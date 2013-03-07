@@ -1,0 +1,229 @@
+@import "base";
+@import "compass/css3/images";
+
+$bar-shadow-color: rgba(0, 0, 0, .065);
+$bar-border-color: #D4D4D4;
+$bar-gradient: linear-gradient(top, white, #F2F2F2);
+
+$chromium-color-dark: #366597;
+$chromium-color-medium: #85b4df;
+$chromium-color-light: #bdd6ed;
+$chromium-color-center: #4580c0;
+
+html, body {
+	height: 100%;
+}
+
+body {
+	color: $default-font-color;
+	font: 14px "Open Sans", Arial, sans-serif;
+  background-color: $light-grey;
+  //background: url(../img/bg.png);
+}
+
+h1, h2, h3, h4{
+  font-weight: 300;
+}
+h1 {
+  font-size: 30px;
+}
+a {
+  color: $chromium-color-center;
+}
+a:hover {
+  text-decoration: none
+}
+b {
+  font-weight: bold;
+}
+
+@mixin gradient-bar-bg {
+  background-color: #FAFAFA;
+  @include background($bar-gradient);
+  padding: 0.75em 1em;
+  box-shadow: 1px 1px 4px $bar-shadow-color;
+}
+
+header, footer {
+  @include display-box; //@include display-flex;
+  @include align-items(center);
+  text-shadow: 0 1px 0 white;
+}
+
+header {
+  margin: 15px 0 30px 0;
+  @include user-select;
+  
+  aside {
+    //@include display-box; //@include display-flex;
+    @include align-items(center);
+    // @include gradient-bar-bg;
+    border-top-right-radius: 5px;
+    border-bottom-right-radius: 5px;
+    /* Uncomment gradient-bar-bg and these 2 to make pretty again */
+    //border-bottom: 1px solid $bar-border-color;
+    //border-right: 1px solid $bar-border-color;
+    background-color: #FAFAFA;
+    padding: 0.75em 1em;
+
+    // Small logo.
+    // background: url(/static/img/chromium-128.png) no-repeat 14px 50%, #FAFAFA;
+    // background-size: 45px;
+    // padding-left: 65px;
+    // Larger bg logo.
+    background: url(/static/img/chromium-128.png) no-repeat 10px 50%, #FAFAFA;
+    background-size: 20%;
+    padding-left: 125px;
+
+    // TODO: temporary for old flex box support.
+    hgroup {
+      @include display-box; //@include display-flex;
+      @include box-orient(vertical); // TODO: remove. Needed because Safari and FF don't have new flexbox.
+    }
+
+    h1 {
+      line-height: 1;
+      //white-space: nowrap;
+      //width: -webkit-min-content;
+    }
+    img {
+      height: 45px;
+      width: 45px;
+      margin-right: 7px;
+    }
+  }
+
+  nav {
+    @include display-box; //@include display-flex;
+    width: 400px;
+    margin-left: 3em;
+
+    a {
+      @include gradient-bar-bg;
+      @include flex(1);
+      cursor: pointer;
+      margin-right: 1em;
+      font-size: 16px;
+      text-align: center;
+      border-radius: 3px;
+      border-bottom: 1px solid $bar-border-color;
+      border-right: 1px solid $bar-border-color;
+
+      &:hover {
+        color: $chromium-color-center;
+      }
+      &:active {
+        position: relative;
+        top: 1px;
+        left: 1px;
+        box-shadow: 3px 3px 4px $bar-shadow-color;
+      }
+
+      &.metrics {
+        @include background(url(../img/stats.svg) no-repeat 15px 50%,
+                            $bar-gradient);
+        background-size: 20px, 100%;
+      }
+      &.features {
+        @include background(url(../img/tools.svg) no-repeat 15px 50%,
+                            $bar-gradient);
+        background-size: 20px, 100%;
+      }
+
+      &.disabled {
+        opacity: 0.5;
+        pointer-events: none;
+        //visibility: hidden;
+      }
+    }
+  }
+
+}
+
+.warning {
+  background: #fc0;
+  padding: 1em;
+  color: black;
+  @include align-self(center);
+  border-radius: 3px;
+  margin: 0 30px;
+}
+
+footer {
+  @include gradient-bar-bg;
+  font-size: 12px;
+  box-shadow: 0 -2px 5px $bar-shadow-color;
+  @include justify-content(center);
+
+  @include box-pack(center); // TODO: remove. Needed because Safari and FF don't have new flexbox.
+}
+
+#container {
+  //@include display-flex;
+  @include display-box; //@include display-flex;
+  @include flex-direction(column);
+  height: 100%;
+  width: 100%;
+
+  @include box-orient(vertical); // TODO: remove. Needed because Safari and FF don't have new flexbox.
+}
+
+#content {
+  @include display-box; //@include display-flex;
+  @include justify-content(center);
+  @include flex(1 0 0);
+  margin: 30px;
+
+  @include box-flex(1); // TODO: remove. Needed because Safari and FF don't have new flexbox.
+
+  iframe {
+    border: none;
+    width: 100%;
+    @include box-flex(1); // TODO: remove. Needed because Safari and FF don't have new flexbox.
+  }
+
+  // #data-table {
+  //   background: white;
+
+  //   th, td {
+  //     padding: 0 10px;
+  //     border: 1px solid rgb(204, 204, 204);
+  //   }
+  // }
+
+  // #viz {
+  //   overflow: auto;
+  //   width: 1200px;
+  //   height: 550px;
+
+  //   table {
+
+  //   }
+  // }
+
+}
+
+.headerRow {
+  background: $chromium-color-dark;
+  color: white;
+  white-space: nowrap;
+  font-weight: bold;
+  height: 50px;
+
+  // td {
+  //   max-width: 200px;
+  //   overflow: hidden;
+  //   text-overflow: ellipsis;
+  // }
+}
+.hoverTableRow {
+  background: $chromium-color-light;
+}
+.selectedTableRow {
+  background: $chromium-color-light;
+}
+
+.chrome-cell {
+  background: url(../img/chrome_logo.svg) no-repeat -22px 50%;
+  background-size: 50px;
+}

@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<section>
+  <h2>Add a feature:</h2>
+  <form name="feature_form" method="POST" action="/newfeature">
+    <table>
+      <!--<tr><th><label for="id_key_name">key_name:</label></th><td><input type="text" name="key_name" id="id_key_name" required /></td></tr>-->
+      {{ feature_form }}
+      <tr><td colspan="2"><input type="submit" /></td></tr>
+    </table>
+  </form>
+</section>
+{% endblock %}
