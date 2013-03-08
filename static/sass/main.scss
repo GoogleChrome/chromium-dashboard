@@ -53,7 +53,7 @@ header, footer {
 header {
   margin: 15px 0 30px 0;
   @include user-select;
-  
+
   aside {
     //@include display-box; //@include display-flex;
     @include align-items(center);
@@ -172,6 +172,7 @@ footer {
   @include display-box; //@include display-flex;
   @include justify-content(center);
   @include flex(1 0 0);
+
   margin: 30px;
 
   @include box-flex(1); // TODO: remove. Needed because Safari and FF don't have new flexbox.
@@ -226,4 +227,12 @@ footer {
 .chrome-cell {
   background: url(../img/chrome_logo.svg) no-repeat -22px 50%;
   background-size: 50px;
+}
+
+
+
+@media only screen and (max-width: 700px){
+  #content { margin: 0; }
+  .warning { margin: 0; }
+  header   { margin: 0; }
 }
