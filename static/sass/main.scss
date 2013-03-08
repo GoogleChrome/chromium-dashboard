@@ -156,6 +156,8 @@ footer {
   @include justify-content(center);
 
   @include box-pack(center); // TODO: remove. Needed because Safari and FF don't have new flexbox.
+  @include box-orient(vertical);
+  @include display-box;
 }
 
 #container {
