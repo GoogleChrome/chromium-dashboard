@@ -158,6 +158,11 @@ footer {
   @include box-pack(center); // TODO: remove. Needed because Safari and FF don't have new flexbox.
   @include box-orient(vertical);
   @include display-box;
+  text-align: center;
+
+  div {
+    margin-top: 5px;
+  }
 }
 
 #container {
