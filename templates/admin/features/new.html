@@ -4,7 +4,7 @@
 
 <section>
   <h2>Add a feature:</h2>
-  <form name="feature_form" method="POST" action="/newfeature">
+  <form name="feature_form" method="POST" action="{{current_path}}">
     <table>
       <!--<tr><th><label for="id_key_name">key_name:</label></th><td><input type="text" name="key_name" id="id_key_name" required /></td></tr>-->
       {{ feature_form }}

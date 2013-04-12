@@ -1,5 +1,5 @@
 application: cr-status
-version: 1
+version: v2dash
 runtime: python27
 threadsafe: true
 api_version: 1
@@ -11,9 +11,42 @@ libraries:
   version: "latest"
 - name: django
   version: "latest" #version: "1.3"
+# - name: setuptools
+#   version: latest
 
 env_variables:
   DJANGO_SETTINGS_MODULE: 'settings'
+
+handlers:
+
+# Static handlers ---------------------------------------------------------------
+- url: /favicon\.ico
+  static_files: static/img/chromium-128.png
+  upload: static/img/chromium-128\.png
+
+- url: /static
+  static_dir: static
+
+# Metrics data handlers --------------------------------------------------------
+- url: /data/.*
+  script: metrics.app
+
+# Admin ------------------------------------------------------------------------
+- url: /admin/gae/.*
+  script: google.appengine.ext.admin.application
+  login: admin
+
+- url: /cron/metrics
+  script: admin.app
+  login: admin # Prevents raw access to this handler. Cron runs as admin.
+
+- url: /admin/features/.*
+  script: admin.app
+  login: admin
+
+# Main server ------------------------------------------------------------------
+- url: /.*
+  script: server.app
 
 skip_files:
 - ^(.*/)?app\.yaml
@@ -30,24 +63,3 @@ skip_files:
 - ^(.*/)?.*\.sql[3]$
 - ^(.*/)?.*\.sh$
 - ^(.*/)?.*\.scss$
-
-handlers:
-- url: /favicon\.ico
-  static_files: static/img/chrome_logo.svg
-  upload: static/img/chrome_logo\.svg
-
-- url: /static
-  static_dir: static
-
-- url: /admin/.*
-  script: google.appengine.ext.admin.application
-  login: admin
-
-- url: /newfeature
-  script: server.app
-  login: admin
-
-- url: /.*
-  script: server.app
-
-

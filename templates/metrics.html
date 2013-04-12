@@ -1,7 +1,26 @@
 {% extends "base.html" %}
 
+{% block css %}
+<link rel="stylesheet" type="text/css" href="/static/css/metrics/metrics.css">
+{% endblock %}
+
+{% block js %}
+<script src="/static/js/metrics/mostPopular.js"></script>
+{% endblock %}
+
 {% block content %}
 
-Come back soon :)
+{% include "metrics/_nav.html" %}
+
+<section>
+<h1>CSS Property Usage</h1>
+<p>CSS Properties in order of calls made to each property. Currently counting all calls, including the user agent style sheet. Per-page stats, excluding the user agent style sheet to come soon!</p>
+</section>
+
+<!-- NOT COMPLETE. Depends on stack. -->
+<!--
+<section><h1>Most Popular</h1>
+<p>Top 10 CSS Properties by percentage of pages which use each property. Statistics excluding the user agent style sheet to come soon!</p>
+</section>-->
 
 {% endblock %}

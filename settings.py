@@ -9,7 +9,7 @@ INSTALLED_APPS = (
 ROOT_DIR = os.path.abspath(os.path.dirname(__file__))
 
 TEMPLATE_DIRS = (
-  os.path.join(ROOT_DIR, 'templates'),
+  os.path.join(ROOT_DIR, 'templates')
 )
 ################################################################################
 

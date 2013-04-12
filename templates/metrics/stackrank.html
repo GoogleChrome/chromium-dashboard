@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% load verbatim %}
+
+{% block css %}
+<link rel="stylesheet" type="text/css" href="/static/css/metrics/metrics.css">
+{% endblock %}
+
+{% block js %}
+<script src="/static/js/angular.resource.min.js"></script>
+<script src="/static/js/metrics/stackrank.js"></script>
+{% endblock %}
+
+{% block content %}
+
+{% include "metrics/_nav.html" %}
+
+{% verbatim %}
+<section ng-controller="StackRankController">
+<h1>Stack Rank</h1>
+<p>CSS Properties in order of popularity. Values reflect the percentage of
+  surveyed pages which use each property.</p>
+<p><button ng-click="sortList()">Swap order</button><p>
+
+<ol id="stack-rank-list">
+  <li ng-show="!properties.length" class="loading">Loading...</li>
+  <li ng-repeat="prop in properties | orderBy:sortBy">
+    <span>{{prop.day_percentage | number }}%</span><span>{{prop.property_name}}</span>
+  </li>
+</ol>
+</section>
+{% endverbatim %}
+
+{% endblock %}

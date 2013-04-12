@@ -30,13 +30,15 @@
 // Author: Eric Bidelman (ericbidelman@chromium.org)
 -->
 <!DOCTYPE html>
-<html ng-app>
+<html ng-app="dashboardApp">
 <head>
 <meta charset="utf-8">
 <title>{{ APP_TITLE }}</title>
 <link rel="shortcut icon" href="/favicon.ico">
 <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Open+Sans:300,300italic,600,800">
 <link rel="stylesheet" type="text/css" href="/static/css/main.css?2012-03-06">
+
+{% block css %} {% endblock %}
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
 
@@ -47,7 +49,7 @@
 <!--<link rel="apple-touch-icon" href="/static/images/identity/HTML5_Badge_64.png">
 <link rel="apple-touch-icon-precomposed" href="/static/images/identity/HTML5_Badge_64.png">-->
 
-<!-- <script src="/static/js/angular.min.js"></script> -->
+<script src="/static/js/angular.min.js"></script>
 </head>
 
 <body>
@@ -60,7 +62,8 @@
   {% include "footer.html" %}
 </div>
 
-<!-- <script src="/static/js/app.js"></script> -->
+<script src="/static/js/app.js"></script>
+{% block js %}{% endblock %}
 <script>
   var _gaq = _gaq || [];
   _gaq.push(['_setAccount', 'UA-39048143-1']);

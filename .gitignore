@@ -3,3 +3,4 @@
 *.swp
 *.DS_Store
 .sass-cache
+*oauth2.data
