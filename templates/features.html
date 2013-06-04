@@ -1,10 +1,57 @@
 {% extends "base.html" %}
 
+{% block html_imports %}
+  <link rel="import" href="/static/elements/chromedash-app.html">
+{% endblock %}
+
+{% block subheader %}
+<div id="subheader">
+  <h1>Features</h1>
+  {% if user.is_admin %}
+    <a href="/admin/features/new">Add a new feature</a>
+  {% endif %}
+</div>
+{% endblock %}
+
 {% block content %}
 
-<div class="warning">
-  <b>April 3, 2013</b>: This dashboard is under construction. For an older snapshot of some of this data see <a href="https://sites.google.com/a/chromium.org/dev/developers/web-platform-status" target="_blank">Web Platform Status</a>. For more info, read our <a href="https://groups.google.com/a/chromium.org/d/topic/chromium-dev/E6lCV7diafU/discussion" target="_blank">chromium-dev announcement</a> or visit the <a href="https://docs.google.com/document/d/1jrSlM4Yhae7XCJ8BuasWx71CvDEMMbSKbXwx7hoh1Co/edit?pli=1" target="_blank">FAQ</a>. The raw spreadsheet data is <a href="https://docs.google.com/spreadsheet/ccc?key=0AjGgk26K1Cc-dFdfUlRQRWtjUm5XdjB4cmFGWjhTZmc#gid=0" target="_blank">here</a>.
+<section>
+<!--   <li><a href="/database/resource/{{r.key.id}}">[Edit]</a> &nbsp; <a href="{{r.url}}" target="_blank">{{r.title}}{% if r.subtitle %}: {{r.subtitle|safe}}{% endif %}</a> - {% for tag in r.tags %}{{tag}}{% if not forloop.last %}, {% endif %}{% endfor %} {% if r.draft %}&nbsp; <b>draft</b>{% endif %}</li> -->
+<div id="feature-list">
+
+{% comment %}
+{% for f in features %}
+  <chromedash-feature name="{{f.feature_name}}" category="{{f.category}}"
+                      milestone="{{f.impl_status_chrome}}"
+                      status="{{f.shipped_milestone}}" feature="{{f}}">
+    {% if user.is_admin %}
+      <a href="/admin/features/edit/{{f.id}}" class="edit">Edit</a>
+    {% endif %}
+    <summary>{{f.summary}}</summary>
+    <p class="status">
+      {% for owner in f.owner %}
+        {{owner}}
+      {% endfor %}
+    </p>
+    <p class="visibility">{{f.visibility|safe}}</p>
+  </chromedash-feature>
+{% endfor %}
+{% endcomment %}
+
+<chromedash-app {% if user.is_admin %}admin{% endif %}></chromedash-app>
+
 </div>
+
+<script>
+document.addEventListener('WebComponentsReady', function(e) {
+  var t = document.querySelector('chromedash-app');
+  t.model = {
+    features: {{features|safe}}
+  }
+});
+</script>
+
+</section>
 
 <!--
 {% load verbatim %}
@@ -19,140 +66,5 @@
   </tr>
 </table>
 {% endverbatim %} -->
-
-<iframe seamless src="//docs.google.com/spreadsheet/pub?key=0AjGgk26K1Cc-dFdfUlRQRWtjUm5XdjB4cmFGWjhTZmc&single=true&gid=0&range=A2:Z116&output=html"></iframe>
-
-<!-- <div id="viz"></div> -->
-
-<script>
-// function DataTableController($scope) {
-//   $scope.data = {};
-
-//   var query = new google.visualization.Query(
-//     'https://spreadsheets.google.com/tq?key=' + KEY + '&range=' + RANGE + '&pub=1&headers=1');
-
-//   query.send(function(response) {
-//     var data = response.getDataTable();
-//     $scope.data = JSON.parse(data.toJSON());
-// //console.log($scope.data)
-//     $scope.$apply(function() {});
-//   });
-// }
-
-var KEY = '0AjGgk26K1Cc-dC0yZFQ4ajh0Z2JqZlJJUmhTMVZVYlE';
-var RANGE = 'A2:R';
-
-// function onGoogLoad() {
-//   var wrapper = new google.visualization.ChartWrapper({
-//     chartType: 'Table',
-//     dataSourceUrl: 'https://spreadsheets.google.com/tq?key=' + KEY + '&range=' + RANGE + '&pub=1',
-//     containerId: 'viz'
-//   });
-
-//   var options = {
-//     'title': 'How Much Pizza I Ate Last Night',
-//     'width': 400,
-//     'height': 300,
-//     allowHtml: true
-//   };
-
-//   wrapper.draw(options);
-
-//   // var table = new google.visualization.Table(document.querySelector('#viz'));
-//   // table.draw(data, {allowHtml: true});
-// }
-
-function sendQuery() {
-  var query = new google.visualization.Query(
-    'https://spreadsheets.google.com/tq?key=' + KEY + '&range=' + RANGE + '&pub=1&headers=1');
-
-  query.send(onQueryResponse);
-}
-
-function onQueryResponse(response) {
-  if (response.isError()) {
-    console.error('Error in query: ' + response.getMessage() + ' ' +
-                  response.getDetailedMessage());
-    return;
-  }
-
-  var data = response.getDataTable();
-
-  //var json = JSON.parse(data.toJSON());
-
-  var options = {
-    allowHtml: true,
-    cssClassNames: {
-      headerRow: 'headerRow',
-      hoverTableRow: 'hoverTableRow',
-      selectedTableRow: 'selectedTableRow'
-    }
-  };
-
-  var table = new google.visualization.Table(document.querySelector('#viz'));
-
-  // Clean up links.
-  var numRows = data.getNumberOfRows();
-  var numCols = data.getNumberOfColumns();
-
-  var shippedInColIdx = getColumnIndexForLabel(data, 'Shipped in');
-
-  for (var row = 0; row < numRows; ++row) {
-    for (var col = 0; col < numCols; ++col) {
-      var cell = data.getValue(row, col);
-
-      // if (shippedInColIdx == col) {
-      //   document.querySelector('table').querySelectorAll("tr:not(.headerRow)")[row].children[col].classList.add('chrome-cell');
-      // }
-
-      if (cell && cell.toString().match('crbug.com')) {
-        data.setValue(row, col, cell.link('http://' + cell));
-      } else if (cell && cell.toString().match('https?://')) {
-        data.setValue(row, col, linkify(cell));
-      }
-    }
-  }
-
-  table.draw(data, options);
-
-  // var html = [];
-
-  // html.push('<tr>');
-  // for (var i = 0, col; col = json.cols[i]; ++i) {
-  //   html.push('<th>', col.label, '</th>');
-  // }
-  // html.push('</tr>');
-
-  // document.querySelector('#viz').innerHTML = '<table>' + html.join('') + '</table>';
-}
-
-function getColumnIndexForLabel(data, label) {
-  for (var i = 0; i < data.getNumberOfColumns(); ++i) {
-    if (data.getColumnLabel(i) == label) {
-      return i;
-    }
-  }
-  return -1;
-}
-
-function linkify(text) {
-  // http://, https://, ftp://
-  var urlPattern = /\b(?:https?|ftp):\/\/[a-z0-9-+&@#\/%?=~_|!:,.;]*[a-z0-9-+&@#\/%=~_|]/gim;
-
-  // www. sans http:// or https://
-  var pseudoUrlPattern = /(^|[^\/])(www\.[\S]+(\b|$))/gim;
-
-  // Email addresses
-  var emailAddressPattern = /\w+@[a-zA-Z_]+?(?:\.[a-zA-Z]{2,6})+/gim;
-
-  return text.replace(urlPattern, '<a href="$&">$&</a>')
-             .replace(pseudoUrlPattern, '$1<a href="http://$2">$2</a>')
-             .replace(emailAddressPattern, '<a href="mailto:$&">$&</a>');
-}
-</script>
-<!-- <script src='//www.google.com/jsapi?autoload={"modules":[{"name":"visualization","version":"1","callback": "onGoogLoad"}]}'></script>
- -->
-<!-- <script src='//www.google.com/jsapi?autoload={"modules":[{"name":"visualization","version":"1","packages":["corechart","table"],"callback": "sendQuery"}]}'></script> -->
-<!-- <script src='//www.google.com/jsapi?autoload={"modules":[{"name":"visualization","version":"1","packages":["corechart","table"]}]}'></script> -->
 
 {% endblock %}

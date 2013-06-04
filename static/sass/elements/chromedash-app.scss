@@ -1,0 +1,15 @@
+@import "base";
+
+.edit {
+  top: 15px;
+  right: 15px;
+  position: absolute;
+}
+
+[is="chromedash-feature"] {
+  @include gradient-bar-bg;
+  margin-bottom: 20px;
+  position: relative;
+  border-radius: $default-border-radius;
+  padding: 15px 20px;
+}

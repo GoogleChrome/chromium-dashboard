@@ -10,6 +10,12 @@ $chromium-color-medium: #85b4df;
 $chromium-color-light: #bdd6ed;
 $chromium-color-center: #4580c0;
 
+/* App specific */
+$invalid-color: rgba(255,0,0,0.75);
+$content-padding: 30px;
+$default-border-radius: 3px;
+/* ----- */
+
 @mixin display-flex() {
   display: -webkit-flex;
   display: -moz-flex;

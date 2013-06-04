@@ -1,0 +1,32 @@
+<element name="chromedash-feature" extends="li" attributes="feature">
+<link rel="stylesheet" type="text/css" href="../css/elements/chromedash-feature.css">
+<template>
+<style>
+@host {
+  * { /* switch to :scope when the polyfill supports it */
+    display: block;
+  }
+}
+</style>
+<hgroup>
+  <h2>{{feature.feature_name}}</h2> <label class="category">{{feature.category}}</label>
+</hgroup>
+<section>
+  <h3>Implementation in Chromium</h3>
+  <p>{{feature.impl_status_chrome}} - {{feature.shipped_milestone}}</p>
+</section>
+<section>
+  <h3>Concensus &amp; Standardization</h3>
+</section>
+<content></content>
+</template>
+<script>
+  Polymer.register(this, {
+    applyAuthorStyles: true,
+    ready: function() {
+
+    }
+  });
+</script>
+</element>
+

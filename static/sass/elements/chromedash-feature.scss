@@ -1,0 +1,32 @@
+@import "base";
+
+hgroup {
+  display: -webkit-flex;
+  display: -ms-flex;
+  display: -o-flex;
+  display: flex;
+  -webkit-align-items: center;
+  -ms-align-items: center;
+  -o-align-items: center;
+  align-items: center;
+  margin-bottom: 15px;
+}
+section {
+  margin-top: 15px;
+}
+h1, h2, h3 {
+  font-weight: 300;
+}
+h2 {
+  display: inline-block;
+  margin-right: 1em;
+  font-size: 25px;
+}
+h3 {
+  font-size: 15px;
+}
+
+.category {
+  color: #bbb;
+  font-size: 20px;
+}

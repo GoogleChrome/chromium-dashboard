@@ -1,4 +1,8 @@
 <footer>
   <p>Except as otherwise noted, the content of this page is licensed under a <a href="http://creativecommons.org/licenses/by/2.5/">Creative Commons Attribution 2.5 license</a>, and examples are licensed under the <a href="http://src.chromium.org/viewvc/chrome/trunk/src/LICENSE">BSD License</a>.</p>
-  <div><a href="https://groups.google.com/a/chromium.org/forum/#!newtopic/blink-dev">Report content issues</a> |  <a href="https://github.com/GoogleChrome/chromium-dashboard">Report site issues</a> | <a href="https://docs.google.com/document/d/1jrSlM4Yhae7XCJ8BuasWx71CvDEMMbSKbXwx7hoh1Co/edit?pli=1" target="_blank">About this page</a></div>
+  <div><a href="https://groups.google.com/a/chromium.org/forum/#!newtopic/blink-dev">Report content issues</a> |  <a href="https://github.com/GoogleChrome/chromium-dashboard">Report site issues</a> | <a href="https://docs.google.com/document/d/1jrSlM4Yhae7XCJ8BuasWx71CvDEMMbSKbXwx7hoh1Co/edit?pli=1" target="_blank">About this page</a> | 
+    {% if user %}
+      <b>{{user.email}}</b> {% if user.is_admin %}( admin ){% endif %}
+    {% endif %}  <a href="{{login.1}}">{{login.0}}</a>
+  </div>
 </footer>

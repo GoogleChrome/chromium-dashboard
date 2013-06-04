@@ -10,7 +10,7 @@ libraries:
 - name: webapp2
   version: "latest"
 - name: django
-  version: "latest" #version: "1.3"
+  version: "1.4" #"latest" 
 # - name: setuptools
 #   version: latest
 

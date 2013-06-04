@@ -8,7 +8,8 @@ import settings
 class StableInstances(common.JSONHandler):
 
   def get(self):
-    data = models.StableInstance.all().order('-date').fetch(limit=None)
+    # All matching results.
+    data = models.StableInstance.all().order('-date').fetch(None)
     super(StableInstances, self).get(data)
 
 
@@ -26,7 +27,8 @@ class QueryStackRank(common.JSONHandler):
       query.filter('date =', data_last_added_on)
       query.order('-hits')
 
-      data = query.fetch(limit=None)
+      # All matching results.
+      data = query.fetch(None)
 
     super(QueryStackRank, self).get(data)
 

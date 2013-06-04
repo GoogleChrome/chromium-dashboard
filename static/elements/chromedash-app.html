@@ -1,0 +1,32 @@
+<link rel="import" href="chromedash-feature.html">
+
+<element name="chromedash-app" attributes="admin">
+<link rel="stylesheet" type="text/css" href="../css/elements/chromedash-app.css">
+<template>
+  <style>
+  @host {
+    * {
+      display: block;
+    }
+  }
+  </style>
+  <template repeat="{{feature in model.features}}">
+    <li is="chromedash-feature" feature="{{feature}}">
+      <template bind if="{{admin}}">
+        <a href="/admin/features/edit/{{feature.id}}" class="edit">Edit</a>
+      </template>
+    </li>
+  </template>
+</template>
+<script>
+  Polymer.register(this, {
+    applyAuthorStyles: true,
+    admin: false,
+    ready: function() {
+      // this.asyncMethod(function() {
+
+      // });
+    }
+  });
+</script>
+</element>

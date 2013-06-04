@@ -30,7 +30,9 @@ import webapp2
 # Appengine imports.
 from google.appengine.api import files
 from google.appengine.api import urlfetch
+from google.appengine.api import users
 from google.appengine.ext import blobstore
+from google.appengine.ext import db
 from google.appengine.ext.webapp import blobstore_handlers
 
 # File imports.
@@ -176,30 +178,88 @@ class YesterdayHandler(blobstore_handlers.BlobstoreDownloadHandler):
 
 class FeatureHandler(common.ContentHandler):
 
-  def get(self, path):
-    # feature = models.Feature(
-    #         type=models.Resource.Type.ARTICLE, #TODO: use correct type for content.
-    #         title=doc.title(),
-    #         text=doc.summary(),#.decode('utf-8').decode('ascii','ignore'),
-    #         publication_date=datetime.datetime.today(), #TODO: save real date.
-    #         url=db.Link(result.final_url or url),
-    #         #fetch_date=datetime.date.today(),
-    #         #sharers
-    #         )
+  def __FullQualifyLink(self, param_name):
+    link = self.request.get(param_name) or None
+    if link:
+      if not link.startswith('http'):
+        link = db.Link('http://' + link)
+      else:
+        link = db.Link(link)
+    return link
 
+  def get(self, path, feature_id=None):
     # Remove trailing slash from URL and redirect. e.g. /metrics/ -> /metrics
     if path[-1] == '/':
       return self.redirect('/' + path.rstrip('/'))
 
-    template_file = path + '.html'
+    feature = None
+    if feature_id: # /admin/edit/1234
+      feature = models.Feature.format_for_edit(
+          models.Feature.get_by_id(int(feature_id)))
+
     template_data = {
-      'feature_form': models.FeatureForm()
+      'feature_form': models.FeatureForm(feature),
     }
+
+    user = users.get_current_user()
+    if user:
+      template_data['login'] = ('Logout',
+                                users.create_logout_url(dest_url=path))
+      template_data['user'] = {
+        'is_admin': users.is_current_user_admin(),
+        'nickname': user.nickname(),
+        'email': user.email(),
+      }
+
+    template_file = path + '.html'
 
     self.render(data=template_data, template_path=os.path.join(template_file))
 
+  def post(self, path):
+    spec_link = self.__FullQualifyLink('spec_link')
+    bug_url = self.__FullQualifyLink('bug_url')
+    spec_link = self.__FullQualifyLink('spec_link')
+
+    safari_views_link = self.__FullQualifyLink('safari_views_link')
+    ff_views_link = self.__FullQualifyLink('ff_views_link')
+    ie_views_link = self.__FullQualifyLink('ie_views_link')
+
+    owners = self.request.get('owner') or []
+    owners = [db.Email(x.strip()) for x in owners.split(',')]
+
+    feature = models.Feature(
+        category=int(self.request.get('category')),
+        feature_name=self.request.get('feature_name'),
+        summary=self.request.get('summary'),
+        owner=owners,
+        bug_url=db.Link(bug_url),
+        impl_status_chrome=int(self.request.get('impl_status_chrome')),
+        shipped_milestone=self.request.get('shipped_milestone'),
+        footprint=int(self.request.get('footprint')),
+        visibility=int(self.request.get('visibility')),
+        safari_views=int(self.request.get('safari_views')),
+        safari_views_link=safari_views_link,
+        ff_views=int(self.request.get('ff_views')),
+        ff_views_link=ff_views_link,
+        ie_views=int(self.request.get('ie_views')),
+        ie_views_link=ie_views_link,
+        prefixed=self.request.get('prefixed') == 'on',
+        spec_link=db.Link(spec_link),
+        standardization=int(self.request.get('standardization')),
+        #fetch_date=datetime.date.today(),
+        )
+
+    #if form.is_valid():
+    #  feature = form.save(commit=False)
+    #  logging.info(feature)
+    feature.put()
+
+    return self.redirect('/' + path)
+
+
 app = webapp2.WSGIApplication([
   ('/cron/metrics', YesterdayHandler),
+  ('/(.*)/([0-9]*)', FeatureHandler),
   ('/(.*)', FeatureHandler),
 ], debug=settings.DEBUG)
 

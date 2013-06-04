@@ -1,3 +1,4 @@
+@import "compass/reset";
 @import "base";
 @import "compass/css3/images";
 
@@ -12,11 +13,14 @@ body {
   //background: url(../img/bg.png);
 }
 
-h1, h2, h3, h4{
+h1, h2, h3, h4 {
   font-weight: 300;
 }
 h1 {
   font-size: 30px;
+}
+h2 {
+  font-size: 25px;
 }
 a {
   color: $chromium-color-center;
@@ -29,11 +33,53 @@ b {
   font-weight: bold;
 }
 
-@mixin gradient-bar-bg {
-  background-color: #FAFAFA;
-  @include background($bar-gradient);
-  padding: 0.75em 1em;
-  box-shadow: 1px 1px 4px $bar-shadow-color;
+input, textarea {
+  outline: none;
+  padding: 7px;
+}
+
+input:not([type="submit"]), textarea {
+  border: 1px solid $bar-border-color;
+  //box-shadow: 2px 2px 2px #ccc inset;
+
+  &[disabled] {
+    opacity: 0.5;
+  }
+}
+
+table {
+  // td, th {
+  //   vertical-align: top;
+  // }
+  th {
+    max-width: 200px;
+  }
+  th, td {
+    padding-bottom: 10px;
+  }
+  .helptext {
+    font-style: italic;
+    font-size: smaller;
+  }
+  input[type="text"], textarea {
+    width: 100%;
+  }
+
+  :required {
+    border: 1px solid $chromium-color-dark;
+  }
+
+  .interacted:valid {
+    border: 1px solid green;
+  }
+
+  .interacted:invalid {
+    border: 1px solid $invalid-color;
+  }
+
+  .errorlist {
+    color: red;
+  }
 }
 
 header, footer {
@@ -98,11 +144,10 @@ header {
       margin-right: 1em;
       font-size: 16px;
       text-align: center;
-      border-radius: 3px;
+      border-radius: $default-border-radius;
       border-bottom: 1px solid $bar-border-color;
       border-right: 1px solid $bar-border-color;
-      padding-left: 3em;
-      text-transform: uppercase;
+      //padding-left: 3em;
 
       &:hover {
         color: $chromium-color-center;
@@ -114,16 +159,16 @@ header {
         box-shadow: 3px 3px 4px $bar-shadow-color;
       }
 
-      &.metrics {
-        @include background(url(../img/stats.svg) no-repeat 15px 50%,
-                            $bar-gradient);
-        background-size: 20px, 100%;
-      }
-      &.features {
-        @include background(url(../img/tools.svg) no-repeat 15px 50%,
-                            $bar-gradient);
-        background-size: 20px, 100%;
-      }
+      // &.metrics {
+      //   @include background(url(../img/stats.svg) no-repeat 15px 50%,
+      //                       $bar-gradient);
+      //   background-size: 20px, 100%;
+      // }
+      // &.features {
+      //   @include background(url(../img/tools.svg) no-repeat 15px 50%,
+      //                       $bar-gradient);
+      //   background-size: 20px, 100%;
+      // }
 
       &.disabled {
         opacity: 0.5;
@@ -132,16 +177,6 @@ header {
       }
     }
   }
-
-}
-
-.warning {
-  background: #fc0;
-  padding: 1em;
-  color: black;
-  @include align-self(center);
-  border-radius: 3px;
-  margin: 0 30px 30px 30px;
 }
 
 footer {
@@ -160,6 +195,10 @@ footer {
   }
 }
 
+#subheader {
+  margin: $content-padding/2 $content-padding 0 $content-padding;
+}
+
 #container {
   //@include display-flex;
   @include display-box; //@include display-flex;
@@ -176,7 +215,7 @@ footer {
   @include flex(1 0 0);
   @include box-orient(vertical);
 
-  margin: 30px;
+  margin: $content-padding;
   overflow: auto;
 
   @include box-flex(1); // TODO: remove. Needed because Safari and FF don't have new flexbox.
@@ -208,37 +247,50 @@ footer {
 
 }
 
-.headerRow {
-  background: $chromium-color-dark;
-  color: white;
-  white-space: nowrap;
-  font-weight: bold;
-  height: 50px;
-
-  // td {
-  //   max-width: 200px;
-  //   overflow: hidden;
-  //   text-overflow: ellipsis;
-  // }
-}
-.hoverTableRow {
-  background: $chromium-color-light;
-}
-.selectedTableRow {
-  background: $chromium-color-light;
+#feature-list {
+  //@include display-box;
+  //@include flex(1 0 0);
+  //@include box-orient(vertical);
+  // width: 100%; // For FF old flex box.
+  // height: 100%;
+  @include display-flex;
+  @include flex(1 0 0);
+  overflow: auto;
 }
 
-.chrome-cell {
-  background: url(../img/chrome_logo.svg) no-repeat -22px 50%;
-  background-size: 50px;
+chromedash-app {
+  height: 100%;
+  @include flex(1 0 0);
 }
+
+// .headerRow {
+//   background: $chromium-color-dark;
+//   color: white;
+//   white-space: nowrap;
+//   font-weight: bold;
+//   height: 50px;
+
+//   // td {
+//   //   max-width: 200px;
+//   //   overflow: hidden;
+//   //   text-overflow: ellipsis;
+//   // }
+// }
+// .hoverTableRow {
+//   background: $chromium-color-light;
+// }
+// .selectedTableRow {
+//   background: $chromium-color-light;
+// }
+
+// .chrome-cell {
+//   background: url(../img/chrome_logo.svg) no-repeat -22px 50%;
+//   background-size: 50px;
+// }
 
 
 @media only screen and (max-width: 700px) {
   #content { margin: 0; }
-  .warning {
-    margin: 15px 0 0 0;
-  }
   header {
     margin: 0;
     display: block;
