@@ -1,4 +1,4 @@
-application: cr-status
+application: google.com:chromestatus #cr-status
 version: v2dash
 runtime: python27
 threadsafe: true
