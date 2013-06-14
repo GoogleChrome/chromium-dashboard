@@ -20,6 +20,7 @@ import logging
 import os
 import webapp2
 
+from google.appengine.api import urlfetch
 from google.appengine.api import users
 
 import common
@@ -67,7 +68,11 @@ class MainHandler(common.ContentHandler):
 
       template_data['features'] = json.dumps(feature_list)
 
-      #http://omahaproxy.appspot.com/all.json
+      # result = urlfetch.fetch('http://omahaproxy.appspot.com/all.json')
+      # if result.status_code == 200:
+      #   template_data['chrome_version'] = json.dumps(result.content)
+      # else:
+      #   template_data['chrome_version'] = None
 
     elif path == 'metrics/featurelevel':
       template_data['CSS_PROPERTY_BUCKETS'] = uma.CSS_PROPERTY_BUCKETS

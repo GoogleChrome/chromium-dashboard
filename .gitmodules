@@ -1,0 +1,3 @@
+[submodule "static/elements/polymer-elements"]
+	path = static/elements/polymer-elements
+	url = git://github.com/Polymer/polymer-elements.git

@@ -8,14 +8,20 @@
     * {
       display: block;
     }
+  } 
+  li[is="chromedash-feature"] {
+    list-style: none;
   }
   </style>
   <template repeat="{{feature in model.features}}">
-    <li is="chromedash-feature" feature="{{feature}}">
+    <!-- TODO: switch back to typee extension custom element when
+         https://github.com/Polymer/polymer/issues/171 is fixed. --> 
+    <!-- <li is="chromedash-feature" feature="{{feature}}"> -->
+    <chromedash-feature feature="{{feature}}">
       <template bind if="{{admin}}">
-        <a href="/admin/features/edit/{{feature.id}}" class="edit">Edit</a>
+        <a href="/admin/features/edit/{{feature.id}}" class="edit">edit</a>
       </template>
-    </li>
+    </chromedash-feature>
   </template>
 </template>
 <script>
@@ -23,9 +29,7 @@
     applyAuthorStyles: true,
     admin: false,
     ready: function() {
-      // this.asyncMethod(function() {
 
-      // });
     }
   });
 </script>

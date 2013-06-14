@@ -1,4 +1,4 @@
-//@import "compass/reset";
+@import "compass/reset";
 @import "compass/css3/border-radius";
 @import "compass/css3/images";
 //@import "compass/css3/box-shadow";
@@ -16,11 +16,4 @@ a {
 }
 a:hover {
 	text-decoration: underline;
-}
-
-@mixin gradient-bar-bg {
-  background-color: #FAFAFA;
-  @include background($bar-gradient);
-  padding: 0.75em 1em;
-  box-shadow: 1px 1px 4px $bar-shadow-color;
 }

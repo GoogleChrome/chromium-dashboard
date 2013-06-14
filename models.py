@@ -66,6 +66,16 @@ class Feature(DictModel):
     d['category'] = FEATURE_CATEGORIES[self.category]
     d['visibility'] = VISIBILITY_CHOICES[self.visibility]
     d['impl_status_chrome'] = IMPLEMENATION_STATUS[self.impl_status_chrome]
+    d['ff_views'] = {'value': self.ff_views,
+                     'text': VENDOR_VIEWS[self.ff_views]}
+    d['ie_views'] = {'value': self.ie_views,
+                     'text': VENDOR_VIEWS[self.ie_views]}
+    d['safari_views'] = {'value': self.safari_views,
+                         'text': VENDOR_VIEWS[self.safari_views]}
+    d['standardization'] = {'value': self.standardization,
+                            'text': STANDARDIZATION[self.standardization]}
+    d['web_dev_views'] = {'value': self.web_dev_views,
+                          'text': WEB_DEV_VIEWS[self.web_dev_views]}
     #d['owner'] = ', '.join(self.owner)
     return d
 
@@ -81,7 +91,7 @@ class Feature(DictModel):
 
   # General info.
   category = db.IntegerProperty(required=True)
-  feature_name = db.StringProperty(required=True)
+  name = db.StringProperty(required=True)
   summary = db.StringProperty(required=True)
 
   # Chromium details.
@@ -97,6 +107,7 @@ class Feature(DictModel):
 
   # Standards details.
   standardization = db.IntegerProperty(required=True)
+  spec_link = db.LinkProperty()
   prefixed = db.BooleanProperty()
 
   safari_views = db.IntegerProperty(required=True)
@@ -108,10 +119,11 @@ class Feature(DictModel):
   ie_views_link = db.LinkProperty()
 
   # Web dev details.
-  #web_dev_temperature = db.StringProperty()  
-  spec_link = db.LinkProperty()
+  web_dev_views = db.IntegerProperty()
   #doc_links = db.StringProperty()
   #tests = db.StringProperty()
+
+  comments = db.StringProperty()
 
 
 class PlaceholderCharField(forms.CharField):
@@ -145,7 +157,6 @@ class PlaceholderCharField(forms.CharField):
 #          field.widget = forms.TextInput(attrs={'placeholder': field.label})
 
 
-CSS = 0
 WEBCOMPONENTS = 1
 MISC = 2
 SECURITY = 3
@@ -155,12 +166,12 @@ FILE = 6
 OFFLINE = 7
 DEVICE = 8
 COMMUNICATION = 9
-STORAGE = 10
-JAVASCRIPT = 11
-NETWORKING = 12
-INPUT = 13
-PERFORMANCE = 14
-WEBGL = 15
+JAVASCRIPT = 10
+NETWORKING = 11
+INPUT = 12
+PERFORMANCE = 13
+GRAPHICS = 14
+CSS = 15
 
 FEATURE_CATEGORIES = {
   CSS: 'CSS',
@@ -170,25 +181,24 @@ FEATURE_CATEGORIES = {
   MULTIMEDIA: 'Multimedia',
   DOM: 'DOM',
   FILE: 'File APIs',
-  OFFLINE: 'Offline',
+  OFFLINE: 'Offline / Storage',
   DEVICE: 'Device',
-  COMMUNICATION: 'Communication',
-  STORAGE: 'Storage',
+  COMMUNICATION: 'Realtime / Communication',
   JAVASCRIPT: 'JavaScript',
-  NETWORKING: 'Networking',
-  INPUT: 'Input',
+  NETWORKING: 'Network / Connectivity',
+  INPUT: 'User input',
   PERFORMANCE: 'Performance',
-  WEBGL: 'WebGL',
+  GRAPHICS: 'Graphics',
   }
 
-NOT_ACTIVE = 0
-PROPOSED = 1
-STARTED = 2
-EXPERIMENTAL = 3
-CANARY_DEV = 4
-BETA = 5
-STABLE = 6
-DEPRECATED = 7
+NOT_ACTIVE = 1
+PROPOSED = 2
+STARTED = 3
+EXPERIMENTAL = 4
+CANARY_DEV = 5
+BETA = 6
+STABLE = 7
+DEPRECATED = 8
 
 IMPLEMENATION_STATUS = {
   NOT_ACTIVE: 'No active development',
@@ -201,32 +211,52 @@ IMPLEMENATION_STATUS = {
   DEPRECATED: 'Deprecated',
   }
 
+MAJOR_NEW_API = 1
+MAJOR_MINOR_NEW_API = 2
+SUBSTANTIVE_CHANGES = 3
+MINOR_EXISTING_CHANGES = 4
+EXTREMELY_SMALL_CHANGE = 5
+
 FOOTPRINT_CHOICES = {
-  0: 'F0',
-  1: 'F1',
-  2: 'F2',
-  3: 'F3',
-  4: 'F4',
+  MAJOR_NEW_API: ('A major new independent API (e.g. adding a large # '
+                  'independent concepts with many methods/properties/objects)'),
+  MAJOR_MINOR_NEW_API: ('Major changes to an existing API OR a minor new '
+                        'independent API (e.g. adding a large # of new '
+                        'methods/properties or introducing new concepts to '
+                        'augment an existing API)'),
+  SUBSTANTIVE_CHANGES: ('Substantive changes to an existing API (e.g. small '
+                        'number of new methods/properties)'),
+  MINOR_EXISTING_CHANGES: (
+      'Minor changes to an existing API (e.g. adding a new keyword/allowed '
+      'argument to a property/method)'),
+  EXTREMELY_SMALL_CHANGE: ('Extremely small tweaks to an existing API (e.g. '
+                           'how existing keywords/arguments are interpreted)'),
   }
+
+MAINSTREAM_NEWS = 1
+WARRANTS_ARTICLE = 2 
+IN_LARGER_ARTICLE = 3
+SMALL_NUM_DEVS = 4
+SUPER_SMALL = 5
 
 VISIBILITY_CHOICES = {
-  0: 'Likely in mainstream tech news',
-  1: 'Warrants its own article on a site like html5rocks.com',
-  2: 'Covered as part of a larger article but not on its own',
-  3: 'Only a very small number of web developers will care about',
-  4: "So small it doesn't need to be covered in this dashboard.",
+  MAINSTREAM_NEWS: 'Likely in mainstream tech news',
+  WARRANTS_ARTICLE: 'Warrants its own article on a site like html5rocks.com',
+  IN_LARGER_ARTICLE: 'Covered as part of a larger article but not on its own',
+  SMALL_NUM_DEVS: 'Only a very small number of web developers will care about',
+  SUPER_SMALL: "So small it doesn't need to be covered in this dashboard.",
   }
 
-FIRST_PROPOSER = 0
-IN_DEV = 1
-PUBLIC_SUPPORT = 2
-MIXED_SIGNALS = 3
-NO_PUBLIC_SIGNALS = 4
-PUBLIC_SKEPTICISM = 5
-OPPOSED = 6
+SHIPPED = 1
+IN_DEV = 2
+PUBLIC_SUPPORT = 3
+MIXED_SIGNALS = 4
+NO_PUBLIC_SIGNALS = 5
+PUBLIC_SKEPTICISM = 6
+OPPOSED = 7
 
 VENDOR_VIEWS = {
-  FIRST_PROPOSER: 'In development (first proposer)',
+  SHIPPED: 'Shipped',
   IN_DEV: 'In development',
   PUBLIC_SUPPORT: 'Documented public support',
   MIXED_SIGNALS: 'Mixed public signals',
@@ -235,13 +265,36 @@ VENDOR_VIEWS = {
   OPPOSED: 'Opposed',
   }
 
+DEFACTO_STD = 1
+ESTABLISHED_STD = 2
+WORKING_DRAFT = 3
+EDITORS_DRAFT = 4
+PUBLIC_DISCUSSION = 5
+NO_STD_OR_DISCUSSION = 6
+
 STANDARDIZATION = {
-  0: 'De-facto standard',
-  1: 'Established standard',
-  2: 'Working draft or equivalent',
-  3: "Editor's draft specification",
-  4: 'Public discussion',
-  5: 'No public discussion / Not standards track',
+  DEFACTO_STD: 'De-facto standard',
+  ESTABLISHED_STD: 'Established standard',
+  WORKING_DRAFT: 'Working draft or equivalent',
+  EDITORS_DRAFT: "Editor's draft specification",
+  PUBLIC_DISCUSSION: 'Public discussion',
+  NO_STD_OR_DISCUSSION: 'No public discussion / Not standards track',
+  }
+
+DEV_STRONG_POSTIVE = 1
+DEV_POSTIVE = 2
+DEV_MIXED_SIGNALS = 3
+DEV_NO_SIGNALS = 4
+DEV_NEGATIVE = 5
+DEV_STRONG_NEGATIVE = 6
+
+WEB_DEV_VIEWS = {
+  DEV_STRONG_POSTIVE: 'Strongly positive',
+  DEV_POSTIVE: 'Positive',
+  DEV_MIXED_SIGNALS: 'Mixed signals',
+  DEV_NO_SIGNALS: 'No signals',
+  DEV_NEGATIVE: 'Negative',
+  DEV_STRONG_NEGATIVE: 'Strongly negative',
   }
 
 
@@ -249,7 +302,7 @@ class FeatureForm(forms.Form):
   
   category = forms.ChoiceField(required=True, choices=FEATURE_CATEGORIES.items())
 
-  feature_name = PlaceholderCharField(required=True, placeholder='Feature name')
+  name = PlaceholderCharField(required=True, placeholder='Feature name')
   #feature_name = forms.CharField(required=True, label='Feature name')
   
   summary = forms.CharField(label='', required=True,
@@ -270,20 +323,34 @@ class FeatureForm(forms.Form):
       label='Earliest version full feature shipped to desktop',
       help_text='(X = not shipped yet, ? = unknown)')
 
+  prefixed = forms.BooleanField(required=False, initial=True, label='Prefixed?')
+
   standardization = forms.ChoiceField(
       label='Standardization', choices=STANDARDIZATION.items(),
+      initial=EDITORS_DRAFT,
       help_text=("The standardization status of the API. In bodies that don't "
                  "use this nomenclature, use the closest equivalent."))
 
+  spec_link = forms.URLField(label='Spec link',
+                             help_text="Prefer an editor's draft.")
 
   footprint  = forms.ChoiceField(label='Technical footprint',
-                                 choices=FOOTPRINT_CHOICES.items())
+                                 choices=FOOTPRINT_CHOICES.items(),
+                                 initial=MAJOR_MINOR_NEW_API)
 
   visibility  = forms.ChoiceField(
       label='Developer visibility',
       choices=VISIBILITY_CHOICES.items(),
+      initial=WARRANTS_ARTICLE,
       help_text=('How much press / media / web developer buzz will this '
                  'feature generate?'))
+
+  web_dev_views = forms.ChoiceField(
+      label='Web developer views',
+      choices=WEB_DEV_VIEWS.items(),
+      initial=DEV_NO_SIGNALS,
+      help_text=('How positive has the reaction from developers been? If '
+                 'unsure, default to "No signals".'))
 
   safari_views = forms.ChoiceField(label='Documented Safari views',
                                    choices=VENDOR_VIEWS.items(),
@@ -301,12 +368,9 @@ class FeatureForm(forms.Form):
                                initial=NO_PUBLIC_SIGNALS)
   ie_views_link = forms.URLField(label='Link')
 
-  prefixed = forms.BooleanField(required=False, initial=False, label='Prefixed?')
+  comments = forms.CharField(label='', required=False, widget=forms.Textarea(
+      attrs={'cols': 50, 'placeholder': 'Additional Comments'}))
 
-  spec_link = forms.URLField(label='Spec link',
-                             help_text="Prefer an editor's draft.")
-
-  
   class Meta:
     model = Feature
     exclude = ('safari_views_link', 'ff_views_link', 'ie_views_link',)

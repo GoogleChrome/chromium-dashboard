@@ -2,55 +2,31 @@
 
 {% block html_imports %}
   <link rel="import" href="/static/elements/chromedash-app.html">
+  <link rel="import" href="/static/elements/chromedash-metadata.html">
 {% endblock %}
 
 {% block subheader %}
 <div id="subheader">
-  <h1>Features</h1>
-  {% if user.is_admin %}
-    <a href="/admin/features/new">Add a new feature</a>
-  {% endif %}
+  <div>
+    <h2>Builds</h2>
+  </div>
+  <div>
+    <h2>Features</h2>
+  </div>
+  <div>
+    {% if user.is_admin %}
+      <a href="/admin/features/new">Add a new feature</a>
+    {% endif %}
+  </div>
 </div>
 {% endblock %}
 
 {% block content %}
-
-<section>
-<!--   <li><a href="/database/resource/{{r.key.id}}">[Edit]</a> &nbsp; <a href="{{r.url}}" target="_blank">{{r.title}}{% if r.subtitle %}: {{r.subtitle|safe}}{% endif %}</a> - {% for tag in r.tags %}{{tag}}{% if not forloop.last %}, {% endif %}{% endfor %} {% if r.draft %}&nbsp; <b>draft</b>{% endif %}</li> -->
-<div id="feature-list">
-
-{% comment %}
-{% for f in features %}
-  <chromedash-feature name="{{f.feature_name}}" category="{{f.category}}"
-                      milestone="{{f.impl_status_chrome}}"
-                      status="{{f.shipped_milestone}}" feature="{{f}}">
-    {% if user.is_admin %}
-      <a href="/admin/features/edit/{{f.id}}" class="edit">Edit</a>
-    {% endif %}
-    <summary>{{f.summary}}</summary>
-    <p class="status">
-      {% for owner in f.owner %}
-        {{owner}}
-      {% endfor %}
-    </p>
-    <p class="visibility">{{f.visibility|safe}}</p>
-  </chromedash-feature>
-{% endfor %}
-{% endcomment %}
-
+<section id="panels">
+<nav>
+  <chromedash-metadata></chromedash-metadata>
+</nav>
 <chromedash-app {% if user.is_admin %}admin{% endif %}></chromedash-app>
-
-</div>
-
-<script>
-document.addEventListener('WebComponentsReady', function(e) {
-  var t = document.querySelector('chromedash-app');
-  t.model = {
-    features: {{features|safe}}
-  }
-});
-</script>
-
 </section>
 
 <!--
@@ -66,5 +42,14 @@ document.addEventListener('WebComponentsReady', function(e) {
   </tr>
 </table>
 {% endverbatim %} -->
+
+<script>
+document.addEventListener('WebComponentsReady', function(e) {
+  var t = document.querySelector('chromedash-app');
+  t.model = {
+    features: {{features|safe}}
+  }
+});
+</script>
 
 {% endblock %}

@@ -22,4 +22,4 @@ else:
 DEBUG = not PROD
 TEMPLATE_DEBUG = DEBUG
 
-APP_TITLE = 'Chromium Feature Dashboard'
+APP_TITLE = 'Chromium Dashboard'

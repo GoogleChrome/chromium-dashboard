@@ -194,8 +194,11 @@ class FeatureHandler(common.ContentHandler):
 
     feature = None
     if feature_id: # /admin/edit/1234
-      feature = models.Feature.format_for_edit(
-          models.Feature.get_by_id(int(feature_id)))
+      f = models.Feature.get_by_id(long(feature_id))
+      if f is None:
+        return self.redirect('/' + path)
+
+      feature = models.Feature.format_for_edit(f)
 
     template_data = {
       'feature_form': models.FeatureForm(feature),
@@ -215,7 +218,7 @@ class FeatureHandler(common.ContentHandler):
 
     self.render(data=template_data, template_path=os.path.join(template_file))
 
-  def post(self, path):
+  def post(self, path, feature_id=None):
     spec_link = self.__FullQualifyLink('spec_link')
     bug_url = self.__FullQualifyLink('bug_url')
     spec_link = self.__FullQualifyLink('spec_link')
@@ -227,31 +230,56 @@ class FeatureHandler(common.ContentHandler):
     owners = self.request.get('owner') or []
     owners = [db.Email(x.strip()) for x in owners.split(',')]
 
-    feature = models.Feature(
-        category=int(self.request.get('category')),
-        feature_name=self.request.get('feature_name'),
-        summary=self.request.get('summary'),
-        owner=owners,
-        bug_url=db.Link(bug_url),
-        impl_status_chrome=int(self.request.get('impl_status_chrome')),
-        shipped_milestone=self.request.get('shipped_milestone'),
-        footprint=int(self.request.get('footprint')),
-        visibility=int(self.request.get('visibility')),
-        safari_views=int(self.request.get('safari_views')),
-        safari_views_link=safari_views_link,
-        ff_views=int(self.request.get('ff_views')),
-        ff_views_link=ff_views_link,
-        ie_views=int(self.request.get('ie_views')),
-        ie_views_link=ie_views_link,
-        prefixed=self.request.get('prefixed') == 'on',
-        spec_link=db.Link(spec_link),
-        standardization=int(self.request.get('standardization')),
-        #fetch_date=datetime.date.today(),
-        )
+    # Update an existing feature.
+    if feature_id: # /admin/edit/1234
+      feature = models.Feature.get_by_id(long(feature_id))
+      if feature is None:
+        return self.redirect('/' + path)
 
-    #if form.is_valid():
-    #  feature = form.save(commit=False)
-    #  logging.info(feature)
+      feature.category = int(self.request.get('category'))
+      feature.name = self.request.get('name')
+      feature.summary = self.request.get('summary')
+      feature.owner = owners
+      feature.bug_url = db.Link(bug_url)
+      feature.impl_status_chrome = int(self.request.get('impl_status_chrome'))
+      feature.shipped_milestone = self.request.get('shipped_milestone')
+      feature.footprint = int(self.request.get('footprint'))
+      feature.visibility = int(self.request.get('visibility'))
+      feature.safari_views = int(self.request.get('safari_views'))
+      feature.safari_views_link = safari_views_link
+      feature.ff_views = int(self.request.get('ff_views'))
+      feature.ff_views_link = ff_views_link
+      feature.ie_views = int(self.request.get('ie_views'))
+      feature.ie_views_link = ie_views_link
+      feature.prefixed = self.request.get('prefixed') == 'on'
+      feature.spec_link = db.Link(spec_link)
+      feature.standardization = int(self.request.get('standardization'))
+      feature.comments = self.request.get('comments')
+      feature.web_dev_views = int(self.request.get('web_dev_views'))
+    else:
+      feature = models.Feature(
+          category=int(self.request.get('category')),
+          name=self.request.get('name'),
+          summary=self.request.get('summary'),
+          owner=owners,
+          bug_url=db.Link(bug_url),
+          impl_status_chrome=int(self.request.get('impl_status_chrome')),
+          shipped_milestone=self.request.get('shipped_milestone'),
+          footprint=int(self.request.get('footprint')),
+          visibility=int(self.request.get('visibility')),
+          safari_views=int(self.request.get('safari_views')),
+          safari_views_link=safari_views_link,
+          ff_views=int(self.request.get('ff_views')),
+          ff_views_link=ff_views_link,
+          ie_views=int(self.request.get('ie_views')),
+          ie_views_link=ie_views_link,
+          prefixed=self.request.get('prefixed') == 'on',
+          spec_link=db.Link(spec_link),
+          standardization=int(self.request.get('standardization')),
+          comments=self.request.get('comments'),
+          web_dev_views=int(self.request.get('web_dev_views')),
+          )
+
     feature.put()
 
     return self.redirect('/' + path)

@@ -16,6 +16,13 @@ $content-padding: 30px;
 $default-border-radius: 3px;
 /* ----- */
 
+@mixin gradient-bar-bg {
+  background-color: #FAFAFA;
+  @include background($bar-gradient);
+  padding: 0.75em 1em;
+  box-shadow: 1px 1px 4px $bar-shadow-color;
+}
+
 @mixin display-flex() {
   display: -webkit-flex;
   display: -moz-flex;

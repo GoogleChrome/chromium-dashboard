@@ -1,32 +1,74 @@
-@import "base";
+@import "element";
 
-hgroup {
-  display: -webkit-flex;
-  display: -ms-flex;
-  display: -o-flex;
-  display: flex;
-  -webkit-align-items: center;
-  -ms-align-items: center;
-  -o-align-items: center;
-  align-items: center;
-  margin-bottom: 15px;
-}
-section {
-  margin-top: 15px;
-}
-h1, h2, h3 {
-  font-weight: 300;
-}
+
 h2 {
   display: inline-block;
   margin-right: 1em;
   font-size: 25px;
 }
-h3 {
-  font-size: 15px;
+
+hgroup {
+  @include display-flex;
+  @include align-items(center);
+  margin-bottom: 15px;
+
+  .category {
+    color: #bbb;
+    font-size: 15px;
+  }
+
+  chromedash-color-status {
+    margin-right: 10px;
+  }
 }
 
-.category {
-  color: #bbb;
-  font-size: 20px;
+section {
+  $spacer: 20px;
+  margin-left: 30px;
+  margin-top: $spacer;
+  
+  h3 {
+    margin-bottom: 10px;
+    font-size: 18px;
+    //color: $chromium-color-dark;
+    font-weight: 400;
+  }
+
+  // summary {
+  //   max-width: 60%;
+  //   text-align: justify;
+  // }
+
+  label {
+    //font-weight: 600;
+    color: $chromium-color-dark;
+    margin-right: 5px;
+
+    &:after {
+      content: ':';
+    }
+  }
+
+  div {
+    margin-bottom: 10px;
+    > * {
+      margin-right: $spacer;
+    }
+  }
+
+  .views {
+    @include display-flex;
+    
+    & > * {
+      @include display-flex;
+      @include align-items(center);
+    }
+  }
 }
+
+chromedash-color-status {
+  @include display-flex;
+  margin-right: 5px;
+  box-sizing: border-box;
+}
+

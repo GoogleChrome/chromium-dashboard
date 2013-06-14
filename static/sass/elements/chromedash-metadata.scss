@@ -1,0 +1,38 @@
+@import "element";
+
+ul {
+  & > li {
+    padding: 5px 0;
+    &:before {
+      content: '';
+      margin-right: 5px;
+      border-left: 5px solid transparent;
+    }
+    &:after {
+      font-size: 75%;
+      margin-left: 10px;
+    }
+  }
+  // :nth-child(2):after {
+  //   content: 'experimental';
+  // }
+  :nth-child(3):after {
+    content: 'canary';
+  }
+  :nth-child(4):after {
+    content: 'dev';
+  }
+  :nth-child(5):after {
+    content: 'beta';
+  }
+  :nth-child(6) {
+    font-weight: 600;
+    color: $chromium-color-dark;
+    &:before {
+      border-color: currentcolor;
+    }
+    &:after {
+      content: 'stable';
+    }
+  }
+}

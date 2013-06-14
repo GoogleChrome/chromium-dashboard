@@ -1,0 +1,60 @@
+<link rel="import" href="polymer-elements/polymer-jsonp.html">
+
+<element name="chromedash-metadata" attributes="feature">
+<link rel="stylesheet" type="text/css" href="../css/elements/chromedash-metadata.css">
+<template>
+<style>
+@host {
+  * { /* switch to :scope when the polyfill supports it */
+    display: block;
+  }
+}
+</style>
+<polymer-jsonp id="jsonp" url="http://omahaproxy.appspot.com/all.json?callback=" auto></polymer-jsonp>
+<ul>
+  <template repeat="{{v in versions}}">
+    <li data-version="{{v}}">{{v}}</li>
+  </template>
+</ul>
+</template>
+<script>
+  Polymer.register(this, {
+    applyAuthorStyles: true,
+    ready: function() {
+      this.addEventListener('polymer-response', function(e) {
+        var windowsVersions = e.detail.response[0];
+
+        this.channels = {};
+
+        for (var i = 0, el; el = windowsVersions.versions[i]; ++i) {
+          switch (el.channel) {
+            case 'stable':
+              this.channels.stable = parseInt(el.version);
+              break;
+            case 'beta':
+              this.channels.beta = parseInt(el.version);
+              break;
+            case 'dev':
+              this.channels.dev = parseInt(el.version);
+              break;
+            case 'canary':
+              this.channels.canary = parseInt(el.version);
+              break;
+            default:
+              break;
+          }
+        }
+
+        this.versions = ['x', this.channels.canary, this.channels.dev,
+                         this.channels.beta, this.channels.stable];
+
+        for (var i = this.channels.stable - 1; i > this.channels.stable - 6; i--) {
+          this.versions.push(i);
+        }
+      });
+
+      //this.$.jsonp.go(); // Using auto attribute instead.
+    }
+  });
+</script>
+</element>

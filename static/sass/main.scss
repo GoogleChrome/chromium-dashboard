@@ -1,4 +1,3 @@
-@import "compass/reset";
 @import "base";
 @import "compass/css3/images";
 
@@ -63,6 +62,10 @@ table {
   }
   input[type="text"], textarea {
     width: 100%;
+  }
+
+  select {
+    max-width: 350px;
   }
 
   :required {
@@ -189,6 +192,7 @@ footer {
   @include box-orient(vertical);
   @include display-box;
   text-align: center;
+  position: relative;
 
   div {
     margin-top: 5px;
@@ -196,7 +200,16 @@ footer {
 }
 
 #subheader {
-  margin: $content-padding/2 $content-padding 0 $content-padding;
+  //@include display-box;
+  //@include box-align(center);
+  @include display-flex;
+  @include align-items(center);
+  margin: $content-padding $content-padding 0 $content-padding + 5;
+  //border-bottom: 1px solid $bar-border-color;
+
+  div {
+    margin-right: $content-padding * 2 - 15;
+  }
 }
 
 #container {
@@ -215,7 +228,7 @@ footer {
   @include flex(1 0 0);
   @include box-orient(vertical);
 
-  margin: $content-padding;
+  margin: $content-padding / 2 $content-padding;
   overflow: auto;
 
   @include box-flex(1); // TODO: remove. Needed because Safari and FF don't have new flexbox.
@@ -226,42 +239,40 @@ footer {
     @include box-flex(1); // TODO: remove. Needed because Safari and FF don't have new flexbox.
   }
 
-  // #data-table {
-  //   background: white;
-
-  //   th, td {
-  //     padding: 0 10px;
-  //     border: 1px solid rgb(204, 204, 204);
-  //   }
-  // }
-
-  // #viz {
-  //   overflow: auto;
-  //   width: 1200px;
-  //   height: 550px;
-
-  //   table {
-
-  //   }
-  // }
-
 }
 
-#feature-list {
-  //@include display-box;
-  //@include flex(1 0 0);
-  //@include box-orient(vertical);
-  // width: 100%; // For FF old flex box.
-  // height: 100%;
-  @include display-flex;
-  @include flex(1 0 0);
-  overflow: auto;
+#panels {
+  @include display-box;
+
+  nav {
+    font-size: 125%;
+    font-weight: 300;
+    width: $content-padding * 4;
+
+    li {
+      &:first-of-type {
+        padding-top: 0;
+      }
+      padding: 5px 0;
+    }
+
+    chromedash-metadata {
+      position: fixed;
+      height: 50vh;
+      overflow: auto;
+    }
+  }
+
+  chromedash-app {
+    @include flex(1 0 0);
+    @include box-flex(1);
+    //margin-left: $content-padding * 5;
+    height: 100%;
+    // font-weight: 300;
+  }
 }
 
-chromedash-app {
-  height: 100%;
-  @include flex(1 0 0);
-}
+
 
 // .headerRow {
 //   background: $chromium-color-dark;
@@ -302,7 +313,7 @@ chromedash-app {
       @include box-pack(center);
       a {
         display: inline-block;
-        padding: 5px 10px 5px 40px;
+        padding: 5px 10px;
       }
     }
   }
