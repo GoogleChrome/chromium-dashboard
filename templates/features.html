@@ -14,7 +14,7 @@
     <h2>Features</h2>
   </div>
   <div>
-    {% if user.is_admin %}
+    {% if user.is_whitelisted %}
       <a href="/admin/features/new">Add a new feature</a>
     {% endif %}
   </div>
@@ -26,7 +26,7 @@
 <nav>
   <chromedash-metadata></chromedash-metadata>
 </nav>
-<chromedash-app {% if user.is_admin %}admin{% endif %}></chromedash-app>
+<chromedash-app {% if user.is_whitelisted %}whitelisted{% endif %}></chromedash-app>
 </section>
 
 <!--

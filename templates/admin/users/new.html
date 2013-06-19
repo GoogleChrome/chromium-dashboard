@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block css %}
+<link rel="stylesheet" type="text/css" href="/static/css/users/users.css">
+{% endblock %}
+
+{% block subheader %}
+<div id="subheader">
+  <h2>Whitelist a user</h2>
+</div>
+{% endblock %}
+
+{% block content %}
+<section>
+  <form name="user_form" method="POST" action="{{current_path}}">
+    <table>
+      <tr><td><input type="email" placeholder="Email address" name="email" id="id_email" required /></td><td><input type="submit"></td></tr>
+    </table>
+  </form>
+</section>
+
+<hr>
+
+<section>
+<h3>Whitelisted users</h3>
+<ul id="user-list">
+{% for user in users %}
+  <li>{{user.email}}
+    <form action="/admin/users/new/{{user.key.id}}" method="post" onsubmit="return false;">
+      <input type="submit" value="delete" onclick="ajaxDelete(this.form)">
+    </form>
+  </li>
+{% endfor %}
+</ul>
+</section>
+{% endblock %}
+
+{% block js %}
+<script>
+function ajaxDelete(form) {
+  var xhr = new XMLHttpRequest();
+  xhr.open('POST', form.action);
+  xhr.onloadend = function(e) {
+    if (e.target.status == 200) {
+      var li = form.parentElement;
+      if ('ontransitionend' in window) {
+        li.addEventListener('transitionend', function(e) {
+          form.parentElement.remove();
+        });
+        li.classList.add('faded');
+      } else {
+        form.parentElement.remove();
+      }
+    }
+  };
+  xhr.send();
+}
+</script>
+{% endblock %}

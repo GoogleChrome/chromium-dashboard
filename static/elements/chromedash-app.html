@@ -1,6 +1,6 @@
 <link rel="import" href="chromedash-feature.html">
 
-<element name="chromedash-app" attributes="admin">
+<element name="chromedash-app" attributes="whitelisted">
 <link rel="stylesheet" type="text/css" href="../css/elements/chromedash-app.css">
 <template>
   <style>
@@ -18,7 +18,7 @@
          https://github.com/Polymer/polymer/issues/171 is fixed. --> 
     <!-- <li is="chromedash-feature" feature="{{feature}}"> -->
     <chromedash-feature feature="{{feature}}">
-      <template bind if="{{admin}}">
+      <template bind if="{{whitelisted}}">
         <a href="/admin/features/edit/{{feature.id}}" class="edit">edit</a>
       </template>
     </chromedash-feature>
@@ -27,7 +27,7 @@
 <script>
   Polymer.register(this, {
     applyAuthorStyles: true,
-    admin: false,
+    whitelisted: false,
     ready: function() {
 
     }

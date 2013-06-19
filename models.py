@@ -2,6 +2,7 @@ import datetime
 import time
 
 from google.appengine.api import memcache
+from google.appengine.api import users
 from google.appengine.ext import db
 #from google.appengine.ext.db import djangoforms
 
@@ -34,6 +35,11 @@ class DictModel(db.Model):
         output[key] = {'lat': value.lat, 'lon': value.lon}
       elif isinstance(value, db.Model):
         output[key] = to_dict(value)
+      elif isinstance(value, users.User):
+        output[key] = {
+          'nickname': value.nickname(),
+          'email': value.email(),
+        }
       else:
         raise ValueError('cannot encode ' + repr(prop))
 
@@ -88,6 +94,8 @@ class Feature(DictModel):
   # Metadata.
   created = db.DateTimeProperty(auto_now_add=True)
   updated = db.DateTimeProperty(auto_now=True)
+  updated_by = db.UserProperty(auto_current_user=True)
+  created_by = db.UserProperty(auto_current_user_add=True)
 
   # General info.
   category = db.IntegerProperty(required=True)
@@ -388,3 +396,13 @@ class FeatureForm(forms.Form):
     for field, val in self.fields.iteritems():
       if val.required:
        self.fields[field].widget.attrs['required'] = 'required'
+
+
+class AppUser(db.Model):
+  """Describes a user."""
+
+  #user = db.UserProperty(required=True, verbose_name='Google Account')
+  email = db.EmailProperty(required=True)
+  #is_admin = db.BooleanProperty(default=False)
+  created = db.DateTimeProperty(auto_now_add=True)
+  updated = db.DateTimeProperty(auto_now=True)

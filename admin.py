@@ -16,8 +16,7 @@ from __future__ import print_function
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__author__ = ('ericbidelman@chromium.org (Eric Bidelman), '
-              'kassycoan@google.com (Kassy Coan)')
+__author__ = 'ericbidelman@chromium.org (Eric Bidelman)'
 
 
 import datetime
@@ -44,7 +43,7 @@ import uma
 
 BIGSTORE_BUCKET = '/gs/uma-dashboards/'
 BIGSTORE_RESTFUL_URI = 'https://uma-dashboards.storage.googleapis.com/'
-BIGSTORE_HISTOGRAM_ID = str(0xb7f3cf359f13d209)
+BIGSTORE_HISTOGRAM_ID = str(0xbfd59b316a6c31f1)
 
 # For fetching files from the production BigStore during development.
 OAUTH2_CREDENTIALS_FILENAME = os.path.join(
@@ -190,33 +189,33 @@ class FeatureHandler(common.ContentHandler):
   def get(self, path, feature_id=None):
     # Remove trailing slash from URL and redirect. e.g. /metrics/ -> /metrics
     if path[-1] == '/':
-      return self.redirect('/' + path.rstrip('/'))
+      return self.redirect(self.request.path.rstrip('/'))
+
+    #TODO(ericbidelman): This creates a additional call to
+    # _is_user_whitelisted() resulting in another db query.
+    if not self._is_user_whitelisted(users.get_current_user()):
+      #TODO(ericbidelman): Use render(status=401) instead.
+      #self.render(data={}, template_path=os.path.join(path + '.html'), status=401)
+      common.handle_401(self.request, self.response, Exception)
+      return
 
     feature = None
     if feature_id: # /admin/edit/1234
       f = models.Feature.get_by_id(long(feature_id))
       if f is None:
-        return self.redirect('/' + path)
+        return self.redirect(self.request.path.replace('edit', 'new'))
 
       feature = models.Feature.format_for_edit(f)
+    elif 'edit' in path:
+      return self.redirect(self.request.path.replace('edit', 'new'))
 
     template_data = {
       'feature_form': models.FeatureForm(feature),
     }
 
-    user = users.get_current_user()
-    if user:
-      template_data['login'] = ('Logout',
-                                users.create_logout_url(dest_url=path))
-      template_data['user'] = {
-        'is_admin': users.is_current_user_admin(),
-        'nickname': user.nickname(),
-        'email': user.email(),
-      }
+    self._add_common_template_values(template_data)
 
-    template_file = path + '.html'
-
-    self.render(data=template_data, template_path=os.path.join(template_file))
+    self.render(data=template_data, template_path=os.path.join(path + '.html'))
 
   def post(self, path, feature_id=None):
     spec_link = self.__FullQualifyLink('spec_link')
@@ -234,7 +233,7 @@ class FeatureHandler(common.ContentHandler):
     if feature_id: # /admin/edit/1234
       feature = models.Feature.get_by_id(long(feature_id))
       if feature is None:
-        return self.redirect('/' + path)
+        return self.redirect(self.request.path)
 
       feature.category = int(self.request.get('category'))
       feature.name = self.request.get('name')
@@ -282,8 +281,7 @@ class FeatureHandler(common.ContentHandler):
 
     feature.put()
 
-    return self.redirect('/' + path)
-
+    return self.redirect(self.request.path)
 
 app = webapp2.WSGIApplication([
   ('/cron/metrics', YesterdayHandler),

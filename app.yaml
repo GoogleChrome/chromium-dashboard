@@ -42,8 +42,16 @@ handlers:
 
 - url: /admin/features/.*
   script: admin.app
+  login: required
+
+- url: /admin/users/.*
+  script: users.app
   login: admin
 
+- url: /admin/.*
+  script: google.appengine.ext.admin.application
+  login: admin
+  
 # Main server ------------------------------------------------------------------
 - url: /.*
   script: server.app

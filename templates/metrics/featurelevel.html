@@ -12,12 +12,18 @@
 <script src="/static/js/metrics/featurelevel.js"></script>
 {% endblock %}
 
+
+{% block subheader %}
+<div id="subheader">
+  <h2>CSS Property Usage > Timeline</h2>
+</div>
+{% endblock %}
+
 {% block content %}
 
 {% include "metrics/_nav.html" %}
 
-<section ng-controller="TimeLineController">
-<h1>CSS Feature Over Time</h1>
+<section >
 <select id="property-selector" onchange="goToChart('property-selector')">
   {% for key, value in CSS_PROPERTY_BUCKETS.items %}
     <option value="{{key}}">{{value}}</option>

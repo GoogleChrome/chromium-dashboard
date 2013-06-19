@@ -39,22 +39,9 @@ class MainHandler(common.ContentHandler):
 
     # Remove trailing slash from URL and redirect. e.g. /metrics/ -> /metrics
     if path[-1] == '/':
-      return self.redirect('/' + path.rstrip('/'))
+      return self.redirect(self.request.path.rstrip('/'))
 
     template_data = {}
-
-    user = users.get_current_user()
-    if user:
-      template_data['login'] = ('Logout',
-                                users.create_logout_url(dest_url=path))
-      template_data['user'] = {
-        'is_admin': users.is_current_user_admin(),
-        'nickname': user.nickname(),
-        'email': user.email(),
-      }
-    else:
-      template_data['user'] = None
-      template_data['login'] = ('Login', users.create_login_url(dest_url=path))
 
     if path == 'features':
       # TODO(ericbidelman): memcache the crap out of this.
@@ -77,9 +64,7 @@ class MainHandler(common.ContentHandler):
     elif path == 'metrics/featurelevel':
       template_data['CSS_PROPERTY_BUCKETS'] = uma.CSS_PROPERTY_BUCKETS
 
-    template_file = path + '.html'
-
-    self.render(data=template_data, template_path=os.path.join(template_file))
+    self.render(data=template_data, template_path=os.path.join(path + '.html'))
 
 
 # Main URL routes.
