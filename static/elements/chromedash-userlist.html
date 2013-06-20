@@ -10,9 +10,13 @@
   </style>
   <form id="form" name="user_form" method="post" action="{{action}}" onsubmit="return false;">
     <table>
-      <tr><td><input type="email" placeholder="Email address" name="email" id="id_email" required /></td><td><input type="submit" on-click="ajaxSubmit"></td></tr>
+      <tr>
+        <td><input type="email" placeholder="Email address" name="email" id="id_email" required /></td>
+        <td><input type="submit" on-click="ajaxSubmit"></td>
+     </tr>
     </table>
   </form>
+  <hr>
   <ul id="user-list">
     <template repeat="{{user in users}}">
       <li><a href="{{action}}/{{user.id}}" on-click="ajaxDelete">delete</a>{{user.email}}</li>
