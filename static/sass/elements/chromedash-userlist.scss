@@ -1,0 +1,17 @@
+@import "compass/css3/transition";
+
+@import "element";
+
+ul {
+  li {
+    @include transition(opacity 600ms ease-in-out);
+
+    &.faded {
+      opacity: 0;
+    }
+
+    > a {
+      margin-right: 15px;
+    }
+  }
+}

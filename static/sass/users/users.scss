@@ -1,18 +1,4 @@
-@import "compass/css3/transition";
-
 @import "vars";
-
-#user-list {
-  margin-top: 1em;  
-
-  li {
-    @include transition(opacity 600ms ease-in-out);
-
-    &.faded {
-      opacity: 0;
-    }
-  }
-}
 
 form {
   display: inline-block;

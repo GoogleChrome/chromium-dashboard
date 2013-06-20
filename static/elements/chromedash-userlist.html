@@ -1,0 +1,92 @@
+<element name="chromedash-userlist" attributes="users action">
+<link rel="stylesheet" type="text/css" href="../css/elements/chromedash-userlist.css">
+<template>
+  <style>
+  @host {
+    :scope {
+      display: block;
+    }
+  }
+  </style>
+  <form id="form" name="user_form" method="post" action="{{action}}" onsubmit="return false;">
+    <table>
+      <tr><td><input type="email" placeholder="Email address" name="email" id="id_email" required /></td><td><input type="submit" on-click="ajaxSubmit"></td></tr>
+    </table>
+  </form>
+  <ul id="user-list">
+    <template repeat="{{user in users}}">
+      <li><a href="{{action}}/{{user.id}}" on-click="ajaxDelete">delete</a>{{user.email}}</li>
+    </template>
+  </ul>
+</template>
+<script>
+Polymer.register(this, {
+  applyAuthorStyles: true,
+  ready: function() {
+    this.users = this.users || [];
+  },
+  addUser: function(user) {
+
+  },
+  ajaxSubmit: function(e, details, sender) {
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', this.$.form.action);
+    xhr.onloadend = function(e) {
+      if (e.target.status == 200) {
+        this.users.splice(0, 0, JSON.parse(e.target.response));
+        this.$.form.reset();
+      }
+    }.bind(this);
+
+    if (this.$.form.checkValidity()) {
+      var formData = new FormData();
+      formData.append('email', this.$.form.email.value);
+
+      xhr.send(formData);
+    }
+  },
+  ajaxDelete: function(e, details, sender) {
+    e.preventDefault();
+
+    if (!confirm('Remove user?')) {
+      return;
+    }
+
+    var lis = this.$['user-list'].querySelectorAll('li');
+
+    var idx = -1;
+    for (var i = 0, li; li = lis[i]; ++i) {
+      if (li == sender.parentElement) {
+        idx = i;
+        break;
+      }
+    }
+
+    if (idx == -1) {
+      return;
+    }
+
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', sender.href);
+    xhr.onloadend = function(e) {
+      var that = this;
+
+      if (e.target.status == 200) {
+        sender.parentElement.classList.add('faded');
+
+        var li = sender.parentElement;
+        if ('ontransitionend' in window) {
+          li.addEventListener('transitionend', function(e) {
+            that.users.splice(idx, 1);
+          });
+          li.classList.add('faded');
+        } else {
+          that.users.splice(idx, 1);
+        }
+      }
+    }.bind(this);
+    xhr.send();
+  }
+});
+</script>
+</element>

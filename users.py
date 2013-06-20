@@ -17,7 +17,7 @@ __author__ = 'ericbidelman@chromium.org (Eric Bidelman)'
 
 
 #import datetime
-#import json
+import json
 import logging
 import os
 import webapp2
@@ -38,8 +38,19 @@ class UserHandler(common.ContentHandler):
     if path[-1] == '/':
       return self.redirect(self.request.path.rstrip('/'))
 
+    # template_data = {
+    #   'users': models.AppUser.all().fetch(None) # TODO(ericbidelman): memcache this.
+    # }
+
+    users = models.AppUser.all().fetch(None) # TODO(ericbidelman): memcache this.
+
+    user_list = []
+    for user in users:
+     u = models.AppUser.format_for_template(user)
+     user_list.append(u)
+
     template_data = {
-      'users': models.AppUser.all().fetch(None) # TODO(ericbidelman): memcache this.
+      'users': json.dumps(user_list)
     }
 
     self.render(data=template_data, template_path=os.path.join(path + '.html'))
@@ -58,7 +69,8 @@ class UserHandler(common.ContentHandler):
       user = models.AppUser(email=db.Email(email))
       user.put()
 
-    return self.redirect(self.request.path)
+    self.response.headers['Content-Type'] = 'application/json'
+    self.response.write(json.dumps(models.AppUser.format_for_template(user)))
 
   def _delete(self, user_id):
     if user_id:

@@ -207,7 +207,7 @@ footer {
   //@include box-align(center);
   @include display-flex;
   @include align-items(center);
-  margin: $content-padding $content-padding 0 $content-padding + 5;
+  margin: $content-padding $content-padding 0 $content-padding;
   //border-bottom: 1px solid $bar-border-color;
 
   div {

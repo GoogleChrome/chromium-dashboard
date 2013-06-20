@@ -5,7 +5,7 @@
 <template>
   <style>
   @host {
-    * {
+    :scope {
       display: block;
     }
   } 
@@ -13,7 +13,7 @@
     list-style: none;
   }
   </style>
-  <template repeat="{{feature in model.features}}">
+  <template repeat="{{feature in features}}">
     <!-- TODO: switch back to typee extension custom element when
          https://github.com/Polymer/polymer/issues/171 is fixed. --> 
     <!-- <li is="chromedash-feature" feature="{{feature}}"> -->

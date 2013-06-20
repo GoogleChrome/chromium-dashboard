@@ -17,6 +17,10 @@ class DictModel(db.Model):
   # def to_dict(self):
   #   return dict([(p, unicode(getattr(self, p))) for p in self.properties()])
 
+  @staticmethod
+  def format_for_template(self):
+    return self.to_dict()
+
   def to_dict(self):
     output = {}
 
@@ -398,7 +402,7 @@ class FeatureForm(forms.Form):
        self.fields[field].widget.attrs['required'] = 'required'
 
 
-class AppUser(db.Model):
+class AppUser(DictModel):
   """Describes a user."""
 
   #user = db.UserProperty(required=True, verbose_name='Google Account')
@@ -406,3 +410,9 @@ class AppUser(db.Model):
   #is_admin = db.BooleanProperty(default=False)
   created = db.DateTimeProperty(auto_now_add=True)
   updated = db.DateTimeProperty(auto_now=True)
+
+  @staticmethod
+  def format_for_template(self):
+    d = self.to_dict()
+    d['id'] = self.key().id()
+    return d

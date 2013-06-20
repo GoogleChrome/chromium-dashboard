@@ -1,9 +1,14 @@
 {% extends "base.html" %}
 
+{% block subheader %}
+<div id="subheader">
+  <h2>Edit a feature</h2>
+</div>
+{% endblock %}
+
 {% block content %}
 
 <section>
-  <h1>Edit a feature</h1>
   <form name="feature_form" method="POST" action="{{current_path}}">
       <table>
         <!--<tr><th><label for="id_key_name">key_name:</label></th><td><input type="text" name="key_name" id="id_key_name" required /></td></tr>-->
