@@ -8,7 +8,6 @@
     @include transition(height 400ms ease-in-out);
     height: 90px;
     overflow: hidden;
-    cursor: pointer;
   }
   :scope.open {
     height: 350px;
@@ -27,6 +26,7 @@ hgroup {
   @include display-flex;
   @include align-items(center);
   margin-bottom: 15px;
+  cursor: pointer;
 
   .category {
     color: #bbb;
@@ -49,11 +49,6 @@ section {
     //color: $chromium-color-dark;
     font-weight: 400;
   }
-
-  // summary {
-  //   max-width: 60%;
-  //   text-align: justify;
-  // }
 
   label {
     //font-weight: 600;

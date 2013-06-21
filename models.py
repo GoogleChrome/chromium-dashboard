@@ -270,7 +270,7 @@ OPPOSED = 7
 VENDOR_VIEWS = {
   SHIPPED: 'Shipped',
   IN_DEV: 'In development',
-  PUBLIC_SUPPORT: 'Documented public support',
+  PUBLIC_SUPPORT: 'Public support',
   MIXED_SIGNALS: 'Mixed public signals',
   NO_PUBLIC_SIGNALS: 'No public signals',
   PUBLIC_SKEPTICISM: 'Public skepticism',
@@ -288,7 +288,7 @@ STANDARDIZATION = {
   DEFACTO_STD: 'De-facto standard',
   ESTABLISHED_STD: 'Established standard',
   WORKING_DRAFT: 'Working draft or equivalent',
-  EDITORS_DRAFT: "Editor's draft specification",
+  EDITORS_DRAFT: "Editor's draft",
   PUBLIC_DISCUSSION: 'Public discussion',
   NO_STD_OR_DISCUSSION: 'No public discussion / Not standards track',
   }
@@ -328,14 +328,12 @@ class FeatureForm(forms.Form):
                            help_text='OWP Launch Tracking or crbug.')
 
   impl_status_chrome = forms.ChoiceField(required=True,
-                                         label='Status in Chromium',
+                                         label='Status in Chrome',
                                          choices=IMPLEMENATION_STATUS.items())
 
-  shipped_milestone = forms.CharField(
-      label='Earliest version full feature shipped to desktop',
-      help_text='(X = not shipped yet, ? = unknown)')
+  shipped_milestone = forms.CharField(label='Milestone')
 
-  prefixed = forms.BooleanField(required=False, initial=True, label='Prefixed?')
+  prefixed = forms.BooleanField(required=False, initial=False, label='Prefixed?')
 
   standardization = forms.ChoiceField(
       label='Standardization', choices=STANDARDIZATION.items(),
@@ -344,7 +342,7 @@ class FeatureForm(forms.Form):
                  "use this nomenclature, use the closest equivalent."))
 
   spec_link = forms.URLField(label='Spec link',
-                             help_text="Prefer an editor's draft.")
+                             help_text="Prefer most mature spec version.")
 
   footprint  = forms.ChoiceField(label='Technical footprint',
                                  choices=FOOTPRINT_CHOICES.items(),

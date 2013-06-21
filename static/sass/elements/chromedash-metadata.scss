@@ -8,14 +8,20 @@
 
 ul {
   & > li {
+    $small-font-size: 75%;
+
     padding: 5px 0;
+    &:first-of-type {
+      font-size: $small-font-size;
+      font-size: italic;
+    }
     &:before {
       content: '';
       margin-right: 5px;
       border-left: 3px solid transparent;
     }
     &:after {
-      font-size: 75%;
+      font-size: $small-font-size;
       margin-left: 10px;
     }
   }

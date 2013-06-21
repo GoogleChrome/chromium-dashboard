@@ -89,7 +89,7 @@ table {
 }
 
 header, footer {
-  @include display-box; //@include display-flex;
+  @include display-flex;//@include display-box;
   @include align-items(center);
   text-shadow: 0 1px 0 white;
 }
@@ -100,7 +100,7 @@ header {
 
   aside {
     //@include display-box; //@include display-flex;
-    @include align-items(center);
+    //@include align-items(center);
     @include gradient-bar-bg;
     border-top-right-radius: 5px;
     border-bottom-right-radius: 5px;
@@ -119,11 +119,11 @@ header {
     background-size: 25%;
     padding-left: 125px;
 
-    // TODO: temporary for old flex box support.
-    hgroup {
-      @include display-box; //@include display-flex;
-      @include box-orient(vertical); // TODO: remove. Needed because Safari and FF don't have new flexbox.
-    }
+    // // TODO: temporary for old flex box support.
+    // hgroup {
+    //   @include display-box; //@include display-flex;
+    //   @include box-orient(vertical); // TODO: remove. Needed because Safari and FF don't have new flexbox.
+    // }
 
     h1 {
       line-height: 1;
@@ -141,8 +141,9 @@ header {
   }
 
   nav {
-    @include display-box; //@include display-flex;
-    @include box-align(center); // TODO: remove. Needed because Safari and FF don't have new flexbox.
+    @include display-flex; // @include display-box;
+    //@include box-align(center); // TODO: remove. Needed because Safari and FF don't have new flexbox.
+    @include align-items(center);
     //width: 400px;
     margin-left: 3em;
 
@@ -192,11 +193,13 @@ footer {
   @include gradient-bar-bg;
   font-size: 12px;
   box-shadow: 0 -2px 5px $bar-shadow-color;
-  @include justify-content(center);
 
-  @include box-pack(center); // TODO: remove. Needed because Safari and FF don't have new flexbox.
-  @include box-orient(vertical);
-  @include display-box;
+  //@include box-pack(center); // TODO: remove. Needed because Safari and FF don't have new flexbox.
+  //@include box-orient(vertical);
+  //@include display-box;
+  @include display-flex;
+  @include flex-direction(column);
+  @include justify-content(center);
   text-align: center;
   position: relative;
 
@@ -219,36 +222,31 @@ footer {
 }
 
 #container {
-  //@include display-flex;
-  @include display-box; //@include display-flex;
+  @include display-flex;
+  //@include display-box; //@include display-flex;
   @include flex-direction(column);
   height: 100%;
   width: 100%;
 
-  @include box-orient(vertical); // TODO: remove. Needed because Safari and FF don't have new flexbox.
+  //@include box-orient(vertical); // TODO: remove. Needed because Safari and FF don't have new flexbox.
 }
 
 #content {
-  @include display-box; //@include display-flex;
-  @include justify-content(center);
+  @include display-flex; //@include display-box; 
+  //@include justify-content(center);
   @include flex(1 0 0);
-  @include box-orient(vertical);
+  //@include box-orient(vertical);
 
   margin: $content-padding / 2 $content-padding;
   overflow: auto;
 
-  @include box-flex(1); // TODO: remove. Needed because Safari and FF don't have new flexbox.
-
-  iframe {
-    border: none;
-    width: 100%;
-    @include box-flex(1); // TODO: remove. Needed because Safari and FF don't have new flexbox.
-  }
-
+ // @include box-flex(1); // TODO: remove. Needed because Safari and FF don't have new flexbox.
 }
 
 #panels {
-  @include display-box;
+  //@include display-box;
+  @include display-flex;
+  width: 100%;
 
   nav {
     font-size: 125%;
@@ -271,7 +269,7 @@ footer {
 
   chromedash-app {
     @include flex(1 0 0);
-    @include box-flex(1);
+    //@include box-flex(1);
     //margin-left: $content-padding * 5;
     height: 100%;
     // font-weight: 300;
@@ -330,10 +328,11 @@ footer {
     }
     nav {
       margin: 10px 0;
-      @include box-pack(center);
+      //@include box-pack(center);
+      @include justify-content(center);
       a {
-        display: inline-block;
         padding: 5px 10px;
+        margin: 0 10px;
       }
     }
   }

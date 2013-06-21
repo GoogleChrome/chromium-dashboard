@@ -29,36 +29,40 @@
   }
 }
 
-#content section {
-  padding-top: 25px;
+#content {
+  @include flex-direction(column);
 
-  h1 {
-    display: inline-block;
-    vertical-align: middle;
-    margin-right: 10px;
-  }
+  section {
+    padding-top: 25px;
 
-  p {
-    margin-top: 10px;
-  }
+    h1 {
+      display: inline-block;
+      vertical-align: middle;
+      margin-right: 10px;
+    }
 
-  #stack-rank-list {
-    margin: 1em 0;
+    p {
+      margin-top: 10px;
+    }
 
-    li {
-      padding: 5px 0;
+    #stack-rank-list {
+      margin: 1em 0;
 
-      // &:nth-child(even):hover {
-      //   background-color: #ccc;
-      // }
+      li {
+        padding: 5px 0;
 
-      > span {
-        display: inline-block;
+        // &:nth-child(even):hover {
+        //   background-color: #ccc;
+        // }
 
-        &:first-of-type {
-          width: 110px;
-          margin-right: 10px;
-          text-align: right;
+        > span {
+          display: inline-block;
+
+          &:first-of-type {
+            width: 110px;
+            margin-right: 10px;
+            text-align: right;
+          }
         }
       }
     }
