@@ -116,7 +116,7 @@ header {
     // padding-left: 65px;
     // Larger bg logo.
     background: url(/static/img/chromium-128.png) no-repeat 10px 50%, #FAFAFA;
-    background-size: 20%;
+    background-size: 25%;
     padding-left: 125px;
 
     // TODO: temporary for old flex box support.
@@ -129,6 +129,9 @@ header {
       line-height: 1;
       //white-space: nowrap;
       //width: -webkit-min-content;
+      a {
+        color: currentcolor;
+      }
     }
     img {
       height: 45px;

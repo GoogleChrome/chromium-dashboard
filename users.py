@@ -38,10 +38,6 @@ class UserHandler(common.ContentHandler):
     if path[-1] == '/':
       return self.redirect(self.request.path.rstrip('/'))
 
-    # template_data = {
-    #   'users': models.AppUser.all().fetch(None) # TODO(ericbidelman): memcache this.
-    # }
-
     users = models.AppUser.all().fetch(None) # TODO(ericbidelman): memcache this.
 
     user_list = []
