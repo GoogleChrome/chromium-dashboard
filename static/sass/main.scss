@@ -304,12 +304,26 @@ footer {
 
 
 @media only screen and (max-width: 700px) {
-  #content { margin: 0; }
+  h1 {
+    font-size: 25px;
+  }
+  h2 {
+    font-size: 20px;
+  }
+  h3 {
+    font-size: 15px;
+  }
+  #container {
+    display: block;
+  }
+  #content {
+    margin: 0;
+  }
   header {
     margin: 0;
     display: block;
     aside {
-      padding-left: 100px;
+      padding: 0.35em 0.35em 0.35em 100px;
     }
     nav {
       margin: 10px 0;
@@ -319,5 +333,34 @@ footer {
         padding: 5px 10px;
       }
     }
+  }
+
+  #panels {
+    display: block;
+    nav {
+      display: none;
+      //width: $content-padding + 5;
+    }
+  }
+
+  #subheader {
+    display: none;
+    margin: $content-padding/2 0;
+    div {
+      //margin-right: 20px;
+      margin-right: $content-padding;
+    }
+  }
+
+  chromedash-feature,
+  [is="chromedash-feature"] {
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    padding: 10px !important;
+    margin: 0 !important;
+  }
+
+  footer {
+    padding: 0.35em;
   }
 }

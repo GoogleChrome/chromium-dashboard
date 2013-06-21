@@ -1,4 +1,20 @@
+@import "compass/css3/transition";
+
 @import "element";
+
+@host {
+  :scope {
+    display: block;
+    @include transition(height 400ms ease-in-out);
+    height: 90px;
+    overflow: hidden;
+    cursor: pointer;
+  }
+  :scope.open {
+    height: 350px;
+    overflow: auto;
+  }
+}
 
 
 h2 {
@@ -51,13 +67,16 @@ section {
 
   div {
     margin-bottom: 10px;
+    @include flex-wrap(wrap);
     > * {
       margin-right: $spacer;
+      // white-space: nowrap;
     }
   }
 
   .views {
     @include display-flex;
+    @include flex-wrap(wrap);
     
     & > * {
       @include display-flex;
@@ -70,5 +89,25 @@ chromedash-color-status {
   @include display-flex;
   margin-right: 5px;
   box-sizing: border-box;
+  @include flex(auto 0 0);
 }
 
+
+@media only screen and (max-width: 700px) {
+  section {
+    margin: 0;
+    &.desc {
+      margin-bottom: 10px;
+    }
+  }
+  .views span {
+    label {
+      &:after {
+        content: '';
+      }
+    }
+    .view_text {
+      display: none;
+    }
+  }
+}

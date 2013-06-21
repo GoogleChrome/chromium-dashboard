@@ -1,21 +1,14 @@
 <link rel="import" href="polymer-elements/polymer-jsonp/polymer-jsonp.html">
 
 <element name="chromedash-metadata" attributes="feature">
-<link rel="stylesheet" type="text/css" href="../css/elements/chromedash-metadata.css">
 <template>
-<style>
-@host {
-  * { /* switch to :scope when the polyfill supports it */
-    display: block;
-  }
-}
-</style>
-<polymer-jsonp id="jsonp" url="//omahaproxy.appspot.com/all.json?callback=" auto></polymer-jsonp>
-<ul>
-  <template repeat="{{v in versions}}">
-    <li data-version="{{v}}">{{v}}</li>
-  </template>
-</ul>
+  <link rel="stylesheet" type="text/css" href="../css/elements/chromedash-metadata.css">
+  <polymer-jsonp id="jsonp" url="//omahaproxy.appspot.com/all.json?callback=" auto></polymer-jsonp>
+  <ul>
+    <template repeat="{{v in versions}}">
+      <li data-version="{{v}}">{{v}}</li>
+    </template>
+  </ul>
 </template>
 <script>
   Polymer.register(this, {

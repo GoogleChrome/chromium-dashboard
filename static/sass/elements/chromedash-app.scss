@@ -1,11 +1,16 @@
 @import "element";
 
+@host {
+  :scope {
+    display: block;
+  }
+} 
+
 .edit {
   top: 15px;
   right: 15px;
   position: absolute;
 }
-
 chromedash-feature,
 [is="chromedash-feature"] {
   @include gradient-bar-bg;
@@ -13,4 +18,5 @@ chromedash-feature,
   position: relative;
   border-radius: $default-border-radius;
   padding: 15px 20px;
+  list-style: none;
 }

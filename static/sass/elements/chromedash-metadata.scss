@@ -1,5 +1,11 @@
 @import "element";
 
+@host {
+  :scope {
+    display: block;
+  }
+}
+
 ul {
   & > li {
     padding: 5px 0;

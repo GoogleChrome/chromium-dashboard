@@ -1,13 +1,8 @@
+<link rel="import" href="polymer-elements/polymer-ajax/polymer-xhr.html">
+
 <element name="chromedash-userlist" attributes="users action">
-<link rel="stylesheet" type="text/css" href="../css/elements/chromedash-userlist.css">
 <template>
-  <style>
-  @host {
-    :scope {
-      display: block;
-    }
-  }
-  </style>
+  <link rel="stylesheet" type="text/css" href="../css/elements/chromedash-userlist.css">
   <form id="form" name="user_form" method="post" action="{{action}}" onsubmit="return false;">
     <table>
       <tr>
@@ -30,23 +25,23 @@ Polymer.register(this, {
     this.users = this.users || [];
   },
   addUser: function(user) {
-
+    this.users.splice(0, 0, user);
+  },
+  removeUser: function(idx) {
+    return this.users.splice(idx, 1);
   },
   ajaxSubmit: function(e, details, sender) {
-    var xhr = new XMLHttpRequest();
-    xhr.open('POST', this.$.form.action);
-    xhr.onloadend = function(e) {
-      if (e.target.status == 200) {
-        this.users.splice(0, 0, JSON.parse(e.target.response));
-        this.$.form.reset();
-      }
-    }.bind(this);
-
     if (this.$.form.checkValidity()) {
       var formData = new FormData();
       formData.append('email', this.$.form.email.value);
 
-      xhr.send(formData);
+      var xhr = document.createElement('polymer-xhr');
+      xhr.request({url: this.action, method: 'POST', body: formData, callback: function(response, xhr) {
+        if (xhr.status == 200) {
+          this.addUser(JSON.parse(response));
+          this.$.form.reset();
+        }
+      }.bind(this)});
     }
   },
   ajaxDelete: function(e, details, sender) {
@@ -56,40 +51,43 @@ Polymer.register(this, {
       return;
     }
 
-    var lis = this.$['user-list'].querySelectorAll('li');
+    // Get index of user model instance that was clicked from template.
+    var user = e.target.templateInstance.model.user;
+    var idx = this.users.indexOf(user);
 
-    var idx = -1;
-    for (var i = 0, li; li = lis[i]; ++i) {
-      if (li == sender.parentElement) {
-        idx = i;
-        break;
-      }
-    }
+    var xhr = document.createElement('polymer-xhr');
+    xhr.request({url: sender.href, method: 'POST', callback: function(response, xhr) {
+      sender.parentElement.classList.add('faded');
 
-    if (idx == -1) {
-      return;
-    }
-
-    var xhr = new XMLHttpRequest();
-    xhr.open('POST', sender.href);
-    xhr.onloadend = function(e) {
-      var that = this;
-
-      if (e.target.status == 200) {
-        sender.parentElement.classList.add('faded');
-
+      if ('ontransitionend' in window) {
         var li = sender.parentElement;
-        if ('ontransitionend' in window) {
-          li.addEventListener('transitionend', function(e) {
-            that.users.splice(idx, 1);
-          });
-          li.classList.add('faded');
-        } else {
-          that.users.splice(idx, 1);
-        }
+        li.addEventListener('transitionend', function(e) {
+          this.removeUser(idx);
+        }.bind(this));
+        li.classList.add('faded');
+      } else {
+        this.removeUser(idx);
       }
-    }.bind(this);
-    xhr.send();
+    }.bind(this)});
+
+    // var xhr = new XMLHttpRequest();
+    // xhr.open('POST', sender.href);
+    // xhr.onloadend = function(e) {
+    //   if (e.target.status == 200) {
+    //     sender.parentElement.classList.add('faded');
+
+    //     var li = sender.parentElement;
+    //     if ('ontransitionend' in window) {
+    //       li.addEventListener('transitionend', function(e) {
+    //         this.users.splice(idx, 1);
+    //       }.bind(this));
+    //       li.classList.add('faded');
+    //     } else {
+    //       this.users.splice(idx, 1);
+    //     }
+    //   }
+    // }.bind(this);
+    // xhr.send();
   }
 });
 </script>

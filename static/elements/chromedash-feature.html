@@ -1,27 +1,20 @@
 <link rel="import" href="chromedash-color-status.html">
 
-<element name="chromedash-feature" extends="li" attributes="feature">
-<link rel="stylesheet" type="text/css" href="../css/elements/chromedash-feature.css">
+<element name="chromedash-feature" extends="li" attributes="feature" on-click="toggle">
 <template>
-<style>
-@host {
-  :scope {
-    display: block;
-  }
-}
-</style>
+<link rel="stylesheet" type="text/css" href="../css/elements/chromedash-feature.css">
 <hgroup>
-  <chromedash-color-status value="7" max="7" width="18" height="18"></chromedash-color-status>
+  <chromedash-color-status value="{{overall_views}}" max="7" width="18" height="18"></chromedash-color-status>
   <h2>{{feature.name}}</h2>
   <label class="category">{{feature.category}}</label>
 </hgroup>
-<section><summary>{{feature.summary}}</summary></section>
+<section class="desc"><summary>{{feature.summary}}</summary></section>
 <section>
   <h3>Implementation Status</h3>
   <div>
+    <a href="{{feature.bug_url}}" target="_blank" class="bug-url">Launch bug</a>
     <span><label>{{feature.impl_status_chrome}}</label>{{feature.shipped_milestone}}</span>
     <span><label>Prefixed</label>{{prefixedStr}}</span>
-    <a href="{{feature.bug_url}}" target="_blank" class="bug-url">Launch bug</a>
     <span class="owner">
       <label>Owner(s)</label><template repeat="{{owner in feature.owner}}">
         {{owner}}
@@ -32,23 +25,21 @@
 <section>
   <h3>Concensus &amp; Standardization</h3>
   <div>
-    <span>{{feature.standardization.text}}</span>
     <a href="{{feature.spec_link}}" class="spec">Spec</a>
+    <span>{{feature.standardization.text}}</span>
   </div>
   <div class="views">
     <span>
-      <chromedash-color-status value="{{feature.ff_views.value}}" max="7"></chromedash-color-status><label>Firefox</label>{{feature.ff_views.text}}
+      <chromedash-color-status value="{{feature.ff_views.value}}" max="7"></chromedash-color-status><label>Firefox</label><span class="view_text">{{feature.ff_views.text}}</span>
     </span>
     <span>
-      <chromedash-color-status value="{{feature.ie_views.value}}" max="7"></chromedash-color-status><label>IE</label>{{feature.ie_views.text}}
+      <chromedash-color-status value="{{feature.ie_views.value}}" max="7"></chromedash-color-status><label>IE</label><span class="view_text">{{feature.ie_views.text}}</span>
     </span>
     <span>
-      <chromedash-color-status value="{{feature.safari_views.value}}" max="7"></chromedash-color-status><label>Safari</label>{{feature.safari_views.text}}
+      <chromedash-color-status value="{{feature.safari_views.value}}" max="7"></chromedash-color-status><label>Safari</label><span class="view_text">{{feature.safari_views.text}}</span>
     </span>
-  </div>
-  <div class="views">
     <span>
-      <chromedash-color-status value="{{feature.web_dev_views.value}}" max="7"></chromedash-color-status><label>Web developer views</label>{{feature.web_dev_views.text}}
+      <chromedash-color-status value="{{feature.web_dev_views.value}}" max="7"></chromedash-color-status><label>Web developers</label><span class="view_text">{{feature.web_dev_views.text}}</span>
     </span>
   </div>
 </section>
@@ -63,14 +54,19 @@
 <script>
   Polymer.register(this, {
     applyAuthorStyles: true,
+    overall_views: 0,
+    toggle: function() {
+      this.classList.toggle('open');
+    },
     ready: function() {
       this.asyncMethod(function() {
         this.prefixedStr = this.feature.prefixed ? 'Yes' : 'No';
-      });
+     
+      this.overall_views = (this.feature.ff_views.value +
+                            this.feature.ie_views.value +
+                            this.feature.safari_views.value) / 3;
+       });
     }
-    // chromeStableChanged: function() {
-    //   console.log(typeof this.chromeStable)
-    // }
   });
 </script>
 </element>
