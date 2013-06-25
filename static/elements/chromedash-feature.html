@@ -1,9 +1,9 @@
 <link rel="import" href="chromedash-color-status.html">
 
-<element name="chromedash-feature" extends="li" attributes="feature" on-click="toggle">
+<element name="chromedash-feature" extends="li" attributes="feature">
 <template>
 <link rel="stylesheet" type="text/css" href="../css/elements/chromedash-feature.css">
-<hgroup>
+<hgroup on-click="toggle">
   <chromedash-color-status value="{{overall_views}}" max="7" width="18" height="18"></chromedash-color-status>
   <h2>{{feature.name}}</h2>
   <label class="category">{{feature.category}}</label>
@@ -11,7 +11,7 @@
 <section class="desc"><summary>{{feature.summary}}</summary></section>
 <section>
   <h3>Implementation Status</h3>
-  <div>
+  <div class="impl_status">
     <a href="{{feature.bug_url}}" target="_blank" class="bug-url">Launch bug</a>
     <span><label>{{feature.impl_status_chrome}}</label>{{feature.shipped_milestone}}</span>
     <span><label>Prefixed</label>{{prefixedStr}}</span>
@@ -24,23 +24,28 @@
 </section>
 <section>
   <h3>Consensus &amp; Standardization</h3>
-  <div>
-    <a href="{{feature.spec_link}}" class="spec" target="_blank">{{feature.standardization.text}}</a>
-    <a href="http://caniuse.com/#search={{feature.name}}" target="_blank">caniuse?</a>
-  </div>
   <div class="views">
-    <span>
-      <chromedash-color-status value="{{feature.ff_views.value}}" max="7"></chromedash-color-status><label>Firefox</label><span class="view_text">{{feature.ff_views.text}}</span>
+    <span alt="{{feature.ff_views.text}}" title="{{feature.ff_views.text}}">
+      <chromedash-color-status value="{{feature.ff_views.value}}" max="7"></chromedash-color-status><label>Firefox</label>
     </span>
-    <span>
-      <chromedash-color-status value="{{feature.ie_views.value}}" max="7"></chromedash-color-status><label>IE</label><span class="view_text">{{feature.ie_views.text}}</span>
+    <span alt="{{feature.ie_views.text}}" title="{{feature.ie_views.text}}">
+      <chromedash-color-status value="{{feature.ie_views.value}}" max="7"></chromedash-color-status><label>IE</label>
     </span>
-    <span>
-      <chromedash-color-status value="{{feature.safari_views.value}}" max="7"></chromedash-color-status><label>Safari</label><span class="view_text">{{feature.safari_views.text}}</span>
+    <span alt="{{feature.safari_views.text}}" title="{{feature.safari_views.text}}">
+      <chromedash-color-status value="{{feature.safari_views.value}}" max="7"></chromedash-color-status><label>Safari</label>
     </span>
-    <span>
-      <chromedash-color-status value="{{feature.web_dev_views.value}}" max="7"></chromedash-color-status><label>Web developers</label><span class="view_text">{{feature.web_dev_views.text}}</span>
+    <span alt="{{feature.web_dev_views.text}}" title="{{feature.web_dev_views.text}}">
+      <chromedash-color-status value="{{feature.web_dev_views.value}}" max="7"></chromedash-color-status><label>Web developers</label>
     </span>
+  </div>
+  <div>
+    <template if="{{feature.spec_link}}">
+      <a href="{{feature.spec_link}}" class="spec" target="_blank">{{feature.standardization.text}}</a>
+    </template>
+    <template if="{{!feature.spec_link}}">
+      <span>{{feature.standardization.text}}</span>
+    </template>
+    <a href="http://caniuse.com/#search={{feature.name}}" target="_blank">caniuse?</a>
   </div>
 </section>
 <template bind if="{{feature.comments}}">
@@ -55,16 +60,21 @@
   Polymer.register(this, {
     applyAuthorStyles: true,
     overall_views: 0,
-    toggle: function() {
+    open: false,
+    toggle: function(e, details, sender) {
+      if (e.target.tagName == 'A') {
+        e.preventDefault();
+      }
       this.classList.toggle('open');
     },
     ready: function() {
       this.asyncMethod(function() {
         this.prefixedStr = this.feature.prefixed ? 'Yes' : 'No';
      
-      this.overall_views = (this.feature.ff_views.value +
-                            this.feature.ie_views.value +
-                            this.feature.safari_views.value) / 3;
+        this.overall_views = (this.feature.ff_views.value +
+                              this.feature.ie_views.value +
+                              this.feature.safari_views.value +
+                              this.feature.web_dev_views.value) / 4;
        });
     }
   });

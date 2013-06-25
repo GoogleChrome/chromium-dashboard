@@ -6,7 +6,7 @@
   :scope {
     display: block;
     @include transition(height 400ms ease-in-out);
-    height: 90px;
+    height: 105px;
     overflow: hidden;
   }
   :scope.open {
@@ -14,7 +14,6 @@
     overflow: auto;
   }
 }
-
 
 h2 {
   display: inline-block;
@@ -54,10 +53,6 @@ section {
     //font-weight: 600;
     color: $chromium-color-dark;
     margin-right: 5px;
-
-    &:after {
-      content: ':';
-    }
   }
 
   div {
@@ -78,6 +73,12 @@ section {
       @include align-items(center);
     }
   }
+
+  // .impl_status {
+  //   label:after {
+  //     content: ':';
+  //   }
+  // }
 }
 
 chromedash-color-status {
@@ -95,14 +96,19 @@ chromedash-color-status {
       margin-bottom: 10px;
     }
   }
+  .impl_status {
+    @include display-flex;
+    @include flex-direction(column);
+    @include flex-wrap(initial);
+    > span label {
+      width: 100px;
+    }
+  }
   .views span {
     label {
       &:after {
         content: '';
       }
-    }
-    .view_text {
-      display: none;
     }
   }
 }

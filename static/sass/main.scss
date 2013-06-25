@@ -215,9 +215,19 @@ footer {
   @include align-items(center);
   margin: $content-padding $content-padding 0 $content-padding;
   //border-bottom: 1px solid $bar-border-color;
+  height: 40px;
 
   div {
     margin-right: $content-padding * 2 - 15;
+  }
+
+  .search {
+    height: 100%;
+
+    input {
+      height: 100%;
+      width: 200px;
+    }
   }
 }
 
@@ -325,6 +335,12 @@ footer {
     display: block;
     aside {
       padding: 0.35em 0.35em 0.35em 100px;
+
+      hgroup {
+        span {
+          display: none;
+        }
+      }
     }
     nav {
       margin: 10px 0;
@@ -332,7 +348,7 @@ footer {
       @include justify-content(center);
       a {
         padding: 5px 10px;
-        margin: 0 10px;
+        margin: 0;
       }
     }
   }
@@ -346,20 +362,33 @@ footer {
   }
 
   #subheader {
-    display: none;
-    margin: $content-padding/2 0;
+    margin: ($content-padding / 2) - 5;
     div {
-      //margin-right: 20px;
-      margin-right: $content-padding;
+      &:not(.search) {
+        display: none;
+      }
+
+      &.search {
+        text-align: center;
+        @include flex(1 0 0);
+        margin: 0;
+      }
     }
   }
 
+  //TODO: move these into the chromedash-feature.scss when we can use media
+  // queries with @host{}.
   chromedash-feature,
   [is="chromedash-feature"] {
     box-shadow: none !important;
     border-radius: 0 !important;
     padding: 10px !important;
     margin: 0 !important;
+    height: 90px !important;
+
+    &.open {
+      height: 350px !important;
+    }
   }
 
   footer {

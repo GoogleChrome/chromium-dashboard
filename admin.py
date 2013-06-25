@@ -220,7 +220,6 @@ class FeatureHandler(common.ContentHandler):
   def post(self, path, feature_id=None):
     spec_link = self.__FullQualifyLink('spec_link')
     bug_url = self.__FullQualifyLink('bug_url')
-    spec_link = self.__FullQualifyLink('spec_link')
 
     safari_views_link = self.__FullQualifyLink('safari_views_link')
     ff_views_link = self.__FullQualifyLink('ff_views_link')
@@ -239,7 +238,7 @@ class FeatureHandler(common.ContentHandler):
       feature.name = self.request.get('name')
       feature.summary = self.request.get('summary')
       feature.owner = owners
-      feature.bug_url = db.Link(bug_url)
+      feature.bug_url = bug_url
       feature.impl_status_chrome = int(self.request.get('impl_status_chrome'))
       feature.shipped_milestone = self.request.get('shipped_milestone')
       feature.footprint = int(self.request.get('footprint'))
@@ -251,7 +250,7 @@ class FeatureHandler(common.ContentHandler):
       feature.ie_views = int(self.request.get('ie_views'))
       feature.ie_views_link = ie_views_link
       feature.prefixed = self.request.get('prefixed') == 'on'
-      feature.spec_link = db.Link(spec_link)
+      feature.spec_link = spec_link
       feature.standardization = int(self.request.get('standardization'))
       feature.comments = self.request.get('comments')
       feature.web_dev_views = int(self.request.get('web_dev_views'))
@@ -261,7 +260,7 @@ class FeatureHandler(common.ContentHandler):
           name=self.request.get('name'),
           summary=self.request.get('summary'),
           owner=owners,
-          bug_url=db.Link(bug_url),
+          bug_url=bug_url,
           impl_status_chrome=int(self.request.get('impl_status_chrome')),
           shipped_milestone=self.request.get('shipped_milestone'),
           footprint=int(self.request.get('footprint')),
@@ -273,7 +272,7 @@ class FeatureHandler(common.ContentHandler):
           ie_views=int(self.request.get('ie_views')),
           ie_views_link=ie_views_link,
           prefixed=self.request.get('prefixed') == 'on',
-          spec_link=db.Link(spec_link),
+          spec_link=spec_link,
           standardization=int(self.request.get('standardization')),
           comments=self.request.get('comments'),
           web_dev_views=int(self.request.get('web_dev_views')),

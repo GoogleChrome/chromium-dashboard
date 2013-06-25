@@ -13,7 +13,7 @@
   <div>
     <h2>Features</h2>
   </div>
-  <div>
+  <div class="search">
     <input type="search" placeholder="Search">
   </div>
   <div>
@@ -50,9 +50,24 @@
 
 {% block js %}
 <script>
+(function() {
+
+var chromedashApp = document.querySelector('chromedash-app');
 document.addEventListener('WebComponentsReady', function(e) {
-  var t = document.querySelector('chromedash-app');
-  t.features = {{features|safe}}; // Filled from server.
+  chromedashApp.features = {{features|safe}}; // Filled from server.
 });
+
+var search = document.querySelector('.search [type="search"]');
+search.addEventListener('keyup', function(e) {
+  chromedashApp.filter(e);
+});
+// Clear input when user clicks the 'x' button.
+search.addEventListener('click', function(e) {
+  if (!e.target.value) {
+    chromedashApp.filter(e);
+  }
+});
+
+})();
 </script>
 {% endblock %}

@@ -109,7 +109,7 @@ class Feature(DictModel):
   # Chromium details.
   bug_url = db.LinkProperty()
   impl_status_chrome = db.IntegerProperty(required=True)
-  shipped_milestone = db.StringProperty(required=True)
+  shipped_milestone = db.StringProperty()
 
   owner = db.ListProperty(db.Email, required=True)
   footprint = db.IntegerProperty()
@@ -311,8 +311,6 @@ WEB_DEV_VIEWS = {
 
 
 class FeatureForm(forms.Form):
-  
-  category = forms.ChoiceField(required=True, choices=FEATURE_CATEGORIES.items())
 
   name = PlaceholderCharField(required=True, placeholder='Feature name')
   #feature_name = forms.CharField(required=True, label='Feature name')
@@ -324,6 +322,8 @@ class FeatureForm(forms.Form):
       required=True, placeholder='Owner(s) email',
       help_text='Owner (@chromium.org username or a full email).')
   
+  category = forms.ChoiceField(required=True, choices=FEATURE_CATEGORIES.items())
+
   bug_url = forms.URLField(label='Bug URL',
                            help_text='OWP Launch Tracking or crbug.')
 
@@ -331,7 +331,7 @@ class FeatureForm(forms.Form):
                                          label='Status in Chrome',
                                          choices=IMPLEMENATION_STATUS.items())
 
-  shipped_milestone = forms.CharField(label='Milestone')
+  shipped_milestone = PlaceholderCharField(required=False, placeholder='Milestone')
 
   prefixed = forms.BooleanField(required=False, initial=False, label='Prefixed?')
 
@@ -341,7 +341,7 @@ class FeatureForm(forms.Form):
       help_text=("The standardization status of the API. In bodies that don't "
                  "use this nomenclature, use the closest equivalent."))
 
-  spec_link = forms.URLField(label='Spec link',
+  spec_link = forms.URLField(required=False, label='Spec link',
                              help_text="Prefer most mature spec version.")
 
   footprint  = forms.ChoiceField(label='Technical footprint',

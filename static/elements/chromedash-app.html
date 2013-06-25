@@ -1,9 +1,10 @@
 <link rel="import" href="chromedash-feature.html">
 
-<element name="chromedash-app" attributes="whitelisted">
+<element name="chromedash-app" attributes="whitelisted features">
 <template>
   <link rel="stylesheet" type="text/css" href="../css/elements/chromedash-app.css">
-  <template repeat="{{feature in features}}">
+  <!-- <input type="search" placeholder="Search" on-keyup="filter"> -->
+  <template repeat="{{feature in filtered}}">
     <li is="chromedash-feature" feature="{{feature}}">
       <template bind if="{{whitelisted}}">
         <a href="/admin/features/edit/{{feature.id}}" class="edit">edit</a>
@@ -16,7 +17,26 @@
     applyAuthorStyles: true,
     whitelisted: false,
     ready: function() {
+      this.asyncMethod(function() {
+        this.features = this.features || [];
+      });
+    },
+    featuresChanged: function() {
+      this.filter();
+    },
+    filter: function(e) {
+      // Clear filter if there's no search or if called directly.
+      if (!e || (e && !e.target.value.length)) {
+        this.filtered = this.features;
+        return;
+      }
 
+      var regex = new RegExp(e.target.value, 'ig');
+      this.filtered = this.features.filter(function(feature, idx, array) {
+        return regex.test(feature.name) || regex.test(feature.category) ||
+               regex.test(feature.summary) ||
+               regex.test(feature.shipped_milestone);
+      });
     }
   });
 </script>
