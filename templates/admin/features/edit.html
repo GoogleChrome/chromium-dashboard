@@ -1,5 +1,10 @@
 {% extends "base.html" %}
 
+
+{% block css %}
+<link rel="stylesheet" type="text/css" href="/static/css/forms.css">
+{% endblock %}
+
 {% block subheader %}
 <div id="subheader">
   <h2>Edit a feature</h2>
@@ -14,11 +19,11 @@
         <!--<tr><th><label for="id_key_name">key_name:</label></th><td><input type="text" name="key_name" id="id_key_name" required /></td></tr>-->
         {{ feature_form }}
        <!--  <tr><th><label for="id_ff_views_link">Link:</label></th><td><input type="text" name="link" id="id_ff_views_link" name="ff_views_link" /></td></tr> -->
-       
+
   <!--       <tr><td colspan="2"><input type="checkbox" disabled name="intent_to_implement" id="id_intent_to_implement"><label for="id_intent_to_implement">Generate intent-to-implement email for blink-dev (you'll copy/paste to send)</label></td></tr>
         <tr><td colspan="2"><input type="checkbox" disabled name="create_launch_bug" id="id_create_launch_bug"><label for="id_create_launch_bug">Automatically create a launch tracing bug</label></td></tr>
-        <tr><td colspan="2"><input type="checkbox" disabled name="email_owners_on_update" id="id_email_owners_on_update"><label for="id_email_owners_on_update">Email feature's owner(s) when data is updated.</label></td></tr>
-        <tr><td colspan="2"><input type="submit" value="Submit"></td></tr> -->
+        <tr><td colspan="2"><input type="checkbox" disabled name="email_owners_on_update" id="id_email_owners_on_update"><label for="id_email_owners_on_update">Email feature's owner(s) when data is updated.</label></td></tr>-->
+        <tr><td colspan="2"><input type="submit" value="Submit"></td></tr>
       </table>
     </form>
 </section>

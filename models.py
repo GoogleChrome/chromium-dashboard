@@ -131,7 +131,7 @@ class Feature(DictModel):
   ie_views_link = db.LinkProperty()
 
   # Web dev details.
-  web_dev_views = db.IntegerProperty()
+  web_dev_views = db.IntegerProperty(required=True)
   #doc_links = db.StringProperty()
   #tests = db.StringProperty()
 
@@ -322,7 +322,8 @@ class FeatureForm(forms.Form):
       required=True, placeholder='Owner(s) email',
       help_text='Owner (@chromium.org username or a full email).')
   
-  category = forms.ChoiceField(required=True, choices=FEATURE_CATEGORIES.items())
+  category = forms.ChoiceField(required=True,
+                               choices=FEATURE_CATEGORIES.items())
 
   bug_url = forms.URLField(label='Bug URL',
                            help_text='OWP Launch Tracking or crbug.')
@@ -331,9 +332,11 @@ class FeatureForm(forms.Form):
                                          label='Status in Chrome',
                                          choices=IMPLEMENATION_STATUS.items())
 
-  shipped_milestone = PlaceholderCharField(required=False, placeholder='Milestone')
+  shipped_milestone = PlaceholderCharField(required=False,
+                                           placeholder='Milestone')
 
-  prefixed = forms.BooleanField(required=False, initial=False, label='Prefixed?')
+  prefixed = forms.BooleanField(
+      required=False, initial=False, label='Prefixed?')
 
   standardization = forms.ChoiceField(
       label='Standardization', choices=STANDARDIZATION.items(),
@@ -362,28 +365,28 @@ class FeatureForm(forms.Form):
       help_text=('How positive has the reaction from developers been? If '
                  'unsure, default to "No signals".'))
 
-  safari_views = forms.ChoiceField(label='Documented Safari views',
+  safari_views = forms.ChoiceField(label='Safari views',
                                    choices=VENDOR_VIEWS.items(),
                                    initial=NO_PUBLIC_SIGNALS)
-  safari_views_link = forms.URLField(label='Link')
+  safari_views_link = forms.URLField(required=False, label='Documented link')
 
-  ff_views = forms.ChoiceField(label='Documented Firefox views',
+  ff_views = forms.ChoiceField(label='Firefox views',
                                choices=VENDOR_VIEWS.items(),
                                initial=NO_PUBLIC_SIGNALS)
-  ff_views_link = forms.URLField(label='Link')
+  ff_views_link = forms.URLField(required=False, label='Documented link')
 
 
-  ie_views = forms.ChoiceField(label='Documented IE views',
+  ie_views = forms.ChoiceField(label='IE views',
                                choices=VENDOR_VIEWS.items(),
                                initial=NO_PUBLIC_SIGNALS)
-  ie_views_link = forms.URLField(label='Link')
+  ie_views_link = forms.URLField(required=False, label='Documented link')
 
   comments = forms.CharField(label='', required=False, widget=forms.Textarea(
       attrs={'cols': 50, 'placeholder': 'Additional Comments'}))
 
   class Meta:
     model = Feature
-    exclude = ('safari_views_link', 'ff_views_link', 'ie_views_link',)
+    #exclude = ('safari_views_link', 'ff_views_link', 'ie_views_link',)
 
   def __init__(self, *args, **keyargs):
     super(FeatureForm, self).__init__(*args, **keyargs)

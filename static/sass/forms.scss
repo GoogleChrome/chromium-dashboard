@@ -1,0 +1,73 @@
+@import "vars";
+
+input:not([type="submit"]), textarea {
+  border: 1px solid $bar-border-color;
+  //box-shadow: 2px 2px 2px #ccc inset;
+
+  &[disabled] {
+    opacity: 0.5;
+  }
+}
+
+table {
+  // td, th {
+  //   vertical-align: top;
+  // }
+  tr[hidden] {
+    th, td {
+      padding: 0;
+    }
+  }
+
+  th {
+    max-width: 200px;
+  }
+
+  th, td {
+    padding-bottom: 10px;
+  }
+  .helptext {
+    font-style: italic;
+    font-size: smaller;
+  }
+  input[type="text"], textarea {
+    width: 100%;
+  }
+
+  select {
+    max-width: 350px;
+  }
+
+  :required {
+    border: 1px solid $chromium-color-dark;
+  }
+
+  .interacted:valid {
+    border: 1px solid green;
+  }
+
+  .interacted:invalid {
+    border: 1px solid $invalid-color;
+  }
+
+  .errorlist {
+    color: red;
+  }
+}
+
+input, textarea {
+  outline: none;
+  padding: 7px;
+}
+
+form[name="feature_form"] {
+  h3 {
+    margin: $content-padding / 2 0;
+  }
+  p {
+    margin-bottom: 10px;
+  }
+  input[type="submit"] {
+    margin-top: $content-padding;
+  }
+}

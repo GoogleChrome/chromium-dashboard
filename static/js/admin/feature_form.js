@@ -14,19 +14,51 @@ for (var i = 0, textarea; textarea = textareas[i]; ++i) {
   });
 }
 
-var MIN_MILESTONE_FOR_ACTIVE = 3;
+// TODO(ericbidelman): These values are brittle if changed in the db later on.
+var MIN_MILESTONE_TO_BE_ACTIVE = 3;
+var MIN_STD_TO_BE_ACTIVE = 5;
+var NO_PUBLIC_SIGNALS = 5;
 
-var implStatus = document.querySelector('#id_impl_status_chrome');
-var milestone = document.querySelector('#id_shipped_milestone');
-
-implStatus.addEventListener('change', function(e) {
-  milestone.disabled = e.target.value <= MIN_MILESTONE_FOR_ACTIVE;
+var form = document.querySelector('[name="feature_form"]');
+form.addEventListener('change', function(e) {
+  switch(e.target.tagName.toLowerCase()) {
+    case 'select':
+      if (e.target.name.match(/_views$/)) {
+        toggleViewLink(e.target);
+      } else if (e.target.id == 'id_impl_status_chrome') {
+        toggleMilestone(e.target);
+      } else if (e.target.id == 'id_standardization') {
+        toggleSpecLink(e.target)
+      }
+      break;
+    default:
+      break;
+  }
 });
 
-function init() {
-  milestone.disabled = implStatus.value <= MIN_MILESTONE_FOR_ACTIVE;
+function toggleSpecLink(stdStage) {
+  var specLink = document.querySelector('#id_spec_link')
+  specLink.disabled = parseInt(stdStage.value) >= MIN_STD_TO_BE_ACTIVE;
+  specLink.parentElement.parentElement.hidden = specLink.disabled;
 }
 
-init();
+function toggleMilestone(status) {
+   var milestone = document.querySelector('#id_shipped_milestone')
+   milestone.disabled = parseInt(status.value) <= MIN_MILESTONE_TO_BE_ACTIVE;
+   milestone.hidden = milestone.disabled;
+}
+
+function toggleViewLink(view) {
+  var link = document.getElementById(view.id + '_link');
+  if (link) {
+    link.disabled = parseInt(view.value) == NO_PUBLIC_SIGNALS;
+    link.parentElement.parentElement.hidden = link.disabled;
+  }
+}
+
+document.addEventListener('DOMContentLoaded', function(e) {
+  toggleMilestone(document.querySelector('#id_impl_status_chrome'));
+  [].forEach.call(document.querySelectorAll('[name$="_views"]'), toggleViewLink);
+});
 
 })();
