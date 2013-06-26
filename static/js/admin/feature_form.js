@@ -52,13 +52,24 @@ function toggleViewLink(view) {
   var link = document.getElementById(view.id + '_link');
   if (link) {
     link.disabled = parseInt(view.value) == NO_PUBLIC_SIGNALS;
+    link.required = !link.disabled;
     link.parentElement.parentElement.hidden = link.disabled;
   }
 }
 
 document.addEventListener('DOMContentLoaded', function(e) {
+  // Get around Django rendering input type="text" fields for URLs.
+  var inputs = document.querySelectorAll('input[name$="_link"]');
+  [].forEach.call(inputs, function(input) {
+    input.type = 'url';
+  });
+
+  var owner = document.querySelector('input[name="owner"]');
+  owner.type = 'email';
+  owner.multiple = true;
+
   toggleMilestone(document.querySelector('#id_impl_status_chrome'));
-  [].forEach.call(document.querySelectorAll('[name$="_views"]'), toggleViewLink);
+  [].forEach.call(document.querySelectorAll('select[name$="_views"]'), toggleViewLink);
 });
 
 })();

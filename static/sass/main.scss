@@ -35,6 +35,15 @@ b {
   font-weight: bold;
 }
 
+input:not([type="submit"]), textarea {
+  border: 1px solid $bar-border-color;
+  //box-shadow: 2px 2px 2px #ccc inset;
+
+  &[disabled] {
+    opacity: 0.5;
+  }
+}
+
 header, footer {
   @include display-flex;//@include display-box;
   @include align-items(center);

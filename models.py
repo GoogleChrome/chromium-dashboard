@@ -320,7 +320,7 @@ class FeatureForm(forms.Form):
 
   owner = PlaceholderCharField(
       required=True, placeholder='Owner(s) email',
-      help_text='Owner (@chromium.org username or a full email).')
+      help_text='Comma separated full emails address (@chromium.org preferred).')
   
   category = forms.ChoiceField(required=True,
                                choices=FEATURE_CATEGORIES.items())

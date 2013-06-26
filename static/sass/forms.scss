@@ -1,14 +1,5 @@
 @import "vars";
 
-input:not([type="submit"]), textarea {
-  border: 1px solid $bar-border-color;
-  //box-shadow: 2px 2px 2px #ccc inset;
-
-  &[disabled] {
-    opacity: 0.5;
-  }
-}
-
 table {
   // td, th {
   //   vertical-align: top;
@@ -30,7 +21,7 @@ table {
     font-style: italic;
     font-size: smaller;
   }
-  input[type="text"], textarea {
+  input[type="text"], input[type="url"], input[type="email"], textarea {
     width: 100%;
   }
 
