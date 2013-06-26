@@ -290,7 +290,7 @@ STANDARDIZATION = {
   WORKING_DRAFT: 'Working draft or equivalent',
   EDITORS_DRAFT: "Editor's draft",
   PUBLIC_DISCUSSION: 'Public discussion',
-  NO_STD_OR_DISCUSSION: 'No public discussion / Not standards track',
+  NO_STD_OR_DISCUSSION: 'No public discussion / standards track',
   }
 
 DEV_STRONG_POSTIVE = 1

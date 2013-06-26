@@ -10,7 +10,7 @@
     overflow: hidden;
   }
   :scope.open {
-    height: 350px;
+    height: 375px;
     overflow: auto;
   }
 }
@@ -91,7 +91,7 @@ chromedash-color-status {
 
 @media only screen and (max-width: 700px) {
   section {
-    margin: 0;
+    margin-left: 0;
     &.desc {
       margin-bottom: 10px;
     }

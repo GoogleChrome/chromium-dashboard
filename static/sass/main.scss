@@ -172,6 +172,8 @@ footer {
     input {
       height: 100%;
       width: 200px;
+      outline: none;
+      padding: 7px;
     }
   }
 }
@@ -301,11 +303,6 @@ footer {
     border-radius: 0 !important;
     padding: 10px !important;
     margin: 0 !important;
-    height: 90px !important;
-
-    &.open {
-      height: 350px !important;
-    }
   }
 
   footer {
