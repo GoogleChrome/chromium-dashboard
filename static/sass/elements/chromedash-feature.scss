@@ -24,7 +24,6 @@ h2 {
 hgroup {
   @include display-flex;
   @include align-items(center);
-  margin-bottom: 15px;
   cursor: pointer;
 
   .category {
@@ -38,20 +37,34 @@ hgroup {
 }
 
 section {
-  $spacer: 20px;
-  margin-left: 30px;
-  margin-top: $spacer;
+  $spacer-left: 30px;
+  margin-left: $spacer-left;
+  margin-top: 20px;
+
+  &.desc {
+    margin-right: $spacer-left;
+
+    summary {
+      text-overflow: ellipsis;
+      overflow: hidden;
+      white-space: nowrap;
+
+      &.open {
+        white-space: normal;
+      }
+    }
+  }
   
   h3 {
     margin-bottom: 10px;
     font-size: 18px;
-    //color: $chromium-color-dark;
+    color: $chromium-color-dark;
     font-weight: 400;
   }
 
   label {
-    //font-weight: 600;
-    color: $chromium-color-dark;
+    font-weight: 600;
+    //color: $chromium-color-dark;
     margin-right: 5px;
   }
 
@@ -59,8 +72,7 @@ section {
     margin-bottom: 10px;
     @include flex-wrap(wrap);
     > * {
-      margin-right: $spacer;
-      // white-space: nowrap;
+      margin-right: 20px;
     }
   }
 
@@ -73,12 +85,6 @@ section {
       @include align-items(center);
     }
   }
-
-  // .impl_status {
-  //   label:after {
-  //     content: ':';
-  //   }
-  // }
 }
 
 chromedash-color-status {

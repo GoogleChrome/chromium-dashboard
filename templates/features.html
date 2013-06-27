@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block html_imports %}
-  <link rel="import" href="/static/elements/chromedash-app.html">
+  <link rel="import" href="/static/elements/chromedash-featurelist.html">
   <link rel="import" href="/static/elements/chromedash-metadata.html">
 {% endblock %}
 
@@ -29,7 +29,7 @@
 <nav>
   <chromedash-metadata></chromedash-metadata>
 </nav>
-<chromedash-app {% if user.is_whitelisted %}whitelisted{% endif %}></chromedash-app>
+<chromedash-featurelist {% if user.is_whitelisted %}whitelisted{% endif %}></chromedash-featurelist>
 </section>
 
 <!--
@@ -52,7 +52,7 @@
 <script>
 (function() {
 
-var chromedashApp = document.querySelector('chromedash-app');
+var chromedashApp = document.querySelector('chromedash-featurelist');
 document.addEventListener('WebComponentsReady', function(e) {
   chromedashApp.features = {{features|safe}}; // Filled from server.
 });

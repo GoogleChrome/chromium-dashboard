@@ -1,14 +1,14 @@
 <link rel="import" href="chromedash-color-status.html">
 
-<element name="chromedash-feature" extends="li" attributes="feature">
+<element name="chromedash-feature" extends="li" attributes="feature open">
 <template>
 <link rel="stylesheet" type="text/css" href="../css/elements/chromedash-feature.css">
-<hgroup on-click="toggle">
-  <chromedash-color-status value="{{overall_views}}" max="7" width="18" height="18"></chromedash-color-status>
+<hgroup on-click="toggleOpen">
+  <chromedash-color-status value="{{overallViews}}" max="7" width="18" height="18"></chromedash-color-status>
   <h2>{{feature.name}}</h2>
   <label class="category">{{feature.category}}</label>
 </hgroup>
-<section class="desc"><summary>{{feature.summary}}</summary></section>
+<section class="desc"><summary class="{{open ? 'open' : ''}}">{{feature.summary}}</summary></section>
 <section>
   <h3>Implementation Status</h3>
   <div class="impl_status">
@@ -47,7 +47,7 @@
       <label hidden?="{{feature.safari_views_link}}">Safari</label>
     </span>
     <span alt="{{feature.web_dev_views.text}}" title="{{feature.web_dev_views.text}}">
-      <chromedash-color-status value="{{feature.web_dev_views.value}}" max="7"></chromedash-color-status><label>Web developers</label>
+      <chromedash-color-status value="{{feature.web_dev_views.value}}" max="7"></chromedash-color-status>Web developers
     </span>
   </div>
   <div>
@@ -55,7 +55,7 @@
       <a href="{{feature.spec_link}}" target="_blank">{{feature.standardization.text}}</a>
     </template>
     <span hidden?="{{feature.spec_link}}">{{feature.standardization.text}}</span>
-    <a href="http://caniuse.com/#search={{feature.name}}" target="_blank">caniuse?</a>
+    <a href="http://caniuse.com/#search={{feature.name}}" target="_blank">Browser share %</a>
   </div>
 </section>
 <template bind if="{{feature.comments}}">
@@ -69,22 +69,25 @@
 <script>
   Polymer.register(this, {
     applyAuthorStyles: true,
-    overall_views: 0,
+    overallViews: 0,
     open: false,
-    toggle: function(e, details, sender) {
-      if (e.target.tagName == 'A') {
-        e.preventDefault();
-      }
-      this.classList.toggle('open');
+    openChanged: function() {
+      this.open ? this.classList.add('open') : this.classList.remove('open');
+    },
+    toggleOpen: function(e, details, sender) {
+      // if (e.target.tagName == 'A') {
+      //   e.preventDefault();
+      // }
+      this.open = !this.open;
     },
     ready: function() {
       this.asyncMethod(function() {
         this.prefixedStr = this.feature.prefixed ? 'Yes' : 'No';
      
-        this.overall_views = (this.feature.ff_views.value +
-                              this.feature.ie_views.value +
-                              this.feature.safari_views.value +
-                              this.feature.web_dev_views.value) / 4;
+        this.overallViews = (this.feature.ff_views.value +
+                             this.feature.ie_views.value +
+                             this.feature.safari_views.value +
+                             this.feature.web_dev_views.value) / 4;
        });
     }
   });

@@ -18,6 +18,9 @@ h1, h2, h3, h4 {
 h1 {
   font-size: 30px;
 }
+h2, h3, h4 {
+  color: #444;
+}
 h2 {
   font-size: 25px;
 }
@@ -224,11 +227,12 @@ footer {
     }
   }
 
-  chromedash-app {
+  chromedash-featurelist {
     @include flex(1 0 0);
     //@include box-flex(1);
     //margin-left: $content-padding * 5;
     height: 100%;
+    max-width: 800px;
     // font-weight: 300;
   }
 }
@@ -253,9 +257,11 @@ footer {
     margin: 0;
     display: block;
     aside {
-      padding: 0.35em 0.35em 0.35em 100px;
+      padding: 0.5em;
+      border-radius: 0;
 
       hgroup {
+        text-align: right;
         span {
           display: none;
         }
@@ -268,6 +274,7 @@ footer {
       a {
         padding: 5px 10px;
         margin: 0;
+        border-radius: 0;
       }
     }
   }

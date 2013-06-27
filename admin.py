@@ -202,8 +202,8 @@ class FeatureHandler(common.ContentHandler):
     feature = None
     if feature_id: # /admin/edit/1234
       f = models.Feature.get_by_id(long(feature_id))
-      if f is None:
-        return self.redirect(self.request.path.replace('edit', 'new'))
+      if f is None or (f and 'edit' not in path):
+        return self.redirect('/admin/features/new')
 
       feature = models.Feature.format_for_edit(f)
     elif 'edit' in path:
@@ -280,7 +280,7 @@ class FeatureHandler(common.ContentHandler):
 
     feature.put()
 
-    return self.redirect(self.request.path)
+    return self.redirect('/')
 
 app = webapp2.WSGIApplication([
   ('/cron/metrics', YesterdayHandler),

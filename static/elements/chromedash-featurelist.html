@@ -1,8 +1,8 @@
 <link rel="import" href="chromedash-feature.html">
 
-<element name="chromedash-app" attributes="whitelisted features">
+<element name="chromedash-featurelist" attributes="whitelisted features">
 <template>
-  <link rel="stylesheet" type="text/css" href="../css/elements/chromedash-app.css">
+  <link rel="stylesheet" type="text/css" href="../css/elements/chromedash-featurelist.css">
   <!-- <input type="search" placeholder="Search" on-keyup="filter"> -->
   <template repeat="{{feature in filtered}}">
     <li is="chromedash-feature" feature="{{feature}}">

@@ -6,7 +6,7 @@
   <polymer-jsonp id="jsonp" url="//omahaproxy.appspot.com/all.json?callback=" auto></polymer-jsonp>
   <ul>
     <template repeat="{{v in versions}}">
-      <li data-version="{{v}}">{{v}}</li>
+      <li data-version="{{v}}" on-click="filterByVersion">{{v}}</li>
     </template>
   </ul>
 </template>
@@ -41,12 +41,16 @@
         this.versions = ['upcoming', this.channels.canary, this.channels.dev,
                          this.channels.beta, this.channels.stable];
 
-        for (var i = this.channels.stable - 1; i > this.channels.stable - 6; i--) {
+        var NUM_VERSIONS_BACK = 3;
+        for (var i = this.channels.stable - 1; i >- this.channels.stable - NUM_VERSIONS_BACK; i--) {
           this.versions.push(i);
         }
       });
 
       //this.$.jsonp.go(); // Using auto attribute instead.
+    },
+    filterByVersion: function(e, details, sender) {
+      this.fire('');
     }
   });
 </script>
