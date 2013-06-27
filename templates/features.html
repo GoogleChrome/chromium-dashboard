@@ -75,7 +75,7 @@ document.addEventListener('WebComponentsReady', function(e) {
   });
 
   document.body.addEventListener('keyup', function(e) {
-    if (e.target == document.body && e.keyCode == 27) { // ESC
+    if (e.keyCode == 27) { // ESC
       chromedashApp.filter();
       search.value = '';
     }
