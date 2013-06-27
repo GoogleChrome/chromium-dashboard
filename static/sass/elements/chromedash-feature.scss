@@ -85,6 +85,15 @@ section {
       @include align-items(center);
     }
   }
+
+  .impl_status {
+    .icon-frown {
+      color: darkred;
+    }
+    .icon-smile {
+      color: green;
+    }
+  }
 }
 
 chromedash-color-status {

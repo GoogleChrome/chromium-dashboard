@@ -312,21 +312,26 @@ WEB_DEV_VIEWS = {
 
 class FeatureForm(forms.Form):
 
-  name = PlaceholderCharField(required=True, placeholder='Feature name')
-  #feature_name = forms.CharField(required=True, label='Feature name')
-  
-  summary = forms.CharField(label='', required=True,
-      widget=forms.Textarea(attrs={'cols': 50, 'placeholder': 'Summary'}))
+  #name = PlaceholderCharField(required=True, placeholder='Feature name')
+  name = forms.CharField(required=True, label='Feature')
 
-  owner = PlaceholderCharField(
-      required=False, placeholder='Owner(s) email',
-      help_text='Comma separated full emails address (@chromium.org preferred).')
-  
+  summary = forms.CharField(label='', required=True,
+      widget=forms.Textarea(attrs={'cols': 50, 'placeholder': 'Summary description'}))
+
+  # owner = PlaceholderCharField(
+  #     required=False, placeholder='Owner(s) email',
+  #     help_text='Comma separated list of full email addresses (@chromium.org preferred).')
+
   category = forms.ChoiceField(required=True,
                                choices=FEATURE_CATEGORIES.items())
 
-  bug_url = forms.URLField(label='Bug URL',
-                           help_text='OWP Launch Tracking or crbug.')
+  owner = forms.CharField(
+      required=False, label='Owner(s) email',
+      help_text='Comma separated list of full email addresses. Prefer @chromium.org.')
+
+
+  bug_url = forms.URLField(required=False, label='Bug URL',
+                           help_text='OWP Launch Tracking, crbug, etc.')
 
   impl_status_chrome = forms.ChoiceField(required=True,
                                          label='Status in Chrome',
@@ -368,21 +373,24 @@ class FeatureForm(forms.Form):
   safari_views = forms.ChoiceField(label='Safari views',
                                    choices=VENDOR_VIEWS.items(),
                                    initial=NO_PUBLIC_SIGNALS)
-  safari_views_link = forms.URLField(required=False, label='Documented link')
+  safari_views_link = forms.URLField(required=False, label='',
+      help_text='Citation link.')
 
   ff_views = forms.ChoiceField(label='Firefox views',
                                choices=VENDOR_VIEWS.items(),
                                initial=NO_PUBLIC_SIGNALS)
-  ff_views_link = forms.URLField(required=False, label='Documented link')
+  ff_views_link = forms.URLField(required=False, label='',
+      help_text='Citation link.')
 
 
   ie_views = forms.ChoiceField(label='IE views',
                                choices=VENDOR_VIEWS.items(),
                                initial=NO_PUBLIC_SIGNALS)
-  ie_views_link = forms.URLField(required=False, label='Documented link')
+  ie_views_link = forms.URLField(required=False, label='',
+      help_text='Citation link.')
 
   comments = forms.CharField(label='', required=False, widget=forms.Textarea(
-      attrs={'cols': 50, 'placeholder': 'Additional Comments'}))
+      attrs={'cols': 50, 'placeholder': 'Additional comments, caveats, info...'}))
 
   class Meta:
     model = Feature

@@ -12,9 +12,9 @@
 <section>
   <h3>Implementation Status</h3>
   <div class="impl_status">
-    <a href="{{feature.bug_url}}" target="_blank" class="bug-url">Launch bug</a>
+    <a href="{{feature.bug_url}}" target="_blank" hidden?="{{!feature.bug_url}}">Launch bug</a>
     <span><label>{{feature.impl_status_chrome}}</label>{{feature.shipped_milestone}}</span>
-    <span><label>Prefixed</label>{{prefixedStr}}</span>
+    <span><label>Prefixed</label>{{feature.prefixed ? 'Yes' : 'No'}}<!-- <i class="icon-{{feature.prefixed ? 'frown' : 'smile'}}"></i> --></span>
     <span class="owner" hidden?="{{!feature.owner.length}}">
       <label>Owner(s)</label><template repeat="{{owner in feature.owner}}">
         {{owner}}
@@ -82,7 +82,7 @@
     },
     ready: function() {
       this.asyncMethod(function() {
-        this.prefixedStr = this.feature.prefixed ? 'Yes' : 'No';
+        //this.prefixedStr = this.feature.prefixed ? 'Yes' : 'No';
      
         this.overallViews = (this.feature.ff_views.value +
                              this.feature.ie_views.value +

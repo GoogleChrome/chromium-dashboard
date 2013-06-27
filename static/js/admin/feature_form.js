@@ -52,19 +52,20 @@ function toggleViewLink(view) {
   var link = document.getElementById(view.id + '_link');
   if (link) {
     link.disabled = parseInt(view.value) == NO_PUBLIC_SIGNALS;
-    link.required = !link.disabled;
+    //link.required = !link.disabled;
     link.parentElement.parentElement.hidden = link.disabled;
   }
 }
 
 document.addEventListener('DOMContentLoaded', function(e) {
   // Get around Django rendering input type="text" fields for URLs.
-  var inputs = document.querySelectorAll('input[name$="_link"]');
+  var inputs = document.querySelectorAll('[name$="_url"], [name$="_link"]');
   [].forEach.call(inputs, function(input) {
     input.type = 'url';
+    input.placeholder = 'http://';
   });
 
-  var owner = document.querySelector('input[name="owner"]');
+  var owner = document.querySelector('[name="owner"]');
   owner.type = 'email';
   owner.multiple = true;
 
