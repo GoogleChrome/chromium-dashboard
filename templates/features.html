@@ -55,10 +55,12 @@
 
 var chromedashApp = document.querySelector('chromedash-featurelist');
 document.addEventListener('WebComponentsReady', function(e) {
+
   chromedashApp.features = {{features|safe}}; // Filled from server.
 
   var search = document.querySelector('.search [type="search"]');
   search.addEventListener('keyup', function(e) {
+    e.stopPropagation();
     chromedashApp.filter(e.target.value);
   });
   // Clear input when user clicks the 'x' button.
