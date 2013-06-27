@@ -226,7 +226,8 @@ class FeatureHandler(common.ContentHandler):
     ie_views_link = self.__FullQualifyLink('ie_views_link')
 
     owners = self.request.get('owner') or []
-    owners = [db.Email(x.strip()) for x in owners.split(',')]
+    if owners:
+      owners = [db.Email(x.strip()) for x in owners.split(',')]
 
     # Update an existing feature.
     if feature_id: # /admin/edit/1234

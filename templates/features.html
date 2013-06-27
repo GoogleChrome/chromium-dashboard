@@ -55,17 +55,30 @@
 var chromedashApp = document.querySelector('chromedash-featurelist');
 document.addEventListener('WebComponentsReady', function(e) {
   chromedashApp.features = {{features|safe}}; // Filled from server.
-});
 
-var search = document.querySelector('.search [type="search"]');
-search.addEventListener('keyup', function(e) {
-  chromedashApp.filter(e);
-});
-// Clear input when user clicks the 'x' button.
-search.addEventListener('click', function(e) {
-  if (!e.target.value) {
-    chromedashApp.filter(e);
-  }
+  var search = document.querySelector('.search [type="search"]');
+  search.addEventListener('keyup', function(e) {
+    chromedashApp.filter(e.target.value);
+  });
+  // Clear input when user clicks the 'x' button.
+  search.addEventListener('click', function(e) {
+    if (!e.target.value) {
+      chromedashApp.filter();
+    }
+  });
+
+  var chromeMetadata = document.querySelector('chromedash-metadata');
+  chromeMetadata.addEventListener('filter-on-version', function(e) {
+    search.value = e.detail.version;
+    chromedashApp.filter(e.detail.version);
+  });
+
+  document.body.addEventListener('keyup', function(e) {
+    if (e.target == document.body && e.keyCode == 27) { // ESC
+      chromedashApp.filter();
+      search.value = '';
+    }
+  });
 });
 
 })();

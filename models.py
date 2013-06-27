@@ -111,7 +111,7 @@ class Feature(DictModel):
   impl_status_chrome = db.IntegerProperty(required=True)
   shipped_milestone = db.StringProperty()
 
-  owner = db.ListProperty(db.Email, required=True)
+  owner = db.ListProperty(db.Email)
   footprint = db.IntegerProperty()
   visibility = db.IntegerProperty(required=True)
 
@@ -319,7 +319,7 @@ class FeatureForm(forms.Form):
       widget=forms.Textarea(attrs={'cols': 50, 'placeholder': 'Summary'}))
 
   owner = PlaceholderCharField(
-      required=True, placeholder='Owner(s) email',
+      required=False, placeholder='Owner(s) email',
       help_text='Comma separated full emails address (@chromium.org preferred).')
   
   category = forms.ChoiceField(required=True,

@@ -9,8 +9,9 @@
 ul {
   & > li {
     $small-font-size: 75%;
-
+    cursor: pointer;
     padding: 5px 0;
+
     &:first-of-type {
       font-size: $small-font-size;
       font-size: italic;

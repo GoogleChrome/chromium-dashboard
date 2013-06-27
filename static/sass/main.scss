@@ -57,6 +57,10 @@ header {
   margin: 15px 0 0 0;
   @include user-select;
 
+  a {
+    color: currentcolor;
+  }
+
   aside {
     //@include display-box; //@include display-flex;
     //@include align-items(center);
@@ -86,11 +90,6 @@ header {
 
     h1 {
       line-height: 1;
-      //white-space: nowrap;
-      //width: -webkit-min-content;
-      a {
-        color: currentcolor;
-      }
     }
     img {
       height: 45px;
@@ -118,9 +117,6 @@ header {
       border-right: 1px solid $bar-border-color;
       //padding-left: 3em;
 
-      &:hover {
-        color: $chromium-color-center;
-      }
       &:active {
         position: relative;
         top: 1px;

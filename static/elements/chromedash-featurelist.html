@@ -24,18 +24,19 @@
     featuresChanged: function() {
       this.filter();
     },
-    filter: function(e) {
+    filter: function(val) {
       // Clear filter if there's no search or if called directly.
-      if (!e || (e && !e.target.value.length)) {
+      if (!val) {
         this.filtered = this.features;
         return;
       }
 
-      var regex = new RegExp(e.target.value, 'ig');
+      var regex = new RegExp(val, 'ig');
       this.filtered = this.features.filter(function(feature, idx, array) {
         return regex.test(feature.name) || regex.test(feature.category) ||
                regex.test(feature.summary) ||
-               regex.test(feature.shipped_milestone);
+               regex.test(feature.shipped_milestone) ||
+               regex.test(feature.impl_status_chrome);
       });
     }
   });
