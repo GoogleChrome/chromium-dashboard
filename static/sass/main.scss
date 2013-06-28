@@ -10,6 +10,10 @@ body {
 	font: 14px "Open Sans", Arial, sans-serif;
   background-color: $light-grey;
   //background: url(../img/bg.png);
+
+  // Prevent Polymer from handling FOUC for us.
+  opacity: 1.0 !important;
+  transition: !important;
 }
 
 h1, h2, h3, h4 {
@@ -307,5 +311,21 @@ footer {
 
   footer {
     padding: 0.35em;
+  }
+}
+
+// For browsers that don't support :unresolved, need a way to turn this off.
+// Code applies .resolved when "WebComponentsReady".
+:unresolved:not(.resolved) {
+  border: 1px dashed #ccc;
+  display: block;
+  background: rgba(255,255,255,0.5);
+
+  &:after {
+    font-size: smaller;
+    content: 'loading...';
+    display: block;
+    text-align: center;
+    padding: 15px;
   }
 }
