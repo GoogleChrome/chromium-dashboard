@@ -161,7 +161,7 @@ footer {
   //@include box-align(center);
   @include display-flex;
   @include align-items(center);
-  margin: $content-padding $content-padding 0 $content-padding;
+  margin: $content-padding $content-padding 0 $content-padding + 5;
   //border-bottom: 1px solid $bar-border-color;
 
   div {
@@ -320,12 +320,18 @@ footer {
   border: 1px dashed #ccc;
   display: block;
   background: rgba(255,255,255,0.5);
+  border-radius: $default-border-radius;
+  @include display-flex;
+  @include justify-content(center);
 
   &:after {
-    font-size: smaller;
+    font-size: 12px;
+    font-weight: normal;
     content: 'loading...';
-    display: block;
-    text-align: center;
-    padding: 15px;
+    color: #ccc;
+    @include display-flex;
+    @include justify-content(center);
+    @include align-items(center);
+    padding: 25px;
   }
 }
