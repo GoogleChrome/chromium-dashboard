@@ -23,3 +23,7 @@ DEBUG = not PROD
 TEMPLATE_DEBUG = DEBUG
 
 APP_TITLE = 'Chromium Dashboard'
+
+APP_VERSION = os.environ['CURRENT_VERSION_ID'].split('.')[0]
+MEMCACHE_KEY_PREFIX = APP_VERSION
+
