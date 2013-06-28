@@ -40,10 +40,7 @@ class UserHandler(common.ContentHandler):
 
     users = models.AppUser.all().fetch(None) # TODO(ericbidelman): memcache this.
 
-    user_list = []
-    for user in users:
-     u = models.AppUser.format_for_template(user)
-     user_list.append(u)
+    user_list = [user.format_for_template() for user in users]
 
     template_data = {
       'users': json.dumps(user_list)
@@ -66,7 +63,7 @@ class UserHandler(common.ContentHandler):
       user.put()
 
     self.response.headers['Content-Type'] = 'application/json'
-    self.response.write(json.dumps(models.AppUser.format_for_template(user)))
+    self.response.write(json.dumps(user.format_for_template()))
 
   def _delete(self, user_id):
     if user_id:

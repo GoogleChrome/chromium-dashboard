@@ -1,4 +1,5 @@
 import datetime
+import logging
 import time
 
 from google.appengine.api import memcache
@@ -9,6 +10,7 @@ from google.appengine.ext import db
 #from django.forms import ModelForm
 from django import forms
 
+import settings
 
 SIMPLE_TYPES = (int, long, float, bool, dict, basestring, list)
 
@@ -17,7 +19,6 @@ class DictModel(db.Model):
   # def to_dict(self):
   #   return dict([(p, unicode(getattr(self, p))) for p in self.properties()])
 
-  @staticmethod
   def format_for_template(self):
     return self.to_dict()
 
@@ -69,7 +70,8 @@ class StableInstance(DictModel):
 class Feature(DictModel):
   """Container for a feature."""
 
-  @staticmethod
+  MEMCACHE_KEY = '%s|features' % (settings.MEMCACHE_KEY_PREFIX)
+
   def format_for_template(self):
     d = self.to_dict()
     d['id'] = self.key().id()
@@ -91,9 +93,23 @@ class Feature(DictModel):
 
   def format_for_edit(self):
     d = self.to_dict()
-    d['id'] = self.key().id
+    #d['id'] = self.key().id
     d['owner'] = ', '.join(self.owner)
     return d
+
+  @staticmethod
+  def get_all(update_cache=False):
+    feature_list = memcache.get(Feature.MEMCACHE_KEY)
+
+    if feature_list is None or update_cache:
+      # All matching results.
+      features = Feature.all().order('-updated').fetch(10)
+
+      feature_list = [f.format_for_template() for f in features]
+
+      memcache.set(Feature.MEMCACHE_KEY, feature_list)
+
+    return feature_list
 
   # Metadata.
   created = db.DateTimeProperty(auto_now_add=True)
@@ -420,7 +436,6 @@ class AppUser(DictModel):
   created = db.DateTimeProperty(auto_now_add=True)
   updated = db.DateTimeProperty(auto_now=True)
 
-  @staticmethod
   def format_for_template(self):
     d = self.to_dict()
     d['id'] = self.key().id()

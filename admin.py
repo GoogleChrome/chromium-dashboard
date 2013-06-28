@@ -28,6 +28,7 @@ import webapp2
 
 # Appengine imports.
 from google.appengine.api import files
+from google.appengine.api import memcache
 from google.appengine.api import urlfetch
 from google.appengine.api import users
 from google.appengine.ext import blobstore
@@ -205,7 +206,7 @@ class FeatureHandler(common.ContentHandler):
       if f is None or (f and 'edit' not in path):
         return self.redirect('/admin/features/new')
 
-      feature = models.Feature.format_for_edit(f)
+      feature = f.format_for_edit()
     elif 'edit' in path:
       return self.redirect(self.request.path.replace('edit', 'new'))
 
@@ -280,6 +281,8 @@ class FeatureHandler(common.ContentHandler):
           )
 
     feature.put()
+
+    memcache.delete(models.Feature.MEMCACHE_KEY)
 
     return self.redirect('/')
 

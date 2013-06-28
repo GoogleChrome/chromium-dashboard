@@ -20,8 +20,7 @@ import logging
 import os
 import webapp2
 
-from google.appengine.api import memcache
-from google.appengine.api import urlfetch
+#from google.appengine.api import urlfetch
 from google.appengine.api import users
 
 import common
@@ -45,31 +44,8 @@ class MainHandler(common.ContentHandler):
     template_data = {}
 
     if path == 'features':
-      # TODO(ericbidelman): memcache the crap out of this.
-      # All matching results.
-
-      update_cache = False # TODO: use for real.
-
-      feature_list = memcache.get('%s|features' % (settings.MEMCACHE_KEY_PREFIX))
-      if feature_list is None or update_cache:
-        # All matching results.
-        features = models.Feature.all().fetch(None)
-
-        feature_list = []
-        for f in features:
-          d = models.Feature.format_for_template(f)
-          feature_list.append(d)
-
-        memcache.set('%s|features' % (settings.MEMCACHE_KEY_PREFIX), feature_list)
-
+      feature_list = models.Feature.get_all() # Memcached
       template_data['features'] = json.dumps(feature_list)
-
-      # result = urlfetch.fetch('http://omahaproxy.appspot.com/all.json')
-      # if result.status_code == 200:
-      #   template_data['chrome_version'] = json.dumps(result.content)
-      # else:
-      #   template_data['chrome_version'] = None
-
     elif path == 'metrics/featurelevel':
       template_data['CSS_PROPERTY_BUCKETS'] = uma.CSS_PROPERTY_BUCKETS
 
