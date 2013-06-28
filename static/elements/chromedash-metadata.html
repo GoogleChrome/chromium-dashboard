@@ -14,28 +14,16 @@
   Polymer.register(this, {
     applyAuthorStyles: true,
     ready: function() {
+      // TODO(ericbidelman): Share this data across instances.
       this.addEventListener('polymer-response', function(e) {
         var windowsVersions = e.detail.response[0];
 
         this.channels = {};
 
         for (var i = 0, el; el = windowsVersions.versions[i]; ++i) {
-          switch (el.channel) {
-            case 'stable':
-              this.channels.stable = parseInt(el.version);
-              break;
-            case 'beta':
-              this.channels.beta = parseInt(el.version);
-              break;
-            case 'dev':
-              this.channels.dev = parseInt(el.version);
-              break;
-            case 'canary':
-              this.channels.canary = parseInt(el.version);
-              break;
-            default:
-              break;
-          }
+          // Include previous version if current is foobar'd.
+          this.channels[el.channel] = parseInt(el.version) ||
+                                      parseInt(el.prev_version);
         }
 
         this.versions = ['upcoming', this.channels.canary, this.channels.dev,
