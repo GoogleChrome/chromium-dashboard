@@ -73,4 +73,10 @@ document.addEventListener('DOMContentLoaded', function(e) {
   [].forEach.call(document.querySelectorAll('select[name$="_views"]'), toggleViewLink);
 });
 
+document.body.addEventListener('ajaxdeleted', function(e) {
+  if (e.detail.xhr.status == 200) {
+    location.href = '/features';
+  }
+});
+
 })();

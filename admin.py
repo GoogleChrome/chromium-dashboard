@@ -192,8 +192,9 @@ class FeatureHandler(common.ContentHandler):
     if path[-1] == '/':
       return self.redirect(self.request.path.rstrip('/'))
 
-    #TODO(ericbidelman): This creates a additional call to
-    # _is_user_whitelisted() resulting in another db query.
+    # TODO(ericbidelman): This creates a additional call to
+    # _is_user_whitelisted() (also called in common.py), resulting in another
+    # db query.
     if not self._is_user_whitelisted(users.get_current_user()):
       #TODO(ericbidelman): Use render(status=401) instead.
       #self.render(data={}, template_path=os.path.join(path + '.html'), status=401)
@@ -208,10 +209,12 @@ class FeatureHandler(common.ContentHandler):
 
       feature = f.format_for_edit()
     elif 'edit' in path:
+      # /features/edit -> /features/new
       return self.redirect(self.request.path.replace('edit', 'new'))
 
     template_data = {
       'feature_form': models.FeatureForm(feature),
+      'id': feature_id
     }
 
     self._add_common_template_values(template_data)
@@ -230,32 +233,33 @@ class FeatureHandler(common.ContentHandler):
     if owners:
       owners = [db.Email(x.strip()) for x in owners.split(',')]
 
-    # Update an existing feature.
+    # Update/delete existing feature.
     if feature_id: # /admin/edit/1234
       feature = models.Feature.get_by_id(long(feature_id))
       if feature is None:
         return self.redirect(self.request.path)
 
-      feature.category = int(self.request.get('category'))
-      feature.name = self.request.get('name')
-      feature.summary = self.request.get('summary')
-      feature.owner = owners
-      feature.bug_url = bug_url
-      feature.impl_status_chrome = int(self.request.get('impl_status_chrome'))
-      feature.shipped_milestone = self.request.get('shipped_milestone')
-      feature.footprint = int(self.request.get('footprint'))
-      feature.visibility = int(self.request.get('visibility'))
-      feature.safari_views = int(self.request.get('safari_views'))
-      feature.safari_views_link = safari_views_link
-      feature.ff_views = int(self.request.get('ff_views'))
-      feature.ff_views_link = ff_views_link
-      feature.ie_views = int(self.request.get('ie_views'))
-      feature.ie_views_link = ie_views_link
-      feature.prefixed = self.request.get('prefixed') == 'on'
-      feature.spec_link = spec_link
-      feature.standardization = int(self.request.get('standardization'))
-      feature.comments = self.request.get('comments')
-      feature.web_dev_views = int(self.request.get('web_dev_views'))
+      if not 'delete' in path:
+        feature.category = int(self.request.get('category'))
+        feature.name = self.request.get('name')
+        feature.summary = self.request.get('summary')
+        feature.owner = owners
+        feature.bug_url = bug_url
+        feature.impl_status_chrome = int(self.request.get('impl_status_chrome'))
+        feature.shipped_milestone = self.request.get('shipped_milestone')
+        feature.footprint = int(self.request.get('footprint'))
+        feature.visibility = int(self.request.get('visibility'))
+        feature.safari_views = int(self.request.get('safari_views'))
+        feature.safari_views_link = safari_views_link
+        feature.ff_views = int(self.request.get('ff_views'))
+        feature.ff_views_link = ff_views_link
+        feature.ie_views = int(self.request.get('ie_views'))
+        feature.ie_views_link = ie_views_link
+        feature.prefixed = self.request.get('prefixed') == 'on'
+        feature.spec_link = spec_link
+        feature.standardization = int(self.request.get('standardization'))
+        feature.comments = self.request.get('comments')
+        feature.web_dev_views = int(self.request.get('web_dev_views'))
     else:
       feature = models.Feature(
           category=int(self.request.get('category')),
@@ -280,11 +284,20 @@ class FeatureHandler(common.ContentHandler):
           web_dev_views=int(self.request.get('web_dev_views')),
           )
 
-    feature.put()
-
     memcache.delete(models.Feature.MEMCACHE_KEY)
 
-    return self.redirect('/')
+    # TODO(ericbidelman): Prevent memcache race condition where key isn't
+    # deleted and we get stale data on the redirect.
+    #time.sleep(1)
+
+    if 'delete' in path:
+      feature.delete()
+      return # Bomb out early on delete. Don't want the extra redirect.
+    else: 
+      feature.put()
+
+    return self.redirect('/features')
+
 
 app = webapp2.WSGIApplication([
   ('/cron/metrics', YesterdayHandler),

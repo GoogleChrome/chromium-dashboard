@@ -1,0 +1,25 @@
+<link rel="import" href="polymer-elements/polymer-ajax/polymer-xhr.html">
+
+<element name="delete-link" extends="a" on-click="onClick">
+<template>
+  <content></content>
+</template>
+<script>
+  Polymer.register(this, {
+    applyAuthorStyles: true,
+    onClick: function(e, details, sender) {
+      e.preventDefault();
+
+      var msg = this.getAttribute('message') || 'Remove?';
+      if (!confirm(msg)) {
+        return;
+      }
+    
+      var xhr = document.createElement('polymer-xhr');
+      xhr.request({url: sender.href, method: 'POST', callback: function(response, xhr) {
+        this.fire('ajaxdeleted', {response: response, xhr: xhr});
+      }.bind(this)});
+    }
+  });
+</script>
+</element>

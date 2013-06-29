@@ -97,13 +97,13 @@ class Feature(DictModel):
     d['owner'] = ', '.join(self.owner)
     return d
 
-  @staticmethod
+  @classmethod
   def get_all(update_cache=False):
     feature_list = memcache.get(Feature.MEMCACHE_KEY)
 
     if feature_list is None or update_cache:
       # All matching results.
-      features = Feature.all().order('-updated').fetch(10)
+      features = Feature.all().order('-updated').fetch(None)
 
       feature_list = [f.format_for_template() for f in features]
 
