@@ -98,14 +98,26 @@ class Feature(DictModel):
     return d
 
   @classmethod
-  def get_all(self, limit=None, order='-updated', update_cache=False):
+  def get_all(self, limit=None, order='-updated', filterby=None,
+              update_cache=False):
     KEY = '%s|%s|%s' % (Feature.DEFAULT_MEMCACHE_KEY, order, limit)
+
+    # TODO(ericbidelman): Support more than one filter.
+    if filterby is not None:
+      s = ('%s%s' % (filterby[0], filterby[1])).replace(' ', '')
+      KEY += '|%s' % s
 
     feature_list = memcache.get(KEY)
 
     if feature_list is None or update_cache:
       # All matching results.
-      features = Feature.all().order(order).fetch(limit)
+      query = Feature.all().order(order)
+
+      # TODO(ericbidelman): Support more than one filter.
+      if filterby:
+        query.filter(filterby[0], filterby[1])
+
+      features = query.fetch(limit)
 
       feature_list = [f.format_for_template() for f in features]
 

@@ -46,8 +46,20 @@ class MainHandler(common.ContentHandler):
     if path.startswith('features'):
       # Request was for an Atom feed.
       if path.endswith('.xml'):
-        feature_list = models.Feature.get_all(
-          limit=settings.RSS_FEED_LIMIT) # Memcached
+        filterby = None
+
+        category = self.request.get('category', None)
+        if category is not None:
+          for k,v in models.FEATURE_CATEGORIES.iteritems():
+            normalized = v.lower().replace(' ', '').replace('/', '')
+            if category == normalized:
+              filterby = ('category =', k)
+              break
+
+        feature_list = models.Feature.get_all( # Memcached
+            limit=settings.RSS_FEED_LIMIT,
+            filterby=filterby)
+
         return self.render_atom_feed('Features', feature_list)
       else:
         feature_list = models.Feature.get_all() # Memcached
