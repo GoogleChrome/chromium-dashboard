@@ -43,9 +43,16 @@ class MainHandler(common.ContentHandler):
 
     template_data = {}
 
-    if path == 'features':
-      feature_list = models.Feature.get_all() # Memcached
-      template_data['features'] = json.dumps(feature_list)
+    if path.startswith('features'):
+      # Request was for an Atom feed.
+      if path.endswith('.xml'):
+        feature_list = models.Feature.get_all(
+          limit=settings.RSS_FEED_LIMIT) # Memcached
+        return self.render_atom_feed('Features', feature_list)
+      else:
+        feature_list = models.Feature.get_all() # Memcached
+        template_data['features'] = json.dumps(feature_list)
+
     elif path == 'metrics/featurelevel':
       template_data['CSS_PROPERTY_BUCKETS'] = uma.CSS_PROPERTY_BUCKETS
 

@@ -27,3 +27,4 @@ APP_TITLE = 'Chromium Dashboard'
 APP_VERSION = os.environ['CURRENT_VERSION_ID'].split('.')[0]
 MEMCACHE_KEY_PREFIX = APP_VERSION # For memcache busting on new version
 
+RSS_FEED_LIMIT = 15

@@ -284,7 +284,8 @@ class FeatureHandler(common.ContentHandler):
           web_dev_views=int(self.request.get('web_dev_views')),
           )
 
-    memcache.delete(models.Feature.MEMCACHE_KEY)
+    # TODO(ericbidelman): enumerate and remove only the relevant keys.
+    memcache.flush_all()
 
     # TODO(ericbidelman): Prevent memcache race condition where key isn't
     # deleted and we get stale data on the redirect.

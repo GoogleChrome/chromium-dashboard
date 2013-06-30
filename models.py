@@ -70,7 +70,7 @@ class StableInstance(DictModel):
 class Feature(DictModel):
   """Container for a feature."""
 
-  MEMCACHE_KEY = '%s|features' % (settings.MEMCACHE_KEY_PREFIX)
+  DEFAULT_MEMCACHE_KEY = '%s|features' % (settings.MEMCACHE_KEY_PREFIX)
 
   def format_for_template(self):
     d = self.to_dict()
@@ -98,16 +98,18 @@ class Feature(DictModel):
     return d
 
   @classmethod
-  def get_all(update_cache=False):
-    feature_list = memcache.get(Feature.MEMCACHE_KEY)
+  def get_all(self, limit=None, order='-updated', update_cache=False):
+    KEY = '%s|%s|%s' % (Feature.DEFAULT_MEMCACHE_KEY, order, limit)
+
+    feature_list = memcache.get(KEY)
 
     if feature_list is None or update_cache:
       # All matching results.
-      features = Feature.all().order('-updated').fetch(None)
+      features = Feature.all().order(order).fetch(limit)
 
       feature_list = [f.format_for_template() for f in features]
 
-      memcache.set(Feature.MEMCACHE_KEY, feature_list)
+      memcache.set(KEY, feature_list)
 
     return feature_list
 

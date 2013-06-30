@@ -16,6 +16,7 @@
 __author__ = 'ericbidelman@chromium.org (Eric Bidelman)'
 
 
+import datetime
 import json
 import logging
 import webapp2
@@ -24,6 +25,7 @@ import webapp2
 from google.appengine.api import users
 
 from django.template.loader import render_to_string
+from django.utils import feedgenerator
 
 import models
 import settings
@@ -109,6 +111,30 @@ class ContentHandler(BaseHandler):
       self.response.out.write(render_to_string(template_path, data))
     except Exception:
       handle_404(self.request, self.response, Exception)
+
+  def render_atom_feed(self, title, data):
+    prefix = '%s://%s%s' % (self.request.scheme, self.request.host,
+                             self.request.path.replace('.xml', ''))
+
+    feed = feedgenerator.Atom1Feed(
+        title=unicode('%s - %s' % (settings.APP_TITLE, title)),
+        link=prefix,
+        description=u'New features exposed to web developers',
+        language=u'en'
+        )
+    for f in data:
+      pubdate = datetime.datetime.strptime(str(f['updated'][:19]),
+                                           '%Y-%m-%d  %H:%M:%S')
+      feed.add_item(
+          title=unicode(f['name']),
+          link=f.get('spec_link', '') or '',
+          description=f.get('summary', ''),
+          pubdate=pubdate,
+          author_name=unicode(settings.APP_TITLE),
+          categories=[f['category']]
+          )
+    self.response.headers.add_header('Content-Type', 'application/atom+xml')
+    self.response.out.write(feed.writeString('utf-8'))
 
 
 def handle_401(request, response, exception):

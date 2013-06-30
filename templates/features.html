@@ -5,6 +5,10 @@
   <link rel="import" href="/static/elements/chromedash-metadata.html">
 {% endblock %}
 
+{% block css %}
+<link rel="stylesheet" type="text/css" href="/static/css/features/features.css">
+{% endblock %}
+
 {% block subheader %}
 <div id="subheader">
   <div>
@@ -14,7 +18,7 @@
     <h2>Features</h2>
   </div>
   <div class="search">
-    <input type="search" placeholder="Search">
+    <input type="search" placeholder="Search" disabled>
   </div>
   <div>
     {% if user.is_whitelisted %}
@@ -49,6 +53,9 @@ document.addEventListener('WebComponentsReady', function(e) {
   chromedashApp.features = {{features|safe}}; // Filled from server.
 
   var search = document.querySelector('.search [type="search"]');
+
+  search.disabled = false;
+
   search.addEventListener('keyup', function(e) {
     e.stopPropagation();
     chromedashApp.filter(e.target.value);

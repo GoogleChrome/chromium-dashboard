@@ -197,6 +197,8 @@ footer {
   margin: $content-padding / 2 $content-padding;
   overflow: auto;
 
+  position: relative;
+
  // @include box-flex(1); // TODO: remove. Needed because Safari and FF don't have new flexbox.
 }
 
@@ -314,24 +316,24 @@ footer {
   }
 }
 
-// For browsers that don't support :unresolved, need a way to turn this off.
-// Code applies .resolved when "WebComponentsReady".
-:unresolved:not(.resolved) {
-  border: 1px dashed #ccc;
-  display: block;
-  background: rgba(255,255,255,0.5);
-  border-radius: $default-border-radius;
-  @include display-flex;
-  @include justify-content(center);
+// // For browsers that don't support :unresolved, need a way to turn this off.
+// // Code applies .resolved when "WebComponentsReady".
+// :unresolved:not(.resolved) {
+//   border: 1px dashed #ccc;
+//   display: block;
+//   background: rgba(255,255,255,0.5);
+//   border-radius: $default-border-radius;
+//   @include display-flex;
+//   @include justify-content(center);
 
-  &:after {
-    font-size: 12px;
-    font-weight: normal;
-    content: 'loading...';
-    color: #ccc;
-    @include display-flex;
-    @include justify-content(center);
-    @include align-items(center);
-    padding: 15px;
-  }
-}
+//   &:after {
+//     font-size: 12px;
+//     font-weight: normal;
+//     content: 'loading...';
+//     color: #ccc;
+//     @include display-flex;
+//     @include justify-content(center);
+//     @include align-items(center);
+//     padding: 15px;
+//   }
+// }
