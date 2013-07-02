@@ -1,0 +1,41 @@
+@import "vars";
+
+#content {
+  @include flex-direction(column);
+  counter-reset: h3;
+
+  > section {
+    max-width: 575px;
+    @include flex(1 0 auto);
+    margin-bottom: 15px;
+  }
+
+  h3 {
+    margin-bottom: 10px;
+    &:before {
+      counter-increment: h3;
+      content: counter(h3) ".";
+      margin-right: 5px;
+    }
+  }
+}
+
+#email-subject {
+  @include display-flex;
+  @include align-items(center);
+  input {
+    @include flex(1 1 0);
+  }
+}
+
+#email-body {
+  //white-space: pre-wrap;
+  label {
+    display: inline-block;
+    margin-top: 10px;
+  }
+  summary {
+    font-style: italic;
+    //display: inline;
+  }
+}

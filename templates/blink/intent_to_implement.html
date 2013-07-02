@@ -1,0 +1,60 @@
+<div id="email-subject">
+  <span>Subject:</span><input type="text" value="Intent to Implement: {{feature.name}}">
+</div>
+
+<div id="email-body">
+<label>Primary eng/PM emails</label>
+<p>
+  {% if not feature.owner %}
+    None
+  {% endif %}
+  {% for owner in feature.owner %}
+    <a href="mailto:{{owner}}"></a>
+    {% if forloop.last %}
+      {{owner}}
+    {% else %}
+      {{owner}},
+    {% endif %}
+    </a>
+  {% endfor %}
+</p>
+
+<label>Spec</label>
+</p>
+{% if feature.spec_link %}
+  <a href="{{feature.spec_link}}">{{feature.spec_link}}</a>
+{% else %}
+  None
+{% endif %}
+</p>
+
+Summary
+  {{feature.summary}}
+
+Motivation
+  TODO
+
+Compatibility Risk
+  Firefox: {{feature.ff_views.text}}
+  Internet Explorer: {{feature.ie_views.text}}
+  Safari: {{feature.safari_views.text}}
+
+Describe the degree of compatibility risk you believe this change poses:
+  <summary>If you don't have a launch tracking bug or row in the feature dashboard, include in this email links to relevant specs, standards discussions, or documentation about support for the feature in other browsers.</summary>
+
+Ongoing technical constraints
+  <summary>Do you anticipate adding any ongoing technical constraints to the codebase while implementing this feature? We prefer to avoid features which require or assume a specific architecture. For most features, the answer here is "None."</summary>
+
+Will this feature be supported on all five Blink platforms (Windows, Mac, Linux, Chrome OS and Android)? Yes or no.
+  <summary>If no, explain why certain platforms will not be included in your implementation.</summary>
+
+OWP launch tracking bug
+  {% if feature.spec_link %}<a href="{{feature.bug_url}}">{{feature.bug_url}}</a>{% else %}None{% endif %}
+
+Entry in {{APP_TITLE}}
+  <a href="{{edit_url}}">{{edit_url}}</a>
+
+Requesting approval to ship?
+  <summary>"No" - you will be implementing your feature behind a runtime flag and sending an Intent to Ship email when you're ready to enable by default.
+"Yes" - your change is small and you'd like to ship enabled-by-default immediately. Per the launch process for new features, you'll need LGTMs from 3 API OWNERS before shipping. If "yes," please change the title of the email to “Intent to Implement and Ship: ...".</summary>
+</div>

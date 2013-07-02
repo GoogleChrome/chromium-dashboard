@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block css %}
+<link rel="stylesheet" type="text/css" href="/static/css/forms.css">
+<link rel="stylesheet" type="text/css" href="/static/css/features/launch.css">
+{% endblock %}
+
+{% block subheader %}
+<div id="subheader">
+  <div>
+    <h2>Next steps for the Blink launch process</h2>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block content %}
+
+{% if launch %}
+<section>
+<h3>Click through this link to file a launch-tracking bug</h3>
+  {% include "blink/launch_bug.html" %}
+</section>
+{% endif %}
+
+{% if intent %}
+<section>
+<h3>Copy and send this text for your "Intent to Implement" email</h3>
+{% include "blink/intent_to_implement.html" %}
+</section>
+{% endif %}
+
+{% endblock %}
+
+{% block js %}
+{% endblock %}

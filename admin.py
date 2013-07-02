@@ -178,6 +178,14 @@ class YesterdayHandler(blobstore_handlers.BlobstoreDownloadHandler):
 
 class FeatureHandler(common.ContentHandler):
 
+  DEFAULT_URL = '/features'
+  ADD_NEW_URL = '/admin/features/new'
+  EDIT_URL = '/admin/features/edit'
+  LAUNCH_URL = '/admin/features/launch'
+
+  INTENT_PARAM = 'intent'
+  LAUNCH_PARAM = 'launch'
+
   def __FullQualifyLink(self, param_name):
     link = self.request.get(param_name) or None
     if link:
@@ -201,21 +209,28 @@ class FeatureHandler(common.ContentHandler):
       common.handle_401(self.request, self.response, Exception)
       return
 
+    if not feature_id:
+      # /features/edit|launch -> /features/new
+      return self.redirect(self.ADD_NEW_URL)
+
     feature = None
-    if feature_id: # /admin/edit/1234
-      f = models.Feature.get_by_id(long(feature_id))
-      if f is None or (f and 'edit' not in path):
-        return self.redirect('/admin/features/new')
 
-      feature = f.format_for_edit()
-    elif 'edit' in path:
-      # /features/edit -> /features/new
-      return self.redirect(self.request.path.replace('edit', 'new'))
+    f = models.Feature.get_by_id(long(feature_id))
+    if f is None:
+      return self.redirect(self.ADD_NEW_URL)
 
+    # Provide new or populated form to template.
     template_data = {
-      'feature_form': models.FeatureForm(feature),
-      'id': feature_id
-    }
+        'feature': f.format_for_template(),
+        'feature_form': models.FeatureForm(f.format_for_edit()),
+        'edit_url': '%s://%s%s/%s' % (self.request.scheme, self.request.host,
+                                   self.EDIT_URL, feature_id)
+        }
+
+    if self.LAUNCH_PARAM in self.request.params:
+      template_data[self.LAUNCH_PARAM] = True
+    if self.INTENT_PARAM in self.request.params:
+      template_data[self.INTENT_PARAM] = True
 
     self._add_common_template_values(template_data)
 
@@ -232,6 +247,8 @@ class FeatureHandler(common.ContentHandler):
     owners = self.request.get('owner') or []
     if owners:
       owners = [db.Email(x.strip()) for x in owners.split(',')]
+
+    redirect_url = self.DEFAULT_URL
 
     # Update/delete existing feature.
     if feature_id: # /admin/edit/1234
@@ -287,17 +304,23 @@ class FeatureHandler(common.ContentHandler):
     # TODO(ericbidelman): enumerate and remove only the relevant keys.
     memcache.flush_all()
 
-    # TODO(ericbidelman): Prevent memcache race condition where key isn't
-    # deleted and we get stale data on the redirect.
-    #time.sleep(1)
-
     if 'delete' in path:
       feature.delete()
-      return # Bomb out early on delete. Don't want the extra redirect.
+      return # Bomb out early for AJAX delete. No need for extra redirect below.
     else: 
-      feature.put()
+      key = feature.put()
 
-    return self.redirect('/features')
+      params = []
+      if self.request.get('create_launch_bug') == 'on':
+        params.append(self.LAUNCH_PARAM)
+      if self.request.get('intent_to_implement') == 'on':
+        params.append(self.INTENT_PARAM)
+
+      if len(params):
+        redirect_url = '%s/%s?%s' % (self.LAUNCH_URL, key.id(),
+                                     '&'.join(params))
+
+    return self.redirect(redirect_url)
 
 
 app = webapp2.WSGIApplication([
