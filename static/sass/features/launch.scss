@@ -20,19 +20,29 @@
   }
 }
 
-#email-subject {
-  @include display-flex;
-  @include align-items(center);
-  input {
-    @include flex(1 1 0);
-  }
-}
+// #email-subject {
+//   @include display-flex;
+//   @include align-items(center);
+//   input {
+//     @include flex(1 1 0);
+//   }
+// }
 
-#email-body {
+#email {
   //white-space: pre-wrap;
+  .subject {
+    border-bottom: 1px solid $bar-border-color;
+    padding-bottom: 10px;
+    span:last-of-type {
+      font-weight: 600;
+    }
+  }
+  .body {
+    margin-top: 10px;
+  }
   label {
     display: inline-block;
-    margin-top: 10px;
+    margin: 10px 10px 0 0;
   }
   summary {
     font-style: italic;

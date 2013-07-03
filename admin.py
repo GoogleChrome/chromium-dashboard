@@ -209,23 +209,30 @@ class FeatureHandler(common.ContentHandler):
       common.handle_401(self.request, self.response, Exception)
       return
 
-    if not feature_id:
+    if not feature_id and not 'new' in path:
       # /features/edit|launch -> /features/new
+      return self.redirect(self.ADD_NEW_URL)
+    elif feature_id and 'new' in path:
       return self.redirect(self.ADD_NEW_URL)
 
     feature = None
 
-    f = models.Feature.get_by_id(long(feature_id))
-    if f is None:
-      return self.redirect(self.ADD_NEW_URL)
-
-    # Provide new or populated form to template.
     template_data = {
-        'feature': f.format_for_template(),
-        'feature_form': models.FeatureForm(f.format_for_edit()),
-        'edit_url': '%s://%s%s/%s' % (self.request.scheme, self.request.host,
-                                   self.EDIT_URL, feature_id)
+        'feature_form': models.FeatureForm()
         }
+
+    if feature_id:
+      f = models.Feature.get_by_id(long(feature_id))
+      if f is None:
+        return self.redirect(self.ADD_NEW_URL)
+
+      # Provide new or populated form to template.
+      template_data.update({
+          'feature': f.format_for_template(),
+          'feature_form': models.FeatureForm(f.format_for_edit()),
+          'edit_url': '%s://%s%s/%s' % (self.request.scheme, self.request.host,
+                                        self.EDIT_URL, feature_id)
+          })
 
     if self.LAUNCH_PARAM in self.request.params:
       template_data[self.LAUNCH_PARAM] = True

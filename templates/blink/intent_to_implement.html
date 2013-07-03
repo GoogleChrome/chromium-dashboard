@@ -1,8 +1,9 @@
-<div id="email-subject">
-  <span>Subject:</span><input type="text" value="Intent to Implement: {{feature.name}}">
-</div>
 
-<div id="email-body">
+<div id="email">
+<div class="subject">
+  <label>Subject:</label><span>Intent to Implement: {{feature.name}}</span>
+</div>
+<div class="body">
 <label>Primary eng/PM emails</label>
 <p>
   {% if not feature.owner %}
@@ -57,4 +58,6 @@ Entry in {{APP_TITLE}}
 Requesting approval to ship?
   <summary>"No" - you will be implementing your feature behind a runtime flag and sending an Intent to Ship email when you're ready to enable by default.
 "Yes" - your change is small and you'd like to ship enabled-by-default immediately. Per the launch process for new features, you'll need LGTMs from 3 API OWNERS before shipping. If "yes," please change the title of the email to “Intent to Implement and Ship: ...".</summary>
+</div>
+
 </div>
