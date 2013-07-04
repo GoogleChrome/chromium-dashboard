@@ -1,3 +1,5 @@
+@import "compass/css3/images";
+
 @import "vars";
 
 #content {
@@ -5,9 +7,20 @@
   counter-reset: h3;
 
   > section {
-    max-width: 575px;
+    max-width: 600px;
     @include flex(1 0 auto);
     margin-bottom: 15px;
+
+    > div {
+      @include gradient-bar-bg;
+      background: rgba(255,255,255,0.8);
+      border-radius: $default-border-radius;
+      margin-top: 5px;
+    }
+
+    > p {
+      color: #aaa;
+    }
   }
 
   h3 {
@@ -19,33 +32,22 @@
     }
   }
 }
+.subject {
+  font-size: 16px;
+  margin-bottom: 10px;
+}
 
-// #email-subject {
-//   @include display-flex;
-//   @include align-items(center);
-//   input {
-//     @include flex(1 1 0);
-//   }
-// }
+.email {
+  white-space: pre-wrap;
 
-#email {
-  //white-space: pre-wrap;
-  .subject {
-    border-bottom: 1px solid $bar-border-color;
-    padding-bottom: 10px;
-    span:last-of-type {
-      font-weight: 600;
-    }
+  .help {
+    font-style: italic;
+    color: #aaa;
   }
-  .body {
-    margin-top: 10px;
-  }
+
   label {
     display: inline-block;
-    margin: 10px 10px 0 0;
-  }
-  summary {
-    font-style: italic;
-    //display: inline;
+    font-weight: 600;
+    // margin: 10px 10px 0 0;
   }
 }
