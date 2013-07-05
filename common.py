@@ -46,9 +46,12 @@ class BaseHandler(webapp2.RequestHandler):
 
 class JSONHandler(BaseHandler):
 
-  def get(self, data):
+  def get(self, data, formatted=False):
     self.response.headers['Content-Type'] = 'application/json'
-    self.response.write(json.dumps([entity.to_dict() for entity in data]))
+    if formatted:
+      return self.response.write(json.dumps(data))
+    else:
+      return self.response.write(json.dumps([entity.to_dict() for entity in data]))
 
 
 class ContentHandler(BaseHandler):

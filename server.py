@@ -29,7 +29,7 @@ import settings
 import uma
 
 
-class MainHandler(common.ContentHandler):
+class MainHandler(common.ContentHandler, common.JSONHandler):
 
   def get(self, path):
     # Default to features page.
@@ -44,8 +44,10 @@ class MainHandler(common.ContentHandler):
     template_data = {}
 
     if path.startswith('features'):
-      # Request was for an Atom feed.
-      if path.endswith('.xml'):
+      if path.endswith('.json'): # JSON request.
+        feature_list = models.Feature.get_all() # Memcached
+        return common.JSONHandler.get(self, feature_list, formatted=True)
+      elif path.endswith('.xml'): # Atom feed request.
         filterby = None
 
         category = self.request.get('category', None)
