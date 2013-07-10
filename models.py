@@ -442,7 +442,7 @@ class FeatureForm(forms.Form):
 
 
 class AppUser(DictModel):
-  """Describes a user."""
+  """Describes a user for whitelisting."""
 
   #user = db.UserProperty(required=True, verbose_name='Google Account')
   email = db.EmailProperty(required=True)
