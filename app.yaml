@@ -6,6 +6,9 @@ api_version: 1
 
 #default_expiration: "30d"
 
+builtins:
+- remote_api: on
+
 libraries:
 - name: webapp2
   version: "latest"
