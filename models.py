@@ -283,7 +283,7 @@ SUPER_SMALL = 5
 
 VISIBILITY_CHOICES = {
   MAINSTREAM_NEWS: 'Likely in mainstream tech news',
-  WARRANTS_ARTICLE: 'Warrants its own article on a site like html5rocks.com',
+  WARRANTS_ARTICLE: 'Will this feature generate articles on sites like html5rocks.com',
   IN_LARGER_ARTICLE: 'Covered as part of a larger article but not on its own',
   SMALL_NUM_DEVS: 'Only a very small number of web developers will care about',
   SUPER_SMALL: "So small it doesn't need to be covered in this dashboard.",
@@ -380,7 +380,7 @@ class FeatureForm(forms.Form):
                  "use this nomenclature, use the closest equivalent."))
 
   spec_link = forms.URLField(required=False, label='Spec link',
-                             help_text="Prefer most mature spec version.")
+                             help_text="Prefer editor's draft.")
 
   footprint  = forms.ChoiceField(label='Technical footprint',
                                  choices=FOOTPRINT_CHOICES.items(),
