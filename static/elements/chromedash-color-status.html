@@ -1,4 +1,4 @@
-<element name="chromedash-color-status" attributes="value max width height">
+<polymer-element name="chromedash-color-status" attributes="value max width height">
   <template>
     <style>
       span {
@@ -12,7 +12,7 @@
     <span id="status"></span>
   </template>
   <script>
-    Polymer.register(this, {
+    Polymer('chromedash-color-status', {
       max: 7,
       width: 10,
       height: 10,
@@ -35,4 +35,4 @@
       }
     });
   </script>
-  </element>
+  </polymer-element>

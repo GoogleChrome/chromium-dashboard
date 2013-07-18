@@ -1,6 +1,6 @@
 <link rel="import" href="polymer-elements/polymer-ajax/polymer-xhr.html">
 
-<element name="chromedash-userlist" attributes="users action">
+<polymer-element name="chromedash-userlist" attributes="users action">
 <template>
   <link rel="stylesheet" type="text/css" href="../css/elements/chromedash-userlist.css">
   <form id="form" name="user_form" method="post" action="{{action}}" onsubmit="return false;">
@@ -19,7 +19,7 @@
   </ul>
 </template>
 <script>
-Polymer.register(this, {
+Polymer('chromedash-userlist', {
   applyAuthorStyles: true,
   ready: function() {
     this.users = this.users || [];
@@ -91,4 +91,4 @@ Polymer.register(this, {
   }
 });
 </script>
-</element>
+</polymer-element>

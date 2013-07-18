@@ -1,6 +1,6 @@
 <link rel="import" href="chromedash-color-status.html">
 
-<element name="chromedash-feature" extends="li" attributes="feature open">
+<polymer-element name="chromedash-feature" extends="li" attributes="feature open">
 <template>
 <link rel="stylesheet" type="text/css" href="../css/elements/chromedash-feature.css">
 <hgroup on-click="toggleOpen">
@@ -70,7 +70,7 @@
 <content select=".edit"></content>
 </template>
 <script>
-  Polymer.register(this, {
+  Polymer('chromedash-feature', {
     applyAuthorStyles: true,
     overallViews: 0,
     open: false,
@@ -95,5 +95,5 @@
     }
   });
 </script>
-</element>
+</polymer-element>
 

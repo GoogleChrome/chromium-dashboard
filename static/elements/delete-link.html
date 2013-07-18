@@ -1,11 +1,11 @@
 <link rel="import" href="polymer-elements/polymer-ajax/polymer-xhr.html">
 
-<element name="delete-link" extends="a" on-click="onClick">
+<polymer-element name="delete-link" extends="a" on-click="onClick">
 <template>
   <content></content>
 </template>
 <script>
-  Polymer.register(this, {
+  Polymer('delete-link', {
     applyAuthorStyles: true,
     onClick: function(e, details, sender) {
       e.preventDefault();
@@ -22,4 +22,4 @@
     }
   });
 </script>
-</element>
+</polymer-element>

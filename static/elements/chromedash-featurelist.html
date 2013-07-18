@@ -1,6 +1,6 @@
 <link rel="import" href="chromedash-feature.html">
 
-<element name="chromedash-featurelist" attributes="whitelisted features">
+<polymer-element name="chromedash-featurelist" attributes="whitelisted features">
 <template>
   <link rel="stylesheet" type="text/css" href="../css/elements/chromedash-featurelist.css">
   <!-- <input type="search" placeholder="Search" on-keyup="filter"> -->
@@ -13,7 +13,7 @@
   </template>
 </template>
 <script>
-  Polymer.register(this, {
+  Polymer('chromedash-featurelist', {
     applyAuthorStyles: true,
     whitelisted: false,
     ready: function() {
@@ -41,4 +41,4 @@
     }
   });
 </script>
-</element>
+</polymer-element>
