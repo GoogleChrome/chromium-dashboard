@@ -111,7 +111,8 @@ class Feature(DictModel):
 
     if feature_list is None or update_cache:
       # All matching results.
-      query = Feature.all().order(order)
+      # For results with same creation date, final ordering is alphabetical.
+      query = Feature.all().order(order).order('name')
 
       # TODO(ericbidelman): Support more than one filter.
       if filterby:
