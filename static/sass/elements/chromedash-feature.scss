@@ -2,6 +2,8 @@
 
 @import "element";
 
+$spacer-left: 5px;
+
 @host {
   :scope {
     display: block;
@@ -25,6 +27,7 @@ hgroup {
   @include display-flex;
   @include align-items(center);
   cursor: pointer;
+  margin-left: $spacer-left;
 
   .category {
     color: #bbb;
@@ -32,12 +35,14 @@ hgroup {
   }
 
   chromedash-color-status {
-    margin-right: 10px;
+    //margin-right: 10px;
+    position: absolute;
+    top: 0;
+    left: 0;
   }
 }
 
 section {
-  $spacer-left: 30px;
   margin-left: $spacer-left;
   margin-top: 20px;
 

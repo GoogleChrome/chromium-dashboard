@@ -1,4 +1,4 @@
-<polymer-element name="chromedash-color-status" attributes="value max width height">
+<polymer-element name="chromedash-color-status" attributes="value max width height corner">
   <template>
     <style>
       span {
@@ -8,6 +8,18 @@
         border-radius: 50%;
         display: inline-block;
       }
+      .corner {
+        border-radius: 0;
+        -webkit-transform: rotateZ(45deg) translateX(-30px);
+        -ms-transform: rotateZ(45deg) translateX(-30px);
+        transform: rotateZ(45deg) translateX(-30px);
+      }
+      /*.corner:after {
+        content: '';
+        position: absolute;
+        border-top: 30px solid transparent;
+        border-right: 30px solid rgb(255, 255, 255);
+      }*/
     </style>
     <span id="status"></span>
   </template>
@@ -16,6 +28,11 @@
       max: 7,
       width: 10,
       height: 10,
+      corner: false,
+      cornerChanged: function() {
+        this.corner ? this.$.status.classList.add('corner') :
+                      this.$.status.classList.remove('corner');
+      },
       updateColor: function() {
         var r = Math.round((this.value / this.max) * 255);
         var g = 255 - r;
