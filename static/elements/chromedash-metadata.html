@@ -29,7 +29,7 @@
         this.versions = ['upcoming', this.channels.canary, this.channels.dev,
                          this.channels.beta, this.channels.stable];
 
-        var NUM_VERSIONS_BACK = 3;
+        var NUM_VERSIONS_BACK = 10;
         var MIN_VERSION = this.channels.stable - NUM_VERSIONS_BACK
         for (var i = this.channels.stable - 1; i >= MIN_VERSION; i--) {
           this.versions.push(i);
