@@ -5,8 +5,16 @@
   <link rel="import" href="/static/elements/chromedash-metadata.html">
 {% endblock %}
 
+{% block rss %}
+<link href="features.xml" rel="alternate" type="application/rss+xml" title="All features" />
+{% for k,v in categories %}
+<link href="features.xml?category={{v}}" rel="alternate" type="application/rss+xml" title='"{{k}}" features' />
+{% endfor %}
+
+{% endblock %}
+
 {% block css %}
-<link rel="stylesheet" type="text/css" href="/static/css/features/features.css?2012-06-29">
+<link rel="stylesheet" type="text/css" href="/static/css/features/features.css?2013-07-26">
 {% endblock %}
 
 {% block subheader %}

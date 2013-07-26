@@ -18,6 +18,13 @@ indexes:
 
 - kind: Feature
   properties:
+  - name: category
+  - name: updated
+    direction: desc
+  - name: name
+
+- kind: Feature
+  properties:
   - name: updated
     direction: desc
   - name: name

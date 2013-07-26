@@ -29,6 +29,10 @@ import settings
 import uma
 
 
+def normalized_name(val):
+  return val.lower().replace(' ', '').replace('/', '')
+
+
 class MainHandler(common.ContentHandler, common.JSONHandler):
 
   def get(self, path):
@@ -53,7 +57,7 @@ class MainHandler(common.ContentHandler, common.JSONHandler):
         category = self.request.get('category', None)
         if category is not None:
           for k,v in models.FEATURE_CATEGORIES.iteritems():
-            normalized = v.lower().replace(' ', '').replace('/', '')
+            normalized = normalized_name(v)
             if category == normalized:
               filterby = ('category =', k)
               break
@@ -66,6 +70,9 @@ class MainHandler(common.ContentHandler, common.JSONHandler):
       else:
         feature_list = models.Feature.get_all() # Memcached
         template_data['features'] = json.dumps(feature_list)
+        template_data['categories'] = [
+          (v, normalized_name(v)) for k,v in
+          models.FEATURE_CATEGORIES.iteritems()]
 
     elif path == 'metrics/featurelevel':
       template_data['CSS_PROPERTY_BUCKETS'] = uma.CSS_PROPERTY_BUCKETS
