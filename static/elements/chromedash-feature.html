@@ -78,20 +78,16 @@
       this.open ? this.classList.add('open') : this.classList.remove('open');
     },
     toggleOpen: function(e, details, sender) {
-      // if (e.target.tagName == 'A') {
-      //   e.preventDefault();
-      // }
       this.open = !this.open;
     },
-    ready: function() {
-      this.asyncMethod(function() {
-        //this.prefixedStr = this.feature.prefixed ? 'Yes' : 'No';
-     
-        this.overallViews = (this.feature.ff_views.value +
-                             this.feature.ie_views.value +
-                             this.feature.safari_views.value +
-                             this.feature.web_dev_views.value) / 4;
-       });
+    calculateOverallViews: function() {
+      this.overallViews = (this.feature.ff_views.value +
+                           this.feature.ie_views.value +
+                           this.feature.safari_views.value +
+                           this.feature.web_dev_views.value) / 4;
+    },
+    featureChanged: function() {
+      this.calculateOverallViews();
     }
   });
 </script>
