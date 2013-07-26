@@ -24,6 +24,7 @@ $default-border-radius: 3px;
 }
 
 @mixin display-flex() {
+  display: -webkit-box; // Safari :(
   display: -webkit-flex;
   display: -moz-flex;
   display: -ms-flex;
@@ -32,6 +33,7 @@ $default-border-radius: 3px;
 }
 
 @mixin flex($val) {
+  -webkit-box-flex: 1; // Safari :(
   -webkit-flex: $val;
   -moz-flex: $val;
   -ms-flex: $val;
@@ -40,6 +42,7 @@ $default-border-radius: 3px;
 }
 
 @mixin justify-content($val: center) {
+  -webkit-box-pack: $val;  // Safari :(
   -webkit-justify-content: $val;
   -moz-justify-content: $val;
   -ms-justify-content: $val;
@@ -48,6 +51,7 @@ $default-border-radius: 3px;
 }
 
 @mixin align-items($val: center) {
+  -webkit-box-align: $val;  // Safari :(
   -webkit-align-items: $val;
   -moz-align-items: $val;
   -ms-align-items: $val;
@@ -64,6 +68,7 @@ $default-border-radius: 3px;
 }
 
 @mixin flex-direction($val) {
+  -webkit-box-orient: vertical;  // Safari :(
   -webkit-flex-direction: $val;
   -moz-flex-direction: $val;
   -ms-flex-direction: $val;
