@@ -23,7 +23,7 @@
     <h2>Builds</h2>
   </div>
   <div>
-    <h2>Features</h2>
+    <h2>Features (<span id="num-features">-</span>)</h2>
   </div>
   <div class="search">
     <input type="search" placeholder="Search" disabled>
@@ -56,12 +56,16 @@
 <script>
 (function() {
 
+function updateCount(count) {
+  document.querySelector('#num-features').textContent = count;
+}
+
 var chromedashApp = document.querySelector('chromedash-featurelist');
 document.addEventListener('WebComponentsReady', function(e) {
   // Fill data from server by including it directly in template.
   chromedashApp.features = {{features|safe}};
 
-  // // Fill data via AJAX.
+  // // Instead, fill data via AJAX.
   // var xhr = new XMLHttpRequest();
   // xhr.open('GET', '/features.json');
   // xhr.onloadend = function(e) {
@@ -69,31 +73,33 @@ document.addEventListener('WebComponentsReady', function(e) {
   // };
   // xhr.send();
 
+  updateCount(chromedashApp.features.length); // Set initial # features showing.
+
   var search = document.querySelector('.search [type="search"]');
   search.disabled = false;
 
   search.addEventListener('keyup', function(e) {
     e.stopPropagation();
     //if (e.keyCode == 13) { // ENTER
-      chromedashApp.filter(e.target.value);
+      updateCount(chromedashApp.filter(e.target.value));
     //}
   });
   // Clear input when user clicks the 'x' button.
   search.addEventListener('click', function(e) {
     if (!e.target.value) {
-      chromedashApp.filter();
+      updateCount(chromedashApp.filter());
     }
   });
 
   var chromeMetadata = document.querySelector('chromedash-metadata');
   chromeMetadata.addEventListener('filter-on-version', function(e) {
     search.value = e.detail.version;
-    chromedashApp.filter(e.detail.version);
+    updateCount(chromedashApp.filter(e.detail.version));
   });
 
   document.body.addEventListener('keyup', function(e) {
     if (e.keyCode == 27) { // ESC
-      chromedashApp.filter();
+      updateCount(chromedashApp.filter());
       search.value = '';
     }
   });
