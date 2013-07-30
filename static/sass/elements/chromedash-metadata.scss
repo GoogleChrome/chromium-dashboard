@@ -12,9 +12,10 @@ ul {
     cursor: pointer;
     padding: 5px 0;
 
-    &:first-of-type {
+    &:first-of-type,
+    &:nth-of-type(2) {
       font-size: $small-font-size;
-      font-size: italic;
+      //font-style: italic;
     }
     &:before {
       content: '';
@@ -29,23 +30,25 @@ ul {
   // :nth-child(2):after {
   //   content: 'experimental';
   // }
-  :nth-child(3):after {
+  :nth-child(4):after {
     content: 'canary';
   }
-  :nth-child(4):after {
+  :nth-child(5):after {
     content: 'dev';
   }
-  :nth-child(5):after {
+  :nth-child(6):after {
     content: 'beta';
   }
-  :nth-child(6) {
+  :nth-child(7) {
+    &:after {
+      content: 'stable';
+    }
+  }
+  [selected] {
     font-weight: 600;
     color: $chromium-color-dark;
     &:before {
       border-color: currentcolor;
-    }
-    &:after {
-      content: 'stable';
     }
   }
 }

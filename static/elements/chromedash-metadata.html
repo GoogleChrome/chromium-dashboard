@@ -5,14 +5,15 @@
   <link rel="stylesheet" type="text/css" href="../css/elements/chromedash-metadata.css">
   <polymer-jsonp id="jsonp" url="//omahaproxy.appspot.com/all.json?callback=" auto></polymer-jsonp>
   <ul>
-    <template repeat="{{v in versions}}">
-      <li data-version="{{v == 'upcoming' ? 'experimental' : v}}" on-click="filterByVersion">{{v}}</li>
+    <template repeat="{{v in versions}}" id="versionlist">
+      <li data-version="{{v}}" on-click="selectMilestone" selected?="{{v == selected}}">{{v}}</li>
     </template>
   </ul>
 </template>
 <script>
   Polymer('chromedash-metadata', {
     applyAuthorStyles: true,
+    selected: null,
     ready: function() {
       // TODO(ericbidelman): Share this data across instances.
       this.addEventListener('polymer-response', function(e) {
@@ -26,17 +27,25 @@
                                       parseInt(el.prev_version);
         }
 
-        this.versions = ['upcoming', this.channels.canary, this.channels.dev,
-                         this.channels.beta, this.channels.stable];
+        this.versions = ['started', 'experimental', this.channels.canary,
+                         this.channels.dev, this.channels.beta,
+                         this.channels.stable];
 
         var NUM_VERSIONS_BACK = 5;
         var MIN_VERSION = this.channels.stable - NUM_VERSIONS_BACK
         for (var i = this.channels.stable - 1; i >= MIN_VERSION; i--) {
           this.versions.push(i);
         }
+
+        // Highlight the stable channel.
+        this.selected = this.channels.stable;
       });
 
       //this.$.jsonp.go(); // Using auto attribute instead.
+    },
+    selectMilestone: function(e, details, sender) {
+      this.selected = sender.dataset.version;
+      this.filterByVersion(e, details, sender);
     },
     filterByVersion: function(e, details, sender) {
       this.fire('filter-on-version', {version: sender.dataset.version});
