@@ -78,29 +78,38 @@ document.addEventListener('WebComponentsReady', function(e) {
   var search = document.querySelector('.search [type="search"]');
   search.disabled = false;
 
-  search.addEventListener('keyup', function(e) {
-    e.stopPropagation();
-    //if (e.keyCode == 13) { // ENTER
-      updateCount(chromedashApp.filter(e.target.value));
-    //}
-  });
-  // Clear input when user clicks the 'x' button.
-  search.addEventListener('click', function(e) {
-    if (!e.target.value) {
-      updateCount(chromedashApp.filter());
-    }
-  });
-
   var chromeMetadata = document.querySelector('chromedash-metadata');
   chromeMetadata.addEventListener('filter-on-version', function(e) {
     search.value = e.detail.version;
     updateCount(chromedashApp.filter(e.detail.version));
   });
 
+  // search.addEventListener('keyup', function(e) {
+  //   e.stopPropagation();
+  //   if (!e.target.value) {
+  //     chromeMetadata.selected = null;
+  //   }
+  //   updateCount(chromedashApp.filter(e.target.value));
+  // });
+
+  // Clear input when user clicks the 'x' button.
+  search.addEventListener('click', function(e) {
+    if (!e.target.value) {
+      updateCount(chromedashApp.filter());
+      chromeMetadata.selected = null;
+    }
+  });
+
   document.body.addEventListener('keyup', function(e) {
-    if (e.keyCode == 27) { // ESC
+    if (e.target == search) {
+      if (!e.target.value) {
+        chromeMetadata.selected = null;
+      }
+      updateCount(chromedashApp.filter(e.target.value));
+    } else if (e.keyCode == 27) { // ESC
       updateCount(chromedashApp.filter());
       search.value = '';
+      chromeMetadata.selected = null;
     }
   });
 });

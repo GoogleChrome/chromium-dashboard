@@ -15,7 +15,12 @@ ul {
     &:first-of-type,
     &:nth-of-type(2) {
       font-size: $small-font-size;
-      //font-style: italic;
+      font-style: italic;
+    }
+    &:nth-of-type(2) {
+      border-bottom: 1px solid $bar-border-color;
+      padding-bottom: 10px;
+      margin-bottom: 5px;
     }
     &:before {
       content: '';
