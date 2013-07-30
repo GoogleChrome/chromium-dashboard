@@ -88,6 +88,20 @@ section {
     & > * {
       @include display-flex;
       @include align-items(center);
+      position: relative;
+
+      &:active:before {
+        content: attr(title);
+        position: absolute;
+        top: -50px;
+        left: 20px;
+        @include gradient-bar-bg;
+        box-shadow: 2px 2px 4px #aaa;
+        border: 1px solid #ccc;
+        z-index: 100;
+        min-width: 150px;
+        text-align: center;
+      }
     }
   }
 
@@ -120,15 +134,19 @@ chromedash-color-status {
     @include display-flex;
     @include flex-direction(column);
     @include flex-wrap(initial);
-    > span label {
-      width: 100px;
+    > span {
+      // label {
+      //   width: 100px;
+      // }
+      margin-bottom: 10px;
     }
   }
   .views span {
-    label {
-      &:after {
-        content: '';
-      }
-    }
+    // label {
+    //   &:after {
+    //     content: '';
+    //   }
+    // }
+    margin-bottom: 10px;
   }
 }
