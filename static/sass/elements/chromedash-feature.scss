@@ -134,7 +134,8 @@ chromedash-color-status {
     @include display-flex;
     @include flex-direction(column);
     @include flex-wrap(initial);
-    > span {
+    > span:not([hidden]):not(:last-of-type),
+    > a {
       // label {
       //   width: 100px;
       // }
