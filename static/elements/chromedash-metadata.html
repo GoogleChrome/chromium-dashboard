@@ -6,7 +6,7 @@
   <polymer-jsonp id="jsonp" url="//omahaproxy.appspot.com/all.json?callback=" auto></polymer-jsonp>
   <ul>
     <template repeat="{{v in versions}}" id="versionlist">
-      <li data-version="{{v}}" on-click="selectMilestone" selected?="{{v == selected}}">{{v}}</li>
+      <li data-version="{{v}}" title="{{v == 'experimental' || v == 'started' ? 'Turn these features on in about:flags' : ''}}"on-click="selectMilestone" selected?="{{v == selected}}">{{v}}</li>
     </template>
   </ul>
 </template>
