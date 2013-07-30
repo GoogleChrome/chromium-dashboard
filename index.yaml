@@ -29,6 +29,12 @@ indexes:
     direction: desc
   - name: name
 
+- kind: Feature
+  properties:
+  - name: name
+  - name: updated
+    direction: desc
+
 - kind: StableInstance
   properties:
   - name: date
