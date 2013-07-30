@@ -30,20 +30,55 @@
       if (!val) {
         this.filtered = this.features;
       } else {
-        var regex = new RegExp(val, 'ig');
-        this.filtered = this.features.filter(function(feature, idx, array) {
-          return regex.test(feature.name) || regex.test(feature.category) ||
-                 regex.test(feature.summary) ||
-                 regex.test(feature.shipped_milestone) ||
-                 regex.test(feature.impl_status_chrome);
-        });
+        val = val.trim();
+
+        // Returns operator and version query e.g. ["<=25", "<=", "25"].
+        var result = /^([<>=]=?)\s*?([0-9]+)/.exec(val);
+        if (result) {
+          var operator = result[1];
+          var version = parseInt(result[2]);
+          this.filtered = this.features.filter(function(feature, idx, array) {
+            var shipped_milestone = parseInt(feature.shipped_milestone);
+
+            switch(operator) {
+              case '<':
+                return shipped_milestone < version;
+                break;
+              case '<=':
+                return shipped_milestone <= version;
+                break;
+              case '>':
+                return shipped_milestone > version;
+                break;
+              case '>=':
+                return shipped_milestone >= version;
+                break;
+              case '=': // Support both '=' and '=='.
+              case '==':
+                return version == shipped_milestone;
+                break;
+              default:
+                return false;
+            }
+          });
+        } else {
+          // Remove "=" prefix so "experimental"/"started" version queries
+          // return results.
+          if (val.indexOf('=') == 0) {
+            val = val.substring(1);
+          }
+          var regex = new RegExp(val, 'ig');
+          this.filtered = this.features.filter(function(feature, idx, array) {
+            return regex.test(feature.name) || regex.test(feature.category) ||
+                   regex.test(feature.summary) ||
+                   regex.test(feature.shipped_milestone) ||
+                   regex.test(feature.impl_status_chrome);
+          });
+        }
       }
 
       return this.filtered.length;
     }
-    // filteredChanged: function() {
-    //   this.fire('filtered-changed', {showing: this.filtered.length});
-    // }
   });
 </script>
 </polymer-element>

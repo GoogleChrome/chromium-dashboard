@@ -37,8 +37,8 @@
           this.versions.push(i);
         }
 
-        // Highlight the stable channel.
-        this.selected = this.channels.stable;
+        // // Highlight the stable channel.
+        // this.selected = this.channels.stable;
       });
 
       //this.$.jsonp.go(); // Using auto attribute instead.
@@ -48,7 +48,7 @@
       this.filterByVersion(e, details, sender);
     },
     filterByVersion: function(e, details, sender) {
-      this.fire('filter-on-version', {version: sender.dataset.version});
+      this.fire('filter-on-version', {version: '=' + sender.dataset.version});
     }
   });
 </script>
