@@ -166,10 +166,14 @@ footer {
 
   div {
     margin-right: $content-padding * 2 - 15;
+
+    &.feature-count {
+      min-width: 165px;
+      margin-right: $content-padding - 15; 
+    }
   }
 
   .search {
-
     input {
       width: 200px;
       outline: none;
