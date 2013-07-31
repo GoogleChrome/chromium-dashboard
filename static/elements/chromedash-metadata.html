@@ -27,12 +27,10 @@
                                       parseInt(el.prev_version);
         }
 
+        // Dev channel explicitly left out. Treat same as canary.
         this.versions = ['proposed', 'started', 'experimental',
                          this.channels.canary, this.channels.beta,
                          this.channels.stable];
-        // if (this.channels.dev == this.channels.canary) {
-        //   this.versions.splice(2, 1);
-        // }
 
         var NUM_VERSIONS_BACK = 6;
         var MIN_VERSION = this.channels.stable - NUM_VERSIONS_BACK
