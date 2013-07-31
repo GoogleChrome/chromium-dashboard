@@ -156,6 +156,13 @@ footer {
   }
 }
 
+chromedash-legend {
+  top: 72px;
+  left: 50%;
+  width: 512px;
+  margin-left: -256px;
+}
+
 #subheader {
   //@include display-box;
   //@include box-align(center);
@@ -225,8 +232,12 @@ footer {
 
     chromedash-metadata {
       position: fixed;
-      height: 55vh;
+      //height: 55vh;
       overflow: auto;
+
+      .help {
+        text-align: center;
+      }
     }
   }
 

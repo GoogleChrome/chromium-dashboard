@@ -3,6 +3,7 @@
 {% block html_imports %}
   <link rel="import" href="/static/elements/chromedash-featurelist.html">
   <link rel="import" href="/static/elements/chromedash-metadata.html">
+  <link rel="import" href="/static/elements/chromedash-legend.html">
 {% endblock %}
 
 {% block rss %}
@@ -28,6 +29,7 @@
   <div class="search">
     <input type="search" placeholder="Search" disabled>
   </div>
+  <div class="legend"><a href="">?</a></div>
   <div>
     {% if user.is_whitelisted %}
       <a href="/admin/features/new">Add a new feature</a>
@@ -38,6 +40,16 @@
 {% endblock %}
 
 {% block content %}
+<!-- <div id="dialog" class="dialog polymer-overlay polymer-overlay-slideup">
+  <h2>Legend</h2>
+  <chromedash-legend></chromedash-legend>
+  <button overlay-toggle>OK</button>
+</div> -->
+
+<chromedash-legend opened>
+  <button overlay-toggle>Close</button>
+</chromedash-legend>
+
 <section id="panels">
 <nav>
   <chromedash-metadata></chromedash-metadata>
@@ -78,12 +90,6 @@ document.addEventListener('WebComponentsReady', function(e) {
   var search = document.querySelector('.search [type="search"]');
   search.disabled = false;
 
-  var chromeMetadata = document.querySelector('chromedash-metadata');
-  chromeMetadata.addEventListener('filter-on-version', function(e) {
-    search.value = e.detail.version;
-    updateCount(chromedashApp.filter(e.detail.version));
-  });
-
   // Clear input when user clicks the 'x' button.
   search.addEventListener('input', function(e) {
     if (!e.target.value) {
@@ -92,6 +98,20 @@ document.addEventListener('WebComponentsReady', function(e) {
     } else {
       updateCount(chromedashApp.filter(e.target.value));
     }
+  });
+
+  var chromeMetadata = document.querySelector('chromedash-metadata');
+  chromeMetadata.addEventListener('filter-on-version', function(e) {
+    search.value = e.detail.version;
+    updateCount(chromedashApp.filter(e.detail.version));
+  });
+
+  var overlay = document.querySelector('chromedash-legend');
+  overlay.options = {{VENDOR_VIEWS|safe}}; // set from server
+
+  document.querySelector('.legend a').addEventListener('click', function(e) {
+    e.preventDefault();
+    overlay.toggle();
   });
 
   document.body.addEventListener('keyup', function(e) {

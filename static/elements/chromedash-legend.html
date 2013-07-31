@@ -1,0 +1,24 @@
+<link rel="import" href="polymer-elements/polymer-overlay/polymer-overlay.html">
+
+<polymer-element name="chromedash-legend" extends="polymer-overlay" class="polymer-overlay" attributes="options">
+<template>
+  <link rel="stylesheet" type="text/css" href="../css/elements/chromedash-legend.css">
+  <div id="dialog">
+    <h2>Legend</h2>
+    <ul>
+      <template repeat="{{o in options}}">
+        <li><chromedash-color-status value="{{o.key}}" max="{{options.length}}"></chromedash-color-status>{{o.val}}</li>
+      </template>
+    </ul>
+    <content></content>
+  </div>
+</template>
+<script>
+  Polymer('chromedash-legend', {
+    applyAuthorStyles: true,
+    ready: function() {
+      this.target = this.$.dialog;
+    }
+  });
+</script>
+</polymer-element>

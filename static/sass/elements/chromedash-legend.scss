@@ -1,0 +1,33 @@
+@import "element";
+
+
+@host {
+  :scope {
+    display: block;
+  }
+}
+
+ul {
+  margin: 15px 0;
+
+  > li {
+    margin: 5px 0;
+  }
+}
+
+#dialog {
+  position: relative;
+  box-sizing: border-box;
+  @include user-select;
+  overflow: hidden;
+  @include gradient-bar-bg;
+  box-shadow: 1px 1px 5px #aaa;
+  //border: 1px solid #ccc;
+  border-radius: $default-border-radius;
+  //background: white;
+  padding: $content-padding $content-padding + 10;
+  //outline: 1px solid rgba(0,0,0,0.2);
+  //box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+  
+  //opacity: 0;
+}
