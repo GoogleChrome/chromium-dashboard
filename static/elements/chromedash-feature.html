@@ -13,9 +13,9 @@
   <section>
     <h3>Implementation Status</h3>
     <div class="impl_status">
-      <a href="{{feature.bug_url}}" target="_blank" hidden?="{{!feature.bug_url}}">Launch bug</a>
       <span><label>{{feature.impl_status_chrome}}</label>{{feature.shipped_milestone}}</span>
       <span><label>Prefixed</label>{{feature.prefixed ? 'Yes' : 'No'}}</span>
+      <a href="{{feature.bug_url}}" target="_blank" hidden?="{{!feature.bug_url}}">Launch bug</a>
       <span class="owner" hidden?="{{!feature.owner.length}}">
         <label>Owner(s)</label><template repeat="{{owner in feature.owner}}">
           {{owner}}
