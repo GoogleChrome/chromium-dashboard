@@ -369,7 +369,7 @@ class FeatureForm(forms.Form):
                                          choices=IMPLEMENATION_STATUS.items())
 
   shipped_milestone = PlaceholderCharField(required=False,
-                                           placeholder='Milestone')
+                                           placeholder='First milestone the feature shipped with this status (either enabled by default or experimental)')
 
   prefixed = forms.BooleanField(
       required=False, initial=False, label='Prefixed?')
