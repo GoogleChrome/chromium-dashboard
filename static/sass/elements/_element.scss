@@ -5,3 +5,19 @@
 // * {
 //   box-sizing: border-box;
 // }
+
+@mixin tooltip {
+  content: attr(title);
+  position: absolute;
+  @include gradient-bar-bg;
+  box-shadow: 2px 2px 4px #aaa;
+  border: 1px solid #ccc;
+  z-index: 100;
+  text-align: center;
+}
+
+// .tooltip {
+//   &:before {
+//     @include tooltip;
+//   }
+// }

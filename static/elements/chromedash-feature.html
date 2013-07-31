@@ -4,7 +4,7 @@
 <template>
 <link rel="stylesheet" type="text/css" href="../css/elements/chromedash-feature.css">
 <hgroup on-click="toggleOpen">
-  <chromedash-color-status title="Overall interest from browser vendors and web developers" value="{{overallViews}}" max="7" width="40" height="40" corner></chromedash-color-status>
+  <chromedash-color-status class="tooltip" title="Overall interest from browser vendors and web developers" value="{{overallViews}}" max="7" width="40" height="40" corner></chromedash-color-status>
   <h2>{{feature.name}}</h2>
   <label class="category">{{feature.category}}</label>
 </hgroup>
@@ -15,7 +15,7 @@
     <div class="impl_status">
       <a href="{{feature.bug_url}}" target="_blank" hidden?="{{!feature.bug_url}}">Launch bug</a>
       <span><label>{{feature.impl_status_chrome}}</label>{{feature.shipped_milestone}}</span>
-      <span><label>Prefixed</label>{{feature.prefixed ? 'Yes' : 'No'}}<!-- <i class="icon-{{feature.prefixed ? 'frown' : 'smile'}}"></i> --></span>
+      <span><label>Prefixed</label>{{feature.prefixed ? 'Yes' : 'No'}}</span>
       <span class="owner" hidden?="{{!feature.owner.length}}">
         <label>Owner(s)</label><template repeat="{{owner in feature.owner}}">
           {{owner}}
@@ -79,6 +79,10 @@
       this.open ? this.classList.add('open') : this.classList.remove('open');
     },
     toggleOpen: function(e, details, sender) {
+      // Don't toggle panel if tooltip is being clicked.
+      if (e.target.classList.contains('tooltip')) {
+        return;
+      }
       this.open = !this.open;
     },
     calculateOverallViews: function() {

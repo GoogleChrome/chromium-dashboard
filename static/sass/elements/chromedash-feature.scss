@@ -39,6 +39,13 @@ hgroup {
     position: absolute;
     top: 0;
     left: 0;
+
+    &:active:before {
+      @include tooltip;
+      top: 20px;
+      left: 25px;
+      min-width: 200px;
+    }
   }
 }
 
@@ -89,18 +96,17 @@ section {
       @include display-flex;
       @include align-items(center);
       position: relative;
+      cursor: pointer;
+
+      > label {
+        cursor: inherit;
+      }
 
       &:active:before {
-        content: attr(title);
-        position: absolute;
+        @include tooltip;
         top: -50px;
         left: 20px;
-        @include gradient-bar-bg;
-        box-shadow: 2px 2px 4px #aaa;
-        border: 1px solid #ccc;
-        z-index: 100;
         min-width: 150px;
-        text-align: center;
       }
     }
   }
