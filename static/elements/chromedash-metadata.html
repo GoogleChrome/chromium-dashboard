@@ -5,8 +5,8 @@
   <link rel="stylesheet" type="text/css" href="../css/elements/chromedash-metadata.css">
   <polymer-jsonp id="jsonp" url="//omahaproxy.appspot.com/all.json?callback=" auto></polymer-jsonp>
   <ul>
-    <template repeat="{{v in versions}}" id="versionlist">
-      <li data-version="{{v}}" title="{{v == 'experimental' ? 'Turn these features on in about:flags' : ''}}" on-click="toggleMilestone" selected?="{{v == selectedVersion}}">{{v}}</li>
+    <template repeat="{{v in versions}}">
+      <li data-version="{{v}}" title="{{v == 'experimental' ? 'Typically features that can be enabled in about:flags' : ''}}" on-click="toggleMilestone" selected?="{{v == selectedVersion}}">{{v}}</li>
     </template>
   </ul>
 </template>
@@ -27,11 +27,14 @@
                                       parseInt(el.prev_version);
         }
 
-        this.versions = ['started', 'experimental', this.channels.canary,
-                         this.channels.dev, this.channels.beta,
+        this.versions = ['proposed', 'started', 'experimental',
+                         this.channels.canary, this.channels.beta,
                          this.channels.stable];
+        // if (this.channels.dev == this.channels.canary) {
+        //   this.versions.splice(2, 1);
+        // }
 
-        var NUM_VERSIONS_BACK = 5;
+        var NUM_VERSIONS_BACK = 6;
         var MIN_VERSION = this.channels.stable - NUM_VERSIONS_BACK
         for (var i = this.channels.stable - 1; i >= MIN_VERSION; i--) {
           this.versions.push(i);

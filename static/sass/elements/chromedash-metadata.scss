@@ -12,42 +12,39 @@ ul {
     cursor: pointer;
     padding: 5px 0;
 
-    &:first-of-type,
-    &:nth-of-type(2) {
-      font-size: $small-font-size;
-      font-style: italic;
-    }
-    &:nth-of-type(2) {
-      border-bottom: 1px solid $bar-border-color;
-      padding-bottom: 10px;
-      margin-bottom: 5px;
-    }
-    &:before {
+    &::before {
       content: '';
       margin-right: 5px;
       border-left: 3px solid transparent;
     }
-    &:after {
+    &::after {
       font-size: $small-font-size;
       margin-left: 10px;
     }
-  }
-  // :nth-child(2):after {
-  //   content: 'experimental';
-  // }
-  :nth-child(4):after {
-    content: 'canary';
-  }
-  :nth-child(5):after {
-    content: 'dev';
-  }
-  :nth-child(6):after {
-    content: 'beta';
-  }
-  :nth-child(7) {
-    &:after {
+
+    &:first-of-type,
+    &:nth-of-type(2),
+    &:nth-of-type(3) {
+      font-size: $small-font-size;
+      font-style: italic;
+    }
+    &:nth-of-type(3) {
+      border-bottom: 1px solid $bar-border-color;
+      padding-bottom: 10px;
+      margin-bottom: 5px;
+    }
+    &:nth-of-type(4)::after {
+      content: 'canary/dev';
+    }
+    &:nth-of-type(5)::after {
+      content: 'beta';
+    }
+    &:nth-of-type(6)::after {
       content: 'stable';
     }
+    // &:nth-of-type(6)::after {
+    //   content: 'stable';
+    // }
   }
   [selected] {
     font-weight: 600;
