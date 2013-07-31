@@ -21,19 +21,17 @@
 {% block subheader %}
 <div id="subheader">
   <div>
-    <h2>Builds</h2>
+    <h2 title="Restrict search to a particular milestone">Filters</h2>
   </div>
   <div class="feature-count">
     <h2>Web Platform Features (<span id="num-features">-</span>)</h2>
   </div>
   <div class="search">
     <input type="search" placeholder="Search" disabled>
-  </div>
-  <div class="legend"><a href="">?</a></div>
-  <div>
-    {% if user.is_whitelisted %}
-      <a href="/admin/features/new">Add a new feature</a>
-    {% endif %}
+  </div> 
+  <div class="actionlinks">
+    {% if user.is_whitelisted %}<a href="/admin/features/new">Add a new feature</a>{% endif %}
+    <a href="" class="legend">Help</a>
   </div>
 </div>
 
@@ -46,7 +44,7 @@
   <button overlay-toggle>OK</button>
 </div> -->
 
-<chromedash-legend opened>
+<chromedash-legend>
   <button overlay-toggle>Close</button>
 </chromedash-legend>
 
@@ -94,22 +92,28 @@ document.addEventListener('WebComponentsReady', function(e) {
   search.addEventListener('input', function(e) {
     if (!e.target.value) {
       updateCount(chromedashApp.filter());
-      chromeMetadata.selected = null;
+      //chromeMetadata.selectedVersion = null;
     } else {
       updateCount(chromedashApp.filter(e.target.value));
     }
   });
 
   var chromeMetadata = document.querySelector('chromedash-metadata');
-  chromeMetadata.addEventListener('filter-on-version', function(e) {
-    search.value = e.detail.version;
-    updateCount(chromedashApp.filter(e.detail.version));
+  chromeMetadata.addEventListener('filter-version', function(e) {
+    var val = e.detail && e.detail.val || null;
+    //search.value = e.detail.version;
+    updateCount(chromedashApp.filter(val));
+  });
+
+  chromedashApp.addEventListener('filter-category', function(e) {
+    search.value = e.detail.val;
+    updateCount(chromedashApp.filterOnCategory(e.detail.val));
   });
 
   var overlay = document.querySelector('chromedash-legend');
   overlay.options = {{VENDOR_VIEWS|safe}}; // set from server
 
-  document.querySelector('.legend a').addEventListener('click', function(e) {
+  document.querySelector('.legend').addEventListener('click', function(e) {
     e.preventDefault();
     overlay.toggle();
   });
@@ -118,7 +122,7 @@ document.addEventListener('WebComponentsReady', function(e) {
     if (e.keyCode == 27) { // ESC
       updateCount(chromedashApp.filter());
       search.value = '';
-      chromeMetadata.selected = null;
+      //chromeMetadata.selectedVersion = null;
     }
   });
 });

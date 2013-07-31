@@ -4,7 +4,16 @@
 @host {
   :scope {
     display: block;
+    // @include display-flex;
+    // @include justify-content(center);
+    // @include align-items(center);
   }
+}
+
+h2 {
+  border-bottom: 2px solid $chromium-color-center;
+  padding-bottom:  10px;
+  margin-bottom: $content-padding / 2;
 }
 
 ul {
@@ -15,13 +24,27 @@ ul {
   }
 }
 
+.queries {
+  li {
+    span {
+      margin-right: 5px;
+      width: 50px;
+      display: inline-block;
+    }
+  }
+}
+
+p {
+  margin-top: 5px;
+}
+
 #dialog {
   position: relative;
   box-sizing: border-box;
   @include user-select;
   overflow: hidden;
   @include gradient-bar-bg;
-  box-shadow: 1px 1px 5px #aaa;
+  box-shadow: 1px 1px 5px $gray-2;
   //border: 1px solid #ccc;
   border-radius: $default-border-radius;
   //background: white;

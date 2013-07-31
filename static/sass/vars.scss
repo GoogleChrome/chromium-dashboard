@@ -1,6 +1,11 @@
 $default-font-color: #666666;
 $light-grey: #eee;
 
+$gray-1: #e6e6e6;
+$gray-2: #a9a9a9;
+$gray-3: #797979;
+$gray-4: #515151;
+
 $bar-shadow-color: rgba(0, 0, 0, .065);
 $bar-border-color: #D4D4D4;
 $bar-gradient: linear-gradient(top, white, #F2F2F2);
@@ -133,18 +138,25 @@ $default-border-radius: 3px;
   width: max-content;
 }
 
-@mixin user-select() {
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -o-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
+@mixin user-select($val: none) {
+  -webkit-user-select: $val;
+  -moz-user-select: $val;
+  -o-user-select: $val;
+  -ms-user-select: $val;
+  user-select: $val;
 }
 
-@mixin calc-width($val) {
-  width: -webkit-calc($val);
-  width: -moz-calc($val);
-  width: -ms-calc($val);
-  width: -o-calc($val);
-  width: calc($val);
+@mixin calc($property, $expression) { 
+  #{$property}: -moz-calc(#{$expression}); 
+  #{$property}: -o-calc(#{$expression}); 
+  #{$property}: -webkit-calc(#{$expression}); 
+  #{$property}: calc(#{$expression}); 
 }
+
+// @mixin calc-width($val) {
+//   width: -webkit-calc($val);
+//   width: -moz-calc($val);
+//   width: -ms-calc($val);
+//   width: -o-calc($val);
+//   width: calc($val);
+// }

@@ -30,8 +30,9 @@ hgroup {
   margin-left: $spacer-left;
 
   .category {
-    color: #bbb;
+    color: $gray-2;
     font-size: 15px;
+    cursor: pointer;
   }
 
   chromedash-color-status {

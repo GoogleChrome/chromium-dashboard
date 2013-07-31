@@ -1,6 +1,8 @@
 @import "base";
 @import "compass/css3/images";
 
+$max-content-width: 760px;
+
 html, body {
   height: 100%;
 }
@@ -157,10 +159,16 @@ footer {
 }
 
 chromedash-legend {
-  top: 72px;
-  left: 50%;
   width: 512px;
-  margin-left: -256px;
+  @include calc(left, '50% - 512px/2');
+  top: 15%;
+  opacity: 0; // Ensure no FOUC.
+  
+  // width: 100%;
+  // background: rgba(0,0,0,0.3);
+  // left: 0;
+  // top: 0;
+  // height: 100%;
 }
 
 #subheader {
@@ -170,21 +178,32 @@ chromedash-legend {
   @include align-items(center);
   margin: $content-padding $content-padding 0 $content-padding + 5;
   //border-bottom: 1px solid $bar-border-color;
+  max-width: $max-content-width + $content-padding * 4 - 10;
 
   div {
     margin-right: $content-padding * 2 - 15;
 
     &.feature-count {
-      min-width: 300px;
+      min-width: 325px;
       margin-right: $content-padding - 15; 
     }
-  }
 
-  .search {
-    input {
-      width: 200px;
-      outline: none;
-      padding: 10px 7px;
+    &.search {
+      margin-right: 0;
+      input {
+        width: 200px;
+        outline: none;
+        padding: 10px 7px;
+      }
+    }
+
+    &.actionlinks {
+      a {
+        margin-left: 20px;
+      }
+      @include flex(1 0 0);
+      text-align: right;
+      margin-right: 0;
     }
   }
 }
@@ -246,7 +265,7 @@ chromedash-legend {
     //@include box-flex(1);
     //margin-left: $content-padding * 5;
     height: 100%;
-    max-width: 760px;
+    max-width: $max-content-width;
     // font-weight: 300;
   }
 }

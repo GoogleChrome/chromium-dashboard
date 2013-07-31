@@ -3,15 +3,29 @@
 <polymer-element name="chromedash-legend" extends="polymer-overlay" class="polymer-overlay" attributes="options">
 <template>
   <link rel="stylesheet" type="text/css" href="../css/elements/chromedash-legend.css">
-  <div id="dialog">
-    <h2>Legend</h2>
-    <ul>
-      <template repeat="{{o in options}}">
-        <li><chromedash-color-status value="{{o.key}}" max="{{options.length}}"></chromedash-color-status>{{o.val}}</li>
-      </template>
-    </ul>
-    <content></content>
-  </div>
+    <div id="dialog">
+      <h2>Help</h2>
+      <h3>Color legend</h3>
+      <section>
+        <p>Description of the browser/web developer views.</p>
+        <ul>
+          <template repeat="{{o in options}}">
+            <li><chromedash-color-status value="{{o.key}}" max="{{options.length}}"></chromedash-color-status>{{o.val}}</li>
+          </template>
+        </ul>
+      </section>
+      <h3>Search queries</h3>
+      <section>
+        <p>Example queries you can enter in the search box.</p>
+        <ul class="queries">
+          <li><span>"&lt;30"</span>features that landed before 30</li>
+          <li><span>"&lt;=30"</span>features in 30</li>
+          <li><span>"=30"</span>features that landed in 30</li>
+          <li><span>">28"</span>features since 28
+        </ul>
+      </section>
+      <content></content>
+    </div>
 </template>
 <script>
   Polymer('chromedash-legend', {

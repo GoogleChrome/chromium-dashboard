@@ -2,7 +2,7 @@
 @import "compass/css3/border-radius";
 @import "compass/css3/images";
 //@import "compass/css3/box-shadow";
-//@import "compass/css3/text-shadow";
+@import "compass/css3/text-shadow";
 //@import "compass/css3/background-size";
 
 @import "vars";
@@ -12,8 +12,30 @@
 }
 
 a {
-	text-decoration: none;
+  text-decoration: none;
 }
 a:hover {
-	text-decoration: underline;
+  text-decoration: underline;
+}
+
+button, .button {
+  display: inline-block;
+  @include background(linear-gradient(#F9F9F9 40%, #E3E3E3 70%));
+  border: 1px solid $gray-2;
+  @include border-radius(3px);
+  padding: 5px 8px;
+  outline: none;
+  white-space: nowrap;
+  @include user-select(none);
+  cursor: pointer;
+  @include text-shadow(1px 1px #fff);
+  font-size: 10pt;
+}
+
+button:not(:disabled):hover {
+  border-color: $gray-4;
+}
+
+button:not(:disabled):active {
+  @include background(linear-gradient(#E3E3E3 40%, #F9F9F9 70%));
 }

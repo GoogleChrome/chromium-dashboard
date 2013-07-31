@@ -6,7 +6,7 @@
   <!-- <input type="search" placeholder="Search" on-keyup="filter"> -->
   <template repeat="{{feature in filtered}}">
     <li is="chromedash-feature" feature="{{feature}}">
-      <template bind if="{{whitelisted}}">
+      <template if="{{whitelisted}}">
         <a href="/admin/features/edit/{{feature.id}}" class="edit">edit</a>
       </template>
     </li>
@@ -24,6 +24,13 @@
     },
     featuresChanged: function() {
       this.filter();
+    },
+    filterOnCategory: function(val) {
+      var regex = new RegExp(val, 'ig');
+      this.filtered = this.features.filter(function(feature, idx, array) {
+        return regex.test(feature.category);
+      });
+      return this.filtered.length;
     },
     filter: function(val) {
       // Clear filter if there's no search or if called directly.
@@ -71,7 +78,7 @@
           this.filtered = this.features.filter(function(feature, idx, array) {
             return regex.test(feature.name) || regex.test(feature.category) ||
                    regex.test(feature.summary) ||
-                   regex.test(feature.shipped_milestone) ||
+                   /*regex.test(feature.shipped_milestone) ||*/
                    regex.test(feature.impl_status_chrome);
           });
         }

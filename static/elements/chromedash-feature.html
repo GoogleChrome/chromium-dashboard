@@ -6,7 +6,7 @@
 <hgroup on-click="toggleOpen">
   <chromedash-color-status class="tooltip" title="Overall interest from browser vendors and web developers" value="{{overallViews}}" max="7" width="40" height="40" corner></chromedash-color-status>
   <h2>{{feature.name}}</h2>
-  <label class="category">{{feature.category}}</label>
+  <label class="category" on-click="categoryFilter">{{feature.category}}</label>
 </hgroup>
 <section class="desc"><summary class="{{open ? 'open' : ''}}">{{feature.summary}}</summary></section>
 <template if="{{open}}">
@@ -93,6 +93,10 @@
     },
     featureChanged: function() {
       this.calculateOverallViews();
+    },
+    categoryFilter: function(e, details, sender) {
+      e.stopPropagation();
+      this.fire('filter-category', {val: sender.textContent});
     }
   });
 </script>

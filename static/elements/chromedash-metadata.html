@@ -6,14 +6,14 @@
   <polymer-jsonp id="jsonp" url="//omahaproxy.appspot.com/all.json?callback=" auto></polymer-jsonp>
   <ul>
     <template repeat="{{v in versions}}" id="versionlist">
-      <li data-version="{{v}}" title="{{v == 'experimental' ? 'Turn these features on in about:flags' : ''}}" on-click="selectMilestone" selected?="{{v == selected}}">{{v}}</li>
+      <li data-version="{{v}}" title="{{v == 'experimental' ? 'Turn these features on in about:flags' : ''}}" on-click="toggleMilestone" selected?="{{v == selectedVersion}}">{{v}}</li>
     </template>
   </ul>
 </template>
 <script>
   Polymer('chromedash-metadata', {
     applyAuthorStyles: true,
-    selected: null,
+    selectedVersion: null,
     ready: function() {
       // TODO(ericbidelman): Share this data across instances.
       this.addEventListener('polymer-response', function(e) {
@@ -38,17 +38,19 @@
         }
 
         // // Highlight the stable channel.
-        // this.selected = this.channels.stable;
+        // this.selectedVersion = this.channels.stable;
       });
 
       //this.$.jsonp.go(); // Using auto attribute instead.
     },
-    selectMilestone: function(e, details, sender) {
-      this.selected = sender.dataset.version;
-      this.filterByVersion(e, details, sender);
-    },
-    filterByVersion: function(e, details, sender) {
-      this.fire('filter-on-version', {version: '=' + sender.dataset.version});
+    toggleMilestone: function(e, details, sender) {
+      var version = sender.dataset.version;
+      this.selectedVersion = this.selectedVersion == version ? null : version;
+      if (this.selectedVersion) {
+        this.fire('filter-version', {val: '=' + version});
+      } else {
+        this.fire('filter-version');
+      }
     }
   });
 </script>
