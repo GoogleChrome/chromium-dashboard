@@ -40,11 +40,13 @@ hgroup {
     top: 0;
     left: 0;
 
-    &:active:before {
-      @include tooltip;
-      top: 20px;
-      left: 25px;
-      min-width: 200px;
+    &:hover, &:active {
+      &:before {
+        @include tooltip;
+        top: 20px;
+        left: 25px;
+        min-width: 200px;
+      }
     }
   }
 }
@@ -102,11 +104,13 @@ section {
         cursor: inherit;
       }
 
-      &:active:before {
-        @include tooltip;
-        top: -50px;
-        left: 20px;
-        min-width: 150px;
+      &:hover, &:active {
+        &:before {
+          @include tooltip;
+          top: -50px;
+          left: 20px;
+          min-width: 150px;
+        }
       }
     }
   }
