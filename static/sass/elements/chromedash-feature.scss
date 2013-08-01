@@ -46,7 +46,7 @@ hgroup {
         @include tooltip;
         top: 20px;
         left: 25px;
-        min-width: 200px;
+        width: 225px;
       }
     }
   }
@@ -111,7 +111,7 @@ section {
           @include tooltip;
           top: -50px;
           left: 20px;
-          min-width: 150px;
+          width: 150px;
         }
       }
     }

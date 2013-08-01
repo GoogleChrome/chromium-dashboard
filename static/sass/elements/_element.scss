@@ -7,7 +7,7 @@
 // }
 
 @mixin tooltip {
-  content: attr(title);
+  content: attr(title) ""; // force to be a string for FF/Safari.
   position: absolute;
   @include gradient-bar-bg;
   box-shadow: 2px 2px 4px $gray-2;
