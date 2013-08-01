@@ -27,7 +27,23 @@ indexes:
   properties:
   - name: name
   - name: updated
+
+- kind: Feature
+  properties:
+  - name: name
+  - name: updated
     direction: desc
+
+- kind: Feature
+  properties:
+  - name: shipped_milestone
+  - name: name
+
+- kind: Feature
+  properties:
+  - name: shipped_milestone
+    direction: desc
+  - name: name
 
 - kind: Feature
   properties:

@@ -195,6 +195,12 @@ class FeatureHandler(common.ContentHandler):
         link = db.Link(link)
     return link
 
+  def __ToInt(self, param_name):
+    param = self.request.get(param_name) or None
+    if param:
+      param = int(param)
+    return param
+
   def get(self, path, feature_id=None):
     # Remove trailing slash from URL and redirect. e.g. /metrics/ -> /metrics
     if path[-1] == '/':
@@ -251,6 +257,12 @@ class FeatureHandler(common.ContentHandler):
     ff_views_link = self.__FullQualifyLink('ff_views_link')
     ie_views_link = self.__FullQualifyLink('ie_views_link')
 
+    # Cast incoming milestones to ints.
+    shipped_milestone = self.__ToInt('shipped_milestone')
+    shipped_android_milestone = self.__ToInt('shipped_android_milestone')
+    shipped_ios_milestone = self.__ToInt('shipped_ios_milestone')
+    shipped_webview_milestone = self.__ToInt('shipped_webview_milestone')
+
     owners = self.request.get('owner') or []
     if owners:
       owners = [db.Email(x.strip()) for x in owners.split(',')]
@@ -270,7 +282,10 @@ class FeatureHandler(common.ContentHandler):
         feature.owner = owners
         feature.bug_url = bug_url
         feature.impl_status_chrome = int(self.request.get('impl_status_chrome'))
-        feature.shipped_milestone = self.request.get('shipped_milestone')
+        feature.shipped_milestone = shipped_milestone
+        feature.shipped_android_milestone = shipped_android_milestone
+        feature.shipped_ios_milestone = shipped_ios_milestone
+        feature.shipped_webview_milestone = shipped_webview_milestone
         feature.footprint = int(self.request.get('footprint'))
         feature.visibility = int(self.request.get('visibility'))
         feature.safari_views = int(self.request.get('safari_views'))
@@ -292,7 +307,10 @@ class FeatureHandler(common.ContentHandler):
           owner=owners,
           bug_url=bug_url,
           impl_status_chrome=int(self.request.get('impl_status_chrome')),
-          shipped_milestone=self.request.get('shipped_milestone'),
+          shipped_milestone=shipped_milestone,
+          shipped_android_milestone=shipped_android_milestone,
+          shipped_ios_milestone=shipped_ios_milestone,
+          shipped_webview_milestone=shipped_webview_milestone,
           footprint=int(self.request.get('footprint')),
           visibility=int(self.request.get('visibility')),
           safari_views=int(self.request.get('safari_views')),

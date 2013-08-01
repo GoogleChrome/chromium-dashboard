@@ -64,11 +64,35 @@ class MainHandler(common.ContentHandler, common.JSONHandler):
 
         feature_list = models.Feature.get_all( # Memcached
             limit=settings.RSS_FEED_LIMIT,
-            filterby=filterby)
+            filterby=filterby,
+            order='-updated')
 
         return self.render_atom_feed('Features', feature_list)
       else:
-        feature_list = models.Feature.get_all() # Memcached
+        #feature_list = models.Feature.get_all() # Memcached
+        query = models.Feature.all().order('-shipped_milestone').order('name')
+        features = query.fetch(None)
+        
+        started = []
+        experimental = []
+        in_progress = []
+        others = []
+        for f in features:
+          if f.impl_status_chrome == models.STARTED:
+            started.append(f)
+          elif f.impl_status_chrome == models.EXPERIMENTAL: 
+            experimental.append(f)
+          elif models.CANARY_DEV <= f.impl_status_chrome <= models.STABLE:
+            in_progress.append(f)
+          else:
+            others.append(f)
+
+        started.extend(experimental)
+        started.extend(in_progress)
+        started.extend(others)
+
+        feature_list = [f.format_for_template() for f in started]
+
         template_data['features'] = json.dumps(feature_list)
         template_data['categories'] = [
           (v, normalized_name(v)) for k,v in
@@ -76,6 +100,9 @@ class MainHandler(common.ContentHandler, common.JSONHandler):
         template_data['VENDOR_VIEWS'] = [
           {'key': k, 'val': v} for k,v in
           models.VENDOR_VIEWS.iteritems()]
+        template_data['WEB_DEV_VIEWS'] = [
+          {'key': k, 'val': v} for k,v in
+          models.WEB_DEV_VIEWS.iteritems()]
 
     elif path == 'metrics/featurelevel':
       template_data['CSS_PROPERTY_BUCKETS'] = uma.CSS_PROPERTY_BUCKETS

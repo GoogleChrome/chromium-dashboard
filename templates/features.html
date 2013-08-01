@@ -44,7 +44,7 @@
   <button overlay-toggle>OK</button>
 </div> -->
 
-<chromedash-legend>
+<chromedash-legend opened>
   <button overlay-toggle>Close</button>
 </chromedash-legend>
 
@@ -111,7 +111,10 @@ document.addEventListener('WebComponentsReady', function(e) {
   });
 
   var overlay = document.querySelector('chromedash-legend');
-  overlay.options = {{VENDOR_VIEWS|safe}}; // set from server
+  overlay.views = {
+    vendors: {{VENDOR_VIEWS|safe}}, // set from server
+    webdevs: {{WEB_DEV_VIEWS|safe}} // set from server
+  };
 
   document.querySelector('.legend').addEventListener('click', function(e) {
     e.preventDefault();

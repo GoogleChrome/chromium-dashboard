@@ -45,7 +45,7 @@ function toggleSpecLink(stdStage) {
 function toggleMilestone(status) {
    var milestone = document.querySelector('#id_shipped_milestone')
    milestone.disabled = parseInt(status.value) <= MIN_MILESTONE_TO_BE_ACTIVE;
-   milestone.hidden = milestone.disabled;
+   milestone.parentElement.parentElement.hidden = milestone.disabled;
 }
 
 function toggleViewLink(view) {
@@ -63,6 +63,12 @@ document.addEventListener('DOMContentLoaded', function(e) {
   [].forEach.call(inputs, function(input) {
     input.type = 'url';
     input.placeholder = 'http://';
+  });
+
+  var shippedInputs = document.querySelectorAll('[name^="shipped_"]');
+  [].forEach.call(shippedInputs, function(input) {
+    input.type = 'number';
+    input.placeholder = 'Milestone #';
   });
 
   var owner = document.querySelector('[name="owner"]');

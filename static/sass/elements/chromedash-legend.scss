@@ -24,6 +24,23 @@ ul {
   }
 }
 
+label {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+section {
+  margin-top: 10px;
+
+  &.views {
+    @include display-flex;
+    > div {
+      @include flex(1 0 0);
+    }
+  }
+}
+
 .queries {
   li {
     span {

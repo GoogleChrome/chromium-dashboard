@@ -1,5 +1,5 @@
 application: cr-status #google.com:chromestatus
-version: v2dash
+version: v2dash2
 runtime: python27
 threadsafe: true
 api_version: 1

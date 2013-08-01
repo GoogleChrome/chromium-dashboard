@@ -5,18 +5,28 @@
   <link rel="stylesheet" type="text/css" href="../css/elements/chromedash-legend.css">
     <div id="dialog">
       <h2>Help</h2>
-      <h3>Color legend</h3>
-      <section>
-        <p>Description of the browser/web developer views.</p>
-        <ul>
-          <template repeat="{{o in options}}">
-            <li><chromedash-color-status value="{{o.key}}" max="{{options.length}}"></chromedash-color-status>{{o.val}}</li>
-          </template>
-        </ul>
+      <h3>Color descriptions</h3>
+      <section class="views">
+        <div>
+          <label>Browser vendor are:</label>
+          <ul>
+            <template repeat="{{o in views.vendors}}">
+              <li><chromedash-color-status value="{{o.key}}" max="{{views.vendors.length}}"></chromedash-color-status>{{o.val}}</li>
+            </template>
+          </ul>
+        </div>
+        <div>
+          <label>Web developer are:</label>
+          <ul>
+            <template repeat="{{o in views.webdevs}}">
+              <li><chromedash-color-status value="{{o.key}}" max="{{views.webdevs.length}}"></chromedash-color-status>{{o.val}}</li>
+            </template>
+          </ul>
+        </div>
       </section>
-      <h3>Search queries</h3>
+      <h3>Search samples</h3>
       <section>
-        <p>Example queries you can enter in the search box.</p>
+        <label>Example search queries</label>
         <ul class="queries">
           <li><span>"&lt;30"</span>features that landed before 30</li>
           <li><span>"&lt;=30"</span>features in 30</li>

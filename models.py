@@ -110,9 +110,7 @@ class Feature(DictModel):
     feature_list = memcache.get(KEY)
 
     if feature_list is None or update_cache:
-      # All matching results.
-      # For results with same creation date, final ordering is alphabetical.
-      query = Feature.all().order(order).order('name')
+      query = Feature.all().order(order) #.order('name')
 
       # TODO(ericbidelman): Support more than one filter.
       if filterby:
@@ -140,7 +138,10 @@ class Feature(DictModel):
   # Chromium details.
   bug_url = db.LinkProperty()
   impl_status_chrome = db.IntegerProperty(required=True)
-  shipped_milestone = db.StringProperty()
+  shipped_milestone = db.IntegerProperty()
+  shipped_android_milestone = db.IntegerProperty()
+  shipped_ios_milestone = db.IntegerProperty()
+  shipped_webview_milestone = db.IntegerProperty()
 
   owner = db.ListProperty(db.Email)
   footprint = db.IntegerProperty()
@@ -246,8 +247,8 @@ DEPRECATED = 8
 IMPLEMENATION_STATUS = {
   NOT_ACTIVE: 'No active development',
   PROPOSED: 'Proposed',
-  STARTED: 'Started',
-  EXPERIMENTAL: 'Experimental',
+  STARTED: 'In development',
+  EXPERIMENTAL: 'Behind a flag',
   CANARY_DEV: 'Canary / Dev channel',
   BETA: 'Beta channel',
   STABLE: 'Stable channel',
@@ -343,6 +344,9 @@ WEB_DEV_VIEWS = {
 
 class FeatureForm(forms.Form):
 
+  SHIPPED_HELP_TXT = ('First milestone the feature shipped with this status '
+                      '(either enabled by default, experimental, or deprecated)')
+
   #name = PlaceholderCharField(required=True, placeholder='Feature name')
   name = forms.CharField(required=True, label='Feature')
 
@@ -368,8 +372,19 @@ class FeatureForm(forms.Form):
                                          label='Status in Chrome',
                                          choices=IMPLEMENATION_STATUS.items())
 
-  shipped_milestone = PlaceholderCharField(required=False,
-                                           placeholder='First milestone the feature shipped with this status (either enabled by default or experimental)')
+  #shipped_milestone = PlaceholderCharField(required=False,
+  #                                         placeholder='First milestone the feature shipped with this status (either enabled by default or experimental)')
+  shipped_milestone = forms.IntegerField(required=False, label='',
+      help_text='Desktop: ' + SHIPPED_HELP_TXT)
+
+  shipped_android_milestone = forms.IntegerField(required=False, label='',
+      help_text='Android: ' + SHIPPED_HELP_TXT)
+
+  shipped_ios_milestone = forms.IntegerField(required=False, label='',
+      help_text='iOS: ' + SHIPPED_HELP_TXT)
+
+  shipped_webview_milestone = forms.IntegerField(required=False, label='',
+      help_text='Web view: ' + SHIPPED_HELP_TXT)
 
   prefixed = forms.BooleanField(
       required=False, initial=False, label='Prefixed?')
@@ -425,7 +440,7 @@ class FeatureForm(forms.Form):
 
   class Meta:
     model = Feature
-    #exclude = ('safari_views_link', 'ff_views_link', 'ie_views_link',)
+    exclude = ('shipped_webview_milestone',)
 
   def __init__(self, *args, **keyargs):
     super(FeatureForm, self).__init__(*args, **keyargs)
