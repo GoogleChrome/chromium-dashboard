@@ -26,7 +26,7 @@ form.addEventListener('change', function(e) {
       if (e.target.name.match(/_views$/)) {
         toggleViewLink(e.target);
       } else if (e.target.id == 'id_impl_status_chrome') {
-        toggleMilestone(e.target);
+        toggleMilestones(e.target);
       } else if (e.target.id == 'id_standardization') {
         toggleSpecLink(e.target)
       }
@@ -42,10 +42,18 @@ function toggleSpecLink(stdStage) {
   specLink.parentElement.parentElement.hidden = specLink.disabled;
 }
 
-function toggleMilestone(status) {
-   var milestone = document.querySelector('#id_shipped_milestone')
-   milestone.disabled = parseInt(status.value) <= MIN_MILESTONE_TO_BE_ACTIVE;
-   milestone.parentElement.parentElement.hidden = milestone.disabled;
+function toggleMilestones(status) {
+  var disabled = parseInt(status.value) <= MIN_MILESTONE_TO_BE_ACTIVE;
+
+  var shippedInputs = document.querySelectorAll('[name^="shipped_"]');
+  [].forEach.call(shippedInputs, function(input) {
+    input.disabled = disabled;
+    input.parentElement.parentElement.hidden = input.disabled;
+  });
+
+  // var milestone = document.querySelector('#id_shipped_milestone');
+  // milestone.disabled = parseInt(status.value) <= MIN_MILESTONE_TO_BE_ACTIVE;
+  // milestone.parentElement.parentElement.hidden = milestone.disabled;
 }
 
 function toggleViewLink(view) {
@@ -75,7 +83,7 @@ document.addEventListener('DOMContentLoaded', function(e) {
   owner.type = 'email';
   owner.multiple = true;
 
-  toggleMilestone(document.querySelector('#id_impl_status_chrome'));
+  toggleMilestones(document.querySelector('#id_impl_status_chrome'));
   [].forEach.call(document.querySelectorAll('select[name$="_views"]'), toggleViewLink);
 });
 
