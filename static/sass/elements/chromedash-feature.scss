@@ -58,6 +58,7 @@ section {
 
   &.desc {
     margin-right: $spacer-left;
+    cursor: pointer;
 
     summary {
       text-overflow: ellipsis;

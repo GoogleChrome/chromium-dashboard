@@ -8,7 +8,7 @@
   <h2>{{feature.name}}</h2>
   <label class="category" on-click="categoryFilter">{{feature.category}}</label>
 </hgroup>
-<section class="desc"><summary class="{{open ? 'open' : ''}}">{{feature.summary}}</summary></section>
+<section class="desc" on-click="toggleOpen"><summary class="{{open ? 'open' : ''}}">{{feature.summary}}</summary></section>
 <template if="{{open}}">
   <section>
     <h3>Implementation Status</h3>
