@@ -1,3 +1,5 @@
+@import "compass/css3/transition";
+
 @import "element";
 
 @host {
@@ -11,8 +13,10 @@ ul {
     $small-font-size: 75%;
     cursor: pointer;
     padding: 5px 0;
+    //@include transition(all 500ms ease);
 
     &::before {
+      @include transition(all 500ms ease);
       content: '';
       margin-right: 5px;
       border-left: 3px solid transparent;
@@ -45,12 +49,13 @@ ul {
     // &:nth-of-type(6)::after {
     //   content: 'stable';
     // }
-  }
-  [selected] {
-    font-weight: 600;
-    color: $chromium-color-dark;
-    &:before {
-      border-color: currentcolor;
+
+    &[selected] {
+      font-weight: 600;
+      color: $chromium-color-dark;
+      &::before {
+        border-color: $chromium-color-dark;
+      }
     }
   }
 }

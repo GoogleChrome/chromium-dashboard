@@ -19,6 +19,10 @@ body {
     @include align-items(center);
     z-index: 100;
   }
+
+  // #subheader {
+  //   margin-left: $content-padding + 150px;
+  // }
 }
 
 @media only screen and (max-width: 700px) {

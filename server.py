@@ -69,29 +69,7 @@ class MainHandler(common.ContentHandler, common.JSONHandler):
 
         return self.render_atom_feed('Features', feature_list)
       else:
-        #feature_list = models.Feature.get_all() # Memcached
-        query = models.Feature.all().order('-shipped_milestone').order('name')
-        features = query.fetch(None)
-        
-        started = []
-        experimental = []
-        in_progress = []
-        others = []
-        for f in features:
-          if f.impl_status_chrome == models.STARTED:
-            started.append(f)
-          elif f.impl_status_chrome == models.EXPERIMENTAL: 
-            experimental.append(f)
-          elif models.CANARY_DEV <= f.impl_status_chrome <= models.STABLE:
-            in_progress.append(f)
-          else:
-            others.append(f)
-
-        started.extend(experimental)
-        started.extend(in_progress)
-        started.extend(others)
-
-        feature_list = [f.format_for_template() for f in started]
+        feature_list = models.Feature.get_chronological() # Memcached
 
         template_data['features'] = json.dumps(feature_list)
         template_data['categories'] = [

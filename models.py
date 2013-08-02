@@ -124,6 +124,34 @@ class Feature(DictModel):
 
     return feature_list
 
+  @classmethod
+  def get_chronological(limit=None, update_cache=False):
+    KEY = '%s|%s|%s' % (Feature.DEFAULT_MEMCACHE_KEY, 'cronorder', limit)
+
+    feature_list = memcache.get(KEY)
+
+    if feature_list is None or update_cache:
+      q = Feature.all()
+      q.order('-shipped_milestone')
+      q.order('name')
+      features = q.fetch(None)
+
+      features = [f for f in features if f.impl_status_chrome > IN_DEVELOPMENT]
+
+      q = Feature.all()
+      q.order('impl_status_chrome')
+      q.order('name')
+      q.filter('impl_status_chrome <=', IN_DEVELOPMENT)
+      pre_release = q.fetch(None)
+
+      pre_release.extend(features)
+
+      feature_list = [f.format_for_template() for f in pre_release]
+       
+      memcache.set(KEY, feature_list)
+
+    return feature_list
+
   # Metadata.
   created = db.DateTimeProperty(auto_now_add=True)
   updated = db.DateTimeProperty(auto_now=True)
@@ -237,8 +265,8 @@ FEATURE_CATEGORIES = {
 
 NOT_ACTIVE = 1
 PROPOSED = 2
-STARTED = 3
-EXPERIMENTAL = 4
+IN_DEVELOPMENT = 3
+BEHIND_A_FLAG = 4
 CANARY_DEV = 5
 BETA = 6
 STABLE = 7
@@ -247,8 +275,8 @@ DEPRECATED = 8
 IMPLEMENATION_STATUS = {
   NOT_ACTIVE: 'No active development',
   PROPOSED: 'Proposed',
-  STARTED: 'In development',
-  EXPERIMENTAL: 'Behind a flag',
+  IN_DEVELOPMENT: 'In development',
+  BEHIND_A_FLAG: 'Behind a flag',
   CANARY_DEV: 'Canary / Dev channel',
   BETA: 'Beta channel',
   STABLE: 'Stable channel',

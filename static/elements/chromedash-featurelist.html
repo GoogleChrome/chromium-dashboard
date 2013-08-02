@@ -3,7 +3,6 @@
 <polymer-element name="chromedash-featurelist" attributes="whitelisted features">
 <template>
   <link rel="stylesheet" type="text/css" href="../css/elements/chromedash-featurelist.css">
-  <!-- <input type="search" placeholder="Search" on-keyup="filter"> -->
   <template repeat="{{feature in filtered}}">
     <li is="chromedash-feature" feature="{{feature}}">
       <template if="{{whitelisted}}">
@@ -19,11 +18,15 @@
     ready: function() {
       this.asyncMethod(function() {
         this.features = this.features || [];
+        this.featureLiList = this.featureLiList || [];
         this.filterd = this.filterd || [];
       });
     },
     featuresChanged: function() {
       this.filter();
+      this.asyncMethod(function() {
+        this.featureLiList = this.shadowRoot.querySelectorAll('li');
+      });
     },
     filterOnCategory: function(val) {
       var regex = new RegExp(val, 'ig');
@@ -32,6 +35,13 @@
       });
       return this.filtered.length;
     },
+    // filterOnVersion: function(val) {
+    //   var regex = new RegExp(val, 'ig');
+    //   this.filtered = this.features.filter(function(feature, idx, array) {
+    //     return regex.test(feature.category);
+    //   });
+    //   return this.filtered.length;
+    // },
     filter: function(val) {
       // Clear filter if there's no search or if called directly.
       if (!val) {
@@ -69,7 +79,7 @@
             }
           });
         } else {
-          // Remove "=" prefix so "experimental"/"started" version queries
+          // Remove "=" prefix so "in development"/"proposed" version queries
           // return results.
           if (val.indexOf('=') == 0) {
             val = val.substring(1);
@@ -85,6 +95,23 @@
       }
 
       return this.filtered.length;
+    },
+    // Returns the closest feature <li> to the scroll top position passed in.
+    featureInView: function(containerScrollTop) {
+      var closest = null;
+
+      for (var i = 0, feature; feature = this.featureLiList[i]; ++i) {
+        var dist = feature.offsetTop - containerScrollTop;
+        if (dist < 0) {
+          dist = -dist * 1.5;
+        }
+
+        if (closest == null || dist < closest.dist) {
+          closest = this.features[i];
+          closest.dist = dist;
+        }
+      }
+      return closest;
     }
   });
 </script>

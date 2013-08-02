@@ -240,7 +240,7 @@ chromedash-legend {
   nav {
     font-size: 125%;
     font-weight: 300;
-    width: $content-padding * 4;
+    width: $content-padding * 5 + 10;
 
     li {
       &:first-of-type {

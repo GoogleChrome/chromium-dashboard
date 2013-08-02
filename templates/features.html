@@ -20,9 +20,9 @@
 
 {% block subheader %}
 <div id="subheader">
-  <div>
+  <!-- <div>
     <h2 title="Restrict search to a particular milestone">Filters</h2>
-  </div>
+  </div> -->
   <div class="feature-count">
     <h2>Web Platform Features (<span id="num-features">-</span>)</h2>
   </div>
@@ -65,12 +65,18 @@
 {% block js %}
 <script>
 (function() {
+var $ = function(selector) {
+  return document.querySelector(selector);
+};
+var $$ = function(selector) {
+  return document.querySelectorAll(selector);
+};
 
 function updateCount(count) {
-  document.querySelector('#num-features').textContent = count;
+  $('#num-features').textContent = count;
 }
 
-var chromedashApp = document.querySelector('chromedash-featurelist');
+var chromedashApp = $('chromedash-featurelist');
 document.addEventListener('WebComponentsReady', function(e) {
   // Fill data from server by including it directly in template.
   chromedashApp.features = {{features|safe}};
@@ -85,24 +91,25 @@ document.addEventListener('WebComponentsReady', function(e) {
 
   updateCount(chromedashApp.features.length); // Set initial # features showing.
 
-  var search = document.querySelector('.search [type="search"]');
+  var search = $('.search [type="search"]');
   search.disabled = false;
 
   // Clear input when user clicks the 'x' button.
   search.addEventListener('input', function(e) {
     if (!e.target.value) {
       updateCount(chromedashApp.filter());
-      //chromeMetadata.selectedVersion = null;
+      //chromeMetadata.selected = null;
     } else {
       updateCount(chromedashApp.filter(e.target.value));
     }
   });
 
-  var chromeMetadata = document.querySelector('chromedash-metadata');
+  var chromeMetadata = $('chromedash-metadata');
   chromeMetadata.addEventListener('filter-version', function(e) {
     var val = e.detail && e.detail.val || null;
     //search.value = e.detail.version;
     updateCount(chromedashApp.filter(val));
+    //updateCount(chromedashApp.filterOnVersion(val));
   });
 
   chromedashApp.addEventListener('filter-category', function(e) {
@@ -110,13 +117,13 @@ document.addEventListener('WebComponentsReady', function(e) {
     updateCount(chromedashApp.filterOnCategory(e.detail.val));
   });
 
-  var overlay = document.querySelector('chromedash-legend');
+  var overlay = $('chromedash-legend');
   overlay.views = {
     vendors: {{VENDOR_VIEWS|safe}}, // set from server
     webdevs: {{WEB_DEV_VIEWS|safe}} // set from server
   };
 
-  document.querySelector('.legend').addEventListener('click', function(e) {
+  $('.legend').addEventListener('click', function(e) {
     e.preventDefault();
     overlay.toggle();
   });
@@ -125,9 +132,40 @@ document.addEventListener('WebComponentsReady', function(e) {
     if (e.keyCode == 27) { // ESC
       updateCount(chromedashApp.filter());
       search.value = '';
-      //chromeMetadata.selectedVersion = null;
+      //chromeMetadata.selected = null;
     }
   });
+
+  $('#content').addEventListener('scroll', function(e) {
+    var feature = chromedashApp.featureInView(e.target.scrollTop);
+
+    // If there's no shipped milestone, use the implementation status.
+    var version = feature.shipped_milestone;
+    if (!feature.shipped_milestone) {
+      switch(feature.impl_status_chrome) {
+        case chromeMetadata.NO_ACTIVE_DEV:
+        case chromeMetadata.PROPOSED:
+        case chromeMetadata.IN_DEVELOPMENT:
+          version = feature.impl_status_chrome;
+          break;
+        default:
+          version = feature.shipped_milestone;
+      }
+    }
+
+    // Update selection if it has changed.
+    if (chromeMetadata.selected != version) {
+      chromeMetadata.selected = version;
+
+      // if (history.replaceState) {
+      //   if (this.highlighted.name == 'hello')
+      //     history.replaceState({}, "", " ");
+      //   else
+      //     history.replaceState({}, this.highlighted.name, this.highlighted.menu.href);
+      // }
+    }
+  });
+
 });
 
 })();
