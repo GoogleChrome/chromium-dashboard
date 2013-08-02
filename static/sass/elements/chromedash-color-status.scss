@@ -17,7 +17,7 @@ span {
 }
 .corner {
   border-radius: 0;
-  height: 155%; // Ensures we can color coverage when feature is scrolled.
+  height: 100%; // Ensures we can color coverage when feature is scrolled.
   width: 7px;
   //@include transform(rotateZ(45deg) translateX(-30px));
 }
