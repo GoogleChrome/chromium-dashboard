@@ -4,7 +4,7 @@
 <template>
   <link rel="stylesheet" type="text/css" href="../css/elements/chromedash-featurelist.css">
   <template repeat="{{feature in filtered}}">
-    <li is="chromedash-feature" feature="{{feature}}">
+    <li is="chromedash-feature" feature="{{feature}}" needsflag="{{feature.needsflag}}">
       <template if="{{whitelisted}}">
         <a href="/admin/features/edit/{{feature.id}}" class="edit">edit</a>
       </template>
@@ -24,6 +24,7 @@
     },
     featuresChanged: function() {
       this.filter();
+
       this.asyncMethod(function() {
         this.featureLiList = this.shadowRoot.querySelectorAll('li');
       });

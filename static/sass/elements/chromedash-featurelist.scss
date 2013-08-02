@@ -6,11 +6,6 @@
   }
 } 
 
-.edit {
-  top: 15px;
-  right: 15px;
-  position: absolute;
-}
 chromedash-feature,
 [is="chromedash-feature"] {
   @include gradient-bar-bg;

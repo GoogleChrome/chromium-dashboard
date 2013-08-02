@@ -1,9 +1,15 @@
 <link rel="import" href="chromedash-color-status.html">
 
-<polymer-element name="chromedash-feature" extends="li" attributes="feature open">
+<polymer-element name="chromedash-feature" extends="li" attributes="feature open needsflag">
 <template>
 <link rel="stylesheet" type="text/css" href="../css/elements/chromedash-feature.css">
 <div on-click="toggleOpen">
+  <div class="topcorner pull-right">
+    <template if="{{needsflag}}">
+      <span class="needsflag tooltip" title="Experimental feature behind a flag."><i class="icon-warning-sign" tooltippart></i></span>
+    </template>
+    <content select=".edit"></content>
+  </div>
   <hgroup>
     <chromedash-color-status class="tooltip" title="Compatiblity Risk: overall interest from browser vendors and web developers" value="{{overallViews}}" max="7" width="40" height="40" corner></chromedash-color-status>
     <h2>{{feature.name}}</h2>
@@ -68,8 +74,6 @@
       </section>
     </template>
   </template>
-
-  <content select=".edit"></content>
 </div>
 </template>
 <script>
@@ -77,12 +81,15 @@
     applyAuthorStyles: true,
     overallViews: 0,
     open: false,
+    needsflag: false,
     openChanged: function() {
       this.open ? this.classList.add('open') : this.classList.remove('open');
     },
     toggleOpen: function(e, details, sender) {
       // Don't toggle panel if tooltip or link is being clicked.
-      if (e.target.classList.contains('tooltip') || e.target.tagName == 'A') {
+      if (e.target.classList.contains('tooltip') || 
+          e.target.getAttribute('tooltippart') != null ||
+          e.target.tagName == 'A') {
         return;
       }
       this.open = !this.open;

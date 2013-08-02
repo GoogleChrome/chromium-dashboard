@@ -24,6 +24,30 @@ h2 {
   font-size: 25px;
 }
 
+.topcorner {
+  &.pull-right {
+    top: 15px;
+    right: 15px;
+    position: absolute;
+  }
+
+  .needsflag {
+    &:hover, &:active {
+      &:before {
+        @include tooltip;
+        top: 20px;
+        right: 20px;
+        width: 250px;
+      }
+    }
+
+    // .icon-warning-sign {
+    //   color: darkred;
+    // }
+  }
+
+}
+
 hgroup {
   @include display-flex;
   @include align-items(center);
@@ -53,11 +77,11 @@ hgroup {
 }
 
 section {
-  margin-left: $spacer-left;
-  margin-top: 20px;
+  //margin-left: $spacer-left;
+  margin-top: 15px;
 
   &.desc {
-    margin-right: $spacer-left;
+    //margin-right: $spacer-left;
     cursor: pointer;
 
     summary {

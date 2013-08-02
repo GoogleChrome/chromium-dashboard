@@ -78,6 +78,7 @@ class Feature(DictModel):
     d['category'] = FEATURE_CATEGORIES[self.category]
     d['visibility'] = VISIBILITY_CHOICES[self.visibility]
     d['impl_status_chrome'] = IMPLEMENATION_STATUS[self.impl_status_chrome]
+    d['needsflag'] = self.impl_status_chrome == BEHIND_A_FLAG
     d['ff_views'] = {'value': self.ff_views,
                      'text': VENDOR_VIEWS[self.ff_views]}
     d['ie_views'] = {'value': self.ie_views,
@@ -263,7 +264,7 @@ FEATURE_CATEGORIES = {
   GRAPHICS: 'Graphics',
   }
 
-NOT_ACTIVE = 1
+NO_ACTIVE_DEV = 1
 PROPOSED = 2
 IN_DEVELOPMENT = 3
 BEHIND_A_FLAG = 4
@@ -271,15 +272,17 @@ CANARY_DEV = 5
 BETA = 6
 STABLE = 7
 DEPRECATED = 8
+ENABLED_BY_DEFAULT = 9
 
 IMPLEMENATION_STATUS = {
-  NOT_ACTIVE: 'No active development',
+  NO_ACTIVE_DEV: 'No active development',
   PROPOSED: 'Proposed',
   IN_DEVELOPMENT: 'In development',
   BEHIND_A_FLAG: 'Behind a flag',
   CANARY_DEV: 'Canary / Dev channel',
   BETA: 'Beta channel',
   STABLE: 'Stable channel',
+  ENABLED_BY_DEFAULT: 'Enabled by default',
   DEPRECATED: 'Deprecated',
   }
 

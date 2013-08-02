@@ -76,10 +76,25 @@ function updateCount(count) {
   $('#num-features').textContent = count;
 }
 
-var chromedashApp = $('chromedash-featurelist');
 document.addEventListener('WebComponentsReady', function(e) {
+  var chromedashApp = $('chromedash-featurelist');
+  var chromeMetadata = $('chromedash-metadata');
+  var overlay = $('chromedash-legend');
+  var search = $('.search [type="search"]');
+
   // Fill data from server by including it directly in template.
   chromedashApp.features = {{features|safe}};
+  chromeMetadata.implStatuses = {{IMPLEMENATION_STATUSES|safe}};
+  chromeMetadata.STATUS_KEYS = {
+    NO_ACTIVE_DEV: 1,
+    PROPOSED: 2,
+    IN_DEVELOPMENT: 3,
+    BEHIND_A_FLAG: 4,
+    DEPRECATED: 8,
+    ENABLED: 9
+  };
+  //chromedashApp.implStatuses = chromeMetadata.implStatuses;
+  // chromedashApp.STATUS_KEYS = chromeMetadata.STATUS_KEYS;
 
   // // Instead, fill data via AJAX.
   // var xhr = new XMLHttpRequest();
@@ -91,7 +106,6 @@ document.addEventListener('WebComponentsReady', function(e) {
 
   updateCount(chromedashApp.features.length); // Set initial # features showing.
 
-  var search = $('.search [type="search"]');
   search.disabled = false;
 
   // Clear input when user clicks the 'x' button.
@@ -104,7 +118,6 @@ document.addEventListener('WebComponentsReady', function(e) {
     }
   });
 
-  var chromeMetadata = $('chromedash-metadata');
   chromeMetadata.addEventListener('filter-version', function(e) {
     var val = e.detail && e.detail.val || null;
     //search.value = e.detail.version;
@@ -117,7 +130,6 @@ document.addEventListener('WebComponentsReady', function(e) {
     updateCount(chromedashApp.filterOnCategory(e.detail.val));
   });
 
-  var overlay = $('chromedash-legend');
   overlay.views = {
     vendors: {{VENDOR_VIEWS|safe}}, // set from server
     webdevs: {{WEB_DEV_VIEWS|safe}} // set from server
@@ -143,9 +155,9 @@ document.addEventListener('WebComponentsReady', function(e) {
     var version = feature.shipped_milestone;
     if (!feature.shipped_milestone) {
       switch(feature.impl_status_chrome) {
-        case chromeMetadata.NO_ACTIVE_DEV:
-        case chromeMetadata.PROPOSED:
-        case chromeMetadata.IN_DEVELOPMENT:
+        case chromeMetadata.implStatuses[chromeMetadata.STATUS_KEYS.NO_ACTIVE_DEV - 1].val:
+        case chromeMetadata.implStatuses[chromeMetadata.STATUS_KEYS.PROPOSED - 1].val:
+        case chromeMetadata.implStatuses[chromeMetadata.STATUS_KEYS.IN_DEVELOPMENT - 1].val:
           version = feature.impl_status_chrome;
           break;
         default:

@@ -75,6 +75,9 @@ class MainHandler(common.ContentHandler, common.JSONHandler):
         template_data['categories'] = [
           (v, normalized_name(v)) for k,v in
           models.FEATURE_CATEGORIES.iteritems()]
+        template_data['IMPLEMENATION_STATUSES'] = [
+          {'key': k, 'val': v} for k,v in
+          models.IMPLEMENATION_STATUS.iteritems()]
         template_data['VENDOR_VIEWS'] = [
           {'key': k, 'val': v} for k,v in
           models.VENDOR_VIEWS.iteritems()]
