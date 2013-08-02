@@ -238,20 +238,20 @@ chromedash-legend {
   width: 100%;
 
   nav {
-    font-size: 125%;
+    font-size: 120%;
     font-weight: 300;
     width: 150px;
 
-    li {
-      &:first-of-type {
-        padding-top: 0;
-      }
-      padding: 5px 0;
-    }
+    // li {
+    //   &:first-of-type {
+    //     padding-top: 0;
+    //   }
+    //   padding: 5px 0;
+    // }
 
     chromedash-metadata {
       position: fixed;
-      //height: 55vh;
+      max-height: 65vh;
       overflow: auto;
 
       .help {

@@ -39,9 +39,7 @@
           this.channels.stable
         ];
 
-        var NUM_VERSIONS_BACK = 6;
-        var MIN_VERSION = this.channels.stable - NUM_VERSIONS_BACK
-        for (var i = this.channels.stable - 1; i >= MIN_VERSION; i--) {
+        for (var i = this.channels.stable - 1; i >= 1; i--) {
           this.versions.push(i);
         }
 

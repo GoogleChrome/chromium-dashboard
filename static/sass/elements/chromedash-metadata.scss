@@ -12,7 +12,7 @@ ul {
   & > li {
     $small-font-size: 75%;
     cursor: pointer;
-    padding: 5px 0;
+    padding: 3px 0;
     //@include transition(all 500ms ease);
 
     &::before {
