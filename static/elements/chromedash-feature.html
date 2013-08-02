@@ -3,72 +3,74 @@
 <polymer-element name="chromedash-feature" extends="li" attributes="feature open">
 <template>
 <link rel="stylesheet" type="text/css" href="../css/elements/chromedash-feature.css">
-<hgroup on-click="toggleOpen">
-  <chromedash-color-status class="tooltip" title="Compatiblity Risk: overall interest from browser vendors and web developers" value="{{overallViews}}" max="7" width="40" height="40" corner></chromedash-color-status>
-  <h2>{{feature.name}}</h2>
-  <label class="category" on-click="categoryFilter">{{feature.category}}</label>
-</hgroup>
-<section class="desc" on-click="toggleOpen"><summary class="{{open ? 'open' : ''}}">{{feature.summary}}</summary></section>
-<template if="{{open}}">
-  <section>
-    <h3>Implementation Status</h3>
-    <div class="impl_status">
-      <span><label>{{feature.impl_status_chrome}}</label>{{feature.shipped_milestone}}</span>
-      <span><label>Prefixed</label>{{feature.prefixed ? 'Yes' : 'No'}}</span>
-      <a href="{{feature.bug_url}}" target="_blank" hidden?="{{!feature.bug_url}}">Launch bug</a>
-      <span class="owner" hidden?="{{!feature.owner.length}}">
-        <label>Owner(s)</label><template repeat="{{owner in feature.owner}}">
-          {{owner}}
-        </template>
-      </span>
-    </div>
-  </section>
-  <section>
-    <h3>Consensus &amp; Standardization</h3>
-    <div class="views">
-      <span alt="{{feature.ff_views.text}}" title="{{feature.ff_views.text}}">
-        <chromedash-color-status value="{{feature.ff_views.value}}" max="7"></chromedash-color-status>
-        <template if="{{feature.ff_views_link}}">
-          <a href="{{feature.ff_views_link}}" target="_blank">Firefox</a>
-        </template>
-        <label hidden?="{{feature.ff_views_link}}">Firefox</label>
-      </span>
-      <span alt="{{feature.ie_views.text}}" title="{{feature.ie_views.text}}">
-        <chromedash-color-status value="{{feature.ie_views.value}}" max="7"></chromedash-color-status>
-        <template if="{{feature.ie_views_link}}">
-          <a href="{{feature.ie_views_link}}" target="_blank">IE</a>
-        </template>
-        <label hidden?="{{feature.ie_views_link}}">IE</label>
-      </span>
-      <span alt="{{feature.safari_views.text}}" title="{{feature.safari_views.text}}">
-        <chromedash-color-status value="{{feature.safari_views.value}}" max="7"></chromedash-color-status>
-        <template if="{{feature.safari_views_link}}">
-          <a href="{{feature.safari_views_link}}" target="_blank">Safari</a>
-        </template>
-        <label hidden?="{{feature.safari_views_link}}">Safari</label>
-      </span>
-      <span alt="{{feature.web_dev_views.text}}" title="{{feature.web_dev_views.text}}">
-        <chromedash-color-status value="{{feature.web_dev_views.value}}" max="7"></chromedash-color-status>
-        <label>Web developers</label>
-      </span>
-    </div>
-    <div>
-      <template if="{{feature.spec_link}}">
-        <a href="{{feature.spec_link}}" target="_blank">{{feature.standardization.text}}</a>
-      </template>
-      <span hidden?="{{feature.spec_link}}">{{feature.standardization.text}}</span>
-      <a href="http://caniuse.com/#search={{feature.name}}" target="_blank">Browser share %</a>
-    </div>
-  </section>
-  <template bind if="{{feature.comments}}">
+<div on-click="toggleOpen">
+  <hgroup>
+    <chromedash-color-status class="tooltip" title="Compatiblity Risk: overall interest from browser vendors and web developers" value="{{overallViews}}" max="7" width="40" height="40" corner></chromedash-color-status>
+    <h2>{{feature.name}}</h2>
+    <label class="category" on-click="categoryFilter">{{feature.category}}</label>
+  </hgroup>
+  <section class="desc"><summary class="{{open ? 'open' : ''}}">{{feature.summary}}</summary></section>
+  <template if="{{open}}">
     <section>
-      <h3>Comments</h3>
-      <summary>{{feature.comments}}</summary>
+      <h3>Implementation Status</h3>
+      <div class="impl_status">
+        <span><label>{{feature.impl_status_chrome}}</label>{{feature.shipped_milestone}}</span>
+        <span><label>Prefixed</label>{{feature.prefixed ? 'Yes' : 'No'}}</span>
+        <a href="{{feature.bug_url}}" target="_blank" hidden?="{{!feature.bug_url}}">Launch bug</a>
+        <span class="owner" hidden?="{{!feature.owner.length}}">
+          <label>Owner(s)</label><template repeat="{{owner in feature.owner}}">
+            {{owner}}
+          </template>
+        </span>
+      </div>
     </section>
+    <section>
+      <h3>Consensus &amp; Standardization</h3>
+      <div class="views">
+        <span alt="{{feature.ff_views.text}}" title="{{feature.ff_views.text}}">
+          <chromedash-color-status value="{{feature.ff_views.value}}" max="7"></chromedash-color-status>
+          <template if="{{feature.ff_views_link}}">
+            <a href="{{feature.ff_views_link}}" target="_blank">Firefox</a>
+          </template>
+          <label hidden?="{{feature.ff_views_link}}">Firefox</label>
+        </span>
+        <span alt="{{feature.ie_views.text}}" title="{{feature.ie_views.text}}">
+          <chromedash-color-status value="{{feature.ie_views.value}}" max="7"></chromedash-color-status>
+          <template if="{{feature.ie_views_link}}">
+            <a href="{{feature.ie_views_link}}" target="_blank">IE</a>
+          </template>
+          <label hidden?="{{feature.ie_views_link}}">IE</label>
+        </span>
+        <span alt="{{feature.safari_views.text}}" title="{{feature.safari_views.text}}">
+          <chromedash-color-status value="{{feature.safari_views.value}}" max="7"></chromedash-color-status>
+          <template if="{{feature.safari_views_link}}">
+            <a href="{{feature.safari_views_link}}" target="_blank">Safari</a>
+          </template>
+          <label hidden?="{{feature.safari_views_link}}">Safari</label>
+        </span>
+        <span alt="{{feature.web_dev_views.text}}" title="{{feature.web_dev_views.text}}">
+          <chromedash-color-status value="{{feature.web_dev_views.value}}" max="7"></chromedash-color-status>
+          <label>Web developers</label>
+        </span>
+      </div>
+      <div>
+        <template if="{{feature.spec_link}}">
+          <a href="{{feature.spec_link}}" target="_blank">{{feature.standardization.text}}</a>
+        </template>
+        <span hidden?="{{feature.spec_link}}">{{feature.standardization.text}}</span>
+        <a href="http://caniuse.com/#search={{feature.name}}" target="_blank">Browser share %</a>
+      </div>
+    </section>
+    <template bind if="{{feature.comments}}">
+      <section>
+        <h3>Comments</h3>
+        <summary>{{feature.comments}}</summary>
+      </section>
+    </template>
   </template>
-</template>
 
-<content select=".edit"></content>
+  <content select=".edit"></content>
+</div>
 </template>
 <script>
   Polymer('chromedash-feature', {
@@ -79,8 +81,8 @@
       this.open ? this.classList.add('open') : this.classList.remove('open');
     },
     toggleOpen: function(e, details, sender) {
-      // Don't toggle panel if tooltip is being clicked.
-      if (e.target.classList.contains('tooltip')) {
+      // Don't toggle panel if tooltip or link is being clicked.
+      if (e.target.classList.contains('tooltip') || e.target.tagName == 'A') {
         return;
       }
       this.open = !this.open;

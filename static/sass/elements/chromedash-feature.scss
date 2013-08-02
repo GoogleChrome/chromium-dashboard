@@ -10,6 +10,7 @@ $spacer-left: 5px;
     @include transition(height 400ms ease-in-out);
     height: 105px;
     overflow: hidden;
+    cursor: pointer;
   }
   :scope.open {
     height: 375px;
@@ -26,7 +27,6 @@ h2 {
 hgroup {
   @include display-flex;
   @include align-items(center);
-  cursor: pointer;
   margin-left: $spacer-left;
 
   .category {
@@ -100,7 +100,6 @@ section {
       @include display-flex;
       @include align-items(center);
       position: relative;
-      cursor: pointer;
 
       > label {
         cursor: inherit;
