@@ -178,7 +178,7 @@ chromedash-legend {
   @include align-items(center);
   margin: $content-padding $content-padding 0 $content-padding + 5;
   //border-bottom: 1px solid $bar-border-color;
-  max-width: $max-content-width + $content-padding * 4 - 10;
+  max-width: $max-content-width + $content-padding * 7 + 5;
 
   div {
     margin-right: $content-padding * 2 - 15;
@@ -224,7 +224,7 @@ chromedash-legend {
   @include flex(1 0 0);
   //@include box-orient(vertical);
 
-  margin: $content-padding / 2 $content-padding;
+  margin: $content-padding;
   overflow: auto;
 
   position: relative;
@@ -240,7 +240,7 @@ chromedash-legend {
   nav {
     font-size: 125%;
     font-weight: 300;
-    width: $content-padding * 5 + 10;
+    width: 150px;
 
     li {
       &:first-of-type {

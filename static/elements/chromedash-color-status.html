@@ -1,25 +1,11 @@
 <polymer-element name="chromedash-color-status" attributes="value max width height corner">
   <template>
+    <link rel="stylesheet" type="text/css" href="../css/elements/chromedash-color-status.css">
     <style>
       span {
-        background-color: rgb(255,0,0);
-        width: 10px;
-        height: 10px;
-        border-radius: 50%;
-        display: inline-block;
+        width: {{width}}px;
+        height: {{height}}px;
       }
-      .corner {
-        border-radius: 0;
-        -webkit-transform: rotateZ(45deg) translateX(-30px);
-        -ms-transform: rotateZ(45deg) translateX(-30px);
-        transform: rotateZ(45deg) translateX(-30px);
-      }
-      /*.corner:after {
-        content: '';
-        position: absolute;
-        border-top: 30px solid transparent;
-        border-right: 30px solid rgb(255, 255, 255);
-      }*/
     </style>
     <span id="status"></span>
   </template>
@@ -43,13 +29,13 @@
       },
       maxChanged: function() {
         this.updateColor();
-      },
-      widthChanged: function() {
-        this.$.status.style.width = this.width + 'px';
-      },
-      heightChanged: function() {
-        this.$.status.style.height = this.height + 'px';
       }
+      // widthChanged: function() {
+      //   this.$.status.style.width = this.width + 'px';
+      // },
+      // heightChanged: function() {
+      //   this.$.status.style.height = this.height + 'px';
+      // }
     });
   </script>
   </polymer-element>

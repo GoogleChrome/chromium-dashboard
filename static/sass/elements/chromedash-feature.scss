@@ -2,18 +2,16 @@
 
 @import "element";
 
-$spacer-left: 5px;
-
 @host {
   :scope {
     display: block;
     @include transition(height 400ms ease-in-out);
-    height: 105px;
+    height: $feature-min-height;
     overflow: hidden;
     cursor: pointer;
   }
   :scope.open {
-    height: 375px;
+    height: 290px;
     overflow: auto;
   }
 }
@@ -51,11 +49,10 @@ h2 {
 hgroup {
   @include display-flex;
   @include align-items(center);
-  margin-left: $spacer-left;
 
   .category {
     color: $gray-2;
-    font-size: 15px;
+    //font-size: 14px;
     cursor: pointer;
   }
 
@@ -70,18 +67,16 @@ hgroup {
         @include tooltip;
         top: 20px;
         left: 25px;
-        width: 225px;
+        width: 275px;
       }
     }
   }
 }
 
 section {
-  //margin-left: $spacer-left;
-  margin-top: 15px;
+  margin-top: 10px;
 
   &.desc {
-    //margin-right: $spacer-left;
     cursor: pointer;
 
     summary {
@@ -161,9 +156,6 @@ chromedash-color-status {
 @media only screen and (max-width: 700px) {
   section {
     margin-left: 0;
-    &.desc {
-      margin-bottom: 10px;
-    }
   }
   .impl_status {
     @include display-flex;

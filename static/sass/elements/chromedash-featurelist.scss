@@ -9,9 +9,9 @@
 chromedash-feature,
 [is="chromedash-feature"] {
   @include gradient-bar-bg;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
   position: relative;
   border-radius: $default-border-radius;
-  padding: 15px 20px;
+  padding: 5px 20px;
   list-style: none;
 }
