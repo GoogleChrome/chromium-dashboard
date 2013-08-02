@@ -8,20 +8,24 @@
       <h3>Color descriptions</h3>
       <section class="views">
         <div>
-          <label>Browser vendor are:</label>
+          <label>Browser vendors</label>
+          <!-- <p>Low compatibility risk</p> -->
           <ul>
             <template repeat="{{o in views.vendors}}">
               <li><chromedash-color-status value="{{o.key}}" max="{{views.vendors.length}}"></chromedash-color-status>{{o.val}}</li>
             </template>
           </ul>
+          <!-- <p>High compatibility risk</p> -->
         </div>
         <div>
-          <label>Web developer are:</label>
+          <label>Web developer</label>
+         <!--  <p>Low compatibility risk</p> -->
           <ul>
             <template repeat="{{o in views.webdevs}}">
               <li><chromedash-color-status value="{{o.key}}" max="{{views.webdevs.length}}"></chromedash-color-status>{{o.val}}</li>
             </template>
           </ul>
+          <!-- <p>High compatibility risk</p> -->
         </div>
       </section>
       <h3>Search samples</h3>
