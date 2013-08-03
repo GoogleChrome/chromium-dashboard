@@ -116,6 +116,8 @@
     },
     scrollToMilestone: function(milestone) {
       for (var i = 0, feature; feature = this.features[i]; i++) {
+        // Check shipped milestone and impl status. Ensure former is string for
+        // comparison.
         if ([String(feature.shipped_milestone),
              feature.impl_status_chrome].indexOf(milestone) != -1) {
           this.featureLiList[i].scrollIntoView(true);

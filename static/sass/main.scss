@@ -1,5 +1,6 @@
 @import "base";
 @import "compass/css3/images";
+@import "compass/css3/transition";
 
 $max-content-width: 760px;
 
@@ -253,6 +254,7 @@ chromedash-legend {
       position: fixed;
       max-height: 65vh;
       overflow: auto;
+      width: 145px;
 
       .help {
         text-align: center;
@@ -343,6 +345,7 @@ chromedash-legend {
     border-radius: 0 !important;
     padding: 10px !important;
     margin: 0 !important;
+    @include transition(none !important);
   }
 
   footer {

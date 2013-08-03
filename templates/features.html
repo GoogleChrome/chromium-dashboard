@@ -126,10 +126,6 @@ document.addEventListener('WebComponentsReady', function(e) {
   });
 
   chromeMetadata.addEventListener('selected-change', function(e) {
-console.log('selected-milestone', e.detail.version)
-
-    //var v = chromeMetadata.getVersionStr(e.detail.version)
-
     featureList.scrollToMilestone(e.detail.version);
   });
 
