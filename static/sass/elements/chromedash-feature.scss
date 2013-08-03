@@ -65,7 +65,9 @@ hgroup {
     &:hover, &:active {
       &:before {
         @include tooltip;
-        top: 5px;
+        //top: 5px;
+        top: 50%;
+        margin: -30px auto;
         left: 25px;
         width: 275px;
       }
