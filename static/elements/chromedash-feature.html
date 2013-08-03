@@ -5,9 +5,7 @@
 <link rel="stylesheet" type="text/css" href="../css/elements/chromedash-feature.css">
 <div on-click="toggleOpen">
   <div class="topcorner pull-right">
-    <template if="{{needsflag}}">
-      <span class="needsflag tooltip" title="Experimental feature behind a flag."><i class="icon-warning-sign" tooltippart></i></span>
-    </template>
+    <span hidden?="{{!needsflag}}" class="needsflag tooltip" title="Experimental feature behind a flag."><i class="icon-warning-sign" tooltippart></i></span>
     <content select=".edit"></content>
   </div>
   <hgroup>

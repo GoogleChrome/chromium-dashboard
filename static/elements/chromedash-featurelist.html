@@ -3,13 +3,13 @@
 <polymer-element name="chromedash-featurelist" attributes="whitelisted features">
 <template>
   <link rel="stylesheet" type="text/css" href="../css/elements/chromedash-featurelist.css">
-  <template repeat="{{feature in filtered}}">
-    <li is="chromedash-feature" feature="{{feature}}" needsflag="{{feature.needsflag}}">
-      <template if="{{whitelisted}}">
-        <a href="/admin/features/edit/{{feature.id}}" class="edit">edit</a>
-      </template>
-    </li>
-  </template>
+  <ul>
+    <template repeat="{{feature in filtered}}">
+      <li is="chromedash-feature" feature="{{feature}}" needsflag="{{feature.needsflag}}">
+        <a href="/admin/features/edit/{{feature.id}}" class="edit" hidden?="{{!whitelisted}}">edit</a>
+      </li>
+    </template>
+  </ul>
 </template>
 <script>
   Polymer('chromedash-featurelist', {
