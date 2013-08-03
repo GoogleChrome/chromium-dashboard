@@ -160,9 +160,9 @@ footer {
 }
 
 chromedash-legend {
-  width: 512px;
-  @include calc(left, '50% - 512px/2');
-  top: 15%;
+  width: 600px;
+  @include calc(left, '50% - 600px/2');
+  top: 10%;
   opacity: 0; // Ensure no FOUC.
   
   // width: 100%;
