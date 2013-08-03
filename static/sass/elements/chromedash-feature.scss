@@ -156,6 +156,9 @@ chromedash-color-status {
 
 
 @media only screen and (max-width: 700px) {
+  h2 {
+    font-size: 20px !important;
+  }
   section {
     margin-left: 0;
   }
