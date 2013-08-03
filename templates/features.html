@@ -84,6 +84,8 @@ document.addEventListener('WebComponentsReady', function(e) {
 
   // Fill data from server by including it directly in template.
   featureList.features = {{features|safe}};
+
+  // TODO: decide if we need these anymore. Can they be moved internal to the el?
   chromeMetadata.implStatuses = {{IMPLEMENATION_STATUSES|safe}};
   chromeMetadata.STATUS_KEYS = {
     NO_ACTIVE_DEV: 1,

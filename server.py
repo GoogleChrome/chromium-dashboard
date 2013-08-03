@@ -49,7 +49,7 @@ class MainHandler(common.ContentHandler, common.JSONHandler):
 
     if path.startswith('features'):
       if path.endswith('.json'): # JSON request.
-        feature_list = models.Feature.get_all() # Memcached
+        feature_list = models.Feature.get_chronological() # Memcached
         return common.JSONHandler.get(self, feature_list, formatted=True)
       elif path.endswith('.xml'): # Atom feed request.
         filterby = None
