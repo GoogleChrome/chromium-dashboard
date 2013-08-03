@@ -101,8 +101,8 @@
     featureInView: function(containerScrollTop) {
       var closest = null;
 
-      for (var i = 0, feature; feature = this.featureLiList[i]; ++i) {
-        var dist = feature.offsetTop - containerScrollTop;
+      for (var i = 0, li; li = this.featureLiList[i]; ++i) {
+        var dist = li.offsetTop - containerScrollTop;
         if (dist < 0) {
           dist = -dist * 1.5;
         }
@@ -113,6 +113,16 @@
         }
       }
       return closest;
+    },
+    scrollToMilestone: function(milestone) {
+      for (var i = 0, feature; feature = this.features[i]; i++) {
+        if ([String(feature.shipped_milestone),
+             feature.impl_status_chrome].indexOf(milestone) != -1) {
+          this.featureLiList[i].scrollIntoView(true);
+          //this.featureLiList[i].scrollIntoViewIfNeeded();
+          break;
+        }
+      }
     }
   });
 </script>

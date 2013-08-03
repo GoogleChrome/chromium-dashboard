@@ -77,13 +77,13 @@ function updateCount(count) {
 }
 
 document.addEventListener('WebComponentsReady', function(e) {
-  var chromedashApp = $('chromedash-featurelist');
+  var featureList = $('chromedash-featurelist');
   var chromeMetadata = $('chromedash-metadata');
   var overlay = $('chromedash-legend');
   var search = $('.search [type="search"]');
 
   // Fill data from server by including it directly in template.
-  chromedashApp.features = {{features|safe}};
+  featureList.features = {{features|safe}};
   chromeMetadata.implStatuses = {{IMPLEMENATION_STATUSES|safe}};
   chromeMetadata.STATUS_KEYS = {
     NO_ACTIVE_DEV: 1,
@@ -93,41 +93,49 @@ document.addEventListener('WebComponentsReady', function(e) {
     DEPRECATED: 8,
     ENABLED: 9
   };
-  //chromedashApp.implStatuses = chromeMetadata.implStatuses;
-  // chromedashApp.STATUS_KEYS = chromeMetadata.STATUS_KEYS;
+  //featureList.implStatuses = chromeMetadata.implStatuses;
+  // featureList.STATUS_KEYS = chromeMetadata.STATUS_KEYS;
 
   // // Instead, fill data via AJAX.
   // var xhr = new XMLHttpRequest();
   // xhr.open('GET', '/features.json');
   // xhr.onloadend = function(e) {
-  //   chromedashApp.features = JSON.parse(e.target.response);
+  //   featureList.features = JSON.parse(e.target.response);
   // };
   // xhr.send();
 
-  updateCount(chromedashApp.features.length); // Set initial # features showing.
+  updateCount(featureList.features.length); // Set initial # features showing.
 
   search.disabled = false;
 
   // Clear input when user clicks the 'x' button.
   search.addEventListener('input', function(e) {
     if (!e.target.value) {
-      updateCount(chromedashApp.filter());
+      updateCount(featureList.filter());
       //chromeMetadata.selected = null;
     } else {
-      updateCount(chromedashApp.filter(e.target.value));
+      updateCount(featureList.filter(e.target.value));
     }
   });
 
   chromeMetadata.addEventListener('filter-version', function(e) {
     var val = e.detail && e.detail.val || null;
     //search.value = e.detail.version;
-    updateCount(chromedashApp.filter(val));
-    //updateCount(chromedashApp.filterOnVersion(val));
+    updateCount(featureList.filter(val));
+    //updateCount(featureList.filterOnVersion(val));
   });
 
-  chromedashApp.addEventListener('filter-category', function(e) {
+  chromeMetadata.addEventListener('selected-change', function(e) {
+console.log('selected-milestone', e.detail.version)
+
+    //var v = chromeMetadata.getVersionStr(e.detail.version)
+
+    featureList.scrollToMilestone(e.detail.version);
+  });
+
+  featureList.addEventListener('filter-category', function(e) {
     search.value = e.detail.val;
-    updateCount(chromedashApp.filterOnCategory(e.detail.val));
+    updateCount(featureList.filterOnCategory(e.detail.val));
   });
 
   overlay.views = {
@@ -142,40 +150,22 @@ document.addEventListener('WebComponentsReady', function(e) {
 
   document.body.addEventListener('keyup', function(e) {
     if (e.keyCode == 27) { // ESC
-      updateCount(chromedashApp.filter());
+      updateCount(featureList.filter());
       search.value = '';
       //chromeMetadata.selected = null;
     }
   });
 
   $('#content').addEventListener('scroll', function(e) {
-    var feature = chromedashApp.featureInView(e.target.scrollTop);
+    var feature = featureList.featureInView(e.target.scrollTop);
+    chromeMetadata.selectMilestone(feature);
 
-    // If there's no shipped milestone, use the implementation status.
-    var version = feature.shipped_milestone;
-    if (!feature.shipped_milestone) {
-      switch(feature.impl_status_chrome) {
-        case chromeMetadata.implStatuses[chromeMetadata.STATUS_KEYS.NO_ACTIVE_DEV - 1].val:
-        case chromeMetadata.implStatuses[chromeMetadata.STATUS_KEYS.PROPOSED - 1].val:
-        case chromeMetadata.implStatuses[chromeMetadata.STATUS_KEYS.IN_DEVELOPMENT - 1].val:
-          version = feature.impl_status_chrome;
-          break;
-        default:
-          version = feature.shipped_milestone;
-      }
-    }
-
-    // Update selection if it has changed.
-    if (chromeMetadata.selected != version) {
-      chromeMetadata.selected = version;
-
-      // if (history.replaceState) {
-      //   if (this.highlighted.name == 'hello')
-      //     history.replaceState({}, "", " ");
-      //   else
-      //     history.replaceState({}, this.highlighted.name, this.highlighted.menu.href);
-      // }
-    }
+    // if (history.replaceState) {
+    //   if (this.highlighted.name == 'hello')
+    //     history.replaceState({}, "", " ");
+    //   else
+    //     history.replaceState({}, this.highlighted.name, this.highlighted.menu.href);
+    // }
   });
 
 });

@@ -6,7 +6,7 @@
   <polymer-jsonp id="jsonp" url="//omahaproxy.appspot.com/all.json?callback=" auto></polymer-jsonp>
   <ul>
     <template repeat="{{v in versions}}">
-      <li data-version="{{v}}" on-click="toggleMilestone" selected?="{{v == selected}}">{{v}}</li>
+      <li data-version="{{v}}" on-click="selectMilestone" selected?="{{v == selected}}">{{v}}</li>
     </template>
   </ul>
 </template>
@@ -35,29 +35,42 @@
           this.implStatuses[this.STATUS_KEYS.NO_ACTIVE_DEV - 1].val,
           this.implStatuses[this.STATUS_KEYS.PROPOSED - 1].val,
           this.implStatuses[this.STATUS_KEYS.IN_DEVELOPMENT - 1].val,
-          this.channels.canary, this.channels.beta,
-          this.channels.stable
+          this.channels.canary, this.channels.beta, this.channels.stable
         ];
 
         for (var i = this.channels.stable - 1; i >= 1; i--) {
           this.versions.push(i);
         }
 
-        //// Highlight the stable channel.
-        //this.selected = this.IN_DEVELOPMENT;
+        // Highlight in development features first.
+        this.selected = this.implStatuses[this.STATUS_KEYS.IN_DEVELOPMENT - 1].val;
       });
-
-      //this.$.jsonp.go(); // Using auto attribute instead.
     },
-    toggleMilestone: function(e, details, sender) {
-      var version = sender.dataset.version;
-      this.selected = this.selected == version ? null : version;
-      // if (this.selected) {
-      //   this.fire('filter-version', {val: '=' + version});
-      // } else {
-      //   this.fire('filter-version');
-      // }
-      // TODO: scroll to this milestone.
+    selectedChanged: function() {
+      this.fire('selected-change', {version: this.selected});
+    },
+    selectMilestone: function(e, details, sender) {
+      if (e.target) {
+        this.selected = sender.dataset.version;
+      } else { // called directly (from outside). e is a feature.
+        // If there's no shipped milestone, use the implementation status.
+        this.selected = this.getVersionStr(e);
+      }
+    },
+    getVersionStr: function(feature) {
+      var version = feature.shipped_milestone;
+      if (!feature.shipped_milestone) {
+        switch(feature.impl_status_chrome) {
+          case this.implStatuses[this.STATUS_KEYS.NO_ACTIVE_DEV - 1].val:
+          case this.implStatuses[this.STATUS_KEYS.PROPOSED - 1].val:
+          case this.implStatuses[this.STATUS_KEYS.IN_DEVELOPMENT - 1].val:
+            version = feature.impl_status_chrome;
+            break;
+          default:
+            version = feature.shipped_milestone;
+        }
+      }
+      return version;
     }
   });
 </script>
