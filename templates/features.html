@@ -154,7 +154,8 @@ document.addEventListener('WebComponentsReady', function(e) {
     }
   });
 
-  $('#content').addEventListener('scroll', function(e) {
+  //$('#content').addEventListener('scroll', function(e) {
+  featureList.addEventListener('scroll', function(e) {
     var feature = featureList.featureInView(e.target.scrollTop);
     chromeMetadata.selectMilestone(feature);
 

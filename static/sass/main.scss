@@ -237,6 +237,7 @@ chromedash-legend {
   //@include display-box;
   @include display-flex;
   width: 100%;
+  overflow: hidden;
 
   nav {
     font-size: 120%;
@@ -251,7 +252,7 @@ chromedash-legend {
     // }
 
     chromedash-metadata {
-      position: fixed;
+      // position: fixed;
       max-height: 65vh;
       overflow: auto;
       width: 145px;
@@ -264,11 +265,9 @@ chromedash-legend {
 
   chromedash-featurelist {
     @include flex(1 0 0);
-    //@include box-flex(1);
-    //margin-left: $content-padding * 5;
-    height: 100%;
+    //height: 100%;
+    overflow: auto;
     max-width: $max-content-width;
-    // font-weight: 300;
   }
 }
 
