@@ -41,17 +41,15 @@
         for (var i = this.channels.stable - 1; i >= 1; i--) {
           this.versions.push(i);
         }
-
-        // Highlight in development features first.
-        this.selected = this.implStatuses[this.STATUS_KEYS.IN_DEVELOPMENT - 1].val;
       });
     },
     selectedChanged: function() {
-      this.fire('selected-change', {version: this.selected});
+      
     },
     selectMilestone: function(e, details, sender) {
-      if (e.target) {
+      if (details) { // Came from an internal click.
         this.selected = sender.dataset.version;
+        this.fire('milestoneselect', {version: this.selected});
       } else { // called directly (from outside). e is a feature.
         // If there's no shipped milestone, use the implementation status.
         this.selected = this.getVersionStr(e);

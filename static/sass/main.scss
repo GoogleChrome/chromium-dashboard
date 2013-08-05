@@ -240,22 +240,17 @@ chromedash-legend {
   overflow: hidden;
 
   nav {
+    $nav-width: 150px;
+
     font-size: 120%;
     font-weight: 300;
-    width: 150px;
-
-    // li {
-    //   &:first-of-type {
-    //     padding-top: 0;
-    //   }
-    //   padding: 5px 0;
-    // }
+    width: $nav-width; // slighty smaller than chromedash-metadata to remove scrollbar
+    overflow-x: hidden;
 
     chromedash-metadata {
-      // position: fixed;
       max-height: 65vh;
       overflow: auto;
-      width: 145px;
+      width: $nav-width + 15;
 
       .help {
         text-align: center;

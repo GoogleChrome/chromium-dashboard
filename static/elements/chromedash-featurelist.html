@@ -12,21 +12,51 @@
   </ul>
 </template>
 <script>
+(function() {
+  function onMetadataChanged_(e) {
+    this.scrollToMilestone(e.detail.version);
+  }
+
   Polymer('chromedash-featurelist', {
     applyAuthorStyles: true,
     whitelisted: false,
+    metadata: null,
     ready: function() {
-      this.asyncMethod(function() {
+      //this.asyncMethod(function() {
         this.features = this.features || [];
         this.featureLiList = this.featureLiList || [];
         this.filterd = this.filterd || [];
+      //});
+
+      this.addEventListener('scroll', function(e) {
+        var feature = this.featureInView(e.target.scrollTop);
+        this.metadata.selectMilestone(feature);
+
+        // // Update URL with history API.
+        // if (history.replaceState) {
+        //   if (this.highlighted.name == 'hello')
+        //     history.replaceState({}, "", " ");
+        //   else
+        //     history.replaceState({}, this.highlighted.name, this.highlighted.menu.href);
+        // }
       });
+    },
+    metadataChanged: function(oldVal) {
+      // TODO: probably need to remove the listener if metadata element changes.
+      //this.metadata.removeEventListener('milestoneselect', onMetadataChanged_.bind(this));
+      this.metadata.addEventListener('milestoneselect', onMetadataChanged_.bind(this));
     },
     featuresChanged: function() {
       this.filter();
 
       this.asyncMethod(function() {
         this.featureLiList = this.shadowRoot.querySelectorAll('li');
+
+        // Highlight and scroll to first "in development" when list of features changes.
+        // TODO: really want this in ready(), but featureLiList and metadata may
+        // not be set yet. Timing issues.
+        this.scrollToMilestone(this.metadata.implStatuses[
+            this.metadata.STATUS_KEYS.IN_DEVELOPMENT - 1].val);
       });
     },
     filterOnCategory: function(val) {
@@ -127,5 +157,6 @@
       }
     }
   });
+})();
 </script>
 </polymer-element>

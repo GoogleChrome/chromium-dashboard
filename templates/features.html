@@ -82,10 +82,8 @@ document.addEventListener('WebComponentsReady', function(e) {
   var overlay = $('chromedash-legend');
   var search = $('.search [type="search"]');
 
-  // Fill data from server by including it directly in template.
-  featureList.features = {{features|safe}};
-
-  // TODO: decide if we need these anymore. Can they be moved internal to the el?
+  // TODO: decide if we need these anymore. Can they be moved internal to the
+  // chromeMetadata element?
   chromeMetadata.implStatuses = {{IMPLEMENATION_STATUSES|safe}};
   chromeMetadata.STATUS_KEYS = {
     NO_ACTIVE_DEV: 1,
@@ -95,8 +93,14 @@ document.addEventListener('WebComponentsReady', function(e) {
     DEPRECATED: 8,
     ENABLED: 9
   };
-  //featureList.implStatuses = chromeMetadata.implStatuses;
-  // featureList.STATUS_KEYS = chromeMetadata.STATUS_KEYS;
+
+  // Fill data from server by including it directly in template.
+  featureList.features = {{features|safe}};
+  featureList.metadata = chromeMetadata; // Feature list needs access to the selected milestone.
+  featureList.addEventListener('filter-category', function(e) {
+    search.value = e.detail.val;
+    updateCount(featureList.filterOnCategory(e.detail.val));
+  });
 
   // // Instead, fill data via AJAX.
   // var xhr = new XMLHttpRequest();
@@ -120,22 +124,6 @@ document.addEventListener('WebComponentsReady', function(e) {
     }
   });
 
-  chromeMetadata.addEventListener('filter-version', function(e) {
-    var val = e.detail && e.detail.val || null;
-    //search.value = e.detail.version;
-    updateCount(featureList.filter(val));
-    //updateCount(featureList.filterOnVersion(val));
-  });
-
-  chromeMetadata.addEventListener('selected-change', function(e) {
-    featureList.scrollToMilestone(e.detail.version);
-  });
-
-  featureList.addEventListener('filter-category', function(e) {
-    search.value = e.detail.val;
-    updateCount(featureList.filterOnCategory(e.detail.val));
-  });
-
   overlay.views = {
     vendors: {{VENDOR_VIEWS|safe}}, // set from server
     webdevs: {{WEB_DEV_VIEWS|safe}} // set from server
@@ -152,19 +140,6 @@ document.addEventListener('WebComponentsReady', function(e) {
       search.value = '';
       //chromeMetadata.selected = null;
     }
-  });
-
-  //$('#content').addEventListener('scroll', function(e) {
-  featureList.addEventListener('scroll', function(e) {
-    var feature = featureList.featureInView(e.target.scrollTop);
-    chromeMetadata.selectMilestone(feature);
-
-    // if (history.replaceState) {
-    //   if (this.highlighted.name == 'hello')
-    //     history.replaceState({}, "", " ");
-    //   else
-    //     history.replaceState({}, this.highlighted.name, this.highlighted.menu.href);
-    // }
   });
 
 });
