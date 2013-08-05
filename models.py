@@ -268,20 +268,14 @@ NO_ACTIVE_DEV = 1
 PROPOSED = 2
 IN_DEVELOPMENT = 3
 BEHIND_A_FLAG = 4
-CANARY_DEV = 5
-BETA = 6
-STABLE = 7
-DEPRECATED = 8
-ENABLED_BY_DEFAULT = 9
+ENABLED_BY_DEFAULT = 5
+DEPRECATED = 6
 
 IMPLEMENATION_STATUS = {
   NO_ACTIVE_DEV: 'No active development',
   PROPOSED: 'Proposed',
   IN_DEVELOPMENT: 'In development',
   BEHIND_A_FLAG: 'Behind a flag',
-  CANARY_DEV: 'Canary / Dev channel',
-  BETA: 'Beta channel',
-  STABLE: 'Stable channel',
   ENABLED_BY_DEFAULT: 'Enabled by default',
   DEPRECATED: 'Deprecated',
   }
