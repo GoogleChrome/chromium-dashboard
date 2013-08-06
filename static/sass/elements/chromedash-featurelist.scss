@@ -13,8 +13,7 @@ li[data-milestone="Proposed"] + div[data-milestone="Proposed"] {
   display: none;
 }*/
 
-
-[firstofmilestone] {
+[data-first-of-milestone] {
 /*  $milestone-label-size: 30px;
 
   position: relative;
@@ -56,44 +55,9 @@ li[data-milestone="Proposed"] + div[data-milestone="Proposed"] {
   }
 
 }
-  
-chromedash-feature,
-[is="chromedash-feature"] {
-  /*$milestone-label-size: 40px;
-
-  &[firstofmilestone] {
-    margin-top: $milestone-label-size + 10;
-    &:before {
-      content: attr(data-milestone);
-      top: -($milestone-label-size + 15);
-      left: 0;
-      position: absolute;
-      font-size: $milestone-label-size;
-      font-weight: 300;
-      color: $chromium-color-center;
-      opacity: 0.5;
-    }
-  }*/
-    /*$milestone-label-size: 40px;
-
-  &[firstofmilestone] {
-    margin-top: $milestone-label-size + 10;
-    &:before {
-      content: attr(data-milestone);
-      top: -($milestone-label-size + 15);
-      left: 0;
-      position: absolute;
-      font-size: $milestone-label-size;
-      font-weight: 300;
-      color: $chromium-color-center;
-      opacity: 0.5;
-    }
-  }*/
-
-}
 
 @media only screen and (max-width: 700px) {
-  div[firstofmilestone] {
+  div[data-first-of-milestone] {
     $milestone-label-size: 12px;
     &:after {
       font-size: $milestone-label-size;

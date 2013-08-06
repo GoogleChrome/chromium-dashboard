@@ -5,8 +5,8 @@
   <link rel="stylesheet" type="text/css" href="../css/elements/chromedash-featurelist.css">
   <ul>
     <template repeat="{{feature in filtered}}">
-      <div firstofmilestone?="{{feature.firstOfMilestone}}" data-milestone="{{feature.shipped_milestone || feature.impl_status_chrome}}"></div>
-      <li is="chromedash-feature" feature="{{feature}}" data-milestone="{{feature.shipped_milestone || feature.impl_status_chrome}}" needsflag="{{feature.meta.needsflag}}">
+      <div data-first-of-milestone?="{{feature.firstOfMilestone}}" data-milestone="{{feature.shipped_milestone || feature.impl_status_chrome}}"></div>
+      <li is="chromedash-feature" feature="{{feature}}" needsflag="{{feature.meta.needsflag}}">
         <a href="/admin/features/edit/{{feature.id}}" class="edit" hidden?="{{!whitelisted}}">edit</a>
       </li>
     </template>
