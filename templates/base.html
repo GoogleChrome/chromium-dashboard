@@ -58,9 +58,8 @@
 var uaParts = navigator.userAgent.match('Chrome/(.*) ');
 if (uaParts) {
   var chromeVersion = parseInt(uaParts[1]);
-  var FLAG = 'shadow=polyfill';
-  if (chromeVersion <= 29) {
-    //Platform = {flags: {shadow: 'polyfill'}};
+  if (chromeVersion < 29) {
+    Platform = {flags: {shadow: 'polyfill'}};
   }
 }
 </script>
