@@ -6,7 +6,15 @@
   }
 } 
 
-div[firstofmilestone] {
+/*li[data-milestone="No active development"] + div[data-milestone="No active development"],
+li[data-milestone="Proposed"] + div[data-milestone="Proposed"],
+li[data-milestone="Proposed"] + div[data-milestone="Proposed"],
+li[data-milestone="Proposed"] + div[data-milestone="Proposed"] {
+  display: none;
+}*/
+
+
+[firstofmilestone] {
 /*  $milestone-label-size: 30px;
 
   position: relative;
@@ -66,6 +74,22 @@ chromedash-feature,
       opacity: 0.5;
     }
   }*/
+    /*$milestone-label-size: 40px;
+
+  &[firstofmilestone] {
+    margin-top: $milestone-label-size + 10;
+    &:before {
+      content: attr(data-milestone);
+      top: -($milestone-label-size + 15);
+      left: 0;
+      position: absolute;
+      font-size: $milestone-label-size;
+      font-weight: 300;
+      color: $chromium-color-center;
+      opacity: 0.5;
+    }
+  }*/
+
 }
 
 @media only screen and (max-width: 700px) {
