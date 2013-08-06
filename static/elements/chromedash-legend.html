@@ -1,49 +1,54 @@
 <link rel="import" href="polymer-elements/polymer-overlay/polymer-overlay.html">
 
-<polymer-element name="chromedash-legend" attributes="options opened">
+<polymer-element name="chromedash-legend" attributes="options"> <!--extends="polymer-overlay" class="polymer-overlay">-->
+
 <template>
+  <!-- <link rel="stylesheet" type="text/css" href="polymer-elements/polymer-overlay/polymer-overlay.css"> -->
   <link rel="stylesheet" type="text/css" href="../css/elements/chromedash-legend.css">
-    <polymer-overlay id="overlay" opened="{{opened}}"></polymer-overlay>
-    <div id="dialog">
-      <h2>Color legend</h2>
-      <p>Colors indicate the "compatibility risk" for a given feature. The risk
-          increases as <chromedash-color-status value="1" max="{{views.vendors.length}}"></chromedash-color-status> &rarr; <chromedash-color-status value="{{views.vendors.length}}" max="{{views.vendors.length}}"></chromedash-color-status>, and its meaning differs between browser
-          vendors and web developers.</p>
-      <section class="views">
-        <div>
-          <label>Browser vendors</label>
-          <ul>
-            <template repeat="{{o in views.vendors}}">
-              <li><chromedash-color-status value="{{o.key}}" max="{{views.vendors.length}}"></chromedash-color-status>{{o.val}}</li>
-            </template>
-          </ul>
-        </div>
-        <div>
-          <label>Web developer</label>
-          <ul>
-            <template repeat="{{o in views.webdevs}}">
-              <li><chromedash-color-status value="{{o.key}}" max="{{views.webdevs.length}}"></chromedash-color-status>{{o.val}}</li>
-            </template>
-          </ul>
-        </div>
-      </section>
-      <h2>Search</h2>
-      <section>
-        <label>Example search queries</label>
-        <ul class="queries">
-          <li><span>"&lt;30"</span>features that landed before 30</li>
-          <li><span>"&lt;=30"</span>features in 30</li>
-          <li><span>"=30"</span>features that landed in 30</li>
-          <li><span>">28"</span>features since 28
+  <polymer-overlay id="overlay" opened="{{opened}}"></polymer-overlay>
+  <div id="dialog">
+    <h2>Color legend</h2>
+    <p>Colors indicate the "compatibility risk" for a given feature. The risk
+        increases as <chromedash-color-status value="1" max="{{views.vendors.length}}"></chromedash-color-status> &rarr; <chromedash-color-status value="{{views.vendors.length}}" max="{{views.vendors.length}}"></chromedash-color-status>, and its meaning differs between browser
+        vendors and web developers.</p>
+    <section class="views">
+      <div>
+        <label>Browser vendors</label>
+        <ul>
+          <template repeat="{{o in views.vendors}}">
+            <li><chromedash-color-status value="{{o.key}}" max="{{views.vendors.length}}"></chromedash-color-status>{{o.val}}</li>
+          </template>
         </ul>
-      </section>
-      <content></content>
-    </div>
+      </div>
+      <div>
+        <label>Web developer</label>
+        <ul>
+          <template repeat="{{o in views.webdevs}}">
+            <li><chromedash-color-status value="{{o.key}}" max="{{views.webdevs.length}}"></chromedash-color-status>{{o.val}}</li>
+          </template>
+        </ul>
+      </div>
+    </section>
+    <h2>Search</h2>
+    <section>
+      <label>Example search queries</label>
+      <ul class="queries">
+        <li><span>"&lt;30"</span>features that landed before 30</li>
+        <li><span>"&lt;=30"</span>features in 30</li>
+        <li><span>"=30"</span>features that landed in 30</li>
+        <li><span>">28"</span>features since 28
+      </ul>
+    </section>
+    <content></content>
+  </div>
 </template>
 <script>
   Polymer('chromedash-legend', {
     applyAuthorStyles: true,
     opened: false,
+    // ready: function() {
+    //   this.target = this.$.dialog;
+    // },
     ready: function() {
       this.$.overlay.target = this;
     },

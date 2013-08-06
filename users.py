@@ -62,8 +62,12 @@ class UserHandler(common.ContentHandler):
       user = models.AppUser(email=db.Email(email))
       user.put()
 
-    self.response.headers['Content-Type'] = 'application/json'
-    self.response.write(json.dumps(user.format_for_template()))
+      self.response.set_status(201, message='Created user')
+      self.response.headers['Content-Type'] = 'application/json'
+      return self.response.write(json.dumps(user.format_for_template()))
+    else:
+      self.response.set_status(200, message='User already exists')
+      self.response.write(json.dumps({'id': user.id()}))
 
   def _delete(self, user_id):
     if user_id:

@@ -24,6 +24,9 @@ Polymer('chromedash-userlist', {
   ready: function() {
     this.users = this.users || [];
   },
+  test: function(e, details, sender) {
+    e.preventDefault();
+  },
   addUser: function(user) {
     this.users.splice(0, 0, user);
   },
@@ -31,17 +34,27 @@ Polymer('chromedash-userlist', {
     return this.users.splice(idx, 1);
   },
   ajaxSubmit: function(e, details, sender) {
+    e.preventDefault();
+
     if (this.$.form.checkValidity()) {
+      // TODO(ericbidelman): move back to this.$.form.email.value when SD
+      // polyfill merges the commit that wraps element.form.
+      var email = this.$.form.querySelector('input[name="email"]').value;
+
       var formData = new FormData();
-      formData.append('email', this.$.form.email.value);
+      formData.append('email', email);
 
       var xhr = document.createElement('polymer-xhr');
-      xhr.request({url: this.action, method: 'POST', body: formData, callback: function(response, xhr) {
-        if (xhr.status == 200) {
-          this.addUser(JSON.parse(response));
-          this.$.form.reset();
-        }
-      }.bind(this)});
+      xhr.request({url: this.action, method: 'POST', body: formData, callback:
+        function(response, xhr) {
+          if (xhr.status == 201) {
+            this.addUser(JSON.parse(response));
+            this.$.form.reset();
+          } else if (xhr.status == 200) {
+            alert('Thanks. But that user already exists');
+          }
+        }.bind(this)
+      });
     }
   },
   ajaxDelete: function(e, details, sender) {
