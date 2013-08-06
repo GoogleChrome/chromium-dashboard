@@ -27,7 +27,7 @@
     <h2>Web Platform Features (<span id="num-features">-</span>)</h2>
   </div>
   <div class="search">
-    <input type="search" placeholder="Search" disabled>
+    <input type="text" placeholder="Search" disabled>
   </div> 
   <div class="actionlinks">
     {% if user.is_whitelisted %}<a href="/admin/features/new">Add a new feature</a>{% endif %}
@@ -80,7 +80,7 @@ document.addEventListener('WebComponentsReady', function(e) {
   var featureList = $('chromedash-featurelist');
   var chromeMetadata = $('chromedash-metadata');
   var overlay = $('chromedash-legend');
-  var search = $('.search [type="search"]');
+  var search = $('.search input');
 
   // TODO: decide if we need these anymore. Can they be moved internal to the
   // chromeMetadata element?
@@ -114,13 +114,26 @@ document.addEventListener('WebComponentsReady', function(e) {
 
   search.disabled = false;
 
-  // Clear input when user clicks the 'x' button.
-  search.addEventListener('input', function(e) {
+  // TODO: taken out. Put back in when if switch input to type="search"
+  // // // Clear input when user clicks the 'x' button.
+  // search.addEventListener('input', function(e) {
+  //   if (!e.target.value) {
+  //     updateCount(featureList.filter());
+  //     //chromeMetadata.selected = null;
+  //   } else {
+  //     updateCount(featureList.filter(e.target.value));
+  //   }
+  // });
+
+   // Clear input when user clicks the 'x' button.
+  search.addEventListener('keyup', function(e) {
     if (!e.target.value) {
       updateCount(featureList.filter());
-      //chromeMetadata.selected = null;
+      chromeMetadata.selected = null;
     } else {
-      updateCount(featureList.filter(e.target.value));
+      if (e.keyCode == 13) {  // Enter
+        updateCount(featureList.filter(e.target.value));
+      }
     }
   });
 

@@ -49,25 +49,27 @@
       if (details) { // Came from an internal click.
         this.selected = sender.dataset.version;
         this.fire('milestoneselect', {version: this.selected});
-      } else { // called directly (from outside). e is a feature.
-        // If there's no shipped milestone, use the implementation status.
-        this.selected = this.getVersionStr(e);
+      } else { // Called directly (from outside). e is a feature.
+        this.selected = this.getMilestoneStr(e);
       }
     },
-    getVersionStr: function(feature) {
-      var version = feature.shipped_milestone;
-      if (!feature.shipped_milestone) {
-        switch(feature.impl_status_chrome) {
-          case this.implStatuses[this.STATUS_KEYS.NO_ACTIVE_DEV - 1].val:
-          case this.implStatuses[this.STATUS_KEYS.PROPOSED - 1].val:
-          case this.implStatuses[this.STATUS_KEYS.IN_DEVELOPMENT - 1].val:
-            version = feature.impl_status_chrome;
-            break;
-          default:
-            version = feature.shipped_milestone;
-        }
-      }
-      return version;
+    getMilestoneStr: function(feature) {
+      // var version = feature.shipped_milestone;
+      // if (!feature.shipped_milestone) {
+      //   switch(feature.impl_status_chrome) {
+      //     case this.implStatuses[this.STATUS_KEYS.NO_ACTIVE_DEV - 1].val:
+      //     case this.implStatuses[this.STATUS_KEYS.PROPOSED - 1].val:
+      //     case this.implStatuses[this.STATUS_KEYS.IN_DEVELOPMENT - 1].val:
+      //       version = feature.impl_status_chrome;
+      //       break;
+      //     default:
+      //       version = feature.shipped_milestone;
+      //   }
+      // }
+      // return version;
+
+      // If there's no shipped milestone, use the implementation status.
+      return feature.shipped_milestone || feature.impl_status_chrome;
     }
   });
 </script>
