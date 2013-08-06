@@ -9,6 +9,13 @@
     height: $feature-min-height;
     overflow: hidden;
     cursor: pointer;
+    @include gradient-bar-bg;
+    // margin-bottom: 10px;
+    margin-bottom: 1px;
+    position: relative;
+    border-radius: $default-border-radius;
+    padding: 5px 20px;
+    list-style: none;
   }
   :scope.open {
     height: 290px;
@@ -39,9 +46,9 @@ h2 {
       }
     }
 
-    // .icon-warning-sign {
-    //   color: darkred;
-    // }
+    .icon-beaker {
+      color: darkgreen;
+    }
   }
 
 }
@@ -134,15 +141,6 @@ section {
           width: 150px;
         }
       }
-    }
-  }
-
-  .impl_status {
-    .icon-frown {
-      color: darkred;
-    }
-    .icon-smile {
-      color: green;
     }
   }
 }

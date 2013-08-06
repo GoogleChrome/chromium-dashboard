@@ -2,8 +2,6 @@
 @import "compass/css3/images";
 @import "compass/css3/transition";
 
-$max-content-width: 760px;
-
 html, body {
   height: 100%;
 }
@@ -248,7 +246,7 @@ chromedash-legend {
     overflow-x: hidden;
 
     chromedash-metadata {
-      max-height: 65vh;
+      //max-height: 65vh;
       overflow: auto;
       width: $nav-width + 15;
 

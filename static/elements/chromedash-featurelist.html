@@ -5,7 +5,8 @@
   <link rel="stylesheet" type="text/css" href="../css/elements/chromedash-featurelist.css">
   <ul>
     <template repeat="{{feature in filtered}}">
-      <li is="chromedash-feature" feature="{{feature}}" needsflag="{{feature.needsflag}}">
+      <div firstofmilestone?="{{feature.firstOfMilestone}}" data-milestone="{{feature.shipped_milestone || feature.impl_status_chrome}}"></div>
+      <li is="chromedash-feature" feature="{{feature}}" firstofmilestone?="{{feature.firstOfMilestone}}" data-milestone="{{feature.shipped_milestone || feature.impl_status_chrome}}" needsflag="{{feature.needsflag}}">
         <a href="/admin/features/edit/{{feature.id}}" class="edit" hidden?="{{!whitelisted}}">edit</a>
       </li>
     </template>
@@ -45,6 +46,14 @@
       // TODO: probably need to remove the listener if metadata element changes.
       //this.metadata.removeEventListener('milestoneselect', onMetadataChanged_.bind(this));
       this.metadata.addEventListener('milestoneselect', onMetadataChanged_.bind(this));
+
+      this.metadata.addEventListener('metadataready', function(e) {
+        for (var i = 0, v; v = this.metadata.versions[i]; ++i) {
+          if (this.firstOfMilestone(v) != -1) {
+            this.features[this.firstOfMilestone(v)].firstOfMilestone = true;
+          }
+        }
+      }.bind(this));
     },
     featuresChanged: function() {
       this.filter();
@@ -144,16 +153,23 @@
       }
       return closest;
     },
-    scrollToMilestone: function(milestone) {
-      for (var i = 0, feature; feature = this.features[i]; i++) {
+    // Returns the index of the first feature of a given milestone string.
+    firstOfMilestone: function(milestone) {
+      for (var i = 0, feature; feature = this.features[i]; ++i) {
         // Check shipped milestone and impl status. Ensure former is string for
         // comparison.
         if ([String(feature.shipped_milestone),
-             feature.impl_status_chrome].indexOf(milestone) != -1) {
-          this.featureLiList[i].scrollIntoView(true);
-          //this.featureLiList[i].scrollIntoViewIfNeeded();
-          break;
+             feature.impl_status_chrome].indexOf(String(milestone)) != -1) {
+          return i;
         }
+      }
+      return -1;
+    },
+    scrollToMilestone: function(milestone) {
+      var idx = this.firstOfMilestone(milestone);
+      if (idx != -1) {
+        this.featureLiList[idx].scrollIntoView(true);
+        //this.featureLiList[idx].scrollIntoViewIfNeeded();
       }
     }
   });
