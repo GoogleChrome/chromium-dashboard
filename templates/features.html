@@ -96,6 +96,15 @@ document.addEventListener('WebComponentsReady', function(e) {
 
   // Fill data from server by including it directly in template.
   featureList.features = {{features|safe}};
+
+  // // !!!!!!Use mock data instead!!!!!!
+  // var xhr = new XMLHttpRequest();
+  // xhr.open('GET', '/static/js/mockdata.json');
+  // xhr.onloadend = function(e) {
+  //   featureList.features = JSON.parse(e.target.response);
+  // };
+  // xhr.send();
+
   featureList.metadata = chromeMetadata; // Feature list needs access to the selected milestone.
   featureList.addEventListener('filter-category', function(e) {
     search.value = e.detail.val;
