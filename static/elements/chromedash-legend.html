@@ -1,6 +1,6 @@
 <link rel="import" href="polymer-elements/polymer-overlay/polymer-overlay.html">
 
-<polymer-element name="chromedash-legend" attributes="options">
+<polymer-element name="chromedash-legend" attributes="options opened">
 <template>
   <link rel="stylesheet" type="text/css" href="../css/elements/chromedash-legend.css">
     <polymer-overlay id="overlay" opened="{{opened}}"></polymer-overlay>
@@ -43,6 +43,7 @@
 <script>
   Polymer('chromedash-legend', {
     applyAuthorStyles: true,
+    opened: false,
     ready: function() {
       this.$.overlay.target = this;
     },
