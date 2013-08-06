@@ -1,8 +1,9 @@
 <link rel="import" href="polymer-elements/polymer-overlay/polymer-overlay.html">
 
-<polymer-element name="chromedash-legend" extends="polymer-overlay" class="polymer-overlay" attributes="options">
+<polymer-element name="chromedash-legend" attributes="options">
 <template>
   <link rel="stylesheet" type="text/css" href="../css/elements/chromedash-legend.css">
+    <polymer-overlay id="overlay" opened="{{opened}}"></polymer-overlay>
     <div id="dialog">
       <h2>Color legend</h2>
       <p>Colors indicate the "compatibility risk" for a given feature. The risk
@@ -43,7 +44,10 @@
   Polymer('chromedash-legend', {
     applyAuthorStyles: true,
     ready: function() {
-      this.target = this.$.dialog;
+      this.$.overlay.target = this;
+    },
+    toggle: function() {
+      this.$.overlay.toggle();
     }
   });
 </script>
