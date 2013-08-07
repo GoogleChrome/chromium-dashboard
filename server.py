@@ -79,32 +79,35 @@ class MainHandler(common.ContentHandler, common.JSONHandler):
       else:
         feature_list = models.Feature.get_chronological() # Memcached
 
-        result = urlfetch.fetch('http://omahaproxy.appspot.com/all.json')
-        if result.status_code == 200:
-          omaha_data = json.loads(result.content)
-          win_versions = omaha_data[0]['versions']
-          for v in win_versions:
-            s = v.get('version') or v.get('prev_version')
-            LATEST_VERSION = int(s.split('.')[0])
-            break
+        try:
+          result = urlfetch.fetch('http://omahaproxy.appspot.com/all.json')
+          if result.status_code == 200:
+            omaha_data = json.loads(result.content)
+            win_versions = omaha_data[0]['versions']
+            for v in win_versions:
+              s = v.get('version') or v.get('prev_version')
+              LATEST_VERSION = int(s.split('.')[0])
+              break
 
-        # TODO - memcache this calculation in models.py
+          # TODO - memcache this calculation in models.py
 
-        milestones = range(1, LATEST_VERSION + 1)
-        milestones.reverse()
-        versions = [
-          models.IMPLEMENATION_STATUS[models.NO_ACTIVE_DEV],
-          models.IMPLEMENATION_STATUS[models.PROPOSED],
-          models.IMPLEMENATION_STATUS[models.IN_DEVELOPMENT],
-          ]
-        versions.extend(milestones)
+          milestones = range(1, LATEST_VERSION + 1)
+          milestones.reverse()
+          versions = [
+            models.IMPLEMENATION_STATUS[models.NO_ACTIVE_DEV],
+            models.IMPLEMENATION_STATUS[models.PROPOSED],
+            models.IMPLEMENATION_STATUS[models.IN_DEVELOPMENT],
+            ]
+          versions.extend(milestones)
 
-        for i, version in enumerate(versions):
-          idx = first_of_milestone(feature_list, version, i);
-          if idx != -1:
-            feature_list[idx]['first_of_milestone'] = True
-          else:
-            feature_list[idx]['first_of_milestone'] = False
+          for i, version in enumerate(versions):
+            idx = first_of_milestone(feature_list, version, i);
+            if idx != -1:
+              feature_list[idx]['first_of_milestone'] = True
+            else:
+              feature_list[idx]['first_of_milestone'] = False
+        except:
+          pass
 
         template_data['features'] = json.dumps(feature_list)
         template_data['categories'] = [
