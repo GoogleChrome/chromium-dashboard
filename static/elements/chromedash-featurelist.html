@@ -5,7 +5,7 @@
   <link rel="stylesheet" type="text/css" href="../css/elements/chromedash-featurelist.css">
   <ul>
     <template repeat="{{feature in filtered}}">
-      <div data-first-of-milestone?="{{feature.firstOfMilestone}}" data-milestone="{{feature.meta.milestone_str}}"></div>
+      <div data-first-of-milestone?="{{feature.first_of_milestone}}" data-milestone="{{feature.meta.milestone_str}}"></div>
       <li is="chromedash-feature" feature="{{feature}}" needsflag="{{feature.meta.needsflag}}">
         <a href="/admin/features/edit/{{feature.id}}" class="edit" hidden?="{{!whitelisted}}">edit</a>
       </li>
@@ -44,16 +44,6 @@
       // TODO: probably need to remove the listener if metadata element changes.
       //this.metadata.removeEventListener('milestoneselect', onMetadataChanged_.bind(this));
       this.metadata.addEventListener('milestoneselect', onMetadataChanged_.bind(this));
-
-      // TODO(ericbidelman): figure out more efficient way to do this.
-      this.metadata.addEventListener('metadataready', function(e) {
-        for (var i = 0, version; version = this.metadata.versions[i]; ++i) {
-          var idx = this.firstOfMilestone(version, i);
-          if (idx != -1) {
-            this.features[idx].firstOfMilestone = true;
-          }
-        }
-      }.bind(this));
     },
     featuresChanged: function() {
       this.filter();
@@ -169,12 +159,10 @@
     },
     // Returns the index of the first feature of a given milestone string.
     firstOfMilestone: function(milestone, opt_startFrom) {
-      var start = opt_startFrom == undefined ? 0 : opt_startFrom;
-      //for (var i = start, feature; feature = this.features[i]; ++i) {
+      var start = opt_startFrom != undefined ? opt_startFrom : 0;
       for (var i = start, feature; feature = this.filtered[i]; ++i) {
-        // Check shipped milestone and impl status. Ensure comparing strings.
-        if ([String(feature.shipped_milestone),
-             feature.impl_status_chrome].indexOf(String(milestone)) != -1) {
+        if (feature.first_of_milestone && [String(feature.shipped_milestone),
+            feature.impl_status_chrome].indexOf(String(milestone)) != -1) {
           return i;
         }
       }

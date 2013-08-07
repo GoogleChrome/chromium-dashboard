@@ -20,7 +20,7 @@ import logging
 import os
 import webapp2
 
-#from google.appengine.api import urlfetch
+from google.appengine.api import urlfetch
 from google.appengine.api import users
 
 import common
@@ -32,7 +32,15 @@ import uma
 def normalized_name(val):
   return val.lower().replace(' ', '').replace('/', '')
 
+def first_of_milestone(feature_list, milestone, start=0):
+  for i in xrange(start, len(feature_list)):
+    f = feature_list[i]
+    if (str(f['shipped_milestone']) == str(milestone) or
+        f['impl_status_chrome'] == str(milestone)):
+      return i
+  return -1
 
+  
 class MainHandler(common.ContentHandler, common.JSONHandler):
 
   def get(self, path):
@@ -70,6 +78,33 @@ class MainHandler(common.ContentHandler, common.JSONHandler):
         return self.render_atom_feed('Features', feature_list)
       else:
         feature_list = models.Feature.get_chronological() # Memcached
+
+        result = urlfetch.fetch('http://omahaproxy.appspot.com/all.json')
+        if result.status_code == 200:
+          omaha_data = json.loads(result.content)
+          win_versions = omaha_data[0]['versions']
+          for v in win_versions:
+            s = v.get('version') or v.get('prev_version')
+            LATEST_VERSION = int(s.split('.')[0])
+            break
+
+        # TODO - memcache this calculation in models.py
+
+        milestones = range(1, LATEST_VERSION + 1)
+        milestones.reverse()
+        versions = [
+          models.IMPLEMENATION_STATUS[models.NO_ACTIVE_DEV],
+          models.IMPLEMENATION_STATUS[models.PROPOSED],
+          models.IMPLEMENATION_STATUS[models.IN_DEVELOPMENT],
+          ]
+        versions.extend(milestones)
+
+        for i, version in enumerate(versions):
+          idx = first_of_milestone(feature_list, version, i);
+          if idx != -1:
+            feature_list[idx]['first_of_milestone'] = True
+          else:
+            feature_list[idx]['first_of_milestone'] = False
 
         template_data['features'] = json.dumps(feature_list)
         template_data['categories'] = [
