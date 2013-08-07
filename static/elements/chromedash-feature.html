@@ -5,7 +5,8 @@
 <link rel="stylesheet" type="text/css" href="../css/elements/chromedash-feature.css">
 <div on-click="toggleOpen">
   <div class="topcorner pull-right">
-    <span hidden?="{{!needsflag}}" class="needsflag tooltip" title="Experimental feature behind a flag."><i class="icon-beaker" tooltippart></i></span>
+    <span hidden?="{{feature.impl_status_chrome != 'Deprecated'}}" class="tooltip" title="{{feature.impl_status_chrome}}"><i class="icon-remove-sign" data-tooltip-part></i></span>
+    <span hidden?="{{!needsflag}}" class="tooltip" title="Experimental feature behind a flag."><i class="icon-beaker" data-tooltip-part></i></span>
     <content select=".edit"></content>
   </div>
   <hgroup>
@@ -85,9 +86,8 @@
     },
     toggleOpen: function(e, details, sender) {
       // Don't toggle panel if tooltip or link is being clicked.
-      if (e.target.classList.contains('tooltip') || 
-          e.target.getAttribute('tooltippart') != null ||
-          e.target.tagName == 'A') {
+      if (e.target.classList.contains('tooltip') ||
+          'tooltipPart' in e.target.dataset || e.target.tagName == 'A') {
         return;
       }
       this.open = !this.open;

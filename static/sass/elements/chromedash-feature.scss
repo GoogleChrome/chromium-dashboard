@@ -36,18 +36,22 @@ h2 {
     position: absolute;
   }
 
-  .needsflag {
+  .icon-beaker {
+    color: green;
+  }
+  .icon-remove-sign {
+    color: darkred;
+  }
+
+  .tooltip {
     &:hover, &:active {
       &:before {
         @include tooltip;
         top: 10px;
         right: 25px;
-        width: 250px;
+        width: auto;
+        white-space: nowrap;
       }
-    }
-
-    .icon-beaker {
-      color: green;
     }
   }
 
