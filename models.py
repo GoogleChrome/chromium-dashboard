@@ -199,7 +199,7 @@ class Feature(DictModel):
   #doc_links = db.StringProperty()
   #tests = db.StringProperty()
 
-  comments = db.StringProperty()
+  comments = db.StringProperty(multiline=True)
 
 
 class PlaceholderCharField(forms.CharField):
