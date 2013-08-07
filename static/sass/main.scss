@@ -258,7 +258,6 @@ chromedash-legend {
 
   chromedash-featurelist {
     @include flex(1 0 0);
-    //height: 100%;
     overflow: auto;
     max-width: $max-content-width;
   }

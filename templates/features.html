@@ -15,14 +15,11 @@
 {% endblock %}
 
 {% block css %}
-<link rel="stylesheet" type="text/css" href="/static/css/features/features.css?2013-07-26">
+<link rel="stylesheet" type="text/css" href="/static/css/features/features.css?2013-08-07">
 {% endblock %}
 
 {% block subheader %}
 <div id="subheader">
-  <!-- <div>
-    <h2 title="Restrict search to a particular milestone">Filters</h2>
-  </div> -->
   <div class="feature-count">
     <h2>Web Platform Features (<span id="num-features">-</span>)</h2>
   </div>
@@ -38,12 +35,6 @@
 {% endblock %}
 
 {% block content %}
-<!-- <div id="dialog" class="dialog polymer-overlay polymer-overlay-slideup">
-  <h2>Legend</h2>
-  <chromedash-legend></chromedash-legend>
-  <button overlay-toggle>OK</button>
-</div> -->
-
 <chromedash-legend>
   <button overlay-toggle>Close</button>
 </chromedash-legend>
@@ -95,15 +86,15 @@ document.addEventListener('WebComponentsReady', function(e) {
   };
 
   // Fill data from server by including it directly in template.
-  featureList.features = {{features|safe}};
+  // featureList.features = {{features|safe}};
 
-  // // !!!!!!Use mock data instead!!!!!!
-  // var xhr = new XMLHttpRequest();
-  // xhr.open('GET', '/static/js/mockdata.json', false);
-  // xhr.onloadend = function(e) {
-  //   featureList.features = JSON.parse(e.target.response);
-  // };
-  // xhr.send();
+  // !!!!!!Use mock data instead!!!!!!
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', '/static/js/mockdata.json', false);
+  xhr.onloadend = function(e) {
+    featureList.features = JSON.parse(e.target.response);
+  };
+  xhr.send();
 
   featureList.metadata = chromeMetadata; // Feature list needs access to the selected milestone.
   featureList.addEventListener('filter-category', function(e) {
@@ -165,6 +156,16 @@ document.addEventListener('WebComponentsReady', function(e) {
   });
 
 });
+
+// Feature detect new flexbox. If unsupported, CSS fixes to support old flexbox.
+// TODO(ericbidelman): remove when Safari updates to new flexbox.
+var el = document.createElement('div');
+if (!('flexBasis' in el.style || 'WebKitFlexBasis' in el.style)) {
+  var link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.href = '/static/css/features/safari_fixes.css';
+  document.head.appendChild(link);
+}
 
 })();
 </script>
