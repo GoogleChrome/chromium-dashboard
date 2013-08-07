@@ -326,14 +326,15 @@ class FeatureHandler(common.ContentHandler):
           web_dev_views=int(self.request.get('web_dev_views')),
           )
 
-    # TODO(ericbidelman): enumerate and remove only the relevant keys.
-    memcache.flush_all()
-
     if 'delete' in path:
       feature.delete()
+      memcache.flush_all()
       return # Bomb out early for AJAX delete. No need for extra redirect below.
     else: 
       key = feature.put()
+
+      # TODO(ericbidelman): enumerate and remove only the relevant keys.
+      memcache.flush_all()
 
       params = []
       if self.request.get('create_launch_bug') == 'on':
