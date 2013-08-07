@@ -23,7 +23,7 @@
         /* Red or green? */
         var h = this.value > 3 ? 0 : 120;
         /* Which shade? */
-        var l = Math.round(95 - Math.abs(this.value - 4) * 10);
+        var l = 95 - Math.abs(this.value - 4) * 10;
         this.$.status.style.backgroundColor = 'hsl(' + h + ', 100%,' + l + '%)';
       },
       valueChanged: function() {
