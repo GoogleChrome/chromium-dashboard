@@ -5,7 +5,7 @@
 <link rel="stylesheet" type="text/css" href="../css/elements/chromedash-feature.css">
 <div on-click="toggleOpen">
   <div class="topcorner pull-right">
-    <span hidden?="{{feature.impl_status_chrome != 'Deprecated'}}" class="tooltip" title="{{feature.impl_status_chrome}}"><i class="icon-remove-sign" data-tooltip-part></i></span>
+    <span hidden?="{{!deprecated}}" class="tooltip" title="Deprecated feature"><i class="icon-warning-sign" data-tooltip-part></i></span>
     <span hidden?="{{!needsflag}}" class="tooltip" title="Experimental feature behind a flag."><i class="icon-beaker" data-tooltip-part></i></span>
     <content select=".edit"></content>
   </div>
@@ -81,6 +81,12 @@
     overallViews: 0,
     open: false,
     needsflag: false,
+    get deprecated() {
+      if (this.feature) {
+        return this.feature.impl_status_chrome.toLowerCase() == 'deprecated';  
+      }
+      return false;
+    },
     openChanged: function() {
       this.open ? this.classList.add('open') : this.classList.remove('open');
     },
