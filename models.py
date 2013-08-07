@@ -79,7 +79,8 @@ class Feature(DictModel):
     d['visibility'] = VISIBILITY_CHOICES[self.visibility]
     d['impl_status_chrome'] = IMPLEMENATION_STATUS[self.impl_status_chrome]
     d['meta'] = {
-      'needsflag': self.impl_status_chrome == BEHIND_A_FLAG
+      'needsflag': self.impl_status_chrome == BEHIND_A_FLAG,
+      'milestone_str': self.shipped_milestone or d['impl_status_chrome']
       }
     d['ff_views'] = {'value': self.ff_views,
                      'text': VENDOR_VIEWS[self.ff_views]}

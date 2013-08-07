@@ -81,12 +81,7 @@
     overallViews: 0,
     open: false,
     needsflag: false,
-    get deprecated() {
-      if (this.feature) {
-        return this.feature.impl_status_chrome.toLowerCase() == 'deprecated';  
-      }
-      return false;
-    },
+    deprecated: false,
     openChanged: function() {
       this.open ? this.classList.add('open') : this.classList.remove('open');
     },
@@ -106,6 +101,7 @@
     },
     featureChanged: function() {
       this.calculateOverallViews();
+      this.deprecated = this.feature.impl_status_chrome == 'Deprecated';
     },
     categoryFilter: function(e, details, sender) {
       e.stopPropagation();

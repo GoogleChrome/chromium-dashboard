@@ -5,7 +5,7 @@
   <link rel="stylesheet" type="text/css" href="../css/elements/chromedash-featurelist.css">
   <ul>
     <template repeat="{{feature in filtered}}">
-      <div data-first-of-milestone?="{{feature.firstOfMilestone}}" data-milestone="{{feature.shipped_milestone || feature.impl_status_chrome}}"></div>
+      <div data-first-of-milestone?="{{feature.firstOfMilestone}}" data-milestone="{{feature.meta.milestone_str}}"></div>
       <li is="chromedash-feature" feature="{{feature}}" needsflag="{{feature.meta.needsflag}}">
         <a href="/admin/features/edit/{{feature.id}}" class="edit" hidden?="{{!whitelisted}}">edit</a>
       </li>
@@ -23,11 +23,9 @@
     whitelisted: false,
     metadata: null,
     ready: function() {
-      //this.asyncMethod(function() {
-        this.features = this.features || [];
-        this.featureLiList = this.featureLiList || [];
-        this.filtered = this.filtered || [];
-      //});
+      this.features = this.features || [];
+      this.featureLiList = this.featureLiList || [];
+      this.filtered = this.filtered || [];
 
       this.addEventListener('scroll', function(e) {
         var feature = this.featureInView(e.target.scrollTop);
@@ -67,7 +65,7 @@
         // TODO: really want this in ready(), but featureLiList and metadata may
         // not be set yet. Timing issues.
         this.scrollToMilestone(this.metadata.implStatuses[
-            this.metadata.STATUS_KEYS.IN_DEVELOPMENT - 1].val);
+            this.metadata.STATUS.IN_DEVELOPMENT - 1].val);
       });
     },
     filterOnCategory: function(val) {

@@ -16,7 +16,7 @@
     selected: null,
     ready: function() {
       this.implStatuses = this.implStatuses || {};
-      this.STATUS_KEYS = this.STATUS_KEYS || {};
+      this.STATUS = this.STATUS || {};
 
       // TODO(ericbidelman): Share this data across instances.
       this.addEventListener('polymer-response', function(e) {
@@ -32,9 +32,9 @@
 
         // Dev channel explicitly left out. Treat same as canary.
         this.versions = [
-          this.implStatuses[this.STATUS_KEYS.NO_ACTIVE_DEV - 1].val,
-          this.implStatuses[this.STATUS_KEYS.PROPOSED - 1].val,
-          this.implStatuses[this.STATUS_KEYS.IN_DEVELOPMENT - 1].val,
+          this.implStatuses[this.STATUS.NO_ACTIVE_DEV - 1].val,
+          this.implStatuses[this.STATUS.PROPOSED - 1].val,
+          this.implStatuses[this.STATUS.IN_DEVELOPMENT - 1].val,
           this.channels.canary, this.channels.beta, this.channels.stable
         ];
 
@@ -50,26 +50,8 @@
         this.selected = sender.dataset.version;
         this.fire('milestoneselect', {version: this.selected});
       } else { // Called directly (from outside). e is a feature.
-        this.selected = this.getMilestoneStr(e);
+        this.selected = e.meta.milestone_str;
       }
-    },
-    getMilestoneStr: function(feature) {
-      // var version = feature.shipped_milestone;
-      // if (!feature.shipped_milestone) {
-      //   switch(feature.impl_status_chrome) {
-      //     case this.implStatuses[this.STATUS_KEYS.NO_ACTIVE_DEV - 1].val:
-      //     case this.implStatuses[this.STATUS_KEYS.PROPOSED - 1].val:
-      //     case this.implStatuses[this.STATUS_KEYS.IN_DEVELOPMENT - 1].val:
-      //       version = feature.impl_status_chrome;
-      //       break;
-      //     default:
-      //       version = feature.shipped_milestone;
-      //   }
-      // }
-      // return version;
-
-      // If there's no shipped milestone, use the implementation status.
-      return feature.shipped_milestone || feature.impl_status_chrome;
     }
   });
 </script>
