@@ -20,11 +20,9 @@
                       this.$.status.classList.remove('corner');
       },
       updateColor: function() {
-        /* Red or green? */
-        var h = this.value > 3 ? 0 : 120;
-        /* Which shade? */
-        var l = 95 - Math.abs(this.value - 4) * 10;
-        this.$.status.style.backgroundColor = 'hsl(' + h + ', 100%,' + l + '%)';
+        var r = Math.round((this.value / this.max) * 255);
+        var g = 255 - r;
+        this.$.status.style.backgroundColor = 'rgb(' + r + ', ' + g + ', 0)';
       },
       valueChanged: function() {
         this.updateColor();
