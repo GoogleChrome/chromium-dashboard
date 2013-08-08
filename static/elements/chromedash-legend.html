@@ -9,8 +9,8 @@
   <div id="dialog">
     <h2>Color legend</h2>
     <p>Colors indicate the "compatibility risk" for a given feature. The risk
-        increases as <chromedash-color-status value="1" max="{{views.vendors.length}}"></chromedash-color-status> &rarr; <chromedash-color-status value="{{views.vendors.length}}" max="{{views.vendors.length}}"></chromedash-color-status>, and its meaning differs between browser
-        vendors and web developers.</p>
+        increases as <chromedash-color-status value="1" max="{{views.vendors.length}}"></chromedash-color-status> &rarr; <chromedash-color-status value="{{views.vendors.length}}" max="{{views.vendors.length}}"></chromedash-color-status>, and the color meaning differs for browser
+        vendors, web developers, and the standards process.</p>
     <section class="views">
       <div>
         <label>Browser vendors</label>
@@ -25,6 +25,14 @@
         <ul>
           <template repeat="{{o in views.webdevs}}">
             <li><chromedash-color-status value="{{o.key}}" max="{{views.webdevs.length}}"></chromedash-color-status>{{o.val}}</li>
+          </template>
+        </ul>
+      </div>
+      <div>
+        <label>Standards values</label>
+        <ul>
+          <template repeat="{{o in views.standards}}">
+            <li><chromedash-color-status value="{{o.key}}" max="{{views.standards.length}}"></chromedash-color-status>{{o.val}}</li>
           </template>
         </ul>
       </div>

@@ -81,8 +81,8 @@ document.addEventListener('WebComponentsReady', function(e) {
     PROPOSED: 2,
     IN_DEVELOPMENT: 3,
     BEHIND_A_FLAG: 4,
-    DEPRECATED: 8,
-    ENABLED: 9
+    ENABLED_BY_DEFAULT: 5,
+    DEPRECATED: 6
   };
 
   // Fill data from server by including it directly in template.
@@ -137,7 +137,8 @@ document.addEventListener('WebComponentsReady', function(e) {
 
   overlay.views = {
     vendors: {{VENDOR_VIEWS|safe}}, // set from server
-    webdevs: {{WEB_DEV_VIEWS|safe}} // set from server
+    webdevs: {{WEB_DEV_VIEWS|safe}}, // set from server
+    standards: {{STANDARDS_VALS|safe}} // set from server
   };
 
   $('.legend').addEventListener('click', function(e) {

@@ -122,6 +122,9 @@ class MainHandler(common.ContentHandler, common.JSONHandler):
         template_data['WEB_DEV_VIEWS'] = [
           {'key': k, 'val': v} for k,v in
           models.WEB_DEV_VIEWS.iteritems()]
+        template_data['STANDARDS_VALS'] = [
+          {'key': k, 'val': v} for k,v in
+          models.STANDARDIZATION.iteritems()]
 
     elif path == 'metrics/featurelevel':
       template_data['CSS_PROPERTY_BUCKETS'] = uma.CSS_PROPERTY_BUCKETS
