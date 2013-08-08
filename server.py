@@ -54,14 +54,14 @@ class MainHandler(common.ContentHandler, common.JSONHandler):
 
     return omaha_data
 
-  def get(self, path):
+  def get(self, path, feature_id=None):
     # Default to features page.
     # TODO: remove later when we want an index.html
     if not path:
       return self.redirect('/features')
 
     # Remove trailing slash from URL and redirect. e.g. /metrics/ -> /metrics
-    if path[-1] == '/':
+    if feature_id == '':
       return self.redirect(self.request.path.rstrip('/'))
 
     template_data = {}
@@ -143,6 +143,7 @@ class MainHandler(common.ContentHandler, common.JSONHandler):
 
 # Main URL routes.
 routes = [
+  ('/(.*)/([0-9]*)', MainHandler),
   ('/(.*)', MainHandler),
 ]
 

@@ -8,7 +8,7 @@
       <template if="{{filtered.length == features.length}}">
         <div data-first-of-milestone?="{{feature.first_of_milestone}}" data-milestone="{{feature.meta.milestone_str}}"></div>
       </template>
-      <li is="chromedash-feature" feature="{{feature}}" needsflag="{{feature.meta.needsflag}}">
+      <li id="{{feature.id}}" is="chromedash-feature" feature="{{feature}}" needsflag="{{feature.meta.needsflag}}">
         <a href="/admin/features/edit/{{feature.id}}" class="edit" hidden?="{{!whitelisted}}">edit</a>
       </li>
     </template>
@@ -55,14 +55,6 @@
       this.addEventListener('scroll', function(e) {
         var feature = this.featureInView(e.target.scrollTop);
         this.metadata.selectMilestone(feature);
-
-        // // Update URL with history API.
-        // if (history.replaceState) {
-        //   if (this.highlighted.name == 'hello')
-        //     history.replaceState({}, "", " ");
-        //   else
-        //     history.replaceState({}, this.highlighted.name, this.highlighted.menu.href);
-        // }
       });
     },
     metadataChanged: function(oldVal) {
@@ -74,13 +66,21 @@
       this.filter();
 
       this.asyncMethod(function() {
-        //this.featureLiList = this.shadowRoot.querySelectorAll('li');
 
-        // Highlight and scroll to first "in development" when list of features changes.
+        // If there's an id in the URL, highlight and scroll to the feature.
+        // Otherwise, go to the first "in development" feature.
         // TODO: really want this in ready(), but featureLiList and metadata may
-        // not be set yet. Timing issues.
-        this.scrollToMilestone(this.metadata.implStatuses[
-            this.metadata.STATUS.IN_DEVELOPMENT - 1].val);
+        // not be set yet due to timing issues.
+
+        var lastSlash = location.pathname.lastIndexOf('/');
+        if (lastSlash > 0) {
+          var id = parseInt(location.pathname.substring(lastSlash + 1));
+          this.scrollToFeature(id);
+        } else {
+          this.scrollToMilestone(
+            this.metadata.implStatuses[this.metadata.STATUS.IN_DEVELOPMENT - 1].val);
+        }
+
       });
     },
     filterOnCategory: function(val) {
@@ -189,7 +189,17 @@
       if (idx != -1) {
         // TODO(ericbidelman): Implement smooth scrolling when https://twitter.com/ebidel/status/364825118171602944 lands.
         this.featureLiList[idx].scrollIntoView(true);
-        //this.featureLiList[idx].scrollIntoViewIfNeeded();
+      }
+    },
+    scrollToFeature: function(id) {
+      if (!id) {
+        return;
+      }
+      for (var i = 0, f; f = this.filtered[i]; ++i) {
+        if (f.id == id) {
+          this.featureLiList[i].scrollIntoView(true);
+          break;
+        }
       }
     }
   });

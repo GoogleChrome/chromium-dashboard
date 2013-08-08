@@ -146,6 +146,10 @@ document.addEventListener('WebComponentsReady', function(e) {
     overlay.toggle();
   });
 
+  window.addEventListener('popstate', function(e) {
+    featureList.scrollToFeature(e.state.id);
+  });
+
 });
 
 // Feature detect new flexbox. If unsupported, CSS fixes to support old flexbox.
