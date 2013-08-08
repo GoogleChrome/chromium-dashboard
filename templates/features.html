@@ -125,13 +125,13 @@ document.addEventListener('WebComponentsReady', function(e) {
 
    // Clear input when user clicks the 'x' button.
   search.addEventListener('keyup', function(e) {
-    if (!e.target.value) {
+    if (!e.target.value && e.keyCode != 27) { // ESC
       updateCount(featureList.filter());
       chromeMetadata.selected = null;
     } else {
-      if (e.keyCode == 13) {  // Enter
+      //if (e.keyCode == 13) {  // Enter
         updateCount(featureList.filter(e.target.value));
-      }
+      //}
     }
   });
 
@@ -143,14 +143,6 @@ document.addEventListener('WebComponentsReady', function(e) {
   $('.legend').addEventListener('click', function(e) {
     e.preventDefault();
     overlay.toggle();
-  });
-
-  document.body.addEventListener('keyup', function(e) {
-    if (e.keyCode == 27) { // ESC
-      updateCount(featureList.filter());
-      search.value = '';
-      //chromeMetadata.selected = null;
-    }
   });
 
 });
