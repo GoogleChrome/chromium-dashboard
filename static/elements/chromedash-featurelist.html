@@ -198,6 +198,7 @@
       for (var i = 0, f; f = this.filtered[i]; ++i) {
         if (f.id == id) {
           this.featureLiList[i].scrollIntoView(true);
+          this.featureLiList[i].open = true;
           break;
         }
       }

@@ -3,7 +3,7 @@
 <polymer-element name="chromedash-feature" extends="li" attributes="feature open needsflag">
 <template>
 <link rel="stylesheet" type="text/css" href="../css/elements/chromedash-feature.css">
-<div on-click="toggleOpen">
+<div on-click="toggle">
   <div class="topcorner pull-right">
     <span hidden?="{{!deprecated}}" class="tooltip" title="Deprecated feature"><i class="icon-warning-sign" data-tooltip></i></span>
     <span hidden?="{{!needsflag}}" class="tooltip" title="Experimental feature behind a flag."><i class="icon-beaker" data-tooltip></i></span>
@@ -106,7 +106,7 @@
         }
       }
     },
-    toggleOpen: function(e, details, sender) {
+    toggle: function(e, details, sender) {
       // Don't toggle panel if tooltip or link is being clicked.
       if (e.target.classList.contains('tooltip') ||
           'tooltip' in e.target.dataset || e.target.tagName == 'A') {
