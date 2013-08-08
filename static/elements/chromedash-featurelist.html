@@ -52,6 +52,20 @@
       this.featureLiList = this.featureLiList || [];
       this.filtered = this.filtered || [];
 
+      this.addEventListener('keyup', function(e) {
+        var focusedEl = this.shadowRoot.querySelector(':focus');
+        if (focusedEl) {
+          switch (e.keyCode) {
+            case 13: // enter
+              //focusedEl.toggle();
+              focusedEl.open = !focusedEl.open;
+              break;
+            default:
+              // noop
+          }
+        }
+      });
+
       this.addEventListener('scroll', function(e) {
         var feature = this.featureInView(e.target.scrollTop);
         this.metadata.selectMilestone(feature);
