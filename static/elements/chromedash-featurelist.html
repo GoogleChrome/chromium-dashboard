@@ -18,6 +18,29 @@
     this.scrollToMilestone(e.detail.version);
   }
 
+  function matchesMilestone_(milestone, operator, version) {
+    switch(operator) {
+      case '<':
+        return milestone < version;
+        break;
+      case '<=':
+        return milestone <= version;
+        break;
+      case '>':
+        return milestone > version;
+        break;
+      case '>=':
+        return milestone >= version;
+        break;
+      case '=': // Support both '=' and '=='.
+      case '==':
+        return milestone == version;
+        break;
+      default:
+        return false;
+    }
+  }
+
   Polymer('chromedash-featurelist', {
     applyAuthorStyles: true,
     whitelisted: false,
@@ -95,28 +118,19 @@
         if (result) {
           var operator = result[1];
           var version = parseInt(result[2]);
-          this.filtered = this.features.filter(function(feature, idx, array) {
-            var shipped_milestone = parseInt(feature.shipped_milestone);
 
-            switch(operator) {
-              case '<':
-                return shipped_milestone < version;
-                break;
-              case '<=':
-                return shipped_milestone <= version;
-                break;
-              case '>':
-                return shipped_milestone > version;
-                break;
-              case '>=':
-                return shipped_milestone >= version;
-                break;
-              case '=': // Support both '=' and '=='.
-              case '==':
-                return version == shipped_milestone;
-                break;
-              default:
-                return false;
+          this.filtered = this.features.filter(function(feature, idx, array) {
+            var platformMilestones = [
+              parseInt(feature.shipped_milestone),
+              parseInt(feature.shipped_android_milestone),
+              parseInt(feature.shipped_ios_milestone),
+              parseInt(feature.shipped_webview_milestone)
+            ];
+
+            for (var i = 0, milestone; milestone = platformMilestones[i]; ++i) {
+              if (matchesMilestone_(milestone, operator, version)) {
+                return true; // Only one of the platforms needs to match.
+              }
             }
           });
         } else {
