@@ -20,6 +20,7 @@ import logging
 import os
 import webapp2
 
+from google.appengine.api import memcache
 from google.appengine.api import urlfetch
 from google.appengine.api import users
 
@@ -42,6 +43,16 @@ def first_of_milestone(feature_list, milestone, start=0):
 
   
 class MainHandler(common.ContentHandler, common.JSONHandler):
+
+  def __get_omaha_data(self):
+    omaha_data = memcache.get('omaha_data')
+    if omaha_data is None:
+      result = urlfetch.fetch('http://omahaproxy.appspot.com/all.json')
+      if result.status_code == 200:
+        omaha_data = json.loads(result.content)
+        memcache.set('omaha_data', omaha_data, time=86400) # cache for 24hrs.
+
+    return omaha_data
 
   def get(self, path):
     # Default to features page.
@@ -80,17 +91,15 @@ class MainHandler(common.ContentHandler, common.JSONHandler):
         feature_list = models.Feature.get_chronological() # Memcached
 
         try:
-          result = urlfetch.fetch('http://omahaproxy.appspot.com/all.json')
-          if result.status_code == 200:
-            omaha_data = json.loads(result.content)
-            win_versions = omaha_data[0]['versions']
-            for v in win_versions:
-              s = v.get('version') or v.get('prev_version')
-              LATEST_VERSION = int(s.split('.')[0])
-              break
+          omaha_data = self.__get_omaha_data()
 
-          # TODO - memcache this calculation in models.py
+          win_versions = omaha_data[0]['versions']
+          for v in win_versions:
+            s = v.get('version') or v.get('prev_version')
+            LATEST_VERSION = int(s.split('.')[0])
+            break
 
+          # TODO(ericbidelman) - memcache this calculation as part of models.py
           milestones = range(1, LATEST_VERSION + 1)
           milestones.reverse()
           versions = [
@@ -106,8 +115,8 @@ class MainHandler(common.ContentHandler, common.JSONHandler):
               feature_list[idx]['first_of_milestone'] = True
             else:
               feature_list[idx]['first_of_milestone'] = False
-        except:
-          pass
+        except Exception as e:
+          logging.error(e)
 
         template_data['features'] = json.dumps(feature_list)
         template_data['categories'] = [
