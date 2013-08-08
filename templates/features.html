@@ -88,6 +88,14 @@ document.addEventListener('WebComponentsReady', function(e) {
   // Fill data from server by including it directly in template.
   featureList.features = {{features|safe}};
 
+  // // Instead, fill data via AJAX.
+  // var xhr = new XMLHttpRequest();
+  // xhr.open('GET', '/features.json');
+  // xhr.onloadend = function(e) {
+  //   featureList.features = JSON.parse(e.target.response);
+  // };
+  // xhr.send();
+
   // // !!!!!!Use mock data instead!!!!!!
   // var xhr = new XMLHttpRequest();
   // xhr.open('GET', '/static/js/mockdata.json', false);
@@ -101,14 +109,6 @@ document.addEventListener('WebComponentsReady', function(e) {
     search.value = e.detail.val;
     updateCount(featureList.filterOnCategory(e.detail.val));
   });
-
-  // // Instead, fill data via AJAX.
-  // var xhr = new XMLHttpRequest();
-  // xhr.open('GET', '/features.json');
-  // xhr.onloadend = function(e) {
-  //   featureList.features = JSON.parse(e.target.response);
-  // };
-  // xhr.send();
 
   updateCount(featureList.features.length); // Set initial # features showing.
 
