@@ -1,0 +1,29 @@
+//@import "compass/css3/transform";
+
+@import "element";
+
+@host {
+  :scope[corner] {
+    height: 100%;
+  }
+}
+
+span {
+  background-color: rgb(255,0,0);
+  border-radius: 50%;
+  display: inline-block;
+  height: 10px; // Default.
+  width: 10px; // Default.
+}
+.corner {
+  border-radius: 0;
+  height: 100%; // Ensures we can color coverage when feature is scrolled.
+  width: 7px;
+  //@include transform(rotateZ(45deg) translateX(-30px));
+}
+/*.corner:after {
+  content: '';
+  position: absolute;
+  border-top: 30px solid transparent;
+  border-right: 30px solid rgb(255, 255, 255);
+}*/

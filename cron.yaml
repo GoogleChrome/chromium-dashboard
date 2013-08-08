@@ -1,0 +1,4 @@
+cron:
+- description: retrieve from UMA Cloud Storage data gathered yesterday
+  url: /cron/metrics
+  schedule: every day 05:00

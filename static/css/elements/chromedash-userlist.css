@@ -1,0 +1,1 @@
+@host{:scope{display:block}}ul{margin-top:10px}ul li{-webkit-transition:opacity 600ms ease-in-out;-moz-transition:opacity 600ms ease-in-out;-o-transition:opacity 600ms ease-in-out;transition:opacity 600ms ease-in-out;margin-bottom:5px}ul li.faded{opacity:0}ul li>a{margin-right:10px}

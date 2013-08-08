@@ -1,0 +1,73 @@
+@import "element";
+
+
+@host {
+  :scope {
+    display: block;
+    // @include display-flex;
+    // @include justify-content(center);
+    // @include align-items(center);
+  }
+}
+
+h2 {
+  border-bottom: 2px solid $chromium-color-center;
+  padding-bottom:  10px;
+  margin-bottom: $content-padding / 2;
+}
+
+ul {
+  margin: 0 0 15px 0;
+
+  > li {
+    margin: 5px 0;
+  }
+}
+
+label {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+section {
+  margin-top: 10px;
+
+  &.views {
+    @include display-flex;
+    > div {
+      @include flex(1 0 0);
+    }
+  }
+}
+
+.queries {
+  li {
+    span {
+      margin-right: 5px;
+      width: 50px;
+      display: inline-block;
+    }
+  }
+}
+
+p {
+  margin-top: 5px;
+}
+
+#dialog {
+  position: relative;
+  box-sizing: border-box;
+  @include user-select;
+  overflow: hidden;
+  @include gradient-bar-bg;
+  box-shadow: 1px 1px 5px $gray-2;
+  //border: 1px solid #ccc;
+  border-radius: $default-border-radius;
+  //background: white;
+  padding: $content-padding $content-padding + 10;
+  //outline: 1px solid rgba(0,0,0,0.2);
+  //box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+  
+  //opacity: 0;
+}

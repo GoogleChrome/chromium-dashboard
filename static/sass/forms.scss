@@ -1,0 +1,61 @@
+@import "vars";
+
+table {
+  // td, th {
+  //   vertical-align: top;
+  // }
+  tr[hidden] {
+    th, td {
+      padding: 0;
+    }
+  }
+
+  th {
+    max-width: 200px;
+  }
+
+  th, td {
+    padding-bottom: 10px;
+  }
+  .helptext {
+    font-style: italic;
+    font-size: smaller;
+  }
+  input[type="text"], input[type="url"], input[type="email"], textarea {
+    width: 100%;
+  }
+
+  select {
+    max-width: 350px;
+  }
+
+  :required {
+    border: 1px solid $chromium-color-dark;
+  }
+
+  .interacted:valid {
+    border: 1px solid green;
+  }
+
+  .interacted:invalid {
+    border: 1px solid $invalid-color;
+  }
+
+  .errorlist {
+    color: red;
+  }
+}
+
+input, textarea {
+  outline: none;
+  padding: 7px;
+}
+
+form[name="feature_form"] {
+  h3 {
+    margin: $content-padding / 2 0;
+  }
+  input[type="submit"] {
+    margin-top: $content-padding;
+  }
+}

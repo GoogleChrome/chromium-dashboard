@@ -1,0 +1,70 @@
+@import "element";
+
+@host {
+  :scope {
+    display: block;
+  }
+} 
+
+/*li[data-milestone="No active development"] + div[data-milestone="No active development"],
+li[data-milestone="Proposed"] + div[data-milestone="Proposed"],
+li[data-milestone="Proposed"] + div[data-milestone="Proposed"],
+li[data-milestone="Proposed"] + div[data-milestone="Proposed"] {
+  display: none;
+}*/
+
+[data-first-of-milestone] {
+/*  $milestone-label-size: 30px;
+
+  position: relative;
+  margin-top: $milestone-label-size;
+
+  &:after {
+    content: attr(data-milestone);
+    font-size: $milestone-label-size;
+    font-weight: 300;
+    //color: $gray-2;
+    color: $chromium-color-dark;
+    position: absolute;
+    right: 5px;
+    top: -$milestone-label-size + 2;
+    //opacity: 0.25;
+  }*/
+
+  $milestone-label-size: 13px;
+
+  &:first-of-type {
+    margin-top: $milestone-label-size + 2;
+  }
+
+  position: relative;
+  margin-top: $milestone-label-size + 15;
+  line-height: 0;
+
+  &:after {
+    content: attr(data-milestone) ""; // force string for FF
+    font-size: $milestone-label-size;
+    font-weight: 600;
+    color: $chromium-color-dark;
+    opacity: 0.5;
+    /*color: $gray-2;*/
+    position: absolute;
+    right: 5px;
+    top: -$milestone-label-size + 4;
+    text-transform: uppercase;
+  }
+
+}
+
+@media only screen and (max-width: 700px) {
+  div[data-first-of-milestone] {
+    $milestone-label-size: 12px;
+    &:after {
+      font-size: $milestone-label-size;
+      font-weight: normal;
+      top: -$milestone-label-size - 10;
+      opacity: 1;
+      text-transform: uppercase;
+    }
+  }
+}

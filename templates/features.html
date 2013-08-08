@@ -1,155 +1,167 @@
 {% extends "base.html" %}
 
+{% block html_imports %}
+  <link rel="import" href="/static/elements/chromedash-featurelist.html">
+  <link rel="import" href="/static/elements/chromedash-metadata.html">
+  <link rel="import" href="/static/elements/chromedash-legend.html">
+{% endblock %}
+
+{% block rss %}
+<link href="features.xml" rel="alternate" type="application/rss+xml" title="All features" />
+{% for k,v in categories %}
+<link href="features.xml?category={{v}}" rel="alternate" type="application/rss+xml" title='"{{k}}" features' />
+{% endfor %}
+
+{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" type="text/css" href="/static/css/features/features.css?2013-08-07">
+{% endblock %}
+
+{% block subheader %}
+<div id="subheader">
+  <div class="feature-count">
+    <h2>Web Platform Features (<span id="num-features">-</span>)</h2>
+  </div>
+  <div class="search">
+    <input type="search" placeholder="Filter" disabled>
+  </div> 
+  <div class="actionlinks">
+    {% if user.is_whitelisted %}<a href="/admin/features/new">Add a new feature</a>{% endif %}
+    <a href="" class="legend">Help</a>
+  </div>
+</div>
+
+{% endblock %}
 
 {% block content %}
+<chromedash-legend>
+  <button overlay-toggle>Close</button>
+</chromedash-legend>
+
+<section id="panels">
+<nav>
+  <chromedash-metadata></chromedash-metadata>
+</nav>
+<chromedash-featurelist {% if user.is_whitelisted %}whitelisted{% endif %}></chromedash-featurelist>
+</section>
 
 <!--
 {% load verbatim %}
-
 {% verbatim %}
-<table ng-controller="DataTableController" id="data-table">
-  <tr class="headerRow">
-    <th ng-repeat="col in data.cols">{{col.label}}</th>
-  </tr>
-  <tr ng-repeat="row in data.rows">
-    <td ng-repeat="cell in row.c">{{cell.v}}</td>
-  </tr>
-</table>
 {% endverbatim %} -->
 
-<iframe seamless src="//docs.google.com/spreadsheet/pub?key=0AjGgk26K1Cc-dFdfUlRQRWtjUm5XdjB4cmFGWjhTZmc&single=true&gid=0&range=A2:Z200&output=html"></iframe>
+{% endblock %}
 
-<!-- <div id="viz"></div> -->
-
+{% block js %}
 <script>
-// function DataTableController($scope) {
-//   $scope.data = {};
+(function() {
+var $ = function(selector) {
+  return document.querySelector(selector);
+};
+var $$ = function(selector) {
+  return document.querySelectorAll(selector);
+};
 
-//   var query = new google.visualization.Query(
-//     'https://spreadsheets.google.com/tq?key=' + KEY + '&range=' + RANGE + '&pub=1&headers=1');
-
-//   query.send(function(response) {
-//     var data = response.getDataTable();
-//     $scope.data = JSON.parse(data.toJSON());
-// //console.log($scope.data)
-//     $scope.$apply(function() {});
-//   });
-// }
-
-var KEY = '0AjGgk26K1Cc-dC0yZFQ4ajh0Z2JqZlJJUmhTMVZVYlE';
-var RANGE = 'A2:R';
-
-// function onGoogLoad() {
-//   var wrapper = new google.visualization.ChartWrapper({
-//     chartType: 'Table',
-//     dataSourceUrl: 'https://spreadsheets.google.com/tq?key=' + KEY + '&range=' + RANGE + '&pub=1',
-//     containerId: 'viz'
-//   });
-
-//   var options = {
-//     'title': 'How Much Pizza I Ate Last Night',
-//     'width': 400,
-//     'height': 300,
-//     allowHtml: true
-//   };
-
-//   wrapper.draw(options);
-
-//   // var table = new google.visualization.Table(document.querySelector('#viz'));
-//   // table.draw(data, {allowHtml: true});
-// }
-
-function sendQuery() {
-  var query = new google.visualization.Query(
-    'https://spreadsheets.google.com/tq?key=' + KEY + '&range=' + RANGE + '&pub=1&headers=1');
-
-  query.send(onQueryResponse);
+function updateCount(count) {
+  $('#num-features').textContent = count;
 }
 
-function onQueryResponse(response) {
-  if (response.isError()) {
-    console.error('Error in query: ' + response.getMessage() + ' ' +
-                  response.getDetailedMessage());
-    return;
-  }
+document.addEventListener('WebComponentsReady', function(e) {
+  var featureList = $('chromedash-featurelist');
+  var chromeMetadata = $('chromedash-metadata');
+  var overlay = $('chromedash-legend');
+  var search = $('.search input');
 
-  var data = response.getDataTable();
-
-  //var json = JSON.parse(data.toJSON());
-
-  var options = {
-    allowHtml: true,
-    cssClassNames: {
-      headerRow: 'headerRow',
-      hoverTableRow: 'hoverTableRow',
-      selectedTableRow: 'selectedTableRow'
-    }
+  // TODO: decide if we need these anymore. Can they be moved internal to the
+  // chromeMetadata element?
+  chromeMetadata.implStatuses = {{IMPLEMENATION_STATUSES|safe}};
+  chromeMetadata.STATUS = {
+    NO_ACTIVE_DEV: 1,
+    PROPOSED: 2,
+    IN_DEVELOPMENT: 3,
+    BEHIND_A_FLAG: 4,
+    ENABLED_BY_DEFAULT: 5,
+    DEPRECATED: 6
   };
 
-  var table = new google.visualization.Table(document.querySelector('#viz'));
+  // Fill data from server by including it directly in template.
+  featureList.features = {{features|safe}};
 
-  // Clean up links.
-  var numRows = data.getNumberOfRows();
-  var numCols = data.getNumberOfColumns();
+  // // Instead, fill data via AJAX.
+  // var xhr = new XMLHttpRequest();
+  // xhr.open('GET', '/features.json');
+  // xhr.onloadend = function(e) {
+  //   featureList.features = JSON.parse(e.target.response);
+  // };
+  // xhr.send();
 
-  var shippedInColIdx = getColumnIndexForLabel(data, 'Shipped in');
+  // // !!!!!!Use mock data instead!!!!!!
+  // var xhr = new XMLHttpRequest();
+  // xhr.open('GET', '/static/js/mockdata.json', false);
+  // xhr.onloadend = function(e) {
+  //   featureList.features = JSON.parse(e.target.response);
+  // };
+  // xhr.send();
 
-  for (var row = 0; row < numRows; ++row) {
-    for (var col = 0; col < numCols; ++col) {
-      var cell = data.getValue(row, col);
+  featureList.metadata = chromeMetadata; // Feature list needs access to the selected milestone.
+  featureList.addEventListener('filter-category', function(e) {
+    search.value = e.detail.val;
+    updateCount(featureList.filterOnCategory(e.detail.val));
+  });
 
-      // if (shippedInColIdx == col) {
-      //   document.querySelector('table').querySelectorAll("tr:not(.headerRow)")[row].children[col].classList.add('chrome-cell');
-      // }
+  updateCount(featureList.features.length); // Set initial # features showing.
 
-      if (cell && cell.toString().match('crbug.com')) {
-        data.setValue(row, col, cell.link('http://' + cell));
-      } else if (cell && cell.toString().match('https?://')) {
-        data.setValue(row, col, linkify(cell));
-      }
+  search.disabled = false;
+
+  // TODO: taken out. Put back in when if switch input to type="search"
+  // // // Clear input when user clicks the 'x' button.
+  search.addEventListener('search', function(e) {
+    if (!e.target.value) {
+      updateCount(featureList.filter());
+      chromeMetadata.selected = null;
     }
-  }
+  });
 
-  table.draw(data, options);
-
-  // var html = [];
-
-  // html.push('<tr>');
-  // for (var i = 0, col; col = json.cols[i]; ++i) {
-  //   html.push('<th>', col.label, '</th>');
-  // }
-  // html.push('</tr>');
-
-  // document.querySelector('#viz').innerHTML = '<table>' + html.join('') + '</table>';
-}
-
-function getColumnIndexForLabel(data, label) {
-  for (var i = 0; i < data.getNumberOfColumns(); ++i) {
-    if (data.getColumnLabel(i) == label) {
-      return i;
+   // Clear input when user clicks the 'x' button.
+  search.addEventListener('keyup', function(e) {
+    if (!e.target.value && e.keyCode != 27) { // ESC
+      updateCount(featureList.filter());
+      chromeMetadata.selected = null;
+    } else {
+      //if (e.keyCode == 13) {  // Enter
+        updateCount(featureList.filter(e.target.value));
+      //}
     }
-  }
-  return -1;
+  });
+
+  overlay.views = {
+    vendors: {{VENDOR_VIEWS|safe}}, // set from server
+    webdevs: {{WEB_DEV_VIEWS|safe}}, // set from server
+    standards: {{STANDARDS_VALS|safe}} // set from server
+  };
+
+  $('.legend').addEventListener('click', function(e) {
+    e.preventDefault();
+    overlay.toggle();
+  });
+
+  window.addEventListener('popstate', function(e) {
+    featureList.scrollToFeature(e.state.id);
+  });
+
+});
+
+// Feature detect new flexbox. If unsupported, CSS fixes to support old flexbox.
+// TODO(ericbidelman): remove when Safari updates to new flexbox.
+var el = document.createElement('div');
+if (!('flexBasis' in el.style || 'WebKitFlexBasis' in el.style)) {
+  var link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.href = '/static/css/features/safari_fixes.css';
+  document.head.appendChild(link);
 }
 
-function linkify(text) {
-  // http://, https://, ftp://
-  var urlPattern = /\b(?:https?|ftp):\/\/[a-z0-9-+&@#\/%?=~_|!:,.;]*[a-z0-9-+&@#\/%=~_|]/gim;
-
-  // www. sans http:// or https://
-  var pseudoUrlPattern = /(^|[^\/])(www\.[\S]+(\b|$))/gim;
-
-  // Email addresses
-  var emailAddressPattern = /\w+@[a-zA-Z_]+?(?:\.[a-zA-Z]{2,6})+/gim;
-
-  return text.replace(urlPattern, '<a href="$&">$&</a>')
-             .replace(pseudoUrlPattern, '$1<a href="http://$2">$2</a>')
-             .replace(emailAddressPattern, '<a href="mailto:$&">$&</a>');
-}
+})();
 </script>
-<!-- <script src='//www.google.com/jsapi?autoload={"modules":[{"name":"visualization","version":"1","callback": "onGoogLoad"}]}'></script>
- -->
-<!-- <script src='//www.google.com/jsapi?autoload={"modules":[{"name":"visualization","version":"1","packages":["corechart","table"],"callback": "sendQuery"}]}'></script> -->
-<!-- <script src='//www.google.com/jsapi?autoload={"modules":[{"name":"visualization","version":"1","packages":["corechart","table"]}]}'></script> -->
-
 {% endblock %}

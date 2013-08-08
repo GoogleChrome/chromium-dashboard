@@ -1,134 +1,41 @@
 @import "compass/reset";
 @import "compass/css3/border-radius";
+@import "compass/css3/images";
 //@import "compass/css3/box-shadow";
-//@import "compass/css3/text-shadow";
+@import "compass/css3/text-shadow";
 //@import "compass/css3/background-size";
 
-$default-font-color: #666666;
-$light-grey: #eee;
-
-@mixin display-flex() {
-  display: -webkit-flex;
-  display: -moz-flex;
-  display: -ms-flex;
-  display: -o-flex;
-  display: flex;
-}
-
-@mixin flex($val) {
-  -webkit-flex: $val;
-  -moz-flex: $val;
-  -ms-flex: $val;
-  -o-flex: $val;
-  flex: $val;
-}
-
-@mixin justify-content($val: center) {
-  -webkit-justify-content: $val;
-  -moz-justify-content: $val;
-  -ms-justify-content: $val;
-  -o-justify-content: $val;
-  justify-content: $val;
-}
-
-@mixin align-items($val: center) {
-  -webkit-align-items: $val;
-  -moz-align-items: $val;
-  -ms-align-items: $val;
-  -o-align-items: $val;
-  align-items: $val;
-}
-
-@mixin align-self($val: center) {
-  -webkit-align-self: $val;
-  -moz-align-self: $val;
-  -ms-align-self: $val;
-  -o-align-self: $val;
-  align-self: $val;
-}
-
-@mixin flex-direction($val) {
-  -webkit-flex-direction: $val;
-  -moz-flex-direction: $val;
-  -ms-flex-direction: $val;
-  -o-flex-direction: $val;
-  flex-direction: $val;
-}
-
-@mixin flex-wrap($val: nowrap) {
-  -webkit-flex-wrap: $val;
-  -moz-flex-wrap: $val;
-  -ms-flex-wrap: $val;
-  -o-flex-wrap: $val;
-  flex-wrap: $val;
-}
-
-// Old flexbox.
-@mixin display-box() {
-  display: -webkit-box;
-  display: -moz-box;
-  display: -ms-box;
-  display: -o-box;
-  display: box;
-}
-
-@mixin box-orient($val) {
-  -webkit-box-orient: $val;
-  -moz-box-orient: $val;
-  -ms-box-orient: $val;
-  -o-box-orient: $val;
-  box-orient: $val;
-}
-
-@mixin box-flex($val) {
-  -webkit-box-flex: $val;
-  -moz-box-flex: $val;
-  -ms-box-flex: $val;
-  -o-box-flex: $val;
-  box-flex: $val;
-}
-
-@mixin box-pack($val) {
-  -webkit-box-pack: $val;
-  -moz-box-pack: $val;
-  -ms-box-pack: $val;
-  -o-box-pack: $val;
-  box-pack: $val;
-}
-
-@mixin width-max-content() {
-  width: -webkit-max-content;
-  width: -moz-max-content;
-  width: -ms-max-content;
-  width: -o-max-content;
-  width: max-content;
-}
-
-@mixin user-select() {
-	-webkit-user-select: none;
-	-moz-user-select: none;
-	-o-user-select: none;
-	-ms-user-select: none;
-  user-select: none;
-}
-
-@mixin calc-width($val) {
-  width: -webkit-calc($val);
-  width: -moz-calc($val);
-  width: -ms-calc($val);
-  width: -o-calc($val);
-  width: calc($val);
-}
+@import "vars";
 
 * {
   box-sizing: border-box;
 }
 
 a {
-	color: navy;
-	text-decoration: none;
+  text-decoration: none;
 }
 a:hover {
-	color: navy;
-	text-decoration: underline;
+  text-decoration: underline;
+}
+
+button, .button {
+  display: inline-block;
+  @include background(linear-gradient(#F9F9F9 40%, #E3E3E3 70%));
+  border: 1px solid $gray-2;
+  @include border-radius(3px);
+  padding: 5px 8px;
+  outline: none;
+  white-space: nowrap;
+  @include user-select(none);
+  cursor: pointer;
+  @include text-shadow(1px 1px #fff);
+  font-size: 10pt;
+}
+
+button:not(:disabled):hover {
+  border-color: $gray-4;
+}
+
+button:not(:disabled):active {
+  @include background(linear-gradient(#E3E3E3 40%, #F9F9F9 70%));
 }

@@ -1,0 +1,14 @@
+#content, #panels {
+  overflow: hidden;
+  height: 100%;
+}
+#panels nav {
+  height: 100%;
+}
+chromedash-metadata {
+  height: -webkit-calc(100% - 250px); // Needed for Safari old flexbox.
+}
+
+chromedash-featurelist {
+  height: -webkit-calc(100% - 250px); // Needed for Safari old flexbox.
+}

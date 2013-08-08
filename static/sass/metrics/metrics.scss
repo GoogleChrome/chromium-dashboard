@@ -1,0 +1,77 @@
+@import "compass/css3/images";
+
+@import "vars";
+
+.line_chart {
+  height: 500px;
+  width: 900px;
+  margin: 0 auto;
+}
+
+#dashboard-table {
+  margin: 0 auto;
+}
+
+.metric-nav {
+  //border-bottom: 1px solid $bar-border-color;
+  //background: $chromium-color-light;
+  border-bottom: 2px solid $chromium-color-center;
+  text-align: center;
+
+  li {
+    display: inline-block;
+    border-top-left-radius: 3px;
+    border-top-right-radius: 3px;
+    @include background($bar-gradient);
+    box-shadow: 1px 1px 4px $bar-shadow-color;
+    padding: 0.5em;
+    margin: 0 5px;
+  }
+}
+
+#content {
+  @include flex-direction(column);
+
+  section {
+    padding-top: 25px;
+
+    h1 {
+      display: inline-block;
+      vertical-align: middle;
+      margin-right: 10px;
+    }
+
+    p {
+      margin-top: 10px;
+    }
+
+    #stack-rank-list {
+      margin: 1em 0;
+
+      li {
+        padding: 5px 0;
+
+        // &:nth-child(even):hover {
+        //   background-color: #ccc;
+        // }
+
+        > span {
+          display: inline-block;
+
+          &:first-of-type {
+            width: 110px;
+            margin-right: 10px;
+            text-align: right;
+          }
+        }
+      }
+    }
+  }
+}
+
+@media only screen and (max-width: 700px) {
+  .metric-nav {
+    text-align: center;
+    margin-top: 15px;
+  }
+}

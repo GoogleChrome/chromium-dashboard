@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block css %}
+<!-- <link rel="stylesheet" type="text/css" href="/static/css/users/users.css"> -->
+<link rel="stylesheet" type="text/css" href="/static/css/forms.css">
+{% endblock %}
+
+{% block html_imports %}
+  <link rel="import" href="/static/elements/chromedash-userlist.html">
+{% endblock %}
+
+{% block subheader %}
+<div id="subheader">
+  <h2>Whitelist a user</h2>
+</div>
+{% endblock %}
+
+{% block content %}
+<section>
+
+<chromedash-userlist action="{{current_path}}"></chromedeash-userlist>
+
+</section>
+{% endblock %}
+
+{% block js %}
+<script>
+document.addEventListener('WebComponentsReady', function(e) {
+  var el = document.querySelector('chromedash-userlist');
+  el.users = {{users|safe}}; // Filled from server.
+});
+</script>
+{% endblock %}

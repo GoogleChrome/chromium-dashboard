@@ -9,7 +9,7 @@ INSTALLED_APPS = (
 ROOT_DIR = os.path.abspath(os.path.dirname(__file__))
 
 TEMPLATE_DIRS = (
-  os.path.join(ROOT_DIR, 'templates'),
+  os.path.join(ROOT_DIR, 'templates')
 )
 ################################################################################
 
@@ -22,4 +22,9 @@ else:
 DEBUG = not PROD
 TEMPLATE_DEBUG = DEBUG
 
-APP_TITLE = 'Chromium Feature Dashboard'
+APP_TITLE = 'Chromium Dashboard'
+
+APP_VERSION = os.environ['CURRENT_VERSION_ID'].split('.')[0]
+MEMCACHE_KEY_PREFIX = APP_VERSION # For memcache busting on new version
+
+RSS_FEED_LIMIT = 15

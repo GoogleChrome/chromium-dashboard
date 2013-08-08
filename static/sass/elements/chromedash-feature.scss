@@ -1,0 +1,221 @@
+@import "compass/css3/transition";
+
+@import "element";
+
+@host {
+  :scope {
+    display: block;
+    @include transition(height 400ms ease-in-out);
+    height: $feature-min-height;
+    overflow: hidden;
+    cursor: pointer;
+    @include gradient-bar-bg;
+    // margin-bottom: 10px;
+    margin-bottom: 1px;
+    position: relative;
+    border-radius: $default-border-radius;
+    padding: 5px 20px;
+    list-style: none;
+  }
+  :scope.open {
+    height: 290px;
+    overflow: auto;
+  }
+}
+
+h2 {
+  display: inline-block;
+  margin-right: 1em;
+  font-size: 25px;
+}
+
+.topcorner {
+  &.pull-right {
+    top: 15px;
+    right: 15px;
+    position: absolute;
+  }
+
+  .icon-beaker {
+    color: $gray-3;
+  }
+  .icon-warning-sign {
+    color: darkred;
+  }
+
+  .tooltip {
+    &:hover, &:active {
+      &:before {
+        @include tooltip;
+        top: 10px;
+        right: 25px;
+        width: auto;
+        white-space: nowrap;
+      }
+    }
+  }
+
+}
+
+hgroup {
+  @include display-flex;
+  @include align-items(center);
+
+  .category {
+    color: $gray-2;
+    //font-size: 14px;
+    cursor: pointer;
+  }
+
+  chromedash-color-status {
+    //margin-right: 10px;
+    position: absolute;
+    top: 0;
+    left: 0;
+
+    &:hover, &:active {
+      &:before {
+        @include tooltip;
+        //top: 5px;
+        top: 50%;
+        margin: -30px auto;
+        left: 25px;
+        width: 275px;
+      }
+    }
+  }
+}
+
+section {
+  margin-top: 10px;
+
+  &.desc {
+    cursor: pointer;
+
+    summary {
+      text-overflow: ellipsis;
+      overflow: hidden;
+      white-space: nowrap;
+
+      &.open {
+        white-space: normal;
+      }
+    }
+  }
+  
+  h3 {
+    margin-bottom: 10px;
+    font-size: 18px;
+    color: $chromium-color-dark;
+    font-weight: 400;
+  }
+
+  label {
+    font-weight: 600;
+    //color: $chromium-color-dark;
+    margin-right: 5px;
+  }
+
+  div {
+    margin-bottom: 10px;
+    @include flex-wrap(wrap);
+    > * {
+      margin-right: 20px;
+    }
+  }
+
+  .impl_status {
+    .chrome_android {
+      &.tooltip {
+        position: relative;
+        &:hover, &:active {
+          &:before {
+            @include tooltip;
+            top: -50px;
+            left: 20px;
+            width: 225px;
+          }
+        }
+      }
+    }
+  }
+
+  .icon-android {
+    color: #A4C739;
+    font-size: 1.5em;
+  }
+
+  .views {
+    @include display-flex;
+    @include flex-wrap(wrap);
+    
+    & > * {
+      @include display-flex;
+      @include align-items(center);
+      position: relative;
+
+      > label {
+        cursor: inherit;
+      }
+
+      &:hover, &:active {
+        &:before {
+          @include tooltip;
+          top: -50px;
+          left: 20px;
+          width: 150px;
+        }
+      }
+    }
+  }
+
+  .standardization {
+    @include display-flex;
+    @include flex-wrap(wrap);
+    & > * {
+      @include display-flex;
+      @include align-items(center);
+    }
+  }
+
+  .comments {
+    white-space: pre-wrap;
+  }
+}
+
+chromedash-color-status {
+  @include display-flex;
+  margin-right: 5px;
+  box-sizing: border-box;
+  @include flex(auto 0 0);
+}
+
+
+@media only screen and (max-width: 700px) {
+  h2 {
+    font-size: 20px !important;
+  }
+  section {
+    margin-left: 0;
+  }
+  .impl_status {
+    @include display-flex;
+    @include flex-direction(column);
+    @include flex-wrap(initial);
+    > span:not([hidden]):not(:last-of-type),
+    > a {
+      // label {
+      //   width: 100px;
+      // }
+      margin-bottom: 10px;
+    }
+  }
+  .views span {
+    // label {
+    //   &:after {
+    //     content: '';
+    //   }
+    // }
+    margin-bottom: 10px;
+  }
+}

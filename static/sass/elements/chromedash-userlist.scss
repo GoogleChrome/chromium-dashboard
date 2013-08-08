@@ -1,0 +1,26 @@
+@import "compass/css3/transition";
+
+@import "element";
+
+@host {
+  :scope {
+    display: block;
+  }
+}
+
+ul {
+  margin-top: 10px;
+
+  li {
+    @include transition(opacity 600ms ease-in-out);
+    margin-bottom: 5px;
+
+    &.faded {
+      opacity: 0;
+    }
+
+    > a {
+      margin-right: 10px;
+    }
+  }
+}
