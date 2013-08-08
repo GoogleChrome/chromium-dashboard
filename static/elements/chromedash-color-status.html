@@ -20,9 +20,8 @@
                       this.$.status.classList.remove('corner');
       },
       updateColor: function() {
-        var r = Math.round((this.value / this.max) * 255);
-        var g = 255 - r;
-        this.$.status.style.backgroundColor = 'rgb(' + r + ', ' + g + ', 0)';
+        var h = Math.round(120 - this.value * 120 / this.max); 
+        this.$.status.style.backgroundColor = 'hsl(' + h + ', 100%, 50%)';  
       },
       valueChanged: function() {
         this.updateColor();
