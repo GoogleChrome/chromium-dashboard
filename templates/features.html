@@ -157,7 +157,8 @@ document.addEventListener('WebComponentsReady', function(e) {
 // Feature detect new flexbox. If unsupported, CSS fixes to support old flexbox.
 // TODO(ericbidelman): remove when Safari updates to new flexbox.
 var el = document.createElement('div');
-if (!('flexBasis' in el.style || 'WebKitFlexBasis' in el.style)) {
+if (!('flexBasis' in el.style || 'webkitFlexBasis' in el.style ||
+      'WebKitFlexBasis' in el.style)) {
   var link = document.createElement('link');
   link.rel = 'stylesheet';
   link.href = '/static/css/features/safari_fixes.css';
