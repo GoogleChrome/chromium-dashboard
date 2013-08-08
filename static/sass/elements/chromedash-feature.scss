@@ -37,7 +37,7 @@ h2 {
   }
 
   .icon-beaker {
-    color: darkgreen;
+    color: $gray-3;
   }
   .icon-warning-sign {
     color: darkred;
@@ -122,6 +122,27 @@ section {
     > * {
       margin-right: 20px;
     }
+  }
+
+  .impl_status {
+    .chrome_android {
+      &.tooltip {
+        position: relative;
+        &:hover, &:active {
+          &:before {
+            @include tooltip;
+            top: -50px;
+            left: 20px;
+            width: 225px;
+          }
+        }
+      }
+    }
+  }
+
+  .icon-android {
+    color: #A4C739;
+    font-size: 1.5em;
   }
 
   .views {
