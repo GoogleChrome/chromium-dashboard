@@ -147,7 +147,9 @@ document.addEventListener('WebComponentsReady', function(e) {
   });
 
   window.addEventListener('popstate', function(e) {
-    featureList.scrollToFeature(e.state.id);
+    if (e.state) {
+      featureList.scrollToFeature(e.state.id);
+    }
   });
 
 });
