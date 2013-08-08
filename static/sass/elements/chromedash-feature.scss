@@ -13,14 +13,20 @@
     // margin-bottom: 10px;
     margin-bottom: 1px;
     position: relative;
+    //border: 1px solid transparent;
     border-radius: $default-border-radius;
     padding: 5px 20px;
     list-style: none;
-    outline: none;
-  }
-  :scope.open {
-    height: 290px;
-    overflow: auto;
+
+    &:active {
+      outline: none;
+    }
+
+    &.open {
+      height: 290px;
+      overflow: auto;
+      outline: none;
+    }
   }
 }
 

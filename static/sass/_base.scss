@@ -11,6 +11,10 @@
   box-sizing: border-box;
 }
 
+:focus {
+  outline: 1px solid $chromium-color-medium;
+}
+
 a {
   text-decoration: none;
 }
