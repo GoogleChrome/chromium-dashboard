@@ -148,6 +148,15 @@ section {
     }
   }
 
+  .standardization {
+    @include display-flex;
+    @include flex-wrap(wrap);
+    & > * {
+      @include display-flex;
+      @include align-items(center);
+    }
+  }
+
   .comments {
     white-space: pre-wrap;
   }
