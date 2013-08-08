@@ -16,6 +16,7 @@
     border-radius: $default-border-radius;
     padding: 5px 20px;
     list-style: none;
+    outline: none;
   }
   :scope.open {
     height: 290px;
