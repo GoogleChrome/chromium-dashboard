@@ -5,7 +5,9 @@
   <link rel="stylesheet" type="text/css" href="../css/elements/chromedash-featurelist.css">
   <ul>
     <template repeat="{{feature in filtered}}">
-      <div data-first-of-milestone?="{{feature.first_of_milestone}}" data-milestone="{{feature.meta.milestone_str}}"></div>
+      <template if="{{filtered.length == features.length}}">
+        <div data-first-of-milestone?="{{feature.first_of_milestone}}" data-milestone="{{feature.meta.milestone_str}}"></div>
+      </template>
       <li is="chromedash-feature" feature="{{feature}}" needsflag="{{feature.meta.needsflag}}">
         <a href="/admin/features/edit/{{feature.id}}" class="edit" hidden?="{{!whitelisted}}">edit</a>
       </li>
