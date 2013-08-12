@@ -113,16 +113,18 @@
         return;
       }
 
-      // For polyfill, needed to wrap in asyncMethod and call Platform.flush()
-      // To get the feature panel to toggle quicker.
-      if (Platform.flags.shadow) {
-        this.asyncMethod(function() {
-          this.open = !this.open;
-          Platform.flush(); 
-        });
-      } else {
-        this.open = !this.open;
-      }
+      // // For v20130808 relase, need to wrap in asyncMethod and call
+      // // Platform.flush() to get the feature panel to toggle at a decent speed
+      // // under the polyfill. B/c of property reflection to attributes?
+      // if (Platform.flags.shadow) {
+      //   this.asyncMethod(function() {
+      //     this.open = !this.open;
+      //     Platform.flush(); 
+      //   });
+      // } else {
+      //   this.open = !this.open;
+      // }
+      this.open = !this.open;
     },
     calculateCompatRisk: function() {
       var vendors = (this.feature.ff_views.value + this.feature.ie_views.value +

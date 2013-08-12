@@ -264,12 +264,12 @@ chromedash-legend {
 }
 
 // Prevent transitions on feature panels under polyfill.
-.polyfill {
-  chromedash-feature,
-  [is="chromedash-feature"] {
-    @include transition(none !important);
-  }
-}
+// .polyfill {
+//   chromedash-feature,
+//   [is="chromedash-feature"] {
+//     @include transition(none !important);
+//   }
+// }
 
 @media only screen and (max-width: 700px) {
   h1 {
