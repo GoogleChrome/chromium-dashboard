@@ -217,12 +217,7 @@ chromedash-color-status {
       margin-bottom: 10px;
     }
   }
-  .views span {
-    // label {
-    //   &:after {
-    //     content: '';
-    //   }
-    // }
+  .views > span {
     margin-bottom: 10px;
   }
 }

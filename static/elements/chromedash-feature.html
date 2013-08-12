@@ -112,7 +112,17 @@
           'tooltip' in e.target.dataset || e.target.tagName == 'A') {
         return;
       }
-      this.open = !this.open;
+
+      // For polyfill, needed to wrap in asyncMethod and call Platform.flush()
+      // To get the feature panel to toggle quicker.
+      if (Platform.flags.shadow) {
+        this.asyncMethod(function() {
+          this.open = !this.open;
+          Platform.flush(); 
+        });
+      } else {
+        this.open = !this.open;
+      }
     },
     calculateCompatRisk: function() {
       var vendors = (this.feature.ff_views.value + this.feature.ie_views.value +

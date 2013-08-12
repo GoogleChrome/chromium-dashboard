@@ -60,6 +60,7 @@ if (uaParts) {
   var chromeVersion = parseInt(uaParts[1]);
   if (chromeVersion < 29) {
     Platform = {flags: {shadow: 'polyfill'}};
+    document.documentElement.classList.add('polyfill');
   }
 }
 </script>

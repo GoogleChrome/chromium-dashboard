@@ -43,13 +43,14 @@
     }
   }
 
+  var featureLiList_ = [];
+
   Polymer('chromedash-featurelist', {
     applyAuthorStyles: true,
     whitelisted: false,
     metadata: null,
     ready: function() {
       this.features = this.features || [];
-      this.featureLiList = this.featureLiList || [];
       this.filtered = this.filtered || [];
 
       this.addEventListener('keyup', function(e) {
@@ -94,9 +95,24 @@
           this.scrollToMilestone(
             this.metadata.implStatuses[this.metadata.STATUS.IN_DEVELOPMENT - 1].val);
         }
-
       });
     },
+    // offsetChanged: function() {
+    //   var viewportH = this.clientHeight;
+    //   var itemHeight = 75; //parseInt(window.getComputedStyle(this.featureLiList[0]).height);
+    //   var ITEMS_LIMIT = Math.floor(viewportH / itemHeight);
+
+    //   console.log(this.offset, this.offset + ITEMS_LIMIT)
+    //   //this.renderedList = this.filtered.slice(this.offset, this.offset + ITEMS_LIMIT);
+
+    //   for (var i = 0, f; f = this.features[i]; ++i) {
+    //     f.inView = false;
+    //     if (this.offset <= i && i < this.offset + ITEMS_LIMIT) {
+    //       f.inView = true;
+    //     }
+    //   }
+    // },
+
     filterOnCategory: function(val) {
       var regex = new RegExp(val, 'ig');
       this.filtered = this.features.filter(function(feature, idx, array) {
@@ -119,7 +135,7 @@
     // TODO: WHY ISNT THIS CALLED when .filtered is set!!
     filteredChanged: function() {
       this.asyncMethod(function() {
-        this.featureLiList = this.shadowRoot.querySelectorAll('li');
+        featureLiList_ = this.shadowRoot.querySelectorAll('li');
       });
     },
     filter: function(val) {
@@ -172,8 +188,7 @@
     // Returns the closest feature <li> to the scroll top position passed in.
     featureInView: function(containerScrollTop) {
       var closest = null;
-
-      for (var i = 0, li; li = this.featureLiList[i]; ++i) {
+      for (var i = 0, li; li = featureLiList_[i]; ++i) {
         var dist = li.offsetTop - containerScrollTop;
         if (dist < 0) {
           dist = -dist * 1.5;
@@ -185,6 +200,7 @@
           closest.dist = dist;
         }
       }
+
       return closest;
     },
     // Returns the index of the first feature of a given milestone string.
@@ -202,7 +218,7 @@
       var idx = this.firstOfMilestone(milestone);
       if (idx != -1) {
         // TODO(ericbidelman): Implement smooth scrolling when https://twitter.com/ebidel/status/364825118171602944 lands.
-        this.featureLiList[idx].scrollIntoView(true);
+        featureLiList_[idx].scrollIntoView(true);
       }
     },
     scrollToFeature: function(id) {
@@ -211,8 +227,8 @@
       }
       for (var i = 0, f; f = this.filtered[i]; ++i) {
         if (f.id == id) {
-          this.featureLiList[i].scrollIntoView(true);
-          this.featureLiList[i].open = true;
+          featureLiList_[i].scrollIntoView(true);
+          featureLiList_[i].open = true;
           break;
         }
       }
