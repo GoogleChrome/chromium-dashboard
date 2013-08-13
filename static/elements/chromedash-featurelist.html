@@ -216,7 +216,8 @@
       var idx = this.firstOfMilestone(milestone);
       if (idx != -1) {
         // TODO(ericbidelman): Implement smooth scrolling when https://twitter.com/ebidel/status/364825118171602944 lands.
-        featureLiList_[idx].scrollIntoView(true);
+        var el = featureLiList_[idx].previousElementSibling || featureLiList_[idx];
+        el.scrollIntoView(true);
       }
     },
     scrollToFeature: function(id) {
