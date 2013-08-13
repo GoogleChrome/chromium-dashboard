@@ -13,7 +13,7 @@
   margin-top: 10px;
   font-weight: 600;
   font-size: $milestone-label-size;
-  color: $chromium-color-center;
+  color: $chromium-color-dark;
 
   // This one rule cases recalcstyle hot path in Blink. Invalidates all siblings.
   // &:first-of-type {

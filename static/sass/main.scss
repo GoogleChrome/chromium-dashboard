@@ -199,6 +199,11 @@ chromedash-legend {
       a {
         margin-left: 20px;
       }
+      .legend {
+        font-size: 18px;
+        margin-left: 18px;
+        cursor: pointer;
+      }
       @include flex(1 0 0);
       text-align: right;
       margin-right: 0;
