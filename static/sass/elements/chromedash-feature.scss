@@ -106,6 +106,7 @@ section {
 
   &.desc {
     cursor: pointer;
+    color: $gray-3;
 
     summary {
       text-overflow: ellipsis;
