@@ -1,6 +1,6 @@
 <link rel="import" href="chromedash-color-status.html">
 
-<polymer-element name="chromedash-feature" extends="li" attributes="feature open needsflag" tabindex="0">
+<polymer-element name="chromedash-feature" extends="li" attributes="feature needsflag" tabindex="0">
 <template>
 <link rel="stylesheet" type="text/css" href="../css/elements/chromedash-feature.css">
 <div on-click="toggle">
@@ -10,7 +10,7 @@
     <content select=".edit"></content>
   </div>
   <hgroup>
-    <chromedash-color-status class="tooltip" title="Compatiblity Risk: overall interest from browser vendors and web developers" value="{{compatRisk}}" max="{{MAX_RISK}}" corner></chromedash-color-status>
+    <chromedash-color-status class="tooltip corner" title="Compatiblity Risk: overall interest from browser vendors and web developers" value="{{compatRisk}}" max="{{MAX_RISK}}"></chromedash-color-status>
     <h2>{{feature.name}}</h2>
     <label class="category" on-click="categoryFilter">{{feature.category}}</label>
   </hgroup>
