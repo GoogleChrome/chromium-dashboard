@@ -3,15 +3,17 @@
 @host {
   :scope {
     display: block;
+    margin-top: -14px;
   }
 }
 
 [data-first-of-milestone] {
   $milestone-label-size: 13px;
 
-  &:first-of-type {
-    margin-top: $milestone-label-size + 2;
-  }
+  // This one rule cases recalcstyle hot path in Blink. Invalidates all siblings.
+  // &:first-of-type {
+  //   margin-top: $milestone-label-size + 2;
+  // }
 
   position: relative;
   margin-top: $milestone-label-size + 15;
@@ -32,7 +34,7 @@
 }
 
 @media only screen and (max-width: 700px) {
-  div[data-first-of-milestone] {
+  [data-first-of-milestone] {
     $milestone-label-size: 12px;
     &:after {
       font-size: $milestone-label-size;
