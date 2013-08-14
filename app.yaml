@@ -29,6 +29,8 @@ handlers:
 
 - url: /static
   static_dir: static
+  http_headers:
+    Access-Control-Allow-Origin: "*"
 
 # Metrics data handlers --------------------------------------------------------
 - url: /data/.*
