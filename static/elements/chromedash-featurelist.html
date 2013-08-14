@@ -121,6 +121,16 @@
 
       return this.filtered.length;
     },
+    filterOnOwner: function(val) {
+      var regex = new RegExp(val, 'ig');
+      this.filtered = this.features.filter(function(feature, idx, array) {
+        return regex.test(feature.owner.toString());
+      });
+
+      this.filteredChanged();
+
+      return this.filtered.length;
+    },
     // filterOnVersion: function(val) {
     //   var regex = new RegExp(val, 'ig');
     //   this.filtered = this.features.filter(function(feature, idx, array) {
@@ -143,6 +153,18 @@
       } else {
         val = val.trim();
 
+        // owner: user@chromium.org
+        var match = val.match(/^owner:\s*(.*)/);
+        if (match) {
+          return this.filterOnOwner(match[1]);
+        }
+
+        // category: Multimedia
+        var match = val.match(/^category:\s*(.*)/);
+        if (match) {
+          return this.filterOnCategory(match[1]);
+        }
+
         // Returns operator and version query e.g. ["<=25", "<=", "25"].
         var result = /^([<>=]=?)\s*?([0-9]+)/.exec(val);
         if (result) {
@@ -163,7 +185,7 @@
               }
             }
           });
-        } else {
+        } else { // Do a general search over misc fields.
           // Remove "=" prefix so "in development"/"proposed" version queries
           // return results.
           if (val.indexOf('=') == 0) {

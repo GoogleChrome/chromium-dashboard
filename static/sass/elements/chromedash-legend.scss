@@ -45,7 +45,7 @@ section {
   li {
     span {
       margin-right: 5px;
-      width: 110px;
+      width: 200px;
       display: inline-block;
     }
   }
@@ -70,4 +70,19 @@ p {
   //box-shadow: 0 4px 16px rgba(0,0,0,0.2);
   
   //opacity: 0;
+}
+
+/* @polyfill @host .close */
+::-webkit-distributed(.close) {
+  position: absolute;
+  right: 15px;
+  top: 10px;
+  padding: 0 5px 3px 5px;
+}
+// Polymer @polyfill directive doesnt like combining these rules.
+.close {
+  position: absolute;
+  right: 15px;
+  top: 10px;
+  padding: 0 5px 3px 5px;
 }

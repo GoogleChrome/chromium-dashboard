@@ -24,10 +24,10 @@
           <span class="chrome_android tooltip" title="Shipped on Chrome for Android"><label><i class="icon-android"></i></label>{{feature.shipped_android_milestone}}</span>
         </template>
         <span><label>Prefixed</label>{{feature.prefixed ? 'Yes' : 'No'}}</span>
-        <a href="{{feature.bug_url}}" target="_blank" hidden?="{{!feature.bug_url}}">Launch bug</a>
+        <span hidden?="{{!feature.bug_url}}"><a href="{{feature.bug_url}}" target="_blank">Launch bug</a></span>
         <span class="owner" hidden?="{{!feature.owner.length}}">
           <label>Owner(s)</label><template repeat="{{owner in feature.owner}}">
-            {{owner}}
+            <span on-click="ownerFilter">{{owner}}</span>
           </template>
         </span>
       </div>
@@ -141,6 +141,10 @@
     categoryFilter: function(e, details, sender) {
       e.stopPropagation();
       this.fire('filter-category', {val: sender.textContent});
+    },
+    ownerFilter: function(e, details, sender) {
+      e.stopPropagation();
+      this.fire('filter-owner', {val: sender.textContent});
     }
   });
 </script>

@@ -36,7 +36,8 @@
 
 {% block content %}
 <chromedash-legend>
-  <button overlay-toggle>Close</button>
+  <!-- <button overlay-toggle>Close</button> -->
+  <button class="close" overlay-toggle>x</button>
 </chromedash-legend>
 
 <section id="panels">
@@ -106,8 +107,13 @@ document.addEventListener('WebComponentsReady', function(e) {
 
   featureList.metadata = chromeMetadata; // Feature list needs access to the selected milestone.
   featureList.addEventListener('filter-category', function(e) {
-    search.value = e.detail.val;
-    updateCount(featureList.filterOnCategory(e.detail.val));
+    search.value = 'category: ' + e.detail.val;
+    updateCount(featureList.filter(search.value));
+  });
+
+  featureList.addEventListener('filter-owner', function(e) {
+    search.value = 'owner: ' + e.detail.val;
+    updateCount(featureList.filter(search.value));
   });
 
   updateCount(featureList.features.length); // Set initial # features showing.
