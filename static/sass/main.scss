@@ -34,11 +34,11 @@ h3 {
 }
 a {
   color: $chromium-color-center;
+  &:hover {
+    color: $chromium-color-dark;
+  }
 }
-a:hover {
-  color: $chromium-color-dark;
-  text-decoration: none
-}
+
 b {
   font-weight: bold;
 }
@@ -64,6 +64,7 @@ header {
 
   a {
     color: currentcolor;
+    text-decoration: none !important;
   }
 
   aside {
@@ -202,6 +203,7 @@ chromedash-legend {
       .legend {
         font-size: 18px;
         cursor: pointer;
+        text-decoration: none;
       }
       @include flex(1 0 0);
       text-align: right;
