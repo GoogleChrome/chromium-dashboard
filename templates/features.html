@@ -105,11 +105,22 @@ document.addEventListener('WebComponentsReady', function(e) {
   // };
   // xhr.send();
 
+  // Setup inside of chromedash-metadata.html
+  // chromeMetadata.addEventListener('milestoneselect', function(e) {
+  //   featureList.scrollToMilestone(e.detail.version);
+  // });
+
   featureList.metadata = chromeMetadata; // Feature list needs access to the selected milestone.
+
   featureList.addEventListener('filter-category', function(e) {
     search.value = 'category: ' + e.detail.val;
     updateCount(featureList.filter(search.value));
   });
+
+  // Setup inside of chromedash-featurelist.html
+  // featureList.addEventListener('scroll', function(e) {
+  //   chromeMetadata.selectMilestone(this.featureInView(e.target.scrollTop));
+  // });
 
   featureList.addEventListener('filter-owner', function(e) {
     search.value = 'owner: ' + e.detail.val;
