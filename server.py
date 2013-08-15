@@ -54,6 +54,35 @@ class MainHandler(common.ContentHandler, common.JSONHandler):
 
     return omaha_data
 
+  def __annotate_first_of_milestones(self, feature_list):
+    try:
+      omaha_data = self.__get_omaha_data()
+
+      win_versions = omaha_data[0]['versions']
+      for v in win_versions:
+        s = v.get('version') or v.get('prev_version')
+        LATEST_VERSION = int(s.split('.')[0])
+        break
+
+      # TODO(ericbidelman) - memcache this calculation as part of models.py
+      milestones = range(1, LATEST_VERSION + 1)
+      milestones.reverse()
+      versions = [
+        models.IMPLEMENATION_STATUS[models.NO_ACTIVE_DEV],
+        models.IMPLEMENATION_STATUS[models.PROPOSED],
+        models.IMPLEMENATION_STATUS[models.IN_DEVELOPMENT],
+        ]
+      versions.extend(milestones)
+
+      last_good_idx = 0
+      for i, version in enumerate(versions):
+        idx = first_of_milestone(feature_list, version, start=last_good_idx)
+        if idx != -1:
+          feature_list[idx]['first_of_milestone'] = True
+          last_good_idx = idx
+    except Exception as e:
+      logging.error(e)
+
   def get(self, path, feature_id=None):
     # Default to features page.
     # TODO: remove later when we want an index.html
@@ -69,6 +98,7 @@ class MainHandler(common.ContentHandler, common.JSONHandler):
     if path.startswith('features'):
       if path.endswith('.json'): # JSON request.
         feature_list = models.Feature.get_chronological() # Memcached
+        self.__annotate_first_of_milestones(feature_list)
         return common.JSONHandler.get(self, feature_list, formatted=True)
       elif path.endswith('.xml'): # Atom feed request.
         filterby = None
@@ -88,37 +118,11 @@ class MainHandler(common.ContentHandler, common.JSONHandler):
 
         return self.render_atom_feed('Features', feature_list)
       else:
-        feature_list = models.Feature.get_chronological() # Memcached
+        #feature_list = models.Feature.get_chronological() # Memcached
 
-        try:
-          omaha_data = self.__get_omaha_data()
+        #self.__annotate_first_of_milestones(feature_list)
 
-          win_versions = omaha_data[0]['versions']
-          for v in win_versions:
-            s = v.get('version') or v.get('prev_version')
-            LATEST_VERSION = int(s.split('.')[0])
-            break
-
-          # TODO(ericbidelman) - memcache this calculation as part of models.py
-          milestones = range(1, LATEST_VERSION + 1)
-          milestones.reverse()
-          versions = [
-            models.IMPLEMENATION_STATUS[models.NO_ACTIVE_DEV],
-            models.IMPLEMENATION_STATUS[models.PROPOSED],
-            models.IMPLEMENATION_STATUS[models.IN_DEVELOPMENT],
-            ]
-          versions.extend(milestones)
-
-          for i, version in enumerate(versions):
-            idx = first_of_milestone(feature_list, version, i);
-            if idx != -1:
-              feature_list[idx]['first_of_milestone'] = True
-            else:
-              feature_list[idx]['first_of_milestone'] = False
-        except Exception as e:
-          logging.error(e)
-
-        template_data['features'] = json.dumps(feature_list)
+        #template_data['features'] = json.dumps(feature_list)
         template_data['categories'] = [
           (v, normalized_name(v)) for k,v in
           models.FEATURE_CATEGORIES.iteritems()]

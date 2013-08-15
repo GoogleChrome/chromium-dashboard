@@ -86,24 +86,18 @@ document.addEventListener('WebComponentsReady', function(e) {
     DEPRECATED: 6
   };
 
-  // Fill data from server by including it directly in template.
-  featureList.features = {{features|safe}};
+  // Fill data via AJAX.
+  var url = location.hostname == 'localhost' ? '/static/js/mockdata.json':
+                                               '/features.json';
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', url, false); // make sync.
+  xhr.onloadend = function(e) {
+    featureList.features = JSON.parse(e.target.response);
+  };
+  xhr.send();
 
-  // // Instead, fill data via AJAX.
-  // var xhr = new XMLHttpRequest();
-  // xhr.open('GET', '/features.json');
-  // xhr.onloadend = function(e) {
-  //   featureList.features = JSON.parse(e.target.response);
-  // };
-  // xhr.send();
-
-  // // // !!!!!!Use mock data instead!!!!!!
-  // var xhr = new XMLHttpRequest();
-  // xhr.open('GET', '/static/js/mockdata.json', false);
-  // xhr.onloadend = function(e) {
-  //   featureList.features = JSON.parse(e.target.response);
-  // };
-  // xhr.send();
+  // Alternatively, fill data from server by including it directly in template.
+  //featureList.features = {{features|safe}};
 
   // Setup inside of chromedash-metadata.html
   // chromeMetadata.addEventListener('milestoneselect', function(e) {
