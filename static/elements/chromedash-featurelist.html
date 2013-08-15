@@ -5,7 +5,7 @@
   <link rel="stylesheet" type="text/css" href="../css/elements/chromedash-featurelist.css">
   <ul>
     <template repeat="{{feature in filtered}}">
-      <div hidden?="{{filtered.length != features.length}}" data-first-of-milestone?="{{feature.first_of_milestone}}" data-milestone="{{feature.meta.milestone_str}}"></div>
+      <div hidden?="{{(filtered.length != features.length) || !feature.first_of_milestone}}" class="milestone-marker">{{feature.meta.milestone_str}}</div>
       <li id="{{feature.id}}" is="chromedash-feature" feature="{{feature}}" needsflag="{{feature.meta.needsflag}}">
         <a href="/admin/features/edit/{{feature.id}}" class="edit" hidden?="{{!whitelisted}}">edit</a>
       </li>
@@ -110,7 +110,6 @@
     //     }
     //   }
     // },
-
     filterOnCategory: function(val) {
       var regex = new RegExp(val, 'ig');
       this.filtered = this.features.filter(function(feature, idx, array) {
@@ -131,15 +130,6 @@
 
       return this.filtered.length;
     },
-    // filterOnVersion: function(val) {
-    //   var regex = new RegExp(val, 'ig');
-    //   this.filtered = this.features.filter(function(feature, idx, array) {
-    //     return regex.test(feature.category);
-    //   });
-    //   this.filteredChanged();
-    //   return this.filtered.length;
-    // },
-
     // TODO: WHY ISNT THIS CALLED when .filtered is set!!
     filteredChanged: function() {
       this.asyncMethod(function() {
@@ -237,8 +227,14 @@
     scrollToMilestone: function(milestone) {
       var idx = this.firstOfMilestone(milestone);
       if (idx != -1) {
-        // TODO(ericbidelman): Implement smooth scrolling when https://twitter.com/ebidel/status/364825118171602944 lands.
-        var el = featureLiList_[idx].previousElementSibling || featureLiList_[idx];
+        // If under polyfill, get actual element out of .impl.
+        if (featureLiList_[idx].impl) {
+          var el = featureLiList_[idx].impl.previousElementSibling || featureLiList_[idx].impl;
+        } else {
+          var el = featureLiList_[idx].previousElementSibling || featureLiList_[idx];
+        }
+        // TODO(ericbidelman): Implement smooth scrolling when
+        // https://twitter.com/ebidel/status/364825118171602944 lands.
         el.scrollIntoView(true);
       }
     },
