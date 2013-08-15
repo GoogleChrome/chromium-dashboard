@@ -9,7 +9,41 @@
 }
 
 ul {
-  & > li {
+  &.canaryisdev {
+    li {
+      &:nth-of-type(4)::after {
+        content: 'canary/dev';
+      }
+      &:nth-of-type(5)::after {
+        content: 'beta';
+      }
+      &:nth-of-type(6)::after {
+        content: 'stable';
+      }
+      &:nth-of-type(7)::after {
+        content: '';
+      }
+    }
+  }
+
+  &.betaisdev {
+    li {
+      &:nth-of-type(4)::after {
+        content: 'canary';
+      }
+      &:nth-of-type(5)::after {
+        content: 'dev/beta';
+      }
+      &:nth-of-type(6)::after {
+        content: 'stable';
+      }
+      &:nth-of-type(7)::after {
+        content: '';
+      }
+    }
+  }
+
+  li {
     $small-font-size: 75%;
     cursor: pointer;
     padding: 3px 0;
@@ -38,17 +72,17 @@ ul {
       margin-bottom: 5px;
     }
     &:nth-of-type(4)::after {
-      content: 'canary/dev';
+      content: 'canary';
     }
     &:nth-of-type(5)::after {
-      content: 'beta';
+      content: 'dev';
     }
     &:nth-of-type(6)::after {
+      content: 'beta';
+    }
+    &:nth-of-type(7)::after {
       content: 'stable';
     }
-    // &:nth-of-type(6)::after {
-    //   content: 'stable';
-    // }
 
     &[selected] {
       font-weight: 600;
