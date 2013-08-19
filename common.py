@@ -130,7 +130,7 @@ class ContentHandler(BaseHandler):
                                            '%Y-%m-%d  %H:%M:%S')
       feed.add_item(
           title=unicode(f['name']),
-          link=f.get('spec_link', '') or '',
+          link='%s/%s' % (prefix, f.get('id')),
           description=f.get('summary', ''),
           pubdate=pubdate,
           author_name=unicode(settings.APP_TITLE),
