@@ -57,13 +57,6 @@
 {% block js %}
 <script>
 (function() {
-var $ = function(selector) {
-  return document.querySelector(selector);
-};
-var $$ = function(selector) {
-  return document.querySelectorAll(selector);
-};
-
 function updateCount(count) {
   $('#num-features').textContent = count;
 }
@@ -86,13 +79,17 @@ document.addEventListener('WebComponentsReady', function(e) {
     DEPRECATED: 6
   };
 
+  featureList.metadata = chromeMetadata; // Feature list needs access to the selected milestone.
+
   // Fill data via AJAX.
   var url = location.hostname == 'localhost' ? '/static/js/mockdata.json':
                                                '/features.json';
   var xhr = new XMLHttpRequest();
-  xhr.open('GET', url, false); // make sync.
+  xhr.open('GET', url);
+  xhr.responseType = 'json';
   xhr.onloadend = function(e) {
-    featureList.features = JSON.parse(e.target.response);
+    var resp = e.target.response;
+    featureList.features = (typeof resp == 'string') ? JSON.parse(resp) : resp;
   };
   xhr.send();
 
@@ -103,8 +100,6 @@ document.addEventListener('WebComponentsReady', function(e) {
   // chromeMetadata.addEventListener('milestoneselect', function(e) {
   //   featureList.scrollToMilestone(e.detail.version);
   // });
-
-  featureList.metadata = chromeMetadata; // Feature list needs access to the selected milestone.
 
   featureList.addEventListener('filter-category', function(e) {
     search.value = 'category: ' + e.detail.val;

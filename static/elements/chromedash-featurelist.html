@@ -76,6 +76,10 @@
       this.metadata.addEventListener('milestoneselect', onMetadataChanged_.bind(this));
     },
     featuresChanged: function() {
+      if (!this.features.length) {
+        return;
+      }
+
       this.filter();
 
       this.asyncMethod(function() {
@@ -235,7 +239,7 @@
         }
         // TODO(ericbidelman): Implement smooth scrolling when
         // https://twitter.com/ebidel/status/364825118171602944 lands.
-        el.scrollIntoView(true);
+        el.scrollIntoView(true); //el.scrollIntoView(true, 'smooth');
       }
     },
     scrollToFeature: function(id) {
