@@ -46,8 +46,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
 
 <!-- iOS: run in full-screen mode and display upper status bar as translucent -->
-<!--<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">-->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
 <link rel="apple-touch-icon" href="/static/img/chromium-128.png">
 <link rel="apple-touch-icon-precomposed" href="/static/img/chromium-128.png">
@@ -72,6 +73,8 @@ if (uaParts) {
 <script>
 Platform.ShadowCSS.strictStyling = true;
 </script>-->
+
+<!-- <script src="/static/js/smoothscroll/dist/smoothscroll.js"></script> -->
 
 {% block html_imports %}{% endblock %}
 </head>
