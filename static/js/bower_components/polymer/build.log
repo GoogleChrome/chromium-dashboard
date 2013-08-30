@@ -1,0 +1,45 @@
+BUILD LOG
+---------
+Build Time: 2013-08-29T17:00:16
+
+NODEJS INFORMATION
+==================
+nodejs: v0.10.4
+chai: 1.7.2
+grunt: 0.4.1
+grunt-audit: 0.0.1
+grunt-concat-sourcemap: 0.3.0
+grunt-contrib-uglify: 0.2.2
+grunt-contrib-yuidoc: 0.4.0
+grunt-karma: 0.6.2
+karma: 0.10.2
+karma-chrome-launcher: 0.1.0
+karma-coffee-preprocessor: 0.1.0
+karma-crbot-reporter: 0.0.4
+karma-firefox-launcher: 0.1.0
+karma-html2js-preprocessor: 0.1.0
+karma-ie-launcher: 0.1.1
+karma-jasmine: 0.1.3
+karma-mocha: 0.1.0
+karma-phantomjs-launcher: 0.1.0
+karma-requirejs: 0.1.0
+karma-script-launcher: 0.1.0
+mocha: 1.12.0
+
+REPO REVISIONS
+==============
+polymer: c8d5aa7d5622ad77919532d20924a4abc12c6d08
+platform: 03ee74a5ff47b8f319348c8411d260175288ee8c
+ShadowDOM: 4c1b65ea12a16546eb931826c3d96e40e3657490
+HTMLImports: 62373c074dd28595fe285d68bda2c44bf721272b
+CustomElements: 677b28f72a545643c3f62e001dda3e08625f5ad3
+PointerEvents: ae0fa2f7ef45f9dd081222d4e93e81e96f409a84
+PointerGestures: 264d55a67f3ed05826e2734d1c9ec2ae1bda72fa
+polymer-expressions: da3a26c4226f8fabc741ce379c0ed7d9b2ef66df
+observe-js: 2dd6f8a3ce60c1eb3bb4f5ffa3dd88cb3a8ba659
+NodeBind: 1e78b2c1dab4933fd5ba56d4dfcb58d97579a215
+TemplateBinding: 5e420fea86a5176620db39e37f517197e5e2ae46
+
+BUILD HASHES
+============
+polymer.min.js: 4bea46e3d3df7d0273d7606bcd6b51b8e26cd1b1
