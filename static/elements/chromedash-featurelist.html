@@ -239,7 +239,8 @@
         }
         // TODO(ericbidelman): Implement smooth scrolling when
         // https://twitter.com/ebidel/status/364825118171602944 lands.
-        el.scrollIntoView(true); //el.scrollIntoView(true, 'smooth');
+        el.scrollIntoView(true);
+        //el.scrollIntoView(true, {behavior: 'smooth'});
       }
     },
     scrollToFeature: function(id) {

@@ -1,0 +1,73 @@
+<link rel="import" href="polymer-elements/polymer-ajax/polymer-ajax.html">
+<link rel="import" href="chromedash-color-status.html">
+<link rel="import" href="x-meter.html">
+
+<polymer-element name="chromedash-metrics">
+<template>
+  <link rel="stylesheet" type="text/css" href="../css/elements/chromedash-metrics.css">
+  <polymer-ajax auto url="/data/querystackrank" response="{{properties}}" handleAs="json"></polymer-ajax>
+  <ol id="stack-rank-list">
+    <li>
+      <label on-click="sort" data-order="property_name">Name <i class="icon-long-arrow-{{sortOrders.property_name.reverse ? 'up' : 'down'}} {{activated: sortOrders.property_name.activated}}"></i></label>
+      <label on-click="sort" data-order="percentage" class="flex2">Percentage <i class="icon-long-arrow-{{sortOrders.percentage.reverse ? 'down' : 'up'}} {{activated: sortOrders.percentage.activated}}"></i></label>
+    </li>
+    <template repeat="{{prop in properties}}">
+      <li hidden?="{{prop.property_name == 'ERROR'}}" tabindex="0">
+        <label>{{prop.property_name}}</label>
+        <!-- <meter value="{{prop.percentage}}" min="0" max="100">{{prop.percentage}}</meter> -->
+        <x-meter value="{{prop.percentage}}"></x-meter>
+      </li>
+    </template>
+  </ol>
+</template>
+<script>
+(function() {
+  function sortBy_(prop, arr) {
+    arr.sort(function(a, b) {
+      if (a[prop] > b[prop]) {
+        return 1;
+      } 
+      if (a[prop] < b[prop]) {
+        return -1;
+      }
+      return 0;
+    });
+  }
+
+  Polymer('chromedash-metrics', {
+    applyAuthorStyles: true,
+    properties: [],
+    propertiesChanged: function() {
+      for (var i = 0, prop; prop = this.properties[i]; ++i) {
+        prop.percentage = (prop.day_percentage * 100).toFixed(4);
+      }
+    },
+    sortOrders: {
+      property_name: {
+        reverse: false,
+        activated: false
+      },
+      percentage: {
+        reverse: true,
+        activated: true
+      }
+    },
+    sort: function(e, detail, sender) {
+      e.preventDefault();
+
+      var order = sender.dataset.order;
+
+      sortBy_(order, this.properties);
+      this.sortOrders[order].activated = true;
+      this.sortOrders[order].reverse = !this.sortOrders[order].reverse;
+      if (this.sortOrders[order].reverse) {
+        this.properties.reverse();
+      }
+    },
+    toggleIcon: function(e, detail, sender) {
+
+    }
+  });
+})();
+</script>
+</polymer-element>

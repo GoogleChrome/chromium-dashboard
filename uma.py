@@ -1,3 +1,6 @@
+# TODO(ericbidelman): generate this file from 
+# http://src.chromium.org/viewvc/blink/trunk/Source/core/page/UseCounter.cpp
+
 CSS_PROPERTY_BUCKETS = {
   # 1 was reserved for number of CSS Pages Visited
   2: 'color',
@@ -410,4 +413,27 @@ CSS_PROPERTY_BUCKETS = {
   409: 'user-zoom',
   410: 'webkit-dashboard-region',
   411: 'webkit-overflow-scrolling',
+  412: 'webkit-app-region',
+  413: 'webkit-filter',
+  414: 'webkit-box-decoration-break',
+  415: 'webkit-tap-highlight-color',
+  416: 'buffered-rendering',
+  417: 'grid-auto-rows',
+  418: 'grid-auto-columns',
+  419: 'background-blend-mode',
+  420: 'mix-blend-mode',
+  421: 'touch-action',
+  422: 'grid-area',
+  423: 'grid-template',
+  424: 'animation',
+  425: 'animation-delay',
+  426: 'animation-direction',
+  427: 'animation-duration',
+  428: 'animation-fill-mode',
+  429: 'animation-iteration-count',
+  430: 'animation-name',
+  431: 'animation-play-state',
+  432: 'animation-timing-function',
+  433: 'object-fit',
+  434: 'paint-order',
 }

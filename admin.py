@@ -42,6 +42,7 @@ import settings
 import uma
 
 
+# uma.googleplex.com/data/histograms/ids-chrome-histograms.txt
 BIGSTORE_BUCKET = '/gs/uma-dashboards/'
 BIGSTORE_RESTFUL_URI = 'https://uma-dashboards.storage.googleapis.com/'
 BIGSTORE_HISTOGRAM_ID = str(0xbfd59b316a6c31f1)
@@ -109,7 +110,7 @@ class YesterdayHandler(blobstore_handlers.BlobstoreDownloadHandler):
           date=yesterday,
           hits=num_hits,
           total_pages=total_pages,
-          day_percentage=float("%.2f" % (num_hits / total_pages))
+          day_percentage=(num_hits * 1.0 / total_pages)#float("%.2f" % (num_hits / total_pages))
           #rolling_percentage=
           )
       entity.put()

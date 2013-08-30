@@ -1,0 +1,26 @@
+@import "element";
+
+@host {
+  :scope {
+    display: inline-block;
+  }
+}
+
+.meter {
+  background: $chromium-color-light;
+  border-radius: $default-border-radius;
+  overflow: hidden;
+  height: 1.7em;
+  div {
+    background: $chromium-color-center;
+    height: 100%;
+    position: relative;
+    &:before {
+      content: attr(data-value) "%"; // Force string for FF.
+      position: absolute;
+      color: white;
+      padding: 3px 5px;
+    }
+  }
+}
+

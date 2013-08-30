@@ -1,0 +1,67 @@
+@import "element";
+
+@host {
+  :scope {
+    display: block;
+    @include flex(1);
+  }
+}
+
+#stack-rank-list {
+  margin: 0;
+  li {
+    margin: 0;
+    padding: 5px 0;
+    @include display-flex;
+    @include align-items(center);
+
+    &[hidden] {
+      display: none;
+    }
+
+    &:first-of-type {
+      margin-bottom: 10px;
+      
+      label {
+        cursor: pointer;
+        color: $chromium-color-dark;
+        text-transform: uppercase;
+        background: $gray-1;
+        border-radius: $default-border-radius;
+        text-align: left;
+        padding: 5px 7px;
+      }
+    }
+
+    // &:nth-child(even) {
+    //   background-color: #ccc;
+    // }
+
+    label {
+      font-weight: 600;
+      @include flex(1);
+
+      &:first-child {
+        text-align: right;
+        margin-right: 10px;
+      }
+
+      i {
+        display: none;
+        &.activated {
+          display: initial;
+        }
+      }
+    }
+
+    x-meter {
+      padding-left: 7px;
+    }
+
+    x-meter, .flex2 {
+      @include flex(2);
+    }
+  }
+}
+
+

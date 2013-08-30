@@ -77,3 +77,4 @@ skip_files:
 - ^(.*/)?.*\.sh$
 - ^(.*/)?.*\.scss$
 - ^static/js/polymer-all
+- ^(.*/)?node_modules
