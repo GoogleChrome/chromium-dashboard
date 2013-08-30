@@ -79,22 +79,23 @@ document.addEventListener('WebComponentsReady', function(e) {
     DEPRECATED: 6
   };
 
-  featureList.metadata = chromeMetadata; // Feature list needs access to the selected milestone.
-
   // Fill data via AJAX.
   var url = location.hostname == 'localhost' ? '/static/js/mockdata.json':
                                                '/features.json';
   var xhr = new XMLHttpRequest();
-  xhr.open('GET', url);
-  xhr.responseType = 'json';
+  xhr.open('GET', url, false); // make sync.
+  //xhr.responseType = 'json';
   xhr.onloadend = function(e) {
     var resp = e.target.response;
-    featureList.features = (typeof resp == 'string') ? JSON.parse(resp) : resp;
+    //featureList.features = (typeof resp == 'string') ? JSON.parse(resp) : resp;
+    featureList.features = JSON.parse(resp);
   };
   xhr.send();
 
   // Alternatively, fill data from server by including it directly in template.
   //featureList.features = {{features|safe}};
+
+  featureList.metadata = chromeMetadata; // Feature list needs access to the selected milestone.
 
   // Setup inside of chromedash-metadata.html
   // chromeMetadata.addEventListener('milestoneselect', function(e) {
