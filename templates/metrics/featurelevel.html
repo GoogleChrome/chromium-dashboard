@@ -5,37 +5,39 @@
 <link rel="stylesheet" type="text/css" href="/static/css/metrics/metrics.css">
 {% endblock %}
 
+{% block html_imports %}
+  <link rel="import" href="/static/elements/chromedash-timeline.html">
+{% endblock %}
+
 {% block js %}
 <!-- <script src='//www.google.com/jsapi?autoload={"modules":[{"name":"visualization","version":"1","packages":["corechart"],"callback": "onGoogLoad"}]}'></script> -->
+<!-- Load charts api outside of chromedash-timeline until
+     https://github.com/Polymer/polymer-elements/issues/26 is fixed. -->
 <script src='//www.google.com/jsapi?autoload={"modules":[{"name":"visualization","version":"1","packages":["corechart"]}]}'></script>
-<!-- <script src="https://www.google.com/jsapi"></script> -->
+
 <script src="/static/js/metrics/featurelevel.js"></script>
 {% endblock %}
 
 
 {% block subheader %}
 <div id="subheader">
-  <h2>CSS Property Usage > Timeline</h2>
+  <h2>CSS Property Usage &gt; Timeline</h2>
 </div>
 {% endblock %}
 
 {% block content %}
-
+<section id="panels">
 {% include "metrics/_nav.html" %}
-
-<section >
-<select id="property-selector" onchange="goToChart('property-selector')">
-  {% for key, value in CSS_PROPERTY_BUCKETS.items %}
-    <option value="{{key}}">{{value}}</option>
-  {% endfor %}
-</select>
-<p>Use of CSS properties over time. Statistics excluding the user agent style sheet to come soon!</p>
-
-{% verbatim %}
-<div id="chart-container" style="width:900px;margin: 0 auto;">  
-  <div id="chart"></div>
+<div class="data-panel">
+  <p class="description">Use of CSS properties over time. <b>Note:</b> these statistics include the user agent stylesheet</p>
+  <chromedash-feature-timeline></chromedash-feature-timeline>
 </div>
 </section>
-{% endverbatim %}
 
+<script>
+document.addEventListener('WebComponentsReady', function(e) {
+  var timeline = $('chromedash-feature-timeline');
+  timeline.cssProperties = {{CSS_PROPERTY_BUCKETS|safe}};
+});
+</script>
 {% endblock %}

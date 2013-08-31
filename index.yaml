@@ -108,6 +108,29 @@ indexes:
 
 - kind: StableInstance
   properties:
+  - name: bucket_id
+  - name: date
+
+- kind: StableInstance
+  properties:
+  - name: bucket_id
+  - name: date
+    direction: desc
+
+- kind: StableInstance
+  properties:
+  - name: bucket_id=
+  - name: date
+    direction: desc
+
+- kind: StableInstance
+  properties:
+  - name: date
+  - name: day_percentage
+    direction: desc
+
+- kind: StableInstance
+  properties:
   - name: date
   - name: hits
     direction: desc

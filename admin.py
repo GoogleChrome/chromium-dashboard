@@ -108,8 +108,8 @@ class YesterdayHandler(blobstore_handlers.BlobstoreDownloadHandler):
           property_name=property_name,
           bucket_id=bucket_id,
           date=yesterday,
-          hits=num_hits,
-          total_pages=total_pages,
+          #hits=num_hits,
+          #total_pages=total_pages,
           day_percentage=(num_hits * 1.0 / total_pages)#float("%.2f" % (num_hits / total_pages))
           #rolling_percentage=
           )

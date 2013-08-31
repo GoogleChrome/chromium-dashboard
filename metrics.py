@@ -4,12 +4,21 @@ import common
 import models
 import settings
 
-
 class StableInstances(common.JSONHandler):
 
   def get(self):
+    try:
+      bucket_id = int(self.request.get('bucket_id'))
+    except:
+      return super(StableInstances, self).get([])
+
+    query = models.StableInstance.all()
+    query.filter('bucket_id =', bucket_id)
+    query.order('date')
+
     # All matching results.
-    data = models.StableInstance.all().order('-date').fetch(None)
+    data = query.fetch(None)
+
     super(StableInstances, self).get(data)
 
 
@@ -25,7 +34,7 @@ class QueryStackRank(common.JSONHandler):
 
       query = models.StableInstance.all()
       query.filter('date =', data_last_added_on)
-      query.order('-hits')
+      query.order('-day_percentage')
 
       # All matching results.
       data = query.fetch(None)

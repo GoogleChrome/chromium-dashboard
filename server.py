@@ -140,7 +140,8 @@ class MainHandler(common.ContentHandler, common.JSONHandler):
           models.STANDARDIZATION.iteritems()]
 
     elif path == 'metrics/featurelevel':
-      template_data['CSS_PROPERTY_BUCKETS'] = uma.CSS_PROPERTY_BUCKETS
+      properties = sorted(uma.CSS_PROPERTY_BUCKETS.items(), key=lambda x:x[1])
+      template_data['CSS_PROPERTY_BUCKETS'] = json.dumps(properties)
 
     self.render(data=template_data, template_path=os.path.join(path + '.html'))
 

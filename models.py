@@ -60,8 +60,8 @@ class StableInstance(DictModel):
   bucket_id = db.IntegerProperty(required=True)
   date = db.DateProperty(verbose_name='When the data was fetched',
                              required=True)
-  hits = db.IntegerProperty(required=True)
-  total_pages = db.IntegerProperty()
+  #hits = db.IntegerProperty(required=True)
+  #total_pages = db.IntegerProperty()
   day_percentage = db.FloatProperty()
   rolling_percentage = db.FloatProperty()
 
