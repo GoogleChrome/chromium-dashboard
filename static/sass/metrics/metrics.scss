@@ -7,6 +7,7 @@
 }
 
 .data-panel {
+  max-width: 800px;
   margin-left: 20px;
   overflow: auto;
 
@@ -27,10 +28,6 @@
     padding: 0.5em;
     margin-bottom: 10px;
   }
-}
-
-chromedash-metrics {
-  max-width: 600px;
 }
 
 @media only screen and (max-width: 700px) {

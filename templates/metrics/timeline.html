@@ -15,9 +15,8 @@
      https://github.com/Polymer/polymer-elements/issues/26 is fixed. -->
 <script src='//www.google.com/jsapi?autoload={"modules":[{"name":"visualization","version":"1","packages":["corechart"]}]}'></script>
 
-<script src="/static/js/metrics/featurelevel.js"></script>
+<!-- <script src="/static/js/metrics/featurelevel.js"></script> -->
 {% endblock %}
-
 
 {% block subheader %}
 <div id="subheader">
@@ -38,6 +37,12 @@
 document.addEventListener('WebComponentsReady', function(e) {
   var timeline = $('chromedash-feature-timeline');
   timeline.cssProperties = {{CSS_PROPERTY_BUCKETS|safe}};
+
+  window.addEventListener('popstate', function(e) {
+    if (e.state) {
+      timeline.selectedBucketId = e.state.id;
+    }
+  });
 });
 </script>
 {% endblock %}
