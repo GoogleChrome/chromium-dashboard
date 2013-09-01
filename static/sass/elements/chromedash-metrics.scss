@@ -4,6 +4,7 @@
   :scope {
     display: block;
     @include flex(1);
+    padding: 1px;
   }
 }
 
