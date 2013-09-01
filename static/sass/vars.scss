@@ -140,6 +140,15 @@ $max-content-width: 760px;
   width: max-content;
 }
 
+@mixin width-min-content() {
+  width: -webkit-min-content;
+  width: -moz-min-content;
+  width: -ms-min-content;
+  width: -o-min-content;
+  width: min-content;
+}
+
+
 @mixin user-select($val: none) {
   -webkit-user-select: $val;
   -moz-user-select: $val;

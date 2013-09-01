@@ -19,7 +19,7 @@
       display: none;
     }
 
-    &:first-of-type {
+    &.header {
       margin-bottom: 10px;
       
       label {
@@ -46,6 +46,7 @@
       &:first-child {
         text-align: right;
         margin-right: 10px;
+        max-width: 175px;
       }
 
       i {
