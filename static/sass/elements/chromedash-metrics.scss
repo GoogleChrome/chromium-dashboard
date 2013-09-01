@@ -23,7 +23,6 @@
       margin-bottom: 10px;
       
       label {
-        cursor: pointer;
         color: $chromium-color-dark;
         text-transform: uppercase;
         background: $gray-1;
@@ -42,6 +41,7 @@
       font-weight: 600;
       font-family: 'Source Code Pro', sans-serif;
       @include flex(1);
+      cursor: pointer;
 
       &:first-child {
         text-align: right;

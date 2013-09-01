@@ -13,7 +13,7 @@
     </li>
     <template repeat="{{prop in properties}}">
       <li hidden?="{{prop.property_name == 'ERROR'}}" tabindex="0">
-        <label>{{prop.property_name}}</label>
+        <label on-click="showTimeline" title="Click to see a timeline view of this porperty">{{prop.property_name}}</label>
         <!-- <meter value="{{prop.percentage}}" min="0" max="100">{{prop.percentage}}</meter> -->
         <x-meter value="{{prop.percentage}}"></x-meter>
       </li>
@@ -64,8 +64,9 @@
         this.properties.reverse();
       }
     },
-    toggleIcon: function(e, detail, sender) {
-
+    showTimeline: function(e, detail, sender) {
+      window.location.href = location.pathname + '/timeline/' +
+                             e.target.templateInstance.model.prop.bucket_id;
     }
   });
 })();
