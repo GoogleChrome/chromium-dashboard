@@ -26,18 +26,25 @@ import settings
 
 class StableInstances(common.JSONHandler):
 
+  MEMCACHE_KEY = 'css_property'
+  CACHE_AGE = 86400 # 24hrs
+
   def get(self):
     try:
       bucket_id = int(self.request.get('bucket_id'))
     except:
       return super(StableInstances, self).get([])
 
-    query = models.StableInstance.all()
-    query.filter('bucket_id =', bucket_id)
-    query.order('date')
+    KEY = '%s|%s' % (self.MEMCACHE_KEY, bucket_id)
 
-    # All matching results.
-    data = query.fetch(None)
+    data = memcache.get(KEY)
+    if data is None:
+      query = models.StableInstance.all()
+      query.filter('bucket_id =', bucket_id)
+      query.order('date')
+      data = query.fetch(None) # All matching results.
+
+      memcache.set(KEY, data, time=self.CACHE_AGE)
 
     super(StableInstances, self).get(data)
 
@@ -45,6 +52,7 @@ class StableInstances(common.JSONHandler):
 class QueryStackRank(common.JSONHandler):
 
   MEMCACHE_KEY = 'css_popularity'
+  CACHE_AGE = 86400 # 24hrs
 
   def get(self):
     css_popularity = memcache.get(self.MEMCACHE_KEY)
@@ -60,7 +68,7 @@ class QueryStackRank(common.JSONHandler):
         query.order('-day_percentage')
         css_popularity = query.fetch(None) # All matching results.
       
-        memcache.set(self.MEMCACHE_KEY, css_popularity, time=86400) # cache for 24hrs.
+        memcache.set(self.MEMCACHE_KEY, css_popularity, time=self.CACHE_AGE)
 
     super(QueryStackRank, self).get(css_popularity)
 
