@@ -68,4 +68,10 @@
   }
 }
 
+.loading {
+  font-style: italic;
+  color: $gray-2;
+  @include justify-content(center);
+}
+
 
