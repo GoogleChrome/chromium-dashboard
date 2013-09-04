@@ -7,7 +7,11 @@
   <link rel="stylesheet" type="text/css" href="../css/elements/chromedash-legend.css">
   <polymer-overlay id="overlay" opened="{{opened}}"></polymer-overlay>
   <div class="dialog">
-    <h2>Color legend</h2>
+    <h3>About the data</h3>
+    <section>
+      <content class="description"></content>
+    </section>
+    <h3>Color legend</h3>
     <p>Colors indicate the "compatibility risk" for a given feature. The risk
         increases as <chromedash-color-status value="1" max="{{views.vendors.length}}"></chromedash-color-status> &rarr; <chromedash-color-status value="{{views.vendors.length}}" max="{{views.vendors.length}}"></chromedash-color-status>, and the color meaning differs for browser
         vendors, web developers, and the standards process.</p>
@@ -37,7 +41,7 @@
         </ul>
       </div>
     </section>
-    <h2>Search</h2>
+    <h3>Search</h3>
     <section>
       <label>Example search queries</label>
       <ul class="queries">

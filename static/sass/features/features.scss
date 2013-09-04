@@ -21,6 +21,45 @@ body {
   }
 }
 
+chromedash-legend {
+  width: 900px;
+  @include calc(left, '50% - 900px/2');
+  top: 3%;
+  opacity: 0; // Ensure no FOUC.
+  font-size: 90%;
+
+  .description {
+    margin-bottom: 10px;
+  }
+}
+
+#panels {
+  nav {
+    $nav-width: 150px;
+
+    font-size: 120%;
+    font-weight: 300;
+    width: $nav-width; // slighty smaller than chromedash-metadata to remove scrollbar
+    overflow-x: hidden;
+
+    chromedash-metadata {
+      //max-height: 65vh;
+      overflow: auto;
+      width: $nav-width + 15;
+
+      .help {
+        text-align: center;
+      }
+    }
+  }
+
+  chromedash-featurelist {
+    @include flex(1 0 0);
+    overflow: auto;
+    max-width: $max-content-width;
+  }
+}
+
 @media only screen and (max-width: 700px) {
   body {
     &:not(.ready) #content {

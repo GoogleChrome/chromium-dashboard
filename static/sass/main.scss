@@ -157,19 +157,6 @@ footer {
   }
 }
 
-chromedash-legend {
-  width: 600px;
-  @include calc(left, '50% - 600px/2');
-  top: 5%;
-  opacity: 0; // Ensure no FOUC.
-  
-  // width: 100%;
-  // background: rgba(0,0,0,0.3);
-  // left: 0;
-  // top: 0;
-  // height: 100%;
-}
-
 #subheader {
   //@include display-box;
   //@include box-align(center);
@@ -241,31 +228,6 @@ chromedash-legend {
   @include display-flex;
   width: 100%;
   overflow: hidden;
-
-  nav {
-    $nav-width: 150px;
-
-    font-size: 120%;
-    font-weight: 300;
-    width: $nav-width; // slighty smaller than chromedash-metadata to remove scrollbar
-    overflow-x: hidden;
-
-    chromedash-metadata {
-      //max-height: 65vh;
-      overflow: auto;
-      width: $nav-width + 15;
-
-      .help {
-        text-align: center;
-      }
-    }
-  }
-
-  chromedash-featurelist {
-    @include flex(1 0 0);
-    overflow: auto;
-    max-width: $max-content-width;
-  }
 }
 
 // Prevent transitions on feature panels under polyfill.
@@ -322,7 +284,6 @@ chromedash-legend {
     display: block;
     nav {
       display: none;
-      //width: $content-padding + 5;
     }
   }
 

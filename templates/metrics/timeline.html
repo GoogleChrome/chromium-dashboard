@@ -26,7 +26,7 @@
 
 {% block content %}
 <section id="panels">
-{% include "metrics/_nav.html" %}
+<nav>{% include "metrics/_nav.html" %}</nav>
 <div class="data-panel">
   <p class="description">Use of CSS properties over time. <b>Note:</b> these statistics include the user agent stylesheet</p>
   <chromedash-feature-timeline></chromedash-feature-timeline>
