@@ -165,7 +165,7 @@ class Feature(DictModel):
   # General info.
   category = db.IntegerProperty(required=True)
   name = db.StringProperty(required=True)
-  summary = db.StringProperty(required=True)
+  summary = db.StringProperty(required=True, multiline=True)
 
   # Chromium details.
   bug_url = db.LinkProperty()
