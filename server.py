@@ -89,6 +89,11 @@ class MainHandler(common.ContentHandler, common.JSONHandler):
     if not path:
       return self.redirect('/features')
 
+    # Default /metrics to CSS ranking.
+    # TODO: remove later when we want /metrics/index.html
+    if path == 'metrics' or path == 'metrics/css':
+      return self.redirect('/metrics/css/rank')
+
     # Remove trailing slash from URL and redirect. e.g. /metrics/ -> /metrics
     if feature_id == '':
       return self.redirect(self.request.path.rstrip('/'))
@@ -139,7 +144,7 @@ class MainHandler(common.ContentHandler, common.JSONHandler):
           {'key': k, 'val': v} for k,v in
           models.STANDARDIZATION.iteritems()]
 
-    elif path == 'metrics/timeline':
+    elif path == 'metrics/css/timeline':
       properties = sorted(uma.CSS_PROPERTY_BUCKETS.items(), key=lambda x:x[1])
       template_data['CSS_PROPERTY_BUCKETS'] = json.dumps(properties)
 
