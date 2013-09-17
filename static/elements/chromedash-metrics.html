@@ -24,12 +24,15 @@
 </template>
 <script>
 (function() {
-  function sortBy_(prop, arr) {
+  function sortBy_(prop, arr, opt_compareAsNumbers) {
+    var compareAsNumbers = opt_compareAsNumbers || false;
     arr.sort(function(a, b) {
-      if (a[prop] > b[prop]) {
+      var propA = compareAsNumbers ? Number(a[prop]) : a[prop];
+      var propB = compareAsNumbers ? Number(b[prop]) : b[prop];
+      if (propA > propB) {
         return 1;
       } 
-      if (a[prop] < b[prop]) {
+      if (propA < propB) {
         return -1;
       }
       return 0;
@@ -59,7 +62,7 @@
 
       var order = sender.dataset.order;
 
-      sortBy_(order, this.properties);
+      sortBy_(order, this.properties, order == 'percentage');
       this.sortOrders[order].activated = true;
       this.sortOrders[order].reverse = !this.sortOrders[order].reverse;
       if (this.sortOrders[order].reverse) {
