@@ -85,8 +85,10 @@ class YesterdayHandler(blobstore_handlers.BlobstoreDownloadHandler):
     total_pages = properties_dict.get(1, 1)
 
     for bucket_id, num_hits in properties_dict.items():
-      # If the id is not in the map, the name will be 'ERROR'.
-      # TODO(ericbidelman): Probably better to leave non-matched bucket ids out.
+      # If the id is not in the map, use 'ERROR' for the name.
+      # TODO(ericbidelman): Non-matched bucket ids are likely new properties
+      #   that have been added. Find way to autofix these values with the
+      #    appropriate property_name later.
       property_name = uma.CSS_PROPERTY_BUCKETS.get(bucket_id, 'ERROR')
 
       query = models.StableInstance.all()
