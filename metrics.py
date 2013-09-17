@@ -17,6 +17,7 @@ __author__ = 'ericbidelman@chromium.org (Eric Bidelman)'
 
 import webapp2
 
+from datetime import timedelta
 from google.appengine.api import memcache
 
 import common
@@ -44,6 +45,9 @@ class StableInstances(common.JSONHandler):
       query.order('date')
       data = query.fetch(None) # All matching results.
 
+      # Remove outliers if percentage is not between 0-1.
+      data = filter(lambda x: 0 <= x.day_percentage <= 1, data)
+
       memcache.set(KEY, data, time=self.CACHE_AGE)
 
     super(StableInstances, self).get(data)
@@ -67,7 +71,15 @@ class QueryStackRank(common.JSONHandler):
         query.filter('date =', result.date)
         query.order('-day_percentage')
         css_popularity = query.fetch(None) # All matching results.
-      
+
+        # Go another day back if if data looks invalid.
+        if (css_popularity[0].day_percentage < 0 or
+            css_popularity[0].day_percentage > 1):
+          query = models.StableInstance.all()
+          query.filter('date =', result.date - timedelta(days=1))
+          query.order('-day_percentage')
+          css_popularity = query.fetch(None)
+
         memcache.set(self.MEMCACHE_KEY, css_popularity, time=self.CACHE_AGE)
 
     super(QueryStackRank, self).get(css_popularity)
