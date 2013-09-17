@@ -436,4 +436,5 @@ CSS_PROPERTY_BUCKETS = {
   432: 'animation-timing-function',
   433: 'object-fit',
   434: 'paint-order',
+  435: 'mask-source-type',
 }
