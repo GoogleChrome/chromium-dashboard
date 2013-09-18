@@ -6,6 +6,7 @@
 <template>
   <link rel="stylesheet" type="text/css" href="../css/elements/chromedash-metrics.css">
   <polymer-ajax auto url="/data/querystackrank" response="{{properties}}" handleAs="json"></polymer-ajax>
+  <b>Showing {{properties.length}} properties</b>
   <ol id="stack-rank-list">
     <li class="header">
       <label on-click="sort" data-order="property_name">Name <i class="icon-long-arrow-{{sortOrders.property_name.reverse ? 'up' : 'down'}} {{activated: sortOrders.property_name.activated}}"></i></label>
