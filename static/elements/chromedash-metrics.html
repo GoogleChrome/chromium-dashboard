@@ -45,7 +45,7 @@
     properties: [],
     propertiesChanged: function() {
       for (var i = 0, prop; prop = this.properties[i]; ++i) {
-        prop.percentage = (prop.day_percentage * 100).toFixed(4);
+        prop.percentage = (prop.day_percentage * 100).toFixed(9);
       }
     },
     sortOrders: {

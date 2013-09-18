@@ -72,7 +72,7 @@
         var date = new Date();
         date.setFullYear(parseInt(dateStr[0]), parseInt(dateStr[1]) - 1,
                          parseInt(dateStr[2]));
-        rowArray.push([date, parseFloat((item.day_percentage * 100).toFixed(4))]);
+        rowArray.push([date, parseFloat((item.day_percentage * 100).toFixed(9))]);
       }
 
       table.addRows(rowArray);
