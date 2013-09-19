@@ -2,17 +2,20 @@
 <template>
   <link rel="stylesheet" type="text/css" href="../css/elements/x-meter.css">
   <div class="meter">
-    <div style="width:{{value}}%">{{value}}%</div>
+    <div style="width:{{value}}%">{{valueFormmatted}}%</div>
   </div>
 </template>
 <script>
   Polymer('x-meter', {
-    //applyAuthorStyles: true,
-    created: function() {
-      // this.addEventListener('polymer-response', function(e) {
-
-      // });
-    },
+    value: 0,
+    valueChanged: function() {
+      var MIN = 0.00001;
+      if (this.value <= MIN) {
+        this.valueFormmatted = '< ' + MIN;
+      } else {
+        this.valueFormmatted = Number(this.value).toFixed(5);
+      }
+    }
   });
 </script>
 </polymer-element>
