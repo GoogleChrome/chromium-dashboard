@@ -14,7 +14,7 @@ body {
 
   // Prevent Polymer from handling FOUC for us.
   opacity: 1.0 !important;
-  transition: none !important;
+  @include transition(none !important);
 }
 
 h1, h2, h3, h4 {
