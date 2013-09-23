@@ -1,6 +1,6 @@
 BUILD LOG
 ---------
-Build Time: 2013-09-05T15:03:12
+Build Time: 2013-09-12T17:00:10
 
 NODEJS INFORMATION
 ==================
@@ -8,7 +8,7 @@ nodejs: v0.10.4
 chai: 1.7.2
 grunt: 0.4.1
 grunt-audit: 0.0.2
-grunt-concat-sourcemap: 0.3.0
+grunt-concat-sourcemap: 0.3.1
 grunt-contrib-uglify: 0.2.4
 grunt-contrib-yuidoc: 0.5.0
 grunt-karma: 0.6.2
@@ -23,23 +23,24 @@ karma-jasmine: 0.1.3
 karma-mocha: 0.1.0
 karma-phantomjs-launcher: 0.1.0
 karma-requirejs: 0.1.0
+karma-safari-launcher: 0.1.1
 karma-script-launcher: 0.1.0
 mocha: 1.12.1
 
 REPO REVISIONS
 ==============
-polymer: c440c8e0ff032587ccf22860dcc20f1b9520bf1c
-platform: 86318749b19cbe8c1e680757e8d878f329a46b49
-ShadowDOM: 58c9eea93e7bc4da6a5332e26194caf6495bd36d
-HTMLImports: 71820388cc1e5ebbbcd797cc9a653e2fc503323e
-CustomElements: 63790ee04b2269121851fe6ae06878dc13d42750
-PointerEvents: e58bceb07ec68378710e28afcace23c0c857adf6
-PointerGestures: 600ebb0f2e3351d9965437613478c4cc486db97e
-polymer-expressions: 1ec937cc23880bd1947bb441741ad2180a8ec739
-observe-js: 4d3bf2327e497893a50fecf663b3472c9b9518b6
-NodeBind: 8e33d670ab686bb7024fcb3efa677e7ca28fc8c6
-TemplateBinding: 35f5c693988472775011588d4288d89417a27587
+polymer: 90ecb3dafd95a92690bebd6d9c440efc4b534068
+platform: 6a44ba1007edf6013c163de90b542996e6155b9d
+ShadowDOM: 7ab91bab1e8e954dc76bf088e8d065570b51dbb4
+HTMLImports: 2c98d41e344b8085fed33468c3cd9446a40049f1
+CustomElements: 57e4d9cfdc8401268c2b0bc18eb1c4e01bf29397
+PointerEvents: 8ea6dc84124b961db3f371e713b34df4b1f917cf
+PointerGestures: dada94fb6e32552c178ddb6ef67aa3b954261d26
+polymer-expressions: bf9723f74656040b09c5851599ed180459f640d5
+observe-js: d678a066edd13d5fe43bebe986eebe9c33990bd7
+NodeBind: 1fa333f47a9aa75bc9b4cccb6ae3f3d96cf1d7a2
+TemplateBinding: e4211a324da440ea495374ec9b4999836b6ea0ae
 
 BUILD HASHES
 ============
-polymer.min.js: a021ac4a4df65921c00a7c10a9335438f7adcab6
+polymer.min.js: 28dbeebfa4eb70d69e55de7b0aa814b8a48ca867
