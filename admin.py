@@ -354,7 +354,7 @@ class FeatureHandler(common.ContentHandler):
 
 app = webapp2.WSGIApplication([
   ('/cron/metrics', YesterdayHandler),
-  ('/(.*)/css/timeline([0-9]*)', FeatureHandler),
-  ('/(.*)/css/rank', FeatureHandler),
+  ('/(.*)/([0-9]*)', FeatureHandler),
+  ('/(.*)', FeatureHandler),
 ], debug=settings.DEBUG)
 
