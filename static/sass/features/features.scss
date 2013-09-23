@@ -1,3 +1,5 @@
+@import "compass/css3/transform";
+
 @import "vars";
 
 body {
@@ -47,6 +49,8 @@ chromedash-legend {
       overflow: auto;
       width: $nav-width + 15;
 
+      @include transform(translateZ(0)); // force composite layer in stable
+
       .help {
         text-align: center;
       }
@@ -54,6 +58,7 @@ chromedash-legend {
   }
 
   chromedash-featurelist {
+    @include transform(translateZ(0)); // force composite layer in stable
     @include flex(1 0 0);
     overflow: auto;
     max-width: $max-content-width;
