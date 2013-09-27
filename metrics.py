@@ -25,10 +25,12 @@ import models
 import settings
 
 
+CACHE_AGE = 86400 # 24hrs
+
+
 class StableInstances(common.JSONHandler):
 
   MEMCACHE_KEY = 'css_property'
-  CACHE_AGE = 86400 # 24hrs
 
   def get(self):
     try:
@@ -48,44 +50,61 @@ class StableInstances(common.JSONHandler):
       # Remove outliers if percentage is not between 0-1.
       data = filter(lambda x: 0 <= x.day_percentage <= 1, data)
 
-      memcache.set(KEY, data, time=self.CACHE_AGE)
+      memcache.set(KEY, data, time=CACHE_AGE)
 
     super(StableInstances, self).get(data)
 
 
-class QueryStackRank(common.JSONHandler):
-
-  MEMCACHE_KEY = 'css_popularity'
-  CACHE_AGE = 86400 # 24hrs
+class CSSPropertyHandler(common.JSONHandler):
 
   def get(self):
-    css_popularity = memcache.get(self.MEMCACHE_KEY)
-    if css_popularity is None:
-      # Find last date data was fetched by pulling one entry.
-      result = models.StableInstance.all().order('-date').get()
+    properties = memcache.get(self.MEMCACHE_KEY)
 
-      css_popularity = []
+    if properties is None:
+      # Find last date data was fetched by pulling one entry.
+      result = self.MODEL_CLASS.all().order('-date').get()
+
+      properties = []
 
       if result:
-        query = models.StableInstance.all()
+        query = self.MODEL_CLASS.all()
         query.filter('date =', result.date)
         query.order('-day_percentage')
-        css_popularity = query.fetch(None) # All matching results.
+        properties = query.fetch(None) # All matching results.
 
         # Go another day back if if data looks invalid.
-        if (css_popularity[0].day_percentage < 0 or
-            css_popularity[0].day_percentage > 1):
-          query = models.StableInstance.all()
+        if (properties[0].day_percentage < 0 or
+            properties[0].day_percentage > 1):
+          query = self.MODEL_CLASS.all()
           query.filter('date =', result.date - timedelta(days=1))
           query.order('-day_percentage')
-          css_popularity = query.fetch(None)
+          properties = query.fetch(None)
 
-        memcache.set(self.MEMCACHE_KEY, css_popularity, time=self.CACHE_AGE)
+        memcache.set(self.MEMCACHE_KEY, properties, time=CACHE_AGE)
 
-    super(QueryStackRank, self).get(css_popularity)
+    super(CSSPropertyHandler, self).get(properties)
+
+
+class QueryStackRank(CSSPropertyHandler):
+
+  MEMCACHE_KEY = 'css_popularity'
+  MODEL_CLASS = models.StableInstance
+
+  def get(self):
+    super(QueryStackRank, self).get()
+
+
+class QueryAnimated(CSSPropertyHandler):
+
+  MEMCACHE_KEY = 'css_animated'
+  MODEL_CLASS = models.AnimatedProperty
+
+  def get(self):
+    super(QueryAnimated, self).get()
 
 
 app = webapp2.WSGIApplication([
   ('/data/querystableinstances', StableInstances),
-  ('/data/querystackrank', QueryStackRank)
+  ('/data/querystackrank', QueryStackRank),
+  ('/data/queryanimated', QueryAnimated)
 ], debug=settings.DEBUG)

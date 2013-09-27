@@ -45,7 +45,9 @@ import uma
 # uma.googleplex.com/data/histograms/ids-chrome-histograms.txt
 BIGSTORE_BUCKET = '/gs/uma-dashboards/'
 BIGSTORE_RESTFUL_URI = 'https://uma-dashboards.storage.googleapis.com/'
-BIGSTORE_HISTOGRAM_ID = str(0xbfd59b316a6c31f1)
+
+CSSPROPERITES_BS_HISTOGRAM_ID = str(0xbfd59b316a6c31f1)
+ANIMATIONPROPS_BS_HISTOGRAM_ID = str(0xbee14b73f4fdde73)
 
 # For fetching files from the production BigStore during development.
 OAUTH2_CREDENTIALS_FILENAME = os.path.join(
@@ -55,12 +57,24 @@ OAUTH2_CREDENTIALS_FILENAME = os.path.join(
 class YesterdayHandler(blobstore_handlers.BlobstoreDownloadHandler):
   """Loads yesterday's UMA data from BigStore."""
 
-  def _SaveData(self, data, yesterday):
+  MODEL_CLASS = {
+    CSSPROPERITES_BS_HISTOGRAM_ID: models.StableInstance,
+    ANIMATIONPROPS_BS_HISTOGRAM_ID: models.AnimatedProperty
+  }
+
+  def _SaveData(self, data, yesterday, bucket_id):
+    try: 
+      model_class = self.MODEL_CLASS[bucket_id]
+    except Exception, e:
+      logging.error('Invalid CSS property bucket id used: %s' % bucket_id)
+      return
+
     # Response format is "bucket-bucket+1=hits".
     # Example: 10-11=2175995,11-12=56635467,12-13=2432539420
-    values_list = data['kTempHistograms'][BIGSTORE_HISTOGRAM_ID]['b'].split(',')
+    #values_list = data['kTempHistograms'][CSSPROPERITES_BS_HISTOGRAM_ID]['b'].split(',')
+    values_list = data['kTempHistograms'][bucket_id]['b'].split(',')
 
-    #sum_total = int(data['kTempHistograms'][BIGSTORE_HISTOGRAM_ID]['s']) # TODO: use this.
+    #sum_total = int(data['kTempHistograms'][CSSPROPERITES_BS_HISTOGRAM_ID]['s']) # TODO: use this.
     
     # Stores a hit count for each CSS property (properties_dict[bucket] = hits).
     properties_dict = {}
@@ -80,18 +94,22 @@ class YesterdayHandler(blobstore_handlers.BlobstoreDownloadHandler):
       # beginning_range is our bucket number; the stable CSSPropertyID.
       properties_dict[beginning_range] = int(hits_string)
 
-    # Bucket 1 is total pages visited. We're guaranteed to have it.
-    # TODO(ericbidelman): If we don't have it, don't set to 1!
-    total_pages = properties_dict.get(1, 1)
+    # Bucket 1 is total pages visited for stank rank histogram. We're guaranteed
+    # to have it.
+    # For other histograms, we have to calculate the total count.
+    if 1 in properties_dict:
+      total_pages = properties_dict.get(1)
+    else:
+      total_pages = sum(properties_dict.values())
 
     for bucket_id, num_hits in properties_dict.items():
       # If the id is not in the map, use 'ERROR' for the name.
       # TODO(ericbidelman): Non-matched bucket ids are likely new properties
-      #   that have been added. Find way to autofix these values with the
-      #    appropriate property_name later.
+      # that have been added and need to be updated in uma.py. Find way to
+      # autofix these values with the appropriate property_name later.
       property_name = uma.CSS_PROPERTY_BUCKETS.get(bucket_id, 'ERROR')
 
-      query = models.StableInstance.all()
+      query = model_class.all()
       query.filter('bucket_id = ', bucket_id)
       query.filter('date =', yesterday)
 
@@ -106,13 +124,13 @@ class YesterdayHandler(blobstore_handlers.BlobstoreDownloadHandler):
       # We average those past 6 days with the new day's data
       # and store the result in rolling_percentage
 
-      entity = models.StableInstance(
+      entity = model_class(
           property_name=property_name,
           bucket_id=bucket_id,
           date=yesterday,
           #hits=num_hits,
           #total_pages=total_pages,
-          day_percentage=(num_hits * 1.0 / total_pages)#float("%.2f" % (num_hits / total_pages))
+          day_percentage=(num_hits * 1.0 / total_pages)
           #rolling_percentage=
           )
       entity.put()
@@ -158,7 +176,8 @@ class YesterdayHandler(blobstore_handlers.BlobstoreDownloadHandler):
 
     if result:
       data = json.loads(result)
-      self._SaveData(data, yesterday)
+      for bucket_id in self.MODEL_CLASS.keys():
+        self._SaveData(data, yesterday, bucket_id)
 
   def _FetchFromBigstoreREST(self, filename):
     # Read the OAuth2 access token from disk.

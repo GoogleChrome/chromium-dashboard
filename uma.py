@@ -437,4 +437,6 @@ CSS_PROPERTY_BUCKETS = {
   433: 'object-fit',
   434: 'paint-order',
   435: 'mask-source-type',
+  436: 'isolation',
+  437: 'object-position',
 }

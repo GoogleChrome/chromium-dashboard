@@ -65,6 +65,10 @@ class StableInstance(DictModel):
   day_percentage = db.FloatProperty()
   rolling_percentage = db.FloatProperty()
 
+# UMA metrics.
+class AnimatedProperty(StableInstance):
+  pass
+
 
 # Feature dashboard.
 class Feature(DictModel):

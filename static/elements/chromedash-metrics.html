@@ -2,10 +2,10 @@
 <!-- <link rel="import" href="chromedash-color-status.html"> -->
 <link rel="import" href="x-meter.html">
 
-<polymer-element name="chromedash-metrics">
+<polymer-element name="chromedash-metrics" attributes="endpoint">
 <template>
   <link rel="stylesheet" type="text/css" href="../css/elements/chromedash-metrics.css">
-  <polymer-ajax auto url="/data/querystackrank" response="{{properties}}" handleAs="json"></polymer-ajax>
+  <polymer-ajax auto url="{{endpoint}}" response="{{properties}}" handleAs="json"></polymer-ajax>
   <b>Showing {{properties.length}} properties</b>
   <ol id="stack-rank-list">
     <li class="header">
@@ -17,7 +17,7 @@
     </template>
     <template repeat="{{prop in properties}}">
       <li hidden?="{{prop.property_name == 'ERROR'}}" tabindex="0">
-        <label on-click="showTimeline" title="Click to see a timeline view of this porperty">{{prop.property_name}}</label>
+        <label on-click="showTimeline" title="Click to see a timeline view of this property">{{prop.property_name}}</label>
         <x-meter value="{{prop.percentage}}"></x-meter>
       </li>
     </template>

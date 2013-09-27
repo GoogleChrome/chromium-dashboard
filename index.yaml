@@ -10,6 +10,12 @@ indexes:
 # automatically uploaded to the admin console when you next deploy
 # your application using appcfg.py.
 
+- kind: AnimatedProperty
+  properties:
+  - name: date
+  - name: day_percentage
+    direction: desc
+
 - kind: Feature
   properties:
   - name: category
