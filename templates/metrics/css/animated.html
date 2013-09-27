@@ -23,7 +23,8 @@
 <div class="data-panel">
   <div>
     <h3>About this data</h3>
-    <p class="description">We've been using Chrome's <a href="https://chromium.googlesource.com/chromium/blink/+/master/Source/core/page/UseCounter.h" target="_blank">anonymous opt-in usage statistics</a> to count the <b>occurrences each CSS property is animated in transitions/keyframes</b>. There is no limit on the number of times each property is counted per page view -- a property that is animated multiple times during a single page view is counted each time it animates. The numbers on this page indicate a <b>percentage of occurrences (across all channels and platforms) where the property is animated</b>. Data is ~24 hrs old.</p>
+    <p class="description">
+    We've been using Chrome's <a href="https://chromium.googlesource.com/chromium/blink/+/master/Source/core/page/UseCounter.h" target="_blank">anonymous opt-in usage statistics</a> to count the <b>number of times each CSS property is animated in a Transition or Animation</b>. A property that is animated multiple times during a single page view is counted each time it animates. <b>Percentages on this page indicate the frequency each property is animated relative to the other animated properties</b>. Data is ~24 hrs old and reflects usage across all channels and platforms.</p>
   </div>
   <chromedash-metrics endpoint="/data/queryanimated"></chromedash-metrics>
 </div>
