@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block css %}
+<link rel="stylesheet" type="text/css" href="/static/css/metrics/metrics.css">
+{% endblock %}
+
+{% block js %}
+{% endblock %}
+
+{% block html_imports %}
+  <link rel="import" href="/static/elements/chromedash-metrics.html">
+{% endblock %}
+
+{% block subheader %}
+<div id="subheader">
+  <h2>CSS Property Usage &gt; Animated properties</h2>
+</div>
+{% endblock %}
+
+{% block content %}
+<section id="panels">
+<nav>{% include "metrics/_nav.html" %}</nav>
+<div class="data-panel">
+  <div>
+    <h3>About this data</h3>
+    <p class="description">We've been using Chrome's <a href="https://chromium.googlesource.com/chromium/blink/+/master/Source/core/page/UseCounter.h" target="_blank">anonymous opt-in usage statistics</a> to count the <b>occurrences each CSS property is animated in transitions/keyframes</b>. There is no limit on the number of times each property is counted per page view -- a property that is animated multiple times during a single page view is counted each time it animates. The numbers on this page indicate a <b>percentage of occurrences (across all channels and platforms) where the property is animated</b>. Data is ~24 hrs old.</p>
+  </div>
+  <chromedash-metrics endpoint="/data/queryanimated"></chromedash-metrics>
+</div>
+</section>
+
+{% endblock %}
