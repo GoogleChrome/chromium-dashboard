@@ -12,4 +12,4 @@
 readonly BASEDIR=$(dirname $BASH_SOURCE)
 
 $BASEDIR/oauthtoken.sh deploy
-appcfg.py update $BASEDIR/../
+appcfg.py update --oauth2 $BASEDIR/../
