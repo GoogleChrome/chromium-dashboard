@@ -1,7 +1,7 @@
 <!-- <link rel="import" href="polymer-elements/polymer-google-jsapi/polymer-google-jsapi.html"> -->
 <link rel="import" href="polymer-elements/polymer-ajax/polymer-ajax.html">
 
-<polymer-element name="chromedash-feature-timeline">
+<polymer-element name="chromedash-feature-timeline" attributes="view timeline">
 <template>
   <link rel="stylesheet" type="text/css" href="../css/elements/chromedash-timeline.css">
 
@@ -19,6 +19,8 @@
     applyAuthorStyles: true,
     cssProperties: [],
     selectedBucketId: 1,
+    view: '',
+    title: '',
     created: function() {
       // var el = this;
       // this.$.jsapi.addEventListener('polymer-google-jsapi-loaded', function() {
@@ -45,7 +47,7 @@
     },
     selectedBucketIdChanged: function() {
       var ajax = document.createElement('polymer-ajax');
-      ajax.url = '/data/querystableinstances';
+      ajax.url = '/data/timeline/' + this.view;
       ajax.params = {
         bucket_id: this.selectedBucketId
       };
@@ -57,7 +59,8 @@
 
       if (history.pushState) {
         history.pushState({id: this.selectedBucketId}, '',
-                          '/metrics/css/timeline/' + this.selectedBucketId);
+                           '/metrics/css/timeline/' + this.view + '/' +
+                           this.selectedBucketId);
       }
     },
     drawVisualization: function(data, bucketId) {
@@ -78,7 +81,7 @@
       table.addRows(rowArray);
 
       var options = {
-        title: 'Percentage of pages surveyed that use this property',
+        title: this.title,
         legend: {
           position: 'none'
         },

@@ -2,7 +2,7 @@
 <!-- <link rel="import" href="chromedash-color-status.html"> -->
 <link rel="import" href="x-meter.html">
 
-<polymer-element name="chromedash-metrics" attributes="endpoint">
+<polymer-element name="chromedash-metrics" attributes="view">
 <template>
   <link rel="stylesheet" type="text/css" href="../css/elements/chromedash-metrics.css">
   <polymer-ajax auto url="{{endpoint}}" response="{{properties}}" handleAs="json"></polymer-ajax>
@@ -48,6 +48,9 @@
         prop.percentage = (prop.day_percentage * 100).toFixed(9);
       }
     },
+    get endpoint() {
+      return '/data/' + this.view;
+    },
     sortOrders: {
       property_name: {
         reverse: false,
@@ -71,7 +74,7 @@
       }
     },
     showTimeline: function(e, detail, sender) {
-      window.location.href = '/metrics/css/timeline/' +
+      window.location.href = '/metrics/css/timeline/' + this.view + '/' + 
                              e.target.templateInstance.model.prop.bucket_id;
     }
   });

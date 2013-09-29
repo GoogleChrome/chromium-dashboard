@@ -13,7 +13,7 @@
 
 {% block subheader %}
 <div id="subheader">
-  <h2>CSS Property Usage &gt; Animated properties</h2>
+  <h2>CSS usage metrics &gt; animated properties > stack rank</h2>
 </div>
 {% endblock %}
 
@@ -26,7 +26,7 @@
     <p class="description">
     We've been using Chrome's <a href="https://chromium.googlesource.com/chromium/blink/+/master/Source/core/page/UseCounter.h" target="_blank">anonymous opt-in usage statistics</a> to count the <b>number of times each CSS property is animated in a Transition or Animation</b>. A property that is animated multiple times during a single page view is counted each time it animates. <b>Percentages on this page indicate the frequency each property is animated relative to the other animated properties</b>. Data is ~24 hrs old and reflects usage across all channels and platforms.</p>
   </div>
-  <chromedash-metrics endpoint="/data/queryanimated"></chromedash-metrics>
+  <chromedash-metrics view="animated"></chromedash-metrics>
 </div>
 </section>
 

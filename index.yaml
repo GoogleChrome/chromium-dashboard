@@ -12,6 +12,11 @@ indexes:
 
 - kind: AnimatedProperty
   properties:
+  - name: bucket_id
+  - name: date
+
+- kind: AnimatedProperty
+  properties:
   - name: date
   - name: day_percentage
     direction: desc

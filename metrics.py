@@ -28,21 +28,19 @@ import settings
 CACHE_AGE = 86400 # 24hrs
 
 
-class StableInstances(common.JSONHandler):
-
-  MEMCACHE_KEY = 'css_property'
+class TimelineHandler(common.JSONHandler):
 
   def get(self):
     try:
       bucket_id = int(self.request.get('bucket_id'))
     except:
-      return super(StableInstances, self).get([])
+      return super(self.MODEL_CLASS, self).get([])
 
     KEY = '%s|%s' % (self.MEMCACHE_KEY, bucket_id)
 
     data = memcache.get(KEY)
     if data is None:
-      query = models.StableInstance.all()
+      query = self.MODEL_CLASS.all()
       query.filter('bucket_id =', bucket_id)
       query.order('date')
       data = query.fetch(None) # All matching results.
@@ -52,7 +50,25 @@ class StableInstances(common.JSONHandler):
 
       memcache.set(KEY, data, time=CACHE_AGE)
 
-    super(StableInstances, self).get(data)
+    super(TimelineHandler, self).get(data)
+
+
+class PopularityTimelineHandler(TimelineHandler):
+
+  MEMCACHE_KEY = 'css_pop_timeline'
+  MODEL_CLASS = models.StableInstance
+
+  def get(self):
+    super(PopularityTimelineHandler, self).get()
+
+
+class AnimatedTimelineHandler(TimelineHandler):
+
+  MEMCACHE_KEY = 'css_animated_timeline'
+  MODEL_CLASS = models.AnimatedProperty
+
+  def get(self):
+    super(AnimatedTimelineHandler, self).get()
 
 
 class CSSPropertyHandler(common.JSONHandler):
@@ -85,26 +101,27 @@ class CSSPropertyHandler(common.JSONHandler):
     super(CSSPropertyHandler, self).get(properties)
 
 
-class QueryStackRank(CSSPropertyHandler):
+class PopularityHandler(CSSPropertyHandler):
 
   MEMCACHE_KEY = 'css_popularity'
   MODEL_CLASS = models.StableInstance
 
   def get(self):
-    super(QueryStackRank, self).get()
+    super(PopularityHandler, self).get()
 
 
-class QueryAnimated(CSSPropertyHandler):
+class AnimatedHandler(CSSPropertyHandler):
 
   MEMCACHE_KEY = 'css_animated'
   MODEL_CLASS = models.AnimatedProperty
 
   def get(self):
-    super(QueryAnimated, self).get()
+    super(AnimatedHandler, self).get()
 
 
 app = webapp2.WSGIApplication([
-  ('/data/querystableinstances', StableInstances),
-  ('/data/querystackrank', QueryStackRank),
-  ('/data/queryanimated', QueryAnimated)
+  ('/data/timeline/animated', AnimatedTimelineHandler),
+  ('/data/timeline/popularity', PopularityTimelineHandler),
+  ('/data/popularity', PopularityHandler),
+  ('/data/animated', AnimatedHandler),
 ], debug=settings.DEBUG)
