@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% load verbatim %}
+
+{% block css %}
+<link rel="stylesheet" type="text/css" href="/static/css/metrics/metrics.css">
+{% endblock %}
+
+{% block html_imports %}
+  <link rel="import" href="/static/elements/chromedash-timeline.html">
+{% endblock %}
+
+{% block js %}
+<!-- <script src='//www.google.com/jsapi?autoload={"modules":[{"name":"visualization","version":"1","packages":["corechart"],"callback": "onGoogLoad"}]}'></script> -->
+<!-- Load charts api outside of chromedash-timeline until
+     https://github.com/Polymer/polymer-elements/issues/26 is fixed. -->
+<script src='//www.google.com/jsapi?autoload={"modules":[{"name":"visualization","version":"1","packages":["corechart"]}]}'></script>
+
+<!-- <script src="/static/js/metrics/featurelevel.js"></script> -->
+{% endblock %}
+
+{% block subheader %}
+<div id="subheader">
+  <h2>CSS usage metrics &gt; animated properties > timeline</h2>
+</div>
+{% endblock %}
+
+{% block content %}
+<section id="panels">
+<nav>{% include "metrics/_nav.html" %}</nav>
+<div class="data-panel">
+  <p class="description">Percentages are the number of times (as the fraction of all animated properties) this property is animated. <b>Note:</b> these statistics include the user agent stylesheet</p>
+  <chromedash-feature-timeline view="animated" title="Percentage of times (as the fraction of all animated properties) this property is animated."></chromedash-feature-timeline>
+</div>
+</section>
+
+<script>
+document.addEventListener('WebComponentsReady', function(e) {
+  var timeline = $('chromedash-feature-timeline');
+  timeline.cssProperties = {{CSS_PROPERTY_BUCKETS|safe}};
+
+  window.addEventListener('popstate', function(e) {
+    if (e.state) {
+      timeline.selectedBucketId = e.state.id;
+    }
+  });
+});
+</script>
+{% endblock %}
