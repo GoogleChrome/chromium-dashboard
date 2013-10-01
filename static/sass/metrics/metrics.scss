@@ -1,4 +1,5 @@
 @import "compass/css3/images";
+@import "compass/css3/transform";
 
 @import "vars";
 
@@ -16,6 +17,7 @@
   max-width: 800px;
   margin-left: 20px;
   overflow: auto;
+  @include transform(translateZ(0)); // force composite layer in stable
 
   .description {
     margin-bottom: 1em;
