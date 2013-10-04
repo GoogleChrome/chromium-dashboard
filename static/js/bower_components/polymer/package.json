@@ -13,7 +13,7 @@
     "url": "git://github.com/Polymer/platform.git"
   },
   "main": "polymer.min.js",
-  "version": "0.0.20130912",
+  "version": "0.0.20131003",
   "devDependencies": {
     "mocha": "*",
     "chai": "*",
