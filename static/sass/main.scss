@@ -11,10 +11,6 @@ body {
   font: 14px "Open Sans", Arial, sans-serif;
   background-color: $light-grey;
   //background: url(../img/bg.png);
-
-  // Prevent Polymer from handling FOUC for us.
-  opacity: 1.0 !important;
-  @include transition(none !important);
 }
 
 h1, h2, h3, h4 {
