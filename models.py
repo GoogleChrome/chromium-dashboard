@@ -155,7 +155,7 @@ class Feature(DictModel):
       pre_release.extend(features)
 
       feature_list = [f.format_for_template() for f in pre_release]
-       
+
       memcache.set(KEY, feature_list)
 
     return feature_list
@@ -229,9 +229,9 @@ class PlaceholderCharField(forms.CharField):
 # class PlaceholderForm(forms.Form):
 #   def __init__(self, *args, **kwargs):
 #     super(PlaceholderForm, self).__init__(*args, **kwargs)
-     
+
 #     for field_name in self.fields:
-#      field = self.fields.get(field_name)  
+#      field = self.fields.get(field_name)
 #      if field:
 #        if type(field.widget) in (forms.TextInput, forms.DateInput):
 #          field.widget = forms.TextInput(attrs={'placeholder': field.label})
@@ -282,7 +282,7 @@ IMPLEMENATION_STATUS = {
   NO_ACTIVE_DEV: 'No active development',
   PROPOSED: 'Proposed',
   IN_DEVELOPMENT: 'In development',
-  BEHIND_A_FLAG: 'Behind a flag',
+  BEHIND_A_FLAG: 'Implemented behind a flag',
   ENABLED_BY_DEFAULT: 'Enabled by default',
   DEPRECATED: 'Deprecated',
   }
@@ -310,7 +310,7 @@ FOOTPRINT_CHOICES = {
   }
 
 MAINSTREAM_NEWS = 1
-WARRANTS_ARTICLE = 2 
+WARRANTS_ARTICLE = 2
 IN_LARGER_ARTICLE = 3
 SMALL_NUM_DEVS = 4
 SUPER_SMALL = 5
