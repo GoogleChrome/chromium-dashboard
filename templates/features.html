@@ -86,19 +86,22 @@ document.addEventListener('WebComponentsReady', function(e) {
   var url = location.hostname == 'localhost' ? '/static/js/mockdata.json':
                                                '/features.json';
   var xhr = new XMLHttpRequest();
-  xhr.open('GET', url, false); // make sync.
-  //xhr.responseType = 'json';
+  xhr.open('GET', url);
+  //xhr.responseType = 'json'; // Safari 6.0.5 doesn't support this
   xhr.onloadend = function(e) {
     var resp = e.target.response;
-    //featureList.features = (typeof resp == 'string') ? JSON.parse(resp) : resp;
-    featureList.features = JSON.parse(resp);
+    featureList.features = (typeof resp == 'string') ? JSON.parse(resp) : resp;
+    featureList.metadata = chromeMetadata; // Feature list needs access to the selected milestone.
+
+    updateCount(featureList.features.length); // Set initial # features showing.
+    search.disabled = false;
+
+    document.body.classList.add('ready'); // unmask app.
   };
   xhr.send();
 
-  // Alternatively, fill data from server by including it directly in template.
+  // Alternatively for xhr, fill data from server by including it directly in template.
   //featureList.features = {{features|safe}};
-
-  featureList.metadata = chromeMetadata; // Feature list needs access to the selected milestone.
 
   // Setup inside of chromedash-metadata.html
   // chromeMetadata.addEventListener('milestoneselect', function(e) {
@@ -120,12 +123,7 @@ document.addEventListener('WebComponentsReady', function(e) {
     updateCount(featureList.filter(search.value));
   });
 
-  updateCount(featureList.features.length); // Set initial # features showing.
-
-  search.disabled = false;
-
-  // TODO: taken out. Put back in when if switch input to type="search"
-  // // // Clear input when user clicks the 'x' button.
+  // Clear input when user clicks the 'x' button.
   search.addEventListener('search', function(e) {
     if (!e.target.value) {
       updateCount(featureList.filter());

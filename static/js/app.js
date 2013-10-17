@@ -30,5 +30,6 @@ document.addEventListener('WebComponentsReady', function(e) {
   //     el.classList.add('resolved');
   //   });
   // }
-  document.body.classList.add('ready');
+
+  //document.body.classList.add('ready');
 });
