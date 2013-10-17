@@ -80,9 +80,11 @@
         return;
       }
 
+      document.body.classList.add('ready'); // unmask app.
+
       this.filter();
 
-      this.asyncMethod(function() {
+      this.async(function() {
 
         // If there's an id in the URL, highlight and scroll to the feature.
         // Otherwise, go to the first "in development" feature.
