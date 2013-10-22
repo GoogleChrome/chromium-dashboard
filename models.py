@@ -472,7 +472,7 @@ class FeatureForm(forms.Form):
 
   class Meta:
     model = Feature
-    exclude = ('shipped_webview_milestone',)
+    #exclude = ('shipped_webview_milestone',)
 
   def __init__(self, *args, **keyargs):
     super(FeatureForm, self).__init__(*args, **keyargs)
