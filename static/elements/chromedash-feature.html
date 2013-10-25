@@ -3,11 +3,11 @@
 <polymer-element name="chromedash-feature" extends="li" attributes="feature needsflag" tabindex="0">
 <template>
 <link rel="stylesheet" type="text/css" href="../css/elements/chromedash-feature.css">
-<div on-click="toggle"><div class="topcorner pull-right"><span hidden?="{{!deprecated}}" class="tooltip" title="Deprecated feature"><i class="icon-warning-sign" data-tooltip></i></span><span hidden?="{{!needsflag}}" class="tooltip" title="Experimental feature behind a flag."><i class="icon-beaker" data-tooltip></i></span><content select=".edit"></content></div>
+<div on-click="{{toggle}}"><div class="topcorner pull-right"><span hidden?="{{!deprecated}}" class="tooltip" title="Deprecated feature"><i class="icon-warning-sign" data-tooltip></i></span><span hidden?="{{!needsflag}}" class="tooltip" title="Experimental feature behind a flag."><i class="icon-beaker" data-tooltip></i></span><content select=".edit"></content></div>
   <hgroup>
     <chromedash-color-status class="tooltip corner" title="Compatiblity Risk: overall interest from browser vendors and web developers" value="{{compatRisk}}" max="{{MAX_RISK}}"></chromedash-color-status>
     <h2>{{feature.name}}</h2>
-    <label class="category" on-click="categoryFilter">{{feature.category}}</label>
+    <label class="category" on-click="{{categoryFilter}}">{{feature.category}}</label>
   </hgroup>
   <section class="desc"><summary class="{{open: open}}">{{feature.summary}}</summary></section>
   <template if="{{open}}">
@@ -22,7 +22,7 @@
         <span hidden?="{{!feature.bug_url}}"><a href="{{feature.bug_url}}" target="_blank">Launch bug</a></span>
         <span class="owner" hidden?="{{!feature.owner.length}}">
           <label>Owner(s)</label><template repeat="{{owner in feature.owner}}">
-            <span on-click="ownerFilter">{{owner}}</span>
+            <span on-click="{{ownerFilter}}">{{owner}}</span>
           </template>
         </span>
       </div>

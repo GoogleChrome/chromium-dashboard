@@ -1,11 +1,11 @@
 BUILD LOG
 ---------
-Build Time: 2013-10-03T17:00:30
+Build Time: 2013-10-25T11:14:20
 
 NODEJS INFORMATION
 ==================
-nodejs: v0.10.20
-chai: 1.8.0
+nodejs: v0.10.21
+chai: 1.8.1
 grunt: 0.4.1
 grunt-audit: 0.0.2
 grunt-concat-sourcemap: 0.3.1
@@ -13,7 +13,7 @@ grunt-contrib-uglify: 0.2.4
 grunt-contrib-yuidoc: 0.5.0
 grunt-karma: 0.6.2
 karma: 0.10.2
-karma-chrome-launcher: 0.1.0
+karma-chrome-launcher: 0.0.2
 karma-coffee-preprocessor: 0.1.0
 karma-crbot-reporter: 0.0.4
 karma-firefox-launcher: 0.1.0
@@ -26,21 +26,24 @@ karma-requirejs: 0.1.0
 karma-safari-launcher: 0.1.1
 karma-script-launcher: 0.1.0
 mocha: 1.13.0
+temporary: 0.0.7
 
 REPO REVISIONS
 ==============
-polymer: 0005280cf49ffa033f3c37cca9ea8e8158ada8be
-platform: 0015da1640e80e5d21d11118bb609d1516d1d086
-ShadowDOM: 0f72ceafc503e50812338fc81d8e21e674cc447d
-HTMLImports: 78cb8b66791c041ec5a41698b01e19d6c924bf78
-CustomElements: 5499eddf5f2415118c2a4702b5a27f0677d0ed2b
-PointerEvents: 8c006ee39ddda0d4eef8b1ebc1061fb734991edc
-PointerGestures: 587288a6573fc2331d2486ca1963b7c0185d9953
-polymer-expressions: 5159c4e877fe0fa46cd712a908fd8ff4b3fe926b
-observe-js: 16f8b7c97039b89b7ba233c721163e157ae571fb
-NodeBind: 42db62bfb4c3b39ba06b46836f839b2da3998c01
-TemplateBinding: 6e1e54b4e216bba1e2e41c109f4bdfcfc0578110
+polymer: 6fcff14beaa7e02bc5a1cabc78bc637897812e55
+CustomElements: c3a82176eb881d38b984123bcf0a2ca370e52929
+HTMLImports: 6f7977d827d60fb39d39a96b637f30287c574938
+MutationObservers: 8231c0c2d0e1694e22783382375f685de2a2e783
+NodeBind: bd0a0591920da9091b326627a46a104a92c7efe7
+PointerEvents: 47409b83e142986ba2fd8adca4e6f63651460caa
+PointerGestures: 6bfae8a718805c73b76fa43801651124b6430ed5
+ShadowDOM: 3888683e35e2817c55388e35b2f0f700751c9813
+TemplateBinding: ed3266266e751b5ab1f75f8e0509d0d5f0ef35d8
+WeakMap: 048c5f89b81188159fc90cff2331b6abf9ceae38
+observe-js: 32c9df28eed8193c3e82adbff84467ecf52605cc
+platform: bcf1dc308185d84f2683eb6e2abf426347a4a5fa
+polymer-expressions: e208882eba15e65291ae1779295e48b24a6e2d9a
 
 BUILD HASHES
 ============
-polymer.min.js: dfb921fbc438c62966060b0aed63f408bcec1b21
+polymer.min.js: cbead39faf4f691bb9fd70c6b9c25a3bee0773a3

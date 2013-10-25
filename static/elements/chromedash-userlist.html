@@ -7,14 +7,14 @@
     <table>
       <tr>
         <td><input type="email" placeholder="Email address" name="email" id="id_email" required /></td>
-        <td><input type="submit" on-click="ajaxSubmit"></td>
+        <td><input type="submit" on-click="{{ajaxSubmit}}"></td>
      </tr>
     </table>
   </form>
   <hr>
   <ul id="user-list">
     <template repeat="{{user in users}}">
-      <li><a href="{{action}}/{{user.id}}" on-click="ajaxDelete">delete</a>{{user.email}}</li>
+      <li><a href="{{action}}/{{user.id}}" on-click="{{ajaxDelete}}">delete</a>{{user.email}}</li>
     </template>
   </ul>
 </template>

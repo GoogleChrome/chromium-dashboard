@@ -6,7 +6,7 @@
   <polymer-jsonp id="jsonp" url="//omahaproxy.appspot.com/all.json?callback=" auto></polymer-jsonp>
   <ul class="{{canaryisdev: canaryIsDev; betaisdev: betaIsDev}}">
     <template repeat="{{v in versions}}">
-      <li data-version="{{v}}" on-click="selectMilestone" selected?="{{v == selected}}">{{v}}</li>
+      <li data-version="{{v}}" on-click="{{selectMilestone}}" selected?="{{v == selected}}">{{v}}</li>
     </template>
   </ul>
 </template>
