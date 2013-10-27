@@ -282,7 +282,7 @@ IMPLEMENATION_STATUS = {
   NO_ACTIVE_DEV: 'No active development',
   PROPOSED: 'Proposed',
   IN_DEVELOPMENT: 'In development',
-  BEHIND_A_FLAG: 'Implemented behind a flag',
+  BEHIND_A_FLAG: 'Behind a flag',
   ENABLED_BY_DEFAULT: 'Enabled by default',
   DEPRECATED: 'Deprecated',
   }

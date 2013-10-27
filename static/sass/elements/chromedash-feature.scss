@@ -141,7 +141,7 @@ section {
   }
 
   .impl_status {
-    .chrome_android {
+    .chrome_desktop, .chrome_android, .chrome_webview {
       &.tooltip {
         position: relative;
         &:hover, &:active {
