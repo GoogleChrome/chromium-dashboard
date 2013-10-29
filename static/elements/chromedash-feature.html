@@ -14,12 +14,12 @@
     <section>
       <h3>Implementation Status</h3>
       <div class="impl_status">
-        <span class="chrome_desktop tooltip" title="Shipped on Chrome desktop"><label>{{feature.impl_status_chrome}}</label>{{feature.shipped_milestone}}</span>
+        <span class="chrome_desktop tooltip" title="Chrome desktop"><label>{{feature.impl_status_chrome}}</label>{{feature.shipped_milestone}}</span>
         <template if="{{feature.shipped_android_milestone}}">
-          <span class="chrome_android tooltip" title="Shipped on Chrome for Android"><label><i class="icon-android"></i></label>{{feature.shipped_android_milestone}}</span>
+          <span class="chrome_android tooltip" title="Chrome for Android"><label><i class="icon-android"></i></label>{{feature.shipped_android_milestone}}</span>
         </template>
         <template if="{{feature.shipped_webview_milestone}}">
-          <span class="chrome_webview tooltip" title="Shipped on Chrome Webview"><label>Webview</label>{{feature.shipped_webview_milestone}}</span>
+          <span class="chrome_webview tooltip" title="Chrome Webview"><label>Webview</label>{{feature.shipped_webview_milestone}}</span>
         </template>
         <span><label>Prefixed</label>{{feature.prefixed ? 'Yes' : 'No'}}</span>
         <span hidden?="{{!feature.bug_url}}"><a href="{{feature.bug_url}}" target="_blank">Launch bug</a></span>
