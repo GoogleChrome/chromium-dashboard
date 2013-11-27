@@ -1,0 +1,335 @@
+<!--
+Copyright 2013 Google Inc. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<!DOCTYPE html><meta charset="UTF-8">
+
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1">
+  <path d="M0,0 L10,0 L30,0 L60,0 L100,0 L150,0" id="path" stroke="black"
+      stroke-width="1" fill="none" />
+</svg>
+
+<script src="../bootstrap.js"></script>
+<script>
+"use strict";
+
+var createNormalizedChain =
+    _WebAnimationsTestingUtilities._createNormalizedChain;
+var CubicBezierTimingFunction =
+    _WebAnimationsTestingUtilities._cubicBezierTimingFunction;
+var LinearTimingFunction = _WebAnimationsTestingUtilities._linearTimingFunction;
+var PacedTimingFunction = _WebAnimationsTestingUtilities._pacedTimingFunction;
+
+var pathEffect =
+    new PathAnimationEffect(document.querySelector('#path').pathSegList);
+
+test(function() {
+  var result = createNormalizedChain('cubic-bezier(0.5, -1.5, 0.5, 2.5)');
+  assert_equals(result.length, 1);
+  assert_true(result[0].timingFunction instanceof CubicBezierTimingFunction);
+  assert_equals(result[0].range.min, 0.0);
+  assert_equals(result[0].range.max, 1.0);
+}, 'Specify a single timing function, it spans entire range');
+
+test(function() {
+  var result = createNormalizedChain('ease foo linear');
+  assert_equals(result.length, 1);
+  assert_true(result[0].timingFunction instanceof LinearTimingFunction);
+  assert_equals(result[0].range.min, 0.0);
+  assert_equals(result[0].range.max, 1.0);
+}, 'Specify an invalid timing function, get a single linear segment');
+
+test(function() {
+  var result = createNormalizedChain(null, [0.0, 0.3, 0.6, 1.0]);
+  assert_equals(result.length, 3);
+  assert_true(result[0].timingFunction instanceof LinearTimingFunction);
+  assert_equals(result[0].range.min, 0.0);
+  assert_equals(result[0].range.max, 0.3);
+  assert_true(result[1].timingFunction instanceof LinearTimingFunction);
+  assert_equals(result[1].range.min, 0.3);
+  assert_equals(result[1].range.max, 0.6);
+  assert_true(result[2].timingFunction instanceof LinearTimingFunction);
+  assert_equals(result[2].range.min, 0.6);
+  assert_equals(result[2].range.max, 1.0);
+}, 'Specify points with no timing function, get linear segments matching the ' +
+    'points');
+
+test(function() {
+  var result = createNormalizedChain('cubic-bezier(0, -1, 0, 1) linear',
+      [0.0, 0.3, 0.6, 1.0]);
+  assert_equals(result.length, 3);
+  assert_true(result[0].timingFunction instanceof CubicBezierTimingFunction);
+  assert_equals(result[0].range.min, 0.0);
+  assert_equals(result[0].range.max, 0.3);
+  assert_true(result[1].timingFunction instanceof LinearTimingFunction);
+  assert_equals(result[1].range.min, 0.3);
+  assert_equals(result[1].range.max, 0.6);
+  assert_true(result[2].timingFunction instanceof LinearTimingFunction);
+  assert_equals(result[2].range.min, 0.6);
+  assert_equals(result[2].range.max, 1.0);
+}, 'Specify points with too few timing functions, get last timing function repeated');
+
+test(function() {
+  var result = createNormalizedChain('ease foo linear', [0.0, 0.3, 0.6, 1.0]);
+  assert_equals(result.length, 3);
+  assert_true(result[0].timingFunction instanceof LinearTimingFunction);
+  assert_equals(result[0].range.min, 0.0);
+  assert_equals(result[0].range.max, 0.3);
+  assert_true(result[1].timingFunction instanceof LinearTimingFunction);
+  assert_equals(result[1].range.min, 0.3);
+  assert_equals(result[1].range.max, 0.6);
+  assert_true(result[2].timingFunction instanceof LinearTimingFunction);
+  assert_equals(result[2].range.min, 0.6);
+  assert_equals(result[2].range.max, 1.0);
+}, 'Specify points with an invalid timing function, get linear timing function ' +
+    'repeated');
+
+test(function() {
+  var result = createNormalizedChain('ease linear ease linear',
+      [0.0, 0.3, 0.6, 1.0]);
+  assert_equals(result.length, 3);
+  assert_true(result[0].timingFunction instanceof CubicBezierTimingFunction);
+  assert_equals(result[0].range.min, 0.0);
+  assert_equals(result[0].range.max, 0.3);
+  assert_true(result[1].timingFunction instanceof LinearTimingFunction);
+  assert_equals(result[1].range.min, 0.3);
+  assert_equals(result[1].range.max, 0.6);
+  assert_true(result[2].timingFunction instanceof CubicBezierTimingFunction);
+  assert_equals(result[2].range.min, 0.6);
+  assert_equals(result[2].range.max, 1.0);
+}, 'Specify points with too many timing functions, trailing timing functions are ' +
+    'dropped');
+
+test(function() {
+  var result = createNormalizedChain('ease linear ease',
+      [0.1, 0.3, 0.6, 1.0]);
+  assert_equals(result.length, 3);
+  assert_true(result[0].timingFunction instanceof CubicBezierTimingFunction);
+  assert_equals(result[0].range.min, 0.0);
+  assert_equals(result[0].range.max, 1/3);
+  assert_true(result[1].timingFunction instanceof LinearTimingFunction);
+  assert_equals(result[1].range.min, 1/3);
+  assert_equals(result[1].range.max, 2/3);
+  assert_true(result[2].timingFunction instanceof CubicBezierTimingFunction);
+  assert_equals(result[2].range.min, 2/3);
+  assert_equals(result[2].range.max, 1.0);
+}, 'Specify incorrect first point, get evenly distributed segments');
+
+test(function() {
+  var result = createNormalizedChain('ease linear ease',
+      [0.0, 0.3, 0.6, 0.9]);
+  assert_equals(result.length, 3);
+  assert_true(result[0].timingFunction instanceof CubicBezierTimingFunction);
+  assert_equals(result[0].range.min, 0.0);
+  assert_equals(result[0].range.max, 1/3);
+  assert_true(result[1].timingFunction instanceof LinearTimingFunction);
+  assert_equals(result[1].range.min, 1/3);
+  assert_equals(result[1].range.max, 2/3);
+  assert_true(result[2].timingFunction instanceof CubicBezierTimingFunction);
+  assert_equals(result[2].range.min, 2/3);
+  assert_equals(result[2].range.max, 1.0);
+}, 'Specify incorrect last point, get evenly distributed segments');
+
+test(function() {
+  var result = createNormalizedChain('ease linear ease',
+      [0.0, 0.6, 0.3, 1.0]);
+  assert_equals(result.length, 3);
+  assert_true(result[0].timingFunction instanceof CubicBezierTimingFunction);
+  assert_equals(result[0].range.min, 0.0);
+  assert_equals(result[0].range.max, 1/3);
+  assert_true(result[1].timingFunction instanceof LinearTimingFunction);
+  assert_equals(result[1].range.min, 1/3);
+  assert_equals(result[1].range.max, 2/3);
+  assert_true(result[2].timingFunction instanceof CubicBezierTimingFunction);
+  assert_equals(result[2].range.min, 2/3);
+  assert_equals(result[2].range.max, 1.0);
+}, 'Specify out of order points, get evenly distributed segments');
+
+test(function() {
+  var result = createNormalizedChain('ease linear ease',
+      [0.3, 'foo', 1.0]);
+  assert_equals(result.length, 3);
+  assert_true(result[0].timingFunction instanceof CubicBezierTimingFunction);
+  assert_equals(result[0].range.min, 0.0);
+  assert_equals(result[0].range.max, 1/3);
+  assert_true(result[1].timingFunction instanceof LinearTimingFunction);
+  assert_equals(result[1].range.min, 1/3);
+  assert_equals(result[1].range.max, 2/3);
+  assert_true(result[2].timingFunction instanceof CubicBezierTimingFunction);
+  assert_equals(result[2].range.min, 2/3);
+  assert_equals(result[2].range.max, 1.0);
+}, 'Specify non-numeric points, get evenly distributed segments');
+
+test(function() {
+  var result = createNormalizedChain('ease linear ease',
+      'distribute');
+  assert_equals(result.length, 3);
+  assert_true(result[0].timingFunction instanceof CubicBezierTimingFunction);
+  assert_equals(result[0].range.min, 0.0);
+  assert_equals(result[0].range.max, 1/3);
+  assert_true(result[1].timingFunction instanceof LinearTimingFunction);
+  assert_equals(result[1].range.min, 1/3);
+  assert_equals(result[1].range.max, 2/3);
+  assert_true(result[2].timingFunction instanceof CubicBezierTimingFunction);
+  assert_equals(result[2].range.min, 2/3);
+  assert_equals(result[2].range.max, 1.0);
+}, 'Specify \'distribute\', get evenly distributed segments');
+
+test(function() {
+  var result = createNormalizedChain(' ease  linear    ease ',
+      'distribute');
+  assert_equals(result.length, 3);
+  assert_true(result[0].timingFunction instanceof CubicBezierTimingFunction);
+  assert_equals(result[0].range.min, 0.0);
+  assert_equals(result[0].range.max, 1/3);
+  assert_true(result[1].timingFunction instanceof LinearTimingFunction);
+  assert_equals(result[1].range.min, 1/3);
+  assert_equals(result[1].range.max, 2/3);
+  assert_true(result[2].timingFunction instanceof CubicBezierTimingFunction);
+  assert_equals(result[2].range.min, 2/3);
+  assert_equals(result[2].range.max, 1.0);
+}, 'Handle extra whitespace');
+
+test(function() {
+  var result = createNormalizedChain('ease linear ease', 'align',
+      new Animation(
+          null, [{offset: 0.0}, {offset: 0.3}, {offset: 0.6}, {offset: 1.0}]));
+  assert_equals(result.length, 3);
+  assert_true(result[0].timingFunction instanceof CubicBezierTimingFunction);
+  assert_equals(result[0].range.min, 0.0);
+  assert_equals(result[0].range.max, 0.3);
+  assert_true(result[1].timingFunction instanceof LinearTimingFunction);
+  assert_equals(result[1].range.min, 0.3);
+  assert_equals(result[1].range.max, 0.6);
+  assert_true(result[2].timingFunction instanceof CubicBezierTimingFunction);
+  assert_equals(result[2].range.min, 0.6);
+  assert_equals(result[2].range.max, 1.0);
+}, 'Specify \'align\' with KeyframeAnimationEffect, get aligned segments');
+
+test(function() {
+  var result = createNormalizedChain('ease linear', 'align',
+      new Animation(
+          null, [{offset: 0.0}, {offset: 0.3}, {offset: 0.6}, {offset: 1.0}]));
+  assert_equals(result.length, 3);
+  assert_true(result[0].timingFunction instanceof CubicBezierTimingFunction);
+  assert_equals(result[0].range.min, 0.0);
+  assert_equals(result[0].range.max, 0.3);
+  assert_true(result[1].timingFunction instanceof LinearTimingFunction);
+  assert_equals(result[1].range.min, 0.3);
+  assert_equals(result[1].range.max, 0.6);
+  assert_true(result[2].timingFunction instanceof LinearTimingFunction);
+  assert_equals(result[2].range.min, 0.6);
+  assert_equals(result[2].range.max, 1.0);
+}, 'Specify \'align\' with KeyframeAnimationEffect and too few timing ' +
+    'functions, get last timing function repeated');
+
+test(function() {
+  var result = createNormalizedChain('ease linear ease linear',
+      'align', new Animation(
+          null, [{offset: 0.0}, {offset: 0.3}, {offset: 0.6}, {offset: 1.0}]));
+  assert_equals(result.length, 3);
+  assert_true(result[0].timingFunction instanceof CubicBezierTimingFunction);
+  assert_equals(result[0].range.min, 0.0);
+  assert_equals(result[0].range.max, 0.3);
+  assert_true(result[1].timingFunction instanceof LinearTimingFunction);
+  assert_equals(result[1].range.min, 0.3);
+  assert_equals(result[1].range.max, 0.6);
+  assert_true(result[2].timingFunction instanceof CubicBezierTimingFunction);
+  assert_equals(result[2].range.min, 0.6);
+  assert_equals(result[2].range.max, 1.0);
+}, 'Specify \'align\' with KeyframeAnimationEffect and too many timing ' +
+    'functions, trailing timing functions are dropped');
+
+test(function() {
+  var result = createNormalizedChain('ease linear ease',
+      'align', new Animation(null, [{offset: 0.3}, {offset: 0.6}]));
+  assert_equals(result.length, 3);
+  assert_true(result[0].timingFunction instanceof CubicBezierTimingFunction);
+  assert_equals(result[0].range.min, 0.0);
+  assert_equals(result[0].range.max, 0.3);
+  assert_true(result[1].timingFunction instanceof LinearTimingFunction);
+  assert_equals(result[1].range.min, 0.3);
+  assert_equals(result[1].range.max, 0.6);
+  assert_true(result[2].timingFunction instanceof CubicBezierTimingFunction);
+  assert_equals(result[2].range.min, 0.6);
+  assert_equals(result[2].range.max, 1.0);
+}, 'Specify \'align\' with KeyframeAnimationEffect but inappropriate ' +
+    'keyframe offsets, offsets get added.');
+
+test(function() {
+  var result = createNormalizedChain('ease linear ease',
+      'align', new ParGroup());
+  assert_equals(result.length, 3);
+  assert_true(result[0].timingFunction instanceof CubicBezierTimingFunction);
+  assert_equals(result[0].range.min, 0.0);
+  assert_equals(result[0].range.max, 1/3);
+  assert_true(result[1].timingFunction instanceof LinearTimingFunction);
+  assert_equals(result[1].range.min, 1/3);
+  assert_equals(result[1].range.max, 2/3);
+  assert_true(result[2].timingFunction instanceof CubicBezierTimingFunction);
+  assert_equals(result[2].range.min, 2/3);
+  assert_equals(result[2].range.max, 1.0);
+}, 'Specify timing functions and \'align\' with invalid effect, get evenly ' +
+    'distributed segments');
+
+test(function() {
+  var result = createNormalizedChain('ease linear paced',
+      [0.0, 0.3, 0.6, 1.0], new Animation(null, pathEffect));
+  assert_equals(result.length, 3);
+  assert_true(result[0].timingFunction instanceof CubicBezierTimingFunction);
+  assert_equals(result[0].range.min, 0.0);
+  assert_equals(result[0].range.max, 0.3);
+  assert_true(result[1].timingFunction instanceof LinearTimingFunction);
+  assert_equals(result[1].range.min, 0.3);
+  assert_equals(result[1].range.max, 0.6);
+  assert_true(result[2].timingFunction instanceof PacedTimingFunction);
+  assert_equals(result[2].range.min, 0.6);
+  assert_equals(result[2].range.max, 1.0);
+}, 'Paced timing function has range set correctly');
+
+test(function() {
+  var result = createNormalizedChain('ease linear paced',
+      [0.0, 0.3, 0.6, 1.0]);
+  assert_equals(result.length, 3);
+  assert_true(result[0].timingFunction instanceof CubicBezierTimingFunction);
+  assert_equals(result[0].range.min, 0.0);
+  assert_equals(result[0].range.max, 0.3);
+  assert_true(result[1].timingFunction instanceof LinearTimingFunction);
+  assert_equals(result[1].range.min, 0.3);
+  assert_equals(result[1].range.max, 0.6);
+  assert_true(result[2].timingFunction instanceof LinearTimingFunction);
+  assert_equals(result[2].range.min, 0.6);
+  assert_equals(result[2].range.max, 1.0);
+}, 'Paced timing function defaults to linear if effect is not a path');
+
+test(function() {
+  var result = createNormalizedChain('paced', [0.0, 0.3, 0.6, 1.0],
+      new Animation(null, pathEffect));
+  assert_equals(result.length, 3);
+  assert_true(result[0].timingFunction instanceof PacedTimingFunction);
+  assert_equals(result[0].range.min, 0.0);
+  assert_equals(result[0].range.max, 0.3);
+  assert_equals(result[0].timingFunction._range, result[0].range);
+  assert_true(result[1].timingFunction instanceof PacedTimingFunction);
+  assert_equals(result[1].range.min, 0.3);
+  assert_equals(result[1].range.max, 0.6);
+  assert_equals(result[1].timingFunction._range, result[1].range);
+  assert_true(result[2].timingFunction instanceof PacedTimingFunction);
+  assert_equals(result[2].range.min, 0.6);
+  assert_equals(result[2].range.max, 1.0);
+  assert_equals(result[2].timingFunction._range, result[2].range);
+}, 'Duplicated paced timing function has range set correctly');
+
+</script>

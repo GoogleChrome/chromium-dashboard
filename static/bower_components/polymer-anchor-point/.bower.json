@@ -1,0 +1,17 @@
+{
+  "name": "polymer-anchor-point",
+  "private": true,
+  "dependencies": {
+    "polymer": "Polymer/polymer#master"
+  },
+  "homepage": "https://github.com/Polymer/polymer-anchor-point",
+  "_release": "a9cf7af28b",
+  "_resolution": {
+    "type": "branch",
+    "branch": "master",
+    "commit": "a9cf7af28b662be044d15cc032295a4d57a3e689"
+  },
+  "_source": "git://github.com/Polymer/polymer-anchor-point.git",
+  "_target": "master",
+  "_originalSource": "Polymer/polymer-anchor-point"
+}

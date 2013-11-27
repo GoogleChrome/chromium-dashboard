@@ -1,0 +1,17 @@
+{
+  "name": "polymer-selection",
+  "private": true,
+  "dependencies": {
+    "polymer": "Polymer/polymer#master"
+  },
+  "homepage": "https://github.com/Polymer/polymer-selection",
+  "_release": "272ce7f7b9",
+  "_resolution": {
+    "type": "branch",
+    "branch": "master",
+    "commit": "272ce7f7b9fa581d8a555efeda4b12cf71258dc2"
+  },
+  "_source": "git://github.com/Polymer/polymer-selection.git",
+  "_target": "master",
+  "_originalSource": "Polymer/polymer-selection"
+}

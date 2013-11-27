@@ -1,0 +1,108 @@
+<!--
+Copyright 2013 The Polymer Authors. All rights reserved.
+Use of this source code is governed by a BSD-style
+license that can be found in the LICENSE file.
+-->
+<!--
+/**
+ * @module Polymer Elements
+ */
+/**
+ * polymer-localstorage provides access to localStorage.  The "name" property
+ * is the key to the data ("value" property) stored in localStorage.
+ *
+ * polymer-localstorage automatically saves the value to localStorage when
+ * value is changed.  Note that if value is an object auto-save will be
+ * triggered only when value is a different instance.
+ *
+ * Example:
+ *
+ *     <polymer-localstorage name="my-app-storage" value="{{value}}"></polymer-localstorage>
+ *
+ * @class polymer-localstorage
+ */
+/**
+ * Fired after it is loaded from localStorage.
+ * 
+ * @event polymer-localstorage-load
+ */
+-->
+<polymer-element name="polymer-localstorage" attributes="name value useRaw autoSaveDisabled">
+  <template>
+    <style>
+      @host {
+        * {
+          display: none;
+        }
+      }
+    </style>
+  </template>
+  <script>
+    Polymer('polymer-localstorage', {
+      /**
+       * The key to the data stored in localStorage.
+       *
+       * @attribute name
+       * @type string
+       * @default null
+       */
+      name: '',
+      /**
+       * The data associated with the specified name.
+       *
+       * @attribute value
+       * @type object
+       * @default null
+       */
+      value: null,
+      /**
+       * If true, the value is stored and retrieved without JSON processing.
+       *
+       * @attribute useRaw
+       * @type boolean
+       * @default false
+       */
+      useRaw: false,
+      /**
+       * If true, auto save is disabled.
+       *
+       * @attribute autoSaveDisabled
+       * @type boolean
+       * @default false
+       */
+      autoSaveDisabled: false,
+      enteredView: function() {
+        // wait for bindings are all setup
+        this.async('load');
+      },
+      valueChanged: function() {
+        if (this.loaded && !this.autoSaveDisabled) {
+          this.save();
+        }
+      },
+      load: function() {
+        var s = window.localStorage.getItem(this.name);
+        if (s !== null && !this.useRaw) {
+          try {
+            this.value = JSON.parse(s);
+          } catch (x) {
+            this.value = s;
+          }
+        } else {
+          this.value = s;
+        }
+        this.loaded = true;
+        this.asyncFire('polymer-localstorage-load');
+      },
+      /** 
+       * Saves the value to localStorage.
+       *
+       * @method save
+       */
+      save: function() {
+        window.localStorage.setItem(this.name, 
+            this.useRaw ? this.value : JSON.stringify(this.value));
+      }
+    });
+  </script>
+</polymer-element>

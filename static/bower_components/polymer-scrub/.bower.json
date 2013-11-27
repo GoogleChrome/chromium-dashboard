@@ -1,0 +1,17 @@
+{
+  "name": "polymer-scrub",
+  "private": true,
+  "dependencies": {
+    "polymer": "Polymer/polymer#master"
+  },
+  "homepage": "https://github.com/Polymer/polymer-scrub",
+  "_release": "23f510d41c",
+  "_resolution": {
+    "type": "branch",
+    "branch": "master",
+    "commit": "23f510d41c92d1914362cc44c5c2a5f4311e9e4e"
+  },
+  "_source": "git://github.com/Polymer/polymer-scrub.git",
+  "_target": "master",
+  "_originalSource": "Polymer/polymer-scrub"
+}

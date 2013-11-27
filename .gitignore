@@ -4,3 +4,5 @@
 *.DS_Store
 .sass-cache
 *oauth2.data
+node_modules
+*bower_components

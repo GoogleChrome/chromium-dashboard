@@ -1,0 +1,17 @@
+{
+  "name": "polymer-media-query",
+  "private": true,
+  "dependencies": {
+    "polymer": "Polymer/polymer#master"
+  },
+  "homepage": "https://github.com/Polymer/polymer-media-query",
+  "_release": "028681f147",
+  "_resolution": {
+    "type": "branch",
+    "branch": "master",
+    "commit": "028681f1473a155948c969beedcb6fee8035794f"
+  },
+  "_source": "git://github.com/Polymer/polymer-media-query.git",
+  "_target": "master",
+  "_originalSource": "Polymer/polymer-media-query"
+}

@@ -1,0 +1,110 @@
+<!--
+Copyright 2013 Google Inc. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+    http://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+
+limitations under the License.
+-->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <style>
+      html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        background: #000 url(third-party/dat.globe/loading.gif) center center no-repeat;
+        font-family: sans-serif;
+        color: #fff;
+      }
+    </style>
+  </head>
+
+  <body>
+  <div id="container"></div>
+
+  <script type="text/javascript" src="third-party/Three/ThreeWebGL.js"></script>
+  <script type="text/javascript" src="third-party/Three/ThreeExtras.js"></script>
+  <script type="text/javascript" src="third-party/Three/RequestAnimationFrame.js"></script>
+  <script type="text/javascript" src="third-party/Three/Detector.js"></script>
+  <script type="text/javascript" src="third-party/dat.globe/globe.js"></script>
+
+  <script type="text/javascript" src="web-animations.js"></script>
+  <script type="text/javascript" src="twine.js"></script>
+  <script type="text/javascript">
+
+    if (!Detector.webgl) {
+      Detector.addGetWebGLMessage();
+    } else {
+      var container = document.getElementById('container');
+      var globe = new DAT.Globe(container);
+      console.log(globe);
+
+      function easing(k, iteration, context) {
+        return --k * k * k + 1; /* cubic-ease-out */
+      };
+
+      var stage = {
+        x: Math.PI * 3 / 2,
+        y: Math.PI / 6.0,
+        distance: 50000,
+        dwell : 5,
+
+        last : function() {
+          console.log('last');
+          twine(stage, { onend: stage.start }, 2).start();
+          stage.dwell = 1 + Math.random() * 3;
+        },
+
+        right : function() {
+          console.log('right');
+          var lat = -33 / 180 * Math.PI;
+          var lon = 151.559 / 180 * Math.PI - Math.PI / 2;
+          twine(stage, { delay: 2, to: { x: lon, y: lat, distance: 900 }, onupdate: easing, onend: stage.last }, 2).start();
+        },
+
+        left : function() {
+          console.log('left');
+          var lat = 47 / 180 * Math.PI;
+          var lon = -122 / 180 * Math.PI - Math.PI / 2;
+          twine(stage, { delay: 2, to: { x: lon, y: lat, distance: 700 }, onupdate: easing, onend: stage.right }, 2).start();
+        },
+
+        next : function() {
+          console.log('next');
+          rotation.stop();
+          var lat = 54 / 180 * Math.PI;
+          var lon = -0.137 / 180 * Math.PI - Math.PI / 2;
+          twine(stage, { delay: 0.5, to: { x: lon, y: lat, distance: 500 }, easing: "cubic-bezier(.12,-0.34,.48,1)", onend: stage.left }, 2).start();
+        },
+
+        first : function() {
+          console.log('first');
+          twine(stage, { to: { distance: 1000 }, easing: "ease-out", onend: stage.next }, stage.dwell).start();
+        },
+
+        start : function() {
+          console.log('start');
+          rotation = twine(stage, { to : { x: -Math.PI * 5 } }, stage.dwell + 2).start();
+          stage.first();
+        },
+      };
+
+      var rotation = null;
+      globe.animate();
+      stage.start();
+    }
+  </script>
+  </body>
+</html>

@@ -1,9 +1,7 @@
 @import "element";
 
-@host {
-  :scope {
-    display: inline-block;
-  }
+:host {
+  display: inline-block;
 }
 
 .meter {

@@ -1,10 +1,8 @@
 @import "element";
 
-@host {
-  :scope {
-    display: block;
-    padding: 1px;
-  }
+:host {
+  display: block;
+  padding: 1px;
 }
 
 .milestone-marker {

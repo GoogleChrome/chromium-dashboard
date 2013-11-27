@@ -1,0 +1,17 @@
+{
+  "name": "polymer-localstorage",
+  "private": true,
+  "dependencies": {
+    "polymer": "Polymer/polymer#master"
+  },
+  "homepage": "https://github.com/Polymer/polymer-localstorage",
+  "_release": "e869f0cfb8",
+  "_resolution": {
+    "type": "branch",
+    "branch": "master",
+    "commit": "e869f0cfb8b91cdec18281306d5c2301179f80a2"
+  },
+  "_source": "git://github.com/Polymer/polymer-localstorage.git",
+  "_target": "master",
+  "_originalSource": "Polymer/polymer-localstorage"
+}

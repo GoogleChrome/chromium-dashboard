@@ -1,0 +1,17 @@
+{
+  "name": "polymer-jsonp",
+  "private": true,
+  "dependencies": {
+    "polymer": "Polymer/polymer#master"
+  },
+  "homepage": "https://github.com/Polymer/polymer-jsonp",
+  "_release": "8b827db036",
+  "_resolution": {
+    "type": "branch",
+    "branch": "master",
+    "commit": "8b827db03655a27df06f40f91ac76275c54e5ba6"
+  },
+  "_source": "git://github.com/Polymer/polymer-jsonp.git",
+  "_target": "master",
+  "_originalSource": "Polymer/polymer-jsonp"
+}

@@ -1,0 +1,380 @@
+<!--
+Copyright 2013 Google Inc. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+
+limitations under the License.
+--> 
+<!DOCTYPE html>
+<style>
+body {
+  margin: 0;
+  overflow: hidden;
+  height: 100vh;
+  width: 100vw;
+}
+
+canvas {
+  position: absolute;
+  top: -webkit-calc(100% - 400px);
+}
+
+</style>
+<svg xmlns='http://www.w3.org/2000/svg' version='1.1' style='width: 100%; height: 100%;' viewBox='0 0 800 800'>
+<defs id='defs'>
+</defs>
+<g transform='translate(400, 400) scale(-1, -1)'>
+  <g id='screenPanel'>
+    <g id='contentsPanel' transform='scale(-1, -1)'>
+      <path id='animPath' 
+            stroke='gray' stroke-width='2px' fill='#A99' transform='translate(0, 21)'/>
+      <image id='cursor' x='-25' y='-25' width='50' height='50' xlink:href='ball.png'/>
+    </g>
+  </g>
+</g>
+</svg>
+
+<script src='web-animations.js'></script>
+<script>
+
+// The number of traversable path segments to generate.
+var numPathSegments = 5;
+
+// The number of floating balls to generate.
+var numFloaters = 50;
+
+var pathSegments = []
+
+// Ensure that the first path is always large enough to extend off the
+// left-hand side of the screen.
+var minWidth = document.documentElement.offsetWidth / 6;
+
+function generatePathSegments() {
+  var lastXDelta = undefined;
+  var lastYDelta = undefined;
+
+  // Generate an initial segment to extend off the left of the screen,
+  // and a final segment to extend off the right, in addition to the
+  // animatable segments.
+  for (var i = 0; i < numPathSegments + 2; i++) {
+    var numBeziers = randInt(2) + 1;
+    var s = '';
+    for (var j = 0; j < numBeziers; j++) {
+      if (lastXDelta == undefined) {
+        var x1 = (randInt(100) + minWidth) / numBeziers;
+        var y1 = randInt(100) - 50;
+      } else {
+        x1 = lastXDelta;
+        y1 = lastYDelta;
+      }
+      var x2 = (randInt(100) + minWidth) / numBeziers + x1;
+      var y2 = randInt(100) - 50 + y1;
+      var x3 = (randInt(100) + minWidth) / numBeziers + x2;
+      var y3 = randInt(100) - 50 + y2;
+      lastXDelta = x3 - x2;
+      lastYDelta = y3 - y2;
+      s += 'c ' + x1 + ' ' + y1 + ' ' + x2 + ' ' + y2 + ' ' + x3 + ' ' + y3 + ' ';
+    }
+    pathSegments.push(s);
+  }
+}
+
+generatePathSegments();
+
+// Determine the (x, y) offset between the start and end of the provided
+// path string.
+function pathOffset(pathString) {
+  var tempPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  tempPath.setAttribute('d', 'm 0 0' + pathString);
+  return tempPath.getPointAtLength(tempPath.getTotalLength());
+}
+
+var zeroPosition = pathOffset(pathSegments[0]);
+var height = document.documentElement.offsetHeight / 2 + 200;
+
+// The ground path consists of the generated path segments, followed by
+// a box around the lower half of the screen.
+var groundPathString = 'm ' + (-zeroPosition.x) + ' ' + (-zeroPosition.y) + 
+    ' ' + pathSegments.join(' ') +
+    ' l 0 ' + height + ' L -' + (minWidth * 3) + ' ' + height + ' z';
+animPath.setAttribute('d', groundPathString);
+
+// Filter out the initial and final segments before constructing an animation.
+pathSegments = pathSegments.slice(1, numPathSegments + 1);
+
+// Initially, the chrome logo is at the beginning of the first animated
+// segment.
+var state = 0;
+
+// Constructs a path animation for target from the generated path segments.
+function makePathAnimation(target) {
+  return new SeqGroup(pathSegments.map(function(data) {
+    return new Animation(target, new PathAnimationEffect('m 0 0 ' + data, 'none', 0, 'add'), 
+      {duration: 1 / numPathSegments, easing: 'paced'});
+  }));
+}
+
+// Build an animation representing the movement of the chrome logo along
+// the generated path segments.
+var targetAnimation = makePathAnimation(cursor);
+var screenAnimation = makePathAnimation(screenPanel);
+var spinner = new Animation(cursor, [{transform: 'rotate(0deg)', composite: 'add'},
+                                     {transform: 'rotate(1800deg)', composite: 'add'}],
+                            1);
+var timeline = new ParGroup([targetAnimation, screenAnimation, spinner]);
+
+// Generates the floating spheres.
+// Randomly chooses path segment terminus and position, but
+// doesn't overlap spheres with existing ones. Every so often,
+// increases the zIndex (i.e. starts generating spheres in a layer
+// that appears closer to the user).
+var colors = ['#4285F4', '#DB4437', '#F4B400', '#0F9D58'];
+
+function randInt(range) {
+  return Math.round(Math.random() * range - 0.5);
+}
+
+var zIndex = 1;
+
+// Tracks the rectangles occluded by existing spheres.
+var exclusionRects = {};
+for (var i = 0; i < numPathSegments + 1; i++) {
+  exclusionRects[i] = []
+}
+
+// Insertion point for shadows. They are placed before the
+// animation path so that the ground isn't shadowed by the 
+// floating spheres. 
+var shadowBehind = animPath;
+
+for (var i = 0; i < numFloaters; i++) {
+  var dotPathIndex = randInt(numPathSegments + 1);
+  var position = pathOffset(pathSegments.slice(0, dotPathIndex).join(' '));
+  var dot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+  if (randInt(2) == 1) {
+    zIndex++;
+  }
+  var count = 0;
+  while (true) {
+    var xDir = randInt(2) * 2 - 1;
+    var xDist = 30 + randInt(300);
+    var yDist = 30 + randInt(300);
+    var x = position.x + xDir * xDist;
+    var y = position.y - yDist;
+    var radius = 25 + zIndex/2;
+    var fits = true;
+    for (var j = 0; j < exclusionRects[dotPathIndex].length; j++) {
+      var er = exclusionRects[dotPathIndex][j];
+      if (x + radius > er[0] && x - radius < er[2] && y + radius > er[1] && y - radius < er[3]) {
+        fits = false;
+        break;
+      }
+    }
+    if (fits) {
+      break;
+    }
+    // Safety valve to ensure we don't iterate forever looking for a free position.
+    if (count++ >= 10) {
+      break;
+    }
+  } 
+  exclusionRects[dotPathIndex].push([x - radius, y - radius, x + radius, y + radius]);
+
+  var dotColor = colors[randInt(colors.length)];
+
+  dot.setAttribute('cx', x);
+  dot.setAttribute('cy', y);
+  dot.setAttribute('r', radius);
+  dot.setAttribute('fill', dotColor);
+  contentsPanel.appendChild(dot);
+
+  var range = 100 * zIndex;
+  var rightmostParallax = dotPathIndex/(numPathSegments + 1) * range;
+  var leftmostParallax = (dotPathIndex - numPathSegments)/(numPathSegments + 1) * range;
+  var parallaxAnimation = new Animation(dot, [
+      {cx: rightmostParallax, composite: 'add'},
+      {cx: leftmostParallax, composite: 'add'}
+    ], 1);
+  timeline.append(parallaxAnimation);
+
+  var shadowX = x + 4 + zIndex/2;
+  var shadowY = y + 4 + zIndex/2;
+  var shadow = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+  shadow.setAttribute('cx', shadowX);
+  shadow.setAttribute('cy', shadowY);
+  shadow.setAttribute('r', 29 + zIndex);
+ 
+  shadowGradient = document.createElementNS('http://www.w3.org/2000/svg', 'radialGradient');
+  shadowGradient.id = 'g' + i
+  shadowGradient.setAttribute('cx', '50%');
+  shadowGradient.setAttribute('cy', '50%');
+  shadowGradient.setAttribute('r', '50%');
+  shadowGradient.setAttribute('fx', '50%');
+  shadowGradient.setAttribute('fy', '50%');
+  
+  firstStop = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
+  firstStop.setAttribute('offset', '50%');
+  var cc = 8 * zIndex;
+  firstStop.setAttribute('style', 
+      'stop-color:rgb(' + cc + ', ' + cc + ', ' + cc + '); stop-opacity: 100%');
+  
+  lastStop = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
+  lastStop.setAttribute('offset', '100%');
+  lastStop.setAttribute('style', 
+      'stop-color:rgb(' + cc + ', ' + cc + ', ' + cc + '); stop-opacity: 0%');
+  
+  shadowGradient.appendChild(firstStop);
+  shadowGradient.appendChild(lastStop);
+
+  // SVG gradients go in a definitions block rather than associate with
+  // elements.
+  // TODO: Generate one gradient definition per zIndex.
+  defs.appendChild(shadowGradient);
+
+  shadow.setAttribute('fill', 'url(#g' + i + ')');
+  contentsPanel.insertBefore(shadow, shadowBehind);
+  shadowBehind = shadow;
+  var shadowAnimation = new Animation(shadow, [
+      {cx: rightmostParallax * 1.25, composite: 'add'},
+      {cx: leftmostParallax * 1.25, composite: 'add'}
+    ], 1);
+  timeline.append(shadowAnimation);
+}
+
+// Bezier timing control points.  
+var bx;
+var by;
+var cx;
+var cy;
+
+function initBezierPoints() {
+  bx = 0.48;
+  by = 0;
+  cx = 0.57;
+  cy = 1;
+}
+
+initBezierPoints();
+
+// Generates an approximation for the current timing bezier.
+// This approximation is used to determine the current
+// (x, y) and tangent velocity vector when updating to a 
+// new path.
+function generateApproximation() {
+  var map = []
+  for (var ii = 0; ii <= 100; ii += 1) {
+    var i = ii / 100;
+    map.push([
+      3 * i * (1 - i) * (1 - i) * bx + 3 * i * i * (1 - i) * cx + i * i * i,
+      3 * i * (1 - i) * (1 - i) * by + 3 * i * i * (1 - i) * cy + i * i * i
+    ]);
+  }
+  return map;
+}
+
+// Returns the linearly interpolated approximations
+// of (control parameter, t_in, t_out) s.t.
+// (t_in, t_out) = bezier(control parameter)
+function lookupInterp(approximation, t) {
+  if (t <= 0) {
+    return 0;
+  }
+  if (t >= 1) {
+    return 1;
+  }
+
+  var fst = 0;
+  while (fst != 100 && t > approximation[fst][0]) {
+    fst += 1;
+  }
+  
+  var xDiff = approximation[fst][0] - approximation[fst - 1][0];
+  var yDiff = approximation[fst][1] - approximation[fst - 1][1];
+  var p = (t - approximation[fst - 1][0]) / xDiff;
+  return [(fst - 1 + p)/100, t, approximation[fst  - 1][1] + p * yDiff];
+}
+
+function updateBezierPoints(t) {
+  var approximation = generateApproximation();
+  var result = lookupInterp(approximation, t);
+  var interp = result[0];
+  var t_in = result[1];
+  var t_out = result[2];
+
+  // Splits bezier at (t_in, t_out) and uses second half as 
+  // initial velocity of new control bezier.
+  var cdx = (1 - cx) * interp + cx;
+  var cdy = (1 - cy) * interp + cy;
+  var bcx = (cx - bx) * interp + bx;
+  var bcy = (cy - by) * interp + by;
+  var bccdx = (cdx - bcx) * interp + bcx;
+  var bccdy = (cdy - bcy) * interp + bcy;
+
+  bx = (bccdx - t_in) / (1 - t_in);
+  by = (bccdy - t_out) / (1 - t_in);
+}  
+
+var offsetTime = 0;
+var oldLoc = 0;
+
+// Generates an animation that represents a slice of the timeline
+// starting at the provided start offset and finishing at the provided
+// end offset. The calculated timing bezier (bx, by) and (cx, cy) 
+// values are used to construct an easing for this slice.
+function makeSlice(animation, start, end) {
+  var playbackRate = end - start;
+  if (end < start) {
+    tmp = end;
+    end = start;
+    start = tmp;
+  }
+
+  var group = new ParGroup([
+    new ParGroup([timeline], 
+        {iterationStart: start, iterations: end - start, 
+        playbackRate: playbackRate})
+    ], {easing: 'cubic-bezier(' + bx + ', ' + by + ', ' + cx + ', ' + cy + ')'});
+  
+  return group;
+}
+
+var currentPlayer = document.timeline.play(timeline);
+currentPlayer.playbackRate = 0;
+
+document.onkeydown = function (event) {
+  var direction;
+  if (event.keyCode == 39 && state < numPathSegments) {
+    direction = 1;
+  } else if (event.keyCode == 37 && state > 0) {
+    direction = -1;
+  } else {
+    return;
+  }
+
+  var startTime = timeline.localTime || 0;
+  var isPlaying = currentPlayer && currentPlayer.playbackRate > 0 && currentPlayer.source.localTime < currentPlayer.source.endTime;
+  if (isPlaying) {
+    updateBezierPoints(currentPlayer.source.localTime);
+  } else {
+    initBezierPoints();
+  }
+  var anim = makeSlice(timeline, startTime, (state + direction) / numPathSegments);
+
+  offsetTime += currentPlayer.currentTime;
+  currentPlayer.currentTime = 0;
+  currentPlayer.playbackRate = 1;
+  currentPlayer.source = anim;
+
+  state += direction;
+}
+
+</script>

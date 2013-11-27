@@ -1,14 +1,12 @@
 @import "element";
 
 
-@host {
-  :scope {
-    display: block;
-    // @include display-flex;
-    // @include justify-content(center);
-    // @include align-items(center);
-    // position: absolute;
-  }
+:host {
+  display: block;
+  // @include display-flex;
+  // @include justify-content(center);
+  // @include align-items(center);
+  // position: absolute;
 }
 
 #dialog {
@@ -97,7 +95,7 @@ p {
 //   //opacity: 0;
 // }
 
-/* @polyfill @host .close */
+/* @polyfill .close */
 ::-webkit-distributed(.close) {
   position: absolute;
   right: 15px;

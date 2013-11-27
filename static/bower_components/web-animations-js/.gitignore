@@ -1,0 +1,11 @@
+*.pyc
+*~
+.nfs*
+.*.swp
+.*.swo
+*.pyc*
+*.log*
+tools/*
+.testrepository
+*.png
+web-animations-4lint.js

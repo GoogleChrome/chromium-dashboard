@@ -1,11 +1,9 @@
 @import "element";
 
-@host {
-  :scope {
-    display: block;
-    @include flex(1);
-    padding: 1px;
-  }
+:host {
+  display: block;
+  @include flex(1);
+  padding: 1px;
 }
 
 #stack-rank-list {

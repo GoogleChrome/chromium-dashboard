@@ -1,11 +1,9 @@
 @import "element";
 
-@host {
-  :scope {
-    display: block;
-    @include flex(1);
-    width: 800px;
-  }
+:host {
+  display: block;
+  @include flex(1);
+  width: 800px;
 }
 
 #chart {

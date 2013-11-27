@@ -1,0 +1,17 @@
+{
+  "name": "polymer-signals",
+  "private": true,
+  "dependencies": {
+    "polymer": "Polymer/polymer#master"
+  },
+  "homepage": "https://github.com/Polymer/polymer-signals",
+  "_release": "a9fb0e346e",
+  "_resolution": {
+    "type": "branch",
+    "branch": "master",
+    "commit": "a9fb0e346ec2a50f48e7e6c2ec56d1eededc7ed8"
+  },
+  "_source": "git://github.com/Polymer/polymer-signals.git",
+  "_target": "master",
+  "_originalSource": "Polymer/polymer-signals"
+}

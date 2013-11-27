@@ -1,0 +1,29 @@
+body {
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    margin: 0;
+    font-family: sans;
+}
+
+#target {
+    width: 100vw;
+    height: 100vh;
+    font-size: 10vh;
+    text-align: center;
+}
+
+.visual {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    width: 20px;
+    height: 20px;
+    border-radius: 10px;
+    opacity: 0;
+}
+
+.visual:nth-child(1n) { background: #4285F4; }
+.visual:nth-child(2n) { background: #DB4437; }
+.visual:nth-child(3n) { background: #F4B400; }
+.visual:nth-child(4n) { background: #0F9D58; }

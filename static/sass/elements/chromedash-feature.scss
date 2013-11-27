@@ -2,31 +2,29 @@
 
 @import "element";
 
-@host {
-  :scope {
-    display: block;
-    @include transition(height 400ms ease-in-out);
-    height: $feature-min-height;
-    overflow: hidden;
-    cursor: pointer;
-    @include gradient-bar-bg;
-    //margin-bottom: 10px;
-    margin-bottom: 1px;
-    position: relative;
-    border-radius: $default-border-radius;
-    padding: 5px 20px;
-    list-style: none;
+:host {
+  display: block;
+  @include transition(height 400ms ease-in-out);
+  height: $feature-min-height;
+  overflow: hidden;
+  cursor: pointer;
+  @include gradient-bar-bg;
+  //margin-bottom: 10px;
+  margin-bottom: 1px;
+  position: relative;
+  border-radius: $default-border-radius;
+  padding: 5px 20px;
+  list-style: none;
 
-    &:active {
-      outline: none;
-    }
-
-    &.open {
-      height: 290px;
-      overflow: auto;
-      outline: none;
-    }
+  &:active {
+    outline: none;
   }
+}
+
+:host(.open:host) {
+  height: 290px;
+  overflow: auto;
+  outline: none;
 }
 
 chromedash-color-status.corner {

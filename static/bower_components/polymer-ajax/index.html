@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>polymer-ajax</title>
+  <style>
+    html, body {
+      font-family: Arial, sans-serif;
+    }
+    [nobowager] [ifnobowager], [noviewer] [ifnoviewer] {
+      display: block;
+    }
+    [detector], [ifnobowager], [ifnoviewer], [nobowager] [ifbowager], [noviewer] [ifviewer] {
+      display: none;
+    }
+    img {
+      vertical-align: middle;
+      height: 22px;
+      padding: 0 4px 2px 0;
+    }
+  </style>
+  <script src="../platform/platform.js"></script>
+  <link rel="import" href="../polymer-doc-viewer/polymer-doc-viewer.html">
+</head>
+<body>
+  <!-- detection-->
+  <img detector src="../Bowager/static/bowager-logo.png" onerror="nobowager()">
+  <img detector src="../polymer-doc-viewer/bowager-logo.png" onerror="noviewer()">
+  <script>
+    function nobowager() {
+      document.body.setAttribute('nobowager', '');
+    }
+    function noviewer() {
+      document.body.setAttribute('noviewer', '');
+    }
+    // for testing only
+    window.addEventListener('load', function() {
+      var opts = window.location.search;
+      if (opts.indexOf('viewer') >= 0) {
+        document.body.removeAttribute('noviewer');
+      }
+      if (opts.indexOf('bowager') >= 0) {
+        document.body.removeAttribute('nobowager');
+      }
+      if (opts.indexOf('noviewer') >= 0) {
+        document.body.setAttribute('noviewer', '');
+      }
+      if (opts.indexOf('nobowager') >= 0) {
+        document.body.setAttribute('nobowager', '');
+      }
+    });
+  </script>
+  <!-- -->
+  <h2>polymer-ajax</h2>
+  <div ifnoviewer>
+    <p>See the <a target="_blank" href="http://itch.selfip.net/bowertopia/components/polymer-ajax/doc.html">remote docs.</a></p>
+    <p>Play with this element in the <a href="http://itch.selfip.net/bowertopia/designer/?element=polymer-ajax">remote sandbox.</a></p>
+    <p>See the <a target="_blank" href="smoke.html">smoke test.</a></p>
+    <hr>
+    <p>To access these tools locally, install the <code>polymer-catalog-tools</code> package.</p>
+    <code>bower install Polymer/polymer-catalog-tools</code>
+    <br>
+    <p ifbowager>
+      Or use <a ifbowager target="_blank" href="foo">one-click install <img src="../Bowager/static/bowager-logo.png" title="install via bowager"></a>
+    </p>
+    <p ifnobowager>
+      Pro tip: consider using Bowager for web-enabled installs.
+    </p>
+  </div>
+  <div ifviewer>
+    <header>
+      <p>Play with this element in the <a target="_blank" href="../../designer/?element=polymer-ajax">sandbox.</a></p>
+      <p>See the <a target="_blank" href="smoke.html">smoke test.</a></p>
+    </header>
+    <polymer-doc-viewer url="data.json" style="display: block; position: absolute; top: 160px; bottom: 0px; left: 0; right: 0; border: 1px solid silver;"></polymer-doc-viewer>
+  </div>
+</body>
+</html>

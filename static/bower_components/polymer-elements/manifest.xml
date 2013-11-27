@@ -1,0 +1,21 @@
+﻿<?xml version="1.0"?>
+<meta>
+  <polymer-element-meta name="polymer-ajax"></polymer-element-meta>
+  <polymer-element-meta name="polymer-animation"></polymer-element-meta>
+  <polymer-element-meta name="polymer-collapse"></polymer-element-meta>
+  <polymer-element-meta name="polymer-file"></polymer-element-meta>
+  <polymer-element-meta name="polymer-flex-layout"></polymer-element-meta>
+  <polymer-element-meta name="polymer-google-jsapi"></polymer-element-meta>
+  <polymer-element-meta name="polymer-grid-layout"></polymer-element-meta>
+  <polymer-element-meta name="polymer-jsonp"></polymer-element-meta>
+  <polymer-element-meta name="polymer-key-helper"></polymer-element-meta>
+  <polymer-element-meta name="polymer-layout"></polymer-element-meta>
+  <polymer-element-meta name="polymer-localstorage"></polymer-element-meta>
+  <polymer-element-meta name="polymer-media-query"></polymer-element-meta>
+  <polymer-element-meta name="polymer-meta"></polymer-element-meta>
+  <polymer-element-meta name="polymer-overlay"></polymer-element-meta>
+  <polymer-element-meta name="polymer-page"></polymer-element-meta>
+  <polymer-element-meta name="polymer-selector"></polymer-element-meta>
+  <polymer-element-meta name="polymer-shared-lib"></polymer-element-meta>
+  <polymer-element-meta name="polymer-view-source-link"></polymer-element-meta>
+</meta>

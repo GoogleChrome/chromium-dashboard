@@ -2,10 +2,8 @@
 
 @import "element";
 
-@host {
-  :scope {
-    display: block;
-  }
+:host {
+  display: block;
 }
 
 ul {

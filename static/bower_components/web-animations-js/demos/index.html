@@ -1,0 +1,218 @@
+<!--
+Copyright 2012 Google Inc. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <link
+      href='http://fonts.googleapis.com/css?family=Roboto:900italic,400,100'
+      rel='stylesheet' type='text/css'>
+    <meta name="viewport" content="width=device-width, 
+				   height=device-height,
+				   user-scalable=false;">
+    <style>
+      h1, body, ul {
+        margin: 0;
+        padding: 0;
+      }
+      html, body {
+        overflow-x: hidden;
+      }
+      h1 {
+        position: relative;
+        font-family: 'Roboto', sans-serif;
+        font-size: 10vmin;
+        font-style: italic;
+        -webkit-text-fill-color: white;
+        -webkit-text-stroke-width: 1px;
+        -webkit-text-stroke-color: black;
+        padding-top: .1em;
+        z-index: 2;
+      }
+      h2 {
+        position: relative;
+        font-size: 30px;
+        z-index: 2;
+      }
+      ul {
+        list-style-type: none;
+        text-align: center;
+        width: 80vw;
+        margin: 0 auto;
+      }
+      li {
+        display: inline-block;
+        margin: 20px; 
+        text-align: center;
+        padding: 10px;
+        background-color: rgb(205,38,38);
+        width: 200px;
+        height: 200px;
+        box-shadow: 2px 2px 2px #999;
+        border-radius: 5px;
+      }
+      .demo-link {
+        font-size: 30px;
+        color: white;
+      }
+      li:hover {
+        background-color: rgb(215,81,81);
+      }
+      body {
+        position: relative;
+        font-family: 'Roboto', sans-serif;
+        font-weight: 400;
+        font-size: 14px;
+        background: #4DBD33;
+      }
+      #sky {
+        background: #87CEFA;
+        background: linear-gradient(to bottom, #B0E2FF, #87CEFA);
+        height: 30vmin;
+        overflow-x: hidden;
+        text-align: center;
+      }
+      #grass {
+        background: #8CDD81;
+        background: linear-gradient(to bottom, #8CDD81 20%, #4DBD33 100%);
+        padding: 20px;
+        z-index: 2;
+        position: relative;
+      }
+      .hills {
+        top: 32vh;
+        left: -12vw;
+        background: #E8E8E8;
+        border-radius: 80vw 80vw 0 0;
+        width: 80vw;
+        height: 40vw;
+        position: absolute;
+        z-index: 1;
+        background: #8CDD81;
+      }
+      #hill {
+        top: 25vmin;
+        left: -10vw;
+      }
+      #zeppelin {
+        height: 10vmin;
+        position: absolute;
+        -webkit-animation: zeppelin 100s linear -20s infinite;
+        animation: zeppelin 100s linear -20s infinite; 
+      }
+      @-webkit-keyframes zeppelin {
+        0% { -webkit-transform: translateX(-400%); }
+        1% { -webkit-transform: translateX(-100%); }
+        99% { -webkit-transform: translateX(100%); }
+        100% { -webkit-transform: translateX(300%); }
+      }
+      @keyframes zeppelin {
+        0% {
+          -webkit-transform: translateX(-400%);
+          transform: translateX(-400%);
+        }
+        1% {
+          -webkit-transform: translateX(-100%);
+          transform: translateX(-100%);
+        }
+        99% {
+          -webkit-transform: translateX(100%);
+          transform: translateX(100%);
+        }
+        100% {
+          -webkit-transform: translateX(300%);
+          transform: translateX(300%);
+        }
+      }
+      @media (max-width: 600px) {
+        #github-banner {
+          display: none;
+        }
+      }
+      #cloud {
+        -webkit-animation: cloud 300s linear 0s infinite;
+        animation: cloud 300s linear 0s infinite;
+        height: 5vw;
+        width: 18vw;
+        top: 10vmin;
+        background: #E8E8E8;
+        border-radius: 10vw;
+        position: absolute;
+        z-index: 0;
+        left: 106vw;
+      }
+      #cloud:after, #cloud:before {
+        content: '';
+        position: absolute;
+        background: #E8E8E8;
+      }
+      #cloud:after {
+        border-radius: 6vw;  
+        width: 6vw;
+        height: 6vw;
+        top: -3vw;
+        left: 3vw;
+      }
+      #cloud:before {
+        width: 9vw;
+        height: 12vw;
+        -webkit-transform: rotate(150deg);
+        transform: rotate(150deg);
+        top: -5vw;
+        right: 2vw;
+        border-radius: 10vw;
+      }
+      @-webkit-keyframes cloud {
+        0% { -webkit-transform: translateX(0); }
+        100% { -webkit-transform: translateX(-700%); }
+      }
+      @keyframes cloud {
+        0% {
+          -webkit-transform: translateX(0);
+          transform: translateX(0);
+        }
+        100% {
+          -webkit-transform: translateX(-700%);
+          transform: translateX(-700px);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <a id="github-banner" href="https://github.com/web-animations">
+      <img style="position: absolute; top: 0; left: 0; border: 0; z-index: 4"
+	   src="https://s3.amazonaws.com/github/ribbons/forkme_left_darkblue_121621.png"
+	   alt="Fork me on GitHub">
+    </a>
+    <div id="sky">
+      <div id="cloud"></div>
+      <h1>Web Animations</h1>
+      <img id="zeppelin" src="zeppelin.svg" alt="Demos">
+    </div>
+    <div id="hill" class="hills"></div>
+    <div id="grass">
+      <ul>
+        <a class="demo-link" href="rolio/rolio.html"><li>Rolio</li></a>
+        <a class="demo-link" href="globe/"><li>Globe</li></a>
+        <a class="demo-link" href="countries/"><li>Countries</li></a>
+        <a class="demo-link" href="touch/touch.html"><li>Touch</li></a>
+        <a class="demo-link" href="curtains.html"><li>Curtains</li></a>
+        <a class="demo-link" href="test-circle-square.html"><li>Shapes</li></a>
+      </ul>
+    </div>
+  </body>
+</html>

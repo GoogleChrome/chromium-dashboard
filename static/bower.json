@@ -1,0 +1,26 @@
+{
+  "name": "chromium-dashboard",
+  "version": "2013.11.26",
+  "homepage": "chromestatus.com",
+  "authors": [
+    "Eric Bidelman <ebidel@gmail.com>"
+  ],
+  "description": "Chromium Feature Dashboard",
+  "keywords": [
+    "chromium",
+    "dashboard"
+  ],
+  "license": "BSD",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "platform": "Polymer/platform#~0.1.0",
+    "polymer-elements": "Polymer/polymer-elements#~0.0.20131108"
+  }
+}
