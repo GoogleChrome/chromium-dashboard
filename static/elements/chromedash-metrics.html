@@ -9,8 +9,8 @@
   <b>Showing {{properties.length}} properties</b>
   <ol id="stack-rank-list">
     <li class="header">
-      <label on-click="{{sort}}" data-order="property_name">Name <i class="icon-long-arrow-{{sortOrders.property_name.reverse ? 'up' : 'down'}} {{activated: sortOrders.property_name.activated}}"></i></label>
-      <label on-click="{{sort}}" data-order="percentage" class="flex2">Percentage <i class="icon-long-arrow-{{sortOrders.percentage.reverse ? 'down' : 'up'}} {{activated: sortOrders.percentage.activated}}"></i></label>
+      <label on-click="{{sort}}" data-order="property_name">Name <i class="icon-long-arrow-{{sortOrders.property_name.reverse ? 'up' : 'down'}} {{ {activated: sortOrders.property_name.activated} | tokenList }}"></i></label>
+      <label on-click="{{sort}}" data-order="percentage" class="flex2">Percentage <i class="icon-long-arrow-{{sortOrders.percentage.reverse ? 'down' : 'up'}} {{ {activated: sortOrders.percentage.activated} | tokenList }}"></i></label>
     </li>
     <template if="{{!properties.length}}">
       <li class="loading">Loading...</li>
