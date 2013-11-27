@@ -20,7 +20,7 @@
     "tests"
   ],
   "dependencies": {
-    "platform": "Polymer/platform#~0.1.0",
-    "polymer-elements": "Polymer/polymer-elements#~0.0.20131108"
+    "platform": "Polymer/platform#master",
+    "polymer-elements": "Polymer/polymer-elements#master"
   }
 }
