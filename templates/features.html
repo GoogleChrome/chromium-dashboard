@@ -83,7 +83,7 @@ document.addEventListener('WebComponentsReady', function(e) {
   };
 
   // Fill data via AJAX.
-  var url = location.hostname == 'localhost2' ? '/static/js/mockdata.json':
+  var url = location.hostname == 'localhost' ? '/static/js/mockdata.json':
                                                '/features.json';
   var xhr = new XMLHttpRequest();
   xhr.open('GET', url);
