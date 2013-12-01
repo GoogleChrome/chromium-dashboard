@@ -12,7 +12,144 @@ from django import forms
 
 import settings
 
+
 SIMPLE_TYPES = (int, long, float, bool, dict, basestring, list)
+
+WEBCOMPONENTS = 1
+MISC = 2
+SECURITY = 3
+MULTIMEDIA = 4
+DOM = 5
+FILE = 6
+OFFLINE = 7
+DEVICE = 8
+COMMUNICATION = 9
+JAVASCRIPT = 10
+NETWORKING = 11
+INPUT = 12
+PERFORMANCE = 13
+GRAPHICS = 14
+CSS = 15
+
+FEATURE_CATEGORIES = {
+  CSS: 'CSS',
+  WEBCOMPONENTS: 'Web Components',
+  MISC: 'Misc',
+  SECURITY: 'Security',
+  MULTIMEDIA: 'Multimedia',
+  DOM: 'DOM',
+  FILE: 'File APIs',
+  OFFLINE: 'Offline / Storage',
+  DEVICE: 'Device',
+  COMMUNICATION: 'Realtime / Communication',
+  JAVASCRIPT: 'JavaScript',
+  NETWORKING: 'Network / Connectivity',
+  INPUT: 'User input',
+  PERFORMANCE: 'Performance',
+  GRAPHICS: 'Graphics',
+  }
+
+NO_ACTIVE_DEV = 1
+PROPOSED = 2
+IN_DEVELOPMENT = 3
+BEHIND_A_FLAG = 4
+ENABLED_BY_DEFAULT = 5
+DEPRECATED = 6
+
+IMPLEMENATION_STATUS = {
+  NO_ACTIVE_DEV: 'No active development',
+  PROPOSED: 'Proposed',
+  IN_DEVELOPMENT: 'In development',
+  BEHIND_A_FLAG: 'Behind a flag',
+  ENABLED_BY_DEFAULT: 'Enabled by default',
+  DEPRECATED: 'Deprecated',
+  }
+
+MAJOR_NEW_API = 1
+MAJOR_MINOR_NEW_API = 2
+SUBSTANTIVE_CHANGES = 3
+MINOR_EXISTING_CHANGES = 4
+EXTREMELY_SMALL_CHANGE = 5
+
+FOOTPRINT_CHOICES = {
+  MAJOR_NEW_API: ('A major new independent API (e.g. adding a large # '
+                  'independent concepts with many methods/properties/objects)'),
+  MAJOR_MINOR_NEW_API: ('Major changes to an existing API OR a minor new '
+                        'independent API (e.g. adding a large # of new '
+                        'methods/properties or introducing new concepts to '
+                        'augment an existing API)'),
+  SUBSTANTIVE_CHANGES: ('Substantive changes to an existing API (e.g. small '
+                        'number of new methods/properties)'),
+  MINOR_EXISTING_CHANGES: (
+      'Minor changes to an existing API (e.g. adding a new keyword/allowed '
+      'argument to a property/method)'),
+  EXTREMELY_SMALL_CHANGE: ('Extremely small tweaks to an existing API (e.g. '
+                           'how existing keywords/arguments are interpreted)'),
+  }
+
+MAINSTREAM_NEWS = 1
+WARRANTS_ARTICLE = 2
+IN_LARGER_ARTICLE = 3
+SMALL_NUM_DEVS = 4
+SUPER_SMALL = 5
+
+VISIBILITY_CHOICES = {
+  MAINSTREAM_NEWS: 'Likely in mainstream tech news',
+  WARRANTS_ARTICLE: 'Will this feature generate articles on sites like html5rocks.com',
+  IN_LARGER_ARTICLE: 'Covered as part of a larger article but not on its own',
+  SMALL_NUM_DEVS: 'Only a very small number of web developers will care about',
+  SUPER_SMALL: "So small it doesn't need to be covered in this dashboard.",
+  }
+
+SHIPPED = 1
+IN_DEV = 2
+PUBLIC_SUPPORT = 3
+MIXED_SIGNALS = 4
+NO_PUBLIC_SIGNALS = 5
+PUBLIC_SKEPTICISM = 6
+OPPOSED = 7
+
+VENDOR_VIEWS = {
+  SHIPPED: 'Shipped',
+  IN_DEV: 'In development',
+  PUBLIC_SUPPORT: 'Public support',
+  MIXED_SIGNALS: 'Mixed public signals',
+  NO_PUBLIC_SIGNALS: 'No public signals',
+  PUBLIC_SKEPTICISM: 'Public skepticism',
+  OPPOSED: 'Opposed',
+  }
+
+DEFACTO_STD = 1
+ESTABLISHED_STD = 2
+WORKING_DRAFT = 3
+EDITORS_DRAFT = 4
+PUBLIC_DISCUSSION = 5
+NO_STD_OR_DISCUSSION = 6
+
+STANDARDIZATION = {
+  DEFACTO_STD: 'De-facto standard',
+  ESTABLISHED_STD: 'Established standard',
+  WORKING_DRAFT: 'Working draft or equivalent',
+  EDITORS_DRAFT: "Editor's draft",
+  PUBLIC_DISCUSSION: 'Public discussion',
+  NO_STD_OR_DISCUSSION: 'No public standards discussion',
+  }
+
+DEV_STRONG_POSTIVE = 1
+DEV_POSTIVE = 2
+DEV_MIXED_SIGNALS = 3
+DEV_NO_SIGNALS = 4
+DEV_NEGATIVE = 5
+DEV_STRONG_NEGATIVE = 6
+
+WEB_DEV_VIEWS = {
+  DEV_STRONG_POSTIVE: 'Strongly positive',
+  DEV_POSTIVE: 'Positive',
+  DEV_MIXED_SIGNALS: 'Mixed signals',
+  DEV_NO_SIGNALS: 'No signals',
+  DEV_NEGATIVE: 'Negative',
+  DEV_STRONG_NEGATIVE: 'Strongly negative',
+  }
 
 
 class DictModel(db.Model):
@@ -192,10 +329,10 @@ class Feature(DictModel):
   spec_link = db.LinkProperty()
   prefixed = db.BooleanProperty()
 
-  ff_views = db.IntegerProperty(required=True)
-  ie_views = db.IntegerProperty(required=True)
-  opera_views = db.IntegerProperty(required=True)
-  safari_views = db.IntegerProperty(required=True)
+  ff_views = db.IntegerProperty(required=True, default=NO_PUBLIC_SIGNALS)
+  ie_views = db.IntegerProperty(required=True, default=NO_PUBLIC_SIGNALS)
+  opera_views = db.IntegerProperty(required=True, default=NO_PUBLIC_SIGNALS)
+  safari_views = db.IntegerProperty(required=True, default=NO_PUBLIC_SIGNALS)
 
   ff_views_link = db.LinkProperty()
   ie_views_link = db.LinkProperty()
@@ -239,143 +376,6 @@ class PlaceholderCharField(forms.CharField):
 #      if field:
 #        if type(field.widget) in (forms.TextInput, forms.DateInput):
 #          field.widget = forms.TextInput(attrs={'placeholder': field.label})
-
-
-WEBCOMPONENTS = 1
-MISC = 2
-SECURITY = 3
-MULTIMEDIA = 4
-DOM = 5
-FILE = 6
-OFFLINE = 7
-DEVICE = 8
-COMMUNICATION = 9
-JAVASCRIPT = 10
-NETWORKING = 11
-INPUT = 12
-PERFORMANCE = 13
-GRAPHICS = 14
-CSS = 15
-
-FEATURE_CATEGORIES = {
-  CSS: 'CSS',
-  WEBCOMPONENTS: 'Web Components',
-  MISC: 'Misc',
-  SECURITY: 'Security',
-  MULTIMEDIA: 'Multimedia',
-  DOM: 'DOM',
-  FILE: 'File APIs',
-  OFFLINE: 'Offline / Storage',
-  DEVICE: 'Device',
-  COMMUNICATION: 'Realtime / Communication',
-  JAVASCRIPT: 'JavaScript',
-  NETWORKING: 'Network / Connectivity',
-  INPUT: 'User input',
-  PERFORMANCE: 'Performance',
-  GRAPHICS: 'Graphics',
-  }
-
-NO_ACTIVE_DEV = 1
-PROPOSED = 2
-IN_DEVELOPMENT = 3
-BEHIND_A_FLAG = 4
-ENABLED_BY_DEFAULT = 5
-DEPRECATED = 6
-
-IMPLEMENATION_STATUS = {
-  NO_ACTIVE_DEV: 'No active development',
-  PROPOSED: 'Proposed',
-  IN_DEVELOPMENT: 'In development',
-  BEHIND_A_FLAG: 'Behind a flag',
-  ENABLED_BY_DEFAULT: 'Enabled by default',
-  DEPRECATED: 'Deprecated',
-  }
-
-MAJOR_NEW_API = 1
-MAJOR_MINOR_NEW_API = 2
-SUBSTANTIVE_CHANGES = 3
-MINOR_EXISTING_CHANGES = 4
-EXTREMELY_SMALL_CHANGE = 5
-
-FOOTPRINT_CHOICES = {
-  MAJOR_NEW_API: ('A major new independent API (e.g. adding a large # '
-                  'independent concepts with many methods/properties/objects)'),
-  MAJOR_MINOR_NEW_API: ('Major changes to an existing API OR a minor new '
-                        'independent API (e.g. adding a large # of new '
-                        'methods/properties or introducing new concepts to '
-                        'augment an existing API)'),
-  SUBSTANTIVE_CHANGES: ('Substantive changes to an existing API (e.g. small '
-                        'number of new methods/properties)'),
-  MINOR_EXISTING_CHANGES: (
-      'Minor changes to an existing API (e.g. adding a new keyword/allowed '
-      'argument to a property/method)'),
-  EXTREMELY_SMALL_CHANGE: ('Extremely small tweaks to an existing API (e.g. '
-                           'how existing keywords/arguments are interpreted)'),
-  }
-
-MAINSTREAM_NEWS = 1
-WARRANTS_ARTICLE = 2
-IN_LARGER_ARTICLE = 3
-SMALL_NUM_DEVS = 4
-SUPER_SMALL = 5
-
-VISIBILITY_CHOICES = {
-  MAINSTREAM_NEWS: 'Likely in mainstream tech news',
-  WARRANTS_ARTICLE: 'Will this feature generate articles on sites like html5rocks.com',
-  IN_LARGER_ARTICLE: 'Covered as part of a larger article but not on its own',
-  SMALL_NUM_DEVS: 'Only a very small number of web developers will care about',
-  SUPER_SMALL: "So small it doesn't need to be covered in this dashboard.",
-  }
-
-SHIPPED = 1
-IN_DEV = 2
-PUBLIC_SUPPORT = 3
-MIXED_SIGNALS = 4
-NO_PUBLIC_SIGNALS = 5
-PUBLIC_SKEPTICISM = 6
-OPPOSED = 7
-
-VENDOR_VIEWS = {
-  SHIPPED: 'Shipped',
-  IN_DEV: 'In development',
-  PUBLIC_SUPPORT: 'Public support',
-  MIXED_SIGNALS: 'Mixed public signals',
-  NO_PUBLIC_SIGNALS: 'No public signals',
-  PUBLIC_SKEPTICISM: 'Public skepticism',
-  OPPOSED: 'Opposed',
-  }
-
-DEFACTO_STD = 1
-ESTABLISHED_STD = 2
-WORKING_DRAFT = 3
-EDITORS_DRAFT = 4
-PUBLIC_DISCUSSION = 5
-NO_STD_OR_DISCUSSION = 6
-
-STANDARDIZATION = {
-  DEFACTO_STD: 'De-facto standard',
-  ESTABLISHED_STD: 'Established standard',
-  WORKING_DRAFT: 'Working draft or equivalent',
-  EDITORS_DRAFT: "Editor's draft",
-  PUBLIC_DISCUSSION: 'Public discussion',
-  NO_STD_OR_DISCUSSION: 'No public standards discussion',
-  }
-
-DEV_STRONG_POSTIVE = 1
-DEV_POSTIVE = 2
-DEV_MIXED_SIGNALS = 3
-DEV_NO_SIGNALS = 4
-DEV_NEGATIVE = 5
-DEV_STRONG_NEGATIVE = 6
-
-WEB_DEV_VIEWS = {
-  DEV_STRONG_POSTIVE: 'Strongly positive',
-  DEV_POSTIVE: 'Positive',
-  DEV_MIXED_SIGNALS: 'Mixed signals',
-  DEV_NO_SIGNALS: 'No signals',
-  DEV_NEGATIVE: 'Negative',
-  DEV_STRONG_NEGATIVE: 'Strongly negative',
-  }
 
 
 class FeatureForm(forms.Form):
