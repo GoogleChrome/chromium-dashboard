@@ -54,6 +54,13 @@
           </template>
           <label hidden?="{{feature.safari_views_link}}">Safari</label>
         </span>
+        <span title="{{feature.opera_views.text}}">
+          <chromedash-color-status value="{{feature.opera_views.value}}" max="{{MAX_VENDOR_VIEW}}"></chromedash-color-status>
+          <template if="{{feature.opera_views_link}}">
+            <a href="{{feature.opera_views_link}}" target="_blank">Opera</a>
+          </template>
+          <label hidden?="{{feature.opera_views_link}}">Opera</label>
+        </span>
         <span title="{{feature.web_dev_views.text}}">
           <chromedash-color-status value="{{feature.web_dev_views.value}}" max="{{MAX_WEBDEV_VIEW}}"></chromedash-color-status>
           <label>Web developers</label>
@@ -110,23 +117,12 @@
           'tooltip' in e.target.dataset || e.target.tagName == 'A') {
         return;
       }
-
-      // // For v20130808 relase, need to wrap in asyncMethod and call
-      // // Platform.flush() to get the feature panel to toggle at a decent speed
-      // // under the polyfill. B/c of property reflection to attributes?
-      // if (Platform.flags.shadow) {
-      //   this.asyncMethod(function() {
-      //     this.open = !this.open;
-      //     Platform.flush(); 
-      //   });
-      // } else {
-      //   this.open = !this.open;
-      // }
       this.open = !this.open;
     },
     calculateCompatRisk: function() {
       var vendors = (this.feature.ff_views.value + this.feature.ie_views.value +
-                     this.feature.safari_views.value) / 3;
+                     this.feature.safari_views.value +
+                     this.feature.opera_views.value) / 4;
       var webdevs = this.feature.web_dev_views.value;
       var standards = this.feature.standardization.value;
 

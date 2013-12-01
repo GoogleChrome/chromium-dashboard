@@ -275,9 +275,10 @@ class FeatureHandler(common.ContentHandler):
     spec_link = self.__FullQualifyLink('spec_link')
     bug_url = self.__FullQualifyLink('bug_url')
 
-    safari_views_link = self.__FullQualifyLink('safari_views_link')
     ff_views_link = self.__FullQualifyLink('ff_views_link')
     ie_views_link = self.__FullQualifyLink('ie_views_link')
+    opera_views_link = self.__FullQualifyLink('opera_views_link')
+    safari_views_link = self.__FullQualifyLink('safari_views_link')
 
     # Cast incoming milestones to ints.
     shipped_milestone = self.__ToInt('shipped_milestone')
@@ -310,12 +311,14 @@ class FeatureHandler(common.ContentHandler):
         feature.shipped_webview_milestone = shipped_webview_milestone
         feature.footprint = int(self.request.get('footprint'))
         feature.visibility = int(self.request.get('visibility'))
-        feature.safari_views = int(self.request.get('safari_views'))
-        feature.safari_views_link = safari_views_link
         feature.ff_views = int(self.request.get('ff_views'))
         feature.ff_views_link = ff_views_link
         feature.ie_views = int(self.request.get('ie_views'))
         feature.ie_views_link = ie_views_link
+        feature.opera_views = int(self.request.get('opera_views'))
+        feature.opera_views_link = opera_views_link
+        feature.safari_views = int(self.request.get('safari_views'))
+        feature.safari_views_link = safari_views_link
         feature.prefixed = self.request.get('prefixed') == 'on'
         feature.spec_link = spec_link
         feature.standardization = int(self.request.get('standardization'))
@@ -335,12 +338,14 @@ class FeatureHandler(common.ContentHandler):
           shipped_webview_milestone=shipped_webview_milestone,
           footprint=int(self.request.get('footprint')),
           visibility=int(self.request.get('visibility')),
-          safari_views=int(self.request.get('safari_views')),
-          safari_views_link=safari_views_link,
           ff_views=int(self.request.get('ff_views')),
           ff_views_link=ff_views_link,
           ie_views=int(self.request.get('ie_views')),
           ie_views_link=ie_views_link,
+          opera_views=int(self.request.get('opera_views')),
+          opera_views_link=opera_views_link,
+          safari_views=int(self.request.get('safari_views')),
+          safari_views_link=safari_views_link,
           prefixed=self.request.get('prefixed') == 'on',
           spec_link=spec_link,
           standardization=int(self.request.get('standardization')),

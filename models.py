@@ -92,6 +92,8 @@ class Feature(DictModel):
                      'text': VENDOR_VIEWS[self.ie_views]}
     d['safari_views'] = {'value': self.safari_views,
                          'text': VENDOR_VIEWS[self.safari_views]}
+    d['opera_views'] = {'value': self.opera_views,
+                        'text': VENDOR_VIEWS[self.opera_views]}
     d['standardization'] = {'value': self.standardization,
                             'text': STANDARDIZATION[self.standardization]}
     d['web_dev_views'] = {'value': self.web_dev_views,
@@ -190,13 +192,15 @@ class Feature(DictModel):
   spec_link = db.LinkProperty()
   prefixed = db.BooleanProperty()
 
-  safari_views = db.IntegerProperty(required=True)
-  ie_views = db.IntegerProperty(required=True)
   ff_views = db.IntegerProperty(required=True)
+  ie_views = db.IntegerProperty(required=True)
+  opera_views = db.IntegerProperty(required=True)
+  safari_views = db.IntegerProperty(required=True)
 
-  safari_views_link = db.LinkProperty()
   ff_views_link = db.LinkProperty()
   ie_views_link = db.LinkProperty()
+  opera_views_link = db.LinkProperty()
+  safari_views_link = db.LinkProperty()
 
   # Web dev details.
   web_dev_views = db.IntegerProperty(required=True)
@@ -465,6 +469,12 @@ class FeatureForm(forms.Form):
                                choices=VENDOR_VIEWS.items(),
                                initial=NO_PUBLIC_SIGNALS)
   ie_views_link = forms.URLField(required=False, label='',
+      help_text='Citation link.')
+
+  opera_views = forms.ChoiceField(label='Opera views',
+                                  choices=VENDOR_VIEWS.items(),
+                                  initial=NO_PUBLIC_SIGNALS)
+  opera_views_link = forms.URLField(required=False, label='',
       help_text='Citation link.')
 
   comments = forms.CharField(label='', required=False, widget=forms.Textarea(
