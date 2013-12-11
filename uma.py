@@ -439,4 +439,9 @@ CSS_PROPERTY_BUCKETS = {
   435: 'mask-source-type',
   436: 'isolation',
   437: 'object-position',
+  438: 'internal-callback',
+  439: 'shape-image-threshold',
+  440: 'column-fill',
+  441: 'text-justify',
+  442: 'touch-action-delay',
 }
