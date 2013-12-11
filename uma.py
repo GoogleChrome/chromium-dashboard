@@ -1,5 +1,5 @@
 # TODO(ericbidelman): generate this file from 
-# http://src.chromium.org/viewvc/blink/trunk/Source/core/page/UseCounter.cpp
+# http://src.chromium.org/viewvc/blink/trunk/Source/core/frame/UseCounter.cpp
 
 CSS_PROPERTY_BUCKETS = {
   # 1 was reserved for number of CSS Pages Visited
