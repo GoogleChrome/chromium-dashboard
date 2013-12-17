@@ -73,11 +73,6 @@ if (uaParts) {
 <!-- Elements import polymer.html, but insure it is loaded. -->
 <link rel="import" href="/static/bower_components/polymer/polymer.html">
 
-<script async>
-  // By default, Polymer veils body. We're grown men; handle FOUC ourselves.
-  Polymer.veiledElements = [];
-</script>
-
 <!-- TODO: test this possible perf optimization for polyfill.
 <script>
 Platform.ShadowCSS.strictStyling = true;
