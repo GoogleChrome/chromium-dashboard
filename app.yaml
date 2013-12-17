@@ -78,3 +78,4 @@ skip_files:
 - ^(.*/)?.*\.scss$
 - ^static/js/polymer-all
 - ^(.*/)?node_modules
+- ^(.*/)?.[LICENSE|PATENTS|AUTHORS|CONTRIBUTING|COPYING](\.md)?
