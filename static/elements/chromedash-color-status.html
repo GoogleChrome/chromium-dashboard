@@ -9,10 +9,11 @@
         height: {{height}}px;
       }
     </style>-->
-    <span id="status" pseudo="x-colorindicator"></span>
+    <span id="status"></span>
   </template>
   <script>
     Polymer('chromedash-color-status', {
+      applyAuthorStyles: true,
       max: 7,
       width: 10,
       height: 10,

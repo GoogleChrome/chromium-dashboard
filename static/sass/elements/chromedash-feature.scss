@@ -29,11 +29,17 @@
 
 chromedash-color-status.corner {
   height: 100% !important;
-  &::x-colorindicator {
-    border-radius: 0 !important;
-    height: 100% !important; // Ensures we can color coverage when feature is scrolled.
-    width: 7px !important;
-  }
+  // & ^ #status {
+  //   border-radius: 0 !important;
+  //   height: 100% !important; // Ensures we can color coverage when feature is scrolled.
+  //   width: 7px !important;
+  // }
+}
+
+#status {
+  border-radius: 0 !important;
+  height: 100% !important; // Ensures we can color coverage when feature is scrolled.
+  width: 7px !important;
 }
 
 h2 {
