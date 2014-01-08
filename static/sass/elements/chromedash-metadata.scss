@@ -83,7 +83,7 @@ ul {
     }
 
     &[selected] {
-      //font-weight: 600; // TODO: put back in. Kills flexbox layout perf in Chrome stable 30.
+      font-weight: 600;
       color: $chromium-color-dark;
       &::before {
         border-color: $chromium-color-dark;
