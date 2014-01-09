@@ -55,6 +55,7 @@ IN_DEVELOPMENT = 3
 BEHIND_A_FLAG = 4
 ENABLED_BY_DEFAULT = 5
 DEPRECATED = 6
+NO_LONGER_PURSUING = 1000 # insure bottom of list
 
 IMPLEMENATION_STATUS = {
   NO_ACTIVE_DEV: 'No active development',
@@ -63,6 +64,7 @@ IMPLEMENATION_STATUS = {
   BEHIND_A_FLAG: 'Behind a flag',
   ENABLED_BY_DEFAULT: 'Enabled by default',
   DEPRECATED: 'Deprecated',
+  NO_LONGER_PURSUING: 'No longer pursuing',
   }
 
 MAJOR_NEW_API = 1
@@ -283,8 +285,9 @@ class Feature(DictModel):
       q.order('name')
       features = q.fetch(None)
 
-      features = [f for f in features if f.impl_status_chrome > IN_DEVELOPMENT]
+      features = [f for f in features if (IN_DEVELOPMENT < f.impl_status_chrome < NO_LONGER_PURSUING)]
 
+      # Get no active, in dev, proposed features.
       q = Feature.all()
       q.order('impl_status_chrome')
       q.order('name')
@@ -292,6 +295,15 @@ class Feature(DictModel):
       pre_release = q.fetch(None)
 
       pre_release.extend(features)
+
+      # Get no longer pursuing features.
+      q = Feature.all()
+      q.order('impl_status_chrome')
+      q.order('name')
+      q.filter('impl_status_chrome =', NO_LONGER_PURSUING)
+      no_longer_pursuing = q.fetch(None)
+
+      pre_release.extend(no_longer_pursuing)
 
       feature_list = [f.format_for_template() for f in pre_release]
 

@@ -73,6 +73,7 @@ class MainHandler(common.ContentHandler, common.JSONHandler):
         models.IMPLEMENATION_STATUS[models.IN_DEVELOPMENT],
         ]
       versions.extend(milestones)
+      versions.append(models.IMPLEMENATION_STATUS[models.NO_LONGER_PURSUING])
 
       last_good_idx = 0
       for i, version in enumerate(versions):

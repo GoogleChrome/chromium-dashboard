@@ -18,6 +18,7 @@ for (var i = 0, textarea; textarea = textareas[i]; ++i) {
 var MIN_MILESTONE_TO_BE_ACTIVE = 3;
 var MIN_STD_TO_BE_ACTIVE = 5;
 var NO_PUBLIC_SIGNALS = 5;
+var NO_LONGER_PURSUING = 1000;
 
 var form = document.querySelector('[name="feature_form"]');
 form.addEventListener('change', function(e) {
@@ -43,7 +44,8 @@ function toggleSpecLink(stdStage) {
 }
 
 function toggleMilestones(status) {
-  var disabled = parseInt(status.value) <= MIN_MILESTONE_TO_BE_ACTIVE;
+  var val = parseInt(status.value);
+  var disabled = val <= MIN_MILESTONE_TO_BE_ACTIVE || val == NO_LONGER_PURSUING;
 
   var shippedInputs = document.querySelectorAll('[name^="shipped_"]');
   [].forEach.call(shippedInputs, function(input) {
