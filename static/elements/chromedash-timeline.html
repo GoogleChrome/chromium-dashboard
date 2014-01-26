@@ -33,7 +33,7 @@
       // });
     },
     cssPropertiesChanged: function() {
-      this.asyncMethod(function() {
+      this.async(function() {
         // If there's an id in the URL, load the property it.
         var lastSlash = location.pathname.lastIndexOf('/');
         if (lastSlash > 0) {

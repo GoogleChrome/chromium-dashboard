@@ -139,7 +139,7 @@
     },
     // TODO: WHY ISNT THIS CALLED when .filtered is set!!
     filteredChanged: function() {
-      this.asyncMethod(function() {
+      this.async(function() {
         featureLiList_ = this.shadowRoot.querySelectorAll('li');
       });
     },
