@@ -18,11 +18,12 @@
 <script>
   Polymer('chromedash-feature-timeline', {
     // applyAuthorStyles: true,
-    cssProperties: [],
     selectedBucketId: 1,
     view: '',
     title: '',
     ready: function() {
+      this.cssProperties = [];
+
       // var el = this;
       // this.$.jsapi.addEventListener('polymer-google-jsapi-loaded', function() {
       //   google.load('visualization', '1.0', {packages:['corechart'], callback:
