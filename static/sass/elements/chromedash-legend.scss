@@ -9,21 +9,21 @@
   // position: absolute;
 }
 
-#dialog {
-  width: 600px;
-  @include calc(left, '50% - 600px/2');
-  top: 5%;
+// #dialog {
+//   width: 600px;
+//   @include calc(left, '50% - 600px/2');
+//   top: 5%;
 
-  // top: 100px;
-  // left: 50%;
-  //width: 512px;
-  //margin-left: -256px;
-//  z-index: 1500 !important;
+//   // top: 100px;
+//   // left: 50%;
+//   //width: 512px;
+//   //margin-left: -256px;
+// //  z-index: 1500 !important;
 
-}
-#dialog::x-backdrop {
-  background: rgba(0,0,0,0.4) !important;
-}
+// }
+// #dialog::x-backdrop {
+//   background: rgba(0,0,0,0.4) !important;
+// }
 .dialog {
   box-sizing: border-box;
   overflow: hidden;
@@ -96,7 +96,7 @@ p {
 // }
 
 /* @polyfill .close */
-::-webkit-distributed(.close) {
+::content .close {
   position: absolute;
   right: 15px;
   top: 10px;

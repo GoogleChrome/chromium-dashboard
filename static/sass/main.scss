@@ -13,41 +13,6 @@ body {
   //background: url(../img/bg.png);
 }
 
-h1, h2, h3, h4 {
-  font-weight: 300;
-}
-h1 {
-  font-size: 30px;
-}
-h2, h3, h4 {
-  color: #444;
-}
-h2 {
-  font-size: 25px;
-}
-h3 {
-  font-size: 20px;
-}
-a {
-  color: $chromium-color-center;
-  &:hover {
-    color: $chromium-color-dark;
-  }
-}
-
-b {
-  font-weight: 600;
-}
-
-input:not([type="submit"]), textarea {
-  border: 1px solid $bar-border-color;
-  //box-shadow: 2px 2px 2px #ccc inset;
-
-  &[disabled] {
-    opacity: 0.5;
-  }
-}
-
 header, footer {
   @include display-flex;//@include display-box;
   @include align-items(center);

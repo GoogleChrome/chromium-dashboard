@@ -21,7 +21,7 @@ function testXhrType(type) {
   return 'response' in xhr && xhr.responseType == type;
 }
 
-document.addEventListener('WebComponentsReady', function(e) {
+document.addEventListener('polymer-ready', function(e) {
   // // Add .resolved to all custom elements. This is a hack until :unknown is supported
   // // in browsers and Polymer registers elements using document.register().
   // for (var name in CustomElements.registry) {

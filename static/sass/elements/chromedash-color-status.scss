@@ -9,3 +9,12 @@ span {
   height: 10px; // Default.
   width: 10px; // Default.
 }
+
+:host(.corner) {
+  height: 100%;
+  #status {
+    border-radius: 0;
+    height: 100%; // Ensures we can color coverage when feature is scrolled.
+    width: 7px;
+  }
+}

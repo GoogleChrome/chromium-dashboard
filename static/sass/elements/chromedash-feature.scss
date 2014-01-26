@@ -9,11 +9,10 @@
   // overflow: hidden;
   cursor: pointer;
   @include gradient-bar-bg;
-  margin-bottom: 10px;
-  margin-bottom: 1px;
+  margin-bottom: 1px !important;
   position: relative;
   border-radius: $default-border-radius;
-  padding: 5px 20px;
+  padding: 5px 20px !important;
   list-style: none;
   box-sizing: border-box;
 
@@ -22,25 +21,11 @@
   }
 }
 
-:host(.open:host) {
+:host(.open) {
   // height: 290px;
   // height: auto;
   overflow: auto;
   outline: none;
-}
-
-chromedash-color-status.corner {
-  height: 100% !important;
-  // & ^ #status {
-  //   border-radius: 0 !important;
-  //   height: 100% !important; // Ensures we can color coverage when feature is scrolled.
-  //   width: 7px !important;
-  // }
-  #status {
-    border-radius: 0 !important;
-    height: 100% !important; // Ensures we can color coverage when feature is scrolled.
-    width: 7px !important;
-  }
 }
 
 h2 {

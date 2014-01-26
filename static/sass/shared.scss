@@ -1,0 +1,63 @@
+@import "compass/css3/images";
+@import "compass/css3/text-shadow";
+
+@import "vars";
+
+h1, h2, h3, h4 {
+  font-weight: 300;
+}
+h1 {
+  font-size: 30px;
+}
+h2, h3, h4 {
+  color: #444;
+}
+h2 {
+  font-size: 25px;
+}
+h3 {
+  font-size: 20px;
+}
+a {
+  text-decoration: none;
+  color: $chromium-color-center;
+  &:hover {
+    text-decoration: underline;
+    color: $chromium-color-dark;
+  }
+}
+
+b {
+  font-weight: 600;
+}
+
+input:not([type="submit"]), textarea {
+  border: 1px solid $bar-border-color;
+  //box-shadow: 2px 2px 2px #ccc inset;
+
+  &[disabled] {
+    opacity: 0.5;
+  }
+}
+
+button, .button {
+  display: inline-block;
+  @include background(linear-gradient(#F9F9F9 40%, #E3E3E3 70%));
+  border: 1px solid $gray-2;
+  border-radius: 3px;
+  padding: 5px 8px;
+  outline: none;
+  white-space: nowrap;
+  @include user-select(none);
+  cursor: pointer;
+  @include text-shadow(1px 1px #fff);
+  font-size: 10pt;
+}
+
+button:not(:disabled):hover {
+  border-color: $gray-4;
+}
+
+button:not(:disabled):active {
+  @include background(linear-gradient(#E3E3E3 40%, #F9F9F9 70%));
+}

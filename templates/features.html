@@ -64,7 +64,7 @@ function updateCount(count) {
   $('#num-features').textContent = count;
 }
 
-document.addEventListener('WebComponentsReady', function(e) {
+document.addEventListener('polymer-ready', function(e) {
   var featureList = $('chromedash-featurelist');
   var chromeMetadata = $('chromedash-metadata');
   var overlay = $('chromedash-legend');
