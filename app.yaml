@@ -4,7 +4,7 @@ runtime: python27
 threadsafe: true
 api_version: 1
 
-#default_expiration: "30d"
+# default_expiration: "30s"
 
 builtins:
 - remote_api: on
@@ -29,6 +29,7 @@ handlers:
 
 - url: /static
   static_dir: static
+  #expiration: 30s
   http_headers:
     Access-Control-Allow-Origin: "*"
 

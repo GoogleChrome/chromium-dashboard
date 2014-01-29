@@ -1,7 +1,7 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="chromedash-color-status.html">
 
-<polymer-element name="chromedash-feature" extends="li" attributes="feature needsflag" tabindex="0">
+<polymer-element name="chromedash-feature" extends="li" attributes="feature needsflag" tabindex="0" cache-csstext>
 <template>
 <link rel="stylesheet" type="text/css" href="../css/elements/chromedash-feature.css">
 <div on-click="{{toggle}}"><div class="topcorner pull-right"><span hidden?="{{!deprecated}}" class="tooltip" title="Deprecated feature"><i class="icon-warning-sign" data-tooltip></i></span><span hidden?="{{!needsflag}}" class="tooltip" title="Experimental feature behind a flag."><i class="icon-beaker" data-tooltip></i></span><content select=".edit"></content></div>
