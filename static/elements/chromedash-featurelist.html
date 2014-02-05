@@ -118,7 +118,7 @@
     //   }
     // },
     filterOnCategory: function(val) {
-      var regex = new RegExp(val, 'ig');
+      var regex = new RegExp(val, 'i');
       this.filtered = this.features.filter(function(feature, idx, array) {
         return regex.test(feature.category);
       });
@@ -128,7 +128,7 @@
       return this.filtered.length;
     },
     filterOnOwner: function(val) {
-      var regex = new RegExp(val, 'ig');
+      var regex = new RegExp(val, 'i');
       this.filtered = this.features.filter(function(feature, idx, array) {
         return regex.test(feature.owner.toString());
       });
