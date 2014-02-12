@@ -11,11 +11,11 @@
   Polymer('x-meter', {
     value: 0,
     valueChanged: function() {
-      var MIN = 0.00001;
+      var MIN = 1e-4;
       if (this.value <= MIN) {
-        this.valueFormmatted = '< ' + MIN;
+        this.valueFormmatted = '~0';
       } else {
-        this.valueFormmatted = Number(this.value).toFixed(5);
+        this.valueFormmatted = Number(this.value).toFixed(4);
       }
     }
   });
