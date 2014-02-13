@@ -48,6 +48,7 @@ BIGSTORE_RESTFUL_URI = 'https://uma-dashboards.storage.googleapis.com/'
 
 CSSPROPERITES_BS_HISTOGRAM_ID = str(0xbfd59b316a6c31f1)
 ANIMATIONPROPS_BS_HISTOGRAM_ID = str(0xbee14b73f4fdde73)
+FEATURE_OBSERVER_BS_HISTOGRAM_ID = str(0x2e44945129413683)
 
 # For fetching files from the production BigStore during development.
 OAUTH2_CREDENTIALS_FILENAME = os.path.join(
@@ -59,20 +60,21 @@ class YesterdayHandler(blobstore_handlers.BlobstoreDownloadHandler):
 
   MODEL_CLASS = {
     CSSPROPERITES_BS_HISTOGRAM_ID: models.StableInstance,
-    ANIMATIONPROPS_BS_HISTOGRAM_ID: models.AnimatedProperty
+    ANIMATIONPROPS_BS_HISTOGRAM_ID: models.AnimatedProperty,
+    FEATURE_OBSERVER_BS_HISTOGRAM_ID: models.FeatureObserver,
   }
 
-  def _SaveData(self, data, yesterday, bucket_id):
+  def _SaveData(self, data, yesterday, histogram_id):
     try: 
-      model_class = self.MODEL_CLASS[bucket_id]
+      model_class = self.MODEL_CLASS[histogram_id]
     except Exception, e:
-      logging.error('Invalid CSS property bucket id used: %s' % bucket_id)
+      logging.error('Invalid CSS property bucket id used: %s' % histogram_id)
       return
 
     # Response format is "bucket-bucket+1=hits".
     # Example: 10-11=2175995,11-12=56635467,12-13=2432539420
     #values_list = data['kTempHistograms'][CSSPROPERITES_BS_HISTOGRAM_ID]['b'].split(',')
-    values_list = data['kTempHistograms'][bucket_id]['b'].split(',')
+    values_list = data['kTempHistograms'][histogram_id]['b'].split(',')
 
     #sum_total = int(data['kTempHistograms'][CSSPROPERITES_BS_HISTOGRAM_ID]['s']) # TODO: use this.
     
@@ -94,10 +96,10 @@ class YesterdayHandler(blobstore_handlers.BlobstoreDownloadHandler):
       # beginning_range is our bucket number; the stable CSSPropertyID.
       properties_dict[beginning_range] = int(hits_string)
 
-    # Bucket 1 is total pages visited for stank rank histogram. We're guaranteed
-    # to have it.
+    # For CSSPROPERITES_BS_HISTOGRAM_ID, bucket 1 is total pages visited for
+    # stank rank histogram. We're guaranteed to have it.
     # For other histograms, we have to calculate the total count.
-    if 1 in properties_dict:
+    if 1 in properties_dict and histogram_id == CSSPROPERITES_BS_HISTOGRAM_ID:
       total_pages = properties_dict.get(1)
     else:
       total_pages = sum(properties_dict.values())
@@ -107,7 +109,11 @@ class YesterdayHandler(blobstore_handlers.BlobstoreDownloadHandler):
       # TODO(ericbidelman): Non-matched bucket ids are likely new properties
       # that have been added and need to be updated in uma.py. Find way to
       # autofix these values with the appropriate property_name later.
-      property_name = uma.CSS_PROPERTY_BUCKETS.get(bucket_id, 'ERROR')
+      property_map = uma.CSS_PROPERTY_BUCKETS
+      if histogram_id == FEATURE_OBSERVER_BS_HISTOGRAM_ID:
+        property_map = uma.FEATUREOBSERVER_BUCKETS
+
+      property_name = property_map.get(bucket_id, 'ERROR')
 
       query = model_class.all()
       query.filter('bucket_id = ', bucket_id)
@@ -176,6 +182,7 @@ class YesterdayHandler(blobstore_handlers.BlobstoreDownloadHandler):
 
     if result:
       data = json.loads(result)
+
       for bucket_id in self.MODEL_CLASS.keys():
         self._SaveData(data, yesterday, bucket_id)
 
@@ -190,6 +197,7 @@ class YesterdayHandler(blobstore_handlers.BlobstoreDownloadHandler):
 
     # Attempt to fetch the file from the production BigStore instance.
     url = BIGSTORE_RESTFUL_URI + filename
+
     headers = {
         'x-goog-api-version': '2',
         'Authorization': 'OAuth ' + credentials_json.get('access_token', '')

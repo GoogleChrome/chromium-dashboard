@@ -2,14 +2,14 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="../bower_components/polymer-ajax/polymer-ajax.html">
 
-<polymer-element name="chromedash-feature-timeline" attributes="view timeline">
+<polymer-element name="chromedash-feature-timeline" attributes="type view timeline">
 <template>
   <link rel="stylesheet" type="text/css" href="../css/elements/chromedash-timeline.css">
 
   <!-- <polymer-google-jsapi id="jsapi"></polymer-google-jsapi> -->
   <select value="{{selectedBucketId}}">
     <option disabled value="1">Select a property</option>
-    <option template repeat="{{bucket in cssProperties}}" value="{{bucket.0}}">{{bucket.1}}</option>
+    <option template repeat="{{bucket in properties}}" value="{{bucket.0}}">{{bucket.1}}</option>
   </select>
   <!-- <div id="chart-container" style="width:900px;margin: 0 auto;">   -->
     <div id="chart"></div>
@@ -17,12 +17,12 @@
 </template>
 <script>
   Polymer('chromedash-feature-timeline', {
-    // applyAuthorStyles: true,
     selectedBucketId: 1,
     view: '',
+    type: '',
     title: '',
     ready: function() {
-      this.cssProperties = [];
+      this.properties = [];
 
       // var el = this;
       // this.$.jsapi.addEventListener('polymer-google-jsapi-loaded', function() {
@@ -33,7 +33,7 @@
       //   });
       // });
     },
-    cssPropertiesChanged: function() {
+    propertiesChanged: function() {
       this.async(function() {
         // If there's an id in the URL, load the property it.
         var lastSlash = location.pathname.lastIndexOf('/');
@@ -49,7 +49,7 @@
     },
     selectedBucketIdChanged: function() {
       var ajax = document.createElement('polymer-ajax');
-      ajax.url = '/data/timeline/' + this.view;
+      ajax.url = '/data/timeline/' + this.type + this.view;
       ajax.params = {
         bucket_id: this.selectedBucketId
       };
@@ -61,8 +61,8 @@
 
       if (history.pushState) {
         history.pushState({id: this.selectedBucketId}, '',
-                           '/metrics/css/timeline/' + this.view + '/' +
-                           this.selectedBucketId);
+                           '/metrics/' + this.type + '/timeline/' +
+                           this.view + '/' + this.selectedBucketId);
       }
     },
     drawVisualization: function(data, bucketId) {

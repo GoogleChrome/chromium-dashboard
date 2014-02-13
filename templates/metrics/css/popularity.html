@@ -13,7 +13,7 @@
 
 {% block subheader %}
 <div id="subheader">
-  <h2>CSS usage metrics &gt; all properties > stack rank</h2>
+  <h2>CSS usage &gt; all properties > stack rank</h2>
 </div>
 {% endblock %}
 
@@ -25,7 +25,7 @@
     <h3>About this data</h3>
     <p class="description">We've been using Chrome's <a href="https://chromium.googlesource.com/chromium/blink/+/master/Source/core/frame/UseCounter.cpp" target="_blank">anonymous opt-in usage statistics</a> to count the occurrences of certain CSS features in the wild. The numbers on this page indicate the <b>percentages of Chrome page loads (across all channels and platforms) that use the corresponding CSS property at least once</b>. Data is ~24 hrs old.</p>
   </div>
-  <chromedash-metrics view="popularity"></chromedash-metrics>
+  <chromedash-metrics type="css" view="popularity"></chromedash-metrics>
 </div>
 </section>
 

@@ -41,11 +41,12 @@
       font-family: 'Source Code Pro', sans-serif;
       @include flex(1);
       cursor: pointer;
+      word-wrap: break-word;
 
       &:first-child {
         text-align: right;
         margin-right: 10px;
-        max-width: 175px;
+        // max-width: 175px;
       }
 
       i {

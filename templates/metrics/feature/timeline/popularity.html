@@ -20,23 +20,23 @@
 
 {% block subheader %}
 <div id="subheader">
-  <h2>CSS usage metrics &gt; animated properties > timeline</h2>
+  <h2>HTML &amp; JavaScript usage &gt; all features > timeline</h2>
 </div>
 {% endblock %}
 
 {% block content %}
 <section id="panels">
-<nav>{% include "metrics/_nav.html" %}</nav>
+<nav>{% include "metrics/feature/_nav.html" %}</nav>
 <div class="data-panel">
-  <p class="description">Percentages are the number of times (as the fraction of all animated properties) this property is animated.</p>
-  <chromedash-feature-timeline type="css" view="animated" title="Percentage of times (as the fraction of all animated properties) this property is animated."></chromedash-feature-timeline>
+  <p class="description">Use of HTML/JS features over time.</p>
+  <chromedash-feature-timeline type="feature" view="popularity" title="Percentage of pages surveyed that use this feature"></chromedash-feature-timeline>
 </div>
 </section>
 
 <script>
 document.addEventListener('polymer-ready', function(e) {
   var timeline = $('chromedash-feature-timeline');
-  timeline.properties = {{CSS_PROPERTY_BUCKETS|safe}};
+  timeline.properties = {{FEATUREOBSERVER_BUCKETS|safe}};
 
   window.addEventListener('popstate', function(e) {
     if (e.state) {

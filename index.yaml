@@ -117,6 +117,17 @@ indexes:
     direction: desc
   - name: name
 
+- kind: FeatureObserver
+  properties:
+  - name: bucket_id
+  - name: date
+
+- kind: FeatureObserver
+  properties:
+  - name: date
+  - name: day_percentage
+    direction: desc
+
 - kind: StableInstance
   properties:
   - name: bucket_id

@@ -71,7 +71,16 @@ class AnimatedTimelineHandler(TimelineHandler):
     super(AnimatedTimelineHandler, self).get()
 
 
-class CSSPropertyHandler(common.JSONHandler):
+class FeatureObserverTimelineHandler(TimelineHandler):
+
+  MEMCACHE_KEY = 'featureob_timeline'
+  MODEL_CLASS = models.FeatureObserver
+
+  def get(self):
+    super(FeatureObserverTimelineHandler, self).get()
+
+
+class FeatureHandler(common.JSONHandler):
 
   def get(self):
     properties = memcache.get(self.MEMCACHE_KEY)
@@ -98,30 +107,41 @@ class CSSPropertyHandler(common.JSONHandler):
 
         memcache.set(self.MEMCACHE_KEY, properties, time=CACHE_AGE)
 
-    super(CSSPropertyHandler, self).get(properties)
+    super(FeatureHandler, self).get(properties)
 
 
-class PopularityHandler(CSSPropertyHandler):
+class CSSPopularityHandler(FeatureHandler):
 
   MEMCACHE_KEY = 'css_popularity'
   MODEL_CLASS = models.StableInstance
 
   def get(self):
-    super(PopularityHandler, self).get()
+    super(CSSPopularityHandler, self).get()
 
 
-class AnimatedHandler(CSSPropertyHandler):
+class CSSAnimatedHandler(FeatureHandler):
 
   MEMCACHE_KEY = 'css_animated'
   MODEL_CLASS = models.AnimatedProperty
 
   def get(self):
-    super(AnimatedHandler, self).get()
+    super(CSSAnimatedHandler, self).get()
+
+
+class FeatureObserverPopularityHandler(FeatureHandler):
+
+  MEMCACHE_KEY = 'featureob_popularity'
+  MODEL_CLASS = models.FeatureObserver
+
+  def get(self):
+    super(FeatureObserverPopularityHandler, self).get()
 
 
 app = webapp2.WSGIApplication([
-  ('/data/timeline/animated', AnimatedTimelineHandler),
-  ('/data/timeline/popularity', PopularityTimelineHandler),
-  ('/data/popularity', PopularityHandler),
-  ('/data/animated', AnimatedHandler),
+  ('/data/timeline/cssanimated', AnimatedTimelineHandler),
+  ('/data/timeline/csspopularity', PopularityTimelineHandler),
+  ('/data/timeline/featurepopularity', FeatureObserverTimelineHandler),
+  ('/data/csspopularity', CSSPopularityHandler),
+  ('/data/cssanimated', CSSAnimatedHandler),
+  ('/data/featurepopularity', FeatureObserverPopularityHandler),
 ], debug=settings.DEBUG)

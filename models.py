@@ -198,14 +198,16 @@ class StableInstance(DictModel):
   property_name = db.StringProperty(required=True)
   bucket_id = db.IntegerProperty(required=True)
   date = db.DateProperty(verbose_name='When the data was fetched',
-                             required=True)
+                         required=True)
   #hits = db.IntegerProperty(required=True)
   #total_pages = db.IntegerProperty()
   day_percentage = db.FloatProperty()
   rolling_percentage = db.FloatProperty()
 
-# UMA metrics.
 class AnimatedProperty(StableInstance):
+  pass
+
+class FeatureObserver(StableInstance):
   pass
 
 

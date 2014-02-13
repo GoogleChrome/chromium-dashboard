@@ -25,7 +25,8 @@
 }
 
 .metric-nav {
-  // width: 200px;
+  // min-width: 175px;
+  // @include flex(1 1 175px);
 
   h3 {
     &:not(:first-of-type) {

@@ -29,14 +29,14 @@
 <nav>{% include "metrics/_nav.html" %}</nav>
 <div class="data-panel">
   <p class="description">Use of CSS properties over time.</p>
-  <chromedash-feature-timeline view="popularity" title="Percentage of pages surveyed that use this property"></chromedash-feature-timeline>
+  <chromedash-feature-timeline type="css" view="popularity" title="Percentage of pages surveyed that use this property"></chromedash-feature-timeline>
 </div>
 </section>
 
 <script>
 document.addEventListener('polymer-ready', function(e) {
   var timeline = $('chromedash-feature-timeline');
-  timeline.cssProperties = {{CSS_PROPERTY_BUCKETS|safe}};
+  timeline.properties = {{CSS_PROPERTY_BUCKETS|safe}};
 
   window.addEventListener('popstate', function(e) {
     if (e.state) {

@@ -3,7 +3,7 @@
 <!-- <link rel="import" href="chromedash-color-status.html"> -->
 <link rel="import" href="x-meter.html">
 
-<polymer-element name="chromedash-metrics" attributes="view">
+<polymer-element name="chromedash-metrics" attributes="type view">
 <template>
   <link rel="stylesheet" type="text/css" href="../css/elements/chromedash-metrics.css">
   <polymer-ajax auto url="{{endpoint}}" response="{{properties}}" handleAs="json"></polymer-ajax>
@@ -42,15 +42,17 @@
   }
 
   Polymer('chromedash-metrics', {
-    // applyAuthorStyles: true,
-    properties: [],
+    type: '',
+    ready: function() {
+      this.properties = [];
+    },
     propertiesChanged: function() {
       for (var i = 0, prop; prop = this.properties[i]; ++i) {
         prop.percentage = (prop.day_percentage * 100).toFixed(9);
       }
     },
     get endpoint() {
-      return '/data/' + this.view;
+      return '/data/' + this.type + this.view;
     },
     sortOrders: {
       property_name: {
@@ -75,7 +77,7 @@
       }
     },
     showTimeline: function(e, detail, sender) {
-      window.location.href = '/metrics/css/timeline/' + this.view + '/' + 
+      window.location.href = '/metrics/' + this.type + '/timeline/' + this.view + '/' + 
                              e.target.templateInstance.model.prop.bucket_id;
     }
   });
