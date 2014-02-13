@@ -444,4 +444,6 @@ CSS_PROPERTY_BUCKETS = {
   440: 'column-fill',
   441: 'text-justify',
   442: 'touch-action-delay',
+  443: 'justify-self',
+  444: 'scroll-behavior',
 }
