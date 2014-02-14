@@ -98,9 +98,17 @@ class YesterdayHandler(blobstore_handlers.BlobstoreDownloadHandler):
 
     # For CSSPROPERITES_BS_HISTOGRAM_ID, bucket 1 is total pages visited for
     # stank rank histogram. We're guaranteed to have it.
-    # For other histograms, we have to calculate the total count.
+    # For the FEATURE_OBSERVER_BS_HISTOGRAM_ID, the PageVisits bucket_id is 52
+    # See uma.py. The actual % is calculated from the count / this number.
+    # For ANIMATIONPROPS_BS_HISTOGRAM_ID, we have to calculate the total count.
     if 1 in properties_dict and histogram_id == CSSPROPERITES_BS_HISTOGRAM_ID:
       total_pages = properties_dict.get(1)
+    elif (uma.PAGE_VISITS_BUCKET_ID in properties_dict and
+          histogram_id == FEATURE_OBSERVER_BS_HISTOGRAM_ID):
+      total_pages = properties_dict.get(uma.PAGE_VISITS_BUCKET_ID)
+
+      # Don't include PageVisits results.
+      del properties_dict[uma.PAGE_VISITS_BUCKET_ID]
     else:
       total_pages = sum(properties_dict.values())
 

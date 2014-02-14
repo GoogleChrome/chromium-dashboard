@@ -448,6 +448,8 @@ CSS_PROPERTY_BUCKETS = {
   444: 'scroll-behavior',
 }
 
+PAGE_VISITS_BUCKET_ID = 52 # corresponds to the property below.
+
 # http://src.chromium.org/viewvc/blink/trunk/Source/core/frame/UseCounter.h
 FEATUREOBSERVER_BUCKETS = {
   0: 'PageDestruction',
@@ -498,7 +500,7 @@ FEATUREOBSERVER_BUCKETS = {
   49: 'RequiredAttribute',
   50: 'ResultsAttribute',
   51: 'StepAttribute',
-  52: 'PageVisits',
+  52: 'PageVisits', # counts are divided by this number for actual %
   53: 'HTMLMarqueeElement',
   55: 'Reflection',
   57: 'PrefixedStorageInfo',
