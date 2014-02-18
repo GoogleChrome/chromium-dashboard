@@ -65,7 +65,7 @@ class YesterdayHandler(blobstore_handlers.BlobstoreDownloadHandler):
   }
 
   def _SaveData(self, data, yesterday, histogram_id):
-    try: 
+    try:
       model_class = self.MODEL_CLASS[histogram_id]
     except Exception, e:
       logging.error('Invalid CSS property bucket id used: %s' % histogram_id)
@@ -77,7 +77,7 @@ class YesterdayHandler(blobstore_handlers.BlobstoreDownloadHandler):
     values_list = data['kTempHistograms'][histogram_id]['b'].split(',')
 
     #sum_total = int(data['kTempHistograms'][CSSPROPERITES_BS_HISTOGRAM_ID]['s']) # TODO: use this.
-    
+
     # Stores a hit count for each CSS property (properties_dict[bucket] = hits).
     properties_dict = {}
 
@@ -212,7 +212,7 @@ class YesterdayHandler(blobstore_handlers.BlobstoreDownloadHandler):
         }
     result = urlfetch.fetch(url, headers=headers)
     return (result.content, result.status_code)
-      
+
 
 class FeatureHandler(common.ContentHandler):
 
@@ -293,7 +293,6 @@ class FeatureHandler(common.ContentHandler):
 
     ff_views_link = self.__FullQualifyLink('ff_views_link')
     ie_views_link = self.__FullQualifyLink('ie_views_link')
-    opera_views_link = self.__FullQualifyLink('opera_views_link')
     safari_views_link = self.__FullQualifyLink('safari_views_link')
 
     # Cast incoming milestones to ints.
@@ -301,6 +300,8 @@ class FeatureHandler(common.ContentHandler):
     shipped_android_milestone = self.__ToInt('shipped_android_milestone')
     shipped_ios_milestone = self.__ToInt('shipped_ios_milestone')
     shipped_webview_milestone = self.__ToInt('shipped_webview_milestone')
+    shipped_opera_milestone = self.__ToInt('shipped_opera_milestone')
+    shipped_opera_android_milestone = self.__ToInt('shipped_opera_android_milestone')
 
     owners = self.request.get('owner') or []
     if owners:
@@ -325,14 +326,14 @@ class FeatureHandler(common.ContentHandler):
         feature.shipped_android_milestone = shipped_android_milestone
         feature.shipped_ios_milestone = shipped_ios_milestone
         feature.shipped_webview_milestone = shipped_webview_milestone
+        feature.shipped_opera_milestone = shipped_opera_milestone
+        feature.shipped_opera_android_milestone = shipped_opera_android_milestone
         feature.footprint = int(self.request.get('footprint'))
         feature.visibility = int(self.request.get('visibility'))
         feature.ff_views = int(self.request.get('ff_views'))
         feature.ff_views_link = ff_views_link
         feature.ie_views = int(self.request.get('ie_views'))
         feature.ie_views_link = ie_views_link
-        feature.opera_views = int(self.request.get('opera_views'))
-        feature.opera_views_link = opera_views_link
         feature.safari_views = int(self.request.get('safari_views'))
         feature.safari_views_link = safari_views_link
         feature.prefixed = self.request.get('prefixed') == 'on'
@@ -352,14 +353,14 @@ class FeatureHandler(common.ContentHandler):
           shipped_android_milestone=shipped_android_milestone,
           shipped_ios_milestone=shipped_ios_milestone,
           shipped_webview_milestone=shipped_webview_milestone,
+          shipped_opera_milestone=shipped_opera_milestone,
+          shipped_opera_android_milestone=shipped_opera_android_milestone,
           footprint=int(self.request.get('footprint')),
           visibility=int(self.request.get('visibility')),
           ff_views=int(self.request.get('ff_views')),
           ff_views_link=ff_views_link,
           ie_views=int(self.request.get('ie_views')),
           ie_views_link=ie_views_link,
-          opera_views=int(self.request.get('opera_views')),
-          opera_views_link=opera_views_link,
           safari_views=int(self.request.get('safari_views')),
           safari_views_link=safari_views_link,
           prefixed=self.request.get('prefixed') == 'on',
@@ -373,7 +374,7 @@ class FeatureHandler(common.ContentHandler):
       feature.delete()
       memcache.flush_all()
       return # Bomb out early for AJAX delete. No need for extra redirect below.
-    else: 
+    else:
       key = feature.put()
 
       # TODO(ericbidelman): enumerate and remove only the relevant keys.

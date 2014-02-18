@@ -47,7 +47,7 @@ class BaseHandler(webapp2.RequestHandler):
 class JSONHandler(BaseHandler):
 
   def get(self, data, formatted=False):
-    self.response.headers['Content-Type'] = 'application/json'
+    self.response.headers['Content-Type'] = 'application/json;charset=utf-8'
     if formatted:
       return self.response.write(json.dumps(data))
     else:
@@ -110,7 +110,7 @@ class ContentHandler(BaseHandler):
     # Add common template data to every request.
     self._add_common_template_values(data)
 
-    try: 
+    try:
       self.response.out.write(render_to_string(template_path, data))
     except Exception:
       handle_404(self.request, self.response, Exception)
@@ -136,7 +136,8 @@ class ContentHandler(BaseHandler):
           author_name=unicode(settings.APP_TITLE),
           categories=[f['category']]
           )
-    self.response.headers.add_header('Content-Type', 'application/atom+xml')
+    self.response.headers.add_header('Content-Type',
+      'application/atom+xml;charset=utf-8')
     self.response.out.write(feed.writeString('utf-8'))
 
 
