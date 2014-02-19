@@ -137,16 +137,16 @@ STANDARDIZATION = {
   NO_STD_OR_DISCUSSION: 'No public standards discussion',
   }
 
-DEV_STRONG_POSTIVE = 1
-DEV_POSTIVE = 2
+DEV_STRONG_POSITIVE = 1
+DEV_POSITIVE = 2
 DEV_MIXED_SIGNALS = 3
 DEV_NO_SIGNALS = 4
 DEV_NEGATIVE = 5
 DEV_STRONG_NEGATIVE = 6
 
 WEB_DEV_VIEWS = {
-  DEV_STRONG_POSTIVE: 'Strongly positive',
-  DEV_POSTIVE: 'Positive',
+  DEV_STRONG_POSITIVE: 'Strongly positive',
+  DEV_POSITIVE: 'Positive',
   DEV_MIXED_SIGNALS: 'Mixed signals',
   DEV_NO_SIGNALS: 'No signals',
   DEV_NEGATIVE: 'Negative',

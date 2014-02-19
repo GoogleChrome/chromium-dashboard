@@ -19,12 +19,6 @@
         <template if="{{feature.shipped_android_milestone}}">
           <span class="chrome_android tooltip" title="Chrome for Android"><label><i class="icon-android"></i></label>{{feature.shipped_android_milestone}}</span>
         </template>
-        <template if="{{feature.shipped_opera_milestone}}">
-          <span class="opera_desktop tooltip" title="Opera for desktop"><label>Opera</label>{{feature.shipped_opera_milestone}}</span>
-        </template>
-        <template if="{{feature.shipped_opera_android_milestone}}">
-          <span class="opera_android tooltip" title="Opera for Android"><label>Opera <i class="icon-android"></i></label>{{feature.shipped_opera_android_milestone}}</span>
-        </template>
         <template if="{{feature.shipped_webview_milestone}}">
           <span class="chrome_webview tooltip" title="Chrome Webview"><label>Webview</label>{{feature.shipped_webview_milestone}}</span>
         </template>
@@ -40,6 +34,17 @@
     <section>
       <h3>Consensus &amp; Standardization</h3>
       <div class="views">
+        <span title="{{feature.impl_status_chrome}}">
+          <template if="{{feature.shipped_opera_milestone}}">
+            Opera {{feature.shipped_opera_milestone}}
+          </template>
+        </span>
+        <span title="{{feature.impl_status_chrome}}">
+          <template if="{{feature.shipped_opera_android_milestone}}">
+            Opera for Android
+            {{feature.shipped_opera_android_milestone}}
+          </template>
+        </span>
         <span title="{{feature.ff_views.text}}">
           <chromedash-color-status value="{{feature.ff_views.value}}" max="{{MAX_VENDOR_VIEW}}"></chromedash-color-status>
           <template if="{{feature.ff_views_link}}">
