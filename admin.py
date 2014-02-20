@@ -130,6 +130,7 @@ class YesterdayHandler(blobstore_handlers.BlobstoreDownloadHandler):
       # Only add this entity if one doesn't already exist with the same
       # bucket_id and date.
       if query.count() > 0:
+        logging.info('Cron data was already fetched for this date')
         continue
 
       # TODO(ericbidelman): Calculate a rolling average here
