@@ -482,7 +482,6 @@ class FeatureForm(forms.Form):
   ff_views_link = forms.URLField(required=False, label='',
       help_text='Citation link.')
 
-
   ie_views = forms.ChoiceField(label='IE views',
                                choices=VENDOR_VIEWS.items(),
                                initial=NO_PUBLIC_SIGNALS)

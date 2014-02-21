@@ -125,7 +125,8 @@
       this.open = !this.open;
     },
     calculateCompatRisk: function() {
-      var vendors = (this.feature.ff_views.value + this.feature.ie_views.value +
+      var vendors = (this.feature.ff_views.value +
+                     this.feature.ie_views.value +
                      this.feature.safari_views.value) / 3;
       var webdevs = this.feature.web_dev_views.value;
       var standards = this.feature.standardization.value;

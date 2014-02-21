@@ -2,8 +2,8 @@
 
 var fields = document.querySelectorAll('input, textarea');
 for (var i = 0, input; input = fields[i]; ++i) {
-  fields[i].addEventListener('blur', function(event) {
-    event.target.classList.add('interacted');
+  fields[i].addEventListener('blur', function(e) {
+    e.target.classList.add('interacted');
   });
 }
 
@@ -14,20 +14,20 @@ var NO_PUBLIC_SIGNALS = 5;
 var NO_LONGER_PURSUING = 1000;
 
 var form = document.querySelector('[name="feature_form"]');
-form.addEventListener('change', function(event) {
-  switch (event.target.tagName.toLowerCase()) {
+form.addEventListener('change', function(e) {
+  switch (e.target.tagName.toLowerCase()) {
     case 'select':
-      if (event.target.name.match(/_views$/)) {
-        toggleViewLink(event.target);
-      } else if (event.target.id == 'id_impl_status_chrome') {
-        toggleMilestones(event.target);
-      } else if (event.target.id == 'id_standardization') {
-        toggleSpecLink(event.target)
+      if (e.target.name.match(/_views$/)) {
+        toggleViewLink(e.target);
+      } else if (e.target.id == 'id_impl_status_chrome') {
+        toggleMilestones(e.target);
+      } else if (e.target.id == 'id_standardization') {
+        toggleSpecLink(e.target)
       }
       break;
     case 'input':
-      if (event.target.name == 'shipped_milestone') {
-        fillOperaFields(event.target);
+      if (e.target.name == 'shipped_milestone') {
+        fillOperaFields(e.target);
       }
       break;
     default:
@@ -35,8 +35,8 @@ form.addEventListener('change', function(event) {
   }
 });
 
-var operaDesktop = window.id_shipped_opera_milestone;
-var operaAndroid = window.id_shipped_opera_android_milestone;
+var operaDesktop = document.querySelector('#id_shipped_opera_milestone');
+var operaAndroid = document.querySelector('#id_shipped_opera_android_milestone');
 function fillOperaFields(chromeField) {
   var chromeVersion = chromeField.valueAsNumber;
   if (chromeVersion < 28) {
@@ -51,7 +51,7 @@ function fillOperaFields(chromeField) {
   }
 }
 
-var specLink = window.id_spec_link;
+var specLink = document.querySelector('#id_spec_link');
 function toggleSpecLink(stdStage) {
   specLink.disabled = parseInt(stdStage.value) >= MIN_STD_TO_BE_ACTIVE;
   specLink.parentElement.parentElement.hidden = specLink.disabled;
@@ -67,7 +67,7 @@ function toggleMilestones(status) {
     input.parentElement.parentElement.hidden = input.disabled;
   });
 
-  // var milestone = window.id_shipped_milestone;
+  // var milestone = document.querySelector('#id_shipped_milestone');
   // milestone.disabled = parseInt(status.value) <= MIN_MILESTONE_TO_BE_ACTIVE;
   // milestone.parentElement.parentElement.hidden = milestone.disabled;
 }
@@ -99,12 +99,12 @@ document.addEventListener('DOMContentLoaded', function() {
   owner.type = 'email';
   owner.multiple = true;
 
-  toggleMilestones(window.id_impl_status_chrome);
+  toggleMilestones(document.querySelector('#id_impl_status_chrome'));
   [].forEach.call(document.querySelectorAll('select[name$="_views"]'), toggleViewLink);
 });
 
-document.body.addEventListener('ajaxdeleted', function(event) {
-  if (event.detail.xhr.status == 200) {
+document.body.addEventListener('ajaxdeleted', function(e) {
+  if (e.detail.xhr.status == 200) {
     location.href = '/features';
   }
 });
