@@ -63,7 +63,7 @@ class UserHandler(common.ContentHandler):
       user.put()
 
       self.response.set_status(201, message='Created user')
-      self.response.headers['Content-Type'] = 'application/json'
+      self.response.headers['Content-Type'] = 'application/json;charset=utf-8'
       return self.response.write(json.dumps(user.format_for_template()))
     else:
       self.response.set_status(200, message='User already exists')

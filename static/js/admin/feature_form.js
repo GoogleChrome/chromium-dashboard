@@ -1,15 +1,8 @@
 (function() {
 
-var inputs = document.querySelectorAll('input');
-for (var i = 0, input; input = inputs[i]; ++i) {
-  inputs[i].addEventListener('blur', function(e) {
-    e.target.classList.add('interacted');
-  });
-}
-
-var textareas = document.querySelectorAll('textarea');
-for (var i = 0, textarea; textarea = textareas[i]; ++i) {
-  textareas[i].addEventListener('blur', function(e) {
+var fields = document.querySelectorAll('input, textarea');
+for (var i = 0, input; input = fields[i]; ++i) {
+  fields[i].addEventListener('blur', function(e) {
     e.target.classList.add('interacted');
   });
 }
@@ -22,7 +15,7 @@ var NO_LONGER_PURSUING = 1000;
 
 var form = document.querySelector('[name="feature_form"]');
 form.addEventListener('change', function(e) {
-  switch(e.target.tagName.toLowerCase()) {
+  switch (e.target.tagName.toLowerCase()) {
     case 'select':
       if (e.target.name.match(/_views$/)) {
         toggleViewLink(e.target);
@@ -32,13 +25,34 @@ form.addEventListener('change', function(e) {
         toggleSpecLink(e.target)
       }
       break;
+    case 'input':
+      if (e.target.name == 'shipped_milestone') {
+        fillOperaFields(e.target);
+      }
+      break;
     default:
       break;
   }
 });
 
+var operaDesktop = document.querySelector('#id_shipped_opera_milestone');
+var operaAndroid = document.querySelector('#id_shipped_opera_android_milestone');
+function fillOperaFields(chromeField) {
+  var chromeVersion = chromeField.valueAsNumber;
+  if (chromeVersion < 28) {
+    return;
+  }
+  var operaVersion = chromeVersion - 13; // e.g. Chrome 32 ~ Opera 19
+  if (!operaDesktop.classList.contains('interacted')) {
+    operaDesktop.value = operaVersion;
+  }
+  if (!operaAndroid.classList.contains('interacted')) {
+    operaAndroid.value = operaVersion;
+  }
+}
+
+var specLink = document.querySelector('#id_spec_link');
 function toggleSpecLink(stdStage) {
-  var specLink = document.querySelector('#id_spec_link')
   specLink.disabled = parseInt(stdStage.value) >= MIN_STD_TO_BE_ACTIVE;
   specLink.parentElement.parentElement.hidden = specLink.disabled;
 }
@@ -67,7 +81,7 @@ function toggleViewLink(view) {
   }
 }
 
-document.addEventListener('DOMContentLoaded', function(e) {
+document.addEventListener('DOMContentLoaded', function() {
   // Get around Django rendering input type="text" fields for URLs.
   var inputs = document.querySelectorAll('[name$="_url"], [name$="_link"]');
   [].forEach.call(inputs, function(input) {

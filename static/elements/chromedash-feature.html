@@ -3,7 +3,7 @@
 
 <polymer-element name="chromedash-feature" extends="li" attributes="feature needsflag" tabindex="0" cache-csstext>
 <template>
-<link rel="stylesheet" type="text/css" href="../css/elements/chromedash-feature.css">
+<link rel="stylesheet" href="../css/elements/chromedash-feature.css">
 <div on-click="{{toggle}}"><div class="topcorner pull-right"><span hidden?="{{!deprecated}}" class="tooltip" title="Deprecated feature"><i class="icon-warning-sign" data-tooltip></i></span><span hidden?="{{!needsflag}}" class="tooltip" title="Experimental feature behind a flag."><i class="icon-beaker" data-tooltip></i></span><content select=".edit"></content></div>
   <hgroup>
     <chromedash-color-status class="tooltip corner" title="Compatiblity Risk: overall interest from browser vendors and web developers" value="{{compatRisk}}" max="{{MAX_RISK}}"></chromedash-color-status>
@@ -34,6 +34,17 @@
     <section>
       <h3>Consensus &amp; Standardization</h3>
       <div class="views">
+        <span title="{{feature.impl_status_chrome}}">
+          <template if="{{feature.shipped_opera_milestone}}">
+            Opera {{feature.shipped_opera_milestone}}
+          </template>
+        </span>
+        <span title="{{feature.impl_status_chrome}}">
+          <template if="{{feature.shipped_opera_android_milestone}}">
+            Opera for Android
+            {{feature.shipped_opera_android_milestone}}
+          </template>
+        </span>
         <span title="{{feature.ff_views.text}}">
           <chromedash-color-status value="{{feature.ff_views.value}}" max="{{MAX_VENDOR_VIEW}}"></chromedash-color-status>
           <template if="{{feature.ff_views_link}}">
@@ -54,13 +65,6 @@
             <a href="{{feature.safari_views_link}}" target="_blank">Safari</a>
           </template>
           <label hidden?="{{feature.safari_views_link}}">Safari</label>
-        </span>
-        <span title="{{feature.opera_views.text}}">
-          <chromedash-color-status value="{{feature.opera_views.value}}" max="{{MAX_VENDOR_VIEW}}"></chromedash-color-status>
-          <template if="{{feature.opera_views_link}}">
-            <a href="{{feature.opera_views_link}}" target="_blank">Opera</a>
-          </template>
-          <label hidden?="{{feature.opera_views_link}}">Opera</label>
         </span>
         <span title="{{feature.web_dev_views.text}}">
           <chromedash-color-status value="{{feature.web_dev_views.value}}" max="{{MAX_WEBDEV_VIEW}}"></chromedash-color-status>
@@ -121,9 +125,9 @@
       this.open = !this.open;
     },
     calculateCompatRisk: function() {
-      var vendors = (this.feature.ff_views.value + this.feature.ie_views.value +
-                     this.feature.safari_views.value +
-                     this.feature.opera_views.value) / 4;
+      var vendors = (this.feature.ff_views.value +
+                     this.feature.ie_views.value +
+                     this.feature.safari_views.value) / 3;
       var webdevs = this.feature.web_dev_views.value;
       var standards = this.feature.standardization.value;
 

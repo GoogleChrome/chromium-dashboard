@@ -5,7 +5,7 @@
 {% endblock %}
 
 {% block css %}
-<link rel="stylesheet" type="text/css" href="/static/css/forms.css">
+<link rel="stylesheet" href="/static/css/forms.css">
 <style>
 a[is="delete-link"] {
   margin-left: 20px;
@@ -25,11 +25,11 @@ a[is="delete-link"] {
 {% block content %}
 <section>
   <form name="feature_form" method="POST" action="{{current_path}}">
-      <table>
-        {{ feature_form }}
-        <tr><td colspan="2"><input type="submit" value="Submit"></td></tr>
-      </table>
-    </form>
+    <table>
+      {{ feature_form }}
+      <tr><td colspan="2"><input type="submit" value="Submit"></td></tr>
+    </table>
+  </form>
 </section>
 
 {% endblock %}

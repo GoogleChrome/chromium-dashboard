@@ -3,7 +3,7 @@
 
 <polymer-element name="chromedash-featurelist" attributes="whitelisted features">
 <template>
-  <link rel="stylesheet" type="text/css" href="../css/elements/chromedash-featurelist.css">
+  <link rel="stylesheet" href="../css/elements/chromedash-featurelist.css">
   <ul>
     <template repeat="{{feature in filtered}}">
       <div hidden?="{{(filtered.length != features.length) || !feature.first_of_milestone}}" class="milestone-marker">{{feature.meta.milestone_str}}</div>
