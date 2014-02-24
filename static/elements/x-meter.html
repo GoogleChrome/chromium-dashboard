@@ -3,19 +3,28 @@
 <polymer-element name="x-meter" attributes="value">
 <template>
   <link rel="stylesheet" type="text/css" href="../css/elements/x-meter.css">
-  <div class="meter">
+  <div class="meter" id="meter" title="{{helpText}}">
     <div style="width:{{value}}%">{{valueFormmatted}}%</div>
   </div>
 </template>
 <script>
   Polymer('x-meter', {
     value: 0,
+    helpText: '',
     valueChanged: function() {
-      var MIN = 1e-4;
-      if (this.value <= MIN) {
+      var MIN_VAL = 1e-4;
+      if (this.value <= MIN_VAL) {
         this.valueFormmatted = '~0';
       } else {
         this.valueFormmatted = Number(this.value).toFixed(4);
+      }
+
+      this.value = Number(this.value).toFixed(4);
+
+      var MIN_FOR_AT_RISK = 0.03;
+      if (this.value <= MIN_FOR_AT_RISK) {
+        this.$.meter.classList.add('atrisk');
+        this.helpText = 'This feature may be at risk for removal. Usage is <= ' + MIN_FOR_AT_RISK + '%.';
       }
     }
   });
