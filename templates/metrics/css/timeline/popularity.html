@@ -36,7 +36,7 @@
 <script>
 document.addEventListener('polymer-ready', function(e) {
   var timeline = $('chromedash-feature-timeline');
-  timeline.properties = {{CSS_PROPERTY_BUCKETS|safe}};
+  timeline.props = {{CSS_PROPERTY_BUCKETS|safe}};
 
   window.addEventListener('popstate', function(e) {
     if (e.state) {

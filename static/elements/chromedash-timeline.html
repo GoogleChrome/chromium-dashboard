@@ -9,7 +9,7 @@
   <!-- <polymer-google-jsapi id="jsapi"></polymer-google-jsapi> -->
   <select value="{{selectedBucketId}}">
     <option disabled value="1">Select a property</option>
-    <option template repeat="{{bucket in properties}}" value="{{bucket.0}}">{{bucket.1}}</option>
+    <option template repeat="{{bucket in props}}" value="{{bucket.0}}">{{bucket.1}}</option>
   </select>
   <!-- <div id="chart-container" style="width:900px;margin: 0 auto;">   -->
     <div id="chart"></div>
@@ -22,7 +22,7 @@
     type: '',
     title: '',
     ready: function() {
-      this.properties = [];
+      this.props = [];
 
       // var el = this;
       // this.$.jsapi.addEventListener('polymer-google-jsapi-loaded', function() {
@@ -33,7 +33,7 @@
       //   });
       // });
     },
-    propertiesChanged: function() {
+    propsChanged: function() {
       this.async(function() {
         // If there's an id in the URL, load the property it.
         var lastSlash = location.pathname.lastIndexOf('/');

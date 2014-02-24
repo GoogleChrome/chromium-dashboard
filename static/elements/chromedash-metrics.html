@@ -6,17 +6,17 @@
 <polymer-element name="chromedash-metrics" attributes="type view">
 <template>
   <link rel="stylesheet" type="text/css" href="../css/elements/chromedash-metrics.css">
-  <polymer-ajax auto url="{{endpoint}}" response="{{properties}}" handleAs="json"></polymer-ajax>
-  <b>Showing {{properties.length}} properties</b>
+  <polymer-ajax auto url="{{endpoint}}" response="{{props}}" handleAs="json"></polymer-ajax>
+  <b>Showing {{props.length}} properties</b>
   <ol id="stack-rank-list">
     <li class="header">
       <label on-click="{{sort}}" data-order="property_name">Name <i class="icon-long-arrow-{{sortOrders.property_name.reverse ? 'up' : 'down'}} {{ {activated: sortOrders.property_name.activated} | tokenList }}"></i></label>
       <label on-click="{{sort}}" data-order="percentage" class="flex2">Percentage <i class="icon-long-arrow-{{sortOrders.percentage.reverse ? 'down' : 'up'}} {{ {activated: sortOrders.percentage.activated} | tokenList }}"></i></label>
     </li>
-    <template if="{{!properties.length}}">
+    <template if="{{!props.length}}">
       <li class="loading">Loading...</li>
     </template>
-    <template repeat="{{prop in properties}}">
+    <template repeat="{{prop in props}}">
       <li hidden?="{{prop.property_name == 'ERROR'}}" tabindex="0">
         <label on-click="{{showTimeline}}" title="Click to see a timeline view of this property">{{prop.property_name}}</label>
         <x-meter value="{{prop.percentage}}"></x-meter>
@@ -44,10 +44,10 @@
   Polymer('chromedash-metrics', {
     type: '',
     ready: function() {
-      this.properties = [];
+      this.props = [];
     },
-    propertiesChanged: function() {
-      for (var i = 0, prop; prop = this.properties[i]; ++i) {
+    propsChanged: function() {
+      for (var i = 0, prop; prop = this.props[i]; ++i) {
         prop.percentage = (prop.day_percentage * 100).toFixed(9);
       }
     },
@@ -69,11 +69,11 @@
 
       var order = sender.dataset.order;
 
-      sortBy_(order, this.properties, order == 'percentage');
+      sortBy_(order, this.props, order == 'percentage');
       this.sortOrders[order].activated = true;
       this.sortOrders[order].reverse = !this.sortOrders[order].reverse;
       if (this.sortOrders[order].reverse) {
-        this.properties.reverse();
+        this.props.reverse();
       }
     },
     showTimeline: function(e, detail, sender) {
