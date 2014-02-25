@@ -137,16 +137,16 @@ STANDARDIZATION = {
   NO_STD_OR_DISCUSSION: 'No public standards discussion',
   }
 
-DEV_STRONG_POSTIVE = 1
-DEV_POSTIVE = 2
+DEV_STRONG_POSITIVE = 1
+DEV_POSITIVE = 2
 DEV_MIXED_SIGNALS = 3
 DEV_NO_SIGNALS = 4
 DEV_NEGATIVE = 5
 DEV_STRONG_NEGATIVE = 6
 
 WEB_DEV_VIEWS = {
-  DEV_STRONG_POSTIVE: 'Strongly positive',
-  DEV_POSTIVE: 'Positive',
+  DEV_STRONG_POSITIVE: 'Strongly positive',
+  DEV_POSITIVE: 'Positive',
   DEV_MIXED_SIGNALS: 'Mixed signals',
   DEV_NO_SIGNALS: 'No signals',
   DEV_NEGATIVE: 'Negative',
@@ -233,8 +233,6 @@ class Feature(DictModel):
                      'text': VENDOR_VIEWS[self.ie_views]}
     d['safari_views'] = {'value': self.safari_views,
                          'text': VENDOR_VIEWS[self.safari_views]}
-    d['opera_views'] = {'value': self.opera_views,
-                        'text': VENDOR_VIEWS[self.opera_views]}
     d['standardization'] = {'value': self.standardization,
                             'text': STANDARDIZATION[self.standardization]}
     d['web_dev_views'] = {'value': self.web_dev_views,
@@ -331,6 +329,8 @@ class Feature(DictModel):
   shipped_android_milestone = db.IntegerProperty()
   shipped_ios_milestone = db.IntegerProperty()
   shipped_webview_milestone = db.IntegerProperty()
+  shipped_opera_milestone = db.IntegerProperty()
+  shipped_opera_android_milestone = db.IntegerProperty()
 
   owner = db.ListProperty(db.Email)
   footprint = db.IntegerProperty()
@@ -345,12 +345,10 @@ class Feature(DictModel):
 
   ff_views = db.IntegerProperty(required=True, default=NO_PUBLIC_SIGNALS)
   ie_views = db.IntegerProperty(required=True, default=NO_PUBLIC_SIGNALS)
-  opera_views = db.IntegerProperty(required=True, default=NO_PUBLIC_SIGNALS)
   safari_views = db.IntegerProperty(required=True, default=NO_PUBLIC_SIGNALS)
 
   ff_views_link = db.LinkProperty()
   ie_views_link = db.LinkProperty()
-  opera_views_link = db.LinkProperty()
   safari_views_link = db.LinkProperty()
 
   # Web dev details.
@@ -425,16 +423,22 @@ class FeatureForm(forms.Form):
   #shipped_milestone = PlaceholderCharField(required=False,
   #                                         placeholder='First milestone the feature shipped with this status (either enabled by default or experimental)')
   shipped_milestone = forms.IntegerField(required=False, label='',
-      help_text='Desktop: ' + SHIPPED_HELP_TXT)
+      help_text='Chrome for desktop: ' + SHIPPED_HELP_TXT)
 
   shipped_android_milestone = forms.IntegerField(required=False, label='',
-      help_text='Android: ' + SHIPPED_HELP_TXT)
+      help_text='Chrome for Android: ' + SHIPPED_HELP_TXT)
 
   shipped_ios_milestone = forms.IntegerField(required=False, label='',
-      help_text='iOS: ' + SHIPPED_HELP_TXT)
+      help_text='Chrome for iOS: ' + SHIPPED_HELP_TXT)
 
   shipped_webview_milestone = forms.IntegerField(required=False, label='',
-      help_text='Web view: ' + SHIPPED_HELP_TXT)
+      help_text='Chrome for Android web view: ' + SHIPPED_HELP_TXT)
+
+  shipped_opera_milestone = forms.IntegerField(required=False, label='',
+      help_text='Opera for desktop: ' + SHIPPED_HELP_TXT)
+
+  shipped_opera_android_milestone = forms.IntegerField(required=False, label='',
+      help_text='Opera for Android: ' + SHIPPED_HELP_TXT)
 
   prefixed = forms.BooleanField(
       required=False, initial=False, label='Prefixed?')
@@ -478,17 +482,10 @@ class FeatureForm(forms.Form):
   ff_views_link = forms.URLField(required=False, label='',
       help_text='Citation link.')
 
-
   ie_views = forms.ChoiceField(label='IE views',
                                choices=VENDOR_VIEWS.items(),
                                initial=NO_PUBLIC_SIGNALS)
   ie_views_link = forms.URLField(required=False, label='',
-      help_text='Citation link.')
-
-  opera_views = forms.ChoiceField(label='Opera views',
-                                  choices=VENDOR_VIEWS.items(),
-                                  initial=NO_PUBLIC_SIGNALS)
-  opera_views_link = forms.URLField(required=False, label='',
       help_text='Citation link.')
 
   comments = forms.CharField(label='', required=False, widget=forms.Textarea(
