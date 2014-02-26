@@ -446,6 +446,7 @@ CSS_PROPERTY_BUCKETS = {
   442: 'touch-action-delay',
   443: 'justify-self',
   444: 'scroll-behavior',
+  445: 'will-change',
 }
 
 PAGE_VISITS_BUCKET_ID = 52 # corresponds to the property below.
