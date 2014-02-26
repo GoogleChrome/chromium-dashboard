@@ -699,4 +699,11 @@ FEATUREOBSERVER_BUCKETS = {
   266: 'PrefixedPutImageDataHD',
   267: 'PrefixedImageSmoothingEnabled',
   268: 'UnprefixedImageSmoothingEnabled',
+  269: 'ShadowRootApplyAuthorStyles',
+  270: 'PromiseConstructor',
+  271: 'PromiseCast',
+  272: 'PromiseReject',
+  273: 'PromiseResolve',
+  274: 'TextAutosizing',
+  275: 'TextAutosizingLayout',
 }
