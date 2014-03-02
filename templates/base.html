@@ -53,30 +53,8 @@
 <link rel="apple-touch-icon" href="/static/img/chromium-128.png">
 <link rel="apple-touch-icon-precomposed" href="/static/img/chromium-128.png">
 
-<!--
-<script>
-// Force ShadowDOM polyfill for Chrome 28. Style recalcs in native SD
-// perform horribly. Chrome 29 fixes the issues.
-var uaParts = navigator.userAgent.match('Chrome/(.*) ');
-if (uaParts) {
-  var chromeVersion = parseInt(uaParts[1]);
-  if (chromeVersion < 29) {
-    Platform = {flags: {shadow: 'polyfill'}};
-    document.documentElement.classList.add('polyfill');
-  }
-}
-</script>
- -->
-
 <script src="/static/bower_components/platform/platform.js"></script>
-<!-- <script src="/static/js/polymer-all/polymer/polymer.js" debug></script> -->
-<!-- Elements import polymer.html, but insure it is loaded. -->
-<link rel="import" href="/static/bower_components/polymer/polymer.html">
-
-<!-- TODO: test this possible perf optimization for polyfill.
-<script>
-Platform.ShadowCSS.strictStyling = true;
-</script>-->
+<link rel="import" href="/static/elements/elements.vulcanized.html">
 
 <!-- <script src="/static/js/smoothscroll/dist/smoothscroll.js"></script> -->
 <!-- <script src="/static/js/bower_components/smoothscroll/smoothscroll.js"></script>  -->
