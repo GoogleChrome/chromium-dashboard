@@ -6,4 +6,4 @@
 *oauth2.data
 node_modules
 *bower_components
-*.vulcanized.html
+*.vulcanize.html

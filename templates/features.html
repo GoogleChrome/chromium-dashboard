@@ -1,21 +1,19 @@
 {% extends "base.html" %}
 
 {% block html_imports %}
-  <link rel="import" href="/static/elements/chromedash-featurelist.html">
-  <link rel="import" href="/static/elements/chromedash-metadata.html">
-  <link rel="import" href="/static/elements/chromedash-legend.html">
+  <link rel="import" href="/static/elements/features-imports{% if VULCANIZE %}.vulcanize{% endif %}.html">
 {% endblock %}
 
 {% block rss %}
-<link href="features.xml" rel="alternate" type="application/rss+xml" title="All features" />
+<link rel="alternate" type="application/rss+xml" href="features.xml" title="All features" />
 {% for k,v in categories %}
-<link href="features.xml?category={{v}}" rel="alternate" type="application/rss+xml" title='"{{k}}" features' />
+<link rel="alternate" type="application/rss+xml" href="features.xml?category={{v}}" title='"{{k}}" features'>
 {% endfor %}
 
 {% endblock %}
 
 {% block css %}
-<link rel="stylesheet" href="/static/css/features/features.css?2013-08-07">
+<link rel="stylesheet" href="/static/css/features/features.css?2014-03-19">
 {% endblock %}
 
 {% block subheader %}
@@ -99,23 +97,18 @@ document.addEventListener('polymer-ready', function(e) {
   };
   xhr.send();
 
-  // Alternatively for xhr, fill data from server by including it directly in template.
-  //featureList.features = {{features|safe}};
-
-  // Setup inside of chromedash-metadata.html
-  // chromeMetadata.addEventListener('milestoneselect', function(e) {
-  //   featureList.scrollToMilestone(e.detail.version);
-  // });
+  // // Alternatively to xhr, fill data from server by including it directly
+  // in the template. Note: this slows down window.onload by 800ms, which is
+  // why we're not doing it.
+  // featureList.features = {{features|safe}};
+  // featureList.metadata = chromeMetadata; // Feature list needs access to the selected milestone.
+  // updateCount(featureList.features.length); // Set initial # features showing.
+  // search.disabled = false;
 
   featureList.addEventListener('filter-category', function(e) {
     search.value = 'category: ' + e.detail.val;
     updateCount(featureList.filter(search.value));
   });
-
-  // Setup inside of chromedash-featurelist.html
-  // featureList.addEventListener('scroll', function(e) {
-  //   chromeMetadata.selectMilestone(this.featureInView(e.target.scrollTop));
-  // });
 
   featureList.addEventListener('filter-owner', function(e) {
     search.value = 'owner: ' + e.detail.val;

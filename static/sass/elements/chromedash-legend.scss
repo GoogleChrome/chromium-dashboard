@@ -95,8 +95,8 @@ p {
 //   //opacity: 0;
 // }
 
-/* @polyfill .close */
-::content .close {
+polyfill-next-selector { content: ':host .close'; }
+* /content/ .close {
   position: absolute;
   right: 15px;
   top: 10px;

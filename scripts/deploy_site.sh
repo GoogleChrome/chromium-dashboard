@@ -11,7 +11,9 @@
 # The directory in which this script resides.
 readonly BASEDIR=$(dirname $BASH_SOURCE)
 
-vulcanize $BASEDIR/../static/elements/elements.html -o $BASEDIR/../static/elements/elements.vulcanized.html
+# vulcanize $BASEDIR/../static/elements/elements.html -o $BASEDIR/../static/elements/elements.vulcanized.html --config vulcanize_config.json
+
+grunt
 
 $BASEDIR/oauthtoken.sh deploy
 appcfg.py update --oauth2 $BASEDIR/../

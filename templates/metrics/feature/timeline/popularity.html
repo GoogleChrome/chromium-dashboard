@@ -6,7 +6,7 @@
 {% endblock %}
 
 {% block html_imports %}
-  <link rel="import" href="/static/elements/chromedash-timeline.html">
+  <link rel="import" href="/static/elements/metrics-imports{% if VULCANIZE %}.vulcanize{% endif %}.html">
 {% endblock %}
 
 {% block js %}

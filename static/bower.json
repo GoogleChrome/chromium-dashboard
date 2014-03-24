@@ -21,6 +21,7 @@
   ],
   "dependencies": {
     "platform": "Polymer/platform#master",
+    "polymer": "Polymer/polymer#master",
     "polymer-elements": "Polymer/polymer-elements#master"
   }
 }

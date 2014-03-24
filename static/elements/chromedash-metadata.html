@@ -4,60 +4,65 @@
 <polymer-element name="chromedash-metadata">
 <template>
   <link rel="stylesheet" href="../css/elements/chromedash-metadata.css">
-  <polymer-jsonp id="jsonp" url="//omahaproxy.appspot.com/all.json?callback=" auto></polymer-jsonp>
+  <polymer-jsonp auto url="//omahaproxy.appspot.com/all.json?callback=" on-polymer-response="{{onResponse}}"></polymer-jsonp>
   <ul class="{{ {canaryisdev: canaryIsDev, betaisdev: betaIsDev} | tokenList }}">
     <template repeat="{{v in versions}}">
       <li data-version="{{v}}" on-click="{{selectMilestone}}" selected?="{{v == selected}}">{{v}}</li>
     </template>
   </ul>
+  <div hidden?="{{!fetchError}}" class="error">Error fetching Chrome version information.</div>
 </template>
 <script>
   Polymer('chromedash-metadata', {
-    //applyAuthorStyles: true,
     selected: null,
     canaryIsDev: false,
     betaIsDev: false,
+    fetchError: false,
     ready: function() {
       this.implStatuses = this.implStatuses || {};
       this.STATUS = this.STATUS || {};
+      this.channels = this.channels || {};
+      this.versions = this.versions || [];
+    },
+    onResponse: function(e, detail, sender) {
+      if (detail.response.type == 'error') {
+        this.fetchError = true;
+        return;
+      }
 
       // TODO(ericbidelman): Share this data across instances.
-      this.addEventListener('polymer-response', function(e) {
-        var windowsVersions = e.detail.response[0];
 
-        this.channels = {};
+      var windowsVersions = detail.response[0];
 
-        for (var i = 0, el; el = windowsVersions.versions[i]; ++i) {
-          // Include previous version if current is foobar'd.
-          this.channels[el.channel] = parseInt(el.version) ||
-                                      parseInt(el.prev_version);
-        }
+      for (var i = 0, el; el = windowsVersions.versions[i]; ++i) {
+        // Include previous version if current is foobar'd.
+        this.channels[el.channel] = parseInt(el.version) ||
+                                    parseInt(el.prev_version);
+      }
 
-        // Dev channel explicitly left out. Treat same as canary.
-        this.versions = [
-          this.implStatuses[this.STATUS.NO_ACTIVE_DEV - 1].val,
-          this.implStatuses[this.STATUS.PROPOSED - 1].val,
-          this.implStatuses[this.STATUS.IN_DEVELOPMENT - 1].val,
-          this.channels.canary, this.channels.dev, this.channels.beta,
-          this.channels.stable
-        ];
+      // Dev channel explicitly left out. Treat same as canary.
+      this.versions = [
+        this.implStatuses[this.STATUS.NO_ACTIVE_DEV - 1].val,
+        this.implStatuses[this.STATUS.PROPOSED - 1].val,
+        this.implStatuses[this.STATUS.IN_DEVELOPMENT - 1].val,
+        this.channels.canary, this.channels.dev, this.channels.beta,
+        this.channels.stable
+      ];
 
-        // Consolidate channels if they're the same.
-        if (this.channels.canary == this.channels.dev) {
-          this.versions.splice(4, 1);
-          this.canaryIsDev = true;
-        } else if (this.channels.dev == this.channels.beta) {
-          this.versions.splice(5, 1);
-          this.betaIsDev = true;
-        }
+      // Consolidate channels if they're the same.
+      if (this.channels.canary == this.channels.dev) {
+        this.versions.splice(4, 1);
+        this.canaryIsDev = true;
+      } else if (this.channels.dev == this.channels.beta) {
+        this.versions.splice(5, 1);
+        this.betaIsDev = true;
+      }
 
-        for (var i = this.channels.stable - 1; i >= 1; i--) {
-          this.versions.push(i);
-        }
+      for (var i = this.channels.stable - 1; i >= 1; i--) {
+        this.versions.push(i);
+      }
 
-        this.versions.push(this.implStatuses[this.implStatuses.length - 1].val);
-
-      });
+      this.versions.push(this.implStatuses[this.implStatuses.length - 1].val);
     },
     selectMilestone: function(e, details, sender) {
       if (details) { // Came from an internal click.

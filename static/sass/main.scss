@@ -2,6 +2,11 @@
 @import "compass/css3/images";
 @import "compass/css3/transition";
 
+// @import url("//fonts.googleapis.com/css?family=Open+Sans:300,300italic,600,800|Source+Code+Pro:400,600");
+
+// @import "../css/font-awesome/font-awesome.css";
+@import "font-awesome/font-awesome.scss";
+
 html, body {
   height: 100%;
 }
@@ -300,3 +305,7 @@ footer {
 //     padding: 15px;
 //   }
 // }
+
+// @import "features/features.scss"; // Inline features.css to remove 1 request on homepage.
+// @import "metrics/metrics.scss";
+

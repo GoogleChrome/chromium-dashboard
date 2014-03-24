@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block html_imports %}
-  <link rel="import" href="/static/elements/delete-link.html">
+  <link rel="import" href="/static/elements/admin-imports{% if VULCANIZE %}.vulcanize{% endif %}.html">
 {% endblock %}
 
 {% block css %}

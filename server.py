@@ -84,6 +84,10 @@ class MainHandler(common.ContentHandler, common.JSONHandler):
     except Exception as e:
       logging.error(e)
 
+  def __get_feature_list(self):
+    feature_list = models.Feature.get_chronological() # Memcached
+    return self.__annotate_first_of_milestones(feature_list)
+
   def get(self, path, feature_id=None):
     # Default to features page.
     # TODO: remove later when we want an index.html
@@ -103,8 +107,7 @@ class MainHandler(common.ContentHandler, common.JSONHandler):
 
     if path.startswith('features'):
       if path.endswith('.json'): # JSON request.
-        feature_list = models.Feature.get_chronological() # Memcached
-        self.__annotate_first_of_milestones(feature_list)
+        feature_list = self.__get_feature_list()
         return common.JSONHandler.get(self, feature_list, formatted=True)
       elif path.endswith('.xml'): # Atom feed request.
         filterby = None
@@ -124,11 +127,16 @@ class MainHandler(common.ContentHandler, common.JSONHandler):
 
         return self.render_atom_feed('Features', feature_list)
       else:
-        #feature_list = models.Feature.get_chronological() # Memcached
+        # if settings.PROD: 
+        #   feature_list = self.__get_feature_list()
+        # else:
+        #   result = urlfetch.fetch(
+        #     self.request.scheme + '://' + self.request.host +
+        #     '/static/js/mockdata.json')
+        #   feature_list = json.loads(result.content)
 
-        #self.__annotate_first_of_milestones(feature_list)
+        # template_data['features'] = json.dumps(feature_list)
 
-        #template_data['features'] = json.dumps(feature_list)
         template_data['categories'] = [
           (v, normalized_name(v)) for k,v in
           models.FEATURE_CATEGORIES.iteritems()]

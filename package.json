@@ -1,0 +1,9 @@
+{
+  "name": "chromestatus-dashboard",
+  "version": "0.0.1",
+  "devDependencies": {
+    "grunt": "*",
+    "grunt-vulcanize": "*",
+    "load-grunt-tasks": "*"
+  }
+}

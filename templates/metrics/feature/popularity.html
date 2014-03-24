@@ -8,7 +8,7 @@
 {% endblock %}
 
 {% block html_imports %}
-  <link rel="import" href="/static/elements/chromedash-metrics.html">
+  <link rel="import" href="/static/elements/metrics-imports{% if VULCANIZE %}.vulcanize{% endif %}.html">
 {% endblock %}
 
 {% block subheader %}

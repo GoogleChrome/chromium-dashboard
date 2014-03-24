@@ -82,7 +82,8 @@ class ContentHandler(BaseHandler):
     template_data = {
       'prod': settings.PROD,
       'APP_TITLE': settings.APP_TITLE,
-      'current_path': self.request.path
+      'current_path': self.request.path,
+      'VULCANIZE': settings.VULCANIZE
       }
 
     user = users.get_current_user()

@@ -6,7 +6,7 @@
 {% endblock %}
 
 {% block html_imports %}
-  <link rel="import" href="/static/elements/chromedash-userlist.html">
+  <link rel="import" href="/static/elements/admin-imports{% if VULCANIZE %}.vulcanize{% endif %}.html">
 {% endblock %}
 
 {% block subheader %}
@@ -25,7 +25,7 @@
 
 {% block js %}
 <script>
-document.addEventListener('WebComponentsReady', function(e) {
+document.addEventListener('polymer-ready', function(e) {
   var el = document.querySelector('chromedash-userlist');
   el.users = {{users|safe}}; // Filled from server.
 });

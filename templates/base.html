@@ -36,11 +36,7 @@
 <title>{{ APP_TITLE }}</title>
 <link rel="shortcut icon" href="/static/img/chromium-128.png">
 <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Open+Sans:300,300italic,600,800|Source+Code+Pro:400,600">
-<link rel="stylesheet" href="/static/css/main.css?2014-01-08">
-<link rel="stylesheet" href="/static/css/font-awesome/font-awesome.css">
-
-{% block rss %}{% endblock%}
-
+<link rel="stylesheet" href="/static/css/main.css?2014-03-19">
 {% block css %}{% endblock %}
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
@@ -54,15 +50,13 @@
 <link rel="apple-touch-icon-precomposed" href="/static/img/chromium-128.png">
 
 <script src="/static/bower_components/platform/platform.js"></script>
-<link rel="import" href="/static/bower_components/polymer/polymer.html">
-<!-- <link rel="import" href="/static/elements/elements.html"> -->
-
 <!-- <script src="/static/js/smoothscroll/dist/smoothscroll.js"></script> -->
 <!-- <script src="/static/js/bower_components/smoothscroll/smoothscroll.js"></script>  -->
 
 {% block html_imports %}{% endblock %}
-</head>
 
+{% block rss %}{% endblock%}
+</head>
 <body>
 
 <div id="container">
@@ -75,18 +69,27 @@
 </div>
 
 {% block js %}{% endblock %}
-<script src="/static/js/app.js"></script>
+<!-- <script src="/static/js/app.js"></script> -->
 <script>
-  var _gaq = _gaq || [];
-  _gaq.push(['_setAccount', 'UA-39048143-1']);
-  _gaq.push(['_setDomainName', 'chromestatus.com']);
-  _gaq.push(['_trackPageview']);
+// Contents of app.js
+var $ = function(selector) {
+  return document.querySelector(selector);
+};
 
-  (function() {
-    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-  })();
+var $$ = function(selector) {
+  return document.querySelectorAll(selector);
+};
+
+var _gaq = _gaq || [];
+_gaq.push(['_setAccount', 'UA-39048143-1']);
+_gaq.push(['_setDomainName', 'chromestatus.com']);
+_gaq.push(['_trackPageview']);
+
+(function() {
+  var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+  ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+  var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+})();
 </script>
 </body>
 </html>
