@@ -86,7 +86,8 @@ class MainHandler(common.ContentHandler, common.JSONHandler):
 
   def __get_feature_list(self):
     feature_list = models.Feature.get_chronological() # Memcached
-    return self.__annotate_first_of_milestones(feature_list)
+    self.__annotate_first_of_milestones(feature_list)
+    return feature_list
 
   def get(self, path, feature_id=None):
     # Default to features page.
