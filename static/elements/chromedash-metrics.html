@@ -16,10 +16,10 @@
     <template if="{{!props.length}}">
       <li class="loading">Loading...</li>
     </template>
-    <template repeat="{{prop in props}}">
-      <li hidden?="{{prop.property_name == 'ERROR'}}" tabindex="0">
-        <label on-click="{{showTimeline}}" title="Click to see a timeline view of this property">{{prop.property_name}}</label>
-        <x-meter value="{{prop.percentage}}"></x-meter>
+    <template repeat="{{prop in viewList}}">
+      <li id="{{prop.property_name}}" hidden?="{{prop.property_name == 'ERROR'}}" tabindex="0">
+        <label><a href="#{{prop.property_name}}" title="Deep link to this property" alt="Deep link to this property">{{prop.property_name}}</a></label>
+        <x-meter value="{{prop.percentage}}" on-click="{{showTimeline}}" title="Click to see a timeline view of this property"></x-meter>
       </li>
     </template>
   </ol>
@@ -45,10 +45,22 @@
     type: '',
     ready: function() {
       this.props = [];
+      this.viewList = [];
     },
     propsChanged: function() {
+      if (!this.props.length) {
+        return;
+      }
+
       for (var i = 0, prop; prop = this.props[i]; ++i) {
         prop.percentage = (prop.day_percentage * 100).toFixed(4);
+      }
+      this.viewList = this.props;
+
+      if (location.hash) {
+        this.async(function() {
+          this.scrollToProperty(location.hash.split('#')[1]);
+        });
       }
     },
     get endpoint() {
@@ -69,16 +81,22 @@
 
       var order = sender.dataset.order;
 
-      sortBy_(order, this.props, order == 'percentage');
+      sortBy_(order, this.viewList, order == 'percentage');
       this.sortOrders[order].activated = true;
       this.sortOrders[order].reverse = !this.sortOrders[order].reverse;
       if (this.sortOrders[order].reverse) {
-        this.props.reverse();
+        this.viewList.reverse();
       }
     },
     showTimeline: function(e, detail, sender) {
       window.location.href = '/metrics/' + this.type + '/timeline/' + this.view + '/' +
                              e.target.templateInstance.model.prop.bucket_id;
+    },
+    scrollToProperty: function(prop) {
+      if (prop) {
+        var el = this.$['stack-rank-list'].querySelector('#' + prop);
+        el.scrollIntoView(true);
+      }
     }
   });
 })();

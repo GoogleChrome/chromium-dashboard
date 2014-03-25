@@ -29,6 +29,7 @@
         text-align: left;
         padding: 5px 7px;
         font-family: inherit;
+        cursor: pointer;
       }
     }
 
@@ -40,7 +41,6 @@
       font-weight: 600;
       font-family: 'Source Code Pro', sans-serif;
       @include flex(1);
-      cursor: pointer;
       word-wrap: break-word;
 
       &:first-child {
@@ -59,6 +59,7 @@
 
     x-meter {
       padding-left: 7px;
+      cursor: pointer;
     }
 
     x-meter, .flex2 {
