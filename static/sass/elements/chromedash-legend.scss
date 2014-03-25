@@ -96,7 +96,7 @@ p {
 // }
 
 polyfill-next-selector { content: ':host .close'; }
-* /content/ .close {
+::content .close {
   position: absolute;
   right: 15px;
   top: 10px;
