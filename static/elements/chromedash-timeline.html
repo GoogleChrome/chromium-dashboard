@@ -1,12 +1,13 @@
-<!-- <link rel="import" href="../bower_components/polymer-google-jsapi/polymer-google-jsapi.html"> -->
+<!-- <script src='//www.google.com/jsapi?autoload={"modules":[{"name":"visualization","version":"1","packages":["corechart"]}]}'></script> -->
+
+<link rel="import" href="../bower_components/polymer-google-jsapi/polymer-google-jsapi.html">
 <link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="../bower_components/polymer-ajax/polymer-ajax.html">
 
 <polymer-element name="chromedash-feature-timeline" attributes="type view timeline">
 <template>
   <link rel="stylesheet" href="../css/elements/chromedash-timeline.css">
-
-  <!-- <polymer-google-jsapi id="jsapi"></polymer-google-jsapi> -->
+  <polymer-google-jsapi id="jsapi" on-polymer-google-jsapi-loaded="{{chartAPILoaded}}"></polymer-google-jsapi>
   <select value="{{selectedBucketId}}">
     <option disabled value="1">Select a property</option>
     <option template repeat="{{bucket in props}}" value="{{bucket.0}}">{{bucket.1}}</option>
@@ -23,29 +24,6 @@
     title: '',
     ready: function() {
       this.props = [];
-
-      // var el = this;
-      // this.$.jsapi.addEventListener('polymer-google-jsapi-loaded', function() {
-      //   google.load('visualization', '1.0', {packages:['corechart'], callback:
-      //     function() {
-      //       el.selectedBucketId = 34;
-      //     }
-      //   });
-      // });
-    },
-    propsChanged: function() {
-      this.async(function() {
-        // If there's an id in the URL, load the property it.
-        var lastSlash = location.pathname.lastIndexOf('/');
-        if (lastSlash > 0) {
-          var id = parseInt(location.pathname.substring(lastSlash + 1));
-          if (String(id) != 'NaN') {
-            this.selectedBucketId = id;
-          } else {
-           // this.selectedBucketId = 21;
-          }
-        }
-      });
     },
     selectedBucketIdChanged: function() {
       var ajax = document.createElement('polymer-ajax');
@@ -64,6 +42,20 @@
                            '/metrics/' + this.type + '/timeline/' +
                            this.view + '/' + this.selectedBucketId);
       }
+    },
+    chartAPILoaded: function(e, detail, sender) {
+      google.load('visualization', '1.0', {packages:['corechart'], callback:
+        function() {
+          // If there's an id in the URL, load the property it.
+          var lastSlash = location.pathname.lastIndexOf('/');
+          if (lastSlash > 0) {
+            var id = parseInt(location.pathname.substring(lastSlash + 1));
+            if (String(id) != 'NaN') {
+              this.selectedBucketId = id;
+            }
+          }
+        }.bind(this)
+      });
     },
     drawVisualization: function(data, bucketId) {
       var table = new google.visualization.DataTable();
