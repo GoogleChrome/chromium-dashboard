@@ -48,7 +48,7 @@
     },
     propsChanged: function() {
       for (var i = 0, prop; prop = this.props[i]; ++i) {
-        prop.percentage = (prop.day_percentage * 100).toFixed(9);
+        prop.percentage = (prop.day_percentage * 100).toFixed(4);
       }
     },
     get endpoint() {
