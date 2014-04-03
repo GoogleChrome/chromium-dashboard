@@ -1,6 +1,20 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="chromedash-color-status.html">
 
+<!-- https://github.com/ljosa/urlize.js -->
+<script src="urlize.js"></script>
+
+
+<polymer-element name="html-echo" attributes="html">
+  <script>
+    Polymer('html-echo', {
+      htmlChanged: function() {
+        this.innerHTML = this.html;
+      }
+    });
+  </script>
+</polymer-element>
+
 <polymer-element name="chromedash-feature" extends="li" attributes="feature needsflag" tabindex="0">
 <template>
 <link rel="stylesheet" href="../css/elements/chromedash-feature.css">
@@ -25,8 +39,8 @@
         <span><label>Prefixed</label>{{feature.prefixed ? 'Yes' : 'No'}}</span>
         <span hidden?="{{!feature.bug_url}}"><a href="{{feature.bug_url}}" target="_blank">Launch bug</a></span>
         <span class="owner" hidden?="{{!feature.owner.length}}">
-          <label>Owner(s)</label><template repeat="{{owner in feature.owner}}">
-            <span on-click="{{ownerFilter}}">{{owner}}</span>
+          <label>Owner(s)</label><template repeat="{{owner, i in feature.owner}}">
+            <span on-click="{{ownerFilter}}">{{owner}}</span><template if="{{feature.owner.length > 1 && i < feature.owner.length - 1}}">,</template>
           </template>
         </span>
       </div>
@@ -81,10 +95,10 @@
         <span><a href="http://caniuse.com/#search={{feature.name}}" target="_blank">Browser share %</a></span>
       </div>
     </section>
-    <template bind if="{{feature.comments}}">
+    <template if="{{feature.comments}}">
       <section>
         <h3>Comments</h3>
-        <summary class="comments">{{feature.comments}}</summary>
+        <summary class="comments"><html-echo html="{{feature.comments | urlizeFilter}}"></html-echo></summary>
       </section>
     </template>
   </template>
@@ -99,6 +113,7 @@
     open: false,
     needsflag: false,
     deprecated: false,
+    feature: null,
     ready: function() {
       this.MAX_RISK = this.MAX_VENDOR_VIEW + this.MAX_WEBDEV_VIEW +
                       this.MAX_STANDARDS_VAL;
@@ -108,7 +123,8 @@
 
       if (history.replaceState) {
         if (this.open) {
-          history.pushState({id: this.feature.id}, this.feature.name, '/features/' + this.feature.id);
+          history.pushState({id: this.feature.id}, this.feature.name,
+                            '/features/' + this.feature.id);
         } else {
           history.replaceState({id: null}, this.feature.name, '/features');
         }
@@ -134,6 +150,9 @@
     featureChanged: function() {
       this.calculateCompatRisk();
       this.deprecated = this.feature.impl_status_chrome == 'Deprecated';
+      // if (this.feature.comments) {
+      //   this.feature.comments = urlize(this.feature.comments, {target: '_blank'});
+      // }
     },
     categoryFilter: function(e, details, sender) {
       e.stopPropagation();
@@ -142,6 +161,9 @@
     ownerFilter: function(e, details, sender) {
       e.stopPropagation();
       this.fire('filter-owner', {val: sender.textContent});
+    },
+    urlizeFilter: function(val) {
+      return urlize(val, {target: '_blank', trim: 'www', autoescape: true});
     }
   });
 </script>
