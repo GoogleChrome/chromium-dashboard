@@ -49,9 +49,10 @@ class JSONHandler(BaseHandler):
   def get(self, data, formatted=False):
     self.response.headers['Content-Type'] = 'application/json;charset=utf-8'
     if formatted:
-      return self.response.write(json.dumps(data))
+      return self.response.write(json.dumps(data, separators=(',',':')))
     else:
-      return self.response.write(json.dumps([entity.to_dict() for entity in data]))
+      data = [entity.to_dict() for entity in data]
+      return self.response.write(json.dumps(data, separators=(',',':')))
 
 
 class ContentHandler(BaseHandler):
