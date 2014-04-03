@@ -136,7 +136,8 @@ class MainHandler(common.ContentHandler, common.JSONHandler):
         #     '/static/js/mockdata.json')
         #   feature_list = json.loads(result.content)
 
-        # template_data['features'] = json.dumps(feature_list)
+        # template_data['features'] = json.dumps(
+        #     feature_list, separators=(',',':'))
 
         template_data['categories'] = [
           (v, normalized_name(v)) for k,v in
@@ -156,10 +157,12 @@ class MainHandler(common.ContentHandler, common.JSONHandler):
 
     elif path.startswith('metrics/css/timeline'):
       properties = sorted(uma.CSS_PROPERTY_BUCKETS.items(), key=lambda x:x[1])
-      template_data['CSS_PROPERTY_BUCKETS'] = json.dumps(properties)
+      template_data['CSS_PROPERTY_BUCKETS'] = json.dumps(
+          properties, separators=(',',':'))
     elif path.startswith('metrics/feature/timeline'):
       properties = sorted(uma.FEATUREOBSERVER_BUCKETS.items(), key=lambda x:x[1])
-      template_data['FEATUREOBSERVER_BUCKETS'] = json.dumps(properties)
+      template_data['FEATUREOBSERVER_BUCKETS'] = json.dumps(
+          properties, separators=(',',':'))
 
     self.render(data=template_data, template_path=os.path.join(path + '.html'))
 
