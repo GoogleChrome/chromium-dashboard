@@ -7,7 +7,7 @@ Chromium Feature Dashboard
 
 1. Install the [Google App Engine SDK for Python](https://developers.google.com/appengine/downloads#Google_App_Engine_SDK_for_Python).
 2. Install [Bower](http://bower.io/).
-3. From the root of the repository, run `cd static; bower install`.
+3. From the root of the repository, run `npm install; cd static; bower install; cd ..; grunt`.
 4. Start the local test server using the Google App Engine SDK for Python.
 
 ### LICENSE
