@@ -36,10 +36,6 @@
 // }
 
 @media only screen and (max-width: 700px) {
-  :host {
-    // padding: 0;
-  }
-
   [data-first-of-milestone] {
     $milestone-label-size: 12px;
     &:after {

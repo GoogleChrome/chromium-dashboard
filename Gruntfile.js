@@ -10,7 +10,7 @@ module.exports = function(grunt) {
         //     "polymer.html$"
         //   ]
         // },
-        strip: false, // Flip to true when https://github.com/Polymer/vulcanize/issues/19 is fixed
+        strip: true,
         csp: false,
         inline: true
       },
