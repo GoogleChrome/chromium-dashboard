@@ -268,17 +268,6 @@ footer {
     }
   }
 
-  //TODO: move these into the chromedash-feature.scss when we can use media
-  // queries with @host{}.
-  chromedash-feature,
-  [is="chromedash-feature"] {
-    box-shadow: none !important;
-    border-radius: 0 !important;
-    padding: 10px !important;
-    margin: 0 !important;
-    @include transition(none !important);
-  }
-
   footer {
     padding: 0.35em;
   }

@@ -198,6 +198,13 @@ chromedash-color-status {
 
 
 @media only screen and (max-width: 700px) {
+  :host {
+    // box-shadow: none !important;
+    border-radius: 0 !important;
+    margin: 7px initial !important;
+    @include transition(none !important);
+  }
+
   h2 {
     font-size: 20px !important;
   }
