@@ -180,10 +180,7 @@ class DictModel(db.Model):
       elif isinstance(value, db.Model):
         output[key] = to_dict(value)
       elif isinstance(value, users.User):
-        output[key] = {
-          'nickname': value.nickname(),
-          'email': value.email(),
-        }
+        output[key] = value.email()
       else:
         raise ValueError('cannot encode ' + repr(prop))
 
