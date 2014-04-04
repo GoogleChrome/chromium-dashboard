@@ -94,7 +94,6 @@ class ContentHandler(BaseHandler):
       template_data['user'] = {
         'is_whitelisted': self._is_user_whitelisted(user),
         'is_admin': users.is_current_user_admin(),
-        'nickname': user.nickname(),
         'email': user.email(),
       }
     else:
