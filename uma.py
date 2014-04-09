@@ -1,4 +1,4 @@
-# TODO(ericbidelman): generate this file from 
+# TODO(ericbidelman): generate this file from
 
 # http://src.chromium.org/viewvc/blink/trunk/Source/core/frame/UseCounter.cpp
 CSS_PROPERTY_BUCKETS = {
@@ -731,4 +731,32 @@ FEATUREOBSERVER_BUCKETS = {
   297: 'DocumentXPathEvaluate',
   298: 'AttrGetValue',
   299: 'AttrSetValue',
+  300: 'AnimationConstructorKeyframeListEffectObjectTiming',
+  301: 'AnimationConstructorKeyframeListEffectDoubleTiming',
+  302: 'AnimationConstructorKeyframeListEffectNoTiming',
+  303: 'AttrSetValueWithElement',
+  304: 'PrefixedCancelAnimationFrame',
+  305: 'PrefixedCancelRequestAnimationFrame',
+  306: 'NamedNodeMapGetNamedItem',
+  307: 'NamedNodeMapSetNamedItem',
+  308: 'NamedNodeMapRemoveNamedItem',
+  309: 'NamedNodeMapItem',
+  310: 'NamedNodeMapGetNamedItemNS',
+  311: 'NamedNodeMapSetNamedItemNS',
+  312: 'NamedNodeMapRemoveNamedItemNS',
+  313: 'OpenWebDatabaseInWorker',
+  314: 'OpenWebDatabaseSyncInWorker',
+  315: 'PrefixedAllowFullscreenAttribute',
+  316: 'XHRProgressEventPosition',
+  317: 'XHRProgressEventTotalSize',
+  318: 'PrefixedDocumentIsFullscreen',
+  319: 'PrefixedDocumentFullScreenKeyboardInputAllowed',
+  320: 'PrefixedDocumentCurrentFullScreenElement',
+  321: 'PrefixedDocumentCancelFullScreen',
+  322: 'PrefixedDocumentFullscreenEnabled',
+  323: 'PrefixedDocumentFullscreenElement',
+  324: 'PrefixedDocumentExitFullscreen',
+  325: 'SVGForeignObjectElement',
+  326: 'PrefixedElementRequestPointerLock',
+  327: 'SelectionSetPosition',
 }
