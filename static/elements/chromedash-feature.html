@@ -149,10 +149,10 @@
     },
     featureChanged: function() {
       this.calculateCompatRisk();
-      this.deprecated = this.feature.impl_status_chrome == 'Deprecated';
-      // if (this.feature.comments) {
-      //   this.feature.comments = urlize(this.feature.comments, {target: '_blank'});
-      // }
+
+      // TODO: this values are brittle if the strings change.
+      this.deprecated = this.feature.impl_status_chrome == 'Deprecated' ||
+                        this.feature.impl_status_chrome == 'No longer pursuing';
     },
     categoryFilter: function(e, details, sender) {
       e.stopPropagation();
