@@ -3,6 +3,7 @@
   "private": true,
   "devDependencies": {
     "grunt": "*",
+    "grunt-appengine": "^0.1.5",
     "grunt-vulcanize": "*",
     "load-grunt-tasks": "*"
   }

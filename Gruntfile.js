@@ -32,6 +32,24 @@ module.exports = function(grunt) {
           spawn: false,
         },
       },
+    },
+
+    appengine: {
+      options: {
+        manageFlags: {
+          oauth2: true
+        },
+        runFlags: {
+          port: 8080
+        }
+      },
+      frontend: {
+        root: '.'
+      }
+      // backend: {
+      //   root: '.',
+      //   backend: true,
+      // }
     }
 
   });
@@ -40,4 +58,5 @@ module.exports = function(grunt) {
   require('load-grunt-tasks')(grunt);
 
   grunt.registerTask('default', ['vulcanize:build']);
+  grunt.registerTask('serve', ['appengine:run:frontend']);
 };
