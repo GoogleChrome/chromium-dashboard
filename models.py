@@ -395,7 +395,7 @@ class FeatureForm(forms.Form):
   #name = PlaceholderCharField(required=True, placeholder='Feature name')
   name = forms.CharField(required=True, label='Feature')
 
-  summary = forms.CharField(label='', required=True,
+  summary = forms.CharField(label='', required=True, max_length=500,
       widget=forms.Textarea(attrs={'cols': 50, 'placeholder': 'Summary description'}))
 
   # owner = PlaceholderCharField(
