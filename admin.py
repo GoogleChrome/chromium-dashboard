@@ -308,6 +308,14 @@ class FeatureHandler(common.ContentHandler):
     if owners:
       owners = [db.Email(x.strip()) for x in owners.split(',')]
 
+    doc_links = self.request.get('doc_links') or []
+    if doc_links:
+      doc_links = [x.strip() for x in doc_links.split(',')]
+
+    sample_links = self.request.get('sample_links') or []
+    if sample_links:
+      sample_links = [x.strip() for x in sample_links.split(',')]
+
     redirect_url = self.DEFAULT_URL
 
     # Update/delete existing feature.
@@ -342,8 +350,8 @@ class FeatureHandler(common.ContentHandler):
         feature.standardization = int(self.request.get('standardization'))
         feature.comments = self.request.get('comments')
         feature.web_dev_views = int(self.request.get('web_dev_views'))
-        feature.doc_links = self.request.get('doc_links')
-        feature.sample_links = self.request.get('sample_links')
+        feature.doc_links = doc_links
+        feature.sample_links = sample_links
     else:
       feature = models.Feature(
           category=int(self.request.get('category')),
@@ -371,8 +379,8 @@ class FeatureHandler(common.ContentHandler):
           standardization=int(self.request.get('standardization')),
           comments=self.request.get('comments'),
           web_dev_views=int(self.request.get('web_dev_views')),
-          doc_links=self.request.get('doc_links'),
-          sample_links=self.request.get('sample_links'),
+          doc_links=doc_links,
+          sample_links=sample_links,
           )
 
     if 'delete' in path:
