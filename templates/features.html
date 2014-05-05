@@ -82,10 +82,8 @@ document.addEventListener('polymer-ready', function(e) {
   };
 
   // Fill data via AJAX.
-  //var url = location.hostname == 'localhost' ? '/static/js/mockdata.json':
-  //                                             '/features.json';
-
-  var url = '/features.json';
+  var url = location.hostname == 'localhost' ? '/static/js/mockdata.json':
+                                               '/features.json';
 
   var xhr = new XMLHttpRequest();
   xhr.open('GET', url);

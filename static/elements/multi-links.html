@@ -7,7 +7,7 @@
   <script>
     Polymer('multi-links', {
       ready: function() {
-      	this.links = this.innerHTML.split(' ');
+      	this.links = this.innerHTML.split(/\s+/);
       }
     });
   </script>
