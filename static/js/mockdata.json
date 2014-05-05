@@ -930,8 +930,8 @@
             "text": "Mixed public signals",
             "value": 4
         },
-        "doc_links": "http://docs1.com http://docs2.com",
-        "sample_links": "http://samples1.com http://samples2.com",
+        "doc_links": ["http://docs1.com", "http://docs2.com"],
+        "sample_links": ["http://samples1.com", "http://samples2.com"],
         "safari_views_link": null,
         "shipped_android_milestone": null,
         "shipped_ios_milestone": null,
