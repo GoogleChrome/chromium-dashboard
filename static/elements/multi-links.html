@@ -1,0 +1,14 @@
+<polymer-element name="multi-links">
+  <template>
+  	<template repeat="{{link in links}}">
+  	  <a href="{{link}}">{{link}}</a>
+  	</template>
+  </template>
+  <script>
+    Polymer('multi-links', {
+      ready: function() {
+      	this.links = this.innerHTML.split(' ');
+      }
+    });
+  </script>
+</polymer-element>

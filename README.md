@@ -6,9 +6,11 @@ Chromium Feature Dashboard
 ### How to run the local test server
 
 1. Install the [Google App Engine SDK for Python](https://developers.google.com/appengine/downloads#Google_App_Engine_SDK_for_Python).
-2. Install [Bower](http://bower.io/).
-3. From the root of the repository, run `npm install; cd static; bower install; cd ..; grunt`.
-4. Start the local test server using the Google App Engine SDK for Python.
+1. Install [Bower](http://bower.io/).
+1. Install [grunt](http://gruntjs.com/getting-started).
+1. From the root of the repository, run `npm install; cd static; bower install; cd ..; grunt`.
+1. Start the local test server using the Google App Engine SDK for Python
+   (`dev_appserver.py .`).
 
 ### LICENSE
 

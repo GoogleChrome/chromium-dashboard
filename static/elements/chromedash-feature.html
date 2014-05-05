@@ -1,5 +1,6 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="chromedash-color-status.html">
+<link rel="import" href="multi-links.html">
 
 <!-- https://github.com/ljosa/urlize.js -->
 <script src="urlize.js"></script>
@@ -95,6 +96,21 @@
         <span><a href="http://caniuse.com/#search={{feature.name}}" target="_blank">Browser share %</a></span>
       </div>
     </section>
+    <template if="{{feature.doc_links || feature.sample.links}}">
+      <section>
+        <h3>Developer resources</h3>
+        <div>
+          <template if="{{feature.doc_links}}">
+            Docs: <multi-links>{{feature.doc_links}}</multi-links>
+          </template>
+        </div>
+        <div>
+          <template if="{{feature.sample_links}}">
+            Samples: <multi-links>{{feature.sample_links}}</multi-links>
+          </template>
+        </div>
+      </section>
+    </template>
     <template if="{{feature.comments}}">
       <section>
         <h3>Comments</h3>

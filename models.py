@@ -350,7 +350,8 @@ class Feature(DictModel):
 
   # Web dev details.
   web_dev_views = db.IntegerProperty(required=True)
-  #doc_links = db.StringProperty()
+  doc_links = db.StringProperty(multiline=True)
+  sample_links = db.StringProperty(multiline=True)
   #tests = db.StringProperty()
 
   comments = db.StringProperty(multiline=True)
@@ -448,6 +449,12 @@ class FeatureForm(forms.Form):
 
   spec_link = forms.URLField(required=False, label='Spec link',
                              help_text="Prefer editor's draft.")
+
+  docs = forms.CharField(label='Doc links', required=False, max_length=500,
+      widget=forms.Textarea(attrs={'cols': 50, 'placeholder': 'Links to docs, space separated'}))
+
+  samples = forms.CharField(label='Samples links', required=False, max_length=500,
+      widget=forms.Textarea(attrs={'cols': 50, 'placeholder': 'Links to samples, space separated'}))
 
   footprint  = forms.ChoiceField(label='Technical footprint',
                                  choices=FOOTPRINT_CHOICES.items(),
