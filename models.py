@@ -450,10 +450,10 @@ class FeatureForm(forms.Form):
   spec_link = forms.URLField(required=False, label='Spec link',
                              help_text="Prefer editor's draft.")
 
-  docs = forms.CharField(label='Doc links', required=False, max_length=500,
+  doc_links = forms.CharField(label='Doc links', required=False, max_length=500,
       widget=forms.Textarea(attrs={'cols': 50, 'placeholder': 'Links to docs, space separated'}))
 
-  samples = forms.CharField(label='Samples links', required=False, max_length=500,
+  sample_links = forms.CharField(label='Samples links', required=False, max_length=500,
       widget=forms.Textarea(attrs={'cols': 50, 'placeholder': 'Links to samples, space separated'}))
 
   footprint  = forms.ChoiceField(label='Technical footprint',
