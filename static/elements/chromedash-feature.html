@@ -95,6 +95,29 @@
         <span><a href="http://caniuse.com/#search={{feature.name}}" target="_blank">Browser share %</a></span>
       </div>
     </section>
+    <template if="{{feature.doc_links || feature.sample_links}}">
+      <section>
+        <h3>Developer resources</h3>
+        <div>
+          <template if="{{feature.doc_links && feature.doc_links.length > 0}}">
+            <span class="doc_links" hidden?="{{!feature.doc_links.length}}">
+            <label>Doc link(s)</label><template repeat="{{link, i in feature.doc_links}}">
+              <a href="{{link}}">{{link}}</a><template if="{{feature.doc_links.length > 1 && i < feature.doc_links.length - 1}}">,</template>
+            </template>
+            </span>
+          </template>
+        </div>
+        <div>
+          <template if="{{feature.sample_links && feature.sample_links.length > 0}}">
+            <span class="sample_links" hidden?="{{!feature.sample_links.length}}">
+            <label>Sample link(s)</label><template repeat="{{link, i in feature.sample_links}}">
+              <a href="{{link}}">{{link}}</a><template if="{{feature.sample_links.length > 1 && i < feature.sample_links.length - 1}}">,</template>
+            </template>
+            </span>
+          </template>
+        </div>
+      </section>
+    </template>
     <template if="{{feature.comments}}">
       <section>
         <h3>Comments</h3>

@@ -84,6 +84,7 @@ document.addEventListener('polymer-ready', function(e) {
   // Fill data via AJAX.
   var url = location.hostname == 'localhost' ? '/static/js/mockdata.json':
                                                '/features.json';
+
   var xhr = new XMLHttpRequest();
   xhr.open('GET', url);
   //xhr.responseType = 'json'; // Safari 6.0.5 doesn't support this

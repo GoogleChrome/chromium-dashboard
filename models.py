@@ -241,6 +241,8 @@ class Feature(DictModel):
     d = self.to_dict()
     #d['id'] = self.key().id
     d['owner'] = ', '.join(self.owner)
+    d['doc_links'] = ', '.join(self.doc_links)
+    d['sample_links'] = ', '.join(self.sample_links)
     return d
 
   @classmethod
@@ -350,7 +352,8 @@ class Feature(DictModel):
 
   # Web dev details.
   web_dev_views = db.IntegerProperty(required=True)
-  #doc_links = db.StringProperty()
+  doc_links = db.StringListProperty()
+  sample_links = db.StringListProperty()
   #tests = db.StringProperty()
 
   comments = db.StringProperty(multiline=True)
@@ -448,6 +451,14 @@ class FeatureForm(forms.Form):
 
   spec_link = forms.URLField(required=False, label='Spec link',
                              help_text="Prefer editor's draft.")
+
+  doc_links = forms.CharField(label='Doc links', required=False, max_length=500,
+      widget=forms.Textarea(attrs={'cols': 50, 'placeholder': 'Links to docs, space separated'}),
+      help_text='Comma separated URLs')
+
+  sample_links = forms.CharField(label='Samples links', required=False, max_length=500,
+      widget=forms.Textarea(attrs={'cols': 50, 'placeholder': 'Links to samples, space separated'}),
+      help_text='Comma separated URLs')
 
   footprint  = forms.ChoiceField(label='Technical footprint',
                                  choices=FOOTPRINT_CHOICES.items(),
