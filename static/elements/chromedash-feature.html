@@ -15,6 +15,22 @@
   </script>
 </polymer-element>
 
+<polymer-element name="multi-links" attributes="links">
+  <template>
+    <link rel="stylesheet" href="../css/shared.css">
+    <template repeat="{{link, i in links}}">
+      <a href="{{link}}" target="_blank">{{link | prettyURLFilter}}</a><template if="{{links.length > 1 && i < links.length - 1}}">,</template>
+    </template>
+  </template>
+  <script>
+    Polymer('multi-links', {
+      prettyURLFilter: function(val) {
+        return val.replace(/https?:\/\//, '');
+      }
+    });
+  </script>
+</polymer-element>
+
 <polymer-element name="chromedash-feature" extends="li" attributes="feature needsflag" tabindex="0">
 <template>
 <link rel="stylesheet" href="../css/elements/chromedash-feature.css">
@@ -101,18 +117,16 @@
         <div>
           <template if="{{feature.doc_links && feature.doc_links.length > 0}}">
             <span class="doc_links" hidden?="{{!feature.doc_links.length}}">
-            <label>Doc link(s)</label><template repeat="{{link, i in feature.doc_links}}">
-              <a href="{{link}}">{{link}}</a><template if="{{feature.doc_links.length > 1 && i < feature.doc_links.length - 1}}">,</template>
-            </template>
+              <label>Documentation</label>
+              <multi-links links="[[feature.doc_links]]"></multi-links>
             </span>
           </template>
         </div>
         <div>
           <template if="{{feature.sample_links && feature.sample_links.length > 0}}">
             <span class="sample_links" hidden?="{{!feature.sample_links.length}}">
-            <label>Sample link(s)</label><template repeat="{{link, i in feature.sample_links}}">
-              <a href="{{link}}">{{link}}</a><template if="{{feature.sample_links.length > 1 && i < feature.sample_links.length - 1}}">,</template>
-            </template>
+              <label>Samples</label>
+              <multi-links links="[[feature.sample_links]]"></multi-links>
             </span>
           </template>
         </div>
@@ -156,7 +170,8 @@
     toggle: function(e, details, sender) {
       // Don't toggle panel if tooltip or link is being clicked.
       if (e.target.classList.contains('tooltip') ||
-          'tooltip' in e.target.dataset || e.target.tagName == 'A') {
+          'tooltip' in e.target.dataset || e.target.tagName == 'A' ||
+           e.target.tagName == 'MULTI-LINKS') {
         return;
       }
       this.open = !this.open;
