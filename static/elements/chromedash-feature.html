@@ -111,7 +111,7 @@
         <span><a href="http://caniuse.com/#search={{feature.name}}" target="_blank">Browser share %</a></span>
       </div>
     </section>
-    <template if="{{feature.doc_links || feature.sample_links}}">
+    <template if="{{feature.doc_links.length || feature.sample_links.length}}">
       <section>
         <h3>Developer resources</h3>
         <div>
