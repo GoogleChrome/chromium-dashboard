@@ -1,6 +1,6 @@
 {
   "name": "chromium-dashboard",
-  "version": "2013.11.26",
+  "version": "0.0.1",
   "homepage": "chromestatus.com",
   "authors": [
     "Eric Bidelman <ebidel@gmail.com>"
