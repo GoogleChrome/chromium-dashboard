@@ -10,7 +10,7 @@
   <polymer-google-jsapi id="jsapi" on-polymer-google-jsapi-loaded="{{chartAPILoaded}}"></polymer-google-jsapi>
   <select value="{{selectedBucketId}}">
     <option disabled value="1">Select a property</option>
-    <option template repeat="{{bucket in props}}" value="{{bucket.0}}">{{bucket.1}}</option>
+    <option template repeat="{{bucket in props}}" value="{{bucket[0]}}">{{bucket[1]}}</option>
   </select>
   <!-- <div id="chart-container" style="width:900px;margin: 0 auto;">   -->
     <div id="chart"></div>
