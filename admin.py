@@ -275,6 +275,8 @@ class FeatureHandler(common.ContentHandler):
       template_data.update({
           'feature': f.format_for_template(),
           'feature_form': models.FeatureForm(f.format_for_edit()),
+          'default_url': '%s://%s%s/%s' % (self.request.scheme, self.request.host,
+                                           self.DEFAULT_URL, feature_id)
           'edit_url': '%s://%s%s/%s' % (self.request.scheme, self.request.host,
                                         self.EDIT_URL, feature_id)
           })
