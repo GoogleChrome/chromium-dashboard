@@ -455,6 +455,7 @@ CSS_PROPERTY_BUCKETS = {
   451: 'backface-visibility',
   452: 'grid-template',
   453: 'grid',
+  454: 'all',
 }
 
 PAGE_VISITS_BUCKET_ID = 52 # corresponds to the property below.
@@ -899,4 +900,19 @@ FEATUREOBSERVER_BUCKETS = {
   455: 'HTMLImports',
   456: 'ElementCreateShadowRoot',
   457: 'DocumentRegisterElement',
+  458: 'EditingAppleInterchangeNewline',
+  459: 'EditingAppleConvertedSpace',
+  460: 'EditingApplePasteAsQuotation',
+  461: 'EditingAppleStyleSpanClass',
+  462: 'EditingAppleTabSpanClass',
+  463: 'HTMLImportsAsyncAttribute',
+  464: 'FontFaceSetReady',
+  465: 'XMLHttpRequestSynchronous',
+  466: 'CSSSelectorPseudoUnresolved',
+  467: 'CSSSelectorPseudoShadow',
+  468: 'CSSSelectorPseudoContent',
+  469: 'CSSSelectorPseudoHost',
+  470: 'CSSSelectorPseudoHostContext',
+  471: 'CSSDeepCombinator',
+  472: 'SyncXHRWithCredentials',
 }
