@@ -456,6 +456,7 @@ CSS_PROPERTY_BUCKETS = {
   452: 'grid-template',
   453: 'grid',
   454: 'all',
+  455: 'justify-items',
 }
 
 PAGE_VISITS_BUCKET_ID = 52 # corresponds to the property below.
@@ -914,5 +915,11 @@ FEATUREOBSERVER_BUCKETS = {
   469: 'CSSSelectorPseudoHost',
   470: 'CSSSelectorPseudoHostContext',
   471: 'CSSDeepCombinator',
-  472: 'SyncXHRWithCredentials',
+  472: 'SyncXHRWithCredentials', # This an above items are available in M37 branch.
+  473: 'UseAsm', 
+  474: 'KeyEventNotAllowedInFullScreen',
+  475: 'DOMWindowOpen',
+  476: 'DOMWindowOpenFeatures',
+  477: 'LegacyFullScreenErrorExemption',
+  478: 'MediaStreamTrackGetSources',
 }
