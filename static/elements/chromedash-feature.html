@@ -45,7 +45,12 @@
     <section>
       <h3>Implementation Status</h3>
       <div class="impl_status">
-        <span class="chrome_desktop tooltip" title="Chrome desktop"><label>{{feature.impl_status_chrome}}</label>{{feature.shipped_milestone}}</span>
+        <template if="{{feature.shipped_milestone}}">
+          <span class="chrome_desktop tooltip" title="Chrome desktop"><label>{{feature.impl_status_chrome}}</label>{{feature.shipped_milestone}}</span>
+        </template>
+        <template if="{{!feature.shipped_milestone}}">
+          <span class="chrome_desktop"><label>{{feature.impl_status_chrome}}</label></span>
+        </template>
         <template if="{{feature.shipped_android_milestone}}">
           <span class="chrome_android tooltip" title="Chrome for Android"><label><i class="icon-android"></i></label>{{feature.shipped_android_milestone}}</span>
         </template>
