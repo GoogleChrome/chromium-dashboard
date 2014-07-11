@@ -48,6 +48,14 @@ class TimelineHandler(common.JSONHandler):
       # Remove outliers if percentage is not between 0-1.
       data = filter(lambda x: 0 <= x.day_percentage <= 1, data)
 
+      # Remove one time peaks where delta is more than 10%.
+      threshold = 0.1
+      last_percentage = None
+      for x in list(data):
+        if last_percentage and (abs(x.day_percentage - last_percentage) > threshold):
+          data.remove(x)
+        last_percentage = x.day_percentage
+
       memcache.set(KEY, data, time=CACHE_AGE)
 
     super(TimelineHandler, self).get(data)
