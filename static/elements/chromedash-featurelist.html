@@ -185,7 +185,7 @@
           if (val.indexOf('=') == 0) {
             val = val.substring(1);
           }
-          var regex = new RegExp(val, 'ig');
+          var regex = new RegExp(val, 'i');
           this.filtered = this.features.filter(function(feature, idx, array) {
             return regex.test(feature.name) || regex.test(feature.category) ||
                    regex.test(feature.summary) ||
