@@ -118,7 +118,7 @@ class ContentHandler(BaseHandler):
 
   def render_atom_feed(self, title, data):
     prefix = '%s://%s%s' % (self.request.scheme, self.request.host,
-                             self.request.path.replace('.xml', ''))
+                            self.request.path.replace('.xml', ''))
 
     feed = feedgenerator.Atom1Feed(
         title=unicode('%s - %s' % (settings.APP_TITLE, title)),
