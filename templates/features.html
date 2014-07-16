@@ -136,6 +136,9 @@ document.addEventListener('polymer-ready', function(e) {
     }
   });
 
+  if (location.hash)
+    search.value = location.hash.substr(1);
+
   overlay.views = {
     vendors: {{VENDOR_VIEWS|safe}}, // set from server
     webdevs: {{WEB_DEV_VIEWS|safe}}, // set from server
