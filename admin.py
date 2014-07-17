@@ -241,6 +241,14 @@ class FeatureHandler(common.ContentHandler):
     return param
 
   def get(self, path, feature_id=None):
+    user = users.get_current_user()
+    if user is None:
+      if feature_id:
+        # Redirect to public URL for unauthenticated users.
+        return self.redirect(self.DEFAULT_URL + '/' + feature_id)
+      else:
+        return self.redirect(users.create_login_url(self.request.uri))
+
     # Remove trailing slash from URL and redirect. e.g. /metrics/ -> /metrics
     if path[-1] == '/':
       return self.redirect(self.request.path.rstrip('/'))
@@ -248,7 +256,7 @@ class FeatureHandler(common.ContentHandler):
     # TODO(ericbidelman): This creates a additional call to
     # _is_user_whitelisted() (also called in common.py), resulting in another
     # db query.
-    if not self._is_user_whitelisted(users.get_current_user()):
+    if not self._is_user_whitelisted(user):
       #TODO(ericbidelman): Use render(status=401) instead.
       #self.render(data={}, template_path=os.path.join(path + '.html'), status=401)
       common.handle_401(self.request, self.response, Exception)
