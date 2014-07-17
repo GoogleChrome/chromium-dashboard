@@ -55,6 +55,7 @@ IN_DEVELOPMENT = 3
 BEHIND_A_FLAG = 4
 ENABLED_BY_DEFAULT = 5
 DEPRECATED = 6
+REMOVED = 7
 NO_LONGER_PURSUING = 1000 # insure bottom of list
 
 IMPLEMENATION_STATUS = {
@@ -64,6 +65,7 @@ IMPLEMENATION_STATUS = {
   BEHIND_A_FLAG: 'Behind a flag',
   ENABLED_BY_DEFAULT: 'Enabled by default',
   DEPRECATED: 'Deprecated',
+  REMOVED: 'Removed',
   NO_LONGER_PURSUING: 'No longer pursuing',
   }
 
