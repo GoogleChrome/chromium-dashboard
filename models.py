@@ -243,6 +243,7 @@ class Feature(DictModel):
     d['owner'] = ', '.join(self.owner)
     d['doc_links'] = ', '.join(self.doc_links)
     d['sample_links'] = ', '.join(self.sample_links)
+    d['search_tags'] = ', '.join(self.search_tags)
     return d
 
   @classmethod
@@ -355,6 +356,8 @@ class Feature(DictModel):
   doc_links = db.StringListProperty()
   sample_links = db.StringListProperty()
   #tests = db.StringProperty()
+
+  search_tags = db.StringListProperty()
 
   comments = db.StringProperty(multiline=True)
 
@@ -495,6 +498,9 @@ class FeatureForm(forms.Form):
                                initial=NO_PUBLIC_SIGNALS)
   ie_views_link = forms.URLField(required=False, label='',
       help_text='Citation link.')
+
+  search_tags = forms.CharField(label='Search tags', required=False,
+      help_text='Comma separated keywords used only in search')
 
   comments = forms.CharField(label='', required=False, widget=forms.Textarea(
       attrs={'cols': 50, 'placeholder': 'Additional comments, caveats, info...'}))
