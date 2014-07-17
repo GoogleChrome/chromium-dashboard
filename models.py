@@ -57,7 +57,7 @@ ENABLED_BY_DEFAULT = 5
 DEPRECATED = 6
 NO_LONGER_PURSUING = 1000 # insure bottom of list
 
-IMPLEMENATION_STATUS = {
+IMPLEMENTATION_STATUS = {
   NO_ACTIVE_DEV: 'No active development',
   PROPOSED: 'Proposed',
   IN_DEVELOPMENT: 'In development',
@@ -219,7 +219,7 @@ class Feature(DictModel):
     d['id'] = self.key().id()
     d['category'] = FEATURE_CATEGORIES[self.category]
     d['visibility'] = VISIBILITY_CHOICES[self.visibility]
-    d['impl_status_chrome'] = IMPLEMENATION_STATUS[self.impl_status_chrome]
+    d['impl_status_chrome'] = IMPLEMENTATION_STATUS[self.impl_status_chrome]
     d['meta'] = {
       'needsflag': self.impl_status_chrome == BEHIND_A_FLAG,
       'milestone_str': self.shipped_milestone or d['impl_status_chrome']
@@ -418,7 +418,7 @@ class FeatureForm(forms.Form):
 
   impl_status_chrome = forms.ChoiceField(required=True,
                                          label='Status in Chrome',
-                                         choices=IMPLEMENATION_STATUS.items())
+                                         choices=IMPLEMENTATION_STATUS.items())
 
   #shipped_milestone = PlaceholderCharField(required=False,
   #                                         placeholder='First milestone the feature shipped with this status (either enabled by default or experimental)')

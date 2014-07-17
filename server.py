@@ -68,12 +68,12 @@ class MainHandler(common.ContentHandler, common.JSONHandler):
       milestones = range(1, LATEST_VERSION + 1)
       milestones.reverse()
       versions = [
-        models.IMPLEMENATION_STATUS[models.NO_ACTIVE_DEV],
-        models.IMPLEMENATION_STATUS[models.PROPOSED],
-        models.IMPLEMENATION_STATUS[models.IN_DEVELOPMENT],
+        models.IMPLEMENTATION_STATUS[models.NO_ACTIVE_DEV],
+        models.IMPLEMENTATION_STATUS[models.PROPOSED],
+        models.IMPLEMENTATION_STATUS[models.IN_DEVELOPMENT],
         ]
       versions.extend(milestones)
-      versions.append(models.IMPLEMENATION_STATUS[models.NO_LONGER_PURSUING])
+      versions.append(models.IMPLEMENTATION_STATUS[models.NO_LONGER_PURSUING])
 
       last_good_idx = 0
       for i, version in enumerate(versions):
@@ -142,9 +142,9 @@ class MainHandler(common.ContentHandler, common.JSONHandler):
         template_data['categories'] = [
           (v, normalized_name(v)) for k,v in
           models.FEATURE_CATEGORIES.iteritems()]
-        template_data['IMPLEMENATION_STATUSES'] = [
+        template_data['IMPLEMENTATION_STATUSES'] = [
           {'key': k, 'val': v} for k,v in
-          models.IMPLEMENATION_STATUS.iteritems()]
+          models.IMPLEMENTATION_STATUS.iteritems()]
         template_data['VENDOR_VIEWS'] = [
           {'key': k, 'val': v} for k,v in
           models.VENDOR_VIEWS.iteritems()]
