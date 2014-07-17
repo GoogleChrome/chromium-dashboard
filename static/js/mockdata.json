@@ -2991,7 +2991,7 @@
             "value": 4
         },
         "ie_views_link": "http://status.modern.ie/#/",
-        "impl_status_chrome": "Removed",
+        "impl_status_chrome": "Deprecated",
         "meta": {
             "milestone_str": 35,
             "needsflag": false
