@@ -34,7 +34,7 @@
 <polymer-element name="chromedash-feature" extends="li" attributes="feature needsflag" tabindex="0">
 <template>
 <link rel="stylesheet" href="../css/elements/chromedash-feature.css">
-<div on-click="{{toggle}}"><div class="topcorner pull-right"><span hidden?="{{!removed}}" class="tooltip" title="Removed feature"><i class="icon-warning-sign" data-tooltip></i></span><span hidden?="{{!deprecated}}" class="tooltip" title="Deprecated feature"><i class="icon-warning-sign" data-tooltip></i></span><span hidden?="{{!needsflag}}" class="tooltip" title="Experimental feature behind a flag."><i class="icon-beaker" data-tooltip></i></span><content select=".edit"></content></div>
+<div on-click="{{toggle}}"><div class="topcorner pull-right"><span hidden?="{{!removed && !deprecated}}" class="tooltip" title="{{removed ? 'Removed feature' : 'Deprecated feature'}}"><i class="icon-warning-sign" data-tooltip></i></span><span hidden?="{{!needsflag}}" class="tooltip" title="Experimental feature behind a flag."><i class="icon-beaker" data-tooltip></i></span><content select=".edit"></content></div>
   <hgroup>
     <chromedash-color-status class="tooltip corner" title="Compatiblity Risk: overall interest from browser vendors and web developers" value="{{compatRisk}}" max="{{MAX_RISK}}"></chromedash-color-status>
     <h2>{{feature.name}}</h2>
