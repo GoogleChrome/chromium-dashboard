@@ -1,5 +1,5 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
-<link rel="import" href="../bower_components/polymer-ajax/polymer-xhr.html">
+<link rel="import" href="../bower_components/core-ajax/core-xhr.html">
 
 <polymer-element name="chromedash-userlist" attributes="users action">
 <template>
@@ -44,7 +44,7 @@ Polymer('chromedash-userlist', {
       var formData = new FormData();
       formData.append('email', email);
 
-      var xhr = document.createElement('polymer-xhr');
+      var xhr = document.createElement('core-xhr');
       xhr.request({url: this.action, method: 'POST', body: formData, callback:
         function(response, xhr) {
           if (xhr.status == 201) {
@@ -68,7 +68,7 @@ Polymer('chromedash-userlist', {
     var user = e.target.templateInstance.model.user;
     var idx = this.users.indexOf(user);
 
-    var xhr = document.createElement('polymer-xhr');
+    var xhr = document.createElement('core-xhr');
     xhr.request({url: sender.href, method: 'POST', callback: function(response, xhr) {
       sender.parentElement.classList.add('faded');
 

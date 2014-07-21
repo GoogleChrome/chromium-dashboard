@@ -1,12 +1,12 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
-<link rel="import" href="../bower_components/polymer-ajax/polymer-ajax.html">
+<link rel="import" href="../bower_components/core-ajax/core-ajax.html">
 <!-- <link rel="import" href="chromedash-color-status.html"> -->
 <link rel="import" href="x-meter.html">
 
 <polymer-element name="chromedash-metrics" attributes="type view">
 <template>
   <link rel="stylesheet" href="../css/elements/chromedash-metrics.css">
-  <polymer-ajax auto url="{{endpoint}}" response="{{props}}" handleAs="json"></polymer-ajax>
+  <core-ajax auto url="{{endpoint}}" response="{{props}}" handleAs="json"></core-ajax>
   <b>Showing {{props.length}} properties</b>
   <ol id="stack-rank-list">
     <li class="header">

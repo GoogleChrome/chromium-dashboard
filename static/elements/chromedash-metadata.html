@@ -1,10 +1,11 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
-<link rel="import" href="../bower_components/polymer-jsonp/polymer-jsonp.html">
+<link rel="import" href="../bower_components/core-ajax/core-ajax.html">
 
 <polymer-element name="chromedash-metadata">
 <template>
   <link rel="stylesheet" href="../css/elements/chromedash-metadata.css">
-  <polymer-jsonp auto url="//omahaproxy.appspot.com/all.json?callback=" on-polymer-response="{{onResponse}}"></polymer-jsonp>
+  <core-ajax auto url="//omahaproxy.appspot.com/all.json"
+             handleAs="json" on-core-response="{{onResponse}}"></core-ajax>
   <ul class="{{ {canaryisdev: canaryIsDev, betaisdev: betaIsDev} | tokenList }}">
     <template repeat="{{v in versions}}">
       <li data-version="{{v}}" on-click="{{selectMilestone}}" selected?="{{v == selected}}">{{v}}</li>

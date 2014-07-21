@@ -1,5 +1,5 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
-<link rel="import" href="../bower_components/polymer-ajax/polymer-xhr.html">
+<link rel="import" href="../bower_components/core-ajax/core-xhr.html">
 
 <polymer-element name="delete-link" extends="a" on-click="{{onClick}}">
 <template>
@@ -15,7 +15,7 @@
         return;
       }
     
-      var xhr = document.createElement('polymer-xhr');
+      var xhr = document.createElement('core-xhr');
       xhr.request({url: sender.href, method: 'POST', callback: function(response, xhr) {
         this.fire('ajaxdeleted', {response: response, xhr: xhr});
       }.bind(this)});

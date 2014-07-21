@@ -2,7 +2,7 @@
 
 <link rel="import" href="../bower_components/polymer-google-jsapi/polymer-google-jsapi.html">
 <link rel="import" href="../bower_components/polymer/polymer.html">
-<link rel="import" href="../bower_components/polymer-ajax/polymer-ajax.html">
+<link rel="import" href="../bower_components/core-ajax/core-ajax.html">
 
 <polymer-element name="chromedash-feature-timeline" attributes="type view timeline">
 <template>
@@ -26,13 +26,13 @@
       this.props = [];
     },
     selectedBucketIdChanged: function() {
-      var ajax = document.createElement('polymer-ajax');
+      var ajax = document.createElement('core-ajax');
       ajax.url = '/data/timeline/' + this.type + this.view;
       ajax.params = {
         bucket_id: this.selectedBucketId
       };
       ajax.handleAs = 'json';
-      ajax.addEventListener('polymer-response', function(e) {
+      ajax.addEventListener('core-response', function(e) {
         this.drawVisualization(e.detail.response, this.selectedBucketId);
       }.bind(this));
       ajax.go();
