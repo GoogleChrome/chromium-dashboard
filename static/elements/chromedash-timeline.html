@@ -1,13 +1,11 @@
-<!-- <script src='//www.google.com/jsapi?autoload={"modules":[{"name":"visualization","version":"1","packages":["corechart"]}]}'></script> -->
-
-<link rel="import" href="../bower_components/polymer-google-jsapi/polymer-google-jsapi.html">
 <link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="../bower_components/core-ajax/core-ajax.html">
+<link rel="import" href="../bower_components/google-apis/google-jsapi.html">
 
 <polymer-element name="chromedash-feature-timeline" attributes="type view timeline">
 <template>
   <link rel="stylesheet" href="../css/elements/chromedash-timeline.css">
-  <polymer-google-jsapi id="jsapi" on-polymer-google-jsapi-loaded="{{chartAPILoaded}}"></polymer-google-jsapi>
+  <google-jsapi on-api-load="{{chartAPILoaded}}"></google-jsapi>
   <select value="{{selectedBucketId}}">
     <option disabled value="1">Select a property</option>
     <option template repeat="{{bucket in props}}" value="{{bucket[0]}}">{{bucket[1]}}</option>
