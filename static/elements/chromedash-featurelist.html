@@ -143,10 +143,11 @@
     filter: function(val) {
       // Clear filter if there's no search or if called directly.
       if (!val) {
-        if (history && history.replaceState)
+        if (history && history.replaceState) {
           history.replaceState('', document.title, location.pathname + location.search);
-        else
+        } else {
           location.hash = '';
+        }
         this.filtered = this.features;
       } else {
         val = val.trim();
