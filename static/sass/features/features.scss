@@ -24,10 +24,10 @@ body {
 }
 
 chromedash-legend {
-  width: 900px;
-  @include calc(left, '50% - 900px/2');
-  top: 3%;
-  //opacity: 0; // Ensure no FOUC.
+  // width: 900px;
+  // @include calc(left, '50% - 900px/2');
+  // top: 3%;
+  // //opacity: 0; // Ensure no FOUC.
   font-size: 90%;
 
   .description {

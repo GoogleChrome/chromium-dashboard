@@ -3,34 +3,10 @@
 
 :host {
   display: block;
-  // @include display-flex;
-  // @include justify-content(center);
-  // @include align-items(center);
-  // position: absolute;
 }
 
-// #dialog {
-//   width: 600px;
-//   @include calc(left, '50% - 600px/2');
-//   top: 5%;
-
-//   // top: 100px;
-//   // left: 50%;
-//   //width: 512px;
-//   //margin-left: -256px;
-// //  z-index: 1500 !important;
-
-// }
-// #dialog::x-backdrop {
-//   background: rgba(0,0,0,0.4) !important;
-// }
-.dialog {
-  box-sizing: border-box;
-  overflow: hidden;
-  background: white;
-  padding: 20px 30px;
-  outline: 1px solid rgba(0,0,0,0.2);
-  box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+paper-dialog {
+  width: 900px;
 }
 
 h3 {
@@ -77,23 +53,6 @@ section {
 p {
   margin-top: 5px;
 }
-
-// #dialog {
-//   position: relative;
-//   box-sizing: border-box;
-//   @include user-select;
-//   overflow: hidden;
-//   @include gradient-bar-bg;
-//   box-shadow: 1px 1px 5px $gray-2;
-//   //border: 1px solid #ccc;
-//   border-radius: $default-border-radius;
-//   //background: white;
-//   padding: $content-padding $content-padding + 10;
-//   //outline: 1px solid rgba(0,0,0,0.2);
-//   //box-shadow: 0 4px 16px rgba(0,0,0,0.2);
-  
-//   //opacity: 0;
-// }
 
 polyfill-next-selector { content: ':host .close'; }
 ::content .close {
