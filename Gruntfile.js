@@ -11,7 +11,7 @@ module.exports = function(grunt) {
         //   ]
         // },
         strip: true,
-        csp: false,
+        csp: true, // TODO: update node_modules flip this
         inline: true
       },
       build: {

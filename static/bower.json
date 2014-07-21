@@ -20,11 +20,9 @@
     "tests"
   ],
   "dependencies": {
-    "platform": "Polymer/platform#master",
     "polymer": "Polymer/polymer#master",
-    "polymer-elements": "Polymer/polymer-elements#master",
-    "core-elements": "Polymer/core-elements#master",
     "core-ajax": "Polymer/core-ajax#master",
-    "google-apis": "PolymerLabs/google-apis#master"
+    "google-apis": "PolymerLabs/google-apis#master",
+    "paper-dialog": "Polymer/paper-dialog#master"
   }
 }
