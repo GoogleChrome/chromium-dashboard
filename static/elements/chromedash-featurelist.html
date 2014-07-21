@@ -78,7 +78,7 @@
         return;
       }
 
-      this.filter();
+      this.filter(location.hash.substr(1));
 
       document.body.classList.add('ready'); // unmask app.
 
@@ -143,9 +143,15 @@
     filter: function(val) {
       // Clear filter if there's no search or if called directly.
       if (!val) {
+        if (history && history.replaceState) {
+          history.replaceState('', document.title, location.pathname + location.search);
+        } else {
+          location.hash = '';
+        }
         this.filtered = this.features;
       } else {
         val = val.trim();
+        location.hash = val;
 
         // owner: user@chromium.org
         var match = val.match(/^owner:\s*(.*)/);

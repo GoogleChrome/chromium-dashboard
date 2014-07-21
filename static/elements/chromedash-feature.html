@@ -162,12 +162,13 @@
     openChanged: function() {
       this.open ? this.classList.add('open') : this.classList.remove('open');
 
-      if (history.replaceState) {
+      if (history && history.replaceState) {
         if (this.open) {
           history.pushState({id: this.feature.id}, this.feature.name,
-                            '/features/' + this.feature.id);
+                            '/features/' + this.feature.id + location.hash);
         } else {
-          history.replaceState({id: null}, this.feature.name, '/features');
+          history.replaceState({id: null}, this.feature.name,
+                               '/features' + location.hash);
         }
       }
     },
