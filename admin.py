@@ -326,6 +326,10 @@ class FeatureHandler(common.ContentHandler):
     if sample_links:
       sample_links = [x.strip() for x in sample_links.split(',')]
 
+    search_tags = self.request.get('search_tags') or []
+    if search_tags:
+      search_tags = [x.strip() for x in search_tags.split(',')]
+
     redirect_url = self.DEFAULT_URL
 
     # Update/delete existing feature.
@@ -362,6 +366,7 @@ class FeatureHandler(common.ContentHandler):
         feature.web_dev_views = int(self.request.get('web_dev_views'))
         feature.doc_links = doc_links
         feature.sample_links = sample_links
+        feature.search_tags = search_tags
     else:
       feature = models.Feature(
           category=int(self.request.get('category')),
@@ -391,6 +396,7 @@ class FeatureHandler(common.ContentHandler):
           web_dev_views=int(self.request.get('web_dev_views')),
           doc_links=doc_links,
           sample_links=sample_links,
+          search_tags=search_tags,
           )
 
     if 'delete' in path:

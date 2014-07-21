@@ -195,6 +195,7 @@
           this.filtered = this.features.filter(function(feature, idx, array) {
             return regex.test(feature.name) || regex.test(feature.category) ||
                    regex.test(feature.summary) ||
+                   regex.test(feature.search_tags) ||
                    /*regex.test(feature.shipped_milestone) ||*/
                    regex.test(feature.impl_status_chrome);
           });
