@@ -151,7 +151,9 @@
         this.filtered = this.features;
       } else {
         val = val.trim();
-        location.hash = val;
+        if (history && history.replaceState) {
+          history.replaceState({id: null}, document.title, '/features#' + val);
+        }
 
         // owner: user@chromium.org
         var match = val.match(/^owner:\s*(.*)/);

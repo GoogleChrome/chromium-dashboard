@@ -117,6 +117,20 @@ document.addEventListener('polymer-ready', function(e) {
     updateCount(featureList.filter(search.value));
   });
 
+  featureList.addEventListener('feature-toggle', function(e) {
+    var feature = e.detail.feature;
+    var open = e.detail.open;
+    if (history && history.replaceState) {
+      if (open) {
+        history.pushState({id: feature.id}, feature.name,
+                          '/features/' + feature.id);
+      } else {
+        var hash = search.value ? '#' + search.value : '';
+        history.replaceState({id: null}, feature.name, '/features' + hash);
+      }
+    }
+  });
+
   // Clear input when user clicks the 'x' button.
   search.addEventListener('search', function(e) {
     if (!e.target.value) {
