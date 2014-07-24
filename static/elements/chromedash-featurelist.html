@@ -7,7 +7,7 @@
   <ul>
     <template repeat="{{feature in filtered}}">
       <div hidden?="{{(filtered.length != features.length) || !feature.first_of_milestone}}" class="milestone-marker">{{feature.meta.milestone_str}}</div>
-      <li id="{{feature.id}}" is="chromedash-feature" feature="{{feature}}" needsflag="{{feature.meta.needsflag}}">
+      <li id="{{feature.id}}" is="chromedash-feature" feature="{{feature}}" needsflag="{{feature.meta.needsflag}}" search="{{search}}">
         <a href="/admin/features/edit/{{feature.id}}" class="edit" hidden?="{{!whitelisted}}">edit</a>
       </li>
     </template>

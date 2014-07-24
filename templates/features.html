@@ -93,6 +93,7 @@ document.addEventListener('polymer-ready', function(e) {
     var resp = e.target.response;
     featureList.features = (typeof resp == 'string') ? JSON.parse(resp) : resp;
     featureList.metadata = chromeMetadata; // Feature list needs access to the selected milestone.
+    featureList.search = search;
 
     updateCount(featureList.features.length); // Set initial # features showing.
     search.disabled = false;
@@ -115,20 +116,6 @@ document.addEventListener('polymer-ready', function(e) {
   featureList.addEventListener('filter-owner', function(e) {
     search.value = 'owner: ' + e.detail.val;
     updateCount(featureList.filter(search.value));
-  });
-
-  featureList.addEventListener('feature-toggle', function(e) {
-    var feature = e.detail.feature;
-    var open = e.detail.open;
-    if (history && history.replaceState) {
-      if (open) {
-        history.pushState({id: feature.id}, feature.name,
-                          '/features/' + feature.id);
-      } else {
-        var hash = search.value ? '#' + search.value : '';
-        history.replaceState({id: null}, feature.name, '/features' + hash);
-      }
-    }
   });
 
   // Clear input when user clicks the 'x' button.
