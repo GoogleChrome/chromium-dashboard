@@ -162,7 +162,7 @@
     openChanged: function() {
       this.open ? this.classList.add('open') : this.classList.remove('open');
 
-      this.fire('toggle-feature', {feature: this.feature, open: this.open});
+      this.fire('feature-toggled', {feature: this.feature, open: this.open});
     },
     toggle: function(e, details, sender) {
       // Don't toggle panel if tooltip or link is being clicked.
