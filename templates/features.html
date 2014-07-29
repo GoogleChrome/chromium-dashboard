@@ -118,6 +118,10 @@ document.addEventListener('polymer-ready', function(e) {
     updateCount(featureList.filter(search.value));
   });
 
+  featureList.addEventListener('toggle-feature', function(e) {
+    this.toggleFeature(e.detail.feature, e.detail.open);
+  });
+
   // Clear input when user clicks the 'x' button.
   search.addEventListener('search', function(e) {
     if (!e.target.value) {

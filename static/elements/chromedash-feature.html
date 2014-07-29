@@ -31,7 +31,7 @@
   </script>
 </polymer-element>
 
-<polymer-element name="chromedash-feature" extends="li" attributes="feature needsflag search" tabindex="0">
+<polymer-element name="chromedash-feature" extends="li" attributes="feature needsflag" tabindex="0">
 <template>
 <link rel="stylesheet" href="../css/elements/chromedash-feature.css">
 <div on-click="{{toggle}}"><div class="topcorner pull-right"><span hidden?="{{!removed && !deprecated}}" class="tooltip" title="{{removed ? 'Removed feature' : 'Deprecated feature'}}"><i class="icon-warning-sign" data-tooltip></i></span><span hidden?="{{!needsflag}}" class="tooltip" title="Experimental feature behind a flag."><i class="icon-beaker" data-tooltip></i></span><content select=".edit"></content></div>
@@ -155,7 +155,6 @@
     needsflag: false,
     deprecated: false,
     feature: null,
-    search: null,
     ready: function() {
       this.MAX_RISK = this.MAX_VENDOR_VIEW + this.MAX_WEBDEV_VIEW +
                       this.MAX_STANDARDS_VAL;
@@ -163,15 +162,7 @@
     openChanged: function() {
       this.open ? this.classList.add('open') : this.classList.remove('open');
 
-      if (history && history.replaceState) {
-        if (this.open) {
-          history.pushState({id: this.feature.id}, this.feature.name,
-                            '/features/' + this.feature.id);
-        } else {
-          var hash = this.search.value ? '#' + this.search.value : '';
-          history.replaceState({id: null}, this.feature.name, '/features' + hash);
-        }
-      }
+      this.fire('toggle-feature', {feature: this.feature, open: this.open});
     },
     toggle: function(e, details, sender) {
       // Don't toggle panel if tooltip or link is being clicked.

@@ -7,7 +7,7 @@
   <ul>
     <template repeat="{{feature in filtered}}">
       <div hidden?="{{(filtered.length != features.length) || !feature.first_of_milestone}}" class="milestone-marker">{{feature.meta.milestone_str}}</div>
-      <li id="{{feature.id}}" is="chromedash-feature" feature="{{feature}}" needsflag="{{feature.meta.needsflag}}" search="{{search}}">
+      <li id="{{feature.id}}" is="chromedash-feature" feature="{{feature}}" needsflag="{{feature.meta.needsflag}}">
         <a href="/admin/features/edit/{{feature.id}}" class="edit" hidden?="{{!whitelisted}}">edit</a>
       </li>
     </template>
@@ -47,6 +47,7 @@
   Polymer('chromedash-featurelist', {
     whitelisted: false,
     metadata: null,
+    search: null,
     ready: function() {
       this.features = this.features || [];
       this.filtered = this.filtered || [];
@@ -258,6 +259,17 @@
           featureLiList_[i].scrollIntoView(true);
           featureLiList_[i].open = true;
           break;
+        }
+      }
+    },
+    toggleFeature: function(feature, open) {
+      if (history && history.replaceState) {
+        if (open) {
+          history.pushState({id: feature.id}, feature.name,
+                            '/features/' + feature.id);
+        } else {
+          var hash = this.search.value ? '#' + this.search.value : '';
+          history.replaceState({id: null}, feature.name, '/features' + hash);
         }
       }
     }
