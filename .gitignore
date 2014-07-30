@@ -7,5 +7,9 @@
 node_modules
 *bower_components
 *.vulcanize.html
+<<<<<<< HEAD
 *.iml
 .idea/*
+=======
+*.vulcanize.js
+>>>>>>> upstream/master

@@ -1,7 +1,7 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="chromedash-feature.html">
 
-<polymer-element name="chromedash-featurelist" attributes="whitelisted features" on-scroll="{{onScrollList}}" on-keyup="{{onKeyUp}}">
+<polymer-element name="chromedash-featurelist" attributes="whitelisted features" on-scroll="{{onScrollList}}" on-keyup="{{onKeyUp}}" on-feature-toggled="{{onFeatureToggled}}">
 <template>
   <link rel="stylesheet" href="../css/elements/chromedash-featurelist.css">
   <ul>
@@ -47,6 +47,7 @@
   Polymer('chromedash-featurelist', {
     whitelisted: false,
     metadata: null,
+    search: null,
     ready: function() {
       this.features = this.features || [];
       this.filtered = this.filtered || [];
@@ -67,6 +68,19 @@
     onScrollList: function(e, detail, sender) {
       var feature = this.featureInView(sender.scrollTop);
       this.metadata.selectMilestone(feature);
+    },
+    onFeatureToggled: function(e, detail, sender) {
+      var feature = detail.feature;
+      var open = detail.open;
+      if (history && history.replaceState) {
+        if (open) {
+          history.pushState({id: feature.id}, feature.name,
+                            '/features/' + feature.id);
+        } else {
+          var hash = this.search.value ? '#' + this.search.value : '';
+          history.replaceState({id: null}, feature.name, '/features' + hash);
+        }
+      }
     },
     metadataChanged: function(oldVal) {
       // TODO: probably need to remove the listener if metadata element changes.
@@ -151,7 +165,9 @@
         this.filtered = this.features;
       } else {
         val = val.trim();
-        location.hash = val;
+        if (history && history.replaceState) {
+          history.replaceState({id: null}, document.title, '/features#' + val);
+        }
 
         // owner: user@chromium.org
         var match = val.match(/^owner:\s*(.*)/);
@@ -195,6 +211,7 @@
           this.filtered = this.features.filter(function(feature, idx, array) {
             return regex.test(feature.name) || regex.test(feature.category) ||
                    regex.test(feature.summary) ||
+                   regex.test(feature.search_tags) ||
                    /*regex.test(feature.shipped_milestone) ||*/
                    regex.test(feature.impl_status_chrome);
           });
