@@ -7,3 +7,5 @@
 node_modules
 *bower_components
 *.vulcanize.html
+*.iml
+.idea/*
