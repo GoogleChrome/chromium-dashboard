@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+
+{% block css %}
+<link rel="stylesheet" href="/static/css/feature/feature.css">
+{% endblock %}
+
+{% block rss %}
+<link rel="alternate" type="application/rss+xml" href="/features.xml" title="All features" />
+{% endblock %}
+
+{% block content %}
+<div>
+  <section id="name">
+    <h2>
+      {{ feature.name }}
+      {% if feature.impl_status_chrome == "Deprecated" %} (deprecated){% endif %}
+    </h2>
+    <a href="/features#category: {{ feature.category }}">{{ feature.category }}</a>
+  </section>
+
+  {% if feature.summary %}
+  <section id="summary">
+    <h3>Summary</h3>
+    <p>{{ feature.summary }}</p>
+    {% if feature.comments %}
+    <p class="note">Note: {{ feature.comments }}</p>
+    {% endif %}
+  </section>
+  {% endif %}
+
+  {% if feature.sample_links %}
+  <section id="demo">
+    <h3>{% if feature.sample_links|length == 1 %}Demo{% else %}Demos{% endif %}</h3>
+    <ul>
+      {% for sample_link in feature.sample_links %}
+      <li><a href="{{ sample_link }}">{{ sample_link }}</a></li>
+      {% endfor %}
+    </ul>
+  </section>
+  {% endif %}
+
+  {% if feature.doc_links %}
+  <section id="documentation">
+    <h3>Documentation</h3>
+    <ul>
+      {% for doc_link in feature.doc_links %}
+      <li><a href="{{ doc_link }}">{{ doc_link }}</a></li>
+      {% endfor %}
+    </ul>
+  </section>
+  {% endif %}
+
+  {% if feature.spec_link %}
+  <section id="specification">
+    <h3>Specification</h3>
+    <p><a href="{{ feature.spec_link }}">{{ feature.standardization.text }}</a></p>
+  </section>
+  {% endif %}
+
+  <section id="status">
+    <h3>Implementation Status</h3>
+    <p>
+      {% if feature.shipped_milestone %}
+      {% if feature.meta.needsflag %}Behind a flag{% else %}Enabled by default{% endif %} in <b>desktop Chrome {{ feature.meta.milestone_str }}</b></p>
+      {% else %}
+      <b>Desktop Chrome</b>: {{ feature.meta.milestone_str }}
+      {% endif %}
+      {% if feature.bug_url %}
+      (<a href="{{ feature.bug_url }}">launch bug</a>)
+      {% endif %}
+    </p>
+
+    {% if feature.shipped_android_milestone %}
+    <p>Available in <b>Chrome for Android release {{ feature.shipped_android_milestone }}</b>.</p>
+    {% endif %}
+
+    {% if feature.shipped_ios_milestone %}
+    <p>Available in <b>Chrome for iOS release {{ feature.shipped_ios_milestone }}</b>.</p>
+    {% endif %}
+
+    {% if feature.shipped_webview_milestone %}
+    <p>Available in <b>Android WebView release {{ feature.shipped_webview_milestone }}</b>.</p>
+    {% endif %}
+  </section>
+
+  <section id="consensus">
+    <h3>Consensus & Standardization</h3>
+    <ul>
+      {% if feature.ff_views %}
+      <li>
+        <b>Firefox</b>:
+        {% if feature.ff_views_link %}
+        <a href="{{ feature.ff_views_link }}">{{ feature.ff_views.text }}</a>
+        {% else %}
+        {{ feature.ff_views.text }}
+        {% endif %}
+      </li>
+      {% endif %}
+
+      {% if feature.ie_views %}
+      <li>
+        <b>Internet Explorer</b>:
+        {% if feature.ie_views_link %}
+        <a href="{{ feature.ie_views_link }}">{{ feature.ie_views.text }}</a>
+        {% else %}
+        {{ feature.ie_views.text }}
+        {% endif %}
+      </li>
+      {% endif %}
+
+      {% if feature.shipped_opera_milestone %}
+      <li><b>Opera</b>: Shipped in release {{ feature.shipped_opera_milestone }}</li>
+      {% endif %}
+
+      {% if feature.shipped_opera_android_milestone %}
+      <li><b>Opera for Android</b>: Shipped in release {{ feature.shipped_opera_android_milestone }}</li>
+      {% endif %}
+
+      {% if feature.safari_views %}
+      <li>
+        <b>Safari</b>:
+        {% if feature.safari_views_link %}
+        <a href="{{ feature.safari_views_link }}">{{ feature.safari_views.text }}</a>
+        {% else %}
+        {{ feature.safari_views.text }}
+        {% endif %}
+      </li>
+      {% endif %}
+
+      <li><b>Web Developers</b>: {{ feature.web_dev_views.text }}</li>
+    </ul>
+  </section>
+
+  {% if feature.owner %}
+  <section id="owner">
+    <h3>{% if feature.owner|length == 1 %}Owner{% else %}Owners{% endif %}</h3>
+    <ul>
+      {% for owner in feature.owner %}
+        <li><a href="mailto:{{ owner }}">{{ owner }}</a></li>
+      {% endfor %}
+    </ul>
+  </section>
+  {% endif %}
+
+  <section id="updated">
+    <p>Last updated on {{ feature.updated_display }}</p>
+  </section>
+</div>
+{% endblock %}

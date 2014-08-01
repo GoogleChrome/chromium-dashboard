@@ -276,6 +276,20 @@ class Feature(DictModel):
     return feature_list
 
   @classmethod
+  def get_feature(self, feature_id, update_cache=False):
+    KEY = '%s|%s' % (Feature.DEFAULT_MEMCACHE_KEY, feature_id)
+    feature = memcache.get(KEY)
+
+    if feature is None or update_cache:
+      unformatted_feature = Feature.get_by_id(feature_id)
+      if unformatted_feature:
+        feature = unformatted_feature.format_for_template()
+        feature['updated_display'] = unformatted_feature.updated.strftime("%Y-%m-%d")
+        memcache.set(KEY, feature)
+
+    return feature
+
+  @classmethod
   def get_chronological(limit=None, update_cache=False):
     KEY = '%s|%s|%s' % (Feature.DEFAULT_MEMCACHE_KEY, 'cronorder', limit)
 
