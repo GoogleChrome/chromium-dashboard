@@ -144,6 +144,7 @@ transformers:
     - property: shipped_milestone
       external_name: shipped_milestone
       # Type: String Stats: 5 properties of this type in this kind.
+      import_transform: transform.none_if_empty(int)
 
     - property: spec_link
       external_name: spec_link
