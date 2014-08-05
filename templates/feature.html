@@ -61,7 +61,7 @@
     <h3>Implementation Status</h3>
     <p>
       {% if feature.shipped_milestone %}
-      {% if feature.meta.needsflag %}Behind a flag{% else %}Enabled by default{% endif %} in <b>desktop Chrome {{ feature.meta.milestone_str }}</b></p>
+      {% if feature.meta.needsflag %}Behind a flag{% else %}Enabled by default{% endif %} in <b>desktop Chrome {{ feature.meta.milestone_str }}</b>
       {% else %}
       <b>Desktop Chrome</b>: {{ feature.meta.milestone_str }}
       {% endif %}
