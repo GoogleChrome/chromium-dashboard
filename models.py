@@ -404,7 +404,7 @@ class FeatureForm(forms.Form):
   name = forms.CharField(required=True, label='Feature')
 
   summary = forms.CharField(label='', required=True, max_length=500,
-      widget=forms.Textarea(attrs={'cols': 50, 'placeholder': 'Summary description'}))
+      widget=forms.Textarea(attrs={'cols': 50, 'placeholder': 'Summary description', 'maxlength': 500}))
 
   # owner = PlaceholderCharField(
   #     required=False, placeholder='Owner(s) email',
@@ -458,11 +458,11 @@ class FeatureForm(forms.Form):
                              help_text="Prefer editor's draft.")
 
   doc_links = forms.CharField(label='Doc links', required=False, max_length=500,
-      widget=forms.Textarea(attrs={'cols': 50, 'placeholder': 'Links to documentation (comma separated)'}),
+      widget=forms.Textarea(attrs={'cols': 50, 'placeholder': 'Links to documentation (comma separated)', 'maxlength': 500}),
       help_text='Comma separated URLs')
 
   sample_links = forms.CharField(label='Samples links', required=False, max_length=500,
-      widget=forms.Textarea(attrs={'cols': 50, 'placeholder': 'Links to samples (comma separated)'}),
+      widget=forms.Textarea(attrs={'cols': 50, 'placeholder': 'Links to samples (comma separated)', 'maxlength': 500}),
       help_text='Comma separated URLs')
 
   footprint  = forms.ChoiceField(label='Technical footprint',
