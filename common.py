@@ -117,26 +117,30 @@ class ContentHandler(BaseHandler):
       handle_404(self.request, self.response, Exception)
 
   def render_atom_feed(self, title, data):
-    prefix = '%s://%s%s' % (self.request.scheme, self.request.host,
-                            self.request.path.replace('.xml', ''))
+    features_url = '%s://%s%s' % (self.request.scheme,
+                                  self.request.host,
+                                  self.request.path.replace('.xml', ''))
+    feature_url_prefix = '%s://%s%s' % (self.request.scheme,
+                                        self.request.host,
+                                        '/feature')
 
     feed = feedgenerator.Atom1Feed(
         title=unicode('%s - %s' % (settings.APP_TITLE, title)),
-        link=prefix,
+        link=features_url,
         description=u'New features exposed to web developers',
         language=u'en'
-        )
+    )
     for f in data:
       pubdate = datetime.datetime.strptime(str(f['updated'][:19]),
                                            '%Y-%m-%d  %H:%M:%S')
       feed.add_item(
           title=unicode(f['name']),
-          link='%s/%s' % (prefix, f.get('id')),
+          link='%s/%s' % (feature_url_prefix, f.get('id')),
           description=f.get('summary', ''),
           pubdate=pubdate,
           author_name=unicode(settings.APP_TITLE),
           categories=[f['category']]
-          )
+      )
     self.response.headers.add_header('Content-Type',
       'application/atom+xml;charset=utf-8')
     self.response.out.write(feed.writeString('utf-8'))

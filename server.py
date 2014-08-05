@@ -114,6 +114,15 @@ class MainHandler(common.ContentHandler, common.JSONHandler):
         filterby = None
 
         category = self.request.get('category', None)
+
+        # Support setting larger-than-default Atom feed sizes so that web
+        # crawlers can treat use this as a full site feed.
+        try:
+          max_items = int(self.request.get('max-items',
+                                           settings.RSS_FEED_LIMIT))
+        except TypeError:
+          max_items = settings.RSS_FEED_LIMIT
+
         if category is not None:
           for k,v in models.FEATURE_CATEGORIES.iteritems():
             normalized = normalized_name(v)
@@ -122,7 +131,7 @@ class MainHandler(common.ContentHandler, common.JSONHandler):
               break
 
         feature_list = models.Feature.get_all( # Memcached
-            limit=settings.RSS_FEED_LIMIT,
+            limit=max_items,
             filterby=filterby,
             order='-updated')
 
@@ -154,7 +163,16 @@ class MainHandler(common.ContentHandler, common.JSONHandler):
         template_data['STANDARDS_VALS'] = [
           {'key': k, 'val': v} for k,v in
           models.STANDARDIZATION.iteritems()]
+    elif path.startswith('feature'):
+      feature = None
+      try:
+        feature = models.Feature.get_feature(int(feature_id))
+      except TypeError:
+        pass
+      if feature is None:
+        self.abort(404)
 
+      template_data['feature'] = feature
     elif path.startswith('metrics/css/timeline'):
       properties = sorted(uma.CSS_PROPERTY_BUCKETS.items(), key=lambda x:x[1])
       template_data['CSS_PROPERTY_BUCKETS'] = json.dumps(
