@@ -13,7 +13,7 @@
   <section id="name">
     <h2>
       {{ feature.name }}
-      {% if feature.impl_status_chrome == "Deprecated" %} (deprecated){% endif %}
+      {% if feature.impl_status_chrome == "Deprecated" or feature.impl_status_chrome == "Removed" or feature.impl_status_chrome == "No longer pursuing" %} (deprecated){% endif %}
     </h2>
     <a href="/features#category: {{ feature.category }}">{{ feature.category }}</a>
   </section>
