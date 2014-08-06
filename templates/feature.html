@@ -1,7 +1,9 @@
 {% extends "base.html" %}
 
 {% block meta %}
+{% if feature.summary %}
 <meta name="description" content="{{ feature.summary }}">
+{% endif %}
 {% endblock %}
 
 {% block css %}
