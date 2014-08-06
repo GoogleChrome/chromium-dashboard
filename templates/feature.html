@@ -1,5 +1,9 @@
 {% extends "base.html" %}
 
+{% block meta %}
+<meta name="description" content="{{ feature.summary }}">
+{% endblock %}
+
 {% block css %}
 <link rel="stylesheet" href="/static/css/feature/feature.css">
 {% endblock %}
