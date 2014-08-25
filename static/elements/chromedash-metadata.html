@@ -4,7 +4,7 @@
 <polymer-element name="chromedash-metadata">
 <template>
   <link rel="stylesheet" href="../css/elements/chromedash-metadata.css">
-  <core-ajax auto url="//omahaproxy.appspot.com/all.json"
+  <core-ajax auto url="https://omahaproxy.appspot.com/all.json"
              handleAs="json" on-core-response="{{onResponse}}"></core-ajax>
   <ul class="{{ {canaryisdev: canaryIsDev, betaisdev: betaIsDev} | tokenList }}">
     <template repeat="{{v in versions}}">
