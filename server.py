@@ -47,7 +47,7 @@ class MainHandler(common.ContentHandler, common.JSONHandler):
   def __get_omaha_data(self):
     omaha_data = memcache.get('omaha_data')
     if omaha_data is None:
-      result = urlfetch.fetch('http://omahaproxy.appspot.com/all.json')
+      result = urlfetch.fetch('https://omahaproxy.appspot.com/all.json')
       if result.status_code == 200:
         omaha_data = json.loads(result.content)
         memcache.set('omaha_data', omaha_data, time=86400) # cache for 24hrs.
