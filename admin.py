@@ -23,6 +23,7 @@ import datetime
 import json
 import logging
 import os
+import re
 import sys
 import webapp2
 
@@ -320,11 +321,11 @@ class FeatureHandler(common.ContentHandler):
 
     doc_links = self.request.get('doc_links') or []
     if doc_links:
-      doc_links = [x.strip() for x in doc_links.split(',')]
+      doc_links = [x.strip() for x in re.split(',|\\r?\\n', doc_links)]
 
     sample_links = self.request.get('sample_links') or []
     if sample_links:
-      sample_links = [x.strip() for x in sample_links.split(',')]
+      sample_links = [x.strip() for x in re.split(',|\\r?\\n', sample_links)]
 
     search_tags = self.request.get('search_tags') or []
     if search_tags:
