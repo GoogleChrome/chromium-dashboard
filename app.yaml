@@ -1,5 +1,5 @@
 application: cr-status
-version: 20140909
+version: 20141001-ssl
 runtime: python27
 threadsafe: true
 api_version: 1
@@ -52,18 +52,22 @@ handlers:
 
 - url: /admin/features/.*
   script: admin.app
+  secure: always
 
 - url: /admin/users/.*
   script: users.app
   login: admin
+  secure: always
 
 - url: /admin/.*
   script: google.appengine.ext.admin.application
   login: admin
+  secure: always
   
 # Main server ------------------------------------------------------------------
 - url: /.*
   script: server.app
+  secure: always
 
 skip_files:
 - ^(.*/)?app\.yaml
