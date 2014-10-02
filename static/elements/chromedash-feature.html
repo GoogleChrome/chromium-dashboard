@@ -34,7 +34,7 @@
 <polymer-element name="chromedash-feature" extends="li" attributes="feature needsflag" tabindex="0">
 <template>
 <link rel="stylesheet" href="../css/elements/chromedash-feature.css">
-<div on-click="{{toggle}}">
+<div on-tap="{{toggle}}">
   <div class="topcorner pull-right">
     <span hidden?="{{!removed && !deprecated}}" class="tooltip" title="{{removed ? 'Removed feature' : 'Deprecated feature'}}">
       <i class="icon-warning-sign" data-tooltip></i>
@@ -50,7 +50,7 @@
   <hgroup>
     <chromedash-color-status class="tooltip corner" title="Compatibility risk: perceived interest from browser vendors and web developers" value="{{compatRisk}}" max="{{MAX_RISK}}"></chromedash-color-status>
     <h2>{{feature.name}}</h2>
-    <label class="category" on-click="{{categoryFilter}}">{{feature.category}}</label>
+    <label class="category" on-tap="{{categoryFilter}}">{{feature.category}}</label>
   </hgroup>
   <section class="desc"><summary class="{{ {open: open} | tokenList }}">{{feature.summary}}</summary></section>
   <template if="{{open}}">
@@ -73,7 +73,7 @@
         <span hidden?="{{!feature.bug_url}}"><a href="{{feature.bug_url}}" target="_blank">Launch bug</a></span>
         <span class="owner" hidden?="{{!feature.owner.length}}">
           <label>Owner(s)</label><template repeat="{{owner, i in feature.owner}}">
-            <span on-click="{{ownerFilter}}">{{owner}}</span><template if="{{feature.owner.length > 1 && i < feature.owner.length - 1}}">,</template>
+            <span on-tap="{{ownerFilter}}">{{owner}}</span><template if="{{feature.owner.length > 1 && i < feature.owner.length - 1}}">,</template>
           </template>
         </span>
       </div>

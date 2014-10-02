@@ -1,13 +1,13 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="../bower_components/core-ajax/core-xhr.html">
 
-<polymer-element name="delete-link" extends="a" on-click="{{onClick}}">
+<polymer-element name="delete-link" extends="a" on-tap="{{onTap}}">
 <template>
   <content></content>
 </template>
 <script>
   Polymer({
-    onClick: function(e, details, sender) {
+    onTap: function(e, details, sender) {
       e.preventDefault();
 
       var msg = this.getAttribute('message') || 'Remove?';

@@ -10,8 +10,8 @@
   <b>Showing {{props.length}} properties</b>
   <ol id="stack-rank-list">
     <li class="header">
-      <label on-click="{{sort}}" data-order="property_name">Name <i class="icon-long-arrow-{{sortOrders.property_name.reverse ? 'up' : 'down'}} {{ {activated: sortOrders.property_name.activated} | tokenList }}"></i></label>
-      <label on-click="{{sort}}" data-order="percentage" class="flex2">Percentage <i class="icon-long-arrow-{{sortOrders.percentage.reverse ? 'down' : 'up'}} {{ {activated: sortOrders.percentage.activated} | tokenList }}"></i></label>
+      <label on-tap="{{sort}}" data-order="property_name">Name <i class="icon-long-arrow-{{sortOrders.property_name.reverse ? 'up' : 'down'}} {{ {activated: sortOrders.property_name.activated} | tokenList }}"></i></label>
+      <label on-tap="{{sort}}" data-order="percentage" class="flex2">Percentage <i class="icon-long-arrow-{{sortOrders.percentage.reverse ? 'down' : 'up'}} {{ {activated: sortOrders.percentage.activated} | tokenList }}"></i></label>
     </li>
     <template if="{{!props.length}}">
       <li class="loading">Loading...</li>
@@ -19,7 +19,7 @@
     <template repeat="{{prop in viewList}}">
       <li id="{{prop.property_name}}" hidden?="{{prop.property_name == 'ERROR'}}" tabindex="0">
         <label><a href="#{{prop.property_name}}" title="Deep link to this property" alt="Deep link to this property">{{prop.property_name}}</a></label>
-        <x-meter value="{{prop.percentage}}" on-click="{{showTimeline}}" title="Click to see a timeline view of this property"></x-meter>
+        <x-meter value="{{prop.percentage}}" on-tap="{{showTimeline}}" title="Click to see a timeline view of this property"></x-meter>
       </li>
     </template>
   </ol>
@@ -43,12 +43,12 @@
 
   Polymer({
     type: '',
-    ready: function() {
+    created: function() {
       this.props = [];
       this.viewList = [];
     },
     propsChanged: function() {
-      if (!this.props.length) {
+      if (!this.props || !this.props.length) {
         return;
       }
 
@@ -96,6 +96,7 @@
       if (prop) {
         var el = this.$['stack-rank-list'].querySelector('#' + prop);
         el.scrollIntoView(true);
+        //el.scrollIntoView(true, {behavior: 'smooth'});
       }
     }
   });

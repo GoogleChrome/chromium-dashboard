@@ -8,7 +8,7 @@
              handleAs="json" on-core-response="{{onResponse}}"></core-ajax>
   <ul class="{{ {canaryisdev: canaryIsDev, betaisdev: betaIsDev} | tokenList }}">
     <template repeat="{{v in versions}}">
-      <li data-version="{{v}}" on-click="{{selectMilestone}}" selected?="{{v == selected}}">{{v}}</li>
+      <li data-version="{{v}}" on-tap="{{selectMilestone}}" selected?="{{v == selected}}">{{v}}</li>
     </template>
   </ul>
   <div hidden?="{{!fetchError}}" class="error">Error fetching Chrome version information.</div>
@@ -19,7 +19,7 @@
     canaryIsDev: false,
     betaIsDev: false,
     fetchError: false,
-    ready: function() {
+    created: function() {
       this.implStatuses = this.implStatuses || {};
       this.STATUS = this.STATUS || {};
       this.channels = this.channels || {};

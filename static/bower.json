@@ -22,7 +22,7 @@
   "dependencies": {
     "polymer": "Polymer/polymer#master",
     "core-ajax": "Polymer/core-ajax#master",
-    "google-apis": "PolymerLabs/google-apis#master",
+    "google-apis": "GoogleWebComponents/google-apis#master",
     "paper-dialog": "Polymer/paper-dialog#master"
   }
 }

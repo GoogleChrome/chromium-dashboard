@@ -48,7 +48,7 @@
     whitelisted: false,
     metadata: null,
     search: null,
-    ready: function() {
+    created: function() {
       this.features = this.features || [];
       this.filtered = this.filtered || [];
     },
@@ -88,7 +88,7 @@
       this.metadata.addEventListener('milestoneselect', onMetadataChanged_.bind(this));
     },
     featuresChanged: function() {
-      if (!this.features.length) {
+      if (!this.features || !this.features.length) {
         return;
       }
 
@@ -113,28 +113,11 @@
         }
       });
     },
-    // offsetChanged: function() {
-    //   var viewportH = this.clientHeight;
-    //   var itemHeight = 75; //parseInt(window.getComputedStyle(this.featureLiList[0]).height);
-    //   var ITEMS_LIMIT = Math.floor(viewportH / itemHeight);
-
-    //   console.log(this.offset, this.offset + ITEMS_LIMIT)
-    //   //this.renderedList = this.filtered.slice(this.offset, this.offset + ITEMS_LIMIT);
-
-    //   for (var i = 0, f; f = this.features[i]; ++i) {
-    //     f.inView = false;
-    //     if (this.offset <= i && i < this.offset + ITEMS_LIMIT) {
-    //       f.inView = true;
-    //     }
-    //   }
-    // },
     filterOnCategory: function(val) {
       var regex = new RegExp(val, 'i');
       this.filtered = this.features.filter(function(feature, idx, array) {
         return regex.test(feature.category);
       });
-
-      this.filteredChanged();
 
       return this.filtered.length;
     },
@@ -144,12 +127,10 @@
         return regex.test(feature.owner.toString());
       });
 
-      this.filteredChanged();
-
       return this.filtered.length;
     },
-    // TODO: WHY ISNT THIS CALLED when .filtered is set!!
     filteredChanged: function() {
+      // Wait one rAF do model has updated the DOM.
       this.async(function() {
         featureLiList_ = this.shadowRoot.querySelectorAll('li');
       });
@@ -165,6 +146,7 @@
         this.filtered = this.features;
       } else {
         val = val.trim();
+
         if (history && history.replaceState) {
           history.replaceState({id: null}, document.title, '/features#' + val);
         }
