@@ -1,5 +1,5 @@
 application: cr-status
-version: 2014-11-13
+version: 2014-11-14
 runtime: python27
 threadsafe: true
 api_version: 1
@@ -65,6 +65,12 @@ handlers:
   secure: always
   
 # Main server ------------------------------------------------------------------
+# features.xml needs to support HTTP as well as HTTPS, as some RSS backends don't support SNI certs.
+# Same issue as what's described at https://github.com/Polymer/blog/issues/7
+- url: /features.xml
+  script: server.app
+  secure: optional
+
 - url: /.*
   script: server.app
   secure: always
