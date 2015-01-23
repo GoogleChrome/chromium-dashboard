@@ -69,7 +69,7 @@
         <template if="{{feature.shipped_webview_milestone}}">
           <span class="chrome_webview tooltip" title="Chrome Webview"><label>Webview</label>{{feature.shipped_webview_milestone}}</span>
         </template>
-        <span><label>Prefixed</label>{{feature.prefixed ? 'Yes' : 'No'}}</span>
+        <span hidden?="{{!feature.prefixed}}"><label>Prefixed</label>Yes</span>
         <span hidden?="{{!feature.bug_url}}"><a href="{{feature.bug_url}}" target="_blank">Launch bug</a></span>
         <span class="owner" hidden?="{{!feature.owner.length}}">
           <label>Owner(s)</label><template repeat="{{owner, i in feature.owner}}">
