@@ -457,6 +457,11 @@ CSS_PROPERTY_BUCKETS = {
   453: 'grid',
   454: 'all',
   455: 'justify-items',
+  456: 'scroll-blocks-on',
+  457: 'motion-path',
+  458: 'motion-position',
+  459: 'motion-rotation',
+  460: 'motion',
 }
 
 PAGE_VISITS_BUCKET_ID = 52 # corresponds to the property below.
