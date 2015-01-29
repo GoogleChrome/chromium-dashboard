@@ -58,6 +58,7 @@ class TimelineHandler(common.JSONHandler):
 
       memcache.set(KEY, data, time=CACHE_AGE)
 
+    data = self._clean_data(data)
     super(TimelineHandler, self).get(data)
 
 
@@ -115,6 +116,7 @@ class FeatureHandler(common.JSONHandler):
 
         memcache.set(self.MEMCACHE_KEY, properties, time=CACHE_AGE)
 
+    properties = self._clean_data(properties)
     super(FeatureHandler, self).get(properties)
 
 
