@@ -43,6 +43,20 @@ class BaseHandler(webapp2.RequestHandler):
     # Settings can't be global in python 2.7 env.
     logging.getLogger().setLevel(logging.DEBUG)
 
+
+class JSONHandler(BaseHandler):
+
+  def get(self, data, formatted=False):
+    self.response.headers['Content-Type'] = 'application/json;charset=utf-8'
+    if formatted:
+      return self.response.write(json.dumps(data, separators=(',',':')))
+    else:
+      data = [entity.to_dict() for entity in data]
+      return self.response.write(json.dumps(data, separators=(',',':')))
+
+
+class ContentHandler(BaseHandler):
+
   def _is_user_whitelisted(self, user):
     if not user:
       return False
@@ -62,33 +76,6 @@ class BaseHandler(webapp2.RequestHandler):
         is_whitelisted = True
 
     return is_whitelisted
-
-
-class JSONHandler(BaseHandler):
-
-  def _clean_data(self, data):
-
-    def truncate_day_percentage(data):
-      data.day_percentage = round(data.day_percentage, 4)
-      return data
-
-    user = users.get_current_user()
-    # Show raw day percentage numbers if user is whitelisted.
-    if not self._is_user_whitelisted(user):
-      data = map(truncate_day_percentage, data)
-
-    return data
-
-  def get(self, data, formatted=False):
-    self.response.headers['Content-Type'] = 'application/json;charset=utf-8'
-    if formatted:
-      return self.response.write(json.dumps(data, separators=(',',':')))
-    else:
-      data = [entity.to_dict() for entity in data]
-      return self.response.write(json.dumps(data, separators=(',',':')))
-
-
-class ContentHandler(BaseHandler):
 
   def _add_common_template_values(self, d):
     """Mixin common values for templates into d."""
