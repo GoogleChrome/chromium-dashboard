@@ -46,6 +46,22 @@ class BaseHandler(webapp2.RequestHandler):
 
 class JSONHandler(BaseHandler):
 
+  def _is_googler(self, user):
+    return user and user.email().endswith('@google.com')
+
+  def _clean_data(self, data):
+
+    def truncate_day_percentage(data):
+      data.day_percentage = round(data.day_percentage, 4)
+      return data
+
+    user = users.get_current_user()
+    # Show raw day percentage numbers if user is a googler.
+    if not self._is_googler(user):
+      data = map(truncate_day_percentage, data)
+
+    return data
+
   def get(self, data, formatted=False):
     self.response.headers['Content-Type'] = 'application/json;charset=utf-8'
     if formatted:
