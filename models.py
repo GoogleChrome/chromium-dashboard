@@ -518,8 +518,8 @@ class FeatureForm(forms.Form):
   search_tags = forms.CharField(label='Search tags', required=False,
       help_text='Comma separated keywords used only in search')
 
-  comments = forms.CharField(label='', required=False, widget=forms.Textarea(
-      attrs={'cols': 50, 'placeholder': 'Additional comments, caveats, info...'}))
+  comments = forms.CharField(label='', required=False, max_length=500, widget=forms.Textarea(
+      attrs={'cols': 50, 'placeholder': 'Additional comments, caveats, info...', 'maxlength': 500}))
 
   class Meta:
     model = Feature
