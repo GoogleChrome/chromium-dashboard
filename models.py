@@ -553,3 +553,24 @@ class AppUser(DictModel):
     d = self.to_dict()
     d['id'] = self.key().id()
     return d
+
+
+class HistogramModel(db.Model):
+  """Container for a histogram."""
+
+  bucket_id = db.IntegerProperty(required=True)
+  property_name = db.StringProperty(required=True)
+
+  @classmethod
+  def get_all(self):
+    output = {}
+    buckets = self.all().fetch(None)
+    for bucket in buckets:
+      output[bucket.bucket_id] = bucket.property_name
+    return output
+
+class CssPropertyHistogram(HistogramModel):
+  pass
+
+class FeatureObserverHistogram(HistogramModel):
+  pass

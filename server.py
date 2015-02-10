@@ -27,7 +27,6 @@ from google.appengine.api import users
 import common
 import models
 import settings
-import uma
 
 
 def normalized_name(val):
@@ -174,11 +173,11 @@ class MainHandler(common.ContentHandler, common.JSONHandler):
 
       template_data['feature'] = feature
     elif path.startswith('metrics/css/timeline'):
-      properties = sorted(uma.CSS_PROPERTY_BUCKETS.items(), key=lambda x:x[1])
+      properties = sorted(models.CssPropertyHistogram.get_all().iteritems(), key=lambda x:x[1])
       template_data['CSS_PROPERTY_BUCKETS'] = json.dumps(
           properties, separators=(',',':'))
     elif path.startswith('metrics/feature/timeline'):
-      properties = sorted(uma.FEATUREOBSERVER_BUCKETS.items(), key=lambda x:x[1])
+      properties = sorted(models.FeatureObserverHistogram.get_all().iteritems(), key=lambda x:x[1])
       template_data['FEATUREOBSERVER_BUCKETS'] = json.dumps(
           properties, separators=(',',':'))
 
