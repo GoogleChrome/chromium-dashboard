@@ -248,7 +248,7 @@ class HistogramsHandler(webapp2.RequestHandler):
     )
 
   def get(self):
-    # Attempt to fetch the histograms.xml file from chromium.googlesource.com.
+    # Attempt to fetch https://chromium.googlesource.com/chromium/src/+/master/tools/metrics/histograms/histograms.xml?format=TEXT
     result = urlfetch.fetch(HISTOGRAMS_URL)
 
     if (result.status_code != 200):
