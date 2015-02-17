@@ -1,4 +1,7 @@
 cron:
+- description: retrieve from chromium.googlesource.com chromium histograms
+  url: /cron/histograms
+  schedule: every day 04:00
 - description: retrieve from UMA Cloud Storage data gathered yesterday
   url: /cron/metrics
   schedule: every day 05:00

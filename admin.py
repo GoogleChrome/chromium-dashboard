@@ -26,6 +26,7 @@ import os
 import re
 import sys
 import webapp2
+import xml.dom.minidom
 
 # Appengine imports.
 from google.appengine.api import files
@@ -40,16 +41,20 @@ from google.appengine.ext.webapp import blobstore_handlers
 import common
 import models
 import settings
-import uma
 
 
 # uma.googleplex.com/data/histograms/ids-chrome-histograms.txt
 BIGSTORE_BUCKET = '/gs/uma-dashboards/'
 BIGSTORE_RESTFUL_URI = 'https://uma-dashboards.storage.googleapis.com/'
 
+HISTOGRAMS_URL = 'https://chromium.googlesource.com/chromium/src/+/master/' \
+    'tools/metrics/histograms/histograms.xml?format=TEXT'
+
 CSSPROPERITES_BS_HISTOGRAM_ID = str(0xbfd59b316a6c31f1)
 ANIMATIONPROPS_BS_HISTOGRAM_ID = str(0xbee14b73f4fdde73)
 FEATURE_OBSERVER_BS_HISTOGRAM_ID = str(0x2e44945129413683)
+
+PAGE_VISITS_BUCKET_ID = 52
 
 # For fetching files from the production BigStore during development.
 OAUTH2_CREDENTIALS_FILENAME = os.path.join(
@@ -99,29 +104,28 @@ class YesterdayHandler(blobstore_handlers.BlobstoreDownloadHandler):
 
     # For CSSPROPERITES_BS_HISTOGRAM_ID, bucket 1 is total pages visited for
     # stank rank histogram. We're guaranteed to have it.
-    # For the FEATURE_OBSERVER_BS_HISTOGRAM_ID, the PageVisits bucket_id is 52
-    # See uma.py. The actual % is calculated from the count / this number.
+    # For the FEATURE_OBSERVER_BS_HISTOGRAM_ID, the PageVisits bucket_id is 52.
+    # The actual % is calculated from the count / this number.
     # For ANIMATIONPROPS_BS_HISTOGRAM_ID, we have to calculate the total count.
     if 1 in properties_dict and histogram_id == CSSPROPERITES_BS_HISTOGRAM_ID:
       total_pages = properties_dict.get(1)
-    elif (uma.PAGE_VISITS_BUCKET_ID in properties_dict and
+    elif (PAGE_VISITS_BUCKET_ID in properties_dict and
           histogram_id == FEATURE_OBSERVER_BS_HISTOGRAM_ID):
-      total_pages = properties_dict.get(uma.PAGE_VISITS_BUCKET_ID)
+      total_pages = properties_dict.get(PAGE_VISITS_BUCKET_ID)
 
       # Don't include PageVisits results.
-      del properties_dict[uma.PAGE_VISITS_BUCKET_ID]
+      del properties_dict[PAGE_VISITS_BUCKET_ID]
     else:
       total_pages = sum(properties_dict.values())
+
+    property_map = models.CssPropertyHistogram.get_all()
+    if histogram_id == FEATURE_OBSERVER_BS_HISTOGRAM_ID:
+      property_map = models.FeatureObserverHistogram.get_all()
 
     for bucket_id, num_hits in properties_dict.items():
       # If the id is not in the map, use 'ERROR' for the name.
       # TODO(ericbidelman): Non-matched bucket ids are likely new properties
-      # that have been added and need to be updated in uma.py. Find way to
-      # autofix these values with the appropriate property_name later.
-      property_map = uma.CSS_PROPERTY_BUCKETS
-      if histogram_id == FEATURE_OBSERVER_BS_HISTOGRAM_ID:
-        property_map = uma.FEATUREOBSERVER_BUCKETS
-
+      # that have been added and will be updated in cron/histograms.
       property_name = property_map.get(bucket_id, 'ERROR')
 
       query = model_class.all()
@@ -216,6 +220,67 @@ class YesterdayHandler(blobstore_handlers.BlobstoreDownloadHandler):
     return (result.content, result.status_code)
 
 
+class HistogramsHandler(webapp2.RequestHandler):
+
+  MODEL_CLASS = {
+    'FeatureObserver': models.FeatureObserverHistogram,
+    'MappedCSSProperties': models.CssPropertyHistogram,
+  }
+
+  def _SaveData(self, data, histogram_id):
+    try:
+      model_class = self.MODEL_CLASS[histogram_id]
+    except Exception:
+      logging.error('Invalid Histogram id used: %s' % histogram_id)
+      return
+
+    bucket_id = int(data['bucket_id'])
+    property_name = data['property_name']
+    key_name = '%s_%s' % (bucket_id, property_name)
+
+    # Bucket ID 1 is reserved for number of CSS Pages Visited. So don't add it.
+    if (model_class == models.CssPropertyHistogram and bucket_id == 1):
+      return
+
+    model_class.get_or_insert(key_name,
+      bucket_id=bucket_id,
+      property_name=property_name
+    )
+
+  def get(self):
+    # Attempt to fetch https://chromium.googlesource.com/chromium/src/+/master/tools/metrics/histograms/histograms.xml?format=TEXT
+    result = urlfetch.fetch(HISTOGRAMS_URL)
+
+    if (result.status_code != 200):
+      logging.error('Unable to retrieve chromium histograms.')
+      return
+
+    browsed_histograms = []
+    histograms_content = result.content.decode('base64')
+    dom = xml.dom.minidom.parseString(histograms_content)
+
+    # The histograms.xml file looks like this:
+    #
+    # ...
+    # <enum name="FeatureObserver" type="int">
+    #   <int value="0" label="PageDestruction"/>
+    #   <int value="1" label="LegacyNotifications"/>
+
+    for enum in dom.getElementsByTagName('enum'):
+      histogram_id = enum.attributes['name'].value
+      if (histogram_id in self.MODEL_CLASS.keys()):
+        browsed_histograms.append(histogram_id)
+        for child in enum.getElementsByTagName('int'):
+          data = {
+            'bucket_id': child.attributes['value'].value,
+            'property_name': child.attributes['label'].value
+          }
+          self._SaveData(data, histogram_id)
+
+    # Log an error if some histograms were not found.
+    if (len(list(set(browsed_histograms))) != len(self.MODEL_CLASS.keys())):
+      logging.error('Less histograms than expected were retrieved.')
+
 class FeatureHandler(common.ContentHandler):
 
   DEFAULT_URL = '/features'
@@ -268,8 +333,6 @@ class FeatureHandler(common.ContentHandler):
       return self.redirect(self.ADD_NEW_URL)
     elif feature_id and 'new' in path:
       return self.redirect(self.ADD_NEW_URL)
-
-    feature = None
 
     template_data = {
         'feature_form': models.FeatureForm()
@@ -425,6 +488,7 @@ class FeatureHandler(common.ContentHandler):
 
 app = webapp2.WSGIApplication([
   ('/cron/metrics', YesterdayHandler),
+  ('/cron/histograms', HistogramsHandler),
   ('/(.*)/([0-9]*)', FeatureHandler),
   ('/(.*)', FeatureHandler),
 ], debug=settings.DEBUG)

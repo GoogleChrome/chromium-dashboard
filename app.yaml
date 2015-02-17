@@ -46,7 +46,7 @@ handlers:
   script: google.appengine.ext.admin.application
   login: admin
 
-- url: /cron/metrics
+- url: /cron/.*
   script: admin.app
   login: admin # Prevents raw access to this handler. Cron runs as admin.
 

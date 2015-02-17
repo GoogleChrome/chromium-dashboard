@@ -37,18 +37,18 @@
 *
 * Handler File
 *
-* visiting /metrics/admin calls YesterdayHandler which retrieves yesterday's data from the UMA Cloud Storage.
+* visiting /cron/metrics calls YesterdayHandler which retrieves yesterday's data from the UMA Cloud Storage.
 * This is how the cron job is updating - Daily grabbing the previous day's data
 * The data is parsed and stored as:
-* class StableInstance(webapp2.RequestHandler):
-*     propertyName = db.StringProperty();
-*     bucketID = db.IntegerProperty();
-*     date = db.DateTimeProperty();
-*     hits = db.IntegerProperty();
-*     totalFlushes = db.IntegerProperty();
-*     dayPercentage = db.FloatProperty();
-*     rollingPercentage = db.FloatProperty();
+* class StableInstance(DictModel):
+*     property_name = db.StringProperty();
+*     bucket_id = db.IntegerProperty();
+*     date = db.DateProperty();
+*     day_percentage = db.FloatProperty();
+*     rolling_percentage = db.FloatProperty();
 *
+* visiting /cron/histograms calls HistogramsHandler which retrieves FeatureObserver and
+* FeatureObserver histograms from chromium.googlesource.com.
 * 
 * ACTION REQUIRED: we will need to replace histogramID with the appropriate ID.
 * This can be obtained from uma.googleplex.com/data/histograms/ids-chrome-histograms.txt
@@ -58,20 +58,13 @@
 * 
 
 
-** uma.py
-*
-* property_name provides a mapping for bucketID to human readable property name
-*
-**
-
-
 ** featurelevel.js
 *
 * Creates charts for the feature level page.
 * 
 * drawVisualization()
 * This function takes in the name of the property for which the graph is being drawn.
-* (This should probably be changed to the proeprtyID/bucketID in the future.) 
+* (This should probably be changed to the propertyID/bucketID in the future.)
 * We iterate through parsed data, building up a data object which we can pass to chart.draw()
 * The desired form of data to pass to chart.draw() is:
 *  [[Date,    Name,      Percentage]

@@ -4,12 +4,12 @@
 # Copyright 2014 Google Inc. All Rights Reserved.
 
 import models
-import uma
 
 
 def CorrectPropertyName(bucket_id):
-  if bucket_id in uma.CSS_PROPERTY_BUCKETS:
-    return uma.CSS_PROPERTY_BUCKETS[bucket_id]
+  allCssPropertyHistograms = models.CssPropertyHistogram.get_all()
+  if bucket_id in allCssPropertyHistograms:
+    return allCssPropertyHistograms[bucket_id]
   return None
 
 def FetchAllPropertiesWithError(bucket_id=None):
