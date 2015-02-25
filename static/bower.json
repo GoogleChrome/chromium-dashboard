@@ -20,8 +20,8 @@
     "tests"
   ],
   "dependencies": {
-    "polymer": "Polymer/polymer#^0.5.2",
-    "core-ajax": "Polymer/core-ajax#^0.5.2",
+    "polymer": "Polymer/polymer#^0.5.5",
+    "core-ajax": "Polymer/core-ajax#^0.5.5",
     "google-apis": "GoogleWebComponents/google-apis#master",
     "paper-dialog": "Polymer/paper-dialog#^0.4.2"
   }
