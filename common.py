@@ -47,7 +47,8 @@ class BaseHandler(webapp2.RequestHandler):
 class JSONHandler(BaseHandler):
     
   def __truncate_day_percentage(self, data):
-    data.day_percentage = round(data.day_percentage, 6)
+    # Need 6 decimals b/c num will by mutiplied by 100 to get a percentage.
+    data.day_percentage = float("%.*f" % (6, data.day_percentage))
     return data
 
   def _is_googler(self, user):
