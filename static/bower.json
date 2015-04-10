@@ -23,6 +23,7 @@
     "polymer": "Polymer/polymer#^0.5.5",
     "core-ajax": "Polymer/core-ajax#^0.5.5",
     "google-apis": "GoogleWebComponents/google-apis#master",
-    "paper-dialog": "Polymer/paper-dialog#^0.4.2"
+    "paper-dialog": "Polymer/paper-dialog#^0.4.2",
+    "webcomponentsjs": "webcomponents/webcomponentsjs#^0.6.0"
   }
 }

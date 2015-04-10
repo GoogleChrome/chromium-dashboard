@@ -9,7 +9,7 @@
 {% endblock %}
 
 {% block css %}
-<link rel="stylesheet" href="/static/css/feature/feature.css">
+<link rel="stylesheet" href="/static/css/features/feature.css">
 {% endblock %}
 
 {% block rss %}
@@ -17,18 +17,17 @@
 {% endblock %}
 
 {% block content %}
-<div>
+<div id="feature">
   <section id="name">
     <h2>
       {{ feature.name }}
       {% if feature.impl_status_chrome == "Deprecated" or feature.impl_status_chrome == "Removed" or feature.impl_status_chrome == "No longer pursuing" %} (deprecated){% endif %}
     </h2>
-    <a href="/features#category: {{ feature.category }}">{{ feature.category }}</a>
+    <a href="/features#category: {{ feature.category }}" class="category">{{ feature.category }}</a>
   </section>
 
   {% if feature.summary %}
   <section id="summary">
-    <h3>Summary</h3>
     <p>{{ feature.summary }}</p>
     {% if feature.comments %}
     <p class="note">Note: {{ feature.comments }}</p>
@@ -71,7 +70,7 @@
       {% if feature.shipped_milestone %}
       {% if feature.meta.needsflag %}Behind a flag{% else %}Enabled by default{% endif %} in <b>desktop Chrome {{ feature.meta.milestone_str }}</b>
       {% else %}
-      <b>Desktop Chrome</b>: {{ feature.meta.milestone_str }}
+      <label>Desktop Chrome:</label> {{ feature.meta.milestone_str }}
       {% endif %}
       {% if feature.bug_url %}
       (<a href="{{ feature.bug_url }}">launch bug</a>)
@@ -92,11 +91,11 @@
   </section>
 
   <section id="consensus">
-    <h3>Consensus & Standardization</h3>
+    <h3>Consensus &amp; Standardization</h3>
     <ul>
       {% if feature.ff_views %}
       <li>
-        <b>Firefox</b>:
+        <label>Firefox:</label>
         {% if feature.ff_views_link %}
         <a href="{{ feature.ff_views_link }}">{{ feature.ff_views.text }}</a>
         {% else %}
@@ -107,7 +106,7 @@
 
       {% if feature.ie_views %}
       <li>
-        <b>Internet Explorer</b>:
+        <label>Internet Explorer:</label>
         {% if feature.ie_views_link %}
         <a href="{{ feature.ie_views_link }}">{{ feature.ie_views.text }}</a>
         {% else %}
@@ -117,16 +116,16 @@
       {% endif %}
 
       {% if feature.shipped_opera_milestone %}
-      <li><b>Opera</b>: Shipped in release {{ feature.shipped_opera_milestone }}</li>
+      <li><label>Opera:</label> Shipped in release {{ feature.shipped_opera_milestone }}</li>
       {% endif %}
 
       {% if feature.shipped_opera_android_milestone %}
-      <li><b>Opera for Android</b>: Shipped in release {{ feature.shipped_opera_android_milestone }}</li>
+      <li><label>Opera for Android:</label> Shipped in release {{ feature.shipped_opera_android_milestone }}</li>
       {% endif %}
 
       {% if feature.safari_views %}
       <li>
-        <b>Safari</b>:
+        <label>Safari:</label>
         {% if feature.safari_views_link %}
         <a href="{{ feature.safari_views_link }}">{{ feature.safari_views.text }}</a>
         {% else %}
@@ -135,7 +134,7 @@
       </li>
       {% endif %}
 
-      <li><b>Web Developers</b>: {{ feature.web_dev_views.text }}</li>
+      <li><label>Web Developers:</label> {{ feature.web_dev_views.text }}</li>
     </ul>
   </section>
 
