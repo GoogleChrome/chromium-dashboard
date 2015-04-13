@@ -110,29 +110,33 @@ class MainHandler(common.ContentHandler, common.JSONHandler):
         feature_list = self.__get_feature_list()
         return common.JSONHandler.get(self, feature_list, formatted=True)
       elif path.endswith('.xml'): # Atom feed request.
-        filterby = None
+        status = self.request.get('status', None)
+        if status:
+          feature_list = models.Feature.get_all_with_statuses(status.split(','))
+        else:
+          filterby = None
 
-        category = self.request.get('category', None)
+          category = self.request.get('category', None)
 
-        # Support setting larger-than-default Atom feed sizes so that web
-        # crawlers can treat use this as a full site feed.
-        try:
-          max_items = int(self.request.get('max-items',
-                                           settings.RSS_FEED_LIMIT))
-        except TypeError:
-          max_items = settings.RSS_FEED_LIMIT
+          # Support setting larger-than-default Atom feed sizes so that web
+          # crawlers can treat use this as a full site feed.
+          try:
+            max_items = int(self.request.get('max-items',
+                                             settings.RSS_FEED_LIMIT))
+          except TypeError:
+            max_items = settings.RSS_FEED_LIMIT
 
-        if category is not None:
-          for k,v in models.FEATURE_CATEGORIES.iteritems():
-            normalized = normalized_name(v)
-            if category == normalized:
-              filterby = ('category =', k)
-              break
+          if category is not None:
+            for k,v in models.FEATURE_CATEGORIES.iteritems():
+              normalized = normalized_name(v)
+              if category == normalized:
+                filterby = ('category =', k)
+                break
 
-        feature_list = models.Feature.get_all( # Memcached
-            limit=max_items,
-            filterby=filterby,
-            order='-updated')
+          feature_list = models.Feature.get_all( # Memcached
+              limit=max_items,
+              filterby=filterby,
+              order='-updated')
 
         return self.render_atom_feed('Features', feature_list)
       else:

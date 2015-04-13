@@ -276,6 +276,25 @@ class Feature(DictModel):
     return feature_list
 
   @classmethod
+  def get_all_with_statuses(self, statuses, update_cache=False):
+    if not statuses:
+      return []
+
+    KEY = '%s|%s' % (Feature.DEFAULT_MEMCACHE_KEY, sorted(statuses))
+    feature_list = memcache.get(KEY)
+
+    if feature_list is None or update_cache:
+      # There's no way to do an OR in a single datastore query, and there's a
+      # very good chance that the self.get_all() results will already be in
+      # memcache, so use an array comprehension to grab the features we
+      # want from the array of everything.
+      feature_list = [feature for feature in self.get_all(update_cache=update_cache)
+                      if feature['impl_status_chrome'] in statuses]
+      memcache.set(KEY, feature_list)
+
+    return feature_list
+
+  @classmethod
   def get_feature(self, feature_id, update_cache=False):
     KEY = '%s|%s' % (Feature.DEFAULT_MEMCACHE_KEY, feature_id)
     feature = memcache.get(KEY)
