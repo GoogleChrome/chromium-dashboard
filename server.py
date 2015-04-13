@@ -112,8 +112,7 @@ class MainHandler(common.ContentHandler, common.JSONHandler):
       elif path.endswith('.xml'): # Atom feed request.
         status = self.request.get('status', None)
         if status:
-          statuses = status.split(',')
-          feature_list = models.Feature.get_all_with_statuses(statuses)
+          feature_list = models.Feature.get_all_with_statuses(status.split(','))
         else:
           filterby = None
 
