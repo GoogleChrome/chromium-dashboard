@@ -1,5 +1,5 @@
 application: cr-status
-version: 2015-04-13
+version: 2015-04-28
 runtime: python27
 threadsafe: true
 api_version: 1
@@ -13,7 +13,7 @@ libraries:
 - name: webapp2
   version: "latest"
 - name: django
-  version: "1.4" #"latest" 
+  version: "1.4" #"latest"
 # - name: setuptools
 #   version: latest
 
@@ -63,7 +63,7 @@ handlers:
   script: google.appengine.ext.admin.application
   login: admin
   secure: always
-  
+
 # Main server ------------------------------------------------------------------
 # features.xml needs to support HTTP as well as HTTPS, as some RSS backends don't support SNI certs.
 # Same issue as what's described at https://github.com/Polymer/blog/issues/7
