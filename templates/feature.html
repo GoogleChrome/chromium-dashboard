@@ -86,7 +86,11 @@
     </p>
 
     {% if feature.shipped_android_milestone %}
-    <p>Available in <b>Chrome for Android release {{ feature.shipped_android_milestone }}</b>.</p>
+      <p>{% if feature.impl_status_chrome == "Deprecated" or feature.impl_status_chrome == "Removed" or feature.impl_status_chrome == "No longer pursuing" %}
+        Deprecated
+      {% else %}
+        Available
+      {% endif %} in <b>Chrome for Android release {{ feature.shipped_android_milestone }}</b>.</p>
     {% endif %}
 
     {% if feature.shipped_ios_milestone %}
