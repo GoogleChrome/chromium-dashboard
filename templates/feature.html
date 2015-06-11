@@ -21,7 +21,8 @@
   <section id="name">
     <h2>
       {{ feature.name }}
-      {% if feature.impl_status_chrome == "Deprecated" or feature.impl_status_chrome == "Removed" or feature.impl_status_chrome == "No longer pursuing" %} (deprecated){% endif %}
+      {% if feature.impl_status_chrome == "Deprecated" or feature.impl_status_chrome == "No longer pursuing" %} (deprecated){% endif %}
+      {% if feature.impl_status_chrome == "Removed" %} (removed){% endif %}
     </h2>
     <a href="/features#category: {{ feature.category }}" class="category">{{ feature.category }}</a>
   </section>
@@ -71,8 +72,10 @@
         {% if feature.meta.needsflag %}
           Behind a flag
         {% else %}
-          {% if feature.impl_status_chrome == "Deprecated" or feature.impl_status_chrome == "Removed" or feature.impl_status_chrome == "No longer pursuing" %}
+          {% if feature.impl_status_chrome == "Deprecated" or feature.impl_status_chrome == "No longer pursuing" %}
             Deprecated
+          {% elif feature.impl_status_chrome == "Removed" %}
+            Removed
           {% else %}
             Enabled by default
           {% endif %}
@@ -86,8 +89,10 @@
     </p>
 
     {% if feature.shipped_android_milestone %}
-      <p>{% if feature.impl_status_chrome == "Deprecated" or feature.impl_status_chrome == "Removed" or feature.impl_status_chrome == "No longer pursuing" %}
+      <p>{% if feature.impl_status_chrome == "Deprecated" or feature.impl_status_chrome == "No longer pursuing" %}
         Deprecated
+      {% elif feature.impl_status_chrome == "Removed" %}
+        Removed
       {% else %}
         Available
       {% endif %} in <b>Chrome for Android release {{ feature.shipped_android_milestone }}</b>.</p>
