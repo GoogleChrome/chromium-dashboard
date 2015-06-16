@@ -8,6 +8,7 @@ module.exports = function(grunt) {
         // excludes: {
         //   imports: [
         //     "polymer.html$"
+        //    "polymer.json"
         //   ]
         // },
         strip: true,
