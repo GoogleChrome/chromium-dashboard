@@ -17,7 +17,7 @@ a[is="delete-link"] {
 <div id="subheader">
   <h2>Edit a feature</h2>
   {% if user.is_admin %}
-     <a is="delete-link" href="/admin/features/delete/{{feature.id}}" message="Delete features?">Delete</a>
+     <a is="delete-link" href="/admin/features/delete/{{feature.id}}" message="Delete feature?">Delete</a>
   {% endif %}
 </div>
 {% endblock %}
