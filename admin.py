@@ -29,7 +29,7 @@ import webapp2
 import xml.dom.minidom
 
 # Appengine imports.
-from google.appengine.api import files
+import cloudstorage
 from google.appengine.api import memcache
 from google.appengine.api import urlfetch
 from google.appengine.api import users
@@ -168,9 +168,9 @@ class YesterdayHandler(blobstore_handlers.BlobstoreDownloadHandler):
 
     if settings.PROD:
       try:
-        with files.open(BIGSTORE_BUCKET + filename, 'r') as unused_f:
+        with cloudstorage.open(BIGSTORE_BUCKET + filename, 'r') as unused_f:
           pass
-      except files.file.ExistenceError, e:
+      except Exception, e:
         self.response.write(e)
         return
 
