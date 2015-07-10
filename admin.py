@@ -170,7 +170,7 @@ class YesterdayHandler(blobstore_handlers.BlobstoreDownloadHandler):
       try:
         with cloudstorage.open(BIGSTORE_BUCKET + filename, 'r') as unused_f:
           pass
-      except Exception, e:
+      except cloudstorage.errors.Error, e:
         self.response.write(e)
         return
 
