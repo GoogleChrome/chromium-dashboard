@@ -44,7 +44,7 @@ import settings
 
 
 # uma.googleplex.com/data/histograms/ids-chrome-histograms.txt
-BIGSTORE_BUCKET = '/gs/uma-dashboards/'
+BIGSTORE_BUCKET = '/uma-dashboards/'
 BIGSTORE_RESTFUL_URI = 'https://uma-dashboards.storage.googleapis.com/'
 
 HISTOGRAMS_URL = 'https://chromium.googlesource.com/chromium/src/+/master/' \
@@ -175,7 +175,7 @@ class YesterdayHandler(blobstore_handlers.BlobstoreDownloadHandler):
         return
 
       # The file exists; serve it.
-      blob_key = blobstore.create_gs_key(BIGSTORE_BUCKET + filename)
+      blob_key = blobstore.create_gs_key('/gs' + BIGSTORE_BUCKET + filename)
       blob_reader = blobstore.BlobReader(blob_key, buffer_size=3510000)
       try:
         result = blob_reader.read()
