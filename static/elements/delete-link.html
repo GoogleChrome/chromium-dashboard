@@ -1,4 +1,38 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-ajax/iron-request.html">
+
+<dom-module id="delete-link">
+<template>
+  <content></content>
+</template>
+</dom-module>
+<script>
+  Polymer({
+    is: 'delete-link',
+
+    extends: 'a',
+
+    listeners: {
+      'click': 'onClick'
+    },
+
+    onClick: function (e, details, sender) {
+      e.preventDefault();
+
+      var msg = this.getAttribute('message') || 'Remove?';
+      if (!confirm(msg)) {
+        return;
+      }
+
+      var xhr = document.createElement('iron-request');
+      xhr.send({url: e.target.href, method: 'POST'}).then(function(request) {
+        this.fire('ajaxdeleted', {response: request.response, xhr: request.xhr});
+      }.bind(this));
+    }
+  });
+</script>
+
+<!-- <link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="../bower_components/core-ajax/core-xhr.html">
 
 <polymer-element name="delete-link" extends="a" on-click="{{onClick}}">
@@ -14,7 +48,7 @@
       if (!confirm(msg)) {
         return;
       }
-    
+
       var xhr = document.createElement('core-xhr');
       xhr.request({url: sender.href, method: 'POST', callback: function(response, xhr) {
         this.fire('ajaxdeleted', {response: response, xhr: xhr});
@@ -23,3 +57,4 @@
   });
 </script>
 </polymer-element>
+ -->

@@ -1,4 +1,4 @@
-<link rel="import" href="../bower_components/polymer/polymer.html">
+<!-- <link rel="import" href="../bower_components/polymer/polymer.html">
 
 <polymer-element name="x-meter" attributes="value">
 <template>
@@ -30,3 +30,49 @@
   });
 </script>
 </polymer-element>
+ -->
+<link rel="import" href="../bower_components/polymer/polymer.html">
+
+<dom-module id="x-meter">
+  <template>
+  <link rel="stylesheet" href="../css/elements/x-meter.css">
+  <div class="meter" id="meter" title="{{helpText}}">
+    <div style="{{computeStyle(value)}}"><span>{{valueFormmatted}}</span>%</div>
+  </div>
+</template>
+</dom-module>
+<script>
+  Polymer({
+    is: 'x-meter',
+    properties: {
+      helpText: {
+        type: String,
+        value: ''
+      },
+      value: {
+        type: Number,
+        value: 0,
+        notify: true,
+        observer: 'valueChanged'
+      }
+    },
+    valueChanged: function () {
+      var MIN_VAL = 0.0001;
+      if (this.value <= MIN_VAL) {
+        this.valueFormmatted = '<=0.0001';
+      } else {
+        this.valueFormmatted = Number(this.value).toFixed(4);
+      }
+      this.value = Number(this.value).toFixed(4);
+      var MIN_FOR_AT_RISK = 0.03;
+      if (this.value <= MIN_FOR_AT_RISK) {
+        this.$.meter.classList.add('atrisk');
+        this.helpText = 'This feature may be at risk for removal. Usage is <= ' + MIN_FOR_AT_RISK + '%.';
+      }
+    },
+    computeStyle: function (value) {
+      return 'width:' + value + '%';
+    }
+  });
+</script>
+

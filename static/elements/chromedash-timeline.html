@@ -1,4 +1,132 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../bower_components/google-apis/google-js-api.html">
+
+<dom-module id="chromedash-feature-timeline">
+  <template>
+  <link rel="stylesheet" href="../css/elements/chromedash-timeline.css">
+  <google-js-api on-api-load="{{chartAPILoaded}}"></google-js-api>
+  <select value="{{selectedBucketId::input}}">
+    <option disabled value="1">Select a property</option>
+    <option template repeat="{{computeRepeat(bucket, props)}}" value="{{bucket[0]}}">{{bucket[1]}}</option>
+  </select>
+  <div id="chart"></div>
+</template>
+</dom-module>
+<script>
+  Polymer({
+    is: 'chromedash-feature-timeline',
+
+    properties: {
+      selectedBucketId: {
+        type: Number,
+        value: 1,
+        observer: 'selectedBucketIdChanged'
+      },
+      timeline: {
+        notify: true
+      },
+      title: {
+        type: String,
+        value: ''
+      },
+      type: {
+        type: String,
+        value: '',
+        notify: true
+      },
+      view: {
+        type: String,
+        value: '',
+        notify: true
+      },
+      props: {
+        type: Array,
+        value: function() { return []; }
+      }
+    },
+
+    selectedBucketIdChanged: function () {
+      var ajax = document.createElement('iron-ajax');
+      ajax.url = '/data/timeline/' + this.type + this.view;
+      ajax.params = {bucket_id: this.selectedBucketId};
+      ajax.handleAs = 'json';
+
+      ajax.addEventListener('response', function(e) {
+        this.drawVisualization(e.detail.response, this.selectedBucketId);
+      }.bind(this));
+
+      ajax.generateRequest();
+
+      if (history.pushState) {
+        history.pushState({ id: this.selectedBucketId }, '', '/metrics/' + this.type + '/timeline/' + this.view + '/' + this.selectedBucketId);
+      }
+    },
+    chartAPILoaded: function (e, detail, sender) {
+      google.load('visualization', '1.0', {
+        packages: ['corechart'],
+        callback: function () {
+          // If there's an id in the URL, load the property it.
+          var lastSlash = location.pathname.lastIndexOf('/');
+          if (lastSlash > 0) {
+            var id = parseInt(location.pathname.substring(lastSlash + 1));
+            if (String(id) != 'NaN') {
+              this.selectedBucketId = id;
+            }
+          }
+        }.bind(this)
+      });
+    },
+    drawVisualization: function (data, bucketId) {
+      var table = new google.visualization.DataTable();
+      table.addColumn('date', 'Date');
+      table.addColumn('number', 'Percentage');
+      var rowArray = [];
+      for (var i = 0, item; item = data[i]; ++i) {
+        var dateStr = item.date.split('-');
+        var date = new Date();
+        date.setFullYear(parseInt(dateStr[0]), parseInt(dateStr[1]) - 1, parseInt(dateStr[2]));
+        rowArray.push([
+          date,
+          parseFloat((item.day_percentage * 100).toFixed(4))
+        ]);
+      }
+      table.addRows(rowArray);
+      var options = {
+        title: this.title,
+        legend: { position: 'none' },
+        vAxis: {
+          title: 'Percentage',
+          // maxValue: 100,
+          minValue: 0
+        },
+        hAxis: {
+          title: 'Date',
+          format: 'yyyy-MM-dd'
+        },
+        width: '100%',
+        height: '100%',
+        // chartArea: {width: '75%'},
+        pointSize: 5
+      };  // var dataView = new google.visualization.DataView(table);
+          // dataView.setColumns([{calc: function(data, row) {
+          //   return data.getFormattedValue(row, 0);
+          // }, type:'string'}, 1]);
+      // var dataView = new google.visualization.DataView(table);
+      // dataView.setColumns([{calc: function(data, row) {
+      //   return data.getFormattedValue(row, 0);
+      // }, type:'string'}, 1]);
+      var chart = new google.visualization.LineChart(this.$.chart);
+      chart.draw(table, options);
+    },
+    computeRepeat: function (bucket, props) {
+      return bucket in props;
+    }
+  });
+</script>
+
+
+<!-- <link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="../bower_components/core-ajax/core-ajax.html">
 <link rel="import" href="../bower_components/google-apis/google-jsapi.html">
 
@@ -10,9 +138,7 @@
     <option disabled value="1">Select a property</option>
     <option template repeat="{{bucket in props}}" value="{{bucket[0]}}">{{bucket[1]}}</option>
   </select>
-  <!-- <div id="chart-container" style="width:900px;margin: 0 auto;">   -->
-    <div id="chart"></div>
-  <!-- </div> -->
+  <div id="chart"></div>
 </template>
 <script>
   Polymer({
@@ -104,4 +230,4 @@
     }
   });
 </script>
-</polymer-element>
+</polymer-element> -->

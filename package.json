@@ -4,7 +4,7 @@
   "devDependencies": {
     "grunt": "*",
     "grunt-appengine": "^0.1.5",
-    "grunt-vulcanize": "0.6.4",
+    "grunt-vulcanize": "^1.0.0",
     "load-grunt-tasks": "*"
   }
 }

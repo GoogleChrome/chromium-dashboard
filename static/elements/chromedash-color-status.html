@@ -1,14 +1,53 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
 
-<polymer-element name="chromedash-color-status" attributes="value max"><!-- width height corner">-->
+<dom-module id="chromedash-color-status">
   <template>
     <link rel="stylesheet" href="../css/elements/chromedash-color-status.css">
-   <!--<style>
-      span {
-        width: {{width}}px;
-        height: {{height}}px;
+    <span id="status"></span>
+  </template>
+</dom-module>
+<script>
+  Polymer({
+    is: 'chromedash-color-status',
+    properties: {
+      height: {
+        type: Number,
+        value: 10
+      },
+      max: {
+        type: Number,
+        value: 7,
+        notify: true,
+        observer: 'maxChanged'
+      },
+      value: {
+        notify: true,
+        observer: 'valueChanged'
+      },
+      width: {
+        type: Number,
+        value: 10
       }
-    </style>-->
+    },
+    updateColor: function () {
+      var h = Math.round(120 - this.value * 120 / this.max);
+      this.$.status.style.backgroundColor = 'hsl(' + h + ', 100%, 50%)';
+    },
+    valueChanged: function () {
+      this.updateColor();
+    },
+    maxChanged: function () {
+      this.updateColor();
+    }
+  });
+</script>
+
+
+<!-- <link rel="import" href="../bower_components/polymer/polymer.html">
+
+<polymer-element name="chromedash-color-status" attributes="value max">
+  <template>
+    <link rel="stylesheet" href="../css/elements/chromedash-color-status.css">
     <span id="status"></span>
   </template>
   <script>
@@ -28,4 +67,4 @@
       }
     });
   </script>
-  </polymer-element>
+</polymer-element> -->

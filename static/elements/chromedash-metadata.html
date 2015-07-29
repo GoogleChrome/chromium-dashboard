@@ -1,4 +1,103 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
+
+<dom-module id="chromedash-metadata">
+  <template>
+  <link rel="stylesheet" href="../css/elements/chromedash-metadata.css">
+  <iron-ajax auto="" url="https://omahaproxy.appspot.com/all.json" handle-as="json" on-core-response="{{onResponse}}"></iron-ajax>
+  <ul class="{{computeClass(betaIsDev, canaryIsDev, tokenList)}}">
+    <template is="dom-repeat" items="{{versions}}" as="v">
+      <li data-version="{{v}}" on-tap="{{selectMilestone}}" selected$="{{computeSelected(selected, v)}}">{{v}}</li>
+    </template>
+  </ul>
+  <div hidden$="{{computeHidden(fetchError)}}" class="error">Error fetching Chrome version information.</div>
+</template>
+</dom-module>
+<script>
+  Polymer({
+    is: 'chromedash-metadata',
+    properties: {
+      betaIsDev: {
+        type: Boolean,
+        value: false
+      },
+      canaryIsDev: {
+        type: Boolean,
+        value: false
+      },
+      fetchError: {
+        type: Boolean,
+        value: false
+      },
+      selected: { value: null }
+    },
+    created: function () {
+      this.implStatuses = this.implStatuses || {};
+      this.STATUS = this.STATUS || {};
+      this.channels = this.channels || {};
+      this.versions = this.versions || [];
+    },
+    onResponse: function (e, detail, sender) {
+      if (detail.response.type == 'error') {
+        this.fetchError = true;
+        return;
+      }
+      // TODO(ericbidelman): Share this data across instances.
+      var windowsVersions = detail.response[0];
+      for (var i = 0, el; el = windowsVersions.versions[i]; ++i) {
+        // Include previous version if current is foobar'd.
+        this.channels[el.channel] = parseInt(el.version) || parseInt(el.prev_version);
+      }
+      // Dev channel explicitly left out. Treat same as canary.
+      this.versions = [
+        this.implStatuses[this.STATUS.NO_ACTIVE_DEV - 1].val,
+        this.implStatuses[this.STATUS.PROPOSED - 1].val,
+        this.implStatuses[this.STATUS.IN_DEVELOPMENT - 1].val,
+        this.channels.canary,
+        this.channels.dev,
+        this.channels.beta,
+        this.channels.stable
+      ];
+      // Consolidate channels if they're the same.
+      if (this.channels.canary == this.channels.dev) {
+        this.versions.splice(4, 1);
+        this.canaryIsDev = true;
+      } else if (this.channels.dev == this.channels.beta) {
+        this.versions.splice(5, 1);
+        this.betaIsDev = true;
+      }
+      for (var i = this.channels.stable - 1; i >= 1; i--) {
+        this.versions.push(i);
+      }
+      this.versions.push(this.implStatuses[this.implStatuses.length - 1].val);
+    },
+    selectMilestone: function (e, details, sender) {
+      if (details) {
+        // Came from an internal click.
+        this.selected = sender.dataset.version;
+        this.fire('milestoneselect', { version: this.selected });
+      } else {
+        // Called directly (from outside). e is a feature.
+        this.selected = e.meta.milestone_str;
+      }
+    },
+    computeClass: function (betaIsDev, canaryIsDev, tokenList) {
+      return {
+        canaryisdev: canaryIsDev,
+        betaisdev: betaIsDev
+      } | tokenList;
+    },
+    computeHidden: function (fetchError) {
+      return !fetchError;
+    },
+    computeSelected: function (selected, v) {
+      return v == selected;
+    }
+  });
+</script>
+
+
+<!-- <link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="../bower_components/core-ajax/core-ajax.html">
 
 <polymer-element name="chromedash-metadata">
@@ -76,3 +175,4 @@
   });
 </script>
 </polymer-element>
+ -->

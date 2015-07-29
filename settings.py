@@ -29,4 +29,4 @@ MEMCACHE_KEY_PREFIX = APP_VERSION # For memcache busting on new version
 
 RSS_FEED_LIMIT = 15
 
-VULCANIZE = True #PROD
+VULCANIZE = False #PROD

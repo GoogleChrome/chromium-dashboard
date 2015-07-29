@@ -10,9 +10,10 @@ module.exports = function(grunt) {
         //     "polymer.html$"
         //   ]
         // },
-        strip: true,
-        csp: true,
-        inline: true
+        stripComments: true,
+        inlineScripts: true,
+        inlineCss: true
+        // csp: true,
       },
       build: {
         files: {
