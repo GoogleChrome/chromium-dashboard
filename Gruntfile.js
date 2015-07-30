@@ -13,16 +13,59 @@ module.exports = function(grunt) {
         stripComments: true,
         inlineScripts: true,
         inlineCss: true
-        // csp: true,
       },
-      build: {
-        files: {
-          'static/elements/elements.vulcanize.html': 'static/elements/elements.html',
-          'static/elements/features-imports.vulcanize.html': 'static/elements/features-imports.html',
-          'static/elements/admin-imports.vulcanize.html': 'static/elements/admin-imports.html',
-          'static/elements/metrics-imports.vulcanize.html': 'static/elements/metrics-imports.html',
+      buildall: {
+        options: {
+          csp: 'elements.vulcanize.js'
         },
+        files: {
+          'static/elements/elements.vulcanize.html': 'static/elements/elements.html'
+        },
+      },
+      build1: {
+        options: {
+          csp: 'metrics-imports.vulcanize.js'
+        },
+        files: {
+          'static/elements/metrics-imports.vulcanize.html': 'static/elements/metrics-imports.html'
+        }
+      },
+      build2: {
+        options: {
+          csp: 'features-imports.vulcanize.js'
+        },
+        files: {
+          'static/elements/features-imports.vulcanize.html': 'static/elements/features-imports.html'
+        }
+      },
+      build3: {
+        options: {
+          csp: 'admin-imports.vulcanize.js'
+        },
+        files: {
+          'static/elements/admin-imports.vulcanize.html': 'static/elements/admin-imports.html'
+        }
       }
+    },
+
+    minified : {
+      files: {
+        src: [
+          'static/elements/*.vulcanize.js'
+        ],
+        dest: 'static'
+      },
+      options : {
+        sourcemap: false,
+        mirrorSource: {
+          path: 'static/'
+        },
+        ext: '.js'
+      }
+    },
+
+    clean: {
+      default: ['static/elements/*.vulcanize.{html,js}']
     },
 
     watch: {
@@ -58,6 +101,6 @@ module.exports = function(grunt) {
   // Plugin and grunt tasks.
   require('load-grunt-tasks')(grunt);
 
-  grunt.registerTask('default', ['vulcanize:build']);
+  grunt.registerTask('default', ['vulcanize', 'minified']);
   grunt.registerTask('serve', ['appengine:run:frontend']);
 };
