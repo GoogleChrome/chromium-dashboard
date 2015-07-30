@@ -1,17 +1,18 @@
 @import "element";
 
-
 :host {
   display: block;
+  position: absolute;
 }
 
 paper-dialog {
-  width: 900px;
+  width: 80vw;
+  padding: 0 24px;
 }
 
 h3 {
   border-bottom: 2px solid $chromium-color-center;
-  padding-bottom:  10px;
+  padding-bottom: 10px;
   margin-bottom: $content-padding / 2;
 }
 
@@ -54,17 +55,9 @@ p {
   margin-top: 5px;
 }
 
-polyfill-next-selector { content: ':host .close'; }
-::content .close {
+.content-wrapper ::content .close {
   position: absolute;
-  right: 15px;
-  top: 10px;
-  padding: 0 5px 3px 5px;
-}
-// Polymer @polyfill directive doesnt like combining these rules.
-.close {
-  position: absolute;
-  right: 15px;
-  top: 10px;
-  padding: 0 5px 3px 5px;
+  right: 0;
+  top: 0;
+  // padding: 0 5px 3px 5px;
 }

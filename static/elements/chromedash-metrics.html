@@ -3,22 +3,23 @@
 <link rel="import" href="x-meter.html">
 
 <dom-module id="chromedash-metrics">
-  <template>
-  <link rel="stylesheet" href="../css/elements/chromedash-metrics.css">
-  <iron-ajax auto="" url="{{endpoint}}" last-response="{{props}}" handle-as="json"></iron-ajax>
+<link rel="import" type="css" href="../css/elements/chromedash-metrics.css">
+<template>
+  <iron-ajax auto url="[[endpoint]]" last-response="{{props}}" handle-as="json"></iron-ajax>
   <b>Showing <span>{{props.length}}</span> properties</b>
   <ol id="stack-rank-list">
     <li class="header">
-      <label on-tap="{{sort}}" data-order="property_name">Name <i class="{{computePropertyNameClass(sortOrders, tokenList)}}"></i></label>
-      <label on-tap="{{sort}}" data-order="percentage" class="flex2">Percentage <i class="{{computePercentClass(sortOrders, tokenList)}}"></i></label>
+      <label on-tap="sort" data-order="property_name">Name <i class$="{{computePropertyNameClass(sortOrders)}}"></i></label>
+      <label on-tap="sort" data-order="percentage" class="flex2">Percentage <i class$="{{computePercentClass(sortOrders)}}"></i></label>
     </li>
     <template is="dom-if" if="{{computeIf(props)}}">
       <li class="loading">Loading...</li>
     </template>
     <template is="dom-repeat" items="{{viewList}}" as="prop">
       <li id="{{prop.property_name}}" hidden$="{{computeHidden(prop)}}" tabindex="0">
-        <label><a href="{{computeHref(prop)}}" title="Deep link to this property" alt="Deep link to this property">{{prop.property_name}}</a></label>
-        <x-meter value="{{prop.percentage}}" on-tap="{{showTimeline}}" title="Click to see a timeline view of this property"></x-meter>
+        <label><a href$="{{computeHref(prop)}}" title="Deep link to this property" alt="Deep link to this property">{{prop.property_name}}</a></label>
+        <x-meter value="{{prop.percentage}}" on-tap="showTimeline"
+                 title="Click to see a timeline view of this property"></x-meter>
       </li>
     </template>
   </ol>
@@ -43,7 +44,15 @@
     Polymer({
       is: 'chromedash-metrics',
       properties: {
-        props: { observer: 'propsChanged' },
+        props: {
+          type: Array,
+          observer: 'propsChanged',
+          value: function() { return []; }
+        },
+        viewList: {
+          type: Array,
+          value: function() { return []; }
+        },
         sortOrders: {
           type: Object,
           value: function () {
@@ -62,13 +71,17 @@
         type: {
           type: String,
           value: '',
-          notify: true
         },
-        view: { notify: true }
+        view: {
+          type: String
+        },
+        endpoint: {
+          type: String,
+          computed: 'computeEndpoint(type, view)',
+        }
       },
-      created: function () {
-        this.props = [];
-        this.viewList = [];
+      computeEndpoint: function(type, view) {
+        return '/data/' + type + view;
       },
       propsChanged: function () {
         if (!this.props || !this.props.length) {
@@ -83,9 +96,6 @@
             this.scrollToProperty(location.hash.split('#')[1]);
           });
         }
-      },
-      get endpoint() {
-        return '/data/' + this.type + this.view;
       },
       sort: function (e, detail, sender) {
         e.preventDefault();
@@ -106,11 +116,15 @@
           el.scrollIntoView(true);  //el.scrollIntoView(true, {behavior: 'smooth'});
         }
       },
-      computePropertyNameClass: function (sortOrders, tokenList) {
-        return 'icon-long-arrow-' + (sortOrders.property_name.reverse ? 'up' : 'down') + ' ' + ({ activated: sortOrders.property_name.activated } | tokenList);
+      computePropertyNameClass: function (sortOrders) {
+        return 'icon-long-arrow-' +
+               (sortOrders.property_name.reverse ? 'up' : 'down') + ' ' +
+               (sortOrders.property_name.activated ? 'activated' : '');
       },
-      computePercentClass: function (sortOrders, tokenList) {
-        return 'icon-long-arrow-' + (sortOrders.percentage.reverse ? 'down' : 'up') + ' ' + ({ activated: sortOrders.percentage.activated } | tokenList);
+      computePercentClass: function (sortOrders) {
+        return 'icon-long-arrow-' +
+               (sortOrders.percentage.reverse ? 'down' : 'up') + ' ' +
+               (sortOrders.percentage.activated ? 'activated' : '');
       },
       computeIf: function (props) {
         return !props.length;

@@ -1,4 +1,7 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../bower_components/paper-styles/color.html">
 <link rel="import" href="chromedash-color-status.html">
 
 <!-- https://github.com/ljosa/urlize.js -->
@@ -11,62 +14,72 @@
     is: 'html-echo',
     properties: {
       html: {
-        notify: true,
         observer: 'htmlChanged'
       }
     },
-    htmlChanged: function () {
+    htmlChanged: function() {
       this.innerHTML = this.html;
     }
   });
 </script>
 
 <dom-module id="multi-links">
+  <link rel="import" type="css" href="../css/shared.css">
   <template>
-    <link rel="stylesheet" href="../css/shared.css">
     <template is="dom-repeat" items="{{links}}" as="link" index-as="i">
-      <a href="{{link}}" target="_blank">{{computeExpression1(link, prettyURLFilter)}}</a><template is="dom-if" if="{{computeIf(i, links)}}">,</template>
+      <a href$="{{link}}" target="_blank">{{_computeLink(link)}}</a><template is="dom-if" if="{{_computeShowComma(i, links)}}">,</template>
     </template>
   </template>
 </dom-module>
 <script>
   Polymer({
     is: 'multi-links',
-    properties: { links: { notify: true } },
-    prettyURLFilter: function (val) {
+    properties: {
+      links: {
+        type: Array,
+        value: function() { return []; }
+      }
+    },
+    _prettyURLFilter: function(val) {
       return val.replace(/https?:\/\//, '');
     },
-    computeIf: function (i, links) {
+    _computeShowComma: function(i, links) {
       return links.length > 1 && i < links.length - 1;
     },
-    computeExpression1: function (link, prettyURLFilter) {
-      return link | prettyURLFilter;
+    _computeLink: function(link) {
+      return this._prettyURLFilter(link);
     }
   });
 </script>
 
 <dom-module id="chromedash-feature">
-  <template>
-<link rel="stylesheet" href="../css/elements/chromedash-feature.css">
-<div on-tap="{{toggle}}">
+<link rel="import" type="css" href="../css/elements/chromedash-feature.css">
+<template>
+<div on-tap="toggle">
   <div class="topcorner pull-right">
-    <span hidden$="{{computeWarningHidden(deprecated, removed)}}" class="tooltip" title="{{computeTitle(removed)}}">
-      <i class="icon-warning-sign" data-tooltip></i>
+    <span hidden$="{{_computeDeprecatedHidden(deprecated, removed)}}"
+          class="tooltip" title="{{_computeTitle(removed)}}">
+      <iron-icon icon="icons:highlight-off" class="remove" data-tooltip></iron-icon>
     </span>
-    <span hidden$="{{!needsflag}}" class="tooltip" title="Experimental feature behind a flag.">
-      <i class="icon-beaker" data-tooltip></i>
+    <span hidden$="{{!needsflag}}" class="tooltip" title="Experimental feature behind a flag">
+      <iron-icon icon="icons:extension" class="experimental"></iron-icon>
     </span>
-    <a href="{{computeStandaloneHref(feature)}}" target="_blank" class="tooltip" title="View on standalone page.">
-      <i class="icon-external-link-sign" data-tooltip></i>
+    <span class="tooltip" title="Edit this feature" hidden$="{{!whitelisted}}">
+      <a href$="{{_computeEditLinkHidden(feature)}}" data-tooltip>
+        <iron-icon icon="icons:create"></iron-icon>
+      </a>
+    </span>
+    <a href$="{{_computeStandaloneHref(feature)}}" target="_blank"
+       class="tooltip" title="View on standalone page">
+      <iron-icon icon="icons:open-in-new" data-tooltip></iron-icon>
     </a>
-    <content select=".edit"></content>
   </div>
   <hgroup>
     <chromedash-color-status class="tooltip corner" title="Compatibility risk: perceived interest from browser vendors and web developers" value="{{compatRisk}}" max="{{MAX_RISK}}"></chromedash-color-status>
     <h2>{{feature.name}}</h2>
-    <label class="category" on-tap="{{categoryFilter}}">{{feature.category}}</label>
+    <label class="category" on-tap="categoryFilter">{{feature.category}}</label>
   </hgroup>
-  <section class="desc"><summary class="{{computeSummaryClass(open)}}">{{feature.summary}}</summary></section>
+  <section class="desc"><summary class$="{{_computeSummaryClass(open)}}">{{feature.summary}}</summary></section>
   <template is="dom-if" if="{{open}}">
     <section>
       <h3>Implementation Status</h3>
@@ -78,16 +91,20 @@
           <span class="chrome_desktop"><label>{{feature.impl_status_chrome}}</label></span>
         </template>
         <template is="dom-if" if="{{feature.shipped_android_milestone}}">
-          <span class="chrome_android tooltip" title="Chrome for Android"><label><i class="icon-android"></i></label>{{feature.shipped_android_milestone}}</span>
+          <span class="chrome_android tooltip" title="Chrome for Android">
+            <iron-icon icon="icons:android" class="android"></iron-icon>
+            <span>{{feature.shipped_android_milestone}}</span>
+          </span>
         </template>
         <template is="dom-if" if="{{feature.shipped_webview_milestone}}">
           <span class="chrome_webview tooltip" title="Chrome Webview"><label>Webview</label>{{feature.shipped_webview_milestone}}</span>
         </template>
         <span hidden$="{{!feature.prefixed}}"><label>Prefixed</label>Yes</span>
-        <span hidden$="{{!feature.bug_url}}"><a href="{{feature.bug_url}}" target="_blank">Launch bug</a></span>
+        <span hidden$="{{!feature.bug_url}}"><a href$="{{feature.bug_url}}" target="_blank">Launch bug</a></span>
         <span class="owner" hidden$="{{!feature.owner.length}}">
           <label>Owner(s)</label><template is="dom-repeat" items="{{feature.owner}}" as="owner" index-as="i">
-            <span on-tap="{{ownerFilter}}">{{owner}}</span><template is="dom-if" if="{{computeShowComma(feature, i)}}">,</template>
+            <span on-tap="ownerFilter">{{owner}}</span>
+            <template is="dom-if" if="{{_computeShowComma(feature, i)}}">,</template>
           </template>
         </span>
       </div>
@@ -108,21 +125,21 @@
         <span title="{{feature.ff_views.text}}">
           <chromedash-color-status value="{{feature.ff_views.value}}" max="{{MAX_VENDOR_VIEW}}"></chromedash-color-status>
           <template is="dom-if" if="{{feature.ff_views_link}}">
-            <a href="{{feature.ff_views_link}}" target="_blank">Firefox</a>
+            <a href$="{{feature.ff_views_link}}" target="_blank">Firefox</a>
           </template>
           <label hidden$="{{feature.ff_views_link}}">Firefox</label>
         </span>
         <span title="{{feature.ie_views.text}}">
           <chromedash-color-status value="{{feature.ie_views.value}}" max="{{MAX_VENDOR_VIEW}}"></chromedash-color-status>
           <template is="dom-if" if="{{feature.ie_views_link}}">
-            <a href="{{feature.ie_views_link}}" target="_blank">IE</a>
+            <a href$="{{feature.ie_views_link}}" target="_blank">IE</a>
           </template>
           <label hidden$="{{feature.ie_views_link}}">IE</label>
         </span>
         <span title="{{feature.safari_views.text}}">
           <chromedash-color-status value="{{feature.safari_views.value}}" max="{{MAX_VENDOR_VIEW}}"></chromedash-color-status>
           <template is="dom-if" if="{{feature.safari_views_link}}">
-            <a href="{{feature.safari_views_link}}" target="_blank">Safari</a>
+            <a href$="{{feature.safari_views_link}}" target="_blank">Safari</a>
           </template>
           <label hidden$="{{feature.safari_views_link}}">Safari</label>
         </span>
@@ -135,17 +152,17 @@
         <span>
           <chromedash-color-status value="{{feature.standardization.value}}" max="{{MAX_STANDARDS_VAL}}"></chromedash-color-status>
           <template is="dom-if" if="{{feature.spec_link}}">
-            <a href="{{feature.spec_link}}" target="_blank">{{feature.standardization.text}}</a>
+            <a href$="{{feature.spec_link}}" target="_blank">{{feature.standardization.text}}</a>
           </template>
           <span hidden$="{{feature.spec_link}}">{{feature.standardization.text}}</span>
         </span>
       </div>
     </section>
-    <template is="dom-if" if="{{computeShowResources(feature)}}">
+    <template is="dom-if" if="{{_computeShowResources(feature)}}">
       <section>
         <h3>Developer resources</h3>
         <div>
-          <template is="dom-if" if="{{computeShowDocLinks(feature)}}">
+          <template is="dom-if" if="{{_computeShowDocLinks(feature)}}">
             <span class="doc_links" hidden$="{{!feature.doc_links.length}}">
               <label>Documentation</label>
               <multi-links links="[[feature.doc_links]]"></multi-links>
@@ -153,7 +170,7 @@
           </template>
         </div>
         <div>
-          <template is="dom-if" if="{{computeShowDocLinks(feature)}}">
+          <template is="dom-if" if="{{_computeShowDocLinks(feature)}}">
             <span class="sample_links" hidden$="{{!feature.sample_links.length}}">
               <label>Samples</label>
               <multi-links links="[[feature.sample_links]]"></multi-links>
@@ -165,7 +182,7 @@
     <template is="dom-if" if="{{feature.comments}}">
       <section>
         <h3>Comments</h3>
-        <summary class="comments"><html-echo html="{{computeHtml(feature)}}"></html-echo></summary>
+        <summary class="comments"><html-echo html="[[_computeHtml(feature)]]"></html-echo></summary>
       </section>
     </template>
   </template>
@@ -184,7 +201,7 @@
     properties: {
       MAX_RISK: {
         type: Number,
-        computed: 'computeMaxRisk(MAX_VENDOR_VIEW, MAX_WEBDEV_VIEW, MAX_STANDARDS_VAL)'
+        computed: '_computeMaxRisk(MAX_VENDOR_VIEW, MAX_WEBDEV_VIEW, MAX_STANDARDS_VAL)'
       },
       MAX_STANDARDS_VAL: {
         type: Number,
@@ -207,30 +224,61 @@
       },
       deprecated: {
         type: Boolean,
-        value: false
+        // value: false,
+        computed: '_computeDeprecated(feature.impl_status_chrome)'
+      },
+      removed: {
+        type: Boolean,
+        computed: '_computeRemoved(feature.impl_status_chrome)'
       },
       feature: {
         value: null,
-        notify: true,
-        observer: 'featureChanged'
+        observer: '_featureChanged'
       },
       needsflag: {
         type: Boolean,
-        value: false,
-        notify: true
+        value: false
       },
       open: {
         type: Boolean,
         value: false,
-        observer: 'openChanged'
+        notify: true,
+        observer: '_openChanged'
       }
     },
 
-    computeMaxRisk: function(vendorViewVal, webdevViewVal, standardsVal) {
-      return vendorViewVal + webdevViewVal + standardsVal;
+    toggle: function(e, details) {
+      // Don't toggle panel if tooltip or link is being clicked.
+      var target = Polymer.dom(e).localTarget;
+      if (target.classList.contains('tooltip') || 'tooltip' in target.dataset ||
+          target.tagName == 'A' || target.tagName == 'MULTI-LINKS') {
+        return;
+      }
+      this.open = !this.open;
     },
 
-    openChanged: function() {
+    categoryFilter: function(e, details) {
+      e.stopPropagation();
+      this.fire('filter-category', {val: Polymer.dom(e).localTarget.textContent});
+    },
+
+    ownerFilter: function(e, details) {
+      e.stopPropagation();
+      this.fire('filter-owner', {val: Polymer.dom(e).localTarget.textContent});
+    },
+
+    _urlizeFilter: function(val) {
+      return urlize(val, {target: '_blank', trim: 'www', autoescape: true});
+    },
+
+    _calculateCompatRisk: function() {
+      var vendors = (this.feature.ff_views.value + this.feature.ie_views.value + this.feature.safari_views.value) / 3;
+      var webdevs = this.feature.web_dev_views.value;
+      var standards = this.feature.standardization.value;
+      this.compatRisk = vendors + webdevs + standards;
+    },
+
+    _openChanged: function() {
       this.open ? this.classList.add('open') : this.classList.remove('open');
       this.fire('feature-toggled', {
         feature: this.feature,
@@ -238,69 +286,53 @@
       });
     },
 
-    toggle: function(e, details, sender) {
-      // Don't toggle panel if tooltip or link is being clicked.
-      if (e.target.classList.contains('tooltip') || 'tooltip' in e.target.dataset || e.target.tagName == 'A' || e.target.tagName == 'MULTI-LINKS') {
-        return;
-      }
-      this.open = !this.open;
-    },
-
-    calculateCompatRisk: function() {
-      var vendors = (this.feature.ff_views.value + this.feature.ie_views.value + this.feature.safari_views.value) / 3;
-      var webdevs = this.feature.web_dev_views.value;
-      var standards = this.feature.standardization.value;
-      this.compatRisk = vendors + webdevs + standards;
-    },
-
-    featureChanged: function() {
-      this.calculateCompatRisk();  // TODO: these values are brittle if the strings change.
+    _featureChanged: function() {
+      this._calculateCompatRisk();  // TODO: these values are brittle if the strings change.
       // TODO: these values are brittle if the strings change.
-      this.removed = this.feature.impl_status_chrome == 'Removed';
-      this.deprecated = this.feature.impl_status_chrome == 'Deprecated' || this.feature.impl_status_chrome == 'No longer pursuing';
+      // this.removed = this.feature.impl_status_chrome == 'Removed';
+      // this.deprecated = this.feature.impl_status_chrome == 'Deprecated' || this.feature.impl_status_chrome == 'No longer pursuing';
     },
 
-    categoryFilter: function(e, details, sender) {
-      e.stopPropagation();
-      this.fire('filter-category', {val: sender.textContent});
-    },
-
-    ownerFilter: function(e, details, sender) {
-      e.stopPropagation();
-      this.fire('filter-owner', {val: sender.textContent});
-    },
-
-    _urlizeFilter: function(val) {
-      return urlize(val, {target: '_blank', trim: 'www', autoescape: true});
-    },
-
-    computeDeprecatedHidden: function(deprecated, removed) {
+    _computeDeprecatedHidden: function(deprecated, removed) {
       return !removed && !deprecated;
     },
-    computeTitle: function(removed) {
+    _computeTitle: function(removed) {
       return removed ? 'Removed feature' : 'Deprecated feature';
     },
-    computeStandaloneHref: function(feature) {
+    _computeStandaloneHref: function(feature) {
       return '/feature/' + feature.id;
     },
-    computeSummaryClass: function(open) {
+    _computeSummaryClass: function(open) {
       return open ? 'open' : '';
     },
-    computeShowResources: function(feature) {
+    _computeShowResources: function(feature) {
       return feature.doc_links.length || feature.sample_links.length;
     },
-    computeShowComma: function(feature, i) {
+    _computeShowComma: function(feature, i) {
       return feature.owner.length > 1 && i < feature.owner.length - 1;
     },
-    computeShowDocLinks: function(feature) {
+    _computeShowDocLinks: function(feature) {
       return feature.doc_links && feature.doc_links.length > 0;
     },
-    computeSampleLinks: function(feature) {
+    _computeSampleLinks: function(feature) {
       return feature.sample_links && feature.sample_links.length > 0;
     },
-    computeHtml: function(feature) {
+    _computeHtml: function(feature) {
       return this._urlizeFilter(feature.comments);
-    }
+    },
+     _computeMaxRisk: function(vendorViewVal, webdevViewVal, standardsVal) {
+      return vendorViewVal + webdevViewVal + standardsVal;
+    },
+    _computeRemoved: function(implStatusChrome) {
+      return implStatusChrome == 'Removed';
+    },
+    _computeDeprecated: function(implStatusChrome) {
+      return implStatusChrome === 'Deprecated' ||
+             implStatusChrome === 'No longer pursuing';
+    },
+    _computeEditLinkHidden: function(feature) {
+      return '/admin/features/edit/' + feature.id;
+    },
   });
 </script>
 

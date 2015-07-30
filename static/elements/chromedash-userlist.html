@@ -2,13 +2,13 @@
 <link rel="import" href="../bower_components/iron-ajax/iron-request.html">
 
 <dom-module id="chromedash-userlist">
+<link rel="import" rel="css" href="../css/elements/chromedash-userlist.css">
 <template>
-  <link rel="stylesheet" href="../css/elements/chromedash-userlist.css">
   <form id="form" name="user_form" method="post" action="{{action}}" onsubmit="return false;">
     <table>
       <tr>
         <td><input type="email" placeholder="Email address" name="email" id="id_email" required></td>
-        <td><input type="submit" on-tap="{{ajaxSubmit}}"></td>
+        <td><input type="submit" on-tap="ajaxSubmit"></td>
       </tr>
     </table>
   </form>
@@ -16,7 +16,7 @@
   <ul id="user-list">
     <template is="dom-repeat" items="{{users}}" as="user">
       <li>
-        <a href="{{computeDeleteHref(action, user)}}" on-tap="{{ajaxDelete}}">delete</a><span>{{user.email}}</span>
+        <a href$="{{computeDeleteHref(action, user)}}" on-tap="ajaxDelete">delete</a><span>{{user.email}}</span>
       </li>
     </template>
   </ul>

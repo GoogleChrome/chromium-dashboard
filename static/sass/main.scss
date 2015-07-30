@@ -2,11 +2,6 @@
 @import "compass/css3/images";
 @import "compass/css3/transition";
 
-// @import url("//fonts.googleapis.com/css?family=Open+Sans:300,300italic,600,800|Source+Code+Pro:400,600");
-
-// @import "../css/font-awesome/font-awesome.css";
-@import "font-awesome/font-awesome.scss";
-
 html, body {
   height: 100%;
 }
@@ -15,7 +10,7 @@ body {
   color: $default-font-color;
   font: 14px "Open Sans", Arial, sans-serif;
   background-color: $light-grey;
-  //background: url(../img/bg.png);
+  // background: url(../img/bg.png);
 }
 
 header, footer {
@@ -137,7 +132,7 @@ footer {
 
     &.feature-count {
       min-width: 325px;
-      margin-right: $content-padding - 15; 
+      margin-right: $content-padding - 15;
     }
 
     &.search {
@@ -151,7 +146,7 @@ footer {
 
     &.actionlinks {
       a {
-        margin-left: 20px;
+        // margin-left: 20px;
       }
       .legend {
         font-size: 18px;
@@ -176,7 +171,7 @@ footer {
 }
 
 #content {
-  @include display-flex; //@include display-box; 
+  @include display-flex; //@include display-box;
   //@include justify-content(center);
   @include flex(1 0 0);
   //@include box-orient(vertical);

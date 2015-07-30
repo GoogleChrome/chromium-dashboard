@@ -26,6 +26,10 @@
     "polymer": "Polymer/polymer#^1.0.8",
     "iron-ajax": "PolymerElements/iron-ajax#^1.0.3",
     "google-apis": "GoogleWebComponents/google-apis#^1.0.2",
-    "paper-dialog": "PolymerElements/paper-dialog#^1.0.1"
+    "paper-dialog": "PolymerElements/paper-dialog#^1.0.1",
+    "paper-styles": "PolymerElements/paper-styles#~1.0.11",
+    "iron-icon": "PolymerElements/iron-icon#~1.0.2",
+    "iron-icons": "PolymerElements/iron-icons#~1.0.3",
+    "paper-button": "PolymerElements/paper-button#~1.0.3"
   }
 }

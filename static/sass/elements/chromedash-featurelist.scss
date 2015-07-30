@@ -6,13 +6,17 @@
 }
 
 .milestone-marker {
-  $milestone-label-size: 14px;
+  $milestone-label-size: 18px;
   text-align: right;
   text-transform: uppercase;
-  margin-top: 10px;
+  margin: 32px 0 8px 0;
   font-weight: 600;
   font-size: $milestone-label-size;
   color: $chromium-color-dark;
+
+  &:first-of-type {
+    margin-top: 0;
+  }
 }
 
 // [data-first-of-milestone] {

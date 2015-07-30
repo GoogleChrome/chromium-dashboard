@@ -3,8 +3,8 @@
 <link rel="import" href="../bower_components/google-apis/google-js-api.html">
 
 <dom-module id="chromedash-feature-timeline">
-  <template>
-  <link rel="stylesheet" href="../css/elements/chromedash-timeline.css">
+<link rel="import" type="css" href="../css/elements/chromedash-timeline.css">
+<template>
   <google-js-api on-api-load="{{chartAPILoaded}}"></google-js-api>
   <select value="{{selectedBucketId::input}}">
     <option disabled value="1">Select a property</option>

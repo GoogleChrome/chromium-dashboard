@@ -20,7 +20,7 @@
 
     &.header {
       margin-bottom: 10px;
-      
+
       label {
         color: $chromium-color-dark;
         text-transform: uppercase;
@@ -39,7 +39,6 @@
 
     label {
       font-weight: 600;
-      font-family: 'Source Code Pro', sans-serif;
       @include flex(1);
       word-wrap: break-word;
 

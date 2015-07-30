@@ -2,14 +2,15 @@
 <link rel="import" href="chromedash-feature.html">
 
 <dom-module id="chromedash-featurelist">
-  <template>
-  <link rel="stylesheet" href="../css/elements/chromedash-featurelist.css">
+<link rel="import" type="css" href="../css/elements/chromedash-featurelist.css">
+<template>
   <ul>
     <template is="dom-repeat" items="{{filtered}}" as="feature">
-      <div hidden$="{{computeMilestoneHidden(feature, features, filtered)}}" class="milestone-marker">{{feature.meta.milestone_str}}</div>
-      <li id="{{feature.id}}" is="chromedash-feature" feature="{{feature}}" needsflag="{{feature.meta.needsflag}}">
-        <a href="{{computeHref(feature)}}" class="edit" hidden$="{{computeEditLinkHidden(whitelisted)}}">edit</a>
-      </li>
+      <div hidden$="{{computeMilestoneHidden(feature, features, filtered)}}"
+           class="milestone-marker">{{computeMilestoneString(feature.meta.milestone_str)}}</div>
+      <li id="{{feature.id}}" is="chromedash-feature"
+          feature="[[feature]]" needsflag="[[feature.meta.needsflag]]"
+          whitelisted="[[whitelisted]]"></li>
     </template>
   </ul>
 </template>
@@ -19,6 +20,7 @@
     function onMetadataChanged_(e) {
       this.scrollToMilestone(e.detail.version);
     }
+
     function matchesMilestone_(milestone, operator, version) {
       switch (operator) {
       case '<':
@@ -45,29 +47,37 @@
     var featureLiList_ = [];
     Polymer({
       is: 'chromedash-featurelist',
+
       properties: {
         features: {
+          type: Array,
           notify: true,
-          observer: 'featuresChanged'
+          observer: 'featuresChanged',
+          value: function() { return []; }
         },
-        filtered: { observer: 'filteredChanged' },
+        filtered: {
+          type: Array,
+          observer: 'filteredChanged',
+          value: function() { return []; }
+        },
         metadata: {
+          type: Object,
           value: null,
           observer: 'metadataChanged'
         },
         search: { value: null },
         whitelisted: {
           type: Boolean,
-          value: false,
-          notify: true
+          value: false
+        },
+        lastStableRelease: {
+          type: Number,
+          observer: '_lastStableReleaseChanged',
         }
       },
-      created: function () {
-        this.features = this.features || [];
-        this.filtered = this.filtered || [];
-      },
-      onKeyUp: function (e, detail, sender) {
-        var focusedEl = this.shadowRoot.querySelector(':focus');
+
+      onKeyUp: function (e, detail) {
+        var focusedEl = Polymer.dom(this.root).querySelector(':focus');
         if (focusedEl) {
           switch (e.keyCode) {
           case 13:
@@ -80,11 +90,11 @@
         }
       },
       // noop
-      onScrollList: function (e, detail, sender) {
-        var feature = this.featureInView(sender.scrollTop);
+      onScrollList: function (e, detail) {
+        var feature = this.featureInView(Polymer.dom(e).localTarget.scrollTop);
         this.metadata.selectMilestone(feature);
       },
-      onFeatureToggled: function (e, detail, sender) {
+      onFeatureToggled: function (e, detail) {
         var feature = detail.feature;
         var open = detail.open;
         if (history && history.replaceState) {
@@ -96,31 +106,31 @@
           }
         }
       },
-      metadataChanged: function (_, oldVal) {
+      metadataChanged: function(newValue, oldValue) {
         // TODO: probably need to remove the listener if metadata element changes.
         //this.metadata.removeEventListener('milestoneselect', onMetadataChanged_.bind(this));
-        this.metadata.addEventListener('milestoneselect', onMetadataChanged_.bind(this));
+        if (this.metadata) {
+          this.metadata.addEventListener('milestoneselect', onMetadataChanged_.bind(this));
+        }
       },
-      featuresChanged: function () {
+      _lastStableReleaseChanged: function() {
+        // If there's an id in the URL, highlight and scroll to the feature.
+        // Otherwise scroll to latest chrome release.
+        var lastSlash = location.pathname.lastIndexOf('/');
+        if (lastSlash > 0) {
+          var id = parseInt(location.pathname.substring(lastSlash + 1));
+          this.scrollToFeature(id);
+        } else {
+          this.scrollToMilestone(this.lastStableRelease);
+        }
+
+        document.body.classList.add('ready');  // unmask app after scroll.
+      },
+      featuresChanged: function() {
         if (!this.features || !this.features.length) {
           return;
         }
         this.filter(location.hash.substr(1));
-        document.body.classList.add('ready');  // unmask app.
-        // unmask app.
-        this.async(function () {
-          // If there's an id in the URL, highlight and scroll to the feature.
-          // Otherwise, go to the first "in development" feature.
-          // TODO: really want this in ready(), but featureLiList and metadata may
-          // not be set yet due to timing issues.
-          var lastSlash = location.pathname.lastIndexOf('/');
-          if (lastSlash > 0) {
-            var id = parseInt(location.pathname.substring(lastSlash + 1));
-            this.scrollToFeature(id);
-          } else {
-            this.scrollToMilestone(this.metadata.implStatuses[this.metadata.STATUS.IN_DEVELOPMENT - 1].val);
-          }
-        });
       },
       filterOnCategory: function (val) {
         var regex = new RegExp(val, 'i');
@@ -139,7 +149,7 @@
       filteredChanged: function () {
         // Wait one rAF do model has updated the DOM.
         this.async(function () {
-          featureLiList_ = this.shadowRoot.querySelectorAll('li');
+          featureLiList_ = Polymer.dom(this.root).querySelectorAll('li');
         });
       },
       filter: function (val) {
@@ -203,7 +213,7 @@
         return this.filtered.length;
       },
       // Returns the closest feature <li> to the scroll top position passed in.
-      featureInView: function (containerScrollTop) {
+      featureInView: function(containerScrollTop) {
         var closest = null;
         for (var i = 0, li; li = featureLiList_[i]; ++i) {
           var dist = li.offsetTop - containerScrollTop;
@@ -219,7 +229,7 @@
         return closest;
       },
       // Returns the index of the first feature of a given milestone string.
-      firstOfMilestone: function (milestone, opt_startFrom) {
+      firstOfMilestone: function(milestone, opt_startFrom) {
         var start = opt_startFrom != undefined ? opt_startFrom : 0;
         for (var i = start, feature; feature = this.filtered[i]; ++i) {
           if (feature.first_of_milestone && [
@@ -231,7 +241,7 @@
         }
         return -1;
       },
-      scrollToMilestone: function (milestone) {
+      scrollToMilestone: function(milestone) {
         var idx = this.firstOfMilestone(milestone);
         if (idx != -1) {
           var el = featureLiList_[idx].previousElementSibling || featureLiList_[idx];
@@ -241,7 +251,7 @@
         }
       },
       // el.scrollIntoView(true, {behavior: 'smooth'});
-      scrollToFeature: function (id) {
+      scrollToFeature: function(id) {
         if (!id) {
           return;
         }
@@ -258,14 +268,11 @@
         'keyup': 'onKeyUp',
         'feature-toggled': 'onFeatureToggled'
       },
-      computeMilestoneHidden: function (feature, features, filtered) {
+      computeMilestoneHidden: function(feature, features, filtered) {
         return filtered.length != features.length || !feature.first_of_milestone;
       },
-      computeEditLinkHidden: function (feature) {
-        return '/admin/features/edit/' + feature.id;
-      },
-      computeHidden: function (whitelisted) {
-        return !whitelisted;
+      computeMilestoneString: function(str) {
+        return isNaN(parseInt(str)) ? str : 'Chrome ' + str;
       }
     });
   }());

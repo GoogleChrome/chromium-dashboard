@@ -34,8 +34,8 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
 
 <dom-module id="x-meter">
-  <template>
-  <link rel="stylesheet" href="../css/elements/x-meter.css">
+<link rel="import" type="css" href="../css/elements/x-meter.css">
+<template>
   <div class="meter" id="meter" title="{{helpText}}">
     <div style="{{computeStyle(value)}}"><span>{{valueFormmatted}}</span>%</div>
   </div>

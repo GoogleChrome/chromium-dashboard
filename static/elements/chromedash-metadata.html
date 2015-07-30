@@ -2,15 +2,18 @@
 <link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
 
 <dom-module id="chromedash-metadata">
-  <template>
-  <link rel="stylesheet" href="../css/elements/chromedash-metadata.css">
-  <iron-ajax auto="" url="https://omahaproxy.appspot.com/all.json" handle-as="json" on-core-response="{{onResponse}}"></iron-ajax>
-  <ul class="{{computeClass(betaIsDev, canaryIsDev, tokenList)}}">
+<link rel="import" type="css" href="../css/elements/chromedash-metadata.css">
+<template>
+  <iron-ajax auto url="https://omahaproxy.appspot.com/all.json" handle-as="json"
+             on-response="onResponse"
+             on-error="onError"></iron-ajax>
+  <ul class$="{{computeClass(betaIsDev, canaryIsDev)}}">
     <template is="dom-repeat" items="{{versions}}" as="v">
-      <li data-version="{{v}}" on-tap="{{selectMilestone}}" selected$="{{computeSelected(selected, v)}}">{{v}}</li>
+      <li data-version$="{{v}}" on-tap="selectMilestone"
+          selected$="{{computeSelected(selected, v)}}">{{v}}</li>
     </template>
   </ul>
-  <div hidden$="{{computeHidden(fetchError)}}" class="error">Error fetching Chrome version information.</div>
+  <div hidden$="{{!fetchError}}" class="error">Error fetching Chrome version information.</div>
 </template>
 </dom-module>
 <script>
@@ -29,25 +32,37 @@
         type: Boolean,
         value: false
       },
-      selected: { value: null }
-    },
-    created: function () {
-      this.implStatuses = this.implStatuses || {};
-      this.STATUS = this.STATUS || {};
-      this.channels = this.channels || {};
-      this.versions = this.versions || [];
-    },
-    onResponse: function (e, detail, sender) {
-      if (detail.response.type == 'error') {
-        this.fetchError = true;
-        return;
+      selected: { value: null },
+      implStatuses: {
+        type: Object,
+        value: function() { return {}; }
+      },
+      STATUS: {
+        type: Object,
+        value: function() { return {}; }
+      },
+      channels: {
+        type: Object,
+        value: function() { return {}; }
+      },
+      versions: {
+        type: Array,
+        value: function() { return []; }
       }
+    },
+    onError: function(e, detail) {
+      this.fetchError = true;
+    },
+    onResponse: function(e, detail) {
       // TODO(ericbidelman): Share this data across instances.
       var windowsVersions = detail.response[0];
       for (var i = 0, el; el = windowsVersions.versions[i]; ++i) {
         // Include previous version if current is foobar'd.
         this.channels[el.channel] = parseInt(el.version) || parseInt(el.prev_version);
       }
+
+      this.fire('channels-update', {lastStableRelease: this.channels.stable});
+
       // Dev channel explicitly left out. Treat same as canary.
       this.versions = [
         this.implStatuses[this.STATUS.NO_ACTIVE_DEV - 1].val,
@@ -67,30 +82,26 @@
         this.betaIsDev = true;
       }
       for (var i = this.channels.stable - 1; i >= 1; i--) {
-        this.versions.push(i);
+        this.push('versions', i);
       }
-      this.versions.push(this.implStatuses[this.implStatuses.length - 1].val);
+      var noLongerPursuing = this.implStatuses[this.implStatuses.length - 1].val;
+      this.push('versions', noLongerPursuing);
     },
-    selectMilestone: function (e, details, sender) {
-      if (details) {
+    selectMilestone: function(e, detail) {
+      if (detail) {
         // Came from an internal click.
-        this.selected = sender.dataset.version;
-        this.fire('milestoneselect', { version: this.selected });
+        this.selected = Polymer.dom(e).localTarget.dataset.version;
+        this.fire('milestoneselect', {version: this.selected});
       } else {
         // Called directly (from outside). e is a feature.
         this.selected = e.meta.milestone_str;
       }
     },
-    computeClass: function (betaIsDev, canaryIsDev, tokenList) {
-      return {
-        canaryisdev: canaryIsDev,
-        betaisdev: betaIsDev
-      } | tokenList;
+    computeClass: function(betaIsDev, canaryIsDev) {
+      return (canaryIsDev ? 'canaryisdev' : '') + ' ' +
+             (betaIsDev ? 'betaisdev' : '');
     },
-    computeHidden: function (fetchError) {
-      return !fetchError;
-    },
-    computeSelected: function (selected, v) {
+    computeSelected: function(selected, v) {
       return v == selected;
     }
   });

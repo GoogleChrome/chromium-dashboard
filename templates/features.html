@@ -7,13 +7,14 @@
 {% block rss %}
 <link rel="alternate" type="application/rss+xml" href="http://www.chromestatus.com/features.xml" title="All features" />
 {% for k,v in categories %}
-<link rel="alternate" type="application/rss+xml" href="http://www.chromestatus.com/features.xml?category={{v}}" title='"{{k}}" features'>
+<link rel="alternate" type="application/rss+xml"
+      href="http://www.chromestatus.com/features.xml?category={{v}}" title='"{{k}}" features'>
 {% endfor %}
 
 {% endblock %}
 
 {% block css %}
-<link rel="stylesheet" href="/static/css/features/features.css?2014-03-19">
+<link rel="stylesheet" href="/static/css/features/features.css?2015-07-29">
 {% endblock %}
 
 {% block subheader %}
@@ -25,8 +26,8 @@
     <input type="search" placeholder="Filter" disabled>
   </div>
   <div class="actionlinks">
-    {% if user.is_whitelisted %}<a href="/admin/features/new">Add a new feature</a>{% endif %}
-    <a href="" class="legend"><i class="icon-question-sign"></i></a>
+    {% if user.is_whitelisted %}<a href="/admin/features/new"><paper-button>Add a new feature</paper-button></a>{% endif %}
+    <a href="" class="legend"><iron-icon icon="icons:help"></iron-icon></a>
   </div>
 </div>
 {% endblock %}
@@ -38,7 +39,9 @@
   in which they were added. Features marked "No active development" are being
   considered or have yet to be started. Features marked "In development" are currently
   being worked on.</p>
-  <button class="close" dismissive>x</button>
+  <div class="close buttons">
+    <paper-button dialog-dismiss>Close</paper-button>
+  </div>
 </chromedash-legend>
 
 <section id="panels">
@@ -62,7 +65,7 @@ function updateCount(count) {
   $('#num-features').textContent = count;
 }
 
-document.addEventListener('polymer-ready', function(e) {
+document.addEventListener('WebComponentsReady', function(e) {
   var featureList = $('chromedash-featurelist');
   var chromeMetadata = $('chromedash-metadata');
   var overlay = $('chromedash-legend');
@@ -88,7 +91,7 @@ document.addEventListener('polymer-ready', function(e) {
 
   var xhr = new XMLHttpRequest();
   xhr.open('GET', url);
-  //xhr.responseType = 'json'; // Safari 6.0.5 doesn't support this
+  xhr.responseType = 'json';
   xhr.onloadend = function(e) {
     var resp = e.target.response;
     featureList.features = (typeof resp == 'string') ? JSON.parse(resp) : resp;
@@ -107,6 +110,10 @@ document.addEventListener('polymer-ready', function(e) {
   // featureList.metadata = chromeMetadata; // Feature list needs access to the selected milestone.
   // updateCount(featureList.features.length); // Set initial # features showing.
   // search.disabled = false;
+
+  chromeMetadata.addEventListener('channels-update', function(e) {
+    featureList.lastStableRelease = e.detail.lastStableRelease;
+  });
 
   featureList.addEventListener('filter-category', function(e) {
     search.value = 'category: ' + e.detail.val;
@@ -160,17 +167,6 @@ document.addEventListener('polymer-ready', function(e) {
   });
 
 });
-
-// Feature detect new flexbox. If unsupported, CSS fixes to support old flexbox.
-// TODO(ericbidelman): remove when Safari updates to new flexbox.
-var el = document.createElement('div');
-if (!('flexBasis' in el.style || 'webkitFlexBasis' in el.style ||
-      'WebKitFlexBasis' in el.style)) {
-  var link = document.createElement('link');
-  link.rel = 'stylesheet';
-  link.href = '/static/css/features/safari_fixes.css';
-  document.head.appendChild(link);
-}
 
 })();
 </script>
