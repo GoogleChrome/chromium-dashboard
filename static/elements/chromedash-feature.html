@@ -57,9 +57,11 @@
 <template>
 <div on-tap="toggle">
   <div class="topcorner pull-right">
-    <span hidden$="{{_computeDeprecatedHidden(deprecated, removed)}}"
-          class="tooltip" title="{{_computeTitle(removed)}}">
-      <iron-icon icon="icons:highlight-off" class="remove" data-tooltip></iron-icon>
+    <span hidden$="{{!removed}}" class="tooltip" title="Removed feature">
+      <iron-icon icon="icons:cancel" class="remove" data-tooltip></iron-icon>
+    </span>
+    <span hidden$="{{!deprecated}}" class="tooltip" title="Deprecated feature">
+      <iron-icon icon="icons:warning" class="deprecated" data-tooltip></iron-icon>
     </span>
     <span hidden$="{{!needsflag}}" class="tooltip" title="Experimental feature behind a flag">
       <iron-icon icon="icons:extension" class="experimental"></iron-icon>
@@ -288,14 +290,8 @@
 
     _featureChanged: function() {
       this._calculateCompatRisk();  // TODO: these values are brittle if the strings change.
-      // TODO: these values are brittle if the strings change.
-      // this.removed = this.feature.impl_status_chrome == 'Removed';
-      // this.deprecated = this.feature.impl_status_chrome == 'Deprecated' || this.feature.impl_status_chrome == 'No longer pursuing';
     },
 
-    _computeDeprecatedHidden: function(deprecated, removed) {
-      return !removed && !deprecated;
-    },
     _computeTitle: function(removed) {
       return removed ? 'Removed feature' : 'Deprecated feature';
     },

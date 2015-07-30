@@ -44,6 +44,9 @@ iron-icon {
   &.remove {
     color: var(--paper-red-700);
   }
+  &.deprecated {
+    color: var(--paper-orange-700);
+  }
   &.experimental {
     color: var(--paper-green-700);
   }
