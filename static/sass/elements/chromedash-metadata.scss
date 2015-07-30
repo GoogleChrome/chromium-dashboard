@@ -2,7 +2,7 @@
 
 @import "element";
 
-$small-font-size: 75%;
+$small-font-size: 80%;
 
 :host {
   display: block;
@@ -85,7 +85,7 @@ ul {
     }
 
     &[selected] {
-      font-weight: 600;
+      font-weight: 500;
       color: $chromium-color-dark;
       &::before {
         border-color: $chromium-color-dark;
@@ -96,7 +96,7 @@ ul {
 
 .error {
   font-size: $small-font-size;
-  font-weight: 600;
+  font-weight: 500;
   font-style: italic;
   margin: 100px 0 0 5px;
   color: darkred;

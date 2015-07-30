@@ -34,12 +34,6 @@
 <head>
 <meta charset="utf-8">
 <title>{% block page_title %}{% endblock %}{{ APP_TITLE }}</title>
-<link rel="shortcut icon" href="/static/img/chromium-128.png">
-<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Open+Sans:300,300italic,600,800">
-<link rel="stylesheet" href="/static/css/main.css?2015-07-29">
-{% block css %}{% endblock %}
-{% block meta %}{% endblock %}
-
 <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
 
 <!-- iOS: run in full-screen mode and display upper status bar as translucent -->
@@ -49,8 +43,14 @@
 
 <link rel="apple-touch-icon" href="/static/img/chromium-128.png">
 <link rel="apple-touch-icon-precomposed" href="/static/img/chromium-128.png">
+<link rel="shortcut icon" href="/static/img/chromium-128.png">
 
-<script src="/static/bower_components/webcomponentsjs/webcomponents-lite.min.js"></script>
+{% block meta %}{% endblock %}
+
+<link rel="stylesheet" href="/static/css/main.css?2015-07-29">
+{% block css %}{% endblock %}
+
+<script src="/static/bower_components/webcomponentsjs/webcomponents-lite.min.js" defer></script>
 <!-- <script src="/static/js/smoothscroll/dist/smoothscroll.js"></script> -->
 <!-- <script src="/static/js/bower_components/smoothscroll/smoothscroll.js"></script>  -->
 
