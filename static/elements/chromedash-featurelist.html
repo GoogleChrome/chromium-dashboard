@@ -4,7 +4,7 @@
 <dom-module id="chromedash-featurelist">
 <link rel="import" type="css" href="../css/elements/chromedash-featurelist.css">
 <template>
-  <ul>
+  <ul id="featurelist">
     <template is="dom-repeat" items="{{filtered}}" as="feature">
       <div hidden$="{{computeMilestoneHidden(feature, features, filtered)}}"
            class="milestone-marker">{{computeMilestoneString(feature.meta.milestone_str)}}</div>

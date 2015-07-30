@@ -1,8 +1,13 @@
+@import "compass/css3/transform";
 @import "element";
 
 :host {
   display: block;
   padding: 5px;
+}
+
+#featurelist {
+  @include transform(translateZ(0)); // force composite layer in stable
 }
 
 .milestone-marker {

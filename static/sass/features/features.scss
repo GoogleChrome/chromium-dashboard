@@ -58,7 +58,6 @@ chromedash-legend {
   }
 
   chromedash-featurelist {
-    @include transform(translateZ(0)); // force composite layer in stable
     @include flex(1 0 0);
     overflow: auto;
     max-width: $max-content-width;
