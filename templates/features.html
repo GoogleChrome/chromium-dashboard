@@ -26,7 +26,9 @@
     <input type="search" placeholder="Filter" disabled>
   </div>
   <div class="actionlinks">
-    {% if user.is_whitelisted %}<a href="/admin/features/new"><paper-button>Add a new feature</paper-button></a>{% endif %}
+    {% if user.is_whitelisted %}
+      <paper-button onclick="addNewFeature(this);">Add a new feature</paper-button>
+    {% endif %}
     <a href="" class="legend"><iron-icon icon="icons:help"></iron-icon></a>
   </div>
 </div>
@@ -63,6 +65,13 @@
 (function() {
 function updateCount(count) {
   $('#num-features').textContent = count;
+}
+
+window.addNewFeature = function(el) {
+  // Wait for ripple to finish.
+  el.addEventListener('transitionend', function(e) {
+    location.href = '/admin/features/new';
+  });
 }
 
 document.addEventListener('WebComponentsReady', function(e) {

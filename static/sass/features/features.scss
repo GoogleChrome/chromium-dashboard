@@ -64,6 +64,12 @@ chromedash-legend {
   }
 }
 
+#subheader {
+  paper-button {
+    color: $chromium-color-dark;
+  }
+}
+
 @media only screen and (max-width: 700px) {
   body {
     &:not(.ready) #content {

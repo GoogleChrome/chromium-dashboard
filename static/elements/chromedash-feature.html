@@ -55,31 +55,29 @@
 <dom-module id="chromedash-feature">
 <link rel="import" type="css" href="../css/elements/chromedash-feature.css">
 <template>
-<div on-tap="toggle">
-  <div class="topcorner pull-right">
-    <span hidden$="{{!removed}}" class="tooltip" title="Removed feature">
-      <iron-icon icon="icons:cancel" class="remove" data-tooltip></iron-icon>
-    </span>
-    <span hidden$="{{!deprecated}}" class="tooltip" title="Deprecated feature">
-      <iron-icon icon="icons:warning" class="deprecated" data-tooltip></iron-icon>
-    </span>
-    <span hidden$="{{!needsflag}}" class="tooltip" title="Experimental feature behind a flag">
-      <iron-icon icon="icons:extension" class="experimental"></iron-icon>
-    </span>
-    <span class="tooltip" title="Edit this feature" hidden$="{{!whitelisted}}">
-      <a href$="{{_computeEditLinkHidden(feature)}}" data-tooltip>
-        <iron-icon icon="icons:create"></iron-icon>
-      </a>
-    </span>
-    <a href$="{{_computeStandaloneHref(feature)}}" target="_blank"
-       class="tooltip" title="View on standalone page">
-      <iron-icon icon="icons:open-in-new" data-tooltip></iron-icon>
-    </a>
-  </div>
+<div on-tap="toggle" class="main-content-area">
   <hgroup>
     <chromedash-color-status class="tooltip corner" title="Compatibility risk: perceived interest from browser vendors and web developers" value="{{compatRisk}}" max="{{MAX_RISK}}"></chromedash-color-status>
     <h2>{{feature.name}}</h2>
-    <label class="category" on-tap="categoryFilter">{{feature.category}}</label>
+    <div class="iconrow">
+      <label class="category" on-tap="categoryFilter">{{feature.category}}</label>
+      <div class="topcorner">
+        <span hidden$="{{!removed}}" class="tooltip" title="Removed feature">
+          <iron-icon icon="icons:cancel" class="remove" data-tooltip></iron-icon>
+        </span>
+        <span hidden$="{{!deprecated}}" class="tooltip" title="Deprecated feature">
+          <iron-icon icon="icons:warning" class="deprecated" data-tooltip></iron-icon>
+        </span>
+        <span hidden$="{{!needsflag}}" class="tooltip" title="Experimental feature behind a flag">
+          <iron-icon icon="icons:extension" class="experimental"></iron-icon>
+        </span>
+        <span class="tooltip" title="Edit this feature" hidden$="{{!whitelisted}}">
+          <a href$="{{_computeEditLinkHidden(feature)}}" class="editfeature" data-tooltip>
+            <iron-icon icon="icons:create"></iron-icon>
+          </a>
+        </span>
+      </div>
+    </div>
   </hgroup>
   <section class="desc"><summary class$="{{_computeSummaryClass(open)}}">{{feature.summary}}</summary></section>
   <template is="dom-if" if="{{open}}">
@@ -189,6 +187,10 @@
     </template>
   </template>
 </div>
+<a href$="{{_computeStandaloneHref(feature)}}" target="_blank"
+   class="open-standalone" title="View on standalone page">
+  <iron-icon icon="icons:open-in-new" class="opennew" data-tooltip></iron-icon>
+</a>
 </template>
 </dom-module>
 <script>
