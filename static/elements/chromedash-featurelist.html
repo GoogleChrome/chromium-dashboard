@@ -122,8 +122,6 @@
           return;
         }
 
-        document.body.classList.add('ready');  // unmask app after scroll.
-
         this.async(function() {
           // If there's an id in the URL, highlight and scroll to the feature.
           // Otherwise scroll to latest chrome release.
@@ -140,6 +138,8 @@
         if (!this.features || !this.features.length) {
           return;
         }
+
+        document.body.classList.add('ready');  // unmask app after scroll.
 
         this.filter(location.hash.substr(1));
       },
