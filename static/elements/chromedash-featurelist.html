@@ -72,7 +72,7 @@
         },
         lastStableRelease: {
           type: Number,
-          observer: '_lastStableReleaseChanged',
+          observer: '_lastStableReleaseChanged'
         }
       },
 
@@ -123,14 +123,18 @@
         } else {
           this.scrollToMilestone(this.lastStableRelease);
         }
-
-        document.body.classList.add('ready');  // unmask app after scroll.
+        if (this.features.length) {
+          document.body.classList.add('ready');  // unmask app after scroll.
+        }
       },
       featuresChanged: function() {
         if (!this.features || !this.features.length) {
           return;
         }
         this.filter(location.hash.substr(1));
+        if (this.lastStableRelease) {
+          document.body.classList.add('ready');  // unmask app after scroll.
+        }
       },
       filterOnCategory: function (val) {
         var regex = new RegExp(val, 'i');
