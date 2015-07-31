@@ -64,6 +64,7 @@ iron-icon {
 .main-content-area {
   @include flex(1 0 0);
   margin-right: 12px;
+  overflow: hidden;
 }
 
 .open-standalone {
