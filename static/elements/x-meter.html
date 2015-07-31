@@ -1,43 +1,11 @@
-<!-- <link rel="import" href="../bower_components/polymer/polymer.html">
-
-<polymer-element name="x-meter" attributes="value">
-<template>
-  <link rel="stylesheet" href="../css/elements/x-meter.css">
-  <div class="meter" id="meter" title="{{helpText}}">
-    <div style="width:{{value}}%">{{valueFormmatted}}%</div>
-  </div>
-</template>
-<script>
-  Polymer({
-    value: 0,
-    helpText: '',
-    valueChanged: function() {
-      var MIN_VAL = 1e-4;
-      if (this.value <= MIN_VAL) {
-        this.valueFormmatted = '<=0.0001';
-      } else {
-        this.valueFormmatted = Number(this.value).toFixed(4);
-      }
-
-      this.value = Number(this.value).toFixed(4);
-
-      var MIN_FOR_AT_RISK = 0.03;
-      if (this.value <= MIN_FOR_AT_RISK) {
-        this.$.meter.classList.add('atrisk');
-        this.helpText = 'This feature may be at risk for removal. Usage is <= ' + MIN_FOR_AT_RISK + '%.';
-      }
-    }
-  });
-</script>
-</polymer-element>
- -->
 <link rel="import" href="../bower_components/polymer/polymer.html">
+<!-- <link rel="import" href="../bower_components/paper-styles/color.html"> -->
 
 <dom-module id="x-meter">
 <link rel="import" type="css" href="../css/elements/x-meter.css">
 <template>
-  <div class="meter" id="meter" title="{{helpText}}">
-    <div style="{{computeStyle(value)}}"><span>{{valueFormmatted}}</span>%</div>
+  <div class$="{{_computeClass('meter', value)}}" id="meter">
+    <div style$="[[computeStyle(value)]]"><span>{{valueFormmatted}}</span></div>
   </div>
 </template>
 </dom-module>
@@ -45,32 +13,37 @@
   Polymer({
     is: 'x-meter',
     properties: {
-      helpText: {
-        type: String,
-        value: ''
+      MIN_FOR_AT_RISK: {
+        type: Number,
+        value: 0.03,
+        readOnly: true
       },
       value: {
         type: Number,
         value: 0,
-        notify: true,
-        observer: 'valueChanged'
+        notify: true
+      },
+      valueFormmatted: {
+        type: Number,
+        computed: '_computeFormattedValue(value)'
       }
     },
-    valueChanged: function () {
-      var MIN_VAL = 0.0001;
-      if (this.value <= MIN_VAL) {
-        this.valueFormmatted = '<=0.0001';
-      } else {
-        this.valueFormmatted = Number(this.value).toFixed(4);
+
+    _computeFormattedValue: function(value) {
+      var atRiskMsg = 'This feature may be at risk for removal. Usage is <= ' +
+                       this.MIN_FOR_AT_RISK + '%.';
+      var num = value <= 0.0001 ? '<=0.0001%' : Number(value).toFixed(4) + '%';
+
+      if (value <= this.MIN_FOR_AT_RISK) {
+        num += ' ' + atRiskMsg
       }
-      this.value = Number(this.value).toFixed(4);
-      var MIN_FOR_AT_RISK = 0.03;
-      if (this.value <= MIN_FOR_AT_RISK) {
-        this.$.meter.classList.add('atrisk');
-        this.helpText = 'This feature may be at risk for removal. Usage is <= ' + MIN_FOR_AT_RISK + '%.';
-      }
+
+      return num;
     },
-    computeStyle: function (value) {
+    _computeClass: function(defaultClasses, value) {
+      return defaultClasses + ' ' + (value <= this.MIN_FOR_AT_RISK ? 'atrisk' : '');
+    },
+    computeStyle: function(value) {
       return 'width:' + value + '%';
     }
   });

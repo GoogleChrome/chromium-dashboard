@@ -25,7 +25,7 @@
 
 {% block js %}
 <script>
-document.addEventListener('polymer-ready', function(e) {
+document.addEventListener('WebComponentsReady', function(e) {
   var el = document.querySelector('chromedash-userlist');
   el.users = {{users|safe}}; // Filled from server.
 });

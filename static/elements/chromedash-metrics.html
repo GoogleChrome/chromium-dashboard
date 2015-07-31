@@ -9,16 +9,23 @@
   <b>Showing <span>{{props.length}}</span> CSS properties</b>
   <ol id="stack-rank-list">
     <li class="header">
-      <label on-tap="sort" data-order="property_name">Property name <i class$="{{computePropertyNameClass(sortOrders)}}"></i></label>
-      <label on-tap="sort" data-order="percentage" class="flex2">Percentage <i class$="{{computePercentClass(sortOrders)}}"></i></label>
+      <label on-tap="sort" data-order="property_name" class="layout horizontal center">
+        Property name <iron-icon icon="[[propertyNameSortIcon]]"></iron-icon>
+      </label>
+      <label on-tap="sort" data-order="percentage" class="flex2">
+       Percentage <iron-icon icon="[[percentSortIcon]]"></iron-icon>
+      </label>
     </li>
     <template is="dom-if" if="{{!props.length}}">
       <li class="loading">Loading...</li>
     </template>
     <template is="dom-repeat" items="{{viewList}}" as="prop">
       <li id="{{prop.property_name}}" hidden$="{{computeHidden(prop)}}" tabindex="0">
-        <label><a href$="{{computeHref(prop)}}" title="Deep link to this property" alt="Deep link to this property">{{prop.property_name}}</a></label>
-        <x-meter value="{{prop.percentage}}" on-tap="showTimeline"
+        <label>
+          <a href$="{{computeHref(prop)}}" title="Deep link to this property"
+             alt="Deep link to this property">{{prop.property_name}}</a>
+        </label>
+        <x-meter value="[[prop.percentage]]" on-tap="showTimeline"
                  title="Click to see a timeline view of this property"></x-meter>
       </li>
     </template>
@@ -26,7 +33,7 @@
 </template>
 </dom-module>
 <script>
-  (function () {
+  (function() {
     function sortBy_(prop, arr, opt_compareAsNumbers) {
       var compareAsNumbers = opt_compareAsNumbers || false;
       arr.sort(function(a, b) {
@@ -68,6 +75,14 @@
             };
           }
         },
+        propertyNameSortIcon: {
+          type: String,
+          computed: '_computeSortIcon(sortOrders.property_name.reverse, sortOrders.property_name.activated)'
+        },
+        percentSortIcon: {
+          type: String,
+          computed: '_computeSortIcon(sortOrders.percentage.reverse, sortOrders.percentage.activated)'
+        },
         type: {
           type: String,
           value: '',
@@ -79,6 +94,12 @@
           type: String,
           computed: 'computeEndpoint(type, view)',
         }
+      },
+      _computeSortIcon: function(reverse, activated) {
+        if (!activated) {
+          return '';
+        }
+        return reverse ? 'icons:arrow-drop-up' : 'icons:arrow-drop-down';
       },
       computeEndpoint: function(type, view) {
         return '/data/' + type + view;
@@ -92,25 +113,37 @@
         }
         this.viewList = this.props;
         if (location.hash) {
-          this.async(function () {
+          this.async(function() {
             this.scrollToProperty(location.hash.split('#')[1]);
           });
         }
       },
       sort: function(e, detail) {
         e.preventDefault();
-        var order = Polymer.dom(e).localTarget.dataset.order;
+
+        var order = e.target.dataset.order;
         sortBy_(order, this.viewList, order === 'percentage');
-        this.sortOrders[order].activated = true;
-        this.sortOrders[order].reverse = !this.sortOrders[order].reverse;
-console.log(this.viewList)
+        switch (order) {
+          case 'percentage':
+            this.set('sortOrders.percentage.activated', true);
+            this.set('sortOrders.percentage.reverse', !this.sortOrders.percentage.reverse);
+            break;
+          case 'property_name':
+            this.set('sortOrders.property_name.activated', true);
+            this.set('sortOrders.property_name.reverse', !this.sortOrders.property_name.reverse);
+            break;
+        }
+
         if (this.sortOrders[order].reverse) {
           this.viewList.reverse();
         }
+
+        // TODO: remove when github.com/Polymer/polymer/issues/2175 is fixed.
+        this.viewList = this.viewList.slice(0);
       },
       showTimeline: function(e, detail) {
         window.location.href = '/metrics/' + this.type + '/timeline/' +
-            this.view + '/' + Polymer.dom(e).localTarget.templateInstance.model.prop.bucket_id;
+            this.view + '/' + e.model.prop.bucket_id;
       },
       scrollToProperty: function(prop) {
         if (prop) {
@@ -118,15 +151,10 @@ console.log(this.viewList)
           el.scrollIntoView(true);  //el.scrollIntoView(true, {behavior: 'smooth'});
         }
       },
-      computePropertyNameClass: function(sortOrders) {
-        return 'icon-long-arrow-' +
-               (sortOrders.property_name.reverse ? 'up' : 'down') + ' ' +
-               (sortOrders.property_name.activated ? 'activated' : '');
-      },
       computePercentClass: function(sortOrders) {
-        return 'icon-long-arrow-' +
+        return ('icon-long-arrow-' +
                (sortOrders.percentage.reverse ? 'down' : 'up') + ' ' +
-               (sortOrders.percentage.activated ? 'activated' : '');
+               (sortOrders.percentage.activated ? 'activated' : '')).trim();
       },
       computeHidden: function(prop) {
         return prop.property_name == 'ERROR';
