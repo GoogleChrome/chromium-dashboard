@@ -1,14 +1,16 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
-<link rel="import" href="../bower_components/google-apis/google-js-api.html">
+<link rel="import" href="../bower_components/google-apis/google-legacy-loader.html">
 
 <dom-module id="chromedash-feature-timeline">
 <link rel="import" type="css" href="../css/elements/chromedash-timeline.css">
 <template>
-  <google-js-api on-api-load="{{chartAPILoaded}}"></google-js-api>
-  <select value="{{selectedBucketId::input}}">
+  <google-legacy-loader on-api-load="_chartAPILoaded"></google-legacy-loader>
+  <select value="{{selectedBucketId::change}}">
     <option disabled value="1">Select a property</option>
-    <option template repeat="{{computeRepeat(bucket, props)}}" value="{{bucket[0]}}">{{bucket[1]}}</option>
+    <template is="dom-repeat" items="{{props}}" as="bucket">
+      <option value="{{bucket.0}}">{{bucket.1}}</option>
+    </template>
   </select>
   <div id="chart"></div>
 </template>
@@ -20,8 +22,7 @@
     properties: {
       selectedBucketId: {
         type: Number,
-        value: 1,
-        observer: 'selectedBucketIdChanged'
+        value: 1
       },
       timeline: {
         notify: true
@@ -46,7 +47,15 @@
       }
     },
 
-    selectedBucketIdChanged: function () {
+    observers: [
+      'updateTimeline(selectedBucketId, type, view)'
+    ],
+
+    updateTimeline: function(selectedBucketId, type, view) {
+      if (this.selectedBucketId === 1) {
+        return;
+      }
+
       var ajax = document.createElement('iron-ajax');
       ajax.url = '/data/timeline/' + this.type + this.view;
       ajax.params = {bucket_id: this.selectedBucketId};
@@ -59,13 +68,15 @@
       ajax.generateRequest();
 
       if (history.pushState) {
-        history.pushState({ id: this.selectedBucketId }, '', '/metrics/' + this.type + '/timeline/' + this.view + '/' + this.selectedBucketId);
+        var url = '/metrics/' + this.type + '/timeline/' + this.view + '/' +
+                  this.selectedBucketId;
+        history.pushState({id: this.selectedBucketId}, '', url);
       }
     },
-    chartAPILoaded: function (e, detail, sender) {
-      google.load('visualization', '1.0', {
-        packages: ['corechart'],
-        callback: function () {
+    _chartAPILoaded: function(e, detail) {
+      google.load('visualization', '1.1', {
+        packages: ['line'],
+        callback: function() {
           // If there's an id in the URL, load the property it.
           var lastSlash = location.pathname.lastIndexOf('/');
           if (lastSlash > 0) {
@@ -77,7 +88,7 @@
         }.bind(this)
       });
     },
-    drawVisualization: function (data, bucketId) {
+    drawVisualization: function(data, bucketId) {
       var table = new google.visualization.DataTable();
       table.addColumn('date', 'Date');
       table.addColumn('number', 'Percentage');
@@ -94,6 +105,8 @@
       table.addRows(rowArray);
       var options = {
         title: this.title,
+        subtitle: 'all channels and platforms',
+        backgroundColor: 'white',
         legend: { position: 'none' },
         vAxis: {
           title: 'Percentage',
@@ -106,7 +119,7 @@
         },
         width: '100%',
         height: '100%',
-        // chartArea: {width: '75%'},
+        // chartArea:{left: 20, top: '20', width: '75%'},
         pointSize: 5
       };  // var dataView = new google.visualization.DataView(table);
           // dataView.setColumns([{calc: function(data, row) {
@@ -116,11 +129,10 @@
       // dataView.setColumns([{calc: function(data, row) {
       //   return data.getFormattedValue(row, 0);
       // }, type:'string'}, 1]);
-      var chart = new google.visualization.LineChart(this.$.chart);
-      chart.draw(table, options);
-    },
-    computeRepeat: function (bucket, props) {
-      return bucket in props;
+      // var chart = new google.visualization.LineChart(this.$.chart);
+      // chart.draw(table, options);
+      var chart = new google.charts.Line(this.$.chart);
+      chart.draw(table, google.charts.Line.convertOptions(options));
     }
   });
 </script>
