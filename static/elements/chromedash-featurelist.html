@@ -71,10 +71,13 @@
           value: false
         },
         lastStableRelease: {
-          type: Number,
-          observer: '_lastStableReleaseChanged'
+          type: Number
         }
       },
+
+      observers: [
+        '_initialScrollToFeature(features, lastStableRelease)'
+      ],
 
       onKeyUp: function (e, detail) {
         var focusedEl = Polymer.dom(this.root).querySelector(':focus');
@@ -110,31 +113,35 @@
         // TODO: probably need to remove the listener if metadata element changes.
         //this.metadata.removeEventListener('milestoneselect', onMetadataChanged_.bind(this));
         if (this.metadata) {
-          this.metadata.addEventListener('milestoneselect', onMetadataChanged_.bind(this));
+          this.metadata.addEventListener(
+              'milestoneselect', onMetadataChanged_.bind(this));
         }
       },
-      _lastStableReleaseChanged: function() {
-        // If there's an id in the URL, highlight and scroll to the feature.
-        // Otherwise scroll to latest chrome release.
-        var lastSlash = location.pathname.lastIndexOf('/');
-        if (lastSlash > 0) {
-          var id = parseInt(location.pathname.substring(lastSlash + 1));
-          this.scrollToFeature(id);
-        } else {
-          this.scrollToMilestone(this.lastStableRelease);
+      _initialScrollToFeature: function(features, lastStableRelease) {
+        if (!features.length || !lastStableRelease) {
+          return;
         }
-        if (this.features.length) {
-          document.body.classList.add('ready');  // unmask app after scroll.
-        }
+
+        document.body.classList.add('ready');  // unmask app after scroll.
+
+        this.async(function() {
+          // If there's an id in the URL, highlight and scroll to the feature.
+          // Otherwise scroll to latest chrome release.
+          var lastSlash = location.pathname.lastIndexOf('/');
+          if (lastSlash > 0) {
+            var id = parseInt(location.pathname.substring(lastSlash + 1));
+            this.scrollToFeature(id);
+          } else {
+            this.scrollToMilestone(this.lastStableRelease);
+          }
+        });
       },
       featuresChanged: function() {
         if (!this.features || !this.features.length) {
           return;
         }
+
         this.filter(location.hash.substr(1));
-        if (this.lastStableRelease) {
-          document.body.classList.add('ready');  // unmask app after scroll.
-        }
       },
       filterOnCategory: function (val) {
         var regex = new RegExp(val, 'i');
@@ -281,269 +288,3 @@
     });
   }());
 </script>
-
-
-<!-- <link rel="import" href="../bower_components/polymer/polymer.html">
-<link rel="import" href="chromedash-feature.html">
-
-<polymer-element name="chromedash-featurelist" attributes="whitelisted features" on-scroll="{{onScrollList}}" on-keyup="{{onKeyUp}}" on-feature-toggled="{{onFeatureToggled}}">
-<template>
-  <link rel="stylesheet" href="../css/elements/chromedash-featurelist.css">
-  <ul>
-    <template repeat="{{feature in filtered}}">
-      <div hidden?="{{(filtered.length != features.length) || !feature.first_of_milestone}}" class="milestone-marker">{{feature.meta.milestone_str}}</div>
-      <li id="{{feature.id}}" is="chromedash-feature" feature="{{feature}}" needsflag="{{feature.meta.needsflag}}">
-        <a href="/admin/features/edit/{{feature.id}}" class="edit" hidden?="{{!whitelisted}}">edit</a>
-      </li>
-    </template>
-  </ul>
-</template>
-<script>
-(function() {
-  function onMetadataChanged_(e) {
-    this.scrollToMilestone(e.detail.version);
-  }
-
-  function matchesMilestone_(milestone, operator, version) {
-    switch(operator) {
-      case '<':
-        return milestone < version;
-        break;
-      case '<=':
-        return milestone <= version;
-        break;
-      case '>':
-        return milestone > version;
-        break;
-      case '>=':
-        return milestone >= version;
-        break;
-      case '=': // Support both '=' and '=='.
-      case '==':
-        return milestone == version;
-        break;
-      default:
-        return false;
-    }
-  }
-
-  var featureLiList_ = [];
-
-  Polymer({
-    whitelisted: false,
-    metadata: null,
-    search: null,
-    created: function() {
-      this.features = this.features || [];
-      this.filtered = this.filtered || [];
-    },
-    onKeyUp: function(e, detail, sender) {
-      var focusedEl = this.shadowRoot.querySelector(':focus');
-      if (focusedEl) {
-        switch (e.keyCode) {
-          case 13: // enter
-            //focusedEl.toggle();
-            focusedEl.open = !focusedEl.open;
-            break;
-          default:
-            // noop
-        }
-        }
-    },
-    onScrollList: function(e, detail, sender) {
-      var feature = this.featureInView(sender.scrollTop);
-      this.metadata.selectMilestone(feature);
-    },
-    onFeatureToggled: function(e, detail, sender) {
-      var feature = detail.feature;
-      var open = detail.open;
-      if (history && history.replaceState) {
-        if (open) {
-          history.pushState({id: feature.id}, feature.name,
-                            '/features/' + feature.id);
-        } else {
-          var hash = this.search.value ? '#' + this.search.value : '';
-          history.replaceState({id: null}, feature.name, '/features' + hash);
-        }
-      }
-    },
-    metadataChanged: function(oldVal) {
-      // TODO: probably need to remove the listener if metadata element changes.
-      //this.metadata.removeEventListener('milestoneselect', onMetadataChanged_.bind(this));
-      this.metadata.addEventListener('milestoneselect', onMetadataChanged_.bind(this));
-    },
-    featuresChanged: function() {
-      if (!this.features || !this.features.length) {
-        return;
-      }
-
-      this.filter(location.hash.substr(1));
-
-      document.body.classList.add('ready'); // unmask app.
-
-      this.async(function() {
-
-        // If there's an id in the URL, highlight and scroll to the feature.
-        // Otherwise, go to the first "in development" feature.
-        // TODO: really want this in ready(), but featureLiList and metadata may
-        // not be set yet due to timing issues.
-
-        var lastSlash = location.pathname.lastIndexOf('/');
-        if (lastSlash > 0) {
-          var id = parseInt(location.pathname.substring(lastSlash + 1));
-          this.scrollToFeature(id);
-        } else {
-          this.scrollToMilestone(
-            this.metadata.implStatuses[this.metadata.STATUS.IN_DEVELOPMENT - 1].val);
-        }
-      });
-    },
-    filterOnCategory: function(val) {
-      var regex = new RegExp(val, 'i');
-      this.filtered = this.features.filter(function(feature, idx, array) {
-        return regex.test(feature.category);
-      });
-
-      return this.filtered.length;
-    },
-    filterOnOwner: function(val) {
-      var regex = new RegExp(val, 'i');
-      this.filtered = this.features.filter(function(feature, idx, array) {
-        return regex.test(feature.owner.toString());
-      });
-
-      return this.filtered.length;
-    },
-    filteredChanged: function() {
-      // Wait one rAF do model has updated the DOM.
-      this.async(function() {
-        featureLiList_ = this.shadowRoot.querySelectorAll('li');
-      });
-    },
-    filter: function(val) {
-      // Clear filter if there's no search or if called directly.
-      if (!val) {
-        if (history && history.replaceState) {
-          history.replaceState('', document.title, location.pathname + location.search);
-        } else {
-          location.hash = '';
-        }
-        this.filtered = this.features;
-      } else {
-        val = val.trim();
-
-        if (history && history.replaceState) {
-          history.replaceState({id: null}, document.title, '/features#' + val);
-        }
-
-        // owner: user@chromium.org
-        var match = val.match(/^owner:\s*(.*)/);
-        if (match) {
-          return this.filterOnOwner(match[1]);
-        }
-
-        // category: Multimedia
-        var match = val.match(/^category:\s*(.*)/);
-        if (match) {
-          return this.filterOnCategory(match[1]);
-        }
-
-        // Returns operator and version query e.g. ["<=25", "<=", "25"].
-        var result = /^([<>=]=?)\s*?([0-9]+)/.exec(val);
-        if (result) {
-          var operator = result[1];
-          var version = parseInt(result[2]);
-
-          this.filtered = this.features.filter(function(feature, idx, array) {
-            var platformMilestones = [
-              parseInt(feature.shipped_milestone),
-              parseInt(feature.shipped_android_milestone),
-              parseInt(feature.shipped_ios_milestone),
-              parseInt(feature.shipped_webview_milestone)
-            ];
-
-            for (var i = 0, milestone; milestone = platformMilestones[i]; ++i) {
-              if (matchesMilestone_(milestone, operator, version)) {
-                return true; // Only one of the platforms needs to match.
-              }
-            }
-          });
-        } else { // Do a general search over misc fields.
-          // Remove "=" prefix so "in development"/"proposed" version queries
-          // return results.
-          if (val.indexOf('=') == 0) {
-            val = val.substring(1);
-          }
-          var regex = new RegExp(val, 'i');
-          this.filtered = this.features.filter(function(feature, idx, array) {
-            return regex.test(feature.name) || regex.test(feature.category) ||
-                   regex.test(feature.summary) ||
-                   regex.test(feature.search_tags) ||
-                   /*regex.test(feature.shipped_milestone) ||*/
-                   regex.test(feature.impl_status_chrome);
-          });
-        }
-      }
-
-      this.filteredChanged();
-
-      return this.filtered.length;
-    },
-    // Returns the closest feature <li> to the scroll top position passed in.
-    featureInView: function(containerScrollTop) {
-      var closest = null;
-      for (var i = 0, li; li = featureLiList_[i]; ++i) {
-        var dist = li.offsetTop - containerScrollTop;
-        if (dist < 0) {
-          dist = -dist * 1.5;
-        }
-
-        if (closest == null || dist < closest.dist) {
-          //closest = this.features[i];
-          closest = this.filtered[i];
-          closest.dist = dist;
-        }
-      }
-
-      return closest;
-    },
-    // Returns the index of the first feature of a given milestone string.
-    firstOfMilestone: function(milestone, opt_startFrom) {
-      var start = opt_startFrom != undefined ? opt_startFrom : 0;
-      for (var i = start, feature; feature = this.filtered[i]; ++i) {
-        if (feature.first_of_milestone && [String(feature.shipped_milestone),
-            feature.impl_status_chrome].indexOf(String(milestone)) != -1) {
-          return i;
-        }
-      }
-      return -1;
-    },
-    scrollToMilestone: function(milestone) {
-      var idx = this.firstOfMilestone(milestone);
-      if (idx != -1) {
-        var el = featureLiList_[idx].previousElementSibling ||
-                 featureLiList_[idx];
-
-        // TODO(ericbidelman): Implement smooth scrolling when
-        // https://twitter.com/ebidel/status/364825118171602944 lands.
-        el.scrollIntoView(true);
-        // el.scrollIntoView(true, {behavior: 'smooth'});
-      }
-    },
-    scrollToFeature: function(id) {
-      if (!id) {
-        return;
-      }
-      for (var i = 0, f; f = this.filtered[i]; ++i) {
-        if (f.id == id) {
-          featureLiList_[i].scrollIntoView(true);
-          featureLiList_[i].open = true;
-          break;
-        }
-      }
-    }
-  });
-})();
-</script>
-</polymer-element>
- -->

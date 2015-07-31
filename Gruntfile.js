@@ -64,6 +64,14 @@ module.exports = function(grunt) {
       }
     },
 
+    compass: {
+      dist: {
+        options: {
+          config: 'config.rb'
+        }
+      }
+    },
+
     clean: {
       default: ['static/elements/*.vulcanize.{html,js}']
     },
@@ -101,6 +109,6 @@ module.exports = function(grunt) {
   // Plugin and grunt tasks.
   require('load-grunt-tasks')(grunt);
 
-  grunt.registerTask('default', ['vulcanize', 'minified']);
+  grunt.registerTask('default', ['compass', 'vulcanize', 'minified']);
   grunt.registerTask('serve', ['appengine:run:frontend']);
 };
