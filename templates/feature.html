@@ -25,6 +25,7 @@
       {% if feature.impl_status_chrome == "Removed" %} (removed){% endif %}
     </h2>
     <a href="/features#category: {{ feature.category }}" class="category">{{ feature.category }}</a>
+    {% if user.is_whitelisted %}<a href="/admin/features/edit/{{ feature.id }}" class="edit">&#160;edit</a>{% endif %}
   </section>
 
   {% if feature.summary %}
