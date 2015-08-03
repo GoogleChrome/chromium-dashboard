@@ -1,11 +1,11 @@
 {
   "name": "chromium-dashboard",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "homepage": "chromestatus.com",
   "authors": [
     "Eric Bidelman <ebidel@gmail.com>"
   ],
-  "description": "Chromium Feature Dashboard",
+  "description": "Chrome Platform Status",
   "keywords": [
     "chromium",
     "dashboard"

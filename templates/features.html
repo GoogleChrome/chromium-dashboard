@@ -102,8 +102,7 @@ document.addEventListener('WebComponentsReady', function(e) {
   xhr.open('GET', url);
   xhr.responseType = 'json';
   xhr.onloadend = function(e) {
-    var resp = e.target.response;
-    featureList.features = (typeof resp == 'string') ? JSON.parse(resp) : resp;
+    featureList.features = e.target.response;
     featureList.metadata = chromeMetadata; // Feature list needs access to the selected milestone.
     featureList.search = search;
 
@@ -120,9 +119,9 @@ document.addEventListener('WebComponentsReady', function(e) {
   // updateCount(featureList.features.length); // Set initial # features showing.
   // search.disabled = false;
 
-  chromeMetadata.addEventListener('channels-update', function(e) {
-    featureList.lastStableRelease = e.detail.lastStableRelease;
-  });
+  // chromeMetadata.addEventListener('channels-update', function(e) {
+  //   featureList.lastStableRelease = e.detail.lastStableRelease;
+  // });
 
   featureList.addEventListener('filter-category', function(e) {
     search.value = 'category: ' + e.detail.val;

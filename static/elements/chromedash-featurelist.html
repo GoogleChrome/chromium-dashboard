@@ -70,9 +70,9 @@
           type: Boolean,
           value: false
         },
-        lastStableRelease: {
-          type: Number
-        }
+        // lastStableRelease: {
+        //   type: Number
+        // }
       },
 
       listeners: {
@@ -81,9 +81,9 @@
         'feature-toggled': 'onFeatureToggled'
       },
 
-      observers: [
-        '_initialScrollToFeature(features, lastStableRelease)'
-      ],
+      // observers: [
+      //   '_initialScrollToFeature(features, lastStableRelease)'
+      // ],
 
       onKeyUp: function (e, detail) {
         var focusedEl = Polymer.dom(this.root).querySelector(':focus');
@@ -123,31 +123,54 @@
               'milestoneselect', onMetadataChanged_.bind(this));
         }
       },
-      _initialScrollToFeature: function(features, lastStableRelease) {
-        if (!features.length || !lastStableRelease) {
+      // _initialScrollToFeature: function(features, lastStableRelease) {
+      //   if (!features.length || !lastStableRelease) {
+      //     return;
+      //   }
+
+      //   this.async(function() {
+      //     // If there's an id in the URL, highlight and scroll to the feature.
+      //     // Otherwise scroll to latest chrome release.
+      //     var lastSlash = location.pathname.lastIndexOf('/');
+      //     if (lastSlash > 0) {
+      //       var id = parseInt(location.pathname.substring(lastSlash + 1));
+      //       this.scrollToFeature(id);
+      //     } else {
+      //       //this.scrollToMilestone(this.lastStableRelease);
+      //       var milestone = this.metadata.implStatuses[this.metadata.STATUS.IN_DEVELOPMENT - 1].val;
+      //       this.scrollToMilestone(milestone);
+      //     }
+      //   });
+      // },
+      // featuresChanged: function() {
+      //   if (!this.features || !this.features.length) {
+      //     return;
+      //   }
+
+      //   document.body.classList.add('ready');  // unmask app after scroll.
+
+      //   this.filter(location.hash.substr(1));
+      // },
+      featuresChanged: function() {
+        if (!this.features || !this.features.length) {
           return;
         }
-
+        this.filter(location.hash.substr(1));
+        document.body.classList.add('ready'); // unmask app.
         this.async(function() {
           // If there's an id in the URL, highlight and scroll to the feature.
-          // Otherwise scroll to latest chrome release.
+          // Otherwise, go to the first "in development" feature.
+          // TODO: really want this in ready(), but featureLiList and metadata may
+          // not be set yet due to timing issues.
           var lastSlash = location.pathname.lastIndexOf('/');
           if (lastSlash > 0) {
             var id = parseInt(location.pathname.substring(lastSlash + 1));
             this.scrollToFeature(id);
           } else {
-            this.scrollToMilestone(this.lastStableRelease);
+            this.scrollToMilestone(
+              this.metadata.implStatuses[this.metadata.STATUS.IN_DEVELOPMENT - 1].val);
           }
         });
-      },
-      featuresChanged: function() {
-        if (!this.features || !this.features.length) {
-          return;
-        }
-
-        document.body.classList.add('ready');  // unmask app after scroll.
-
-        this.filter(location.hash.substr(1));
       },
       filterOnCategory: function (val) {
         var regex = new RegExp(val, 'i');
