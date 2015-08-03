@@ -14,6 +14,7 @@
     is: 'html-echo',
     properties: {
       html: {
+        type: String,
         observer: 'htmlChanged'
       }
     },
@@ -228,7 +229,6 @@
       },
       deprecated: {
         type: Boolean,
-        // value: false,
         computed: '_computeDeprecated(feature.impl_status_chrome)'
       },
       removed: {
