@@ -280,7 +280,7 @@
     },
 
     _openChanged: function() {
-      this.open ? this.classList.add('open') : this.classList.remove('open');
+      this.classList.toggle('open', this.open);
       this.fire('feature-toggled', {
         feature: this.feature,
         open: this.open
