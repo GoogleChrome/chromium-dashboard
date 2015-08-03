@@ -31,7 +31,8 @@
       }
     },
     updateColor: function() {
-      var h = Math.round(120 - this.value * 120 / this.max);
+      var CYAN = 120;
+      var h = Math.round(CYAN - this.value * CYAN / this.max);
       this.$.status.style.backgroundColor = 'hsl(' + h + ', 100%, 50%)';
     },
     valueChanged: function() {
