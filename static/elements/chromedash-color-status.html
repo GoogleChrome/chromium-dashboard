@@ -5,41 +5,41 @@
   <template>
     <span id="status"></span>
   </template>
-</dom-module>
-<script>
-  Polymer({
-    is: 'chromedash-color-status',
-    properties: {
-      height: {
-        type: Number,
-        value: 10
+  <script>
+    Polymer({
+      is: 'chromedash-color-status',
+      properties: {
+        height: {
+          type: Number,
+          value: 10
+        },
+        max: {
+          type: Number,
+          value: 7,
+          notify: true,
+          observer: '_maxChanged'
+        },
+        value: {
+          type: Number,
+          notify: true,
+          observer: '_valueChanged'
+        },
+        width: {
+          type: Number,
+          value: 10
+        }
       },
-      max: {
-        type: Number,
-        value: 7,
-        notify: true,
-        observer: 'maxChanged'
+      updateColor: function() {
+        var CYAN = 120;
+        var h = Math.round(CYAN - this.value * CYAN / this.max);
+        this.$.status.style.backgroundColor = 'hsl(' + h + ', 100%, 50%)';
       },
-      value: {
-        type: Number,
-        notify: true,
-        observer: 'valueChanged'
+      _valueChanged: function() {
+        this.updateColor();
       },
-      width: {
-        type: Number,
-        value: 10
+      _maxChanged: function() {
+        this.updateColor();
       }
-    },
-    updateColor: function() {
-      var CYAN = 120;
-      var h = Math.round(CYAN - this.value * CYAN / this.max);
-      this.$.status.style.backgroundColor = 'hsl(' + h + ', 100%, 50%)';
-    },
-    valueChanged: function() {
-      this.updateColor();
-    },
-    maxChanged: function() {
-      this.updateColor();
-    }
-  });
-</script>
+    });
+  </script>
+</dom-module>

@@ -20,9 +20,9 @@
       <li class="loading">Loading...</li>
     </template>
     <template is="dom-repeat" items="{{viewList}}" as="prop">
-      <li id="{{prop.property_name}}" hidden$="{{computeHidden(prop)}}" tabindex="0">
+      <li id="{{prop.property_name}}" hidden$="{{_computeHidden(prop)}}" tabindex="0">
         <label>
-          <a href$="{{computeHref(prop)}}" title="Deep link to this property"
+          <a href$="{{_computeHref(prop)}}" title="Deep link to this property"
              alt="Deep link to this property">{{prop.property_name}}</a>
         </label>
         <x-meter value="[[prop.percentage]]" on-tap="showTimeline"
@@ -31,7 +31,6 @@
     </template>
   </ol>
 </template>
-</dom-module>
 <script>
   (function() {
     function sortBy_(prop, arr, opt_compareAsNumbers) {
@@ -53,7 +52,7 @@
       properties: {
         props: {
           type: Array,
-          observer: 'propsChanged',
+          observer: '_propsChanged',
           value: function() { return []; }
         },
         viewList: {
@@ -92,32 +91,10 @@
         },
         endpoint: {
           type: String,
-          computed: 'computeEndpoint(type, view)',
+          computed: '_computeEndpoint(type, view)',
         }
       },
-      _computeSortIcon: function(reverse, activated) {
-        if (!activated) {
-          return '';
-        }
-        return reverse ? 'icons:arrow-drop-up' : 'icons:arrow-drop-down';
-      },
-      computeEndpoint: function(type, view) {
-        return '/data/' + type + view;
-      },
-      propsChanged: function() {
-        if (!this.props || !this.props.length) {
-          return;
-        }
-        for (var i = 0, prop; prop = this.props[i]; ++i) {
-          prop.percentage = (prop.day_percentage * 100).toFixed(4);
-        }
-        this.viewList = this.props;
-        if (location.hash) {
-          this.async(function() {
-            this.scrollToProperty(location.hash.split('#')[1]);
-          });
-        }
-      },
+
       sort: function(e, detail) {
         e.preventDefault();
 
@@ -151,17 +128,43 @@
           el.scrollIntoView(true);  //el.scrollIntoView(true, {behavior: 'smooth'});
         }
       },
-      computePercentClass: function(sortOrders) {
+
+      _propsChanged: function() {
+        if (!this.props || !this.props.length) {
+          return;
+        }
+        for (var i = 0, prop; prop = this.props[i]; ++i) {
+          prop.percentage = (prop.day_percentage * 100).toFixed(4);
+        }
+        this.viewList = this.props;
+        if (location.hash) {
+          this.async(function() {
+            this.scrollToProperty(location.hash.split('#')[1]);
+          });
+        }
+      },
+
+      _computeSortIcon: function(reverse, activated) {
+        if (!activated) {
+          return '';
+        }
+        return reverse ? 'icons:arrow-drop-up' : 'icons:arrow-drop-down';
+      },
+      _computeEndpoint: function(type, view) {
+        return '/data/' + type + view;
+      },
+      _computePercentClass: function(sortOrders) {
         return ('icon-long-arrow-' +
                (sortOrders.percentage.reverse ? 'down' : 'up') + ' ' +
                (sortOrders.percentage.activated ? 'activated' : '')).trim();
       },
-      computeHidden: function(prop) {
+      _computeHidden: function(prop) {
         return prop.property_name == 'ERROR';
       },
-      computeHref: function(prop) {
+      _computeHref: function(prop) {
         return '#' + prop.property_name;
       }
     });
   }());
 </script>
+</dom-module>

@@ -7,8 +7,6 @@
 <!-- https://github.com/ljosa/urlize.js -->
 <script src="urlize.js"></script>
 
-<dom-module id="html-echo">
-</dom-module>
 <script>
   Polymer({
     is: 'html-echo',
@@ -31,27 +29,27 @@
       <a href$="{{link}}" target="_blank">{{_computeLink(link)}}</a><template is="dom-if" if="{{_computeShowComma(i, links)}}">,</template>
     </template>
   </template>
-</dom-module>
-<script>
-  Polymer({
-    is: 'multi-links',
-    properties: {
-      links: {
-        type: Array,
-        value: function() { return []; }
+  <script>
+    Polymer({
+      is: 'multi-links',
+      properties: {
+        links: {
+          type: Array,
+          value: function() { return []; }
+        }
+      },
+      _prettyURLFilter: function(val) {
+        return val.replace(/https?:\/\//, '');
+      },
+      _computeShowComma: function(i, links) {
+        return links.length > 1 && i < links.length - 1;
+      },
+      _computeLink: function(link) {
+        return this._prettyURLFilter(link);
       }
-    },
-    _prettyURLFilter: function(val) {
-      return val.replace(/https?:\/\//, '');
-    },
-    _computeShowComma: function(i, links) {
-      return links.length > 1 && i < links.length - 1;
-    },
-    _computeLink: function(link) {
-      return this._prettyURLFilter(link);
-    }
-  });
-</script>
+    });
+  </script>
+</dom-module>
 
 <dom-module id="chromedash-feature">
 <link rel="import" type="css" href="../css/elements/chromedash-feature.css">
@@ -193,7 +191,6 @@
   <iron-icon icon="icons:open-in-new" class="opennew" data-tooltip></iron-icon>
 </a>
 </template>
-</dom-module>
 <script>
   Polymer({
     is: 'chromedash-feature',
@@ -318,7 +315,7 @@
     _computeHtml: function(feature) {
       return this._urlizeFilter(feature.comments);
     },
-     _computeMaxRisk: function(vendorViewVal, webdevViewVal, standardsVal) {
+    _computeMaxRisk: function(vendorViewVal, webdevViewVal, standardsVal) {
       return vendorViewVal + webdevViewVal + standardsVal;
     },
     _computeRemoved: function(implStatusChrome) {
@@ -333,3 +330,4 @@
     },
   });
 </script>
+</dom-module>

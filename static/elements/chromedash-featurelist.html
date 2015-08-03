@@ -6,15 +6,14 @@
 <template>
   <ul id="featurelist">
     <template is="dom-repeat" items="{{filtered}}" as="feature">
-      <div hidden$="{{computeMilestoneHidden(feature, features, filtered)}}"
-           class="milestone-marker">{{computeMilestoneString(feature.meta.milestone_str)}}</div>
+      <div hidden$="{{_computeMilestoneHidden(feature, features, filtered)}}"
+           class="milestone-marker">{{_computeMilestoneString(feature.meta.milestone_str)}}</div>
       <li id="{{feature.id}}" is="chromedash-feature"
           feature="[[feature]]" needsflag="[[feature.meta.needsflag]]"
           whitelisted="[[whitelisted]]"></li>
     </template>
   </ul>
 </template>
-</dom-module>
 <script>
   (function() {
     function onMetadataChanged_(e) {
@@ -303,12 +302,13 @@
           }
         }
       },
-      computeMilestoneHidden: function(feature, features, filtered) {
+      _computeMilestoneHidden: function(feature, features, filtered) {
         return filtered.length != features.length || !feature.first_of_milestone;
       },
-      computeMilestoneString: function(str) {
+      _computeMilestoneString: function(str) {
         return isNaN(parseInt(str)) ? str : 'Chrome ' + str;
       }
     });
   }());
 </script>
+</dom-module>

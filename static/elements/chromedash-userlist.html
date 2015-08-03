@@ -15,12 +15,11 @@
   <ul id="user-list">
     <template is="dom-repeat" items="{{users}}" as="user">
       <li>
-        <a href$="{{computeDeleteHref(action, user)}}" on-tap="ajaxDelete">delete</a><span>{{user.email}}</span>
+        <a href$="{{_computeDeleteHref(action, user)}}" on-tap="ajaxDelete">delete</a><span>{{user.email}}</span>
       </li>
     </template>
   </ul>
 </template>
-</dom-module>
 <script>
   Polymer({
     is: 'chromedash-userlist',
@@ -33,9 +32,7 @@
         value: function() { return []; }
       }
     },
-    computeDeleteHref: function(action, user) {
-      return action + '/' + user.id;
-    },
+
     addUser: function(user) {
       this.splice('users', 0, 0, user);
     },
@@ -89,6 +86,11 @@
           this.removeUser(idx);
         }
       }.bind(this));
+    },
+
+    _computeDeleteHref: function(action, user) {
+      return action + '/' + user.id;
     }
   });
 </script>
+</dom-module>
