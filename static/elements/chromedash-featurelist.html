@@ -16,7 +16,7 @@
 </template>
 </dom-module>
 <script>
-  (function () {
+  (function() {
     function onMetadataChanged_(e) {
       this.scrollToMilestone(e.detail.version);
     }
@@ -186,9 +186,9 @@
         });
         return this.filtered.length;
       },
-      filteredChanged: function () {
+      filteredChanged: function() {
         // Wait one rAF do model has updated the DOM.
-        this.async(function () {
+        this.async(function() {
           featureLiList_ = Polymer.dom(this.root).querySelectorAll('li');
         });
       },

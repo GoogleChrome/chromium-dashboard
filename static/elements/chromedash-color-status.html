@@ -30,14 +30,14 @@
         value: 10
       }
     },
-    updateColor: function () {
+    updateColor: function() {
       var h = Math.round(120 - this.value * 120 / this.max);
       this.$.status.style.backgroundColor = 'hsl(' + h + ', 100%, 50%)';
     },
-    valueChanged: function () {
+    valueChanged: function() {
       this.updateColor();
     },
-    maxChanged: function () {
+    maxChanged: function() {
       this.updateColor();
     }
   });
