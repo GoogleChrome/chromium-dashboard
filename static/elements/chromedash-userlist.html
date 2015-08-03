@@ -23,6 +23,7 @@
 <script>
   Polymer({
     is: 'chromedash-userlist',
+
     properties: {
       action: {
         type: String
@@ -36,9 +37,11 @@
     addUser: function(user) {
       this.splice('users', 0, 0, user);
     },
+
     removeUser: function(idx) {
       return this.splice('users', idx, 1);
     },
+
     ajaxSubmit: function(e, details) {
       e.preventDefault();
       if (this.$.form.checkValidity()) {
@@ -47,12 +50,12 @@
         var email = this.$.form.querySelector('input[name="email"]').value;
         var formData = new FormData();
         formData.append('email', email);
-        var xhr = document.createElement('iron-request');
-        xhr.send({
+        var request = document.createElement('iron-request');
+        request.send({
           url: this.action,
           method: 'POST',
           body: formData
-        }).then(function(request) {
+        }).then(function(req) {
           if (request.status == 201) {
             this.addUser(JSON.parse(request.response));
             this.$.form.reset();
@@ -62,19 +65,21 @@
         }.bind(this));
       }
     },
+
     ajaxDelete: function(e, details) {
       e.preventDefault();
       if (!confirm('Remove user?')) {
         return;
       }
+
       // Get index of user model instance that was clicked from template.
       var user = e.model.user;
       var idx = this.users.indexOf(user);
-      var xhr = document.createElement('iron-request');
-      xhr.send({
+      var request = document.createElement('iron-request');
+      request.send({
         url: Polymer.dom(e).rootTarget.href,
         method: 'POST'
-      }).then(function(request) {
+      }).then(function(req) {
         Polymer.dom(e).rootTarget.parentElement.classList.add('faded');
         if ('ontransitionend' in window) {
           var li = Polymer.dom(e).rootTarget.parentElement;

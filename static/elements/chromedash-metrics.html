@@ -47,8 +47,10 @@
         return 0;
       });
     }
+
     Polymer({
       is: 'chromedash-metrics',
+
       properties: {
         props: {
           type: Array,
@@ -118,10 +120,12 @@
         // TODO: remove when github.com/Polymer/polymer/issues/2175 is fixed.
         this.viewList = this.viewList.slice(0);
       },
+
       showTimeline: function(e, detail) {
         window.location.href = '/metrics/' + this.type + '/timeline/' +
             this.view + '/' + e.model.prop.bucket_id;
       },
+
       scrollToProperty: function(prop) {
         if (prop) {
           var el = this.$['stack-rank-list'].querySelector('#' + prop);

@@ -8,14 +8,13 @@
 <script>
   Polymer({
     is: 'delete-link',
-
     extends: 'a',
 
     listeners: {
-      'click': 'onClick'
+      'click': '_onClick'
     },
 
-    onClick: function(e, details, sender) {
+    _onClick: function(e, details, sender) {
       e.preventDefault();
 
       var msg = this.getAttribute('message') || 'Remove?';
@@ -23,8 +22,8 @@
         return;
       }
 
-      var xhr = document.createElement('iron-request');
-      xhr.send({url: e.target.href, method: 'POST'}).then(function(request) {
+      var request = document.createElement('iron-request');
+      request.send({url: e.target.href, method: 'POST'}).then(function(req) {
         this.fire('ajaxdeleted', {response: request.response, xhr: request.xhr});
       }.bind(this));
     }

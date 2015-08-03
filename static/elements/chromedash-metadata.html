@@ -5,12 +5,12 @@
 <link rel="import" type="css" href="../css/elements/chromedash-metadata.css">
 <template>
   <iron-ajax auto url="https://omahaproxy.appspot.com/all.json" handle-as="json"
-             on-response="onResponse"
-             on-error="onError"></iron-ajax>
-  <ul class$="{{computeClass(betaIsDev, canaryIsDev)}}">
+             on-response="_onResponse"
+             on-error="_onError"></iron-ajax>
+  <ul class$="{{_computeClass(betaIsDev, canaryIsDev)}}">
     <template is="dom-repeat" items="{{versions}}" as="v">
       <li data-version$="{{v}}" on-tap="selectMilestone"
-          selected$="{{computeSelected(selected, v)}}">{{v}}</li>
+          selected$="{{_computeSelected(selected, v)}}">{{v}}</li>
     </template>
   </ul>
   <div hidden$="{{!fetchError}}" class="error">Error fetching Chrome version information.</div>
@@ -18,6 +18,7 @@
 <script>
   Polymer({
     is: 'chromedash-metadata',
+
     properties: {
       betaIsDev: {
         type: Boolean,
@@ -49,10 +50,23 @@
         value: function() { return []; }
       }
     },
-    onError: function(e, detail) {
+
+    selectMilestone: function(e, detail) {
+      if (detail) {
+        // Came from an internal click.
+        this.selected = Polymer.dom(e).localTarget.dataset.version;
+        this.fire('milestoneselect', {version: this.selected});
+      } else {
+        // Called directly (from outside). e is a feature.
+        this.selected = e.meta.milestone_str;
+      }
+    },
+
+    _onError: function(e, detail) {
       this.fetchError = true;
     },
-    onResponse: function(e, detail) {
+
+    _onResponse: function(e, detail) {
       // TODO(ericbidelman): Share this data across instances.
       var windowsVersions = detail.response[0];
       for (var i = 0, el; el = windowsVersions.versions[i]; ++i) {
@@ -86,21 +100,12 @@
       var noLongerPursuing = this.implStatuses[this.implStatuses.length - 1].val;
       this.push('versions', noLongerPursuing);
     },
-    selectMilestone: function(e, detail) {
-      if (detail) {
-        // Came from an internal click.
-        this.selected = Polymer.dom(e).localTarget.dataset.version;
-        this.fire('milestoneselect', {version: this.selected});
-      } else {
-        // Called directly (from outside). e is a feature.
-        this.selected = e.meta.milestone_str;
-      }
-    },
-    computeClass: function(betaIsDev, canaryIsDev) {
+
+    _computeClass: function(betaIsDev, canaryIsDev) {
       return (canaryIsDev ? 'canaryisdev' : '') + ' ' +
              (betaIsDev ? 'betaisdev' : '');
     },
-    computeSelected: function(selected, v) {
+    _computeSelected: function(selected, v) {
       return v == selected;
     }
   });

@@ -119,10 +119,6 @@ document.addEventListener('WebComponentsReady', function(e) {
   // updateCount(featureList.features.length); // Set initial # features showing.
   // search.disabled = false;
 
-  // chromeMetadata.addEventListener('channels-update', function(e) {
-  //   featureList.lastStableRelease = e.detail.lastStableRelease;
-  // });
-
   featureList.addEventListener('filter-category', function(e) {
     search.value = 'category: ' + e.detail.val;
     updateCount(featureList.filter(search.value));
