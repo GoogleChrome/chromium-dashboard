@@ -75,6 +75,12 @@
         }
       },
 
+      listeners: {
+        'scroll': 'onScrollList',
+        'keyup': 'onKeyUp',
+        'feature-toggled': 'onFeatureToggled'
+      },
+
       observers: [
         '_initialScrollToFeature(features, lastStableRelease)'
       ],
@@ -273,11 +279,6 @@
             break;
           }
         }
-      },
-      listeners: {
-        'scroll': 'onScrollList',
-        'keyup': 'onKeyUp',
-        'feature-toggled': 'onFeatureToggled'
       },
       computeMilestoneHidden: function(feature, features, filtered) {
         return filtered.length != features.length || !feature.first_of_milestone;
