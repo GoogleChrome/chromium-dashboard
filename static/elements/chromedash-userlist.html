@@ -1,107 +1,101 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
-<link rel="import" href="../bower_components/core-ajax/core-xhr.html">
+<link rel="import" href="../bower_components/iron-ajax/iron-request.html">
 
-<polymer-element name="chromedash-userlist" attributes="users action">
+<dom-module id="chromedash-userlist">
+<link rel="import" type="css" href="../css/elements/chromedash-userlist.css">
 <template>
-  <link rel="stylesheet" href="../css/elements/chromedash-userlist.css">
   <form id="form" name="user_form" method="post" action="{{action}}" onsubmit="return false;">
     <table>
       <tr>
-        <td><input type="email" placeholder="Email address" name="email" id="id_email" required /></td>
-        <td><input type="submit" on-tap="{{ajaxSubmit}}"></td>
-     </tr>
+        <td><input type="email" placeholder="Email address" name="email" id="id_email" required></td>
+        <td><input type="submit" on-tap="ajaxSubmit"></td>
+      </tr>
     </table>
   </form>
-  <hr>
   <ul id="user-list">
-    <template repeat="{{user in users}}">
-      <li><a href="{{action}}/{{user.id}}" on-tap="{{ajaxDelete}}">delete</a>{{user.email}}</li>
+    <template is="dom-repeat" items="{{users}}" as="user">
+      <li>
+        <a href$="{{_computeDeleteHref(action, user)}}" on-tap="ajaxDelete">delete</a><span>{{user.email}}</span>
+      </li>
     </template>
   </ul>
 </template>
 <script>
-Polymer({
-  created: function() {
-    this.users = this.users || [];
-  },
-  test: function(e, details, sender) {
-    e.preventDefault();
-  },
-  addUser: function(user) {
-    this.users.splice(0, 0, user);
-  },
-  removeUser: function(idx) {
-    return this.users.splice(idx, 1);
-  },
-  ajaxSubmit: function(e, details, sender) {
-    e.preventDefault();
+  Polymer({
+    is: 'chromedash-userlist',
 
-    if (this.$.form.checkValidity()) {
-      // TODO(ericbidelman): move back to this.$.form.email.value when SD
-      // polyfill merges the commit that wraps element.form.
-      var email = this.$.form.querySelector('input[name="email"]').value;
+    properties: {
+      action: {
+        type: String
+      },
+      users: {
+        type: Array,
+        value: function() { return []; }
+      }
+    },
 
-      var formData = new FormData();
-      formData.append('email', email);
+    addUser: function(user) {
+      this.splice('users', 0, 0, user);
+    },
 
-      var xhr = document.createElement('core-xhr');
-      xhr.request({url: this.action, method: 'POST', body: formData, callback:
-        function(response, xhr) {
-          if (xhr.status == 201) {
-            this.addUser(JSON.parse(response));
+    removeUser: function(idx) {
+      return this.splice('users', idx, 1);
+    },
+
+    ajaxSubmit: function(e, details) {
+      e.preventDefault();
+      if (this.$.form.checkValidity()) {
+        // TODO(ericbidelman): move back to this.$.form.email.value when SD
+        // polyfill merges the commit that wraps element.form.
+        var email = this.$.form.querySelector('input[name="email"]').value;
+        var formData = new FormData();
+        formData.append('email', email);
+        var request = document.createElement('iron-request');
+        request.send({
+          url: this.action,
+          method: 'POST',
+          body: formData
+        }).then(function(req) {
+          if (request.status == 201) {
+            this.addUser(JSON.parse(request.response));
             this.$.form.reset();
-          } else if (xhr.status == 200) {
+          } else if (request.status == 200) {
             alert('Thanks. But that user already exists');
           }
-        }.bind(this)
-      });
-    }
-  },
-  ajaxDelete: function(e, details, sender) {
-    e.preventDefault();
-
-    if (!confirm('Remove user?')) {
-      return;
-    }
-
-    // Get index of user model instance that was clicked from template.
-    var user = e.target.templateInstance.model.user;
-    var idx = this.users.indexOf(user);
-
-    var xhr = document.createElement('core-xhr');
-    xhr.request({url: sender.href, method: 'POST', callback: function(response, xhr) {
-      sender.parentElement.classList.add('faded');
-
-      if ('ontransitionend' in window) {
-        var li = sender.parentElement;
-        li.addEventListener('transitionend', function(e) {
-          this.removeUser(idx);
         }.bind(this));
-        li.classList.add('faded');
-      } else {
-        this.removeUser(idx);
       }
-    }.bind(this)});
+    },
 
-    // var xhr = new XMLHttpRequest();
-    // xhr.open('POST', sender.href);
-    // xhr.onloadend = function(e) {
-    //   if (e.target.status == 200) {
-    //     sender.parentElement.classList.add('faded');
+    ajaxDelete: function(e, details) {
+      e.preventDefault();
+      if (!confirm('Remove user?')) {
+        return;
+      }
 
-    //     var li = sender.parentElement;
-    //     if ('ontransitionend' in window) {
-    //       li.addEventListener('transitionend', function(e) {
-    //         this.users.splice(idx, 1);
-    //       }.bind(this));
-    //       li.classList.add('faded');
-    //     } else {
-    //       this.users.splice(idx, 1);
-    //     }
-    //   }
-    // }.bind(this);
-    // xhr.send();
-  }
-});
+      // Get index of user model instance that was clicked from template.
+      var user = e.model.user;
+      var idx = this.users.indexOf(user);
+      var request = document.createElement('iron-request');
+      request.send({
+        url: Polymer.dom(e).rootTarget.href,
+        method: 'POST'
+      }).then(function(req) {
+        Polymer.dom(e).rootTarget.parentElement.classList.add('faded');
+        if ('ontransitionend' in window) {
+          var li = Polymer.dom(e).rootTarget.parentElement;
+          li.addEventListener('transitionend', function(e) {
+            this.removeUser(idx);
+          }.bind(this));
+          li.classList.add('faded');
+        } else {
+          this.removeUser(idx);
+        }
+      }.bind(this));
+    },
+
+    _computeDeleteHref: function(action, user) {
+      return action + '/' + user.id;
+    }
+  });
 </script>
-</polymer-element>
+</dom-module>

@@ -5,22 +5,22 @@
 }
 
 .meter {
-  background: $chromium-color-light;
+  background: $chromium-color-light; //var(--paper-green-200);
   border-radius: $default-border-radius;
   overflow: hidden;
   height: 1.7em;
   color: white;
 
   &.atrisk {
-    background: darkred;
+    background: darkred; //var(--paper-red-500) !important;
 
     div {
-      background: red;
+      background: red; //var(--paper-red-200) !important;
     }
   }
 
   div {
-    background: $chromium-color-center;
+    background: $chromium-color-center; //var(--paper-green-500);
     height: 100%;
     white-space: nowrap;
     padding: 3px 0;

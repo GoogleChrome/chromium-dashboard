@@ -1,20 +1,18 @@
 @import "compass/css3/transition";
 
-@import "font-awesome/font-awesome.scss";
-
 @import "element";
 
 :host {
-  display: block;
+  @include display-flex;
   // @include transition(height 400ms ease-in-out);
   // height: $feature-min-height;
   // overflow: hidden;
   cursor: pointer;
   @include gradient-bar-bg;
-  margin-bottom: 1px !important;
+  // margin-bottom: 10px !important;
   position: relative;
   border-radius: $default-border-radius;
-  padding: 5px 20px !important;
+  padding: 10px 20px !important;
   list-style: none;
   box-sizing: border-box;
 
@@ -32,41 +30,79 @@
 
 h2 {
   display: inline-block;
-  margin-right: 1em;
   font-size: 25px;
+  @include flex(1 0 0);
+}
+
+iron-icon {
+  --iron-icon-height: 20px;
+  --iron-icon-width: 20px;
+
+  &.android {
+    color: #A4C739;
+  }
+  &.remove {
+    color: var(--paper-red-700);
+  }
+  &.deprecated {
+    color: var(--paper-orange-700);
+  }
+  &.experimental {
+    color: var(--paper-green-700);
+  }
+  &.opennew {
+    color: var(--paper-grey-700);
+    --iron-icon-height: 14px;
+    --iron-icon-width: 14px;
+  }
+}
+
+.editfeature {
+  color: $chromium-color-center;
+}
+
+.main-content-area {
+  @include flex(1 0 0);
+  margin-right: 12px;
+  overflow: hidden;
+}
+
+.open-standalone {
+  position: absolute;
+  right: 0;
+  top: 0;
+  @include display-flex;
+  @include align-items(center);
+  height: 100%;
+  // box-shadow: -1px 1px 3px #ccc;
+  border-left: 2px solid #eee;
+  padding: 4px;
+}
+
+.iconrow {
+  @include display-flex;
+  @include align-items(center);
 }
 
 .topcorner {
-  &.pull-right {
-    top: 15px;
-    right: 15px;
-    position: absolute;
-  }
-
-  .icon-beaker {
-    color: $gray-3;
-  }
-  .icon-warning-sign {
-    color: darkred;
-  }
-
   .tooltip {
+    margin-left: 8px;
+
     &:hover, &:active {
       &:before {
         @include tooltip;
-        top: 10px;
-        right: 25px;
+        top: 35px;
+        right: 20px;
         width: auto;
         white-space: nowrap;
       }
     }
   }
-
 }
 
 hgroup {
   @include display-flex;
-  @include align-items(center);
+  @include align-items(flex-start);
 
   .category {
     color: $gray-2;
@@ -111,7 +147,7 @@ section {
       }
     }
   }
-  
+
   h3 {
     margin: 10px 0;
     font-size: 18px;
@@ -148,15 +184,10 @@ section {
     }
   }
 
-  .icon-android {
-    color: #A4C739;
-    font-size: 1.5em;
-  }
-
   .views {
     @include display-flex;
     @include flex-wrap(wrap);
-    
+
     & > span {
       @include display-flex;
       @include align-items(center);
@@ -186,7 +217,7 @@ section {
     }
   }
 
-  .comments {
+  .comments html-echo {
     white-space: pre-wrap;
   }
 }
@@ -212,6 +243,9 @@ chromedash-color-status {
   }
   section {
     margin-left: 0;
+  }
+  .category {
+    display: none;
   }
   .impl_status {
     @include display-flex;

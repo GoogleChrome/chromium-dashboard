@@ -1,69 +1,77 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
-<link rel="import" href="../bower_components/paper-dialog/paper-dialog-transition.html">
+<link rel="import" href="../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../bower_components/neon-animation/animations/scale-up-animation.html">
+<link rel="import" href="../bower_components/neon-animation/animations/fade-out-animation.html">
 
-<polymer-element name="chromedash-legend" attributes="opened">
+<dom-module id="chromedash-legend">
+<link rel="import" type="css" href="../css/elements/chromedash-legend.css">
 <template>
-  <link rel="stylesheet" href="../css/elements/chromedash-legend.css">
-  <paper-dialog id="overlay" opened="{{opened}}" backdrop transition="core-transition-center">
-    <div class="dialog">
-      <h3>About the data</h3>
-      <section>
-        <content class="description"></content>
-      </section>
-      <h3>Color legend</h3>
-      <p>Colors indicate the "compatibility risk" for a given feature. The risk
-          increases as <chromedash-color-status value="1" max="{{views.vendors.length}}"></chromedash-color-status> &rarr; <chromedash-color-status value="{{views.vendors.length}}" max="{{views.vendors.length}}"></chromedash-color-status>, and the color meaning differs for browser
-          vendors, web developers, and the standards process.</p>
-      <section class="views">
-        <div>
-          <label>Browser vendors</label>
-          <ul>
-            <template repeat="{{o in views.vendors}}">
-              <li><chromedash-color-status value="{{o.key}}" max="{{views.vendors.length}}"></chromedash-color-status>{{o.val}}</li>
-            </template>
-          </ul>
-        </div>
-        <div>
-          <label>Web developer</label>
-          <ul>
-            <template repeat="{{o in views.webdevs}}">
-              <li><chromedash-color-status value="{{o.key}}" max="{{views.webdevs.length}}"></chromedash-color-status>{{o.val}}</li>
-            </template>
-          </ul>
-        </div>
-        <div>
-          <label>Standards values</label>
-          <ul>
-            <template repeat="{{o in views.standards}}">
-              <li><chromedash-color-status value="{{o.key}}" max="{{views.standards.length}}"></chromedash-color-status>{{o.val}}</li>
-            </template>
-          </ul>
-        </div>
-      </section>
-      <h3>Search</h3>
-      <section>
-        <label>Example search queries</label>
-        <ul class="queries">
-          <li><span>"&lt;30"</span>features that landed before 30</li>
-          <li><span>"&lt;=30"</span>features in 30</li>
-          <li><span>"=30"</span>features that landed in 30</li>
-          <li><span>">28"</span>features since 28
-          <li><span>"behind a flag"</span>all experimental features
-          <!-- <li><span>"category: CSS"</span>features in the category CSS</li> -->
-          <li><span>"owner: user@example.org"</span>features owned by user@example.org</li>
+  <paper-dialog id="overlay" opened="{{opened}}" modal
+                entry-animation="scale-up-animation" exit-animation="fade-out-animation">
+    <h3>About the data</h3>
+    <section class="content-wrapper">
+      <content class="description"></content>
+    </section>
+    <h3>Color legend</h3>
+    <p>Colors indicate the "compatibility risk" for a given feature. The risk
+        increases as <chromedash-color-status value="1" max="{{views.vendors.length}}"></chromedash-color-status> → <chromedash-color-status value="{{views.vendors.length}}" max="{{views.vendors.length}}"></chromedash-color-status>, and the color meaning differs for browser
+        vendors, web developers, and the standards process.</p>
+    <section class="views">
+      <div>
+        <label>Browser vendors</label>
+        <ul>
+          <template is="dom-repeat" items="{{views.vendors}}" as="o">
+            <li><chromedash-color-status value="{{o.key}}" max="{{views.vendors.length}}"></chromedash-color-status><span>{{o.val}}</span></li>
+          </template>
         </ul>
-      </section>
-      <content></content>
-    </div>
+      </div>
+      <div>
+        <label>Web developer</label>
+        <ul>
+          <template is="dom-repeat" items="{{views.webdevs}}" as="o">
+            <li><chromedash-color-status value="{{o.key}}" max="{{views.webdevs.length}}"></chromedash-color-status><span>{{o.val}}</span></li>
+          </template>
+        </ul>
+      </div>
+      <div>
+        <label>Standards values</label>
+        <ul>
+          <template is="dom-repeat" items="{{views.standards}}" as="o">
+            <li><chromedash-color-status value="{{o.key}}" max="{{views.standards.length}}"></chromedash-color-status><span>{{o.val}}</span></li>
+          </template>
+        </ul>
+      </div>
+    </section>
+    <h3>Search</h3>
+    <section>
+      <label>Example search queries</label>
+      <ul class="queries">
+        <li><span>"&lt;30"</span>features that landed before 30</li>
+        <li><span>"&lt;=30"</span>features in 30</li>
+        <li><span>"=30"</span>features that landed in 30</li>
+        <li><span>"&gt;28"</span>features since 28
+        </li><li><span>"behind a flag"</span>all experimental features
+        <!-- <li><span>"category: CSS"</span>features in the category CSS</li> -->
+        </li><li><span>"owner: user@example.org"</span>features owned by user@example.org</li>
+      </ul>
+    </section>
+    <div class="content-wrapper"><content></content></div>
   </paper-dialog>
 </template>
 <script>
   Polymer({
-    opened: false,
+    is: 'chromedash-legend',
+    properties: {
+      opened: {
+        type: Boolean,
+        value: false,
+        notify: true
+      }
+    },
     toggle: function() {
       this.$.overlay.toggle();
     }
   });
 </script>
-</polymer-element>
+</dom-module>

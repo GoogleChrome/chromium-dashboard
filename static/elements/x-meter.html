@@ -1,32 +1,51 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
+<!-- <link rel="import" href="../bower_components/paper-styles/color.html"> -->
 
-<polymer-element name="x-meter" attributes="value">
+<dom-module id="x-meter">
+<link rel="import" type="css" href="../css/elements/x-meter.css">
 <template>
-  <link rel="stylesheet" href="../css/elements/x-meter.css">
-  <div class="meter" id="meter" title="{{helpText}}">
-    <div style="width:{{value}}%">{{valueFormmatted}}%</div>
+  <div class$="{{_computeClass('meter', value)}}" id="meter">
+    <div style$="[[_computeStyle(value)]]"><span>{{valueFormmatted}}</span></div>
   </div>
 </template>
 <script>
   Polymer({
-    value: 0,
-    helpText: '',
-    valueChanged: function() {
-      var MIN_VAL = 1e-4;
-      if (this.value <= MIN_VAL) {
-        this.valueFormmatted = '<=0.0001';
-      } else {
-        this.valueFormmatted = Number(this.value).toFixed(4);
+    is: 'x-meter',
+
+    properties: {
+      MIN_FOR_AT_RISK: {
+        type: Number,
+        value: 0.03,
+        readOnly: true
+      },
+      value: {
+        type: Number,
+        value: 0,
+        notify: true
+      },
+      valueFormmatted: {
+        type: Number,
+        computed: '_computeFormattedValue(value)'
+      }
+    },
+
+    _computeFormattedValue: function(value) {
+      var atRiskMsg = 'This feature may be at risk for removal. Usage is <= ' +
+                       this.MIN_FOR_AT_RISK + '%.';
+      var num = value <= 0.0001 ? '<=0.0001%' : Number(value).toFixed(4) + '%';
+
+      if (value <= this.MIN_FOR_AT_RISK) {
+        num += ' ' + atRiskMsg
       }
 
-      this.value = Number(this.value).toFixed(4);
-
-      var MIN_FOR_AT_RISK = 0.03;
-      if (this.value <= MIN_FOR_AT_RISK) {
-        this.$.meter.classList.add('atrisk');
-        this.helpText = 'This feature may be at risk for removal. Usage is <= ' + MIN_FOR_AT_RISK + '%.';
-      }
+      return num;
+    },
+    _computeClass: function(defaultClasses, value) {
+      return defaultClasses + ' ' + (value <= this.MIN_FOR_AT_RISK ? 'atrisk' : '');
+    },
+    _computeStyle: function(value) {
+      return 'width:' + value + '%';
     }
   });
 </script>
-</polymer-element>
+</dom-module>

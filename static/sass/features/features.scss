@@ -41,7 +41,7 @@ chromedash-legend {
 
     font-size: 120%;
     font-weight: 300;
-    width: $nav-width; // slighty smaller than chromedash-metadata to remove scrollbar
+    //width: $nav-width; // slighty smaller than chromedash-metadata to remove scrollbar
     overflow-x: hidden;
 
     chromedash-metadata {
@@ -58,10 +58,15 @@ chromedash-legend {
   }
 
   chromedash-featurelist {
-    @include transform(translateZ(0)); // force composite layer in stable
     @include flex(1 0 0);
     overflow: auto;
     max-width: $max-content-width;
+  }
+}
+
+#subheader {
+  paper-button {
+    color: $chromium-color-dark;
   }
 }
 

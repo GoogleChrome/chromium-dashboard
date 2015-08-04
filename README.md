@@ -1,4 +1,4 @@
-Chromium Feature Dashboard
+Chrome Platform Status
 ==================
 
 [chromestatus.com](http://chromestatus.com/)
@@ -14,7 +14,7 @@ Chromium Feature Dashboard
 
 ### LICENSE
 
-Copyright (c) 2014 The Chromium Authors. All rights reserved.
+Copyright (c) 2013-2015 The Chromium Authors. All rights reserved.
 
 [BSD License](http://src.chromium.org/viewvc/chrome/trunk/src/LICENSE)
 

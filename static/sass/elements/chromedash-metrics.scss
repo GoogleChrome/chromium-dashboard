@@ -20,7 +20,7 @@
 
     &.header {
       margin-bottom: 10px;
-      
+
       label {
         color: $chromium-color-dark;
         text-transform: uppercase;
@@ -30,6 +30,9 @@
         padding: 5px 7px;
         font-family: inherit;
         cursor: pointer;
+        @include display-flex;
+        @include align-items(center);
+        @include justify-content(end);
       }
     }
 
@@ -39,7 +42,6 @@
 
     label {
       font-weight: 600;
-      font-family: 'Source Code Pro', sans-serif;
       @include flex(1);
       word-wrap: break-word;
 
@@ -47,13 +49,6 @@
         text-align: right;
         margin-right: 10px;
         // max-width: 175px;
-      }
-
-      i {
-        display: none;
-        &.activated {
-          display: inline;
-        }
       }
     }
 

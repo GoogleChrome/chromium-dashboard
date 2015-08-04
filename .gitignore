@@ -7,7 +7,7 @@
 node_modules
 *bower_components
 *.vulcanize.html
+*.vulcanize.js
 *.iml
 .idea/*
 bulkloader-*
-*.vulcanize.js
