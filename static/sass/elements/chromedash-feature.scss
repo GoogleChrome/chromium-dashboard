@@ -231,7 +231,7 @@ section {
   }
 
   .doc_links, .sample_links, .owner {
-    @include flex-shrink(1);
+    @include flex-shrink(1 !important);
   }
 }
 

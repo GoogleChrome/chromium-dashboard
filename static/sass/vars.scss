@@ -31,7 +31,6 @@ $max-content-width: 760px;
 }
 
 @mixin display-flex() {
-  display: -webkit-box; // Safari :(
   display: -webkit-flex;
   display: -moz-flex;
   display: -ms-flex;
@@ -41,11 +40,11 @@ $max-content-width: 760px;
 
 @mixin display-inlineflex() {
   display: -webkit-inline-box;
+  display: -webkit-inline-flex;
   display: inline-flex;
 }
 
 @mixin flex($val) {
-  -webkit-box-flex: 1; // Safari :(
   -webkit-flex: $val;
   -moz-flex: $val;
   -ms-flex: $val;
@@ -54,7 +53,6 @@ $max-content-width: 760px;
 }
 
 @mixin justify-content($val: center) {
-  -webkit-box-pack: $val;  // Safari :(
   -webkit-justify-content: $val;
   -moz-justify-content: $val;
   -ms-justify-content: $val;
@@ -63,7 +61,6 @@ $max-content-width: 760px;
 }
 
 @mixin align-items($val: center) {
-  -webkit-box-align: $val;  // Safari :(
   -webkit-align-items: $val;
   -moz-align-items: $val;
   -ms-align-items: $val;
@@ -80,7 +77,6 @@ $max-content-width: 760px;
 }
 
 @mixin flex-direction($val) {
-  -webkit-box-orient: vertical;  // Safari :(
   -webkit-flex-direction: $val;
   -moz-flex-direction: $val;
   -ms-flex-direction: $val;
@@ -89,7 +85,7 @@ $max-content-width: 760px;
 }
 
 @mixin flex-shrink($val: initial) {
-  // -webkit-flex-wrap: $val;
+  -webkit-flex-shrink: $val;
   -moz-flex-shrink: $val;
   -ms-flex-shrink: $val;
   -o-flex-shrink: $val;
@@ -103,47 +99,6 @@ $max-content-width: 760px;
   -o-flex-wrap: $val;
   flex-wrap: $val;
 }
-
-// // Old flexbox.
-// @mixin display-box() {
-//   display: -webkit-box;
-//   display: -moz-box;
-//   display: -ms-box;
-//   display: -o-box;
-//   display: box;
-// }
-
-// @mixin box-orient($val) {
-//   -webkit-box-orient: $val;
-//   -moz-box-orient: $val;
-//   -ms-box-orient: $val;
-//   -o-box-orient: $val;
-//   box-orient: $val;
-// }
-
-// @mixin box-align($val) {
-//   -webkit-box-align: $val;
-//   -moz-box-align: $val;
-//   -ms-box-align: $val;
-//   -o-box-align: $val;
-//   box-align: $val;
-// }
-
-// @mixin box-flex($val) {
-//   -webkit-box-flex: $val;
-//   -moz-box-flex: $val;
-//   -ms-box-flex: $val;
-//   -o-box-flex: $val;
-//   box-flex: $val;
-// }
-
-// @mixin box-pack($val) {
-//   -webkit-box-pack: $val;
-//   -moz-box-pack: $val;
-//   -ms-box-pack: $val;
-//   -o-box-pack: $val;
-//   box-pack: $val;
-// }
 
 @mixin width-max-content() {
   width: -webkit-max-content;
