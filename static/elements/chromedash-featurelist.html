@@ -38,7 +38,9 @@
         return false;
       }
     }
+
     var featureLiList_ = [];
+
     Polymer({
       is: 'chromedash-featurelist',
 
@@ -62,6 +64,16 @@
         search: { value: null },
         whitelisted: {
           type: Boolean,
+          value: false
+        },
+        _topmostFeatureInScrollList: {
+          type: Object,
+          readOnly: true,
+          value: function() { return {}; }
+        },
+        _milestoneWasClicked: {
+          type: Boolean,
+          readOnly: true,
           value: false
         }
       },
@@ -152,18 +164,41 @@
 
       // Returns the closest feature <li> to the scroll top position passed in.
       featureInView: function(containerScrollTop) {
-        var closest = null;
-        for (var i = 0, li; li = featureLiList_[i]; ++i) {
-          var dist = li.offsetTop - containerScrollTop;
-          if (dist < 0) {
-            dist = -dist * 1.5;
-          }
-          if (closest == null || dist < closest.dist) {
-            closest = this.filtered[i];
-            closest.dist = dist;
-          }
+
+        // Generate list of features below current scroll position.
+        var items = featureLiList_.filter(function(el) {
+          if (el.offsetTop < containerScrollTop) { return el; }
+        });
+
+        // Grab the last feature (it's at the top of the scroll container).
+        var topmostFeature = items.length ? items[items.length - 1] :
+                                            featureLiList_[0];
+
+        var idx = featureLiList_.indexOf(topmostFeature);
+         // Use next feature in list so milestone labels line up better.
+        var feature = this.features[idx + 1];
+
+        var label = feature.shipped_milestone || feature.impl_status_chrome;
+        if (label !== this._topmostFeatureInScrollList.labelStr) {
+          this._set_topmostFeatureInScrollList(
+              {feature: feature, labelStr: label});
         }
-        return closest;
+
+        return this._topmostFeatureInScrollList.feature;
+
+        // TODO: remove once we're super happy with the above.
+        // var closest = null;
+        // for (var i = 0, li; li = featureLiList_[i]; ++i) {
+        //   var dist = li.offsetTop - containerScrollTop;
+        //   if (dist < 0) {
+        //     dist = -dist * 1.5;
+        //   }
+        //   if (closest == null || dist < closest.dist) {
+        //     closest = this.filtered[i];
+        //     closest.dist = dist;
+        //   }
+        // }
+        // return closest;
       },
 
       // Returns the index of the first feature of a given milestone string.
@@ -211,6 +246,10 @@
       },
 
       _onScrollList: function(e, detail) {
+        if (this._milestoneWasClicked) {
+          this._set_milestoneWasClicked(false);
+          return;
+        }
         var feature = this.featureInView(Polymer.dom(e).localTarget.scrollTop);
         this.metadata.selectMilestone(feature);
       },
@@ -233,6 +272,7 @@
         //this.metadata.removeEventListener('milestoneselect', onMetadataChanged_.bind(this));
         if (this.metadata) {
           this.metadata.addEventListener('milestoneselect', function(e) {
+            this._set_milestoneWasClicked(true);
             this.scrollToMilestone(e.detail.version);
           }.bind(this));
         }
