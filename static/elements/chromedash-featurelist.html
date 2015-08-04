@@ -16,10 +16,6 @@
 </template>
 <script>
   (function() {
-    function onMetadataChanged_(e) {
-      this.scrollToMilestone(e.detail.version);
-    }
-
     function matchesMilestone_(milestone, operator, version) {
       switch (operator) {
       case '<':
@@ -104,7 +100,7 @@
         } else {
           val = val.trim();
           if (history && history.replaceState) {
-            history.replaceState({ id: null }, document.title, '/features#' + val);
+            history.replaceState({id: null}, document.title, '/features#' + val);
           }
           // owner: user@chromium.org
           var match = val.match(/^owner:\s*(.*)/);
@@ -185,7 +181,7 @@
 
       scrollToMilestone: function(milestone) {
         var idx = this.firstOfMilestone(milestone);
-        if (idx != -1) {
+        if (idx !== -1) {
           var el = featureLiList_[idx].previousElementSibling || featureLiList_[idx];
           // TODO(ericbidelman): Implement smooth scrolling when
           // https://twitter.com/ebidel/status/364825118171602944 lands.
@@ -224,20 +220,21 @@
         var open = detail.open;
         if (history && history.replaceState) {
           if (open) {
-            history.pushState({ id: feature.id }, feature.name, '/features/' + feature.id);
+            history.pushState({id: feature.id}, feature.name, '/features/' + feature.id);
           } else {
             var hash = this.search.value ? '#' + this.search.value : '';
-            history.replaceState({ id: null }, feature.name, '/features' + hash);
+            history.replaceState({id: null}, feature.name, '/features' + hash);
           }
         }
       },
 
-      _metadataChanged: function(newValue, oldValue) {
+      _metadataChanged: function() {
         // TODO: probably need to remove the listener if metadata element changes.
         //this.metadata.removeEventListener('milestoneselect', onMetadataChanged_.bind(this));
         if (this.metadata) {
-          this.metadata.addEventListener(
-              'milestoneselect', onMetadataChanged_.bind(this));
+          this.metadata.addEventListener('milestoneselect', function(e) {
+            this.scrollToMilestone(e.detail.version);
+          }.bind(this));
         }
       },
 
