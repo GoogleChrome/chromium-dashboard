@@ -136,6 +136,7 @@ section {
     margin: 10px 0 0 0;
     cursor: pointer;
     color: $gray-3;
+    line-height: 20px;
 
     summary {
       text-overflow: ellipsis;
@@ -162,9 +163,12 @@ section {
 
   div {
     margin-bottom: 10px;
-    @include flex-wrap(wrap);
+    // @include flex-wrap(wrap);
+    @include display-flex;
     > span {
       margin-right: 20px;
+      // @include flex-wrap(nowrap);
+      @include flex-shrink(0);
     }
   }
 
@@ -217,8 +221,17 @@ section {
     }
   }
 
+  .owner {
+    @include display-flex;
+    @include flex-wrap(wrap);
+  }
+
   .comments html-echo {
     white-space: pre-wrap;
+  }
+
+  .doc_links, .sample_links, .owner {
+    @include flex-shrink(1);
   }
 }
 
@@ -249,8 +262,9 @@ chromedash-color-status {
   }
   .impl_status {
     @include display-flex;
-    @include flex-direction(column);
-    @include flex-wrap(initial);
+    // @include flex-direction(column);
+    // @include flex-wrap(initial);
+    @include flex-wrap(wrap);
     > span:not([hidden]):not(:last-of-type),
     > a {
       margin-bottom: 10px;

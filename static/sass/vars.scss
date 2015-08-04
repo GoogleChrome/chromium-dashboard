@@ -39,6 +39,11 @@ $max-content-width: 760px;
   display: flex;
 }
 
+@mixin display-inlineflex() {
+  display: -webkit-inline-box;
+  display: inline-flex;
+}
+
 @mixin flex($val) {
   -webkit-box-flex: 1; // Safari :(
   -webkit-flex: $val;
@@ -81,6 +86,14 @@ $max-content-width: 760px;
   -ms-flex-direction: $val;
   -o-flex-direction: $val;
   flex-direction: $val;
+}
+
+@mixin flex-shrink($val: initial) {
+  // -webkit-flex-wrap: $val;
+  -moz-flex-shrink: $val;
+  -ms-flex-shrink: $val;
+  -o-flex-shrink: $val;
+  flex-shrink: $val;
 }
 
 @mixin flex-wrap($val: nowrap) {
