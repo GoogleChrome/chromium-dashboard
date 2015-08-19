@@ -72,7 +72,6 @@ window.Polymer = window.Polymer || {dom: 'shadow'};
   {% include "footer.html" %}
 </div>
 
-{% block js %}{% endblock %}
 <script>
 var $ = function(selector) {
   return document.querySelector(selector);
@@ -81,7 +80,9 @@ var $ = function(selector) {
 var $$ = function(selector) {
   return document.querySelectorAll(selector);
 };
-
+</script>
+{% block js %}{% endblock %}
+<script>
 var _gaq = _gaq || [];
 _gaq.push(['_setAccount', 'UA-39048143-1']);
 _gaq.push(['_setDomainName', 'chromestatus.com']);

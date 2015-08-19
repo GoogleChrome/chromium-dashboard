@@ -63,6 +63,7 @@
 {% block js %}
 <script>
 (function() {
+
 function updateCount(count) {
   $('#num-features').textContent = count;
 }
@@ -74,12 +75,66 @@ window.addNewFeature = function(el) {
   });
 }
 
-document.addEventListener('WebComponentsReady', function(e) {
-  var featureList = $('chromedash-featurelist');
-  var chromeMetadata = $('chromedash-metadata');
-  var overlay = $('chromedash-legend');
-  var search = $('.search input');
+var featureList = $('chromedash-featurelist');
+var chromeMetadata = $('chromedash-metadata');
+var overlay = $('chromedash-legend');
+var search = $('.search input');
 
+// Set search box to URL deep link.
+if (location.hash) {
+  search.value = location.hash.substr(1);
+}
+
+featureList.addEventListener('filter-category', function(e) {
+  search.value = 'category: ' + e.detail.val;
+  updateCount(featureList.filter(search.value));
+});
+
+featureList.addEventListener('filter-owner', function(e) {
+  search.value = 'owner: ' + e.detail.val;
+  updateCount(featureList.filter(search.value));
+});
+
+// Clear input when user clicks the 'x' button.
+search.addEventListener('search', function(e) {
+  if (!e.target.value) {
+    updateCount(featureList.filter());
+    chromeMetadata.selected = null;
+  }
+});
+
+ // Clear input when user clicks the 'x' button.
+search.addEventListener('keyup', function(e) {
+  if (!e.target.value && e.keyCode != 27) { // ESC
+    updateCount(featureList.filter());
+    chromeMetadata.selected = null;
+  } else {
+    //if (e.keyCode == 13) {  // Enter
+      updateCount(featureList.filter(e.target.value));
+    //}
+  }
+});
+
+$('.legend').addEventListener('click', function(e) {
+  e.preventDefault();
+  overlay.toggle();
+});
+
+// Fire of features.json XHR right away so data can populate faster.
+var featuresPromise = new Promise(function(resolve, reject) {
+  var url = location.hostname == 'localhost' ? '/static/js/mockdata.json' :
+                                               '/features.json';
+  var xhr = new XMLHttpRequest(); // Fill features list via AJAX.
+  xhr.open('GET', url);
+  xhr.responseType = 'json';
+  xhr.onloadend = function(e) {
+    resolve(e.target.response);
+  };
+  xhr.onerror = reject;
+  xhr.send();
+});
+
+function importsLoaded() {
   // TODO: decide if we need these anymore. Can they be moved internal to the
   // chromeMetadata element?
   chromeMetadata.implStatuses = {{IMPLEMENTATION_STATUSES|safe}};
@@ -94,82 +149,45 @@ document.addEventListener('WebComponentsReady', function(e) {
     NO_LONGER_PURSUING: 1000,
   };
 
-  // Fill data via AJAX.
-  var url = location.hostname == 'localhost' ? '/static/js/mockdata.json':
-                                               '/features.json';
+  featureList.metadata = chromeMetadata; // Feature list needs access to the selected milestone.
+  featureList.search = search;
 
-  var xhr = new XMLHttpRequest();
-  xhr.open('GET', url);
-  xhr.responseType = 'json';
-  xhr.onloadend = function(e) {
-    featureList.features = e.target.response;
-    featureList.metadata = chromeMetadata; // Feature list needs access to the selected milestone.
-    featureList.search = search;
-
+  featuresPromise.then(function(features) {
+    featureList.features = features;
     updateCount(featureList.filter(search.value));
     search.disabled = false;
-  };
-  xhr.send();
+  });
 
-  // // Alternatively to xhr, fill data from server by including it directly
-  // in the template. Note: this slows down window.onload by 800ms, which is
-  // why we're not doing it.
+  // // Alternative to XHR, we could fill data from server by including it
+  // // directly in the server's page template. However, this increases the weight
+  // // of the page and slows down window.onload, especially as the number of
+  // // features increases over time. For this reason, XHR is preferred.
   // featureList.features = {{features|safe}};
   // featureList.metadata = chromeMetadata; // Feature list needs access to the selected milestone.
-  // updateCount(featureList.features.length); // Set initial # features showing.
+  // featureList.search = search;
+  // updateCount(featureList.filter(search.value)); // Set initial # features showing.
   // search.disabled = false;
-
-  featureList.addEventListener('filter-category', function(e) {
-    search.value = 'category: ' + e.detail.val;
-    updateCount(featureList.filter(search.value));
-  });
-
-  featureList.addEventListener('filter-owner', function(e) {
-    search.value = 'owner: ' + e.detail.val;
-    updateCount(featureList.filter(search.value));
-  });
-
-  // Clear input when user clicks the 'x' button.
-  search.addEventListener('search', function(e) {
-    if (!e.target.value) {
-      updateCount(featureList.filter());
-      chromeMetadata.selected = null;
-    }
-  });
-
-   // Clear input when user clicks the 'x' button.
-  search.addEventListener('keyup', function(e) {
-    if (!e.target.value && e.keyCode != 27) { // ESC
-      updateCount(featureList.filter());
-      chromeMetadata.selected = null;
-    } else {
-      //if (e.keyCode == 13) {  // Enter
-        updateCount(featureList.filter(e.target.value));
-      //}
-    }
-  });
-
-  if (location.hash) {
-    search.value = location.hash.substr(1);
-  }
 
   overlay.views = {
     vendors: {{VENDOR_VIEWS|safe}}, // set from server
     webdevs: {{WEB_DEV_VIEWS|safe}}, // set from server
     standards: {{STANDARDS_VALS|safe}} // set from server
   };
+}
 
-  $('.legend').addEventListener('click', function(e) {
-    e.preventDefault();
-    overlay.toggle();
-  });
+var importsSupported = ('import' in document.createElement('link'));
+if (importsSupported) {
+  document.addEventListener('HTMLImportsLoaded', importsLoaded);
+} else {
+  // Polyfilled browsers need to wait for the WCR event to in order to set
+  // properties on upgraded elements.
+  document.addEventListener('WebComponentsReady', importsLoaded);
+}
 
-  window.addEventListener('popstate', function(e) {
-    if (e.state) {
-      featureList.scrollToFeature(e.state.id);
-    }
-  });
-
+window.addEventListener('popstate', function(e) {
+  if (e.state) {
+    featureList.scrollToFeature(e.state.id);
+  }
 });
 
 })();
