@@ -128,7 +128,11 @@ var featuresPromise = new Promise(function(resolve, reject) {
   xhr.open('GET', url);
   xhr.responseType = 'json';
   xhr.onloadend = function(e) {
-    resolve(e.target.response);
+    if (e.target.status < 400) {
+      resolve(e.target.response);
+    } else {
+      reject(new Error('Features XHR failed with status ' + e.target.statusText));
+    }
   };
   xhr.onerror = reject;
   xhr.send();
@@ -156,6 +160,8 @@ function importsLoaded() {
     featureList.features = features;
     updateCount(featureList.filter(search.value));
     search.disabled = false;
+  }, function(e) {
+    document.body.classList.add('error');
   });
 
   // // Alternative to XHR, we could fill data from server by including it
