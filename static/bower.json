@@ -24,7 +24,6 @@
   },
   "dependencies": {
     "polymer": "Polymer/polymer#^1.1.0",
-    "font-roboto": "PolymerElements/font-roboto-local#^1.0.1",
     "iron-ajax": "PolymerElements/iron-ajax#^1.0.3",
     "google-apis": "GoogleWebComponents/google-apis#^1.0.2",
     "paper-dialog": "PolymerElements/paper-dialog#^1.0.1",
