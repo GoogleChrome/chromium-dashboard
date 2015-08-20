@@ -62,20 +62,28 @@
     <div class="iconrow">
       <label class="category" on-tap="categoryFilter">{{feature.category}}</label>
       <div class="topcorner">
-        <span hidden$="{{!removed}}" class="tooltip" title="Removed feature">
-          <iron-icon icon="icons:cancel" class="remove" data-tooltip></iron-icon>
-        </span>
-        <span hidden$="{{!deprecated}}" class="tooltip" title="Deprecated feature">
-          <iron-icon icon="icons:warning" class="deprecated" data-tooltip></iron-icon>
-        </span>
-        <span hidden$="{{!needsflag}}" class="tooltip" title="Experimental feature behind a flag">
-          <iron-icon icon="icons:extension" class="experimental"></iron-icon>
-        </span>
-        <span class="tooltip" title="Edit this feature" hidden$="{{!whitelisted}}">
-          <a href$="{{_computeEditLinkHidden(feature)}}" class="editfeature" data-tooltip>
-            <iron-icon icon="icons:create"></iron-icon>
-          </a>
-        </span>
+        <template is="dom-if" if="{{removed}}">
+          <span class="tooltip" title="Removed feature">
+            <iron-icon icon="icons:cancel" class="remove" data-tooltip></iron-icon>
+          </span>
+        </template>
+        <template is="dom-if" if="{{deprecated}}">
+          <span class="tooltip" title="Deprecated feature">
+            <iron-icon icon="icons:warning" class="deprecated" data-tooltip></iron-icon>
+          </span>
+        </template>
+        <template is="dom-if" if="{{needsflag}}">
+          <span class="tooltip" title="Experimental feature behind a flag">
+            <iron-icon icon="icons:extension" class="experimental"></iron-icon>
+          </span>
+        </template>
+        <template is="dom-if" if="{{whitelisted}}">
+          <span class="tooltip" title="Edit this feature">
+            <a href$="{{_computeEditLinkHidden(feature)}}" class="editfeature" data-tooltip>
+              <iron-icon icon="icons:create"></iron-icon>
+            </a>
+          </span>
+        </template>
       </div>
     </div>
   </hgroup>
