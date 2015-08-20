@@ -50,11 +50,16 @@ iron-icon {
   &.experimental {
     color: var(--paper-green-700);
   }
-  &.opennew {
-    color: var(--paper-grey-700);
-    --iron-icon-height: 14px;
-    --iron-icon-width: 14px;
-  }
+  // &.opennew {
+  //   color: var(--paper-grey-700);
+  //   --iron-icon-height: 14px;
+  //   --iron-icon-width: 14px;
+  // }
+}
+
+.opennew {
+  width: 18px;
+  height: 18px;
 }
 
 .editfeature {
