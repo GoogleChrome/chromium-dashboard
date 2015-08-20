@@ -2,18 +2,19 @@
 
 @import "vars";
 
-body {
-  #content:after {
-    font-size: 18px;
+#content {
+  &.ready::after {
+    display: none;
   }
 
-  &:not(.ready) #content:after {
+  &::after {
+    font-size: 18px;
     font-weight: normal;
     content: 'loading...';
     color: $gray-3;
+    top: 0;
     left: 0;
     position: absolute;
-    top: 0;
     background: white;
     border: 1px dashed #bbb;
     border-radius: $default-border-radius;
@@ -26,7 +27,7 @@ body {
     z-index: 100;
   }
 
-  &.error #content:after {
+  &.error::after {
     content: 'Error loading features list.';
     color: darkred;
   }

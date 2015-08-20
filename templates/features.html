@@ -127,7 +127,12 @@ var featuresPromise = new Promise(function(resolve, reject) {
   var xhr = new XMLHttpRequest(); // Fill features list via AJAX.
   xhr.open('GET', url);
   xhr.responseType = 'json';
+
+  console.time('features unveil'); // benchmark how long it takes load features.
+  console.timeStamp('features fetch');
+
   xhr.onloadend = function(e) {
+    console.timeStamp('features loaded');
     if (e.target.status < 400) {
       resolve(e.target.response);
     } else {
@@ -161,7 +166,7 @@ function importsLoaded() {
     updateCount(featureList.filter(search.value));
     search.disabled = false;
   }, function(e) {
-    document.body.classList.add('error');
+    document.getElementById('content').classList.add('error');
   });
 
   // // Alternative to XHR, we could fill data from server by including it

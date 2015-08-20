@@ -59,6 +59,14 @@
 <!-- <script src="/static/js/bower_components/smoothscroll/smoothscroll.js"></script>  -->
 <script>
 window.Polymer = window.Polymer || {dom: 'shadow'};
+
+var $ = function(selector) {
+  return document.querySelector(selector);
+};
+
+var $$ = function(selector) {
+  return document.querySelectorAll(selector);
+};
 </script>
 
 {% block html_imports %}{% endblock %}
@@ -76,15 +84,6 @@ window.Polymer = window.Polymer || {dom: 'shadow'};
   {% include "footer.html" %}
 </div>
 
-<script>
-var $ = function(selector) {
-  return document.querySelector(selector);
-};
-
-var $$ = function(selector) {
-  return document.querySelectorAll(selector);
-};
-</script>
 {% block js %}{% endblock %}
 <script>
 var _gaq = _gaq || [];

@@ -284,9 +284,12 @@
         }
 
         this.filter(location.hash.substr(1));
-        document.body.classList.add('ready'); // unmask app.
 
         this.async(function() {
+          document.getElementById('content').classList.add('ready'); // unmask app.
+          console.timeStamp('features unveiled');
+          console.timeEnd('features unveil');
+
           // If there's an id in the URL, highlight and scroll to the feature.
           // Otherwise, go to the first "in development" feature.
           // TODO: really want this in ready(), but featureLiList and metadata may
