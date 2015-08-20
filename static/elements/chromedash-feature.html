@@ -81,7 +81,8 @@
   </hgroup>
   <section class="desc">
     <summary class$="{{_computeSummaryClass(open)}}">
-      <html-echo html="[[_urlizeFilter(feature.summary)]]"></html-echo>
+      <!-- <html-echo html="[[_urlizeFilter(feature.summary)]]"></html-echo> -->
+      <span>[[feature.summary]]</span>
     </summary>
   </section>
   <template is="dom-if" if="{{open}}">
