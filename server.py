@@ -40,7 +40,7 @@ def first_of_milestone(feature_list, milestone, start=0):
       return i
   return -1
 
-  
+
 class MainHandler(common.ContentHandler, common.JSONHandler):
 
   def __get_omaha_data(self):
@@ -140,7 +140,7 @@ class MainHandler(common.ContentHandler, common.JSONHandler):
 
         return self.render_atom_feed('Features', feature_list)
       else:
-        # if settings.PROD: 
+        # if settings.PROD:
         #   feature_list = self.__get_feature_list()
         # else:
         #   result = urlfetch.fetch(
@@ -184,6 +184,9 @@ class MainHandler(common.ContentHandler, common.JSONHandler):
       properties = sorted(models.FeatureObserverHistogram.get_all().iteritems(), key=lambda x:x[1])
       template_data['FEATUREOBSERVER_BUCKETS'] = json.dumps(
           properties, separators=(',',':'))
+    elif path.startswith('omaha_data'):
+      omaha_data = self.__get_omaha_data()
+      return common.JSONHandler.get(self, omaha_data, formatted=True)
 
     self.render(data=template_data, template_path=os.path.join(path + '.html'))
 

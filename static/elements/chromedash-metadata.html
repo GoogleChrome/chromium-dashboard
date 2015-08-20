@@ -4,7 +4,7 @@
 <dom-module id="chromedash-metadata">
 <link rel="import" type="css" href="../css/elements/chromedash-metadata.css">
 <template>
-  <iron-ajax auto url="https://omahaproxy.appspot.com/all.json" handle-as="json"
+  <iron-ajax auto url="/omaha_data" handle-as="json"
              on-response="_onResponse"
              on-error="_onError"></iron-ajax>
   <ul class$="{{_computeClass(betaIsDev, canaryIsDev)}}">

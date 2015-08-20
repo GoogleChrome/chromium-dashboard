@@ -3,10 +3,14 @@
 @import "vars";
 
 body {
+  #content:after {
+    font-size: 18px;
+  }
+
   &:not(.ready) #content:after {
     font-weight: normal;
     content: 'loading...';
-    color: #bbb;
+    color: $gray-3;
     left: 0;
     position: absolute;
     top: 0;
@@ -20,6 +24,11 @@ body {
     @include justify-content(center);
     @include align-items(center);
     z-index: 100;
+  }
+
+  &.error #content:after {
+    content: 'Error loading features list.';
+    color: darkred;
   }
 }
 

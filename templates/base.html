@@ -47,6 +47,10 @@
 
 {% block meta %}{% endblock %}
 
+<!-- Load fonts right away. These URLs are also used in paper-styles, but we
+     want a jumpstart on download and the GFonts API is helllla cached. -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,300,300italic,400italic,500,500italic,700,700italic">
+
 <link rel="stylesheet" href="/static/css/main.css?2015-07-29">
 {% block css %}{% endblock %}
 
@@ -72,7 +76,6 @@ window.Polymer = window.Polymer || {dom: 'shadow'};
   {% include "footer.html" %}
 </div>
 
-{% block js %}{% endblock %}
 <script>
 var $ = function(selector) {
   return document.querySelector(selector);
@@ -81,7 +84,9 @@ var $ = function(selector) {
 var $$ = function(selector) {
   return document.querySelectorAll(selector);
 };
-
+</script>
+{% block js %}{% endblock %}
+<script>
 var _gaq = _gaq || [];
 _gaq.push(['_setAccount', 'UA-39048143-1']);
 _gaq.push(['_setDomainName', 'chromestatus.com']);
