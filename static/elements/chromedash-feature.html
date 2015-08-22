@@ -53,7 +53,7 @@
 <dom-module id="chromedash-feature">
 <link rel="import" type="css" href="../css/elements/chromedash-feature.css">
 <template>
-<div on-tap="toggle" class="main-content-area">
+<div on-tap="_toggle" class="main-content-area">
   <hgroup>
     <chromedash-color-status class="tooltip corner"
        title="Compatibility risk: perceived interest from browser vendors and web developers"
@@ -88,7 +88,7 @@
     </div>
   </hgroup>
   <section class="desc">
-    <summary class$="{{_computeSummaryClass(open)}}">
+    <summary>
       <!-- <html-echo html="[[_urlizeFilter(feature.summary)]]"></html-echo> -->
       <span>[[feature.summary]]</span>
     </summary>
@@ -274,20 +274,30 @@
       },
       open: {
         type: Boolean,
-        value: false,
         notify: true,
+        reflectToAttribute: true, // for styling.
+        computed: '_featureOpen(feature.open)',
         observer: '_openChanged'
       }
     },
 
-    toggle: function(e, details) {
-      // Don't toggle panel if tooltip or link is being clicked.
-      var target = Polymer.dom(e).localTarget;
-      if (target.classList.contains('tooltip') || 'tooltip' in target.dataset ||
-          target.tagName == 'A' || target.tagName == 'MULTI-LINKS') {
-        return;
+    _featureOpen: function(open) {
+      return open || false;
+    },
+
+    _toggle: function(e, details) {
+      if (e) {
+        // Don't toggle panel if tooltip or link is being clicked.
+        var target = Polymer.dom(e).localTarget;
+        if (target.classList.contains('tooltip') || 'tooltip' in target.dataset ||
+            target.tagName == 'A' || target.tagName == 'MULTI-LINKS') {
+          return;
+        }
       }
-      this.open = !this.open;
+
+      this.set('feature.open', !this.feature.open);
+
+      this.fire('feature-toggled', {feature: this.feature, open: this.feature.open});
     },
 
     categoryFilter: function(e, details) {
@@ -312,11 +322,10 @@
     },
 
     _openChanged: function() {
-      this.classList.toggle('open', this.open);
-      this.fire('feature-toggled', {
-        feature: this.feature,
-        open: this.open
-      });
+      // Feature is opened on a deep link, need to re-render list.
+      if (this.feature && this.open) {
+        this.fire('feature-toggled', {feature: this.feature, open: this.open});
+      }
     },
 
     _featureChanged: function() {
@@ -328,9 +337,6 @@
     },
     _computeStandaloneHref: function(feature) {
       return '/feature/' + feature.id;
-    },
-    _computeSummaryClass: function(open) {
-      return open ? 'open' : '';
     },
     _computeShowResources: function(feature) {
       return feature.doc_links.length || feature.sample_links.length;

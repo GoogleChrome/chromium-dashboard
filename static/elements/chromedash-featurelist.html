@@ -1,17 +1,29 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="chromedash-feature.html">
+<link rel="import" href="../bower_components/iron-list/iron-list.html">
 
 <dom-module id="chromedash-featurelist">
 <link rel="import" type="css" href="../css/elements/chromedash-featurelist.css">
 <template>
   <ul id="featurelist">
-    <template is="dom-repeat" items="{{filtered}}" as="feature">
+    <!-- <template is="dom-repeat" items="{{filtered}}" as="feature">
       <div hidden$="{{_computeMilestoneHidden(feature, features, filtered)}}"
            class="milestone-marker">{{_computeMilestoneString(feature.meta.milestone_str)}}</div>
       <li id="{{feature.id}}" is="chromedash-feature"
           feature="[[feature]]" needsflag="[[feature.meta.needsflag]]"
           whitelisted="[[whitelisted]]"></li>
-    </template>
+    </template> -->
+   <iron-list items="[[filtered]]" as="feature" id="ironlist">
+     <template>
+        <div class="item">
+          <div hidden$="{{_computeMilestoneHidden(feature, features, filtered)}}"
+           class="milestone-marker">{{_computeMilestoneString(feature.meta.milestone_str)}}</div>
+          <li id="{{feature.id}}" is="chromedash-feature"
+              feature="[[feature]]" needsflag="[[feature.meta.needsflag]]"
+              whitelisted="[[whitelisted]]"></li>
+        </div>
+      </template>
+    </iron-list>
   </ul>
 </template>
 <script>
@@ -39,8 +51,6 @@
       }
     }
 
-    var featureLiList_ = [];
-
     Polymer({
       is: 'chromedash-featurelist',
 
@@ -48,7 +58,6 @@
         features: {
           type: Array,
           notify: true,
-          //observer: '_featuresChanged',
           value: function() { return []; }
         },
         filtered: {
@@ -66,16 +75,6 @@
           type: Boolean,
           value: false
         },
-        _topmostFeatureInScrollList: {
-          type: Object,
-          readOnly: true,
-          value: function() { return {}; }
-        },
-        _milestoneWasClicked: {
-          type: Boolean,
-          readOnly: true,
-          value: false
-        },
         _firstLoad: {
           type: Boolean,
           readOnly: true,
@@ -84,26 +83,31 @@
       },
 
       listeners: {
-        'scroll': '_onScrollList',
+        'ironlist.scroll': '_onScrollList',
         'keyup': '_onKeyUp',
         'feature-toggled': '_onFeatureToggled'
       },
 
-      filterOnCategory: function(val) {
+      attached: function() {
+        // See github.com/PolymerElements/iron-list/issues/73.
+        this.$.ironlist.style.height = Polymer.dom(this).node.clientHeight + 'px';
+      },
+
+      _filterOnCategory: function(val) {
         var regex = new RegExp(val, 'i');
         return this.features.filter(function(feature, idx, array) {
           return regex.test(feature.category);
         });
       },
 
-      filterOnOwner: function(val) {
+      _filterOnOwner: function(val) {
         var regex = new RegExp(val, 'i');
         return this.features.filter(function(feature, idx, array) {
           return regex.test(feature.owner.toString());
         });
       },
 
-      filterOnOperation: function(operator, version) {
+      _filterOnOperation: function(operator, version) {
         return this.features.filter(function(feature, idx, array) {
           var platformMilestones = [
             parseInt(feature.shipped_milestone),
@@ -142,11 +146,11 @@
           var operatorMatch = /^([<>=]=?)\s*([0-9]+)/.exec(val);
 
           if (ownerMatch) {
-            this.filtered = this.filterOnOwner(ownerMatch[1]);
+            this.filtered = this._filterOnOwner(ownerMatch[1]);
           } else if (categoryMatch) {
-            this.filtered = this.filterOnCategory(categoryMatch[1]);
+            this.filtered = this._filterOnCategory(categoryMatch[1]);
           } else if (operatorMatch) {
-            this.filtered = this.filterOnOperation(operatorMatch[1], operatorMatch[2]);
+            this.filtered = this._filterOnOperation(operatorMatch[1], operatorMatch[2]);
           } else {
             // Only one of the platforms needs to match.
             // Do a general search over misc fields.
@@ -173,45 +177,6 @@
         }, 200);
       },
 
-      // Returns the closest feature <li> to the scroll top position passed in.
-      featureInView: function(containerScrollTop) {
-
-        // Generate list of features below current scroll position.
-        var items = featureLiList_.filter(function(el) {
-          if (el.offsetTop < containerScrollTop) { return el; }
-        });
-
-        // Grab the last feature (it's at the top of the scroll container).
-        var topmostFeature = items.length ? items[items.length - 1] :
-                                            featureLiList_[0];
-
-        var idx = featureLiList_.indexOf(topmostFeature);
-         // Use next feature in list so milestone labels line up better.
-        var feature = this.features[idx + 1];
-
-        var label = feature.shipped_milestone || feature.impl_status_chrome;
-        if (label !== this._topmostFeatureInScrollList.labelStr) {
-          this._set_topmostFeatureInScrollList(
-              {feature: feature, labelStr: label});
-        }
-
-        return this._topmostFeatureInScrollList.feature;
-
-        // TODO: remove once we're super happy with the above.
-        // var closest = null;
-        // for (var i = 0, li; li = featureLiList_[i]; ++i) {
-        //   var dist = li.offsetTop - containerScrollTop;
-        //   if (dist < 0) {
-        //     dist = -dist * 1.5;
-        //   }
-        //   if (closest == null || dist < closest.dist) {
-        //     closest = this.filtered[i];
-        //     closest.dist = dist;
-        //   }
-        // }
-        // return closest;
-      },
-
       // Returns the index of the first feature of a given milestone string.
       firstOfMilestone: function(milestone, opt_startFrom) {
         var start = opt_startFrom != undefined ? opt_startFrom : 0;
@@ -228,11 +193,7 @@
       scrollToMilestone: function(milestone) {
         var idx = this.firstOfMilestone(milestone);
         if (idx !== -1) {
-          var el = featureLiList_[idx].previousElementSibling || featureLiList_[idx];
-          // TODO(ericbidelman): Implement smooth scrolling when
-          // https://twitter.com/ebidel/status/364825118171602944 lands.
-          el.scrollIntoView(true);  // el.scrollIntoView(true, {behavior: 'smooth'});
-          // this.$.ironlist.scrollToIndex(idx);
+          this.$.ironlist.scrollToIndex(idx);
         }
       },
 
@@ -242,8 +203,8 @@
         }
         for (var i = 0, f; f = this.filtered[i]; ++i) {
           if (f.id == id) {
-            featureLiList_[i].scrollIntoView(true); // this.$.ironlist.scrollToIndex(i);
-            featureLiList_[i].open = true;
+            this.$.ironlist.scrollToIndex(i);
+            this.set(['filtered', i, 'open'], true); // trigger feature panel open.
             break;
           }
         }
@@ -258,17 +219,18 @@
       },
 
       _onScrollList: function(e, detail) {
-        if (this._milestoneWasClicked) {
-          this._set_milestoneWasClicked(false);
-          return;
-        }
-        var feature = this.featureInView(Polymer.dom(e).localTarget.scrollTop);
+        var feature = this.features[this.$.ironlist.firstVisibleIndex];
         this.metadata.selectMilestone(feature);
       },
 
       _onFeatureToggled: function(e, detail) {
         var feature = detail.feature;
         var open = detail.open;
+
+        // Force re-render virtual list since height of feature changed.
+        // See github.com/PolymerElements/iron-list/issues/13.
+        this.$.ironlist._update();
+
         if (history && history.replaceState) {
           if (open) {
             history.pushState({id: feature.id}, feature.name, '/features/' + feature.id);
@@ -283,23 +245,10 @@
         if (this.metadata) {
           // TODO: remove the listener if metadata element changes.
           this.metadata.addEventListener('milestoneselect', function(e) {
-            this._set_milestoneWasClicked(true);
             this.scrollToMilestone(e.detail.version);
           }.bind(this));
         }
       },
-
-      // _featuresChanged: function() {
-      //   if (!this.features || !this.features.length) {
-      //     return;
-      //   }
-
-      //   this.async(function() {
-      //     document.getElementById('content').classList.add('ready'); // unmask app.
-      //     console.timeStamp('features unveiled');
-      //     console.timeEnd('features unveil');
-      //   });
-      // },
 
       _deepLinkToFeature: function() {
         this._set_firstLoad(false);
@@ -327,9 +276,9 @@
         if (oldVal === undefined || newVal.length === oldVal.length) {
           return;
         }
+
         // Wait one rAF do model has updated the DOM.
         this.async(function() {
-          featureLiList_ = Polymer.dom(this.root).querySelectorAll('li');
           if (this._firstLoad) {
             this._deepLinkToFeature();
           }

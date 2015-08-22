@@ -19,9 +19,13 @@
   font-size: $milestone-label-size;
   color: $chromium-color-dark;
 
-  &:first-of-type {
-    margin-top: 0;
-  }
+  // &:first-of-type {
+  //   margin-top: 0;
+  // }
+}
+
+iron-list {
+  margin-top: -32px; // counteract milestone marker margin offset.
 }
 
 // [data-first-of-milestone] {

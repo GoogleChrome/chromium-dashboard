@@ -21,11 +21,15 @@
   }
 }
 
-:host(.open) {
+:host([open]) {
   // height: 290px;
   // height: auto;
   overflow: auto;
   outline: none;
+
+  .desc summary {
+    white-space: normal;
+  }
 }
 
 h2 {
@@ -147,10 +151,6 @@ section {
       text-overflow: ellipsis;
       overflow: hidden;
       white-space: nowrap;
-
-      &.open {
-        white-space: normal;
-      }
     }
   }
 
