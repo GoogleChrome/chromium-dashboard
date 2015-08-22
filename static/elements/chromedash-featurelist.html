@@ -48,7 +48,7 @@
         features: {
           type: Array,
           notify: true,
-          observer: '_featuresChanged',
+          //observer: '_featuresChanged',
           value: function() { return []; }
         },
         filtered: {
@@ -75,6 +75,11 @@
           type: Boolean,
           readOnly: true,
           value: false
+        },
+        _firstLoad: {
+          type: Boolean,
+          readOnly: true,
+          value: true
         }
       },
 
@@ -86,21 +91,35 @@
 
       filterOnCategory: function(val) {
         var regex = new RegExp(val, 'i');
-        this.filtered = this.features.filter(function(feature, idx, array) {
+        return this.features.filter(function(feature, idx, array) {
           return regex.test(feature.category);
         });
-        return this.filtered.length;
       },
 
       filterOnOwner: function(val) {
         var regex = new RegExp(val, 'i');
-        this.filtered = this.features.filter(function(feature, idx, array) {
+        return this.features.filter(function(feature, idx, array) {
           return regex.test(feature.owner.toString());
         });
-        return this.filtered.length;
       },
 
-      filter: function(val) {
+      filterOnOperation: function(operator, version) {
+        return this.features.filter(function(feature, idx, array) {
+          var platformMilestones = [
+            parseInt(feature.shipped_milestone),
+            parseInt(feature.shipped_android_milestone),
+            parseInt(feature.shipped_ios_milestone),
+            parseInt(feature.shipped_webview_milestone)
+          ];
+          for (var i = 0, milestone; milestone = platformMilestones[i]; ++i) {
+            if (matchesMilestone_(milestone, operator, version)) {
+              return true;  // Only one of the platforms needs to match.
+            }
+          }
+        });
+      },
+
+      _filterList: function(val) {
         // Clear filter if there's no search or if called directly.
         if (!val) {
           if (history && history.replaceState) {
@@ -114,34 +133,20 @@
           if (history && history.replaceState) {
             history.replaceState({id: null}, document.title, '/features#' + val);
           }
+
           // owner: user@chromium.org
-          var match = val.match(/^owner:\s*(.*)/);
-          if (match) {
-            return this.filterOnOwner(match[1]);
-          }
+          var ownerMatch = val.match(/^owner:\s*(.*)/);
           // category: Multimedia
-          var match = val.match(/^category:\s*(.*)/);
-          if (match) {
-            return this.filterOnCategory(match[1]);
-          }
+          var categoryMatch = val.match(/^category:\s*(.*)/);
           // Returns operator and version query e.g. ["<=25", "<=", "25"].
-          var result = /^([<>=]=?)\s*([0-9]+)/.exec(val);
-          if (result) {
-            var operator = result[1];
-            var version = parseInt(result[2]);
-            this.filtered = this.features.filter(function(feature, idx, array) {
-              var platformMilestones = [
-                parseInt(feature.shipped_milestone),
-                parseInt(feature.shipped_android_milestone),
-                parseInt(feature.shipped_ios_milestone),
-                parseInt(feature.shipped_webview_milestone)
-              ];
-              for (var i = 0, milestone; milestone = platformMilestones[i]; ++i) {
-                if (matchesMilestone_(milestone, operator, version)) {
-                  return true;  // Only one of the platforms needs to match.
-                }
-              }
-            });
+          var operatorMatch = /^([<>=]=?)\s*([0-9]+)/.exec(val);
+
+          if (ownerMatch) {
+            this.filtered = this.filterOnOwner(ownerMatch[1]);
+          } else if (categoryMatch) {
+            this.filtered = this.filterOnCategory(categoryMatch[1]);
+          } else if (operatorMatch) {
+            this.filtered = this.filterOnOperation(operatorMatch[1], operatorMatch[2]);
           } else {
             // Only one of the platforms needs to match.
             // Do a general search over misc fields.
@@ -158,8 +163,14 @@
             });
           }
         }
-        this._filteredChanged();
-        return this.filtered.length;
+
+        this.fire('filtered', {count: this.filtered.length});
+      },
+
+      filter: function(val) {
+        this.debounce('filtering', function() {
+          this._filterList(val);
+        }, 200);
       },
 
       // Returns the closest feature <li> to the scroll top position passed in.
@@ -221,6 +232,7 @@
           // TODO(ericbidelman): Implement smooth scrolling when
           // https://twitter.com/ebidel/status/364825118171602944 lands.
           el.scrollIntoView(true);  // el.scrollIntoView(true, {behavior: 'smooth'});
+          // this.$.ironlist.scrollToIndex(idx);
         }
       },
 
@@ -230,7 +242,7 @@
         }
         for (var i = 0, f; f = this.filtered[i]; ++i) {
           if (f.id == id) {
-            featureLiList_[i].scrollIntoView(true);
+            featureLiList_[i].scrollIntoView(true); // this.$.ironlist.scrollToIndex(i);
             featureLiList_[i].open = true;
             break;
           }
@@ -268,9 +280,8 @@
       },
 
       _metadataChanged: function() {
-        // TODO: probably need to remove the listener if metadata element changes.
-        //this.metadata.removeEventListener('milestoneselect', onMetadataChanged_.bind(this));
         if (this.metadata) {
+          // TODO: remove the listener if metadata element changes.
           this.metadata.addEventListener('milestoneselect', function(e) {
             this._set_milestoneWasClicked(true);
             this.scrollToMilestone(e.detail.version);
@@ -278,37 +289,50 @@
         }
       },
 
-      _featuresChanged: function() {
-        if (!this.features || !this.features.length) {
-          return;
+      // _featuresChanged: function() {
+      //   if (!this.features || !this.features.length) {
+      //     return;
+      //   }
+
+      //   this.async(function() {
+      //     document.getElementById('content').classList.add('ready'); // unmask app.
+      //     console.timeStamp('features unveiled');
+      //     console.timeEnd('features unveil');
+      //   });
+      // },
+
+      _deepLinkToFeature: function() {
+        this._set_firstLoad(false);
+
+        document.getElementById('content').classList.add('ready'); // unmask app.
+        console.timeStamp('features unveiled');
+        console.timeEnd('features unveil');
+
+        // If there's an id in the URL, highlight and scroll to the feature.
+        // Otherwise, go to the first "in development" feature.
+        // TODO: really want this in ready(), but featureLiList and metadata may
+        // not be set yet due to timing issues.
+        var lastSlash = location.pathname.lastIndexOf('/');
+        if (lastSlash > 0) {
+          var id = parseInt(location.pathname.substring(lastSlash + 1));
+          this.scrollToFeature(id);
+        } else {
+          var milestone = this.metadata.implStatuses[
+              this.metadata.status.IN_DEVELOPMENT - 1].val;
+          this.scrollToMilestone(milestone);
         }
-
-        this.filter(location.hash.substr(1));
-
-        this.async(function() {
-          document.getElementById('content').classList.add('ready'); // unmask app.
-          console.timeStamp('features unveiled');
-          console.timeEnd('features unveil');
-
-          // If there's an id in the URL, highlight and scroll to the feature.
-          // Otherwise, go to the first "in development" feature.
-          // TODO: really want this in ready(), but featureLiList and metadata may
-          // not be set yet due to timing issues.
-          var lastSlash = location.pathname.lastIndexOf('/');
-          if (lastSlash > 0) {
-            var id = parseInt(location.pathname.substring(lastSlash + 1));
-            this.scrollToFeature(id);
-          } else {
-            this.scrollToMilestone(
-              this.metadata.implStatuses[this.metadata.STATUS.IN_DEVELOPMENT - 1].val);
-          }
-        });
       },
 
-      _filteredChanged: function() {
+      _filteredChanged: function(newVal, oldVal) {
+        if (oldVal === undefined || newVal.length === oldVal.length) {
+          return;
+        }
         // Wait one rAF do model has updated the DOM.
         this.async(function() {
           featureLiList_ = Polymer.dom(this.root).querySelectorAll('li');
+          if (this._firstLoad) {
+            this._deepLinkToFeature();
+          }
         });
       },
 
