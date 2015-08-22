@@ -48,7 +48,18 @@
 
 <section id="panels">
 <nav>
-  <chromedash-metadata></chromedash-metadata>
+  <chromedash-metadata
+      impl-statuses='{{IMPLEMENTATION_STATUSES|safe}}'
+      status='{
+        "NO_ACTIVE_DEV": 1,
+        "PROPOSED": 2,
+        "IN_DEVELOPMENT": 3,
+        "BEHIND_A_FLAG": 4,
+        "ENABLED_BY_DEFAULT": 5,
+        "DEPRECATED": 6,
+        "REMOVED": 7,
+        "NO_LONGER_PURSUING": 1000
+      }'></chromedash-metadata>
 </nav>
 <chromedash-featurelist {% if user.is_whitelisted %}whitelisted{% endif %}></chromedash-featurelist>
 </section>
@@ -144,20 +155,6 @@ var featuresPromise = new Promise(function(resolve, reject) {
 });
 
 function importsLoaded() {
-  // TODO: decide if we need these anymore. Can they be moved internal to the
-  // chromeMetadata element?
-  chromeMetadata.implStatuses = {{IMPLEMENTATION_STATUSES|safe}};
-  chromeMetadata.STATUS = {
-    NO_ACTIVE_DEV: 1,
-    PROPOSED: 2,
-    IN_DEVELOPMENT: 3,
-    BEHIND_A_FLAG: 4,
-    ENABLED_BY_DEFAULT: 5,
-    DEPRECATED: 6,
-    REMOVED: 7,
-    NO_LONGER_PURSUING: 1000,
-  };
-
   featureList.metadata = chromeMetadata; // Feature list needs access to the selected milestone.
   featureList.search = search;
 
