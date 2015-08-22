@@ -224,10 +224,6 @@
     is: 'chromedash-feature',
     extends: 'li',
 
-    hostAttributes: {
-      tabindex: '0'
-    },
-
     properties: {
       MAX_RISK: {
         type: Number,
@@ -298,6 +294,10 @@
       this.set('feature.open', !this.feature.open);
 
       this.fire('feature-toggled', {feature: this.feature, open: this.feature.open});
+    },
+
+    toggle: function() {
+      this._toggle();
     },
 
     categoryFilter: function(e, details) {
