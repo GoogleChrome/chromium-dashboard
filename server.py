@@ -154,18 +154,18 @@ class MainHandler(common.ContentHandler, common.JSONHandler):
         template_data['categories'] = [
           (v, normalized_name(v)) for k,v in
           models.FEATURE_CATEGORIES.iteritems()]
-        template_data['IMPLEMENTATION_STATUSES'] = [
+        template_data['IMPLEMENTATION_STATUSES'] = json.dumps([
           {'key': k, 'val': v} for k,v in
-          models.IMPLEMENTATION_STATUS.iteritems()]
-        template_data['VENDOR_VIEWS'] = [
+          models.IMPLEMENTATION_STATUS.iteritems()])
+        template_data['VENDOR_VIEWS'] = json.dumps([
           {'key': k, 'val': v} for k,v in
-          models.VENDOR_VIEWS.iteritems()]
-        template_data['WEB_DEV_VIEWS'] = [
+          models.VENDOR_VIEWS.iteritems()])
+        template_data['WEB_DEV_VIEWS'] = json.dumps([
           {'key': k, 'val': v} for k,v in
-          models.WEB_DEV_VIEWS.iteritems()]
-        template_data['STANDARDS_VALS'] = [
+          models.WEB_DEV_VIEWS.iteritems()])
+        template_data['STANDARDS_VALS'] = json.dumps([
           {'key': k, 'val': v} for k,v in
-          models.STANDARDIZATION.iteritems()]
+          models.STANDARDIZATION.iteritems()])
     elif path.startswith('feature'):
       feature = None
       try:
