@@ -4,6 +4,7 @@
 :host {
   display: block;
   padding: 5px;
+  box-sizing: content-box !important; // TODO: remove when github.com/PolymerElements/iron-list/issues/73 is resolved.
 }
 
 #featurelist {
@@ -19,10 +20,14 @@
   font-size: $milestone-label-size;
   color: $chromium-color-dark;
 
-  &:first-of-type {
-    margin-top: 0;
-  }
+  // &:first-of-type {
+  //   margin-top: 0;
+  // }
 }
+
+// iron-list {
+//   margin-top: -32px; // counteract milestone marker margin offset.
+// }
 
 // [data-first-of-milestone] {
 //   $milestone-label-size: 14px;

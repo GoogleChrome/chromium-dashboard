@@ -1,5 +1,5 @@
 application: cr-status
-version: polymer10-noicon
+version: polymer10-ironlist
 runtime: python27
 threadsafe: true
 api_version: 1
