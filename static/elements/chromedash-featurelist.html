@@ -6,14 +6,14 @@
 <link rel="import" type="css" href="../css/elements/chromedash-featurelist.css">
 <template>
   <ul id="featurelist">
-   <iron-list items="[[filtered]]" as="feature" id="ironlist">
-     <template>
+    <iron-list items="[[filtered]]" as="feature" id="ironlist">
+      <template>
         <div class="item" tabindex="0">
           <div hidden$="{{_computeMilestoneHidden(feature, features, filtered)}}"
-           class="milestone-marker">{{_computeMilestoneString(feature.meta.milestone_str)}}</div>
+               class="milestone-marker">{{_computeMilestoneString(feature.meta.milestone_str)}}</div>
           <li id="{{feature.id}}" is="chromedash-feature"
-              feature="[[feature]]" needsflag="[[feature.meta.needsflag]]"
-              whitelisted="[[whitelisted]]"></li>
+               feature="[[feature]]" needsflag="[[feature.meta.needsflag]]"
+               whitelisted="[[whitelisted]]"></li>
         </div>
       </template>
     </iron-list>
