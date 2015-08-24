@@ -4,6 +4,7 @@
 :host {
   display: block;
   padding: 5px;
+  box-sizing: content-box !important; // TODO: remove when github.com/PolymerElements/iron-list/issues/73 is resolved.
 }
 
 #featurelist {

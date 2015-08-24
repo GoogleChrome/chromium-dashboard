@@ -83,7 +83,9 @@
 
       attached: function() {
         // See github.com/PolymerElements/iron-list/issues/73.
-        this.$.ironlist.style.height = Polymer.dom(this).node.clientHeight + 'px';
+        var node = Polymer.dom(this).node;
+        this.$.ironlist.style.height = window.getComputedStyle(node).height;
+        // this.$.ironlist.style.height = node.clientHeight + 'px';
       },
 
       _filterOnCategory: function(val) {
