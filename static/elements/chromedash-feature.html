@@ -293,6 +293,7 @@
 
       this.set('feature.open', !this.feature.open);
 
+      // Feature panel was toggled via user manual click.
       this.fire('feature-toggled', {feature: this.feature, open: this.feature.open});
     },
 
@@ -322,7 +323,8 @@
     },
 
     _openChanged: function() {
-      // Feature is opened on a deep link, need to re-render list.
+      // Feature is being opened from loading the page to a deep link. Fire
+      // `feature-toggled` to notify iron-list to update its virtual view.
       if (this.feature && this.open) {
         this.fire('feature-toggled', {feature: this.feature, open: this.open});
       }
