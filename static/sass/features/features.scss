@@ -69,7 +69,7 @@ chromedash-legend {
 
   chromedash-featurelist {
     @include flex(1 0 0);
-    overflow: auto;
+    // overflow: auto;
     max-width: $max-content-width;
   }
 }
