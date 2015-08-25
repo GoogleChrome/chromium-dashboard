@@ -5,7 +5,7 @@
 <dom-module id="chromedash-featurelist">
 <link rel="import" type="css" href="../css/elements/chromedash-featurelist.css">
 <template>
-  <ul id="featurelist">
+  <ul id="featurelist" class="fit vertical layout">
     <iron-list items="[[filtered]]" as="feature" id="ironlist">
       <template>
         <div class="item" tabindex="0">
@@ -79,13 +79,6 @@
         'ironlist.scroll': '_onScrollList',
         'keyup': '_onKeyUp',
         'feature-toggled': '_onFeatureToggled'
-      },
-
-      attached: function() {
-        // See github.com/PolymerElements/iron-list/issues/73.
-        var node = Polymer.dom(this).node;
-        this.$.ironlist.style.height = window.getComputedStyle(node).height;
-        // this.$.ironlist.style.height = node.clientHeight + 'px';
       },
 
       _filterOnCategory: function(val) {

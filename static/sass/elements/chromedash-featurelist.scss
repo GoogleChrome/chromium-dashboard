@@ -4,12 +4,12 @@
 :host {
   display: block;
   padding: 5px;
-  box-sizing: content-box !important; // TODO: remove when github.com/PolymerElements/iron-list/issues/73 is resolved.
+  position: relative;
 }
 
-#featurelist {
-  @include transform(translateZ(0)); // force composite layer in stable
-}
+// #featurelist {
+//   @include transform(translateZ(0)); // force composite layer in stable
+// }
 
 .milestone-marker {
   $milestone-label-size: 18px;
@@ -24,10 +24,6 @@
   //   margin-top: 0;
   // }
 }
-
-// iron-list {
-//   margin-top: -32px; // counteract milestone marker margin offset.
-// }
 
 // [data-first-of-milestone] {
 //   $milestone-label-size: 14px;
