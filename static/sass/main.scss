@@ -173,7 +173,7 @@ footer {
 
 @media only screen and (max-width: 700px) {
   h1 {
-    font-size: 25px;
+    font-size: 6.5vw;
   }
   h2 {
     font-size: 20px;
@@ -208,6 +208,7 @@ footer {
         padding: 5px 10px;
         margin: 0;
         border-radius: 0;
+        @include flex(1 0 auto);
       }
     }
   }

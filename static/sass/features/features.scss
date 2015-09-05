@@ -81,12 +81,15 @@ chromedash-legend {
 }
 
 @media only screen and (max-width: 700px) {
-  body {
-    &:not(.ready) #content {
-      margin: 10px;
-    }
-  }
   #content {
-    min-height: 150px;
+    height: 100%;
+    margin: 0;
+  }
+  chromedash-featurelist {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
   }
 }

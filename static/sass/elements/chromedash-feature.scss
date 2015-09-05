@@ -256,6 +256,11 @@ chromedash-color-status {
     @include transition(none !important);
   }
 
+  iron-icon {
+    --iron-icon-height: 16px;
+    --iron-icon-width: 16px;
+  }
+
   h2 {
     font-size: 20px !important;
   }
