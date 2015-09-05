@@ -81,9 +81,13 @@ chromedash-legend {
 }
 
 @media only screen and (max-width: 700px) {
+  body {
+    &:not(.ready) #content {
+      margin: 10px;
+    }
+  }
   #content {
     height: 100%;
-    margin: 0;
   }
   chromedash-featurelist {
     position: absolute;
