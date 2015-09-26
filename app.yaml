@@ -1,5 +1,5 @@
 application: cr-status
-version: polymer10-ironlist
+version: polymer10-ironlist2
 runtime: python27
 threadsafe: true
 api_version: 1
