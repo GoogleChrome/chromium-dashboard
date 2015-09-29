@@ -194,7 +194,7 @@
           </template>
         </div>
         <div>
-          <template is="dom-if" if="{{_computeShowDocLinks(feature)}}">
+          <template is="dom-if" if="{{_computeSampleLinks(feature)}}">
             <span class="sample_links" hidden$="{{!feature.sample_links.length}}">
               <label>Samples</label>
               <multi-links links="[[feature.sample_links]]"></multi-links>
