@@ -115,11 +115,10 @@ class MainHandler(common.ContentHandler, common.JSONHandler):
           feature_list = models.Feature.get_all_with_statuses(status.split(','))
         else:
           filterby = None
-
           category = self.request.get('category', None)
 
           # Support setting larger-than-default Atom feed sizes so that web
-          # crawlers can treat use this as a full site feed.
+          # crawlers can use this as a full site feed.
           try:
             max_items = int(self.request.get('max-items',
                                              settings.RSS_FEED_LIMIT))
@@ -187,6 +186,19 @@ class MainHandler(common.ContentHandler, common.JSONHandler):
     elif path.startswith('omaha_data'):
       omaha_data = self.__get_omaha_data()
       return common.JSONHandler.get(self, omaha_data, formatted=True)
+    elif path.startswith('samples'):
+      feature_list = models.Feature.get_shipping_samples() # Memcached
+      #self.__annotate_first_of_milestones(feature_list)
+      if path.endswith('.json'): # JSON request.
+        return common.JSONHandler.get(self, feature_list, formatted=True)
+      else:
+        template_data['FEATURES'] = json.dumps(feature_list, separators=(',',':'))
+        template_data['CATEGORIES'] = [
+          (v, normalized_name(v)) for k,v in
+          models.FEATURE_CATEGORIES.iteritems()]
+        template_data['categories'] = dict([
+          (v, normalized_name(v)) for k,v in
+          models.FEATURE_CATEGORIES.iteritems()])
 
     self.render(data=template_data, template_path=os.path.join(path + '.html'))
 

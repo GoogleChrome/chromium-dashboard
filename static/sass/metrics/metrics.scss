@@ -15,7 +15,7 @@
 
 .data-panel {
   max-width: 800px;
-  margin-left: 20px;
+  margin-left: 32px;
   overflow: auto;
   @include transform(translateZ(0)); // force composite layer in stable
 

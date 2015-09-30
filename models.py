@@ -309,7 +309,7 @@ class Feature(DictModel):
     return feature
 
   @classmethod
-  def get_chronological(limit=None, update_cache=False):
+  def get_chronological(self, limit=None, update_cache=False):
     KEY = '%s|%s|%s' % (Feature.DEFAULT_MEMCACHE_KEY, 'cronorder', limit)
 
     feature_list = memcache.get(KEY)
@@ -341,6 +341,23 @@ class Feature(DictModel):
       pre_release.extend(no_longer_pursuing)
 
       feature_list = [f.format_for_template() for f in pre_release]
+
+      memcache.set(KEY, feature_list)
+
+    return feature_list
+
+  @classmethod
+  def get_shipping_samples(self, limit=None, update_cache=False):
+    KEY = '%s|%s|%s' % (Feature.DEFAULT_MEMCACHE_KEY, 'samples', limit)
+
+    feature_list = memcache.get(KEY)
+
+    if feature_list is None or update_cache:
+      # self.get_chronological() results will likely be in memcache from users
+      # visiting main landing features page. Don't do db query, just filter out
+      # results we don't want.
+      feature_list = [f for f in self.get_chronological(update_cache=update_cache)
+                      if len(f['sample_links'])]
 
       memcache.set(KEY, feature_list)
 

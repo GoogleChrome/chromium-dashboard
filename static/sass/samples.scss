@@ -1,0 +1,89 @@
+// @import "compass/css3/transform";
+
+@import "vars";
+
+$content-padding: 32px;
+
+paper-button, paper-item {
+  iron-icon {
+    margin-right: $content-padding / 2;
+  }
+}
+
+#content {
+  margin-top: 20px;
+}
+
+#subheader {
+  max-width: $max-content-width + $content-padding * 7;
+}
+
+#panels {
+  nav {
+    overflow-x: hidden;
+    min-width: 300px;
+
+    paper-menu {
+      color: $chromium-color-dark;
+      background: #fff;
+    }
+  }
+}
+
+#sample-panel {
+  margin: 0 $content-padding;
+  overflow-x: hidden;
+  // min-width: 650px;
+  // background: #fff;
+
+  display: block;
+  @include flex(1 0 0);
+  max-width: 650px;//$max-content-width;
+}
+
+#samplelist {
+  li {
+    margin-bottom: $content-padding / 2;
+    line-height: 1.4;
+    padding: 0 4px; // for paper-material
+  }
+  paper-material {
+    background: #fff;
+    padding: $content-padding / 2;
+  }
+  iron-icon {
+    color: $gray-2;
+  }
+}
+
+.category {
+  margin-right: $content-padding / 2;
+  font-weight: 400;
+  color: $chromium-color-dark;
+}
+
+.summary {
+  margin: $content-padding/2 0;
+}
+
+.actionlinks {
+  paper-button {
+    background: $chromium-color-dark;
+    color: white;
+    font-weight: 600;
+  }
+}
+
+.demo-link {
+  background: #eee;
+  margin-right: 8px;
+}
+
+@media only screen and (max-width: 700px) {
+  #content {
+    margin: 8px;
+  }
+  #sample-panel {
+    margin: 0;
+  }
+}

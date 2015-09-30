@@ -1,0 +1,210 @@
+{% extends "base.html" %}
+{% load verbatim %}
+
+{% block html_imports %}
+  <link rel="import" href="/static/elements/samples-imports{% if VULCANIZE %}.vulcanize{% endif %}.html">
+{% endblock %}
+
+{% block rss %}
+<link rel="alternate" type="application/rss+xml" href="http://www.chromestatus.com/features.xml" title="All features" />
+{% for k,v in CATEGORIES %}
+<link rel="alternate" type="application/rss+xml"
+      href="http://www.chromestatus.com/features.xml?category={{v}}" title='"{{k}}" features'>
+{% endfor %}
+
+{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="/static/css/samples.css?2015-09-28">
+{% endblock %}f
+
+{% block subheader %}
+<div id="subheader">
+  <div>
+    <h2>Web Platform Samples</h2>
+  </div>
+  <div class="search">
+    <input type="search" placeholder="Filter">
+  </div>
+  <div class="actionlinks">
+    <a href="https://github.com/GoogleChrome/samples" target="_blank">
+      <paper-button><iron-icon src="/static/img/github-white.png"></iron-icon>Fork on Github</paper-button>
+    </a>
+  </div>
+</div>
+{% endblock %}
+
+{% block content %}
+
+<template id="t" is="dom-bind">
+
+<section id="panels">
+<nav>
+
+<!-- <template id="template-menu" is="dom-bind"> -->
+
+<!-- on-iron-activate="_onSelectCategory" -->
+  {% verbatim %}
+  <paper-menu id="papermenu" selected-item="{{selectedCategory}}"
+              on-transitionend="_onRippleDone">
+  {% endverbatim %}
+  {% for k,v in CATEGORIES %}
+    <!-- {% if v != "webcomponents" %} {% endif %} -->
+      <paper-item class="relative" data-category="{{v}}">
+        <iron-icon icon="chromestatus:{{v}}"></iron-icon>{{k}}
+        <paper-ripple></paper-ripple>
+      </paper-item>
+
+  {% endfor %}
+  <!-- <paper-item class="relative" data-category="webcomponents">
+    <iron-icon src="/static/img/wclogo.svg"></iron-icon>Web Components
+    <paper-ripple></paper-ripple>
+  </paper-item> -->
+
+</paper-menu>
+<!-- </template> -->
+
+</nav>
+<div id="sample-panel">
+
+  {% verbatim %}
+    <ul id="samplelist" class="card-content">
+      <template is="dom-repeat" items="{{filtered}}" as="feature">
+        <li>
+<paper-material>
+          <h3><a href="[[_computeFeatureLink(feature.id)]]">{{feature.name}}</a></h3>
+          <div class="summary">{{feature.summary}}</div>
+          <div class="layout horizontal center justified">
+            <div class="category layout horizontal center">
+              <template is="dom-repeat" items="{{feature.sample_links}}" as="link">
+                <a href="[[link]]" target="_blank" class="demo-link">
+                  <paper-button>View Demo</paper-button>
+                </a>
+              </template>
+            </div>
+            <iron-icon icon="{{_computeIconId(feature.category)}}" title="{{feature.category}}"></iron-icon>
+          </div>
+</paper-material>
+        </li>
+      </template>
+      </ul>
+  {% endverbatim %}
+
+</div>
+</section>
+
+</template>
+
+{% endblock %}
+
+{% block js %}
+<script>
+(function() {
+
+var t = $('#t');
+t.categories = {{categories|safe}}; // server included.
+t.prevSelectedCategory = null;
+
+t._computeIcon = function(el) {
+  return 'chromestatus:' + (el ? el.dataset.category : '');
+};
+
+t._computeIconId = function(categoryStr) {
+  return 'chromestatus:' + this.categories[categoryStr];
+};
+
+t._computeFeatureLink = function(id) {
+  return '/features/' + id;
+};
+
+t._onSelectCategory = function(e, detail) {
+  // Enable toggling selected item until
+  // https://github.com/PolymerElements/paper-menu/issues/50 is fixed.
+  if (this.selectedCategory === this.prevSelectedCategory) {
+    this.filter();
+    this.$.papermenu.selected = null;
+    this.prevSelectedCategory = null;
+  } else {
+    this.filter(this.selectedCategory.textContent.trim());
+    this.prevSelectedCategory = this.selectedCategory;
+  }
+};
+
+t._onRippleDone = function(e, detail) {
+  // Needed until https://github.com/PolymerElements/paper-ripple/pull/41 is fixed.
+  this.debounce('ripple', function() {
+    t._onSelectCategory();
+  }, 10);
+};
+
+t.filter = function(category) {
+  if (!category) {
+    this.filtered = this.features;
+    return;
+  }
+
+  var regex = new RegExp(category, 'i');
+  var features = this.features.filter(function(feature, idx, array) {
+    return regex.test(feature.category);
+  });
+
+  this.filtered = features;
+};
+
+// Fire of samples.json XHR right away so data can populate faster.
+var samplesPromise = new Promise(function(resolve, reject) {
+  var url = location.hostname == 'localhost' ? 'https://polymer10-samples-dot-cr-status.appspot.com/samples.json' :
+                                               '/samples.json';
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', url);
+  xhr.responseType = 'json';
+  xhr.onloadend = function(e) {
+    if (e.target.status < 400) {
+      resolve(e.target.response);
+    } else {
+      reject(new Error('Samples XHR failed with status ' + e.target.statusText));
+    }
+  };
+  xhr.onerror = reject;
+  xhr.send();
+});
+
+samplesPromise.then(function(features) {
+  var re = /github.com\/GoogleChrome\/samples\/tree\/gh-pages\/(.*)/;
+  features.forEach(function(f, i) {
+    f.sample_links.forEach(function(link, i) {
+      var match = re.test(link);
+      if (match) {
+        f.sample_links[i] = link.replace(re, 'googlechrome.github.io/samples/$1');
+      }
+    });
+  });
+
+  t.features = features;
+  t.filtered = features;
+
+}, function(e) {
+  console.error(e);
+});
+
+var search = $('.search input');
+
+// Clear input when user clicks the 'x' button.
+search.addEventListener('search', function(e) {
+  t.filter();
+});
+
+search.addEventListener('keyup', function(e) {
+  if (!e.target.value && e.keyCode != 27) { // ESC
+    // Clear filtering.
+    t.filter();
+  } else {
+    //if (e.keyCode == 13) {  // Enter
+      t.filter(e.target.value);
+    //}
+  }
+});
+
+})();
+</script>
+{% endblock %}

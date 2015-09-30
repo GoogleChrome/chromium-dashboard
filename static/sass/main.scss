@@ -116,9 +116,9 @@ footer {
 #subheader {
   @include display-flex;
   @include align-items(center);
-  margin: $content-padding $content-padding 0 $content-padding + 5;
+  margin: $content-padding 0 0 $content-padding + 12;
   // border-bottom: 1px solid $bar-border-color;
-  max-width: $max-content-width + $content-padding * 7 + 5;
+  max-width: $max-content-width + $content-padding * 7 + 25;
 
   div {
     margin-right: $content-padding * 2 - 15;
@@ -160,7 +160,7 @@ footer {
 #content {
   @include display-flex;
   @include flex(1 0 0);
-  margin: $content-padding;
+  margin: $content-padding + 12;
   overflow: auto;
   position: relative;
 }
@@ -204,6 +204,7 @@ footer {
     nav {
       margin: 10px 0;
       @include justify-content(center);
+      @include flex-wrap(wrap);
       a {
         padding: 5px 10px;
         margin: 0;

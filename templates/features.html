@@ -115,8 +115,8 @@ search.addEventListener('search', function(e) {
   }
 });
 
- // Clear input when user clicks the 'x' button.
 search.addEventListener('keyup', function(e) {
+  // Clear results.
   if (!e.target.value && e.keyCode != 27) { // ESC
     featureList.filter();
     chromeMetadata.selected = null;
