@@ -76,14 +76,14 @@ paper-input {
         <li>
           <paper-material>
             <h3 class="feature-name layout horizontal justified">
-              <a href="[[_computeFeatureLink(feature.id)]]">{{feature.name}}</a>
+              <a href$="[[_computeFeatureLink(feature.id)]]">{{feature.name}}</a>
               <span class="milestone" hidden$="[[!feature.shipped_milestone]]">Chrome <span>[[feature.shipped_milestone]]</span></span>
             </h3>
             <div class="summary">{{feature.summary}}</div>
             <div class="layout horizontal center justified">
               <div class="category layout horizontal center">
                 <template is="dom-repeat" items="{{feature.sample_links}}" as="link">
-                  <a href="[[link]]" target="_blank" class="demo-link">
+                  <a href$="[[link]]" target="_blank" class="demo-link">
                     <paper-button>View Demo</paper-button>
                   </a>
                 </template>
