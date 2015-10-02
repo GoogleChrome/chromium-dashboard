@@ -28,6 +28,7 @@
     "google-apis": "GoogleWebComponents/google-apis#^1.0.2",
     "paper-dialog": "PolymerElements/paper-dialog#^1.0.1",
     "paper-item": "PolymerElements/paper-item#^1.0.3",
+    "paper-input": "PolymerElements/paper-input#^1.0.14",
     "paper-ripple": "PolymerElements/paper-ripple#^1.0.2",
     "paper-styles": "PolymerElements/paper-styles#^1.0.11",
     "paper-menu": "PolymerElements/paper-menu#^1.1.1",

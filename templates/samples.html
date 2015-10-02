@@ -16,15 +16,25 @@
 
 {% block css %}
 <link rel="stylesheet" href="/static/css/samples.css?2015-09-28">
+
+<style is="custom-style">
+paper-input {
+  --paper-input-container-focus-color: #366597;
+  --paper-input-container-color: #366597;
+  --paper-input-container: {
+    padding: 12px;
+  };
+}
+</style>
 {% endblock %}f
 
 {% block subheader %}
 <div id="subheader">
-  <div>
+  <div class="subheader-title">
     <h2>Web Platform Samples</h2>
   </div>
   <div class="search">
-    <input type="search" placeholder="Filter">
+    <paper-input label="Search" type="search" no-label-float autocomplete></paper-input>
   </div>
   <div class="actionlinks">
     <a href="https://github.com/GoogleChrome/samples" target="_blank">
@@ -41,50 +51,47 @@
 <section id="panels">
 <nav>
 
-<!-- <template id="template-menu" is="dom-bind"> -->
-
-<!-- on-iron-activate="_onSelectCategory" -->
   {% verbatim %}
   <paper-menu id="papermenu" selected-item="{{selectedCategory}}"
               on-transitionend="_onRippleDone">
   {% endverbatim %}
   {% for k,v in CATEGORIES %}
-    <!-- {% if v != "webcomponents" %} {% endif %} -->
+    {% if v != 'webcomponents' %}
       <paper-item class="relative" data-category="{{v}}">
         <iron-icon icon="chromestatus:{{v}}"></iron-icon>{{k}}
         <paper-ripple></paper-ripple>
       </paper-item>
-
+    {% endif %}
   {% endfor %}
-  <!-- <paper-item class="relative" data-category="webcomponents">
-    <iron-icon src="/static/img/wclogo.svg"></iron-icon>Web Components
-    <paper-ripple></paper-ripple>
-  </paper-item> -->
-
-</paper-menu>
-<!-- </template> -->
+  </paper-menu>
 
 </nav>
-<div id="sample-panel">
+<div id="sample-panel" class="loading">
 
   {% verbatim %}
+    <!-- <h3><span>{{filtered.length}}</span> features with samples</h3> -->
+
     <ul id="samplelist" class="card-content">
       <template is="dom-repeat" items="{{filtered}}" as="feature">
         <li>
-<paper-material>
-          <h3><a href="[[_computeFeatureLink(feature.id)]]">{{feature.name}}</a></h3>
-          <div class="summary">{{feature.summary}}</div>
-          <div class="layout horizontal center justified">
-            <div class="category layout horizontal center">
-              <template is="dom-repeat" items="{{feature.sample_links}}" as="link">
-                <a href="[[link]]" target="_blank" class="demo-link">
-                  <paper-button>View Demo</paper-button>
-                </a>
-              </template>
+          <paper-material>
+            <h3 class="feature-name layout horizontal justified">
+              <a href="[[_computeFeatureLink(feature.id)]]">{{feature.name}}</a>
+              <span class="milestone" hidden$="[[!feature.shipped_milestone]]">Chrome <span>[[feature.shipped_milestone]]</span></span>
+            </h3>
+            <div class="summary">{{feature.summary}}</div>
+            <div class="layout horizontal center justified">
+              <div class="category layout horizontal center">
+                <template is="dom-repeat" items="{{feature.sample_links}}" as="link">
+                  <a href="[[link]]" target="_blank" class="demo-link">
+                    <paper-button>View Demo</paper-button>
+                  </a>
+                </template>
+              </div>
+              <iron-icon icon="{{_computeIconId(feature.category)}}"
+                         title="{{feature.category}}"></iron-icon>
             </div>
-            <iron-icon icon="{{_computeIconId(feature.category)}}" title="{{feature.category}}"></iron-icon>
-          </div>
-</paper-material>
+          </paper-material>
         </li>
       </template>
       </ul>
@@ -100,6 +107,8 @@
 {% block js %}
 <script>
 (function() {
+
+var search = $('.search paper-input');
 
 var t = $('#t');
 t.categories = {{categories|safe}}; // server included.
@@ -121,13 +130,13 @@ t._onSelectCategory = function(e, detail) {
   // Enable toggling selected item until
   // https://github.com/PolymerElements/paper-menu/issues/50 is fixed.
   if (this.selectedCategory === this.prevSelectedCategory) {
-    this.filter();
     this.$.papermenu.selected = null;
     this.prevSelectedCategory = null;
   } else {
-    this.filter(this.selectedCategory.textContent.trim());
     this.prevSelectedCategory = this.selectedCategory;
   }
+
+  this.filter(search.value);
 };
 
 t._onRippleDone = function(e, detail) {
@@ -137,18 +146,29 @@ t._onRippleDone = function(e, detail) {
   }, 10);
 };
 
-t.filter = function(category) {
-  if (!category) {
-    this.filtered = this.features;
-    return;
+t.filter = function(val) {
+  var features = this.features;
+  if (val) {
+    var regex = new RegExp(val, 'i');
+    features = features.filter(function(feature, idx, array) {
+      return regex.test(feature.name) || regex.test(feature.summary);
+    });
   }
 
-  var regex = new RegExp(category, 'i');
-  var features = this.features.filter(function(feature, idx, array) {
-    return regex.test(feature.category);
-  });
+  // Further refine list based on selected category in menu.
+  if (this.selectedCategory) {
+    var category = this.selectedCategory.textContent.trim();
+    var regex = new RegExp(category, 'i');
+    features = features.filter(function(feature, idx, array) {
+      return regex.test(feature.category);
+    });
+  }
 
   this.filtered = features;
+};
+
+t.removeFilters = function() {
+  t.filter();
 };
 
 // Fire of samples.json XHR right away so data can populate faster.
@@ -183,21 +203,20 @@ samplesPromise.then(function(features) {
   t.features = features;
   t.filtered = features;
 
+  $('#sample-panel').classList.remove('loading');
+
 }, function(e) {
   console.error(e);
 });
 
-var search = $('.search input');
-
 // Clear input when user clicks the 'x' button.
 search.addEventListener('search', function(e) {
-  t.filter();
+  t.removeFilters();
 });
 
 search.addEventListener('keyup', function(e) {
   if (!e.target.value && e.keyCode != 27) { // ESC
-    // Clear filtering.
-    t.filter();
+    t.removeFilters();
   } else {
     //if (e.keyCode == 13) {  // Enter
       t.filter(e.target.value);
