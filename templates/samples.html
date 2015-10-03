@@ -29,7 +29,7 @@ paper-input {
     <h2>Web Platform Samples</h2>
   </div>
   <div class="search">
-    <paper-input label="Search" type="search" no-label-float autocomplete></paper-input>
+    <paper-input placeholder="Search" type="search" no-label-float autocomplete></paper-input>
   </div>
   <div class="actionlinks">
     <a href="https://github.com/GoogleChrome/samples" target="_blank">
@@ -168,7 +168,7 @@ t.removeFilters = function() {
 
 // Fire of samples.json XHR right away so data can populate faster.
 var samplesPromise = new Promise(function(resolve, reject) {
-  var url = location.hostname == 'localhost' ? 'https://wwww.chromestatus.com/samples.json' :
+  var url = location.hostname == 'localhost' ? 'https://www.chromestatus.com/samples.json' :
                                                '/samples.json';
   var xhr = new XMLHttpRequest();
   xhr.open('GET', url);
