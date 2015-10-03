@@ -6,12 +6,7 @@
 {% endblock %}
 
 {% block rss %}
-<link rel="alternate" type="application/rss+xml" href="http://www.chromestatus.com/features.xml" title="All features" />
-{% for k,v in CATEGORIES %}
-<link rel="alternate" type="application/rss+xml"
-      href="http://www.chromestatus.com/features.xml?category={{v}}" title='"{{k}}" features'>
-{% endfor %}
-
+<link rel="alternate" type="application/rss+xml" href="http://www.chromestatus.com/samples.xml" title="All samples" />
 {% endblock %}
 
 {% block css %}
@@ -173,7 +168,7 @@ t.removeFilters = function() {
 
 // Fire of samples.json XHR right away so data can populate faster.
 var samplesPromise = new Promise(function(resolve, reject) {
-  var url = location.hostname == 'localhost' ? 'https://polymer10-samples-dot-cr-status.appspot.com/samples.json' :
+  var url = location.hostname == 'localhost' ? 'https://wwww.chromestatus.com/samples.json' :
                                                '/samples.json';
   var xhr = new XMLHttpRequest();
   xhr.open('GET', url);
@@ -190,13 +185,10 @@ var samplesPromise = new Promise(function(resolve, reject) {
 });
 
 samplesPromise.then(function(features) {
-  var re = /github.com\/GoogleChrome\/samples\/tree\/gh-pages\/(.*)/;
+  var re = /github.com\/GoogleChrome\/samples\/tree\/gh-pages\/(.*)/i;
   features.forEach(function(f, i) {
-    f.sample_links.forEach(function(link, i) {
-      var match = re.test(link);
-      if (match) {
-        f.sample_links[i] = link.replace(re, 'googlechrome.github.io/samples/$1');
-      }
+    f.sample_links = f.sample_links.map(function(link) {
+      return link.replace(re, 'googlechrome.github.io/samples/$1');
     });
   });
 

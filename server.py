@@ -188,9 +188,19 @@ class MainHandler(common.ContentHandler, common.JSONHandler):
       return common.JSONHandler.get(self, omaha_data, formatted=True)
     elif path.startswith('samples'):
       feature_list = models.Feature.get_shipping_samples() # Memcached
-      #self.__annotate_first_of_milestones(feature_list)
+
       if path.endswith('.json'): # JSON request.
         return common.JSONHandler.get(self, feature_list, formatted=True)
+      elif path.endswith('.xml'): # Atom feed request.
+        # Support setting larger-than-default Atom feed sizes so that web
+        # crawlers can use this as a full site feed.
+        try:
+          max_items = int(self.request.get('max-items',
+                                           settings.RSS_FEED_LIMIT))
+        except TypeError:
+          max_items = settings.RSS_FEED_LIMIT
+
+        return self.render_atom_feed('Samples', feature_list)
       else:
         template_data['FEATURES'] = json.dumps(feature_list, separators=(',',':'))
         template_data['CATEGORIES'] = [

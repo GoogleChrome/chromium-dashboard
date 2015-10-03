@@ -67,7 +67,7 @@ handlers:
 # Main server ------------------------------------------------------------------
 # features.xml needs to support HTTP as well as HTTPS, as some RSS backends don't support SNI certs.
 # Same issue as what's described at https://github.com/Polymer/blog/issues/7
-- url: /features.xml
+- url: /(features|samples).xml
   script: server.app
   secure: optional
 
