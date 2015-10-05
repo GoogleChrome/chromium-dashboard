@@ -281,6 +281,7 @@ class Feature(DictModel):
       return []
 
     KEY = '%s|%s' % (Feature.DEFAULT_MEMCACHE_KEY, sorted(statuses))
+
     feature_list = memcache.get(KEY)
 
     if feature_list is None or update_cache:
@@ -322,22 +323,20 @@ class Feature(DictModel):
 
       features = [f for f in features if (IN_DEVELOPMENT < f.impl_status_chrome < NO_LONGER_PURSUING)]
 
-      # Get no active, in dev, proposed features.
+      # Append no active, in dev, proposed features.
       q = Feature.all()
       q.order('impl_status_chrome')
       q.order('name')
       q.filter('impl_status_chrome <=', IN_DEVELOPMENT)
       pre_release = q.fetch(None)
-
       pre_release.extend(features)
 
-      # Get no longer pursuing features.
+      # Append no longer pursuing features.
       q = Feature.all()
       q.order('impl_status_chrome')
       q.order('name')
       q.filter('impl_status_chrome =', NO_LONGER_PURSUING)
       no_longer_pursuing = q.fetch(None)
-
       pre_release.extend(no_longer_pursuing)
 
       feature_list = [f.format_for_template() for f in pre_release]
@@ -353,11 +352,27 @@ class Feature(DictModel):
     feature_list = memcache.get(KEY)
 
     if feature_list is None or update_cache:
-      # self.get_chronological() results will likely be in memcache from users
-      # visiting main landing features page. Don't do db query, just filter out
-      # results we don't want.
-      feature_list = [f for f in self.get_chronological(update_cache=update_cache)
-                      if len(f['sample_links'])]
+      # Get all shipping features. Ordered by shipping milestone (latest first).
+      q = Feature.all()
+      q.filter('impl_status_chrome =', ENABLED_BY_DEFAULT)
+      q.order('-impl_status_chrome')
+      q.order('-shipped_milestone')
+      q.order('name')
+      features = q.fetch(None)
+
+      # Get non-shipping features (sans removed or deprecated ones) and
+      # append to bottom of list.
+      q = Feature.all()
+      q.filter('impl_status_chrome <', ENABLED_BY_DEFAULT)
+      q.order('-impl_status_chrome')
+      q.order('-shipped_milestone')
+      q.order('name')
+      others = q.fetch(None)
+      features.extend(others)
+
+      # Filter out features without sample links.
+      feature_list = [f.format_for_template() for f in features
+                      if len(f.sample_links)]
 
       memcache.set(KEY, feature_list)
 
