@@ -134,6 +134,12 @@ var t = $('#t');
 t.categories = {{categories|safe}}; // server included.
 t.prevSelectedCategory = null;
 
+// Set search box to URL deep link.
+if (location.hash) {
+  search.value = location.hash.substr(1);
+  // t.filter(search.value);
+}
+
 t._computeIcon = function(el) {
   return 'chromestatus:' + (el ? el.dataset.category : '');
 };
@@ -155,7 +161,6 @@ t._onSelectCategory = function(e, detail) {
   } else {
     this.prevSelectedCategory = this.selectedCategory;
   }
-
   this.filter(search.value);
 };
 
@@ -186,7 +191,32 @@ t._filterOnOperation = function(features, operator, version) {
 // TODO: move filtering into a behavior. Mostly duped from chromedash-featurelist.html.
 t.filter = function(val) {
   var features = this.features;
+
+  if (!features) {
+    return;
+  }
+
+  if (!val && !this.selectedCategory) {
+    if (history && history.replaceState) {
+      history.replaceState('', document.title, location.pathname + location.search);
+    } else {
+      location.hash = '';
+    }
+    this.filtered = features;
+
+    return;
+  }
+
   if (val) {
+    val = val.trim();
+
+    if (history && history.replaceState) {
+      // Minimize updating URL.
+      this.debounce('updateurl', function() {
+        history.replaceState({}, document.title, '/samples#' + val);
+      }, 500);
+    }
+
     // Returns operator and version query e.g. ["<=25", "<=", "25"].
     var operatorMatch = /^([<>=]=?)\s*([0-9]+)/.exec(val);
     if (operatorMatch) {
@@ -245,6 +275,8 @@ samplesPromise.then(function(features) {
   t.filtered = features;
 
   $('#sample-panel').classList.remove('loading');
+
+  t.filter(search.value);
 
 }, function(e) {
   console.error(e);
