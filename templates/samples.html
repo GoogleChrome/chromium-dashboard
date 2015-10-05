@@ -14,8 +14,9 @@
 
 <style is="custom-style">
 paper-input {
-  --paper-input-container-focus-color: #366597;
-  --paper-input-container-color: #366597;
+  --input-color: #85b4df;
+  --paper-input-container-focus-color: var(--input-color);
+  --paper-input-container-color: var(--input-color);
   --paper-input-container: {
     padding: 12px;
   };
@@ -64,8 +65,6 @@ paper-input {
 <div id="sample-panel" class="loading">
 
   {% verbatim %}
-    <!-- <h3><span>{{filtered.length}}</span> features with samples</h3> -->
-
     <ul id="samplelist" class="card-content">
       <template is="dom-repeat" items="{{filtered}}" as="feature">
         <li>
@@ -76,10 +75,12 @@ paper-input {
             </h3>
             <div class="summary">{{feature.summary}}</div>
             <div class="layout horizontal center justified">
-              <div class="category layout horizontal center">
+              <div class="demo-links layout horizontal center">
                 <template is="dom-repeat" items="{{feature.sample_links}}" as="link">
                   <a href$="[[link]]" target="_blank" class="demo-link">
-                    <paper-button>View Demo</paper-button>
+                    <paper-button>
+                      <iron-icon icon="chromestatus:open-in-browser"></iron-icon> View Demo
+                    </paper-button>
                   </a>
                 </template>
               </div>
@@ -102,6 +103,30 @@ paper-input {
 {% block js %}
 <script>
 (function() {
+
+// TODO: move this into a behavior. It's duplicated from chromedash-featurelist.html.
+function matchesMilestone_(milestone, operator, version) {
+  switch (operator) {
+  case '<':
+    return milestone < version;
+    break;
+  case '<=':
+    return milestone <= version;
+    break;
+  case '>':
+    return milestone > version;
+    break;
+  case '>=':
+    return milestone >= version;
+    break;
+  case '=':  // Support both '=' and '=='.
+  case '==':
+    return milestone == version;
+    break;
+  default:
+    return false;
+  }
+}
 
 var search = $('.search paper-input');
 
@@ -141,13 +166,37 @@ t._onRippleDone = function(e, detail) {
   }, 10);
 };
 
+// TODO: move this into a behavior. It's duplicated from chromedash-featurelist.html.
+t._filterOnOperation = function(features, operator, version) {
+  return features.filter(function(f, idx, array) {
+    var platformMilestones = [
+      parseInt(f.shipped_milestone),
+      parseInt(f.shipped_android_milestone),
+      parseInt(f.shipped_ios_milestone),
+      parseInt(f.shipped_webview_milestone)
+    ];
+    for (var i = 0, milestone; milestone = platformMilestones[i]; ++i) {
+      if (matchesMilestone_(milestone, operator, version)) {
+        return true;  // Only one of the platforms needs to match.
+      }
+    }
+  });
+};
+
+// TODO: move filtering into a behavior. Mostly duped from chromedash-featurelist.html.
 t.filter = function(val) {
   var features = this.features;
   if (val) {
-    var regex = new RegExp(val, 'i');
-    features = features.filter(function(feature, idx, array) {
-      return regex.test(feature.name) || regex.test(feature.summary);
-    });
+    // Returns operator and version query e.g. ["<=25", "<=", "25"].
+    var operatorMatch = /^([<>=]=?)\s*([0-9]+)/.exec(val);
+    if (operatorMatch) {
+      features = this._filterOnOperation(features, operatorMatch[1], operatorMatch[2]);
+    } else {
+      var regex = new RegExp(val, 'i');
+      features = features.filter(function(feature, idx, array) {
+        return regex.test(feature.name) || regex.test(feature.summary);
+      });
+    }
   }
 
   // Further refine list based on selected category in menu.
