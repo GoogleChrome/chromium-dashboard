@@ -87,6 +87,12 @@ indexes:
 
 - kind: Feature
   properties:
+  - name: sample_links
+  - name: updated
+    direction: desc
+
+- kind: Feature
+  properties:
   - name: shipped_milestone
   - name: name
 

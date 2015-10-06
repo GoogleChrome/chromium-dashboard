@@ -45,6 +45,14 @@ module.exports = function(grunt) {
         files: {
           'static/elements/admin-imports.vulcanize.html': 'static/elements/admin-imports.html'
         }
+      },
+      build4: {
+        options: {
+          csp: 'samples-imports.vulcanize.js'
+        },
+        files: {
+          'static/elements/samples-imports.vulcanize.html': 'static/elements/samples-imports.html'
+        }
       }
     },
 

@@ -1,0 +1,132 @@
+// @import "compass/css3/transform";
+
+@import "vars";
+
+$content-padding: 32px;
+$max-content-width: 600px;
+
+paper-button, paper-item {
+  iron-icon {
+    margin-right: $content-padding / 4;
+  }
+}
+
+paper-input {
+  width: 300px;
+  margin: auto;
+  background-color: #fff;
+}
+
+#content {
+  margin-top: 20px;
+}
+
+#subheader {
+  max-width: $max-content-width + 335px;// + $content-padding * 5;
+
+  .subheader-title {
+    width: 310px;
+  }
+}
+
+#panels {
+  nav {
+    overflow-x: hidden;
+    min-width: 300px;
+
+    paper-menu {
+      color: $chromium-color-dark;
+      background: #fff;
+    }
+  }
+}
+
+#sample-panel {
+  margin: 0 $content-padding;
+  overflow-x: hidden;
+
+  position: relative;
+  @include flex(1 0 0);
+  max-width: $max-content-width;//$max-content-width;
+
+  &.loading {
+    background: #fff;
+
+    &::before {
+      padding: $content-padding;
+      font-size: 18px;
+      font-weight: normal;
+      content: 'loading...';
+      color: $gray-3;
+      background: #fff;
+      @include display-flex;
+      @include justify-content(center);
+      @include align-items(center);
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      box-sizing: border-box;
+    }
+  }
+}
+
+#samplelist {
+  li {
+    margin-bottom: $content-padding / 2;
+    line-height: 1.4;
+    padding: 0 4px; // for paper-material
+  }
+  paper-material {
+    background: #fff;
+    padding: $content-padding / 2;
+  }
+  iron-icon {
+    color: $gray-2;
+    @include flex-shrink(0);
+  }
+}
+
+.feature-name {
+  font-weight: 400;
+  color: $chromium-color-dark;
+}
+
+.milestone {
+  font-size: 16px;
+  white-space: nowrap;
+  color: $gray-3;
+}
+
+.summary {
+  margin: $content-padding/2 0;
+}
+
+.actionlinks {
+  paper-button {
+    background: $chromium-color-dark;
+    color: white;
+    font-weight: 600;
+  }
+}
+
+.demo-links {
+  margin-right: $content-padding / 2;
+  font-weight: 400;
+  color: $chromium-color-dark;
+  @include flex-wrap(wrap);
+}
+
+.demo-link {
+  background-color: #F5F5F5;
+  margin: 8px 8px 0 0;
+  color: $gray-3;
+}
+
+@media only screen and (max-width: 700px) {
+  #content {
+    margin: 8px;
+  }
+  #sample-panel {
+    margin: 0;
+  }
+}
