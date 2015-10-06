@@ -6,7 +6,7 @@
 <link rel="import" type="css" href="../css/elements/chromedash-metrics.css">
 <template>
   <iron-ajax auto url="[[endpoint]]" last-response="{{props}}" handle-as="json"></iron-ajax>
-  <b>Showing <span>{{props.length}}</span> CSS properties</b>
+  <b>Showing <span>{{props.length}}</span> properties</b>
   <ol id="stack-rank-list">
     <li class="header">
       <label on-tap="sort" data-order="property_name" class="layout horizontal center">
