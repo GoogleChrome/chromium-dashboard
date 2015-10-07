@@ -113,7 +113,7 @@ footer {
   }
 }
 
-#subheader {
+#subheader, .subheader {
   @include display-flex;
   @include align-items(center);
   margin: $content-padding 0 0 $content-padding + 12;
