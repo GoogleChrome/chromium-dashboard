@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block page_title %}{% if feature.name %}{{ feature.name }} - {% endif %}{% endblock %}
+
+{% block meta %}
+{% if feature.summary %}
+<meta name="description" content="{{ feature.summary }}">
+{% endif %}
+{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="/static/css/features/feature.css">
+{% endblock %}
+
+{% block rss %}
+<link rel="alternate" type="application/rss+xml" href="http://www.chromestatus.com/features.xml" title="All features" />
+{% endblock %}
+
+{% block content %}
+<div id="feature">
+  <section id="name">
+    <h2>{{ feature.name }}</h2>
+  </section>
+
+  {% if feature.summary %}
+  <section id="summary">
+    <p>{{ feature.summary }}</p>
+  </section>
+  {% endif %}
+
+  {% if feature.sample_links %}
+  <section id="demo">
+    <h3>{% if feature.sample_links|length == 1 %}Demo{% else %}Demos{% endif %}</h3>
+    <ul>
+      {% for sample_link in feature.sample_links %}
+      <li><a href="{{ sample_link }}">{{ sample_link }}</a></li>
+      {% endfor %}
+    </ul>
+  </section>
+  {% endif %}
+
+  <section id="updated">
+    <p>Last updated on {{ feature.updated_display }}</p>
+  </section>
+</div>
+{% endblock %}

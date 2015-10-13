@@ -209,6 +209,16 @@ class MainHandler(common.ContentHandler, common.JSONHandler):
         template_data['categories'] = dict([
           (v, normalized_name(v)) for k,v in
           models.FEATURE_CATEGORIES.iteritems()])
+    elif path.startswith('sample'):
+      feature = None
+      try:
+        feature = models.Feature.get_feature(int(feature_id))
+      except TypeError:
+        pass
+      if feature is None:
+        self.abort(404)
+
+      template_data['feature'] = feature
 
     self.render(data=template_data, template_path=os.path.join(path + '.html'))
 
