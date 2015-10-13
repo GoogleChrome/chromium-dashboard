@@ -28,6 +28,8 @@ import common
 import models
 import settings
 
+import http2push.http2push as http2push
+
 
 def normalized_name(val):
   return val.lower().replace(' ', '').replace('/', '')
@@ -41,7 +43,7 @@ def first_of_milestone(feature_list, milestone, start=0):
   return -1
 
 
-class MainHandler(common.ContentHandler, common.JSONHandler):
+class MainHandler(http2push.PushHandler, common.ContentHandler, common.JSONHandler):
 
   def __get_omaha_data(self):
     omaha_data = memcache.get('omaha_data')
@@ -88,6 +90,7 @@ class MainHandler(common.ContentHandler, common.JSONHandler):
     self.__annotate_first_of_milestones(feature_list)
     return feature_list
 
+  @http2push.push()
   def get(self, path, feature_id=None):
     # Default to features page.
     # TODO: remove later when we want an index.html
@@ -220,6 +223,8 @@ routes = [
 ]
 
 app = webapp2.WSGIApplication(routes, debug=settings.DEBUG)
+
 app.error_handlers[404] = common.handle_404
+
 if settings.PROD and not settings.DEBUG:
   app.error_handlers[500] = common.handle_500

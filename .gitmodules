@@ -1,0 +1,3 @@
+[submodule "http2push"]
+	path = http2push
+	url = https://github.com/GoogleChrome/http2push-gae
