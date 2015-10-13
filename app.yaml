@@ -90,7 +90,8 @@ skip_files:
 - ^(.*/)?.*\.sql[3]$
 - ^(.*/)?.*\.sh$
 - ^(.*/)?.*\.scss$
-- ^static/js/polymer-all
+- ^http2push/example
+- ^http2push/site
 - ^(.*/)?node_modules
 - ^(.*/)?.[LICENSE|PATENTS|AUTHORS|CONTRIBUTING|COPYING](\.md)?
 - ^(.*/)?.*\.md$
