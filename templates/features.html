@@ -14,7 +14,7 @@
 {% endblock %}
 
 {% block css %}
-<link rel="stylesheet" href="/static/css/features/features.css?2015-10-07">
+<link rel="stylesheet" href="/static/css/features/features.css">
 {% endblock %}
 
 {% block subheader %}
@@ -134,7 +134,7 @@ $('.legend').addEventListener('click', function(e) {
 
 // Fire of features.json XHR right away so data can populate faster.
 var featuresPromise = new Promise(function(resolve, reject) {
-  var url = location.hostname == 'localhost' ? '/static/js/mockdata.json' :
+  var url = location.hostname == 'localhost' ? 'https://www.chromestatus.com/features.json' :
                                                '/features.json';
   var xhr = new XMLHttpRequest(); // Fill features list via AJAX.
   xhr.open('GET', url);

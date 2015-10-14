@@ -3,6 +3,10 @@ Chrome Platform Status
 
 [chromestatus.com](http://chromestatus.com/)
 
+### Get the code
+
+    git clone --recursive https://github.com/GoogleChrome/chromium-dashboard
+
 ### How to run the local test server
 
 1. Install the [Google App Engine SDK for Python](https://developers.google.com/appengine/downloads#Google_App_Engine_SDK_for_Python).
