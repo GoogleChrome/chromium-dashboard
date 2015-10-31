@@ -8,7 +8,7 @@
     "grunt-contrib-compass": "^1.0.3",
     "grunt-minified": "0.0.6",
     "grunt-vulcanize": "^1.0.0",
-    "http2-push-manifest": "0.0.1",
+    "http2-push-manifest": "^1.0.0",
     "load-grunt-tasks": "*"
   }
 }

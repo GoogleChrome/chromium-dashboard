@@ -1,9 +1,30 @@
 {
-  "/static/css/main.css": 1,
-  "/static/bower_components/webcomponentsjs/webcomponents-lite.min.js": 1,
-  "/static/css/features/features.css": 1,
-  "/static/elements/features-imports.vulcanize.html": 1,
-  "/static/elements/features-imports.vulcanize.js": 1,
-  "/features.json": 1,
-  "/omaha_data": 1
+  "/static/css/main.css": {
+    "type": "style",
+    "weight": 1
+  },
+  "/static/bower_components/webcomponentsjs/webcomponents-lite.min.js": {
+    "type": "script",
+    "weight": 1
+  },
+  "/static/css/features/features.css": {
+    "type": "style",
+    "weight": 1
+  },
+  "/static/elements/features-imports.vulcanize.html": {
+    "type": "document",
+    "weight": 1
+  },
+  "/static/elements/features-imports.vulcanize.js": {
+    "type": "script",
+    "weight": 1
+  },
+  "/features.json": {
+    "type": "script",
+    "weight": 1
+  },
+  "/omaha_data": {
+    "type": "script",
+    "weight": 1
+  }
 }
