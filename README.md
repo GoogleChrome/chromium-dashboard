@@ -12,6 +12,7 @@ Chrome Platform Status
 1. Install the [Google App Engine SDK for Python](https://developers.google.com/appengine/downloads#Google_App_Engine_SDK_for_Python).
 1. Install [Bower](http://bower.io/).
 1. Install [grunt](http://gruntjs.com/getting-started).
+1. Install [ruby-compass](http://compass-style.org/install/)
 1. From the root of the repository, run `npm install; cd static; bower install; cd ..; grunt`.
 1. Start the local test server using the Google App Engine SDK for Python
    (`dev_appserver.py .`).
