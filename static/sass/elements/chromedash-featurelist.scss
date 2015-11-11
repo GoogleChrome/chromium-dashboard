@@ -11,6 +11,11 @@
 //   @include transform(translateZ(0)); // force composite layer in stable
 // }
 
+// See https://crbug.com/553278
+#ironlist {
+  min-height: 0;
+}
+
 .milestone-marker {
   $milestone-label-size: 18px;
   text-align: right;
