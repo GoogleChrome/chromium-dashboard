@@ -7,15 +7,22 @@ Chrome Platform Status
 
     git clone --recursive https://github.com/GoogleChrome/chromium-dashboard
 
-### How to run the local test server
+### Installation
 
-1. Install the [Google App Engine SDK for Python](https://developers.google.com/appengine/downloads#Google_App_Engine_SDK_for_Python).
-1. Install [Bower](http://bower.io/).
-1. Install [grunt](http://gruntjs.com/getting-started).
-1. Install [ruby-compass](http://compass-style.org/install/)
-1. From the root of the repository, run `npm install; cd static; bower install; cd ..; grunt`.
-1. Start the local test server using the Google App Engine SDK for Python
-   (`dev_appserver.py .`).
+First, install the [Google App Engine SDK for Python](https://developers.google.com/appengine/downloads#Google_App_Engine_SDK_for_Python).
+
+Then run:
+
+    npm install
+
+This will also pull down bower_components and run `grunt` to build the site.
+
+### Run the local test server
+
+Start the local test server in the root project directory using the Google App
+Engine Python SDK:
+
+    dev_appserver.py .
 
 ### LICENSE
 

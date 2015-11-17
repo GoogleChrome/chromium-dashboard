@@ -1,5 +1,5 @@
 application: cr-status
-version: h2push
+version: 2015-11-17
 runtime: python27
 threadsafe: true
 api_version: 1

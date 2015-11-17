@@ -1,6 +1,6 @@
 {
   "name": "chromium-dashboard",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "homepage": "chromestatus.com",
   "authors": [
     "Eric Bidelman <ebidel@gmail.com>"
@@ -23,8 +23,8 @@
     "iron-component-page": "PolymerElements/iron-component-page#^1.0.5"
   },
   "dependencies": {
-    "polymer": "Polymer/polymer#^1.1.2",
-    "iron-ajax": "PolymerElements/iron-ajax#^1.0.3",
+    "polymer": "Polymer/polymer#^1.2.3",
+    "iron-ajax": "PolymerElements/iron-ajax#^1.1.0",
     "google-apis": "GoogleWebComponents/google-apis#^1.0.2",
     "paper-dialog": "PolymerElements/paper-dialog#^1.0.1",
     "paper-item": "PolymerElements/paper-item#^1.0.3",

@@ -1,6 +1,12 @@
 {
   "name": "chromestatus-dashboard",
   "private": true,
+  "scripts": {
+    "postinstall": "npm run deps; npm run build",
+    "deps": "rm -rf static/bower_components; bower install",
+    "build": "grunt",
+    "deploy": "./scripts/deploy_site.sh"
+  },
   "devDependencies": {
     "grunt": "*",
     "grunt-appengine": "^0.1.5",
