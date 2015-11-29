@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% load verbatim %}
+
+{% block css %}
+<link rel="stylesheet" href="/static/css/metrics/metrics.css">
+{% endblock %}
+
+{% block html_imports %}
+  <link rel="import" href="/static/elements/metrics-imports{% if VULCANIZE %}.vulcanize{% endif %}.html">
+{% endblock %}
+
+{% block js %}
+{% endblock %}
+
+{% block subheader %}
+<div id="subheader">
+  <h2>CSS usage metrics &gt; all properties > timeline</h2>
+</div>
+{% endblock %}
+
+{% block content %}
+<section id="panels">
+<nav>{% include "metrics/_nav.html" %}</nav>
+<div class="data-panel">
+  <p class="description">Use of CSS properties over time.</p>
+  <chromedash-feature-timeline type="css" view="popularity" title="Percentage of Chrome page loads that use this property at least once"></chromedash-feature-timeline>
+</div>
+</section>
+
+<script>
+document.addEventListener('WebComponentsReady', function(e) {
+  var timeline = $('chromedash-feature-timeline');
+  timeline.props = {{CSS_PROPERTY_BUCKETS|safe}};
+
+  window.addEventListener('popstate', function(e) {
+    if (e.state) {
+      timeline.selectedBucketId = e.state.id;
+    }
+  });
+});
+</script>
+{% endblock %}

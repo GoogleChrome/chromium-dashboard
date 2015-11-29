@@ -1,19 +1,30 @@
 @import "element";
 
-
-@host {
-  :scope {
-    display: block;
-    // @include display-flex;
-    // @include justify-content(center);
-    // @include align-items(center);
-  }
+:host {
+  display: block;
+  position: absolute;
 }
 
-h2 {
+paper-dialog {
+  width: 80vw;
+}
+
+// Replicate styles of paper-dialog. See PolymerElements/paper-dialog-behavior/issues/21
+paper-dialog > * {
+  margin: 0 24px !important;
+  margin-top: 20px !important;
+  padding: 0 !important;
+}
+
+h3 {
   border-bottom: 2px solid $chromium-color-center;
-  padding-bottom:  10px;
+  padding-bottom: 10px;
   margin-bottom: $content-padding / 2;
+
+  &:first-child {
+    margin-top: 24px;
+  }
+
 }
 
 ul {
@@ -45,7 +56,7 @@ section {
   li {
     span {
       margin-right: 5px;
-      width: 50px;
+      width: 200px;
       display: inline-block;
     }
   }
@@ -55,19 +66,9 @@ p {
   margin-top: 5px;
 }
 
-#dialog {
-  position: relative;
-  box-sizing: border-box;
-  @include user-select;
-  overflow: hidden;
-  @include gradient-bar-bg;
-  box-shadow: 1px 1px 5px $gray-2;
-  //border: 1px solid #ccc;
-  border-radius: $default-border-radius;
-  //background: white;
-  padding: $content-padding $content-padding + 10;
-  //outline: 1px solid rgba(0,0,0,0.2);
-  //box-shadow: 0 4px 16px rgba(0,0,0,0.2);
-  
-  //opacity: 0;
+.content-wrapper ::content .close {
+  position: absolute;
+  right: 0;
+  top: 0;
+  // padding: 0 5px 3px 5px;
 }

@@ -46,12 +46,30 @@ class BaseHandler(webapp2.RequestHandler):
 
 class JSONHandler(BaseHandler):
 
+  def __truncate_day_percentage(self, data):
+    # Need 6 decimals b/c num will by mutiplied by 100 to get a percentage.
+    data.day_percentage = float("%.*f" % (6, data.day_percentage))
+    return data
+
+  def _is_googler(self, user):
+    return user and user.email().endswith('@google.com')
+
+  def _clean_data(self, data):
+
+    user = users.get_current_user()
+    # Show raw day percentage numbers if user is a googler.
+    if not self._is_googler(user):
+      data = map(self.__truncate_day_percentage, data)
+
+    return data
+
   def get(self, data, formatted=False):
-    self.response.headers['Content-Type'] = 'application/json'
+    self.response.headers['Content-Type'] = 'application/json;charset=utf-8'
     if formatted:
-      return self.response.write(json.dumps(data))
+      return self.response.write(json.dumps(data, separators=(',',':')))
     else:
-      return self.response.write(json.dumps([entity.to_dict() for entity in data]))
+      data = [entity.to_dict() for entity in data]
+      return self.response.write(json.dumps(data, separators=(',',':')))
 
 
 class ContentHandler(BaseHandler):
@@ -82,7 +100,8 @@ class ContentHandler(BaseHandler):
     template_data = {
       'prod': settings.PROD,
       'APP_TITLE': settings.APP_TITLE,
-      'current_path': self.request.path
+      'current_path': self.request.path,
+      'VULCANIZE': settings.VULCANIZE
       }
 
     user = users.get_current_user()
@@ -92,7 +111,6 @@ class ContentHandler(BaseHandler):
       template_data['user'] = {
         'is_whitelisted': self._is_user_whitelisted(user),
         'is_admin': users.is_current_user_admin(),
-        'nickname': user.nickname(),
         'email': user.email(),
       }
     else:
@@ -110,33 +128,38 @@ class ContentHandler(BaseHandler):
     # Add common template data to every request.
     self._add_common_template_values(data)
 
-    try: 
+    try:
       self.response.out.write(render_to_string(template_path, data))
     except Exception:
       handle_404(self.request, self.response, Exception)
 
   def render_atom_feed(self, title, data):
-    prefix = '%s://%s%s' % (self.request.scheme, self.request.host,
-                             self.request.path.replace('.xml', ''))
+    features_url = '%s://%s%s' % (self.request.scheme,
+                                  self.request.host,
+                                  self.request.path.replace('.xml', ''))
+    feature_url_prefix = '%s://%s%s' % (self.request.scheme,
+                                        self.request.host,
+                                        '/feature')
 
     feed = feedgenerator.Atom1Feed(
         title=unicode('%s - %s' % (settings.APP_TITLE, title)),
-        link=prefix,
+        link=features_url,
         description=u'New features exposed to web developers',
         language=u'en'
-        )
+    )
     for f in data:
       pubdate = datetime.datetime.strptime(str(f['updated'][:19]),
                                            '%Y-%m-%d  %H:%M:%S')
       feed.add_item(
           title=unicode(f['name']),
-          link=f.get('spec_link', '') or '',
+          link='%s/%s' % (feature_url_prefix, f.get('id')),
           description=f.get('summary', ''),
           pubdate=pubdate,
           author_name=unicode(settings.APP_TITLE),
           categories=[f['category']]
-          )
-    self.response.headers.add_header('Content-Type', 'application/atom+xml')
+      )
+    self.response.headers.add_header('Content-Type',
+      'application/atom+xml;charset=utf-8')
     self.response.out.write(feed.writeString('utf-8'))
 
 

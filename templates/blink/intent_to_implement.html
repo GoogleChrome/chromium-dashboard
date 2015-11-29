@@ -4,43 +4,47 @@ Intent to Implement: {{feature.name}}
 </div>
 
 <p>Body</p>
-<div class="email"><label>Primary eng/PM emails</label>
+<div class="email"><label>Contact emails</label>
 {% if not feature.owner %}None{% endif %}{% for owner in feature.owner %}<a href="mailto:{{owner}}">{% if forloop.last %}{{owner}}</a>{% else %}{{owner}}</a>,{% endif %}{% endfor %}
 
 <label>Spec</label>
 {% if feature.spec_link %}<a href="{{feature.spec_link}}">{{feature.spec_link}}</a>{% else %}None{% endif %}
+<span class="help">You should have at least an unofficial spec in hand and/or have discussed the API with other browser vendors or standards bodies before sending an intent to implement. If your change is not yet at this stage of maturity, feel free to solicit feedback informally on blink-dev instead. If this is an intent to ship, include a link to a <a href="https://github.com/w3ctag/spec-reviews/issues">tag review</a> or a description about why the tag review process is being skipped.</span>
 
 <label>Summary</label>
 {{feature.summary}}
+<span class="help">Give a high-level description of your change.</span>
 
 <label>Motivation</label>
-<span class="help">Fill me in.</span>
-  
+<span class="help">Explain why the web needs this change. It may be useful to describe what web developers are forced to do without it. When possible, include links to back up your claims.</span>
+
 <label>Compatibility Risk</label>
 Firefox: {{feature.ff_views.text}}
-Internet Explorer: {{feature.ie_views.text}}
+Edge: {{feature.ie_views.text}}
 Safari: {{feature.safari_views.text}}
 Web developers: {{feature.web_dev_views.text}}
+<span class="help">Describe the degree of compatibility risk you believe this change poses. If this is a brand new feature, please characterize how much we might regret shipping this new feature because we might want to change or remove it in the future. If you don't have a launch tracking bug or row in the feature dashboard, include in this email links to relevant specs, standards discussions, or documentation about support for the feature in other browsers.</span>
 
 <label>Describe the degree of compatibility risk you believe this change poses</label>
 <span class="help">If you don't have a launch tracking bug or row in the feature dashboard, include in this email links to relevant specs, standards discussions, or documentation about support for the feature in other browsers.</span>
 
 <label>Ongoing technical constraints</label>
-<span class="help">Do you anticipate adding any ongoing technical constraints to the codebase while implementing this feature? We prefer to avoid features which require or assume a specific architecture. For most features, the answer here is "None."</span>
+<span class="help">Do you anticipate adding any ongoing technical constraints to the codebase while implementing this feature? We prefer to avoid features which require or assume a specific architecture. For most features, the answer here is "None".</span>
 
-<label>Will this feature be supported on all five Blink platforms (Windows, Mac, Linux,
-Chrome OS, and Android)? Yes or no.</label>
-<span class="help">If no, explain why certain platforms will not be included in your implementation.</span>
+<label>Will this feature be supported on all six Blink platforms (Windows, Mac, Linux,
+Chrome OS, Android, and Android WebView)? Yes or no.</label>
+<span class="help">Yes or no. If no, explain why certain platforms will not be included in your implementation.</span>
 
 <label>OWP launch tracking bug</label>
 {% if feature.bug_url %}<a href="{{feature.bug_url}}">{{feature.bug_url}}</a>{% else %}None{% endif %}
+<span class="help">Add crbug.com/### link here if an OWP launch tracking bug exists. Otherwise, indicate that there isn't one. You may be asked to create one.</span>
 
-<label>Entry in {{APP_TITLE}}</label>
-<a href="{{edit_url}}">{{edit_url}}</a>
+<label>Link to entry on the {{APP_TITLE}}</label>
+<a href="{{default_url}}">{{default_url}}</a>
+<span class="help">The feature dashboard is used to keep track of web-facing changes in Blink (and V8) that matter to developers. Make sure your change has an entry if you think it merits outreach to developers (e.g inclusion in the Chromium Blog Beta posts). If there's no entry, please explain why you think this change doesn't need one (e.g. "small change", "fits under an existing entry"). You may be asked to create one.</span>
 
 <label>Requesting approval to ship?</label>
-<span class="help">"No" - you will be implementing your feature behind a runtime flag and sending an Intent to Ship email when you're ready to enable by default.
-
-"Yes" - your change is small and you'd like to ship enabled-by-default immediately. Per the launch process for new features, you'll need LGTMs from 3 API OWNERS before shipping. If "yes," please change the title of the email to "Intent to Implement and Ship: ...".
+<span class="help">"No" means you will be implementing your feature behind a runtime flag and sending an Intent to Ship email when you're ready to enable by default.
+"Yes" means your change is small and you'd like to ship enabled-by-default immediately. Per the launch process for new features, you'll need LGTMs from 3 API OWNERS before shipping. If "yes", please change the title of the email to "Intent to Implement and Ship: ...".
 </span>
 </div>

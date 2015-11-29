@@ -1,47 +1,65 @@
 {% extends "base.html" %}
 
 {% block html_imports %}
-  <link rel="import" href="/static/elements/chromedash-featurelist.html">
-  <link rel="import" href="/static/elements/chromedash-metadata.html">
-  <link rel="import" href="/static/elements/chromedash-legend.html">
+  <link rel="import" href="/static/elements/features-imports{% if VULCANIZE %}.vulcanize{% endif %}.html">
 {% endblock %}
 
 {% block rss %}
-<link href="features.xml" rel="alternate" type="application/rss+xml" title="All features" />
+<link rel="alternate" type="application/rss+xml" href="http://www.chromestatus.com/features.xml" title="All features" />
 {% for k,v in categories %}
-<link href="features.xml?category={{v}}" rel="alternate" type="application/rss+xml" title='"{{k}}" features' />
+<link rel="alternate" type="application/rss+xml"
+      href="http://www.chromestatus.com/features.xml?category={{v}}" title='"{{k}}" features'>
 {% endfor %}
 
 {% endblock %}
 
 {% block css %}
-<link rel="stylesheet" type="text/css" href="/static/css/features/features.css?2013-08-07">
+<link rel="stylesheet" href="/static/css/features/features.css">
 {% endblock %}
 
 {% block subheader %}
 <div id="subheader">
   <div class="feature-count">
-    <h2>Web Platform Features (<span id="num-features">-</span>)</h2>
+    <h2>Web Platform Features (<span id="num-features"></span>)</h2>
   </div>
   <div class="search">
     <input type="search" placeholder="Filter" disabled>
-  </div> 
+  </div>
   <div class="actionlinks">
-    {% if user.is_whitelisted %}<a href="/admin/features/new">Add a new feature</a>{% endif %}
-    <a href="" class="legend">Help</a>
+    {% if user.is_whitelisted %}
+      <paper-button onclick="addNewFeature(this);">Add a new feature</paper-button>
+    {% endif %}
+    <a href="" class="legend"><iron-icon icon="icons:help"></iron-icon></a>
   </div>
 </div>
-
 {% endblock %}
 
 {% block content %}
 <chromedash-legend>
-  <button overlay-toggle>Close</button>
+  <p class="description">What you're looking at is a mostly comprehensive list of
+  web platform features that have landed in Chromium, ordered chronologically by the milestone
+  in which they were added. Features marked "No active development" are being
+  considered or have yet to be started. Features marked "In development" are currently
+  being worked on.</p>
+  <div class="close buttons">
+    <paper-button dialog-dismiss>Close</paper-button>
+  </div>
 </chromedash-legend>
 
 <section id="panels">
 <nav>
-  <chromedash-metadata></chromedash-metadata>
+  <chromedash-metadata
+      impl-statuses='{{IMPLEMENTATION_STATUSES|safe}}'
+      status='{
+        "NO_ACTIVE_DEV": 1,
+        "PROPOSED": 2,
+        "IN_DEVELOPMENT": 3,
+        "BEHIND_A_FLAG": 4,
+        "ENABLED_BY_DEFAULT": 5,
+        "DEPRECATED": 6,
+        "REMOVED": 7,
+        "NO_LONGER_PURSUING": 1000
+      }'></chromedash-metadata>
 </nav>
 <chromedash-featurelist {% if user.is_whitelisted %}whitelisted{% endif %}></chromedash-featurelist>
 </section>
@@ -54,113 +72,132 @@
 {% endblock %}
 
 {% block js %}
+<!-- <script src="/static/bower_components/promise-polyfill/Promise.min.js"></script> -->
 <script>
 (function() {
-var $ = function(selector) {
-  return document.querySelector(selector);
-};
-var $$ = function(selector) {
-  return document.querySelectorAll(selector);
-};
 
-function updateCount(count) {
-  $('#num-features').textContent = count;
+window.addNewFeature = function(el) {
+  // Wait for ripple to finish.
+  el.addEventListener('transitionend', function(e) {
+    location.href = '/admin/features/new';
+  });
 }
 
-document.addEventListener('WebComponentsReady', function(e) {
-  var featureList = $('chromedash-featurelist');
-  var chromeMetadata = $('chromedash-metadata');
-  var overlay = $('chromedash-legend');
-  var search = $('.search input');
+var featureList = $('chromedash-featurelist');
+var chromeMetadata = $('chromedash-metadata');
+var overlay = $('chromedash-legend');
+var search = $('.search input');
 
-  // TODO: decide if we need these anymore. Can they be moved internal to the
-  // chromeMetadata element?
-  chromeMetadata.implStatuses = {{IMPLEMENATION_STATUSES|safe}};
-  chromeMetadata.STATUS = {
-    NO_ACTIVE_DEV: 1,
-    PROPOSED: 2,
-    IN_DEVELOPMENT: 3,
-    BEHIND_A_FLAG: 4,
-    ENABLED_BY_DEFAULT: 5,
-    DEPRECATED: 6
-  };
+// Set search box to URL deep link.
+if (location.hash) {
+  search.value = location.hash.substr(1);
+}
 
-  // Fill data from server by including it directly in template.
-  featureList.features = {{features|safe}};
+featureList.addEventListener('filtered', function(e) {
+  $('#num-features').textContent = e.detail.count;
+});
 
-  // // Instead, fill data via AJAX.
-  // var xhr = new XMLHttpRequest();
-  // xhr.open('GET', '/features.json');
-  // xhr.onloadend = function(e) {
-  //   featureList.features = JSON.parse(e.target.response);
-  // };
-  // xhr.send();
+featureList.addEventListener('filter-category', function(e) {
+  search.value = 'category: ' + e.detail.val;
+  featureList.filter(search.value);
+});
 
-  // // !!!!!!Use mock data instead!!!!!!
-  // var xhr = new XMLHttpRequest();
-  // xhr.open('GET', '/static/js/mockdata.json', false);
-  // xhr.onloadend = function(e) {
-  //   featureList.features = JSON.parse(e.target.response);
-  // };
-  // xhr.send();
+featureList.addEventListener('filter-owner', function(e) {
+  search.value = 'owner: ' + e.detail.val;
+  featureList.filter(search.value);
+});
 
-  featureList.metadata = chromeMetadata; // Feature list needs access to the selected milestone.
-  featureList.addEventListener('filter-category', function(e) {
-    search.value = e.detail.val;
-    updateCount(featureList.filterOnCategory(e.detail.val));
-  });
+// Clear input when user clicks the 'x' button.
+search.addEventListener('search', function(e) {
+  if (!e.target.value) {
+    featureList.filter();
+    chromeMetadata.selected = null;
+  }
+});
 
-  updateCount(featureList.features.length); // Set initial # features showing.
+search.addEventListener('keyup', function(e) {
+  // Clear results.
+  if (!e.target.value && e.keyCode != 27) { // ESC
+    featureList.filter();
+    chromeMetadata.selected = null;
+  } else {
+    //if (e.keyCode == 13) {  // Enter
+      featureList.filter(e.target.value);
+    //}
+  }
+});
 
-  search.disabled = false;
+$('.legend').addEventListener('click', function(e) {
+  e.preventDefault();
+  overlay.toggle();
+});
 
-  // TODO: taken out. Put back in when if switch input to type="search"
-  // // // Clear input when user clicks the 'x' button.
-  search.addEventListener('search', function(e) {
-    if (!e.target.value) {
-      updateCount(featureList.filter());
-      chromeMetadata.selected = null;
-    }
-  });
+// Fire of features.json XHR right away so data can populate faster.
+var featuresPromise = new Promise(function(resolve, reject) {
+  var url = location.hostname == 'localhost' ? 'https://www.chromestatus.com/features.json' :
+                                               '/features.json';
+  var xhr = new XMLHttpRequest(); // Fill features list via AJAX.
+  xhr.open('GET', url);
+  xhr.responseType = 'json';
 
-   // Clear input when user clicks the 'x' button.
-  search.addEventListener('keyup', function(e) {
-    if (!e.target.value && e.keyCode != 27) { // ESC
-      updateCount(featureList.filter());
-      chromeMetadata.selected = null;
+  console.time('features unveil'); // benchmark how long it takes load features.
+  console.timeStamp('features fetch');
+
+  xhr.onloadend = function(e) {
+    console.timeStamp('features loaded');
+    if (e.target.status < 400) {
+      resolve(e.target.response);
     } else {
-      //if (e.keyCode == 13) {  // Enter
-        updateCount(featureList.filter(e.target.value));
-      //}
+      reject(new Error('Features XHR failed with status ' + e.target.statusText));
     }
+  };
+  xhr.onerror = reject;
+  xhr.send();
+});
+
+function importsLoaded() {
+  featureList.metadata = chromeMetadata; // Feature list needs access to the selected milestone.
+  featureList.search = search;
+
+  featuresPromise.then(function(features) {
+    featureList.features = features;
+    featureList.filter(search.value);
+    search.disabled = false;
+  }, function(e) {
+    document.getElementById('content').classList.add('error');
   });
+
+  // // Alternative to XHR, we could fill data from server by including it
+  // // directly in the server's page template. However, this increases the weight
+  // // of the page and slows down window.onload, especially as the number of
+  // // features increases over time. For this reason, XHR is preferred.
+  // featureList.features = {{features|safe}};
+  // featureList.metadata = chromeMetadata; // Feature list needs access to the selected milestone.
+  // featureList.search = search;
+  // updateCount(featureList.filter(search.value)); // Set initial # features showing.
+  // search.disabled = false;
 
   overlay.views = {
     vendors: {{VENDOR_VIEWS|safe}}, // set from server
     webdevs: {{WEB_DEV_VIEWS|safe}}, // set from server
     standards: {{STANDARDS_VALS|safe}} // set from server
   };
-
-  $('.legend').addEventListener('click', function(e) {
-    e.preventDefault();
-    overlay.toggle();
-  });
-
-  window.addEventListener('popstate', function(e) {
-    featureList.scrollToFeature(e.state.id);
-  });
-
-});
-
-// Feature detect new flexbox. If unsupported, CSS fixes to support old flexbox.
-// TODO(ericbidelman): remove when Safari updates to new flexbox.
-var el = document.createElement('div');
-if (!('flexBasis' in el.style || 'WebKitFlexBasis' in el.style)) {
-  var link = document.createElement('link');
-  link.rel = 'stylesheet';
-  link.href = '/static/css/features/safari_fixes.css';
-  document.head.appendChild(link);
 }
+
+var importsSupported = ('import' in document.createElement('link'));
+if (importsSupported) {
+  document.addEventListener('HTMLImportsLoaded', importsLoaded);
+} else {
+  // Polyfilled browsers need to wait for the WCR event to in order to set
+  // properties on upgraded elements.
+  document.addEventListener('WebComponentsReady', importsLoaded);
+}
+
+window.addEventListener('popstate', function(e) {
+  if (e.state) {
+    featureList.scrollToFeature(e.state.id);
+  }
+});
 
 })();
 </script>

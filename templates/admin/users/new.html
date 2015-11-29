@@ -1,12 +1,12 @@
 {% extends "base.html" %}
 
 {% block css %}
-<!-- <link rel="stylesheet" type="text/css" href="/static/css/users/users.css"> -->
-<link rel="stylesheet" type="text/css" href="/static/css/forms.css">
+<!-- <link rel="stylesheet" href="/static/css/users/users.css"> -->
+<link rel="stylesheet" href="/static/css/forms.css">
 {% endblock %}
 
 {% block html_imports %}
-  <link rel="import" href="/static/elements/chromedash-userlist.html">
+  <link rel="import" href="/static/elements/admin-imports{% if VULCANIZE %}.vulcanize{% endif %}.html">
 {% endblock %}
 
 {% block subheader %}

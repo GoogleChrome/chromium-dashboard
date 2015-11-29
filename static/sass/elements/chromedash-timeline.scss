@@ -1,0 +1,15 @@
+@import "element";
+
+:host {
+  display: block;
+  @include flex(1);
+  width: 800px;
+}
+
+#chart {
+  margin-top: 15px;
+  width: 800px;
+  height: 400px;
+  background: $gray-1;
+  border-radius: $default-border-radius;
+}

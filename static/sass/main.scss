@@ -8,48 +8,11 @@ html, body {
 
 body {
   color: $default-font-color;
-  font: 14px "Open Sans", Arial, sans-serif;
+  font: 14px "Roboto", Arial, sans-serif;
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
   background-color: $light-grey;
-  //background: url(../img/bg.png);
-
-  // Prevent Polymer from handling FOUC for us.
-  opacity: 1.0 !important;
-  transition: none !important;
-}
-
-h1, h2, h3, h4 {
-  font-weight: 300;
-}
-h1 {
-  font-size: 30px;
-}
-h2, h3, h4 {
-  color: #444;
-}
-h2 {
-  font-size: 25px;
-}
-h3 {
-  font-size: 20px;
-}
-a {
-  color: $chromium-color-center;
-}
-a:hover {
-  color: $chromium-color-dark;
-  text-decoration: none
-}
-b {
-  font-weight: bold;
-}
-
-input:not([type="submit"]), textarea {
-  border: 1px solid $bar-border-color;
-  //box-shadow: 2px 2px 2px #ccc inset;
-
-  &[disabled] {
-    opacity: 0.5;
-  }
+  // background: url(../img/bg.png);
 }
 
 header, footer {
@@ -64,18 +27,17 @@ header {
 
   a {
     color: currentcolor;
+    text-decoration: none !important;
   }
 
   aside {
-    //@include display-box; //@include display-flex;
+    //@include display-flex;
     //@include align-items(center);
     @include gradient-bar-bg;
     border-top-right-radius: 5px;
     border-bottom-right-radius: 5px;
-    /* Uncomment gradient-bar-bg and these 2 to make pretty again */
     border-bottom: 1px solid $bar-border-color;
     border-right: 1px solid $bar-border-color;
-    background-color: #FAFAFA;
     padding: 0.75em 1em;
 
     // Small logo.
@@ -83,15 +45,18 @@ header {
     // background-size: 45px;
     // padding-left: 65px;
     // Larger bg logo.
-    background: url(/static/img/chromium-128.png) no-repeat 10px 50%, #FAFAFA;
-    background-size: 25%;
-    padding-left: 125px;
-
-    // // TODO: temporary for old flex box support.
-    // hgroup {
-    //   @include display-box; //@include display-flex;
-    //   @include box-orient(vertical); // TODO: remove. Needed because Safari and FF don't have new flexbox.
-    // }
+    // background: url(/static/img/chromium-128.png) no-repeat 10px 50%, #FAFAFA;
+    // background-size: 25%;
+    // padding-left: 125px;
+    // Multi-background
+    // background: url(/static/img/chrome_logo.svg) no-repeat 52px 50%,
+                // url(/static/img/canary_128.png) no-repeat 30px 50%,
+                // url(/static/img/chromium-128.png) no-repeat 18px 50%;
+    // background-size: 20%, 22%, 20%;
+    background: url(/static/img/chrome_logo.svg) no-repeat 18px 50%;
+    background-size: 20%;
+    background-color: #fafafa;
+    padding-left: 124px;
 
     h1 {
       line-height: 1;
@@ -104,15 +69,12 @@ header {
   }
 
   nav {
-    @include display-flex; // @include display-box;
-    //@include box-align(center); // TODO: remove. Needed because Safari and FF don't have new flexbox.
+    @include display-flex;
     @include align-items(center);
-    //width: 400px;
     margin-left: 3em;
 
     a {
       @include gradient-bar-bg;
-      @include flex(1);
       cursor: pointer;
       margin-right: 1em;
       font-size: 16px;
@@ -120,7 +82,6 @@ header {
       border-radius: $default-border-radius;
       border-bottom: 1px solid $bar-border-color;
       border-right: 1px solid $bar-border-color;
-      //padding-left: 3em;
 
       &:active {
         position: relative;
@@ -132,7 +93,6 @@ header {
       &.disabled {
         opacity: 0.5;
         pointer-events: none;
-        //visibility: hidden;
       }
     }
   }
@@ -142,10 +102,6 @@ footer {
   @include gradient-bar-bg;
   font-size: 12px;
   box-shadow: 0 -2px 5px $bar-shadow-color;
-
-  //@include box-pack(center); // TODO: remove. Needed because Safari and FF don't have new flexbox.
-  //@include box-orient(vertical);
-  //@include display-box;
   @include display-flex;
   @include flex-direction(column);
   @include justify-content(center);
@@ -157,34 +113,19 @@ footer {
   }
 }
 
-chromedash-legend {
-  width: 600px;
-  @include calc(left, '50% - 600px/2');
-  top: 10%;
-  opacity: 0; // Ensure no FOUC.
-  
-  // width: 100%;
-  // background: rgba(0,0,0,0.3);
-  // left: 0;
-  // top: 0;
-  // height: 100%;
-}
-
-#subheader {
-  //@include display-box;
-  //@include box-align(center);
+#subheader, .subheader {
   @include display-flex;
   @include align-items(center);
-  margin: $content-padding $content-padding 0 $content-padding + 5;
-  //border-bottom: 1px solid $bar-border-color;
-  max-width: $max-content-width + $content-padding * 7 + 5;
+  margin: $content-padding 0 0 $content-padding + 12;
+  // border-bottom: 1px solid $bar-border-color;
+  max-width: $max-content-width + $content-padding * 7 + 25;
 
   div {
     margin-right: $content-padding * 2 - 15;
 
     &.feature-count {
       min-width: 325px;
-      margin-right: $content-padding - 15; 
+      margin-right: $content-padding - 15;
     }
 
     &.search {
@@ -197,8 +138,10 @@ chromedash-legend {
     }
 
     &.actionlinks {
-      a {
-        margin-left: 20px;
+      .legend {
+        font-size: 18px;
+        cursor: pointer;
+        text-decoration: none;
       }
       @include flex(1 0 0);
       text-align: right;
@@ -209,63 +152,28 @@ chromedash-legend {
 
 #container {
   @include display-flex;
-  //@include display-box; //@include display-flex;
   @include flex-direction(column);
   height: 100%;
   width: 100%;
-
-  //@include box-orient(vertical); // TODO: remove. Needed because Safari and FF don't have new flexbox.
 }
 
 #content {
-  @include display-flex; //@include display-box; 
-  //@include justify-content(center);
+  @include display-flex;
   @include flex(1 0 0);
-  //@include box-orient(vertical);
-
-  margin: $content-padding;
+  margin: $content-padding + 12;
   overflow: auto;
-
   position: relative;
-
- // @include box-flex(1); // TODO: remove. Needed because Safari and FF don't have new flexbox.
 }
 
 #panels {
-  //@include display-box;
   @include display-flex;
   width: 100%;
   overflow: hidden;
-
-  nav {
-    $nav-width: 150px;
-
-    font-size: 120%;
-    font-weight: 300;
-    width: $nav-width; // slighty smaller than chromedash-metadata to remove scrollbar
-    overflow-x: hidden;
-
-    chromedash-metadata {
-      //max-height: 65vh;
-      overflow: auto;
-      width: $nav-width + 15;
-
-      .help {
-        text-align: center;
-      }
-    }
-  }
-
-  chromedash-featurelist {
-    @include flex(1 0 0);
-    overflow: auto;
-    max-width: $max-content-width;
-  }
 }
 
 @media only screen and (max-width: 700px) {
   h1 {
-    font-size: 25px;
+    font-size: 6.5vw;
   }
   h2 {
     font-size: 20px;
@@ -295,12 +203,13 @@ chromedash-legend {
     }
     nav {
       margin: 10px 0;
-      //@include box-pack(center);
       @include justify-content(center);
+      @include flex-wrap(wrap);
       a {
         padding: 5px 10px;
         margin: 0;
         border-radius: 0;
+        @include flex(1 0 auto);
       }
     }
   }
@@ -309,7 +218,6 @@ chromedash-legend {
     display: block;
     nav {
       display: none;
-      //width: $content-padding + 5;
     }
   }
 
@@ -326,17 +234,6 @@ chromedash-legend {
         margin: 0;
       }
     }
-  }
-
-  //TODO: move these into the chromedash-feature.scss when we can use media
-  // queries with @host{}.
-  chromedash-feature,
-  [is="chromedash-feature"] {
-    box-shadow: none !important;
-    border-radius: 0 !important;
-    padding: 10px !important;
-    margin: 0 !important;
-    @include transition(none !important);
   }
 
   footer {
@@ -365,3 +262,7 @@ chromedash-legend {
 //     padding: 15px;
 //   }
 // }
+
+// @import "features/features.scss"; // Inline features.css to remove 1 request on homepage.
+// @import "metrics/metrics.scss";
+

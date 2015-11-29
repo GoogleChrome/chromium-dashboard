@@ -1,0 +1,72 @@
+@import "element";
+
+:host {
+  display: block;
+  @include flex(1);
+  padding: 1px;
+}
+
+#stack-rank-list {
+  margin: 0;
+  li {
+    margin: 0;
+    padding: 5px 0;
+    @include display-flex;
+    @include align-items(center);
+
+    &[hidden] {
+      display: none;
+    }
+
+    &.header {
+      margin-bottom: 10px;
+
+      label {
+        color: $chromium-color-dark;
+        text-transform: uppercase;
+        background: $gray-1;
+        border-radius: $default-border-radius;
+        text-align: left;
+        padding: 5px 7px;
+        font-family: inherit;
+        cursor: pointer;
+        @include display-flex;
+        @include align-items(center);
+        @include justify-content(end);
+      }
+    }
+
+    // &:nth-child(even) {
+    //   background-color: #ccc;
+    // }
+
+    label {
+      font-weight: 600;
+      @include flex(1);
+      word-wrap: break-word;
+
+      &:first-child {
+        text-align: right;
+        margin-right: 10px;
+        // max-width: 175px;
+      }
+    }
+
+    x-meter {
+      padding-left: 7px;
+      cursor: pointer;
+    }
+
+    x-meter, .flex2 {
+      @include flex(2);
+    }
+  }
+}
+
+.loading {
+  font-style: italic;
+  color: $gray-2;
+  @include justify-content(center);
+}
+
+

@@ -1,42 +1,43 @@
-<polymer-element name="chromedash-color-status" attributes="value max width height corner">
+<link rel="import" href="../bower_components/polymer/polymer.html">
+
+<dom-module id="chromedash-color-status">
+  <link rel="import" type="css" href="../css/elements/chromedash-color-status.css">
   <template>
-    <link rel="stylesheet" type="text/css" href="../css/elements/chromedash-color-status.css">
-    <style>
-      span {
-        width: {{width}}px;
-        height: {{height}}px;
-      }
-    </style>
     <span id="status"></span>
   </template>
   <script>
-    Polymer('chromedash-color-status', {
-      max: 7,
-      width: 10,
-      height: 10,
-      corner: false,
-      cornerChanged: function() {
-        this.corner ? this.$.status.classList.add('corner') :
-                      this.$.status.classList.remove('corner');
+    Polymer({
+      is: 'chromedash-color-status',
+      properties: {
+        height: {
+          type: Number,
+          value: 10
+        },
+        max: {
+          type: Number,
+          value: 7,
+          observer: '_maxChanged'
+        },
+        value: {
+          type: Number,
+          observer: '_valueChanged'
+        },
+        width: {
+          type: Number,
+          value: 10
+        }
       },
       updateColor: function() {
-        var h = Math.round(120 - this.value * 120 / this.max); 
-        this.$.status.style.backgroundColor = 'hsl(' + h + ', 100%, 50%)';  
+        var CYAN = 120;
+        var h = Math.round(CYAN - this.value * CYAN / this.max);
+        this.$.status.style.backgroundColor = 'hsl(' + h + ', 100%, 50%)';
       },
-      valueChanged: function() {
+      _valueChanged: function() {
         this.updateColor();
       },
-      maxChanged: function() {
+      _maxChanged: function() {
         this.updateColor();
       }
-      /*widthChanged: function() {
-         //this.$.status.style.width = this.width + 'px';
-         //this.widthUnits ? this.corner ? '%': 'px';
-      },*/
-      /*heightChanged: function() {
-        //this.$.status.style.height = this.height + 'px';
-        this.heightUnits = this.corner ? '%': 'px';
-      }*/
     });
   </script>
-  </polymer-element>
+</dom-module>

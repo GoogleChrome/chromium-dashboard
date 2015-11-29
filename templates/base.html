@@ -1,5 +1,5 @@
 <!--
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright (c) 2015 The Chromium Authors. All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
@@ -33,42 +33,46 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>{{ APP_TITLE }}</title>
-<link rel="shortcut icon" href="/favicon.ico">
-<link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Open+Sans:300,300italic,600,800">
-<link rel="stylesheet" type="text/css" href="/static/css/main.css?2012-08-02">
-<link rel="stylesheet" type="text/css" href="/static/css/font-awesome/font-awesome.css">
-
-{% block rss %}{% endblock%}
-
-{% block css %}{% endblock %}
-
+<title>{% block page_title %}{% endblock %}{{ APP_TITLE }}</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
 
 <!-- iOS: run in full-screen mode and display upper status bar as translucent -->
-<!--<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">-->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
 <link rel="apple-touch-icon" href="/static/img/chromium-128.png">
 <link rel="apple-touch-icon-precomposed" href="/static/img/chromium-128.png">
+<link rel="shortcut icon" href="/static/img/chromium-128.png">
 
+{% block meta %}{% endblock %}
+
+<!-- Load fonts right away. These URLs are also used in paper-styles, but we
+     want a jumpstart on download and the GFonts API is helllla cached. -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,300,300italic,400italic,500,500italic,700,700italic">
+
+<link rel="stylesheet" href="/static/css/main.css">
+{% block css %}{% endblock %}
+
+<script src="/static/bower_components/webcomponentsjs/webcomponents-lite.min.js" defer></script>
+<!-- <script src="/static/js/smoothscroll/dist/smoothscroll.js"></script> -->
+<!-- <script src="/static/js/bower_components/smoothscroll/smoothscroll.js"></script>  -->
 <script>
-// Force ShadowDOM polyfill for Chrome 28. Style recalcs in native SD
-// perform horribly. Chrome 29 fixes the issues.
-var uaParts = navigator.userAgent.match('Chrome/(.*) ');
-if (uaParts) {
-  var chromeVersion = parseInt(uaParts[1]);
-  if (chromeVersion < 29) {
-    Platform = {flags: {shadow: 'polyfill'}};
-  }
-}
+window.Polymer = window.Polymer || {dom: 'shadow'};
+
+var $ = function(selector) {
+  return document.querySelector(selector);
+};
+
+var $$ = function(selector) {
+  return document.querySelectorAll(selector);
+};
 </script>
-<script src="/static/js/polymer.min.js"></script>
-<!-- <script src="/static/js/polymer-all/polymer/polymer.js" debug></script> -->
 
 {% block html_imports %}{% endblock %}
-</head>
 
+{% block rss %}{% endblock%}
+</head>
 <body>
 
 <div id="container">
@@ -81,18 +85,17 @@ if (uaParts) {
 </div>
 
 {% block js %}{% endblock %}
-<script src="/static/js/app.js"></script>
 <script>
-  var _gaq = _gaq || [];
-  _gaq.push(['_setAccount', 'UA-39048143-1']);
-  _gaq.push(['_setDomainName', 'chromestatus.com']);
-  _gaq.push(['_trackPageview']);
+var _gaq = _gaq || [];
+_gaq.push(['_setAccount', 'UA-39048143-1']);
+_gaq.push(['_setDomainName', 'chromestatus.com']);
+_gaq.push(['_trackPageview']);
 
-  (function() {
-    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-  })();
+(function() {
+  var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+  ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+  var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+})();
 </script>
 </body>
 </html>

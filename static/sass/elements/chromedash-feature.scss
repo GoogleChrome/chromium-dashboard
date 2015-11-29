@@ -2,64 +2,116 @@
 
 @import "element";
 
-@host {
-  :scope {
-    display: block;
-    @include transition(height 400ms ease-in-out);
-    height: $feature-min-height;
-    overflow: hidden;
-    cursor: pointer;
-    @include gradient-bar-bg;
-    // margin-bottom: 10px;
-    margin-bottom: 1px;
-    position: relative;
-    border-radius: $default-border-radius;
-    padding: 5px 20px;
-    list-style: none;
+:host {
+  @include display-flex;
+  // @include transition(height 400ms ease-in-out);
+  // height: $feature-min-height;
+  // overflow: hidden;
+  cursor: pointer;
+  @include gradient-bar-bg;
+  // margin-bottom: 10px !important;
+  position: relative;
+  border-radius: $default-border-radius;
+  padding: 10px 20px !important;
+  list-style: none;
+  box-sizing: border-box;
+
+  &:active {
+    outline: none;
   }
-  :scope.open {
-    height: 290px;
-    overflow: auto;
+}
+
+:host([open]) {
+  // height: 290px;
+  // height: auto;
+  overflow: auto;
+  outline: none;
+
+  .desc summary {
+    white-space: normal;
   }
 }
 
 h2 {
   display: inline-block;
-  margin-right: 1em;
   font-size: 25px;
+  @include flex(1 0 0);
+}
+
+iron-icon {
+  --iron-icon-height: 20px;
+  --iron-icon-width: 20px;
+
+  &.android {
+    color: #A4C739;
+  }
+  &.remove {
+    color: var(--paper-red-700);
+  }
+  &.deprecated {
+    color: var(--paper-orange-700);
+  }
+  &.experimental {
+    color: var(--paper-green-700);
+  }
+  // &.opennew {
+  //   color: var(--paper-grey-700);
+  //   --iron-icon-height: 14px;
+  //   --iron-icon-width: 14px;
+  // }
+}
+
+.opennew {
+  width: 18px;
+  height: 18px;
+}
+
+.editfeature {
+  color: $chromium-color-center;
+}
+
+.main-content-area {
+  @include flex(1 0 0);
+  margin-right: 12px;
+  overflow: hidden;
+}
+
+.open-standalone {
+  position: absolute;
+  right: 0;
+  top: 0;
+  @include display-flex;
+  @include align-items(center);
+  height: 100%;
+  // box-shadow: -1px 1px 3px #ccc;
+  border-left: 2px solid #eee;
+  padding: 4px;
+}
+
+.iconrow {
+  @include display-flex;
+  @include align-items(center);
 }
 
 .topcorner {
-  &.pull-right {
-    top: 15px;
-    right: 15px;
-    position: absolute;
-  }
-
-  .icon-beaker {
-    color: $gray-3;
-  }
-  .icon-warning-sign {
-    color: darkred;
-  }
-
   .tooltip {
+    margin-left: 8px;
+
     &:hover, &:active {
       &:before {
         @include tooltip;
-        top: 10px;
-        right: 25px;
+        top: 35px;
+        right: 20px;
         width: auto;
         white-space: nowrap;
       }
     }
   }
-
 }
 
 hgroup {
   @include display-flex;
-  @include align-items(center);
+  @include align-items(flex-start);
 
   .category {
     color: $gray-2;
@@ -87,26 +139,24 @@ hgroup {
 }
 
 section {
-  margin-top: 10px;
+  margin: 18px 0;
 
   &.desc {
+    margin: 10px 0 0 0;
     cursor: pointer;
+    color: $gray-3;
+    line-height: 20px;
 
     summary {
       text-overflow: ellipsis;
       overflow: hidden;
       white-space: nowrap;
-
-      &.open {
-        white-space: normal;
-      }
     }
   }
-  
+
   h3 {
-    margin-bottom: 10px;
+    margin: 10px 0;
     font-size: 18px;
-    color: $chromium-color-dark;
     font-weight: 400;
   }
 
@@ -118,14 +168,17 @@ section {
 
   div {
     margin-bottom: 10px;
-    @include flex-wrap(wrap);
-    > * {
+    // @include flex-wrap(wrap);
+    @include display-flex;
+    > span {
       margin-right: 20px;
+      // @include flex-wrap(nowrap);
+      @include flex-shrink(0);
     }
   }
 
   .impl_status {
-    .chrome_android {
+    .chrome_desktop, .chrome_android, .chrome_webview {
       &.tooltip {
         position: relative;
         &:hover, &:active {
@@ -140,16 +193,11 @@ section {
     }
   }
 
-  .icon-android {
-    color: #A4C739;
-    font-size: 1.5em;
-  }
-
   .views {
     @include display-flex;
     @include flex-wrap(wrap);
-    
-    & > * {
+
+    & > span {
       @include display-flex;
       @include align-items(center);
       position: relative;
@@ -172,14 +220,23 @@ section {
   .standardization {
     @include display-flex;
     @include flex-wrap(wrap);
-    & > * {
+    & > span {
       @include display-flex;
       @include align-items(center);
     }
   }
 
-  .comments {
+  .owner {
+    @include display-flex;
+    @include flex-wrap(wrap);
+  }
+
+  .comments html-echo {
     white-space: pre-wrap;
+  }
+
+  .doc_links, .sample_links, .owner {
+    @include flex-shrink(1 !important);
   }
 }
 
@@ -192,30 +249,38 @@ chromedash-color-status {
 
 
 @media only screen and (max-width: 700px) {
+  :host {
+    // box-shadow: none !important;
+    border-radius: 0 !important;
+    margin: 7px initial !important;
+    @include transition(none !important);
+  }
+
+  iron-icon {
+    --iron-icon-height: 16px;
+    --iron-icon-width: 16px;
+  }
+
   h2 {
     font-size: 20px !important;
   }
   section {
     margin-left: 0;
   }
+  .category {
+    display: none;
+  }
   .impl_status {
     @include display-flex;
-    @include flex-direction(column);
-    @include flex-wrap(initial);
+    // @include flex-direction(column);
+    // @include flex-wrap(initial);
+    @include flex-wrap(wrap);
     > span:not([hidden]):not(:last-of-type),
     > a {
-      // label {
-      //   width: 100px;
-      // }
       margin-bottom: 10px;
     }
   }
-  .views span {
-    // label {
-    //   &:after {
-    //     content: '';
-    //   }
-    // }
+  .views > span {
     margin-bottom: 10px;
   }
 }

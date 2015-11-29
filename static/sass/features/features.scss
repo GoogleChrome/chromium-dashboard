@@ -1,14 +1,21 @@
+@import "compass/css3/transform";
+
 @import "vars";
 
-body {
-  &:not(.ready) #content:after {
+#content {
+  &.ready::after {
+    display: none;
+  }
+
+  &::after {
+    font-size: 18px;
     font-weight: normal;
     content: 'loading...';
-    color: #bbb;
+    color: $gray-3;
+    top: 0;
     left: 0;
     position: absolute;
-    top: 0;
-    background: rgba(255,255,255,0.5);
+    background: white;
     border: 1px dashed #bbb;
     border-radius: $default-border-radius;
     width: 100%;
@@ -19,6 +26,59 @@ body {
     @include align-items(center);
     z-index: 100;
   }
+
+  &.error::after {
+    content: 'Error loading features list.';
+    color: darkred;
+  }
+}
+
+chromedash-legend {
+  // width: 900px;
+  // @include calc(left, '50% - 900px/2');
+  // top: 3%;
+  // //opacity: 0; // Ensure no FOUC.
+  font-size: 90%;
+
+  .description {
+    margin-bottom: 10px;
+  }
+}
+
+#panels {
+  nav {
+    $nav-width: 150px;
+
+    font-size: 120%;
+    font-weight: 300;
+    //width: $nav-width; // slighty smaller than chromedash-metadata to remove scrollbar
+    overflow-x: hidden;
+
+    chromedash-metadata {
+      //max-height: 65vh;
+      overflow: auto;
+      width: $nav-width + 15;
+
+      @include transform(translateZ(0)); // force composite layer in stable
+
+      .help {
+        text-align: center;
+      }
+    }
+  }
+
+  chromedash-featurelist {
+    @include flex(1 0 0);
+    // overflow: auto;
+    max-width: $max-content-width;
+  }
+}
+
+#subheader {
+  paper-button {
+    color: $chromium-color-dark;
+    background: #fff;
+  }
 }
 
 @media only screen and (max-width: 700px) {
@@ -28,6 +88,13 @@ body {
     }
   }
   #content {
-    min-height: 150px;
+    height: 100%;
+  }
+  chromedash-featurelist {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
   }
 }

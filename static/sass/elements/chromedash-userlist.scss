@@ -2,10 +2,8 @@
 
 @import "element";
 
-@host {
-  :scope {
-    display: block;
-  }
+:host {
+  display: block;
 }
 
 ul {
@@ -19,7 +17,7 @@ ul {
       opacity: 0;
     }
 
-    > a {
+    a {
       margin-right: 10px;
     }
   }

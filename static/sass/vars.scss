@@ -31,7 +31,6 @@ $max-content-width: 760px;
 }
 
 @mixin display-flex() {
-  display: -webkit-box; // Safari :(
   display: -webkit-flex;
   display: -moz-flex;
   display: -ms-flex;
@@ -39,8 +38,13 @@ $max-content-width: 760px;
   display: flex;
 }
 
+@mixin display-inlineflex() {
+  display: -webkit-inline-box;
+  display: -webkit-inline-flex;
+  display: inline-flex;
+}
+
 @mixin flex($val) {
-  -webkit-box-flex: 1; // Safari :(
   -webkit-flex: $val;
   -moz-flex: $val;
   -ms-flex: $val;
@@ -49,7 +53,6 @@ $max-content-width: 760px;
 }
 
 @mixin justify-content($val: center) {
-  -webkit-box-pack: $val;  // Safari :(
   -webkit-justify-content: $val;
   -moz-justify-content: $val;
   -ms-justify-content: $val;
@@ -58,7 +61,6 @@ $max-content-width: 760px;
 }
 
 @mixin align-items($val: center) {
-  -webkit-box-align: $val;  // Safari :(
   -webkit-align-items: $val;
   -moz-align-items: $val;
   -ms-align-items: $val;
@@ -75,12 +77,19 @@ $max-content-width: 760px;
 }
 
 @mixin flex-direction($val) {
-  -webkit-box-orient: vertical;  // Safari :(
   -webkit-flex-direction: $val;
   -moz-flex-direction: $val;
   -ms-flex-direction: $val;
   -o-flex-direction: $val;
   flex-direction: $val;
+}
+
+@mixin flex-shrink($val: initial) {
+  -webkit-flex-shrink: $val;
+  -moz-flex-shrink: $val;
+  -ms-flex-shrink: $val;
+  -o-flex-shrink: $val;
+  flex-shrink: $val;
 }
 
 @mixin flex-wrap($val: nowrap) {
@@ -91,47 +100,6 @@ $max-content-width: 760px;
   flex-wrap: $val;
 }
 
-// // Old flexbox.
-// @mixin display-box() {
-//   display: -webkit-box;
-//   display: -moz-box;
-//   display: -ms-box;
-//   display: -o-box;
-//   display: box;
-// }
-
-// @mixin box-orient($val) {
-//   -webkit-box-orient: $val;
-//   -moz-box-orient: $val;
-//   -ms-box-orient: $val;
-//   -o-box-orient: $val;
-//   box-orient: $val;
-// }
-
-// @mixin box-align($val) {
-//   -webkit-box-align: $val;
-//   -moz-box-align: $val;
-//   -ms-box-align: $val;
-//   -o-box-align: $val;
-//   box-align: $val;
-// }
-
-// @mixin box-flex($val) {
-//   -webkit-box-flex: $val;
-//   -moz-box-flex: $val;
-//   -ms-box-flex: $val;
-//   -o-box-flex: $val;
-//   box-flex: $val;
-// }
-
-// @mixin box-pack($val) {
-//   -webkit-box-pack: $val;
-//   -moz-box-pack: $val;
-//   -ms-box-pack: $val;
-//   -o-box-pack: $val;
-//   box-pack: $val;
-// }
-
 @mixin width-max-content() {
   width: -webkit-max-content;
   width: -moz-max-content;
@@ -139,6 +107,15 @@ $max-content-width: 760px;
   width: -o-max-content;
   width: max-content;
 }
+
+@mixin width-min-content() {
+  width: -webkit-min-content;
+  width: -moz-min-content;
+  width: -ms-min-content;
+  width: -o-min-content;
+  width: min-content;
+}
+
 
 @mixin user-select($val: none) {
   -webkit-user-select: $val;
@@ -148,11 +125,11 @@ $max-content-width: 760px;
   user-select: $val;
 }
 
-@mixin calc($property, $expression) { 
-  #{$property}: -moz-calc(#{$expression}); 
-  #{$property}: -o-calc(#{$expression}); 
-  #{$property}: -webkit-calc(#{$expression}); 
-  #{$property}: calc(#{$expression}); 
+@mixin calc($property, $expression) {
+  #{$property}: -moz-calc(#{$expression});
+  #{$property}: -o-calc(#{$expression});
+  #{$property}: -webkit-calc(#{$expression});
+  #{$property}: calc(#{$expression});
 }
 
 // @mixin calc-width($val) {

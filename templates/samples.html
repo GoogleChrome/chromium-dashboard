@@ -1,0 +1,307 @@
+{% extends "base.html" %}
+{% load verbatim %}
+
+{% block html_imports %}
+  <link rel="import" href="/static/elements/samples-imports{% if VULCANIZE %}.vulcanize{% endif %}.html">
+{% endblock %}
+
+{% block rss %}
+<link rel="alternate" type="application/rss+xml" href="http://www.chromestatus.com/samples.xml" title="All samples" />
+{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="/static/css/samples.css?2015-10-07">
+
+<style is="custom-style">
+paper-input {
+  --input-color: #85b4df;
+  --paper-input-container-focus-color: var(--input-color);
+  --paper-input-container-color: var(--input-color);
+  --paper-input-container: {
+    padding: 12px;
+  };
+}
+</style>
+{% endblock %}f
+
+{% block subheader %}
+<div id="subheader">
+  <div class="subheader-title">
+    <h2>Web Platform Samples</h2>
+  </div>
+  <div class="search">
+    <paper-input placeholder="Search" type="search" no-label-float autocomplete></paper-input>
+  </div>
+  <div class="actionlinks">
+    <a href="https://github.com/GoogleChrome/samples" target="_blank">
+      <paper-button><iron-icon src="/static/img/github-white.png"></iron-icon>Fork on Github</paper-button>
+    </a>
+  </div>
+</div>
+<div class="subheader layout vertical start">
+  <p class="description">Features are ordered by Chrome release version, latest first. Features
+  enabled by default always come first, followed by features that are behind a flag
+  or are still in the development.</p>
+</div>
+{% endblock %}
+
+{% block content %}
+
+<template id="t" is="dom-bind">
+
+<section id="panels">
+<nav>
+
+  {% verbatim %}
+  <paper-menu id="papermenu" selected-item="{{selectedCategory}}"
+              on-transitionend="_onRippleDone">
+  {% endverbatim %}
+  {% for k,v in CATEGORIES %}
+    {% if v != 'webcomponents' %}
+      <paper-item class="relative" data-category="{{v}}">
+        <iron-icon icon="chromestatus:{{v}}"></iron-icon>{{k}}
+        <paper-ripple></paper-ripple>
+      </paper-item>
+    {% endif %}
+  {% endfor %}
+  </paper-menu>
+
+</nav>
+<div id="sample-panel" class="loading">
+
+  {% verbatim %}
+    <ul id="samplelist" class="card-content">
+      <template is="dom-repeat" items="{{filtered}}" as="feature">
+        <li>
+          <paper-material>
+            <h3 class="feature-name layout horizontal justified">
+              <a href$="[[_computeFeatureLink(feature.id)]]">{{feature.name}}</a>
+              <span class="milestone" hidden$="[[!feature.shipped_milestone]]">Chrome <span>[[feature.shipped_milestone]]</span></span>
+            </h3>
+            <div class="summary">{{feature.summary}}</div>
+            <div class="layout horizontal center justified">
+              <div class="demo-links layout horizontal center">
+                <template is="dom-repeat" items="{{feature.sample_links}}" as="link">
+                  <a href$="[[link]]" target="_blank" class="demo-link">
+                    <paper-button>
+                      <iron-icon icon="chromestatus:open-in-browser"></iron-icon> View Demo
+                    </paper-button>
+                  </a>
+                </template>
+              </div>
+              <iron-icon icon="{{_computeIconId(feature.category)}}"
+                         title="{{feature.category}}"></iron-icon>
+            </div>
+          </paper-material>
+        </li>
+      </template>
+      </ul>
+  {% endverbatim %}
+
+</div>
+</section>
+
+</template>
+
+{% endblock %}
+
+{% block js %}
+<script>
+(function() {
+
+// TODO: move this into a behavior. It's duplicated from chromedash-featurelist.html.
+function matchesMilestone_(milestone, operator, version) {
+  switch (operator) {
+  case '<':
+    return milestone < version;
+    break;
+  case '<=':
+    return milestone <= version;
+    break;
+  case '>':
+    return milestone > version;
+    break;
+  case '>=':
+    return milestone >= version;
+    break;
+  case '=':  // Support both '=' and '=='.
+  case '==':
+    return milestone == version;
+    break;
+  default:
+    return false;
+  }
+}
+
+var search = $('.search paper-input');
+
+var t = $('#t');
+t.categories = {{categories|safe}}; // server included.
+t.prevSelectedCategory = null;
+
+// Set search box to URL deep link.
+if (location.hash) {
+  search.value = location.hash.substr(1);
+  // t.filter(search.value);
+}
+
+t._computeIcon = function(el) {
+  return 'chromestatus:' + (el ? el.dataset.category : '');
+};
+
+t._computeIconId = function(categoryStr) {
+  return 'chromestatus:' + this.categories[categoryStr];
+};
+
+t._computeFeatureLink = function(id) {
+  return '/features/' + id;
+};
+
+t._onSelectCategory = function(e, detail) {
+  // Enable toggling selected item until
+  // https://github.com/PolymerElements/paper-menu/issues/50 is fixed.
+  if (this.selectedCategory === this.prevSelectedCategory) {
+    this.$.papermenu.selected = null;
+    this.prevSelectedCategory = null;
+  } else {
+    this.prevSelectedCategory = this.selectedCategory;
+  }
+  this.filter(search.value);
+};
+
+t._onRippleDone = function(e, detail) {
+  // Needed until https://github.com/PolymerElements/paper-ripple/pull/41 is fixed.
+  this.debounce('ripple', function() {
+    t._onSelectCategory();
+  }, 10);
+};
+
+// TODO: move this into a behavior. It's duplicated from chromedash-featurelist.html.
+t._filterOnOperation = function(features, operator, version) {
+  return features.filter(function(f, idx, array) {
+    var platformMilestones = [
+      parseInt(f.shipped_milestone),
+      parseInt(f.shipped_android_milestone),
+      parseInt(f.shipped_ios_milestone),
+      parseInt(f.shipped_webview_milestone)
+    ];
+    for (var i = 0, milestone; milestone = platformMilestones[i]; ++i) {
+      if (matchesMilestone_(milestone, operator, version)) {
+        return true;  // Only one of the platforms needs to match.
+      }
+    }
+  });
+};
+
+// TODO: move filtering into a behavior. Mostly duped from chromedash-featurelist.html.
+t.filter = function(val) {
+  var features = this.features;
+
+  if (!features) {
+    return;
+  }
+
+  if (!val && !this.selectedCategory) {
+    if (history && history.replaceState) {
+      history.replaceState('', document.title, location.pathname + location.search);
+    } else {
+      location.hash = '';
+    }
+    this.filtered = features;
+
+    return;
+  }
+
+  if (val) {
+    val = val.trim();
+
+    if (history && history.replaceState) {
+      // Minimize updating URL.
+      this.debounce('updateurl', function() {
+        history.replaceState({}, document.title, '/samples#' + val);
+      }, 500);
+    }
+
+    // Returns operator and version query e.g. ["<=25", "<=", "25"].
+    var operatorMatch = /^([<>=]=?)\s*([0-9]+)/.exec(val);
+    if (operatorMatch) {
+      features = this._filterOnOperation(features, operatorMatch[1], operatorMatch[2]);
+    } else {
+      var regex = new RegExp(val, 'i');
+      features = features.filter(function(feature, idx, array) {
+        return regex.test(feature.name) || regex.test(feature.summary);
+      });
+    }
+  }
+
+  // Further refine list based on selected category in menu.
+  if (this.selectedCategory) {
+    var category = this.selectedCategory.textContent.trim();
+    var regex = new RegExp(category, 'i');
+    features = features.filter(function(feature, idx, array) {
+      return regex.test(feature.category);
+    });
+  }
+
+  this.filtered = features;
+};
+
+t.removeFilters = function() {
+  t.filter();
+};
+
+// Fire of samples.json XHR right away so data can populate faster.
+var samplesPromise = new Promise(function(resolve, reject) {
+  var url = location.hostname == 'localhost' ? 'https://www.chromestatus.com/samples.json' :
+                                               '/samples.json';
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', url);
+  xhr.responseType = 'json';
+  xhr.onloadend = function(e) {
+    if (e.target.status < 400) {
+      resolve(e.target.response);
+    } else {
+      reject(new Error('Samples XHR failed with status ' + e.target.statusText));
+    }
+  };
+  xhr.onerror = reject;
+  xhr.send();
+});
+
+samplesPromise.then(function(features) {
+  var re = /github.com\/GoogleChrome\/samples\/tree\/gh-pages\/(.*)/i;
+  features.forEach(function(f, i) {
+    f.sample_links = f.sample_links.map(function(link) {
+      return link.replace(re, 'googlechrome.github.io/samples/$1');
+    });
+  });
+
+  t.features = features;
+  t.filtered = features;
+
+  $('#sample-panel').classList.remove('loading');
+
+  t.filter(search.value);
+
+}, function(e) {
+  console.error(e);
+});
+
+// Clear input when user clicks the 'x' button.
+search.addEventListener('search', function(e) {
+  t.removeFilters();
+});
+
+search.addEventListener('keyup', function(e) {
+  if (!e.target.value && e.keyCode != 27) { // ESC
+    t.removeFilters();
+  } else {
+    //if (e.keyCode == 13) {  // Enter
+      t.filter(e.target.value);
+    //}
+  }
+});
+
+})();
+</script>
+{% endblock %}

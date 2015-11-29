@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+
+{% block page_title %}{% if feature.name %}{{ feature.name }} - {% endif %}{% endblock %}
+
+{% block meta %}
+{% if feature.summary %}
+<meta name="description" content="{{ feature.summary }}">
+{% endif %}
+{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="/static/css/features/feature.css">
+{% endblock %}
+
+{% block rss %}
+<link rel="alternate" type="application/rss+xml" href="http://www.chromestatus.com/features.xml" title="All features" />
+{% endblock %}
+
+{% block content %}
+<div id="feature">
+  <section id="name">
+    <h2>
+      {{ feature.name }}
+      {% if feature.impl_status_chrome == "Deprecated" or feature.impl_status_chrome == "No longer pursuing" %} (deprecated){% endif %}
+      {% if feature.impl_status_chrome == "Removed" %} (removed){% endif %}
+    </h2>
+    <a href="/features#category: {{ feature.category }}" class="category">{{ feature.category }}</a>
+    {% if user.is_whitelisted %}<a href="/admin/features/edit/{{ feature.id }}" class="edit">&#160;edit</a>{% endif %}
+  </section>
+
+  {% if feature.summary %}
+  <section id="summary">
+    <p>{{ feature.summary }}</p>
+    {% if feature.comments %}
+    <p class="note">Note: {{ feature.comments }}</p>
+    {% endif %}
+  </section>
+  {% endif %}
+
+  {% if feature.sample_links %}
+  <section id="demo">
+    <h3>{% if feature.sample_links|length == 1 %}Demo{% else %}Demos{% endif %}</h3>
+    <ul>
+      {% for sample_link in feature.sample_links %}
+      <li><a href="{{ sample_link }}">{{ sample_link }}</a></li>
+      {% endfor %}
+    </ul>
+  </section>
+  {% endif %}
+
+  {% if feature.doc_links %}
+  <section id="documentation">
+    <h3>Documentation</h3>
+    <ul>
+      {% for doc_link in feature.doc_links %}
+      <li><a href="{{ doc_link }}">{{ doc_link }}</a></li>
+      {% endfor %}
+    </ul>
+  </section>
+  {% endif %}
+
+  {% if feature.spec_link %}
+  <section id="specification">
+    <h3>Specification</h3>
+    <p><a href="{{ feature.spec_link }}">{{ feature.standardization.text }}</a></p>
+  </section>
+  {% endif %}
+
+  <section id="status">
+    <h3>Implementation Status</h3>
+    <p>
+      {% if feature.shipped_milestone %}
+        {% if feature.meta.needsflag %}
+          Behind a flag
+        {% else %}
+          {% if feature.impl_status_chrome == "Deprecated" or feature.impl_status_chrome == "No longer pursuing" %}
+            Deprecated
+          {% elif feature.impl_status_chrome == "Removed" %}
+            Removed
+          {% else %}
+            Enabled by default
+          {% endif %}
+        {% endif %} in <b>desktop Chrome {{ feature.meta.milestone_str }}</b>
+      {% else %}
+      <label>Desktop Chrome:</label> {{ feature.meta.milestone_str }}
+      {% endif %}
+      {% if feature.bug_url %}
+      (<a href="{{ feature.bug_url }}">launch bug</a>)
+      {% endif %}
+    </p>
+
+    {% if feature.shipped_android_milestone %}
+      <p>{% if feature.impl_status_chrome == "Deprecated" or feature.impl_status_chrome == "No longer pursuing" %}
+        Deprecated
+      {% elif feature.impl_status_chrome == "Removed" %}
+        Removed
+      {% else %}
+        Available
+      {% endif %} in <b>Chrome for Android release {{ feature.shipped_android_milestone }}</b>.</p>
+    {% endif %}
+
+    {% if feature.shipped_ios_milestone %}
+    <p>Available in <b>Chrome for iOS release {{ feature.shipped_ios_milestone }}</b>.</p>
+    {% endif %}
+
+    {% if feature.shipped_webview_milestone %}
+    <p>Available in <b>Android WebView release {{ feature.shipped_webview_milestone }}</b>.</p>
+    {% endif %}
+  </section>
+
+  <section id="consensus">
+    <h3>Consensus &amp; Standardization</h3>
+    <ul>
+      {% if feature.ff_views %}
+      <li>
+        <label>Firefox:</label>
+        {% if feature.ff_views_link %}
+        <a href="{{ feature.ff_views_link }}">{{ feature.ff_views.text }}</a>
+        {% else %}
+        {{ feature.ff_views.text }}
+        {% endif %}
+      </li>
+      {% endif %}
+
+      {% if feature.ie_views %}
+      <li>
+        <label>Edge:</label>
+        {% if feature.ie_views_link %}
+        <a href="{{ feature.ie_views_link }}">{{ feature.ie_views.text }}</a>
+        {% else %}
+        {{ feature.ie_views.text }}
+        {% endif %}
+      </li>
+      {% endif %}
+
+      {% if feature.shipped_opera_milestone %}
+      <li><label>Opera:</label> Shipped in release {{ feature.shipped_opera_milestone }}</li>
+      {% endif %}
+
+      {% if feature.shipped_opera_android_milestone %}
+      <li><label>Opera for Android:</label> Shipped in release {{ feature.shipped_opera_android_milestone }}</li>
+      {% endif %}
+
+      {% if feature.safari_views %}
+      <li>
+        <label>Safari:</label>
+        {% if feature.safari_views_link %}
+        <a href="{{ feature.safari_views_link }}">{{ feature.safari_views.text }}</a>
+        {% else %}
+        {{ feature.safari_views.text }}
+        {% endif %}
+      </li>
+      {% endif %}
+
+      <li><label>Web Developers:</label> {{ feature.web_dev_views.text }}</li>
+    </ul>
+  </section>
+
+  {% if feature.owner %}
+  <section id="owner">
+    <h3>{% if feature.owner|length == 1 %}Owner{% else %}Owners{% endif %}</h3>
+    <ul>
+      {% for owner in feature.owner %}
+        <li><a href="mailto:{{ owner }}">{{ owner }}</a></li>
+      {% endfor %}
+    </ul>
+  </section>
+  {% endif %}
+
+  <section id="updated">
+    <p>Last updated on {{ feature.updated_display }}</p>
+  </section>
+</div>
+{% endblock %}

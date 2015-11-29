@@ -2,21 +2,54 @@
 
 @import "element";
 
-@host {
-  :scope {
-    display: block;
-  }
+$small-font-size: 80%;
+
+:host {
+  display: block;
 }
 
 ul {
-  & > li {
-    $small-font-size: 75%;
+  &.canaryisdev {
+    li {
+      &:nth-of-type(4)::after {
+        content: 'canary/dev';
+      }
+      &:nth-of-type(5)::after {
+        content: 'beta';
+      }
+      &:nth-of-type(6)::after {
+        content: 'stable';
+      }
+      &:nth-of-type(7)::after {
+        content: '';
+      }
+    }
+  }
+
+  &.betaisdev {
+    li {
+      &:nth-of-type(4)::after {
+        content: 'canary';
+      }
+      &:nth-of-type(5)::after {
+        content: 'dev/beta';
+      }
+      &:nth-of-type(6)::after {
+        content: 'stable';
+      }
+      &:nth-of-type(7)::after {
+        content: '';
+      }
+    }
+  }
+
+  li {
     cursor: pointer;
     padding: 3px 0;
     //@include transition(all 500ms ease);
 
     &::before {
-      @include transition(all 500ms ease);
+      // @include transition(all 300ms cubic-bezier(0.4, 0, 0.2, 1));
       content: '';
       margin-right: 5px;
       border-left: 3px solid transparent;
@@ -28,9 +61,10 @@ ul {
 
     &:first-of-type,
     &:nth-of-type(2),
-    &:nth-of-type(3) {
+    &:nth-of-type(3),
+    &:last-of-type {
       font-size: $small-font-size;
-      font-style: italic;
+      // font-style: italic;
     }
     &:nth-of-type(3) {
       border-bottom: 1px solid $bar-border-color;
@@ -38,20 +72,20 @@ ul {
       margin-bottom: 5px;
     }
     &:nth-of-type(4)::after {
-      content: 'canary/dev';
+      content: 'canary';
     }
     &:nth-of-type(5)::after {
-      content: 'beta';
+      content: 'dev';
     }
     &:nth-of-type(6)::after {
+      content: 'beta';
+    }
+    &:nth-of-type(7)::after {
       content: 'stable';
     }
-    // &:nth-of-type(6)::after {
-    //   content: 'stable';
-    // }
 
     &[selected] {
-      font-weight: 600;
+      font-weight: 500;
       color: $chromium-color-dark;
       &::before {
         border-color: $chromium-color-dark;
@@ -59,3 +93,12 @@ ul {
     }
   }
 }
+
+.error {
+  font-size: $small-font-size;
+  font-weight: 500;
+  font-style: italic;
+  margin: 100px 0 0 5px;
+  color: darkred;
+}
+

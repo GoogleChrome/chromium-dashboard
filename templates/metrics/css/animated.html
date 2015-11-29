@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block css %}
+<link rel="stylesheet" href="/static/css/metrics/metrics.css">
+{% endblock %}
+
+{% block js %}
+{% endblock %}
+
+{% block html_imports %}
+  <link rel="import" href="/static/elements/metrics-imports{% if VULCANIZE %}.vulcanize{% endif %}.html">
+{% endblock %}
+
+{% block subheader %}
+<div id="subheader">
+  <h2>CSS usage metrics &gt; animated properties > stack rank</h2>
+</div>
+{% endblock %}
+
+{% block content %}
+<section id="panels">
+<nav>{% include "metrics/_nav.html" %}</nav>
+<div class="data-panel">
+  <div>
+    <h3>About this data</h3>
+    <p class="description">
+    We've been using Chrome's <a href="https://chromium.googlesource.com/chromium/blink/+/master/Source/core/frame/UseCounter.cpp" target="_blank">anonymous opt-in usage statistics</a> to count the CSS properties which are animated. A property that is animated multiple times during a single page view is counted each time it animates. <b>Percentages on this page indicate the amount of times (as the fraction of all animated properties) each property is used in a Transition or Animation.</b>. Data is ~24 hrs old and reflects usage across all channels and platforms.</p>
+  </div>
+  <chromedash-metrics type="css" view="animated"></chromedash-metrics>
+</div>
+</section>
+
+{% endblock %}

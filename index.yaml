@@ -10,10 +10,15 @@ indexes:
 # automatically uploaded to the admin console when you next deploy
 # your application using appcfg.py.
 
-- kind: Feature
+- kind: AnimatedProperty
   properties:
-  - name: category
-  - name: updated
+  - name: bucket_id
+  - name: date
+
+- kind: AnimatedProperty
+  properties:
+  - name: date
+  - name: day_percentage
     direction: desc
 
 - kind: Feature
@@ -21,6 +26,12 @@ indexes:
   - name: category
   - name: updated
     direction: desc
+
+- kind: Feature
+  properties:
+  - name: category
+  - name: updated
+    direction: desc
   - name: name
 
 - kind: Feature
@@ -76,6 +87,12 @@ indexes:
 
 - kind: Feature
   properties:
+  - name: sample_links
+  - name: updated
+    direction: desc
+
+- kind: Feature
+  properties:
   - name: shipped_milestone
   - name: name
 
@@ -105,6 +122,40 @@ indexes:
   - name: updated
     direction: desc
   - name: name
+
+- kind: FeatureObserver
+  properties:
+  - name: bucket_id
+  - name: date
+
+- kind: FeatureObserver
+  properties:
+  - name: date
+  - name: day_percentage
+    direction: desc
+
+- kind: StableInstance
+  properties:
+  - name: bucket_id
+  - name: date
+
+- kind: StableInstance
+  properties:
+  - name: bucket_id
+  - name: date
+    direction: desc
+
+- kind: StableInstance
+  properties:
+  - name: bucket_id=
+  - name: date
+    direction: desc
+
+- kind: StableInstance
+  properties:
+  - name: date
+  - name: day_percentage
+    direction: desc
 
 - kind: StableInstance
   properties:

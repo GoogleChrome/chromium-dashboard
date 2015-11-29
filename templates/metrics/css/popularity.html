@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block css %}
+<link rel="stylesheet" href="/static/css/metrics/metrics.css">
+{% endblock %}
+
+{% block js %}
+{% endblock %}
+
+{% block html_imports %}
+  <link rel="import" href="/static/elements/metrics-imports{% if VULCANIZE %}.vulcanize{% endif %}.html">
+{% endblock %}
+
+{% block subheader %}
+<div id="subheader">
+  <h2>CSS usage &gt; all properties > stack rank</h2>
+</div>
+{% endblock %}
+
+{% block content %}
+<section id="panels">
+<nav>{% include "metrics/_nav.html" %}</nav>
+<div class="data-panel">
+  <div>
+    <h3>About this data</h3>
+    <p class="description">We've been using Chrome's <a href="https://chromium.googlesource.com/chromium/blink/+/master/Source/core/frame/UseCounter.cpp" target="_blank">anonymous opt-in usage statistics</a> to count the occurrences of certain CSS features in the wild. The numbers on this page indicate the <b>percentages of Chrome page loads (across all channels and platforms) that use the corresponding CSS property at least once</b>. Data is ~24 hrs old.</p>
+  </div>
+  <chromedash-metrics type="css" view="popularity"></chromedash-metrics>
+</div>
+</section>
+
+{% endblock %}
