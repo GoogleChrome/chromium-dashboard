@@ -90,7 +90,7 @@ class MainHandler(http2push.PushHandler, common.ContentHandler, common.JSONHandl
     self.__annotate_first_of_milestones(feature_list)
     return feature_list
 
-  @http2push.push()
+  #@http2push.push()
   def get(self, path, feature_id=None):
     # Default to features page.
     # TODO: remove later when we want an index.html
