@@ -90,7 +90,6 @@ class MainHandler(http2push.PushHandler, common.ContentHandler, common.JSONHandl
     self.__annotate_first_of_milestones(feature_list)
     return feature_list
 
-  #@http2push.push()
   def get(self, path, feature_id=None):
     # Default to features page.
     # TODO: remove later when we want an index.html
@@ -107,6 +106,7 @@ class MainHandler(http2push.PushHandler, common.ContentHandler, common.JSONHandl
       return self.redirect(self.request.path.rstrip('/'))
 
     template_data = {}
+    push_urls = [] # URLs to push in this response.
 
     if path.startswith('features'):
       if path.endswith('.json'): # JSON request.
@@ -168,6 +168,9 @@ class MainHandler(http2push.PushHandler, common.ContentHandler, common.JSONHandl
         template_data['STANDARDS_VALS'] = json.dumps([
           {'key': k, 'val': v} for k,v in
           models.STANDARDIZATION.iteritems()])
+
+        push_urls = http2push.use_push_manifest('push_manifest_features.json')
+
     elif path.startswith('feature'):
       feature = None
       try:
@@ -179,11 +182,13 @@ class MainHandler(http2push.PushHandler, common.ContentHandler, common.JSONHandl
 
       template_data['feature'] = feature
     elif path.startswith('metrics/css/timeline'):
-      properties = sorted(models.CssPropertyHistogram.get_all().iteritems(), key=lambda x:x[1])
+      properties = sorted(
+          models.CssPropertyHistogram.get_all().iteritems(), key=lambda x:x[1])
       template_data['CSS_PROPERTY_BUCKETS'] = json.dumps(
           properties, separators=(',',':'))
     elif path.startswith('metrics/feature/timeline'):
-      properties = sorted(models.FeatureObserverHistogram.get_all().iteritems(), key=lambda x:x[1])
+      properties = sorted(
+          models.FeatureObserverHistogram.get_all().iteritems(), key=lambda x:x[1])
       template_data['FEATUREOBSERVER_BUCKETS'] = json.dumps(
           properties, separators=(',',':'))
     elif path.startswith('omaha_data'):
@@ -212,6 +217,14 @@ class MainHandler(http2push.PushHandler, common.ContentHandler, common.JSONHandl
         template_data['categories'] = dict([
           (v, normalized_name(v)) for k,v in
           models.FEATURE_CATEGORIES.iteritems()])
+
+    if path.startswith('metrics/'):
+      push_urls = http2push.use_push_manifest('push_manifest_metrics.json')
+
+    # Add Link rel=preload header for h2 push on .html file requests.
+    if push_urls:
+      self.response.headers.add_header(
+          'Link', self._generate_link_preload_headers(push_urls))
 
     self.render(data=template_data, template_path=os.path.join(path + '.html'))
 
