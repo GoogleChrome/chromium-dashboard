@@ -16,4 +16,4 @@ readonly BASEDIR=$(dirname $BASH_SOURCE)
 grunt
 
 $BASEDIR/oauthtoken.sh deploy
-appcfg.py update --oauth2 $BASEDIR/../
+appcfg.py update $BASEDIR/../
