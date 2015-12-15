@@ -1,11 +1,18 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="chromedash-feature.html">
 <link rel="import" href="../bower_components/iron-list/iron-list.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
 
 <dom-module id="chromedash-featurelist">
 <link rel="import" type="css" href="../css/elements/chromedash-featurelist.css">
 <template>
-  <ul id="featurelist" class="fit vertical layout">
+  <style>
+    #featurelist {
+      @apply(--layout-vertical);
+      @apply(--layout-fit);
+    }
+  </style>
+  <ul id="featurelist">
     <iron-list items="[[filtered]]" as="feature" id="ironlist">
       <template>
         <div class="item" tabindex="0">
@@ -241,6 +248,8 @@
       _deepLinkToFeature: function() {
         this._set_firstLoad(false);
 
+        this.$.ironlist._update(); // force update to list.
+
         document.getElementById('content').classList.add('ready'); // unmask app.
         console.timeStamp('features unveiled');
         console.timeEnd('features unveil');
@@ -261,16 +270,11 @@
       },
 
       _filteredChanged: function(newVal, oldVal) {
-        if (oldVal === undefined || newVal.length === oldVal.length) {
+        if (oldVal === undefined || newVal.length === oldVal.length ||
+            !this._firstLoad) {
           return;
         }
-
-        // Wait one rAF do model has updated the DOM.
-        this.async(function() {
-          if (this._firstLoad) {
-            this._deepLinkToFeature();
-          }
-        });
+        this._deepLinkToFeature();
       },
 
       _computeMilestoneHidden: function(feature, features, filtered) {

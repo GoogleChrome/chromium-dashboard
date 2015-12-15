@@ -7,7 +7,7 @@
     "type": "script",
     "weight": 1
   },
-  "/static/css/features/metrics.css": {
+  "/static/css/metrics/metrics.css": {
     "type": "style",
     "weight": 1
   },

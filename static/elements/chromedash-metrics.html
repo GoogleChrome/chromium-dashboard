@@ -1,19 +1,29 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
 <link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
 <link rel="import" href="../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../bower_components/iron-flex-layout/classes/iron-flex-layout.html">
 <link rel="import" href="x-meter.html">
 
 <dom-module id="chromedash-metrics">
 <link rel="import" type="css" href="../css/elements/chromedash-metrics.css">
 <template>
+  <style>
+    .header label {
+      @apply(--layout-horizontal);
+      @apply(--layout-center);
+    }
+    #stack-rank-list .percent_label {
+      @apply(--layout-flex-2);
+    }
+  </style>
   <iron-ajax auto url="[[endpoint]]" last-response="{{props}}" handle-as="json"></iron-ajax>
   <b>Showing <span>{{props.length}}</span> properties</b>
   <ol id="stack-rank-list">
     <li class="header">
-      <label on-tap="sort" data-order="property_name" class="layout horizontal center">
+      <label on-tap="sort" data-order="property_name">
         Property name <iron-icon icon="[[propertyNameSortIcon]]"></iron-icon>
       </label>
-      <label on-tap="sort" data-order="percentage" class="flex2">
+      <label on-tap="sort" data-order="percentage" class="percent_label">
        Percentage <iron-icon icon="[[percentSortIcon]]"></iron-icon>
       </label>
     </li>

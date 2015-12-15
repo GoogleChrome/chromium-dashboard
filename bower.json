@@ -35,6 +35,6 @@
     "iron-icons": "PolymerElements/iron-icons#^1.0.3",
     "paper-button": "PolymerElements/paper-button#^1.0.3",
     "paper-card": "PolymerElements/paper-card#^1.0.0",
-    "iron-list": "PolymerElements/iron-list#^1.1.0"
+    "iron-list": "PolymerElements/iron-list#^1.1.6"
   }
 }
