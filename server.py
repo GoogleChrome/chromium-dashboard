@@ -217,6 +217,16 @@ class MainHandler(http2push.PushHandler, common.ContentHandler, common.JSONHandl
         template_data['categories'] = dict([
           (v, normalized_name(v)) for k,v in
           models.FEATURE_CATEGORIES.iteritems()])
+    elif path.startswith('sample'):
+      feature = None
+      try:
+        feature = models.Feature.get_feature(int(feature_id))
+      except TypeError:
+        pass
+      if feature is None:
+        self.abort(404)
+
+      template_data['feature'] = feature
 
     if path.startswith('metrics/'):
       push_urls = http2push.use_push_manifest('push_manifest_metrics.json')

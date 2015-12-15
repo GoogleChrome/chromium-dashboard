@@ -92,6 +92,10 @@ paper-input {
               <iron-icon icon="{{_computeIconId(feature.category)}}"
                          title="{{feature.category}}"></iron-icon>
             </div>
+            <a href$="{{_computeSampleLink(feature.id)}}" target="_blank"
+               class="open-standalone" title="View on standalone page">
+              <img src="/static/elements/openinnew.svg" class="opennew">
+            </a>
           </paper-material>
         </li>
       </template>
@@ -155,6 +159,10 @@ t._computeIconId = function(categoryStr) {
 
 t._computeFeatureLink = function(id) {
   return '/features/' + id;
+};
+
+t._computeSampleLink = function(id) {
+  return '/sample/' + id;
 };
 
 t._onSelectCategory = function(e, detail) {
