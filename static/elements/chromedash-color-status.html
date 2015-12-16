@@ -9,10 +9,6 @@
     Polymer({
       is: 'chromedash-color-status',
       properties: {
-        height: {
-          type: Number,
-          value: 10
-        },
         max: {
           type: Number,
           value: 7,
@@ -21,10 +17,6 @@
         value: {
           type: Number,
           observer: '_valueChanged'
-        },
-        width: {
-          type: Number,
-          value: 10
         }
       },
       updateColor: function() {

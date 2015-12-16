@@ -15,6 +15,20 @@ span {
   #status {
     border-radius: 0;
     height: 100%; // Ensures we can color coverage when feature is scrolled.
-    width: 7px;
+    width: 4px;
+  }
+}
+
+:host(.bottom) {
+  height: 8px;
+  width: 100%;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+
+  #status {
+    border-radius: 0;
+    height: 100%;
+    width: 100%;
   }
 }
