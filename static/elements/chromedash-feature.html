@@ -61,7 +61,7 @@
 <link rel="import" type="css" href="../css/elements/chromedash-feature.css">
 <template>
 <div class="main-content-area">
-  <hgroup on-tap="_toggle">
+  <hgroup on-tap="toggle">
     <chromedash-color-status class="tooltip corner"
        title="Compatibility risk: perceived interest from browser vendors and web developers"
        value="[[compatRisk]]" max="[[MAX_RISK]]"></chromedash-color-status>
@@ -94,7 +94,7 @@
       </div>
     </div>
   </hgroup>
-  <section class="desc" on-tap="_toggle">
+  <section class="desc" on-tap="toggle">
     <summary>
       <!-- <html-echo html="[[_urlizeFilter(feature.summary)]]"></html-echo> -->
       <span>[[feature.summary]]</span>
@@ -198,7 +198,7 @@
             <chromedash-color-status class="bottom"
                 value="[[feature.standardization.value]]"
                 max="[[MAX_STANDARDS_VAL]]"></chromedash-color-status>
-            <span class="vendor-view w3c-view"></span>
+            <!-- <span class="vendor-view w3c-view"></span> -->
             <template is="dom-if" if="{{feature.spec_link}}">
               <a href$="{{feature.spec_link}}" target="_blank">{{feature.standardization.text}}</a>
             </template>
@@ -216,6 +216,7 @@
             <div class="doc_links">
               <multi-links links="[[feature.doc_links]]" title="Link"></multi-links>
             </div>
+            <span hidden$="{{!_computeSampleLinks(feature)}}">,</span>
           </template>
           <template is="dom-if" if="{{_computeSampleLinks(feature)}}">
             <div class="sample_links">
@@ -294,8 +295,7 @@
         type: Boolean,
         notify: true,
         reflectToAttribute: true, // for styling.
-        computed: '_featureOpen(feature.open)',
-        observer: '_openChanged'
+        computed: '_featureOpen(feature.open)'
       }
     },
 
@@ -344,14 +344,6 @@
       this.compatRisk = vendors + webdevs + standards;
     },
 
-    _openChanged: function() {
-      // Feature is being opened from loading the page to a deep link. Fire
-      // `feature-toggled` to notify iron-list to update its virtual view.
-      if (this.feature && this.open) {
-        this.fire('feature-toggled', {feature: this.feature, open: this.open});
-      }
-    },
-
     _featureChanged: function() {
       this._calculateCompatRisk();  // TODO: these values are brittle if the strings change.
     },
@@ -388,6 +380,9 @@
       return '/admin/features/edit/' + feature.id;
     },
     _computeCrbug: function(link) {
+      if (!link) {
+        return link;
+      }
       var m = link.match(/[\/|?id=]([0-9]+)$/); // pull out bug number.
       if (m) {
         return '#' + m[1];

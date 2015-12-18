@@ -222,9 +222,8 @@
         var feature = detail.feature;
         var open = detail.open;
 
-        // Force re-render virtual list since height of feature changed.
-        // See github.com/PolymerElements/iron-list/issues/13.
-        this.$.ironlist._update();
+        // Height of item changed. See github.com/PolymerElements/iron-list/issues/13.
+        this.$.ironlist.updateSizeForItem(feature);
 
         if (history && history.replaceState) {
           if (open) {
