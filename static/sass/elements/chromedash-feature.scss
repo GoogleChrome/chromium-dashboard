@@ -4,12 +4,7 @@
 
 :host {
   @include display-flex;
-  // @include transition(height 400ms ease-in-out);
-  // height: $feature-min-height;
-  // overflow: hidden;
-  cursor: pointer;
   @include gradient-bar-bg;
-  // margin-bottom: 10px !important;
   position: relative;
   border-radius: $default-border-radius;
   padding: 10px 20px !important;
@@ -22,14 +17,16 @@
 }
 
 :host([open]) {
-  // height: 290px;
-  // height: auto;
   overflow: auto;
   outline: none;
 
   .desc summary {
     white-space: normal;
   }
+}
+
+[hidden] {
+  display: none !important;
 }
 
 h2 {
@@ -54,11 +51,6 @@ iron-icon {
   &.experimental {
     color: var(--paper-green-700);
   }
-  // &.opennew {
-  //   color: var(--paper-grey-700);
-  //   --iron-icon-height: 14px;
-  //   --iron-icon-width: 14px;
-  // }
 }
 
 .opennew {
@@ -83,7 +75,6 @@ iron-icon {
   @include display-flex;
   @include align-items(center);
   height: 100%;
-  // box-shadow: -1px 1px 3px #ccc;
   border-left: 2px solid #eee;
   padding: 4px;
 }
@@ -112,15 +103,13 @@ iron-icon {
 hgroup {
   @include display-flex;
   @include align-items(flex-start);
+  cursor: pointer;
 
   .category {
     color: $gray-2;
-    //font-size: 14px;
-    cursor: pointer;
   }
 
   chromedash-color-status {
-    //margin-right: 10px;
     position: absolute;
     top: 0;
     left: 0;
@@ -128,7 +117,6 @@ hgroup {
     &:hover, &:active {
       &:before {
         @include tooltip;
-        //top: 5px;
         top: 50%;
         margin: -30px auto;
         left: 25px;
@@ -160,24 +148,26 @@ section {
     font-weight: 400;
   }
 
-  label {
-    font-weight: 600;
-    //color: $chromium-color-dark;
-    margin-right: 5px;
-  }
-
   div {
-    margin-bottom: 10px;
-    // @include flex-wrap(wrap);
-    @include display-flex;
     > span {
-      margin-right: 20px;
-      // @include flex-wrap(nowrap);
       @include flex-shrink(0);
     }
   }
 
   .impl_status {
+    @include display-flex;
+    @include flex-direction(column);
+
+    > span {
+      @include display-flex;
+      @include justify-content(space-between);
+      padding: 8px;
+
+      &:nth-of-type(odd) {
+        background: #eee;
+      }
+    }
+
     .chrome_desktop, .chrome_android, .chrome_webview {
       &.tooltip {
         position: relative;
@@ -197,38 +187,101 @@ section {
     @include display-flex;
     @include flex-wrap(wrap);
 
-    & > span {
+    .view {
       @include display-flex;
       @include align-items(center);
       position: relative;
+      height: 35px;
+      background: #eee;
+      margin: 0 8px 16px 0;
+      padding: 8px;
 
-      > label {
-        cursor: inherit;
+      &.tooltip {
+        &:hover, &:active {
+          &:before {
+            @include tooltip;
+            top: -50px;
+            left: 20px;
+            width: 150px;
+          }
+        }
       }
+    }
 
+    .standardization {
+      .vendor-view {
+        margin-left: 0;
+      }
+    }
+
+    iron-icon {
+      margin: 0 8px;
+    }
+
+    .vendor-view {
+      background: url(/static/img/browsers-logos.png) no-repeat;
+      background-size: cover;
+      height: 16px;
+      margin: 8px;
+      display: inline-block;
+    }
+
+    .opera-view {
+      .vendor-view {
+        background-position: -60px 50%;
+        width: 17px;
+      }
       &:hover, &:active {
         &:before {
-          @include tooltip;
-          top: -50px;
-          left: 20px;
-          width: 150px;
+          width: 210px !important;
+          left: -80px !important;
+        }
+      }
+    }
+
+    .edge-view {
+      background-position: -80px 50%;
+      width: 16px;
+    }
+    .safari-view {
+      background-position: -20px 50%;
+      width: 17px
+    }
+    .ff-view {
+      background-position: -40px 50%;
+      width: 17px;
+    }
+    .w3c-view {
+      background-position: -99px 50%;
+      width: 22px;
+    }
+    .webdev-view {
+      &:hover, &:active {
+        &:before {
+          left: -80px !important;
+          width: 160px !important;
         }
       }
     }
   }
 
-  .standardization {
-    @include display-flex;
-    @include flex-wrap(wrap);
-    & > span {
-      @include display-flex;
-      @include align-items(center);
+  chromedash-color-status {
+    width: 3px;
+    overflow: hidden;
+
+    &.bottom {
+      margin-top: 3px;
     }
   }
 
-  .owner {
+  .owner-list {
     @include display-flex;
-    @include flex-wrap(wrap);
+    @include flex-direction(column);
+    @include align-items(flex-end);
+
+    a {
+      display: block;
+    }
   }
 
   .comments html-echo {
@@ -238,19 +291,32 @@ section {
   .doc_links, .sample_links, .owner {
     @include flex-shrink(1 !important);
   }
+  .sample_links {
+    margin-left: 8px;
+  }
 }
 
-chromedash-color-status {
+.sidebyside {
   @include display-flex;
-  margin-right: 5px;
-  box-sizing: border-box;
-  @include flex(auto 0 0);
+  @include justify-content(space-between);
+
+  .flex {
+    -ms-flex: 0 0 calc(50% - 16px);
+    -webkit-flex: 0 0 calc(50% - 16px);
+    flex: 0 0 calc(50% - 16px);
+  }
 }
 
+.resources {
+  @include display-flex;
+  @include align-items(center);
+  label {
+    margin-right: 8px;
+  }
+}
 
 @media only screen and (max-width: 700px) {
   :host {
-    // box-shadow: none !important;
     border-radius: 0 !important;
     margin: 7px initial !important;
     @include transition(none !important);
@@ -271,10 +337,6 @@ chromedash-color-status {
     display: none;
   }
   .impl_status {
-    @include display-flex;
-    // @include flex-direction(column);
-    // @include flex-wrap(initial);
-    @include flex-wrap(wrap);
     > span:not([hidden]):not(:last-of-type),
     > a {
       margin-bottom: 10px;
@@ -282,5 +344,9 @@ chromedash-color-status {
   }
   .views > span {
     margin-bottom: 10px;
+  }
+
+  .sidebyside {
+    @include flex-direction(column);
   }
 }
