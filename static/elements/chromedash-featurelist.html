@@ -223,7 +223,8 @@
         var open = detail.open;
 
         // Height of item changed. See github.com/PolymerElements/iron-list/issues/13.
-        this.$.ironlist.updateSizeForItem(feature);
+        //this.$.ironlist.updateSizeForItem(feature);
+        this.$.ironlist._update(); // force entire list to update.
 
         if (history && history.replaceState) {
           if (open) {
