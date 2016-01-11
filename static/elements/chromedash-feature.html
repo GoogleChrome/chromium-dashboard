@@ -63,8 +63,8 @@
 <div class="main-content-area">
   <hgroup on-tap="toggle">
     <chromedash-color-status class="tooltip corner"
-       title="Compatibility risk: perceived interest from browser vendors and web developers"
-       value="[[compatRisk]]" max="[[MAX_RISK]]"></chromedash-color-status>
+       title="Interoperability risk: perceived interest from browser vendors and web developers"
+       value="[[interopRisk]]" max="[[MAX_RISK]]"></chromedash-color-status>
     <h2>{{feature.name}}</h2>
     <div class="iconrow">
       <label class="category" on-tap="categoryFilter">{{feature.category}}</label>
@@ -267,7 +267,7 @@
         value: 6,
         readOnly: true
       },
-      compatRisk: {
+      interopRisk: {
         type: Number,
         value: 0
       },
@@ -341,7 +341,7 @@
       var vendors = (this.feature.ff_views.value + this.feature.ie_views.value + this.feature.safari_views.value) / 3;
       var webdevs = this.feature.web_dev_views.value;
       var standards = this.feature.standardization.value;
-      this.compatRisk = vendors + webdevs + standards;
+      this.interopRisk = vendors + webdevs + standards;
     },
 
     _featureChanged: function() {
