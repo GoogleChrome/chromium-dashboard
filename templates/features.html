@@ -140,11 +140,11 @@ var featuresPromise = new Promise(function(resolve, reject) {
   xhr.open('GET', url);
   xhr.responseType = 'json';
 
-  console.time('features unveil'); // benchmark how long it takes load features.
-  console.timeStamp('features fetch');
+  console.time && console.time('features unveil'); // benchmark how long it takes load features.
+  console.timeStamp && console.timeStamp('features fetch');
 
   xhr.onloadend = function(e) {
-    console.timeStamp('features loaded');
+    console.timeStamp && console.timeStamp('features loaded');
     if (e.target.status < 400) {
       resolve(e.target.response);
     } else {
@@ -165,6 +165,7 @@ function importsLoaded() {
     search.disabled = false;
   }, function(e) {
     document.getElementById('content').classList.add('error');
+    console.error(e);
   });
 
   // // Alternative to XHR, we could fill data from server by including it
