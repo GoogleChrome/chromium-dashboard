@@ -165,6 +165,10 @@ class ContentHandler(BaseHandler):
 
 def handle_401(request, response, exception):
   ERROR_401 = (
+    '<style>'
+      'body { padding: 2em; }'
+      'h1, h2 { font-weight: 300; font-family: "Roboto", sans-serif; }\n'
+    '</style>\n'
     '<title>401 Unauthorized</title>\n'
     '<h1>Error: Unauthorized</h1>\n'
     '<h2>User does not have permission to view this page.</h2>')
@@ -173,16 +177,24 @@ def handle_401(request, response, exception):
 
 def handle_404(request, response, exception):
   ERROR_404 = (
+    '<style>'
+      'body { padding: 2em; }'
+      'h1, h2 { font-weight: 300; font-family: "Roboto", sans-serif; }\n'
+    '</style>\n'
     '<title>404 Not Found</title>\n'
     '<h1>Error: Not Found</h1>\n'
-    '<h2>The requested URL <code>%s</code> was not found on this server.'
-    '</h2>' % request.url)
+    '<h2>The requested URL was not found on this server.'
+    '</h2>')
   response.write(ERROR_404)
   response.set_status(404)
 
 def handle_500(request, response, exception):
   logging.exception(exception)
   ERROR_500 = (
+    '<style>'
+      'body { padding: 2em; }'
+      'h1, h2 { font-weight: 300; font-family: "Roboto", sans-serif; }\n'
+    '</style>\n'
     '<title>500 Internal Server Error</title>\n'
     '<h1>Error: 500 Internal Server Error</h1>')
   response.write(ERROR_500)
