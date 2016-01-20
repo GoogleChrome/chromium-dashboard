@@ -26,7 +26,7 @@ Engine Python SDK:
 
 ### LICENSE
 
-Copyright (c) 2013-2015 The Chromium Authors. All rights reserved.
+Copyright (c) 2013-2016 The Chromium Authors. All rights reserved.
 
 [BSD License](http://src.chromium.org/viewvc/chrome/trunk/src/LICENSE)
 
