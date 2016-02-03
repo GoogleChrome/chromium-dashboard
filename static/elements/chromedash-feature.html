@@ -84,6 +84,11 @@
             <iron-icon icon="icons:extension" class="experimental"></iron-icon>
           </span>
         </template>
+        <template is="dom-if" if="{{feature.meta.experimentalframework}}">
+          <span class="tooltip" title="Feature in experimental framework">
+            <iron-icon icon="icons:extension" class="experimental"></iron-icon>
+          </span>
+        </template>
         <template is="dom-if" if="{{whitelisted}}">
           <span class="tooltip" title="Edit this feature">
             <a href$="{{_computeEditLinkHidden(feature)}}" class="editfeature" data-tooltip>
