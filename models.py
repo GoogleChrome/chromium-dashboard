@@ -56,6 +56,7 @@ BEHIND_A_FLAG = 4
 ENABLED_BY_DEFAULT = 5
 DEPRECATED = 6
 REMOVED = 7
+EXPERIMENTAL_FRAMEWORK = 8
 NO_LONGER_PURSUING = 1000 # insure bottom of list
 
 IMPLEMENTATION_STATUS = {
@@ -66,6 +67,7 @@ IMPLEMENTATION_STATUS = {
   ENABLED_BY_DEFAULT: 'Enabled by default',
   DEPRECATED: 'Deprecated',
   REMOVED: 'Removed',
+  EXPERIMENTAL_FRAMEWORK: 'In experimental framework',
   NO_LONGER_PURSUING: 'No longer pursuing',
   }
 
@@ -223,6 +225,7 @@ class Feature(DictModel):
     d['visibility'] = VISIBILITY_CHOICES[self.visibility]
     d['impl_status_chrome'] = IMPLEMENTATION_STATUS[self.impl_status_chrome]
     d['meta'] = {
+      'experimentalframework': self.impl_status_chrome == EXPERIMENTAL_FRAMEWORK,
       'needsflag': self.impl_status_chrome == BEHIND_A_FLAG,
       'milestone_str': self.shipped_milestone or d['impl_status_chrome']
       }

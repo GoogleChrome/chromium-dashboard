@@ -70,10 +70,12 @@
     <h3>Implementation Status</h3>
     <p>
       {% if feature.shipped_milestone %}
-        {% if feature.meta.needsflag %}
-          Behind a flag
+        {% if feature.meta.experimentalframework %}
+          In experimental framework
         {% else %}
-          {% if feature.impl_status_chrome == "Deprecated" or feature.impl_status_chrome == "No longer pursuing" %}
+          {% if feature.meta.needsflag %}
+            Behind a flag
+          {% elif feature.impl_status_chrome == "Deprecated" or feature.impl_status_chrome == "No longer pursuing" %}
             Deprecated
           {% elif feature.impl_status_chrome == "Removed" %}
             Removed
