@@ -8,6 +8,7 @@ from google.appengine.ext import db
 #from google.appengine.ext.db import djangoforms
 
 #from django.forms import ModelForm
+from collections import OrderedDict
 from django import forms
 
 import settings
@@ -59,17 +60,16 @@ REMOVED = 7
 EXPERIMENTAL_FRAMEWORK = 8
 NO_LONGER_PURSUING = 1000 # insure bottom of list
 
-IMPLEMENTATION_STATUS = {
-  NO_ACTIVE_DEV: 'No active development',
-  PROPOSED: 'Proposed',
-  IN_DEVELOPMENT: 'In development',
-  BEHIND_A_FLAG: 'Behind a flag',
-  ENABLED_BY_DEFAULT: 'Enabled by default',
-  DEPRECATED: 'Deprecated',
-  REMOVED: 'Removed',
-  EXPERIMENTAL_FRAMEWORK: 'In experimental framework',
-  NO_LONGER_PURSUING: 'No longer pursuing',
-  }
+IMPLEMENTATION_STATUS = OrderedDict()
+IMPLEMENTATION_STATUS[NO_ACTIVE_DEV] = 'No active development'
+IMPLEMENTATION_STATUS[PROPOSED] = 'Proposed'
+IMPLEMENTATION_STATUS[IN_DEVELOPMENT] = 'In development'
+IMPLEMENTATION_STATUS[BEHIND_A_FLAG] = 'Behind a flag'
+IMPLEMENTATION_STATUS[EXPERIMENTAL_FRAMEWORK] = 'In experimental framework'
+IMPLEMENTATION_STATUS[ENABLED_BY_DEFAULT] = 'Enabled by default'
+IMPLEMENTATION_STATUS[DEPRECATED] = 'Deprecated'
+IMPLEMENTATION_STATUS[REMOVED] = 'Removed'
+IMPLEMENTATION_STATUS[NO_LONGER_PURSUING] = 'No longer pursuing'
 
 MAJOR_NEW_API = 1
 MAJOR_MINOR_NEW_API = 2
