@@ -198,8 +198,8 @@
         }
         for (var i = 0, f; f = this.filtered[i]; ++i) {
           if (f.id == id) {
-            this.$.ironlist.scrollToIndex(i + 1);
             this.set(['filtered', i, 'open'], true); // trigger feature panel open.
+            this.$.ironlist.scrollToIndex(i);
             return;
           }
         }
