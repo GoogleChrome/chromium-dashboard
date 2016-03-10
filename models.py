@@ -246,8 +246,8 @@ class Feature(DictModel):
     d = self.to_dict()
     #d['id'] = self.key().id
     d['owner'] = ', '.join(self.owner)
-    d['doc_links'] = ', '.join(self.doc_links)
-    d['sample_links'] = ', '.join(self.sample_links)
+    d['doc_links'] = '\r\n'.join(self.doc_links)
+    d['sample_links'] = '\r\n'.join(self.sample_links)
     d['search_tags'] = ', '.join(self.search_tags)
     return d
 
@@ -526,12 +526,12 @@ class FeatureForm(forms.Form):
                              help_text="Prefer editor's draft.")
 
   doc_links = forms.CharField(label='Doc links', required=False, max_length=500,
-      widget=forms.Textarea(attrs={'cols': 50, 'placeholder': 'Links to documentation (comma separated)', 'maxlength': 500}),
-      help_text='Comma separated URLs')
+      widget=forms.Textarea(attrs={'cols': 50, 'placeholder': 'Links to documentation (one per line)', 'maxlength': 500}),
+      help_text='One URL per line')
 
   sample_links = forms.CharField(label='Samples links', required=False, max_length=500,
-      widget=forms.Textarea(attrs={'cols': 50, 'placeholder': 'Links to samples (comma separated)', 'maxlength': 500}),
-      help_text='Comma separated URLs')
+      widget=forms.Textarea(attrs={'cols': 50, 'placeholder': 'Links to samples (one per line)', 'maxlength': 500}),
+      help_text='One URL per line')
 
   footprint  = forms.ChoiceField(label='Technical footprint',
                                  choices=FOOTPRINT_CHOICES.items(),
