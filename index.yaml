@@ -130,6 +130,12 @@ indexes:
 
 - kind: FeatureObserver
   properties:
+  - name: bucket_id
+  - name: date
+    direction: desc
+
+- kind: FeatureObserver
+  properties:
   - name: date
   - name: day_percentage
     direction: desc

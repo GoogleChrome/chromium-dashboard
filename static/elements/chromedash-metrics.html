@@ -31,10 +31,9 @@
       <li class="loading">Loading...</li>
     </template>
     <template is="dom-repeat" items="{{viewList}}" as="prop">
-      <li id="{{prop.property_name}}" hidden$="{{_computeHidden(prop)}}" tabindex="0">
+      <li id="{{prop.property_name}}" title="{{prop.property_name}}. Click to deep link to this property." hidden$="{{_computeHidden(prop)}}" tabindex="0">
         <label>
-          <a href$="{{_computeHref(prop)}}" title="Deep link to this property"
-             alt="Deep link to this property">{{prop.property_name}}</a>
+          <a href$="{{_computeHref(prop)}}">{{prop.property_name}}</a>
         </label>
         <x-meter value="[[prop.percentage]]" on-tap="showTimeline"
                  title="Click to see a timeline view of this property"></x-meter>

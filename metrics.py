@@ -95,26 +95,23 @@ class FeatureHandler(common.JSONHandler):
     properties = memcache.get(self.MEMCACHE_KEY)
 
     if properties is None:
-      # Find last date data was fetched by pulling one entry.
-      result = self.MODEL_CLASS.all().order('-date').get()
 
       properties = []
 
-      if result:
+      # For every css/feature property, fetch latest day_percentage.
+      buckets = self.PROPERTY_CLASS.all().fetch(None)
+      for b in buckets:
         query = self.MODEL_CLASS.all()
-        query.filter('date =', result.date)
-        query.order('-day_percentage')
-        properties = query.fetch(None) # All matching results.
+        query.filter('bucket_id =', b.bucket_id)
+        query.order('-date')
+        last_result = query.get()
+        if last_result:
+          properties.append(last_result)
 
-        # Go another day back if if data looks invalid.
-        if (properties[0].day_percentage < 0 or
-            properties[0].day_percentage > 1):
-          query = self.MODEL_CLASS.all()
-          query.filter('date =', result.date - timedelta(days=1))
-          query.order('-day_percentage')
-          properties = query.fetch(None)
+      # Sort list by percentage. Highest first.
+      properties.sort(key=lambda x: x.day_percentage, reverse=True)
 
-        memcache.set(self.MEMCACHE_KEY, properties, time=CACHE_AGE)
+      memcache.set(self.MEMCACHE_KEY, properties, time=CACHE_AGE)
 
     properties = self._clean_data(properties)
     super(FeatureHandler, self).get(properties)
@@ -124,6 +121,7 @@ class CSSPopularityHandler(FeatureHandler):
 
   MEMCACHE_KEY = 'css_popularity'
   MODEL_CLASS = models.StableInstance
+  PROPERTY_CLASS = models.CssPropertyHistogram
 
   def get(self):
     super(CSSPopularityHandler, self).get()
@@ -133,6 +131,7 @@ class CSSAnimatedHandler(FeatureHandler):
 
   MEMCACHE_KEY = 'css_animated'
   MODEL_CLASS = models.AnimatedProperty
+  PROPERTY_CLASS = models.CssPropertyHistogram
 
   def get(self):
     super(CSSAnimatedHandler, self).get()
@@ -142,6 +141,7 @@ class FeatureObserverPopularityHandler(FeatureHandler):
 
   MEMCACHE_KEY = 'featureob_popularity'
   MODEL_CLASS = models.FeatureObserver
+  PROPERTY_CLASS = models.FeatureObserverHistogram
 
   def get(self):
     super(FeatureObserverPopularityHandler, self).get()
