@@ -21,6 +21,12 @@ indexes:
   - name: day_percentage
     direction: desc
 
+- kind: AnimatedProperty
+  properties:
+  - name: bucket_id
+  - name: date
+    direction: desc
+
 - kind: Feature
   properties:
   - name: category
