@@ -4,4 +4,4 @@ cron:
   schedule: every day 04:00
 - description: retrieve from UMA Cloud Storage data gathered yesterday
   url: /cron/metrics
-  schedule: every day 05:00
+  schedule: every day 22:00
