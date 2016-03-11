@@ -7,9 +7,9 @@
   position: relative;
 }
 
-// #featurelist {
-//   @include transform(translateZ(0)); // force composite layer in stable
-// }
+#featurelist {
+  //@include transform(translateZ(0)); // force composite layer in stable
+}
 
 // See https://crbug.com/553278
 #ironlist {
