@@ -102,11 +102,23 @@
     {% endif %}
 
     {% if feature.shipped_ios_milestone %}
-    <p>Available in <b>Chrome for iOS release {{ feature.shipped_ios_milestone }}</b>.</p>
+      <p>{% if feature.impl_status_chrome == "Deprecated" or feature.impl_status_chrome == "No longer pursuing" %}
+        Deprecated
+      {% elif feature.impl_status_chrome == "Removed" %}
+        Removed
+      {% else %}
+        Available
+      {% endif %} in <b>Chrome for iOS release {{ feature.shipped_ios_milestone }}</b>.</p>
     {% endif %}
 
     {% if feature.shipped_webview_milestone %}
-    <p>Available in <b>Android WebView release {{ feature.shipped_webview_milestone }}</b>.</p>
+      <p>{% if feature.impl_status_chrome == "Deprecated" or feature.impl_status_chrome == "No longer pursuing" %}
+        Deprecated
+      {% elif feature.impl_status_chrome == "Removed" %}
+        Removed
+      {% else %}
+        Available
+      {% endif %} in <b>Android WebView release {{ feature.shipped_webview_milestone }}</b>.</p>
     {% endif %}
   </section>
 
