@@ -357,7 +357,7 @@ class Feature(DictModel):
     if feature_list is None or update_cache:
       # Get all shipping features. Ordered by shipping milestone (latest first).
       q = Feature.all()
-      q.filter('impl_status_chrome =', ENABLED_BY_DEFAULT)
+      q.filter('impl_status_chrome IN', [ENABLED_BY_DEFAULT, EXPERIMENTAL_FRAMEWORK])
       q.order('-impl_status_chrome')
       q.order('-shipped_milestone')
       q.order('name')
