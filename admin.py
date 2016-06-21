@@ -42,95 +42,62 @@ import common
 import models
 import settings
 
-
-# uma.googleplex.com/data/histograms/ids-chrome-histograms.txt
-BIGSTORE_BUCKET = '/uma-dashboards/'
-BIGSTORE_RESTFUL_URI = 'https://uma-dashboards.storage.googleapis.com/'
+UMA_QUERY_SERVER = 'https://uma-export.appspot.com/chromestatus/'
 
 HISTOGRAMS_URL = 'https://chromium.googlesource.com/chromium/src/+/master/' \
     'tools/metrics/histograms/histograms.xml?format=TEXT'
 
-CSSPROPERITES_BS_HISTOGRAM_ID = str(0xbfd59b316a6c31f1)
-ANIMATIONPROPS_BS_HISTOGRAM_ID = str(0xbee14b73f4fdde73)
-FEATURE_OBSERVER_BS_HISTOGRAM_ID = str(0x2e44945129413683)
-
-PAGE_VISITS_BUCKET_ID = 52
-
-# For fetching files from the production BigStore during development.
-OAUTH2_CREDENTIALS_FILENAME = os.path.join(
-    settings.ROOT_DIR, 'scripts', 'oauth2.data')
+# Path to a local cookie to supply when running dev_appserver
+# Go to https://uma-export.appspot.com/login and login then copy the
+# value of SACSID from browser and write this to a cookie file.
+COOKIE_FILENAME = os.path.join(settings.ROOT_DIR, 'cookie')
 
 
-class YesterdayHandler(blobstore_handlers.BlobstoreDownloadHandler):
-  """Loads yesterday's UMA data from BigStore."""
+def _FetchWithCookie(url):
+  if settings.PROD:
+    return urlfetch.fetch(url)
+  try:
+    with open(COOKIE_FILENAME, 'r') as f:
+      cookie = f.readline()
+  except IOError, e:
+    logging.error(e)
+  return urlfetch.fetch(
+      url, headers={'cookie': 'SACSID=' + cookie}, deadline=60)
 
-  MODEL_CLASS = {
-    CSSPROPERITES_BS_HISTOGRAM_ID: models.StableInstance,
-    ANIMATIONPROPS_BS_HISTOGRAM_ID: models.AnimatedProperty,
-    FEATURE_OBSERVER_BS_HISTOGRAM_ID: models.FeatureObserver,
-  }
 
-  def _SaveData(self, data, yesterday, histogram_id):
-    try:
-      model_class = self.MODEL_CLASS[histogram_id]
-    except Exception, e:
-      logging.error('Invalid CSS property bucket id used: %s' % histogram_id)
-      return
+class UmaQuery(object):
+  """Reads and stores stats from UMA."""
 
-    # Response format is "bucket-bucket+1=hits".
-    # Example: 10-11=2175995,11-12=56635467,12-13=2432539420
-    #values_list = data['kTempHistograms'][CSSPROPERITES_BS_HISTOGRAM_ID]['b'].split(',')
-    values_list = data['kTempHistograms'][histogram_id]['b'].split(',')
+  def __init__(self, query_name, model_class, property_map_class):
+    self.query_name = query_name
+    self.model_class = model_class
+    self.property_map_class = property_map_class
 
-    #sum_total = int(data['kTempHistograms'][CSSPROPERITES_BS_HISTOGRAM_ID]['s']) # TODO: use this.
+  def _FetchData(self, date):
+    params = '?end_date=%s&day_count=1' % date.strftime('%Y%m%d')
+    result = _FetchWithCookie(UMA_QUERY_SERVER + self.query_name + params)
 
-    # Stores a hit count for each CSS property (properties_dict[bucket] = hits).
-    properties_dict = {}
+    if (result.status_code != 200):
+      logging.error('Unable to retrieve histograms data.')
+      return (None, 404)
 
-    for val in values_list:
-      bucket_range, hits_string = val.split('=') # e.g. "10-11=2175995"
+    json_content = result.content.split('\n', 1)[1]
+    j = json.loads(json_content)
+    if not j.has_key('r'):
+      logging.error(
+          '%s results do not have an "r" key in the response' % self.query_name)
+      return (None, 404)
+    return (j['r'], result.status_code)
 
-      parts = bucket_range.split('-')
+  def _SaveData(self, data, date):
+    property_map = self.property_map_class.get_all()
 
-      beginning_range = int(parts[0])
-      end_range = int(parts[1])
+    for bucket_str, rate in data.iteritems():
+      bucket_id = int(bucket_str)
 
-      # Range > 1 indicates malformed data. Skip it.
-      if end_range - beginning_range > 1:
-        continue
-
-      # beginning_range is our bucket number; the stable CSSPropertyID.
-      properties_dict[beginning_range] = int(hits_string)
-
-    # For CSSPROPERITES_BS_HISTOGRAM_ID, bucket 1 is total pages visited for
-    # stank rank histogram. We're guaranteed to have it.
-    # For the FEATURE_OBSERVER_BS_HISTOGRAM_ID, the PageVisits bucket_id is 52.
-    # The actual % is calculated from the count / this number.
-    # For ANIMATIONPROPS_BS_HISTOGRAM_ID, we have to calculate the total count.
-    if 1 in properties_dict and histogram_id == CSSPROPERITES_BS_HISTOGRAM_ID:
-      total_pages = properties_dict.get(1)
-    elif (PAGE_VISITS_BUCKET_ID in properties_dict and
-          histogram_id == FEATURE_OBSERVER_BS_HISTOGRAM_ID):
-      total_pages = properties_dict.get(PAGE_VISITS_BUCKET_ID)
-
-      # Don't include PageVisits results.
-      del properties_dict[PAGE_VISITS_BUCKET_ID]
-    else:
-      total_pages = sum(properties_dict.values())
-
-    property_map = models.CssPropertyHistogram.get_all()
-    if histogram_id == FEATURE_OBSERVER_BS_HISTOGRAM_ID:
-      property_map = models.FeatureObserverHistogram.get_all()
-
-    for bucket_id, num_hits in properties_dict.items():
-      # If the id is not in the map, use 'ERROR' for the name.
-      # TODO(ericbidelman): Non-matched bucket ids are likely new properties
-      # that have been added and will be updated in cron/histograms.
-      property_name = property_map.get(bucket_id, 'ERROR')
-
-      query = model_class.all()
+      query = self.model_class.all()
       query.filter('bucket_id = ', bucket_id)
-      query.filter('date =', yesterday)
+      query.filter('date =', date)
 
       # Only add this entity if one doesn't already exist with the same
       # bucket_id and date.
@@ -138,23 +105,44 @@ class YesterdayHandler(blobstore_handlers.BlobstoreDownloadHandler):
         logging.info('Cron data was already fetched for this date')
         continue
 
-      # TODO(ericbidelman): Calculate a rolling average here
-      # This will be done using a GQL query to grab information
-      # for the past 6 days.
-      # We average those past 6 days with the new day's data
-      # and store the result in rolling_percentage
+      # If the id is not in the map, use 'ERROR' for the name.
+      # TODO(ericbidelman): Non-matched bucket ids are likely new properties
+      # that have been added and will be updated in cron/histograms.
+      property_name = property_map.get(bucket_id, 'ERROR')
 
-      entity = model_class(
+      entity = self.model_class(
           property_name=property_name,
           bucket_id=bucket_id,
-          date=yesterday,
+          date=date,
           #hits=num_hits,
           #total_pages=total_pages,
-          day_percentage=(num_hits * 1.0 / total_pages)
+          day_percentage=rate
           #rolling_percentage=
           )
       entity.put()
 
+  def FetchAndSaveData(self, date):
+    data, response_code = self._FetchData(date)
+    if response_code == 200:
+      self._SaveData(data, date)
+    return response_code
+
+
+UMA_QUERIES = [
+  UmaQuery(query_name='featureobserver',
+           model_class=models.FeatureObserver,
+           property_map_class=models.FeatureObserverHistogram),
+  UmaQuery(query_name='featureobserver.cssproperties',
+           model_class=models.StableInstance,
+           property_map_class=models.CssPropertyHistogram),
+  UmaQuery(query_name='animation.cssproperties',
+           model_class=models.AnimatedProperty,
+           property_map_class=models.CssPropertyHistogram),
+]
+
+
+class YesterdayHandler(webapp2.RequestHandler):
+  """Loads yesterday's UMA data."""
   def get(self):
     """Loads the data file located at |filename|.
 
@@ -162,63 +150,13 @@ class YesterdayHandler(blobstore_handlers.BlobstoreDownloadHandler):
       filename: The filename for the data file to be loaded.
     """
     yesterday = datetime.date.today() - datetime.timedelta(1)
-    yesterday_formatted = yesterday.strftime("%Y.%m.%d")
 
-    filename = 'histograms/daily/%s/Everything' % (yesterday_formatted)
-
-    if settings.PROD:
-      try:
-        with cloudstorage.open(BIGSTORE_BUCKET + filename, 'r') as unused_f:
-          pass
-      except cloudstorage.errors.Error, e:
-        logging.error(e)
-        self.response.write(e)
-        return
-
-      # The file exists; serve it.
-      blob_key = blobstore.create_gs_key('/gs' + BIGSTORE_BUCKET + filename)
-      blob_reader = blobstore.BlobReader(blob_key, buffer_size=3510000)
-      try:
-        result = blob_reader.read()
-      finally:
-        blob_reader.close()
-    else:
-      # From the development server, use the RESTful API to read files from the
-      # production BigStore instance, rather than needing to stage them to the
-      # local BigStore instance.
-      result, response_code = self._FetchFromBigstoreREST(filename)
-
+    for query in UMA_QUERIES:
+      response_code = query.FetchAndSaveData(yesterday)
       if response_code != 200:
         self.error(response_code)
         self.response.out.write(
-            ('%s - Error doing BigStore API request. '
-             'Try refreshing your OAuth token?' % response_code))
-        return
-
-    if result:
-      data = json.loads(result)
-
-      for bucket_id in self.MODEL_CLASS.keys():
-        self._SaveData(data, yesterday, bucket_id)
-
-  def _FetchFromBigstoreREST(self, filename):
-    # Read the OAuth2 access token from disk.
-    try:
-      with open(OAUTH2_CREDENTIALS_FILENAME, 'r') as f:
-        credentials_json = json.load(f)
-    except IOError, e:
-      logging.error(e)
-      return [None, 404]
-
-    # Attempt to fetch the file from the production BigStore instance.
-    url = BIGSTORE_RESTFUL_URI + filename
-
-    headers = {
-        'x-goog-api-version': '2',
-        'Authorization': 'OAuth ' + credentials_json.get('access_token', '')
-        }
-    result = urlfetch.fetch(url, headers=headers)
-    return (result.content, result.status_code)
+            ('%s - Error fetching usage data' % response_code))
 
 
 class HistogramsHandler(webapp2.RequestHandler):
