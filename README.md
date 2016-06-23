@@ -19,10 +19,7 @@ This will also pull down bower_components and run `grunt` to build the site.
 
 ### Run the local test server
 
-Start the local test server in the root project directory using the Google App
-Engine Python SDK:
-
-    dev_appserver.py .
+Download the Google App Engine Python SDK launcher. Open the launcher and run the app in the main repo directory.
 
 ### LICENSE
 
