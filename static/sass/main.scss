@@ -161,7 +161,6 @@ footer {
   @include display-flex;
   @include flex(1 0 0);
   margin: $content-padding + 12;
-  overflow: auto;
   position: relative;
 }
 
@@ -265,4 +264,3 @@ footer {
 
 // @import "features/features.scss"; // Inline features.css to remove 1 request on homepage.
 // @import "metrics/metrics.scss";
-
