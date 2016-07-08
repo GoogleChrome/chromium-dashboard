@@ -16,7 +16,6 @@ import settings
 
 SIMPLE_TYPES = (int, long, float, bool, dict, basestring, list)
 
-WEBCOMPONENTS = 1
 MISC = 2
 SECURITY = 3
 MULTIMEDIA = 4
@@ -31,6 +30,7 @@ INPUT = 12
 PERFORMANCE = 13
 GRAPHICS = 14
 CSS = 15
+WEBCOMPONENTS = 16
 
 FEATURE_CATEGORIES = {
   CSS: 'CSS',

@@ -160,6 +160,7 @@ footer {
   @include flex(1 0 0);
   margin: $content-padding + 12;
   position: relative;
+  overflow: auto;
 }
 
 #panels {
