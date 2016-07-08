@@ -16,6 +16,7 @@ import settings
 
 SIMPLE_TYPES = (int, long, float, bool, dict, basestring, list)
 
+WEBCOMPONENTS = 1
 MISC = 2
 SECURITY = 3
 MULTIMEDIA = 4
@@ -30,7 +31,6 @@ INPUT = 12
 PERFORMANCE = 13
 GRAPHICS = 14
 CSS = 15
-WEBCOMPONENTS = 16
 
 FEATURE_CATEGORIES = {
   CSS: 'CSS',
@@ -479,7 +479,7 @@ class FeatureForm(forms.Form):
   #     help_text='Comma separated list of full email addresses (@chromium.org preferred).')
 
   category = forms.ChoiceField(required=True,
-                               choices=FEATURE_CATEGORIES.items())
+                               choices=sorted(FEATURE_CATEGORIES.items(), key=lambda x: x[1]))
 
   owner = forms.CharField(
       required=False, label='Owner(s) email',
