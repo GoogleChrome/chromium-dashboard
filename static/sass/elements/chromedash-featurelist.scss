@@ -1,4 +1,3 @@
-@import "compass/css3/transform";
 @import "element";
 
 :host {
@@ -8,13 +7,13 @@
 }
 
 #featurelist {
-  //@include transform(translateZ(0)); // force composite layer in stable
+  //transform: translateZ(0); // force composite layer in stable
 }
 
 // See https://crbug.com/553278
 #ironlist {
   min-height: 0;
-  // @include transform(translateZ(0)); // force composite layer for non-retina.
+  //transform: translateZ(0); // force composite layer for non-retina.
 }
 
 .milestone-marker {

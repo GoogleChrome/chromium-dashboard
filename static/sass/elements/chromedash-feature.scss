@@ -1,5 +1,3 @@
-@import "compass/css3/transition";
-
 @import "element";
 
 :host {
@@ -317,7 +315,7 @@ section {
   :host {
     border-radius: 0 !important;
     margin: 7px initial !important;
-    @include transition(none !important);
+    transition: none !important;
   }
 
   iron-icon {
