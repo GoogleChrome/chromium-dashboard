@@ -2,7 +2,7 @@
 
 :host {
   @include display-flex;
-  @include gradient-bar-bg;
+  @include gradient-bar-bg();
   position: relative;
   border-radius: $default-border-radius;
   padding: 10px 20px !important;
