@@ -1,8 +1,5 @@
-@import "compass/css3/images";
-@import "compass/css3/transition";
-
-@import "shared";
-@import "vars";
+@import "../shared";
+@import "../vars";
 
 $feature-min-height: 75px;
 
@@ -14,7 +11,7 @@ $feature-min-height: 75px;
   font: inherit;
   text-decoration: inherit;
   //outline: 5px solid transparent;
-  //@include transition(outline 200ms ease-in-out);
+  //transition: outline 200ms ease-in-out;
 }
 
 :focus {
@@ -25,7 +22,7 @@ $feature-min-height: 75px;
 @mixin tooltip {
   content: attr(title) ""; // force to be a string for FF/Safari.
   position: absolute;
-  @include gradient-bar-bg;
+  @include gradient-bar-bg();
   box-shadow: 2px 2px 4px $gray-2;
   border: 1px solid $gray-1;
   z-index: 100;

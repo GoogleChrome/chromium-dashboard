@@ -42,9 +42,9 @@ to the new version.
 
 ### LICENSE
 
-Copyright (c) 2013-2016 The Chromium Authors. All rights reserved.
+Copyright (c) 2013-2016 Google Ince. All rights reserved.
 
-[BSD License](http://src.chromium.org/viewvc/chrome/trunk/src/LICENSE)
+Apache2 License.
 
 
 [![Analytics](https://ga-beacon.appspot.com/UA-39048143-2/GoogleChrome/chromium-dashboard/README)](https://github.com/igrigorik/ga-beacon)

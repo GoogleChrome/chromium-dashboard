@@ -1,10 +1,8 @@
-@import "compass/css3/transition";
-
 @import "element";
 
 :host {
   @include display-flex;
-  @include gradient-bar-bg;
+  @include gradient-bar-bg();
   position: relative;
   border-radius: $default-border-radius;
   padding: 10px 20px !important;
@@ -317,7 +315,7 @@ section {
   :host {
     border-radius: 0 !important;
     margin: 7px initial !important;
-    @include transition(none !important);
+    transition: none !important;
   }
 
   iron-icon {

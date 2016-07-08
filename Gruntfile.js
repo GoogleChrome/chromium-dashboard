@@ -72,11 +72,17 @@ module.exports = function(grunt) {
       }
     },
 
-    compass: {
+    sass: {
+      options: {
+        sourceMap: false,
+        outputStyle: 'compressed'
+      },
       dist: {
-        options: {
-          config: 'config.rb'
-        }
+        expand: true,
+        cwd: 'static/sass',
+        src: ['**/*.scss'],
+        dest: 'static/css',
+        ext: '.css'
       }
     },
 
@@ -117,6 +123,6 @@ module.exports = function(grunt) {
   // Plugin and grunt tasks.
   require('load-grunt-tasks')(grunt);
 
-  grunt.registerTask('default', ['compass', 'vulcanize', 'minified']);
+  grunt.registerTask('default', ['sass', 'vulcanize', 'minified']);
   grunt.registerTask('serve', ['appengine:run:frontend']);
 };

@@ -1,6 +1,4 @@
-@import "compass/css3/images";
-
-@import "vars";
+@import "../vars";
 
 #content {
   @include flex-direction(column);

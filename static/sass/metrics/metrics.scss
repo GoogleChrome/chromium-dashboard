@@ -1,7 +1,4 @@
-@import "compass/css3/images";
-@import "compass/css3/transform";
-
-@import "vars";
+@import "../vars";
 
 #content {
   h3 {
@@ -17,7 +14,7 @@
   max-width: 800px;
   margin-left: 32px;
   overflow: auto;
-  @include transform(translateZ(0)); // force composite layer in stable
+  transform: translateZ(0); // force composite layer in stable
 
   .description {
     margin-bottom: 1em;
@@ -43,7 +40,7 @@
     text-align: center;
     border-top-left-radius: 3px;
     border-top-right-radius: 3px;
-    @include background($bar-gradient);
+    background: $bar-gradient;
     box-shadow: 1px 1px 4px $bar-shadow-color;
     padding: 0.5em;
     margin-bottom: 10px;

@@ -1,8 +1,4 @@
-@import "compass/css3/images";
-@import "compass/css3/transform";
-@import "compass/css3/transition";
-
-@import "vars";
+@import "../vars";
 
 #feature {
   @include gradient-bar-bg;
@@ -60,7 +56,7 @@ section {
   #feature {
     border-radius: 0 !important;
     margin: 7px initial !important;
-    @include transition(none !important);
+    transition: none !important;
   }
 }
 

@@ -1,6 +1,4 @@
-@import "compass/css3/transform";
-
-@import "vars";
+@import "../vars";
 
 #content {
   &.ready::after {
@@ -59,7 +57,7 @@ chromedash-legend {
       overflow: auto;
       width: $nav-width + 15;
 
-      @include transform(translateZ(0)); // force composite layer in stable
+      transform: translateZ(0); // force composite layer in stable
 
       .help {
         text-align: center;
