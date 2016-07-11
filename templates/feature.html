@@ -86,19 +86,21 @@
         {% if feature.bug_url %}
         (<a href="{{ feature.bug_url }}">launch bug</a>)
         {% endif %}
-        in: </br>
+        in:
+        <ul>
         {% if feature.shipped_milestone %}
-          - <b>Chrome for desktop release {{ feature.meta.milestone_str }}</b></br>
+        <li><b>Chrome for desktop release {{ feature.meta.milestone_str }}</b></li>
         {% endif %}
         {% if feature.shipped_android_milestone %}
-          - <b>Chrome for Android release {{ feature.shipped_android_milestone }}</b></p>
+        <li><b>Chrome for Android release {{ feature.shipped_android_milestone }}</b></li>
         {% endif %}
         {% if feature.shipped_ios_milestone %}
-          - <b>Chrome for iOS release {{ feature.shipped_ios_milestone }}</b></p>
+        <li><b>Chrome for iOS release {{ feature.shipped_ios_milestone }}</b></li>
         {% endif %}
         {% if feature.shipped_webview_milestone %}
-          - <b>Android WebView release {{ feature.shipped_webview_milestone }}</b></p>
+        <li><b>Android WebView release {{ feature.shipped_webview_milestone }}</b></li>
         {% endif %}
+        </ul>
       {% else %}
         {{ feature.meta.milestone_str }}
         {% if feature.bug_url %}
