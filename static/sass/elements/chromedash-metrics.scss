@@ -20,13 +20,11 @@
 
     label {
       font-weight: 600;
-      // word-wrap: break-word;
     }
 
     > :first-child {
       @include flex(1);
       margin-right: 10px;
-      // max-width: 175px;
     }
 
     > :nth-child(2) {
@@ -63,10 +61,6 @@
         cursor: pointer;
       }
     }
-
-    // &:nth-child(even) {
-    //   background-color: #ccc;
-    // }
   }
 }
 
@@ -75,5 +69,3 @@
   color: $gray-2;
   @include justify-content(center);
 }
-
-
