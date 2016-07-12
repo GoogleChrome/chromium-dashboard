@@ -31,9 +31,13 @@
   {% if feature.summary %}
   <section id="summary">
     <p>{{ feature.summary }}</p>
-    {% if feature.comments %}
-    <p class="note">Note: {{ feature.comments }}</p>
-    {% endif %}
+  </section>
+  {% endif %}
+
+  {% if feature.comments %}
+  <section id="comments">
+    <h3>Comments</h3>
+    <p>{{ feature.comments|urlize }}</p>
   </section>
   {% endif %}
 
