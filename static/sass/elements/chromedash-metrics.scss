@@ -36,13 +36,20 @@
       }
     }
 
+    > :first-child {
+      @include flex(1);
+    }
+
+    > :nth-child(2) {
+      @include flex(2);
+    }
+
     // &:nth-child(even) {
     //   background-color: #ccc;
     // }
 
     label {
       font-weight: 600;
-      @include flex(1);
       // word-wrap: break-word;
 
       &:first-child {
@@ -57,10 +64,6 @@
     x-meter {
       padding-left: 7px;
       cursor: pointer;
-    }
-
-    x-meter, .flex2 {
-      @include flex(2);
     }
   }
 }

@@ -12,9 +12,6 @@
       @apply(--layout-horizontal);
       @apply(--layout-center);
     }
-    #stack-rank-list .percent_label {
-      @apply(--layout-flex-2);
-    }
   </style>
   <iron-ajax auto url="[[endpoint]]" last-response="{{props}}" handle-as="json"></iron-ajax>
   <b>Showing <span>{{props.length}}</span> properties</b>
