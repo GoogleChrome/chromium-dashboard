@@ -89,13 +89,11 @@
             <iron-icon icon="icons:extension" class="experimental"></iron-icon>
           </span>
         </template>
-        <template is="dom-if" if="{{feature.bug_components}}">
-          <span class="tooltip" title="File a bug">
-            <a href$="{{_computeNewBugUrl(feature)}}" class="newbug" data-tooltip>
-              <iron-icon icon="icons:bug-report"></iron-icon>
-            </a>
-          </span>
-        </template>
+        <span class="tooltip" title="File a bug">
+          <a href$="{{_computeNewBugUrl(feature)}}" class="newbug" data-tooltip>
+            <iron-icon icon="icons:bug-report"></iron-icon>
+          </a>
+        </span>
         <template is="dom-if" if="{{whitelisted}}">
           <span class="tooltip" title="Edit this feature">
             <a href$="{{_computeEditLinkHidden(feature)}}" class="editfeature" data-tooltip>
@@ -417,12 +415,15 @@
     _computeNewBugUrl: function(feature) {
       var url = "https://bugs.chromium.org/p/chromium/issues/entry";
       var params = [];
-      if (feature.bug_components.length) {
+      if (feature.bug_components && feature.bug_components.length) {
         params.push("components=" + feature.bug_components.map(encodeURIComponent));
       }
       var crbugNumber = this._computeCrbugNumber(feature.bug_url)
       if (crbugNumber && this._computePreLaunch(feature.impl_status_chrome)) {
         params.push("blocking="+crbugNumber);
+      }
+      if (feature.owner.length) {
+        params.push("cc=" + feature.owner.map(encodeURIComponent));
       }
       if (params.length) {
         return url + "?" + params.join("&");
