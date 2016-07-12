@@ -70,6 +70,7 @@
     <h3>Implementation Status</h3>
     <p>
       {% if feature.shipped_milestone or feature.shipped_android_milestone or feature.shipped_ios_milestone or feature.shipped_webview_milestone %}
+        <b>
         {% if feature.meta.experimentalframework %}
           In experimental framework
         {% else %}
@@ -83,22 +84,23 @@
             Enabled by default
           {% endif %}
         {% endif %}
+        </b>
         {% if feature.bug_url %}
         (<a href="{{ feature.bug_url }}">launch bug</a>)
         {% endif %}
         in:
         <ul>
         {% if feature.shipped_milestone %}
-        <li><b>Chrome for desktop release {{ feature.meta.milestone_str }}</b></li>
+        <li>Chrome for desktop release {{ feature.meta.milestone_str }}</li>
         {% endif %}
         {% if feature.shipped_android_milestone %}
-        <li><b>Chrome for Android release {{ feature.shipped_android_milestone }}</b></li>
+        <li>Chrome for Android release {{ feature.shipped_android_milestone }}</li>
         {% endif %}
         {% if feature.shipped_ios_milestone %}
-        <li><b>Chrome for iOS release {{ feature.shipped_ios_milestone }}</b></li>
+        <li>Chrome for iOS release {{ feature.shipped_ios_milestone }}</li>
         {% endif %}
         {% if feature.shipped_webview_milestone %}
-        <li><b>Android WebView release {{ feature.shipped_webview_milestone }}</b></li>
+        <li>Android WebView release {{ feature.shipped_webview_milestone }}</li>
         {% endif %}
         </ul>
       {% else %}
