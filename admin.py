@@ -379,6 +379,10 @@ class FeatureHandler(common.ContentHandler):
     shipped_opera_milestone = self.__ToInt('shipped_opera_milestone')
     shipped_opera_android_milestone = self.__ToInt('shipped_opera_android_milestone')
 
+    bug_components = self.request.get('bug_components') or []
+    if bug_components:
+      bug_components = [x.strip() for x in bug_components.split(',')]
+
     owners = self.request.get('owner') or []
     if owners:
       owners = [db.Email(x.strip()) for x in owners.split(',')]
@@ -409,6 +413,7 @@ class FeatureHandler(common.ContentHandler):
         feature.summary = self.request.get('summary')
         feature.owner = owners
         feature.bug_url = bug_url
+        feature.bug_components = bug_components
         feature.impl_status_chrome = int(self.request.get('impl_status_chrome'))
         feature.shipped_milestone = shipped_milestone
         feature.shipped_android_milestone = shipped_android_milestone
@@ -439,6 +444,7 @@ class FeatureHandler(common.ContentHandler):
           summary=self.request.get('summary'),
           owner=owners,
           bug_url=bug_url,
+          bug_component=bug_components,
           impl_status_chrome=int(self.request.get('impl_status_chrome')),
           shipped_milestone=shipped_milestone,
           shipped_android_milestone=shipped_android_milestone,

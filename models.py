@@ -245,6 +245,7 @@ class Feature(DictModel):
   def format_for_edit(self):
     d = self.to_dict()
     #d['id'] = self.key().id
+    d['bug_components'] = ', '.join(self.bug_components)
     d['owner'] = ', '.join(self.owner)
     d['doc_links'] = '\r\n'.join(self.doc_links)
     d['sample_links'] = '\r\n'.join(self.sample_links)
@@ -394,6 +395,7 @@ class Feature(DictModel):
 
   # Chromium details.
   bug_url = db.LinkProperty()
+  bug_components = db.StringListProperty()
   impl_status_chrome = db.IntegerProperty(required=True)
   shipped_milestone = db.IntegerProperty()
   shipped_android_milestone = db.IntegerProperty()
@@ -488,6 +490,9 @@ class FeatureForm(forms.Form):
 
   bug_url = forms.URLField(required=False, label='Bug URL',
                            help_text='OWP Launch Tracking, crbug, etc.')
+
+  bug_components = forms.CharField(required=False, label='CrBug Component(s)', max_length=500,
+      help_text="Comma separated list of component names. Most should start with \"Blink>\".")
 
   impl_status_chrome = forms.ChoiceField(required=True,
                                          label='Status in Chrome',
