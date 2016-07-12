@@ -406,27 +406,27 @@
       }
     },
     _computeCrbug: function(link) {
-      var CrBugNumber = this._computeCrbugNumber(link)
-      if (CrBugNumber) {
-        return '#' + CrBugNumber;
+      var crbugNumber = this._computeCrbugNumber(link);
+      if (crbugNumber) {
+        return '#' + crbugNumber;
       }
       return link;
     },
     _computeNewBugUrl: function(feature) {
-      var url = "https://bugs.chromium.org/p/chromium/issues/entry";
+      var url = 'https://bugs.chromium.org/p/chromium/issues/entry';
       var params = [];
       if (feature.bug_components && feature.bug_components.length) {
-        params.push("components=" + feature.bug_components.map(encodeURIComponent));
+        params.push('components=' + feature.bug_components.map(encodeURIComponent));
       }
-      var crbugNumber = this._computeCrbugNumber(feature.bug_url)
+      var crbugNumber = this._computeCrbugNumber(feature.bug_url);
       if (crbugNumber && this._computePreLaunch(feature.impl_status_chrome)) {
-        params.push("blocking="+crbugNumber);
+        params.push('blocking=' + crbugNumber);
       }
       if (feature.owner.length) {
-        params.push("cc=" + feature.owner.map(encodeURIComponent));
+        params.push('cc=' + feature.owner.map(encodeURIComponent));
       }
       if (params.length) {
-        return url + "?" + params.join("&");
+        return url + '?' + params.join('&');
       }
       return url;
     }
