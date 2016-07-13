@@ -1,11 +1,11 @@
 @import "vars";
 
-$content-padding: 32px;
+// $content-padding: 32px;
 $max-content-width: 600px;
 
 paper-button, paper-item {
   iron-icon {
-    margin-right: $content-padding / 4;
+    margin-right: $content-padding / 2;
   }
 }
 
@@ -15,68 +15,48 @@ paper-input {
   background-color: #fff;
 }
 
-#content {
-  margin-top: 20px;
-}
-
-#subheader {
-  max-width: $max-content-width + 335px;// + $content-padding * 5;
-
-  .subheader-title {
-    width: 310px;
-  }
-}
-
-#panels {
-  nav {
-    overflow-x: hidden;
-    min-width: 300px;
-
-    paper-menu {
-      color: $chromium-color-dark;
-      background: #fff;
-    }
+app-drawer {
+  paper-menu {
+    color: $chromium-color-dark;
+    background: inherit;
   }
 }
 
 #sample-panel {
-  margin: 0 $content-padding;
-  overflow-x: hidden;
-
   position: relative;
   @include flex(1 0 0);
-  max-width: $max-content-width;//$max-content-width;
+  max-width: $max-content-width;
 
-  &.loading {
-    background: #fff;
+  // &.loading {
+  //   background: #fff;
 
-    &::before {
-      padding: $content-padding;
-      font-size: 18px;
-      font-weight: normal;
-      content: 'loading...';
-      color: $gray-3;
-      background: #fff;
-      @include display-flex;
-      @include justify-content(center);
-      @include align-items(center);
-      width: 100%;
-      height: 100%;
-      position: absolute;
-      box-sizing: border-box;
-    }
-  }
+  //   &::before {
+  //     padding: $content-padding * 2;
+  //     font-size: 18px;
+  //     font-weight: normal;
+  //     content: 'loading...';
+  //     color: $gray-3;
+  //     background: #fff;
+  //     @include display-flex;
+  //     @include justify-content(center);
+  //     @include align-items(center);
+  //     width: 100%;
+  //     height: 100%;
+  //     position: absolute;
+  //     box-sizing: border-box;
+  //   }
+  // }
 }
 
 #samplelist {
   li {
-    margin-bottom: $content-padding / 2;
+    margin-bottom: $content-padding;
     line-height: 1.4;
-    padding: 0 4px; // for paper-material
+    list-style: none;
   }
   paper-material {
     background: #fff;
-    padding: $content-padding / 2;
+    padding: $content-padding;
   }
   iron-icon {
     color: $gray-2;
@@ -96,7 +76,7 @@ paper-input {
 }
 
 .summary {
-  margin: $content-padding/2 0;
+  margin: $content-padding 0;
 }
 
 .actionlinks {
@@ -108,7 +88,7 @@ paper-input {
 }
 
 .demo-links {
-  margin-right: $content-padding / 2;
+  margin-right: $content-padding;
   font-weight: 400;
   color: $chromium-color-dark;
   @include flex-wrap(wrap);
@@ -120,11 +100,11 @@ paper-input {
   color: $gray-3;
 }
 
-@media only screen and (max-width: 700px) {
-  #content {
-    margin: 8px;
-  }
-  #sample-panel {
-    margin: 0;
-  }
-}
+// @media only screen and (max-width: 700px) {
+//   #content {
+//     margin: 8px;
+//   }
+//   #sample-panel {
+//     margin: 0;
+//   }
+// }

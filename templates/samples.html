@@ -33,7 +33,23 @@ paper-item {
   };
 }
 </style>
-{% endblock %}f
+{% endblock %}
+
+{% block drawer %}
+  {% verbatim %}
+  <paper-menu id="papermenu" selected-item="{{selectedCategory}}"
+              on-transitionend="_onRippleDone">
+  {% endverbatim %}
+  {% for k,v in CATEGORIES %}
+    {% if v != 'webcomponents' %}
+      <paper-item class="relative" data-category="{{v}}">
+        <iron-icon icon="chromestatus:{{v}}"></iron-icon>{{k}}
+        <paper-ripple></paper-ripple>
+      </paper-item>
+    {% endif %}
+  {% endfor %}
+  </paper-menu>
+{% endblock %}
 
 {% block subheader %}
 <div id="subheader">
@@ -59,7 +75,7 @@ paper-item {
 {% block content %}
 
 <template id="t" is="dom-bind">
-
+<!--
 <section id="panels">
 <nav>
 
@@ -77,7 +93,7 @@ paper-item {
   {% endfor %}
   </paper-menu>
 
-</nav>
+</nav> -->
 <div id="sample-panel" class="loading">
 
   {% verbatim %}
@@ -110,7 +126,7 @@ paper-item {
   {% endverbatim %}
 
 </div>
-</section>
+<!-- </section> -->
 
 </template>
 

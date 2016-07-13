@@ -12,6 +12,12 @@ body {
   background-color: $light-grey;
 }
 
+.drawer-content-wrapper {
+  height: 100%;
+  overflow: auto;
+  padding: $content-padding;
+}
+
 app-header {
   background-color: $light-grey;
 }
