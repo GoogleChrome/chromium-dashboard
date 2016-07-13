@@ -89,6 +89,11 @@
             <iron-icon icon="icons:extension" class="experimental"></iron-icon>
           </span>
         </template>
+        <span class="tooltip" title="File a bug against this feature">
+          <a href$="{{_computeNewBugUrl(feature)}}" class="newbug" data-tooltip>
+            <iron-icon icon="icons:bug-report"></iron-icon>
+          </a>
+        </span>
         <template is="dom-if" if="{{whitelisted}}">
           <span class="tooltip" title="Edit this feature">
             <a href$="{{_computeEditLinkHidden(feature)}}" class="editfeature" data-tooltip>
@@ -381,18 +386,43 @@
       return implStatusChrome === 'Deprecated' ||
              implStatusChrome === 'No longer pursuing';
     },
+    _computePreLaunch: function(implStatusChrome) {
+      return implStatusChrome === 'No active development' ||
+             implStatusChrome === 'Proposed' ||
+             implStatusChrome === 'In development' ||
+             implStatusChrome === 'Behind a flag' ||
+             implStatusChrome === 'In experimental framework';
+    },
     _computeEditLinkHidden: function(feature) {
       return '/admin/features/edit/' + feature.id;
     },
-    _computeCrbug: function(link) {
+    _computeCrbugNumber: function(link) {
       if (!link) {
-        return link;
+        return;
       }
       var m = link.match(/[\/|?id=]([0-9]+)$/); // pull out bug number.
       if (m) {
-        return '#' + m[1];
+        return m[1];
+      }
+    },
+    _computeCrbug: function(link) {
+      var crbugNumber = this._computeCrbugNumber(link);
+      if (crbugNumber) {
+        return '#' + crbugNumber;
       }
       return link;
+    },
+    _computeNewBugUrl: function(feature) {
+      var url = 'https://bugs.chromium.org/p/chromium/issues/entry';
+      var params = ["components=Blink"];
+      var crbugNumber = this._computeCrbugNumber(feature.bug_url);
+      if (crbugNumber && this._computePreLaunch(feature.impl_status_chrome)) {
+        params.push('blocking=' + crbugNumber);
+      }
+      if (feature.owner.length) {
+        params.push('cc=' + feature.owner.map(encodeURIComponent));
+      }
+      return url + '?' + params.join('&');
     }
   });
 </script>
