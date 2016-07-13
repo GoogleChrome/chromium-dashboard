@@ -23,6 +23,7 @@
     "iron-component-page": "PolymerElements/iron-component-page#^1.0.5"
   },
   "dependencies": {
+    "app-layout": "PolymerElements/app-layout#^0.10.0",
     "polymer": "Polymer/polymer#^1.6.0",
     "iron-ajax": "PolymerElements/iron-ajax#^1.1.0",
     "google-apis": "GoogleWebComponents/google-apis#^1.0.2",

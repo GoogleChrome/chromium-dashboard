@@ -6,25 +6,19 @@
 <dom-module id="chromedash-featurelist">
 <link rel="import" type="css" href="../css/elements/chromedash-featurelist.css">
 <template>
-  <style>
-    #featurelist {
-      @apply(--layout-vertical);
-      @apply(--layout-fit);
-    }
-  </style>
-  <ul id="featurelist">
-    <iron-list items="[[filtered]]" as="feature" id="ironlist">
+  <div id="featurelist">
+    <iron-list id="ironlist" scroll-target="document" items="[[filtered]]" as="feature">
       <template>
         <div class="item" tabindex="0">
           <div hidden$="{{_computeMilestoneHidden(feature, features, filtered)}}"
                class="milestone-marker">{{_computeMilestoneString(feature.meta.milestone_str)}}</div>
-          <li id="{{feature.id}}" is="chromedash-feature"
+          <chromedash-feature id="{{feature.id}}"
                feature="[[feature]]" needsflag="[[feature.meta.needsflag]]"
-               whitelisted="[[whitelisted]]"></li>
+               whitelisted="[[whitelisted]]"></chromedash-feature>
         </div>
       </template>
     </iron-list>
-  </ul>
+  </div>
 </template>
 <script>
   (function() {
@@ -82,9 +76,18 @@
       },
 
       listeners: {
-        'ironlist.scroll': '_onScrollList',
         'keyup': '_onKeyUp',
         'feature-toggled': '_onFeatureToggled'
+      },
+
+      attached: function() {
+        Polymer.RenderStatus.afterNextRender(this, function() {
+          this.listen(window, 'scroll', '_onScrollList');
+        });
+      },
+
+      detached: function() {
+        this.unlisten(window, 'scroll', '_onScrollList');
       },
 
       _filterOnCategory: function(val) {
@@ -210,7 +213,7 @@
       },
 
       _onKeyUp: function(e, detail) {
-        var focusedEl = Polymer.dom(e).rootTarget.querySelector('[is=chromedash-feature]');
+        var focusedEl = Polymer.dom(e).rootTarget.querySelector('chromedash-feature');
         // Check for the ENTER key.
         if (focusedEl && e.keyCode === 13) {
           focusedEl.toggle();

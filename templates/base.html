@@ -68,20 +68,56 @@ var $$ = function(selector) {
 };
 </script>
 
+<style is="custom-style">
+  app-header {
+    --app-header-shadow: {
+      box-shadow: inset 0px 5px 2px -3px rgba(0, 0, 0, 0.2);
+    };
+  }
+  app-toolbar {
+    --app-toolbar-font-size: inherit;
+  }
+  app-drawer {
+    --app-drawer-width: 200px;
+    --app-drawer-content-container: {
+      background: #eee;
+      margin: 16px;
+    };
+  }
+</style>
+
 {% block html_imports %}{% endblock %}
 
 {% block rss %}{% endblock%}
 </head>
 <body>
 
-<div id="container">
-  {% include "header.html" %}
-  {% block subheader %}{% endblock %}
-  <div id="content">
-    {% block content %}{% endblock %}
-  </div>
-  {% include "footer.html" %}
-</div>
+<app-drawer-layout fullbleed>
+  <app-drawer swipe-open>
+    <div style="height: 100%; overflow: auto;">
+      {% block drawer %}{% endblock %}
+    </div>
+  </app-drawer>
+  <app-header-layout fullbleed>
+    <app-header fixed effects="waterfall">
+      <app-toolbar>
+        <iron-icon icon="icons:menu" drawer-toggle></iron-icon>
+        <div>
+          {% include "header.html" %}
+          {% block subheader %}{% endblock %}
+        </div>
+      </app-toolbar>
+    </app-header>
+
+    <div id="content">
+      {% block content %}{% endblock %}
+    </div>
+
+    {% include "footer.html" %}
+
+  </app-header-layout>
+</app-drawer-layout>
+
 
 {% block js %}{% endblock %}
 

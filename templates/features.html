@@ -29,7 +29,7 @@
 {% block subheader %}
 <div id="subheader">
   <div class="feature-count">
-    <h2>Web Platform Features (<span id="num-features"></span>)</h2>
+    <h2>Web platform features: <span id="num-features"></span></h2>
   </div>
   <div class="search">
     <input type="search" placeholder="Filter" disabled>
@@ -41,6 +41,22 @@
     <a href="" class="legend"><iron-icon icon="icons:help"></iron-icon></a>
   </div>
 </div>
+{% endblock %}
+
+{% block drawer %}
+<chromedash-metadata
+  impl-statuses='{{IMPLEMENTATION_STATUSES|safe}}'
+  status='{
+    "NO_ACTIVE_DEV": 1,
+    "PROPOSED": 2,
+    "IN_DEVELOPMENT": 3,
+    "BEHIND_A_FLAG": 4,
+    "ENABLED_BY_DEFAULT": 5,
+    "DEPRECATED": 6,
+    "REMOVED": 7,
+    "IN_EXPERIMENTAL_FRAMEWORK": 8,
+    "NO_LONGER_PURSUING": 1000
+  }'></chromedash-metadata>
 {% endblock %}
 
 {% block content %}
@@ -55,24 +71,7 @@
   </div>
 </chromedash-legend>
 
-<section id="panels">
-<nav>
-  <chromedash-metadata
-      impl-statuses='{{IMPLEMENTATION_STATUSES|safe}}'
-      status='{
-        "NO_ACTIVE_DEV": 1,
-        "PROPOSED": 2,
-        "IN_DEVELOPMENT": 3,
-        "BEHIND_A_FLAG": 4,
-        "ENABLED_BY_DEFAULT": 5,
-        "DEPRECATED": 6,
-        "REMOVED": 7,
-        "ORIGIN_TRIAL": 8,
-        "NO_LONGER_PURSUING": 1000
-      }'></chromedash-metadata>
-</nav>
 <chromedash-featurelist {% if user.is_whitelisted %}whitelisted{% endif %}></chromedash-featurelist>
-</section>
 
 <!--
 {% load verbatim %}

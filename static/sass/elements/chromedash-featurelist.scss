@@ -2,18 +2,11 @@
 
 :host {
   display: block;
-  padding: 5px;
-  position: relative;
-}
-
-#featurelist {
-  //transform: translateZ(0); // force composite layer in stable
 }
 
 // See https://crbug.com/553278
 #ironlist {
   min-height: 0;
-  //transform: translateZ(0); // force composite layer for non-retina.
 }
 
 .milestone-marker {
@@ -21,34 +14,9 @@
   text-align: right;
   text-transform: uppercase;
   margin: 32px 0 8px 0;
-  // font-weight: 600;
   font-size: $milestone-label-size;
   color: $chromium-color-dark;
-
-  // &:first-of-type {
-  //   margin-top: 0;
-  // }
 }
-
-// [data-first-of-milestone] {
-//   $milestone-label-size: 14px;
-//   text-align: right;
-//   text-transform: uppercase;
-//   margin-top: 10px;
-//   font-weight: 600;
-//   font-size: $milestone-label-size;
-//   color: $chromium-color-dark;
-
-//   // This one rule cases recalcstyle hot path in Blink. Invalidates all siblings.
-//   // &:first-of-type {
-//   //   margin-top: $milestone-label-size + 2;
-//   // }
-
-//   &:after {
-//     content: attr(data-milestone) ""; // force string for FF
-//   }
-
-// }
 
 @media only screen and (max-width: 700px) {
   .milestone-marker {
