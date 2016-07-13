@@ -414,7 +414,7 @@
     },
     _computeNewBugUrl: function(feature) {
       var url = 'https://bugs.chromium.org/p/chromium/issues/entry';
-      var params = ["components=Blink"];
+      var params = ['components=Blink'];
       var crbugNumber = this._computeCrbugNumber(feature.bug_url);
       if (crbugNumber && this._computePreLaunch(feature.impl_status_chrome)) {
         params.push('blocking=' + crbugNumber);
