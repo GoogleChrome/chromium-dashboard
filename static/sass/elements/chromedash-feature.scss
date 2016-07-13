@@ -166,7 +166,7 @@ section {
       }
     }
 
-    .chrome_desktop, .chrome_android, .chrome_webview {
+    .chrome_desktop, .chrome_android, .chrome_webview, .opera_desktop, .opera_android {
       &.tooltip {
         position: relative;
         &:hover, &:active {
@@ -222,19 +222,6 @@ section {
       height: 16px;
       margin: 8px;
       display: inline-block;
-    }
-
-    .opera-view {
-      .vendor-view {
-        background-position: -60px 50%;
-        width: 17px;
-      }
-      &:hover, &:active {
-        &:before {
-          width: 210px !important;
-          left: -80px !important;
-        }
-      }
     }
 
     .edge-view {

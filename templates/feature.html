@@ -71,9 +71,9 @@
   {% endif %}
 
   <section id="status">
-    <h3>Implementation Status</h3>
+    <h3>Status in Chromium</h3>
     <p>
-      {% if feature.shipped_milestone or feature.shipped_android_milestone or feature.shipped_ios_milestone or feature.shipped_webview_milestone %}
+      {% if feature.shipped_milestone or feature.shipped_android_milestone or feature.shipped_ios_milestone or feature.shipped_webview_milestone or feature.shipped_opera_milestone or shipped_opera_android_milestone %}
         <b>
         {% if feature.meta.experimentalframework %}
           In experimental framework
@@ -105,6 +105,12 @@
         {% endif %}
         {% if feature.shipped_webview_milestone %}
         <li>Android WebView release {{ feature.shipped_webview_milestone }}</li>
+        {% endif %}
+        {% if feature.shipped_opera_milestone %}
+        <li>Opera release {{ feature.shipped_opera_milestone }}</li>
+        {% endif %}
+        {% if feature.shipped_opera_android_milestone %}
+        <li>Opera for Android release {{ feature.shipped_opera_android_milestone }}</li>
         {% endif %}
         </ul>
       {% else %}
@@ -139,14 +145,6 @@
         {{ feature.ie_views.text }}
         {% endif %}
       </li>
-      {% endif %}
-
-      {% if feature.shipped_opera_milestone %}
-      <li><label>Opera:</label> Shipped in release {{ feature.shipped_opera_milestone }}</li>
-      {% endif %}
-
-      {% if feature.shipped_opera_android_milestone %}
-      <li><label>Opera for Android:</label> Shipped in release {{ feature.shipped_opera_android_milestone }}</li>
       {% endif %}
 
       {% if feature.safari_views %}
