@@ -181,6 +181,7 @@ class MainHandler(http2push.PushHandler, common.ContentHandler, common.JSONHandl
         self.abort(404)
 
       template_data['feature'] = feature
+
     elif path.startswith('metrics/css/timeline'):
       properties = sorted(
           models.CssPropertyHistogram.get_all().iteritems(), key=lambda x:x[1])
