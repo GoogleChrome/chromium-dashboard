@@ -28,7 +28,9 @@
       {% if feature.impl_status_chrome == "Deprecated" or feature.impl_status_chrome == "No longer pursuing" %} (deprecated){% endif %}
       {% if feature.impl_status_chrome == "Removed" %} (removed){% endif %}
     </h2>
+    <div class="iconrow">
     <a href="/features#category: {{ feature.category }}" class="category">{{ feature.category }}</a>
+    <div class="topcorner">
     {% if feature.meta.experimentalframework %}&nbsp;
     <span class="tooltip" title="Feature in experimental framework">
       <iron-icon icon="icons:extension" class="experimental"></iron-icon>
@@ -47,6 +49,8 @@
       </a>
     </span>
     {% endif %}
+    </div>
+    </div>
   </section>
 
   {% if feature.summary %}

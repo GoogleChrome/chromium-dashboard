@@ -385,7 +385,7 @@ class Feature(DictModel):
 
   def crbug_number(self):
     if not self.bug_url:
-      return;
+      return
     m = re.search(r'[\/|?id=]([0-9]+)$', self.bug_url)
     if m:
       return m.group(1)
@@ -402,8 +402,8 @@ class Feature(DictModel):
         EXPERIMENTAL_FRAMEWORK):
       params.append('blocking=' + crbug_number);
     if self.owner:
-      params.append('cc=' + ",".join(self.owner))
-    return url + '?' + "&".join(params)
+      params.append('cc=' + ','.join(self.owner))
+    return url + '?' + '&'.join(params)
 
   # Metadata.
   created = db.DateTimeProperty(auto_now_add=True)
