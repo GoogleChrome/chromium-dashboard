@@ -115,13 +115,11 @@
       <div class="flex">
         <h3>Chromium status</h3>
         <div class="impl_status">
+          <span class="chromium_status"><label>{{feature.impl_status_chrome}}</label></span>
           <template is="dom-if" if="{{feature.shipped_milestone}}">
             <span class="chrome_desktop tooltip" title="Chrome desktop">
-              <label>{{feature.impl_status_chrome}}</label><span>{{feature.shipped_milestone}}</span>
+              <label>Chrome desktop</label><span>{{feature.shipped_milestone}}</span>
             </span>
-          </template>
-          <template is="dom-if" if="{{!feature.shipped_milestone}}">
-            <span class="chrome_desktop"><label>{{feature.impl_status_chrome}}</label></span>
           </template>
           <template is="dom-if" if="{{feature.shipped_android_milestone}}">
             <span class="chrome_android tooltip" title="Chrome for Android">

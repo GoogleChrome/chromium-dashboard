@@ -170,6 +170,10 @@ section {
       }
     }
 
+    .chromium_status {
+      font-weight: bold;
+    }
+
     .chrome_desktop, .chrome_android, .chrome_webview, .opera_desktop, .opera_android {
       &.tooltip {
         position: relative;
