@@ -16,8 +16,17 @@ app-drawer {
   paper-listbox {
     color: $chromium-color-dark;
   }
+  h3 {
+    margin: $content-padding $content-padding 0 $content-padding;
+  }
   .drawer-content-wrapper {
     padding: 0;
+  }
+}
+
+#subheader {
+  .feature-count {
+    min-width: 170px;
   }
 }
 
@@ -86,20 +95,11 @@ app-drawer {
   margin: $content-padding 0;
 }
 
-.actionlinks {
-  paper-button {
-    background: $chromium-color-dark;
-    color: white;
-    font-weight: 600;
-    height: 35px;
-    border-radius: 0;
-  }
-}
-
 .demo-links {
   margin-right: $content-padding;
   font-weight: 400;
   color: $chromium-color-dark;
+  @include display-flex;
   @include flex-wrap(wrap);
 }
 

@@ -29,16 +29,16 @@
 {% block subheader %}
 <div id="subheader">
   <div class="feature-count">
-    <h2>Web platform features: <span class="num-features"></span></h2>
+    <h2>Features: <span class="num-features"></span></h2>
   </div>
   <div class="search">
     <input type="search" placeholder="Filter" disabled>
+    <a href="" class="legend"><iron-icon icon="chromestatus:help"></iron-icon></a>
   </div>
   <div class="actionlinks">
     {% if user.is_whitelisted %}
-      <paper-button onclick="addNewFeature(this);">Add a new feature</paper-button>
+      <paper-button onclick="addNewFeature(this);"><iron-icon icon="chromestatus:add-circle-outline"></iron-icon>Add new feature</paper-button>
     {% endif %}
-    <a href="" class="legend"><iron-icon icon="chromestatus:help"></iron-icon></a>
   </div>
 </div>
 {% endblock %}
@@ -61,7 +61,7 @@
   }'></chromedash-metadata>
 {% endblock %}
 
-{% block content %}
+{% block overlay %}
 <chromedash-legend>
   <p class="description">What you're looking at is a mostly comprehensive list of
   web platform features that have landed in Chromium, ordered chronologically by the milestone
@@ -72,7 +72,9 @@
     <paper-button dialog-dismiss>Close</paper-button>
   </div>
 </chromedash-legend>
+{% endblock %}
 
+{% block content %}
 <chromedash-featurelist {% if user.is_whitelisted %}whitelisted{% endif %}></chromedash-featurelist>
 
 {% endblock %}

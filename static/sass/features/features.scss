@@ -28,6 +28,12 @@
   }
 }
 
+app-drawer {
+  h3 {
+    margin-left: $content-padding / 2;
+  }
+}
+
 chromedash-legend {
   font-size: 90%;
 
@@ -44,6 +50,10 @@ chromedash-featurelist {
   paper-button {
     color: $chromium-color-dark;
     background: #fff;
+  }
+
+  .feature-count {
+    min-width: 170px;
   }
 }
 

@@ -31,10 +31,10 @@ app-drawer {
 
   h3 {
     margin-bottom: $content-padding;
-    margin-left: $content-padding / 2;
     text-transform: uppercase;
     font-weight: 600;
     font-size: 14px;
+    color: inherit;
   }
 }
 
@@ -143,28 +143,21 @@ footer {
   }
 }
 
+.description {
+  line-height: 1.4;
+}
+
 #subheader, .subheader {
   @include display-flex;
   @include align-items(center);
-  @include justify-content(space-between);
   margin: $content-padding 0;
-
-  .description {
-    line-height: 1.4;
-  }
 
   .num-features {
     font-weight: 400;
   }
 
   div {
-    &.feature-count {
-      min-width: 325px;
-      @include flex(1 0 auto);
-    }
-
     &.search {
-      margin-right: 0;
       input {
         width: 200px;
         outline: none;
@@ -173,7 +166,22 @@ footer {
     }
 
     &.actionlinks {
+      @include display-flex;
+      @include justify-content(flex-end);
+      @include flex(1 0 auto);
       margin-left: $content-padding;
+
+      paper-button {
+        background: $chromium-color-dark;
+        color: white;
+        font-weight: 600;
+        height: 35px;
+        border-radius: 0;
+
+        iron-icon {
+          margin-right: $content-padding / 2;
+        }
+      }
 
       .legend {
         font-size: 18px;

@@ -9,17 +9,8 @@ paper-dialog {
   width: 80vw;
 }
 
-// Replicate styles of paper-dialog. See PolymerElements/paper-dialog-behavior/issues/21
-paper-dialog > * {
-  margin: 0 24px !important;
-  margin-top: 20px !important;
-  padding: 0 !important;
-}
-
 h3 {
   border-bottom: 2px solid $chromium-color-center;
-  padding-bottom: 10px;
-  margin-bottom: $content-padding / 2;
 
   &:first-child {
     margin-top: 24px;
@@ -68,7 +59,6 @@ p {
 
 .content-wrapper ::content .close {
   position: absolute;
-  right: 0;
-  top: 0;
-  // padding: 0 5px 3px 5px;
+  top: $content-padding / 2;
+  right: $content-padding / 2;
 }

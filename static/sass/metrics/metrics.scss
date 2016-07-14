@@ -6,15 +6,10 @@
   }
 }
 
-#subheader {
-  display: block;
-}
-
 .data-panel {
   max-width: 800px;
   margin-left:  $content-padding * 2;
   overflow: auto;
-  // transform: translateZ(0); // force composite layer in stable
 
   .description {
     margin-bottom: 1em;
@@ -24,15 +19,8 @@
 .metric-nav {
   list-style-type: none;
 
-  h3 {
-    &:not(:first-of-type) {
-      margin-top: 2em;
-    }
-    margin-bottom: 10px;
-    text-transform: uppercase;
-    font-weight: 600;
-    font-size: 14px;
-    color: $chromium-color-dark;
+  h3:not(:first-of-type) {
+    margin-top: $content-padding * 2;
   }
 
   li {
