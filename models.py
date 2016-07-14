@@ -400,7 +400,7 @@ class Feature(DictModel):
         IN_DEVELOPMENT,
         BEHIND_A_FLAG,
         EXPERIMENTAL_FRAMEWORK):
-      params.append('blocking=' + crbug_number);
+      params.append('blocking=' + crbug_number)
     if self.owner:
       params.append('cc=' + ','.join(self.owner))
     return url + '?' + '&'.join(params)
