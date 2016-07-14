@@ -16,6 +16,10 @@
 <link rel="alternate" type="application/rss+xml" href="http://www.chromestatus.com/features.xml" title="All features" />
 {% endblock %}
 
+{% block html_imports %}
+<link rel="import" href="/static/elements/features-imports{% if VULCANIZE %}.vulcanize{% endif %}.html">
+{% endblock %}
+
 {% block content %}
 <div id="feature">
   <section id="name">
@@ -24,8 +28,28 @@
       {% if feature.impl_status_chrome == "Deprecated" or feature.impl_status_chrome == "No longer pursuing" %} (deprecated){% endif %}
       {% if feature.impl_status_chrome == "Removed" %} (removed){% endif %}
     </h2>
+    <div class="iconrow">
     <a href="/features#category: {{ feature.category }}" class="category">{{ feature.category }}</a>
-    {% if user.is_whitelisted %}<a href="/admin/features/edit/{{ feature.id }}" class="edit">&#160;edit</a>{% endif %}
+    <div class="topcorner">
+    {% if feature.meta.experimentalframework %}
+    <span class="tooltip" title="Feature in experimental framework">
+      <iron-icon icon="icons:extension" class="experimental"></iron-icon>
+    </span>
+    {% endif %}
+    <span class="tooltip" title="File a bug against this feature">
+      <a href="{{ feature.new_crbug_url }}" class="newbug" data-tooltip>
+        <iron-icon icon="icons:bug-report"></iron-icon>
+      </a>
+    </span>
+    {% if user.is_whitelisted %}
+    <span class="tooltip" title="Edit this feature">
+      <a href="/admin/features/edit/{{ feature.id }}" class="editfeature" data-tooltip>
+        <iron-icon icon="icons:create"></iron-icon>
+      </a>
+    </span>
+    {% endif %}
+    </div>
+    </div>
   </section>
 
   {% if feature.summary %}

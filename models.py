@@ -1,5 +1,6 @@
 import datetime
 import logging
+import re
 import time
 
 from google.appengine.api import memcache
@@ -308,6 +309,7 @@ class Feature(DictModel):
       if unformatted_feature:
         feature = unformatted_feature.format_for_template()
         feature['updated_display'] = unformatted_feature.updated.strftime("%Y-%m-%d")
+        feature['new_crbug_url'] = unformatted_feature.new_crbug_url()
         memcache.set(KEY, feature)
 
     return feature
@@ -380,6 +382,28 @@ class Feature(DictModel):
       memcache.set(KEY, feature_list)
 
     return feature_list
+
+  def crbug_number(self):
+    if not self.bug_url:
+      return
+    m = re.search(r'[\/|?id=]([0-9]+)$', self.bug_url)
+    if m:
+      return m.group(1)
+
+  def new_crbug_url(self):
+    url = 'https://bugs.chromium.org/p/chromium/issues/entry';
+    params = ['components=Blink'];
+    crbug_number = self.crbug_number()
+    if crbug_number and self.impl_status_chrome in (
+        NO_ACTIVE_DEV,
+        PROPOSED,
+        IN_DEVELOPMENT,
+        BEHIND_A_FLAG,
+        EXPERIMENTAL_FRAMEWORK):
+      params.append('blocking=' + crbug_number)
+    if self.owner:
+      params.append('cc=' + ','.join(self.owner))
+    return url + '?' + '&'.join(params)
 
   # Metadata.
   created = db.DateTimeProperty(auto_now_add=True)

@@ -39,6 +39,31 @@ section {
   }
 }
 
+/* TODO(iclelland): DRY - factor this style out of here and
+ * chromedash-feature.scss into somewhere common.
+ */
+iron-icon {
+  --iron-icon-height: 20px;
+  --iron-icon-width: 20px;
+
+  &.android {
+    color: #A4C739;
+  }
+  &.experimental {
+    color: #388E3C;
+  }
+}
+.iconrow {
+  @include display-flex;
+  @include align-items(center);
+}
+
+.topcorner {
+  .tooltip {
+    margin-left: 8px;
+  }
+}
+
 #consensus {
   li {
     @include display-flex;
