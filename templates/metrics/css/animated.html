@@ -17,6 +17,10 @@
   <link rel="import" href="/static/elements/metrics-imports{% if VULCANIZE %}.vulcanize{% endif %}.html">
 {% endblock %}
 
+{% block drawer %}
+  {% include "metrics/_nav.html" %}
+{% endblock %}
+
 {% block subheader %}
 <div id="subheader">
   <h2>CSS usage metrics &gt; animated properties > stack rank</h2>
@@ -24,8 +28,6 @@
 {% endblock %}
 
 {% block content %}
-<section id="panels">
-<nav>{% include "metrics/_nav.html" %}</nav>
 <div class="data-panel">
   <div>
     <h3>About this data</h3>
@@ -34,6 +36,4 @@
   </div>
   <chromedash-metrics type="css" view="animated"></chromedash-metrics>
 </div>
-</section>
-
 {% endblock %}

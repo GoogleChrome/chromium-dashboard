@@ -38,12 +38,14 @@
     {% if user.is_whitelisted %}
       <paper-button onclick="addNewFeature(this);">Add a new feature</paper-button>
     {% endif %}
-    <a href="" class="legend"><iron-icon icon="icons:help"></iron-icon></a>
+    <a href="" class="legend"><iron-icon icon="chromestatus:help"></iron-icon></a>
   </div>
 </div>
 {% endblock %}
 
 {% block drawer %}
+<h3>Chrome versions</h3>
+
 <chromedash-metadata
   impl-statuses='{{IMPLEMENTATION_STATUSES|safe}}'
   status='{

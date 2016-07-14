@@ -12,6 +12,10 @@
 {% block js %}
 {% endblock %}
 
+{% block drawer %}
+  {% include "metrics/_nav.html" %}
+{% endblock %}
+
 {% block subheader %}
 <div id="subheader">
   <h2>CSS usage metrics &gt; all properties > timeline</h2>
@@ -19,13 +23,10 @@
 {% endblock %}
 
 {% block content %}
-<section id="panels">
-<nav>{% include "metrics/_nav.html" %}</nav>
 <div class="data-panel">
   <p class="description">Use of CSS properties over time.</p>
   <chromedash-feature-timeline type="css" view="popularity" title="Percentage of Chrome page loads that use this property at least once"></chromedash-feature-timeline>
 </div>
-</section>
 
 <script>
 document.addEventListener('WebComponentsReady', function(e) {

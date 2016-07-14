@@ -31,6 +31,16 @@
 //   }
 // }
 
+app-drawer {
+  h3 {
+    margin-bottom: $content-padding;
+    margin-left: $content-padding / 2;
+    text-transform: uppercase;
+    font-weight: 600;
+    font-size: 14px;
+  }
+}
+
 chromedash-legend {
   font-size: 90%;
 
@@ -38,16 +48,6 @@ chromedash-legend {
     margin-bottom: 10px;
   }
 }
-
-// #panels {
-//   nav {
-//     $nav-width: 150px;
-
-//     font-size: 120%;
-//     font-weight: 300;
-//     overflow-x: hidden;
-//   }
-// }
 
 chromedash-featurelist {
   max-width: $max-content-width;

@@ -27,28 +27,23 @@ paper-input {
     padding: 12px;
   };
 }
-paper-item {
-  --paper-item: {
-    cursor: pointer;
-  };
-}
 </style>
 {% endblock %}
 
 {% block drawer %}
   {% verbatim %}
-  <paper-menu id="papermenu" selected-item="{{selectedCategory}}"
-              on-transitionend="_onRippleDone">
+  <paper-listbox id="papermenu" selected-item="{{selectedCategory}}"
+                 on-transitionend="_onRippleDone">
   {% endverbatim %}
   {% for k,v in CATEGORIES %}
     {% if v != 'webcomponents' %}
-      <paper-item class="relative" data-category="{{v}}">
+      <paper-item data-category="{{v}}">
         <iron-icon icon="chromestatus:{{v}}"></iron-icon>{{k}}
         <paper-ripple></paper-ripple>
       </paper-item>
     {% endif %}
   {% endfor %}
-  </paper-menu>
+  </paper-listbox>
 {% endblock %}
 
 {% block subheader %}
@@ -75,25 +70,7 @@ paper-item {
 {% block content %}
 
 <template id="t" is="dom-bind">
-<!--
-<section id="panels">
-<nav>
 
-  {% verbatim %}
-  <paper-menu id="papermenu" selected-item="{{selectedCategory}}"
-              on-transitionend="_onRippleDone">
-  {% endverbatim %}
-  {% for k,v in CATEGORIES %}
-    {% if v != 'webcomponents' %}
-      <paper-item class="relative" data-category="{{v}}">
-        <iron-icon icon="chromestatus:{{v}}"></iron-icon>{{k}}
-        <paper-ripple></paper-ripple>
-      </paper-item>
-    {% endif %}
-  {% endfor %}
-  </paper-menu>
-
-</nav> -->
 <div id="sample-panel" class="loading">
 
   {% verbatim %}
@@ -105,10 +82,10 @@ paper-item {
               <a href$="[[_computeFeatureLink(feature.id)]]">{{feature.name}}</a>
               <span class="milestone" hidden$="[[!feature.shipped_milestone]]">Chrome <span>[[feature.shipped_milestone]]</span></span>
             </h3>
-            <div class="summary">{{feature.summary}}</div>
+            <div class="summary">[[feature.summary]]</div>
             <div class="layout horizontal center justified">
               <div class="demo-links layout horizontal center">
-                <template is="dom-repeat" items="{{feature.sample_links}}" as="link">
+                <template is="dom-repeat" items="[[feature.sample_links]]" as="link">
                   <a href$="[[link]]" target="_blank" class="demo-link">
                     <paper-button>
                       <iron-icon icon="chromestatus:open-in-browser"></iron-icon> View Demo
@@ -116,8 +93,8 @@ paper-item {
                   </a>
                 </template>
               </div>
-              <iron-icon icon="{{_computeIconId(feature.category)}}"
-                         title="{{feature.category}}"></iron-icon>
+              <iron-icon icon="[[_computeIconId(feature.category)]]"
+                         title="[[feature.category]]"></iron-icon>
             </div>
           </paper-material>
         </li>
@@ -184,6 +161,8 @@ t._computeFeatureLink = function(id) {
   return '/features/' + id;
 };
 
+// TODO: category filtering no longer works now that the menu is in the app drawer
+// and not part of the dom-bind template.
 t._onSelectCategory = function(e, detail) {
   // Enable toggling selected item until
   // https://github.com/PolymerElements/paper-menu/issues/50 is fixed.

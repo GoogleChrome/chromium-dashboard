@@ -12,6 +12,10 @@
 {% block js %}
 {% endblock %}
 
+{% block drawer %}
+  {% include "metrics/_nav.html" %}
+{% endblock %}
+
 {% block subheader %}
 <div id="subheader">
   <h2>CSS usage metrics &gt; animated properties > timeline</h2>
@@ -19,13 +23,10 @@
 {% endblock %}
 
 {% block content %}
-<section id="panels">
-<nav>{% include "metrics/_nav.html" %}</nav>
 <div class="data-panel">
   <p class="description">Percentages are the number of times (as the fraction of all animated properties) this property is animated.</p>
   <chromedash-feature-timeline type="css" view="animated" title="Percentage of times (as the fraction of all animated properties) this property is animated."></chromedash-feature-timeline>
 </div>
-</section>
 
 <script>
 document.addEventListener('WebComponentsReady', function(e) {

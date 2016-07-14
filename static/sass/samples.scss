@@ -1,6 +1,5 @@
 @import "vars";
 
-// $content-padding: 32px;
 $max-content-width: 600px;
 
 paper-button, paper-item {
@@ -16,15 +15,13 @@ paper-input {
 }
 
 app-drawer {
-  paper-menu {
+  paper-listbox {
     color: $chromium-color-dark;
-    background: inherit;
   }
 }
 
 #sample-panel {
   position: relative;
-  @include flex(1 0 0);
   max-width: $max-content-width;
 
   // &.loading {

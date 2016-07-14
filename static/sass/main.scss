@@ -12,10 +12,16 @@ body {
   background-color: $light-grey;
 }
 
-.drawer-content-wrapper {
-  height: 100%;
-  overflow: auto;
-  padding: $content-padding;
+app-drawer {
+  .drawer-content-wrapper {
+    height: 100%;
+    overflow: auto;
+    padding: $content-padding;
+  }
+
+  paper-listbox {
+    background-color: inherit;
+  }
 }
 
 app-header {
@@ -164,7 +170,7 @@ footer {
 
 @media only screen and (max-width: 700px) {
   h1 {
-    font-size: 6.5vw;
+    font-size: 24px;
   }
   h2 {
     font-size: 20px;
@@ -172,15 +178,22 @@ footer {
   h3 {
     font-size: 15px;
   }
-  #container {
-    display: block;
+  app-header {
+    app-toolbar {
+      padding: 0;
+    }
   }
+
   header {
     margin: 0;
     display: block;
     aside {
-      padding: 0.5em;
+      @include display-flex;
+      @include justify-content(space-between);
+      padding: $content-padding / 2;
       border-radius: 0;
+      background-size: 24px;
+      background-position: 116px 50%;
 
       hgroup {
         text-align: right;
