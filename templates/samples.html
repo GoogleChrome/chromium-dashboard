@@ -16,18 +16,7 @@
 {% endblock %}
 
 {% block css %}
-<link rel="stylesheet" href="/static/css/samples.css?2015-10-07">
-
-<style is="custom-style">
-paper-input {
-  --input-color: #85b4df;
-  --paper-input-container-focus-color: var(--input-color);
-  --paper-input-container-color: var(--input-color);
-  --paper-input-container: {
-    padding: 12px;
-  };
-}
-</style>
+<link rel="stylesheet" href="/static/css/samples.css?2016-07-14">
 {% endblock %}
 
 {% block drawer %}
@@ -52,7 +41,7 @@ paper-input {
     <h2>Web Platform Samples</h2>
   </div>
   <div class="search">
-    <paper-input placeholder="Search" type="search" no-label-float autocomplete></paper-input>
+    <input type="search" placeholder="Search">
   </div>
   <div class="actionlinks">
     <a href="https://github.com/GoogleChrome/samples" target="_blank">
@@ -137,7 +126,7 @@ function matchesMilestone_(milestone, operator, version) {
   }
 }
 
-var search = $('.search paper-input');
+var search = $('.search input');
 
 var t = $('#t');
 t.categories = {{categories|safe}}; // server included.

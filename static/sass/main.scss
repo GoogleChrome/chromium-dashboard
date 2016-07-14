@@ -13,6 +13,8 @@ body {
 }
 
 app-drawer {
+  font-size: 14px;
+
   .drawer-content-wrapper {
     height: 100%;
     overflow: auto;
@@ -21,6 +23,10 @@ app-drawer {
 
   paper-listbox {
     background-color: inherit;
+
+    paper-item {
+      font-size: inherit;
+    }
   }
 
   h3 {
@@ -130,7 +136,7 @@ footer {
   text-align: center;
   position: fixed;
   bottom: 0;
-  width: calc(100% - 256px); // 256px is width of drawer.
+  width: calc(100% - 200px); // 200px is width of drawer.
 
   div {
     margin-top: $content-padding / 2;
@@ -140,6 +146,7 @@ footer {
 #subheader, .subheader {
   @include display-flex;
   @include align-items(center);
+  @include justify-content(space-between);
   margin: $content-padding 0;
 
   div {
@@ -147,7 +154,6 @@ footer {
 
     &.feature-count {
       min-width: 325px;
-      margin-right: $content-padding - 15;
     }
 
     &.search {
@@ -188,6 +194,14 @@ footer {
   overflow: hidden;
 }
 
+@media only screen and (min-width: 701px) {
+  app-toolbar {
+    .toolbar-content {
+      max-width: $max-content-width;
+    }
+  }
+}
+
 @media only screen and (max-width: 700px) {
   h1 {
     font-size: 24px;
@@ -201,6 +215,7 @@ footer {
   app-header {
     app-toolbar {
       padding: 0;
+      display: block;
     }
   }
 

@@ -9,7 +9,6 @@
   color: $chromium-color-dark;
   padding: 0;
   margin: 0;
-  font-size: 16px;
 
   &.canaryisdev {
     li {
@@ -53,7 +52,7 @@
     &::before {
       content: '';
       margin-right: $content-padding / 2;
-      border-left: 3px solid transparent;
+      border-left: 2px solid transparent;
     }
     &::after {
       margin-left: $content-padding / 2;

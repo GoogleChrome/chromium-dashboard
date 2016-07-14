@@ -78,6 +78,7 @@ var $$ = function(selector) {
     --app-toolbar-font-size: inherit;
   }
   app-drawer {
+    --app-drawer-width: 200px;
     --app-drawer-content-container: {
       background: #eee;
     };
@@ -104,7 +105,7 @@ var $$ = function(selector) {
   <app-header-layout fullbleed>
     <app-header fixed effects="waterfall">
       <app-toolbar>
-        <div>
+        <div class="toolbar-content">
           {% include "header.html" %}
           {% block subheader %}{% endblock %}
         </div>
