@@ -1,35 +1,32 @@
 @import "../vars";
 
-// #content {
-//   &.ready::after {
-//     display: none;
-//   }
+#content {
+  &.ready::after {
+    display: none;
+  }
 
-//   &::after {
-//     font-size: 18px;
-//     font-weight: normal;
-//     content: 'loading...';
-//     color: $gray-3;
-//     top: 0;
-//     left: 0;
-//     position: absolute;
-//     background: white;
-//     border: 1px dashed #bbb;
-//     border-radius: $default-border-radius;
-//     width: 100%;
-//     height: 100%;
-//     box-sizing: border-box;
-//     @include display-flex;
-//     @include justify-content(center);
-//     @include align-items(center);
-//     z-index: 100;
-//   }
+  &::after {
+    font-size: 18px;
+    font-weight: normal;
+    content: 'loading...';
+    color: $gray-3;
+    top: 0;
+    left: 0;
+    position: absolute;
+    background: #fafafa;
+    width: $max-content-width;
+    height: 100%;
+    box-sizing: border-box;
+    @include display-flex;
+    @include justify-content(center);
+    @include align-items(center);
+  }
 
-//   &.error::after {
-//     content: 'Error loading features list.';
-//     color: darkred;
-//   }
-// }
+  &.error::after {
+    content: 'Error loading features list.';
+    color: darkred;
+  }
+}
 
 chromedash-legend {
   font-size: 90%;

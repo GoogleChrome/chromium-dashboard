@@ -37,8 +37,8 @@
 
 {% block subheader %}
 <div id="subheader">
-  <div class="subheader-title">
-    <h2>Web Platform Samples</h2>
+  <div class="feature-count">
+    <h2>Samples: <span class="num-features"></span></h2>
   </div>
   <div class="search">
     <input type="search" placeholder="Search">
@@ -49,7 +49,7 @@
     </a>
   </div>
 </div>
-<div class="subheader layout vertical start">
+<div class="subheader">
   <p class="description">Features are ordered by Chrome release version, latest first. Features
   enabled by default always come first, followed by features that are origin trials,
   behind a flag or still in the development.</p>
@@ -67,12 +67,12 @@
       <template is="dom-repeat" items="{{filtered}}" as="feature">
         <li>
           <paper-material>
-            <h3 class="feature-name layout horizontal justified">
+            <h3 class="feature-name">
               <a href$="[[_computeFeatureLink(feature.id)]]">{{feature.name}}</a>
               <span class="milestone" hidden$="[[!feature.shipped_milestone]]">Chrome <span>[[feature.shipped_milestone]]</span></span>
             </h3>
             <div class="summary">[[feature.summary]]</div>
-            <div class="layout horizontal center justified">
+            <div class="sample_links">
               <div class="demo-links layout horizontal center">
                 <template is="dom-repeat" items="[[feature.sample_links]]" as="link">
                   <a href$="[[link]]" target="_blank" class="demo-link">
@@ -127,6 +127,7 @@ function matchesMilestone_(milestone, operator, version) {
 }
 
 var search = $('.search input');
+var numSamples = $('.num-features');
 
 var t = $('#t');
 t.categories = {{categories|safe}}; // server included.
@@ -239,6 +240,8 @@ t.filter = function(val) {
   }
 
   this.filtered = features;
+
+  numSamples.textContent = this.filtered.length;
 };
 
 t.removeFilters = function() {
@@ -273,6 +276,8 @@ samplesPromise.then(function(features) {
 
   t.features = features;
   t.filtered = features;
+
+  numSamples.textContent = t.features.length;
 
   $('#sample-panel').classList.remove('loading');
 
