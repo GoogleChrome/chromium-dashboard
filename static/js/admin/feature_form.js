@@ -17,9 +17,7 @@ var form = document.querySelector('[name="feature_form"]');
 form.addEventListener('change', function(e) {
   switch (e.target.tagName.toLowerCase()) {
     case 'select':
-      if (e.target.name.match(/_views$/)) {
-        toggleViewLink(e.target);
-      } else if (e.target.id == 'id_impl_status_chrome') {
+      if (e.target.id == 'id_impl_status_chrome') {
         toggleMilestones(e.target);
       } else if (e.target.id == 'id_standardization') {
         toggleSpecLink(e.target)
@@ -72,15 +70,6 @@ function toggleMilestones(status) {
   // milestone.parentElement.parentElement.hidden = milestone.disabled;
 }
 
-function toggleViewLink(view) {
-  var link = document.getElementById(view.id + '_link');
-  if (link) {
-    link.disabled = parseInt(view.value) == NO_PUBLIC_SIGNALS;
-    //link.required = !link.disabled;
-    link.parentElement.parentElement.hidden = link.disabled;
-  }
-}
-
 document.addEventListener('DOMContentLoaded', function() {
   // Get around Django rendering input type="text" fields for URLs.
   var inputs = document.querySelectorAll('[name$="_url"], [name$="_link"]');
@@ -100,7 +89,6 @@ document.addEventListener('DOMContentLoaded', function() {
   owner.multiple = true;
 
   toggleMilestones(document.querySelector('#id_impl_status_chrome'));
-  [].forEach.call(document.querySelectorAll('select[name$="_views"]'), toggleViewLink);
 });
 
 document.body.addEventListener('ajaxdeleted', function(e) {
