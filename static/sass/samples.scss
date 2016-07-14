@@ -16,6 +16,9 @@ app-drawer {
   paper-listbox {
     color: $chromium-color-dark;
   }
+  .drawer-content-wrapper {
+    padding: 0;
+  }
 }
 
 #sample-panel {
