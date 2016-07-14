@@ -22,6 +22,14 @@ app-drawer {
   paper-listbox {
     background-color: inherit;
   }
+
+  h3 {
+    margin-bottom: $content-padding;
+    margin-left: $content-padding / 2;
+    text-transform: uppercase;
+    font-weight: 600;
+    font-size: 14px;
+  }
 }
 
 app-header {
@@ -46,29 +54,6 @@ header {
     text-decoration: none !important;
   }
 
-  aside {
-    @include gradient-bar-bg;
-    border-top-right-radius: 5px;
-    border-bottom-right-radius: 5px;
-    border-bottom: 1px solid $bar-border-color;
-    border-right: 1px solid $bar-border-color;
-    padding: 0.75em 1em;
-
-    background: url(/static/img/chrome_logo.svg) no-repeat 18px 50%;
-    background-size: 20%;
-    background-color: #fafafa;
-    padding-left: 124px;
-
-    h1 {
-      line-height: 1;
-    }
-    img {
-      height: 45px;
-      width: 45px;
-      margin-right: 7px;
-    }
-  }
-
   nav {
     @include display-flex;
     @include align-items(center);
@@ -77,7 +62,6 @@ header {
     a {
       @include gradient-bar-bg;
       cursor: pointer;
-      margin-right: $content-padding;
       font-size: 16px;
       text-align: center;
       border-radius: $default-border-radius;
@@ -96,6 +80,42 @@ header {
         opacity: 0.5;
         pointer-events: none;
       }
+    }
+
+    paper-menu-button {
+      margin: 0;
+      padding: 0;
+      line-height: 1;
+
+      .dropdown-content {
+        @include display-flex;
+        @include flex-direction(column);
+      }
+    }
+  }
+
+  aside {
+    $logoSize: 50px;
+
+    @include gradient-bar-bg;
+    // border-top-right-radius: 5px;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+    border-bottom: 1px solid $bar-border-color;
+    border-right: 1px solid $bar-border-color;
+
+    background: url(/static/img/chrome_logo.svg) no-repeat $content-padding 50%;
+    background-size: $logoSize;
+    background-color: #fafafa;
+    padding-left: $logoSize + $content-padding  + $content-padding / 2;
+
+    h1 {
+      line-height: 1;
+    }
+    img {
+      height: 45px;
+      width: 45px;
+      margin-right: 7px;
     }
   }
 }
@@ -123,7 +143,7 @@ footer {
   margin: $content-padding 0;
 
   div {
-    margin-right: $content-padding * 2;
+    // margin-right: $content-padding * 2;
 
     &.feature-count {
       min-width: 325px;
