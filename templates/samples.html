@@ -49,22 +49,22 @@
     </a>
   </div>
 </div>
+{% endblock %}
+
+{% block content %}
 <div class="subheader">
   <p class="description">Features are ordered by Chrome release version, latest first. Features
   enabled by default always come first, followed by features that are origin trials,
   behind a flag or still in the development.</p>
 </div>
-{% endblock %}
-
-{% block content %}
 
 <template id="t" is="dom-bind">
 
-<div id="sample-panel" class="loading">
+<div id="sample-panel">
 
   {% verbatim %}
     <ul id="samplelist" class="card-content">
-      <template is="dom-repeat" items="{{filtered}}" as="feature">
+      <template is="dom-repeat" items="{{filtered}}" as="feature" initial-count="6">
         <li>
           <paper-material>
             <h3 class="feature-name">
@@ -272,7 +272,7 @@ samplesPromise.then(function(features) {
 
   numSamples.textContent = t.features.length;
 
-  $('#sample-panel').classList.remove('loading');
+  document.body.classList.remove('loading');
 
   t.filter(search.value);
 

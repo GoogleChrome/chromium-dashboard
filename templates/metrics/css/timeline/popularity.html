@@ -9,9 +9,6 @@
   <link rel="import" href="/static/elements/metrics-imports{% if VULCANIZE %}.vulcanize{% endif %}.html">
 {% endblock %}
 
-{% block js %}
-{% endblock %}
-
 {% block drawer %}
   {% include "metrics/_nav.html" %}
 {% endblock %}
@@ -27,11 +24,15 @@
   <p class="description">Use of CSS properties over time.</p>
   <chromedash-feature-timeline type="css" view="popularity" title="Percentage of Chrome page loads that use this property at least once"></chromedash-feature-timeline>
 </div>
+{% endblock %}
 
+{% block js %}
 <script>
 document.addEventListener('WebComponentsReady', function(e) {
   var timeline = $('chromedash-feature-timeline');
   timeline.props = {{CSS_PROPERTY_BUCKETS|safe}};
+
+  document.body.classList.remove('loading');
 
   window.addEventListener('popstate', function(e) {
     if (e.state) {

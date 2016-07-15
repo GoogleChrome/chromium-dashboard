@@ -94,7 +94,7 @@ var $$ = function(selector) {
 
 {% block rss %}{% endblock%}
 </head>
-<body>
+<body class="loading">
 
 <app-drawer-layout fullbleed>
   <app-drawer swipe-open>
@@ -102,23 +102,21 @@ var $$ = function(selector) {
       {% block drawer %}{% endblock %}
     </div>
   </app-drawer>
-  <app-header-layout fullbleed>
-    <app-header fixed effects="waterfall">
-      <app-toolbar class="main-toolbar">
-        <div class="toolbar-content">
-          {% include "header.html" %}
-          {% block subheader %}{% endblock %}
-        </div>
-      </app-toolbar>
-    </app-header>
+  <app-header fixed effects="waterfall">
+    <app-toolbar class="main-toolbar">
+      <div class="toolbar-content">
+        {% include "header.html" %}
+        {% block subheader %}{% endblock %}
+      </div>
+    </app-toolbar>
+  </app-header>
 
-    <div id="content">
-      {% block content %}{% endblock %}
-    </div>
+  <div id="content">
+    <div id="spinner"><img src="/static/img/ring.svg"></div>
+    {% block content %}{% endblock %}
+  </div>
 
-    {% include "footer.html" %}
-
-  </app-header-layout>
+  {% include "footer.html" %}
 </app-drawer-layout>
 
 {% block overlay %}{% endblock %}

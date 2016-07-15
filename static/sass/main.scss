@@ -10,6 +10,22 @@ body {
   font-weight: 400;
   -webkit-font-smoothing: antialiased;
   background-color: $light-grey;
+
+  &.loading {
+    #spinner {
+      @include display-flex;
+    }
+  }
+}
+
+#spinner {
+  display: none;
+  @include align-items(center);
+  @include justify-content(center);
+  position: fixed;
+  height: calc(100% - 54px - 135px); // 100% - height of footer + header.
+  max-width: $max-content-width;
+  width: 100%;
 }
 
 app-drawer {
@@ -40,6 +56,14 @@ app-drawer {
 
 app-header {
   background-color: $light-grey;
+  right: 0;
+  top: 0;
+  left: 0;
+  z-index: 1;
+
+  &[fixed] {
+    position: fixed;
+  }
 }
 
 app-toolbar.main-toolbar {
@@ -136,7 +160,9 @@ footer {
   text-align: center;
   position: fixed;
   bottom: 0;
-  width: calc(100% - 200px); // 200px is width of drawer.
+  left: 0;
+  right: 0;
+  z-index: 1;
 
   div {
     margin-top: $content-padding / 2;
@@ -151,6 +177,7 @@ footer {
   @include display-flex;
   @include align-items(center);
   margin: $content-padding 0;
+  max-width: $max-content-width;
 
   .num-features {
     font-weight: 400;
@@ -203,6 +230,7 @@ footer {
   margin: $content-padding;
   position: relative;
   height: 100%;
+  margin-top: 135px;
 }
 
 #panels {
@@ -216,6 +244,14 @@ footer {
     .toolbar-content {
       max-width: $max-content-width;
     }
+  }
+  app-drawer {
+    .drawer-content-wrapper {
+      margin-top: 135px; // height of header.
+    }
+  }
+  app-header {
+    padding-left: $app-drawer-width;
   }
 }
 
@@ -234,6 +270,10 @@ footer {
       padding: 0;
       display: block;
     }
+  }
+
+  app-drawer {
+    z-index: 2;
   }
 
   #content {
@@ -298,8 +338,6 @@ footer {
       }
     }
   }
-
-  footer {
-    width: 100%;
-  }
 }
+
+@import 'fouc';

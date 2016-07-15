@@ -109,9 +109,10 @@ chromeMetadata.addEventListener('query-changed', function(e) {
 
 featureList.addEventListener('filtered', function(e) {
   $('.num-features').textContent = e.detail.count;
+  document.body.classList.remove('loading');
 });
 
-featureList.addEventListener('unveiled', function() {
+featureList.addEventListener('app-ready', function() {
   console.timeStamp && console.timeStamp('features unveiled');
   console.timeEnd && console.timeEnd('features unveil');
   unveilStart && ga('send', 'timing', 'features', 'unveil', performance.now() - unveilStart);

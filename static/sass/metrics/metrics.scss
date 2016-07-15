@@ -7,8 +7,7 @@
 }
 
 .data-panel {
-  max-width: 800px;
-  margin-left:  $content-padding * 2;
+  max-width: $max-content-width;
   overflow: auto;
 
   .description {

@@ -250,8 +250,7 @@
         // Looks fixed now and removing this call helps page load perf!
         //this.$.ironlist._update(); // force update to list.
 
-        document.getElementById('content').classList.add('ready'); // unmask app.
-        this.fire('unveiled');
+        this.fire('app-ready');
 
         // If there's an id in the URL, highlight and scroll to the feature.
         // Otherwise, go to the first "in development" feature.

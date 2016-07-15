@@ -36,3 +36,11 @@
   <chromedash-metrics type="css" view="popularity"></chromedash-metrics>
 </div>
 {% endblock %}
+
+{% block js %}
+<script>
+document.addEventListener('app-ready', function(e) {
+  document.body.classList.remove('loading');
+});
+</script>
+{% endblock %}

@@ -9,9 +9,6 @@
   <link rel="import" href="/static/elements/metrics-imports{% if VULCANIZE %}.vulcanize{% endif %}.html">
 {% endblock %}
 
-{% block js %}
-{% endblock %}
-
 {% block drawer %}
   {% include "metrics/_nav.html" %}
 {% endblock %}
@@ -27,11 +24,15 @@
   <p class="description">Percentages are the number of times (as the fraction of all animated properties) this property is animated.</p>
   <chromedash-feature-timeline type="css" view="animated" title="Percentage of times (as the fraction of all animated properties) this property is animated."></chromedash-feature-timeline>
 </div>
+{% endblock %}
 
+{% block js %}
 <script>
 document.addEventListener('WebComponentsReady', function(e) {
   var timeline = $('chromedash-feature-timeline');
   timeline.props = {{CSS_PROPERTY_BUCKETS|safe}};
+
+  document.body.classList.remove('loading');
 
   window.addEventListener('popstate', function(e) {
     if (e.state) {

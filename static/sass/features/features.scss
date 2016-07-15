@@ -1,26 +1,11 @@
 @import "../vars";
 
 #content {
-  &.ready::after {
-    display: none;
-  }
-
-  &::after {
-    font-size: 18px;
-    font-weight: normal;
-    content: 'loading...';
-    color: $gray-3;
-    top: 0;
-    left: 0;
-    position: absolute;
-    background: #fafafa;
-    width: 100%;
-    height: 100%;
-    box-sizing: border-box;
-    @include display-flex;
-    @include justify-content(center);
-    @include align-items(center);
-  }
+  // &.ready {
+  //   #spinner {
+  //     display: none;
+  //   }
+  // }
 
   &.error::after {
     content: 'Error loading features list.';
@@ -43,7 +28,8 @@ chromedash-legend {
 }
 
 chromedash-featurelist {
-  max-width: $max-content-width;
+  max-width: 745px;//$max-content-width;
+  margin-bottom: 54px + $content-padding * 2;
 }
 
 #subheader {
