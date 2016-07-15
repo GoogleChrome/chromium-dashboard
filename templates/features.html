@@ -95,6 +95,11 @@ if (location.hash) {
   search.value = location.hash.substr(1);
 }
 
+chromeMetadata.addEventListener('query-changed', function(e) {
+  search.value = '=' + e.detail.version;
+  featureList.filter(search.value);
+});
+
 featureList.addEventListener('filtered', function(e) {
   $('#num-features').textContent = e.detail.count;
 });
@@ -123,16 +128,9 @@ search.addEventListener('search', function(e) {
   }
 });
 
-search.addEventListener('keyup', function(e) {
-  // Clear results.
-  if (!e.target.value && e.keyCode != 27) { // ESC
-    featureList.filter();
-    chromeMetadata.selected = null;
-  } else {
-    //if (e.keyCode == 13) {  // Enter
-      featureList.filter(e.target.value);
-    //}
-  }
+search.addEventListener('input', function(e) {
+  featureList.filter(e.target.value);
+  chromeMetadata.selected = null;
 });
 
 $('.legend').addEventListener('click', function(e) {
