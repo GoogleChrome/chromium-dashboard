@@ -117,29 +117,47 @@
         <div class="impl_status">
           <span class="chromium_status"><label>{{feature.impl_status_chrome}}</label></span>
           <template is="dom-if" if="{{feature.shipped_milestone}}">
-            <span class="chrome_desktop tooltip" title="Chrome desktop">
-              <label>Chrome desktop</label><span>{{feature.shipped_milestone}}</span>
+            <span>
+              <label>
+                <span class="chrome_icon"></span>
+                <span class="follows_icon">Chrome desktop</span>
+              </label>
+              <span>{{feature.shipped_milestone}}</span>
             </span>
           </template>
           <template is="dom-if" if="{{feature.shipped_android_milestone}}">
-            <span class="chrome_android tooltip" title="Chrome for Android">
-              <iron-icon icon="icons:android" class="android"></iron-icon>
+            <span>
+              <label>
+                <span class="chrome_icon"></span>
+                <iron-icon icon="icons:android" class="android follows_icon"></iron-icon>
+                <span class="follows_icon">Chrome for Android</span>
+              </label>
               <span>{{feature.shipped_android_milestone}}</span>
             </span>
           </template>
           <template is="dom-if" if="{{feature.shipped_webview_milestone}}">
-            <span class="chrome_webview tooltip" title="Android Webview">
-              <label>Android Webview</label><span>{{feature.shipped_webview_milestone}}</span>
+            <span>
+              <label>Android Webview</label>
+              <span>{{feature.shipped_webview_milestone}}</span>
             </span>
           </template>
           <template is="dom-if" if="{{feature.shipped_opera_milestone}}">
-            <span class="opera_desktop tooltip" title="Opera desktop">
-              <label>Opera desktop</label><span>{{feature.shipped_opera_milestone}}</span>
+            <span>
+              <label>
+                <span class="opera_icon"></span>
+                <span class="follows_icon">Opera desktop</span>
+              </label>
+              <span>{{feature.shipped_opera_milestone}}</span>
             </span>
           </template>
           <template is="dom-if" if="{{feature.shipped_opera_android_milestone}}">
-            <span class="opera_android tooltip" title="Opera for Android">
-              <label>Opera for Android</label><span>{{feature.shipped_opera_android_milestone}}</span>
+            <span>
+              <label>
+                <span class="opera_icon"></span>
+                <iron-icon icon="icons:android" class="android follows_icon"></iron-icon>
+                <span class="follows_icon">Opera for Android</span>
+              </label>
+              <span>{{feature.shipped_opera_android_milestone}}</span>
             </span>
           </template>
           <template is="dom-if" if="{{feature.prefixed}}">
