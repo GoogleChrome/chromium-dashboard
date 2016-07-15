@@ -67,8 +67,7 @@
         },
         metadata: {
           type: Object,
-          value: null,
-          observer: '_metadataChanged'
+          value: null
         },
         search: { value: null },
         whitelisted: {
@@ -233,15 +232,6 @@
             var hash = this.search.value ? '#' + this.search.value : '';
             history.replaceState({id: null}, feature.name, '/features' + hash);
           }
-        }
-      },
-
-      _metadataChanged: function() {
-        if (this.metadata) {
-          // TODO: remove the listener if metadata element changes.
-          this.metadata.addEventListener('milestoneselect', function(e) {
-            this.scrollToMilestone(e.detail.version);
-          }.bind(this));
         }
       },
 

@@ -55,7 +55,7 @@
       if (detail) {
         // Came from an internal click.
         this.selected = Polymer.dom(e).localTarget.dataset.version;
-        this.fire('queryChanged', {version: this.selected});
+        this.fire('query-changed', {version: this.selected});
       } else {
         // Called directly (from outside). e is a feature.
         this.selected = e.meta.milestone_str;

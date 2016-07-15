@@ -94,7 +94,7 @@ if (location.hash) {
   search.value = location.hash.substr(1);
 }
 
-chromeMetadata.addEventListener('queryChanged', function(e) {
+chromeMetadata.addEventListener('query-changed', function(e) {
   search.value = '=' + e.detail.version;
   var event = new Event('input');
   search.dispatchEvent(event);
