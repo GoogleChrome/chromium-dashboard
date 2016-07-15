@@ -113,25 +113,54 @@
   <template is="dom-if" if="{{open}}">
     <section class="sidebyside">
       <div class="flex">
-        <h3>Implementation status</h3>
+        <h3>Chromium status</h3>
         <div class="impl_status">
+          <span class="chromium_status"><label>{{feature.impl_status_chrome}}</label></span>
           <template is="dom-if" if="{{feature.shipped_milestone}}">
-            <span class="chrome_desktop tooltip" title="Chrome desktop">
-              <label>{{feature.impl_status_chrome}}</label><span>{{feature.shipped_milestone}}</span>
+            <span>
+              <label>
+                <span class="chrome_icon"></span>
+                <span class="follows_icon">Chrome desktop</span>
+              </label>
+              <span>{{feature.shipped_milestone}}</span>
             </span>
           </template>
-          <template is="dom-if" if="{{!feature.shipped_milestone}}">
-            <span class="chrome_desktop"><label>{{feature.impl_status_chrome}}</label></span>
-          </template>
           <template is="dom-if" if="{{feature.shipped_android_milestone}}">
-            <span class="chrome_android tooltip" title="Chrome for Android">
-              <iron-icon icon="icons:android" class="android"></iron-icon>
+            <span>
+              <label>
+                <span class="chrome_icon"></span>
+                <iron-icon icon="icons:android" class="android follows_icon"></iron-icon>
+                <span class="follows_icon">Chrome for Android</span>
+              </label>
               <span>{{feature.shipped_android_milestone}}</span>
             </span>
           </template>
           <template is="dom-if" if="{{feature.shipped_webview_milestone}}">
-            <span class="chrome_webview tooltip" title="Chrome Webview">
-              <label>Webview</label><span>{{feature.shipped_webview_milestone}}</span>
+            <span>
+              <label>
+                <iron-icon icon="icons:android" class="android"></iron-icon>
+                Android Webview
+              </label>
+              <span>{{feature.shipped_webview_milestone}}</span>
+            </span>
+          </template>
+          <template is="dom-if" if="{{feature.shipped_opera_milestone}}">
+            <span>
+              <label>
+                <span class="opera_icon"></span>
+                <span class="follows_icon">Opera desktop</span>
+              </label>
+              <span>{{feature.shipped_opera_milestone}}</span>
+            </span>
+          </template>
+          <template is="dom-if" if="{{feature.shipped_opera_android_milestone}}">
+            <span>
+              <label>
+                <span class="opera_icon"></span>
+                <iron-icon icon="icons:android" class="android follows_icon"></iron-icon>
+                <span class="follows_icon">Opera for Android</span>
+              </label>
+              <span>{{feature.shipped_opera_android_milestone}}</span>
             </span>
           </template>
           <template is="dom-if" if="{{feature.prefixed}}">
@@ -191,13 +220,6 @@
             </template>
             <span class="vendor-view safari-view" hidden$="{{feature.safari_views_link}}"></span>
           </span>
-          <template is="dom-if" if="{{feature.shipped_opera_milestone}}">
-            <span title="Shipped. Desktop: {{feature.shipped_opera_milestone}}, Android: {{feature.shipped_opera_android_milestone}}" class="view opera-view tooltip">
-              <chromedash-color-status class="bottom"
-                  value="1" max="[[MAX_VENDOR_VIEW]]"></chromedash-color-status>
-              <span class="vendor-view"></span>
-            </span>
-          </template>
           <span title="Web developers: {{feature.web_dev_views.text}}" class="view webdev-view tooltip">
             <chromedash-color-status class="bottom"
                 value="[[feature.web_dev_views.value]]"

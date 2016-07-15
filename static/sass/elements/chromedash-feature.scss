@@ -170,18 +170,31 @@ section {
       }
     }
 
-    .chrome_desktop, .chrome_android, .chrome_webview {
-      &.tooltip {
-        position: relative;
-        &:hover, &:active {
-          &:before {
-            @include tooltip;
-            top: -50px;
-            left: 20px;
-            width: 225px;
-          }
-        }
-      }
+    .chromium_status {
+      font-weight: bold;
+    }
+
+    .vendor_icon {
+      background: url(/static/img/browsers-logos.png) no-repeat;
+      background-size: cover;
+      height: 20px;
+      width: 20px;
+      margin-right: 4px;
+      display: inline-block;
+    }
+
+    .chrome_icon {
+      @extend .vendor_icon;
+      background-position: 0px 50%;
+    }
+
+    .opera_icon {
+      @extend .vendor_icon;
+      background-position: -75px 50%;
+    }
+
+    .follows_icon, iron-icon.follows_icon {
+      vertical-align: top;
     }
   }
 
@@ -226,19 +239,6 @@ section {
       height: 16px;
       margin: 8px;
       display: inline-block;
-    }
-
-    .opera-view {
-      .vendor-view {
-        background-position: -60px 50%;
-        width: 17px;
-      }
-      &:hover, &:active {
-        &:before {
-          width: 210px !important;
-          left: -80px !important;
-        }
-      }
     }
 
     .edge-view {

@@ -514,7 +514,7 @@ class FeatureForm(forms.Form):
                            help_text='OWP Launch Tracking, crbug, etc.')
 
   impl_status_chrome = forms.ChoiceField(required=True,
-                                         label='Status in Chrome',
+                                         label='Status in Chromium',
                                          choices=IMPLEMENTATION_STATUS.items())
 
   #shipped_milestone = PlaceholderCharField(required=False,
