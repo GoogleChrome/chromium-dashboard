@@ -96,8 +96,7 @@ if (location.hash) {
 
 chromeMetadata.addEventListener('query-changed', function(e) {
   search.value = '=' + e.detail.version;
-  var event = new Event('input');
-  search.dispatchEvent(event);
+  featureList.filter(search.value);
 });
 
 featureList.addEventListener('filtered', function(e) {
