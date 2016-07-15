@@ -150,7 +150,7 @@ var featuresPromise = new Promise(function(resolve, reject) {
 
   console.time && console.time('features unveil'); // benchmark how long it takes load features.
   console.timeStamp && console.timeStamp('features fetch');
-  performance && (unveilStart = performance.now());
+  performance && performance.now && (unveilStart = performance.now());
 
   xhr.onloadend = function(e) {
     console.timeStamp && console.timeStamp('features loaded');
