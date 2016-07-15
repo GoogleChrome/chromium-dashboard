@@ -88,6 +88,7 @@ var featureList = $('chromedash-featurelist');
 var chromeMetadata = $('chromedash-metadata');
 var overlay = $('chromedash-legend');
 var search = $('.search input');
+var unveilStart;
 
 // Set search box to URL deep link.
 if (location.hash) {
@@ -96,6 +97,12 @@ if (location.hash) {
 
 featureList.addEventListener('filtered', function(e) {
   $('#num-features').textContent = e.detail.count;
+});
+
+featureList.addEventListener('unveiled', function() {
+  console.timeStamp && console.timeStamp('features unveiled');
+  console.timeEnd && console.timeEnd('features unveil');
+  unveilStart && ga('send', 'timing', 'features', 'unveil', performance.now() - unveilStart);
 });
 
 featureList.addEventListener('filter-category', function(e) {
@@ -143,9 +150,11 @@ var featuresPromise = new Promise(function(resolve, reject) {
 
   console.time && console.time('features unveil'); // benchmark how long it takes load features.
   console.timeStamp && console.timeStamp('features fetch');
+  performance && performance.now && (unveilStart = performance.now());
 
   xhr.onloadend = function(e) {
     console.timeStamp && console.timeStamp('features loaded');
+    unveilStart && ga('send', 'timing', 'features', 'loaded', performance.now() - unveilStart);
     if (e.target.status < 400) {
       resolve(e.target.response);
     } else {
