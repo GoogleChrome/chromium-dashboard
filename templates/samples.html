@@ -1,6 +1,12 @@
 {% extends "base.html" %}
 {% load verbatim %}
 
+{% block preload %}
+  {% if VULCANIZE %}
+    <link rel="preload" href="/static/elements/samples-imports.vulcanize.js" as="script">
+  {% endif %}
+{% endblock %}
+
 {% block html_imports %}
   <link rel="import" href="/static/elements/samples-imports{% if VULCANIZE %}.vulcanize{% endif %}.html">
 {% endblock %}
