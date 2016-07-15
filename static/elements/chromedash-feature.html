@@ -137,7 +137,10 @@
           </template>
           <template is="dom-if" if="{{feature.shipped_webview_milestone}}">
             <span>
-              <label>Android Webview</label>
+              <label>
+                <iron-icon icon="icons:android" class="android"></iron-icon>
+                Android Webview
+              </label>
               <span>{{feature.shipped_webview_milestone}}</span>
             </span>
           </template>
