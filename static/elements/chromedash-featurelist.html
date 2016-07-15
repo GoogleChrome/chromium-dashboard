@@ -251,8 +251,7 @@
         this.$.ironlist._update(); // force update to list.
 
         document.getElementById('content').classList.add('ready'); // unmask app.
-        console.timeStamp && console.timeStamp('features unveiled');
-        console.timeEnd && console.timeEnd('features unveil');
+        this.fire('unveiled');
 
         // If there's an id in the URL, highlight and scroll to the feature.
         // Otherwise, go to the first "in development" feature.
