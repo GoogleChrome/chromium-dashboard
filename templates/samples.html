@@ -22,8 +22,7 @@
 {% block drawer %}
   <h3>Category filter</h3>
   {% verbatim %}
-  <paper-listbox id="papermenu" selected-item="{{selectedCategory}}"
-                 on-transitionend="_onRippleDone">
+  <paper-listbox id="papermenu">
   {% endverbatim %}
   {% for k,v in CATEGORIES %}
     {% if v != 'webcomponents' %}
@@ -128,6 +127,7 @@ function matchesMilestone_(milestone, operator, version) {
 
 var search = $('.search input');
 var numSamples = $('.num-features');
+var categoryMenu = $('#papermenu');
 
 var t = $('#t');
 t.categories = {{categories|safe}}; // server included.
@@ -150,25 +150,18 @@ t._computeFeatureLink = function(id) {
   return '/features/' + id;
 };
 
-// TODO(ericbidelman): category filtering no longer works now that the menu is in the app drawer
 // and not part of the dom-bind template.
 t._onSelectCategory = function(e, detail) {
   // Enable toggling selected item until
   // https://github.com/PolymerElements/paper-menu/issues/50 is fixed.
   if (this.selectedCategory === this.prevSelectedCategory) {
-    this.$.papermenu.selected = null;
+    categoryMenu.selected = null;
+    this.selectedCategory = null;
     this.prevSelectedCategory = null;
   } else {
     this.prevSelectedCategory = this.selectedCategory;
   }
   this.filter(search.value);
-};
-
-t._onRippleDone = function(e, detail) {
-  // Needed until https://github.com/PolymerElements/paper-ripple/pull/41 is fixed.
-  this.debounce('ripple', function() {
-    t._onSelectCategory();
-  }, 10);
 };
 
 // TODO: move this into a behavior. It's duplicated from chromedash-featurelist.html.
@@ -203,6 +196,7 @@ t.filter = function(val) {
       location.hash = '';
     }
     this.filtered = features;
+    numSamples.textContent = this.filtered.length;
 
     return;
   }
@@ -297,6 +291,19 @@ search.addEventListener('keyup', function(e) {
   } else {
     t.filter(e.target.value);
   }
+});
+
+search.addEventListener('keyup', function(e) {
+  if (!e.target.value && e.keyCode != 27) { // ESC
+    t.removeFilters();
+  } else {
+    t.filter(e.target.value);
+  }
+});
+
+categoryMenu.addEventListener('transitionend', function(e) {
+  t.selectedCategory = this.selectedItem;
+  t._onSelectCategory();
 });
 
 })();
