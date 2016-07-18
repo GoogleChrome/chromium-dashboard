@@ -11,11 +11,11 @@ import del from 'del';
 // import runSequence from 'run-sequence';
 // import browserSync from 'browser-sync';
 // import swPrecache from 'sw-precache';
-// import gulpLoadPlugins from 'gulp-load-plugins';
+import gulpLoadPlugins from 'gulp-load-plugins';
 // import {output as pagespeed} from 'psi';
 // import pkg from './package.json';
 
-// const $ = gulpLoadPlugins();
+const $ = gulpLoadPlugins();
 // const reload = browserSync.reload;
 
 // Lint JavaScript
@@ -65,21 +65,14 @@ gulp.task('styles', () => {
 
   // For best performance, don't add Sass partials to `gulp.src`
   return gulp.src([
-    'app/styles/**/*.scss',
-    'app/styles/**/*.css'
+    'static/sass/**/*.scss'
   ])
-    .pipe($.newer('.tmp/styles'))
-    .pipe($.sourcemaps.init())
     .pipe($.sass({
+      outputStyle: 'compressed',
       precision: 10
     }).on('error', $.sass.logError))
-    .pipe($.autoprefixer(AUTOPREFIXER_BROWSERS))
-    .pipe(gulp.dest('.tmp/styles'))
-    // Concatenate and minify styles
-    .pipe($.if('*.css', $.cssnano()))
-    .pipe($.size({title: 'styles'}))
-    .pipe($.sourcemaps.write('./'))
-    .pipe(gulp.dest('dist/styles'));
+//    .pipe($.autoprefixer(AUTOPREFIXER_BROWSERS))
+    .pipe(gulp.dest('static/css'));
 });
 
 // Concatenate and minify JavaScript. Optionally transpiles ES2015 code to ES5.
