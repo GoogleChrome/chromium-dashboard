@@ -30,3 +30,5 @@ MEMCACHE_KEY_PREFIX = APP_VERSION # For memcache busting on new version
 RSS_FEED_LIMIT = 15
 
 VULCANIZE = True #PROD
+
+DEFAULT_CACHE_TIME = 600 # seconds

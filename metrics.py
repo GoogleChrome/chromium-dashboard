@@ -59,7 +59,9 @@ class TimelineHandler(common.JSONHandler):
       memcache.set(KEY, data, time=CACHE_AGE)
 
     data = self._clean_data(data)
-    super(TimelineHandler, self).get(data)
+    # Metrics json shouldn't be cached by intermediary caches because users
+    # see different data when logged in. Set Cache-Control: private.
+    super(TimelineHandler, self).get(data, public=False)
 
 
 class PopularityTimelineHandler(TimelineHandler):
@@ -114,7 +116,9 @@ class FeatureHandler(common.JSONHandler):
       memcache.set(self.MEMCACHE_KEY, properties, time=CACHE_AGE)
 
     properties = self._clean_data(properties)
-    super(FeatureHandler, self).get(properties)
+    # Metrics json shouldn't be cached by intermediary caches because users
+    # see different data when logged in. Set Cache-Control: private.
+    super(FeatureHandler, self).get(properties, public=False)
 
 
 class CSSPopularityHandler(FeatureHandler):

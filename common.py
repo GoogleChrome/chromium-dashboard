@@ -63,8 +63,16 @@ class JSONHandler(BaseHandler):
 
     return data
 
-  def get(self, data, formatted=False):
+  def get(self, data, formatted=False, public=True):
+    cache_type = 'public'
+    if not public:
+      cache_type = 'private'
+
+    # Cache script generated json responses for 10 minutes.
+    self.response.headers['Cache-Control'] = '%s, max-age=%s' % (
+        cache_type, settings.DEFAULT_CACHE_TIME)
     self.response.headers['Content-Type'] = 'application/json;charset=utf-8'
+
     if formatted:
       return self.response.write(json.dumps(data, separators=(',',':')))
     else:
