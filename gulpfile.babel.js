@@ -14,6 +14,7 @@ import del from 'del';
 import gulpLoadPlugins from 'gulp-load-plugins';
 // import {output as pagespeed} from 'psi';
 // import pkg from './package.json';
+import merge from 'merge-stream';
 
 const $ = gulpLoadPlugins();
 // const reload = browserSync.reload;
@@ -122,6 +123,55 @@ gulp.task('html', () => {
     // Output files
     .pipe($.if('*.html', $.size({title: 'html', showFiles: true})))
     .pipe(gulp.dest('dist'));
+});
+
+gulp.task('vulcanize', () => {
+  var targets = [
+    {
+      input: 'static/elements/elements.html',
+      outputDir: 'static/elements',
+      outputFile: 'elements.vulcanize.html',
+    },
+    {
+      input: 'static/elements/metrics-imports.html',
+      outputDir: 'static/elements',
+      outputFile: 'metrics-imports.vulcanize.html',
+    },
+    {
+      input: 'static/elements/features-imports.html',
+      outputDir: 'static/elements',
+      outputFile: 'features-imports.vulcanize.html',
+    },
+    {
+      input: 'static/elements/admin-imports.html',
+      outputDir: 'static/elements',
+      outputFile: 'admin-imports.vulcanize.html',
+    },
+    {
+      input: 'static/elements/samples-imports.html',
+      outputDir: 'static/elements',
+      outputFile: 'samples-imports.vulcanize.html',
+    },
+  ];
+
+  // Vulcanize does not allow the name of the output file to be changed, so
+  // must manually rename the file first.
+  var tasks = targets.map(target => {
+    return gulp.src(target.input)
+      .pipe($.rename(target.outputFile))
+      .pipe(gulp.dest(target.outputDir))
+      .pipe($.vulcanize({
+        stripComments: true,
+        inlineScripts: true,
+        inlineCss: true
+      }))
+      .pipe($.crisper({
+        scriptInHead: false
+      }))
+      .pipe(gulp.dest(target.outputDir));
+  });
+
+  return merge(tasks);
 });
 
 // Clean output directory

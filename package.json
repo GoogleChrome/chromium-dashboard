@@ -30,8 +30,12 @@
     "grunt-sass": "^1.2.0",
     "grunt-vulcanize": "^1.0.0",
     "gulp": "^3.9.1",
+    "gulp-crisper": "^1.1.0",
+    "gulp-if": "^2.0.1",
     "gulp-load-plugins": "^1.2.4",
+    "gulp-rename": "^1.2.2",
     "gulp-sass": "^2.3.2",
+    "gulp-vulcanize": "^6.1.0",
     "http2-push-manifest": "^1.0.0",
     "load-grunt-tasks": "^3.4.1"
   }
