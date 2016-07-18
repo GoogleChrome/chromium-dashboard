@@ -20,12 +20,16 @@
     "url": "https://github.com/GoogleChrome/chromium-dashboard/issues"
   },
   "devDependencies": {
+    "babel-core": "^6.10.4",
+    "babel-preset-es2015": "^6.9.0",
+    "del": "^2.2.1",
     "grunt": "^0.4.5",
     "grunt-appengine": "^0.1.5",
     "grunt-contrib-clean": "^0.6.0",
     "grunt-minified": "0.0.6",
     "grunt-sass": "^1.2.0",
     "grunt-vulcanize": "^1.0.0",
+    "gulp": "^3.9.1",
     "http2-push-manifest": "^1.0.0",
     "load-grunt-tasks": "^3.4.1"
   }
