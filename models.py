@@ -58,7 +58,7 @@ BEHIND_A_FLAG = 4
 ENABLED_BY_DEFAULT = 5
 DEPRECATED = 6
 REMOVED = 7
-EXPERIMENTAL_FRAMEWORK = 8
+ORIGIN_TRIAL = 8
 NO_LONGER_PURSUING = 1000 # insure bottom of list
 
 IMPLEMENTATION_STATUS = OrderedDict()
@@ -66,7 +66,7 @@ IMPLEMENTATION_STATUS[NO_ACTIVE_DEV] = 'No active development'
 IMPLEMENTATION_STATUS[PROPOSED] = 'Proposed'
 IMPLEMENTATION_STATUS[IN_DEVELOPMENT] = 'In development'
 IMPLEMENTATION_STATUS[BEHIND_A_FLAG] = 'Behind a flag'
-IMPLEMENTATION_STATUS[EXPERIMENTAL_FRAMEWORK] = 'In experimental framework'
+IMPLEMENTATION_STATUS[ORIGIN_TRIAL] = 'Origin trial'
 IMPLEMENTATION_STATUS[ENABLED_BY_DEFAULT] = 'Enabled by default'
 IMPLEMENTATION_STATUS[DEPRECATED] = 'Deprecated'
 IMPLEMENTATION_STATUS[REMOVED] = 'Removed'
@@ -226,7 +226,7 @@ class Feature(DictModel):
     d['visibility'] = VISIBILITY_CHOICES[self.visibility]
     d['impl_status_chrome'] = IMPLEMENTATION_STATUS[self.impl_status_chrome]
     d['meta'] = {
-      'experimentalframework': self.impl_status_chrome == EXPERIMENTAL_FRAMEWORK,
+      'origintrial': self.impl_status_chrome == ORIGIN_TRIAL,
       'needsflag': self.impl_status_chrome == BEHIND_A_FLAG,
       'milestone_str': self.shipped_milestone or d['impl_status_chrome']
       }
@@ -359,7 +359,7 @@ class Feature(DictModel):
     if feature_list is None or update_cache:
       # Get all shipping features. Ordered by shipping milestone (latest first).
       q = Feature.all()
-      q.filter('impl_status_chrome IN', [ENABLED_BY_DEFAULT, EXPERIMENTAL_FRAMEWORK])
+      q.filter('impl_status_chrome IN', [ENABLED_BY_DEFAULT, ORIGIN_TRIAL])
       q.order('-impl_status_chrome')
       q.order('-shipped_milestone')
       q.order('name')
@@ -399,7 +399,7 @@ class Feature(DictModel):
         PROPOSED,
         IN_DEVELOPMENT,
         BEHIND_A_FLAG,
-        EXPERIMENTAL_FRAMEWORK):
+        ORIGIN_TRIAL):
       params.append('blocking=' + crbug_number)
     if self.owner:
       params.append('cc=' + ','.join(self.owner))
@@ -490,7 +490,7 @@ class PlaceholderCharField(forms.CharField):
 class FeatureForm(forms.Form):
 
   SHIPPED_HELP_TXT = ('First milestone the feature shipped with this status '
-                      '(either enabled by default, experimental, or deprecated)')
+                      '(either enabled by default, origin trial, or deprecated)')
 
   #name = PlaceholderCharField(required=True, placeholder='Feature name')
   name = forms.CharField(required=True, label='Feature')

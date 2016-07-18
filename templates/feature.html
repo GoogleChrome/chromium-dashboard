@@ -31,8 +31,8 @@
     <div class="iconrow">
     <a href="/features#category: {{ feature.category }}" class="category">{{ feature.category }}</a>
     <div class="topcorner">
-    {% if feature.meta.experimentalframework %}
-    <span class="tooltip" title="Feature in experimental framework">
+    {% if feature.meta.origintrial %}
+    <span class="tooltip" title="Origin trial">
       <iron-icon icon="icons:extension" class="experimental"></iron-icon>
     </span>
     {% endif %}
@@ -99,8 +99,8 @@
     <p>
       {% if feature.shipped_milestone or feature.shipped_android_milestone or feature.shipped_ios_milestone or feature.shipped_webview_milestone or feature.shipped_opera_milestone or shipped_opera_android_milestone %}
         <b>
-        {% if feature.meta.experimentalframework %}
-          In experimental framework
+        {% if feature.meta.origintrial %}
+          Origin trial
         {% else %}
           {% if feature.meta.needsflag %}
             Behind a flag
