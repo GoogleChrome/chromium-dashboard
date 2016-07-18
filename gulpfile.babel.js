@@ -8,7 +8,7 @@
 import path from 'path';
 import gulp from 'gulp';
 import del from 'del';
-// import runSequence from 'run-sequence';
+import runSequence from 'run-sequence';
 // import browserSync from 'browser-sync';
 // import swPrecache from 'sw-precache';
 import gulpLoadPlugins from 'gulp-load-plugins';
@@ -184,15 +184,13 @@ gulp.task('serve:dist', ['default'], () =>
 
 // Build production files, the default task
 gulp.task('default', ['clean'], cb =>
-  cb
-/*
   runSequence(
     'styles',
-    ['lint', 'html', 'scripts', 'images', 'copy'],
-    'generate-service-worker',
+    'vulcanize',
+    'scripts',
+//    'generate-service-worker',
     cb
   )
-*/
 );
 
 // Run PageSpeed Insights
