@@ -84,8 +84,8 @@
             <iron-icon icon="icons:extension" class="experimental"></iron-icon>
           </span>
         </template>
-        <template is="dom-if" if="{{feature.meta.experimentalframework}}">
-          <span class="tooltip" title="Feature in experimental framework">
+        <template is="dom-if" if="{{feature.meta.origintrial}}">
+          <span class="tooltip" title="Origin trial">
             <iron-icon icon="icons:extension" class="experimental"></iron-icon>
           </span>
         </template>
@@ -413,7 +413,7 @@
              implStatusChrome === 'Proposed' ||
              implStatusChrome === 'In development' ||
              implStatusChrome === 'Behind a flag' ||
-             implStatusChrome === 'In experimental framework';
+             implStatusChrome === 'Origin trial';
     },
     _computeEditLinkHidden: function(feature) {
       return '/admin/features/edit/' + feature.id;
