@@ -115,52 +115,30 @@ gulp.task('html', () => {
 });
 
 gulp.task('vulcanize', () => {
-  var targets = [
-    {
-      input: 'static/elements/elements.html',
-      outputDir: 'static/elements',
-      outputFile: 'elements.vulcanize.html',
-    },
-    {
-      input: 'static/elements/metrics-imports.html',
-      outputDir: 'static/elements',
-      outputFile: 'metrics-imports.vulcanize.html',
-    },
-    {
-      input: 'static/elements/features-imports.html',
-      outputDir: 'static/elements',
-      outputFile: 'features-imports.vulcanize.html',
-    },
-    {
-      input: 'static/elements/admin-imports.html',
-      outputDir: 'static/elements',
-      outputFile: 'admin-imports.vulcanize.html',
-    },
-    {
-      input: 'static/elements/samples-imports.html',
-      outputDir: 'static/elements',
-      outputFile: 'samples-imports.vulcanize.html',
-    },
-  ];
-
-  // Vulcanize does not allow the name of the output file to be changed, so
-  // must manually rename the file first.
-  var tasks = targets.map(target => {
-    return gulp.src(target.input)
-      .pipe($.rename(target.outputFile))
-      .pipe(gulp.dest(target.outputDir))
-      .pipe($.vulcanize({
-        stripComments: true,
-        inlineScripts: true,
-        inlineCss: true
-      }))
-      .pipe($.crisper({
-        scriptInHead: false
-      }))
-      .pipe(gulp.dest(target.outputDir));
-  });
-
-  return merge(tasks);
+  // Vulcanize the Polymer imports, creating *.vulcanize.* files beside the
+  // original input files.
+  return gulp.src([
+      'static/elements/elements.html',
+      'static/elements/metrics-imports.html',
+      'static/elements/features-imports.html',
+      'static/elements/admin-imports.html',
+      'static/elements/samples-imports.html',
+    ], {base: 'static'}
+  )
+    // Vulcanize does not allow the name of the output file to be changed, so
+    // must manually rename the file first.
+    .pipe($.rename({suffix: '.vulcanize'}))
+    .pipe(gulp.dest('static'))
+    .pipe($.vulcanize({
+      stripComments: true,
+      inlineScripts: true,
+      inlineCss: true
+    }))
+    // Create an external script file to satisfy CSP
+    .pipe($.crisper({
+      scriptInHead: false
+    }))
+    .pipe(gulp.dest('static'));
 });
 
 // Clean output directory
