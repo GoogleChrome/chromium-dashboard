@@ -9,6 +9,7 @@
   "scripts": {
     "postinstall": "npm run deps; npm run build",
     "deps": "rm -rf static/bower_components; bower install",
+    "lint": "eslint .",
     "build": "grunt",
     "deploy": "./scripts/deploy_site.sh"
   },
@@ -20,6 +21,8 @@
     "url": "https://github.com/GoogleChrome/chromium-dashboard/issues"
   },
   "devDependencies": {
+    "eslint": "^3.1.1",
+    "eslint-config-google": "^0.6.0",
     "grunt": "^0.4.5",
     "grunt-appengine": "^0.1.5",
     "grunt-contrib-clean": "^0.6.0",
