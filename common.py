@@ -68,7 +68,7 @@ class JSONHandler(BaseHandler):
     if not public:
       cache_type = 'private'
 
-    # Cache script generated json responses for 10 minutes.
+    # Cache script generated json responses.
     self.response.headers['Cache-Control'] = '%s, max-age=%s' % (
         cache_type, settings.DEFAULT_CACHE_TIME)
     self.response.headers['Content-Type'] = 'application/json;charset=utf-8'
