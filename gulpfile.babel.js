@@ -9,6 +9,7 @@ import path from 'path';
 import gulp from 'gulp';
 import del from 'del';
 import runSequence from 'run-sequence';
+import swPrecache from 'sw-precache';
 import gulpLoadPlugins from 'gulp-load-plugins';
 import merge from 'merge-stream';
 
@@ -93,9 +94,41 @@ gulp.task('default', ['clean'], cb =>
     'lint',
     'vulcanize',
     'scripts',
+    'generate-service-worker',
     cb
   )
 );
+
+// Copy over the scripts that are used in importScripts as part of the generate-service-worker task.
+gulp.task('copy-sw-scripts', () => {
+  return gulp.src('node_modules/sw-toolbox/sw-toolbox.js')
+    .pipe(gulp.dest('static/dist'));
+});
+
+// Generate a service worker file that will provide offline functionality for
+// local resources.
+gulp.task('generate-service-worker', ['copy-sw-scripts'], () => {
+  const staticDir = 'static';
+  const distDir = path.join(staticDir, 'dist');
+  const filepath = path.join(distDir, 'service-worker.js');
+
+  return swPrecache.write(filepath, {
+    cacheId: 'chromestatus',
+    importScripts: [
+      `${distDir}/sw-toolbox.js`,
+    ],
+    staticFileGlobs: [
+      // Images
+      `${staticDir}/img/**/*`,
+      `${staticDir}/elements/openinnew.svg`,
+      // Scripts
+      `${staticDir}/bower_components/webcomponentsjs/webcomponents-lite.min.js`,
+      `${staticDir}/js/**/*.js`,
+      // Styles
+      `${staticDir}/css/**/*.css`,
+    ],
+  });
+});
 
 // Load custom tasks from the `tasks` directory
 // Run: `npm install --save-dev require-dir` from the command-line

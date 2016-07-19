@@ -39,6 +39,8 @@
     "gulp-vulcanize": "^6.1.0",
     "http2-push-manifest": "^1.0.0",
     "load-grunt-tasks": "^3.4.1",
-    "run-sequence": "^1.2.2"
+    "run-sequence": "^1.2.2",
+    "sw-precache": "^3.2.0",
+    "sw-toolbox": "^3.2.1"
   }
 }
