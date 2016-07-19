@@ -74,13 +74,15 @@ gulp.task('vulcanize', () => {
     }))
     // Create an external script file to satisfy CSP
     .pipe($.crisper({
-      scriptInHead: false
+      scriptInHead: true
     }))
     .pipe(gulp.dest('static'));
 });
 
 // Clean output directory
-gulp.task('clean', () => del(['static/elements/*.vulcanize.{html,js}'], {dot: true}));
+gulp.task('clean', () => {
+  del(['static/elements/*.vulcanize.{html,js}'], {dot: true});
+});
 
 // Build production files, the default task
 gulp.task('default', ['clean'], cb =>
