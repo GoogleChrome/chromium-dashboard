@@ -129,7 +129,7 @@ search.addEventListener('search', function(e) {
 });
 
 search.addEventListener('input', function(e) {
-  featureList.filter(e.target.value);
+  featureList.filter(e.target.value, true);
   chromeMetadata.selected = null;
 });
 
