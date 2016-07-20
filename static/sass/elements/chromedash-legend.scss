@@ -6,7 +6,7 @@
 }
 
 paper-dialog {
-  width: 80vw;
+  overflow-y: auto;
 }
 
 h3 {
@@ -61,4 +61,10 @@ p {
   position: absolute;
   top: $content-padding / 2;
   right: $content-padding / 2;
+}
+
+@media only screen and (min-width: 701px) {
+  paper-dialog {
+    width: 80vw;
+  }
 }
