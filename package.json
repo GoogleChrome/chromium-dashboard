@@ -36,6 +36,7 @@
     "gulp-rename": "^1.2.2",
     "gulp-sass": "^2.3.2",
     "gulp-uglify": "^1.5.4",
+    "gulp-util": "^3.0.7",
     "gulp-vulcanize": "^6.1.0",
     "http2-push-manifest": "^1.0.0",
     "load-grunt-tasks": "^3.4.1",

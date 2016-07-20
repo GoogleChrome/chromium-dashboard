@@ -84,7 +84,11 @@ gulp.task('vulcanize', () => {
 
 // Clean generated files
 gulp.task('clean', () => {
-  del(['static/elements/*.vulcanize.{html,js}', 'static/css/'], {dot: true});
+  del([
+    'static/css',
+    'static/dist',
+    'static/elements/*.vulcanize.{html,js}'
+    ], {dot: true});
 });
 
 // Build production files, the default task
@@ -112,11 +116,21 @@ gulp.task('generate-service-worker', ['copy-sw-scripts'], () => {
   const distDir = path.join(staticDir, 'dist');
   const filepath = path.join(distDir, 'service-worker.js');
 
+  // Precache all the truly static resources, and everything else will be
+  // cached at runtime. While the various Polymer elements are static, they are
+  // not pre-cached. Reasons include:
+  //  - The elements may be served in different ways. Typically, the Polymer
+  //    elements are vulcanized into a single file per page, but may be served
+  //    individually during development or testing.
+  //  - The vulcanized files end up being rather large. Rather than consuming
+  //    more space on service worker install, wait until the user visits the
+  //    including page
+  //  - The pages already include logic to preload/push the elements. Rely on
+  //    that logic to improve the initial loading performance of the page.
   return swPrecache.write(filepath, {
     cacheId: 'chromestatus',
-    importScripts: [
-      `${distDir}/sw-toolbox.js`,
-    ],
+    verbose: true,
+    logger: $.util.log,
     staticFileGlobs: [
       // Images
       `${staticDir}/img/**/*`,
@@ -126,6 +140,31 @@ gulp.task('generate-service-worker', ['copy-sw-scripts'], () => {
       `${staticDir}/js/**/*.js`,
       // Styles
       `${staticDir}/css/**/*.css`,
+    ],
+    runtimeCaching: [
+      // Server-side generated content
+      {
+        urlPattern: /\/features\//,
+        handler: 'fastest',
+        options: {
+          debug: true,
+            cache: {
+            maxEntries: 10,
+            name: 'features-cache'
+          }
+        }
+      },
+      // For the feature data, try the network first to get the most recent
+      // values.
+      {
+        urlPattern: /features.json$/,
+        handler: 'networkFirst',
+      },
+      // Polymer elements that may or may not be vulcanized
+      {
+        urlPattern: /\/static\/(bower_components|elements)\//,
+        handler: 'cacheFirst',
+      },
     ],
   });
 });
