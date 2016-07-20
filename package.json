@@ -26,6 +26,7 @@
     "grunt": "^0.4.5",
     "grunt-appengine": "^0.1.5",
     "gulp": "^3.9.1",
+    "gulp-autoprefixer": "^3.1.0",
     "gulp-crisper": "^1.1.0",
     "gulp-if": "^2.0.1",
     "gulp-load-plugins": "^1.2.4",

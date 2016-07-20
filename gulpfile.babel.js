@@ -9,9 +9,7 @@ import path from 'path';
 import gulp from 'gulp';
 import del from 'del';
 import runSequence from 'run-sequence';
-// import swPrecache from 'sw-precache';
 import gulpLoadPlugins from 'gulp-load-plugins';
-// import pkg from './package.json';
 import merge from 'merge-stream';
 
 const $ = gulpLoadPlugins();
@@ -19,15 +17,8 @@ const $ = gulpLoadPlugins();
 // Compile and automatically prefix stylesheets
 gulp.task('styles', () => {
   const AUTOPREFIXER_BROWSERS = [
-    'ie >= 10',
-    'ie_mob >= 10',
-    'ff >= 30',
-    'chrome >= 34',
-    'safari >= 7',
-    'opera >= 23',
-    'ios >= 7',
-    'android >= 4.4',
-    'bb >= 10'
+    'last 2 versions',
+    'last 3 iOS versions'
   ];
 
   // For best performance, don't add Sass partials to `gulp.src`
@@ -38,13 +29,15 @@ gulp.task('styles', () => {
       outputStyle: 'compressed',
       precision: 10
     }).on('error', $.sass.logError))
-//    .pipe($.autoprefixer(AUTOPREFIXER_BROWSERS))
+    .pipe($.autoprefixer(AUTOPREFIXER_BROWSERS))
     .pipe(gulp.dest('static/css'));
 });
 
+// Minify the vulcanized script files
 gulp.task('scripts', () => {
-  // Minify the vulcanized script files (overwriting in place)
-  //  - The 'base' option is used to retain the relative path of each file
+  // The script files are overwritten (as they are generated anyways)
+  //  - The 'base' option is needed to retain the relative path of each file,
+  //    allow overwriting
   return gulp.src(
     'static/elements/*.vulcanize.js', {base: 'static'}
   )
@@ -52,9 +45,9 @@ gulp.task('scripts', () => {
     .pipe(gulp.dest('static'));
 });
 
+// Vulcanize the Polymer imports, creating *.vulcanize.* files beside the
+// original import files.
 gulp.task('vulcanize', () => {
-  // Vulcanize the Polymer imports, creating *.vulcanize.* files beside the
-  // original input files.
   return gulp.src([
       'static/elements/elements.html',
       'static/elements/metrics-imports.html',
@@ -63,7 +56,7 @@ gulp.task('vulcanize', () => {
       'static/elements/samples-imports.html',
     ], {base: 'static'}
   )
-    // Vulcanize does not allow the name of the output file to be changed, so
+    // Vulcanize does not allow the name of the output file to be specified, so
     // must manually rename the file first.
     .pipe($.rename({suffix: '.vulcanize'}))
     .pipe(gulp.dest('static'))
@@ -79,7 +72,7 @@ gulp.task('vulcanize', () => {
     .pipe(gulp.dest('static'));
 });
 
-// Clean output directory
+// Clean generated files
 gulp.task('clean', () => {
   del(['static/elements/*.vulcanize.{html,js}'], {dot: true});
 });
@@ -90,47 +83,9 @@ gulp.task('default', ['clean'], cb =>
     'styles',
     'vulcanize',
     'scripts',
-//    'generate-service-worker',
     cb
   )
 );
-
-// Copy over the scripts that are used in importScripts as part of the generate-service-worker task.
-gulp.task('copy-sw-scripts', () => {
-  return gulp.src(['node_modules/sw-toolbox/sw-toolbox.js', 'app/scripts/sw/runtime-caching.js'])
-    .pipe(gulp.dest('dist/scripts/sw'));
-});
-
-// See http://www.html5rocks.com/en/tutorials/service-worker/introduction/ for
-// an in-depth explanation of what service workers are and why you should care.
-// Generate a service worker file that will provide offline functionality for
-// local resources. This should only be done for the 'dist' directory, to allow
-// live reload to work as expected when serving from the 'app' directory.
-gulp.task('generate-service-worker', ['copy-sw-scripts'], () => {
-  const rootDir = 'dist';
-  const filepath = path.join(rootDir, 'service-worker.js');
-
-  return swPrecache.write(filepath, {
-    // Used to avoid cache conflicts when serving on localhost.
-    cacheId: pkg.name || 'web-starter-kit',
-    // sw-toolbox.js needs to be listed first. It sets up methods used in runtime-caching.js.
-    importScripts: [
-      'scripts/sw/sw-toolbox.js',
-      'scripts/sw/runtime-caching.js'
-    ],
-    staticFileGlobs: [
-      // Add/remove glob patterns to match your directory setup.
-      `${rootDir}/images/**/*`,
-      `${rootDir}/scripts/**/*.js`,
-      `${rootDir}/styles/**/*.css`,
-      `${rootDir}/*.{html,json}`
-    ],
-    // Translates a static file path to the relative URL that it's served from.
-    // This is '/' rather than path.sep because the paths returned from
-    // glob always use '/'.
-    stripPrefix: rootDir + '/'
-  });
-});
 
 // Load custom tasks from the `tasks` directory
 // Run: `npm install --save-dev require-dir` from the command-line
