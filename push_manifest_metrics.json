@@ -1,22 +1,3 @@
 {
-  "/static/css/main.css": {
-    "type": "style",
-    "weight": 1
-  },
-  "/static/bower_components/webcomponentsjs/webcomponents-lite.min.js": {
-    "type": "script",
-    "weight": 1
-  },
-  "/static/css/metrics/metrics.css": {
-    "type": "style",
-    "weight": 1
-  },
-  "/static/elements/metrics-imports.vulcanize.html": {
-    "type": "document",
-    "weight": 1
-  },
-  "/static/elements/metrics-imports.vulcanize.js": {
-    "type": "script",
-    "weight": 1
-  }
+
 }
