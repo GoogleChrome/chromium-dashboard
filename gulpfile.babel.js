@@ -14,6 +14,15 @@ import merge from 'merge-stream';
 
 const $ = gulpLoadPlugins();
 
+gulp.task('lint', () => {
+  return gulp.src([
+    'static/**/*.js'
+  ])
+    .pipe($.eslint())
+    .pipe($.eslint.format())
+    .pipe($.eslint.failAfterError());
+});
+
 // Compile and automatically prefix stylesheets
 gulp.task('styles', () => {
   const AUTOPREFIXER_BROWSERS = [
@@ -81,6 +90,7 @@ gulp.task('clean', () => {
 gulp.task('default', ['clean'], cb =>
   runSequence(
     'styles',
+    'lint',
     'vulcanize',
     'scripts',
     cb
