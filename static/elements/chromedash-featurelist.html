@@ -221,6 +221,9 @@
       },
 
       _onScrollList: function(e, detail) {
+        if (this._firstLoad) {
+          return;
+        }
         var feature = this.features[this.$.ironlist.firstVisibleIndex];
         this.metadata.selectMilestone(feature);
       },
