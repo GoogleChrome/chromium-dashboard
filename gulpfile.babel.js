@@ -74,7 +74,7 @@ gulp.task('vulcanize', () => {
 
 // Clean generated files
 gulp.task('clean', () => {
-  del(['static/elements/*.vulcanize.{html,js}'], {dot: true});
+  del(['static/elements/*.vulcanize.{html,js}', 'static/css/'], {dot: true});
 });
 
 // Build production files, the default task
