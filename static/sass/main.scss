@@ -80,7 +80,6 @@ header {
   @include user-select;
 
   a {
-    color: currentcolor;
     text-decoration: none !important;
   }
 
@@ -125,10 +124,9 @@ header {
   }
 
   aside {
-    $logoSize: 50px;
+    $logoSize: 48px;
 
     @include gradient-bar-bg;
-    // border-top-right-radius: 5px;
     border-bottom-left-radius: 5px;
     border-bottom-right-radius: 5px;
     border-bottom: 1px solid $bar-border-color;
@@ -138,6 +136,12 @@ header {
     background-size: $logoSize;
     background-color: #fafafa;
     padding-left: $logoSize + $content-padding  + $content-padding / 2;
+
+    hgroup {
+      a {
+        color: currentcolor;
+      }
+    }
 
     h1 {
       line-height: 1;
@@ -281,18 +285,19 @@ footer {
   }
 
   header {
+    $logoSize: 24px;
+
     margin: 0;
     display: block;
     aside {
       @include display-flex;
-      @include justify-content(space-between);
       padding: $content-padding / 2;
       border-radius: 0;
-      background-size: 24px;
-      background-position: 116px 50%;
+      background-size: $logoSize;
+      background-position: $content-padding + 8 + $logoSize 50%;
 
       hgroup {
-        text-align: right;
+        padding-left: $content-padding + 8 + $logoSize;
         span {
           display: none;
         }
