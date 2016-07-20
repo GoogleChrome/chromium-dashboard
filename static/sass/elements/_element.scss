@@ -10,12 +10,9 @@ $feature-min-height: 75px;
   margin: 0;
   font: inherit;
   text-decoration: inherit;
-  //outline: 5px solid transparent;
-  //transition: outline 200ms ease-in-out;
 }
 
 :focus {
-  // outline: 1px solid $chromium-color-medium;
   z-index: 1;
 }
 
@@ -29,9 +26,3 @@ $feature-min-height: 75px;
   text-align: center;
   color: $default-font-color;
 }
-
-// .tooltip {
-//   &:before {
-//     @include tooltip;
-//   }
-// }

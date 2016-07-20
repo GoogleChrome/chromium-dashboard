@@ -1,12 +1,12 @@
 @import "../vars";
 
 #content {
-  @include flex-direction(column);
+  flex-direction: column;
   counter-reset: h3;
 
   > section {
     max-width: 600px;
-    @include flex(1 0 auto);
+    flex: 1 0 auto;
     margin-bottom: 15px;
 
     > div {
@@ -46,6 +46,5 @@
   label {
     display: inline-block;
     font-weight: 600;
-    // margin: 10px 10px 0 0;
   }
 }

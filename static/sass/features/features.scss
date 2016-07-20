@@ -19,9 +19,9 @@
     width: 100%;
     height: 100%;
     box-sizing: border-box;
-    @include display-flex;
-    @include justify-content(center);
-    @include align-items(center);
+    display: flex;
+    align-items: center;
+    justify-content: center;
     z-index: 100;
   }
 
@@ -32,10 +32,6 @@
 }
 
 chromedash-legend {
-  // width: 900px;
-  // @include calc(left, '50% - 900px/2');
-  // top: 3%;
-  // //opacity: 0; // Ensure no FOUC.
   font-size: 90%;
 
   .description {
@@ -49,11 +45,9 @@ chromedash-legend {
 
     font-size: 120%;
     font-weight: 300;
-    //width: $nav-width; // slighty smaller than chromedash-metadata to remove scrollbar
     overflow-x: hidden;
 
     chromedash-metadata {
-      //max-height: 65vh;
       overflow: auto;
       width: $nav-width + 15;
 
@@ -66,8 +60,7 @@ chromedash-legend {
   }
 
   chromedash-featurelist {
-    @include flex(1 0 0);
-    // overflow: auto;
+    flex: 1 0 0;
     max-width: $max-content-width;
   }
 }

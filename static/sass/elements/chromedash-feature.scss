@@ -1,7 +1,7 @@
 @import "element";
 
 :host {
-  @include display-flex;
+  display: flex;
   @include gradient-bar-bg();
   position: relative;
   border-radius: $default-border-radius;
@@ -15,7 +15,6 @@
 }
 
 :host([open]) {
-  // overflow: auto;
   outline: none;
 
   .desc summary {
@@ -30,7 +29,7 @@
 h2 {
   display: inline-block;
   font-size: 25px;
-  @include flex(1 0 0);
+  flex: 1 0 0;
 }
 
 iron-icon {
@@ -65,7 +64,7 @@ iron-icon {
 }
 
 .main-content-area {
-  @include flex(1 0 0);
+  flex: 1 0 0;
   margin-right: 12px;
   overflow: hidden;
 }
@@ -74,16 +73,16 @@ iron-icon {
   position: absolute;
   right: 0;
   top: 0;
-  @include display-flex;
-  @include align-items(center);
+  display: flex;
+  align-items: center;
   height: 100%;
   border-left: 2px solid #eee;
   padding: 4px;
 }
 
 .iconrow {
-  @include display-flex;
-  @include align-items(center);
+  display: flex;
+  align-items: center;
 }
 
 .topcorner {
@@ -103,8 +102,8 @@ iron-icon {
 }
 
 hgroup {
-  @include display-flex;
-  @include align-items(flex-start);
+  display: flex;
+  align-items: flex-start;
   cursor: pointer;
 
   .category {
@@ -152,17 +151,17 @@ section {
 
   div {
     > span {
-      @include flex-shrink(0);
+      flex-shrink: 0;
     }
   }
 
   .impl_status {
-    @include display-flex;
-    @include flex-direction(column);
+    display: flex;
+    flex-direction: column;
 
     > span {
-      @include display-flex;
-      @include justify-content(space-between);
+      display: flex;
+      justify-content: space-between;
       padding: 8px;
 
       &:nth-of-type(odd) {
@@ -199,12 +198,12 @@ section {
   }
 
   .views {
-    @include display-flex;
-    @include flex-wrap(wrap);
+    display: flex;
+    flex-wrap: wrap;
 
     .view {
-      @include display-flex;
-      @include align-items(center);
+      display: flex;
+      align-items: center;
       position: relative;
       height: 35px;
       background: #eee;
@@ -268,7 +267,6 @@ section {
   }
 
   chromedash-color-status {
-    // width: 3px;
     overflow: hidden;
 
     &.bottom {
@@ -277,9 +275,9 @@ section {
   }
 
   .owner-list {
-    @include display-flex;
-    @include flex-direction(column);
-    @include align-items(flex-end);
+    display: flex;
+    align-items: flex-end;
+    flex-direction: column;
 
     a {
       display: block;
@@ -291,7 +289,7 @@ section {
   }
 
   .doc_links, .sample_links, .owner {
-    @include flex-shrink(1 !important);
+    flex-shrink: 1 !important;
   }
   .sample_links {
     margin-left: 8px;
@@ -299,12 +297,10 @@ section {
 }
 
 .sidebyside {
-  @include display-flex;
-  @include justify-content(space-between);
+  display: flex;
+  justify-content: space-between;
 
   .flex {
-    -ms-flex: 0 0 calc(50% - 16px);
-    -webkit-flex: 0 0 calc(50% - 16px);
     flex: 0 0 calc(50% - 16px);
   }
 }
@@ -348,13 +344,12 @@ section {
 
   .sidebyside {
     display: block;
-    // @include flex-direction(column);
   }
 }
 
 @media only screen and (min-width: 701px) {
   .resources {
-    @include display-flex;
-    @include align-items(center);
+    display: flex;
+    align-items: center;
   }
 }

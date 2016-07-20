@@ -45,9 +45,9 @@ section {
   margin-top: 10px;
 
   &.views {
-    @include display-flex;
+    display: flex;
     > div {
-      @include flex(1 0 0);
+      flex: 1 0 0;
     }
   }
 }
@@ -70,5 +70,4 @@ p {
   position: absolute;
   right: 0;
   top: 0;
-  // padding: 0 5px 3px 5px;
 }

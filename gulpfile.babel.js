@@ -17,8 +17,8 @@ const $ = gulpLoadPlugins();
 // Compile and automatically prefix stylesheets
 gulp.task('styles', () => {
   const AUTOPREFIXER_BROWSERS = [
-    'last 2 versions',
-    'last 3 iOS versions'
+    'last 1 version',
+    'last 2 iOS versions'
   ];
 
   // For best performance, don't add Sass partials to `gulp.src`
