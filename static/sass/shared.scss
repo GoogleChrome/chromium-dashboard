@@ -32,7 +32,6 @@ b {
 
 input:not([type="submit"]), textarea {
   border: 1px solid $bar-border-color;
-  //box-shadow: 2px 2px 2px #ccc inset;
 
   &[disabled] {
     opacity: 0.5;
@@ -47,7 +46,7 @@ button, .button {
   padding: 5px 8px;
   outline: none;
   white-space: nowrap;
-  @include user-select(none);
+  user-select: none;
   cursor: pointer;
   text-shadow: 1px 1px #fff;
   font-size: 10pt;

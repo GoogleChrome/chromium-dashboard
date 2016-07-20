@@ -2,7 +2,7 @@
 
 :host {
   display: block;
-  @include flex(1);
+  flex: 1;
   padding: 1px;
 }
 
@@ -11,8 +11,8 @@
   li {
     margin: 0;
     padding: 5px 0;
-    @include display-flex;
-    @include align-items(center);
+    display: flex;
+    align-items: center;
 
     &[hidden] {
       display: none;
@@ -23,12 +23,12 @@
     }
 
     > :first-child {
-      @include flex(1);
+      flex: 1;
       margin-right: 10px;
     }
 
     > :nth-child(2) {
-      @include flex(2);
+      flex: 2;
     }
 
     &.header {
@@ -43,8 +43,8 @@
         font-family: inherit;
         cursor: pointer;
         white-space: nowrap;
-        @include display-flex;
-        @include align-items(center);
+        display: flex;
+        align-items: center;
       }
     }
 
@@ -68,5 +68,5 @@
 .loading {
   font-style: italic;
   color: $gray-2;
-  @include justify-content(center);
+  justify-content: center;
 }

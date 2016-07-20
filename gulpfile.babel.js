@@ -14,11 +14,20 @@ import merge from 'merge-stream';
 
 const $ = gulpLoadPlugins();
 
+gulp.task('lint', () => {
+  return gulp.src([
+    'static/**/*.js'
+  ])
+    .pipe($.eslint())
+    .pipe($.eslint.format())
+    .pipe($.eslint.failAfterError());
+});
+
 // Compile and automatically prefix stylesheets
 gulp.task('styles', () => {
   const AUTOPREFIXER_BROWSERS = [
-    'last 2 versions',
-    'last 3 iOS versions'
+    'last 1 version',
+    'last 2 iOS versions'
   ];
 
   // For best performance, don't add Sass partials to `gulp.src`
@@ -74,13 +83,14 @@ gulp.task('vulcanize', () => {
 
 // Clean generated files
 gulp.task('clean', () => {
-  del(['static/elements/*.vulcanize.{html,js}'], {dot: true});
+  del(['static/elements/*.vulcanize.{html,js}', 'static/css/'], {dot: true});
 });
 
 // Build production files, the default task
 gulp.task('default', ['clean'], cb =>
   runSequence(
     'styles',
+    'lint',
     'vulcanize',
     'scripts',
     cb

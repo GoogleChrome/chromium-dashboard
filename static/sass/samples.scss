@@ -48,21 +48,22 @@ app-drawer {
   }
   iron-icon {
     color: $gray-2;
-    @include flex-shrink(0);
+    flex-shrink: 0;
   }
 }
 
 .feature-name {
   font-weight: 400;
   color: $chromium-color-dark;
-  @include display-flex;
-  @include justify-content(space-between);
+  display: flex;
+  justify-content: space-between;
+
 }
 
 .sample_links {
-  @include display-flex;
-  @include align-items(center);
-  @include justify-content(space-between);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .milestone {
@@ -79,8 +80,8 @@ app-drawer {
   margin-right: $content-padding;
   font-weight: 400;
   color: $chromium-color-dark;
-  @include display-flex;
-  @include flex-wrap(wrap);
+  display: flex;
+  flex-wrap: wrap;
 }
 
 .demo-link {

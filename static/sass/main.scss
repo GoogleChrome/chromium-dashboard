@@ -13,15 +13,15 @@ body {
 
   &.loading {
     #spinner {
-      @include display-flex;
+      display: flex;
     }
   }
 }
 
 #spinner {
   display: none;
-  @include align-items(center);
-  @include justify-content(center);
+  align-items: center;
+  justify-content: center;
   position: fixed;
   height: calc(100% - 54px - 135px); // 100% - height of footer + header.
   max-width: $max-content-width;
@@ -71,21 +71,21 @@ app-toolbar.main-toolbar {
 }
 
 header, footer {
-  @include display-flex;
-  @include align-items(center);
+  display: flex;
+  align-items: center;
   text-shadow: 0 1px 0 white;
 }
 
 header {
-  @include user-select;
+  user-select: none;
 
   a {
     text-decoration: none !important;
   }
 
   nav {
-    @include display-flex;
-    @include align-items(center);
+    display: flex;
+    align-items: center;
     margin-left: $content-padding;
 
     a {
@@ -117,8 +117,8 @@ header {
       line-height: 1;
 
       .dropdown-content {
-        @include display-flex;
-        @include flex-direction(column);
+        display: flex;
+        flex-direction: column;
       }
     }
   }
@@ -158,9 +158,9 @@ footer {
   @include gradient-bar-bg;
   font-size: 12px;
   box-shadow: 0 -2px 5px $bar-shadow-color;
-  @include display-flex;
-  @include flex-direction(column);
-  @include justify-content(center);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   text-align: center;
   position: fixed;
   bottom: 0;
@@ -178,8 +178,8 @@ footer {
 }
 
 #subheader, .subheader {
-  @include display-flex;
-  @include align-items(center);
+  display: flex;
+  align-items: center;
   margin: $content-padding 0;
   max-width: $max-content-width;
 
@@ -197,9 +197,9 @@ footer {
     }
 
     &.actionlinks {
-      @include display-flex;
-      @include justify-content(flex-end);
-      @include flex(1 0 auto);
+      display: flex;
+      justify-content: flex-end;
+      flex: 1 0 auto;
       margin-left: $content-padding;
 
       paper-button {
@@ -224,8 +224,8 @@ footer {
 }
 
 #container {
-  @include display-flex;
-  @include flex-direction(column);
+  display: flex;
+  flex-direction: column;
   height: 100%;
   width: 100%;
 }
@@ -238,7 +238,7 @@ footer {
 }
 
 #panels {
-  @include display-flex;
+  display: flex;
   width: 100%;
   overflow: hidden;
 }
@@ -291,7 +291,7 @@ footer {
     margin: 0;
     display: block;
     aside {
-      @include display-flex;
+      display: flex;
       padding: $content-padding / 2;
       border-radius: 0;
       background-size: $logoSize;
@@ -306,13 +306,13 @@ footer {
     }
     nav {
       margin: 0;
-      @include justify-content(center);
-      @include flex-wrap(wrap);
+      justify-content: center;
+      flex-wrap: wrap;
       a {
         padding: 5px 10px;
         margin: 0;
         border-radius: 0;
-        @include flex(1 0 auto);
+        flex: 1 0 auto;
       }
     }
   }
@@ -339,7 +339,7 @@ footer {
 
       &.search {
         text-align: center;
-        @include flex(1 0 0);
+        flex: 1 0 0;
         margin: 0;
       }
     }
