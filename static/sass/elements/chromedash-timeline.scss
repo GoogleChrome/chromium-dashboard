@@ -2,7 +2,7 @@
 
 :host {
   display: block;
-  @include flex(1);
+  flex: 1;
   width: 800px;
 }
 

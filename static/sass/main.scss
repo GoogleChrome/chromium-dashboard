@@ -10,18 +10,17 @@ body {
   font-weight: 400;
   -webkit-font-smoothing: antialiased;
   background-color: $light-grey;
-  // background: url(../img/bg.png);
 }
 
 header, footer {
-  @include display-flex;//@include display-box;
-  @include align-items(center);
+  display: flex;
+  align-items: center;
   text-shadow: 0 1px 0 white;
 }
 
 header {
   margin: 15px 0 0 0;
-  @include user-select;
+  user-select: none;
 
   a {
     color: currentcolor;
@@ -29,28 +28,12 @@ header {
   }
 
   aside {
-    //@include display-flex;
-    //@include align-items(center);
     @include gradient-bar-bg;
     border-top-right-radius: 5px;
     border-bottom-right-radius: 5px;
     border-bottom: 1px solid $bar-border-color;
     border-right: 1px solid $bar-border-color;
     padding: 0.75em 1em;
-
-    // Small logo.
-    // background: url(/static/img/chromium-128.png) no-repeat 14px 50%, #FAFAFA;
-    // background-size: 45px;
-    // padding-left: 65px;
-    // Larger bg logo.
-    // background: url(/static/img/chromium-128.png) no-repeat 10px 50%, #FAFAFA;
-    // background-size: 25%;
-    // padding-left: 125px;
-    // Multi-background
-    // background: url(/static/img/chrome_logo.svg) no-repeat 52px 50%,
-                // url(/static/img/canary_128.png) no-repeat 30px 50%,
-                // url(/static/img/chromium-128.png) no-repeat 18px 50%;
-    // background-size: 20%, 22%, 20%;
     background: url(/static/img/chrome_logo.svg) no-repeat 18px 50%;
     background-size: 20%;
     background-color: #fafafa;
@@ -67,8 +50,8 @@ header {
   }
 
   nav {
-    @include display-flex;
-    @include align-items(center);
+    display: flex;
+    align-items: center;
     margin-left: 3em;
 
     a {
@@ -100,9 +83,9 @@ footer {
   @include gradient-bar-bg;
   font-size: 12px;
   box-shadow: 0 -2px 5px $bar-shadow-color;
-  @include display-flex;
-  @include flex-direction(column);
-  @include justify-content(center);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   text-align: center;
   position: relative;
 
@@ -112,10 +95,9 @@ footer {
 }
 
 #subheader, .subheader {
-  @include display-flex;
-  @include align-items(center);
+  display: flex;
+  align-items: center;
   margin: $content-padding 0 0 $content-padding + 12;
-  // border-bottom: 1px solid $bar-border-color;
   max-width: $max-content-width + $content-padding * 7 + 25;
 
   div {
@@ -141,7 +123,7 @@ footer {
         cursor: pointer;
         text-decoration: none;
       }
-      @include flex(1 0 0);
+      flex: 1 0 0;
       text-align: right;
       margin-right: 0;
     }
@@ -149,22 +131,22 @@ footer {
 }
 
 #container {
-  @include display-flex;
-  @include flex-direction(column);
+  display: flex;
+  flex-direction: column;
   height: 100%;
   width: 100%;
 }
 
 #content {
-  @include display-flex;
-  @include flex(1 0 0);
+  display: flex;
+  flex: 1 0 0;
   margin: $content-padding + 12;
   position: relative;
   overflow: auto;
 }
 
 #panels {
-  @include display-flex;
+  display: flex;
   width: 100%;
   overflow: hidden;
 }
@@ -201,13 +183,13 @@ footer {
     }
     nav {
       margin: 10px 0;
-      @include justify-content(center);
-      @include flex-wrap(wrap);
+      justify-content: center;
+      flex-wrap: wrap;
       a {
         padding: 5px 10px;
         margin: 0;
         border-radius: 0;
-        @include flex(1 0 auto);
+        flex: 1 0 auto;
       }
     }
   }
@@ -228,7 +210,7 @@ footer {
 
       &.search {
         text-align: center;
-        @include flex(1 0 0);
+        flex: 1 0 0;
         margin: 0;
       }
     }
@@ -238,28 +220,3 @@ footer {
     padding: 0.35em;
   }
 }
-
-// // For browsers that don't support :unresolved, need a way to turn this off.
-// // Code applies .resolved when "WebComponentsReady".
-// :unresolved:not(.resolved) {
-//   border: 1px dashed #ccc;
-//   display: block;
-//   background: rgba(255,255,255,0.5);
-//   border-radius: $default-border-radius;
-//   @include display-flex;
-//   @include justify-content(center);
-
-//   &:after {
-//     font-size: 12px;
-//     font-weight: normal;
-//     content: 'loading...';
-//     color: #ccc;
-//     @include display-flex;
-//     @include justify-content(center);
-//     @include align-items(center);
-//     padding: 15px;
-//   }
-// }
-
-// @import "features/features.scss"; // Inline features.css to remove 1 request on homepage.
-// @import "metrics/metrics.scss";

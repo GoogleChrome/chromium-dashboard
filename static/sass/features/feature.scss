@@ -12,8 +12,8 @@
 }
 
 #name {
-  @include display-flex;
-  @include align-items(center);
+  display: flex;
+  align-items: center;
 
   h2 {
     margin-right: 1em;
@@ -34,7 +34,6 @@ section {
 
   label {
     font-weight: 600;
-    // color: $chromium-color-dark;
     margin-right: 5px;
   }
 }
@@ -54,8 +53,8 @@ iron-icon {
   }
 }
 .iconrow {
-  @include display-flex;
-  @include align-items(center);
+  display: flex;
+  align-items: center;
 }
 
 .topcorner {
@@ -66,7 +65,7 @@ iron-icon {
 
 #consensus {
   li {
-    @include display-flex;
+    display: flex;
     label {
       width: 125px;
     }
