@@ -5,6 +5,12 @@
 <link rel="stylesheet" href="/static/css/metrics/metrics.css">
 {% endblock %}
 
+{% block preload %}
+  {% if VULCANIZE %}
+    <link rel="preload" href="/static/elements/metrics-imports.vulcanize.js" as="script">
+  {% endif %}
+{% endblock %}
+
 {% block html_imports %}
   <link rel="import" href="/static/elements/metrics-imports{% if VULCANIZE %}.vulcanize{% endif %}.html">
 {% endblock %}

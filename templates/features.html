@@ -1,5 +1,14 @@
 {% extends "base.html" %}
 
+{% block preload %}
+{% if VULCANIZE %}
+  <link rel="preload" href="/static/elements/features-imports.vulcanize.js" as="script">
+{% endif %}
+{% if PROD %}
+  <link rel="preload" href="/features.json" as="script">
+{% endif %}
+{% endblock %}
+
 {% block html_imports %}
   <link rel="import" href="/static/elements/features-imports{% if VULCANIZE %}.vulcanize{% endif %}.html">
 {% endblock %}
@@ -176,16 +185,6 @@ function importsLoaded() {
     console.error(e);
   });
 
-  // // Alternative to XHR, we could fill data from server by including it
-  // // directly in the server's page template. However, this increases the weight
-  // // of the page and slows down window.onload, especially as the number of
-  // // features increases over time. For this reason, XHR is preferred.
-  // featureList.features = {{features|safe}};
-  // featureList.metadata = chromeMetadata; // Feature list needs access to the selected milestone.
-  // featureList.search = search;
-  // updateCount(featureList.filter(search.value)); // Set initial # features showing.
-  // search.disabled = false;
-
   overlay.views = {
     vendors: {{VENDOR_VIEWS|safe}}, // set from server
     webdevs: {{WEB_DEV_VIEWS|safe}}, // set from server
@@ -193,14 +192,8 @@ function importsLoaded() {
   };
 }
 
-var importsSupported = ('import' in document.createElement('link'));
-if (importsSupported) {
-  document.addEventListener('HTMLImportsLoaded', importsLoaded);
-} else {
-  // Polyfilled browsers need to wait for the WCR event to in order to set
-  // properties on upgraded elements.
-  document.addEventListener('WebComponentsReady', importsLoaded);
-}
+// Fired after lazy loading the polyfills (if necessary).
+document.addEventListener('WebComponentsReady', importsLoaded);
 
 window.addEventListener('popstate', function(e) {
   if (e.state) {
