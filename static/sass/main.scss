@@ -61,13 +61,16 @@ app-header {
   left: 0;
   z-index: 1;
 
-  &[fixed] {
+  &.fixed {
     position: fixed;
+    box-shadow: 0px 5px 2px -3px rgba(0, 0, 0, 0.2);
   }
 }
 
 app-toolbar.main-toolbar {
-  height: auto;
+  display: flex;
+  position: relative;
+  padding: 0 $content-padding;
 }
 
 header, footer {
@@ -270,7 +273,7 @@ footer {
     font-size: 15px;
   }
   app-header {
-    app-toolbar {
+    app-toolbar.main-toolbar {
       padding: 0;
       display: block;
     }

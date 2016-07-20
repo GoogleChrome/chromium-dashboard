@@ -69,14 +69,6 @@ var $$ = function(selector) {
 </script>
 
 <style is="custom-style">
-  app-header {
-    --app-header-shadow: {
-      box-shadow: inset 0px 5px 2px -3px rgba(0, 0, 0, 0.2);
-    };
-  }
-  app-toolbar {
-    --app-toolbar-font-size: inherit;
-  }
   app-drawer {
     --app-drawer-width: 200px;
     --app-drawer-content-container: {
@@ -102,7 +94,9 @@ var $$ = function(selector) {
       {% block drawer %}{% endblock %}
     </div>
   </app-drawer>
-  <app-header fixed effects="waterfall">
+  <!-- Note: app-header is intentionally not registered. Just used for styling. -->
+  <app-header class="fixed">
+    <!-- Note: app-toolbar is intentionally not registered. Just used for styling. -->
     <app-toolbar class="main-toolbar">
       <div class="toolbar-content">
         {% include "header.html" %}
