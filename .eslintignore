@@ -1,6 +1,7 @@
 **/node_modules/**
 **/bower_components/
 http2push/
+static/dist/
 
 **/urlize.js
 **/*.vulcanize.js
