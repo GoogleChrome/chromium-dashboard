@@ -16,7 +16,7 @@ You'll also need node/npm. Next, install `bower` and the npm deps:
     npm install -g bower
     npm install
 
-This will also pull down bower_components and run `grunt` to build the site.
+This will also pull down bower_components and run `gulp` to build the site.
 
 ### Developing
 
