@@ -87,6 +87,8 @@
   }
 
   document.addEventListener('DOMContentLoaded', function() {
+    document.body.classList.remove('loading');
+
     // Get around Django rendering input type="text" fields for URLs.
     var inputs = document.querySelectorAll('[name$="_url"], [name$="_link"]');
     [].forEach.call(inputs, function(input) {
