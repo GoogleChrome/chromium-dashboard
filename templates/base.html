@@ -146,7 +146,12 @@ let button = document.querySelector('app-header paper-menu-button');
 button.addEventListener('click', function lazyHandler(e) {
   this.removeEventListener('click', lazyHandler);
 
+  {% if VULCANIZE %}
+  let url = '/static/elements/paper-menu-button.vulcanize.html';
+  {% else %}
   let url = '/static/bower_components/paper-menu-button/paper-menu-button.html';
+  {% endif %}
+
   Polymer.Base.importHref(url, () => {
     this.querySelector('.dropdown-content').hidden = false;
     this.open();

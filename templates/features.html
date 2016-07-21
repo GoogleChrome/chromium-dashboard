@@ -96,6 +96,7 @@ var chromeMetadata = $('chromedash-metadata');
 var overlay = $('chromedash-legend');
 var search = $('.search input');
 var unveilStart;
+var overlayLoaded = false;
 
 // Set search box to URL deep link.
 if (location.hash) {
@@ -141,9 +142,36 @@ search.addEventListener('input', function(e) {
   chromeMetadata.selected = null;
 });
 
+// Handles lazy loading chromedash-legend and settings its properties only once.
+var helpOverlayLoadPromise = function(overlay) {
+  return new Promise(function(resolve, reject) {
+    if (overlayLoaded) {
+      return resolve();
+    }
+
+    let url = '/static/elements/chromedash-legend{% if VULCANIZE %}.vulcanize{% endif %}.html';
+
+    Polymer.Base.importHref(url, () => {
+      overlayLoaded = true;
+      overlay.views = {
+        vendors: {{VENDOR_VIEWS|safe}}, // set from server
+        webdevs: {{WEB_DEV_VIEWS|safe}}, // set from server
+        standards: {{STANDARDS_VALS|safe}} // set from server
+      };
+      resolve();
+    }, function(e) {
+      reject(new Error('Error loading:' + url));
+    }, true);
+  });
+}
+
+
 $('.legend').addEventListener('click', function(e) {
   e.preventDefault();
-  overlay.toggle();
+
+  helpOverlayLoadPromise(overlay).then(function() {
+    overlay.toggle();
+  });
 });
 
 // Fire of features.json XHR right away so data can populate faster.
@@ -183,12 +211,6 @@ function importsLoaded() {
     document.getElementById('content').classList.add('error');
     console.error(e);
   });
-
-  overlay.views = {
-    vendors: {{VENDOR_VIEWS|safe}}, // set from server
-    webdevs: {{WEB_DEV_VIEWS|safe}}, // set from server
-    standards: {{STANDARDS_VALS|safe}} // set from server
-  };
 }
 
 // Fired after lazy loading the polyfills (if necessary).
