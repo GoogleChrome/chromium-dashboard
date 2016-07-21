@@ -142,10 +142,16 @@ function lazyLoadWCPolyfillsIfNecessary() {
   }
 }
 
-// document.addEventListener('scroll', function(e) {
-//   var scroller = document.scrollingElement || document.body;
-//   document.querySelector('app-header').classList.toggle('shadow', scroller.scrollTop > 0);
-// });
+let button = document.querySelector('app-header paper-menu-button');
+button.addEventListener('click', function lazyHandler(e) {
+  this.removeEventListener('click', lazyHandler);
+
+  let url = '/static/bower_components/paper-menu-button/paper-menu-button.html';
+  Polymer.Base.importHref(url, () => {
+    this.querySelector('.dropdown-content').hidden = false;
+    this.open();
+  }, null, true);
+});
 
 // Google Analytics
 (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
