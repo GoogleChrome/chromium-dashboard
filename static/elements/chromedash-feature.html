@@ -1,5 +1,4 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
-<link rel="import" href="../bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="../bower_components/iron-icon/iron-icon.html">
 <link rel="import" href="../bower_components/paper-styles/color.html">
 <link rel="import" href="chromedash-color-status.html">
@@ -71,33 +70,33 @@
       <div class="topcorner">
         <template is="dom-if" if="{{removed}}">
           <span class="tooltip" title="Removed feature">
-            <iron-icon icon="icons:cancel" class="remove" data-tooltip></iron-icon>
+            <iron-icon icon="chromestatus:cancel" class="remove" data-tooltip></iron-icon>
           </span>
         </template>
         <template is="dom-if" if="{{deprecated}}">
           <span class="tooltip" title="Deprecated feature">
-            <iron-icon icon="icons:warning" class="deprecated" data-tooltip></iron-icon>
+            <iron-icon icon="chromestatus:warning" class="deprecated" data-tooltip></iron-icon>
           </span>
         </template>
         <template is="dom-if" if="{{needsflag}}">
           <span class="tooltip" title="Experimental feature behind a flag">
-            <iron-icon icon="icons:flag" class="experimental"></iron-icon>
+            <iron-icon icon="chromestatus:flag" class="experimental"></iron-icon>
           </span>
         </template>
         <template is="dom-if" if="{{feature.meta.origintrial}}">
           <span class="tooltip" title="Origin trial">
-            <iron-icon icon="icons:extension" class="experimental"></iron-icon>
+            <iron-icon icon="chromestatus:extension" class="experimental"></iron-icon>
           </span>
         </template>
         <span class="tooltip" title="File a bug against this feature">
           <a href$="{{_computeNewBugUrl(feature)}}" class="newbug" data-tooltip>
-            <iron-icon icon="icons:bug-report"></iron-icon>
+            <iron-icon icon="chromestatus:bug-report"></iron-icon>
           </a>
         </span>
         <template is="dom-if" if="{{whitelisted}}">
           <span class="tooltip" title="Edit this feature">
             <a href$="{{_computeEditLinkHidden(feature)}}" class="editfeature" data-tooltip>
-              <iron-icon icon="icons:create"></iron-icon>
+              <iron-icon icon="chromestatus:create"></iron-icon>
             </a>
           </span>
         </template>
@@ -129,7 +128,7 @@
             <span>
               <label>
                 <span class="chrome_icon"></span>
-                <iron-icon icon="icons:android" class="android follows_icon"></iron-icon>
+                <iron-icon icon="chromestatus:android" class="android follows_icon"></iron-icon>
                 <span class="follows_icon">Chrome for Android</span>
               </label>
               <span>{{feature.shipped_android_milestone}}</span>
@@ -138,7 +137,7 @@
           <template is="dom-if" if="{{feature.shipped_webview_milestone}}">
             <span>
               <label>
-                <iron-icon icon="icons:android" class="android"></iron-icon>
+                <iron-icon icon="chromestatus:android" class="android"></iron-icon>
                 Android Webview
               </label>
               <span>{{feature.shipped_webview_milestone}}</span>
@@ -157,7 +156,7 @@
             <span>
               <label>
                 <span class="opera_icon"></span>
-                <iron-icon icon="icons:android" class="android follows_icon"></iron-icon>
+                <iron-icon icon="chromestatus:android" class="android follows_icon"></iron-icon>
                 <span class="follows_icon">Opera for Android</span>
               </label>
               <span>{{feature.shipped_opera_android_milestone}}</span>
@@ -224,7 +223,7 @@
             <chromedash-color-status class="bottom"
                 value="[[feature.web_dev_views.value]]"
                 max="[[MAX_WEBDEV_VIEW]]"></chromedash-color-status>
-            <iron-icon icon="icons:accessibility"></iron-icon>
+            <iron-icon icon="chromestatus:accessibility"></iron-icon>
           </span>
           <span class="standardization view">
             <chromedash-color-status class="bottom"
@@ -270,14 +269,12 @@
 </div>
 <a href$="{{_computeStandaloneHref(feature)}}" target="_blank"
    class="open-standalone" title="View on standalone page">
-  <!-- <iron-icon icon="icons:open-in-new" class="opennew" data-tooltip></iron-icon> -->
   <img src="openinnew.svg" class="opennew">
 </a>
 </template>
 <script>
   Polymer({
     is: 'chromedash-feature',
-    extends: 'li',
 
     properties: {
       MAX_RISK: {

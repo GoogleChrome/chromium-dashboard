@@ -1,33 +1,21 @@
 @import "../vars";
 
 #content {
-  &.ready::after {
-    display: none;
-  }
-
-  &::after {
-    font-size: 18px;
-    font-weight: normal;
-    content: 'loading...';
-    color: $gray-3;
-    top: 0;
-    left: 0;
-    position: absolute;
-    background: white;
-    border: 1px dashed #bbb;
-    border-radius: $default-border-radius;
-    width: 100%;
-    height: 100%;
-    box-sizing: border-box;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 100;
-  }
+  // &.ready {
+  //   #spinner {
+  //     display: none;
+  //   }
+  // }
 
   &.error::after {
     content: 'Error loading features list.';
     color: darkred;
+  }
+}
+
+app-drawer {
+  h3 {
+    margin-left: $content-padding / 2;
   }
 }
 
@@ -39,30 +27,9 @@ chromedash-legend {
   }
 }
 
-#panels {
-  nav {
-    $nav-width: 150px;
-
-    font-size: 120%;
-    font-weight: 300;
-    overflow-x: hidden;
-
-    chromedash-metadata {
-      overflow: auto;
-      width: $nav-width + 15;
-
-      transform: translateZ(0); // force composite layer in stable
-
-      .help {
-        text-align: center;
-      }
-    }
-  }
-
-  chromedash-featurelist {
-    flex: 1 0 0;
-    max-width: $max-content-width;
-  }
+chromedash-featurelist {
+  max-width: 745px;
+  margin-bottom: 54px + $content-padding * 2;
 }
 
 #subheader {
@@ -70,23 +37,16 @@ chromedash-legend {
     color: $chromium-color-dark;
     background: #fff;
   }
+
+  .feature-count {
+    min-width: 170px;
+  }
 }
 
-@media only screen and (max-width: 700px) {
-  body {
-    &:not(.ready) #content {
-      margin: 10px;
-    }
-  }
+@media only screen and (min-width: 701px) {
   #content {
-    height: 100%;
-  }
-  chromedash-featurelist {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    min-height: 100vh;
+    &::after {
+      width: $max-content-width;
+    }
   }
 }

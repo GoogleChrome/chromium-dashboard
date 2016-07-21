@@ -7,12 +7,14 @@
   <iron-ajax auto url="/omaha_data" handle-as="json"
              on-response="_onResponse"
              on-error="_onError"></iron-ajax>
-  <ul class$="{{_computeClass(betaIsDev, canaryIsDev)}}">
+
+  <ul id="versionlist" class$="[[_computeClass(betaIsDev, canaryIsDev)]]">
     <template is="dom-repeat" items="{{versions}}" as="v">
       <li data-version$="{{v}}" on-tap="selectMilestone"
           selected$="{{_computeSelected(selected, v)}}">{{v}}</li>
     </template>
   </ul>
+
   <div hidden$="{{!fetchError}}" class="error">Error fetching Chrome version information.</div>
 </template>
 <script>
@@ -105,6 +107,7 @@
       return (canaryIsDev ? 'canaryisdev' : '') + ' ' +
              (betaIsDev ? 'betaisdev' : '');
     },
+
     _computeSelected: function(selected, v) {
       return v == selected;
     }

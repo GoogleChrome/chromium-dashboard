@@ -24,9 +24,6 @@
        Percentage <iron-icon icon="[[percentSortIcon]]"></iron-icon>
       </label>
     </li>
-    <template is="dom-if" if="{{!props.length}}">
-      <li class="loading">Loading...</li>
-    </template>
     <template is="dom-repeat" items="{{viewList}}" as="prop">
       <li id="{{prop.property_name}}" title="{{prop.property_name}}. Click to deep link to this property." hidden$="{{_computeHidden(prop)}}" tabindex="0">
         <label>
@@ -141,6 +138,8 @@
       },
 
       _propsChanged: function() {
+        this.fire('app-ready');
+
         if (!this.props || !this.props.length) {
           return;
         }

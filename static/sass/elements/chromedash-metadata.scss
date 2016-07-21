@@ -1,12 +1,15 @@
-@import "element";
-
-$small-font-size: 80%;
+@import "../vars";
 
 :host {
   display: block;
 }
 
-ul {
+#versionlist {
+  background-color: inherit;
+  color: $chromium-color-dark;
+  padding: 0;
+  margin: 0;
+
   &.canaryisdev {
     li {
       &:nth-of-type(4)::after {
@@ -25,7 +28,7 @@ ul {
   }
 
   &.betaisdev {
-    li {
+    li, paper-item {
       &:nth-of-type(4)::after {
         content: 'canary';
       }
@@ -43,28 +46,22 @@ ul {
 
   li {
     cursor: pointer;
-    padding: 3px 0;
+    list-style: none;
+    padding: $content-padding / 4 0;
 
     &::before {
       content: '';
-      margin-right: 5px;
-      border-left: 3px solid transparent;
+      margin-right: $content-padding / 2;
+      border-left: 2px solid transparent;
     }
     &::after {
-      font-size: $small-font-size;
-      margin-left: 10px;
+      margin-left: $content-padding / 2;
     }
 
-    &:first-of-type,
-    &:nth-of-type(2),
-    &:nth-of-type(3),
-    &:last-of-type {
-      font-size: $small-font-size;
-    }
     &:nth-of-type(3) {
       border-bottom: 1px solid $bar-border-color;
-      padding-bottom: 10px;
-      margin-bottom: 5px;
+      padding-bottom: $content-padding / 2;
+      margin-bottom: $content-padding / 2;
     }
     &:nth-of-type(4)::after {
       content: 'canary';
@@ -80,7 +77,7 @@ ul {
     }
 
     &[selected] {
-      font-weight: 500;
+      font-weight: bold;
       color: $chromium-color-dark;
       &::before {
         border-color: $chromium-color-dark;
@@ -90,7 +87,6 @@ ul {
 }
 
 .error {
-  font-size: $small-font-size;
   font-weight: 500;
   font-style: italic;
   margin: 100px 0 0 5px;

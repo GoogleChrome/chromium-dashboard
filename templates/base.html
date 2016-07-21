@@ -68,20 +68,51 @@ var $$ = function(selector) {
 };
 </script>
 
+<style is="custom-style">
+  app-drawer {
+    --app-drawer-width: 200px;
+    --app-drawer-content-container: {
+      background: #eee;
+    };
+  }
+  paper-item {
+    --paper-item: {
+      cursor: pointer;
+    };
+  }
+</style>
+
 {% block html_imports %}{% endblock %}
 
 {% block rss %}{% endblock%}
 </head>
-<body>
+<body class="loading">
 
-<div id="container">
-  {% include "header.html" %}
-  {% block subheader %}{% endblock %}
+<app-drawer-layout fullbleed>
+  <app-drawer swipe-open>
+    <div class="drawer-content-wrapper">
+      {% block drawer %}{% endblock %}
+    </div>
+  </app-drawer>
+  <app-header fixed effects="waterfall">
+    <!-- Note: app-toolbar is intentionally not registered. Just used for styling. -->
+    <app-toolbar class="main-toolbar">
+      <div class="toolbar-content">
+        {% include "header.html" %}
+        {% block subheader %}{% endblock %}
+      </div>
+    </app-toolbar>
+  </app-header>
+
   <div id="content">
+    <div id="spinner"><img src="/static/img/ring.svg"></div>
     {% block content %}{% endblock %}
   </div>
+
   {% include "footer.html" %}
-</div>
+</app-drawer-layout>
+
+{% block overlay %}{% endblock %}
 
 {% block js %}{% endblock %}
 
@@ -110,6 +141,11 @@ function lazyLoadWCPolyfillsIfNecessary() {
     onload();
   }
 }
+
+// document.addEventListener('scroll', function(e) {
+//   var scroller = document.scrollingElement || document.body;
+//   document.querySelector('app-header').classList.toggle('shadow', scroller.scrollTop > 0);
+// });
 
 // Google Analytics
 (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){

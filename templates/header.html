@@ -1,17 +1,20 @@
 <header>
-  <a href="/">
-    <aside>
-      <!-- <img src="/static/img/chromium-128.png" alt="Chromium Logo"> -->
-      <hgroup>
-        <h1>{{APP_TITLE}}</h1>
-        <span>feature support &amp; usage metrics</span>
-      </hgroup>
-    </aside>
-  </a>
+  <aside>
+    <iron-icon icon="chromestatus:menu" drawer-toggle></iron-icon>
+    <hgroup>
+      <a href="/"><h1>{{APP_TITLE}}</h1></a>
+      <span>feature support &amp; usage metrics</span>
+    </hgroup>
+  </aside>
   <nav>
     <a href="/features">Features</a>
     <a href="/samples" class="features">Samples</a>
-    <a href="/metrics/css/popularity" class="metrics">CSS Metrics</a>
-    <a href="/metrics/feature/popularity" class="metrics">JS/HTML Metrics</a>
-  </nav>
+    <paper-menu-button vertical-align="top" horizontal-align="right">
+      <a href="javascript:void(0)" class="dropdown-trigger">Usage Metrics</a>
+      <div class="dropdown-content">
+        <a href="/metrics/css/popularity" class="metrics">CSS</a>
+        <a href="/metrics/feature/popularity" class="metrics">JS/HTML</a>
+      </div>
+    </paper-menu-button>
+    </nav>
 </header>

@@ -1,7 +1,15 @@
 {% extends "base.html" %}
 
+{% block html_imports %}
+  <link rel="import" href="/static/elements/admin-imports{% if VULCANIZE %}.vulcanize{% endif %}.html">
+{% endblock %}
+
 {% block css %}
 <link rel="stylesheet" href="/static/css/forms.css">
+{% endblock %}
+
+{% block drawer %}
+
 {% endblock %}
 
 {% block subheader %}
