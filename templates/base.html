@@ -94,8 +94,7 @@ var $$ = function(selector) {
       {% block drawer %}{% endblock %}
     </div>
   </app-drawer>
-  <!-- Note: app-header is intentionally not registered. Just used for styling. -->
-  <app-header class="fixed">
+  <app-header fixed effects="waterfall">
     <!-- Note: app-toolbar is intentionally not registered. Just used for styling. -->
     <app-toolbar class="main-toolbar">
       <div class="toolbar-content">
@@ -142,6 +141,11 @@ function lazyLoadWCPolyfillsIfNecessary() {
     onload();
   }
 }
+
+// document.addEventListener('scroll', function(e) {
+//   var scroller = document.scrollingElement || document.body;
+//   document.querySelector('app-header').classList.toggle('shadow', scroller.scrollTop > 0);
+// });
 
 // Google Analytics
 (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
