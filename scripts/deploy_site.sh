@@ -13,7 +13,7 @@ readonly BASEDIR=$(dirname $BASH_SOURCE)
 
 # vulcanize $BASEDIR/../static/elements/elements.html -o $BASEDIR/../static/elements/elements.vulcanized.html --config vulcanize_config.json
 
-grunt
+gulp
 
 $BASEDIR/oauthtoken.sh deploy
 appcfg.py update $BASEDIR/../
