@@ -10,6 +10,66 @@ body {
   font-weight: 400;
   -webkit-font-smoothing: antialiased;
   background-color: $light-grey;
+
+  &.loading {
+    #spinner {
+      display: flex;
+    }
+  }
+}
+
+#spinner {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  position: fixed;
+  height: calc(100% - 54px - 135px); // 100% - height of footer + header.
+  max-width: $max-content-width;
+  width: 100%;
+}
+
+app-drawer {
+  font-size: 14px;
+
+  .drawer-content-wrapper {
+    height: 100%;
+    overflow: auto;
+    padding: $content-padding;
+  }
+
+  paper-listbox {
+    background-color: inherit !important; // more specific than shimmer
+
+    paper-item {
+      font-size: inherit !important; // more specific than shimmer
+    }
+  }
+
+  h3 {
+    margin-bottom: $content-padding;
+    text-transform: uppercase;
+    font-weight: 600;
+    font-size: 14px;
+    color: inherit;
+  }
+}
+
+app-header {
+  background-color: $light-grey;
+  right: 0;
+  top: 0;
+  left: 0;
+  z-index: 1;
+
+  &[fixed] {
+    position: fixed;
+  }
+}
+
+app-toolbar.main-toolbar {
+  display: flex;
+  position: relative;
+  padding: 0 $content-padding;
 }
 
 header, footer {
@@ -19,50 +79,26 @@ header, footer {
 }
 
 header {
-  margin: 15px 0 0 0;
   user-select: none;
 
   a {
-    color: currentcolor;
     text-decoration: none !important;
-  }
-
-  aside {
-    @include gradient-bar-bg;
-    border-top-right-radius: 5px;
-    border-bottom-right-radius: 5px;
-    border-bottom: 1px solid $bar-border-color;
-    border-right: 1px solid $bar-border-color;
-    padding: 0.75em 1em;
-    background: url(/static/img/chrome_logo.svg) no-repeat 18px 50%;
-    background-size: 20%;
-    background-color: #fafafa;
-    padding-left: 124px;
-
-    h1 {
-      line-height: 1;
-    }
-    img {
-      height: 45px;
-      width: 45px;
-      margin-right: 7px;
-    }
   }
 
   nav {
     display: flex;
     align-items: center;
-    margin-left: 3em;
+    margin-left: $content-padding;
 
     a {
       @include gradient-bar-bg;
       cursor: pointer;
-      margin-right: 1em;
       font-size: 16px;
       text-align: center;
       border-radius: $default-border-radius;
       border-bottom: 1px solid $bar-border-color;
       border-right: 1px solid $bar-border-color;
+      white-space: nowrap;
 
       &:active {
         position: relative;
@@ -76,6 +112,47 @@ header {
         pointer-events: none;
       }
     }
+
+    paper-menu-button {
+      margin: 0 !important; // override polyfill shimming
+      padding: 0 !important; // override polyfill shimming
+      line-height: 1;
+
+      .dropdown-content {
+        display: flex;
+        flex-direction: column;
+      }
+    }
+  }
+
+  aside {
+    $logoSize: 48px;
+
+    @include gradient-bar-bg;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+    border-bottom: 1px solid $bar-border-color;
+    border-right: 1px solid $bar-border-color;
+
+    background: url(/static/img/chrome_logo.svg) no-repeat $content-padding 50%;
+    background-size: $logoSize;
+    background-color: #fafafa;
+    padding-left: $logoSize + $content-padding  + $content-padding / 2;
+
+    hgroup {
+      a {
+        color: currentcolor;
+      }
+    }
+
+    h1 {
+      line-height: 1;
+    }
+    img {
+      height: 45px;
+      width: 45px;
+      margin-right: 7px;
+    }
   }
 }
 
@@ -87,29 +164,33 @@ footer {
   flex-direction: column;
   justify-content: center;
   text-align: center;
-  position: relative;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 1;
 
   div {
-    margin-top: 5px;
+    margin-top: $content-padding / 2;
   }
+}
+
+.description {
+  line-height: 1.4;
 }
 
 #subheader, .subheader {
   display: flex;
   align-items: center;
-  margin: $content-padding 0 0 $content-padding + 12;
-  max-width: $max-content-width + $content-padding * 7 + 25;
+  margin: $content-padding 0;
+  max-width: $max-content-width;
+
+  .num-features {
+    font-weight: 400;
+  }
 
   div {
-    margin-right: $content-padding * 2 - 15;
-
-    &.feature-count {
-      min-width: 325px;
-      margin-right: $content-padding - 15;
-    }
-
     &.search {
-      margin-right: 0;
       input {
         width: 200px;
         outline: none;
@@ -118,14 +199,28 @@ footer {
     }
 
     &.actionlinks {
+      display: flex;
+      justify-content: flex-end;
+      flex: 1 0 auto;
+      margin-left: $content-padding;
+
+      paper-button {
+        background: $chromium-color-dark;
+        color: white;
+        font-weight: 600;
+        height: 35px;
+        border-radius: 0;
+
+        iron-icon {
+          margin-right: $content-padding / 2;
+        }
+      }
+
       .legend {
         font-size: 18px;
         cursor: pointer;
         text-decoration: none;
       }
-      flex: 1 0 0;
-      text-align: right;
-      margin-right: 0;
     }
   }
 }
@@ -138,11 +233,10 @@ footer {
 }
 
 #content {
-  display: flex;
-  flex: 1 0 0;
-  margin: $content-padding + 12;
+  margin: $content-padding;
   position: relative;
-  overflow: auto;
+  height: 100%;
+  margin-top: 135px;
 }
 
 #panels {
@@ -151,9 +245,25 @@ footer {
   overflow: hidden;
 }
 
+@media only screen and (min-width: 701px) {
+  app-toolbar {
+    .toolbar-content {
+      max-width: $max-content-width;
+    }
+  }
+  app-drawer {
+    .drawer-content-wrapper {
+      margin-top: 135px; // height of header.
+    }
+  }
+  app-header {
+    padding-left: $app-drawer-width;
+  }
+}
+
 @media only screen and (max-width: 700px) {
   h1 {
-    font-size: 6.5vw;
+    font-size: 24px;
   }
   h2 {
     font-size: 20px;
@@ -161,28 +271,43 @@ footer {
   h3 {
     font-size: 15px;
   }
-  #container {
-    display: block;
+  app-header {
+    app-toolbar.main-toolbar {
+      padding: 0;
+      display: block;
+    }
   }
+
+  app-drawer {
+    z-index: 2;
+  }
+
   #content {
-    margin: 0;
+    margin-left: 0;
+    margin-right: 0;
   }
+
   header {
+    $logoSize: 24px;
+
     margin: 0;
     display: block;
     aside {
-      padding: 0.5em;
+      display: flex;
+      padding: $content-padding / 2;
       border-radius: 0;
+      background-size: $logoSize;
+      background-position: $content-padding + 8 + $logoSize 50%;
 
       hgroup {
-        text-align: right;
+        padding-left: $content-padding + 8 + $logoSize;
         span {
           display: none;
         }
       }
     }
     nav {
-      margin: 10px 0;
+      margin: 0;
       justify-content: center;
       flex-wrap: wrap;
       a {
@@ -201,8 +326,14 @@ footer {
     }
   }
 
+  .subheader {
+    .description {
+      margin: 0 $content-padding;
+    }
+  }
+
   #subheader {
-    margin: ($content-padding / 2) - 5;
+
     div {
       &:not(.search) {
         display: none;
@@ -215,8 +346,6 @@ footer {
       }
     }
   }
-
-  footer {
-    padding: 0.35em;
-  }
 }
+
+@import 'fouc';

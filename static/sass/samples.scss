@@ -1,11 +1,8 @@
 @import "vars";
 
-$content-padding: 32px;
-$max-content-width: 600px;
-
 paper-button, paper-item {
   iron-icon {
-    margin-right: $content-padding / 4;
+    margin-right: $content-padding / 2;
   }
 }
 
@@ -15,68 +12,39 @@ paper-input {
   background-color: #fff;
 }
 
-#content {
-  margin-top: 20px;
-}
-
-#subheader {
-  max-width: $max-content-width + 335px;// + $content-padding * 5;
-
-  .subheader-title {
-    width: 310px;
+app-drawer {
+  #papermenu {
+    color: $chromium-color-dark;
+    overflow: auto;
+  }
+  h3 {
+    margin: $content-padding $content-padding 0 $content-padding;
+  }
+  .drawer-content-wrapper {
+    padding: 0;
   }
 }
 
-#panels {
-  nav {
-    overflow-x: hidden;
-    min-width: 300px;
-
-    paper-menu {
-      color: $chromium-color-dark;
-      background: #fff;
-    }
+#subheader {
+  .feature-count {
+    min-width: 170px;
   }
 }
 
 #sample-panel {
-  margin: 0 $content-padding;
-  overflow-x: hidden;
-
   position: relative;
-  flex: 1 0 0;
-  max-width: $max-content-width;//$max-content-width;
-
-  &.loading {
-    background: #fff;
-
-    &::before {
-      padding: $content-padding;
-      font-size: 18px;
-      font-weight: normal;
-      content: 'loading...';
-      color: $gray-3;
-      background: #fff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 100%;
-      height: 100%;
-      position: absolute;
-      box-sizing: border-box;
-    }
-  }
+  max-width: 750px;
 }
 
 #samplelist {
   li {
-    margin-bottom: $content-padding / 2;
+    margin-bottom: $content-padding;
     line-height: 1.4;
-    padding: 0 4px; // for paper-material
+    list-style: none;
   }
   paper-material {
     background: #fff;
-    padding: $content-padding / 2;
+    padding: $content-padding;
   }
   iron-icon {
     color: $gray-2;
@@ -87,6 +55,15 @@ paper-input {
 .feature-name {
   font-weight: 400;
   color: $chromium-color-dark;
+  display: flex;
+  justify-content: space-between;
+
+}
+
+.sample_links {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .milestone {
@@ -96,21 +73,14 @@ paper-input {
 }
 
 .summary {
-  margin: $content-padding/2 0;
-}
-
-.actionlinks {
-  paper-button {
-    background: $chromium-color-dark;
-    color: white;
-    font-weight: 600;
-  }
+  margin: $content-padding 0;
 }
 
 .demo-links {
-  margin-right: $content-padding / 2;
+  margin-right: $content-padding;
   font-weight: 400;
   color: $chromium-color-dark;
+  display: flex;
   flex-wrap: wrap;
 }
 
@@ -118,13 +88,5 @@ paper-input {
   background-color: #F5F5F5;
   margin: 8px 8px 0 0;
   color: $gray-3;
-}
-
-@media only screen and (max-width: 700px) {
-  #content {
-    margin: 8px;
-  }
-  #sample-panel {
-    margin: 0;
-  }
+  display: block;
 }

@@ -23,15 +23,18 @@
     "iron-component-page": "PolymerElements/iron-component-page#^1.0.5"
   },
   "dependencies": {
+    "app-layout": "PolymerElements/app-layout#^0.10.0",
     "polymer": "Polymer/polymer#^1.6.0",
     "iron-ajax": "PolymerElements/iron-ajax#^1.1.0",
     "google-apis": "GoogleWebComponents/google-apis#^1.0.2",
     "paper-dialog": "PolymerElements/paper-dialog#^1.0.1",
+    "paper-listbox": "PolymerElements/paper-listbox#^1.1.2",
     "paper-item": "PolymerElements/paper-item#^1.0.3",
     "paper-input": "PolymerElements/paper-input#^1.0.14",
     "paper-ripple": "PolymerElements/paper-ripple#^1.0.2",
     "paper-styles": "PolymerElements/paper-styles#^1.0.11",
     "paper-menu": "PolymerElements/paper-menu#^1.1.1",
+    "paper-menu-button": "PolymerElements/paper-menu-button#^1.3.0",
     "iron-icons": "PolymerElements/iron-icons#^1.0.3",
     "paper-button": "PolymerElements/paper-button#^1.0.3",
     "paper-card": "PolymerElements/paper-card#^1.0.0",

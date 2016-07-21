@@ -1,0 +1,13 @@
+@import 'vars';
+
+body.loading {
+  chromedash-legend {
+    display: none;
+  }
+
+  .main-toolbar {
+    .dropdown-content {
+      display: none;
+    }
+  }
+}

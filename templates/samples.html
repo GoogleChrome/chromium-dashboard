@@ -16,32 +16,32 @@
 {% endblock %}
 
 {% block css %}
-<link rel="stylesheet" href="/static/css/samples.css?2015-10-07">
+<link rel="stylesheet" href="/static/css/samples.css?2016-07-14">
+{% endblock %}
 
-<style is="custom-style">
-paper-input {
-  --input-color: #85b4df;
-  --paper-input-container-focus-color: var(--input-color);
-  --paper-input-container-color: var(--input-color);
-  --paper-input-container: {
-    padding: 12px;
-  };
-}
-paper-item {
-  --paper-item: {
-    cursor: pointer;
-  };
-}
-</style>
-{% endblock %}f
+{% block drawer %}
+  <h3>Category filter</h3>
+  {% verbatim %}
+  <paper-listbox id="papermenu">
+  {% endverbatim %}
+  {% for k,v in CATEGORIES %}
+    {% if v != 'webcomponents' %}
+      <paper-item data-category="{{v}}">
+        <iron-icon icon="chromestatus:{{v}}"></iron-icon>{{k}}
+        <paper-ripple></paper-ripple>
+      </paper-item>
+    {% endif %}
+  {% endfor %}
+  </paper-listbox>
+{% endblock %}
 
 {% block subheader %}
 <div id="subheader">
-  <div class="subheader-title">
-    <h2>Web Platform Samples</h2>
+  <div class="feature-count">
+    <h2>Samples: <span class="num-features"></span></h2>
   </div>
   <div class="search">
-    <paper-input placeholder="Search" type="search" no-label-float autocomplete></paper-input>
+    <input type="search" placeholder="Search">
   </div>
   <div class="actionlinks">
     <a href="https://github.com/GoogleChrome/samples" target="_blank">
@@ -49,50 +49,32 @@ paper-item {
     </a>
   </div>
 </div>
-<div class="subheader layout vertical start">
+{% endblock %}
+
+{% block content %}
+<div class="subheader">
   <p class="description">Features are ordered by Chrome release version, latest first. Features
   enabled by default always come first, followed by features that are origin trials,
   behind a flag or still in the development.</p>
 </div>
-{% endblock %}
-
-{% block content %}
 
 <template id="t" is="dom-bind">
 
-<section id="panels">
-<nav>
-
-  {% verbatim %}
-  <paper-menu id="papermenu" selected-item="{{selectedCategory}}"
-              on-transitionend="_onRippleDone">
-  {% endverbatim %}
-  {% for k,v in CATEGORIES %}
-    {% if v != 'webcomponents' %}
-      <paper-item class="relative" data-category="{{v}}">
-        <iron-icon icon="chromestatus:{{v}}"></iron-icon>{{k}}
-        <paper-ripple></paper-ripple>
-      </paper-item>
-    {% endif %}
-  {% endfor %}
-  </paper-menu>
-
-</nav>
-<div id="sample-panel" class="loading">
+<div id="sample-panel">
 
   {% verbatim %}
     <ul id="samplelist" class="card-content">
-      <template is="dom-repeat" items="{{filtered}}" as="feature">
+      <template is="dom-repeat" items="{{filtered}}" as="feature" initial-count="6">
         <li>
           <paper-material>
-            <h3 class="feature-name layout horizontal justified">
+            <h3 class="feature-name">
               <a href$="[[_computeFeatureLink(feature.id)]]">{{feature.name}}</a>
               <span class="milestone" hidden$="[[!feature.shipped_milestone]]">Chrome <span>[[feature.shipped_milestone]]</span></span>
             </h3>
-            <div class="summary">{{feature.summary}}</div>
-            <div class="layout horizontal center justified">
+            <div class="summary">[[feature.summary]]</div>
+            <div class="sample_links">
               <div class="demo-links layout horizontal center">
-                <template is="dom-repeat" items="{{feature.sample_links}}" as="link">
+                <template is="dom-repeat" items="[[feature.sample_links]]" as="link">
                   <a href$="[[link]]" target="_blank" class="demo-link">
                     <paper-button>
                       <iron-icon icon="chromestatus:open-in-browser"></iron-icon> View Demo
@@ -100,8 +82,8 @@ paper-item {
                   </a>
                 </template>
               </div>
-              <iron-icon icon="{{_computeIconId(feature.category)}}"
-                         title="{{feature.category}}"></iron-icon>
+              <iron-icon icon="[[_computeIconId(feature.category)]]"
+                         title="[[feature.category]]"></iron-icon>
             </div>
           </paper-material>
         </li>
@@ -110,7 +92,6 @@ paper-item {
   {% endverbatim %}
 
 </div>
-</section>
 
 </template>
 
@@ -144,7 +125,9 @@ function matchesMilestone_(milestone, operator, version) {
   }
 }
 
-var search = $('.search paper-input');
+var search = $('.search input');
+var numSamples = $('.num-features');
+var categoryMenu = $('#papermenu');
 
 var t = $('#t');
 t.categories = {{categories|safe}}; // server included.
@@ -153,7 +136,6 @@ t.prevSelectedCategory = null;
 // Set search box to URL deep link.
 if (location.hash) {
   search.value = location.hash.substr(1);
-  // t.filter(search.value);
 }
 
 t._computeIcon = function(el) {
@@ -168,23 +150,18 @@ t._computeFeatureLink = function(id) {
   return '/features/' + id;
 };
 
+// and not part of the dom-bind template.
 t._onSelectCategory = function(e, detail) {
   // Enable toggling selected item until
   // https://github.com/PolymerElements/paper-menu/issues/50 is fixed.
   if (this.selectedCategory === this.prevSelectedCategory) {
-    this.$.papermenu.selected = null;
+    categoryMenu.selected = null;
+    this.selectedCategory = null;
     this.prevSelectedCategory = null;
   } else {
     this.prevSelectedCategory = this.selectedCategory;
   }
   this.filter(search.value);
-};
-
-t._onRippleDone = function(e, detail) {
-  // Needed until https://github.com/PolymerElements/paper-ripple/pull/41 is fixed.
-  this.debounce('ripple', function() {
-    t._onSelectCategory();
-  }, 10);
 };
 
 // TODO: move this into a behavior. It's duplicated from chromedash-featurelist.html.
@@ -219,6 +196,7 @@ t.filter = function(val) {
       location.hash = '';
     }
     this.filtered = features;
+    numSamples.textContent = this.filtered.length;
 
     return;
   }
@@ -255,6 +233,8 @@ t.filter = function(val) {
   }
 
   this.filtered = features;
+
+  numSamples.textContent = this.filtered.length;
 };
 
 t.removeFilters = function() {
@@ -290,7 +270,9 @@ samplesPromise.then(function(features) {
   t.features = features;
   t.filtered = features;
 
-  $('#sample-panel').classList.remove('loading');
+  numSamples.textContent = t.features.length;
+
+  document.body.classList.remove('loading');
 
   t.filter(search.value);
 
@@ -307,10 +289,21 @@ search.addEventListener('keyup', function(e) {
   if (!e.target.value && e.keyCode != 27) { // ESC
     t.removeFilters();
   } else {
-    //if (e.keyCode == 13) {  // Enter
-      t.filter(e.target.value);
-    //}
+    t.filter(e.target.value);
   }
+});
+
+search.addEventListener('keyup', function(e) {
+  if (!e.target.value && e.keyCode != 27) { // ESC
+    t.removeFilters();
+  } else {
+    t.filter(e.target.value);
+  }
+});
+
+categoryMenu.addEventListener('transitionend', function(e) {
+  t.selectedCategory = this.selectedItem;
+  t._onSelectCategory();
 });
 
 })();

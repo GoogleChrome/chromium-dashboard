@@ -12,10 +12,6 @@ $feature-min-height: 75px;
   text-decoration: inherit;
 }
 
-:focus {
-  z-index: 1;
-}
-
 @mixin tooltip {
   content: attr(title) ""; // force to be a string for FF/Safari.
   position: absolute;

@@ -48,7 +48,13 @@ input, textarea {
   padding: 7px;
 }
 
+li {
+  list-style: none;
+}
+
 form[name="feature_form"] {
+  margin-bottom: 54px + $content-padding * 2; // bottom bar + some.
+
   h3 {
     margin: $content-padding / 2 0;
   }

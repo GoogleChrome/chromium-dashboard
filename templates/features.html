@@ -29,21 +29,39 @@
 {% block subheader %}
 <div id="subheader">
   <div class="feature-count">
-    <h2>Web Platform Features (<span id="num-features"></span>)</h2>
+    <h2>Features: <span class="num-features"></span></h2>
   </div>
   <div class="search">
     <input type="search" placeholder="Filter" disabled>
+    <a href="" class="legend"><iron-icon icon="chromestatus:help"></iron-icon></a>
   </div>
   <div class="actionlinks">
     {% if user.is_whitelisted %}
-      <paper-button onclick="addNewFeature(this);">Add a new feature</paper-button>
+      <paper-button onclick="addNewFeature(this);"><iron-icon icon="chromestatus:add-circle-outline"></iron-icon>Add new feature</paper-button>
     {% endif %}
-    <a href="" class="legend"><iron-icon icon="icons:help"></iron-icon></a>
   </div>
 </div>
 {% endblock %}
 
-{% block content %}
+{% block drawer %}
+<h3>Chrome versions</h3>
+
+<chromedash-metadata
+  impl-statuses='{{IMPLEMENTATION_STATUSES|safe}}'
+  status='{
+    "NO_ACTIVE_DEV": 1,
+    "PROPOSED": 2,
+    "IN_DEVELOPMENT": 3,
+    "BEHIND_A_FLAG": 4,
+    "ENABLED_BY_DEFAULT": 5,
+    "DEPRECATED": 6,
+    "REMOVED": 7,
+    "IN_EXPERIMENTAL_FRAMEWORK": 8,
+    "NO_LONGER_PURSUING": 1000
+  }'></chromedash-metadata>
+{% endblock %}
+
+{% block overlay %}
 <chromedash-legend>
   <p class="description">What you're looking at is a mostly comprehensive list of
   web platform features that have landed in Chromium, ordered chronologically by the milestone
@@ -54,30 +72,10 @@
     <paper-button dialog-dismiss>Close</paper-button>
   </div>
 </chromedash-legend>
+{% endblock %}
 
-<section id="panels">
-<nav>
-  <chromedash-metadata
-      impl-statuses='{{IMPLEMENTATION_STATUSES|safe}}'
-      status='{
-        "NO_ACTIVE_DEV": 1,
-        "PROPOSED": 2,
-        "IN_DEVELOPMENT": 3,
-        "BEHIND_A_FLAG": 4,
-        "ENABLED_BY_DEFAULT": 5,
-        "DEPRECATED": 6,
-        "REMOVED": 7,
-        "ORIGIN_TRIAL": 8,
-        "NO_LONGER_PURSUING": 1000
-      }'></chromedash-metadata>
-</nav>
+{% block content %}
 <chromedash-featurelist {% if user.is_whitelisted %}whitelisted{% endif %}></chromedash-featurelist>
-</section>
-
-<!--
-{% load verbatim %}
-{% verbatim %}
-{% endverbatim %} -->
 
 {% endblock %}
 
@@ -110,10 +108,11 @@ chromeMetadata.addEventListener('query-changed', function(e) {
 });
 
 featureList.addEventListener('filtered', function(e) {
-  $('#num-features').textContent = e.detail.count;
+  $('.num-features').textContent = e.detail.count;
+  document.body.classList.remove('loading');
 });
 
-featureList.addEventListener('unveiled', function() {
+featureList.addEventListener('app-ready', function() {
   console.timeStamp && console.timeStamp('features unveiled');
   console.timeEnd && console.timeEnd('features unveil');
   unveilStart && ga('send', 'timing', 'features', 'unveil', performance.now() - unveilStart);
