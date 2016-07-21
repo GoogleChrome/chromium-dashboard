@@ -26,6 +26,8 @@
 {% block js %}
 <script>
 document.addEventListener('WebComponentsReady', function(e) {
+  document.body.classList.remove('loading');
+
   var el = document.querySelector('chromedash-userlist');
   el.users = {{users|safe}}; // Filled from server.
 });
