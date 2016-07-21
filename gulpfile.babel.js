@@ -59,7 +59,6 @@ gulp.task('scripts', () => {
 // original import files.
 gulp.task('vulcanize', () => {
   return gulp.src([
-      'static/elements/elements.html',
       'static/elements/metrics-imports.html',
       'static/elements/features-imports.html',
       'static/elements/admin-imports.html',
