@@ -144,20 +144,23 @@ gulp.task('generate-service-worker', ['copy-sw-scripts'], () => {
     runtimeCaching: [
       // Server-side generated content
       {
-        urlPattern: /\/features\//,
+        urlPattern: /\/features\/\w+$/,
         handler: 'fastest',
         options: {
-          debug: true,
-            cache: {
+          cache: {
             maxEntries: 10,
             name: 'features-cache'
           }
         }
       },
-      // For the feature data, try the network first to get the most recent
+      // For dynamic data (json), try the network first to get the most recent
       // values.
       {
-        urlPattern: /features.json$/,
+        urlPattern: /\/features.json$/,
+        handler: 'networkFirst',
+      },
+      {
+        urlPattern: /\/omaha_data$/,
         handler: 'networkFirst',
       },
       // Polymer elements that may or may not be vulcanized
