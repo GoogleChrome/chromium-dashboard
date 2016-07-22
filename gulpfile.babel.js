@@ -105,7 +105,6 @@ gulp.task('vulcanize-lazy-elements', () => {
 
 gulp.task('vulcanize', ['styles', 'vulcanize-lazy-elements'], () => {
   return gulp.src([
-    // 'static/elements/elements.html',
     'static/elements/metrics-imports.html',
     'static/elements/features-imports.html',
     'static/elements/admin-imports.html',
@@ -169,6 +168,8 @@ gulp.task('generate-service-worker', () => {
       // Polymer imports
       // NOTE: The admin imports are intentionally excluded, as the admin pages
       //       only work online
+      `${staticDir}/elements/paper-menu-button.vulcanize.*`,
+      `${staticDir}/elements/chromedash-legend.vulcanize.*`,
       `${staticDir}/elements/metrics-imports.vulcanize.*`,
       `${staticDir}/elements/features-imports.vulcanize.*`,
       `${staticDir}/elements/samples-imports.vulcanize.*`,
