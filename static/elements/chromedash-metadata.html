@@ -1,21 +1,16 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
-<link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
 
 <dom-module id="chromedash-metadata">
 <link rel="import" type="css" href="../css/elements/chromedash-metadata.css">
 <template>
-  <iron-ajax auto url="/omaha_data" handle-as="json"
-             on-response="_onResponse"
-             on-error="_onError"></iron-ajax>
-
   <ul id="versionlist" class$="[[_computeClass(betaIsDev, canaryIsDev)]]">
-    <template is="dom-repeat" items="{{versions}}" as="v">
-      <li data-version$="{{v}}" on-tap="selectMilestone"
-          selected$="{{_computeSelected(selected, v)}}">{{v}}</li>
+    <template is="dom-repeat" items="[[versions]]" as="v">
+      <li data-version$="[[v]]" on-tap="selectMilestone"
+          selected$="[[_computeSelected(selected, v)]]">[[v]]</li>
     </template>
   </ul>
 
-  <div hidden$="{{!fetchError}}" class="error">Error fetching Chrome version information.</div>
+  <div hidden$="[[!fetchError]]" class="error">Error fetching version information.</div>
 </template>
 <script>
   Polymer({
@@ -53,6 +48,24 @@
       }
     },
 
+    attached: function() {
+      Polymer.RenderStatus.afterNextRender(this, function() {
+        var xhr = new XMLHttpRequest();
+        xhr.responseType = 'json';
+        xhr.open('GET', '/omaha_data');
+
+        xhr.onloadend = function(e) {
+          if (e.target.status === 200) {
+            this._onResponse(e.target.response);
+          } else {
+            this._onError();
+          }
+        }.bind(this);
+        xhr.onerror = this._onError.bind(this);
+        xhr.send();
+      });
+    },
+
     selectMilestone: function(e, detail) {
       if (detail) {
         // Came from an internal click.
@@ -68,9 +81,9 @@
       this.fetchError = true;
     },
 
-    _onResponse: function(e, detail) {
+    _onResponse: function(response) {
       // TODO(ericbidelman): Share this data across instances.
-      var windowsVersions = detail.response[0];
+      var windowsVersions = response[0];
       for (var i = 0, el; el = windowsVersions.versions[i]; ++i) {
         // Include previous version if current is foobar'd.
         this.channels[el.channel] = parseInt(el.version) || parseInt(el.prev_version);

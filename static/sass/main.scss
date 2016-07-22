@@ -66,7 +66,7 @@ app-header {
   }
 }
 
-app-toolbar.main-toolbar {
+.main-toolbar {
   display: flex;
   position: relative;
   padding: 0 $content-padding;
@@ -246,7 +246,7 @@ footer {
 }
 
 @media only screen and (min-width: 701px) {
-  app-toolbar {
+  .main-toolbar {
     .toolbar-content {
       max-width: $max-content-width;
     }
@@ -272,7 +272,7 @@ footer {
     font-size: 15px;
   }
   app-header {
-    app-toolbar.main-toolbar {
+    .main-toolbar {
       padding: 0;
       display: block;
     }
