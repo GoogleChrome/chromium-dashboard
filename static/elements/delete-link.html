@@ -1,5 +1,4 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
-<link rel="import" href="../bower_components/iron-ajax/iron-request.html">
 
 <dom-module id="delete-link">
 <template>
@@ -22,9 +21,8 @@
         return;
       }
 
-      var request = document.createElement('iron-request');
-      request.send({url: e.target.href, method: 'POST'}).then(function(req) {
-        this.fire('ajaxdeleted', {response: request.response, xhr: request.xhr});
+      fetch(e.target.href, {method: 'POST'}).then(function(resp) {
+        this.fire('ajax-delete', {response: resp, status: resp.status});
       }.bind(this));
     }
   });

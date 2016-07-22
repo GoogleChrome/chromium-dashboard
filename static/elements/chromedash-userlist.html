@@ -1,10 +1,9 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
-<link rel="import" href="../bower_components/iron-ajax/iron-request.html">
 
 <dom-module id="chromedash-userlist">
 <link rel="import" type="css" href="../css/elements/chromedash-userlist.css">
 <template>
-  <form id="form" name="user_form" method="post" action="{{action}}" onsubmit="return false;">
+  <form id="form" name="user_form" method="post" action="[[action]]" onsubmit="return false;">
     <table>
       <tr>
         <td><input type="email" placeholder="Email address" name="email" id="id_email" required></td>
@@ -13,9 +12,9 @@
     </table>
   </form>
   <ul id="user-list">
-    <template is="dom-repeat" items="{{users}}" as="user">
+    <template is="dom-repeat" items="[[users]]" as="user">
       <li>
-        <a href$="{{_computeDeleteHref(action, user)}}" on-tap="ajaxDelete">delete</a><span>{{user.email}}</span>
+        <a href$="[[action]]/[[user.id]]" on-tap="ajaxDelete">delete</a><span>[[user.email]]</span>
       </li>
     </template>
   </ul>
@@ -44,24 +43,30 @@
 
     ajaxSubmit: function(e, details) {
       e.preventDefault();
+
       if (this.$.form.checkValidity()) {
         // TODO(ericbidelman): move back to this.$.form.email.value when SD
         // polyfill merges the commit that wraps element.form.
         var email = this.$.form.querySelector('input[name="email"]').value;
         var formData = new FormData();
         formData.append('email', email);
-        var request = document.createElement('iron-request');
-        request.send({
-          url: this.action,
+
+        fetch(this.action, {
           method: 'POST',
-          body: formData
-        }).then(function(req) {
-          if (request.status == 201) {
-            this.addUser(JSON.parse(request.response));
-            this.$.form.reset();
-          } else if (request.status == 200) {
+          body: formData,
+          credentials: 'same-origin' // Needed for admin permissions to be sent.
+        }).then(function(resp) {
+          if (resp.status === 200) {
             alert('Thanks. But that user already exists');
+            throw new Error('User already added');
+          } else if (resp.status !== 201) {
+            throw new Error('Sever error adding new user');
           }
+
+          return resp.json();
+        }).then(function(json) {
+          this.addUser(json);
+          this.$.form.reset();
         }.bind(this));
       }
     },
@@ -75,11 +80,11 @@
       // Get index of user model instance that was clicked from template.
       var user = e.model.user;
       var idx = this.users.indexOf(user);
-      var request = document.createElement('iron-request');
-      request.send({
-        url: Polymer.dom(e).rootTarget.href,
-        method: 'POST'
-      }).then(function(req) {
+
+      fetch(Polymer.dom(e).rootTarget.href, {
+        method: 'POST',
+        credentials: 'same-origin'
+      }).then(function(resp) {
         Polymer.dom(e).rootTarget.parentElement.classList.add('faded');
         if ('ontransitionend' in window) {
           var li = Polymer.dom(e).rootTarget.parentElement;
@@ -90,6 +95,8 @@
         } else {
           this.removeUser(idx);
         }
+
+        return resp.json();
       }.bind(this));
     },
 

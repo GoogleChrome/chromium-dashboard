@@ -109,8 +109,8 @@
     toggleMilestones(document.querySelector('#id_impl_status_chrome'));
   });
 
-  document.body.addEventListener('ajaxdeleted', function(e) {
-    if (e.detail.xhr.status === 200) {
+  document.body.addEventListener('ajax-delete', function(e) {
+    if (e.detail.status === 200) {
       location.href = '/features';
     }
   });
