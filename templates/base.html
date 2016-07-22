@@ -95,13 +95,12 @@ var $$ = function(selector) {
     </div>
   </app-drawer>
   <app-header fixed effects="waterfall">
-    <!-- Note: app-toolbar is intentionally not registered. Just used for styling. -->
-    <app-toolbar class="main-toolbar">
+    <div class="main-toolbar">
       <div class="toolbar-content">
         {% include "header.html" %}
         {% block subheader %}{% endblock %}
       </div>
-    </app-toolbar>
+    </div>
   </app-header>
 
   <div id="content">
