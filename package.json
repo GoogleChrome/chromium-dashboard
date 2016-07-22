@@ -23,6 +23,7 @@
   "devDependencies": {
     "babel-core": "^6.10.4",
     "babel-preset-es2015": "^6.9.0",
+    "css-slam": "^1.1.0",
     "del": "^2.2.1",
     "eslint-config-google": "^0.6.0",
     "grunt": "^0.4.5",
@@ -32,7 +33,9 @@
     "gulp-crisper": "^1.1.0",
     "gulp-eslint": "^3.0.1",
     "gulp-if": "^2.0.1",
+    "gulp-license": "^1.1.0",
     "gulp-load-plugins": "^1.2.4",
+    "gulp-minify-html": "^1.0.6",
     "gulp-rename": "^1.2.2",
     "gulp-sass": "^2.3.2",
     "gulp-uglify": "^1.5.4",
