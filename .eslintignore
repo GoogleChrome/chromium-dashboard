@@ -7,4 +7,3 @@ static/dist/
 **/*.vulcanize.js
 
 Gruntfile.js
-gulpfile*.js

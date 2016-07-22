@@ -102,30 +102,13 @@ gulp.task('default', ['clean'], cb =>
   )
 );
 
-// Copy over the scripts that are used in importScripts as part of the generate-service-worker task.
-gulp.task('copy-sw-scripts', () => {
-  return gulp.src('node_modules/sw-toolbox/sw-toolbox.js')
-    .pipe(gulp.dest('static/dist'));
-});
-
 // Generate a service worker file that will provide offline functionality for
 // local resources.
-gulp.task('generate-service-worker', ['copy-sw-scripts'], () => {
+gulp.task('generate-service-worker', () => {
   const staticDir = 'static';
   const distDir = path.join(staticDir, 'dist');
   const filepath = path.join(distDir, 'service-worker.js');
 
-  // Precache all the truly static resources, and everything else will be
-  // cached at runtime. While the various Polymer elements are static, they are
-  // not pre-cached. Reasons include:
-  //  - The elements may be served in different ways. Typically, the Polymer
-  //    elements are vulcanized into a single file per page, but may be served
-  //    individually during development or testing.
-  //  - The vulcanized files end up being rather large. Rather than consuming
-  //    more space on service worker install, wait until the user visits the
-  //    including page
-  //  - The pages already include logic to preload/push the elements. Rely on
-  //    that logic to improve the initial loading performance of the page.
   return swPrecache.write(filepath, {
     cacheId: 'chromestatus',
     verbose: true,
@@ -139,11 +122,24 @@ gulp.task('generate-service-worker', ['copy-sw-scripts'], () => {
       `${staticDir}/js/**/*.js`,
       // Styles
       `${staticDir}/css/**/*.css`,
+      // Polymer imports
+      // NOTE: The admin imports are intentionally excluded, as the admin pages
+      //       only work online
+      `${staticDir}/elements/metrics-imports.vulcanize.*`,
+      `${staticDir}/elements/features-imports.vulcanize.*`,
+      `${staticDir}/elements/samples-imports.vulcanize.*`,
     ],
     runtimeCaching: [
       // Server-side generated content
       {
-        urlPattern: /\/features\/\w+$/,
+        // The features page, which optionally has a trailing slash or a
+        // feature id. For example:
+        //  - /features
+        //  - /features/
+        //  - /features/<numeric feature id>
+        // This overly-specific regex is required to avoid matching other
+        // static content (i.e. /static/css/features/features.css)
+        urlPattern: /\/features(\/(\w+)?)?$/,
         handler: 'fastest',
         options: {
           cache: {
@@ -152,20 +148,51 @@ gulp.task('generate-service-worker', ['copy-sw-scripts'], () => {
           }
         }
       },
+      {
+        // The metrics pages (optionally with a trailing slash)
+        //  - /metrics/css/animated
+        //  - /metrics/css/timeline/animated
+        //  - /metrics/css/popularity
+        //  - /metrics/css/timeline/popularity
+        //  - /metrics/feature/popularity
+        //  - /metrics/feature/timeline/popularity
+        urlPattern: /\/metrics\/(css|feature)\/(timeline\/)?(animated|popularity)(\/)?$/,
+        handler: 'fastest',
+        options: {
+          cache: {
+            maxEntries: 10,
+            name: 'metrics-cache'
+          }
+        }
+      },
+      {
+        // The samples page (optionally with a trailing slash)
+        urlPattern: /\/samples(\/)?$/,
+        handler: 'fastest',
+        options: {
+          cache: {
+            maxEntries: 10,
+            name: 'samples-cache'
+          }
+        }
+      },
       // For dynamic data (json), try the network first to get the most recent
       // values.
       {
+        urlPattern: /\/data\//,
+        handler: 'networkFirst'
+      },
+      {
         urlPattern: /\/features.json$/,
-        handler: 'networkFirst',
+        handler: 'networkFirst'
+      },
+      {
+        urlPattern: /\/samples.json$/,
+        handler: 'networkFirst'
       },
       {
         urlPattern: /\/omaha_data$/,
-        handler: 'networkFirst',
-      },
-      // Polymer elements that may or may not be vulcanized
-      {
-        urlPattern: /\/static\/(bower_components|elements)\//,
-        handler: 'cacheFirst',
+        handler: 'networkFirst'
       },
     ],
   });
