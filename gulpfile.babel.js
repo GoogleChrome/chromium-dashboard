@@ -85,17 +85,12 @@ gulp.task('vulcanize-lazy-elements', () => {
     stripComments: true,
     inlineScripts: true,
     inlineCss: true,
-    stripExcludes: [ // Leave out elements registered by main site.
+    // Leave out elements registered by main site or shared in other
+    // lazy-loaded elements.
+    stripExcludes: [
       'polymer.html$',
-
-      // Dupes from paper-menu-button
-      'fade-out-animation.html',
       'iron-meta.html',
-      'iron-overlay-backdrop.html',
-      // Dupes from chromedash-legend
-      'iron-icon.html',
-      'chromedash-color-status.html',
-      'web-animations.html'
+      'chromedash-color-status.html'
     ]
   }))
   .pipe($.rename({suffix: '.vulcanize'}))

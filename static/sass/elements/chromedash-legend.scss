@@ -1,17 +1,48 @@
 @import "element";
 
 :host {
-  display: block;
-  position: absolute;
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  visibility: hidden;
+
+  &::after {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: -1;
+    content: '';
+    transition: opacity 300ms;
+    background: #000;
+    opacity: 0;
+    pointer-events: none;
+    will-change: opacity;
+  }
 }
 
-paper-dialog {
-  overflow-y: auto;
-  padding: 0 $content-padding;
+:host([opened]) {
+  visibility: visible;
+  z-index: 1;
 
-  > * {
-    padding: 0 !important; // override paper-dialot.
+  &::after {
+    opacity: 0.6;
   }
+}
+
+#overlay {
+  background: #fff;
+  padding: 16px;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
 }
 
 h3 {
@@ -64,10 +95,12 @@ p {
   position: absolute;
   top: $content-padding / 2;
   right: $content-padding / 2;
+  cursor: pointer;
 }
 
 @media only screen and (min-width: 701px) {
-  paper-dialog {
+  #overlay {
     width: 80vw;
+    max-height: 80vh;
   }
 }

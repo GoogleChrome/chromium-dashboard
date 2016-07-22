@@ -1,24 +1,17 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
-<link rel="import" href="../bower_components/paper-dialog/paper-dialog.html">
-<link rel="import" href="../bower_components/iron-icon/iron-icon.html">
-<link rel="import" href="../bower_components/neon-animation/animations/scale-up-animation.html">
-<link rel="import" href="../bower_components/neon-animation/animations/fade-out-animation.html">
 
 <link rel="import" href="chromedash-color-status.html">
 
 <dom-module id="chromedash-legend">
 <link rel="import" type="css" href="../css/elements/chromedash-legend.css">
 <template>
-  <paper-dialog id="overlay" opened="{{opened}}" modal
-                entry-animation="scale-up-animation" exit-animation="fade-out-animation">
+  <div id="overlay">
     <h3>About the data</h3>
     <section class="content-wrapper">
       <content class="description"></content>
     </section>
     <h3>Color legend</h3>
-    <p>Colors indicate the "interoperability risk" for a given feature. The risk
-        increases as <chromedash-color-status value="1" max="{{views.vendors.length}}"></chromedash-color-status> → <chromedash-color-status value="{{views.vendors.length}}" max="{{views.vendors.length}}"></chromedash-color-status>, and the color meaning differs for browser
-        vendors, web developers, and the standards process.</p>
+    <p>Colors indicate the "interoperability risk" for a given feature. The risk increases as <chromedash-color-status value="1" max="{{views.vendors.length}}"></chromedash-color-status> → <chromedash-color-status value="{{views.vendors.length}}" max="{{views.vendors.length}}"></chromedash-color-status>, and the color meaning differs for browser vendors, web developers, and the standards process.</p>
     <section class="views">
       <div>
         <label>Browser vendors</label>
@@ -60,7 +53,7 @@
       </ul>
     </section>
     <div class="content-wrapper"><content></content></div>
-  </paper-dialog>
+  </div>
 </template>
 <script>
   Polymer({
@@ -69,15 +62,33 @@
       opened: {
         type: Boolean,
         value: false,
-        notify: true
+        notify: true,
+        reflectToAttribute: true
       },
       views: {
         type: Array,
         value: function() { return []; }
       }
     },
+
+    _dissmissEl: null,
+
+    attached: function() {
+      Polymer.RenderStatus.afterNextRender(this, function() {
+        this._dissmissEl = Polymer.dom(this).querySelector('[dialog-dismiss]');
+        if (this._dissmissEl) {
+          this.listen(this._dissmissEl, 'click', 'toggle');
+        }
+      });
+    },
+    detached: function() {
+      if (this.this._dissmissEl) {
+        this.unlisten(this._dissmissEl, 'click', 'toggle');
+      }
+    },
     toggle: function() {
-      this.$.overlay.toggle();
+      this.opened = !this.opened;
+      document.body.style.overflow = this.opened ? 'hidden' : '';
     }
   });
 </script>
