@@ -95,13 +95,7 @@
         } else {
           this.removeUser(idx);
         }
-
-        return resp.json();
       }.bind(this));
-    },
-
-    _computeDeleteHref: function(action, user) {
-      return action + '/' + user.id;
     }
   });
 </script>
