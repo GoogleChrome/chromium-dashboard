@@ -2,13 +2,11 @@
 
 #feature {
   @include gradient-bar-bg;
-  margin-bottom: 3px;
   border-radius: $default-border-radius;
   box-sizing: border-box;
-  width: 100%;
-  height: 100%;
   word-wrap: break-word;
-  overflow: auto;
+  margin-bottom: $content-padding + 100; // padding + height of footer.
+  max-width: $max-content-width;
 }
 
 #name {
@@ -80,18 +78,12 @@ iron-icon {
   #feature {
     border-radius: 0 !important;
     margin: 7px initial !important;
-    transition: none !important;
   }
 }
 
 @media only screen and (min-width: 701px) {
   #feature {
     padding: 30px 40px;
-    width: 600px;
-  }
-  #content {
-    margin: 40px;
-    overflow: initial;
   }
 }
 
