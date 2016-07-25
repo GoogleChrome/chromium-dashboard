@@ -97,15 +97,6 @@ if (location.hash) {
   search.value = location.hash.substr(1);
 }
 
-// $('.actionlinks .blue-button').addEventListener('click', function(e) {
-//   e.preventDefault();
-
-//   // Wait for ripple to finish.
-//   e.target.addEventListener('transitionend', function(e) {
-//     location.href = e.target.href;
-//   });
-// });
-
 chromeMetadata.addEventListener('query-changed', function(e) {
   search.value = '=' + e.detail.version;
   featureList.filter(search.value);
