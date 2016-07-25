@@ -44,8 +44,8 @@
     <input type="search" placeholder="Search">
   </div>
   <div class="actionlinks">
-    <a href="https://github.com/GoogleChrome/samples" target="_blank">
-      <paper-button><iron-icon src="/static/img/github-white.png"></iron-icon>Fork on Github</paper-button>
+    <a href="https://github.com/GoogleChrome/samples" target="_blank" class="blue-button">
+      <iron-icon src="/static/img/github-white.png"></iron-icon>Fork on Github
     </a>
   </div>
 </div>
@@ -66,7 +66,7 @@
     <ul id="samplelist" class="card-content">
       <template is="dom-repeat" items="{{filtered}}" as="feature" initial-count="6">
         <li>
-          <paper-material>
+          <div class="card">
             <h3 class="feature-name">
               <a href$="[[_computeFeatureLink(feature.id)]]">{{feature.name}}</a>
               <span class="milestone" hidden$="[[!feature.shipped_milestone]]">Chrome <span>[[feature.shipped_milestone]]</span></span>
@@ -76,16 +76,14 @@
               <div class="demo-links layout horizontal center">
                 <template is="dom-repeat" items="[[feature.sample_links]]" as="link">
                   <a href$="[[link]]" target="_blank" class="demo-link">
-                    <paper-button>
-                      <iron-icon icon="chromestatus:open-in-browser"></iron-icon> View Demo
-                    </paper-button>
+                    <iron-icon icon="chromestatus:open-in-browser"></iron-icon> View Demo
                   </a>
                 </template>
               </div>
               <iron-icon icon="[[_computeIconId(feature.category)]]"
                          title="[[feature.category]]"></iron-icon>
             </div>
-          </paper-material>
+          </div>
         </li>
       </template>
       </ul>
