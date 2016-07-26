@@ -57,7 +57,11 @@
 {% block preload %}{% endblock %}
 
 <script>
-window.Polymer = window.Polymer || {dom: 'shadow', lazyRegister: true};
+window.Polymer = window.Polymer || {
+  dom: 'shadow',
+  lazyRegister: true,
+  useNativeCSSProperties: true
+};
 
 var $ = function(selector) {
   return document.querySelector(selector);
