@@ -37,7 +37,7 @@
   </div>
   <div class="actionlinks">
     {% if user.is_whitelisted %}
-      <paper-button onclick="addNewFeature(this);"><iron-icon icon="chromestatus:add-circle-outline"></iron-icon>Add new feature</paper-button>
+      <a href="/admin/features/new" class="blue-button"><iron-icon icon="chromestatus:add-circle-outline"></iron-icon>Add new feature</a>
     {% endif %}
   </div>
 </div>
@@ -83,13 +83,7 @@
 <!-- <script src="/static/bower_components/promise-polyfill/Promise.min.js"></script> -->
 <script>
 (function() {
-
-window.addNewFeature = function(el) {
-  // Wait for ripple to finish.
-  el.addEventListener('transitionend', function(e) {
-    location.href = '/admin/features/new';
-  });
-}
+'use strict';
 
 var featureList = $('chromedash-featurelist');
 var chromeMetadata = $('chromedash-metadata');

@@ -63,17 +63,17 @@ gulp.task('styles', () => {
     .pipe(gulp.dest('static/css'));
 });
 
-// Minify the vulcanized script files
-gulp.task('scripts', () => {
-  // The script files are overwritten (as they are generated anyways)
-  //  - The 'base' option is needed to retain the relative path of each file,
-  //    allow overwriting
-  return gulp.src(
-    'static/elements/*.vulcanize.js', {base: 'static'}
-  )
-    .pipe(uglifyJS())
-    .pipe(gulp.dest('static'));
-});
+// // Minify the vulcanized script files
+// gulp.task('scripts', () => {
+//   // The script files are overwritten (as they are generated anyways)
+//   //  - The 'base' option is needed to retain the relative path of each file,
+//   //    allow overwriting
+//   return gulp.src(
+//     'static/elements/*.vulcanize.js', {base: 'static'}
+//   )
+//     .pipe(uglifyJS())
+//     .pipe(gulp.dest('static'));
+// });
 
 // Vulcanize the Polymer imports, creating *.vulcanize.* files beside the
 // original import files.
@@ -139,7 +139,7 @@ gulp.task('default', ['clean'], cb =>
     'styles',
     'lint',
     'vulcanize',
-    'scripts',
+    // 'scripts',
     'generate-service-worker',
     cb
   )

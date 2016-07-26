@@ -204,12 +204,22 @@ footer {
       flex: 1 0 auto;
       margin-left: $content-padding;
 
-      paper-button {
+      .blue-button {
         background: $chromium-color-dark;
-        color: white;
-        font-weight: 600;
-        height: 35px;
-        border-radius: 0;
+        color: #fff;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        max-height: 35px;
+        min-width: 5.14em;
+        -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+        -webkit-tap-highlight-color: transparent;
+        text-transform: uppercase;
+        text-decoration: none;
+        border-radius: 3px;
+        user-select: none;
+        cursor: pointer;
+        padding: 0.7em 0.57em;
 
         iron-icon {
           margin-right: $content-padding / 2;

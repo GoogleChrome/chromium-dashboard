@@ -202,3 +202,11 @@
   </section>
 </div>
 {% endblock %}
+
+
+{% block js %}
+<script>
+// Remove loading spinner at page load.
+document.body.classList.remove('loading');
+</script>
+{% endblock %}
