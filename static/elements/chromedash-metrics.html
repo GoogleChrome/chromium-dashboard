@@ -1,7 +1,6 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
-<link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
 <link rel="import" href="../bower_components/iron-icon/iron-icon.html">
-<link rel="import" href="../bower_components/iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="chromestatus-icons.html">
 <link rel="import" href="x-meter.html">
 
 <dom-module id="chromedash-metrics">
@@ -9,11 +8,10 @@
 <template>
   <style>
     .header label {
-      @apply(--layout-horizontal);
-      @apply(--layout-center);
+      display: flex;
+      align-items: center;
     }
   </style>
-  <iron-ajax auto url="[[endpoint]]" last-response="{{props}}" handle-as="json"></iron-ajax>
   <b>Showing <span>[[props.length]]</span> properties</b>
   <ol id="stack-rank-list">
     <li class="header">
@@ -24,7 +22,7 @@
        Percentage <iron-icon icon="[[percentSortIcon]]"></iron-icon>
       </label>
     </li>
-    <template is="dom-repeat" items="[[viewList]]" as="prop" initial-count="20">
+    <template is="dom-repeat" items="[[viewList]]" as="prop">
       <li id="[[prop.property_name]]"
           title="[[prop.property_name]]. Click to deep link to this property."
           hidden$="[[_computeHidden(prop)]]" tabindex="0">
@@ -110,6 +108,20 @@
         }
       },
 
+      observers: [
+        '_endpointChanged(endpoint)'
+      ],
+
+      _endpointChanged: function() {
+        var xhr = new XMLHttpRequest();
+        xhr.responseType = 'json';
+        xhr.open('GET', this.endpoint);
+        xhr.onload = function(e) {
+          this.props = e.target.response;
+        }.bind(this);
+        xhr.send();
+      },
+
       sort: function(e, detail) {
         e.preventDefault();
 
@@ -167,7 +179,8 @@
         if (!activated) {
           return '';
         }
-        return reverse ? 'icons:arrow-drop-up' : 'icons:arrow-drop-down';
+        return reverse ? 'chromestatus:arrow-drop-up' :
+                         'chromestatus:arrow-drop-down';
       },
       _computeEndpoint: function(type, view, useRemoteData) {
         var prefix = useRemoteData ? 'https://www.chromestatus.com' : '';
