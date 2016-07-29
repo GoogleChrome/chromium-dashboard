@@ -1,5 +1,4 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
-<link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
 <link rel="import" href="../bower_components/google-apis/google-legacy-loader.html">
 
 <dom-module id="chromedash-feature-timeline">
@@ -106,16 +105,16 @@
 
       var prefix = useRemoteData ? 'https://www.chromestatus.com' : '';
 
-      var ajax = document.createElement('iron-ajax');
-      ajax.url = prefix + '/data/timeline/' + this.type + this.view;
-      ajax.params = {bucket_id: this.selectedBucketId};
-      ajax.handleAs = 'json';
+      var url = prefix + '/data/timeline/' + this.type + this.view +
+                '?bucket_id=' + this.selectedBucketId;
 
-      ajax.addEventListener('response', function(e) {
-        this.drawVisualization(e.detail.response, this.selectedBucketId);
-      }.bind(this));
-
-      ajax.generateRequest();
+      var xhr = new XMLHttpRequest();
+      xhr.responseType = 'json';
+      xhr.open('GET', url);
+      xhr.onload = function(e) {
+        this.drawVisualization(e.target.response, this.selectedBucketId);
+      }.bind(this);
+      xhr.send();
 
       if (history.pushState) {
         var url = '/metrics/' + this.type + '/timeline/' + this.view + '/' +
