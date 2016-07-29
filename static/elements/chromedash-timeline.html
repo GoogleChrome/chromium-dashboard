@@ -43,11 +43,18 @@
       props: {
         type: Array,
         value: function() { return []; }
+      },
+      /**
+       * If true, fetches live data from chromestatus.com instead of localhost.
+       */
+      useRemoteData: {
+        type: Boolean,
+        value: false
       }
     },
 
     observers: [
-      '_updateTimeline(selectedBucketId, type, view)'
+      '_updateTimeline(selectedBucketId, type, view, useRemoteData)'
     ],
 
     drawVisualization: function(data, bucketId) {
@@ -92,13 +99,15 @@
       chart.draw(table, options);
     },
 
-    _updateTimeline: function(selectedBucketId, type, view) {
+    _updateTimeline: function(selectedBucketId, type, view, useRemoteData) {
       if (this.selectedBucketId === 1) {
         return;
       }
 
+      var prefix = useRemoteData ? 'https://www.chromestatus.com' : '';
+
       var ajax = document.createElement('iron-ajax');
-      ajax.url = '/data/timeline/' + this.type + this.view;
+      ajax.url = prefix + '/data/timeline/' + this.type + this.view;
       ajax.params = {bucket_id: this.selectedBucketId};
       ajax.handleAs = 'json';
 

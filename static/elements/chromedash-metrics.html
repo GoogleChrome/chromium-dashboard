@@ -14,7 +14,7 @@
     }
   </style>
   <iron-ajax auto url="[[endpoint]]" last-response="{{props}}" handle-as="json"></iron-ajax>
-  <b>Showing <span>{{props.length}}</span> properties</b>
+  <b>Showing <span>[[props.length]]</span> properties</b>
   <ol id="stack-rank-list">
     <li class="header">
       <label on-tap="sort" data-order="property_name">
@@ -24,10 +24,12 @@
        Percentage <iron-icon icon="[[percentSortIcon]]"></iron-icon>
       </label>
     </li>
-    <template is="dom-repeat" items="{{viewList}}" as="prop">
-      <li id="{{prop.property_name}}" title="{{prop.property_name}}. Click to deep link to this property." hidden$="{{_computeHidden(prop)}}" tabindex="0">
+    <template is="dom-repeat" items="[[viewList]]" as="prop" initial-count="20">
+      <li id="[[prop.property_name]]"
+          title="[[prop.property_name]]. Click to deep link to this property."
+          hidden$="[[_computeHidden(prop)]]" tabindex="0">
         <label>
-          <a href$="{{_computeHref(prop)}}">{{prop.property_name}}</a>
+          <a href$="[[_computeHref(prop)]]">[[prop.property_name]]</a>
         </label>
         <x-meter value="[[prop.percentage]]" on-tap="showTimeline"
                  title="Click to see a timeline view of this property"></x-meter>
@@ -97,7 +99,14 @@
         },
         endpoint: {
           type: String,
-          computed: '_computeEndpoint(type, view)',
+          computed: '_computeEndpoint(type, view, useRemoteData)',
+        },
+        /**
+         * If true, fetches live data from chromestatus.com instead of localhost.
+         */
+        useRemoteData: {
+          type: Boolean,
+          value: false
         }
       },
 
@@ -160,8 +169,9 @@
         }
         return reverse ? 'icons:arrow-drop-up' : 'icons:arrow-drop-down';
       },
-      _computeEndpoint: function(type, view) {
-        return '/data/' + type + view;
+      _computeEndpoint: function(type, view, useRemoteData) {
+        var prefix = useRemoteData ? 'https://www.chromestatus.com' : '';
+        return prefix + '/data/' + type + view;
       },
       _computePercentClass: function(sortOrders) {
         return ('icon-long-arrow-' +
