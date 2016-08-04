@@ -33,18 +33,18 @@
     <div class="topcorner">
     {% if feature.meta.origintrial %}
     <span class="tooltip" title="Origin trial">
-      <iron-icon icon="icons:extension" class="experimental"></iron-icon>
+      <iron-icon icon="chromestatus:extension" class="experimental"></iron-icon>
     </span>
     {% endif %}
     <span class="tooltip" title="File a bug against this feature">
       <a href="{{ feature.new_crbug_url }}" class="newbug" data-tooltip>
-        <iron-icon icon="icons:bug-report"></iron-icon>
+        <iron-icon icon="chromestatus:bug-report"></iron-icon>
       </a>
     </span>
     {% if user.is_whitelisted %}
     <span class="tooltip" title="Edit this feature">
       <a href="/admin/features/edit/{{ feature.id }}" class="editfeature" data-tooltip>
-        <iron-icon icon="icons:create"></iron-icon>
+        <iron-icon icon="chromestatus:create"></iron-icon>
       </a>
     </span>
     {% endif %}
