@@ -30,6 +30,7 @@
     "grunt-appengine": "^0.1.5",
     "gulp": "^3.9.1",
     "gulp-autoprefixer": "^3.1.0",
+    "gulp-babel": "^6.1.2",
     "gulp-crisper": "^1.1.0",
     "gulp-eslint": "^3.0.1",
     "gulp-if": "^2.0.1",

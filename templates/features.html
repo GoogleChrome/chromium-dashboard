@@ -4,7 +4,7 @@
 {% if VULCANIZE %}
   <link rel="preload" href="/static/elements/features-imports.vulcanize.js" as="script">
 {% endif %}
-{% if PROD %}
+{% if prod %}
   <link rel="preload" href="/features.json" as="script">
 {% endif %}
 {% endblock %}
@@ -80,7 +80,7 @@
 {% endblock %}
 
 {% block js %}
-<!-- <script src="/static/bower_components/promise-polyfill/Promise.min.js"></script> -->
+<script src="/static/js/metrics.es6.min.js"></script>
 <script>
 (function() {
 'use strict';
@@ -89,13 +89,15 @@ var featureList = $('chromedash-featurelist');
 var chromeMetadata = $('chromedash-metadata');
 var overlay = $('chromedash-legend');
 var search = $('.search input');
-var unveilStart;
 var overlayLoaded = false;
 
 // Set search box to URL deep link.
 if (location.hash) {
   search.value = location.hash.substr(1);
 }
+
+var featuresUnveilMetric = new Metric('features_unveil');
+var featuresFetchMetric = new Metric('features_loaded');
 
 chromeMetadata.addEventListener('query-changed', function(e) {
   search.value = '=' + e.detail.version;
@@ -108,9 +110,7 @@ featureList.addEventListener('filtered', function(e) {
 });
 
 featureList.addEventListener('app-ready', function() {
-  console.timeStamp && console.timeStamp('features unveiled');
-  console.timeEnd && console.timeEnd('features unveil');
-  unveilStart && ga('send', 'timing', 'features', 'unveil', performance.now() - unveilStart);
+  featuresUnveilMetric.end().log().sendToAnalytics('features', 'unveil');
 });
 
 featureList.addEventListener('filter-category', function(e) {
@@ -143,9 +143,9 @@ var helpOverlayLoadPromise = function(overlay) {
       return resolve();
     }
 
-    let url = '/static/elements/chromedash-legend{% if VULCANIZE %}.vulcanize{% endif %}.html';
+    var url = '/static/elements/chromedash-legend{% if VULCANIZE %}.vulcanize{% endif %}.html';
 
-    Polymer.Base.importHref(url, () => {
+    Polymer.Base.importHref(url, function() {
       overlayLoaded = true;
       overlay.views = {
         vendors: {{VENDOR_VIEWS|safe}}, // set from server
@@ -176,13 +176,11 @@ var featuresPromise = new Promise(function(resolve, reject) {
   xhr.open('GET', url);
   xhr.responseType = 'json';
 
-  console.time && console.time('features unveil'); // benchmark how long it takes load features.
-  console.timeStamp && console.timeStamp('features fetch');
-  performance && performance.now && (unveilStart = performance.now());
+  featuresUnveilMetric.start();
 
   xhr.onloadend = function(e) {
-    console.timeStamp && console.timeStamp('features loaded');
-    unveilStart && ga('send', 'timing', 'features', 'loaded', performance.now() - unveilStart);
+    featuresFetchMetric.end().log().sendToAnalytics('features', 'loaded');
+
     if (e.target.status < 400) {
       resolve(e.target.response);
     } else {
@@ -190,6 +188,8 @@ var featuresPromise = new Promise(function(resolve, reject) {
     }
   };
   xhr.onerror = reject;
+
+  featuresFetchMetric.start();
   xhr.send();
 });
 
