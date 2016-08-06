@@ -47,7 +47,7 @@ limitations under the License.
 <script>
 window.Polymer = window.Polymer || {
   dom: 'shadow',
-  lazyRegister: true,
+  lazyRegister: 'max',
   useNativeCSSProperties: true
 };
 
@@ -148,7 +148,7 @@ button.addEventListener('click', function lazyHandler(e) {
   Polymer.Base.importHref(url, function() {
     this.querySelector('.dropdown-content').hidden = false;
     this.open();
-  }, null, true);
+  }.bind(this), null, true);
 });
 
 // Google Analytics
