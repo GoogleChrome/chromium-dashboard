@@ -9,6 +9,7 @@ import path from 'path';
 import gulp from 'gulp';
 import del from 'del';
 import runSequence from 'run-sequence';
+import swPrecache from 'sw-precache';
 import gulpLoadPlugins from 'gulp-load-plugins';
 import merge from 'merge-stream';
 import cssslam from 'css-slam';
@@ -104,7 +105,6 @@ gulp.task('vulcanize-lazy-elements', () => {
 
 gulp.task('vulcanize', ['styles', 'vulcanize-lazy-elements'], () => {
   return gulp.src([
-    // 'static/elements/elements.html',
     'static/elements/metrics-imports.html',
     'static/elements/features-imports.html',
     'static/elements/admin-imports.html',
@@ -126,7 +126,11 @@ gulp.task('vulcanize', ['styles', 'vulcanize-lazy-elements'], () => {
 
 // Clean generated files
 gulp.task('clean', () => {
-  del(['static/elements/*.vulcanize.{html,js}', 'static/css/'], {dot: true});
+  del([
+    'static/css',
+    'static/dist',
+    'static/elements/*.vulcanize.{html,js}'
+    ], {dot: true});
 });
 
 // Build production files, the default task
@@ -136,9 +140,108 @@ gulp.task('default', ['clean'], cb =>
     'lint',
     'vulcanize',
     // 'scripts',
+    'generate-service-worker',
     cb
   )
 );
+
+// Generate a service worker file that will provide offline functionality for
+// local resources.
+gulp.task('generate-service-worker', () => {
+  const staticDir = 'static';
+  const distDir = path.join(staticDir, 'dist');
+  const filepath = path.join(distDir, 'service-worker.js');
+
+  return swPrecache.write(filepath, {
+    cacheId: 'chromestatus',
+    verbose: true,
+    logger: $.util.log,
+    staticFileGlobs: [
+      // Images
+      `${staticDir}/img/**/*`,
+      `${staticDir}/elements/openinnew.svg`,
+      // Scripts
+      `${staticDir}/bower_components/webcomponentsjs/webcomponents-lite.min.js`,
+      `${staticDir}/js/**/*.js`,
+      // Styles
+      `${staticDir}/css/**/*.css`,
+      // Polymer imports
+      // NOTE: The admin imports are intentionally excluded, as the admin pages
+      //       only work online
+      `${staticDir}/elements/paper-menu-button.vulcanize.*`,
+      `${staticDir}/elements/chromedash-legend.vulcanize.*`,
+      `${staticDir}/elements/metrics-imports.vulcanize.*`,
+      `${staticDir}/elements/features-imports.vulcanize.*`,
+      `${staticDir}/elements/samples-imports.vulcanize.*`,
+    ],
+    runtimeCaching: [
+      // Server-side generated content
+      {
+        // The features page, which optionally has a trailing slash or a
+        // feature id. For example:
+        //  - /features
+        //  - /features/
+        //  - /features/<numeric feature id>
+        // This overly-specific regex is required to avoid matching other
+        // static content (i.e. /static/css/features/features.css)
+        urlPattern: /\/features(\/(\w+)?)?$/,
+        handler: 'fastest',
+        options: {
+          cache: {
+            maxEntries: 10,
+            name: 'features-cache'
+          }
+        }
+      },
+      {
+        // The metrics pages (optionally with a trailing slash)
+        //  - /metrics/css/animated
+        //  - /metrics/css/timeline/animated
+        //  - /metrics/css/popularity
+        //  - /metrics/css/timeline/popularity
+        //  - /metrics/feature/popularity
+        //  - /metrics/feature/timeline/popularity
+        urlPattern: /\/metrics\/(css|feature)\/(timeline\/)?(animated|popularity)(\/)?$/,
+        handler: 'fastest',
+        options: {
+          cache: {
+            maxEntries: 10,
+            name: 'metrics-cache'
+          }
+        }
+      },
+      {
+        // The samples page (optionally with a trailing slash)
+        urlPattern: /\/samples(\/)?$/,
+        handler: 'fastest',
+        options: {
+          cache: {
+            maxEntries: 10,
+            name: 'samples-cache'
+          }
+        }
+      },
+      // For dynamic data (json), try the network first to get the most recent
+      // values.
+      {
+        urlPattern: /\/data\//,
+        handler: 'networkFirst'
+      },
+      {
+        urlPattern: /\/features.json$/,
+        handler: 'networkFirst'
+      },
+      {
+        urlPattern: /\/samples.json$/,
+        handler: 'networkFirst'
+      },
+      {
+        urlPattern: /\/omaha_data$/,
+        handler: 'networkFirst'
+      },
+    ],
+  });
+});
 
 // Load custom tasks from the `tasks` directory
 // Run: `npm install --save-dev require-dir` from the command-line
