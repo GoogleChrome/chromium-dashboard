@@ -41,7 +41,7 @@ handlers:
 - url: /static
   static_dir: static
   #expiration: 30s
-  application_readable: true
+  application_readable: true # So static assets can be read by inline_file django tag.
   http_headers:
     Access-Control-Allow-Origin: "*"
 

@@ -1,4 +1,4 @@
-{% load include_raw %}
+{% load inline_file %}
 
 <!DOCTYPE html>
 <!--
@@ -112,9 +112,7 @@ var $$ = function(selector) {
 {% block js %}{% endblock %}
 
 <script>
-{% comment %}
 {% inline_file "/static/js/service-worker-registration.js" %}
-{% endcomment %}
 
 // https://gist.github.com/ebidel/1d5ede1e35b6f426a2a7
 function lazyLoadWCPolyfillsIfNecessary() {
