@@ -1,9 +1,13 @@
-from django.template import loader
-from google.appengine.ext.webapp import template
+from django import template
 
-register = template.create_template_register()
+register = template.Library()
 
 @register.simple_tag
-def include_raw(path):
-  return loader.find_template(path)[0]
- 
+def inline_file(path):
+  if path[0] == '/':
+    path = path[1:]
+
+  content = ''
+  with open(path, 'r') as f:
+    content = f.read()
+  return content

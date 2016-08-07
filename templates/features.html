@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 
+{% load include_raw %}
+
 {% block preload %}
 {% if VULCANIZE %}
   <link rel="preload" href="/static/elements/features-imports.vulcanize.js" as="script">
@@ -10,7 +12,9 @@
 {% endblock %}
 
 {% block html_imports %}
-  <link rel="import" href="/static/elements/features-imports{% if VULCANIZE %}.vulcanize{% endif %}.html">
+  <link rel="import"
+        href="/static/elements/features-imports{% if VULCANIZE %}.vulcanize{% endif %}.html"
+        onload="importsLoaded()" async>
 {% endblock %}
 
 {% block rss %}
@@ -23,7 +27,8 @@
 {% endblock %}
 
 {% block css %}
-<link rel="stylesheet" href="/static/css/features/features.css">
+<!-- <link rel="stylesheet" href="/static/css/features/features.css"> -->
+<style>{% inline_file "/static/css/features/features.css" %}</style>
 {% endblock %}
 
 {% block subheader %}
@@ -76,14 +81,14 @@
 
 {% block content %}
 <chromedash-featurelist {% if user.is_whitelisted %}whitelisted{% endif %}></chromedash-featurelist>
-
 {% endblock %}
 
 {% block js %}
-<script src="/static/js/metrics.es6.min.js"></script>
 <script>
 (function() {
 'use strict';
+
+{% inline_file "/static/js/metrics.es6.min.js" %}
 
 var featureList = $('chromedash-featurelist');
 var chromeMetadata = $('chromedash-metadata');
@@ -207,8 +212,7 @@ function importsLoaded() {
   });
 }
 
-// Fired after lazy loading the polyfills (if necessary).
-document.addEventListener('WebComponentsReady', importsLoaded);
+window.importsLoaded = importsLoaded; // called by features import onload handler (above).
 
 window.addEventListener('popstate', function(e) {
   if (e.state) {

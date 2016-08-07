@@ -1,5 +1,5 @@
 application: cr-status
-version: 2016-07-28
+version: 2016-08-06
 runtime: python27
 threadsafe: true
 api_version: 1
@@ -34,12 +34,14 @@ handlers:
 - url: /service-worker\.js
   static_files: static/dist/service-worker.js
   upload: static/dist/service-worker\.js
+  application_readable: true
   expiration: "0m"
   secure: always
 
 - url: /static
   static_dir: static
   #expiration: 30s
+  application_readable: true
   http_headers:
     Access-Control-Allow-Origin: "*"
 
@@ -96,9 +98,11 @@ skip_files:
 - ^(.*/)?.*\.sql[3]$
 - ^(.*/)?.*\.sh$
 - ^(.*/)?.*\.scss$
-- ^http2push/example
-- ^http2push/site
 - ^(.*/)?node_modules
 - ^(.*/)?tests
 - ^(.*/)?.[LICENSE|PATENTS|AUTHORS|CONTRIBUTING|COPYING](\.md)?
 - ^(.*/)?.*\.md$
+
+- ^http2push/example
+- ^http2push/site
+- ^static/sass
