@@ -30,7 +30,7 @@ function uglifyJS() {
 
 function license() {
   return $.license('Apache2', {
-    organization: 'Copyright (c) 2016 The Chromium Authors. All rights reserved.',
+    organization: 'Copyright (c) 2016 The Google Inc. All rights reserved.',
     tiny: true
   });
 }
@@ -63,17 +63,18 @@ gulp.task('styles', () => {
     .pipe(gulp.dest('static/css'));
 });
 
-// // Minify the vulcanized script files
-// gulp.task('scripts', () => {
-//   // The script files are overwritten (as they are generated anyways)
-//   //  - The 'base' option is needed to retain the relative path of each file,
-//   //    allow overwriting
-//   return gulp.src(
-//     'static/elements/*.vulcanize.js', {base: 'static'}
-//   )
-//     .pipe(uglifyJS())
-//     .pipe(gulp.dest('static'));
-// });
+// Run scripts through babel. Note, this does not include vulcanized js.
+gulp.task('js', () => {
+  return gulp.src([
+    //'static/elements/*.vulcanize.js',
+    'static/js/**/*.es6.js',
+  ])
+    .pipe($.babel()) // Defaults are in .babelrc
+    .pipe(uglifyJS())
+    .pipe(license()) // Add license to top.
+    .pipe($.rename({suffix: '.min'}))
+    .pipe(gulp.dest('static/js'));
+});
 
 // Vulcanize the Polymer imports, creating *.vulcanize.* files beside the
 // original import files.
@@ -127,10 +128,12 @@ gulp.task('vulcanize', ['styles', 'vulcanize-lazy-elements'], () => {
 // Clean generated files
 gulp.task('clean', () => {
   del([
-    'static/css',
+    'static/css/',
     'static/dist',
-    'static/elements/*.vulcanize.{html,js}'
-    ], {dot: true});
+    'static/elements/*.vulcanize.{html,js}',
+    'static/js/**/*.es6.min.js'
+  ], {dot: true});
+
 });
 
 // Build production files, the default task
@@ -139,7 +142,7 @@ gulp.task('default', ['clean'], cb =>
     'styles',
     'lint',
     'vulcanize',
-    // 'scripts',
+    'js',
     'generate-service-worker',
     cb
   )
