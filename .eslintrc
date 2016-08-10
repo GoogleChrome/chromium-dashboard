@@ -13,6 +13,7 @@
   },
   "globals": {
     "Polymer": true,
-    "ga": true
+    "ga": true,
+    "Metric": true
   }
 }

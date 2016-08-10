@@ -62,6 +62,19 @@ var $ = function(selector) {
 var $$ = function(selector) {
   return document.querySelectorAll(selector);
 };
+
+// Note: this version requires Promises, which are in all the
+// latest browsers except IE 11. Edge will ship them.
+// Note: native Promise.defer() is deprecated. Have to create our own.
+function deferred() {
+  var result = {};
+  result.promise = new Promise(function(resolve, reject) {
+    result.resolve = resolve;
+    result.reject = reject;
+  });
+  return result;
+}
+
 </script>
 
 <style is="custom-style">
@@ -107,12 +120,19 @@ var $$ = function(selector) {
   {% include "footer.html" %}
 </app-drawer-layout>
 
+<chromedash-toast msg="Welcome to chromestatus.com!"></chromedash-toast>
+
 {% block overlay %}{% endblock %}
+
+{# Metric is need by sw registration and page code. #}
+<script>
+{% inline_file "/static/js/metrics.es6.min.js" %}
+</script>
 
 {% block js %}{% endblock %}
 
 <script>
-{% inline_file "/static/js/service-worker-registration.js" %}
+{% inline_file "/static/js/service-worker-registration.es6.min.js" %}
 
 // https://gist.github.com/ebidel/1d5ede1e35b6f426a2a7
 function lazyLoadWCPolyfillsIfNecessary() {

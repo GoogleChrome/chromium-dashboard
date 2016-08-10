@@ -14,7 +14,7 @@
 {% block html_imports %}
   <link rel="import"
         href="/static/elements/features-imports{% if VULCANIZE %}.vulcanize{% endif %}.html"
-        onload="importsLoaded()" async>
+        onload="importsLoaded(event)" async>
 {% endblock %}
 
 {% block rss %}
@@ -88,8 +88,6 @@
 (function() {
 'use strict';
 
-{% inline_file "/static/js/metrics.es6.min.js" %}
-
 var featureList = $('chromedash-featurelist');
 var chromeMetadata = $('chromedash-metadata');
 var overlay = $('chromedash-legend');
@@ -116,6 +114,10 @@ featureList.addEventListener('filtered', function(e) {
 
 featureList.addEventListener('app-ready', function() {
   featuresUnveilMetric.end().log().sendToAnalytics('features', 'unveil');
+
+  // delay registering SW until features are done and toast animation can
+  // be smooth.
+  registerServiceWorker();
 });
 
 featureList.addEventListener('filter-category', function(e) {
@@ -198,7 +200,12 @@ var featuresPromise = new Promise(function(resolve, reject) {
   xhr.send();
 });
 
-function importsLoaded() {
+window.asyncImportsLoadPromise = deferred();
+
+// called by features import onload handler (above).
+window.importsLoaded = function(e) {
+  asyncImportsLoadPromise.resolve(e.target);
+
   featureList.metadata = chromeMetadata; // Feature list needs access to the selected milestone.
   featureList.search = search;
 
@@ -211,8 +218,6 @@ function importsLoaded() {
     console.error(e);
   });
 }
-
-window.importsLoaded = importsLoaded; // called by features import onload handler (above).
 
 window.addEventListener('popstate', function(e) {
   if (e.state) {
