@@ -79,7 +79,7 @@
                           'service worker', 'precache size', bytes);
 
                       Toast.showMessage(
-                          'This site is cached & ready to use offline!' +
+                          'This site is cached and ready to use offline!' +
                            ` (${kb}KB)`);
                     }));
                   }
