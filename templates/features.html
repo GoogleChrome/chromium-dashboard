@@ -12,9 +12,10 @@
 {% endblock %}
 
 {% block html_imports %}
-  <link rel="import"
+  <link id="features_import"
+        rel="import"
         href="/static/elements/features-imports{% if VULCANIZE %}.vulcanize{% endif %}.html"
-        onload="importsLoaded()" async>
+        async>
 {% endblock %}
 
 {% block rss %}
@@ -88,8 +89,6 @@
 (function() {
 'use strict';
 
-{% inline_file "/static/js/metrics.es6.min.js" %}
-
 var featureList = $('chromedash-featurelist');
 var chromeMetadata = $('chromedash-metadata');
 var overlay = $('chromedash-legend');
@@ -116,6 +115,10 @@ featureList.addEventListener('filtered', function(e) {
 
 featureList.addEventListener('app-ready', function() {
   featuresUnveilMetric.end().log().sendToAnalytics('features', 'unveil');
+
+  // Want "Caching is complete" toast to be slightly delayed after page load.
+  // To do that, wait to register SW until features have loaded.
+  registerServiceWorker();
 });
 
 featureList.addEventListener('filter-category', function(e) {
@@ -198,21 +201,26 @@ var featuresPromise = new Promise(function(resolve, reject) {
   xhr.send();
 });
 
-function importsLoaded() {
-  featureList.metadata = chromeMetadata; // Feature list needs access to the selected milestone.
-  featureList.search = search;
+window.asyncImportsLoadPromise = new Promise(function(resolve, reject) {
+  var featuresImport = document.querySelector('#features_import');
+  featuresImport.onerror = reject;
+  featuresImport.onload = function(e) {
+    resolve();
 
-  featuresPromise.then(function(features) {
-    featureList.features = features;
-    featureList.filter(search.value);
-    search.disabled = false;
-  }, function(e) {
-    document.getElementById('content').classList.add('error');
-    console.error(e);
-  });
-}
+    // Feature list needs access to the selected milestone.
+    featureList.metadata = chromeMetadata;
+    featureList.search = search;
 
-window.importsLoaded = importsLoaded; // called by features import onload handler (above).
+    featuresPromise.then(function(features) {
+      featureList.features = features;
+      featureList.filter(search.value);
+      search.disabled = false;
+    }, function(e) {
+      document.getElementById('content').classList.add('error');
+      console.error(e);
+    });
+  };
+});
 
 window.addEventListener('popstate', function(e) {
   if (e.state) {

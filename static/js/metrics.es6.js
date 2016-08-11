@@ -31,6 +31,7 @@ class Metric {
   /**
    * Returns the duration of the timing metric or -1 if there hasn't been a
    * measurement made.
+   * @readonly
    */
   get duration() {
     let duration = this._end - this._start;
@@ -46,7 +47,7 @@ class Metric {
       }
     }
 
-    return duration;
+    return duration || -1;
   }
 
   constructor(name) {
@@ -61,21 +62,6 @@ class Metric {
         throw Error('This library cannot be used in this browser.');
       }
     }
-
-    // if (window.PerformanceObserver) {}
-    //   let observer = new PerformanceObserver(list => {
-    //     list.getEntries().forEach(entry => {
-    //       // Display each reported measurement on console
-    //       if (console) {
-    //         console.log("Name: "       + entry.name      +
-    //                     ", Type: "     + entry.entryType +
-    //                     ", Start: "    + entry.startTime +
-    //                     ", Duration: " + entry.duration  + "\n");
-    //       }
-    //     })
-    //   });
-    //   observer.observe({entryTypes: ['resource', 'mark', 'measure']});
-    // }
 
     this.name = name;
   }
@@ -113,6 +99,11 @@ class Metric {
    * @return {Metric} instance of this object.
    */
   start() {
+    if (this._start) {
+      console.warn('Recording already started.');
+      return this;
+    }
+
     this._start = performance.now();
 
     // Support: developer.mozilla.org/en-US/docs/Web/API/Performance/mark
@@ -128,6 +119,11 @@ class Metric {
    * @return {Metric} instance of this object.
    */
   end() {
+    if (this._end) {
+      console.warn('Recording already stopped.');
+      return this;
+    }
+
     this._end = performance.now();
 
     // Support: developer.mozilla.org/en-US/docs/Web/API/Performance/mark
@@ -152,7 +148,9 @@ class Metric {
    * @return {Metric} instance of this object.
    */
   sendToAnalytics(category, metric = this.name, duration = this.duration) {
-    if (window.ga && duration >= 0) {
+    if (!window.ga) {
+      console.warn('Google Analytics has not been loaded');
+    } else if (duration >= 0) {
       ga('send', 'timing', category, metric, duration);
     }
     return this;
