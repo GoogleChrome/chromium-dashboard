@@ -1,8 +1,11 @@
 {% extends "base.html" %}
+{% load inline_file %}
 
 {% block css %}
-<link rel="stylesheet" href="/static/css/forms.css">
-<link rel="stylesheet" href="/static/css/features/launch.css">
+<!-- <link rel="stylesheet" href="/static/css/forms.css"> -->
+<!-- <link rel="stylesheet" href="/static/css/features/launch.css"> -->
+<style>{% inline_file "/static/css/forms.css" %}</style>
+<style>{% inline_file "/static/css/features/launch.css" %}</style>
 {% endblock %}
 
 {% block subheader %}

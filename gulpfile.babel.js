@@ -161,13 +161,12 @@ gulp.task('generate-service-worker', () => {
     logger: $.util.log,
     staticFileGlobs: [
       // Images
-      `${staticDir}/img/**/*`,
+      `${staticDir}/img/{browsers-logos.png,*.svg,crstatus_128.png,github-white.png}`,
       `${staticDir}/elements/openinnew.svg`,
       // Scripts
       `${staticDir}/bower_components/webcomponentsjs/webcomponents-lite.min.js`,
-      `${staticDir}/js/**/*.js`,
-      // Styles
-      `${staticDir}/css/**/*.css`,
+      `${staticDir}/js/**/!(*.es6).js`, // Don't include unminimized/untranspiled js.
+      // Styles. All styles are inline into pages or vulcanized bundles.
       // Polymer imports
       // NOTE: The admin imports are intentionally excluded, as the admin pages
       //       only work online
@@ -177,72 +176,63 @@ gulp.task('generate-service-worker', () => {
       `${staticDir}/elements/features-imports.vulcanize.*`,
       `${staticDir}/elements/samples-imports.vulcanize.*`,
     ],
-    runtimeCaching: [
-      // Server-side generated content
-      {
-        // The features page, which optionally has a trailing slash or a
-        // feature id. For example:
-        //  - /features
-        //  - /features/
-        //  - /features/<numeric feature id>
-        // This overly-specific regex is required to avoid matching other
-        // static content (i.e. /static/css/features/features.css)
-        urlPattern: /\/features(\/(\w+)?)?$/,
-        handler: 'fastest',
-        options: {
-          cache: {
-            maxEntries: 10,
-            name: 'features-cache'
-          }
+    runtimeCaching: [{ // Server-side generated content
+      // The features page, which optionally has a trailing slash or a
+      // feature id. For example:
+      //  - /features
+      //  - /features/
+      //  - /features/<numeric feature id>
+      // This overly-specific regex is required to avoid matching other
+      // static content (i.e. /static/css/features/features.css)
+      urlPattern: /\/features(\/(\w+)?)?$/,
+      handler: 'fastest',
+      options: {
+        cache: {
+          maxEntries: 10,
+          name: 'features-cache'
         }
-      },
-      {
-        // The metrics pages (optionally with a trailing slash)
-        //  - /metrics/css/animated
-        //  - /metrics/css/timeline/animated
-        //  - /metrics/css/popularity
-        //  - /metrics/css/timeline/popularity
-        //  - /metrics/feature/popularity
-        //  - /metrics/feature/timeline/popularity
-        urlPattern: /\/metrics\/(css|feature)\/(timeline\/)?(animated|popularity)(\/)?$/,
-        handler: 'fastest',
-        options: {
-          cache: {
-            maxEntries: 10,
-            name: 'metrics-cache'
-          }
+      }
+    }, {
+      // The metrics pages (optionally with a trailing slash)
+      //  - /metrics/css/animated
+      //  - /metrics/css/timeline/animated
+      //  - /metrics/css/popularity
+      //  - /metrics/css/timeline/popularity
+      //  - /metrics/feature/popularity
+      //  - /metrics/feature/timeline/popularity
+      urlPattern: /\/metrics\/(css|feature)\/(timeline\/)?(animated|popularity)(\/)?$/,
+      handler: 'fastest',
+      options: {
+        cache: {
+          maxEntries: 10,
+          name: 'metrics-cache'
         }
-      },
-      {
-        // The samples page (optionally with a trailing slash)
-        urlPattern: /\/samples(\/)?$/,
-        handler: 'fastest',
-        options: {
-          cache: {
-            maxEntries: 10,
-            name: 'samples-cache'
-          }
+      }
+    }, {
+      // The samples page (optionally with a trailing slash)
+      urlPattern: /\/samples(\/)?$/,
+      handler: 'fastest',
+      options: {
+        cache: {
+          maxEntries: 10,
+          name: 'samples-cache'
         }
-      },
+      }
+    }, {
       // For dynamic data (json), try the network first to get the most recent
       // values.
-      {
-        urlPattern: /\/data\//,
-        handler: 'networkFirst'
-      },
-      {
-        urlPattern: /\/features.json$/,
-        handler: 'networkFirst'
-      },
-      {
-        urlPattern: /\/samples.json$/,
-        handler: 'networkFirst'
-      },
-      {
-        urlPattern: /\/omaha_data$/,
-        handler: 'networkFirst'
-      },
-    ],
+      urlPattern: /\/data\//,
+      handler: 'networkFirst'
+    }, {
+      urlPattern: /\/features.json$/,
+      handler: 'networkFirst'
+    }, {
+      urlPattern: /\/samples.json$/,
+      handler: 'networkFirst'
+    }, {
+      urlPattern: /\/omaha_data$/,
+      handler: 'networkFirst'
+    }]
   });
 });
 
