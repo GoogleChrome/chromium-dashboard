@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load verbatim %}
+{% load inline_file %}
 
 {% block preload %}
   {% if VULCANIZE %}
@@ -16,7 +17,8 @@
 {% endblock %}
 
 {% block css %}
-<link rel="stylesheet" href="/static/css/samples.css?2016-07-14">
+<!-- <link rel="stylesheet" href="/static/css/samples.css?2016-07-14"> -->
+<style>{% inline_file "/static/css/samples.css" %}</style>
 {% endblock %}
 
 {% block drawer %}

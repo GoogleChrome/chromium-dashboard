@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load inline_file %}
 
 {% block page_title %}{% if feature.name %}{{ feature.name }} - {% endif %}{% endblock %}
 
@@ -9,7 +10,8 @@
 {% endblock %}
 
 {% block css %}
-<link rel="stylesheet" href="/static/css/features/feature.css">
+<!-- <link rel="stylesheet" href="/static/css/features/feature.css"> -->
+<style>{% inline_file "/static/css/features/feature.css" %}</style>
 {% endblock %}
 
 {% block rss %}
