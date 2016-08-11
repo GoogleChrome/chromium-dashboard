@@ -2,7 +2,7 @@
 {
   "name": "Chrome Platform Status",
   "short_name": "Chrome status",
-  "start_url": "/features?utm_source=web_app_manifest",
+  "start_url": "../features?utm_source=web_app_manifest",
   "display": "standalone",
   "theme_color": "#366597",
   "background_color": "#366597",
