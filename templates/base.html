@@ -62,19 +62,6 @@ var $ = function(selector) {
 var $$ = function(selector) {
   return document.querySelectorAll(selector);
 };
-
-// Note: this version requires Promises, which are in all the
-// latest browsers except IE 11. Edge will ship them.
-// Note: native Promise.defer() is deprecated. Have to create our own.
-function deferred() {
-  var result = {};
-  result.promise = new Promise(function(resolve, reject) {
-    result.resolve = resolve;
-    result.reject = reject;
-  });
-  return result;
-}
-
 </script>
 
 <style is="custom-style">

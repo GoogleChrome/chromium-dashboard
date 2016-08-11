@@ -12,9 +12,10 @@
 {% endblock %}
 
 {% block html_imports %}
-  <link rel="import"
+  <link id="features_import"
+        rel="import"
         href="/static/elements/features-imports{% if VULCANIZE %}.vulcanize{% endif %}.html"
-        onload="importsLoaded(event)" async>
+        async>
 {% endblock %}
 
 {% block rss %}
@@ -115,8 +116,8 @@ featureList.addEventListener('filtered', function(e) {
 featureList.addEventListener('app-ready', function() {
   featuresUnveilMetric.end().log().sendToAnalytics('features', 'unveil');
 
-  // delay registering SW until features are done and toast animation can
-  // be smooth.
+  // Want "Caching is complete" toast to be slightly delayed after page load.
+  // To do that, wait to register SW until features have loaded.
   registerServiceWorker();
 });
 
@@ -200,24 +201,26 @@ var featuresPromise = new Promise(function(resolve, reject) {
   xhr.send();
 });
 
-window.asyncImportsLoadPromise = deferred();
+window.asyncImportsLoadPromise = new Promise(function(resolve, reject) {
+  var featuresImport = document.querySelector('#features_import');
+  featuresImport.onerror = reject;
+  featuresImport.onload = function(e) {
+    resolve();
 
-// called by features import onload handler (above).
-window.importsLoaded = function(e) {
-  asyncImportsLoadPromise.resolve(e.target);
+    // Feature list needs access to the selected milestone.
+    featureList.metadata = chromeMetadata;
+    featureList.search = search;
 
-  featureList.metadata = chromeMetadata; // Feature list needs access to the selected milestone.
-  featureList.search = search;
-
-  featuresPromise.then(function(features) {
-    featureList.features = features;
-    featureList.filter(search.value);
-    search.disabled = false;
-  }, function(e) {
-    document.getElementById('content').classList.add('error');
-    console.error(e);
-  });
-}
+    featuresPromise.then(function(features) {
+      featureList.features = features;
+      featureList.filter(search.value);
+      search.disabled = false;
+    }, function(e) {
+      document.getElementById('content').classList.add('error');
+      console.error(e);
+    });
+  };
+});
 
 window.addEventListener('popstate', function(e) {
   if (e.state) {

@@ -7,11 +7,12 @@
   const Toast = document.querySelector('chromedash-toast');
 
   let toastReady = new Promise(function(resolve, reject) {
-    if (!window.asyncImportsLoadPromise) {
-      resolve();
-      return;
+    // If the page is using async imports, wait for them to load so toast custom
+    // element is upgraded and has its methods.
+    if (window.asyncImportsLoadPromise) {
+      return window.asyncImportsLoadPromise.then(resolve, reject);
     }
-    window.asyncImportsLoadPromise.promise.then(resolve).catch(reject);
+    resolve();
   });
 
   /**
