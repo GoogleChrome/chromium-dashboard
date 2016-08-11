@@ -1,8 +1,9 @@
 {% extends "base.html" %}
-{% load verbatim %}
+{% load inline_file %}
 
 {% block css %}
-<link rel="stylesheet" href="/static/css/metrics/metrics.css">
+<!-- <link rel="stylesheet" href="/static/css/metrics/metrics.css"> -->
+<style>{% inline_file "/static/css/metrics/metrics.css" %}</style>
 {% endblock %}
 
 {% block html_imports %}
