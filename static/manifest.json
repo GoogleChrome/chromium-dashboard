@@ -2,32 +2,32 @@
 {
   "name": "Chrome Platform Status",
   "short_name": "Chrome status",
-  "start_url": "../features?utm_source=web_app_manifest",
+  "start_url": "/features",
   "display": "standalone",
   "theme_color": "#366597",
   "background_color": "#366597",
   "icons": [{
-    "src": "/static/img/crstatus_72.png",
+    "src": "./img/crstatus_72.png",
     "sizes": "72x72",
     "type": "image/png"
   }, {
-    "src": "/static/img/crstatus_96.png",
+    "src": "./img/crstatus_96.png",
     "sizes": "96x96",
     "type": "image/png"
   }, {
-    "src": "/static/img/crstatus_128.png",
+    "src": "./img/crstatus_128.png",
     "sizes": "128x128",
     "type": "image/png"
   }, {
-    "src": "/static/img/crstatus_144.png",
+    "src": "./img/crstatus_144.png",
     "sizes": "144x144",
     "type": "image/png"
   }, {
-    "src": "/static/img/crstatus_192.png",
+    "src": "./img/crstatus_192.png",
     "sizes": "192x192",
     "type": "image/png"
   }, {
-    "src": "/static/img/crstatus_512.png",
+    "src": "./img/crstatus_512.png",
     "sizes": "512x512",
     "type": "image/png"
   }]
