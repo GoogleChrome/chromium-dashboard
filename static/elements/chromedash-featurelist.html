@@ -72,7 +72,7 @@
           type: Boolean,
           readOnly: true,
           value: true
-        }
+        },
       },
 
       listeners: {
@@ -98,38 +98,77 @@
           'i');
       },
 
-      _filterOnCategory: function(val) {
-        var regex = this._getSearchStrRegExp(val);
-        return this.features.filter(function(feature, idx, array) {
-          return regex.test(feature.category);
-        });
+      _lt: function(propName, value, feature) {
+        return feature[propName] < value;
+      },
+      _lte: function(propName, value, feature) {
+        return feature[propName] <= value;
+      },
+      _gt: function(propName, value, feature) {
+        return feature[propName] > value;
+      },
+      _gte: function(propName, value, feature) {
+        return feature[propName] >= value;
+      },
+      _eq: function(propName, value, feature) {
+        return feature[propName] === value;
+      },
+      _false: function() {
+        return false;
       },
 
-      _filterOnOwner: function(val) {
-        var regex = this._getSearchStrRegExp(val);
-        return this.features.filter(function(feature, idx, array) {
-          return regex.test(feature.owner.toString());
-        });
+      _getOperatorFilter: function(args /* [propName, operator, valueStr] */) {
+        var value = parseFloat(args[2]);
+        if (isNaN(value)) return this._false;
+
+        switch (args[1].trim()) {
+          case '<':
+            return this._lt.bind(this, args[0], value);
+            break;
+          case '<=':
+            return this._lte.bind(this, args[0], value);
+            break;
+          case '>':
+            return this._gt.bind(this, args[0], value);
+            break;
+          case '>=':
+            return this._gte.bind(this, args[0], value);
+            break;
+          case '=':  // Support both '=' and '=='.
+          case '==':
+            return this._eq.bind(this, args[0], value);
+            break;
+          default:
+            return this._false;
+        }
       },
 
-      _filterOnOperation: function(operator, version) {
-        return this.features.filter(function(feature, idx, array) {
-          var platformMilestones = [
-            parseInt(feature.shipped_milestone),
-            parseInt(feature.shipped_android_milestone),
-            parseInt(feature.shipped_ios_milestone),
-            parseInt(feature.shipped_webview_milestone)
-          ];
-          for (var i = 0; i < platformMilestones.length; ++i) {
-            var milestone = platformMilestones[i];
-            if (matchesMilestone_(milestone, operator, version)) {
-              return true;  // Only one of the platforms needs to match.
-            }
-          }
-        });
+      _filterProperty: function(propName, regExp, feature) {
+        var value = feature[propName];
+
+        // Null or missing values never match.
+        if (value === null || typeof value === 'undefined')
+          return false;
+
+        // Allow for enums that store string in "text" property.
+        return (value.text || value).toString().match(regExp) !== null;
+      },
+      _getPropertyFilter: function(args /* [propName, searchStr] */) {
+        return this._filterProperty.bind(
+          this, args[0], this._getSearchStrRegExp(args[1]));
+      },
+
+      _filterKeyword: function(regExp, feature) {
+        return (feature.name + '\n' + feature.summary + '\n' + feature.comments)
+          .match(regExp) !== null;
+      },
+      _getKeywordFilter: function(keyword) {
+        return this._filterKeyword.bind(
+          this, this._getSearchStrRegExp(keyword));
       },
 
       _filterList: function(val) {
+
         // Clear filter if there's no search or if called directly.
         if (!val) {
           if (history && history.replaceState) {
@@ -139,6 +178,7 @@
           }
           this.filtered = this.features;
         } else {
+
           val = val.trim();
           if (history && history.replaceState) {
             history.replaceState(
@@ -147,34 +187,65 @@
               '/features#' + encodeURIComponent(val));
           }
 
-          // owner: user@chromium.org
-          var ownerMatch = val.match(/^owner:\s*(.*)/);
-          // category: Multimedia
-          var categoryMatch = val.match(/^category:\s*(.*)/);
-          // Returns operator and version query e.g. ["<=25", "<=", "25"].
-          var operatorMatch = /^([<>=]=?)\s*([0-9]+)/.exec(val);
-
-          if (ownerMatch) {
-            this.filtered = this._filterOnOwner(ownerMatch[1]);
-          } else if (categoryMatch) {
-            this.filtered = this._filterOnCategory(categoryMatch[1]);
-          } else if (operatorMatch) {
-            this.filtered = this._filterOnOperation(
-                operatorMatch[1], operatorMatch[2]);
-          } else {
-            // Only one of the platforms needs to match.
-            // Do a general search over misc fields.
-            // Remove "=" prefix so "in development"/"proposed" version queries
-            // return results.
-            if (val.indexOf('=') == 0) {
-              val = val.substring(1);
+          var regExp = /"([^"]*)"/g;
+          var start = 0;
+          var parts = [];
+          while ((match = regExp.exec(val)) !== null) {
+            if (start - (regExp.lastIndex - match[0].length) > 0) {
+              parts.push(val.substring(start, regExp.lastIndex -
+                                       match[0].length));
             }
-            var regex = this._getSearchStrRegExp(val);
-            this.filtered = this.features.filter(function(feature, idx, array) {
-              return (regex.test(feature.name) || regex.test(feature.category) ||
-                      regex.test(feature.summary) || regex.test(feature.search_tags) ||
-                      regex.test(feature.impl_status_chrome));
-            });
+            parts.push(match[1]);
+          }
+          if (start - (regExp.lastIndex - match[0].length) > 0) {
+            parts.push(val.substring(start, regExp.lastIndex -
+                                     match[0].length));
+          }
+
+          // Match words separated by whitespace and/or ":".
+          regExp = /([^:<>= \f\n\r\t\v\u00a0\u1680\u180e\u2000-\u200a\u2028\u2029\u202f\u205f\u3000\ufeff]+)([:<>= \f\n\r\t\v\u00a0\u1680\u180e\u2000-\u200a\u2028\u2029\u202f\u205f\u3000\ufeff]+)?/g;
+          var match;
+          var reMatches = [];
+          while (match = regExp.exec(val) !== null) {
+            reMatches.push(match);
+          }
+
+          // Accumulate keyword and property queries.
+          var propertyQueries = [];
+          var operatorQueries = [];
+          var keywordQueries = [];
+          var i;
+          for (i = 0; i < reMatches.length; i++) {
+            match = reMatches[i];
+            if (match[2] && match[2].match(':') !== null &&
+                i < reMatches.length - 1) {
+              propertyQueries.push([match[1], reMatches[i + 1][1]]);
+              i++;
+            } else if (match[2] && match[2].match(/[<>=]/) !== null &&
+                       i < reMatches.length - 1) {
+              operatorQueries.push([match[1], match[2], reMatches[i + 1][1]]);
+              i++;
+            } else {
+              keywordQueries.push(match[1]);
+            }
+          }
+
+          var filters = propertyQueries.map(
+            this._getPropertyFilter.bind(this)).concat(
+              operatorQueries.map(
+                this._getOperatorFilter.bind(this))).concat(
+                  keywordQueries.map(
+                    this._getKeywordFilter.bind(this)));
+
+          if (filters.length === 0) {
+            this.filtered = this.features;
+          } else {
+            var results = this.features;
+            var j;
+            for (i = 0; i < filters.length; i++) {
+              results = results.filter(filters[i]);
+            }
+            this.filtered = results;
           }
         }
 
