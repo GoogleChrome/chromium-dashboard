@@ -90,15 +90,23 @@
         this.unlisten(window, 'scroll', '_onScrollList');
       },
 
+      _getSearchStrRegExp: function(searchStr) {
+        return new RegExp(
+          // Case-insensitive match on literal string; escape characters that
+          // have special meaning in regular expressions.
+          searchStr.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&"),
+          'i');
+      },
+
       _filterOnCategory: function(val) {
-        var regex = new RegExp(val, 'i');
+        var regex = this._getSearchStrRegExp(val);
         return this.features.filter(function(feature, idx, array) {
           return regex.test(feature.category);
         });
       },
 
       _filterOnOwner: function(val) {
-        var regex = new RegExp(val, 'i');
+        var regex = this._getSearchStrRegExp(val);
         return this.features.filter(function(feature, idx, array) {
           return regex.test(feature.owner.toString());
         });
@@ -156,7 +164,7 @@
             if (val.indexOf('=') == 0) {
               val = val.substring(1);
             }
-            var regex = new RegExp(val, 'i');
+            var regex = this._getSearchStrRegExp(val);
             this.filtered = this.features.filter(function(feature, idx, array) {
               return (regex.test(feature.name) || regex.test(feature.category) ||
                       regex.test(feature.summary) || regex.test(feature.search_tags) ||
