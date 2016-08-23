@@ -415,6 +415,9 @@
     _computeEditLinkHidden: function(feature) {
       return '/admin/features/edit/' + feature.id;
     },
+    _computeBugComponent: function(feature) {
+      return feature.bug_component || 'Blink';
+    },
     _computeCrbugNumber: function(link) {
       if (!link) {
         return;
@@ -433,7 +436,8 @@
     },
     _computeNewBugUrl: function(feature) {
       var url = 'https://bugs.chromium.org/p/chromium/issues/entry';
-      var params = ['components=Blink'];
+      var params = [];
+      params.push('components=' + this._computeBugComponent(feature));
       var crbugNumber = this._computeCrbugNumber(feature.bug_url);
       if (crbugNumber && this._computePreLaunch(feature.impl_status_chrome)) {
         params.push('blocking=' + crbugNumber);
