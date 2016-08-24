@@ -394,8 +394,7 @@ class Feature(DictModel):
 
   def new_crbug_url(self):
     url = 'https://bugs.chromium.org/p/chromium/issues/entry';
-    params = [];
-    params.append('components=' + self.bug_component or DEFAULT_BUG_COMPONENT);
+    params = ['components=' + self.bug_component or DEFAULT_BUG_COMPONENT];
     crbug_number = self.crbug_number()
     if crbug_number and self.impl_status_chrome in (
         NO_ACTIVE_DEV,
@@ -518,7 +517,7 @@ class FeatureForm(forms.Form):
                            help_text='OWP Launch Tracking, crbug, etc.')
 
   bug_component = forms.CharField(required=False, label='Bug Component',
-                           help_text='"%s" will be used if not speficied.' % DEFAULT_BUG_COMPONENT)
+                           help_text='"%s" will be used if not specified.' % DEFAULT_BUG_COMPONENT)
 
   impl_status_chrome = forms.ChoiceField(required=True,
                                          label='Status in Chromium',
