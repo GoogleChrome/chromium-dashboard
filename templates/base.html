@@ -162,9 +162,9 @@ button.addEventListener('click', function lazyHandler(e) {
   {% endif %}
 
   Polymer.Base.importHref(url, function() {
-    this.querySelector('.dropdown-content').hidden = false;
-    this.open();
-  }.bind(this), null, true);
+    button.contentElement.hidden = false;
+    button.open();
+  }, null, true);
 });
 
 // Google Analytics
