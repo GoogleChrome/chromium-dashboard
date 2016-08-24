@@ -210,5 +210,14 @@
 <script>
 // Remove loading spinner at page load.
 document.body.classList.remove('loading');
+
+var SHOW_TOAST = {% if was_updated %}true{% else %}false{% endif %};
+if (SHOW_TOAST) {
+  setTimeout(function() {
+    var Toast = document.querySelector('chromedash-toast');
+    Toast.showMessage('Your feature was saved! It may take a few minutes to ' +
+                      'show up in the main list.', null, null, -1);
+  }, 500);
+}
 </script>
 {% endblock %}

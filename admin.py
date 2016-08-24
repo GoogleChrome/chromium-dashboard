@@ -395,44 +395,48 @@ class FeatureHandler(common.ContentHandler):
     if search_tags:
       search_tags = [x.strip() for x in search_tags.split(',')]
 
-    redirect_url = self.DEFAULT_URL
-
     # Update/delete existing feature.
     if feature_id: # /admin/edit/1234
       feature = models.Feature.get_by_id(long(feature_id))
+
       if feature is None:
         return self.redirect(self.request.path)
 
-      if not 'delete' in path:
-        feature.category = int(self.request.get('category'))
-        feature.name = self.request.get('name')
-        feature.summary = self.request.get('summary')
-        feature.owner = owners
-        feature.bug_url = bug_url
-        feature.bug_component = self.request.get('bug_component')
-        feature.impl_status_chrome = int(self.request.get('impl_status_chrome'))
-        feature.shipped_milestone = shipped_milestone
-        feature.shipped_android_milestone = shipped_android_milestone
-        feature.shipped_ios_milestone = shipped_ios_milestone
-        feature.shipped_webview_milestone = shipped_webview_milestone
-        feature.shipped_opera_milestone = shipped_opera_milestone
-        feature.shipped_opera_android_milestone = shipped_opera_android_milestone
-        feature.footprint = int(self.request.get('footprint'))
-        feature.visibility = int(self.request.get('visibility'))
-        feature.ff_views = int(self.request.get('ff_views'))
-        feature.ff_views_link = ff_views_link
-        feature.ie_views = int(self.request.get('ie_views'))
-        feature.ie_views_link = ie_views_link
-        feature.safari_views = int(self.request.get('safari_views'))
-        feature.safari_views_link = safari_views_link
-        feature.prefixed = self.request.get('prefixed') == 'on'
-        feature.spec_link = spec_link
-        feature.standardization = int(self.request.get('standardization'))
-        feature.comments = self.request.get('comments')
-        feature.web_dev_views = int(self.request.get('web_dev_views'))
-        feature.doc_links = doc_links
-        feature.sample_links = sample_links
-        feature.search_tags = search_tags
+      if 'delete' in path:
+        feature.delete()
+        memcache.flush_all()
+        return # Bomb out early for AJAX delete. No need to redirect.
+
+      # Update properties of existing feature.
+      feature.category = int(self.request.get('category'))
+      feature.name = self.request.get('name')
+      feature.summary = self.request.get('summary')
+      feature.owner = owners
+      feature.bug_url = bug_url
+      feature.bug_component = self.request.get('bug_component')
+      feature.impl_status_chrome = int(self.request.get('impl_status_chrome'))
+      feature.shipped_milestone = shipped_milestone
+      feature.shipped_android_milestone = shipped_android_milestone
+      feature.shipped_ios_milestone = shipped_ios_milestone
+      feature.shipped_webview_milestone = shipped_webview_milestone
+      feature.shipped_opera_milestone = shipped_opera_milestone
+      feature.shipped_opera_android_milestone = shipped_opera_android_milestone
+      feature.footprint = int(self.request.get('footprint'))
+      feature.visibility = int(self.request.get('visibility'))
+      feature.ff_views = int(self.request.get('ff_views'))
+      feature.ff_views_link = ff_views_link
+      feature.ie_views = int(self.request.get('ie_views'))
+      feature.ie_views_link = ie_views_link
+      feature.safari_views = int(self.request.get('safari_views'))
+      feature.safari_views_link = safari_views_link
+      feature.prefixed = self.request.get('prefixed') == 'on'
+      feature.spec_link = spec_link
+      feature.standardization = int(self.request.get('standardization'))
+      feature.comments = self.request.get('comments')
+      feature.web_dev_views = int(self.request.get('web_dev_views'))
+      feature.doc_links = doc_links
+      feature.sample_links = sample_links
+      feature.search_tags = search_tags
     else:
       feature = models.Feature(
           category=int(self.request.get('category')),
@@ -466,25 +470,22 @@ class FeatureHandler(common.ContentHandler):
           search_tags=search_tags,
           )
 
-    if 'delete' in path:
-      feature.delete()
-      memcache.flush_all()
-      return # Bomb out early for AJAX delete. No need for extra redirect below.
-    else:
-      key = feature.put()
+    key = feature.put()
 
-      # TODO(ericbidelman): enumerate and remove only the relevant keys.
-      memcache.flush_all()
+    # TODO(ericbidelman): enumerate and remove only the relevant keys.
+    memcache.flush_all()
 
-      params = []
-      if self.request.get('create_launch_bug') == 'on':
-        params.append(self.LAUNCH_PARAM)
-      if self.request.get('intent_to_implement') == 'on':
-        params.append(self.INTENT_PARAM)
+    params = []
+    if self.request.get('create_launch_bug') == 'on':
+      params.append(self.LAUNCH_PARAM)
+    if self.request.get('intent_to_implement') == 'on':
+      params.append(self.INTENT_PARAM)
 
-      if len(params):
-        redirect_url = '%s/%s?%s' % (self.LAUNCH_URL, key.id(),
-                                     '&'.join(params))
+    redirect_url = '/feature/' + str(key.id())
+
+    if len(params):
+      redirect_url = '%s/%s?%s' % (self.LAUNCH_URL, key.id(),
+                                   '&'.join(params))
 
     return self.redirect(redirect_url)
 
