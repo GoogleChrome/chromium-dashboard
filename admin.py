@@ -409,6 +409,7 @@ class FeatureHandler(common.ContentHandler):
         feature.summary = self.request.get('summary')
         feature.owner = owners
         feature.bug_url = bug_url
+        feature.bug_component = self.request.get('bug_component')
         feature.impl_status_chrome = int(self.request.get('impl_status_chrome'))
         feature.shipped_milestone = shipped_milestone
         feature.shipped_android_milestone = shipped_android_milestone
@@ -439,6 +440,7 @@ class FeatureHandler(common.ContentHandler):
           summary=self.request.get('summary'),
           owner=owners,
           bug_url=bug_url,
+          bug_component=self.request.get('bug_component'),
           impl_status_chrome=int(self.request.get('impl_status_chrome')),
           shipped_milestone=shipped_milestone,
           shipped_android_milestone=shipped_android_milestone,

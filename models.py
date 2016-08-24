@@ -158,6 +158,8 @@ WEB_DEV_VIEWS = {
   DEV_STRONG_NEGATIVE: 'Strongly negative',
   }
 
+DEFAULT_BUG_COMPONENT = 'Blink'
+
 
 class DictModel(db.Model):
   # def to_dict(self):
@@ -392,7 +394,7 @@ class Feature(DictModel):
 
   def new_crbug_url(self):
     url = 'https://bugs.chromium.org/p/chromium/issues/entry';
-    params = ['components=Blink'];
+    params = ['components=' + self.bug_component or DEFAULT_BUG_COMPONENT];
     crbug_number = self.crbug_number()
     if crbug_number and self.impl_status_chrome in (
         NO_ACTIVE_DEV,
@@ -418,6 +420,7 @@ class Feature(DictModel):
 
   # Chromium details.
   bug_url = db.LinkProperty()
+  bug_component = db.StringProperty(required=False, default=DEFAULT_BUG_COMPONENT)
   impl_status_chrome = db.IntegerProperty(required=True)
   shipped_milestone = db.IntegerProperty()
   shipped_android_milestone = db.IntegerProperty()
@@ -512,6 +515,9 @@ class FeatureForm(forms.Form):
 
   bug_url = forms.URLField(required=False, label='Bug URL',
                            help_text='OWP Launch Tracking, crbug, etc.')
+
+  bug_component = forms.CharField(required=False, label='Bug Component',
+                           help_text='"%s" will be used if not specified.' % DEFAULT_BUG_COMPONENT)
 
   impl_status_chrome = forms.ChoiceField(required=True,
                                          label='Status in Chromium',
