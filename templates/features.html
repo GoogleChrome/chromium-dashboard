@@ -95,6 +95,10 @@ var overlay = $('chromedash-legend');
 var search = $('.search input');
 var overlayLoaded = false;
 
+// Feature list needs access to the selected milestone.
+featureList.metadata = chromeMetadata;
+featureList.search = search;
+
 // Set search box to URL deep link.
 if (location.hash) {
   search.value = location.hash.substr(1);
@@ -110,10 +114,11 @@ chromeMetadata.addEventListener('query-changed', function(e) {
 
 featureList.addEventListener('filtered', function(e) {
   $('.num-features').textContent = e.detail.count;
-  document.body.classList.remove('loading');
 });
 
 featureList.addEventListener('app-ready', function() {
+  document.body.classList.remove('loading');
+
   featuresUnveilMetric.end().log().sendToAnalytics('features', 'unveil');
 
   // Want "Caching is complete" toast to be slightly delayed after page load.
@@ -206,10 +211,6 @@ window.asyncImportsLoadPromise = new Promise(function(resolve, reject) {
   featuresImport.onerror = reject;
   featuresImport.onload = function(e) {
     resolve();
-
-    // Feature list needs access to the selected milestone.
-    featureList.metadata = chromeMetadata;
-    featureList.search = search;
 
     featuresPromise.then(function(features) {
       featureList.features = features;

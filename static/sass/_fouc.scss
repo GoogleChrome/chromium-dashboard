@@ -5,6 +5,10 @@ body.loading {
     display: none;
   }
 
+  chromedash-featurelist {
+    visibility: hidden;
+  }
+
   .main-toolbar {
     .dropdown-content {
       display: none;

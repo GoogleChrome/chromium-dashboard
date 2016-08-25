@@ -261,8 +261,6 @@
         // Looks fixed now and removing this call helps page load perf!
         //this.$.ironlist._update(); // force update to list.
 
-        this.fire('app-ready');
-
         // If there's an id in the URL, highlight and scroll to the feature.
         // Otherwise, go to the first "in development" feature.
         // TODO: really want this in ready(), but featureLiList and metadata may
@@ -283,12 +281,22 @@
             !this._firstLoad) {
           return;
         }
-        this._deepLinkToFeature();
+
+        // Wait for feature list to be attached + rendered before attempting
+        // to scroll ti.
+        Polymer.RenderStatus.afterNextRender(this, function() {
+          this.fire('app-ready');
+
+          this.async(function() {
+            this._deepLinkToFeature();
+          }, 300);
+        });
       },
 
       _computeMilestoneHidden: function(feature, features, filtered) {
         return filtered.length != features.length || !feature.first_of_milestone;
       },
+
       _computeMilestoneString: function(str) {
         return isNaN(parseInt(str)) ? str : 'Chrome ' + str;
       }
