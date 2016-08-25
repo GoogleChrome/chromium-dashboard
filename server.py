@@ -180,7 +180,13 @@ class MainHandler(http2push.PushHandler, common.ContentHandler, common.JSONHandl
       if feature is None:
         self.abort(404)
 
+      was_updated = False
+      if self.request.referer:
+        was_updated = (self.request.referer.endswith('/admin/features/new') or
+                       '/admin/features/edit' in self.request.referer)
+
       template_data['feature'] = feature
+      template_data['was_updated'] = was_updated
 
     elif path.startswith('metrics/css/timeline'):
       properties = sorted(
