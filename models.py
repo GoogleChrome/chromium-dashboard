@@ -229,9 +229,14 @@ class Feature(DictModel):
     d['impl_status_chrome'] = IMPLEMENTATION_STATUS[self.impl_status_chrome]
     d['meta'] = {
       'origintrial': self.impl_status_chrome == ORIGIN_TRIAL,
-      'needsflag': self.impl_status_chrome == BEHIND_A_FLAG,
-      'milestone_str': self.shipped_milestone or d['impl_status_chrome']
+      'needsflag': self.impl_status_chrome == BEHIND_A_FLAG
       }
+    if self.shipped_milestone:
+      d['meta']['milestone_str'] = self.shipped_milestone
+    elif self.shipped_milestone is None and self.shipped_android_milestone:
+      d['meta']['milestone_str'] = self.shipped_android_milestone
+    else:
+      d['meta']['milestone_str'] = d['impl_status_chrome']
     d['ff_views'] = {'value': self.ff_views,
                      'text': VENDOR_VIEWS[self.ff_views]}
     d['ie_views'] = {'value': self.ie_views,
@@ -323,32 +328,58 @@ class Feature(DictModel):
     feature_list = memcache.get(KEY)
 
     if feature_list is None or update_cache:
-      q = Feature.all()
-      q.order('-shipped_milestone')
-      q.order('name')
-      features = q.fetch(None)
 
-      features = [f for f in features if (IN_DEVELOPMENT < f.impl_status_chrome < NO_LONGER_PURSUING)]
-
-      # Append no active, in dev, proposed features.
+      # Features with no active, in dev, proposed features.
       q = Feature.all()
       q.order('impl_status_chrome')
       q.order('name')
       q.filter('impl_status_chrome <=', IN_DEVELOPMENT)
       pre_release = q.fetch(None)
-      pre_release.extend(features)
 
-      # Append no longer pursuing features.
+      # Shipping features. Exclude features that do not have a desktop
+      # shipping milestone.
+      q = Feature.all()
+      q.order('-shipped_milestone')
+      q.order('name')
+      q.filter('shipped_milestone !=', None)
+      shipping_features = q.fetch(None)
+
+      # Features with an android shipping milestone but no desktop milestone.
+      q = Feature.all()
+      q.order('-shipped_android_milestone')
+      q.order('name')
+      q.filter('shipped_milestone =', None)
+      android_only_shipping_features = q.fetch(None)
+
+      # No longer pursuing features.
       q = Feature.all()
       q.order('impl_status_chrome')
       q.order('name')
       q.filter('impl_status_chrome =', NO_LONGER_PURSUING)
-      no_longer_pursuing = q.fetch(None)
-      pre_release.extend(no_longer_pursuing)
+      no_longer_pursuing_features = q.fetch(None)
+
+      shipping_features.extend(android_only_shipping_features)
+
+      shipping_features = [f for f in shipping_features if (IN_DEVELOPMENT < f.impl_status_chrome < NO_LONGER_PURSUING)]
+
+      def getSortingMilestone(feature):
+        feature._sort_by_milestone = (feature.shipped_milestone or
+                                      feature.shipped_android_milestone)
+        return feature
+
+      # Sort the feature list on either Android shipping milestone or desktop
+      # shipping milestone, depending on which is specified. If a desktop
+      # milestone is defined, that will take default.
+      shipping_features = map(getSortingMilestone, shipping_features)
+
+      # TODO: sort on name after sorting on milestone.
+      shipping_features.sort(key=lambda f: f._sort_by_milestone, reverse=True)
+
+      # Constructor the proper ordering.
+      pre_release.extend(shipping_features)
+      pre_release.extend(no_longer_pursuing_features)
 
       feature_list = [f.format_for_template() for f in pre_release]
-
-      memcache.set(KEY, feature_list)
 
     return feature_list
 

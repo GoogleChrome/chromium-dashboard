@@ -40,6 +40,9 @@ def first_of_milestone(feature_list, milestone, start=0):
     if (str(f['shipped_milestone']) == str(milestone) or
         f['impl_status_chrome'] == str(milestone)):
       return i
+    elif (f['shipped_milestone'] == None and
+          str(f['shipped_android_milestone']) == str(milestone)):
+      return i
   return -1
 
 
