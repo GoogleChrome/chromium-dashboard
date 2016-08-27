@@ -113,7 +113,11 @@ class MainHandler(http2push.PushHandler, common.ContentHandler, common.JSONHandl
 
     if path.startswith('features'):
       if path.endswith('.json'): # JSON request.
-        feature_list = self.__get_feature_list()
+        KEY = '%s|all' % (models.Feature.DEFAULT_MEMCACHE_KEY)
+        feature_list = memcache.get(KEY)
+        if feature_list is None:
+          feature_list = self.__get_feature_list()
+          memcache.set(KEY, feature_list)
         return common.JSONHandler.get(self, feature_list, formatted=True)
       elif path.endswith('.xml'): # Atom feed request.
         status = self.request.get('status', None)
