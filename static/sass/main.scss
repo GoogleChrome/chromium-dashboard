@@ -6,7 +6,7 @@ html, body {
 
 body {
   color: $default-font-color;
-  font: 14px "Roboto", Arial, sans-serif;
+  font: 14px "Roboto", sans-serif;
   font-weight: 400;
   -webkit-font-smoothing: antialiased;
   background-color: $light-grey;
@@ -51,7 +51,7 @@ app-drawer {
   h3 {
     margin-bottom: $content-padding;
     text-transform: uppercase;
-    font-weight: 600;
+    font-weight: 500;
     font-size: 14px;
     color: inherit;
   }

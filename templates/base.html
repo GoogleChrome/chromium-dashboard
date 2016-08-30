@@ -42,9 +42,9 @@ limitations under the License.
 
 {% block meta %}{% endblock %}
 
-<!-- Load fonts right away. These URLs are also used in paper-styles, but we
-     want a jumpstart on download and the GFonts API is helllla cached. -->
-<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,300,300italic,400italic,500,500italic,700,700italic">
+<link rel="stylesheet"
+      href="https://fonts.googleapis.com/css?family=Roboto:300,400"
+      media="none" onload="this.media='all'">
 
 <!-- <link rel="stylesheet" href="/static/css/main.css"> -->
 <style>{% inline_file "/static/css/main.css" %}</style>
