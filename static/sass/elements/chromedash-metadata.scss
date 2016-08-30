@@ -77,7 +77,7 @@
     }
 
     &[selected] {
-      font-weight: bold;
+      font-weight: 500;
       color: $chromium-color-dark;
       &::before {
         border-color: $chromium-color-dark;
