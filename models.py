@@ -372,7 +372,8 @@ class Feature(DictModel):
       # milestone is defined, that will take default.
       shipping_features = map(getSortingMilestone, shipping_features)
 
-      # TODO: sort on name after sorting on milestone.
+      # First sort by name, then sort by feature milestone (latest first).
+      shipping_features.sort(key=lambda f: f.name, reverse=False)
       shipping_features.sort(key=lambda f: f._sort_by_milestone, reverse=True)
 
       # Constructor the proper ordering.
