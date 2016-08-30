@@ -40,6 +40,9 @@ def first_of_milestone(feature_list, milestone, start=0):
     if (str(f['shipped_milestone']) == str(milestone) or
         f['impl_status_chrome'] == str(milestone)):
       return i
+    elif (f['shipped_milestone'] == None and
+          str(f['shipped_android_milestone']) == str(milestone)):
+      return i
   return -1
 
 
@@ -110,7 +113,11 @@ class MainHandler(http2push.PushHandler, common.ContentHandler, common.JSONHandl
 
     if path.startswith('features'):
       if path.endswith('.json'): # JSON request.
-        feature_list = self.__get_feature_list()
+        KEY = '%s|all' % (models.Feature.DEFAULT_MEMCACHE_KEY)
+        feature_list = memcache.get(KEY)
+        if feature_list is None:
+          feature_list = self.__get_feature_list()
+          memcache.set(KEY, feature_list)
         return common.JSONHandler.get(self, feature_list, formatted=True)
       elif path.endswith('.xml'): # Atom feed request.
         status = self.request.get('status', None)

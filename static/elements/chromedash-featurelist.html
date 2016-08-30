@@ -120,7 +120,8 @@
             parseInt(feature.shipped_ios_milestone),
             parseInt(feature.shipped_webview_milestone)
           ];
-          for (var i = 0, milestone; milestone = platformMilestones[i]; ++i) {
+          for (var i = 0; i < platformMilestones.length; ++i) {
+            var milestone = platformMilestones[i];
             if (matchesMilestone_(milestone, operator, version)) {
               return true;  // Only one of the platforms needs to match.
             }
@@ -155,7 +156,8 @@
           } else if (categoryMatch) {
             this.filtered = this._filterOnCategory(categoryMatch[1]);
           } else if (operatorMatch) {
-            this.filtered = this._filterOnOperation(operatorMatch[1], operatorMatch[2]);
+            this.filtered = this._filterOnOperation(
+                operatorMatch[1], operatorMatch[2]);
           } else {
             // Only one of the platforms needs to match.
             // Do a general search over misc fields.
