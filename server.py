@@ -253,8 +253,7 @@ class FeaturesAPIHandler(common.JSONHandler):
       version = int(version[2:])
 
     KEY = '%s|v%s|all' % (models.Feature.DEFAULT_MEMCACHE_KEY, version)
-    #feature_list = memcache.get(KEY)
-    feature_list = None
+    feature_list = memcache.get(KEY)
     if feature_list is None:
       feature_list = self.__get_feature_list(version)
       memcache.set(KEY, feature_list)
