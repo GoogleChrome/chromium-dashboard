@@ -223,34 +223,125 @@ class Feature(DictModel):
 
   DEFAULT_MEMCACHE_KEY = '%s|features' % (settings.MEMCACHE_KEY_PREFIX)
 
-  def format_for_template(self):
+  def format_for_template(self, version=None):
     d = self.to_dict()
-    d['id'] = self.key().id()
-    d['category'] = FEATURE_CATEGORIES[self.category]
-    d['visibility'] = VISIBILITY_CHOICES[self.visibility]
-    d['impl_status_chrome'] = IMPLEMENTATION_STATUS[self.impl_status_chrome]
-    d['meta'] = {
-      'origintrial': self.impl_status_chrome == ORIGIN_TRIAL,
-      'intervention': self.impl_status_chrome == INTERVENTION,
-      'needsflag': self.impl_status_chrome == BEHIND_A_FLAG
+
+    if version == 2:
+      d['id'] = self.key().id()
+      d['category'] = FEATURE_CATEGORIES[self.category]
+      d['created'] = {
+        'by': d.pop('created', None),
+        'when': d.pop('created_by', None),
       }
-    if self.shipped_milestone:
-      d['meta']['milestone_str'] = self.shipped_milestone
-    elif self.shipped_milestone is None and self.shipped_android_milestone:
-      d['meta']['milestone_str'] = self.shipped_android_milestone
+      d['updated'] = {
+        'by': d.pop('updated', None),
+        'when': d.pop('updated_by', None),
+      }
+      d['standards'] = {
+        'spec': d.pop('spec_link', None),
+        'status': {
+          'text': STANDARDIZATION[self.standardization],
+          'val': d.pop('standardization', None),
+        },
+        'visibility': {
+          'text': VISIBILITY_CHOICES[self.visibility],
+          'val': d.pop('visibility', None),
+        },
+        'footprint': {
+          'val': d.pop('footprint', None),
+          #'text': FOOTPRINT_CHOICES[self.footprint]
+        }
+      }
+      d['resources'] = {
+        'samples': d.pop('sample_links', []),
+        'docs': d.pop('doc_links', []),
+      }
+      d['tags'] = d.pop('search_tags', [])
+      d['browsers'] = {
+        'chrome': {
+          'bug': d.pop('bug_url', None),
+          'crbug_component': d.pop('bug_component', None),
+          'owners': d.pop('owner', []),
+          'origintrial': self.impl_status_chrome == ORIGIN_TRIAL,
+          'intervention': self.impl_status_chrome == INTERVENTION,
+          'prefixed': d.pop('prefixed', False),
+          'flag': self.impl_status_chrome == BEHIND_A_FLAG,
+          'status': {
+            'text': IMPLEMENTATION_STATUS[self.impl_status_chrome],
+            'val': d.pop('impl_status_chrome', None)
+          },
+          'desktop': d.pop('shipped_milestone', None),
+          'android': d.pop('shipped_android_milestone', None),
+          'webview': d.pop('shipped_webview_milestone', None),
+          'ios': d.pop('shipped_ios_milestone', None),
+        },
+        'opera': {
+          'desktop': d.pop('shipped_opera_milestone', None),
+          'android': d.pop('shipped_opera_android_milestone', None),
+        },
+        'ff': {
+          'view': {
+            'text': VENDOR_VIEWS[self.ff_views],
+            'val': d.pop('ff_views', None),
+            'url': d.pop('ff_views_link', None),
+          }
+        },
+        'edge': {
+          'view': {
+            'text': VENDOR_VIEWS[self.ie_views],
+            'val': d.pop('ie_views', None),
+            'url': d.pop('ie_views_link', None),
+          }
+        },
+        'safari': {
+          'view': {
+            'text': VENDOR_VIEWS[self.safari_views],
+            'val': d.pop('safari_views', None),
+            'url': d.pop('safari_views_link', None),
+          }
+        },
+        'webdev': {
+          'view': {
+            'text': VENDOR_VIEWS[self.web_dev_views],
+            'val': d.pop('web_dev_views', None),
+          }
+        }
+      }
+
+      if self.shipped_milestone:
+        d['browsers']['chrome']['status']['milestone_str'] = self.shipped_milestone
+      elif self.shipped_milestone is None and self.shipped_android_milestone:
+        d['browsers']['chrome']['status']['milestone_str'] = self.shipped_android_milestone
+      else:
+        d['browsers']['chrome']['status']['milestone_str'] = d['browsers']['chrome']['status']['text']
+
     else:
-      d['meta']['milestone_str'] = d['impl_status_chrome']
-    d['ff_views'] = {'value': self.ff_views,
-                     'text': VENDOR_VIEWS[self.ff_views]}
-    d['ie_views'] = {'value': self.ie_views,
-                     'text': VENDOR_VIEWS[self.ie_views]}
-    d['safari_views'] = {'value': self.safari_views,
-                         'text': VENDOR_VIEWS[self.safari_views]}
-    d['standardization'] = {'value': self.standardization,
-                            'text': STANDARDIZATION[self.standardization]}
-    d['web_dev_views'] = {'value': self.web_dev_views,
-                          'text': WEB_DEV_VIEWS[self.web_dev_views]}
-    #d['owner'] = ', '.join(self.owner)
+      d['id'] = self.key().id()
+      d['category'] = FEATURE_CATEGORIES[self.category]
+      d['visibility'] = VISIBILITY_CHOICES[self.visibility]
+      d['impl_status_chrome'] = IMPLEMENTATION_STATUS[self.impl_status_chrome]
+      d['meta'] = {
+        'origintrial': self.impl_status_chrome == ORIGIN_TRIAL,
+        'intervention': self.impl_status_chrome == INTERVENTION,
+        'needsflag': self.impl_status_chrome == BEHIND_A_FLAG,
+        }
+      if self.shipped_milestone:
+        d['meta']['milestone_str'] = self.shipped_milestone
+      elif self.shipped_milestone is None and self.shipped_android_milestone:
+        d['meta']['milestone_str'] = self.shipped_android_milestone
+      else:
+        d['meta']['milestone_str'] = d['impl_status_chrome']
+      d['ff_views'] = {'value': self.ff_views,
+                       'text': VENDOR_VIEWS[self.ff_views]}
+      d['ie_views'] = {'value': self.ie_views,
+                       'text': VENDOR_VIEWS[self.ie_views]}
+      d['safari_views'] = {'value': self.safari_views,
+                           'text': VENDOR_VIEWS[self.safari_views]}
+      d['standardization'] = {'value': self.standardization,
+                              'text': STANDARDIZATION[self.standardization]}
+      d['web_dev_views'] = {'value': self.web_dev_views,
+                            'text': WEB_DEV_VIEWS[self.web_dev_views]}
+
     return d
 
   def format_for_edit(self):
@@ -325,8 +416,9 @@ class Feature(DictModel):
     return feature
 
   @classmethod
-  def get_chronological(self, limit=None, update_cache=False):
-    KEY = '%s|%s|%s' % (Feature.DEFAULT_MEMCACHE_KEY, 'cronorder', limit)
+  def get_chronological(self, limit=None, update_cache=False, version=None):
+    KEY = '%s|%s|%s|%s' % (Feature.DEFAULT_MEMCACHE_KEY,
+                           'cronorder', limit, version)
 
     feature_list = memcache.get(KEY)
 
@@ -383,7 +475,7 @@ class Feature(DictModel):
       pre_release.extend(shipping_features)
       pre_release.extend(no_longer_pursuing_features)
 
-      feature_list = [f.format_for_template() for f in pre_release]
+      feature_list = [f.format_for_template(version) for f in pre_release]
 
     return feature_list
 

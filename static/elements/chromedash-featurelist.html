@@ -9,11 +9,11 @@
   <div id="featurelist">
     <iron-list id="ironlist" scroll-target="document" items="[[filtered]]" as="feature">
       <template>
-        <div class="item">
-          <div hidden$="{{_computeMilestoneHidden(feature, features, filtered)}}"
-               class="milestone-marker">{{_computeMilestoneString(feature.meta.milestone_str)}}</div>
-          <chromedash-feature id="{{feature.id}}" tabindex="0"
-               feature="[[feature]]" needsflag="[[feature.meta.needsflag]]"
+        <div class="item" tabindex="0">
+          <div hidden$="[[_computeMilestoneHidden(feature, features, filtered)]]"
+               class="milestone-marker">[[_computeMilestoneString(feature.browsers.chrome.status.milestone_str)]]</div>
+          <chromedash-feature id="{{feature.id}}"
+               feature="[[feature]]" needsflag="[[feature.browsers.chrome.flag]]"
                whitelisted="[[whitelisted]]"></chromedash-feature>
         </div>
       </template>
@@ -291,8 +291,8 @@
         var start = opt_startFrom != undefined ? opt_startFrom : 0;
         for (var i = start, feature; feature = this.filtered[i]; ++i) {
           if (feature.first_of_milestone &&
-              (milestone == feature.shipped_milestone ||
-               milestone == feature.impl_status_chrome)) {
+              (milestone === feature.browsers.chrome.desktop ||
+               milestone === feature.browsers.chrome.status.text)) {
             return i;
           }
         }

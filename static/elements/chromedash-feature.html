@@ -83,7 +83,7 @@
             <iron-icon icon="chromestatus:flag" class="experimental"></iron-icon>
           </span>
         </template>
-        <template is="dom-if" if="{{feature.meta.origintrial}}">
+        <template is="dom-if" if="[[feature.browsers.chrome.origintrial]]">
           <span class="tooltip" title="Origin trial">
             <iron-icon icon="chromestatus:extension" class="experimental"></iron-icon>
           </span>
@@ -114,13 +114,13 @@
       <span>[[feature.summary]]</span>
     </summary>
   </section>
-  <template is="dom-if" if="{{open}}">
+  <template is="dom-if" if="[[open]]">
     <section class="sidebyside">
       <div class="flex">
         <h3>Chromium status</h3>
         <div class="impl_status">
-          <span class="chromium_status"><label>{{feature.impl_status_chrome}}</label></span>
-          <template is="dom-if" if="{{feature.shipped_milestone}}">
+          <span class="chromium_status"><label>[[feature.browsers.chrome.status.text]]</label></span>
+          <template is="dom-if" if="[[feature.browsers.chrome.desktop]]">
             <span>
               <label class="impl_status_label">
                 <span class="impl_status_icons">
@@ -128,10 +128,10 @@
                 </span>
                 <span>Chrome desktop</span>
               </label>
-              <span>{{feature.shipped_milestone}}</span>
+              <span>[[feature.browsers.chrome.desktop]]</span>
             </span>
           </template>
-          <template is="dom-if" if="{{feature.shipped_android_milestone}}">
+          <template is="dom-if" if="[[feature.browsers.chrome.android]]">
             <span>
               <label class="impl_status_label">
                 <span class="impl_status_icons">
@@ -140,10 +140,10 @@
                 </span>
                 <span>Chrome for Android</span>
               </label>
-              <span>{{feature.shipped_android_milestone}}</span>
+              <span>[[feature.shipped_android_milestone]]</span>
             </span>
           </template>
-          <template is="dom-if" if="{{feature.shipped_webview_milestone}}">
+          <template is="dom-if" if="[[feature.browsers.chrome.webview]]">
             <span>
               <label class="impl_status_label">
                 <span class="impl_status_icons">
@@ -151,11 +151,12 @@
                 </span>
                 <span>Android Webview</span>
               </label>
-              <span>{{feature.shipped_webview_milestone}}</span>
+              <span>[[feature.browsers.chrome.webview]]</span>
             </span>
           </template>
-          <template is="dom-if" if="{{!feature.meta.origintrial}}">
-            <template is="dom-if" if="{{feature.shipped_opera_milestone}}">
+
+          <template is="dom-if" if="[[!feature.browsers.chrome.origintrial]]">
+            <template is="dom-if" if="[[feature.browsers.opera.desktop]]">
               <span>
                 <label class="impl_status_label">
                   <span class="impl_status_icons">
@@ -163,10 +164,10 @@
                   </span>
                   <span>Opera desktop</span>
                 </label>
-                <span>{{feature.shipped_opera_milestone}}</span>
+                <span>[[feature.browsers.opera.desktop]]</span>
               </span>
             </template>
-            <template is="dom-if" if="{{feature.shipped_opera_android_milestone}}">
+            <template is="dom-if" if="[[feature.browsers.opera.android]]">
               <span>
                 <label class="impl_status_label">
                   <span class="impl_status_icons">
@@ -175,25 +176,26 @@
                   </span>
                   <span>Opera for Android</span>
                 </label>
-                <span>{{feature.shipped_opera_android_milestone}}</span>
+                <span>[[feature.browsers.opera.android]]</span>
               </span>
             </template>
           </template>
-          <template is="dom-if" if="{{feature.prefixed}}">
+          <template is="dom-if" if="[[feature.browsers.chrome.prefixed]]">
             <span><label>Prefixed</label><span>Yes</span></span>
           </template>
-          <template is="dom-if" if="{{feature.bug_url}}">
+          <template is="dom-if" if="[[feature.browsers.chrome.bug]]">
             <span>
               <span>Launch bug</span>
-              <a href$="{{feature.bug_url}}" target="_blank">[[_computeCrbug(feature.bug_url)]]</a>
+              <a href$="[[feature.browsers.chrome.bug]]" target="_blank">[[_computeCrbug(feature.browsers.chrome.bug)]]</a>
             </span>
           </template>
-          <template is="dom-if" if="{{feature.owner.length}}">
+          <template is="dom-if" if="[[feature.browsers.chrome.owners.length]]">
             <span class="owner">
               <label>Owner(s)</label>
               <span class="owner-list">
-                <template is="dom-repeat" items="{{feature.owner}}" as="owner" index-as="i">
-                  <a href="#" on-tap="ownerFilter">{{owner}}</a>
+                <template is="dom-repeat" items="[[feature.browsers.chrome.owners]]"
+                          as="owner" index-as="i">
+                  <a href="#" on-tap="ownerFilter">[[owner]]</a>
                 </template>
               </span>
             </span>
@@ -203,78 +205,78 @@
       <div class="flex">
         <h3>Consensus &amp; standardization</h3>
         <div class="views">
-          <span title="{{feature.ff_views.text}}" class="view tooltip">
+          <span title="[[feature.browsers.ff.view.text]]" class="view tooltip">
             <chromedash-color-status class="bottom"
-                value="{{feature.ff_views.value}}"
-                max="{{MAX_VENDOR_VIEW}}"></chromedash-color-status>
-            <template is="dom-if" if="{{feature.ff_views_link}}">
-              <a href$="{{feature.ff_views_link}}" target="_blank">
+                value="[[feature.browsers.ff.view.val]]"
+                max="[[MAX_VENDOR_VIEW]]"></chromedash-color-status>
+            <template is="dom-if" if="[[feature.browsers.ff.view.url]]">
+              <a href$="[[feature.browsers.ff.view.url]]" target="_blank">
                 <span class="vendor-view ff-view"></span>
               </a>
             </template>
-            <span class="vendor-view ff-view" hidden$="{{feature.ff_views_link}}"></span>
+            <span class="vendor-view ff-view" hidden$="[[feature.browsers.ff.view.url]]"></span>
           </span>
-          <span title="{{feature.ie_views.text}}" class="view tooltip">
+          <span title="[[feature.browsers.edge.view.text]]" class="view tooltip">
             <chromedash-color-status class="bottom"
-                value="[[feature.ie_views.value]]"
+                value="[[feature.browsers.edge.view.val]]"
                 max="[[MAX_VENDOR_VIEW]]"></chromedash-color-status>
-            <template is="dom-if" if="{{feature.ie_views_link}}">
-              <a href$="{{feature.ie_views_link}}" target="_blank">
+            <template is="dom-if" if="[[feature.browsers.edge.view.url]]">
+              <a href$="[[feature.browsers.edge.view.url]]" target="_blank">
                 <span class="vendor-view edge-view"></span>
               </a>
             </template>
-            <span class="vendor-view edge-view" hidden$="{{feature.ie_views_link}}"></span>
+            <span class="vendor-view edge-view" hidden$="[[feature.browsers.edge.view.url]]"></span>
           </span>
-          <span title="{{feature.safari_views.text}}" class="view tooltip">
+          <span title="[[feature.browsers.safari.view.text]]" class="view tooltip">
             <chromedash-color-status class="bottom"
-                value="[[feature.safari_views.value]]"
+                value="[[feature.browsers.safari.view.val]]"
                 max="[[MAX_VENDOR_VIEW]]"></chromedash-color-status>
-            <template is="dom-if" if="{{feature.safari_views_link}}">
-              <a href$="{{feature.safari_views_link}}" target="_blank">
+            <template is="dom-if" if="[[feature.browsers.safari.view.url]]">
+              <a href$="[[feature.browsers.safari.view.url]]" target="_blank">
                 <span class="vendor-view safari-view"></span>
               </a>
             </template>
-            <span class="vendor-view safari-view" hidden$="{{feature.safari_views_link}}"></span>
+            <span class="vendor-view safari-view" hidden$="[[feature.browsers.safari.view.url]]"></span>
           </span>
-          <span title="Web developers: {{feature.web_dev_views.text}}" class="view webdev-view tooltip">
+          <span title="Web developers: [[feature.browsers.webdev.view.text]]"
+                class="view webdev-view tooltip">
             <chromedash-color-status class="bottom"
-                value="[[feature.web_dev_views.value]]"
+                value="[[feature.browsers.webdev.view.val]]"
                 max="[[MAX_WEBDEV_VIEW]]"></chromedash-color-status>
             <iron-icon icon="chromestatus:accessibility"></iron-icon>
           </span>
           <span class="standardization view">
             <chromedash-color-status class="bottom"
-                value="[[feature.standardization.value]]"
+                value="[[feature.standards.status.val]]"
                 max="[[MAX_STANDARDS_VAL]]"></chromedash-color-status>
-            <!-- <span class="vendor-view w3c-view"></span> -->
-            <template is="dom-if" if="{{feature.spec_link}}">
-              <a href$="{{feature.spec_link}}" target="_blank">{{feature.standardization.text}}</a>
+            <template is="dom-if" if="[[feature.standards.spec]]">
+              <a href$="[[feature.standards.spec]]" target="_blank">[[feature.standards.status.text]]</a>
             </template>
-            <label hidden$="{{feature.spec_link}}">{{feature.standardization.text}}</label>
+            <label hidden$="[[feature.standards.spec]]">[[feature.standards.status.text]]</label>
           </span>
         </div>
       </div>
     </section>
-    <template is="dom-if" if="{{_computeShowResources(feature)}}">
+    <template is="dom-if" if="[[_computeShowResources(feature)]]">
       <section>
         <h3>Developer resources</h3>
         <div class="resources">
           <label>Documentation/samples:</label>
           <template is="dom-if" if="{{_computeShowDocLinks(feature)}}">
             <div class="doc_links">
-              <multi-links links="[[feature.doc_links]]" title="Link"></multi-links>
+              <multi-links links="[[feature.resources.docs]]" title="Link"></multi-links>
             </div>
             <span hidden$="{{!_computeSampleLinks(feature)}}">,</span>
           </template>
           <template is="dom-if" if="{{_computeSampleLinks(feature)}}">
             <div class="sample_links">
-              <multi-links links="[[feature.sample_links]]" title="Sample"></multi-links>
+              <multi-links links="[[feature.resources.samples]]" title="Sample"></multi-links>
             </div>
           </template>
         </div>
       </section>
     </template>
-    <template is="dom-if" if="{{feature.comments}}">
+    <template is="dom-if" if="[[feature.comments]]">
       <section>
         <h3>Comments</h3>
         <summary class="comments">
@@ -319,11 +321,11 @@
       },
       deprecated: {
         type: Boolean,
-        computed: '_computeDeprecated(feature.impl_status_chrome)'
+        computed: '_computeDeprecated(feature.browsers.chrome.status.text)'
       },
       removed: {
         type: Boolean,
-        computed: '_computeRemoved(feature.impl_status_chrome)'
+        computed: '_computeRemoved(feature.browsers.chrome.status.text)'
       },
       feature: {
         type: Object,
@@ -384,9 +386,11 @@
     },
 
     _calculateCompatRisk: function() {
-      var vendors = (this.feature.ff_views.value + this.feature.ie_views.value + this.feature.safari_views.value) / 3;
-      var webdevs = this.feature.web_dev_views.value;
-      var standards = this.feature.standardization.value;
+      var vendors = (this.feature.browsers.ff.view.val +
+                     this.feature.browsers.edge.view.val +
+                     this.feature.browsers.safari.view.val) / 3;
+      var webdevs = this.feature.browsers.webdev.view.val;
+      var standards = this.feature.standards.status.val;
       this.interopRisk = vendors + webdevs + standards;
     },
 
@@ -401,13 +405,14 @@
       return '/feature/' + feature.id;
     },
     _computeShowResources: function(feature) {
-      return feature.doc_links.length || feature.sample_links.length;
+      return feature.resources.docs.length ||
+             feature.resources.samples.length;
     },
     _computeShowDocLinks: function(feature) {
-      return feature.doc_links && feature.doc_links.length > 0;
+      return feature.resources.docs && feature.resources.docs.length > 0;
     },
     _computeSampleLinks: function(feature) {
-      return feature.sample_links && feature.sample_links.length > 0;
+      return feature.resources.samples && feature.resources.samples.length > 0;
     },
     _computeHtml: function(feature) {
       return this._urlizeFilter(feature.comments);
@@ -433,7 +438,7 @@
       return '/admin/features/edit/' + feature.id;
     },
     _computeBugComponent: function(feature) {
-      return feature.bug_component || 'Blink';
+      return feature.browsers.chrome.crbug_component || 'Blink';
     },
     _computeCrbugNumber: function(link) {
       if (!link) {
@@ -454,12 +459,13 @@
     _computeNewBugUrl: function(feature) {
       var url = 'https://bugs.chromium.org/p/chromium/issues/entry';
       var params = ['components=' + this._computeBugComponent(feature)];
-      var crbugNumber = this._computeCrbugNumber(feature.bug_url);
-      if (crbugNumber && this._computePreLaunch(feature.impl_status_chrome)) {
+      var crbugNumber = this._computeCrbugNumber(feature.browsers.chrome.bug);
+      if (crbugNumber && this._computePreLaunch(feature.browsers.chrome.status.text)) {
         params.push('blocking=' + crbugNumber);
       }
-      if (feature.owner.length) {
-        params.push('cc=' + feature.owner.map(encodeURIComponent));
+      var owners = feature.browsers.chrome.owners;
+      if (owners.length) {
+        params.push('cc=' + owners.map(encodeURIComponent));
       }
       return url + '?' + params.join('&');
     }
