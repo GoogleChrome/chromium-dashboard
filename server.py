@@ -43,18 +43,21 @@ def first_of_milestone(feature_list, milestone, start=0):
     elif (f['shipped_milestone'] == None and
           str(f['shipped_android_milestone']) == str(milestone)):
       return i
+
   return -1
 
 def first_of_milestone_v2(feature_list, milestone, start=0):
   for i in xrange(start, len(feature_list)):
     f = feature_list[i]
-    desktop_shipped_milestone = f['browsers']['chrome']['desktop']
-    if (str(desktop_shipped_milestone) == str(milestone) or
-        f['browsers']['chrome']['status']['text'] == str(milestone)):
+    desktop_milestone = f['browsers']['chrome'].get('desktop', None)
+    android_milestone = f['browsers']['chrome'].get('android', None)
+    status = f['browsers']['chrome']['status'].get('text', None)
+
+    if (str(desktop_milestone) == str(milestone) or status == str(milestone)):
       return i
-    elif (desktop_shipped_milestone == None and
-          str(f['browsers']['chrome']['android']) == str(milestone)):
+    elif (desktop_milestone == None and str(android_milestone) == str(milestone)):
       return i
+
   return -1
 
 def get_omaha_data():
@@ -171,6 +174,10 @@ class MainHandler(http2push.PushHandler, common.ContentHandler, common.JSONHandl
           {'key': k, 'val': v} for k,v in
           models.STANDARDIZATION.iteritems()])
         template_data['TEMPLATE_CACHE_TIME'] = settings.TEMPLATE_CACHE_TIME
+
+        feature_list = models.Feature.get_chronological(version=2) # Memcached
+        annotate_first_of_milestones(feature_list, version=2)
+        template_data['FEATURES'] = feature_list
 
         push_urls = http2push.use_push_manifest('push_manifest_features.json')
 

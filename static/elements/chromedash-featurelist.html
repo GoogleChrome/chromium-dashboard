@@ -7,7 +7,7 @@
 <link rel="import" type="css" href="../css/elements/chromedash-featurelist.css">
 <template>
   <div id="featurelist">
-    <iron-list id="ironlist" scroll-target="document" items="[[filtered]]" as="feature">
+   <!--  <iron-list id="ironlist" scroll-target="document" items="[[filtered]]" as="feature">
       <template>
         <div class="item" tabindex="0">
           <div hidden$="[[_computeMilestoneHidden(feature, features, filtered)]]"
@@ -17,7 +17,8 @@
                whitelisted="[[whitelisted]]"></chromedash-feature>
         </div>
       </template>
-    </iron-list>
+    </iron-list> -->
+    <content></content>
   </div>
 </template>
 <script>

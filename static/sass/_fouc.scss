@@ -5,8 +5,56 @@ body.loading {
     display: none;
   }
 
+  // chromedash-featurelist {
+  //   visibility: hidden;
+  // }
+
+  chromedash-feature {
+    display: block;
+
+    summary {
+      margin: 10px 0 0 0;
+      cursor: pointer;
+      color: #797979;
+      line-height: 20px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+  }
+
   chromedash-featurelist {
-    visibility: hidden;
+    .milestone-marker.first {
+      margin-top: 0;
+    }
+  }
+
+  app-drawer-layout {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+
+    app-drawer {
+      width: 196px;
+      display: inline-block;
+      vertical-align: top;
+
+      .drawer-content-wrapper {
+        height: 100%;
+      }
+    }
+
+    #content {
+      display: inline-block;
+      vertical-align: top;
+      // width: 100%;
+      // margin-left: 200px + $content-padding;
+      // margin-top: 135px;
+
+    }
   }
 
   .main-toolbar {

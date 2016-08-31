@@ -64,7 +64,9 @@
     <chromedash-color-status class="tooltip corner"
        title="Interoperability risk: perceived interest from browser vendors and web developers"
        value="[[interopRisk]]" max="[[MAX_RISK]]"></chromedash-color-status>
-    <h2>{{feature.name}}</h2>
+    <content select="h2">
+      <h2>{{title}}</h2>
+    </content>
     <div class="iconrow">
       <label class="category" on-tap="categoryFilter">{{feature.category}}</label>
       <div class="topcorner">
@@ -109,10 +111,10 @@
     </div>
   </hgroup>
   <section class="desc" on-tap="toggle">
-    <summary>
-      <!-- <html-echo html="[[_urlizeFilter(feature.summary)]]"></html-echo> -->
+    <!-- <summary>
       <span>[[feature.summary]]</span>
-    </summary>
+    </summary> -->
+    <content select="summary"></content>
   </section>
   <template is="dom-if" if="[[open]]">
     <section class="sidebyside">
