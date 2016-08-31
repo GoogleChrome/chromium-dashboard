@@ -163,6 +163,18 @@ WEB_DEV_VIEWS = {
 DEFAULT_BUG_COMPONENT = 'Blink'
 
 
+def del_none(d):
+  """
+  Delete dict keys with None values, and empty lists, recursively.
+  """
+  for key, value in d.items():
+    if value is None or (isinstance(value, list) and len(value) == 0):
+      del d[key]
+    elif isinstance(value, dict):
+      del_none(value)
+  return d
+
+
 class DictModel(db.Model):
   # def to_dict(self):
   #   return dict([(p, unicode(getattr(self, p))) for p in self.properties()])
@@ -314,6 +326,11 @@ class Feature(DictModel):
         d['browsers']['chrome']['status']['milestone_str'] = self.shipped_android_milestone
       else:
         d['browsers']['chrome']['status']['milestone_str'] = d['browsers']['chrome']['status']['text']
+
+      del d['created']
+      del d['updated']
+
+      del_none(d) # Further prune response by removing null/[] values.
 
     else:
       d['id'] = self.key().id()

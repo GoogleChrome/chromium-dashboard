@@ -405,8 +405,9 @@
       return '/feature/' + feature.id;
     },
     _computeShowResources: function(feature) {
-      return feature.resources.docs.length ||
-             feature.resources.samples.length;
+      var docs = feature.resources.docs;
+      var samples = feature.resources.samples;
+      return docs && docs.length || samples && samples.length;
     },
     _computeShowDocLinks: function(feature) {
       return feature.resources.docs && feature.resources.docs.length > 0;
@@ -464,7 +465,7 @@
         params.push('blocking=' + crbugNumber);
       }
       var owners = feature.browsers.chrome.owners;
-      if (owners.length) {
+      if (owners && owners.length) {
         params.push('cc=' + owners.map(encodeURIComponent));
       }
       return url + '?' + params.join('&');
