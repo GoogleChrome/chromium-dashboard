@@ -78,7 +78,9 @@
                       metric.sendToAnalytics(
                           'service worker', 'precache size', bytes);
 
-                      Toast.showMessage(`This site is cached (${kb}KB). Ready to use offline!`);
+                      Toast.showMessage(
+                          `This site is cached (${kb}KB). ` +
+                          'Ready to use offline!');
                     }));
                   }
                 }
