@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 
 {% load inline_file %}
+{% load cache %}
 
 {% block preload %}
 {% if VULCANIZE %}
@@ -20,16 +21,21 @@
 
 {% block rss %}
 <link rel="alternate" type="application/rss+xml" href="http://www.chromestatus.com/features.xml" title="All features" />
-{% for k,v in categories %}
-<link rel="alternate" type="application/rss+xml"
-      href="http://www.chromestatus.com/features.xml?category={{v}}" title='"{{k}}" features'>
-{% endfor %}
+{% cache TEMPLATE_CACHE_TIME rssfeed %}
+  {% for k,v in categories %}
+  <link rel="alternate" type="application/rss+xml"
+        href="http://www.chromestatus.com/features.xml?category={{v}}" title='"{{k}}" features'>
+  {% endfor %}
+{% endcache %}
 
 {% endblock %}
 
 {% block css %}
 <!-- <link rel="stylesheet" href="/static/css/features/features.css"> -->
+{% cache TEMPLATE_CACHE_TIME featurescss %}
 <style>{% inline_file "/static/css/features/features.css" %}</style>
+{% endcache %}
+
 {% endblock %}
 
 {% block subheader %}
@@ -52,6 +58,7 @@
 {% block drawer %}
 <h3>Chrome versions</h3>
 
+{% cache TEMPLATE_CACHE_TIME chromedashmetadata %}
 <chromedash-metadata
   impl-statuses='{{IMPLEMENTATION_STATUSES|safe}}'
   status='{
@@ -65,6 +72,8 @@
     "IN_EXPERIMENTAL_FRAMEWORK": 8,
     "NO_LONGER_PURSUING": 1000
   }'></chromedash-metadata>
+{% endcache %}
+
 {% endblock %}
 
 {% block overlay %}
