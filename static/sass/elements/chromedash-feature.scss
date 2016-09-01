@@ -8,6 +8,7 @@
   padding: 10px 20px !important;
   list-style: none;
   box-sizing: border-box;
+  contain: content;
 
   &:active {
     outline: none;

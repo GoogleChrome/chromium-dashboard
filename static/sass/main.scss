@@ -124,6 +124,7 @@ header {
       .dropdown-content {
         display: flex;
         flex-direction: column;
+        contain: content;
       }
     }
   }
