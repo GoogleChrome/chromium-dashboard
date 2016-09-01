@@ -291,6 +291,10 @@ footer {
     .main-toolbar {
       padding: 0;
       display: block;
+
+      iron-icon {
+        width: 24px;
+      }
     }
   }
 
