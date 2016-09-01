@@ -170,7 +170,7 @@
         this.viewList = this.props;
         if (location.hash) {
           this.async(function() {
-            this.scrollToProperty(location.hash.split('#')[1]);
+            this.scrollToProperty(decodeURIComponent(location.hash.substr(1)));
           });
         }
       },

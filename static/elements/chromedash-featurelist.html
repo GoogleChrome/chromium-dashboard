@@ -141,7 +141,10 @@
         } else {
           val = val.trim();
           if (history && history.replaceState) {
-            history.replaceState({id: null}, document.title, '/features#' + val);
+            history.replaceState(
+              {id: null},
+              document.title,
+              '/features#' + encodeURIComponent(val));
           }
 
           // owner: user@chromium.org
