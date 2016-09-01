@@ -135,7 +135,7 @@ t.prevSelectedCategory = null;
 
 // Set search box to URL deep link.
 if (location.hash) {
-  search.value = location.hash.substr(1);
+  search.value = decodeURIComponent(location.hash.substr(1));
 }
 
 t._computeIcon = function(el) {

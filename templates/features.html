@@ -101,7 +101,7 @@ featureList.search = search;
 
 // Set search box to URL deep link.
 if (location.hash) {
-  search.value = location.hash.substr(1);
+  search.value = decodeURIComponent(location.hash.substr(1));
 }
 
 var featuresUnveilMetric = new Metric('features_unveil');
