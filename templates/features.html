@@ -90,6 +90,8 @@
 {% endblock %}
 
 {% block content %}
+
+{% cache TEMPLATE_CACHE_TIME template_feature_list user.is_whitelisted %}
 <chromedash-featurelist {% if user.is_whitelisted %}whitelisted{% endif %}>
   {% for feature in FEATURES %}
     <div class="item">
@@ -110,6 +112,8 @@
     </div>
   {% endfor %}
 </chromedash-featurelist>
+{% endcache %}
+
 {% endblock %}
 
 {% block js %}
@@ -246,21 +250,6 @@ var featuresPromise = new Promise(function(resolve, reject) {
 });
 
 window.asyncImportsLoadPromise = new Promise(function(resolve, reject) {
-  // var featuresImport = document.querySelector('#features_import');
-  // featuresImport.onerror = reject;
-  // featuresImport.onload = function(e) {
-  //   resolve();
-
-  //   featuresPromise.then(function(features) {
-  //     featureList.features = features;
-  //     featureList.filter(search.value);
-  //     search.disabled = false;
-  //   }, function(e) {
-  //     document.getElementById('content').classList.add('error');
-  //     console.error(e);
-  //   });
-  // };
-
   var l = document.createElement('link');
   l.rel = 'import';
   l.setAttribute('async', '');
