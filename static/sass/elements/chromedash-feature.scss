@@ -8,6 +8,7 @@
   padding: 10px 20px !important;
   list-style: none;
   box-sizing: border-box;
+  contain: content;
 
   &:active {
     outline: none;
@@ -162,6 +163,7 @@ section {
     > span {
       display: flex;
       justify-content: space-between;
+      align-items: center;
       padding: 8px;
 
       &:nth-of-type(odd) {
@@ -191,10 +193,17 @@ section {
       @extend .vendor_icon;
       background-position: -75px 50%;
     }
+  }
 
-    .follows_icon, iron-icon.follows_icon {
-      vertical-align: top;
-    }
+  .impl_status_label {
+    display: flex;
+    align-items: center;
+  }
+
+  .impl_status_icons {
+    display: flex;
+    align-items: center;
+    min-width: 50px;
   }
 
   .views {

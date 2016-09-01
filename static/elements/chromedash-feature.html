@@ -117,47 +117,57 @@
           <span class="chromium_status"><label>{{feature.impl_status_chrome}}</label></span>
           <template is="dom-if" if="{{feature.shipped_milestone}}">
             <span>
-              <label>
-                <span class="chrome_icon"></span>
-                <span class="follows_icon">Chrome desktop</span>
+              <label class="impl_status_label">
+                <span class="impl_status_icons">
+                  <span class="chrome_icon"></span>
+                </span>
+                <span>Chrome desktop</span>
               </label>
               <span>{{feature.shipped_milestone}}</span>
             </span>
           </template>
           <template is="dom-if" if="{{feature.shipped_android_milestone}}">
             <span>
-              <label>
-                <span class="chrome_icon"></span>
-                <iron-icon icon="chromestatus:android" class="android follows_icon"></iron-icon>
-                <span class="follows_icon">Chrome for Android</span>
+              <label class="impl_status_label">
+                <span class="impl_status_icons">
+                  <span class="chrome_icon"></span>
+                  <iron-icon icon="chromestatus:android" class="android"></iron-icon>
+                </span>
+                <span>Chrome for Android</span>
               </label>
               <span>{{feature.shipped_android_milestone}}</span>
             </span>
           </template>
           <template is="dom-if" if="{{feature.shipped_webview_milestone}}">
             <span>
-              <label>
-                <iron-icon icon="chromestatus:android" class="android"></iron-icon>
-                Android Webview
+              <label class="impl_status_label">
+                <span class="impl_status_icons">
+                  <iron-icon icon="chromestatus:android" class="android"></iron-icon>
+                </span>
+                <span>Android Webview</span>
               </label>
               <span>{{feature.shipped_webview_milestone}}</span>
             </span>
           </template>
           <template is="dom-if" if="{{feature.shipped_opera_milestone}}">
             <span>
-              <label>
-                <span class="opera_icon"></span>
-                <span class="follows_icon">Opera desktop</span>
+              <label class="impl_status_label">
+                <span class="impl_status_icons">
+                  <span class="opera_icon"></span>
+                </span>
+                <span>Opera desktop</span>
               </label>
               <span>{{feature.shipped_opera_milestone}}</span>
             </span>
           </template>
           <template is="dom-if" if="{{feature.shipped_opera_android_milestone}}">
             <span>
-              <label>
-                <span class="opera_icon"></span>
-                <iron-icon icon="chromestatus:android" class="android follows_icon"></iron-icon>
-                <span class="follows_icon">Opera for Android</span>
+              <label class="impl_status_label">
+                <span class="impl_status_icons">
+                  <span class="opera_icon"></span>
+                  <iron-icon icon="chromestatus:android" class="android"></iron-icon>
+                </span>
+                <span>Opera for Android</span>
               </label>
               <span>{{feature.shipped_opera_android_milestone}}</span>
             </span>

@@ -9,10 +9,10 @@
   <div id="featurelist">
     <iron-list id="ironlist" scroll-target="document" items="[[filtered]]" as="feature">
       <template>
-        <div class="item" tabindex="0">
+        <div class="item">
           <div hidden$="{{_computeMilestoneHidden(feature, features, filtered)}}"
                class="milestone-marker">{{_computeMilestoneString(feature.meta.milestone_str)}}</div>
-          <chromedash-feature id="{{feature.id}}"
+          <chromedash-feature id="{{feature.id}}" tabindex="0"
                feature="[[feature]]" needsflag="[[feature.meta.needsflag]]"
                whitelisted="[[whitelisted]]"></chromedash-feature>
         </div>

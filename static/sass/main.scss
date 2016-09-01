@@ -124,6 +124,7 @@ header {
       .dropdown-content {
         display: flex;
         flex-direction: column;
+        contain: content;
       }
     }
   }
@@ -226,6 +227,8 @@ footer {
 
         iron-icon {
           margin-right: $content-padding / 2;
+          height: 24px;
+          width: 24px;
         }
       }
 
@@ -288,6 +291,10 @@ footer {
     .main-toolbar {
       padding: 0;
       display: block;
+
+      iron-icon {
+        width: 24px;
+      }
     }
   }
 
