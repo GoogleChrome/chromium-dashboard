@@ -72,7 +72,7 @@
           type: Boolean,
           readOnly: true,
           value: true
-        },
+        }
       },
 
       listeners: {
@@ -222,8 +222,7 @@
           var keywordQueries = [];
 
           // Accumulate keyword and property queries.
-          var i;
-          for (i = 0; i < reMatches.length; i++) {
+          for (var i = 0; i < reMatches.length; i++) {
             match = reMatches[i];
             var part = match[2] || match[3];
             var sep = match[4];
@@ -262,7 +261,7 @@
             this.filtered = this.features;
           } else {
             var results = this.features;
-            for (i = 0; i < filters.length; i++) {
+            for (var i = 0; i < filters.length; i++) {
               results = results.filter(filters[i]);
             }
             this.filtered = results;
