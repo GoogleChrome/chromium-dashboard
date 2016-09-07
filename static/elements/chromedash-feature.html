@@ -88,6 +88,11 @@
             <iron-icon icon="chromestatus:extension" class="experimental"></iron-icon>
           </span>
         </template>
+        <template is="dom-if" if="[[feature.meta.intervention]]">
+          <span class="tooltip" title="Browser intervention">
+            <iron-icon icon="chromestatus:pan-tool" class="intervention" data-tooltip></iron-icon>
+          </span>
+        </template>
         <span class="tooltip" title="File a bug against this feature">
           <a href$="{{_computeNewBugUrl(feature)}}" class="newbug" data-tooltip>
             <iron-icon icon="chromestatus:bug-report"></iron-icon>

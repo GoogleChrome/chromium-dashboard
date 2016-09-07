@@ -49,6 +49,9 @@ iron-icon {
   &.experimental {
     color: var(--paper-green-700);
   }
+  &.intervention {
+    color: var(--paper-yellow-800);
+  }
 }
 
 .opennew {
