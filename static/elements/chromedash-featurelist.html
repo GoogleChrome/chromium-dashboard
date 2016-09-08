@@ -190,6 +190,7 @@
           var regExp = /"([^"]*)"/g;
           var start = 0;
           var parts = [];
+          var match;
           while ((match = regExp.exec(val)) !== null) {
             if (start - (regExp.lastIndex - match[0].length) > 0) {
               parts.push(val.substring(start, regExp.lastIndex -
@@ -197,9 +198,10 @@
             }
             parts.push(match[1]);
           }
-          if (start - (regExp.lastIndex - match[0].length) > 0) {
+          var matchLen = match ? match[0].length : 0;
+          if (start - (regExp.lastIndex - matchLen) > 0) {
             parts.push(val.substring(start, regExp.lastIndex -
-                                     match[0].length));
+                                     matchLen));
           }
 
           // Match words separated by whitespace and/or ":" and/or ordered
@@ -209,7 +211,6 @@
           // [ full match, quoted-string-or-word, contents-of-quoted-string,
           //   word, separator ].
           var reMatches = [];
-          var match;
           while ((match = regExp.exec(val)) !== null) {
             reMatches.push(match);
           }
