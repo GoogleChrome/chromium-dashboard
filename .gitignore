@@ -14,3 +14,4 @@ static/js/**/*.es6.min.js
 bulkloader-*
 css/
 static/dist/
+cookie
