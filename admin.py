@@ -55,7 +55,8 @@ COOKIE_FILENAME = os.path.join(settings.ROOT_DIR, 'cookie')
 
 def _FetchWithCookie(url):
   if settings.PROD:
-    return urlfetch.fetch(url)
+    # follow_redirects=False according to https://cloud.google.com/appengine/docs/python/appidentity/#asserting_identity_to_other_app_engine_apps
+    return urlfetch.fetch(url, deadline=60, follow_redirects=False)
   try:
     with open(COOKIE_FILENAME, 'r') as f:
       cookie = f.readline()
@@ -75,10 +76,11 @@ class UmaQuery(object):
 
   def _FetchData(self, date):
     params = '?end_date=%s&day_count=1' % date.strftime('%Y%m%d')
-    result = _FetchWithCookie(UMA_QUERY_SERVER + self.query_name + params)
+    url = UMA_QUERY_SERVER + self.query_name + params
+    result = _FetchWithCookie(url)
 
     if (result.status_code != 200):
-      logging.error('Unable to retrieve histograms data.')
+      logging.error('Unable to retrieve UMA data from %s. Error: %s' % (url, result.status_code))
       return (None, 404)
 
     json_content = result.content.split('\n', 1)[1]
