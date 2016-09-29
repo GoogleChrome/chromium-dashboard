@@ -111,6 +111,8 @@ class MainHandler(http2push.PushHandler, common.ContentHandler, common.JSONHandl
     template_data = {}
     push_urls = [] # URLs to push in this response.
 
+    template_data['embed'] = self.request.get('embed', None) is not None
+
     if path.startswith('features'):
       if path.endswith('.json'): # JSON request.
         KEY = '%s|all' % (models.Feature.DEFAULT_MEMCACHE_KEY)

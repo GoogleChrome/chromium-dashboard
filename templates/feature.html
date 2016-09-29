@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends embed|yesno:"blank.html,base.html" %}
 {% load inline_file %}
 
 {% block page_title %}{% if feature.name %}{{ feature.name }} - {% endif %}{% endblock %}
@@ -23,6 +23,7 @@
 {% endblock %}
 
 {% block content %}
+
 <div id="feature">
   <section id="name">
     <h2>

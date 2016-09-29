@@ -1,0 +1,77 @@
+{% load inline_file %}
+
+<!DOCTYPE html>
+<!--
+Copyright 2016 Google Inc. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<html>
+<head>
+<meta charset="utf-8">
+<title>{% block page_title %}{% endblock %}{{ APP_TITLE }}</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+
+<link rel="manifest" href="/static/manifest.json">
+
+<meta name="theme-color" content="#366597">
+<link rel="icon" sizes="192x192" href="/static/img/crstatus_192.png">
+
+<!-- iOS: run in full-screen mode and display upper status bar as translucent -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+<link rel="apple-touch-icon" href="/static/img/crstatus_128.png">
+<link rel="apple-touch-icon-precomposed" href="/static/img/crstatus_128.png">
+<link rel="shortcut icon" href="/static/img/crstatus_128.png">
+
+<link rel="preconnect" href="https://www.google-analytics.com" crossorigin>
+{% block meta %}{% endblock %}
+
+<style>{% inline_file "/static/css/main.css" %}</style>
+
+{% block css %}{% endblock %}
+
+{% block preload %}{% endblock %}
+
+{% block html_imports %}{% endblock %}
+
+{% block rss %}{% endblock%}
+</head>
+<body class="loading">
+
+{% block content %}{% endblock %}
+
+{# Metric is need by sw registration and page code. #}
+<script>
+{% inline_file "/static/js/metrics.es6.min.js" %}
+</script>
+
+{% block js %}{% endblock %}
+
+<script>
+{% inline_file "/static/js/service-worker-registration.es6.min.js" %}
+
+// Google Analytics
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-39048143-1', 'auto');
+ga('send', 'pageview');
+// End Google Analytics
+</script>
+</body>
+</html>
