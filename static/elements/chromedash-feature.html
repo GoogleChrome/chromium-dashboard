@@ -154,28 +154,30 @@
               <span>{{feature.shipped_webview_milestone}}</span>
             </span>
           </template>
-          <template is="dom-if" if="{{feature.shipped_opera_milestone}}">
-            <span>
-              <label class="impl_status_label">
-                <span class="impl_status_icons">
-                  <span class="opera_icon"></span>
-                </span>
-                <span>Opera desktop</span>
-              </label>
-              <span>{{feature.shipped_opera_milestone}}</span>
-            </span>
-          </template>
-          <template is="dom-if" if="{{feature.shipped_opera_android_milestone}}">
-            <span>
-              <label class="impl_status_label">
-                <span class="impl_status_icons">
-                  <span class="opera_icon"></span>
-                  <iron-icon icon="chromestatus:android" class="android"></iron-icon>
-                </span>
-                <span>Opera for Android</span>
-              </label>
-              <span>{{feature.shipped_opera_android_milestone}}</span>
-            </span>
+          <template is="dom-if" if="{{!feature.meta.origintrial}}">
+            <template is="dom-if" if="{{feature.shipped_opera_milestone}}">
+              <span>
+                <label class="impl_status_label">
+                  <span class="impl_status_icons">
+                    <span class="opera_icon"></span>
+                  </span>
+                  <span>Opera desktop</span>
+                </label>
+                <span>{{feature.shipped_opera_milestone}}</span>
+              </span>
+            </template>
+            <template is="dom-if" if="{{feature.shipped_opera_android_milestone}}">
+              <span>
+                <label class="impl_status_label">
+                  <span class="impl_status_icons">
+                    <span class="opera_icon"></span>
+                    <iron-icon icon="chromestatus:android" class="android"></iron-icon>
+                  </span>
+                  <span>Opera for Android</span>
+                </label>
+                <span>{{feature.shipped_opera_android_milestone}}</span>
+              </span>
+            </template>
           </template>
           <template is="dom-if" if="{{feature.prefixed}}">
             <span><label>Prefixed</label><span>Yes</span></span>
