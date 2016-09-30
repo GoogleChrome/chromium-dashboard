@@ -133,7 +133,7 @@
         {% if feature.shipped_webview_milestone %}
         <li>Android WebView release {{ feature.shipped_webview_milestone }}</li>
         {% endif %}
-        {% if !feature.meta.origintrial %}
+        {% if not feature.meta.origintrial %}
           {% if feature.shipped_opera_milestone %}
           <li>Opera release {{ feature.shipped_opera_milestone }}</li>
           {% endif %}

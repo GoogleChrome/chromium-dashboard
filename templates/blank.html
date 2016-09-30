@@ -48,8 +48,36 @@ limitations under the License.
 {% block html_imports %}{% endblock %}
 
 {% block rss %}{% endblock%}
+
+<style>
+header {
+  margin-bottom: 16px;
+  max-width: 768px;
+}
+header aside {
+  width: 100%;
+}
+header nav {
+  display: none;
+}
+header iron-icon {
+  display: none !important;
+}
+@media only screen and (max-width: 700px) {
+  header aside {
+    background-position: 16px 50%;
+  }
+  header aside hgroup {
+    padding-left: 40px;
+  }
+}
+</style>
 </head>
 <body class="loading">
+
+<div>
+{% include "header.html" %}
+</div>
 
 {% block content %}{% endblock %}
 
