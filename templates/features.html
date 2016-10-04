@@ -226,9 +226,11 @@ window.asyncImportsLoadPromise = new Promise(function(resolve, reject) {
 
     featuresPromise.then(function(features) {
       features.map(function(feature) {
-      feature.milestone = feature.shipped_milestone || feature.shipped_android_milestone ||
-          feature.shipped_webview_milestone || feature.shipped_ios_milestone ||
-          Infinity;
+        feature.milestone = feature.shipped_milestone ||
+            feature.shipped_android_milestone ||
+            feature.shipped_webview_milestone ||
+            feature.shipped_ios_milestone ||
+            Infinity;
       });
       featureList.features = features;
       featureList.filter(search.value);
