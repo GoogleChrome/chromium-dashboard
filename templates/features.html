@@ -117,7 +117,9 @@ var featuresUnveilMetric = new Metric('features_unveil');
 var featuresFetchMetric = new Metric('features_loaded');
 
 chromeMetadata.addEventListener('query-changed', function(e) {
-  search.value = '=' + e.detail.version;
+  var propertyName = e.detail.version.match(/^[0-9]+$/) ? 'milestone' :
+      'impl_status_chrome';
+  search.value = propertyName + '=' + e.detail.version;
   featureList.filter(search.value);
 });
 
@@ -222,6 +224,11 @@ window.asyncImportsLoadPromise = new Promise(function(resolve, reject) {
     resolve();
 
     featuresPromise.then(function(features) {
+      features.map(function(feature) {
+      feature.milestone = feature.shipped_milestone || feature.shipped_android_milestone ||
+          feature.shipped_webview_milestone || feature.shipped_ios_milestone ||
+          Infinity;
+      });
       featureList.features = features;
       featureList.filter(search.value);
       search.disabled = false;
