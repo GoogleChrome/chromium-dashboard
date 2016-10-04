@@ -117,9 +117,10 @@ var featuresUnveilMetric = new Metric('features_unveil');
 var featuresFetchMetric = new Metric('features_loaded');
 
 chromeMetadata.addEventListener('query-changed', function(e) {
-  var propertyName = e.detail.version.match(/^[0-9]+$/) ? 'milestone' :
-      'impl_status_chrome';
-  search.value = propertyName + '=' + e.detail.version;
+  var value = e.detail.version;
+  var isMilestone = value.match(/^[0-9]+$/);
+  search.value = isMilestone ? 'milestone=' + value :
+      'impl_status_chrome:"' + value + '"';
   featureList.filter(search.value);
 });
 
