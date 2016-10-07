@@ -30,7 +30,7 @@
   <div>
     <h3>About this data</h3>
     <p class="description">
-    We've been using Chrome's <a href="https://chromium.googlesource.com/chromium/blink/+/master/Source/core/frame/UseCounter.cpp" target="_blank">anonymous opt-in usage statistics</a> to count the CSS properties which are animated. A property that is animated multiple times during a single page view is counted each time it animates. <b>Percentages on this page indicate the amount of times (as the fraction of all animated properties) each property is used in a Transition or Animation</b>. Data is ~24 hrs old and reflects usage across all channels and platforms.</p>
+    We've been using Chrome's <a href="https://chromium.googlesource.com/chromium/blink/+/master/Source/core/frame/UseCounter.cpp" target="_blank">anonymous opt-out usage statistics</a> to count the CSS properties which are animated. A property that is animated multiple times during a single page view is counted each time it animates. <b>Percentages on this page indicate the amount of times (as the fraction of all animated properties) each property is used in a Transition or Animation</b>. Data is ~24 hrs old and reflects usage across all channels and platforms.</p>
   </div>
   <chromedash-metrics type="css" view="animated" {% if not prod %}use-remote-data{% endif %}></chromedash-metrics>
 </div>
