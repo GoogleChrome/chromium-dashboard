@@ -19,7 +19,7 @@
    * Returns a promise for the total size of assets precached by service worker.
    * @return {Promise} Promises that fulfills with the total size.
    */
-  function precachedAssetTotalSize() {
+  function getPrecachedAssetTotalSize() {
     // Note that any opaque (i.e. cross-domain, without CORS) responses in the
     // cache will return a size of 0.
     return caches.keys().then(cacheNames => {
@@ -67,22 +67,19 @@
           installingWorker.onstatechange = function() {
             switch (installingWorker.state) {
               case 'installed':
-                if (!navigator.serviceWorker.controller) {
-                  if (Toast) {
-                    toastReady.then(precachedAssetTotalSize().then(bytes => {
-                      let kb = Math.round(bytes / 1000);
-                      console.info('[ServiceWorker] precached', kb, 'KB');
+                if (Toast && !navigator.serviceWorker.controller) {
+                  toastReady.then(getPrecachedAssetTotalSize().then(bytes => {
+                    let kb = Math.round(bytes / 1000);
+                    console.info('[ServiceWorker] precached', kb, 'KB');
 
-                      // Send precached bytes to GA.
-                      let metric = new Metric('sw_precache');
-                      metric.sendToAnalytics(
-                          'service worker', 'precache size', bytes);
+                    // Send precached bytes to GA.
+                    let metric = new Metric('sw_precache');
+                    metric.sendToAnalytics(
+                        'service worker', 'precache size', bytes);
 
-                      Toast.showMessage(
-                          `This site is cached (${kb}KB). ` +
-                          'Ready to use offline!');
-                    }));
-                  }
+                    Toast.showMessage(
+                        `This site is cached (${kb}KB). Ready to use offline!`);
+                  }));
                 }
                 break;
               case 'redundant':

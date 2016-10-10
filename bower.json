@@ -24,7 +24,7 @@
   },
   "dependencies": {
     "app-layout": "PolymerElements/app-layout#^0.10.0",
-    "polymer": "Polymer/polymer#^1.6.0",
+    "polymer": "Polymer/polymer#^1.7.0",
     "google-apis": "GoogleWebComponents/google-apis#^1.0.2",
     "paper-listbox": "PolymerElements/paper-listbox#^1.1.2",
     "paper-item": "PolymerElements/paper-item#^1.0.3",
