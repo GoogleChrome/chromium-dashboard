@@ -219,19 +219,23 @@ gulp.task('generate-service-worker', () => {
         }
       }
     }, {
-      // For dynamic data (json), try the network first to get the most recent
-      // values.
+      // For dynamic data (json), use "fastest" so liefi scenarios are fast.
+      // "fastest" also makes a network request to update the cached copy.
+      // The worst case is that the user with an active SW gets stale content
+      // and never refreshes the page.
+      // TODO: use sw-toolbox notifyOnCacheUpdate when it's ready
+      // https://github.com/GoogleChrome/sw-toolbox/pull/174/
       urlPattern: /\/data\//,
-      handler: 'networkFirst'
+      handler: 'fastest'
     }, {
       urlPattern: /\/features.json$/,
-      handler: 'networkFirst'
+      handler: 'fastest'
     }, {
       urlPattern: /\/samples.json$/,
-      handler: 'networkFirst'
+      handler: 'fastest'
     }, {
       urlPattern: /\/omaha_data$/,
-      handler: 'networkFirst'
+      handler: 'fastest'
     }]
   });
 });
