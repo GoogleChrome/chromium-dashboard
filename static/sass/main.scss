@@ -26,7 +26,7 @@ body {
   align-items: center;
   justify-content: center;
   position: fixed;
-  height: calc(100% - 54px - $header-height); // 100% - height of footer + header.
+  height: calc(100% - 54px - $header-height - $banner-height); // 100% - height of footer - banner + header.
   max-width: $max-content-width;
   width: 100%;
 }
@@ -262,7 +262,7 @@ footer {
   margin: $content-padding;
   position: relative;
   height: 100%;
-  margin-top: $header-height;
+  margin-top: $header-height + $banner-height;
 }
 
 #panels {
@@ -279,7 +279,7 @@ footer {
   }
   app-drawer {
     .drawer-content-wrapper {
-      margin-top: $header-height;
+      margin-top: $header-height + $banner-height;
     }
   }
   app-header {
