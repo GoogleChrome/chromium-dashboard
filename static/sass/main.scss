@@ -26,7 +26,7 @@ body {
   align-items: center;
   justify-content: center;
   position: fixed;
-  height: calc(100% - 54px - 135px); // 100% - height of footer + header.
+  height: calc(100% - 54px - $header-height - $banner-height); // 100% - height of footer - banner + header.
   max-width: $max-content-width;
   width: 100%;
 }
@@ -241,6 +241,16 @@ footer {
   }
 }
 
+#banner {
+  display: flex;
+  margin: $content-padding 0;
+  max-width: $max-content-width;
+  background: #fff3e0;
+  font-weight: 500;
+  padding: $content-padding $content-padding / 2;
+}
+
+
 #container {
   display: flex;
   flex-direction: column;
@@ -252,7 +262,7 @@ footer {
   margin: $content-padding;
   position: relative;
   height: 100%;
-  margin-top: 135px;
+  margin-top: $header-height + $banner-height;
 }
 
 #panels {
@@ -269,7 +279,7 @@ footer {
   }
   app-drawer {
     .drawer-content-wrapper {
-      margin-top: 135px; // height of header.
+      margin-top: $header-height + $banner-height;
     }
   }
   app-header {

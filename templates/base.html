@@ -99,6 +99,13 @@ var $$ = function(selector) {
     <div class="main-toolbar">
       <div class="toolbar-content">
         {% include "header.html" %}
+        {% block banner %}
+        <div id="banner">
+          <p>
+            Help us improve this site by filling out this very short <a href="https://docs.google.com/a/google.com/forms/d/e/1FAIpQLSd5lL2cRXOnxYZF8qaPykLsU6-1_p4M_1PatwGaIwL3eVcOMA/viewform?c=0&w=1" target="_blank">survey</a>.
+          </p>
+        </div>
+        {% endblock %}
         {% block subheader %}{% endblock %}
       </div>
     </div>
