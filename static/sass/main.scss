@@ -277,6 +277,9 @@ footer {
       max-width: $max-content-width;
     }
   }
+  footer {
+    padding-left: $app-drawer-width;
+  }
 }
 
 @media only screen and (max-width: 700px) {
