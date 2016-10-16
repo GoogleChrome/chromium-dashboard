@@ -2,6 +2,11 @@
 
 @import "vars";
 
+* {
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+  outline: 0;
+}
+
 h1, h2, h3, h4 {
   font-weight: 300;
 }
