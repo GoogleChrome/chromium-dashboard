@@ -7,18 +7,17 @@
 <link rel="import" type="css" href="../css/elements/chromedash-featurelist.css">
 <template>
   <div id="featurelist">
-   <!--  <iron-list id="ironlist" scroll-target="document" items="[[filtered]]" as="feature">
+    <iron-list id="ironlist" scroll-target="document" items="[[filtered]]" as="feature">
       <template>
-        <div class="item" tabindex="0">
-          <div hidden$="[[_computeMilestoneHidden(feature, features, filtered)]]"
-               class="milestone-marker">[[_computeMilestoneString(feature.browsers.chrome.status.milestone_str)]]</div>
-          <chromedash-feature id="{{feature.id}}"
-               feature="[[feature]]" needsflag="[[feature.browsers.chrome.flag]]"
+        <div class="item">
+          <div hidden$="{{_computeMilestoneHidden(feature, features, filtered)}}"
+               class="milestone-marker">[[_computeMilestoneString(feature.meta.milestone_str)]]</div>
+          <chromedash-feature id="[[feature.id]]" tabindex="0"
+               feature="[[feature]]" needsflag="[[feature.meta.needsflag]]"
                whitelisted="[[whitelisted]]"></chromedash-feature>
         </div>
       </template>
-    </iron-list> -->
-    <content></content>
+    </iron-list>
   </div>
 </template>
 <script>

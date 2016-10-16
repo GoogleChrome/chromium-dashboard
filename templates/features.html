@@ -13,10 +13,10 @@
 {% endblock %}
 
 {% block html_imports %}
- <!--  <link id="features_import"
+  <link id="features_import"
         rel="import"
         href="/static/elements/features-imports{% if VULCANIZE %}.vulcanize{% endif %}.html"
-        async> -->
+        async>
 {% endblock %}
 
 {% block rss %}
@@ -90,30 +90,7 @@
 {% endblock %}
 
 {% block content %}
-
-{% cache TEMPLATE_CACHE_TIME template_feature_list user.is_whitelisted %}
-<chromedash-featurelist {% if user.is_whitelisted %}whitelisted{% endif %}>
-  {% for feature in FEATURES %}
-    <div class="item">
-      {% if feature.first_of_milestone %}
-        <div class="milestone-marker {% if forloop.first %}first{% endif %}">
-          {{feature.browsers.chrome.status.milestone_str}}
-        </div>
-      {% endif %}
-      <chromedash-feature id="{{feature.id}}"  tabindex="0"
-            title="{{feature.name}}"
-            {% if feature.browsers.chrome.flag %}needsflag{% endif %}
-            {% if user.is_whitelisted %}whitelisted{% endif %}>
-        <h2>{{feature.name}}</h2>
-        <summary>
-          <span>{{feature.summary}}</span>
-        </summary>
-      </chromedash-feature>
-    </div>
-  {% endfor %}
-</chromedash-featurelist>
-{% endcache %}
-
+<chromedash-featurelist {% if user.is_whitelisted %}whitelisted{% endif %}></chromedash-featurelist>
 {% endblock %}
 
 {% block js %}
@@ -224,37 +201,35 @@ $('.legend').addEventListener('click', function(e) {
   });
 });
 
-// Fire off features API XHR right away so data can populate faster.
+// Fire of features.json XHR right away so data can populate faster.
 var featuresPromise = new Promise(function(resolve, reject) {
-  // var url = location.hostname == 'localhost' ? 'https://www.chromestatus.com/features_v2.json' :
-  //                                              '/features_v2.json';
-  // var xhr = new XMLHttpRequest(); // Fill features list via AJAX.
-  // xhr.open('GET', url);
-  // xhr.responseType = 'json';
+  var url = location.hostname == 'localhost' ? 'https://www.chromestatus.com/features_v2.json' :
+                                               '/features_v2.json';
+  var xhr = new XMLHttpRequest(); // Fill features list via AJAX.
+  xhr.open('GET', url);
+  xhr.responseType = 'json';
 
-  // featuresUnveilMetric.start();
+  featuresUnveilMetric.start();
 
-  // xhr.onloadend = function(e) {
-  //   featuresFetchMetric.end().log().sendToAnalytics('features', 'loaded');
+  xhr.onloadend = function(e) {
+    featuresFetchMetric.end().log().sendToAnalytics('features', 'loaded');
 
-  //   if (e.target.status < 400) {
-  //     resolve(e.target.response);
-  //   } else {
-  //     reject(new Error('Features XHR failed with status ' + e.target.statusText));
-  //   }
-  // };
-  // xhr.onerror = reject;
+    if (e.target.status < 400) {
+      resolve(e.target.response);
+    } else {
+      reject(new Error('Features XHR failed with status ' + e.target.statusText));
+    }
+  };
+  xhr.onerror = reject;
 
-  // featuresFetchMetric.start();
-  // xhr.send();
+  featuresFetchMetric.start();
+  xhr.send();
 });
 
 window.asyncImportsLoadPromise = new Promise(function(resolve, reject) {
-  var l = document.createElement('link');
-  l.rel = 'import';
-  l.setAttribute('async', '');
-  l.href = "/static/elements/features-imports{% if VULCANIZE %}.vulcanize{% endif %}.html";
-  l.onload = function(e) {
+  var featuresImport = document.querySelector('#features_import');
+  featuresImport.onerror = reject;
+  featuresImport.onload = function(e) {
     resolve();
 
     featuresPromise.then(function(features) {
@@ -273,12 +248,6 @@ window.asyncImportsLoadPromise = new Promise(function(resolve, reject) {
       console.error(e);
     });
   };
-  l.onerror = function(e) {
-    document.getElementById('content').classList.add('error');
-    console.error(e);
-  };
-
-  document.head.appendChild(l);
 });
 
 window.addEventListener('popstate', function(e) {
