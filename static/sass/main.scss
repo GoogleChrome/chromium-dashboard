@@ -262,7 +262,7 @@ footer {
   margin: $content-padding;
   position: relative;
   height: 100%;
-  margin-top: $header-height;
+  // margin-top: $header-height;
 }
 
 #panels {
@@ -276,14 +276,6 @@ footer {
     .toolbar-content {
       max-width: $max-content-width;
     }
-  }
-  app-drawer {
-    .drawer-content-wrapper {
-      margin-top: $header-height;
-    }
-  }
-  app-header {
-    padding-left: $app-drawer-width;
   }
 }
 
