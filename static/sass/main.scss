@@ -280,6 +280,12 @@ footer {
   footer {
     padding-left: $app-drawer-width;
   }
+  // Overrides styles set by app-header-layout so there's no visual
+  // layout FOUC/jump as the drawer panel upgrades.
+  app-header {
+    padding-left: $app-drawer-width;
+    left: 0 !important;
+  }
 }
 
 @media only screen and (max-width: 700px) {
