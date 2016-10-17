@@ -75,6 +75,9 @@
         }
       },
 
+      // True when the user has physically scrolled the list fo rthe first time.
+      _hasScrolledList: false,
+
       listeners: {
         'keyup': '_onKeyUp',
         'feature-toggled': '_onFeatureToggled'
@@ -327,6 +330,10 @@
       _onScrollList: function(e, detail) {
         if (this._firstLoad) {
           return;
+        }
+        if (!this._hasScrolledList) {
+          this._hasScrolledList = true;
+          this.fire('has-scroll-list');
         }
         var feature = this.features[this.$.ironlist.firstVisibleIndex];
         this.metadata.selectMilestone(feature);
