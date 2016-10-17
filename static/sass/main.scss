@@ -241,16 +241,6 @@ footer {
   }
 }
 
-// #banner {
-//   display: flex;
-//   margin: $content-padding 0;
-//   max-width: $max-content-width;
-//   background: #fff3e0;
-//   font-weight: 500;
-//   padding: $content-padding $content-padding / 2;
-// }
-
-
 #container {
   display: flex;
   flex-direction: column;
@@ -262,7 +252,6 @@ footer {
   margin: $content-padding;
   position: relative;
   height: 100%;
-  // margin-top: $header-height;
 }
 
 #panels {
