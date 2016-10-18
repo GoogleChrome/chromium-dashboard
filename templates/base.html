@@ -95,21 +95,27 @@ var $$ = function(selector) {
       {% block drawer %}{% endblock %}
     </div>
   </app-drawer>
-  <app-header fixed effects="waterfall">
-    <div class="main-toolbar">
-      <div class="toolbar-content">
-        {% include "header.html" %}
-        {% block subheader %}{% endblock %}
+  <app-header-layout>
+    <app-header reveals fixed effects="waterfall">
+      <div class="main-toolbar">
+        <div class="toolbar-content">
+          {% include "header.html" %}
+          {% block subheader %}{% endblock %}
+        </div>
       </div>
+    </app-header>
+
+    <div id="content">
+      <div id="spinner"><img src="/static/img/ring.svg"></div>
+      {% block content %}{% endblock %}
     </div>
-  </app-header>
 
-  <div id="content">
-    <div id="spinner"><img src="/static/img/ring.svg"></div>
-    {% block content %}{% endblock %}
-  </div>
+    {% include "footer.html" %}
+    <!-- <app-header fixed effects="waterfall">
+      {% include "footer.html" %}
+    </app-header> -->
+  </app-header-layout>
 
-  {% include "footer.html" %}
 </app-drawer-layout>
 
 <chromedash-toast msg="Welcome to chromestatus.com!"></chromedash-toast>

@@ -77,7 +77,7 @@
 {% endblock %}
 
 {% block overlay %}
-<chromedash-legend>
+<chromedash-legend hidden>
   <p class="description">What you're looking at is a mostly comprehensive list of
   web platform features that have landed in Chromium, ordered chronologically by the milestone
   in which they were added. Features marked "No active development" are being
@@ -138,6 +138,13 @@ featureList.addEventListener('app-ready', function() {
   registerServiceWorker();
 });
 
+featureList.addEventListener('has-scroll-list', function(e) {
+  var header = document.querySelector('app-header-layout app-header');
+  if (header) {
+    header.fixed = false;
+  }
+});
+
 featureList.addEventListener('filter-category', function(e) {
   search.value = 'category: ' + e.detail.val;
   featureList.filter(search.value);
@@ -177,6 +184,7 @@ var helpOverlayLoadPromise = function(overlay) {
         webdevs: {{WEB_DEV_VIEWS|safe}}, // set from server
         standards: {{STANDARDS_VALS|safe}} // set from server
       };
+      overlay.hidden = false;
       resolve();
     }, function(e) {
       reject(new Error('Error loading:' + url));
