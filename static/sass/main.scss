@@ -31,6 +31,35 @@ body {
   width: 100%;
 }
 
+#site-banner {
+  display: none;
+  background: $chromium-color-center;
+  color: #fff;
+  position: fixed;
+  z-index: 1;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  cursor: pointer;
+  text-transform: capitalize;
+  text-align: center;
+  transform: rotate(35deg);
+  right: -40px;
+  top: 20px;
+  padding: 10px 40px 8px 60px;
+  box-shadow: inset 0px 5px 6px -3px rgba(0, 0, 0, 0.4);
+
+  iron-icon {
+    margin-right: $content-padding / 4;
+    height: 20px;
+    width: 20px;
+  }
+
+  a {
+    color: currentcolor;
+    text-decoration: none;
+  }
+}
+
 app-drawer {
   font-size: 14px;
 
@@ -175,7 +204,7 @@ footer {
   z-index: 1;
 
   div {
-    margin-top: $content-padding / 2;
+    margin-top: $content-padding / 4;
   }
 }
 
@@ -265,9 +294,6 @@ footer {
     .toolbar-content {
       max-width: $max-content-width;
     }
-  }
-  footer {
-    padding-left: $app-drawer-width;
   }
   // Overrides styles set by app-header-layout so there's no visual
   // layout FOUC/jump as the drawer panel upgrades.
@@ -372,6 +398,13 @@ footer {
     width: 100%;
     left: 0;
     margin: 0;
+  }
+}
+
+// When banner doesn't block navigation buttons.
+@media only screen and (min-width: 1100px) {
+  #site-banner {
+    display: block;
   }
 }
 

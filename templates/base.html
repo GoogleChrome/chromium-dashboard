@@ -89,6 +89,11 @@ var $$ = function(selector) {
 </head>
 <body class="loading">
 
+<div id="site-banner">
+  <a href="https://www.youtube.com/watch?v=Rd0plknSPYU" target="_blank">
+  <iron-icon icon="chromestatus:ondemand-video"></iron-icon> How we built it</a>
+</div>
+
 <app-drawer-layout fullbleed>
   <app-drawer swipe-open>
     <div class="drawer-content-wrapper">
@@ -110,12 +115,9 @@ var $$ = function(selector) {
       {% block content %}{% endblock %}
     </div>
 
-    {% include "footer.html" %}
-    <!-- <app-header fixed effects="waterfall">
-      {% include "footer.html" %}
-    </app-header> -->
   </app-header-layout>
 
+  {% include "footer.html" %}
 </app-drawer-layout>
 
 <chromedash-toast msg="Welcome to chromestatus.com!"></chromedash-toast>
