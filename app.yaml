@@ -1,5 +1,5 @@
 application: cr-status
-version: 2016-10-16
+version: 2016-10-21
 runtime: python27
 threadsafe: true
 api_version: 1
