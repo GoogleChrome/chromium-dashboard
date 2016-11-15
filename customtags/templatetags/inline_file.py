@@ -1,3 +1,5 @@
+import logging
+
 from django import template
 
 register = template.Library()
@@ -8,6 +10,9 @@ def inline_file(path):
     path = path[1:]
 
   content = ''
-  with open(path, 'r') as f:
-    content = f.read()
+  try:
+    with open(path, 'r') as f:
+      content = f.read()
+  except IOError, e:
+    logging.error('inline_file cannot read file - ' + str(e))
   return content
