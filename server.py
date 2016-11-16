@@ -74,6 +74,8 @@ def annotate_first_of_milestones(feature_list, version=None):
   try:
     omaha_data = get_omaha_data()
 
+    # JSON data is an array of chrome versions for each platform. Search the
+    # array for the first `version` we find for windows, and break out.
     win_versions = omaha_data[0]['versions']
     for v in win_versions:
       s = v.get('version') or v.get('prev_version')
@@ -257,7 +259,7 @@ class FeaturesAPIHandler(common.JSONHandler):
     if version is None:
       version = 1
     else:
-      version = int(version[2:])
+      version = int(version)
 
     KEY = '%s|v%s|all' % (models.Feature.DEFAULT_MEMCACHE_KEY, version)
     feature_list = memcache.get(KEY)
@@ -269,7 +271,7 @@ class FeaturesAPIHandler(common.JSONHandler):
 
 # Main URL routes.
 routes = [
-  ('/features(_v[0-9]*)?.json', FeaturesAPIHandler),
+  (r'/features(?:_v(\d+))?.json', FeaturesAPIHandler),
   ('/(.*)/([0-9]*)', MainHandler),
   ('/(.*)', MainHandler),
 ]
