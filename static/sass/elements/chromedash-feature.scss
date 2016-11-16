@@ -18,7 +18,7 @@
 :host([open]), chromedash-feature[open] {
   outline: none;
 
-  .desc ::content summary {
+  .desc summary {
     white-space: normal;
   }
 }
@@ -140,7 +140,7 @@ section {
     color: $gray-3;
     line-height: 20px;
 
-    ::content summary {
+    summary {
       text-overflow: ellipsis;
       overflow: hidden;
       white-space: nowrap;

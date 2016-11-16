@@ -28,7 +28,7 @@ chromedash-legend {
 }
 
 chromedash-featurelist {
-  width: 745px;
+  max-width: 745px;
   margin-bottom: 54px + $content-padding * 2; // bottom bar + some.
 }
 
@@ -42,46 +42,6 @@ chromedash-featurelist {
   #content {
     &::after {
       width: $max-content-width;
-    }
-  }
-}
-
-
-
-// Added to pre-style before element upgrade.
-chromedash-featurelist {
-  display: block;
-
-  .milestone-marker {
-    $milestone-label-size: 18px;
-    text-align: right;
-    text-transform: uppercase;
-    margin: 32px 0 8px 0;
-    font-size: $milestone-label-size;
-    color: $chromium-color-dark;
-  }
-
-  @import "../elements/chromedash-feature";
-}
-
-@media only screen and (max-width: 700px) {
-  chromedash-featurelist {
-    max-width: 100%;
-
-    .milestone-marker {
-      font-size: 14px;
-      font-weight: 500;
-      margin: 0;
-    }
-    [data-first-of-milestone] {
-      $milestone-label-size: 12px;
-      &:after {
-        font-size: $milestone-label-size;
-        font-weight: normal;
-        top: -$milestone-label-size - 10;
-        opacity: 1;
-        text-transform: uppercase;
-      }
     }
   }
 }
