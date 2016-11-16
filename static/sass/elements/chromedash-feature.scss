@@ -1,6 +1,6 @@
 @import "element";
 
-:host, chromedash-feature {
+:host {
   display: flex;
   @include gradient-bar-bg();
   position: relative;
@@ -15,7 +15,7 @@
   }
 }
 
-:host([open]), chromedash-feature[open] {
+:host([open]) {
   outline: none;
 
   .desc summary {
@@ -324,7 +324,7 @@ section {
 }
 
 @media only screen and (max-width: 700px) {
-  :host, chromedash-feature {
+  :host {
     border-radius: 0 !important;
     margin: 7px initial !important;
     transition: none !important;
