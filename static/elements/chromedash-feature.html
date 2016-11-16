@@ -139,7 +139,7 @@
                 </span>
                 <span>Chrome for Android</span>
               </label>
-              <span>[[feature.shipped_android_milestone]]</span>
+              <span>[[feature.browsers.chrome.android]]</span>
             </span>
           </template>
           <template is="dom-if" if="[[feature.browsers.chrome.webview]]">
@@ -421,7 +421,7 @@
       return vendorViewVal + webdevViewVal + standardsVal;
     },
     _computeRemoved: function(implStatusChrome) {
-      return implStatusChrome == 'Removed';
+      return implStatusChrome === 'Removed';
     },
     _computeDeprecated: function(implStatusChrome) {
       return implStatusChrome === 'Deprecated' ||

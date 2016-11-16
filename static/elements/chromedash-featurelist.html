@@ -101,26 +101,32 @@
           'i');
       },
 
-      _lt: function(propName, value, feature) {
-        return feature[propName] < value;
+      _pathToPropertyVal: function(propPath, feature) {
+        return propPath.split('.').reduce(function(obj, key) {
+          return obj[key];
+        }, feature);
       },
-      _lte: function(propName, value, feature) {
-        return feature[propName] <= value;
+
+      _lt: function(propPath, value, feature) {
+        return this._pathToPropertyVal(propPath, feature) < value;
       },
-      _gt: function(propName, value, feature) {
-        return feature[propName] > value;
+      _lte: function(propPath, value, feature) {
+        return this._pathToPropertyVal(propPath, feature) <= value;
       },
-      _gte: function(propName, value, feature) {
-        return feature[propName] >= value;
+      _gt: function(propPath, value, feature) {
+        return this._pathToPropertyVal(propPath, feature) > value;
       },
-      _eq: function(propName, value, feature) {
-        return feature[propName] === value;
+      _gte: function(propPath, value, feature) {
+        return this._pathToPropertyVal(propPath, feature) >= value;
+      },
+      _eq: function(propPath, value, feature) {
+        return this._pathToPropertyVal(propPath, feature) === value;
       },
       _false: function() {
         return false;
       },
 
-      _getOperatorFilter: function(args /* [propName, operator, valueStr] */) {
+      _getOperatorFilter: function(args /* [propPath, operator, valueStr] */) {
         var value = parseFloat(args[2]);
         if (isNaN(value)) return this._false;
 
@@ -146,8 +152,8 @@
         }
       },
 
-      _filterProperty: function(propName, regExp, feature) {
-        var value = feature[propName];
+      _filterProperty: function(propPath, regExp, feature) {
+        var value = this._pathToPropertyVal(propPath, feature);
 
         // Null or missing values never match.
         if (value === null || typeof value === 'undefined')
@@ -156,7 +162,7 @@
         // Allow for enums that store string in "text" property.
         return (value.text || value).toString().match(regExp) !== null;
       },
-      _getPropertyFilter: function(args /* [propName, searchStr] */) {
+      _getPropertyFilter: function(args /* [propPath, searchStr] */) {
         return this._filterProperty.bind(
           this, args[0], this._getSearchStrRegExp(args[1]));
       },
@@ -184,10 +190,8 @@
 
           val = val.trim();
           if (history && history.replaceState) {
-            history.replaceState(
-              {id: null},
-              document.title,
-              '/features#' + encodeURIComponent(val));
+            history.replaceState({id: null}, document.title,
+                                 '/features#' + encodeURIComponent(val));
           }
 
           var regExp = /"([^"]*)"/g;
