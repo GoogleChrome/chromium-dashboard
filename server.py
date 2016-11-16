@@ -74,13 +74,11 @@ def annotate_first_of_milestones(feature_list, version=None):
   try:
     omaha_data = get_omaha_data()
 
-    # JSON data is an array of chrome versions for each platform. Search the
-    # array for the first `version` we find for windows, and break out.
     win_versions = omaha_data[0]['versions']
-    for v in win_versions:
-      s = v.get('version') or v.get('prev_version')
-      LATEST_VERSION = int(s.split('.')[0])
-      break
+
+    # Find the latest canary major version from the list of windows versions.
+    canary_versions = [x for x in win_versions if x.get('channel') and x.get('channel').startswith('canary')]
+    LATEST_VERSION = int(canary_versions[0].get('version').split('.')[0])
 
     # TODO(ericbidelman) - memcache this calculation as part of models.py
     milestones = range(1, LATEST_VERSION + 1)
