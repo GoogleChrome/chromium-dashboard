@@ -73,7 +73,7 @@
         this.fire('query-changed', {version: this.selected});
       } else {
         // Called directly (from outside). e is a feature.
-        this.selected = e.meta.milestone_str;
+        this.selected = e.browsers.chrome.status.milestone_str;
       }
     },
 

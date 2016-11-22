@@ -120,7 +120,7 @@ chromeMetadata.addEventListener('query-changed', function(e) {
   var value = e.detail.version;
   var isMilestone = value.match(/^[0-9]+$/);
   search.value = isMilestone ? 'milestone=' + value :
-      'impl_status_chrome:"' + value + '"';
+      'browsers.chrome.status:"' + value + '"';
   featureList.filter(search.value);
 });
 
@@ -151,7 +151,7 @@ featureList.addEventListener('filter-category', function(e) {
 });
 
 featureList.addEventListener('filter-owner', function(e) {
-  search.value = 'owner: ' + e.detail.val;
+  search.value = 'browsers.chrome.owners: ' + e.detail.val;
   featureList.filter(search.value);
 });
 
@@ -203,8 +203,8 @@ $('.legend').addEventListener('click', function(e) {
 
 // Fire of features.json XHR right away so data can populate faster.
 var featuresPromise = new Promise(function(resolve, reject) {
-  var url = location.hostname == 'localhost' ? 'https://www.chromestatus.com/features.json' :
-                                               '/features.json';
+  var url = location.hostname == 'localhost' ? 'https://www.chromestatus.com/features_v2.json' :
+                                               '/features_v2.json';
   var xhr = new XMLHttpRequest(); // Fill features list via AJAX.
   xhr.open('GET', url);
   xhr.responseType = 'json';
@@ -234,10 +234,10 @@ window.asyncImportsLoadPromise = new Promise(function(resolve, reject) {
 
     featuresPromise.then(function(features) {
       features.map(function(feature) {
-        feature.milestone = feature.shipped_milestone ||
-            feature.shipped_android_milestone ||
-            feature.shipped_webview_milestone ||
-            feature.shipped_ios_milestone ||
+        feature.milestone = feature.browsers.chrome.desktop ||
+            feature.browsers.chrome.android ||
+            feature.browsers.chrome.webview ||
+            feature.browsers.chrome.ios ||
             Infinity;
       });
       featureList.features = features;

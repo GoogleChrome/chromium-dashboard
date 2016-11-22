@@ -43,55 +43,69 @@ def first_of_milestone(feature_list, milestone, start=0):
     elif (f['shipped_milestone'] == None and
           str(f['shipped_android_milestone']) == str(milestone)):
       return i
+
   return -1
+
+def first_of_milestone_v2(feature_list, milestone, start=0):
+  for i in xrange(start, len(feature_list)):
+    f = feature_list[i]
+    desktop_milestone = f['browsers']['chrome'].get('desktop', None)
+    android_milestone = f['browsers']['chrome'].get('android', None)
+    status = f['browsers']['chrome']['status'].get('text', None)
+
+    if (str(desktop_milestone) == str(milestone) or status == str(milestone)):
+      return i
+    elif (desktop_milestone == None and str(android_milestone) == str(milestone)):
+      return i
+
+  return -1
+
+def get_omaha_data():
+  omaha_data = memcache.get('omaha_data')
+  if omaha_data is None:
+    result = urlfetch.fetch('https://omahaproxy.appspot.com/all.json')
+    if result.status_code == 200:
+      omaha_data = json.loads(result.content)
+      memcache.set('omaha_data', omaha_data, time=86400) # cache for 24hrs.
+
+  return omaha_data
+
+def annotate_first_of_milestones(feature_list, version=None):
+  try:
+    omaha_data = get_omaha_data()
+
+    win_versions = omaha_data[0]['versions']
+
+    # Find the latest canary major version from the list of windows versions.
+    canary_versions = [x for x in win_versions if x.get('channel') and x.get('channel').startswith('canary')]
+    LATEST_VERSION = int(canary_versions[0].get('version').split('.')[0])
+
+    # TODO(ericbidelman) - memcache this calculation as part of models.py
+    milestones = range(1, LATEST_VERSION + 1)
+    milestones.reverse()
+    versions = [
+      models.IMPLEMENTATION_STATUS[models.NO_ACTIVE_DEV],
+      models.IMPLEMENTATION_STATUS[models.PROPOSED],
+      models.IMPLEMENTATION_STATUS[models.IN_DEVELOPMENT],
+      ]
+    versions.extend(milestones)
+    versions.append(models.IMPLEMENTATION_STATUS[models.NO_LONGER_PURSUING])
+
+    first_of_milestone_func = first_of_milestone
+    if version == 2:
+      first_of_milestone_func = first_of_milestone_v2
+
+    last_good_idx = 0
+    for i, ver in enumerate(versions):
+      idx = first_of_milestone_func(feature_list, ver, start=last_good_idx)
+      if idx != -1:
+        feature_list[idx]['first_of_milestone'] = True
+        last_good_idx = idx
+  except Exception as e:
+    logging.error(e)
 
 
 class MainHandler(http2push.PushHandler, common.ContentHandler, common.JSONHandler):
-
-  def __get_omaha_data(self):
-    omaha_data = memcache.get('omaha_data')
-    if omaha_data is None:
-      result = urlfetch.fetch('https://omahaproxy.appspot.com/all.json')
-      if result.status_code == 200:
-        omaha_data = json.loads(result.content)
-        memcache.set('omaha_data', omaha_data, time=86400) # cache for 24hrs.
-
-    return omaha_data
-
-  def __annotate_first_of_milestones(self, feature_list):
-    try:
-      omaha_data = self.__get_omaha_data()
-
-      win_versions = omaha_data[0]['versions']
-      for v in win_versions:
-        s = v.get('version') or v.get('prev_version')
-        LATEST_VERSION = int(s.split('.')[0])
-        break
-
-      # TODO(ericbidelman) - memcache this calculation as part of models.py
-      milestones = range(1, LATEST_VERSION + 1)
-      milestones.reverse()
-      versions = [
-        models.IMPLEMENTATION_STATUS[models.NO_ACTIVE_DEV],
-        models.IMPLEMENTATION_STATUS[models.PROPOSED],
-        models.IMPLEMENTATION_STATUS[models.IN_DEVELOPMENT],
-        ]
-      versions.extend(milestones)
-      versions.append(models.IMPLEMENTATION_STATUS[models.NO_LONGER_PURSUING])
-
-      last_good_idx = 0
-      for i, version in enumerate(versions):
-        idx = first_of_milestone(feature_list, version, start=last_good_idx)
-        if idx != -1:
-          feature_list[idx]['first_of_milestone'] = True
-          last_good_idx = idx
-    except Exception as e:
-      logging.error(e)
-
-  def __get_feature_list(self):
-    feature_list = models.Feature.get_chronological() # Memcached
-    self.__annotate_first_of_milestones(feature_list)
-    return feature_list
 
   def get(self, path, feature_id=None):
     # Default to features page.
@@ -114,14 +128,7 @@ class MainHandler(http2push.PushHandler, common.ContentHandler, common.JSONHandl
     template_data['embed'] = self.request.get('embed', None) is not None
 
     if path.startswith('features'):
-      if path.endswith('.json'): # JSON request.
-        KEY = '%s|all' % (models.Feature.DEFAULT_MEMCACHE_KEY)
-        feature_list = memcache.get(KEY)
-        if feature_list is None:
-          feature_list = self.__get_feature_list()
-          memcache.set(KEY, feature_list)
-        return common.JSONHandler.get(self, feature_list, formatted=True)
-      elif path.endswith('.xml'): # Atom feed request.
+      if path.endswith('.xml'): # Atom feed request.
         status = self.request.get('status', None)
         if status:
           feature_list = models.Feature.get_all_with_statuses(status.split(','))
@@ -151,17 +158,6 @@ class MainHandler(http2push.PushHandler, common.ContentHandler, common.JSONHandl
 
         return self.render_atom_feed('Features', feature_list)
       else:
-        # if settings.PROD:
-        #   feature_list = self.__get_feature_list()
-        # else:
-        #   result = urlfetch.fetch(
-        #     self.request.scheme + '://' + self.request.host +
-        #     '/static/js/mockdata.json')
-        #   feature_list = json.loads(result.content)
-
-        # template_data['features'] = json.dumps(
-        #     feature_list, separators=(',',':'))
-
         template_data['categories'] = [
           (v, normalized_name(v)) for k,v in
           models.FEATURE_CATEGORIES.iteritems()]
@@ -178,6 +174,10 @@ class MainHandler(http2push.PushHandler, common.ContentHandler, common.JSONHandl
           {'key': k, 'val': v} for k,v in
           models.STANDARDIZATION.iteritems()])
         template_data['TEMPLATE_CACHE_TIME'] = settings.TEMPLATE_CACHE_TIME
+
+        feature_list = models.Feature.get_chronological(version=2) # Memcached
+        annotate_first_of_milestones(feature_list, version=2)
+        template_data['FEATURES'] = feature_list
 
         push_urls = http2push.use_push_manifest('push_manifest_features.json')
 
@@ -209,7 +209,7 @@ class MainHandler(http2push.PushHandler, common.ContentHandler, common.JSONHandl
       template_data['FEATUREOBSERVER_BUCKETS'] = json.dumps(
           properties, separators=(',',':'))
     elif path.startswith('omaha_data'):
-      omaha_data = self.__get_omaha_data()
+      omaha_data = get_omaha_data()
       return common.JSONHandler.get(self, omaha_data, formatted=True)
     elif path.startswith('samples'):
       feature_list = models.Feature.get_shipping_samples() # Memcached
@@ -246,8 +246,30 @@ class MainHandler(http2push.PushHandler, common.ContentHandler, common.JSONHandl
     self.render(data=template_data, template_path=os.path.join(path + '.html'))
 
 
+class FeaturesAPIHandler(common.JSONHandler):
+
+  def __get_feature_list(self, version=None):
+    feature_list = models.Feature.get_chronological(version=version) # Memcached
+    annotate_first_of_milestones(feature_list, version=version)
+    return feature_list
+
+  def get(self, version=None):
+    if version is None:
+      version = 1
+    else:
+      version = int(version)
+
+    KEY = '%s|v%s|all' % (models.Feature.DEFAULT_MEMCACHE_KEY, version)
+    feature_list = memcache.get(KEY)
+    if feature_list is None:
+      feature_list = self.__get_feature_list(version)
+      memcache.set(KEY, feature_list)
+    return common.JSONHandler.get(self, feature_list, formatted=True)
+
+
 # Main URL routes.
 routes = [
+  (r'/features(?:_v(\d+))?.json', FeaturesAPIHandler),
   ('/(.*)/([0-9]*)', MainHandler),
   ('/(.*)', MainHandler),
 ]
