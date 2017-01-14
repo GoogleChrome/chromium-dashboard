@@ -641,6 +641,9 @@ class FeatureForm(forms.Form):
                       '(either enabled by default, origin trial, intervention, '
                       'or deprecated)')
 
+  SHIPPED_IOS_HELP_TXT = ('Fill this only in case this feature is relevant to Chrome for iOS '
+                         '(most are not)!' + SHIPPED_HELP_TXT)
+
   #name = PlaceholderCharField(required=True, placeholder='Feature name')
   name = forms.CharField(required=True, label='Feature')
 
@@ -677,11 +680,11 @@ class FeatureForm(forms.Form):
   shipped_android_milestone = forms.IntegerField(required=False, label='',
       help_text='Chrome for Android: ' + SHIPPED_HELP_TXT)
 
-  shipped_ios_milestone = forms.IntegerField(required=False, label='',
-      help_text='Chrome for iOS: ' + SHIPPED_HELP_TXT)
-
   shipped_webview_milestone = forms.IntegerField(required=False, label='',
       help_text='Chrome for Android web view: ' + SHIPPED_HELP_TXT)
+
+  shipped_ios_milestone = forms.IntegerField(required=False, label='',
+      help_text='Chrome for iOS: ' + SHIPPED_IOS_HELP_TXT)
 
   shipped_opera_milestone = forms.IntegerField(required=False, label='',
       help_text='Opera for desktop: ' + SHIPPED_HELP_TXT)
