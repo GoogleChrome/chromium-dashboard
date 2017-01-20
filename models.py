@@ -314,7 +314,7 @@ class Feature(DictModel):
         },
         'webdev': {
           'view': {
-            'text': VENDOR_VIEWS[self.web_dev_views],
+            'text': WEB_DEV_VIEWS[self.web_dev_views],
             'val': d.pop('web_dev_views', None),
           }
         }
