@@ -1,5 +1,5 @@
 application: cr-status
-version: newmodel-ssr
+version: 2017-01-23
 runtime: python27
 threadsafe: true
 api_version: 1

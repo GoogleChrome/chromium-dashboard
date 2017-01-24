@@ -494,6 +494,8 @@ class Feature(DictModel):
 
       feature_list = [f.format_for_template(version) for f in pre_release]
 
+      memcache.set(KEY, feature_list)
+
     return feature_list
 
   @classmethod

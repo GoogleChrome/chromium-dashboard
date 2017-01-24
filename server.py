@@ -175,10 +175,6 @@ class MainHandler(http2push.PushHandler, common.ContentHandler, common.JSONHandl
           models.STANDARDIZATION.iteritems()])
         template_data['TEMPLATE_CACHE_TIME'] = settings.TEMPLATE_CACHE_TIME
 
-        feature_list = models.Feature.get_chronological(version=2) # Memcached
-        annotate_first_of_milestones(feature_list, version=2)
-        template_data['FEATURES'] = feature_list
-
         push_urls = http2push.use_push_manifest('push_manifest_features.json')
 
     elif path.startswith('feature'):
