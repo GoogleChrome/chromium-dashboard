@@ -52,7 +52,7 @@ to the new version.
 
 ### LICENSE
 
-Copyright (c) 2013-2016 Google Ince. All rights reserved.
+Copyright (c) 2013-2016 Google Inc. All rights reserved.
 
 Apache2 License.
 
