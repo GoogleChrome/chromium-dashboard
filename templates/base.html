@@ -56,9 +56,11 @@ limitations under the License.
 
 <script>
 window.Polymer = window.Polymer || {
-  dom: 'shadow',
+  dom: 'shadow', // Use native shadow dom.
   lazyRegister: 'max',
-  useNativeCSSProperties: true
+  useNativeCSSProperties: true,
+  suppressTemplateNotifications: true, // Don't fire dom-change on dom-if, dom-bind, etc.
+  // disableUpgradeEnabled: true // Works with `disable-upgrade` attr. When removed, upgrades element.
 };
 
 var $ = function(selector) {
@@ -90,10 +92,10 @@ var $$ = function(selector) {
 </head>
 <body class="loading">
 
-<div id="site-banner">
+<!--<div id="site-banner">
   <a href="https://www.youtube.com/watch?v=Rd0plknSPYU" target="_blank">
   <iron-icon icon="chromestatus:ondemand-video"></iron-icon> How we built it</a>
-</div>
+</div>-->
 
 <app-drawer-layout fullbleed>
   <app-drawer swipe-open>
