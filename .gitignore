@@ -5,6 +5,7 @@
 .sass-cache
 *oauth2.data
 node_modules
+travis/node_modules
 *bower_components
 *.vulcanize.html
 *.vulcanize.js

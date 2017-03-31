@@ -7,7 +7,8 @@
     "node": ">=6.0.0"
   },
   "scripts": {
-    "postinstall": "npm run deps; npm run build",
+    "postinstall": "npm run deps && npm run build",
+    "install-travis": "npm --prefix ./travis install ./travis",
     "deps": "rm -rf static/bower_components; bower install",
     "lint": "gulp lint",
     "build": "gulp",

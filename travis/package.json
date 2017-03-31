@@ -1,0 +1,11 @@
+{
+  "name": "chrome-status-ci",
+  "version": "0.0.1",
+  "main": "index.js",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "chalk": "^1.1.3",
+    "github": "^9.2.0",
+    "node-fetch": "^1.6.3"
+  }
+}
