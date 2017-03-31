@@ -14,14 +14,14 @@ cache:
   - node_modules
   - travis/node_modules
 install:
-  - npm install -g bower gulp
-  - npm install
-  - npm run install-travis
+- npm install -g bower gulp
+- npm install
+- npm run install-travis
 script:
-  - npm run lint
-  - npm run build
+- npm run lint
+- npm run build
 after_success:
-  - ./travis/deploy_pr_gae.sh
-  - export LH_MIN_PASS_SCORE=96
-  - export LH_TEST_URL=https://lighthouse-ci-staging-dot-cr-status.appspot.com/features
-  - node travis/runLighthouse.js $LH_TEST_URL $LH_MIN_PASS_SCORE
+- "./travis/deploy_pr_gae.sh"
+- export LH_MIN_PASS_SCORE=96
+- export LH_TEST_URL=https://lighthouse-ci-staging-dot-cr-status.appspot.com/features
+- node travis/runLighthouse.js $LH_TEST_URL $LH_MIN_PASS_SCORE

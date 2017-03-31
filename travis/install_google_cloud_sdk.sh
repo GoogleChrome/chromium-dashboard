@@ -4,7 +4,7 @@ set -e
 # Installs the Google Cloud SDK
 
 # Decrypt the Service Account Key
-openssl aes-256-cbc -K $encrypted_4e28b26c6af1_key -iv $encrypted_4e28b26c6af1_iv \
+openssl aes-256-cbc -K $encrypted_aee7e38c959c_key -iv $encrypted_aee7e38c959c_iv \
     -in gcloud-client-secret.json.enc -out gcloud-client-secret.json -d
 
 # Download & install the Google Cloud SDK
