@@ -25,7 +25,7 @@ const PR_NUM = process.env.TRAVIS_PULL_REQUEST;
 const PR_SHA = process.env.TRAVIS_PULL_REQUEST_SHA;
 const REPO_SLUG = process.env.TRAVIS_PULL_REQUEST_SLUG;
 
-const CI_HOST = 'https://lighthouse-ci.appspot.com';
+const CI_HOST = process.env.CI_HOST || 'https://lighthouse-ci.appspot.com';
 const API_KEY = process.env.API_KEY;
 const RUNNERS = {chrome: 'chrome', wpt: 'wpt'};
 
