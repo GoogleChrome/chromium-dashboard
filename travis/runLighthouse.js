@@ -81,4 +81,7 @@ function run(runner) {
   });
 }
 
-run(RUNNERS.chrome);
+// Run LH if this is a PR.
+if (process.env.TRAVIS_EVENT_TYPE === 'pull_request') {
+  run(RUNNERS.chrome);
+}
