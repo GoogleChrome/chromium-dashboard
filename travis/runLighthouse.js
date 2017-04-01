@@ -84,4 +84,6 @@ function run(runner) {
 // Run LH if this is a PR.
 if (process.env.TRAVIS_EVENT_TYPE === 'pull_request') {
   run(RUNNERS.chrome);
+} else {
+  console.log('Lighthouse not run for non-PR commits');
 }
