@@ -8,6 +8,8 @@
 
 #stack-rank-list {
   margin: 0;
+  overflow-y: scroll;
+  height: 350px;
   li {
     margin: 0;
     padding: 5px 0;
