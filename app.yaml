@@ -79,6 +79,10 @@ handlers:
   script: server.app
   secure: optional
 
+- url: /delay
+  script: server-delay.app
+  secure: always
+
 - url: /.*
   script: server.app
   secure: always
