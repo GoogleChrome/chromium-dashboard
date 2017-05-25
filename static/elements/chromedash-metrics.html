@@ -165,7 +165,8 @@
           return;
         }
         for (var i = 0, prop; prop = this.props[i]; ++i) {
-          prop.percentage = (prop.day_percentage * 100).toFixed(4);
+          prop.percentage = (prop.day_percentage * 100).toFixed(6);
+          // prop.percentage = prop.day_percentage * 100;
         }
         this.viewList = this.props;
         if (location.hash) {

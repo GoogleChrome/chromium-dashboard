@@ -25,7 +25,7 @@
     },
 
     _computeFormattedValue: function(value) {
-      return value <= 0.0001 ? '<=0.0001%' : Number(value).toFixed(4) + '%';
+      return value <= 0.000001 ? '<=0.000001%' : Number(value) + '%';
     },
     _computeStyle: function(value) {
       return 'width:' + value + '%';

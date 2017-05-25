@@ -47,20 +47,16 @@ class BaseHandler(webapp2.RequestHandler):
 class JSONHandler(BaseHandler):
 
   def __truncate_day_percentage(self, data):
-    # Need 6 decimals b/c num will by mutiplied by 100 to get a percentage.
-    data.day_percentage = float("%.*f" % (6, data.day_percentage))
+    # Need 8 decimals b/c num will by multiplied by 100 to get a percentage and
+    # we want 6 decimals.
+    data.day_percentage = float("%.*f" % (8, data.day_percentage))
     return data
 
   def _is_googler(self, user):
     return user and user.email().endswith('@google.com')
 
   def _clean_data(self, data):
-
-    user = users.get_current_user()
-    # Show raw day percentage numbers if user is a googler.
-    if not self._is_googler(user):
-      data = map(self.__truncate_day_percentage, data)
-
+    data = map(self.__truncate_day_percentage, data)
     return data
 
   def get(self, data, formatted=False, public=True):
