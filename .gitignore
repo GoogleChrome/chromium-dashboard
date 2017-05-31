@@ -3,6 +3,7 @@
 *.swp
 *.DS_Store
 .sass-cache
+.vscode
 *oauth2.data
 node_modules
 travis/node_modules

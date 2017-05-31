@@ -56,7 +56,10 @@ class JSONHandler(BaseHandler):
     return user and user.email().endswith('@google.com')
 
   def _clean_data(self, data):
-    data = map(self.__truncate_day_percentage, data)
+    user = users.get_current_user()
+    # Don't show raw percentages if user is not a googler.
+    if not self._is_googler(user):
+      data = map(self.__truncate_day_percentage, data)
     return data
 
   def get(self, data, formatted=False, public=True):
@@ -69,11 +72,16 @@ class JSONHandler(BaseHandler):
         cache_type, settings.DEFAULT_CACHE_TIME)
     self.response.headers['Content-Type'] = 'application/json;charset=utf-8'
 
-    if formatted:
-      return self.response.write(json.dumps(data, separators=(',',':')))
-    else:
+    if not formatted:
       data = [entity.to_dict() for entity in data]
-      return self.response.write(json.dumps(data, separators=(',',':')))
+
+      # Remove keys that the frontend doesn't render.
+      for item in data:
+        item.pop('rolling_percentage', None)
+        item.pop('updated', None)
+        item.pop('created', None)
+
+    return self.response.write(json.dumps(data, separators=(',',':')))
 
 
 class ContentHandler(BaseHandler):
