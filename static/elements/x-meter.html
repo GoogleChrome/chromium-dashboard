@@ -5,7 +5,7 @@
 <link rel="import" type="css" href="../css/elements/x-meter.css">
 <template>
   <div class="meter" id="meter">
-    <div style$="[[_computeStyle(value)]]"><span>{{valueFormatted}}</span></div>
+    <div style$="[[_computeStyle(value, max)]]"><span>{{valueFormatted}}</span></div>
   </div>
 </template>
 <script>
@@ -21,14 +21,21 @@
       valueFormatted: {
         type: Number,
         computed: '_computeFormattedValue(value)'
+      },
+      /**
+       * Normalized, maximum width for the bar
+       */
+      max: {
+        type: Number,
+        value: 100
       }
     },
 
-    _computeFormattedValue: function(value) {
-      return value <= 0.000001 ? '<=0.000001%' : Number(value) + '%';
+    _computeFormattedValue: function(value, max) {
+      return value <= 0.000001 ? '<=0.000001%' : value + '%';
     },
-    _computeStyle: function(value) {
-      return 'width:' + value + '%';
+    _computeStyle: function(value, max) {
+      return 'width:' + (value * (100 / max)) + '%';
     }
   });
 </script>

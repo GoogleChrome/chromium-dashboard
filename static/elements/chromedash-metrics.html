@@ -12,7 +12,7 @@
       align-items: center;
     }
   </style>
-  <b>Showing <span>[[props.length]]</span> properties</b>
+  <b>Showing <span>[[viewList.length]]</span> properties</b>
   <ol id="stack-rank-list">
     <li class="header">
       <label on-tap="sort" data-order="property_name">
@@ -24,12 +24,11 @@
     </li>
     <template is="dom-repeat" items="[[viewList]]" as="prop">
       <li id="[[prop.property_name]]"
-          title="[[prop.property_name]]. Click to deep link to this property."
-          hidden$="[[_computeHidden(prop)]]" tabindex="0">
+          title="[[prop.property_name]]. Click to deep link to this property." tabindex="0">
         <label>
           <a href$="[[_computeHref(prop)]]">[[prop.property_name]]</a>
         </label>
-        <x-meter value="[[prop.percentage]]" on-tap="showTimeline"
+        <x-meter value="[[prop.percentage]]" max="[[maxPercentage]]" on-tap="showTimeline"
                  title="Click to see a timeline view of this property"></x-meter>
       </li>
     </template>
@@ -105,6 +104,10 @@
         useRemoteData: {
           type: Boolean,
           value: false
+        },
+        maxPercentage: {
+          type: Boolean,
+          value: 100
         }
       },
 
@@ -164,11 +167,21 @@
         if (!this.props || !this.props.length) {
           return;
         }
+
         for (var i = 0, prop; prop = this.props[i]; ++i) {
           prop.percentage = (prop.day_percentage * 100).toFixed(6);
           // prop.percentage = prop.day_percentage * 100;
         }
-        this.viewList = this.props;
+
+        // Remove some of the unwanted properties.
+        this.viewList =  this.props.filter(function(prop) {
+          return !['ERROR', 'PageVisits', 'PageDestruction'].includes(prop.property_name);
+        });
+
+        this.maxPercentage = this.viewList.reduce(function(accum, currVal) {
+          return Math.max(accum, currVal.percentage);
+        }, 0);
+
         if (location.hash) {
           this.async(function() {
             this.scrollToProperty(decodeURIComponent(location.hash.substr(1)));
@@ -191,9 +204,6 @@
         return ('icon-long-arrow-' +
                (sortOrders.percentage.reverse ? 'down' : 'up') + ' ' +
                (sortOrders.percentage.activated ? 'activated' : '')).trim();
-      },
-      _computeHidden: function(prop) {
-        return prop.property_name == 'ERROR';
       },
       _computeHref: function(prop) {
         return '#' + prop.property_name;
