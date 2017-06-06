@@ -427,7 +427,6 @@ class FeatureHandler(common.ContentHandler):
 
     return self.redirect(redirect_url)
 
-
 app = webapp2.WSGIApplication([
   ('/cron/metrics', YesterdayHandler),
   ('/cron/histograms', HistogramsHandler),

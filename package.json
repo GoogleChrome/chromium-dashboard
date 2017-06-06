@@ -46,7 +46,7 @@
     "lighthouse-ci": "https://github.com/ebidel/lighthouse-ci",
     "load-grunt-tasks": "^3.4.1",
     "run-sequence": "^1.2.2",
-    "sw-precache": "^3.2.0",
-    "sw-toolbox": "^3.2.1"
+    "sw-precache": "^5.1.1",
+    "sw-toolbox": "^3.6.0"
   }
 }

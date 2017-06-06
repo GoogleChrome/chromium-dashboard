@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% load verbatim %}
+{% load inline_file %}
+
+{% block html_imports %}
+  <link rel="import" href="/static/elements/admin-imports{% if VULCANIZE %}.vulcanize{% endif %}.html">
+{% endblock %}
+
+{% block css %}
+<style>{% inline_file "/static/css/schedule.css" %}</style>
+{% endblock %}
+
+{% block drawer %}
+
+{% endblock %}
+
+{% block subheader %}
+<div id="subheader">
+  <h2>Milestones</h2>
+</div>
+{% endblock %}
+
+{% block content %}
+
+<section>
+
+<template id="t" is="dom-bind">
+
+<div>
+  {% verbatim %}
+
+    <!--<ul id="samplelist" class="card-content">
+      <template is="dom-repeat" items="{{filtered}}" as="feature" initial-count="6">
+        <li>
+          <div class="card">
+            <h3 class="feature-name">
+              <a href$="[[_computeFeatureLink(feature.id)]]">{{feature.name}}</a>
+              <span class="milestone" hidden$="[[!feature.shipped_milestone]]">Chrome <span>[[feature.shipped_milestone]]</span></span>
+            </h3>
+            <div class="summary">[[feature.summary]]</div>
+            <div class="sample_links">
+              <div class="demo-links layout horizontal center">
+                <template is="dom-repeat" items="[[feature.sample_links]]" as="link">
+                  <a href$="[[link]]" target="_blank" class="demo-link">
+                    <iron-icon icon="chromestatus:open-in-browser"></iron-icon> View Demo
+                  </a>
+                </template>
+              </div>
+              <iron-icon icon="[[_computeIconId(feature.category)]]"
+                         title="[[feature.category]]"></iron-icon>
+            </div>
+          </div>
+        </li>
+      </template>
+    </ul>-->
+    <div class="">
+      <h1 class="chrome_version">Chrome [[chromeVersion]]</h1>
+    </div>
+    <div class="release layout horizontal center">
+      <h2 class="release_title">Beta:</h2> <span class="release-beta">[[_computeDate(milestone.earliest_beta)]] - [[_computeDate(milestone.latest_beta)]]</span>
+    </div>
+    <div class="release layout horizontal center">
+      <h2 class="release_title">Stable:</h2>
+      <!--<span class="release release-stable">Desktop stable release: [[_computeDate(milestone.final_beta)]]</span>-->
+      <span class="release-stable">[[_computeDate(milestone.stable_date)]]</span>
+    </div>
+  {% endverbatim %}
+</div>
+
+</template>
+
+</section>
+
+{% endblock %}
+
+{% block js %}
+<script>
+(function() {
+'use strict';
+
+async function getMilestoneInfo(version) {
+  const resp = await fetch(`https://chromepmo.appspot.com/schedule/mstone/json?mstone=${version}`);
+  const json = await resp.json();
+  return json.mstones[0];
+}
+
+function currentChromeVersions(versions) {
+  const channels = [];
+  const winVersions = versions.filter(platform => platform.os === 'win')[0].versions;
+  for (let i = 0, el; el = winVersions[i]; ++i) {
+    channels[el.channel] = parseInt(el.version);
+  }
+  return channels;
+}
+
+const t = $('#t');
+
+t._computeDate = function(dateStr) {
+  return new Date(dateStr).toLocaleDateString();
+};
+
+t.versions = {{versions|safe}};
+
+const currentVersions = currentChromeVersions(t.versions);
+t.chromeVersion = currentVersions.stable;
+
+getMilestoneInfo(currentVersions.stable).then(milestone => {
+  t.milestone = milestone;
+  document.body.classList.remove('loading');
+});
+
+})();
+</script>
+{% endblock %}

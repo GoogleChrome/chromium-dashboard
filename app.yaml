@@ -58,6 +58,10 @@ handlers:
   script: admin.app
   login: admin # Prevents raw access to this handler. Cron runs as admin.
 
+- url: /admin/schedule
+  script: schedule.app
+  secure: always
+
 - url: /admin/features/.*
   script: admin.app
   secure: always
