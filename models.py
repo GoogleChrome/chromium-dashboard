@@ -13,6 +13,7 @@ from collections import OrderedDict
 from django import forms
 
 import settings
+import util
 
 
 SIMPLE_TYPES = (int, long, float, bool, dict, basestring, list)
@@ -174,6 +175,11 @@ def del_none(d):
       del_none(value)
   return d
 
+def list_to_chunks(l, n):
+  """Yield successive n-sized chunk lists from l."""
+  for i in xrange(0, len(l), n):
+    yield l[i:i + n]
+
 
 class DictModel(db.Model):
   # def to_dict(self):
@@ -234,6 +240,85 @@ class Feature(DictModel):
   """Container for a feature."""
 
   DEFAULT_MEMCACHE_KEY = '%s|features' % (settings.MEMCACHE_KEY_PREFIX)
+  MAX_CHUNK_SIZE = 500 # max num features to save for each memcache chunk.
+
+  @classmethod
+  def get_feature_chunk_memcache_keys(self, key_prefix):
+    num_features = Feature.all(keys_only=True).count()
+    l = list_to_chunks(range(0, num_features), self.MAX_CHUNK_SIZE)
+    return ['%s|chunk%s' % (key_prefix, i) for i,val in enumerate(l)]
+
+  @classmethod
+  def set_feature_chunk_memcache_keys(self, key_prefix, feature_list):
+    chunks = list_to_chunks(feature_list, self.MAX_CHUNK_SIZE)
+    vals = []
+    for i, chunk in enumerate(chunks):
+      vals.append(('%s|chunk%s' % (key_prefix, i), chunk))
+    # d = OrderedDict(sorted(dict(vals).items(), key=lambda t: t[0]))
+    d = dict(vals)
+    return d
+
+  @classmethod
+  def _first_of_milestone(self, feature_list, milestone, start=0):
+    for i in xrange(start, len(feature_list)):
+      f = feature_list[i]
+      if (str(f['shipped_milestone']) == str(milestone) or
+          f['impl_status_chrome'] == str(milestone)):
+        return i
+      elif (f['shipped_milestone'] == None and
+            str(f['shipped_android_milestone']) == str(milestone)):
+        return i
+
+    return -1
+
+  @classmethod
+  def _first_of_milestone_v2(self, feature_list, milestone, start=0):
+    for i in xrange(start, len(feature_list)):
+      f = feature_list[i]
+      desktop_milestone = f['browsers']['chrome'].get('desktop', None)
+      android_milestone = f['browsers']['chrome'].get('android', None)
+      status = f['browsers']['chrome']['status'].get('text', None)
+
+      if (str(desktop_milestone) == str(milestone) or status == str(milestone)):
+        return i
+      elif (desktop_milestone == None and str(android_milestone) == str(milestone)):
+        return i
+
+    return -1
+
+  @classmethod
+  def _annotate_first_of_milestones(self, feature_list, version=None):
+    try:
+      omaha_data = util.get_omaha_data()
+
+      win_versions = omaha_data[0]['versions']
+
+      # Find the latest canary major version from the list of windows versions.
+      canary_versions = [x for x in win_versions if x.get('channel') and x.get('channel').startswith('canary')]
+      LATEST_VERSION = int(canary_versions[0].get('version').split('.')[0])
+
+      milestones = range(1, LATEST_VERSION + 1)
+      milestones.reverse()
+      versions = [
+        IMPLEMENTATION_STATUS[NO_ACTIVE_DEV],
+        IMPLEMENTATION_STATUS[PROPOSED],
+        IMPLEMENTATION_STATUS[IN_DEVELOPMENT],
+        ]
+      versions.extend(milestones)
+      versions.append(IMPLEMENTATION_STATUS[NO_LONGER_PURSUING])
+
+      first_of_milestone_func = Feature._first_of_milestone
+      if version == 2:
+        first_of_milestone_func = Feature._first_of_milestone_v2
+
+      last_good_idx = 0
+      for i, ver in enumerate(versions):
+        idx = first_of_milestone_func(feature_list, ver, start=last_good_idx)
+        if idx != -1:
+          feature_list[idx]['first_of_milestone'] = True
+          last_good_idx = idx
+    except Exception as e:
+      logging.error(e)
 
   def format_for_template(self, version=None):
     d = self.to_dict()
@@ -437,10 +522,10 @@ class Feature(DictModel):
     KEY = '%s|%s|%s|%s' % (Feature.DEFAULT_MEMCACHE_KEY,
                            'cronorder', limit, version)
 
-    feature_list = memcache.get(KEY)
+    # feature_list = memcache.get(KEY)
+    feature_list = memcache.get_multi(Feature.get_feature_chunk_memcache_keys(KEY))
 
-    if feature_list is None or update_cache:
-
+    if not len(feature_list.keys()) or update_cache:
       # Features with no active, in dev, proposed features.
       q = Feature.all()
       q.order('impl_status_chrome')
@@ -494,7 +579,19 @@ class Feature(DictModel):
 
       feature_list = [f.format_for_template(version) for f in pre_release]
 
-      memcache.set(KEY, feature_list)
+      self._annotate_first_of_milestones(feature_list, version=version)
+
+      # memcache.set(KEY, feature_list)
+
+      # Memcache doesn't support saving values > 1MB. Break up features list into
+      # chunks so we don't hit the limit.
+      memcache.set_multi(Feature.set_feature_chunk_memcache_keys(KEY, feature_list))
+    else:
+      temp_feature_list = []
+      # Reconstruct feature list by ordering chunks.
+      for key in sorted(feature_list.keys()):
+        temp_feature_list.extend(feature_list[key])
+      feature_list = temp_feature_list
 
     return feature_list
 
