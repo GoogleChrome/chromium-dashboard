@@ -522,10 +522,12 @@ class Feature(DictModel):
     KEY = '%s|%s|%s|%s' % (Feature.DEFAULT_MEMCACHE_KEY,
                            'cronorder', limit, version)
 
-    # feature_list = memcache.get(KEY)
-    feature_list = memcache.get_multi(Feature.get_feature_chunk_memcache_keys(KEY))
+    keys = Feature.get_feature_chunk_memcache_keys(KEY)
+    feature_list = memcache.get_multi(keys)
 
-    if not len(feature_list.keys()) or update_cache:
+    # If we didn't get the expected number of chunks back (or a cache update
+    # was requested), do a db query.
+    if len(feature_list.keys()) != len(keys) or update_cache:
       # Features with no active, in dev, proposed features.
       q = Feature.all()
       q.order('impl_status_chrome')
@@ -580,8 +582,6 @@ class Feature(DictModel):
       feature_list = [f.format_for_template(version) for f in pre_release]
 
       self._annotate_first_of_milestones(feature_list, version=version)
-
-      # memcache.set(KEY, feature_list)
 
       # Memcache doesn't support saving values > 1MB. Break up features list into
       # chunks so we don't hit the limit.
