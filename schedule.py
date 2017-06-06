@@ -38,6 +38,7 @@ from google.appengine.api import users
 import common
 # import models
 import settings
+import util
 
 
 def fetch_chrome_release_info(version):
@@ -45,12 +46,6 @@ def fetch_chrome_release_info(version):
   result = urlfetch.fetch(url)
   if result.status_code == 200:
     return json.loads(result.content)['mstones']
-  return None
-
-def get_omaha_data(host):
-  result = urlfetch.fetch('%s/omaha_data' % host)
-  if result.status_code == 200:
-    return json.loads(result.content)
   return None
 
 
@@ -63,7 +58,7 @@ class ScheduleHandler(common.ContentHandler):
       return
 
     data = {
-      'versions': json.dumps(get_omaha_data(self.request.host_url)),
+      'versions': json.dumps(util.get_omaha_data()),
       'release': fetch_chrome_release_info(58)
     }
 
