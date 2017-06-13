@@ -173,7 +173,7 @@ class FeaturesAPIHandler(common.JSONHandler):
 
   def get(self, version=None):
     if version is None:
-      version = 1
+      version = 2
     else:
       version = int(version)
 
