@@ -8,7 +8,6 @@
   },
   "scripts": {
     "postinstall": "npm run deps && npm run build",
-    "install-travis": "npm --prefix ./travis install ./travis",
     "deps": "rm -rf static/bower_components; bower install",
     "lint": "gulp lint",
     "build": "gulp",
@@ -44,6 +43,7 @@
     "gulp-util": "^3.0.7",
     "gulp-vulcanize": "^6.1.0",
     "http2-push-manifest": "^1.0.0",
+    "lighthouse-ci": "https://github.com/ebidel/lighthouse-ci",
     "load-grunt-tasks": "^3.4.1",
     "run-sequence": "^1.2.2",
     "sw-precache": "^3.2.0",

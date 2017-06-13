@@ -1,5 +1,6 @@
 language: node_js
-node_js: '7'
+node_js:
+  - "7"
 dist: trusty
 sudo: false
 git:
@@ -10,18 +11,17 @@ env:
   - CLOUDSDK_PYTHON_SITEPACKAGES=1
   - GAE_APP_ID=cr-status
 cache:
+  yarn: true
   directories:
-  - node_modules
-  - travis/node_modules
+    - node_modules
 install:
-- npm install -g bower gulp
-- npm install
-- npm run install-travis
+  - yarn global add bower gulp
+  - yarn
 script:
-- npm run lint
-- npm run build
+  - npm run lint
+  - npm run build
 after_success:
-- "./travis/deploy_pr_gae.sh"
-- export LH_MIN_PASS_SCORE=96
-- export LH_TEST_URL=https://lighthouse-ci-staging-dot-cr-status.appspot.com/features
-- node travis/runLighthouse.js $LH_TEST_URL $LH_MIN_PASS_SCORE
+  - "./travis/deploy_pr_gae.sh"
+  - export LH_MIN_PASS_SCORE=96
+  - export LH_TEST_URL=https://lighthouse-ci-staging-dot-cr-status.appspot.com/features
+  - node node_modules/lighthouse-ci/runlighthouse.js --score=$LH_MIN_PASS_SCORE $LH_TEST_URL
