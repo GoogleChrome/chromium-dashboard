@@ -142,8 +142,9 @@ class ContentHandler(BaseHandler):
 
     try:
       self.response.out.write(render_to_string(template_path, data))
-    except Exception:
-      handle_404(self.request, self.response, Exception)
+    except Exception as e:
+      logging.error(e)
+      handle_404(self.request, self.response, e)
 
   def render_atom_feed(self, title, data):
     features_url = '%s://%s%s' % (self.request.scheme,
