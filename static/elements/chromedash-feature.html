@@ -438,7 +438,7 @@
       return '/admin/features/edit/' + feature.id;
     },
     _computeBugComponent: function(feature) {
-      return feature.browsers.chrome.crbug_component || 'Blink';
+      return feature.browsers.chrome.blink_components[0] || 'Blink';
     },
     _computeCrbugNumber: function(link) {
       if (!link) {

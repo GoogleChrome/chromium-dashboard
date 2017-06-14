@@ -372,7 +372,6 @@ class Feature(DictModel):
       d['browsers'] = {
         'chrome': {
           'bug': d.pop('bug_url', None),
-          'crbug_component': d.pop('bug_component', None),
           'blink_components': d.pop('blink_components', None),
           'owners': d.pop('owner', []),
           'origintrial': self.impl_status_chrome == ORIGIN_TRIAL,
@@ -654,7 +653,7 @@ class Feature(DictModel):
 
   def new_crbug_url(self):
     url = 'https://bugs.chromium.org/p/chromium/issues/entry'
-    params = ['components=' + self.bug_component or DEFAULT_BUG_COMPONENT]
+    params = ['components=' + self.blink_components[0] or DEFAULT_BUG_COMPONENT]
     crbug_number = self.crbug_number()
     if crbug_number and self.impl_status_chrome in (
         NO_ACTIVE_DEV,
@@ -681,7 +680,6 @@ class Feature(DictModel):
 
   # Chromium details.
   bug_url = db.LinkProperty()
-  bug_component = db.StringProperty(required=False, default=DEFAULT_BUG_COMPONENT)
   blink_components = db.StringListProperty(required=True, default=[DEFAULT_BUG_COMPONENT])
 
   impl_status_chrome = db.IntegerProperty(required=True)
@@ -778,9 +776,6 @@ class FeatureForm(forms.Form):
 
   bug_url = forms.URLField(required=False, label='Bug URL',
       help_text='OWP Launch Tracking, crbug, etc.')
-
-  bug_component = forms.CharField(required=False, label='Bug Component',
-      help_text='"%s" will be used if not specified.' % DEFAULT_BUG_COMPONENT)
 
   blink_components = forms.ChoiceField(
       required=True,
