@@ -335,6 +335,10 @@ class FeatureHandler(common.ContentHandler):
     if search_tags:
       search_tags = filter(bool, [x.strip() for x in search_tags.split(',')])
 
+    blink_components = self.request.get('blink_components') or models.DEFAULT_BUG_COMPONENT
+    if blink_components:
+      blink_components = filter(bool, [x.strip() for x in blink_components.split(',')])
+
     # Update/delete existing feature.
     if feature_id: # /admin/edit/1234
       feature = models.Feature.get_by_id(long(feature_id))
@@ -353,7 +357,7 @@ class FeatureHandler(common.ContentHandler):
       feature.summary = self.request.get('summary')
       feature.owner = owners
       feature.bug_url = bug_url
-      feature.bug_component = self.request.get('bug_component')
+      feature.blink_components = blink_components
       feature.impl_status_chrome = int(self.request.get('impl_status_chrome'))
       feature.shipped_milestone = shipped_milestone
       feature.shipped_android_milestone = shipped_android_milestone
@@ -384,7 +388,7 @@ class FeatureHandler(common.ContentHandler):
           summary=self.request.get('summary'),
           owner=owners,
           bug_url=bug_url,
-          bug_component=self.request.get('bug_component'),
+          blink_components=blink_components,
           impl_status_chrome=int(self.request.get('impl_status_chrome')),
           shipped_milestone=shipped_milestone,
           shipped_android_milestone=shipped_android_milestone,

@@ -1,9 +1,11 @@
 import datetime
+import json
 import logging
 import re
 import time
 
 from google.appengine.api import memcache
+from google.appengine.api import urlfetch
 from google.appengine.api import users
 from google.appengine.ext import db
 #from google.appengine.ext.db import djangoforms
@@ -162,7 +164,7 @@ WEB_DEV_VIEWS = {
   }
 
 DEFAULT_BUG_COMPONENT = 'Blink'
-
+BLINK_COMPONENTS_URL = 'https://blinkcomponents-b48b5.firebaseapp.com/blinkcomponents'
 
 def del_none(d):
   """
@@ -179,6 +181,19 @@ def list_to_chunks(l, n):
   """Yield successive n-sized chunk lists from l."""
   for i in xrange(0, len(l), n):
     yield l[i:i + n]
+
+def fetch_blink_components():
+  key = '%s|blinkcomponents' % (settings.MEMCACHE_KEY_PREFIX)
+
+  components = memcache.get(key)
+  if components is None:
+    components = []
+
+    result = urlfetch.fetch(BLINK_COMPONENTS_URL)
+    if result.status_code == 200:
+      components = sorted(json.loads(result.content))
+      memcache.set(key, components)
+  return [(x, x) for x in components]
 
 
 class DictModel(db.Model):
@@ -357,7 +372,7 @@ class Feature(DictModel):
       d['browsers'] = {
         'chrome': {
           'bug': d.pop('bug_url', None),
-          'crbug_component': d.pop('bug_component', None),
+          'blink_components': d.pop('blink_components', []),
           'owners': d.pop('owner', []),
           'origintrial': self.impl_status_chrome == ORIGIN_TRIAL,
           'intervention': self.impl_status_chrome == INTERVENTION,
@@ -453,6 +468,7 @@ class Feature(DictModel):
     d['doc_links'] = '\r\n'.join(self.doc_links)
     d['sample_links'] = '\r\n'.join(self.sample_links)
     d['search_tags'] = ', '.join(self.search_tags)
+    d['blink_components'] = ', '.join(self.blink_components)
     return d
 
   @classmethod
@@ -636,8 +652,8 @@ class Feature(DictModel):
       return m.group(1)
 
   def new_crbug_url(self):
-    url = 'https://bugs.chromium.org/p/chromium/issues/entry';
-    params = ['components=' + self.bug_component or DEFAULT_BUG_COMPONENT];
+    url = 'https://bugs.chromium.org/p/chromium/issues/entry'
+    params = ['components=' + self.blink_components[0] or DEFAULT_BUG_COMPONENT]
     crbug_number = self.crbug_number()
     if crbug_number and self.impl_status_chrome in (
         NO_ACTIVE_DEV,
@@ -664,7 +680,8 @@ class Feature(DictModel):
 
   # Chromium details.
   bug_url = db.LinkProperty()
-  bug_component = db.StringProperty(required=False, default=DEFAULT_BUG_COMPONENT)
+  blink_components = db.StringListProperty(required=True, default=[DEFAULT_BUG_COMPONENT])
+
   impl_status_chrome = db.IntegerProperty(required=True)
   shipped_milestone = db.IntegerProperty()
   shipped_android_milestone = db.IntegerProperty()
@@ -751,22 +768,24 @@ class FeatureForm(forms.Form):
   #     help_text='Comma separated list of full email addresses (@chromium.org preferred).')
 
   category = forms.ChoiceField(required=True,
-                               choices=sorted(FEATURE_CATEGORIES.items(), key=lambda x: x[1]))
+      choices=sorted(FEATURE_CATEGORIES.items(), key=lambda x: x[1]))
 
-  owner = forms.CharField(
-      required=False, label='Owner(s) email',
+  owner = forms.CharField(required=False, label='Owner(s) email',
       help_text='Comma separated list of full email addresses. Prefer @chromium.org.')
 
 
   bug_url = forms.URLField(required=False, label='Bug URL',
-                           help_text='OWP Launch Tracking, crbug, etc.')
+      help_text='OWP Launch Tracking, crbug, etc.')
 
-  bug_component = forms.CharField(required=False, label='Bug Component',
-                           help_text='"%s" will be used if not specified.' % DEFAULT_BUG_COMPONENT)
+  blink_components = forms.ChoiceField(
+      required=True,
+      label='Blink component',
+      help_text='Select the most specific component. If unsure, leave as "%s".' % DEFAULT_BUG_COMPONENT,
+      choices=fetch_blink_components(),
+      initial=[DEFAULT_BUG_COMPONENT])
 
   impl_status_chrome = forms.ChoiceField(required=True,
-                                         label='Status in Chromium',
-                                         choices=IMPLEMENTATION_STATUS.items())
+      label='Status in Chromium', choices=IMPLEMENTATION_STATUS.items())
 
   #shipped_milestone = PlaceholderCharField(required=False,
   #                                         placeholder='First milestone the feature shipped with this status (either enabled by default or experimental)')
@@ -788,8 +807,7 @@ class FeatureForm(forms.Form):
   shipped_opera_android_milestone = forms.IntegerField(required=False, label='',
       help_text='Opera for Android: ' + SHIPPED_HELP_TXT)
 
-  prefixed = forms.BooleanField(
-      required=False, initial=False, label='Prefixed?')
+  prefixed = forms.BooleanField(required=False, initial=False, label='Prefixed?')
 
   standardization = forms.ChoiceField(
       label='Standardization', choices=STANDARDIZATION.items(),
@@ -809,8 +827,7 @@ class FeatureForm(forms.Form):
       help_text='One URL per line')
 
   footprint  = forms.ChoiceField(label='Technical footprint',
-                                 choices=FOOTPRINT_CHOICES.items(),
-                                 initial=MAJOR_MINOR_NEW_API)
+      choices=FOOTPRINT_CHOICES.items(), initial=MAJOR_MINOR_NEW_API)
 
   visibility  = forms.ChoiceField(
       label='Developer visibility',
