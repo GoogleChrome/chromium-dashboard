@@ -372,7 +372,7 @@ class Feature(DictModel):
       d['browsers'] = {
         'chrome': {
           'bug': d.pop('bug_url', None),
-          'blink_components': d.pop('blink_components', None),
+          'blink_components': d.pop('blink_components', []),
           'owners': d.pop('owner', []),
           'origintrial': self.impl_status_chrome == ORIGIN_TRIAL,
           'intervention': self.impl_status_chrome == INTERVENTION,
