@@ -16,7 +16,7 @@
 
 {% block subheader %}
 <div id="subheader">
-  <h2>Milestones</h2>
+  <h2>Current release snapshot</h2>
 </div>
 {% endblock %}
 
@@ -29,40 +29,55 @@
 <div>
   {% verbatim %}
 
-    <!--<ul id="samplelist" class="card-content">
-      <template is="dom-repeat" items="{{filtered}}" as="feature" initial-count="6">
-        <li>
-          <div class="card">
-            <h3 class="feature-name">
-              <a href$="[[_computeFeatureLink(feature.id)]]">{{feature.name}}</a>
-              <span class="milestone" hidden$="[[!feature.shipped_milestone]]">Chrome <span>[[feature.shipped_milestone]]</span></span>
-            </h3>
-            <div class="summary">[[feature.summary]]</div>
-            <div class="sample_links">
-              <div class="demo-links layout horizontal center">
-                <template is="dom-repeat" items="[[feature.sample_links]]" as="link">
-                  <a href$="[[link]]" target="_blank" class="demo-link">
-                    <iron-icon icon="chromestatus:open-in-browser"></iron-icon> View Demo
-                  </a>
-                </template>
-              </div>
-              <iron-icon icon="[[_computeIconId(feature.category)]]"
-                         title="[[feature.category]]"></iron-icon>
-            </div>
-          </div>
-        </li>
-      </template>
-    </ul>-->
-    <div class="">
-      <h1 class="chrome_version">Chrome [[chromeVersion]]</h1>
-    </div>
-    <div class="release layout horizontal center">
-      <h2 class="release_title">Beta:</h2> <span class="release-beta">[[_computeDate(milestone.earliest_beta)]] - [[_computeDate(milestone.latest_beta)]]</span>
-    </div>
-    <div class="release layout horizontal center">
-      <h2 class="release_title">Stable:</h2>
-      <!--<span class="release release-stable">Desktop stable release: [[_computeDate(milestone.final_beta)]]</span>-->
-      <span class="release-stable">[[_computeDate(milestone.stable_date)]]</span>
+    <div class="releases layout horizontal">
+      <section class="release">
+        <div class="layout vertical center">
+          <h1 class="channel_label">stable</h1>
+          <h1 class="chrome_version layout horizontal center">
+            <span class="chrome-logo"></span> Chrome [[channels.stable.version]]
+          </h1>
+        </div>
+        <!--<div class="milestone_info layout horizontal center">
+          <h2>Beta: <span class="release-beta">[[_computeDate(channels.stable.earliest_beta)]] - [[_computeDate(channels.stable.latest_beta)]]</span></h2>
+        </div>-->
+        <div class="milestone_info layout horizontal center">
+          <h3><span class="channel_label">Shipped</span> [[_computeDate(channels.stable.stable_date)]]
+            <span class="release-stable">( [[_computeDaysUntil(channels.stable.stable_date)]] )</span>
+          </h3>
+        </div>
+      </section>
+      <section class="release release-beta">
+        <div class="layout vertical center">
+          <h1 class="channel_label">beta</h1>
+          <h1 class="chrome_version chrome_version--beta layout horizontal center">
+            <span class="chrome-logo"></span> Chrome [[channels.beta.version]]
+          </h1>
+        </div>
+        <div class="milestone_info layout horizontal center">
+          <h3><span class="channel_label">Beta</span> <span class="milestone_info-beta">[[_computeDate(channels.beta.earliest_beta)]] - [[_computeDate(channels.beta.latest_beta)]]</span></h3>
+        </div>
+        <div class="milestone_info layout horizontal center">
+          <h3><span class="channel_label">Stable</span> [[_computeDate(channels.beta.stable_date)]]
+            <span class="release-stable">( [[_computeDaysUntil(channels.beta.stable_date)]] )</span>
+          </h3>
+        </div>
+      </section>
+      <section class="release">
+        <div class="layout vertical center">
+          <h1 class="channel_label">dev</h1>
+          <h1 class="chrome_version chrome_version--dev layout horizontal center">
+            <span class="chrome-logo"></span> Chrome [[channels.dev.version]]
+          </h1>
+        </div>
+        <div class="milestone_info layout horizontal center">
+          <h3><span class="channel_label">Beta</span> <span class="milestone_info-beta">[[_computeDate(channels.dev.earliest_beta)]] - [[_computeDate(channels.dev.latest_beta)]]</span></h3>
+        </div>
+        <div class="milestone_info layout horizontal center">
+          <h3><span class="channel_label">Stable</span> [[_computeDaysUntil(channels.dev.stable_date)]]
+            <span class="release-stable">( [[_computeDate(channels.dev.stable_date)]] )</span>
+          </h3>
+        </div>
+      </section>
     </div>
   {% endverbatim %}
 </div>
@@ -77,6 +92,8 @@
 <script>
 (function() {
 'use strict';
+
+const PLACEHOLDER = '-';
 
 async function getMilestoneInfo(version) {
   const resp = await fetch(`https://chromepmo.appspot.com/schedule/mstone/json?mstone=${version}`);
@@ -93,20 +110,66 @@ function currentChromeVersions(versions) {
   return channels;
 }
 
+function dateDiffInDays(a, b) {
+  // Discard time and time-zone information.
+  const utc1 = Date.UTC(a.getFullYear(), a.getMonth(), a.getDate());
+  const utc2 = Date.UTC(b.getFullYear(), b.getMonth(), b.getDate());
+
+  const MS_PER_DAY = 1000 * 60 * 60 * 24;
+  const daysDiff = Math.floor((utc2 - utc1) / MS_PER_DAY);
+  return {days: Math.abs(daysDiff), future: daysDiff < 1};
+}
+
 const t = $('#t');
 
-t._computeDate = function(dateStr) {
-  return new Date(dateStr).toLocaleDateString();
+t._computeDaysUntil = function(dateStr) {
+  if (!dateStr) {
+    return PLACEHOLDER;
+  }
+
+  const today = new Date();
+  const diff = dateDiffInDays(new Date(dateStr), today);
+  const prefix = diff.future ? 'in' : '';
+  const days = diff.days > 1 ? 's' : '';
+  const ago = !diff.future ? 'ago' : '';
+  return `${prefix} ${diff.days} day${days} ${ago}`;
 };
 
-t.versions = {{versions|safe}};
+t._computeDate = function(dateStr) {
+  if (!dateStr) {
+    return PLACEHOLDER;
+  }
+  const opts = {weekday: 'short', month: 'short', day: 'numeric'};
+  const date = new Date(dateStr);
+  return new Intl.DateTimeFormat('en-US',  opts).format(date);
+  // return new Date(dateStr).toLocaleDateString();
+};
 
-const currentVersions = currentChromeVersions(t.versions);
-t.chromeVersion = currentVersions.stable;
+const versions = {{versions|safe}};
+t.channels = {};
+
+const currentVersions = currentChromeVersions(versions);
+
+// console.log(currentVersions);
 
 getMilestoneInfo(currentVersions.stable).then(milestone => {
-  t.milestone = milestone;
+  t.set('channels.stable', Object.assign({
+    version: currentVersions.stable
+  }, milestone));
+
   document.body.classList.remove('loading');
+});
+
+getMilestoneInfo(currentVersions.beta).then(milestone => {
+  t.set('channels.beta', Object.assign({
+    version: currentVersions.beta
+  }, milestone));
+});
+
+getMilestoneInfo(currentVersions.dev).then(milestone => {
+  t.set('channels.dev', Object.assign({
+    version: currentVersions.dev
+  }, milestone));
 });
 
 })();
