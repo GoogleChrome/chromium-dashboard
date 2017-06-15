@@ -12,8 +12,15 @@ body[data-path$='schedule'] {
 .layout {
   display: flex;
 }
+.layout.wrap {
+  flex-wrap: wrap;
+}
 .layout.center {
   align-items: center;
+}
+.layout.center-center {
+  align-items: center;
+  justify-content: center;
 }
 .layout.vertical {
   flex-direction: column;
@@ -22,7 +29,8 @@ body[data-path$='schedule'] {
   font-size: 45px;
   border-bottom: 1px solid $bar-border-color;
   padding-bottom: $content-padding / 2;
-  margin-bottom: $content-padding;
+  margin: $content-padding / 2 0 $content-padding 0;
+  white-space: nowrap;
 }
 .channel_label {
   font-weight: 600;
@@ -65,19 +73,28 @@ body[data-path$='schedule'] {
   }
 }
 .releases {
+  padding-bottom: $content-padding * 5;
+
   .release {
-    background: $bar-gradient;
+    padding: $content-padding;
+    // background: $bar-gradient;
+    background: #fff;
     padding: $content-padding;
     border-radius: $default-border-radius;
     // transition: 300ms all ease-in-out;
-    flex: 1 0 auto;
+    // flex: 1 0 auto;
+    flex: 1 0 calc(33.33% - 16px);
+    max-width: 33.33%;
+    overflow: hidden;
+    min-width: 300px;
 
-    &:hover,
-    .release-beta {
-      background: #fff;
-    }
+    // &:hover,
+    // &.release-beta {
+    //   background: #fff;
+    // }
 
     &:not(:last-child) {
+      margin-bottom: $content-padding;
       margin-right: $content-padding;
     }
   }
@@ -89,8 +106,45 @@ body[data-path$='schedule'] {
     font-size: inherit;
     font-weight: 500;
     text-transform: none;
-    min-width: 60px;
-    display: inline-block;
-    text-align: end;
+    // min-width: 60px;
+    // display: inline-block;
+    // text-align: end;
+  }
+}
+.features_list {
+  margin-top: $content-padding * 2;
+
+  ol {
+    margin-top: $content-padding / 2;
+    padding: 0 $content-padding;
+  }
+
+  li {
+    padding: $content-padding / 2 0;
+    font-weight: 500;
+  }
+}
+
+.special_status {
+  font-weight: 600;
+  background: $chromium-color-dark;
+  color: white;
+  padding: 2px 4px;
+  border-radius: $default-border-radius;
+}
+
+.special_status-intervention {
+  background: $chromium-color-dark;
+}
+
+.special_status-origin-trial {
+  background: $chromium-color-center;
+}
+
+@media only screen and (max-width: 700px) {
+  .releases {
+    .release {
+      min-width: 100%;
+    }
   }
 }
