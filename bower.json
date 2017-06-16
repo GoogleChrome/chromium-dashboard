@@ -33,6 +33,7 @@
     "paper-styles": "PolymerElements/paper-styles#^1.0.11",
     "paper-menu": "PolymerElements/paper-menu#^1.1.1",
     "paper-menu-button": "PolymerElements/paper-menu-button#^1.3.0",
-    "iron-list": "PolymerElements/iron-list#^1.2.7"
+    "iron-list": "PolymerElements/iron-list#^1.2.7",
+    "paper-toggle-button": "PolymerElements/paper-toggle-button#^2.0.0"
   }
 }

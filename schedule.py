@@ -70,7 +70,9 @@ class ScheduleHandler(common.ContentHandler):
 
   def get(self, path):
     user = users.get_current_user()
-    if not self._is_user_whitelisted(user):
+    if not user:
+      return self.redirect(users.create_login_url(self.request.uri))
+    elif not self._is_user_whitelisted(user):
       common.handle_401(self.request, self.response, Exception)
       return
 

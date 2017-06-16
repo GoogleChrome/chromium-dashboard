@@ -16,7 +16,7 @@
 
 {% block subheader %}
 <div id="subheader">
-  <h2>Chrome release timeline</h2>
+  <!--<h2>Chrome release timeline</h2>-->
 </div>
 {% endblock %}
 
@@ -28,6 +28,10 @@
 
 <div>
   {% verbatim %}
+
+    <div class="release-toggles layout horizontal center-center">
+      <paper-toggle-button noink on-change="_toggleComponents">Hide components</paper-toggle-button>
+    </div>
 
     <div class="releases layout horizontal wrap">
       <section class="release">
@@ -46,16 +50,39 @@
           </h3>
         </div>
         <div class="features_list">
-          <h3>Features in this release:</h3>
-          <ol>
-            <template is="dom-repeat" items="[[channels.stable.features]]" as="f">
-              <li>
-                <a href$="/feature/[[f.id]]">[[f.name]]</a>
-                <label hidden$="[[!f.browsers.chrome.origintrial]]" class="special_status special_status-origin-trial" title="Origin Trial">OT</label>
-                <label hidden$="[[!f.browsers.chrome.intervention]]" class="special_status special_status-intervention" title="Intervention">I</label>
-              </li>
-            </template>
-          </ol>
+          <div class="features_header">Features in this release:</div>
+
+          <template is="dom-repeat" items="[[_objKeys(channels.stable.components)]]" as="componentName">
+            <h3 class="feature_components">{{componentName}}</h3>
+            <ul>
+              <template is="dom-repeat" items="[[_featuresFor(channels.stable.components, componentName)]]" as="f">
+                <li>
+                  <a href$="/feature/[[f.id]]">[[f.name]]</a>
+                  <template is="dom-if" if="[[f.browsers.chrome.origintrial]]">
+                    <span class="tooltip" title="Origin Trial">
+                      <iron-icon icon="chromestatus:extension" class="experimental" data-tooltip></iron-icon>
+                    </span>
+                  </template>
+                  <template is="dom-if" if="[[f.browsers.chrome.intervention]]">
+                    <span class="tooltip" title="Browser intervention">
+                      <iron-icon icon="chromestatus:pan-tool" class="intervention" data-tooltip></iron-icon>
+                    </span>
+                  </template>
+                  <template is="dom-if" if="[[isRemoved(f.browsers.chrome.status.text)]]">
+                    <span class="tooltip" title="Removed">
+                      <iron-icon icon="chromestatus:cancel" class="remove" data-tooltip></iron-icon>
+                    </span>
+                  </template>
+                  <template is="dom-if" if="[[isDeprecated(f.browsers.chrome.status.text)]]">
+                    <span class="tooltip" title="Deprecated">
+                      <iron-icon icon="chromestatus:warning" class="deprecated" data-tooltip></iron-icon>
+                    </span>
+                  </template>
+                </li>
+              </template>
+            </ul>
+          </template>
+
         </div>
       </section>
       <section class="release release-beta">
@@ -74,16 +101,39 @@
           </h3>
         </div>
         <div class="features_list">
-          <h3>Planned features in this release:</h3>
-          <ol>
-            <template is="dom-repeat" items="[[channels.beta.features]]" as="f">
-              <li>
-                <a href$="/feature/[[f.id]]">[[f.name]]</a>
-                <label hidden$="[[!f.browsers.chrome.origintrial]]" class="special_status special_status-origin-trial" title="Origin Trial">OT</label>
-                <label hidden$="[[!f.browsers.chrome.intervention]]" class="special_status special_status-intervention" title="Intervention">I</label>
-              </li>
-            </template>
-          </ol>
+          <div class="features_header">Features planned in this release:</div>
+
+          <template is="dom-repeat" items="[[_objKeys(channels.beta.components)]]" as="componentName">
+            <h3 class="feature_components">{{componentName}}</h3>
+            <ul>
+              <template is="dom-repeat" items="[[_featuresFor(channels.beta.components, componentName)]]" as="f">
+                <li>
+                  <a href$="/feature/[[f.id]]">[[f.name]]</a>
+                  <template is="dom-if" if="[[f.browsers.chrome.origintrial]]">
+                    <span class="tooltip" title="Origin Trial">
+                      <iron-icon icon="chromestatus:extension" class="experimental" data-tooltip></iron-icon>
+                    </span>
+                  </template>
+                  <template is="dom-if" if="[[f.browsers.chrome.intervention]]">
+                    <span class="tooltip" title="Browser intervention">
+                      <iron-icon icon="chromestatus:pan-tool" class="intervention" data-tooltip></iron-icon>
+                    </span>
+                  </template>
+                  <template is="dom-if" if="[[isRemoved(f.browsers.chrome.status.text)]]">
+                    <span class="tooltip" title="Removed">
+                      <iron-icon icon="chromestatus:cancel" class="remove" data-tooltip></iron-icon>
+                    </span>
+                  </template>
+                  <template is="dom-if" if="[[isDeprecated(f.browsers.chrome.status.text)]]">
+                    <span class="tooltip" title="Deprecated">
+                      <iron-icon icon="chromestatus:warning" class="deprecated" data-tooltip></iron-icon>
+                    </span>
+                  </template>
+                </li>
+              </template>
+            </ul>
+          </template>
+
         </div>
       </section>
       <section class="release">
@@ -102,16 +152,39 @@
           </h3>
         </div>
         <div class="features_list">
-          <h3>Planned features in this release:</h3>
-          <ol>
-            <template is="dom-repeat" items="[[channels.dev.features]]" as="f">
-              <li>
-                <a href$="/feature/[[f.id]]">[[f.name]]</a>
-                <label hidden$="[[!f.browsers.chrome.origintrial]]" class="special_status special_status-origin-trial" title="Origin Trial">OT</label>
-                <label hidden$="[[!f.browsers.chrome.intervention]]" class="special_status special_status-intervention" title="Intervention">I</label>
-              </li>
-            </template>
-          </ol>
+          <div class="features_header">Features planned in this release:</div>
+
+          <template is="dom-repeat" items="[[_objKeys(channels.dev.components)]]" as="componentName">
+            <h3 class="feature_components">{{componentName}}</h3>
+            <ul>
+              <template is="dom-repeat" items="[[_featuresFor(channels.dev.components, componentName)]]" as="f">
+                <li>
+                  <a href$="/feature/[[f.id]]">[[f.name]]</a>
+                  <template is="dom-if" if="[[f.browsers.chrome.origintrial]]">
+                    <span class="tooltip" title="Origin Trial">
+                      <iron-icon icon="chromestatus:extension" class="experimental" data-tooltip></iron-icon>
+                    </span>
+                  </template>
+                  <template is="dom-if" if="[[f.browsers.chrome.intervention]]">
+                    <span class="tooltip" title="Browser intervention">
+                      <iron-icon icon="chromestatus:pan-tool" class="intervention" data-tooltip></iron-icon>
+                    </span>
+                  </template>
+                  <template is="dom-if" if="[[isRemoved(f.browsers.chrome.status.text)]]">
+                    <span class="tooltip" title="Removed">
+                      <iron-icon icon="chromestatus:cancel" class="remove" data-tooltip></iron-icon>
+                    </span>
+                  </template>
+                  <template is="dom-if" if="[[isDeprecated(f.browsers.chrome.status.text)]]">
+                    <span class="tooltip" title="Deprecated">
+                      <iron-icon icon="chromestatus:warning" class="deprecated" data-tooltip></iron-icon>
+                    </span>
+                  </template>
+                </li>
+              </template>
+            </ul>
+          </template>
+
         </div>
       </section>
     </div>
@@ -176,7 +249,6 @@ async function getFeaturesList() {
   return json;
 }
 
-
 function dateDiffInDays(a, b) {
   // Discard time and time-zone information.
   const utc1 = Date.UTC(a.getFullYear(), a.getMonth(), a.getDate());
@@ -187,7 +259,45 @@ function dateDiffInDays(a, b) {
   return {days: Math.abs(daysDiff), future: daysDiff < 1};
 }
 
+function mapFeaturesToComponents(features) {
+  let set = new Set();
+  features.forEach(f => set.add(...f.browsers.chrome.blink_components));
+  const usedComponents = Array.from(set);
+
+  const featuresMappedToComponents = {};
+  features.forEach(f => {
+    const components = f.browsers.chrome.blink_components;
+    components.forEach(component => {
+      if (!featuresMappedToComponents[component]) {
+        featuresMappedToComponents[component] = [];
+      }
+      featuresMappedToComponents[component].push(f);
+    });
+  });
+
+  return featuresMappedToComponents;
+}
+
 const t = $('#t');
+
+t._objKeys = function(obj) {
+  if (!obj) {
+    return [];
+  }
+  return Object.keys(obj).sort();
+};
+
+t._featuresFor = function(features, componentName) {
+  return features[componentName];
+};
+
+t.isRemoved = function(implStatusChrome) {
+  return implStatusChrome === 'Removed';
+};
+
+t.isDeprecated = function(implStatusChrome) {
+  return implStatusChrome === 'Deprecated' || implStatusChrome === 'No longer pursuing';
+};
 
 t._computeDaysUntil = function(dateStr) {
   if (!dateStr) {
@@ -211,21 +321,34 @@ t._computeDate = function(dateStr) {
   return new Intl.DateTimeFormat('en-US',  opts).format(date);
 };
 
+t._toggleComponents = function(e) {
+  e.stopPropagation();
+  document.querySelectorAll('.release').forEach(release => {
+    release.classList.toggle('no-components', e.target.checked)
+  });
+};
+
 t.channels = {{channels|safe}};
 
 getFeaturesList().then(features => {
   const stableFeatures = features.filter(f =>
       f.browsers.chrome.status.milestone_str === t.channels.stable.version);
-  const devFeatures = features.filter(f =>
-      f.browsers.chrome.status.milestone_str === t.channels.dev.version);
   const betaFeatures = features.filter(f =>
       f.browsers.chrome.status.milestone_str === t.channels.beta.version);
-  t.set('channels.stable.features', stableFeatures);
-  t.set('channels.beta.features', betaFeatures);
-  t.set('channels.dev.features', devFeatures);
+  const devFeatures = features.filter(f =>
+      f.browsers.chrome.status.milestone_str === t.channels.dev.version);
+
+  t.set('channels.stable.components', mapFeaturesToComponents(stableFeatures));
+  t.set('channels.beta.components', mapFeaturesToComponents(betaFeatures));
+  t.set('channels.dev.components', mapFeaturesToComponents(devFeatures));
 });
 
-document.body.classList.remove('loading');
+document.addEventListener('WebComponentsReady', function(e) {
+  const header = document.querySelector('app-header-layout app-header');
+  if (header) {
+    header.fixed = false;
+  }
+});
 
 })();
 </script>
