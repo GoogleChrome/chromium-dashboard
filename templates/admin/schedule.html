@@ -247,6 +247,12 @@ async function getFeaturesList() {
   return json;
 }
 
+/**
+ *  Returns the number of days between a and b.
+ *  @param {!Date} a
+ *  @param {!Date} b
+ *  @return {!{days: number, future: boolean}}
+ */
 function dateDiffInDays(a, b) {
   // Discard time and time-zone information.
   const utc1 = Date.UTC(a.getFullYear(), a.getMonth(), a.getDate());
@@ -257,6 +263,26 @@ function dateDiffInDays(a, b) {
   return {days: Math.abs(daysDiff), future: daysDiff < 1};
 }
 
+/**
+ *  @param {!Array<!Object>} features
+ */
+function shortFeaturesByName(features) {
+  features.sort((a, b) => {
+    a = a.name.toLowerCase();
+    b = b.name.toLowerCase();
+    if (a < b) {
+      return -1;
+    }
+    if (a > b) {
+      return 1;
+    }
+    return 0;
+  });
+}
+
+/**
+ *  @param {!Array<!Object>} features
+ */
 function mapFeaturesToComponents(features) {
   let set = new Set();
   features.forEach(f => set.add(...f.browsers.chrome.blink_components));
@@ -272,6 +298,10 @@ function mapFeaturesToComponents(features) {
       featuresMappedToComponents[component].push(f);
     });
   });
+
+  for (let [component, features] of Object.entries(featuresMappedToComponents)) {
+    shortFeaturesByName(features);
+  }
 
   return featuresMappedToComponents;
 }
