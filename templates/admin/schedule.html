@@ -17,6 +17,7 @@
 {% block subheader %}
 <div id="subheader">
   <!--<h2>Chrome release timeline</h2>-->
+  <paper-toggle-button noink>Hide components</paper-toggle-button>
 </div>
 {% endblock %}
 
@@ -28,10 +29,6 @@
 
 <div>
   {% verbatim %}
-
-    <div class="release-toggles layout horizontal center-center">
-      <paper-toggle-button noink on-change="_toggleComponents">Hide components</paper-toggle-button>
-    </div>
 
     <div class="releases layout horizontal wrap">
       <section class="release">
@@ -342,13 +339,6 @@ t._computeDate = function(dateStr) {
   return new Intl.DateTimeFormat('en-US',  opts).format(date);
 };
 
-t._toggleComponents = function(e) {
-  e.stopPropagation();
-  document.querySelectorAll('.release').forEach(release => {
-    release.classList.toggle('no-components', e.target.checked)
-  });
-};
-
 t.channels = {{channels|safe}};
 
 getFeaturesList().then(features => {
@@ -362,6 +352,13 @@ getFeaturesList().then(features => {
   t.set('channels.stable.components', mapFeaturesToComponents(stableFeatures));
   t.set('channels.beta.components', mapFeaturesToComponents(betaFeatures));
   t.set('channels.dev.components', mapFeaturesToComponents(devFeatures));
+});
+
+$('paper-toggle-button').addEventListener('change', e => {
+  e.stopPropagation();
+  document.querySelectorAll('.release').forEach(release => {
+    release.classList.toggle('no-components', e.target.checked)
+  });
 });
 
 document.addEventListener('WebComponentsReady', function(e) {
