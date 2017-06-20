@@ -346,8 +346,8 @@ class Feature(DictModel):
         'when': d.pop('created_by', None),
       }
       d['updated'] = {
-        'by': d.pop('updated', None),
-        'when': d.pop('updated_by', None),
+        'by': d.pop('updated_by', None),
+        'when': d.pop('updated', None),
       }
       d['standards'] = {
         'spec': d.pop('spec_link', None),
@@ -428,7 +428,6 @@ class Feature(DictModel):
         d['browsers']['chrome']['status']['milestone_str'] = d['browsers']['chrome']['status']['text']
 
       del d['created']
-      del d['updated']
 
       del_none(d) # Further prune response by removing null/[] values.
 
