@@ -68,14 +68,9 @@ def construct_chrome_channels_details(omaha_data):
 
 class ScheduleHandler(common.ContentHandler):
 
+  @common.require_whitelisted_user
+  @common.strip_trailing_slash
   def get(self, path):
-    user = users.get_current_user()
-    if not user:
-      return self.redirect(users.create_login_url(self.request.uri))
-    elif not self._is_user_whitelisted(user):
-      common.handle_401(self.request, self.response, Exception)
-      return
-
     omaha_data = util.get_omaha_data()
 
     # features = Feature.get_chronological()
@@ -88,10 +83,10 @@ class ScheduleHandler(common.ContentHandler):
       'channels': json.dumps(construct_chrome_channels_details(omaha_data))
     }
 
-    self.render(data, template_path=os.path.join(path + '.html'))
+    self.render(data, template_path=os.path.join('admin/schedule.html'))
 
 
 app = webapp2.WSGIApplication([
-  ('/(.*)', ScheduleHandler),
+  ('(.*)', ScheduleHandler),
 ], debug=settings.DEBUG)
 

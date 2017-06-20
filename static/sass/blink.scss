@@ -1,0 +1,40 @@
+@import "vars";
+@import "layout";
+
+#spinner {
+  display: none !important;
+}
+#components_list {
+  /*display: flex;*/
+  list-style: none;
+  margin-bottom: $content-padding * 4;
+  /*flex-wrap: wrap;*/
+
+  li {
+    padding: $content-padding / 2;
+  }
+
+  .component_name {
+    flex: 1 0 130px;
+  }
+}
+/*.owner_name {
+  margin-right: $content-padding / 2;
+}*/
+
+.owners_list {
+  // margin-top: $content-padding / 2;
+  flex: 1 0 auto;
+}
+.owners_list_add {
+  margin-left: $content-padding / 2;
+}
+
+select[multiple] {
+  min-width: 100px;
+
+  &:disabled option {
+    color: initial;
+    padding: 2px 4px;
+  }
+}

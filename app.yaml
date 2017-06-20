@@ -50,20 +50,26 @@ handlers:
   script: metrics.app
 
 # Admin ------------------------------------------------------------------------
-- url: /admin/gae/.*
-  script: google.appengine.ext.admin.application
-  login: admin
-
 - url: /cron/.*
   script: admin.app
   login: admin # Prevents raw access to this handler. Cron runs as admin.
 
-- url: /admin/schedule
-  script: schedule.app
+- url: /admin/gae/.*
+  script: google.appengine.ext.admin.application
+  login: admin
+
+- url: /admin/blink.*
+  script: blink_handler.app
+  login: required
   secure: always
 
 - url: /admin/features/.*
   script: admin.app
+  secure: always
+
+- url: /admin/schedule.*
+  script: schedule.app
+  login: required
   secure: always
 
 - url: /admin/users/.*

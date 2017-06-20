@@ -31,6 +31,30 @@ import models
 import settings
 
 
+def require_whitelisted_user(handler):
+  """Handler decorator to require the user be whitelisted."""
+  def check_login(self, *args, **kwargs):
+    user = users.get_current_user()
+    if not user:
+      return self.redirect(users.create_login_url(self.request.uri))
+    elif not self._is_user_whitelisted(user):
+      handle_401(self.request, self.response, Exception)
+      return
+
+    return handler(self, *args, **kwargs) # Call the handler method
+  return check_login
+
+def strip_trailing_slash(handler):
+  """Strips the trailing slash on the URL."""
+  def remove_slash(self, *args, **kwargs):
+    path = args[0]
+    if path[-1] == '/':
+      return self.redirect(self.request.path.rstrip('/'))
+
+    return handler(self, *args, **kwargs) # Call the handler method
+  return remove_slash
+
+
 class BaseHandler(webapp2.RequestHandler):
 
   def __init__(self, request, response):
@@ -113,7 +137,8 @@ class ContentHandler(BaseHandler):
       'prod': settings.PROD,
       'APP_TITLE': settings.APP_TITLE,
       'current_path': self.request.path,
-      'VULCANIZE': settings.VULCANIZE
+      'VULCANIZE': settings.VULCANIZE,
+      'TEMPLATE_CACHE_TIME': settings.TEMPLATE_CACHE_TIME
       }
 
     user = users.get_current_user()

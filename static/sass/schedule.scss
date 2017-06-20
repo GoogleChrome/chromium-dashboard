@@ -1,6 +1,7 @@
 @import "vars";
+@import "layout";
 
-body[data-path$='schedule'] {
+body[data-path*='admin/schedule'] {
   app-drawer {
     display: none;
   }
@@ -11,23 +12,6 @@ body[data-path$='schedule'] {
   #spinner {
     display: none;
   }
-}
-
-.layout {
-  display: flex;
-}
-.layout.wrap {
-  flex-wrap: wrap;
-}
-.layout.center {
-  align-items: center;
-}
-.layout.center-center {
-  align-items: center;
-  justify-content: center;
-}
-.layout.vertical {
-  flex-direction: column;
 }
 
 iron-icon {
@@ -166,6 +150,8 @@ iron-icon {
 
     :first-child {
       margin-left: $content-padding + 8px;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
   }
 

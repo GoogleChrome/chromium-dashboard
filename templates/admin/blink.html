@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+{% load verbatim %}
+{% load inline_file %}
+
+{% block html_imports %}
+  <link rel="import" href="/static/elements/admin-imports{% if VULCANIZE %}.vulcanize{% endif %}.html">
+{% endblock %}
+
+{% block css %}
+<style>{% inline_file "/static/css/blink.css" %}</style>
+{% endblock %}
+
+{% block drawer %}
+
+{% endblock %}
+
+{% block subheader %}
+<div id="subheader">
+  <h2>Blink component owners</h2>
+</div>
+{% endblock %}
+
+{% block content %}
+
+<section>
+
+<div><a href="/admin/schedule">Chrome releases</a></div>
+
+<!--<p>Start typing a component name:</p>
+<input list="components" name="components" placeholder="{{components.0}}>Animation"></label>
+<datalist id="components">
+  {% for c in components %}
+    <option value="{{c}}">{{c}}</option>
+  {% endfor %}
+</datalist>-->
+
+<template id="tmpl_owners_list">
+  <select>
+    {% for owner in owners %}
+      <option class="owner_name" value="{{owner.id}}">{{owner.name}}</option>
+    {% endfor %}
+  </select>
+</template>
+
+<ul id="components_list">
+  {% for c in components %}
+    <li class="layout horizontal center">
+      <h3 class="component_name">{{c.name}}</h3>
+      <div class="owners_list layout horizontal center">
+        <div>
+          <div>DevRel owners</div>
+          <select multiple disabled id="owner_list_{{forloop.counter}}">
+            <!--{% if c.owners|length < 1 %}
+              <option>No owners</option>
+            {% endif %}-->
+            {% for owner in c.owners %}
+              <option class="owner_name" value="{{owner.name}}">{{owner.name}}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="owners_list_add">
+          <select class="owner_candidates">
+            {% for owner in owners %}
+              <option class="owner_name" value="{{owner.name}}">{{owner.name}}</option>
+            {% endfor %}
+          </select>
+          <button class="add_owner_button" data-index="{{forloop.counter}}">Add</button>
+        </div>
+      </div>
+    </li>
+  {% endfor %}
+</ul>
+
+<template id="t" is="dom-bind">
+
+<div>
+  {% verbatim %}
+
+  {% endverbatim %}
+</div>
+
+</template>
+
+</section>
+
+{% endblock %}
+
+{% block js %}
+<script>
+(function() {
+'use strict';
+
+const t = $('#t');
+const tmpl = $('#tmpl_owners_list');
+
+function insertOwnerSelector(container) {
+  const clone = document.importNode(tmpl.content, true);
+  container.appendChild(clone);
+}
+
+$('#components_list').addEventListener('click', function(e) {
+  if (!e.target.classList.contains('add_owner_button')) {
+    return;
+  }
+  const idx = e.target.dataset.index;
+
+  const candidates = e.target.parentElement.querySelector('.owner_candidates');
+  const option = document.createElement('option');
+  option.value = candidates.value;
+  option.textContent = option.value;
+  this.querySelector(`#owner_list_${idx}`).appendChild(option);
+
+  // insertOwnerSelector(e.target.parentElement);
+
+});
+
+document.addEventListener('WebComponentsReady', function(e) {
+
+});
+
+})();
+</script>
+{% endblock %}

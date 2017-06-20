@@ -329,7 +329,7 @@ class FeatureHandler(common.ContentHandler):
     if search_tags:
       search_tags = filter(bool, [x.strip() for x in search_tags.split(',')])
 
-    blink_components = self.request.get('blink_components') or models.DEFAULT_BUG_COMPONENT
+    blink_components = self.request.get('blink_components') or models.BlinkComponent.DEFAULT_COMPONENT
     if blink_components:
       blink_components = filter(bool, [x.strip() for x in blink_components.split(',')])
 
