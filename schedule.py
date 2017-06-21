@@ -73,11 +73,6 @@ class ScheduleHandler(common.ContentHandler):
   def get(self, path):
     omaha_data = util.get_omaha_data()
 
-    # features = Feature.get_chronological()
-    # for f in features:
-      # milesstone = f.get('meta').get('milestone_str')
-    #  print f.get('impl_status_chrome')
-
     data = {
       'features': json.dumps(models.Feature.get_chronological()),
       'channels': json.dumps(construct_chrome_channels_details(omaha_data))

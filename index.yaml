@@ -153,6 +153,11 @@ indexes:
   - name: day_percentage
     direction: desc
 
+- kind: FeatureOwner
+  properties:
+  - name: blink_components
+  - name: name
+
 - kind: StableInstance
   properties:
   - name: bucket_id

@@ -8,7 +8,6 @@ from google.appengine.api import memcache
 from google.appengine.api import urlfetch
 from google.appengine.api import users
 from google.appengine.ext import db
-from google.appengine.ext import ndb
 #from google.appengine.ext.db import djangoforms
 
 #from django.forms import ModelForm
@@ -181,7 +180,42 @@ def list_to_chunks(l, n):
     yield l[i:i + n]
 
 
-class BlinkComponent(db.Model):
+class DictModel(db.Model):
+  # def to_dict(self):
+  #   return dict([(p, unicode(getattr(self, p))) for p in self.properties()])
+
+  def format_for_template(self):
+    d = self.to_dict()
+    d['id'] = self.key().id()
+    return d
+
+  def to_dict(self):
+    output = {}
+
+    for key, prop in self.properties().iteritems():
+      value = getattr(self, key)
+
+      if value is None or isinstance(value, SIMPLE_TYPES):
+        output[key] = value
+      elif isinstance(value, datetime.date):
+        # Convert date/datetime to ms-since-epoch ("new Date()").
+        #ms = time.mktime(value.utctimetuple())
+        #ms += getattr(value, 'microseconds', 0) / 1000
+        #output[key] = int(ms)
+        output[key] = unicode(value)
+      elif isinstance(value, db.GeoPt):
+        output[key] = {'lat': value.lat, 'lon': value.lon}
+      elif isinstance(value, db.Model):
+        output[key] = to_dict(value)
+      elif isinstance(value, users.User):
+        output[key] = value.email()
+      else:
+        raise ValueError('cannot encode ' + repr(prop))
+
+    return output
+
+
+class BlinkComponent(DictModel):
 
   DEFAULT_COMPONENT = 'Blink'
   COMPONENTS_URL = 'https://blinkcomponents-b48b5.firebaseapp.com/blinkcomponents'
@@ -192,7 +226,7 @@ class BlinkComponent(db.Model):
 
   @property
   def owners(self):
-    q = FeatureOwner.all().filter('blink_components = ', self.key())
+    q = FeatureOwner.all().filter('blink_components = ', self.key()).order('name')
     return q.fetch(None)
 
   @classmethod
@@ -230,39 +264,6 @@ class BlinkComponent(db.Model):
       logging.error('%s is an unknown BlinkComponent.' % (component_name))
       return None
     return component[0]
-
-
-class DictModel(db.Model):
-  # def to_dict(self):
-  #   return dict([(p, unicode(getattr(self, p))) for p in self.properties()])
-
-  def format_for_template(self):
-    return self.to_dict()
-
-  def to_dict(self):
-    output = {}
-
-    for key, prop in self.properties().iteritems():
-      value = getattr(self, key)
-
-      if value is None or isinstance(value, SIMPLE_TYPES):
-        output[key] = value
-      elif isinstance(value, datetime.date):
-        # Convert date/datetime to ms-since-epoch ("new Date()").
-        #ms = time.mktime(value.utctimetuple())
-        #ms += getattr(value, 'microseconds', 0) / 1000
-        #output[key] = int(ms)
-        output[key] = unicode(value)
-      elif isinstance(value, db.GeoPt):
-        output[key] = {'lat': value.lat, 'lon': value.lon}
-      elif isinstance(value, db.Model):
-        output[key] = to_dict(value)
-      elif isinstance(value, users.User):
-        output[key] = value.email()
-      else:
-        raise ValueError('cannot encode ' + repr(prop))
-
-    return output
 
 
 # UMA metrics.
@@ -932,11 +933,6 @@ class AppUser(DictModel):
   created = db.DateTimeProperty(auto_now_add=True)
   updated = db.DateTimeProperty(auto_now=True)
 
-  def format_for_template(self):
-    d = self.to_dict()
-    d['id'] = self.key().id()
-    return d
-
 
 class FeatureOwner(DictModel):
   """Describes owner of a web platform feature."""
@@ -947,11 +943,6 @@ class FeatureOwner(DictModel):
   twitter = db.StringProperty()
   blink_components = db.ListProperty(db.Key)
 
-  def format_for_template(self):
-    d = self.to_dict()
-    d['id'] = self.key().id()
-    return d
-
   def add_as_component_owner(self, component_name):
     """Adds the user to the list of Blink component owners."""
     c = BlinkComponent.get_by_name(component_name)
@@ -959,15 +950,18 @@ class FeatureOwner(DictModel):
       already_added = len([x for x in self.blink_components if x.id() == c.key().id()])
       if not already_added:
         self.blink_components.append(c.key())
-        self.put()
+        return self.put()
+    return None
 
   def remove_from_component_owners(self, component_name):
     """Removes the user from the list of Blink component owners."""
     c = BlinkComponent.get_by_name(component_name)
     if c:
       self.blink_components = [x for x in self.blink_components if x.id() != c.key().id()]
-      self.put()
-    pass
+      logging.info(c)
+      logging.info(self.blink_components)
+      return self.put()
+    return None
 
 
 class HistogramModel(db.Model):

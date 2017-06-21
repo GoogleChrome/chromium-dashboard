@@ -1,16 +1,23 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
 
-<dom-module id="delete-link">
+<dom-module id="ajax-link">
 <template>
   <content></content>
 </template>
 <script>
   Polymer({
-    is: 'delete-link',
+    is: 'ajax-link',
     extends: 'a',
 
     listeners: {
       'click': '_onClick'
+    },
+
+    properties: {
+      method: {
+        type: String,
+        value: 'POST'
+      }
     },
 
     _onClick: function(e, details, sender) {
@@ -21,7 +28,10 @@
         return;
       }
 
-      fetch(e.target.href, {method: 'POST'}).then(function(resp) {
+      fetch(e.target.href, {
+        method: this.method,
+        credentials: 'include'
+      }).then(function(resp) {
         this.fire('ajax-delete', {response: resp, status: resp.status});
       }.bind(this));
     }

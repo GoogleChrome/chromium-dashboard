@@ -33,26 +33,50 @@ import util
 
 class BlinkHandler(common.ContentHandler):
 
+  def __update_owners_list(self, add=True, user_id=None, blink_component=None):
+    if not user_id or not blink_component:
+      return False
+
+    owner = models.FeatureOwner.get_by_id(long(user_id))
+    if not owner:
+      return True
+
+    if add:
+      owner.add_as_component_owner(blink_component)
+    else:
+      owner.remove_from_component_owners(blink_component)
+
+    return True
+
   @common.require_whitelisted_user
   @common.strip_trailing_slash
   def get(self, path):
-    # components = models.BlinkComponent.fetch_all_components()
-    # for f in features:
-      # milesstone = f.get('meta').get('milestone_str')
-    #  print f.get('impl_status_chrome')
+    components = models.BlinkComponent.all().order('name').fetch(None)
+    owners = models.FeatureOwner.all().order('name').fetch(None)
 
-    components = models.BlinkComponent.all().fetch(None)
-    owners = models.FeatureOwner.all().fetch(None)
-
-    owners = [x.format_for_template() for x in sorted(owners, key=lambda o: o.name)]
+    # Format for django template
+    owners = [x.format_for_template() for x in owners]
 
     data = {
-      #'components': components #json.dumps(components),json.dumps(components),
       'owners': owners,
-      'components': sorted(components, key=lambda c: c.name)
+      'components': components
     }
 
     self.render(data, template_path=os.path.join('admin/blink.html'))
+
+  def put(self, path):
+    params = json.loads(self.request.body)
+    self.__update_owners_list(False, user_id=params.get('userId'),
+                              blink_component=params.get('componentName'))
+    self.response.set_status(200, message='User removed from owners')
+    return self.response.write(json.dumps({'done': True}))
+
+  def post(self, path):
+    params = json.loads(self.request.body)
+    self.__update_owners_list(True, user_id=params.get('userId'),
+                              blink_component=params.get('componentName'))
+    self.response.set_status(200, message='User added to owners')
+    return self.response.write(json.dumps(params))
 
 
 app = webapp2.WSGIApplication([
