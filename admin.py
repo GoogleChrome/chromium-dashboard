@@ -190,7 +190,7 @@ class HistogramsHandler(webapp2.RequestHandler):
 
   def get(self):
     # Attempt to fetch enums mapping file.
-    result = urlfetch.fetch(HISTOGRAMS_URL)
+    result = urlfetch.fetch(HISTOGRAMS_URL, deadline=60)
 
     if (result.status_code != 200):
       logging.error('Unable to retrieve chromium histograms mapping file.')
@@ -427,9 +427,18 @@ class FeatureHandler(common.ContentHandler):
 
     return self.redirect(redirect_url)
 
+
+class BlinkComponentHandler(webapp2.RequestHandler):
+  """Updates the list of Blink components in the db."""
+  def get(self):
+    models.BlinkComponent.update_db()
+    self.response.out.write('Blink components updated')
+
+
 app = webapp2.WSGIApplication([
   ('/cron/metrics', YesterdayHandler),
   ('/cron/histograms', HistogramsHandler),
+  ('/cron/update_blink_components', BlinkComponentHandler),
   ('/(.*)/([0-9]*)', FeatureHandler),
   ('/(.*)', FeatureHandler),
 ], debug=settings.DEBUG)

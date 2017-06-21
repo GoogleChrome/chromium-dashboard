@@ -236,7 +236,7 @@ class BlinkComponent(DictModel):
     components = memcache.get(key)
     if components is None or update_cache:
       components = []
-      result = urlfetch.fetch(self.COMPONENTS_URL)
+      result = urlfetch.fetch(self.COMPONENTS_URL, deadline=60)
       if result.status_code == 200:
         components = sorted(json.loads(result.content))
         memcache.set(key, components)
@@ -250,7 +250,6 @@ class BlinkComponent(DictModel):
     for name in new_components:
       if not len([x.name for x in existing_comps if x.name == name]):
         logging.info('Adding new BlinkComponent: ' + name)
-        print 'Adding new BlinkComponent: ' + name
         c = BlinkComponent(name=name)
         c.put()
 
