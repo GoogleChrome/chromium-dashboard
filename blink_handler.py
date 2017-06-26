@@ -19,6 +19,7 @@ import json
 import logging
 import os
 import webapp2
+import yaml
 
 # Appengine imports.
 from google.appengine.api import memcache
@@ -29,6 +30,35 @@ import common
 import models
 import settings
 import util
+
+
+class PopulateOwnersHandler(common.ContentHandler):
+
+  def __populate_devrel_owers(self):
+    """Seeds the database with the team in devrel_team.yaml and adds the team
+      member to the specified blink components in that file. Should only be ran
+      if the FeatureOwner database entries have been cleared"""
+    f = file('%s/data/devrel_team.yaml' % settings.ROOT_DIR, 'r')
+    for profile in yaml.load_all(f):
+      blink_components = profile.get('blink_components', [])
+      blink_components = [models.BlinkComponent.get_by_name(name).key() for name in blink_components]
+      blink_components = filter(None, blink_components) # Filter out None values
+
+      owner = models.FeatureOwner(
+        name=unicode(profile['name']),
+        email=unicode(profile['email']),
+        twitter=profile.get('twitter', None),
+        blink_components=blink_components
+      )
+      owner.put()
+    f.close()
+
+  @common.require_whitelisted_user
+  def get(self):
+    if settings.PROD:
+      return self.response.out.write('Handler not allowed in production.')
+    self.__populate_devrel_owers()
+    return self.redirect('/admin/blink')
 
 
 class BlinkHandler(common.ContentHandler):
@@ -80,6 +110,7 @@ class BlinkHandler(common.ContentHandler):
 
 
 app = webapp2.WSGIApplication([
+  ('/admin/blink/populate_owners', PopulateOwnersHandler),
   ('(.*)', BlinkHandler),
 ], debug=settings.DEBUG)
 

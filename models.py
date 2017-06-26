@@ -957,8 +957,6 @@ class FeatureOwner(DictModel):
     c = BlinkComponent.get_by_name(component_name)
     if c:
       self.blink_components = [x for x in self.blink_components if x.id() != c.key().id()]
-      logging.info(c)
-      logging.info(self.blink_components)
       return self.put()
     return None
 

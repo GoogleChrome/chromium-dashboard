@@ -46,6 +46,7 @@
 {% endcomment %}
 
 <ul id="components_list">
+  <div><b>Listing {{components|length}} components</b></div>
   {% for c in components %}
     <li class="layout horizontal center">
       <h3 class="component_name">{{c.name}}</h3>
@@ -60,6 +61,7 @@
         </div>
         <div class="owners_list_add_remove">
           <select class="owner_candidates">
+            <option selected disabled>Select owner to add/remove</option>
             {% for owner in owners %}
               <option class="owner_name" value="{{owner.id}}">{{owner.name}}</option>
             {% endfor %}
@@ -121,7 +123,13 @@ $('#components_list').addEventListener('click', function(e) {
   const idx = e.target.dataset.index;
   const componentName = e.target.dataset.componentName;
   const userId = candidates.value;
-  const username = candidates.selectedOptions[0].textContent;
+  const selectedCandidate = candidates.selectedOptions[0];
+  const username = selectedCandidate.textContent;
+
+  if (selectedCandidate.disabled) {
+    alert('Please select a user');
+    return;
+  }
 
   // Add new item to owners list.
   const ownersList = this.querySelector(`#owner_list_${idx}`);
