@@ -23,7 +23,7 @@
 
 {% block content %}
 
-<section>
+<section id="releases-section">
 
 <template id="t" is="dom-bind">
 
@@ -244,6 +244,8 @@ async function getFeaturesList() {
   return json;
 }
 
+const featuresPromise = getFeaturesList(); // make network request asap.
+
 /**
  *  Returns the number of days between a and b.
  *  @param {!Date} a
@@ -341,7 +343,39 @@ t._computeDate = function(dateStr) {
 
 t.channels = {{channels|safe}};
 
-getFeaturesList().then(features => {
+$('paper-toggle-button').addEventListener('change', e => {
+  e.stopPropagation();
+  document.querySelectorAll('.release').forEach(release => {
+    release.classList.toggle('no-components', e.target.checked)
+  });
+});
+
+async function init() {
+  document.body.classList.remove('loading');
+
+  // Wait for Polymer to be setup before setting features on template.
+  // This prevents race conditions whereby when opening a new tab, Chrome
+  // returns features from the cache and beats Polymer being ready.
+  const target = $('#releases-section');
+  const mutationObserverPromise = new Promise(resolve => {
+    const observer = new MutationObserver(mutations => {
+      mutations.forEach(mutation => {
+        if (mutation.addedNodes.length && target.querySelector('.releases')) {
+          observer.disconnect();
+          resolve();
+        }
+      });
+    });
+    observer.observe(target, {childList: true});
+  });
+
+  const timeoutPromise = new Promise(resolve => setTimeout(resolve, 5000));
+
+  // Race fetching features from network and timeout. If MO observer check fails
+  // for some reason, manually set features after 5s.
+  await Promise.race([mutationObserverPromise, timeoutPromise]);
+
+  const features = await featuresPromise;
   const stableFeatures = features.filter(f =>
       f.browsers.chrome.status.milestone_str === t.channels.stable.version);
   const betaFeatures = features.filter(f =>
@@ -352,14 +386,7 @@ getFeaturesList().then(features => {
   t.set('channels.stable.components', mapFeaturesToComponents(stableFeatures));
   t.set('channels.beta.components', mapFeaturesToComponents(betaFeatures));
   t.set('channels.dev.components', mapFeaturesToComponents(devFeatures));
-});
-
-$('paper-toggle-button').addEventListener('change', e => {
-  e.stopPropagation();
-  document.querySelectorAll('.release').forEach(release => {
-    release.classList.toggle('no-components', e.target.checked)
-  });
-});
+}
 
 document.addEventListener('WebComponentsReady', function(e) {
   const header = document.querySelector('app-header-layout app-header');
@@ -368,7 +395,7 @@ document.addEventListener('WebComponentsReady', function(e) {
   }
 });
 
-document.body.classList.remove('loading');
+init();
 
 })();
 </script>
