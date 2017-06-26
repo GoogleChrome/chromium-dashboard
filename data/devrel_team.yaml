@@ -11,12 +11,13 @@ twitter: ebidel
 email: e.bidelman@google.com
 blink_components:
   - Blink>DOM
+  - Blink>CSS
   - Blink>HTML
   - Blink>Forms
   - Blink>JavaScript
   - Internals>OriginTrials
 ---
-name: Megan Kearney
+name: Meggin Kearney
 email: mkearney@google.com
 ---
 name: Robert Nyman
@@ -99,3 +100,19 @@ email: kayce@google.com
 ---
 name: Paul Kinlan
 email: paulkinlan@google.com
+---
+name: Ilya Grigorik
+email: igrigorik@google.com
+twitter: igrigorik
+---
+name: Lizzi Harvey
+email: ekharvey@google.com
+---
+name: Paul Bakaus
+email: pbakaus@google.com
+---
+name: Rick Viscomi
+email: rviscomi@google.com
+---
+name: Mustafa Kurtuldu
+email: mkurtuldu@google.com
