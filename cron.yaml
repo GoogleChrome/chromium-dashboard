@@ -5,6 +5,6 @@ cron:
 - description: retrieve from UMA Cloud Storage data gathered yesterday
   url: /cron/metrics
   schedule: every day 22:00
-- desription: update list of Blink components
+- description: update list of Blink components
   url: /cron/update_blink_components
   schedule: every day 04:30
