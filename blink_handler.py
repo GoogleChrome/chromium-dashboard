@@ -81,6 +81,10 @@ class BlinkHandler(common.ContentHandler):
   @common.require_whitelisted_user
   @common.strip_trailing_slash
   def get(self, path):
+    # key = '%s|blinkcomponentowners' % (settings.MEMCACHE_KEY_PREFIX)
+
+    # data = memcache.get(key)
+    # if data is None:
     components = models.BlinkComponent.all().order('name').fetch(None)
     owners = models.FeatureOwner.all().order('name').fetch(None)
 
@@ -91,6 +95,7 @@ class BlinkHandler(common.ContentHandler):
       'owners': owners,
       'components': components
     }
+    # memcache.set(key, data)
 
     self.render(data, template_path=os.path.join('admin/blink.html'))
 
@@ -105,6 +110,8 @@ class BlinkHandler(common.ContentHandler):
     params = json.loads(self.request.body)
     self.__update_owners_list(True, user_id=params.get('userId'),
                               blink_component=params.get('componentName'))
+    # memcache.flush_all()
+    # memcache.delete('%s|blinkcomponentowners' % (settings.MEMCACHE_KEY_PREFIX))
     self.response.set_status(200, message='User added to owners')
     return self.response.write(json.dumps(params))
 

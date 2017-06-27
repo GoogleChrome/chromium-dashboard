@@ -17,7 +17,7 @@
 {% block subheader %}
 <div id="subheader">
   <div>
-    <h2>Blink component owners</h2>
+    <h2>blink component owners</h2>
     <div>listing {{components|length}} components</div>
   </div>
   <div class="layout horizontal subheader_toggles">
@@ -53,7 +53,7 @@
 
 <ul id="components_list">
   {% for c in components %}
-    <li class="layout horizontal">
+    <li class="layout horizontal" id="{{c.name}}">
       <div class="component_name">
         <div class="column_header">Component</div>
         <h3>{{c.name}}</h3>
@@ -92,32 +92,6 @@
 <script>
 (function() {
 'use strict';
-
-const t = $('#t');
-
-// // Update disabled state of buttons if name is in the list or not.
-// function setButtons(eventOrTarget) {
-//   const target = eventOrTarget.target || eventOrTarget;
-
-//   if (!target.classList.contains('owner_candidates')) {
-//     return;
-//   }
-
-//   const addUser = target.classList.contains('add_owner_button');
-//   const removeUser = target.classList.contains('remove_owner_button');
-
-//   const username = target.selectedOptions[0].textContent;
-//   const ownersList = this.querySelector('.owners_list select');
-//   const foundName = Array.from(ownersList.options).find(option => option.textContent === username);
-
-//   const addButton = this.querySelector('.add_owner_button');
-//   addButton.disabled = !!foundName;
-
-//   const removeButton = this.querySelector('.remove_owner_button');
-//   removeButton.disabled = !addButton.disabled;
-// }
-
-// $('#components_list').addEventListener('change', setButtons);
 
 $('paper-toggle-button').addEventListener('change', e => {
   e.stopPropagation();
@@ -181,6 +155,15 @@ $('#components_list').addEventListener('click', function(e) {
     }
 
   });
+});
+
+window.addEventListener('DOMContentLoaded', function(e) {
+  if (location.hash) {
+    setTimeout(function() {
+      const el = document.getElementById(location.hash.slice(1));
+      $('app-header').scroll(0, el.offsetTop);
+    }, 500);
+  }
 });
 
 document.body.classList.remove('loading');

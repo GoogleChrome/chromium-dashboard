@@ -1,6 +1,10 @@
 @import "vars";
 @import "layout";
 
+body {
+  scroll-behavior: smooth;
+}
+
 #spinner {
   display: none !important;
 }
@@ -62,6 +66,11 @@
   .component_name {
     flex: 1 0 130px;
     margin-right: $content-padding;
+
+    h3 {
+      color: initial;
+      padding-top: 4px;
+    }
   }
 }
 .column_header {

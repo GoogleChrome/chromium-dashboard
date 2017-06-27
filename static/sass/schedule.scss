@@ -37,6 +37,15 @@ iron-icon {
   }
 }
 
+#subheader {
+  max-width: 100%;
+  justify-content: center;
+}
+.main-toolbar .toolbar-content {
+  max-width: 100%; // override.
+  width: 100%;
+}
+
 .chrome_version {
   font-size: 45px;
   margin: $content-padding / 2 0 $content-padding 0;
