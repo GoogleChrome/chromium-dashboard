@@ -93,7 +93,7 @@ class BlinkHandler(common.ContentHandler):
 
     data = {
       'owners': owners,
-      'components': components
+      'components': components[1:] # ditch generic "Blink" component
     }
     # memcache.set(key, data)
 
