@@ -16,10 +16,16 @@
 
 {% block subheader %}
 <div id="subheader">
-  <h2>Blink component owners</h2>
-  <ul class="layout horizontal">
-    <li><a href="/admin/schedule">View Chrome releases</a></li>
-  </ul>
+  <div>
+    <h2>Blink component owners</h2>
+    <div>listing {{components|length}} components</div>
+  </div>
+  <div class="layout horizontal subheader_toggles">
+    <paper-toggle-button noink>Edit owners</paper-toggle-button>
+    <ul>
+      <li><a href="/admin/schedule">Chrome releases &rarr;</a></li>
+    </ul>
+  </div>
 </div>
 {% endblock %}
 
@@ -46,14 +52,16 @@
 {% endcomment %}
 
 <ul id="components_list">
-  <div><b>Listing {{components|length}} components</b></div>
   {% for c in components %}
-    <li class="layout horizontal center">
-      <h3 class="component_name">{{c.name}}</h3>
+    <li class="layout horizontal">
+      <div class="component_name">
+        <div class="column_header">Component</div>
+        <h3>{{c.name}}</h3>
+      </div>
       <div class="owners_list layout horizontal center">
         <div>
-          <div>DevRel owners</div>
-          <select multiple disabled id="owner_list_{{forloop.counter}}">
+          <div class="column_header">Owners</div>
+          <select multiple disabled id="owner_list_{{forloop.counter}}" size="{{c.owners|length}}">
             {% for owner in c.owners %}
               <option class="owner_name" value="{{owner.id}}">{{owner.name}}</option>
             {% endfor %}
@@ -110,6 +118,11 @@ const t = $('#t');
 // }
 
 // $('#components_list').addEventListener('change', setButtons);
+
+$('paper-toggle-button').addEventListener('change', e => {
+  e.stopPropagation();
+  $('#components_list').classList.toggle('editing', e.target.checked);
+});
 
 $('#components_list').addEventListener('click', function(e) {
   const addUser = e.target.classList.contains('add_owner_button');
