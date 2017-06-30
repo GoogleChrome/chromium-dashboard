@@ -100,7 +100,5 @@ Next steps:
 
     message.check_initialized()
 
-    logging.info(message.html)
-
     if settings.SEND_EMAIL:
       message.send()
