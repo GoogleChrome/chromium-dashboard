@@ -4,6 +4,7 @@ import logging
 import re
 import time
 
+from google.appengine.api import mail
 from google.appengine.api import memcache
 from google.appengine.api import urlfetch
 from google.appengine.api import users
@@ -231,6 +232,7 @@ class BlinkComponent(DictModel):
 
   @classmethod
   def fetch_all_components(self, update_cache=False):
+    """Returns the list of blink components from live endpoint if unavailable in the cache."""
     key = '%s|blinkcomponents' % (settings.MEMCACHE_KEY_PREFIX)
 
     components = memcache.get(key)
@@ -240,6 +242,8 @@ class BlinkComponent(DictModel):
       if result.status_code == 200:
         components = sorted(json.loads(result.content))
         memcache.set(key, components)
+      else:
+        logging.error('Fetching blink components returned: %s' % result.status_code)
     return components
 
   @classmethod
@@ -263,7 +267,6 @@ class BlinkComponent(DictModel):
       logging.error('%s is an unknown BlinkComponent.' % (component_name))
       return None
     return component[0]
-
 
 # UMA metrics.
 class StableInstance(DictModel):

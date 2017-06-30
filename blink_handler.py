@@ -57,6 +57,7 @@ class PopulateOwnersHandler(common.ContentHandler):
   def get(self):
     if settings.PROD:
       return self.response.out.write('Handler not allowed in production.')
+    models.BlinkComponent.update_db()
     self.__populate_devrel_owers()
     return self.redirect('/admin/blink')
 
@@ -114,7 +115,6 @@ class BlinkHandler(common.ContentHandler):
     # memcache.delete('%s|blinkcomponentowners' % (settings.MEMCACHE_KEY_PREFIX))
     self.response.set_status(200, message='User added to owners')
     return self.response.write(json.dumps(params))
-
 
 app = webapp2.WSGIApplication([
   ('/admin/blink/populate_owners', PopulateOwnersHandler),
