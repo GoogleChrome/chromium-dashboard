@@ -1,0 +1,108 @@
+@import "vars";
+@import "layout";
+
+body {
+  scroll-behavior: smooth;
+}
+
+#spinner {
+  display: none !important;
+}
+#subheader {
+  paper-toggle-button {
+    --paper-toggle-button-checked-bar-color: $chromium-color-medium;
+    --paper-toggle-button-checked-button-color: $chromium-color-center;
+    cursor: pointer;
+  }
+  .subheader_toggles {
+    display: flex !important;
+    justify-content: flex-end;
+    flex: 1 0 auto;
+  }
+  ul {
+    list-style-type: none;
+    margin-left: $content-padding;
+
+    li {
+      text-align: center;
+      border-radius: $default-border-radius;
+      box-shadow: 1px 1px 4px $bar-shadow-color;
+      padding: 0.5em;
+      background: $chromium-color-dark;
+      color: #fff;
+      font-weight: 500;
+      text-transform: uppercase;
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+    }
+  }
+}
+#components_list {
+  list-style: none;
+  margin-bottom: $content-padding * 4;
+
+  &.editing {
+    .owners_list_add_remove {
+      opacity: 1;
+      pointer-events: all;
+    }
+    .owners_list select[multiple] {
+      background-color: #fff;
+      border-color: transparent;
+
+      option {
+        padding-left: 4px;
+      }
+    }
+  }
+
+  li {
+    padding: $content-padding 0;
+  }
+
+  .component_name {
+    flex: 1 0 130px;
+    margin-right: $content-padding;
+
+    h3 {
+      color: initial;
+      padding-top: 4px;
+    }
+  }
+}
+.column_header {
+  margin-bottom: $content-padding / 2;
+}
+.owners_list {
+  flex: 1 0 auto;
+}
+.owners_list_add_remove {
+  margin-left: $content-padding / 2;
+  opacity: 0;
+  transition: 200ms opacity cubic-bezier(0,0,0.2,1);
+  pointer-events: none;
+
+  button[disabled] {
+    pointer-events: none;
+    opacity: 0.5;
+  }
+}
+.remove_owner_button {
+  color: darkred;
+}
+
+select[multiple] {
+  min-width: 125px;
+  background-color: #eee;
+  border: none;
+  transition: 200ms background-color cubic-bezier(0,0,0.2,1);
+  font-size: inherit;
+
+  &:disabled option {
+    color: initial;
+    padding: 4px 0;
+  }
+}

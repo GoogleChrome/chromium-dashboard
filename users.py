@@ -33,11 +33,8 @@ import settings
 
 class UserHandler(common.ContentHandler):
 
+  @common.strip_trailing_slash
   def get(self, path):
-    # Remove trailing slash from URL and redirect. e.g. /users/ -> /users
-    if path[-1] == '/':
-      return self.redirect(self.request.path.rstrip('/'))
-
     users = models.AppUser.all().fetch(None) # TODO(ericbidelman): memcache this.
 
     user_list = [user.format_for_template() for user in users]

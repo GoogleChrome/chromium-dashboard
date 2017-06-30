@@ -159,7 +159,7 @@ header {
   }
 
   aside {
-    $logoSize: 48px;
+    $logoSize: 32px;
 
     @include gradient-bar-bg;
     border-bottom-left-radius: 5px;
@@ -170,6 +170,7 @@ header {
     background: url(/static/img/chrome_logo.svg) no-repeat $content-padding 50%;
     background-size: $logoSize;
     background-color: #fafafa;
+    padding: 0.75em 1em;
     padding-left: $logoSize + $content-padding  + $content-padding / 2;
 
     hgroup {
@@ -217,6 +218,7 @@ footer {
   align-items: center;
   margin: $content-padding 0;
   max-width: $max-content-width;
+  width: 100%;
 
   .num-features {
     font-weight: 400;
@@ -293,6 +295,7 @@ footer {
   .main-toolbar {
     .toolbar-content {
       max-width: $max-content-width;
+      width: 100%;
     }
   }
   // Overrides styles set by app-header-layout so there's no visual

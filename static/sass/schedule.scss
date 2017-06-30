@@ -1,0 +1,231 @@
+@import "vars";
+@import "layout";
+
+body[data-path*='features/schedule'] {
+  app-drawer {
+    display: none;
+  }
+  // app-header {
+  //   padding-left: 0;
+  // }
+  #spinner {
+    display: none;
+  }
+}
+
+iron-icon {
+  --iron-icon-height: 18px;
+  --iron-icon-width: 18px;
+
+  color: $chromium-color-dark;
+
+  &:hover.android {
+    color: #A4C739;
+  }
+  &:hover.remove {
+    color: var(--paper-red-700);
+  }
+  &:hover.deprecated {
+    color: var(--paper-orange-700);
+  }
+  &:hover.experimental {
+    color: var(--paper-green-700);
+  }
+  &:hover.intervention {
+    color: var(--paper-yellow-800);
+  }
+}
+
+#subheader {
+  max-width: 100%;
+  justify-content: center;
+}
+.main-toolbar .toolbar-content {
+  max-width: 100%; // override.
+  width: 100%;
+}
+
+.chrome_version {
+  font-size: 45px;
+  margin: $content-padding / 2 0 $content-padding 0;
+  white-space: nowrap;
+}
+.channel_label {
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 24px;
+  text-align: center;
+}
+.chrome_version .chrome-logo {
+  position: relative;
+  width: 45px;
+  height: 45px;
+  overflow: hidden;
+  background: url(/static/img/chrome_logo.svg) no-repeat 50% 50%;
+  background-size: contain;
+  border-radius: 50%;
+  margin-right: $content-padding / 2;
+  contain: strict;
+
+  &::before {
+    position: absolute;
+    bottom: 0;
+    font-size: 11px;
+    font-weight: 600;
+    background: #222;
+    padding: 2px 0 3px 0;
+    color: #fff;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+  }
+}
+
+.chrome_version--beta .chrome-logo {
+  &::before {
+    content: 'beta';
+  }
+}
+.chrome_version--dev .chrome-logo {
+  &::before {
+    content: 'dev';
+  }
+}
+
+.releases {
+  padding-bottom: $content-padding * 5;
+
+  .release {
+    padding: $content-padding;
+    background: #fff;
+    padding: $content-padding;
+    margin-bottom: $content-padding;
+    border-radius: $default-border-radius;
+    flex: 1 0 calc(33.33% - 16px);
+    max-width: 33.33%;
+    min-width: 300px;
+    counter-reset: featurecount;
+
+    &:not(:last-child) {
+      margin-right: $content-padding;
+    }
+
+    &.no-components {
+      .feature_components {
+        display: none;
+      }
+
+      .feature_components + ul {
+        margin-top: 0;
+      }
+    }
+  }
+}
+.milestone_info {
+  margin-bottom: $content-padding / 2;
+
+  &:nth-of-type(3) {
+    border-bottom: 1px solid $gray-1; //$bar-border-color;
+    padding-bottom: $content-padding;
+  }
+
+  .channel_label {
+    font-size: inherit;
+    font-weight: 500;
+    text-transform: none;
+  }
+}
+.features_list {
+  margin-top: $content-padding * 2;
+
+  ul, ol {
+    margin-top: $content-padding / 2;
+    list-style: none;
+  }
+
+  li {
+    padding: $content-padding / 2 0;
+    font-weight: 500;
+    display: flex;
+    justify-content: space-between;
+
+    &::before {
+      counter-increment: featurecount;
+      content: counter(featurecount) ".";
+      position: absolute;
+      color: $gray-2;
+    }
+
+    :first-child {
+      margin-left: $content-padding + 8px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+
+  .features_header {
+    font-weight: 500;
+    text-transform: uppercase;
+    margin-bottom: $content-padding;
+  }
+}
+
+.feature_components {
+  margin-top: $content-padding;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+// Replicated from _elements.scss
+@mixin tooltip {
+  content: attr(title) ""; // force to be a string for FF/Safari.
+  position: absolute;
+  @include gradient-bar-bg();
+  box-shadow: 2px 2px 4px $gray-2;
+  border: 1px solid $gray-1;
+  z-index: 100;
+  text-align: center;
+  color: $default-font-color;
+}
+
+.tooltip {
+  position: relative;
+  opacity: 0.5;
+  font-weight: normal;
+  will-change: transform, opacity, visibility;
+
+  &:before {
+    transition: 200ms all cubic-bezier(0,0,0.2,1);
+    transform: translateY(50%);
+    @include tooltip;
+    top: -45px;
+    right: -40px;
+    width: auto;
+    white-space: nowrap;
+    visibility: hidden;
+    opacity: 0;
+  }
+
+  &:hover, &:active {
+    opacity: 1;
+    &:before {
+      opacity: 1;
+      transform: none;
+      visibility: visible;
+    }
+  }
+}
+
+paper-toggle-button {
+  --paper-toggle-button-checked-bar-color: $chromium-color-medium;
+  --paper-toggle-button-checked-button-color: $chromium-color-center;
+  cursor: pointer;
+}
+
+@media only screen and (max-width: 700px) {
+  .releases {
+    .release {
+      min-width: 100%;
+    }
+  }
+}

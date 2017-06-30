@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+{% load verbatim %}
+{% load inline_file %}
+
+{% block html_imports %}
+  <link rel="import" href="/static/elements/admin-imports{% if VULCANIZE %}.vulcanize{% endif %}.html">
+{% endblock %}
+
+{% block css %}
+<style>{% inline_file "/static/css/blink.css" %}</style>
+{% endblock %}
+
+{% block drawer %}
+
+{% endblock %}
+
+{% block subheader %}
+<div id="subheader">
+  <div>
+    <h2>blink component owners</h2>
+    <div>listing {{components|length}} components</div>
+  </div>
+  <div class="layout horizontal subheader_toggles">
+    <paper-toggle-button noink>Edit owners</paper-toggle-button>
+    <ul>
+      <li><a href="/features/schedule">Chrome releases &rarr;</a></li>
+    </ul>
+  </div>
+</div>
+{% endblock %}
+
+{% block content %}
+
+<section>
+
+{% comment %}
+<!--<p>Start typing a component name:</p>
+<input list="components" name="components" placeholder="{{components.0}}>Animation"></label>
+<datalist id="components">
+  {% for c in components %}
+    <option value="{{c.name}}">{{c.name}}</option>
+  {% endfor %}
+</datalist>-->
+
+<!--<template id="tmpl_owners_list">
+  <select>
+    {% for owner in owners %}
+      <option class="owner_name" value="{{owner.id}}">{{owner.name}}</option>
+    {% endfor %}
+  </select>
+</template>-->
+{% endcomment %}
+
+<ul id="components_list">
+  {% for c in components %}
+    <li class="layout horizontal" id="{{c.name}}">
+      <div class="component_name">
+        <div class="column_header">Component</div>
+        <h3>{{c.name}}</h3>
+      </div>
+      <div class="owners_list layout horizontal center">
+        <div>
+          <div class="column_header">Owners</div>
+          <select multiple disabled id="owner_list_{{forloop.counter}}" size="{{c.owners|length}}">
+            {% for owner in c.owners %}
+              <option class="owner_name" value="{{owner.id}}">{{owner.name}}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="owners_list_add_remove">
+          <select class="owner_candidates">
+            <option selected disabled>Select owner to add/remove</option>
+            {% for owner in owners %}
+              <option class="owner_name" value="{{owner.id}}">{{owner.name}}</option>
+            {% endfor %}
+          </select>
+          <button class="add_owner_button" data-index="{{forloop.counter}}"
+                  data-component-name="{{c.name}}">Add</button>
+          <button class="remove_owner_button" data-index="{{forloop.counter}}"
+                  data-component-name="{{c.name}}">Remove</button>
+        </div>
+      </div>
+    </li>
+  {% endfor %}
+</ul>
+
+</section>
+
+{% endblock %}
+
+{% block js %}
+<script>
+(function() {
+'use strict';
+
+$('paper-toggle-button').addEventListener('change', e => {
+  e.stopPropagation();
+  $('#components_list').classList.toggle('editing', e.target.checked);
+});
+
+$('#components_list').addEventListener('click', function(e) {
+  const addUser = e.target.classList.contains('add_owner_button');
+  const removeUser = e.target.classList.contains('remove_owner_button');
+
+  if (!(addUser || removeUser)) {
+    return;
+  }
+
+  const candidates = e.target.parentElement.querySelector('.owner_candidates');
+  const idx = e.target.dataset.index;
+  const componentName = e.target.dataset.componentName;
+  const userId = candidates.value;
+  const selectedCandidate = candidates.selectedOptions[0];
+  const username = selectedCandidate.textContent;
+
+  if (selectedCandidate.disabled) {
+    alert('Please select a user');
+    return;
+  }
+
+  // Add new item to owners list.
+  const ownersList = this.querySelector(`#owner_list_${idx}`);
+  const foundName = Array.from(ownersList.options).find(option => option.textContent === username);
+  let doFetch = false;
+
+  if (addUser) {
+    if (!foundName) {
+      const option = document.createElement('option');
+      option.value = userId;
+      option.textContent = candidates.selectedOptions[0].textContent;
+      ownersList.appendChild(option);
+      doFetch = true;
+    }
+  } else if (removeUser && foundName) {
+    foundName.remove(); // remove existing name.
+    doFetch = true;
+  }
+
+  if (!doFetch) {
+    return;
+  }
+
+  fetch('/admin/blink', {
+    method: removeUser ? 'PUT' : 'POST',
+    credentials: 'include',
+    body: JSON.stringify({userId, componentName})
+  })
+  .then(resp => resp.json())
+  .then(json => {
+    const Toast = document.querySelector('chromedash-toast');
+    if (addUser) {
+      Toast.showMessage(`User added to "${componentName}" owners.`);
+    } else if (removeUser)  {
+      Toast.showMessage(`User removed from "${componentName}" owners.`);
+    }
+    ownersList.size = ownersList.options.length;
+  });
+});
+
+window.addEventListener('DOMContentLoaded', function(e) {
+  if (location.hash) {
+    setTimeout(function() {
+      const el = document.getElementById(location.hash.slice(1));
+      $('app-header').scroll(0, el.offsetTop);
+    }, 500);
+  }
+});
+
+document.body.classList.remove('loading');
+
+})();
+</script>
+{% endblock %}

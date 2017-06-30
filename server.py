@@ -100,7 +100,6 @@ class MainHandler(http2push.PushHandler, common.ContentHandler, common.JSONHandl
         template_data['STANDARDS_VALS'] = json.dumps([
           {'key': k, 'val': v} for k,v in
           models.STANDARDIZATION.iteritems()])
-        template_data['TEMPLATE_CACHE_TIME'] = settings.TEMPLATE_CACHE_TIME
 
         push_urls = http2push.use_push_manifest('push_manifest_features.json')
 

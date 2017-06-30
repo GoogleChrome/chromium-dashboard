@@ -39,6 +39,7 @@ from google.appengine.ext.webapp import blobstore_handlers
 
 # File imports.
 import common
+import emailer
 import models
 import settings
 
@@ -190,7 +191,7 @@ class HistogramsHandler(webapp2.RequestHandler):
 
   def get(self):
     # Attempt to fetch enums mapping file.
-    result = urlfetch.fetch(HISTOGRAMS_URL)
+    result = urlfetch.fetch(HISTOGRAMS_URL, deadline=60)
 
     if (result.status_code != 200):
       logging.error('Unable to retrieve chromium histograms mapping file.')
@@ -214,6 +215,7 @@ class HistogramsHandler(webapp2.RequestHandler):
           'bucket_id': child.attributes['value'].value,
           'property_name': child.attributes['label'].value
         }, histogram_id)
+
 
 
 class FeatureHandler(common.ContentHandler):
@@ -329,11 +331,13 @@ class FeatureHandler(common.ContentHandler):
     if search_tags:
       search_tags = filter(bool, [x.strip() for x in search_tags.split(',')])
 
-    blink_components = self.request.get('blink_components') or models.DEFAULT_BUG_COMPONENT
+    blink_components = self.request.get('blink_components') or models.BlinkComponent.DEFAULT_COMPONENT
     if blink_components:
       blink_components = filter(bool, [x.strip() for x in blink_components.split(',')])
 
     # Update/delete existing feature.
+    updating_existing_feature = False
+
     if feature_id: # /admin/edit/1234
       feature = models.Feature.get_by_id(long(feature_id))
 
@@ -344,6 +348,8 @@ class FeatureHandler(common.ContentHandler):
         feature.delete()
         memcache.flush_all()
         return # Bomb out early for AJAX delete. No need to redirect.
+
+      updating_existing_feature = True
 
       # Update properties of existing feature.
       feature.category = int(self.request.get('category'))
@@ -425,12 +431,26 @@ class FeatureHandler(common.ContentHandler):
       redirect_url = '%s/%s?%s' % (self.LAUNCH_URL, key.id(),
                                    '&'.join(params))
 
+    try:
+      # Email feature owners.
+      emailer.email_feature_owners(feature, update=updating_existing_feature)
+    except:
+      logging.error('Error sending email to feature owners')
+
     return self.redirect(redirect_url)
+
+
+class BlinkComponentHandler(webapp2.RequestHandler):
+  """Updates the list of Blink components in the db."""
+  def get(self):
+    models.BlinkComponent.update_db()
+    self.response.out.write('Blink components updated')
 
 
 app = webapp2.WSGIApplication([
   ('/cron/metrics', YesterdayHandler),
   ('/cron/histograms', HistogramsHandler),
+  ('/cron/update_blink_components', BlinkComponentHandler),
   ('/(.*)/([0-9]*)', FeatureHandler),
   ('/(.*)', FeatureHandler),
 ], debug=settings.DEBUG)

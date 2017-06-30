@@ -1,5 +1,5 @@
 application: cr-status
-version: 2017-06-20
+version: schedule2
 runtime: python27
 threadsafe: true
 api_version: 1
@@ -50,16 +50,25 @@ handlers:
   script: metrics.app
 
 # Admin ------------------------------------------------------------------------
-- url: /admin/gae/.*
-  script: google.appengine.ext.admin.application
-  login: admin
-
 - url: /cron/.*
   script: admin.app
   login: admin # Prevents raw access to this handler. Cron runs as admin.
 
+- url: /admin/gae/.*
+  script: google.appengine.ext.admin.application
+  login: admin
+
+- url: /admin/blink.*
+  script: blink_handler.app
+  login: required
+  secure: always
+
 - url: /admin/features/.*
   script: admin.app
+  secure: always
+
+- url: /features/schedule.*
+  script: schedule.app
   secure: always
 
 - url: /admin/users/.*

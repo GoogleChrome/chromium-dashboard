@@ -1,0 +1,118 @@
+name: Addy Osmani
+twitter: addyosmani
+email: addyo@google.com
+---
+name: Chris Wilson
+twitter: cwilso
+email: cilwso@google.com
+---
+name: Eric Bidelman
+twitter: ebidel
+email: e.bidelman@google.com
+blink_components:
+  - Blink>DOM
+  - Blink>CSS
+  - Blink>HTML
+  - Blink>Forms
+  - Blink>JavaScript
+  - Internals>OriginTrials
+---
+name: Meggin Kearney
+email: mkearney@google.com
+---
+name: Robert Nyman
+email: rnyman@google.com
+---
+name: Ewa Gasperowicz
+email: ewag@google.com
+---
+name: Francois Beaufort
+email: fbeaufort@google.com
+---
+name: Jake Archibald
+email: jakearchibald@google.com
+---
+name: Mat Scales
+email: mscales@google.com
+---
+name: Sam Dutton
+email: dutton@google.com
+---
+name: Surma Surma
+email: surma@google.com
+---
+name: Sergio Gomes
+email: sgomes@google.com
+---
+name: Brendan Kenny
+email: bckenny@google.com
+---
+name: Jeff Posnick
+email: jeffy@google.com
+---
+name: Mathias Bynens
+email: mathiasb@google.com
+---
+name: Matt Gaunt
+email: mattguant@google.com
+---
+name: Philip Walton
+email: philipwalton@google.com
+---
+name: Rob Dodson
+twitter: rob_dodson
+email: robdodson@google.com
+blink_components:
+  - Blink>DOM
+  - Blink>HTML
+  - Blink>Forms
+  - UI>Accessibility
+---
+name: Alex Danilo
+email: adanilo@google.com
+---
+name: Eiji Kitmaura
+email: agektmr@google.com
+---
+name: Mariko Kosaka
+email: kosamari@google.com
+---
+name: Pete LePage
+email: petele@google.com
+---
+name: Sam Thorogood
+email: thorogood@google.com
+---
+name: Arthur Evans
+email: arthure@google.com
+---
+name: David Gash
+email: dgash@google.com
+---
+name: Joe Medley
+email: jmedley@google.com
+---
+name: Kate Jeffreys
+email: katejeffreys@google.com
+---
+name: Kayce Basques
+email: kayce@google.com
+---
+name: Paul Kinlan
+email: paulkinlan@google.com
+---
+name: Ilya Grigorik
+email: igrigorik@google.com
+twitter: igrigorik
+---
+name: Lizzi Harvey
+email: ekharvey@google.com
+---
+name: Paul Bakaus
+email: pbakaus@google.com
+---
+name: Rick Viscomi
+email: rviscomi@google.com
+---
+name: Mustafa Kurtuldu
+email: mkurtuldu@google.com

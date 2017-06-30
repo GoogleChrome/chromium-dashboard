@@ -4,6 +4,7 @@ import logging
 import re
 import time
 
+from google.appengine.api import mail
 from google.appengine.api import memcache
 from google.appengine.api import urlfetch
 from google.appengine.api import users
@@ -163,9 +164,6 @@ WEB_DEV_VIEWS = {
   DEV_STRONG_NEGATIVE: 'Strongly negative',
   }
 
-DEFAULT_BUG_COMPONENT = 'Blink'
-BLINK_COMPONENTS_URL = 'https://blinkcomponents-b48b5.firebaseapp.com/blinkcomponents'
-
 def del_none(d):
   """
   Delete dict keys with None values, and empty lists, recursively.
@@ -182,26 +180,15 @@ def list_to_chunks(l, n):
   for i in xrange(0, len(l), n):
     yield l[i:i + n]
 
-def fetch_blink_components():
-  key = '%s|blinkcomponents' % (settings.MEMCACHE_KEY_PREFIX)
-
-  components = memcache.get(key)
-  if components is None:
-    components = []
-
-    result = urlfetch.fetch(BLINK_COMPONENTS_URL)
-    if result.status_code == 200:
-      components = sorted(json.loads(result.content))
-      memcache.set(key, components)
-  return [(x, x) for x in components]
-
 
 class DictModel(db.Model):
   # def to_dict(self):
   #   return dict([(p, unicode(getattr(self, p))) for p in self.properties()])
 
   def format_for_template(self):
-    return self.to_dict()
+    d = self.to_dict()
+    d['id'] = self.key().id()
+    return d
 
   def to_dict(self):
     output = {}
@@ -229,6 +216,58 @@ class DictModel(db.Model):
     return output
 
 
+class BlinkComponent(DictModel):
+
+  DEFAULT_COMPONENT = 'Blink'
+  COMPONENTS_URL = 'https://blinkcomponents-b48b5.firebaseapp.com/blinkcomponents'
+
+  name = db.StringProperty(required=True, default=DEFAULT_COMPONENT)
+  created = db.DateTimeProperty(auto_now_add=True)
+  updated = db.DateTimeProperty(auto_now=True)
+
+  @property
+  def owners(self):
+    q = FeatureOwner.all().filter('blink_components = ', self.key()).order('name')
+    return q.fetch(None)
+
+  @classmethod
+  def fetch_all_components(self, update_cache=False):
+    """Returns the list of blink components from live endpoint if unavailable in the cache."""
+    key = '%s|blinkcomponents' % (settings.MEMCACHE_KEY_PREFIX)
+
+    components = memcache.get(key)
+    if components is None or update_cache:
+      components = []
+      result = urlfetch.fetch(self.COMPONENTS_URL, deadline=60)
+      if result.status_code == 200:
+        components = sorted(json.loads(result.content))
+        memcache.set(key, components)
+      else:
+        logging.error('Fetching blink components returned: %s' % result.status_code)
+    return components
+
+  @classmethod
+  def update_db(self):
+    """Updates the db with new Blink components from the json endpoint"""
+    new_components = self.fetch_all_components(update_cache=True)
+    existing_comps = self.all().fetch(None)
+    for name in new_components:
+      if not len([x.name for x in existing_comps if x.name == name]):
+        logging.info('Adding new BlinkComponent: ' + name)
+        c = BlinkComponent(name=name)
+        c.put()
+
+  @classmethod
+  def get_by_name(self, component_name):
+    """Fetch blink component with given name."""
+    q = self.all()
+    q.filter('name =', component_name)
+    component = q.fetch(1)
+    if not component:
+      logging.error('%s is an unknown BlinkComponent.' % (component_name))
+      return None
+    return component[0]
+
 # UMA metrics.
 class StableInstance(DictModel):
   created = db.DateTimeProperty(auto_now_add=True)
@@ -243,8 +282,10 @@ class StableInstance(DictModel):
   day_percentage = db.FloatProperty()
   rolling_percentage = db.FloatProperty()
 
+
 class AnimatedProperty(StableInstance):
   pass
+
 
 class FeatureObserver(StableInstance):
   pass
@@ -652,7 +693,7 @@ class Feature(DictModel):
 
   def new_crbug_url(self):
     url = 'https://bugs.chromium.org/p/chromium/issues/entry'
-    params = ['components=' + self.blink_components[0] or DEFAULT_BUG_COMPONENT]
+    params = ['components=' + self.blink_components[0] or BlinkComponent.DEFAULT_COMPONENT]
     crbug_number = self.crbug_number()
     if crbug_number and self.impl_status_chrome in (
         NO_ACTIVE_DEV,
@@ -679,7 +720,7 @@ class Feature(DictModel):
 
   # Chromium details.
   bug_url = db.LinkProperty()
-  blink_components = db.StringListProperty(required=True, default=[DEFAULT_BUG_COMPONENT])
+  blink_components = db.StringListProperty(required=True, default=[BlinkComponent.DEFAULT_COMPONENT])
 
   impl_status_chrome = db.IntegerProperty(required=True)
   shipped_milestone = db.IntegerProperty()
@@ -779,9 +820,9 @@ class FeatureForm(forms.Form):
   blink_components = forms.ChoiceField(
       required=True,
       label='Blink component',
-      help_text='Select the most specific component. If unsure, leave as "%s".' % DEFAULT_BUG_COMPONENT,
-      choices=fetch_blink_components(),
-      initial=[DEFAULT_BUG_COMPONENT])
+      help_text='Select the most specific component. If unsure, leave as "%s".' % BlinkComponent.DEFAULT_COMPONENT,
+      choices=[(x, x) for x in BlinkComponent.fetch_all_components()],
+      initial=[BlinkComponent.DEFAULT_COMPONENT])
 
   impl_status_chrome = forms.ChoiceField(required=True,
       label='Status in Chromium', choices=IMPLEMENTATION_STATUS.items())
@@ -894,10 +935,33 @@ class AppUser(DictModel):
   created = db.DateTimeProperty(auto_now_add=True)
   updated = db.DateTimeProperty(auto_now=True)
 
-  def format_for_template(self):
-    d = self.to_dict()
-    d['id'] = self.key().id()
-    return d
+
+class FeatureOwner(DictModel):
+  """Describes owner of a web platform feature."""
+  created = db.DateTimeProperty(auto_now_add=True)
+  updated = db.DateTimeProperty(auto_now=True)
+  name = db.StringProperty(required=True)
+  email = db.EmailProperty(required=True)
+  twitter = db.StringProperty()
+  blink_components = db.ListProperty(db.Key)
+
+  def add_as_component_owner(self, component_name):
+    """Adds the user to the list of Blink component owners."""
+    c = BlinkComponent.get_by_name(component_name)
+    if c:
+      already_added = len([x for x in self.blink_components if x.id() == c.key().id()])
+      if not already_added:
+        self.blink_components.append(c.key())
+        return self.put()
+    return None
+
+  def remove_from_component_owners(self, component_name):
+    """Removes the user from the list of Blink component owners."""
+    c = BlinkComponent.get_by_name(component_name)
+    if c:
+      self.blink_components = [x for x in self.blink_components if x.id() != c.key().id()]
+      return self.put()
+    return None
 
 
 class HistogramModel(db.Model):

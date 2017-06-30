@@ -153,7 +153,6 @@
               <span>[[feature.browsers.chrome.webview]]</span>
             </span>
           </template>
-
           <template is="dom-if" if="[[!feature.browsers.chrome.origintrial]]">
             <template is="dom-if" if="[[feature.browsers.opera.desktop]]">
               <span>
@@ -186,6 +185,12 @@
             <span>
               <span>Launch bug</span>
               <a href$="[[feature.browsers.chrome.bug]]" target="_blank">[[_computeCrbug(feature.browsers.chrome.bug)]]</a>
+            </span>
+          </template>
+          <template is="dom-if" if="[[feature.browsers.chrome.blink_components.length]]">
+            <span>
+              <label>Blink component</label>
+              <a href$="https://bugs.chromium.org/p/chromium/issues/list?q=component:[[feature.browsers.chrome.blink_components]]" target="_blank">[[feature.browsers.chrome.blink_components]]</a>
             </span>
           </template>
           <template is="dom-if" if="[[feature.browsers.chrome.owners.length]]">
