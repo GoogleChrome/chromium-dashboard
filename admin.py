@@ -45,7 +45,7 @@ import settings
 UMA_QUERY_SERVER = 'https://uma-export.appspot.com/chromestatus/'
 
 HISTOGRAMS_URL = 'https://chromium.googlesource.com/chromium/src/+/master/' \
-    'tools/metrics/histograms/histograms.xml?format=TEXT'
+    'tools/metrics/histograms/enums.xml?format=TEXT'
 
 # Path to a local cookie to supply when running dev_appserver
 # Go to https://uma-export.appspot.com/login and login then copy the
@@ -189,38 +189,32 @@ class HistogramsHandler(webapp2.RequestHandler):
     )
 
   def get(self):
-    # Attempt to fetch https://chromium.googlesource.com/chromium/src/+/master/tools/metrics/histograms/histograms.xml?format=TEXT
+    # Attempt to fetch enums mapping file.
     result = urlfetch.fetch(HISTOGRAMS_URL)
 
     if (result.status_code != 200):
-      logging.error('Unable to retrieve chromium histograms.')
+      logging.error('Unable to retrieve chromium histograms mapping file.')
       return
 
-    browsed_histograms = []
     histograms_content = result.content.decode('base64')
     dom = xml.dom.minidom.parseString(histograms_content)
 
-    # The histograms.xml file looks like this:
-    #
-    # ...
-    # <enum name="FeatureObserver" type="int">
-    #   <int value="0" label="PageDestruction"/>
+    # The enums.xml file looks like this:
+    # <enum name="FeatureObserver">
+    #   <int value="0" label="OBSOLETE_PageDestruction"/>
     #   <int value="1" label="LegacyNotifications"/>
 
-    for enum in dom.getElementsByTagName('enum'):
-      histogram_id = enum.attributes['name'].value
-      if (histogram_id in self.MODEL_CLASS.keys()):
-        browsed_histograms.append(histogram_id)
-        for child in enum.getElementsByTagName('int'):
-          data = {
-            'bucket_id': child.attributes['value'].value,
-            'property_name': child.attributes['label'].value
-          }
-          self._SaveData(data, histogram_id)
+    enum_tags = dom.getElementsByTagName('enum')
 
-    # Log an error if some histograms were not found.
-    if (len(list(set(browsed_histograms))) != len(self.MODEL_CLASS.keys())):
-      logging.error('Less histograms than expected were retrieved.')
+    # Save bucket ids for each histogram type, FeatureObserver and MappedCSSProperties.
+    for histogram_id in self.MODEL_CLASS.keys():
+      enum = filter(lambda enum: enum.attributes['name'].value == histogram_id, enum_tags)[0]
+      for child in enum.getElementsByTagName('int'):
+        self._SaveData({
+          'bucket_id': child.attributes['value'].value,
+          'property_name': child.attributes['label'].value
+        }, histogram_id)
+
 
 class FeatureHandler(common.ContentHandler):
 
