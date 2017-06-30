@@ -22,13 +22,13 @@ $default-border-radius: 3px;
 
 $app-drawer-width: 200px;
 $header-height: 135px;
-$max-content-width: 768px;
+$max-content-width: 746px;
 /* ----- */
 
 @mixin gradient-bar-bg() {
   background-color: #FAFAFA;
   background: $bar-gradient;
-  padding: 0.75em 1em;
+  padding: 0.75em 0.5em;
   box-shadow: 1px 1px 4px $bar-shadow-color;
 }
 

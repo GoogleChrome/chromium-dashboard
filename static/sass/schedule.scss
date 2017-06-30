@@ -5,10 +5,9 @@ body[data-path*='features/schedule'] {
   app-drawer {
     display: none;
   }
-  app-header {
-    padding-left: 0;
-  }
-
+  // app-header {
+  //   padding-left: 0;
+  // }
   #spinner {
     display: none;
   }
