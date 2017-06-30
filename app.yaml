@@ -1,5 +1,5 @@
 application: cr-status
-version: schedule
+version: schedule2
 runtime: python27
 threadsafe: true
 api_version: 1
@@ -67,9 +67,8 @@ handlers:
   script: admin.app
   secure: always
 
-- url: /admin/schedule.*
+- url: /features/schedule.*
   script: schedule.app
-  login: required
   secure: always
 
 - url: /admin/users/.*

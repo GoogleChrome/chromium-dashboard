@@ -38,4 +38,4 @@ if DEBUG:
 else:
   TEMPLATE_CACHE_TIME = 600 # seconds
 
-SEND_EMAIL = True # Flag to turn off email notifications to feature owners.
+SEND_EMAIL = False # Flag to turn off email notifications to feature owners.

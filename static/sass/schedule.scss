@@ -1,7 +1,7 @@
 @import "vars";
 @import "layout";
 
-body[data-path*='admin/schedule'] {
+body[data-path*='features/schedule'] {
   app-drawer {
     display: none;
   }

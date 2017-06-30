@@ -15,24 +15,14 @@
 
 __author__ = 'ericbidelman@chromium.org (Eric Bidelman)'
 
-
-# import datetime
 import json
 import logging
 import os
-# import re
-# import sys
 import webapp2
-# import xml.dom.minidom
 
-# Appengine imports.
-# import cloudstorage
 from google.appengine.api import memcache
 from google.appengine.api import urlfetch
 from google.appengine.api import users
-# from google.appengine.ext import blobstore
-# from google.appengine.ext import db
-# from google.appengine.ext.webapp import blobstore_handlers
 
 import common
 import models
@@ -68,7 +58,6 @@ def construct_chrome_channels_details(omaha_data):
 
 class ScheduleHandler(common.ContentHandler):
 
-  @common.require_whitelisted_user
   @common.strip_trailing_slash
   def get(self, path):
     omaha_data = util.get_omaha_data()
@@ -78,7 +67,7 @@ class ScheduleHandler(common.ContentHandler):
       'channels': json.dumps(construct_chrome_channels_details(omaha_data))
     }
 
-    self.render(data, template_path=os.path.join('admin/schedule.html'))
+    self.render(data, template_path=os.path.join('schedule.html'))
 
 
 app = webapp2.WSGIApplication([
