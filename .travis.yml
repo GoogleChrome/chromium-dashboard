@@ -14,10 +14,10 @@ env:
   - GAE_APP_ID=cr-status
 cache:
   yarn: true
+  pip: true
   directories:
     - node_modules
 install:
-  - pip install --user travis -r requirements.txt
   - yarn global add bower gulp
   - yarn
 script:

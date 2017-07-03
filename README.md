@@ -11,11 +11,10 @@ Chrome Platform Status
 
 First, install the [Google App Engine SDK for Python](https://developers.google.com/appengine/downloads#Google_App_Engine_SDK_for_Python).
 
-You'll also need pip, node, and npm. Next, install `bower` and the deps:
+You'll also need pip, node, npm, and gulp:
 
-    npm install -g bower
+    npm install -g bower gulp
     npm install
-    pip install -t lib -r requirements.txt
 
 This will also pull down bower_components and run `gulp` to build the site.
 
