@@ -36,7 +36,7 @@ def email_feature_owners(feature, is_update=False, changes=[]):
 
     owner_names = [owner.name for owner in component.owners]
     if not owner_names:
-      logging.info('Blink component has no owners. Skipping email')
+      logging.info('Blink component %s has no owners. Skipping email.' % component_name)
       return
 
     if feature.shipped_milestone:

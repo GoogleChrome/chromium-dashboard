@@ -8,6 +8,16 @@
 # Copyright 2015 Eric Bidelman <ericbidelman@chromium.org>
 
 
+deployVersion=$1
+usage="Usage: deploy.sh `date +%Y-%m-%d`"
+
+if [ -z "$deployVersion" ]
+then
+  echo "App version not specified."
+  echo $usage
+  exit 0
+fi
+
 # The directory in which this script resides.
 readonly BASEDIR=$(dirname $BASH_SOURCE)
 
@@ -16,4 +26,4 @@ readonly BASEDIR=$(dirname $BASH_SOURCE)
 gulp
 
 $BASEDIR/oauthtoken.sh deploy
-appcfg.py update -A cr-status $BASEDIR/../app.yaml $BASEDIR/../notifier.yaml
+appcfg.py update -A cr-status -V $deployVersion $BASEDIR/../app.yaml $BASEDIR/../notifier.yaml

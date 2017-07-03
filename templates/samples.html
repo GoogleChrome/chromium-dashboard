@@ -262,7 +262,7 @@ var samplesPromise = new Promise(function(resolve, reject) {
 samplesPromise.then(function(features) {
   var re = /github.com\/GoogleChrome\/samples\/tree\/gh-pages\/(.*)/i;
   features.forEach(function(f, i) {
-    f.sample_links = f.sample_links.map(function(link) {
+    f.sample_links = f.resources.samples.map(function(link) {
       return link.replace(re, 'googlechrome.github.io/samples/$1');
     });
   });

@@ -1,9 +1,12 @@
 runtime: python27
 api_version: 1
 threadsafe: true
-service: notifier
+module: notifier
 
 handlers:
 - url: /.*
   script: notifier.app
   login: admin
+
+includes:
+- skip_files.yaml

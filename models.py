@@ -741,7 +741,7 @@ class Feature(DictModel):
       'is_update': is_update,
       'feature': self.format_for_template()
     })
-    queue = taskqueue.Queue(name='emailer')
+    queue = taskqueue.Queue()#name='emailer')
     # Create task to email owners.
     task = taskqueue.Task(method="POST", url='/tasks/email-owners',
         target='notifier', payload=payload)
