@@ -1,0 +1,10 @@
+# total_storage_limit: 120M
+queue:
+- name: emailer
+  target: notifier
+  rate: 1/s
+  retry_parameters:
+    task_retry_limit: 3
+    task_age_limit: 2d
+  # bucket_size: 40
+  # max_concurrent_requests: 10

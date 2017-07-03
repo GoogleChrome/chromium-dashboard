@@ -20,9 +20,9 @@ import logging
 import os
 import webapp2
 
+import settings
 import common
 import models
-import settings
 import util
 
 import http2push.http2push as http2push

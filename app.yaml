@@ -1,5 +1,5 @@
 application: cr-status
-version: schedule2
+version: schedule-emailer
 runtime: python27
 threadsafe: true
 api_version: 1
@@ -9,16 +9,16 @@ api_version: 1
 builtins:
 - remote_api: on
 
-libraries:
-- name: webapp2
-  version: "latest"
-- name: django
-  version: "1.4" #"latest"
+#libraries:
+#- name: webapp2
+#  version: "latest"
+#- name: django
+#  version: "1.4" #"1.9"
 # - name: setuptools
 #   version: latest
 
-env_variables:
-  DJANGO_SETTINGS_MODULE: 'settings'
+#env_variables:
+#  DJANGO_SETTINGS_MODULE: 'settings'
 
 handlers:
 

@@ -16,4 +16,4 @@ readonly BASEDIR=$(dirname $BASH_SOURCE)
 gulp
 
 $BASEDIR/oauthtoken.sh deploy
-appcfg.py update $BASEDIR/../
+appcfg.py update -A cr-status $BASEDIR/../app.yaml $BASEDIR/../notifier.yaml
