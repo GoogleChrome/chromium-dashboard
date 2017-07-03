@@ -378,7 +378,7 @@ class Feature(DictModel):
     except Exception as e:
       logging.error(e)
 
-  def format_for_template(self, version=2):
+  def format_for_template(self, version=None):
     d = self.to_dict()
 
     if version == 2:
@@ -739,7 +739,7 @@ class Feature(DictModel):
     payload = json.dumps({
       'changes': changed_props,
       'is_update': is_update,
-      'feature': self.format_for_template()
+      'feature': self.format_for_template(version=2)
     })
     queue = taskqueue.Queue()#name='emailer')
     # Create task to email owners.
