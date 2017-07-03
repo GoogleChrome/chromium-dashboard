@@ -4,19 +4,21 @@ import logging
 import re
 import time
 
+from google.appengine.ext import db
+# from google.appengine.ext.db import djangoforms
 from google.appengine.api import mail
 from google.appengine.api import memcache
 from google.appengine.api import urlfetch
+from google.appengine.api import taskqueue
 from google.appengine.api import users
-from google.appengine.ext import db
-#from google.appengine.ext.db import djangoforms
+
+import settings
+import util
 
 #from django.forms import ModelForm
 from collections import OrderedDict
 from django import forms
-
-import settings
-import util
+# import google.appengine.ext.django as django
 
 
 SIMPLE_TYPES = (int, long, float, bool, dict, basestring, list)
@@ -376,11 +378,14 @@ class Feature(DictModel):
     except Exception as e:
       logging.error(e)
 
-  def format_for_template(self, version=None):
+  def format_for_template(self, version=2):
     d = self.to_dict()
 
     if version == 2:
-      d['id'] = self.key().id()
+      if self.is_saved():
+        d['id'] = self.key().id()
+      else:
+        d['id'] = None
       d['category'] = FEATURE_CATEGORIES[self.category]
       d['created'] = {
         'by': d.pop('created', None),
@@ -473,7 +478,10 @@ class Feature(DictModel):
       del_none(d) # Further prune response by removing null/[] values.
 
     else:
-      d['id'] = self.key().id()
+      if self.is_saved():
+        d['id'] = self.key().id()
+      else:
+        d['id'] = None
       d['category'] = FEATURE_CATEGORIES[self.category]
       d['visibility'] = VISIBILITY_CHOICES[self.visibility]
       d['impl_status_chrome'] = IMPLEMENTATION_STATUS[self.impl_status_chrome]
@@ -706,6 +714,44 @@ class Feature(DictModel):
     if self.owner:
       params.append('cc=' + ','.join(self.owner))
     return url + '?' + '&'.join(params)
+
+  def __init__(self, *args, **kwargs):
+    super(Feature, self).__init__(*args, **kwargs)
+
+    # Stash existing values when entity is created so we can diff property
+    # values later in put() to know what's changed. https://stackoverflow.com/a/41344898
+    for prop_name, prop in self.properties().iteritems():
+      old_val = getattr(self, prop_name, None)
+      setattr(self, '_old_' + prop_name, old_val)
+
+  def __notify_feature_owners_of_changes(self, is_update):
+    """Async notifies owners of new features and property changes to features by
+       posting to a task queue."""
+    # Diff values to see what properties have changed.
+    changed_props = []
+    for prop_name, prop in self.properties().iteritems():
+      new_val = getattr(self, prop_name, None)
+      old_val = getattr(self, '_old_' + prop_name, None)
+      if new_val != old_val:
+        changed_props.append({
+            'prop_name': prop_name, 'old_val': old_val, 'new_val': new_val})
+
+    payload = json.dumps({
+      'changes': changed_props,
+      'is_update': is_update,
+      'feature': self.format_for_template()
+    })
+    queue = taskqueue.Queue()#name='emailer')
+    # Create task to email owners.
+    task = taskqueue.Task(method="POST", url='/tasks/email-owners',
+        target='notifier', payload=payload)
+    queue.add(task)
+
+  def put(self, **kwargs):
+    is_update = self.is_saved()
+    key = super(Feature, self).put(**kwargs)
+    self.__notify_feature_owners_of_changes(is_update)
+    return key
 
   # Metadata.
   created = db.DateTimeProperty(auto_now_add=True)

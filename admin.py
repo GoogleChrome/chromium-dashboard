@@ -35,11 +35,11 @@ from google.appengine.api import urlfetch
 from google.appengine.api import users
 from google.appengine.ext import blobstore
 from google.appengine.ext import db
+from google.appengine.api import taskqueue
 from google.appengine.ext.webapp import blobstore_handlers
 
 # File imports.
 import common
-import emailer
 import models
 import settings
 
@@ -430,12 +430,6 @@ class FeatureHandler(common.ContentHandler):
     if len(params):
       redirect_url = '%s/%s?%s' % (self.LAUNCH_URL, key.id(),
                                    '&'.join(params))
-
-    try:
-      # Email feature owners.
-      emailer.email_feature_owners(feature, update=updating_existing_feature)
-    except:
-      logging.error('Error sending email to feature owners')
 
     return self.redirect(redirect_url)
 

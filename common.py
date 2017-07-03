@@ -24,11 +24,11 @@ import webapp2
 # App Engine imports.
 from google.appengine.api import users
 
+import settings
+import models
+
 from django.template.loader import render_to_string
 from django.utils import feedgenerator
-
-import models
-import settings
 
 
 def require_whitelisted_user(handler):
