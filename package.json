@@ -8,7 +8,7 @@
   },
   "scripts": {
     "postinstall": "npm run deps && npm run build",
-    "deps": "rm -rf static/bower_components; bower install",
+    "deps": "rm -rf static/bower_components && bower install && pip install -t lib -r requirements.txt",
     "lint": "gulp lint",
     "build": "gulp",
     "deploy": "./scripts/deploy_site.sh"
