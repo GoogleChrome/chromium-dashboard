@@ -29,6 +29,13 @@ handlers:
   expiration: "0m"
   secure: always
 
+- url: /firebase-messaging-sw\.js
+  static_files: static/firebase-messaging-sw.js
+  upload: static/dist/firebase-messaging-sw\.js
+  # application_readable: true
+  expiration: "0m"
+  secure: always
+
 - url: /static
   static_dir: static
   #expiration: 30s
