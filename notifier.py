@@ -112,7 +112,7 @@ Changes:
 ---
 Next steps:
 - Check existing <a href="https://github.com/GoogleChrome/lighthouse/tree/master/lighthouse-core/audits">Lighthouse audits</a> for correctness.
-- Check existing /web content for correctness:
+- Check existing /web content for correctness. Non-exhaustive list:
 {wf_content}
 """.format(name=feature.name, id=feature.key().id(), updated=updated_on,
            updated_by=feature.updated_by, component_name=component_name,
