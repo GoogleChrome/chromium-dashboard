@@ -335,9 +335,6 @@ class FeatureHandler(common.ContentHandler):
     if blink_components:
       blink_components = filter(bool, [x.strip() for x in blink_components.split(',')])
 
-    # Update/delete existing feature.
-    updating_existing_feature = False
-
     if feature_id: # /admin/edit/1234
       feature = models.Feature.get_by_id(long(feature_id))
 
@@ -348,8 +345,6 @@ class FeatureHandler(common.ContentHandler):
         feature.delete()
         memcache.flush_all()
         return # Bomb out early for AJAX delete. No need to redirect.
-
-      updating_existing_feature = True
 
       # Update properties of existing feature.
       feature.category = int(self.request.get('category'))

@@ -27,6 +27,20 @@ import settings
 import models
 
 
+def create_wf_content_list(component):
+  list = ''
+  wf_component_content = models.BlinkComponent.fetch_wf_content_for_components()
+  content = wf_component_content.get(component)
+  if not content:
+    return []
+
+  for url in content:
+    list += '    - <a href="{url}">{url}</a>. Last updated: {updatedOn})\n'.format(
+        url=url['url'], updatedOn=url['updatedOn'])
+  if not wf_component_content:
+    list = 'None'
+  return list
+
 def email_feature_owners(feature, is_update=False, changes=[]):
   for component_name in feature.blink_components:
     component = models.BlinkComponent.get_by_name(component_name)
@@ -79,7 +93,6 @@ Next steps:
   if not formatted_changes:
     formatted_changes = 'None'
 
-  # TODO: link to existing /web content tagged with component name.
   update_msg = """
 Hi {owners},
 
@@ -98,13 +111,15 @@ Changes:
 
 ---
 Next steps:
-- Check existing /web content for correctness.
 - Check existing <a href="https://github.com/GoogleChrome/lighthouse/tree/master/lighthouse-core/audits">Lighthouse audits</a> for correctness.
+- Check existing /web content for correctness. Non-exhaustive list:
+{wf_content}
 """.format(name=feature.name, id=feature.key().id(), updated=updated_on,
            updated_by=feature.updated_by, component_name=component_name,
            owners=', '.join(owner_names), milestone=milestone_str,
            status=models.IMPLEMENTATION_STATUS[feature.impl_status_chrome],
-           formatted_changes=formatted_changes)
+           formatted_changes=formatted_changes,
+           wf_content=create_wf_content_list(component_name))
 
   message = mail.EmailMessage(sender='Chromestatus <admin@cr-status.appspotmail.com>',
                               subject='chromestatus update',
@@ -131,12 +146,8 @@ class EmailOwnersHandler(webapp2.RequestHandler):
     changes = json_body.get('changes') or []
 
     # Email feature owners.
-    try:
-      feature = models.Feature.get_by_id(feature['id'])
-      email_feature_owners(feature, is_update=is_update, changes=changes)
-    except:
-      logging.error('Error sending email to feature owners')
-
+    feature = models.Feature.get_by_id(feature['id'])
+    email_feature_owners(feature, is_update=is_update, changes=changes)
 
 app = webapp2.WSGIApplication([
   ('/tasks/email-owners', EmailOwnersHandler),
