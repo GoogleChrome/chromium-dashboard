@@ -92,6 +92,10 @@ class BlinkHandler(common.ContentHandler):
     # Format for django template
     owners = [x.format_for_template() for x in owners]
 
+    # wf_component_content = models.BlinkComponent.fetch_wf_content_for_components()
+    # for c in components:
+    #   c.wf_urls = wf_component_content.get(c.name) or []
+
     data = {
       'owners': owners,
       'components': components[1:] # ditch generic "Blink" component

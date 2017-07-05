@@ -221,7 +221,9 @@ class DictModel(db.Model):
 class BlinkComponent(DictModel):
 
   DEFAULT_COMPONENT = 'Blink'
-  COMPONENTS_URL = 'https://blinkcomponents-b48b5.firebaseapp.com/blinkcomponents'
+  COMPONENTS_URL = 'https://blinkcomponents-b48b5.firebaseapp.com'
+  COMPONENTS_ENDPOINT = '%s/blinkcomponents' % COMPONENTS_URL
+  WF_CONTENT_ENDPOINT = '%s/wfcomponents' % COMPONENTS_URL
 
   name = db.StringProperty(required=True, default=DEFAULT_COMPONENT)
   created = db.DateTimeProperty(auto_now_add=True)
@@ -240,7 +242,7 @@ class BlinkComponent(DictModel):
     components = memcache.get(key)
     if components is None or update_cache:
       components = []
-      result = urlfetch.fetch(self.COMPONENTS_URL, deadline=60)
+      result = urlfetch.fetch(self.COMPONENTS_ENDPOINT, deadline=60)
       if result.status_code == 200:
         components = sorted(json.loads(result.content))
         memcache.set(key, components)
@@ -249,8 +251,25 @@ class BlinkComponent(DictModel):
     return components
 
   @classmethod
+  def fetch_wf_content_for_components(self, update_cache=False):
+    """Returns the /web content that use each blink component."""
+    key = '%s|wfcomponents' % (settings.MEMCACHE_KEY_PREFIX)
+
+    components = memcache.get(key)
+    if components is None or update_cache:
+      components = {}
+      result = urlfetch.fetch(self.WF_CONTENT_ENDPOINT, deadline=60)
+      if result.status_code == 200:
+        components = json.loads(result.content)
+        memcache.set(key, components)
+      else:
+        logging.error('Fetching /web blink components content returned: %s' % result.status_code)
+    return components
+
+  @classmethod
   def update_db(self):
     """Updates the db with new Blink components from the json endpoint"""
+    self.fetch_wf_content_for_components(update_cache=True) # store /web content in memcache
     new_components = self.fetch_all_components(update_cache=True)
     existing_comps = self.all().fetch(None)
     for name in new_components:

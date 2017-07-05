@@ -4,6 +4,9 @@ api_version: 1
 
 # default_expiration: "30s"
 
+env_variables:
+ DJANGO_SETTINGS_MODULE: 'settings'
+
 builtins:
 - remote_api: on
 
