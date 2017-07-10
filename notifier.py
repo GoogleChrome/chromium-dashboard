@@ -20,12 +20,20 @@ import datetime
 import json
 import webapp2
 
+from google.appengine.ext import db
 from google.appengine.api import mail
+from google.appengine.api import urlfetch
 from google.appengine.api import taskqueue
 
 import settings
 import models
 
+
+class PushSubscription(models.DictModel):
+
+  SERVER_KEY = 'AAAA6Lfj0-8:APA91bFl7OgYBmIIOIJM-wW72FceMH0xBJpcRwT4PVyCg3LXNu7gvWZqz3OvXi2G5Jy6J7xreRSwUQus28hrkx_NOEoDBom9Gsci9qafcTUCvGdCliMbAEIksH4u9IFFofeOt7wANaQl'
+
+  subscription_id = db.StringProperty(required=True)
 
 def create_wf_content_list(component):
   list = ''
@@ -138,6 +146,45 @@ Next steps:
     message.send()
 
 
+def send_notification_to_feature_subscribers(id=None):
+  # curl -X POST -H "Authorization: key=YOUR-SERVER-KEY" -H "Content-Type: application/json" -d '{
+  #   "notification": {
+  #     "title": "Portugal vs. Denmark",
+  #     "body": "5 to 1",
+  #     "icon": "firebase-logo.png",
+  #     "click_action": "http://localhost:8081"
+  #   },
+  #   "to": "YOUR-IID-TOKEN"
+  # }' "https://fcm.googleapis.com/fcm/send"
+
+  subscriptions = self.all().fetch(None)
+  logging.info(subscriptions)
+  return
+  for s in subscriptions:
+    data = """{
+      "notification": {
+        "title": "Portugal vs. Denmark",
+        "body": "5 to 1",
+        "icon": "/static/img/crstatus_192.png",
+        "click_action": "https://www.chromestatus.com/feature/{id}"
+      },
+      "to": "{subscription_id}"
+    }""".format(id=id, subscription_id=s.subscription_id)
+
+    headers = {
+      'Authorization': 'key=%s' % SERVER_KEY,
+      'Content-Type': 'application/json'
+      }
+    result = urlfetch.fetch(url='https://fcm.googleapis.com/fcm/send',
+                            payload=data,
+                            method=urlfetch.POST,
+                            headers=headers)
+    if result.status_code != 200:
+      logging.error('Error: sending notification to %s' % (url, result.status_code))
+      return
+
+    resp = json.loads(result.content)
+
 class EmailOwnersHandler(webapp2.RequestHandler):
   def post(self):
     json_body = json.loads(self.request.body)
@@ -149,6 +196,19 @@ class EmailOwnersHandler(webapp2.RequestHandler):
     feature = models.Feature.get_by_id(feature['id'])
     email_feature_owners(feature, is_update=is_update, changes=changes)
 
+
+class PushNotificationHandler(webapp2.RequestHandler):
+  def get(self):
+    pass
+
+  def post(self):
+    # json_body = json.loads(self.request.body)
+    # feature = json_body.get('feature') or None
+    # is_update = json_body.get('is_update') or False
+    # changes = json_body.get('changes') or []
+
+
 app = webapp2.WSGIApplication([
   ('/tasks/email-owners', EmailOwnersHandler),
+  ('/tasks/send_push_notifications', PushNotificationHandler),
 ], debug=settings.DEBUG)

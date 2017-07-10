@@ -23,8 +23,6 @@ import yaml
 
 # Appengine imports.
 from google.appengine.api import memcache
-from google.appengine.api import urlfetch
-from google.appengine.api import users
 
 import common
 import models
