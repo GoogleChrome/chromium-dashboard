@@ -760,11 +760,19 @@ class Feature(DictModel):
       'is_update': is_update,
       'feature': self.format_for_template(version=2)
     })
-    queue = taskqueue.Queue()#name='emailer')
+
     # Create task to email owners.
+    queue = taskqueue.Queue()#name='emailer')
     task = taskqueue.Task(method="POST", url='/tasks/email-owners',
         target='notifier', payload=payload)
     queue.add(task)
+
+    # Create task to send push notifications
+    queue = taskqueue.Queue()
+    task = taskqueue.Task(method="POST", url='/tasks/send_notifications',
+        target='notifier', payload=payload)
+    queue.add(task)
+
 
   def put(self, **kwargs):
     is_update = self.is_saved()

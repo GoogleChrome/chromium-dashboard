@@ -35,6 +35,39 @@ class PushSubscription(models.DictModel):
 
   subscription_id = db.StringProperty(required=True)
 
+
+def send_notification_to_feature_subscribers(feature=None, is_update=False, subscription_id=None):
+  query = PushSubscription.all()
+  if subscription_id:
+    query.filter('subscription_id =', subscription_id)
+
+  subscriptions = query.fetch(None)
+
+  for s in subscriptions:
+    data = """{{
+      "notification": {{
+        "title": "{title}",
+        "body": "{added_str}. Click here fore more information.",
+        "icon": "/static/img/crstatus_192.png",
+        "click_action": "https://www.chromestatus.com/feature/{id}"
+      }},
+      "to": "{sub_id}"
+    }}""".format(title=feature.name, id=feature.key().id(),
+                  sub_id=s.subscription_id,
+                  added_str=('Updated' if is_update else 'Added'))
+
+    headers = {
+      'Authorization': 'key=%s' % PushSubscription.SERVER_KEY,
+      'Content-Type': 'application/json'
+      }
+    result = urlfetch.fetch(url='https://fcm.googleapis.com/fcm/send',
+        payload=data, method=urlfetch.POST, headers=headers)
+    if result.status_code != 200:
+      logging.error('Error: sending notification to %s' % (url, result.status_code))
+      return
+
+    resp = json.loads(result.content)
+
 def create_wf_content_list(component):
   list = ''
   wf_component_content = models.BlinkComponent.fetch_wf_content_for_components()
@@ -53,12 +86,12 @@ def email_feature_owners(feature, is_update=False, changes=[]):
   for component_name in feature.blink_components:
     component = models.BlinkComponent.get_by_name(component_name)
     if not component:
-      logging.warn('Blink component %s not found. Not sending email to owners' % component_name)
+      logging.warn('Blink component "%s" not found. Not sending email to owners' % component_name)
       return
 
     owner_names = [owner.name for owner in component.owners]
     if not owner_names:
-      logging.info('Blink component %s has no owners. Skipping email.' % component_name)
+      logging.info('Blink component "%s" has no owners. Skipping email.' % component_name)
       return
 
     if feature.shipped_milestone:
@@ -146,45 +179,6 @@ Next steps:
     message.send()
 
 
-def send_notification_to_feature_subscribers(id=None):
-  # curl -X POST -H "Authorization: key=YOUR-SERVER-KEY" -H "Content-Type: application/json" -d '{
-  #   "notification": {
-  #     "title": "Portugal vs. Denmark",
-  #     "body": "5 to 1",
-  #     "icon": "firebase-logo.png",
-  #     "click_action": "http://localhost:8081"
-  #   },
-  #   "to": "YOUR-IID-TOKEN"
-  # }' "https://fcm.googleapis.com/fcm/send"
-
-  subscriptions = self.all().fetch(None)
-  logging.info(subscriptions)
-  return
-  for s in subscriptions:
-    data = """{
-      "notification": {
-        "title": "Portugal vs. Denmark",
-        "body": "5 to 1",
-        "icon": "/static/img/crstatus_192.png",
-        "click_action": "https://www.chromestatus.com/feature/{id}"
-      },
-      "to": "{subscription_id}"
-    }""".format(id=id, subscription_id=s.subscription_id)
-
-    headers = {
-      'Authorization': 'key=%s' % SERVER_KEY,
-      'Content-Type': 'application/json'
-      }
-    result = urlfetch.fetch(url='https://fcm.googleapis.com/fcm/send',
-                            payload=data,
-                            method=urlfetch.POST,
-                            headers=headers)
-    if result.status_code != 200:
-      logging.error('Error: sending notification to %s' % (url, result.status_code))
-      return
-
-    resp = json.loads(result.content)
-
 class EmailOwnersHandler(webapp2.RequestHandler):
   def post(self):
     json_body = json.loads(self.request.body)
@@ -192,23 +186,43 @@ class EmailOwnersHandler(webapp2.RequestHandler):
     is_update = json_body.get('is_update') or False
     changes = json_body.get('changes') or []
 
-    # Email feature owners.
+    # Email feature owners if if the feature exists and there were actually changes to it.
     feature = models.Feature.get_by_id(feature['id'])
-    email_feature_owners(feature, is_update=is_update, changes=changes)
+    if feature and (is_update and len(changes) or not is_update):
+      email_feature_owners(feature, is_update=is_update, changes=changes)
 
 
-class PushNotificationHandler(webapp2.RequestHandler):
-  def get(self):
-    pass
-
+class PushNotificationSubscribeHandler(webapp2.RequestHandler):
   def post(self):
-    # json_body = json.loads(self.request.body)
-    # feature = json_body.get('feature') or None
-    # is_update = json_body.get('is_update') or False
-    # changes = json_body.get('changes') or []
+    json_body = json.loads(self.request.body)
+
+    subscription_id = json_body.get('subscriptionId') or None
+    if subscription_id is None:
+      return
+
+    # Don't add duplicates
+    query = PushSubscription.all(keys_only=True).filter('subscription_id =', subscription_id)
+    found_token = query.get()
+    if found_token is None:
+      subscription = PushSubscription(subscription_id=subscription_id)
+      subscription.put()
+
+
+class PushNotificationSendHandler(webapp2.RequestHandler):
+  def post(self):
+    json_body = json.loads(self.request.body)
+    feature = json_body.get('feature') or None
+    is_update = json_body.get('is_update') or False
+    changes = json_body.get('changes') or []
+
+    # Email feature owners if if the feature exists and there were actually changes to it.
+    feature = models.Feature.get_by_id(feature['id'])
+    if feature and (is_update and len(changes) or not is_update):
+      send_notification_to_feature_subscribers(feature=feature, is_update=is_update)
 
 
 app = webapp2.WSGIApplication([
   ('/tasks/email-owners', EmailOwnersHandler),
-  ('/tasks/send_push_notifications', PushNotificationHandler),
+  ('/tasks/send_notifications', PushNotificationSendHandler),
+  ('/features/push/subscribe', PushNotificationSubscribeHandler),
 ], debug=settings.DEBUG)

@@ -104,7 +104,7 @@ async function getToken() {
   }
 
   if (currentToken) {
-    sendTokenToServer(currentToken);
+    await sendTokenToServer(currentToken);
   } else {
     console.log('No Instance ID token available. Request permission to generate one.');
     // Prompt user to enable notifications.
@@ -152,13 +152,16 @@ function setTokenSentToServer(sent) {
 // Send the Instance ID token to the server, so we can:
 // - send messages back to this app
 // - subscribe/unsubscribe the token from topics
-function sendTokenToServer(token) {
+async function sendTokenToServer(token) {
   if (!isTokenSentToServer()) {
-    console.log('Sending token to server...');
-    // TODO: Send the current token to your server.
+    const resp = await fetch('/features/push/subscribe', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({subscriptionId: token})
+    });
+
     setTokenSentToServer(true);
-  } else {
-    console.log("Token already sent to server so won't send it again unless it changes");
+    console.log('Token sent to server.');
   }
 }
 
@@ -175,7 +178,7 @@ messaging.onTokenRefresh(async () => {
 
   console.log('Token refreshed.');
   setTokenSentToServer(false);
-  sendTokenToServer(refreshedToken);
+  await sendTokenToServer(refreshedToken);
 });
 
 messaging.onMessage(payload => {
@@ -201,7 +204,7 @@ if (SUPPORTS_NOTIFICATIONS) {
     // messaging.useServiceWorker(reg); // use site's existing sw instead of the one FB messaging registers.
 
     getToken().then(token => {
-      console.log(token);
+      // console.log(token);
     });
   // });
 }
