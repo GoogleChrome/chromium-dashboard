@@ -11,7 +11,8 @@
     "deps": "rm -rf static/bower_components && bower install && pip install -t lib -r requirements.txt",
     "lint": "gulp lint",
     "build": "gulp",
-    "deploy": "./scripts/deploy_site.sh"
+    "deploy": "./scripts/deploy_site.sh",
+    "start": "./scripts/start_server.sh"
   },
   "repository": {
     "type": "git",
