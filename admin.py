@@ -26,7 +26,9 @@ import os
 import re
 import sys
 import webapp2
-import xml.dom.minidom
+from bs4 import BeautifulSoup
+from HTMLParser import HTMLParser
+from xml.dom import minidom
 
 # Appengine imports.
 import cloudstorage
@@ -198,7 +200,7 @@ class HistogramsHandler(webapp2.RequestHandler):
       return
 
     histograms_content = result.content.decode('base64')
-    dom = xml.dom.minidom.parseString(histograms_content)
+    dom = minidom.parseString(histograms_content)
 
     # The enums.xml file looks like this:
     # <enum name="FeatureObserver">
@@ -242,6 +244,17 @@ class FeatureHandler(common.ContentHandler):
     if param:
       param = int(param)
     return param
+
+  def __get_blink_component_from_bug(self, blink_components, bug_url):
+    if blink_components[0] == models.BlinkComponent.DEFAULT_COMPONENT and bug_url:
+      result = urlfetch.fetch(bug_url)
+      if result.status_code == 200:
+        soup = BeautifulSoup(result.content, 'html.parser')
+        components = soup.find_all(string=re.compile('^Blink'))
+
+        h = HTMLParser()
+        return [h.unescape(unicode(c)) for c in components]
+    return blink_components
 
   def get(self, path, feature_id=None):
     user = users.get_current_user()
@@ -377,6 +390,13 @@ class FeatureHandler(common.ContentHandler):
       feature.sample_links = sample_links
       feature.search_tags = search_tags
     else:
+      # Check bug for existing blink component(s) used to label the bug. If
+      # found, use the first component name instead of the generic "Blink" name.
+      try:
+        blink_components = self.__get_blink_component_from_bug(blink_components, bug_url)
+      except Exception:
+        pass
+
       feature = models.Feature(
           category=int(self.request.get('category')),
           name=self.request.get('name'),
