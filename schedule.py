@@ -45,14 +45,23 @@ def fetch_chrome_release_info(version):
       memcache.set(key, data)
   return data
 
-def construct_chrome_channels_details(omaha_data):
+def construct_chrome_channels_details():
+  omaha_data = util.get_omaha_data()
   channels = {}
   win_versions = omaha_data[0]['versions']
+
   for v in win_versions:
     channel = v['channel']
     major_version = int(v['version'].split('.')[0])
     channels[channel] = fetch_chrome_release_info(major_version)
     channels[channel]['version'] = major_version
+
+  # Adjust for the brief period after a stable release where stable and beta
+  # are on the same major version.
+  if channels['stable']['version'] == channels['beta']['version']:
+    channels['beta'] = channels['dev']
+    channels['dev'] = channels['canary']
+
   return channels
 
 
@@ -60,11 +69,9 @@ class ScheduleHandler(common.ContentHandler):
 
   @common.strip_trailing_slash
   def get(self, path):
-    omaha_data = util.get_omaha_data()
-
     data = {
       'features': json.dumps(models.Feature.get_chronological()),
-      'channels': json.dumps(construct_chrome_channels_details(omaha_data))
+      'channels': json.dumps(construct_chrome_channels_details())
     }
 
     self.render(data, template_path=os.path.join('schedule.html'))
