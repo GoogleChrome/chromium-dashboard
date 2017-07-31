@@ -272,7 +272,7 @@ function dateDiffInDays(a, b) {
 /**
  *  @param {!Array<!Object>} features
  */
-function shortFeaturesByName(features) {
+function sortFeaturesByName(features) {
   features.sort((a, b) => {
     a = a.name.toLowerCase();
     b = b.name.toLowerCase();
@@ -305,8 +305,8 @@ function mapFeaturesToComponents(features) {
     });
   });
 
-  for (let [component, features] of Object.entries(featuresMappedToComponents)) {
-    shortFeaturesByName(features);
+  for (let [component, feautreList] of Object.entries(featuresMappedToComponents)) {
+    sortFeaturesByName(feautreList);
   }
 
   return featuresMappedToComponents;
