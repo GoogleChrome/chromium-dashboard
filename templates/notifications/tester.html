@@ -12,11 +12,20 @@
 
 {% block css %}
 <style>
-  /*.no-push-notifications {
+  .no-push-notifications {
     display: none;
-  }*/
+  }
   body[data-path*='notifications/tester'] #spinner {
     display: none;
+  }
+  ul {
+    list-style: none;
+  }
+  #content section {
+    margin-top: 16px;
+  }
+  [icon^="chromestatus:notifications"] {
+    cursor: pointer;
   }
 </style>
 {% endblock %}
@@ -28,9 +37,19 @@
 {% endblock %}
 
 {% block content %}
-<iron-icon icon="chromestatus:notifications"></iron-icon>
-
+<label>
+  Feature id:
+  <input id="feature_id" type="text" value="5827411627212800" placeholder="Feature id">
+</label>
 <button onclick="sendNotification()" disabled class="no-push-notifications">Send message</button>
+
+<iron-icon icon="chromestatus:notifications-off" onclick="subscribeToFeature(this, '5827411627212800')" class="no-push-notifications"></iron-icon>
+
+<section>
+  <h3>Feature list</h3>
+  <ul id="feature_list"></ul>
+</section>
+
 {% endblock %}
 
 {% block js %}
@@ -38,7 +57,7 @@
 <script src="https://www.gstatic.com/firebasejs/4.1.3/firebase-messaging.js"></script>
 
 <script>
-const SERVER_KEY = 'AAAA6Lfj0-8:APA91bFl7OgYBmIIOIJM-wW72FceMH0xBJpcRwT4PVyCg3LXNu7gvWZqz3OvXi2G5Jy6J7xreRSwUQus28hrkx_NOEoDBom9Gsci9qafcTUCvGdCliMbAEIksH4u9IFFofeOt7wANaQl';
+const SERVER_KEY = 'INSERT ME';
 const SUPPORTS_NOTIFICATIONS = navigator.serviceWorker && window.Notification;
 
 firebase.initializeApp({
@@ -52,30 +71,71 @@ firebase.initializeApp({
 
 const messaging = firebase.messaging();
 
-async function sendNotification() {
-  if (!SUPPORTS_NOTIFICATIONS) {
-    throw Error('You browser does not support push notifications');
-  }
+async function getFeaturesList() {
+  const url = '/features.json';
+  const resp = await fetch(url);
+  const json = await resp.json();
+  return json;
+}
 
-  const notification = {
-    'title': 'Portugal vs. Denmark',
-    'body': '5 to 1',
-    'icon': '/static/img/crstatus_192.png',
-    // 'badge': '/static/img/crstatus_192.png',
-    // 'image': '/static/img/crstatus_192.png',
-    'click_action': location.href
-  };
-
-  const token = await getToken();
+async function getTokenInfo(token = null) {
+  token = token || await getToken();
 
   try {
-    const resp = await fetch('https://fcm.googleapis.com/fcm/send', {
+    const resp = await fetch(`https://iid.googleapis.com/iid/info/${token}?details=true`, {
       method: 'POST',
       headers: {
         'Authorization': `key=${SERVER_KEY}`,
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({notification, to: token})
+      body: JSON.stringify({
+        // details: true,
+        // to: token,
+      })
+    });
+    return await resp.json();
+  } catch(err) {
+    console.error('Error sending notification to FCM', err);
+  }
+}
+
+getTokenInfo().then(info => {
+  if (info.rel) {
+    console.log(info.rel.topics);
+  } else {
+    console.log(info);
+  }
+});
+
+
+async function sendNotification() {
+  if (!SUPPORTS_NOTIFICATIONS) {
+    throw Error('You browser does not support push notifications');
+  }
+
+  // const notification = {
+  //   'title': 'Portugal vs. Denmark',
+  //   'body': '5 to 1',
+  //   'icon': '/static/img/crstatus_192.png',
+  //   // 'badge': '/static/img/crstatus_192.png',
+  //   // 'image': '/static/img/crstatus_192.png',
+  //   'click_action': location.href
+  // };
+
+  // const token = await getToken();
+
+  try {
+    const resp = await fetch('/tasks/send_notifications', { //https://fcm.googleapis.com/fcm/send'
+      method: 'POST',
+      headers: {
+        'Authorization': `key=${SERVER_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        // notification,
+        // to: token,
+        feature: {id: parseInt(document.getElementById('feature_id').value)}
+      })
     });
   } catch(err) {
     console.error('Error sending notification to FCM', err);
@@ -154,7 +214,7 @@ function setTokenSentToServer(sent) {
 // - subscribe/unsubscribe the token from topics
 async function sendTokenToServer(token) {
   if (!isTokenSentToServer()) {
-    const resp = await fetch('/features/push/subscribe', {
+    const resp = await fetch('/features/push/new', {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({subscriptionId: token})
@@ -195,18 +255,57 @@ messaging.onMessage(payload => {
   };
 });
 
+async function subscribeToFeature(icon, featureId) {
+  const token = await getToken();
+
+  try {
+    const resp = await fetch(`https://iid.googleapis.com/iid/v1/${token}/rel/topics/${featureId}`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `key=${SERVER_KEY}`,
+        'Content-Type': 'application/json'
+      }
+    });
+  } catch(err) {
+    console.error('Error sending notification to FCM', err);
+  }
+
+  const info = await getTokenInfo(token);
+  console.log(info);
+
+  const active = icon.classList.toggle('active');
+  if (active) {
+    icon.icon = 'chromestatus:notifications';
+  } else {
+    icon.icon = 'chromestatus:notifications-off';
+  }
+}
+
+function useId(el) {
+  document.getElementById('feature_id').value = el.dataset.id;
+}
+
 if (SUPPORTS_NOTIFICATIONS) {
   document.querySelectorAll('.no-push-notifications').forEach(el => {
-    // el.classList.remove('no-push-notifications');
+    el.classList.remove('no-push-notifications');
     el.disabled = false;
   });
   // navigator.serviceWorker.ready.then(reg => {
     // messaging.useServiceWorker(reg); // use site's existing sw instead of the one FB messaging registers.
 
-    getToken().then(token => {
-      // console.log(token);
-    });
+    // getToken().then(token => {
+    //   // console.log(token);
+    // });
   // });
+
+  getFeaturesList().then(features => {
+    const list = document.querySelector('#feature_list');
+    features.forEach(f => {
+      const li = document.createElement('li');
+      li.innerHTML = `${f.name}: <a href="#" onclick="useId(this)" data-id="${f.id}">${f.id}</a>`;
+      list.appendChild(li);
+    });
+  });
 }
 </script>
 {% endblock %}

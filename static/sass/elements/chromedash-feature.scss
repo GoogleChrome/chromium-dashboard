@@ -5,7 +5,7 @@
   @include gradient-bar-bg();
   position: relative;
   border-radius: $default-border-radius;
-  padding: 10px 20px !important;
+  padding: 10px 10px 10px 20px !important;
   list-style: none;
   box-sizing: border-box;
   contain: content;
@@ -20,6 +20,12 @@
 
   .desc summary {
     white-space: normal;
+  }
+}
+
+.supports-push-notifications {
+  .no-push-notifications {
+    display: initial;
   }
 }
 
@@ -59,17 +65,8 @@ iron-icon {
   height: 18px;
 }
 
-.newbug:hover {
-  text-decoration: none;
-}
-
-.editfeature {
-  color: $chromium-color-center;
-}
-
 .main-content-area {
   flex: 1 0 0;
-  margin-right: 12px;
   overflow: hidden;
 }
 
@@ -91,7 +88,11 @@ iron-icon {
 
 .topcorner {
   .tooltip {
-    margin-left: 8px;
+    margin-left: 4px;
+
+    a {
+      text-decoration: none;
+    }
 
     &:hover, &:active {
       &:before {

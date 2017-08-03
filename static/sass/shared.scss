@@ -67,3 +67,7 @@ button:not(:disabled):active {
 .comma::after {
   content: ',\00a0';
 }
+
+.no-push-notifications {
+  display: none;
+}

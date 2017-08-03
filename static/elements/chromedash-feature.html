@@ -64,8 +64,16 @@
     <chromedash-color-status class="tooltip corner"
        title="Interoperability risk: perceived interest from browser vendors and web developers"
        value="[[interopRisk]]" max="[[MAX_RISK]]"></chromedash-color-status>
-    <h2>[[feature.name]]</h2>
-    <div class="iconrow">
+    <h2>[[feature.name]]
+      <template is="dom-if" if="{{whitelisted}}">
+        <span class="tooltip" title="Edit this feature">
+          <a href$="{{_computeEditLinkHidden(feature)}}" data-tooltip>
+            <iron-icon icon="chromestatus:create"></iron-icon>
+          </a>
+        </span>
+      </template>
+    </h2>
+    <div class$="iconrow [[_computeSupportsPushNotifications]]">
       <label class="category" on-tap="categoryFilter">{{feature.category}}</label>
       <div class="topcorner">
         <template is="dom-if" if="{{removed}}">
@@ -93,18 +101,21 @@
             <iron-icon icon="chromestatus:pan-tool" class="intervention" data-tooltip></iron-icon>
           </span>
         </template>
+        <span class="tooltip no-push-notifications" title="Receive push notification updates">
+          <a href="#" data-tooltip>
+            <iron-icon icon="[[_computePushSubscribed(_pushSubscribed)]]" on-click="subscribeToFeature" class="pushicon"></iron-icon>
+          </a>
+        </span>
         <span class="tooltip" title="File a bug against this feature">
-          <a href$="{{_computeNewBugUrl(feature)}}" class="newbug" data-tooltip>
+          <a href$="{{_computeNewBugUrl(feature)}}" data-tooltip>
             <iron-icon icon="chromestatus:bug-report"></iron-icon>
           </a>
         </span>
-        <template is="dom-if" if="{{whitelisted}}">
-          <span class="tooltip" title="Edit this feature">
-            <a href$="{{_computeEditLinkHidden(feature)}}" class="editfeature" data-tooltip>
-              <iron-icon icon="chromestatus:create"></iron-icon>
-            </a>
-          </span>
-        </template>
+        <span class="tooltip" title="View on a standalone page">
+          <a href$="{{_computeStandaloneHref(feature)}}" target="_blank">
+            <iron-icon icon="chromestatus:open-in-new"></iron-icon>
+          </a>
+        </span>
       </div>
     </div>
   </hgroup>
@@ -290,10 +301,6 @@
     </template>
   </template>
 </div>
-<a href$="{{_computeStandaloneHref(feature)}}" target="_blank"
-   class="open-standalone" title="View on standalone page">
-  <img src="openinnew.svg" class="opennew">
-</a>
 </template>
 <script>
   Polymer({
@@ -343,12 +350,32 @@
         type: Boolean,
         value: false
       },
+      _pushSubscribed: {
+        type: Boolean,
+        value: false
+      },
+      _computeSupportsPushNotifications: {
+        type: Boolean,
+        value: function() {
+          return PushNotifier && PushNotifier.SUPPORTS_NOTIFICATIONS ? 'supports-push-notifications' : '';
+        }
+      },
       open: {
         type: Boolean,
         notify: true,
         reflectToAttribute: true, // for styling.
         computed: '_featureOpen(feature.open)'
       }
+    },
+
+    ready: function() {
+      PushNotifications.getAllSubscribedFeatures().then(function(features) {
+        features.forEach(function(f) {
+          if (features.includes(f)) {
+            this.notifyPath('_pushSubscribed', true);
+          }
+        }.bind(this));
+      }.bind(this));
     },
 
     _featureOpen: function(open) {
@@ -473,6 +500,34 @@
         params.push('cc=' + owners.map(encodeURIComponent));
       }
       return url + '?' + params.join('&');
+    },
+    _computePushSubscribed: function(subscribed) {
+      return subscribed ? 'chromestatus:notifications' : 'chromestatus:notifications-off';
+    },
+    subscribeToFeature: function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+
+      if (!PushNotifier.SUPPORTS_NOTIFICATIONS || !this.feature.id) {
+        return;
+      }
+
+      var icon = Polymer.dom(e).localTarget;
+      // icon.classList.toggle('active');
+      this.notifyPath('_pushSubscribed', !this._pushSubscribed);
+
+      if (this._pushSubscribed) {
+        // icon.icon = 'chromestatus:notifications';
+        PushNotifications.subscribeToFeature(this.feature.id).then(function(info) {
+          // icon.icon = 'chromestatus:notifications';
+          console.log(info);
+        });
+      } else {
+        PushNotifications.unsubscribeFromFeature(this.feature.id).then(function(info) {
+          // icon.icon = 'chromestatus:notifications-off';
+          console.log(info);
+        });
+      }
     }
   });
 </script>

@@ -18,6 +18,7 @@ __author__ = 'ericbidelman@chromium.org (Eric Bidelman)'
 import logging
 import datetime
 import json
+import os
 import webapp2
 
 from google.appengine.ext import db
@@ -30,43 +31,36 @@ import models
 
 
 class PushSubscription(models.DictModel):
-
-  SERVER_KEY = 'AAAA6Lfj0-8:APA91bFl7OgYBmIIOIJM-wW72FceMH0xBJpcRwT4PVyCg3LXNu7gvWZqz3OvXi2G5Jy6J7xreRSwUQus28hrkx_NOEoDBom9Gsci9qafcTUCvGdCliMbAEIksH4u9IFFofeOt7wANaQl'
-
   subscription_id = db.StringProperty(required=True)
 
 
-def send_notification_to_feature_subscribers(feature=None, is_update=False, subscription_id=None):
-  query = PushSubscription.all()
-  if subscription_id:
-    query.filter('subscription_id =', subscription_id)
+def get_default_headers():
+  headers = {
+    'Authorization': 'key=%s' % settings.FIREBASE_SERVER_KEY,
+    'Content-Type': 'application/json'
+    }
+  return headers
 
-  subscriptions = query.fetch(None)
+def send_notification_to_feature_subscribers(feature=None, is_update=False):
+  data = """{{
+    "notification": {{
+      "title": "{title}",
+      "body": "{added_str}. Click here for more information.",
+      "icon": "/static/img/crstatus_192.png",
+      "click_action": "https://www.chromestatus.com/feature/{id}"
+    }},
+    "to": "/topics/{id}"
+  }}""".format(title=feature.name, id=feature.key().id(),
+               added_str=('Was updated' if is_update else 'Was added'))
 
-  for s in subscriptions:
-    data = """{{
-      "notification": {{
-        "title": "{title}",
-        "body": "{added_str}. Click here fore more information.",
-        "icon": "/static/img/crstatus_192.png",
-        "click_action": "https://www.chromestatus.com/feature/{id}"
-      }},
-      "to": "{sub_id}"
-    }}""".format(title=feature.name, id=feature.key().id(),
-                  sub_id=s.subscription_id,
-                  added_str=('Updated' if is_update else 'Added'))
+  result = urlfetch.fetch(url='https://fcm.googleapis.com/fcm/send',
+      payload=data, method=urlfetch.POST, headers=get_default_headers())
 
-    headers = {
-      'Authorization': 'key=%s' % PushSubscription.SERVER_KEY,
-      'Content-Type': 'application/json'
-      }
-    result = urlfetch.fetch(url='https://fcm.googleapis.com/fcm/send',
-        payload=data, method=urlfetch.POST, headers=headers)
-    if result.status_code != 200:
-      logging.error('Error: sending notification to %s' % (url, result.status_code))
-      return
+  if result.status_code != 200:
+    logging.error('Error: sending notification to topic: %s' % result.content)
+    return
 
-    resp = json.loads(result.content)
+  resp = json.loads(result.content)
 
 def create_wf_content_list(component):
   list = ''
@@ -186,17 +180,17 @@ class EmailOwnersHandler(webapp2.RequestHandler):
     is_update = json_body.get('is_update') or False
     changes = json_body.get('changes') or []
 
-    # Email feature owners if if the feature exists and there were actually changes to it.
+    # Email feature owners if the feature exists and there were actually changes to it.
     feature = models.Feature.get_by_id(feature['id'])
     if feature and (is_update and len(changes) or not is_update):
       email_feature_owners(feature, is_update=is_update, changes=changes)
 
 
-class PushNotificationSubscribeHandler(webapp2.RequestHandler):
+class PushNotificationNewSubscriptionHandler(webapp2.RequestHandler):
   def post(self):
     json_body = json.loads(self.request.body)
-
     subscription_id = json_body.get('subscriptionId') or None
+
     if subscription_id is None:
       return
 
@@ -208,6 +202,34 @@ class PushNotificationSubscribeHandler(webapp2.RequestHandler):
       subscription.put()
 
 
+class PushNotificationSubscribeHandler(webapp2.RequestHandler):
+  def post(self, feature_id=None):
+    json_body = json.loads(self.request.body)
+    subscription_id = json_body.get('subscriptionId') or None
+    remove = json_body.get('remove') or False
+
+    if subscription_id is None or feature_id is None:
+      return
+
+    data = {}
+    if remove:
+      url = 'https://iid.googleapis.com/iid/v1:batchRemove'
+      data = """{{
+        "to": "/topics/{feature_id}",
+        "registration_tokens": ["{token}"]
+      }}""".format(feature_id=feature_id, token=subscription_id)
+    else:
+      url = 'https://iid.googleapis.com/iid/v1/%s/rel/topics/%s' % (subscription_id, feature_id)
+
+    result = urlfetch.fetch(url=url, payload=data, method=urlfetch.POST, headers=get_default_headers())
+
+    if result.status_code != 200:
+      logging.error('Error: subscribing %s to topic: %s' % (subscription_id, feature_id))
+      return
+
+    resp = json.loads(result.content)
+
+
 class PushNotificationSendHandler(webapp2.RequestHandler):
   def post(self):
     json_body = json.loads(self.request.body)
@@ -215,14 +237,34 @@ class PushNotificationSendHandler(webapp2.RequestHandler):
     is_update = json_body.get('is_update') or False
     changes = json_body.get('changes') or []
 
-    # Email feature owners if if the feature exists and there were actually changes to it.
+    # Email feature owners if the feature exists and there were changes to it.
     feature = models.Feature.get_by_id(feature['id'])
     if feature and (is_update and len(changes) or not is_update):
       send_notification_to_feature_subscribers(feature=feature, is_update=is_update)
 
 
+class PushNotificationSubscriptionInfoHandler(webapp2.RequestHandler):
+  def post(self):
+    json_body = json.loads(self.request.body)
+    subscription_id = json_body.get('subscriptionId') or None
+
+    if subscription_id is None:
+      return
+
+    url = 'https://iid.googleapis.com/iid/info/%s?details=true' % subscription_id
+    result = urlfetch.fetch(url=url, method=urlfetch.GET, headers=get_default_headers())
+
+    if result.status_code != 200:
+      logging.error('Error: fetching info for subscription %s' % subscription_id)
+      return
+
+    self.response.write(result.content)
+
+
 app = webapp2.WSGIApplication([
   ('/tasks/email-owners', EmailOwnersHandler),
   ('/tasks/send_notifications', PushNotificationSendHandler),
-  ('/features/push/subscribe', PushNotificationSubscribeHandler),
+  ('/features/push/new', PushNotificationNewSubscriptionHandler),
+  ('/features/push/info', PushNotificationSubscriptionInfoHandler),
+  ('/features/push/subscribe/([0-9]*)', PushNotificationSubscribeHandler),
 ], debug=settings.DEBUG)

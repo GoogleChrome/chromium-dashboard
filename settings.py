@@ -39,3 +39,5 @@ else:
   TEMPLATE_CACHE_TIME = 600 # seconds
 
 SEND_EMAIL = False # Flag to turn off email notifications to feature owners.
+
+FIREBASE_SERVER_KEY = os.environ.get('FIREBASE_SERVER_KEY')

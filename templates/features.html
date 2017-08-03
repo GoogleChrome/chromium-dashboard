@@ -94,9 +94,13 @@
 {% endblock %}
 
 {% block js %}
+<script src="https://www.gstatic.com/firebasejs/4.1.3/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/4.1.3/firebase-messaging.js"></script>
 <script>
 (function() {
 'use strict';
+
+{% inline_file "/static/js/notifications.js" %}
 
 var featureList = $('chromedash-featurelist');
 var chromeMetadata = $('chromedash-metadata');
@@ -203,7 +207,7 @@ $('.legend').addEventListener('click', function(e) {
 
 // Fire of features.json XHR right away so data can populate faster.
 var featuresPromise = new Promise(function(resolve, reject) {
-  var url = location.hostname == 'localhost' ? 'https://www.chromestatus.com/features_v2.json' :
+  var url = location.hostname == 'localhost2' ? 'https://www.chromestatus.com/features_v2.json' :
                                                '/features_v2.json';
   var xhr = new XMLHttpRequest(); // Fill features list via AJAX.
   xhr.open('GET', url);
