@@ -535,7 +535,7 @@ class Feature(DictModel):
     d['doc_links'] = '\r\n'.join(self.doc_links)
     d['sample_links'] = '\r\n'.join(self.sample_links)
     d['search_tags'] = ', '.join(self.search_tags)
-    d['blink_components'] = ', '.join(self.blink_components)
+    d['blink_components'] = self.blink_components[0] #TODO: support more than one component.
     return d
 
   @classmethod
