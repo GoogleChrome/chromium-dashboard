@@ -103,7 +103,8 @@
         </template>
         <span class="tooltip no-push-notifications" title="Receive push notification updates">
           <a href="#" data-tooltip>
-            <iron-icon icon="[[_computePushSubscribed(_pushSubscribed)]]" on-click="subscribeToFeature" class="pushicon"></iron-icon>
+            <iron-icon icon="[[_computePushSubscribed(feature.receivePush)]]"
+                       on-click="subscribeToFeature" class$="pushicon [[pushDisabled]]"></iron-icon>
           </a>
         </span>
         <span class="tooltip" title="File a bug against this feature">
@@ -350,14 +351,16 @@
         type: Boolean,
         value: false
       },
-      _pushSubscribed: {
+      pushDisabled: {
         type: Boolean,
-        value: false
+        value: function() {
+          return PushNotifier.GRANTED_ACCESS ? '' : 'disabled';
+        }
       },
       _computeSupportsPushNotifications: {
         type: Boolean,
         value: function() {
-          return PushNotifier && PushNotifier.SUPPORTS_NOTIFICATIONS ? 'supports-push-notifications' : '';
+          return window.PushNotifier && PushNotifier.SUPPORTS_NOTIFICATIONS ? 'supports-push-notifications' : '';
         }
       },
       open: {
@@ -366,16 +369,6 @@
         reflectToAttribute: true, // for styling.
         computed: '_featureOpen(feature.open)'
       }
-    },
-
-    ready: function() {
-      PushNotifications.getAllSubscribedFeatures().then(function(features) {
-        features.forEach(function(f) {
-          if (features.includes(f)) {
-            this.notifyPath('_pushSubscribed', true);
-          }
-        }.bind(this));
-      }.bind(this));
     },
 
     _featureOpen: function(open) {
@@ -510,23 +503,18 @@
 
       if (!PushNotifier.SUPPORTS_NOTIFICATIONS || !this.feature.id) {
         return;
+      } else if (Notification.permission === 'denied') {
+        alert('Notifications were previously denied. Please reset the browser permission.');
+        return;
       }
 
       var icon = Polymer.dom(e).localTarget;
-      // icon.classList.toggle('active');
-      this.notifyPath('_pushSubscribed', !this._pushSubscribed);
+      this.set('feature.receivePush', !this.feature.receivePush);
 
-      if (this._pushSubscribed) {
-        // icon.icon = 'chromestatus:notifications';
-        PushNotifications.subscribeToFeature(this.feature.id).then(function(info) {
-          // icon.icon = 'chromestatus:notifications';
-          console.log(info);
-        });
+      if (this.feature.receivePush) {
+        PushNotifications.subscribeToFeature(this.feature.id);
       } else {
-        PushNotifications.unsubscribeFromFeature(this.feature.id).then(function(info) {
-          // icon.icon = 'chromestatus:notifications-off';
-          console.log(info);
-        });
+        PushNotifications.unsubscribeFromFeature(this.feature.id);
       }
     }
   });

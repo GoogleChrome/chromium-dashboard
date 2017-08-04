@@ -58,6 +58,9 @@ iron-icon {
   &.intervention {
     color: var(--paper-yellow-800);
   }
+  &.disabled {
+    opacity: 0.5;
+  }
 }
 
 .opennew {

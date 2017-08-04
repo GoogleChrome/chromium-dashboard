@@ -1,20 +1,46 @@
-const SUPPORTS_NOTIFICATIONS = navigator.serviceWorker && window.Notification;
+(function(exports) {
+'use strict';
 
-firebase.initializeApp({
-  apiKey: "AIzaSyDMfRkOLG6OUTeEL_Z2ixEMDceyklm10UM",
-  authDomain: "cr-status.firebaseapp.com",
-  databaseURL: "https://cr-status.firebaseio.com",
-  projectId: "cr-status",
-  storageBucket: "cr-status.appspot.com",
-  messagingSenderId: "999517574127"
-});
+let _libsLoaded = false;
+
+/**
+ * Lazy loads a script.
+ * @param {string} src
+ * @return {!Promise}
+ */
+function loadLib(src) {
+  return new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = src;
+    script.onload = resolve;
+    script.onerror = reject;
+    document.head.appendChild(script);
+  });
+}
+
+/**
+ * Lazy load the Firebase Messaging (FCM) SDK.
+ */
+async function loadLibs() {
+  await loadLib('https://www.gstatic.com/firebasejs/4.1.3/firebase-app.js');
+  await loadLib('https://www.gstatic.com/firebasejs/4.1.3/firebase-messaging.js');
+  _libsLoaded = true;
+}
 
 class PushNotifier {
-  constructor() {
-    // document.querySelectorAll('.no-push-notifications').forEach(el => {
-    //   el.classList.remove('no-push-notifications');
-    //   el.disabled = false;
-    // });
+  init() {
+    if (!_libsLoaded) {
+      throw Error('Firebase SDK not loaded.');
+    }
+
+    firebase.initializeApp({
+      apiKey: "AIzaSyDMfRkOLG6OUTeEL_Z2ixEMDceyklm10UM",
+      authDomain: "cr-status.firebaseapp.com",
+      databaseURL: "https://cr-status.firebaseio.com",
+      projectId: "cr-status",
+      storageBucket: "cr-status.appspot.com",
+      messagingSenderId: "999517574127"
+    });
 
     this.messaging = firebase.messaging();
 
@@ -29,14 +55,12 @@ class PushNotifier {
         return;
       }
 
-      // console.log('Token refreshed.');
       this._setTokenSentToServer(false);
       await this.sendTokenToServer(refreshedToken);
     });
 
     this.messaging.onMessage(payload => {
       const notification = new Notification(payload.notification.title, payload.notification);
-      console.log(notification, payload);
 
       notification.onerror = function(e) {
         console.log(e);
@@ -44,21 +68,25 @@ class PushNotifier {
 
       notification.onclick = function(e) {
         //window.open(payload.notification.click_action, '_blank');
-        window.focus();
+        exports.focus();
       };
     });
   }
 
   static get SUPPORTS_NOTIFICATIONS() {
-    return !!(navigator.serviceWorker && window.Notification);
+    return !!(navigator.serviceWorker && exports.Notification);
+  }
+
+  static get GRANTED_ACCESS() {
+    return Notification.permission === 'granted';
   }
 
   _isTokenSentToServer() {
-    return window.localStorage.getItem('pushTokenSentToServer') == 1;
+    return exports.localStorage.getItem('pushTokenSentToServer') == 1;
   }
 
   _setTokenSentToServer(sent) {
-    window.localStorage.setItem('pushTokenSentToServer', sent ? 1 : 0);
+    exports.localStorage.setItem('pushTokenSentToServer', sent ? 1 : 0);
   }
 
   /**
@@ -156,13 +184,14 @@ class PushNotifier {
     const token = await this.getToken();
 
     return this.getTokenInfo(token).then(info => {
-      return info.rel ? Object.keys(info.rel.topics) : [];
+      return info.rel ? Object.keys(info.rel.topics).map(id => parseInt(id)) : [];
     });
   }
 }
 
-window.PushNotifier = PushNotifier;
-window.PushNotifications = new PushNotifier();
+exports.PushNotifier = PushNotifier;
+exports.PushNotifications = new PushNotifier();
+exports.loadFirebaseSDKLibs = loadLibs;
 
 // if (SUPPORTS_NOTIFICATIONS) {
 //   // navigator.serviceWorker.ready.then(reg => {
@@ -173,3 +202,5 @@ window.PushNotifications = new PushNotifier();
 //     // });
 //   // });
 // }
+
+})(window);
