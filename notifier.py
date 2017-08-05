@@ -41,27 +41,6 @@ def get_default_headers():
     }
   return headers
 
-def send_notification_to_feature_subscribers(feature=None, is_update=False):
-  data = """{{
-    "notification": {{
-      "title": "{title}",
-      "body": "{added_str}. Click here for more information.",
-      "icon": "/static/img/crstatus_192.png",
-      "click_action": "https://www.chromestatus.com/feature/{id}"
-    }},
-    "to": "/topics/{id}"
-  }}""".format(title=feature.name, id=feature.key().id(),
-               added_str=('Was updated' if is_update else 'Was added'))
-
-  result = urlfetch.fetch(url='https://fcm.googleapis.com/fcm/send',
-      payload=data, method=urlfetch.POST, headers=get_default_headers())
-
-  if result.status_code != 200:
-    logging.error('Error: sending notification to topic: %s' % result.content)
-    return
-
-  resp = json.loads(result.content)
-
 def create_wf_content_list(component):
   list = ''
   wf_component_content = models.BlinkComponent.fetch_wf_content_for_components()
@@ -174,6 +153,7 @@ Next steps:
 
 
 class EmailOwnersHandler(webapp2.RequestHandler):
+
   def post(self):
     json_body = json.loads(self.request.body)
     feature = json_body.get('feature') or None
@@ -186,7 +166,8 @@ class EmailOwnersHandler(webapp2.RequestHandler):
       email_feature_owners(feature, is_update=is_update, changes=changes)
 
 
-class PushNotificationNewSubscriptionHandler(webapp2.RequestHandler):
+class NotificationNewSubscriptionHandler(webapp2.RequestHandler):
+
   def post(self):
     json_body = json.loads(self.request.body)
     subscription_id = json_body.get('subscriptionId') or None
@@ -194,7 +175,7 @@ class PushNotificationNewSubscriptionHandler(webapp2.RequestHandler):
     if subscription_id is None:
       return
 
-    # Don't add duplicates
+    # Don't add duplicate tokens.
     query = PushSubscription.all(keys_only=True).filter('subscription_id =', subscription_id)
     found_token = query.get()
     if found_token is None:
@@ -202,8 +183,10 @@ class PushNotificationNewSubscriptionHandler(webapp2.RequestHandler):
       subscription.put()
 
 
-class PushNotificationSubscribeHandler(webapp2.RequestHandler):
+class NotificationSubscribeHandler(webapp2.RequestHandler):
+
   def post(self, feature_id=None):
+    """Subscribes or unsubscribes a token to a topic."""
     json_body = json.loads(self.request.body)
     subscription_id = json_body.get('subscriptionId') or None
     remove = json_body.get('remove') or False
@@ -211,26 +194,61 @@ class PushNotificationSubscribeHandler(webapp2.RequestHandler):
     if subscription_id is None or feature_id is None:
       return
 
+    # # Subscribe token to topic for new feature additions.
+    # query = PushSubscription.all()
+    # if subscription_id:
+    #   query.filter('subscription_id =', subscription_id)
+    # subscriptions = query.fetch(None)
+
     data = {}
+    topic_id = feature_id if feature_id else 'new-feature'
+    url = 'https://iid.googleapis.com/iid/v1/%s/rel/topics/%s' % (subscription_id, topic_id)
+
     if remove:
       url = 'https://iid.googleapis.com/iid/v1:batchRemove'
       data = """{{
-        "to": "/topics/{feature_id}",
+        "to": "/topics/{topic_id}",
         "registration_tokens": ["{token}"]
-      }}""".format(feature_id=feature_id, token=subscription_id)
-    else:
-      url = 'https://iid.googleapis.com/iid/v1/%s/rel/topics/%s' % (subscription_id, feature_id)
+      }}""".format(topic_id=topic_id, token=subscription_id)
 
-    result = urlfetch.fetch(url=url, payload=data, method=urlfetch.POST, headers=get_default_headers())
+    result = urlfetch.fetch(url=url, payload=data, method=urlfetch.POST,
+                            headers=get_default_headers())
 
     if result.status_code != 200:
-      logging.error('Error: subscribing %s to topic: %s' % (subscription_id, feature_id))
+      logging.error('Error: subscribing %s to topic: %s' % (subscription_id, topic_id))
       return
 
-    resp = json.loads(result.content)
 
+class NotificationSendHandler(webapp2.RequestHandler):
 
-class PushNotificationSendHandler(webapp2.RequestHandler):
+  def _send_notification_to_feature_subscribers(self, feature, is_update=False):
+    """Sends a notification to users when new features are added or updated.
+
+    Args:
+      feature: Feature that was added/modified.
+      is_update: True if this was an update to the feature. False if it was newly added.
+    """
+    feature_id = feature.key().id()
+    topic_id = feature_id if is_update else 'new-feature'
+
+    data = """{{
+      "notification": {{
+        "title": "{title}",
+        "body": "{added_str}. Click here for more information.",
+        "icon": "/static/img/crstatus_192.png",
+        "click_action": "https://www.chromestatus.com/feature/{id}"
+      }},
+      "to": "/topics/{topic_id}"
+    }}""".format(title=feature.name, id=feature_id, topic_id=topic_id,
+        added_str=('Was updated' if is_update else 'New feature added'))
+
+    result = urlfetch.fetch(url='https://fcm.googleapis.com/fcm/send',
+        payload=data, method=urlfetch.POST, headers=get_default_headers())
+
+    if result.status_code != 200:
+      logging.error('Error sending notification to topic %s. %s' % (topic_id, result.content))
+      return
+
   def post(self):
     json_body = json.loads(self.request.body)
     feature = json_body.get('feature') or None
@@ -240,10 +258,10 @@ class PushNotificationSendHandler(webapp2.RequestHandler):
     # Email feature owners if the feature exists and there were changes to it.
     feature = models.Feature.get_by_id(feature['id'])
     if feature and (is_update and len(changes) or not is_update):
-      send_notification_to_feature_subscribers(feature=feature, is_update=is_update)
+      self._send_notification_to_feature_subscribers(feature=feature, is_update=is_update)
 
 
-class PushNotificationSubscriptionInfoHandler(webapp2.RequestHandler):
+class NotificationSubscriptionInfoHandler(webapp2.RequestHandler):
   def post(self):
     json_body = json.loads(self.request.body)
     subscription_id = json_body.get('subscriptionId') or None
@@ -263,8 +281,8 @@ class PushNotificationSubscriptionInfoHandler(webapp2.RequestHandler):
 
 app = webapp2.WSGIApplication([
   ('/tasks/email-owners', EmailOwnersHandler),
-  ('/tasks/send_notifications', PushNotificationSendHandler),
-  ('/features/push/new', PushNotificationNewSubscriptionHandler),
-  ('/features/push/info', PushNotificationSubscriptionInfoHandler),
-  ('/features/push/subscribe/([0-9]*)', PushNotificationSubscribeHandler),
+  ('/tasks/send_notifications', NotificationSendHandler),
+  ('/features/push/new', NotificationNewSubscriptionHandler),
+  ('/features/push/info', NotificationSubscriptionInfoHandler),
+  ('/features/push/subscribe/([0-9]*)', NotificationSubscribeHandler),
 ], debug=settings.DEBUG)

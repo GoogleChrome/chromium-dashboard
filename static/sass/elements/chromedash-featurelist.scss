@@ -16,6 +16,7 @@
   margin: 32px 0 8px 0;
   font-size: $milestone-label-size;
   color: $chromium-color-dark;
+  -webkit-font-smoothing: initial;
 }
 
 @media only screen and (max-width: 700px) {

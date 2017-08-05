@@ -81,6 +81,10 @@ class PushNotifier {
     return Notification.permission === 'granted';
   }
 
+  static get ALL_FEATURES_TOPIC_ID() {
+    return 'new-feature';
+  }
+
   _isTokenSentToServer() {
     return exports.localStorage.getItem('pushTokenSentToServer') == 1;
   }
@@ -145,18 +149,19 @@ class PushNotifier {
 
   async sendTokenToServer(token) {
     if (!this._isTokenSentToServer()) {
-      const resp = await fetch('/features/push/new', {
+      await fetch('/features/push/new', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({subscriptionId: token})
       });
 
       this._setTokenSentToServer(true);
-      // console.log('Token sent to server.');
     }
   }
 
   async subscribeToFeature(featureId, remove=false) {
+    featureId = featureId || '';
+
     const token = await this.getToken();
 
     try {
@@ -164,7 +169,7 @@ class PushNotifier {
       if (remove) {
         body.remove = true;
       }
-      const resp = await fetch(`/features/push/subscribe/${featureId}`, {
+      await fetch(`/features/push/subscribe/${featureId}`, {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify(body)
@@ -173,7 +178,7 @@ class PushNotifier {
       console.error('Error [un]subscribing to topic.', err);
     }
 
-    return await this.getTokenInfo(token);
+    return true;
   }
 
   async unsubscribeFromFeature(featureId) {
@@ -184,7 +189,7 @@ class PushNotifier {
     const token = await this.getToken();
 
     return this.getTokenInfo(token).then(info => {
-      return info.rel ? Object.keys(info.rel.topics).map(id => parseInt(id)) : [];
+      return info.rel ? Object.keys(info.rel.topics).map(id => String(id)) : [];
     });
   }
 }

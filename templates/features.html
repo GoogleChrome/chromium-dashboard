@@ -48,8 +48,9 @@
     <a href="" class="legend"><iron-icon icon="chromestatus:help"></iron-icon></a>
   </div>
   <div class="actionlinks">
+    <a id="features-subscribe-button" class="blue-button no-push-notifications" title="Sends a push notification when new features are added."><iron-icon icon="chromestatus:notifications-off"></iron-icon><span>Subscribe</span></a>
     {% if user.is_whitelisted %}
-      <a href="/admin/features/new" class="blue-button"><iron-icon icon="chromestatus:add-circle-outline"></iron-icon>Add new feature</a>
+      <a href="/admin/features/new" class="blue-button" title="Adds a new feature to the site"><iron-icon icon="chromestatus:add-circle-outline"></iron-icon><span>Add new feature</span></a>
     {% endif %}
   </div>
 </div>
@@ -147,8 +148,15 @@ featureList.addEventListener('app-ready', function() {
     // push icon for each feature the user is subscribed to.
     if (PushNotifier.GRANTED_ACCESS) {
       PushNotifications.getAllSubscribedFeatures().then(function(subscribedFeatures) {
+        var icon = $('#features-subscribe-button').firstElementChild;
+        if (subscribedFeatures.includes(PushNotifier.ALL_FEATURES_TOPIC_ID)) {
+          icon.icon = 'chromestatus:notifications';
+        } else {
+          icon.icon = 'chromestatus:notifications-off';
+        }
+
         featureList.features.forEach(function(f, i) {
-          if (subscribedFeatures.includes(f.id)) {
+          if (subscribedFeatures.includes(String(f.id))) {
             f.receivePush = true;
             featureList.notifyPath(['features', i, 'receivePush'], true);
             featureList.notifyPath(['filtered', i, 'receivePush'], true);
@@ -188,6 +196,28 @@ search.addEventListener('input', function(e) {
   featureList.filter(e.target.value, true);
   chromeMetadata.selected = null;
 });
+
+if (PushNotifier.SUPPORTS_NOTIFICATIONS) {
+  $('#features-subscribe-button').addEventListener('click', function(e) {
+    e.preventDefault();
+
+    if (Notification.permission === 'denied') {
+      alert('Notifications were previously denied. Please reset the browser permission.');
+      return;
+    }
+
+    PushNotifications.getAllSubscribedFeatures().then(subscribedFeatures => {
+      var icon = $('#features-subscribe-button').firstElementChild;
+      if (subscribedFeatures.includes(PushNotifier.ALL_FEATURES_TOPIC_ID)) {
+        icon.icon = 'chromestatus:notifications-off';
+        PushNotifications.unsubscribeFromFeature();
+      } else {
+        icon.icon = 'chromestatus:notifications';
+        PushNotifications.subscribeToFeature();
+      }
+    });
+  });
+}
 
 // Handles lazy loading chromedash-legend and settings its properties only once.
 var helpOverlayLoadPromise = function(overlay) {
@@ -277,6 +307,13 @@ window.addEventListener('popstate', function(e) {
     featureList.scrollToFeature(e.state.id);
   }
 });
+
+// Unhide notification features if browser supports it.
+if (PushNotifier.SUPPORTS_NOTIFICATIONS) {
+  document.querySelectorAll('.no-push-notifications').forEach(el => {
+    el.classList.remove('no-push-notifications');
+  });
+}
 
 })();
 </script>
