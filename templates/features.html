@@ -254,7 +254,7 @@ $('.legend').addEventListener('click', function(e) {
 
 // Fire of features.json XHR right away so data can populate faster.
 var featuresPromise = new Promise(function(resolve, reject) {
-  var url = location.hostname == 'localhost' ? 'https://www.chromestatus.com/features_v2.json' :
+  var url = location.hostname == 'localhost2' ? 'https://www.chromestatus.com/features_v2.json' :
                                                '/features_v2.json';
   var xhr = new XMLHttpRequest(); // Fill features list via AJAX.
   xhr.open('GET', url);
