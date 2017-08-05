@@ -309,11 +309,11 @@ window.addEventListener('popstate', function(e) {
 });
 
 // Unhide notification features if browser supports it.
-if (PushNotifier.SUPPORTS_NOTIFICATIONS) {
-  document.querySelectorAll('.no-push-notifications').forEach(el => {
-    el.classList.remove('no-push-notifications');
-  });
-}
+// if (PushNotifier.SUPPORTS_NOTIFICATIONS) {
+//   Array.from(document.querySelectorAll('.no-push-notifications')).forEach(el => {
+//     el.classList.remove('no-push-notifications');
+//   });
+// }
 
 })();
 </script>
