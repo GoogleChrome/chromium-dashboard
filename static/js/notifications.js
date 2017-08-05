@@ -1,3 +1,5 @@
+/* global firebase */
+
 (function(exports) {
 'use strict';
 
@@ -5,8 +7,8 @@ let _libsLoaded = false;
 
 /**
  * Lazy loads a script.
- * @param {string} src
- * @return {!Promise}
+ * @param {string} src URL of script.
+ * @return {!Promise} Resolves when the script has loaded. Rejects otherwise.
  */
 function loadLib(src) {
   return new Promise((resolve, reject) => {
@@ -60,21 +62,22 @@ class PushNotifier {
     });
 
     this.messaging.onMessage(payload => {
-      const notification = new Notification(payload.notification.title, payload.notification);
+      const notification = new Notification(
+          payload.notification.title, payload.notification);
 
       notification.onerror = function(e) {
         console.log(e);
       };
 
-      notification.onclick = function(e) {
-        //window.open(payload.notification.click_action, '_blank');
+      notification.onclick = function() {
+        // window.open(payload.notification.click_action, '_blank');
         exports.focus();
       };
     });
   }
 
   static get SUPPORTS_NOTIFICATIONS() {
-    return !!(navigator.serviceWorker && exports.Notification);
+    return Boolean(navigator.serviceWorker && exports.Notification);
   }
 
   static get GRANTED_ACCESS() {
@@ -86,7 +89,7 @@ class PushNotifier {
   }
 
   _isTokenSentToServer() {
-    return exports.localStorage.getItem('pushTokenSentToServer') == 1;
+    return exports.localStorage.getItem('pushTokenSentToServer') === 1;
   }
 
   _setTokenSentToServer(sent) {
@@ -94,7 +97,9 @@ class PushNotifier {
   }
 
   /**
-   * @param {string=} token
+   * Fetches information about the push token.
+   * @param {string=} token Push subscription token.
+   * @return {!Promise<Object>} JSON
    */
   async getTokenInfo(token = null) {
     token = token || await this.getToken();
@@ -106,7 +111,7 @@ class PushNotifier {
         body: JSON.stringify({subscriptionId: token})
       });
       return await resp.json();
-    } catch(err) {
+    } catch (err) {
       console.error('Error sending notification to FCM.', err);
     }
   }
@@ -159,7 +164,7 @@ class PushNotifier {
     }
   }
 
-  async subscribeToFeature(featureId, remove=false) {
+  async subscribeToFeature(featureId, remove = false) {
     featureId = featureId || '';
 
     const token = await this.getToken();
@@ -174,7 +179,7 @@ class PushNotifier {
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify(body)
       });
-    } catch(err) {
+    } catch (err) {
       console.error('Error [un]subscribing to topic.', err);
     }
 
@@ -207,5 +212,4 @@ exports.loadFirebaseSDKLibs = loadLibs;
 //     // });
 //   // });
 // }
-
 })(window);

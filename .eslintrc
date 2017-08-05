@@ -1,7 +1,11 @@
 {
   "extends": "google",
   "env": {
-    "browser": true
+    "browser": true,
+    "es6": true
+  },
+  "parserOptions": {
+    "ecmaVersion": 8
   },
   "rules": {
     "no-warning-comments": "off",
@@ -9,7 +13,8 @@
       "vars": "all",
       "args": "after-used",
       "argsIgnorePattern": "^var_args$"
-    }]
+    }],
+    "indent": ["error", 2, { "outerIIFEBody": 0, "SwitchCase": 1 }]
   },
   "globals": {
     "Polymer": true,
