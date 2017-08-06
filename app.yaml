@@ -31,7 +31,7 @@ handlers:
 
 - url: /firebase-messaging-sw\.js
   static_files: static/firebase-messaging-sw.js
-  upload: static/dist/firebase-messaging-sw\.js
+  upload: static/firebase-messaging-sw\.js
   # application_readable: true
   expiration: "0m"
   secure: always
