@@ -133,29 +133,6 @@ class MainHandler(http2push.PushHandler, common.ContentHandler, common.JSONHandl
     elif path.startswith('omaha_data'):
       omaha_data = util.get_omaha_data()
       return common.JSONHandler.get(self, omaha_data, formatted=True)
-    elif path.startswith('samples'):
-      feature_list = models.Feature.get_shipping_samples() # Memcached
-
-      if path.endswith('.json'): # JSON request.
-        return common.JSONHandler.get(self, feature_list, formatted=True)
-      elif path.endswith('.xml'): # Atom feed request.
-        # Support setting larger-than-default Atom feed sizes so that web
-        # crawlers can use this as a full site feed.
-        try:
-          max_items = int(self.request.get('max-items',
-                                           settings.RSS_FEED_LIMIT))
-        except TypeError:
-          max_items = settings.RSS_FEED_LIMIT
-
-        return self.render_atom_feed('Samples', feature_list)
-      else:
-        template_data['FEATURES'] = json.dumps(feature_list, separators=(',',':'))
-        template_data['CATEGORIES'] = [
-          (v, normalized_name(v)) for k,v in
-          models.FEATURE_CATEGORIES.iteritems()]
-        template_data['categories'] = dict([
-          (v, normalized_name(v)) for k,v in
-          models.FEATURE_CATEGORIES.iteritems()])
 
     if path.startswith('metrics/'):
       push_urls = http2push.use_push_manifest('push_manifest_metrics.json')
@@ -181,9 +158,44 @@ class FeaturesAPIHandler(common.JSONHandler):
     return common.JSONHandler.get(self, feature_list, formatted=True)
 
 
+class SamplesHandler(common.ContentHandler, common.JSONHandler):
+
+  def get(self, path=None):
+    feature_list = models.Feature.get_shipping_samples() # Memcached
+
+    if path == '/':
+      return self.redirect(self.request.path.rstrip('/'))
+
+    template_data = {}
+
+    if path and path.endswith('.json'): # JSON request.
+      return common.JSONHandler.get(self, feature_list, formatted=True)
+    elif path and path.endswith('.xml'): # Atom feed request.
+      # Support setting larger-than-default Atom feed sizes so that web
+      # crawlers can use this as a full site feed.
+      try:
+        max_items = int(self.request.get('max-items',
+                                          settings.RSS_FEED_LIMIT))
+      except TypeError:
+        max_items = settings.RSS_FEED_LIMIT
+
+      return self.render_atom_feed('Samples', feature_list)
+
+    template_data['FEATURES'] = json.dumps(feature_list, separators=(',',':'))
+    template_data['CATEGORIES'] = [
+      (v, normalized_name(v)) for k,v in
+      models.FEATURE_CATEGORIES.iteritems()]
+    template_data['categories'] = dict([
+      (v, normalized_name(v)) for k,v in
+      models.FEATURE_CATEGORIES.iteritems()])
+
+    return self.render(data=template_data, template_path=os.path.join('samples.html'))
+
+
 # Main URL routes.
 routes = [
   (r'/features(?:_v(\d+))?.json', FeaturesAPIHandler),
+  ('/samples(/.*)?', SamplesHandler),
   ('/(.*)/([0-9]*)', MainHandler),
   ('/(.*)', MainHandler),
 ]
