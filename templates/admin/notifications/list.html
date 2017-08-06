@@ -151,15 +151,12 @@ async function init() {
   const frag = new DocumentFragment();
   sortedFeatures.forEach(f => {
     const li = document.createElement('li');
+    li.textContent = f.name; // escape html entities.
     li.innerHTML = `
       <span class="num_subscribers">Subscribers: ${f.pushSubscribers}</span>
-      <a href="#" onclick="useId(this)" data-id="${f.id}">${f.name}</a>`;
+      <a href="#" onclick="useId(this)" data-id="${f.id}">${li.innerHTML}</a>`;
     frag.appendChild(li);
   });
-
-  // for (const [key, val] of featureIdToSubscribers.entries()) {
-  //   console.log(key, val);
-  // }
 
   // Update UI.
   const list = document.querySelector('#feature_list');
