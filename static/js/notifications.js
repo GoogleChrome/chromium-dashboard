@@ -110,6 +110,10 @@ class PushNotifier {
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({subscriptionId: token})
       });
+      // if (resp.status !== 200) {
+      //   const text = await resp.text();
+      //   throw new Error(text);
+      // }
       return await resp.json();
     } catch (err) {
       console.error('Error sending notification to FCM.', err);

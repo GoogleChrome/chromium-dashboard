@@ -26,6 +26,7 @@ from google.appengine.api import mail
 from google.appengine.api import urlfetch
 from google.appengine.api import taskqueue
 
+import common
 import settings
 import models
 
@@ -194,12 +195,6 @@ class NotificationSubscribeHandler(webapp2.RequestHandler):
     if subscription_id is None or feature_id is None:
       return
 
-    # # Subscribe token to topic for new feature additions.
-    # query = PushSubscription.all()
-    # if subscription_id:
-    #   query.filter('subscription_id =', subscription_id)
-    # subscriptions = query.fetch(None)
-
     data = {}
     topic_id = feature_id if feature_id else 'new-feature'
     url = 'https://iid.googleapis.com/iid/v1/%s/rel/topics/%s' % (subscription_id, topic_id)
@@ -274,12 +269,26 @@ class NotificationSubscriptionInfoHandler(webapp2.RequestHandler):
 
     if result.status_code != 200:
       logging.error('Error: fetching info for subscription %s' % subscription_id)
+      self.response.set_status(400, message=result.content)
+      self.response.write(result.content)
       return
 
     self.response.write(result.content)
 
 
+class NotificationsListHandler(common.ContentHandler):
+  def get(self):
+    subscriptions = PushSubscription.all().fetch(None)
+
+    template_data = {
+      'FIREBASE_SERVER_KEY': settings.FIREBASE_SERVER_KEY,
+      'subscriptions': json.dumps([s.subscription_id for s in subscriptions])
+    }
+    self.render(data=template_data, template_path=os.path.join('admin/notifications/list.html'))
+
+
 app = webapp2.WSGIApplication([
+  ('/admin/notifications/list', NotificationsListHandler),
   ('/tasks/email-owners', EmailOwnersHandler),
   ('/tasks/send_notifications', NotificationSendHandler),
   ('/features/push/new', NotificationNewSubscriptionHandler),
