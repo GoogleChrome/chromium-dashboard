@@ -29,6 +29,13 @@ handlers:
   expiration: "0m"
   secure: always
 
+- url: /firebase-messaging-sw\.js
+  static_files: static/firebase-messaging-sw.js
+  upload: static/firebase-messaging-sw\.js
+  # application_readable: true
+  expiration: "0m"
+  secure: always
+
 - url: /static
   static_dir: static
   #expiration: 30s
@@ -45,25 +52,30 @@ handlers:
   script: admin.app
   login: admin # Prevents raw access to this handler. Cron runs as admin.
 
+- url: /tasks/.*
+  script: notifier.app
+  login: admin # Prevents raw access to this handler. Tasks runs as admin.
+
 - url: /admin/gae/.*
   script: google.appengine.ext.admin.application
   login: admin
 
 - url: /admin/blink.*
   script: blink_handler.app
-  login: required
+  login: required # non-admin
   secure: always
 
 - url: /admin/features/.*
   script: admin.app
   secure: always
 
-- url: /features/schedule.*
-  script: schedule.app
-  secure: always
-
 - url: /admin/users/.*
   script: users.app
+  login: admin
+  secure: always
+
+- url: /admin/notifications/.*
+  script: notifier.app
   login: admin
   secure: always
 
@@ -72,17 +84,31 @@ handlers:
   login: admin
   secure: always
 
-# Main server ------------------------------------------------------------------
+# Main server handlers ---------------------------------------------------------
 # features.xml needs to support HTTP as well as HTTPS, as some RSS backends don't support SNI certs.
 # Same issue as what's described at https://github.com/Polymer/blog/issues/7
 - url: /(features|samples).xml
   script: server.app
   secure: optional
 
+# Testing endpoint
 - url: /delay
   script: server-delay.app
   secure: always
 
+- url: /features/push/.*
+  script: notifier.app
+  secure: always
+
+- url: /features/schedule.*
+  script: schedule.app
+  secure: always
+
+- url: /(features|samples).xml
+  script: server.app
+  secure: optional
+
+# Everything else
 - url: /.*
   script: server.app
   secure: always

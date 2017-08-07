@@ -36,12 +36,31 @@ chromedash-featurelist {
   .feature-count {
     min-width: 170px;
   }
+  .actionlinks {
+    .blue-button {
+      margin-left: 4px;
+    }
+  }
 }
 
 @media only screen and (min-width: 701px) {
   #content {
     &::after {
       width: $max-content-width;
+    }
+  }
+}
+
+@media only screen and (max-width: 700px) {
+  #subheader {
+    margin: $content-padding / 2;
+    width: initial;
+
+    div.actionlinks {
+      flex: 1 0 0;
+      span {
+        display: none;
+      }
     }
   }
 }

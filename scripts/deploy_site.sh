@@ -20,10 +20,14 @@ fi
 
 # The directory in which this script resides.
 readonly BASEDIR=$(dirname $BASH_SOURCE)
+readonly FIREBASE_SERVER_KEY=`cat .fcm_server_key`
 
 # vulcanize $BASEDIR/../static/elements/elements.html -o $BASEDIR/../static/elements/elements.vulcanized.html --config vulcanize_config.json
 
 gulp
 
 $BASEDIR/oauthtoken.sh deploy
-appcfg.py update -A cr-status -V $deployVersion $BASEDIR/../app.yaml $BASEDIR/../notifier.yaml
+appcfg.py update -A cr-status \
+  -V $deployVersion \
+  --env_variable=FIREBASE_SERVER_KEY:$FIREBASE_SERVER_KEY \
+  $BASEDIR/../app.yaml $BASEDIR/../notifier.yaml

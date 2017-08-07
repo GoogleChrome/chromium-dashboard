@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+
+{% load inline_file %}
+
+{% block html_imports %}
+<!--<link id="features_import"
+        rel="import"
+        href="/static/elements/admin-imports{% if VULCANIZE %}.vulcanize{% endif %}.html"
+        async>-->
+<link rel="import" href="/static/elements/common.html">
+<link rel="import" href="/static/elements/chromestatus-icons.html">
+<link rel="import" href="/static/bower_components/iron-icon/iron-icon.html">
+{% endblock %}
+
+{% block css %}
+<style>
+  .no-push-notifications {
+    display: none;
+  }
+  body[data-path*='notifications/tester'] #spinner {
+    display: none;
+  }
+  ul {
+    list-style: none;
+  }
+  li {
+    margin: 16px 0;
+  }
+  #content section {
+    margin-top: 16px;
+  }
+  .num_subscribers {
+    margin-right: 8px;
+    font-weight: 500;
+  }
+</style>
+{% endblock %}
+
+{% block subheader %}
+<div id="subheader">
+  <h3>Number push subscriptions: <span id="num_push_tokens"></span></h3>
+</div>
+{% endblock %}
+
+{% block content %}
+<button onclick="sendNotification()" disabled class="no-push-notifications">Send test message to my token</button>
+<input id="feature_id" type="text" value="5827411627212800" placeholder="Feature id">
+
+<section>
+  <h3>Subscribers breakdown by feature</h3>
+  <ul id="feature_list"></ul>
+</section>
+
+{% endblock %}
+
+{% block js %}
+<script>
+{% inline_file "/static/js/notifications.js" %}
+
+const SERVER_KEY = '{{FIREBASE_SERVER_KEY}}';
+const SUBSCRIPTIONS = {{subscriptions|safe}};
+
+async function getFeaturesList() {
+  const url = location.hostname == 'localhost' ? 'https://www.chromestatus.com/features_v2.json' :
+                                                 '/features_v2.json';
+  const resp = await fetch(url);
+  const json = await resp.json();
+  return json;
+}
+
+async function sendNotification() {
+  const notification = {
+    'title': 'Portugal vs. Denmark',
+    'body': '5 to 1',
+    'icon': '/static/img/crstatus_192.png',
+    // 'badge': '/static/img/crstatus_192.png',
+    // 'image': '/static/img/crstatus_192.png',
+    'click_action': location.href
+  };
+
+  const token = await PushNotifications.getToken();
+
+  try {
+    const resp = await fetch('https://fcm.googleapis.com/fcm/send', {
+      method: 'POST',
+      headers: {
+        'Authorization': `key=${SERVER_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        notification,
+        to: token
+      })
+    });
+  } catch(err) {
+    console.error('Error sending notification to FCM', err);
+  }
+}
+
+function useId(el) {
+  event.stopPropagation();
+  // event.preventDefault();
+  document.getElementById('feature_id').value = el.dataset.id;
+}
+
+async function init() {
+  $('#num_push_tokens').textContent = SUBSCRIPTIONS.length;
+  document.querySelectorAll('.no-push-notifications').forEach(el => {
+    el.classList.remove('no-push-notifications');
+    el.disabled = false;
+  });
+
+  const featureList = await getFeaturesList();
+
+  // if (!PushNotifier.SUPPORTS_NOTIFICATIONS) {
+  //   return;
+  // }
+
+  // navigator.serviceWorker.ready.then(reg => {
+  //   messaging.useServiceWorker(reg); // use site's existing sw instead of the one FB messaging registers.
+
+  //   getToken().then(token => {
+  //     // console.log(token);
+  //   });
+  // });
+
+  await loadFirebaseSDKLibs();
+
+  PushNotifications.init(); // init Firebase messaging.
+
+  // Popluate initial sums
+  const featureIdToSubscribers = new Map();
+  featureIdToSubscribers.set('new-feature', 0);
+  featureList.forEach(f => featureIdToSubscribers.set(String(f.id), 0));
+
+  const infoPromises = SUBSCRIPTIONS.map(token => PushNotifications.getTokenInfo(token));
+  const infos = await Promise.all(infoPromises);
+
+  // Count how many subscribers for each feature.
+  infos.filter(info => info && !info.error).map(info => {
+    const topics = info && info.rel ? Object.keys(info.rel.topics).map(id => String(id)) : [];
+    topics.forEach(topic => {
+      if (featureIdToSubscribers.has(topic)) {
+        const sum = featureIdToSubscribers.get(topic);
+        featureIdToSubscribers.set(topic, sum + 1);
+      }
+    });
+  });
+
+  const sortedFeatures = featureList.map(f => {
+    f.pushSubscribers = featureIdToSubscribers.get(String(f.id));
+    return f;
+  }).sort((a, b) => a.pushSubscribers - b.pushSubscribers).reverse();
+
+  const frag = new DocumentFragment();
+  sortedFeatures.forEach(f => {
+    const li = document.createElement('li');
+    li.textContent = f.name; // escape html entities.
+    li.innerHTML = `
+      <span class="num_subscribers">Subscribers: ${f.pushSubscribers}</span>
+      <a href="/feature/${f.id}" onclick="useId(this)" data-id="${f.id}">${li.innerHTML}</a>`;
+    frag.appendChild(li);
+  });
+
+  document.body.classList.remove('loading');
+
+  // Update UI.
+  const list = document.querySelector('#feature_list');
+  list.appendChild(frag);
+}
+
+init();
+</script>
+{% endblock %}

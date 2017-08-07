@@ -39,6 +39,14 @@
       <iron-icon icon="chromestatus:extension" class="experimental"></iron-icon>
     </span>
     {% endif %}
+    <span class="tooltip no-push-notifications" title="Receive a push notification where there are updates">
+      <a href="#" data-tooltip>
+        <iron-icon icon="chromestatus:notifications-off"
+                    onclick="subscribeToFeature({{ feature.id }})"
+                    class="pushicon"></iron-icon>
+      </a>
+    </span>
+
     <span class="tooltip" title="File a bug against this feature">
       <a href="{{ feature.new_crbug_url }}" class="newbug" data-tooltip target="_blank">
         <iron-icon icon="chromestatus:bug-report"></iron-icon>
@@ -220,8 +228,45 @@
 
 {% block js %}
 <script>
+{% inline_file "/static/js/notifications.js" %}
+
+function subscribeToFeature(featureId) {
+  var icon = $('.pushicon');
+  if (icon.icon === 'chromestatus:notifications') {
+    icon.icon = 'chromestatus:notifications-off';
+    PushNotifications.unsubscribeFromFeature(featureId);
+  } else {
+    icon.icon = 'chromestatus:notifications';
+    PushNotifications.subscribeToFeature(featureId);
+  }
+}
 // Remove loading spinner at page load.
 document.body.classList.remove('loading');
+
+// Unhide notification features if browser supports it.
+if (PushNotifier.SUPPORTS_NOTIFICATIONS) {
+  Array.from(document.querySelectorAll('.no-push-notifications')).forEach(el => {
+    el.classList.remove('no-push-notifications');
+  });
+
+  // Lazy load Firebase messaging SDK.
+  loadFirebaseSDKLibs().then(() => {
+    PushNotifications.init(); // init Firebase messaging.
+
+    // If use already granted the notification permission, update state of the
+    // push icon for each feature the user is subscribed to.
+    if (PushNotifier.GRANTED_ACCESS) {
+      PushNotifications.getAllSubscribedFeatures().then(function(subscribedFeatures) {
+        var icon = $('.pushicon');
+        if (subscribedFeatures.includes('{{feature.id}}')) {
+          icon.icon = 'chromestatus:notifications';
+        } else {
+          icon.icon = 'chromestatus:notifications-off';
+        }
+      });
+    }
+  });
+}
 
 var SHOW_TOAST = {% if was_updated %}true{% else %}false{% endif %};
 if (SHOW_TOAST) {

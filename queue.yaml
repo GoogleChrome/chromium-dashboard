@@ -6,5 +6,5 @@ queue:
     task_retry_limit: 3
     task_age_limit: 2d
   # bucket_size: 40
-  # max_concurrent_requests: 10
+  # max_concurrent_requests: 5
 # total_storage_limit: 120M

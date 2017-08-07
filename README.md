@@ -20,11 +20,21 @@ This will also pull down bower_components and run `gulp` to build the site.
 
 ### Developing
 
-Note: I've had issues with Django errors just running `grunt serve` or using the `dev_appserver.py` but others haven't.
+To start the main server and the notifier backend, run:
 
-Download the [Google App Engine Python SDK launcher](https://cloud.google.com/appengine/downloads) (Mac) and use that. Open the launcher and run the app in the main repo directory.
+    ./scripts/start_server.sh
 
-Locally, the `/feature` list pulls from prod (https://www.chromestatus.com/features.json). Opening one of the features will 404 because the entry is not actually in the local db. If you want to test local entries, modify [`templates/features.html`](https://github.com/GoogleChrome/chromium-dashboard/blob/0b3e3eb444f1e6b6751140f9524a2f60cdc2ca5d/templates/features.html#L181-L182) to pull locally and add some db entries by signing in to the app (bottom link). Make sure to check the "sign in as admin" box when doing so. Note that you can also simply go to `http://127.0.0.1:8080/` instead of `localhost` to pull locally.
+##### FCM setup
+
+If you want to test push notification features, you'll need to create a file named
+`.fcm_server_key` in the main project root. Copy in the FCM server key obtained
+from the [Firebase console](https://firebase.corp.google.com/).
+
+When `./scripts/start_server.sh` is run, it will populate this value as an environment variable.
+
+**Notes**
+
+- Locally, the `/feature` list pulls from prod (https://www.chromestatus.com/features.json). Opening one of the features will 404 because the entry is not actually in the local db. If you want to test local entries, modify [`templates/features.html`](https://github.com/GoogleChrome/chromium-dashboard/blob/0b3e3eb444f1e6b6751140f9524a2f60cdc2ca5d/templates/features.html#L181-L182) to pull locally and add some db entries by signing in to the app (bottom link). Make sure to check the "sign in as admin" box when doing so. Note that you can also simply go to `http://127.0.0.1:8080/` instead of `localhost` to pull locally.
 
 #### Seed the blink component owners
 

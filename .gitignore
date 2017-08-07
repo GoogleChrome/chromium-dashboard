@@ -5,6 +5,7 @@
 .sass-cache
 .vscode
 *oauth2.data
+.fcm_server_key
 node_modules
 travis/node_modules
 *bower_components
