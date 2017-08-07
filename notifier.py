@@ -50,10 +50,10 @@ def create_wf_content_list(component):
     return []
 
   for url in content:
-    list += '    - <a href="{url}">{url}</a>. Last updated: {updatedOn})\n'.format(
+    list += '<li><a href="{url}">{url}</a>. Last updated: {updatedOn})</li>'.format(
         url=url['url'], updatedOn=url['updatedOn'])
   if not wf_component_content:
-    list = 'None'
+    list = '<li>None</li>'
   return list
 
 def email_feature_owners(feature, is_update=False, changes=[]):
@@ -63,8 +63,11 @@ def email_feature_owners(feature, is_update=False, changes=[]):
       logging.warn('Blink component "%s" not found. Not sending email to owners' % component_name)
       return
 
-    owner_names = [owner.name for owner in component.owners]
-    if not owner_names:
+    # owners = component.owners
+    # TODO: restrict emails to me for now to see if they're not too noisy.
+    owners = models.FeatureOwner.all().filter('email = ', 'e.bidelman@google.com').fetch(1)
+
+    if not owners:
       logging.info('Blink component "%s" has no owners. Skipping email.' % component_name)
       return
 
@@ -77,75 +80,79 @@ def email_feature_owners(feature, is_update=False, changes=[]):
 
     created_on = datetime.datetime.strptime(str(feature.created), "%Y-%m-%d %H:%M:%S.%f").date()
     new_msg = """
-Hi {owners},
+<html><body>
+<p>Hi {owners},</p>
 
-{created_by} added a new feature to chromestatus. You are listed as a web platform owner for "{component_name}".
-See https://www.chromestatus.com/feature/{id} for more details.
----
+<p>You are listed as a web platform owner for "{component_name}". {created_by} added a new feature to this component.</p>
+<hr>
 
-Feature: {name}
+<p> <a href="https://www.chromestatus.com/feature/{id}">{name}</a> (added {created})</p>
+<p><b>Milestone</b>: {milestone}</p>
+<p><b>Implementation status</b>: {status}</p>
 
-Created: {created}
-Implementation status: {status}
-Milestone: {milestone}
-
----
-Next steps:
-- Try the API, write a sample, provide early feedback to eng.
-- Consider authoring a new article/update for /web.
-- Write a <a href="https://github.com/GoogleChrome/lighthouse/tree/master/docs/recipes/custom-audit">new Lighthouse audit</a>. This can  help drive adoption of an API over time.
-- Add a sample to https://github.com/GoogleChrome/samples (see <a href="https://github.com/GoogleChrome/samples#contributing-samples">contributing</a>).
-  - Don't forget add your demo link to the <a href="https://www.chromestatus.com/admin/features/edit/{id}">chromestatus feature entry</a>.
+<hr>
+<p>Next steps:</p>
+<ul>
+  <li>Try the API, write a sample, provide early feedback to eng.</li>
+  <li>Consider authoring a new article/update for /web.</li>
+  <li>Write a <a href="https://github.com/GoogleChrome/lighthouse/tree/master/docs/recipes/custom-audit">new Lighthouse audit</a>. This can  help drive adoption of an API over time.</li>
+  <li>Add a sample to https://github.com/GoogleChrome/samples (see <a href="https://github.com/GoogleChrome/samples#contributing-samples">contributing</a>).</li>
+  <li>Don't forget add your demo link to the <a href="https://www.chromestatus.com/admin/features/edit/{id}">chromestatus feature entry</a>.</li>
+</ul>
+</body></html>
 """.format(name=feature.name, id=feature.key().id(), created=created_on,
            created_by=feature.created_by, component_name=component_name,
-           owners=', '.join(owner_names), milestone=milestone_str,
+           owners=', '.join([owner.name for owner in owners]), milestone=milestone_str,
            status=models.IMPLEMENTATION_STATUS[feature.impl_status_chrome])
 
   updated_on = datetime.datetime.strptime(str(feature.updated), "%Y-%m-%d %H:%M:%S.%f").date()
   formatted_changes = ''
   for prop in changes:
-    formatted_changes += '- %s: %s -> %s\n' % (prop['prop_name'], prop['old_val'], prop['new_val'])
+    formatted_changes += '<li>%s: %s -> %s</li>' % (prop['prop_name'], prop['old_val'], prop['new_val'])
   if not formatted_changes:
-    formatted_changes = 'None'
+    formatted_changes = '<li>None</li>'
 
-  update_msg = """
-Hi {owners},
+  update_msg = """<html><body>
+<p>Hi {owners},</p>
 
-{updated_by} updated a feature on chromestatus. You are listed as a web platform owner for "{component_name}".
-See https://www.chromestatus.com/feature/{id} for more details.
----
+<p>You are listed as a web platform owner for "{component_name}". A new feature was added:</p>
+<hr>
 
-Feature: <a href="https://www.chromestatus.com/feature/{id}">{name}</a>
+<p><a href="https://www.chromestatus.com/feature/{id}">{name}</a> (updated {updated})</p>
+<p><b>Milestone</b>: {milestone}</p>
+<p><b>Implementation status</b>: {status}</p>
 
-Updated: {updated}
-Implementation status: {status}
-Milestone: {milestone}
-
-Changes:
+<p>Changes:</p>
+<ul>
 {formatted_changes}
+</ul>
 
----
-Next steps:
-- Check existing <a href="https://github.com/GoogleChrome/lighthouse/tree/master/lighthouse-core/audits">Lighthouse audits</a> for correctness.
-- Check existing /web content for correctness. Non-exhaustive list:
-{wf_content}
+<hr>
+<p>Next steps:</p>
+<ul>
+<li>Check existing <a href="https://github.com/GoogleChrome/lighthouse/tree/master/lighthouse-core/audits">Lighthouse audits</a> for correctness.</li>
+<li>Check existing /web content for correctness. Non-exhaustive list:
+  <ul>{wf_content}</ul>
+</li>
+</ul>
+</body></html>
 """.format(name=feature.name, id=feature.key().id(), updated=updated_on,
            updated_by=feature.updated_by, component_name=component_name,
-           owners=', '.join(owner_names), milestone=milestone_str,
+           owners=', '.join([owner.name for owner in owners]), milestone=milestone_str,
            status=models.IMPLEMENTATION_STATUS[feature.impl_status_chrome],
            formatted_changes=formatted_changes,
            wf_content=create_wf_content_list(component_name))
 
   message = mail.EmailMessage(sender='Chromestatus <admin@cr-status.appspotmail.com>',
-                              subject='chromestatus update',
-                              to=[owner.email for owner in component.owners])
+                              subject='update',
+                              to=[owner.email for owner in owners])
 
   if is_update:
     message.html = update_msg
-    message.subject = 'chromestatus: updated feature'
+    message.subject = 'updated feature: %s' % feature.name
   else:
     message.html = new_msg
-    message.subject = 'chromestatus: new feature'
+    message.subject = 'new feature: %s' % feature.name
 
   message.check_initialized()
 
@@ -223,6 +230,9 @@ class NotificationSendHandler(webapp2.RequestHandler):
       feature: Feature that was added/modified.
       is_update: True if this was an update to the feature. False if it was newly added.
     """
+    if not settings.SEND_PUSH_NOTIFICATIONS:
+      return
+
     feature_id = feature.key().id()
     topic_id = feature_id if is_update else 'new-feature'
 

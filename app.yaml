@@ -53,7 +53,7 @@ handlers:
   login: admin # Prevents raw access to this handler. Cron runs as admin.
 
 - url: /tasks/.*
-  script: admin.app
+  script: notifier.app
   login: admin # Prevents raw access to this handler. Tasks runs as admin.
 
 - url: /admin/gae/.*

@@ -99,13 +99,18 @@ async function sendNotification() {
 
 function useId(el) {
   event.stopPropagation();
-  event.preventDefault();
+  // event.preventDefault();
   document.getElementById('feature_id').value = el.dataset.id;
 }
 
 async function init() {
+  $('#num_push_tokens').textContent = SUBSCRIPTIONS.length;
+  document.querySelectorAll('.no-push-notifications').forEach(el => {
+    el.classList.remove('no-push-notifications');
+    el.disabled = false;
+  });
+
   const featureList = await getFeaturesList();
-  document.body.classList.remove('loading');
 
   // if (!PushNotifier.SUPPORTS_NOTIFICATIONS) {
   //   return;
@@ -147,26 +152,21 @@ async function init() {
     return f;
   }).sort((a, b) => a.pushSubscribers - b.pushSubscribers).reverse();
 
-
   const frag = new DocumentFragment();
   sortedFeatures.forEach(f => {
     const li = document.createElement('li');
     li.textContent = f.name; // escape html entities.
     li.innerHTML = `
       <span class="num_subscribers">Subscribers: ${f.pushSubscribers}</span>
-      <a href="#" onclick="useId(this)" data-id="${f.id}">${li.innerHTML}</a>`;
+      <a href="/feature/${f.id}" onclick="useId(this)" data-id="${f.id}">${li.innerHTML}</a>`;
     frag.appendChild(li);
   });
+
+  document.body.classList.remove('loading');
 
   // Update UI.
   const list = document.querySelector('#feature_list');
   list.appendChild(frag);
-
-  $('#num_push_tokens').textContent = SUBSCRIPTIONS.length;
-  document.querySelectorAll('.no-push-notifications').forEach(el => {
-    el.classList.remove('no-push-notifications');
-    el.disabled = false;
-  });
 }
 
 init();
