@@ -47,7 +47,7 @@ def create_wf_content_list(component):
   wf_component_content = models.BlinkComponent.fetch_wf_content_for_components()
   content = wf_component_content.get(component)
   if not content:
-    return []
+    return '<li>None</li>'
 
   for url in content:
     list += '<li><a href="{url}">{url}</a>. Last updated: {updatedOn})</li>'.format(
@@ -83,10 +83,10 @@ def email_feature_owners(feature, is_update=False, changes=[]):
 <html><body>
 <p>Hi {owners},</p>
 
-<p>You are listed as a web platform owner for "{component_name}". {created_by} added a new feature to this component.</p>
+<p>You are listed as a web platform owner for "{component_name}". {created_by} added a new feature to this component:</p>
 <hr>
 
-<p> <a href="https://www.chromestatus.com/feature/{id}">{name}</a> (added {created})</p>
+<p><b><a href="https://www.chromestatus.com/feature/{id}">{name}</a></b> (added {created})</p>
 <p><b>Milestone</b>: {milestone}</p>
 <p><b>Implementation status</b>: {status}</p>
 
@@ -115,10 +115,10 @@ def email_feature_owners(feature, is_update=False, changes=[]):
   update_msg = """<html><body>
 <p>Hi {owners},</p>
 
-<p>You are listed as a web platform owner for "{component_name}". A new feature was added:</p>
+<p>You are listed as a web platform owner for "{component_name}". {updated_by} updated this feature:</p>
 <hr>
 
-<p><a href="https://www.chromestatus.com/feature/{id}">{name}</a> (updated {updated})</p>
+<p><b><a href="https://www.chromestatus.com/feature/{id}">{name}</a></b> (updated {updated})</p>
 <p><b>Milestone</b>: {milestone}</p>
 <p><b>Implementation status</b>: {status}</p>
 
