@@ -159,7 +159,11 @@ iron-icon {
       color: $gray-2;
     }
 
-    :first-child {
+    .icon_row {
+      flex-shrink: 0;
+    }
+
+    > :first-child {
       margin-left: $content-padding + 4px;
       overflow: hidden;
       text-overflow: ellipsis;

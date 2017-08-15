@@ -173,7 +173,8 @@ class PushNotifier {
       return;
     } else if (Notification.permission === 'denied') {
       // eslint-disable-next-line no-alert
-      alert('Notifications were previously denied. Please reset the browser permission.');
+      alert('Notifications were previously denied. ' +
+            'Please reset the browser permission.');
       return;
     }
 

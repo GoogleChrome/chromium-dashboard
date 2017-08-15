@@ -60,26 +60,32 @@
               <template is="dom-repeat" items="[[_featuresFor(channels.stable.components, componentName)]]" as="f">
                 <li>
                   <a href$="/feature/[[f.id]]">[[f.name]]</a>
-                  <template is="dom-if" if="[[f.browsers.chrome.origintrial]]">
-                    <span class="tooltip" title="Origin Trial">
-                      <iron-icon icon="chromestatus:extension" class="experimental" data-tooltip></iron-icon>
+                  <span class="icon_row">
+                    <span class="tooltip no-push-notifications" title="Subscribe to notification updates">
+                      <iron-icon icon="chromestatus:notifications-off"
+                                on-click="subscribeToFeature" class$="pushicon [[pushDisabled()]]"></iron-icon>
                     </span>
-                  </template>
-                  <template is="dom-if" if="[[f.browsers.chrome.intervention]]">
-                    <span class="tooltip" title="Browser intervention">
-                      <iron-icon icon="chromestatus:pan-tool" class="intervention" data-tooltip></iron-icon>
-                    </span>
-                  </template>
-                  <template is="dom-if" if="[[isRemoved(f.browsers.chrome.status.text)]]">
-                    <span class="tooltip" title="Removed">
-                      <iron-icon icon="chromestatus:cancel" class="remove" data-tooltip></iron-icon>
-                    </span>
-                  </template>
-                  <template is="dom-if" if="[[isDeprecated(f.browsers.chrome.status.text)]]">
-                    <span class="tooltip" title="Deprecated">
-                      <iron-icon icon="chromestatus:warning" class="deprecated" data-tooltip></iron-icon>
-                    </span>
-                  </template>
+                    <template is="dom-if" if="[[f.browsers.chrome.origintrial]]">
+                      <span class="tooltip" title="Origin Trial">
+                        <iron-icon icon="chromestatus:extension" class="experimental" data-tooltip></iron-icon>
+                      </span>
+                    </template>
+                    <template is="dom-if" if="[[f.browsers.chrome.intervention]]">
+                      <span class="tooltip" title="Browser intervention">
+                        <iron-icon icon="chromestatus:pan-tool" class="intervention" data-tooltip></iron-icon>
+                      </span>
+                    </template>
+                    <template is="dom-if" if="[[isRemoved(f.browsers.chrome.status.text)]]">
+                      <span class="tooltip" title="Removed">
+                        <iron-icon icon="chromestatus:cancel" class="remove" data-tooltip></iron-icon>
+                      </span>
+                    </template>
+                    <template is="dom-if" if="[[isDeprecated(f.browsers.chrome.status.text)]]">
+                      <span class="tooltip" title="Deprecated">
+                        <iron-icon icon="chromestatus:warning" class="deprecated" data-tooltip></iron-icon>
+                      </span>
+                    </template>
+                  </span>
                 </li>
               </template>
             </ul>
@@ -112,30 +118,32 @@
               <template is="dom-repeat" items="[[_featuresFor(channels.beta.components, componentName)]]" as="f">
                 <li>
                   <a href$="/feature/[[f.id]]">[[f.name]]</a>
-                  <span class="tooltip no-push-notifications" title="Subscribe to notification updates">
-                    <iron-icon icon="chromestatus:notifications-off"
-                               on-click="subscribeToFeature" class$="pushicon [[pushDisabled()]]"></iron-icon>
+                  <span class="icon_row">
+                    <span class="tooltip no-push-notifications" title="Subscribe to notification updates">
+                      <iron-icon icon="chromestatus:notifications-off"
+                                on-click="subscribeToFeature" class$="pushicon [[pushDisabled()]]"></iron-icon>
+                    </span>
+                    <template is="dom-if" if="[[f.browsers.chrome.origintrial]]">
+                      <span class="tooltip" title="Origin Trial">
+                        <iron-icon icon="chromestatus:extension" class="experimental" data-tooltip></iron-icon>
+                      </span>
+                    </template>
+                    <template is="dom-if" if="[[f.browsers.chrome.intervention]]">
+                      <span class="tooltip" title="Browser intervention">
+                        <iron-icon icon="chromestatus:pan-tool" class="intervention" data-tooltip></iron-icon>
+                      </span>
+                    </template>
+                    <template is="dom-if" if="[[isRemoved(f.browsers.chrome.status.text)]]">
+                      <span class="tooltip" title="Removed">
+                        <iron-icon icon="chromestatus:cancel" class="remove" data-tooltip></iron-icon>
+                      </span>
+                    </template>
+                    <template is="dom-if" if="[[isDeprecated(f.browsers.chrome.status.text)]]">
+                      <span class="tooltip" title="Deprecated">
+                        <iron-icon icon="chromestatus:warning" class="deprecated" data-tooltip></iron-icon>
+                      </span>
+                    </template>
                   </span>
-                  <template is="dom-if" if="[[f.browsers.chrome.origintrial]]">
-                    <span class="tooltip" title="Origin Trial">
-                      <iron-icon icon="chromestatus:extension" class="experimental" data-tooltip></iron-icon>
-                    </span>
-                  </template>
-                  <template is="dom-if" if="[[f.browsers.chrome.intervention]]">
-                    <span class="tooltip" title="Browser intervention">
-                      <iron-icon icon="chromestatus:pan-tool" class="intervention" data-tooltip></iron-icon>
-                    </span>
-                  </template>
-                  <template is="dom-if" if="[[isRemoved(f.browsers.chrome.status.text)]]">
-                    <span class="tooltip" title="Removed">
-                      <iron-icon icon="chromestatus:cancel" class="remove" data-tooltip></iron-icon>
-                    </span>
-                  </template>
-                  <template is="dom-if" if="[[isDeprecated(f.browsers.chrome.status.text)]]">
-                    <span class="tooltip" title="Deprecated">
-                      <iron-icon icon="chromestatus:warning" class="deprecated" data-tooltip></iron-icon>
-                    </span>
-                  </template>
                 </li>
               </template>
             </ul>
@@ -168,26 +176,32 @@
               <template is="dom-repeat" items="[[_featuresFor(channels.dev.components, componentName)]]" as="f">
                 <li>
                   <a href$="/feature/[[f.id]]">[[f.name]]</a>
-                  <template is="dom-if" if="[[f.browsers.chrome.origintrial]]">
-                    <span class="tooltip" title="Origin Trial">
-                      <iron-icon icon="chromestatus:extension" class="experimental" data-tooltip></iron-icon>
+                  <span class="icon_row">
+                      <span class="tooltip no-push-notifications" title="Subscribe to notification updates">
+                      <iron-icon icon="chromestatus:notifications-off"
+                                on-click="subscribeToFeature" class$="pushicon [[pushDisabled()]]"></iron-icon>
                     </span>
-                  </template>
-                  <template is="dom-if" if="[[f.browsers.chrome.intervention]]">
-                    <span class="tooltip" title="Browser intervention">
-                      <iron-icon icon="chromestatus:pan-tool" class="intervention" data-tooltip></iron-icon>
-                    </span>
-                  </template>
-                  <template is="dom-if" if="[[isRemoved(f.browsers.chrome.status.text)]]">
-                    <span class="tooltip" title="Removed">
-                      <iron-icon icon="chromestatus:cancel" class="remove" data-tooltip></iron-icon>
-                    </span>
-                  </template>
-                  <template is="dom-if" if="[[isDeprecated(f.browsers.chrome.status.text)]]">
-                    <span class="tooltip" title="Deprecated">
-                      <iron-icon icon="chromestatus:warning" class="deprecated" data-tooltip></iron-icon>
-                    </span>
-                  </template>
+                    <template is="dom-if" if="[[f.browsers.chrome.origintrial]]">
+                      <span class="tooltip" title="Origin Trial">
+                        <iron-icon icon="chromestatus:extension" class="experimental" data-tooltip></iron-icon>
+                      </span>
+                    </template>
+                    <template is="dom-if" if="[[f.browsers.chrome.intervention]]">
+                      <span class="tooltip" title="Browser intervention">
+                        <iron-icon icon="chromestatus:pan-tool" class="intervention" data-tooltip></iron-icon>
+                      </span>
+                    </template>
+                    <template is="dom-if" if="[[isRemoved(f.browsers.chrome.status.text)]]">
+                      <span class="tooltip" title="Removed">
+                        <iron-icon icon="chromestatus:cancel" class="remove" data-tooltip></iron-icon>
+                      </span>
+                    </template>
+                    <template is="dom-if" if="[[isDeprecated(f.browsers.chrome.status.text)]]">
+                      <span class="tooltip" title="Deprecated">
+                        <iron-icon icon="chromestatus:warning" class="deprecated" data-tooltip></iron-icon>
+                      </span>
+                    </template>
+                  </span>
                 </li>
               </template>
             </ul>
