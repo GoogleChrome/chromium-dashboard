@@ -104,10 +104,6 @@ handlers:
   script: schedule.app
   secure: always
 
-- url: /(features|samples).xml
-  script: server.app
-  secure: optional
-
 # Everything else
 - url: /.*
   script: server.app

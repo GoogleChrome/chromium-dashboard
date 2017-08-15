@@ -195,7 +195,7 @@ class SamplesHandler(common.ContentHandler, common.JSONHandler):
 # Main URL routes.
 routes = [
   (r'/features(?:_v(\d+))?.json', FeaturesAPIHandler),
-  ('/samples(/.*)?', SamplesHandler),
+  ('/samples(.*)', SamplesHandler),
   ('/(.*)/([0-9]*)', MainHandler),
   ('/(.*)', MainHandler),
 ]
