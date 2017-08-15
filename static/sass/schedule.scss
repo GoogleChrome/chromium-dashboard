@@ -34,6 +34,9 @@ iron-icon {
   &:hover.intervention {
     color: var(--paper-yellow-800);
   }
+  &.pushicon {
+    cursor: pointer;
+  }
 }
 
 #subheader {
@@ -157,7 +160,7 @@ iron-icon {
     }
 
     :first-child {
-      margin-left: $content-padding + 8px;
+      margin-left: $content-padding + 4px;
       overflow: hidden;
       text-overflow: ellipsis;
     }

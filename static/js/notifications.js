@@ -169,6 +169,14 @@ class PushNotifier {
   }
 
   async subscribeToFeature(featureId, remove = false) {
+    if (!PushNotifier.SUPPORTS_NOTIFICATIONS) {
+      return;
+    } else if (Notification.permission === 'denied') {
+      // eslint-disable-next-line no-alert
+      alert('Notifications were previously denied. Please reset the browser permission.');
+      return;
+    }
+
     featureId = featureId || '';
 
     const token = await this.getToken();
@@ -195,6 +203,12 @@ class PushNotifier {
   }
 
   async getAllSubscribedFeatures() {
+    if (!PushNotifier.GRANTED_ACCESS) {
+      console.warn('getAllSubscribedFeatures(): notifications ' +
+                   'permission has not been granted yet.');
+      return [];
+    }
+
     const token = await this.getToken();
 
     return this.getTokenInfo(token).then(info => {

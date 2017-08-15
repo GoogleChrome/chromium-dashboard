@@ -112,6 +112,10 @@
               <template is="dom-repeat" items="[[_featuresFor(channels.beta.components, componentName)]]" as="f">
                 <li>
                   <a href$="/feature/[[f.id]]">[[f.name]]</a>
+                  <span class="tooltip no-push-notifications" title="Subscribe to notification updates">
+                    <iron-icon icon="chromestatus:notifications-off"
+                               on-click="subscribeToFeature" class$="pushicon [[pushDisabled()]]"></iron-icon>
+                  </span>
                   <template is="dom-if" if="[[f.browsers.chrome.origintrial]]">
                     <span class="tooltip" title="Origin Trial">
                       <iron-icon icon="chromestatus:extension" class="experimental" data-tooltip></iron-icon>
@@ -205,6 +209,28 @@
 <script>
 (function() {
 'use strict';
+
+{% inline_file "/static/js/notifications.js" %}
+
+const t = $('#t');
+
+async function initNotifications(allFeatures) {
+  await loadFirebaseSDKLibs(); // Lazy load Firebase messaging SDK.
+
+  PushNotifications.init(); // init Firebase messaging.
+
+  // If use already granted the notification permission, update state of the
+  // push icon for each feature the user is subscribed to.
+  const subscribedFeatures = await PushNotifications.getAllSubscribedFeatures();
+  allFeatures.forEach((f, i) => {
+    if (subscribedFeatures.includes(String(f.id))) {
+      // f.receivePush = true;
+      $$('.pushicon').forEach(icon => {
+        icon.icon = 'chromestatus:notifications';
+      });
+    }
+  });
+}
 
 // async function getMilestoneInfo(version) {
 //   const resp = await fetch(`https://chromepmo.appspot.com/schedule/mstone/json?mstone=${version}`);
@@ -312,8 +338,6 @@ function mapFeaturesToComponents(features) {
   return featuresMappedToComponents;
 }
 
-const t = $('#t');
-
 t._objKeys = function(obj) {
   if (!obj) {
     return [];
@@ -347,6 +371,30 @@ t._computeDate = function(dateStr) {
   const date = new Date(dateStr);
   return new Intl.DateTimeFormat('en-US',  opts).format(date);
 };
+
+t.pushDisabled = function() {
+  return PushNotifier.GRANTED_ACCESS ? '' : 'disabled';
+};
+
+t._computePushSubscribed = function(subscribed) {
+  return subscribed ? 'chromestatus:notifications' : 'chromestatus:notifications-off';
+};
+
+t.subscribeToFeature = function(e) {
+  e.preventDefault();
+  e.stopPropagation();
+
+  const featureId = Polymer.dom(e).event.model.f.id;
+  const icon = Polymer.dom(e).localTarget;
+  const receivePush = icon.icon !== 'chromestatus:notifications';
+  icon.icon = this._computePushSubscribed(receivePush);
+
+  if (receivePush) {
+    PushNotifications.subscribeToFeature(featureId);
+  } else {
+    PushNotifications.unsubscribeFromFeature(featureId);
+  }
+}
 
 t.channels = {{channels|safe}};
 
@@ -393,6 +441,12 @@ async function init() {
   t.set('channels.stable.components', mapFeaturesToComponents(stableFeatures));
   t.set('channels.beta.components', mapFeaturesToComponents(betaFeatures));
   t.set('channels.dev.components', mapFeaturesToComponents(devFeatures));
+
+  // Show push notification icons if the browser supports the feature.
+  if (window.PushNotifier && PushNotifier.SUPPORTS_NOTIFICATIONS) {
+    $('.releases').classList.add('supports-push-notifications');
+    initNotifications(features);
+  }
 }
 
 document.addEventListener('WebComponentsReady', function(e) {

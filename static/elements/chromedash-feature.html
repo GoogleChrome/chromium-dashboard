@@ -501,10 +501,7 @@
       e.preventDefault();
       e.stopPropagation();
 
-      if (!PushNotifier.SUPPORTS_NOTIFICATIONS || !this.feature.id) {
-        return;
-      } else if (Notification.permission === 'denied') {
-        alert('Notifications were previously denied. Please reset the browser permission.');
+      if (!this.feature.id) {
         return;
       }
 
