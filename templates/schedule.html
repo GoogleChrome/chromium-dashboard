@@ -58,7 +58,7 @@
             <h3 class="feature_components">{{componentName}}</h3>
             <ul>
               <template is="dom-repeat" items="[[_featuresFor(channels.stable.components, componentName)]]" as="f">
-                <li>
+                <li data-feature-id$="[[f.id]]">
                   <a href$="/feature/[[f.id]]">[[f.name]]</a>
                   <span class="icon_row">
                     <span class="tooltip no-push-notifications" title="Subscribe to notification updates">
@@ -116,7 +116,7 @@
             <h3 class="feature_components">{{componentName}}</h3>
             <ul>
               <template is="dom-repeat" items="[[_featuresFor(channels.beta.components, componentName)]]" as="f">
-                <li>
+                <li data-feature-id$="[[f.id]]">
                   <a href$="/feature/[[f.id]]">[[f.name]]</a>
                   <span class="icon_row">
                     <span class="tooltip no-push-notifications" title="Subscribe to notification updates">
@@ -174,7 +174,7 @@
             <h3 class="feature_components">{{componentName}}</h3>
             <ul>
               <template is="dom-repeat" items="[[_featuresFor(channels.dev.components, componentName)]]" as="f">
-                <li>
+                <li data-feature-id$="[[f.id]]">
                   <a href$="/feature/[[f.id]]">[[f.name]]</a>
                   <span class="icon_row">
                       <span class="tooltip no-push-notifications" title="Subscribe to notification updates">
@@ -239,9 +239,10 @@ async function initNotifications(allFeatures) {
   allFeatures.forEach((f, i) => {
     if (subscribedFeatures.includes(String(f.id))) {
       // f.receivePush = true;
-      $$('.pushicon').forEach(icon => {
+      const icon = $(`[data-feature-id="${f.id}"] .pushicon`);
+      if (icon) {
         icon.icon = 'chromestatus:notifications';
-      });
+      }
     }
   });
 }
