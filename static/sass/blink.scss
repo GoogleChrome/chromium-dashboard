@@ -79,6 +79,9 @@ body {
 .owners_list {
   flex: 1 0 auto;
 }
+.component_owner {
+  font-weight: 600;
+}
 .owners_list_add_remove {
   margin-left: $content-padding / 2;
   opacity: 0;

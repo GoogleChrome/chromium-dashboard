@@ -230,9 +230,12 @@ class BlinkComponent(DictModel):
   updated = db.DateTimeProperty(auto_now=True)
 
   @property
-  def owners(self):
-    q = FeatureOwner.all().filter('blink_components = ', self.key()).order('name')
-    return q.fetch(None)
+  def subscribers(self):
+    return FeatureOwner.all().filter('blink_components = ', self.key()).order('name').fetch(None)
+
+  @property
+  def owner(self):
+    return FeatureOwner.all().filter('primary_blink_components = ', self.key()).get()
 
   @classmethod
   def fetch_all_components(self, update_cache=False):
@@ -743,8 +746,8 @@ class Feature(DictModel):
       old_val = getattr(self, prop_name, None)
       setattr(self, '_old_' + prop_name, old_val)
 
-  def __notify_feature_owners_of_changes(self, is_update):
-    """Async notifies owners of new features and property changes to features by
+  def __notify_feature_subscribers_of_changes(self, is_update):
+    """Async notifies subscribers of new features and property changes to features by
        posting to a task queue."""
     # Diff values to see what properties have changed.
     changed_props = []
@@ -761,9 +764,9 @@ class Feature(DictModel):
       'feature': self.format_for_template(version=2)
     })
 
-    # Create task to email owners.
+    # Create task to email subscribers.
     queue = taskqueue.Queue()#name='emailer')
-    task = taskqueue.Task(method="POST", url='/tasks/email-owners',
+    task = taskqueue.Task(method="POST", url='/tasks/email-subscribers',
         target='notifier', payload=payload)
     queue.add(task)
 
@@ -777,7 +780,7 @@ class Feature(DictModel):
   def put(self, **kwargs):
     is_update = self.is_saved()
     key = super(Feature, self).put(**kwargs)
-    self.__notify_feature_owners_of_changes(is_update)
+    self.__notify_feature_subscribers_of_changes(is_update)
     return key
 
   # Metadata.
@@ -1009,32 +1012,60 @@ class AppUser(DictModel):
   updated = db.DateTimeProperty(auto_now=True)
 
 
+def list_with_component(l, component):
+  return [x for x in l if x.id() == component.key().id()]
+
+def list_without_component(l, component):
+  return [x for x in l if x.id() != component.key().id()]
+
+
 class FeatureOwner(DictModel):
-  """Describes owner of a web platform feature."""
+  """Describes subscribers of a web platform feature."""
   created = db.DateTimeProperty(auto_now_add=True)
   updated = db.DateTimeProperty(auto_now=True)
   name = db.StringProperty(required=True)
   email = db.EmailProperty(required=True)
   twitter = db.StringProperty()
   blink_components = db.ListProperty(db.Key)
+  primary_blink_components = db.ListProperty(db.Key)
 
-  def add_as_component_owner(self, component_name):
-    """Adds the user to the list of Blink component owners."""
+  def add_to_component_subscribers(self, component_name):
+    """Adds the user to the list of Blink component subscribers."""
     c = BlinkComponent.get_by_name(component_name)
     if c:
-      already_added = len([x for x in self.blink_components if x.id() == c.key().id()])
-      if not already_added:
+      # Add the user if they're not already in the list.
+      if not len(list_with_component(self.blink_components, c)):
         self.blink_components.append(c.key())
         return self.put()
     return None
 
-  def remove_from_component_owners(self, component_name):
-    """Removes the user from the list of Blink component owners."""
+  def remove_from_component_subscribers(self, component_name, remove_as_owner=False):
+    """Removes the user from the list of Blink component subscribers or as the owner
+       of the component."""
     c = BlinkComponent.get_by_name(component_name)
     if c:
-      self.blink_components = [x for x in self.blink_components if x.id() != c.key().id()]
+      if remove_as_owner:
+        self.primary_blink_components = list_without_component(self.primary_blink_components, c)
+      else:
+        self.blink_components = list_without_component(self.blink_components, c)
+        self.primary_blink_components = list_without_component(self.primary_blink_components, c)
       return self.put()
     return None
+
+  def add_as_component_owner(self, component_name):
+    """Adds the user as the Blink component owner."""
+    c = BlinkComponent.get_by_name(component_name)
+    if c:
+      # Update both the primary list and blink components subscribers if the
+      # user is not already in them.
+      self.add_to_component_subscribers(component_name)
+      if not len(list_with_component(self.primary_blink_components, c)):
+        self.primary_blink_components.append(c.key())
+      return self.put()
+    return None
+
+  def remove_as_component_owner(self, component_name):
+    return self.remove_from_component_subscribers(component_name, remove_as_owner=True)
 
 
 class HistogramModel(db.Model):

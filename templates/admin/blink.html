@@ -17,11 +17,11 @@
 {% block subheader %}
 <div id="subheader">
   <div>
-    <h2>blink component owners</h2>
+    <h2>Feature contacts</h2>
     <div>listing {{components|length}} components</div>
   </div>
   <div class="layout horizontal subheader_toggles">
-    <paper-toggle-button noink>Edit owners</paper-toggle-button>
+    <paper-toggle-button noink>Edit mode</paper-toggle-button>
   </div>
 </div>
 {% endblock %}
@@ -60,20 +60,22 @@
       </div>
       <div class="owners_list layout horizontal center">
         <div>
-          <div class="column_header">Owners</div>
-          <select multiple disabled id="owner_list_{{forloop.counter}}" size="{{c.owners|length}}">
-            {% for owner in c.owners %}
-              <option class="owner_name" value="{{owner.id}}">{{owner.name}}</option>
+          <div class="column_header">Subscribers</div>
+          <select multiple disabled id="owner_list_{{forloop.counter}}" size="{{c.subscribers|length}}">
+            {% for s in c.subscribers %}
+              <option class="owner_name {% if c.owner.name == s.name %}component_owner{% endif %}"
+                      value="{{s.id}}">{{s.name}}</option>
             {% endfor %}
           </select>
         </div>
         <div class="owners_list_add_remove">
           <select class="owner_candidates">
             <option selected disabled>Select owner to add/remove</option>
-            {% for owner in owners %}
-              <option class="owner_name" value="{{owner.id}}">{{owner.name}}</option>
+            {% for s in subscribers %}
+              <option class="owner_name" value="{{s.id}}">{{s.name}}</option>
             {% endfor %}
           </select>
+          <label>Primary? <input type="checkbox" class="is_primary_checkbox"></label>
           <button class="add_owner_button" data-index="{{forloop.counter}}"
                   data-component-name="{{c.name}}">Add</button>
           <button class="remove_owner_button" data-index="{{forloop.counter}}"
@@ -107,11 +109,13 @@ $('#components_list').addEventListener('click', function(e) {
   }
 
   const candidates = e.target.parentElement.querySelector('.owner_candidates');
+  const primaryCheckbox = e.target.parentElement.querySelector('.is_primary_checkbox');
   const idx = e.target.dataset.index;
   const componentName = e.target.dataset.componentName;
   const userId = candidates.value;
   const selectedCandidate = candidates.selectedOptions[0];
   const username = selectedCandidate.textContent;
+  const toggleAsOwner = primaryCheckbox.checked;
 
   if (selectedCandidate.disabled) {
     alert('Please select a user');
@@ -121,39 +125,45 @@ $('#components_list').addEventListener('click', function(e) {
   // Add new item to owners list.
   const ownersList = this.querySelector(`#owner_list_${idx}`);
   const foundName = Array.from(ownersList.options).find(option => option.textContent === username);
-  let doFetch = false;
 
   if (addUser) {
+    // Don't try to add user if they're already in the list, and we're not
+    // modifying their owner state.
+    if (foundName && !toggleAsOwner) {
+      return;
+    }
+
+    const option = document.createElement('option');
+    option.value = userId;
+    option.textContent = candidates.selectedOptions[0].textContent;
+
     if (!foundName) {
-      const option = document.createElement('option');
-      option.value = userId;
-      option.textContent = candidates.selectedOptions[0].textContent;
       ownersList.appendChild(option);
-      doFetch = true;
+    }
+
+    if (toggleAsOwner) {
+      const el = foundName || option;
+      el.classList.add('component_owner');
     }
   } else if (removeUser && foundName) {
-    foundName.remove(); // remove existing name.
-    doFetch = true;
-  }
-
-  if (!doFetch) {
-    return;
+    if (toggleAsOwner) {
+      foundName.classList.remove('component_owner');
+    } else {
+      foundName.remove(); // remove existing name.
+    }
   }
 
   fetch('/admin/blink', {
     method: removeUser ? 'PUT' : 'POST',
     credentials: 'include',
-    body: JSON.stringify({userId, componentName})
+    body: JSON.stringify({userId, componentName, primary: toggleAsOwner})
   })
   .then(resp => resp.json())
   .then(json => {
     const Toast = document.querySelector('chromedash-toast');
-    if (addUser) {
-      Toast.showMessage(`User added to "${componentName}" owners.`);
-    } else if (removeUser)  {
-      Toast.showMessage(`User removed from "${componentName}" owners.`);
-    }
+    Toast.showMessage(`"${componentName}" updated.`);
     ownersList.size = ownersList.options.length;
+    primaryCheckbox.checked = false;
   });
 });
 
