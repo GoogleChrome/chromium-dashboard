@@ -38,7 +38,7 @@ if DEBUG:
 else:
   TEMPLATE_CACHE_TIME = 600 # seconds
 
-SEND_EMAIL = True # Flag to turn off email notifications to feature owners.
+SEND_EMAIL = False # Flag to turn off email notifications to feature owners.
 SEND_PUSH_NOTIFICATIONS = True # Flag to turn off sending push notifications for all users.
 
 FIREBASE_SERVER_KEY = os.environ.get('FIREBASE_SERVER_KEY')

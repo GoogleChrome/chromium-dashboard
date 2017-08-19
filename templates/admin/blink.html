@@ -60,7 +60,7 @@
       </div>
       <div class="owners_list layout horizontal center">
         <div>
-          <div class="column_header">Receive email updates:</div>
+          <div class="column_header">Receives email updates:</div>
           <select multiple disabled id="owner_list_{{forloop.counter}}" size="{{c.subscribers|length}}">
             {% for s in c.subscribers %}
               <option class="owner_name {% if s.name in c.primaries %}component_owner{% endif %}"
@@ -76,7 +76,7 @@
                 <option class="owner_name" value="{{s.id}}" data-email="{{s.email}}">{{s.name}}</option>
               {% endfor %}
             </select><br>
-            <label>Primary? <input type="checkbox" class="is_primary_checkbox"></label>
+            <label title="Toggles the user as an owner. If you click 'Remove' ans this is not checked, the user is removed from the component.">Owner? <input type="checkbox" class="is_primary_checkbox"></label>
           </div>
           <button class="add_owner_button" data-index="{{forloop.counter}}"
                   data-component-name="{{c.name}}">Add</button>
