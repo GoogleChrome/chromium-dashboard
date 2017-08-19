@@ -63,12 +63,19 @@ def email_feature_subscribers(feature, is_update=False, changes=[]):
       logging.warn('Blink component "%s" not found. Not sending email to subscribers' % component_name)
       return
 
-    # subscribers = component.subscribers
-    # TODO: restrict emails to me for now to see if they're not too noisy.
-    subscribers = models.FeatureOwner.all().filter('email = ', 'e.bidelman@google.com').fetch(1)
+    def list_diff(subscribers, owners):
+      """Returns list B - A."""
+      owner_ids = [x.key().id() for x in owners]
+      return [x for x in subscribers if not x.key().id() in owner_ids]
 
-    if not subscribers:
-      logging.info('Blink component "%s" has no subscribers. Skipping email.' % component_name)
+    owners = component.owners
+    subscribers = list_diff(component.subscribers, owners)
+
+    # TODO: restrict emails to me for now to see if they're not too noisy.
+    # subscribers = models.FeatureOwner.all().filter('email = ', 'e.bidelman@google.com').fetch(1)
+
+    if not subscribers and not owners:
+      logging.info('Blink component "%s" has no subscribers or owners. Skipping email.' % component_name)
       return
 
     if feature.shipped_milestone:
@@ -78,12 +85,16 @@ def email_feature_subscribers(feature, is_update=False, changes=[]):
     else:
       milestone_str = 'not yet assigned'
 
+    intro = 'You are listed as an owner for web platform features under "{component_name}"'.format(component_name=component_name)
+    if not owners:
+      intro = 'Just letting you know that there\'s a new feature under "{component_name}".'.format(component_name=component_name)
+
     created_on = datetime.datetime.strptime(str(feature.created), "%Y-%m-%d %H:%M:%S.%f").date()
     new_msg = """
 <html><body>
-<p>Hi {subscribers},</p>
+<p>Hi {owners},</p>
 
-<p>You are listed as a web platform owner for "{component_name}". {created_by} added a new feature to this component:</p>
+<p>{intro}. {created_by} added a new feature to this component:</p>
 <hr>
 
 <p><b><a href="https://www.chromestatus.com/feature/{id}">{name}</a></b> (added {created})</p>
@@ -99,10 +110,11 @@ def email_feature_subscribers(feature, is_update=False, changes=[]):
   <li>Add a sample to https://github.com/GoogleChrome/samples (see <a href="https://github.com/GoogleChrome/samples#contributing-samples">contributing</a>).</li>
   <li>Don't forget add your demo link to the <a href="https://www.chromestatus.com/admin/features/edit/{id}">chromestatus feature entry</a>.</li>
 </ul>
+<p>CC'd on this email? Feel free to reply-all if you can help with these tasks.</p>
 </body></html>
 """.format(name=feature.name, id=feature.key().id(), created=created_on,
-           created_by=feature.created_by, component_name=component_name,
-           subscribers=', '.join([s.name for s in subscribers]), milestone=milestone_str,
+           created_by=feature.created_by, intro=intro,
+           owners=', '.join([o.name for o in owners]), milestone=milestone_str,
            status=models.IMPLEMENTATION_STATUS[feature.impl_status_chrome])
 
   updated_on = datetime.datetime.strptime(str(feature.updated), "%Y-%m-%d %H:%M:%S.%f").date()
@@ -112,10 +124,14 @@ def email_feature_subscribers(feature, is_update=False, changes=[]):
   if not formatted_changes:
     formatted_changes = '<li>None</li>'
 
-  update_msg = """<html><body>
-<p>Hi {subscribers},</p>
+    intro = 'You are listed as an owner for web platform features under "{component_name}"'.format(component_name=component_name)
+    if not owners:
+      intro = 'Just letting you know that a feature under "{component_name}" has changed.'.format(component_name=component_name)
 
-<p>You are listed as a web platform owner for "{component_name}". {updated_by} updated this feature:</p>
+  update_msg = """<html><body>
+<p>Hi {owners},</p>
+
+<p>{intro}. {updated_by} updated this feature:</p>
 <hr>
 
 <p><b><a href="https://www.chromestatus.com/feature/{id}">{name}</a></b> (updated {updated})</p>
@@ -135,17 +151,23 @@ def email_feature_subscribers(feature, is_update=False, changes=[]):
   <ul>{wf_content}</ul>
 </li>
 </ul>
+
+<p>CC'd on this email? Feel free to reply-all if can help.</p>
 </body></html>
 """.format(name=feature.name, id=feature.key().id(), updated=updated_on,
-           updated_by=feature.updated_by, component_name=component_name,
-           subscribers=', '.join([s.name for s in subscribers]), milestone=milestone_str,
+           updated_by=feature.updated_by, intro=intro,
+           owners=', '.join([o.name for o in owners]), milestone=milestone_str,
            status=models.IMPLEMENTATION_STATUS[feature.impl_status_chrome],
            formatted_changes=formatted_changes,
            wf_content=create_wf_content_list(component_name))
 
   message = mail.EmailMessage(sender='Chromestatus <admin@cr-status.appspotmail.com>',
                               subject='update',
-                              to=[s.email for s in subscribers])
+                              cc=[s.email for s in subscribers])
+
+  # Only include to: line if there are feature owners. Otherwise, we'll just use cc.
+  if owners:
+    message.to = [s.email for s in owners]
 
   if is_update:
     message.html = update_msg

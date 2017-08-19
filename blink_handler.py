@@ -32,7 +32,7 @@ import util
 
 class PopulateSubscribersHandler(common.ContentHandler):
 
-  def __populate_devrel_owers(self):
+  def __populate_subscribers(self):
     """Seeds the database with the team in devrel_team.yaml and adds the team
       member to the specified blink components in that file. Should only be ran
       if the FeatureOwner database entries have been cleared"""
@@ -56,7 +56,7 @@ class PopulateSubscribersHandler(common.ContentHandler):
     if settings.PROD:
       return self.response.out.write('Handler not allowed in production.')
     models.BlinkComponent.update_db()
-    self.__populate_devrel_owers()
+    self.__populate_subscribers()
     return self.redirect('/admin/blink')
 
 
