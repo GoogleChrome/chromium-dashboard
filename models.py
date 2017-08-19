@@ -1029,6 +1029,7 @@ class FeatureOwner(DictModel):
   twitter = db.StringProperty()
   blink_components = db.ListProperty(db.Key)
   primary_blink_components = db.ListProperty(db.Key)
+  watching_all_features = db.BooleanProperty(default=False)
 
   def add_to_component_subscribers(self, component_name):
     """Adds the user to the list of Blink component subscribers."""

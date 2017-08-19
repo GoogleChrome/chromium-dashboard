@@ -57,6 +57,8 @@ def create_wf_content_list(component):
   return list
 
 def email_feature_subscribers(feature, is_update=False, changes=[]):
+  feature_watchers = models.FeatureOwner.all().filter('watching_all_features = ', True).fetch(None)
+
   for component_name in feature.blink_components:
     component = models.BlinkComponent.get_by_name(component_name)
     if not component:
@@ -69,7 +71,7 @@ def email_feature_subscribers(feature, is_update=False, changes=[]):
       return [x for x in subscribers if not x.key().id() in owner_ids]
 
     owners = component.owners
-    subscribers = list_diff(component.subscribers, owners)
+    subscribers = list_diff(component.subscribers, owners) + feature_watchers
 
     # TODO: restrict emails to me for now to see if they're not too noisy.
     # subscribers = models.FeatureOwner.all().filter('email = ', 'e.bidelman@google.com').fetch(1)
