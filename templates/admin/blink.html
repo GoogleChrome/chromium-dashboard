@@ -60,22 +60,24 @@
       </div>
       <div class="owners_list layout horizontal center">
         <div>
-          <div class="column_header">Subscribers</div>
+          <div class="column_header">Receive email updates:</div>
           <select multiple disabled id="owner_list_{{forloop.counter}}" size="{{c.subscribers|length}}">
             {% for s in c.subscribers %}
-              <option class="owner_name {% if c.owner.name == s.name %}component_owner{% endif %}"
-                      value="{{s.id}}">{{s.name}}</option>
+              <option class="owner_name {% if s.name in c.primaries %}component_owner{% endif %}"
+                      value="{{s.id}}">{{s.name}}: {{s.email}}</option>
             {% endfor %}
           </select>
         </div>
         <div class="owners_list_add_remove">
-          <select class="owner_candidates">
-            <option selected disabled>Select owner to add/remove</option>
-            {% for s in subscribers %}
-              <option class="owner_name" value="{{s.id}}">{{s.name}}</option>
-            {% endfor %}
-          </select>
-          <label>Primary? <input type="checkbox" class="is_primary_checkbox"></label>
+          <div>
+            <select class="owner_candidates">
+              <option selected disabled>Select owner to add/remove</option>
+              {% for s in subscribers %}
+                <option class="owner_name" value="{{s.id}}" data-email="{{s.email}}">{{s.name}}</option>
+              {% endfor %}
+            </select><br>
+            <label>Primary? <input type="checkbox" class="is_primary_checkbox"></label>
+          </div>
           <button class="add_owner_button" data-index="{{forloop.counter}}"
                   data-component-name="{{c.name}}">Add</button>
           <button class="remove_owner_button" data-index="{{forloop.counter}}"
@@ -115,6 +117,7 @@ $('#components_list').addEventListener('click', function(e) {
   const userId = candidates.value;
   const selectedCandidate = candidates.selectedOptions[0];
   const username = selectedCandidate.textContent;
+  const email = selectedCandidate.dataset.email;
   const toggleAsOwner = primaryCheckbox.checked;
 
   if (selectedCandidate.disabled) {
@@ -124,7 +127,8 @@ $('#components_list').addEventListener('click', function(e) {
 
   // Add new item to owners list.
   const ownersList = this.querySelector(`#owner_list_${idx}`);
-  const foundName = Array.from(ownersList.options).find(option => option.textContent === username);
+  const optionText = `${username}: ${email}`;
+  const foundName = Array.from(ownersList.options).find(option => option.textContent === optionText);
 
   if (addUser) {
     // Don't try to add user if they're already in the list, and we're not
@@ -135,7 +139,7 @@ $('#components_list').addEventListener('click', function(e) {
 
     const option = document.createElement('option');
     option.value = userId;
-    option.textContent = candidates.selectedOptions[0].textContent;
+    option.textContent = optionText;
 
     if (!foundName) {
       ownersList.appendChild(option);

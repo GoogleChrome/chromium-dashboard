@@ -234,8 +234,8 @@ class BlinkComponent(DictModel):
     return FeatureOwner.all().filter('blink_components = ', self.key()).order('name').fetch(None)
 
   @property
-  def owner(self):
-    return FeatureOwner.all().filter('primary_blink_components = ', self.key()).get()
+  def owners(self):
+    return FeatureOwner.all().filter('primary_blink_components = ', self.key()).order('name').fetch(None)
 
   @classmethod
   def fetch_all_components(self, update_cache=False):
@@ -291,6 +291,7 @@ class BlinkComponent(DictModel):
       logging.error('%s is an unknown BlinkComponent.' % (component_name))
       return None
     return component[0]
+
 
 # UMA metrics.
 class StableInstance(DictModel):
