@@ -12,13 +12,15 @@
 :root {
   --padding: 8px;
 }
+#users_list {
+  margin-bottom: 100px;
+}
 #users_list > li {
   padding: var(--padding) 0;
 }
 .component_list {
   list-style: none;
   padding: var(--padding) calc(var(--padding) * 2);
-  font-size: 16px;
 }
 .component_list li {
   margin-left: calc(var(--padding) * 2);
@@ -33,7 +35,7 @@
   margin-left: calc(var(--padding) * 3);
 }
 .user_name {
-  min-width: 160px;
+  min-width: 175px;
 }
 </style>
 {% endblock %}
@@ -47,10 +49,7 @@
   <div>
     <h2>Feature owners</h2>
   </div>
-  <!-- <div class="layout horizontal"> -->
-    <!-- <paper-toggle-button noink>Edit mode</paper-toggle-button> -->
-    <a href="/admin/blink">View list as components</a>
-  <!-- </div> -->
+  <a href="/admin/blink">View list as components →</a>
 </div>
 {% endblock %}
 
@@ -61,18 +60,15 @@
 <ul id="users_list">
   {% for s in subscribers %}
     <li class="layout horizontal center">
-      <!-- <div class="component_name"> -->
-        <!-- <div class="column_header">Component</div> -->
-        <div>
-          <h3 class="user_name">{{s.name}}</h3>
-          <h4><a href="mailto:{{s.email}}">{{s.email}}</a></h4>
-        </div>
-        <ul class="component_list layout horizontal center">
-          {% for c in s.owned_components %}
-            <li><a href="/admin/blink#{{c.name}}">{{c.name}}</a></li>
-          {% endfor %}
-        </ul>
-      <!-- </div> -->
+      <div>
+        <h3 class="user_name">{{s.name}}</h3>
+        <h4><a href="mailto:{{s.email}}">{{s.email}}</a></h4>
+      </div>
+      <ul class="component_list layout horizontal center">
+        {% for c in s.owned_components %}
+          <li><a href="/admin/blink#{{c.name}}">{{c.name}}</a></li>
+        {% endfor %}
+      </ul>
     </li>
   {% endfor %}
 </ul>
@@ -85,15 +81,6 @@
 <script>
 (function() {
 'use strict';
-
-window.addEventListener('DOMContentLoaded', function(e) {
-  // if (location.hash) {
-  //   setTimeout(function() {
-  //     const el = document.getElementById(location.hash.slice(1));
-  //     $('app-header').scroll(0, el.offsetTop);
-  //   }, 500);
-  // }
-});
 
 document.body.classList.remove('loading');
 
