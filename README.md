@@ -28,7 +28,7 @@ To start the main server and the notifier backend, run:
 
 If you want to test push notification features, you'll need to create a file named
 `.fcm_server_key` in the main project root. Copy in the FCM server key obtained
-from the [Firebase console](https://firebase.corp.google.com/).
+from the [Firebase console](https://firebase.corp.google.com/project/cr-status/settings/cloudmessaging/).
 
 When `./scripts/start_server.sh` is run, it will populate this value as an environment variable.
 
@@ -45,7 +45,11 @@ Visit http://localhost:8080/admin/blink/populate_blink to see the list of Blink 
 [`settings.py`](https://github.com/GoogleChrome/chromium-dashboard/blob/master/settings.py) contains a list
 of globals for debugging and running the site locally.
 
-`VULCANIZE` - `False` will run the site without vulcanizing the Polymer elements.
+`VULCANIZE` - `False`, will run the site without vulcanizing the Polymer elements.
+
+`SEND_EMAIL` - `False` will turn off email notifications to feature owners.
+
+`SEND_PUSH_NOTIFICATIONS` - `False` will turn off sending push notifications for all users.
 
 ### Deploying
 
