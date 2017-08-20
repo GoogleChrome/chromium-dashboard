@@ -70,11 +70,10 @@ def email_feature_subscribers(feature, is_update=False, changes=[]):
       owner_ids = [x.key().id() for x in owners]
       return [x for x in subscribers if not x.key().id() in owner_ids]
 
-    owners = component.owners
-    subscribers = list_diff(component.subscribers, owners) + feature_watchers
-
-    # TODO: restrict emails to me for now to see if they're not too noisy.
-    # subscribers = models.FeatureOwner.all().filter('email = ', 'e.bidelman@google.com').fetch(1)
+    # TODO: switch back
+    owners = [] #component.owners
+    # subscribers = list_diff(component.subscribers, owners) + feature_watchers
+    subscribers = models.FeatureOwner.all().filter('email = ', 'e.bidelman@google.com').fetch(1)
 
     if not subscribers and not owners:
       logging.info('Blink component "%s" has no subscribers or owners. Skipping email.' % component_name)
