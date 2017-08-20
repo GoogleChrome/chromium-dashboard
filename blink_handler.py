@@ -132,8 +132,31 @@ class BlinkHandler(common.ContentHandler):
     self.response.set_status(200, message='User added to subscribers')
     return self.response.write(json.dumps(params))
 
+
+class SubscribersHandler(common.ContentHandler):
+
+  @common.require_whitelisted_user
+  # @common.strip_trailing_slash
+  def get(self, path):
+    subscribers = models.FeatureOwner.all().order('name').fetch(None)
+
+    # Format for django template
+    # subscribers = [x.format_for_template() for x in subscribers]
+
+    for s in subscribers:
+      s.subscribed_components = [models.BlinkComponent.get(key) for key in s.blink_components]
+      s.owned_components = [models.BlinkComponent.get(key) for key in s.primary_blink_components]
+
+    data = {
+      'subscribers': subscribers,
+    }
+
+    self.render(data, template_path=os.path.join('admin/subscribers.html'))
+
+
 app = webapp2.WSGIApplication([
   ('/admin/blink/populate_subscribers', PopulateSubscribersHandler),
+  ('/admin/subscribers(.*)', SubscribersHandler),
   ('(.*)', BlinkHandler),
 ], debug=settings.DEBUG)
 

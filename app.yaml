@@ -65,6 +65,11 @@ handlers:
   login: required # non-admin
   secure: always
 
+- url: /admin/subscribers.*
+  script: blink_handler.app
+  login: required # non-admin
+  secure: always
+
 - url: /admin/features/.*
   script: admin.app
   secure: always

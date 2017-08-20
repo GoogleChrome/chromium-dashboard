@@ -16,9 +16,12 @@
 
 {% block subheader %}
 <div id="subheader">
-  <div>
-    <h2>Feature contacts</h2>
-    <div>listing {{components|length}} components</div>
+  <div class="layout horizontal center">
+    <div>
+      <h2>Blink components</h2>
+      <div>listing {{components|length}} components</div>
+    </div>
+    <a href="/admin/subscribers" class="view_owners_linke">View list by owner</a>
   </div>
   <div class="layout horizontal subheader_toggles">
     <paper-toggle-button noink>Edit mode</paper-toggle-button>
