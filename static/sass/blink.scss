@@ -39,6 +39,9 @@ body {
       }
     }
   }
+  .view_owners_linke {
+    margin-left: $content-padding;
+  }
 }
 #components_list {
   list-style: none;
@@ -79,6 +82,9 @@ body {
 .owners_list {
   flex: 1 0 auto;
 }
+.component_owner {
+  font-weight: 600;
+}
 .owners_list_add_remove {
   margin-left: $content-padding / 2;
   opacity: 0;
@@ -95,7 +101,7 @@ body {
 }
 
 select[multiple] {
-  min-width: 125px;
+  min-width: 275px;
   background-color: #eee;
   border: none;
   transition: 200ms background-color cubic-bezier(0,0,0.2,1);

@@ -30,9 +30,9 @@ import settings
 import util
 
 
-class PopulateOwnersHandler(common.ContentHandler):
+class PopulateSubscribersHandler(common.ContentHandler):
 
-  def __populate_devrel_owers(self):
+  def __populate_subscribers(self):
     """Seeds the database with the team in devrel_team.yaml and adds the team
       member to the specified blink components in that file. Should only be ran
       if the FeatureOwner database entries have been cleared"""
@@ -42,13 +42,13 @@ class PopulateOwnersHandler(common.ContentHandler):
       blink_components = [models.BlinkComponent.get_by_name(name).key() for name in blink_components]
       blink_components = filter(None, blink_components) # Filter out None values
 
-      owner = models.FeatureOwner(
+      user = models.FeatureOwner(
         name=unicode(profile['name']),
         email=unicode(profile['email']),
         twitter=profile.get('twitter', None),
         blink_components=blink_components
       )
-      owner.put()
+      user.put()
     f.close()
 
   @common.require_whitelisted_user
@@ -56,24 +56,30 @@ class PopulateOwnersHandler(common.ContentHandler):
     if settings.PROD:
       return self.response.out.write('Handler not allowed in production.')
     models.BlinkComponent.update_db()
-    self.__populate_devrel_owers()
+    self.__populate_subscribers()
     return self.redirect('/admin/blink')
 
 
 class BlinkHandler(common.ContentHandler):
 
-  def __update_owners_list(self, add=True, user_id=None, blink_component=None):
+  def __update_subscribers_list(self, add=True, user_id=None, blink_component=None, primary=False):
     if not user_id or not blink_component:
       return False
 
-    owner = models.FeatureOwner.get_by_id(long(user_id))
-    if not owner:
+    user = models.FeatureOwner.get_by_id(long(user_id))
+    if not user:
       return True
 
-    if add:
-      owner.add_as_component_owner(blink_component)
+    if primary:
+      if add:
+        user.add_as_component_owner(blink_component)
+      else:
+        user.remove_as_component_owner(blink_component)
     else:
-      owner.remove_from_component_owners(blink_component)
+      if add:
+        user.add_to_component_subscribers(blink_component)
+      else:
+        user.remove_from_component_subscribers(blink_component)
 
     return True
 
@@ -85,41 +91,72 @@ class BlinkHandler(common.ContentHandler):
     # data = memcache.get(key)
     # if data is None:
     components = models.BlinkComponent.all().order('name').fetch(None)
-    owners = models.FeatureOwner.all().order('name').fetch(None)
+    subscribers = models.FeatureOwner.all().order('name').fetch(None)
 
     # Format for django template
-    owners = [x.format_for_template() for x in owners]
+    subscribers = [x.format_for_template() for x in subscribers]
+
+    for c in components:
+      c.primaries = [o.name for o in c.owners]
 
     # wf_component_content = models.BlinkComponent.fetch_wf_content_for_components()
     # for c in components:
     #   c.wf_urls = wf_component_content.get(c.name) or []
 
     data = {
-      'owners': owners,
+      'subscribers': subscribers,
       'components': components[1:] # ditch generic "Blink" component
     }
     # memcache.set(key, data)
 
     self.render(data, template_path=os.path.join('admin/blink.html'))
 
+  # Remove user from component subscribers.
   def put(self, path):
     params = json.loads(self.request.body)
-    self.__update_owners_list(False, user_id=params.get('userId'),
-                              blink_component=params.get('componentName'))
-    self.response.set_status(200, message='User removed from owners')
+    self.__update_subscribers_list(False, user_id=params.get('userId'),
+                                   blink_component=params.get('componentName'),
+                                   primary=params.get('primary'))
+    self.response.set_status(200, message='User removed from subscribers')
     return self.response.write(json.dumps({'done': True}))
 
+  # Add user to component subscribers.
   def post(self, path):
     params = json.loads(self.request.body)
-    self.__update_owners_list(True, user_id=params.get('userId'),
-                              blink_component=params.get('componentName'))
+
+    self.__update_subscribers_list(True, user_id=params.get('userId'),
+                                   blink_component=params.get('componentName'),
+                                   primary=params.get('primary'))
     # memcache.flush_all()
     # memcache.delete('%s|blinkcomponentowners' % (settings.MEMCACHE_KEY_PREFIX))
-    self.response.set_status(200, message='User added to owners')
+    self.response.set_status(200, message='User added to subscribers')
     return self.response.write(json.dumps(params))
 
+
+class SubscribersHandler(common.ContentHandler):
+
+  @common.require_whitelisted_user
+  # @common.strip_trailing_slash
+  def get(self, path):
+    subscribers = models.FeatureOwner.all().order('name').fetch(None)
+
+    # Format for django template
+    # subscribers = [x.format_for_template() for x in subscribers]
+
+    for s in subscribers:
+      s.subscribed_components = [models.BlinkComponent.get(key) for key in s.blink_components]
+      s.owned_components = [models.BlinkComponent.get(key) for key in s.primary_blink_components]
+
+    data = {
+      'subscribers': subscribers,
+    }
+
+    self.render(data, template_path=os.path.join('admin/subscribers.html'))
+
+
 app = webapp2.WSGIApplication([
-  ('/admin/blink/populate_owners', PopulateOwnersHandler),
+  ('/admin/blink/populate_subscribers', PopulateSubscribersHandler),
+  ('/admin/subscribers(.*)', SubscribersHandler),
   ('(.*)', BlinkHandler),
 ], debug=settings.DEBUG)
 

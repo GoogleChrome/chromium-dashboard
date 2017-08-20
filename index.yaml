@@ -158,6 +158,11 @@ indexes:
   - name: blink_components
   - name: name
 
+- kind: FeatureOwner
+  properties:
+  - name: primary_blink_components
+  - name: name
+
 - kind: StableInstance
   properties:
   - name: bucket_id

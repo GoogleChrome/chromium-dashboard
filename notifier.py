@@ -56,19 +56,27 @@ def create_wf_content_list(component):
     list = '<li>None</li>'
   return list
 
-def email_feature_owners(feature, is_update=False, changes=[]):
+def email_feature_subscribers(feature, is_update=False, changes=[]):
+  feature_watchers = models.FeatureOwner.all().filter('watching_all_features = ', True).fetch(None)
+
   for component_name in feature.blink_components:
     component = models.BlinkComponent.get_by_name(component_name)
     if not component:
-      logging.warn('Blink component "%s" not found. Not sending email to owners' % component_name)
+      logging.warn('Blink component "%s" not found. Not sending email to subscribers' % component_name)
       return
 
-    # owners = component.owners
-    # TODO: restrict emails to me for now to see if they're not too noisy.
-    owners = models.FeatureOwner.all().filter('email = ', 'e.bidelman@google.com').fetch(1)
+    def list_diff(subscribers, owners):
+      """Returns list B - A."""
+      owner_ids = [x.key().id() for x in owners]
+      return [x for x in subscribers if not x.key().id() in owner_ids]
 
-    if not owners:
-      logging.info('Blink component "%s" has no owners. Skipping email.' % component_name)
+    # TODO: switch back
+    owners = [] #component.owners
+    # subscribers = list_diff(component.subscribers, owners) + feature_watchers
+    subscribers = models.FeatureOwner.all().filter('email = ', 'e.bidelman@google.com').fetch(1)
+
+    if not subscribers and not owners:
+      logging.info('Blink component "%s" has no subscribers or owners. Skipping email.' % component_name)
       return
 
     if feature.shipped_milestone:
@@ -78,12 +86,16 @@ def email_feature_owners(feature, is_update=False, changes=[]):
     else:
       milestone_str = 'not yet assigned'
 
+    intro = 'You are listed as an owner for web platform features under "{component_name}"'.format(component_name=component_name)
+    if not owners:
+      intro = 'Just letting you know that there\'s a new feature under "{component_name}".'.format(component_name=component_name)
+
     created_on = datetime.datetime.strptime(str(feature.created), "%Y-%m-%d %H:%M:%S.%f").date()
     new_msg = """
 <html><body>
 <p>Hi {owners},</p>
 
-<p>You are listed as a web platform owner for "{component_name}". {created_by} added a new feature to this component:</p>
+<p>{intro}. {created_by} added a new feature to this component:</p>
 <hr>
 
 <p><b><a href="https://www.chromestatus.com/feature/{id}">{name}</a></b> (added {created})</p>
@@ -99,10 +111,11 @@ def email_feature_owners(feature, is_update=False, changes=[]):
   <li>Add a sample to https://github.com/GoogleChrome/samples (see <a href="https://github.com/GoogleChrome/samples#contributing-samples">contributing</a>).</li>
   <li>Don't forget add your demo link to the <a href="https://www.chromestatus.com/admin/features/edit/{id}">chromestatus feature entry</a>.</li>
 </ul>
+<p>CC'd on this email? Feel free to reply-all if you can help with these tasks.</p>
 </body></html>
 """.format(name=feature.name, id=feature.key().id(), created=created_on,
-           created_by=feature.created_by, component_name=component_name,
-           owners=', '.join([owner.name for owner in owners]), milestone=milestone_str,
+           created_by=feature.created_by, intro=intro,
+           owners=', '.join([o.name for o in owners]), milestone=milestone_str,
            status=models.IMPLEMENTATION_STATUS[feature.impl_status_chrome])
 
   updated_on = datetime.datetime.strptime(str(feature.updated), "%Y-%m-%d %H:%M:%S.%f").date()
@@ -112,10 +125,14 @@ def email_feature_owners(feature, is_update=False, changes=[]):
   if not formatted_changes:
     formatted_changes = '<li>None</li>'
 
+    intro = 'You are listed as an owner for web platform features under "{component_name}"'.format(component_name=component_name)
+    if not owners:
+      intro = 'Just letting you know that a feature under "{component_name}" has changed.'.format(component_name=component_name)
+
   update_msg = """<html><body>
 <p>Hi {owners},</p>
 
-<p>You are listed as a web platform owner for "{component_name}". {updated_by} updated this feature:</p>
+<p>{intro}. {updated_by} updated this feature:</p>
 <hr>
 
 <p><b><a href="https://www.chromestatus.com/feature/{id}">{name}</a></b> (updated {updated})</p>
@@ -135,17 +152,23 @@ def email_feature_owners(feature, is_update=False, changes=[]):
   <ul>{wf_content}</ul>
 </li>
 </ul>
+
+<p>CC'd on this email? Feel free to reply-all if can help.</p>
 </body></html>
 """.format(name=feature.name, id=feature.key().id(), updated=updated_on,
-           updated_by=feature.updated_by, component_name=component_name,
-           owners=', '.join([owner.name for owner in owners]), milestone=milestone_str,
+           updated_by=feature.updated_by, intro=intro,
+           owners=', '.join([o.name for o in owners]), milestone=milestone_str,
            status=models.IMPLEMENTATION_STATUS[feature.impl_status_chrome],
            formatted_changes=formatted_changes,
            wf_content=create_wf_content_list(component_name))
 
   message = mail.EmailMessage(sender='Chromestatus <admin@cr-status.appspotmail.com>',
                               subject='update',
-                              to=[owner.email for owner in owners])
+                              cc=[s.email for s in subscribers])
+
+  # Only include to: line if there are feature owners. Otherwise, we'll just use cc.
+  if owners:
+    message.to = [s.email for s in owners]
 
   if is_update:
     message.html = update_msg
@@ -160,7 +183,7 @@ def email_feature_owners(feature, is_update=False, changes=[]):
     message.send()
 
 
-class EmailOwnersHandler(webapp2.RequestHandler):
+class EmailHandler(webapp2.RequestHandler):
 
   def post(self):
     json_body = json.loads(self.request.body)
@@ -168,10 +191,10 @@ class EmailOwnersHandler(webapp2.RequestHandler):
     is_update = json_body.get('is_update') or False
     changes = json_body.get('changes') or []
 
-    # Email feature owners if the feature exists and there were actually changes to it.
+    # Email feature subscribers if the feature exists and there were actually changes to it.
     feature = models.Feature.get_by_id(feature['id'])
     if feature and (is_update and len(changes) or not is_update):
-      email_feature_owners(feature, is_update=is_update, changes=changes)
+      email_feature_subscribers(feature, is_update=is_update, changes=changes)
 
 
 class NotificationNewSubscriptionHandler(webapp2.RequestHandler):
@@ -260,7 +283,7 @@ class NotificationSendHandler(webapp2.RequestHandler):
     is_update = json_body.get('is_update') or False
     changes = json_body.get('changes') or []
 
-    # Email feature owners if the feature exists and there were changes to it.
+    # Email feature subscribers if the feature exists and there were changes to it.
     feature = models.Feature.get_by_id(feature['id'])
     if feature and (is_update and len(changes) or not is_update):
       self._send_notification_to_feature_subscribers(feature=feature, is_update=is_update)
@@ -299,7 +322,7 @@ class NotificationsListHandler(common.ContentHandler):
 
 app = webapp2.WSGIApplication([
   ('/admin/notifications/list', NotificationsListHandler),
-  ('/tasks/email-owners', EmailOwnersHandler),
+  ('/tasks/email-subscribers', EmailHandler),
   ('/tasks/send_notifications', NotificationSendHandler),
   ('/features/push/new', NotificationNewSubscriptionHandler),
   ('/features/push/info', NotificationSubscriptionInfoHandler),

@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% load verbatim %}
+{% load inline_file %}
+
+{% block html_imports %}
+  <link rel="import" href="/static/elements/admin-imports{% if VULCANIZE %}.vulcanize{% endif %}.html">
+{% endblock %}
+
+{% block css %}
+<!-- <style>{% inline_file "/static/css/blink.css" %}</style> -->
+<style>
+:root {
+  --padding: 8px;
+}
+#users_list {
+  margin-bottom: 100px;
+}
+#users_list > li {
+  padding: var(--padding) 0;
+}
+.component_list {
+  list-style: none;
+  padding: var(--padding) calc(var(--padding) * 2);
+}
+.component_list li {
+  margin-left: calc(var(--padding) * 2);
+}
+.layout.horizontal {
+  display: flex;
+}
+.layout.horizontal.center {
+  align-items: center;
+}
+#subheader a {
+  margin-left: calc(var(--padding) * 3);
+}
+.user_name {
+  min-width: 175px;
+}
+</style>
+{% endblock %}
+
+{% block drawer %}
+
+{% endblock %}
+
+{% block subheader %}
+<div id="subheader">
+  <div>
+    <h2>Feature owners</h2>
+  </div>
+  <a href="/admin/blink">View list as components →</a>
+</div>
+{% endblock %}
+
+{% block content %}
+
+<section>
+
+<ul id="users_list">
+  {% for s in subscribers %}
+    <li class="layout horizontal center">
+      <div>
+        <h3 class="user_name">{{s.name}}</h3>
+        <h4><a href="mailto:{{s.email}}">{{s.email}}</a></h4>
+      </div>
+      <ul class="component_list layout horizontal center">
+        {% for c in s.owned_components %}
+          <li><a href="/admin/blink#{{c.name}}">{{c.name}}</a></li>
+        {% endfor %}
+      </ul>
+    </li>
+  {% endfor %}
+</ul>
+
+</section>
+
+{% endblock %}
+
+{% block js %}
+<script>
+(function() {
+'use strict';
+
+document.body.classList.remove('loading');
+
+})();
+</script>
+{% endblock %}
