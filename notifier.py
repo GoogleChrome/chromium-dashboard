@@ -88,7 +88,7 @@ def email_feature_subscribers(feature, is_update=False, changes=[]):
 
     intro = 'You are listed as an owner for web platform features under "{component_name}"'.format(component_name=component_name)
     if not owners:
-      intro = 'Just letting you know that there\'s a new feature under "{component_name}".'.format(component_name=component_name)
+      intro = 'Just letting you know that there\'s a new feature under "{component_name}"'.format(component_name=component_name)
 
     created_on = datetime.datetime.strptime(str(feature.created), "%Y-%m-%d %H:%M:%S.%f").date()
     new_msg = """
@@ -127,7 +127,7 @@ def email_feature_subscribers(feature, is_update=False, changes=[]):
 
     intro = 'You are listed as an owner for web platform features under "{component_name}"'.format(component_name=component_name)
     if not owners:
-      intro = 'Just letting you know that a feature under "{component_name}" has changed.'.format(component_name=component_name)
+      intro = 'Just letting you know that a feature under "{component_name}" has changed'.format(component_name=component_name)
 
   update_msg = """<html><body>
 <p>Hi {owners},</p>
