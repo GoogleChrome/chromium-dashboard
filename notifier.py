@@ -111,7 +111,8 @@ def email_feature_subscribers(feature, is_update=False, changes=[]):
   <li>Add a sample to https://github.com/GoogleChrome/samples (see <a href="https://github.com/GoogleChrome/samples#contributing-samples">contributing</a>).</li>
   <li>Don't forget add your demo link to the <a href="https://www.chromestatus.com/admin/features/edit/{id}">chromestatus feature entry</a>.</li>
 </ul>
-<p>CC'd on this email? Feel free to reply-all if you can help with these tasks.</p>
+<p>If you're CCd on this email you expressed interest in helping with features
+under "{component_name}". Feel free to reply-all if can help with these tasks!</p>
 </body></html>
 """.format(name=feature.name, id=feature.key().id(), created=created_on,
            created_by=feature.created_by, intro=intro,
@@ -153,7 +154,8 @@ def email_feature_subscribers(feature, is_update=False, changes=[]):
 </li>
 </ul>
 
-<p>CC'd on this email? Feel free to reply-all if can help.</p>
+<p>If you're CCd on this email you expressed interest in helping with features
+under "{component_name}". Feel free to reply-all if can help!</p>
 </body></html>
 """.format(name=feature.name, id=feature.key().id(), updated=updated_on,
            updated_by=feature.updated_by, intro=intro,
