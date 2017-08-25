@@ -61,10 +61,6 @@
                 <li data-feature-id$="[[f.id]]">
                   <a href$="/feature/[[f.id]]">[[f.name]]</a>
                   <span class="icon_row">
-                    <span class="tooltip no-push-notifications" title="Subscribe to notification updates">
-                      <iron-icon icon="chromestatus:notifications-off"
-                                on-click="subscribeToFeature" class$="pushicon [[pushDisabled()]]"></iron-icon>
-                    </span>
                     <template is="dom-if" if="[[f.browsers.chrome.origintrial]]">
                       <span class="tooltip" title="Origin Trial">
                         <iron-icon icon="chromestatus:extension" class="experimental" data-tooltip></iron-icon>
@@ -85,6 +81,10 @@
                         <iron-icon icon="chromestatus:warning" class="deprecated" data-tooltip></iron-icon>
                       </span>
                     </template>
+                    <span class="tooltip no-push-notifications" title="Subscribe to notification updates">
+                      <iron-icon icon="chromestatus:notifications-off"
+                                on-click="subscribeToFeature" class$="pushicon [[pushDisabled()]]"></iron-icon>
+                    </span>
                   </span>
                 </li>
               </template>
@@ -119,10 +119,6 @@
                 <li data-feature-id$="[[f.id]]">
                   <a href$="/feature/[[f.id]]">[[f.name]]</a>
                   <span class="icon_row">
-                    <span class="tooltip no-push-notifications" title="Subscribe to notification updates">
-                      <iron-icon icon="chromestatus:notifications-off"
-                                on-click="subscribeToFeature" class$="pushicon [[pushDisabled()]]"></iron-icon>
-                    </span>
                     <template is="dom-if" if="[[f.browsers.chrome.origintrial]]">
                       <span class="tooltip" title="Origin Trial">
                         <iron-icon icon="chromestatus:extension" class="experimental" data-tooltip></iron-icon>
@@ -143,6 +139,10 @@
                         <iron-icon icon="chromestatus:warning" class="deprecated" data-tooltip></iron-icon>
                       </span>
                     </template>
+                    <span class="tooltip no-push-notifications" title="Subscribe to notification updates">
+                      <iron-icon icon="chromestatus:notifications-off"
+                                on-click="subscribeToFeature" class$="pushicon [[pushDisabled()]]"></iron-icon>
+                    </span>
                   </span>
                 </li>
               </template>
@@ -177,10 +177,6 @@
                 <li data-feature-id$="[[f.id]]">
                   <a href$="/feature/[[f.id]]">[[f.name]]</a>
                   <span class="icon_row">
-                      <span class="tooltip no-push-notifications" title="Subscribe to notification updates">
-                      <iron-icon icon="chromestatus:notifications-off"
-                                on-click="subscribeToFeature" class$="pushicon [[pushDisabled()]]"></iron-icon>
-                    </span>
                     <template is="dom-if" if="[[f.browsers.chrome.origintrial]]">
                       <span class="tooltip" title="Origin Trial">
                         <iron-icon icon="chromestatus:extension" class="experimental" data-tooltip></iron-icon>
@@ -201,6 +197,10 @@
                         <iron-icon icon="chromestatus:warning" class="deprecated" data-tooltip></iron-icon>
                       </span>
                     </template>
+                    <span class="tooltip no-push-notifications" title="Subscribe to notification updates">
+                      <iron-icon icon="chromestatus:notifications-off"
+                                on-click="subscribeToFeature" class$="pushicon [[pushDisabled()]]"></iron-icon>
+                    </span>
                   </span>
                 </li>
               </template>
