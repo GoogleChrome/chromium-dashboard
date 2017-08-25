@@ -63,36 +63,16 @@ iron-icon {
   position: relative;
   width: 45px;
   height: 45px;
-  overflow: hidden;
   background: url(/static/img/chrome_logo.svg) no-repeat 50% 50%;
   background-size: contain;
-  border-radius: 50%;
   margin-right: $content-padding / 2;
-  contain: strict;
-
-  &::before {
-    position: absolute;
-    bottom: 0;
-    font-size: 11px;
-    font-weight: 600;
-    background: #222;
-    padding: 2px 0 3px 0;
-    color: #fff;
-    width: 100%;
-    text-align: center;
-    box-sizing: border-box;
-  }
 }
 
 .chrome_version--beta .chrome-logo {
-  &::before {
-    content: 'beta';
-  }
+  background-image: url(/static/img/chrome_logo_beta.svg); 
 }
 .chrome_version--dev .chrome-logo {
-  &::before {
-    content: 'dev';
-  }
+  background-image: url(/static/img/chrome_logo_dev.svg);
 }
 
 .releases {
