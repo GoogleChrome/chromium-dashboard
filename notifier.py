@@ -70,10 +70,8 @@ def email_feature_subscribers(feature, is_update=False, changes=[]):
       owner_ids = [x.key().id() for x in owners]
       return [x for x in subscribers if not x.key().id() in owner_ids]
 
-    # TODO: switch back
-    owners = [] #component.owners
-    # subscribers = list_diff(component.subscribers, owners) + feature_watchers
-    subscribers = models.FeatureOwner.all().filter('email = ', 'e.bidelman@google.com').fetch(1)
+    owners = component.owners
+    subscribers = list_diff(component.subscribers, owners) + feature_watchers
 
     if not subscribers and not owners:
       logging.info('Blink component "%s" has no subscribers or owners. Skipping email.' % component_name)
@@ -117,7 +115,8 @@ under "{component_name}". Feel free to reply-all if can help with these tasks!</
 """.format(name=feature.name, id=feature.key().id(), created=created_on,
            created_by=feature.created_by, intro=intro,
            owners=', '.join([o.name for o in owners]), milestone=milestone_str,
-           status=models.IMPLEMENTATION_STATUS[feature.impl_status_chrome])
+           status=models.IMPLEMENTATION_STATUS[feature.impl_status_chrome],
+           component_name=component_name)
 
   updated_on = datetime.datetime.strptime(str(feature.updated), "%Y-%m-%d %H:%M:%S.%f").date()
   formatted_changes = ''
@@ -162,7 +161,8 @@ under "{component_name}". Feel free to reply-all if can help!</p>
            owners=', '.join([o.name for o in owners]), milestone=milestone_str,
            status=models.IMPLEMENTATION_STATUS[feature.impl_status_chrome],
            formatted_changes=formatted_changes,
-           wf_content=create_wf_content_list(component_name))
+           wf_content=create_wf_content_list(component_name),
+           component_name=component_name)
 
   message = mail.EmailMessage(sender='Chromestatus <admin@cr-status.appspotmail.com>',
                               subject='update',

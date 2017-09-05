@@ -118,7 +118,7 @@ class ContentHandler(BaseHandler):
 
     if users.is_current_user_admin():
       is_whitelisted = True
-    elif user.email().endswith('@chromium.org'):
+    elif user.email().endswith('@chromium.org') or self._is_googler(user):
       is_whitelisted = True
     else:
       # TODO(ericbidelman): memcache user lookup.
