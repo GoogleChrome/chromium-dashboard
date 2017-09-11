@@ -7,29 +7,59 @@
 {% endblock %}
 
 {% block css %}
-<!-- <style>{% inline_file "/static/css/blink.css" %}</style> -->
+<style>{% inline_file "/static/css/schedule.css" %}</style>
 <style>
 :root {
   --padding: 8px;
 }
 #users_list {
   margin-bottom: 100px;
+  list-style: none;
 }
-#users_list > li {
-  padding: var(--padding) 0;
+#channels, .filtering {
+  justify-content: space-evenly;
+  padding: calc(var(--padding) * 2);
+  margin-bottom: calc(var(--padding) * 2);
+  background-color: #fff;
+  width: 700px;
+}
+.channels-title {
+  font-weight: 500;
+}
+.filtering {
+  text-align: center;
+  font-size: 16px;
+}
+.chrome_version {
+  font-size: 30px;
+  margin: 0;
+  padding-bottom: var(--padding);
+  border-bottom: 3px solid transparent;
+  color: #4580c0;
+}
+.chrome_version a {
+  text-decoration: none;
+}
+.chrome_version:hover,
+.chrome_version.highlight {
+  border-bottom: 3px solid currentColor;
 }
 .component_list {
-  list-style: none;
-  padding: var(--padding) calc(var(--padding) * 2);
+  padding: calc(var(--padding) * 2) calc(var(--padding) * 4);
 }
-.component_list li {
-  margin-left: calc(var(--padding) * 2);
+.component:not(:last-child) {
+  margin-bottom: calc(var(--padding) * 2);
 }
-.layout.horizontal {
-  display: flex;
+.component_name {
+  font-weight: 500;
+  font-size: 14px;
 }
-.layout.horizontal.center {
-  align-items: center;
+.component_features {
+  margin-top: calc(var(--padding) * 2);
+}
+.feature_name {
+  margin: 0 calc(var(--padding) * 4);
+  line-height: 1.8;
 }
 #subheader a {
   margin-left: calc(var(--padding) * 3);
@@ -49,26 +79,76 @@
   <div>
     <h2>Feature owners</h2>
   </div>
-  <a href="/admin/blink">View list as components →</a>
+  <a href="/admin/blink">Edit component owners →</a>
 </div>
 {% endblock %}
 
 {% block content %}
 
+<div id="channels" class="layout horizontal center">
+  <h3 class="channels-title" title="Select a version to only show features for that milestone">Milestone filter:</h3>
+  {% for key,channel in channels.items %}
+    <div class="chrome_version layout horizontal center chrome_version--{{key}} {% if selected_milestone == channel.mstone %}highlight{% endif %}" title="Show only features for the current {{key}}">
+      <a href="?showFeatures&milestone={{channel.mstone}}" class="layout horizontal center">
+        <div class="chrome-logo"></div>
+        <!-- <span>{{key}}</span> -->
+        {{channel.mstone}}
+      </a>
+    </div>
+  {% endfor %}
+</div>
+
+{% if selected_milestone %}
+  <div class="filtering">Filtering features in the M{{selected_milestone}} release. <a href="?showFeatures"><b>CLEAR ✘</b></a></div>
+{% endif %}
+
+<!-- <div id="channels" class="layout horizontal center">
+  <h3>Filter by milestone:</h3>
+  <div class="chrome_version layout horizontal center chrome_version--stable" title="Current Stable">
+    <span class="chrome-logo"></span>
+    <span>Stable</span>
+    <a href=""></a>
+  </div>
+  <div class="chrome_version layout horizontal center chrome_version--beta" title="Current Beta">
+    <span class="chrome-logo"></span>
+    <span>Beta</span>
+    <a href=""></a>
+  </div>
+  <div class="chrome_version layout horizontal center chrome_version--dev" title="Current Dev">
+    <span class="chrome-logo"></span>
+    <span>Dev</span>
+    <a href=""></a>
+  </div>
+  <div class="chrome_version layout horizontal center chrome_version--canary" title="Current Canary">
+    <span class="chrome-logo"></span>
+    <span>Canary</span>
+    <a href=""></a>
+  </div>
+</div> -->
+
 <section>
 
 <ul id="users_list">
   {% for s in subscribers %}
-    <li class="layout horizontal center">
+    <li>
       <div>
         <h3 class="user_name">{{s.name}}</h3>
         <h4><a href="mailto:{{s.email}}">{{s.email}}</a></h4>
       </div>
-      <ul class="component_list layout horizontal center">
-        {% for c in s.owned_components %}
-          <li><a href="/admin/blink#{{c.name}}">{{c.name}}</a></li>
+      <div class="component_list">
+        {% for component in s.owned_components %}
+          <div class="component">
+            <h4><a href="/admin/blink#{{component.name}}" class="component_name">{{component.name}}</a></h4>
+            {% if component.features|length %}
+              <ol class="component_features">
+                {% for feature in component.features %}
+                  <li class="feature_name"><a href="/feature/{{feature.id}}">{{feature.name}}</a></li>
+                {% endfor %}
+              </ol>
+            {% endif %}
+          </div>
         {% endfor %}
-      </ul>
+      </div>
     </li>
   {% endfor %}
 </ul>

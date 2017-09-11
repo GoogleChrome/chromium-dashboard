@@ -59,7 +59,8 @@ iron-icon {
   font-size: 24px;
   text-align: center;
 }
-.chrome_version .chrome-logo {
+.chrome_version .chrome-logo,
+.chrome_version--stable .chrome-logo {
   position: relative;
   width: 45px;
   height: 45px;
@@ -69,10 +70,14 @@ iron-icon {
 }
 
 .chrome_version--beta .chrome-logo {
-  background-image: url(/static/img/chrome_logo_beta.svg); 
+  background-image: url(/static/img/chrome_logo_beta.svg);
 }
 .chrome_version--dev .chrome-logo {
   background-image: url(/static/img/chrome_logo_dev.svg);
+}
+.chrome_version--canary .chrome-logo {
+  background-image: url(/static/img/chrome_logo_canary.svg);
+  background-size: 42px;
 }
 
 .releases {
