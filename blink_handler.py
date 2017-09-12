@@ -143,7 +143,7 @@ class SubscribersHandler(common.ContentHandler):
   # @common.strip_trailing_slash
   def get(self, path):
     users = models.FeatureOwner.all().order('name').fetch(None)
-    feature_list = models.Feature.get_all()
+    feature_list = models.Feature.get_chronological()
 
     milestone = self.request.get('milestone') or None
     if milestone:
@@ -161,16 +161,14 @@ class SubscribersHandler(common.ContentHandler):
 
     details = construct_chrome_channels_details()
 
-    channels = collections.OrderedDict([
-      ('stable', details['stable']),
-      ('beta', details['beta']),
-      ('dev', details['dev']),
-      ('canary', details['canary']),
-    ])
-
     data = {
       'subscribers': users,
-      'channels': channels,
+      'channels': collections.OrderedDict([
+        ('stable', details['stable']),
+        ('beta', details['beta']),
+        ('dev', details['dev']),
+        ('canary', details['canary']),
+      ]),
       'selected_milestone': int(milestone) if milestone else None
     }
 

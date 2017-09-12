@@ -7,66 +7,9 @@
 {% endblock %}
 
 {% block css %}
-<style>{% inline_file "/static/css/schedule.css" %}</style>
 <style>
-:root {
-  --padding: 8px;
-}
-#users_list {
-  margin-bottom: 100px;
-  list-style: none;
-}
-#channels, .filtering {
-  justify-content: space-evenly;
-  padding: calc(var(--padding) * 2);
-  margin-bottom: calc(var(--padding) * 2);
-  background-color: #fff;
-  width: 700px;
-}
-.channels-title {
-  font-weight: 500;
-}
-.filtering {
-  text-align: center;
-  font-size: 16px;
-}
-.chrome_version {
-  font-size: 30px;
-  margin: 0;
-  padding-bottom: var(--padding);
-  border-bottom: 3px solid transparent;
-  color: #4580c0;
-}
-.chrome_version a {
-  text-decoration: none;
-}
-.chrome_version:hover,
-.chrome_version.highlight {
-  border-bottom: 3px solid currentColor;
-}
-.component_list {
-  padding: calc(var(--padding) * 2) calc(var(--padding) * 4);
-}
-.component:not(:last-child) {
-  margin-bottom: calc(var(--padding) * 2);
-}
-.component_name {
-  font-weight: 500;
-  font-size: 14px;
-}
-.component_features {
-  margin-top: calc(var(--padding) * 2);
-}
-.feature_name {
-  margin: 0 calc(var(--padding) * 4);
-  line-height: 1.8;
-}
-#subheader a {
-  margin-left: calc(var(--padding) * 3);
-}
-.user_name {
-  min-width: 175px;
-}
+{% inline_file "/static/css/schedule.css" %}
+{% inline_file "/static/css/subscribers.css" %}
 </style>
 {% endblock %}
 
@@ -86,7 +29,10 @@
 {% block content %}
 
 <div id="channels" class="layout horizontal center">
-  <h3 class="channels-title" title="Select a version to only show features for that milestone">Milestone filter:</h3>
+  <div>
+    <h3 class="channels-title" title="Select a version to only show features for that milestone">Show features in:</h3>
+    <!-- <a href="?showFeatures">show all</a> | <a href="/admin/subscribers">hide all</a> -->
+  </div>
   {% for key,channel in channels.items %}
     <div class="chrome_version layout horizontal center chrome_version--{{key}} {% if selected_milestone == channel.mstone %}highlight{% endif %}" title="Show only features for the current {{key}}">
       <a href="?showFeatures&milestone={{channel.mstone}}" class="layout horizontal center">
@@ -99,7 +45,7 @@
 </div>
 
 {% if selected_milestone %}
-  <div class="filtering">Filtering features in the M{{selected_milestone}} release. <a href="?showFeatures"><b>CLEAR ✘</b></a></div>
+  <div class="filtering">Showing features in M{{selected_milestone}}. <a href="?showFeatures"><b>CLEAR MILESTONE ✘</b></a></div>
 {% endif %}
 
 <!-- <div id="channels" class="layout horizontal center">
