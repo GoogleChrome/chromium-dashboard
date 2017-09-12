@@ -1,0 +1,78 @@
+@import "vars";
+@import "layout";
+
+:root {
+  --padding: 8px;
+}
+#subheader {
+  max-width: initial;
+  justify-content: initial;
+
+  a {
+    margin-left: calc(var(--padding) * 3);
+  }
+}
+#users_list {
+  margin-bottom: 100px;
+  list-style: none;
+}
+#channels, .filtering {
+  justify-content: space-evenly;
+  padding: calc(var(--padding) * 2);
+  margin-bottom: calc(var(--padding) * 2);
+  background-color: #fff;
+  width: $max-content-width;
+  max-width: 100%;
+}
+.channels-title {
+  font-weight: 500;
+}
+.filtering {
+  text-align: center;
+  font-size: 16px;
+}
+.chrome_version {
+  margin: 0;
+  border-bottom: 3px solid transparent;
+  color: #4580c0;
+
+  &:hover,
+  &.highlight {
+    border-bottom: 3px solid currentColor;
+  }
+
+  &.highlight {
+    font-weight: 500;
+  }
+
+  a {
+    text-decoration: none;
+  }
+}
+
+.component_list {
+  padding: calc(var(--padding) * 2) calc(var(--padding) * 4);
+}
+.component:not(:last-child) {
+  margin-bottom: calc(var(--padding) * 2);
+}
+.component_name {
+  font-weight: 500;
+  font-size: 14px;
+}
+.component_features {
+  margin-top: calc(var(--padding) * 2);
+}
+.feature_name {
+  margin: 0 calc(var(--padding) * 4);
+  line-height: 1.8;
+}
+.user_name {
+  min-width: 175px;
+}
+
+@media only screen and (max-width: 700px) {
+  .milestone_number {
+    display: none;
+  }
+}

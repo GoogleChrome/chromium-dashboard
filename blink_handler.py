@@ -15,6 +15,7 @@
 
 __author__ = 'ericbidelman@chromium.org (Eric Bidelman)'
 
+import collections
 import json
 import logging
 import os
@@ -28,6 +29,7 @@ import common
 import models
 import settings
 import util
+from schedule import construct_chrome_channels_details
 
 
 class PopulateSubscribersHandler(common.ContentHandler):
@@ -46,7 +48,9 @@ class PopulateSubscribersHandler(common.ContentHandler):
         name=unicode(profile['name']),
         email=unicode(profile['email']),
         twitter=profile.get('twitter', None),
-        blink_components=blink_components
+        blink_components=blink_components,
+        primary_blink_components=blink_components,
+        watching_all_features=False,
       )
       user.put()
     f.close()
@@ -138,17 +142,34 @@ class SubscribersHandler(common.ContentHandler):
   @common.require_whitelisted_user
   # @common.strip_trailing_slash
   def get(self, path):
-    subscribers = models.FeatureOwner.all().order('name').fetch(None)
+    users = models.FeatureOwner.all().order('name').fetch(None)
+    feature_list = models.Feature.get_chronological()
 
-    # Format for django template
-    # subscribers = [x.format_for_template() for x in subscribers]
+    milestone = self.request.get('milestone') or None
+    if milestone:
+      milestone = int(milestone)
+      feature_list = filter(lambda f: (f['shipped_milestone'] or f['shipped_android_milestone']) == milestone, feature_list)
 
-    for s in subscribers:
-      s.subscribed_components = [models.BlinkComponent.get(key) for key in s.blink_components]
-      s.owned_components = [models.BlinkComponent.get(key) for key in s.primary_blink_components]
+    list_features_per_owner = 'showFeatures' in self.request.GET
+    for user in users:
+      # user.subscribed_components = [models.BlinkComponent.get(key) for key in user.blink_components]
+      user.owned_components = [models.BlinkComponent.get(key) for key in user.primary_blink_components]
+      for component in user.owned_components:
+        component.features = []
+        if list_features_per_owner:
+          component.features = filter(lambda f: component.name in f['blink_components'], feature_list)
+
+    details = construct_chrome_channels_details()
 
     data = {
-      'subscribers': subscribers,
+      'subscribers': users,
+      'channels': collections.OrderedDict([
+        ('stable', details['stable']),
+        ('beta', details['beta']),
+        ('dev', details['dev']),
+        ('canary', details['canary']),
+      ]),
+      'selected_milestone': int(milestone) if milestone else None
     }
 
     self.render(data, template_path=os.path.join('admin/subscribers.html'))

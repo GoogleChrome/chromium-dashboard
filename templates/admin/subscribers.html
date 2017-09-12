@@ -7,36 +7,9 @@
 {% endblock %}
 
 {% block css %}
-<!-- <style>{% inline_file "/static/css/blink.css" %}</style> -->
 <style>
-:root {
-  --padding: 8px;
-}
-#users_list {
-  margin-bottom: 100px;
-}
-#users_list > li {
-  padding: var(--padding) 0;
-}
-.component_list {
-  list-style: none;
-  padding: var(--padding) calc(var(--padding) * 2);
-}
-.component_list li {
-  margin-left: calc(var(--padding) * 2);
-}
-.layout.horizontal {
-  display: flex;
-}
-.layout.horizontal.center {
-  align-items: center;
-}
-#subheader a {
-  margin-left: calc(var(--padding) * 3);
-}
-.user_name {
-  min-width: 175px;
-}
+{% inline_file "/static/css/schedule.css" %}
+{% inline_file "/static/css/subscribers.css" %}
 </style>
 {% endblock %}
 
@@ -49,26 +22,79 @@
   <div>
     <h2>Feature owners</h2>
   </div>
-  <a href="/admin/blink">View list as components →</a>
+  <a href="/admin/blink">Edit component owners →</a>
 </div>
 {% endblock %}
 
 {% block content %}
 
+<div id="channels" class="layout horizontal center">
+  <div>
+    <h3 class="channels-title" title="Select a version to only show features for that milestone">Show features in:</h3>
+    <!-- <a href="?showFeatures">show all</a> | <a href="/admin/subscribers">hide all</a> -->
+  </div>
+  {% for key,channel in channels.items %}
+    <div class="chrome_version layout horizontal center chrome_version--{{key}} {% if selected_milestone == channel.mstone %}highlight{% endif %}" title="Show only features for the current {{key}}">
+      <a href="?showFeatures&milestone={{channel.mstone}}" class="layout horizontal center">
+        <div class="chrome-logo"></div>
+        <!-- <span>{{key}}</span> -->
+        <span class="milestone_number">{{channel.mstone}}<span>
+      </a>
+    </div>
+  {% endfor %}
+</div>
+
+{% if selected_milestone %}
+  <div class="filtering">Showing features in M{{selected_milestone}}. <a href="?showFeatures"><b>CLEAR MILESTONE ✘</b></a></div>
+{% endif %}
+
+<!-- <div id="channels" class="layout horizontal center">
+  <h3>Filter by milestone:</h3>
+  <div class="chrome_version layout horizontal center chrome_version--stable" title="Current Stable">
+    <span class="chrome-logo"></span>
+    <span>Stable</span>
+    <a href=""></a>
+  </div>
+  <div class="chrome_version layout horizontal center chrome_version--beta" title="Current Beta">
+    <span class="chrome-logo"></span>
+    <span>Beta</span>
+    <a href=""></a>
+  </div>
+  <div class="chrome_version layout horizontal center chrome_version--dev" title="Current Dev">
+    <span class="chrome-logo"></span>
+    <span>Dev</span>
+    <a href=""></a>
+  </div>
+  <div class="chrome_version layout horizontal center chrome_version--canary" title="Current Canary">
+    <span class="chrome-logo"></span>
+    <span>Canary</span>
+    <a href=""></a>
+  </div>
+</div> -->
+
 <section>
 
 <ul id="users_list">
   {% for s in subscribers %}
-    <li class="layout horizontal center">
+    <li>
       <div>
         <h3 class="user_name">{{s.name}}</h3>
         <h4><a href="mailto:{{s.email}}">{{s.email}}</a></h4>
       </div>
-      <ul class="component_list layout horizontal center">
-        {% for c in s.owned_components %}
-          <li><a href="/admin/blink#{{c.name}}">{{c.name}}</a></li>
+      <div class="component_list">
+        {% for component in s.owned_components %}
+          <div class="component">
+            <h4><a href="/admin/blink#{{component.name}}" class="component_name">{{component.name}}</a></h4>
+            {% if component.features|length %}
+              <ol class="component_features">
+                {% for feature in component.features %}
+                  <li class="feature_name"><a href="/feature/{{feature.id}}">{{feature.name}}</a></li>
+                {% endfor %}
+              </ol>
+            {% endif %}
+          </div>
         {% endfor %}
-      </ul>
+      </div>
     </li>
   {% endfor %}
 </ul>
