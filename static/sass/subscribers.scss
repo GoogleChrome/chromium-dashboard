@@ -21,7 +21,8 @@
   padding: calc(var(--padding) * 2);
   margin-bottom: calc(var(--padding) * 2);
   background-color: #fff;
-  width: 700px;
+  width: $max-content-width;
+  max-width: 100%;
 }
 .channels-title {
   font-weight: 500;
@@ -44,10 +45,11 @@
     font-weight: 500;
   }
 
-   a {
+  a {
     text-decoration: none;
   }
 }
+
 .component_list {
   padding: calc(var(--padding) * 2) calc(var(--padding) * 4);
 }
@@ -67,4 +69,10 @@
 }
 .user_name {
   min-width: 175px;
+}
+
+@media only screen and (max-width: 700px) {
+  .milestone_number {
+    display: none;
+  }
 }
