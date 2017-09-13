@@ -52,6 +52,12 @@
         <iron-icon icon="chromestatus:bug-report"></iron-icon>
       </a>
     </span>
+    <span class="tooltip no-web-share" title="Share this feature">
+      <a href="#" data-tooltip>
+        <iron-icon icon="chromestatus:share"
+                    onclick="shareFeature()"></iron-icon>
+      </a>
+    </span>
     {% if user.is_whitelisted %}
     <span class="tooltip" title="Edit this feature">
       <a href="/admin/features/edit/{{ feature.id }}" class="editfeature" data-tooltip>
@@ -241,8 +247,33 @@ function subscribeToFeature(featureId) {
   }
 }
 
+function shareFeature() {
+  if (navigator.share) {
+    var url = '/feature/{{ feature.id }}';
+    navigator.share({
+        title: '{{ feature.name }}',
+        text: '{{ feature.summary }}',
+        url: url
+    })
+    .then(() => {
+      ga('send', 'social', {
+        'socialNetwork': 'web',
+        'socialAction': 'share',
+        'socialTarget': url
+      });
+    });
+  }
+}
+
 // Remove loading spinner at page load.
 document.body.classList.remove('loading');
+
+// Unhide "Web Share" feature if browser supports it.
+if (navigator.share) {
+  Array.from(document.querySelectorAll('.no-web-share')).forEach(el => {
+    el.classList.remove('no-web-share');
+  });
+}
 
 // Unhide notification features if browser supports it.
 if (PushNotifier.SUPPORTS_NOTIFICATIONS) {
