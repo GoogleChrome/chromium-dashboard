@@ -68,7 +68,7 @@ button:not(:disabled):active {
   content: ',\00a0';
 }
 
-.no-push-notifications {
+.no-push-notifications, .no-web-share {
   display: none;
 }
 
@@ -76,8 +76,4 @@ button:not(:disabled):active {
   .no-push-notifications {
     display: initial;
   }
-}
-
-.no-web-share {
-  display: none;
 }

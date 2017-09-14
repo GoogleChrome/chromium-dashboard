@@ -54,8 +54,7 @@
     </span>
     <span class="tooltip no-web-share" title="Share this feature">
       <a href="#" data-tooltip>
-        <iron-icon icon="chromestatus:share"
-                    onclick="shareFeature()"></iron-icon>
+        <iron-icon icon="chromestatus:share" onclick="shareFeature()"></iron-icon>
       </a>
     </span>
     {% if user.is_whitelisted %}
@@ -251,9 +250,9 @@ function shareFeature() {
   if (navigator.share) {
     var url = '/feature/{{ feature.id }}';
     navigator.share({
-        title: '{{ feature.name }}',
-        text: '{{ feature.summary }}',
-        url: url
+      title: '{{ feature.name|escapejs }}',
+      text: '{{ feature.summary|escapejs }}',
+      url: url
     })
     .then(() => {
       ga('send', 'social', {
