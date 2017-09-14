@@ -56,11 +56,15 @@ def construct_chrome_channels_details():
     channels[channel] = fetch_chrome_release_info(major_version)
     channels[channel]['version'] = major_version
 
-  # Adjust for the brief period after a stable release where stable and beta
-  # are on the same major version.
+  # Adjust for the brief period after next miletone gets promted to stable/beta
+  # channel and their major versions are the same.
   if channels['stable']['version'] == channels['beta']['version']:
-    channels['beta'] = channels['dev']
-    channels['dev'] = channels['canary']
+    new_beta_version = channels['stable']['version'] + 1
+    channels['beta'] = fetch_chrome_release_info(new_beta_version)
+    channels['beta']['version'] = new_beta_version
+    new_dev_version = channels['beta']['version'] + 1
+    channels['dev'] = fetch_chrome_release_info(new_dev_version)
+    channels['dev']['version'] = new_dev_version
 
   return channels
 
