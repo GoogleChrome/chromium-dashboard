@@ -469,7 +469,7 @@
       if (!link) {
         return;
       }
-      var m = link.match(/[\/|?id=]([0-9]+)$/); // pull out bug number.
+      var m = link.match(/id=([0-9]+)/g); // pull out bug number.
       if (m) {
         return m[1];
       }
