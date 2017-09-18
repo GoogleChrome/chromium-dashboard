@@ -91,7 +91,7 @@ def email_feature_subscribers(feature, is_update=False, changes=[]):
     created_on = datetime.datetime.strptime(str(feature.created), "%Y-%m-%d %H:%M:%S.%f").date()
     new_msg = """
 <html><body>
-<p>Hi {owners},</p>
+<p>Hi <b>{owners}</b>,</p>
 
 <p>{intro}. {created_by} added a new feature to this component:</p>
 <hr>
@@ -130,7 +130,7 @@ under "{component_name}". Feel free to reply-all if you can help with these task
       intro = 'Just letting you know that a feature under "{component_name}" has changed'.format(component_name=component_name)
 
   update_msg = """<html><body>
-<p>Hi {owners},</p>
+<p>Hi <b>{owners}</b>,</p>
 
 <p>{intro}. {updated_by} updated this feature:</p>
 <hr>
