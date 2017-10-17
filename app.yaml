@@ -5,9 +5,6 @@ instance_class: F2
 
 # default_expiration: "30s"
 
-env_variables:
- DJANGO_SETTINGS_MODULE: 'settings'
-
 builtins:
 - remote_api: on
 
@@ -116,3 +113,4 @@ handlers:
 
 includes:
 - skip_files.yaml
+- env_vars.yaml

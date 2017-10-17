@@ -1,7 +1,7 @@
 runtime: python27
 api_version: 1
 threadsafe: true
-module: notifier
+service: notifier
 
 handlers:
 - url: /.*
@@ -10,3 +10,4 @@ handlers:
 
 includes:
 - skip_files.yaml
+- env_vars.yaml

@@ -325,7 +325,7 @@ class Feature(DictModel):
 
   @classmethod
   def get_feature_chunk_memcache_keys(self, key_prefix):
-    num_features = Feature.all(keys_only=True).count()
+    num_features = len(Feature.all().fetch(limit=None, keys_only=True))
     l = list_to_chunks(range(0, num_features), self.MAX_CHUNK_SIZE)
     return ['%s|chunk%s' % (key_prefix, i) for i,val in enumerate(l)]
 

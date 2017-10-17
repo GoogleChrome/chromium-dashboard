@@ -27,7 +27,8 @@ readonly FIREBASE_SERVER_KEY=`cat .fcm_server_key`
 gulp
 
 $BASEDIR/oauthtoken.sh deploy
-appcfg.py update -A cr-status \
-  -V $deployVersion \
-  --env_variable=FIREBASE_SERVER_KEY:$FIREBASE_SERVER_KEY \
+gcloud app deploy \
+  --project cr-status \
+  --version $deployVersion \
+  --no-promote \
   $BASEDIR/../app.yaml $BASEDIR/../notifier.yaml

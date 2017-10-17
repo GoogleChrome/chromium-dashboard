@@ -19,3 +19,4 @@ css/
 static/dist/
 cookie
 lib
+env_vars.yaml
