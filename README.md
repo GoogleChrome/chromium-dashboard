@@ -38,7 +38,7 @@ When `./scripts/start_server.sh` is run, it will populate this value as an envir
 
 #### Seed the blink component owners
 
-Visit http://localhost:8080/admin/blink/populate_blink to see the list of Blink component owners
+Visit http://localhost:8080/admin/blink/populate_blink to see the list of Blink component owners.
 
 #### Debugging / settings
 
