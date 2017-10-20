@@ -86,7 +86,7 @@
             <iron-icon icon="chromestatus:warning" class="deprecated" data-tooltip></iron-icon>
           </span>
         </template>
-        <template is="dom-if" if="{{needsflag}}">
+        <template is="dom-if" if="{{feature.browsers.chrome.flag}}">
           <span class="tooltip" title="Experimental feature behind a flag">
             <iron-icon icon="chromestatus:flag" class="experimental"></iron-icon>
           </span>
@@ -342,10 +342,6 @@
       feature: {
         type: Object,
         observer: '_featureChanged'
-      },
-      needsflag: {
-        type: Boolean,
-        value: false
       },
       whitelisted: {
         type: Boolean,

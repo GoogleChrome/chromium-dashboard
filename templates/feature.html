@@ -39,6 +39,11 @@
       <iron-icon icon="chromestatus:extension" class="experimental"></iron-icon>
     </span>
     {% endif %}
+    {% if feature.meta.needsflag %}
+    <span class="tooltip" title="Experimental feature behind a flag">
+      <iron-icon icon="chromestatus:flag" class="experimental"></iron-icon>
+    </span>
+    {% endif %}
     <span class="tooltip no-push-notifications" title="Receive a push notification where there are updates">
       <a href="#" data-tooltip>
         <iron-icon icon="chromestatus:notifications-off"

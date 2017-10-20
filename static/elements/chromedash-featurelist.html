@@ -13,8 +13,7 @@
           <div hidden$="[[_computeMilestoneHidden(feature, features, filtered)]]"
                class="milestone-marker">[[_computeMilestoneString(feature.browsers.chrome.status.milestone_str)]]</div>
           <chromedash-feature id="[[feature.id]]" tabindex="0"
-               feature="[[feature]]" needsflag="[[feature.meta.needsflag]]"
-               whitelisted="[[whitelisted]]"></chromedash-feature>
+               feature="[[feature]]" whitelisted="[[whitelisted]]"></chromedash-feature>
         </div>
       </template>
     </iron-list>
