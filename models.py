@@ -1076,6 +1076,23 @@ class HistogramModel(db.Model):
   bucket_id = db.IntegerProperty(required=True)
   property_name = db.StringProperty(required=True)
 
+  MAX_CHUNK_SIZE = 500 # max num features to save for each memcache chunk.
+
+  @classmethod
+  def get_property_chunk_memcache_keys(self, property_class, key_prefix):
+    num_props = len(property_class.all().fetch(limit=None, keys_only=True))
+    l = list_to_chunks(range(0, num_props), self.MAX_CHUNK_SIZE)
+    return ['%s|chunk%s' % (key_prefix, i) for i,val in enumerate(l)]
+
+  @classmethod
+  def set_property_chunk_memcache_keys(self, key_prefix, pop_list):
+    chunks = list_to_chunks(pop_list, self.MAX_CHUNK_SIZE)
+    vals = []
+    for i, chunk in enumerate(chunks):
+      vals.append(('%s|chunk%s' % (key_prefix, i), chunk))
+    d = dict(vals)
+    return d
+
   @classmethod
   def get_all(self):
     output = {}

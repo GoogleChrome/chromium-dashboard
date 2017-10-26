@@ -24,7 +24,6 @@ import common
 import models
 import settings
 
-
 CACHE_AGE = 86400 # 24hrs
 
 
@@ -94,10 +93,13 @@ class FeatureObserverTimelineHandler(TimelineHandler):
 class FeatureHandler(common.JSONHandler):
 
   def get(self):
-    properties = memcache.get(self.MEMCACHE_KEY)
+    keys = self.PROPERTY_CLASS.get_property_chunk_memcache_keys(
+        self.PROPERTY_CLASS, self.MEMCACHE_KEY)
+    properties = memcache.get_multi(keys)
+    # properties = memcache.get(self.MEMCACHE_KEY)
 
-    if properties is None:
-
+    # if properties is None:
+    if len(properties.keys()) != len(properties) or not properties:
       properties = []
 
       # For every css/feature property, fetch latest day_percentage.
@@ -113,7 +115,16 @@ class FeatureHandler(common.JSONHandler):
       # Sort list by percentage. Highest first.
       properties.sort(key=lambda x: x.day_percentage, reverse=True)
 
-      memcache.set(self.MEMCACHE_KEY, properties, time=CACHE_AGE)
+      # memcache.set(self.MEMCACHE_KEY, properties, time=CACHE_AGE)
+
+      # Memcache doesn't support saving values > 1MB. Break up list into chunks.
+      memcache.set_multi(PROPERTY_CLASS.set_property_chunk_memcache_keys(
+          self.MEMCACHE_KEY, properties))
+    else:
+      temp_list = []
+      for key in sorted(properties.keys()):
+        temp_list.extend(properties[key])
+      properties = temp_list
 
     properties = self._clean_data(properties)
     # Metrics json shouldn't be cached by intermediary caches because users
