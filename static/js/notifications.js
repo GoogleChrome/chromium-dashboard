@@ -81,7 +81,7 @@ class PushNotifier {
   }
 
   static get GRANTED_ACCESS() {
-    return Notification.permission === 'granted';
+    return window.Notification && Notification.permission === 'granted';
   }
 
   static get ALL_FEATURES_TOPIC_ID() {

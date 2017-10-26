@@ -201,7 +201,7 @@ if (PushNotifier.SUPPORTS_NOTIFICATIONS) {
   $('#features-subscribe-button').addEventListener('click', function(e) {
     e.preventDefault();
 
-    if (Notification.permission === 'denied') {
+    if (window.Notification && Notification.permission === 'denied') {
       alert('Notifications were previously denied. Please reset the browser permission.');
       return;
     }
