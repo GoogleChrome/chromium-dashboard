@@ -80,7 +80,7 @@ def email_feature_subscribers(feature, is_update=False, changes=[]):
     if feature.shipped_milestone:
       milestone_str = feature.shipped_milestone
     elif feature.shipped_milestone is None and feature.shipped_android_milestone:
-      milestone_str = feature.shipped_android_milestone + ' (android)'
+      milestone_str = '%s (android)' % feature.shipped_android_milestone
     else:
       milestone_str = 'not yet assigned'
 
