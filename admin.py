@@ -78,7 +78,7 @@ class UmaQuery(object):
     self.property_map_class = property_map_class
 
   def _FetchData(self, date):
-    params = '?end_date=%s&day_count=1' % date.strftime('%Y%m%d')
+    params = '?date=%s' % date.strftime('%Y%m%d')
     url = UMA_QUERY_SERVER + self.query_name + params
     result = _FetchWithCookie(url)
 
@@ -97,7 +97,7 @@ class UmaQuery(object):
   def _SaveData(self, data, date):
     property_map = self.property_map_class.get_all()
 
-    for bucket_str, rate in data.iteritems():
+    for bucket_str, bucket_dict in data.iteritems():
       bucket_id = int(bucket_str)
 
       query = self.model_class.all()
@@ -121,7 +121,9 @@ class UmaQuery(object):
           date=date,
           #hits=num_hits,
           #total_pages=total_pages,
-          day_percentage=rate
+          day_percentage=bucket_dict['rate']
+          #day_milestone=bucket_dict['milestone']
+          #low_volume=bucket_dict['low_volume']
           #rolling_percentage=
           )
       entity.put()
@@ -134,13 +136,13 @@ class UmaQuery(object):
 
 
 UMA_QUERIES = [
-  UmaQuery(query_name='featureobserver',
+  UmaQuery(query_name='usecounter.features',
            model_class=models.FeatureObserver,
            property_map_class=models.FeatureObserverHistogram),
-  UmaQuery(query_name='featureobserver.cssproperties',
+  UmaQuery(query_name='usecounter.cssproperties',
            model_class=models.StableInstance,
            property_map_class=models.CssPropertyHistogram),
-  UmaQuery(query_name='animation.cssproperties',
+  UmaQuery(query_name='usecounter.animatedcssproperties',
            model_class=models.AnimatedProperty,
            property_map_class=models.CssPropertyHistogram),
 ]
