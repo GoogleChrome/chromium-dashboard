@@ -78,7 +78,7 @@ class UmaQuery(object):
     self.property_map_class = property_map_class
 
   def _FetchData(self, date):
-    params = '?end_date=%s&day_count=1' % date.strftime('%Y%m%d')
+    params = '?date=%s' % date.strftime('%Y%m%d')
     url = UMA_QUERY_SERVER + self.query_name + params
     result = _FetchWithCookie(url)
 
@@ -134,13 +134,13 @@ class UmaQuery(object):
 
 
 UMA_QUERIES = [
-  UmaQuery(query_name='featureobserver',
+  UmaQuery(query_name='usecounter.features',
            model_class=models.FeatureObserver,
            property_map_class=models.FeatureObserverHistogram),
-  UmaQuery(query_name='featureobserver.cssproperties',
+  UmaQuery(query_name='usecounter.cssproperties',
            model_class=models.StableInstance,
            property_map_class=models.CssPropertyHistogram),
-  UmaQuery(query_name='animation.cssproperties',
+  UmaQuery(query_name='usecounter.animatedcssproperties',
            model_class=models.AnimatedProperty,
            property_map_class=models.CssPropertyHistogram),
 ]
