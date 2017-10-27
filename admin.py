@@ -97,7 +97,7 @@ class UmaQuery(object):
   def _SaveData(self, data, date):
     property_map = self.property_map_class.get_all()
 
-    for bucket_str, rate in data.iteritems():
+    for bucket_str, bucket_dict in data.iteritems():
       bucket_id = int(bucket_str)
 
       query = self.model_class.all()
@@ -121,7 +121,9 @@ class UmaQuery(object):
           date=date,
           #hits=num_hits,
           #total_pages=total_pages,
-          day_percentage=rate
+          day_percentage=bucket_dict['rate']
+          #day_milestone=bucket_dict['milestone']
+          #low_volume=bucket_dict['low_volume']
           #rolling_percentage=
           )
       entity.put()
