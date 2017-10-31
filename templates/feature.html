@@ -144,7 +144,7 @@
         {% endif %}
         </b>
         {% if feature.bug_url %}
-        (<a href="{{feature.bug_url}}" target="_blank">launch bug</a>)
+        (<a href="{{feature.bug_url}}" target="_blank">tracking bug</a>)
         {% endif %}
         in:
         <ul>
@@ -172,7 +172,7 @@
       {% else %}
         {{ feature.meta.milestone_str }}
         {% if feature.bug_url %}
-        (<a href="{{ feature.bug_url }}" target="_blank">launch bug</a>)
+        (<a href="{{ feature.bug_url }}" target="_blank">tracking bug</a>)
         {% endif %}
       {% endif %}
     </p>
