@@ -96,7 +96,6 @@ class FeatureHandler(common.JSONHandler):
     keys = self.PROPERTY_CLASS.get_property_chunk_memcache_keys(
         self.PROPERTY_CLASS, self.MEMCACHE_KEY)
     properties = memcache.get_multi(keys)
-    # properties = memcache.get(self.MEMCACHE_KEY)
 
     # if properties is None:
     if len(properties.keys()) != len(properties) or not properties:
@@ -115,11 +114,9 @@ class FeatureHandler(common.JSONHandler):
       # Sort list by percentage. Highest first.
       properties.sort(key=lambda x: x.day_percentage, reverse=True)
 
-      # memcache.set(self.MEMCACHE_KEY, properties, time=CACHE_AGE)
-
       # Memcache doesn't support saving values > 1MB. Break up list into chunks.
-      memcache.set_multi(PROPERTY_CLASS.set_property_chunk_memcache_keys(
-          self.MEMCACHE_KEY, properties))
+      chunk_keys = self.PROPERTY_CLASS.set_property_chunk_memcache_keys(self.MEMCACHE_KEY, properties)
+      memcache.set_multi(chunk_keys, time=CACHE_AGE)
     else:
       temp_list = []
       for key in sorted(properties.keys()):
