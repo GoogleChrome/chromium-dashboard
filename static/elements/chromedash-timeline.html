@@ -92,7 +92,29 @@
       }
 
       table.addRows(rowArray);
-      var options = {
+
+      // function aggregateByMonth(date) {
+      //   var month = date.getMonth();
+      //   var year = date.getFullYear();
+      //   return new Date(year, month);
+      // }
+
+      // table = google.visualization.data.group(table,
+      //   [{column: 0, modifier: aggregateByMonth, type: 'date'}],
+      //   [{column: 1, aggregation: google.visualization.data.max, type: 'number'}],
+      //   [{column: 2, type: 'string'}]
+      // );
+
+      var formatter = new google.visualization.NumberFormat({fractionDigits: 6});
+      formatter.format(table, 1); // Apply formatter to percentage column.
+
+      // Show 2 years of data.
+      const startYear = (new Date()).getFullYear() - 2;
+      var view = new google.visualization.DataView(table);
+      view.setRows(view.getFilteredRows([{column: 0, minValue: new Date(startYear, 0, 1)}]));
+
+      var chart = new google.visualization.LineChart(this.$.chart);
+      chart.draw(view, {
         title: this.title,
         subtitle: 'all channels and platforms',
         backgroundColor: 'white',
@@ -105,7 +127,7 @@
         },
         hAxis: {
           title: 'Date',
-          format: 'yyyy-MM-dd'
+          format: 'MM/yy'
         },
         width: '100%',
         height: '100%',
@@ -119,13 +141,7 @@
             pointsVisible: false
           }
         }
-      };
-
-      var formatter = new google.visualization.NumberFormat({fractionDigits: 6});
-      formatter.format(table, 1); // Apply formatter to percentage column.
-
-      var chart = new google.visualization.LineChart(this.$.chart);
-      chart.draw(table, options);
+      });
     },
 
     _updateTimeline: function(selectedBucketId, type, view, useRemoteData) {
