@@ -83,9 +83,8 @@
         date.setFullYear(parseInt(dateStr[0]), parseInt(dateStr[1]) - 1, parseInt(dateStr[2]));
         var row = [date, parseFloat((item.day_percentage * 100).toFixed(6))];
         // Add annotation where UMA data switched to new stuff.
-
-        if (item.date === '2017-10-26') {
-          row.push('N', 'Modernized metrics');
+        if (item.date === '2017-10-27') {
+          row.push('A', 'Modernized metrics');
         } else {
           row.push(null, null);
         }
