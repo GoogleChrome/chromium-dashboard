@@ -6,6 +6,11 @@
   width: $max-content-width;
 }
 
+:host label {
+  margin-left: 8px;
+  cursor: pointer;
+}
+
 #chart {
   margin-top: 15px;
   width: 100%;

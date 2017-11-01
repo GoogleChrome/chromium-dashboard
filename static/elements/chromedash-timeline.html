@@ -10,6 +10,7 @@
       <option value="{{bucket.0}}">{{bucket.1}}</option>
     </template>
   </select>
+  <label>Show all historical data: <input type="checkbox" checked="{{showAllHistoricalData::change}}"></label>
   <div id="chart"></div>
 </template>
 <script>
@@ -20,6 +21,10 @@
       selectedBucketId: {
         type: Number,
         value: 1
+      },
+      showAllHistoricalData: {
+        type: Boolean,
+        value: false
       },
       timeline: {
         notify: true
@@ -52,7 +57,7 @@
     },
 
     observers: [
-      '_updateTimeline(selectedBucketId, type, view, useRemoteData)'
+      '_updateTimeline(selectedBucketId, type, view, useRemoteData, showAllHistoricalData)',
     ],
 
     ready: function() {
@@ -69,7 +74,7 @@
       }.bind(this));
     },
 
-    drawVisualization: function(data, bucketId) {
+    drawVisualization: function(data, bucketId, showAllHistoricalData) {
       var table = new google.visualization.DataTable();
       table.addColumn('date', 'Date');
       table.addColumn('number', 'Percentage');
@@ -108,10 +113,13 @@
       var formatter = new google.visualization.NumberFormat({fractionDigits: 6});
       formatter.format(table, 1); // Apply formatter to percentage column.
 
-      // Show 2 years of data.
-      const startYear = (new Date()).getFullYear() - 2;
-      var view = new google.visualization.DataView(table);
-      view.setRows(view.getFilteredRows([{column: 0, minValue: new Date(startYear, 0, 1)}]));
+      var view = table;
+
+      if (!showAllHistoricalData) {
+        const startYear = (new Date()).getFullYear() - 2; // Show only 2 years of data by default.
+        view = new google.visualization.DataView(table);
+        view.setRows(view.getFilteredRows([{column: 0, minValue: new Date(startYear, 0, 1)}]));
+      }
 
       var chart = new google.visualization.LineChart(this.$.chart);
       chart.draw(view, {
@@ -144,7 +152,7 @@
       });
     },
 
-    _updateTimeline: function(selectedBucketId, type, view, useRemoteData) {
+    _updateTimeline: function(selectedBucketId, type, view, useRemoteData, showAllHistoricalData) {
       if (this.selectedBucketId === 1) {
         return;
       }
@@ -158,7 +166,7 @@
       xhr.responseType = 'json';
       xhr.open('GET', url);
       xhr.onload = function(e) {
-        this.drawVisualization(e.target.response, this.selectedBucketId);
+        this.drawVisualization(e.target.response, this.selectedBucketId, showAllHistoricalData);
       }.bind(this);
       xhr.send();
 
