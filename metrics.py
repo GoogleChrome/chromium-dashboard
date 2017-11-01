@@ -17,7 +17,7 @@ __author__ = 'ericbidelman@chromium.org (Eric Bidelman)'
 
 import webapp2
 
-from datetime import timedelta
+import datetime
 from google.appengine.api import memcache
 
 import common
@@ -41,19 +41,17 @@ class TimelineHandler(common.JSONHandler):
     if data is None:
       query = self.MODEL_CLASS.all()
       query.filter('bucket_id =', bucket_id)
+      # The switch to new UMA data changed the semantics of the CSS animated
+      # properties. Since showing the historical data alongside the new data
+      # does not make sense, filter out everything before the 2017-10-26 switch.
+      # See https://github.com/GoogleChrome/chromium-dashboard/issues/414
+      if self.MODEL_CLASS == models.AnimatedProperty:
+        query.filter('date >=', datetime.datetime(2017, 10, 26))
       query.order('date')
       data = query.fetch(None) # All matching results.
 
       # Remove outliers if percentage is not between 0-1.
       data = filter(lambda x: 0 <= x.day_percentage <= 1, data)
-
-      # Remove one time peaks where delta is more than 10%.
-      threshold = 0.1
-      last_percentage = None
-      for x in list(data):
-        if last_percentage and (abs(x.day_percentage - last_percentage) > threshold):
-          data.remove(x)
-        last_percentage = x.day_percentage
 
       memcache.set(KEY, data, time=CACHE_AGE)
 
