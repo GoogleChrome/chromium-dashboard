@@ -1,10 +1,9 @@
 <link rel="import" href="../bower_components/polymer/polymer.html">
-<link rel="import" href="../bower_components/google-apis/google-legacy-loader.html">
+<link rel="import" href="google-charts-lib.html">
 
 <dom-module id="chromedash-feature-timeline">
 <link rel="import" type="css" href="../css/elements/chromedash-timeline.css">
 <template>
-  <google-legacy-loader on-api-load="_chartAPILoaded"></google-legacy-loader>
   <select value="{{selectedBucketId::change}}">
     <option disabled value="1">Select a property</option>
     <template is="dom-repeat" items="{{props}}" as="bucket">
@@ -56,21 +55,41 @@
       '_updateTimeline(selectedBucketId, type, view, useRemoteData)'
     ],
 
+    ready: function() {
+      google.charts.load('current', {'packages': ['corechart']});
+      google.charts.setOnLoadCallback(function() {
+        // If there's an id in the URL, load the property it.
+        var lastSlash = location.pathname.lastIndexOf('/');
+        if (lastSlash > 0) {
+          var id = parseInt(location.pathname.substring(lastSlash + 1));
+          if (String(id) != 'NaN') {
+            this.selectedBucketId = id;
+          }
+        }
+      }.bind(this));
+    },
+
     drawVisualization: function(data, bucketId) {
       var table = new google.visualization.DataTable();
       table.addColumn('date', 'Date');
       table.addColumn('number', 'Percentage');
+      table.addColumn({type:'string', role: 'annotation'});
+      table.addColumn({type:'string', role: 'annotationText'});
 
       var rowArray = [];
       for (var i = 0, item; item = data[i]; ++i) {
         var dateStr = item.date.split('-');
         var date = new Date();
         date.setFullYear(parseInt(dateStr[0]), parseInt(dateStr[1]) - 1, parseInt(dateStr[2]));
-        rowArray.push([
-          date,
-          parseFloat((item.day_percentage * 100).toFixed(6))
-          // parseFloat(item.day_percentage * 100)
-        ]);
+        var row = [date, parseFloat((item.day_percentage * 100).toFixed(6))];
+        // Add annotation where UMA data switched to new stuff.
+
+        if (item.date === '2017-10-26') {
+          row.push('N', 'Modernized metrics');
+        } else {
+          row.push(null, null);
+        }
+        rowArray.push(row);
       }
 
       table.addRows(rowArray);
@@ -79,8 +98,9 @@
         subtitle: 'all channels and platforms',
         backgroundColor: 'white',
         legend: { position: 'none' },
+        curveType: 'function',
         vAxis: {
-          title: 'Percentage',
+          title: '% page loads',
           // maxValue: 100,
           minValue: 0
         },
@@ -90,15 +110,21 @@
         },
         width: '100%',
         height: '100%',
-        // chartArea:{left: 20, top: '20', width: '75%'},
-        pointSize: 5
+        pointSize: 4,
+        series: {0: {color: '#4580c0'}},
+        trendlines: {
+          0: {
+            type: 'linear',
+            opacity: 0.5,
+            color: '#bdd6ed',
+            pointsVisible: false
+          }
+        }
       };
 
       var formatter = new google.visualization.NumberFormat({fractionDigits: 6});
       formatter.format(table, 1); // Apply formatter to percentage column.
 
-      // var chart = new google.charts.Line(this.$.chart);
-      // chart.draw(table, google.charts.Line.convertOptions(options));
       var chart = new google.visualization.LineChart(this.$.chart);
       chart.draw(table, options);
     },
@@ -126,24 +152,6 @@
                   this.selectedBucketId;
         history.pushState({id: this.selectedBucketId}, '', url);
       }
-    },
-
-    _chartAPILoaded: function(e, detail) {
-      // google.load('visualization', '1.1', {
-        // packages: ['line'],
-      google.load('visualization', '1.0', {
-        packages: ['corechart'],
-        callback: function() {
-          // If there's an id in the URL, load the property it.
-          var lastSlash = location.pathname.lastIndexOf('/');
-          if (lastSlash > 0) {
-            var id = parseInt(location.pathname.substring(lastSlash + 1));
-            if (String(id) != 'NaN') {
-              this.selectedBucketId = id;
-            }
-          }
-        }.bind(this)
-      });
     }
   });
 </script>

@@ -22,11 +22,15 @@
 
 {% block content %}
 <div class="data-panel">
-  <p class="description">Percentages are the number of times (as the fraction of all animated properties) this property is animated.</p>
   <chromedash-feature-timeline
       type="css" view="animated"
-      title="Percentage of times (as the fraction of all animated properties) this property is animated."
-      {% if not prod %}use-remote-data{% endif %}></chromedash-feature-timeline>
+      title="The % of page loads in which the given CSS property was animated."
+      {% if not prod %}usse-remote-data{% endif %}></chromedash-feature-timeline>
+  <p class="callout">
+    <b>Note</b>: on 2017-10-26 the underlying metrics were switched over to a newer collection system
+    which is <a href="https://groups.google.com/a/chromium.org/forum/#!msg/blink-api-owners-discuss/IpIkbz0qtrM/HUCfSMv2AQAJ" target="_blank">more accurate</a>.
+    This is also the reason for the abrupt spike around 2017-10-26.
+  </p>
 </div>
 {% endblock %}
 
