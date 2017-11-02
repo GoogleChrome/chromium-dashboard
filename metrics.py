@@ -90,36 +90,47 @@ class FeatureObserverTimelineHandler(TimelineHandler):
 
 class FeatureHandler(common.JSONHandler):
 
+  def __query_metrics_for_properties(self):
+    properties = []
+
+    # For every css property, fetch latest day_percentage.
+    buckets = self.PROPERTY_CLASS.all().fetch(None)
+    for b in buckets:
+      query = self.MODEL_CLASS.all()
+      query.filter('bucket_id =', b.bucket_id)
+      query.order('-date')
+      last_result = query.get()
+      if last_result:
+        properties.append(last_result)
+
+    # Sort list by percentage. Highest first.
+    properties.sort(key=lambda x: x.day_percentage, reverse=True)
+    return properties
+
   def get(self):
-    keys = self.PROPERTY_CLASS.get_property_chunk_memcache_keys(
-        self.PROPERTY_CLASS, self.MEMCACHE_KEY)
-    properties = memcache.get_multi(keys)
+    # Memcache doesn't support saving values > 1MB. Break up features into chunks
+    # and save those to memcache.
+    if self.MODEL_CLASS == models.FeatureObserver:
+      keys = self.PROPERTY_CLASS.get_property_chunk_memcache_keys(
+          self.PROPERTY_CLASS, self.MEMCACHE_KEY)
+      properties = memcache.get_multi(keys)
 
-    # if properties is None:
-    if len(properties.keys()) != len(properties) or not properties:
-      properties = []
+      if len(properties.keys()) != len(properties) or not properties:
+        properties = self.__query_metrics_for_properties()
 
-      # For every css/feature property, fetch latest day_percentage.
-      buckets = self.PROPERTY_CLASS.all().fetch(None)
-      for b in buckets:
-        query = self.MODEL_CLASS.all()
-        query.filter('bucket_id =', b.bucket_id)
-        query.order('-date')
-        last_result = query.get()
-        if last_result:
-          properties.append(last_result)
-
-      # Sort list by percentage. Highest first.
-      properties.sort(key=lambda x: x.day_percentage, reverse=True)
-
-      # Memcache doesn't support saving values > 1MB. Break up list into chunks.
-      chunk_keys = self.PROPERTY_CLASS.set_property_chunk_memcache_keys(self.MEMCACHE_KEY, properties)
-      memcache.set_multi(chunk_keys, time=CACHE_AGE)
+        # Memcache doesn't support saving values > 1MB. Break up list into chunks.
+        chunk_keys = self.PROPERTY_CLASS.set_property_chunk_memcache_keys(self.MEMCACHE_KEY, properties)
+        memcache.set_multi(chunk_keys, time=CACHE_AGE)
+      else:
+        temp_list = []
+        for key in sorted(properties.keys()):
+          temp_list.extend(properties[key])
+        properties = temp_list
     else:
-      temp_list = []
-      for key in sorted(properties.keys()):
-        temp_list.extend(properties[key])
-      properties = temp_list
+      properties = memcache.get(self.MEMCACHE_KEY)
+      if properties is None:
+        properties = self.__query_metrics_for_properties()
+        memcache.set(self.MEMCACHE_KEY, properties, time=CACHE_AGE)
 
     properties = self._clean_data(properties)
     # Metrics json shouldn't be cached by intermediary caches because users
