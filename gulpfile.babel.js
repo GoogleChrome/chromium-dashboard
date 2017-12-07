@@ -228,7 +228,7 @@ gulp.task('generate-service-worker', () => {
       urlPattern: /\/data\//,
       handler: 'fastest'
     }, {
-      urlPattern: /\/features.json$/,
+      urlPattern: /\/features(_v\d+)?.json$/,
       handler: 'fastest'
     }, {
       urlPattern: /\/samples.json$/,
