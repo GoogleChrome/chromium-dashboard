@@ -84,6 +84,13 @@ def email_feature_subscribers(feature, is_update=False, changes=[]):
     else:
       milestone_str = 'not yet assigned'
 
+	moz_steps = ''
+	for link in feature.doc_links:
+	  if 'developer.mozilla.org' in link:
+	    moz_links += ('<li>' + link + '</li>')
+	if moz_links:
+		moz_steps = '<li>Review the following MDN pages and <a href="https://docs.google.com/document/d/10jDTZeW914ahqWfxwm9_WXJWvyAKT6EcDIlbI3w0BKY/edit#heading=h.frumfipthu7">subscribe to updates</a> for them.<ul>' + moz_links + '</ul><li>'
+
     intro = 'You are listed as an owner for web platform features under "{component_name}"'.format(component_name=component_name)
     if not owners:
       intro = 'Just letting you know that there\'s a new feature under "{component_name}"'.format(component_name=component_name)
@@ -151,6 +158,7 @@ under "{component_name}". Feel free to reply-all if you can help with these task
 <li>Check existing /web content for correctness. Non-exhaustive list:
   <ul>{wf_content}</ul>
 </li>
+{moz_steps}
 </ul>
 
 <p>If you're CCd on this email, you expressed interest in helping with features
@@ -161,7 +169,7 @@ under "{component_name}". Feel free to reply-all if you can help!</p>
            owners=', '.join([o.name for o in owners]), milestone=milestone_str,
            status=models.IMPLEMENTATION_STATUS[feature.impl_status_chrome],
            formatted_changes=formatted_changes,
-           wf_content=create_wf_content_list(component_name),
+           wf_content=create_wf_content_list(component_name),moz_steps=moz_steps
            component_name=component_name)
 
   message = mail.EmailMessage(sender='Chromestatus <admin@cr-status.appspotmail.com>',
