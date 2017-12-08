@@ -169,7 +169,7 @@ under "{component_name}". Feel free to reply-all if you can help!</p>
            owners=', '.join([o.name for o in owners]), milestone=milestone_str,
            status=models.IMPLEMENTATION_STATUS[feature.impl_status_chrome],
            formatted_changes=formatted_changes,
-           wf_content=create_wf_content_list(component_name),moz_steps=moz_steps
+           wf_content=create_wf_content_list(component_name),moz_steps=moz_steps,
            component_name=component_name)
 
   message = mail.EmailMessage(sender='Chromestatus <admin@cr-status.appspotmail.com>',
