@@ -84,12 +84,12 @@ def email_feature_subscribers(feature, is_update=False, changes=[]):
     else:
       milestone_str = 'not yet assigned'
 
-	moz_links = ''
-	for link in feature.doc_links:
-	  if 'developer.mozilla.org' in link:
-	    moz_links += '<li>%s</li>' % link
-	if moz_links:
-		moz_links = '<li>Review the following MDN pages and <a href="https://docs.google.com/document/d/10jDTZeW914ahqWfxwm9_WXJWvyAKT6EcDIlbI3w0BKY/edit#heading=h.frumfipthu7">subscribe to updates</a> for them.<ul>' + moz_links + '</ul></li>'
+	  moz_links = ''
+	  for link in feature.doc_links:
+	    if 'developer.mozilla.org' in link:
+	      moz_links += '<li>%s</li>' % link
+	  if moz_links:
+		  moz_links = '<li>Review the following MDN pages and <a href="https://docs.google.com/document/d/10jDTZeW914ahqWfxwm9_WXJWvyAKT6EcDIlbI3w0BKY/edit#heading=h.frumfipthu7">subscribe to updates</a> for them.<ul>' + moz_links + '</ul></li>'
 
     intro = 'You are listed as an owner for web platform features under "{component_name}"'.format(component_name=component_name)
     if not owners:
