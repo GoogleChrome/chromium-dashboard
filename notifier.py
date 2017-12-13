@@ -31,9 +31,10 @@ import settings
 import models
 
 
-class PushSubscription(models.DictModel):
-  subscription_id = db.StringProperty(required=True)
-
+def list_diff(subscribers, owners):
+  """Returns list B - A."""
+  owner_ids = [x.key().id() for x in owners]
+  return [x for x in subscribers if not x.key().id() in owner_ids]
 
 def get_default_headers():
   headers = {
@@ -65,11 +66,6 @@ def email_feature_subscribers(feature, is_update=False, changes=[]):
       logging.warn('Blink component "%s" not found. Not sending email to subscribers' % component_name)
       return
 
-    def list_diff(subscribers, owners):
-      """Returns list B - A."""
-      owner_ids = [x.key().id() for x in owners]
-      return [x for x in subscribers if not x.key().id() in owner_ids]
-
     owners = component.owners
     subscribers = list_diff(component.subscribers, owners) + feature_watchers
 
@@ -83,6 +79,16 @@ def email_feature_subscribers(feature, is_update=False, changes=[]):
       milestone_str = '%s (android)' % feature.shipped_android_milestone
     else:
       milestone_str = 'not yet assigned'
+
+    moz_links = ''
+    for link in feature.doc_links:
+      if 'developer.mozilla.org' in link:
+        moz_links += '<li>%s</li>' % link
+    if moz_links:
+      moz_links = """
+          <li>Review the following MDN pages and <a href="https://docs.google.com/document/d/10jDTZeW914ahqWfxwm9_WXJWvyAKT6EcDIlbI3w0BKY/edit#heading=h.frumfipthu7">subscribe to updates</a> for them.
+          <ul>%s</ul>
+          </li>""" % moz_links
 
     intro = 'You are listed as an owner for web platform features under "{component_name}"'.format(component_name=component_name)
     if not owners:
@@ -151,6 +157,7 @@ under "{component_name}". Feel free to reply-all if you can help with these task
 <li>Check existing /web content for correctness. Non-exhaustive list:
   <ul>{wf_content}</ul>
 </li>
+{moz_links}
 </ul>
 
 <p>If you're CCd on this email, you expressed interest in helping with features
@@ -161,7 +168,7 @@ under "{component_name}". Feel free to reply-all if you can help!</p>
            owners=', '.join([o.name for o in owners]), milestone=milestone_str,
            status=models.IMPLEMENTATION_STATUS[feature.impl_status_chrome],
            formatted_changes=formatted_changes,
-           wf_content=create_wf_content_list(component_name),
+           wf_content=create_wf_content_list(component_name), moz_links=moz_links,
            component_name=component_name)
 
   message = mail.EmailMessage(sender='Chromestatus <admin@cr-status.appspotmail.com>',
@@ -183,6 +190,10 @@ under "{component_name}". Feel free to reply-all if you can help!</p>
 
   if settings.SEND_EMAIL:
     message.send()
+
+
+class PushSubscription(models.DictModel):
+  subscription_id = db.StringProperty(required=True)
 
 
 class EmailHandler(webapp2.RequestHandler):
