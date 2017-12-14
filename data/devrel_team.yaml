@@ -51,7 +51,10 @@ name: Jeff Posnick
 email: jeffy@google.com
 ---
 name: Mathias Bynens
-email: mathiasb@google.com
+email: mths@google.com
+twitter: mathias
+blink_components:
+  - Blink>JavaScript
 ---
 name: Matt Gaunt
 email: mattguant@google.com
