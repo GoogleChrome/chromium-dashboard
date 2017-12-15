@@ -26,6 +26,8 @@ from google.appengine.api import mail
 from google.appengine.api import urlfetch
 from google.appengine.api import taskqueue
 
+from django.utils.html import escape
+
 import common
 import settings
 import models
@@ -52,7 +54,7 @@ def create_wf_content_list(component):
 
   for url in content:
     list += '<li><a href="{url}">{url}</a>. Last updated: {updatedOn})</li>'.format(
-        url=url['url'], updatedOn=url['updatedOn'])
+        url=escape(url['url']), updatedOn=escape(url['updatedOn']))
   if not wf_component_content:
     list = '<li>None</li>'
   return list
@@ -90,9 +92,9 @@ def email_feature_subscribers(feature, is_update=False, changes=[]):
           <ul>%s</ul>
           </li>""" % moz_links
 
-    intro = 'You are listed as an owner for web platform features under "{component_name}"'.format(component_name=component_name)
+    intro = 'You are listed as an owner for web platform features under "{component_name}"'.format(component_name=escape(component_name))
     if not owners:
-      intro = 'Just letting you know that there\'s a new feature under "{component_name}"'.format(component_name=component_name)
+      intro = 'Just letting you know that there\'s a new feature under "{component_name}"'.format(component_name=escape(component_name))
 
     created_on = datetime.datetime.strptime(str(feature.created), "%Y-%m-%d %H:%M:%S.%f").date()
     new_msg = """
@@ -118,22 +120,22 @@ def email_feature_subscribers(feature, is_update=False, changes=[]):
 <p>If you're CCd on this email, you expressed interest in helping with features
 under "{component_name}". Feel free to reply-all if you can help with these tasks!</p>
 </body></html>
-""".format(name=feature.name, id=feature.key().id(), created=created_on,
-           created_by=feature.created_by, intro=intro,
-           owners=', '.join([o.name for o in owners]), milestone=milestone_str,
-           status=models.IMPLEMENTATION_STATUS[feature.impl_status_chrome],
-           component_name=component_name)
+""".format(name=escape(feature.name), id=escape(feature.key().id()), created=escape(created_on),
+           created_by=escape(feature.created_by), intro=escape(intro),
+           owners=escape(', '.join([o.name for o in owners])), milestone=escape(milestone_str),
+           status=escape(models.IMPLEMENTATION_STATUS[feature.impl_status_chrome]),
+           component_name=escape(component_name))
 
   updated_on = datetime.datetime.strptime(str(feature.updated), "%Y-%m-%d %H:%M:%S.%f").date()
   formatted_changes = ''
   for prop in changes:
-    formatted_changes += '<li>%s: %s -> %s</li>' % (prop['prop_name'], prop['old_val'], prop['new_val'])
+    formatted_changes += '<li>%s: %s -> %s</li>' % (escape(prop['prop_name']), escape(prop['old_val']), escape(prop['new_val']))
   if not formatted_changes:
     formatted_changes = '<li>None</li>'
 
-    intro = 'You are listed as an owner for web platform features under "{component_name}"'.format(component_name=component_name)
+    intro = 'You are listed as an owner for web platform features under "{component_name}"'.format(component_name=escape(component_name))
     if not owners:
-      intro = 'Just letting you know that a feature under "{component_name}" has changed'.format(component_name=component_name)
+      intro = 'Just letting you know that a feature under "{component_name}" has changed'.format(component_name=escape(component_name))
 
   update_msg = """<html><body>
 <p>Hi <b>{owners}</b>,</p>
@@ -163,13 +165,13 @@ under "{component_name}". Feel free to reply-all if you can help with these task
 <p>If you're CCd on this email, you expressed interest in helping with features
 under "{component_name}". Feel free to reply-all if you can help!</p>
 </body></html>
-""".format(name=feature.name, id=feature.key().id(), updated=updated_on,
-           updated_by=feature.updated_by, intro=intro,
-           owners=', '.join([o.name for o in owners]), milestone=milestone_str,
-           status=models.IMPLEMENTATION_STATUS[feature.impl_status_chrome],
-           formatted_changes=formatted_changes,
+""".format(name=escape(feature.name), id=escape(feature.key().id()), updated=escape(updated_on),
+           updated_by=escape(feature.updated_by), intro=escape(intro),
+           owners=escape(', '.join([o.name for o in owners])), milestone=escape(milestone_str),
+           status=escape(models.IMPLEMENTATION_STATUS[feature.impl_status_chrome]),
+           formatted_changes=escape(formatted_changes),
            wf_content=create_wf_content_list(component_name), moz_links=moz_links,
-           component_name=component_name)
+           component_name=escape(component_name))
 
   message = mail.EmailMessage(sender='Chromestatus <admin@cr-status.appspotmail.com>',
                               subject='update',
