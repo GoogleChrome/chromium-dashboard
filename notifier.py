@@ -69,6 +69,7 @@ def email_feature_subscribers(feature, is_update=False, changes=[]):
       return
 
     owners = component.owners
+    # Take of dupe owners from subscribers list.
     subscribers = list_diff(component.subscribers, owners) + feature_watchers
 
     if not subscribers and not owners:
@@ -174,8 +175,9 @@ under "{component_name}". Feel free to reply-all if you can help!</p>
            component_name=escape(component_name))
 
   message = mail.EmailMessage(sender='Chromestatus <admin@cr-status.appspotmail.com>',
-                              subject='update',
-                              cc=[s.email for s in subscribers])
+                              subject='update')
+  if len(subscribers):
+    message.cc = [s.email for s in subscribers]
 
   # Only include to: line if there are feature owners. Otherwise, we'll just use cc.
   if owners:

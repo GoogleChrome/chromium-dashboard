@@ -1031,6 +1031,9 @@ class FeatureOwner(DictModel):
   primary_blink_components = db.ListProperty(db.Key)
   watching_all_features = db.BooleanProperty(default=False)
 
+  # def __eq__(self, other):
+  #   return self.key().id() == other.key().id()
+
   def add_to_component_subscribers(self, component_name):
     """Adds the user to the list of Blink component subscribers."""
     c = BlinkComponent.get_by_name(component_name)
