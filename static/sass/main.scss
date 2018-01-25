@@ -382,7 +382,6 @@ footer {
   }
 
   #subheader {
-
     div {
       &:not(.search):not(.actionlinks) {
         display: none;
@@ -402,12 +401,50 @@ footer {
     left: 0;
     margin: 0;
   }
+
+  #a2hs-button.available {
+    display: flex !important;
+    justify-content: center;
+    align-items: center;
+    margin-top: $content-padding / 2;
+
+    &::after {
+      content: 'Install app';
+      text-transform: uppercase;
+      font-weight: 600;
+      margin-left: $content-padding / 2;
+    }
+  }
 }
 
 // When banner doesn't block navigation buttons.
 @media only screen and (min-width: 1100px) {
   #site-banner {
     display: block;
+  }
+}
+
+#a2hs-button {
+  display: none;
+  margin-left: $content-padding / 2;
+
+  &.available {
+    display: inline-block;
+  }
+
+  &.disabled {
+    opacity: 0.5;
+  }
+
+  img {
+    height: 24px;
+    width: 24px;
+  }
+}
+
+@media all and (display-mode: standalone) {
+  #a2hs-button {
+    display: none;
   }
 }
 

@@ -68,6 +68,7 @@ gulp.task('js', () => {
   return gulp.src([
     //'static/elements/*.vulcanize.js',
     'static/js/**/*.es6.js',
+    'static/js/shared.js',
   ])
     .pipe($.babel()) // Defaults are in .babelrc
     .pipe(uglifyJS())
@@ -131,7 +132,8 @@ gulp.task('clean', () => {
     'static/css/',
     'static/dist',
     'static/elements/*.vulcanize.{html,js}',
-    'static/js/**/*.es6.min.js'
+    'static/js/**/*.es6.min.js',
+    'static/js/shared.min.js'
   ], {dot: true});
 
 });

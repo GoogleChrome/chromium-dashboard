@@ -28,7 +28,7 @@ chromedash-legend {
 }
 
 chromedash-featurelist {
-  max-width: 745px;
+  max-width: $max-content-width;
   margin-bottom: 54px + $content-padding * 2; // bottom bar + some.
 }
 
