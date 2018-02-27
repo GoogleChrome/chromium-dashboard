@@ -1,7 +1,7 @@
 Chrome Platform Status
 ==================
 
-[![Lighthouse score: 100/100](https://lighthouse-badge.appspot.com/?score=100&category=Perf)](https://developers.google.com/web/tools/lighthouse/)
+[![Lighthouse score: 100/100](https://lighthouse-badge.appspot.com/?score=100&category=PWA)](https://github.com/ebidel/lighthouse-badge)
 
 [chromestatus.com](http://chromestatus.com/)
 
