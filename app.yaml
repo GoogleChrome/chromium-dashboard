@@ -93,11 +93,6 @@ handlers:
   script: server.app
   secure: optional
 
-# Testing endpoint
-- url: /delay
-  script: server-delay.app
-  secure: always
-
 - url: /features/push/.*
   script: notifier.app
   secure: always
