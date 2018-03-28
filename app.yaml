@@ -69,6 +69,7 @@ handlers:
 
 - url: /admin/features/.*
   script: admin.app
+  login: required # non-admin
   secure: always
 
 - url: /admin/users/.*

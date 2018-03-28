@@ -315,6 +315,11 @@ class FeatureHandler(common.ContentHandler):
     self.render(data=template_data, template_path=os.path.join(path + '.html'))
 
   def post(self, path, feature_id=None):
+    user = users.get_current_user()
+    if user is None or (user and not self._is_user_whitelisted(user)):
+      common.handle_401(self.request, self.response, Exception)
+      return
+
     spec_link = self.__FullQualifyLink('spec_link')
     bug_url = self.__FullQualifyLink('bug_url')
 
