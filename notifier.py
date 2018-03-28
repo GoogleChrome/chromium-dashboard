@@ -26,7 +26,7 @@ from google.appengine.api import mail
 from google.appengine.api import urlfetch
 from google.appengine.api import taskqueue
 
-from django.utils.html import escape
+from django.utils.html import conditional_escape as escape
 
 import common
 import settings
@@ -93,9 +93,9 @@ def email_feature_subscribers(feature, is_update=False, changes=[]):
           <ul>%s</ul>
           </li>""" % moz_links
 
-    intro = 'You are listed as an owner for web platform features under "{component_name}"'.format(component_name=escape(component_name))
+    intro = 'You are listed as an owner for web platform features under "{component_name}"'.format(component_name=component_name)
     if not owners:
-      intro = 'Just letting you know that there\'s a new feature under "{component_name}"'.format(component_name=escape(component_name))
+      intro = 'Just letting you know that there\'s a new feature under "{component_name}"'.format(component_name=component_name)
 
     created_on = datetime.datetime.strptime(str(feature.created), "%Y-%m-%d %H:%M:%S.%f").date()
     new_msg = """
@@ -130,13 +130,21 @@ under "{component_name}". Feel free to reply-all if you can help with these task
   updated_on = datetime.datetime.strptime(str(feature.updated), "%Y-%m-%d %H:%M:%S.%f").date()
   formatted_changes = ''
   for prop in changes:
-    formatted_changes += '<li>%s: %s &gt; %s</li>' % (escape(prop['prop_name']), escape(prop['old_val']), escape(prop['new_val']))
+    prop_name = prop['prop_name']
+    new_val = prop['new_val']
+    old_val = prop['old_val']
+
+    if prop_name == 'category':
+      new_val = models.FEATURE_CATEGORIES[new_val]
+      old_val = models.FEATURE_CATEGORIES[old_val]
+
+    formatted_changes += '<li>%s: %s &gt; %s</li>' % (prop_name, escape(old_val), escape(new_val))
   if not formatted_changes:
     formatted_changes = '<li>None</li>'
 
-    intro = 'You are listed as an owner for web platform features under "{component_name}"'.format(component_name=escape(component_name))
+    intro = 'You are listed as an owner for web platform features under "{component_name}"'
     if not owners:
-      intro = 'Just letting you know that a feature under "{component_name}" has changed'.format(component_name=escape(component_name))
+      intro = 'Just letting you know that a feature under "{component_name}" has changed'
 
   update_msg = """<html><body>
 <p>Hi <b>{owners}</b>,</p>
@@ -170,7 +178,7 @@ under "{component_name}". Feel free to reply-all if you can help!</p>
            updated_by=escape(feature.updated_by), intro=escape(intro),
            owners=escape(', '.join([o.name for o in owners])), milestone=escape(milestone_str),
            status=escape(models.IMPLEMENTATION_STATUS[feature.impl_status_chrome]),
-           formatted_changes=escape(formatted_changes),
+           formatted_changes=formatted_changes,
            wf_content=create_wf_content_list(component_name), moz_links=moz_links,
            component_name=escape(component_name))
 
