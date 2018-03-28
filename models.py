@@ -38,6 +38,9 @@ INPUT = 12
 PERFORMANCE = 13
 GRAPHICS = 14
 CSS = 15
+HOUDINI = 16
+SERVICEWORKER = 17
+WEBRTC = 18
 
 FEATURE_CATEGORIES = {
   CSS: 'CSS',
@@ -55,6 +58,9 @@ FEATURE_CATEGORIES = {
   INPUT: 'User input',
   PERFORMANCE: 'Performance',
   GRAPHICS: 'Graphics',
+  HOUDINI: 'Houdini',
+  SERVICEWORKER: 'Service Worker',
+  WEBRTC: 'Web RTC',
   }
 
 NO_ACTIVE_DEV = 1
