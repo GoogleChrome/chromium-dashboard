@@ -53,7 +53,7 @@ def create_wf_content_list(component):
     return '<li>None</li>'
 
   for url in content:
-    list += '<li><a href="{url}">{url}</a>. Last updated: {updatedOn})</li>'.format(
+    list += '<li><a href="{url}">{url}</a>. Updated: {updatedOn}</li>'.format(
         url=escape(url['url']), updatedOn=escape(url['updatedOn']))
   if not wf_component_content:
     list = '<li>None</li>'
@@ -130,7 +130,7 @@ under "{component_name}". Feel free to reply-all if you can help with these task
   updated_on = datetime.datetime.strptime(str(feature.updated), "%Y-%m-%d %H:%M:%S.%f").date()
   formatted_changes = ''
   for prop in changes:
-    formatted_changes += '<li>%s: %s -> %s</li>' % (escape(prop['prop_name']), escape(prop['old_val']), escape(prop['new_val']))
+    formatted_changes += '<li>%s: %s &gt; %s</li>' % (escape(prop['prop_name']), escape(prop['old_val']), escape(prop['new_val']))
   if not formatted_changes:
     formatted_changes = '<li>None</li>'
 
