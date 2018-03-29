@@ -16,8 +16,8 @@
 __author__ = 'ericbidelman@chromium.org (Eric Bidelman)'
 
 import webapp2
-
 import datetime
+import json
 from google.appengine.api import memcache
 
 import common
@@ -168,6 +168,20 @@ class FeatureObserverPopularityHandler(FeatureHandler):
     super(FeatureObserverPopularityHandler, self).get()
 
 
+class FeatureBucketsHandler(common.BaseHandler):
+
+  def get(self, type):
+    if type == 'cssprops':
+      properties = sorted(
+          models.CssPropertyHistogram.get_all().iteritems(), key=lambda x:x[1])
+    else:
+      properties = sorted(
+          models.FeatureObserverHistogram.get_all().iteritems(), key=lambda x:x[1])
+
+    self.response.headers['Content-Type'] = 'application/json;charset=utf-8'
+    return self.response.write(json.dumps(properties, separators=(',',':')))
+
+
 app = webapp2.WSGIApplication([
   ('/data/timeline/cssanimated', AnimatedTimelineHandler),
   ('/data/timeline/csspopularity', PopularityTimelineHandler),
@@ -175,4 +189,5 @@ app = webapp2.WSGIApplication([
   ('/data/csspopularity', CSSPopularityHandler),
   ('/data/cssanimated', CSSAnimatedHandler),
   ('/data/featurepopularity', FeatureObserverPopularityHandler),
+  ('/data/blink/(.*)', FeatureBucketsHandler),
 ], debug=settings.DEBUG)
