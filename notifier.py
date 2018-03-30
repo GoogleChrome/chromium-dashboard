@@ -138,7 +138,7 @@ under "{component_name}". Feel free to reply-all if you can help with these task
       new_val = models.FEATURE_CATEGORIES[new_val]
       old_val = models.FEATURE_CATEGORIES[old_val]
 
-    formatted_changes += '<li>%s: <br/><br/><b>old:</b> %s <br/><br/><b>new:</b> %s</li>' % (prop_name, escape(old_val), escape(new_val))
+    formatted_changes += '<li>%s: <br/><b>old:</b> %s <br/><br/><b>new:</b> %s<br/></li>' % (prop_name, escape(old_val), escape(new_val))
   if not formatted_changes:
     formatted_changes = '<li>None</li>'
 
