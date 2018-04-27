@@ -881,10 +881,12 @@ class FeatureForm(forms.Form):
                       'or deprecated)')
 
   #name = PlaceholderCharField(required=True, placeholder='Feature name')
-  name = forms.CharField(required=True, label='Feature')
+  name = forms.CharField(required=True, label='Feature',
+      help_text='Capitalize only the first letter and the beginnings of proper nouns.')
 
   summary = forms.CharField(label='', required=True, max_length=500,
-      widget=forms.Textarea(attrs={'cols': 50, 'placeholder': 'Summary description', 'maxlength': 500}))
+      widget=forms.Textarea(attrs={'cols': 50, 'placeholder': 'Summary description', 'maxlength': 500}),
+      help_text='Complete sentences only. Provide a one sentence description followed by one or two lines explaining how this feature helps web developers.')
 
   # owner = PlaceholderCharField(
   #     required=False, placeholder='Owner(s) email',
@@ -898,7 +900,7 @@ class FeatureForm(forms.Form):
 
 
   bug_url = forms.URLField(required=False, label='Bug URL',
-      help_text='OWP Launch Tracking, crbug, etc.')
+      help_text='Launch Tracking, crbug, or other. Only one URL is allowed.')
 
   blink_components = forms.ChoiceField(
       required=True,
@@ -919,7 +921,7 @@ class FeatureForm(forms.Form):
       help_text='Chrome for Android: ' + SHIPPED_HELP_TXT)
 
   shipped_ios_milestone = forms.IntegerField(required=False, label='',
-      help_text='Chrome for iOS: ' + SHIPPED_HELP_TXT)
+      help_text='Chrome for iOS (rare): ' + SHIPPED_HELP_TXT)
 
   shipped_webview_milestone = forms.IntegerField(required=False, label='',
       help_text='Chrome for Android web view: ' + SHIPPED_HELP_TXT)
@@ -987,8 +989,9 @@ class FeatureForm(forms.Form):
   search_tags = forms.CharField(label='Search tags', required=False,
       help_text='Comma separated keywords used only in search')
 
-  comments = forms.CharField(label='', required=False, max_length=500, widget=forms.Textarea(
-      attrs={'cols': 50, 'placeholder': 'Additional comments, caveats, info...', 'maxlength': 500}))
+  comments = forms.CharField(label='Comments', required=False, max_length=500, widget=forms.Textarea(
+      attrs={'cols': 50, 'placeholder': 'Additional comments, caveats, info...', 'maxlength': 500}),
+      help_text='Complete sentences only.')
 
   class Meta:
     model = Feature
