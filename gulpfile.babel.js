@@ -8,11 +8,12 @@
 import path from 'path';
 import gulp from 'gulp';
 import del from 'del';
-import runSequence from 'run-sequence';
 import swPrecache from 'sw-precache';
+import * as uglifyEs from 'gulp-uglify-es';
+const uglify = uglifyEs.default;
 import gulpLoadPlugins from 'gulp-load-plugins';
 import merge from 'merge-stream';
-import cssslam from 'css-slam';
+import * as cssslam from 'css-slam';
 
 const $ = gulpLoadPlugins();
 
@@ -25,7 +26,9 @@ function minifyHtml() {
 }
 
 function uglifyJS() {
-  return $.uglify({preserveComments: 'some'});
+  return uglify({
+    output: {comments: 'some'},
+  });
 }
 
 function license() {
@@ -105,7 +108,7 @@ gulp.task('vulcanize-lazy-elements', () => {
   .pipe(gulp.dest('static/elements'));
 });
 
-gulp.task('vulcanize', ['styles', 'vulcanize-lazy-elements'], () => {
+gulp.task('vulcanize', gulp.series('styles', 'vulcanize-lazy-elements', function vulcanizeStuff() {
   return gulp.src([
     'static/elements/metrics-imports.html',
     'static/elements/features-imports.html',
@@ -124,11 +127,11 @@ gulp.task('vulcanize', ['styles', 'vulcanize-lazy-elements'], () => {
   .pipe($.if('*.js', uglifyJS())) // Minify JS in HTML output.
   .pipe($.if('*.js', license())) // Add license to top.
   .pipe(gulp.dest('static/elements'));
-});
+}));
 
 // Clean generated files
 gulp.task('clean', () => {
-  del([
+  return del([
     'static/css/',
     'static/dist',
     'static/elements/*.vulcanize.{html,js}',
@@ -137,18 +140,6 @@ gulp.task('clean', () => {
   ], {dot: true});
 
 });
-
-// Build production files, the default task
-gulp.task('default', ['clean'], cb =>
-  runSequence(
-    'styles',
-    'lint',
-    'vulcanize',
-    'js',
-    'generate-service-worker',
-    cb
-  )
-);
 
 // Generate a service worker file that will provide offline functionality for
 // local resources.
@@ -241,6 +232,15 @@ gulp.task('generate-service-worker', () => {
     }]
   });
 });
+
+// Build production files, the default task
+gulp.task('default', gulp.series(
+  'styles',
+  'lint',
+  'vulcanize',
+  'js',
+  'generate-service-worker'
+));
 
 // Load custom tasks from the `tasks` directory
 // Run: `npm install --save-dev require-dir` from the command-line

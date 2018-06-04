@@ -36,12 +36,12 @@ class PushNotifier {
     }
 
     firebase.initializeApp({
-      apiKey: "AIzaSyDMfRkOLG6OUTeEL_Z2ixEMDceyklm10UM",
-      authDomain: "cr-status.firebaseapp.com",
-      databaseURL: "https://cr-status.firebaseio.com",
-      projectId: "cr-status",
-      storageBucket: "cr-status.appspot.com",
-      messagingSenderId: "999517574127"
+      apiKey: 'AIzaSyDMfRkOLG6OUTeEL_Z2ixEMDceyklm10UM',
+      authDomain: 'cr-status.firebaseapp.com',
+      databaseURL: 'https://cr-status.firebaseio.com',
+      projectId: 'cr-status',
+      storageBucket: 'cr-status.appspot.com',
+      messagingSenderId: '999517574127',
     });
 
     this.messaging = firebase.messaging();
@@ -63,7 +63,7 @@ class PushNotifier {
 
     this.messaging.onMessage(payload => {
       const notification = new Notification(
-          payload.notification.title, payload.notification);
+        payload.notification.title, payload.notification);
 
       notification.onerror = function(e) {
         console.log(e);
@@ -108,7 +108,7 @@ class PushNotifier {
       const resp = await fetch('/features/push/info', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({subscriptionId: token})
+        body: JSON.stringify({subscriptionId: token}),
       });
       // if (resp.status !== 200) {
       //   const text = await resp.text();
@@ -161,7 +161,7 @@ class PushNotifier {
       await fetch('/features/push/new', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({subscriptionId: token})
+        body: JSON.stringify({subscriptionId: token}),
       });
 
       this._setTokenSentToServer(true);
@@ -190,7 +190,7 @@ class PushNotifier {
       await fetch(`/features/push/subscribe/${featureId}`, {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(body)
+        body: JSON.stringify(body),
       });
     } catch (err) {
       console.error('Error [un]subscribing to topic.', err);

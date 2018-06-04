@@ -1,19 +1,19 @@
 (function() {
 'use strict';
 
-var fields = document.querySelectorAll('input, textarea');
-for (var i = 0; i < fields.length; ++i) {
+const fields = document.querySelectorAll('input, textarea');
+for (let i = 0; i < fields.length; ++i) {
   fields[i].addEventListener('blur', function(e) {
     e.target.classList.add('interacted');
   });
 }
 
 // TODO(ericbidelman): These values are brittle if changed in the db later on.
-var MIN_MILESTONE_TO_BE_ACTIVE = 3;
-var MIN_STD_TO_BE_ACTIVE = 5;
-var NO_LONGER_PURSUING = 1000;
+const MIN_MILESTONE_TO_BE_ACTIVE = 3;
+const MIN_STD_TO_BE_ACTIVE = 5;
+const NO_LONGER_PURSUING = 1000;
 
-var form = document.querySelector('[name="feature_form"]');
+const form = document.querySelector('[name="feature_form"]');
 form.addEventListener('change', function(e) {
   switch (e.target.tagName.toLowerCase()) {
     case 'select':
@@ -33,20 +33,20 @@ form.addEventListener('change', function(e) {
   }
 });
 
-var operaDesktop = document.querySelector('#id_shipped_opera_milestone');
-var operaAndroid = document.querySelector(
-    '#id_shipped_opera_android_milestone');
+const operaDesktop = document.querySelector('#id_shipped_opera_milestone');
+const operaAndroid = document.querySelector(
+  '#id_shipped_opera_android_milestone');
 
 /**
  * Populates Opera version inputs with Chrome 32 -> Opera 19 version mapping.
  * @param {HTMLInputElement} chromeField Chrome version input.
  */
 function fillOperaFields(chromeField) {
-  var chromeVersion = chromeField.valueAsNumber;
+  const chromeVersion = chromeField.valueAsNumber;
   if (chromeVersion < 28) {
     return;
   }
-  var operaVersion = chromeVersion - 13; // e.g. Chrome 32 ~ Opera 19
+  const operaVersion = chromeVersion - 13; // e.g. Chrome 32 ~ Opera 19
   if (!operaDesktop.classList.contains('interacted')) {
     operaDesktop.value = operaVersion;
   }
@@ -55,7 +55,7 @@ function fillOperaFields(chromeField) {
   }
 }
 
-var specLink = document.querySelector('#id_spec_link');
+const specLink = document.querySelector('#id_spec_link');
 
 /**
  * Toggles the spec link input.
@@ -71,11 +71,11 @@ function toggleSpecLink(stdStage) {
  * @param {HTMLInputElement} status Input element.
  */
 function toggleMilestones(status) {
-  var val = parseInt(status.value, 10);
-  var disabled = (val <= MIN_MILESTONE_TO_BE_ACTIVE ||
-                  val === NO_LONGER_PURSUING);
+  const val = parseInt(status.value, 10);
+  const disabled = (val <= MIN_MILESTONE_TO_BE_ACTIVE ||
+                    val === NO_LONGER_PURSUING);
 
-  var shippedInputs = document.querySelectorAll('[name^="shipped_"]');
+  const shippedInputs = document.querySelectorAll('[name^="shipped_"]');
   [].forEach.call(shippedInputs, function(input) {
     input.disabled = disabled;
     input.parentElement.parentElement.hidden = input.disabled;
@@ -90,19 +90,19 @@ document.addEventListener('DOMContentLoaded', function() {
   document.body.classList.remove('loading');
 
   // Get around Django rendering input type="text" fields for URLs.
-  var inputs = document.querySelectorAll('[name$="_url"], [name$="_link"]');
+  const inputs = document.querySelectorAll('[name$="_url"], [name$="_link"]');
   [].forEach.call(inputs, function(input) {
     input.type = 'url';
     input.placeholder = 'http://';
   });
 
-  var shippedInputs = document.querySelectorAll('[name^="shipped_"]');
+  const shippedInputs = document.querySelectorAll('[name^="shipped_"]');
   [].forEach.call(shippedInputs, function(input) {
     input.type = 'number';
     input.placeholder = 'Milestone #';
   });
 
-  var owner = document.querySelector('[name="owner"]');
+  const owner = document.querySelector('[name="owner"]');
   owner.type = 'email';
   owner.multiple = true;
 

@@ -19,7 +19,6 @@
 'use strict';
 
 class Metric {
-
   static get supportsPerfNow() {
     return performance && performance.now;
   }

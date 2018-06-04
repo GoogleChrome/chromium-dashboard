@@ -75,10 +75,10 @@ function registerServiceWorker() {
                   // Send precached bytes to GA.
                   let metric = new Metric('sw_precache');
                   metric.sendToAnalytics(
-                      'service worker', 'precache size', bytes);
+                    'service worker', 'precache size', bytes);
 
                   Toast.showMessage(
-                      `This site is cached (${kb}KB). Ready to use offline!`);
+                    `This site is cached (${kb}KB). Ready to use offline!`);
                 }));
               }
               break;
@@ -112,7 +112,7 @@ if (navigator.serviceWorker && navigator.serviceWorker.controller) {
       if (Toast) {
         toastReady.then(function() {
           Toast.showMessage('A new version of this app is available.',
-                            'Refresh', tapHandler, -1);
+            'Refresh', tapHandler, -1);
         });
       } else {
         tapHandler(); // Force reload if toast never loads.

@@ -42,7 +42,7 @@ if (a2hsButton) {
             addToHomescreenEvent = null;
           } else {
             a2hsButton.setAttribute(
-                'title', 'Refresh the page and click again to install app.');
+              'title', 'Refresh the page and click again to install app.');
           }
           a2hsButton.classList.add('disabled'); // Can't re-prompt, so disable button
         });
@@ -53,12 +53,12 @@ if (a2hsButton) {
 })(window);
 
 // Google Analytics
-/*eslint-disable */
+/* eslint-disable */
 (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
 (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
 m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
 })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
-/*eslint-enable */
+/* eslint-enable */
 
 ga('create', 'UA-39048143-1', 'auto');
 ga('send', 'pageview');
