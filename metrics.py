@@ -51,7 +51,7 @@ class TimelineHandler(common.JSONHandler):
       data = query.fetch(None) # All matching results.
 
       # Remove outliers if percentage is not between 0-1.
-      data = filter(lambda x: 0 <= x.day_percentage <= 1, data)
+      #data = filter(lambda x: 0 <= x.day_percentage <= 1, data)
 
       memcache.set(KEY, data, time=CACHE_AGE)
 
