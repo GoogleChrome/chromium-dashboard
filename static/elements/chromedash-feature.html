@@ -220,7 +220,6 @@
       </div>
       <div class="flex">
         <h3>Consensus &amp; standardization</h3>
-        <p>After a feature ships in Chrome, the values listed here are not guaranteed to be up to date.</p>
         <div class="views">
           <span title="[[feature.browsers.ff.view.text]]" class="view tooltip">
             <chromedash-color-status class="bottom"
@@ -272,6 +271,7 @@
             <label hidden$="[[feature.standards.spec]]">[[feature.standards.status.text]]</label>
           </span>
         </div>
+        <div style="font-size:smaller">After a feature ships in Chrome, the values listed here are not guaranteed to be up to date.</div>
       </div>
     </section>
     <template is="dom-if" if="[[_computeShowResources(feature)]]">
