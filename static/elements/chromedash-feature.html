@@ -202,7 +202,8 @@
           <template is="dom-if" if="[[feature.browsers.chrome.blink_components.length]]">
             <span>
               <label>Blink component</label>
-              <a href$="https://bugs.chromium.org/p/chromium/issues/list?q=component:[[feature.browsers.chrome.blink_components]]" target="_blank">[[feature.browsers.chrome.blink_components]]</a>
+              <!-- <a href$="https://bugs.chromium.org/p/chromium/issues/list?q=component:[[feature.browsers.chrome.blink_components]]" target="_blank" on-tap="componentFilter">[[feature.browsers.chrome.blink_components]]</a> -->
+              <a href="#" on-tap="componentFilter">[[feature.browsers.chrome.blink_components]]</a>
             </span>
           </template>
           <template is="dom-if" if="[[feature.browsers.chrome.owners.length]]">
@@ -394,12 +395,20 @@
 
     categoryFilter: function(e, details) {
       e.stopPropagation();
+      e.preventDefault();
       this.fire('filter-category', {val: Polymer.dom(e).localTarget.textContent});
     },
 
     ownerFilter: function(e, details) {
       e.stopPropagation();
+      e.preventDefault();
       this.fire('filter-owner', {val: Polymer.dom(e).localTarget.textContent});
+    },
+
+    componentFilter: function(e, details) {
+      e.stopPropagation();
+      e.preventDefault();
+      this.fire('filter-component', {val: Polymer.dom(e).localTarget.textContent});
     },
 
     _urlizeFilter: function(val) {

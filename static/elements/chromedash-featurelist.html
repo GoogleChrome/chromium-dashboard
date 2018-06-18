@@ -96,8 +96,7 @@
         return new RegExp(
           // Case-insensitive match on literal string; escape characters that
           // have special meaning in regular expressions.
-          searchStr.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&"),
-          'i');
+          searchStr.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&"), 'i');
       },
 
       _pathToPropertyVal: function(propPath, feature) {
@@ -176,7 +175,6 @@
       },
 
       _filterList: function(val) {
-
         // Clear filter if there's no search or if called directly.
         if (!val) {
           if (history && history.replaceState) {
@@ -191,6 +189,15 @@
           if (history && history.replaceState) {
             history.replaceState({id: null}, document.title,
                                  '/features#' + encodeURIComponent(val));
+          }
+
+          const blinkComponent = val.match(/^component:\s?(.*)/);
+          if (blinkComponent) {
+            var componentName = blinkComponent[1].trim();
+            var results = this.features;
+            this.filtered = results.filter(feature => feature.browsers.chrome.blink_components.includes(componentName));
+            this.fire('filtered', {count: this.filtered.length});
+            return;
           }
 
           var regExp = /"([^"]*)"/g;

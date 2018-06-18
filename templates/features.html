@@ -184,6 +184,11 @@ featureList.addEventListener('filter-owner', function(e) {
   featureList.filter(search.value);
 });
 
+featureList.addEventListener('filter-component', function(e) {
+  search.value = 'component: ' + e.detail.val;
+  featureList.filter(search.value);
+});
+
 // Clear input when user clicks the 'x' button.
 search.addEventListener('search', function(e) {
   if (!e.target.value) {
