@@ -888,7 +888,7 @@ class FeatureForm(forms.Form):
 
   summary = forms.CharField(label='', required=True, max_length=500,
       widget=forms.Textarea(attrs={'cols': 50, 'placeholder': 'Summary description', 'maxlength': 500}),
-      help_text='Complete sentences only. Provide a one sentence description followed by one or two lines explaining how this feature helps web developers.')
+      help_text='Complete sentences only. Provide a one sentence description followed by one or two lines explaining how this feature helps web developers. <br/>Note: line breaks are ignored in some views of this content.')
 
   # owner = PlaceholderCharField(
   #     required=False, placeholder='Owner(s) email',
