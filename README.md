@@ -26,6 +26,18 @@ To start the main server and the notifier backend, run:
 
     ./scripts/start_server.sh
 
+##### Add env_vars.yaml
+
+Create a file named `env_vars.yaml` in the root directory and fill it with:
+
+```yaml
+env_variables:
+  DJANGO_SETTINGS_MODULE: 'settings'
+  FIREBASE_SERVER_KEY: <SERVER_KEY>
+```
+
+The `FIREBASE_SERVER_KEY` is the Firebase server key obtained from the [Firebase console](https://firebase.corp.google.com/project/cr-status/settings/cloudmessaging/).
+
 ##### FCM setup
 
 If you want to test push notification features, you'll need to create a file named
