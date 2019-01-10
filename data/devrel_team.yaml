@@ -50,9 +50,6 @@ twitter: mathias
 blink_components:
   - Blink>JavaScript
 ---
-name: Matt Gaunt
-email: mattguant@google.com
----
 name: Philip Walton
 email: philipwalton@google.com
 ---
@@ -120,3 +117,12 @@ email: merewood@google.com
 name: Jason Miller
 email: jasonjmiller@google.com
 twitter: _developit
+---
+name: Katie Hempenius
+email: khempenius@google.com
+---
+name: Thomas Steiner
+email: tsteiner@google.com
+---
+name: Houssein Djirdeh
+email: houssein@google.com
