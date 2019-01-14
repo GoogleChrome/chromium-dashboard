@@ -11,7 +11,23 @@
     </template>
   </select>
   <label>Show all historical data: <input type="checkbox" checked="{{showAllHistoricalData::change}}"></label>
+  <h3 class="header_title">Percentage of page loads that use this feature</h3>
+  <p class="description">The chart below shows the percentage of page loads (in Chrome) that use
+    this feature at least once. Data is across all channels and platforms.
+  </p>
   <div id="chart"></div>
+  <p class="callout">
+    <b>Note</b>: on 2017-10-26 the underlying metrics were switched over to a newer collection system
+    which is <a href="https://groups.google.com/a/chromium.org/forum/#!msg/blink-api-owners-discuss/IpIkbz0qtrM/HUCfSMv2AQAJ" target="_blank">more accurate</a>.
+    This is also the reason for the abrupt spike around 2017-10-26.
+  </p>
+  <h3 class="header_title">Adoption of the feature on top sites</h3>
+  <p class="description">The chart below shows the adoption of the feature by the top URLs on the internet. Data from <a href="https://httparchive.org/" target="blank">HTTPArchive</a>.</p>
+  <iframe id="httparchivedata"></iframe>
+  <p class="callout">
+    <b>Note</b>: In July 2018, the corpus of URLs crawled by HTTPArchive increased. This accounts for the large
+    jump in the graphs around that time. See the <a href="https://discuss.httparchive.org/t/changes-to-the-http-archive-corpus/1539" target="_blank">announcement</a> for more details.
+  </p>
 </template>
 <script>
   Polymer({
@@ -98,17 +114,17 @@
 
       table.addRows(rowArray);
 
-      // function aggregateByMonth(date) {
-      //   var month = date.getMonth();
-      //   var year = date.getFullYear();
-      //   return new Date(year, month);
-      // }
+      function aggregateByMonth(date) {
+        var month = date.getMonth();
+        var year = date.getFullYear();
+        return new Date(year, month);
+      }
 
-      // table = google.visualization.data.group(table,
-      //   [{column: 0, modifier: aggregateByMonth, type: 'date'}],
-      //   [{column: 1, aggregation: google.visualization.data.max, type: 'number'}],
-      //   [{column: 2, type: 'string'}]
-      // );
+      table = google.visualization.data.group(table,
+        [{column: 0, modifier: aggregateByMonth, type: 'date'}],
+        [{column: 1, aggregation: google.visualization.data.avg, type: 'number', label: 'Monthly Average'}],
+        [{column: 2, type: 'string'}]
+      );
 
       var formatter = new google.visualization.NumberFormat({fractionDigits: 6});
       formatter.format(table, 1); // Apply formatter to percentage column.
@@ -123,8 +139,8 @@
 
       var chart = new google.visualization.LineChart(this.$.chart);
       chart.draw(view, {
-        title: this.title,
-        subtitle: 'all channels and platforms',
+        // title: this.title,
+        // subtitle: 'all channels and platforms',
         backgroundColor: 'white',
         legend: { position: 'none' },
         curveType: 'function',
@@ -135,7 +151,7 @@
         },
         hAxis: {
           title: 'Date',
-          format: 'MM/yy'
+          format: 'M/yy'
         },
         width: '100%',
         height: '100%',
@@ -162,6 +178,8 @@
       var url = prefix + '/data/timeline/' + this.type + this.view +
                 '?bucket_id=' + this.selectedBucketId;
 
+      this._renderHTTPArchiveData();
+
       var xhr = new XMLHttpRequest();
       xhr.responseType = 'json';
       xhr.open('GET', url);
@@ -174,6 +192,20 @@
         var url = '/metrics/' + this.type + '/timeline/' + this.view + '/' +
                   this.selectedBucketId;
         history.pushState({id: this.selectedBucketId}, '', url);
+      }
+    },
+
+    _renderHTTPArchiveData() {
+      if (!this.props.length) {
+        return;
+      }
+
+      const feature = this.props.find((el) => el[0] === parseInt(this.selectedBucketId));
+      if (feature) {
+        const featureName = feature[1];
+        const REPORT_ID = '1M8kXOqPkwYNKjJhtag_nvDNJCpvmw_ri';
+        const dsEmbedUrl = `https://datastudio.google.com/embed/reporting/${REPORT_ID}/page/tc5b?config=%7B"df3":"include%25EE%2580%25800%25EE%2580%2580IN%25EE%2580%2580${featureName}"%7D`;
+        this.$.httparchivedata.src = dsEmbedUrl;
       }
     }
   });
