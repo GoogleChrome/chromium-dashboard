@@ -41,6 +41,10 @@
   line-height: 1.4;
 }
 
+#bigquery:empty {
+  display: none;
+}
+
 #bigquery {
   font-family: 'Courier New', Courier, monospace;
   font-weight: 600;
