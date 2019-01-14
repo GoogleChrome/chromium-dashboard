@@ -40,3 +40,13 @@
   border-color: rgba(27,31,35,0.15);
   line-height: 1.4;
 }
+
+#bigquery {
+  font-family: 'Courier New', Courier, monospace;
+  font-weight: 600;
+  padding: 15px;
+  margin-bottom: 100px;
+  background: $gray-4;
+  color: #fff;
+  display: inline-block;
+}

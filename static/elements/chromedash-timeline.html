@@ -28,6 +28,8 @@
     <b>Note</b>: The jump around July 2018 is because the corpus of URLs crawled by HTTPArchive increased and has no correlation with the jump in the top graph.
     See the <a href="https://discuss.httparchive.org/t/changes-to-the-http-archive-corpus/1539" target="_blank">announcement</a> for more details.
   </p>
+  <p class="description">This query can be run in <a href="https://bigquery.cloud.google.com" target="_blank">BigQuery</a> to produce similar results:</p>
+  <pre id="bigquery"></pre>
 </template>
 <script>
   Polymer({
@@ -206,6 +208,15 @@
         const REPORT_ID = '1M8kXOqPkwYNKjJhtag_nvDNJCpvmw_ri';
         const dsEmbedUrl = `https://datastudio.google.com/embed/reporting/${REPORT_ID}/page/tc5b?config=%7B"df3":"include%25EE%2580%25800%25EE%2580%2580IN%25EE%2580%2580${featureName}"%7D`;
         this.$.httparchivedata.src = dsEmbedUrl;
+
+        this.$.bigquery.textContent = `#standardSQL
+SELECT yyyymmdd, client, pct_urls, url
+FROM \`httparchive.blink_features.features\`
+JOIN \`httparchive.blink_features.usage\`
+USING (yyyymmdd, client, feature)
+WHERE feature = '${featureName}'
+ORDER BY yyyymmdd DESC, client
+`;
       }
     }
   });
