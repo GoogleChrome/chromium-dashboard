@@ -210,13 +210,10 @@
         this.$.httparchivedata.src = dsEmbedUrl;
 
         this.$.bigquery.textContent = `#standardSQL
-SELECT yyyymmdd, client, pct_urls, url
-FROM \`httparchive.blink_features.features\`
-JOIN \`httparchive.blink_features.usage\`
-USING (yyyymmdd, client, feature)
+SELECT yyyymmdd, client, pct_urls, sample_urls
+FROM \`httparchive.blink_features.usage\`
 WHERE feature = '${featureName}'
-ORDER BY yyyymmdd DESC, client
-`;
+ORDER BY yyyymmdd DESC, client`;
       }
     }
   });
