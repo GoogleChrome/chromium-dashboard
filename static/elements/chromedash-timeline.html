@@ -11,7 +11,7 @@
     </template>
   </select>
   <label>Show all historical data: <input type="checkbox" checked="{{showAllHistoricalData::change}}"></label>
-  <h3 class="header_title">Percentage of page loads that use this feature</h3>
+  <h3 id="usage" class="header_title">Percentage of page loads that use this feature</h3>
   <p class="description">The chart below shows the percentage of page loads (in Chrome) that use
     this feature at least once. Data is across all channels and platforms.
   </p>
@@ -21,8 +21,8 @@
     which is <a href="https://groups.google.com/a/chromium.org/forum/#!msg/blink-api-owners-discuss/IpIkbz0qtrM/HUCfSMv2AQAJ" target="_blank">more accurate</a>.
     This is also the reason for the abrupt spike around 2017-10-26.
   </p>
-  <h3 class="header_title">Adoption of the feature on top sites</h3>
-  <p class="description">The chart below shows the adoption of the feature by the top URLs on the internet. Data from <a href="https://httparchive.org/" target="blank">HTTPArchive</a>.</p>
+  <h3 id="httparchive" class="header_title">Adoption of the feature on top sites</h3>
+  <p class="description">The chart below shows the adoption of the feature by the top URLs on the internet. Data from <a href="https://httparchive.org/" target="blank">HTTP Archive</a>.</p>
   <iframe id="httparchivedata"></iframe>
   <p class="callout">
     <b>Note</b>: The jump around July and December 2018 are because the corpus of URLs crawled by HTTP Archive increased. These jumps have no correlation with the jump in the top graph.
