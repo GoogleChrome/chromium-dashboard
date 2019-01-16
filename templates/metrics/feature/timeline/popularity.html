@@ -28,16 +28,11 @@
 
 {% block content %}
 <div class="data-panel">
-  <p class="description">Usage of HTML/JS features over time.</p>
+  <p class="description">To begin, select a feature in the dropdown below.</p>
   <chromedash-feature-timeline
       type="feature" view="popularity"
       title="Percentage of page views that use this feature"
       {% if not prod %}use-remote-data{% endif %}></chromedash-feature-timeline>
-  <p class="callout">
-    <b>Note</b>: on 2017-10-26 the underlying metrics were switched over to a newer collection system
-    which is <a href="https://groups.google.com/a/chromium.org/forum/#!msg/blink-api-owners-discuss/IpIkbz0qtrM/HUCfSMv2AQAJ" target="_blank">more accurate</a>.
-    This is also the reason for the abrupt spike around 2017-10-26.
-  </p>
 </div>
 {% endblock %}
 
@@ -46,7 +41,6 @@
 document.addEventListener('WebComponentsReady', function(e) {
   var timeline = $('chromedash-feature-timeline');
   timeline.props = {{FEATUREOBSERVER_BUCKETS|safe}};
-
   document.body.classList.remove('loading');
 
   window.addEventListener('popstate', function(e) {
