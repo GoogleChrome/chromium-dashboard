@@ -878,9 +878,11 @@ class PlaceholderCharField(forms.CharField):
 
 class FeatureForm(forms.Form):
 
-  SHIPPED_HELP_TXT = ('First milestone the feature shipped with this status '
-                      '(either enabled by default, origin trial, intervention, '
-                      'or deprecated)')
+  SHIPPED_HELP_TXT = ('First milestone to ship with this '
+                      'status. Applies to: Enabled by default, Behind a flag, '
+                      'Origin trial, Browser Intervention, and Deprecated. If '
+                      'the flag is \'test\' rather than \'experimental\' set '
+                      'status to In development.')
 
   #name = PlaceholderCharField(required=True, placeholder='Feature name')
   name = forms.CharField(required=True, label='Feature',
