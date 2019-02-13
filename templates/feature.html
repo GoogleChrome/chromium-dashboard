@@ -161,14 +161,6 @@
         {% if feature.shipped_webview_milestone %}
         <li>Android WebView release {{ feature.shipped_webview_milestone }}</li>
         {% endif %}
-        <!-- {% if not feature.meta.origintrial %}
-          {% if feature.shipped_opera_milestone %}
-          <li>Opera release {{ feature.shipped_opera_milestone }}</li>
-          {% endif %}
-          {% if feature.shipped_opera_android_milestone %}
-          <li>Opera for Android release {{ feature.shipped_opera_android_milestone }}</li>
-          {% endif %}
-        {% endif %} -->
         </ul>
       {% else %}
         {{ feature.meta.milestone_str }}
