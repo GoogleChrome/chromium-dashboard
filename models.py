@@ -419,8 +419,8 @@ class Feature(DictModel):
         d['id'] = None
       d['category'] = FEATURE_CATEGORIES[self.category]
       d['created'] = {
-        'by': d.pop('created', None),
-        'when': d.pop('created_by', None),
+        'by': d.pop('created_by', None),
+        'when': d.pop('created', None),
       }
       d['updated'] = {
         'by': d.pop('updated_by', None),
