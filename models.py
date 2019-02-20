@@ -79,7 +79,7 @@ INTENT_STAGES = {
   INTENT_EXTEND_TRIAL: 'Extend Origin Trial',
   INTENT_IMPLEMENT_SHIP: 'Implement and Ship',
   INTENT_SHIP: 'Ship',
-  INTENT_REMOVE: 'Remove'
+  INTENT_REMOVE: 'Remove',
 }
 
 NO_ACTIVE_DEV = 1
@@ -971,9 +971,9 @@ class FeatureForm(forms.Form):
   motivation = forms.CharField(label='Motivation', required=True, max_length=500,
       widget=forms.Textarea(attrs={'cols': 50, 'placeholder': 'Explain why the web needs this change. It may be useful to describe what web developers are forced to do without it. When possible, include links to back up your claims in the explainer.', 'maxlength': 500}))
 
-  explainer_links = forms.CharField(label='Explainer link(s)', required=True,
+  explainer_links = forms.CharField(label='Explainer link(s)', required=False,
       max_length=500,
-      widget=forms.Textarea(attrs={'rows': 4, 'cols': 50, 'placeholder': 'Link to explainer(s). You should have at least an explainer in hand and have discussed the API on a public forum with other browser vendors or standards bodies before sending an intent to implement. If your change is not yet at this stage of maturity, feel free to solicit feedback informally on blink-dev instead.', 'maxlength': 500}),
+      widget=forms.Textarea(attrs={'rows': 4, 'cols': 50, 'placeholder': 'Link to explainer(s). You should have at least an explainer in hand and have discussed the API on a public forum with other browser vendors or standards bodies before sending an Intent to Implement. If your change is not yet at this stage of maturity, feel free to solicit feedback informally on blink-dev instead.', 'maxlength': 500}),
       help_text='One URL per line.')
 
   intent_to_implement_url = forms.URLField(required=False, label='Intent to Implement link',
@@ -983,7 +983,7 @@ class FeatureForm(forms.Form):
       help_text='If your feature was available as an Origin Trial, link to a summary of usage and developer feedback. If not, leave this empty.')
 
   doc_links = forms.CharField(label='Doc link(s)', required=False, max_length=500,
-      widget=forms.Textarea(attrs={'rows': 4, 'cols': 50, 'placeholder': 'Links to design doc(s), if and when available. [This is not required to send out an intent to implement. Please update the intent thread with the design doc when ready]. An explainer and/or design doc is sufficient to start this process.\n\n[Note: Please include links and data, where possible, to support any claims.]', 'maxlength': 500}),
+      widget=forms.Textarea(attrs={'rows': 4, 'cols': 50, 'placeholder': 'Links to design doc(s), if and when available. [This is not required to send out an Intent to Implement. Please update the intent thread with the design doc when ready]. An explainer and/or design doc is sufficient to start this process.\n\n[Note: Please include links and data, where possible, to support any claims.]', 'maxlength': 500}),
       help_text='One URL per line')
 
   standardization = forms.ChoiceField(
@@ -1028,16 +1028,16 @@ class FeatureForm(forms.Form):
       widget=forms.Textarea(attrs={'rows': 2, 'cols': 50, 'placeholder': 'Notes', 'maxlength': 500}))
 
   web_dev_views = forms.ChoiceField(
-      label='Web developer views',
+      label='Web / Framework developer views',
       choices=WEB_DEV_VIEWS.items(),
       initial=DEV_NO_SIGNALS,
-      help_text=('How positive has the reaction from developers been? If '
-                 'unsure, default to "No signals".'))
+      help_text='If unsure, default to "No signals".')
 
   web_dev_views_link = forms.URLField(required=False, label='',
       help_text='Citation link.')
   web_dev_views_notes = forms.CharField(required=False, label='',
-      widget=forms.Textarea(attrs={'rows': 2, 'cols': 50, 'placeholder': 'Notes', 'maxlength': 500}))
+      widget=forms.Textarea(attrs={'rows': 2, 'cols': 50, 'placeholder': 'Notes', 'maxlength': 500}),
+      help_text='Reference known representative examples of opinion, both positive and negative.')
 
   ergonomics_risks = forms.CharField(label='Ergonomics Risks', required=False, max_length=500,
       widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 500}),
@@ -1053,7 +1053,7 @@ class FeatureForm(forms.Form):
 
   experiment_goals = forms.CharField(label='Experiment Goals', required=False, max_length=500,
       widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 500}),
-      help_text='Which pieces of the API surface are you looking to gain insight on? What metrics/measurement/feedback will you be using to validate designs? Double check that your experiment makes sense given that a large developer (e.g. a Google product or Facebook) likely can\'t use it in production due to the limits enforced by origin trials.\n\nIf intent to continue experimenting, highlight new/different areas for experimentation. Should not be an exact copy of goals from first I2E?')
+      help_text='Which pieces of the API surface are you looking to gain insight on? What metrics/measurement/feedback will you be using to validate designs? Double check that your experiment makes sense given that a large developer (e.g. a Google product or Facebook) likely can\'t use it in production due to the limits enforced by origin trials.\n\nIf Intent to Extend Origin Trial, highlight new/different areas for experimentation. Should not be an exact copy of goals from the first Intent to Experiment.')
 
   experiment_timeline = forms.CharField(label='Experiment Timeline', required=False, max_length=500,
       widget=forms.Textarea(attrs={'rows': 2, 'cols': 50, 'maxlength': 500}),
@@ -1065,7 +1065,7 @@ class FeatureForm(forms.Form):
 
   experiment_extension_reason = forms.CharField(label='Experiment Extension Reason', required=False, max_length=500,
       widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 500}),
-      help_text='If this is a repeat experiment, link to the previous intent to experiment and explain why you want to extend this experiment.')
+      help_text='If this is a repeat experiment, link to the previous Intent to Experiment thread and explain why you want to extend this experiment.')
 
   ongoing_constraints = forms.CharField(label='Ongoing Constraints', required=False, max_length=500,
       widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 500}),

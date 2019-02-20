@@ -445,7 +445,7 @@ class FeatureHandler(common.ContentHandler):
           intent_to_implement_url=intent_to_implement_url,
           origin_trial_feedback_url=origin_trial_feedback_url,
           motivation=self.request.get('motivation'),
-          explainer_links = explainer_links,
+          explainer_links=explainer_links,
           owner=owners,
           bug_url=bug_url,
           blink_components=blink_components,
@@ -491,7 +491,7 @@ class FeatureHandler(common.ContentHandler):
           experiment_timeline=self.request.get('experiment_timeline'),
           experiment_risks=self.request.get('experiment_risks'),
           experiment_extension_reason=self.request.get('experiment_extension_reason'),
-          ongoing_constraints = self.request.get('ongoing_constraints')
+          ongoing_constraints=self.request.get('ongoing_constraints'),
           )
 
     key = feature.put()
@@ -528,4 +528,3 @@ app = webapp2.WSGIApplication([
   ('/(.*)/([0-9]*)', FeatureHandler),
   ('/(.*)', FeatureHandler),
 ], debug=settings.DEBUG)
-
