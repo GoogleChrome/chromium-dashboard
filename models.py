@@ -951,8 +951,8 @@ class FeatureForm(forms.Form):
       help_text='Capitalize only the first letter and the beginnings of proper nouns.')
 
   summary = forms.CharField(label='', required=True, max_length=500,
-      widget=forms.Textarea(attrs={'cols': 50, 'placeholder': 'Summary description', 'maxlength': 500}),
-      help_text='Complete sentences only. Provide a one sentence description followed by one or two lines explaining how this feature helps web developers.')
+      widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 500}),
+      help_text='Provide a one sentence description followed by one or two lines explaining how this feature helps web developers.')
 
   category = forms.ChoiceField(required=True, help_text='Select the most specific category. If unsure, leave as "%s".' % FEATURE_CATEGORIES[MISC],
       initial=MISC,
@@ -962,19 +962,21 @@ class FeatureForm(forms.Form):
       initial=INTENT_IMPLEMENT,
       choices=INTENT_STAGES.items())
 
-  owner = forms.CharField(initial=users.get_current_user().email, required=True, label='Contact emails',
+  current_user_email = users.get_current_user().email if users.get_current_user() else None
+  owner = forms.CharField(initial=current_user_email, required=True, label='Contact emails',
       help_text='Comma separated list of full email addresses. Prefer @chromium.org.')
 
   summary = forms.CharField(label='Feature summary', required=True, max_length=500,
-      widget=forms.Textarea(attrs={'cols': 50, 'placeholder': 'Summary description', 'maxlength': 500}))
+      widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 500}),
+      help_text='Summary of the feature.')
 
   motivation = forms.CharField(label='Motivation', required=True, max_length=500,
-      widget=forms.Textarea(attrs={'cols': 50, 'placeholder': 'Explain why the web needs this change. It may be useful to describe what web developers are forced to do without it. When possible, include links to back up your claims in the explainer.', 'maxlength': 500}))
+      widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 500}),
+      help_text='Explain why the web needs this change. It may be useful to describe what web developers are forced to do without it. When possible, include links to back up your claims in the explainer.')
 
   explainer_links = forms.CharField(label='Explainer link(s)', required=False,
-      max_length=500,
-      widget=forms.Textarea(attrs={'rows': 4, 'cols': 50, 'placeholder': 'Link to explainer(s). You should have at least an explainer in hand and have discussed the API on a public forum with other browser vendors or standards bodies before sending an Intent to Implement. If your change is not yet at this stage of maturity, feel free to solicit feedback informally on blink-dev instead.', 'maxlength': 500}),
-      help_text='One URL per line.')
+      widget=forms.Textarea(attrs={'rows': 4, 'cols': 50, 'maxlength': 500}),
+      help_text='Link to explainer(s) (one URL per line). You should have at least an explainer in hand and have discussed the API on a public forum with other browser vendors or standards bodies before sending an Intent to Implement. If your change is not yet at this stage of maturity, feel free to solicit feedback informally on blink-dev instead.')
 
   intent_to_implement_url = forms.URLField(required=False, label='Intent to Implement link',
       help_text='Link to the "Intent to Implement" discussion thread.')
@@ -982,9 +984,9 @@ class FeatureForm(forms.Form):
   origin_trial_feedback_url = forms.URLField(required=False, label='Origin Trial feedback summary',
       help_text='If your feature was available as an Origin Trial, link to a summary of usage and developer feedback. If not, leave this empty.')
 
-  doc_links = forms.CharField(label='Doc link(s)', required=False, max_length=500,
-      widget=forms.Textarea(attrs={'rows': 4, 'cols': 50, 'placeholder': 'Links to design doc(s), if and when available. [This is not required to send out an Intent to Implement. Please update the intent thread with the design doc when ready]. An explainer and/or design doc is sufficient to start this process.\n\n[Note: Please include links and data, where possible, to support any claims.]', 'maxlength': 500}),
-      help_text='One URL per line')
+  doc_links = forms.CharField(label='Doc link(s)', required=False,
+      widget=forms.Textarea(attrs={'rows': 4, 'cols': 50, 'maxlength': 500}),
+      help_text='Links to design doc(s) (one URL per line), if and when available. [This is not required to send out an Intent to Implement. Please update the intent thread with the design doc when ready]. An explainer and/or design doc is sufficient to start this process. [Note: Please include links and data, where possible, to support any claims.]')
 
   standardization = forms.ChoiceField(
       label='Standardization', choices=STANDARDIZATION.items(),
@@ -996,8 +998,8 @@ class FeatureForm(forms.Form):
                              help_text="Link to spec, if and when available. Please update the chromestatus.com entry and the intent thread(s) with the spec link when available.")
 
   tag_review = forms.CharField(label='TAG Review', required=True,
-      widget=forms.Textarea(attrs={'rows': 2, 'cols': 50, 'placeholder': 'Link(s) to TAG review(s), or explanation why this is not needed.', 'maxlength': 500}),
-      help_text='One URL per line, optionally followed by a short title, or rationale for omitting TAG review.')
+      widget=forms.Textarea(attrs={'rows': 2, 'cols': 50, 'maxlength': 500}),
+      help_text='Link(s) to TAG review(s), or explanation why this is not needed.')
 
   interop_compat_risks = forms.CharField(label='Interoperability and Compatibility Risks', required=True, max_length=500,
       widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 500}),
@@ -1072,24 +1074,25 @@ class FeatureForm(forms.Form):
       help_text='Do you anticipate adding any ongoing technical constraints to the codebase while implementing this feature? We prefer to avoid features which require or assume a specific architecture. For most features, the answer here is "None."')
 
   debuggability = forms.CharField(label='Debuggability', required=False,
-      widget=forms.Textarea(attrs={'cols': 50, 'placeholder': 'Please describe the desired DevTools debugging support for your feature. Consider emailing https://groups.google.com/forum/?fromgroups#!forum/google-chrome-developer-tools to make sure developers are able to debug and inspect code that uses your feature. For new language features in V8 specifically, refer to the debugger support checklist. If your feature doesn\'t require changes to DevTools in order to provide a good debugging experience, feel free to delete this section.', 'maxlength': 500}),
-      help_text='Description of the desired DevTools debugging support for your feature. Consider emailing the <a href="https://groups.google.com/forum/?fromgroups#!forum/google-chrome-developer-tools">google-chrome-developer-tools</a> list for additional help.')
+      widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 500}),
+      help_text='Description of the desired DevTools debugging support for your feature. Consider emailing the <a href="https://groups.google.com/forum/?fromgroups#!forum/google-chrome-developer-tools">google-chrome-developer-tools</a> list for additional help. For new language features in V8 specifically, refer to the debugger support checklist. If your feature doesn\'t require changes to DevTools in order to provide a good debugging experience, feel free to leave this section empty.')
 
-  all_platforms = forms.BooleanField(required=False, initial=False, label='Supported on all platforms?', help_text='Will this feature be supported on all six Blink platforms (Windows, Mac, Linux, Chrome OS, Android, and Android WebView)?')
+  all_platforms = forms.BooleanField(required=False, initial=False, label='Supported on all platforms?',
+      help_text='Will this feature be supported on all six Blink platforms (Windows, Mac, Linux, Chrome OS, Android, and Android WebView)?')
 
-  all_platforms_descr = forms.CharField(label='Platfor Support Explanation', required=False,
-      widget=forms.Textarea(attrs={'rows': 2, 'cols': 50, 'placeholder': 'If this feature is not supported on all platforms (see previous question), explain why.', 'maxlength': 200}),
+  all_platforms_descr = forms.CharField(label='Platform Support Explanation', required=False,
+      widget=forms.Textarea(attrs={'rows': 2, 'cols': 50, 'maxlength': 200}),
       help_text='Explanation for why this feature is, or is not, supported on all platforms.')
 
   wpt = forms.BooleanField(required=True, initial=False, label='Web Platform Tests', help_text='Is this feature fully tested in Web Platform Tests?')
 
   wpt_descr = forms.CharField(label='Web Platform Tests Description', required=True,
-      widget=forms.Textarea(attrs={'cols': 50, 'placeholder': 'Is this feature fully tested by web-platform-tests?\nPlease link to the test suite. If any part of the feature is not tested by web-platform-tests, please include links to issues, etc. Links to a web platform test suite or issues (see help text below) to be filed explaining why such a test suite is currently impossible or in the progress of being upstreamed.', 'maxlength': 500}),
+      widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 500}),
       help_text='Please link to the test suite(s). If any part of the feature is not tested by web-platform-tests, please include links to issues, e.g. a web-platform-tests issue with the "infra" label explaining why a certain thing cannot be tested (<a href="https://github.com/w3c/web-platform-tests/issues/3867">example</a>), a spec issue for some change that would make it possible to test. (<a href="https://github.com/whatwg/fullscreen/issues/70">example</a>), or a Chromium issue to upstream some existing tests (<a href="https://bugs.chromium.org/p/chromium/issues/detail?id=695486">example</a>).')
 
   sample_links = forms.CharField(label='Samples links', required=False,
-      widget=forms.Textarea(attrs={'cols': 50, 'placeholder': 'Links to samples (one per line)', 'maxlength': 500}),
-      help_text='One URL per line')
+      widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 500}),
+      help_text='Links to samples (one URL per line).')
 
   bug_url = forms.URLField(required=False, label='Tracking bug URL',
       help_text='Tracking bug url (https://bugs.chromium.org/...). This bug should have "Type=Feature" set and be world readable.')
@@ -1139,9 +1142,9 @@ class FeatureForm(forms.Form):
   search_tags = forms.CharField(label='Search tags', required=False,
       help_text='Comma separated keywords used only in search')
 
-  comments = forms.CharField(label='Comments', required=False, max_length=500, widget=forms.Textarea(
-      attrs={'cols': 50, 'placeholder': 'Additional comments, caveats, info...', 'maxlength': 500}),
-      help_text='Complete sentences only.')
+  comments = forms.CharField(label='Comments', required=False, max_length=500,
+      widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 500}),
+      help_text='Additional comments, caveats, info...')
 
   class Meta:
     model = Feature

@@ -10,7 +10,6 @@ for (let i = 0; i < fields.length; ++i) {
 
 // TODO(ericbidelman): These values are brittle if changed in the db later on.
 const MIN_MILESTONE_TO_BE_ACTIVE = 3;
-const MIN_STD_TO_BE_ACTIVE = 5;
 const NO_LONGER_PURSUING = 1000;
 
 const form = document.querySelector('[name="feature_form"]');
@@ -84,19 +83,19 @@ const INTENT_REMOVE = 6;
 
 let INTENT_IDENTIFIER_NAMES = {};
 
-INTENT_IDENTIFIER_NAMES[INTENT_IMPLEMENT] = "INTENT_IMPLEMENT";
-INTENT_IDENTIFIER_NAMES[INTENT_EXPERIMENT] = "INTENT_EXPERIMENT";
-INTENT_IDENTIFIER_NAMES[INTENT_EXTEND_TRIAL] = "INTENT_EXTEND_TRIAL";
-INTENT_IDENTIFIER_NAMES[INTENT_IMPLEMENT_SHIP] = "INTENT_IMPLEMENT_SHIP";
-INTENT_IDENTIFIER_NAMES[INTENT_SHIP] = "INTENT_SHIP";
-INTENT_IDENTIFIER_NAMES[INTENT_REMOVE] = "INTENT_REMOVE";
+INTENT_IDENTIFIER_NAMES[INTENT_IMPLEMENT] = 'INTENT_IMPLEMENT';
+INTENT_IDENTIFIER_NAMES[INTENT_EXPERIMENT] = 'INTENT_EXPERIMENT';
+INTENT_IDENTIFIER_NAMES[INTENT_EXTEND_TRIAL] = 'INTENT_EXTEND_TRIAL';
+INTENT_IDENTIFIER_NAMES[INTENT_IMPLEMENT_SHIP] = 'INTENT_IMPLEMENT_SHIP';
+INTENT_IDENTIFIER_NAMES[INTENT_SHIP] = 'INTENT_SHIP';
+INTENT_IDENTIFIER_NAMES[INTENT_REMOVE] = 'INTENT_REMOVE';
 
 // An object graph mapping form fields to implementation status and whether or
 // not the form field is shown or hidden (first 1/0) and required or optional
 // (second 1/0).
 
-const FORM_FIELD_SHOW_POS = 0
-const FORM_FIELD_REQUIRED_POS = 1
+const FORM_FIELD_SHOW_POS = 0;
+const FORM_FIELD_REQUIRED_POS = 1;
 
 const HIDDEN = [0, 0];
 const VISIBLE_OPTIONAL = [1, 0];
@@ -431,8 +430,9 @@ function intentStageChanged(stage) {
   let stageIndex = INTENT_IDENTIFIER_NAMES[Number(stage.value)];
 
   for (let id in FORM_FIELD_GRAPH) {
-    if (!FORM_FIELD_GRAPH.hasOwnProperty(id))
-      continue
+    if (!FORM_FIELD_GRAPH.hasOwnProperty(id)) {
+      continue;
+    }
 
     if (FORM_FIELD_GRAPH[id][stageIndex][FORM_FIELD_SHOW_POS]) {
       show(id);
@@ -447,7 +447,7 @@ function intentStageChanged(stage) {
     }
   }
 
-  let intentStageName = document.querySelector('#id_intent_stage_name')
+  let intentStageName = document.querySelector('#id_intent_stage_name');
 
   if (intentStageName) {
     intentStageName.textContent =
