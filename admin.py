@@ -321,11 +321,19 @@ class FeatureHandler(common.ContentHandler):
       return
 
     spec_link = self.__FullQualifyLink('spec_link')
+
+    explainer_links = self.request.get('explainer_links') or []
+    if explainer_links:
+      explainer_links = filter(bool, [x.strip() for x in re.split('\\r?\\n', explainer_links)])
+
     bug_url = self.__FullQualifyLink('bug_url')
+    intent_to_implement_url = self.__FullQualifyLink('intent_to_implement_url')
+    origin_trial_feedback_url = self.__FullQualifyLink('origin_trial_feedback_url')
 
     ff_views_link = self.__FullQualifyLink('ff_views_link')
     ie_views_link = self.__FullQualifyLink('ie_views_link')
     safari_views_link = self.__FullQualifyLink('safari_views_link')
+    web_dev_views_link = self.__FullQualifyLink('web_dev_views_link')
 
     # Cast incoming milestones to ints.
     shipped_milestone = self.__ToInt('shipped_milestone')
@@ -369,7 +377,12 @@ class FeatureHandler(common.ContentHandler):
       # Update properties of existing feature.
       feature.category = int(self.request.get('category'))
       feature.name = self.request.get('name')
+      feature.intent_stage = int(self.request.get('intent_stage'))
       feature.summary = self.request.get('summary')
+      feature.intent_to_implement_url = intent_to_implement_url
+      feature.origin_trial_feedback_url = origin_trial_feedback_url
+      feature.motivation = self.request.get('motivation')
+      feature.explainer_links = explainer_links
       feature.owner = owners
       feature.bug_url = bug_url
       feature.blink_components = blink_components
@@ -381,21 +394,41 @@ class FeatureHandler(common.ContentHandler):
       feature.shipped_opera_milestone = shipped_opera_milestone
       feature.shipped_opera_android_milestone = shipped_opera_android_milestone
       feature.footprint = int(self.request.get('footprint'))
+      feature.interop_compat_risks = self.request.get('interop_compat_risks')
+      feature.ergonomics_risks = self.request.get('ergonomics_risks')
+      feature.activation_risks = self.request.get('activation_risks')
+      feature.security_risks = self.request.get('security_risks')
+      feature.debuggability = self.request.get('debuggability')
+      feature.all_platforms = self.request.get('all_platforms') == 'on'
+      feature.all_platforms_descr = self.request.get('all_platforms_descr')
+      feature.wpt = self.request.get('wpt') == 'on'
+      feature.wpt_descr = self.request.get('wpt_descr')
       feature.visibility = int(self.request.get('visibility'))
       feature.ff_views = int(self.request.get('ff_views'))
       feature.ff_views_link = ff_views_link
+      feature.ff_views_notes = self.request.get('ff_views_notes')
       feature.ie_views = int(self.request.get('ie_views'))
       feature.ie_views_link = ie_views_link
+      feature.ie_views_notes = self.request.get('ie_views_notes')
       feature.safari_views = int(self.request.get('safari_views'))
       feature.safari_views_link = safari_views_link
+      feature.safari_views_notes = self.request.get('safari_views_notes')
+      feature.web_dev_views = int(self.request.get('web_dev_views'))
+      feature.web_dev_views_link = web_dev_views_link
+      feature.web_dev_views_notes = self.request.get('web_dev_views_notes')
       feature.prefixed = self.request.get('prefixed') == 'on'
       feature.spec_link = spec_link
+      feature.tag_review = self.request.get('tag_review')
       feature.standardization = int(self.request.get('standardization'))
-      feature.comments = self.request.get('comments')
-      feature.web_dev_views = int(self.request.get('web_dev_views'))
       feature.doc_links = doc_links
       feature.sample_links = sample_links
       feature.search_tags = search_tags
+      feature.comments = self.request.get('comments')
+      feature.experiment_goal = self.request.get('experiment_goal')
+      feature.experiment_timeline = self.request.get('experiment_timeline')
+      feature.experiment_risks = self.request.get('experiment_risks')
+      feature.experiment_extension_reason = self.request.get('experiment_extension_reason')
+      feature.ongoing_constraints = self.request.get('ongoing_constraints')
     else:
       # Check bug for existing blink component(s) used to label the bug. If
       # found, use the first component name instead of the generic "Blink" name.
@@ -407,7 +440,12 @@ class FeatureHandler(common.ContentHandler):
       feature = models.Feature(
           category=int(self.request.get('category')),
           name=self.request.get('name'),
+          intent_stage=int(self.request.get('intent_stage')),
           summary=self.request.get('summary'),
+          intent_to_implement_url=intent_to_implement_url,
+          origin_trial_feedback_url=origin_trial_feedback_url,
+          motivation=self.request.get('motivation'),
+          explainer_links=explainer_links,
           owner=owners,
           bug_url=bug_url,
           blink_components=blink_components,
@@ -418,22 +456,42 @@ class FeatureHandler(common.ContentHandler):
           shipped_webview_milestone=shipped_webview_milestone,
           shipped_opera_milestone=shipped_opera_milestone,
           shipped_opera_android_milestone=shipped_opera_android_milestone,
+          interop_compat_risks=self.request.get('interop_compat_risks'),
+          ergonomics_risks=self.request.get('ergonomics_risks'),
+          activation_risks=self.request.get('activation_risks'),
+          security_risks=self.request.get('security_risks'),
+          debuggability=self.request.get('debuggability'),
+          all_platforms=self.request.get('all_platforms') == 'on',
+          all_platforms_descr=self.request.get('all_platforms_descr'),
+          wpt=self.request.get('wpt') == 'on',
+          wpt_descr=self.request.get('wpt_descr'),
           footprint=int(self.request.get('footprint')),
           visibility=int(self.request.get('visibility')),
           ff_views=int(self.request.get('ff_views')),
           ff_views_link=ff_views_link,
+          ff_views_notes=self.request.get('ff_views_notes'),
           ie_views=int(self.request.get('ie_views')),
           ie_views_link=ie_views_link,
+          ie_views_notes=self.request.get('ie_views_notes'),
           safari_views=int(self.request.get('safari_views')),
           safari_views_link=safari_views_link,
+          safari_views_notes=self.request.get('safari_views_notes'),
+          web_dev_views=int(self.request.get('web_dev_views')),
+          web_dev_views_link=web_dev_views_link,
+          web_dev_views_notes=self.request.get('web_dev_views_notes'),
           prefixed=self.request.get('prefixed') == 'on',
           spec_link=spec_link,
+          tag_review=self.request.get('tag_review'),
           standardization=int(self.request.get('standardization')),
-          comments=self.request.get('comments'),
-          web_dev_views=int(self.request.get('web_dev_views')),
           doc_links=doc_links,
           sample_links=sample_links,
           search_tags=search_tags,
+          comments=self.request.get('comments'),
+          experiment_goal=self.request.get('experiment_goal'),
+          experiment_timeline=self.request.get('experiment_timeline'),
+          experiment_risks=self.request.get('experiment_risks'),
+          experiment_extension_reason=self.request.get('experiment_extension_reason'),
+          ongoing_constraints=self.request.get('ongoing_constraints'),
           )
 
     key = feature.put()
@@ -470,4 +528,3 @@ app = webapp2.WSGIApplication([
   ('/(.*)/([0-9]*)', FeatureHandler),
   ('/(.*)', FeatureHandler),
 ], debug=settings.DEBUG)
-
