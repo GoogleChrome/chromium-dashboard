@@ -137,7 +137,7 @@ SUPER_SMALL = 5
 
 VISIBILITY_CHOICES = {
   MAINSTREAM_NEWS: 'Likely in mainstream tech news',
-  WARRANTS_ARTICLE: 'Will this feature generate articles on sites like html5rocks.com',
+  WARRANTS_ARTICLE: 'Will this feature generate articles on sites like developers.google.com/web/',
   IN_LARGER_ARTICLE: 'Covered as part of a larger article but not on its own',
   SMALL_NUM_DEVS: 'Only a very small number of web developers will care',
   SUPER_SMALL: "So small it doesn't need to be covered in this dashboard",
@@ -966,7 +966,7 @@ class FeatureForm(forms.Form):
 
   summary = forms.CharField(label='Feature summary', required=True, max_length=500,
       widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 500}),
-      help_text='Summary of the feature.')
+      help_text='Summarize the feature using complete sentences as you would to an external developer using the feature.')
 
   motivation = forms.CharField(label='Motivation', required=True,
       widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 1480}),
@@ -1108,16 +1108,16 @@ class FeatureForm(forms.Form):
   #shipped_milestone = PlaceholderCharField(required=False,
   #                                         placeholder='First milestone the feature shipped with this status (either enabled by default or experimental)')
   shipped_milestone = forms.IntegerField(required=False, label='',
-      help_text='Chrome for desktop: ' + SHIPPED_HELP_TXT)
+      help_text='Desktop:<br/>' + SHIPPED_HELP_TXT)
 
   shipped_android_milestone = forms.IntegerField(required=False, label='',
-      help_text='Chrome for Android: ' + SHIPPED_HELP_TXT)
+      help_text='Chrome for Android:</br/>' + SHIPPED_HELP_TXT)
 
   shipped_ios_milestone = forms.IntegerField(required=False, label='',
-      help_text='Chrome for iOS (rare): ' + SHIPPED_HELP_TXT)
+      help_text='Chrome for iOS (RARE):<br/>' + SHIPPED_HELP_TXT)
 
   shipped_webview_milestone = forms.IntegerField(required=False, label='',
-      help_text='Chrome for Android web view: ' + SHIPPED_HELP_TXT)
+      help_text='Android WebView:<br/>' + SHIPPED_HELP_TXT)
 
   prefixed = forms.BooleanField(required=False, initial=False, label='Prefixed?')
 
