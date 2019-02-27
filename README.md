@@ -77,12 +77,14 @@ able to deploy the site.
 First, update the version field in `app.yaml`. That will ensure the app deploys
 to a versioned URL and helps for rolling back later. Then, run the helper script:
 
-    ./scripts/deploy_site.sh
+    ./scripts/deploy_site.sh <YYYY-MM-DD>
 
-This will build the site and deploy it to GAE.
+Where `<YYYY-MM-DD>` is today's date, which will be used as the deployment's version
+number. This will build the site and deploy it to GAE.
 
-Lastly, open the [Google Developer Console](https://console.cloud.google.com/appengine/versions?project=cr-status&organizationId=433637338589&moduleId=default) and flip
-to the new version.
+Lastly, open the [Google Developer
+Console](https://console.cloud.google.com/appengine/versions?project=cr-status&organizationId=433637338589&moduleId=default)
+and flip to the new version by selecting from the list and clicking *MIGRATE TRAFFIC*.
 
 ### LICENSE
 
