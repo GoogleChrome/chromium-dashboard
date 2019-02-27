@@ -22,37 +22,10 @@ form.addEventListener('change', function(e) {
         intentStageChanged(e.target);
       }
       break;
-    case 'input':
-      if (e.target.name === 'shipped_milestone') {
-        fillOperaFields(e.target);
-      }
-      break;
     default:
       break;
   }
 });
-
-const operaDesktop = document.querySelector('#id_shipped_opera_milestone');
-const operaAndroid = document.querySelector(
-  '#id_shipped_opera_android_milestone');
-
-/**
- * Populates Opera version inputs with Chrome 32 -> Opera 19 version mapping.
- * @param {HTMLInputElement} chromeField Chrome version input.
- */
-function fillOperaFields(chromeField) {
-  const chromeVersion = chromeField.valueAsNumber;
-  if (chromeVersion < 28) {
-    return;
-  }
-  const operaVersion = chromeVersion - 13; // e.g. Chrome 32 ~ Opera 19
-  if (!operaDesktop.classList.contains('interacted')) {
-    operaDesktop.value = operaVersion;
-  }
-  if (!operaAndroid.classList.contains('interacted')) {
-    operaAndroid.value = operaVersion;
-  }
-}
 
 /**
  * Toggles the chrome milestone inputs.

@@ -483,10 +483,6 @@ class Feature(DictModel):
           'webview': d.pop('shipped_webview_milestone', None),
           'ios': d.pop('shipped_ios_milestone', None),
         },
-        'opera': {
-          'desktop': d.pop('shipped_opera_milestone', None),
-          'android': d.pop('shipped_opera_android_milestone', None),
-        },
         'ff': {
           'view': {
             'text': VENDOR_VIEWS[self.ff_views],
@@ -846,8 +842,6 @@ class Feature(DictModel):
   shipped_android_milestone = db.IntegerProperty()
   shipped_ios_milestone = db.IntegerProperty()
   shipped_webview_milestone = db.IntegerProperty()
-  shipped_opera_milestone = db.IntegerProperty()
-  shipped_opera_android_milestone = db.IntegerProperty()
 
   owner = db.ListProperty(db.Email)
   footprint = db.IntegerProperty()
@@ -1122,12 +1116,6 @@ class FeatureForm(forms.Form):
 
   shipped_webview_milestone = forms.IntegerField(required=False, label='',
       help_text='Chrome for Android web view: ' + SHIPPED_HELP_TXT)
-
-  shipped_opera_milestone = forms.IntegerField(required=False, label='',
-      help_text='Opera for desktop: ' + SHIPPED_HELP_TXT)
-
-  shipped_opera_android_milestone = forms.IntegerField(required=False, label='',
-      help_text='Opera for Android: ' + SHIPPED_HELP_TXT)
 
   prefixed = forms.BooleanField(required=False, initial=False, label='Prefixed?')
 
