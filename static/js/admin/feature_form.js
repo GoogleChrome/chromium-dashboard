@@ -27,9 +27,6 @@ form.addEventListener('change', function(e) {
   }
 });
 
-
-const specLink = document.querySelector('#id_spec_link');
-
 /**
  * Toggles the chrome milestone inputs.
  * @param {HTMLInputElement} status Input element.
