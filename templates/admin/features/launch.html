@@ -31,10 +31,23 @@
 
 {% if intent %}
 <section>
-<h3>Copy and send this text for your "Intent to Implement" email</h3>
+<h3>Copy and send this text for your "Intent to {{feature.intent_stage}}" email</h3>
 {% include "blink/intent_to_implement.html" %}
 </section>
 {% endif %}
+
+{% if feature.intent_stage == "Ship" %}
+<section>
+<h3>Obtain LGTMs from 3 API Owners</h3>
+<span class="help">Given the intent stage of this feature is "{{feature.intent_stage}}" that means you're now done with your experimentation and implementation, and have documented that in this feature description. Now you need to get 3 API Owners to respond to your message with LGTMs. Once you have that, you're cleared from the Blink Launch process perspective to ship your feature.
+</section>
+{% elif feature.intent_stage == "Implement and Ship" %}
+<section>
+<h3>Obtain LGTMs from 3 API Owners</h3>
+<span class="help">Given the intent stage of this feature is "{{feature.intent_stage}}" that means this is a small change and you’d like to ship enabled-by-default immediately. Per <a href="http://www.chromium.org/blink#launch-process">the launch process for new features</a>, you’ll now need 3 LGTMs from API OWNERS before shipping.
+</section>
+{% endif %}
+</span>
 
 {% endblock %}
 

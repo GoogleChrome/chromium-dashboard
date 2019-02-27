@@ -65,6 +65,23 @@ FEATURE_CATEGORIES = {
   LAYERED: 'Layered APIs',
   }
 
+# Intent stages and mapping from stage to stage name.
+INTENT_IMPLEMENT = 1
+INTENT_EXPERIMENT = 2
+INTENT_EXTEND_TRIAL = 3
+INTENT_IMPLEMENT_SHIP = 4
+INTENT_SHIP = 5
+INTENT_REMOVE = 6
+
+INTENT_STAGES = {
+  INTENT_IMPLEMENT: 'Implement',
+  INTENT_EXPERIMENT: 'Experiment',
+  INTENT_EXTEND_TRIAL: 'Extend Origin Trial',
+  INTENT_IMPLEMENT_SHIP: 'Implement and Ship',
+  INTENT_SHIP: 'Ship',
+  INTENT_REMOVE: 'Remove',
+}
+
 NO_ACTIVE_DEV = 1
 PROPOSED = 2
 IN_DEVELOPMENT = 3
@@ -120,8 +137,8 @@ VISIBILITY_CHOICES = {
   MAINSTREAM_NEWS: 'Likely in mainstream tech news',
   WARRANTS_ARTICLE: 'Will this feature generate articles on sites like html5rocks.com',
   IN_LARGER_ARTICLE: 'Covered as part of a larger article but not on its own',
-  SMALL_NUM_DEVS: 'Only a very small number of web developers will care about',
-  SUPER_SMALL: "So small it doesn't need to be covered in this dashboard.",
+  SMALL_NUM_DEVS: 'Only a very small number of web developers will care',
+  SUPER_SMALL: "So small it doesn't need to be covered in this dashboard",
   }
 
 SHIPPED = 1
@@ -418,9 +435,11 @@ class Feature(DictModel):
       else:
         d['id'] = None
       d['category'] = FEATURE_CATEGORIES[self.category]
+      if self.intent_stage is not None:
+        d['intent_stage'] = INTENT_STAGES[self.intent_stage]
       d['created'] = {
-        'by': d.pop('created', None),
-        'when': d.pop('created_by', None),
+        'by': d.pop('created_by', None),
+        'when': d.pop('created', None),
       }
       d['updated'] = {
         'by': d.pop('updated_by', None),
@@ -469,6 +488,7 @@ class Feature(DictModel):
             'text': VENDOR_VIEWS[self.ff_views],
             'val': d.pop('ff_views', None),
             'url': d.pop('ff_views_link', None),
+            'notes': d.pop('ff_views_notes', None),
           }
         },
         'edge': {
@@ -476,6 +496,7 @@ class Feature(DictModel):
             'text': VENDOR_VIEWS[self.ie_views],
             'val': d.pop('ie_views', None),
             'url': d.pop('ie_views_link', None),
+            'notes': d.pop('ie_views_notes', None),
           }
         },
         'safari': {
@@ -483,12 +504,15 @@ class Feature(DictModel):
             'text': VENDOR_VIEWS[self.safari_views],
             'val': d.pop('safari_views', None),
             'url': d.pop('safari_views_link', None),
+            'notes': d.pop('safari_views_notes', None),
           }
         },
         'webdev': {
           'view': {
             'text': WEB_DEV_VIEWS[self.web_dev_views],
             'val': d.pop('web_dev_views', None),
+            'url': d.pop('web_dev_views_link', None),
+            'notes': d.pop('web_dev_views_notes', None),
           }
         }
       }
@@ -510,6 +534,8 @@ class Feature(DictModel):
       else:
         d['id'] = None
       d['category'] = FEATURE_CATEGORIES[self.category]
+      if self.intent_stage is not None:
+        d['intent_stage'] = INTENT_STAGES[self.intent_stage]
       d['visibility'] = VISIBILITY_CHOICES[self.visibility]
       d['impl_status_chrome'] = IMPLEMENTATION_STATUS[self.impl_status_chrome]
       d['meta'] = {
@@ -540,6 +566,7 @@ class Feature(DictModel):
     d = self.to_dict()
     #d['id'] = self.key().id
     d['owner'] = ', '.join(self.owner)
+    d['explainer_links'] = '\r\n'.join(self.explainer_links)
     d['doc_links'] = '\r\n'.join(self.doc_links)
     d['sample_links'] = '\r\n'.join(self.sample_links)
     d['search_tags'] = ', '.join(self.search_tags)
@@ -797,7 +824,14 @@ class Feature(DictModel):
   # General info.
   category = db.IntegerProperty(required=True)
   name = db.StringProperty(required=True)
+  intent_stage = db.IntegerProperty()
   summary = db.StringProperty(required=True, multiline=True)
+  intent_to_implement_url = db.LinkProperty()
+  origin_trial_feedback_url = db.LinkProperty()
+
+  # A list of intent threads in the format "date|subject|url"
+  intent_threads = db.StringListProperty()
+  motivation = db.StringProperty(multiline=True)
 
   # Chromium details.
   bug_url = db.LinkProperty()
@@ -811,6 +845,16 @@ class Feature(DictModel):
 
   owner = db.ListProperty(db.Email)
   footprint = db.IntegerProperty()
+  interop_compat_risks = db.StringProperty()
+  ergonomics_risks = db.StringProperty()
+  activation_risks = db.StringProperty()
+  security_risks = db.StringProperty()
+  debuggability = db.StringProperty()
+  all_platforms = db.BooleanProperty()
+  all_platforms_descr = db.StringProperty()
+  wpt = db.BooleanProperty()
+  wpt_descr = db.StringProperty()
+
   visibility = db.IntegerProperty(required=True)
 
   #webbiness = db.IntegerProperty() # TODO: figure out what this is
@@ -818,18 +862,26 @@ class Feature(DictModel):
   # Standards details.
   standardization = db.IntegerProperty(required=True)
   spec_link = db.LinkProperty()
+  tag_review = db.StringProperty()
   prefixed = db.BooleanProperty()
+
+  explainer_links = db.StringListProperty()
 
   ff_views = db.IntegerProperty(required=True, default=NO_PUBLIC_SIGNALS)
   ie_views = db.IntegerProperty(required=True, default=NO_PUBLIC_SIGNALS)
   safari_views = db.IntegerProperty(required=True, default=NO_PUBLIC_SIGNALS)
+  web_dev_views = db.IntegerProperty(required=True)
 
   ff_views_link = db.LinkProperty()
   ie_views_link = db.LinkProperty()
   safari_views_link = db.LinkProperty()
+  web_dev_views_link = db.LinkProperty()
 
-  # Web dev details.
-  web_dev_views = db.IntegerProperty(required=True)
+  ff_views_notes = db.StringProperty()
+  ie_views_notes = db.StringProperty()
+  safari_views_notes = db.StringProperty()
+  web_dev_views_notes = db.StringProperty()
+
   doc_links = db.StringListProperty()
   sample_links = db.StringListProperty()
   #tests = db.StringProperty()
@@ -838,6 +890,11 @@ class Feature(DictModel):
 
   comments = db.StringProperty(multiline=True)
 
+  experiment_goals = db.StringProperty(multiline=True)
+  experiment_timeline = db.StringProperty(multiline=True)
+  experiment_risks = db.StringProperty(multiline=True)
+  experiment_extension_reason = db.StringProperty(multiline=True)
+  ongoing_constraints = db.StringProperty(multiline=True)
 
 class PlaceholderCharField(forms.CharField):
 
@@ -878,27 +935,163 @@ class FeatureForm(forms.Form):
                       'the flag is \'test\' rather than \'experimental\' set '
                       'status to In development.')
 
+  # Note that the "required" argument in the following field definitions only
+  # mean so much in practice. There's various code in js/admin/feature_form.js,
+  # including intentStageChanged(), that adjusts what fields are required (as
+  # well as visible at all). IOW, when making changes to what form fields are or
+  # are not required, look both in the definitions here as well as in
+  # js/admin/feature_form.js and make sure the code works as intended.
+
   #name = PlaceholderCharField(required=True, placeholder='Feature name')
   name = forms.CharField(required=True, label='Feature',
       help_text='Capitalize only the first letter and the beginnings of proper nouns.')
 
   summary = forms.CharField(label='', required=True, max_length=500,
-      widget=forms.Textarea(attrs={'cols': 50, 'placeholder': 'Summary description', 'maxlength': 500}),
-      help_text='Complete sentences only. Provide a one sentence description followed by one or two lines explaining how this feature helps web developers.')
+      widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 500}),
+      help_text='Provide a one sentence description followed by one or two lines explaining how this feature helps web developers.')
 
-  # owner = PlaceholderCharField(
-  #     required=False, placeholder='Owner(s) email',
-  #     help_text='Comma separated list of full email addresses (@chromium.org preferred).')
-
-  category = forms.ChoiceField(required=True,
+  category = forms.ChoiceField(required=True, help_text='Select the most specific category. If unsure, leave as "%s".' % FEATURE_CATEGORIES[MISC],
+      initial=MISC,
       choices=sorted(FEATURE_CATEGORIES.items(), key=lambda x: x[1]))
 
-  owner = forms.CharField(required=False, label='Owner(s) email',
+  intent_stage = forms.ChoiceField(required=True, label='Intent stage', help_text='Select the appropriate intent stage.',
+      initial=INTENT_IMPLEMENT,
+      choices=INTENT_STAGES.items())
+
+  current_user_email = users.get_current_user().email if users.get_current_user() else None
+  owner = forms.CharField(initial=current_user_email, required=True, label='Contact emails',
       help_text='Comma separated list of full email addresses. Prefer @chromium.org.')
 
+  summary = forms.CharField(label='Feature summary', required=True, max_length=500,
+      widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 500}),
+      help_text='Summary of the feature.')
 
-  bug_url = forms.URLField(required=False, label='Bug URL',
-      help_text='Launch Tracking, crbug, or other. Only one URL is allowed.')
+  motivation = forms.CharField(label='Motivation', required=True, max_length=500,
+      widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 500}),
+      help_text='Explain why the web needs this change. It may be useful to describe what web developers are forced to do without it. When possible, include links to back up your claims in the explainer.')
+
+  explainer_links = forms.CharField(label='Explainer link(s)', required=False,
+      widget=forms.Textarea(attrs={'rows': 4, 'cols': 50, 'maxlength': 500}),
+      help_text='Link to explainer(s) (one URL per line). You should have at least an explainer in hand and have discussed the API on a public forum with other browser vendors or standards bodies before sending an Intent to Implement. If your change is not yet at this stage of maturity, feel free to solicit feedback informally on blink-dev instead.')
+
+  intent_to_implement_url = forms.URLField(required=False, label='Intent to Implement link',
+      help_text='Link to the "Intent to Implement" discussion thread.')
+
+  origin_trial_feedback_url = forms.URLField(required=False, label='Origin Trial feedback summary',
+      help_text='If your feature was available as an Origin Trial, link to a summary of usage and developer feedback. If not, leave this empty.')
+
+  doc_links = forms.CharField(label='Doc link(s)', required=False,
+      widget=forms.Textarea(attrs={'rows': 4, 'cols': 50, 'maxlength': 500}),
+      help_text='Links to design doc(s) (one URL per line), if and when available. [This is not required to send out an Intent to Implement. Please update the intent thread with the design doc when ready]. An explainer and/or design doc is sufficient to start this process. [Note: Please include links and data, where possible, to support any claims.]')
+
+  standardization = forms.ChoiceField(
+      label='Standardization', choices=STANDARDIZATION.items(),
+      initial=EDITORS_DRAFT,
+      help_text=("The standardization status of the API. In bodies that don't "
+                 "use this nomenclature, use the closest equivalent."))
+
+  spec_link = forms.URLField(required=False, label='Spec link',
+                             help_text="Link to spec, if and when available. Please update the chromestatus.com entry and the intent thread(s) with the spec link when available.")
+
+  tag_review = forms.CharField(label='TAG Review', required=True,
+      widget=forms.Textarea(attrs={'rows': 2, 'cols': 50, 'maxlength': 500}),
+      help_text='Link(s) to TAG review(s), or explanation why this is not needed.')
+
+  interop_compat_risks = forms.CharField(label='Interoperability and Compatibility Risks', required=True, max_length=500,
+      widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 500}),
+      help_text='Describe the degree of <a target="_blank" href="https://sites.google.com/a/chromium.org/dev/blink?pli=1#TOC-Policy-for-shipping-and-removing-web-platform-API-features">interoperability risk</a>. For a new feature, the main risk is that it fails to become an interoperable part of the web platform if other browsers do not implement it. For a removal, please review our <a target="_blank" href="https://docs.google.com/document/d/1RC-pBBvsazYfCNNUSkPqAVpSpNJ96U8trhNkfV0v9fk/edit">principles of web compatibility</a>.')
+
+  safari_views = forms.ChoiceField(label='Safari views',
+                                   choices=VENDOR_VIEWS.items(),
+                                   initial=NO_PUBLIC_SIGNALS)
+  safari_views_link = forms.URLField(required=False, label='',
+      help_text='Citation link.')
+  safari_views_notes = forms.CharField(required=False, label='',
+      widget=forms.Textarea(attrs={'rows': 2, 'cols': 50, 'placeholder': 'Notes', 'maxlength': 500}))
+
+  ff_views = forms.ChoiceField(label='Firefox views',
+                               choices=VENDOR_VIEWS.items(),
+                               initial=NO_PUBLIC_SIGNALS)
+  ff_views_link = forms.URLField(required=False, label='',
+      help_text='Citation link.')
+  ff_views_notes = forms.CharField(required=False, label='',
+      widget=forms.Textarea(attrs={'rows': 2, 'cols': 50, 'placeholder': 'Notes', 'maxlength': 500}))
+
+  ie_views = forms.ChoiceField(label='Edge',
+                               choices=VENDOR_VIEWS.items(),
+                               initial=NO_PUBLIC_SIGNALS)
+  ie_views_link = forms.URLField(required=False, label='',
+      help_text='Citation link.')
+  ie_views_notes = forms.CharField(required=False, label='',
+      widget=forms.Textarea(attrs={'rows': 2, 'cols': 50, 'placeholder': 'Notes', 'maxlength': 500}))
+
+  web_dev_views = forms.ChoiceField(
+      label='Web / Framework developer views',
+      choices=WEB_DEV_VIEWS.items(),
+      initial=DEV_NO_SIGNALS,
+      help_text='If unsure, default to "No signals".')
+
+  web_dev_views_link = forms.URLField(required=False, label='',
+      help_text='Citation link.')
+  web_dev_views_notes = forms.CharField(required=False, label='',
+      widget=forms.Textarea(attrs={'rows': 2, 'cols': 50, 'placeholder': 'Notes', 'maxlength': 500}),
+      help_text='Reference known representative examples of opinion, both positive and negative.')
+
+  ergonomics_risks = forms.CharField(label='Ergonomics Risks', required=False, max_length=500,
+      widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 500}),
+      help_text='Are there any other platform APIs this feature will frequently be used in tandem with? Could the default usage of this API make it hard for Chrome to maintain good performance (i.e. synchronous return, must run on a certain thread, guaranteed return timing)?')
+
+  activation_risks = forms.CharField(label='Activation Risks', required=False, max_length=500,
+      widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 500}),
+      help_text='Will it be challenging for developers to take advantage of this feature immediately, as-is? Would this feature benefit from having polyfills, significant documentation and outreach, and/or libraries built on top of it to make it easier to use?')
+
+  security_risks = forms.CharField(label='Security Risks', required=False, max_length=500,
+      widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 500}),
+      help_text='List any security considerations that were taken into account when deigning this feature.')
+
+  experiment_goals = forms.CharField(label='Experiment Goals', required=False, max_length=500,
+      widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 500}),
+      help_text='Which pieces of the API surface are you looking to gain insight on? What metrics/measurement/feedback will you be using to validate designs? Double check that your experiment makes sense given that a large developer (e.g. a Google product or Facebook) likely can\'t use it in production due to the limits enforced by origin trials.\n\nIf Intent to Extend Origin Trial, highlight new/different areas for experimentation. Should not be an exact copy of goals from the first Intent to Experiment.')
+
+  experiment_timeline = forms.CharField(label='Experiment Timeline', required=False, max_length=500,
+      widget=forms.Textarea(attrs={'rows': 2, 'cols': 50, 'maxlength': 500}),
+      help_text='When does the experiment start and expire?')
+
+  experiment_risks = forms.CharField(label='Experiment Risks', required=False, max_length=500,
+      widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 500}),
+      help_text='When this experiment comes to an end are there any risks to the sites that were using it, for example losing access to important storage due to an experimental storage API?')
+
+  experiment_extension_reason = forms.CharField(label='Experiment Extension Reason', required=False, max_length=500,
+      widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 500}),
+      help_text='If this is a repeat experiment, link to the previous Intent to Experiment thread and explain why you want to extend this experiment.')
+
+  ongoing_constraints = forms.CharField(label='Ongoing Constraints', required=False, max_length=500,
+      widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 500}),
+      help_text='Do you anticipate adding any ongoing technical constraints to the codebase while implementing this feature? We prefer to avoid features which require or assume a specific architecture. For most features, the answer here is "None."')
+
+  debuggability = forms.CharField(label='Debuggability', required=False,
+      widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 500}),
+      help_text='Description of the desired DevTools debugging support for your feature. Consider emailing the <a href="https://groups.google.com/forum/?fromgroups#!forum/google-chrome-developer-tools">google-chrome-developer-tools</a> list for additional help. For new language features in V8 specifically, refer to the debugger support checklist. If your feature doesn\'t require changes to DevTools in order to provide a good debugging experience, feel free to leave this section empty.')
+
+  all_platforms = forms.BooleanField(required=False, initial=False, label='Supported on all platforms?',
+      help_text='Will this feature be supported on all six Blink platforms (Windows, Mac, Linux, Chrome OS, Android, and Android WebView)?')
+
+  all_platforms_descr = forms.CharField(label='Platform Support Explanation', required=False,
+      widget=forms.Textarea(attrs={'rows': 2, 'cols': 50, 'maxlength': 200}),
+      help_text='Explanation for why this feature is, or is not, supported on all platforms.')
+
+  wpt = forms.BooleanField(required=True, initial=False, label='Web Platform Tests', help_text='Is this feature fully tested in Web Platform Tests?')
+
+  wpt_descr = forms.CharField(label='Web Platform Tests Description', required=True,
+      widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 500}),
+      help_text='Please link to the test suite(s). If any part of the feature is not tested by web-platform-tests, please include links to issues, e.g. a web-platform-tests issue with the "infra" label explaining why a certain thing cannot be tested (<a href="https://github.com/w3c/web-platform-tests/issues/3867">example</a>), a spec issue for some change that would make it possible to test. (<a href="https://github.com/whatwg/fullscreen/issues/70">example</a>), or a Chromium issue to upstream some existing tests (<a href="https://bugs.chromium.org/p/chromium/issues/detail?id=695486">example</a>).')
+
+  sample_links = forms.CharField(label='Samples links', required=False,
+      widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 500}),
+      help_text='Links to samples (one URL per line).')
+
+  bug_url = forms.URLField(required=False, label='Tracking bug URL',
+      help_text='Tracking bug url (https://bugs.chromium.org/...). This bug should have "Type=Feature" set and be world readable.')
 
   blink_components = forms.ChoiceField(
       required=True,
@@ -926,23 +1119,6 @@ class FeatureForm(forms.Form):
 
   prefixed = forms.BooleanField(required=False, initial=False, label='Prefixed?')
 
-  standardization = forms.ChoiceField(
-      label='Standardization', choices=STANDARDIZATION.items(),
-      initial=EDITORS_DRAFT,
-      help_text=("The standardization status of the API. In bodies that don't "
-                 "use this nomenclature, use the closest equivalent."))
-
-  spec_link = forms.URLField(required=False, label='Spec link',
-                             help_text="Prefer editor's draft.")
-
-  doc_links = forms.CharField(label='Doc links', required=False, max_length=500,
-      widget=forms.Textarea(attrs={'cols': 50, 'placeholder': 'Links to documentation (one per line)', 'maxlength': 500}),
-      help_text='One URL per line')
-
-  sample_links = forms.CharField(label='Samples links', required=False, max_length=500,
-      widget=forms.Textarea(attrs={'cols': 50, 'placeholder': 'Links to samples (one per line)', 'maxlength': 500}),
-      help_text='One URL per line')
-
   footprint  = forms.ChoiceField(label='Technical footprint',
       choices=FOOTPRINT_CHOICES.items(), initial=MAJOR_MINOR_NEW_API)
 
@@ -953,37 +1129,12 @@ class FeatureForm(forms.Form):
       help_text=('How much press / media / web developer buzz will this '
                  'feature generate?'))
 
-  web_dev_views = forms.ChoiceField(
-      label='Web developer views',
-      choices=WEB_DEV_VIEWS.items(),
-      initial=DEV_NO_SIGNALS,
-      help_text=('How positive has the reaction from developers been? If '
-                 'unsure, default to "No signals".'))
-
-  safari_views = forms.ChoiceField(label='Safari views',
-                                   choices=VENDOR_VIEWS.items(),
-                                   initial=NO_PUBLIC_SIGNALS)
-  safari_views_link = forms.URLField(required=False, label='',
-      help_text='Citation link.')
-
-  ff_views = forms.ChoiceField(label='Firefox views',
-                               choices=VENDOR_VIEWS.items(),
-                               initial=NO_PUBLIC_SIGNALS)
-  ff_views_link = forms.URLField(required=False, label='',
-      help_text='Citation link.')
-
-  ie_views = forms.ChoiceField(label='Edge',
-                               choices=VENDOR_VIEWS.items(),
-                               initial=NO_PUBLIC_SIGNALS)
-  ie_views_link = forms.URLField(required=False, label='',
-      help_text='Citation link.')
-
   search_tags = forms.CharField(label='Search tags', required=False,
       help_text='Comma separated keywords used only in search')
 
-  comments = forms.CharField(label='Comments', required=False, max_length=500, widget=forms.Textarea(
-      attrs={'cols': 50, 'placeholder': 'Additional comments, caveats, info...', 'maxlength': 500}),
-      help_text='Complete sentences only.')
+  comments = forms.CharField(label='Comments', required=False, max_length=500,
+      widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 500}),
+      help_text='Additional comments, caveats, info...')
 
   class Meta:
     model = Feature
