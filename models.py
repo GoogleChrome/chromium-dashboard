@@ -435,7 +435,8 @@ class Feature(DictModel):
       else:
         d['id'] = None
       d['category'] = FEATURE_CATEGORIES[self.category]
-      d['intent_stage'] = INTENT_STAGES[self.intent_stage]
+      if self.intent_stage is not None:
+        d['intent_stage'] = INTENT_STAGES[self.intent_stage]
       d['created'] = {
         'by': d.pop('created_by', None),
         'when': d.pop('created', None),
@@ -537,7 +538,8 @@ class Feature(DictModel):
       else:
         d['id'] = None
       d['category'] = FEATURE_CATEGORIES[self.category]
-      d['intent_stage'] = INTENT_STAGES[self.intent_stage]
+      if self.intent_stage is not None:
+        d['intent_stage'] = INTENT_STAGES[self.intent_stage]
       d['visibility'] = VISIBILITY_CHOICES[self.visibility]
       d['impl_status_chrome'] = IMPLEMENTATION_STATUS[self.impl_status_chrome]
       d['meta'] = {
@@ -826,14 +828,14 @@ class Feature(DictModel):
   # General info.
   category = db.IntegerProperty(required=True)
   name = db.StringProperty(required=True)
-  intent_stage = db.IntegerProperty(required=True)
+  intent_stage = db.IntegerProperty()
   summary = db.StringProperty(required=True, multiline=True)
   intent_to_implement_url = db.LinkProperty()
   origin_trial_feedback_url = db.LinkProperty()
 
   # A list of intent threads in the format "date|subject|url"
   intent_threads = db.StringListProperty()
-  motivation = db.StringProperty(required=True, multiline=True)
+  motivation = db.StringProperty(multiline=True)
 
   # Chromium details.
   bug_url = db.LinkProperty()
