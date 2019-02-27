@@ -22,8 +22,11 @@
     "url": "https://github.com/GoogleChrome/chromium-dashboard/issues"
   },
   "devDependencies": {
+    "@babel/core": "^7.3.4",
+    "@babel/register": "^7.0.0",
     "babel-core": "^6.26.3",
     "babel-preset-es2015": "^6.9.0",
+    "babel-register": "^6.26.0",
     "css-slam": "^2.1.2",
     "del": "^3.0.0",
     "eslint": "^5.2.0",
@@ -50,5 +53,7 @@
     "sw-precache": "^5.2.1",
     "sw-toolbox": "^3.6.0"
   },
-  "dependencies": {}
+  "dependencies": {
+    "lint": "^1.1.2"
+  }
 }

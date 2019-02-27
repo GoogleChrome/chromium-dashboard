@@ -31,15 +31,6 @@ form.addEventListener('change', function(e) {
 const specLink = document.querySelector('#id_spec_link');
 
 /**
- * Toggles the spec link input.
- * @param {HTMLInputElement} stdStage Input element.
- */
-function toggleSpecLink(stdStage) {
-  specLink.disabled = parseInt(stdStage.value, 10) >= MIN_STD_TO_BE_ACTIVE;
-  specLink.parentElement.parentElement.hidden = specLink.disabled;
-}
-
-/**
  * Toggles the chrome milestone inputs.
  * @param {HTMLInputElement} status Input element.
  */
