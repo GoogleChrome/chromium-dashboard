@@ -845,15 +845,15 @@ class Feature(DictModel):
 
   owner = db.ListProperty(db.Email)
   footprint = db.IntegerProperty()
-  interop_compat_risks = db.StringProperty()
-  ergonomics_risks = db.StringProperty()
-  activation_risks = db.StringProperty()
-  security_risks = db.StringProperty()
-  debuggability = db.StringProperty()
+  interop_compat_risks = db.StringProperty(multiline=True)
+  ergonomics_risks = db.StringProperty(multiline=True)
+  activation_risks = db.StringProperty(multiline=True)
+  security_risks = db.StringProperty(multiline=True)
+  debuggability = db.StringProperty(multiline=True)
   all_platforms = db.BooleanProperty()
   all_platforms_descr = db.StringProperty()
   wpt = db.BooleanProperty()
-  wpt_descr = db.StringProperty()
+  wpt_descr = db.StringProperty(multiline=True)
 
   visibility = db.IntegerProperty(required=True)
 
@@ -862,7 +862,7 @@ class Feature(DictModel):
   # Standards details.
   standardization = db.IntegerProperty(required=True)
   spec_link = db.LinkProperty()
-  tag_review = db.StringProperty()
+  tag_review = db.StringProperty(multiline=True)
   prefixed = db.BooleanProperty()
 
   explainer_links = db.StringListProperty()
@@ -877,10 +877,10 @@ class Feature(DictModel):
   safari_views_link = db.LinkProperty()
   web_dev_views_link = db.LinkProperty()
 
-  ff_views_notes = db.StringProperty()
-  ie_views_notes = db.StringProperty()
-  safari_views_notes = db.StringProperty()
-  web_dev_views_notes = db.StringProperty()
+  ff_views_notes = db.StringProperty(multiline=True)
+  ie_views_notes = db.StringProperty(multiline=True)
+  safari_views_notes = db.StringProperty(multiline=True)
+  web_dev_views_notes = db.StringProperty(multiline=True)
 
   doc_links = db.StringListProperty()
   sample_links = db.StringListProperty()
@@ -1080,7 +1080,7 @@ class FeatureForm(forms.Form):
       widget=forms.Textarea(attrs={'rows': 2, 'cols': 50, 'maxlength': 200}),
       help_text='Explanation for why this feature is, or is not, supported on all platforms.')
 
-  wpt = forms.BooleanField(required=True, initial=False, label='Web Platform Tests', help_text='Is this feature fully tested in Web Platform Tests?')
+  wpt = forms.BooleanField(required=False, initial=False, label='Web Platform Tests', help_text='Is this feature fully tested in Web Platform Tests?')
 
   wpt_descr = forms.CharField(label='Web Platform Tests Description', required=True,
       widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 500}),
