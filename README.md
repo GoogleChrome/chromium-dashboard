@@ -74,8 +74,7 @@ of globals for debugging and running the site locally.
 **Note** you need to have admin privileges on the `cr-status` cloud project to be
 able to deploy the site.
 
-First, update the version field in `app.yaml`. That will ensure the app deploys
-to a versioned URL and helps for rolling back later. Then, run the helper script:
+Run the helper script:
 
     ./scripts/deploy_site.sh <YYYY-MM-DD>
 
