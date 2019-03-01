@@ -66,6 +66,7 @@ FEATURE_CATEGORIES = {
   }
 
 # Intent stages and mapping from stage to stage name.
+INTENT_NONE = 0
 INTENT_IMPLEMENT = 1
 INTENT_EXPERIMENT = 2
 INTENT_EXTEND_TRIAL = 3
@@ -74,6 +75,7 @@ INTENT_SHIP = 5
 INTENT_REMOVE = 6
 
 INTENT_STAGES = {
+  INTENT_NONE: 'None',
   INTENT_IMPLEMENT: 'Implement',
   INTENT_EXPERIMENT: 'Experiment',
   INTENT_EXTEND_TRIAL: 'Extend Origin Trial',
@@ -824,7 +826,7 @@ class Feature(DictModel):
   # General info.
   category = db.IntegerProperty(required=True)
   name = db.StringProperty(required=True)
-  intent_stage = db.IntegerProperty()
+  intent_stage = db.IntegerProperty(default=0)
   summary = db.StringProperty(required=True, multiline=True)
   intent_to_implement_url = db.LinkProperty()
   origin_trial_feedback_url = db.LinkProperty()
