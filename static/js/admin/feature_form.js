@@ -485,7 +485,7 @@ function intentStageChanged(stage) {
   if (intentStageName) {
     if (stageIndex != INTENT_NONE) {
       intentStageName.textContent =
-	  stage.options[stage.options.selectedIndex].textContent;
+        stage.options[stage.options.selectedIndex].textContent;
     } else {
       intentStageName.textContent = '...';
     }
