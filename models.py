@@ -946,7 +946,7 @@ class FeatureForm(forms.Form):
   name = forms.CharField(required=True, label='Feature',
       help_text='Capitalize only the first letter and the beginnings of proper nouns.')
 
-  summary = forms.CharField(label='', required=True, max_length=500,
+  summary = forms.CharField(label='', required=True,
       widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 500}),
       help_text='Provide a one sentence description followed by one or two lines explaining how this feature helps web developers.')
 
@@ -966,8 +966,8 @@ class FeatureForm(forms.Form):
       widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 500}),
       help_text='Summary of the feature.')
 
-  motivation = forms.CharField(label='Motivation', required=True, max_length=500,
-      widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 500}),
+  motivation = forms.CharField(label='Motivation', required=True,
+      widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 1480}),
       help_text='Explain why the web needs this change. It may be useful to describe what web developers are forced to do without it. When possible, include links to back up your claims in the explainer.')
 
   explainer_links = forms.CharField(label='Explainer link(s)', required=False,
@@ -994,11 +994,11 @@ class FeatureForm(forms.Form):
                              help_text="Link to spec, if and when available. Please update the chromestatus.com entry and the intent thread(s) with the spec link when available.")
 
   tag_review = forms.CharField(label='TAG Review', required=True,
-      widget=forms.Textarea(attrs={'rows': 2, 'cols': 50, 'maxlength': 500}),
+      widget=forms.Textarea(attrs={'rows': 2, 'cols': 50, 'maxlength': 1480}),
       help_text='Link(s) to TAG review(s), or explanation why this is not needed.')
 
-  interop_compat_risks = forms.CharField(label='Interoperability and Compatibility Risks', required=True, max_length=500,
-      widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 500}),
+  interop_compat_risks = forms.CharField(label='Interoperability and Compatibility Risks', required=True,
+      widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 1480}),
       help_text='Describe the degree of <a target="_blank" href="https://sites.google.com/a/chromium.org/dev/blink?pli=1#TOC-Policy-for-shipping-and-removing-web-platform-API-features">interoperability risk</a>. For a new feature, the main risk is that it fails to become an interoperable part of the web platform if other browsers do not implement it. For a removal, please review our <a target="_blank" href="https://docs.google.com/document/d/1RC-pBBvsazYfCNNUSkPqAVpSpNJ96U8trhNkfV0v9fk/edit">principles of web compatibility</a>.')
 
   safari_views = forms.ChoiceField(label='Safari views',
@@ -1007,7 +1007,7 @@ class FeatureForm(forms.Form):
   safari_views_link = forms.URLField(required=False, label='',
       help_text='Citation link.')
   safari_views_notes = forms.CharField(required=False, label='',
-      widget=forms.Textarea(attrs={'rows': 2, 'cols': 50, 'placeholder': 'Notes', 'maxlength': 500}))
+      widget=forms.Textarea(attrs={'rows': 2, 'cols': 50, 'placeholder': 'Notes', 'maxlength': 1480}))
 
   ff_views = forms.ChoiceField(label='Firefox views',
                                choices=VENDOR_VIEWS.items(),
@@ -1015,7 +1015,7 @@ class FeatureForm(forms.Form):
   ff_views_link = forms.URLField(required=False, label='',
       help_text='Citation link.')
   ff_views_notes = forms.CharField(required=False, label='',
-      widget=forms.Textarea(attrs={'rows': 2, 'cols': 50, 'placeholder': 'Notes', 'maxlength': 500}))
+      widget=forms.Textarea(attrs={'rows': 2, 'cols': 50, 'placeholder': 'Notes', 'maxlength': 1480}))
 
   ie_views = forms.ChoiceField(label='Edge',
                                choices=VENDOR_VIEWS.items(),
@@ -1023,7 +1023,7 @@ class FeatureForm(forms.Form):
   ie_views_link = forms.URLField(required=False, label='',
       help_text='Citation link.')
   ie_views_notes = forms.CharField(required=False, label='',
-      widget=forms.Textarea(attrs={'rows': 2, 'cols': 50, 'placeholder': 'Notes', 'maxlength': 500}))
+      widget=forms.Textarea(attrs={'rows': 2, 'cols': 50, 'placeholder': 'Notes', 'maxlength': 1480}))
 
   web_dev_views = forms.ChoiceField(
       label='Web / Framework developer views',
@@ -1034,56 +1034,56 @@ class FeatureForm(forms.Form):
   web_dev_views_link = forms.URLField(required=False, label='',
       help_text='Citation link.')
   web_dev_views_notes = forms.CharField(required=False, label='',
-      widget=forms.Textarea(attrs={'rows': 2, 'cols': 50, 'placeholder': 'Notes', 'maxlength': 500}),
+      widget=forms.Textarea(attrs={'rows': 2, 'cols': 50, 'placeholder': 'Notes', 'maxlength': 1480}),
       help_text='Reference known representative examples of opinion, both positive and negative.')
 
-  ergonomics_risks = forms.CharField(label='Ergonomics Risks', required=False, max_length=500,
-      widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 500}),
+  ergonomics_risks = forms.CharField(label='Ergonomics Risks', required=False,
+      widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 1480}),
       help_text='Are there any other platform APIs this feature will frequently be used in tandem with? Could the default usage of this API make it hard for Chrome to maintain good performance (i.e. synchronous return, must run on a certain thread, guaranteed return timing)?')
 
-  activation_risks = forms.CharField(label='Activation Risks', required=False, max_length=500,
-      widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 500}),
+  activation_risks = forms.CharField(label='Activation Risks', required=False,
+      widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 1480}),
       help_text='Will it be challenging for developers to take advantage of this feature immediately, as-is? Would this feature benefit from having polyfills, significant documentation and outreach, and/or libraries built on top of it to make it easier to use?')
 
-  security_risks = forms.CharField(label='Security Risks', required=False, max_length=500,
-      widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 500}),
+  security_risks = forms.CharField(label='Security Risks', required=False,
+      widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 1480}),
       help_text='List any security considerations that were taken into account when deigning this feature.')
 
-  experiment_goals = forms.CharField(label='Experiment Goals', required=False, max_length=500,
-      widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 500}),
+  experiment_goals = forms.CharField(label='Experiment Goals', required=False,
+      widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 1480}),
       help_text='Which pieces of the API surface are you looking to gain insight on? What metrics/measurement/feedback will you be using to validate designs? Double check that your experiment makes sense given that a large developer (e.g. a Google product or Facebook) likely can\'t use it in production due to the limits enforced by origin trials.\n\nIf Intent to Extend Origin Trial, highlight new/different areas for experimentation. Should not be an exact copy of goals from the first Intent to Experiment.')
 
-  experiment_timeline = forms.CharField(label='Experiment Timeline', required=False, max_length=500,
-      widget=forms.Textarea(attrs={'rows': 2, 'cols': 50, 'maxlength': 500}),
+  experiment_timeline = forms.CharField(label='Experiment Timeline', required=False,
+      widget=forms.Textarea(attrs={'rows': 2, 'cols': 50, 'maxlength': 1480}),
       help_text='When does the experiment start and expire?')
 
-  experiment_risks = forms.CharField(label='Experiment Risks', required=False, max_length=500,
-      widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 500}),
+  experiment_risks = forms.CharField(label='Experiment Risks', required=False,
+      widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 1480}),
       help_text='When this experiment comes to an end are there any risks to the sites that were using it, for example losing access to important storage due to an experimental storage API?')
 
-  experiment_extension_reason = forms.CharField(label='Experiment Extension Reason', required=False, max_length=500,
-      widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 500}),
+  experiment_extension_reason = forms.CharField(label='Experiment Extension Reason', required=False,
+      widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 1480}),
       help_text='If this is a repeat experiment, link to the previous Intent to Experiment thread and explain why you want to extend this experiment.')
 
-  ongoing_constraints = forms.CharField(label='Ongoing Constraints', required=False, max_length=500,
-      widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 500}),
+  ongoing_constraints = forms.CharField(label='Ongoing Constraints', required=False,
+      widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 1480}),
       help_text='Do you anticipate adding any ongoing technical constraints to the codebase while implementing this feature? We prefer to avoid features which require or assume a specific architecture. For most features, the answer here is "None."')
 
   debuggability = forms.CharField(label='Debuggability', required=False,
-      widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 500}),
+      widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 1480}),
       help_text='Description of the desired DevTools debugging support for your feature. Consider emailing the <a href="https://groups.google.com/forum/?fromgroups#!forum/google-chrome-developer-tools">google-chrome-developer-tools</a> list for additional help. For new language features in V8 specifically, refer to the debugger support checklist. If your feature doesn\'t require changes to DevTools in order to provide a good debugging experience, feel free to leave this section empty.')
 
   all_platforms = forms.BooleanField(required=False, initial=False, label='Supported on all platforms?',
       help_text='Will this feature be supported on all six Blink platforms (Windows, Mac, Linux, Chrome OS, Android, and Android WebView)?')
 
   all_platforms_descr = forms.CharField(label='Platform Support Explanation', required=False,
-      widget=forms.Textarea(attrs={'rows': 2, 'cols': 50, 'maxlength': 200}),
+      widget=forms.Textarea(attrs={'rows': 2, 'cols': 50, 'maxlength': 2000}),
       help_text='Explanation for why this feature is, or is not, supported on all platforms.')
 
   wpt = forms.BooleanField(required=False, initial=False, label='Web Platform Tests', help_text='Is this feature fully tested in Web Platform Tests?')
 
   wpt_descr = forms.CharField(label='Web Platform Tests Description', required=True,
-      widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 500}),
+      widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 1480}),
       help_text='Please link to the test suite(s). If any part of the feature is not tested by web-platform-tests, please include links to issues, e.g. a web-platform-tests issue with the "infra" label explaining why a certain thing cannot be tested (<a href="https://github.com/w3c/web-platform-tests/issues/3867">example</a>), a spec issue for some change that would make it possible to test. (<a href="https://github.com/whatwg/fullscreen/issues/70">example</a>), or a Chromium issue to upstream some existing tests (<a href="https://bugs.chromium.org/p/chromium/issues/detail?id=695486">example</a>).')
 
   sample_links = forms.CharField(label='Samples links', required=False,
@@ -1132,8 +1132,8 @@ class FeatureForm(forms.Form):
   search_tags = forms.CharField(label='Search tags', required=False,
       help_text='Comma separated keywords used only in search')
 
-  comments = forms.CharField(label='Comments', required=False, max_length=500,
-      widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 500}),
+  comments = forms.CharField(label='Comments', required=False,
+      widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 1480}),
       help_text='Additional comments, caveats, info...')
 
   class Meta:
