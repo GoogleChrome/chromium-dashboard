@@ -1086,7 +1086,7 @@ class FeatureForm(forms.Form):
 
   wpt_descr = forms.CharField(label='Web Platform Tests Description', required=True,
       widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 1480}),
-      help_text='Please link to the test suite(s). If any part of the feature is not tested by web-platform-tests, please include links to issues, e.g. a web-platform-tests issue with the "infra" label explaining why a certain thing cannot be tested (<a href="https://github.com/w3c/web-platform-tests/issues/3867">example</a>), a spec issue for some change that would make it possible to test. (<a href="https://github.com/whatwg/fullscreen/issues/70">example</a>), or a Chromium issue to upstream some existing tests (<a href="https://bugs.chromium.org/p/chromium/issues/detail?id=695486">example</a>).')
+      help_text='Please link to the <a href="https://wpt.fyi/results">results on wpt.fyi</a>. If any part of the feature is not tested by web-platform-tests, please include links to issues, e.g. a web-platform-tests issue with the "infra" label explaining why a certain thing cannot be tested (<a href="https://github.com/w3c/web-platform-tests/issues/3867">example</a>), a spec issue for some change that would make it possible to test. (<a href="https://github.com/whatwg/fullscreen/issues/70">example</a>), or a Chromium issue to upstream some existing tests (<a href="https://bugs.chromium.org/p/chromium/issues/detail?id=695486">example</a>).')
 
   sample_links = forms.CharField(label='Samples links', required=False,
       widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 500}),
