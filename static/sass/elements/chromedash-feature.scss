@@ -143,6 +143,10 @@ section {
       overflow: hidden;
       white-space: nowrap;
     }
+
+    summary p:not(:first-child) {
+      margin: 10px 0 0 0;
+    }
   }
 
   h3 {

@@ -79,6 +79,12 @@
   </section>
   {% endif %}
 
+  {% if feature.motivation %}
+  <section id="motivation">
+    <p>{{ feature.motivation|urlize }}</p>
+  </section>
+  {% eindif %}
+
   {% if feature.comments %}
   <section id="comments">
     <h3>Comments</h3>
