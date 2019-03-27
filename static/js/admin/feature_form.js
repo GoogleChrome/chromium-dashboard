@@ -443,7 +443,7 @@ const FORM_FIELD_GRAPH = {
 // Exceptions by category to the above set of values
 const FORM_FIELD_CATEGORY_EXCEPTIONS =
 {
-  "JavaScript": {
+  'JavaScript': {
     'tag_review': {
       INTENT_NONE: VISIBLE_OPTIONAL,
       INTENT_IMPLEMENT: VISIBLE_OPTIONAL,
