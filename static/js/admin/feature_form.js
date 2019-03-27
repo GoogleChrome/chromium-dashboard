@@ -18,8 +18,9 @@ form.addEventListener('change', function(e) {
     case 'select':
       if (e.target.id === 'id_impl_status_chrome') {
         toggleMilestones(e.target);
-      } else if (e.target.id === 'id_intent_stage') {
-        intentStageChanged(e.target);
+      } else if (e.target.id === 'id_intent_stage' ||
+                 e.target.id === 'id_category') {
+        intentStageChanged();
       }
       break;
     default:
@@ -150,7 +151,7 @@ const FORM_FIELD_GRAPH = {
     INTENT_REMOVE: VISIBLE_REQUIRED,
   },
   'sample_links': {
-    INTENT_NONE: HIDDEN,
+    INTENT_NONE: VISIBLE_OPTIONAL,
     INTENT_IMPLEMENT: VISIBLE_OPTIONAL,
     INTENT_EXPERIMENT: HIDDEN,
     INTENT_EXTEND_TRIAL: HIDDEN,
@@ -159,7 +160,7 @@ const FORM_FIELD_GRAPH = {
     INTENT_REMOVE: HIDDEN,
   },
   'bug_url': {
-    INTENT_NONE: HIDDEN,
+    INTENT_NONE: VISIBLE_OPTIONAL,
     INTENT_IMPLEMENT: VISIBLE_REQUIRED,
     INTENT_EXPERIMENT: HIDDEN,
     INTENT_EXTEND_TRIAL: HIDDEN,
@@ -168,7 +169,7 @@ const FORM_FIELD_GRAPH = {
     INTENT_REMOVE: VISIBLE_REQUIRED,
   },
   'blink_components': {
-    INTENT_NONE: HIDDEN,
+    INTENT_NONE: VISIBLE_OPTIONAL,
     INTENT_IMPLEMENT: VISIBLE_REQUIRED,
     INTENT_EXPERIMENT: HIDDEN,
     INTENT_EXTEND_TRIAL: HIDDEN,
@@ -177,7 +178,7 @@ const FORM_FIELD_GRAPH = {
     INTENT_REMOVE: VISIBLE_REQUIRED,
   },
   'impl_status_chrome': {
-    INTENT_NONE: HIDDEN,
+    INTENT_NONE: VISIBLE_OPTIONAL,
     INTENT_IMPLEMENT: VISIBLE_REQUIRED,
     INTENT_EXPERIMENT: HIDDEN,
     INTENT_EXTEND_TRIAL: HIDDEN,
@@ -195,7 +196,7 @@ const FORM_FIELD_GRAPH = {
     INTENT_REMOVE: VISIBLE_OPTIONAL,
   },
   'footprint': {
-    INTENT_NONE: HIDDEN,
+    INTENT_NONE: VISIBLE_OPTIONAL,
     INTENT_IMPLEMENT: VISIBLE_REQUIRED,
     INTENT_EXPERIMENT: HIDDEN,
     INTENT_EXTEND_TRIAL: HIDDEN,
@@ -439,7 +440,41 @@ const FORM_FIELD_GRAPH = {
   },
 };
 
-function intentStageChanged(stage) {
+// Exceptions by category to the above set of values
+const FORM_FIELD_CATEGORY_EXCEPTIONS =
+{
+  'JavaScript': {
+    'tag_review': {
+      INTENT_NONE: VISIBLE_OPTIONAL,
+      INTENT_IMPLEMENT: VISIBLE_OPTIONAL,
+      INTENT_EXPERIMENT: VISIBLE_OPTIONAL,
+      INTENT_EXTEND_TRIAL: VISIBLE_OPTIONAL,
+      INTENT_IMPLEMENT_SHIP: VISIBLE_OPTIONAL,
+      INTENT_SHIP: VISIBLE_OPTIONAL,
+      INTENT_REMOVE: VISIBLE_OPTIONAL,
+    },
+    'wpt': {
+      INTENT_NONE: VISIBLE_OPTIONAL,
+      INTENT_IMPLEMENT: VISIBLE_OPTIONAL,
+      INTENT_EXPERIMENT: VISIBLE_OPTIONAL,
+      INTENT_EXTEND_TRIAL: VISIBLE_OPTIONAL,
+      INTENT_IMPLEMENT_SHIP: VISIBLE_OPTIONAL,
+      INTENT_SHIP: VISIBLE_OPTIONAL,
+      INTENT_REMOVE: VISIBLE_OPTIONAL,
+    },
+    'wpt_descr': {
+      INTENT_NONE: VISIBLE_OPTIONAL,
+      INTENT_IMPLEMENT: VISIBLE_OPTIONAL,
+      INTENT_EXPERIMENT: VISIBLE_OPTIONAL,
+      INTENT_EXTEND_TRIAL: VISIBLE_OPTIONAL,
+      INTENT_IMPLEMENT_SHIP: VISIBLE_OPTIONAL,
+      INTENT_SHIP: VISIBLE_OPTIONAL,
+      INTENT_REMOVE: VISIBLE_OPTIONAL,
+    },
+  },
+};
+
+function intentStageChanged() {
   function setRequired(id, required) {
     if (required) {
       document.querySelector('#id_' + id).setAttribute('required', 'required');
@@ -458,21 +493,32 @@ function intentStageChanged(stage) {
     document.querySelector('#id_' + id).parentNode.parentNode.style.display = 'none';
   }
 
+  let stage = document.querySelector('#id_intent_stage');
   let stageIndex = Number(stage.value);
   let stageIdentifier = INTENT_IDENTIFIER_NAMES[stageIndex];
+
+  let category = document.querySelector('#id_category').selectedOptions[0].textContent;
 
   for (let id in FORM_FIELD_GRAPH) {
     if (!FORM_FIELD_GRAPH.hasOwnProperty(id)) {
       continue;
     }
 
-    if (FORM_FIELD_GRAPH[id][stageIdentifier][FORM_FIELD_SHOW_POS]) {
+    let formFieldValues = FORM_FIELD_GRAPH[id][stageIdentifier];
+
+    if (category in FORM_FIELD_CATEGORY_EXCEPTIONS &&
+        id in FORM_FIELD_CATEGORY_EXCEPTIONS[category] &&
+        stageIdentifier in FORM_FIELD_CATEGORY_EXCEPTIONS[category][id]) {
+      formFieldValues = FORM_FIELD_CATEGORY_EXCEPTIONS[category][id][stageIdentifier];
+    }
+
+    if (formFieldValues[FORM_FIELD_SHOW_POS]) {
       show(id);
     } else {
       hide(id);
     }
 
-    if (FORM_FIELD_GRAPH[id][stageIdentifier][FORM_FIELD_REQUIRED_POS]) {
+    if (formFieldValues[FORM_FIELD_REQUIRED_POS]) {
       setRequired(id, true);
     } else {
       setRequired(id, false);
@@ -528,7 +574,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   toggleMilestones(document.querySelector('#id_impl_status_chrome'));
 
-  intentStageChanged(document.querySelector('#id_intent_stage'));
+  intentStageChanged();
 });
 
 document.body.addEventListener('ajax-delete', function(e) {
