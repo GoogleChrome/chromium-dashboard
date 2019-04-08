@@ -2193,6 +2193,8 @@
 
     // Import the LitElement base class and html helper function
 
+    console.log('=========== component');
+
     // Extend the LitElement base class
     class MyElement extends LitElement {
 
