@@ -12,7 +12,9 @@
     "lint": "gulp lint",
     "build": "gulp",
     "deploy": "./scripts/deploy_site.sh",
-    "start": "./scripts/start_server.sh"
+    "start": "./scripts/start_server.sh",
+    "build-components": "rollup -c",
+    "watch-components": "rollup -c -w"
   },
   "repository": {
     "type": "git",
@@ -47,8 +49,13 @@
     "http2-push-manifest": "^1.0.0",
     "lighthouse-ci": "https://github.com/ebidel/lighthouse-ci",
     "load-grunt-tasks": "^4.0.0",
+    "rollup": "^1.9.0",
+    "rollup-plugin-commonjs": "^9.3.4",
+    "rollup-plugin-node-resolve": "^4.2.1",
     "sw-precache": "^5.2.1",
     "sw-toolbox": "^3.6.0"
   },
-  "dependencies": {}
+  "dependencies": {
+    "lit-element": "^2.1.0"
+  }
 }
