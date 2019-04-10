@@ -22,11 +22,7 @@ This will also pull down bower_components and run `gulp` to build the site.
 
 ### Developing
 
-To start the main server and the notifier backend, run:
-
-    ./scripts/start_server.sh
-
-##### Add env_vars.yaml
+#### Create env_vars.yaml
 
 Create a file named `env_vars.yaml` in the root directory and fill it with:
 
@@ -38,7 +34,17 @@ env_variables:
 
 The `FIREBASE_SERVER_KEY` is the Firebase server key obtained from the [Firebase console](https://firebase.corp.google.com/project/cr-status/settings/cloudmessaging/).
 
-##### FCM setup
+#### Start the main devserver
+
+```shell
+npm run start
+```
+
+#### Watch web component rollup job
+
+If you are developing web components under `/static/elements`, run `npm run watch-components` to watch changes and bundle web components into `/static/js/component-bundle.js`
+
+#### FCM setup
 
 If you want to test push notification features, you'll need to create a file named
 `.fcm_server_key` in the main project root. Copy in the FCM server key obtained
@@ -70,6 +76,14 @@ of globals for debugging and running the site locally.
 `SEND_PUSH_NOTIFICATIONS` - `False` will turn off sending push notifications for all users.
 
 ### Deploying
+
+#### Build all web components
+
+```shell
+npm run watch-components
+```
+
+#### Deploy
 
 **Note** you need to have admin privileges on the `cr-status` cloud project to be
 able to deploy the site.
