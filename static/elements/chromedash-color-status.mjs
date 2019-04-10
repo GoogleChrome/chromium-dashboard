@@ -1,63 +1,34 @@
-// Import the LitElement base class and html helper function
 import { LitElement, html } from 'lit-element';
 
-console.log('=========== component')
+class ChromedashColorStatus extends LitElement {
+  static get properties() {
+    return {
+      max: {
+        type: Number,
+      },
+      value: {
+        type: Number,
+      }
+    };
+  }
 
-// Extend the LitElement base class
-class MyElement extends LitElement {
+  constructor() {
+    super();
+    this.max = 7;
+  }
 
-  /**
-   * Implement `render` to define a template for your element.
-   *
-   * You must provide an implementation of `render` for any element
-   * that uses LitElement as a base class.
-   */
-  render(){
-    /**
-     * `render` must return a lit-html `TemplateResult`.
-     *
-     * To create a `TemplateResult`, tag a JavaScript template literal
-     * with the `html` helper function:
-     */
+  render() {
     return html`
-      <!-- template content -->
-      <p>A paragraph</p>
+      <link rel="stylesheet" href="/static/css/elements/chromedash-color-status.css">
+      <span id="status" style="background-color: ${this._getColor()}"></span>
     `;
   }
-}
-// Register the new element with the browser.
-customElements.define('chromedash-color-status', MyElement);
 
-// <dom-module id="chromedash-color-status">
-//   <link rel="import" type="css" href="../css/elements/chromedash-color-status.css">
-//   <template>
-//     <span id="status"></span>
-//   </template>
-//   <script>
-//     Polymer({
-//       is: 'chromedash-color-status',
-//       properties: {
-//         max: {
-//           type: Number,
-//           value: 7,
-//           observer: '_maxChanged'
-//         },
-//         value: {
-//           type: Number,
-//           observer: '_valueChanged'
-//         }
-//       },
-//       updateColor: function() {
-//         var CYAN = 120;
-//         var h = Math.round(CYAN - this.value * CYAN / this.max);
-//         this.$.status.style.backgroundColor = 'hsl(' + h + ', 100%, 50%)';
-//       },
-//       _valueChanged: function() {
-//         this.updateColor();
-//       },
-//       _maxChanged: function() {
-//         this.updateColor();
-//       }
-//     });
-//   </script>
-// </dom-module>
+  _getColor() {
+    const cyan = 120;
+    const hue = Math.round(cyan - this.value * cyan / this.max);
+    return `hsl(${hue}, 100%, 50%)`;
+  }
+}
+
+customElements.define('chromedash-color-status', ChromedashColorStatus);
