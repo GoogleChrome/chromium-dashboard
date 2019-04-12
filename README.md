@@ -42,7 +42,7 @@ npm run start
 
 #### Watch web component rollup job
 
-If you are developing web components under `/static/elements`, run `npm run watch-components` to watch changes and bundle web components into `/static/js/component-bundle.js`
+If you are developing web components under `/static/elements`, run `npm run watch` to watch changes and bundle web components into `/static/js/component-bundle.js`
 
 #### FCM setup
 
