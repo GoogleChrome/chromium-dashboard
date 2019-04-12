@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% load inline_file %}
+{% block css %}
+<!-- <link rel="stylesheet" href="/static/css/metrics/metrics.css"> -->
+<style>{% inline_file "/static/css/metrics/metrics.css" %}</style>
+{% endblock %}
+
+{% block preload %}
+  {% if VULCANIZE %}
+    <link rel="preload" href="/static/elements/metrics-imports.vulcanize.js" as="script">
+  {% endif %}
+{% endblock %}
+
+{% block html_imports %}
+  <link rel="import" href="/static/elements/metrics-imports{% if VULCANIZE %}.vulcanize{% endif %}.html">
+{% endblock %}
+
+{% block drawer %}
+  {% include "metrics/_nav.html" %}
+{% endblock %}
+
+{% block subheader %}
+<div id="subheader">
+  <h2>CSS usage metrics &gt; animated properties > stack rank</h2>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="data-panel">
+  <div>
+    <h3>About this data</h3>
+    <p class="description">
+    We've been using Chrome's <a href="https://cs.chromium.org/chromium/src/tools/metrics/histograms/enums.xml" target="_blank">anonymous usage statistics</a> to count the CSS properties which are animated.
+    <b>Percentages on this page indicate the fraction of Chrome page loads that animates the corresponding CSS property (in a transition or animation) at least once</b>. Data is ~24 hrs old and reflects usage across all channels and platforms.</p>
+  </div>
+  <chromedash-metrics type="css" view="animated" {% if not prod %}use-remote-data{% endif %}></chromedash-metrics>
+</div>
+{% endblock %}
+
+{% block js %}
+<script>
+document.addEventListener('WebComponentsReady', function(e) {
+  document.body.classList.remove('loading');
+});
+</script>
+{% endblock %}

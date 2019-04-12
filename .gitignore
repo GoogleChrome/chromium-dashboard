@@ -15,7 +15,7 @@ static/js/**/*.es6.min.js
 *.iml
 .idea/*
 bulkloader-*
-css/
+static/css/
 static/dist/
 cookie
 lib

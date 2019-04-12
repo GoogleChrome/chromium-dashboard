@@ -80,7 +80,7 @@ of globals for debugging and running the site locally.
 #### Build all web components
 
 ```shell
-npm run watch-components
+npm run build
 ```
 
 #### Deploy
