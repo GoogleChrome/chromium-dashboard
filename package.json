@@ -10,10 +10,9 @@
     "postinstall": "npm run deps && npm run build",
     "deps": "rm -rf static/bower_components && bower install && pip install -t lib -r requirements.txt",
     "lint": "gulp lint",
-    "build": "gulp && rollup -c",
+    "build": "gulp",
     "deploy": "./scripts/deploy_site.sh",
-    "start": "./scripts/start_server.sh",
-    "watch": "rollup -c -w"
+    "start": "./scripts/start_server.sh"
   },
   "repository": {
     "type": "git",
@@ -48,9 +47,6 @@
     "http2-push-manifest": "^1.0.0",
     "lighthouse-ci": "https://github.com/ebidel/lighthouse-ci",
     "load-grunt-tasks": "^4.0.0",
-    "rollup": "^1.9.0",
-    "rollup-plugin-node-resolve": "^4.2.1",
-    "rollup-plugin-terser": "^4.0.4",
     "sw-precache": "^5.2.1",
     "sw-toolbox": "^3.6.0"
   },

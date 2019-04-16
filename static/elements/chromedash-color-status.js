@@ -1,4 +1,6 @@
-import { LitElement, html } from 'lit-element';
+import {LitElement, html} from 'https://unpkg.com/@polymer/lit-element@latest/lit-element.js?module';
+
+const CYAN = 120;
 
 class ChromedashColorStatus extends LitElement {
   static get properties() {
@@ -8,7 +10,7 @@ class ChromedashColorStatus extends LitElement {
       },
       value: {
         type: Number,
-      }
+      },
     };
   }
 
@@ -18,16 +20,11 @@ class ChromedashColorStatus extends LitElement {
   }
 
   render() {
+    const color = `hsl(${Math.round(CYAN - this.value * CYAN / this.max)}, 100%, 50%)`;
     return html`
       <link rel="stylesheet" href="/static/css/elements/chromedash-color-status.css">
-      <span id="status" style="background-color: ${this._getColor()}"></span>
+      <span id="status" style="background-color: ${color}"></span>
     `;
-  }
-
-  _getColor() {
-    const cyan = 120;
-    const hue = Math.round(cyan - this.value * cyan / this.max);
-    return `hsl(${hue}, 100%, 50%)`;
   }
 }
 

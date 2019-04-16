@@ -40,10 +40,6 @@ The `FIREBASE_SERVER_KEY` is the Firebase server key obtained from the [Firebase
 npm run start
 ```
 
-#### Watch web component rollup job
-
-If you are developing web components under `/static/elements`, run `npm run watch` to watch changes and bundle web components into `/static/js/component-bundle.js`
-
 #### FCM setup
 
 If you want to test push notification features, you'll need to create a file named
@@ -76,12 +72,6 @@ of globals for debugging and running the site locally.
 `SEND_PUSH_NOTIFICATIONS` - `False` will turn off sending push notifications for all users.
 
 ### Deploying
-
-#### Build all web components
-
-```shell
-npm run build
-```
 
 #### Deploy
 
