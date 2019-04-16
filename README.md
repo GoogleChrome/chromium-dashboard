@@ -73,8 +73,6 @@ of globals for debugging and running the site locally.
 
 ### Deploying
 
-#### Deploy
-
 **Note** you need to have admin privileges on the `cr-status` cloud project to be
 able to deploy the site.
 

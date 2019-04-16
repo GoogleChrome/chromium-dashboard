@@ -72,7 +72,7 @@ gulp.task('js', () => {
     //'static/elements/*.vulcanize.js',
     'static/js/**/*.es6.js',
     'static/js/shared.js',
-    '!static/static/elements'  // Exclude web components
+    '!static/static/elements',  // Exclude web components
   ])
     .pipe($.babel()) // Defaults are in .babelrc
     .pipe(uglifyJS())
