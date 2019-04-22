@@ -1,4 +1,4 @@
-var urlize = (function () {
+export const urlize = (function () {
 
   // From http://blog.stevenlevithan.com/archives/cross-browser-split
   // modified to not add itself to String.prototype.
