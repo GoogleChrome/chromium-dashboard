@@ -1,6 +1,13 @@
-<link rel="import" href="../bower_components/iron-icon/iron-icon.html">
-<link rel="import" href="../bower_components/iron-iconset-svg/iron-iconset-svg.html">
+/**
+ * Add icons to iron-icon.
+ * This file uses a similar pattern used in iron-icons (https://github.com/PolymerElements/iron-icons/blob/master/iron-icons.js)
+ */
 
+import {html} from 'https://unpkg.com/@polymer/lit-element@latest/lit-element.js?module';
+import 'https://unpkg.com/@polymer/iron-icon/iron-icon.js?module';
+import 'https://unpkg.com/@polymer/iron-iconset-svg/iron-iconset-svg.js?module';
+
+const template = html`
 <iron-iconset-svg name="chromestatus" size="24">
 <svg><defs>
 
@@ -78,3 +85,6 @@
 
 </defs></svg>
 </iron-iconset-svg>
+`;
+
+document.head.appendChild(template.getTemplateElement());

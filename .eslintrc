@@ -26,6 +26,8 @@
     "max-len": [2, 100, {
       "ignoreComments": true,
       "ignoreUrls": true,
+      "ignoreTemplateLiterals": true,
+      "ignoreRegExpLiterals": true,
       "tabWidth": 2
     }],
   },

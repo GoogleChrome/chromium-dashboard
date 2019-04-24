@@ -28,6 +28,21 @@ form.addEventListener('change', function(e) {
   }
 });
 
+document.querySelector('.delete-button').addEventListener('click', function(e) {
+  if (!confirm('Delete feature?')) {
+    return;
+  }
+
+  fetch(`/admin/features/delete/${e.currentTarget.dataset.id}`, {
+    method: 'POST',
+    credentials: 'include',
+  }).then((resp) => {
+    if (resp.status === 200) {
+      location.href = '/features';
+    }
+  });
+});
+
 /**
  * Toggles the chrome milestone inputs.
  * @param {HTMLInputElement} status Input element.
@@ -575,11 +590,5 @@ document.addEventListener('DOMContentLoaded', function() {
   toggleMilestones(document.querySelector('#id_impl_status_chrome'));
 
   intentStageChanged();
-});
-
-document.body.addEventListener('ajax-delete', function(e) {
-  if (e.detail.status === 200) {
-    location.href = '/features';
-  }
 });
 })();

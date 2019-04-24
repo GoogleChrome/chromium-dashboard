@@ -80,54 +80,54 @@ gulp.task('js', () => {
     .pipe(gulp.dest('static/js'));
 });
 
-// Vulcanize the Polymer imports, creating *.vulcanize.* files beside the
-// original import files.
-gulp.task('vulcanize-lazy-elements', () => {
-  return gulp.src([
-    'static/bower_components/paper-menu-button/paper-menu-button.html',
-    'static/elements/chromedash-legend.html'
-  ])
-  .pipe($.vulcanize({
-    stripComments: true,
-    inlineScripts: true,
-    inlineCss: true,
-    // Leave out elements registered by main site or shared in other
-    // lazy-loaded elements.
-    stripExcludes: [
-      'polymer.html$',
-      'iron-meta.html',
-      'chromedash-color-status.html'
-    ]
-  }))
-  .pipe($.rename({suffix: '.vulcanize'}))
-  .pipe($.crisper({scriptInHead: true})) // Separate HTML and JS. CSP friendly.
-  .pipe($.if('*.html', minifyHtml())) // Minify HTML output.
-  .pipe($.if('*.html', cssslam.gulp())) // Minify CSS in HTML output.
-  .pipe($.if('*.js', uglifyJS())) // Minify JS in HTML output.
-  .pipe($.if('*.js', license())) // Add license to top.
-  .pipe(gulp.dest('static/elements'));
-});
+// // Vulcanize the Polymer imports, creating *.vulcanize.* files beside the
+// // original import files.
+// gulp.task('vulcanize-lazy-elements', () => {
+//   return gulp.src([
+//     'static/bower_components/paper-menu-button/paper-menu-button.html',
+//     'static/elements/chromedash-legend.html'
+//   ])
+//   .pipe($.vulcanize({
+//     stripComments: true,
+//     inlineScripts: true,
+//     inlineCss: true,
+//     // Leave out elements registered by main site or shared in other
+//     // lazy-loaded elements.
+//     stripExcludes: [
+//       'polymer.html$',
+//       'iron-meta.html',
+//       'chromedash-color-status.html'
+//     ]
+//   }))
+//   .pipe($.rename({suffix: '.vulcanize'}))
+//   .pipe($.crisper({scriptInHead: true})) // Separate HTML and JS. CSP friendly.
+//   .pipe($.if('*.html', minifyHtml())) // Minify HTML output.
+//   .pipe($.if('*.html', cssslam.gulp())) // Minify CSS in HTML output.
+//   .pipe($.if('*.js', uglifyJS())) // Minify JS in HTML output.
+//   .pipe($.if('*.js', license())) // Add license to top.
+//   .pipe(gulp.dest('static/elements'));
+// });
 
-gulp.task('vulcanize', gulp.series('styles', 'vulcanize-lazy-elements', function vulcanizeStuff() {
-  return gulp.src([
-    'static/elements/metrics-imports.html',
-    'static/elements/features-imports.html',
-    'static/elements/admin-imports.html',
-    'static/elements/samples-imports.html',
-  ])
-  .pipe($.vulcanize({
-    stripComments: true,
-    inlineScripts: true,
-    inlineCss: true
-  }))
-  .pipe($.rename({suffix: '.vulcanize'}))
-  .pipe($.crisper({scriptInHead: true})) // Separate HTML and JS. CSP friendly.
-  .pipe($.if('*.html', minifyHtml())) // Minify HTML output.
-  .pipe($.if('*.html', cssslam.gulp())) // Minify CSS in HTML output.
-  .pipe($.if('*.js', uglifyJS())) // Minify JS in HTML output.
-  .pipe($.if('*.js', license())) // Add license to top.
-  .pipe(gulp.dest('static/elements'));
-}));
+// gulp.task('vulcanize', gulp.series('styles', 'vulcanize-lazy-elements', function vulcanizeStuff() {
+//   return gulp.src([
+//     'static/elements/metrics-imports.html',
+//     'static/elements/features-imports.html',
+//     'static/elements/admin-imports.html',
+//     'static/elements/samples-imports.html',
+//   ])
+//   .pipe($.vulcanize({
+//     stripComments: true,
+//     inlineScripts: true,
+//     inlineCss: true
+//   }))
+//   .pipe($.rename({suffix: '.vulcanize'}))
+//   .pipe($.crisper({scriptInHead: true})) // Separate HTML and JS. CSP friendly.
+//   .pipe($.if('*.html', minifyHtml())) // Minify HTML output.
+//   .pipe($.if('*.html', cssslam.gulp())) // Minify CSS in HTML output.
+//   .pipe($.if('*.js', uglifyJS())) // Minify JS in HTML output.
+//   .pipe($.if('*.js', license())) // Add license to top.
+//   .pipe(gulp.dest('static/elements'));
+// }));
 
 // Clean generated files
 gulp.task('clean', () => {
@@ -155,19 +155,19 @@ gulp.task('generate-service-worker', () => {
     staticFileGlobs: [
       // Images
       `${staticDir}/img/{browsers-logos.png,*.svg,crstatus_128.png,github-white.png}`,
-      `${staticDir}/elements/openinnew.svg`,
+      // `${staticDir}/elements/openinnew.svg`,
       // Scripts
-      `${staticDir}/bower_components/webcomponentsjs/webcomponents-lite.min.js`,
+      // `${staticDir}/bower_components/webcomponentsjs/webcomponents-lite.min.js`,
       `${staticDir}/js/**/!(*.es6).js`, // Don't include unminimized/untranspiled js.
       // Styles. All styles are inline into pages or vulcanized bundles.
       // Polymer imports
       // NOTE: The admin imports are intentionally excluded, as the admin pages
       //       only work online
-      `${staticDir}/elements/paper-menu-button.vulcanize.*`,
-      `${staticDir}/elements/chromedash-legend.vulcanize.*`,
-      `${staticDir}/elements/metrics-imports.vulcanize.*`,
-      `${staticDir}/elements/features-imports.vulcanize.*`,
-      `${staticDir}/elements/samples-imports.vulcanize.*`,
+      // `${staticDir}/elements/paper-menu-button.vulcanize.*`,
+      // `${staticDir}/elements/chromedash-legend.vulcanize.*`,
+      // `${staticDir}/elements/metrics-imports.vulcanize.*`,
+      // `${staticDir}/elements/features-imports.vulcanize.*`,
+      // `${staticDir}/elements/samples-imports.vulcanize.*`,
     ],
     runtimeCaching: [{ // Server-side generated content
       // The features page, which optionally has a trailing slash or a
@@ -237,7 +237,7 @@ gulp.task('generate-service-worker', () => {
 gulp.task('default', gulp.series(
   'styles',
   'lint',
-  'vulcanize',
+  // 'vulcanize',
   'js',
   'generate-service-worker'
 ));

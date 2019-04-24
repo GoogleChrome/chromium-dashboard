@@ -55,20 +55,11 @@ limitations under the License.
 {% block preload %}{% endblock %}
 
 <script>
-window.Polymer = window.Polymer || {
-  dom: 'shadow', // Use native shadow dom.
-  lazyRegister: 'max',
-  useNativeCSSProperties: true,
-  suppressTemplateNotifications: true, // Don't fire dom-change on dom-if, dom-bind, etc.
-  suppressBindingNotifications: true
-  // disableUpgradeEnabled: true // Works with `disable-upgrade` attr. When removed, upgrades element.
-};
-
-var $ = function(selector) {
+const $ = function(selector) {
   return document.querySelector(selector);
 };
 
-var $$ = function(selector) {
+const $$ = function(selector) {
   return document.querySelectorAll(selector);
 };
 </script>
@@ -140,50 +131,50 @@ var $$ = function(selector) {
 <script>
 {% inline_file "/static/js/service-worker-registration.es6.min.js" %}
 
-// https://gist.github.com/ebidel/1d5ede1e35b6f426a2a7
-function lazyLoadWCPolyfillsIfNecessary() {
-  function onload() {
-    // For native Imports, manually fire WCR so user code
-    // can use the same code path for native and polyfill'd imports.
-    if (!('HTMLImports' in window)) {
-      document.body.dispatchEvent(
-          new CustomEvent('WebComponentsReady', {bubbles: true}));
-    }
-  }
+// TODO (yangguang) Look into this code
+// // https://gist.github.com/ebidel/1d5ede1e35b6f426a2a7
+// function lazyLoadWCPolyfillsIfNecessary() {
+//   function onload() {
+//     // For native Imports, manually fire WCR so user code
+//     // can use the same code path for native and polyfill'd imports.
+//     if (!('HTMLImports' in window)) {
+//       document.body.dispatchEvent(
+//           new CustomEvent('WebComponentsReady', {bubbles: true}));
+//     }
+//   }
+//   var webComponentsSupported = ('registerElement' in document
+//       && 'import' in document.createElement('link')
+//       && 'content' in document.createElement('template'));
+//   if (!webComponentsSupported) {
+//     var script = document.createElement('script');
+//     script.async = true;
+//     script.src = '/static/bower_components/webcomponentsjs/webcomponents-lite.min.js';
+//     script.onload = onload;
+//     document.head.appendChild(script);
+//   } else {
+//     onload();
+//   }
+// }
 
-  var webComponentsSupported = ('registerElement' in document
-      && 'import' in document.createElement('link')
-      && 'content' in document.createElement('template'));
-  if (!webComponentsSupported) {
-    var script = document.createElement('script');
-    script.async = true;
-    script.src = '/static/bower_components/webcomponentsjs/webcomponents-lite.min.js';
-    script.onload = onload;
-    document.head.appendChild(script);
-  } else {
-    onload();
-  }
-}
+// const button = $('app-header paper-menu-button');
+// button.addEventListener('click', function lazyHandler(e) {
+//   this.removeEventListener('click', lazyHandler);
 
-var button = document.querySelector('app-header paper-menu-button');
-button.addEventListener('click', function lazyHandler(e) {
-  this.removeEventListener('click', lazyHandler);
+//   {% if VULCANIZE %}
+//   var url = '/static/elements/paper-menu-button.vulcanize.html';
+//   {% else %}
+//   var url = '/static/bower_components/paper-menu-button/paper-menu-button.html';
+//   {% endif %}
 
-  {% if VULCANIZE %}
-  var url = '/static/elements/paper-menu-button.vulcanize.html';
-  {% else %}
-  var url = '/static/bower_components/paper-menu-button/paper-menu-button.html';
-  {% endif %}
+//   Polymer.Base.importHref(url, function() {
+//     button.contentElement.hidden = false;
+//     button.open();
+//   }, null, true);
+// });
 
-  Polymer.Base.importHref(url, function() {
-    button.contentElement.hidden = false;
-    button.open();
-  }, null, true);
-});
+// {% inline_file "/static/js/shared.min.js" %}
 
-{% inline_file "/static/js/shared.min.js" %}
-
-lazyLoadWCPolyfillsIfNecessary();
+// lazyLoadWCPolyfillsIfNecessary();
 </script>
 </body>
 </html>

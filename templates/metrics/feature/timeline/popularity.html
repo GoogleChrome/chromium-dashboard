@@ -7,13 +7,10 @@
 {% endblock %}
 
 {% block preload %}
-  {% if VULCANIZE %}
-    <link rel="preload" href="/static/elements/metrics-imports.vulcanize.js" as="script">
-  {% endif %}
+<script type="module" src="/static/elements/metrics-imports.js"></script>
 {% endblock %}
 
 {% block html_imports %}
-  <link rel="import" href="/static/elements/metrics-imports{% if VULCANIZE %}.vulcanize{% endif %}.html">
 {% endblock %}
 
 {% block drawer %}
@@ -29,17 +26,17 @@
 {% block content %}
 <div class="data-panel">
   <p class="description">To begin, select a feature in the dropdown below.</p>
-  <chromedash-feature-timeline
+  <chromedash-timeline
       type="feature" view="popularity"
       title="Percentage of page views that use this feature"
-      {% if not prod %}use-remote-data{% endif %}></chromedash-feature-timeline>
+      {% if not prod %}use-remote-data{% endif %}></chromedash-timeline>
 </div>
 {% endblock %}
 
 {% block js %}
 <script>
 document.addEventListener('WebComponentsReady', function(e) {
-  var timeline = $('chromedash-feature-timeline');
+  var timeline = $('chromedash-timeline');
   timeline.props = {{FEATUREOBSERVER_BUCKETS|safe}};
   document.body.classList.remove('loading');
 

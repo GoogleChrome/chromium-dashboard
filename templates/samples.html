@@ -3,13 +3,7 @@
 {% load inline_file %}
 
 {% block preload %}
-  {% if VULCANIZE %}
-    <link rel="preload" href="/static/elements/samples-imports.vulcanize.js" as="script">
-  {% endif %}
-{% endblock %}
-
-{% block html_imports %}
-  <link rel="import" href="/static/elements/samples-imports{% if VULCANIZE %}.vulcanize{% endif %}.html">
+  <script type="module" src="/static/elements/samples-imports.js"></script>
 {% endblock %}
 
 {% block rss %}
@@ -17,7 +11,6 @@
 {% endblock %}
 
 {% block css %}
-<!-- <link rel="stylesheet" href="/static/css/samples.css?2016-07-14"> -->
 <style>{% inline_file "/static/css/samples.css" %}</style>
 {% endblock %}
 

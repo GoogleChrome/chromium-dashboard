@@ -83,22 +83,21 @@ iron-icon {
   align-items: center;
 }
 
-.topcorner {
-  .tooltip {
-    margin-left: 4px;
+.category-tooltip,
+.topcorner .tooltip {
+  margin-left: 4px;
 
-    a {
-      text-decoration: none;
-    }
+  a {
+    text-decoration: none;
+  }
 
-    &:hover, &:active {
-      &:before {
-        @include tooltip;
-        top: 35px;
-        right: 20px;
-        width: auto;
-        white-space: nowrap;
-      }
+  &:hover, &:active {
+    &:before {
+      @include tooltip;
+      top: 35px;
+      right: 20px;
+      width: auto;
+      white-space: nowrap;
     }
   }
 }
@@ -116,16 +115,6 @@ hgroup {
     position: absolute;
     top: 0;
     left: 0;
-
-    &:hover, &:active {
-      &:before {
-        @include tooltip;
-        top: 50%;
-        margin: -30px auto;
-        left: 25px;
-        width: 275px;
-      }
-    }
   }
 }
 
@@ -223,17 +212,6 @@ section {
       background: #eee;
       margin: 0 8px 16px 0;
       padding: 8px;
-
-      &.tooltip {
-        &:hover, &:active {
-          &:before {
-            @include tooltip;
-            top: -50px;
-            left: 20px;
-            width: 150px;
-          }
-        }
-      }
     }
 
     .standardization {
@@ -269,14 +247,6 @@ section {
     .w3c-view {
       background-position: -99px 50%;
       width: 22px;
-    }
-    .webdev-view {
-      &:hover, &:active {
-        &:before {
-          left: -80px !important;
-          width: 160px !important;
-        }
-      }
     }
   }
 
@@ -316,6 +286,24 @@ section {
 
   .flex {
     flex: 0 0 calc(50% - 16px);
+  }
+
+  .tooltip {
+    position: relative;
+
+    a {
+      text-decoration: none;
+    }
+
+    &:hover, &:active {
+      &:before {
+        @include tooltip;
+        bottom: 25px;
+        left: -50px;
+        width: auto;
+        white-space: nowrap;
+      }
+    }
   }
 }
 

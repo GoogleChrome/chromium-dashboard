@@ -6,13 +6,7 @@
 {% endblock %}
 
 {% block preload %}
-  {% if VULCANIZE %}
-    <link rel="preload" href="/static/elements/metrics-imports.vulcanize.js" as="script">
-  {% endif %}
-{% endblock %}
-
-{% block html_imports %}
-  <link rel="import" href="/static/elements/metrics-imports{% if VULCANIZE %}.vulcanize{% endif %}.html">
+<script type="module" src="/static/elements/metrics-imports.js"></script>
 {% endblock %}
 
 {% block drawer %}

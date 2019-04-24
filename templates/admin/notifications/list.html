@@ -2,14 +2,10 @@
 
 {% load inline_file %}
 
-{% block html_imports %}
-<!--<link id="features_import"
-        rel="import"
-        href="/static/elements/admin-imports{% if VULCANIZE %}.vulcanize{% endif %}.html"
-        async>-->
-<link rel="import" href="/static/elements/common.html">
-<link rel="import" href="/static/elements/chromestatus-icons.html">
-<link rel="import" href="/static/bower_components/iron-icon/iron-icon.html">
+{% block preload %}
+<script type="module" href="/static/elements/common.js"></script>
+<script type="module" href="/static/elements/icons.js"></script>
+<script type="module" href="https://unpkg.com/@polymer/iron-icon/iron-icon.js"></script>
 {% endblock %}
 
 {% block css %}

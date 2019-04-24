@@ -4,19 +4,11 @@
 {% load cache %}
 
 {% block preload %}
-{% if VULCANIZE %}
-  <link rel="preload" href="/static/elements/features-imports.vulcanize.js" as="script">
-{% endif %}
+<script type="module" src="/static/elements/feature-imports.js"></script>
+
 <!-- {% if prod %}
   <link rel="preload" href="/features.json" as="script">
 {% endif %} -->
-{% endblock %}
-
-{% block html_imports %}
-  <link id="features_import"
-        rel="import"
-        href="/static/elements/features-imports{% if VULCANIZE %}.vulcanize{% endif %}.html"
-        async>
 {% endblock %}
 
 {% block rss %}
@@ -78,16 +70,7 @@
 {% endblock %}
 
 {% block overlay %}
-<chromedash-legend hidden>
-  <p class="description">What you're looking at is a mostly comprehensive list of
-  web platform features that have landed in Chromium, ordered chronologically by the milestone
-  in which they were added. Features marked "No active development" are being
-  considered or have yet to be started. Features marked "In development" are currently
-  being worked on.</p>
-  <div class="close buttons">
-    <iron-icon icon="chromestatus:close" dialog-dismiss></iron-icon>
-  </div>
-</chromedash-legend>
+<chromedash-legend hidden></chromedash-legend>
 {% endblock %}
 
 {% block content %}
@@ -101,37 +84,13 @@
 
 {% inline_file "/static/js/notifications.js" %}
 
-var featureList = $('chromedash-featurelist');
-var chromeMetadata = $('chromedash-metadata');
-var overlay = $('chromedash-legend');
-var search = $('.search input');
+var featureListEl = $('chromedash-featurelist');
+var chromeMetadataEl = $('chromedash-metadata');
+var overlayEl = $('chromedash-legend');
+var searchEl = $('.search input');
 var overlayLoaded = false;
 
-// Feature list needs access to the selected milestone.
-featureList.metadata = chromeMetadata;
-featureList.search = search;
-
-// Set search box to URL deep link.
-if (location.hash) {
-  search.value = decodeURIComponent(location.hash.substr(1));
-}
-
-var featuresUnveilMetric = new Metric('features_unveil');
-var featuresFetchMetric = new Metric('features_loaded');
-
-chromeMetadata.addEventListener('query-changed', function(e) {
-  var value = e.detail.version;
-  var isMilestone = value.match(/^[0-9]+$/);
-  search.value = isMilestone ? 'milestone=' + value :
-      'browsers.chrome.status:"' + value + '"';
-  featureList.filter(search.value);
-});
-
-featureList.addEventListener('filtered', function(e) {
-  $('.num-features').textContent = e.detail.count;
-});
-
-featureList.addEventListener('app-ready', function() {
+document.addEventListener('app-ready', function() {
   document.body.classList.remove('loading');
 
   featuresUnveilMetric.end().log().sendToAnalytics('features', 'unveil');
@@ -147,7 +106,7 @@ featureList.addEventListener('app-ready', function() {
     // If use already granted the notification permission, update state of the
     // push icon for each feature the user is subscribed to.
     if (PushNotifier.GRANTED_ACCESS) {
-      PushNotifications.getAllSubscribedFeatures().then(function(subscribedFeatures) {
+      PushNotifications.getAllSubscribedFeatures().then((subscribedFeatures) => {
         var icon = $('#features-subscribe-button').firstElementChild;
         if (subscribedFeatures.includes(PushNotifier.ALL_FEATURES_TOPIC_ID)) {
           icon.icon = 'chromestatus:notifications';
@@ -155,51 +114,46 @@ featureList.addEventListener('app-ready', function() {
           icon.icon = 'chromestatus:notifications-off';
         }
 
-        featureList.features.forEach(function(f, i) {
+        featureListEl.features.forEach((f, i) => {
           if (subscribedFeatures.includes(String(f.id))) {
             f.receivePush = true;
-            featureList.notifyPath(['features', i, 'receivePush'], true);
-            featureList.notifyPath(['filtered', i, 'receivePush'], true);
+            featureListEl.notifyPath(['features', i, 'receivePush'], true);
+            featureListEl.notifyPath(['filtered', i, 'receivePush'], true);
           }
-        }.bind(this));
-      }.bind(this));
+        });
+      });
     }
   });
 });
 
-featureList.addEventListener('has-scroll-list', function(e) {
-  var header = document.querySelector('app-header-layout app-header');
-  if (header) {
-    header.fixed = false;
-  }
-});
+// Set search box to URL deep link.
+if (location.hash) {
+  searchEl.value = decodeURIComponent(location.hash.substr(1));
+}
 
-featureList.addEventListener('filter-category', function(e) {
-  search.value = 'category: ' + e.detail.val;
-  featureList.filter(search.value);
-});
+var featuresUnveilMetric = new Metric('features_unveil');
+var featuresFetchMetric = new Metric('features_loaded');
 
-featureList.addEventListener('filter-owner', function(e) {
-  search.value = 'browsers.chrome.owners: ' + e.detail.val;
-  featureList.filter(search.value);
-});
-
-featureList.addEventListener('filter-component', function(e) {
-  search.value = 'component: ' + e.detail.val;
-  featureList.filter(search.value);
+chromeMetadataEl.addEventListener('query-changed', function(e) {
+  var value = e.detail.version;
+  var isMilestone = value.match(/^[0-9]+$/);
+  searchEl.value = isMilestone ? 'milestone=' + value :
+      'browsers.chrome.status:"' + value + '"';
+  featureListEl.filter(searchEl.value);
 });
 
 // Clear input when user clicks the 'x' button.
-search.addEventListener('search', function(e) {
+searchEl.addEventListener('search', function(e) {
   if (!e.target.value) {
-    featureList.filter();
-    chromeMetadata.selected = null;
+    featureListEl.filter();
+    chromeMetadataEl.selected = null;
   }
 });
 
-search.addEventListener('input', function(e) {
-  featureList.filter(e.target.value, true);
-  chromeMetadata.selected = null;
+searchEl.addEventListener('input', function(e) {
+  // TODO debounce 200ms here
+  featureListEl.filter(e.target.value);
+  chromeMetadataEl.selected = null;
 });
 
 if (PushNotifier.SUPPORTS_NOTIFICATIONS) {
@@ -224,92 +178,103 @@ if (PushNotifier.SUPPORTS_NOTIFICATIONS) {
   });
 }
 
-// Handles lazy loading chromedash-legend and settings its properties only once.
-var helpOverlayLoadPromise = function(overlay) {
-  return new Promise(function(resolve, reject) {
-    if (overlayLoaded) {
-      return resolve();
-    }
+// TODO(yangguang): Look into the following code.
+// // Handles lazy loading chromedash-legend and settings its properties only once.
+// var helpOverlayLoadPromise = function(overlay) {
+//   return new Promise(function(resolve, reject) {
+//     if (overlayLoaded) {
+//       return resolve();
+//     }
 
-    var url = '/static/elements/chromedash-legend{% if VULCANIZE %}.vulcanize{% endif %}.html';
+//     var url = '/static/elements/chromedash-legend{% if VULCANIZE %}.vulcanize{% endif %}.html';
 
-    Polymer.Base.importHref(url, function() {
-      overlayLoaded = true;
-      overlay.views = {
-        vendors: {{VENDOR_VIEWS|safe}}, // set from server
-        webdevs: {{WEB_DEV_VIEWS|safe}}, // set from server
-        standards: {{STANDARDS_VALS|safe}} // set from server
-      };
-      overlay.hidden = false;
-      resolve();
-    }, function(e) {
-      reject(new Error('Error loading:' + url));
-    }, true);
-  });
-}
+//     Polymer.Base.importHref(url, function() {
+//       overlayLoaded = true;
+//       overlay.views = {
+//         vendors: {{VENDOR_VIEWS|safe}}, // set from server
+//         webdevs: {{WEB_DEV_VIEWS|safe}}, // set from server
+//         standards: {{STANDARDS_VALS|safe}} // set from server
+//       };
+//       overlay.hidden = false;
+//       resolve();
+//     }, function(e) {
+//       reject(new Error('Error loading:' + url));
+//     }, true);
+//   });
+// }
 
 
-$('.legend').addEventListener('click', function(e) {
-  e.preventDefault();
+// $('.legend').addEventListener('click', function(e) {
+//   e.preventDefault();
 
-  helpOverlayLoadPromise(overlay).then(function() {
-    overlay.toggle();
-  });
-});
+//   helpOverlayLoadPromise(overlayEl).then(function() {
+//     overlayEl.toggle();
+//   });
+// });
 
 // Fire of features.json XHR right away so data can populate faster.
-var featuresPromise = new Promise(function(resolve, reject) {
-  var url = location.hostname == 'localhost' ? 'https://www.chromestatus.com/features_v2.json' :
-                                               '/features_v2.json';
-  var xhr = new XMLHttpRequest(); // Fill features list via AJAX.
-  xhr.open('GET', url);
-  xhr.responseType = 'json';
+const featureUrl = 'localhost' ?
+    'https://www.chromestatus.com/features_v2.json' : '/features_v2.json';
+featuresUnveilMetric.start();
+featuresFetchMetric.start();
+const featuresPromise = fetch(featureUrl).then((res) => res.json()).then((features) => {
+  featuresFetchMetric.end().log().sendToAnalytics('features', 'loaded');
+  features.map((feature) => {
+    feature.receivePush = false;
+    feature.milestone = feature.browsers.chrome.desktop ||
+        feature.browsers.chrome.android ||
+        feature.browsers.chrome.webview ||
+        feature.browsers.chrome.ios ||
+        Infinity;
+  });
+  searchEl.disabled = false;
+}).catch((error) => {
+  document.getElementById('content').classList.add('error');
+  console.error(error);
+  throw new Error('Failed to fetch features');
+});
 
-  featuresUnveilMetric.start();
+window.addEventListener('featurelist-ready', () => {
+  // Feature list needs access to the selected milestone.
+  featureListEl.metadata = chromeMetadataEl;
+  featureListEl.search = searchEl;
 
-  xhr.onloadend = function(e) {
-    featuresFetchMetric.end().log().sendToAnalytics('features', 'loaded');
+  featureListEl.addEventListener('filtered', function(e) {
+    $('.num-features').textContent = e.detail.count;
+  });
 
-    if (e.target.status < 400) {
-      resolve(e.target.response);
-    } else {
-      reject(new Error('Features XHR failed with status ' + e.target.statusText));
+  featureListEl.addEventListener('has-scroll-list', function(e) {
+    var header = document.querySelector('app-header-layout app-header');
+    if (header) {
+      header.fixed = false;
     }
-  };
-  xhr.onerror = reject;
+  });
 
-  featuresFetchMetric.start();
-  xhr.send();
+  featureListEl.addEventListener('filter-category', function(e) {
+    searchEl.value = 'category: ' + e.detail.val;
+    featureListEl.filter(searchEl.value);
+  });
+
+  featureListEl.addEventListener('filter-owner', function(e) {
+    searchEl.value = 'browsers.chrome.owners: ' + e.detail.val;
+    featureListEl.filter(searchEl.value);
+  });
+
+  featureListEl.addEventListener('filter-component', function(e) {
+    searchEl.value = 'component: ' + e.detail.val;
+    featureListEl.filter(searchEl.value);
+  });
+
+  featuresPromise.then(() => {
+    featureListEl.features = features;
+    featureListEl.filter(searchEl.value);
+  });
 });
 
-window.asyncImportsLoadPromise = new Promise(function(resolve, reject) {
-  var featuresImport = document.querySelector('#features_import');
-  featuresImport.onerror = reject;
-  featuresImport.onload = function(e) {
-    resolve();
 
-    featuresPromise.then(function(features) {
-      features.map(function(feature) {
-        feature.receivePush = false;
-        feature.milestone = feature.browsers.chrome.desktop ||
-            feature.browsers.chrome.android ||
-            feature.browsers.chrome.webview ||
-            feature.browsers.chrome.ios ||
-            Infinity;
-      });
-      featureList.features = features;
-      featureList.filter(search.value);
-      search.disabled = false;
-    }, function(e) {
-      document.getElementById('content').classList.add('error');
-      console.error(e);
-    });
-  };
-});
-
-window.addEventListener('popstate', function(e) {
+window.addEventListener('popstate', (e) => {
   if (e.state) {
-    featureList.scrollToFeature(e.state.id);
+    featureListEl.scrollToFeature(e.state.id);
   }
 });
 

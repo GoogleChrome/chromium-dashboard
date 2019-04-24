@@ -1,8 +1,8 @@
 {% extends "base.html" %}
 {% load inline_file %}
 
-{% block html_imports %}
-  <link rel="import" href="/static/elements/features-imports{% if VULCANIZE %}.vulcanize{% endif %}.html">
+{% block preload %}
+<script type="module" src="/static/elements/feature-imports.js"></script>
 {% endblock %}
 
 {% block css %}
@@ -57,8 +57,8 @@
 document.body.classList.remove('loading');
 
 setTimeout(function() {
-  var Toast = document.querySelector('chromedash-toast');
-  Toast.showMessage('Your feature was saved! It may take a few minutes to ' +
+  const toastEl = document.querySelector('chromedash-toast');
+  toastEl.showMessage('Your feature was saved! It may take a few minutes to ' +
                     'show up in the main list.', null, null, -1);
 }, 500);
 </script>
