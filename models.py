@@ -853,7 +853,7 @@ class Feature(DictModel):
   security_risks = db.StringProperty(multiline=True)
   debuggability = db.StringProperty(multiline=True)
   all_platforms = db.BooleanProperty()
-  all_platforms_descr = db.StringProperty()
+  all_platforms_descr = db.StringProperty(multiline=True)
   wpt = db.BooleanProperty()
   wpt_descr = db.StringProperty(multiline=True)
 
