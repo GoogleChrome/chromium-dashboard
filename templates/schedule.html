@@ -2,473 +2,222 @@
 {% load verbatim %}
 {% load inline_file %}
 
-{% block preload %}
-<script type="module" src="/static/elements/admin-imports.js"></script>
+{% block css %}
+  <style>{% inline_file "/static/css/schedule.css" %}</style>
 {% endblock %}
 
-{% block css %}
-<style>{% inline_file "/static/css/schedule.css" %}</style>
+{% block preload %}
+  <script type="module">
+    import 'https://unpkg.com/@polymer/paper-toggle-button/paper-toggle-button.js?module';
+    import '/static/elements/chromedash-schedule.js';
+  </script>
 {% endblock %}
 
 {% block subheader %}
-<div id="subheader">
-  <!--<h2>Chrome release timeline</h2>-->
-  <div style="flex:1">
-    <h3>Release timeline</h3>
-    <p class="description">Please note, all dates are estimates and are subject to change.</p>
+  <div id="subheader">
+    <!--<h2>Chrome release timeline</h2>-->
+    <div style="flex:1">
+      <h3>Release timeline</h3>
+      <p class="description">Please note, all dates are estimates and are subject to change.</p>
+    </div>
+    <paper-toggle-button noink>Hide Blink components</paper-toggle-button>
   </div>
-  <paper-toggle-button noink>Hide Blink components</paper-toggle-button>
-</div>
 {% endblock %}
 
 {% block content %}
-
-<section id="releases-section">
-
-<template id="t" is="dom-bind">
-
-<div>
-  {% verbatim %}
-
-    <div class="releases layout horizontal wrap">
-      <section class="release">
-        <div class="layout vertical center">
-          <h1 class="channel_label">stable</h1>
-          <h1 class="chrome_version layout horizontal center">
-            <span class="chrome-logo"></span>
-            <a href="https://www.google.com/chrome/browser/desktop/index.html" target="_blank" title="Download Chrome stable">Chrome [[channels.stable.version]]</a>
-          </h1>
-        </div>
-        <div class="milestone_info layout horizontal center-center">
-          <h3><span class="channel_label">Beta</span> was <span class="milestone_info-beta">[[_computeDate(channels.stable.earliest_beta)]] - [[_computeDate(channels.stable.latest_beta)]]</span></h3>
-        </div>
-        <div class="milestone_info layout horizontal center-center">
-          <h3><span class="channel_label">Stable</span> [[_computeDaysUntil(channels.stable.stable_date)]]
-            <span class="release-stable">( [[_computeDate(channels.stable.stable_date)]] )</span>
-          </h3>
-        </div>
-        <div class="features_list">
-          <div class="features_header">Features in this release:</div>
-
-          <template is="dom-repeat" items="[[_objKeys(channels.stable.components)]]" as="componentName">
-            <h3 class="feature_components">{{componentName}}</h3>
-            <ul>
-              <template is="dom-repeat" items="[[_featuresFor(channels.stable.components, componentName)]]" as="f">
-                <li data-feature-id$="[[f.id]]">
-                  <a href$="/feature/[[f.id]]">[[f.name]]</a>
-                  <span class="icon_row">
-                    <template is="dom-if" if="[[f.browsers.chrome.origintrial]]">
-                      <span class="tooltip" title="Origin Trial">
-                        <iron-icon icon="chromestatus:extension" class="experimental" data-tooltip></iron-icon>
-                      </span>
-                    </template>
-                    <template is="dom-if" if="[[f.browsers.chrome.intervention]]">
-                      <span class="tooltip" title="Browser intervention">
-                        <iron-icon icon="chromestatus:pan-tool" class="intervention" data-tooltip></iron-icon>
-                      </span>
-                    </template>
-                    <template is="dom-if" if="[[isRemoved(f.browsers.chrome.status.text)]]">
-                      <span class="tooltip" title="Removed">
-                        <iron-icon icon="chromestatus:cancel" class="remove" data-tooltip></iron-icon>
-                      </span>
-                    </template>
-                    <template is="dom-if" if="[[isDeprecated(f.browsers.chrome.status.text)]]">
-                      <span class="tooltip" title="Deprecated">
-                        <iron-icon icon="chromestatus:warning" class="deprecated" data-tooltip></iron-icon>
-                      </span>
-                    </template>
-                    <span class="tooltip no-push-notifications" title="Subscribe to notification updates">
-                      <iron-icon icon="chromestatus:notifications-off"
-                                on-click="subscribeToFeature" class$="pushicon [[pushDisabled()]]"></iron-icon>
-                    </span>
-                  </span>
-                </li>
-              </template>
-            </ul>
-          </template>
-
-        </div>
-      </section>
-      <section class="release release-beta">
-        <div class="layout vertical center">
-          <h1 class="channel_label">Next up</h1>
-          <h1 class="chrome_version chrome_version--beta layout horizontal center">
-            <span class="chrome-logo"></span>
-            <a href="https://www.google.com/chrome/browser/beta.html" target="_blank" title="Download Chrome Beta">Chrome [[channels.beta.version]]</a>
-          </h1>
-        </div>
-        <div class="milestone_info layout horizontal center-center">
-          <h3><span class="channel_label">Beta</span> between <span class="milestone_info-beta">[[_computeDate(channels.beta.earliest_beta)]] - [[_computeDate(channels.beta.latest_beta)]]</span></h3>
-        </div>
-        <div class="milestone_info layout horizontal center-center">
-          <h3><span class="channel_label">Stable</span> [[_computeDaysUntil(channels.beta.stable_date)]]
-            <span class="release-stable">( [[_computeDate(channels.beta.stable_date)]] )</span>
-          </h3>
-        </div>
-        <div class="features_list">
-          <div class="features_header">Features planned in this release:</div>
-
-          <template is="dom-repeat" items="[[_objKeys(channels.beta.components)]]" as="componentName">
-            <h3 class="feature_components">{{componentName}}</h3>
-            <ul>
-              <template is="dom-repeat" items="[[_featuresFor(channels.beta.components, componentName)]]" as="f">
-                <li data-feature-id$="[[f.id]]">
-                  <a href$="/feature/[[f.id]]">[[f.name]]</a>
-                  <span class="icon_row">
-                    <template is="dom-if" if="[[f.browsers.chrome.origintrial]]">
-                      <span class="tooltip" title="Origin Trial">
-                        <iron-icon icon="chromestatus:extension" class="experimental" data-tooltip></iron-icon>
-                      </span>
-                    </template>
-                    <template is="dom-if" if="[[f.browsers.chrome.intervention]]">
-                      <span class="tooltip" title="Browser intervention">
-                        <iron-icon icon="chromestatus:pan-tool" class="intervention" data-tooltip></iron-icon>
-                      </span>
-                    </template>
-                    <template is="dom-if" if="[[isRemoved(f.browsers.chrome.status.text)]]">
-                      <span class="tooltip" title="Removed">
-                        <iron-icon icon="chromestatus:cancel" class="remove" data-tooltip></iron-icon>
-                      </span>
-                    </template>
-                    <template is="dom-if" if="[[isDeprecated(f.browsers.chrome.status.text)]]">
-                      <span class="tooltip" title="Deprecated">
-                        <iron-icon icon="chromestatus:warning" class="deprecated" data-tooltip></iron-icon>
-                      </span>
-                    </template>
-                    <span class="tooltip no-push-notifications" title="Subscribe to notification updates">
-                      <iron-icon icon="chromestatus:notifications-off"
-                                on-click="subscribeToFeature" class$="pushicon [[pushDisabled()]]"></iron-icon>
-                    </span>
-                  </span>
-                </li>
-              </template>
-            </ul>
-          </template>
-
-        </div>
-      </section>
-      <section class="release">
-        <div class="layout vertical center">
-          <h1 class="channel_label">&nbsp;</h1>
-          <h1 class="chrome_version chrome_version--dev layout horizontal center">
-            <span class="chrome-logo"></span>
-            <a href="https://www.google.com/chrome/browser/canary.html" target="_blank" title="Download Chrome Canary">Chrome [[channels.dev.version]]</a>
-          </h1>
-        </div>
-        <div class="milestone_info layout horizontal center-center">
-          <h3><span class="channel_label">Beta </span> coming <span class="milestone_info-beta">[[_computeDate(channels.dev.earliest_beta)]] - [[_computeDate(channels.dev.latest_beta)]]</span></h3>
-        </div>
-        <div class="milestone_info layout horizontal center-center">
-          <h3><span class="channel_label">Stable</span> [[_computeDaysUntil(channels.dev.stable_date)]]
-            <span class="release-stable">( [[_computeDate(channels.dev.stable_date)]] )</span>
-          </h3>
-        </div>
-        <div class="features_list">
-          <div class="features_header">Features planned in this release:</div>
-
-          <template is="dom-repeat" items="[[_objKeys(channels.dev.components)]]" as="componentName">
-            <h3 class="feature_components">{{componentName}}</h3>
-            <ul>
-              <template is="dom-repeat" items="[[_featuresFor(channels.dev.components, componentName)]]" as="f">
-                <li data-feature-id$="[[f.id]]">
-                  <a href$="/feature/[[f.id]]">[[f.name]]</a>
-                  <span class="icon_row">
-                    <template is="dom-if" if="[[f.browsers.chrome.origintrial]]">
-                      <span class="tooltip" title="Origin Trial">
-                        <iron-icon icon="chromestatus:extension" class="experimental" data-tooltip></iron-icon>
-                      </span>
-                    </template>
-                    <template is="dom-if" if="[[f.browsers.chrome.intervention]]">
-                      <span class="tooltip" title="Browser intervention">
-                        <iron-icon icon="chromestatus:pan-tool" class="intervention" data-tooltip></iron-icon>
-                      </span>
-                    </template>
-                    <template is="dom-if" if="[[isRemoved(f.browsers.chrome.status.text)]]">
-                      <span class="tooltip" title="Removed">
-                        <iron-icon icon="chromestatus:cancel" class="remove" data-tooltip></iron-icon>
-                      </span>
-                    </template>
-                    <template is="dom-if" if="[[isDeprecated(f.browsers.chrome.status.text)]]">
-                      <span class="tooltip" title="Deprecated">
-                        <iron-icon icon="chromestatus:warning" class="deprecated" data-tooltip></iron-icon>
-                      </span>
-                    </template>
-                    <span class="tooltip no-push-notifications" title="Subscribe to notification updates">
-                      <iron-icon icon="chromestatus:notifications-off"
-                                on-click="subscribeToFeature" class$="pushicon [[pushDisabled()]]"></iron-icon>
-                    </span>
-                  </span>
-                </li>
-              </template>
-            </ul>
-          </template>
-
-        </div>
-      </section>
-    </div>
-  {% endverbatim %}
-</div>
-
-</template>
-
-</section>
-
+  <section id="releases-section">
+    <chromedash-schedule></chromedash-schedule>
+  </section>
 {% endblock %}
 
 {% block js %}
-<script>
-(function() {
-'use strict';
+  <script>
+    (function() {
+    'use strict';
 
-{% inline_file "/static/js/notifications.js" %}
+    {% inline_file "/static/js/notifications.js" %}
 
-const t = $('#t');
+    async function initNotifications(allFeatures) {
+      await loadFirebaseSDKLibs(); // Lazy load Firebase messaging SDK.
 
-async function initNotifications(allFeatures) {
-  await loadFirebaseSDKLibs(); // Lazy load Firebase messaging SDK.
+      PushNotifications.init(); // init Firebase messaging.
 
-  PushNotifications.init(); // init Firebase messaging.
-
-  // If use already granted the notification permission, update state of the
-  // push icon for each feature the user is subscribed to.
-  const subscribedFeatures = await PushNotifications.getAllSubscribedFeatures();
-  allFeatures.forEach((f, i) => {
-    if (subscribedFeatures.includes(String(f.id))) {
-      // f.receivePush = true;
-      const icon = $(`[data-feature-id="${f.id}"] .pushicon`);
-      if (icon) {
-        icon.icon = 'chromestatus:notifications';
-      }
-    }
-  });
-}
-
-// async function getMilestoneInfo(version) {
-//   const resp = await fetch(`https://chromepmo.appspot.com/schedule/mstone/json?mstone=${version}`);
-//   const json = await resp.json();
-//   return json.mstones[0];
-// }
-
-// function currentChromeVersions(versions) {
-//   const channels = {};
-//   const winVersions = versions.filter(platform => platform.os === 'win')[0].versions;
-//   for (let i = 0, el; el = winVersions[i]; ++i) {
-//     channels[el.channel] = parseInt(el.version);
-//   }
-//   return channels;
-// }
-
-// const currentVersions = currentChromeVersions(versions);
-
-// getMilestoneInfo(currentVersions.stable).then(milestone => {
-//   t.set('channels.stable', Object.assign({
-//     version: currentVersions.stable
-//   }, milestone));
-
-//   document.body.classList.remove('loading');
-// });
-
-// getMilestoneInfo(currentVersions.beta).then(milestone => {
-//   t.set('channels.beta', Object.assign({
-//     version: currentVersions.beta
-//   }, milestone));
-// });
-
-// getMilestoneInfo(currentVersions.dev).then(milestone => {
-//   t.set('channels.dev', Object.assign({
-//     version: currentVersions.dev
-//   }, milestone));
-// });
-
-async function getFeaturesList() {
-  const url = location.hostname == 'localhost' ? 'https://www.chromestatus.com/features.json' :
-                                                 '/features.json';
-  const resp = await fetch(url);
-  const json = await resp.json();
-  return json;
-}
-
-const featuresPromise = getFeaturesList(); // make network request asap.
-
-/**
- *  Returns the number of days between a and b.
- *  @param {!Date} a
- *  @param {!Date} b
- *  @return {!{days: number, future: boolean}}
- */
-function dateDiffInDays(a, b) {
-  // Discard time and time-zone information.
-  const utc1 = Date.UTC(a.getFullYear(), a.getMonth(), a.getDate());
-  const utc2 = Date.UTC(b.getFullYear(), b.getMonth(), b.getDate());
-
-  const MS_PER_DAY = 1000 * 60 * 60 * 24;
-  const daysDiff = Math.floor((utc2 - utc1) / MS_PER_DAY);
-  return {days: Math.abs(daysDiff), future: daysDiff < 1};
-}
-
-/**
- *  @param {!Array<!Object>} features
- */
-function sortFeaturesByName(features) {
-  features.sort((a, b) => {
-    a = a.name.toLowerCase();
-    b = b.name.toLowerCase();
-    if (a < b) {
-      return -1;
-    }
-    if (a > b) {
-      return 1;
-    }
-    return 0;
-  });
-}
-
-/**
- *  @param {!Array<!Object>} features
- */
-function mapFeaturesToComponents(features) {
-  let set = new Set();
-  features.forEach(f => set.add(...f.browsers.chrome.blink_components));
-  const usedComponents = Array.from(set);
-
-  const featuresMappedToComponents = {};
-  features.forEach(f => {
-    const components = f.browsers.chrome.blink_components;
-    components.forEach(component => {
-      if (!featuresMappedToComponents[component]) {
-        featuresMappedToComponents[component] = [];
-      }
-      featuresMappedToComponents[component].push(f);
-    });
-  });
-
-  for (let [component, feautreList] of Object.entries(featuresMappedToComponents)) {
-    sortFeaturesByName(feautreList);
-  }
-
-  return featuresMappedToComponents;
-}
-
-t._objKeys = function(obj) {
-  if (!obj) {
-    return [];
-  }
-  return Object.keys(obj).sort();
-};
-
-t._featuresFor = function(features, componentName) {
-  return features[componentName];
-};
-
-t.isRemoved = function(implStatusChrome) {
-  return implStatusChrome === 'Removed';
-};
-
-t.isDeprecated = function(implStatusChrome) {
-  return implStatusChrome === 'Deprecated' || implStatusChrome === 'No longer pursuing';
-};
-
-t._computeDaysUntil = function(dateStr) {
-  const today = new Date();
-  const diff = dateDiffInDays(new Date(dateStr), today);
-  const prefix = diff.future ? 'in' : '';
-  const days = diff.days > 1 ? 's' : '';
-  const ago = !diff.future ? 'ago' : '';
-  return `${prefix} ${diff.days} day${days} ${ago}`;
-};
-
-t._computeDate = function(dateStr) {
-  const opts = {/*weekday: 'short',*/ month: 'short', day: 'numeric'};
-  const date = new Date(dateStr);
-  return new Intl.DateTimeFormat('en-US',  opts).format(date);
-};
-
-t.pushDisabled = function() {
-  return PushNotifier.GRANTED_ACCESS ? '' : 'disabled';
-};
-
-t._computePushSubscribed = function(subscribed) {
-  return subscribed ? 'chromestatus:notifications' : 'chromestatus:notifications-off';
-};
-
-t.subscribeToFeature = function(e) {
-  e.preventDefault();
-  e.stopPropagation();
-
-  const featureId = Polymer.dom(e).event.model.f.id;
-  const icon = Polymer.dom(e).localTarget;
-  const receivePush = icon.icon !== 'chromestatus:notifications';
-  icon.icon = this._computePushSubscribed(receivePush);
-
-  if (receivePush) {
-    PushNotifications.subscribeToFeature(featureId);
-  } else {
-    PushNotifications.unsubscribeFromFeature(featureId);
-  }
-}
-
-t.channels = {{channels|safe}};
-
-$('paper-toggle-button').addEventListener('change', e => {
-  e.stopPropagation();
-  document.querySelectorAll('.release').forEach(release => {
-    release.classList.toggle('no-components', e.target.checked)
-  });
-});
-
-async function init() {
-  document.body.classList.remove('loading');
-
-  // Wait for Polymer to be setup before setting features on template.
-  // This prevents race conditions whereby when opening a new tab, Chrome
-  // returns features from the cache and beats Polymer being ready.
-  const target = $('#releases-section');
-  const mutationObserverPromise = new Promise(resolve => {
-    const observer = new MutationObserver(mutations => {
-      mutations.forEach(mutation => {
-        if (mutation.addedNodes.length && target.querySelector('.releases')) {
-          observer.disconnect();
-          resolve();
+      // If use already granted the notification permission, update state of the
+      // push icon for each feature the user is subscribed to.
+      const subscribedFeatures = await PushNotifications.getAllSubscribedFeatures();
+      allFeatures.forEach((feature, i) => {
+        if (subscribedFeatures.includes(String(feature.id))) {
+          // f.receivePush = true;
+          const iconEl = $(`[data-feature-id="${feature.id}"] .pushicon`);
+          if (iconEl) {
+            iconEl.icon = 'chromestatus:notifications';
+          }
         }
       });
+    }
+
+    // async function getMilestoneInfo(version) {
+    //   const resp = await fetch(`https://chromepmo.appspot.com/schedule/mstone/json?mstone=${version}`);
+    //   const json = await resp.json();
+    //   return json.mstones[0];
+    // }
+
+    // function currentChromeVersions(versions) {
+    //   const channels = {};
+    //   const winVersions = versions.filter(platform => platform.os === 'win')[0].versions;
+    //   for (let i = 0, el; el = winVersions[i]; ++i) {
+    //     channels[el.channel] = parseInt(el.version);
+    //   }
+    //   return channels;
+    // }
+
+    // const currentVersions = currentChromeVersions(versions);
+
+    // getMilestoneInfo(currentVersions.stable).then(milestone => {
+    //   t.set('channels.stable', Object.assign({
+    //     version: currentVersions.stable
+    //   }, milestone));
+
+    //   document.body.classList.remove('loading');
+    // });
+
+    // getMilestoneInfo(currentVersions.beta).then(milestone => {
+    //   t.set('channels.beta', Object.assign({
+    //     version: currentVersions.beta
+    //   }, milestone));
+    // });
+
+    // getMilestoneInfo(currentVersions.dev).then(milestone => {
+    //   t.set('channels.dev', Object.assign({
+    //     version: currentVersions.dev
+    //   }, milestone));
+    // });
+    
+    const url = location.hostname == 'localhost' ? 'https://www.chromestatus.com/features.json' :
+                                                   '/features.json';
+    const featuresPromise = fetch(url).then((res) => res.json());
+
+    /**
+     *  Returns the number of days between a and b.
+     *  @param {!Date} a
+     *  @param {!Date} b
+     *  @return {!{days: number, future: boolean}}
+     */
+    function dateDiffInDays(a, b) {
+      // Discard time and time-zone information.
+      const utc1 = Date.UTC(a.getFullYear(), a.getMonth(), a.getDate());
+      const utc2 = Date.UTC(b.getFullYear(), b.getMonth(), b.getDate());
+
+      const MS_PER_DAY = 1000 * 60 * 60 * 24;
+      const daysDiff = Math.floor((utc2 - utc1) / MS_PER_DAY);
+      return {days: Math.abs(daysDiff), future: daysDiff < 1};
+    }
+
+    /**
+     *  @param {!Array<!Object>} features
+     */
+    function sortFeaturesByName(features) {
+      features.sort((a, b) => {
+        a = a.name.toLowerCase();
+        b = b.name.toLowerCase();
+        if (a < b) {
+          return -1;
+        }
+        if (a > b) {
+          return 1;
+        }
+        return 0;
+      });
+    }
+
+    /**
+     *  @param {!Array<!Object>} features
+     */
+    function mapFeaturesToComponents(features) {
+      let set = new Set();
+      features.forEach(f => set.add(...f.browsers.chrome.blink_components));
+      const usedComponents = Array.from(set);
+
+      const featuresMappedToComponents = {};
+      features.forEach(f => {
+        const components = f.browsers.chrome.blink_components;
+        components.forEach(component => {
+          if (!featuresMappedToComponents[component]) {
+            featuresMappedToComponents[component] = [];
+          }
+          featuresMappedToComponents[component].push(f);
+        });
+      });
+
+      for (let [component, feautreList] of Object.entries(featuresMappedToComponents)) {
+        sortFeaturesByName(feautreList);
+      }
+
+      return featuresMappedToComponents;
+    }
+
+    t.channels = {{channels|safe}};
+
+    $('paper-toggle-button').addEventListener('change', e => {
+      e.stopPropagation();
+      document.querySelectorAll('.release').forEach(release => {
+        release.classList.toggle('no-components', e.target.checked)
+      });
     });
-    observer.observe(target, {childList: true});
-  });
 
-  const timeoutPromise = new Promise(resolve => setTimeout(resolve, 5000));
+    async function init() {
+      document.body.classList.remove('loading');
 
-  // Race fetching features from network and timeout. If MO observer check fails
-  // for some reason, manually set features after 5s.
-  await Promise.race([mutationObserverPromise, timeoutPromise]);
+      // Wait for Polymer to be setup before setting features on template.
+      // This prevents race conditions whereby when opening a new tab, Chrome
+      // returns features from the cache and beats Polymer being ready.
+      const target = $('#releases-section');
+      const mutationObserverPromise = new Promise(resolve => {
+        const observer = new MutationObserver(mutations => {
+          mutations.forEach(mutation => {
+            if (mutation.addedNodes.length && target.querySelector('.releases')) {
+              observer.disconnect();
+              resolve();
+            }
+          });
+        });
+        observer.observe(target, {childList: true});
+      });
 
-  const features = await featuresPromise;
-  const stableFeatures = features.filter(f =>
-      f.browsers.chrome.status.milestone_str === t.channels.stable.version);
-  const betaFeatures = features.filter(f =>
-      f.browsers.chrome.status.milestone_str === t.channels.beta.version);
-  const devFeatures = features.filter(f =>
-      f.browsers.chrome.status.milestone_str === t.channels.dev.version);
+      const timeoutPromise = new Promise(resolve => setTimeout(resolve, 5000));
 
-  t.set('channels.stable.components', mapFeaturesToComponents(stableFeatures));
-  t.set('channels.beta.components', mapFeaturesToComponents(betaFeatures));
-  t.set('channels.dev.components', mapFeaturesToComponents(devFeatures));
+      // Race fetching features from network and timeout. If MO observer check fails
+      // for some reason, manually set features after 5s.
+      await Promise.race([mutationObserverPromise, timeoutPromise]);
 
-  // Show push notification icons if the browser supports the feature.
-  if (window.PushNotifier && PushNotifier.SUPPORTS_NOTIFICATIONS) {
-    $('.releases').classList.add('supports-push-notifications');
-    initNotifications(features);
-  }
-}
+      const features = await featuresPromise;
+      const stableFeatures = features.filter(f =>
+          f.browsers.chrome.status.milestone_str === t.channels.stable.version);
+      const betaFeatures = features.filter(f =>
+          f.browsers.chrome.status.milestone_str === t.channels.beta.version);
+      const devFeatures = features.filter(f =>
+          f.browsers.chrome.status.milestone_str === t.channels.dev.version);
 
-document.addEventListener('WebComponentsReady', function(e) {
-  const header = document.querySelector('app-header-layout app-header');
-  if (header) {
-    header.fixed = false;
-  }
-});
+      t.set('channels.stable.components', mapFeaturesToComponents(stableFeatures));
+      t.set('channels.beta.components', mapFeaturesToComponents(betaFeatures));
+      t.set('channels.dev.components', mapFeaturesToComponents(devFeatures));
 
-init();
+      // Show push notification icons if the browser supports the feature.
+      if (window.PushNotifier && PushNotifier.SUPPORTS_NOTIFICATIONS) {
+        $('.releases').classList.add('supports-push-notifications');
+        initNotifications(features);
+      }
+    }
 
-})();
-</script>
+    document.addEventListener('WebComponentsReady', function(e) {
+      const header = document.querySelector('app-header-layout app-header');
+      if (header) {
+        header.fixed = false;
+      }
+    });
+
+    init();
+
+  })();
+  </script>
 {% endblock %}

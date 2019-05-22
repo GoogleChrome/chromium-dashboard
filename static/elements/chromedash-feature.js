@@ -1,8 +1,6 @@
 import {LitElement, html} from 'https://unpkg.com/@polymer/lit-element@latest/lit-element.js?module';
 import 'https://unpkg.com/@polymer/iron-icon/iron-icon.js?module';
-import 'https://unpkg.com/@polymer/paper-styles/color.js?module';
-import './chromedash-color-status.js';
-import {urlize} from './urlize.js';
+import '/static/elements/chromedash-color-status.js';
 
 const MAX_STANDARDS_VAL = 6;
 const MAX_VENDOR_VIEW = 7;
@@ -187,8 +185,11 @@ class ChromedashFeature extends LitElement {
   }
 
   render() {
+    console.log('feature render');
     return html`
       <link rel="stylesheet" href="/static/css/elements/chromedash-feature.css">
+      <!-- https://github.com/ljosa/urlize.js.git. This package does not have ES module support. It sets window.urlize in browsers. -->
+      <script src="https://unpkg.com/urlize.js/urlize.js"></script>
 
       <div class="main-content-area">
         <hgroup @click="${this.toggle}">

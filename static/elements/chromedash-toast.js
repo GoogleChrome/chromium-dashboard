@@ -7,7 +7,7 @@ class ChromedashToast extends LitElement {
   static get properties() {
     return {
       msg: {type: String}, // The toast's message.
-      action: {type: String}, // A label for the call to action of the toast.
+      actionLabel: {type: String}, // A label for the call to action of the toast.
       duration: {type: Number}, // The duration in milliseconds to show the toast. -1 or `Infinity`, to disable the toast auto-closing.
       open: {type: Boolean, reflect: true},
     };
@@ -16,10 +16,9 @@ class ChromedashToast extends LitElement {
   constructor() {
     super();
     this.msg = '';
-    this.action = '';
+    this.actionLabel = '';
     this.duration = 7000;
     this.open = false;
-    this._tapHandler = null;
   }
 
   /**
@@ -33,9 +32,13 @@ class ChromedashToast extends LitElement {
    */
   showMessage(msg, optAction, optTapHandler, optDuration) {
     this.msg = msg;
-    this.action = optAction;
-    this._tapHandler = optTapHandler;
-    this.$.action.addEventListener('click', this._onTap);
+    this.actionLabel = optAction;
+    this.$.action.addEventListener('click', () => {
+      e.preventDefault();
+      if (optTapHandler) {
+        optTapHandler();
+      }
+    }, {once: true});
 
     // Override duration just for this toast.
     const originalDuration = this.duration;
@@ -85,7 +88,7 @@ class ChromedashToast extends LitElement {
 
       <div id="message_container">
         <span id="msg">${this.msg}</span>
-        <a href="#" id="action">${this.action}</a>
+        <a href="#" id="action">${this.actionLabel}</a>
       </div>
     `;
   }

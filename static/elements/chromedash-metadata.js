@@ -35,8 +35,8 @@ class ChromedashMetadata extends LitElement {
   }
 
   // Directly called in chromedash-featurelist
-  selectMilestone(e, detail) {
-    if (detail) {
+  selectMilestone(e) {
+    if (e.currentTarget.dataset.version) {
       // Came from an internal click.
       this.selected = e.currentTarget.dataset.version;
       this._fireEvent('query-changed', {version: this.selected});

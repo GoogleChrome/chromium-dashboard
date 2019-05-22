@@ -1,5 +1,5 @@
 import {LitElement, html} from 'https://unpkg.com/@polymer/lit-element@latest/lit-element.js?module';
-import './chromedash-color-status.js';
+import '/static/elements/chromedash-color-status.js';
 
 class ChromedashLegend extends LitElement {
   static get properties() {

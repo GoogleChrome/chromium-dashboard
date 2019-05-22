@@ -3,288 +3,86 @@
 {% load inline_file %}
 {% load cache %}
 
-{% block preload %}
-<script type="module" src="/static/elements/feature-imports.js"></script>
-
-<!-- {% if prod %}
-  <link rel="preload" href="/features.json" as="script">
-{% endif %} -->
-{% endblock %}
-
 {% block rss %}
-<link rel="alternate" type="application/rss+xml" href="https://www.chromestatus.com/features.xml" title="All features" />
-{% cache TEMPLATE_CACHE_TIME rssfeed %}
-  {% for k,v in categories %}
-  <link rel="alternate" type="application/rss+xml"
-        href="https://www.chromestatus.com/features.xml?category={{v}}" title='"{{k}}" features'>
-  {% endfor %}
-{% endcache %}
-
+  <link rel="alternate" type="application/rss+xml" href="https://www.chromestatus.com/features.xml" title="All features" />
+  {% cache TEMPLATE_CACHE_TIME rssfeed %}
+    {% for k,v in categories %}
+    <link rel="alternate" type="application/rss+xml"
+          href="https://www.chromestatus.com/features.xml?category={{v}}" title='"{{k}}" features'>
+    {% endfor %}
+  {% endcache %}
 {% endblock %}
 
 {% block css %}
-<!-- <link rel="stylesheet" href="/static/css/features/features.css"> -->
-{% cache TEMPLATE_CACHE_TIME featurescss %}
-<style>{% inline_file "/static/css/features/features.css" %}</style>
-{% endcache %}
+  <!-- <link rel="stylesheet" href="/static/css/features/features.css"> -->
+  {% cache TEMPLATE_CACHE_TIME featurescss %}
+    <style>{% inline_file "/static/css/features/features.css" %}</style>
+  {% endcache %}
+{% endblock %}
 
+{% block preload %}
+  <script type="module">
+    import '/static/elements/chromedash-featurelist.js';
+  </script>
 {% endblock %}
 
 {% block subheader %}
-<div id="subheader">
-  <div class="feature-count">
-    <h2>Features: <span class="num-features"></span></h2>
+  <div id="subheader">
+    <div class="feature-count">
+      <h2>Features: <span class="num-features"></span></h2>
+    </div>
+    <div class="search">
+      <input type="search" placeholder="Filter" disabled>
+      <a href="" class="legend"><iron-icon icon="chromestatus:help"></iron-icon></a>
+    </div>
+    <div class="actionlinks">
+      <a id="features-subscribe-button" class="blue-button no-push-notifications" title="Sends a push notification when new features are added."><iron-icon icon="chromestatus:notifications-off"></iron-icon><span>Subscribe</span></a>
+      {% if user.is_whitelisted %}
+        <a href="/admin/features/new" class="blue-button" title="Adds a new feature to the site"><iron-icon icon="chromestatus:add-circle-outline"></iron-icon><span>Add new feature</span></a>
+      {% endif %}
+    </div>
   </div>
-  <div class="search">
-    <input type="search" placeholder="Filter" disabled>
-    <a href="" class="legend"><iron-icon icon="chromestatus:help"></iron-icon></a>
-  </div>
-  <div class="actionlinks">
-    <a id="features-subscribe-button" class="blue-button no-push-notifications" title="Sends a push notification when new features are added."><iron-icon icon="chromestatus:notifications-off"></iron-icon><span>Subscribe</span></a>
-    {% if user.is_whitelisted %}
-      <a href="/admin/features/new" class="blue-button" title="Adds a new feature to the site"><iron-icon icon="chromestatus:add-circle-outline"></iron-icon><span>Add new feature</span></a>
-    {% endif %}
-  </div>
-</div>
 {% endblock %}
 
 {% block drawer %}
-<h3>Chrome versions</h3>
-
-{% cache TEMPLATE_CACHE_TIME chromedashmetadata %}
-<chromedash-metadata
-  impl-statuses='{{IMPLEMENTATION_STATUSES|safe}}'
-  status='{
-    "NO_ACTIVE_DEV": 1,
-    "PROPOSED": 2,
-    "IN_DEVELOPMENT": 3,
-    "BEHIND_A_FLAG": 4,
-    "ENABLED_BY_DEFAULT": 5,
-    "DEPRECATED": 6,
-    "REMOVED": 7,
-    "IN_EXPERIMENTAL_FRAMEWORK": 8,
-    "NO_LONGER_PURSUING": 1000
-  }'></chromedash-metadata>
-{% endcache %}
-
+  <h3>Chrome versions</h3>
+  {% cache TEMPLATE_CACHE_TIME chromedashmetadata %}
+  <chromedash-metadata
+    impl-statuses='{{IMPLEMENTATION_STATUSES|safe}}'
+    status='{
+      "NO_ACTIVE_DEV": 1,
+      "PROPOSED": 2,
+      "IN_DEVELOPMENT": 3,
+      "BEHIND_A_FLAG": 4,
+      "ENABLED_BY_DEFAULT": 5,
+      "DEPRECATED": 6,
+      "REMOVED": 7,
+      "IN_EXPERIMENTAL_FRAMEWORK": 8,
+      "NO_LONGER_PURSUING": 1000
+    }'></chromedash-metadata>
+  {% endcache %}
 {% endblock %}
 
 {% block overlay %}
-<chromedash-legend hidden></chromedash-legend>
+  <chromedash-legend hidden></chromedash-legend>
 {% endblock %}
 
 {% block content %}
-<chromedash-featurelist {% if user.is_whitelisted %}whitelisted{% endif %}></chromedash-featurelist>
+  <chromedash-featurelist {% if user.is_whitelisted %}whitelisted{% endif %}></chromedash-featurelist>
 {% endblock %}
 
 {% block js %}
-<script>
-(function() {
-'use strict';
-
-{% inline_file "/static/js/notifications.js" %}
-
-var featureListEl = $('chromedash-featurelist');
-var chromeMetadataEl = $('chromedash-metadata');
-var overlayEl = $('chromedash-legend');
-var searchEl = $('.search input');
-var overlayLoaded = false;
-
-document.addEventListener('app-ready', function() {
-  document.body.classList.remove('loading');
-
-  featuresUnveilMetric.end().log().sendToAnalytics('features', 'unveil');
-
-  // Want "Caching is complete" toast to be slightly delayed after page load.
-  // To do that, wait to register SW until features have loaded.
-  registerServiceWorker();
-
-  // Lazy load Firebase messaging SDK after features list visible.
-  loadFirebaseSDKLibs().then(() => {
-    PushNotifications.init(); // init Firebase messaging.
-
-    // If use already granted the notification permission, update state of the
-    // push icon for each feature the user is subscribed to.
-    if (PushNotifier.GRANTED_ACCESS) {
-      PushNotifications.getAllSubscribedFeatures().then((subscribedFeatures) => {
-        var icon = $('#features-subscribe-button').firstElementChild;
-        if (subscribedFeatures.includes(PushNotifier.ALL_FEATURES_TOPIC_ID)) {
-          icon.icon = 'chromestatus:notifications';
-        } else {
-          icon.icon = 'chromestatus:notifications-off';
-        }
-
-        featureListEl.features.forEach((f, i) => {
-          if (subscribedFeatures.includes(String(f.id))) {
-            f.receivePush = true;
-            featureListEl.notifyPath(['features', i, 'receivePush'], true);
-            featureListEl.notifyPath(['filtered', i, 'receivePush'], true);
-          }
-        });
-      });
-    }
-  });
-});
-
-// Set search box to URL deep link.
-if (location.hash) {
-  searchEl.value = decodeURIComponent(location.hash.substr(1));
-}
-
-var featuresUnveilMetric = new Metric('features_unveil');
-var featuresFetchMetric = new Metric('features_loaded');
-
-chromeMetadataEl.addEventListener('query-changed', function(e) {
-  var value = e.detail.version;
-  var isMilestone = value.match(/^[0-9]+$/);
-  searchEl.value = isMilestone ? 'milestone=' + value :
-      'browsers.chrome.status:"' + value + '"';
-  featureListEl.filter(searchEl.value);
-});
-
-// Clear input when user clicks the 'x' button.
-searchEl.addEventListener('search', function(e) {
-  if (!e.target.value) {
-    featureListEl.filter();
-    chromeMetadataEl.selected = null;
-  }
-});
-
-searchEl.addEventListener('input', function(e) {
-  // TODO debounce 200ms here
-  featureListEl.filter(e.target.value);
-  chromeMetadataEl.selected = null;
-});
-
-if (PushNotifier.SUPPORTS_NOTIFICATIONS) {
-  $('#features-subscribe-button').addEventListener('click', function(e) {
-    e.preventDefault();
-
-    if (window.Notification && Notification.permission === 'denied') {
-      alert('Notifications were previously denied. Please reset the browser permission.');
-      return;
-    }
-
-    PushNotifications.getAllSubscribedFeatures().then(subscribedFeatures => {
-      var icon = $('#features-subscribe-button').firstElementChild;
-      if (subscribedFeatures.includes(PushNotifier.ALL_FEATURES_TOPIC_ID)) {
-        icon.icon = 'chromestatus:notifications-off';
-        PushNotifications.unsubscribeFromFeature();
-      } else {
-        icon.icon = 'chromestatus:notifications';
-        PushNotifications.subscribeToFeature();
-      }
-    });
-  });
-}
-
-// TODO(yangguang): Look into the following code.
-// // Handles lazy loading chromedash-legend and settings its properties only once.
-// var helpOverlayLoadPromise = function(overlay) {
-//   return new Promise(function(resolve, reject) {
-//     if (overlayLoaded) {
-//       return resolve();
-//     }
-
-//     var url = '/static/elements/chromedash-legend{% if VULCANIZE %}.vulcanize{% endif %}.html';
-
-//     Polymer.Base.importHref(url, function() {
-//       overlayLoaded = true;
-//       overlay.views = {
-//         vendors: {{VENDOR_VIEWS|safe}}, // set from server
-//         webdevs: {{WEB_DEV_VIEWS|safe}}, // set from server
-//         standards: {{STANDARDS_VALS|safe}} // set from server
-//       };
-//       overlay.hidden = false;
-//       resolve();
-//     }, function(e) {
-//       reject(new Error('Error loading:' + url));
-//     }, true);
-//   });
-// }
-
-
-// $('.legend').addEventListener('click', function(e) {
-//   e.preventDefault();
-
-//   helpOverlayLoadPromise(overlayEl).then(function() {
-//     overlayEl.toggle();
-//   });
-// });
-
-// Fire of features.json XHR right away so data can populate faster.
-const featureUrl = 'localhost' ?
-    'https://www.chromestatus.com/features_v2.json' : '/features_v2.json';
-featuresUnveilMetric.start();
-featuresFetchMetric.start();
-const featuresPromise = fetch(featureUrl).then((res) => res.json()).then((features) => {
-  featuresFetchMetric.end().log().sendToAnalytics('features', 'loaded');
-  features.map((feature) => {
-    feature.receivePush = false;
-    feature.milestone = feature.browsers.chrome.desktop ||
-        feature.browsers.chrome.android ||
-        feature.browsers.chrome.webview ||
-        feature.browsers.chrome.ios ||
-        Infinity;
-  });
-  searchEl.disabled = false;
-}).catch((error) => {
-  document.getElementById('content').classList.add('error');
-  console.error(error);
-  throw new Error('Failed to fetch features');
-});
-
-window.addEventListener('featurelist-ready', () => {
-  // Feature list needs access to the selected milestone.
-  featureListEl.metadata = chromeMetadataEl;
-  featureListEl.search = searchEl;
-
-  featureListEl.addEventListener('filtered', function(e) {
-    $('.num-features').textContent = e.detail.count;
-  });
-
-  featureListEl.addEventListener('has-scroll-list', function(e) {
-    var header = document.querySelector('app-header-layout app-header');
-    if (header) {
-      header.fixed = false;
-    }
-  });
-
-  featureListEl.addEventListener('filter-category', function(e) {
-    searchEl.value = 'category: ' + e.detail.val;
-    featureListEl.filter(searchEl.value);
-  });
-
-  featureListEl.addEventListener('filter-owner', function(e) {
-    searchEl.value = 'browsers.chrome.owners: ' + e.detail.val;
-    featureListEl.filter(searchEl.value);
-  });
-
-  featureListEl.addEventListener('filter-component', function(e) {
-    searchEl.value = 'component: ' + e.detail.val;
-    featureListEl.filter(searchEl.value);
-  });
-
-  featuresPromise.then(() => {
-    featureListEl.features = features;
-    featureListEl.filter(searchEl.value);
-  });
-});
-
-
-window.addEventListener('popstate', (e) => {
-  if (e.state) {
-    featureListEl.scrollToFeature(e.state.id);
-  }
-});
-
-// Unhide notification features if browser supports it.
-// if (PushNotifier.SUPPORTS_NOTIFICATIONS) {
-//   Array.from(document.querySelectorAll('.no-push-notifications')).forEach(el => {
-//     el.classList.remove('no-push-notifications');
-//   });
-// }
-
-})();
-</script>
+  <script>
+    (function() {
+    'use strict';
+      // Get values from server. used in /static/js/features.js
+      const VIEWS = {
+        vendors: {{VENDOR_VIEWS|safe}},
+        webdevs: {{WEB_DEV_VIEWS|safe}},
+        standards: {{STANDARDS_VALS|safe}}
+      };
+      {% inline_file "/static/js/notifications.js" %}
+      {% inline_file "/static/js/features.es6.min.js" %}
+    })();
+  </script>
 {% endblock %}

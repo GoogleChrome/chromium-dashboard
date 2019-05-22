@@ -1,6 +1,5 @@
 import {LitElement, html} from 'https://unpkg.com/@polymer/lit-element@latest/lit-element.js?module';
 import 'https://unpkg.com/@polymer/iron-icon/iron-icon.js?module';
-import '/static/elements/icons.js';
 import '/static/elements/chromedash-x-meter.js';
 
 class ChromedashMetrics extends LitElement {

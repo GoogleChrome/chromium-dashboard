@@ -26,6 +26,8 @@ To start the main server and the notifier backend, run:
 
     ./scripts/start_server.sh
 
+There are some developing information in developer-documentation.md.
+
 ##### Add env_vars.yaml
 
 Create a file named `env_vars.yaml` in the root directory and fill it with:

@@ -32,7 +32,6 @@
     }],
   },
   "globals": {
-    "Polymer": true,
     "ga": true,
     "Metric": true
   }

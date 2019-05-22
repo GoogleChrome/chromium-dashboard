@@ -3,7 +3,7 @@
 
 const fields = document.querySelectorAll('input, textarea');
 for (let i = 0; i < fields.length; ++i) {
-  fields[i].addEventListener('blur', function(e) {
+  fields[i].addEventListener('blur', (e) => {
     e.target.classList.add('interacted');
   });
 }
@@ -12,8 +12,7 @@ for (let i = 0; i < fields.length; ++i) {
 const MIN_MILESTONE_TO_BE_ACTIVE = 3;
 const NO_LONGER_PURSUING = 1000;
 
-const form = document.querySelector('[name="feature_form"]');
-form.addEventListener('change', function(e) {
+document.querySelector('[name="feature_form"]').addEventListener('change', (e) => {
   switch (e.target.tagName.toLowerCase()) {
     case 'select':
       if (e.target.id === 'id_impl_status_chrome') {
@@ -28,7 +27,7 @@ form.addEventListener('change', function(e) {
   }
 });
 
-document.querySelector('.delete-button').addEventListener('click', function(e) {
+document.querySelector('.delete-button').addEventListener('click', (e) => {
   if (!confirm('Delete feature?')) {
     return;
   }
@@ -508,11 +507,11 @@ function intentStageChanged() {
     document.querySelector('#id_' + id).parentNode.parentNode.style.display = 'none';
   }
 
-  let stage = document.querySelector('#id_intent_stage');
-  let stageIndex = Number(stage.value);
-  let stageIdentifier = INTENT_IDENTIFIER_NAMES[stageIndex];
+  const stageEl = document.querySelector('#id_intent_stage');
+  const stageIndex = Number(stageEl.value);
+  const stageIdentifier = INTENT_IDENTIFIER_NAMES[stageIndex];
 
-  let category = document.querySelector('#id_category').selectedOptions[0].textContent;
+  const category = document.querySelector('#id_category').selectedOptions[0].textContent;
 
   for (let id in FORM_FIELD_GRAPH) {
     if (!FORM_FIELD_GRAPH.hasOwnProperty(id)) {
@@ -541,28 +540,28 @@ function intentStageChanged() {
   }
 
   // Update the "Intent to <X>" wording in the form to match the intent stage.
-  let intentStageName = document.querySelector('#id_intent_stage_name');
+  let intentStageNameEl = document.querySelector('#id_intent_stage_name');
 
-  if (intentStageName) {
+  if (intentStageNameEl) {
     if (stageIndex != INTENT_NONE) {
-      intentStageName.textContent =
-        stage.options[stage.options.selectedIndex].textContent;
+      intentStageNameEl.textContent =
+        stageEl.options[stageEl.options.selectedIndex].textContent;
     } else {
-      intentStageName.textContent = '...';
+      intentStageNameEl.textContent = '...';
     }
   }
 
   // Disable the "Generate Intent to..." checkbox when the intent stage is
   // "None" (i.e. for entries created before the notion of an intent stage was
   // known to Features).
-  let intentToImplement = document.querySelector('#id_intent_to_implement');
+  let intentToImplementEl = document.querySelector('#id_intent_to_implement');
 
-  if (intentToImplement) {
+  if (intentToImplementEl) {
     if (stageIndex == INTENT_NONE) {
-      intentToImplement.disabled = true;
-      intentToImplement.checked = false;
+      intentToImplementEl.disabled = true;
+      intentToImplementEl.checked = false;
     } else {
-      intentToImplement.disabled = false;
+      intentToImplementEl.disabled = false;
     }
   }
 }
@@ -571,21 +570,21 @@ document.addEventListener('DOMContentLoaded', function() {
   document.body.classList.remove('loading');
 
   // Get around Django rendering input type="text" fields for URLs.
-  const inputs = document.querySelectorAll('[name$="_url"], [name$="_link"]');
-  [].forEach.call(inputs, function(input) {
-    input.type = 'url';
-    input.placeholder = 'http://';
+  const inputsEls = document.querySelectorAll('[name$="_url"], [name$="_link"]');
+  [].forEach.call(inputsEls, function(inputEl) {
+    inputEl.type = 'url';
+    inputEl.placeholder = 'http://';
   });
 
-  const shippedInputs = document.querySelectorAll('[name^="shipped_"]');
-  [].forEach.call(shippedInputs, function(input) {
-    input.type = 'number';
-    input.placeholder = 'Milestone #';
+  const shippedInputEls = document.querySelectorAll('[name^="shipped_"]');
+  [].forEach.call(shippedInputEls, function(inputEl) {
+    inputEl.type = 'number';
+    inputEl.placeholder = 'Milestone #';
   });
 
-  const owner = document.querySelector('[name="owner"]');
-  owner.type = 'email';
-  owner.multiple = true;
+  const ownerEl = document.querySelector('[name="owner"]');
+  ownerEl.type = 'email';
+  ownerEl.multiple = true;
 
   toggleMilestones(document.querySelector('#id_impl_status_chrome'));
 

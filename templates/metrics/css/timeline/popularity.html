@@ -38,7 +38,7 @@
 {% block js %}
 <script>
 document.addEventListener('WebComponentsReady', function(e) {
-  var timeline = $('chromedash-timeline');
+  var timeline = document.querySelector('chromedash-timeline');
   timeline.props = {{CSS_PROPERTY_BUCKETS|safe}};
 
   document.body.classList.remove('loading');

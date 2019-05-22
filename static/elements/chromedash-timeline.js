@@ -1,4 +1,5 @@
 import {LitElement, html} from 'https://unpkg.com/@polymer/lit-element@latest/lit-element.js?module';
+import 'https://www.gstatic.com/charts/loader.js'; // Global `google.charts.load`
 
 class ChromedashTimeline extends LitElement {
   static get properties() {
@@ -183,7 +184,6 @@ ORDER BY yyyymmdd DESC, client`;
   render() {
     return html`
       <link rel="stylesheet" href="/static/css/elements/chromedash-timeline.css">
-      <script src="https://www.gstatic.com/charts/loader.js"></script>
 
       <select .value="${this.selectedBucketId}" @change="${this.updateSelectedBucketId}">
         <option disabled value="1">Select a property</option>
