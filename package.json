@@ -8,9 +8,10 @@
   },
   "scripts": {
     "postinstall": "npm run deps && npm run build",
-    "deps": "rm -rf static/bower_components && bower install && pip install -t lib -r requirements.txt",
+    "deps": "pip install -t lib -r requirements.txt",
     "lint": "gulp lint",
     "build": "gulp",
+    "watch": "gulp watch",
     "deploy": "./scripts/deploy_site.sh",
     "start": "./scripts/start_server.sh"
   },
@@ -24,7 +25,6 @@
   "devDependencies": {
     "babel-core": "^6.26.3",
     "babel-preset-es2015": "^6.9.0",
-    "css-slam": "^2.1.2",
     "del": "^3.0.0",
     "eslint": "^5.2.0",
     "eslint-config-google": "^0.9.1",

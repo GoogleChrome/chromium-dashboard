@@ -12,8 +12,6 @@ import swPrecache from 'sw-precache';
 import * as uglifyEs from 'gulp-uglify-es';
 const uglify = uglifyEs.default;
 import gulpLoadPlugins from 'gulp-load-plugins';
-import merge from 'merge-stream';
-import * as cssslam from 'css-slam';
 
 const $ = gulpLoadPlugins();
 
@@ -84,10 +82,8 @@ gulp.task('clean', () => {
   return del([
     'static/css/',
     'static/dist',
-    'static/js/**/*.es6.min.js',
-    'static/js/shared.min.js'
+    'static/js/',
   ], {dot: true});
-
 });
 
 // Generate a service worker file that will provide offline functionality for
@@ -172,9 +168,23 @@ gulp.task('generate-service-worker', () => {
 });
 
 // Build production files, the default task
-gulp.task('default', gulp.series(
+gulp.task('watch', gulp.series(
+  'clean',
   'styles',
   'lint',
   'js',
-  'generate-service-worker'
+  'generate-service-worker',
+  function watch() {
+    gulp.watch(['static/sass/*.scss'], gulp.series('styles'));
+    gulp.watch(['static/js-src/*.js', 'static/elements/*.js'], gulp.series(['lint', 'js']));
+  }
+));
+
+// Build production files, the default task
+gulp.task('default', gulp.series(
+  'clean',
+  'styles',
+  'lint',
+  'js',
+  'generate-service-worker',
 ));
