@@ -45,9 +45,24 @@ limitations under the License.
     app-drawer {
       --app-drawer-width: 200px;
     }
+
+    /* Set the left sidebar the same background color as the page. */
     .drawer-content-wrapper {
       background: #eee;
     }
+
+    /* Manually hide the toggle button
+     * https://github.com/PolymerElements/app-layout/tree/master/app-drawer-layout */
+    app-drawer-layout:not([narrow]) [drawer-toggle] {
+      display: none;
+    }
+
+    /* Fix a bug. Left align the right side list and the header.
+     * TODO: Find out why it happens, and fix the root cause. */
+    app-drawer-layout:not([narrow]) app-header-layout {
+      margin-left: -60px;
+    }
+
     paper-item {
       --paper-item: {
         cursor: pointer;

@@ -10,16 +10,13 @@ Front end codes exist in two parts: main site (including admin) and http2push.
 
 ### Main site page renderring
 
-All the pages are rendered in a combination of Django template (`/templates`) and front-end components (`/static/elements`). From the top to bottom:
+All the pages are rendered in a combination of Django template (`/templates`) and front-end components (`/static/elements`).
 
 1. `/templates/base.html` and `/templates/base_embed.html` are the html skeleton.
-1. Templates in `/templates` extend the `base.html` or `embed_base.html`.
-    1. Templates load components in `/static/elements` in the `preload` block
-    1. Templates load JavaScript files from `/static/js` in the `js` block. Js are minified by gulp.
-    1. Templates pass template variables to the front end code using a pattern like `const variableInJs = {{variable_in_template|safe}}`.
-1. Components in `/static/elements` are lit-element components.
-    1. All CSS in the components are in `/static/css`, compiled from `/static/sass` by gulp.
-
-### Http2push
-
-TODO: Write doc for http2push.
+1. Templates in `/templates` (extend the `base.html` or `embed_base.html`) are the Django templates for each page.
+    - lit-element components, css, js files are all imported/included in those templates.
+    - We pass backend variables to js like this: `const variableInJs = {{variable_in_template|safe}}`.
+1. All lit-element components are in `/static/elements`.
+1. All JavaScript files are in `/static/js-src/` and processed by gulp, them output to '/static/js/' and get included in templates.
+1. All CSS files are in `/static/sass/` and processed by gulp, them output to `/static/css/` and get included in templates.
+1. A service worker is created by the gulp too. Output in `/static/dist/service-worker.js`.
