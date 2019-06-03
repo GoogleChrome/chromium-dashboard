@@ -61,8 +61,7 @@ window.addEventListener('popstate', (e) => {
   }
 });
 
-document.addEventListener('app-ready', () => {
-  console.log('app-ready');
+featureListEl.addEventListener('app-ready', () => {
   document.body.classList.remove('loading');
 
   // Want "Caching is complete" toast to be slightly delayed after page load.

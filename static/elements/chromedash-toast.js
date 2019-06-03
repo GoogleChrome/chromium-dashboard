@@ -33,7 +33,7 @@ class ChromedashToast extends LitElement {
   showMessage(msg, optAction, optTapHandler, optDuration) {
     this.msg = msg;
     this.actionLabel = optAction;
-    this.$.action.addEventListener('click', () => {
+    this.shadowRoot.querySelector('#action').addEventListener('click', () => {
       e.preventDefault();
       if (optTapHandler) {
         optTapHandler();
@@ -53,15 +53,6 @@ class ChromedashToast extends LitElement {
 
   close() {
     this.open = false;
-  }
-
-  _onTap(e) {
-    e.preventDefault();
-
-    this.$.action.removeEventListener('click', this._onTap);
-    if (this._tapHandler) {
-      this._tapHandler();
-    }
   }
 
   _openChanged() {

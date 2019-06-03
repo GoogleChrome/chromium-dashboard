@@ -35,7 +35,7 @@
     (function() {
     'use strict';
 
-    {% inline_file "/static/js/notifications.js" %}
+    {% inline_file "/static/js/notifications.min.js" %}
 
     async function initNotifications(allFeatures) {
       await loadFirebaseSDKLibs(); // Lazy load Firebase messaging SDK.

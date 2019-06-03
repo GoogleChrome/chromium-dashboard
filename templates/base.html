@@ -44,9 +44,9 @@ limitations under the License.
     {% inline_file "/static/css/main.css" %}
     app-drawer {
       --app-drawer-width: 200px;
-      --app-drawer-content-container: {
-        background: #eee;
-      };
+    }
+    .drawer-content-wrapper {
+      background: #eee;
     }
     paper-item {
       --paper-item: {
@@ -56,6 +56,7 @@ limitations under the License.
   </style>
 
   {% block css %}{% endblock %}
+  <script src="https://unpkg.com/@webcomponents/webcomponentsjs@^2.0.0/webcomponents-loader.js"></script>
 
   <script type="module">
     import 'https://unpkg.com/@polymer/paper-styles/color.js?module';
@@ -83,13 +84,13 @@ limitations under the License.
   {% endcomment %}
 
   <app-drawer-layout fullbleed>
-    <app-drawer swipe-open>
+    <app-drawer slot="drawer" swipe-open opened>
       <div class="drawer-content-wrapper">
         {% block drawer %}{% endblock %}
       </div>
     </app-drawer>
     <app-header-layout>
-      <app-header reveals fixed effects="waterfall">
+      <app-header slot="header" reveals fixed effects="waterfall">
         <div class="main-toolbar">
           <div class="toolbar-content">
             {% include "header.html" %}
@@ -112,8 +113,11 @@ limitations under the License.
 
   {% block overlay %}{% endblock %}
 
+  <!-- https://github.com/ljosa/urlize.js.git. This package does not have ES module support. It sets window.urlize in browsers. -->
+  <script src="https://unpkg.com/urlize.js/urlize.js"></script>
+
   {# Metric is need by sw registration and page code. #}
-  <script>{% inline_file "/static/js/metrics.es6.min.js" %}</script>
+  <script>{% inline_file "/static/js/metrics.min.js" %}</script>
 
   {% block js %}{% endblock %}
 
@@ -161,7 +165,7 @@ limitations under the License.
     
     // lazyLoadWCPolyfillsIfNecessary();
 
-    {% inline_file "/static/js/service-worker-registration.es6.min.js" %}
+    {% inline_file "/static/js/service-worker-registration.min.js" %}
     {% inline_file "/static/js/shared.min.js" %}
   </script>
 </body>

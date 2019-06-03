@@ -23,6 +23,7 @@
 {% block preload %}
   <script type="module">
     import '/static/elements/chromedash-featurelist.js';
+    import '/static/elements/chromedash-metadata.js';
   </script>
 {% endblock %}
 
@@ -47,19 +48,8 @@
 {% block drawer %}
   <h3>Chrome versions</h3>
   {% cache TEMPLATE_CACHE_TIME chromedashmetadata %}
-  <chromedash-metadata
-    impl-statuses='{{IMPLEMENTATION_STATUSES|safe}}'
-    status='{
-      "NO_ACTIVE_DEV": 1,
-      "PROPOSED": 2,
-      "IN_DEVELOPMENT": 3,
-      "BEHIND_A_FLAG": 4,
-      "ENABLED_BY_DEFAULT": 5,
-      "DEPRECATED": 6,
-      "REMOVED": 7,
-      "IN_EXPERIMENTAL_FRAMEWORK": 8,
-      "NO_LONGER_PURSUING": 1000
-    }'></chromedash-metadata>
+    <!-- Use single quote here. The value is a json string with double quote. -->
+    <chromedash-metadata implstatuses='{{IMPLEMENTATION_STATUSES|safe}}'></chromedash-metadata>
   {% endcache %}
 {% endblock %}
 
@@ -81,8 +71,8 @@
         webdevs: {{WEB_DEV_VIEWS|safe}},
         standards: {{STANDARDS_VALS|safe}}
       };
-      {% inline_file "/static/js/notifications.js" %}
-      {% inline_file "/static/js/features.es6.min.js" %}
+      {% inline_file "/static/js/notifications.min.js" %}
+      {% inline_file "/static/js/features.min.js" %}
     })();
   </script>
 {% endblock %}

@@ -87,4 +87,5 @@ const template = html`
 </iron-iconset-svg>
 `;
 
-document.head.appendChild(template.getTemplateElement());
+const element = template.getTemplateElement().content.firstElementChild;
+document.head.appendChild(element);

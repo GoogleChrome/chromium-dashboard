@@ -5,10 +5,10 @@ class ChromedashFeaturelist extends LitElement {
   static get properties() {
     return {
       whitelisted: {type: Boolean}, // From attribute
-      features: {type: Array, reflect: true}, // Directly edited and accessed in template/features.html
+      features: {type: Array, attribute: false}, // Directly edited and accessed in template/features.html
       metadataEl: {type: Object}, // The metadata component element. Directly edited in template/features.html
       searchEl: {type: Object}, // The search input element. Directly edited in template/features.html
-      filtered: {type: Array, hasChanged: this._filteredChanged},
+      filtered: {type: Array},
     };
   }
 
@@ -19,7 +19,7 @@ class ChromedashFeaturelist extends LitElement {
     this.metadataEl = document.querySelector('chromedash-metadata');
     this.searchEl = document.querySelector('.search input');
     this.whitelisted = false;
-    this._hasFirstFiltered = true; // Used to check initialization code.
+    this._hasInitialized = false; // Used to check initialization code.
     this._hasScrolledByUser = false; // Used to set the app header state.
 
     this._featuresUnveilMetric = new Metric('features_unveil');
@@ -46,10 +46,10 @@ class ChromedashFeaturelist extends LitElement {
             Infinity;
       });
       this.features = features;
-      console.log('loaded', features);
 
       this.searchEl.disabled = false;
       this.filter(this.searchEl.value);
+      this._initialize();
     }).catch((error) => {
       document.getElementById('content').classList.add('error');
       console.error(error);
@@ -58,10 +58,12 @@ class ChromedashFeaturelist extends LitElement {
   }
 
   connectedCallback() {
+    super.connectedCallback();
     window.addEventListener('scroll', this._onScrollList.bind(this));
   }
 
   disconnectedCallback() {
+    super.disconnectedCallback();
     window.removeEventListener('scroll', this._onScrollList.bind(this));
   }
 
@@ -253,7 +255,7 @@ class ChromedashFeaturelist extends LitElement {
       if (filters.length === 0) {
         this.filtered = this.features;
       } else {
-        const results = this.features;
+        let results = this.features;
         for (let i = 0; i < filters.length; i++) {
           results = results.filter(filters[i]);
         }
@@ -286,7 +288,15 @@ class ChromedashFeaturelist extends LitElement {
   // Directly called from template/features.html
   scrollToId(targetId) {
     if (!targetId) return;
-    const targetElement = document.querySelector('#' + targetId);
+
+    let selector;
+    if (!isNaN(Number(targetId))) {
+      /* number is not valid id. so we added prefix 'id-' in the template. */
+      selector = `#id-${targetId}`;
+    } else {
+      selector = `#${targetId}`;
+    }
+    const targetElement = document.querySelector(selector);
     if (!targetElement) return;
 
     const SCROLL_PADDING = 130;
@@ -298,16 +308,17 @@ class ChromedashFeaturelist extends LitElement {
   }
 
   _onScrollList() {
-    console.log('_onScrollList');
-    if (this._hasFirstFiltered) {
+    if (!this._hasInitialized) {
       return;
     }
     if (!this._hasScrolledByUser) {
       this._hasScrolledByUser = true;
       this._fireEvent('has-scroll-list'); // Nofity the app to un-fix header.
     }
-    const feature = this.features[this.$.ironlist.firstVisibleIndex];
-    this.metadataEl.selectMilestone(feature);
+    // TODO(yangguang): Get the first visible index
+    // const feature = this.features[this.$.ironlist.firstVisibleIndex];
+    // const feature = this.features[0];
+    // this.metadataEl.selectMilestone(feature);
   }
 
   /** Scroll to the item in the URL. Otherwise the first 'In development' item */
@@ -317,23 +328,15 @@ class ChromedashFeaturelist extends LitElement {
       const id = parseInt(location.pathname.substring(lastSlash + 1));
       this.scrollToId(id);
     } else {
-      const milestone = this.metadataEl.implStatuses[
-        this.metadataEl.status.IN_DEVELOPMENT - 1].val;
+      const milestone = this.metadataEl.implStatuses[this.metadataEl.status.IN_DEVELOPMENT - 1].val;
       this.scrollToMilestone(milestone);
     }
   }
 
-  _filteredChanged(newVal, oldVal) {
-    console.log('_filteredChanged');
-    // Only run it once, when we get the initial filtered list.
-    if (oldVal === undefined || newVal.length === oldVal.length ||
-        !this._hasFirstFiltered) {
-      return;
-    }
-
+  _initialize() {
     this._featuresUnveilMetric.end().log().sendToAnalytics('features', 'unveil');
     this._fireEvent('app-ready');
-    this._hasFirstFiltered = false;
+    this._hasInitialized = true;
     setTimeout(() => {
       this._scrollToInitialPosition();
     }, 300);
@@ -363,7 +366,6 @@ class ChromedashFeaturelist extends LitElement {
   }
 
   render() {
-    console.log('featurelist render');
     return html`
       <link rel="stylesheet" href="/static/css/elements/chromedash-featurelist.css">
 
@@ -372,9 +374,9 @@ class ChromedashFeaturelist extends LitElement {
           <div class="item">
             <div ?hidden="${this._computeMilestoneHidden(feature, this.features, this.filtered)}"
                  class="milestone-marker">${this._computeMilestoneString(feature.browsers.chrome.status.milestone_str)}</div>
-            <chromedash-feature id="${feature.id}" tabindex="0"
+            <chromedash-feature id="id-${feature.id}" tabindex="0"
                  @feature-toggled="${this._onFeatureToggled}"
-                 feature="${feature}" ?whitelisted="${this.whitelisted}"></chromedash-feature>
+                 .feature="${feature}" ?whitelisted="${this.whitelisted}"></chromedash-feature>
           </div>
           `)}
       </div>

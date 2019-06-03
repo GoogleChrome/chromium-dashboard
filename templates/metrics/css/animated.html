@@ -6,7 +6,9 @@
 {% endblock %}
 
 {% block preload %}
-<script type="module" src="/static/elements/metrics-imports.js"></script>
+<script type="module">
+  import '/static/elements/chromedash-metrics.js';
+</script>
 {% endblock %}
 
 {% block drawer %}

@@ -16,14 +16,25 @@ class ChromedashMetadata extends LitElement {
   constructor() {
     super();
     this.implStatuses = [];
-    this.status = {};
+    this.status = {
+      'NO_ACTIVE_DEV': 1,
+      'PROPOSED': 2,
+      'IN_DEVELOPMENT': 3,
+      'BEHIND_A_FLAG': 4,
+      'ENABLED_BY_DEFAULT': 5,
+      'DEPRECATED': 6,
+      'REMOVED': 7,
+      'IN_EXPERIMENTAL_FRAMEWORK': 8,
+      'NO_LONGER_PURSUING': 1000,
+    };
     this._channels = {};
     this._versions = [];
   }
 
   connectedCallback() {
+    super.connectedCallback();
     fetch('/omaha_data').then((res) => res.json()).then((response) => {
-      this._onResponse(response);
+      this._processResponse(response);
     }).catch(() => {
       this._fetchError = true;
     });
@@ -46,7 +57,7 @@ class ChromedashMetadata extends LitElement {
     }
   }
 
-  _onResponse(response) {
+  _processResponse(response) {
     // TODO(ericbidelman): Share this data across instances.
     const windowsVersions = response[0];
     for (let i = 0, el; el = windowsVersions.versions[i]; ++i) {
