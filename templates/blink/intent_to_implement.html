@@ -17,10 +17,10 @@ Intent to {{feature.intent_stage}}: {{feature.name}}
 Specification: <a href="{{feature.spec_link}}">{{feature.spec_link}}</a>
 {% endif %}
 {% for link in feature.doc_links %}<a href="{{link}}">{{link}}</a>{% endfor %}
-
+{% endif %}
 <label>TAG review</label>
 {{feature.tag_review|urlize}}
-{% endif %}
+
 <label>Summary</label>
 {{feature.summary}}
 {% if feature.intent_stage == "Implement" or feature.intent_stage == "Ship" or feature.intent_stage == "Implement and Ship" %}
