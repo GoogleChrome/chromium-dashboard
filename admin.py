@@ -224,7 +224,7 @@ class HistogramsHandler(webapp2.RequestHandler):
 
 class FeatureHandler(common.ContentHandler):
 
-  DEFAULT_URL = '/features'
+  DEFAULT_URL = '/feature'
   ADD_NEW_URL = '/admin/features/new'
   EDIT_URL = '/admin/features/edit'
   LAUNCH_URL = '/admin/features/launch'
