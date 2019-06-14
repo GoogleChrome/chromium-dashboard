@@ -505,16 +505,18 @@ class FeatureHandler(common.ContentHandler):
           ongoing_constraints=self.request.get('ongoing_constraints'),
           )
 
-    key = feature.put()
-
-    # TODO(ericbidelman): enumerate and remove only the relevant keys.
-    memcache.flush_all()
-
     params = []
     if self.request.get('create_launch_bug') == 'on':
       params.append(self.LAUNCH_PARAM)
     if self.request.get('intent_to_implement') == 'on':
       params.append(self.INTENT_PARAM)
+
+      feature.intent_template_use_count += 1
+
+    key = feature.put()
+
+    # TODO(ericbidelman): enumerate and remove only the relevant keys.
+    memcache.flush_all()
 
     redirect_url = '/feature/' + str(key.id())
 

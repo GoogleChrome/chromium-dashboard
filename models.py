@@ -823,6 +823,8 @@ class Feature(DictModel):
   updated_by = db.UserProperty(auto_current_user=True)
   created_by = db.UserProperty(auto_current_user_add=True)
 
+  intent_template_use_count = db.IntegerProperty(default = 0)
+
   # General info.
   category = db.IntegerProperty(required=True)
   name = db.StringProperty(required=True)
