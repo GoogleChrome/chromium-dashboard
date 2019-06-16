@@ -43,8 +43,8 @@
     "gulp-util": "^3.0.7",
     "http2-push-manifest": "^1.0.0",
     "lighthouse-ci": "https://github.com/ebidel/lighthouse-ci",
+    "lit-virtualizer": "^0.1.0",
     "sw-precache": "^5.2.1",
     "sw-toolbox": "^3.6.0"
   },
-  "dependencies": {}
 }

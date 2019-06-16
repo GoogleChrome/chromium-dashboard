@@ -1,4 +1,5 @@
 import {LitElement, html} from 'https://unpkg.com/@polymer/lit-element@latest/lit-element.js?module';
+import {LitVirtualizer} from 'https://unpkg.com/lit-virtualizer?module';
 import '/static/elements/chromedash-feature.js';
 
 class ChromedashFeaturelist extends LitElement {
@@ -370,15 +371,19 @@ class ChromedashFeaturelist extends LitElement {
       <link rel="stylesheet" href="/static/css/elements/chromedash-featurelist.css">
 
       <div id="featurelist">
-        ${this.filtered.map((feature) => html`
-          <div class="item">
-            <div ?hidden="${this._computeMilestoneHidden(feature, this.features, this.filtered)}"
-                 class="milestone-marker">${this._computeMilestoneString(feature.browsers.chrome.status.milestone_str)}</div>
-            <chromedash-feature id="id-${feature.id}" tabindex="0"
-                 @feature-toggled="${this._onFeatureToggled}"
-                 .feature="${feature}" ?whitelisted="${this.whitelisted}"></chromedash-feature>
-          </div>
-          `)}
+        <lit-virtualizer
+          .scrollTarget=${window}
+          .items=${this.filtered}
+          .template=${(feature) => html`
+            <div class="item">
+              <div ?hidden="${this._computeMilestoneHidden(feature, this.features, this.filtered)}"
+                   class="milestone-marker">${this._computeMilestoneString(feature.browsers.chrome.status.milestone_str)}</div>
+              <chromedash-feature id="id-${feature.id}" tabindex="0"
+                   @feature-toggled="${this._onFeatureToggled}"
+                   .feature="${feature}" ?whitelisted="${this.whitelisted}"></chromedash-feature>
+            </div>
+          `}>
+        </lit-virtualizer>
       </div>
     `;
   }
