@@ -33,7 +33,7 @@ class ChromedashToast extends LitElement {
   showMessage(msg, optAction, optTapHandler, optDuration) {
     this.msg = msg;
     this.actionLabel = optAction;
-    this.shadowRoot.querySelector('#action').addEventListener('click', () => {
+    this.shadowRoot.querySelector('#action').addEventListener('click', (e) => {
       e.preventDefault();
       if (optTapHandler) {
         optTapHandler();

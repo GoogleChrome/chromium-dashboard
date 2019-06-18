@@ -89,8 +89,11 @@ limitations under the License.
   {% block js %}{% endblock %}
 
   <script>
-    {% inline_file "/static/js/service-worker-registration.min.js" %}
-    {% inline_file "/static/js/shared.min.js" %}
+    (function() {
+      'use strict';
+      {% inline_file "/static/js/service-worker-registration.min.js" %}
+      {% inline_file "/static/js/shared.min.js" %}
+    })();
   </script>
 </body>
 </html>

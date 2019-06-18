@@ -32,7 +32,7 @@ class ChromedashSchedule extends LitElement {
 
   _computeDaysUntil(dateStr) {
     const today = new Date();
-    const diff = dateDiffInDays(new Date(dateStr), today);
+    const diff = this._dateDiffInDays(new Date(dateStr), today);
     const prefix = diff.future ? 'in' : '';
     const days = diff.days > 1 ? 's' : '';
     const ago = !diff.future ? 'ago' : '';
@@ -69,6 +69,22 @@ class ChromedashSchedule extends LitElement {
     }
   }
 
+
+  /**
+   *  Returns the number of days between a and b.
+   *  @param {!Date} a
+   *  @param {!Date} b
+   *  @return {!{days: number, future: boolean}}
+   */
+  _dateDiffInDays(a, b) {
+    // Discard time and time-zone information.
+    const utc1 = Date.UTC(a.getFullYear(), a.getMonth(), a.getDate());
+    const utc2 = Date.UTC(b.getFullYear(), b.getMonth(), b.getDate());
+
+    const MS_PER_DAY = 1000 * 60 * 60 * 24;
+    const daysDiff = Math.floor((utc2 - utc1) / MS_PER_DAY);
+    return {days: Math.abs(daysDiff), future: daysDiff < 1};
+  }
 
   render() {
     return html`
