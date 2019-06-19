@@ -30,11 +30,12 @@ class ChromedashFeaturelist extends LitElement {
     this._loadData();
   }
 
-  _loadData() {
+  async _loadData() {
     const featureUrl = location.hostname == 'localhost' ?
       'https://www.chromestatus.com/features_v2.json' : '/features_v2.json';
 
-    fetch(featureUrl).then((res) => res.json()).then((features) => {
+    try {
+      const features = await (await fetch(featureUrl)).json();
       this._featuresFetchMetric.end().log().sendToAnalytics('features', 'loaded');
 
       features.map((feature) => {
@@ -50,11 +51,11 @@ class ChromedashFeaturelist extends LitElement {
       this.searchEl.disabled = false;
       this.filter(this.searchEl.value);
       this._initialize();
-    }).catch((error) => {
+    } catch (error) {
       document.getElementById('content').classList.add('error');
       console.error(error);
       throw new Error('Failed to fetch features');
-    });
+    };
   }
 
   connectedCallback() {
@@ -369,17 +370,15 @@ class ChromedashFeaturelist extends LitElement {
     return html`
       <link rel="stylesheet" href="/static/css/elements/chromedash-featurelist.css">
 
-      <div id="featurelist">
-        ${this.filtered.map((feature) => html`
-          <div class="item">
-            <div ?hidden="${this._computeMilestoneHidden(feature, this.features, this.filtered)}"
-                 class="milestone-marker">${this._computeMilestoneString(feature.browsers.chrome.status.milestone_str)}</div>
-            <chromedash-feature id="id-${feature.id}" tabindex="0"
-                 @feature-toggled="${this._onFeatureToggled}"
-                 .feature="${feature}" ?whitelisted="${this.whitelisted}"></chromedash-feature>
-          </div>
-          `)}
-      </div>
+      ${this.filtered.map((feature) => html`
+        <div class="item">
+          <div ?hidden="${this._computeMilestoneHidden(feature, this.features, this.filtered)}"
+               class="milestone-marker">${this._computeMilestoneString(feature.browsers.chrome.status.milestone_str)}</div>
+          <chromedash-feature id="id-${feature.id}" tabindex="0"
+               @feature-toggled="${this._onFeatureToggled}"
+               .feature="${feature}" ?whitelisted="${this.whitelisted}"></chromedash-feature>
+        </div>
+        `)}
     `;
   }
 }

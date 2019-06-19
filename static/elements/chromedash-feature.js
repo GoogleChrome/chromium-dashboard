@@ -129,7 +129,7 @@ class ChromedashFeature extends LitElement {
     this.dispatchEvent(event);
   }
 
-  toggle(e) {
+  _togglePanelExpansion(e) {
     // Don't toggle panel if tooltip or link is being clicked.
     const target = e.currentTarget;
     if (target.classList.contains('tooltip') || 'tooltip' in target.dataset ||
@@ -189,8 +189,8 @@ class ChromedashFeature extends LitElement {
     return html`
       <link rel="stylesheet" href="/static/css/elements/chromedash-feature.css">
 
-      <div class="main-content-area">
-        <hgroup @click="${this.toggle}">
+      <div id="main-content-area">
+        <hgroup @click="${this._togglePanelExpansion}">
           <chromedash-color-status class="tooltip corner"
             title="Interoperability risk: perceived interest from browser
                 vendors and web developers"
@@ -269,7 +269,7 @@ class ChromedashFeature extends LitElement {
             </div>
           </div>
         </hgroup>
-        <section class="desc" @click="${this.toggle}">
+        <section class="desc" @click="${this._togglePanelExpansion}">
           <summary>
             <p><span>${this.feature.summary}</span></p>
             <p><span>${this.feature.motivation}</span></p>
