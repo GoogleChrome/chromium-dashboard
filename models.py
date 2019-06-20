@@ -974,7 +974,7 @@ class FeatureForm(forms.Form):
 
   explainer_links = forms.CharField(label='Explainer link(s)', required=False,
       widget=forms.Textarea(attrs={'rows': 4, 'cols': 50, 'maxlength': 500}),
-      help_text='Link to explainer(s) (one URL per line). You should have at least an explainer in hand and have discussed the API on a public forum with other browser vendors or standards bodies before sending an Intent to Implement. If your change is not yet at this stage of maturity, feel free to solicit feedback informally on blink-dev instead.')
+      help_text='Link to explainer(s) (one URL per line). You should have at least an explainer in hand and have shared it on a public forum before sending an intent to implement in order to enable discussion with other browser vendors, standards bodies, or other interested parties.')
 
   intent_to_implement_url = forms.URLField(required=False, label='Intent to Implement link',
       help_text='Link to the "Intent to Implement" discussion thread.')
