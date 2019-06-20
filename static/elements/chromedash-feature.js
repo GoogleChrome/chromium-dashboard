@@ -129,7 +129,7 @@ class ChromedashFeature extends LitElement {
     this.dispatchEvent(event);
   }
 
-  toggle(e) {
+  _togglePanelExpansion(e) {
     // Don't toggle panel if tooltip or link is being clicked.
     const target = e.currentTarget;
     if (target.classList.contains('tooltip') || 'tooltip' in target.dataset ||
@@ -189,272 +189,270 @@ class ChromedashFeature extends LitElement {
     return html`
       <link rel="stylesheet" href="/static/css/elements/chromedash-feature.css">
 
-      <div class="main-content-area">
-        <hgroup @click="${this.toggle}">
-          <chromedash-color-status class="tooltip corner"
-            title="Interoperability risk: perceived interest from browser
-                vendors and web developers"
-            .value="${this._interopRisk}"
-            .max="${MAX_RISK}"></chromedash-color-status>
-          <h2>${this.feature.name}
-            ${this.whitelisted ? html`
-              <span class="tooltip" title="Edit this feature">
-                <a href="/admin/features/edit/${this.feature.id}" data-tooltip>
-                  <iron-icon icon="chromestatus:create"></iron-icon>
-                </a>
-              </span>
-              `: ''}
-          </h2>
-          <div class="iconrow
-              ${IS_PUSH_NOTIFIER_SUPPORTED ?
-                'supports-push-notifications' : ''}">
-            <span class="tooltip category-tooltip"
-                  title="Filter by category ${this.feature.category}">
-              <a href="#" class="category"
-                 @click="${this.categoryFilter}">
-                ${this.feature.category}</a>
+      <hgroup @click="${this._togglePanelExpansion}">
+        <chromedash-color-status class="tooltip corner"
+          title="Interoperability risk: perceived interest from browser
+              vendors and web developers"
+          .value="${this._interopRisk}"
+          .max="${MAX_RISK}"></chromedash-color-status>
+        <h2>${this.feature.name}
+          ${this.whitelisted ? html`
+            <span class="tooltip" title="Edit this feature">
+              <a href="/admin/features/edit/${this.feature.id}" data-tooltip>
+                <iron-icon icon="chromestatus:create"></iron-icon>
+              </a>
             </span>
-            <div class="topcorner">
-              ${this.feature.browsers.chrome.status.text === 'Removed' ? html`
-                <span class="tooltip" title="Removed feature">
-                  <iron-icon icon="chromestatus:cancel"
-                             class="remove" data-tooltip></iron-icon>
-                </span>
-                ` : ''}
-              ${this._isDeprecated ? html`
-                <span class="tooltip" title="Deprecated feature">
-                  <iron-icon icon="chromestatus:warning"
-                             class="deprecated" data-tooltip></iron-icon>
-                </span>
-                ` : ''}
-              ${this.feature.browsers.chrome.flag ? html`
-                <span class="tooltip"
-                      title="Experimental feature behind a flag">
-                  <iron-icon icon="chromestatus:flag"
-                             class="experimental"></iron-icon>
-                </span>
-                ` : ''}
-              ${this.feature.browsers.chrome.origintrial ? html`
-                <span class="tooltip" title="Origin trial">
-                  <iron-icon icon="chromestatus:extension"
-                             class="experimental"></iron-icon>
-                </span>
-                ` : ''}
-              ${this.feature.browsers.chrome.intervention ? html`
-                <span class="tooltip" title="Browser intervention">
-                  <iron-icon icon="chromestatus:pan-tool"
-                             class="intervention" data-tooltip></iron-icon>
-                </span>
-                ` : ''}
-              <span class="tooltip no-push-notifications"
-                    title="Receive a push notification when there are updates">
-                <a href="#" @click="${this.subscribeToFeature}" data-tooltip>
-                  <iron-icon icon="${this._receivePush ?
-                                'chromestatus:notifications' :
-                                'chromestatus:notifications-off'}"
-                             class="pushicon ${IS_PUSH_NOTIFIER_ENABLED ?
-                               '' : 'disabled'}"></iron-icon>
-                </a>
+            `: ''}
+        </h2>
+        <div class="iconrow
+            ${IS_PUSH_NOTIFIER_SUPPORTED ?
+              'supports-push-notifications' : ''}">
+          <span class="tooltip category-tooltip"
+                title="Filter by category ${this.feature.category}">
+            <a href="#" class="category"
+               @click="${this.categoryFilter}">
+              ${this.feature.category}</a>
+          </span>
+          <div class="topcorner">
+            ${this.feature.browsers.chrome.status.text === 'Removed' ? html`
+              <span class="tooltip" title="Removed feature">
+                <iron-icon icon="chromestatus:cancel"
+                           class="remove" data-tooltip></iron-icon>
               </span>
-              <span class="tooltip" title="File a bug against this feature">
-                <a href="${this._newBugUrl}" data-tooltip>
-                  <iron-icon icon="chromestatus:bug-report"></iron-icon>
-                </a>
+              ` : ''}
+            ${this._isDeprecated ? html`
+              <span class="tooltip" title="Deprecated feature">
+                <iron-icon icon="chromestatus:warning"
+                           class="deprecated" data-tooltip></iron-icon>
               </span>
-              <span class="tooltip" title="View on a standalone page">
-                <a href="/feature/${this.feature.id}" target="_blank">
-                  <iron-icon icon="chromestatus:open-in-new"></iron-icon>
-                </a>
+              ` : ''}
+            ${this.feature.browsers.chrome.flag ? html`
+              <span class="tooltip"
+                    title="Experimental feature behind a flag">
+                <iron-icon icon="chromestatus:flag"
+                           class="experimental"></iron-icon>
               </span>
+              ` : ''}
+            ${this.feature.browsers.chrome.origintrial ? html`
+              <span class="tooltip" title="Origin trial">
+                <iron-icon icon="chromestatus:extension"
+                           class="experimental"></iron-icon>
+              </span>
+              ` : ''}
+            ${this.feature.browsers.chrome.intervention ? html`
+              <span class="tooltip" title="Browser intervention">
+                <iron-icon icon="chromestatus:pan-tool"
+                           class="intervention" data-tooltip></iron-icon>
+              </span>
+              ` : ''}
+            <span class="tooltip no-push-notifications"
+                  title="Receive a push notification when there are updates">
+              <a href="#" @click="${this.subscribeToFeature}" data-tooltip>
+                <iron-icon icon="${this._receivePush ?
+                              'chromestatus:notifications' :
+                              'chromestatus:notifications-off'}"
+                           class="pushicon ${IS_PUSH_NOTIFIER_ENABLED ?
+                             '' : 'disabled'}"></iron-icon>
+              </a>
+            </span>
+            <span class="tooltip" title="File a bug against this feature">
+              <a href="${this._newBugUrl}" data-tooltip>
+                <iron-icon icon="chromestatus:bug-report"></iron-icon>
+              </a>
+            </span>
+            <span class="tooltip" title="View on a standalone page">
+              <a href="/feature/${this.feature.id}" target="_blank">
+                <iron-icon icon="chromestatus:open-in-new"></iron-icon>
+              </a>
+            </span>
+          </div>
+        </div>
+      </hgroup>
+      <section class="desc" @click="${this._togglePanelExpansion}">
+        <summary>
+          <p><span>${this.feature.summary}</span></p>
+          <p><span>${this.feature.motivation}</span></p>
+        </summary>
+      </section>
+      ${this.open ? html`
+        <section class="sidebyside">
+          <div class="flex">
+            <h3>Chromium status</h3>
+            <div class="impl_status">
+              <span class="chromium_status">
+                <label>${this.feature.browsers.chrome.status.text}</label>
+              </span>
+              ${this.feature.browsers.chrome.desktop ? html`
+                <span>
+                  <label class="impl_status_label">
+                    <span class="impl_status_icons">
+                      <span class="chrome_icon"></span>
+                    </span>
+                    <span>Chrome desktop</span>
+                  </label>
+                  <span>${this.feature.browsers.chrome.desktop}</span>
+                </span>
+                ` : ''}
+              ${this.feature.browsers.chrome.android ? html`
+                <span>
+                  <label class="impl_status_label">
+                    <span class="impl_status_icons">
+                      <span class="chrome_icon"></span>
+                      <iron-icon icon="chromestatus:android"
+                                 class="android"></iron-icon>
+                    </span>
+                    <span>Chrome for Android</span>
+                  </label>
+                  <span>${this.feature.browsers.chrome.android}</span>
+                </span>
+                ` : ''}
+              ${this.feature.browsers.chrome.webview ? html`
+                <span>
+                  <label class="impl_status_label">
+                    <span class="impl_status_icons">
+                      <iron-icon icon="chromestatus:android"
+                                 class="android"></iron-icon>
+                    </span>
+                    <span>Android Webview</span>
+                  </label>
+                  <span>${this.feature.browsers.chrome.webview}</span>
+                </span>
+                ` : ''}
+              ${this.feature.browsers.chrome.prefixed ? html`
+                <span><label>Prefixed</label><span>Yes</span></span>
+                ` : ''}
+              ${this.feature.browsers.chrome.bug ? html`<span>
+                  <span>Tracking bug</span>
+                  <a href="${this.feature.browsers.chrome.bug}"
+                     target="_blank">${this._crBugNumber ?
+                       `#${this._crBugNumber}` :
+                       this.feature.browsers.chrome.bug}</a>
+                </span>
+                ` : ''}
+              ${this.feature.browsers.chrome.blink_components &&
+                this.feature.browsers.chrome.blink_components.length ? html`
+                <span>
+                  <label>Blink component</label>
+                  <span class="tooltip"
+                        title="Filter by component ${this.feature.browsers.chrome.blink_components}">
+                    <a href="#" @click="${this.filterByComponent}">
+                      ${this.feature.browsers.chrome.blink_components}
+                    </a>
+                  </span>
+                </span>
+                ` : ''}
+              ${this.feature.browsers.chrome.owners &&
+                this.feature.browsers.chrome.owners.length ? html`
+                <span class="owner">
+                  <label>Owner(s)</label>
+                  <span class="owner-list">
+                    ${this.feature.browsers.chrome.owners.map((owner) => html`
+                      <span class="tooltip" title="Filter by owner ${owner}">
+                        <a href="#" @click="${this.filterByOwner}">
+                          ${owner}
+                        </a>
+                      </span>
+                      `)}
+                  </span>
+                </span>
+                ` : ''}
             </div>
           </div>
-        </hgroup>
-        <section class="desc" @click="${this.toggle}">
-          <summary>
-            <p><span>${this.feature.summary}</span></p>
-            <p><span>${this.feature.motivation}</span></p>
-          </summary>
-        </section>
-        ${this.open ? html`
-          <section class="sidebyside">
-            <div class="flex">
-              <h3>Chromium status</h3>
-              <div class="impl_status">
-                <span class="chromium_status">
-                  <label>${this.feature.browsers.chrome.status.text}</label>
-                </span>
-                ${this.feature.browsers.chrome.desktop ? html`
-                  <span>
-                    <label class="impl_status_label">
-                      <span class="impl_status_icons">
-                        <span class="chrome_icon"></span>
-                      </span>
-                      <span>Chrome desktop</span>
-                    </label>
-                    <span>${this.feature.browsers.chrome.desktop}</span>
-                  </span>
-                  ` : ''}
-                ${this.feature.browsers.chrome.android ? html`
-                  <span>
-                    <label class="impl_status_label">
-                      <span class="impl_status_icons">
-                        <span class="chrome_icon"></span>
-                        <iron-icon icon="chromestatus:android"
-                                   class="android"></iron-icon>
-                      </span>
-                      <span>Chrome for Android</span>
-                    </label>
-                    <span>${this.feature.browsers.chrome.android}</span>
-                  </span>
-                  ` : ''}
-                ${this.feature.browsers.chrome.webview ? html`
-                  <span>
-                    <label class="impl_status_label">
-                      <span class="impl_status_icons">
-                        <iron-icon icon="chromestatus:android"
-                                   class="android"></iron-icon>
-                      </span>
-                      <span>Android Webview</span>
-                    </label>
-                    <span>${this.feature.browsers.chrome.webview}</span>
-                  </span>
-                  ` : ''}
-                ${this.feature.browsers.chrome.prefixed ? html`
-                  <span><label>Prefixed</label><span>Yes</span></span>
-                  ` : ''}
-                ${this.feature.browsers.chrome.bug ? html`<span>
-                    <span>Tracking bug</span>
-                    <a href="${this.feature.browsers.chrome.bug}"
-                       target="_blank">${this._crBugNumber ?
-                         `#${this._crBugNumber}` :
-                         this.feature.browsers.chrome.bug}</a>
-                  </span>
-                  ` : ''}
-                ${this.feature.browsers.chrome.blink_components &&
-                  this.feature.browsers.chrome.blink_components.length ? html`
-                  <span>
-                    <label>Blink component</label>
-                    <span class="tooltip"
-                          title="Filter by component ${this.feature.browsers.chrome.blink_components}">
-                      <a href="#" @click="${this.filterByComponent}">
-                        ${this.feature.browsers.chrome.blink_components}
-                      </a>
-                    </span>
-                  </span>
-                  ` : ''}
-                ${this.feature.browsers.chrome.owners &&
-                  this.feature.browsers.chrome.owners.length ? html`
-                  <span class="owner">
-                    <label>Owner(s)</label>
-                    <span class="owner-list">
-                      ${this.feature.browsers.chrome.owners.map((owner) => html`
-                        <span class="tooltip" title="Filter by owner ${owner}">
-                          <a href="#" @click="${this.filterByOwner}">
-                            ${owner}
-                          </a>
-                        </span>
-                        `)}
-                    </span>
-                  </span>
-                  ` : ''}
-              </div>
+          <div class="flex">
+            <h3>Consensus &amp; standardization</h3>
+            <div class="views">
+              <span title="${this.feature.browsers.ff.view.text}"
+                    class="view tooltip">
+                <chromedash-color-status class="bottom"
+                    .value="${this.feature.browsers.ff.view.val}"
+                    .max="${MAX_VENDOR_VIEW}"></chromedash-color-status>
+                ${this.feature.browsers.ff.view.url ? html`
+                  <a href="${this.feature.browsers.ff.view.url}"
+                     target="_blank">
+                    <span class="vendor-view ff-view"></span>
+                  </a>
+                  ` : html`<span class="vendor-view ff-view"></span>`}
+              </span>
+              <span title="${this.feature.browsers.edge.view.text}"
+                    class="view tooltip">
+                <chromedash-color-status class="bottom"
+                    .value="${this.feature.browsers.edge.view.val}"
+                    .max="${MAX_VENDOR_VIEW}"></chromedash-color-status>
+                ${this.feature.browsers.edge.view.url ? html`
+                  <a href="${this.feature.browsers.edge.view.url}"
+                     target="_blank">
+                    <span class="vendor-view edge-view"></span>
+                  </a>
+                  ` : html`<span class="vendor-view edge-view"></span>`}
+              </span>
+              <span title="${this.feature.browsers.safari.view.text}"
+                    class="view tooltip">
+                <chromedash-color-status class="bottom"
+                    .value="${this.feature.browsers.safari.view.val}"
+                    .max="${MAX_VENDOR_VIEW}"></chromedash-color-status>
+                ${this.feature.browsers.safari.view.url ? html`
+                  <a href="${this.feature.browsers.safari.view.url}"
+                     target="_blank">
+                    <span class="vendor-view safari-view"></span>
+                  </a>
+                  ` : html`<span class="vendor-view safari-view"></span>`}
+              </span>
+              <span title="Web developers: ${this.feature.browsers.webdev.view.text}"
+                    class="view webdev-view tooltip">
+                <chromedash-color-status class="bottom"
+                    .value="${this.feature.browsers.webdev.view.val}"
+                    .max="${MAX_WEBDEV_VIEW}"></chromedash-color-status>
+                <iron-icon icon="chromestatus:accessibility"></iron-icon>
+              </span>
+              <span class="standardization view">
+                <chromedash-color-status class="bottom"
+                    .value="${this.feature.standards.status.val}"
+                    .max="${MAX_STANDARDS_VAL}"></chromedash-color-status>
+                ${this.feature.standards.spec ? html`
+                  <a href="${this.feature.standards.spec}"
+                     target="_blank">${this.feature.standards.status.text}</a>
+                  ` : html`
+                  <label>${this.feature.standards.status.text}</label>
+                  `}
+              </span>
             </div>
-            <div class="flex">
-              <h3>Consensus &amp; standardization</h3>
-              <div class="views">
-                <span title="${this.feature.browsers.ff.view.text}"
-                      class="view tooltip">
-                  <chromedash-color-status class="bottom"
-                      .value="${this.feature.browsers.ff.view.val}"
-                      .max="${MAX_VENDOR_VIEW}"></chromedash-color-status>
-                  ${this.feature.browsers.ff.view.url ? html`
-                    <a href="${this.feature.browsers.ff.view.url}"
-                       target="_blank">
-                      <span class="vendor-view ff-view"></span>
-                    </a>
-                    ` : html`<span class="vendor-view ff-view"></span>`}
-                </span>
-                <span title="${this.feature.browsers.edge.view.text}"
-                      class="view tooltip">
-                  <chromedash-color-status class="bottom"
-                      .value="${this.feature.browsers.edge.view.val}"
-                      .max="${MAX_VENDOR_VIEW}"></chromedash-color-status>
-                  ${this.feature.browsers.edge.view.url ? html`
-                    <a href="${this.feature.browsers.edge.view.url}"
-                       target="_blank">
-                      <span class="vendor-view edge-view"></span>
-                    </a>
-                    ` : html`<span class="vendor-view edge-view"></span>`}
-                </span>
-                <span title="${this.feature.browsers.safari.view.text}"
-                      class="view tooltip">
-                  <chromedash-color-status class="bottom"
-                      .value="${this.feature.browsers.safari.view.val}"
-                      .max="${MAX_VENDOR_VIEW}"></chromedash-color-status>
-                  ${this.feature.browsers.safari.view.url ? html`
-                    <a href="${this.feature.browsers.safari.view.url}"
-                       target="_blank">
-                      <span class="vendor-view safari-view"></span>
-                    </a>
-                    ` : html`<span class="vendor-view safari-view"></span>`}
-                </span>
-                <span title="Web developers: ${this.feature.browsers.webdev.view.text}"
-                      class="view webdev-view tooltip">
-                  <chromedash-color-status class="bottom"
-                      .value="${this.feature.browsers.webdev.view.val}"
-                      .max="${MAX_WEBDEV_VIEW}"></chromedash-color-status>
-                  <iron-icon icon="chromestatus:accessibility"></iron-icon>
-                </span>
-                <span class="standardization view">
-                  <chromedash-color-status class="bottom"
-                      .value="${this.feature.standards.status.val}"
-                      .max="${MAX_STANDARDS_VAL}"></chromedash-color-status>
-                  ${this.feature.standards.spec ? html`
-                    <a href="${this.feature.standards.spec}"
-                       target="_blank">${this.feature.standards.status.text}</a>
-                    ` : html`
-                    <label>${this.feature.standards.status.text}</label>
-                    `}
-                </span>
-              </div>
-              <div style="font-size:smaller">
-                After a feature ships in Chrome, the values listed here are not
-                guaranteed to be up to date.
-              </div>
+            <div style="font-size:smaller">
+              After a feature ships in Chrome, the values listed here are not
+              guaranteed to be up to date.
+            </div>
+          </div>
+        </section>
+        ${this._hasDocLinks || this._hasSampleLinks ? html`
+          <section>
+            <h3>Developer resources</h3>
+            <div class="resources">
+              <label>Documentation/samples:</label>
+              ${this._hasDocLinks ? html`
+                <div class="doc_links">
+                  <chromedash-multi-links
+                      .links="${this.feature.resources.docs}"
+                      title="Link"></chromedash-multi-links>
+                </div>
+                ` : ''}
+              ${this._hasDocLinks && this._hasSampleLinks ?
+                html`<span>,</span>` : ''}
+              ${this._hasSampleLinks ? html`
+                <div class="sample_links">
+                  <chromedash-multi-links title="Sample"
+                      .links="${this.feature.resources.samples}"
+                      ></chromedash-multi-links>
+                </div>
+                ` : ''}
             </div>
           </section>
-          ${this._hasDocLinks || this._hasSampleLinks ? html`
-            <section>
-              <h3>Developer resources</h3>
-              <div class="resources">
-                <label>Documentation/samples:</label>
-                ${this._hasDocLinks ? html`
-                  <div class="doc_links">
-                    <chromedash-multi-links
-                        .links="${this.feature.resources.docs}"
-                        title="Link"></chromedash-multi-links>
-                  </div>
-                  ` : ''}
-                ${this._hasDocLinks && this._hasSampleLinks ?
-                  html`<span>,</span>` : ''}
-                ${this._hasSampleLinks ? html`
-                  <div class="sample_links">
-                    <chromedash-multi-links title="Sample"
-                        .links="${this.feature.resources.samples}"
-                        ></chromedash-multi-links>
-                  </div>
-                  ` : ''}
-              </div>
-            </section>
-            ` : ''}
-          ${this.feature.comments ? html`
-            <section>
-              <h3>Comments</h3>
-              <summary class="comments">${this._commentHtml}</summary>
-            </section>
-            ` : ''}
           ` : ''}
-      </div>
+        ${this.feature.comments ? html`
+          <section>
+            <h3>Comments</h3>
+            <summary class="comments">${this._commentHtml}</summary>
+          </section>
+          ` : ''}
+        ` : ''}
     `;
   }
 }

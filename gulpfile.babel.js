@@ -175,8 +175,8 @@ gulp.task('watch', gulp.series(
   'js',
   'generate-service-worker',
   function watch() {
-    gulp.watch(['static/sass/*.scss'], gulp.series('styles'));
-    gulp.watch(['static/js-src/*.js', 'static/elements/*.js'], gulp.series(['lint', 'js']));
+    gulp.watch(['static/sass/**/*.scss'], gulp.series('styles'));
+    gulp.watch(['static/js-src/**/*.js', 'static/elements/*.js'], gulp.series(['lint', 'js']));
   }
 ));
 

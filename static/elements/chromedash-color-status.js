@@ -6,8 +6,8 @@ const DEFAULT_MAX = 7;
 class ChromedashColorStatus extends LitElement {
   static get properties() {
     return {
-      max: {type: Number}, // From parent
-      value: {type: Number}, // From parent
+      max: {type: Number}, // From attribute
+      value: {type: Number}, // From attribute
     };
   }
 

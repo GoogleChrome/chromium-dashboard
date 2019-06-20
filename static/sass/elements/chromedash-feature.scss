@@ -1,14 +1,15 @@
 @import "element";
 
 :host {
-  display: flex;
   @include gradient-bar-bg();
+  display: block;
   position: relative;
   border-radius: $default-border-radius;
   padding: 10px 10px 10px 20px !important;
   list-style: none;
   box-sizing: border-box;
   contain: content;
+  overflow: hidden;
 
   &:active {
     outline: none;
@@ -60,11 +61,6 @@ iron-icon {
 .opennew {
   width: 18px;
   height: 18px;
-}
-
-.main-content-area {
-  flex: 1 0 0;
-  overflow: hidden;
 }
 
 .open-standalone {
