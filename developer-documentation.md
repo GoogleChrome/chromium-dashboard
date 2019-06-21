@@ -17,6 +17,6 @@ All the pages are rendered in a combination of Django template (`/templates`) an
     - lit-element components, css, js files are all imported/included in those templates.
     - We pass backend variables to js like this: `const variableInJs = {{variable_in_template|safe}}`.
 1. All lit-element components are in `/static/elements`.
-1. All JavaScript files are in `/static/js-src/` and processed by gulp, them output to '/static/js/' and get included in templates.
+1. All JavaScript files are in `/static/js-src/` and processed by gulp, then output to '/static/js/' and get included in templates.
 1. All CSS files are in `/static/sass/` and processed by gulp, them output to `/static/css/` and get included in templates.
 1. A service worker is created by the gulp too. Output in `/static/dist/service-worker.js`.
