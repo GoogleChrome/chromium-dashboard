@@ -411,6 +411,7 @@ class Feature(DictModel):
         IMPLEMENTATION_STATUS[NO_ACTIVE_DEV],
         IMPLEMENTATION_STATUS[PROPOSED],
         IMPLEMENTATION_STATUS[IN_DEVELOPMENT],
+        IMPLEMENTATION_STATUS[DEPRECATED]
         ]
       versions.extend(milestones)
       versions.append(IMPLEMENTATION_STATUS[NO_LONGER_PURSUING])
