@@ -370,6 +370,9 @@ class ChromedashFeaturelist extends LitElement {
   render() {
     return html`
       <link rel="stylesheet" href="/static/css/elements/chromedash-featurelist.css">
+      <style>
+        .item {width: 100%}
+      </style>
 
       <lit-virtualizer
         .scrollTarget=${window}
