@@ -171,8 +171,8 @@ gulp.task('generate-service-worker', () => {
 gulp.task('watch', gulp.series(
   'clean',
   'styles',
-  'lint',
   'js',
+  'lint',
   'generate-service-worker',
   function watch() {
     gulp.watch(['static/sass/**/*.scss'], gulp.series('styles'));
@@ -184,7 +184,7 @@ gulp.task('watch', gulp.series(
 gulp.task('default', gulp.series(
   'clean',
   'styles',
-  'lint',
   'js',
+  'lint',
   'generate-service-worker',
 ));

@@ -4,6 +4,11 @@ const searchEl = document.querySelector('.search input');
 const numSamplesEl = document.querySelector('.num-features');
 const categoryMenuEl = document.querySelector('#papermenu');
 const samplePanelEl = document.querySelector('chromedash-sample-panel');
+let previousSelectedCategory = null;
+
+samplePanelEl.categories = CATEGORIES;
+samplePanelEl.searchEl = searchEl;
+samplePanelEl.categoryMenuEl = categoryMenuEl;
 
 // Set search box to URL deep link.
 if (location.hash) {
@@ -11,48 +16,35 @@ if (location.hash) {
 }
 
 samplePanelEl.addEventListener('update-length', (e) => {
-  numSamplesEl.textContent = e.detail.length;
-});
-
-// Fire of samples.json XHR right away so data can populate faster.
-const url = location.hostname == 'localhost' ?
-  'https://www.chromestatus.com/samples.json' : '/samples.json';
-fetch(url).then((res) => res.json()).then(function(features) {
-  const re = /github.com\/GoogleChrome\/samples\/tree\/gh-pages\/(.*)/i;
-  features.forEach((feature) => {
-    feature.sample_links = feature.sample_links.map(function(link) {
-      return link.replace(re, 'googlechrome.github.io/samples/$1');
-    });
-  });
-
-  samplePanelEl.features = features;
-  samplePanelEl.filtered = features;
-
-  numSamplesEl.textContent = features.length;
-
+  // chromedash-sample-panel fires update-length after init.
   document.body.classList.remove('loading');
 
-  samplePanelEl.filter(searchEl.value);
-}).catch((error) => {
-  console.error(error);
-  throw new Error('Samples XHR failed with status ' + e.message);
+  numSamplesEl.textContent = e.detail.length;
 });
 
 // Clear input when user clicks the 'x' button.
 searchEl.addEventListener('search', () => {
-  samplePanelEl.filter(null);
+  samplePanelEl.filter(null, previousSelectedCategory);
 });
 
 searchEl.addEventListener('keyup', (e) => {
   if (!e.target.value && e.keyCode != KEY_CODE_ESC) {
-    samplePanelEl.filter(null);
+    samplePanelEl.filter(null, previousSelectedCategory);
   } else {
-    samplePanelEl.filter(e.target.value);
+    samplePanelEl.filter(e.target.value, previousSelectedCategory);
   }
 });
 
-categoryMenuEl.addEventListener('transitionend', () => {
-  // TODO(yangguang): Look into this. selectedItem doesn't exist
-  // samplePanelEl.selectedCategory = this.selectedItem;
-  samplePanelEl._onSelectCategory();
+categoryMenuEl.addEventListener('transitionend', (e) => {
+  const selectedCategory = e.currentTarget.selectedItem.textContent.trim();
+
+  // Clicking selected item to de-select
+  if (selectedCategory && selectedCategory === previousSelectedCategory) {
+    previousSelectedCategory = null;
+    categoryMenuEl.selected = null;
+    samplePanelEl.filter(searchEl.value.trim());
+  } else {
+    samplePanelEl.filter(searchEl.value.trim(), selectedCategory);
+    previousSelectedCategory = selectedCategory;
+  }
 });
