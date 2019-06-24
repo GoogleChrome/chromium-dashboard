@@ -179,9 +179,9 @@ class ChromedashFeature extends LitElement {
     this._receivePush = !this._receivePush;
 
     if (this._receivePush) {
-      PushNotifications.subscribeToFeature(featureId);
+      window.PushNotifications.subscribeToFeature(featureId);
     } else {
-      PushNotifications.unsubscribeFromFeature(featureId);
+      window.PushNotifications.unsubscribeFromFeature(featureId);
     }
   }
 

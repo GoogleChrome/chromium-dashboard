@@ -1,14 +1,49 @@
 import {LitElement, html} from 'https://unpkg.com/@polymer/lit-element@latest/lit-element.js?module';
 import 'https://unpkg.com/@polymer/iron-icon/iron-icon.js?module';
 
+const TEMPLATE_CONTENT = {
+  stable: {
+    channelLabel: 'Stable',
+    h1Class: '',
+    downloadUrl: 'https://www.google.com/chrome/browser/desktop/index.html',
+    downloadTitle: 'Download Chrome stable',
+    dateText: 'was',
+    featureHeader: 'Features in this release',
+  },
+  beta: {
+    channelLabel: 'Next up',
+    h1Class: 'chrome_version--beta',
+    downloadUrl: 'https://www.google.com/chrome/browser/beta.html',
+    downloadTitle: 'Download Chrome Beta',
+    dateText: 'between',
+    featureHeader: 'Features planned in this release',
+  },
+  dev: {
+    channelLabel: 'Dev',
+    h1Class: 'chrome_version--dev',
+    downloadUrl: 'https://www.google.com/chrome/browser/canary.html',
+    downloadTitle: 'Download Chrome Canary',
+    dateText: 'coming',
+    featureHeader: 'Features planned in this release',
+  },
+};
+
+const REMOVED_STATUS = ['Removed'];
+const DEPRECATED_STATUS = ['Deprecated', 'No longer pursuing'];
+
 class ChromedashSchedule extends LitElement {
   static get properties() {
     return {
+      channels: {type: Object}, // Assigned in schedule.js
+      _grantedPushNotification: {type: Boolean, attribute: false},
+      _supportPushNotification: {type: Boolean, attribute: false},
     };
   }
 
   constructor() {
     super();
+    this._supportPushNotification = PushNotifier.SUPPORTS_NOTIFICATIONS;
+    this._grantedPushNotification = PushNotifier.GRANTED_ACCESS;
   }
 
   _objKeys(obj) {
@@ -16,18 +51,6 @@ class ChromedashSchedule extends LitElement {
       return [];
     }
     return Object.keys(obj).sort();
-  }
-
-  _featuresFor(features, componentName) {
-    return features[componentName];
-  }
-
-  isRemoved(implStatusChrome) {
-    return implStatusChrome === 'Removed';
-  }
-
-  isDeprecated(implStatusChrome) {
-    return implStatusChrome === 'Deprecated' || implStatusChrome === 'No longer pursuing';
   }
 
   _computeDaysUntil(dateStr) {
@@ -45,31 +68,6 @@ class ChromedashSchedule extends LitElement {
     return new Intl.DateTimeFormat('en-US', opts).format(date);
   }
 
-  pushDisabled() {
-    return PushNotifier.GRANTED_ACCESS ? '' : 'disabled';
-  }
-
-  _computePushSubscribed(subscribed) {
-    return subscribed ? 'chromestatus:notifications' : 'chromestatus:notifications-off';
-  }
-
-  subscribeToFeature(e) {
-    e.preventDefault();
-    e.stopPropagation();
-
-    const featureId = Polymer.dom(e).event.model.f.id;
-    const icon = Polymer.dom(e).localTarget;
-    const receivePush = icon.icon !== 'chromestatus:notifications';
-    icon.icon = this._computePushSubscribed(receivePush);
-
-    if (receivePush) {
-      PushNotifications.subscribeToFeature(featureId);
-    } else {
-      PushNotifications.unsubscribeFromFeature(featureId);
-    }
-  }
-
-
   /**
    *  Returns the number of days between a and b.
    *  @param {!Date} a
@@ -86,184 +84,98 @@ class ChromedashSchedule extends LitElement {
     return {days: Math.abs(daysDiff), future: daysDiff < 1};
   }
 
+  _subscribeToFeature(e) {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const iconEl = e.target;
+    const featureId = iconEl.dataset.featureId;
+    console.log(featureId);
+    const receivePush = iconEl.icon !== 'chromestatus:notifications';
+    iconEl.icon = receivePush ? 'chromestatus:notifications' : 'chromestatus:notifications-off';
+
+    if (receivePush) {
+      window.PushNotifications.subscribeToFeature(featureId);
+    } else {
+      window.PushNotifications.unsubscribeFromFeature(featureId);
+    }
+  }
+
   render() {
+    if (!this.channels) {
+      return html``;
+    }
     return html`
+      <link rel="stylesheet" href="/static/css/elements/chromedash-schedule.css">
+
       <div>
         <div class="releases layout horizontal wrap">
-          <section class="release">
-            <div class="layout vertical center">
-              <h1 class="channel_label">stable</h1>
-              <h1 class="chrome_version layout horizontal center">
-                <span class="chrome-logo"></span>
-                <a href="https://www.google.com/chrome/browser/desktop/index.html" target="_blank" title="Download Chrome stable">Chrome [[channels.stable.version]]</a>
-              </h1>
-            </div>
-            <div class="milestone_info layout horizontal center-center">
-              <h3><span class="channel_label">Beta</span> was <span class="milestone_info-beta">[[_computeDate(channels.stable.earliest_beta)]] - [[_computeDate(channels.stable.latest_beta)]]</span></h3>
-            </div>
-            <div class="milestone_info layout horizontal center-center">
-              <h3><span class="channel_label">Stable</span> [[_computeDaysUntil(channels.stable.stable_date)]]
-                <span class="release-stable">( [[_computeDate(channels.stable.stable_date)]] )</span>
-              </h3>
-            </div>
-            <div class="features_list">
-              <div class="features_header">Features in this release:</div>
+          ${['stable', 'beta', 'dev'].map((type) => html`
+            <section class="release">
+              <div class="layout vertical center">
+                <h1 class="channel_label">${TEMPLATE_CONTENT[type].channelLabel}</h1>
+                <h1 class="chrome_version layout horizontal center ${TEMPLATE_CONTENT[type].h1Class}">
+                  <span class="chrome-logo"></span>
+                  <a href="${TEMPLATE_CONTENT[type].downloadUrl}" title="${TEMPLATE_CONTENT[type].downloadTitle}"
+                     target="_blank">Chrome ${this.channels[type].version}</a>
+                </h1>
+              </div>
+              <div class="milestone_info layout horizontal center-center">
+                <h3>
+                  <span class="channel_label">Beta</span> ${TEMPLATE_CONTENT[type].dateText}
+                  <span class="milestone_info-beta">${this._computeDate(this.channels[type].earliest_beta)} - ${this._computeDate(this.channels[type].latest_beta)}</span>
+                </h3>
+              </div>
+              <div class="milestone_info layout horizontal center-center">
+                <h3>
+                  <span class="channel_label">Stable</span> ${this._computeDaysUntil(this.channels[type].stable_date)}
+                  <span class="release-stable">( ${this._computeDate(this.channels[type].stable_date)} )</span>
+                </h3>
+              </div>
+              <div class="features_list">
+                <div class="features_header">${TEMPLATE_CONTENT[type].featureHeader}:</div>
 
-              <template is="dom-repeat" items="[[_objKeys(channels.stable.components)]]" as="componentName">
-                <h3 class="feature_components">{{componentName}}</h3>
-                <ul>
-                  <template is="dom-repeat" items="[[_featuresFor(channels.stable.components, componentName)]]" as="f">
-                    <li data-feature-id$="[[f.id]]">
-                      <a href$="/feature/[[f.id]]">[[f.name]]</a>
-                      <span class="icon_row">
-                        <template is="dom-if" if="[[f.browsers.chrome.origintrial]]">
-                          <span class="tooltip" title="Origin Trial">
-                            <iron-icon icon="chromestatus:extension" class="experimental" data-tooltip></iron-icon>
+                ${this._objKeys(this.channels[type].components).map((componentName) => html`
+                  <h3 class="feature_components">${componentName}</h3>
+                  <ul>
+                    ${this.channels[type].components[componentName].map((f) => html`
+                      <li data-feature-id="${f.id}">
+                        <a href="/feature/${f.id}">${f.name}</a>
+                        <span class="icon_row">
+                          ${f.browsers.chrome.origintrial ? html`
+                            <span class="tooltip" title="Origin Trial">
+                              <iron-icon icon="chromestatus:extension" class="experimental" data-tooltip></iron-icon>
+                            </span>
+                            ` : ''}
+                          ${f.browsers.chrome.intervention ? html`
+                            <span class="tooltip" title="Browser intervention">
+                              <iron-icon icon="chromestatus:pan-tool" class="intervention" data-tooltip></iron-icon>
+                            </span>
+                            ` : ''}
+                          ${REMOVED_STATUS.includes(f.browsers.chrome.status.text) ? html`
+                            <span class="tooltip" title="Removed">
+                              <iron-icon icon="chromestatus:cancel" class="remove" data-tooltip></iron-icon>
+                            </span>
+                            ` : ''}
+                          ${DEPRECATED_STATUS.includes(f.browsers.chrome.status.text) ? html`
+                            <span class="tooltip" title="Deprecated">
+                              <iron-icon icon="chromestatus:warning" class="deprecated" data-tooltip></iron-icon>
+                            </span>
+                            ` : ''}
+                          <span class="tooltip ${this._supportPushNotification ? '' : 'no-push-notifications'}" title="Subscribe to notification updates">
+                            <iron-icon icon="chromestatus:notifications-off"
+                                       class="pushicon ${this._grantedPushNotification ? '' : 'disabled'}"
+                                       data-feature-id="${f.id}"
+                                       @click="${this._subscribeToFeature}"></iron-icon>
                           </span>
-                        </template>
-                        <template is="dom-if" if="[[f.browsers.chrome.intervention]]">
-                          <span class="tooltip" title="Browser intervention">
-                            <iron-icon icon="chromestatus:pan-tool" class="intervention" data-tooltip></iron-icon>
-                          </span>
-                        </template>
-                        <template is="dom-if" if="[[isRemoved(f.browsers.chrome.status.text)]]">
-                          <span class="tooltip" title="Removed">
-                            <iron-icon icon="chromestatus:cancel" class="remove" data-tooltip></iron-icon>
-                          </span>
-                        </template>
-                        <template is="dom-if" if="[[isDeprecated(f.browsers.chrome.status.text)]]">
-                          <span class="tooltip" title="Deprecated">
-                            <iron-icon icon="chromestatus:warning" class="deprecated" data-tooltip></iron-icon>
-                          </span>
-                        </template>
-                        <span class="tooltip no-push-notifications" title="Subscribe to notification updates">
-                          <iron-icon icon="chromestatus:notifications-off"
-                                    on-click="subscribeToFeature" class$="pushicon [[pushDisabled()]]"></iron-icon>
                         </span>
-                      </span>
-                    </li>
-                  </template>
-                </ul>
-              </template>
-
-            </div>
-          </section>
-          <section class="release release-beta">
-            <div class="layout vertical center">
-              <h1 class="channel_label">Next up</h1>
-              <h1 class="chrome_version chrome_version--beta layout horizontal center">
-                <span class="chrome-logo"></span>
-                <a href="https://www.google.com/chrome/browser/beta.html" target="_blank" title="Download Chrome Beta">Chrome [[channels.beta.version]]</a>
-              </h1>
-            </div>
-            <div class="milestone_info layout horizontal center-center">
-              <h3><span class="channel_label">Beta</span> between <span class="milestone_info-beta">[[_computeDate(channels.beta.earliest_beta)]] - [[_computeDate(channels.beta.latest_beta)]]</span></h3>
-            </div>
-            <div class="milestone_info layout horizontal center-center">
-              <h3><span class="channel_label">Stable</span> [[_computeDaysUntil(channels.beta.stable_date)]]
-                <span class="release-stable">( [[_computeDate(channels.beta.stable_date)]] )</span>
-              </h3>
-            </div>
-            <div class="features_list">
-              <div class="features_header">Features planned in this release:</div>
-
-              <template is="dom-repeat" items="[[_objKeys(channels.beta.components)]]" as="componentName">
-                <h3 class="feature_components">{{componentName}}</h3>
-                <ul>
-                  <template is="dom-repeat" items="[[_featuresFor(channels.beta.components, componentName)]]" as="f">
-                    <li data-feature-id$="[[f.id]]">
-                      <a href$="/feature/[[f.id]]">[[f.name]]</a>
-                      <span class="icon_row">
-                        <template is="dom-if" if="[[f.browsers.chrome.origintrial]]">
-                          <span class="tooltip" title="Origin Trial">
-                            <iron-icon icon="chromestatus:extension" class="experimental" data-tooltip></iron-icon>
-                          </span>
-                        </template>
-                        <template is="dom-if" if="[[f.browsers.chrome.intervention]]">
-                          <span class="tooltip" title="Browser intervention">
-                            <iron-icon icon="chromestatus:pan-tool" class="intervention" data-tooltip></iron-icon>
-                          </span>
-                        </template>
-                        <template is="dom-if" if="[[isRemoved(f.browsers.chrome.status.text)]]">
-                          <span class="tooltip" title="Removed">
-                            <iron-icon icon="chromestatus:cancel" class="remove" data-tooltip></iron-icon>
-                          </span>
-                        </template>
-                        <template is="dom-if" if="[[isDeprecated(f.browsers.chrome.status.text)]]">
-                          <span class="tooltip" title="Deprecated">
-                            <iron-icon icon="chromestatus:warning" class="deprecated" data-tooltip></iron-icon>
-                          </span>
-                        </template>
-                        <span class="tooltip no-push-notifications" title="Subscribe to notification updates">
-                          <iron-icon icon="chromestatus:notifications-off"
-                                    on-click="subscribeToFeature" class$="pushicon [[pushDisabled()]]"></iron-icon>
-                        </span>
-                      </span>
-                    </li>
-                  </template>
-                </ul>
-              </template>
-
-            </div>
-          </section>
-          <section class="release">
-            <div class="layout vertical center">
-              <h1 class="channel_label">&nbsp;</h1>
-              <h1 class="chrome_version chrome_version--dev layout horizontal center">
-                <span class="chrome-logo"></span>
-                <a href="https://www.google.com/chrome/browser/canary.html" target="_blank" title="Download Chrome Canary">Chrome [[channels.dev.version]]</a>
-              </h1>
-            </div>
-            <div class="milestone_info layout horizontal center-center">
-              <h3><span class="channel_label">Beta </span> coming <span class="milestone_info-beta">[[_computeDate(channels.dev.earliest_beta)]] - [[_computeDate(channels.dev.latest_beta)]]</span></h3>
-            </div>
-            <div class="milestone_info layout horizontal center-center">
-              <h3><span class="channel_label">Stable</span> [[_computeDaysUntil(channels.dev.stable_date)]]
-                <span class="release-stable">( [[_computeDate(channels.dev.stable_date)]] )</span>
-              </h3>
-            </div>
-            <div class="features_list">
-              <div class="features_header">Features planned in this release:</div>
-
-              <template is="dom-repeat" items="[[_objKeys(channels.dev.components)]]" as="componentName">
-                <h3 class="feature_components">{{componentName}}</h3>
-                <ul>
-                  <template is="dom-repeat" items="[[_featuresFor(channels.dev.components, componentName)]]" as="f">
-                    <li data-feature-id$="[[f.id]]">
-                      <a href$="/feature/[[f.id]]">[[f.name]]</a>
-                      <span class="icon_row">
-                        <template is="dom-if" if="[[f.browsers.chrome.origintrial]]">
-                          <span class="tooltip" title="Origin Trial">
-                            <iron-icon icon="chromestatus:extension" class="experimental" data-tooltip></iron-icon>
-                          </span>
-                        </template>
-                        <template is="dom-if" if="[[f.browsers.chrome.intervention]]">
-                          <span class="tooltip" title="Browser intervention">
-                            <iron-icon icon="chromestatus:pan-tool" class="intervention" data-tooltip></iron-icon>
-                          </span>
-                        </template>
-                        <template is="dom-if" if="[[isRemoved(f.browsers.chrome.status.text)]]">
-                          <span class="tooltip" title="Removed">
-                            <iron-icon icon="chromestatus:cancel" class="remove" data-tooltip></iron-icon>
-                          </span>
-                        </template>
-                        <template is="dom-if" if="[[isDeprecated(f.browsers.chrome.status.text)]]">
-                          <span class="tooltip" title="Deprecated">
-                            <iron-icon icon="chromestatus:warning" class="deprecated" data-tooltip></iron-icon>
-                          </span>
-                        </template>
-                        <span class="tooltip no-push-notifications" title="Subscribe to notification updates">
-                          <iron-icon icon="chromestatus:notifications-off"
-                                    on-click="subscribeToFeature" class$="pushicon [[pushDisabled()]]"></iron-icon>
-                        </span>
-                      </span>
-                    </li>
-                  </template>
-                </ul>
-              </template>
-
-            </div>
-          </section>
+                      </li>
+                      `)}
+                  </ul>
+                  `)}
+              </div>
+            </section>
+            `)}
         </div>
       </div>
     `;
