@@ -43,9 +43,7 @@ if (navigator.share) {
 
 // Unhide notification features if browser supports it.
 if (PushNotifier.SUPPORTS_NOTIFICATIONS) {
-  Array.from(document.querySelectorAll('.no-push-notifications')).forEach((el) => {
-    el.classList.remove('no-push-notifications');
-  });
+  document.querySelector('.push-notifications').removeAttribute('hidden');
 
   // Lazy load Firebase messaging SDK.
   loadFirebaseSDKLibs().then(() => {

@@ -28,6 +28,11 @@ class ChromedashMetrics extends LitElement {
     };
   }
 
+  _fireEvent(eventName, detail) {
+    let event = new CustomEvent(eventName, {detail});
+    this.dispatchEvent(event);
+  }
+
   firstUpdated() {
     const endpoint = `${this.useRemoteData ? 'https://www.chromestatus.com' : ''}/data/${this.type}${this.view}`;
 
@@ -37,7 +42,7 @@ class ChromedashMetrics extends LitElement {
   }
 
   _updateAfterData(items) {
-    this.fire('app-ready');
+    this._fireEvent('app-ready');
 
     if (!items || !items.length) {
       return;

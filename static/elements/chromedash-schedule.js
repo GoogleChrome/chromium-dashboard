@@ -30,21 +30,15 @@ const TEMPLATE_CONTENT = {
 
 const REMOVED_STATUS = ['Removed'];
 const DEPRECATED_STATUS = ['Deprecated', 'No longer pursuing'];
+const IS_PUSH_NOTIFIER_SUPPORTED = window.PushNotifier.SUPPORTS_NOTIFICATIONS;
+const IS_PUSH_NOTIFIER_ENABLED = window.PushNotifier.GRANTED_ACCESS;
 
 class ChromedashSchedule extends LitElement {
   static get properties() {
     return {
       channels: {type: Object}, // Assigned in schedule.js, value from Django
       hideBlink: {type: Boolean}, // Edited in schedule.js
-      _grantedPushNotification: {type: Boolean, attribute: false},
-      _supportPushNotification: {type: Boolean, attribute: false},
     };
-  }
-
-  constructor() {
-    super();
-    this._supportPushNotification = PushNotifier.SUPPORTS_NOTIFICATIONS;
-    this._grantedPushNotification = PushNotifier.GRANTED_ACCESS;
   }
 
   _objKeys(obj) {
@@ -162,13 +156,15 @@ class ChromedashSchedule extends LitElement {
                             <iron-icon icon="chromestatus:warning" class="deprecated" data-tooltip></iron-icon>
                           </span>
                           ` : ''}
-                        <span class="tooltip ${this._supportPushNotification ? '' : 'no-push-notifications'}" title="Subscribe to notification updates">
-                          <iron-icon icon="chromestatus:notifications-off"
-                                     class="pushicon ${this._grantedPushNotification ? '' : 'disabled'}"
-                                     data-feature-id="${f.id}"
-                                     @click="${this._subscribeToFeature}"></iron-icon>
+                        ${IS_PUSH_NOTIFIER_SUPPORTED ? html`
+                          <span class="tooltip" title="Subscribe to notification updates">
+                            <iron-icon icon="chromestatus:notifications-off"
+                                       class="pushicon ${IS_PUSH_NOTIFIER_ENABLED ? '' : 'disabled'}"
+                                       data-feature-id="${f.id}"
+                                       @click="${this._subscribeToFeature}"></iron-icon>
+                          </span>
                         </span>
-                      </span>
+                          ` : ''}
                     </li>
                     `)}
                 </ul>

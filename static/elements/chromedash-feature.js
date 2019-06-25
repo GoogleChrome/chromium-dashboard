@@ -8,8 +8,7 @@ const MAX_WEBDEV_VIEW = 6;
 const MAX_RISK = MAX_VENDOR_VIEW + MAX_WEBDEV_VIEW + MAX_STANDARDS_VAL;
 
 const IS_PUSH_NOTIFIER_ENABLED = window.PushNotifier.GRANTED_ACCESS;
-const IS_PUSH_NOTIFIER_SUPPORTED =
-    window.PushNotifier && window.PushNotifier.SUPPORTS_NOTIFICATIONS;
+const IS_PUSH_NOTIFIER_SUPPORTED = window.PushNotifier.SUPPORTS_NOTIFICATIONS;
 
 class ChromedashFeature extends LitElement {
   static get properties() {
@@ -245,16 +244,18 @@ class ChromedashFeature extends LitElement {
                            class="intervention" data-tooltip></iron-icon>
               </span>
               ` : ''}
-            <span class="tooltip no-push-notifications"
-                  title="Receive a push notification when there are updates">
-              <a href="#" @click="${this.subscribeToFeature}" data-tooltip>
-                <iron-icon icon="${this._receivePush ?
-                              'chromestatus:notifications' :
-                              'chromestatus:notifications-off'}"
-                           class="pushicon ${IS_PUSH_NOTIFIER_ENABLED ?
-                             '' : 'disabled'}"></iron-icon>
-              </a>
-            </span>
+            ${IS_PUSH_NOTIFIER_SUPPORTED ? html`
+              <span class="tooltip"
+                    title="Receive a push notification when there are updates">
+                <a href="#" @click="${this.subscribeToFeature}" data-tooltip>
+                  <iron-icon icon="${this._receivePush ?
+                                'chromestatus:notifications' :
+                                'chromestatus:notifications-off'}"
+                             class="pushicon ${IS_PUSH_NOTIFIER_ENABLED ?
+                               '' : 'disabled'}"></iron-icon>
+                </a>
+              </span>
+              ` : ''}
             <span class="tooltip" title="File a bug against this feature">
               <a href="${this._newBugUrl}" data-tooltip>
                 <iron-icon icon="chromestatus:bug-report"></iron-icon>

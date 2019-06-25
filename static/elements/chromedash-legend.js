@@ -4,33 +4,19 @@ import '/static/elements/chromedash-color-status.js';
 class ChromedashLegend extends LitElement {
   static get properties() {
     return {
-      opened: {type: Boolean, reflect: true},
-      views: {type: Array},
+      opened: {type: Boolean, reflect: true}, // Used to control visibility. See the css
+      views: {type: Object}, // Assigned in features-page.js, value from Django
     };
   }
 
   constructor() {
     super();
-    this.opened = false;
-    this.views = [];
-  }
-
-  firstUpdated() {
-    this._dissmissEl = this.$.querySelector('[dialog-dismiss]');
-    if (this._dissmissEl) {
-      this.listen(this._dissmissEl, 'click', 'toggle');
-    }
-  }
-
-  detached() {
-    if (this.this._dissmissEl) {
-      this.unlisten(this._dissmissEl, 'click', 'toggle');
-    }
+    this.views = {};
   }
 
   toggle() {
     this.opened = !this.opened;
-    document.body.style.overflow = this.opened ? 'hidden' : '';
+    document.body.style.overflow = this.opened ? 'opened' : '';
   }
 
   render() {
@@ -46,17 +32,17 @@ class ChromedashLegend extends LitElement {
           added. Features marked "No active development" are being considered or
           have yet to be started. Features marked "In development" are currently
           being worked on.</p>
-          <div class="close buttons">
-            <iron-icon icon="chromestatus:close" dialog-dismiss></iron-icon>
-          </div>
+          <button class="close buttons">
+            <iron-icon icon="chromestatus:close" @click=${this.toggle}></iron-icon>
+          </button>
         </section>
         <h3>Color legend</h3>
         <p>Colors indicate the "interoperability risk" for a given feature. The
           risk increases as
           <chromedash-color-status .value="1"
-              .max="${views.vendors.length}"></chromedash-color-status> → 
-          <chromedash-color-status .value="${views.vendors.length}"
-              .max="${views.vendors.length}"></chromedash-color-status>, and the
+              .max="${this.views.vendors.length}"></chromedash-color-status> → 
+          <chromedash-color-status .value="${this.views.vendors.length}"
+              .max="${this.views.vendors.length}"></chromedash-color-status>, and the
           color meaning differs for browser vendors, web developers, and the
           standards process.</p>
         <section class="views">
@@ -66,7 +52,7 @@ class ChromedashLegend extends LitElement {
               ${this.views.vendors.map((vendor) => html`
                 <li>
                   <chromedash-color-status .value="${vendor.key}"
-                                           .max="${views.vendors.length}">
+                                           .max="${this.views.vendors.length}">
                                            </chromedash-color-status>
                   <span>${vendor.val}</span></li>
                 `)}
@@ -78,7 +64,7 @@ class ChromedashLegend extends LitElement {
               ${this.views.webdevs.map((webdev) => html`
                 <li>
                   <chromedash-color-status .value="${webdev.key}"
-                                           .max="${views.webdevs.length}">
+                                           .max="${this.views.webdevs.length}">
                                            </chromedash-color-status>
                   <span>${webdev.val}</span></li>
                 `)}
@@ -90,7 +76,7 @@ class ChromedashLegend extends LitElement {
               ${this.views.standards.map((standard) => html`
                 <li>
                   <chromedash-color-status .value="${standard.key}"
-                                           .max="${views.standards.length}">
+                                           .max="${this.views.standards.length}">
                                            </chromedash-color-status>
                   <span>${standard.val}</span></li>
                 `)}
@@ -129,4 +115,4 @@ class ChromedashLegend extends LitElement {
   }
 }
 
-customElements.define('chromedash-color-status', ChromedashLegend);
+customElements.define('chromedash-legend', ChromedashLegend);

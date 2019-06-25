@@ -80,10 +80,6 @@ limitations under the License.
 
 <body class="loading" data-path={{current_path}}>
   {% comment %}
-  <!--<div id="site-banner">
-    <a href="https://www.youtube.com/watch?v=Rd0plknSPYU" target="_blank">
-    <iron-icon icon="chromestatus:ondemand-video"></iron-icon> How we built it</a>
-  </div>-->
   {% endcomment %}
 
   <app-drawer-layout fullbleed>
@@ -120,53 +116,11 @@ limitations under the License.
   <script src="https://unpkg.com/urlize.js/urlize.js"></script>
 
   {# Metric is need by sw registration and page code. #}
-  <script>{% inline_file "/static/js/metrics.min.js" %}</script>
+  <script>{% inline_file "/static/js/metric.min.js" %}</script>
 
   {% block js %}{% endblock %}
 
   <script>
-    // TODO (yangguang) Look into this code
-    // // https://gist.github.com/ebidel/1d5ede1e35b6f426a2a7
-    // function lazyLoadWCPolyfillsIfNecessary() {
-    //   function onload() {
-    //     // For native Imports, manually fire WCR so user code
-    //     // can use the same code path for native and polyfill'd imports.
-    //     if (!('HTMLImports' in window)) {
-    //       document.body.dispatchEvent(
-    //           new CustomEvent('WebComponentsReady', {bubbles: true}));
-    //     }
-    //   }
-    //   var webComponentsSupported = ('registerElement' in document
-    //       && 'import' in document.createElement('link')
-    //       && 'content' in document.createElement('template'));
-    //   if (!webComponentsSupported) {
-    //     var script = document.createElement('script');
-    //     script.async = true;
-    //     script.src = '/static/bower_components/webcomponentsjs/webcomponents-lite.min.js';
-    //     script.onload = onload;
-    //     document.head.appendChild(script);
-    //   } else {
-    //     onload();
-    //   }
-    // }
-
-    // const button = document.querySelector('app-header paper-menu-button');
-    // button.addEventListener('click', function lazyHandler(e) {
-    //   this.removeEventListener('click', lazyHandler);
-
-    //   {% if VULCANIZE %}
-    //   var url = '/static/elements/paper-menu-button.vulcanize.html';
-    //   {% else %}
-    //   var url = '/static/bower_components/paper-menu-button/paper-menu-button.html';
-    //   {% endif %}
-
-    //   Polymer.Base.importHref(url, function() {
-    //     button.contentElement.hidden = false;
-    //     button.open();
-    //   }, null, true);
-    // });
-    
-    // lazyLoadWCPolyfillsIfNecessary();
     (function() {
       'use strict';
       {% inline_file "/static/js/service-worker-registration.min.js" %}

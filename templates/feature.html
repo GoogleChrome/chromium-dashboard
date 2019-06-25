@@ -44,7 +44,7 @@
         <iron-icon icon="chromestatus:flag" class="experimental"></iron-icon>
       </span>
       {% endif %}
-      <span class="tooltip no-push-notifications" title="Receive a push notification where there are updates">
+      <span class="tooltip push-notifications" title="Receive a push notification where there are updates" hidden>
         <a href="#" data-tooltip>
           <iron-icon icon="chromestatus:notifications-off"
                       onclick="subscribeToFeature({{ feature.id }})"
@@ -255,7 +255,7 @@
       const SHOW_TOAST = {% if was_updated %}true{% else %}false{% endif %};
 
       {% inline_file "/static/js/notifications.min.js" %}
-      {% inline_file "/static/js/feature.min.js" %}
+      {% inline_file "/static/js/feature-page.min.js" %}
     })();
   </script>
 {% endblock %}
