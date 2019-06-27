@@ -36,9 +36,16 @@ class ChromedashFeature extends LitElement {
   // Initialize values after receiving `this.feature`.
   firstUpdated() {
     this._receivePush = this.feature.receivePush;
+    this._crBugNumber = this._getCrBugNumber();
+    this._newBugUrl = this._getNewBugUrl();
+    this._interopRisk = this._getInteropRisk();
+    this._isDeprecated = this._getIsDeprecated();
+    this._hasDocLinks = this._getHasDocLinks();
+    this._hasSampleLinks = this._getHasSampleLinks();
+    this._commentHtml = this._getCommentHtml();
   }
 
-  get _crBugNumber() {
+  _getCrBugNumber() {
     const link = this.feature.browsers.chrome.bug;
     if (!link) {
       return '';
@@ -54,9 +61,7 @@ class ChromedashFeature extends LitElement {
     return '';
   }
 
-  set _crBugNumber(value) {/* Never called */}
-
-  get _newBugUrl() {
+  _getNewBugUrl() {
     const url = 'https://bugs.chromium.org/p/chromium/issues/entry';
     const params = [
       `components=${this.feature.browsers.chrome.blink_components[0] ||
@@ -80,9 +85,7 @@ class ChromedashFeature extends LitElement {
     return `${url}?${params.join('&')}`;
   }
 
-  set _newBugUrl(value) {/* Never called */}
-
-  get _interopRisk() {
+  _getInteropRisk() {
     if (!this.feature) return undefined;
     const vendors = (this.feature.browsers.ff.view.val +
                    this.feature.browsers.edge.view.val +
@@ -92,36 +95,26 @@ class ChromedashFeature extends LitElement {
     return vendors + webdevs + standards;
   }
 
-  set _interopRisk(value) {/* Never called */}
-
-  get _isDeprecated() {
+  _getIsDeprecated() {
     const DEPRECATED_STATUSES = ['Deprecated', 'No longer pursuing'];
     return DEPRECATED_STATUSES.includes(
       this.feature.browsers.chrome.status.text);
   }
 
-  set _isDeprecated(value) {/* Never called */}
-
-  get _hasDocLinks() {
+  _getHasDocLinks() {
     return this.feature.resources.docs &&
         this.feature.resources.docs.length > 0;
   }
 
-  set _hasDocLinks(value) {/* Never called */}
-
-  get _hasSampleLinks() {
+  _getHasSampleLinks() {
     return this.feature.resources.samples &&
         this.feature.resources.samples.length > 0;
   }
 
-  set _hasSampleLinks(value) {/* Never called */}
-
-  get _commentHtml() {
+  _getCommentHtml() {
     return urlize(this.feature.comments,
       {target: '_blank', trim: 'www', autoescape: true});
   }
-
-  set _commentHtml(value) {/* Never called */}
 
   _fireEvent(eventName, detail) {
     let event = new CustomEvent(eventName, {detail});
