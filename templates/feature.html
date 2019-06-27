@@ -1,324 +1,323 @@
-{% extends embed|yesno:"blank.html,base.html" %}
+{% extends embed|yesno:"base_embed.html,base.html" %}
 {% load inline_file %}
 
 {% block page_title %}{% if feature.name %}{{ feature.name }} - {% endif %}{% endblock %}
 
 {% block meta %}
-{% if feature.summary %}
-<meta name="description" content="{{ feature.summary }}">
-{% endif %}
+  {% if feature.summary %}
+    <meta name="description" content="{{ feature.summary }}">
+  {% endif %}
 {% endblock %}
 
 {% block css %}
-<!-- <link rel="stylesheet" href="/static/css/features/feature.css"> -->
-<style>{% inline_file "/static/css/features/feature.css" %}</style>
+  <style>{% inline_file "/static/css/features/feature.css" %}</style>
 {% endblock %}
 
 {% block rss %}
-<link rel="alternate" type="application/rss+xml" href="https://www.chromestatus.com/features.xml" title="All features" />
+  <link rel="alternate" type="application/rss+xml" href="https://www.chromestatus.com/features.xml" title="All features" />
 {% endblock %}
 
-{% block html_imports %}
-<link rel="import" href="/static/elements/features-imports{% if VULCANIZE %}.vulcanize{% endif %}.html">
+{% block preload %}
+  <script type="module">
+    
+  </script>
 {% endblock %}
 
 {% block content %}
+  <div id="feature">
+    <section id="name">
+      <h2>
+        {{ feature.name }}
+        {% if feature.impl_status_chrome == "Deprecated" or feature.impl_status_chrome == "No longer pursuing" %} (deprecated){% endif %}
+        {% if feature.impl_status_chrome == "Removed" %} (removed){% endif %}
+      </h2>
+      <div class="iconrow">
+      <a href="/features#category: {{ feature.category }}" class="category">{{ feature.category }}</a>
+      <div class="topcorner">
+      {% if feature.meta.origintrial %}
+      <span class="tooltip" title="Origin trial">
+        <iron-icon icon="chromestatus:extension" class="experimental"></iron-icon>
+      </span>
+      {% endif %}
+      {% if feature.meta.needsflag %}
+      <span class="tooltip" title="Experimental feature behind a flag">
+        <iron-icon icon="chromestatus:flag" class="experimental"></iron-icon>
+      </span>
+      {% endif %}
+      <span class="tooltip no-push-notifications" title="Receive a push notification where there are updates">
+        <a href="#" data-tooltip>
+          <iron-icon icon="chromestatus:notifications-off"
+                      onclick="subscribeToFeature({{ feature.id }})"
+                      class="pushicon"></iron-icon>
+        </a>
+      </span>
 
-<div id="feature">
-  <section id="name">
-    <h2>
-      {{ feature.name }}
-      {% if feature.impl_status_chrome == "Deprecated" or feature.impl_status_chrome == "No longer pursuing" %} (deprecated){% endif %}
-      {% if feature.impl_status_chrome == "Removed" %} (removed){% endif %}
-    </h2>
-    <div class="iconrow">
-    <a href="/features#category: {{ feature.category }}" class="category">{{ feature.category }}</a>
-    <div class="topcorner">
-    {% if feature.meta.origintrial %}
-    <span class="tooltip" title="Origin trial">
-      <iron-icon icon="chromestatus:extension" class="experimental"></iron-icon>
-    </span>
+      <span class="tooltip" title="File a bug against this feature">
+        <a href="{{ feature.new_crbug_url }}" class="newbug" data-tooltip target="_blank">
+          <iron-icon icon="chromestatus:bug-report"></iron-icon>
+        </a>
+      </span>
+      <span class="tooltip no-web-share" title="Share this feature">
+        <a href="#" data-tooltip>
+          <iron-icon icon="chromestatus:share" onclick="shareFeature()"></iron-icon>
+        </a>
+      </span>
+      {% if user.is_whitelisted %}
+      <span class="tooltip" title="Edit this feature">
+        <a href="/admin/features/edit/{{ feature.id }}" class="editfeature" data-tooltip>
+          <iron-icon icon="chromestatus:create"></iron-icon>
+        </a>
+      </span>
+      {% endif %}
+      </div>
+      </div>
+    </section>
+
+    {% if feature.summary %}
+    <section id="summary">
+      <p>{{ feature.summary|urlize }}</p>
+    </section>
     {% endif %}
-    {% if feature.meta.needsflag %}
-    <span class="tooltip" title="Experimental feature behind a flag">
-      <iron-icon icon="chromestatus:flag" class="experimental"></iron-icon>
-    </span>
+
+    {% if feature.motivation %}
+    <section id="motivation">
+      <p>{{ feature.motivation|urlize }}</p>
+    </section>
     {% endif %}
-    <span class="tooltip no-push-notifications" title="Receive a push notification where there are updates">
-      <a href="#" data-tooltip>
-        <iron-icon icon="chromestatus:notifications-off"
-                    onclick="subscribeToFeature({{ feature.id }})"
-                    class="pushicon"></iron-icon>
-      </a>
-    </span>
 
-    <span class="tooltip" title="File a bug against this feature">
-      <a href="{{ feature.new_crbug_url }}" class="newbug" data-tooltip target="_blank">
-        <iron-icon icon="chromestatus:bug-report"></iron-icon>
-      </a>
-    </span>
-    <span class="tooltip no-web-share" title="Share this feature">
-      <a href="#" data-tooltip>
-        <iron-icon icon="chromestatus:share" onclick="shareFeature()"></iron-icon>
-      </a>
-    </span>
-    {% if user.is_whitelisted %}
-    <span class="tooltip" title="Edit this feature">
-      <a href="/admin/features/edit/{{ feature.id }}" class="editfeature" data-tooltip>
-        <iron-icon icon="chromestatus:create"></iron-icon>
-      </a>
-    </span>
+    {% if feature.comments %}
+    <section id="comments">
+      <h3>Comments</h3>
+      <p>{{ feature.comments|urlize }}</p>
+    </section>
     {% endif %}
-    </div>
-    </div>
-  </section>
 
-  {% if feature.summary %}
-  <section id="summary">
-    <p>{{ feature.summary|urlize }}</p>
-  </section>
-  {% endif %}
-
-  {% if feature.motivation %}
-  <section id="motivation">
-    <p>{{ feature.motivation|urlize }}</p>
-  </section>
-  {% endif %}
-
-  {% if feature.comments %}
-  <section id="comments">
-    <h3>Comments</h3>
-    <p>{{ feature.comments|urlize }}</p>
-  </section>
-  {% endif %}
-
-  {% if feature.sample_links %}
-  <section id="demo">
-    <h3>{% if feature.sample_links|length == 1 %}Demo{% else %}Demos{% endif %}</h3>
-    <ul>
-      {% for sample_link in feature.sample_links %}
-      <li><a href="{{ sample_link }}">{{ sample_link }}</a></li>
-      {% endfor %}
-    </ul>
-  </section>
-  {% endif %}
-
-  {% if feature.doc_links %}
-  <section id="documentation">
-    <h3>Documentation</h3>
-    <ul>
-      {% for doc_link in feature.doc_links %}
-      <li><a href="{{ doc_link }}">{{ doc_link }}</a></li>
-      {% endfor %}
-    </ul>
-  </section>
-  {% endif %}
-
-  {% if feature.spec_link %}
-  <section id="specification">
-    <h3>Specification</h3>
-    <p><a href="{{feature.spec_link}}" target="_blank">{{feature.standardization.text}}</a></p>
-  </section>
-  {% endif %}
-
-  <section id="status">
-    <h3>Status in Chromium</h3>
-    {% if feature.blink_components %}
-      <p>
-        <label>Blink components:</label>
-        {% for c in feature.blink_components %}
-          <a><a href="https://bugs.chromium.org/p/chromium/issues/list?q=component:{{c}}" target="_blank">{{c}}</a>
+    {% if feature.sample_links %}
+    <section id="demo">
+      <h3>{% if feature.sample_links|length == 1 %}Demo{% else %}Demos{% endif %}</h3>
+      <ul>
+        {% for sample_link in feature.sample_links %}
+        <li><a href="{{ sample_link }}">{{ sample_link }}</a></li>
         {% endfor %}
-      </p>
+      </ul>
+    </section>
     {% endif %}
-    <br>
-    <p>
-      {% if feature.shipped_milestone or feature.shipped_android_milestone or feature.shipped_ios_milestone or feature.shipped_webview_milestone %}
-        <b>
-        {% if feature.meta.origintrial %}
-          Origin trial
-        {% else %}
-          {% if feature.meta.needsflag %}
-            Behind a flag
-          {% elif feature.impl_status_chrome == "Deprecated" or feature.impl_status_chrome == "No longer pursuing" %}
-            Deprecated
-          {% elif feature.impl_status_chrome == "Removed" %}
-            Removed
+
+    {% if feature.doc_links %}
+    <section id="documentation">
+      <h3>Documentation</h3>
+      <ul>
+        {% for doc_link in feature.doc_links %}
+        <li><a href="{{ doc_link }}">{{ doc_link }}</a></li>
+        {% endfor %}
+      </ul>
+    </section>
+    {% endif %}
+
+    {% if feature.spec_link %}
+    <section id="specification">
+      <h3>Specification</h3>
+      <p><a href="{{feature.spec_link}}" target="_blank">{{feature.standardization.text}}</a></p>
+    </section>
+    {% endif %}
+
+    <section id="status">
+      <h3>Status in Chromium</h3>
+      {% if feature.blink_components %}
+        <p>
+          <label>Blink components:</label>
+          {% for c in feature.blink_components %}
+            <a><a href="https://bugs.chromium.org/p/chromium/issues/list?q=component:{{c}}" target="_blank">{{c}}</a>
+          {% endfor %}
+        </p>
+      {% endif %}
+      <br>
+      <p>
+        {% if feature.shipped_milestone or feature.shipped_android_milestone or feature.shipped_ios_milestone or feature.shipped_webview_milestone %}
+          <b>
+          {% if feature.meta.origintrial %}
+            Origin trial
           {% else %}
-            Enabled by default
+            {% if feature.meta.needsflag %}
+              Behind a flag
+            {% elif feature.impl_status_chrome == "Deprecated" or feature.impl_status_chrome == "No longer pursuing" %}
+              Deprecated
+            {% elif feature.impl_status_chrome == "Removed" %}
+              Removed
+            {% else %}
+              Enabled by default
+            {% endif %}
+          {% endif %}
+          </b>
+          {% if feature.bug_url %}
+          (<a href="{{feature.bug_url}}" target="_blank">tracking bug</a>)
+          {% endif %}
+          in:
+          <ul>
+          {% if feature.shipped_milestone %}
+          <li>Chrome for desktop release {{ feature.meta.milestone_str }}</li>
+          {% endif %}
+          {% if feature.shipped_android_milestone %}
+          <li>Chrome for Android release {{ feature.shipped_android_milestone }}</li>
+          {% endif %}
+          {% if feature.shipped_ios_milestone %}
+          <li>Chrome for iOS release {{ feature.shipped_ios_milestone }}</li>
+          {% endif %}
+          {% if feature.shipped_webview_milestone %}
+          <li>Android WebView release {{ feature.shipped_webview_milestone }}</li>
+          {% endif %}
+          </ul>
+        {% else %}
+          {{ feature.meta.milestone_str }}
+          {% if feature.bug_url %}
+          (<a href="{{ feature.bug_url }}" target="_blank">tracking bug</a>)
           {% endif %}
         {% endif %}
-        </b>
-        {% if feature.bug_url %}
-        (<a href="{{feature.bug_url}}" target="_blank">tracking bug</a>)
-        {% endif %}
-        in:
-        <ul>
-        {% if feature.shipped_milestone %}
-        <li>Chrome for desktop release {{ feature.meta.milestone_str }}</li>
-        {% endif %}
-        {% if feature.shipped_android_milestone %}
-        <li>Chrome for Android release {{ feature.shipped_android_milestone }}</li>
-        {% endif %}
-        {% if feature.shipped_ios_milestone %}
-        <li>Chrome for iOS release {{ feature.shipped_ios_milestone }}</li>
-        {% endif %}
-        {% if feature.shipped_webview_milestone %}
-        <li>Android WebView release {{ feature.shipped_webview_milestone }}</li>
-        {% endif %}
-        </ul>
-      {% else %}
-        {{ feature.meta.milestone_str }}
-        {% if feature.bug_url %}
-        (<a href="{{ feature.bug_url }}" target="_blank">tracking bug</a>)
-        {% endif %}
-      {% endif %}
-    </p>
-  </section>
+      </p>
+    </section>
 
-  <section id="consensus">
-    <h3>Consensus &amp; Standardization</h3>
-    <div style="font-size:smaller;">After a feature ships in Chrome, the values listed here are not guaranteed to be up to date.</div>
-    <br>
-    <ul>
-      {% if feature.ff_views %}
-      <li>
-        <label>Firefox:</label>
-        {% if feature.ff_views_link %}
-        <a href="{{ feature.ff_views_link }}">{{ feature.ff_views.text }}</a>
-        {% else %}
-        {{ feature.ff_views.text }}
+    <section id="consensus">
+      <h3>Consensus &amp; Standardization</h3>
+      <div style="font-size:smaller;">After a feature ships in Chrome, the values listed here are not guaranteed to be up to date.</div>
+      <br>
+      <ul>
+        {% if feature.ff_views %}
+        <li>
+          <label>Firefox:</label>
+          {% if feature.ff_views_link %}
+          <a href="{{ feature.ff_views_link }}">{{ feature.ff_views.text }}</a>
+          {% else %}
+          {{ feature.ff_views.text }}
+          {% endif %}
+        </li>
         {% endif %}
-      </li>
-      {% endif %}
 
-      {% if feature.ie_views %}
-      <li>
-        <label>Edge:</label>
-        {% if feature.ie_views_link %}
-        <a href="{{ feature.ie_views_link }}">{{ feature.ie_views.text }}</a>
-        {% else %}
-        {{ feature.ie_views.text }}
+        {% if feature.ie_views %}
+        <li>
+          <label>Edge:</label>
+          {% if feature.ie_views_link %}
+          <a href="{{ feature.ie_views_link }}">{{ feature.ie_views.text }}</a>
+          {% else %}
+          {{ feature.ie_views.text }}
+          {% endif %}
+        </li>
         {% endif %}
-      </li>
-      {% endif %}
 
-      {% if feature.safari_views %}
-      <li>
-        <label>Safari:</label>
-        {% if feature.safari_views_link %}
-        <a href="{{ feature.safari_views_link }}">{{ feature.safari_views.text }}</a>
-        {% else %}
-        {{ feature.safari_views.text }}
+        {% if feature.safari_views %}
+        <li>
+          <label>Safari:</label>
+          {% if feature.safari_views_link %}
+          <a href="{{ feature.safari_views_link }}">{{ feature.safari_views.text }}</a>
+          {% else %}
+          {{ feature.safari_views.text }}
+          {% endif %}
+        </li>
         {% endif %}
-      </li>
-      {% endif %}
 
-      <li><label>Web Developers:</label> {{ feature.web_dev_views.text }}</li>
-    </ul>
-  </section>
+        <li><label>Web Developers:</label> {{ feature.web_dev_views.text }}</li>
+      </ul>
+    </section>
 
-  {% if feature.owner %}
-  <section id="owner">
-    <h3>{% if feature.owner|length == 1 %}Owner{% else %}Owners{% endif %}</h3>
-    <ul>
-      {% for owner in feature.owner %}
-        <li><a href="mailto:{{ owner }}">{{ owner }}</a></li>
-      {% endfor %}
-    </ul>
-  </section>
-  {% endif %}
+    {% if feature.owner %}
+    <section id="owner">
+      <h3>{% if feature.owner|length == 1 %}Owner{% else %}Owners{% endif %}</h3>
+      <ul>
+        {% for owner in feature.owner %}
+          <li><a href="mailto:{{ owner }}">{{ owner }}</a></li>
+        {% endfor %}
+      </ul>
+    </section>
+    {% endif %}
 
-  {% if feature.intent_to_implement_url %}
-  <section id="intent_to_implement_url">
-    <h3>Intent to Implement url</h3>
-    <a href="{{ feature.intent_to_implement_url }}">Intent to Implement thread</a>
-    </ul>
-  </section>
-  {% endif %}
+    {% if feature.intent_to_implement_url %}
+    <section id="intent_to_implement_url">
+      <h3>Intent to Implement url</h3>
+      <a href="{{ feature.intent_to_implement_url }}">Intent to Implement thread</a>
+      </ul>
+    </section>
+    {% endif %}
 
-  <section id="updated">
-    <p>Last updated on {{ feature.updated_display }}</p>
-  </section>
-</div>
+    <section id="updated">
+      <p>Last updated on {{ feature.updated_display }}</p>
+    </section>
+  </div>
 {% endblock %}
 
-
 {% block js %}
-<script>
-{% inline_file "/static/js/notifications.js" %}
+  <script>
+    {% inline_file "/static/js/notifications.min.js" %}
 
-function subscribeToFeature(featureId) {
-  var icon = $('.pushicon');
-  if (icon.icon === 'chromestatus:notifications') {
-    icon.icon = 'chromestatus:notifications-off';
-    PushNotifications.unsubscribeFromFeature(featureId);
-  } else {
-    icon.icon = 'chromestatus:notifications';
-    PushNotifications.subscribeToFeature(featureId);
-  }
-}
+    const subscribeToFeature = (featureId) => {
+      const iconEl = document.querySelector('.pushicon');
+      if (iconEl.icon === 'chromestatus:notifications') {
+        iconEl.icon = 'chromestatus:notifications-off';
+        PushNotifications.unsubscribeFromFeature(featureId);
+      } else {
+        iconEl.icon = 'chromestatus:notifications';
+        PushNotifications.subscribeToFeature(featureId);
+      }
+    }
 
-function shareFeature() {
-  if (navigator.share) {
-    var url = '/feature/{{ feature.id }}';
-    navigator.share({
-      title: '{{ feature.name|escapejs }}',
-      text: '{{ feature.summary|escapejs }}',
-      url: url
-    })
-    .then(() => {
-      ga('send', 'social', {
-        'socialNetwork': 'web',
-        'socialAction': 'share',
-        'socialTarget': url
+    const shareFeature = () => {
+      if (navigator.share) {
+        const url = '/feature/{{ feature.id }}';
+        navigator.share({
+          title: '{{ feature.name|escapejs }}',
+          text: '{{ feature.summary|escapejs }}',
+          url: url
+        })
+        .then(() => {
+          ga('send', 'social', {
+            'socialNetwork': 'web',
+            'socialAction': 'share',
+            'socialTarget': url
+          });
+        });
+      }
+    }
+
+    // Remove loading spinner at page load.
+    document.body.classList.remove('loading');
+
+    // Unhide "Web Share" feature if browser supports it.
+    if (navigator.share) {
+      Array.from(document.querySelectorAll('.no-web-share')).forEach((el) => {
+        el.classList.remove('no-web-share');
       });
-    });
-  }
-}
+    }
 
-// Remove loading spinner at page load.
-document.body.classList.remove('loading');
+    // Unhide notification features if browser supports it.
+    if (PushNotifier.SUPPORTS_NOTIFICATIONS) {
+      Array.from(document.querySelectorAll('.no-push-notifications')).forEach((el) => {
+        el.classList.remove('no-push-notifications');
+      });
 
-// Unhide "Web Share" feature if browser supports it.
-if (navigator.share) {
-  Array.from(document.querySelectorAll('.no-web-share')).forEach(el => {
-    el.classList.remove('no-web-share');
-  });
-}
+      // Lazy load Firebase messaging SDK.
+      loadFirebaseSDKLibs().then(() => {
+        PushNotifications.init(); // init Firebase messaging.
 
-// Unhide notification features if browser supports it.
-if (PushNotifier.SUPPORTS_NOTIFICATIONS) {
-  Array.from(document.querySelectorAll('.no-push-notifications')).forEach(el => {
-    el.classList.remove('no-push-notifications');
-  });
-
-  // Lazy load Firebase messaging SDK.
-  loadFirebaseSDKLibs().then(() => {
-    PushNotifications.init(); // init Firebase messaging.
-
-    // If use already granted the notification permission, update state of the
-    // push icon for each feature the user is subscribed to.
-    if (PushNotifier.GRANTED_ACCESS) {
-      PushNotifications.getAllSubscribedFeatures().then(function(subscribedFeatures) {
-        var icon = $('.pushicon');
-        if (subscribedFeatures.includes('{{feature.id}}')) {
-          icon.icon = 'chromestatus:notifications';
-        } else {
-          icon.icon = 'chromestatus:notifications-off';
+        // If use already granted the notification permission, update state of the
+        // push icon for each feature the user is subscribed to.
+        if (PushNotifier.GRANTED_ACCESS) {
+          PushNotifications.getAllSubscribedFeatures().then((subscribedFeatures) => {
+            const iconEl = document.querySelector('.pushicon');
+            if (subscribedFeatures.includes('{{feature.id}}')) {
+              iconEl.icon = 'chromestatus:notifications';
+            } else {
+              iconEl.icon = 'chromestatus:notifications-off';
+            }
+          });
         }
       });
     }
-  });
-}
 
-var SHOW_TOAST = {% if was_updated %}true{% else %}false{% endif %};
-if (SHOW_TOAST) {
-  setTimeout(function() {
-    var Toast = document.querySelector('chromedash-toast');
-    Toast.showMessage('Your feature was saved! It may take a few minutes to ' +
-                      'show up in the main list.', null, null, -1);
-  }, 500);
-}
-</script>
+    const SHOW_TOAST = {% if was_updated %}true{% else %}false{% endif %};
+    if (SHOW_TOAST) {
+      setTimeout(() => {
+        const toastEl = document.querySelector('chromedash-toast');
+        toastEl.showMessage('Your feature was saved! It may take a few minutes to ' +
+                          'show up in the main list.', null, null, -1);
+      }, 500);
+    }
+  </script>
 {% endblock %}

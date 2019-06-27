@@ -11,18 +11,17 @@ Chrome Platform Status
 
 ### Installation
 
-First, install the [Google App Engine SDK for Python](https://developers.google.com/appengine/downloads#Google_App_Engine_SDK_for_Python).
+1. Install global CLIs
+    1. [Google App Engine SDK for Python](https://developers.google.com/appengine/downloads#Google_App_Engine_SDK_for_Python).
+    1. pip, node, npm.
+    1. Gulp `npm install -g gulp`
+1. Install Site, followed by postinstall script
 
-You'll also need pip, node, npm, and gulp:
+```bash
+npm install`
+```
 
-    npm install -g bower gulp
-    npm install
-
-This will also pull down bower_components and run `gulp` to build the site.
-
-### Developing
-
-#### Create env_vars.yaml
+##### Add env_vars.yaml
 
 Create a file named `env_vars.yaml` in the root directory and fill it with:
 
@@ -34,13 +33,23 @@ env_variables:
 
 The `FIREBASE_SERVER_KEY` is the Firebase server key obtained from the [Firebase console](https://firebase.corp.google.com/project/cr-status/settings/cloudmessaging/).
 
-#### Start the main devserver
+### Developing
 
-```shell
-npm run start
+To start the main server and the notifier backend, run:
+
+```bash
+npm start
 ```
 
-#### FCM setup
+To start front end code watching, run
+
+```bash
+npm run watch
+```
+
+There are some developing information in developer-documentation.md.
+
+##### FCM setup
 
 If you want to test push notification features, you'll need to create a file named
 `.fcm_server_key` in the main project root. Copy in the FCM server key obtained

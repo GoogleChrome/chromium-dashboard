@@ -2,8 +2,8 @@
 {% load verbatim %}
 {% load inline_file %}
 
-{% block html_imports %}
-  <link rel="import" href="/static/elements/admin-imports{% if VULCANIZE %}.vulcanize{% endif %}.html">
+{% block preload %}
+<script type="module" src="/static/elements/admin-imports.js"></script>
 {% endblock %}
 
 {% block css %}

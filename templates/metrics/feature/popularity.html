@@ -8,13 +8,12 @@
 {% endblock %}
 
 {% block preload %}
-  {% if VULCANIZE %}
-    <link rel="preload" href="/static/elements/metrics-imports.vulcanize.js" as="script">
-  {% endif %}
+<script type="module">
+  import '/static/elements/chromedash-metrics.js';
+</script>
 {% endblock %}
 
 {% block html_imports %}
-  <link rel="import" href="/static/elements/metrics-imports{% if VULCANIZE %}.vulcanize{% endif %}.html">
 {% endblock %}
 
 {% block drawer %}
