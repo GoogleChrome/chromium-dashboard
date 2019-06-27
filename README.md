@@ -41,11 +41,18 @@ To start the main server and the notifier backend, run:
 npm start
 ```
 
-To start front end code watching, run
+To start front end code watching (sass, js lint check, babel, minify files), run
 
 ```bash
 npm run watch
 ```
+
+Run a fix-lint task (Lint for you on save):
+
+```bash
+npm run lint
+```
+
 
 There are some developing information in developer-documentation.md.
 
