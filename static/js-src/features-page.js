@@ -1,8 +1,7 @@
 const featureListEl = document.querySelector('chromedash-featurelist');
 const chromeMetadataEl = document.querySelector('chromedash-metadata');
 const searchEl = document.querySelector('.search input');
-// const overlayEl = document.querySelector('chromedash-legend');
-// let overlayLoaded = false;
+const legendEl = document.querySelector('chromedash-legend');
 
 // Set search box to URL deep link.
 if (location.hash) {
@@ -96,7 +95,10 @@ featureListEl.addEventListener('app-ready', () => {
 });
 
 if (PushNotifier.SUPPORTS_NOTIFICATIONS) {
-  document.querySelector('#features-subscribe-button').addEventListener('click', (e) => {
+  const subscribeButtonEl = document.querySelector('#features-subscribe-button');
+  subscribeButtonEl.removeAttribute('hidden');
+
+  subscribeButtonEl.addEventListener('click', (e) => {
     e.preventDefault();
 
     if (window.Notification && Notification.permission === 'denied') {
@@ -117,39 +119,10 @@ if (PushNotifier.SUPPORTS_NOTIFICATIONS) {
   });
 }
 
-// TODO(yangguang): Look into the following code.
-// // Handles lazy loading chromedash-legend and settings its properties only once.
-// const helpOverlayLoadPromise = (overlay) => {
-//   return new Promise((resolve, reject) => {
-//     if (overlayLoaded) {
-//       return resolve();
-//     }
+legendEl.views = VIEWS;
 
-//     const url = '/static/elements/chromedash-legend{% if VULCANIZE %}.vulcanize{% endif %}.html';
-
-//     Polymer.Base.importHref(url, () => {
-//       overlayLoaded = true;
-//       overlay.views = VIEWS; // set from server. Defined in features.html
-//       overlay.hidden = false;
-//       resolve();
-//     }, (e) => {
-//       reject(new Error('Error loading:' + url));
-//     }, true);
-//   });
-// }
-
-
-// document.querySelector('.legend').addEventListener('click', (e) => {
-//   e.preventDefault();
-
-//   helpOverlayLoadPromise(overlayEl).then(() => {
-//     overlayEl.toggle();
-//   });
-// });
-
-// Unhide notification features if browser supports it.
-// if (PushNotifier.SUPPORTS_NOTIFICATIONS) {
-//   Array.from($All('.no-push-notifications')).forEach(el => {
-//     el.classList.remove('no-push-notifications');
-//   });
-// }
+document.querySelector('.legend-button').addEventListener('click', (e) => {
+  e.preventDefault();
+  console.log(legendEl);
+  legendEl.toggle();
+});

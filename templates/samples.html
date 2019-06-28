@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "_base.html" %}
 {% load verbatim %}
 {% load inline_file %}
 
@@ -12,9 +12,9 @@
 
 {% block preload %}
   <script type="module">
-    import 'https://unpkg.com/@polymer/paper-listbox/paper-listbox.js?moduel';
-    import 'https://unpkg.com/@polymer/paper-ripple/paper-ripple.js?moduel';
-    import 'https://unpkg.com/@polymer/paper-item/paper-item.js?moduel';
+    import 'https://unpkg.com/@polymer/paper-listbox/paper-listbox.js?module';
+    import 'https://unpkg.com/@polymer/paper-ripple/paper-ripple.js?module';
+    import 'https://unpkg.com/@polymer/paper-item/paper-item.js?module';
     import 'https://unpkg.com/@polymer/iron-icon/iron-icon.js?module';
     import '/static/elements/chromedash-sample-panel.js';
   </script>
@@ -59,13 +59,16 @@
     behind a flag or still in the development.</p>
   </div>
 
-  <chromedash-sample-panel categories="{{categories|safe}}"></chromedash-sample-panel>
+  <chromedash-sample-panel></chromedash-sample-panel>
 {% endblock %}
 
 {% block js %}
   <script>
     (function() {
-      {% inline_file "/static/js/samples.min.js" %}
+      'use strict';
+      const CATEGORIES = {{categories|safe}};
+
+      {% inline_file "/static/js/samples-page.min.js" %}
     })();
   </script>
 {% endblock %}
