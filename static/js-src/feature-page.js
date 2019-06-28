@@ -1,5 +1,3 @@
-console.log(FEATURE_ID, FEATURE_NAME, FEATUER_SUMMARY);
-
 // Event handler. Used in feature.html template.
 const subscribeToFeature = (featureId) => { // eslint-disable-line no-unused-vars
   const iconEl = document.querySelector('.pushicon');

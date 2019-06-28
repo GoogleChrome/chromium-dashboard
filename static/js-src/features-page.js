@@ -123,6 +123,5 @@ legendEl.views = VIEWS;
 
 document.querySelector('.legend-button').addEventListener('click', (e) => {
   e.preventDefault();
-  console.log(legendEl);
   legendEl.toggle();
 });
