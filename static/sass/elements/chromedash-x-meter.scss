@@ -3,9 +3,6 @@
 :host {
   display: inline-block;
   contain: content;
-}
-
-.meter {
   background: $chromium-color-light; //var(--paper-green-200);
   border-radius: $default-border-radius;
   overflow: hidden;

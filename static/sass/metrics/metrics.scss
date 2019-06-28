@@ -1,5 +1,9 @@
 @import "../vars";
 
+.drawer-content-wrapper {
+  max-width: var(--app-drawer-width);
+}
+
 #content {
   h3 {
     margin-bottom: $content-padding;

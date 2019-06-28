@@ -103,76 +103,74 @@ class ChromedashSchedule extends LitElement {
     return html`
       <link rel="stylesheet" href="/static/css/elements/chromedash-schedule.css">
 
-      <div class="releases layout horizontal wrap">
-        ${['stable', 'beta', 'dev'].map((type) => html`
-          <section class="release ${this.hideBlink ? 'no-components' : ''}">
-            <div class="layout vertical center">
-              <h1 class="channel_label">${TEMPLATE_CONTENT[type].channelLabel}</h1>
-              <h1 class="chrome_version layout horizontal center ${TEMPLATE_CONTENT[type].h1Class}">
-                <span class="chrome-logo"></span>
-                <a href="${TEMPLATE_CONTENT[type].downloadUrl}" title="${TEMPLATE_CONTENT[type].downloadTitle}"
-                   target="_blank">Chrome ${this.channels[type].version}</a>
-              </h1>
-            </div>
-            <div class="milestone_info layout horizontal center-center">
-              <h3>
-                <span class="channel_label">Beta</span> ${TEMPLATE_CONTENT[type].dateText}
-                <span class="milestone_info-beta">${this._computeDate(this.channels[type].earliest_beta)} - ${this._computeDate(this.channels[type].latest_beta)}</span>
-              </h3>
-            </div>
-            <div class="milestone_info layout horizontal center-center">
-              <h3>
-                <span class="channel_label">Stable</span> ${this._computeDaysUntil(this.channels[type].stable_date)}
-                <span class="release-stable">( ${this._computeDate(this.channels[type].stable_date)} )</span>
-              </h3>
-            </div>
-            <div class="features_list">
-              <div class="features_header">${TEMPLATE_CONTENT[type].featureHeader}:</div>
+      ${['stable', 'beta', 'dev'].map((type) => html`
+        <section class="release ${this.hideBlink ? 'no-components' : ''}">
+          <div class="layout vertical center">
+            <h1 class="channel_label">${TEMPLATE_CONTENT[type].channelLabel}</h1>
+            <h1 class="chrome_version layout horizontal center ${TEMPLATE_CONTENT[type].h1Class}">
+              <span class="chrome-logo"></span>
+              <a href="${TEMPLATE_CONTENT[type].downloadUrl}" title="${TEMPLATE_CONTENT[type].downloadTitle}"
+                 target="_blank">Chrome ${this.channels[type].version}</a>
+            </h1>
+          </div>
+          <div class="milestone_info layout horizontal center-center">
+            <h3>
+              <span class="channel_label">Beta</span> ${TEMPLATE_CONTENT[type].dateText}
+              <span class="milestone_info-beta">${this._computeDate(this.channels[type].earliest_beta)} - ${this._computeDate(this.channels[type].latest_beta)}</span>
+            </h3>
+          </div>
+          <div class="milestone_info layout horizontal center-center">
+            <h3>
+              <span class="channel_label">Stable</span> ${this._computeDaysUntil(this.channels[type].stable_date)}
+              <span class="release-stable">( ${this._computeDate(this.channels[type].stable_date)} )</span>
+            </h3>
+          </div>
+          <div class="features_list">
+            <div class="features_header">${TEMPLATE_CONTENT[type].featureHeader}:</div>
 
-              ${this._objKeys(this.channels[type].components).map((componentName) => html`
-                <h3 class="feature_components">${componentName}</h3>
-                <ul>
-                  ${this.channels[type].components[componentName].map((f) => html`
-                    <li data-feature-id="${f.id}">
-                      <a href="/feature/${f.id}">${f.name}</a>
-                      <span class="icon_row">
-                        ${f.browsers.chrome.origintrial ? html`
-                          <span class="tooltip" title="Origin Trial">
-                            <iron-icon icon="chromestatus:extension" class="experimental" data-tooltip></iron-icon>
-                          </span>
-                          ` : ''}
-                        ${f.browsers.chrome.intervention ? html`
-                          <span class="tooltip" title="Browser intervention">
-                            <iron-icon icon="chromestatus:pan-tool" class="intervention" data-tooltip></iron-icon>
-                          </span>
-                          ` : ''}
-                        ${REMOVED_STATUS.includes(f.browsers.chrome.status.text) ? html`
-                          <span class="tooltip" title="Removed">
-                            <iron-icon icon="chromestatus:cancel" class="remove" data-tooltip></iron-icon>
-                          </span>
-                          ` : ''}
-                        ${DEPRECATED_STATUS.includes(f.browsers.chrome.status.text) ? html`
-                          <span class="tooltip" title="Deprecated">
-                            <iron-icon icon="chromestatus:warning" class="deprecated" data-tooltip></iron-icon>
-                          </span>
-                          ` : ''}
-                        ${IS_PUSH_NOTIFIER_SUPPORTED ? html`
-                          <span class="tooltip" title="Subscribe to notification updates">
-                            <iron-icon icon="chromestatus:notifications-off"
-                                       class="pushicon ${IS_PUSH_NOTIFIER_ENABLED ? '' : 'disabled'}"
-                                       data-feature-id="${f.id}"
-                                       @click="${this._subscribeToFeature}"></iron-icon>
-                          </span>
+            ${this._objKeys(this.channels[type].components).map((componentName) => html`
+              <h3 class="feature_components">${componentName}</h3>
+              <ul>
+                ${this.channels[type].components[componentName].map((f) => html`
+                  <li data-feature-id="${f.id}">
+                    <a href="/feature/${f.id}">${f.name}</a>
+                    <span class="icon_row">
+                      ${f.browsers.chrome.origintrial ? html`
+                        <span class="tooltip" title="Origin Trial">
+                          <iron-icon icon="chromestatus:extension" class="experimental" data-tooltip></iron-icon>
                         </span>
-                          ` : ''}
-                    </li>
-                    `)}
-                </ul>
-                `)}
-            </div>
-          </section>
-          `)}
-      </div>
+                        ` : ''}
+                      ${f.browsers.chrome.intervention ? html`
+                        <span class="tooltip" title="Browser intervention">
+                          <iron-icon icon="chromestatus:pan-tool" class="intervention" data-tooltip></iron-icon>
+                        </span>
+                        ` : ''}
+                      ${REMOVED_STATUS.includes(f.browsers.chrome.status.text) ? html`
+                        <span class="tooltip" title="Removed">
+                          <iron-icon icon="chromestatus:cancel" class="remove" data-tooltip></iron-icon>
+                        </span>
+                        ` : ''}
+                      ${DEPRECATED_STATUS.includes(f.browsers.chrome.status.text) ? html`
+                        <span class="tooltip" title="Deprecated">
+                          <iron-icon icon="chromestatus:warning" class="deprecated" data-tooltip></iron-icon>
+                        </span>
+                        ` : ''}
+                      ${IS_PUSH_NOTIFIER_SUPPORTED ? html`
+                        <span class="tooltip" title="Subscribe to notification updates">
+                          <iron-icon icon="chromestatus:notifications-off"
+                                     class="pushicon ${IS_PUSH_NOTIFIER_ENABLED ? '' : 'disabled'}"
+                                     data-feature-id="${f.id}"
+                                     @click="${this._subscribeToFeature}"></iron-icon>
+                        </span>
+                      </span>
+                        ` : ''}
+                  </li>
+                  `)}
+              </ul>
+              `)}
+          </div>
+        </section>
+        `)}
     `;
   }
 }

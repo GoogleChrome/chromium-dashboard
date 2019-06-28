@@ -1,11 +1,10 @@
 @import "element";
 
-#sample-panel {
+:host {
+  display: block;
   position: relative;
   max-width: 750px;
-}
 
-#samplelist {
   li {
     margin-bottom: $content-padding;
     line-height: 1.4;

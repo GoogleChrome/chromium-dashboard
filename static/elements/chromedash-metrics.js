@@ -7,8 +7,7 @@ class ChromedashMetrics extends LitElement {
     return {
       type: {type: String}, // From attribute
       view: {type: String}, // From attribute
-      useRemoteData: {type: Boolean}, // From attibute. If true, fetches live data from chromestatus.com instead of localhost.
-      // Properties used in the template
+      prod: {type: Boolean}, // From attibute
       viewList: {type: Array},
       propertyNameSortIcon: {type: String},
       percentSortIcon: {type: String},
@@ -20,7 +19,6 @@ class ChromedashMetrics extends LitElement {
     super();
     this.viewList = [];
     this.type = '';
-    this.useRemoteData = false;
     this.maxPercentage = 100;
     this.sortOrders = {
       property_name: {reverse: false, activated: false},
@@ -34,8 +32,7 @@ class ChromedashMetrics extends LitElement {
   }
 
   firstUpdated() {
-    const endpoint = `${this.useRemoteData ? 'https://www.chromestatus.com' : ''}/data/${this.type}${this.view}`;
-
+    const endpoint = `${!this.prod ? 'https://www.chromestatus.com' : ''}/data/${this.type}${this.view}`;
     fetch(endpoint).then((res) => res.json()).then((response) => {
       this._updateAfterData(response);
     });

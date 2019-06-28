@@ -1,6 +1,12 @@
 @import "element";
 @import "../_layout";
 
+:host {
+  display: flex;
+  flex-wrap: wrap;
+  padding-bottom: $content-padding * 5;
+}
+
 iron-icon {
   --iron-icon-height: 18px;
   --iron-icon-width: 18px;
@@ -64,35 +70,32 @@ iron-icon {
   background-size: 42px;
 }
 
-.releases {
-  padding-bottom: $content-padding * 5;
+.release {
+  padding: $content-padding;
+  background: #fff;
+  padding: $content-padding;
+  margin-bottom: $content-padding;
+  border-radius: $default-border-radius;
+  flex: 1 0 calc(33.33% - 16px);
+  max-width: 33.33%;
+  min-width: 300px;
+  counter-reset: featurecount;
 
-  .release {
-    padding: $content-padding;
-    background: #fff;
-    padding: $content-padding;
-    margin-bottom: $content-padding;
-    border-radius: $default-border-radius;
-    flex: 1 0 calc(33.33% - 16px);
-    max-width: 33.33%;
-    min-width: 300px;
-    counter-reset: featurecount;
+  &:not(:last-child) {
+    margin-right: $content-padding;
+  }
 
-    &:not(:last-child) {
-      margin-right: $content-padding;
+  &.no-components {
+    .feature_components {
+      display: none;
     }
 
-    &.no-components {
-      .feature_components {
-        display: none;
-      }
-
-      .feature_components + ul {
-        margin-top: 0;
-      }
+    .feature_components + ul {
+      margin-top: 0;
     }
   }
 }
+
 .milestone_info {
   margin-bottom: $content-padding / 2;
 
@@ -193,7 +196,7 @@ iron-icon {
 }
 
 @media only screen and (max-width: 700px) {
-  .releases {
+  :host {
     .release {
       min-width: 100%;
     }

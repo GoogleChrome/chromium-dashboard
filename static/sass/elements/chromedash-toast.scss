@@ -1,5 +1,6 @@
 :host {
-  display: block;
+  display: flex;
+  justify-content: space-between;
   position: fixed;
   background-color: #323232;
   color: #f1f1f1;
@@ -20,20 +21,19 @@
   z-index: 3;
   bottom: 0;
 }
+
 :host([open]) {
   opacity: 1;
   transform: translateY(0px);
 }
+
 #action {
   text-transform: uppercase;
   text-decoration: none;
   color: #FFEB3B;
   font-weight: bold;
 }
+
 #msg {
   margin-right: 16px;
-}
-#message_container {
-  display: flex;
-  justify-content: space-between;
 }

@@ -77,10 +77,8 @@ class ChromedashToast extends LitElement {
     return html`
       <link rel="stylesheet" href="/static/css/elements/chromedash-toast.css">
 
-      <div id="message_container">
-        <span id="msg">${this.msg}</span>
-        <a href="#" id="action">${this.actionLabel}</a>
-      </div>
+      <span id="msg">${this.msg}</span>
+      <a href="#" id="action">${this.actionLabel}</a>
     `;
   }
 }

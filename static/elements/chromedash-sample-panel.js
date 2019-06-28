@@ -123,32 +123,30 @@ class ChromedashSamplePanel extends LitElement {
     return html`
       <link rel="stylesheet" href="/static/css/elements/chromedash-sample-panel.css">
 
-      <div id="sample-panel">
-        <ul id="samplelist" class="card-content">
-          ${this.filtered.map((feature) => html`
-            <li>
-              <div class="card">
-                <h3 class="feature-name">
-                  <a href="${this._computeFeatureLink(feature.id)}">${feature.name}</a>
-                  <span class="milestone" ?hidden="${!feature.shipped_milestone}">Chrome <span>${feature.shipped_milestone}</span></span>
-                </h3>
-                <div class="summary">${feature.summary}</div>
-                <div class="sample_links">
-                  <div class="demo-links layout horizontal center">
-                    ${feature.sample_links.map((link) => html`
-                      <a href="${link}" target="_blank" class="demo-link">
-                        <iron-icon icon="chromestatus:open-in-browser"></iron-icon> View Demo
-                      </a>
-                      `)}
-                  </div>
-                  <iron-icon icon="${this._computeIconId(feature.category)}"
-                             title="${feature.category}"></iron-icon>
+      <ul>
+        ${this.filtered.map((feature) => html`
+          <li>
+            <div class="card">
+              <h3 class="feature-name">
+                <a href="${this._computeFeatureLink(feature.id)}">${feature.name}</a>
+                <span class="milestone" ?hidden="${!feature.shipped_milestone}">Chrome <span>${feature.shipped_milestone}</span></span>
+              </h3>
+              <div class="summary">${feature.summary}</div>
+              <div class="sample_links">
+                <div class="demo-links layout horizontal center">
+                  ${feature.sample_links.map((link) => html`
+                    <a href="${link}" target="_blank" class="demo-link">
+                      <iron-icon icon="chromestatus:open-in-browser"></iron-icon> View Demo
+                    </a>
+                    `)}
                 </div>
+                <iron-icon icon="${this._computeIconId(feature.category)}"
+                           title="${feature.category}"></iron-icon>
               </div>
-            </li>
-            `)}
-        </ul>
-      </div>
+            </div>
+          </li>
+          `)}
+      </ul>
     `;
   }
 }
