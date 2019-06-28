@@ -6,8 +6,10 @@
 <style>{% inline_file "/static/css/metrics/metrics.css" %}</style>
 {% endblock %}
 
-{% block html_imports %}
-  <link rel="import" href="/static/elements/metrics-imports{% if VULCANIZE %}.vulcanize{% endif %}.html">
+{% block preload %}
+<script type="module">
+  import '/static/elements/chromedash-timeline.js';
+</script>
 {% endblock %}
 
 {% block drawer %}
@@ -23,10 +25,10 @@
 {% block content %}
 <div class="data-panel">
   <p class="description">Use of CSS properties over time.</p>
-  <chromedash-feature-timeline
+  <chromedash-timeline
       type="css" view="popularity"
       title="Percentage of Chrome page loads that use this property at least once"
-      {% if not prod %}use-remote-data{% endif %}></chromedash-feature-timeline>
+      {% if not prod %}use-remote-data{% endif %}></chromedash-timeline>
   <p class="callout">
     <b>Note</b>: on 2017-10-26 the underlying metrics were switched over to a newer collection system
     which is <a href="https://groups.google.com/a/chromium.org/forum/#!msg/blink-api-owners-discuss/IpIkbz0qtrM/HUCfSMv2AQAJ" target="_blank">more accurate</a>.
@@ -38,7 +40,7 @@
 {% block js %}
 <script>
 document.addEventListener('WebComponentsReady', function(e) {
-  var timeline = $('chromedash-feature-timeline');
+  var timeline = document.querySelector('chromedash-timeline');
   timeline.props = {{CSS_PROPERTY_BUCKETS|safe}};
 
   document.body.classList.remove('loading');

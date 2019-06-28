@@ -18,172 +18,170 @@ limitations under the License.
 -->
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<title>{% block page_title %}{% endblock %}{{ APP_TITLE }}</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+  <meta charset="utf-8">
+  <title>{% block page_title %}{% endblock %}{{ APP_TITLE }}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
 
-<link rel="manifest" href="/static/manifest.json">
+  <link rel="manifest" href="/static/manifest.json">
 
-<meta name="theme-color" content="#366597">
-<link rel="icon" sizes="192x192" href="/static/img/crstatus_192.png">
+  <meta name="theme-color" content="#366597">
+  <link rel="icon" sizes="192x192" href="/static/img/crstatus_192.png">
 
-<!-- iOS: run in full-screen mode and display upper status bar as translucent -->
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <!-- iOS: run in full-screen mode and display upper status bar as translucent -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
-<link rel="apple-touch-icon" href="/static/img/crstatus_128.png">
-<link rel="apple-touch-icon-precomposed" href="/static/img/crstatus_128.png">
-<link rel="shortcut icon" href="/static/img/crstatus_128.png">
+  <link rel="apple-touch-icon" href="/static/img/crstatus_128.png">
+  <link rel="apple-touch-icon-precomposed" href="/static/img/crstatus_128.png">
+  <link rel="shortcut icon" href="/static/img/crstatus_128.png">
 
-<link rel="preconnect" href="https://www.google-analytics.com" crossorigin>
-<!-- <link rel="dns-prefetch" href="https://fonts.googleapis.com"> -->
-<!-- <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin> -->
+  <link rel="preconnect" href="https://www.google-analytics.com" crossorigin>
 
-{% block meta %}{% endblock %}
+  {% block meta %}{% endblock %}
 
-<!-- <link rel="stylesheet"
-      href="https://fonts.googleapis.com/css?family=Roboto:300,400"
-      media="none" onload="this.media='all'">
--->
-
-<!-- <link rel="stylesheet" href="/static/css/main.css"> -->
-<style>{% inline_file "/static/css/main.css" %}</style>
-
-{% block css %}{% endblock %}
-
-{% block preload %}{% endblock %}
-
-<script>
-window.Polymer = window.Polymer || {
-  dom: 'shadow', // Use native shadow dom.
-  lazyRegister: 'max',
-  useNativeCSSProperties: true,
-  suppressTemplateNotifications: true, // Don't fire dom-change on dom-if, dom-bind, etc.
-  suppressBindingNotifications: true
-  // disableUpgradeEnabled: true // Works with `disable-upgrade` attr. When removed, upgrades element.
-};
-
-var $ = function(selector) {
-  return document.querySelector(selector);
-};
-
-var $$ = function(selector) {
-  return document.querySelectorAll(selector);
-};
-</script>
-
-<style is="custom-style">
-  app-drawer {
-    --app-drawer-width: 200px;
-    --app-drawer-content-container: {
-      background: #eee;
-    };
-  }
-  paper-item {
-    --paper-item: {
-      cursor: pointer;
-    };
-  }
-</style>
-
-{% block html_imports %}{% endblock %}
-
-{% block rss %}{% endblock%}
-</head>
-<body class="loading" data-path={{current_path}}>
-
-{% comment %}
-<!--<div id="site-banner">
-  <a href="https://www.youtube.com/watch?v=Rd0plknSPYU" target="_blank">
-  <iron-icon icon="chromestatus:ondemand-video"></iron-icon> How we built it</a>
-</div>-->
-{% endcomment %}
-
-<app-drawer-layout fullbleed>
-  <app-drawer swipe-open>
-    <div class="drawer-content-wrapper">
-      {% block drawer %}{% endblock %}
-    </div>
-  </app-drawer>
-  <app-header-layout>
-    <app-header reveals fixed effects="waterfall">
-      <div class="main-toolbar">
-        <div class="toolbar-content">
-          {% include "header.html" %}
-          {% block subheader %}{% endblock %}
-        </div>
-      </div>
-    </app-header>
-
-    <div id="content">
-      <div id="spinner"><img src="/static/img/ring.svg"></div>
-      {% block content %}{% endblock %}
-    </div>
-
-  </app-header-layout>
-
-  {% include "footer.html" %}
-</app-drawer-layout>
-
-<chromedash-toast msg="Welcome to chromestatus.com!"></chromedash-toast>
-
-{% block overlay %}{% endblock %}
-
-{# Metric is need by sw registration and page code. #}
-<script>
-{% inline_file "/static/js/metrics.es6.min.js" %}
-</script>
-
-{% block js %}{% endblock %}
-
-<script>
-{% inline_file "/static/js/service-worker-registration.es6.min.js" %}
-
-// https://gist.github.com/ebidel/1d5ede1e35b6f426a2a7
-function lazyLoadWCPolyfillsIfNecessary() {
-  function onload() {
-    // For native Imports, manually fire WCR so user code
-    // can use the same code path for native and polyfill'd imports.
-    if (!('HTMLImports' in window)) {
-      document.body.dispatchEvent(
-          new CustomEvent('WebComponentsReady', {bubbles: true}));
+  <style>
+    {% inline_file "/static/css/main.css" %}
+    app-drawer {
+      --app-drawer-width: 200px;
     }
-  }
 
-  var webComponentsSupported = ('registerElement' in document
-      && 'import' in document.createElement('link')
-      && 'content' in document.createElement('template'));
-  if (!webComponentsSupported) {
-    var script = document.createElement('script');
-    script.async = true;
-    script.src = '/static/bower_components/webcomponentsjs/webcomponents-lite.min.js';
-    script.onload = onload;
-    document.head.appendChild(script);
-  } else {
-    onload();
-  }
-}
+    /* Set the left sidebar the same background color as the page. */
+    .drawer-content-wrapper {
+      background: #eee;
+    }
 
-var button = document.querySelector('app-header paper-menu-button');
-button.addEventListener('click', function lazyHandler(e) {
-  this.removeEventListener('click', lazyHandler);
+    /* Manually hide the toggle button
+     * https://github.com/PolymerElements/app-layout/tree/master/app-drawer-layout */
+    app-drawer-layout:not([narrow]) [drawer-toggle] {
+      display: none;
+    }
 
-  {% if VULCANIZE %}
-  var url = '/static/elements/paper-menu-button.vulcanize.html';
-  {% else %}
-  var url = '/static/bower_components/paper-menu-button/paper-menu-button.html';
-  {% endif %}
+    /* Fix a bug. Left align the right side list and the header.
+     * TODO: Find out why it happens, and fix the root cause. */
+    app-drawer-layout:not([narrow]) app-header-layout {
+      margin-left: -60px;
+    }
 
-  Polymer.Base.importHref(url, function() {
-    button.contentElement.hidden = false;
-    button.open();
-  }, null, true);
-});
+    paper-item {
+      --paper-item: {
+        cursor: pointer;
+      };
+    }
+  </style>
 
-{% inline_file "/static/js/shared.min.js" %}
+  {% block css %}{% endblock %}
+  <script src="https://unpkg.com/@webcomponents/webcomponentsjs@^2.0.0/webcomponents-loader.js"></script>
 
-lazyLoadWCPolyfillsIfNecessary();
-</script>
+  <script type="module">
+    import 'https://unpkg.com/@polymer/paper-styles/color.js?module';
+    import '/static/elements/icons.js';
+
+    import 'https://unpkg.com/@polymer/app-layout/app-drawer-layout/app-drawer-layout.js?module';
+    import 'https://unpkg.com/@polymer/app-layout/app-header-layout/app-header-layout.js?module';
+    import 'https://unpkg.com/@polymer/app-layout/app-scroll-effects/app-scroll-effects.js?module';
+    import 'https://unpkg.com/@polymer/app-layout/app-drawer/app-drawer.js?module';
+    import 'https://unpkg.com/@polymer/app-layout/app-header/app-header.js?module';
+    import '/static/elements/chromedash-toast.js';
+  </script>
+
+  {% block preload %}{% endblock %}
+
+  {% block rss %}{% endblock%}
+</head>
+
+<body class="loading" data-path={{current_path}}>
+  {% comment %}
+  <!--<div id="site-banner">
+    <a href="https://www.youtube.com/watch?v=Rd0plknSPYU" target="_blank">
+    <iron-icon icon="chromestatus:ondemand-video"></iron-icon> How we built it</a>
+  </div>-->
+  {% endcomment %}
+
+  <app-drawer-layout fullbleed>
+    <app-drawer slot="drawer" swipe-open opened>
+      <div class="drawer-content-wrapper">
+        {% block drawer %}{% endblock %}
+      </div>
+    </app-drawer>
+    <app-header-layout>
+      <app-header slot="header" reveals fixed effects="waterfall">
+        <div class="main-toolbar">
+          <div class="toolbar-content">
+            {% include "header.html" %}
+            {% block subheader %}{% endblock %}
+          </div>
+        </div>
+      </app-header>
+
+      <div id="content">
+        <div id="spinner"><img src="/static/img/ring.svg"></div>
+        {% block content %}{% endblock %}
+      </div>
+
+    </app-header-layout>
+
+    {% include "footer.html" %}
+  </app-drawer-layout>
+
+  <chromedash-toast msg="Welcome to chromestatus.com!"></chromedash-toast>
+
+  {% block overlay %}{% endblock %}
+
+  <!-- https://github.com/ljosa/urlize.js.git. This package does not have ES module support. It sets window.urlize in browsers. -->
+  <script src="https://unpkg.com/urlize.js/urlize.js"></script>
+
+  {# Metric is need by sw registration and page code. #}
+  <script>{% inline_file "/static/js/metrics.min.js" %}</script>
+
+  {% block js %}{% endblock %}
+
+  <script>
+    // TODO (yangguang) Look into this code
+    // // https://gist.github.com/ebidel/1d5ede1e35b6f426a2a7
+    // function lazyLoadWCPolyfillsIfNecessary() {
+    //   function onload() {
+    //     // For native Imports, manually fire WCR so user code
+    //     // can use the same code path for native and polyfill'd imports.
+    //     if (!('HTMLImports' in window)) {
+    //       document.body.dispatchEvent(
+    //           new CustomEvent('WebComponentsReady', {bubbles: true}));
+    //     }
+    //   }
+    //   var webComponentsSupported = ('registerElement' in document
+    //       && 'import' in document.createElement('link')
+    //       && 'content' in document.createElement('template'));
+    //   if (!webComponentsSupported) {
+    //     var script = document.createElement('script');
+    //     script.async = true;
+    //     script.src = '/static/bower_components/webcomponentsjs/webcomponents-lite.min.js';
+    //     script.onload = onload;
+    //     document.head.appendChild(script);
+    //   } else {
+    //     onload();
+    //   }
+    // }
+
+    // const button = document.querySelector('app-header paper-menu-button');
+    // button.addEventListener('click', function lazyHandler(e) {
+    //   this.removeEventListener('click', lazyHandler);
+
+    //   {% if VULCANIZE %}
+    //   var url = '/static/elements/paper-menu-button.vulcanize.html';
+    //   {% else %}
+    //   var url = '/static/bower_components/paper-menu-button/paper-menu-button.html';
+    //   {% endif %}
+
+    //   Polymer.Base.importHref(url, function() {
+    //     button.contentElement.hidden = false;
+    //     button.open();
+    //   }, null, true);
+    // });
+    
+    // lazyLoadWCPolyfillsIfNecessary();
+
+    {% inline_file "/static/js/service-worker-registration.min.js" %}
+    {% inline_file "/static/js/shared.min.js" %}
+  </script>
 </body>
 </html>
