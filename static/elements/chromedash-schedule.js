@@ -85,7 +85,6 @@ class ChromedashSchedule extends LitElement {
 
     const iconEl = e.target;
     const featureId = iconEl.dataset.featureId;
-    console.log(featureId);
     const receivePush = iconEl.icon !== 'chromestatus:notifications';
     iconEl.icon = receivePush ? 'chromestatus:notifications' : 'chromestatus:notifications-off';
 
