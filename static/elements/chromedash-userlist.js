@@ -63,7 +63,7 @@ class ChromedashUserlist extends LitElement {
       method: 'POST',
       credentials: 'same-origin',
     }).then(() => {
-       this.removeUser(idx);
+      this.removeUser(idx);
     });
   }
 
