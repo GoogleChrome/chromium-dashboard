@@ -1,5 +1,11 @@
 @import "../vars";
 
+/* Fix a bug. Left align the right side list and the header.
+ * TODO: Find out why it happens, and fix the root cause. */
+app-drawer-layout:not([narrow]) app-header-layout {
+  margin-left: -60px;
+}
+
 #content {
   // &.ready {
   //   #spinner {
@@ -17,6 +23,15 @@ app-drawer {
   h3 {
     margin-left: $content-padding / 2;
   }
+}
+
+button {
+  background: transparent;
+  border: 0;
+}
+
+.legend-button {
+  color: #4580c0;
 }
 
 chromedash-legend {

@@ -52,7 +52,7 @@ button, .button {
   white-space: nowrap;
   user-select: none;
   cursor: pointer;
-  text-shadow: 1px 1px #fff;
+  // text-shadow: 1px 1px #fff;
   font-size: 10pt;
 }
 
@@ -68,12 +68,6 @@ button:not(:disabled):active {
   content: ',\00a0';
 }
 
-.no-push-notifications, .no-web-share {
+.no-web-share {
   display: none;
-}
-
-.supports-push-notifications {
-  .no-push-notifications {
-    display: initial;
-  }
 }

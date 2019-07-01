@@ -9,8 +9,8 @@
   "scripts": {
     "postinstall": "npm run deps && npm run build",
     "deps": "pip install -t lib -r requirements.txt",
-    "lint": "gulp lint",
     "build": "gulp",
+    "lint": "gulp fix-lint",
     "watch": "gulp watch",
     "deploy": "./scripts/deploy_site.sh",
     "start": "./scripts/start_server.sh"
@@ -33,6 +33,7 @@
     "gulp-babel": "^7.0.1",
     "gulp-crisper": "^1.1.0",
     "gulp-eslint": "^5.0.0",
+    "gulp-eslint-auto-fix": "^1.1.0",
     "gulp-if": "^2.0.1",
     "gulp-license": "^1.1.0",
     "gulp-load-plugins": "^1.2.4",

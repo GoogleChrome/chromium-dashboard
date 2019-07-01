@@ -41,11 +41,18 @@ To start the main server and the notifier backend, run:
 npm start
 ```
 
-To start front end code watching, run
+To start front end code watching (sass, js lint check, babel, minify files), run
 
 ```bash
 npm run watch
 ```
+
+Run a fix-lint task (Lint for you on save):
+
+```bash
+npm run lint
+```
+
 
 There are some developing information in developer-documentation.md.
 
@@ -73,8 +80,6 @@ Visit http://localhost:8080/admin/blink/populate_blink to see the list of Blink 
 
 [`settings.py`](https://github.com/GoogleChrome/chromium-dashboard/blob/master/settings.py) contains a list
 of globals for debugging and running the site locally.
-
-`VULCANIZE` - `False`, will run the site without vulcanizing the Polymer elements.
 
 `SEND_EMAIL` - `False` will turn off email notifications to feature owners.
 

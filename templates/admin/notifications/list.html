@@ -1,12 +1,9 @@
-{% extends "base.html" %}
+{% extends "_base.html" %}
 
 {% load inline_file %}
 
 {% block css %}
   <style>
-    .no-push-notifications {
-      display: none;
-    }
     body[data-path*='notifications/tester'] #spinner {
       display: none;
     }
@@ -33,7 +30,7 @@
 {% endblock %}
 
 {% block content %}
-  <button onclick="sendNotification()" disabled class="no-push-notifications">Send test message to my token</button>
+  <button onclick="sendNotification()" disabled class="push-notifications" hidden>Send test message to my token</button>
   <input id="feature_id" type="text" value="5827411627212800" placeholder="Feature id">
 
   <section>
@@ -94,8 +91,8 @@
 
     async function init() {
       $('#num_push_tokens').textContent = SUBSCRIPTIONS.length;
-      document.querySelectorAll('.no-push-notifications').forEach(el => {
-        el.classList.remove('no-push-notifications');
+      document.querySelectorAll('.push-notifications').forEach(el => {
+        el.removeAttribute('hidden');
         el.disabled = false;
       });
 

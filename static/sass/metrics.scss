@@ -1,4 +1,8 @@
-@import "../vars";
+@import "vars";
+
+.drawer-content-wrapper {
+  max-width: var(--app-drawer-width);
+}
 
 #content {
   h3 {
