@@ -90,7 +90,7 @@
     }
 
     async function init() {
-      $('#num_push_tokens').textContent = SUBSCRIPTIONS.length;
+      document.querySelector('#num_push_tokens').textContent = SUBSCRIPTIONS.length;
       document.querySelectorAll('.push-notifications').forEach(el => {
         el.removeAttribute('hidden');
         el.disabled = false;

@@ -4,7 +4,8 @@
 :host {
   display: flex;
   flex-wrap: wrap;
-  padding-bottom: $content-padding * 5;
+  padding: 0 1em $content-padding * 5;
+  margin-right: $content-padding * -1;
 }
 
 iron-icon {
@@ -76,14 +77,10 @@ iron-icon {
   padding: $content-padding;
   margin-bottom: $content-padding;
   border-radius: $default-border-radius;
-  flex: 1 0 calc(33.33% - 16px);
-  max-width: 33.33%;
+  flex: 1 0 0;
   min-width: 300px;
+  margin-right: $content-padding;
   counter-reset: featurecount;
-
-  &:not(:last-child) {
-    margin-right: $content-padding;
-  }
 
   &.no-components {
     .feature_components {
@@ -191,14 +188,6 @@ iron-icon {
       opacity: 1;
       transform: none;
       visibility: visible;
-    }
-  }
-}
-
-@media only screen and (max-width: 700px) {
-  :host {
-    .release {
-      min-width: 100%;
     }
   }
 }
