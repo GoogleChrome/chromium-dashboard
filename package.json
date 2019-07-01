@@ -9,8 +9,8 @@
   "scripts": {
     "postinstall": "npm run deps && npm run build",
     "deps": "pip install -t lib -r requirements.txt",
+    "lint": "gulp lint",
     "build": "gulp",
-    "lint": "gulp fix-lint",
     "watch": "gulp watch",
     "deploy": "./scripts/deploy_site.sh",
     "start": "./scripts/start_server.sh"
