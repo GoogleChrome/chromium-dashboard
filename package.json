@@ -43,9 +43,7 @@
     "gulp-uglify-es": "^1.0.4",
     "gulp-util": "^3.0.7",
     "http2-push-manifest": "^1.0.0",
-    "i": "^0.3.6",
     "lighthouse-ci": "https://github.com/ebidel/lighthouse-ci",
-    "npm": "^6.9.2",
     "sw-precache": "^5.2.1",
     "sw-toolbox": "^3.6.0"
   },
