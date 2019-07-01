@@ -33,7 +33,7 @@
     "gulp-babel": "^7.0.1",
     "gulp-crisper": "^1.1.0",
     "gulp-eslint": "^5.0.0",
-    "gulp-eslint-auto-fix": "^1.1.0",
+    "gulp-eslint-if-fixed": "^1.0.0",
     "gulp-if": "^2.0.1",
     "gulp-license": "^1.1.0",
     "gulp-load-plugins": "^1.2.4",
@@ -43,7 +43,9 @@
     "gulp-uglify-es": "^1.0.4",
     "gulp-util": "^3.0.7",
     "http2-push-manifest": "^1.0.0",
+    "i": "^0.3.6",
     "lighthouse-ci": "https://github.com/ebidel/lighthouse-ci",
+    "npm": "^6.9.2",
     "sw-precache": "^5.2.1",
     "sw-toolbox": "^3.6.0"
   },

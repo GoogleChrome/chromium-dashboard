@@ -47,13 +47,6 @@ To start front end code watching (sass, js lint check, babel, minify files), run
 npm run watch
 ```
 
-Run a fix-lint task (Lint for you on save):
-
-```bash
-npm run lint
-```
-
-
 There are some developing information in developer-documentation.md.
 
 ##### FCM setup

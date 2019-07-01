@@ -12,7 +12,7 @@ import swPrecache from 'sw-precache';
 import * as uglifyEs from 'gulp-uglify-es';
 const uglify = uglifyEs.default;
 import gulpLoadPlugins from 'gulp-load-plugins';
-const autoFixTask = require('gulp-eslint-auto-fix')
+const eslintIfFixed = require('gulp-eslint-if-fixed');
 const $ = gulpLoadPlugins();
 
 function minifyHtml() {
@@ -40,16 +40,12 @@ gulp.task('lint', () => {
   return gulp.src([
     'static/js-src/*.js',
     'static/elements/*.js',
-  ])
-    .pipe($.eslint())
+  ], {base: './'})
+    .pipe($.eslint({fix:true}))
     .pipe($.eslint.format())
+    .pipe(eslintIfFixed('./'))
     .pipe($.eslint.failAfterError());
 });
-
-autoFixTask('fix-lint', [
-  'static/js-src/*.js',
-  'static/elements/*.js',
-])
 
 // Compile and automatically prefix stylesheets
 gulp.task('styles', () => {
