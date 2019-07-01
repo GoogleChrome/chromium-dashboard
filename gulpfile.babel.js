@@ -40,6 +40,16 @@ gulp.task('lint', () => {
   return gulp.src([
     'static/js-src/*.js',
     'static/elements/*.js',
+  ])
+    .pipe($.eslint())
+    .pipe($.eslint.format())
+    .pipe($.eslint.failAfterError());
+});
+
+gulp.task('lint-fix', () => {
+  return gulp.src([
+    'static/js-src/*.js',
+    'static/elements/*.js',
   ], {base: './'})
     .pipe($.eslint({fix:true}))
     .pipe($.eslint.format())
@@ -173,7 +183,7 @@ gulp.task('watch', gulp.series(
   'clean',
   'styles',
   'js',
-  'lint',
+  'lint-fix',
   'generate-service-worker',
   function watch() {
     gulp.watch(['static/sass/**/*.scss'], gulp.series('styles'));
@@ -186,6 +196,6 @@ gulp.task('default', gulp.series(
   'clean',
   'styles',
   'js',
-  'lint',
+  'lint-fix',
   'generate-service-worker',
 ));
