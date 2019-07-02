@@ -19,7 +19,7 @@
 
 {% block preload %}
   <script type="module">
-    
+    import 'https://unpkg.com/@polymer/iron-icon/iron-icon.js?module';
   </script>
 {% endblock %}
 
@@ -248,7 +248,7 @@
     (function() {
       'use strict';
       
-      // Variables used in feature.js
+      // Variables used in feature-page.js
       const FEATURE_ID = '{{ feature.id }}';
       const FEATURE_NAME = '{{ feature.name|escapejs }}';
       const FEATUER_SUMMARY = '{{ feature.summary|escapejs }}';

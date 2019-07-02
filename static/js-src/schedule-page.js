@@ -8,12 +8,10 @@ document.querySelector('paper-toggle-button').addEventListener('change', e => {
   document.querySelector('chromedash-schedule').hideBlink = e.target.checked;
 });
 
-document.addEventListener('WebComponentsReady', function() {
-  const header = document.querySelector('app-header-layout app-header');
-  if (header) {
-    header.fixed = false;
-  }
-});
+const header = document.querySelector('app-header-layout app-header');
+if (header) {
+  header.fixed = false;
+}
 
 async function init() {
   document.body.classList.remove('loading');
