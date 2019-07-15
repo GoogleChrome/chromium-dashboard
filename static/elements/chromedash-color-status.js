@@ -1,4 +1,4 @@
-import {LitElement, html} from 'https://unpkg.com/@polymer/lit-element@latest/lit-element.js?module';
+import {LitElement, html} from 'lit-element';
 
 const CYAN = 120;
 const DEFAULT_MAX = 7;

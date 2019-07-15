@@ -1,14 +1,11 @@
-import {LitElement, html} from 'https://unpkg.com/@polymer/lit-element@latest/lit-element.js?module';
-import 'https://unpkg.com/@polymer/iron-icon/iron-icon.js?module';
-import '/static/elements/chromedash-color-status.js';
+import {LitElement, html} from 'lit-element';
+import '@polymer/iron-icon';
+import './chromedash-color-status';
 
 const MAX_STANDARDS_VAL = 6;
 const MAX_VENDOR_VIEW = 7;
 const MAX_WEBDEV_VIEW = 6;
 const MAX_RISK = MAX_VENDOR_VIEW + MAX_WEBDEV_VIEW + MAX_STANDARDS_VAL;
-
-const IS_PUSH_NOTIFIER_ENABLED = window.PushNotifier.GRANTED_ACCESS;
-const IS_PUSH_NOTIFIER_SUPPORTED = window.PushNotifier.SUPPORTS_NOTIFICATIONS;
 
 class ChromedashFeature extends LitElement {
   static get properties() {
@@ -197,7 +194,7 @@ class ChromedashFeature extends LitElement {
             `: ''}
         </h2>
         <div class="iconrow
-            ${IS_PUSH_NOTIFIER_SUPPORTED ?
+            ${window.PushNotifier && window.PushNotifier.SUPPORTS_NOTIFICATIONS ?
               'supports-push-notifications' : ''}">
           <span class="tooltip category-tooltip"
                 title="Filter by category ${this.feature.category}">
@@ -237,14 +234,14 @@ class ChromedashFeature extends LitElement {
                            class="intervention" data-tooltip></iron-icon>
               </span>
               ` : ''}
-            ${IS_PUSH_NOTIFIER_SUPPORTED ? html`
+            ${window.PushNotifier && window.PushNotifier.SUPPORTS_NOTIFICATIONS ? html`
               <span class="tooltip"
                     title="Receive a push notification when there are updates">
                 <a href="#" @click="${this.subscribeToFeature}" data-tooltip>
                   <iron-icon icon="${this._receivePush ?
                                 'chromestatus:notifications' :
                                 'chromestatus:notifications-off'}"
-                             class="pushicon ${IS_PUSH_NOTIFIER_ENABLED ?
+                             class="pushicon ${window.PushNotifier && window.PushNotifier.GRANTED_ACCESS ?
                                '' : 'disabled'}"></iron-icon>
                 </a>
               </span>

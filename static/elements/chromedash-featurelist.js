@@ -1,5 +1,5 @@
-import {LitElement, html} from 'https://unpkg.com/@polymer/lit-element@latest/lit-element.js?module';
-import '/static/elements/chromedash-feature.js';
+import {LitElement, html} from 'lit-element';
+import './chromedash-feature';
 
 class ChromedashFeaturelist extends LitElement {
   static get properties() {

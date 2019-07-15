@@ -5,15 +5,17 @@
 // You can read more about the new JavaScript features here:
 // https://babeljs.io/docs/learn-es2015/
 
-import path from 'path';
-import gulp from 'gulp';
-import del from 'del';
-import swPrecache from 'sw-precache';
-import * as uglifyEs from 'gulp-uglify-es';
+const path = require('path');
+const gulp = require('gulp');
+const del = require('del');
+const swPrecache = require('sw-precache');
+const uglifyEs = require('gulp-uglify-es');
 const uglify = uglifyEs.default;
-import gulpLoadPlugins from 'gulp-load-plugins';
+const gulpLoadPlugins = require('gulp-load-plugins');
 const eslintIfFixed = require('gulp-eslint-if-fixed');
+const rollup = require('rollup');
 const $ = gulpLoadPlugins();
+const resolve = require('rollup-plugin-node-resolve');
 
 function minifyHtml() {
   return $.minifyHtml({
@@ -74,6 +76,22 @@ gulp.task('styles', () => {
     }).on('error', $.sass.logError))
     .pipe($.autoprefixer(AUTOPREFIXER_BROWSERS))
     .pipe(gulp.dest('static/css'));
+});
+
+gulp.task('rollup', () => {
+  return rollup.rollup({
+    input: 'static/rollup-entry',
+    plugins: [
+      resolve(),
+    ],
+  }).then(bundle => {
+    return bundle.write({
+      file: 'static/dist/component-bundle.js',
+      format: 'es',
+      sourcemap: true,
+      compact: true,
+    });
+  });
 });
 
 // Run scripts through babel.
@@ -180,7 +198,6 @@ gulp.task('generate-service-worker', () => {
 
 // Build production files, the default task
 gulp.task('watch', gulp.series(
-  'clean',
   'styles',
   'js',
   'lint-fix',
@@ -188,6 +205,7 @@ gulp.task('watch', gulp.series(
   function watch() {
     gulp.watch(['static/sass/**/*.scss'], gulp.series('styles'));
     gulp.watch(['static/js-src/**/*.js', 'static/elements/*.js'], gulp.series(['lint', 'js']));
+    gulp.watch(['static/rollup-entry.js', 'static/elements/*.js'], gulp.series(['rollup']));
   }
 ));
 
@@ -197,5 +215,6 @@ gulp.task('default', gulp.series(
   'styles',
   'js',
   'lint-fix',
+  'rollup',
   'generate-service-worker',
 ));

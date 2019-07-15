@@ -9,7 +9,7 @@
   "scripts": {
     "postinstall": "npm run deps && npm run build",
     "deps": "pip install -t lib -r requirements.txt",
-    "lint": "gulp lint",
+    "lint": "gulp lint-fix",
     "build": "gulp",
     "watch": "gulp watch",
     "deploy": "./scripts/deploy_site.sh",
@@ -44,10 +44,22 @@
     "gulp-util": "^3.0.7",
     "http2-push-manifest": "^1.0.0",
     "lighthouse-ci": "https://github.com/ebidel/lighthouse-ci",
+    "rollup": "^1.17.0",
+    "rollup-plugin-node-resolve": "^5.2.0",
     "sw-precache": "^5.2.1",
     "sw-toolbox": "^3.6.0"
   },
   "dependencies": {
-    "lit-element": "^2.1.0"
+    "@polymer/app-layout": "^3.1.0",
+    "@polymer/iron-icon": "^3.0.1",
+    "@polymer/iron-iconset-svg": "^3.0.1",
+    "@polymer/lit-element": "^0.7.1",
+    "@polymer/paper-item": "^3.0.1",
+    "@polymer/paper-listbox": "^3.0.1",
+    "@polymer/paper-ripple": "^3.0.1",
+    "@polymer/paper-styles": "^3.0.1",
+    "@polymer/paper-toggle-button": "^3.0.1",
+    "lit-element": "^2.1.0",
+    "urlize.js": "^1.0.2"
   }
 }

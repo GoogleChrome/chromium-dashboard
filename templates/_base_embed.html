@@ -67,10 +67,8 @@ limitations under the License.
 
   {% block css %}{% endblock %}
   
-  <script type="module">
-    import 'https://unpkg.com/@polymer/paper-styles/color.js?module';
-    import '/static/elements/icons.js';
-  </script>
+  <script src="https://unpkg.com/@webcomponents/webcomponentsjs@^2/webcomponents-loader.js"></script>
+  <script src="/static/dist/component-bundle.js"></script>
 
   {% block preload %}{% endblock %}
 

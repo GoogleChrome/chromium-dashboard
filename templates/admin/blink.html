@@ -2,12 +2,6 @@
 {% load verbatim %}
 {% load inline_file %}
 
-{% block preload %}
-  <script type="module">
-    import 'https://unpkg.com/@polymer/paper-toggle-button/paper-toggle-button.js?module';
-  </script>
-{% endblock %}
-
 {% block css %}
   <style>{% inline_file "/static/css/blink.css" %}</style>
 {% endblock %}
