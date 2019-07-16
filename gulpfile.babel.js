@@ -197,19 +197,6 @@ gulp.task('generate-service-worker', () => {
 });
 
 // Build production files, the default task
-gulp.task('watch', gulp.series(
-  'styles',
-  'js',
-  'lint-fix',
-  'generate-service-worker',
-  function watch() {
-    gulp.watch(['static/sass/**/*.scss'], gulp.series('styles'));
-    gulp.watch(['static/js-src/**/*.js', 'static/elements/*.js'], gulp.series(['lint', 'js']));
-    gulp.watch(['static/rollup-entry.js', 'static/elements/*.js'], gulp.series(['rollup']));
-  }
-));
-
-// Build production files, the default task
 gulp.task('default', gulp.series(
   'clean',
   'styles',
@@ -217,4 +204,14 @@ gulp.task('default', gulp.series(
   'lint-fix',
   'rollup',
   'generate-service-worker',
+));
+
+// Build production files, the default task
+gulp.task('watch', gulp.series(
+  'default',
+  function watch() {
+    gulp.watch(['static/sass/**/*.scss'], gulp.series('styles'));
+    gulp.watch(['static/js-src/**/*.js', 'static/elements/*.js'], gulp.series(['lint', 'js']));
+    gulp.watch(['static/rollup-entry.js', 'static/elements/*.js'], gulp.series(['rollup']));
+  }
 ));
