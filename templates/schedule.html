@@ -13,7 +13,9 @@
       <h3>Release timeline</h3>
       <p class="description">Please note, all dates are estimates and are subject to change.</p>
     </div>
-    <paper-toggle-button noink>Hide Blink components</paper-toggle-button>
+    <!-- <paper-toggle-button> doesn't working here. Related links:
+      https://github.com/PolymerElements/paper-toggle-button/pull/132 -->
+    <label><input type="checkbox" class="paper-toggle-button">Hide Blink components</label>
   </div>
 {% endblock %}
 

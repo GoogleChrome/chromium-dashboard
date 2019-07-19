@@ -20,7 +20,9 @@
     <a href="/admin/subscribers" class="view_owners_linke">List by owner &amp; their features →</a>
   </div>
   <div class="layout horizontal subheader_toggles">
-    <paper-toggle-button noink>Edit mode</paper-toggle-button>
+    <!-- <paper-toggle-button> doesn't working here. Related links:
+      https://github.com/PolymerElements/paper-toggle-button/pull/132 -->
+    <label><input type="checkbox" class="paper-toggle-button">Edit mode</label>
   </div>
 </div>
 {% endblock %}
@@ -96,7 +98,7 @@
 (function() {
 'use strict';
 
-document.querySelector('paper-toggle-button').addEventListener('change', e => {
+document.querySelector('.paper-toggle-button').addEventListener('change', e => {
   e.stopPropagation();
   document.querySelector('#components_list').classList.toggle('editing', e.target.checked);
 });

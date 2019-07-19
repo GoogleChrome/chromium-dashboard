@@ -7,7 +7,6 @@ import '@polymer/paper-item';
 import '@polymer/paper-listbox';
 import '@polymer/paper-ripple';
 import '@polymer/paper-styles/color.js';
-import '@polymer/paper-toggle-button';
 
 import './elements/icons';
 import './elements/chromedash-color-status';

@@ -18,9 +18,3 @@ body[data-path*='features/schedule'] {
   max-width: 100%;
   justify-content: center;
 }
-
-paper-toggle-button {
-  --paper-toggle-button-checked-bar-color: $chromium-color-medium;
-  --paper-toggle-button-checked-button-color: $chromium-color-center;
-  cursor: pointer;
-}
