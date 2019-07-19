@@ -12,7 +12,7 @@ import swPrecache from 'sw-precache';
 import * as uglifyEs from 'gulp-uglify-es';
 const uglify = uglifyEs.default;
 import gulpLoadPlugins from 'gulp-load-plugins';
-const autoFixTask = require('gulp-eslint-auto-fix')
+const eslintIfFixed = require('gulp-eslint-if-fixed');
 const $ = gulpLoadPlugins();
 
 function minifyHtml() {
@@ -46,10 +46,16 @@ gulp.task('lint', () => {
     .pipe($.eslint.failAfterError());
 });
 
-autoFixTask('fix-lint', [
-  'static/js-src/*.js',
-  'static/elements/*.js',
-])
+gulp.task('lint-fix', () => {
+  return gulp.src([
+    'static/js-src/*.js',
+    'static/elements/*.js',
+  ], {base: './'})
+    .pipe($.eslint({fix:true}))
+    .pipe($.eslint.format())
+    .pipe(eslintIfFixed('./'))
+    .pipe($.eslint.failAfterError());
+});
 
 // Compile and automatically prefix stylesheets
 gulp.task('styles', () => {
@@ -177,7 +183,7 @@ gulp.task('watch', gulp.series(
   'clean',
   'styles',
   'js',
-  'lint',
+  'lint-fix',
   'generate-service-worker',
   function watch() {
     gulp.watch(['static/sass/**/*.scss'], gulp.series('styles'));
@@ -190,6 +196,6 @@ gulp.task('default', gulp.series(
   'clean',
   'styles',
   'js',
-  'lint',
+  'lint-fix',
   'generate-service-worker',
 ));

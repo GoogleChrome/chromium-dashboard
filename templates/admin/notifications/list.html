@@ -41,7 +41,7 @@
 
 {% block js %}
   <script>
-    {% inline_file "/static/js/notifications.js" %}
+    {% inline_file "/static/js/notifications.min.js" %}
 
     const SERVER_KEY = '{{FIREBASE_SERVER_KEY}}';
     const SUBSCRIPTIONS = {{subscriptions|safe}};
@@ -90,7 +90,7 @@
     }
 
     async function init() {
-      $('#num_push_tokens').textContent = SUBSCRIPTIONS.length;
+      document.querySelector('#num_push_tokens').textContent = SUBSCRIPTIONS.length;
       document.querySelectorAll('.push-notifications').forEach(el => {
         el.removeAttribute('hidden');
         el.disabled = false;
