@@ -73,10 +73,12 @@
     </div>
   </section>
 
-  {% if feature.summary %}
-  <section id="summary">
-    <p>{{ feature.summary|urlize }}</p>
-  </section>
+  {% for summary in feature.summary %}
+    <section id="summary">
+      <p>{{ feature.summary|urlize }}</p>
+    </section>
+	{% endfor %}
+
   {% endif %}
 
   {% if feature.motivation %}
