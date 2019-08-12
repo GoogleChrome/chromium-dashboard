@@ -77,6 +77,12 @@ iron-icon {
 .iconrow {
   display: flex;
   align-items: center;
+
+  button {
+    background: transparent;
+    border: 0;
+    padding: 0;
+  }
 }
 
 .category-tooltip,

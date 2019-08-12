@@ -46,7 +46,7 @@ class ChromedashTimeline extends LitElement {
     this.showAllHistoricalData = !this.showAllHistoricalData;
   }
 
-  ready() {
+  firstUpdated() {
     window.google.charts.load('current', {'packages': ['corechart']});
     window.google.charts.setOnLoadCallback(() => {
       // If there's an id in the URL, load the property it.

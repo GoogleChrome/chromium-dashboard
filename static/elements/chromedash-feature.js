@@ -199,12 +199,9 @@ class ChromedashFeature extends LitElement {
         <div class="iconrow
             ${IS_PUSH_NOTIFIER_SUPPORTED ?
               'supports-push-notifications' : ''}">
-          <span class="tooltip category-tooltip"
-                title="Filter by category ${this.feature.category}">
-            <a href="#" class="category"
-               @click="${this.categoryFilter}">
-              ${this.feature.category}</a>
-          </span>
+          <button class="category tooltip category-tooltip" @click="${this.categoryFilter}"
+              title="Filter by category ${this.feature.category}">
+            ${this.feature.category}</button>
           <div class="topcorner">
             ${this.feature.browsers.chrome.status.text === 'Removed' ? html`
               <span class="tooltip" title="Removed feature">
@@ -238,16 +235,14 @@ class ChromedashFeature extends LitElement {
               </span>
               ` : ''}
             ${IS_PUSH_NOTIFIER_SUPPORTED ? html`
-              <span class="tooltip"
-                    title="Receive a push notification when there are updates">
-                <a href="#" @click="${this.subscribeToFeature}" data-tooltip>
-                  <iron-icon icon="${this._receivePush ?
-                                'chromestatus:notifications' :
-                                'chromestatus:notifications-off'}"
-                             class="pushicon ${IS_PUSH_NOTIFIER_ENABLED ?
-                               '' : 'disabled'}"></iron-icon>
-                </a>
-              </span>
+              <button @click="${this.subscribeToFeature}" data-tooltip class="tooltip"
+                  title="Receive a push notification when there are updates">
+                <iron-icon icon="${this._receivePush ?
+                              'chromestatus:notifications' :
+                              'chromestatus:notifications-off'}"
+                           class="pushicon ${IS_PUSH_NOTIFIER_ENABLED ?
+                             '' : 'disabled'}"></iron-icon>
+              </button>
               ` : ''}
             <span class="tooltip" title="File a bug against this feature">
               <a href="${this._newBugUrl}" data-tooltip>
@@ -329,9 +324,9 @@ class ChromedashFeature extends LitElement {
                   <label>Blink component</label>
                   <span class="tooltip"
                         title="Filter by component ${this.feature.browsers.chrome.blink_components}">
-                    <a href="#" @click="${this.filterByComponent}">
+                    <button @click="${this.filterByComponent}">
                       ${this.feature.browsers.chrome.blink_components}
-                    </a>
+                    </button>
                   </span>
                 </span>
                 ` : ''}
@@ -342,9 +337,9 @@ class ChromedashFeature extends LitElement {
                   <span class="owner-list">
                     ${this.feature.browsers.chrome.owners.map((owner) => html`
                       <span class="tooltip" title="Filter by owner ${owner}">
-                        <a href="#" @click="${this.filterByOwner}">
+                        <button @click="${this.filterByOwner}">
                           ${owner}
-                        </a>
+                        </button>
                       </span>
                       `)}
                   </span>

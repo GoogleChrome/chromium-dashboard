@@ -86,9 +86,6 @@ class ChromedashMetrics extends LitElement {
     if (this.sortOrders[order].reverse) {
       this.viewList.reverse();
     }
-
-    // TODO: remove when github.com/Polymer/polymer/issues/2175 is fixed.
-    this.viewList = this.viewList.slice(0);
   }
 
   showTimeline(e) {
@@ -115,21 +112,20 @@ class ChromedashMetrics extends LitElement {
       <b>Showing <span>${this.viewList.length}</span> properties</b>
       <ol id="stack-rank-list">
         <li class="header">
-          <label @click="${this.sort}" data-order="property_name">
+          <span @click="${this.sort}" data-order="property_name">
             Property name <iron-icon icon="${this.propertyNameSortIcon}"></iron-icon>
-          </label>
-          <label @click="${this.sort}" data-order="percentage" class="percent_label">
+          </span>
+          <span @click="${this.sort}" data-order="percentage" class="percent_label">
            Percentage <iron-icon icon="${this.percentSortIcon}"></iron-icon>
-          </label>
+          </span>
         </li>
         ${this.viewList.map((item) => html`
           <li id="${item.property_name}"
               title="${item.property_name}. Click to deep link to this property." tabindex="0">
-            <label>
-              <a href="#${item.property_name}">${item.property_name}</a>
-            </label>
-            <chromedash-x-meter value="${item.percentage}" max="${this.maxPercentage}" @click="${this.showTimeline}"
-                     title="Click to see a timeline view of this property"></chromedash-x-meter>
+            <a href="#${item.property_name}">${item.property_name}</a>
+            <chromedash-x-meter value="${item.percentage}" max="${this.maxPercentage}"
+                @click="${this.showTimeline}"
+                title="Click to see a timeline view of this property"></chromedash-x-meter>
           </li>
           `)}
       </ol>
