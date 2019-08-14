@@ -8,9 +8,14 @@ INSTALLED_APPS = (
 
 ROOT_DIR = os.path.abspath(os.path.dirname(__file__))
 
-TEMPLATE_DIRS = (
-  os.path.join(ROOT_DIR, 'templates')
-)
+TEMPLATES = [
+  {
+    'BACKEND': 'django.template.backends.django.DjangoTemplates',
+    'DIRS': [os.path.join(ROOT_DIR, 'templates')],
+    'APP_DIRS': True,
+  },
+]
+
 ################################################################################
 
 if (os.getenv('SERVER_SOFTWARE', '').startswith('Google App Engine') or
@@ -24,6 +29,8 @@ TEMPLATE_DEBUG = DEBUG
 
 APP_TITLE = 'Chrome Platform Status'
 
+SECRET_KEY = os.environ['DJANGO_SECRET']
+
 APP_VERSION = os.environ['CURRENT_VERSION_ID'].split('.')[0]
 MEMCACHE_KEY_PREFIX = APP_VERSION # For memcache busting on new version
 
@@ -32,6 +39,8 @@ RSS_FEED_LIMIT = 15
 VULCANIZE = True #PROD
 
 DEFAULT_CACHE_TIME = 600 # seconds
+
+USE_I18N = False
 
 if DEBUG:
   TEMPLATE_CACHE_TIME = 0

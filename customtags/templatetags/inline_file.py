@@ -1,6 +1,7 @@
 import logging
 
 from django import template
+from django.utils.safestring import mark_safe
 
 register = template.Library()
 
@@ -15,4 +16,4 @@ def inline_file(path):
       content = f.read()
   except IOError, e:
     logging.error('inline_file cannot read file - ' + str(e))
-  return content
+  return mark_safe(content)
