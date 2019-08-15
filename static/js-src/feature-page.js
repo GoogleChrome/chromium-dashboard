@@ -1,5 +1,5 @@
 // Event handler. Used in feature.html template.
-const subscribeToFeature = (featureId) => { // eslint-disable-line no-unused-vars
+const subscribeToFeature = (featureId) => {
   const iconEl = document.querySelector('.pushicon');
   if (iconEl.icon === 'chromestatus:notifications') {
     iconEl.icon = 'chromestatus:notifications-off';
@@ -11,7 +11,7 @@ const subscribeToFeature = (featureId) => { // eslint-disable-line no-unused-var
 };
 
 // Event handler. Used in feature.html template.
-const shareFeature = () => { // eslint-disable-line no-unused-vars
+const shareFeature = () => {
   if (navigator.share) {
     const url = '/feature/' + FEATURE_ID;
     navigator.share({
@@ -69,3 +69,5 @@ if (SHOW_TOAST) {
                       'show up in the main list.', null, null, -1);
   }, 500);
 }
+
+export {subscribeToFeature, shareFeature};
