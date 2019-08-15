@@ -1,16 +1,21 @@
+// TODO(yangguang): This component is not tested. Data is not available in devserver, so cannot be tested locally.
+
 import {LitElement, html} from 'https://unpkg.com/@polymer/lit-element@latest/lit-element.js?module';
 
 class ChromedashTimeline extends LitElement {
   static get properties() {
     return {
-      selectedBucketId: {type: Number},
-      showAllHistoricalData: {type: Boolean},
-      timeline: {type: Object}, // Not used?
-      title: {type: String},
       type: {type: String},
       view: {type: String},
-      props: {type: Array}, // Directly edited from metrics/css/timeline/popularity and metrics/feature/timeline/popularity
-      useRemoteData: {type: Boolean}, // If true, fetches live data from chromestatus.com instead of localhost.
+      title: {type: String},
+      selectedBucketId: {attribute: false},
+      showAllHistoricalData: {attribute: false},
+      props: {attribute: false}, // Directly edited from metrics/css/timeline/popularity and metrics/feature/timeline/popularity
+      useRemoteData: {attribute: false}, // If true, fetches live data from chromestatus.com instead of localhost.
+
+      // Listed in the old code, but seems not used in the component:
+      prod: {type: Boolean},
+      timeline: {attribute: false},
     };
   }
 

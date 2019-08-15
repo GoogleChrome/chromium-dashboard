@@ -1,14 +1,14 @@
 import {LitElement, html} from 'https://unpkg.com/@polymer/lit-element@latest/lit-element.js?module';
-import '/static/elements/chromedash-feature.js';
+import './chromedash-feature.js';
 
 class ChromedashFeaturelist extends LitElement {
   static get properties() {
     return {
-      whitelisted: {type: Boolean}, // From attribute
-      features: {type: Array, attribute: false}, // Directly edited and accessed in template/features.html
-      metadataEl: {type: Object}, // The metadata component element. Directly edited in template/features.html
-      searchEl: {type: Object}, // The search input element. Directly edited in template/features.html
-      filtered: {type: Array},
+      whitelisted: {type: Boolean},
+      features: {attribute: false}, // Directly edited and accessed in template/features.html
+      metadataEl: {attribute: false}, // The metadata component element. Directly edited in template/features.html
+      searchEl: {attribute: false}, // The search input element. Directly edited in template/features.html
+      filtered: {attribute: false},
     };
   }
 

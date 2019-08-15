@@ -1,6 +1,7 @@
 import {LitElement, html} from 'https://unpkg.com/@polymer/lit-element@latest/lit-element.js?module';
+import {nothing} from 'https://unpkg.com/lit-html/lit-html.js?module';
 import 'https://unpkg.com/@polymer/iron-icon/iron-icon.js?module';
-import '/static/elements/chromedash-color-status.js';
+import './chromedash-color-status.js';
 
 const MAX_STANDARDS_VAL = 6;
 const MAX_VENDOR_VIEW = 7;
@@ -13,18 +14,18 @@ const IS_PUSH_NOTIFIER_SUPPORTED = window.PushNotifier.SUPPORTS_NOTIFICATIONS;
 class ChromedashFeature extends LitElement {
   static get properties() {
     return {
-      feature: {type: Object}, // From attribute
-      whitelisted: {type: Boolean}, // From attribute
+      feature: {type: Object},
+      whitelisted: {type: Boolean},
       open: {type: Boolean, reflect: true}, // Attribute used in the parent for styling
       // Values used in the template
-      _interopRisk: {type: Number, attribute: false},
-      _isDeprecated: {type: Boolean, attribute: false},
-      _hasDocLinks: {type: Boolean, attribute: false},
-      _hasSampleLinks: {type: Boolean, attribute: false},
-      _commentHtml: {type: String, attribute: false},
-      _crBugNumber: {type: String, attribute: false},
-      _newBugUrl: {type: String, attribute: false},
-      _receivePush: {type: Boolean, attribute: false},
+      _interopRisk: {attribute: false},
+      _isDeprecated: {attribute: false},
+      _hasDocLinks: {attribute: false},
+      _hasSampleLinks: {attribute: false},
+      _commentHtml: {attribute: false},
+      _crBugNumber: {attribute: false},
+      _newBugUrl: {attribute: false},
+      _receivePush: {attribute: false},
     };
   }
 
@@ -194,11 +195,11 @@ class ChromedashFeature extends LitElement {
                 <iron-icon icon="chromestatus:create"></iron-icon>
               </a>
             </span>
-            `: ''}
+            `: nothing}
         </h2>
         <div class="iconrow
             ${IS_PUSH_NOTIFIER_SUPPORTED ?
-              'supports-push-notifications' : ''}">
+              'supports-push-notifications' : nothing}">
           <button class="category tooltip category-tooltip" @click="${this.categoryFilter}"
               title="Filter by category ${this.feature.category}">
             ${this.feature.category}</button>
@@ -208,32 +209,32 @@ class ChromedashFeature extends LitElement {
                 <iron-icon icon="chromestatus:cancel"
                            class="remove" data-tooltip></iron-icon>
               </span>
-              ` : ''}
+              ` : nothing}
             ${this._isDeprecated ? html`
               <span class="tooltip" title="Deprecated feature">
                 <iron-icon icon="chromestatus:warning"
                            class="deprecated" data-tooltip></iron-icon>
               </span>
-              ` : ''}
+              ` : nothing}
             ${this.feature.browsers.chrome.flag ? html`
               <span class="tooltip"
                     title="Experimental feature behind a flag">
                 <iron-icon icon="chromestatus:flag"
                            class="experimental"></iron-icon>
               </span>
-              ` : ''}
+              ` : nothing}
             ${this.feature.browsers.chrome.origintrial ? html`
               <span class="tooltip" title="Origin trial">
                 <iron-icon icon="chromestatus:extension"
                            class="experimental"></iron-icon>
               </span>
-              ` : ''}
+              ` : nothing}
             ${this.feature.browsers.chrome.intervention ? html`
               <span class="tooltip" title="Browser intervention">
                 <iron-icon icon="chromestatus:pan-tool"
                            class="intervention" data-tooltip></iron-icon>
               </span>
-              ` : ''}
+              ` : nothing}
             ${IS_PUSH_NOTIFIER_SUPPORTED ? html`
               <button @click="${this.subscribeToFeature}" data-tooltip class="tooltip"
                   title="Receive a push notification when there are updates">
@@ -241,9 +242,9 @@ class ChromedashFeature extends LitElement {
                               'chromestatus:notifications' :
                               'chromestatus:notifications-off'}"
                            class="pushicon ${IS_PUSH_NOTIFIER_ENABLED ?
-                             '' : 'disabled'}"></iron-icon>
+                             nothing : 'disabled'}"></iron-icon>
               </button>
-              ` : ''}
+              ` : nothing}
             <span class="tooltip" title="File a bug against this feature">
               <a href="${this._newBugUrl}" data-tooltip>
                 <iron-icon icon="chromestatus:bug-report"></iron-icon>
@@ -281,7 +282,7 @@ class ChromedashFeature extends LitElement {
                   </label>
                   <span>${this.feature.browsers.chrome.desktop}</span>
                 </span>
-                ` : ''}
+                ` : nothing}
               ${this.feature.browsers.chrome.android ? html`
                 <span>
                   <label class="impl_status_label">
@@ -294,7 +295,7 @@ class ChromedashFeature extends LitElement {
                   </label>
                   <span>${this.feature.browsers.chrome.android}</span>
                 </span>
-                ` : ''}
+                ` : nothing}
               ${this.feature.browsers.chrome.webview ? html`
                 <span>
                   <label class="impl_status_label">
@@ -306,10 +307,10 @@ class ChromedashFeature extends LitElement {
                   </label>
                   <span>${this.feature.browsers.chrome.webview}</span>
                 </span>
-                ` : ''}
+                ` : nothing}
               ${this.feature.browsers.chrome.prefixed ? html`
                 <span><label>Prefixed</label><span>Yes</span></span>
-                ` : ''}
+                ` : nothing}
               ${this.feature.browsers.chrome.bug ? html`<span>
                   <span>Tracking bug</span>
                   <a href="${this.feature.browsers.chrome.bug}"
@@ -317,7 +318,7 @@ class ChromedashFeature extends LitElement {
                        `#${this._crBugNumber}` :
                        this.feature.browsers.chrome.bug}</a>
                 </span>
-                ` : ''}
+                ` : nothing}
               ${this.feature.browsers.chrome.blink_components &&
                 this.feature.browsers.chrome.blink_components.length ? html`
                 <span>
@@ -329,7 +330,7 @@ class ChromedashFeature extends LitElement {
                     </button>
                   </span>
                 </span>
-                ` : ''}
+                ` : nothing}
               ${this.feature.browsers.chrome.owners &&
                 this.feature.browsers.chrome.owners.length ? html`
                 <span class="owner">
@@ -344,7 +345,7 @@ class ChromedashFeature extends LitElement {
                       `)}
                   </span>
                 </span>
-                ` : ''}
+                ` : nothing}
             </div>
           </div>
           <div class="flex">
@@ -422,26 +423,26 @@ class ChromedashFeature extends LitElement {
                       .links="${this.feature.resources.docs}"
                       title="Link"></chromedash-multi-links>
                 </div>
-                ` : ''}
+                ` : nothing}
               ${this._hasDocLinks && this._hasSampleLinks ?
-                html`<span>,</span>` : ''}
+                html`<span>,</span>` : nothing}
               ${this._hasSampleLinks ? html`
                 <div class="sample_links">
                   <chromedash-multi-links title="Sample"
                       .links="${this.feature.resources.samples}"
                       ></chromedash-multi-links>
                 </div>
-                ` : ''}
+                ` : nothing}
             </div>
           </section>
-          ` : ''}
+          ` : nothing}
         ${this.feature.comments ? html`
           <section>
             <h3>Comments</h3>
             <summary class="comments">${this._commentHtml}</summary>
           </section>
-          ` : ''}
-        ` : ''}
+          ` : nothing}
+        ` : nothing}
     `;
   }
 }

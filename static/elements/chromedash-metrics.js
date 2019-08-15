@@ -1,17 +1,17 @@
 import {LitElement, html} from 'https://unpkg.com/@polymer/lit-element@latest/lit-element.js?module';
 import 'https://unpkg.com/@polymer/iron-icon/iron-icon.js?module';
-import '/static/elements/chromedash-x-meter.js';
+import './chromedash-x-meter.js';
 
 class ChromedashMetrics extends LitElement {
   static get properties() {
     return {
-      type: {type: String}, // From attribute
-      view: {type: String}, // From attribute
-      prod: {type: Boolean}, // From attibute
-      viewList: {type: Array},
-      propertyNameSortIcon: {type: String},
-      percentSortIcon: {type: String},
-      maxPercentage: {type: Number},
+      type: {type: String},
+      view: {type: String},
+      prod: {type: Boolean},
+      viewList: {attribute: false},
+      propertyNameSortIcon: {attribute: false},
+      percentSortIcon: {attribute: false},
+      maxPercentage: {attribute: false},
     };
   }
 
@@ -31,11 +31,11 @@ class ChromedashMetrics extends LitElement {
     this.dispatchEvent(event);
   }
 
-  firstUpdated() {
+  async firstUpdated() {
     const endpoint = `${!this.prod ? 'https://www.chromestatus.com' : ''}/data/${this.type}${this.view}`;
-    fetch(endpoint).then((res) => res.json()).then((response) => {
-      this._updateAfterData(response);
-    });
+    const res = await fetch(endpoint);
+    const json = await res.json();
+    this._updateAfterData(json);
   }
 
   _updateAfterData(items) {

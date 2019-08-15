@@ -28,6 +28,12 @@
   display: none !important;
 }
 
+button {
+  background: transparent;
+  border: 0;
+  padding: 0;
+}
+
 h2 {
   display: inline-block;
   font-size: 25px;
@@ -77,12 +83,6 @@ iron-icon {
 .iconrow {
   display: flex;
   align-items: center;
-
-  button {
-    background: transparent;
-    border: 0;
-    padding: 0;
-  }
 }
 
 .category-tooltip,

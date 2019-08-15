@@ -1,12 +1,12 @@
 import {LitElement, html} from 'https://unpkg.com/@polymer/lit-element@latest/lit-element.js?module';
 import 'https://unpkg.com/@polymer/iron-icon/iron-icon.js?module';
-import '/static/elements/chromedash-color-status.js';
+import './chromedash-color-status.js';
 
 class ChromedashLegend extends LitElement {
   static get properties() {
     return {
-      opened: {type: Boolean, reflect: true}, // Used to control visibility. See the css
-      views: {type: Object}, // Assigned in features-page.js, value from Django
+      opened: {type: Boolean, reflect: true},
+      views: {attribute: false}, // Assigned in features-page.js, value from Django
     };
   }
 

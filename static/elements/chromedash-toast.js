@@ -6,10 +6,10 @@ let _currentToast = null;
 class ChromedashToast extends LitElement {
   static get properties() {
     return {
-      msg: {type: String}, // The toast's message.
-      actionLabel: {type: String}, // A label for the call to action of the toast.
-      duration: {type: Number}, // The duration in milliseconds to show the toast. -1 or `Infinity`, to disable the toast auto-closing.
+      msg: {type: String},
       open: {type: Boolean, reflect: true},
+      actionLabel: {attribute: false},
+      duration: {attribute: false}, // The duration in milliseconds to show the toast. -1 or `Infinity`, to disable the toast auto-closing.
     };
   }
 
