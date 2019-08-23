@@ -1,5 +1,5 @@
 <script type="module">
-  import 'https://unpkg.com/@polymer/paper-menu-button/paper-menu-button.js?module';
+  import 'https://unpkg.com/@polymer/iron-icon/iron-icon.js?module';
 </script>
 <header>
   <aside>
@@ -13,13 +13,13 @@
     <a href="/features">All features</a>
     <a href="/features/schedule">Releases</a>
     <a href="/samples" class="features">Samples</a>
-    <paper-menu-button vertical-align="top" horizontal-align="right">
-      <a href="javascript:void(0)" class="dropdown-trigger">Stats</a>
-      <div class="dropdown-content" hidden> <!-- hidden removed by lazy load code. -->
-        <a href="/metrics/css/popularity" class="metrics">CSS</a>
-        <a href="/metrics/feature/popularity" class="metrics">JS/HTML</a>
-      </div>
-    </paper-menu-button>
+    <div class="nav-dropdown-container">
+      <a class="nav-dropdown-trigger">Stats</a>
+      <ul>
+        <li><a href="/metrics/css/popularity">CSS</a></li>
+        <li><a href="/metrics/feature/popularity">JS/HTML</a></li>
+      </ul>
+    </div>
   </nav>
   <a href="#" id="a2hs-button" title="Add app to homescreen"><img src="/static/img/a2hs_icon_24px.svg"></a>
 </header>

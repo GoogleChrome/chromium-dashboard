@@ -12,7 +12,7 @@ for (let i = 0; i < fields.length; ++i) {
 const MIN_MILESTONE_TO_BE_ACTIVE = 3;
 const NO_LONGER_PURSUING = 1000;
 
-document.querySelector('[name="feature_form"]').addEventListener('change', (e) => {
+document.querySelector('[name=feature_form]').addEventListener('change', (e) => {
   switch (e.target.tagName.toLowerCase()) {
     case 'select':
       if (e.target.id === 'id_impl_status_chrome') {
@@ -27,20 +27,23 @@ document.querySelector('[name="feature_form"]').addEventListener('change', (e) =
   }
 });
 
-document.querySelector('.delete-button').addEventListener('click', (e) => {
-  if (!confirm('Delete feature?')) {
-    return;
-  }
-
-  fetch(`/admin/features/delete/${e.currentTarget.dataset.id}`, {
-    method: 'POST',
-    credentials: 'include',
-  }).then((resp) => {
-    if (resp.status === 200) {
-      location.href = '/features';
+// Only admins see this button
+if (document.querySelector('.delete-button')) {
+  document.querySelector('.delete-button').addEventListener('click', (e) => {
+    if (!confirm('Delete feature?')) {
+      return;
     }
+
+    fetch(`/admin/features/delete/${e.currentTarget.dataset.id}`, {
+      method: 'POST',
+      credentials: 'include',
+    }).then((resp) => {
+      if (resp.status === 200) {
+        location.href = '/features';
+      }
+    });
   });
-});
+}
 
 /**
  * Toggles the chrome milestone inputs.

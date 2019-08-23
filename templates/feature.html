@@ -1,4 +1,4 @@
-{% extends embed|yesno:"base_embed.html,base.html" %}
+{% extends embed|yesno:"_base_embed.html,_base.html" %}
 {% load inline_file %}
 
 {% block page_title %}{% if feature.name %}{{ feature.name }} - {% endif %}{% endblock %}
@@ -19,7 +19,7 @@
 
 {% block preload %}
   <script type="module">
-    
+    import 'https://unpkg.com/@polymer/iron-icon/iron-icon.js?module';
   </script>
 {% endblock %}
 
@@ -44,7 +44,7 @@
         <iron-icon icon="chromestatus:flag" class="experimental"></iron-icon>
       </span>
       {% endif %}
-      <span class="tooltip no-push-notifications" title="Receive a push notification where there are updates">
+      <span class="tooltip push-notifications" title="Receive a push notification where there are updates" hidden>
         <a href="#" data-tooltip>
           <iron-icon icon="chromestatus:notifications-off"
                       onclick="subscribeToFeature({{ feature.id }})"
@@ -245,79 +245,17 @@
 
 {% block js %}
   <script>
-    {% inline_file "/static/js/notifications.min.js" %}
+    (function() {
+      'use strict';
+      
+      // Variables used in feature-page.js
+      const FEATURE_ID = '{{ feature.id }}';
+      const FEATURE_NAME = '{{ feature.name|escapejs }}';
+      const FEATUER_SUMMARY = '{{ feature.summary|escapejs }}';
+      const SHOW_TOAST = {% if was_updated %}true{% else %}false{% endif %};
 
-    const subscribeToFeature = (featureId) => {
-      const iconEl = document.querySelector('.pushicon');
-      if (iconEl.icon === 'chromestatus:notifications') {
-        iconEl.icon = 'chromestatus:notifications-off';
-        PushNotifications.unsubscribeFromFeature(featureId);
-      } else {
-        iconEl.icon = 'chromestatus:notifications';
-        PushNotifications.subscribeToFeature(featureId);
-      }
-    }
-
-    const shareFeature = () => {
-      if (navigator.share) {
-        const url = '/feature/{{ feature.id }}';
-        navigator.share({
-          title: '{{ feature.name|escapejs }}',
-          text: '{{ feature.summary|escapejs }}',
-          url: url
-        })
-        .then(() => {
-          ga('send', 'social', {
-            'socialNetwork': 'web',
-            'socialAction': 'share',
-            'socialTarget': url
-          });
-        });
-      }
-    }
-
-    // Remove loading spinner at page load.
-    document.body.classList.remove('loading');
-
-    // Unhide "Web Share" feature if browser supports it.
-    if (navigator.share) {
-      Array.from(document.querySelectorAll('.no-web-share')).forEach((el) => {
-        el.classList.remove('no-web-share');
-      });
-    }
-
-    // Unhide notification features if browser supports it.
-    if (PushNotifier.SUPPORTS_NOTIFICATIONS) {
-      Array.from(document.querySelectorAll('.no-push-notifications')).forEach((el) => {
-        el.classList.remove('no-push-notifications');
-      });
-
-      // Lazy load Firebase messaging SDK.
-      loadFirebaseSDKLibs().then(() => {
-        PushNotifications.init(); // init Firebase messaging.
-
-        // If use already granted the notification permission, update state of the
-        // push icon for each feature the user is subscribed to.
-        if (PushNotifier.GRANTED_ACCESS) {
-          PushNotifications.getAllSubscribedFeatures().then((subscribedFeatures) => {
-            const iconEl = document.querySelector('.pushicon');
-            if (subscribedFeatures.includes('{{feature.id}}')) {
-              iconEl.icon = 'chromestatus:notifications';
-            } else {
-              iconEl.icon = 'chromestatus:notifications-off';
-            }
-          });
-        }
-      });
-    }
-
-    const SHOW_TOAST = {% if was_updated %}true{% else %}false{% endif %};
-    if (SHOW_TOAST) {
-      setTimeout(() => {
-        const toastEl = document.querySelector('chromedash-toast');
-        toastEl.showMessage('Your feature was saved! It may take a few minutes to ' +
-                          'show up in the main list.', null, null, -1);
-      }, 500);
-    }
+      {% inline_file "/static/js/notifications.min.js" %}
+      {% inline_file "/static/js/feature-page.min.js" %}
+    })();
   </script>
 {% endblock %}

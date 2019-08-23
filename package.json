@@ -33,6 +33,7 @@
     "gulp-babel": "^7.0.1",
     "gulp-crisper": "^1.1.0",
     "gulp-eslint": "^5.0.0",
+    "gulp-eslint-if-fixed": "^1.0.0",
     "gulp-if": "^2.0.1",
     "gulp-license": "^1.1.0",
     "gulp-load-plugins": "^1.2.4",
@@ -46,5 +47,7 @@
     "sw-precache": "^5.2.1",
     "sw-toolbox": "^3.6.0"
   },
-  "dependencies": {}
+  "dependencies": {
+    "lit-element": "^2.1.0"
+  }
 }

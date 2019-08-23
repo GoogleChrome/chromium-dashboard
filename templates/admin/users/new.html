@@ -1,12 +1,13 @@
-{% extends "base.html" %}
+{% extends "_base.html" %}
 
 {% block css %}
-<!-- <link rel="stylesheet" href="/static/css/users/users.css"> -->
-<link rel="stylesheet" href="/static/css/forms.css">
+  <link rel="stylesheet" href="/static/css/forms.css">
 {% endblock %}
 
 {% block preload %}
-<script type="module" src="/static/elements/admin-imports.js"></script>
+  <script type="module">
+    import '/static/elements/chromedash-userlist.js';
+  </script>
 {% endblock %}
 
 {% block subheader %}
@@ -25,11 +26,9 @@
 
 {% block js %}
 <script>
-document.addEventListener('WebComponentsReady', () => {
-  document.body.classList.remove('loading');
-
   const el = document.querySelector('chromedash-userlist');
-  el.users = {{users|safe}}; // Filled from server.
-});
+  el.users = {{users|safe}};
+
+  document.body.classList.remove('loading');
 </script>
 {% endblock %}

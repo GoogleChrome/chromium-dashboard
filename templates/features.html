@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "_base.html" %}
 
 {% load inline_file %}
 {% load cache %}
@@ -14,7 +14,6 @@
 {% endblock %}
 
 {% block css %}
-  <!-- <link rel="stylesheet" href="/static/css/features/features.css"> -->
   {% cache TEMPLATE_CACHE_TIME featurescss %}
     <style>{% inline_file "/static/css/features/features.css" %}</style>
   {% endcache %}
@@ -23,6 +22,7 @@
 {% block preload %}
   <script type="module">
     import '/static/elements/chromedash-featurelist.js';
+    import '/static/elements/chromedash-legend.js';
     import '/static/elements/chromedash-metadata.js';
   </script>
 {% endblock %}
@@ -34,7 +34,7 @@
     </div>
     <div class="search">
       <input type="search" placeholder="Filter" disabled>
-      <a href="" class="legend"><iron-icon icon="chromestatus:help"></iron-icon></a>
+      <button class="legend-button"><iron-icon icon="chromestatus:help"></iron-icon></button>
     </div>
     <div class="actionlinks">
       <a id="features-subscribe-button" class="blue-button no-push-notifications" title="Sends a push notification when new features are added."><iron-icon icon="chromestatus:notifications-off"></iron-icon><span>Subscribe</span></a>
@@ -54,7 +54,7 @@
 {% endblock %}
 
 {% block overlay %}
-  <chromedash-legend hidden></chromedash-legend>
+  <chromedash-legend></chromedash-legend>
 {% endblock %}
 
 {% block content %}
@@ -64,15 +64,15 @@
 {% block js %}
   <script>
     (function() {
-    'use strict';
-      // Get values from server. used in /static/js/features.js
+      'use strict';
+      // Get values from server. used in /static/js/features-page.js
       const VIEWS = {
         vendors: {{VENDOR_VIEWS|safe}},
         webdevs: {{WEB_DEV_VIEWS|safe}},
         standards: {{STANDARDS_VALS|safe}}
       };
       {% inline_file "/static/js/notifications.min.js" %}
-      {% inline_file "/static/js/features.min.js" %}
+      {% inline_file "/static/js/features-page.min.js" %}
     })();
   </script>
 {% endblock %}

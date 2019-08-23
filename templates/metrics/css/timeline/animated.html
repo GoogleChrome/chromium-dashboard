@@ -1,19 +1,19 @@
-{% extends "base.html" %}
+{% extends "_base.html" %}
 {% load inline_file %}
 
 {% block css %}
-<!-- <link rel="stylesheet" href="/static/css/metrics/metrics.css"> -->
-<style>{% inline_file "/static/css/metrics/metrics.css" %}</style>
+  <style>{% inline_file "/static/css/metrics.css" %}</style>
 {% endblock %}
 
 {% block preload %}
+<script src="https://www.gstatic.com/charts/loader.js"></script>
 <script type="module">
   import '/static/elements/chromedash-timeline.js';
 </script>
 {% endblock %}
 
 {% block drawer %}
-  {% include "metrics/_nav.html" %}
+  {% include "metrics/css/_css_metric_nav.html" %}
 {% endblock %}
 
 {% block subheader %}
@@ -27,7 +27,7 @@
   <chromedash-timeline
       type="css" view="animated"
       title="The % of page loads in which the given CSS property was animated."
-      {% if not prod %}use-remote-data{% endif %}></chromedash-timeline>
+      {% if prod %}prod{% endif %}></chromedash-timeline>
   <p class="callout">
     <b>Note</b>: on 2017-10-26 the underlying metrics were switched over to a newer collection system
     which is <a href="https://groups.google.com/a/chromium.org/forum/#!msg/blink-api-owners-discuss/IpIkbz0qtrM/HUCfSMv2AQAJ" target="_blank">more accurate</a>.
@@ -38,17 +38,11 @@
 
 {% block js %}
 <script>
-document.addEventListener('WebComponentsReady', function(e) {
-  var timeline = document.querySelector('chromedash-timeline');
-  timeline.props = {{CSS_PROPERTY_BUCKETS|safe}};
-
-  document.body.classList.remove('loading');
-
-  window.addEventListener('popstate', function(e) {
-    if (e.state) {
-      timeline.selectedBucketId = e.state.id;
-    }
-  });
-});
+  (function() {
+    'use strict';
+    // Get values from server. used in /static/js/metrics-timeline-page.js
+    const DATA = {{CSS_PROPERTY_BUCKETS|safe}};
+    {% inline_file "/static/js/metrics-timeline-page.min.js" %}
+  })();
 </script>
 {% endblock %}

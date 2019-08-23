@@ -1,13 +1,15 @@
-{% extends "base.html" %}
+{% extends "_base.html" %}
 {% load verbatim %}
 {% load inline_file %}
 
 {% block preload %}
-<script type="module" src="/static/elements/admin-imports.js"></script>
+  <script type="module">
+    import 'https://unpkg.com/@polymer/paper-toggle-button/paper-toggle-button.js?module';
+  </script>
 {% endblock %}
 
 {% block css %}
-<style>{% inline_file "/static/css/blink.css" %}</style>
+  <style>{% inline_file "/static/css/blink.css" %}</style>
 {% endblock %}
 
 {% block drawer %}
@@ -100,12 +102,12 @@
 (function() {
 'use strict';
 
-$('paper-toggle-button').addEventListener('change', e => {
+document.querySelector('paper-toggle-button').addEventListener('change', e => {
   e.stopPropagation();
-  $('#components_list').classList.toggle('editing', e.target.checked);
+  document.querySelector('#components_list').classList.toggle('editing', e.target.checked);
 });
 
-$('#components_list').addEventListener('click', function(e) {
+document.querySelector('#components_list').addEventListener('click', function(e) {
   const addUser = e.target.classList.contains('add_owner_button');
   const removeUser = e.target.classList.contains('remove_owner_button');
 
@@ -178,7 +180,7 @@ window.addEventListener('DOMContentLoaded', function(e) {
   if (location.hash) {
     setTimeout(function() {
       const el = document.getElementById(location.hash.slice(1));
-      $('app-header').scroll(0, el.offsetTop);
+      document.querySelector('app-header').scroll(0, el.offsetTop);
     }, 500);
   }
 });

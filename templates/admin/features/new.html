@@ -1,8 +1,4 @@
-{% extends "base.html" %}
-
-{% block preload %}
-<script type="module" src="/static/elements/admin-imports.js"></script>
-{% endblock %}
+{% extends "_base.html" %}
 
 {% block css %}
 <link rel="stylesheet" href="/static/css/forms.css">
@@ -40,5 +36,5 @@
 {% endblock %}
 
 {% block js %}
-<script src="/static/js/admin/feature_form.js"></script>
+<script src="/static/js/admin/feature_form.min.js"></script>
 {% endblock %}

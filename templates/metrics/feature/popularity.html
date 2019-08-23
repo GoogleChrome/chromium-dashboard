@@ -1,10 +1,8 @@
-{% extends "base.html" %}
-
+{% extends "_base.html" %}
 {% load inline_file %}
 
 {% block css %}
-<!-- <link rel="stylesheet" href="/static/css/metrics/metrics.css"> -->
-<style>{% inline_file "/static/css/metrics/metrics.css" %}</style>
+  <style>{% inline_file "/static/css/metrics.css" %}</style>
 {% endblock %}
 
 {% block preload %}
@@ -13,11 +11,8 @@
 </script>
 {% endblock %}
 
-{% block html_imports %}
-{% endblock %}
-
 {% block drawer %}
-  {% include "metrics/feature/_nav.html" %}
+  {% include "metrics/feature/_feature_metric_nav.html" %}
 {% endblock %}
 
 {% block subheader %}
@@ -28,18 +23,18 @@
 
 {% block content %}
 <div class="data-panel">
-  <div>
-    <h3>About this data</h3>
-    <p class="description">We've been using Chrome's <a href="https://cs.chromium.org/chromium/src/tools/metrics/histograms/enums.xml" target="_blank">anonymous usage statistics</a> to count the occurrences of certain HTML and JavaScript features in the wild. The numbers on this page indicate the <b>percentages of Chrome page loads (across all channels and platforms) that use the corresponding feature at least once</b>. Data is ~24 hrs old.</p>
-  </div>
-  <chromedash-metrics type="feature" view="popularity" {% if not prod %}use-remote-data{% endif %}></chromedash-metrics>
+  <h3>About this data</h3>
+  <p class="description">
+    We've been using Chrome's <a href="https://cs.chromium.org/chromium/src/tools/metrics/histograms/enums.xml" target="_blank">anonymous usage statistics</a> to count the occurrences of certain HTML and JavaScript features in the wild. The numbers on this page indicate the <b>percentages of Chrome page loads (across all channels and platforms) that use the corresponding feature at least once</b>. Data is ~24 hrs old.</p>
+  <chromedash-metrics type="feature" view="popularity" {% if prod %}prod{% endif %}></chromedash-metrics>
 </div>
 {% endblock %}
 
 {% block js %}
 <script>
-document.addEventListener('app-ready', function(e) {
-  document.body.classList.remove('loading');
-});
+  (function() {
+    'use strict';
+    {% inline_file "/static/js/metrics-page.min.js" %}
+  })();
 </script>
 {% endblock %}

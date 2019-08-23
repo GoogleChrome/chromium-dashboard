@@ -1,16 +1,12 @@
-{% extends "base.html" %}
+{% extends "_base.html" %}
 {% load verbatim %}
 {% load inline_file %}
 
-{% block preload %}
-<script type="module" src="/static/elements/admin-imports.js"></script>
-{% endblock %}
-
 {% block css %}
-<style>
-{% inline_file "/static/css/schedule.css" %}
-{% inline_file "/static/css/subscribers.css" %}
-</style>
+  <style>
+    {% inline_file "/static/css/schedule.css" %}
+    {% inline_file "/static/css/subscribers.css" %}
+  </style>
 {% endblock %}
 
 {% block drawer %}

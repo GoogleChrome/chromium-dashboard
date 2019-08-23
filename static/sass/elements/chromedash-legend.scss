@@ -91,7 +91,9 @@ p {
   margin-top: 5px;
 }
 
-.content-wrapper ::content .close {
+.close {
+  background: transparent;
+  border: 0;
   position: absolute;
   top: $content-padding / 2;
   right: $content-padding / 2;
