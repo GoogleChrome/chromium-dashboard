@@ -420,7 +420,7 @@ class ChromedashFeature extends LitElement {
               ${this._hasDocLinks ? html`
                 <div class="doc_links">
                   <chromedash-multi-links
-                      .links="${this.feature.resources.docs}"
+                      .links="${this.feature.resources.docs || []}"
                       title="Link"></chromedash-multi-links>
                 </div>
                 ` : nothing}
@@ -429,7 +429,7 @@ class ChromedashFeature extends LitElement {
               ${this._hasSampleLinks ? html`
                 <div class="sample_links">
                   <chromedash-multi-links title="Sample"
-                      .links="${this.feature.resources.samples}"
+                      .links="${this.feature.resources.samples || []}"
                       ></chromedash-multi-links>
                 </div>
                 ` : nothing}

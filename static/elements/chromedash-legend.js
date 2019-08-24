@@ -1,4 +1,5 @@
 import {LitElement, html} from 'https://unpkg.com/@polymer/lit-element@latest/lit-element.js?module';
+import {nothing} from 'https://unpkg.com/lit-html/lit-html.js?module';
 import 'https://unpkg.com/@polymer/iron-icon/iron-icon.js?module';
 import './chromedash-color-status.js';
 
@@ -10,17 +11,15 @@ class ChromedashLegend extends LitElement {
     };
   }
 
-  constructor() {
-    super();
-    this.views = {};
-  }
-
   toggle() {
     this.opened = !this.opened;
     document.body.style.overflow = this.opened ? 'opened' : '';
   }
 
   render() {
+    if (!this.views) {
+      return nothing;
+    }
     return html`
       <link rel="stylesheet" href="/static/css/elements/chromedash-legend.css">
 
