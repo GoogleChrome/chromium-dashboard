@@ -1,17 +1,14 @@
 import {LitElement, html} from 'https://unpkg.com/@polymer/lit-element@latest/lit-element.js?module';
-import '/static/elements/chromedash-color-status.js';
+import {nothing} from 'https://unpkg.com/lit-html/lit-html.js?module';
+import 'https://unpkg.com/@polymer/iron-icon/iron-icon.js?module';
+import './chromedash-color-status.js';
 
 class ChromedashLegend extends LitElement {
   static get properties() {
     return {
-      opened: {type: Boolean, reflect: true}, // Used to control visibility. See the css
-      views: {type: Object}, // Assigned in features-page.js, value from Django
+      opened: {type: Boolean, reflect: true},
+      views: {attribute: false}, // Assigned in features-page.js, value from Django
     };
-  }
-
-  constructor() {
-    super();
-    this.views = {};
   }
 
   toggle() {
@@ -20,6 +17,9 @@ class ChromedashLegend extends LitElement {
   }
 
   render() {
+    if (!this.views) {
+      return nothing;
+    }
     return html`
       <link rel="stylesheet" href="/static/css/elements/chromedash-legend.css">
 
@@ -32,8 +32,8 @@ class ChromedashLegend extends LitElement {
           added. Features marked "No active development" are being considered or
           have yet to be started. Features marked "In development" are currently
           being worked on.</p>
-          <button class="close buttons">
-            <iron-icon icon="chromestatus:close" @click=${this.toggle}></iron-icon>
+          <button class="close buttons" @click=${this.toggle}>
+            <iron-icon icon="chromestatus:close"></iron-icon>
           </button>
         </section>
         <h3>Color legend</h3>
@@ -47,7 +47,7 @@ class ChromedashLegend extends LitElement {
           standards process.</p>
         <section class="views">
           <div>
-            <label>Browser vendors</label>
+            <p>Browser vendors</p>
             <ul>
               ${this.views.vendors.map((vendor) => html`
                 <li>
@@ -59,7 +59,7 @@ class ChromedashLegend extends LitElement {
             </ul>
           </div>
           <div>
-            <label>Web developer</label>
+            <p>Web developer</p>
             <ul>
               ${this.views.webdevs.map((webdev) => html`
                 <li>
@@ -71,7 +71,7 @@ class ChromedashLegend extends LitElement {
             </ul>
           </div>
           <div>
-            <label>Standards values</label>
+            <p>Standards values</p>
             <ul>
               ${this.views.standards.map((standard) => html`
                 <li>
@@ -85,7 +85,7 @@ class ChromedashLegend extends LitElement {
         </section>
         <h3>Search</h3>
         <section>
-          <label>Example search queries</label>
+          <p>Example search queries</p>
           <ul class="queries">
             <li>
               <span>"browsers.chrome.desktop&lt;30"</span>features that landed before 30

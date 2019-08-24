@@ -4,8 +4,8 @@ class ChromedashXMeter extends LitElement {
   static get properties() {
     return {
       value: {type: Number},
-      valueFormatted: {type: Number},
       max: {type: Number}, // Normalized, maximum width for the bar
+      valueFormatted: {attribute: false},
     };
   }
 

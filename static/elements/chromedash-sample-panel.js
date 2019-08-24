@@ -1,17 +1,18 @@
 import {LitElement, html} from 'https://unpkg.com/@polymer/lit-element@latest/lit-element.js?module';
+import {nothing} from 'https://unpkg.com/lit-html/lit-html.js?module';
 import 'https://unpkg.com/@polymer/iron-icon/iron-icon.js?module';
 
 class ChromedashSamplePanel extends LitElement {
   static get properties() {
     return {
-      categories: {type: Object}, // Edited in static/js/samples.js
-      features: {type: Array}, // Edited in static/js/samples.js
-      filtered: {type: Array}, // Edited in static/js/samples.js
+      categories: {attribute: false}, // Edited in static/js/samples.js
+      features: {attribute: false}, // Edited in static/js/samples.js
+      filtered: {attribute: false}, // Edited in static/js/samples.js
     };
   }
 
-  constructor() {
-    super();
+  connectedCallback() {
+    super.connectedCallback();
     this._loadData();
   }
 
@@ -24,7 +25,6 @@ class ChromedashSamplePanel extends LitElement {
     // Fire of samples.json XHR right away so data can populate faster.
     const url = location.hostname == 'localhost' ?
       'https://www.chromestatus.com/samples.json' : '/samples.json';
-
     this.features = await (await fetch(url)).json();
     this.features.forEach((feature) => {
       feature.sample_links = feature.sample_links.map((link) => {
@@ -65,7 +65,6 @@ class ChromedashSamplePanel extends LitElement {
     });
   }
 
-  // TODO: move filtering into a behavior. Mostly duped from chromedash-featurelist.html.
   filter(query, category) {
     let features = this.features;
 
@@ -118,7 +117,7 @@ class ChromedashSamplePanel extends LitElement {
 
   render() {
     if (!this.filtered) {
-      return html``;
+      return nothing;
     }
     return html`
       <link rel="stylesheet" href="/static/css/elements/chromedash-sample-panel.css">
@@ -153,7 +152,6 @@ class ChromedashSamplePanel extends LitElement {
 
 customElements.define('chromedash-sample-panel', ChromedashSamplePanel);
 
-// TODO: move this into a behavior. It's duplicated from chromedash-featurelist.html.
 function matchesMilestone_(milestone, operator, version) {
   switch (operator) {
     case '<':
