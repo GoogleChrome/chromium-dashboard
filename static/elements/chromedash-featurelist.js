@@ -375,8 +375,8 @@ class ChromedashFeaturelist extends LitElement {
           <div ?hidden="${this._computeMilestoneHidden(feature, this.features, this.filtered)}"
                class="milestone-marker">${this._computeMilestoneString(feature.browsers.chrome.status.milestone_str)}</div>
           <chromedash-feature id="id-${feature.id}" tabindex="0"
-               @feature-toggled="${this._onFeatureToggled}"
-               .feature="${feature}" ?whitelisted="${this.whitelisted}"></chromedash-feature>
+              @feature-toggled="${this._onFeatureToggled}"
+              .feature="${feature}" ?whitelisted="${this.whitelisted}"></chromedash-feature>
         </div>
         `)}
     `;

@@ -40,16 +40,19 @@ featureListEl.addEventListener('has-scroll-list', () => {
 });
 
 featureListEl.addEventListener('filter-category', (e) => {
+  e.stopPropagation();
   searchEl.value = 'category: ' + e.detail.val;
   featureListEl.filter(searchEl.value);
 });
 
 featureListEl.addEventListener('filter-owner', (e) => {
+  e.stopPropagation();
   searchEl.value = 'browsers.chrome.owners: ' + e.detail.val;
   featureListEl.filter(searchEl.value);
 });
 
 featureListEl.addEventListener('filter-component', (e) => {
+  e.stopPropagation();
   searchEl.value = 'component: ' + e.detail.val;
   featureListEl.filter(searchEl.value);
 });
