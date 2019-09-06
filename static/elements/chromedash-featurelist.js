@@ -73,10 +73,6 @@ class ChromedashFeaturelist extends LitElement {
     this.dispatchEvent(event);
   }
 
-  _bubbleUpEvent(e) {
-    this._fireEvent(e.type, e.detail);
-  }
-
   _getSearchStrRegExp(searchStr) {
     return new RegExp(
       // Case-insensitive match on literal string; escape characters that
@@ -380,9 +376,6 @@ class ChromedashFeaturelist extends LitElement {
                class="milestone-marker">${this._computeMilestoneString(feature.browsers.chrome.status.milestone_str)}</div>
           <chromedash-feature id="id-${feature.id}" tabindex="0"
               @feature-toggled="${this._onFeatureToggled}"
-              @filter-category="${this._bubbleUpEvent}"
-              @filter-owner="${this._bubbleUpEvent}"
-              @filter-component="${this._bubbleUpEvent}"
               .feature="${feature}" ?whitelisted="${this.whitelisted}"></chromedash-feature>
         </div>
         `)}

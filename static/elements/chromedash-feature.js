@@ -34,8 +34,21 @@ class ChromedashFeature extends LitElement {
     this.open = false;
   }
 
-  // Initialize values after receiving `this.feature`.
   firstUpdated() {
+    this._initializeValues();
+  }
+
+  updated(props) {
+    /* When chromedash-featurelist filters, we need to _initializeValues. And
+     * chromedash-feature components are updated (not destroyed and recreated),
+     * so firstUpdated won't run.
+     * This piece need to be revisited when switching to lit-virtualizer. */
+    if (props.get('feature')) {
+      this._initializeValues();
+    }
+  }
+
+  _initializeValues() {
     this._receivePush = this.feature.receivePush;
     this._crBugNumber = this._getCrBugNumber();
     this._newBugUrl = this._getNewBugUrl();
@@ -118,7 +131,11 @@ class ChromedashFeature extends LitElement {
   }
 
   _fireEvent(eventName, detail) {
-    let event = new CustomEvent(eventName, {detail});
+    let event = new CustomEvent(eventName, {
+      bubbles: true,
+      composed: true,
+      detail,
+    });
     this.dispatchEvent(event);
   }
 
@@ -420,7 +437,7 @@ class ChromedashFeature extends LitElement {
               ${this._hasDocLinks ? html`
                 <div class="doc_links">
                   <chromedash-multi-links
-                      .links="${this.feature.resources.docs || []}"
+                      .links="${this.feature.resources.docs}"
                       title="Link"></chromedash-multi-links>
                 </div>
                 ` : nothing}
@@ -429,7 +446,7 @@ class ChromedashFeature extends LitElement {
               ${this._hasSampleLinks ? html`
                 <div class="sample_links">
                   <chromedash-multi-links title="Sample"
-                      .links="${this.feature.resources.samples || []}"
+                      .links="${this.feature.resources.samples}"
                       ></chromedash-multi-links>
                 </div>
                 ` : nothing}
