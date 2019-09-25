@@ -4,7 +4,7 @@ class ChromedashUserlist extends LitElement {
   static get properties() {
     return {
       actionPath: {type: String},
-      users: {type: Array},
+      users: {attribute: false},
     };
   }
 
@@ -23,7 +23,7 @@ class ChromedashUserlist extends LitElement {
     this.users = this.users.slice(0); // Refresh the list
   }
 
-  ajaxSubmit(e) {
+  async ajaxSubmit(e) {
     e.preventDefault();
     const formEl = this.shadowRoot.querySelector('form');
 
@@ -32,22 +32,22 @@ class ChromedashUserlist extends LitElement {
       const formData = new FormData();
       formData.append('email', email);
 
-      fetch(this.actionPath, {
+      const resp = await fetch(this.actionPath, {
         method: 'POST',
         body: formData,
         credentials: 'same-origin', // Needed for admin permissions to be sent.
-      }).then((resp) => {
-        if (resp.status === 200) {
-          alert('Thanks. But that user already exists');
-          throw new Error('User already added');
-        } else if (resp.status !== 201) {
-          throw new Error('Sever error adding new user');
-        }
-        return resp.json();
-      }).then((json) => {
+      });
+
+      if (resp.status === 200) {
+        alert('Thanks. But that user already exists');
+        throw new Error('User already added');
+      } else if (resp.status !== 201) {
+        throw new Error('Sever error adding new user');
+      } else {
+        const json = await resp.json();
         this.addUser(json);
         formEl.reset();
-      });
+      }
     }
   }
 

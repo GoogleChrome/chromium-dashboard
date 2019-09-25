@@ -4,11 +4,11 @@ import './chromedash-feature';
 class ChromedashFeaturelist extends LitElement {
   static get properties() {
     return {
-      whitelisted: {type: Boolean}, // From attribute
-      features: {type: Array, attribute: false}, // Directly edited and accessed in template/features.html
-      metadataEl: {type: Object}, // The metadata component element. Directly edited in template/features.html
-      searchEl: {type: Object}, // The search input element. Directly edited in template/features.html
-      filtered: {type: Array},
+      whitelisted: {type: Boolean},
+      features: {attribute: false}, // Directly edited and accessed in template/features.html
+      metadataEl: {attribute: false}, // The metadata component element. Directly edited in template/features.html
+      searchEl: {attribute: false}, // The search input element. Directly edited in template/features.html
+      filtered: {attribute: false},
     };
   }
 
@@ -375,8 +375,8 @@ class ChromedashFeaturelist extends LitElement {
           <div ?hidden="${this._computeMilestoneHidden(feature, this.features, this.filtered)}"
                class="milestone-marker">${this._computeMilestoneString(feature.browsers.chrome.status.milestone_str)}</div>
           <chromedash-feature id="id-${feature.id}" tabindex="0"
-               @feature-toggled="${this._onFeatureToggled}"
-               .feature="${feature}" ?whitelisted="${this.whitelisted}"></chromedash-feature>
+              @feature-toggled="${this._onFeatureToggled}"
+              .feature="${feature}" ?whitelisted="${this.whitelisted}"></chromedash-feature>
         </div>
         `)}
     `;

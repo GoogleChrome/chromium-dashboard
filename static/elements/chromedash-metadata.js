@@ -3,13 +3,13 @@ import {LitElement, html} from 'lit-element';
 class ChromedashMetadata extends LitElement {
   static get properties() {
     return {
-      implStatuses: {type: Array}, // From attribute.  Read in chromedash-featurelist.
-      status: {type: Object}, // From attribute. Read in chromedash-featurelist.
-      selected: {type: String}, // Directly edited in /templates/features.html
-      _className: {type: String},
-      _fetchError: {type: Boolean},
-      _channels: {type: Object},
-      _versions: {type: Array},
+      implStatuses: {type: Array}, // Read in chromedash-featurelist.
+      status: {attribute: false}, // Read in chromedash-featurelist.
+      selected: {attribute: false}, // Directly edited in /templates/features.html
+      _className: {attribute: false},
+      _fetchError: {attribute: false},
+      _channels: {attribute: false},
+      _versions: {attribute: false},
     };
   }
 

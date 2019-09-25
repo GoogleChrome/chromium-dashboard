@@ -1,4 +1,5 @@
 import {LitElement, html} from 'lit-element';
+import {nothing} from 'lit-html';
 import '@polymer/iron-icon';
 
 const TEMPLATE_CONTENT = {
@@ -34,8 +35,8 @@ const DEPRECATED_STATUS = ['Deprecated', 'No longer pursuing'];
 class ChromedashSchedule extends LitElement {
   static get properties() {
     return {
-      channels: {type: Object}, // Assigned in schedule.js, value from Django
-      hideBlink: {type: Boolean}, // Edited in schedule.js
+      channels: {attribute: false}, // Assigned in schedule.js, value from Django
+      hideBlink: {attribute: false}, // Edited in schedule.js
     };
   }
 
@@ -101,7 +102,7 @@ class ChromedashSchedule extends LitElement {
       <link rel="stylesheet" href="/static/css/elements/chromedash-schedule.css">
 
       ${['stable', 'beta', 'dev'].map((type) => html`
-        <section class="release ${this.hideBlink ? 'no-components' : ''}">
+        <section class="release ${this.hideBlink ? 'no-components' : nothing}">
           <div class="layout vertical center">
             <h1 class="channel_label">${TEMPLATE_CONTENT[type].channelLabel}</h1>
             <h1 class="chrome_version layout horizontal center ${TEMPLATE_CONTENT[type].h1Class}">
@@ -136,31 +137,31 @@ class ChromedashSchedule extends LitElement {
                         <span class="tooltip" title="Origin Trial">
                           <iron-icon icon="chromestatus:extension" class="experimental" data-tooltip></iron-icon>
                         </span>
-                        ` : ''}
+                        ` : nothing}
                       ${f.browsers.chrome.intervention ? html`
                         <span class="tooltip" title="Browser intervention">
                           <iron-icon icon="chromestatus:pan-tool" class="intervention" data-tooltip></iron-icon>
                         </span>
-                        ` : ''}
+                        ` : nothing}
                       ${REMOVED_STATUS.includes(f.browsers.chrome.status.text) ? html`
                         <span class="tooltip" title="Removed">
                           <iron-icon icon="chromestatus:cancel" class="remove" data-tooltip></iron-icon>
                         </span>
-                        ` : ''}
+                        ` : nothing}
                       ${DEPRECATED_STATUS.includes(f.browsers.chrome.status.text) ? html`
                         <span class="tooltip" title="Deprecated">
                           <iron-icon icon="chromestatus:warning" class="deprecated" data-tooltip></iron-icon>
                         </span>
-                        ` : ''}
+                        ` : nothing}
                       ${window.PushNotifier && window.PushNotifier.SUPPORTS_NOTIFICATIONS ? html`
                         <span class="tooltip" title="Subscribe to notification updates">
                           <iron-icon icon="chromestatus:notifications-off"
-                                     class="pushicon ${window.PushNotifier && window.PushNotifier.GRANTED_ACCESS ? '' : 'disabled'}"
+                                     class="pushicon ${window.PushNotifier && window.PushNotifier.GRANTED_ACCESS ? nothing : 'disabled'}"
                                      data-feature-id="${f.id}"
                                      @click="${this._subscribeToFeature}"></iron-icon>
                         </span>
                       </span>
-                        ` : ''}
+                        ` : nothing}
                   </li>
                   `)}
               </ul>
