@@ -1,8 +1,11 @@
 import {LitElement, html} from 'lit-element';
 import '@polymer/iron-icon';
 import './chromedash-x-meter';
+import style from '../css/elements/chromedash-metrics.css';
 
 class ChromedashMetrics extends LitElement {
+  static styles = style;
+
   static get properties() {
     return {
       type: {type: String},
@@ -107,8 +110,6 @@ class ChromedashMetrics extends LitElement {
 
   render() {
     return html`
-      <link rel="stylesheet" href="/static/css/elements/chromedash-metrics.css">
-
       <b>Showing <span>${this.viewList.length}</span> properties</b>
       <ol id="stack-rank-list">
         <li class="header">

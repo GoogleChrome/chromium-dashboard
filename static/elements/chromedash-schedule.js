@@ -1,6 +1,7 @@
 import {LitElement, html} from 'lit-element';
 import {nothing} from 'lit-html';
 import '@polymer/iron-icon';
+import style from '../css/elements/chromedash-schedule.css';
 
 const TEMPLATE_CONTENT = {
   stable: {
@@ -33,6 +34,8 @@ const REMOVED_STATUS = ['Removed'];
 const DEPRECATED_STATUS = ['Deprecated', 'No longer pursuing'];
 
 class ChromedashSchedule extends LitElement {
+  static styles = style;
+
   static get properties() {
     return {
       channels: {attribute: false}, // Assigned in schedule.js, value from Django
@@ -99,8 +102,6 @@ class ChromedashSchedule extends LitElement {
       return html``;
     }
     return html`
-      <link rel="stylesheet" href="/static/css/elements/chromedash-schedule.css">
-
       ${['stable', 'beta', 'dev'].map((type) => html`
         <section class="release ${this.hideBlink ? 'no-components' : nothing}">
           <div class="layout vertical center">

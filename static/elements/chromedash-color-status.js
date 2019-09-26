@@ -1,9 +1,13 @@
 import {LitElement, html} from 'lit-element';
 
+import style from '../css/elements/chromedash-color-status.css';
+
 const CYAN = 120;
 const DEFAULT_MAX = 7;
 
 class ChromedashColorStatus extends LitElement {
+  static styles = style;
+
   static get properties() {
     return {
       max: {type: Number},
@@ -19,8 +23,6 @@ class ChromedashColorStatus extends LitElement {
   render() {
     const color = `hsl(${Math.round(CYAN - this.value * CYAN / this.max)}, 100%, 50%)`;
     return html`
-      <link rel="stylesheet" href="/static/css/elements/chromedash-color-status.css">
-
       <span id="status" style="background-color: ${color}"></span>
     `;
   }

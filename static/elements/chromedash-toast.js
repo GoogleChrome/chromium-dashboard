@@ -1,9 +1,12 @@
 import {LitElement, html} from 'lit-element';
+import style from '../css/elements/chromedash-toast.css';
 
 // Keeps track of the toast currently opened.
 let _currentToast = null;
 
 class ChromedashToast extends LitElement {
+  static styles = style;
+
   static get properties() {
     return {
       msg: {type: String},
@@ -75,8 +78,6 @@ class ChromedashToast extends LitElement {
 
   render() {
     return html`
-      <link rel="stylesheet" href="/static/css/elements/chromedash-toast.css">
-
       <span id="msg">${this.msg}</span>
       <a href="#" id="action">${this.actionLabel}</a>
     `;

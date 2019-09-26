@@ -1,6 +1,9 @@
 import {LitElement, html} from 'lit-element';
+import style from '../css/elements/chromedash-x-meter.css';
 
 class ChromedashXMeter extends LitElement {
+  static styles = style;
+
   static get properties() {
     return {
       value: {type: Number},
@@ -21,8 +24,6 @@ class ChromedashXMeter extends LitElement {
 
   render() {
     return html`  
-      <link rel="stylesheet" href="/static/css/elements/chromedash-x-meter.css"> 
-      
       <div style="width: ${(this.value / this.max * 100)}%">  
         <span>${this.valueFormatted}</span> 
       </div>  

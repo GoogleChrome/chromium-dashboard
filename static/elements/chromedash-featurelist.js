@@ -1,7 +1,10 @@
 import {LitElement, html} from 'lit-element';
 import './chromedash-feature';
+import style from '../css/elements/chromedash-featurelist.css';
 
 class ChromedashFeaturelist extends LitElement {
+  static styles = style;
+
   static get properties() {
     return {
       whitelisted: {type: Boolean},
@@ -368,8 +371,6 @@ class ChromedashFeaturelist extends LitElement {
 
   render() {
     return html`
-      <link rel="stylesheet" href="/static/css/elements/chromedash-featurelist.css">
-
       ${this.filtered.map((feature) => html`
         <div class="item">
           <div ?hidden="${this._computeMilestoneHidden(feature, this.features, this.filtered)}"

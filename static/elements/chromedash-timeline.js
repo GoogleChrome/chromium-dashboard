@@ -1,7 +1,10 @@
 // TODO(yangguang): This component is not tested. Data is not available in devserver, so cannot be tested locally.
 import {LitElement, html} from 'lit-element';
+import style from '../css/elements/chromedash-timeline.css';
 
 class ChromedashTimeline extends LitElement {
+  static styles = style;
+
   static get properties() {
     return {
       type: {type: String},
@@ -186,8 +189,6 @@ ORDER BY yyyymmdd DESC, client`;
 
   render() {
     return html`  
-      <link rel="stylesheet" href="/static/css/elements/chromedash-timeline.css">
-
       <select .value="${this.selectedBucketId}" @change="${this.updateSelectedBucketId}">
         <option disabled value="1">Select a property</option>
         ${this.props.map((prop) => html`

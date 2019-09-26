@@ -3,12 +3,17 @@ import {nothing} from 'lit-html';
 import '@polymer/iron-icon';
 import './chromedash-color-status';
 
+import style from '../css/elements/chromedash-feature.css';
+import sharedStyle from '../css/shared.css';
+
 const MAX_STANDARDS_VAL = 6;
 const MAX_VENDOR_VIEW = 7;
 const MAX_WEBDEV_VIEW = 6;
 const MAX_RISK = MAX_VENDOR_VIEW + MAX_WEBDEV_VIEW + MAX_STANDARDS_VAL;
 
 class ChromedashFeature extends LitElement {
+  static styles = style;
+
   static get properties() {
     return {
       feature: {type: Object},
@@ -194,8 +199,6 @@ class ChromedashFeature extends LitElement {
 
   render() {
     return html`
-      <link rel="stylesheet" href="/static/css/elements/chromedash-feature.css">
-
       <hgroup @click="${this._togglePanelExpansion}">
         <chromedash-color-status class="tooltip corner"
           title="Interoperability risk: perceived interest from browser
@@ -470,6 +473,8 @@ customElements.define('chromedash-feature', ChromedashFeature);
 
 
 class ChromedashMultiLinks extends LitElement {
+  static styles = sharedStyle;
+
   static get properties() {
     return {
       title: {type: String}, // From parent
@@ -485,8 +490,6 @@ class ChromedashMultiLinks extends LitElement {
 
   render() {
     return html`
-      <link rel="stylesheet" href="/static/css/shared.css">
-
       ${this.links.map((link, index) => html`
         <a href="${link}" target="_blank"
            class="${index < this.links.length - 1 ? 'comma' : ''}"

@@ -1,6 +1,9 @@
 import {LitElement, html} from 'lit-element';
+import style from '../css/elements/chromedash-userlist.css';
 
 class ChromedashUserlist extends LitElement {
+  static styles = style;
+
   static get properties() {
     return {
       actionPath: {type: String},
@@ -69,8 +72,6 @@ class ChromedashUserlist extends LitElement {
 
   render() {
     return html`  
-      <link rel="stylesheet" href="/static/css/elements/chromedash-userlist.css">
-
       <form id="form" name="user_form" method="post" action="${this.actionPath}" onsubmit="return false;">
         <input type="email" placeholder="Email address" name="email" id="id_email" required>
         <td><input type="submit" @click="${this.ajaxSubmit}">

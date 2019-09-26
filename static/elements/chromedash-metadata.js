@@ -1,6 +1,9 @@
 import {LitElement, html} from 'lit-element';
+import style from '../css/elements/chromedash-metadata.css';
 
 class ChromedashMetadata extends LitElement {
+  static styles = style;
+
   static get properties() {
     return {
       implStatuses: {type: Array}, // Read in chromedash-featurelist.
@@ -96,8 +99,6 @@ class ChromedashMetadata extends LitElement {
 
   render() {
     return html`
-      <link rel="stylesheet" href="/static/css/elements/chromedash-metadata.css">
-
       <ul id="versionlist" class="${this._className}">
         ${this._versions.map((version) => html`
           <li data-version="${version}" @click="${this.selectMilestone}"

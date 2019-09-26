@@ -1,21 +1,19 @@
 'use strict';
 
-// This gulpfile makes use of new JavaScript features.
-// Babel handles this without us having to do anything. It just works.
-// You can read more about the new JavaScript features here:
-// https://babeljs.io/docs/learn-es2015/
-
 const path = require('path');
 const gulp = require('gulp');
+const babel = require("gulp-babel");
 const del = require('del');
 const swPrecache = require('sw-precache');
 const uglifyEs = require('gulp-uglify-es');
 const uglify = uglifyEs.default;
 const gulpLoadPlugins = require('gulp-load-plugins');
 const eslintIfFixed = require('gulp-eslint-if-fixed');
-const rollup = require('rollup');
 const $ = gulpLoadPlugins();
-const resolve = require('rollup-plugin-node-resolve');
+const rollup = require('rollup');
+const rollupResolve = require('rollup-plugin-node-resolve');
+const rollupLitCss = require('rollup-plugin-lit-css');
+const rollupBabel = require('rollup-plugin-babel');
 
 function minifyHtml() {
   return $.minifyHtml({
@@ -80,9 +78,11 @@ gulp.task('styles', () => {
 
 gulp.task('rollup', () => {
   return rollup.rollup({
-    input: 'static/rollup-entry',
+    input: 'static/rollup-entry.js',
     plugins: [
-      resolve(),
+      rollupLitCss({include: []}),
+      rollupResolve(),
+      rollupBabel(),
     ],
   }).then(bundle => {
     return bundle.write({
@@ -99,7 +99,7 @@ gulp.task('js', () => {
   return gulp.src([
     'static/js-src/**/*.js',
   ])
-    .pipe($.babel()) // Defaults are in .babelrc
+    .pipe(babel()) // Defaults are in .babelrc
     .pipe(uglifyJS())
     .pipe(license()) // Add license to top.
     .pipe($.rename({suffix: '.min'}))

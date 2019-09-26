@@ -2,8 +2,11 @@ import {LitElement, html} from 'lit-element';
 import {nothing} from 'lit-html';
 import '@polymer/iron-icon';
 import './chromedash-color-status';
+import style from '../css/elements/chromedash-legend.css';
 
 class ChromedashLegend extends LitElement {
+  static styles = style;
+
   static get properties() {
     return {
       opened: {type: Boolean, reflect: true},
@@ -21,8 +24,6 @@ class ChromedashLegend extends LitElement {
       return nothing;
     }
     return html`
-      <link rel="stylesheet" href="/static/css/elements/chromedash-legend.css">
-
       <div id="overlay">
         <h3>About the data</h3>
         <section class="content-wrapper">

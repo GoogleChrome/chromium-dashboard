@@ -1,8 +1,11 @@
 import {LitElement, html} from 'lit-element';
 import {nothing} from 'lit-html';
 import '@polymer/iron-icon';
+import style from '../css/elements/chromedash-sample-panel.css';
 
 class ChromedashSamplePanel extends LitElement {
+  static styles = style;
+
   static get properties() {
     return {
       categories: {attribute: false}, // Edited in static/js/samples.js
@@ -120,8 +123,6 @@ class ChromedashSamplePanel extends LitElement {
       return nothing;
     }
     return html`
-      <link rel="stylesheet" href="/static/css/elements/chromedash-sample-panel.css">
-
       <ul>
         ${this.filtered.map((feature) => html`
           <li>
