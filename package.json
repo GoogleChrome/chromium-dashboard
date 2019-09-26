@@ -24,8 +24,6 @@
   "devDependencies": {
     "@babel/core": "^7.6.2",
     "@babel/plugin-proposal-class-properties": "^7.5.5",
-    "@babel/plugin-transform-regenerator": "^7.4.5",
-    "@babel/plugin-transform-runtime": "^7.6.2",
     "@babel/preset-env": "^7.6.2",
     "@babel/register": "^7.6.2",
     "babel-eslint": "^10.0.3",
@@ -51,14 +49,13 @@
     "regenerator-runtime": "^0.13.3",
     "rollup": "^1.17.0",
     "rollup-plugin-babel": "^4.3.3",
-    "rollup-plugin-commonjs": "^10.1.0",
+    "rollup-plugin-babel-minify": "^9.1.0",
     "rollup-plugin-lit-css": "^2.0.0",
     "rollup-plugin-node-resolve": "^5.2.0",
     "sw-precache": "^5.2.1",
     "sw-toolbox": "^3.6.0"
   },
   "dependencies": {
-    "@babel/runtime": "^7.6.2",
     "@polymer/app-layout": "^3.1.0",
     "@polymer/iron-icon": "^3.0.1",
     "@polymer/iron-iconset-svg": "^3.0.1",
@@ -67,9 +64,7 @@
     "@polymer/paper-listbox": "^3.0.1",
     "@polymer/paper-ripple": "^3.0.1",
     "@polymer/paper-styles": "^3.0.1",
-    "core-js": "^2.6.9",
     "lit-element": "^2.1.0",
-    "lit-html": "^1.1.2",
-    "urlize.js": "^1.0.2"
+    "lit-html": "^1.1.2"
   }
 }

@@ -14,6 +14,7 @@ const rollup = require('rollup');
 const rollupResolve = require('rollup-plugin-node-resolve');
 const rollupLitCss = require('rollup-plugin-lit-css');
 const rollupBabel = require('rollup-plugin-babel');
+const rollupMinify = require('rollup-plugin-babel-minify');
 
 function minifyHtml() {
   return $.minifyHtml({
@@ -83,6 +84,7 @@ gulp.task('rollup', () => {
       rollupLitCss({include: []}),
       rollupResolve(),
       rollupBabel(),
+      rollupMinify({comments: false}),
     ],
   }).then(bundle => {
     return bundle.write({
