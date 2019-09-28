@@ -15,7 +15,7 @@ Chrome Platform Status
     1. [Google App Engine SDK for Python](https://developers.google.com/appengine/downloads#Google_App_Engine_SDK_for_Python).
     1. pip, node, npm.
     1. Gulp `npm install -g gulp`
-1. Install npm dependencies `npm install`
+1. Install npm dependencies `npm ci`
 1. Install other dependencies `npm run deps`
 
 ##### Add env_vars.yaml
