@@ -30,8 +30,10 @@ class ChromedashFeaturelist extends LitElement {
     this._featuresUnveilMetric.start();
     this._featuresFetchMetric.start();
 
-    /* Declaring it as an arrow function to bind `this`. See more comments in
-     * the render function. */
+    /* The running context `this` inside `renderItem` is `lit-virtualizer`
+     * rather than `chromedash-featurelist`, so all function calls inside need
+     * to be bound to `this`. So declaring `_onFeatureToggled` as an arrow
+     * function here. */
     this._onFeatureToggled = (e) => {
       const feature = e.detail.feature;
       const open = e.detail.open;
@@ -350,11 +352,6 @@ class ChromedashFeaturelist extends LitElement {
   }
 
   render() {
-    /* The running context `this` inside `renderItem` is `lit-virtualizer`
-     * rather than `chromedash-featurelist`, so all function calls inside are
-     * written with `.call(this, ...)`
-     * Note: `_onFeatureToggled` is bind to `this` by the arrow function in
-     * `constructor`. */
     return html`
       <link rel="stylesheet" href="/static/css/elements/chromedash-featurelist.css">
       <style>
@@ -367,8 +364,8 @@ class ChromedashFeaturelist extends LitElement {
         @rangechange=${this._onScrollList}
         .renderItem=${(feature) => html`
           <div class="item">
-            <div ?hidden="${this._computeMilestoneHidden.call(this, feature, this.features, this.filtered)}"
-                 class="milestone-marker">${this._computeMilestoneString.call(this, feature.browsers.chrome.status.milestone_str)}</div>
+            <div ?hidden="${this._computeMilestoneHidden(feature, this.features, this.filtered)}"
+                 class="milestone-marker">${this._computeMilestoneString(feature.browsers.chrome.status.milestone_str)}</div>
             <chromedash-feature id="id-${feature.id}" tabindex="0"
                  ?open="${this._scrollOpenFeatureId === feature.id}"
                  @feature-toggled="${this._onFeatureToggled}"
