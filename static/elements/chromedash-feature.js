@@ -33,14 +33,16 @@ class ChromedashFeature extends LitElement {
     this._initializeValues();
   }
 
-  shouldUpdate(props) {
-    /* When chromedash-featurelist filters, we need to _initializeValues. And
-     * chromedash-feature components are updated (not destroyed and recreated),
-     * so firstUpdated won't run.  */
-    if (props.get('feature')) {
+  /* Initialize values for the template `_initializeValues()`.
+   * - Why not `firstUpdated`: When chromedash-featurelist filters,
+   *   chromedash-feature components are updated, rather than destroyed then
+   *   recreated, so firstUpdated won't run.
+   * - Why not `updated`: We need the new values before the first render. */
+  update(changedProperties) {
+    if (changedProperties.get('feature')) {
       this._initializeValues();
     }
-    return true;
+    super.update(changedProperties);
   }
 
   _initializeValues() {
@@ -52,7 +54,6 @@ class ChromedashFeature extends LitElement {
     this._hasDocLinks = this._getHasDocLinks();
     this._hasSampleLinks = this._getHasSampleLinks();
     this._commentHtml = this._getCommentHtml();
-    this.open = false;
   }
 
   _getCrBugNumber() {
@@ -434,8 +435,7 @@ class ChromedashFeature extends LitElement {
                 <div class="doc_links">
                   <chromedash-multi-links
                       .links="${this.feature.resources.docs}"
-                      title="Doc"
-                      title="Link"></chromedash-multi-links>
+                      title="Doc"></chromedash-multi-links>
                 </div>
                 ` : nothing}
               ${this._hasDocLinks && this._hasSampleLinks ?
@@ -443,7 +443,6 @@ class ChromedashFeature extends LitElement {
               ${this._hasSampleLinks ? html`
                 <div class="sample_links">
                   <chromedash-multi-links title="Sample"
-                      title="Sample"
                       .links="${this.feature.resources.samples}"
                       ></chromedash-multi-links>
                 </div>

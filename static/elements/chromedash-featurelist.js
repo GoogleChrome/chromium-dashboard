@@ -22,17 +22,35 @@ class ChromedashFeaturelist extends LitElement {
     this.whitelisted = false;
     this._hasInitialized = false; // Used to check initialization code.
     this._hasScrolledByUser = false; // Used to set the app header state.
+    /* When scrollTo(), we also expand the feature. This is the id of the feature. */
+    this._scrollOpenFeatureId = undefined;
 
     this._featuresUnveilMetric = new Metric('features_unveil');
     this._featuresFetchMetric = new Metric('features_loaded');
     this._featuresUnveilMetric.start();
     this._featuresFetchMetric.start();
 
+    /* Declaring it as an arrow function to bind `this`. See more comments in
+     * the render function. */
+    this._onFeatureToggled = (e) => {
+      const feature = e.detail.feature;
+      const open = e.detail.open;
+
+      if (history && history.replaceState) {
+        if (open) {
+          history.pushState({id: feature.id}, feature.name, '/features/' + feature.id);
+        } else {
+          const hash = this.searchEl.value ? '#' + this.searchEl.value : '';
+          history.replaceState({id: null}, feature.name, '/features' + hash);
+        }
+      }
+    };
+
     this._loadData();
   }
 
   firstUpdated() {
-    this.virtualizerEl = this.shadowRoot.querySelector('lit-virtualizer');
+    this._virtualizerEl = this.shadowRoot.querySelector('lit-virtualizer');
   }
 
   async _loadData() {
@@ -278,13 +296,11 @@ class ChromedashFeaturelist extends LitElement {
   scrollToId(targetId) {
     if (!targetId) return;
 
+    this._scrollOpenFeatureId = targetId;
+
     for (let i = 0, f; f = this.filtered[i]; ++i) {
       if (f.id === targetId) {
-        this.virtualizerEl.scrollToIndex(i);
-        const featureEl = document.querySelector('chromedash-featurelist').shadowRoot.querySelector(`chromedash-feature[id=id-${f.id}]`);
-        if (featureEl) {
-          featureEl.open = true;
-        }
+        this._virtualizerEl.scrollToIndex(i);
         return;
       }
     }
@@ -325,21 +341,6 @@ class ChromedashFeaturelist extends LitElement {
     }, 300);
   }
 
-  /* eslint no-unused-vars: ["error", { "args": "after-used" }] */
-  _onFeatureToggled(e) {
-    const feature = e.detail.feature;
-    const open = e.detail.open;
-
-    if (history && history.replaceState) {
-      if (open) {
-        history.pushState({id: feature.id}, feature.name, '/features/' + feature.id);
-      } else {
-        const hash = this.searchEl.value ? '#' + this.searchEl.value : '';
-        history.replaceState({id: null}, feature.name, '/features' + hash);
-      }
-    }
-  }
-
   _computeMilestoneHidden(feature, features, filtered) {
     return filtered.length != features.length || !feature.first_of_milestone;
   }
@@ -349,6 +350,11 @@ class ChromedashFeaturelist extends LitElement {
   }
 
   render() {
+    /* The running context `this` inside `renderItem` is `lit-virtualizer`
+     * rather than `chromedash-featurelist`, so all function calls inside are
+     * written with `.call(this, ...)`
+     * Note: `_onFeatureToggled` is bind to `this` by the arrow function in
+     * `constructor`. */
     return html`
       <link rel="stylesheet" href="/static/css/elements/chromedash-featurelist.css">
       <style>
@@ -364,7 +370,8 @@ class ChromedashFeaturelist extends LitElement {
             <div ?hidden="${this._computeMilestoneHidden.call(this, feature, this.features, this.filtered)}"
                  class="milestone-marker">${this._computeMilestoneString.call(this, feature.browsers.chrome.status.milestone_str)}</div>
             <chromedash-feature id="id-${feature.id}" tabindex="0"
-                 @feature-toggled="${this._onFeatureToggled.bind(this)}"
+                 ?open="${this._scrollOpenFeatureId === feature.id}"
+                 @feature-toggled="${this._onFeatureToggled}"
                  .feature="${feature}" ?whitelisted="${this.whitelisted}"></chromedash-feature>
           </div>
         `}>
