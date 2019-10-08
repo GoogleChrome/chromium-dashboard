@@ -32,21 +32,8 @@ class ChromedashFeaturelist extends LitElement {
 
     /* The running context `this` inside `renderItem` is `lit-virtualizer`
      * rather than `chromedash-featurelist`, so all function calls inside need
-     * to be bound to `this`. So declaring `_onFeatureToggled` as an arrow
-     * function here. */
-    this._onFeatureToggled = (e) => {
-      const feature = e.detail.feature;
-      const open = e.detail.open;
-
-      if (history && history.replaceState) {
-        if (open) {
-          history.pushState({id: feature.id}, feature.name, '/features/' + feature.id);
-        } else {
-          const hash = this.searchEl.value ? '#' + this.searchEl.value : '';
-          history.replaceState({id: null}, feature.name, '/features' + hash);
-        }
-      }
-    };
+     * to be bound to `this`. */
+    this._onFeatureToggledBound = this._onFeatureToggled.bind(this);
 
     this._loadData();
   }
@@ -143,6 +130,20 @@ class ChromedashFeaturelist extends LitElement {
         break;
       default:
         return this._false;
+    }
+  }
+
+  _onFeatureToggled(e) {
+    const feature = e.detail.feature;
+    const open = e.detail.open;
+
+    if (history && history.replaceState) {
+      if (open) {
+        history.pushState({id: feature.id}, feature.name, '/features/' + feature.id);
+      } else {
+        const hash = this.searchEl.value ? '#' + this.searchEl.value : '';
+        history.replaceState({id: null}, feature.name, '/features' + hash);
+      }
     }
   }
 
@@ -368,7 +369,7 @@ class ChromedashFeaturelist extends LitElement {
                  class="milestone-marker">${this._computeMilestoneString(feature.browsers.chrome.status.milestone_str)}</div>
             <chromedash-feature id="id-${feature.id}" tabindex="0"
                  ?open="${this._scrollOpenFeatureId === feature.id}"
-                 @feature-toggled="${this._onFeatureToggled}"
+                 @feature-toggled="${this._onFeatureToggledBound}"
                  .feature="${feature}" ?whitelisted="${this.whitelisted}"></chromedash-feature>
           </div>
         `}>
