@@ -34,9 +34,10 @@ Create a file named `env_vars.yaml` in the root directory and fill it with:
 env_variables:
   DJANGO_SETTINGS_MODULE: 'settings'
   FIREBASE_SERVER_KEY: <SERVER_KEY>
+  DJANGO_SECRET: <django_key>
 ```
 
-The `FIREBASE_SERVER_KEY` is the Firebase server key obtained from the [Firebase console](https://firebase.corp.google.com/project/cr-status/settings/cloudmessaging/).
+The `FIREBASE_SERVER_KEY` is the Firebase server key obtained from the [Firebase console](https://firebase.corp.google.com/project/cr-status/settings/cloudmessaging/). The `DJANGO_SECRET` should be a unique value (e.g. an UUID), and if possible maintained across deployments.
 
 ##### FCM setup
 

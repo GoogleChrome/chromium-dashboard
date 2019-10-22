@@ -30,7 +30,7 @@
     "eslint-config-google": "^0.9.1",
     "grunt": "^1.0.3",
     "grunt-appengine": "^0.1.5",
-    "gulp": "^4.0.0",
+    "gulp": "^4.0.2",
     "gulp-autoprefixer": "^5.0.0",
     "gulp-babel": "^7.0.1",
     "gulp-crisper": "^1.1.0",
