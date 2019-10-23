@@ -29,23 +29,20 @@ class ChromedashFeature extends LitElement {
     };
   }
 
-  constructor() {
-    super();
-    this.open = false;
-  }
-
   firstUpdated() {
     this._initializeValues();
   }
 
-  updated(props) {
-    /* When chromedash-featurelist filters, we need to _initializeValues. And
-     * chromedash-feature components are updated (not destroyed and recreated),
-     * so firstUpdated won't run.
-     * This piece need to be revisited when switching to lit-virtualizer. */
-    if (props.get('feature')) {
+  /* Initialize values for the template `_initializeValues()`.
+   * - Why not `firstUpdated`: When chromedash-featurelist filters,
+   *   chromedash-feature components are updated, rather than destroyed then
+   *   recreated, so firstUpdated won't run.
+   * - Why not `updated`: We need the new values before the first render. */
+  update(changedProperties) {
+    if (changedProperties.get('feature')) {
       this._initializeValues();
     }
+    super.update(changedProperties);
   }
 
   _initializeValues() {
@@ -438,7 +435,7 @@ class ChromedashFeature extends LitElement {
                 <div class="doc_links">
                   <chromedash-multi-links
                       .links="${this.feature.resources.docs}"
-                      title="Link"></chromedash-multi-links>
+                      title="Doc"></chromedash-multi-links>
                 </div>
                 ` : nothing}
               ${this._hasDocLinks && this._hasSampleLinks ?

@@ -47,7 +47,5 @@
     "sw-precache": "^5.2.1",
     "sw-toolbox": "^3.6.0"
   },
-  "dependencies": {
-    "lit-element": "^2.1.0"
-  }
+  "dependencies": {}
 }
