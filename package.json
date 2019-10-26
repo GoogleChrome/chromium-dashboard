@@ -8,8 +8,7 @@
   },
   "scripts": {
     "deps": "pip install -t lib -r requirements.txt",
-    "lint": "gulp lint-fix",
-    "lit-analyzer": "lit-analyzer",
+    "lint": "gulp lint-fix && lit-analyzer \"static/elements/chromedash-!(featurelist)*.js\"",
     "build": "gulp",
     "watch": "gulp watch",
     "deploy": "npm run build && ./scripts/deploy_site.sh",

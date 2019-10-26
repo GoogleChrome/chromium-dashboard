@@ -44,13 +44,13 @@ To start front end code watching (sass, js lint check, babel, minify files), run
 npm run watch
 ```
 
-To lint & validate lit-element:
+To run lint & lit-analyzer:
 
 ```bash
 npm run lint
-npm run lit-analyer static/elements
 ```
-Note: lit-analyer on featurelist causes `Maximum call stack size exceeded`.
+
+Note: featurelist is temporarily excluded because lit-analyzer throws `Maximum call stack size exceeded`.
 
 There are some developing information in developer-documentation.md.
 
