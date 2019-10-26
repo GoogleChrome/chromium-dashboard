@@ -358,17 +358,6 @@ class ChromedashFeaturelist extends LitElement {
 
   render() {
     return html`
-<<<<<<< HEAD
-      ${this.filtered.map((feature) => html`
-        <div class="item">
-          <div ?hidden="${this._computeMilestoneHidden(feature, this.features, this.filtered)}"
-               class="milestone-marker">${this._computeMilestoneString(feature.browsers.chrome.status.milestone_str)}</div>
-          <chromedash-feature id="id-${feature.id}" tabindex="0"
-              @feature-toggled="${this._onFeatureToggled}"
-              .feature="${feature}" ?whitelisted="${this.whitelisted}"></chromedash-feature>
-        </div>
-        `)}
-=======
       <link rel="stylesheet" href="/static/css/elements/chromedash-featurelist.css">
       <style>
         .item {width: 100%}
@@ -389,7 +378,6 @@ class ChromedashFeaturelist extends LitElement {
           </div>
         `}>
       </lit-virtualizer>
->>>>>>> lit-virtualizer
     `;
   }
 }

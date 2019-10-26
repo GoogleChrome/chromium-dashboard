@@ -9,6 +9,7 @@
   "scripts": {
     "deps": "pip install -t lib -r requirements.txt",
     "lint": "gulp lint-fix",
+    "lit-analyzer": "lit-analyzer",
     "build": "gulp",
     "watch": "gulp watch",
     "deploy": "npm run build && ./scripts/deploy_site.sh",
@@ -45,6 +46,7 @@
     "gulp-util": "^3.0.7",
     "http2-push-manifest": "^1.0.0",
     "lighthouse-ci": "https://github.com/ebidel/lighthouse-ci",
+    "lit-analyzer": "^1.1.9",
     "regenerator-runtime": "^0.13.3",
     "rollup": "^1.17.0",
     "rollup-plugin-babel": "^4.3.3",

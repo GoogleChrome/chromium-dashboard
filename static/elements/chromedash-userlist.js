@@ -72,7 +72,7 @@ class ChromedashUserlist extends LitElement {
 
   render() {
     return html`  
-      <form id="form" name="user_form" method="post" action="${this.actionPath}" onsubmit="return false;">
+      <form id="form" name="user_form" method="POST" action="${this.actionPath}" onsubmit="return false;">
         <input type="email" placeholder="Email address" name="email" id="id_email" required>
         <td><input type="submit" @click="${this.ajaxSubmit}">
       </form>

@@ -1,4 +1,6 @@
 import {LitElement, html} from 'lit-element';
+import {ifDefined} from 'lit-html/directives/if-defined.js';
+
 import '@polymer/iron-icon';
 import './chromedash-x-meter';
 import style from '../css/elements/chromedash-metrics.css';
@@ -114,10 +116,10 @@ class ChromedashMetrics extends LitElement {
       <ol id="stack-rank-list">
         <li class="header">
           <span @click="${this.sort}" data-order="property_name">
-            Property name <iron-icon icon="${this.propertyNameSortIcon}"></iron-icon>
+            Property name <iron-icon icon="${ifDefined(this.propertyNameSortIcon)}"></iron-icon>
           </span>
           <span @click="${this.sort}" data-order="percentage" class="percent_label">
-           Percentage <iron-icon icon="${this.percentSortIcon}"></iron-icon>
+           Percentage <iron-icon icon="${ifDefined(this.percentSortIcon)}"></iron-icon>
           </span>
         </li>
         ${this.viewList.map((item) => html`

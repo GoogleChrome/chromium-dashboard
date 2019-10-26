@@ -40,7 +40,7 @@ class ChromedashLegend extends LitElement {
         <h3>Color legend</h3>
         <p>Colors indicate the "interoperability risk" for a given feature. The
           risk increases as
-          <chromedash-color-status .value="1"
+          <chromedash-color-status value="0"
               .max="${this.views.vendors.length}"></chromedash-color-status> → 
           <chromedash-color-status .value="${this.views.vendors.length}"
               .max="${this.views.vendors.length}"></chromedash-color-status>, and the

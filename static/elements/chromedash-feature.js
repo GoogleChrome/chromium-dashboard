@@ -1,5 +1,6 @@
 import {LitElement, html} from 'lit-element';
 import {nothing} from 'lit-html';
+import {ifDefined} from 'lit-html/directives/if-defined.js';
 import '@polymer/iron-icon';
 import './chromedash-color-status';
 
@@ -265,7 +266,7 @@ class ChromedashFeature extends LitElement {
               </span>
               ` : nothing}
             <span class="tooltip" title="File a bug against this feature">
-              <a href="${this._newBugUrl}" data-tooltip>
+              <a href="${ifDefined(this._newBugUrl)}" data-tooltip>
                 <iron-icon icon="chromestatus:bug-report"></iron-icon>
               </a>
             </span>

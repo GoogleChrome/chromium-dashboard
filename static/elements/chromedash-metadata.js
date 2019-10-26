@@ -1,4 +1,5 @@
 import {LitElement, html} from 'lit-element';
+import {ifDefined} from 'lit-html/directives/if-defined.js';
 import style from '../css/elements/chromedash-metadata.css';
 
 class ChromedashMetadata extends LitElement {
@@ -98,7 +99,7 @@ class ChromedashMetadata extends LitElement {
 
   render() {
     return html`
-      <ul id="versionlist" class="${this._className}">
+      <ul id="versionlist" class="${ifDefined(this._className)}">
         ${this._versions.map((version) => html`
           <li data-version="${version}" @click="${this._clickMilestone}"
               ?selected="${this.selected === version}">${version}</li>

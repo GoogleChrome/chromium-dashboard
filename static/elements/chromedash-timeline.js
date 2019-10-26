@@ -23,7 +23,7 @@ class ChromedashTimeline extends LitElement {
 
   constructor() {
     super();
-    this.selectedBucketId = 1;
+    this.selectedBucketId = '1';
     this.showAllHistoricalData = false;
     this.title = '';
     this.type = '';
@@ -145,7 +145,7 @@ class ChromedashTimeline extends LitElement {
   }
 
   _updateTimeline() {
-    if (this.selectedBucketId === 1) {
+    if (this.selectedBucketId === '1') {
       return;
     }
 
@@ -207,7 +207,7 @@ ORDER BY yyyymmdd DESC, client`;
         This is also the reason for the abrupt spike around 2017-10-26.
       </p>
       <h3 id="httparchive" class="header_title">Adoption of the feature on top sites</h3>
-      <p class="description">The chart below shows the adoption of the feature by the top URLs on the internet. Data from <a href="https://httparchive.org/" target="blank">HTTP Archive</a>.</p>
+      <p class="description">The chart below shows the adoption of the feature by the top URLs on the internet. Data from <a href="https://httparchive.org/" target="_blank">HTTP Archive</a>.</p>
       <iframe id="httparchivedata"></iframe>
       <p class="callout">
         <b>Note</b>: The jump around July and December 2018 are because the corpus of URLs crawled by HTTP Archive increased. These jumps have no correlation with the jump in the top graph.

@@ -161,8 +161,8 @@ class ChromedashSchedule extends LitElement {
                                      data-feature-id="${f.id}"
                                      @click="${this._subscribeToFeature}"></iron-icon>
                         </span>
-                      </span>
-                        ` : nothing}
+                      ` : nothing}
+                    </span>
                   </li>
                   `)}
               </ul>
