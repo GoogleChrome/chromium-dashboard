@@ -79,16 +79,18 @@ gulp.task('styles', () => {
 
 gulp.task('rollup', () => {
   return rollup.rollup({
-    input: 'static/rollup-entry.js',
+    input: 'static/components.js',
     plugins: [
       rollupLitCss({include: []}),
       rollupResolve(),
-      rollupBabel(),
+      rollupBabel({
+        plugins: ["@babel/plugin-syntax-dynamic-import"]
+      }),
       rollupMinify({comments: false}),
     ],
   }).then(bundle => {
     return bundle.write({
-      file: 'static/dist/component-bundle.js',
+      dir: 'static/dist',
       format: 'es',
       sourcemap: true,
       compact: true,
@@ -214,6 +216,6 @@ gulp.task('watch', gulp.series(
   function watch() {
     gulp.watch(['static/sass/**/*.scss'], gulp.series('styles'));
     gulp.watch(['static/js-src/**/*.js', 'static/elements/*.js'], gulp.series(['lint', 'js']));
-    gulp.watch(['static/rollup-entry.js', 'static/elements/*.js'], gulp.series(['rollup']));
+    gulp.watch(['static/components.js', 'static/elements/*.js'], gulp.series(['rollup']));
   }
 ));

@@ -1,3 +1,5 @@
+/** This is the entry file for rollup. It bundles all the web components: polymer-paper components and our own components */
+
 // polymer components
 import '@polymer/app-layout';
 import '@polymer/app-layout/app-scroll-effects/effects/waterfall';

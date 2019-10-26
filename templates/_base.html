@@ -43,7 +43,7 @@ limitations under the License.
   <style>
     {% inline_file "/static/css/main.css" %}
     :root {
-      --app-drawer-width: 200px; /* Used by the component. */
+      --app-drawer-width: 210px; /* Used by the component. */
     }
 
     /* Set the left sidebar the same background color as the page. */
@@ -66,7 +66,7 @@ limitations under the License.
   <script src="https://unpkg.com/@webcomponents/webcomponentsjs/webcomponents-loader.js" defer></script>
   <script type="module">
     WebComponents.waitFor(() => {
-      return import('/static/dist/component-bundle.js');
+      return import('/static/dist/components.js');
     });
   </script>
 

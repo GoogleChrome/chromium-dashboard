@@ -48,16 +48,15 @@ class ChromedashMetadata extends LitElement {
     this.dispatchEvent(event);
   }
 
+  _clickMilestone(e) {
+    // Came from an internal click.
+    this.selected = e.currentTarget.dataset.version;
+    this._fireEvent('query-changed', {version: this.selected});
+  }
+
   // Directly called in chromedash-featurelist
-  selectMilestone(e) {
-    if (e.currentTarget.dataset.version) {
-      // Came from an internal click.
-      this.selected = e.currentTarget.dataset.version;
-      this._fireEvent('query-changed', {version: this.selected});
-    } else {
-      // Called directly (from outside). e is a feature.
-      this.selected = e.browsers.chrome.status.milestone_str;
-    }
+  selectMilestone(feature) {
+    this.selected = feature.browsers.chrome.status.milestone_str;
   }
 
   _processResponse(response) {
@@ -101,7 +100,7 @@ class ChromedashMetadata extends LitElement {
     return html`
       <ul id="versionlist" class="${this._className}">
         ${this._versions.map((version) => html`
-          <li data-version="${version}" @click="${this.selectMilestone}"
+          <li data-version="${version}" @click="${this._clickMilestone}"
               ?selected="${this.selected === version}">${version}</li>
           `)}
       </ul>
