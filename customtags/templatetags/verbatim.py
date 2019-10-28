@@ -12,6 +12,7 @@ to output the contents with no changes.
 """
 
 from django import template
+from django.template import base
 
 register = template.Library()
 
@@ -32,13 +33,13 @@ def verbatim(parser, token):
       token = parser.tokens.pop(0)
       if token.contents == 'endverbatim':
           break
-      if token.token_type == template.TOKEN_VAR:
+      if token.token_type == base.TOKEN_VAR:
           text.append('{{')
-      elif token.token_type == template.TOKEN_BLOCK:
+      elif token.token_type == base.TOKEN_BLOCK:
           text.append('{%')
       text.append(token.contents)
-      if token.token_type == template.TOKEN_VAR:
+      if token.token_type == base.TOKEN_VAR:
           text.append('}}')
-      elif token.token_type == template.TOKEN_BLOCK:
+      elif token.token_type == base.TOKEN_BLOCK:
           text.append('%}')
   return VerbatimNode(''.join(text))
