@@ -23,10 +23,10 @@ Specification: <a href="{{feature.spec_link}}">{{feature.spec_link}}</a>
 
 <label>Summary</label>
 {{feature.summary}}
-{% if feature.intent_stage == "Implement" or feature.intent_stage == "Ship" or feature.intent_stage == "Implement and Ship" %}
-{% if feature.intent_stage == "Implement" or feature.intent_stage == "Implement and Ship" %}<label>Motivation</label>
+{% if feature.intent_stage == "Prototype" or feature.intent_stage == "Ship" or feature.intent_stage == "Implement and Ship" %}
+{% if feature.intent_stage == "Prototype" or feature.intent_stage == "Implement and Ship" %}<label>Motivation</label>
 {{feature.motivation|urlize}}
-{% endif %}{% if feature.intent_stage == "Ship" or feature.intent_stage == "Experiment" or feature.intent_stage == "Extend Origin Trial" %}<label>Link to “Intent to Implement” blink-dev discussion</label>
+{% endif %}{% if feature.intent_stage == "Ship" or feature.intent_stage == "Experiment" or feature.intent_stage == "Extend Origin Trial" %}<label>Link to “Intent to Prototype” blink-dev discussion</label>
 {{feature.intent_to_implement_url}}
 {% if feature.origin_trial_feedback_url %}
 <label>Link to Origin Trial feedback summary</label>

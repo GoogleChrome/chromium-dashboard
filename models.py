@@ -76,7 +76,7 @@ INTENT_REMOVE = 6
 
 INTENT_STAGES = {
   INTENT_NONE: 'None',
-  INTENT_IMPLEMENT: 'Implement',
+  INTENT_IMPLEMENT: 'Prototype',
   INTENT_EXPERIMENT: 'Experiment',
   INTENT_EXTEND_TRIAL: 'Extend Origin Trial',
   INTENT_IMPLEMENT_SHIP: 'Implement and Ship',
@@ -979,17 +979,17 @@ class FeatureForm(forms.Form):
 
   explainer_links = forms.CharField(label='Explainer link(s)', required=False,
       widget=forms.Textarea(attrs={'rows': 4, 'cols': 50, 'maxlength': 500}),
-      help_text='Link to explainer(s) (one URL per line). You should have at least an explainer in hand and have shared it on a public forum before sending an intent to implement in order to enable discussion with other browser vendors, standards bodies, or other interested parties.')
+      help_text='Link to explainer(s) (one URL per line). You should have at least an explainer in hand and have shared it on a public forum before sending an Intent to Prototype in order to enable discussion with other browser vendors, standards bodies, or other interested parties.')
 
-  intent_to_implement_url = forms.URLField(required=False, label='Intent to Implement link',
-      help_text='Link to the "Intent to Implement" discussion thread.')
+  intent_to_implement_url = forms.URLField(required=False, label='Intent to Prototype link',
+      help_text='Link to the "Intent to Prototype" discussion thread.')
 
   origin_trial_feedback_url = forms.URLField(required=False, label='Origin Trial feedback summary',
       help_text='If your feature was available as an Origin Trial, link to a summary of usage and developer feedback. If not, leave this empty.')
 
   doc_links = forms.CharField(label='Doc link(s)', required=False,
       widget=forms.Textarea(attrs={'rows': 4, 'cols': 50, 'maxlength': 500}),
-      help_text='Links to design doc(s) (one URL per line), if and when available. [This is not required to send out an Intent to Implement. Please update the intent thread with the design doc when ready]. An explainer and/or design doc is sufficient to start this process. [Note: Please include links and data, where possible, to support any claims.]')
+      help_text='Links to design doc(s) (one URL per line), if and when available. [This is not required to send out an Intent to Prototype. Please update the intent thread with the design doc when ready]. An explainer and/or design doc is sufficient to start this process. [Note: Please include links and data, where possible, to support any claims.]')
 
   standardization = forms.ChoiceField(
       label='Standardization', choices=STANDARDIZATION.items(),
