@@ -369,7 +369,7 @@ class FeatureHandler(common.ContentHandler):
       logging.error('Invalid intent_stage \'{}\'' \
                     .format(self.request.get('intent_stage')))
 
-      # Default the intent stage to 1 (Implement) if we failed to get a valid
+      # Default the intent stage to 1 (Prototype) if we failed to get a valid
       # intent stage from the request. This should be removed once we
       # understand what causes this.
       intent_stage = 1
