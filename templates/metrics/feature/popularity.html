@@ -5,12 +5,6 @@
   <style>{% inline_file "/static/css/metrics.css" %}</style>
 {% endblock %}
 
-{% block preload %}
-<script type="module">
-  import '/static/elements/chromedash-metrics.js';
-</script>
-{% endblock %}
-
 {% block drawer %}
   {% include "metrics/feature/_feature_metric_nav.html" %}
 {% endblock %}

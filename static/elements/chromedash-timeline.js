@@ -1,8 +1,10 @@
 // TODO(yangguang): This component is not tested. Data is not available in devserver, so cannot be tested locally.
-
-import {LitElement, html} from 'https://unpkg.com/@polymer/lit-element@latest/lit-element.js?module';
+import {LitElement, html} from 'lit-element';
+import style from '../css/elements/chromedash-timeline.css';
 
 class ChromedashTimeline extends LitElement {
+  static styles = style;
+
   static get properties() {
     return {
       type: {type: String},
@@ -21,7 +23,7 @@ class ChromedashTimeline extends LitElement {
 
   constructor() {
     super();
-    this.selectedBucketId = 1;
+    this.selectedBucketId = '1';
     this.showAllHistoricalData = false;
     this.title = '';
     this.type = '';
@@ -143,7 +145,7 @@ class ChromedashTimeline extends LitElement {
   }
 
   _updateTimeline() {
-    if (this.selectedBucketId === 1) {
+    if (this.selectedBucketId === '1') {
       return;
     }
 
@@ -187,8 +189,6 @@ ORDER BY yyyymmdd DESC, client`;
 
   render() {
     return html`  
-      <link rel="stylesheet" href="/static/css/elements/chromedash-timeline.css">
-
       <select .value="${this.selectedBucketId}" @change="${this.updateSelectedBucketId}">
         <option disabled value="1">Select a property</option>
         ${this.props.map((prop) => html`
@@ -207,7 +207,7 @@ ORDER BY yyyymmdd DESC, client`;
         This is also the reason for the abrupt spike around 2017-10-26.
       </p>
       <h3 id="httparchive" class="header_title">Adoption of the feature on top sites</h3>
-      <p class="description">The chart below shows the adoption of the feature by the top URLs on the internet. Data from <a href="https://httparchive.org/" target="blank">HTTP Archive</a>.</p>
+      <p class="description">The chart below shows the adoption of the feature by the top URLs on the internet. Data from <a href="https://httparchive.org/" target="_blank">HTTP Archive</a>.</p>
       <iframe id="httparchivedata"></iframe>
       <p class="callout">
         <b>Note</b>: The jump around July and December 2018 are because the corpus of URLs crawled by HTTP Archive increased. These jumps have no correlation with the jump in the top graph.

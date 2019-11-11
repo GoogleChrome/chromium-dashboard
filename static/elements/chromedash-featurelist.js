@@ -1,8 +1,12 @@
-import {LitElement, html} from 'https://unpkg.com/@polymer/lit-element@latest/lit-element.js?module';
-import 'https://unpkg.com/lit-virtualizer?module';
-import './chromedash-feature.js';
+import {LitElement, html} from 'lit-element';
+// eslint-disable-next-line no-unused-vars
+import {LitVirtualizer} from 'lit-virtualizer';
+import './chromedash-feature';
+import style from '../css/elements/chromedash-featurelist.css';
 
 class ChromedashFeaturelist extends LitElement {
+  static styles = style;
+
   static get properties() {
     return {
       whitelisted: {type: Boolean},

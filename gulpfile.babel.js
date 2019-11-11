@@ -1,19 +1,20 @@
 'use strict';
 
-// This gulpfile makes use of new JavaScript features.
-// Babel handles this without us having to do anything. It just works.
-// You can read more about the new JavaScript features here:
-// https://babeljs.io/docs/learn-es2015/
-
-import path from 'path';
-import gulp from 'gulp';
-import del from 'del';
-import swPrecache from 'sw-precache';
-import * as uglifyEs from 'gulp-uglify-es';
+const path = require('path');
+const gulp = require('gulp');
+const babel = require("gulp-babel");
+const del = require('del');
+const swPrecache = require('sw-precache');
+const uglifyEs = require('gulp-uglify-es');
 const uglify = uglifyEs.default;
-import gulpLoadPlugins from 'gulp-load-plugins';
+const gulpLoadPlugins = require('gulp-load-plugins');
 const eslintIfFixed = require('gulp-eslint-if-fixed');
 const $ = gulpLoadPlugins();
+const rollup = require('rollup');
+const rollupResolve = require('rollup-plugin-node-resolve');
+const rollupLitCss = require('rollup-plugin-lit-css');
+const rollupBabel = require('rollup-plugin-babel');
+const rollupMinify = require('rollup-plugin-babel-minify');
 
 function minifyHtml() {
   return $.minifyHtml({
@@ -76,12 +77,33 @@ gulp.task('styles', () => {
     .pipe(gulp.dest('static/css'));
 });
 
+gulp.task('rollup', () => {
+  return rollup.rollup({
+    input: 'static/components.js',
+    plugins: [
+      rollupLitCss({include: []}),
+      rollupResolve(),
+      rollupBabel({
+        plugins: ["@babel/plugin-syntax-dynamic-import"]
+      }),
+      rollupMinify({comments: false}),
+    ],
+  }).then(bundle => {
+    return bundle.write({
+      dir: 'static/dist',
+      format: 'es',
+      sourcemap: true,
+      compact: true,
+    });
+  });
+});
+
 // Run scripts through babel.
 gulp.task('js', () => {
   return gulp.src([
     'static/js-src/**/*.js',
   ])
-    .pipe($.babel()) // Defaults are in .babelrc
+    .pipe(babel()) // Defaults are in .babelrc
     .pipe(uglifyJS())
     .pipe(license()) // Add license to top.
     .pipe($.rename({suffix: '.min'}))
@@ -179,23 +201,21 @@ gulp.task('generate-service-worker', () => {
 });
 
 // Build production files, the default task
-gulp.task('watch', gulp.series(
-  'clean',
-  'styles',
-  'js',
-  'lint-fix',
-  'generate-service-worker',
-  function watch() {
-    gulp.watch(['static/sass/**/*.scss'], gulp.series('styles'));
-    gulp.watch(['static/js-src/**/*.js', 'static/elements/*.js'], gulp.series(['lint', 'js']));
-  }
-));
-
-// Build production files, the default task
 gulp.task('default', gulp.series(
   'clean',
   'styles',
   'js',
   'lint-fix',
+  'rollup',
   'generate-service-worker',
+));
+
+// Build production files, the default task
+gulp.task('watch', gulp.series(
+  'default',
+  function watch() {
+    gulp.watch(['static/sass/**/*.scss'], gulp.series('styles'));
+    gulp.watch(['static/js-src/**/*.js', 'static/elements/*.js'], gulp.series(['lint', 'js']));
+    gulp.watch(['static/components.js', 'static/elements/*.js'], gulp.series(['rollup']));
+  }
 ));

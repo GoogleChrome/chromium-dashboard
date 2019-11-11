@@ -3,9 +3,9 @@
  * This file uses a similar pattern used in iron-icons (https://github.com/PolymerElements/iron-icons/blob/master/iron-icons.js)
  */
 
-import {html} from 'https://unpkg.com/@polymer/lit-element@latest/lit-element.js?module';
-import 'https://unpkg.com/@polymer/iron-icon/iron-icon.js?module';
-import 'https://unpkg.com/@polymer/iron-iconset-svg/iron-iconset-svg.js?module';
+import {html} from 'lit-element';
+import '@polymer/iron-icon';
+import '@polymer/iron-iconset-svg';
 
 const template = html`
 <iron-iconset-svg name="chromestatus" size="24">

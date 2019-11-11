@@ -1,6 +1,7 @@
-import {LitElement, html} from 'https://unpkg.com/@polymer/lit-element@latest/lit-element.js?module';
-import {nothing} from 'https://unpkg.com/lit-html/lit-html.js?module';
-import 'https://unpkg.com/@polymer/iron-icon/iron-icon.js?module';
+import {LitElement, html} from 'lit-element';
+import {nothing} from 'lit-html';
+import '@polymer/iron-icon';
+import style from '../css/elements/chromedash-schedule.css';
 
 const TEMPLATE_CONTENT = {
   stable: {
@@ -31,10 +32,10 @@ const TEMPLATE_CONTENT = {
 
 const REMOVED_STATUS = ['Removed'];
 const DEPRECATED_STATUS = ['Deprecated', 'No longer pursuing'];
-const IS_PUSH_NOTIFIER_SUPPORTED = window.PushNotifier.SUPPORTS_NOTIFICATIONS;
-const IS_PUSH_NOTIFIER_ENABLED = window.PushNotifier.GRANTED_ACCESS;
 
 class ChromedashSchedule extends LitElement {
+  static styles = style;
+
   static get properties() {
     return {
       channels: {attribute: false}, // Assigned in schedule.js, value from Django
@@ -101,8 +102,6 @@ class ChromedashSchedule extends LitElement {
       return html``;
     }
     return html`
-      <link rel="stylesheet" href="/static/css/elements/chromedash-schedule.css">
-
       ${['stable', 'beta', 'dev'].map((type) => html`
         <section class="release ${this.hideBlink ? 'no-components' : nothing}">
           <div class="layout vertical center">
@@ -155,15 +154,15 @@ class ChromedashSchedule extends LitElement {
                           <iron-icon icon="chromestatus:warning" class="deprecated" data-tooltip></iron-icon>
                         </span>
                         ` : nothing}
-                      ${IS_PUSH_NOTIFIER_SUPPORTED ? html`
+                      ${window.PushNotifier && window.PushNotifier.SUPPORTS_NOTIFICATIONS ? html`
                         <span class="tooltip" title="Subscribe to notification updates">
                           <iron-icon icon="chromestatus:notifications-off"
-                                     class="pushicon ${IS_PUSH_NOTIFIER_ENABLED ? nothing : 'disabled'}"
+                                     class="pushicon ${window.PushNotifier && window.PushNotifier.GRANTED_ACCESS ? nothing : 'disabled'}"
                                      data-feature-id="${f.id}"
                                      @click="${this._subscribeToFeature}"></iron-icon>
                         </span>
-                      </span>
-                        ` : nothing}
+                      ` : nothing}
+                    </span>
                   </li>
                   `)}
               </ul>

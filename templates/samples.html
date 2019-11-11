@@ -10,16 +10,6 @@
   <style>{% inline_file "/static/css/samples.css" %}</style>
 {% endblock %}
 
-{% block preload %}
-  <script type="module">
-    import 'https://unpkg.com/@polymer/paper-listbox/paper-listbox.js?module';
-    import 'https://unpkg.com/@polymer/paper-ripple/paper-ripple.js?module';
-    import 'https://unpkg.com/@polymer/paper-item/paper-item.js?module';
-    import 'https://unpkg.com/@polymer/iron-icon/iron-icon.js?module';
-    import '/static/elements/chromedash-sample-panel.js';
-  </script>
-{% endblock %}
-
 {% block drawer %}
   <h3>Category filter</h3>
   {% verbatim %}

@@ -59,18 +59,15 @@ limitations under the License.
   </style>
 
   {% block css %}{% endblock %}
-  <script src="https://unpkg.com/@webcomponents/webcomponentsjs@^2.0.0/webcomponents-loader.js"></script>
+  
+  {# Metric is need by sw registration and page code. #}
+  <script>{% inline_file "/static/js/metric.min.js" %}</script>
 
+  <script src="https://unpkg.com/@webcomponents/webcomponentsjs/webcomponents-loader.js" defer></script>
   <script type="module">
-    import 'https://unpkg.com/@polymer/paper-styles/color.js?module';
-    import '/static/elements/icons.js';
-
-    import 'https://unpkg.com/@polymer/app-layout/app-drawer-layout/app-drawer-layout.js?module';
-    import 'https://unpkg.com/@polymer/app-layout/app-header-layout/app-header-layout.js?module';
-    import 'https://unpkg.com/@polymer/app-layout/app-scroll-effects/app-scroll-effects.js?module';
-    import 'https://unpkg.com/@polymer/app-layout/app-drawer/app-drawer.js?module';
-    import 'https://unpkg.com/@polymer/app-layout/app-header/app-header.js?module';
-    import '/static/elements/chromedash-toast.js';
+    WebComponents.waitFor(() => {
+      return import('/static/dist/components.js');
+    });
   </script>
 
   {% block preload %}{% endblock %}
@@ -114,9 +111,6 @@ limitations under the License.
 
   <!-- https://github.com/ljosa/urlize.js.git. This package does not have ES module support. It sets window.urlize in browsers. -->
   <script src="https://unpkg.com/urlize.js/urlize.js"></script>
-
-  {# Metric is need by sw registration and page code. #}
-  <script>{% inline_file "/static/js/metric.min.js" %}</script>
 
   {% block js %}{% endblock %}
 

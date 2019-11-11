@@ -1,17 +1,20 @@
-import {LitElement, html} from 'https://unpkg.com/@polymer/lit-element@latest/lit-element.js?module';
-import {nothing} from 'https://unpkg.com/lit-html/lit-html.js?module';
-import 'https://unpkg.com/@polymer/iron-icon/iron-icon.js?module';
-import './chromedash-color-status.js';
+import {LitElement, html} from 'lit-element';
+import {nothing} from 'lit-html';
+import {ifDefined} from 'lit-html/directives/if-defined.js';
+import '@polymer/iron-icon';
+import './chromedash-color-status';
+
+import style from '../css/elements/chromedash-feature.css';
+import sharedStyle from '../css/shared.css';
 
 const MAX_STANDARDS_VAL = 6;
 const MAX_VENDOR_VIEW = 7;
 const MAX_WEBDEV_VIEW = 6;
 const MAX_RISK = MAX_VENDOR_VIEW + MAX_WEBDEV_VIEW + MAX_STANDARDS_VAL;
 
-const IS_PUSH_NOTIFIER_ENABLED = window.PushNotifier.GRANTED_ACCESS;
-const IS_PUSH_NOTIFIER_SUPPORTED = window.PushNotifier.SUPPORTS_NOTIFICATIONS;
-
 class ChromedashFeature extends LitElement {
+  static styles = style;
+
   static get properties() {
     return {
       feature: {type: Object},
@@ -194,8 +197,6 @@ class ChromedashFeature extends LitElement {
 
   render() {
     return html`
-      <link rel="stylesheet" href="/static/css/elements/chromedash-feature.css">
-
       <hgroup @click="${this._togglePanelExpansion}">
         <chromedash-color-status class="tooltip corner"
           title="Interoperability risk: perceived interest from browser
@@ -212,11 +213,14 @@ class ChromedashFeature extends LitElement {
             `: nothing}
         </h2>
         <div class="iconrow
-            ${IS_PUSH_NOTIFIER_SUPPORTED ?
+            ${window.PushNotifier && window.PushNotifier.SUPPORTS_NOTIFICATIONS ?
               'supports-push-notifications' : nothing}">
-          <button class="category tooltip category-tooltip" @click="${this.categoryFilter}"
-              title="Filter by category ${this.feature.category}">
-            ${this.feature.category}</button>
+          <span class="tooltip category-tooltip"
+                title="Filter by category ${this.feature.category}">
+            <a href="#" class="category"
+               @click="${this.categoryFilter}">
+              ${this.feature.category}</a>
+          </span>
           <div class="topcorner">
             ${this.feature.browsers.chrome.status.text === 'Removed' ? html`
               <span class="tooltip" title="Removed feature">
@@ -249,18 +253,20 @@ class ChromedashFeature extends LitElement {
                            class="intervention" data-tooltip></iron-icon>
               </span>
               ` : nothing}
-            ${IS_PUSH_NOTIFIER_SUPPORTED ? html`
-              <button @click="${this.subscribeToFeature}" data-tooltip class="tooltip"
-                  title="Receive a push notification when there are updates">
-                <iron-icon icon="${this._receivePush ?
-                              'chromestatus:notifications' :
-                              'chromestatus:notifications-off'}"
-                           class="pushicon ${IS_PUSH_NOTIFIER_ENABLED ?
-                             nothing : 'disabled'}"></iron-icon>
-              </button>
+            ${window.PushNotifier && window.PushNotifier.SUPPORTS_NOTIFICATIONS ? html`
+              <span class="tooltip"
+                    title="Receive a push notification when there are updates">
+                <a href="#" @click="${this.subscribeToFeature}" data-tooltip>
+                  <iron-icon icon="${this._receivePush ?
+                                'chromestatus:notifications' :
+                                'chromestatus:notifications-off'}"
+                             class="pushicon ${window.PushNotifier && window.PushNotifier.GRANTED_ACCESS ?
+                               '' : 'disabled'}"></iron-icon>
+                </a>
+              </span>
               ` : nothing}
             <span class="tooltip" title="File a bug against this feature">
-              <a href="${this._newBugUrl}" data-tooltip>
+              <a href="${ifDefined(this._newBugUrl)}" data-tooltip>
                 <iron-icon icon="chromestatus:bug-report"></iron-icon>
               </a>
             </span>
@@ -465,6 +471,8 @@ customElements.define('chromedash-feature', ChromedashFeature);
 
 
 class ChromedashMultiLinks extends LitElement {
+  static styles = sharedStyle;
+
   static get properties() {
     return {
       title: {type: String}, // From parent
@@ -480,8 +488,6 @@ class ChromedashMultiLinks extends LitElement {
 
   render() {
     return html`
-      <link rel="stylesheet" href="/static/css/shared.css">
-
       ${this.links.map((link, index) => html`
         <a href="${link}" target="_blank"
            class="${index < this.links.length - 1 ? 'comma' : ''}"

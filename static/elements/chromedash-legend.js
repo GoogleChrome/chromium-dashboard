@@ -1,9 +1,12 @@
-import {LitElement, html} from 'https://unpkg.com/@polymer/lit-element@latest/lit-element.js?module';
-import {nothing} from 'https://unpkg.com/lit-html/lit-html.js?module';
-import 'https://unpkg.com/@polymer/iron-icon/iron-icon.js?module';
-import './chromedash-color-status.js';
+import {LitElement, html} from 'lit-element';
+import {nothing} from 'lit-html';
+import '@polymer/iron-icon';
+import './chromedash-color-status';
+import style from '../css/elements/chromedash-legend.css';
 
 class ChromedashLegend extends LitElement {
+  static styles = style;
+
   static get properties() {
     return {
       opened: {type: Boolean, reflect: true},
@@ -21,8 +24,6 @@ class ChromedashLegend extends LitElement {
       return nothing;
     }
     return html`
-      <link rel="stylesheet" href="/static/css/elements/chromedash-legend.css">
-
       <div id="overlay">
         <h3>About the data</h3>
         <section class="content-wrapper">
@@ -39,7 +40,7 @@ class ChromedashLegend extends LitElement {
         <h3>Color legend</h3>
         <p>Colors indicate the "interoperability risk" for a given feature. The
           risk increases as
-          <chromedash-color-status .value="1"
+          <chromedash-color-status value="0"
               .max="${this.views.vendors.length}"></chromedash-color-status> → 
           <chromedash-color-status .value="${this.views.vendors.length}"
               .max="${this.views.vendors.length}"></chromedash-color-status>, and the

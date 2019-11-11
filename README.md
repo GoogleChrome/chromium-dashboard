@@ -15,11 +15,8 @@ Chrome Platform Status
     1. [Google App Engine SDK for Python](https://developers.google.com/appengine/downloads#Google_App_Engine_SDK_for_Python).
     1. pip, node, npm.
     1. Gulp `npm install -g gulp`
-1. Install Site, followed by postinstall script
-
-```bash
-npm install`
-```
+1. Install npm dependencies `npm ci`
+1. Install other dependencies `npm run deps`
 
 ##### Add env_vars.yaml
 
@@ -46,6 +43,14 @@ To start front end code watching (sass, js lint check, babel, minify files), run
 ```bash
 npm run watch
 ```
+
+To run lint & lit-analyzer:
+
+```bash
+npm run lint
+```
+
+Note: featurelist is temporarily excluded because lit-analyzer throws `Maximum call stack size exceeded`.
 
 There are some developing information in developer-documentation.md.
 

@@ -1,6 +1,10 @@
-import {LitElement, html} from 'https://unpkg.com/@polymer/lit-element@latest/lit-element.js?module';
+import {LitElement, html} from 'lit-element';
+import {ifDefined} from 'lit-html/directives/if-defined.js';
+import style from '../css/elements/chromedash-metadata.css';
 
 class ChromedashMetadata extends LitElement {
+  static styles = style;
+
   static get properties() {
     return {
       implStatuses: {type: Array}, // Read in chromedash-featurelist.
@@ -95,9 +99,7 @@ class ChromedashMetadata extends LitElement {
 
   render() {
     return html`
-      <link rel="stylesheet" href="/static/css/elements/chromedash-metadata.css">
-
-      <ul id="versionlist" class="${this._className}">
+      <ul id="versionlist" class="${ifDefined(this._className)}">
         ${this._versions.map((version) => html`
           <li data-version="${version}" @click="${this._clickMilestone}"
               ?selected="${this.selected === version}">${version}</li>
