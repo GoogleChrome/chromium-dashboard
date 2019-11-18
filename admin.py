@@ -363,6 +363,10 @@ class FeatureHandler(common.ContentHandler):
     if blink_components:
       blink_components = filter(bool, [x.strip() for x in blink_components.split(',')])
 
+    devrel = self.request.get('devrel') or []
+    if devrel:
+      devrel = [db.Email(x.strip()) for x in devrel.split(',')]
+
     try:
       intent_stage = int(self.request.get('intent_stage'))
     except:
@@ -397,6 +401,7 @@ class FeatureHandler(common.ContentHandler):
       feature.owner = owners
       feature.bug_url = bug_url
       feature.blink_components = blink_components
+      feature.devrel = devrel
       feature.impl_status_chrome = int(self.request.get('impl_status_chrome'))
       feature.shipped_milestone = shipped_milestone
       feature.shipped_android_milestone = shipped_android_milestone
@@ -460,6 +465,7 @@ class FeatureHandler(common.ContentHandler):
           owner=owners,
           bug_url=bug_url,
           blink_components=blink_components,
+          devrel=devrel,
           impl_status_chrome=int(self.request.get('impl_status_chrome')),
           shipped_milestone=shipped_milestone,
           shipped_android_milestone=shipped_android_milestone,
