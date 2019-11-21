@@ -474,6 +474,7 @@ class Feature(DictModel):
         'chrome': {
           'bug': d.pop('bug_url', None),
           'blink_components': d.pop('blink_components', []),
+          'devrel': d.pop('devrel', []),
           'owners': d.pop('owner', []),
           'origintrial': self.impl_status_chrome == ORIGIN_TRIAL,
           'intervention': self.impl_status_chrome == INTERVENTION,
@@ -576,6 +577,7 @@ class Feature(DictModel):
     d['sample_links'] = '\r\n'.join(self.sample_links)
     d['search_tags'] = ', '.join(self.search_tags)
     d['blink_components'] = self.blink_components[0] #TODO: support more than one component.
+    d['devrel'] = ', '.join(self.devrel)
     return d
 
   @classmethod
@@ -843,6 +845,7 @@ class Feature(DictModel):
   # Chromium details.
   bug_url = db.LinkProperty()
   blink_components = db.StringListProperty(required=True, default=[BlinkComponent.DEFAULT_COMPONENT])
+  devrel = db.ListProperty(db.Email)
 
   impl_status_chrome = db.IntegerProperty(required=True)
   shipped_milestone = db.IntegerProperty()
@@ -1106,6 +1109,9 @@ class FeatureForm(forms.Form):
       help_text='Select the most specific component. If unsure, leave as "%s".' % BlinkComponent.DEFAULT_COMPONENT,
       choices=[(x, x) for x in BlinkComponent.fetch_all_components()],
       initial=[BlinkComponent.DEFAULT_COMPONENT])
+
+  devrel = forms.CharField(required=False, label='Developer relations emails',
+      help_text='Comma separated list of full email addresses.')
 
   impl_status_chrome = forms.ChoiceField(required=True,
       label='Status in Chromium', choices=IMPLEMENTATION_STATUS.items())
