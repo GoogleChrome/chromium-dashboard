@@ -15,6 +15,10 @@ from google.appengine.api import users
 import settings
 import util
 
+import hack_components
+import hack_wf_components
+
+
 #from django.forms import ModelForm
 from collections import OrderedDict
 from django import forms
@@ -280,6 +284,11 @@ class BlinkComponent(DictModel):
         memcache.set(key, components)
       else:
         logging.error('Fetching blink components returned: %s' % result.status_code)
+
+    if not components:
+      components = sorted(hack_components.HACK_BLINK_COMPONENTS)
+      logging.info('using hard-coded blink components')
+
     return components
 
   @classmethod
@@ -296,6 +305,11 @@ class BlinkComponent(DictModel):
         memcache.set(key, components)
       else:
         logging.error('Fetching /web blink components content returned: %s' % result.status_code)
+
+    if not components:
+      components = hack_wf_components.HACK_WF_COMPONENTS
+      logging.info('using hard-coded WF components')
+
     return components
 
   @classmethod
