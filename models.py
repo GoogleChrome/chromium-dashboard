@@ -278,7 +278,8 @@ class BlinkComponent(DictModel):
     components = memcache.get(key)
     if components is None or update_cache:
       components = []
-      result = urlfetch.fetch(self.COMPONENTS_ENDPOINT, deadline=60)
+      url = self.COMPONENTS_ENDPOINT + '?cache-buster=%s' % time.time()
+      result = urlfetch.fetch(url, deadline=60)
       if result.status_code == 200:
         components = sorted(json.loads(result.content))
         memcache.set(key, components)
@@ -299,7 +300,8 @@ class BlinkComponent(DictModel):
     components = memcache.get(key)
     if components is None or update_cache:
       components = {}
-      result = urlfetch.fetch(self.WF_CONTENT_ENDPOINT, deadline=60)
+      url = self.WF_CONTENT_ENDPOINT + '?cache-buster=%s' % time.time()
+      result = urlfetch.fetch(url, deadline=60)
       if result.status_code == 200:
         components = json.loads(result.content)
         memcache.set(key, components)
