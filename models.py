@@ -15,6 +15,10 @@ from google.appengine.api import users
 import settings
 import util
 
+import hack_components
+import hack_wf_components
+
+
 #from django.forms import ModelForm
 from collections import OrderedDict
 from django import forms
@@ -274,12 +278,18 @@ class BlinkComponent(DictModel):
     components = memcache.get(key)
     if components is None or update_cache:
       components = []
-      result = urlfetch.fetch(self.COMPONENTS_ENDPOINT, deadline=60)
+      url = self.COMPONENTS_ENDPOINT + '?cache-buster=%s' % time.time()
+      result = urlfetch.fetch(url, deadline=60)
       if result.status_code == 200:
         components = sorted(json.loads(result.content))
         memcache.set(key, components)
       else:
         logging.error('Fetching blink components returned: %s' % result.status_code)
+
+    if not components:
+      components = sorted(hack_components.HACK_BLINK_COMPONENTS)
+      logging.info('using hard-coded blink components')
+
     return components
 
   @classmethod
@@ -290,12 +300,18 @@ class BlinkComponent(DictModel):
     components = memcache.get(key)
     if components is None or update_cache:
       components = {}
-      result = urlfetch.fetch(self.WF_CONTENT_ENDPOINT, deadline=60)
+      url = self.WF_CONTENT_ENDPOINT + '?cache-buster=%s' % time.time()
+      result = urlfetch.fetch(url, deadline=60)
       if result.status_code == 200:
         components = json.loads(result.content)
         memcache.set(key, components)
       else:
         logging.error('Fetching /web blink components content returned: %s' % result.status_code)
+
+    if not components:
+      components = hack_wf_components.HACK_WF_COMPONENTS
+      logging.info('using hard-coded WF components')
+
     return components
 
   @classmethod
