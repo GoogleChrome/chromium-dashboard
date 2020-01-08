@@ -1,4 +1,4 @@
-HACK_WF_COMPONTENTS = {
+HACK_WF_COMPONENTS = {
   "Internals>Headless": [
     {
       "url": "https://github.com/Google/WebFundamentals/blob/master/src/content/en/tools/puppeteer/debugging.md",
