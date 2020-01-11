@@ -29,7 +29,11 @@ import models
 
 from django.template.loader import render_to_string
 from django.utils import feedgenerator
+import django
 
+# Initialize django so that it'll function when run as a standalone script.
+# https://django.readthedocs.io/en/latest/releases/1.7.html#standalone-scripts
+django.setup()
 
 def require_whitelisted_user(handler):
   """Handler decorator to require the user be whitelisted."""
