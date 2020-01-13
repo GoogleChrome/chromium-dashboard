@@ -1,21 +1,20 @@
 'use strict';
 
-// This gulpfile makes use of new JavaScript features.
-// Babel handles this without us having to do anything. It just works.
-// You can read more about the new JavaScript features here:
-// https://babeljs.io/docs/learn-es2015/
-
-import path from 'path';
-import gulp from 'gulp';
-import del from 'del';
-import swPrecache from 'sw-precache';
-import * as uglifyEs from 'gulp-uglify-es';
+const path = require('path');
+const gulp = require('gulp');
+const babel = require("gulp-babel");
+const del = require('del');
+const swPrecache = require('sw-precache');
+const uglifyEs = require('gulp-uglify-es');
 const uglify = uglifyEs.default;
-import gulpLoadPlugins from 'gulp-load-plugins';
-import merge from 'merge-stream';
-import * as cssslam from 'css-slam';
-
+const gulpLoadPlugins = require('gulp-load-plugins');
+const eslintIfFixed = require('gulp-eslint-if-fixed');
 const $ = gulpLoadPlugins();
+const rollup = require('rollup');
+const rollupResolve = require('rollup-plugin-node-resolve');
+const rollupLitCss = require('rollup-plugin-lit-css');
+const rollupBabel = require('rollup-plugin-babel');
+const rollupMinify = require('rollup-plugin-babel-minify');
 
 function minifyHtml() {
   return $.minifyHtml({
@@ -40,10 +39,22 @@ function license() {
 
 gulp.task('lint', () => {
   return gulp.src([
-    'static/**/*.js'
+    'static/js-src/*.js',
+    'static/elements/*.js',
   ])
     .pipe($.eslint())
     .pipe($.eslint.format())
+    .pipe($.eslint.failAfterError());
+});
+
+gulp.task('lint-fix', () => {
+  return gulp.src([
+    'static/js-src/*.js',
+    'static/elements/*.js',
+  ], {base: './'})
+    .pipe($.eslint({fix:true}))
+    .pipe($.eslint.format())
+    .pipe(eslintIfFixed('./'))
     .pipe($.eslint.failAfterError());
 });
 
@@ -66,79 +77,46 @@ gulp.task('styles', () => {
     .pipe(gulp.dest('static/css'));
 });
 
-// Run scripts through babel. Note, this does not include vulcanized js.
+gulp.task('rollup', () => {
+  return rollup.rollup({
+    input: 'static/components.js',
+    plugins: [
+      rollupLitCss({include: []}),
+      rollupResolve(),
+      rollupBabel({
+        plugins: ["@babel/plugin-syntax-dynamic-import"]
+      }),
+      rollupMinify({comments: false}),
+    ],
+  }).then(bundle => {
+    return bundle.write({
+      dir: 'static/dist',
+      format: 'es',
+      sourcemap: true,
+      compact: true,
+    });
+  });
+});
+
+// Run scripts through babel.
 gulp.task('js', () => {
   return gulp.src([
-    //'static/elements/*.vulcanize.js',
-    'static/js/**/*.es6.js',
-    'static/js/shared.js',
+    'static/js-src/**/*.js',
   ])
-    .pipe($.babel()) // Defaults are in .babelrc
+    .pipe(babel()) // Defaults are in .babelrc
     .pipe(uglifyJS())
     .pipe(license()) // Add license to top.
     .pipe($.rename({suffix: '.min'}))
     .pipe(gulp.dest('static/js'));
 });
 
-// Vulcanize the Polymer imports, creating *.vulcanize.* files beside the
-// original import files.
-gulp.task('vulcanize-lazy-elements', () => {
-  return gulp.src([
-    'static/bower_components/paper-menu-button/paper-menu-button.html',
-    'static/elements/chromedash-legend.html'
-  ])
-  .pipe($.vulcanize({
-    stripComments: true,
-    inlineScripts: true,
-    inlineCss: true,
-    // Leave out elements registered by main site or shared in other
-    // lazy-loaded elements.
-    stripExcludes: [
-      'polymer.html$',
-      'iron-meta.html',
-      'chromedash-color-status.html'
-    ]
-  }))
-  .pipe($.rename({suffix: '.vulcanize'}))
-  .pipe($.crisper({scriptInHead: true})) // Separate HTML and JS. CSP friendly.
-  .pipe($.if('*.html', minifyHtml())) // Minify HTML output.
-  .pipe($.if('*.html', cssslam.gulp())) // Minify CSS in HTML output.
-  .pipe($.if('*.js', uglifyJS())) // Minify JS in HTML output.
-  .pipe($.if('*.js', license())) // Add license to top.
-  .pipe(gulp.dest('static/elements'));
-});
-
-gulp.task('vulcanize', gulp.series('styles', 'vulcanize-lazy-elements', function vulcanizeStuff() {
-  return gulp.src([
-    'static/elements/metrics-imports.html',
-    'static/elements/features-imports.html',
-    'static/elements/admin-imports.html',
-    'static/elements/samples-imports.html',
-  ])
-  .pipe($.vulcanize({
-    stripComments: true,
-    inlineScripts: true,
-    inlineCss: true
-  }))
-  .pipe($.rename({suffix: '.vulcanize'}))
-  .pipe($.crisper({scriptInHead: true})) // Separate HTML and JS. CSP friendly.
-  .pipe($.if('*.html', minifyHtml())) // Minify HTML output.
-  .pipe($.if('*.html', cssslam.gulp())) // Minify CSS in HTML output.
-  .pipe($.if('*.js', uglifyJS())) // Minify JS in HTML output.
-  .pipe($.if('*.js', license())) // Add license to top.
-  .pipe(gulp.dest('static/elements'));
-}));
-
 // Clean generated files
 gulp.task('clean', () => {
   return del([
     'static/css/',
     'static/dist',
-    'static/elements/*.vulcanize.{html,js}',
-    'static/js/**/*.es6.min.js',
-    'static/js/shared.min.js'
+    'static/js/',
   ], {dot: true});
-
 });
 
 // Generate a service worker file that will provide offline functionality for
@@ -155,19 +133,8 @@ gulp.task('generate-service-worker', () => {
     staticFileGlobs: [
       // Images
       `${staticDir}/img/{browsers-logos.png,*.svg,crstatus_128.png,github-white.png}`,
-      `${staticDir}/elements/openinnew.svg`,
       // Scripts
-      `${staticDir}/bower_components/webcomponentsjs/webcomponents-lite.min.js`,
       `${staticDir}/js/**/!(*.es6).js`, // Don't include unminimized/untranspiled js.
-      // Styles. All styles are inline into pages or vulcanized bundles.
-      // Polymer imports
-      // NOTE: The admin imports are intentionally excluded, as the admin pages
-      //       only work online
-      `${staticDir}/elements/paper-menu-button.vulcanize.*`,
-      `${staticDir}/elements/chromedash-legend.vulcanize.*`,
-      `${staticDir}/elements/metrics-imports.vulcanize.*`,
-      `${staticDir}/elements/features-imports.vulcanize.*`,
-      `${staticDir}/elements/samples-imports.vulcanize.*`,
     ],
     runtimeCaching: [{ // Server-side generated content
       // The features page, which optionally has a trailing slash or a
@@ -235,13 +202,20 @@ gulp.task('generate-service-worker', () => {
 
 // Build production files, the default task
 gulp.task('default', gulp.series(
+  'clean',
   'styles',
-  'lint',
-  'vulcanize',
   'js',
-  'generate-service-worker'
+  'lint-fix',
+  'rollup',
+  'generate-service-worker',
 ));
 
-// Load custom tasks from the `tasks` directory
-// Run: `npm install --save-dev require-dir` from the command-line
-// try { require('require-dir')('tasks'); } catch (err) { console.error(err); }
+// Build production files, the default task
+gulp.task('watch', gulp.series(
+  'default',
+  function watch() {
+    gulp.watch(['static/sass/**/*.scss'], gulp.series('styles'));
+    gulp.watch(['static/js-src/**/*.js', 'static/elements/*.js'], gulp.series(['lint', 'js']));
+    gulp.watch(['static/components.js', 'static/elements/*.js'], gulp.series(['rollup']));
+  }
+));

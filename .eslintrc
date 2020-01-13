@@ -4,8 +4,10 @@
     "browser": true,
     "es6": true
   },
+  "parser": "babel-eslint",
   "parserOptions": {
-    "ecmaVersion": 8
+    "ecmaVersion": 8,
+    "sourceType": "module"
   },
   "rules": {
     "no-warning-comments": "off",
@@ -14,18 +16,23 @@
       "args": "after-used",
       "argsIgnorePattern": "^var_args$"
     }],
-    "indent": ["error", 2, { "outerIIFEBody": 0, "SwitchCase": 1 }],
+    "indent": [
+      "error",
+      2,
+      { "outerIIFEBody": 0, "SwitchCase": 1, "ignoredNodes": ["TemplateLiteral > *"] }
+    ],
     "require-jsdoc": 0,
     "no-var": 1,
     "arrow-parens": 0,
     "max-len": [2, 100, {
       "ignoreComments": true,
       "ignoreUrls": true,
+      "ignoreTemplateLiterals": true,
+      "ignoreRegExpLiterals": true,
       "tabWidth": 2
     }],
   },
   "globals": {
-    "Polymer": true,
     "ga": true,
     "Metric": true
   }

@@ -146,15 +146,25 @@ header {
       }
     }
 
-    paper-menu-button {
-      margin: 0 !important; // override polyfill shimming
-      padding: 0 !important; // override polyfill shimming
-      line-height: 1;
+    .nav-dropdown-container {
+      position: relative;
 
-      .dropdown-content {
-        display: flex;
-        flex-direction: column;
-        contain: content;
+      ul {
+        display: none;
+        position: absolute;
+        top: 80%;
+        left: 0;
+        list-style: none;
+        z-index: 1;
+      }
+
+      a {
+        display: block;
+      }
+
+      .nav-dropdown-trigger:hover + ul,
+      ul:hover {
+        display: block;
       }
     }
   }
@@ -228,7 +238,7 @@ footer {
   div {
     &.search {
       input {
-        width: 160px;
+        width: 300px;
         outline: none;
         padding: 10px 7px;
       }

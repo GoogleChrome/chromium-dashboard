@@ -1,16 +1,12 @@
-{% extends "base.html" %}
+{% extends "_base.html" %}
 {% load verbatim %}
 {% load inline_file %}
 
-{% block html_imports %}
-  <link rel="import" href="/static/elements/admin-imports{% if VULCANIZE %}.vulcanize{% endif %}.html">
-{% endblock %}
-
 {% block css %}
-<style>
-{% inline_file "/static/css/schedule.css" %}
-{% inline_file "/static/css/subscribers.css" %}
-</style>
+  <style>
+    {% inline_file "/static/css/schedule.css" %}
+    {% inline_file "/static/css/subscribers.css" %}
+  </style>
 {% endblock %}
 
 {% block drawer %}

@@ -1,12 +1,7 @@
-{% extends "base.html" %}
+{% extends "_base.html" %}
 
 {% block css %}
-<!-- <link rel="stylesheet" href="/static/css/users/users.css"> -->
-<link rel="stylesheet" href="/static/css/forms.css">
-{% endblock %}
-
-{% block html_imports %}
-  <link rel="import" href="/static/elements/admin-imports{% if VULCANIZE %}.vulcanize{% endif %}.html">
+  <link rel="stylesheet" href="/static/css/forms.css">
 {% endblock %}
 
 {% block subheader %}
@@ -25,11 +20,9 @@
 
 {% block js %}
 <script>
-document.addEventListener('WebComponentsReady', function(e) {
-  document.body.classList.remove('loading');
+  const el = document.querySelector('chromedash-userlist');
+  el.users = {{users|safe}};
 
-  var el = document.querySelector('chromedash-userlist');
-  el.users = {{users|safe}}; // Filled from server.
-});
+  document.body.classList.remove('loading');
 </script>
 {% endblock %}

@@ -1,24 +1,13 @@
-{% extends "base.html" %}
+{% extends "_base.html" %}
 {% load verbatim %}
 {% load inline_file %}
 
-{% block preload %}
-  {% if VULCANIZE %}
-    <link rel="preload" href="/static/elements/samples-imports.vulcanize.js" as="script">
-  {% endif %}
-{% endblock %}
-
-{% block html_imports %}
-  <link rel="import" href="/static/elements/samples-imports{% if VULCANIZE %}.vulcanize{% endif %}.html">
-{% endblock %}
-
 {% block rss %}
-<link rel="alternate" type="application/rss+xml" href="http://www.chromestatus.com/samples.xml" title="All samples" />
+  <link rel="alternate" type="application/rss+xml" href="http://www.chromestatus.com/samples.xml" title="All samples" />
 {% endblock %}
 
 {% block css %}
-<!-- <link rel="stylesheet" href="/static/css/samples.css?2016-07-14"> -->
-<style>{% inline_file "/static/css/samples.css" %}</style>
+  <style>{% inline_file "/static/css/samples.css" %}</style>
 {% endblock %}
 
 {% block drawer %}
@@ -38,274 +27,38 @@
 {% endblock %}
 
 {% block subheader %}
-<div id="subheader">
-  <div class="feature-count">
-    <h2>Samples: <span class="num-features"></span></h2>
+  <div id="subheader">
+    <div class="feature-count">
+      <h2>Samples: <span class="num-features"></span></h2>
+    </div>
+    <div class="search">
+      <input type="search" placeholder="Search">
+    </div>
+    <div class="actionlinks">
+      <a href="https://github.com/GoogleChrome/samples" target="_blank" class="blue-button">
+        <iron-icon src="/static/img/github-white.png"></iron-icon>Fork on Github
+      </a>
+    </div>
   </div>
-  <div class="search">
-    <input type="search" placeholder="Search">
-  </div>
-  <div class="actionlinks">
-    <a href="https://github.com/GoogleChrome/samples" target="_blank" class="blue-button">
-      <iron-icon src="/static/img/github-white.png"></iron-icon>Fork on Github
-    </a>
-  </div>
-</div>
 {% endblock %}
 
 {% block content %}
-<div class="subheader">
-  <p class="description">Features are ordered by Chrome release version, latest first. Features
-  enabled by default always come first, followed by features that are origin trials,
-  behind a flag or still in the development.</p>
-</div>
+  <div class="subheader">
+    <p class="description">Features are ordered by Chrome release version, latest first. Features
+    enabled by default always come first, followed by features that are origin trials,
+    behind a flag or still in the development.</p>
+  </div>
 
-<template id="t" is="dom-bind">
-
-<div id="sample-panel">
-
-  {% verbatim %}
-    <ul id="samplelist" class="card-content">
-      <template is="dom-repeat" items="{{filtered}}" as="feature" initial-count="6">
-        <li>
-          <div class="card">
-            <h3 class="feature-name">
-              <a href$="[[_computeFeatureLink(feature.id)]]">{{feature.name}}</a>
-              <span class="milestone" hidden$="[[!feature.shipped_milestone]]">Chrome <span>[[feature.shipped_milestone]]</span></span>
-            </h3>
-            <div class="summary">[[feature.summary]]</div>
-            <div class="sample_links">
-              <div class="demo-links layout horizontal center">
-                <template is="dom-repeat" items="[[feature.sample_links]]" as="link">
-                  <a href$="[[link]]" target="_blank" class="demo-link">
-                    <iron-icon icon="chromestatus:open-in-browser"></iron-icon> View Demo
-                  </a>
-                </template>
-              </div>
-              <iron-icon icon="[[_computeIconId(feature.category)]]"
-                         title="[[feature.category]]"></iron-icon>
-            </div>
-          </div>
-        </li>
-      </template>
-      </ul>
-  {% endverbatim %}
-
-</div>
-
-</template>
-
+  <chromedash-sample-panel></chromedash-sample-panel>
 {% endblock %}
 
 {% block js %}
-<script>
-(function() {
+  <script>
+    (function() {
+      'use strict';
+      const CATEGORIES = {{categories|safe}};
 
-// TODO: move this into a behavior. It's duplicated from chromedash-featurelist.html.
-function matchesMilestone_(milestone, operator, version) {
-  switch (operator) {
-  case '<':
-    return milestone < version;
-    break;
-  case '<=':
-    return milestone <= version;
-    break;
-  case '>':
-    return milestone > version;
-    break;
-  case '>=':
-    return milestone >= version;
-    break;
-  case '=':  // Support both '=' and '=='.
-  case '==':
-    return milestone == version;
-    break;
-  default:
-    return false;
-  }
-}
-
-var search = $('.search input');
-var numSamples = $('.num-features');
-var categoryMenu = $('#papermenu');
-
-var t = $('#t');
-t.categories = {{categories|safe}}; // server included.
-t.prevSelectedCategory = null;
-
-// Set search box to URL deep link.
-if (location.hash) {
-  search.value = decodeURIComponent(location.hash.substr(1));
-}
-
-t._computeIcon = function(el) {
-  return 'chromestatus:' + (el ? el.dataset.category : '');
-};
-
-t._computeIconId = function(categoryStr) {
-  return 'chromestatus:' + this.categories[categoryStr];
-};
-
-t._computeFeatureLink = function(id) {
-  return '/features/' + id;
-};
-
-// and not part of the dom-bind template.
-t._onSelectCategory = function(e, detail) {
-  // Enable toggling selected item until
-  // https://github.com/PolymerElements/paper-menu/issues/50 is fixed.
-  if (this.selectedCategory === this.prevSelectedCategory) {
-    categoryMenu.selected = null;
-    this.selectedCategory = null;
-    this.prevSelectedCategory = null;
-  } else {
-    this.prevSelectedCategory = this.selectedCategory;
-  }
-  this.filter(search.value);
-};
-
-// TODO: move this into a behavior. It's duplicated from chromedash-featurelist.html.
-t._filterOnOperation = function(features, operator, version) {
-  return features.filter(function(f, idx, array) {
-    var platformMilestones = [
-      parseInt(f.shipped_milestone),
-      parseInt(f.shipped_android_milestone),
-      parseInt(f.shipped_ios_milestone),
-      parseInt(f.shipped_webview_milestone)
-    ];
-    for (var i = 0, milestone; milestone = platformMilestones[i]; ++i) {
-      if (matchesMilestone_(milestone, operator, version)) {
-        return true;  // Only one of the platforms needs to match.
-      }
-    }
-  });
-};
-
-// TODO: move filtering into a behavior. Mostly duped from chromedash-featurelist.html.
-t.filter = function(val) {
-  var features = this.features;
-
-  if (!features) {
-    return;
-  }
-
-  if (!val && !this.selectedCategory) {
-    if (history && history.replaceState) {
-      history.replaceState('', document.title, location.pathname + location.search);
-    } else {
-      location.hash = '';
-    }
-    this.filtered = features;
-    numSamples.textContent = this.filtered.length;
-
-    return;
-  }
-
-  if (val) {
-    val = val.trim();
-
-    if (history && history.replaceState) {
-      // Minimize updating URL.
-      this.debounce('updateurl', function() {
-        history.replaceState({}, document.title, '/samples#' + val);
-      }, 500);
-    }
-
-    // Returns operator and version query e.g. ["<=25", "<=", "25"].
-    var operatorMatch = /^([<>=]=?)\s*([0-9]+)/.exec(val);
-    if (operatorMatch) {
-      features = this._filterOnOperation(features, operatorMatch[1], operatorMatch[2]);
-    } else {
-      var regex = new RegExp(val, 'i');
-      features = features.filter(function(feature, idx, array) {
-        return regex.test(feature.name) || regex.test(feature.summary);
-      });
-    }
-  }
-
-  // Further refine list based on selected category in menu.
-  if (this.selectedCategory) {
-    var category = this.selectedCategory.textContent.trim();
-    var regex = new RegExp(category, 'i');
-    features = features.filter(function(feature, idx, array) {
-      return regex.test(feature.category);
-    });
-  }
-
-  this.filtered = features;
-
-  numSamples.textContent = this.filtered.length;
-};
-
-t.removeFilters = function() {
-  t.filter();
-};
-
-// Fire of samples.json XHR right away so data can populate faster.
-var samplesPromise = new Promise(function(resolve, reject) {
-  var url = location.hostname == 'localhost' ? 'https://www.chromestatus.com/samples.json' :
-                                               '/samples.json';
-  var xhr = new XMLHttpRequest();
-  xhr.open('GET', url);
-  xhr.responseType = 'json';
-  xhr.onloadend = function(e) {
-    if (e.target.status < 400) {
-      resolve(e.target.response);
-    } else {
-      reject(new Error('Samples XHR failed with status ' + e.target.statusText));
-    }
-  };
-  xhr.onerror = reject;
-  xhr.send();
-});
-
-samplesPromise.then(function(features) {
-  var re = /github.com\/GoogleChrome\/samples\/tree\/gh-pages\/(.*)/i;
-  features.forEach(function(f, i) {
-    f.sample_links = f.sample_links.map(function(link) {
-      return link.replace(re, 'googlechrome.github.io/samples/$1');
-    });
-  });
-
-  t.features = features;
-  t.filtered = features;
-
-  numSamples.textContent = t.features.length;
-
-  document.body.classList.remove('loading');
-
-  t.filter(search.value);
-
-}, function(e) {
-  console.error(e);
-});
-
-// Clear input when user clicks the 'x' button.
-search.addEventListener('search', function(e) {
-  t.removeFilters();
-});
-
-search.addEventListener('keyup', function(e) {
-  if (!e.target.value && e.keyCode != 27) { // ESC
-    t.removeFilters();
-  } else {
-    t.filter(e.target.value);
-  }
-});
-
-search.addEventListener('keyup', function(e) {
-  if (!e.target.value && e.keyCode != 27) { // ESC
-    t.removeFilters();
-  } else {
-    t.filter(e.target.value);
-  }
-});
-
-categoryMenu.addEventListener('transitionend', function(e) {
-  t.selectedCategory = this.selectedItem;
-  t._onSelectCategory();
-});
-
-})();
-</script>
+      {% inline_file "/static/js/samples-page.min.js" %}
+    })();
+  </script>
 {% endblock %}

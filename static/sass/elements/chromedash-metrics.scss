@@ -57,12 +57,17 @@
         }
       }
 
-      x-meter {
-        padding-left: 7px;
+      chromedash-x-meter {
+        margin-left: 7px;
         cursor: pointer;
       }
     }
   }
+}
+
+.header label {
+  display: flex;
+  align-items: center;
 }
 
 .loading {

@@ -1,13 +1,9 @@
-{% extends "base.html" %}
+{% extends "_base.html" %}
 {% load verbatim %}
 {% load inline_file %}
 
-{% block html_imports %}
-  <link rel="import" href="/static/elements/admin-imports{% if VULCANIZE %}.vulcanize{% endif %}.html">
-{% endblock %}
-
 {% block css %}
-<style>{% inline_file "/static/css/blink.css" %}</style>
+  <style>{% inline_file "/static/css/blink.css" %}</style>
 {% endblock %}
 
 {% block drawer %}
@@ -24,7 +20,9 @@
     <a href="/admin/subscribers" class="view_owners_linke">List by owner &amp; their features →</a>
   </div>
   <div class="layout horizontal subheader_toggles">
-    <paper-toggle-button noink>Edit mode</paper-toggle-button>
+    <!-- <paper-toggle-button> doesn't working here. Related links:
+      https://github.com/PolymerElements/paper-toggle-button/pull/132 -->
+    <label><input type="checkbox" class="paper-toggle-button">Edit mode</label>
   </div>
 </div>
 {% endblock %}
@@ -100,12 +98,12 @@
 (function() {
 'use strict';
 
-$('paper-toggle-button').addEventListener('change', e => {
+document.querySelector('.paper-toggle-button').addEventListener('change', e => {
   e.stopPropagation();
-  $('#components_list').classList.toggle('editing', e.target.checked);
+  document.querySelector('#components_list').classList.toggle('editing', e.target.checked);
 });
 
-$('#components_list').addEventListener('click', function(e) {
+document.querySelector('#components_list').addEventListener('click', function(e) {
   const addUser = e.target.classList.contains('add_owner_button');
   const removeUser = e.target.classList.contains('remove_owner_button');
 
@@ -178,7 +176,7 @@ window.addEventListener('DOMContentLoaded', function(e) {
   if (location.hash) {
     setTimeout(function() {
       const el = document.getElementById(location.hash.slice(1));
-      $('app-header').scroll(0, el.offsetTop);
+      document.querySelector('app-header').scroll(0, el.offsetTop);
     }, 500);
   }
 });

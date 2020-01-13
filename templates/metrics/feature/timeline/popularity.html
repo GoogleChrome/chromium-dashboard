@@ -1,23 +1,16 @@
-{% extends "base.html" %}
+{% extends "_base.html" %}
 {% load inline_file %}
 
 {% block css %}
-<!-- <link rel="stylesheet" href="/static/css/metrics/metrics.css"> -->
-<style>{% inline_file "/static/css/metrics/metrics.css" %}</style>
+  <style>{% inline_file "/static/css/metrics.css" %}</style>
 {% endblock %}
 
 {% block preload %}
-  {% if VULCANIZE %}
-    <link rel="preload" href="/static/elements/metrics-imports.vulcanize.js" as="script">
-  {% endif %}
-{% endblock %}
-
-{% block html_imports %}
-  <link rel="import" href="/static/elements/metrics-imports{% if VULCANIZE %}.vulcanize{% endif %}.html">
+<script src="https://www.gstatic.com/charts/loader.js"></script>
 {% endblock %}
 
 {% block drawer %}
-  {% include "metrics/feature/_nav.html" %}
+  {% include "metrics/feature/_feature_metric_nav.html" %}
 {% endblock %}
 
 {% block subheader %}
@@ -29,25 +22,20 @@
 {% block content %}
 <div class="data-panel">
   <p class="description">To begin, select a feature in the dropdown below.</p>
-  <chromedash-feature-timeline
+  <chromedash-timeline
       type="feature" view="popularity"
       title="Percentage of page views that use this feature"
-      {% if not prod %}use-remote-data{% endif %}></chromedash-feature-timeline>
+      {% if prod %}prod{% endif %}></chromedash-timeline>
 </div>
 {% endblock %}
 
 {% block js %}
 <script>
-document.addEventListener('WebComponentsReady', function(e) {
-  var timeline = $('chromedash-feature-timeline');
-  timeline.props = {{FEATUREOBSERVER_BUCKETS|safe}};
-  document.body.classList.remove('loading');
-
-  window.addEventListener('popstate', function(e) {
-    if (e.state) {
-      timeline.selectedBucketId = e.state.id;
-    }
-  });
-});
+  (function() {
+    'use strict';
+    // Get values from server. used in /static/js/metrics-timeline-page.js
+    const DATA = {{FEATUREOBSERVER_BUCKETS|safe}};
+    {% inline_file "/static/js/metrics-timeline-page.min.js" %}
+  })();
 </script>
 {% endblock %}

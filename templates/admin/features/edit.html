@@ -1,13 +1,9 @@
-{% extends "base.html" %}
-
-{% block html_imports %}
-  <link rel="import" href="/static/elements/admin-imports{% if VULCANIZE %}.vulcanize{% endif %}.html">
-{% endblock %}
+{% extends "_base.html" %}
 
 {% block css %}
 <link rel="stylesheet" href="/static/css/forms.css">
 <style>
-a[is="ajax-link"] {
+.delete-button {
   margin-left: 20px;
 }
 </style>
@@ -17,7 +13,7 @@ a[is="ajax-link"] {
 <div id="subheader">
   <h2>Edit a feature</h2>
   {% if user.is_admin %}
-     <a is="ajax-link" href="/admin/features/delete/{{feature.id}}" message="Delete feature?">Delete</a>
+    <button class="delete-button" data-id="{{feature.id}}">Delete</button>
   {% endif %}
 </div>
 {% endblock %}
@@ -29,8 +25,14 @@ a[is="ajax-link"] {
       {{ feature_form }}
     </table>
     <ul>
-      <li><input type="checkbox" name="intent_to_implement" id="id_intent_to_implement"><label for="id_intent_to_implement">Generate "Intent to <span id="id_intent_stage_name"></span>" email on next page (you will copy &amp; paste it to send)</label></li>
-      <li><input type="checkbox" name="create_launch_bug" disabled id="id_create_launch_bug"><label for="id_create_launch_bug">Generate a pre-populated launch-tracking bug link on the next page (you will file it manually)</label></li>
+      <li>
+        <input type="checkbox" name="intent_to_implement" id="id_intent_to_implement">
+        <label for="id_intent_to_implement">Generate "Intent to <span id="id_intent_stage_name"></span>" email on next page (you will copy &amp; paste it to send)</label>
+      </li>
+      <li>
+        <input type="checkbox" name="create_launch_bug" disabled id="id_create_launch_bug">
+        <label for="id_create_launch_bug">Generate a pre-populated launch-tracking bug link on the next page (you will file it manually)</label>
+      </li>
       <li></li>
     </ul>
     <input type="submit" value="Submit">
@@ -40,5 +42,5 @@ a[is="ajax-link"] {
 {% endblock %}
 
 {% block js %}
-<script src="/static/js/admin/feature_form.js"></script>
+<script src="/static/js/admin/feature_form.min.js"></script>
 {% endblock %}

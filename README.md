@@ -11,20 +11,12 @@ Chrome Platform Status
 
 ### Installation
 
-First, install the [Google App Engine SDK for Python](https://developers.google.com/appengine/downloads#Google_App_Engine_SDK_for_Python).
-
-You'll also need pip, node, npm, and gulp:
-
-    npm install -g bower gulp
-    npm install
-
-This will also pull down bower_components and run `gulp` to build the site.
-
-### Developing
-
-To start the main server and the notifier backend, run:
-
-    ./scripts/start_server.sh
+1. Install global CLIs
+    1. [Google App Engine SDK for Python](https://developers.google.com/appengine/downloads#Google_App_Engine_SDK_for_Python).
+    1. pip, node, npm.
+    1. Gulp `npm install -g gulp`
+1. Install npm dependencies `npm ci`
+1. Install other dependencies `npm run deps`
 
 ##### Add env_vars.yaml
 
@@ -34,10 +26,33 @@ Create a file named `env_vars.yaml` in the root directory and fill it with:
 env_variables:
   DJANGO_SETTINGS_MODULE: 'settings'
   FIREBASE_SERVER_KEY: <SERVER_KEY>
-  DJANGO_SECRET: <django_key>
 ```
 
-The `FIREBASE_SERVER_KEY` is the Firebase server key obtained from the [Firebase console](https://firebase.corp.google.com/project/cr-status/settings/cloudmessaging/). The `DJANGO_SECRET` should be a unique value (e.g. an UUID), and if possible maintained across deployments.
+The `FIREBASE_SERVER_KEY` is the Firebase server key obtained from the [Firebase console](https://firebase.corp.google.com/project/cr-status/settings/cloudmessaging/).
+
+### Developing
+
+To start the main server and the notifier backend, run:
+
+```bash
+npm start
+```
+
+To start front end code watching (sass, js lint check, babel, minify files), run
+
+```bash
+npm run watch
+```
+
+To run lint & lit-analyzer:
+
+```bash
+npm run lint
+```
+
+Note: featurelist is temporarily excluded because lit-analyzer throws `Maximum call stack size exceeded`.
+
+There are some developing information in developer-documentation.md.
 
 ##### FCM setup
 
@@ -63,8 +78,6 @@ Visit http://localhost:8080/admin/blink/populate_blink to see the list of Blink 
 
 [`settings.py`](https://github.com/GoogleChrome/chromium-dashboard/blob/master/settings.py) contains a list
 of globals for debugging and running the site locally.
-
-`VULCANIZE` - `False`, will run the site without vulcanizing the Polymer elements.
 
 `SEND_EMAIL` - `False` will turn off email notifications to feature owners.
 

@@ -1,0 +1,47 @@
+@import "vars";
+
+.drawer-content-wrapper {
+  max-width: var(--app-drawer-width);
+}
+
+#content {
+  h3 {
+    margin-bottom: $content-padding;
+  }
+}
+
+.data-panel {
+  max-width: $max-content-width;
+
+  .description {
+    margin-bottom: 1em;
+  }
+}
+
+.metric-nav {
+  list-style-type: none;
+
+  h3:not(:first-of-type) {
+    margin-top: $content-padding * 2;
+  }
+
+  li {
+    text-align: center;
+    border-top-left-radius: 3px;
+    border-top-right-radius: 3px;
+    background: $bar-gradient;
+    box-shadow: 1px 1px 4px $bar-shadow-color;
+    padding: 0.5em;
+    margin-bottom: 10px;
+  }
+}
+
+@media only screen and (max-width: 700px) {
+  #subheader {
+    margin: $content-padding 0;
+    text-align: center;
+  }
+  .data-panel {
+    margin: 0 10px;
+  }
+}
