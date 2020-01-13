@@ -93,10 +93,6 @@ class ChromedashMetrics extends LitElement {
     }
   }
 
-  showTimeline(e) {
-    window.location.href = `/metrics/${this.type}/timeline/${this.view}/${e.model.prop.bucket_id}`;
-  }
-
   _updateSortIcons() {
     this.propertyNameSortIcon = this._getOrderIcon('property_name');
     this.percentSortIcon = this._getOrderIcon('percentage');
@@ -127,7 +123,7 @@ class ChromedashMetrics extends LitElement {
               title="${item.property_name}. Click to deep link to this property." tabindex="0">
             <a href="#${item.property_name}">${item.property_name}</a>
             <chromedash-x-meter value="${item.percentage}" max="${this.maxPercentage}"
-                @click="${this.showTimeline}"
+                href="/metrics/${this.type}/timeline/${this.view}/${item.bucket_id}"
                 title="Click to see a timeline view of this property"></chromedash-x-meter>
           </li>
           `)}

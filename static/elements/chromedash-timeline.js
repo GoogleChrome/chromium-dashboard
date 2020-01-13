@@ -40,7 +40,7 @@ class ChromedashTimeline extends LitElement {
       'useRemoteData',
       'showAllHistoricalData',
     ];
-    if (TRACKING_PROPERTIES.some((property) => changedProperties.get(property))) {
+    if (TRACKING_PROPERTIES.some((property) => changedProperties.has(property))) {
       this._updateTimeline();
     }
   }
@@ -68,11 +68,11 @@ class ChromedashTimeline extends LitElement {
   }
 
   drawVisualization(data, bucketId, showAllHistoricalData) {
-    const table = new google.visualization.DataTable();
-    table.addColumn('date', 'Date');
-    table.addColumn('number', 'Percentage');
-    table.addColumn({type: 'string', role: 'annotation'});
-    table.addColumn({type: 'string', role: 'annotationText'});
+    const datatable = new google.visualization.DataTable();
+    datatable.addColumn('date', 'Date');
+    datatable.addColumn('number', 'Percentage');
+    datatable.addColumn({type: 'string', role: 'annotation'});
+    datatable.addColumn({type: 'string', role: 'annotationText'});
 
     const rowArray = [];
     for (let i = 0, item; item = data[i]; ++i) {
@@ -89,10 +89,16 @@ class ChromedashTimeline extends LitElement {
       rowArray.push(row);
     }
 
-    table.addRows(rowArray);
+    datatable.addRows(rowArray);
 
-    table = window.google.visualization.data.group(table,
-      [{column: 0, modifier: new Date(date.getFullYear(), date.getMonth()), type: 'date'}],
+    function aggregateByMonth(date) {
+      let month = date.getMonth();
+      let year = date.getFullYear();
+      return new Date(year, month);
+    }
+
+    const groupedTable = window.google.visualization.data.group(datatable,
+      [{column: 0, modifier: aggregateByMonth, type: 'date'}],
       [{
         column: 1,
         aggregation: window.google.visualization.data.avg,
@@ -103,17 +109,18 @@ class ChromedashTimeline extends LitElement {
     );
 
     const formatter = new window.google.visualization.NumberFormat({fractionDigits: 6});
-    formatter.format(table, 1); // Apply formatter to percentage column.
+    formatter.format(groupedTable, 1); // Apply formatter to percentage column.
 
-    let view = table;
+    let view = groupedTable;
 
     if (!showAllHistoricalData) {
       const startYear = (new Date()).getFullYear() - 2; // Show only 2 years of data by default.
-      view = new window.google.visualization.DataView(table);
+      view = new window.google.visualization.DataView(groupedTable);
       view.setRows(view.getFilteredRows([{column: 0, minValue: new Date(startYear, 0, 1)}]));
     }
 
-    const chart = new window.google.visualization.LineChart(this.$.chart);
+    const chartEl = this.shadowRoot.getElementById('chart');
+    const chart = new window.google.visualization.LineChart(chartEl);
     chart.draw(view, {
       // title: this.title,
       // subtitle: 'all channels and platforms',
@@ -177,9 +184,11 @@ class ChromedashTimeline extends LitElement {
       const featureName = feature[1];
       const REPORT_ID = '1M8kXOqPkwYNKjJhtag_nvDNJCpvmw_ri';
       const dsEmbedUrl = `https://datastudio.google.com/embed/reporting/${REPORT_ID}/page/tc5b?config=%7B"df3":"include%25EE%2580%25800%25EE%2580%2580IN%25EE%2580%2580${featureName}"%7D`;
-      this.$.httparchivedata.src = dsEmbedUrl;
+      const hadEl = this.shadowRoot.getElementById('httparchivedata');
+      hadEl.src = dsEmbedUrl;
 
-      this.$.bigquery.textContent = `#standardSQL  
+      const bigqueryEl = this.shadowRoot.getElementById('bigquery');
+      bigqueryEl.textContent = `#standardSQL  
 SELECT yyyymmdd, client, pct_urls, sample_urls  
 FROM \`httparchive.blink_features.usage\`  
 WHERE feature = '${featureName}'  

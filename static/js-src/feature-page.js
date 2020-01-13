@@ -1,3 +1,4 @@
+(function(exports) {
 // Event handler. Used in feature.html template.
 const subscribeToFeature = (featureId) => {
   const iconEl = document.querySelector('.pushicon');
@@ -70,4 +71,6 @@ if (SHOW_TOAST) {
   }, 500);
 }
 
-export {subscribeToFeature, shareFeature};
+exports.subscribeToFeature = subscribeToFeature;
+exports.shareFeature = shareFeature;
+})(window);

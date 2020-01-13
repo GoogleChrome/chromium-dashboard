@@ -3,7 +3,7 @@ const url = location.hostname == 'localhost' ?
   'https://www.chromestatus.com/features.json' : '/features.json';
 const featuresPromise = fetch(url).then((res) => res.json());
 
-document.querySelector('.paper-toggle-button').addEventListener('change', e => {
+document.querySelector('.hide-blink-checkbox').addEventListener('change', e => {
   e.stopPropagation();
   document.querySelector('chromedash-schedule').hideBlink = e.target.checked;
 });

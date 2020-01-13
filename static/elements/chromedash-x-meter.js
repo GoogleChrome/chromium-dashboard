@@ -9,6 +9,7 @@ class ChromedashXMeter extends LitElement {
       value: {type: Number},
       max: {type: Number}, // Normalized, maximum width for the bar
       valueFormatted: {attribute: false},
+      href: {type: String},
     };
   }
 
@@ -16,10 +17,16 @@ class ChromedashXMeter extends LitElement {
     super();
     this.value = 0;
     this.max = 100;
+    this.href = '#';
   }
 
   firstUpdated() {
     this.valueFormatted = this.value <= 0.000001 ? '<=0.000001%' : this.value + '%';
+    this.addEventListener('click', this.showTimeline);
+  }
+
+  showTimeline() {
+    window.location.href = this.href;
   }
 
   render() {

@@ -11,7 +11,7 @@
     "lint": "gulp lint-fix && lit-analyzer \"static/elements/chromedash-!(featurelist)*.js\"",
     "build": "gulp",
     "watch": "gulp watch",
-    "deploy": "npm run build && ./scripts/deploy_site.sh",
+    "deploy": "npm run build && ./scripts/deploy_site.sh `date +%Y-%m-%d`",
     "start": "npm run build && ./scripts/start_server.sh"
   },
   "repository": {
