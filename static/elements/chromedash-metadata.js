@@ -28,7 +28,8 @@ class ChromedashMetadata extends LitElement {
       'ENABLED_BY_DEFAULT': 5,
       'DEPRECATED': 6,
       'REMOVED': 7,
-      'IN_EXPERIMENTAL_FRAMEWORK': 8,
+      'ORIGINTRIAL': 8,
+      'INTERVENTION': 9,
       'NO_LONGER_PURSUING': 1000,
     };
     this._channels = {};
@@ -75,6 +76,7 @@ class ChromedashMetadata extends LitElement {
       this.implStatuses[this.status.NO_ACTIVE_DEV - 1].val,
       this.implStatuses[this.status.PROPOSED - 1].val,
       this.implStatuses[this.status.IN_DEVELOPMENT - 1].val,
+      this.implStatuses[this.status.DEPRECATED - 1].val,
       this._channels.canary,
       this._channels.dev,
       this._channels.beta,
@@ -83,10 +85,10 @@ class ChromedashMetadata extends LitElement {
 
     // Consolidate channels if they're the same.
     if (this._channels.canary == this._channels.dev) {
-      this._versions.splice(4, 1);
+      this._versions.splice(5, 1);
       this._className = 'canaryisdev';
     } else if (this._channels.dev == this._channels.beta) {
-      this._versions.splice(5, 1);
+      this._versions.splice(6, 1);
       this._className = 'betaisdev';
     }
 

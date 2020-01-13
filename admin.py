@@ -224,7 +224,7 @@ class HistogramsHandler(webapp2.RequestHandler):
 
 class FeatureHandler(common.ContentHandler):
 
-  DEFAULT_URL = '/features'
+  DEFAULT_URL = '/feature'
   ADD_NEW_URL = '/admin/features/new'
   EDIT_URL = '/admin/features/edit'
   LAUNCH_URL = '/admin/features/launch'
@@ -363,6 +363,17 @@ class FeatureHandler(common.ContentHandler):
     if blink_components:
       blink_components = filter(bool, [x.strip() for x in blink_components.split(',')])
 
+    try:
+      intent_stage = int(self.request.get('intent_stage'))
+    except:
+      logging.error('Invalid intent_stage \'{}\'' \
+                    .format(self.request.get('intent_stage')))
+
+      # Default the intent stage to 1 (Prototype) if we failed to get a valid
+      # intent stage from the request. This should be removed once we
+      # understand what causes this.
+      intent_stage = 1
+
     if feature_id: # /admin/edit/1234
       feature = models.Feature.get_by_id(long(feature_id))
 
@@ -377,7 +388,7 @@ class FeatureHandler(common.ContentHandler):
       # Update properties of existing feature.
       feature.category = int(self.request.get('category'))
       feature.name = self.request.get('name')
-      feature.intent_stage = int(self.request.get('intent_stage'))
+      feature.intent_stage = intent_stage
       feature.summary = self.request.get('summary')
       feature.intent_to_implement_url = intent_to_implement_url
       feature.origin_trial_feedback_url = origin_trial_feedback_url
@@ -440,7 +451,7 @@ class FeatureHandler(common.ContentHandler):
       feature = models.Feature(
           category=int(self.request.get('category')),
           name=self.request.get('name'),
-          intent_stage=int(self.request.get('intent_stage')),
+          intent_stage=intent_stage,
           summary=self.request.get('summary'),
           intent_to_implement_url=intent_to_implement_url,
           origin_trial_feedback_url=origin_trial_feedback_url,
@@ -494,16 +505,18 @@ class FeatureHandler(common.ContentHandler):
           ongoing_constraints=self.request.get('ongoing_constraints'),
           )
 
-    key = feature.put()
-
-    # TODO(ericbidelman): enumerate and remove only the relevant keys.
-    memcache.flush_all()
-
     params = []
     if self.request.get('create_launch_bug') == 'on':
       params.append(self.LAUNCH_PARAM)
     if self.request.get('intent_to_implement') == 'on':
       params.append(self.INTENT_PARAM)
+
+      feature.intent_template_use_count += 1
+
+    key = feature.put()
+
+    # TODO(ericbidelman): enumerate and remove only the relevant keys.
+    memcache.flush_all()
 
     redirect_url = '/feature/' + str(key.id())
 

@@ -76,7 +76,7 @@ INTENT_REMOVE = 6
 
 INTENT_STAGES = {
   INTENT_NONE: 'None',
-  INTENT_IMPLEMENT: 'Implement',
+  INTENT_IMPLEMENT: 'Prototype',
   INTENT_EXPERIMENT: 'Experiment',
   INTENT_EXTEND_TRIAL: 'Extend Origin Trial',
   INTENT_IMPLEMENT_SHIP: 'Implement and Ship',
@@ -95,16 +95,18 @@ ORIGIN_TRIAL = 8
 INTERVENTION = 9
 NO_LONGER_PURSUING = 1000 # insure bottom of list
 
+# Ordered dictionary, make sure the order of this dictionary matches that of
+# the sorted list above!
 IMPLEMENTATION_STATUS = OrderedDict()
 IMPLEMENTATION_STATUS[NO_ACTIVE_DEV] = 'No active development'
 IMPLEMENTATION_STATUS[PROPOSED] = 'Proposed'
 IMPLEMENTATION_STATUS[IN_DEVELOPMENT] = 'In development'
 IMPLEMENTATION_STATUS[BEHIND_A_FLAG] = 'Behind a flag'
-IMPLEMENTATION_STATUS[ORIGIN_TRIAL] = 'Origin trial'
-IMPLEMENTATION_STATUS[INTERVENTION] = 'Browser Intervention'
 IMPLEMENTATION_STATUS[ENABLED_BY_DEFAULT] = 'Enabled by default'
 IMPLEMENTATION_STATUS[DEPRECATED] = 'Deprecated'
 IMPLEMENTATION_STATUS[REMOVED] = 'Removed'
+IMPLEMENTATION_STATUS[ORIGIN_TRIAL] = 'Origin trial'
+IMPLEMENTATION_STATUS[INTERVENTION] = 'Browser Intervention'
 IMPLEMENTATION_STATUS[NO_LONGER_PURSUING] = 'No longer pursuing'
 
 MAJOR_NEW_API = 1
@@ -411,6 +413,7 @@ class Feature(DictModel):
         IMPLEMENTATION_STATUS[NO_ACTIVE_DEV],
         IMPLEMENTATION_STATUS[PROPOSED],
         IMPLEMENTATION_STATUS[IN_DEVELOPMENT],
+        IMPLEMENTATION_STATUS[DEPRECATED],
         ]
       versions.extend(milestones)
       versions.append(IMPLEMENTATION_STATUS[NO_LONGER_PURSUING])
@@ -823,6 +826,8 @@ class Feature(DictModel):
   updated_by = db.UserProperty(auto_current_user=True)
   created_by = db.UserProperty(auto_current_user_add=True)
 
+  intent_template_use_count = db.IntegerProperty(default = 0)
+
   # General info.
   category = db.IntegerProperty(required=True)
   name = db.StringProperty(required=True)
@@ -974,17 +979,17 @@ class FeatureForm(forms.Form):
 
   explainer_links = forms.CharField(label='Explainer link(s)', required=False,
       widget=forms.Textarea(attrs={'rows': 4, 'cols': 50, 'maxlength': 500}),
-      help_text='Link to explainer(s) (one URL per line). You should have at least an explainer in hand and have discussed the API on a public forum with other browser vendors or standards bodies before sending an Intent to Implement. If your change is not yet at this stage of maturity, feel free to solicit feedback informally on blink-dev instead.')
+      help_text='Link to explainer(s) (one URL per line). You should have at least an explainer in hand and have shared it on a public forum before sending an Intent to Prototype in order to enable discussion with other browser vendors, standards bodies, or other interested parties.')
 
-  intent_to_implement_url = forms.URLField(required=False, label='Intent to Implement link',
-      help_text='Link to the "Intent to Implement" discussion thread.')
+  intent_to_implement_url = forms.URLField(required=False, label='Intent to Prototype link',
+      help_text='Link to the "Intent to Prototype" discussion thread.')
 
   origin_trial_feedback_url = forms.URLField(required=False, label='Origin Trial feedback summary',
       help_text='If your feature was available as an Origin Trial, link to a summary of usage and developer feedback. If not, leave this empty.')
 
   doc_links = forms.CharField(label='Doc link(s)', required=False,
       widget=forms.Textarea(attrs={'rows': 4, 'cols': 50, 'maxlength': 500}),
-      help_text='Links to design doc(s) (one URL per line), if and when available. [This is not required to send out an Intent to Implement. Please update the intent thread with the design doc when ready]. An explainer and/or design doc is sufficient to start this process. [Note: Please include links and data, where possible, to support any claims.]')
+      help_text='Links to design doc(s) (one URL per line), if and when available. [This is not required to send out an Intent to Prototype. Please update the intent thread with the design doc when ready]. An explainer and/or design doc is sufficient to start this process. [Note: Please include links and data, where possible, to support any claims.]')
 
   standardization = forms.ChoiceField(
       label='Standardization', choices=STANDARDIZATION.items(),

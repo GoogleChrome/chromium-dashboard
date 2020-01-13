@@ -13,16 +13,16 @@
 
   &.canaryisdev {
     li {
-      &:nth-of-type(4)::after {
+      &:nth-of-type(5)::after {
         content: 'canary/dev';
       }
-      &:nth-of-type(5)::after {
+      &:nth-of-type(6)::after {
         content: 'beta';
       }
-      &:nth-of-type(6)::after {
+      &:nth-of-type(7)::after {
         content: 'stable';
       }
-      &:nth-of-type(7)::after {
+      &:nth-of-type(8)::after {
         content: '';
       }
     }
@@ -30,16 +30,16 @@
 
   &.betaisdev {
     li, paper-item {
-      &:nth-of-type(4)::after {
+      &:nth-of-type(5)::after {
         content: 'canary';
       }
-      &:nth-of-type(5)::after {
+      &:nth-of-type(6)::after {
         content: 'dev/beta';
       }
-      &:nth-of-type(6)::after {
+      &:nth-of-type(7)::after {
         content: 'stable';
       }
-      &:nth-of-type(7)::after {
+      &:nth-of-type(8)::after {
         content: '';
       }
     }
@@ -59,21 +59,21 @@
       margin-left: $content-padding / 2;
     }
 
-    &:nth-of-type(3) {
+    &:nth-of-type(4) {
       border-bottom: 1px solid $bar-border-color;
       padding-bottom: $content-padding / 2;
       margin-bottom: $content-padding / 2;
     }
-    &:nth-of-type(4)::after {
+    &:nth-of-type(5)::after {
       content: 'canary';
     }
-    &:nth-of-type(5)::after {
+    &:nth-of-type(6)::after {
       content: 'dev';
     }
-    &:nth-of-type(6)::after {
+    &:nth-of-type(7)::after {
       content: 'beta';
     }
-    &:nth-of-type(7)::after {
+    &:nth-of-type(8)::after {
       content: 'stable';
     }
 
@@ -93,4 +93,3 @@
   margin: 100px 0 0 5px;
   color: darkred;
 }
-

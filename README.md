@@ -97,7 +97,7 @@ number. This will build the site and deploy it to GAE.
 
 Lastly, open the [Google Developer
 Console](https://console.cloud.google.com/appengine/versions?project=cr-status&organizationId=433637338589&moduleId=default)
-and flip to the new version by selecting from the list and clicking *MIGRATE TRAFFIC*.
+and flip to the new version by selecting from the list and clicking *MIGRATE TRAFFIC*. Make sure to do this for both the 'default' service as well as for the 'notifier' service.
 
 ### LICENSE
 
