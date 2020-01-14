@@ -18,8 +18,9 @@ cache:
   directories:
     - node_modules
 install:
-  - yarn global add bower gulp
-  - yarn
+  - npm install -g gulp
+  - npm ci
+  - npm run deps
 script:
   - npm run lint
   - npm run build
