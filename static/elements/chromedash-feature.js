@@ -147,12 +147,14 @@ class ChromedashFeature extends LitElement {
       return;
     }
 
-    this.open = !this.open;
+    // We toggle the open state by sending an event, which causes a new
+    // ChromedashFeature object to be created with the new state.
+    const newOpen = !this.open;
 
     // Handled in `chromedash-featurelist`
     this._fireEvent('feature-toggled', {
       feature: this.feature,
-      open: this.open,
+      open: newOpen,
     });
   }
 

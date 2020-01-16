@@ -25,5 +25,3 @@ static/js/
 # OS files
 *.DS_Store
 
-package-lock.json
-

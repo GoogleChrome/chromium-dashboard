@@ -19,7 +19,7 @@ cache:
     - node_modules
 install:
   - npm install -g gulp
-  - npm ci
+  - npm install
   - npm run deps
 script:
   - npm run lint

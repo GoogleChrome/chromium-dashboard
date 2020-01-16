@@ -18,6 +18,7 @@
 
 'use strict';
 
+(function(exports) {
 class Metric {
   static get supportsPerfNow() {
     return performance && performance.now;
@@ -155,3 +156,6 @@ class Metric {
     return this;
   }
 }
+
+exports.Metric = Metric;
+})(window);
