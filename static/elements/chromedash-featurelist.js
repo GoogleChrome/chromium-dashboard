@@ -14,6 +14,7 @@ class ChromedashFeaturelist extends LitElement {
       metadataEl: {attribute: false}, // The metadata component element. Directly edited in template/features.html
       searchEl: {attribute: false}, // The search input element. Directly edited in template/features.html
       filtered: {attribute: false},
+      filteredWithState: {attribute: false},
     };
   }
 
@@ -21,6 +22,7 @@ class ChromedashFeaturelist extends LitElement {
     super();
     this.features = [];
     this.filtered = [];
+    this.filteredWithState = [];
     this.metadataEl = document.querySelector('chromedash-metadata');
     this.searchEl = document.querySelector('.search input');
     this.whitelisted = false;
@@ -28,6 +30,7 @@ class ChromedashFeaturelist extends LitElement {
     this._hasScrolledByUser = false; // Used to set the app header state.
     /* When scrollTo(), we also expand the feature. This is the id of the feature. */
     this._scrollOpenFeatureId = undefined;
+    this.openFeatures = new Map();
 
     this._featuresUnveilMetric = new Metric('features_unveil');
     this._featuresFetchMetric = new Metric('features_loaded');
@@ -137,9 +140,20 @@ class ChromedashFeaturelist extends LitElement {
     }
   }
 
+  _calcFilteredWithState() {
+    this.filteredWithState = this.filtered.map((feature) => {
+      return {
+        feature: feature,
+        open: Boolean(this.openFeatures.get(feature.id)),
+      };
+    });
+  }
+
   _onFeatureToggled(e) {
     const feature = e.detail.feature;
     const open = e.detail.open;
+    this.openFeatures.set(feature.id, open);
+    this._calcFilteredWithState();
 
     if (history && history.replaceState) {
       if (open) {
@@ -188,6 +202,7 @@ class ChromedashFeaturelist extends LitElement {
         location.hash = '';
       }
       this.filtered = this.features;
+      this._calcFilteredWithState();
     } else {
       val = val.trim();
       if (history && history.replaceState) {
@@ -322,8 +337,11 @@ class ChromedashFeaturelist extends LitElement {
       this._fireEvent('has-scroll-list'); // Nofity the app to un-fix header.
     }
 
+    // Note: e.firstVisible is undefined on Safari.
     const feature = this.features[e.firstVisible];
-    this.metadataEl.selectMilestone(feature);
+    if (feature) {
+      this.metadataEl.selectMilestone(feature);
+    }
   }
 
   /** Scroll to the item in the URL. Otherwise the first 'In development' item */
@@ -365,16 +383,16 @@ class ChromedashFeaturelist extends LitElement {
 
       <lit-virtualizer
         .scrollTarget=${window}
-        .items=${this.filtered}
+        .items=${this.filteredWithState}
         @rangechange=${this._onScrollList}
-        .renderItem=${(feature) => html`
+        .renderItem=${(item) => html`
           <div class="item">
-            <div ?hidden="${this._computeMilestoneHidden(feature, this.features, this.filtered)}"
-                 class="milestone-marker">${this._computeMilestoneString(feature.browsers.chrome.status.milestone_str)}</div>
-            <chromedash-feature id="id-${feature.id}" tabindex="0"
-                 ?open="${this._scrollOpenFeatureId === feature.id}"
+            <div ?hidden="${this._computeMilestoneHidden(item.feature, this.features, this.filtered)}"
+                 class="milestone-marker">${this._computeMilestoneString(item.feature.browsers.chrome.status.milestone_str)}</div>
+            <chromedash-feature id="id-${item.feature.id}" tabindex="0"
+                 ?open="${item.open}"
                  @feature-toggled="${this._onFeatureToggledBound}"
-                 .feature="${feature}" ?whitelisted="${this.whitelisted}"></chromedash-feature>
+                 .feature="${item.feature}" ?whitelisted="${this.whitelisted}"></chromedash-feature>
           </div>
         `}>
       </lit-virtualizer>
