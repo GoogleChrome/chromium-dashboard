@@ -216,6 +216,7 @@ class ChromedashFeaturelist extends LitElement {
         this.filtered = this.features.filter(feature => (
           feature.browsers.chrome.blink_components.includes(componentName)
         ));
+        this._calcFilteredWithState();
         this._fireEvent('filtered', {count: this.filtered.length});
         return;
       }
@@ -298,6 +299,7 @@ class ChromedashFeaturelist extends LitElement {
         this.filtered = results;
       }
     }
+    this._calcFilteredWithState();
 
     this._fireEvent('filtered', {count: this.filtered.length});
   }
