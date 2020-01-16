@@ -14,7 +14,7 @@ class ChromedashFeaturelist extends LitElement {
       metadataEl: {attribute: false}, // The metadata component element. Directly edited in template/features.html
       searchEl: {attribute: false}, // The search input element. Directly edited in template/features.html
       filtered: {attribute: false},
-      filteredWithState: {attribute: false},
+      openFeatures: {type: Object},
     };
   }
 
@@ -22,15 +22,13 @@ class ChromedashFeaturelist extends LitElement {
     super();
     this.features = [];
     this.filtered = [];
-    this.filteredWithState = [];
     this.metadataEl = document.querySelector('chromedash-metadata');
     this.searchEl = document.querySelector('.search input');
     this.whitelisted = false;
     this._hasInitialized = false; // Used to check initialization code.
     this._hasScrolledByUser = false; // Used to set the app header state.
     /* When scrollTo(), we also expand the feature. This is the id of the feature. */
-    this._scrollOpenFeatureId = undefined;
-    this.openFeatures = new Map();
+    this.openFeatures = new Set();
 
     this._featuresUnveilMetric = new Metric('features_unveil');
     this._featuresFetchMetric = new Metric('features_loaded');
@@ -140,20 +138,20 @@ class ChromedashFeaturelist extends LitElement {
     }
   }
 
-  _calcFilteredWithState() {
-    this.filteredWithState = this.filtered.map((feature) => {
-      return {
-        feature: feature,
-        open: Boolean(this.openFeatures.get(feature.id)),
-      };
-    });
+  _setOpenFeatures(featureId, open) {
+    const newOpen = new Set(this.openFeatures);
+    if (open) {
+      newOpen.add(featureId);
+    } else {
+      newOpen.delete(featureId);
+    }
+    this.openFeatures = newOpen;
   }
 
   _onFeatureToggled(e) {
     const feature = e.detail.feature;
     const open = e.detail.open;
-    this.openFeatures.set(feature.id, open);
-    this._calcFilteredWithState();
+    this._setOpenFeatures(feature.id, open);
 
     if (history && history.replaceState) {
       if (open) {
@@ -202,7 +200,6 @@ class ChromedashFeaturelist extends LitElement {
         location.hash = '';
       }
       this.filtered = this.features;
-      this._calcFilteredWithState();
     } else {
       val = val.trim();
       if (history && history.replaceState) {
@@ -216,7 +213,6 @@ class ChromedashFeaturelist extends LitElement {
         this.filtered = this.features.filter(feature => (
           feature.browsers.chrome.blink_components.includes(componentName)
         ));
-        this._calcFilteredWithState();
         this._fireEvent('filtered', {count: this.filtered.length});
         return;
       }
@@ -299,7 +295,6 @@ class ChromedashFeaturelist extends LitElement {
         this.filtered = results;
       }
     }
-    this._calcFilteredWithState();
 
     this._fireEvent('filtered', {count: this.filtered.length});
   }
@@ -320,7 +315,7 @@ class ChromedashFeaturelist extends LitElement {
   scrollToId(targetId) {
     if (!targetId) return;
 
-    this._scrollOpenFeatureId = targetId;
+    this._setOpenFeatures(targetId, true);
 
     for (let i = 0, f; f = this.filtered[i]; ++i) {
       if (f.id === targetId) {
@@ -377,6 +372,12 @@ class ChromedashFeaturelist extends LitElement {
   }
 
   render() {
+    const filteredWithState = this.filtered.map((feature) => {
+      return {
+        feature: feature,
+        open: this.openFeatures.has(feature.id),
+      };
+    });
     return html`
       <link rel="stylesheet" href="/static/css/elements/chromedash-featurelist.css">
       <style>
@@ -385,7 +386,7 @@ class ChromedashFeaturelist extends LitElement {
 
       <lit-virtualizer
         .scrollTarget=${window}
-        .items=${this.filteredWithState}
+        .items=${filteredWithState}
         @rangechange=${this._onScrollList}
         .renderItem=${(item) => html`
           <div class="item">
