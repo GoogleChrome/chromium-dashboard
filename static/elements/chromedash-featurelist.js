@@ -14,7 +14,8 @@ class ChromedashFeaturelist extends LitElement {
       metadataEl: {attribute: false}, // The metadata component element. Directly edited in template/features.html
       searchEl: {attribute: false}, // The search input element. Directly edited in template/features.html
       filtered: {attribute: false},
-      openFeatures: {type: Object},
+      openFeatures: {attribute: false},
+      subscribedFeatures: {attribute: false},
     };
   }
 
@@ -29,6 +30,7 @@ class ChromedashFeaturelist extends LitElement {
     this._hasScrolledByUser = false; // Used to set the app header state.
     /* When scrollTo(), we also expand the feature. This is the id of the feature. */
     this.openFeatures = new Set();
+    this.subscribedFeatures = new Set();
 
     this._featuresUnveilMetric = new Metric('features_unveil');
     this._featuresFetchMetric = new Metric('features_loaded');
@@ -39,6 +41,7 @@ class ChromedashFeaturelist extends LitElement {
      * rather than `chromedash-featurelist`, so all function calls inside need
      * to be bound to `this`. */
     this._onFeatureToggledBound = this._onFeatureToggled.bind(this);
+    this._onSubscribedToggledBound = this._onSubscribedToggled.bind(this);
 
     this._loadData();
   }
@@ -161,6 +164,19 @@ class ChromedashFeaturelist extends LitElement {
         history.replaceState({id: null}, feature.name, '/features' + hash);
       }
     }
+  }
+
+  _onSubscribedToggled(e) {
+    const feature = e.detail.feature;
+    const subscribed = e.detail.subscribed;
+
+    const newSubscribedFeatures = new Set(this.subscribedFeatures);
+    if (subscribed) {
+      newSubscribedFeatures.add(String(feature.id));
+    } else {
+      newSubscribedFeatures.delete(String(feature.id));
+    }
+    this.subscribedFeatures = newSubscribedFeatures;
   }
 
   _filterProperty(propPath, regExp, feature) {
@@ -376,6 +392,7 @@ class ChromedashFeaturelist extends LitElement {
       return {
         feature: feature,
         open: this.openFeatures.has(feature.id),
+        subscribed: this.subscribedFeatures.has(String(feature.id)),
       };
     });
     return html`
@@ -394,8 +411,11 @@ class ChromedashFeaturelist extends LitElement {
                  class="milestone-marker">${this._computeMilestoneString(item.feature.browsers.chrome.status.milestone_str)}</div>
             <chromedash-feature id="id-${item.feature.id}" tabindex="0"
                  ?open="${item.open}"
+                 ?subscribed="${item.subscribed}"
                  @feature-toggled="${this._onFeatureToggledBound}"
-                 .feature="${item.feature}" ?whitelisted="${this.whitelisted}"></chromedash-feature>
+                 @subscribed-toggled="${this._onSubscribedToggledBound}"
+                 .feature="${item.feature}"
+                 ?whitelisted="${this.whitelisted}"></chromedash-feature>
           </div>
         `}>
       </lit-virtualizer>
