@@ -65,7 +65,7 @@ class ChromedashMetrics extends LitElement {
     if (location.hash) {
       const hash = decodeURIComponent(location.hash);
       if (hash) {
-        const el = this.$['stack-rank-list'].querySelector(hash);
+        const el = this.shadowRoot.querySelector('#stack-rank-list ' + hash);
         el.scrollIntoView(true, {behavior: 'smooth'});
       }
     }
