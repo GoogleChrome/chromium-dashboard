@@ -20,6 +20,7 @@ class ChromedashFeature extends LitElement {
       feature: {type: Object},
       whitelisted: {type: Boolean},
       open: {type: Boolean, reflect: true}, // Attribute used in the parent for styling
+      subscribed: {type: Boolean},
       // Values used in the template
       _interopRisk: {attribute: false},
       _isDeprecated: {attribute: false},
@@ -28,7 +29,6 @@ class ChromedashFeature extends LitElement {
       _commentHtml: {attribute: false},
       _crBugNumber: {attribute: false},
       _newBugUrl: {attribute: false},
-      _receivePush: {attribute: false},
     };
   }
 
@@ -49,7 +49,6 @@ class ChromedashFeature extends LitElement {
   }
 
   _initializeValues() {
-    this._receivePush = this.feature.receivePush;
     this._crBugNumber = this._getCrBugNumber();
     this._newBugUrl = this._getNewBugUrl();
     this._interopRisk = this._getInteropRisk();
@@ -188,13 +187,21 @@ class ChromedashFeature extends LitElement {
       return;
     }
 
-    this._receivePush = !this._receivePush;
+    // We toggle the subscribed state by sending an event, which causes a new
+    // ChromedashFeature object to be created with the new state.
+    const newSubscribed = !this.subscribed;
 
-    if (this._receivePush) {
+    if (newSubscribed) {
       window.PushNotifications.subscribeToFeature(featureId);
     } else {
       window.PushNotifications.unsubscribeFromFeature(featureId);
     }
+
+    // Handled in `chromedash-featurelist`
+    this._fireEvent('subscribed-toggled', {
+      feature: this.feature,
+      subscribed: newSubscribed,
+    });
   }
 
   render() {
@@ -259,7 +266,7 @@ class ChromedashFeature extends LitElement {
               <span class="tooltip"
                     title="Receive a push notification when there are updates">
                 <a href="#" @click="${this.subscribeToFeature}" data-tooltip>
-                  <iron-icon icon="${this._receivePush ?
+                  <iron-icon icon="${this.subscribed ?
                                 'chromestatus:notifications' :
                                 'chromestatus:notifications-off'}"
                              class="pushicon ${window.PushNotifier && window.PushNotifier.GRANTED_ACCESS ?

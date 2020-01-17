@@ -85,13 +85,7 @@ featureListEl.addEventListener('app-ready', () => {
           iconEl.icon = 'chromestatus:notifications-off';
         }
 
-        featureListEl.features.forEach((f, i) => {
-          if (subscribedFeatures.includes(String(f.id))) {
-            f.receivePush = true;
-            featureListEl.notifyPath(['features', i, 'receivePush'], true);
-            featureListEl.notifyPath(['filtered', i, 'receivePush'], true);
-          }
-        });
+        featureListEl.subscribedFeatures = new Set(subscribedFeatures);
       });
     }
   });
