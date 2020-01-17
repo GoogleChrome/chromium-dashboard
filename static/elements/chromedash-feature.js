@@ -29,7 +29,6 @@ class ChromedashFeature extends LitElement {
       _commentHtml: {attribute: false},
       _crBugNumber: {attribute: false},
       _newBugUrl: {attribute: false},
-      _receivePush: {attribute: false},
     };
   }
 
