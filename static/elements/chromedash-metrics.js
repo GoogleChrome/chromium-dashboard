@@ -74,7 +74,7 @@ class ChromedashMetrics extends LitElement {
   sort(e) {
     e.preventDefault();
 
-    const order = e.target.dataset.order;
+    const order = e.target.dataset.order || e.target.parentNode.dataset.order;
     sortBy_(order, this.viewList);
     switch (order) {
       case 'percentage':
