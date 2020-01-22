@@ -1,8 +1,9 @@
 import {LitElement, html} from 'lit-element';
 // eslint-disable-next-line no-unused-vars
-import {LitVirtualizer} from 'lit-virtualizer';
 import './chromedash-feature';
 import style from '../css/elements/chromedash-featurelist.css';
+
+const MAX_FEATURES_SHOWN = 500;
 
 class ChromedashFeaturelist extends LitElement {
   static styles = style;
@@ -44,10 +45,6 @@ class ChromedashFeaturelist extends LitElement {
     this._onSubscribedToggledBound = this._onSubscribedToggled.bind(this);
 
     this._loadData();
-  }
-
-  firstUpdated() {
-    this._virtualizerEl = this.shadowRoot.querySelector('lit-virtualizer');
   }
 
   async _loadData() {
@@ -333,27 +330,11 @@ class ChromedashFeaturelist extends LitElement {
 
     this._setOpenFeatures(targetId, true);
 
-    for (let i = 0, f; f = this.filtered[i]; ++i) {
-      if (f.id === targetId) {
-        this._virtualizerEl.scrollToIndex(i);
-        return;
-      }
-    }
-  }
-
-  _onScrollList(e) {
-    if (!this._hasInitialized) {
-      return;
-    }
-    if (!this._hasScrolledByUser) {
-      this._hasScrolledByUser = true;
-      this._fireEvent('has-scroll-list'); // Nofity the app to un-fix header.
-    }
-
-    // Note: e.firstVisible is undefined on Safari.
-    const feature = this.features[e.firstVisible];
-    if (feature) {
-      this.metadataEl.selectMilestone(feature);
+    const targetEl = this.shadowRoot.querySelector('#id-' + targetId);
+    if (targetEl) {
+      targetEl.scrollIntoView();
+      const heightOfHeader = document.querySelector('.main-toolbar').getBoundingClientRect().height;
+      window.scrollBy(0, heightOfHeader * -1);
     }
   }
 
@@ -388,24 +369,26 @@ class ChromedashFeaturelist extends LitElement {
   }
 
   render() {
-    const filteredWithState = this.filtered.map((feature) => {
+    // TODO: Avoid computing values in render().
+    let filteredWithState = this.filtered.map((feature) => {
       return {
         feature: feature,
         open: this.openFeatures.has(feature.id),
         subscribed: this.subscribedFeatures.has(String(feature.id)),
       };
     });
+    let numOverLimit = 0;
+    if (filteredWithState.length > MAX_FEATURES_SHOWN) {
+      numOverLimit = filteredWithState.length - MAX_FEATURES_SHOWN;
+      filteredWithState = filteredWithState.slice(0, MAX_FEATURES_SHOWN);
+    }
     return html`
       <link rel="stylesheet" href="/static/css/elements/chromedash-featurelist.css">
       <style>
         .item {width: 100%}
       </style>
 
-      <lit-virtualizer
-        .scrollTarget=${window}
-        .items=${filteredWithState}
-        @rangechange=${this._onScrollList}
-        .renderItem=${(item) => html`
+      ${filteredWithState.map((item) => html`
           <div class="item">
             <div ?hidden="${this._computeMilestoneHidden(item.feature, this.features, this.filtered)}"
                  class="milestone-marker">${this._computeMilestoneString(item.feature.browsers.chrome.status.milestone_str)}</div>
@@ -417,8 +400,11 @@ class ChromedashFeaturelist extends LitElement {
                  .feature="${item.feature}"
                  ?whitelisted="${this.whitelisted}"></chromedash-feature>
           </div>
-        `}>
-      </lit-virtualizer>
+        `)}
+
+      ${numOverLimit > 0 ?
+        html`<p>To see ${numOverLimit} earlier features, please enter a more specific query.</p>` :
+        ''}
     `;
   }
 }
