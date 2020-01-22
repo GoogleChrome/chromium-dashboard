@@ -333,22 +333,8 @@ class ChromedashFeaturelist extends LitElement {
     const targetEl = this.shadowRoot.querySelector('#id-' + targetId);
     if (targetEl) {
       targetEl.scrollIntoView();
-    }
-  }
-
-  _onScrollList(e) {
-    if (!this._hasInitialized) {
-      return;
-    }
-    if (!this._hasScrolledByUser) {
-      this._hasScrolledByUser = true;
-      this._fireEvent('has-scroll-list'); // Nofity the app to un-fix header.
-    }
-
-    // Note: e.firstVisible is undefined on Safari.
-    const feature = this.features[e.firstVisible];
-    if (feature) {
-      this.metadataEl.selectMilestone(feature);
+      const heightOfHeader = document.querySelector('.main-toolbar').getBoundingClientRect().height;
+      window.scrollBy(0, heightOfHeader * -1);
     }
   }
 
@@ -383,7 +369,7 @@ class ChromedashFeaturelist extends LitElement {
   }
 
   render() {
-    console.log('num features = ' + this.filtered.length);
+    // TODO: Avoid computing values in render().
     let filteredWithState = this.filtered.map((feature) => {
       return {
         feature: feature,
