@@ -23,6 +23,10 @@
   width: 100%;
 }
 
+p {
+  margin: 32px;
+}
+
 @media only screen and (max-width: 700px) {
   .milestone-marker {
     font-size: 14px;

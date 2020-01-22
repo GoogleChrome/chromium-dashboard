@@ -3,6 +3,8 @@ import {LitElement, html} from 'lit-element';
 import './chromedash-feature';
 import style from '../css/elements/chromedash-featurelist.css';
 
+const MAX_FEATURES_SHOWN = 500;
+
 class ChromedashFeaturelist extends LitElement {
   static styles = style;
 
@@ -43,10 +45,6 @@ class ChromedashFeaturelist extends LitElement {
     this._onSubscribedToggledBound = this._onSubscribedToggled.bind(this);
 
     this._loadData();
-  }
-
-  firstUpdated() {
-    // @@@ this._virtualizerEl = this.shadowRoot.querySelector('lit-virtualizer');
   }
 
   async _loadData() {
@@ -332,11 +330,9 @@ class ChromedashFeaturelist extends LitElement {
 
     this._setOpenFeatures(targetId, true);
 
-    for (let i = 0, f; f = this.filtered[i]; ++i) {
-      if (f.id === targetId) {
-        // @@@ this._virtualizerEl.scrollToIndex(i);
-        return;
-      }
+    const targetEl = this.shadowRoot.querySelector('#id-' + targetId);
+    if (targetEl) {
+      targetEl.scrollIntoView();
     }
   }
 
@@ -388,13 +384,18 @@ class ChromedashFeaturelist extends LitElement {
 
   render() {
     console.log('num features = ' + this.filtered.length);
-    const filteredWithState = this.filtered.map((feature) => {
+    let filteredWithState = this.filtered.map((feature) => {
       return {
         feature: feature,
         open: this.openFeatures.has(feature.id),
         subscribed: this.subscribedFeatures.has(String(feature.id)),
       };
     });
+    let numOverLimit = 0;
+    if (filteredWithState.length > MAX_FEATURES_SHOWN) {
+      numOverLimit = filteredWithState.length - MAX_FEATURES_SHOWN;
+      filteredWithState = filteredWithState.slice(0, MAX_FEATURES_SHOWN);
+    }
     return html`
       <link rel="stylesheet" href="/static/css/elements/chromedash-featurelist.css">
       <style>
@@ -414,6 +415,10 @@ class ChromedashFeaturelist extends LitElement {
                  ?whitelisted="${this.whitelisted}"></chromedash-feature>
           </div>
         `)}
+
+      ${numOverLimit > 0 ?
+        html`<p>To see ${numOverLimit} earlier features, please enter a more specific query.</p>` :
+        ''}
     `;
   }
 }
