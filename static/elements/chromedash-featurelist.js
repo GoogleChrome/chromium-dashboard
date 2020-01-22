@@ -1,6 +1,5 @@
 import {LitElement, html} from 'lit-element';
 // eslint-disable-next-line no-unused-vars
-import {LitVirtualizer} from 'lit-virtualizer';
 import './chromedash-feature';
 import style from '../css/elements/chromedash-featurelist.css';
 
@@ -47,7 +46,7 @@ class ChromedashFeaturelist extends LitElement {
   }
 
   firstUpdated() {
-    this._virtualizerEl = this.shadowRoot.querySelector('lit-virtualizer');
+    // @@@ this._virtualizerEl = this.shadowRoot.querySelector('lit-virtualizer');
   }
 
   async _loadData() {
@@ -335,7 +334,7 @@ class ChromedashFeaturelist extends LitElement {
 
     for (let i = 0, f; f = this.filtered[i]; ++i) {
       if (f.id === targetId) {
-        this._virtualizerEl.scrollToIndex(i);
+        // @@@ this._virtualizerEl.scrollToIndex(i);
         return;
       }
     }
@@ -388,6 +387,7 @@ class ChromedashFeaturelist extends LitElement {
   }
 
   render() {
+    console.log('num features = ' + this.filtered.length);
     const filteredWithState = this.filtered.map((feature) => {
       return {
         feature: feature,
@@ -401,11 +401,7 @@ class ChromedashFeaturelist extends LitElement {
         .item {width: 100%}
       </style>
 
-      <lit-virtualizer
-        .scrollTarget=${window}
-        .items=${filteredWithState}
-        @rangechange=${this._onScrollList}
-        .renderItem=${(item) => html`
+      ${filteredWithState.map((item) => html`
           <div class="item">
             <div ?hidden="${this._computeMilestoneHidden(item.feature, this.features, this.filtered)}"
                  class="milestone-marker">${this._computeMilestoneString(item.feature.browsers.chrome.status.milestone_str)}</div>
@@ -417,8 +413,7 @@ class ChromedashFeaturelist extends LitElement {
                  .feature="${item.feature}"
                  ?whitelisted="${this.whitelisted}"></chromedash-feature>
           </div>
-        `}>
-      </lit-virtualizer>
+        `)}
     `;
   }
 }
