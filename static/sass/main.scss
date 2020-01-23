@@ -237,8 +237,10 @@ footer {
 
   div {
     &.search {
+      min-width: 350px;
+
       input {
-        width: 300px;
+        width: 280px;
         outline: none;
         padding: 10px 7px;
       }
@@ -248,7 +250,6 @@ footer {
       display: flex;
       justify-content: flex-end;
       flex: 1 0 auto;
-      margin-left: $content-padding;
 
       .blue-button {
         background: $chromium-color-dark;
