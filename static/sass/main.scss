@@ -237,6 +237,8 @@ footer {
 
   div {
     &.search {
+      min-width: 350px;
+
       input {
         width: 280px;
         outline: none;
