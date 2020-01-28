@@ -12,7 +12,6 @@ curl https://sdk.cloud.google.com | bash
 
 # Update any necessary components
 $HOME/google-cloud-sdk/bin/gcloud components update -q
-$HOME/google-cloud-sdk/bin/gcloud components install app-engine-python
 
 # Set the AppEngine App ID to $GAE_APP_ID
 $HOME/google-cloud-sdk/bin/gcloud config set project $GAE_APP_ID
