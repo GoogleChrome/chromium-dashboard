@@ -15,7 +15,8 @@ if [ "${TRAVIS_TEST_RESULT}" = "1" ]; then
   exit
 fi
 
-./travis/install_google_cloud_sdk.sh
+# Now done in .travis.yml
+#./travis/install_google_cloud_sdk.sh
 
 # Set the AppEngine version for staging
 # VERSION=pr-$TRAVIS_PULL_REQUEST

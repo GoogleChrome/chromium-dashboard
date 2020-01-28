@@ -16,14 +16,21 @@ import os
 import sys
 import unittest
 
-APP_ENGINE_PATH = '/usr/lib/google-cloud-sdk/platform/google_appengine'
-sys.path.insert(0, APP_ENGINE_PATH)
+app_engine_path = os.environ.get('APP_ENGINE_PATH', '')
+if not app_engine_path:
+  app_engine_path = '/usr/lib/google-cloud-sdk/platform/google_appengine'
+if not os.path.exists(app_engine_path):
+  app_engine_path = 'google-cloud-sdk/platform/google_appengine'
+if os.path.exists(app_engine_path):
+  sys.path.insert(0, app_engine_path)
+else:
+  print 'Could not find appengine, please set APP_ENGINE_PATH'
 
 import dev_appserver
 dev_appserver.fix_sys_path()
 
-LIB_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'lib')
-sys.path.insert(0, LIB_PATH)
+lib_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'lib')
+sys.path.insert(0, lib_path)
 
 from google.appengine.api import memcache
 from google.appengine.ext import ndb

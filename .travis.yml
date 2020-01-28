@@ -23,6 +23,8 @@ install:
   - npm run deps
 script:
   - npm run lint
+  - "./travis/install_google_cloud_sdk.sh"
+  - npm run test
   - npm run build
 after_success:
   - "./travis/deploy_pr_gae.sh"

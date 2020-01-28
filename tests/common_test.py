@@ -12,23 +12,38 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import mock
 import unittest
 import testing_config  # Must be imported before the module under test.
 
 import common
 
 
+class MockHandler(object):
+
+  def __init__(self, path):
+    self.handler_called_with = None
+    self.redirected_to = None
+    self.request = self
+    self.path = path
+
+  @common.strip_trailing_slash
+  def handlerMethod(self, *args):
+    self.handler_called_with = args
+
+  def redirect(self, new_path):
+    self.redirected_to = new_path
+
+
 class CommonFunctionTests(unittest.TestCase):
 
   def test_strip_trailing_slash(self):
-    self.called_with = []
-    def handler(handlerInstance, *args):
-      self.called_with = args
+    handlerInstance = MockHandler('/request/path')
+    handlerInstance.handlerMethod('/request/path')
+    self.assertEqual(('/request/path',), handlerInstance.handler_called_with)
+    self.assertIsNone(handlerInstance.redirected_to)
 
-    wrapped_handler = common.strip_trailing_slash(handler)
-
-    wrapped_handler('aHandler', '/request/path')
-    self.assertEqual(('/request/path',), self.called_with)
-
-    with self.assertRaises(Exception):
-      wrapped_handler('aHandler', '/request/path/')
+    handlerInstance = MockHandler('/request/path/')
+    handlerInstance.handlerMethod('/request/path/')
+    self.assertIsNone(handlerInstance.handler_called_with)
+    self.assertEqual('/request/path', handlerInstance.redirected_to)
