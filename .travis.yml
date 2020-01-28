@@ -23,11 +23,10 @@ install:
   - npm run deps
 script:
   - npm run lint
-  - "./travis/install_google_cloud_sdk.sh"
-  - npm run test
   - npm run build
 after_success:
   - "./travis/deploy_pr_gae.sh"
+  - npm run test
   - export LH_MIN_PASS_SCORE=96
   - export LH_TEST_URL=https://lighthouse-ci-staging-dot-cr-status.appspot.com/features
   - node node_modules/lighthouse-ci/runlighthouse.js --score=$LH_MIN_PASS_SCORE $LH_TEST_URL
