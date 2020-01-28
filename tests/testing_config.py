@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import print_function
 import os
 import sys
 import unittest
@@ -24,7 +25,9 @@ if not os.path.exists(app_engine_path):
 if os.path.exists(app_engine_path):
   sys.path.insert(0, app_engine_path)
 else:
-  print 'Could not find appengine, please set APP_ENGINE_PATH'
+  print('Could not find appengine, please set APP_ENGINE_PATH',
+        file=sys.stderr)
+  sys.exit(1)
 
 import dev_appserver
 dev_appserver.fix_sys_path()
