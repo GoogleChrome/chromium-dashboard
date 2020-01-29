@@ -20,7 +20,8 @@ cache:
 before_install:
   - if [ ! -d $HOME/google-cloud-sdk/bin ]; then rm -rf $HOME/google-cloud-sdk; curl https://sdk.cloud.google.com | bash > /dev/null; fi
   - source $HOME/google-cloud-sdk/path.bash.inc
-  - gcloud components update kubectl
+  - gcloud components update -q
+  - gcloud components install app-engine-python
   - gcloud version
 
 install:
@@ -29,6 +30,7 @@ install:
   - npm run deps
 script:
   - npm run lint
+  - npm run test
   - npm run build
 after_success:
   - df -h
