@@ -25,6 +25,7 @@ script:
   - npm run lint
   - npm run build
 after_success:
+  - df -h
   - "./travis/deploy_pr_gae.sh"
   - export LH_MIN_PASS_SCORE=96
   - export LH_TEST_URL=https://lighthouse-ci-staging-dot-cr-status.appspot.com/features
