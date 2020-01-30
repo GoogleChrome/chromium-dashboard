@@ -50,6 +50,12 @@ To run lint & lit-analyzer:
 npm run lint
 ```
 
+To run unit tests:
+
+```bash
+npm run test
+```
+
 Note: featurelist is temporarily excluded because lit-analyzer throws `Maximum call stack size exceeded`.
 
 There are some developing information in developer-documentation.md.
