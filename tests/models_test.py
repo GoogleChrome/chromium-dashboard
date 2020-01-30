@@ -41,5 +41,5 @@ class ModelsFunctionsTest(unittest.TestCase):
         list(models.list_to_chunks([1, 2, 3, 4], 2)))
 
     self.assertEqual(
-        [[1, 2], [3, 4], [5]],
+        [[1, 2], [3, 4], [5], 999],
         list(models.list_to_chunks([1, 2, 3, 4, 5], 2)))
