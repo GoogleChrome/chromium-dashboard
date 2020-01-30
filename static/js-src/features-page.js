@@ -16,8 +16,7 @@ function debounce(func, threshold_ms = 300) {
   let timeout;
   return function(...args) {
     let context = this; // eslint-disable-line no-invalid-this
-    let later = function() {
-      timeout = null;
+    let later = () => {
       func.apply(context, args);
     };
     clearTimeout(timeout);
