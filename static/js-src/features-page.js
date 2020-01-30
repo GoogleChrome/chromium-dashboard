@@ -3,6 +3,27 @@ const chromeMetadataEl = document.querySelector('chromedash-metadata');
 const searchEl = document.querySelector('.search input');
 const legendEl = document.querySelector('chromedash-legend');
 
+/**
+ * Simple debouncer to handle text input.  Don't try to hit the server
+ * until the user has stopped typing for a few seconds.  E.g.,
+ * var debouncedKeyHandler = debounce(keyHandler);
+ * el.addEventListener('keyup', debouncedKeyHandler);
+ * @param {function} func Function to call after a delay.
+ * @param {number} threshold_ms Milliseconds to wait before calling.
+ * @return {function} A new function that can be used as an event handler.
+ */
+function debounce(func, threshold_ms = 300) {
+  let timeout;
+  return function(...args) {
+    let context = this; // eslint-disable-line no-invalid-this
+    let later = () => {
+      func.apply(context, args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, threshold_ms);
+  };
+}
+
 // Set search box to URL deep link.
 if (location.hash) {
   searchEl.value = decodeURIComponent(location.hash.substr(1));
@@ -24,11 +45,10 @@ searchEl.addEventListener('search', (e) => {
   }
 });
 
-searchEl.addEventListener('input', (e) => {
-  // TODO debounce 200ms here
+searchEl.addEventListener('input', debounce((e) => {
   featureListEl.filter(e.target.value);
   chromeMetadataEl.selected = null;
-});
+}));
 
 featureListEl.addEventListener('filtered', (e) => {
   document.querySelector('.num-features').textContent = e.detail.count;
