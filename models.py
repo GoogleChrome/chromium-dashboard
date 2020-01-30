@@ -366,7 +366,7 @@ class Feature(DictModel):
   """Container for a feature."""
 
   DEFAULT_MEMCACHE_KEY = '%s|features' % (settings.MEMCACHE_KEY_PREFIX)
-  MAX_CHUNK_SIZE = 500 # max num features to save for each memcache chunk.
+  MAX_CHUNK_SIZE = 300 # max num features to save for each memcache chunk.
 
   @classmethod
   def get_feature_chunk_memcache_keys(self, key_prefix):
