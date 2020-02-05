@@ -832,10 +832,16 @@ class Feature(DictModel):
     queue.add(task)
 
 
-  def put(self, **kwargs):
+  def put(self, notify=True, **kwargs):
     is_update = self.is_saved()
     key = super(Feature, self).put(**kwargs)
-    self.__notify_feature_subscribers_of_changes(is_update)
+    if notify:
+      self.__notify_feature_subscribers_of_changes(is_update)
+
+    # Invalidate memcache for the individual feature view.
+    memcache_key = '%s|%s' % (Feature.DEFAULT_MEMCACHE_KEY, self.key().id())
+    memcache.delete(memcache_key)
+
     return key
 
   # Metadata.
@@ -921,6 +927,9 @@ class Feature(DictModel):
   experiment_risks = db.StringProperty(multiline=True)
   experiment_extension_reason = db.StringProperty(multiline=True)
   ongoing_constraints = db.StringProperty(multiline=True)
+
+  star_count = db.IntegerProperty(default=0)
+
 
 class PlaceholderCharField(forms.CharField):
 

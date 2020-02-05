@@ -44,8 +44,9 @@ os.environ['SERVER_SOFTWARE'] = 'test ' + os.environ.get('SERVER_SOFTWARE', '')
 os.environ['CURRENT_VERSION_ID'] = 'test.123'
 
 
+ourTestbed = testbed.Testbed()
+
 def setUpOurTestbed():
-  ourTestbed = testbed.Testbed()
   # needed because endpoints expects a . in this value
   ourTestbed.setup_env(current_version_id='testbed.version')
   ourTestbed.activate()
