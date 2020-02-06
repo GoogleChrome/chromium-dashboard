@@ -98,6 +98,10 @@ handlers:
   script: notifier.app
   secure: always
 
+- url: /features/star/.*
+  script: notifier.app
+  secure: always
+
 - url: /features/schedule.*
   script: schedule.app
   secure: always

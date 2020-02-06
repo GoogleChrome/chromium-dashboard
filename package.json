@@ -8,7 +8,7 @@
   },
   "scripts": {
     "deps": "pip install -t lib -r requirements.txt",
-    "test": "python -m unittest discover -p *_test.py -s tests",
+    "test": "python -m unittest discover -p *_test.py -s tests -b",
     "lint": "gulp lint-fix && lit-analyzer \"static/elements/chromedash-!(featurelist)*.js\"",
     "build": "gulp",
     "watch": "gulp watch",

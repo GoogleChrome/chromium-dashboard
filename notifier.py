@@ -24,6 +24,7 @@ import webapp2
 from google.appengine.ext import db
 from google.appengine.api import mail
 from google.appengine.api import urlfetch
+from google.appengine.api import users
 from google.appengine.api import taskqueue
 
 from django.utils.html import conditional_escape as escape
@@ -208,6 +209,54 @@ class PushSubscription(models.DictModel):
   subscription_id = db.StringProperty(required=True)
 
 
+class FeatureStar(models.DictModel):
+  """A FeatureStar represent one user's interest in one feature."""
+  email = db.EmailProperty(required=True)
+  feature_id = db.IntegerProperty(required=True)
+  # This is so that we do not sync a bell to a star that the user has removed.
+  starred = db.BooleanProperty(default=True)
+
+  @classmethod
+  def get_star(self, email, feature_id):
+    """If that user starred that feature, return the model or None."""
+    q = FeatureStar.all()
+    q.filter('email =', email)
+    q.filter('feature_id =', feature_id)
+    return q.get()
+
+  @classmethod
+  def set_star(self, email, feature_id, starred=True):
+    """Set/clear a star for the specified user and feature."""
+    feature_star = self.get_star(email, feature_id)
+    if not feature_star and starred:
+      feature_star = FeatureStar(email=email, feature_id=feature_id)
+      feature_star.put()
+    elif feature_star and feature_star.starred != starred:
+      feature_star.starred = starred
+      feature_star.put()
+    else:
+      return  # No need to update anything in datastore
+
+    feature = models.Feature.get_by_id(feature_id)
+    feature.star_count += 1 if starred else -1
+    if feature.star_count < 0:
+      logging.error('count would be < 0: %r', (email, feature_id, starred))
+      return
+    feature.put(notify=False)
+
+  @classmethod
+  def get_user_stars(self, email):
+    """Return a list of feature_ids of all features that the user starred."""
+    q = FeatureStar.all()
+    q.filter('email =', email)
+    q.filter('starred =', True)
+    feature_stars = q.fetch(None)
+    logging.info('found %d stars for %r', len(feature_stars), email)
+    feature_ids = [fs.feature_id for fs in feature_stars]
+    logging.info('returning %r', feature_ids)
+    return feature_ids
+
+
 class EmailHandler(webapp2.RequestHandler):
 
   def post(self):
@@ -237,6 +286,53 @@ class NotificationNewSubscriptionHandler(webapp2.RequestHandler):
     if found_token is None:
       subscription = PushSubscription(subscription_id=subscription_id)
       subscription.put()
+
+
+class SetStarHandler(webapp2.RequestHandler):
+  """Handle JSON API requests to set/clear a star."""
+
+  def post(self):
+    """Stars or unstars a feature for the signed in user."""
+    json_body = json.loads(self.request.body)
+    feature_id = json_body.get('featureId')
+    starred = json_body.get('starred', True)
+
+    if type(feature_id) != int:
+      logging.info('Invalid feature_id: %r', feature_id)
+      self.abort(400)
+
+    feature = models.Feature.get_feature(feature_id)
+    if not feature:
+      logging.info('feature not found: %r', feature_id)
+      self.abort(404)
+
+    user = users.get_current_user()
+    if not user:
+      logging.info('User must be signed in before starring')
+      self.abort(400)
+
+    FeatureStar.set_star(user.email(), feature_id, starred)
+
+
+class GetUserStarsHandler(webapp2.RequestHandler):
+  """Handle JSON API requests list all stars for current user."""
+
+  def post(self):
+    """Returns a list of starred feature_ids for the signed in user."""
+    # Note: the post body is not used.
+
+    user = users.get_current_user()
+    if user:
+      feature_ids = FeatureStar.get_user_stars(user.email())
+    else:
+      feature_ids = []  # Anon users cannot star features.
+
+    data = {
+        'featureIds': feature_ids,
+        }
+    self.response.headers['Content-Type'] = 'application/json;charset=utf-8'
+    result = self.response.write(json.dumps(data, separators=(',',':')))
+
 
 
 class NotificationSubscribeHandler(webapp2.RequestHandler):
@@ -352,4 +448,11 @@ app = webapp2.WSGIApplication([
   ('/features/push/new', NotificationNewSubscriptionHandler),
   ('/features/push/info', NotificationSubscriptionInfoHandler),
   ('/features/push/subscribe/([0-9]*)', NotificationSubscribeHandler),
+  ('/features/star/set', SetStarHandler),
+  ('/features/star/list', GetUserStarsHandler),
 ], debug=settings.DEBUG)
+
+app.error_handlers[404] = common.handle_404
+
+if settings.PROD and not settings.DEBUG:
+  app.error_handlers[500] = common.handle_500
