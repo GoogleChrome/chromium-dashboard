@@ -123,6 +123,47 @@ class SetStarHandlerTest(unittest.TestCase):
     with self.assertRaises(exc.HTTPClientError):
       self.handler.post()
 
+  def test_post__duplicate(self):
+    """User sends a duplicate request, which should be a no-op."""
+    testing_config.ourTestbed.setup_env(
+            user_email='user7@example.com',
+            user_id='123567890',
+            overwrite=True)
+
+    feature_id = self.feature_1.key().id()
+    self.handler.request.body = '{"featureId": %d}' % feature_id
+    self.handler.post()  # Original request
+    updated_feature = models.Feature.get_by_id(feature_id)
+    self.assertEqual(1, updated_feature.star_count)
+    self.handler.post()  # Duplicate request
+    updated_feature = models.Feature.get_by_id(feature_id)
+    self.assertEqual(1, updated_feature.star_count)  # Still 1, not 2.
+
+    self.handler.request.body = (
+        '{"featureId": %d, "starred": false}' % feature_id)
+    self.handler.post()  # Original request
+    updated_feature = models.Feature.get_by_id(feature_id)
+    self.assertEqual(0, updated_feature.star_count)
+    self.handler.post()  # Duplicate request
+    updated_feature = models.Feature.get_by_id(feature_id)
+    self.assertEqual(0, updated_feature.star_count)  # Still 0, not negative.
+
+  def test_post__unmatched_unstar(self):
+    """User tries to unstar feature that they never starred: no-op."""
+    testing_config.ourTestbed.setup_env(
+            user_email='user8@example.com',
+            user_id='123567890',
+            overwrite=True)
+
+    feature_id = self.feature_1.key().id()
+    # User never stars the feature in the first place.
+
+    self.handler.request.body = (
+        '{"featureId": %d, "starred": false}' % feature_id)
+    self.handler.post()  # Out-of-step request
+    updated_feature = models.Feature.get_by_id(feature_id)
+    self.assertEqual(0, updated_feature.star_count)  # Still 0, not negative.
+
   def test_post__normal(self):
     """User can star and unstar."""
     testing_config.ourTestbed.setup_env(
@@ -175,7 +216,7 @@ class GetUserStarsHandlerTest(unittest.TestCase):
         self.handler.response.body)
 
   def test_post__some_stars(self):
-    """User has not starred any features."""
+    """User has starred some features."""
     email = 'user8@example.com'
     feature_1_id = self.feature_1.key().id()
     testing_config.ourTestbed.setup_env(

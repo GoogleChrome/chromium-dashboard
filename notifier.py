@@ -228,13 +228,20 @@ class FeatureStar(models.DictModel):
   def set_star(self, email, feature_id, starred=True):
     """Set/clear a star for the specified user and feature."""
     feature_star = self.get_star(email, feature_id)
-    if not feature_star:
+    if not feature_star and starred:
       feature_star = FeatureStar(email=email, feature_id=feature_id)
-    feature_star.starred = starred
-    feature_star.put()
+      feature_star.put()
+    elif feature_star and feature_star.starred != starred:
+      feature_star.starred = starred
+      feature_star.put()
+    else:
+      return  # No need to update anything in datastore
 
     feature = models.Feature.get_by_id(feature_id)
     feature.star_count += 1 if starred else -1
+    if feature.star_count < 0:
+      logging.error('count would be < 0: %r', (email, feature_id, starred))
+      return
     feature.put(notify=False)
 
   @classmethod
