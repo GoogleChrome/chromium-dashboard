@@ -1,0 +1,46 @@
+<html><body>
+<p>Hi <b>{{owners}}</b>,</p>
+
+<p>
+  {% if owners %}
+    You are listed as an owner for web platform features under
+    "{{component_name}}".
+  {% else %}
+    Just letting you know that there\'s a new feature under
+    "{{component_name}}".
+  {% endif %}
+  {{feature.created_by}} added a new feature to this component:
+</p>
+<hr>
+
+<p><b><a href="https://www.chromestatus.com/feature/{{id}}"
+         >{{feature.name}}</a></b>
+  (added {{created}})</p>
+<p><b>Milestone</b>: {{milestone}}</p>
+<p><b>Implementation status</b>: {{status}}</p>
+
+<hr>
+<p>Next steps:</p>
+<ul>
+  <li>Try the API, write a sample, provide early feedback to eng.</li>
+  <li>Consider authoring a new article/update for /web.</li>
+  <li>Write a
+    <a href="https://github.com/GoogleChrome/lighthouse/tree/master/docs/recipes/custom-audit"
+       >new Lighthouse audit</a>. This can help drive adoption of an API
+    over time.
+  </li>
+  <li>Add a sample to https://github.com/GoogleChrome/samples (see
+    <a href="https://github.com/GoogleChrome/samples#contributing-samples"
+       >contributing</a>).
+  </li>
+  <li>Don't forget add your demo link to the
+    <a href="https://www.chromestatus.com/admin/features/edit/{{id}}"
+       >chromestatus feature entry</a>.
+  </li>
+</ul>
+
+<p>If you're CCd on this email, you expressed interest in helping with
+features under "{{component_name}}". Feel free to reply-all if you can
+help with these tasks!</p>
+
+</body></html>

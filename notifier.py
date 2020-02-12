@@ -27,7 +27,9 @@ from google.appengine.api import urlfetch
 from google.appengine.api import users
 from google.appengine.api import taskqueue
 
+from django.template.loader import render_to_string
 from django.utils.html import conditional_escape as escape
+
 
 import common
 import settings
@@ -94,39 +96,17 @@ def email_feature_subscribers(feature, is_update=False, changes=[]):
           <ul>%s</ul>
           </li>""" % moz_links
 
-    intro = 'You are listed as an owner for web platform features under "{component_name}"'.format(component_name=component_name)
-    if not owners:
-      intro = 'Just letting you know that there\'s a new feature under "{component_name}"'.format(component_name=component_name)
-
     created_on = datetime.datetime.strptime(str(feature.created), "%Y-%m-%d %H:%M:%S.%f").date()
-    new_msg = """
-<html><body>
-<p>Hi <b>{owners}</b>,</p>
-
-<p>{intro}. {created_by} added a new feature to this component:</p>
-<hr>
-
-<p><b><a href="https://www.chromestatus.com/feature/{id}">{name}</a></b> (added {created})</p>
-<p><b>Milestone</b>: {milestone}</p>
-<p><b>Implementation status</b>: {status}</p>
-
-<hr>
-<p>Next steps:</p>
-<ul>
-  <li>Try the API, write a sample, provide early feedback to eng.</li>
-  <li>Consider authoring a new article/update for /web.</li>
-  <li>Write a <a href="https://github.com/GoogleChrome/lighthouse/tree/master/docs/recipes/custom-audit">new Lighthouse audit</a>. This can  help drive adoption of an API over time.</li>
-  <li>Add a sample to https://github.com/GoogleChrome/samples (see <a href="https://github.com/GoogleChrome/samples#contributing-samples">contributing</a>).</li>
-  <li>Don't forget add your demo link to the <a href="https://www.chromestatus.com/admin/features/edit/{id}">chromestatus feature entry</a>.</li>
-</ul>
-<p>If you're CCd on this email, you expressed interest in helping with features
-under "{component_name}". Feel free to reply-all if you can help with these tasks!</p>
-</body></html>
-""".format(name=escape(feature.name), id=escape(feature.key().id()), created=escape(created_on),
-           created_by=escape(feature.created_by), intro=escape(intro),
-           owners=escape(', '.join([o.name for o in owners])), milestone=escape(milestone_str),
-           status=escape(models.IMPLEMENTATION_STATUS[feature.impl_status_chrome]),
-           component_name=escape(component_name))
+    new_msg_data = {
+        'feature': feature,
+        'id': feature.key().id(),
+        'created': created_on,
+        'owners': ', '.join([o.name for o in owners]),
+        'milestone': milestone_str,
+        'status': models.IMPLEMENTATION_STATUS[feature.impl_status_chrome],
+        'component_name': component_name,
+    }
+    new_msg = render_to_string('new-feature-email.html', new_msg_data)
 
   updated_on = datetime.datetime.strptime(str(feature.updated), "%Y-%m-%d %H:%M:%S.%f").date()
   formatted_changes = ''
@@ -143,45 +123,19 @@ under "{component_name}". Feel free to reply-all if you can help with these task
   if not formatted_changes:
     formatted_changes = '<li>None</li>'
 
-    intro = 'You are listed as an owner for web platform features under "{component_name}"'
-    if not owners:
-      intro = 'Just letting you know that a feature under "{component_name}" has changed'
-
-  update_msg = """<html><body>
-<p>Hi <b>{owners}</b>,</p>
-
-<p>{intro}. {updated_by} updated this feature:</p>
-<hr>
-
-<p><b><a href="https://www.chromestatus.com/feature/{id}">{name}</a></b> (updated {updated})</p>
-<p><b>Milestone</b>: {milestone}</p>
-<p><b>Implementation status</b>: {status}</p>
-
-<p>Changes:</p>
-<ul>
-{formatted_changes}
-</ul>
-
-<hr>
-<p>Next steps:</p>
-<ul>
-<li>Check existing <a href="https://github.com/GoogleChrome/lighthouse/tree/master/lighthouse-core/audits">Lighthouse audits</a> for correctness.</li>
-<li>Check existing /web content for correctness. Non-exhaustive list:
-  <ul>{wf_content}</ul>
-</li>
-{moz_links}
-</ul>
-
-<p>If you're CCd on this email, you expressed interest in helping with features
-under "{component_name}". Feel free to reply-all if you can help!</p>
-</body></html>
-""".format(name=escape(feature.name), id=escape(feature.key().id()), updated=escape(updated_on),
-           updated_by=escape(feature.updated_by), intro=escape(intro),
-           owners=escape(', '.join([o.name for o in owners])), milestone=escape(milestone_str),
-           status=escape(models.IMPLEMENTATION_STATUS[feature.impl_status_chrome]),
-           formatted_changes=formatted_changes,
-           wf_content=create_wf_content_list(component_name), moz_links=moz_links,
-           component_name=escape(component_name))
+  update_msg_data = {
+      'feature': feature,
+      'id': feature.key().id(),
+      'updated': updated_on,
+      'owners': ', '.join([o.name for o in owners]),
+      'milestone': milestone_str,
+      'status': models.IMPLEMENTATION_STATUS[feature.impl_status_chrome],
+      'formatted_changes': formatted_changes,
+      'wf_content': create_wf_content_list(component_name),
+      'moz_links': moz_links,
+      'component_name': component_name,
+  }
+  update_msg = render_to_string('update-feature-email.html', update_msg_data)
 
   message = mail.EmailMessage(sender='Chromestatus <admin@cr-status.appspotmail.com>',
                               subject='update')
@@ -203,6 +157,10 @@ under "{component_name}". Feel free to reply-all if you can help!</p>
 
   if settings.SEND_EMAIL:
     message.send()
+  else:
+    logging.info('Would have sent the following email:\n')
+    logging.info('Subject: %s', message.subject)
+    logging.info('Body:\n%s', message.html)
 
 
 class PushSubscription(models.DictModel):

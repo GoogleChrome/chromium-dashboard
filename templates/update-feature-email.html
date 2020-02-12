@@ -1,0 +1,45 @@
+<html><body>
+<p>Hi <b>{{owners}}</b>,</p>
+
+<p>
+  {% if owners %}
+    You are listed as an owner for web platform features under
+    "{{component_name}}".
+  {% else %}
+    Just letting you know that a feature under "{{component_name}}" has changed.
+  {% endif %}
+  {{feature.updated_by}} updated this feature:
+</p>
+<hr>
+
+<p>
+  <b><a href="https://www.chromestatus.com/feature/{id}">{{feature.name}}</a></b>
+  (updated {{updated}})</p>
+
+<p><b>Milestone</b>: {{milestone}}</p>
+<p><b>Implementation status</b>: {{status}}</p>
+
+<p>Changes:</p>
+<ul>
+{{formatted_changes}}
+</ul>
+
+<hr>
+
+<p>Next steps:</p>
+<ul>
+  <li>Check existing
+    <a href="https://github.com/GoogleChrome/lighthouse/tree/master/lighthouse-core/audits"
+       >Lighthouse audits</a> for correctness.</li>
+<li>Check existing /web content for correctness. Non-exhaustive list:
+  <ul>{{wf_content}}</ul>
+</li>
+{{moz_links}}
+</ul>
+
+<p>
+  If you're CCd on this email, you expressed interest in helping with features
+  under "{{component_name}}". Feel free to reply-all if you can help!
+</p>
+
+</body></html>
