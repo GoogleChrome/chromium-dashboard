@@ -440,7 +440,7 @@ class FeatureHandler(common.ContentHandler):
       feature.sample_links = sample_links
       feature.search_tags = search_tags
       feature.comments = self.request.get('comments')
-      feature.experiment_goal = self.request.get('experiment_goal')
+      feature.experiment_goals = self.request.get('experiment_goals')
       feature.experiment_timeline = self.request.get('experiment_timeline')
       feature.experiment_risks = self.request.get('experiment_risks')
       feature.experiment_extension_reason = self.request.get('experiment_extension_reason')
@@ -504,7 +504,7 @@ class FeatureHandler(common.ContentHandler):
           sample_links=sample_links,
           search_tags=search_tags,
           comments=self.request.get('comments'),
-          experiment_goal=self.request.get('experiment_goal'),
+          experiment_goals=self.request.get('experiment_goals'),
           experiment_timeline=self.request.get('experiment_timeline'),
           experiment_risks=self.request.get('experiment_risks'),
           experiment_extension_reason=self.request.get('experiment_extension_reason'),
