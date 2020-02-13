@@ -4,10 +4,10 @@
 <p>
   {% if owners %}
     You are listed as an owner for web platform features under
-    "{{component_name}}".
+    "{{component.name}}".
   {% else %}
-    Just letting you know that there\'s a new feature under
-    "{{component_name}}".
+    Just letting you know that there's a new feature under
+    "{{component.name}}".
   {% endif %}
   {{feature.created_by}} added a new feature to this component:
 </p>
@@ -40,7 +40,7 @@
 </ul>
 
 <p>If you're CCd on this email, you expressed interest in helping with
-features under "{{component_name}}". Feel free to reply-all if you can
+features under "{{component.name}}". Feel free to reply-all if you can
 help with these tasks!</p>
 
 </body></html>

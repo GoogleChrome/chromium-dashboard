@@ -41,6 +41,7 @@ def list_diff(subscribers, owners):
   owner_ids = [x.key().id() for x in owners]
   return [x for x in subscribers if not x.key().id() in owner_ids]
 
+
 def get_default_headers():
   headers = {
     'Authorization': 'key=%s' % settings.FIREBASE_SERVER_KEY,
@@ -48,7 +49,9 @@ def get_default_headers():
     }
   return headers
 
+
 def create_wf_content_list(component):
+  # TODO: This markup should be in a django template.
   list = ''
   wf_component_content = models.BlinkComponent.fetch_wf_content_for_components()
   content = wf_component_content.get(component)
@@ -56,59 +59,28 @@ def create_wf_content_list(component):
     return '<li>None</li>'
 
   for url in content:
-    list += '<li><a href="{url}">{url}</a>. Updated: {updatedOn}</li>'.format(
+    list += '<li><a href="{url}">{url}</a>. Updated: {updatedOn}</li>\n'.format(
         url=escape(url['url']), updatedOn=escape(url['updatedOn']))
   if not wf_component_content:
     list = '<li>None</li>'
   return list
 
-def email_feature_subscribers(feature, is_update=False, changes=[]):
-  feature_watchers = models.FeatureOwner.all().filter('watching_all_features = ', True).fetch(None)
 
-  for component_name in feature.blink_components:
-    component = models.BlinkComponent.get_by_name(component_name)
-    if not component:
-      logging.warn('Blink component "%s" not found. Not sending email to subscribers' % component_name)
-      return
+def format_email_body(is_update, feature, component, changes):
+  """Return an HTML string for a notification email body."""
+  if feature.shipped_milestone:
+    milestone_str = feature.shipped_milestone
+  elif feature.shipped_milestone is None and feature.shipped_android_milestone:
+    milestone_str = '%s (android)' % feature.shipped_android_milestone
+  else:
+    milestone_str = 'not yet assigned'
 
-    owners = component.owners
-    # Take of dupe owners from subscribers list.
-    subscribers = list_diff(component.subscribers, owners) + feature_watchers
+  moz_link_urls = [link for link in feature.doc_links
+                   if 'developer.mozilla.org' in link]
 
-    if not subscribers and not owners:
-      logging.info('Blink component "%s" has no subscribers or owners. Skipping email.' % component_name)
-      return
-
-    if feature.shipped_milestone:
-      milestone_str = feature.shipped_milestone
-    elif feature.shipped_milestone is None and feature.shipped_android_milestone:
-      milestone_str = '%s (android)' % feature.shipped_android_milestone
-    else:
-      milestone_str = 'not yet assigned'
-
-    moz_links = ''
-    for link in feature.doc_links:
-      if 'developer.mozilla.org' in link:
-        moz_links += '<li>%s</li>' % link
-    if moz_links:
-      moz_links = """
-          <li>Review the following MDN pages and <a href="https://docs.google.com/document/d/10jDTZeW914ahqWfxwm9_WXJWvyAKT6EcDIlbI3w0BKY/edit#heading=h.frumfipthu7">subscribe to updates</a> for them.
-          <ul>%s</ul>
-          </li>""" % moz_links
-
-    created_on = datetime.datetime.strptime(str(feature.created), "%Y-%m-%d %H:%M:%S.%f").date()
-    new_msg_data = {
-        'feature': feature,
-        'id': feature.key().id(),
-        'created': created_on,
-        'owners': ', '.join([o.name for o in owners]),
-        'milestone': milestone_str,
-        'status': models.IMPLEMENTATION_STATUS[feature.impl_status_chrome],
-        'component_name': component_name,
-    }
-    new_msg = render_to_string('new-feature-email.html', new_msg_data)
-
+  created_on = datetime.datetime.strptime(str(feature.created), "%Y-%m-%d %H:%M:%S.%f").date()
   updated_on = datetime.datetime.strptime(str(feature.updated), "%Y-%m-%d %H:%M:%S.%f").date()
+
   formatted_changes = ''
   for prop in changes:
     prop_name = prop['prop_name']
@@ -119,26 +91,45 @@ def email_feature_subscribers(feature, is_update=False, changes=[]):
       new_val = models.FEATURE_CATEGORIES[new_val]
       old_val = models.FEATURE_CATEGORIES[old_val]
 
-    formatted_changes += '<li>%s: <br/><b>old:</b> %s <br/><br/><b>new:</b> %s<br/><br/></li>' % (prop_name, escape(old_val), escape(new_val))
+    formatted_changes += ('<li>%s: <br/><b>old:</b> %s <br/><br/>'
+                          '<b>new:</b> %s<br/><br/></li>\n' %
+                          (prop_name, escape(old_val), escape(new_val)))
   if not formatted_changes:
     formatted_changes = '<li>None</li>'
 
-  update_msg_data = {
+  body_data = {
       'feature': feature,
       'id': feature.key().id(),
+      'created': created_on,
       'updated': updated_on,
-      'owners': ', '.join([o.name for o in owners]),
+      'owners': ', '.join([o.name for o in component.owners]),
       'milestone': milestone_str,
       'status': models.IMPLEMENTATION_STATUS[feature.impl_status_chrome],
       'formatted_changes': formatted_changes,
-      'wf_content': create_wf_content_list(component_name),
-      'moz_links': moz_links,
-      'component_name': component_name,
+      'wf_content': create_wf_content_list(component.name),
+      'moz_link_urls': moz_link_urls,
+      'component': component,
   }
-  update_msg = render_to_string('update-feature-email.html', update_msg_data)
+  template_path = 'update-feature-email.html' if is_update else 'new-feature-email.html'
+  body = render_to_string(template_path, body_data)
+  return body
 
+
+def compose_email_for_one_component(
+    feature, is_update, changes, feature_watchers, component):
+  """Return an EmailMessage for a feature change in the context of one component."""
+  owners = component.owners
+  # Take of dupe owners from subscribers list.
+  subscribers = list_diff(component.subscribers, owners) + feature_watchers
+
+  if not subscribers and not owners:
+    logging.info('Blink component "%s" has no subscribers or owners. Skipping email.' %
+                 component_name)
+    return None
+
+  email_html = format_email_body(is_update, feature, component, changes)
   message = mail.EmailMessage(sender='Chromestatus <admin@cr-status.appspotmail.com>',
-                              subject='update')
+                              subject='update', html=email_html)
   if len(subscribers):
     message.cc = [s.email for s in subscribers]
 
@@ -147,20 +138,34 @@ def email_feature_subscribers(feature, is_update=False, changes=[]):
     message.to = [s.email for s in owners]
 
   if is_update:
-    message.html = update_msg
     message.subject = 'updated feature: %s' % feature.name
   else:
-    message.html = new_msg
     message.subject = 'new feature: %s' % feature.name
 
   message.check_initialized()
+  return message
 
-  if settings.SEND_EMAIL:
-    message.send()
-  else:
-    logging.info('Would have sent the following email:\n')
-    logging.info('Subject: %s', message.subject)
-    logging.info('Body:\n%s', message.html)
+
+def email_feature_subscribers(feature, is_update=False, changes=[]):
+  feature_watchers = models.FeatureOwner.all().filter('watching_all_features = ', True).fetch(None)
+
+  for component_name in feature.blink_components:  # There will always be at least one.
+    component = models.BlinkComponent.get_by_name(component_name)
+    if not component:
+      logging.warn('Blink component "%s" not found. Not sending email to subscribers' % component_name)
+      continue
+
+    message = compose_email_for_one_component(
+        feature, is_update, changes, feature_watchers, component)
+    if not message:
+      continue
+
+    if settings.SEND_EMAIL:
+      message.send()
+    else:
+      logging.info('Would have sent the following email:\n')
+      logging.info('Subject: %s', message.subject)
+      logging.info('Body:\n%s', message.html)
 
 
 class PushSubscription(models.DictModel):
