@@ -1,0 +1,57 @@
+<html><body>
+<p>Hi <b>{{owners}}</b>,</p>
+
+<p>
+  {% if owners %}
+    You are listed as an owner for web platform features under
+    "{{component.name}}".
+  {% else %}
+    Just letting you know that a feature under "{{component.name}}" has changed.
+  {% endif %}
+  {{feature.updated_by}} updated this feature:
+</p>
+<hr>
+
+<p>
+  <b><a href="https://www.chromestatus.com/feature/{id}">{{feature.name}}</a></b>
+  (updated {{feature.updated|date}})</p>
+
+<p><b>Milestone</b>: {{milestone}}</p>
+<p><b>Implementation status</b>: {{status}}</p>
+
+<p>Changes:</p>
+<ul>
+{{formatted_changes|safe}}
+</ul>
+
+<hr>
+
+<p>Next steps:</p>
+<ul>
+  <li>Check existing
+    <a href="https://github.com/GoogleChrome/lighthouse/tree/master/lighthouse-core/audits"
+       >Lighthouse audits</a> for correctness.</li>
+<li>Check existing /web content for correctness. Non-exhaustive list:
+  <ul>{{wf_content|safe}}</ul>
+</li>
+
+{% if moz_link_urls %}
+  <li>Review the following MDN pages and
+    <a href="https://docs.google.com/document/d/10jDTZeW914ahqWfxwm9_WXJWvyAKT6EcDIlbI3w0BKY/edit#heading=h.frumfipthu7"
+       >subscribe to updates</a> for them.
+    <ul>
+      {% for url in moz_link_urls %}
+        <li>{{url}}</li>
+      {% endfor %}
+    </ul>
+  </li>
+{% endif %}
+
+</ul>
+
+<p>
+  If you're CCd on this email, you expressed interest in helping with features
+  under "{{component.name}}". Feel free to reply-all if you can help!
+</p>
+
+</body></html>

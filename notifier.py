@@ -27,7 +27,9 @@ from google.appengine.api import urlfetch
 from google.appengine.api import users
 from google.appengine.api import taskqueue
 
+from django.template.loader import render_to_string
 from django.utils.html import conditional_escape as escape
+
 
 import common
 import settings
@@ -39,6 +41,7 @@ def list_diff(subscribers, owners):
   owner_ids = [x.key().id() for x in owners]
   return [x for x in subscribers if not x.key().id() in owner_ids]
 
+
 def get_default_headers():
   headers = {
     'Authorization': 'key=%s' % settings.FIREBASE_SERVER_KEY,
@@ -46,7 +49,9 @@ def get_default_headers():
     }
   return headers
 
+
 def create_wf_content_list(component):
+  # TODO: This markup should be in a django template.
   list = ''
   wf_component_content = models.BlinkComponent.fetch_wf_content_for_components()
   content = wf_component_content.get(component)
@@ -54,81 +59,25 @@ def create_wf_content_list(component):
     return '<li>None</li>'
 
   for url in content:
-    list += '<li><a href="{url}">{url}</a>. Updated: {updatedOn}</li>'.format(
+    list += '<li><a href="{url}">{url}</a>. Updated: {updatedOn}</li>\n'.format(
         url=escape(url['url']), updatedOn=escape(url['updatedOn']))
   if not wf_component_content:
     list = '<li>None</li>'
   return list
 
-def email_feature_subscribers(feature, is_update=False, changes=[]):
-  feature_watchers = models.FeatureOwner.all().filter('watching_all_features = ', True).fetch(None)
 
-  for component_name in feature.blink_components:
-    component = models.BlinkComponent.get_by_name(component_name)
-    if not component:
-      logging.warn('Blink component "%s" not found. Not sending email to subscribers' % component_name)
-      return
+def format_email_body(is_update, feature, component, changes):
+  """Return an HTML string for a notification email body."""
+  if feature.shipped_milestone:
+    milestone_str = feature.shipped_milestone
+  elif feature.shipped_milestone is None and feature.shipped_android_milestone:
+    milestone_str = '%s (android)' % feature.shipped_android_milestone
+  else:
+    milestone_str = 'not yet assigned'
 
-    owners = component.owners
-    # Take of dupe owners from subscribers list.
-    subscribers = list_diff(component.subscribers, owners) + feature_watchers
+  moz_link_urls = [link for link in feature.doc_links
+                   if 'developer.mozilla.org' in link]
 
-    if not subscribers and not owners:
-      logging.info('Blink component "%s" has no subscribers or owners. Skipping email.' % component_name)
-      return
-
-    if feature.shipped_milestone:
-      milestone_str = feature.shipped_milestone
-    elif feature.shipped_milestone is None and feature.shipped_android_milestone:
-      milestone_str = '%s (android)' % feature.shipped_android_milestone
-    else:
-      milestone_str = 'not yet assigned'
-
-    moz_links = ''
-    for link in feature.doc_links:
-      if 'developer.mozilla.org' in link:
-        moz_links += '<li>%s</li>' % link
-    if moz_links:
-      moz_links = """
-          <li>Review the following MDN pages and <a href="https://docs.google.com/document/d/10jDTZeW914ahqWfxwm9_WXJWvyAKT6EcDIlbI3w0BKY/edit#heading=h.frumfipthu7">subscribe to updates</a> for them.
-          <ul>%s</ul>
-          </li>""" % moz_links
-
-    intro = 'You are listed as an owner for web platform features under "{component_name}"'.format(component_name=component_name)
-    if not owners:
-      intro = 'Just letting you know that there\'s a new feature under "{component_name}"'.format(component_name=component_name)
-
-    created_on = datetime.datetime.strptime(str(feature.created), "%Y-%m-%d %H:%M:%S.%f").date()
-    new_msg = """
-<html><body>
-<p>Hi <b>{owners}</b>,</p>
-
-<p>{intro}. {created_by} added a new feature to this component:</p>
-<hr>
-
-<p><b><a href="https://www.chromestatus.com/feature/{id}">{name}</a></b> (added {created})</p>
-<p><b>Milestone</b>: {milestone}</p>
-<p><b>Implementation status</b>: {status}</p>
-
-<hr>
-<p>Next steps:</p>
-<ul>
-  <li>Try the API, write a sample, provide early feedback to eng.</li>
-  <li>Consider authoring a new article/update for /web.</li>
-  <li>Write a <a href="https://github.com/GoogleChrome/lighthouse/tree/master/docs/recipes/custom-audit">new Lighthouse audit</a>. This can  help drive adoption of an API over time.</li>
-  <li>Add a sample to https://github.com/GoogleChrome/samples (see <a href="https://github.com/GoogleChrome/samples#contributing-samples">contributing</a>).</li>
-  <li>Don't forget add your demo link to the <a href="https://www.chromestatus.com/admin/features/edit/{id}">chromestatus feature entry</a>.</li>
-</ul>
-<p>If you're CCd on this email, you expressed interest in helping with features
-under "{component_name}". Feel free to reply-all if you can help with these tasks!</p>
-</body></html>
-""".format(name=escape(feature.name), id=escape(feature.key().id()), created=escape(created_on),
-           created_by=escape(feature.created_by), intro=escape(intro),
-           owners=escape(', '.join([o.name for o in owners])), milestone=escape(milestone_str),
-           status=escape(models.IMPLEMENTATION_STATUS[feature.impl_status_chrome]),
-           component_name=escape(component_name))
-
-  updated_on = datetime.datetime.strptime(str(feature.updated), "%Y-%m-%d %H:%M:%S.%f").date()
   formatted_changes = ''
   for prop in changes:
     prop_name = prop['prop_name']
@@ -139,52 +88,43 @@ under "{component_name}". Feel free to reply-all if you can help with these task
       new_val = models.FEATURE_CATEGORIES[new_val]
       old_val = models.FEATURE_CATEGORIES[old_val]
 
-    formatted_changes += '<li>%s: <br/><b>old:</b> %s <br/><br/><b>new:</b> %s<br/><br/></li>' % (prop_name, escape(old_val), escape(new_val))
+    formatted_changes += ('<li>%s: <br/><b>old:</b> %s <br/><br/>'
+                          '<b>new:</b> %s<br/><br/></li>\n' %
+                          (prop_name, escape(old_val), escape(new_val)))
   if not formatted_changes:
     formatted_changes = '<li>None</li>'
 
-    intro = 'You are listed as an owner for web platform features under "{component_name}"'
-    if not owners:
-      intro = 'Just letting you know that a feature under "{component_name}" has changed'
+  body_data = {
+      'feature': feature,
+      'id': feature.key().id(),
+      'owners': ', '.join([o.name for o in component.owners]),
+      'milestone': milestone_str,
+      'status': models.IMPLEMENTATION_STATUS[feature.impl_status_chrome],
+      'formatted_changes': formatted_changes,
+      'wf_content': create_wf_content_list(component.name),
+      'moz_link_urls': moz_link_urls,
+      'component': component,
+  }
+  template_path = 'update-feature-email.html' if is_update else 'new-feature-email.html'
+  body = render_to_string(template_path, body_data)
+  return body
 
-  update_msg = """<html><body>
-<p>Hi <b>{owners}</b>,</p>
 
-<p>{intro}. {updated_by} updated this feature:</p>
-<hr>
+def compose_email_for_one_component(
+    feature, is_update, changes, feature_watchers, component):
+  """Return an EmailMessage for a feature change in the context of one component."""
+  owners = component.owners
+  # Take of dupe owners from subscribers list.
+  subscribers = list_diff(component.subscribers, owners) + feature_watchers
 
-<p><b><a href="https://www.chromestatus.com/feature/{id}">{name}</a></b> (updated {updated})</p>
-<p><b>Milestone</b>: {milestone}</p>
-<p><b>Implementation status</b>: {status}</p>
+  if not subscribers and not owners:
+    logging.info('Blink component "%s" has no subscribers or owners. Skipping email.' %
+                 component_name)
+    return None
 
-<p>Changes:</p>
-<ul>
-{formatted_changes}
-</ul>
-
-<hr>
-<p>Next steps:</p>
-<ul>
-<li>Check existing <a href="https://github.com/GoogleChrome/lighthouse/tree/master/lighthouse-core/audits">Lighthouse audits</a> for correctness.</li>
-<li>Check existing /web content for correctness. Non-exhaustive list:
-  <ul>{wf_content}</ul>
-</li>
-{moz_links}
-</ul>
-
-<p>If you're CCd on this email, you expressed interest in helping with features
-under "{component_name}". Feel free to reply-all if you can help!</p>
-</body></html>
-""".format(name=escape(feature.name), id=escape(feature.key().id()), updated=escape(updated_on),
-           updated_by=escape(feature.updated_by), intro=escape(intro),
-           owners=escape(', '.join([o.name for o in owners])), milestone=escape(milestone_str),
-           status=escape(models.IMPLEMENTATION_STATUS[feature.impl_status_chrome]),
-           formatted_changes=formatted_changes,
-           wf_content=create_wf_content_list(component_name), moz_links=moz_links,
-           component_name=escape(component_name))
-
+  email_html = format_email_body(is_update, feature, component, changes)
   message = mail.EmailMessage(sender='Chromestatus <admin@cr-status.appspotmail.com>',
-                              subject='update')
+                              subject='update', html=email_html)
   if len(subscribers):
     message.cc = [s.email for s in subscribers]
 
@@ -193,16 +133,34 @@ under "{component_name}". Feel free to reply-all if you can help!</p>
     message.to = [s.email for s in owners]
 
   if is_update:
-    message.html = update_msg
     message.subject = 'updated feature: %s' % feature.name
   else:
-    message.html = new_msg
     message.subject = 'new feature: %s' % feature.name
 
   message.check_initialized()
+  return message
 
-  if settings.SEND_EMAIL:
-    message.send()
+
+def email_feature_subscribers(feature, is_update=False, changes=[]):
+  feature_watchers = models.FeatureOwner.all().filter('watching_all_features = ', True).fetch(None)
+
+  for component_name in feature.blink_components:  # There will always be at least one.
+    component = models.BlinkComponent.get_by_name(component_name)
+    if not component:
+      logging.warn('Blink component "%s" not found. Not sending email to subscribers' % component_name)
+      continue
+
+    message = compose_email_for_one_component(
+        feature, is_update, changes, feature_watchers, component)
+    if not message:
+      continue
+
+    if settings.SEND_EMAIL:
+      message.send()
+    else:
+      logging.info('Would have sent the following email:\n')
+      logging.info('Subject: %s', message.subject)
+      logging.info('Body:\n%s', message.html)
 
 
 class PushSubscription(models.DictModel):

@@ -14,8 +14,13 @@
 
 import unittest
 import testing_config  # Must be imported before the module under test.
+
+import mock
 import webapp2
 from webob import exc
+
+from google.appengine.ext import db
+from google.appengine.api import users
 
 import models
 import notifier
@@ -26,6 +31,96 @@ class NotifierFunctionsTest(unittest.TestCase):
 
   def test_list_diff__empty(self):
     self.assertEqual([], notifier.list_diff([], []))
+
+
+class EmailFormattingTest(unittest.TestCase):
+
+  def setUp(self):
+    self.feature_1 = models.Feature(
+        name='feature one', summary='sum', category=1, visibility=1,
+        standardization=1, web_dev_views=1, impl_status_chrome=1,
+        created_by=users.User('creator@example.com'),
+        updated_by=users.User('editor@example.com'))
+    self.feature_1.put()
+    self.component_1 = models.BlinkComponent(name='Blink')
+    self.component_1.put()
+    self.owner_1 = models.FeatureOwner(
+        name='owner_1', email='owner_1@example.com',
+        primary_blink_components=[self.component_1.key()])
+    self.owner_1.put()
+    self.watcher_1 = models.FeatureOwner(
+        name='watcher_1', email='watcher_1@example.com',
+        watching_all_features=True)
+    self.watcher_1.put()
+
+  @mock.patch('notifier.create_wf_content_list')
+  def test_format_email_body__new(self, mock_wf_content):
+    """We generate an email body for new features."""
+    mock_wf_content.return_value = 'mock_wf_content'
+    body_html = notifier.format_email_body(
+        False, self.feature_1, self.component_1, [])
+    self.assertIn('Blink', body_html)
+    self.assertIn('Hi <b>owner_1</b>,', body_html)
+    self.assertIn('creator@example.com added', body_html)
+    self.assertNotIn('watcher_1,', body_html)
+    mock_wf_content.assert_called_once_with('Blink')
+
+  @mock.patch('notifier.create_wf_content_list')
+  def test_format_email_body__update_no_changes(self, mock_wf_content):
+    """We don't crash if the change list is emtpy."""
+    mock_wf_content.return_value = 'mock_wf_content'
+    body_html = notifier.format_email_body(
+        True, self.feature_1, self.component_1, [])
+    self.assertIn('Blink', body_html)
+    self.assertIn('editor@example.com updated', body_html)
+    self.assertIn('Hi <b>owner_1</b>,', body_html)
+    self.assertNotIn('watcher_1,', body_html)
+    self.assertIn('mock_wf_content', body_html)
+    mock_wf_content.assert_called_once_with('Blink')
+
+  @mock.patch('notifier.create_wf_content_list')
+  def test_format_email_body__update_with_changes(self, mock_wf_content):
+    """We generate an email body for an updated feature."""
+    mock_wf_content.return_value = 'mock_wf_content'
+    changes = [dict(prop_name='test_prop', new_val='test new value',
+                    old_val='test old value')]
+    body_html = notifier.format_email_body(
+        True, self.feature_1, self.component_1, changes)
+    self.assertIn('test_prop', body_html)
+    self.assertIn('test old value', body_html)
+    self.assertIn('test new value', body_html)
+
+  @mock.patch('notifier.format_email_body')
+  def test_compose_email_for_one_component__new(self, mock_f_e_b):
+    """We send email to component owners and subscribers for new features."""
+    mock_f_e_b.return_value = 'mock body html'
+    message = notifier.compose_email_for_one_component(
+        self.feature_1, False, [],
+        [models.FeatureOwner(name='watcher_2', email='watcher_2@example.com')],
+        self.component_1)
+    self.assertEqual('new feature: feature one', message.subject)
+    self.assertEqual('mock body html', message.html)
+    self.assertEqual(['owner_1@example.com'], message.to)
+    self.assertEqual(['watcher_2@example.com'], message.cc)
+    mock_f_e_b.assert_called_once_with(
+        False, self.feature_1, self.component_1, [])
+
+  @mock.patch('notifier.format_email_body')
+  def test_compose_email_for_one_component__update(self, mock_f_e_b):
+    """We send email to component owners and subscribers for edits."""
+    mock_f_e_b.return_value = 'mock body html'
+    changes = [dict(prop_name='test_prop', new_val='test new value',
+                    old_val='test old value')]
+    message = notifier.compose_email_for_one_component(
+        self.feature_1, True, changes,
+        [models.FeatureOwner(name='watcher_2', email='watcher_2@example.com')],
+        self.component_1)
+    self.assertEqual('updated feature: feature one', message.subject)
+    self.assertEqual('mock body html', message.html)
+    self.assertEqual(['owner_1@example.com'], message.to)
+    self.assertEqual(['watcher_2@example.com'], message.cc)
+    mock_f_e_b.assert_called_once_with(
+        True, self.feature_1, self.component_1, changes)
 
 
 class FeatureStarTest(unittest.TestCase):
