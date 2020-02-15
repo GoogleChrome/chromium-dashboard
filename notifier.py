@@ -78,9 +78,6 @@ def format_email_body(is_update, feature, component, changes):
   moz_link_urls = [link for link in feature.doc_links
                    if 'developer.mozilla.org' in link]
 
-  created_on = datetime.datetime.strptime(str(feature.created), "%Y-%m-%d %H:%M:%S.%f").date()
-  updated_on = datetime.datetime.strptime(str(feature.updated), "%Y-%m-%d %H:%M:%S.%f").date()
-
   formatted_changes = ''
   for prop in changes:
     prop_name = prop['prop_name']
@@ -100,8 +97,6 @@ def format_email_body(is_update, feature, component, changes):
   body_data = {
       'feature': feature,
       'id': feature.key().id(),
-      'created': created_on,
-      'updated': updated_on,
       'owners': ', '.join([o.name for o in component.owners]),
       'milestone': milestone_str,
       'status': models.IMPLEMENTATION_STATUS[feature.impl_status_chrome],
