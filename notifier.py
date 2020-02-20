@@ -94,6 +94,7 @@ def accumulate_reasons(addr_reasons, user_list, reason):
 
 def convert_reasons_to_task(addr, reasons, email_html, subject):
   """Add a task dict to task_list for each user who has not already got one."""
+  assert reasons, 'We are emailing someone without any reason'
   footer_lines = ['<p>You are receiving this email because:</p>', '<ul>']
   for reason in reasons:
     footer_lines.append('<li>%s</li>' % reason)

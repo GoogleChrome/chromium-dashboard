@@ -63,7 +63,6 @@ class EmailFormattingTest(unittest.TestCase):
     self.assertIn('Blink', body_html)
     self.assertIn('editor@example.com updated', body_html)
     self.assertNotIn('watcher_1,', body_html)
-    self.assertIn('mock_wf_content', body_html)
 
   def test_format_email_body__update_with_changes(self):
     """We generate an email body for an updated feature."""
@@ -94,8 +93,21 @@ class EmailFormattingTest(unittest.TestCase):
         },
         addr_reasons)
 
-  def test_convert_reasons_to_task(self):
-    pass  # @@@
+  def test_convert_reasons_to_task__no_reasons(self):
+    with self.assertRaises(AssertionError):
+      notifier.convert_reasons_to_task('addr', [], 'html', 'subject')
+
+  def test_convert_reasons_to_task__normal(self):
+    actual = notifier.convert_reasons_to_task(
+        'addr', ['reason 1', 'reason 2'], 'html', 'subject')
+    self.assertItemsEqual(
+        ['to', 'subject', 'html'],
+        actual.keys())
+    self.assertEqual('addr', actual['to'])
+    self.assertEqual('subject', actual['subject'])
+    self.assertIn('html', actual['html'])
+    self.assertIn('reason 1', actual['html'])
+    self.assertIn('reason 2', actual['html'])
 
   @mock.patch('notifier.format_email_body')
   def test_make_email_tasks__new(self, mock_f_e_b):
