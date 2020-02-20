@@ -15,6 +15,7 @@
 
 __author__ = 'ericbidelman@chromium.org (Eric Bidelman)'
 
+import collections
 import logging
 import datetime
 import json
@@ -30,16 +31,9 @@ from google.appengine.api import taskqueue
 from django.template.loader import render_to_string
 from django.utils.html import conditional_escape as escape
 
-
 import common
 import settings
 import models
-
-
-def list_diff(subscribers, owners):
-  """Returns list B - A."""
-  owner_ids = [x.key().id() for x in owners]
-  return [x for x in subscribers if not x.key().id() in owner_ids]
 
 
 def get_default_headers():
@@ -50,23 +44,7 @@ def get_default_headers():
   return headers
 
 
-def create_wf_content_list(component):
-  # TODO: This markup should be in a django template.
-  list = ''
-  wf_component_content = models.BlinkComponent.fetch_wf_content_for_components()
-  content = wf_component_content.get(component)
-  if not content:
-    return '<li>None</li>'
-
-  for url in content:
-    list += '<li><a href="{url}">{url}</a>. Updated: {updatedOn}</li>\n'.format(
-        url=escape(url['url']), updatedOn=escape(url['updatedOn']))
-  if not wf_component_content:
-    list = '<li>None</li>'
-  return list
-
-
-def format_email_body(is_update, feature, component, changes):
+def format_email_body(is_update, feature, changes):
   """Return an HTML string for a notification email body."""
   if feature.shipped_milestone:
     milestone_str = feature.shipped_milestone
@@ -97,70 +75,73 @@ def format_email_body(is_update, feature, component, changes):
   body_data = {
       'feature': feature,
       'id': feature.key().id(),
-      'owners': ', '.join([o.name for o in component.owners]),
       'milestone': milestone_str,
       'status': models.IMPLEMENTATION_STATUS[feature.impl_status_chrome],
       'formatted_changes': formatted_changes,
-      'wf_content': create_wf_content_list(component.name),
       'moz_link_urls': moz_link_urls,
-      'component': component,
   }
-  template_path = 'update-feature-email.html' if is_update else 'new-feature-email.html'
+  template_path = ('update-feature-email.html' if is_update
+                   else 'new-feature-email.html')
   body = render_to_string(template_path, body_data)
   return body
 
 
-def compose_email_for_one_component(
-    feature, is_update, changes, feature_watchers, component):
-  """Return an EmailMessage for a feature change in the context of one component."""
-  owners = component.owners
-  # Take of dupe owners from subscribers list.
-  subscribers = list_diff(component.subscribers, owners) + feature_watchers
-
-  if not subscribers and not owners:
-    logging.info('Blink component "%s" has no subscribers or owners. Skipping email.' %
-                 component_name)
-    return None
-
-  email_html = format_email_body(is_update, feature, component, changes)
-  message = mail.EmailMessage(sender='Chromestatus <admin@cr-status.appspotmail.com>',
-                              subject='update', html=email_html)
-  if len(subscribers):
-    message.cc = [s.email for s in subscribers]
-
-  # Only include to: line if there are feature owners. Otherwise, we'll just use cc.
-  if owners:
-    message.to = [s.email for s in owners]
-
-  if is_update:
-    message.subject = 'updated feature: %s' % feature.name
-  else:
-    message.subject = 'new feature: %s' % feature.name
-
-  message.check_initialized()
-  return message
+def accumulate_reasons(addr_reasons, user_list, reason):
+  """Add a reason string for each user."""
+  for user in user_list:
+    addr_reasons[user.email].append(reason)
 
 
-def email_feature_subscribers(feature, is_update=False, changes=[]):
+def convert_reasons_to_task(addr, reasons, email_html, subject):
+  """Add a task dict to task_list for each user who has not already got one."""
+  footer_lines = ['<p>You are receiving this email because:</p>', '<ul>']
+  for reason in reasons:
+    footer_lines.append('<li>%s</li>' % reason)
+  footer_lines.append('</ul>')
+  email_html_with_footer = email_html + '\n\n' + '\n'.join(footer_lines)
+  one_email_task = {
+      'to': addr,
+      'subject': subject,
+      'html': email_html_with_footer
+  }
+  return one_email_task
+
+
+def make_email_tasks(feature, is_update=False, changes=[]):
+  """Return a list of task dicts to notify users of feature changes."""
   feature_watchers = models.FeatureOwner.all().filter('watching_all_features = ', True).fetch(None)
 
-  for component_name in feature.blink_components:  # There will always be at least one.
+  email_html = format_email_body(is_update, feature, changes)
+  if is_update:
+    subject = 'updated feature: %s' % feature.name
+  else:
+    subject = 'new feature: %s' % feature.name
+
+  addr_reasons = collections.defaultdict(list)  # [{email_addr: [reason,...]}]
+
+  accumulate_reasons(
+      addr_reasons, feature_watchers,
+      'You are watching all feature changes')
+
+  # There will always be at least one component.
+  for component_name in feature.blink_components:
     component = models.BlinkComponent.get_by_name(component_name)
     if not component:
       logging.warn('Blink component "%s" not found. Not sending email to subscribers' % component_name)
       continue
 
-    message = compose_email_for_one_component(
-        feature, is_update, changes, feature_watchers, component)
-    if not message:
-      continue
+    accumulate_reasons(
+        addr_reasons, component.owners,
+        'You are an owner of this feature\'s component')
+    accumulate_reasons(
+        addr_reasons, component.subscribers,
+        'You subscribe to this feature\'s component')
 
-    if settings.SEND_EMAIL:
-      message.send()
-    else:
-      logging.info('Would have sent the following email:\n')
-      logging.info('Subject: %s', message.subject)
-      logging.info('Body:\n%s', message.html)
+  # TODO: add starrers here
+
+  all_tasks = [convert_reasons_to_task(addr, reasons, email_html, subject)
+               for addr, reasons in sorted(addr_reasons.items())]
+  return all_tasks
 
 
 class PushSubscription(models.DictModel):
@@ -215,7 +196,8 @@ class FeatureStar(models.DictModel):
     return feature_ids
 
 
-class EmailHandler(webapp2.RequestHandler):
+class FeatureChangeHandler(webapp2.RequestHandler):
+  """This task handles a feature creation or update by making email tasks."""
 
   def post(self):
     json_body = json.loads(self.request.body)
@@ -226,7 +208,36 @@ class EmailHandler(webapp2.RequestHandler):
     # Email feature subscribers if the feature exists and there were actually changes to it.
     feature = models.Feature.get_by_id(feature['id'])
     if feature and (is_update and len(changes) or not is_update):
-      email_feature_subscribers(feature, is_update=is_update, changes=changes)
+      email_tasks = make_email_tasks(
+          feature, is_update=is_update, changes=changes)
+      for one_email_dict in email_tasks:
+        payload = json.dumps(one_email_dict)
+        task = taskqueue.Task(
+            method='POST', url='/tasks/outbound-email', payload=payload,
+            target='notifier')
+        taskqueue.Queue().add(task)
+
+
+class OutboundEmailHandler(webapp2.RequestHandler):
+  """Task to send a notification email to one recipient."""
+
+  def post(self):
+    json_body = json.loads(self.request.body)
+    to = json_body['to']
+    subject = json_body['subject']
+    email_html = json_body['email_html']
+
+    message = mail.EmailMessage(
+        sender='Chromestatus <admin@cr-status.appspotmail.com>',
+        to=to, subject=subject, html=email_html)
+    message.check_initialized()
+
+    logging.info('Will send the following email:\n')
+    logging.info('To: %s', message.to)
+    logging.info('Subject: %s', message.subject)
+    logging.info('Body:\n%s', message.html)
+    if settings.SEND_EMAIL:
+      message.send()
 
 
 class NotificationNewSubscriptionHandler(webapp2.RequestHandler):
@@ -401,7 +412,8 @@ class NotificationsListHandler(common.ContentHandler):
 
 app = webapp2.WSGIApplication([
   ('/admin/notifications/list', NotificationsListHandler),
-  ('/tasks/email-subscribers', EmailHandler),
+  ('/tasks/email-subscribers', FeatureChangeHandler),
+  ('/tasks/outbound-email', OutboundEmailHandler),
   ('/tasks/send_notifications', NotificationSendHandler),
   ('/features/push/new', NotificationNewSubscriptionHandler),
   ('/features/push/info', NotificationSubscriptionInfoHandler),
