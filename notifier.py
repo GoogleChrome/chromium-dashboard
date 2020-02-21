@@ -226,7 +226,7 @@ class OutboundEmailHandler(webapp2.RequestHandler):
     json_body = json.loads(self.request.body)
     to = json_body['to']
     subject = json_body['subject']
-    email_html = json_body['email_html']
+    email_html = json_body['html']
 
     message = mail.EmailMessage(
         sender='Chromestatus <admin@cr-status.appspotmail.com>',
