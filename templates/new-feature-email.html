@@ -1,22 +1,12 @@
-<html><body>
-<p>Hi <b>{{owners}}</b>,</p>
-
 <p>
-  {% if owners %}
-    You are listed as an owner for web platform features under
-    "{{component.name}}".
-  {% else %}
-    Just letting you know that there's a new feature under
-    "{{component.name}}".
-  {% endif %}
-  {{feature.created_by}} added a new feature to this component:
+  {{feature.created_by}} added a new feature:
 </p>
-<hr>
 
 <p><b><a href="https://www.chromestatus.com/feature/{{id}}"
          >{{feature.name}}</a></b>
 </p>
 <p><b>Milestone</b>: {{milestone}}</p>
+<p><b>Components</b>: {{feature.blink_components|join:", "}}</p>
 <p><b>Implementation status</b>: {{status}}</p>
 
 <hr>
@@ -38,9 +28,3 @@
        >chromestatus feature entry</a>.
   </li>
 </ul>
-
-<p>If you're CCd on this email, you expressed interest in helping with
-features under "{{component.name}}". Feel free to reply-all if you can
-help with these tasks!</p>
-
-</body></html>

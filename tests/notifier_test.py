@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import collections
 import unittest
 import testing_config  # Must be imported before the module under test.
 
@@ -26,13 +27,6 @@ import models
 import notifier
 
 
-
-class NotifierFunctionsTest(unittest.TestCase):
-
-  def test_list_diff__empty(self):
-    self.assertEqual([], notifier.list_diff([], []))
-
-
 class EmailFormattingTest(unittest.TestCase):
 
   def setUp(self):
@@ -40,7 +34,8 @@ class EmailFormattingTest(unittest.TestCase):
         name='feature one', summary='sum', category=1, visibility=1,
         standardization=1, web_dev_views=1, impl_status_chrome=1,
         created_by=users.User('creator@example.com'),
-        updated_by=users.User('editor@example.com'))
+        updated_by=users.User('editor@example.com'),
+        blink_components=['Blink'])
     self.feature_1.put()
     self.component_1 = models.BlinkComponent(name='Blink')
     self.component_1.put()
@@ -53,74 +48,102 @@ class EmailFormattingTest(unittest.TestCase):
         watching_all_features=True)
     self.watcher_1.put()
 
-  @mock.patch('notifier.create_wf_content_list')
-  def test_format_email_body__new(self, mock_wf_content):
+  def test_format_email_body__new(self):
     """We generate an email body for new features."""
-    mock_wf_content.return_value = 'mock_wf_content'
     body_html = notifier.format_email_body(
-        False, self.feature_1, self.component_1, [])
+        False, self.feature_1, [])
     self.assertIn('Blink', body_html)
-    self.assertIn('Hi <b>owner_1</b>,', body_html)
     self.assertIn('creator@example.com added', body_html)
     self.assertNotIn('watcher_1,', body_html)
-    mock_wf_content.assert_called_once_with('Blink')
 
-  @mock.patch('notifier.create_wf_content_list')
-  def test_format_email_body__update_no_changes(self, mock_wf_content):
+  def test_format_email_body__update_no_changes(self):
     """We don't crash if the change list is emtpy."""
-    mock_wf_content.return_value = 'mock_wf_content'
     body_html = notifier.format_email_body(
-        True, self.feature_1, self.component_1, [])
+        True, self.feature_1, [])
     self.assertIn('Blink', body_html)
     self.assertIn('editor@example.com updated', body_html)
-    self.assertIn('Hi <b>owner_1</b>,', body_html)
     self.assertNotIn('watcher_1,', body_html)
-    self.assertIn('mock_wf_content', body_html)
-    mock_wf_content.assert_called_once_with('Blink')
 
-  @mock.patch('notifier.create_wf_content_list')
-  def test_format_email_body__update_with_changes(self, mock_wf_content):
+  def test_format_email_body__update_with_changes(self):
     """We generate an email body for an updated feature."""
-    mock_wf_content.return_value = 'mock_wf_content'
     changes = [dict(prop_name='test_prop', new_val='test new value',
                     old_val='test old value')]
     body_html = notifier.format_email_body(
-        True, self.feature_1, self.component_1, changes)
+        True, self.feature_1, changes)
     self.assertIn('test_prop', body_html)
     self.assertIn('test old value', body_html)
     self.assertIn('test new value', body_html)
 
-  @mock.patch('notifier.format_email_body')
-  def test_compose_email_for_one_component__new(self, mock_f_e_b):
-    """We send email to component owners and subscribers for new features."""
-    mock_f_e_b.return_value = 'mock body html'
-    message = notifier.compose_email_for_one_component(
-        self.feature_1, False, [],
-        [models.FeatureOwner(name='watcher_2', email='watcher_2@example.com')],
-        self.component_1)
-    self.assertEqual('new feature: feature one', message.subject)
-    self.assertEqual('mock body html', message.html)
-    self.assertEqual(['owner_1@example.com'], message.to)
-    self.assertEqual(['watcher_2@example.com'], message.cc)
-    mock_f_e_b.assert_called_once_with(
-        False, self.feature_1, self.component_1, [])
+  def test_accumulate_reasons(self):
+    """We can accumulate lists of reasons why we sent a message to a user."""
+    addr_reasons = collections.defaultdict(list)
+    notifier.accumulate_reasons(addr_reasons, [], 'a reason')
+    self.assertEqual({}, addr_reasons)
+
+    notifier.accumulate_reasons(addr_reasons, [self.owner_1], 'a reason')
+    self.assertEqual(
+        {'owner_1@example.com': ['a reason']},
+        addr_reasons)
+
+    notifier.accumulate_reasons(
+        addr_reasons, [self.owner_1, self.watcher_1], 'another reason')
+    self.assertEqual(
+        {'owner_1@example.com': ['a reason', 'another reason'],
+         'watcher_1@example.com': ['another reason'],
+        },
+        addr_reasons)
+
+  def test_convert_reasons_to_task__no_reasons(self):
+    with self.assertRaises(AssertionError):
+      notifier.convert_reasons_to_task('addr', [], 'html', 'subject')
+
+  def test_convert_reasons_to_task__normal(self):
+    actual = notifier.convert_reasons_to_task(
+        'addr', ['reason 1', 'reason 2'], 'html', 'subject')
+    self.assertItemsEqual(
+        ['to', 'subject', 'html'],
+        actual.keys())
+    self.assertEqual('addr', actual['to'])
+    self.assertEqual('subject', actual['subject'])
+    self.assertIn('html', actual['html'])
+    self.assertIn('reason 1', actual['html'])
+    self.assertIn('reason 2', actual['html'])
 
   @mock.patch('notifier.format_email_body')
-  def test_compose_email_for_one_component__update(self, mock_f_e_b):
+  def test_make_email_tasks__new(self, mock_f_e_b):
+    """We send email to component owners and subscribers for new features."""
+    mock_f_e_b.return_value = 'mock body html'
+    actual_tasks = notifier.make_email_tasks(
+        self.feature_1, is_update=False, changes=[])
+    self.assertEqual(2, len(actual_tasks))
+    owner_task, watcher_task = actual_tasks
+    self.assertEqual('new feature: feature one', owner_task['subject'])
+    self.assertIn('mock body html', owner_task['html'])
+    self.assertEqual('owner_1@example.com', owner_task['to'])
+    self.assertEqual('new feature: feature one', watcher_task['subject'])
+    self.assertIn('mock body html', watcher_task['html'])
+    self.assertEqual('watcher_1@example.com', watcher_task['to'])
+    mock_f_e_b.assert_called_once_with(
+        False, self.feature_1, [])
+
+  @mock.patch('notifier.format_email_body')
+  def test_make_email_tasks__update(self, mock_f_e_b):
     """We send email to component owners and subscribers for edits."""
     mock_f_e_b.return_value = 'mock body html'
     changes = [dict(prop_name='test_prop', new_val='test new value',
                     old_val='test old value')]
-    message = notifier.compose_email_for_one_component(
-        self.feature_1, True, changes,
-        [models.FeatureOwner(name='watcher_2', email='watcher_2@example.com')],
-        self.component_1)
-    self.assertEqual('updated feature: feature one', message.subject)
-    self.assertEqual('mock body html', message.html)
-    self.assertEqual(['owner_1@example.com'], message.to)
-    self.assertEqual(['watcher_2@example.com'], message.cc)
+    actual_tasks = notifier.make_email_tasks(
+        self.feature_1, True, changes)
+    self.assertEqual(2, len(actual_tasks))
+    owner_task, watcher_task = actual_tasks
+    self.assertEqual('updated feature: feature one', owner_task['subject'])
+    self.assertIn('mock body html', owner_task['html'])
+    self.assertEqual('owner_1@example.com', owner_task['to'])
+    self.assertEqual('updated feature: feature one', watcher_task['subject'])
+    self.assertIn('mock body html', watcher_task['html'])
+    self.assertEqual('watcher_1@example.com', watcher_task['to'])
     mock_f_e_b.assert_called_once_with(
-        True, self.feature_1, self.component_1, changes)
+        True, self.feature_1, changes)
 
 
 class FeatureStarTest(unittest.TestCase):
