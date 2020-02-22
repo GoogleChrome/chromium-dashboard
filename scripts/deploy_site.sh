@@ -9,6 +9,7 @@
 
 
 deployVersion=$1
+appName=${2:-cr-status}
 usage="Usage: deploy.sh `date +%Y-%m-%d`"
 
 if [ -z "$deployVersion" ]
@@ -28,7 +29,7 @@ gulp
 
 $BASEDIR/oauthtoken.sh deploy
 gcloud app deploy \
-  --project cr-status \
+  --project $appName \
   --version $deployVersion \
   --no-promote \
   $BASEDIR/../app.yaml $BASEDIR/../notifier.yaml
