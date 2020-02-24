@@ -228,8 +228,12 @@ class OutboundEmailHandler(webapp2.RequestHandler):
     subject = json_body['subject']
     email_html = json_body['html']
 
+    if settings.SEND_ALL_EMAIL_TO:
+      to_user, to_domain = to.split('@')
+      to = settings.SEND_ALL_EMAIL_TO % {'user': to_user, 'domain': to_domain}
+
     message = mail.EmailMessage(
-        sender='Chromestatus <admin@cr-status.appspotmail.com>',
+        sender='Chromestatus <admin@%s.appspotmail.com>' % settings.APP_ID,
         to=to, subject=subject, html=email_html)
     message.check_initialized()
 
@@ -239,6 +243,9 @@ class OutboundEmailHandler(webapp2.RequestHandler):
     logging.info('Body:\n%s', message.html)
     if settings.SEND_EMAIL:
       message.send()
+      logging.info('Email sent')
+    else:
+      logging.info('Email not sent because of settings.SEND_EMAIL')
 
 
 class NotificationNewSubscriptionHandler(webapp2.RequestHandler):

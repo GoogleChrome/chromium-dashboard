@@ -1,4 +1,8 @@
+import logging
 import os
+
+from google.appengine.api import app_identity
+
 
 #Hack to get custom tags working django 1.3 + python27.
 INSTALLED_APPS = (
@@ -16,18 +20,31 @@ TEMPLATES = [
   },
 ]
 
+# By default, send all email to an archive for debugging.
+# For the live cr-status server, this setting is None.
+SEND_ALL_EMAIL_TO = 'cr-status-staging-emails+%(user)s+%(domain)s@google.com'
+
 ################################################################################
 
-if (os.getenv('SERVER_SOFTWARE', '').startswith('Google App Engine') or
-    os.getenv('SETTINGS_MODE') == 'prod'):
+PROD = False
+DEBUG = True
+SEND_EMAIL = False  # Just log email
+
+APP_ID = app_identity.get_application_id()
+
+if APP_ID == 'testbed-test':
+  APP_TITLE = 'Local testing'
+elif APP_ID == 'cr-status':
   PROD = True
+  DEBUG = False
+  APP_TITLE = 'Chrome Platform Status'
+  SEND_EMAIL = True
+  SEND_ALL_EMAIL_TO = None  # Deliver it to the intended users
+elif APP_ID == 'cr-status-staging':
+  SEND_EMAIL = True
+  APP_TITLE = 'Chrome Platform Status Staging'
 else:
-  PROD = False
-
-DEBUG = not PROD
-TEMPLATE_DEBUG = DEBUG
-
-APP_TITLE = 'Chrome Platform Status'
+  logging.error('Unexpected app ID %r, please configure settings.py.', APP_ID)
 
 SECRET_KEY = os.environ['DJANGO_SECRET']
 
@@ -42,12 +59,12 @@ DEFAULT_CACHE_TIME = 600 # seconds
 
 USE_I18N = False
 
+TEMPLATE_DEBUG = DEBUG
 if DEBUG:
   TEMPLATE_CACHE_TIME = 0
 else:
   TEMPLATE_CACHE_TIME = 600 # seconds
 
-SEND_EMAIL = PROD # Flag to turn off email notifications to feature owners.
 SEND_PUSH_NOTIFICATIONS = PROD # Flag to turn off sending push notifications for all users.
 
 FIREBASE_SERVER_KEY = os.environ.get('FIREBASE_SERVER_KEY')

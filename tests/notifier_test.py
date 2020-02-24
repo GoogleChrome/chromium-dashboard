@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import collections
+import json
 import unittest
 import testing_config  # Must be imported before the module under test.
 
@@ -21,10 +22,12 @@ import webapp2
 from webob import exc
 
 from google.appengine.ext import db
+from google.appengine.api import mail
 from google.appengine.api import users
 
 import models
 import notifier
+import settings
 
 
 class EmailFormattingTest(unittest.TestCase):
@@ -203,6 +206,74 @@ class FeatureStarTest(unittest.TestCase):
     self.assertItemsEqual(
         [feature_1_id, feature_2_id],
         actual)
+
+
+class OutboundEmailHandlerTest(unittest.TestCase):
+
+  def setUp(self):
+    self.handler = notifier.OutboundEmailHandler()
+    self.handler.request = webapp2.Request.blank('/tasks/outbound-email')
+    self.handler.response = webapp2.Response()
+
+    self.to = 'user@example.com'
+    self.subject = 'test subject'
+    self.html = '<b>body</b>'
+    self.sender = ('Chromestatus <admin@%s.appspotmail.com>' %
+                   settings.APP_ID)
+
+  @mock.patch('settings.SEND_EMAIL', True)
+  @mock.patch('settings.SEND_ALL_EMAIL_TO', None)
+  @mock.patch('google.appengine.api.mail.EmailMessage')
+  def test_post__prod(self, mock_emailmessage_constructor):
+    """On cr-status, we send emails to real users."""
+    self.handler.request.body = json.dumps({
+        'to': self.to,
+        'subject': self.subject,
+        'html': self.html,
+        })
+    self.handler.post()
+    mock_emailmessage_constructor.assert_called_once_with(
+        sender=self.sender, to=self.to, subject=self.subject,
+        html=self.html)
+    mock_message = mock_emailmessage_constructor.return_value
+    mock_message.check_initialized.assert_called_once_with()
+    mock_message.send.assert_called_once_with()
+
+  @mock.patch('settings.SEND_EMAIL', True)
+  @mock.patch('google.appengine.api.mail.EmailMessage')
+  def test_post__staging(self, mock_emailmessage_constructor):
+    """On cr-status-staging, we send emails to an archive."""
+    self.handler.request.body = json.dumps({
+        'to': self.to,
+        'subject': self.subject,
+        'html': self.html,
+        })
+    self.handler.post()
+    expected_to = 'cr-status-staging-emails+user+example.com@google.com'
+    mock_emailmessage_constructor.assert_called_once_with(
+        sender=self.sender, to=expected_to, subject=self.subject,
+        html=self.html)
+    mock_message = mock_emailmessage_constructor.return_value
+    mock_message.check_initialized.assert_called_once_with()
+    mock_message.send.assert_called_once_with()
+
+  @mock.patch('settings.SEND_EMAIL', False)
+  @mock.patch('google.appengine.api.mail.EmailMessage')
+  def test_post__local(self, mock_emailmessage_constructor):
+    """When running locally, we don't actually send emails."""
+    self.handler.request.body = json.dumps({
+        'to': self.to,
+        'subject': self.subject,
+        'html': self.html,
+        })
+    self.handler.post()
+    expected_to = 'cr-status-staging-emails+user+example.com@google.com'
+    mock_emailmessage_constructor.assert_called_once_with(
+        sender=self.sender, to=expected_to, subject=self.subject,
+        html=self.html)
+    mock_message = mock_emailmessage_constructor.return_value
+    mock_message.check_initialized.assert_called_once_with()
+    mock_message.send.assert_not_called()
 
 
 class SetStarHandlerTest(unittest.TestCase):
