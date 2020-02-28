@@ -57,6 +57,8 @@ class EmailFormattingTest(unittest.TestCase):
         False, self.feature_1, [])
     self.assertIn('Blink', body_html)
     self.assertIn('creator@example.com added', body_html)
+    self.assertIn('www.chromestatus.com/feature/%d' % self.feature_1.key().id(),
+                  body_html)
     self.assertNotIn('watcher_1,', body_html)
 
   def test_format_email_body__update_no_changes(self):
@@ -74,6 +76,8 @@ class EmailFormattingTest(unittest.TestCase):
     body_html = notifier.format_email_body(
         True, self.feature_1, changes)
     self.assertIn('test_prop', body_html)
+    self.assertIn('www.chromestatus.com/feature/%d' % self.feature_1.key().id(),
+                  body_html)
     self.assertIn('test old value', body_html)
     self.assertIn('test new value', body_html)
 
