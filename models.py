@@ -46,6 +46,7 @@ HOUDINI = 16
 SERVICEWORKER = 17
 WEBRTC = 18
 LAYERED = 19
+WEBASSEMBLY = 20
 
 FEATURE_CATEGORIES = {
   CSS: 'CSS',
@@ -67,6 +68,7 @@ FEATURE_CATEGORIES = {
   SERVICEWORKER: 'Service Worker',
   WEBRTC: 'Web RTC',
   LAYERED: 'Layered APIs',
+  WEBASSEMBLY: 'WebAssembly'
   }
 
 # Intent stages and mapping from stage to stage name.
