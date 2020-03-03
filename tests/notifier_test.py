@@ -50,6 +50,15 @@ class EmailFormattingTest(unittest.TestCase):
         name='watcher_1', email='watcher_1@example.com',
         watching_all_features=True)
     self.watcher_1.put()
+    self.changes = [dict(prop_name='test_prop', new_val='test new value',
+                    old_val='test old value')]
+    self.feature_2 = models.Feature(
+        name='feature two', summary='sum', category=1, visibility=1,
+        standardization=1, web_dev_views=1, impl_status_chrome=1,
+        created_by=users.User('creator@example.com'),
+        updated_by=users.User('editor@example.com'),
+        blink_components=['Blink'])
+    self.feature_2.put()
 
   def test_format_email_body__new(self):
     """We generate an email body for new features."""
@@ -71,10 +80,8 @@ class EmailFormattingTest(unittest.TestCase):
 
   def test_format_email_body__update_with_changes(self):
     """We generate an email body for an updated feature."""
-    changes = [dict(prop_name='test_prop', new_val='test new value',
-                    old_val='test old value')]
     body_html = notifier.format_email_body(
-        True, self.feature_1, changes)
+        True, self.feature_1, self.changes)
     self.assertIn('test_prop', body_html)
     self.assertIn('www.chromestatus.com/feature/%d' % self.feature_1.key().id(),
                   body_html)
@@ -137,10 +144,8 @@ class EmailFormattingTest(unittest.TestCase):
   def test_make_email_tasks__update(self, mock_f_e_b):
     """We send email to component owners and subscribers for edits."""
     mock_f_e_b.return_value = 'mock body html'
-    changes = [dict(prop_name='test_prop', new_val='test new value',
-                    old_val='test old value')]
     actual_tasks = notifier.make_email_tasks(
-        self.feature_1, True, changes)
+        self.feature_1, True, self.changes)
     self.assertEqual(2, len(actual_tasks))
     owner_task, watcher_task = actual_tasks
     self.assertEqual('updated feature: feature one', owner_task['subject'])
@@ -150,7 +155,48 @@ class EmailFormattingTest(unittest.TestCase):
     self.assertIn('mock body html', watcher_task['html'])
     self.assertEqual('watcher_1@example.com', watcher_task['to'])
     mock_f_e_b.assert_called_once_with(
-        True, self.feature_1, changes)
+        True, self.feature_1, self.changes)
+
+  @mock.patch('notifier.format_email_body')
+  def test_make_email_tasks__starrer(self, mock_f_e_b):
+    """We send email to users who starred the feature."""
+    mock_f_e_b.return_value = 'mock body html'
+    notifier.FeatureStar.set_star(
+        'starrer_1@example.com', self.feature_1.key().id())
+    actual_tasks = notifier.make_email_tasks(
+        self.feature_1, True, self.changes)
+    self.assertEqual(3, len(actual_tasks))
+    owner_task, starrer_task, watcher_task = actual_tasks
+    self.assertEqual('updated feature: feature one', owner_task['subject'])
+    self.assertIn('mock body html', owner_task['html'])
+    self.assertEqual('owner_1@example.com', owner_task['to'])
+    self.assertEqual('starrer_1@example.com', starrer_task['to'])
+    self.assertEqual('updated feature: feature one', watcher_task['subject'])
+    self.assertIn('mock body html', watcher_task['html'])
+    self.assertEqual('watcher_1@example.com', watcher_task['to'])
+    mock_f_e_b.assert_called_once_with(
+        True, self.feature_1, self.changes)
+
+
+  @mock.patch('notifier.format_email_body')
+  def test_make_email_tasks__starrer_unsubscribed(self, mock_f_e_b):
+    """We don't email users who starred the feature but opted out."""
+    mock_f_e_b.return_value = 'mock body html'
+    starrer_2_pref = models.UserPref(
+        email='starrer_2@example.com',
+        notify_as_starrer=False)
+    starrer_2_pref.put()
+    notifier.FeatureStar.set_star(
+        'starrer_2@example.com', self.feature_2.key().id())
+    actual_tasks = notifier.make_email_tasks(
+        self.feature_2, True, self.changes)
+    self.assertEqual(2, len(actual_tasks))
+    # Note: There is no starrer_task.
+    owner_task, watcher_task = actual_tasks
+    self.assertEqual('owner_1@example.com', owner_task['to'])
+    self.assertEqual('watcher_1@example.com', watcher_task['to'])
+    mock_f_e_b.assert_called_once_with(
+        True, self.feature_2, self.changes)
 
 
 class FeatureStarTest(unittest.TestCase):
@@ -192,13 +238,13 @@ class FeatureStarTest(unittest.TestCase):
     updated_feature = models.Feature.get_by_id(feature_id)
     self.assertEqual(0, updated_feature.star_count)
 
-  def test_get_user_star__no_stars(self):
+  def test_get_user_stars__no_stars(self):
     """User has never starred any features."""
     email = 'user4@example.com'
     actual = notifier.FeatureStar.get_user_stars(email)
     self.assertEqual([], actual)
 
-  def test_get_user_star(self):
+  def test_get_user_stars__some_stars(self):
     """User has starred two features."""
     email = 'user5@example.com'
     feature_1_id = self.feature_1.key().id()
@@ -210,6 +256,27 @@ class FeatureStarTest(unittest.TestCase):
     self.assertItemsEqual(
         [feature_1_id, feature_2_id],
         actual)
+
+  def test_get_feature_starrers__no_stars(self):
+    """No user has starred the given feature."""
+    feature_1_id = self.feature_1.key().id()
+    actual = notifier.FeatureStar.get_feature_starrers(feature_1_id)
+    self.assertEqual([], actual)
+
+  def test_get_feature_starrers__some_starrers(self):
+    """Two users have starred the given feature."""
+    app_user_1 = models.AppUser(email='user16@example.com')
+    app_user_1.put()
+    app_user_2 = models.AppUser(email='user17@example.com')
+    app_user_2.put()
+    feature_1_id = self.feature_1.key().id()
+    notifier.FeatureStar.set_star(app_user_1.email, feature_1_id)
+    notifier.FeatureStar.set_star(app_user_2.email, feature_1_id)
+
+    actual = notifier.FeatureStar.get_feature_starrers(feature_1_id)
+    self.assertItemsEqual(
+        [app_user_1.email, app_user_2.email],
+        [au.email for au in actual])
 
 
 class OutboundEmailHandlerTest(unittest.TestCase):
