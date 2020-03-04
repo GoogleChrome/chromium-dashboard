@@ -1193,6 +1193,30 @@ class FeatureForm(forms.Form):
        self.fields[field].widget.attrs['required'] = 'required'
 
 
+class UserPref(DictModel):
+  """Describes a user's application preferences."""
+
+  email = db.EmailProperty(required=True)
+  notify_as_starrer = db.BooleanProperty(default=True)
+
+  @classmethod
+  def get_prefs_for_emails(self, emails):
+    """Return a list of UserPrefs for each of the given emails."""
+    q = UserPref.all()
+    q.filter('email IN', emails)
+    user_prefs = q.fetch(None)
+    found_set = set(up.email for up in user_prefs)
+
+    # Make default prefs for any user that does not already have an entity.
+    new_prefs = [UserPref(email=e) for e in emails
+                 if e not in found_set]
+    for np in new_prefs:
+      np.put()
+      user_prefs.append(np)
+
+    return user_prefs
+
+
 class AppUser(DictModel):
   """Describes a user for whitelisting."""
 

@@ -96,7 +96,7 @@ def convert_reasons_to_task(addr, reasons, email_html, subject):
   """Add a task dict to task_list for each user who has not already got one."""
   assert reasons, 'We are emailing someone without any reason'
   footer_lines = ['<p>You are receiving this email because:</p>', '<ul>']
-  for reason in reasons:
+  for reason in sorted(set(reasons)):
     footer_lines.append('<li>%s</li>' % reason)
   footer_lines.append('</ul>')
   email_html_with_footer = email_html + '\n\n' + '\n'.join(footer_lines)
@@ -128,7 +128,8 @@ def make_email_tasks(feature, is_update=False, changes=[]):
   for component_name in feature.blink_components:
     component = models.BlinkComponent.get_by_name(component_name)
     if not component:
-      logging.warn('Blink component "%s" not found. Not sending email to subscribers' % component_name)
+      logging.warn('Blink component "%s" not found.'
+                   'Not sending email to subscribers' % component_name)
       continue
 
     accumulate_reasons(
@@ -138,7 +139,8 @@ def make_email_tasks(feature, is_update=False, changes=[]):
         addr_reasons, component.subscribers,
         'You subscribe to this feature\'s component')
 
-  # TODO: add starrers here
+  starrers = FeatureStar.get_feature_starrers(feature.key().id())
+  accumulate_reasons(addr_reasons, starrers, 'You starred this feature')
 
   all_tasks = [convert_reasons_to_task(addr, reasons, email_html, subject)
                for addr, reasons in sorted(addr_reasons.items())]
@@ -196,6 +198,21 @@ class FeatureStar(models.DictModel):
     logging.info('returning %r', feature_ids)
     return feature_ids
 
+  @classmethod
+  def get_feature_starrers(self, feature_id):
+    """Return a list of UserPref objects of all users that starred a feature."""
+    q = FeatureStar.all()
+    q.filter('feature_id =', feature_id)
+    q.filter('starred =', True)
+    feature_stars = q.fetch(None)
+    logging.info('found %d stars for %r', len(feature_stars), feature_id)
+    emails = [fs.email for fs in feature_stars]
+    logging.info('looking up %r', emails)
+    user_prefs = models.UserPref.get_prefs_for_emails(emails)
+    user_prefs = [up for up in user_prefs
+                  if up.notify_as_starrer]
+    return user_prefs
+
 
 class FeatureChangeHandler(webapp2.RequestHandler):
   """This task handles a feature creation or update by making email tasks."""
@@ -206,7 +223,8 @@ class FeatureChangeHandler(webapp2.RequestHandler):
     is_update = json_body.get('is_update') or False
     changes = json_body.get('changes') or []
 
-    # Email feature subscribers if the feature exists and there were actually changes to it.
+    # Email feature subscribers if the feature exists and there were
+    # actually changes to it.
     feature = models.Feature.get_by_id(feature['id'])
     if feature and (is_update and len(changes) or not is_update):
       email_tasks = make_email_tasks(
