@@ -1197,6 +1197,9 @@ class UserPref(DictModel):
   """Describes a user's application preferences."""
 
   email = db.EmailProperty(required=True)
+
+  # True means that user should be sent a notification email after each change
+  # to each feature that the user starred.
   notify_as_starrer = db.BooleanProperty(default=True)
 
   @classmethod

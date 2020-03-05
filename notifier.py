@@ -200,7 +200,7 @@ class FeatureStar(models.DictModel):
 
   @classmethod
   def get_feature_starrers(self, feature_id):
-    """Return a list of UserPref objects of all users that starred a feature."""
+    """Return list of UserPref objects for starrers that want notifications."""
     q = FeatureStar.all()
     q.filter('feature_id =', feature_id)
     q.filter('starred =', True)
