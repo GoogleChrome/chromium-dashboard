@@ -20,6 +20,31 @@ import models
 
 class ModelsFunctionsTest(unittest.TestCase):
 
+  def test_convert_enum_int_to_string__not_an_enum(self):
+    """If the property is not an enum, just use the property value."""
+    actual = models.convert_enum_int_to_string(
+        'name', 'not an int')
+    self.assertEqual('not an int', actual)
+
+    actual = models.convert_enum_int_to_string(
+        'unknown property', 'something')
+    self.assertEqual('something', actual)
+
+  def test_convert_enum_int_to_string__enum_found(self):
+    """We use the human-reable string if it is defined."""
+    actual = models.convert_enum_int_to_string(
+        'impl_status_chrome', models.NO_ACTIVE_DEV)
+    self.assertEqual(
+        models.IMPLEMENTATION_STATUS[models.NO_ACTIVE_DEV],
+        actual)
+
+  def test_convert_enum_int_to_string__enum_not_found(self):
+    """If we somehow don't have an emum string, use the ordinal."""
+    actual = models.convert_enum_int_to_string(
+        'impl_status_chrome', 99)
+    self.assertEqual(99, actual)
+
+
   def test_del_none(self):
     d = {}
     self.assertEqual(

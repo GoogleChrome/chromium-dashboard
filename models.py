@@ -199,6 +199,28 @@ WEB_DEV_VIEWS = {
   DEV_STRONG_NEGATIVE: 'Strongly negative',
   }
 
+
+PROPERTY_NAMES_TO_ENUM_DICTS = {
+    'category': FEATURE_CATEGORIES,
+    'intent_stage': INTENT_STAGES,
+    'impl_status_chrome': IMPLEMENTATION_STATUS,
+    'footprint': FOOTPRINT_CHOICES,
+    'visibility': VISIBILITY_CHOICES,
+    'standardization': STANDARDIZATION,
+    'ff_views': VENDOR_VIEWS,
+    'ie_views': VENDOR_VIEWS,
+    'safari_views': VENDOR_VIEWS,
+    'web_dev_views': WEB_DEV_VIEWS,
+  }
+
+
+def convert_enum_int_to_string(property_name, value):
+  """If the property is an enum, return human-readable string, else value."""
+  enum_dict = PROPERTY_NAMES_TO_ENUM_DICTS.get(property_name, {})
+  converted_value = enum_dict.get(value, value)
+  return converted_value
+
+
 def del_none(d):
   """
   Delete dict keys with None values, and empty lists, recursively.
@@ -810,6 +832,8 @@ class Feature(DictModel):
       new_val = getattr(self, prop_name, None)
       old_val = getattr(self, '_old_' + prop_name, None)
       if new_val != old_val:
+        new_val = convert_enum_int_to_string(prop_name, new_val)
+        old_val = convert_enum_int_to_string(prop_name, old_val)
         changed_props.append({
             'prop_name': prop_name, 'old_val': old_val, 'new_val': new_val})
 
