@@ -53,6 +53,10 @@ handlers:
   script: notifier.app
   login: admin # Prevents raw access to this handler. Tasks runs as admin.
 
+- url: /_ah/bounce
+  script: notifier.app
+  login: admin # Prevents raw access to this handler.
+
 - url: /admin/gae/.*
   script: google.appengine.ext.admin.application
   login: admin
@@ -114,3 +118,6 @@ handlers:
 includes:
 - skip_files.yaml
 - env_vars.yaml
+
+inbound_services:
+- mail_bounce

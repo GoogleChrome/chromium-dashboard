@@ -20,6 +20,7 @@ import logging
 import datetime
 import json
 import os
+import re
 import webapp2
 
 from google.appengine.ext import db
@@ -27,6 +28,7 @@ from google.appengine.api import mail
 from google.appengine.api import urlfetch
 from google.appengine.api import users
 from google.appengine.api import taskqueue
+from google.appengine.ext.webapp.mail_handlers import BounceNotificationHandler
 
 from django.template.loader import render_to_string
 from django.utils.html import conditional_escape as escape
@@ -206,7 +208,7 @@ class FeatureStar(models.DictModel):
     logging.info('looking up %r', emails)
     user_prefs = models.UserPref.get_prefs_for_emails(emails)
     user_prefs = [up for up in user_prefs
-                  if up.notify_as_starrer]
+                  if up.notify_as_starrer and not up.bounced]
     return user_prefs
 
 
@@ -432,6 +434,41 @@ class NotificationsListHandler(common.ContentHandler):
     self.render(data=template_data, template_path=os.path.join('admin/notifications/list.html'))
 
 
+
+class BouncedEmailHandler(BounceNotificationHandler):
+  BAD_WRAP_RE = re.compile('=\r\n')
+  BAD_EQ_RE = re.compile('=3D')
+
+  """Handler to notice when email to given user is bouncing."""
+  # For docs on AppEngine's bounce email handling, see:
+  # https://cloud.google.com/appengine/docs/python/mail/bounce
+  # Source code is in file:
+  # google_appengine/google/appengine/ext/webapp/mail_handlers.py
+  def post(self):
+    try:
+      super(BouncedEmail, self).post()
+    except AttributeError:
+      # Work-around for
+      # https://code.google.com/p/googleappengine/issues/detail?id=13512
+      raw_message = self.request.POST.get('raw-message')
+      logging.info('raw_message %r', raw_message)
+      raw_message = self.BAD_WRAP_RE.sub('', raw_message)
+      raw_message = self.BAD_EQ_RE.sub('=', raw_message)
+      logging.info('fixed raw_message %r', raw_message)
+      mime_message = email.message_from_string(raw_message)
+      logging.info('get_payload gives %r', mime_message.get_payload())
+      self.request.POST['raw-message'] = mime_message
+      super(BouncedEmail, self).post()  # Retry with mime_message
+
+  def receive(self, bounce_message):
+    email_addr = bounce_message.original.get('to')
+    logging.info('Bounce was sent to: %r', email_addr)
+    pref_list = models.UserPref.get_prefs_for_emails([email_addr])
+    user_pref = pref_list[0]
+    user_pref.bounced = True
+    user_pref.put()
+
+
 app = webapp2.WSGIApplication([
   ('/admin/notifications/list', NotificationsListHandler),
   ('/tasks/email-subscribers', FeatureChangeHandler),
@@ -442,6 +479,7 @@ app = webapp2.WSGIApplication([
   ('/features/push/subscribe/([0-9]*)', NotificationSubscribeHandler),
   ('/features/star/set', SetStarHandler),
   ('/features/star/list', GetUserStarsHandler),
+  ('/_ah/bounce', BouncedEmailHandler),
 ], debug=settings.DEBUG)
 
 app.error_handlers[404] = common.handle_404
