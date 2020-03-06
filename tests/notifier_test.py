@@ -488,3 +488,44 @@ class GetUserStarsHandlerTest(unittest.TestCase):
     self.assertEqual(
         '{"featureIds":[%d]}' % feature_1_id,
         self.handler.response.body)
+
+
+class BouncedEmailHandlerTest(unittest.TestCase):
+
+  def setUp(self):
+    self.handler = notifier.BouncedEmailHandler()
+
+  def test_receive__user_has_prefs(self):
+    """When we get a bounce, we update the UserPrefs for that user."""
+    starrer_3_pref = models.UserPref(
+        email='starrer_3@example.com',
+        notify_as_starrer=False)
+    starrer_3_pref.put()
+
+    bounce_message = testing_config.Blank(
+        original=testing_config.Blank(
+            get=lambda header: 'starrer_3@example.com'))
+
+    self.handler.receive(bounce_message)
+
+    updated_pref = models.UserPref.get_by_id(starrer_3_pref.key().id())
+    self.assertEqual('starrer_3@example.com', updated_pref.email)
+    self.assertTrue(updated_pref.bounced)
+    self.assertFalse(updated_pref.notify_as_starrer)
+
+  def test_receive__user_has_prefs(self):
+    """When we get a bounce, we create the UserPrefs for that user."""
+    # Note, no existing UserPref for starrer_4.
+
+    bounce_message = testing_config.Blank(
+        original=testing_config.Blank(
+            get=lambda header: 'starrer_4@example.com'))
+
+    self.handler.receive(bounce_message)
+
+    prefs_list = models.UserPref.get_prefs_for_emails(
+        ['starrer_4@example.com'])
+    updated_pref = prefs_list[0]
+    self.assertEqual('starrer_4@example.com', updated_pref.email)
+    self.assertTrue(updated_pref.bounced)
+    self.assertTrue(updated_pref.notify_as_starrer)

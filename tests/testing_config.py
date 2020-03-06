@@ -71,3 +71,17 @@ def setUpOurTestbed():
 # but we need it to be done before importing any application code because
 # models.py makes GAE API calls to in code that runs during loading.
 setUpOurTestbed()
+
+
+class Blank(object):
+  """Simple class that assigns all named args to attributes.
+  Tip: supply a lambda to define a method.
+  """
+  def __init__(self, **kwargs):
+    vars(self).update(kwargs)
+  def __repr__(self):
+    return '%s(%s)' % (self.__class__.__name__, str(vars(self)))
+  def __eq__(self, other):
+    if other is None:
+      return False
+    return vars(self) == vars(other)

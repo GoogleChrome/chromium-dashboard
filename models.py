@@ -1226,6 +1226,10 @@ class UserPref(DictModel):
   # to each feature that the user starred.
   notify_as_starrer = db.BooleanProperty(default=True)
 
+  # True means that we sent an email message to this user in the past
+  # and it bounced.  We will not send to that address again.
+  bounced = db.BooleanProperty(default=False)
+
   @classmethod
   def get_prefs_for_emails(self, emails):
     """Return a list of UserPrefs for each of the given emails."""
