@@ -30,6 +30,14 @@ class ModelsFunctionsTest(unittest.TestCase):
         'unknown property', 'something')
     self.assertEqual('something', actual)
 
+  def test_convert_enum_int_to_string__not_an_int(self):
+    """We don't crash or convert when given non-numeric values."""
+    actual = models.convert_enum_int_to_string(
+        'impl_status_chrome', {'something': 'non-numeric'})
+    self.assertEqual(
+        {'something': 'non-numeric'},
+        actual)
+
   def test_convert_enum_int_to_string__enum_found(self):
     """We use the human-reable string if it is defined."""
     actual = models.convert_enum_int_to_string(
