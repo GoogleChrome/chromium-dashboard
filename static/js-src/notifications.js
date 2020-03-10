@@ -218,9 +218,45 @@ class PushNotifier {
   }
 }
 
+
+class StarService {
+  static getStars() {
+    return new Promise((resolve, reject) => {
+      const url = location.hostname == 'localhost' ?
+        'https://www.chromestatus.com/features/star/list' :
+        '/features/star/list';
+      const fetchPromise = fetch(url, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({}),
+      });
+      const jsonPromise = fetchPromise.then((res) => res.json(), reject);
+      const starsPromise = jsonPromise.then((res) => res.featureIds);
+      resolve(starsPromise);
+    });
+  }
+
+  static setStar(featureId, starred) {
+    return new Promise((resolve, reject) => {
+      const url = location.hostname == 'localhost' ?
+        'https://www.chromestatus.com/features/star/set' :
+        '/features/star/set';
+      const fetchPromise = fetch(url, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({featureId: featureId, starred: starred}),
+      });
+      const jsonPromise = fetchPromise.then((res) => res, reject);
+      resolve(jsonPromise);
+    });
+  }
+}
+
+
 exports.PushNotifier = PushNotifier;
 exports.PushNotifications = new PushNotifier();
 exports.loadFirebaseSDKLibs = loadLibs;
+exports.StarService = StarService;
 
 // if (SUPPORTS_NOTIFICATIONS) {
 //   // navigator.serviceWorker.ready.then(reg => {

@@ -19,8 +19,9 @@ class ChromedashFeature extends LitElement {
     return {
       feature: {type: Object},
       whitelisted: {type: Boolean},
+      signedin: {type: Boolean},
       open: {type: Boolean, reflect: true}, // Attribute used in the parent for styling
-      subscribed: {type: Boolean},
+      starred: {type: Boolean},
       // Values used in the template
       _interopRisk: {attribute: false},
       _isDeprecated: {attribute: false},
@@ -178,7 +179,7 @@ class ChromedashFeature extends LitElement {
     this._fireEvent('filter-component', {val: e.currentTarget.innerText});
   }
 
-  subscribeToFeature(e) {
+  starFeature(e) {
     e.preventDefault();
     e.stopPropagation();
 
@@ -187,20 +188,16 @@ class ChromedashFeature extends LitElement {
       return;
     }
 
-    // We toggle the subscribed state by sending an event, which causes a new
+    // We toggle the starred state by sending an event, which causes a new
     // ChromedashFeature object to be created with the new state.
-    const newSubscribed = !this.subscribed;
+    const newStarred = !this.starred;
 
-    if (newSubscribed) {
-      window.PushNotifications.subscribeToFeature(featureId);
-    } else {
-      window.PushNotifications.unsubscribeFromFeature(featureId);
-    }
+    window.StarService.setStar(featureId, newStarred);
 
     // Handled in `chromedash-featurelist`
-    this._fireEvent('subscribed-toggled', {
+    this._fireEvent('star-toggled', {
       feature: this.feature,
-      subscribed: newSubscribed,
+      starred: newStarred,
     });
   }
 
@@ -262,15 +259,14 @@ class ChromedashFeature extends LitElement {
                            class="intervention" data-tooltip></iron-icon>
               </span>
               ` : nothing}
-            ${window.PushNotifier && window.PushNotifier.SUPPORTS_NOTIFICATIONS ? html`
+            ${this.signedin ? html`
               <span class="tooltip"
-                    title="Receive a push notification when there are updates">
-                <a href="#" @click="${this.subscribeToFeature}" data-tooltip>
-                  <iron-icon icon="${this.subscribed ?
-                                'chromestatus:notifications' :
-                                'chromestatus:notifications-off'}"
-                             class="pushicon ${window.PushNotifier && window.PushNotifier.GRANTED_ACCESS ?
-                               '' : 'disabled'}"></iron-icon>
+                    title="Receive an email notification when there are updates">
+                <a href="#" @click="${this.starFeature}" data-tooltip>
+                  <iron-icon icon="${this.starred ?
+                                'chromestatus:star' :
+                                'chromestatus:star-border'}"
+                             class="pushicon"></iron-icon>
                 </a>
               </span>
               ` : nothing}

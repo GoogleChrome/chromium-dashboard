@@ -50,7 +50,10 @@
 {% endblock %}
 
 {% block content %}
-  <chromedash-featurelist {% if user.is_whitelisted %}whitelisted{% endif %}></chromedash-featurelist>
+  <chromedash-featurelist
+    {% if user %}signedin{% endif %}
+    {% if user.is_whitelisted %}whitelisted{% endif %}
+    ></chromedash-featurelist>
 {% endblock %}
 
 {% block js %}
