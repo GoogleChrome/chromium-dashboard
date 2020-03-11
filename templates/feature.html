@@ -22,7 +22,8 @@
     <section id="name">
       <h2>
         {{ feature.name }}
-        {% if feature.impl_status_chrome == "Deprecated" or feature.impl_status_chrome == "No longer pursuing" %} (deprecated){% endif %}
+        {% if feature.impl_status_chrome == "No longer pursuing" %} (No longer pursuing){% endif %}
+        {% if feature.impl_status_chrome == "Deprecated" %} (deprecated){% endif %}
         {% if feature.impl_status_chrome == "Removed" %} (removed){% endif %}
       </h2>
       <div class="iconrow">
