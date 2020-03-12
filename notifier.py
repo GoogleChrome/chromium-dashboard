@@ -305,6 +305,9 @@ class SetStarHandler(webapp2.RequestHandler):
       self.abort(400)
 
     FeatureStar.set_star(user.email(), feature_id, starred)
+    data = {}
+    self.response.headers['Content-Type'] = 'application/json;charset=utf-8'
+    result = self.response.write(json.dumps(data, separators=(',',':')))
 
 
 class GetUserStarsHandler(webapp2.RequestHandler):

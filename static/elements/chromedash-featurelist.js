@@ -11,12 +11,13 @@ class ChromedashFeaturelist extends LitElement {
   static get properties() {
     return {
       whitelisted: {type: Boolean},
+      signedin: {type: Boolean},
       features: {attribute: false}, // Directly edited and accessed in template/features.html
       metadataEl: {attribute: false}, // The metadata component element. Directly edited in template/features.html
       searchEl: {attribute: false}, // The search input element. Directly edited in template/features.html
       filtered: {attribute: false},
       openFeatures: {attribute: false},
-      subscribedFeatures: {attribute: false},
+      starredFeatures: {attribute: false},
     };
   }
 
@@ -27,11 +28,12 @@ class ChromedashFeaturelist extends LitElement {
     this.metadataEl = document.querySelector('chromedash-metadata');
     this.searchEl = document.querySelector('.search input');
     this.whitelisted = false;
+    this.signedin = false;
     this._hasInitialized = false; // Used to check initialization code.
     this._hasScrolledByUser = false; // Used to set the app header state.
     /* When scrollTo(), we also expand the feature. This is the id of the feature. */
     this.openFeatures = new Set();
-    this.subscribedFeatures = new Set();
+    this.starredFeatures = new Set();
 
     this._featuresUnveilMetric = new Metric('features_unveil');
     this._featuresFetchMetric = new Metric('features_loaded');
@@ -42,7 +44,7 @@ class ChromedashFeaturelist extends LitElement {
      * rather than `chromedash-featurelist`, so all function calls inside need
      * to be bound to `this`. */
     this._onFeatureToggledBound = this._onFeatureToggled.bind(this);
-    this._onSubscribedToggledBound = this._onSubscribedToggled.bind(this);
+    this._onStarToggledBound = this._onStarToggled.bind(this);
 
     this._loadData();
   }
@@ -163,17 +165,17 @@ class ChromedashFeaturelist extends LitElement {
     }
   }
 
-  _onSubscribedToggled(e) {
+  _onStarToggled(e) {
     const feature = e.detail.feature;
-    const subscribed = e.detail.subscribed;
+    const starred = e.detail.starred;
 
-    const newSubscribedFeatures = new Set(this.subscribedFeatures);
-    if (subscribed) {
-      newSubscribedFeatures.add(String(feature.id));
+    const newStarredFeatures = new Set(this.starredFeatures);
+    if (starred) {
+      newStarredFeatures.add(feature.id);
     } else {
-      newSubscribedFeatures.delete(String(feature.id));
+      newStarredFeatures.delete(feature.id);
     }
-    this.subscribedFeatures = newSubscribedFeatures;
+    this.starredFeatures = newStarredFeatures;
   }
 
   _filterProperty(propPath, regExp, feature) {
@@ -374,7 +376,7 @@ class ChromedashFeaturelist extends LitElement {
       return {
         feature: feature,
         open: this.openFeatures.has(feature.id),
-        subscribed: this.subscribedFeatures.has(String(feature.id)),
+        starred: this.starredFeatures.has(feature.id),
       };
     });
     let numOverLimit = 0;
@@ -394,11 +396,13 @@ class ChromedashFeaturelist extends LitElement {
                  class="milestone-marker">${this._computeMilestoneString(item.feature.browsers.chrome.status.milestone_str)}</div>
             <chromedash-feature id="id-${item.feature.id}" tabindex="0"
                  ?open="${item.open}"
-                 ?subscribed="${item.subscribed}"
+                 ?starred="${item.starred}"
                  @feature-toggled="${this._onFeatureToggledBound}"
-                 @subscribed-toggled="${this._onSubscribedToggledBound}"
+                 @star-toggled="${this._onStarToggledBound}"
                  .feature="${item.feature}"
-                 ?whitelisted="${this.whitelisted}"></chromedash-feature>
+                 ?whitelisted="${this.whitelisted}"
+                 ?signedin="${this.signedin}"
+          ></chromedash-feature>
           </div>
         `)}
 

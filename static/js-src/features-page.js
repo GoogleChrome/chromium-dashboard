@@ -104,10 +104,12 @@ featureListEl.addEventListener('app-ready', () => {
         } else {
           iconEl.icon = 'chromestatus:notifications-off';
         }
-
-        featureListEl.subscribedFeatures = new Set(subscribedFeatures);
       });
     }
+  });
+
+  StarService.getStars().then((starredFeatureIds) => {
+    featureListEl.starredFeatures = new Set(starredFeatureIds);
   });
 });
 

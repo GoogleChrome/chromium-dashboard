@@ -39,14 +39,15 @@
         <iron-icon icon="chromestatus:flag" class="experimental"></iron-icon>
       </span>
       {% endif %}
-      <span class="tooltip push-notifications" title="Receive a push notification where there are updates" hidden>
+      {% if user %}
+      <span class="tooltip" title="Receive an email notification when there are updates">
         <a href="#" data-tooltip>
-          <iron-icon icon="chromestatus:notifications-off"
+          <iron-icon icon="chromestatus:star-border"
                       onclick="subscribeToFeature({{ feature.id }})"
                       class="pushicon"></iron-icon>
         </a>
       </span>
-
+      {% endif %}
       <span class="tooltip" title="File a bug against this feature">
         <a href="{{ feature.new_crbug_url }}" class="newbug" data-tooltip target="_blank">
           <iron-icon icon="chromestatus:bug-report"></iron-icon>

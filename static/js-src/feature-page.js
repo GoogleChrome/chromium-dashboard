@@ -2,12 +2,14 @@
 // Event handler. Used in feature.html template.
 const subscribeToFeature = (featureId) => {
   const iconEl = document.querySelector('.pushicon');
-  if (iconEl.icon === 'chromestatus:notifications') {
-    iconEl.icon = 'chromestatus:notifications-off';
-    PushNotifications.unsubscribeFromFeature(featureId);
+  if (iconEl.icon === 'chromestatus:star') {
+    StarService.setStar(featureId, false).then(() => {
+      iconEl.icon = 'chromestatus:star-border';
+    });
   } else {
-    iconEl.icon = 'chromestatus:notifications';
-    PushNotifications.subscribeToFeature(featureId);
+    StarService.setStar(featureId, true).then(() => {
+      iconEl.icon = 'chromestatus:star';
+    });
   }
 };
 
@@ -40,28 +42,16 @@ if (navigator.share) {
   });
 }
 
-// Unhide notification features if browser supports it.
-if (PushNotifier.SUPPORTS_NOTIFICATIONS) {
-  document.querySelector('.push-notifications').removeAttribute('hidden');
+// Show the star icon if the user has starred this feature.
+StarService.getStars().then((subscribedFeatures) => {
+  const iconEl = document.querySelector('.pushicon');
+  if (subscribedFeatures.includes(Number(FEATURE_ID))) {
+    iconEl.icon = 'chromestatus:star';
+  } else {
+    iconEl.icon = 'chromestatus:star-border';
+  }
+});
 
-  // Lazy load Firebase messaging SDK.
-  loadFirebaseSDKLibs().then(() => {
-    PushNotifications.init(); // init Firebase messaging.
-
-    // If use already granted the notification permission, update state of the
-    // push icon for each feature the user is subscribed to.
-    if (PushNotifier.GRANTED_ACCESS) {
-      PushNotifications.getAllSubscribedFeatures().then((subscribedFeatures) => {
-        const iconEl = document.querySelector('.pushicon');
-        if (subscribedFeatures.includes(FEATURE_ID)) {
-          iconEl.icon = 'chromestatus:notifications';
-        } else {
-          iconEl.icon = 'chromestatus:notifications-off';
-        }
-      });
-    }
-  });
-}
 
 if (SHOW_TOAST) {
   setTimeout(() => {
