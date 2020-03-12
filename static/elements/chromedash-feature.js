@@ -179,7 +179,7 @@ class ChromedashFeature extends LitElement {
     this._fireEvent('filter-component', {val: e.currentTarget.innerText});
   }
 
-  starFeature(e) {
+  toggleStar(e) {
     e.preventDefault();
     e.stopPropagation();
 
@@ -262,7 +262,7 @@ class ChromedashFeature extends LitElement {
             ${this.signedin ? html`
               <span class="tooltip"
                     title="Receive an email notification when there are updates">
-                <a href="#" @click="${this.starFeature}" data-tooltip>
+                <a href="#" @click="${this.toggleStar}" data-tooltip>
                   <iron-icon icon="${this.starred ?
                                 'chromestatus:star' :
                                 'chromestatus:star-border'}"
