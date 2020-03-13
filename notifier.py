@@ -465,11 +465,24 @@ class BouncedEmailHandler(BounceNotificationHandler):
 
   def receive(self, bounce_message):
     email_addr = bounce_message.original.get('to')
-    logging.info('Bounce was sent to: %r', email_addr)
+    msg = 'Mail to %r bounced' % email_addr
+    logging.info(msg)
     pref_list = models.UserPref.get_prefs_for_emails([email_addr])
     user_pref = pref_list[0]
     user_pref.bounced = True
     user_pref.put()
+
+    # Escalate to someone who might do something about it, e.g.
+    # find a new owner for a component.
+    message = mail.EmailMessage(
+        sender='Chromestatus <admin@%s.appspotmail.com>' % settings.APP_ID,
+        to=settings.BOUNCE_ESCALATION_ADDR,
+        subject=msg,
+        html='See subject.  Check logs.')
+    message.check_initialized()
+    if settings.SEND_EMAIL:
+      message.send()
+
 
 
 app = webapp2.WSGIApplication([
