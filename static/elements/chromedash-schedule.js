@@ -32,6 +32,7 @@ const TEMPLATE_CONTENT = {
 
 const REMOVED_STATUS = ['Removed'];
 const DEPRECATED_STATUS = ['Deprecated', 'No longer pursuing'];
+const SHOW_DATES = false;
 
 class ChromedashSchedule extends LitElement {
   static styles = style;
@@ -112,18 +113,20 @@ class ChromedashSchedule extends LitElement {
                  target="_blank">Chrome ${this.channels[type].version}</a>
             </h1>
           </div>
-          <div class="milestone_info layout horizontal center-center">
-            <h3>
-              <span class="channel_label">Beta</span> ${TEMPLATE_CONTENT[type].dateText}
-              <span class="milestone_info-beta">${this._computeDate(this.channels[type].earliest_beta)} - ${this._computeDate(this.channels[type].latest_beta)}</span>
-            </h3>
-          </div>
-          <div class="milestone_info layout horizontal center-center">
-            <h3>
-              <span class="channel_label">Stable</span> ${this._computeDaysUntil(this.channels[type].stable_date)}
-              <span class="release-stable">( ${this._computeDate(this.channels[type].stable_date)} )</span>
-            </h3>
-          </div>
+          ${SHOW_DATES ? html`
+            <div class="milestone_info layout horizontal center-center">
+              <h3>
+                <span class="channel_label">Beta</span> ${TEMPLATE_CONTENT[type].dateText}
+                <span class="milestone_info-beta">${this._computeDate(this.channels[type].earliest_beta)} - ${this._computeDate(this.channels[type].latest_beta)}</span>
+              </h3>
+            </div>
+            <div class="milestone_info layout horizontal center-center">
+              <h3>
+                <span class="channel_label">Stable</span> ${this._computeDaysUntil(this.channels[type].stable_date)}
+                <span class="release-stable">( ${this._computeDate(this.channels[type].stable_date)} )</span>
+              </h3>
+            </div>
+          ` : nothing}
           <div class="features_list">
             <div class="features_header">${TEMPLATE_CONTENT[type].featureHeader}:</div>
 
