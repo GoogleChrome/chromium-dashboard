@@ -449,7 +449,7 @@ class BouncedEmailHandler(BounceNotificationHandler):
   # google_appengine/google/appengine/ext/webapp/mail_handlers.py
   def post(self):
     try:
-      super(BouncedEmail, self).post()
+      super(BouncedEmailHandler, self).post()
     except AttributeError:
       # Work-around for
       # https://code.google.com/p/googleappengine/issues/detail?id=13512
@@ -465,8 +465,8 @@ class BouncedEmailHandler(BounceNotificationHandler):
 
   def receive(self, bounce_message):
     email_addr = bounce_message.original.get('to')
-    msg = 'Mail to %r bounced' % email_addr
-    logging.info(msg)
+    subject = 'Mail to %r bounced' % email_addr
+    logging.info(subject)
     pref_list = models.UserPref.get_prefs_for_emails([email_addr])
     user_pref = pref_list[0]
     user_pref.bounced = True
@@ -474,11 +474,16 @@ class BouncedEmailHandler(BounceNotificationHandler):
 
     # Escalate to someone who might do something about it, e.g.
     # find a new owner for a component.
+    body = ('The following message bounced.\n'
+            '=================\n'
+            'From: {from}\n'
+            'To: {to}\n'
+            'Subject: {subject}\n\n'
+            '{text}\n'.format(**bounce_message.original))
+    logging.info(body)
     message = mail.EmailMessage(
         sender='Chromestatus <admin@%s.appspotmail.com>' % settings.APP_ID,
-        to=settings.BOUNCE_ESCALATION_ADDR,
-        subject=msg,
-        html='See subject.  Check logs.')
+        to=settings.BOUNCE_ESCALATION_ADDR, subject=subject, body=body)
     message.check_initialized()
     if settings.SEND_EMAIL:
       message.send()

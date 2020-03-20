@@ -497,7 +497,6 @@ class BouncedEmailHandlerTest(unittest.TestCase):
     self.sender = ('Chromestatus <admin@%s.appspotmail.com>' %
                    settings.APP_ID)
     self.expected_to = settings.BOUNCE_ESCALATION_ADDR
-    self.expected_html = 'See subject.  Check logs.'
 
   @mock.patch('settings.SEND_EMAIL', True)
   @mock.patch('google.appengine.api.mail.EmailMessage')
@@ -509,8 +508,10 @@ class BouncedEmailHandlerTest(unittest.TestCase):
     starrer_3_pref.put()
 
     bounce_message = testing_config.Blank(
-        original=testing_config.Blank(
-            get=lambda header: 'starrer_3@example.com'))
+        original={'to': 'starrer_3@example.com',
+                  'from': 'sender',
+                  'subject': 'subject',
+                  'text': 'body'})
 
     self.handler.receive(bounce_message)
 
@@ -521,7 +522,7 @@ class BouncedEmailHandlerTest(unittest.TestCase):
     expected_subject = "Mail to 'starrer_3@example.com' bounced"
     mock_emailmessage_constructor.assert_called_once_with(
         sender=self.sender, to=self.expected_to, subject=expected_subject,
-        html=self.expected_html)
+        body=mock.ANY)
     mock_message = mock_emailmessage_constructor.return_value
     mock_message.check_initialized.assert_called_once_with()
     mock_message.send.assert_called()
@@ -533,8 +534,10 @@ class BouncedEmailHandlerTest(unittest.TestCase):
     # Note, no existing UserPref for starrer_4.
 
     bounce_message = testing_config.Blank(
-        original=testing_config.Blank(
-            get=lambda header: 'starrer_4@example.com'))
+        original={'to': 'starrer_4@example.com',
+                  'from': 'sender',
+                  'subject': 'subject',
+                  'text': 'body'})
 
     self.handler.receive(bounce_message)
 
@@ -547,7 +550,7 @@ class BouncedEmailHandlerTest(unittest.TestCase):
     expected_subject = "Mail to 'starrer_4@example.com' bounced"
     mock_emailmessage_constructor.assert_called_once_with(
         sender=self.sender, to=self.expected_to, subject=expected_subject,
-        html=self.expected_html)
+        body=mock.ANY)
     mock_message = mock_emailmessage_constructor.return_value
     mock_message.check_initialized.assert_called_once_with()
     mock_message.send.assert_called()
