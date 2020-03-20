@@ -24,6 +24,8 @@ TEMPLATES = [
 # For the live cr-status server, this setting is None.
 SEND_ALL_EMAIL_TO = 'cr-status-staging-emails+%(user)s+%(domain)s@google.com'
 
+BOUNCE_ESCALATION_ADDR = 'cr-status-bounces@google.com'
+
 ################################################################################
 
 PROD = False

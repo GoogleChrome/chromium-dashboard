@@ -494,8 +494,13 @@ class BouncedEmailHandlerTest(unittest.TestCase):
 
   def setUp(self):
     self.handler = notifier.BouncedEmailHandler()
+    self.sender = ('Chromestatus <admin@%s.appspotmail.com>' %
+                   settings.APP_ID)
+    self.expected_to = settings.BOUNCE_ESCALATION_ADDR
 
-  def test_receive__user_has_prefs(self):
+  @mock.patch('settings.SEND_EMAIL', True)
+  @mock.patch('google.appengine.api.mail.EmailMessage')
+  def test_receive__user_has_prefs(self, mock_emailmessage_constructor):
     """When we get a bounce, we update the UserPrefs for that user."""
     starrer_3_pref = models.UserPref(
         email='starrer_3@example.com',
@@ -503,8 +508,10 @@ class BouncedEmailHandlerTest(unittest.TestCase):
     starrer_3_pref.put()
 
     bounce_message = testing_config.Blank(
-        original=testing_config.Blank(
-            get=lambda header: 'starrer_3@example.com'))
+        original={'to': 'starrer_3@example.com',
+                  'from': 'sender',
+                  'subject': 'subject',
+                  'text': 'body'})
 
     self.handler.receive(bounce_message)
 
@@ -512,14 +519,25 @@ class BouncedEmailHandlerTest(unittest.TestCase):
     self.assertEqual('starrer_3@example.com', updated_pref.email)
     self.assertTrue(updated_pref.bounced)
     self.assertFalse(updated_pref.notify_as_starrer)
+    expected_subject = "Mail to 'starrer_3@example.com' bounced"
+    mock_emailmessage_constructor.assert_called_once_with(
+        sender=self.sender, to=self.expected_to, subject=expected_subject,
+        body=mock.ANY)
+    mock_message = mock_emailmessage_constructor.return_value
+    mock_message.check_initialized.assert_called_once_with()
+    mock_message.send.assert_called()
 
-  def test_receive__user_has_prefs(self):
+  @mock.patch('settings.SEND_EMAIL', True)
+  @mock.patch('google.appengine.api.mail.EmailMessage')
+  def test_receive__create_prefs(self, mock_emailmessage_constructor):
     """When we get a bounce, we create the UserPrefs for that user."""
     # Note, no existing UserPref for starrer_4.
 
     bounce_message = testing_config.Blank(
-        original=testing_config.Blank(
-            get=lambda header: 'starrer_4@example.com'))
+        original={'to': 'starrer_4@example.com',
+                  'from': 'sender',
+                  'subject': 'subject',
+                  'text': 'body'})
 
     self.handler.receive(bounce_message)
 
@@ -529,3 +547,10 @@ class BouncedEmailHandlerTest(unittest.TestCase):
     self.assertEqual('starrer_4@example.com', updated_pref.email)
     self.assertTrue(updated_pref.bounced)
     self.assertTrue(updated_pref.notify_as_starrer)
+    expected_subject = "Mail to 'starrer_4@example.com' bounced"
+    mock_emailmessage_constructor.assert_called_once_with(
+        sender=self.sender, to=self.expected_to, subject=expected_subject,
+        body=mock.ANY)
+    mock_message = mock_emailmessage_constructor.return_value
+    mock_message.check_initialized.assert_called_once_with()
+    mock_message.send.assert_called()

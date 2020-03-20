@@ -120,4 +120,5 @@ includes:
 - env_vars.yaml
 
 inbound_services:
+- mail
 - mail_bounce
