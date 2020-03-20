@@ -108,7 +108,8 @@ def convert_reasons_to_task(addr, reasons, email_html, subject):
 
 def make_email_tasks(feature, is_update=False, changes=[]):
   """Return a list of task dicts to notify users of feature changes."""
-  feature_watchers = models.FeatureOwner.all().filter('watching_all_features = ', True).fetch(None)
+  feature_watchers = models.FeatureOwner.all().filter(
+      'watching_all_features = ', True).fetch(None)
 
   email_html = format_email_body(is_update, feature, changes)
   if is_update:
@@ -274,7 +275,8 @@ class NotificationNewSubscriptionHandler(webapp2.RequestHandler):
       return
 
     # Don't add duplicate tokens.
-    query = PushSubscription.all(keys_only=True).filter('subscription_id =', subscription_id)
+    query = PushSubscription.all(keys_only=True).filter(
+        'subscription_id =', subscription_id)
     found_token = query.get()
     if found_token is None:
       subscription = PushSubscription(subscription_id=subscription_id)
@@ -344,7 +346,8 @@ class NotificationSubscribeHandler(webapp2.RequestHandler):
 
     data = {}
     topic_id = feature_id if feature_id else 'new-feature'
-    url = 'https://iid.googleapis.com/iid/v1/%s/rel/topics/%s' % (subscription_id, topic_id)
+    url = ('https://iid.googleapis.com/iid/v1/%s/rel/topics/%s' %
+           (subscription_id, topic_id))
 
     if remove:
       url = 'https://iid.googleapis.com/iid/v1:batchRemove'
@@ -357,7 +360,8 @@ class NotificationSubscribeHandler(webapp2.RequestHandler):
                             headers=get_default_headers())
 
     if result.status_code != 200:
-      logging.error('Error: subscribing %s to topic: %s' % (subscription_id, topic_id))
+      logging.error('Error: subscribing %s to topic: %s' %
+                    (subscription_id, topic_id))
       return
 
 
@@ -368,7 +372,8 @@ class NotificationSendHandler(webapp2.RequestHandler):
 
     Args:
       feature: Feature that was added/modified.
-      is_update: True if this was an update to the feature. False if it was newly added.
+      is_update: True if this was an update to the feature. False if
+          it was newly added.
     """
     if not settings.SEND_PUSH_NOTIFICATIONS:
       return
@@ -391,7 +396,8 @@ class NotificationSendHandler(webapp2.RequestHandler):
         payload=data, method=urlfetch.POST, headers=get_default_headers())
 
     if result.status_code != 200:
-      logging.error('Error sending notification to topic %s. %s' % (topic_id, result.content))
+      logging.error('Error sending notification to topic %s. %s' %
+                    (topic_id, result.content))
       return
 
   def post(self):
@@ -400,10 +406,12 @@ class NotificationSendHandler(webapp2.RequestHandler):
     is_update = json_body.get('is_update') or False
     changes = json_body.get('changes') or []
 
-    # Email feature subscribers if the feature exists and there were changes to it.
+    # Email feature subscribers if the feature exists and
+    # there were changes to it.
     feature = models.Feature.get_by_id(feature['id'])
     if feature and (is_update and len(changes) or not is_update):
-      self._send_notification_to_feature_subscribers(feature=feature, is_update=is_update)
+      self._send_notification_to_feature_subscribers(
+          feature=feature, is_update=is_update)
 
 
 class NotificationSubscriptionInfoHandler(webapp2.RequestHandler):
@@ -415,7 +423,8 @@ class NotificationSubscriptionInfoHandler(webapp2.RequestHandler):
       return
 
     url = 'https://iid.googleapis.com/iid/info/%s?details=true' % subscription_id
-    result = urlfetch.fetch(url=url, method=urlfetch.GET, headers=get_default_headers())
+    result = urlfetch.fetch(
+        url=url, method=urlfetch.GET, headers=get_default_headers())
 
     if result.status_code != 200:
       logging.error('Error: fetching info for subscription %s' % subscription_id)
@@ -435,7 +444,6 @@ class NotificationsListHandler(common.ContentHandler):
       'subscriptions': json.dumps([s.subscription_id for s in subscriptions])
     }
     self.render(data=template_data, template_path=os.path.join('admin/notifications/list.html'))
-
 
 
 class BouncedEmailHandler(BounceNotificationHandler):
@@ -487,7 +495,6 @@ class BouncedEmailHandler(BounceNotificationHandler):
     message.check_initialized()
     if settings.SEND_EMAIL:
       message.send()
-
 
 
 app = webapp2.WSGIApplication([
