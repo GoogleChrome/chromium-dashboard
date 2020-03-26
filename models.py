@@ -99,6 +99,7 @@ DEPRECATED = 6
 REMOVED = 7
 ORIGIN_TRIAL = 8
 INTERVENTION = 9
+ON_HOLD = 10
 NO_LONGER_PURSUING = 1000 # insure bottom of list
 
 # Ordered dictionary, make sure the order of this dictionary matches that of
@@ -113,6 +114,7 @@ IMPLEMENTATION_STATUS[DEPRECATED] = 'Deprecated'
 IMPLEMENTATION_STATUS[REMOVED] = 'Removed'
 IMPLEMENTATION_STATUS[ORIGIN_TRIAL] = 'Origin trial'
 IMPLEMENTATION_STATUS[INTERVENTION] = 'Browser Intervention'
+IMPLEMENTATION_STATUS[ON_HOLD] = 'On hold'
 IMPLEMENTATION_STATUS[NO_LONGER_PURSUING] = 'No longer pursuing'
 
 MAJOR_NEW_API = 1
