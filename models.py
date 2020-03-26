@@ -1252,6 +1252,13 @@ class UserPref(DictModel):
     return user_prefs
 
 
+class UserPrefForm(forms.Form):
+  notify_as_starrer = forms.BooleanField(
+      required=False,
+      label='Notify as starrer',
+      help_text='Send you notification emails for features that you starred?')
+
+
 class AppUser(DictModel):
   """Describes a user for whitelisting."""
 
