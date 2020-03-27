@@ -47,6 +47,7 @@ SERVICEWORKER = 17
 WEBRTC = 18
 LAYERED = 19
 WEBASSEMBLY = 20
+CAPABILITIES = 21
 
 FEATURE_CATEGORIES = {
   CSS: 'CSS',
@@ -69,6 +70,7 @@ FEATURE_CATEGORIES = {
   WEBRTC: 'Web RTC',
   LAYERED: 'Layered APIs',
   WEBASSEMBLY: 'WebAssembly'
+  CAPABILITIES: 'Capabilities (Fugu)'
   }
 
 # Intent stages and mapping from stage to stage name.
