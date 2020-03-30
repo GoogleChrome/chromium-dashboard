@@ -1,0 +1,34 @@
+{% extends "_base.html" %}
+
+{% block css %}
+  <link rel="stylesheet" href="/static/css/forms.css">
+  <style>
+    th, td { padding: 4px; }
+    input[type="submit"] { margin: 20px; }
+  </style>
+{% endblock %}
+
+{% block subheader %}
+<div id="subheader">
+  <h2>User preferences</h2>
+</div>
+{% endblock %}
+
+{% block content %}
+<section>
+
+  <form name="user_pref_form" method="POST" action="{{current_path}}">
+    <table cellspacing=6>
+      {{ user_pref_form }}
+    </table>
+    <input type="submit" value="Submit">
+  </form>
+
+</section>
+{% endblock %}
+
+{% block js %}
+<script>
+  document.body.classList.remove('loading');
+</script>
+{% endblock %}
