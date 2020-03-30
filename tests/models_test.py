@@ -15,6 +15,9 @@
 import unittest
 import testing_config  # Must be imported before the module under test.
 
+import mock
+from google.appengine.api import users
+
 import models
 
 
@@ -76,3 +79,37 @@ class ModelsFunctionsTest(unittest.TestCase):
     self.assertEqual(
         [[1, 2], [3, 4], [5]],
         list(models.list_to_chunks([1, 2, 3, 4, 5], 2)))
+
+
+class UserPrefTest(unittest.TestCase):
+
+  @mock.patch('google.appengine.api.users.get_current_user')
+  def test_get_signed_in_user_pref__anon(self, mock_get_current_user):
+    mock_get_current_user.return_value = None
+    actual = models.UserPref.get_signed_in_user_pref()
+    self.assertIsNone(actual)
+
+  @mock.patch('google.appengine.api.users.get_current_user')
+  def test_get_signed_in_user_pref__first_time(self, mock_get_current_user):
+    mock_get_current_user.return_value = testing_config.Blank(
+        email=lambda: 'user1@example.com')
+
+    actual = models.UserPref.get_signed_in_user_pref()
+
+    self.assertEqual('user1@example.com', actual.email)
+    self.assertEqual(True, actual.notify_as_starrer)
+    self.assertEqual(False, actual.bounced)
+
+  @mock.patch('google.appengine.api.users.get_current_user')
+  def test_get_signed_in_user_pref__had_pref(self, mock_get_current_user):
+    mock_get_current_user.return_value = testing_config.Blank(
+        email=lambda: 'user2@example.com')
+    user_pref = models.UserPref(
+        email='user2@example.com', notify_as_starrer=False, bounced=True)
+    user_pref.put()
+
+    actual = models.UserPref.get_signed_in_user_pref()
+
+    self.assertEqual('user2@example.com', actual.email)
+    self.assertEqual(False, actual.notify_as_starrer)
+    self.assertEqual(True, actual.bounced)

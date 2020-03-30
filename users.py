@@ -73,8 +73,35 @@ class UserHandler(common.ContentHandler):
         found_user.delete()
 
 
+class SettingsHandler(common.ContentHandler):
+
+  def get(self):
+    user_pref = models.UserPref.get_signed_in_user_pref()
+    if not user_pref:
+      return self.redirect(users.create_login_url(self.request.uri))
+
+    template_data = {
+        'user_pref': user_pref,
+        'user_pref_form': models.UserPrefForm(user_pref.to_dict()),
+    }
+
+    self.render(data=template_data, template_path=os.path.join('settings.html'))
+
+  def post(self):
+    user_pref = models.UserPref.get_signed_in_user_pref()
+    if not user_pref:
+      self.abort(403)
+
+    new_notify = self.request.get('notify_as_starrer')
+    logging.info('setting notify_as_starrer for %r to %r',
+                 user_pref.email, new_notify)
+    user_pref.notify_as_starrer = bool(new_notify)
+    user_pref.put()
+    return self.redirect(self.request.uri)
+
+
 app = webapp2.WSGIApplication([
+  ('/settings', SettingsHandler),
   ('/(.*)/([0-9]*)', UserHandler),
   ('/(.*)', UserHandler),
 ], debug=settings.DEBUG)
-

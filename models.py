@@ -1235,7 +1235,22 @@ class UserPref(DictModel):
   bounced = db.BooleanProperty(default=False)
 
   @classmethod
-  def get_prefs_for_emails(self, emails):
+  def get_signed_in_user_pref(cls):
+    """Return a UserPref for the signed in user or None if anon."""
+    signed_in_user = users.get_current_user()
+    if not signed_in_user:
+      return None
+
+    user_pref_list = UserPref.all().filter(
+        'email =', signed_in_user.email()).fetch(1)
+    if user_pref_list:
+      user_pref = user_pref_list[0]
+    else:
+      user_pref = UserPref(email=signed_in_user.email())
+    return user_pref
+
+  @classmethod
+  def get_prefs_for_emails(cls, emails):
     """Return a list of UserPrefs for each of the given emails."""
     q = UserPref.all()
     q.filter('email IN', emails)
@@ -1250,6 +1265,13 @@ class UserPref(DictModel):
       user_prefs.append(np)
 
     return user_prefs
+
+
+class UserPrefForm(forms.Form):
+  notify_as_starrer = forms.BooleanField(
+      required=False,
+      label='Notify as starrer',
+      help_text='Send you notification emails for features that you starred?')
 
 
 class AppUser(DictModel):

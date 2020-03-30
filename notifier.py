@@ -97,6 +97,8 @@ def convert_reasons_to_task(addr, reasons, email_html, subject):
   for reason in sorted(set(reasons)):
     footer_lines.append('<li>%s</li>' % reason)
   footer_lines.append('</ul>')
+  footer_lines.append('<p><a href="%ssettings">Unsubscribe</a></p>' %
+                      settings.SITE_URL)
   email_html_with_footer = email_html + '\n\n' + '\n'.join(footer_lines)
   one_email_task = {
       'to': addr,

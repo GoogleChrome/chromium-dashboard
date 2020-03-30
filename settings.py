@@ -33,15 +33,19 @@ DEBUG = True
 SEND_EMAIL = False  # Just log email
 
 APP_ID = app_identity.get_application_id()
+SITE_URL = 'http://%s.appspot.com/' % APP_ID
+
 
 if APP_ID == 'testbed-test':
   APP_TITLE = 'Local testing'
+  SITE_URL = 'http://127.0.0.1:8888/'
 elif APP_ID == 'cr-status':
   PROD = True
   DEBUG = False
   APP_TITLE = 'Chrome Platform Status'
   SEND_EMAIL = True
   SEND_ALL_EMAIL_TO = None  # Deliver it to the intended users
+  SITE_URL = 'http://chromestatus.com/'
 elif APP_ID == 'cr-status-staging':
   SEND_EMAIL = True
   APP_TITLE = 'Chrome Platform Status Staging'
