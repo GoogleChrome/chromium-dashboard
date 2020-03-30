@@ -75,22 +75,8 @@ class UserHandler(common.ContentHandler):
 
 class SettingsHandler(common.ContentHandler):
 
-  def load_user_pref(self):
-    """Return a UserPref for the signed in user or None if anon."""
-    signed_in_user = users.get_current_user()
-    if not signed_in_user:
-      return None
-
-    user_pref_list = models.UserPref.all().filter(
-        'email =', signed_in_user.email()).fetch(1)
-    if user_pref_list:
-      user_pref = user_pref_list[0]
-    else:
-      user_pref = models.UserPref(email=signed_in_user.email())
-    return user_pref
-
   def get(self):
-    user_pref = self.load_user_pref()
+    user_pref = models.UserPref.get_signed_in_user_pref()
     if not user_pref:
       return self.redirect(users.create_login_url(self.request.uri))
 
@@ -102,7 +88,7 @@ class SettingsHandler(common.ContentHandler):
     self.render(data=template_data, template_path=os.path.join('settings.html'))
 
   def post(self):
-    user_pref = self.load_user_pref()
+    user_pref = models.UserPref.get_signed_in_user_pref()
     if not user_pref:
       self.abort(403)
 
