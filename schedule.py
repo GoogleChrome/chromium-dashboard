@@ -35,7 +35,8 @@ def fetch_chrome_release_info(version):
 
   data = memcache.get(key)
   if data is None:
-    url = 'https://chromepmo.appspot.com/schedule/mstone/json?mstone=%s' % version
+    url = ('https://chromiumdash.appspot.com/fetch_milestone_schedule?'
+           'mstone=%s' % version)
     result = urlfetch.fetch(url, deadline=60)
     if result.status_code == 200:
       data = json.loads(result.content)['mstones'][0]
@@ -75,7 +76,8 @@ class ScheduleHandler(common.ContentHandler):
   def get(self, path):
     data = {
       'features': json.dumps(models.Feature.get_chronological()),
-      'channels': json.dumps(construct_chrome_channels_details())
+      'channels': json.dumps(construct_chrome_channels_details(),
+                             indent=4)
     }
 
     self.render(data, template_path=os.path.join('schedule.html'))
@@ -84,4 +86,3 @@ class ScheduleHandler(common.ContentHandler):
 app = webapp2.WSGIApplication([
   ('(.*)', ScheduleHandler),
 ], debug=settings.DEBUG)
-

@@ -32,7 +32,7 @@ const TEMPLATE_CONTENT = {
 
 const REMOVED_STATUS = ['Removed'];
 const DEPRECATED_STATUS = ['Deprecated', 'No longer pursuing'];
-const SHOW_DATES = false;
+const SHOW_DATES = true;
 
 class ChromedashSchedule extends LitElement {
   static styles = style;
