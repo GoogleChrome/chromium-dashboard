@@ -32,7 +32,7 @@ const TEMPLATE_CONTENT = {
 
 const REMOVED_STATUS = ['Removed'];
 const DEPRECATED_STATUS = ['Deprecated', 'No longer pursuing'];
-const SHOW_DATES = false;
+const SHOW_DATES = true;
 
 class ChromedashSchedule extends LitElement {
   static styles = style;
@@ -113,7 +113,7 @@ class ChromedashSchedule extends LitElement {
                  target="_blank">Chrome ${this.channels[type].version}</a>
             </h1>
           </div>
-          ${SHOW_DATES ? html`
+          ${SHOW_DATES && this.channels[type].earliest_beta ? html`
             <div class="milestone_info layout horizontal center-center">
               <h3>
                 <span class="channel_label">Beta</span> ${TEMPLATE_CONTENT[type].dateText}
