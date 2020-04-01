@@ -39,11 +39,25 @@ def fetch_chrome_release_info(version):
            'mstone=%s' % version)
     result = urlfetch.fetch(url, deadline=60)
     if result.status_code == 200:
-      data = json.loads(result.content)['mstones'][0]
-      del data['owners']
-      del data['feature_freeze']
-      del data['ldaps']
-      memcache.set(key, data)
+      try:
+        data = json.loads(result.content)['mstones'][0]
+        del data['owners']
+        del data['feature_freeze']
+        del data['ldaps']
+        memcache.set(key, data)
+      except ValueError:
+        pass  # Handled by next statement
+
+    if not data:
+      data = {
+          'stable_date': None,
+          'earliest_beta': None,
+          'latest_beta': None,
+          'mstone': version,
+          'version': version,
+      }
+      # Note: we don't put placeholder data into memcache.
+
   return data
 
 def construct_chrome_channels_details():
