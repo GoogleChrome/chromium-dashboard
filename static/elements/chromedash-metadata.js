@@ -30,6 +30,7 @@ class ChromedashMetadata extends LitElement {
       'REMOVED': 7,
       'ORIGINTRIAL': 8,
       'INTERVENTION': 9,
+      'ON_HOLD': 10,
       'NO_LONGER_PURSUING': 1000,
     };
     this._channels = {};

@@ -86,6 +86,7 @@ class ChromedashFeature extends LitElement {
       'In development',
       'Behind a flag',
       'Origin trial',
+      'On hold'
     ];
     if (this._crBugNumber &&
         PRE_LAUNCH_STATUSES.includes(
