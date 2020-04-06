@@ -69,7 +69,7 @@ FEATURE_CATEGORIES = {
   SERVICEWORKER: 'Service Worker',
   WEBRTC: 'Web RTC',
   LAYERED: 'Layered APIs',
-  WEBASSEMBLY: 'WebAssembly'
+  WEBASSEMBLY: 'WebAssembly',
   CAPABILITIES: 'Capabilities (Fugu)'
   }
 
