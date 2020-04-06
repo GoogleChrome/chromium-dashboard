@@ -5,7 +5,6 @@ import '@polymer/app-layout';
 import '@polymer/app-layout/app-scroll-effects/effects/waterfall';
 import '@polymer/iron-icon';
 import '@polymer/iron-iconset-svg';
-import '@polymer/lit-element';
 import '@polymer/paper-item';
 import '@polymer/paper-listbox';
 import '@polymer/paper-ripple';
