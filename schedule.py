@@ -40,11 +40,14 @@ def fetch_chrome_release_info(version):
     result = urlfetch.fetch(url, deadline=60)
     if result.status_code == 200:
       try:
-        data = json.loads(result.content)['mstones'][0]
-        del data['owners']
-        del data['feature_freeze']
-        del data['ldaps']
-        memcache.set(key, data)
+        logging.info('result.content is:\n%s', result.content)
+        result_json = json.loads(result.content)
+        if 'mstones' in result_json:
+          data = result_json['mstones'][0]
+          del data['owners']
+          del data['feature_freeze']
+          del data['ldaps']
+          memcache.set(key, data)
       except ValueError:
         pass  # Handled by next statement
 

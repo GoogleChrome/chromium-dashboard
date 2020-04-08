@@ -37,10 +37,17 @@ const SHOW_DATES = true;
 class ChromedashSchedule extends LitElement {
   static styles = style;
 
+  constructor() {
+    super();
+    this.starredFeatures = new Set();
+  }
+
   static get properties() {
     return {
       channels: {attribute: false}, // Assigned in schedule.js, value from Django
       hideBlink: {attribute: false}, // Edited in schedule.js
+      signedin: {type: Boolean},
+      starredFeatures: {attribute: false},
     };
   }
 
@@ -82,20 +89,22 @@ class ChromedashSchedule extends LitElement {
     return {days: Math.abs(daysDiff), future: daysDiff < 1};
   }
 
-  _subscribeToFeature(e) {
+  toggleStar(e) {
     e.preventDefault();
     e.stopPropagation();
 
     const iconEl = e.target;
-    const featureId = iconEl.dataset.featureId;
-    const receivePush = iconEl.icon !== 'chromestatus:notifications';
-    iconEl.icon = receivePush ? 'chromestatus:notifications' : 'chromestatus:notifications-off';
+    const featureId = Number(iconEl.dataset.featureId);
+    const newStarred = !this.starredFeatures.has(featureId);
+    window.StarService.setStar(featureId, newStarred);
 
-    if (receivePush) {
-      window.PushNotifications.subscribeToFeature(featureId);
+    const newStarredFeatures = new Set(this.starredFeatures);
+    if (newStarred) {
+      newStarredFeatures.add(featureId);
     } else {
-      window.PushNotifications.unsubscribeFromFeature(featureId);
+      newStarredFeatures.delete(featureId);
     }
+    this.starredFeatures = newStarredFeatures;
   }
 
   render() {
@@ -157,12 +166,16 @@ class ChromedashSchedule extends LitElement {
                           <iron-icon icon="chromestatus:warning" class="deprecated" data-tooltip></iron-icon>
                         </span>
                         ` : nothing}
-                      ${window.PushNotifier && window.PushNotifier.SUPPORTS_NOTIFICATIONS ? html`
-                        <span class="tooltip" title="Subscribe to notification updates">
-                          <iron-icon icon="chromestatus:notifications-off"
-                                     class="pushicon ${window.PushNotifier && window.PushNotifier.GRANTED_ACCESS ? nothing : 'disabled'}"
-                                     data-feature-id="${f.id}"
-                                     @click="${this._subscribeToFeature}"></iron-icon>
+                      ${this.signedin ? html`
+                        <span class="tooltip"
+                              title="Receive an email notification when there are updates">
+                          <iron-icon
+                             icon="${this.starredFeatures.has(Number(f.id)) ?
+                               'chromestatus:star' :
+                               'chromestatus:star-border'}"
+                             class="pushicon"
+                             data-feature-id="${f.id}"
+                             @click="${this.toggleStar}"></iron-icon>
                         </span>
                       ` : nothing}
                     </span>
