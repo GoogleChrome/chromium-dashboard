@@ -30,6 +30,9 @@ async function init() {
   if (window.PushNotifier && PushNotifier.SUPPORTS_NOTIFICATIONS) {
     initNotifications(features);
   }
+  StarService.getStars().then((starredFeatureIds) => {
+    scheduleEl.starredFeatures = new Set(starredFeatureIds);
+  });
 }
 
 function mapFeaturesToComponents(features) {

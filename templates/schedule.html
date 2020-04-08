@@ -21,7 +21,9 @@
 
 {% block content %}
   <section id="releases-section">
-    <chromedash-schedule></chromedash-schedule>
+    <chromedash-schedule
+      {% if user %}signedin{% endif %}
+    ></chromedash-schedule>
   </section>
 {% endblock %}
 
