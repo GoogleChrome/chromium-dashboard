@@ -52,6 +52,7 @@
 {% block content %}
   <chromedash-featurelist
     {% if user %}signedin{% endif %}
+    loginurl="{{login.1}}"
     {% if user.is_whitelisted %}whitelisted{% endif %}
     ></chromedash-featurelist>
 {% endblock %}

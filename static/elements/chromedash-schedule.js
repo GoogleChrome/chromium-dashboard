@@ -47,6 +47,7 @@ class ChromedashSchedule extends LitElement {
       channels: {attribute: false}, // Assigned in schedule.js, value from Django
       hideBlink: {attribute: false}, // Edited in schedule.js
       signedin: {type: Boolean},
+      loginUrl: {type: String},
       starredFeatures: {attribute: false},
     };
   }
@@ -177,7 +178,15 @@ class ChromedashSchedule extends LitElement {
                              data-feature-id="${f.id}"
                              @click="${this.toggleStar}"></iron-icon>
                         </span>
-                      ` : nothing}
+                      ` : html`
+                        <span class="tooltip"
+                              title="Sign in to get email notifications for updates">
+                          <a href="${this.loginUrl}" data-tooltip>
+                            <iron-icon icon="chromestatus:star-border"
+                                       class="pushicon"></iron-icon>
+                          </a>
+                        </span>
+                    `}
                     </span>
                   </li>
                   `)}

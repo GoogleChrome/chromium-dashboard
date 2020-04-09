@@ -20,6 +20,7 @@ class ChromedashFeature extends LitElement {
       feature: {type: Object},
       whitelisted: {type: Boolean},
       signedin: {type: Boolean},
+      loginUrl: {type: String},
       open: {type: Boolean, reflect: true}, // Attribute used in the parent for styling
       starred: {type: Boolean},
       // Values used in the template
@@ -270,7 +271,15 @@ class ChromedashFeature extends LitElement {
                              class="pushicon"></iron-icon>
                 </a>
               </span>
-              ` : nothing}
+             ` : html`
+                <span class="tooltip"
+                    title="Sign in to get email notifications for updates">
+                <a href="${this.loginUrl}" data-tooltip>
+                  <iron-icon icon="chromestatus:star-border"
+                             class="pushicon"></iron-icon>
+                </a>
+              </span>
+             `}
             <span class="tooltip" title="File a bug against this feature">
               <a href="${ifDefined(this._newBugUrl)}" data-tooltip>
                 <iron-icon icon="chromestatus:bug-report"></iron-icon>
