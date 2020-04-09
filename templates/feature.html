@@ -47,6 +47,13 @@
                       class="pushicon"></iron-icon>
         </a>
       </span>
+      {% else %}
+      <span class="tooltip" title="Sign in to get email notifications for updates">
+        <a href="{{login.1}}" data-tooltip>
+          <iron-icon icon="chromestatus:star-border"
+                      class="pushicon"></iron-icon>
+        </a>
+      </span>
       {% endif %}
       <span class="tooltip" title="File a bug against this feature">
         <a href="{{ feature.new_crbug_url }}" class="newbug" data-tooltip target="_blank">

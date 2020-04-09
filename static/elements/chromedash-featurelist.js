@@ -12,6 +12,7 @@ class ChromedashFeaturelist extends LitElement {
     return {
       whitelisted: {type: Boolean},
       signedin: {type: Boolean},
+      loginUrl: {type: String},
       features: {attribute: false}, // Directly edited and accessed in template/features.html
       metadataEl: {attribute: false}, // The metadata component element. Directly edited in template/features.html
       searchEl: {attribute: false}, // The search input element. Directly edited in template/features.html
@@ -400,6 +401,7 @@ class ChromedashFeaturelist extends LitElement {
                  @feature-toggled="${this._onFeatureToggledBound}"
                  @star-toggled="${this._onStarToggledBound}"
                  .feature="${item.feature}"
+                 loginurl="${this.loginUrl}"
                  ?whitelisted="${this.whitelisted}"
                  ?signedin="${this.signedin}"
           ></chromedash-feature>
