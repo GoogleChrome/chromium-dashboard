@@ -65,7 +65,7 @@ def format_email_body(is_update, feature, changes):
     old_val = prop['old_val']
 
     formatted_changes += ('<li>%s: <br/><b>old:</b> %s <br/>'
-                          '<b>new:</b> %s<br/></li>\n' %
+                          '<b>new:</b> %s<br/></li>\n\n' %
                           (prop_name, escape(old_val), escape(new_val)))
   if not formatted_changes:
     formatted_changes = '<li>None</li>'
