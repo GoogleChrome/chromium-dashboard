@@ -76,6 +76,11 @@ handlers:
   login: required # non-admin
   secure: always
 
+- url: /guide/.*
+  script: guide.app
+  login: required # non-admin
+  secure: always
+
 - url: /admin/users/.*
   script: users.app
   login: admin

@@ -1,0 +1,398 @@
+@import "element";
+
+:host {
+  @include gradient-bar-bg();
+  display: block;
+  position: relative;
+  border-radius: $default-border-radius;
+  list-style: none;
+  box-sizing: border-box;
+  contain: content;
+  overflow: hidden;
+
+  &:active {
+    outline: none;
+  }
+}
+
+th {
+  color: black;
+  font-weight: bold;
+  text-align: left;
+  padding: 8px;
+  background: #ddd;
+}
+
+td {
+  color: #222;
+  padding: 8px 8px 16px 8px;
+  vertical-align: top;
+  border-bottom: 1px solid #ddd;
+  background: white;
+}
+
+tr.active td {
+  background: #f0f8ff;
+}
+
+td b {
+  color: black;
+}
+
+td div.done:before {
+  content: "\\2713";
+  position: relative;
+  left: -.7em;
+}
+
+td div.pending:before {
+  content: "\\25cb";
+  position: relative;
+  left: -.7em;
+}
+
+td div.done, td div.pending {
+  margin-left: 1em;
+}
+
+td a.buttonify {
+  padding: 4px 16px;
+  background: #58f;
+  border-radius: 4px;
+  color: white;
+  font-weight: bold;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+button {
+  background: transparent;
+  border: 0;
+  padding: 0;
+}
+
+h2 {
+  display: inline-block;
+  font-size: 25px;
+  flex: 1 0 0;
+}
+
+iron-icon {
+  --iron-icon-height: 20px;
+  --iron-icon-width: 20px;
+
+  &.android {
+    color: #A4C739;
+  }
+  &.remove {
+    color: var(--paper-red-700);
+  }
+  &.deprecated {
+    color: var(--paper-orange-700);
+  }
+  &.experimental {
+    color: var(--paper-green-700);
+  }
+  &.intervention {
+    color: var(--paper-yellow-800);
+  }
+  &.disabled {
+    opacity: 0.5;
+  }
+}
+
+.opennew {
+  width: 18px;
+  height: 18px;
+}
+
+.open-standalone {
+  position: absolute;
+  right: 0;
+  top: 0;
+  display: flex;
+  align-items: center;
+  height: 100%;
+  border-left: 2px solid #eee;
+  padding: 4px;
+}
+
+.iconrow {
+  display: flex;
+  align-items: center;
+}
+
+.category-tooltip,
+.topcorner .tooltip {
+  margin-left: 4px;
+
+  a {
+    text-decoration: none;
+  }
+
+  &:hover, &:active {
+    &:before {
+      @include tooltip;
+      top: 35px;
+      right: 20px;
+      width: auto;
+      white-space: nowrap;
+    }
+  }
+}
+
+hgroup {
+  display: flex;
+  align-items: flex-start;
+  cursor: pointer;
+
+  .category {
+    color: $gray-2;
+  }
+
+  chromedash-color-status {
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+}
+
+section {
+  margin: 18px 0;
+
+  &.desc {
+    margin: 10px 0 0 0;
+    cursor: pointer;
+    color: $gray-3;
+    line-height: 20px;
+
+    summary {
+      text-overflow: ellipsis;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+
+    summary p:not(:first-child) {
+      margin: 10px 0 0 0;
+    }
+  }
+
+  h3 {
+    margin: 10px 0;
+    font-size: 18px;
+    font-weight: 400;
+  }
+
+  div {
+    > span {
+      flex-shrink: 0;
+    }
+  }
+
+  .impl_status {
+    display: flex;
+    flex-direction: column;
+
+    > span {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px;
+
+      &:nth-of-type(odd) {
+        background: #eee;
+      }
+    }
+
+    .chromium_status {
+      font-weight: 500;
+    }
+
+    .vendor_icon {
+      background: url(/static/img/browsers-logos.png) no-repeat;
+      background-size: cover;
+      height: 20px;
+      width: 20px;
+      margin-right: 4px;
+      display: inline-block;
+    }
+
+    .chrome_icon {
+      @extend .vendor_icon;
+      background-position: 0px 50%;
+    }
+
+    .opera_icon {
+      @extend .vendor_icon;
+      background-position: -75px 50%;
+    }
+  }
+
+  .impl_status_label {
+    display: flex;
+    align-items: center;
+  }
+
+  .impl_status_icons {
+    display: flex;
+    align-items: center;
+    min-width: 50px;
+  }
+
+  .views {
+    display: flex;
+    flex-wrap: wrap;
+
+    .view {
+      display: flex;
+      align-items: center;
+      position: relative;
+      height: 35px;
+      background: #eee;
+      margin: 0 8px 16px 0;
+      padding: 8px;
+    }
+
+    .standardization {
+      .vendor-view {
+        margin-left: 0;
+      }
+    }
+
+    iron-icon {
+      margin: 0 8px;
+    }
+
+    .vendor-view {
+      background: url(/static/img/browsers-logos.png) no-repeat;
+      background-size: cover;
+      height: 16px;
+      margin: 8px;
+      display: inline-block;
+    }
+
+    .edge-view {
+      background-position: -80px 50%;
+      width: 16px;
+    }
+    .safari-view {
+      background-position: -20px 50%;
+      width: 17px
+    }
+    .ff-view {
+      background-position: -40px 50%;
+      width: 17px;
+    }
+    .w3c-view {
+      background-position: -99px 50%;
+      width: 22px;
+    }
+  }
+
+  chromedash-color-status {
+    overflow: hidden;
+
+    &.bottom {
+      margin-top: 3px;
+    }
+  }
+
+  .owner-list {
+    display: flex;
+    align-items: flex-end;
+    flex-direction: column;
+
+    a {
+      display: block;
+    }
+  }
+
+  .comments html-echo {
+    white-space: pre-wrap;
+  }
+
+  .doc_links, .sample_links, .owner {
+    flex-shrink: 1 !important;
+  }
+  .sample_links {
+    margin-left: 8px;
+  }
+}
+
+.sidebyside {
+  display: flex;
+  justify-content: space-between;
+
+  .flex {
+    flex: 0 0 calc(50% - 16px);
+  }
+
+  .tooltip {
+    position: relative;
+
+    a {
+      text-decoration: none;
+    }
+
+    &:hover, &:active {
+      &:before {
+        @include tooltip;
+        bottom: 25px;
+        left: -50px;
+        width: auto;
+        white-space: nowrap;
+      }
+    }
+  }
+}
+
+.resources {
+  label {
+    margin-right: 8px;
+  }
+}
+
+@media only screen and (max-width: 700px) {
+  :host {
+    border-radius: 0 !important;
+    margin: 7px initial !important;
+    transition: none !important;
+  }
+
+  iron-icon {
+    --iron-icon-height: 16px;
+    --iron-icon-width: 16px;
+  }
+
+  h2 {
+    font-size: 20px !important;
+  }
+  section {
+    margin-left: 0;
+  }
+  .category {
+    display: none;
+  }
+  .impl_status {
+    > span:not([hidden]):not(:last-of-type),
+    > a {
+      margin-bottom: 10px;
+    }
+  }
+  .views > span {
+    margin-bottom: 10px;
+  }
+
+  .sidebyside {
+    display: block;
+  }
+}
+
+@media only screen and (min-width: 701px) {
+  .resources {
+    display: flex;
+    align-items: center;
+  }
+}
