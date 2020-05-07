@@ -61,6 +61,7 @@ class ChromedashProcessOverview extends LitElement {
               html`<a href="/guide/stage/${featureId}/${stage.incoming_stage}">${this.preview}</a>` :
               nothing }
            </td>
+         </tr>
        `)}
      </table>
     `;
