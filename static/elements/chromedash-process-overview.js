@@ -13,9 +13,6 @@ class ChromedashProcessOverview extends LitElement {
       feature: {type: Object},
       process: {type: Array},
       progress: {type: Array},
-      revisit: {type: String},
-      start: {type: String},
-      preview: {type: String},
     };
   }
 
@@ -24,23 +21,21 @@ class ChromedashProcessOverview extends LitElement {
     this.feature = {};
     this.process = [];
     this.progress = [];
-    this.revisit = 'Revisit';
-    this.start = 'Start';
-    this.preview = 'Preview';
   }
 
   render() {
     let featureId = this.feature.id;
     return html`
-     <table cellspacing=0>
+     <table>
        <tr>
-         <th width="100">Stage</th>
-         <th width="200">Progres</th>
-         <th width="80"></th>
+         <th style="width: 100px;">Stage</th>
+         <th style="width: 200px">Progres</th>
+         <th style="width: 80px"></th>
        </tr>
 
        ${this.process.map(stage => html`
-         <tr class="${this.feature.intent_stage_int == stage.incoming_stage ? 'active' : ''}">
+         <tr class="${this.feature.intent_stage_int == stage.incoming_stage ?
+                      'active' : ''}">
            <td>
              <div><b>${stage.name}</b></div>
              <div>${stage.description}</div>
@@ -52,13 +47,16 @@ class ChromedashProcessOverview extends LitElement {
            </td>
            <td>
             ${this.feature.intent_stage_int > stage.incoming_stage ?
-              html`<a href="/guide/stage/${featureId}/${stage.incoming_stage}">${this.revisit}</a>` :
+              html`<a href="/guide/stage/${featureId}/${stage.incoming_stage}"
+                   >Revisit</a>` :
               nothing }
             ${this.feature.intent_stage_int == stage.incoming_stage ?
-              html`<a href="/guide/stage/${featureId}/${stage.incoming_stage}" class="buttonify">${this.start}</a>` :
+              html`<a href="/guide/stage/${featureId}/${stage.incoming_stage}"
+                      class="buttonify">Start</a>` :
               nothing }
             ${this.feature.intent_stage_int < stage.incoming_stage ?
-              html`<a href="/guide/stage/${featureId}/${stage.incoming_stage}">${this.preview}</a>` :
+              html`<a href="/guide/stage/${featureId}/${stage.incoming_stage}"
+                   >Preview</a>` :
               nothing }
            </td>
          </tr>
