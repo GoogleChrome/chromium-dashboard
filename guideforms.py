@@ -212,6 +212,7 @@ ALL_FIELDS = {
          'areas for experimentation. Should not be an exact copy of goals '
          'from the first Intent to Experiment.')),
 
+    # TODO(jrobbins): consider splitting this into start and end fields.
     'experiment_timeline': forms.CharField(
         label='Experiment Timeline', required=False,
         widget=forms.Textarea(attrs={'rows': 2, 'cols': 50, 'maxlength': 1480}),
@@ -242,6 +243,8 @@ ALL_FIELDS = {
          'features which require or assume a specific architecture. '
          'For most features, the answer here is "None."')),
 
+    # TODO(jrobbins): Make sure that every field in the old form is
+    # included here and used in at least one of the detailed forms below.
     }
 
 

@@ -30,10 +30,10 @@ BLINK_PROCESS = [
   ProcessStage(
       'Start incubation',
       'Create an initial WebStatus feature entry and kick off standards '
-      'incubation (WICG) to share ideas',
+      'incubation (WICG) to share ideas.',
       ['Feature name, description, owners, and other details',
        'WICG discourse post',
-       'Create repo',
+       'Spec repo',
       ],
       models.INTENT_NONE, models.INTENT_IMPLEMENT),
   ProcessStage(
@@ -45,7 +45,7 @@ BLINK_PROCESS = [
        'Code in repo',
        'Security review',
        'Privacy review',
-       'Intent to Prototype mail',
+       'Intent to Prototype email',
        'Spec reviewer',
       ],
       models.INTENT_IMPLEMENT, models.INTENT_EXPERIMENT),
@@ -57,7 +57,7 @@ BLINK_PROCESS = [
        'Samples',
        'Request signals',
        'External reviews',
-       'Ready for Trial mail',
+       'Ready for Trial email',
       ],
       models.INTENT_EXPERIMENT, models.INTENT_IMPLEMENT_SHIP),
   ProcessStage(
@@ -80,10 +80,10 @@ BLINK_PROCESS = [
       'Prepare to ship',
       'Lock in shipping milestone. Finalize docs and announcements. '
       'Further standardization.',
-      ['Intent to Ship mail',
+      ['Intent to Ship email',
        'Request to migrate incubation',
        'TAG issues addressed',
-       '3 LGTMs',
+       'Three LGTMs',
        'Updated vendor signals',
       ],
       models.INTENT_SHIP, models.INTENT_REMOVE),

@@ -24,9 +24,6 @@ import os
 import re
 import sys
 import webapp2
-from bs4 import BeautifulSoup
-from HTMLParser import HTMLParser
-from xml.dom import minidom
 from django import forms
 
 # Appengine imports.
@@ -51,6 +48,7 @@ STAGE_FORMS = {
     models.INTENT_EXTEND_TRIAL: guideforms.OriginTrial,
 }
 
+
 class FeatureNew(common.ContentHandler):
 
   def get(self, path):
@@ -58,12 +56,7 @@ class FeatureNew(common.ContentHandler):
     if user is None:
       return self.redirect(users.create_login_url(self.request.uri))
 
-    # TODO(ericbidelman): This creates a additional call to
-    # _is_user_whitelisted() (also called in common.py), resulting in another
-    # db query.
     if not self._is_user_whitelisted(user):
-      #TODO(ericbidelman): Use render(status=401) instead.
-      #self.render(data={}, template_path=os.path.join(path + '.html'), status=401)
       common.handle_401(self.request, self.response, Exception)
       return
 
@@ -126,6 +119,8 @@ class ProcessOverview(common.ContentHandler):
       return self.redirect(self.ADD_NEW_URL)
 
     progress_so_far = []  # An unordered list of progress item strings.
+    # TODO(jrobbins): Replace this constant with a call to apply a bunch
+    # of tiny functions to detect each bit of progress.
     progress_so_far = ['Explainer', 'API design']
 
     # Provide new or populated form to template.
@@ -162,16 +157,9 @@ class FeatureEditStage(common.ContentHandler):
       param = int(param)
     return param
 
-  def __get_blink_component_from_bug(self, blink_components, bug_url):
-    if blink_components[0] == models.BlinkComponent.DEFAULT_COMPONENT and bug_url:
-      result = urlfetch.fetch(bug_url)
-      if result.status_code == 200:
-        soup = BeautifulSoup(result.content, 'html.parser')
-        components = soup.find_all(string=re.compile('^Blink'))
-
-        h = HTMLParser()
-        return [h.unescape(unicode(c)) for c in components]
-    return blink_components
+  def get_blink_component_from_bug(self, blink_components, bug_url):
+    # TODO(jrobbins): Use monorail API instead of scrapping.
+    return []
 
   def get(self, path, feature_id, stage_id):
     user = users.get_current_user()
@@ -230,6 +218,7 @@ class FeatureEditStage(common.ContentHandler):
     web_dev_views_link = self.__FullQualifyLink('web_dev_views_link')
 
     # Cast incoming milestones to ints.
+    # TODO(jrobbins): Consider supporting milestones that are not ints.
     shipped_milestone = self.__ToInt('shipped_milestone')
     shipped_android_milestone = self.__ToInt('shipped_android_milestone')
     shipped_ios_milestone = self.__ToInt('shipped_ios_milestone')
@@ -272,7 +261,7 @@ class FeatureEditStage(common.ContentHandler):
       # understand what causes this.
       intent_stage = 1
 
-    if feature_id: # /admin/edit/1234
+    if feature_id: # /guide/edit/1234
       feature = models.Feature.get_by_id(long(feature_id))
 
       if feature is None:
@@ -339,71 +328,6 @@ class FeatureEditStage(common.ContentHandler):
       feature.experiment_risks = self.request.get('experiment_risks')
       feature.experiment_extension_reason = self.request.get('experiment_extension_reason')
       feature.ongoing_constraints = self.request.get('ongoing_constraints')
-    else:
-      # Check bug for existing blink component(s) used to label the bug. If
-      # found, use the first component name instead of the generic "Blink" name.
-      try:
-        blink_components = self.__get_blink_component_from_bug(blink_components, bug_url)
-      except Exception:
-        pass
-
-      feature = models.Feature(
-          category=int(self.request.get('category')),
-          name=self.request.get('name'),
-          intent_stage=intent_stage,
-          summary=self.request.get('summary'),
-          intent_to_implement_url=intent_to_implement_url,
-          origin_trial_feedback_url=origin_trial_feedback_url,
-          motivation=self.request.get('motivation'),
-          explainer_links=explainer_links,
-          owner=owners,
-          bug_url=bug_url,
-          blink_components=blink_components,
-          devrel=devrel,
-          impl_status_chrome=int(self.request.get('impl_status_chrome')),
-          shipped_milestone=shipped_milestone,
-          shipped_android_milestone=shipped_android_milestone,
-          shipped_ios_milestone=shipped_ios_milestone,
-          shipped_webview_milestone=shipped_webview_milestone,
-          shipped_opera_milestone=shipped_opera_milestone,
-          shipped_opera_android_milestone=shipped_opera_android_milestone,
-          interop_compat_risks=self.request.get('interop_compat_risks'),
-          ergonomics_risks=self.request.get('ergonomics_risks'),
-          activation_risks=self.request.get('activation_risks'),
-          security_risks=self.request.get('security_risks'),
-          debuggability=self.request.get('debuggability'),
-          all_platforms=self.request.get('all_platforms') == 'on',
-          all_platforms_descr=self.request.get('all_platforms_descr'),
-          wpt=self.request.get('wpt') == 'on',
-          wpt_descr=self.request.get('wpt_descr'),
-          footprint=int(self.request.get('footprint')),
-          visibility=int(self.request.get('visibility')),
-          ff_views=int(self.request.get('ff_views')),
-          ff_views_link=ff_views_link,
-          ff_views_notes=self.request.get('ff_views_notes'),
-          ie_views=int(self.request.get('ie_views')),
-          ie_views_link=ie_views_link,
-          ie_views_notes=self.request.get('ie_views_notes'),
-          safari_views=int(self.request.get('safari_views')),
-          safari_views_link=safari_views_link,
-          safari_views_notes=self.request.get('safari_views_notes'),
-          web_dev_views=int(self.request.get('web_dev_views')),
-          web_dev_views_link=web_dev_views_link,
-          web_dev_views_notes=self.request.get('web_dev_views_notes'),
-          prefixed=self.request.get('prefixed') == 'on',
-          spec_link=spec_link,
-          tag_review=self.request.get('tag_review'),
-          standardization=int(self.request.get('standardization')),
-          doc_links=doc_links,
-          sample_links=sample_links,
-          search_tags=search_tags,
-          comments=self.request.get('comments'),
-          experiment_goals=self.request.get('experiment_goals'),
-          experiment_timeline=self.request.get('experiment_timeline'),
-          experiment_risks=self.request.get('experiment_risks'),
-          experiment_extension_reason=self.request.get('experiment_extension_reason'),
-          ongoing_constraints=self.request.get('ongoing_constraints'),
-          )
 
     params = []
     if self.request.get('create_launch_bug') == 'on':
