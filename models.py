@@ -488,6 +488,7 @@ class Feature(DictModel):
       d['category'] = FEATURE_CATEGORIES[self.category]
       if self.intent_stage is not None:
         d['intent_stage'] = INTENT_STAGES[self.intent_stage]
+        d['intent_stage_int'] = self.intent_stage
       d['created'] = {
         'by': d.pop('created_by', None),
         'when': d.pop('created', None),
@@ -588,6 +589,7 @@ class Feature(DictModel):
       d['category'] = FEATURE_CATEGORIES[self.category]
       if self.intent_stage is not None:
         d['intent_stage'] = INTENT_STAGES[self.intent_stage]
+        d['intent_stage_int'] = self.intent_stage
       d['visibility'] = VISIBILITY_CHOICES[self.visibility]
       d['impl_status_chrome'] = IMPLEMENTATION_STATUS[self.impl_status_chrome]
       d['meta'] = {

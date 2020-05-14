@@ -18,6 +18,7 @@ import './elements/chromedash-featurelist';
 import './elements/chromedash-legend';
 import './elements/chromedash-metadata';
 import './elements/chromedash-metrics';
+import './elements/chromedash-process-overview';
 import './elements/chromedash-sample-panel';
 import './elements/chromedash-schedule';
 import './elements/chromedash-timeline';

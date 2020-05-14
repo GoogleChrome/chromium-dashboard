@@ -1,0 +1,44 @@
+{% extends "_base.html" %}
+
+{% block css %}
+<link rel="stylesheet" href="/static/css/forms.css">
+<style>
+.delete-button {
+  margin-left: 20px;
+}
+</style>
+{% endblock %}
+
+{% block subheader %}
+<div id="subheader">
+  <h2>Edit feature: {{ feature.name }}</h2>
+  {% if user.is_admin %}
+    <button class="delete-button" data-id="{{ feature_id }}">Delete</button>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block content %}
+<section>
+</section>
+
+<section style='margin: 1em 0 8em 0'>
+  <chromedash-process-overview
+    title='Blink Process'
+    feature='{{ feature_json }}'
+    process='{{ process_json }}'
+    progress='{{ progress_so_far }}'>
+  </chromedash-process-overview>
+</section>
+
+
+<section style="margin-top: 4em">
+  <a href="/admin/features/edit/{{ feature_id }}">Use old UI</a>
+</section>
+
+{% endblock %}
+
+{% block js %}
+<script src="/static/js/admin/process_overview_form.min.js"></script>
+{% endblock %}
+

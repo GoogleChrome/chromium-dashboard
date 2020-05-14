@@ -1,0 +1,48 @@
+{% extends "_base.html" %}
+
+{% block css %}
+<link rel="stylesheet" href="/static/css/forms.css">
+<style>
+.delete-button {
+  margin-left: 20px;
+}
+</style>
+{% endblock %}
+
+{% block subheader %}
+<div id="subheader">
+  <h2>Edit feature: {{ feature.name }}</h2>
+  {% if user.is_admin %}
+    <button class="delete-button" data-id="{{feature_id}}">Delete</button>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block content %}
+<section>
+  <form name="feature_form" method="POST" action="{{current_path}}">
+    <table>
+      {{ feature_form }}
+    </table>
+
+    <!-- TODO(jrobbins): redo this to be driven by process definition. -->
+    <ul>
+      <li>
+        <input type="checkbox" name="intent_to_implement" id="id_intent_to_implement">
+        <label for="id_intent_to_implement">Generate "Intent to <span id="id_intent_stage_name"></span>" email on next page (you will copy &amp; paste it to send)</label>
+      </li>
+      <li>
+        <input type="checkbox" name="create_launch_bug" disabled id="id_create_launch_bug">
+        <label for="id_create_launch_bug">Generate a pre-populated launch-tracking bug link on the next page (you will file it manually)</label>
+      </li>
+      <li></li>
+    </ul>
+    <input type="submit" value="Submit">
+  </form>
+</section>
+
+{% endblock %}
+
+{% block js %}
+<script src="/static/js/admin/feature_form.min.js"></script>
+{% endblock %}
