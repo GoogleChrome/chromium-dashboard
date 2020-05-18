@@ -378,17 +378,13 @@ class SetStarHandlerTest(unittest.TestCase):
     """We reject anon star requests."""
     feature_id = self.feature_1.key().id()
     self.handler.request.body = '{"featureId": %d}' % feature_id
-    testing_config.ourTestbed.setup_env(
-            user_email='', user_id='', overwrite=True)
+    testing_config.sign_out()
     with self.assertRaises(exc.HTTPClientError):
       self.handler.post()
 
   def test_post__duplicate(self):
     """User sends a duplicate request, which should be a no-op."""
-    testing_config.ourTestbed.setup_env(
-            user_email='user7@example.com',
-            user_id='123567890',
-            overwrite=True)
+    testing_config.sign_in('user7@example.com', 123567890)
 
     feature_id = self.feature_1.key().id()
     self.handler.request.body = '{"featureId": %d}' % feature_id
@@ -410,10 +406,7 @@ class SetStarHandlerTest(unittest.TestCase):
 
   def test_post__unmatched_unstar(self):
     """User tries to unstar feature that they never starred: no-op."""
-    testing_config.ourTestbed.setup_env(
-            user_email='user8@example.com',
-            user_id='123567890',
-            overwrite=True)
+    testing_config.sign_in('user8@example.com', 123567890)
 
     feature_id = self.feature_1.key().id()
     # User never stars the feature in the first place.
@@ -426,10 +419,7 @@ class SetStarHandlerTest(unittest.TestCase):
 
   def test_post__normal(self):
     """User can star and unstar."""
-    testing_config.ourTestbed.setup_env(
-            user_email='user6@example.com',
-            user_id='123567890',
-            overwrite=True)
+    testing_config.sign_in('user6@example.com', 123567890)
 
     feature_id = self.feature_1.key().id()
     self.handler.request.body = '{"featureId": %d}' % feature_id
@@ -457,8 +447,7 @@ class GetUserStarsHandlerTest(unittest.TestCase):
 
   def test_post__anon(self):
     """Anon should always have an empty list of stars."""
-    testing_config.ourTestbed.setup_env(
-            user_email='', user_id='', overwrite=True)
+    testing_config.sign_out()
     self.handler.post()
     self.assertEqual(
         '{"featureIds":[]}',
@@ -466,10 +455,7 @@ class GetUserStarsHandlerTest(unittest.TestCase):
 
   def test_post__no_stars(self):
     """User has not starred any features."""
-    testing_config.ourTestbed.setup_env(
-            user_email='user7@example.com',
-            user_id='123567890',
-            overwrite=True)
+    testing_config.sign_in('user7@example.com', 123567890)
     self.handler.post()
     self.assertEqual(
         '{"featureIds":[]}',
@@ -479,10 +465,7 @@ class GetUserStarsHandlerTest(unittest.TestCase):
     """User has starred some features."""
     email = 'user8@example.com'
     feature_1_id = self.feature_1.key().id()
-    testing_config.ourTestbed.setup_env(
-            user_email=email,
-            user_id='123567890',
-            overwrite=True)
+    testing_config.sign_in(email, 123567890)
     notifier.FeatureStar.set_star(email, feature_1_id)
     self.handler.post()
     self.assertEqual(

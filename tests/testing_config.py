@@ -85,3 +85,17 @@ class Blank(object):
     if other is None:
       return False
     return vars(self) == vars(other)
+
+
+def sign_out():
+  """Set env variables to represent a signed out user."""
+  ourTestbed.setup_env(
+      user_email='', user_id='', overwrite=True)
+
+
+def sign_in(user_email, user_id):
+  """Set env variables to represent a signed out user."""
+  ourTestbed.setup_env(
+      user_email=user_email,
+      user_id=str(user_id),
+      overwrite=True)
