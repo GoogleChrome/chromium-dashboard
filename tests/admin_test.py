@@ -39,6 +39,7 @@ class FeatureHandlerTest(unittest.TestCase):
 
   def test_post__anon(self):
     """Anon cannot edit features, gets a 401."""
+    testing_config.sign_out()
     feature_id = self.feature_1.key().id()
     actual = self.handler.post(self.handler.request.path, feature_id=feature_id)
     self.assertIsNone(actual)
