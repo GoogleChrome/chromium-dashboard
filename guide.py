@@ -49,6 +49,11 @@ STAGE_FORMS = {
 }
 
 
+def format_feature_url(feature_id):
+  """Return the feature detail page URL for the specified feature."""
+  return '/feature/%d' % feature_id
+
+
 class FeatureNew(common.ContentHandler):
 
   def get(self, path):
@@ -74,6 +79,8 @@ class FeatureNew(common.ContentHandler):
       common.handle_401(self.request, self.response, Exception)
       return
 
+    # TODO(jrobbins): Validate input, even though it is done on client.
+
     feature = models.Feature(
         category=int(self.request.get('category')),
         name=self.request.get('name'),
@@ -85,7 +92,7 @@ class FeatureNew(common.ContentHandler):
         web_dev_views=models.DEV_NO_SIGNALS)
     key = feature.put()
 
-    # TODO(ericbidelman): enumerate and remove only the relevant keys.
+    # TODO(jrobbins): enumerate and remove only the relevant keys.
     memcache.flush_all()
 
     redirect_url = '/guide/edit/' + str(key.id())
@@ -98,11 +105,8 @@ class ProcessOverview(common.ContentHandler):
     user = users.get_current_user()
     if user is None:
       # Redirect to public URL for unauthenticated users.
-      return self.redirect(self.DEFAULT_URL + '/' + feature_id)
+      return self.redirect(format_feature_url(feature_id))
 
-    # TODO(ericbidelman): This creates a additional call to
-    # _is_user_whitelisted() (also called in common.py), resulting in another
-    # db query.
     if not self._is_user_whitelisted(user):
       common.handle_401(self.request, self.response, Exception)
       return
@@ -116,7 +120,7 @@ class ProcessOverview(common.ContentHandler):
 
     f = models.Feature.get_by_id(long(feature_id))
     if f is None:
-      return self.redirect(self.ADD_NEW_URL)
+      self.abort(404)
 
     progress_so_far = []  # An unordered list of progress item strings.
     # TODO(jrobbins): Replace this constant with a call to apply a bunch
@@ -142,6 +146,20 @@ class FeatureEditStage(common.ContentHandler):
   INTENT_PARAM = 'intent'
   LAUNCH_PARAM = 'launch'
 
+  def touched(self, param_name):
+    """Return True if the user edited the specified field."""
+    # TODO(jrobbins): for now we just consider everything on the current form
+    # to have been touched.  Later we will add javascript to populate a
+    # hidden form field named "touched" that lists the names of all fields
+    # actually touched by the user.
+    return param_name in self.request.POST
+
+  def split_input(self, field_name, delim='\\r?\\n'):
+    """Split the input lines, strip whitespace, and skip blank lines."""
+    input_text = self.request.get(field_name) or ''
+    return filter(bool, [
+        x.strip() for x in re.split(delim, input_text)])
+
   def __FullQualifyLink(self, param_name):
     link = self.request.get(param_name) or None
     if link:
@@ -165,7 +183,7 @@ class FeatureEditStage(common.ContentHandler):
     user = users.get_current_user()
     if user is None:
       # Redirect to public URL for unauthenticated users.
-      return self.redirect(self.DEFAULT_URL + '/' + feature_id)
+      return self.redirect(format_feature_url(feature_id))
 
     if not self._is_user_whitelisted(user):
       common.handle_401(self.request, self.response, Exception)
@@ -176,8 +194,9 @@ class FeatureEditStage(common.ContentHandler):
 
     f = models.Feature.get_by_id(long(feature_id))
     if f is None:
-      return self.redirect(self.ADD_NEW_URL)
+      self.abort(404)
 
+    # TODO(jrobbins): show useful error if stage not found.
     detail_form_class = STAGE_FORMS.get(int(stage_id), models.FeatureForm)
 
     # Provide new or populated form to template.
@@ -202,56 +221,77 @@ class FeatureEditStage(common.ContentHandler):
       common.handle_401(self.request, self.response, Exception)
       return
 
-    spec_link = self.__FullQualifyLink('spec_link')
+    if feature_id:
+      feature = models.Feature.get_by_id(long(feature_id))
+      if feature is None:
+        self.abort(404)
 
-    explainer_links = self.request.get('explainer_links') or []
-    if explainer_links:
-      explainer_links = filter(bool, [x.strip() for x in re.split('\\r?\\n', explainer_links)])
+    logging.info('POST is %r', self.request.POST)
 
-    bug_url = self.__FullQualifyLink('bug_url')
-    intent_to_implement_url = self.__FullQualifyLink('intent_to_implement_url')
-    origin_trial_feedback_url = self.__FullQualifyLink('origin_trial_feedback_url')
+    if self.touched('spec_link'):
+      feature.spec_link = self.__FullQualifyLink('spec_link')
 
-    ff_views_link = self.__FullQualifyLink('ff_views_link')
-    ie_views_link = self.__FullQualifyLink('ie_views_link')
-    safari_views_link = self.__FullQualifyLink('safari_views_link')
-    web_dev_views_link = self.__FullQualifyLink('web_dev_views_link')
+    if self.touched('explainer_links'):
+      feature.explainer_links = self.split_input('explainer_links')
+
+    if self.touched('bug_url'):
+      feature.bug_url = self.__FullQualifyLink('bug_url')
+
+    if self.touched('intent_to_implement_url'):
+      feature.intent_to_implement_url = self.__FullQualifyLink(
+          'intent_to_implement_url')
+
+    if self.touched('origin_trial_feedback_url'):
+      feature.origin_trial_feedback_url = self.__FullQualifyLink(
+          'origin_trial_feedback_url')
 
     # Cast incoming milestones to ints.
     # TODO(jrobbins): Consider supporting milestones that are not ints.
-    shipped_milestone = self.__ToInt('shipped_milestone')
-    shipped_android_milestone = self.__ToInt('shipped_android_milestone')
-    shipped_ios_milestone = self.__ToInt('shipped_ios_milestone')
-    shipped_webview_milestone = self.__ToInt('shipped_webview_milestone')
-    shipped_opera_milestone = self.__ToInt('shipped_opera_milestone')
-    shipped_opera_android_milestone = self.__ToInt('shipped_opera_android_milestone')
+    if self.touched('shipped_milestone = self'):
+      feature.shipped_milestone = self.__ToInt('shipped_milestone')
 
-    owners = self.request.get('owner') or []
-    if owners:
-      owners = [db.Email(x.strip()) for x in owners.split(',')]
+    if self.touched('shipped_android_milestone'):
+      feature.shipped_android_milestone = self.__ToInt(
+          'shipped_android_milestone')
 
-    doc_links = self.request.get('doc_links') or []
-    if doc_links:
-      doc_links = filter(bool, [x.strip() for x in re.split('\\r?\\n', doc_links)])
+    if self.touched('shipped_ios_milestone'):
+      feature.shipped_ios_milestone = self.__ToInt('shipped_ios_milestone')
 
-    sample_links = self.request.get('sample_links') or []
-    if sample_links:
-      sample_links = filter(bool, [x.strip() for x in re.split('\\r?\\n', sample_links)])
+    if self.touched('shipped_webview_milestone'):
+      feature.shipped_webview_milestone = self.__ToInt(
+          'shipped_webview_milestone')
 
-    search_tags = self.request.get('search_tags') or []
-    if search_tags:
-      search_tags = filter(bool, [x.strip() for x in search_tags.split(',')])
+    if self.touched('shipped_opera_milestone'):
+      feature.shipped_opera_milestone = self.__ToInt('shipped_opera_milestone')
 
-    blink_components = self.request.get('blink_components') or models.BlinkComponent.DEFAULT_COMPONENT
-    if blink_components:
-      blink_components = filter(bool, [x.strip() for x in blink_components.split(',')])
+    if self.touched('shipped_opera_android'):
+      feature.shipped_opera_android_milestone = self.__ToInt(
+          'shipped_opera_android_milestone')
 
-    devrel = self.request.get('devrel') or []
-    if devrel:
-      devrel = [db.Email(x.strip()) for x in devrel.split(',')]
+    if self.touched('owner'):
+      owner_addrs = self.split_input('owner', delim=',')
+      feature.owner = [db.Email(addr) for addr in owner_addrs]
+
+    if self.touched('doc_links'):
+      feature.doc_links = self.split_input('doc_links')
+
+    if self.touched('sample_links'):
+      feature.sample_links = self.split_input('sample_links')
+
+    if self.touched('search_tags'):
+      feature.search_tags = self.split_input('search_tags', delim=',')
+
+    if self.touched('blink_components'):
+      feature.blink_components = (
+          self.split_input('blink_components', delim=',') or
+          models.BlinkComponent.DEFAULT_COMPONENT)
+
+    if self.touched('devrel'):
+      devrel_addrs = self.split_input('devrel', delim=',')
+      feature.devrel = [db.Email(addr) for addr in devrel_addrs]
 
     try:
-      intent_stage = int(self.request.get('intent_stage'))
+      feature.intent_stage = int(self.request.get('intent_stage'))
     except:
       logging.error('Invalid intent_stage \'{}\'' \
                     .format(self.request.get('intent_stage')))
@@ -259,74 +299,82 @@ class FeatureEditStage(common.ContentHandler):
       # Default the intent stage to 1 (Prototype) if we failed to get a valid
       # intent stage from the request. This should be removed once we
       # understand what causes this.
-      intent_stage = 1
+      feature.intent_stage = 1
 
-    if feature_id: # /guide/edit/1234
-      feature = models.Feature.get_by_id(long(feature_id))
-
-      if feature is None:
-        return self.redirect(self.request.path)
-
-      if 'delete' in path:
-        feature.delete()
-        memcache.flush_all()
-        return # Bomb out early for AJAX delete. No need to redirect.
-
-      # Update properties of existing feature.
+    if self.touched('category'):
       feature.category = int(self.request.get('category'))
+    if self.touched('name'):
       feature.name = self.request.get('name')
-      feature.intent_stage = intent_stage
+    if self.touched('summary'):
       feature.summary = self.request.get('summary')
-      feature.intent_to_implement_url = intent_to_implement_url
-      feature.origin_trial_feedback_url = origin_trial_feedback_url
+    if self.touched('motivation'):
       feature.motivation = self.request.get('motivation')
-      feature.explainer_links = explainer_links
-      feature.owner = owners
-      feature.bug_url = bug_url
-      feature.blink_components = blink_components
-      feature.devrel = devrel
+    if self.touched('impl_status_chrome'):
       feature.impl_status_chrome = int(self.request.get('impl_status_chrome'))
-      feature.shipped_milestone = shipped_milestone
-      feature.shipped_android_milestone = shipped_android_milestone
-      feature.shipped_ios_milestone = shipped_ios_milestone
-      feature.shipped_webview_milestone = shipped_webview_milestone
-      feature.shipped_opera_milestone = shipped_opera_milestone
-      feature.shipped_opera_android_milestone = shipped_opera_android_milestone
+    if self.touched('footprint'):
       feature.footprint = int(self.request.get('footprint'))
+    if self.touched('interop_compat_risks'):
       feature.interop_compat_risks = self.request.get('interop_compat_risks')
+    if self.touched('ergonomics_risks'):
       feature.ergonomics_risks = self.request.get('ergonomics_risks')
+    if self.touched('activation_risks'):
       feature.activation_risks = self.request.get('activation_risks')
+    if self.touched('security_risks'):
       feature.security_risks = self.request.get('security_risks')
+    if self.touched('debuggability'):
       feature.debuggability = self.request.get('debuggability')
+    if self.touched('all_platforms'):
       feature.all_platforms = self.request.get('all_platforms') == 'on'
+    if self.touched('all_platforms_descr'):
       feature.all_platforms_descr = self.request.get('all_platforms_descr')
+    if self.touched('wpt'):
       feature.wpt = self.request.get('wpt') == 'on'
+    if self.touched('wpt_descr'):
       feature.wpt_descr = self.request.get('wpt_descr')
+    if self.touched('visibility'):
       feature.visibility = int(self.request.get('visibility'))
+    if self.touched('ff_views'):
       feature.ff_views = int(self.request.get('ff_views'))
-      feature.ff_views_link = ff_views_link
+    if self.touched('ff_views_link'):
+      feature.ff_views_link = self.__FullQualifyLink('ff_views_link')
+    if self.touched('ff_views_notes'):
       feature.ff_views_notes = self.request.get('ff_views_notes')
+    if self.touched('ie_views'):
       feature.ie_views = int(self.request.get('ie_views'))
-      feature.ie_views_link = ie_views_link
+    if self.touched('ie_views_link'):
+      feature.ie_views_link = self.__FullQualifyLink('ie_views_link')
+    if self.touched('ie_views_notes'):
       feature.ie_views_notes = self.request.get('ie_views_notes')
+    if self.touched('safari_views'):
       feature.safari_views = int(self.request.get('safari_views'))
-      feature.safari_views_link = safari_views_link
+    if self.touched('safari_views_link'):
+      feature.safari_views_link = self.__FullQualifyLink('safari_views_link')
+    if self.touched('safari_views_notes'):
       feature.safari_views_notes = self.request.get('safari_views_notes')
+    if self.touched('web_dev_views'):
       feature.web_dev_views = int(self.request.get('web_dev_views'))
-      feature.web_dev_views_link = web_dev_views_link
+    if self.touched('web_dev_views'):
+      feature.web_dev_views_link = self.__FullQualifyLink('web_dev_views_link')
+    if self.touched('web_dev_views_notes'):
       feature.web_dev_views_notes = self.request.get('web_dev_views_notes')
+    if self.touched('prefixed'):
       feature.prefixed = self.request.get('prefixed') == 'on'
-      feature.spec_link = spec_link
+    if self.touched('tag_review'):
       feature.tag_review = self.request.get('tag_review')
+    if self.touched('standardization'):
       feature.standardization = int(self.request.get('standardization'))
-      feature.doc_links = doc_links
-      feature.sample_links = sample_links
-      feature.search_tags = search_tags
+    if self.touched('comments'):
       feature.comments = self.request.get('comments')
+    if self.touched('experiment_goals'):
       feature.experiment_goals = self.request.get('experiment_goals')
+    if self.touched('experiment_timeline'):
       feature.experiment_timeline = self.request.get('experiment_timeline')
+    if self.touched('experiment_risks'):
       feature.experiment_risks = self.request.get('experiment_risks')
-      feature.experiment_extension_reason = self.request.get('experiment_extension_reason')
+    if self.touched('experiment_extension_reason'):
+      feature.experiment_extension_reason = self.request.get(
+          'experiment_extension_reason')
+    if self.touched('ongoing_constraints'):
       feature.ongoing_constraints = self.request.get('ongoing_constraints')
 
     params = []
@@ -339,7 +387,7 @@ class FeatureEditStage(common.ContentHandler):
 
     key = feature.put()
 
-    # TODO(ericbidelman): enumerate and remove only the relevant keys.
+    # TODO(jrobbins): enumerate and remove only the relevant keys.
     memcache.flush_all()
 
     redirect_url = '/feature/' + str(key.id())
@@ -354,5 +402,6 @@ class FeatureEditStage(common.ContentHandler):
 app = webapp2.WSGIApplication([
   ('/(guide/new)', FeatureNew),
   ('/(guide/edit)/([0-9]*)', ProcessOverview),
+  # TODO(jrobbins): ('/(guide/delete)/([0-9]*)', FeatureDelete),
   ('/(guide/stage)/([0-9]*)/([0-9]*)', FeatureEditStage),
 ], debug=settings.DEBUG)

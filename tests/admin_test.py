@@ -39,6 +39,7 @@ class FeatureHandlerTest(unittest.TestCase):
 
   def test_post__anon(self):
     """Anon cannot edit features, gets a 401."""
+    testing_config.sign_out()
     feature_id = self.feature_1.key().id()
     actual = self.handler.post(self.handler.request.path, feature_id=feature_id)
     self.assertIsNone(actual)
@@ -47,10 +48,7 @@ class FeatureHandlerTest(unittest.TestCase):
   @mock.patch('admin.FeatureHandler.redirect')
   def test_post__no_existing(self, mock_redirect):
     """Trying to edit a feature that does not exist redirects."""
-    testing_config.ourTestbed.setup_env(
-            user_email='user1@google.com',
-            user_id='123567890',
-            overwrite=True)
+    testing_config.sign_in('user1@google.com', 123567890)
     mock_redirect.return_value = 'fake redirect return value'
     bad_feature_id = self.feature_1.key().id() + 1
     path = '/admin/features/edit/%d' % bad_feature_id
@@ -62,10 +60,7 @@ class FeatureHandlerTest(unittest.TestCase):
   @mock.patch('admin.FeatureHandler.redirect')
   def test_post__normal(self, mock_redirect):
     """Allowed user can edit a feature."""
-    testing_config.ourTestbed.setup_env(
-            user_email='user1@google.com',
-            user_id='123567890',
-            overwrite=True)
+    testing_config.sign_in('user1@google.com', 123567890)
     mock_redirect.return_value = 'fake redirect return value'
     feature_id = self.feature_1.key().id()
     params = {
