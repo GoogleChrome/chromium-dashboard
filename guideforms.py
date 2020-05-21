@@ -260,7 +260,7 @@ class NewFeatureForm(forms.Form):
       initial=current_user_email, required=True, label='Contact emails',
       help_text=('Comma separated list of full email addresses. '
                  'Prefer @chromium.org.'))
-  process = ALL_FIELDS['process']
+  # TODO(jrobbins): Choice of processes.
 
 
 class MetadataForm(forms.Form):
@@ -272,7 +272,7 @@ class MetadataForm(forms.Form):
       label='Contact emails',
       help_text=('Comma separated list of full email addresses. '
                  'Prefer @chromium.org.'))
-  process = ALL_FIELDS['process']
+  # TODO(jrobbins): Choice of processes.
   intent_stage = forms.ChoiceField(
       required=True, label='Intent stage',
       help_text='Select the appropriate intent stage.',
