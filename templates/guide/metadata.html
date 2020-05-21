@@ -1,0 +1,33 @@
+<section style="max-width:67em; border: 1px solid #ccc; padding: 1em; color: #222">
+
+  <div id="metadata-readonly">
+    <div style="max-height: 3em; overflow: hidden">
+      {% if user.is_admin %}
+        <button id="delete-feature"
+                data-id="{{ feature_id }}"
+                class="delete-button"
+                style="float: right">Delete</button>
+      {% endif %}
+      <button id="open-metadata" style="float: right">Edit</button>
+      {{ feature.summary }}
+    </div>
+    <div>Category: {{ feature.category }}</div>
+    <div>Owners: 
+      {% for owner in feature.owner %}
+        <a href="mailto:{{ owner }}">{{ owner }}</a>
+      {% endfor %}
+    <div>Intent stage: {{ feature.intent_stage }}</div>
+    </div>
+  </div>
+
+  <div id="metadata-editing" style="display:none">
+    <form name="overview_form" method="POST" action="/guide/stage/{{ feature_id }}/0">
+      <table>
+        {{ overview_form }}
+      </table>
+
+      <input class="button" type="submit" value="Submit">
+      <button id="close-metadata">Cancel</button>
+    </form>
+  </div>
+</section>

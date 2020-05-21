@@ -45,6 +45,8 @@ ALL_FIELDS = {
         initial=models.MISC,
         choices=sorted(models.FEATURE_CATEGORIES.items(), key=lambda x: x[1])),
 
+    # TODO(jrobbins): Choice of processes.
+
     'motivation': forms.CharField(
         label='Motivation', required=True,
         widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 1480}),
@@ -248,11 +250,35 @@ ALL_FIELDS = {
     }
 
 
-class OverviewForm(forms.Form):
+class NewFeatureForm(forms.Form):
 
   name = ALL_FIELDS['name']
   summary = ALL_FIELDS['summary']
   category = ALL_FIELDS['category']
+  current_user_email = users.get_current_user().email if users.get_current_user() else None
+  owner = forms.CharField(
+      initial=current_user_email, required=True, label='Contact emails',
+      help_text=('Comma separated list of full email addresses. '
+                 'Prefer @chromium.org.'))
+  process = ALL_FIELDS['process']
+
+
+class MetadataForm(forms.Form):
+
+  name = ALL_FIELDS['name']
+  summary = ALL_FIELDS['summary']
+  category = ALL_FIELDS['category']
+  owner = forms.CharField(
+      label='Contact emails',
+      help_text=('Comma separated list of full email addresses. '
+                 'Prefer @chromium.org.'))
+  process = ALL_FIELDS['process']
+  intent_stage = forms.ChoiceField(
+      required=True, label='Intent stage',
+      help_text='Select the appropriate intent stage.',
+      initial=models.INTENT_IMPLEMENT,
+      choices=models.INTENT_STAGES.items())
+
 
 
 class Incubate(forms.Form):

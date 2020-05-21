@@ -20,6 +20,21 @@ if (document.querySelector('.delete-button')) {
 }
 
 
+if (document.querySelector('#open-metadata')) {
+  document.querySelector('#open-metadata').addEventListener('click', (e) => {
+    document.querySelector('#metadata-readonly').style.display = 'none';
+    document.querySelector('#metadata-editing').style.display = '';
+  });
+}
+
+if (document.querySelector('#close-metadata')) {
+  document.querySelector('#close-metadata').addEventListener('click', (e) => {
+    document.querySelector('#metadata-readonly').style.display = '';
+    document.querySelector('#metadata-editing').style.display = 'none';
+  });
+}
+
+
 document.addEventListener('DOMContentLoaded', function() {
   document.body.classList.remove('loading');
 });

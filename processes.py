@@ -31,8 +31,7 @@ BLINK_PROCESS = [
       'Start incubation',
       'Create an initial WebStatus feature entry and kick off standards '
       'incubation (WICG) to share ideas.',
-      ['Feature name, description, owners, and other details',
-       'WICG discourse post',
+      ['WICG discourse post',
        'Spec repo',
       ],
       models.INTENT_NONE, models.INTENT_IMPLEMENT),

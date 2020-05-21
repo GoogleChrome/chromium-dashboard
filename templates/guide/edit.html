@@ -12,15 +12,12 @@
 {% block subheader %}
 <div id="subheader">
   <h2>Edit feature: {{ feature.name }}</h2>
-  {% if user.is_admin %}
-    <button class="delete-button" data-id="{{ feature_id }}">Delete</button>
-  {% endif %}
 </div>
 {% endblock %}
 
 {% block content %}
-<section>
-</section>
+
+{% include "guide/metadata.html" %}
 
 <section style='margin: 1em 0 8em 0'>
   <chromedash-process-overview
