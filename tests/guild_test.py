@@ -88,7 +88,6 @@ class FeatureNewTest(unittest.TestCase):
 
     self.assertEqual('302 Moved Temporarily', self.handler.response.status)
     location = self.handler.response.headers['location']
-    print('location is %r' % location)
     self.assertTrue(location.startswith('http://localhost/guide/edit/'))
     new_feature_id = int(location.split('/')[-1])
     feature = models.Feature.get_by_id(new_feature_id)
@@ -249,8 +248,7 @@ class FeatureEditStageTest(unittest.TestCase):
 
     self.assertEqual('302 Moved Temporarily', self.handler.response.status)
     location = self.handler.response.headers['location']
-    print('location is %r' % location)
-    self.assertEqual('http://localhost/feature/%d' % self.feature_1.key().id(),
+    self.assertEqual('http://localhost/guide/edit/%d' % self.feature_1.key().id(),
                      location)
     revised_feature = models.Feature.get_by_id(self.feature_1.key().id())
     self.assertEqual(2, revised_feature.category)
