@@ -9,6 +9,8 @@
   box-sizing: border-box;
   contain: content;
   overflow: hidden;
+  background: inherit;
+  padding: 0;
 
   &:active {
     outline: none;

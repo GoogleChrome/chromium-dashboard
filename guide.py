@@ -66,7 +66,7 @@ class FeatureNew(common.ContentHandler):
       return
 
     template_data = {
-        'overview_form': guideforms.OverviewForm(),
+        'overview_form': guideforms.NewFeatureForm(),
         }
 
     self._add_common_template_values(template_data)
@@ -79,6 +79,11 @@ class FeatureNew(common.ContentHandler):
       common.handle_401(self.request, self.response, Exception)
       return
 
+    owner_addrs = self.request.get('owner') or ''
+    owner_addrs = filter(bool, [
+        x.strip() for x in re.split(',', owner_addrs)])
+    owners = [db.Email(addr) for addr in owner_addrs]
+
     # TODO(jrobbins): Validate input, even though it is done on client.
 
     feature = models.Feature(
@@ -86,6 +91,7 @@ class FeatureNew(common.ContentHandler):
         name=self.request.get('name'),
         intent_stage=models.INTENT_NONE,
         summary=self.request.get('summary'),
+        owner=owners,
         impl_status_chrome=models.NO_ACTIVE_DEV,
         visibility=models.WARRANTS_ARTICLE,
         standardization=models.EDITORS_DRAFT,
@@ -111,16 +117,16 @@ class ProcessOverview(common.ContentHandler):
       common.handle_401(self.request, self.response, Exception)
       return
 
+    f = models.Feature.get_by_id(long(feature_id))
+    if f is None:
+      self.abort(404)
+
     template_data = {
-        'overview_form': guideforms.OverviewForm(),
+        'overview_form': guideforms.MetadataForm(f.format_for_edit()),
         'process_json': json.dumps(
             [stage._asdict() for stage in processes.BLINK_PROCESS]),
         'progress_so_far': [],
         }
-
-    f = models.Feature.get_by_id(long(feature_id))
-    if f is None:
-      self.abort(404)
 
     progress_so_far = []  # An unordered list of progress item strings.
     # TODO(jrobbins): Replace this constant with a call to apply a bunch
@@ -129,7 +135,7 @@ class ProcessOverview(common.ContentHandler):
 
     # Provide new or populated form to template.
     template_data.update({
-        'feature': f,
+        'feature': f.format_for_template(),
         'feature_id': f.key().id,
         'feature_json': json.dumps(f.format_for_template()),
         'progress_so_far': json.dumps(progress_so_far),
@@ -189,7 +195,13 @@ class FeatureEditStage(common.ContentHandler):
       common.handle_401(self.request, self.response, Exception)
       return
 
+    stage_name = ''
+    for stage in processes.BLINK_PROCESS:
+      if stage.outgoing_stage == stage_id:
+        stage_name = stage.name
+
     template_data = {
+        stage_name: stage_name,
         }
 
     f = models.Feature.get_by_id(long(feature_id))
@@ -390,7 +402,7 @@ class FeatureEditStage(common.ContentHandler):
     # TODO(jrobbins): enumerate and remove only the relevant keys.
     memcache.flush_all()
 
-    redirect_url = '/feature/' + str(key.id())
+    redirect_url = '/guide/edit/' + str(key.id())
 
     if len(params):
       redirect_url = '%s/%s?%s' % (self.LAUNCH_URL, key.id(),

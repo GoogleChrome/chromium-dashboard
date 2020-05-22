@@ -29,12 +29,12 @@ class ChromedashProcessOverview extends LitElement {
      <table>
        <tr>
          <th style="width: 100px;">Stage</th>
-         <th style="width: 200px">Progres</th>
+         <th style="width: 200px">Progress</th>
          <th style="width: 80px"></th>
        </tr>
 
        ${this.process.map(stage => html`
-         <tr class="${this.feature.intent_stage_int == stage.incoming_stage ?
+         <tr class="${this.feature.intent_stage_int == stage.outgoing_stage ?
                       'active' : ''}">
            <td>
              <div><b>${stage.name}</b></div>
@@ -46,7 +46,14 @@ class ChromedashProcessOverview extends LitElement {
            `)}
            </td>
            <td>
-            ${this.feature.intent_stage_int > stage.incoming_stage ?
+            ${this.feature.intent_stage_int == stage.outgoing_stage ?
+              html`<div><a
+                     href="/guide/stage/${featureId}/${stage.incoming_stage}"
+                     class="buttonify">Update</a></div>
+                   <!-- TODO(jrobbins): Preview email and other actions -->` :
+              nothing }
+            ${this.feature.intent_stage_int > stage.incoming_stage &&
+              this.feature.intent_stage_int != stage.outgoing_stage ?
               html`<a href="/guide/stage/${featureId}/${stage.incoming_stage}"
                    >Revisit</a>` :
               nothing }
