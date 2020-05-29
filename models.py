@@ -73,6 +73,17 @@ FEATURE_CATEGORIES = {
   CAPABILITIES: 'Capabilities (Fugu)'
   }
 
+PROCESS_BLINK_LAUNCH_ID = 0
+PROCESS_FAST_TRACK_ID = 1
+PROCESS_PSA_ONLY_ID = 2
+
+PROCESSES = {
+    PROCESS_BLINK_LAUNCH_ID: 'Blink launch process',
+    PROCESS_FAST_TRACK_ID: 'Fast track process',
+    PROCESS_PSA_ONLY_ID: 'PSA only',
+}
+
+
 # Intent stages and mapping from stage to stage name.
 INTENT_NONE = 0
 INTENT_IMPLEMENT = 1
@@ -486,6 +497,9 @@ class Feature(DictModel):
       else:
         d['id'] = None
       d['category'] = FEATURE_CATEGORIES[self.category]
+      if self.process is not None:
+        d['process'] = PROCESSES[self.process]
+        d['process_int'] = self.process
       if self.intent_stage is not None:
         d['intent_stage'] = INTENT_STAGES[self.intent_stage]
         d['intent_stage_int'] = self.intent_stage
@@ -587,6 +601,9 @@ class Feature(DictModel):
       else:
         d['id'] = None
       d['category'] = FEATURE_CATEGORIES[self.category]
+      if self.process is not None:
+        d['process'] = PROCESSES[self.process]
+        d['process_int'] = self.process
       if self.intent_stage is not None:
         d['intent_stage'] = INTENT_STAGES[self.intent_stage]
         d['intent_stage_int'] = self.intent_stage
@@ -890,6 +907,7 @@ class Feature(DictModel):
   # General info.
   category = db.IntegerProperty(required=True)
   name = db.StringProperty(required=True)
+  process = db.IntegerProperty(default=PROCESS_BLINK_LAUNCH_ID)
   intent_stage = db.IntegerProperty(default=0)
   summary = db.StringProperty(required=True, multiline=True)
   intent_to_implement_url = db.LinkProperty()

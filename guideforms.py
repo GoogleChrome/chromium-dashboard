@@ -21,6 +21,7 @@ from django import forms
 from google.appengine.api import users
 
 import models
+import processes
 
 
 # We define all form fields here so that they can be include in one or more
@@ -45,7 +46,13 @@ ALL_FIELDS = {
         initial=models.MISC,
         choices=sorted(models.FEATURE_CATEGORIES.items(), key=lambda x: x[1])),
 
-    # TODO(jrobbins): Choice of processes.
+    'process': forms.ChoiceField(
+        required=True,
+        help_text=('Select the process appropriate to this feature.'),
+        initial=models.PROCESS_BLINK_LAUNCH_ID,
+        choices=sorted(
+            [(p_id, p.name) for (p_id, p) in processes.ALL_PROCESSES.items()],
+            key=lambda x: x[1])),
 
     'motivation': forms.CharField(
         label='Motivation', required=True,
@@ -258,6 +265,8 @@ ALL_FIELDS = {
 
 class NewFeatureForm(forms.Form):
 
+  field_order = (
+      'name', 'summary', 'category', 'owner', 'process')
   name = ALL_FIELDS['name']
   summary = ALL_FIELDS['summary']
   category = ALL_FIELDS['category']
@@ -267,23 +276,26 @@ class NewFeatureForm(forms.Form):
       initial=current_user_email, required=True, label='Contact emails',
       help_text=('Comma separated list of full email addresses. '
                  'Prefer @chromium.org.'))
-  # TODO(jrobbins): Choice of processes.
+  process = ALL_FIELDS['process']
 
 
 class MetadataForm(forms.Form):
 
+  field_order = (
+      'name', 'summary', 'category', 'owner', 'process', 'intent_stage')
   name = ALL_FIELDS['name']
   summary = ALL_FIELDS['summary']
   category = ALL_FIELDS['category']
   unlisted = ALL_FIELDS['unlisted']
   owner = forms.CharField(
+      required=False,
       label='Contact emails',
       help_text=('Comma separated list of full email addresses. '
                  'Prefer @chromium.org.'))
-  # TODO(jrobbins): Choice of processes.
+  process = ALL_FIELDS['process']
   intent_stage = forms.ChoiceField(
-      required=True, label='Intent stage',
-      help_text='Select the appropriate intent stage.',
+      required=True, label='Process stage',
+      help_text='Select the appropriate process stage.',
       initial=models.INTENT_IMPLEMENT,
       choices=models.INTENT_STAGES.items())
 

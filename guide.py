@@ -40,12 +40,28 @@ import processes
 import settings
 
 
-# Forms to be used for each stage of the process.
+# Forms to be used for each stage of each process.
 STAGE_FORMS = {
-    models.INTENT_NONE: guideforms.Incubate,
-    models.INTENT_IMPLEMENT: guideforms.Prototype,
-    models.INTENT_EXPERIMENT: guideforms.DevTrial,
-    models.INTENT_EXTEND_TRIAL: guideforms.OriginTrial,
+    (models.PROCESS_BLINK_LAUNCH_ID, models.INTENT_NONE):
+    guideforms.Incubate,
+    (models.PROCESS_BLINK_LAUNCH_ID, models.INTENT_IMPLEMENT):
+    guideforms.Prototype,
+    (models.PROCESS_BLINK_LAUNCH_ID, models.INTENT_EXPERIMENT):
+    guideforms.DevTrial,
+    (models.PROCESS_BLINK_LAUNCH_ID, models.INTENT_EXTEND_TRIAL):
+    guideforms.OriginTrial,
+
+    (models.PROCESS_FAST_TRACK_ID, models.INTENT_NONE):
+    guideforms.Incubate,
+    (models.PROCESS_FAST_TRACK_ID, models.INTENT_IMPLEMENT_SHIP):
+    guideforms.Prototype,
+    (models.PROCESS_FAST_TRACK_ID, models.INTENT_SHIP):
+    guideforms.DevTrial,
+    (models.PROCESS_FAST_TRACK_ID, models.INTENT_EXTEND_TRIAL):
+    guideforms.OriginTrial,
+
+    (models.PROCESS_PSA_ONLY_ID, models.INTENT_NONE):
+    guideforms.Incubate,
 }
 
 
@@ -89,6 +105,7 @@ class FeatureNew(common.ContentHandler):
     feature = models.Feature(
         category=int(self.request.get('category')),
         name=self.request.get('name'),
+        process=int(self.request.get('process', 0)),
         intent_stage=models.INTENT_NONE,
         summary=self.request.get('summary'),
         owner=owners,
@@ -122,10 +139,11 @@ class ProcessOverview(common.ContentHandler):
     if f is None:
       self.abort(404)
 
+    feature_process = processes.ALL_PROCESSES.get(
+        f.process, processes.BLINK_LAUNCH_PROCESS)
     template_data = {
         'overview_form': guideforms.MetadataForm(f.format_for_edit()),
-        'process_json': json.dumps(
-            [stage._asdict() for stage in processes.BLINK_PROCESS]),
+        'process_json': json.dumps(processes.process_to_dict(feature_process)),
         'progress_so_far': [],
         }
 
@@ -191,6 +209,7 @@ class FeatureEditStage(common.ContentHandler):
     return []
 
   def get(self, path, feature_id, stage_id):
+    stage_id = int(stage_id)
     user = users.get_current_user()
     if user is None:
       # Redirect to public URL for unauthenticated users.
@@ -200,21 +219,24 @@ class FeatureEditStage(common.ContentHandler):
       common.handle_401(self.request, self.response, Exception)
       return
 
-    stage_name = ''
-    for stage in processes.BLINK_PROCESS:
-      if stage.outgoing_stage == stage_id:
-        stage_name = stage.name
-
-    template_data = {
-        stage_name: stage_name,
-        }
-
     f = models.Feature.get_by_id(long(feature_id))
     if f is None:
       self.abort(404)
 
+    feature_process = processes.ALL_PROCESSES.get(
+        f.process, processes.BLINK_LAUNCH_PROCESS)
+    stage_name = ''
+    for stage in feature_process.stages:
+      if stage.outgoing_stage == stage_id:
+        stage_name = stage.name
+
+    template_data = {
+        'stage_name': stage_name,
+        }
+
     # TODO(jrobbins): show useful error if stage not found.
-    detail_form_class = STAGE_FORMS.get(int(stage_id), models.FeatureForm)
+    detail_form_class = STAGE_FORMS.get(
+        (f.process, stage_id), models.FeatureForm)
 
     # Provide new or populated form to template.
     template_data.update({
@@ -307,16 +329,10 @@ class FeatureEditStage(common.ContentHandler):
       devrel_addrs = self.split_input('devrel', delim=',')
       feature.devrel = [db.Email(addr) for addr in devrel_addrs]
 
-    try:
+    if self.touched('process'):
+      feature.process = int(self.request.get('process'))
+    if self.touched('intent_stage'):
       feature.intent_stage = int(self.request.get('intent_stage'))
-    except:
-      logging.error('Invalid intent_stage \'{}\'' \
-                    .format(self.request.get('intent_stage')))
-
-      # Default the intent stage to 1 (Prototype) if we failed to get a valid
-      # intent stage from the request. This should be removed once we
-      # understand what causes this.
-      feature.intent_stage = 1
 
     if self.touched('category'):
       feature.category = int(self.request.get('category'))
