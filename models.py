@@ -78,9 +78,9 @@ PROCESS_FAST_TRACK_ID = 1
 PROCESS_PSA_ONLY_ID = 2
 
 PROCESSES = {
-    PROCESS_BLINK_LAUNCH_ID: 'Blink launch process',
-    PROCESS_FAST_TRACK_ID: 'Fast track process',
-    PROCESS_PSA_ONLY_ID: 'PSA only',
+    PROCESS_BLINK_LAUNCH_ID: 'New feature incubation',
+    PROCESS_FAST_TRACK_ID: 'Existing feature implementation',
+    PROCESS_PSA_ONLY_ID: 'Web developer facing change to existing code',
 }
 
 

@@ -115,7 +115,7 @@ BLINK_PROCESS_STAGES = [
 
 
 BLINK_LAUNCH_PROCESS = Process(
-    'Blink launch process',
+    'New feature incubation',
     'Description of blink launch process',
     'When to use it',
     BLINK_PROCESS_STAGES)
@@ -162,7 +162,7 @@ BLINK_FAST_TRACK_STAGES = [
 
 
 BLINK_FAST_TRACK_PROCESS = Process(
-    'Blink fast track process',
+    'Existing feature implementation',
     'Description of blink fast track process',
     'When to use it',
     BLINK_FAST_TRACK_STAGES)
@@ -182,7 +182,7 @@ PSA_ONLY_STAGES = [
   ]
 
 PSA_ONLY_PROCESS = Process(
-    'PSA Only',
+    'Web developer facing change to existing code',
     'Description of PSA process',
     'When to use it',
     PSA_ONLY_STAGES)  # TODO(jrobbins): revisit these stages.

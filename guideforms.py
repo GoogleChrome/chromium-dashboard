@@ -47,7 +47,7 @@ ALL_FIELDS = {
         choices=sorted(models.FEATURE_CATEGORIES.items(), key=lambda x: x[1])),
 
     'process': forms.ChoiceField(
-        required=True,
+        label='Feature type', required=True,
         help_text=('Select the process appropriate to this feature.'),
         initial=models.PROCESS_BLINK_LAUNCH_ID,
         choices=sorted(
@@ -276,7 +276,8 @@ class NewFeatureForm(forms.Form):
       initial=current_user_email, required=True, label='Contact emails',
       help_text=('Comma separated list of full email addresses. '
                  'Prefer @chromium.org.'))
-  process = ALL_FIELDS['process']
+  # Done with custom HTML
+  # process = ALL_FIELDS['process']
 
 
 class MetadataForm(forms.Form):
@@ -294,7 +295,7 @@ class MetadataForm(forms.Form):
                  'Prefer @chromium.org.'))
   process = ALL_FIELDS['process']
   intent_stage = forms.ChoiceField(
-      required=True, label='Process stage',
+      required=True, label='Feature stage',
       help_text='Select the appropriate process stage.',
       initial=models.INTENT_IMPLEMENT,
       choices=models.INTENT_STAGES.items())
