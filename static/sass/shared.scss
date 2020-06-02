@@ -42,25 +42,27 @@ input:not([type="submit"]), textarea {
   }
 }
 
-button, .button {
+button, input[type="submit"], .button {
   display: inline-block;
-  background: linear-gradient(#F9F9F9 40%, #E3E3E3 70%);
-  border: 1px solid $gray-2;
-  border-radius: 3px;
-  padding: 5px 8px;
-  outline: none;
+  padding: 4px 16px;
+  background: inherit;
+  border: 0;
+  border-radius: 4px;
+  color: #444;
   white-space: nowrap;
   user-select: none;
   cursor: pointer;
   font-size: 10pt;
 }
 
-button:not(:disabled):hover {
-  border-color: $gray-4;
+button.primary, input[type="submit"], .button.primary {
+  background: $material-primary-button;
+  color: white;
+  font-weight: bold;
 }
 
-button:not(:disabled):active {
-  background: linear-gradient(#E3E3E3 40%, #F9F9F9 70%);
+button:not(:disabled):hover {
+  border-color: $gray-4;
 }
 
 .comma::after {
