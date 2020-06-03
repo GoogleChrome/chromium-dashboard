@@ -37,6 +37,9 @@ class FeatureHandlerTest(unittest.TestCase):
     response = webapp2.Response()
     self.handler = admin.FeatureHandler(request, response)
 
+  def tearDown(self):
+    self.feature_1.delete()
+
   def test_post__anon(self):
     """Anon cannot edit features, gets a 401."""
     testing_config.sign_out()

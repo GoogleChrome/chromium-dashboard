@@ -16,6 +16,7 @@ import unittest
 import testing_config  # Must be imported before the module under test.
 
 import mock
+from google.appengine.api import memcache
 from google.appengine.api import users
 
 import models
@@ -79,6 +80,43 @@ class ModelsFunctionsTest(unittest.TestCase):
     self.assertEqual(
         [[1, 2], [3, 4], [5]],
         list(models.list_to_chunks([1, 2, 3, 4, 5], 2)))
+
+
+class FeatureTest(unittest.TestCase):
+
+  def setUp(self):
+    self.feature_1 = models.Feature(
+        name='feature one', summary='sum', category=1, visibility=1,
+        standardization=1, web_dev_views=1, impl_status_chrome=1)
+    self.feature_1.put()
+
+    self.feature_2 = models.Feature(
+        name='feature two', summary='sum', category=1, visibility=1,
+        standardization=1, web_dev_views=1, impl_status_chrome=1)
+    self.feature_2.put()
+
+  def tearDown(self):
+    self.feature_1.delete()
+    self.feature_2.delete()
+    memcache.flush_all()
+
+  def test_get_chronological__normal(self):
+    """We can retrieve a list of features."""
+    actual = models.Feature.get_chronological()
+    names = [f['name'] for f in actual]
+    self.assertEqual(
+        ['feature one', 'feature two'],
+        names)
+
+  def test_get_chronological__unlisted(self):
+    """Unlisted features are not included in the list."""
+    self.feature_2.unlisted = True
+    self.feature_2.put()
+    actual = models.Feature.get_chronological()
+    names = [f['name'] for f in actual]
+    self.assertEqual(
+        ['feature one'],
+        names)
 
 
 class UserPrefTest(unittest.TestCase):
