@@ -76,7 +76,7 @@ ALL_FIELDS = {
     'unlisted': forms.BooleanField(
       required=False, initial=False,
       help_text=('Check this box for draft features that should not appear '
-                 'in the feature list.  Anyone with the link will be able to '
+                 'in the feature list. Anyone with the link will be able to '
                  'view the feature on the detail page.')),
 
     'spec_link': forms.URLField(
