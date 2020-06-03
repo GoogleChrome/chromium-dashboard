@@ -117,7 +117,11 @@ ALL_FIELDS = {
          'our <a target="_blank" href="'
          'https://docs.google.com/document/d/'
          '1RC-pBBvsazYfCNNUSkPqAVpSpNJ96U8trhNkfV0v9fk/edit">'
-         'principles of web compatibility</a>.')),
+         'principles of web compatibility</a>.<br>'
+         '<br>'
+         'Please include citation links below where possible. Examples include '
+         'resolutions from relevant standards bodies (e.g. W3C Working Group), '
+         'tracking bugs, or links to online conversations.')),
 
     'safari_views': forms.ChoiceField(
         label='Safari views',

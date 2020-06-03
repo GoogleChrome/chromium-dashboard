@@ -166,10 +166,10 @@ OPPOSED = 7
 VENDOR_VIEWS = {
   SHIPPED: 'Shipped',
   IN_DEV: 'In development',
-  PUBLIC_SUPPORT: 'Public support',
+  PUBLIC_SUPPORT: 'Positive signals',
   MIXED_SIGNALS: 'Mixed public signals',
   NO_PUBLIC_SIGNALS: 'No public signals',
-  PUBLIC_SKEPTICISM: 'Public skepticism',
+  PUBLIC_SKEPTICISM: 'Negative signals',
   OPPOSED: 'Opposed',
   }
 
@@ -1076,7 +1076,7 @@ class FeatureForm(forms.Form):
 
   interop_compat_risks = forms.CharField(label='Interoperability and Compatibility Risks', required=True,
       widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 1480}),
-      help_text='Describe the degree of <a target="_blank" href="https://sites.google.com/a/chromium.org/dev/blink?pli=1#TOC-Policy-for-shipping-and-removing-web-platform-API-features">interoperability risk</a>. For a new feature, the main risk is that it fails to become an interoperable part of the web platform if other browsers do not implement it. For a removal, please review our <a target="_blank" href="https://docs.google.com/document/d/1RC-pBBvsazYfCNNUSkPqAVpSpNJ96U8trhNkfV0v9fk/edit">principles of web compatibility</a>.')
+      help_text='Describe the degree of <a target="_blank" href="https://sites.google.com/a/chromium.org/dev/blink?pli=1#TOC-Policy-for-shipping-and-removing-web-platform-API-features">interoperability risk</a>. For a new feature, the main risk is that it fails to become an interoperable part of the web platform if other browsers do not implement it. For a removal, please review our <a target="_blank" href="https://docs.google.com/document/d/1RC-pBBvsazYfCNNUSkPqAVpSpNJ96U8trhNkfV0v9fk/edit">principles of web compatibility</a>.<br><br>Please include citation links below where possible. Examples include resolutions from relevant standards bodies (e.g. W3C Working Group), tracking bugs, or links to online conversations.')
 
   safari_views = forms.ChoiceField(label='Safari views',
                                    choices=VENDOR_VIEWS.items(),
