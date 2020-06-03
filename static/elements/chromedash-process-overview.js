@@ -49,7 +49,7 @@ class ChromedashProcessOverview extends LitElement {
             ${this.feature.intent_stage_int == stage.outgoing_stage ?
               html`<div><a
                      href="/guide/stage/${featureId}/${stage.incoming_stage}"
-                     class="buttonify">Update</a></div>
+                     class="button primary">Update</a></div>
                    <!-- TODO(jrobbins): Preview email and other actions -->` :
               nothing }
             ${this.feature.intent_stage_int > stage.incoming_stage &&
@@ -59,7 +59,7 @@ class ChromedashProcessOverview extends LitElement {
               nothing }
             ${this.feature.intent_stage_int == stage.incoming_stage ?
               html`<a href="/guide/stage/${featureId}/${stage.incoming_stage}"
-                      class="buttonify">Start</a>` :
+                      class="button primary">Start</a>` :
               nothing }
             ${this.feature.intent_stage_int < stage.incoming_stage ?
               html`<a href="/guide/stage/${featureId}/${stage.incoming_stage}"
