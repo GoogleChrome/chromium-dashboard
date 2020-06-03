@@ -752,7 +752,8 @@ class Feature(DictModel):
       pre_release.extend(shipping_features)
       pre_release.extend(no_longer_pursuing_features)
 
-      feature_list = [f.format_for_template(version) for f in pre_release]
+      feature_list = [f.format_for_template(version) for f in pre_release
+                      if not f.unlisted]
 
       self._annotate_first_of_milestones(feature_list, version=version)
 
@@ -893,6 +894,7 @@ class Feature(DictModel):
   summary = db.StringProperty(required=True, multiline=True)
   intent_to_implement_url = db.LinkProperty()
   origin_trial_feedback_url = db.LinkProperty()
+  unlisted = db.BooleanProperty(default=False)
 
   # A list of intent threads in the format "date|subject|url"
   intent_threads = db.StringListProperty()
@@ -1048,6 +1050,12 @@ class FeatureForm(forms.Form):
 
   origin_trial_feedback_url = forms.URLField(required=False, label='Origin Trial feedback summary',
       help_text='If your feature was available as an Origin Trial, link to a summary of usage and developer feedback. If not, leave this empty.')
+
+  unlisted = forms.BooleanField(
+      required=False, initial=False,
+      help_text=('Check this box for draft features that should not appear '
+                 'in the feature list.  Anyone with the link will be able to '
+                 'view the feature on the detail page.'))
 
   doc_links = forms.CharField(label='Doc link(s)', required=False,
       widget=forms.Textarea(attrs={'rows': 4, 'cols': 50, 'maxlength': 500}),

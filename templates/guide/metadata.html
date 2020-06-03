@@ -12,6 +12,9 @@
       {{ feature.summary }}
     </div>
     <div>Category: {{ feature.category }}</div>
+    {% if feature.unlisted %}
+      <div>Not shown in feature list</div>
+    {% endif %}
     <div>Owners: 
       {% for owner in feature.owner %}
         <a href="mailto:{{ owner }}">{{ owner }}</a>

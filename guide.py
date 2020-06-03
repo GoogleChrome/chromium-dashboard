@@ -95,6 +95,7 @@ class FeatureNew(common.ContentHandler):
         impl_status_chrome=models.NO_ACTIVE_DEV,
         visibility=models.WARRANTS_ARTICLE,
         standardization=models.EDITORS_DRAFT,
+        unlisted=self.request.get('unlisted') == 'on',
         web_dev_views=models.DEV_NO_SIGNALS)
     key = feature.put()
 
@@ -158,6 +159,10 @@ class FeatureEditStage(common.ContentHandler):
     # to have been touched.  Later we will add javascript to populate a
     # hidden form field named "touched" that lists the names of all fields
     # actually touched by the user.
+    # For now, checkboxes are always considered "touched", otherwise there
+    # would be no way to uncheck.
+    if param_name in ('unlisted', 'all_platforms', 'wpt', 'prefixed'):
+      return True
     return param_name in self.request.POST
 
   def split_input(self, field_name, delim='\\r?\\n'):
@@ -375,6 +380,8 @@ class FeatureEditStage(common.ContentHandler):
       feature.tag_review = self.request.get('tag_review')
     if self.touched('standardization'):
       feature.standardization = int(self.request.get('standardization'))
+    if self.touched('unlisted'):
+      feature.unlisted = self.request.get('unlisted') == 'on'
     if self.touched('comments'):
       feature.comments = self.request.get('comments')
     if self.touched('experiment_goals'):

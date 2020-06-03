@@ -76,6 +76,12 @@
       </div>
     </section>
 
+    {% if feature.unlisted %}
+    <section id="access">
+      <p><b>Not shown in feature list</b></p>
+    </section>
+    {% endif %}
+
     {% if feature.summary %}
     <section id="summary">
       <p>{{ feature.summary|urlize }}</p>

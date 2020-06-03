@@ -73,6 +73,12 @@ ALL_FIELDS = {
         help_text=("The standardization status of the API. In bodies that don't "
                    "use this nomenclature, use the closest equivalent.")),
 
+    'unlisted': forms.BooleanField(
+      required=False, initial=False,
+      help_text=('Check this box for draft features that should not appear '
+                 'in the feature list.  Anyone with the link will be able to '
+                 'view the feature on the detail page.')),
+
     'spec_link': forms.URLField(
         required=False, label='Spec link',
         help_text=('Link to spec, if and when available.  Please update the '
@@ -256,6 +262,7 @@ class NewFeatureForm(forms.Form):
   summary = ALL_FIELDS['summary']
   category = ALL_FIELDS['category']
   current_user_email = users.get_current_user().email if users.get_current_user() else None
+  unlisted = ALL_FIELDS['unlisted']
   owner = forms.CharField(
       initial=current_user_email, required=True, label='Contact emails',
       help_text=('Comma separated list of full email addresses. '
@@ -268,6 +275,7 @@ class MetadataForm(forms.Form):
   name = ALL_FIELDS['name']
   summary = ALL_FIELDS['summary']
   category = ALL_FIELDS['category']
+  unlisted = ALL_FIELDS['unlisted']
   owner = forms.CharField(
       label='Contact emails',
       help_text=('Comma separated list of full email addresses. '
