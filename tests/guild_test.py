@@ -94,6 +94,7 @@ class FeatureNewTest(unittest.TestCase):
     self.assertEqual(1, feature.category)
     self.assertEqual('Feature name', feature.name)
     self.assertEqual('Feature summary', feature.summary)
+    feature.delete()
 
 
 class ProcessOverviewTest(unittest.TestCase):
@@ -108,6 +109,9 @@ class ProcessOverviewTest(unittest.TestCase):
         '/guide/edit/%d' % self.feature_1.key().id())
     response = webapp2.Response()
     self.handler = guide.ProcessOverview(request, response)
+
+  def tearDown(self):
+    self.feature_1.delete()
 
   @mock.patch('guide.ProcessOverview.render')
   def test_get__anon(self, mock_render):
@@ -159,6 +163,9 @@ class FeatureEditStageTest(unittest.TestCase):
         '/guide/stage/%d/%d' % (self.feature_1.key().id(), self.stage))
     response = webapp2.Response()
     self.handler = guide.FeatureEditStage(request, response)
+
+  def tearDown(self):
+    self.feature_1.delete()
 
   def test_touched(self):
     """We can tell if the user meant to edit a field."""

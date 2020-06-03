@@ -394,6 +394,7 @@ class FeatureHandler(common.ContentHandler):
       feature.name = self.request.get('name')
       feature.intent_stage = intent_stage
       feature.summary = self.request.get('summary')
+      feature.unlisted = self.request.get('unlisted') == 'on'
       feature.intent_to_implement_url = intent_to_implement_url
       feature.origin_trial_feedback_url = origin_trial_feedback_url
       feature.motivation = self.request.get('motivation')

@@ -60,6 +60,10 @@ class EmailFormattingTest(unittest.TestCase):
         blink_components=['Blink'])
     self.feature_2.put()
 
+  def tearDown(self):
+    self.feature_1.delete()
+    self.feature_2.delete()
+
   def test_format_email_body__new(self):
     """We generate an email body for new features."""
     body_html = notifier.format_email_body(
@@ -211,6 +215,10 @@ class FeatureStarTest(unittest.TestCase):
         standardization=1, web_dev_views=1, impl_status_chrome=1)
     self.feature_2.put()
 
+  def tearDown(self):
+    self.feature_1.delete()
+    self.feature_2.delete()
+
   def test_get_star__no_existing(self):
     """User has never starred the given feature."""
     email = 'user1@example.com'
@@ -358,6 +366,9 @@ class SetStarHandlerTest(unittest.TestCase):
     self.handler.request = webapp2.Request.blank('/features/star/set')
     self.handler.response = webapp2.Response()
 
+  def tearDown(self):
+    self.feature_1.delete()
+
   def test_post__invalid_feature_id(self):
     """We reject star requests that don't have an int featureId."""
     self.handler.request.body = '{}'
@@ -444,6 +455,9 @@ class GetUserStarsHandlerTest(unittest.TestCase):
     self.handler = notifier.GetUserStarsHandler()
     self.handler.request = webapp2.Request.blank('/features/star/list')
     self.handler.response = webapp2.Response()
+
+  def tearDown(self):
+    self.feature_1.delete()
 
   def test_post__anon(self):
     """Anon should always have an empty list of stars."""
