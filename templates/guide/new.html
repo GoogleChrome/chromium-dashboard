@@ -18,8 +18,43 @@
 
 <section>
   <form name="overview_form" method="POST" action="{{ current_path }}">
-    <table>
+    <table style="max-width: 60em">
       {{ overview_form }}
+      <tr>
+        <th>Feature type:</th>
+        <td class="choices">
+          <div>
+            <label for="id_feature_type_0">
+              <input id="id_feature_type_0" name="feature_type" type="radio"
+                     value="0" required>
+              New feature incubation
+            </label>
+            <p>When building new features, we follow a
+              process that emphasizes engagement with the WICG and other
+              stakeholders early.</p>
+          </div>
+          <div>
+            <label for="id_feature_type_1">
+              <input id="id_feature_type_1" name="feature_type" type="radio"
+                     value="1" required>
+              Existing feature implementation
+            </label>
+            <p>If there is already an agreed specification, work may
+              quickly start on implementation and origin trials.</p>
+          </div>
+          <div>
+            <label for="id_feature_type_2">
+              <input id="id_feature_type_2" name="feature_type" type="radio"
+                     value="2" required>
+              Web developer facing change to existing code
+            </label>
+            <p>Sometimes a change to a shipped feature requires an additional
+              feature entry.  This type of feature entry can be referenced
+              from a PSA immediately.</p>
+          </div>
+
+        </td>
+      </tr>
     </table>
 
     <input type="submit" class="primary" value="Submit">

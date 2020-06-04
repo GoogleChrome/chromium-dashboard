@@ -73,6 +73,17 @@ FEATURE_CATEGORIES = {
   CAPABILITIES: 'Capabilities (Fugu)'
   }
 
+FEATURE_TYPE_INCUBATE_ID = 0
+FEATURE_TYPE_EXISTING_ID = 1
+FEATURE_TYPE_CODE_CHANGE_ID = 2
+
+FEATURE_TYPES = {
+    FEATURE_TYPE_INCUBATE_ID: 'New feature incubation',
+    FEATURE_TYPE_EXISTING_ID: 'Existing feature implementation',
+    FEATURE_TYPE_CODE_CHANGE_ID: 'Web developer facing change to existing code',
+}
+
+
 # Intent stages and mapping from stage to stage name.
 INTENT_NONE = 0
 INTENT_IMPLEMENT = 1
@@ -486,6 +497,9 @@ class Feature(DictModel):
       else:
         d['id'] = None
       d['category'] = FEATURE_CATEGORIES[self.category]
+      if self.feature_type is not None:
+        d['feature_type'] = FEATURE_TYPES[self.feature_type]
+        d['feature_type_int'] = self.feature_type
       if self.intent_stage is not None:
         d['intent_stage'] = INTENT_STAGES[self.intent_stage]
         d['intent_stage_int'] = self.intent_stage
@@ -587,6 +601,9 @@ class Feature(DictModel):
       else:
         d['id'] = None
       d['category'] = FEATURE_CATEGORIES[self.category]
+      if self.feature_type is not None:
+        d['feature_type'] = FEATURE_TYPES[self.feature_type]
+        d['feature_type_int'] = self.feature_type
       if self.intent_stage is not None:
         d['intent_stage'] = INTENT_STAGES[self.intent_stage]
         d['intent_stage_int'] = self.intent_stage
@@ -890,6 +907,7 @@ class Feature(DictModel):
   # General info.
   category = db.IntegerProperty(required=True)
   name = db.StringProperty(required=True)
+  feature_type = db.IntegerProperty(default=FEATURE_TYPE_INCUBATE_ID)
   intent_stage = db.IntegerProperty(default=0)
   summary = db.StringProperty(required=True, multiline=True)
   intent_to_implement_url = db.LinkProperty()

@@ -172,7 +172,7 @@ class ContentHandler(BaseHandler):
     try:
       self.response.out.write(render_to_string(template_path, data))
     except Exception as e:
-      logging.error(e)
+      logging.exception(e)
       handle_404(self.request, self.response, e)
 
   def render_atom_feed(self, title, data):

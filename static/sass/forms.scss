@@ -9,11 +9,24 @@ table {
 
   th {
     max-width: 200px;
+    white-space: nowrap;
   }
 
   th, td {
-    padding-bottom: 10px;
+    padding: 10px;
+    vertical-align: baseline;
   }
+  .choices label {
+    font-weight: bold;
+  }
+  .choices div {
+    margin-top: 1em;
+  }
+
+  .choices p {
+    margin: .5em 1.5em 1em;
+  }
+
   .helptext {
     display: block;
     font-style: italic;

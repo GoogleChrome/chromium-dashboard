@@ -33,7 +33,7 @@ class ChromedashProcessOverview extends LitElement {
          <th style="width: 80px"></th>
        </tr>
 
-       ${this.process.map(stage => html`
+       ${this.process.stages.map(stage => html`
          <tr class="${this.feature.intent_stage_int == stage.outgoing_stage ?
                       'active' : ''}">
            <td>
