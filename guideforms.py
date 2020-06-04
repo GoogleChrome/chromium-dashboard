@@ -120,7 +120,7 @@ ALL_FIELDS = {
          'principles of web compatibility</a>.<br>'
          '<br>'
          'Please include citation links below where possible. Examples include '
-         'resolutions from relevant standards bodies (e.g. W3C Working Group), '
+         'resolutions from relevant standards bodies (e.g. W3C working group), '
          'tracking bugs, or links to online conversations.')),
 
     'safari_views': forms.ChoiceField(
