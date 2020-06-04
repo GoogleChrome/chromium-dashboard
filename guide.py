@@ -42,25 +42,25 @@ import settings
 
 # Forms to be used for each stage of each process.
 STAGE_FORMS = {
-    (models.PROCESS_BLINK_LAUNCH_ID, models.INTENT_NONE):
+    (models.FEATURE_TYPE_INCUBATE_ID, models.INTENT_NONE):
     guideforms.Incubate,
-    (models.PROCESS_BLINK_LAUNCH_ID, models.INTENT_IMPLEMENT):
+    (models.FEATURE_TYPE_INCUBATE_ID, models.INTENT_IMPLEMENT):
     guideforms.Prototype,
-    (models.PROCESS_BLINK_LAUNCH_ID, models.INTENT_EXPERIMENT):
+    (models.FEATURE_TYPE_INCUBATE_ID, models.INTENT_EXPERIMENT):
     guideforms.DevTrial,
-    (models.PROCESS_BLINK_LAUNCH_ID, models.INTENT_EXTEND_TRIAL):
+    (models.FEATURE_TYPE_INCUBATE_ID, models.INTENT_EXTEND_TRIAL):
     guideforms.OriginTrial,
 
-    (models.PROCESS_FAST_TRACK_ID, models.INTENT_NONE):
+    (models.FEATURE_TYPE_EXISTING_ID, models.INTENT_NONE):
     guideforms.Incubate,
-    (models.PROCESS_FAST_TRACK_ID, models.INTENT_IMPLEMENT_SHIP):
+    (models.FEATURE_TYPE_EXISTING_ID, models.INTENT_IMPLEMENT_SHIP):
     guideforms.Prototype,
-    (models.PROCESS_FAST_TRACK_ID, models.INTENT_SHIP):
+    (models.FEATURE_TYPE_EXISTING_ID, models.INTENT_SHIP):
     guideforms.DevTrial,
-    (models.PROCESS_FAST_TRACK_ID, models.INTENT_EXTEND_TRIAL):
+    (models.FEATURE_TYPE_EXISTING_ID, models.INTENT_EXTEND_TRIAL):
     guideforms.OriginTrial,
 
-    (models.PROCESS_PSA_ONLY_ID, models.INTENT_NONE):
+    (models.FEATURE_TYPE_CODE_CHANGE_ID, models.INTENT_NONE):
     guideforms.Incubate,
 }
 
@@ -105,7 +105,7 @@ class FeatureNew(common.ContentHandler):
     feature = models.Feature(
         category=int(self.request.get('category')),
         name=self.request.get('name'),
-        process=int(self.request.get('process', 0)),
+        feature_type=int(self.request.get('feature_type', 0)),
         intent_stage=models.INTENT_NONE,
         summary=self.request.get('summary'),
         owner=owners,
@@ -140,7 +140,7 @@ class ProcessOverview(common.ContentHandler):
       self.abort(404)
 
     feature_process = processes.ALL_PROCESSES.get(
-        f.process, processes.BLINK_LAUNCH_PROCESS)
+        f.feature_type, processes.BLINK_LAUNCH_PROCESS)
     template_data = {
         'overview_form': guideforms.MetadataForm(f.format_for_edit()),
         'process_json': json.dumps(processes.process_to_dict(feature_process)),
@@ -224,7 +224,7 @@ class FeatureEditStage(common.ContentHandler):
       self.abort(404)
 
     feature_process = processes.ALL_PROCESSES.get(
-        f.process, processes.BLINK_LAUNCH_PROCESS)
+        f.feature_type, processes.BLINK_LAUNCH_PROCESS)
     stage_name = ''
     for stage in feature_process.stages:
       if stage.outgoing_stage == stage_id:
@@ -236,7 +236,7 @@ class FeatureEditStage(common.ContentHandler):
 
     # TODO(jrobbins): show useful error if stage not found.
     detail_form_class = STAGE_FORMS.get(
-        (f.process, stage_id), models.FeatureForm)
+        (f.feature_type, stage_id), models.FeatureForm)
 
     # Provide new or populated form to template.
     template_data.update({
@@ -329,8 +329,8 @@ class FeatureEditStage(common.ContentHandler):
       devrel_addrs = self.split_input('devrel', delim=',')
       feature.devrel = [db.Email(addr) for addr in devrel_addrs]
 
-    if self.touched('process'):
-      feature.process = int(self.request.get('process'))
+    if self.touched('feature_type'):
+      feature.feature_type = int(self.request.get('feature_type'))
     if self.touched('intent_stage'):
       feature.intent_stage = int(self.request.get('intent_stage'))
 

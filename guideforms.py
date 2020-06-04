@@ -46,12 +46,12 @@ ALL_FIELDS = {
         initial=models.MISC,
         choices=sorted(models.FEATURE_CATEGORIES.items(), key=lambda x: x[1])),
 
-    'process': forms.ChoiceField(
-        label='Feature type', required=True,
-        help_text=('Select the process appropriate to this feature.'),
-        initial=models.PROCESS_BLINK_LAUNCH_ID,
+    'feature_type': forms.ChoiceField(
+        required=True,
+        help_text=('Select the feature type.'),
+        initial=models.FEATURE_TYPE_INCUBATE_ID,
         choices=sorted(
-            [(p_id, p.name) for (p_id, p) in processes.ALL_PROCESSES.items()],
+            [(ft_id, name) for (ft_id, name) in models.FEATURE_TYPES.items()],
             key=lambda x: x[1])),
 
     'motivation': forms.CharField(
@@ -266,7 +266,7 @@ ALL_FIELDS = {
 class NewFeatureForm(forms.Form):
 
   field_order = (
-      'name', 'summary', 'category', 'owner', 'process')
+      'name', 'summary', 'category', 'owner', 'feature_type')
   name = ALL_FIELDS['name']
   summary = ALL_FIELDS['summary']
   category = ALL_FIELDS['category']
@@ -276,14 +276,13 @@ class NewFeatureForm(forms.Form):
       initial=current_user_email, required=True, label='Contact emails',
       help_text=('Comma separated list of full email addresses. '
                  'Prefer @chromium.org.'))
-  # Done with custom HTML
-  # process = ALL_FIELDS['process']
+  # Note: feature_type is done with custom HTML
 
 
 class MetadataForm(forms.Form):
 
   field_order = (
-      'name', 'summary', 'category', 'owner', 'process', 'intent_stage')
+      'name', 'summary', 'category', 'owner', 'feature_type', 'intent_stage')
   name = ALL_FIELDS['name']
   summary = ALL_FIELDS['summary']
   category = ALL_FIELDS['category']
@@ -293,7 +292,7 @@ class MetadataForm(forms.Form):
       label='Contact emails',
       help_text=('Comma separated list of full email addresses. '
                  'Prefer @chromium.org.'))
-  process = ALL_FIELDS['process']
+  feature_type = ALL_FIELDS['feature_type']
   intent_stage = forms.ChoiceField(
       required=True, label='Feature stage',
       help_text='Select the appropriate process stage.',

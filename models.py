@@ -73,14 +73,14 @@ FEATURE_CATEGORIES = {
   CAPABILITIES: 'Capabilities (Fugu)'
   }
 
-PROCESS_BLINK_LAUNCH_ID = 0
-PROCESS_FAST_TRACK_ID = 1
-PROCESS_PSA_ONLY_ID = 2
+FEATURE_TYPE_INCUBATE_ID = 0
+FEATURE_TYPE_EXISTING_ID = 1
+FEATURE_TYPE_CODE_CHANGE_ID = 2
 
-PROCESSES = {
-    PROCESS_BLINK_LAUNCH_ID: 'New feature incubation',
-    PROCESS_FAST_TRACK_ID: 'Existing feature implementation',
-    PROCESS_PSA_ONLY_ID: 'Web developer facing change to existing code',
+FEATURE_TYPES = {
+    FEATURE_TYPE_INCUBATE_ID: 'New feature incubation',
+    FEATURE_TYPE_EXISTING_ID: 'Existing feature implementation',
+    FEATURE_TYPE_CODE_CHANGE_ID: 'Web developer facing change to existing code',
 }
 
 
@@ -497,9 +497,9 @@ class Feature(DictModel):
       else:
         d['id'] = None
       d['category'] = FEATURE_CATEGORIES[self.category]
-      if self.process is not None:
-        d['process'] = PROCESSES[self.process]
-        d['process_int'] = self.process
+      if self.feature_type is not None:
+        d['feature_type'] = FEATURE_TYPES[self.feature_type]
+        d['feature_type_int'] = self.feature_type
       if self.intent_stage is not None:
         d['intent_stage'] = INTENT_STAGES[self.intent_stage]
         d['intent_stage_int'] = self.intent_stage
@@ -601,9 +601,9 @@ class Feature(DictModel):
       else:
         d['id'] = None
       d['category'] = FEATURE_CATEGORIES[self.category]
-      if self.process is not None:
-        d['process'] = PROCESSES[self.process]
-        d['process_int'] = self.process
+      if self.feature_type is not None:
+        d['feature_type'] = FEATURE_TYPES[self.feature_type]
+        d['feature_type_int'] = self.feature_type
       if self.intent_stage is not None:
         d['intent_stage'] = INTENT_STAGES[self.intent_stage]
         d['intent_stage_int'] = self.intent_stage
@@ -907,7 +907,7 @@ class Feature(DictModel):
   # General info.
   category = db.IntegerProperty(required=True)
   name = db.StringProperty(required=True)
-  process = db.IntegerProperty(default=PROCESS_BLINK_LAUNCH_ID)
+  feature_type = db.IntegerProperty(default=FEATURE_TYPE_INCUBATE_ID)
   intent_stage = db.IntegerProperty(default=0)
   summary = db.StringProperty(required=True, multiline=True)
   intent_to_implement_url = db.LinkProperty()
