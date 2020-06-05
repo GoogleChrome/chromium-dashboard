@@ -119,7 +119,7 @@ class FeatureTest(unittest.TestCase):
         names)
 
   def test_get_chronological__unlisted_shown(self):
-    """Unlisted features are still included for users allowed to edit."""
+    """Unlisted features are included for users with edit access."""
     self.feature_2.unlisted = True
     self.feature_2.put()
     actual = models.Feature.get_chronological(show_unlisted=True)
