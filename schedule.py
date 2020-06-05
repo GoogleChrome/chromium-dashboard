@@ -91,8 +91,11 @@ class ScheduleHandler(common.ContentHandler):
 
   @common.strip_trailing_slash
   def get(self, path):
+    user = users.get_current_user()
+    features = models.Feature.get_chronological(
+        show_unlisted=self._is_user_whitelisted(user))
     data = {
-      'features': json.dumps(models.Feature.get_chronological()),
+      'features': json.dumps(features),
       'channels': json.dumps(construct_chrome_channels_details(),
                              indent=4)
     }

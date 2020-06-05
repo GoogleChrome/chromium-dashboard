@@ -118,6 +118,16 @@ class FeatureTest(unittest.TestCase):
         ['feature one'],
         names)
 
+  def test_get_chronological__unlisted_shown(self):
+    """Unlisted features are still included for users allowed to edit."""
+    self.feature_2.unlisted = True
+    self.feature_2.put()
+    actual = models.Feature.get_chronological(show_unlisted=True)
+    names = [f['name'] for f in actual]
+    self.assertEqual(
+        ['feature one', 'feature two'],
+        names)
+
 
 class UserPrefTest(unittest.TestCase):
 
