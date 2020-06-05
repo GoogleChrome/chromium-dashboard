@@ -708,7 +708,8 @@ class Feature(DictModel):
     return feature
 
   @classmethod
-  def get_chronological(self, limit=None, update_cache=False, version=None):
+  def get_chronological(
+      self, limit=None, update_cache=False, version=None, show_unlisted=False):
     KEY = '%s|%s|%s|%s' % (Feature.DEFAULT_MEMCACHE_KEY,
                            'cronorder', limit, version)
 
@@ -769,8 +770,7 @@ class Feature(DictModel):
       pre_release.extend(shipping_features)
       pre_release.extend(no_longer_pursuing_features)
 
-      feature_list = [f.format_for_template(version) for f in pre_release
-                      if not f.unlisted]
+      feature_list = [f.format_for_template(version) for f in pre_release]
 
       self._annotate_first_of_milestones(feature_list, version=version)
 
@@ -784,7 +784,11 @@ class Feature(DictModel):
         temp_feature_list.extend(feature_list[key])
       feature_list = temp_feature_list
 
-    return feature_list
+    allowed_feature_list = [
+        f for f in feature_list
+        if show_unlisted or not f['unlisted']]
+
+    return allowed_feature_list
 
   @classmethod
   def get_shipping_samples(self, limit=None, update_cache=False):

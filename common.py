@@ -71,6 +71,26 @@ class BaseHandler(webapp2.RequestHandler):
     # Settings can't be global in python 2.7 env.
     logging.getLogger().setLevel(logging.DEBUG)
 
+  def _is_user_whitelisted(self, user):
+    if not user:
+      return False
+
+    is_whitelisted = False
+
+    if users.is_current_user_admin():
+      is_whitelisted = True
+    elif user.email().endswith('@chromium.org') or user.email().endswith('@google.com'):
+      is_whitelisted = True
+    else:
+      # TODO(ericbidelman): memcache user lookup.
+      query = models.AppUser.all(keys_only=True).filter('email =', user.email())
+      found_user = query.get()
+
+      if found_user is not None:
+        is_whitelisted = True
+
+    return is_whitelisted
+
 
 class JSONHandler(BaseHandler):
 
@@ -113,26 +133,6 @@ class JSONHandler(BaseHandler):
 
 
 class ContentHandler(BaseHandler):
-
-  def _is_user_whitelisted(self, user):
-    if not user:
-      return False
-
-    is_whitelisted = False
-
-    if users.is_current_user_admin():
-      is_whitelisted = True
-    elif user.email().endswith('@chromium.org') or user.email().endswith('@google.com'):
-      is_whitelisted = True
-    else:
-      # TODO(ericbidelman): memcache user lookup.
-      query = models.AppUser.all(keys_only=True).filter('email =', user.email())
-      found_user = query.get()
-
-      if found_user is not None:
-        is_whitelisted = True
-
-    return is_whitelisted
 
   def _add_common_template_values(self, d):
     """Mixin common values for templates into d."""

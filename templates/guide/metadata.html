@@ -13,7 +13,8 @@
     </div>
     <div>Category: {{ feature.category }}</div>
     {% if feature.unlisted %}
-      <div>Not shown in feature list</div>
+    <div>This feature is only shown in the feature list
+         to users who with edit access.</div>
     {% endif %}
     <div>Owners: 
       {% for owner in feature.owner %}
