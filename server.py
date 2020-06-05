@@ -158,9 +158,6 @@ class FeaturesAPIHandler(common.JSONHandler):
     user = users.get_current_user()
     feature_list = models.Feature.get_chronological(
         version=version, show_unlisted=self._is_user_whitelisted(user))
-    logging.info('user is %r', user)
-    logging.info('show_unlisted is %r', self._is_user_whitelisted(user))
-    logging.info('feature: %r', [f['name'] for f in feature_list])
     return common.JSONHandler.get(
         self, feature_list, formatted=True, public=False)
 
