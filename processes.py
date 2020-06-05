@@ -76,7 +76,7 @@ BLINK_PROCESS_STAGES = [
       'Provide sample code. '
       'Request feedback from browser vendors.',
       ['Samples',
-       'Draft API overview (may be on MDN)',
+       'Draft API overview',
        'Request signals',
        'External reviews',
        'Ready for Trial email',
