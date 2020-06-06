@@ -50,9 +50,7 @@ ALL_FIELDS = {
         required=True,
         help_text=('Select the feature type.'),
         initial=models.FEATURE_TYPE_INCUBATE_ID,
-        choices=sorted(
-            [(ft_id, name) for (ft_id, name) in models.FEATURE_TYPES.items()],
-            key=lambda x: x[1])),
+        choices=sorted(models.FEATURE_TYPES.items())),
 
     'motivation': forms.CharField(
         label='Motivation', required=True,

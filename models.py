@@ -76,11 +76,13 @@ FEATURE_CATEGORIES = {
 FEATURE_TYPE_INCUBATE_ID = 0
 FEATURE_TYPE_EXISTING_ID = 1
 FEATURE_TYPE_CODE_CHANGE_ID = 2
+FEATURE_TYPE_DEPRECATION_ID = 3
 
 FEATURE_TYPES = {
     FEATURE_TYPE_INCUBATE_ID: 'New feature incubation',
     FEATURE_TYPE_EXISTING_ID: 'Existing feature implementation',
     FEATURE_TYPE_CODE_CHANGE_ID: 'Web developer facing change to existing code',
+    FEATURE_TYPE_DEPRECATION_ID: 'Feature deprecation',
 }
 
 

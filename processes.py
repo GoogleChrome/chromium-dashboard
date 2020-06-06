@@ -72,10 +72,11 @@ BLINK_PROCESS_STAGES = [
 
   ProcessStage(
       'Dev trials and iterate on design',
-      'Publicize test-readiness.  Share sample code. '
+      'Publicize availablity for developers to try. '
+      'Provide sample code. '
       'Request feedback from browser vendors.',
-      ['DevRel publicity request',
-       'Samples',
+      ['Samples',
+       'Draft API overview',
        'Request signals',
        'External reviews',
        'Ready for Trial email',
@@ -87,6 +88,8 @@ BLINK_PROCESS_STAGES = [
       'Work through a TAG review and gather vendor signals.',
       ['TAG review request',
        'Vendor signals',
+       'Documentation signoff',
+       'Estimated target milestone',
       ],
       models.INTENT_IMPLEMENT_SHIP, models.INTENT_SHIP),
 
@@ -109,6 +112,7 @@ BLINK_PROCESS_STAGES = [
        'TAG issues addressed',
        'Three LGTMs',
        'Updated vendor signals',
+       'Finalized target milestone',
       ],
       models.INTENT_SHIP, models.INTENT_REMOVE),
   ]
@@ -116,8 +120,8 @@ BLINK_PROCESS_STAGES = [
 
 BLINK_LAUNCH_PROCESS = Process(
     'New feature incubation',
-    'Description of blink launch process',
-    'When to use it',
+    'Description of blink launch process',  # Not used yet.
+    'When to use it',  # Not used yet.
     BLINK_PROCESS_STAGES)
 
 
@@ -138,12 +142,22 @@ BLINK_FAST_TRACK_STAGES = [
       models.INTENT_IMPLEMENT_SHIP, models.INTENT_SHIP),
 
   ProcessStage(
-      'Dev Trial (Optional) Origin Trial',
-      'Publicize test-readiness.  Set up and run an origin trial. '
+      'Dev trials and iterate on implementation',
+      'Publicize availablity for developers to try. '
+      'Provide sample code. '
       'Act on feedback from partners and web developers.',
-      ['Documentation',
-       'Estiamted target milestone',
-       'OT request',
+      ['Samples',
+       'Draft API overview (may be on MDN)',
+       'Ready for Trial email',
+       'Estimated target milestone',
+      ],
+      models.INTENT_EXTEND_TRIAL, models.INTENT_EXTEND_TRIAL),
+
+  ProcessStage(
+      '(Optional) Origin Trial',
+      'Set up and run an origin trial. '
+      'Act on feedback from partners and web developers.',
+      ['OT request',
        'OT available',
        'OT results',
       ],
@@ -155,6 +169,7 @@ BLINK_FAST_TRACK_STAGES = [
       'Further standardization.',
       ['Intent to Ship email',
        'Three LGTMs',
+       'Documentation signoff',
        'Finalized target milestone',
       ],
       models.INTENT_SHIP, models.INTENT_REMOVE),
@@ -163,33 +178,110 @@ BLINK_FAST_TRACK_STAGES = [
 
 BLINK_FAST_TRACK_PROCESS = Process(
     'Existing feature implementation',
-    'Description of blink fast track process',
-    'When to use it',
+    'Description of blink fast track process',  # Not used yet.
+    'When to use it',  # Not used yet.
     BLINK_FAST_TRACK_STAGES)
 
 
 PSA_ONLY_STAGES = [
   ProcessStage(
-      'Create entry',
-      'Create a WebStatus feature entry for an existing feature '
-      'so that it can be referenced in a PSA email.',
-      ['Feature entry',
-       'Draft PSA',
-       'LGTM',
-       'Final PSA',
+      'Identify feature',
+      'Create an initial WebStatus feature entry for a web developer '
+      'facing change to existing code.',
+      ['Spec links',
       ],
-      models.INTENT_NONE, models.INTENT_REMOVE),
+      models.INTENT_NONE, models.INTENT_IMPLEMENT_SHIP),
+
+  ProcessStage(
+      'Implement',
+      'Check code into Chromium under a flag.',
+      ['Code in Chromium',
+      ],
+      models.INTENT_IMPLEMENT_SHIP, models.INTENT_SHIP),
+
+  ProcessStage(
+      'Dev trials and iterate on implementation',
+      'Publicize availablity for developers to try. '
+      'Act on feedback from partners and web developers.',
+      ['Ready for Trial email',
+       'Estimated target milestone',
+      ],
+      models.INTENT_EXTEND_TRIAL, models.INTENT_EXTEND_TRIAL),
+
+  ProcessStage(
+      'Prepare to ship',
+      'Lock in shipping milestone.',
+      ['Web facing PSA email',
+       'One LGTM',
+       'Finalize target Milestone',
+      ],
+      models.INTENT_SHIP, models.INTENT_REMOVE),
   ]
 
 PSA_ONLY_PROCESS = Process(
     'Web developer facing change to existing code',
-    'Description of PSA process',
-    'When to use it',
-    PSA_ONLY_STAGES)  # TODO(jrobbins): revisit these stages.
+    'Description of PSA process',   # Not used yet.
+    'When to use it',  # Not used yet.
+    PSA_ONLY_STAGES)
+
+
+DEPRECATION_STAGES = [
+  ProcessStage(
+      'Identify feature',
+      'Create an initial WebStatus feature entry to deprecate '
+      'an existing feature stating impact.',
+      ['Link to existing feature',
+      ],
+      models.INTENT_NONE, models.INTENT_IMPLEMENT_SHIP),
+
+  ProcessStage(
+      'Implement',
+      'Move existing Chromium code under a flag.',
+      ['Code in Chromium',
+      ],
+      models.INTENT_IMPLEMENT_SHIP, models.INTENT_SHIP),
+
+  # TODO(cwilso): Work out additional steps for flag defaulting to disabled.
+  ProcessStage(
+      'Dev trial',
+      'Publicize deprecation. ',
+      ['Ready for Trial email',
+       'Estimated target milestone',
+      ],
+      models.INTENT_EXTEND_TRIAL, models.INTENT_EXTEND_TRIAL),
+
+  ProcessStage(
+      'Prepare to unship',
+      'Lock in shipping milestone. Finalize docs and announcements. '
+      'Further standardization.',
+      ['Intent to Ship email',
+       'Three LGTMs',
+       'Finalized target milestone',
+      ],
+      models.INTENT_SHIP, models.INTENT_REMOVE),
+
+  ProcessStage(
+      '(Optional) Reverse Origin Trial',
+      'Set up and run a reverse origin trial. ',
+      ['ROT request',
+       'ROT available',
+       'Removal of ROT',
+       'Removal of implementation code',
+      ],
+      models.INTENT_EXTEND_TRIAL, models.INTENT_EXTEND_TRIAL),
+  ]
+
+
+DEPRECATION_PROCESS = Process(
+    'Feature deprecation',
+    'Description of deprecation process',  # Not used yet.
+    'When to use it',  # Not used yet.
+    DEPRECATION_STAGES)
 
 
 ALL_PROCESSES = {
     models.FEATURE_TYPE_INCUBATE_ID: BLINK_LAUNCH_PROCESS,
     models.FEATURE_TYPE_EXISTING_ID: BLINK_FAST_TRACK_PROCESS,
     models.FEATURE_TYPE_CODE_CHANGE_ID: PSA_ONLY_PROCESS,
+    models.FEATURE_TYPE_DEPRECATION_ID: DEPRECATION_PROCESS,
     }
