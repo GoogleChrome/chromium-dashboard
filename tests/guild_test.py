@@ -157,7 +157,7 @@ class FeatureEditStageTest(unittest.TestCase):
         name='feature one', summary='sum', category=1, visibility=1,
         standardization=1, web_dev_views=1, impl_status_chrome=1)
     self.feature_1.put()
-    self.stage = models.INTENT_NONE  # Shows incubate form
+    self.stage = models.INTENT_INCUBATE  # Shows first form
 
     request = webapp2.Request.blank(
         '/guide/stage/%d/%d' % (self.feature_1.key().id(), self.stage))

@@ -54,7 +54,7 @@ BLINK_PROCESS_STAGES = [
       ['WICG discourse post',
        'Spec repo',
       ],
-      models.INTENT_NONE, models.INTENT_IMPLEMENT),
+      models.INTENT_NONE, models.INTENT_INCUBATE),
 
   ProcessStage(
       'Start prototyping',
@@ -68,7 +68,7 @@ BLINK_PROCESS_STAGES = [
        'Intent to Prototype email',
        'Spec reviewer',
       ],
-      models.INTENT_IMPLEMENT, models.INTENT_EXPERIMENT),
+      models.INTENT_INCUBATE, models.INTENT_IMPLEMENT),
 
   ProcessStage(
       'Dev trials and iterate on design',
@@ -81,7 +81,7 @@ BLINK_PROCESS_STAGES = [
        'External reviews',
        'Ready for Trial email',
       ],
-      models.INTENT_EXPERIMENT, models.INTENT_IMPLEMENT_SHIP),
+      models.INTENT_IMPLEMENT, models.INTENT_EXPERIMENT),
 
   ProcessStage(
       'Evaluate readiness to ship',
@@ -91,7 +91,7 @@ BLINK_PROCESS_STAGES = [
        'Documentation signoff',
        'Estimated target milestone',
       ],
-      models.INTENT_IMPLEMENT_SHIP, models.INTENT_SHIP),
+      models.INTENT_EXPERIMENT, models.INTENT_IMPLEMENT_SHIP),
 
   ProcessStage(
       '(Optional) Origin Trial',
@@ -101,7 +101,7 @@ BLINK_PROCESS_STAGES = [
        'OT available',
        'OT results',
       ],
-      models.INTENT_EXTEND_TRIAL, models.INTENT_EXTEND_TRIAL),
+      models.INTENT_IMPLEMENT_SHIP, models.INTENT_EXTEND_TRIAL),
 
   ProcessStage(
       'Prepare to ship',
@@ -114,7 +114,7 @@ BLINK_PROCESS_STAGES = [
        'Updated vendor signals',
        'Finalized target milestone',
       ],
-      models.INTENT_SHIP, models.INTENT_REMOVE),
+      models.INTENT_IMPLEMENT_SHIP, models.INTENT_SHIP),
   ]
 
 
@@ -132,14 +132,14 @@ BLINK_FAST_TRACK_STAGES = [
       'of an existing specification or combinaton of specifications.',
       ['Spec links',
       ],
-      models.INTENT_NONE, models.INTENT_IMPLEMENT_SHIP),
+      models.INTENT_NONE, models.INTENT_INCUBATE),
 
   ProcessStage(
       'Implement',
       'Check code into Chromium under a flag.',
       ['Code in Chromium',
       ],
-      models.INTENT_IMPLEMENT_SHIP, models.INTENT_SHIP),
+      models.INTENT_INCUBATE, models.INTENT_IMPLEMENT),
 
   ProcessStage(
       'Dev trials and iterate on implementation',
@@ -151,7 +151,7 @@ BLINK_FAST_TRACK_STAGES = [
        'Ready for Trial email',
        'Estimated target milestone',
       ],
-      models.INTENT_EXTEND_TRIAL, models.INTENT_EXTEND_TRIAL),
+      models.INTENT_IMPLEMENT, models.INTENT_EXPERIMENT),
 
   ProcessStage(
       '(Optional) Origin Trial',
@@ -161,7 +161,7 @@ BLINK_FAST_TRACK_STAGES = [
        'OT available',
        'OT results',
       ],
-      models.INTENT_EXTEND_TRIAL, models.INTENT_EXTEND_TRIAL),
+      models.INTENT_EXPERIMENT, models.INTENT_EXTEND_TRIAL),
 
   ProcessStage(
       'Prepare to ship',
@@ -172,7 +172,7 @@ BLINK_FAST_TRACK_STAGES = [
        'Documentation signoff',
        'Finalized target milestone',
       ],
-      models.INTENT_SHIP, models.INTENT_REMOVE),
+      models.INTENT_EXPERIMENT, models.INTENT_SHIP),
   ]
 
 
@@ -190,14 +190,14 @@ PSA_ONLY_STAGES = [
       'facing change to existing code.',
       ['Spec links',
       ],
-      models.INTENT_NONE, models.INTENT_IMPLEMENT_SHIP),
+      models.INTENT_NONE, models.INTENT_INCUBATE),
 
   ProcessStage(
       'Implement',
       'Check code into Chromium under a flag.',
       ['Code in Chromium',
       ],
-      models.INTENT_IMPLEMENT_SHIP, models.INTENT_SHIP),
+      models.INTENT_INCUBATE, models.INTENT_IMPLEMENT),
 
   ProcessStage(
       'Dev trials and iterate on implementation',
@@ -206,7 +206,7 @@ PSA_ONLY_STAGES = [
       ['Ready for Trial email',
        'Estimated target milestone',
       ],
-      models.INTENT_EXTEND_TRIAL, models.INTENT_EXTEND_TRIAL),
+      models.INTENT_IMPLEMENT, models.INTENT_EXPERIMENT),
 
   ProcessStage(
       'Prepare to ship',
@@ -215,7 +215,7 @@ PSA_ONLY_STAGES = [
        'One LGTM',
        'Finalize target Milestone',
       ],
-      models.INTENT_SHIP, models.INTENT_REMOVE),
+      models.INTENT_EXPERIMENT, models.INTENT_SHIP),
   ]
 
 PSA_ONLY_PROCESS = Process(
@@ -232,14 +232,14 @@ DEPRECATION_STAGES = [
       'an existing feature stating impact.',
       ['Link to existing feature',
       ],
-      models.INTENT_NONE, models.INTENT_IMPLEMENT_SHIP),
+      models.INTENT_NONE, models.INTENT_INCUBATE),
 
   ProcessStage(
       'Implement',
       'Move existing Chromium code under a flag.',
       ['Code in Chromium',
       ],
-      models.INTENT_IMPLEMENT_SHIP, models.INTENT_SHIP),
+      models.INTENT_INCUBATE, models.INTENT_IMPLEMENT),
 
   # TODO(cwilso): Work out additional steps for flag defaulting to disabled.
   ProcessStage(
@@ -248,7 +248,7 @@ DEPRECATION_STAGES = [
       ['Ready for Trial email',
        'Estimated target milestone',
       ],
-      models.INTENT_EXTEND_TRIAL, models.INTENT_EXTEND_TRIAL),
+      models.INTENT_IMPLEMENT, models.INTENT_EXPERIMENT),
 
   ProcessStage(
       'Prepare to unship',
@@ -258,7 +258,7 @@ DEPRECATION_STAGES = [
        'Three LGTMs',
        'Finalized target milestone',
       ],
-      models.INTENT_SHIP, models.INTENT_REMOVE),
+      models.INTENT_EXPERIMENT, models.INTENT_REMOVE),
 
   ProcessStage(
       '(Optional) Reverse Origin Trial',
@@ -268,7 +268,7 @@ DEPRECATION_STAGES = [
        'Removal of ROT',
        'Removal of implementation code',
       ],
-      models.INTENT_EXTEND_TRIAL, models.INTENT_EXTEND_TRIAL),
+      models.INTENT_EXPERIMENT, models.INTENT_EXTEND_TRIAL),
   ]
 
 

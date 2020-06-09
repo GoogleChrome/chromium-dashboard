@@ -23,6 +23,35 @@ class ChromedashProcessOverview extends LitElement {
     this.progress = [];
   }
 
+  /* A stage is "prior" if it would set a intent_stage that this feature
+     has already passed. */
+  isPriorStage(stage) {
+    let stageOrder = this.process.stages.map(s => s.outgoing_stage);
+    let viewedOutgoingStageIndex = stageOrder.indexOf(stage.outgoing_stage);
+    let featureStageIndex = stageOrder.indexOf(this.feature.intent_stage_int);
+    return (viewedOutgoingStageIndex < featureStageIndex);
+  }
+
+  /* A stage is "startable" if its incoming stage is the stage that the
+     feature is on or has already passed, but its outgoing stage has
+     not alrady been passed. */
+  isStartableStage(stage) {
+    let stageOrder = this.process.stages.map(s => s.outgoing_stage);
+    let viewedIncomingStageIndex = stageOrder.indexOf(stage.incoming_stage);
+    let viewedOutgoingStageIndex = stageOrder.indexOf(stage.outgoing_stage);
+    let featureStageIndex = stageOrder.indexOf(this.feature.intent_stage_int);
+    return (viewedIncomingStageIndex <= featureStageIndex &&
+            viewedOutgoingStageIndex > featureStageIndex);
+  }
+
+  /* A stage is "future" if the feature has not yet reached its incoming stage. */
+  isFutureStage(stage) {
+    let stageOrder = this.process.stages.map(s => s.outgoing_stage);
+    let viewedIncomingStageIndex = stageOrder.indexOf(stage.incoming_stage);
+    let featureStageIndex = stageOrder.indexOf(this.feature.intent_stage_int);
+    return (viewedIncomingStageIndex > featureStageIndex);
+  }
+
   render() {
     let featureId = this.feature.id;
     return html`
@@ -48,21 +77,20 @@ class ChromedashProcessOverview extends LitElement {
            <td>
             ${this.feature.intent_stage_int == stage.outgoing_stage ?
               html`<div><a
-                     href="/guide/stage/${featureId}/${stage.incoming_stage}"
+                     href="/guide/stage/${featureId}/${stage.outgoing_stage}"
                      class="button primary">Update</a></div>
                    <!-- TODO(jrobbins): Preview email and other actions -->` :
               nothing }
-            ${this.feature.intent_stage_int > stage.incoming_stage &&
-              this.feature.intent_stage_int != stage.outgoing_stage ?
-              html`<a href="/guide/stage/${featureId}/${stage.incoming_stage}"
+            ${this.isPriorStage(stage) ?
+              html`<a href="/guide/stage/${featureId}/${stage.outgoing_stage}"
                    >Revisit</a>` :
               nothing }
-            ${this.feature.intent_stage_int == stage.incoming_stage ?
-              html`<a href="/guide/stage/${featureId}/${stage.incoming_stage}"
+            ${this.isStartableStage(stage) ?
+              html`<a href="/guide/stage/${featureId}/${stage.outgoing_stage}"
                       class="button primary">Start</a>` :
               nothing }
-            ${this.feature.intent_stage_int < stage.incoming_stage ?
-              html`<a href="/guide/stage/${featureId}/${stage.incoming_stage}"
+            ${this.isFutureStage(stage) ?
+              html`<a href="/guide/stage/${featureId}/${stage.outgoing_stage}"
                    >Preview</a>` :
               nothing }
            </td>

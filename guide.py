@@ -41,27 +41,39 @@ import settings
 
 
 # Forms to be used for each stage of each process.
+# { feature_type_id: { stage_id: stage_specific_form} }
 STAGE_FORMS = {
-    (models.FEATURE_TYPE_INCUBATE_ID, models.INTENT_NONE):
-    guideforms.Incubate,
-    (models.FEATURE_TYPE_INCUBATE_ID, models.INTENT_IMPLEMENT):
-    guideforms.Prototype,
-    (models.FEATURE_TYPE_INCUBATE_ID, models.INTENT_EXPERIMENT):
-    guideforms.DevTrial,
-    (models.FEATURE_TYPE_INCUBATE_ID, models.INTENT_EXTEND_TRIAL):
-    guideforms.OriginTrial,
+    models.FEATURE_TYPE_INCUBATE_ID: {
+        models.INTENT_INCUBATE: guideforms.NewFeature_Incubate,
+        models.INTENT_IMPLEMENT: guideforms.NewFeature_Prototype,
+        models.INTENT_EXPERIMENT: guideforms.NewFeature_DevTrial,
+        models.INTENT_IMPLEMENT_SHIP: guideforms.NewFeature_EvalReadinessToShip,
+        models.INTENT_EXTEND_TRIAL: guideforms.NewFeature_OriginTrial,
+        models.INTENT_SHIP: guideforms.NewFeature_PrepareToShip,
+        },
 
-    (models.FEATURE_TYPE_EXISTING_ID, models.INTENT_NONE):
-    guideforms.Incubate,
-    (models.FEATURE_TYPE_EXISTING_ID, models.INTENT_IMPLEMENT_SHIP):
-    guideforms.Prototype,
-    (models.FEATURE_TYPE_EXISTING_ID, models.INTENT_SHIP):
-    guideforms.DevTrial,
-    (models.FEATURE_TYPE_EXISTING_ID, models.INTENT_EXTEND_TRIAL):
-    guideforms.OriginTrial,
+    models.FEATURE_TYPE_EXISTING_ID: {
+        models.INTENT_INCUBATE: guideforms.Existing_Identify,
+        models.INTENT_IMPLEMENT: guideforms.Existing_Implement,
+        models.INTENT_EXPERIMENT: guideforms.Existing_DevTrial,
+        models.INTENT_EXTEND_TRIAL: guideforms.Existing_OriginTrial,
+        models.INTENT_SHIP: guideforms.Existing_PrepareToShip,
+        },
 
-    (models.FEATURE_TYPE_CODE_CHANGE_ID, models.INTENT_NONE):
-    guideforms.Incubate,
+    models.FEATURE_TYPE_CODE_CHANGE_ID: {
+        models.INTENT_INCUBATE: guideforms.CodeChange_Identify,
+        models.INTENT_IMPLEMENT: guideforms.CodeChange_Implement,
+        models.INTENT_EXPERIMENT: guideforms.CodeChange_DevTrial,
+        models.INTENT_SHIP: guideforms.CodeChange_PrepareToShip,
+        },
+
+    models.FEATURE_TYPE_DEPRECATION_ID: {
+        models.INTENT_INCUBATE: guideforms.Deprecation_Identify,
+        models.INTENT_IMPLEMENT: guideforms.Deprecation_Implement,
+        models.INTENT_EXPERIMENT: guideforms.Deprecation_DevTrial,
+        models.INTENT_REMOVE: guideforms.Deprecation_PrepareToUnship,
+        models.INTENT_EXTEND_TRIAL: guideforms.Deprecation_ReverseOriginTrial,
+        },
 }
 
 
@@ -235,8 +247,7 @@ class FeatureEditStage(common.ContentHandler):
         }
 
     # TODO(jrobbins): show useful error if stage not found.
-    detail_form_class = STAGE_FORMS.get(
-        (f.feature_type, stage_id), models.FeatureForm)
+    detail_form_class = STAGE_FORMS[f.feature_type][stage_id]
 
     # Provide new or populated form to template.
     template_data.update({
