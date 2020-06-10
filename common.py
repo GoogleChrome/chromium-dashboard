@@ -19,10 +19,12 @@ __author__ = 'ericbidelman@chromium.org (Eric Bidelman)'
 import datetime
 import json
 import logging
+import re
 import webapp2
 
 # App Engine imports.
 from google.appengine.api import users
+from google.appengine.ext import db
 
 import settings
 import models
@@ -133,6 +135,27 @@ class JSONHandler(BaseHandler):
 
 
 class ContentHandler(BaseHandler):
+
+  def split_input(self, field_name, delim='\\r?\\n'):
+    """Split the input lines, strip whitespace, and skip blank lines."""
+    input_text = self.request.get(field_name) or ''
+    return filter(bool, [
+        x.strip() for x in re.split(delim, input_text)])
+
+  def parse_link(self, param_name):
+    link = self.request.get(param_name) or None
+    if link:
+      if not link.startswith('http'):
+        link = db.Link('http://' + link)
+      else:
+        link = db.Link(link)
+    return link
+
+  def parse_int(self, param_name):
+    param = self.request.get(param_name) or None
+    if param:
+      param = int(param)
+    return param
 
   def _add_common_template_values(self, d):
     """Mixin common values for templates into d."""

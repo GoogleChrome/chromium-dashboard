@@ -94,8 +94,8 @@ BLINK_PROCESS_STAGES = [
       models.INTENT_EXPERIMENT, models.INTENT_IMPLEMENT_SHIP),
 
   ProcessStage(
-      '(Optional) Origin Trial',
-      'Set up and run an origin trial. '
+      'Origin Trial',
+      '(Optional) Set up and run an origin trial. '
       'Act on feedback from partners and web developers.',
       ['OT request',
        'OT available',
@@ -154,8 +154,8 @@ BLINK_FAST_TRACK_STAGES = [
       models.INTENT_IMPLEMENT, models.INTENT_EXPERIMENT),
 
   ProcessStage(
-      '(Optional) Origin Trial',
-      'Set up and run an origin trial. '
+      'Origin Trial',
+      '(Optional) Set up and run an origin trial. '
       'Act on feedback from partners and web developers.',
       ['OT request',
        'OT available',
@@ -261,8 +261,8 @@ DEPRECATION_STAGES = [
       models.INTENT_EXPERIMENT, models.INTENT_REMOVE),
 
   ProcessStage(
-      '(Optional) Reverse Origin Trial',
-      'Set up and run a reverse origin trial. ',
+      'Reverse Origin Trial',
+      '(Optional) Set up and run a reverse origin trial. ',
       ['ROT request',
        'ROT available',
        'Removal of ROT',

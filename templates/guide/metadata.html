@@ -1,4 +1,4 @@
-<section style="max-width:67em; border: 1px solid #ccc; padding: 1em; color: #222">
+<section style="max-width:67em; border: 1px solid #ccc; padding: 1em; color: #222; box-shadow: rgba(0, 0, 0, 0.067) 1px 1px 4px;">
 
   <div id="metadata-readonly">
     <div style="max-height: 3em; overflow: hidden">
@@ -20,9 +20,13 @@
       {% for owner in feature.owner %}
         <a href="mailto:{{ owner }}">{{ owner }}</a>
       {% endfor %}
+    </div>
     <div>Feature type: {{ feature.feature_type }}</div>
     <div>Feature stage: {{ feature.intent_stage }}</div>
-    </div>
+    <div>Blink components: {{ feature.blink_components | join:', ' }}</div>
+    <div>Tracking bug: <a href="{{ feature.bug_url }}">{{ feature.bug_url }}</a></div>
+    <div>Status in Chromium: {{ feature.impl_status_chrome }}</div>
+    <div>Search tags: {{ feature.search_tags | join:', ' }}</div>
   </div>
 
   <div id="metadata-editing" style="display:none">
