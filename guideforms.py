@@ -293,7 +293,7 @@ ALL_FIELDS = {
         label='Platform Support Explanation', required=False,
         widget=forms.Textarea(attrs={'rows': 2, 'cols': 50, 'maxlength': 2000}),
         help_text=
-        ('Explanation for why this feature is, or is not, '
+        ('Explain why this feature is, or is not, '
          'supported on all platforms.')),
 
     'wpt': forms.BooleanField(
