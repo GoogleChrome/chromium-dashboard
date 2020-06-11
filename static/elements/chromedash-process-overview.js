@@ -52,14 +52,27 @@ class ChromedashProcessOverview extends LitElement {
     return (viewedIncomingStageIndex > featureStageIndex);
   }
 
+  renderAction(action) {
+    const label = action[0];
+    const url = action[1].replace('{feature_id}', this.feature.id);
+    return html`
+      <li>
+        <a href=${url} target="_blank">${label}</a>
+      </li>`;
+  }
+
+  renderActions(stage) {
+    return stage.actions.map(act => this.renderAction(act));
+  }
+
   render() {
     let featureId = this.feature.id;
     return html`
      <table>
        <tr>
-         <th style="width: 100px;">Stage</th>
-         <th style="width: 200px">Progress</th>
-         <th style="width: 80px"></th>
+         <th style="width: 30em;">Stage</th>
+         <th style="width: 25em">Progress</th>
+         <th style="width: 12em"></th>
        </tr>
 
        ${this.process.stages.map(stage => html`
@@ -79,7 +92,7 @@ class ChromedashProcessOverview extends LitElement {
               html`<div><a
                      href="/guide/stage/${featureId}/${stage.outgoing_stage}"
                      class="button primary">Update</a></div>
-                   <!-- TODO(jrobbins): Preview email and other actions -->` :
+                   <ol>${this.renderActions(stage)}</ol>` :
               nothing }
             ${this.isPriorStage(stage) ?
               html`<a href="/guide/stage/${featureId}/${stage.outgoing_stage}"
