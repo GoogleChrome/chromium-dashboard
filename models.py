@@ -155,23 +155,52 @@ VISIBILITY_CHOICES = {
   SUPER_SMALL: "So small it doesn't need to be covered in this dashboard",
   }
 
+# Signals from other implementations in an intent-to-ship
 SHIPPED = 1
 IN_DEV = 2
 PUBLIC_SUPPORT = 3
-MIXED_SIGNALS = 4
+MIXED_SIGNALS = 4  # Deprecated
 NO_PUBLIC_SIGNALS = 5
-PUBLIC_SKEPTICISM = 6
+PUBLIC_SKEPTICISM = 6  # Deprecated
 OPPOSED = 7
+NEUTRAL = 8
+SIGNALS_NA = 9
+GECKO_UNDER_CONSIDERATION = 10
+GECKO_IMPORTANT = 11
+GECKO_WORTH_PROTOTYPING = 12
+GECKO_NONHARMFUL = 13
+GECKO_DEFER = 14
+GECKO_HARMFUL = 15
 
-VENDOR_VIEWS = {
-  SHIPPED: 'Shipped',
+
+VENDOR_VIEWS_COMMON = {
+  SHIPPED: 'Shipped/Shipping',
   IN_DEV: 'In development',
-  PUBLIC_SUPPORT: 'Positive signals',
-  MIXED_SIGNALS: 'Mixed public signals',
-  NO_PUBLIC_SIGNALS: 'No public signals',
-  PUBLIC_SKEPTICISM: 'Negative signals',
-  OPPOSED: 'Opposed',
+  PUBLIC_SUPPORT: 'Positive',
+  NO_PUBLIC_SIGNALS: 'No signal',
+  OPPOSED: 'Negative',
+  NEUTRAL: 'Neutral',
+  SIGNALS_NA: 'N/A',
   }
+
+VENDOR_VIEWS_GECKO = VENDOR_VIEWS_COMMON.copy()
+VENDOR_VIEWS_GECKO.update({
+  GECKO_UNDER_CONSIDERATION: 'Under consideration',
+  GECKO_IMPORTANT: 'Important',
+  GECKO_WORTH_PROTOTYPING: 'Worth prototyping',
+  GECKO_NONHARMFUL: 'Non-harmful',
+  GECKO_DEFER: 'Defer',
+  GECKO_HARMFUL: 'Harmful',
+  })
+
+# These vendors have no "custom" views values yet.
+VENDOR_VIEWS_EDGE = VENDOR_VIEWS_COMMON
+VENDOR_VIEWS_WEBKIT = VENDOR_VIEWS_COMMON
+
+VENDOR_VIEWS = {}
+VENDOR_VIEWS.update(VENDOR_VIEWS_GECKO)
+VENDOR_VIEWS.update(VENDOR_VIEWS_EDGE)
+VENDOR_VIEWS.update(VENDOR_VIEWS_WEBKIT)
 
 DEFACTO_STD = 1
 ESTABLISHED_STD = 2
@@ -477,7 +506,19 @@ class Feature(DictModel):
     except Exception as e:
       logging.error(e)
 
+  def migrate_views(self):
+    """Migrate obsolete values for views on first edit."""
+    if self.ff_views == MIXED_SIGNALS:
+      self.ff_views = NO_PUBLIC_SIGNALS
+    if self.ff_views == PUBLIC_SKEPTICISM:
+      self.ff_views = OPPOSED
+    if self.safari_views == MIXED_SIGNALS:
+      self.safari_views = NO_PUBLIC_SIGNALS
+    if self.safari_views == PUBLIC_SKEPTICISM:
+      self.safari_views = OPPOSED
+
   def format_for_template(self, version=None):
+    self.migrate_views()
     d = self.to_dict()
 
     if version == 2:
@@ -617,6 +658,7 @@ class Feature(DictModel):
     return d
 
   def format_for_edit(self):
+    self.migrate_views()
     d = self.to_dict()
     #d['id'] = self.key().id
     d['owner'] = ', '.join(self.owner)
@@ -1079,7 +1121,7 @@ class FeatureForm(forms.Form):
       help_text='Describe the degree of <a target="_blank" href="https://sites.google.com/a/chromium.org/dev/blink?pli=1#TOC-Policy-for-shipping-and-removing-web-platform-API-features">interoperability risk</a>. For a new feature, the main risk is that it fails to become an interoperable part of the web platform if other browsers do not implement it. For a removal, please review our <a target="_blank" href="https://docs.google.com/document/d/1RC-pBBvsazYfCNNUSkPqAVpSpNJ96U8trhNkfV0v9fk/edit">principles of web compatibility</a>.<br><br>Please include citation links below where possible. Examples include resolutions from relevant standards bodies (e.g. W3C working group), tracking bugs, or links to online conversations.')
 
   safari_views = forms.ChoiceField(label='Safari views',
-                                   choices=VENDOR_VIEWS.items(),
+                                   choices=VENDOR_VIEWS_WEBKIT.items(),
                                    initial=NO_PUBLIC_SIGNALS)
   safari_views_link = forms.URLField(required=False, label='',
       help_text='Citation link.')
@@ -1087,7 +1129,7 @@ class FeatureForm(forms.Form):
       widget=forms.Textarea(attrs={'rows': 2, 'cols': 50, 'placeholder': 'Notes', 'maxlength': 1480}))
 
   ff_views = forms.ChoiceField(label='Firefox views',
-                               choices=VENDOR_VIEWS.items(),
+                               choices=VENDOR_VIEWS_GECKO.items(),
                                initial=NO_PUBLIC_SIGNALS)
   ff_views_link = forms.URLField(required=False, label='',
       help_text='Citation link.')
@@ -1095,7 +1137,7 @@ class FeatureForm(forms.Form):
       widget=forms.Textarea(attrs={'rows': 2, 'cols': 50, 'placeholder': 'Notes', 'maxlength': 1480}))
 
   ie_views = forms.ChoiceField(label='Edge',
-                               choices=VENDOR_VIEWS.items(),
+                               choices=VENDOR_VIEWS_EDGE.items(),
                                initial=NO_PUBLIC_SIGNALS)
   ie_views_link = forms.URLField(required=False, label='',
       help_text='Citation link.')
