@@ -326,7 +326,7 @@ ALL_FIELDS = {
         required=False, label='Tracking bug URL',
         help_text=
         ('Tracking bug url (https://bugs.chromium.org/...). This bug '
-         'should have "Type=Feature" set and be world readable.'
+         'should have "Type=Feature" set and be world readable. '
          'Note: This field only accepts one URL.')),
 
     'blink_components': forms.ChoiceField(
