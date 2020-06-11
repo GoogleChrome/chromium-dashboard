@@ -280,7 +280,7 @@ ALL_FIELDS = {
          'google-chrome-developer-tools</a> list for additional help. '
          'For new language features in V8 specifically, refer to the '
          'debugger support checklist. If your feature doesn\'t require '
-         'changes to DevTools in order to provide a good debugging '
+         'changes to DevTools to provide a good debugging '
          'experience, feel free to leave this section empty.')),
 
     'all_platforms': forms.BooleanField(
