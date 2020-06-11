@@ -306,7 +306,7 @@ ALL_FIELDS = {
         help_text=
         ('Please link to the <a href="https://wpt.fyi/results">results on '
          'wpt.fyi</a>. If any part of the feature is not tested by '
-         'web-platform-tests, please include links to issues, e.g. a '
+         'web-platform-tests. Please include links to issues, e.g. a '
          'web-platform-tests issue with the "infra" label explaining why a '
          'certain thing cannot be tested (<a '
          'href="https://github.com/w3c/web-platform-tests/issues/3867">'
