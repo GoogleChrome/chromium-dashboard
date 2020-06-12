@@ -115,6 +115,7 @@ INTENT_IMPLEMENT_SHIP = 4  # Eval readiness to ship
 INTENT_EXTEND_TRIAL = 3  # Origin trials
 INTENT_SHIP = 5  # Prepare to ship
 INTENT_REMOVE = 6
+INTENT_SHIPPED = 8
 
 INTENT_STAGES = collections.OrderedDict([
   (INTENT_NONE, 'None'),
@@ -125,6 +126,7 @@ INTENT_STAGES = collections.OrderedDict([
   (INTENT_EXTEND_TRIAL, 'Origin trials'),
   (INTENT_SHIP, 'Prepare to ship'),
   (INTENT_REMOVE, 'Remove'),
+  (INTENT_SHIPPED, 'Shipped'),
 ])
 
 

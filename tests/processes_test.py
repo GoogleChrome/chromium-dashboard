@@ -31,11 +31,13 @@ class HelperFunctionsTest(unittest.TestCase):
             'Make dough',
             'Mix it and kneed',
             ['Cold dough'],
+            [('Share kneeding video', 'https://example.com')],
             0, 1),
          processes.ProcessStage(
              'Bake it',
              'Heat at 375 for 40 minutes',
              ['A loaf', 'A dirty pan'],
+             [],
              1, 2),
          ])
     expected = {
@@ -46,11 +48,13 @@ class HelperFunctionsTest(unittest.TestCase):
             {'name': 'Make dough',
              'description': 'Mix it and kneed',
              'progress_items': ['Cold dough'],
+             'actions': [('Share kneeding video', 'https://example.com')],
              'incoming_stage': 0,
              'outgoing_stage': 1},
             {'name': 'Bake it',
              'description': 'Heat at 375 for 40 minutes',
              'progress_items': ['A loaf', 'A dirty pan'],
+             'actions': [],
              'incoming_stage': 1,
              'outgoing_stage': 2},
         ]

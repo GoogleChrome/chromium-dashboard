@@ -26,6 +26,9 @@ class ChromedashProcessOverview extends LitElement {
   /* A stage is "prior" if it would set a intent_stage that this feature
      has already passed. */
   isPriorStage(stage) {
+    if (this.feature.intent_stage == 'Shipped') {
+      return true;
+    }
     let stageOrder = this.process.stages.map(s => s.outgoing_stage);
     let viewedOutgoingStageIndex = stageOrder.indexOf(stage.outgoing_stage);
     let featureStageIndex = stageOrder.indexOf(this.feature.intent_stage_int);
@@ -36,6 +39,9 @@ class ChromedashProcessOverview extends LitElement {
      feature is on or has already passed, but its outgoing stage has
      not alrady been passed. */
   isStartableStage(stage) {
+    if (this.feature.intent_stage == 'Shipped') {
+      return false;
+    }
     let stageOrder = this.process.stages.map(s => s.outgoing_stage);
     let viewedIncomingStageIndex = stageOrder.indexOf(stage.incoming_stage);
     let viewedOutgoingStageIndex = stageOrder.indexOf(stage.outgoing_stage);
@@ -46,6 +52,9 @@ class ChromedashProcessOverview extends LitElement {
 
   /* A stage is "future" if the feature has not yet reached its incoming stage. */
   isFutureStage(stage) {
+    if (this.feature.intent_stage == 'Shipped') {
+      return false;
+    }
     let stageOrder = this.process.stages.map(s => s.outgoing_stage);
     let viewedIncomingStageIndex = stageOrder.indexOf(stage.incoming_stage);
     let featureStageIndex = stageOrder.indexOf(this.feature.intent_stage_int);

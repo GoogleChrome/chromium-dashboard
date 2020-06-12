@@ -28,8 +28,8 @@ SHIPPED_HELP_TXT = (
     'First milestone to ship with this status. Applies to: Enabled by '
     'default, Behind a flag, Origin trial, Browser Intervention, and '
     'Deprecated. If the flag is \'test\' rather than \'experimental\' set '
-    'status to In development. If the flag is for an origin trial set status'
-    ' to Origin trial.)
+    'status to In development. If the flag is for an origin trial set status '
+    'to Origin trial.')
 
 # We define all form fields here so that they can be include in one or more
 # stage-specific fields without repeating the details and help text.
