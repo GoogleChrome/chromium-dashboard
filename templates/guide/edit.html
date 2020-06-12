@@ -10,7 +10,9 @@
 {% endblock %}
 
 {% block subheader %}
-<div id="subheader">
+<div id="subheader" style="display:block">
+  <a style="float:right"
+     href="/admin/features/edit/{{ feature_id }}">Use old UI</a>
   <h2>Edit feature: {{ feature.name }}</h2>
 </div>
 {% endblock %}
@@ -30,7 +32,6 @@
 
 
 <section style="margin-top: 4em">
-  <a href="/admin/features/edit/{{ feature_id }}">Use old UI</a>
 </section>
 
 {% endblock %}

@@ -33,6 +33,13 @@
         None
       {% endif %}
     </div>
+    <div>Launch bug:
+      {% if feature.launch_bug_url %}
+        <a href="{{ feature.launch_bug_url }}">{{ feature.launch_bug_url }}</a>
+      {% else %}
+        None
+      {% endif %}
+    </div>
     <div>Status in Chromium: {{ feature.impl_status_chrome }}</div>
     <div>Search tags: {{ feature.search_tags | join:', ' }}</div>
   </div>

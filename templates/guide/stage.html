@@ -17,19 +17,25 @@
 {% endblock %}
 
 {% block content %}
-<section>
+<section id="stage_form">
   <form name="feature_form" method="POST" action="{{current_path}}">
     <table>
       {{ feature_form }}
 
       <tr>
-        <th></th>
+        <th>Process stage:</th>
         <td>
           <!-- TODO(jrobbins): Auto-check based on conditions. -->
           <input type="checkbox" name="set_stage"
                  id="set_stage">
           <label for="set_stage">
-            Set the process stage to: {{ stage_name }}
+            Set to: <b>{{ stage_name }}</b>
+            <br>
+            <span class="helptext">
+              Check this box when you are ready to advance this feature to
+              this phase in the process.  Leave unchecked if you are filling
+              in draft information or revising a previous stage.
+            </span>
           </label>
         </td>
       </tr>

@@ -33,6 +33,7 @@ table {
     font-style: italic;
     font-size: smaller;
     max-width: 40em;
+    margin-top: 2px;
   }
   input[type="text"], input[type="url"], input[type="email"], textarea {
     width: 100%;
@@ -79,8 +80,16 @@ form[name="feature_form"] {
   }
 }
 
-#metadata {
-  color: #222;
+#stage_form form[name="feature_form"] {
+  margin-bottom: 1em;
+}
+
+#stage_form {
+  margin-bottom: 6em;
+}
+
+#metadata, #stage_form {
+  color: #444;
   background: white;
   max-width: 67em;
   border: 1px solid #ccc;

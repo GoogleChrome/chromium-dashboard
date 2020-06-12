@@ -14,7 +14,9 @@
   <h2>Edit a feature</h2>
   {% if user.is_admin %}
     <button class="delete-button" data-id="{{feature.id}}">Delete</button>
-  {% endif %}
+    {% endif %}
+    <a style="flex-grow:1; text-align:right"
+     href="/guide/edit/{{ feature.id }}">Try new UI</a>
 </div>
 {% endblock %}
 

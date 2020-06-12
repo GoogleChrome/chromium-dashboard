@@ -270,6 +270,8 @@ class FeatureEditStage(common.ContentHandler):
 
     if self.touched('bug_url'):
       feature.bug_url = self.parse_link('bug_url')
+    if self.touched('launch_bug_url'):
+      feature.launch_bug_url = self.parse_link('launch_bug_url')
 
     if self.touched('intent_to_implement_url'):
       feature.intent_to_implement_url = self.parse_link(
