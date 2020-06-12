@@ -41,27 +41,39 @@ import settings
 
 
 # Forms to be used for each stage of each process.
+# { feature_type_id: { stage_id: stage_specific_form} }
 STAGE_FORMS = {
-    (models.FEATURE_TYPE_INCUBATE_ID, models.INTENT_NONE):
-    guideforms.Incubate,
-    (models.FEATURE_TYPE_INCUBATE_ID, models.INTENT_IMPLEMENT):
-    guideforms.Prototype,
-    (models.FEATURE_TYPE_INCUBATE_ID, models.INTENT_EXPERIMENT):
-    guideforms.DevTrial,
-    (models.FEATURE_TYPE_INCUBATE_ID, models.INTENT_EXTEND_TRIAL):
-    guideforms.OriginTrial,
+    models.FEATURE_TYPE_INCUBATE_ID: {
+        models.INTENT_INCUBATE: guideforms.NewFeature_Incubate,
+        models.INTENT_IMPLEMENT: guideforms.NewFeature_Prototype,
+        models.INTENT_EXPERIMENT: guideforms.NewFeature_DevTrial,
+        models.INTENT_IMPLEMENT_SHIP: guideforms.NewFeature_EvalReadinessToShip,
+        models.INTENT_EXTEND_TRIAL: guideforms.NewFeature_OriginTrial,
+        models.INTENT_SHIP: guideforms.NewFeature_PrepareToShip,
+        },
 
-    (models.FEATURE_TYPE_EXISTING_ID, models.INTENT_NONE):
-    guideforms.Incubate,
-    (models.FEATURE_TYPE_EXISTING_ID, models.INTENT_IMPLEMENT_SHIP):
-    guideforms.Prototype,
-    (models.FEATURE_TYPE_EXISTING_ID, models.INTENT_SHIP):
-    guideforms.DevTrial,
-    (models.FEATURE_TYPE_EXISTING_ID, models.INTENT_EXTEND_TRIAL):
-    guideforms.OriginTrial,
+    models.FEATURE_TYPE_EXISTING_ID: {
+        models.INTENT_INCUBATE: guideforms.Existing_Identify,
+        models.INTENT_IMPLEMENT: guideforms.Existing_Implement,
+        models.INTENT_EXPERIMENT: guideforms.Existing_DevTrial,
+        models.INTENT_EXTEND_TRIAL: guideforms.Existing_OriginTrial,
+        models.INTENT_SHIP: guideforms.Existing_PrepareToShip,
+        },
 
-    (models.FEATURE_TYPE_CODE_CHANGE_ID, models.INTENT_NONE):
-    guideforms.Incubate,
+    models.FEATURE_TYPE_CODE_CHANGE_ID: {
+        models.INTENT_INCUBATE: guideforms.CodeChange_Identify,
+        models.INTENT_IMPLEMENT: guideforms.CodeChange_Implement,
+        models.INTENT_EXPERIMENT: guideforms.CodeChange_DevTrial,
+        models.INTENT_SHIP: guideforms.CodeChange_PrepareToShip,
+        },
+
+    models.FEATURE_TYPE_DEPRECATION_ID: {
+        models.INTENT_INCUBATE: guideforms.Deprecation_Identify,
+        models.INTENT_IMPLEMENT: guideforms.Deprecation_Implement,
+        models.INTENT_EXPERIMENT: guideforms.Deprecation_DevTrial,
+        models.INTENT_REMOVE: guideforms.Deprecation_PrepareToUnship,
+        models.INTENT_EXTEND_TRIAL: guideforms.Deprecation_ReverseOriginTrial,
+        },
 }
 
 
@@ -95,10 +107,12 @@ class FeatureNew(common.ContentHandler):
       common.handle_401(self.request, self.response, Exception)
       return
 
-    owner_addrs = self.request.get('owner') or ''
-    owner_addrs = filter(bool, [
-        x.strip() for x in re.split(',', owner_addrs)])
+    owner_addrs = self.split_input('owner', delim=',')
     owners = [db.Email(addr) for addr in owner_addrs]
+
+    blink_components = (
+        self.split_input('blink_components', delim=',') or
+        [models.BlinkComponent.DEFAULT_COMPONENT])
 
     # TODO(jrobbins): Validate input, even though it is done on client.
 
@@ -113,7 +127,8 @@ class FeatureNew(common.ContentHandler):
         visibility=models.WARRANTS_ARTICLE,
         standardization=models.EDITORS_DRAFT,
         unlisted=self.request.get('unlisted') == 'on',
-        web_dev_views=models.DEV_NO_SIGNALS)
+        web_dev_views=models.DEV_NO_SIGNALS,
+        blink_components=blink_components)
     key = feature.put()
 
     # TODO(jrobbins): enumerate and remove only the relevant keys.
@@ -183,27 +198,6 @@ class FeatureEditStage(common.ContentHandler):
       return True
     return param_name in self.request.POST
 
-  def split_input(self, field_name, delim='\\r?\\n'):
-    """Split the input lines, strip whitespace, and skip blank lines."""
-    input_text = self.request.get(field_name) or ''
-    return filter(bool, [
-        x.strip() for x in re.split(delim, input_text)])
-
-  def __FullQualifyLink(self, param_name):
-    link = self.request.get(param_name) or None
-    if link:
-      if not link.startswith('http'):
-        link = db.Link('http://' + link)
-      else:
-        link = db.Link(link)
-    return link
-
-  def __ToInt(self, param_name):
-    param = self.request.get(param_name) or None
-    if param:
-      param = int(param)
-    return param
-
   def get_blink_component_from_bug(self, blink_components, bug_url):
     # TODO(jrobbins): Use monorail API instead of scrapping.
     return []
@@ -232,11 +226,11 @@ class FeatureEditStage(common.ContentHandler):
 
     template_data = {
         'stage_name': stage_name,
+        'stage_id': stage_id,
         }
 
     # TODO(jrobbins): show useful error if stage not found.
-    detail_form_class = STAGE_FORMS.get(
-        (f.feature_type, stage_id), models.FeatureForm)
+    detail_form_class = STAGE_FORMS[f.feature_type][stage_id]
 
     # Provide new or populated form to template.
     template_data.update({
@@ -264,47 +258,48 @@ class FeatureEditStage(common.ContentHandler):
       feature = models.Feature.get_by_id(long(feature_id))
       if feature is None:
         self.abort(404)
+    stage_id = int(stage_id)
 
     logging.info('POST is %r', self.request.POST)
 
     if self.touched('spec_link'):
-      feature.spec_link = self.__FullQualifyLink('spec_link')
+      feature.spec_link = self.parse_link('spec_link')
 
     if self.touched('explainer_links'):
       feature.explainer_links = self.split_input('explainer_links')
 
     if self.touched('bug_url'):
-      feature.bug_url = self.__FullQualifyLink('bug_url')
+      feature.bug_url = self.parse_link('bug_url')
 
     if self.touched('intent_to_implement_url'):
-      feature.intent_to_implement_url = self.__FullQualifyLink(
+      feature.intent_to_implement_url = self.parse_link(
           'intent_to_implement_url')
 
     if self.touched('origin_trial_feedback_url'):
-      feature.origin_trial_feedback_url = self.__FullQualifyLink(
+      feature.origin_trial_feedback_url = self.parse_link(
           'origin_trial_feedback_url')
 
     # Cast incoming milestones to ints.
     # TODO(jrobbins): Consider supporting milestones that are not ints.
     if self.touched('shipped_milestone = self'):
-      feature.shipped_milestone = self.__ToInt('shipped_milestone')
+      feature.shipped_milestone = self.parse_int('shipped_milestone')
 
     if self.touched('shipped_android_milestone'):
-      feature.shipped_android_milestone = self.__ToInt(
+      feature.shipped_android_milestone = self.parse_int(
           'shipped_android_milestone')
 
     if self.touched('shipped_ios_milestone'):
-      feature.shipped_ios_milestone = self.__ToInt('shipped_ios_milestone')
+      feature.shipped_ios_milestone = self.parse_int('shipped_ios_milestone')
 
     if self.touched('shipped_webview_milestone'):
-      feature.shipped_webview_milestone = self.__ToInt(
+      feature.shipped_webview_milestone = self.parse_int(
           'shipped_webview_milestone')
 
     if self.touched('shipped_opera_milestone'):
-      feature.shipped_opera_milestone = self.__ToInt('shipped_opera_milestone')
+      feature.shipped_opera_milestone = self.parse_int('shipped_opera_milestone')
 
     if self.touched('shipped_opera_android'):
-      feature.shipped_opera_android_milestone = self.__ToInt(
+      feature.shipped_opera_android_milestone = self.parse_int(
           'shipped_opera_android_milestone')
 
     if self.touched('owner'):
@@ -323,7 +318,7 @@ class FeatureEditStage(common.ContentHandler):
     if self.touched('blink_components'):
       feature.blink_components = (
           self.split_input('blink_components', delim=',') or
-          models.BlinkComponent.DEFAULT_COMPONENT)
+          [models.BlinkComponent.DEFAULT_COMPONENT])
 
     if self.touched('devrel'):
       devrel_addrs = self.split_input('devrel', delim=',')
@@ -331,8 +326,11 @@ class FeatureEditStage(common.ContentHandler):
 
     if self.touched('feature_type'):
       feature.feature_type = int(self.request.get('feature_type'))
+
     if self.touched('intent_stage'):
       feature.intent_stage = int(self.request.get('intent_stage'))
+    elif self.request.get('set_stage') == 'on':
+      feature.intent_stage = stage_id
 
     if self.touched('category'):
       feature.category = int(self.request.get('category'))
@@ -369,25 +367,25 @@ class FeatureEditStage(common.ContentHandler):
     if self.touched('ff_views'):
       feature.ff_views = int(self.request.get('ff_views'))
     if self.touched('ff_views_link'):
-      feature.ff_views_link = self.__FullQualifyLink('ff_views_link')
+      feature.ff_views_link = self.parse_link('ff_views_link')
     if self.touched('ff_views_notes'):
       feature.ff_views_notes = self.request.get('ff_views_notes')
     if self.touched('ie_views'):
       feature.ie_views = int(self.request.get('ie_views'))
     if self.touched('ie_views_link'):
-      feature.ie_views_link = self.__FullQualifyLink('ie_views_link')
+      feature.ie_views_link = self.parse_link('ie_views_link')
     if self.touched('ie_views_notes'):
       feature.ie_views_notes = self.request.get('ie_views_notes')
     if self.touched('safari_views'):
       feature.safari_views = int(self.request.get('safari_views'))
     if self.touched('safari_views_link'):
-      feature.safari_views_link = self.__FullQualifyLink('safari_views_link')
+      feature.safari_views_link = self.parse_link('safari_views_link')
     if self.touched('safari_views_notes'):
       feature.safari_views_notes = self.request.get('safari_views_notes')
     if self.touched('web_dev_views'):
       feature.web_dev_views = int(self.request.get('web_dev_views'))
     if self.touched('web_dev_views'):
-      feature.web_dev_views_link = self.__FullQualifyLink('web_dev_views_link')
+      feature.web_dev_views_link = self.parse_link('web_dev_views_link')
     if self.touched('web_dev_views_notes'):
       feature.web_dev_views_notes = self.request.get('web_dev_views_notes')
     if self.touched('prefixed'):
@@ -417,7 +415,6 @@ class FeatureEditStage(common.ContentHandler):
       params.append(self.LAUNCH_PARAM)
     if self.request.get('intent_to_implement') == 'on':
       params.append(self.INTENT_PARAM)
-
       feature.intent_template_use_count += 1
 
     key = feature.put()

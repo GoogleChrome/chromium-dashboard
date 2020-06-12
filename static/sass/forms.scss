@@ -9,12 +9,13 @@ table {
 
   th {
     max-width: 200px;
-    white-space: nowrap;
+    padding: 12px 10px 10px 0;
+    vertical-align: top;
   }
 
-  th, td {
+  td {
     padding: 10px;
-    vertical-align: baseline;
+    vertical-align: top;
   }
   .choices label {
     font-weight: bold;
@@ -76,4 +77,17 @@ form[name="feature_form"] {
   input[type="submit"] {
     margin-top: $content-padding;
   }
+}
+
+#metadata {
+  color: #222;
+  background: white;
+  max-width: 67em;
+  border: 1px solid #ccc;
+  padding: 1em;
+  box-shadow: rgba(0, 0, 0, 0.067) 1px 1px 4px;
+}
+
+#metadata-readonly div + div {
+  margin-top: 4px;
 }

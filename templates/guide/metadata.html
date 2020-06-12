@@ -1,15 +1,17 @@
-<section style="max-width:67em; border: 1px solid #ccc; padding: 1em; color: #222">
+<section id="metadata">
 
   <div id="metadata-readonly">
-    <div style="max-height: 3em; overflow: hidden">
-      {% if user.is_admin %}
-        <button id="delete-feature"
-                data-id="{{ feature_id }}"
-                class="delete-button"
-                style="float: right">Delete</button>
-      {% endif %}
-      <button id="open-metadata" style="float: right">Edit</button>
-      {{ feature.summary }}
+    <div style="margin-bottom: 1em">
+        <div style="float: right">
+          <button id="open-metadata" style="float: right">Edit</button>
+          {% if user.is_admin %}
+            <div><button id="delete-feature"
+                    data-id="{{ feature_id }}"
+                    class="delete-button"
+                    >Delete</button></div>
+          {% endif %}
+        </div>
+      <div style="width:60em">{{ feature.summary }}</div>
     </div>
     <div>Category: {{ feature.category }}</div>
     {% if feature.unlisted %}
@@ -20,9 +22,19 @@
       {% for owner in feature.owner %}
         <a href="mailto:{{ owner }}">{{ owner }}</a>
       {% endfor %}
+    </div>
     <div>Feature type: {{ feature.feature_type }}</div>
     <div>Feature stage: {{ feature.intent_stage }}</div>
+    <div>Blink components: {{ feature.blink_components | join:', ' }}</div>
+    <div>Tracking bug:
+      {% if feature.bug_url %}
+        <a href="{{ feature.bug_url }}">{{ feature.bug_url }}</a>
+      {% else %}
+        None
+      {% endif %}
     </div>
+    <div>Status in Chromium: {{ feature.impl_status_chrome }}</div>
+    <div>Search tags: {{ feature.search_tags | join:', ' }}</div>
   </div>
 
   <div id="metadata-editing" style="display:none">

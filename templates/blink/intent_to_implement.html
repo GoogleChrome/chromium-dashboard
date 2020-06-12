@@ -1,6 +1,17 @@
 <p>Subject</p>
 <div class="subject">
-Intent to {{feature.intent_stage}}: {{feature.name}}
+  {% if feature.intent_stage_int == 1 %}
+    Intent to Prototype:
+  {% elif feature.intent_stage_int == 2 %}
+    Ready for Trial:
+  {% elif feature.intent_stage_int == 3 %}
+    Intent to Experiment:
+  {% elif feature.intent_stage_int == 5 %}
+    Intent to Ship:
+  {% else %}
+    Intent stage "{{feature.intent_stage}}":
+  {% endif %}
+  {{feature.name}}
 </div>
 
 <p>Body</p>

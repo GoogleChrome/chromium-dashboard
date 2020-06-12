@@ -1,3 +1,23 @@
+from __future__ import division
+from __future__ import print_function
+
+# -*- coding: utf-8 -*-
+# Copyright 2020 Google Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License")
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+
+import collections
 import datetime
 import json
 import logging
@@ -88,22 +108,27 @@ FEATURE_TYPES = {
 
 # Intent stages and mapping from stage to stage name.
 INTENT_NONE = 0
-INTENT_IMPLEMENT = 1
-INTENT_EXPERIMENT = 2
-INTENT_EXTEND_TRIAL = 3
-INTENT_IMPLEMENT_SHIP = 4
-INTENT_SHIP = 5
+INTENT_INCUBATE = 7  # Start incubating
+INTENT_IMPLEMENT = 1  # Start prototyping
+INTENT_EXPERIMENT = 2  # Dev trials
+INTENT_IMPLEMENT_SHIP = 4  # Eval readiness to ship
+INTENT_EXTEND_TRIAL = 3  # Origin trials
+INTENT_SHIP = 5  # Prepare to ship
 INTENT_REMOVE = 6
+INTENT_SHIPPED = 8
 
-INTENT_STAGES = {
-  INTENT_NONE: 'None',
-  INTENT_IMPLEMENT: 'Prototype',
-  INTENT_EXPERIMENT: 'Experiment',
-  INTENT_EXTEND_TRIAL: 'Extend Origin Trial',
-  INTENT_IMPLEMENT_SHIP: 'Implement and Ship',
-  INTENT_SHIP: 'Ship',
-  INTENT_REMOVE: 'Remove',
-}
+INTENT_STAGES = collections.OrderedDict([
+  (INTENT_NONE, 'None'),
+  (INTENT_INCUBATE, 'Start incubating'),
+  (INTENT_IMPLEMENT, 'Start prototyping'),
+  (INTENT_EXPERIMENT, 'Dev trials'),
+  (INTENT_IMPLEMENT_SHIP, 'Evaluate readiness to ship'),
+  (INTENT_EXTEND_TRIAL, 'Origin trials'),
+  (INTENT_SHIP, 'Prepare to ship'),
+  (INTENT_REMOVE, 'Remove'),
+  (INTENT_SHIPPED, 'Shipped'),
+])
+
 
 NO_ACTIVE_DEV = 1
 PROPOSED = 2
@@ -1049,7 +1074,8 @@ class FeatureForm(forms.Form):
       initial=MISC,
       choices=sorted(FEATURE_CATEGORIES.items(), key=lambda x: x[1]))
 
-  intent_stage = forms.ChoiceField(required=True, label='Intent stage', help_text='Select the appropriate intent stage.',
+  intent_stage = forms.ChoiceField(
+      required=True, label='Intent stage', help_text='Select the appropriate intent stage.',
       initial=INTENT_IMPLEMENT,
       choices=INTENT_STAGES.items())
 
