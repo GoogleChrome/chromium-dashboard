@@ -1225,7 +1225,9 @@ class FeatureForm(forms.Form):
       help_text=(
           'Launch bug url (https://bugs.chromium.org/...) to track launch '
           'aprpovals. '
-          'This bug should be created using a "Launch" issue template.'))
+          '<a href="https://bugs.chromium.org/p/chromium/issues/entry?template=Chrome+Launch+Feature" '
+          'target="_blank" '
+          '>Create launch bug<a>'))
 
   blink_components = forms.ChoiceField(
       required=True,

@@ -329,12 +329,16 @@ ALL_FIELDS = {
          'should have "Type=Feature" set and be world readable. '
          'Note: This field only accepts one URL.')),
 
+    # TODO(jrobbins): Consider a button to file the launch bug automatically,
+    # or a deep link that has some feature details filled in.
     'launch_bug_url': forms.URLField(
         required=False, label='Launch bug URL',
         help_text=(
             'Launch bug url (https://bugs.chromium.org/...) to track launch '
             'aprpovals. '
-            'This bug should be created using a "Launch" issue template.')),
+          '<a href="https://bugs.chromium.org/p/chromium/issues/entry?template=Chrome+Launch+Feature" '
+          'target="_blank" '
+          '>Create launch bug<a>')),
 
     'blink_components': forms.ChoiceField(
       required=True,
