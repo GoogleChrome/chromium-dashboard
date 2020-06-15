@@ -953,6 +953,7 @@ class Feature(DictModel):
 
   # Chromium details.
   bug_url = db.LinkProperty()
+  launch_bug_url = db.LinkProperty()
   blink_components = db.StringListProperty(required=True, default=[BlinkComponent.DEFAULT_COMPONENT])
   devrel = db.ListProperty(db.Email)
 
@@ -1221,6 +1222,14 @@ class FeatureForm(forms.Form):
 
   bug_url = forms.URLField(required=False, label='Tracking bug URL',
       help_text='Tracking bug url (https://bugs.chromium.org/...). This bug should have "Type=Feature" set and be world readable.')
+
+  launch_bug_url = forms.URLField(required=False, label='Launch bug URL',
+      help_text=(
+          'Launch bug url (https://bugs.chromium.org/...) to track launch '
+          'aprpovals. '
+          '<a href="https://bugs.chromium.org/p/chromium/issues/entry?template=Chrome+Launch+Feature" '
+          'target="_blank" '
+          '>Create launch bug<a>'))
 
   blink_components = forms.ChoiceField(
       required=True,

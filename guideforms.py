@@ -329,6 +329,17 @@ ALL_FIELDS = {
          'should have "Type=Feature" set and be world readable. '
          'Note: This field only accepts one URL.')),
 
+    # TODO(jrobbins): Consider a button to file the launch bug automatically,
+    # or a deep link that has some feature details filled in.
+    'launch_bug_url': forms.URLField(
+        required=False, label='Launch bug URL',
+        help_text=(
+            'Launch bug url (https://bugs.chromium.org/...) to track launch '
+            'aprpovals. '
+          '<a href="https://bugs.chromium.org/p/chromium/issues/entry?template=Chrome+Launch+Feature" '
+          'target="_blank" '
+          '>Create launch bug<a>')),
+
     'blink_components': forms.ChoiceField(
       required=True,
       label='Blink component',
@@ -410,7 +421,9 @@ class NewFeatureForm(forms.Form):
 class MetadataForm(forms.Form):
 
   field_order = (
-      'name', 'summary', 'category', 'owner', 'feature_type', 'intent_stage')
+      'name', 'summary', 'category', 'unlisted', 'owner', 'feature_type',
+      'intent_stage', 'blink_components', 'bug_url', 'launch_bug_url',
+      'impl_status_chrome', 'search_tags')
   name = ALL_FIELDS['name']
   summary = ALL_FIELDS['summary']
   category = ALL_FIELDS['category']
@@ -428,6 +441,7 @@ class MetadataForm(forms.Form):
       choices=models.INTENT_STAGES.items())
   blink_components = ALL_FIELDS['blink_components']
   bug_url = ALL_FIELDS['bug_url']
+  launch_bug_url = ALL_FIELDS['launch_bug_url']
   impl_status_chrome = ALL_FIELDS['impl_status_chrome']
   search_tags = ALL_FIELDS['search_tags']
 
@@ -444,6 +458,8 @@ class NewFeature_Incubate(forms.Form):
   motivation = ALL_FIELDS['motivation']
   explainer_links = ALL_FIELDS['explainer_links']
   footprint = ALL_FIELDS['footprint']
+  bug_url = ALL_FIELDS['bug_url']
+  launch_bug_url = ALL_FIELDS['launch_bug_url']
   # TODO(jrobbins): public proposal URL, optional
 
 
@@ -543,6 +559,7 @@ class NewFeature_PrepareToShip(forms.Form):
   tag_review = ALL_FIELDS['tag_review']
   intent_to_implement_url = ALL_FIELDS['intent_to_implement_url']
   origin_trial_feedback_url = ALL_FIELDS['origin_trial_feedback_url'] # optional
+  launch_bug_url = ALL_FIELDS['launch_bug_url']
 
 
 class Existing_Identify(forms.Form):
@@ -557,6 +574,8 @@ class Existing_Identify(forms.Form):
   motivation = ALL_FIELDS['motivation']
   explainer_links = ALL_FIELDS['explainer_links']
   footprint = ALL_FIELDS['footprint']
+  bug_url = ALL_FIELDS['bug_url']
+  launch_bug_url = ALL_FIELDS['launch_bug_url']
   # TODO(jrobbins): public proposal URL, optional
 
 
@@ -624,6 +643,7 @@ class Existing_PrepareToShip(forms.Form):
   tag_review = ALL_FIELDS['tag_review']
   intent_to_implement_url = ALL_FIELDS['intent_to_implement_url']
   origin_trial_feedback_url = ALL_FIELDS['origin_trial_feedback_url'] # optional
+  launch_bug_url = ALL_FIELDS['launch_bug_url']
 
 
 class CodeChange_Identify(forms.Form):
@@ -638,6 +658,8 @@ class CodeChange_Identify(forms.Form):
   motivation = ALL_FIELDS['motivation']
   explainer_links = ALL_FIELDS['explainer_links']
   footprint = ALL_FIELDS['footprint']
+  bug_url = ALL_FIELDS['bug_url']
+  launch_bug_url = ALL_FIELDS['launch_bug_url']
   # TODO(jrobbins): public proposal URL, optional
 
 
@@ -694,8 +716,7 @@ class CodeChange_PrepareToShip(forms.Form):
   tag_review = ALL_FIELDS['tag_review']
   intent_to_implement_url = ALL_FIELDS['intent_to_implement_url']
   origin_trial_feedback_url = ALL_FIELDS['origin_trial_feedback_url'] # optional
-
-
+  launch_bug_url = ALL_FIELDS['launch_bug_url']
 
 
 class Deprecation_Identify(forms.Form):
@@ -710,6 +731,8 @@ class Deprecation_Identify(forms.Form):
   motivation = ALL_FIELDS['motivation']
   explainer_links = ALL_FIELDS['explainer_links']
   footprint = ALL_FIELDS['footprint']
+  bug_url = ALL_FIELDS['bug_url']
+  launch_bug_url = ALL_FIELDS['launch_bug_url']
   # TODO(jrobbins): public proposal URL, optional
 
 
@@ -766,6 +789,7 @@ class Deprecation_PrepareToUnship(forms.Form):
   tag_review = ALL_FIELDS['tag_review']
   intent_to_implement_url = ALL_FIELDS['intent_to_implement_url']
   origin_trial_feedback_url = ALL_FIELDS['origin_trial_feedback_url'] # optional
+  launch_bug_url = ALL_FIELDS['launch_bug_url']
 
 
 class Deprecation_ReverseOriginTrial(forms.Form):

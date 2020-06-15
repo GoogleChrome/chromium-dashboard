@@ -327,6 +327,7 @@ class FeatureHandler(common.ContentHandler):
       explainer_links = filter(bool, [x.strip() for x in re.split('\\r?\\n', explainer_links)])
 
     bug_url = self.__FullQualifyLink('bug_url')
+    launch_bug_url = self.__FullQualifyLink('launch_bug_url')
     intent_to_implement_url = self.__FullQualifyLink('intent_to_implement_url')
     origin_trial_feedback_url = self.__FullQualifyLink('origin_trial_feedback_url')
 
@@ -401,6 +402,7 @@ class FeatureHandler(common.ContentHandler):
       feature.explainer_links = explainer_links
       feature.owner = owners
       feature.bug_url = bug_url
+      feature.launch_bug_url = launch_bug_url
       feature.blink_components = blink_components
       feature.devrel = devrel
       feature.impl_status_chrome = int(self.request.get('impl_status_chrome'))

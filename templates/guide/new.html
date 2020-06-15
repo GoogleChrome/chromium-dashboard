@@ -9,20 +9,25 @@
 {% endblock %}
 
 {% block subheader %}
-<div id="subheader">
+<div id="subheader" style="display:block">
+  <a style="float:right"
+     href="/admin/features/new">Use old UI</a>
+  <a style="float:right; margin-right: 2em"
+     href="https://github.com/GoogleChrome/chromium-dashboard/issues/new?labels=Feedback&template=process-and-guide-ux-feedback.md"
+     target="_blank">Process and UI feedback</a>
   <h2>Add a feature</h2>
 </div>
 {% endblock %}
 
 {% block content %}
 
-<section>
+<section id="stage_form">
   <form name="overview_form" method="POST" action="{{ current_path }}">
     <table style="max-width: 60em">
       {{ overview_form }}
       <tr>
         <th>Feature type:</th>
-        <td class="choices">
+        <td class="choices" style="padding-top:0">
           <div>
             <label for="id_feature_type_0">
               <input id="id_feature_type_0" name="feature_type" type="radio"
