@@ -654,7 +654,7 @@ class Existing_OriginTrial(forms.Form):
 
 
 # Note: Even though this is similar to another form, it is likely to change.
-class Deprecation_PrepareToUnship(forms.Form):
+class Deprecation_PrepareToShip(forms.Form):
 
   field_order = (
       'impl_status_chrome', 'footprint', 'tag_review',
@@ -670,7 +670,7 @@ class Deprecation_PrepareToUnship(forms.Form):
 
 
 # Note: Even though this is similar to another form, it is likely to change.
-class Deprecation_ReverseOriginTrial(forms.Form):
+class Deprecation_DeprecationTrial(forms.Form):
 
   field_order = (
       'experiment_goals', 'experiment_timeline', 'experiment_risks',

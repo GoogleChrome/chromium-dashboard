@@ -1,11 +1,21 @@
 <p>Subject</p>
 <div class="subject">
-  {% if feature.intent_stage_int == 1 %}
+  {% if feature.intent_stage_int == 7 %}
+    {% if feature.feature_type_int == 3 %}
+      Intent to Deprecate and Remove:
+    {% else %}
+      Intent stage "{{feature.intent_stage}}":
+    {% endif %}
+  {% elif feature.intent_stage_int == 1 %}
     Intent to Prototype:
   {% elif feature.intent_stage_int == 2 %}
     Ready for Trial:
   {% elif feature.intent_stage_int == 3 %}
-    Intent to Experiment:
+    {% if feature.feature_type_int == 3 %}
+      Request for Deprecation Trial:
+    {% else %}
+      Intent to Experiment:
+    {% endif %}
   {% elif feature.intent_stage_int == 5 %}
     Intent to Ship:
   {% else %}
