@@ -58,7 +58,7 @@ BLINK_PROCESS_STAGES = [
       'Start incubation',
       'Create an initial WebStatus feature entry and kick off standards '
       'incubation (WICG) to share ideas.',
-      ['WICG discourse post',
+      ['Initial public proposal',
        'Spec repo',
       ],
       [],
