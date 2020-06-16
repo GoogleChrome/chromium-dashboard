@@ -954,6 +954,7 @@ class Feature(DictModel):
   # Chromium details.
   bug_url = db.LinkProperty()
   launch_bug_url = db.LinkProperty()
+  initial_public_proposal_url = db.LinkProperty()
   blink_components = db.StringListProperty(required=True, default=[BlinkComponent.DEFAULT_COMPONENT])
   devrel = db.ListProperty(db.Email)
 
@@ -1230,6 +1231,12 @@ class FeatureForm(forms.Form):
           '<a href="https://bugs.chromium.org/p/chromium/issues/entry?template=Chrome+Launch+Feature" '
           'target="_blank" '
           '>Create launch bug<a>'))
+
+  initial_public_proposal_url = forms.URLField(
+      required=False, label='Initial public proposal URL',
+      help_text=(
+          'Link to the first public proposal to create this feature, e.g., '
+          'a WICG discourse post.'))
 
   blink_components = forms.ChoiceField(
       required=True,

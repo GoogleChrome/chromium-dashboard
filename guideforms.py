@@ -340,6 +340,12 @@ ALL_FIELDS = {
           'target="_blank" '
           '>Create launch bug<a>')),
 
+    'initial_public_proposal_url': forms.URLField(
+      required=False, label='Initial public proposal URL',
+      help_text=(
+          'Link to the first public proposal to create this feature, e.g., '
+          'a WICG discourse post.')),
+
     'blink_components': forms.ChoiceField(
       required=True,
       label='Blink component',
@@ -448,30 +454,47 @@ class MetadataForm(forms.Form):
 
 class NewFeature_Incubate(forms.Form):
 
+  field_order = (
+      'motivation', 'initial_public_proposal_url', 'explainer_links',
+      'owner', 'blink_components', 'footprint',
+      'bug_url', 'launch_bug_url', 'comments')
+  motivation = ALL_FIELDS['motivation']
+  initial_public_proposal_url = ALL_FIELDS['initial_public_proposal_url']
+  explainer_links = ALL_FIELDS['explainer_links']
   current_user_email = users.get_current_user().email if users.get_current_user() else None
   owner = forms.CharField(
       initial=current_user_email, required=True, label='Contact emails',
       help_text=('Comma separated list of full email addresses. '
                  'Prefer @chromium.org.'))
   blink_components = ALL_FIELDS['blink_components']
-
-  motivation = ALL_FIELDS['motivation']
-  explainer_links = ALL_FIELDS['explainer_links']
   footprint = ALL_FIELDS['footprint']
   bug_url = ALL_FIELDS['bug_url']
   launch_bug_url = ALL_FIELDS['launch_bug_url']
-  # TODO(jrobbins): public proposal URL, optional
+  comments = ALL_FIELDS['comments']
 
 
 class NewFeature_Prototype(forms.Form):
 
-  # TODO(jrobbins): public proposal URL, required
+  field_order = (
+      'spec_link', 'comments')
+  initial_public_proposal_url = ALL_FIELDS['initial_public_proposal_url']
   # TODO(jrobbins): advise user to request a tag review
   spec_link = ALL_FIELDS['spec_link']
   # TODO(jrobbins): action to generate Intent to Prototype email
+  comments = ALL_FIELDS['comments']
 
 
-class NewFeature_DevTrial(forms.Form):
+class Any_DevTrial(forms.Form):
+  field_order = (
+      'bug_url', 'doc_links', 'spec_link', 'intent_to_implement_url',
+      'interop_compat_risks',
+      'safari_views', 'safari_views_link', 'safari_views_notes',
+      'ff_views', 'ff_views_link', 'ff_views_notes',
+      'ie_views', 'ie_views_link', 'ie_views_notes',
+      'web_dev_views', 'web_dev_views_link', 'web_dev_views_notes',
+      'ergonomics_risks', 'activation_risks', 'security_risks', 'debuggability',
+      'all_platforms', 'all_platforms_descr', 'wpt', 'wpt_descr',
+      'sample_links', 'comments')
 
   bug_url = ALL_FIELDS['bug_url']
   doc_links = ALL_FIELDS['doc_links']
@@ -495,6 +518,7 @@ class NewFeature_DevTrial(forms.Form):
 
   web_dev_views = ALL_FIELDS['web_dev_views']
   web_dev_views_link = ALL_FIELDS['web_dev_views_link']
+  web_dev_views_notes = ALL_FIELDS['web_dev_views_notes']
 
   ergonomics_risks = ALL_FIELDS['ergonomics_risks']
   activation_risks = ALL_FIELDS['activation_risks']
@@ -507,10 +531,19 @@ class NewFeature_DevTrial(forms.Form):
   wpt_descr = ALL_FIELDS['wpt_descr']
   sample_links = ALL_FIELDS['sample_links']
   # TODO(jrobbins): generate ready for trial email
+  comments = ALL_FIELDS['comments']
 
 
 class NewFeature_EvalReadinessToShip(forms.Form):
 
+  field_order = (
+      'doc_links', 'tag_review', 'spec_link', 'interop_compat_risks',
+      'safari_views', 'safari_views_link', 'safari_views_notes',
+      'ff_views', 'ff_views_link', 'ff_views_notes',
+      'ie_views', 'ie_views_link', 'ie_views_notes',
+      'web_dev_views', 'web_dev_views_link', 'web_dev_views_notes',
+      'shipped_milestone', 'shipped_android_milestone', 'shipped_ios_milestone',
+      'shipped_webview_milestone', 'prefixed', 'visibility', 'comments')
   doc_links = ALL_FIELDS['doc_links']
   tag_review = ALL_FIELDS['tag_review']
   spec_link = ALL_FIELDS['spec_link']
@@ -531,6 +564,7 @@ class NewFeature_EvalReadinessToShip(forms.Form):
 
   web_dev_views = ALL_FIELDS['web_dev_views']
   web_dev_views_link = ALL_FIELDS['web_dev_views_link']
+  web_dev_views_notes = ALL_FIELDS['web_dev_views_notes']
 
   # TODO(jrobbins): ready to ship email URL
   shipped_milestone = ALL_FIELDS['shipped_milestone']
@@ -539,10 +573,15 @@ class NewFeature_EvalReadinessToShip(forms.Form):
   shipped_webview_milestone = ALL_FIELDS['shipped_webview_milestone']
   prefixed = ALL_FIELDS['prefixed']
   visibility = ALL_FIELDS['visibility']
+  comments = ALL_FIELDS['comments']
 
 
 class NewFeature_OriginTrial(forms.Form):
 
+  field_order = (
+      'experiment_goals', 'experiment_timeline', 'experiment_risks',
+      'experiment_extension_reason', 'ongoing_constraints',
+      'origin_trial_feedback_url', 'comments')
   experiment_goals = ALL_FIELDS['experiment_goals']
   experiment_timeline = ALL_FIELDS['experiment_timeline']
   experiment_risks = ALL_FIELDS['experiment_risks']
@@ -550,20 +589,29 @@ class NewFeature_OriginTrial(forms.Form):
   ongoing_constraints = ALL_FIELDS['ongoing_constraints']
   origin_trial_feedback_url = ALL_FIELDS['origin_trial_feedback_url'] # optional
   # TODO(jrobbins): action to generate intent to experiement email
+  comments = ALL_FIELDS['comments']
 
 
-class NewFeature_PrepareToShip(forms.Form):
+class Any_PrepareToShip(forms.Form):
 
+  field_order = (
+      'impl_status_chrome', 'footprint', 'tag_review',
+      'intent_to_implement_url', 'origin_trial_feedback_url',
+      'launch_bug_url', 'comments')
   impl_status_chrome = ALL_FIELDS['impl_status_chrome']
   footprint = ALL_FIELDS['footprint']
   tag_review = ALL_FIELDS['tag_review']
   intent_to_implement_url = ALL_FIELDS['intent_to_implement_url']
   origin_trial_feedback_url = ALL_FIELDS['origin_trial_feedback_url'] # optional
   launch_bug_url = ALL_FIELDS['launch_bug_url']
+  comments = ALL_FIELDS['comments']
 
 
-class Existing_Identify(forms.Form):
+class Any_Identify(forms.Form):
 
+  field_order = (
+      'owner', 'blink_components', 'motivation', 'explainer_links',
+      'footprint', 'bug_url', 'launch_bug_url', 'comments')
   current_user_email = users.get_current_user().email if users.get_current_user() else None
   owner = forms.CharField(
       initial=current_user_email, required=True, label='Contact emails',
@@ -576,57 +624,25 @@ class Existing_Identify(forms.Form):
   footprint = ALL_FIELDS['footprint']
   bug_url = ALL_FIELDS['bug_url']
   launch_bug_url = ALL_FIELDS['launch_bug_url']
-  # TODO(jrobbins): public proposal URL, optional
+  comments = ALL_FIELDS['comments']
 
 
-class Existing_Implement(forms.Form):
+class Any_Implement(forms.Form):
 
-  # TODO(jrobbins): public proposal URL, required
+  field_order = (
+      'spec_link', 'comments')
   # TODO(jrobbins): advise user to request a tag review
   spec_link = ALL_FIELDS['spec_link']
   # TODO(jrobbins): action to generate Intent to Prototype email
-
-
-class Existing_DevTrial(forms.Form):
-
-  bug_url = ALL_FIELDS['bug_url']
-  doc_links = ALL_FIELDS['doc_links']
-  # TODO(jrobbins): api overview link
-  spec_link = ALL_FIELDS['spec_link']
-
-  intent_to_implement_url = ALL_FIELDS['intent_to_implement_url']
-  interop_compat_risks = ALL_FIELDS['interop_compat_risks']
-
-  safari_views = ALL_FIELDS['safari_views']
-  safari_views_link = ALL_FIELDS['safari_views_link']
-  safari_views_notes = ALL_FIELDS['safari_views_notes']
-
-  ff_views = ALL_FIELDS['ff_views']
-  ff_views_link = ALL_FIELDS['ff_views_link']
-  ff_views_notes = ALL_FIELDS['ff_views_notes']
-
-  ie_views = ALL_FIELDS['ie_views']
-  ie_views_link = ALL_FIELDS['ie_views_link']
-  ie_views_notes = ALL_FIELDS['ie_views_notes']
-
-  web_dev_views = ALL_FIELDS['web_dev_views']
-  web_dev_views_link = ALL_FIELDS['web_dev_views_link']
-
-  ergonomics_risks = ALL_FIELDS['ergonomics_risks']
-  activation_risks = ALL_FIELDS['activation_risks']
-  security_risks = ALL_FIELDS['security_risks']
-  # TODO(jrobbins): request security and privacy reviews
-  debuggability = ALL_FIELDS['debuggability']
-  all_platforms = ALL_FIELDS['all_platforms']
-  all_platforms_descr = ALL_FIELDS['all_platforms_descr']
-  wpt = ALL_FIELDS['wpt']
-  wpt_descr = ALL_FIELDS['wpt_descr']
-  sample_links = ALL_FIELDS['sample_links']
-  # TODO(jrobbins): generate ready for trial email
+  comments = ALL_FIELDS['comments']
 
 
 class Existing_OriginTrial(forms.Form):
 
+  field_order = (
+      'experiment_goals', 'experiment_timeline', 'experiment_risks',
+      'experiment_extension_reason', 'ongoing_constraints',
+      'origin_trial_feedback_url', 'comments')
   experiment_goals = ALL_FIELDS['experiment_goals']
   experiment_timeline = ALL_FIELDS['experiment_timeline']
   experiment_risks = ALL_FIELDS['experiment_risks']
@@ -634,170 +650,36 @@ class Existing_OriginTrial(forms.Form):
   ongoing_constraints = ALL_FIELDS['ongoing_constraints']
   origin_trial_feedback_url = ALL_FIELDS['origin_trial_feedback_url'] # optional
   # TODO(jrobbins): action to generate intent to experiement email
+  comments = ALL_FIELDS['comments']
 
 
-class Existing_PrepareToShip(forms.Form):
-
-  impl_status_chrome = ALL_FIELDS['impl_status_chrome']
-  footprint = ALL_FIELDS['footprint']
-  tag_review = ALL_FIELDS['tag_review']
-  intent_to_implement_url = ALL_FIELDS['intent_to_implement_url']
-  origin_trial_feedback_url = ALL_FIELDS['origin_trial_feedback_url'] # optional
-  launch_bug_url = ALL_FIELDS['launch_bug_url']
-
-
-class CodeChange_Identify(forms.Form):
-
-  current_user_email = users.get_current_user().email if users.get_current_user() else None
-  owner = forms.CharField(
-      initial=current_user_email, required=True, label='Contact emails',
-      help_text=('Comma separated list of full email addresses. '
-                 'Prefer @chromium.org.'))
-  blink_components = ALL_FIELDS['blink_components']
-
-  motivation = ALL_FIELDS['motivation']
-  explainer_links = ALL_FIELDS['explainer_links']
-  footprint = ALL_FIELDS['footprint']
-  bug_url = ALL_FIELDS['bug_url']
-  launch_bug_url = ALL_FIELDS['launch_bug_url']
-  # TODO(jrobbins): public proposal URL, optional
-
-
-class CodeChange_Implement(forms.Form):
-
-  # TODO(jrobbins): public proposal URL, required
-  # TODO(jrobbins): advise user to request a tag review
-  spec_link = ALL_FIELDS['spec_link']
-  # TODO(jrobbins): action to generate Intent to Prototype email
-
-
-class CodeChange_DevTrial(forms.Form):
-
-  bug_url = ALL_FIELDS['bug_url']
-  doc_links = ALL_FIELDS['doc_links']
-  # TODO(jrobbins): api overview link
-  spec_link = ALL_FIELDS['spec_link']
-
-  intent_to_implement_url = ALL_FIELDS['intent_to_implement_url']
-  interop_compat_risks = ALL_FIELDS['interop_compat_risks']
-
-  safari_views = ALL_FIELDS['safari_views']
-  safari_views_link = ALL_FIELDS['safari_views_link']
-  safari_views_notes = ALL_FIELDS['safari_views_notes']
-
-  ff_views = ALL_FIELDS['ff_views']
-  ff_views_link = ALL_FIELDS['ff_views_link']
-  ff_views_notes = ALL_FIELDS['ff_views_notes']
-
-  ie_views = ALL_FIELDS['ie_views']
-  ie_views_link = ALL_FIELDS['ie_views_link']
-  ie_views_notes = ALL_FIELDS['ie_views_notes']
-
-  web_dev_views = ALL_FIELDS['web_dev_views']
-  web_dev_views_link = ALL_FIELDS['web_dev_views_link']
-
-  ergonomics_risks = ALL_FIELDS['ergonomics_risks']
-  activation_risks = ALL_FIELDS['activation_risks']
-  security_risks = ALL_FIELDS['security_risks']
-  # TODO(jrobbins): request security and privacy reviews
-  debuggability = ALL_FIELDS['debuggability']
-  all_platforms = ALL_FIELDS['all_platforms']
-  all_platforms_descr = ALL_FIELDS['all_platforms_descr']
-  wpt = ALL_FIELDS['wpt']
-  wpt_descr = ALL_FIELDS['wpt_descr']
-  sample_links = ALL_FIELDS['sample_links']
-  # TODO(jrobbins): generate ready for trial email
-
-
-class CodeChange_PrepareToShip(forms.Form):
-
-  impl_status_chrome = ALL_FIELDS['impl_status_chrome']
-  footprint = ALL_FIELDS['footprint']
-  tag_review = ALL_FIELDS['tag_review']
-  intent_to_implement_url = ALL_FIELDS['intent_to_implement_url']
-  origin_trial_feedback_url = ALL_FIELDS['origin_trial_feedback_url'] # optional
-  launch_bug_url = ALL_FIELDS['launch_bug_url']
-
-
-class Deprecation_Identify(forms.Form):
-
-  current_user_email = users.get_current_user().email if users.get_current_user() else None
-  owner = forms.CharField(
-      initial=current_user_email, required=True, label='Contact emails',
-      help_text=('Comma separated list of full email addresses. '
-                 'Prefer @chromium.org.'))
-  blink_components = ALL_FIELDS['blink_components']
-
-  motivation = ALL_FIELDS['motivation']
-  explainer_links = ALL_FIELDS['explainer_links']
-  footprint = ALL_FIELDS['footprint']
-  bug_url = ALL_FIELDS['bug_url']
-  launch_bug_url = ALL_FIELDS['launch_bug_url']
-  # TODO(jrobbins): public proposal URL, optional
-
-
-class Deprecation_Implement(forms.Form):
-
-  # TODO(jrobbins): public proposal URL, required
-  # TODO(jrobbins): advise user to request a tag review
-  spec_link = ALL_FIELDS['spec_link']
-  # TODO(jrobbins): action to generate Intent to Prototype email
-
-
-class Deprecation_DevTrial(forms.Form):
-
-  bug_url = ALL_FIELDS['bug_url']
-  doc_links = ALL_FIELDS['doc_links']
-  # TODO(jrobbins): api overview link
-  spec_link = ALL_FIELDS['spec_link']
-
-  intent_to_implement_url = ALL_FIELDS['intent_to_implement_url']
-  interop_compat_risks = ALL_FIELDS['interop_compat_risks']
-
-  safari_views = ALL_FIELDS['safari_views']
-  safari_views_link = ALL_FIELDS['safari_views_link']
-  safari_views_notes = ALL_FIELDS['safari_views_notes']
-
-  ff_views = ALL_FIELDS['ff_views']
-  ff_views_link = ALL_FIELDS['ff_views_link']
-  ff_views_notes = ALL_FIELDS['ff_views_notes']
-
-  ie_views = ALL_FIELDS['ie_views']
-  ie_views_link = ALL_FIELDS['ie_views_link']
-  ie_views_notes = ALL_FIELDS['ie_views_notes']
-
-  web_dev_views = ALL_FIELDS['web_dev_views']
-  web_dev_views_link = ALL_FIELDS['web_dev_views_link']
-
-  ergonomics_risks = ALL_FIELDS['ergonomics_risks']
-  activation_risks = ALL_FIELDS['activation_risks']
-  security_risks = ALL_FIELDS['security_risks']
-  # TODO(jrobbins): request security and privacy reviews
-  debuggability = ALL_FIELDS['debuggability']
-  all_platforms = ALL_FIELDS['all_platforms']
-  all_platforms_descr = ALL_FIELDS['all_platforms_descr']
-  wpt = ALL_FIELDS['wpt']
-  wpt_descr = ALL_FIELDS['wpt_descr']
-  sample_links = ALL_FIELDS['sample_links']
-  # TODO(jrobbins): generate ready for trial email
-
-
+# Note: Even though this is similar to another form, it is likely to change.
 class Deprecation_PrepareToUnship(forms.Form):
 
+  field_order = (
+      'impl_status_chrome', 'footprint', 'tag_review',
+      'intent_to_implement_url', 'origin_trial_feedback_url',
+      'launch_bug_url', 'comments')
   impl_status_chrome = ALL_FIELDS['impl_status_chrome']
   footprint = ALL_FIELDS['footprint']
   tag_review = ALL_FIELDS['tag_review']
   intent_to_implement_url = ALL_FIELDS['intent_to_implement_url']
   origin_trial_feedback_url = ALL_FIELDS['origin_trial_feedback_url'] # optional
   launch_bug_url = ALL_FIELDS['launch_bug_url']
+  comments = ALL_FIELDS['comments']
 
 
+# Note: Even though this is similar to another form, it is likely to change.
 class Deprecation_ReverseOriginTrial(forms.Form):
 
+  field_order = (
+      'experiment_goals', 'experiment_timeline', 'experiment_risks',
+      'experiment_extension_reason', 'ongoing_constraints',
+      'origin_trial_feedback_url', 'comments')
   experiment_goals = ALL_FIELDS['experiment_goals']
   experiment_timeline = ALL_FIELDS['experiment_timeline']
   experiment_risks = ALL_FIELDS['experiment_risks']
   experiment_extension_reason = ALL_FIELDS['experiment_extension_reason']
   ongoing_constraints = ALL_FIELDS['ongoing_constraints']
   origin_trial_feedback_url = ALL_FIELDS['origin_trial_feedback_url'] # optional
-  # TODO(jrobbins): action to generate intent to experiement email
+  comments = ALL_FIELDS['comments']

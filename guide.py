@@ -46,31 +46,31 @@ STAGE_FORMS = {
     models.FEATURE_TYPE_INCUBATE_ID: {
         models.INTENT_INCUBATE: guideforms.NewFeature_Incubate,
         models.INTENT_IMPLEMENT: guideforms.NewFeature_Prototype,
-        models.INTENT_EXPERIMENT: guideforms.NewFeature_DevTrial,
+        models.INTENT_EXPERIMENT: guideforms.Any_DevTrial,
         models.INTENT_IMPLEMENT_SHIP: guideforms.NewFeature_EvalReadinessToShip,
         models.INTENT_EXTEND_TRIAL: guideforms.NewFeature_OriginTrial,
-        models.INTENT_SHIP: guideforms.NewFeature_PrepareToShip,
+        models.INTENT_SHIP: guideforms.Any_PrepareToShip,
         },
 
     models.FEATURE_TYPE_EXISTING_ID: {
-        models.INTENT_INCUBATE: guideforms.Existing_Identify,
-        models.INTENT_IMPLEMENT: guideforms.Existing_Implement,
-        models.INTENT_EXPERIMENT: guideforms.Existing_DevTrial,
+        models.INTENT_INCUBATE: guideforms.Any_Identify,
+        models.INTENT_IMPLEMENT: guideforms.Any_Implement,
+        models.INTENT_EXPERIMENT: guideforms.Any_DevTrial,
         models.INTENT_EXTEND_TRIAL: guideforms.Existing_OriginTrial,
-        models.INTENT_SHIP: guideforms.Existing_PrepareToShip,
+        models.INTENT_SHIP: guideforms.Any_PrepareToShip,
         },
 
     models.FEATURE_TYPE_CODE_CHANGE_ID: {
-        models.INTENT_INCUBATE: guideforms.CodeChange_Identify,
-        models.INTENT_IMPLEMENT: guideforms.CodeChange_Implement,
-        models.INTENT_EXPERIMENT: guideforms.CodeChange_DevTrial,
-        models.INTENT_SHIP: guideforms.CodeChange_PrepareToShip,
+        models.INTENT_INCUBATE: guideforms.Any_Identify,
+        models.INTENT_IMPLEMENT: guideforms.Any_Implement,
+        models.INTENT_EXPERIMENT: guideforms.Any_DevTrial,
+        models.INTENT_SHIP: guideforms.Any_PrepareToShip,
         },
 
     models.FEATURE_TYPE_DEPRECATION_ID: {
-        models.INTENT_INCUBATE: guideforms.Deprecation_Identify,
-        models.INTENT_IMPLEMENT: guideforms.Deprecation_Implement,
-        models.INTENT_EXPERIMENT: guideforms.Deprecation_DevTrial,
+        models.INTENT_INCUBATE: guideforms.Any_Identify,
+        models.INTENT_IMPLEMENT: guideforms.Any_Implement,
+        models.INTENT_EXPERIMENT: guideforms.Any_DevTrial,
         models.INTENT_REMOVE: guideforms.Deprecation_PrepareToUnship,
         models.INTENT_EXTEND_TRIAL: guideforms.Deprecation_ReverseOriginTrial,
         },
@@ -264,6 +264,10 @@ class FeatureEditStage(common.ContentHandler):
 
     if self.touched('spec_link'):
       feature.spec_link = self.parse_link('spec_link')
+
+    if self.touched('initial_public_proposal_url'):
+      feature.initial_public_proposal_url = self.parse_link(
+          'initial_public_proposal_url')
 
     if self.touched('explainer_links'):
       feature.explainer_links = self.split_input('explainer_links')
