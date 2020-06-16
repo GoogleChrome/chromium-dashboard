@@ -73,6 +73,7 @@ STAGE_FORMS = {
         models.INTENT_EXPERIMENT: guideforms.Any_DevTrial,
         models.INTENT_EXTEND_TRIAL: guideforms.Deprecation_DeprecationTrial,
         models.INTENT_SHIP: guideforms.Deprecation_PrepareToShip,
+        models.INTENT_REMOVED: guideforms.Deprecation_Removed,
         },
 }
 

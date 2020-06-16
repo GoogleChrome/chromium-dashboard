@@ -281,6 +281,7 @@ DEPRECATION_STAGES = [
        'Removal of DT',
       ],
       [('Draft Deprecation Trial email', INTENT_EMAIL_URL)],
+      # TODO(jrobbins): Intent to extend deprecation.
       models.INTENT_EXPERIMENT, models.INTENT_EXTEND_TRIAL),
 
   ProcessStage(
@@ -293,6 +294,14 @@ DEPRECATION_STAGES = [
       ],
       [('Draft Intent to Ship email', INTENT_EMAIL_URL)],
       models.INTENT_EXPERIMENT, models.INTENT_SHIP),
+
+  ProcessStage(
+      'Remove code',
+      'Once the feature is no longer available, remove the code.',
+      ['Code removed',
+      ],
+      [],
+      models.INTENT_SHIP, models.INTENT_REMOVED),
   ]
 
 

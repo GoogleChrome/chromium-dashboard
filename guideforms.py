@@ -683,3 +683,6 @@ class Deprecation_DeprecationTrial(forms.Form):
   ongoing_constraints = ALL_FIELDS['ongoing_constraints']
   origin_trial_feedback_url = ALL_FIELDS['origin_trial_feedback_url'] # optional
   comments = ALL_FIELDS['comments']
+
+class Deprecation_Removed(forms.Form):
+  comments = ALL_FIELDS['comments']
