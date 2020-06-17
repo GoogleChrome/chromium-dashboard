@@ -48,18 +48,19 @@ td b {
 
 td div.done:before {
   content: "\\2713";
-  position: relative;
-  left: -.7em;
+  position: absolute;
+  left: 0;
 }
 
 td div.pending:before {
   content: "\\25cb";
-  position: relative;
-  left: -.7em;
+  position: absolute;
+  left: 0;
 }
 
 td div.done, td div.pending {
-  margin-left: 1em;
+  position: relative;
+  padding-left: 1.2em;
 }
 
 ol li {

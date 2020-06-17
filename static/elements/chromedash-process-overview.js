@@ -12,7 +12,7 @@ class ChromedashProcessOverview extends LitElement {
     return {
       feature: {type: Object},
       process: {type: Array},
-      progress: {type: Array},
+      progress: {type: Object},
     };
   }
 
@@ -20,7 +20,7 @@ class ChromedashProcessOverview extends LitElement {
     super();
     this.feature = {};
     this.process = [];
-    this.progress = [];
+    this.progress = {};
   }
 
   inFinalStage(stage) {
@@ -80,6 +80,21 @@ class ChromedashProcessOverview extends LitElement {
     return stage.actions.map(act => this.renderAction(act));
   }
 
+  renderProgressItem(item) {
+    if (!this.progress.hasOwnProperty(item)) {
+      return html`<div class="pending">${item}</div>`;
+    }
+
+    if (this.progress[item].startsWith('http://') ||
+        this.progress[item].startsWith('https://')) {
+      return html`<div class="done"><a target="_blank"
+        href="${this.progress[item]}"
+        >${item}</a></div>`;
+    }
+
+    return html`<div class="done">${item}</div>`;
+  }
+
   render() {
     let featureId = this.feature.id;
     return html`
@@ -97,10 +112,8 @@ class ChromedashProcessOverview extends LitElement {
              <div><b>${stage.name}</b></div>
              <div>${stage.description}</div>
            </td>
-           <td>${stage.progress_items.map(item => html`
-             <div class="${this.progress.includes(item) ? 'done' : 'pending'}">
-                  ${item}</div>
-           `)}
+           <td>
+             ${stage.progress_items.map(item => this.renderProgressItem(item))}
            </td>
            <td>
             ${this.feature.intent_stage_int == stage.outgoing_stage ?

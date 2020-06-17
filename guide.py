@@ -141,6 +141,14 @@ class FeatureNew(common.ContentHandler):
 
 class ProcessOverview(common.ContentHandler):
 
+  def detect_progress(self, f):
+    progress_so_far = {}
+    for progress_item, detector in processes.PROGRESS_DETECTORS.items():
+      detected = detector(f)
+      if detected:
+        progress_so_far[progress_item] = str(detected)
+    return progress_so_far
+
   def get(self, path, feature_id):
     user = users.get_current_user()
     if user is None:
@@ -160,13 +168,9 @@ class ProcessOverview(common.ContentHandler):
     template_data = {
         'overview_form': guideforms.MetadataForm(f.format_for_edit()),
         'process_json': json.dumps(processes.process_to_dict(feature_process)),
-        'progress_so_far': [],
         }
 
-    progress_so_far = []  # An unordered list of progress item strings.
-    # TODO(jrobbins): Replace this constant with a call to apply a bunch
-    # of tiny functions to detect each bit of progress.
-    progress_so_far = ['Explainer', 'API design']
+    progress_so_far = self.detect_progress(f)
 
     # Provide new or populated form to template.
     template_data.update({
