@@ -164,6 +164,7 @@ BLINK_FAST_TRACK_STAGES = [
       ['Samples',
        'Draft API overview (may be on MDN)',
        'Ready for Trial email',
+       'Vendor signals',
        'Estimated target milestone',
       ],
       [('Draft Ready for Trial email', INTENT_EMAIL_URL)],
@@ -224,6 +225,7 @@ PSA_ONLY_STAGES = [
       'Publicize availablity for developers to try. '
       'Act on feedback from partners and web developers.',
       ['Ready for Trial email',
+       'Vendor signals',
        'Estimated target milestone',
       ],
       [('Draft Ready for Trial email', INTENT_EMAIL_URL)],
@@ -249,53 +251,57 @@ PSA_ONLY_PROCESS = Process(
 
 DEPRECATION_STAGES = [
   ProcessStage(
-      'Identify feature',
+      'Write up motivation',
       'Create an initial WebStatus feature entry to deprecate '
-      'an existing feature stating impact.',
+      'an existing feature, including motivation and impact. '
+      'Then, move existing Chromium code under a flag.',
       ['Link to existing feature',
+       'Motivation',
+       'Code in Chromium',
       ],
-      [],
+      [('Draft Intent to Deprecate and Remove email', INTENT_EMAIL_URL)],
       models.INTENT_NONE, models.INTENT_INCUBATE),
-
-  ProcessStage(
-      'Implement',
-      'Move existing Chromium code under a flag.',
-      ['Code in Chromium',
-      ],
-      [],
-      models.INTENT_INCUBATE, models.INTENT_IMPLEMENT),
 
   # TODO(cwilso): Work out additional steps for flag defaulting to disabled.
   ProcessStage(
       'Dev trial',
-      'Publicize deprecation. ',
+      'Publicize deprecation and address risks. ',
       ['Ready for Trial email',
+       'Vendor signals',
        'Estimated target milestone',
       ],
-      [],
-      models.INTENT_IMPLEMENT, models.INTENT_EXPERIMENT),
+      [('Draft Ready for Trial email', INTENT_EMAIL_URL)],
+      models.INTENT_INCUBATE, models.INTENT_EXPERIMENT),
 
   ProcessStage(
-      'Prepare to unship',
-      'Lock in shipping milestone. Finalize docs and announcements. '
-      'Further standardization.',
+      'Prepare for Deprecation Trial',
+      '(Optional) Set up and run a deprecation trial. ',
+      ['DT request',
+       'DT available',
+       'Removal of DT',
+      ],
+      [('Draft Deprecation Trial email', INTENT_EMAIL_URL)],
+      # TODO(jrobbins): Intent to extend deprecation.
+      models.INTENT_EXPERIMENT, models.INTENT_EXTEND_TRIAL),
+
+  ProcessStage(
+      'Prepare to ship',
+      'Lock in shipping milestone. '
+      'Finalize docs and announcements before disabling feature by default.',
       ['Intent to Ship email',
        'Three LGTMs',
        'Finalized target milestone',
       ],
       [('Draft Intent to Ship email', INTENT_EMAIL_URL)],
-      models.INTENT_EXPERIMENT, models.INTENT_REMOVE),
+      models.INTENT_EXPERIMENT, models.INTENT_SHIP),
 
   ProcessStage(
-      'Reverse Origin Trial',
-      '(Optional) Set up and run a reverse origin trial. ',
-      ['ROT request',
-       'ROT available',
-       'Removal of ROT',
-       'Removal of implementation code',
+      'Remove code',
+      'Once the feature is no longer available, remove the code.',
+      ['Code removed',
       ],
-      [('Draft Ready for Trial email', INTENT_EMAIL_URL)],
-      models.INTENT_EXPERIMENT, models.INTENT_EXTEND_TRIAL),
+      [],
+      models.INTENT_SHIP, models.INTENT_REMOVED),
   ]
 
 

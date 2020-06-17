@@ -71,8 +71,9 @@ STAGE_FORMS = {
         models.INTENT_INCUBATE: guideforms.Any_Identify,
         models.INTENT_IMPLEMENT: guideforms.Any_Implement,
         models.INTENT_EXPERIMENT: guideforms.Any_DevTrial,
-        models.INTENT_REMOVE: guideforms.Deprecation_PrepareToUnship,
-        models.INTENT_EXTEND_TRIAL: guideforms.Deprecation_ReverseOriginTrial,
+        models.INTENT_EXTEND_TRIAL: guideforms.Deprecation_DeprecationTrial,
+        models.INTENT_SHIP: guideforms.Deprecation_PrepareToShip,
+        models.INTENT_REMOVED: guideforms.Deprecation_Removed,
         },
 }
 
