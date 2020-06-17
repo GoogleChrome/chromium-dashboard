@@ -59,6 +59,7 @@ BLINK_PROCESS_STAGES = [
       'Create an initial WebStatus feature entry and kick off standards '
       'incubation (WICG) to share ideas.',
       ['Initial public proposal',
+       'Motivation',
        'Spec repo',
       ],
       [],
@@ -98,6 +99,7 @@ BLINK_PROCESS_STAGES = [
       'Work through a TAG review and gather vendor signals.',
       ['TAG review request',
        'Vendor signals',
+       'Doc links',
        'Documentation signoff',
        'Estimated target milestone',
       ],
@@ -236,7 +238,7 @@ PSA_ONLY_STAGES = [
       'Lock in shipping milestone.',
       ['Web facing PSA email',
        'One LGTM',
-       'Finalize target Milestone',
+       'Finalize target milestone',
       ],
       [('Draft Intent to Ship email', INTENT_EMAIL_URL)],
       models.INTENT_EXPERIMENT, models.INTENT_SHIP),
@@ -318,3 +320,44 @@ ALL_PROCESSES = {
     models.FEATURE_TYPE_CODE_CHANGE_ID: PSA_ONLY_PROCESS,
     models.FEATURE_TYPE_DEPRECATION_ID: DEPRECATION_PROCESS,
     }
+
+
+# These functions return a true value when the checkmark should be shown.
+# If they return a string, and it starts with "http:" or "https:", it will
+# be used as a link URL.
+PROGRESS_DETECTORS = {
+    'Initial public proposal':
+    lambda f: f.initial_public_proposal_url,
+
+    'Explainer':
+    lambda f: f.explainer_links and f.explainer_links[0],
+
+    'Samples':
+    lambda f: f.sample_links and f.sample_links[0],
+
+    'Doc links':
+    lambda f: f.doc_links and f.doc_links[0],
+
+    'TAG review request':
+    lambda f: f.tag_review,
+
+    'Request signals':
+    lambda f: bool(
+        f.ff_views != models.NO_PUBLIC_SIGNALS or
+        f.safari_views != models.NO_PUBLIC_SIGNALS or
+        f.ie_views != models.NO_PUBLIC_SIGNALS),
+
+    'Estimated target milestone':
+    lambda f: bool(f.shipped_milestone),
+
+    'Code in Chromium':
+    lambda f: f.impl_status_chrome in (
+        models.IN_DEVELOPMENT, models.BEHIND_A_FLAG, models.ENABLED_BY_DEFAULT,
+        models.ORIGIN_TRIAL, models.INTERVENTION),
+
+    'Motivation':
+    lambda f: bool(f.motivation),
+
+    'Code removed':
+    lambda f: f.impl_status_chrome == models.REMOVED,
+}

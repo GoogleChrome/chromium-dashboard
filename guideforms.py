@@ -36,6 +36,7 @@ SHIPPED_HELP_TXT = (
 ALL_FIELDS = {
     'name': forms.CharField(
         required=True, label='Feature',
+        widget=forms.TextInput(attrs={'autocomplete': 'off'}),
         help_text=('Capitalize only the first letter and the beginnings of '
                    'proper nouns.')),
 

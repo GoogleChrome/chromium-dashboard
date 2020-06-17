@@ -1067,7 +1067,9 @@ class FeatureForm(forms.Form):
   # js/admin/feature_form.js and make sure the code works as intended.
 
   #name = PlaceholderCharField(required=True, placeholder='Feature name')
-  name = forms.CharField(required=True, label='Feature',
+  name = forms.CharField(
+      required=True, label='Feature',
+      widget=forms.TextInput(attrs={'autocomplete': 'off'}),
       help_text='Capitalize only the first letter and the beginnings of proper nouns.')
 
   summary = forms.CharField(label='', required=True,

@@ -113,6 +113,23 @@ class ProcessOverviewTest(unittest.TestCase):
   def tearDown(self):
     self.feature_1.delete()
 
+  def test_detect_progress__no_progress(self):
+    """A new feature has earned no progress items."""
+    actual = self.handler.detect_progress(self.feature_1)
+    self.assertEqual({}, actual)
+
+  def test_detect_progress__some_progress(self):
+    """We can detect some progress."""
+    self.feature_1.motivation = 'something'
+    actual = self.handler.detect_progress(self.feature_1)
+    self.assertEqual({'Motivation': 'True'}, actual)
+
+  def test_detect_progress__progress_item_links(self):
+    """Fields with multiple URLs use the first URL in progress item."""
+    self.feature_1.doc_links = ['http://one', 'http://two']
+    actual = self.handler.detect_progress(self.feature_1)
+    self.assertEqual({'Doc links': 'http://one'}, actual)
+
   @mock.patch('guide.ProcessOverview.render')
   def test_get__anon(self, mock_render):
     """Anon cannot edit features, gets a redirect to viewing page."""
