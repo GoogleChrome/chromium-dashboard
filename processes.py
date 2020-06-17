@@ -341,7 +341,7 @@ PROGRESS_DETECTORS = {
     'TAG review request':
     lambda f: f.tag_review,
 
-    'Request signals':
+    'Vendor signals':
     lambda f: bool(
         f.ff_views != models.NO_PUBLIC_SIGNALS or
         f.safari_views != models.NO_PUBLIC_SIGNALS or

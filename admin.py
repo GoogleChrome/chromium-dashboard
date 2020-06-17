@@ -328,6 +328,8 @@ class FeatureHandler(common.ContentHandler):
 
     bug_url = self.__FullQualifyLink('bug_url')
     launch_bug_url = self.__FullQualifyLink('launch_bug_url')
+    initial_public_proposal_url = self.__FullQualifyLink(
+        'initial_public_proposal_url')
     intent_to_implement_url = self.__FullQualifyLink('intent_to_implement_url')
     origin_trial_feedback_url = self.__FullQualifyLink('origin_trial_feedback_url')
 
@@ -403,6 +405,7 @@ class FeatureHandler(common.ContentHandler):
       feature.owner = owners
       feature.bug_url = bug_url
       feature.launch_bug_url = launch_bug_url
+      feature.initial_public_proposal_url = initial_public_proposal_url
       feature.blink_components = blink_components
       feature.devrel = devrel
       feature.impl_status_chrome = int(self.request.get('impl_status_chrome'))
@@ -467,6 +470,8 @@ class FeatureHandler(common.ContentHandler):
           explainer_links=explainer_links,
           owner=owners,
           bug_url=bug_url,
+          launch_bug_url=launch_bug_url,
+          initial_public_proposal_url=initial_public_proposal_url,
           blink_components=blink_components,
           devrel=devrel,
           impl_status_chrome=int(self.request.get('impl_status_chrome')),
