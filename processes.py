@@ -99,6 +99,7 @@ BLINK_PROCESS_STAGES = [
       'Work through a TAG review and gather vendor signals.',
       ['TAG review request',
        'Vendor signals',
+       'Doc links',
        'Documentation signoff',
        'Estimated target milestone',
       ],
@@ -333,6 +334,9 @@ PROGRESS_DETECTORS = {
 
     'Samples':
     lambda f: f.sample_links and f.sample_links[0],
+
+    'Doc links':
+    lambda f: f.doc_links and f.doc_links[0],
 
     'TAG review request':
     lambda f: f.tag_review,
