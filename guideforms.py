@@ -130,11 +130,15 @@ ALL_FIELDS = {
          'our <a target="_blank" href="'
          'https://docs.google.com/document/d/'
          '1RC-pBBvsazYfCNNUSkPqAVpSpNJ96U8trhNkfV0v9fk/edit">'
-         'principles of web compatibility</a>.')),
+         'principles of web compatibility</a>.<br>'
+         '<br>'
+         'Please include citation links below where possible. Examples include '
+         'resolutions from relevant standards bodies (e.g. W3C working group), '
+         'tracking bugs, or links to online conversations.')),
 
     'safari_views': forms.ChoiceField(
         label='Safari views',
-        choices=models.VENDOR_VIEWS.items(),
+        choices=models.VENDOR_VIEWS_WEBKIT.items(),
         initial=models.NO_PUBLIC_SIGNALS),
 
     'safari_views_link': forms.URLField(
@@ -149,7 +153,7 @@ ALL_FIELDS = {
 
     'ff_views': forms.ChoiceField(
         label='Firefox views',
-        choices=models.VENDOR_VIEWS.items(),
+        choices=models.VENDOR_VIEWS_GECKO.items(),
         initial=models.NO_PUBLIC_SIGNALS),
 
     'ff_views_link': forms.URLField(
@@ -164,7 +168,7 @@ ALL_FIELDS = {
 
     'ie_views': forms.ChoiceField(
         label='Edge',
-        choices=models.VENDOR_VIEWS.items(),
+        choices=models.VENDOR_VIEWS_EDGE.items(),
         initial=models.NO_PUBLIC_SIGNALS),
 
     'ie_views_link': forms.URLField(

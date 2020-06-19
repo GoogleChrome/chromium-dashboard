@@ -57,15 +57,11 @@ Specification: <a href="{{feature.spec_link}}">{{feature.spec_link}}</a>
 <div style="margin-left: 4em;"><label>Interoperability and Compatibility</label>
 {{feature.interop_compat_risks|urlize}}
 
-<i>Firefox</i>: {{feature.ff_views.text}}{% if feature.ff_views_link %} (<a href="{{feature.ff_views_link}}">{{feature.ff_views_link}}</a>){% endif %}{% if feature.ff_views_notes %}
+<i>Gecko</i>: {{feature.ff_views.text}}{% if feature.ff_views_link %} (<a href="{{feature.ff_views_link}}">{{feature.ff_views_link}}</a>){% endif %}{% if feature.ff_views_notes %}
 
 {{feature.ff_views_notes|urlize}}
 {% endif %}
-<i>Edge</i>: {{feature.ie_views.text}}{% if feature.ie_views_link %} (<a href="{{feature.ie_views_link}}">{{feature.ie_views_link}}</a>){% endif %}{% if feature.ie_views_notes %}
-
-{{feature.ie_views_notes|urlize}}
-{% endif %}
-<i>Safari</i>: {{feature.safari_views.text}}{% if feature.safari_views_link %} (<a href="{{feature.safari_views_link}}">{{feature.safari_views_link}}</a>){% endif %}{% if feature.safari_views_notes %}
+<i>WebKit</i>: {{feature.safari_views.text}}{% if feature.safari_views_link %} (<a href="{{feature.safari_views_link}}">{{feature.safari_views_link}}</a>){% endif %}{% if feature.safari_views_notes %}
 
 {{feature.safari_views_notes|urlize}}
 {% endif %}
