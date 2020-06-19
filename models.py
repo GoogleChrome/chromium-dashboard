@@ -72,7 +72,7 @@ CAPABILITIES = 21
 FEATURE_CATEGORIES = {
   CSS: 'CSS',
   WEBCOMPONENTS: 'Web Components',
-  MISC: 'Misc',
+  MISC: 'Miscellaneous',
   SECURITY: 'Security',
   MULTIMEDIA: 'Multimedia',
   DOM: 'DOM',
@@ -1072,7 +1072,7 @@ class FeatureForm(forms.Form):
       widget=forms.TextInput(attrs={'autocomplete': 'off'}),
       help_text='Capitalize only the first letter and the beginnings of proper nouns.')
 
-  summary = forms.CharField(label='', required=True,
+  summary = forms.CharField(label='Summary', required=True,
       widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 500}),
       help_text='Provide a one sentence description followed by one or two lines explaining how this feature helps web developers.')
 
@@ -1110,7 +1110,7 @@ class FeatureForm(forms.Form):
   unlisted = forms.BooleanField(
       required=False, initial=False,
       help_text=('Check this box for draft features that should not appear '
-                 'in the feature list. Anyone with the link will be able to '
+                 'on the public feature list. Anyone with the link will be able to '
                  'view the feature on the detail page.'))
 
   doc_links = forms.CharField(label='Doc link(s)', required=False,
