@@ -166,10 +166,10 @@ MINOR_EXISTING_CHANGES = 4
 EXTREMELY_SMALL_CHANGE = 5
 
 FOOTPRINT_CHOICES = {
-  MAJOR_NEW_API: ('A major new independent API (e.g. adding a large # '
+  MAJOR_NEW_API: ('A major new independent API (e.g. adding many '
                   'independent concepts with many methods/properties/objects)'),
   MAJOR_MINOR_NEW_API: ('Major changes to an existing API OR a minor new '
-                        'independent API (e.g. adding a large # of new '
+                        'independent API (e.g. adding many new '
                         'methods/properties or introducing new concepts to '
                         'augment an existing API)'),
   SUBSTANTIVE_CHANGES: ('Substantive changes to an existing API (e.g. small '
