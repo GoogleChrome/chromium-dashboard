@@ -71,7 +71,8 @@ ALL_FIELDS = {
     'doc_links': forms.CharField(
         label='Doc link(s)', required=False,
         widget=forms.Textarea(
-            attrs={'rows': 4, 'cols': 50, 'maxlength': 500}),
+            attrs={'rows': 4, 'cols': 50, 'maxlength': 500,
+                   'placeholder': 'https://\nhttps://'}),
         help_text=('Links to design doc(s) (one URL per line), if and when '
                    'available. [This is not required to send out an Intent '
                    'to Prototype. Please update the intent thread with the '
@@ -94,13 +95,16 @@ ALL_FIELDS = {
 
     'spec_link': forms.URLField(
         required=False, label='Spec link',
+        widget=forms.URLInput(attrs={'placeholder': 'https://'}),
         help_text=('Link to spec, if and when available.  Please update the '
                    'chromestatus.com entry and the intent thread(s) with the '
                    'spec link when available.')),
 
     'explainer_links': forms.CharField(
         label='Explainer link(s)', required=False,
-        widget=forms.Textarea(attrs={'rows': 4, 'cols': 50, 'maxlength': 500}),
+        widget=forms.Textarea(
+            attrs={'rows': 4, 'cols': 50, 'maxlength': 500,
+                   'placeholder': 'https://\nhttps://'}),
         help_text=('Link to explainer(s) (one URL per line). You should have '
                    'at least an explainer in hand and have shared it on a '
                    'public forum before sending an Intent to Prototype in '
@@ -115,6 +119,7 @@ ALL_FIELDS = {
 
     'intent_to_implement_url': forms.URLField(
         required=False, label='Intent to Prototype link',
+        widget=forms.URLInput(attrs={'placeholder': 'https://'}),
         help_text='Link to the "Intent to Prototype" discussion thread.'),
 
     'interop_compat_risks': forms.CharField(
@@ -143,6 +148,7 @@ ALL_FIELDS = {
 
     'safari_views_link': forms.URLField(
         required=False, label='',
+        widget=forms.URLInput(attrs={'placeholder': 'https://'}),
         help_text='Citation link.'),
 
     'safari_views_notes': forms.CharField(
@@ -158,6 +164,7 @@ ALL_FIELDS = {
 
     'ff_views_link': forms.URLField(
         required=False, label='',
+        widget=forms.URLInput(attrs={'placeholder': 'https://'}),
         help_text='Citation link.'),
 
     'ff_views_notes': forms.CharField(
@@ -173,6 +180,7 @@ ALL_FIELDS = {
 
     'ie_views_link': forms.URLField(
         required=False, label='',
+        widget=forms.URLInput(attrs={'placeholder': 'https://'}),
         help_text='Citation link.'),
 
     'ie_views_notes': forms.CharField(
@@ -189,6 +197,7 @@ ALL_FIELDS = {
 
     'web_dev_views_link': forms.URLField(
         required=False, label='',
+        widget=forms.URLInput(attrs={'placeholder': 'https://'}),
         help_text='Citation link.'),
 
     'web_dev_views_notes': forms.CharField(
@@ -270,6 +279,7 @@ ALL_FIELDS = {
 
     'origin_trial_feedback_url': forms.URLField(
         required=False, label='Origin Trial feedback summary',
+        widget=forms.URLInput(attrs={'placeholder': 'https://'}),
         help_text=
         ('If your feature was available as an Origin Trial, link to a summary '
          'of usage and developer feedback. If not, leave this empty.')),
@@ -324,11 +334,14 @@ ALL_FIELDS = {
 
     'sample_links': forms.CharField(
         label='Samples links', required=False,
-        widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 500}),
+        widget=forms.Textarea(
+            attrs={'cols': 50, 'maxlength': 500,
+                   'placeholder': 'https://\nhttps://'}),
         help_text='Links to samples (one URL per line).'),
 
     'bug_url': forms.URLField(
         required=False, label='Tracking bug URL',
+        widget=forms.URLInput(attrs={'placeholder': 'https://'}),
         help_text=
         ('Tracking bug url (https://bugs.chromium.org/...). This bug '
          'should have "Type=Feature" set and be world readable. '
@@ -338,6 +351,7 @@ ALL_FIELDS = {
     # or a deep link that has some feature details filled in.
     'launch_bug_url': forms.URLField(
         required=False, label='Launch bug URL',
+        widget=forms.URLInput(attrs={'placeholder': 'https://'}),
         help_text=(
             'Launch bug url (https://bugs.chromium.org/...) to track launch '
             'aprpovals. '
@@ -346,10 +360,11 @@ ALL_FIELDS = {
           '>Create launch bug<a>')),
 
     'initial_public_proposal_url': forms.URLField(
-      required=False, label='Initial public proposal URL',
-      help_text=(
-          'Link to the first public proposal to create this feature, e.g., '
-          'a WICG discourse post.')),
+        required=False, label='Initial public proposal URL',
+        widget=forms.URLInput(attrs={'placeholder': 'https://'}),
+        help_text=(
+            'Link to the first public proposal to create this feature, e.g., '
+            'a WICG discourse post.')),
 
     'blink_components': forms.ChoiceField(
       required=True,
@@ -360,8 +375,10 @@ ALL_FIELDS = {
       choices=[(x, x) for x in models.BlinkComponent.fetch_all_components()],
       initial=[models.BlinkComponent.DEFAULT_COMPONENT]),
 
-    'devrel': forms.CharField(
+    'devrel': forms.EmailField(
         required=False, label='Developer relations emails',
+        widget=forms.EmailInput(
+            attrs={'multiple': True, 'placeholder': 'email, email'}),
         help_text='Comma separated list of full email addresses.'),
 
     'impl_status_chrome': forms.ChoiceField(
@@ -370,18 +387,22 @@ ALL_FIELDS = {
 
     'shipped_milestone': forms.IntegerField(
         required=False, label='',
+        widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'}),
         help_text='Desktop:<br/>' + SHIPPED_HELP_TXT),
 
     'shipped_android_milestone': forms.IntegerField(
         required=False, label='',
+        widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'}),
         help_text='Chrome for Android:</br/>' + SHIPPED_HELP_TXT),
 
     'shipped_ios_milestone': forms.IntegerField(
         required=False, label='',
+        widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'}),
         help_text='Chrome for iOS (RARE):<br/>' + SHIPPED_HELP_TXT),
 
     'shipped_webview_milestone': forms.IntegerField(
         required=False, label='',
+        widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'}),
         help_text='Android WebView:<br/>' + SHIPPED_HELP_TXT),
 
     'prefixed': forms.BooleanField(
@@ -421,8 +442,10 @@ class NewFeatureForm(forms.Form):
   category = ALL_FIELDS['category']
   unlisted = ALL_FIELDS['unlisted']
   current_user_email = users.get_current_user().email if users.get_current_user() else None
-  owner = forms.CharField(
+  owner = forms.EmailField(
       initial=current_user_email, required=True, label='Contact emails',
+      widget=forms.EmailInput(
+          attrs={'multiple': True, 'placeholder': 'email, email'}),
       help_text=('Comma separated list of full email addresses. '
                  'Prefer @chromium.org.'))
   # Note: feature_type is done with custom HTML
@@ -439,9 +462,11 @@ class MetadataForm(forms.Form):
   summary = ALL_FIELDS['summary']
   category = ALL_FIELDS['category']
   unlisted = ALL_FIELDS['unlisted']
-  owner = forms.CharField(
+  owner = forms.EmailField(
       required=False,
       label='Contact emails',
+      widget=forms.EmailInput(
+          attrs={'multiple': True, 'placeholder': 'email, email'}),
       help_text=('Comma separated list of full email addresses. '
                  'Prefer @chromium.org.'))
   feature_type = ALL_FIELDS['feature_type']
@@ -467,8 +492,10 @@ class NewFeature_Incubate(forms.Form):
   initial_public_proposal_url = ALL_FIELDS['initial_public_proposal_url']
   explainer_links = ALL_FIELDS['explainer_links']
   current_user_email = users.get_current_user().email if users.get_current_user() else None
-  owner = forms.CharField(
+  owner = forms.EmailField(
       initial=current_user_email, required=True, label='Contact emails',
+      widget=forms.EmailInput(
+          attrs={'multiple': True, 'placeholder': 'email, email'}),
       help_text=('Comma separated list of full email addresses. '
                  'Prefer @chromium.org.'))
   blink_components = ALL_FIELDS['blink_components']
@@ -618,8 +645,10 @@ class Any_Identify(forms.Form):
       'owner', 'blink_components', 'motivation', 'explainer_links',
       'footprint', 'bug_url', 'launch_bug_url', 'comments')
   current_user_email = users.get_current_user().email if users.get_current_user() else None
-  owner = forms.CharField(
+  owner = forms.EmailField(
       initial=current_user_email, required=True, label='Contact emails',
+      widget=forms.EmailInput(
+          attrs={'multiple': True, 'placeholder': 'email, email'}),
       help_text=('Comma separated list of full email addresses. '
                  'Prefer @chromium.org.'))
   blink_components = ALL_FIELDS['blink_components']

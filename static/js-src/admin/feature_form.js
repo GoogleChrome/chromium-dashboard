@@ -579,23 +579,6 @@ function intentStageChanged() {
 document.addEventListener('DOMContentLoaded', function() {
   document.body.classList.remove('loading');
 
-  // Get around Django rendering input type="text" fields for URLs.
-  const inputsEls = document.querySelectorAll('[name$="_url"], [name$="_link"]');
-  [].forEach.call(inputsEls, function(inputEl) {
-    inputEl.type = 'url';
-    inputEl.placeholder = 'http://';
-  });
-
-  const shippedInputEls = document.querySelectorAll('[name^="shipped_"]');
-  [].forEach.call(shippedInputEls, function(inputEl) {
-    inputEl.type = 'number';
-    inputEl.placeholder = 'Milestone #';
-  });
-
-  const ownerEl = document.querySelector('[name="owner"]');
-  ownerEl.type = 'email';
-  ownerEl.multiple = true;
-
   toggleMilestones(document.querySelector('#id_impl_status_chrome'));
 
   intentStageChanged();

@@ -1128,7 +1128,10 @@ class FeatureForm(forms.Form):
       choices=INTENT_STAGES.items())
 
   current_user_email = users.get_current_user().email if users.get_current_user() else None
-  owner = forms.CharField(initial=current_user_email, required=True, label='Contact emails',
+  owner = forms.EmailField(
+      initial=current_user_email, required=True, label='Contact emails',
+      widget=forms.EmailInput(
+          attrs={'multiple': True, 'placeholder': 'email, email'}),
       help_text='Comma separated list of full email addresses. Prefer @chromium.org.')
 
   summary = forms.CharField(label='Feature summary', required=True, max_length=500,
@@ -1140,13 +1143,19 @@ class FeatureForm(forms.Form):
       help_text='Explain why the web needs this change. It may be useful to describe what web developers are forced to do without it. When possible, include links to back up your claims in the explainer.')
 
   explainer_links = forms.CharField(label='Explainer link(s)', required=False,
-      widget=forms.Textarea(attrs={'rows': 4, 'cols': 50, 'maxlength': 500}),
+      widget=forms.Textarea(
+          attrs={'rows': 4, 'cols': 50, 'maxlength': 500,
+                 'placeholder': 'https://\nhttps://'}),
       help_text='Link to explainer(s) (one URL per line). You should have at least an explainer in hand and have shared it on a public forum before sending an Intent to Prototype in order to enable discussion with other browser vendors, standards bodies, or other interested parties.')
 
-  intent_to_implement_url = forms.URLField(required=False, label='Intent to Prototype link',
+  intent_to_implement_url = forms.URLField(
+      required=False, label='Intent to Prototype link',
+      widget=forms.URLInput(attrs={'placeholder': 'https://'}),
       help_text='Link to the "Intent to Prototype" discussion thread.')
 
-  origin_trial_feedback_url = forms.URLField(required=False, label='Origin Trial feedback summary',
+  origin_trial_feedback_url = forms.URLField(
+      required=False, label='Origin Trial feedback summary',
+      widget=forms.URLInput(attrs={'placeholder': 'https://'}),
       help_text='If your feature was available as an Origin Trial, link to a summary of usage and developer feedback. If not, leave this empty.')
 
   unlisted = forms.BooleanField(
@@ -1156,7 +1165,9 @@ class FeatureForm(forms.Form):
                  'view the feature on the detail page.'))
 
   doc_links = forms.CharField(label='Doc link(s)', required=False,
-      widget=forms.Textarea(attrs={'rows': 4, 'cols': 50, 'maxlength': 500}),
+      widget=forms.Textarea(
+          attrs={'rows': 4, 'cols': 50, 'maxlength': 500,
+                 'placeholder': 'https://\nhttps://'}),
       help_text='Links to design doc(s) (one URL per line), if and when available. [This is not required to send out an Intent to Prototype. Please update the intent thread with the design doc when ready]. An explainer and/or design doc is sufficient to start this process. [Note: Please include links and data, where possible, to support any claims.]')
 
   standardization = forms.ChoiceField(
@@ -1165,8 +1176,10 @@ class FeatureForm(forms.Form):
       help_text=("The standardization status of the API. In bodies that don't "
                  "use this nomenclature, use the closest equivalent."))
 
-  spec_link = forms.URLField(required=False, label='Spec link',
-                             help_text="Link to spec, if and when available. Please update the chromestatus.com entry and the intent thread(s) with the spec link when available.")
+  spec_link = forms.URLField(
+      required=False, label='Spec link',
+      widget=forms.URLInput(attrs={'placeholder': 'https://'}),
+      help_text="Link to spec, if and when available. Please update the chromestatus.com entry and the intent thread(s) with the spec link when available.")
 
   tag_review = forms.CharField(label='TAG Review', required=True,
       widget=forms.Textarea(attrs={'rows': 2, 'cols': 50, 'maxlength': 1480}),
@@ -1179,7 +1192,9 @@ class FeatureForm(forms.Form):
   safari_views = forms.ChoiceField(label='Safari views',
                                    choices=VENDOR_VIEWS_WEBKIT.items(),
                                    initial=NO_PUBLIC_SIGNALS)
-  safari_views_link = forms.URLField(required=False, label='',
+  safari_views_link = forms.URLField(
+      required=False, label='',
+      widget=forms.URLInput(attrs={'placeholder': 'https://'}),
       help_text='Citation link.')
   safari_views_notes = forms.CharField(required=False, label='',
       widget=forms.Textarea(attrs={'rows': 2, 'cols': 50, 'placeholder': 'Notes', 'maxlength': 1480}))
@@ -1187,7 +1202,9 @@ class FeatureForm(forms.Form):
   ff_views = forms.ChoiceField(label='Firefox views',
                                choices=VENDOR_VIEWS_GECKO.items(),
                                initial=NO_PUBLIC_SIGNALS)
-  ff_views_link = forms.URLField(required=False, label='',
+  ff_views_link = forms.URLField(
+      required=False, label='',
+      widget=forms.URLInput(attrs={'placeholder': 'https://'}),
       help_text='Citation link.')
   ff_views_notes = forms.CharField(required=False, label='',
       widget=forms.Textarea(attrs={'rows': 2, 'cols': 50, 'placeholder': 'Notes', 'maxlength': 1480}))
@@ -1195,7 +1212,9 @@ class FeatureForm(forms.Form):
   ie_views = forms.ChoiceField(label='Edge',
                                choices=VENDOR_VIEWS_EDGE.items(),
                                initial=NO_PUBLIC_SIGNALS)
-  ie_views_link = forms.URLField(required=False, label='',
+  ie_views_link = forms.URLField(
+      required=False, label='',
+      widget=forms.URLInput(attrs={'placeholder': 'https://'}),
       help_text='Citation link.')
   ie_views_notes = forms.CharField(required=False, label='',
       widget=forms.Textarea(attrs={'rows': 2, 'cols': 50, 'placeholder': 'Notes', 'maxlength': 1480}))
@@ -1206,7 +1225,9 @@ class FeatureForm(forms.Form):
       initial=DEV_NO_SIGNALS,
       help_text='If unsure, default to "No signals".')
 
-  web_dev_views_link = forms.URLField(required=False, label='',
+  web_dev_views_link = forms.URLField(
+      required=False, label='',
+      widget=forms.URLInput(attrs={'placeholder': 'https://'}),
       help_text='Citation link.')
   web_dev_views_notes = forms.CharField(required=False, label='',
       widget=forms.Textarea(attrs={'rows': 2, 'cols': 50, 'placeholder': 'Notes', 'maxlength': 1480}),
@@ -1262,13 +1283,19 @@ class FeatureForm(forms.Form):
       help_text='Please link to the <a href="https://wpt.fyi/results">results on wpt.fyi</a>. If any part of the feature is not tested by web-platform-tests, please include links to issues, e.g. a web-platform-tests issue with the "infra" label explaining why a certain thing cannot be tested (<a href="https://github.com/w3c/web-platform-tests/issues/3867">example</a>), a spec issue for some change that would make it possible to test. (<a href="https://github.com/whatwg/fullscreen/issues/70">example</a>), or a Chromium issue to upstream some existing tests (<a href="https://bugs.chromium.org/p/chromium/issues/detail?id=695486">example</a>).')
 
   sample_links = forms.CharField(label='Samples links', required=False,
-      widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 500}),
+      widget=forms.Textarea(
+          attrs={'cols': 50, 'maxlength': 500,
+                 'placeholder': 'https://\nhttps://'}),
       help_text='Links to samples (one URL per line).')
 
-  bug_url = forms.URLField(required=False, label='Tracking bug URL',
+  bug_url = forms.URLField(
+      required=False, label='Tracking bug URL',
+      widget=forms.URLInput(attrs={'placeholder': 'https://'}),
       help_text='Tracking bug url (https://bugs.chromium.org/...). This bug should have "Type=Feature" set and be world readable.')
 
-  launch_bug_url = forms.URLField(required=False, label='Launch bug URL',
+  launch_bug_url = forms.URLField(
+      required=False, label='Launch bug URL',
+      widget=forms.URLInput(attrs={'placeholder': 'https://'}),
       help_text=(
           'Launch bug url (https://bugs.chromium.org/...) to track launch '
           'aprpovals. '
@@ -1278,6 +1305,7 @@ class FeatureForm(forms.Form):
 
   initial_public_proposal_url = forms.URLField(
       required=False, label='Initial public proposal URL',
+      widget=forms.URLInput(attrs={'placeholder': 'https://'}),
       help_text=(
           'Link to the first public proposal to create this feature, e.g., '
           'a WICG discourse post.'))
@@ -1289,7 +1317,10 @@ class FeatureForm(forms.Form):
       choices=[(x, x) for x in BlinkComponent.fetch_all_components()],
       initial=[BlinkComponent.DEFAULT_COMPONENT])
 
-  devrel = forms.CharField(required=False, label='Developer relations emails',
+  devrel = forms.EmailField(
+      required=False, label='Developer relations emails',
+      widget=forms.EmailInput(
+          attrs={'multiple': True, 'placeholder': 'email, email'}),
       help_text='Comma separated list of full email addresses.')
 
   impl_status_chrome = forms.ChoiceField(required=True,
@@ -1297,16 +1328,24 @@ class FeatureForm(forms.Form):
 
   #shipped_milestone = PlaceholderCharField(required=False,
   #                                         placeholder='First milestone the feature shipped with this status (either enabled by default or experimental)')
-  shipped_milestone = forms.IntegerField(required=False, label='',
+  shipped_milestone = forms.IntegerField(
+      required=False, label='',
+      widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'}),
       help_text='Desktop:<br/>' + SHIPPED_HELP_TXT)
 
-  shipped_android_milestone = forms.IntegerField(required=False, label='',
+  shipped_android_milestone = forms.IntegerField(
+      required=False, label='',
+      widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'}),
       help_text='Chrome for Android:</br/>' + SHIPPED_HELP_TXT)
 
-  shipped_ios_milestone = forms.IntegerField(required=False, label='',
+  shipped_ios_milestone = forms.IntegerField(
+      required=False, label='',
+      widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'}),
       help_text='Chrome for iOS (RARE):<br/>' + SHIPPED_HELP_TXT)
 
-  shipped_webview_milestone = forms.IntegerField(required=False, label='',
+  shipped_webview_milestone = forms.IntegerField(
+      required=False, label='',
+      widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'}),
       help_text='Android WebView:<br/>' + SHIPPED_HELP_TXT)
 
   prefixed = forms.BooleanField(required=False, initial=False, label='Prefixed?')
