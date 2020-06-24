@@ -392,13 +392,6 @@ ALL_FIELDS = {
         choices=models.FOOTPRINT_CHOICES.items(),
         initial=models.MAJOR_MINOR_NEW_API),
 
-    'visibility': forms.ChoiceField(
-      label='Developer visibility',
-      choices=models.VISIBILITY_CHOICES.items(),
-      initial=models.WARRANTS_ARTICLE,
-      help_text=('How much press / media / web developer buzz will this '
-                 'feature generate?')),
-
     'search_tags': forms.CharField(
         label='Search tags', required=False,
         help_text='Comma separated keywords used only in search'),
@@ -499,7 +492,7 @@ class Any_DevTrial(forms.Form):
       'web_dev_views', 'web_dev_views_link', 'web_dev_views_notes',
       'ergonomics_risks', 'activation_risks', 'security_risks', 'debuggability',
       'all_platforms', 'all_platforms_descr', 'wpt', 'wpt_descr',
-      'sample_links', 'comments')
+      'sample_links', 'devrel', 'comments')
 
   bug_url = ALL_FIELDS['bug_url']
   doc_links = ALL_FIELDS['doc_links']
@@ -535,6 +528,7 @@ class Any_DevTrial(forms.Form):
   wpt = ALL_FIELDS['wpt']
   wpt_descr = ALL_FIELDS['wpt_descr']
   sample_links = ALL_FIELDS['sample_links']
+  devrel = ALL_FIELDS['devrel']
   # TODO(jrobbins): generate ready for trial email
   comments = ALL_FIELDS['comments']
 
@@ -548,7 +542,7 @@ class NewFeature_EvalReadinessToShip(forms.Form):
       'ie_views', 'ie_views_link', 'ie_views_notes',
       'web_dev_views', 'web_dev_views_link', 'web_dev_views_notes',
       'shipped_milestone', 'shipped_android_milestone', 'shipped_ios_milestone',
-      'shipped_webview_milestone', 'prefixed', 'visibility', 'comments')
+      'shipped_webview_milestone', 'prefixed', 'comments')
   doc_links = ALL_FIELDS['doc_links']
   tag_review = ALL_FIELDS['tag_review']
   spec_link = ALL_FIELDS['spec_link']
@@ -577,7 +571,6 @@ class NewFeature_EvalReadinessToShip(forms.Form):
   shipped_ios_milestone = ALL_FIELDS['shipped_ios_milestone']
   shipped_webview_milestone = ALL_FIELDS['shipped_webview_milestone']
   prefixed = ALL_FIELDS['prefixed']
-  visibility = ALL_FIELDS['visibility']
   comments = ALL_FIELDS['comments']
 
 
