@@ -93,7 +93,7 @@ class ScheduleHandler(common.ContentHandler):
   def get(self, path):
     user = users.get_current_user()
     features = models.Feature.get_chronological(
-        show_unlisted=self._is_user_whitelisted(user))
+        show_unlisted=self.user_can_edit(user))
     data = {
       'features': json.dumps(features),
       'channels': json.dumps(construct_chrome_channels_details(),

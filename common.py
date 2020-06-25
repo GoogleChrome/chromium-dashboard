@@ -37,13 +37,13 @@ import django
 # https://django.readthedocs.io/en/latest/releases/1.7.html#standalone-scripts
 django.setup()
 
-def require_whitelisted_user(handler):
-  """Handler decorator to require the user be whitelisted."""
+def require_edit_permission(handler):
+  """Handler decorator to require the user have edit permission."""
   def check_login(self, *args, **kwargs):
     user = users.get_current_user()
     if not user:
       return self.redirect(users.create_login_url(self.request.uri))
-    elif not self._is_user_whitelisted(user):
+    elif not self.user_can_edit(user):
       handle_401(self.request, self.response, Exception)
       return
 
@@ -73,25 +73,25 @@ class BaseHandler(webapp2.RequestHandler):
     # Settings can't be global in python 2.7 env.
     logging.getLogger().setLevel(logging.DEBUG)
 
-  def _is_user_whitelisted(self, user):
+  def user_can_edit(self, user):
     if not user:
       return False
 
-    is_whitelisted = False
+    can_edit = False
 
     if users.is_current_user_admin():
-      is_whitelisted = True
-    elif user.email().endswith('@chromium.org') or user.email().endswith('@google.com'):
-      is_whitelisted = True
+      can_edit = True
+    elif user.email().endswith(('@chromium.org', '@google.com')):
+      can_edit = True
     else:
       # TODO(ericbidelman): memcache user lookup.
       query = models.AppUser.all(keys_only=True).filter('email =', user.email())
       found_user = query.get()
 
       if found_user is not None:
-        is_whitelisted = True
+        can_edit = True
 
-    return is_whitelisted
+    return can_edit
 
 
 class JSONHandler(BaseHandler):
@@ -173,7 +173,7 @@ class ContentHandler(BaseHandler):
       template_data['login'] = (
           'Logout', users.create_logout_url(dest_url=self.request.path))
       template_data['user'] = {
-        'is_whitelisted': self._is_user_whitelisted(user),
+        'can_edit': self.user_can_edit(user),
         'is_admin': users.is_current_user_admin(),
         'email': user.email(),
       }

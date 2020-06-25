@@ -10,7 +10,7 @@ class ChromedashFeaturelist extends LitElement {
 
   static get properties() {
     return {
-      whitelisted: {type: Boolean},
+      canEdit: {type: Boolean},
       signedin: {type: Boolean},
       loginUrl: {type: String},
       features: {attribute: false}, // Directly edited and accessed in template/features.html
@@ -28,7 +28,7 @@ class ChromedashFeaturelist extends LitElement {
     this.filtered = [];
     this.metadataEl = document.querySelector('chromedash-metadata');
     this.searchEl = document.querySelector('.search input');
-    this.whitelisted = false;
+    this.canEdit = false;
     this.signedin = false;
     this._hasInitialized = false; // Used to check initialization code.
     this._hasScrolledByUser = false; // Used to set the app header state.
@@ -402,7 +402,7 @@ class ChromedashFeaturelist extends LitElement {
                  @star-toggled="${this._onStarToggledBound}"
                  .feature="${item.feature}"
                  loginurl="${this.loginUrl}"
-                 ?whitelisted="${this.whitelisted}"
+                 ?canedit="${this.canEdit}"
                  ?signedin="${this.signedin}"
           ></chromedash-feature>
           </div>

@@ -30,7 +30,7 @@
     </div>
     <div class="actionlinks">
       <a id="features-subscribe-button" class="blue-button no-push-notifications" title="Sends a push notification when new features are added."><iron-icon icon="chromestatus:notifications-off"></iron-icon><span>Subscribe</span></a>
-      {% if user.is_whitelisted %}
+      {% if user.can_edit %}
         <a href="/admin/features/new" class="blue-button" title="Adds a new feature to the site"><iron-icon icon="chromestatus:add-circle-outline"></iron-icon><span>Add new feature</span></a>
       {% endif %}
     </div>
@@ -53,7 +53,7 @@
   <chromedash-featurelist
     {% if user %}signedin{% endif %}
     loginurl="{{login.1}}"
-    {% if user.is_whitelisted %}whitelisted{% endif %}
+    {% if user.can_edit %}canedit{% endif %}
     ></chromedash-featurelist>
 {% endblock %}
 

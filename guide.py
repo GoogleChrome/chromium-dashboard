@@ -90,7 +90,7 @@ class FeatureNew(common.ContentHandler):
     if user is None:
       return self.redirect(users.create_login_url(self.request.uri))
 
-    if not self._is_user_whitelisted(user):
+    if not self.user_can_edit(user):
       common.handle_401(self.request, self.response, Exception)
       return
 
@@ -104,7 +104,7 @@ class FeatureNew(common.ContentHandler):
 
   def post(self, path):
     user = users.get_current_user()
-    if user is None or (user and not self._is_user_whitelisted(user)):
+    if user is None or (user and not self.user_can_edit(user)):
       common.handle_401(self.request, self.response, Exception)
       return
 
@@ -154,7 +154,7 @@ class ProcessOverview(common.ContentHandler):
       # Redirect to public URL for unauthenticated users.
       return self.redirect(format_feature_url(feature_id))
 
-    if not self._is_user_whitelisted(user):
+    if not self.user_can_edit(user):
       common.handle_401(self.request, self.response, Exception)
       return
 
@@ -213,7 +213,7 @@ class FeatureEditStage(common.ContentHandler):
       # Redirect to public URL for unauthenticated users.
       return self.redirect(format_feature_url(feature_id))
 
-    if not self._is_user_whitelisted(user):
+    if not self.user_can_edit(user):
       common.handle_401(self.request, self.response, Exception)
       return
 
@@ -254,7 +254,7 @@ class FeatureEditStage(common.ContentHandler):
 
   def post(self, path, feature_id, stage_id):
     user = users.get_current_user()
-    if user is None or (user and not self._is_user_whitelisted(user)):
+    if user is None or (user and not self.user_can_edit(user)):
       common.handle_401(self.request, self.response, Exception)
       return
 

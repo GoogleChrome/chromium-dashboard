@@ -55,7 +55,7 @@ class PopulateSubscribersHandler(common.ContentHandler):
       user.put()
     f.close()
 
-  @common.require_whitelisted_user
+  @common.require_edit_permission
   def get(self):
     if settings.PROD:
       return self.response.out.write('Handler not allowed in production.')
@@ -87,7 +87,7 @@ class BlinkHandler(common.ContentHandler):
 
     return True
 
-  @common.require_whitelisted_user
+  @common.require_edit_permission
   @common.strip_trailing_slash
   def get(self, path):
     # key = '%s|blinkcomponentowners' % (settings.MEMCACHE_KEY_PREFIX)
@@ -139,7 +139,7 @@ class BlinkHandler(common.ContentHandler):
 
 class SubscribersHandler(common.ContentHandler):
 
-  @common.require_whitelisted_user
+  @common.require_edit_permission
   # @common.strip_trailing_slash
   def get(self, path):
     users = models.FeatureOwner.all().order('name').fetch(None)
@@ -180,4 +180,3 @@ app = webapp2.WSGIApplication([
   ('/admin/subscribers(.*)', SubscribersHandler),
   ('(.*)', BlinkHandler),
 ], debug=settings.DEBUG)
-
