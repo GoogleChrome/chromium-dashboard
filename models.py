@@ -187,14 +187,6 @@ IN_LARGER_ARTICLE = 3
 SMALL_NUM_DEVS = 4
 SUPER_SMALL = 5
 
-VISIBILITY_CHOICES = {
-  MAINSTREAM_NEWS: 'Likely in mainstream tech news',
-  WARRANTS_ARTICLE: 'Will this feature generate articles on sites like developers.google.com/web/',
-  IN_LARGER_ARTICLE: 'Covered as part of a larger article but not on its own',
-  SMALL_NUM_DEVS: 'Only a very small number of web developers will care',
-  SUPER_SMALL: "So small it doesn't need to be covered in this dashboard",
-  }
-
 # Signals from other implementations in an intent-to-ship
 SHIPPED = 1
 IN_DEV = 2
@@ -280,7 +272,6 @@ PROPERTY_NAMES_TO_ENUM_DICTS = {
     'intent_stage': INTENT_STAGES,
     'impl_status_chrome': IMPLEMENTATION_STATUS,
     'footprint': FOOTPRINT_CHOICES,
-    'visibility': VISIBILITY_CHOICES,
     'standardization': STANDARDIZATION,
     'ff_views': VENDOR_VIEWS,
     'ie_views': VENDOR_VIEWS,
@@ -587,10 +578,6 @@ class Feature(DictModel):
           'text': STANDARDIZATION[self.standardization],
           'val': d.pop('standardization', None),
         },
-        'visibility': {
-          'text': VISIBILITY_CHOICES[self.visibility],
-          'val': d.pop('visibility', None),
-        },
         'footprint': {
           'val': d.pop('footprint', None),
           #'text': FOOTPRINT_CHOICES[self.footprint]
@@ -677,7 +664,6 @@ class Feature(DictModel):
       if self.intent_stage is not None:
         d['intent_stage'] = INTENT_STAGES[self.intent_stage]
         d['intent_stage_int'] = self.intent_stage
-      d['visibility'] = VISIBILITY_CHOICES[self.visibility]
       d['impl_status_chrome'] = IMPLEMENTATION_STATUS[self.impl_status_chrome]
       d['meta'] = {
         'origintrial': self.impl_status_chrome == ORIGIN_TRIAL,
@@ -1018,7 +1004,7 @@ class Feature(DictModel):
   wpt = db.BooleanProperty()
   wpt_descr = db.StringProperty(multiline=True)
 
-  visibility = db.IntegerProperty(required=True)
+  visibility = db.IntegerProperty(required=False)  # Deprecated
 
   #webbiness = db.IntegerProperty() # TODO: figure out what this is
 
@@ -1352,13 +1338,6 @@ class FeatureForm(forms.Form):
 
   footprint  = forms.ChoiceField(label='Technical footprint',
       choices=FOOTPRINT_CHOICES.items(), initial=MAJOR_MINOR_NEW_API)
-
-  visibility  = forms.ChoiceField(
-      label='Developer visibility',
-      choices=VISIBILITY_CHOICES.items(),
-      initial=WARRANTS_ARTICLE,
-      help_text=('How much press / media / web developer buzz will this '
-                 'feature generate?'))
 
   search_tags = forms.CharField(label='Search tags', required=False,
       help_text='Comma separated keywords used only in search')

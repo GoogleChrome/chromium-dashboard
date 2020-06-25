@@ -425,7 +425,6 @@ class FeatureHandler(common.ContentHandler):
       feature.all_platforms_descr = self.request.get('all_platforms_descr')
       feature.wpt = self.request.get('wpt') == 'on'
       feature.wpt_descr = self.request.get('wpt_descr')
-      feature.visibility = int(self.request.get('visibility'))
       feature.ff_views = int(self.request.get('ff_views'))
       feature.ff_views_link = ff_views_link
       feature.ff_views_notes = self.request.get('ff_views_notes')
@@ -491,7 +490,6 @@ class FeatureHandler(common.ContentHandler):
           wpt=self.request.get('wpt') == 'on',
           wpt_descr=self.request.get('wpt_descr'),
           footprint=int(self.request.get('footprint')),
-          visibility=int(self.request.get('visibility')),
           ff_views=int(self.request.get('ff_views')),
           ff_views_link=ff_views_link,
           ff_views_notes=self.request.get('ff_views_notes'),

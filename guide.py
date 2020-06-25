@@ -125,7 +125,6 @@ class FeatureNew(common.ContentHandler):
         summary=self.request.get('summary'),
         owner=owners,
         impl_status_chrome=models.NO_ACTIVE_DEV,
-        visibility=models.WARRANTS_ARTICLE,
         standardization=models.EDITORS_DRAFT,
         unlisted=self.request.get('unlisted') == 'on',
         web_dev_views=models.DEV_NO_SIGNALS,
@@ -373,8 +372,6 @@ class FeatureEditStage(common.ContentHandler):
       feature.wpt = self.request.get('wpt') == 'on'
     if self.touched('wpt_descr'):
       feature.wpt_descr = self.request.get('wpt_descr')
-    if self.touched('visibility'):
-      feature.visibility = int(self.request.get('visibility'))
     if self.touched('ff_views'):
       feature.ff_views = int(self.request.get('ff_views'))
     if self.touched('ff_views_link'):
