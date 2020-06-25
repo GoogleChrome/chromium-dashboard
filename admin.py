@@ -272,9 +272,9 @@ class FeatureHandler(common.ContentHandler):
       return self.redirect(self.request.path.rstrip('/'))
 
     # TODO(ericbidelman): This creates a additional call to
-    # _is_user_whitelisted() (also called in common.py), resulting in another
+    # user_can_edit() (also called in common.py), resulting in another
     # db query.
-    if not self._is_user_whitelisted(user):
+    if not self.user_can_edit(user):
       #TODO(ericbidelman): Use render(status=401) instead.
       #self.render(data={}, template_path=os.path.join(path + '.html'), status=401)
       common.handle_401(self.request, self.response, Exception)
@@ -316,7 +316,7 @@ class FeatureHandler(common.ContentHandler):
 
   def post(self, path, feature_id=None):
     user = users.get_current_user()
-    if user is None or (user and not self._is_user_whitelisted(user)):
+    if user is None or (user and not self.user_can_edit(user)):
       common.handle_401(self.request, self.response, Exception)
       return
 

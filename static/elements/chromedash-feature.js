@@ -18,7 +18,7 @@ class ChromedashFeature extends LitElement {
   static get properties() {
     return {
       feature: {type: Object},
-      whitelisted: {type: Boolean},
+      canEdit: {type: Boolean},
       signedin: {type: Boolean},
       loginUrl: {type: String},
       open: {type: Boolean, reflect: true}, // Attribute used in the parent for styling
@@ -212,7 +212,7 @@ class ChromedashFeature extends LitElement {
           .value="${this._interopRisk}"
           .max="${MAX_RISK}"></chromedash-color-status>
         <h2>${this.feature.name}
-          ${this.whitelisted ? html`
+          ${this.canEdit ? html`
             <span class="tooltip" title="Edit this feature">
               <a href="/admin/features/edit/${this.feature.id}" data-tooltip>
                 <iron-icon icon="chromestatus:create"></iron-icon>

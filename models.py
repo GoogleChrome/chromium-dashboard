@@ -1419,7 +1419,7 @@ class UserPrefForm(forms.Form):
 
 
 class AppUser(DictModel):
-  """Describes a user for whitelisting."""
+  """Describes a user for permission checking."""
 
   #user = db.UserProperty(required=True, verbose_name='Google Account')
   email = db.EmailProperty(required=True)

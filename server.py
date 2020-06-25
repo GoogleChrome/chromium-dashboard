@@ -157,7 +157,7 @@ class FeaturesAPIHandler(common.JSONHandler):
 
     user = users.get_current_user()
     feature_list = models.Feature.get_chronological(
-        version=version, show_unlisted=self._is_user_whitelisted(user))
+        version=version, show_unlisted=self.user_can_edit(user))
     return common.JSONHandler.get(
         self, feature_list, formatted=True, public=False)
 
