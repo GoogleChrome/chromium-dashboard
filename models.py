@@ -543,6 +543,12 @@ class Feature(DictModel):
       self.ff_views = NO_PUBLIC_SIGNALS
     if self.ff_views == PUBLIC_SKEPTICISM:
       self.ff_views = OPPOSED
+
+    if self.ie_views == MIXED_SIGNALS:
+      self.ie_views = NO_PUBLIC_SIGNALS
+    if self.ie_views == PUBLIC_SKEPTICISM:
+      self.ie_views = OPPOSED
+
     if self.safari_views == MIXED_SIGNALS:
       self.safari_views = NO_PUBLIC_SIGNALS
     if self.safari_views == PUBLIC_SKEPTICISM:
