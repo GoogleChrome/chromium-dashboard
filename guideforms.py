@@ -79,8 +79,8 @@ ALL_FIELDS = {
         help_text=
         ('Explain why the web needs this change. It may be useful '
          'to describe what web developers are forced to do without '
-         'it. When possible, include links to back up your claims '
-         'in the explainer. '
+         'it. When possible, add links to your explainer '
+         'backing up your claims. '
          '<a target="_blank" href="'
          'https://github.com/GoogleChrome/chromium-dashboard/wiki/'
          'EditingHelp#motivation-example">Example</a>.'
