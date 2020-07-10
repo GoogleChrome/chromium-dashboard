@@ -2,13 +2,13 @@
 
   <div id="metadata-readonly">
     <div style="margin-bottom: 1em">
-        <div style="float: right">
-          <button id="open-metadata" style="float: right">Edit</button>
+        <div id="metadata-buttons" style="float: right">
+          <a id="open-metadata">Edit</a>
           {% if user.is_admin %}
-            <div><button id="delete-feature"
+            <div><a id="delete-feature"
                     data-id="{{ feature_id }}"
                     class="delete-button"
-                    >Delete</button></div>
+                    >Delete</a></div>
           {% endif %}
         </div>
       <div style="width:60em">{{ feature.summary }}</div>
