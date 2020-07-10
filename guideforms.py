@@ -77,7 +77,7 @@ ALL_FIELDS = {
         label='Motivation', required=True,
         widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 1480}),
         help_text=
-        ('Explain why the web needs this change.  It may be useful '
+        ('Explain why the web needs this change. It may be useful '
          'to describe what web developers are forced to do without '
          'it. When possible, include links to back up your claims '
          'in the explainer. '
