@@ -48,10 +48,15 @@
     <form name="overview_form" method="POST" action="/guide/stage/{{ feature_id }}/0">
       <table>
         {{ overview_form }}
-      </table>
 
-      <input class="button" type="submit" value="Submit">
-      <button id="close-metadata">Cancel</button>
+        <tr>
+          <th></th>
+          <td>
+            <input class="button" type="submit" value="Submit">
+            <button id="close-metadata">Cancel</button>
+          </td>
+        </tr>
+      </table>
     </form>
   </div>
 </section>
