@@ -24,6 +24,11 @@
   {{feature.name}}
 </div>
 
+{% comment %}
+  TODO(jrobbins): rather than checking intent_stage_int, that logic should be
+  in python code and passed to this template as a list of field names to show.
+{% endcomment %}
+
 <p>Body</p>
 <div class="email"><label>Contact emails</label>
 {% if not feature.owner %}None{% endif %}{% for owner in feature.owner %}<a href="mailto:{{owner}}">{% if forloop.last %}{{owner}}</a>{% else %}{{owner}}</a>,{% endif %}{% endfor %}
@@ -31,7 +36,7 @@
 <label>Explainer</label>
 {% for link in feature.explainer_links %}<a href="{{link}}">{{link}}</a>
 {% endfor %}
-{% if feature.intent_stage == "Ship" %}<label>Spec</label>
+{% if feature.intent_stage_int == 5 %}<label>Spec</label>
 <a href="{{feature.spec_link}}">{{feature.spec_link}}</a>
 {% else %}
 <label>Design docs/spec</label>{% if feature.spec_link %}
@@ -44,10 +49,10 @@ Specification: <a href="{{feature.spec_link}}">{{feature.spec_link}}</a>
 
 <label>Summary</label>
 {{feature.summary}}
-{% if feature.intent_stage == "Prototype" or feature.intent_stage == "Ship" or feature.intent_stage == "Implement and Ship" %}
-{% if feature.intent_stage == "Prototype" or feature.intent_stage == "Implement and Ship" %}<label>Motivation</label>
+{% if feature.intent_stage_int == 1 or feature.intent_stage_int == 5 or feature.intent_stage_int == 4 %}
+{% if feature.intent_stage_int == 1 or feature.intent_stage_int == 4 %}<label>Motivation</label>
 {{feature.motivation|urlize}}
-{% endif %}{% if feature.intent_stage == "Ship" or feature.intent_stage == "Experiment" or feature.intent_stage == "Extend Origin Trial" %}<label>Link to “Intent to Prototype” blink-dev discussion</label>
+{% endif %}{% if feature.intent_stage_int == 5 or feature.intent_stage_int == 2 or feature.intent_stage == 3 %}<label>Link to “Intent to Prototype” blink-dev discussion</label>
 {{feature.intent_to_implement_url}}
 {% if feature.origin_trial_feedback_url %}
 <label>Link to Origin Trial feedback summary</label>
@@ -76,13 +81,13 @@ Specification: <a href="{{feature.spec_link}}">{{feature.spec_link}}</a>
 {% endif %}{% if feature.security_risks %}
 <label>Security</label>
 {{feature.security_risks|urlize}}
-{% endif %}</div>{% elif feature.intent_stage == "Experiment" or feature.intent_stage == "Extend Origin Trial" %}
+{% endif %}</div>{% elif feature.intent_stage_int == 2 or feature.intent_stage_int == 3 %}
 <label>Goals for experimentation</label>
 {{feature.experiment_goals|urlize}}
 
 <label>Experimental timeline</label>
 {{feature.experiment_timeline|urlize}}
-{% if feature.intent_stage == "Extend Origin Trial" %}
+{% if feature.intent_stage_int == 3 %}
 <label>Reason this experiment is being extended</label>
 {{feature.experiment_extension_reason|urlize}}
 {% endif %}
@@ -99,10 +104,10 @@ Chrome OS, Android, and Android WebView)?</label>
 <label>Is this feature fully tested by <a href="https://chromium.googlesource.com/chromium/src/+/master/docs/testing/web_platform_tests.md">web-platform-tests</a>?</label>
 {% if feature.wpt %}Yes{% else %}No{% endif %}
 {{feature.wpt_descr|urlize}}
-{% if feature.intent_stage == "Ship" or feature.intent_stage == "Implement and Ship" %}
+{% if feature.intent_stage_int == 5 or feature.intent_stage_int == 4 %}
 <label>Tracking bug</label>
 {% if feature.bug_url %}<a href="{{feature.bug_url}}">{{feature.bug_url}}</a>{% else %}None{% endif %}
-{% endif %}{% if feature.intent_stage == "Ship" or feature.intent_stage == "Implement and Ship" %}{% if feature.sample_links %}
+{% endif %}{% if feature.intent_stage_int == 5 or feature.intent_stage_int == 4 %}{% if feature.sample_links %}
 <label>Demo links</label>
 {% for link in feature.sample_links %}<a href="{{link}}">{{link}}</a>
 {% endfor %}{% endif %}{% endif %}
