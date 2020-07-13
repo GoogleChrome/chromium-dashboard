@@ -37,15 +37,28 @@ ALL_FIELDS = {
     'name': forms.CharField(
         required=True, label='Feature',
         widget=forms.TextInput(attrs={'autocomplete': 'off'}),
-        help_text=('Capitalize only the first letter and the beginnings of '
-                   'proper nouns.')),
+        help_text=
+        ('Capitalize only the first letter and the beginnings of '
+         'proper nouns. '
+         '<a target="_blank" href="'
+         'https://github.com/GoogleChrome/chromium-dashboard/wiki/'
+         'EditingHelp#feature-name">Learn more</a>. '
+         '<a target="_blank" href="'
+         'https://github.com/GoogleChrome/chromium-dashboard/wiki/'
+         'EditingHelp#feature-name-example">Example</a>.'
+        )),
 
     'summary': forms.CharField(
         label='', required=True,
         widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 500}),
-        help_text=('Provide a one sentence description followed by one or '
-                   'two lines explaining how this feature helps web '
-                   'developers.')),
+        help_text=
+        ('Provide a one sentence description followed by one or '
+         'two lines explaining how this feature helps web '
+         'developers. '
+         '<a target="_blank" href="'
+         'https://github.com/GoogleChrome/chromium-dashboard/wiki/'
+         'EditingHelp#summary-example">Example</a>.'
+        )),
 
     'category': forms.ChoiceField(
         required=True,
@@ -63,10 +76,15 @@ ALL_FIELDS = {
     'motivation': forms.CharField(
         label='Motivation', required=True,
         widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 1480}),
-        help_text=('Explain why the web needs this change.  It may be useful '
-                   'to describe what web developers are forced to do without '
-                   'it. When possible, include links to back up your claims '
-                   'in the explainer.')),
+        help_text=
+        ('Explain why the web needs this change. It may be useful '
+         'to describe what web developers are forced to do without '
+         'it. When possible, add links to your explainer '
+         'backing up your claims. '
+         '<a target="_blank" href="'
+         'https://github.com/GoogleChrome/chromium-dashboard/wiki/'
+         'EditingHelp#motivation-example">Example</a>.'
+        )),
 
     'doc_links': forms.CharField(
         label='Doc link(s)', required=False,
@@ -139,7 +157,12 @@ ALL_FIELDS = {
          '<br>'
          'Please include citation links below where possible. Examples include '
          'resolutions from relevant standards bodies (e.g. W3C working group), '
-         'tracking bugs, or links to online conversations.')),
+         'tracking bugs, or links to online conversations. '
+         '<a target="_blank" href="'
+         'https://github.com/GoogleChrome/chromium-dashboard/wiki/'
+         'EditingHelp#interoperability-and-compatibility-risks-example">'
+         'Example</a>.'
+        )),
 
     'safari_views': forms.ChoiceField(
         label='Safari views',
@@ -355,9 +378,10 @@ ALL_FIELDS = {
         help_text=(
             'Launch bug url (https://bugs.chromium.org/...) to track launch '
             'aprpovals. '
-          '<a href="https://bugs.chromium.org/p/chromium/issues/entry?template=Chrome+Launch+Feature" '
-          'target="_blank" '
-          '>Create launch bug<a>')),
+            '<a target="_blank" href="'
+            'https://bugs.chromium.org/p/chromium/issues/'
+            'entry?template=Chrome+Launch+Feature" '
+            '>Create launch bug<a>.')),
 
     'initial_public_proposal_url': forms.URLField(
         required=False, label='Initial public proposal URL',
