@@ -1093,6 +1093,12 @@ class FeatureForm(forms.Form):
                       'the flag is \'test\' rather than \'experimental\' set '
                       'status to In development.')
 
+  SHIPPED_WEBVIEW_HELP_TXT = ('First milestone to ship with this status. '
+                              'Applies to Enabled by default, Browser '
+                              'Intervention, and Deprecated.\n\n NOTE: for '
+                              'statuses Behind a flag and Origin trial this '
+                              'MUST be blank.')
+
   # Note that the "required" argument in the following field definitions only
   # mean so much in practice. There's various code in js/admin/feature_form.js,
   # including intentStageChanged(), that adjusts what fields are required (as
@@ -1338,7 +1344,7 @@ class FeatureForm(forms.Form):
   shipped_webview_milestone = forms.IntegerField(
       required=False, label='',
       widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'}),
-      help_text='Android WebView:<br/>' + SHIPPED_HELP_TXT)
+      help_text='Android WebView:<br/>' + SHIPPED_WEBVIEW_HELP_TXT)
 
   prefixed = forms.BooleanField(required=False, initial=False, label='Prefixed?')
 
