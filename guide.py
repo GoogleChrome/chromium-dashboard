@@ -185,11 +185,6 @@ class ProcessOverview(common.ContentHandler):
 
 class FeatureEditStage(common.ContentHandler):
 
-  LAUNCH_URL = '/admin/features/launch'
-
-  INTENT_PARAM = 'intent'
-  LAUNCH_PARAM = 'launch'
-
   def touched(self, param_name):
     """Return True if the user edited the specified field."""
     # TODO(jrobbins): for now we just consider everything on the current form
@@ -242,11 +237,6 @@ class FeatureEditStage(common.ContentHandler):
         'feature_id': f.key().id,
         'feature_form': detail_form_class(f.format_for_edit()),
     })
-
-    if self.LAUNCH_PARAM in self.request.params:
-      template_data[self.LAUNCH_PARAM] = True
-    if self.INTENT_PARAM in self.request.params:
-      template_data[self.INTENT_PARAM] = True
 
     self._add_common_template_values(template_data)
 
@@ -418,11 +408,7 @@ class FeatureEditStage(common.ContentHandler):
     if self.touched('ongoing_constraints'):
       feature.ongoing_constraints = self.request.get('ongoing_constraints')
 
-    params = []
-    if self.request.get('create_launch_bug') == 'on':
-      params.append(self.LAUNCH_PARAM)
     if self.request.get('intent_to_implement') == 'on':
-      params.append(self.INTENT_PARAM)
       feature.intent_template_use_count += 1
 
     key = feature.put()
@@ -431,11 +417,6 @@ class FeatureEditStage(common.ContentHandler):
     memcache.flush_all()
 
     redirect_url = '/guide/edit/' + str(key.id())
-
-    if len(params):
-      redirect_url = '%s/%s?%s' % (self.LAUNCH_URL, key.id(),
-                                   '&'.join(params))
-
     return self.redirect(redirect_url)
 
 
