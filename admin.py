@@ -222,15 +222,44 @@ class HistogramsHandler(webapp2.RequestHandler):
 
 
 
+INTENT_PARAM = 'intent'
+LAUNCH_PARAM = 'launch'
+VIEW_FEATURE_URL = '/feature'
+
+
+class IntentEmailHandler(common.ContentHandler):
+
+  # auth?
+  def get(self, feature_id=None):
+
+    if not feature_id:
+      common.handle_404(self.request, self.response, None)
+    f = models.Feature.get_by_id(long(feature_id))
+    if f is None:
+      common.handle_404(self.request, self.response, None)
+
+    template_data = {
+        'feature': f.format_for_template(),
+        'sections_to_show': [],
+        'default_url': '%s://%s%s/%s' % (
+            self.request.scheme, self.request.host,
+            VIEW_FEATURE_URL, feature_id),
+    }
+
+    if LAUNCH_PARAM in self.request.params:
+      template_data[LAUNCH_PARAM] = True
+    if INTENT_PARAM in self.request.params:
+      template_data[INTENT_PARAM] = True
+
+    self._add_common_template_values(template_data)
+    self.render(data=template_data, template_path='admin/features/launch.html')
+
+
 class FeatureHandler(common.ContentHandler):
 
-  DEFAULT_URL = '/feature'
   ADD_NEW_URL = '/admin/features/new'
   EDIT_URL = '/admin/features/edit'
   LAUNCH_URL = '/admin/features/launch'
-
-  INTENT_PARAM = 'intent'
-  LAUNCH_PARAM = 'launch'
 
   def __FullQualifyLink(self, param_name):
     link = self.request.get(param_name) or None
@@ -263,7 +292,7 @@ class FeatureHandler(common.ContentHandler):
     if user is None:
       if feature_id:
         # Redirect to public URL for unauthenticated users.
-        return self.redirect(self.DEFAULT_URL + '/' + feature_id)
+        return self.redirect(VIEW_FEATURE_URL + '/' + feature_id)
       else:
         return self.redirect(users.create_login_url(self.request.uri))
 
@@ -300,15 +329,15 @@ class FeatureHandler(common.ContentHandler):
           'feature': f.format_for_template(),
           'feature_form': models.FeatureForm(f.format_for_edit()),
           'default_url': '%s://%s%s/%s' % (self.request.scheme, self.request.host,
-                                           self.DEFAULT_URL, feature_id),
+                                           VIEW_FEATURE_URL, feature_id),
           'edit_url': '%s://%s%s/%s' % (self.request.scheme, self.request.host,
                                         self.EDIT_URL, feature_id)
           })
 
-    if self.LAUNCH_PARAM in self.request.params:
-      template_data[self.LAUNCH_PARAM] = True
-    if self.INTENT_PARAM in self.request.params:
-      template_data[self.INTENT_PARAM] = True
+    if LAUNCH_PARAM in self.request.params:
+      template_data[LAUNCH_PARAM] = True
+    if INTENT_PARAM in self.request.params:
+      template_data[INTENT_PARAM] = True
 
     self._add_common_template_values(template_data)
 
@@ -519,9 +548,9 @@ class FeatureHandler(common.ContentHandler):
 
     params = []
     if self.request.get('create_launch_bug') == 'on':
-      params.append(self.LAUNCH_PARAM)
+      params.append(LAUNCH_PARAM)
     if self.request.get('intent_to_implement') == 'on':
-      params.append(self.INTENT_PARAM)
+      params.append(INTENT_PARAM)
 
       feature.intent_template_use_count += 1
 
@@ -550,6 +579,7 @@ app = webapp2.WSGIApplication([
   ('/cron/metrics', YesterdayHandler),
   ('/cron/histograms', HistogramsHandler),
   ('/cron/update_blink_components', BlinkComponentHandler),
+  ('/admin/features/launch/([0-9]*)', IntentEmailHandler),
   ('/(.*)/([0-9]*)', FeatureHandler),
   ('/(.*)', FeatureHandler),
 ], debug=settings.DEBUG)
