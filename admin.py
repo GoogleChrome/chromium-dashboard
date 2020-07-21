@@ -228,18 +228,34 @@ LAUNCH_PARAM = 'launch'
 VIEW_FEATURE_URL = '/feature'
 
 
-class IntentEmailHandler(common.ContentHandler):
+class IntentEmailPreviewHandler(common.ContentHandler):
+  """Show a preview of an intent email, as appropriate to the feature stage."""
 
-  # auth?
   def get(self, feature_id=None):
+    user = users.get_current_user()
+    if user is None:
+      return self.redirect(users.create_login_url(self.request.uri))
 
     if not feature_id:
       common.handle_404(self.request, self.response, None)
+      return
     f = models.Feature.get_by_id(long(feature_id))
     if f is None:
       common.handle_404(self.request, self.response, None)
+      return
 
-    template_data = {
+    if not self.user_can_edit(user):
+      common.handle_401(self.request, self.response, Exception)
+      return
+
+    page_data = self.get_page_data(feature_id, f)
+
+    self._add_common_template_values(page_data)
+    self.render(data=page_data, template_path='admin/features/launch.html')
+
+  def get_page_data(self, feature_id, f):
+    """Return a dictionary of data used to render the page."""
+    page_data = {
         'feature': f.format_for_template(),
         'sections_to_show': processes.INTENT_EMAIL_SECTIONS.get(
             f.intent_stage, []),
@@ -247,16 +263,13 @@ class IntentEmailHandler(common.ContentHandler):
             self.request.scheme, self.request.host,
             VIEW_FEATURE_URL, feature_id),
     }
-    logging.info('1223123123123123123123123')
-    logging.info('sections_to_show is %r', template_data['sections_to_show'])
 
     if LAUNCH_PARAM in self.request.params:
-      template_data[LAUNCH_PARAM] = True
+      page_data[LAUNCH_PARAM] = True
     if INTENT_PARAM in self.request.params:
-      template_data[INTENT_PARAM] = True
+      page_data[INTENT_PARAM] = True
 
-    self._add_common_template_values(template_data)
-    self.render(data=template_data, template_path='admin/features/launch.html')
+    return page_data
 
 
 class FeatureHandler(common.ContentHandler):
@@ -338,13 +351,7 @@ class FeatureHandler(common.ContentHandler):
                                         self.EDIT_URL, feature_id)
           })
 
-    if LAUNCH_PARAM in self.request.params:
-      template_data[LAUNCH_PARAM] = True
-    if INTENT_PARAM in self.request.params:
-      template_data[INTENT_PARAM] = True
-
     self._add_common_template_values(template_data)
-
     self.render(data=template_data, template_path=os.path.join(path + '.html'))
 
   def post(self, path, feature_id=None):
@@ -583,7 +590,7 @@ app = webapp2.WSGIApplication([
   ('/cron/metrics', YesterdayHandler),
   ('/cron/histograms', HistogramsHandler),
   ('/cron/update_blink_components', BlinkComponentHandler),
-  ('/admin/features/launch/([0-9]*)', IntentEmailHandler),
+  ('/admin/features/launch/([0-9]*)', IntentEmailPreviewHandler),
   ('/(.*)/([0-9]*)', FeatureHandler),
   ('/(.*)', FeatureHandler),
 ], debug=settings.DEBUG)
