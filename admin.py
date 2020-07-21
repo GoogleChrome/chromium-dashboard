@@ -43,6 +43,7 @@ from google.appengine.ext.webapp import blobstore_handlers
 # File imports.
 import common
 import models
+import processes
 import settings
 
 UMA_QUERY_SERVER = 'https://uma-export.appspot.com/chromestatus/'
@@ -240,11 +241,14 @@ class IntentEmailHandler(common.ContentHandler):
 
     template_data = {
         'feature': f.format_for_template(),
-        'sections_to_show': [],
+        'sections_to_show': processes.INTENT_EMAIL_SECTIONS.get(
+            f.intent_stage, []),
         'default_url': '%s://%s%s/%s' % (
             self.request.scheme, self.request.host,
             VIEW_FEATURE_URL, feature_id),
     }
+    logging.info('1223123123123123123123123')
+    logging.info('sections_to_show is %r', template_data['sections_to_show'])
 
     if LAUNCH_PARAM in self.request.params:
       template_data[LAUNCH_PARAM] = True

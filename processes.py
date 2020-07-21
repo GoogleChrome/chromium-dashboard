@@ -330,10 +330,13 @@ INTENT_EMAIL_SECTIONS = {
     models.INTENT_NONE: [],
     models.INTENT_INCUBATE: [],
     models.INTENT_IMPLEMENT: ['motivation'],
-    models.INTENT_EXPERIMENT: ['i2p_thread'],
-    models.INTENT_IMPLEMENT_SHIP: ['need_api_owners_lgtms', 'motivation'],
-    models.INTENT_EXTEND_TRIAL: ['i2p_thread'],
-    models.INTENT_SHIP: ['need_api_owners_lgtms', 'spec_link', 'i2p_thread'],
+    models.INTENT_EXPERIMENT: ['i2p_thread', 'experiment'],
+    models.INTENT_IMPLEMENT_SHIP: [
+        'need_api_owners_lgtms', 'motivation', 'tracking_bug', 'demo_links'],
+    models.INTENT_EXTEND_TRIAL: [
+        'i2p_thread', 'experiment', 'extension_reason'],
+    models.INTENT_SHIP: [
+        'need_api_owners_lgtms', 'i2p_thread', 'tracking_bug', 'demo_links'],
     models.INTENT_REMOVED: [],
     models.INTENT_SHIPPED: [],
     models.INTENT_PARKED: [],
