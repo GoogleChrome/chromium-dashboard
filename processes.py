@@ -50,12 +50,13 @@ def process_to_dict(process):
 # This page generates a preview of an email that can be sent
 # to a mailing list to announce an intent.
 # The parameter "{feature_id}" is filled in by JS code.
-# The param "intent" adds causes the template to include details
+# The param "intent" adds clauses the template to include details
 # needed for an intent email.  The param "launch" causes those
 # details to be omitted and a link to create a launch bug shown instead.
 INTENT_EMAIL_URL = '/admin/features/launch/{feature_id}?intent'
-LAUNCH_EMAIL_URL = '/admin/features/launch/{feature_id}?launch'
-# xxx need to research which is intended to be used now
+LAUNCH_BUG_TEMPLATE_URL = '/admin/features/launch/{feature_id}?launch'
+# TODO(jrobbins): Creation of the launch bug has been a TODO for 5 years.
+
 
 BLINK_PROCESS_STAGES = [
   ProcessStage(
