@@ -25,8 +25,8 @@
 </div>
 
 {% comment %}
-  TODO(jrobbins): rather than checking intent_stage_int, that logic should be
-  in python code and passed to this template as a list of field names to show.
+  Insted of vertical margins, <br> elements are used to create line breaks
+  that can be copied and pasted into a text editor.
 {% endcomment %}
 
 <p>Body</p>
@@ -43,14 +43,13 @@
     <br><a href="{{link}}">{{link}}</a>
   {% endfor %}
 
-  {% if feature.intent_stage_int == 5 %}
-    <br><br><h4>Spec</h4>
+  {% if feature.spec_link %}
+    <br><br><h4>Specification</h4>
     <a href="{{feature.spec_link}}">{{feature.spec_link}}</a>
-  {% else %}
-    <br><br><h4>Design docs/spec</h4>
-    {% if feature.spec_link %}
-      Specification: <a href="{{feature.spec_link}}">{{feature.spec_link}}</a>
-    {% endif %}
+  {% endif %}
+
+  {% if feature.doc_links %}
+    <br><br><h4>Design docs</h4>
     {% for link in feature.doc_links %}
       <br><a href="{{link}}">{{link}}</a>
     {% endfor %}
@@ -63,20 +62,20 @@
   {{feature.summary}}
 
 
-  {% if feature.intent_stage_int == 1 or feature.intent_stage_int == 5 or feature.intent_stage_int == 4 %}
+  {% if 'motivation' in sections_to_show %}
+    <br><br><h4>Motivation</h4>
+    {{feature.motivation|urlize}}
+  {% endif %}
 
-    {% if feature.intent_stage_int == 1 or feature.intent_stage_int == 4 %}
-      <br><br><h4>Motivation</h4>
-     {{feature.motivation|urlize}}
-    {% endif %}
-    {% if feature.intent_stage_int == 5 or feature.intent_stage_int == 2 or feature.intent_stage == 3 %}
-      <br><br><h4>Link to “Intent to Prototype” blink-dev discussion</h4>
-      {{feature.intent_to_implement_url}}
-      {% if feature.origin_trial_feedback_url %}
-        <br><br><h4>Link to Origin Trial feedback summary</h4>
-       {{feature.origin_trial_feedback_url}}
-      {% endif %}
-   {% endif %}
+  {% if 'i2p_thread' in sections_to_show %}
+    <br><br><h4>Link to “Intent to Prototype” blink-dev discussion</h4>
+    {{feature.intent_to_implement_url}}
+  {% endif %}
+
+  {% if feature.origin_trial_feedback_url %}
+    <br><br><h4>Link to Origin Trial feedback summary</h4>
+    {{feature.origin_trial_feedback_url}}
+  {% endif %}
 
   <br><br><h4>Risks</h4>
   <div style="margin-left: 4em;">
@@ -107,7 +106,7 @@
       {{feature.web_dev_views_notes|urlize}}
     {% endif %}
 
-   {% if feature.ergonomics_risks %}
+    {% if feature.ergonomics_risks %}
       <br><br><h4>Ergonomics</h4>
       {{feature.ergonomics_risks|urlize}}
     {% endif %}
@@ -124,7 +123,7 @@
 
   </div> <!-- end risks -->
 
-{% elif feature.intent_stage_int == 2 or feature.intent_stage_int == 3 %}
+{% if 'experiment' in sections_to_show %}
 
   <br><br><h4>Goals for experimentation</h4>
   {{feature.experiment_goals|urlize}}
@@ -132,7 +131,7 @@
   <br><br><h4>Experimental timeline</h4>
   {{feature.experiment_timeline|urlize}}
 
-  {% if feature.intent_stage_int == 3 %}
+  {% if 'extension_reason' in sections_to_show %}
     <br><br><h4>Reason this experiment is being extended</h4>
     {{feature.experiment_extension_reason|urlize}}
   {% endif %}
@@ -156,7 +155,7 @@
 {% if feature.wpt %}Yes{% else %}No{% endif %}
 {{feature.wpt_descr|urlize}}
 
-{% if feature.intent_stage_int == 5 or feature.intent_stage_int == 4 %}
+{% if 'tracking_bug' in sections_to_show %}
   <br><br><h4>Tracking bug</h4>
   {% if feature.bug_url %}
     <a href="{{feature.bug_url}}">{{feature.bug_url}}</a>
@@ -165,8 +164,7 @@
   {% endif %}
 {% endif %}
 
-{% if feature.intent_stage_int == 5 or feature.intent_stage_int == 4 %}
-
+{% if 'demo_links' in sections_to_show %}
    {% if feature.sample_links %}
      <br><br><h4>Demo links</h4>
      {% for link in feature.sample_links %}
