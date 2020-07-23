@@ -650,10 +650,16 @@ class NewFeature_OriginTrial(forms.Form):
 class Any_PrepareToShip(forms.Form):
 
   field_order = (
-      'impl_status_chrome', 'footprint', 'tag_review',
+      'impl_status_chrome', 'shipped_milestone', 'shipped_android_milestone',
+      'shipped_ios_milestone', 'shipped_webview_milestone',
+      'footprint', 'tag_review',
       'intent_to_implement_url', 'origin_trial_feedback_url',
       'launch_bug_url', 'comments')
   impl_status_chrome = ALL_FIELDS['impl_status_chrome']
+  shipped_milestone = ALL_FIELDS['shipped_milestone']
+  shipped_android_milestone = ALL_FIELDS['shipped_android_milestone']
+  shipped_ios_milestone = ALL_FIELDS['shipped_ios_milestone']
+  shipped_webview_milestone = ALL_FIELDS['shipped_webview_milestone']
   footprint = ALL_FIELDS['footprint']
   tag_review = ALL_FIELDS['tag_review']
   intent_to_implement_url = ALL_FIELDS['intent_to_implement_url']
