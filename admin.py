@@ -256,6 +256,7 @@ class IntentEmailPreviewHandler(common.ContentHandler):
   def get_page_data(self, feature_id, f):
     """Return a dictionary of data used to render the page."""
     page_data = {
+        'subject_prefix': self.compute_subject_prefix(f),
         'feature': f.format_for_template(),
         'sections_to_show': processes.INTENT_EMAIL_SECTIONS.get(
             f.intent_stage, []),
@@ -270,6 +271,26 @@ class IntentEmailPreviewHandler(common.ContentHandler):
       page_data[INTENT_PARAM] = True
 
     return page_data
+
+  def compute_subject_prefix(self, feature):
+    """Return part of the subject line for an intent email."""
+
+    if feature.intent_stage == models.INTENT_INCUBATE:
+      if feature.feature_type == models.FEATURE_TYPE_DEPRECATION_ID:
+        return 'Intent to Deprecate and Remove'
+    elif feature.intent_stage == models.INTENT_IMPLEMENT:
+      return 'Intent to Prototype'
+    elif feature.intent_stage == models.INTENT_EXPERIMENT:
+      return 'Ready for Trial'
+    elif feature.intent_stage == models.INTENT_EXTEND_TRIAL:
+      if feature.feature_type == models.FEATURE_TYPE_DEPRECATION_ID:
+        return 'Request for Deprecation Trial'
+      else:
+        return 'Intent to Experiment'
+    elif feature.intent_stage == models.INTENT_SHIP:
+      return 'Intent to Ship'
+
+    return 'Intent stage "%s"' % models.INTENT_STAGES[feature.intent_stage]
 
 
 class FeatureHandler(common.ContentHandler):

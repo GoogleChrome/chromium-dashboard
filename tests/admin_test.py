@@ -73,6 +73,79 @@ class IntentEmailPreviewHandlerTest(unittest.TestCase):
     self.assertEqual(
         ['motivation'],
         page_data['sections_to_show'])
+    self.assertEqual(
+        'Intent to Prototype',
+        page_data['subject_prefix'])
+
+  def test_compute_subject_prefix__incubate_new_feature(self):
+    """We offer users the correct subject line for each intent stage."""
+    self.feature_1.intent_stage = models.INTENT_NONE
+    self.assertEqual(
+        'Intent stage "None"',
+        self.handler.compute_subject_prefix(self.feature_1))
+
+    self.feature_1.intent_stage = models.INTENT_INCUBATE
+    self.assertEqual(
+        'Intent stage "Start incubating"',
+        self.handler.compute_subject_prefix(self.feature_1))
+
+    self.feature_1.intent_stage = models.INTENT_IMPLEMENT
+    self.assertEqual(
+        'Intent to Prototype',
+        self.handler.compute_subject_prefix(self.feature_1))
+
+    self.feature_1.intent_stage = models.INTENT_EXPERIMENT
+    self.assertEqual(
+        'Ready for Trial',
+        self.handler.compute_subject_prefix(self.feature_1))
+
+    self.feature_1.intent_stage = models.INTENT_IMPLEMENT_SHIP
+    self.assertEqual(
+        'Intent stage "Evaluate readiness to ship"',
+        self.handler.compute_subject_prefix(self.feature_1))
+
+    self.feature_1.intent_stage = models.INTENT_EXTEND_TRIAL
+    self.assertEqual(
+        'Intent to Experiment',
+        self.handler.compute_subject_prefix(self.feature_1))
+
+    self.feature_1.intent_stage = models.INTENT_SHIP
+    self.assertEqual(
+        'Intent to Ship',
+        self.handler.compute_subject_prefix(self.feature_1))
+
+    self.feature_1.intent_stage = models.INTENT_REMOVED
+    self.assertEqual(
+        'Intent stage "Removed"',
+        self.handler.compute_subject_prefix(self.feature_1))
+
+    self.feature_1.intent_stage = models.INTENT_SHIPPED
+    self.assertEqual(
+        'Intent stage "Shipped"',
+        self.handler.compute_subject_prefix(self.feature_1))
+
+    self.feature_1.intent_stage = models.INTENT_PARKED
+    self.assertEqual(
+        'Intent stage "Parked"',
+        self.handler.compute_subject_prefix(self.feature_1))
+
+  def test_compute_subject_prefix__deprecate_feature(self):
+    """We offer users the correct subject line for each intent stage."""
+    self.feature_1.feature_type = models.FEATURE_TYPE_DEPRECATION_ID
+    self.feature_1.intent_stage = models.INTENT_NONE
+    self.assertEqual(
+        'Intent stage "None"',
+        self.handler.compute_subject_prefix(self.feature_1))
+
+    self.feature_1.intent_stage = models.INTENT_INCUBATE
+    self.assertEqual(
+        'Intent to Deprecate and Remove',
+        self.handler.compute_subject_prefix(self.feature_1))
+
+    self.feature_1.intent_stage = models.INTENT_EXTEND_TRIAL
+    self.assertEqual(
+        'Request for Deprecation Trial',
+        self.handler.compute_subject_prefix(self.feature_1))
 
 
 class FeatureHandlerTest(unittest.TestCase):
