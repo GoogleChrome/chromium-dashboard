@@ -32,18 +32,17 @@
 </section>
 {% endif %}
 
-{% if feature.intent_stage == "Ship" %}
+{% if 'need_api_owners_lgtms' in sections_to_show %}
 <section>
 <h3>Obtain LGTMs from 3 API Owners</h3>
-<span class="help">Given the intent stage of this feature is "{{feature.intent_stage}}" that means you're now done with your experimentation and implementation, and have documented that in this feature description. Now you need to get 3 API Owners to respond to your message with LGTMs. Once you have that, you're cleared from the Blink Launch process perspective to ship your feature.
-</section>
-{% elif feature.intent_stage == "Implement and Ship" %}
-<section>
-<h3>Obtain LGTMs from 3 API Owners</h3>
-<span class="help">Given the intent stage of this feature is "{{feature.intent_stage}}" that means this is a small change and you’d like to ship enabled-by-default immediately. Per <a href="http://www.chromium.org/blink#launch-process">the launch process for new features</a>, you’ll now need 3 LGTMs from API OWNERS before shipping.
+<span class="help">
+  You will need three LGTMs from API owners.
+According to the
+<a href="http://www.chromium.org/blink#launch-process">Blink Launch process</a>
+after that, you're free to ship your feature.
+</span>
 </section>
 {% endif %}
-</span>
 
 {% endblock %}
 
@@ -51,11 +50,5 @@
 <script>
 // Remove loading spinner at page load.
 document.body.classList.remove('loading');
-
-setTimeout(function() {
-  const toastEl = document.querySelector('chromedash-toast');
-  toastEl.showMessage('Your feature was saved! It may take a few minutes to ' +
-                    'show up in the main list.', null, null, -1);
-}, 500);
 </script>
 {% endblock %}

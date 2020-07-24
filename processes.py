@@ -50,7 +50,12 @@ def process_to_dict(process):
 # This page generates a preview of an email that can be sent
 # to a mailing list to announce an intent.
 # The parameter "{feature_id}" is filled in by JS code.
+# The param "intent" adds clauses the template to include details
+# needed for an intent email.  The param "launch" causes those
+# details to be omitted and a link to create a launch bug shown instead.
 INTENT_EMAIL_URL = '/admin/features/launch/{feature_id}?intent'
+LAUNCH_BUG_TEMPLATE_URL = '/admin/features/launch/{feature_id}?launch'
+# TODO(jrobbins): Creation of the launch bug has been a TODO for 5 years.
 
 
 BLINK_PROCESS_STAGES = [
@@ -321,6 +326,22 @@ ALL_PROCESSES = {
     models.FEATURE_TYPE_DEPRECATION_ID: DEPRECATION_PROCESS,
     }
 
+
+INTENT_EMAIL_SECTIONS = {
+    models.INTENT_NONE: [],
+    models.INTENT_INCUBATE: [],
+    models.INTENT_IMPLEMENT: ['motivation'],
+    models.INTENT_EXPERIMENT: ['i2p_thread', 'experiment'],
+    models.INTENT_IMPLEMENT_SHIP: [
+        'need_api_owners_lgtms', 'motivation', 'tracking_bug', 'demo_links'],
+    models.INTENT_EXTEND_TRIAL: [
+        'i2p_thread', 'experiment', 'extension_reason'],
+    models.INTENT_SHIP: [
+        'need_api_owners_lgtms', 'i2p_thread', 'tracking_bug', 'demo_links'],
+    models.INTENT_REMOVED: [],
+    models.INTENT_SHIPPED: [],
+    models.INTENT_PARKED: [],
+    }
 
 # These functions return a true value when the checkmark should be shown.
 # If they return a string, and it starts with "http:" or "https:", it will

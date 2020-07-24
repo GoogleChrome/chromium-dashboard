@@ -43,6 +43,7 @@ from google.appengine.ext.webapp import blobstore_handlers
 # File imports.
 import common
 import models
+import processes
 import settings
 
 UMA_QUERY_SERVER = 'https://uma-export.appspot.com/chromestatus/'
@@ -222,15 +223,81 @@ class HistogramsHandler(webapp2.RequestHandler):
 
 
 
+INTENT_PARAM = 'intent'
+LAUNCH_PARAM = 'launch'
+VIEW_FEATURE_URL = '/feature'
+
+
+class IntentEmailPreviewHandler(common.ContentHandler):
+  """Show a preview of an intent email, as appropriate to the feature stage."""
+
+  def get(self, feature_id=None):
+    user = users.get_current_user()
+    if user is None:
+      return self.redirect(users.create_login_url(self.request.uri))
+
+    if not feature_id:
+      common.handle_404(self.request, self.response, None)
+      return
+    f = models.Feature.get_by_id(long(feature_id))
+    if f is None:
+      common.handle_404(self.request, self.response, None)
+      return
+
+    if not self.user_can_edit(user):
+      common.handle_401(self.request, self.response, Exception)
+      return
+
+    page_data = self.get_page_data(feature_id, f)
+
+    self._add_common_template_values(page_data)
+    self.render(data=page_data, template_path='admin/features/launch.html')
+
+  def get_page_data(self, feature_id, f):
+    """Return a dictionary of data used to render the page."""
+    page_data = {
+        'subject_prefix': self.compute_subject_prefix(f),
+        'feature': f.format_for_template(),
+        'sections_to_show': processes.INTENT_EMAIL_SECTIONS.get(
+            f.intent_stage, []),
+        'default_url': '%s://%s%s/%s' % (
+            self.request.scheme, self.request.host,
+            VIEW_FEATURE_URL, feature_id),
+    }
+
+    if LAUNCH_PARAM in self.request.params:
+      page_data[LAUNCH_PARAM] = True
+    if INTENT_PARAM in self.request.params:
+      page_data[INTENT_PARAM] = True
+
+    return page_data
+
+  def compute_subject_prefix(self, feature):
+    """Return part of the subject line for an intent email."""
+
+    if feature.intent_stage == models.INTENT_INCUBATE:
+      if feature.feature_type == models.FEATURE_TYPE_DEPRECATION_ID:
+        return 'Intent to Deprecate and Remove'
+    elif feature.intent_stage == models.INTENT_IMPLEMENT:
+      return 'Intent to Prototype'
+    elif feature.intent_stage == models.INTENT_EXPERIMENT:
+      return 'Ready for Trial'
+    elif feature.intent_stage == models.INTENT_EXTEND_TRIAL:
+      if feature.feature_type == models.FEATURE_TYPE_DEPRECATION_ID:
+        return 'Request for Deprecation Trial'
+      else:
+        return 'Intent to Experiment'
+    elif feature.intent_stage == models.INTENT_SHIP:
+      return 'Intent to Ship'
+
+    return 'Intent stage "%s"' % models.INTENT_STAGES[feature.intent_stage]
+
+
 class FeatureHandler(common.ContentHandler):
 
-  DEFAULT_URL = '/feature'
   ADD_NEW_URL = '/admin/features/new'
   EDIT_URL = '/admin/features/edit'
   LAUNCH_URL = '/admin/features/launch'
-
-  INTENT_PARAM = 'intent'
-  LAUNCH_PARAM = 'launch'
 
   def __FullQualifyLink(self, param_name):
     link = self.request.get(param_name) or None
@@ -263,7 +330,7 @@ class FeatureHandler(common.ContentHandler):
     if user is None:
       if feature_id:
         # Redirect to public URL for unauthenticated users.
-        return self.redirect(self.DEFAULT_URL + '/' + feature_id)
+        return self.redirect(VIEW_FEATURE_URL + '/' + feature_id)
       else:
         return self.redirect(users.create_login_url(self.request.uri))
 
@@ -300,18 +367,12 @@ class FeatureHandler(common.ContentHandler):
           'feature': f.format_for_template(),
           'feature_form': models.FeatureForm(f.format_for_edit()),
           'default_url': '%s://%s%s/%s' % (self.request.scheme, self.request.host,
-                                           self.DEFAULT_URL, feature_id),
+                                           VIEW_FEATURE_URL, feature_id),
           'edit_url': '%s://%s%s/%s' % (self.request.scheme, self.request.host,
                                         self.EDIT_URL, feature_id)
           })
 
-    if self.LAUNCH_PARAM in self.request.params:
-      template_data[self.LAUNCH_PARAM] = True
-    if self.INTENT_PARAM in self.request.params:
-      template_data[self.INTENT_PARAM] = True
-
     self._add_common_template_values(template_data)
-
     self.render(data=template_data, template_path=os.path.join(path + '.html'))
 
   def post(self, path, feature_id=None):
@@ -519,9 +580,9 @@ class FeatureHandler(common.ContentHandler):
 
     params = []
     if self.request.get('create_launch_bug') == 'on':
-      params.append(self.LAUNCH_PARAM)
+      params.append(LAUNCH_PARAM)
     if self.request.get('intent_to_implement') == 'on':
-      params.append(self.INTENT_PARAM)
+      params.append(INTENT_PARAM)
 
       feature.intent_template_use_count += 1
 
@@ -550,6 +611,7 @@ app = webapp2.WSGIApplication([
   ('/cron/metrics', YesterdayHandler),
   ('/cron/histograms', HistogramsHandler),
   ('/cron/update_blink_components', BlinkComponentHandler),
+  ('/admin/features/launch/([0-9]*)', IntentEmailPreviewHandler),
   ('/(.*)/([0-9]*)', FeatureHandler),
   ('/(.*)', FeatureHandler),
 ], debug=settings.DEBUG)

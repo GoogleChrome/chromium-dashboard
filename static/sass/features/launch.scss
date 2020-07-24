@@ -19,7 +19,7 @@
     }
 
     > p {
-      color: #aaa;
+      color: #666;
     }
   }
 
@@ -38,15 +38,12 @@
 }
 
 .email {
-  white-space: pre-wrap;
-
   .help {
     font-style: italic;
     color: #aaa;
   }
 
-  label {
-    display: inline-block;
+  h4 {
     font-weight: 600;
   }
 }
