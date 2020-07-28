@@ -4,7 +4,6 @@ const path = require('path');
 const gulp = require('gulp');
 const babel = require("gulp-babel");
 const del = require('del');
-const swPrecache = require('sw-precache');
 const uglifyEs = require('gulp-uglify-es');
 const uglify = uglifyEs.default;
 const gulpLoadPlugins = require('gulp-load-plugins');
@@ -119,86 +118,6 @@ gulp.task('clean', () => {
   ], {dot: true});
 });
 
-// Generate a service worker file that will provide offline functionality for
-// local resources.
-gulp.task('generate-service-worker', () => {
-  const staticDir = 'static';
-  const distDir = path.join(staticDir, 'dist');
-  const filepath = path.join(distDir, 'service-worker.js');
-
-  return swPrecache.write(filepath, {
-    cacheId: 'chromestatus',
-    verbose: true,
-    logger: $.util.log,
-    staticFileGlobs: [
-      // Images
-      `${staticDir}/img/{browsers-logos.png,*.svg,crstatus_128.png,github-white.png}`,
-      // Scripts
-      `${staticDir}/js/**/!(*.es6).js`, // Don't include unminimized/untranspiled js.
-    ],
-    runtimeCaching: [{ // Server-side generated content
-      // The features page, which optionally has a trailing slash or a
-      // feature id. For example:
-      //  - /features
-      //  - /features/
-      //  - /features/<numeric feature id>
-      // This overly-specific regex is required to avoid matching other
-      // static content (i.e. /static/css/features/features.css)
-      urlPattern: /\/features(\/(\w+)?)?$/,
-      handler: 'fastest',
-      options: {
-        cache: {
-          maxEntries: 10,
-          name: 'features-cache'
-        }
-      }
-    }, {
-      // The metrics pages (optionally with a trailing slash)
-      //  - /metrics/css/animated
-      //  - /metrics/css/timeline/animated
-      //  - /metrics/css/popularity
-      //  - /metrics/css/timeline/popularity
-      //  - /metrics/feature/popularity
-      //  - /metrics/feature/timeline/popularity
-      urlPattern: /\/metrics\/(css|feature)\/(timeline\/)?(animated|popularity)(\/)?$/,
-      handler: 'fastest',
-      options: {
-        cache: {
-          maxEntries: 10,
-          name: 'metrics-cache'
-        }
-      }
-    }, {
-      // The samples page (optionally with a trailing slash)
-      urlPattern: /\/samples(\/)?$/,
-      handler: 'fastest',
-      options: {
-        cache: {
-          maxEntries: 10,
-          name: 'samples-cache'
-        }
-      }
-    }, {
-      // For dynamic data (json), use "fastest" so liefi scenarios are fast.
-      // "fastest" also makes a network request to update the cached copy.
-      // The worst case is that the user with an active SW gets stale content
-      // and never refreshes the page.
-      // TODO: use sw-toolbox notifyOnCacheUpdate when it's ready
-      // https://github.com/GoogleChrome/sw-toolbox/pull/174/
-      urlPattern: /\/data\//,
-      handler: 'fastest'
-    }, {
-      urlPattern: /\/features(_v\d+)?.json$/,
-      handler: 'fastest'
-    }, {
-      urlPattern: /\/samples.json$/,
-      handler: 'fastest'
-    }, {
-      urlPattern: /\/omaha_data$/,
-      handler: 'fastest'
-    }]
-  });
-});
 
 // Build production files, the default task
 gulp.task('default', gulp.series(
@@ -207,7 +126,6 @@ gulp.task('default', gulp.series(
   'js',
   'lint-fix',
   'rollup',
-  'generate-service-worker',
 ));
 
 // Build production files, the default task
