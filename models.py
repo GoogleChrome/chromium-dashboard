@@ -1116,12 +1116,15 @@ class FeatureForm(forms.Form):
       widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 500}),
       help_text='Provide a one sentence description followed by one or two lines explaining how this feature helps web developers.')
 
-  category = forms.ChoiceField(required=True, help_text='Select the most specific category. If unsure, leave as "%s".' % FEATURE_CATEGORIES[MISC],
+  category = forms.ChoiceField(
+      required=False,
+      help_text='Select the most specific category. If unsure, leave as "%s".' % FEATURE_CATEGORIES[MISC],
       initial=MISC,
       choices=sorted(FEATURE_CATEGORIES.items(), key=lambda x: x[1]))
 
   intent_stage = forms.ChoiceField(
-      required=True, label='Intent stage', help_text='Select the appropriate intent stage.',
+      required=False,
+      label='Intent stage', help_text='Select the appropriate intent stage.',
       initial=INTENT_IMPLEMENT,
       choices=INTENT_STAGES.items())
 
@@ -1169,6 +1172,7 @@ class FeatureForm(forms.Form):
       help_text='Links to design doc(s) (one URL per line), if and when available. [This is not required to send out an Intent to Prototype. Please update the intent thread with the design doc when ready]. An explainer and/or design doc is sufficient to start this process. [Note: Please include links and data, where possible, to support any claims.]')
 
   standardization = forms.ChoiceField(
+      required=False,
       label='Standardization', choices=STANDARDIZATION.items(),
       initial=EDITORS_DRAFT,
       help_text=("The standardization status of the API. In bodies that don't "
@@ -1187,9 +1191,10 @@ class FeatureForm(forms.Form):
       widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 1480}),
       help_text='Describe the degree of <a target="_blank" href="https://sites.google.com/a/chromium.org/dev/blink?pli=1#TOC-Policy-for-shipping-and-removing-web-platform-API-features">interoperability risk</a>. For a new feature, the main risk is that it fails to become an interoperable part of the web platform if other browsers do not implement it. For a removal, please review our <a target="_blank" href="https://docs.google.com/document/d/1RC-pBBvsazYfCNNUSkPqAVpSpNJ96U8trhNkfV0v9fk/edit">principles of web compatibility</a>.<br><br>Please include citation links below where possible. Examples include resolutions from relevant standards bodies (e.g. W3C working group), tracking bugs, or links to online conversations.')
 
-  safari_views = forms.ChoiceField(label='Safari views',
-                                   choices=VENDOR_VIEWS_WEBKIT.items(),
-                                   initial=NO_PUBLIC_SIGNALS)
+  safari_views = forms.ChoiceField(
+      required=False, label='Safari views',
+      choices=VENDOR_VIEWS_WEBKIT.items(),
+      initial=NO_PUBLIC_SIGNALS)
   safari_views_link = forms.URLField(
       required=False, label='',
       widget=forms.URLInput(attrs={'placeholder': 'https://'}),
@@ -1197,9 +1202,10 @@ class FeatureForm(forms.Form):
   safari_views_notes = forms.CharField(required=False, label='',
       widget=forms.Textarea(attrs={'rows': 2, 'cols': 50, 'placeholder': 'Notes', 'maxlength': 1480}))
 
-  ff_views = forms.ChoiceField(label='Firefox views',
-                               choices=VENDOR_VIEWS_GECKO.items(),
-                               initial=NO_PUBLIC_SIGNALS)
+  ff_views = forms.ChoiceField(
+      required=False, label='Firefox views',
+      choices=VENDOR_VIEWS_GECKO.items(),
+      initial=NO_PUBLIC_SIGNALS)
   ff_views_link = forms.URLField(
       required=False, label='',
       widget=forms.URLInput(attrs={'placeholder': 'https://'}),
@@ -1207,9 +1213,10 @@ class FeatureForm(forms.Form):
   ff_views_notes = forms.CharField(required=False, label='',
       widget=forms.Textarea(attrs={'rows': 2, 'cols': 50, 'placeholder': 'Notes', 'maxlength': 1480}))
 
-  ie_views = forms.ChoiceField(label='Edge',
-                               choices=VENDOR_VIEWS_EDGE.items(),
-                               initial=NO_PUBLIC_SIGNALS)
+  ie_views = forms.ChoiceField(
+      required=False, label='Edge',
+      choices=VENDOR_VIEWS_EDGE.items(),
+      initial=NO_PUBLIC_SIGNALS)
   ie_views_link = forms.URLField(
       required=False, label='',
       widget=forms.URLInput(attrs={'placeholder': 'https://'}),
@@ -1218,7 +1225,7 @@ class FeatureForm(forms.Form):
       widget=forms.Textarea(attrs={'rows': 2, 'cols': 50, 'placeholder': 'Notes', 'maxlength': 1480}))
 
   web_dev_views = forms.ChoiceField(
-      label='Web / Framework developer views',
+      required=False, label='Web / Framework developer views',
       choices=WEB_DEV_VIEWS.items(),
       initial=DEV_NO_SIGNALS,
       help_text='If unsure, default to "No signals".')
@@ -1309,7 +1316,7 @@ class FeatureForm(forms.Form):
           'a WICG discourse post.'))
 
   blink_components = forms.ChoiceField(
-      required=True,
+      required=False,
       label='Blink component',
       help_text='Select the most specific component. If unsure, leave as "%s".' % BlinkComponent.DEFAULT_COMPONENT,
       choices=[(x, x) for x in BlinkComponent.fetch_all_components()],
@@ -1321,7 +1328,8 @@ class FeatureForm(forms.Form):
           attrs={'multiple': True, 'placeholder': 'email, email'}),
       help_text='Comma separated list of full email addresses.')
 
-  impl_status_chrome = forms.ChoiceField(required=True,
+  impl_status_chrome = forms.ChoiceField(
+      required=False,
       label='Status in Chromium', choices=IMPLEMENTATION_STATUS.items())
 
   #shipped_milestone = PlaceholderCharField(required=False,
@@ -1348,7 +1356,8 @@ class FeatureForm(forms.Form):
 
   prefixed = forms.BooleanField(required=False, initial=False, label='Prefixed?')
 
-  footprint  = forms.ChoiceField(label='Technical footprint',
+  footprint  = forms.ChoiceField(
+      required=False, label='Technical footprint',
       choices=FOOTPRINT_CHOICES.items(), initial=MAJOR_MINOR_NEW_API)
 
   search_tags = forms.CharField(label='Search tags', required=False,
