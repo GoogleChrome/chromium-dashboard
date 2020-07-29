@@ -32,9 +32,9 @@ class ChromedashProcessOverview extends LitElement {
   /* A stage is "prior" if it would set a intent_stage that this feature
      has already passed. */
   isPriorStage(stage) {
-    if (this.inFinalStage(stage)) {
-      return true;
-    }
+    // if (this.inFinalStage(stage)) {
+    //   return true;
+    // }
     let stageOrder = this.process.stages.map(s => s.outgoing_stage);
     let viewedOutgoingStageIndex = stageOrder.indexOf(stage.outgoing_stage);
     let featureStageIndex = stageOrder.indexOf(this.feature.intent_stage_int);

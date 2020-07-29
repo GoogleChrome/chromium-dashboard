@@ -668,6 +668,21 @@ class Any_PrepareToShip(forms.Form):
   comments = ALL_FIELDS['comments']
 
 
+class Any_Ship(forms.Form):
+
+  field_order = (
+      'impl_status_chrome', 'shipped_milestone', 'shipped_android_milestone',
+      'shipped_ios_milestone', 'shipped_webview_milestone',
+      'launch_bug_url', 'comments')
+  impl_status_chrome = ALL_FIELDS['impl_status_chrome']
+  shipped_milestone = ALL_FIELDS['shipped_milestone']
+  shipped_android_milestone = ALL_FIELDS['shipped_android_milestone']
+  shipped_ios_milestone = ALL_FIELDS['shipped_ios_milestone']
+  shipped_webview_milestone = ALL_FIELDS['shipped_webview_milestone']
+  launch_bug_url = ALL_FIELDS['launch_bug_url']
+  comments = ALL_FIELDS['comments']
+
+
 class Any_Identify(forms.Form):
 
   field_order = (

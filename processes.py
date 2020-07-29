@@ -131,10 +131,20 @@ BLINK_PROCESS_STAGES = [
        'TAG issues addressed',
        'Three LGTMs',
        'Updated vendor signals',
-       'Finalized target milestone',
+       'Updated target milestone',
       ],
       [('Draft Intent to Ship email', INTENT_EMAIL_URL)],
       models.INTENT_IMPLEMENT_SHIP, models.INTENT_SHIP),
+
+  ProcessStage(
+      'Ship',
+      'Update milestones and other information when the feature '
+      'actually ships.',
+      ['Finalized vendor signals',
+       'Finalized target milestone',
+      ],
+      [],
+      models.INTENT_SHIP, models.INTENT_SHIPPED),
   ]
 
 
@@ -195,10 +205,20 @@ BLINK_FAST_TRACK_STAGES = [
       ['Intent to Ship email',
        'Three LGTMs',
        'Documentation signoff',
-       'Finalized target milestone',
+       'Updated target milestone',
       ],
       [('Draft Intent to Ship email', INTENT_EMAIL_URL)],
       models.INTENT_EXPERIMENT, models.INTENT_SHIP),
+
+  ProcessStage(
+      'Ship',
+      'Update milestones and other information when the feature '
+      'actually ships.',
+      ['Finalized vendor signals',
+       'Finalized target milestone',
+      ],
+      [],
+      models.INTENT_SHIP, models.INTENT_SHIPPED),
   ]
 
 
@@ -243,10 +263,20 @@ PSA_ONLY_STAGES = [
       'Lock in shipping milestone.',
       ['Web facing PSA email',
        'One LGTM',
-       'Finalize target milestone',
+       'Updated target milestone',
       ],
       [('Draft Intent to Ship email', INTENT_EMAIL_URL)],
       models.INTENT_EXPERIMENT, models.INTENT_SHIP),
+
+  ProcessStage(
+      'Ship',
+      'Update milestones and other information when the feature '
+      'actually ships.',
+      ['Finalized vendor signals',
+       'Finalized target milestone',
+      ],
+      [],
+      models.INTENT_SHIP, models.INTENT_SHIPPED),
   ]
 
 PSA_ONLY_PROCESS = Process(
@@ -297,7 +327,7 @@ DEPRECATION_STAGES = [
       'Finalize docs and announcements before disabling feature by default.',
       ['Intent to Ship email',
        'Three LGTMs',
-       'Finalized target milestone',
+       'Updated target milestone',
       ],
       [('Draft Intent to Ship email', INTENT_EMAIL_URL)],
       models.INTENT_EXPERIMENT, models.INTENT_SHIP),
