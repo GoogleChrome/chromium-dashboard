@@ -86,57 +86,10 @@ window.addEventListener('popstate', (e) => {
 featureListEl.addEventListener('app-ready', () => {
   document.body.classList.remove('loading');
 
-  // Want "Caching is complete" toast to be slightly delayed after page load.
-  // To do that, wait to register SW until features have loaded.
-  registerServiceWorker();
-
-  // Lazy load Firebase messaging SDK after features list visible.
-  loadFirebaseSDKLibs().then(() => {
-    PushNotifications.init(); // init Firebase messaging.
-
-    // If use already granted the notification permission, update state of the
-    // push icon for each feature the user is subscribed to.
-    if (PushNotifier.GRANTED_ACCESS) {
-      PushNotifications.getAllSubscribedFeatures().then((subscribedFeatures) => {
-        const iconEl = document.querySelector('#features-subscribe-button').firstElementChild;
-        if (subscribedFeatures.includes(PushNotifier.ALL_FEATURES_TOPIC_ID)) {
-          iconEl.icon = 'chromestatus:notifications';
-        } else {
-          iconEl.icon = 'chromestatus:notifications-off';
-        }
-      });
-    }
-  });
-
   StarService.getStars().then((starredFeatureIds) => {
     featureListEl.starredFeatures = new Set(starredFeatureIds);
   });
 });
-
-if (PushNotifier.SUPPORTS_NOTIFICATIONS) {
-  const subscribeButtonEl = document.querySelector('#features-subscribe-button');
-  subscribeButtonEl.removeAttribute('hidden');
-
-  subscribeButtonEl.addEventListener('click', (e) => {
-    e.preventDefault();
-
-    if (window.Notification && Notification.permission === 'denied') {
-      alert('Notifications were previously denied. Please reset the browser permission.');
-      return;
-    }
-
-    PushNotifications.getAllSubscribedFeatures().then(subscribedFeatures => {
-      const iconEl = document.querySelector('#features-subscribe-button').firstElementChild;
-      if (subscribedFeatures.includes(PushNotifier.ALL_FEATURES_TOPIC_ID)) {
-        iconEl.icon = 'chromestatus:notifications-off';
-        PushNotifications.unsubscribeFromFeature();
-      } else {
-        iconEl.icon = 'chromestatus:notifications';
-        PushNotifications.subscribeToFeature();
-      }
-    });
-  });
-}
 
 legendEl.views = VIEWS;
 

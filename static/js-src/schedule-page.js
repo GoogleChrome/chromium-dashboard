@@ -26,10 +26,6 @@ async function init() {
   const scheduleEl = document.querySelector('chromedash-schedule');
   scheduleEl.channels = CHANNELS;
 
-  // Show push notification icons if the browser supports the feature.
-  if (window.PushNotifier && PushNotifier.SUPPORTS_NOTIFICATIONS) {
-    initNotifications(features);
-  }
   StarService.getStars().then((starredFeatureIds) => {
     scheduleEl.starredFeatures = new Set(starredFeatureIds);
   });
@@ -57,24 +53,6 @@ function mapFeaturesToComponents(features) {
   return featuresMappedToComponents;
 }
 
-async function initNotifications(allFeatures) {
-  await loadFirebaseSDKLibs(); // Lazy load Firebase messaging SDK.
-
-  PushNotifications.init(); // init Firebase messaging.
-
-  // If use already granted the notification permission, update state of the
-  // push icon for each feature the user is subscribed to.
-  const subscribedFeatures = await PushNotifications.getAllSubscribedFeatures();
-  allFeatures.forEach((feature) => {
-    if (subscribedFeatures.includes(String(feature.id))) {
-      // f.receivePush = true;
-      const iconEl = document.querySelector(`[data-feature-id="${feature.id}"] .pushicon`);
-      if (iconEl) {
-        iconEl.icon = 'chromestatus:notifications';
-      }
-    }
-  });
-}
 
 /**
  *  @param {!Array<!Object>} features

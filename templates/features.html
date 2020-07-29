@@ -29,7 +29,7 @@
       <button class="legend-button"><iron-icon icon="chromestatus:help"></iron-icon></button>
     </div>
     <div class="actionlinks">
-      <a id="features-subscribe-button" class="blue-button no-push-notifications" title="Sends a push notification when new features are added."><iron-icon icon="chromestatus:notifications-off"></iron-icon><span>Subscribe</span></a>
+      <!-- TODO(jrobbins): Re-implement Subscribe button to use emails. -->
       {% if user.can_edit %}
         <a href="/admin/features/new" class="blue-button" title="Adds a new feature to the site"><iron-icon icon="chromestatus:add-circle-outline"></iron-icon><span>Add new feature</span></a>
       {% endif %}
