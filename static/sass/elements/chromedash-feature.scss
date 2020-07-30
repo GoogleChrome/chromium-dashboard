@@ -1,10 +1,13 @@
 @import "element";
 
 :host {
-  @include gradient-bar-bg();
+  // @include gradient-bar-bg();
   display: block;
   position: relative;
   border-radius: $default-border-radius;
+  border: 1px solid #ddd;
+  background-color: white;
+  box-shadow: rgba(0, 0, 0, 0.067) 1px 1px 4px;
   padding: 10px 10px 10px 20px !important;
   list-style: none;
   box-sizing: border-box;

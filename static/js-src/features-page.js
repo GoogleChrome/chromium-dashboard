@@ -1,5 +1,5 @@
 const featureListEl = document.querySelector('chromedash-featurelist');
-const chromeMetadataEl = document.querySelector('chromedash-metadata');
+// const chromeMetadataEl = document.querySelector('chromedash-metadata');
 const searchEl = document.querySelector('.search input');
 const legendEl = document.querySelector('chromedash-legend');
 
@@ -29,25 +29,25 @@ if (location.hash) {
   searchEl.value = decodeURIComponent(location.hash.substr(1));
 }
 
-chromeMetadataEl.addEventListener('query-changed', (e) => {
-  const value = e.detail.version;
-  const isMilestone = value.match(/^[0-9]+$/);
-  searchEl.value = isMilestone ? 'milestone=' + value :
-    'browsers.chrome.status:"' + value + '"';
-  featureListEl.filter(searchEl.value);
-});
+// chromeMetadataEl.addEventListener('query-changed', (e) => {
+//   const value = e.detail.version;
+//   const isMilestone = value.match(/^[0-9]+$/);
+//   searchEl.value = isMilestone ? 'milestone=' + value :
+//     'browsers.chrome.status:"' + value + '"';
+//   featureListEl.filter(searchEl.value);
+// });
 
 // Clear input when user clicks the 'x' button.
 searchEl.addEventListener('search', (e) => {
   if (!e.target.value) {
     featureListEl.filter();
-    chromeMetadataEl.selected = null;
+    // chromeMetadataEl.selected = null;
   }
 });
 
 searchEl.addEventListener('input', debounce((e) => {
   featureListEl.filter(e.target.value);
-  chromeMetadataEl.selected = null;
+  // chromeMetadataEl.selected = null;
 }));
 
 featureListEl.addEventListener('filtered', (e) => {

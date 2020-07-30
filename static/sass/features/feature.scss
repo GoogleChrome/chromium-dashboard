@@ -1,8 +1,10 @@
 @import "../vars";
 
 #feature {
-  @include gradient-bar-bg;
+  // @include gradient-bar-bg;
+  background-color: white;
   border-radius: $default-border-radius;
+  box-shadow: rgba(0, 0, 0, 0.067) 1px 1px 4px;
   box-sizing: border-box;
   word-wrap: break-word;
   margin-bottom: $content-padding + 100; // padding + height of footer.

@@ -348,10 +348,11 @@ class ChromedashFeaturelist extends LitElement {
     if (lastSlash > 0) {
       id = parseInt(location.pathname.substring(lastSlash + 1));
     } else {
-      const milestone = this.metadataEl.implStatuses[this.metadataEl.status.IN_DEVELOPMENT - 1].val;
-      id = this._firstOfMilestone(milestone);
+      // const milestone = this.metadataEl.implStatuses[this.metadataEl.status.IN_DEVELOPMENT - 1].val;
+      // id = this._firstOfMilestone(milestone);
     }
-    this.scrollToId(id);
+    console.log(id);
+    // this.scrollToId(id);
   }
 
   _initialize() {
@@ -393,8 +394,13 @@ class ChromedashFeaturelist extends LitElement {
 
       ${filteredWithState.map((item) => html`
           <div class="item">
-            <div ?hidden="${this._computeMilestoneHidden(item.feature, this.features, this.filtered)}"
-                 class="milestone-marker">${this._computeMilestoneString(item.feature.browsers.chrome.status.milestone_str)}</div>
+            <div
+              ?hidden="${this._computeMilestoneHidden(item.feature, this.features, this.filtered)}"
+              class="milestone-marker">
+              <iron-icon icon="chromestatus:expand-more"></iron-icon>
+
+              ${this._computeMilestoneString(item.feature.browsers.chrome.status.milestone_str)}
+            </div>
             <chromedash-feature id="id-${item.feature.id}" tabindex="0"
                  ?open="${item.open}"
                  ?starred="${item.starred}"

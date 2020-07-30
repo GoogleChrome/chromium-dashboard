@@ -78,13 +78,8 @@ limitations under the License.
   {% endcomment %}
 
   <app-drawer-layout fullbleed>
-    <app-drawer slot="drawer" swipe-open opened>
-      <div class="drawer-content-wrapper">
-        {% block drawer %}{% endblock %}
-      </div>
-    </app-drawer>
     <app-header-layout>
-      <app-header slot="header" reveals fixed effects="waterfall">
+      <app-header slot="header">
         <div class="main-toolbar">
           <div class="toolbar-content">
             {% include "header.html" %}

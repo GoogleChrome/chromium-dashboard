@@ -206,11 +206,11 @@ class ChromedashFeature extends LitElement {
   render() {
     return html`
       <hgroup @click="${this._togglePanelExpansion}">
-        <chromedash-color-status class="tooltip corner"
+        <!-- chromedash-color-status class="tooltip corner"
           title="Interoperability risk: perceived interest from browser
               vendors and web developers"
           .value="${this._interopRisk}"
-          .max="${MAX_RISK}"></chromedash-color-status>
+          .max="${MAX_RISK}"></chromedash-color-status -->
         <h2>${this.feature.name}
           ${this.canEdit ? html`
             <span class="tooltip" title="Edit this feature">

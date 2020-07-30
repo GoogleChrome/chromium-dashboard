@@ -7,9 +7,8 @@ html, body {
 body {
   color: $default-font-color;
   font: 14px "Roboto", sans-serif;
-  font-weight: 400;
   -webkit-font-smoothing: antialiased;
-  background-color: $light-grey;
+  background-color: #fafafa;
 
   &.loading {
     #spinner {
@@ -79,7 +78,7 @@ app-drawer {
 
   h3 {
     margin-bottom: $content-padding;
-    text-transform: uppercase;
+    // text-transform: uppercase;
     font-weight: 500;
     font-size: 14px;
     color: inherit;
@@ -87,57 +86,58 @@ app-drawer {
 }
 
 app-header {
-  background-color: $light-grey;
   right: 0;
   top: 0;
   left: 0;
   z-index: 1;
 
   &[fixed] {
-    position: fixed;
+    //position: fixed;
   }
 }
 
 .main-toolbar {
   display: flex;
   position: relative;
-  padding: 0 $content-padding;
+  padding: 0;
 }
 
 header, footer {
   display: flex;
   align-items: center;
-  text-shadow: 0 1px 0 white;
+  // text-shadow: 0 1px 0 white;
 }
 
 header {
+  background-color: white;
   user-select: none;
-
+  border-bottom: 1px solid #ddd;
+  box-shadow: rgba(0, 0, 0, 0.067) 1px 1px 4px;
   a {
     text-decoration: none !important;
   }
 
   nav {
     display: flex;
+    flex: 1;
     align-items: center;
     margin-left: $content-padding;
     -webkit-font-smoothing: initial;
 
     a {
-      @include gradient-bar-bg;
+      //@include gradient-bar-bg;
       cursor: pointer;
       font-size: 16px;
       text-align: center;
-      border-radius: $default-border-radius;
-      border-bottom: 1px solid $bar-border-color;
-      border-right: 1px solid $bar-border-color;
+      padding: 8px 16px;
+      color: #444;
+   //   border-bottom: 1px solid $bar-border-color;
+      //  border-right: 1px solid $bar-border-color;
       white-space: nowrap;
 
-      &:active {
-        position: relative;
-        top: 1px;
-        left: 1px;
-        box-shadow: 3px 3px 4px $bar-shadow-color;
+      &:hover {
+	color: #000;
+	background-color: #f4f4f4;
       }
 
       &.disabled {
@@ -156,9 +156,13 @@ header {
         left: 0;
         list-style: none;
         z-index: 1;
+	background-color: white;
+	border: solid 1px #ddd;
+	box-shadow: rgba(0, 0, 0, 0.067) 1px 1px 4px;
       }
 
       a {
+        text-align: left;
         display: block;
       }
 
@@ -172,16 +176,16 @@ header {
   aside {
     $logoSize: 32px;
 
-    @include gradient-bar-bg;
-    border-bottom-left-radius: 5px;
-    border-bottom-right-radius: 5px;
-    border-bottom: 1px solid $bar-border-color;
-    border-right: 1px solid $bar-border-color;
+    // @include gradient-bar-bg;
+    //border-bottom-left-radius: 5px;
+    //border-bottom-right-radius: 5px;
+    //border-bottom: 1px solid $bar-border-color;
+    //border-right: 1px solid $bar-border-color;
 
     background: url(/static/img/chrome_logo.svg) no-repeat $content-padding 50%;
     background-size: $logoSize;
-    background-color: #fafafa;
-    padding: 0.75em 1em;
+  //  background-color: #fafafa;
+    padding: 0.75em 2em;
     padding-left: $logoSize + $content-padding  + $content-padding / 2;
 
     hgroup {
@@ -202,21 +206,25 @@ header {
 }
 
 footer {
-  @include gradient-bar-bg;
-  font-size: 12px;
+  //@include gradient-bar-bg;
+  //font-size: 12px;
   box-shadow: 0 -2px 5px $bar-shadow-color;
   display: flex;
   flex-direction: column;
   justify-content: center;
   text-align: center;
-  position: fixed;
+  padding: 8px;
   bottom: 0;
   left: 0;
   right: 0;
-  z-index: 3;
 
   div {
     margin-top: $content-padding / 4;
+
+    a + a {
+      margin-left: 1em;
+      padding-left: 1em;
+    }
   }
 }
 
@@ -227,7 +235,7 @@ footer {
 #subheader, .subheader {
   display: flex;
   align-items: center;
-  margin: $content-padding 0;
+  margin: $content-padding;
   max-width: $max-content-width;
   width: 100%;
 
@@ -290,7 +298,7 @@ footer {
 }
 
 #content {
-  margin: $content-padding 6px;
+  margin: $content-padding;
   position: relative;
   height: 100%;
 }
@@ -311,14 +319,14 @@ footer {
 @media only screen and (min-width: 701px) {
   .main-toolbar {
     .toolbar-content {
-      max-width: $max-content-width;
+      //max-width: $max-content-width;
       width: 100%;
     }
   }
   // Overrides styles set by app-header-layout so there's no visual
   // layout FOUC/jump as the drawer panel upgrades.
   app-header {
-    padding-left: $app-drawer-width;
+    //padding-left: $app-drawer-width;
     left: 0 !important;
   }
 }
@@ -377,7 +385,7 @@ footer {
       justify-content: center;
       flex-wrap: wrap;
       a {
-        padding: 5px 10px;
+        padding: 8px 16px;
         margin: 0;
         border-radius: 0;
         flex: 1 0 auto;
