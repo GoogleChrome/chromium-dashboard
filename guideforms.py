@@ -67,14 +67,14 @@ ALL_FIELDS = {
         )),
 
     'category': forms.ChoiceField(
-        required=True,
+        required=False,
         help_text=('Select the most specific category. If unsure, '
                    'leave as "%s".' % models.FEATURE_CATEGORIES[models.MISC]),
         initial=models.MISC,
         choices=sorted(models.FEATURE_CATEGORIES.items(), key=lambda x: x[1])),
 
     'feature_type': forms.ChoiceField(
-        required=True,
+        required=False,
         help_text=('Select the feature type.'),
         initial=models.FEATURE_TYPE_INCUBATE_ID,
         choices=sorted(models.FEATURE_TYPES.items())),
@@ -106,7 +106,8 @@ ALL_FIELDS = {
                    'claims.]')),
 
     'standardization': forms.ChoiceField(
-        label='Standardization', choices=models.STANDARDIZATION.items(),
+        required=False, label='Standardization',
+        choices=models.STANDARDIZATION.items(),
         initial=models.EDITORS_DRAFT,
         help_text=("The standardization status of the API. In bodies that don't "
                    "use this nomenclature, use the closest equivalent.")),
@@ -171,7 +172,7 @@ ALL_FIELDS = {
         )),
 
     'safari_views': forms.ChoiceField(
-        label='Safari views',
+        required=False, label='Safari views',
         choices=models.VENDOR_VIEWS_WEBKIT.items(),
         initial=models.NO_PUBLIC_SIGNALS),
 
@@ -187,7 +188,7 @@ ALL_FIELDS = {
                    'maxlength': 1480})),
 
     'ff_views': forms.ChoiceField(
-        label='Firefox views',
+        required=False, label='Firefox views',
         choices=models.VENDOR_VIEWS_GECKO.items(),
         initial=models.NO_PUBLIC_SIGNALS),
 
@@ -203,7 +204,7 @@ ALL_FIELDS = {
                    'maxlength': 1480})),
 
     'ie_views': forms.ChoiceField(
-        label='Edge',
+        required=False, label='Edge',
         choices=models.VENDOR_VIEWS_EDGE.items(),
         initial=models.NO_PUBLIC_SIGNALS),
 
@@ -219,7 +220,7 @@ ALL_FIELDS = {
                    'maxlength': 1480})),
 
     'web_dev_views': forms.ChoiceField(
-        label='Web / Framework developer views',
+        required=False, label='Web / Framework developer views',
         choices=models.WEB_DEV_VIEWS.items(),
         initial=models.DEV_NO_SIGNALS,
         help_text='If unsure, default to "No signals".'),
@@ -397,8 +398,7 @@ ALL_FIELDS = {
             'a WICG discourse post.')),
 
     'blink_components': forms.ChoiceField(
-      required=True,
-      label='Blink component',
+      required=False, label='Blink component',
       help_text=
       ('Select the most specific component. If unsure, leave as "%s".' %
        models.BlinkComponent.DEFAULT_COMPONENT),
@@ -412,7 +412,7 @@ ALL_FIELDS = {
         help_text='Comma separated list of full email addresses.'),
 
     'impl_status_chrome': forms.ChoiceField(
-        required=True, label='Status in Chromium',
+        required=False, label='Status in Chromium',
         choices=models.IMPLEMENTATION_STATUS.items()),
 
     'shipped_milestone': forms.IntegerField(
@@ -439,6 +439,7 @@ ALL_FIELDS = {
         required=False, initial=False, label='Prefixed?'),
 
     'footprint': forms.ChoiceField(
+        required=False,
         label='Technical footprint',
         choices=models.FOOTPRINT_CHOICES.items(),
         initial=models.MAJOR_MINOR_NEW_API),
@@ -494,7 +495,7 @@ class MetadataForm(forms.Form):
                  'Prefer @chromium.org.'))
   feature_type = ALL_FIELDS['feature_type']
   intent_stage = forms.ChoiceField(
-      required=True, label='Feature stage',
+      required=False, label='Feature stage',
       help_text='Select the appropriate process stage.',
       initial=models.INTENT_IMPLEMENT,
       choices=models.INTENT_STAGES.items())
