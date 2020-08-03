@@ -12,8 +12,8 @@
     "lint": "gulp lint-fix && lit-analyzer \"static/elements/chromedash-!(featurelist)*.js\"",
     "build": "gulp",
     "watch": "gulp watch",
-    "deploy": "npm run build && ./scripts/deploy_site.sh `date +%Y-%m-%d`",
-    "staging": "npm run build && ./scripts/deploy_site.sh `date +%Y-%m-%d` cr-status-staging",
+    "deploy": "npm run build && ./scripts/deploy_site.sh `git describe --always --abbrev=7 --match 'NOT A TAG' --dirty='-tainted'`",
+    "staging": "npm run build && ./scripts/deploy_site.sh `git describe --always --abbrev=7 --match 'NOT A TAG' --dirty='-tainted'` cr-status-staging",
     "start": "npm run build && ./scripts/start_server.sh"
   },
   "repository": {
