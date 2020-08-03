@@ -1109,7 +1109,9 @@ class FeatureForm(forms.Form):
   #name = PlaceholderCharField(required=True, placeholder='Feature name')
   name = forms.CharField(
       required=True, label='Feature',
-      widget=forms.TextInput(attrs={'autocomplete': 'off'}),
+      # Use a specific autocomplete value to avoid "name" autofill.
+      # https://bugs.chromium.org/p/chromium/issues/detail?id=468153#c164
+      widget=forms.TextInput(attrs={'autocomplete': 'feature-name'}),
       help_text='Capitalize only the first letter and the beginnings of proper nouns.')
 
   summary = forms.CharField(label='Summary', required=True,
