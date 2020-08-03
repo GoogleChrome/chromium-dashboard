@@ -1256,7 +1256,9 @@ class FeatureForm(forms.Form):
 
   experiment_timeline = forms.CharField(label='Experiment Timeline', required=False,
       widget=forms.Textarea(attrs={'rows': 2, 'cols': 50, 'maxlength': 1480}),
-      help_text='When does the experiment start and expire?')
+      help_text=(
+            'For developer trials and origin trials state which versions of '
+            'will support the trial.')),
 
   experiment_risks = forms.CharField(label='Experiment Risks', required=False,
       widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 1480}),
@@ -1279,7 +1281,7 @@ class FeatureForm(forms.Form):
 
   all_platforms_descr = forms.CharField(label='Platform Support Explanation', required=False,
       widget=forms.Textarea(attrs={'rows': 2, 'cols': 50, 'maxlength': 2000}),
-      help_text='Explanation for why this feature is, or is not, supported on all platforms.')
+      help_text='If this feature is not supported on all platforms, explain why.')
 
   wpt = forms.BooleanField(required=False, initial=False, label='Web Platform Tests', help_text='Is this feature fully tested in Web Platform Tests?')
 
@@ -1326,7 +1328,9 @@ class FeatureForm(forms.Form):
       required=False, label='Developer relations emails',
       widget=forms.EmailInput(
           attrs={'multiple': True, 'placeholder': 'email, email'}),
-      help_text='Comma separated list of full email addresses.')
+      help_text=(
+          'If you are working with members of Developer relations, add a '
+          'comma separated list of their email addresses.'))
 
   impl_status_chrome = forms.ChoiceField(
       required=False,
@@ -1354,7 +1358,7 @@ class FeatureForm(forms.Form):
       widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'}),
       help_text='Android WebView:<br/>' + SHIPPED_WEBVIEW_HELP_TXT)
 
-  prefixed = forms.BooleanField(required=False, initial=False, label='Prefixed?')
+  prefixed = forms.BooleanField(required=False, initial=False, label='WebKit prefixed?')
 
   footprint  = forms.ChoiceField(
       required=False, label='Technical footprint',

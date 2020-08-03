@@ -280,7 +280,9 @@ ALL_FIELDS = {
     'experiment_timeline': forms.CharField(
         label='Experiment Timeline', required=False,
         widget=forms.Textarea(attrs={'rows': 2, 'cols': 50, 'maxlength': 1480}),
-        help_text='When does the experiment start and expire?'),
+        help_text=(
+            'For developer trials and origin trials state which versions of '
+            'will support the trial.')),
 
     'experiment_risks': forms.CharField(
         label='Experiment Risks', required=False,
@@ -338,8 +340,7 @@ ALL_FIELDS = {
         label='Platform Support Explanation', required=False,
         widget=forms.Textarea(attrs={'rows': 2, 'cols': 50, 'maxlength': 2000}),
         help_text=
-        ('Explain why this feature is, or is not, '
-         'supported on all platforms.')),
+        ('If this feature is not supported on all platforms, explain why.')),
 
     'wpt': forms.BooleanField(
         required=False, initial=False, label='Web Platform Tests',
@@ -409,7 +410,9 @@ ALL_FIELDS = {
         required=False, label='Developer relations emails',
         widget=forms.EmailInput(
             attrs={'multiple': True, 'placeholder': 'email, email'}),
-        help_text='Comma separated list of full email addresses.'),
+        help_text=(
+            'If you are working with members of Developer relations, add a '
+            'comma separated list of their email addresses.')),
 
     'impl_status_chrome': forms.ChoiceField(
         required=False, label='Status in Chromium',
@@ -436,7 +439,7 @@ ALL_FIELDS = {
         help_text='Android WebView:<br/>' + SHIPPED_WEBVIEW_HELP_TXT),
 
     'prefixed': forms.BooleanField(
-        required=False, initial=False, label='Prefixed?'),
+        required=False, initial=False, label='WebKit prefixed?'),
 
     'footprint': forms.ChoiceField(
         required=False,
