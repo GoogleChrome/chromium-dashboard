@@ -282,7 +282,7 @@ ALL_FIELDS = {
         widget=forms.Textarea(attrs={'rows': 2, 'cols': 50, 'maxlength': 1480}),
         help_text=(
             'For developer trials and origin trials state which versions of '
-            'will support the trial.')),
+            'Chrome will support the trial.')),
 
     'experiment_risks': forms.CharField(
         label='Experiment Risks', required=False,
