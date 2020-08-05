@@ -392,6 +392,9 @@ class FeatureHandler(common.ContentHandler):
     initial_public_proposal_url = self.__FullQualifyLink(
         'initial_public_proposal_url')
     intent_to_implement_url = self.__FullQualifyLink('intent_to_implement_url')
+    intent_to_ship_url = self.__FullQualifyLink('intent_to_ship_url')
+    ready_for_trial_url = self.__FullQualifyLink('ready_for_trial_url')
+    intent_to_experiment_url = self.__FullQualifyLink('intent_to_experiment_url')
     origin_trial_feedback_url = self.__FullQualifyLink('origin_trial_feedback_url')
 
     ff_views_link = self.__FullQualifyLink('ff_views_link')
@@ -460,6 +463,9 @@ class FeatureHandler(common.ContentHandler):
       feature.summary = self.request.get('summary')
       feature.unlisted = self.request.get('unlisted') == 'on'
       feature.intent_to_implement_url = intent_to_implement_url
+      feature.intent_to_ship_url = intent_to_ship_url
+      feature.ready_for_trial_url = ready_for_trial_url
+      feature.intent_to_experiment_url = intent_to_experiment_url
       feature.origin_trial_feedback_url = origin_trial_feedback_url
       feature.motivation = self.request.get('motivation')
       feature.explainer_links = explainer_links
@@ -525,6 +531,9 @@ class FeatureHandler(common.ContentHandler):
           intent_stage=intent_stage,
           summary=self.request.get('summary'),
           intent_to_implement_url=intent_to_implement_url,
+          intent_to_ship_url=intent_to_ship_url,
+          ready_for_trial_url=ready_for_trial_url,
+          intent_to_experiment_url=intent_to_experiment_url,
           origin_trial_feedback_url=origin_trial_feedback_url,
           motivation=self.request.get('motivation'),
           explainer_links=explainer_links,

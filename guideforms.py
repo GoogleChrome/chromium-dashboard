@@ -147,7 +147,26 @@ ALL_FIELDS = {
     'intent_to_implement_url': forms.URLField(
         required=False, label='Intent to Prototype link',
         widget=forms.URLInput(attrs={'placeholder': 'https://'}),
-        help_text='Link to the "Intent to Prototype" discussion thread.'),
+        help_text=('After you have started the "Intent to Prototype" discussion '
+                   'thread, link to it here.')),
+
+    'intent_to_ship_url': forms.URLField(
+        required=False, label='Intent to Ship link',
+        widget=forms.URLInput(attrs={'placeholder': 'https://'}),
+        help_text=('After you have started the "Intent to Ship" discussion '
+                   'thread, link to it here.')),
+
+    'ready_for_trial_url': forms.URLField(
+        required=False, label='Ready for Trial link',
+        widget=forms.URLInput(attrs={'placeholder': 'https://'}),
+        help_text=('After you have started the "Ready for Trial" discussion '
+                   'thread, link to it here.')),
+
+    'intent_to_experiment_url': forms.URLField(
+        required=False, label='Intent to Experiment link',
+        widget=forms.URLInput(attrs={'placeholder': 'https://'}),
+        help_text=('After you have started the "Intent to Experiment" discussion '
+                   'thread, link to it here.')),
 
     'interop_compat_risks': forms.CharField(
         label='Interoperability and Compatibility Risks', required=True,
@@ -534,17 +553,18 @@ class NewFeature_Incubate(forms.Form):
 class NewFeature_Prototype(forms.Form):
 
   field_order = (
-      'spec_link', 'comments')
+      'initial_public_proposal_url', 'spec_link',
+      'intent_to_implement_url', 'comments')
   initial_public_proposal_url = ALL_FIELDS['initial_public_proposal_url']
   # TODO(jrobbins): advise user to request a tag review
   spec_link = ALL_FIELDS['spec_link']
-  # TODO(jrobbins): action to generate Intent to Prototype email
+  intent_to_implement_url = ALL_FIELDS['intent_to_implement_url']
   comments = ALL_FIELDS['comments']
 
 
 class Any_DevTrial(forms.Form):
   field_order = (
-      'bug_url', 'doc_links', 'spec_link', 'intent_to_implement_url',
+      'bug_url', 'doc_links', 'spec_link',
       'interop_compat_risks',
       'safari_views', 'safari_views_link', 'safari_views_notes',
       'ff_views', 'ff_views_link', 'ff_views_notes',
@@ -552,14 +572,13 @@ class Any_DevTrial(forms.Form):
       'web_dev_views', 'web_dev_views_link', 'web_dev_views_notes',
       'ergonomics_risks', 'activation_risks', 'security_risks', 'debuggability',
       'all_platforms', 'all_platforms_descr', 'wpt', 'wpt_descr',
-      'sample_links', 'devrel', 'comments')
+      'sample_links', 'devrel', 'ready_for_trial_url', 'comments')
 
   bug_url = ALL_FIELDS['bug_url']
   doc_links = ALL_FIELDS['doc_links']
   # TODO(jrobbins): api overview link
   spec_link = ALL_FIELDS['spec_link']
 
-  intent_to_implement_url = ALL_FIELDS['intent_to_implement_url']
   interop_compat_risks = ALL_FIELDS['interop_compat_risks']
 
   safari_views = ALL_FIELDS['safari_views']
@@ -590,6 +609,7 @@ class Any_DevTrial(forms.Form):
   sample_links = ALL_FIELDS['sample_links']
   devrel = ALL_FIELDS['devrel']
   # TODO(jrobbins): generate ready for trial email
+  ready_for_trial_url = ALL_FIELDS['ready_for_trial_url']
   comments = ALL_FIELDS['comments']
 
 
@@ -639,7 +659,7 @@ class NewFeature_OriginTrial(forms.Form):
   field_order = (
       'experiment_goals', 'experiment_timeline', 'experiment_risks',
       'experiment_extension_reason', 'ongoing_constraints',
-      'origin_trial_feedback_url', 'comments')
+      'origin_trial_feedback_url', 'intent_to_experiment_url', 'comments')
   experiment_goals = ALL_FIELDS['experiment_goals']
   experiment_timeline = ALL_FIELDS['experiment_timeline']
   experiment_risks = ALL_FIELDS['experiment_risks']
@@ -647,6 +667,7 @@ class NewFeature_OriginTrial(forms.Form):
   ongoing_constraints = ALL_FIELDS['ongoing_constraints']
   origin_trial_feedback_url = ALL_FIELDS['origin_trial_feedback_url'] # optional
   # TODO(jrobbins): action to generate intent to experiement email
+  intent_to_experiment_url = ALL_FIELDS['intent_to_experiment_url']
   comments = ALL_FIELDS['comments']
 
 
@@ -657,7 +678,7 @@ class Any_PrepareToShip(forms.Form):
       'shipped_ios_milestone', 'shipped_webview_milestone',
       'footprint', 'tag_review',
       'intent_to_implement_url', 'origin_trial_feedback_url',
-      'launch_bug_url', 'comments')
+      'launch_bug_url', 'intent_to_ship_url', 'comments')
   impl_status_chrome = ALL_FIELDS['impl_status_chrome']
   shipped_milestone = ALL_FIELDS['shipped_milestone']
   shipped_android_milestone = ALL_FIELDS['shipped_android_milestone']
@@ -668,6 +689,7 @@ class Any_PrepareToShip(forms.Form):
   intent_to_implement_url = ALL_FIELDS['intent_to_implement_url']
   origin_trial_feedback_url = ALL_FIELDS['origin_trial_feedback_url'] # optional
   launch_bug_url = ALL_FIELDS['launch_bug_url']
+  intent_to_ship_url = ALL_FIELDS['intent_to_ship_url']
   comments = ALL_FIELDS['comments']
 
 
@@ -723,12 +745,14 @@ class Existing_OriginTrial(forms.Form):
   field_order = (
       'experiment_goals', 'experiment_timeline', 'experiment_risks',
       'experiment_extension_reason', 'ongoing_constraints',
+      'intent_to_experiment_url',
       'origin_trial_feedback_url', 'comments')
   experiment_goals = ALL_FIELDS['experiment_goals']
   experiment_timeline = ALL_FIELDS['experiment_timeline']
   experiment_risks = ALL_FIELDS['experiment_risks']
   experiment_extension_reason = ALL_FIELDS['experiment_extension_reason']
   ongoing_constraints = ALL_FIELDS['ongoing_constraints']
+  intent_to_experiment_url = ALL_FIELDS['intent_to_experiment_url']
   origin_trial_feedback_url = ALL_FIELDS['origin_trial_feedback_url'] # optional
   # TODO(jrobbins): action to generate intent to experiement email
   comments = ALL_FIELDS['comments']

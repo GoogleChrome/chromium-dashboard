@@ -977,13 +977,15 @@ class Feature(DictModel):
   feature_type = db.IntegerProperty(default=FEATURE_TYPE_INCUBATE_ID)
   intent_stage = db.IntegerProperty(default=0)
   summary = db.StringProperty(required=True, multiline=True)
-  intent_to_implement_url = db.LinkProperty()
   origin_trial_feedback_url = db.LinkProperty()
   unlisted = db.BooleanProperty(default=False)
-
-  # A list of intent threads in the format "date|subject|url"
-  intent_threads = db.StringListProperty()
   motivation = db.StringProperty(multiline=True)
+
+  # Tracability to intent discussion threads
+  intent_to_implement_url = db.LinkProperty()
+  intent_to_ship_url = db.LinkProperty()
+  ready_for_trial_url = db.LinkProperty()
+  intent_to_experiment_url = db.LinkProperty()
 
   # Chromium details.
   bug_url = db.LinkProperty()
@@ -1154,7 +1156,27 @@ class FeatureForm(forms.Form):
   intent_to_implement_url = forms.URLField(
       required=False, label='Intent to Prototype link',
       widget=forms.URLInput(attrs={'placeholder': 'https://'}),
-      help_text='Link to the "Intent to Prototype" discussion thread.')
+      help_text=('After you have started the "Intent to Prototype" discussion '
+                 'thread, link to it here.'))
+
+  intent_to_ship_url = forms.URLField(
+      required=False, label='Intent to Ship link',
+      widget=forms.URLInput(attrs={'placeholder': 'https://'}),
+      help_text=('After you have started the "Intent to Ship" discussion '
+                 'thread, link to it here.'))
+
+  ready_for_trial_url = forms.URLField(
+      required=False, label='Ready for Trial link',
+      widget=forms.URLInput(attrs={'placeholder': 'https://'}),
+      help_text=('After you have started the "Ready for Trial" discussion '
+                 'thread, link to it here.'))
+
+  intent_to_experiment_url = forms.URLField(
+      required=False, label='Intent to Experiment link',
+      widget=forms.URLInput(attrs={'placeholder': 'https://'}),
+      help_text=('After you have started the "Intent to Experiment" discussion '
+                   'thread, link to it here.'))
+
 
   origin_trial_feedback_url = forms.URLField(
       required=False, label='Origin Trial feedback summary',

@@ -118,6 +118,7 @@ BLINK_PROCESS_STAGES = [
       ['OT request',
        'OT available',
        'OT results',
+       'Intent to Experiment email',
       ],
       [('Draft Intent to Experiment email', INTENT_EMAIL_URL)],
       models.INTENT_IMPLEMENT_SHIP, models.INTENT_EXTEND_TRIAL),
@@ -194,6 +195,7 @@ BLINK_FAST_TRACK_STAGES = [
       ['OT request',
        'OT available',
        'OT results',
+       'Intent to Experiment email',
       ],
       [('Draft Intent to Experiment email', INTENT_EMAIL_URL)],
       models.INTENT_EXPERIMENT, models.INTENT_EXTEND_TRIAL),
@@ -382,6 +384,18 @@ PROGRESS_DETECTORS = {
 
     'Explainer':
     lambda f: f.explainer_links and f.explainer_links[0],
+
+    'Intent to Prototype email':
+    lambda f: f.intent_to_implement_url,
+
+    'Intent to Ship email':
+    lambda f: f.intent_to_ship_url,
+
+    'Ready for Trial email':
+    lambda f: f.ready_for_trial_url,
+
+    'Intent to Experiment email':
+    lambda f: f.intent_to_experiment_url,
 
     'Samples':
     lambda f: f.sample_links and f.sample_links[0],

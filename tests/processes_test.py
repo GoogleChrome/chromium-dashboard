@@ -17,6 +17,7 @@ import testing_config  # Must be imported before the module under test.
 
 import mock
 
+import models
 import processes
 
 
@@ -61,3 +62,100 @@ class HelperFunctionsTest(unittest.TestCase):
     }
     actual = processes.process_to_dict(process)
     self.assertEqual(expected, actual)
+
+
+class ProgressDetectorsTest(unittest.TestCase):
+
+  def setUp(self):
+    self.feature_1 = models.Feature(
+        name='feature one', summary='sum', category=1, visibility=1,
+        standardization=1, web_dev_views=1, impl_status_chrome=1,
+        intent_stage=models.INTENT_IMPLEMENT)
+    self.feature_1.put()
+
+  def tearDown(self):
+    self.feature_1.delete()
+
+  def test_initial_public_proposal_url(self):
+    detector = processes.PROGRESS_DETECTORS['Initial public proposal']
+    self.assertFalse(detector(self.feature_1))
+    self.feature_1.initial_public_proposal_url = 'http://example.com'
+    self.assertTrue(detector(self.feature_1))
+
+  def test_explainer(self):
+    detector = processes.PROGRESS_DETECTORS['Explainer']
+    self.assertFalse(detector(self.feature_1))
+    self.feature_1.explainer_links = ['http://example.com']
+    self.assertTrue(detector(self.feature_1))
+
+  def test_intent_to_prototype_email(self):
+    detector = processes.PROGRESS_DETECTORS['Intent to Prototype email']
+    self.assertFalse(detector(self.feature_1))
+    self.feature_1.intent_to_implement_url = 'http://example.com'
+    self.assertTrue(detector(self.feature_1))
+
+  def test_intent_to_ship_email(self):
+    detector = processes.PROGRESS_DETECTORS['Intent to Ship email']
+    self.assertFalse(detector(self.feature_1))
+    self.feature_1.intent_to_ship_url = 'http://example.com'
+    self.assertTrue(detector(self.feature_1))
+
+  def test_ready_for_trial_email(self):
+    detector = processes.PROGRESS_DETECTORS['Ready for Trial email']
+    self.assertFalse(detector(self.feature_1))
+    self.feature_1.ready_for_trial_url = 'http://example.com'
+    self.assertTrue(detector(self.feature_1))
+
+  def test_intent_to_experiment_email(self):
+    detector = processes.PROGRESS_DETECTORS['Intent to Experiment email']
+    self.assertFalse(detector(self.feature_1))
+    self.feature_1.intent_to_experiment_url = 'http://example.com'
+    self.assertTrue(detector(self.feature_1))
+
+  def test_samples(self):
+    detector = processes.PROGRESS_DETECTORS['Samples']
+    self.assertFalse(detector(self.feature_1))
+    self.feature_1.sample_links = ['http://example.com']
+    self.assertTrue(detector(self.feature_1))
+
+  def test_doc_links(self):
+    detector = processes.PROGRESS_DETECTORS['Doc links']
+    self.assertFalse(detector(self.feature_1))
+    self.feature_1.doc_links = ['http://example.com']
+    self.assertTrue(detector(self.feature_1))
+
+  def test_tag_review_request(self):
+    detector = processes.PROGRESS_DETECTORS['TAG review request']
+    self.assertFalse(detector(self.feature_1))
+    self.feature_1.tag_review = 'http://example.com'
+    self.assertTrue(detector(self.feature_1))
+
+  def test_vendor_signals(self):
+    detector = processes.PROGRESS_DETECTORS['Vendor signals']
+    self.assertFalse(detector(self.feature_1))
+    self.feature_1.ff_views = models.PUBLIC_SUPPORT
+    self.assertTrue(detector(self.feature_1))
+
+  def test_estimated_target_milestone(self):
+    detector = processes.PROGRESS_DETECTORS['Estimated target milestone']
+    self.assertFalse(detector(self.feature_1))
+    self.feature_1.shipped_milestone = 99
+    self.assertTrue(detector(self.feature_1))
+
+  def test_code_in_chromium(self):
+    detector = processes.PROGRESS_DETECTORS['Code in Chromium']
+    self.assertFalse(detector(self.feature_1))
+    self.feature_1.impl_status_chrome = models.ENABLED_BY_DEFAULT
+    self.assertTrue(detector(self.feature_1))
+
+  def test_motivation(self):
+    detector = processes.PROGRESS_DETECTORS['Motivation']
+    self.assertFalse(detector(self.feature_1))
+    self.feature_1.motivation = 'test motivation'
+    self.assertTrue(detector(self.feature_1))
+
+  def test_code_removed(self):
+    detector = processes.PROGRESS_DETECTORS['Code removed']
+    self.assertFalse(detector(self.feature_1))
+    self.feature_1.impl_status_chrome = models.REMOVED
+    self.assertTrue(detector(self.feature_1))

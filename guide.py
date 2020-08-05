@@ -278,6 +278,18 @@ class FeatureEditStage(common.ContentHandler):
       feature.intent_to_implement_url = self.parse_link(
           'intent_to_implement_url')
 
+    if self.touched('intent_to_ship_url'):
+      feature.intent_to_ship_url = self.parse_link(
+          'intent_to_ship_url')
+
+    if self.touched('ready_for_trial_url'):
+      feature.ready_for_trial_url = self.parse_link(
+          'ready_for_trial_url')
+
+    if self.touched('intent_to_experiment_url'):
+      feature.intent_to_experiment_url = self.parse_link(
+          'intent_to_experiment_url')
+
     if self.touched('origin_trial_feedback_url'):
       feature.origin_trial_feedback_url = self.parse_link(
           'origin_trial_feedback_url')
