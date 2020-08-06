@@ -131,6 +131,18 @@ class FeatureTest(unittest.TestCase):
 
 class UserPrefTest(unittest.TestCase):
 
+  def setUp(self):
+    self.user_pref_1 = models.UserPref(email='one@example.com')
+    self.user_pref_1.notify_as_starrer = False
+    self.user_pref_1.put()
+
+    self.user_pref_2 = models.UserPref(email='two@example.com')
+    self.user_pref_2.put()
+
+  def tearDown(self):
+    self.user_pref_1.delete()
+    self.user_pref_2.delete()
+
   @mock.patch('google.appengine.api.users.get_current_user')
   def test_get_signed_in_user_pref__anon(self, mock_get_current_user):
     mock_get_current_user.return_value = None
@@ -161,3 +173,23 @@ class UserPrefTest(unittest.TestCase):
     self.assertEqual('user2@example.com', actual.email)
     self.assertEqual(False, actual.notify_as_starrer)
     self.assertEqual(True, actual.bounced)
+
+  def test_get_prefs_for_emails__some_found(self):
+    emails = ['one@example.com', 'two@example.com', 'huh@example.com']
+    user_prefs = models.UserPref.get_prefs_for_emails(emails)
+    self.assertEqual(3, len(user_prefs))
+    one, two, huh = user_prefs
+    self.assertEqual('one@example.com', one.email)
+    self.assertFalse(one.notify_as_starrer)
+    self.assertEqual('two@example.com', two.email)
+    self.assertTrue(two.notify_as_starrer)
+    # This one is automatically created:
+    self.assertEqual('huh@example.com', huh.email)
+    self.assertTrue(huh.notify_as_starrer)
+
+  def test_get_prefs_for_emails__long_list(self):
+    emails = ['user_%d@example.com' % i
+              for i in range(100)]
+    user_prefs = models.UserPref.get_prefs_for_emails(emails)
+    self.assertEqual(100, len(user_prefs))
+    self.assertEqual('user_0@example.com', user_prefs[0].email)
