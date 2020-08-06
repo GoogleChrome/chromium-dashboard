@@ -1441,19 +1441,25 @@ class UserPref(DictModel):
   @classmethod
   def get_prefs_for_emails(cls, emails):
     """Return a list of UserPrefs for each of the given emails."""
-    q = UserPref.all()
-    q.filter('email IN', emails)
-    user_prefs = q.fetch(None)
-    found_set = set(up.email for up in user_prefs)
+    result = []
+    CHUNK_SIZE = 25  # Query 25 at a time because IN operator is limited to 30.
+    chunks = [emails[i : i + CHUNK_SIZE]
+              for i in range(0, len(emails), CHUNK_SIZE)]
+    for chunk_emails in chunks:
+      q = UserPref.all()
+      q.filter('email IN', chunk_emails)
+      chunk_prefs = q.fetch(None)
+      result.extend(chunk_prefs)
+      found_set = set(up.email for up in chunk_prefs)
 
-    # Make default prefs for any user that does not already have an entity.
-    new_prefs = [UserPref(email=e) for e in emails
-                 if e not in found_set]
-    for np in new_prefs:
-      np.put()
-      user_prefs.append(np)
+      # Make default prefs for any user that does not already have an entity.
+      new_prefs = [UserPref(email=e) for e in chunk_emails
+                   if e not in found_set]
+      for np in new_prefs:
+        np.put()
+        result.append(np)
 
-    return user_prefs
+    return result
 
 
 class UserPrefForm(forms.Form):
