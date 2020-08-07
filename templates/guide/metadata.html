@@ -28,16 +28,6 @@
         </td>
       </tr>
 
-      {% if feature.unlisted %}
-      <tr>
-        <th></th>
-        <td>
-           This feature is only shown in the feature list
-           to users who with edit access.
-        </td>
-      </tr>
-      {% endif %}
-      
       <tr>
         <th>Blink components</th>
         <td>{{ feature.blink_components | join:', ' }}</td>
@@ -98,6 +88,14 @@
     </table>
 
     </td></tr></table>
+
+    {% if feature.unlisted %}
+      <div style="padding: 8px">
+        This feature is only shown in the feature list
+        to users who with edit access.
+      </div>
+    {% endif %}
+
   </div>
 
   <div id="metadata-editing" style="display:none">
