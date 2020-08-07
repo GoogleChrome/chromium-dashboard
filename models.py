@@ -1110,7 +1110,7 @@ class FeatureForm(forms.Form):
 
   #name = PlaceholderCharField(required=True, placeholder='Feature name')
   name = forms.CharField(
-      required=True, label='Feature',
+      required=True, label='Feature name',
       # Use a specific autocomplete value to avoid "name" autofill.
       # https://bugs.chromium.org/p/chromium/issues/detail?id=468153#c164
       widget=forms.TextInput(attrs={'autocomplete': 'feature-name'}),
@@ -1388,7 +1388,8 @@ class FeatureForm(forms.Form):
       help_text='Comma separated keywords used only in search')
 
   comments = forms.CharField(label='Comments', required=False,
-      widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 1480}),
+      widget=forms.Textarea(attrs={
+          'cols': 50, 'rows': 4, 'maxlength': 1480}),
       help_text='Additional comments, caveats, info...')
 
   class Meta:
