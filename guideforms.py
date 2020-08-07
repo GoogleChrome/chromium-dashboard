@@ -482,7 +482,8 @@ class NewFeatureForm(forms.Form):
 
   field_order = (
       'name', 'summary', 'owner',
-      'unlisted', 'blink_components', 'category',
+      'blink_components', 'category',
+      'unlisted',
       'feature_type')
   name = ALL_FIELDS['name']
   summary = ALL_FIELDS['summary']
@@ -503,7 +504,8 @@ class MetadataForm(forms.Form):
 
   field_order = (
       'name', 'summary', 'owner',
-      'unlisted', 'blink_components', 'category',
+      'blink_components', 'category',
+      'unlisted',
       'feature_type', 'intent_stage',
       'bug_url', 'launch_bug_url',
       'impl_status_chrome', 'search_tags')
