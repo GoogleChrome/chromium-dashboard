@@ -11,37 +11,93 @@
                     >Delete</a></div>
           {% endif %}
         </div>
-      <div style="width:60em">{{ feature.summary }}</div>
+        <div style="width:60em">{{ feature.summary }}</div>
     </div>
-    <div>Category: {{ feature.category }}</div>
-    {% if feature.unlisted %}
-    <div>This feature is only shown in the feature list
-         to users who with edit access.</div>
-    {% endif %}
-    <div>Owners: 
-      {% for owner in feature.owner %}
-        <a href="mailto:{{ owner }}">{{ owner }}</a>
-      {% endfor %}
-    </div>
-    <div>Feature type: {{ feature.feature_type }}</div>
-    <div>Feature stage: {{ feature.intent_stage }}</div>
-    <div>Blink components: {{ feature.blink_components | join:', ' }}</div>
-    <div>Tracking bug:
-      {% if feature.bug_url %}
-        <a href="{{ feature.bug_url }}">{{ feature.bug_url }}</a>
-      {% else %}
-        None
+
+    <table>
+      <tr>
+        <td>
+
+    <table class="property-sheet">
+      <tr>
+        <th>Owners</th>
+        <td>
+          {% for owner in feature.owner %}
+            <a href="mailto:{{ owner }}">{{ owner }}</a>
+          {% endfor %}
+        </td>
+      </tr>
+
+      {% if feature.unlisted %}
+      <tr>
+        <th></th>
+        <td>
+           This feature is only shown in the feature list
+           to users who with edit access.
+        </td>
+      </tr>
       {% endif %}
-    </div>
-    <div>Launch bug:
-      {% if feature.launch_bug_url %}
-        <a href="{{ feature.launch_bug_url }}">{{ feature.launch_bug_url }}</a>
-      {% else %}
-        None
-      {% endif %}
-    </div>
-    <div>Status in Chromium: {{ feature.impl_status_chrome }}</div>
-    <div>Search tags: {{ feature.search_tags | join:', ' }}</div>
+      
+      <tr>
+        <th>Blink components</th>
+        <td>{{ feature.blink_components | join:', ' }}</td>
+      </tr>
+
+      <tr>
+        <th>Category</th>
+        <td>{{ feature.category }}</td>
+      </tr>
+
+      <tr>
+        <th>Feature type</th>
+        <td>{{ feature.feature_type }}</td>
+      </tr>
+
+      <tr>
+        <th>Feature stage</th>
+        <td>{{ feature.intent_stage }}</td>
+      </tr>
+    </table>
+
+        </td>
+        <td>
+
+    <table class="property-sheet">
+      <tr>
+        <th>Tracking bug</th>
+        <td>
+          {% if feature.bug_url %}
+            <a href="{{ feature.bug_url }}">{{ feature.bug_url }}</a>
+          {% else %}
+            None
+          {% endif %}
+         </td>
+      </tr>
+
+      <tr>
+        <th>Launch bug</th>
+        <td>
+          {% if feature.launch_bug_url %}
+            <a href="{{ feature.launch_bug_url }}">{{ feature.launch_bug_url }}</a>
+          {% else %}
+            None
+          {% endif %}
+        </td>
+      </tr>
+
+      <tr>
+        <th>Status in Chromium</th>
+        <td>{{ feature.impl_status_chrome }}</td>
+      </tr>
+
+      <tr>
+        <th>Search tags</th>
+        <td>{{ feature.search_tags | join:', ' }}</td>
+      </tr>
+
+    </table>
+
+    </td></tr></table>
   </div>
 
   <div id="metadata-editing" style="display:none">
