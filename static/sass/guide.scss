@@ -1,0 +1,35 @@
+/* TODO(jrobbins): Convert metadata.html to a web component and put these
+   style rules inside that component. */
+
+#metadata-buttons {
+  margin-left: 20px;
+}
+
+#metadata-buttons div {
+  margin-top: 20px;
+}
+
+.flex-cols {
+  display: flex;
+  flex-flow: row wrap;
+  align-items: flex-start;
+  align-content: space-between;
+}
+
+table.property-sheet {
+  margin-right: 16px;
+  margin-bottom: 16px;
+}
+
+table.property-sheet tr:nth-of-type(odd) {
+  background: #f8f8f8;
+}
+
+
+table.property-sheet th, #metadata-readonly td {
+  padding: 6px 30px 6px 6px;
+}
+
+table.property-sheet th {
+  white-space: nowrap;
+}
