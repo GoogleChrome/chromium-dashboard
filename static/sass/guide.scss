@@ -9,6 +9,18 @@
   margin-top: 20px;
 }
 
+.flex-cols {
+  display: flex;
+  flex-flow: row wrap;
+  align-items: flex-start;
+  align-content: space-between;
+}
+
+table.property-sheet {
+  margin-right: 16px;
+  margin-bottom: 16px;
+}
+
 table.property-sheet tr:nth-of-type(odd) {
   background: #f8f8f8;
 }
