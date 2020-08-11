@@ -259,8 +259,21 @@ class FeatureEditStage(common.ContentHandler):
 
     logging.info('POST is %r', self.request.POST)
 
+    if self.touched('spec_repo_url'):
+      feature.spec_repo_url = self.parse_link('spec_repo_url')
+
     if self.touched('spec_link'):
       feature.spec_link = self.parse_link('spec_link')
+
+    if self.touched('security_review_url'):
+      feature.security_review_url = self.parse_link('security_review_url')
+    if self.touched('security_review_status'):
+      feature.security_review_status = self.parse_int('security_review_status')
+
+    if self.touched('privacy_review_url'):
+      feature.privacy_review_url = self.parse_link('privacy_review_url')
+    if self.touched('privacy_review_status'):
+      feature.privacy_review_status = self.parse_int('privacy_review_status')
 
     if self.touched('initial_public_proposal_url'):
       feature.initial_public_proposal_url = self.parse_link(
@@ -403,8 +416,12 @@ class FeatureEditStage(common.ContentHandler):
       feature.web_dev_views_notes = self.request.get('web_dev_views_notes')
     if self.touched('prefixed'):
       feature.prefixed = self.request.get('prefixed') == 'on'
+
     if self.touched('tag_review'):
       feature.tag_review = self.request.get('tag_review')
+    if self.touched('tag_review_status'):
+      feature.tag_review_status = self.parse_int('tag_review_status')
+
     if self.touched('standardization'):
       feature.standardization = int(self.request.get('standardization'))
     if self.touched('unlisted'):

@@ -165,6 +165,19 @@ SUBSTANTIVE_CHANGES = 3
 MINOR_EXISTING_CHANGES = 4
 EXTREMELY_SMALL_CHANGE = 5
 
+# Status for security and privacy reviews.
+REVIEW_PENDING = 1
+REVIEW_IN_PROGRESS = 2
+REVIEW_COMPLETED = 3
+REVIEW_NA = 4
+
+REVIEW_STATUS_CHOICES = {
+    REVIEW_PENDING: 'Pending',
+    REVIEW_IN_PROGRESS: 'In progress',
+    REVIEW_COMPLETED: 'Completed',
+    REVIEW_NA: 'Not applicable',
+    }
+
 FOOTPRINT_CHOICES = {
   MAJOR_NEW_API: ('A major new independent API (e.g. adding many '
                   'independent concepts with many methods/properties/objects)'),
@@ -271,6 +284,8 @@ PROPERTY_NAMES_TO_ENUM_DICTS = {
     'category': FEATURE_CATEGORIES,
     'intent_stage': INTENT_STAGES,
     'impl_status_chrome': IMPLEMENTATION_STATUS,
+    'security_review_status': REVIEW_STATUS_CHOICES,
+    'privacy_review_status': REVIEW_STATUS_CHOICES,
     'footprint': FOOTPRINT_CHOICES,
     'standardization': STANDARDIZATION,
     'ff_views': VENDOR_VIEWS,
@@ -1018,8 +1033,16 @@ class Feature(DictModel):
 
   # Standards details.
   standardization = db.IntegerProperty(required=True)
+  spec_repo_url = db.LinkProperty()
   spec_link = db.LinkProperty()
+  security_review_url = db.LinkProperty()
+  privacy_review_url = db.LinkProperty()
+  security_review_status = db.IntegerProperty(default=REVIEW_PENDING)
+  privacy_review_status = db.IntegerProperty(default=REVIEW_PENDING)
+
   tag_review = db.StringProperty(multiline=True)
+  tag_review_status = db.IntegerProperty(default=REVIEW_PENDING)
+
   prefixed = db.BooleanProperty()
 
   explainer_links = db.StringListProperty()
@@ -1202,14 +1225,48 @@ class FeatureForm(forms.Form):
       help_text=("The standardization status of the API. In bodies that don't "
                  "use this nomenclature, use the closest equivalent."))
 
+  spec_repo_url = forms.URLField(
+      required=False, label='Spec repo',
+      widget=forms.URLInput(attrs={'placeholder': 'https://'}),
+      help_text=('Link to spec repository.  This is where the spec will be '
+                 'kept under version control even if it does not exist yet.'))
+
   spec_link = forms.URLField(
       required=False, label='Spec link',
       widget=forms.URLInput(attrs={'placeholder': 'https://'}),
       help_text="Link to spec, if and when available. Please update the chromestatus.com entry and the intent thread(s) with the spec link when available.")
 
+  security_review_url = forms.URLField(
+      required=False, label='Security review',
+      widget=forms.URLInput(attrs={'placeholder': 'https://'}),
+      help_text='Link to security review issue or discussion.')
+
+  security_review_status = forms.ChoiceField(
+      required=False,
+      choices=REVIEW_STATUS_CHOICES.items(),
+      initial=REVIEW_PENDING,
+      help_text=('Status of the security review.'))
+
+  privacy_review_url = forms.URLField(
+      required=False, label='Privacy review',
+      widget=forms.URLInput(attrs={'placeholder': 'https://'}),
+      help_text='Link to privacy review issue or discussion.')
+
+  privacy_review_status = forms.ChoiceField(
+      required=False,
+      choices=REVIEW_STATUS_CHOICES.items(),
+      initial=REVIEW_PENDING,
+      help_text=('Status of the privacy review.'))
+
   tag_review = forms.CharField(label='TAG Review', required=True,
       widget=forms.Textarea(attrs={'rows': 2, 'cols': 50, 'maxlength': 1480}),
       help_text='Link(s) to TAG review(s), or explanation why this is not needed.')
+
+  tag_review_status = forms.ChoiceField(
+      required=False,
+      choices=REVIEW_STATUS_CHOICES.items(),
+      initial=REVIEW_PENDING,
+      help_text=('Status of the tag review.'))
 
   interop_compat_risks = forms.CharField(label='Interoperability and Compatibility Risks', required=True,
       widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 1480}),
