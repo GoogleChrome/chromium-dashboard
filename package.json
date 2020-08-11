@@ -51,6 +51,7 @@
     "kind-of": ">=6.0.3",
     "lighthouse-ci": "https://github.com/ebidel/lighthouse-ci",
     "lit-analyzer": "^1.1.9",
+    "lodash": ">=4.17.19",
     "lodash.template": ">=4.5.0",
     "minimist": ">=0.2.1",
     "regenerator-runtime": "^0.13.3",
