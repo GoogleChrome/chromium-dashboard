@@ -41,7 +41,7 @@ SHIPPED_WEBVIEW_HELP_TXT = (
 # stage-specific fields without repeating the details and help text.
 ALL_FIELDS = {
     'name': forms.CharField(
-        required=True, label='Feature',
+        required=True, label='Feature name',
         # Use a specific autocomplete value to avoid "name" autofill.
         # https://bugs.chromium.org/p/chromium/issues/detail?id=468153#c164
         widget=forms.TextInput(attrs={'autocomplete': 'feature-name'}),
@@ -57,7 +57,7 @@ ALL_FIELDS = {
         )),
 
     'summary': forms.CharField(
-        label='', required=True,
+        required=True,
         widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 500}),
         help_text=
         ('Provide a one sentence description followed by one or '
@@ -471,7 +471,8 @@ ALL_FIELDS = {
 
     'comments': forms.CharField(
         label='Comments', required=False,
-        widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 1480}),
+        widget=forms.Textarea(attrs={
+            'cols': 50, 'rows': 4, 'maxlength': 1480}),
         help_text='Additional comments, caveats, info...'),
 
     }
@@ -480,8 +481,10 @@ ALL_FIELDS = {
 class NewFeatureForm(forms.Form):
 
   field_order = (
-      'name', 'summary', 'category', 'unlisted', 'owner', 'feature_type',
-      'blink_components')
+      'name', 'summary', 'owner',
+      'blink_components', 'category',
+      'unlisted',
+      'feature_type')
   name = ALL_FIELDS['name']
   summary = ALL_FIELDS['summary']
   category = ALL_FIELDS['category']
@@ -500,8 +503,11 @@ class NewFeatureForm(forms.Form):
 class MetadataForm(forms.Form):
 
   field_order = (
-      'name', 'summary', 'category', 'unlisted', 'owner', 'feature_type',
-      'intent_stage', 'blink_components', 'bug_url', 'launch_bug_url',
+      'name', 'summary', 'owner',
+      'blink_components', 'category',
+      'unlisted',
+      'feature_type', 'intent_stage',
+      'bug_url', 'launch_bug_url',
       'impl_status_chrome', 'search_tags')
   name = ALL_FIELDS['name']
   summary = ALL_FIELDS['summary']
