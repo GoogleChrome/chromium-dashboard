@@ -108,7 +108,7 @@ FEATURE_TYPES = {
 
 # Intent stages and mapping from stage to stage name.
 INTENT_NONE = 0
-INTENT_INCUBATE = 7  # Start incubation
+INTENT_INCUBATE = 7  # Start incubating
 INTENT_IMPLEMENT = 1  # Start prototyping
 INTENT_EXPERIMENT = 2  # Dev trials
 INTENT_IMPLEMENT_SHIP = 4  # Eval readiness to ship
@@ -120,7 +120,7 @@ INTENT_PARKED = 9
 
 INTENT_STAGES = collections.OrderedDict([
   (INTENT_NONE, 'None'),
-  (INTENT_INCUBATE, 'Start incubation'),
+  (INTENT_INCUBATE, 'Start incubating'),
   (INTENT_IMPLEMENT, 'Start prototyping'),
   (INTENT_EXPERIMENT, 'Dev trials'),
   (INTENT_IMPLEMENT_SHIP, 'Evaluate readiness to ship'),

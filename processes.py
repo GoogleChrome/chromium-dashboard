@@ -60,7 +60,7 @@ LAUNCH_BUG_TEMPLATE_URL = '/admin/features/launch/{feature_id}?launch'
 
 BLINK_PROCESS_STAGES = [
   ProcessStage(
-      'Start incubation',
+      'Start incubating',
       'Create an initial WebStatus feature entry and kick off standards '
       'incubation (WICG) to share ideas.',
       ['Initial public proposal',
