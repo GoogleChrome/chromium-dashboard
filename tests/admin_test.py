@@ -86,7 +86,7 @@ class IntentEmailPreviewHandlerTest(unittest.TestCase):
 
     self.feature_1.intent_stage = models.INTENT_INCUBATE
     self.assertEqual(
-        'Intent stage "Start incubating"',
+        'Intent stage "Start incubation"',
         self.handler.compute_subject_prefix(self.feature_1))
 
     self.feature_1.intent_stage = models.INTENT_IMPLEMENT

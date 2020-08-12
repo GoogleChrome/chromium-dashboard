@@ -66,6 +66,7 @@ BLINK_PROCESS_STAGES = [
       ['Initial public proposal',
        'Motivation',
        'Spec repo',
+       'Explainer',
       ],
       [],
       models.INTENT_NONE, models.INTENT_INCUBATE),
@@ -74,9 +75,7 @@ BLINK_PROCESS_STAGES = [
       'Start prototyping',
       'Share an explainer doc and API. '
       'Start prototyping code in a public repo.',
-      ['Explainer',
-       'API design',
-       'Code in repo',
+      ['API design',
        'Security review',
        'Privacy review',
        'Intent to Prototype email',
