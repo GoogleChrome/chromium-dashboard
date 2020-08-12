@@ -266,6 +266,7 @@ class FeatureEditStageTest(unittest.TestCase):
             'category': '2',
             'name': 'Revised feature name',
             'summary': 'Revised feature summary',
+            'shipped_milestone': '84',
         })
 
     self.handler.post('/guide/stage', self.feature_1.key().id(), self.stage)
@@ -278,3 +279,4 @@ class FeatureEditStageTest(unittest.TestCase):
     self.assertEqual(2, revised_feature.category)
     self.assertEqual('Revised feature name', revised_feature.name)
     self.assertEqual('Revised feature summary', revised_feature.summary)
+    self.assertEqual(84, revised_feature.shipped_milestone)

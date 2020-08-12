@@ -296,7 +296,7 @@ class FeatureEditStage(common.ContentHandler):
 
     # Cast incoming milestones to ints.
     # TODO(jrobbins): Consider supporting milestones that are not ints.
-    if self.touched('shipped_milestone = self'):
+    if self.touched('shipped_milestone'):
       feature.shipped_milestone = self.parse_int('shipped_milestone')
 
     if self.touched('shipped_android_milestone'):
