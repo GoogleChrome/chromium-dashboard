@@ -60,12 +60,13 @@ LAUNCH_BUG_TEMPLATE_URL = '/admin/features/launch/{feature_id}?launch'
 
 BLINK_PROCESS_STAGES = [
   ProcessStage(
-      'Start incubation',
+      'Start incubating',
       'Create an initial WebStatus feature entry and kick off standards '
       'incubation (WICG) to share ideas.',
       ['Initial public proposal',
        'Motivation',
        'Spec repo',
+       'Explainer',
       ],
       [],
       models.INTENT_NONE, models.INTENT_INCUBATE),
@@ -74,9 +75,7 @@ BLINK_PROCESS_STAGES = [
       'Start prototyping',
       'Share an explainer doc and API. '
       'Start prototyping code in a public repo.',
-      ['Explainer',
-       'API design',
-       'Code in repo',
+      ['API design',
        'Security review',
        'Privacy review',
        'Intent to Prototype email',

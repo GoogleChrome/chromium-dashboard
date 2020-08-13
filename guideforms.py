@@ -225,7 +225,7 @@ ALL_FIELDS = {
                    'maxlength': 1480})),
 
     'ie_views': forms.ChoiceField(
-        required=False, label='Edge',
+        required=False, label='Edge views',
         choices=models.VENDOR_VIEWS_EDGE.items(),
         initial=models.NO_PUBLIC_SIGNALS),
 
@@ -481,13 +481,12 @@ ALL_FIELDS = {
 class NewFeatureForm(forms.Form):
 
   field_order = (
-      'name', 'summary', 'owner',
+      'name', 'summary',
+      'unlisted', 'owner',
       'blink_components', 'category',
-      'unlisted',
       'feature_type')
   name = ALL_FIELDS['name']
   summary = ALL_FIELDS['summary']
-  category = ALL_FIELDS['category']
   unlisted = ALL_FIELDS['unlisted']
   current_user_email = users.get_current_user().email if users.get_current_user() else None
   owner = forms.EmailField(
@@ -496,22 +495,21 @@ class NewFeatureForm(forms.Form):
           attrs={'multiple': True, 'placeholder': 'email, email'}),
       help_text=('Comma separated list of full email addresses. '
                  'Prefer @chromium.org.'))
-  # Note: feature_type is done with custom HTML
   blink_components = ALL_FIELDS['blink_components']
+  category = ALL_FIELDS['category']
+  # Note: feature_type is done with custom HTML
 
 
 class MetadataForm(forms.Form):
 
   field_order = (
-      'name', 'summary', 'owner',
+      'name', 'summary', 'unlisted', 'owner',
       'blink_components', 'category',
-      'unlisted',
       'feature_type', 'intent_stage',
       'bug_url', 'launch_bug_url',
       'impl_status_chrome', 'search_tags')
   name = ALL_FIELDS['name']
   summary = ALL_FIELDS['summary']
-  category = ALL_FIELDS['category']
   unlisted = ALL_FIELDS['unlisted']
   owner = forms.EmailField(
       required=False,
@@ -520,13 +518,14 @@ class MetadataForm(forms.Form):
           attrs={'multiple': True, 'placeholder': 'email, email'}),
       help_text=('Comma separated list of full email addresses. '
                  'Prefer @chromium.org.'))
+  blink_components = ALL_FIELDS['blink_components']
+  category = ALL_FIELDS['category']
   feature_type = ALL_FIELDS['feature_type']
   intent_stage = forms.ChoiceField(
       required=False, label='Feature stage',
       help_text='Select the appropriate process stage.',
       initial=models.INTENT_IMPLEMENT,
       choices=models.INTENT_STAGES.items())
-  blink_components = ALL_FIELDS['blink_components']
   bug_url = ALL_FIELDS['bug_url']
   launch_bug_url = ALL_FIELDS['launch_bug_url']
   impl_status_chrome = ALL_FIELDS['impl_status_chrome']
@@ -537,19 +536,12 @@ class NewFeature_Incubate(forms.Form):
 
   field_order = (
       'motivation', 'initial_public_proposal_url', 'explainer_links',
-      'owner', 'blink_components', 'footprint',
+      'footprint',
       'bug_url', 'launch_bug_url', 'comments')
   motivation = ALL_FIELDS['motivation']
   initial_public_proposal_url = ALL_FIELDS['initial_public_proposal_url']
   explainer_links = ALL_FIELDS['explainer_links']
   current_user_email = users.get_current_user().email if users.get_current_user() else None
-  owner = forms.EmailField(
-      initial=current_user_email, required=True, label='Contact emails',
-      widget=forms.EmailInput(
-          attrs={'multiple': True, 'placeholder': 'email, email'}),
-      help_text=('Comma separated list of full email addresses. '
-                 'Prefer @chromium.org.'))
-  blink_components = ALL_FIELDS['blink_components']
   footprint = ALL_FIELDS['footprint']
   bug_url = ALL_FIELDS['bug_url']
   launch_bug_url = ALL_FIELDS['launch_bug_url']
@@ -559,9 +551,8 @@ class NewFeature_Incubate(forms.Form):
 class NewFeature_Prototype(forms.Form):
 
   field_order = (
-      'initial_public_proposal_url', 'spec_link',
+      'spec_link',
       'intent_to_implement_url', 'comments')
-  initial_public_proposal_url = ALL_FIELDS['initial_public_proposal_url']
   # TODO(jrobbins): advise user to request a tag review
   spec_link = ALL_FIELDS['spec_link']
   intent_to_implement_url = ALL_FIELDS['intent_to_implement_url']
@@ -570,7 +561,7 @@ class NewFeature_Prototype(forms.Form):
 
 class Any_DevTrial(forms.Form):
   field_order = (
-      'bug_url', 'doc_links', 'spec_link',
+      'bug_url', 'doc_links',
       'interop_compat_risks',
       'safari_views', 'safari_views_link', 'safari_views_notes',
       'ff_views', 'ff_views_link', 'ff_views_notes',
@@ -583,7 +574,6 @@ class Any_DevTrial(forms.Form):
   bug_url = ALL_FIELDS['bug_url']
   doc_links = ALL_FIELDS['doc_links']
   # TODO(jrobbins): api overview link
-  spec_link = ALL_FIELDS['spec_link']
 
   interop_compat_risks = ALL_FIELDS['interop_compat_risks']
 
