@@ -396,6 +396,12 @@ class FeatureHandler(common.ContentHandler):
     ready_for_trial_url = self.__FullQualifyLink('ready_for_trial_url')
     intent_to_experiment_url = self.__FullQualifyLink('intent_to_experiment_url')
     origin_trial_feedback_url = self.__FullQualifyLink('origin_trial_feedback_url')
+    i2e_lgtms = self.request.get('i2e_lgtms') or []
+    if i2e_lgtms:
+      i2e_lgtms = [db.Email(x.strip()) for x in i2e_lgtms.split(',')]
+    i2s_lgtms = self.request.get('i2s_lgtms') or []
+    if i2s_lgtms:
+      i2s_lgtms = [db.Email(x.strip()) for x in i2s_lgtms.split(',')]
 
     ff_views_link = self.__FullQualifyLink('ff_views_link')
     ie_views_link = self.__FullQualifyLink('ie_views_link')
@@ -467,6 +473,8 @@ class FeatureHandler(common.ContentHandler):
       feature.ready_for_trial_url = ready_for_trial_url
       feature.intent_to_experiment_url = intent_to_experiment_url
       feature.origin_trial_feedback_url = origin_trial_feedback_url
+      feature.i2e_lgtms = i2e_lgtms
+      feature.i2s_lgtms = i2s_lgtms
       feature.motivation = self.request.get('motivation')
       feature.explainer_links = explainer_links
       feature.owner = owners
@@ -535,6 +543,8 @@ class FeatureHandler(common.ContentHandler):
           ready_for_trial_url=ready_for_trial_url,
           intent_to_experiment_url=intent_to_experiment_url,
           origin_trial_feedback_url=origin_trial_feedback_url,
+          i2e_lgtms=i2e_lgtms,
+          i2s_lgtms=i2s_lgtms,
           motivation=self.request.get('motivation'),
           explainer_links=explainer_links,
           owner=owners,

@@ -142,6 +142,12 @@ class ContentHandler(BaseHandler):
     return filter(bool, [
         x.strip() for x in re.split(delim, input_text)])
 
+  def split_emails(self, param_name):
+    """Split one input field and construct db.Email objects."""
+    addr_strs = self.split_input(param_name, delim=',')
+    emails = [db.Email(addr) for addr in addr_strs]
+    return emails
+
   def parse_link(self, param_name):
     link = self.request.get(param_name) or None
     if link:

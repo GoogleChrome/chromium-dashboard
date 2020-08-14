@@ -706,6 +706,8 @@ class Feature(DictModel):
     d['search_tags'] = ', '.join(self.search_tags)
     d['blink_components'] = self.blink_components[0] #TODO: support more than one component.
     d['devrel'] = ', '.join(self.devrel)
+    d['i2e_lgtms'] = ', '.join(self.i2e_lgtms)
+    d['i2s_lgtms'] = ', '.join(self.i2s_lgtms)
     return d
 
   @classmethod
@@ -986,6 +988,8 @@ class Feature(DictModel):
   intent_to_ship_url = db.LinkProperty()
   ready_for_trial_url = db.LinkProperty()
   intent_to_experiment_url = db.LinkProperty()
+  i2e_lgtms = db.ListProperty(db.Email)  # Currently, only one is needed.
+  i2s_lgtms = db.ListProperty(db.Email)
 
   # Chromium details.
   bug_url = db.LinkProperty()
@@ -1188,13 +1192,26 @@ class FeatureForm(forms.Form):
       required=False, label='Intent to Experiment link',
       widget=forms.URLInput(attrs={'placeholder': 'https://'}),
       help_text=('After you have started the "Intent to Experiment" discussion '
-                   'thread, link to it here.'))
-
+                 'thread, link to it here.'))
 
   origin_trial_feedback_url = forms.URLField(
       required=False, label='Origin Trial feedback summary',
       widget=forms.URLInput(attrs={'placeholder': 'https://'}),
       help_text='If your feature was available as an Origin Trial, link to a summary of usage and developer feedback. If not, leave this empty.')
+
+  i2e_lgtms = forms.EmailField(
+      required=False, label='i2e LGTM by',
+      widget=forms.EmailInput(
+          attrs={'multiple': True, 'placeholder': 'email'}),
+      help_text=('Full email address of API owner who LGTM\'d the '
+                 'Intent to Experiment email thread.'))
+
+  i2s_lgtms = forms.EmailField(
+      required=False, label='i2s LGTMs by',
+      widget=forms.EmailInput(
+          attrs={'multiple': True, 'placeholder': 'email, email, email'}),
+      help_text=('Full email addresses of API owner who LGTM\'d '
+                 'the Intent to Ship email thread.'))
 
   doc_links = forms.CharField(label='Doc link(s)', required=False,
       widget=forms.Textarea(

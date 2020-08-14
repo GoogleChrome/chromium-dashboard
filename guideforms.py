@@ -335,6 +335,20 @@ ALL_FIELDS = {
         ('If your feature was available as an Origin Trial, link to a summary '
          'of usage and developer feedback. If not, leave this empty.')),
 
+    'i2e_lgtms': forms.EmailField(
+        required=False, label='i2e LGTM by',
+        widget=forms.EmailInput(
+            attrs={'multiple': True, 'placeholder': 'email'}),
+        help_text=('Full email address of API owner who LGTM\'d the '
+                   'Intent to Experiment email thread.')),
+
+    'i2s_lgtms': forms.EmailField(
+        required=False, label='i2s LGTMs by',
+        widget=forms.EmailInput(
+            attrs={'multiple': True, 'placeholder': 'email, email, email'}),
+        help_text=('Full email addresses of API owner who LGTM\'d '
+                   'the Intent to Ship email thread.')),
+
     'debuggability': forms.CharField(
         label='Debuggability', required=False,
         widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 1480}),
@@ -655,15 +669,16 @@ class NewFeature_OriginTrial(forms.Form):
   field_order = (
       'experiment_goals', 'experiment_timeline', 'experiment_risks',
       'experiment_extension_reason', 'ongoing_constraints',
-      'origin_trial_feedback_url', 'intent_to_experiment_url', 'comments')
+      'origin_trial_feedback_url', 'intent_to_experiment_url',
+      'i2e_lgtms', 'comments')
   experiment_goals = ALL_FIELDS['experiment_goals']
   experiment_timeline = ALL_FIELDS['experiment_timeline']
   experiment_risks = ALL_FIELDS['experiment_risks']
   experiment_extension_reason = ALL_FIELDS['experiment_extension_reason']
   ongoing_constraints = ALL_FIELDS['ongoing_constraints']
   origin_trial_feedback_url = ALL_FIELDS['origin_trial_feedback_url'] # optional
-  # TODO(jrobbins): action to generate intent to experiement email
   intent_to_experiment_url = ALL_FIELDS['intent_to_experiment_url']
+  i2e_lgtms = ALL_FIELDS['i2e_lgtms']
   comments = ALL_FIELDS['comments']
 
 
@@ -674,7 +689,7 @@ class Any_PrepareToShip(forms.Form):
       'shipped_ios_milestone', 'shipped_webview_milestone',
       'footprint', 'tag_review',
       'intent_to_implement_url', 'origin_trial_feedback_url',
-      'launch_bug_url', 'intent_to_ship_url', 'comments')
+      'launch_bug_url', 'intent_to_ship_url', 'i2s_lgtms', 'comments')
   impl_status_chrome = ALL_FIELDS['impl_status_chrome']
   shipped_milestone = ALL_FIELDS['shipped_milestone']
   shipped_android_milestone = ALL_FIELDS['shipped_android_milestone']
@@ -686,6 +701,7 @@ class Any_PrepareToShip(forms.Form):
   origin_trial_feedback_url = ALL_FIELDS['origin_trial_feedback_url'] # optional
   launch_bug_url = ALL_FIELDS['launch_bug_url']
   intent_to_ship_url = ALL_FIELDS['intent_to_ship_url']
+  i2s_lgtms = ALL_FIELDS['i2s_lgtms']
   comments = ALL_FIELDS['comments']
 
 

@@ -118,6 +118,7 @@ BLINK_PROCESS_STAGES = [
        'OT available',
        'OT results',
        'Intent to Experiment email',
+       'One i2e LGTM',
       ],
       [('Draft Intent to Experiment email', INTENT_EMAIL_URL)],
       models.INTENT_IMPLEMENT_SHIP, models.INTENT_EXTEND_TRIAL),
@@ -126,12 +127,12 @@ BLINK_PROCESS_STAGES = [
       'Prepare to ship',
       'Lock in shipping milestone. Finalize docs and announcements. '
       'Further standardization.',
-      ['Intent to Ship email',
-       'Request to migrate incubation',
+      ['Request to migrate incubation',
        'TAG issues addressed',
-       'Three LGTMs',
        'Updated vendor signals',
        'Updated target milestone',
+       'Intent to Ship email',
+       'Three i2s LGTMs',
       ],
       [('Draft Intent to Ship email', INTENT_EMAIL_URL)],
       models.INTENT_IMPLEMENT_SHIP, models.INTENT_SHIP),
@@ -203,10 +204,10 @@ BLINK_FAST_TRACK_STAGES = [
       'Prepare to ship',
       'Lock in shipping milestone. Finalize docs and announcements. '
       'Further standardization.',
-      ['Intent to Ship email',
-       'Three LGTMs',
-       'Documentation signoff',
+      ['Documentation signoff',
        'Updated target milestone',
+       'Intent to Ship email',
+       'Three i2s LGTMs',
       ],
       [('Draft Intent to Ship email', INTENT_EMAIL_URL)],
       models.INTENT_EXPERIMENT, models.INTENT_SHIP),
@@ -263,8 +264,9 @@ PSA_ONLY_STAGES = [
       'Prepare to ship',
       'Lock in shipping milestone.',
       ['Web facing PSA email',
-       'One LGTM',
        'Updated target milestone',
+       'Intent to Ship email',
+       'One i2s LGTM',
       ],
       [('Draft Intent to Ship email', INTENT_EMAIL_URL)],
       models.INTENT_EXPERIMENT, models.INTENT_SHIP),
@@ -395,6 +397,15 @@ PROGRESS_DETECTORS = {
 
     'Intent to Experiment email':
     lambda f: f.intent_to_experiment_url,
+
+    'One i2e LGTM':
+    lambda f: f.i2e_lgtms,
+
+    'One i2s LGTM':
+    lambda f: f.i2s_lgtms,
+
+    'Three i2s LGTMs':
+    lambda f: f.i2s_lgtms and len(f.i2s_lgtms) >= 3,
 
     'Samples':
     lambda f: f.sample_links and f.sample_links[0],
