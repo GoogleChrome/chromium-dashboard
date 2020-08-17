@@ -165,22 +165,6 @@ SUBSTANTIVE_CHANGES = 3
 MINOR_EXISTING_CHANGES = 4
 EXTREMELY_SMALL_CHANGE = 5
 
-FOOTPRINT_CHOICES = {
-  MAJOR_NEW_API: ('A major new independent API (e.g. adding many '
-                  'independent concepts with many methods/properties/objects)'),
-  MAJOR_MINOR_NEW_API: ('Major changes to an existing API OR a minor new '
-                        'independent API (e.g. adding many new '
-                        'methods/properties or introducing new concepts to '
-                        'augment an existing API)'),
-  SUBSTANTIVE_CHANGES: ('Substantive changes to an existing API (e.g. small '
-                        'number of new methods/properties)'),
-  MINOR_EXISTING_CHANGES: (
-      'Minor changes to an existing API (e.g. adding a new keyword/allowed '
-      'argument to a property/method)'),
-  EXTREMELY_SMALL_CHANGE: ('Extremely small tweaks to an existing API (e.g. '
-                           'how existing keywords/arguments are interpreted)'),
-  }
-
 MAINSTREAM_NEWS = 1
 WARRANTS_ARTICLE = 2
 IN_LARGER_ARTICLE = 3
@@ -271,7 +255,6 @@ PROPERTY_NAMES_TO_ENUM_DICTS = {
     'category': FEATURE_CATEGORIES,
     'intent_stage': INTENT_STAGES,
     'impl_status_chrome': IMPLEMENTATION_STATUS,
-    'footprint': FOOTPRINT_CHOICES,
     'standardization': STANDARDIZATION,
     'ff_views': VENDOR_VIEWS,
     'ie_views': VENDOR_VIEWS,
@@ -584,10 +567,6 @@ class Feature(DictModel):
           'text': STANDARDIZATION[self.standardization],
           'val': d.pop('standardization', None),
         },
-        'footprint': {
-          'val': d.pop('footprint', None),
-          #'text': FOOTPRINT_CHOICES[self.footprint]
-        }
       }
       d['resources'] = {
         'samples': d.pop('sample_links', []),
@@ -1001,7 +980,7 @@ class Feature(DictModel):
   shipped_webview_milestone = db.IntegerProperty()
 
   owner = db.ListProperty(db.Email)
-  footprint = db.IntegerProperty()
+  footprint = db.IntegerProperty()  # Deprecated
   interop_compat_risks = db.StringProperty(multiline=True)
   ergonomics_risks = db.StringProperty(multiline=True)
   activation_risks = db.StringProperty(multiline=True)
@@ -1379,10 +1358,6 @@ class FeatureForm(forms.Form):
       help_text='Android WebView:<br/>' + SHIPPED_WEBVIEW_HELP_TXT)
 
   prefixed = forms.BooleanField(required=False, initial=False, label='Prefixed?')
-
-  footprint  = forms.ChoiceField(
-      required=False, label='Technical footprint',
-      choices=FOOTPRINT_CHOICES.items(), initial=MAJOR_MINOR_NEW_API)
 
   search_tags = forms.CharField(label='Search tags', required=False,
       help_text='Comma separated keywords used only in search')

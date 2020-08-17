@@ -357,8 +357,6 @@ class FeatureEditStage(common.ContentHandler):
       feature.motivation = self.request.get('motivation')
     if self.touched('impl_status_chrome'):
       feature.impl_status_chrome = int(self.request.get('impl_status_chrome'))
-    if self.touched('footprint'):
-      feature.footprint = int(self.request.get('footprint'))
     if self.touched('interop_compat_risks'):
       feature.interop_compat_risks = self.request.get('interop_compat_risks')
     if self.touched('ergonomics_risks'):
