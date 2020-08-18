@@ -60,6 +60,11 @@ class FeatureNewTest(unittest.TestCase):
     mock_render.assert_called_once()
     template_data = mock_render.call_args.kwargs['data']
     self.assertTrue('overview_form' in template_data)
+    form = template_data['overview_form']
+    field = form.fields['owner']
+    self.assertEqual(
+        'user1@google.com',
+        form.get_initial_for_field(field, 'owner'))
 
   def test_post__anon(self):
     """Anon cannot create features, gets a 401."""
