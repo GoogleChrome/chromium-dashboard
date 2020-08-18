@@ -91,5 +91,9 @@
 {% endblock %}
 
 {% block js %}
-<script src="/static/js/admin/process_overview_form.min.js"></script>
+<script>
+  var currentUserEmail = "{{user.email}}";
+</script>
+
+<script src="/static/js/guide/new.min.js"></script>
 {% endblock %}
