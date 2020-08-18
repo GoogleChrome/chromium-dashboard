@@ -1130,9 +1130,8 @@ class FeatureForm(forms.Form):
                  'on the public feature list. Anyone with the link will be able to '
                  'view the feature on the detail page.'))
 
-  current_user_email = users.get_current_user().email if users.get_current_user() else None
   owner = forms.EmailField(
-      initial=current_user_email, required=True, label='Contact emails',
+      required=True, label='Contact emails',
       widget=forms.EmailInput(
           attrs={'multiple': True, 'placeholder': 'email, email'}),
       help_text='Comma separated list of full email addresses. Prefer @chromium.org.')

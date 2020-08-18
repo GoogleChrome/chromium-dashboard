@@ -488,9 +488,8 @@ class NewFeatureForm(forms.Form):
   name = ALL_FIELDS['name']
   summary = ALL_FIELDS['summary']
   unlisted = ALL_FIELDS['unlisted']
-  current_user_email = users.get_current_user().email if users.get_current_user() else None
   owner = forms.EmailField(
-      initial=current_user_email, required=True, label='Contact emails',
+      required=True, label='Contact emails',
       widget=forms.EmailInput(
           attrs={'multiple': True, 'placeholder': 'email, email'}),
       help_text=('Comma separated list of full email addresses. '
@@ -541,7 +540,6 @@ class NewFeature_Incubate(forms.Form):
   motivation = ALL_FIELDS['motivation']
   initial_public_proposal_url = ALL_FIELDS['initial_public_proposal_url']
   explainer_links = ALL_FIELDS['explainer_links']
-  current_user_email = users.get_current_user().email if users.get_current_user() else None
   footprint = ALL_FIELDS['footprint']
   bug_url = ALL_FIELDS['bug_url']
   launch_bug_url = ALL_FIELDS['launch_bug_url']
@@ -709,9 +707,8 @@ class Any_Identify(forms.Form):
   field_order = (
       'owner', 'blink_components', 'motivation', 'explainer_links',
       'footprint', 'bug_url', 'launch_bug_url', 'comments')
-  current_user_email = users.get_current_user().email if users.get_current_user() else None
   owner = forms.EmailField(
-      initial=current_user_email, required=True, label='Contact emails',
+      required=True, label='Contact emails',
       widget=forms.EmailInput(
           attrs={'multiple': True, 'placeholder': 'email, email'}),
       help_text=('Comma separated list of full email addresses. '

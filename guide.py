@@ -97,8 +97,10 @@ class FeatureNew(common.ContentHandler):
       common.handle_401(self.request, self.response, Exception)
       return
 
+    new_feature_form = guideforms.NewFeatureForm(
+        initial={'owner': user.email()})
     template_data = {
-        'overview_form': guideforms.NewFeatureForm(),
+        'overview_form': new_feature_form,
         }
 
     self._add_common_template_values(template_data)
