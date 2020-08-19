@@ -65,7 +65,6 @@ BLINK_PROCESS_STAGES = [
       'incubation (WICG) to share ideas.',
       ['Initial public proposal',
        'Motivation',
-       'Spec repo',
       ],
       [],
       models.INTENT_NONE, models.INTENT_INCUBATE),
@@ -77,8 +76,6 @@ BLINK_PROCESS_STAGES = [
       ['Explainer',
        'API design',
        'Code in repo',
-       'Security review requested',
-       'Privacy review requested',
        'Intent to Prototype email',
        'Spec reviewer',
       ],
@@ -93,8 +90,8 @@ BLINK_PROCESS_STAGES = [
       ['Samples',
        'Draft API overview',
        'Request signals',
-       'Security review completed',
-       'Privacy review completed',
+       'Security review issues addressed',
+       'Privacy review issues addressed',
        'External reviews',
        'Ready for Trial email',
       ],
@@ -131,7 +128,7 @@ BLINK_PROCESS_STAGES = [
       'Further standardization.',
       ['Intent to Ship email',
        'Request to migrate incubation',
-       'TAG review completed',
+       'TAG review issues addressed',
        'Three LGTMs',
        'Updated vendor signals',
        'Updated target milestone',
@@ -378,8 +375,15 @@ INTENT_EMAIL_SECTIONS = {
     }
 
 
+def initial_tag_review_status(feature_type):
+  """Incubating a new feature requires a TAG review, other types do not."""
+  if feature_type == models.FEATURE_TYPE_INCUBATE_ID:
+    return models.REVIEW_PENDING
+  return models.REVIEW_NA
+
+
 def review_is_done(status):
-  return status in (models.REVIEW_COMPLETED, models.REVIEW_NA)
+  return status in (models.REVIEW_ISSUES_ADDRESSED, models.REVIEW_NA)
 
 
 # These functions return a true value when the checkmark should be shown.
@@ -389,22 +393,13 @@ PROGRESS_DETECTORS = {
     'Initial public proposal':
     lambda f: f.initial_public_proposal_url,
 
-    'Spec repo':
-    lambda f: f.spec_repo_url,
-
     'Explainer':
     lambda f: f.explainer_links and f.explainer_links[0],
 
-    'Security review requested':
-    lambda f: f.security_review_url,
-
-    'Privacy review requested':
-    lambda f: f.privacy_review_url,
-
-    'Security review completed':
+    'Security review issues addressed':
     lambda f: review_is_done(f.security_review_status),
 
-    'Privacy review completed':
+    'Privacy review issues addressed':
     lambda f: review_is_done(f.privacy_review_status),
 
     'Intent to Prototype email':
@@ -428,7 +423,7 @@ PROGRESS_DETECTORS = {
     'TAG review requested':
     lambda f: f.tag_review,
 
-    'TAG review completed':
+    'TAG review issues addressed':
     lambda f: review_is_done(f.tag_review_status),
 
     'Vendor signals':

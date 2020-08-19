@@ -167,14 +167,14 @@ EXTREMELY_SMALL_CHANGE = 5
 
 # Status for security and privacy reviews.
 REVIEW_PENDING = 1
-REVIEW_IN_PROGRESS = 2
-REVIEW_COMPLETED = 3
+REVIEW_ISSUES_OPEN = 2
+REVIEW_ISSUES_ADDRESSED = 3
 REVIEW_NA = 4
 
 REVIEW_STATUS_CHOICES = {
     REVIEW_PENDING: 'Pending',
-    REVIEW_IN_PROGRESS: 'In progress',
-    REVIEW_COMPLETED: 'Completed',
+    REVIEW_ISSUES_OPEN: 'Issues open',
+    REVIEW_ISSUES_ADDRESSED: 'Issues addessed',
     REVIEW_NA: 'Not applicable',
     }
 
@@ -1033,10 +1033,7 @@ class Feature(DictModel):
 
   # Standards details.
   standardization = db.IntegerProperty(required=True)
-  spec_repo_url = db.LinkProperty()
   spec_link = db.LinkProperty()
-  security_review_url = db.LinkProperty()
-  privacy_review_url = db.LinkProperty()
   security_review_status = db.IntegerProperty(default=REVIEW_PENDING)
   privacy_review_status = db.IntegerProperty(default=REVIEW_PENDING)
 
@@ -1225,32 +1222,16 @@ class FeatureForm(forms.Form):
       help_text=("The standardization status of the API. In bodies that don't "
                  "use this nomenclature, use the closest equivalent."))
 
-  spec_repo_url = forms.URLField(
-      required=False, label='Spec repo',
-      widget=forms.URLInput(attrs={'placeholder': 'https://'}),
-      help_text=('Link to spec repository.  This is where the spec will be '
-                 'kept under version control even if it does not exist yet.'))
-
   spec_link = forms.URLField(
       required=False, label='Spec link',
       widget=forms.URLInput(attrs={'placeholder': 'https://'}),
       help_text="Link to spec, if and when available. Please update the chromestatus.com entry and the intent thread(s) with the spec link when available.")
-
-  security_review_url = forms.URLField(
-      required=False, label='Security review',
-      widget=forms.URLInput(attrs={'placeholder': 'https://'}),
-      help_text='Link to security review issue or discussion.')
 
   security_review_status = forms.ChoiceField(
       required=False,
       choices=REVIEW_STATUS_CHOICES.items(),
       initial=REVIEW_PENDING,
       help_text=('Status of the security review.'))
-
-  privacy_review_url = forms.URLField(
-      required=False, label='Privacy review',
-      widget=forms.URLInput(attrs={'placeholder': 'https://'}),
-      help_text='Link to privacy review issue or discussion.')
 
   privacy_review_status = forms.ChoiceField(
       required=False,

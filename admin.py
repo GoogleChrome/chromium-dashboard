@@ -381,10 +381,7 @@ class FeatureHandler(common.ContentHandler):
       common.handle_401(self.request, self.response, Exception)
       return
 
-    spec_repo_url = self.__FullQualifyLink('spec_repo_url')
     spec_link = self.__FullQualifyLink('spec_link')
-    security_review_url = self.__FullQualifyLink('security_review_url')
-    privacy_review_url = self.__FullQualifyLink('privacy_review_url')
 
     explainer_links = self.request.get('explainer_links') or []
     if explainer_links:
@@ -508,12 +505,9 @@ class FeatureHandler(common.ContentHandler):
       feature.web_dev_views_link = web_dev_views_link
       feature.web_dev_views_notes = self.request.get('web_dev_views_notes')
       feature.prefixed = self.request.get('prefixed') == 'on'
-      feature.spec_repo_url = spec_repo_url
       feature.spec_link = spec_link
-      feature.security_review_url = security_review_url
       feature.security_review_status = int(self.request.get(
           'security_review_status', models.REVIEW_PENDING))
-      feature.privacy_review_url = privacy_review_url
       feature.privacy_review_status = int(self.request.get(
           'privacy_review_status', models.REVIEW_PENDING))
       feature.tag_review = self.request.get('tag_review')
@@ -585,12 +579,9 @@ class FeatureHandler(common.ContentHandler):
           web_dev_views_link=web_dev_views_link,
           web_dev_views_notes=self.request.get('web_dev_views_notes'),
           prefixed=self.request.get('prefixed') == 'on',
-          spec_repo_url=spec_repo_url,
           spec_link=spec_link,
-          security_review_url=security_review_url,
           security_review_status=int(self.request.get(
               'security_review_status', models.REVIEW_PENDING)),
-          privacy_review_url=privacy_review_url,
           privacy_review_status=int(self.request.get(
               'privacy_review_status', models.REVIEW_PENDING)),
           tag_review=self.request.get('tag_review'),

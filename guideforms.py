@@ -120,12 +120,6 @@ ALL_FIELDS = {
                  'in the feature list. Anyone with the link will be able to '
                  'view the feature on the detail page.')),
 
-    'spec_repo_url': forms.URLField(
-      required=False, label='Spec repo',
-      widget=forms.URLInput(attrs={'placeholder': 'https://'}),
-      help_text=('Link to spec repository.  This is where the spec will be '
-                 'kept under version control even if it does not exist yet.')),
-
     'spec_link': forms.URLField(
         required=False, label='Spec link',
         widget=forms.URLInput(attrs={'placeholder': 'https://'}),
@@ -144,27 +138,17 @@ ALL_FIELDS = {
                    'order to enable discussion with other browser vendors, '
                    'standards bodies, or other interested parties.')),
 
-    'security_review_url': forms.URLField(
-        required=False, label='Security review',
-        widget=forms.URLInput(attrs={'placeholder': 'https://'}),
-        help_text='Link to security review issue or discussion.'),
-
     'security_review_status': forms.ChoiceField(
         required=False,
         choices=models.REVIEW_STATUS_CHOICES.items(),
         initial=models.REVIEW_PENDING,
-        help_text=('Status of the the security review.')),
-
-    'privacy_review_url': forms.URLField(
-        required=False, label='Privacy review',
-        widget=forms.URLInput(attrs={'placeholder': 'https://'}),
-        help_text='Link to privacy review issue or discussion.'),
+        help_text=('Status of the security review.')),
 
     'privacy_review_status': forms.ChoiceField(
         required=False,
         choices=models.REVIEW_STATUS_CHOICES.items(),
         initial=models.REVIEW_PENDING,
-        help_text=('Status of the the privacy review.')),
+        help_text=('Status of the privacy review.')),
 
     'tag_review': forms.CharField(
         label='TAG Review', required=True,
@@ -565,12 +549,11 @@ class NewFeature_Incubate(forms.Form):
 
   field_order = (
       'motivation', 'initial_public_proposal_url',
-      'spec_repo_url', 'explainer_links',
+      'explainer_links',
       'owner', 'blink_components', 'footprint',
       'bug_url', 'launch_bug_url', 'comments')
   motivation = ALL_FIELDS['motivation']
   initial_public_proposal_url = ALL_FIELDS['initial_public_proposal_url']
-  spec_repo_url = ALL_FIELDS['spec_repo_url']
   explainer_links = ALL_FIELDS['explainer_links']
   current_user_email = users.get_current_user().email if users.get_current_user() else None
   owner = forms.EmailField(
@@ -590,13 +573,10 @@ class NewFeature_Prototype(forms.Form):
 
   field_order = (
       'initial_public_proposal_url', 'spec_link',
-      'security_review_url', 'privacy_review_url',
       'intent_to_implement_url', 'comments')
   initial_public_proposal_url = ALL_FIELDS['initial_public_proposal_url']
   # TODO(jrobbins): advise user to request a tag review
   spec_link = ALL_FIELDS['spec_link']
-  security_review_url = ALL_FIELDS['security_review_url']
-  privacy_review_url = ALL_FIELDS['privacy_review_url']
   intent_to_implement_url = ALL_FIELDS['intent_to_implement_url']
   comments = ALL_FIELDS['comments']
 
@@ -609,8 +589,7 @@ class Any_DevTrial(forms.Form):
       'ff_views', 'ff_views_link', 'ff_views_notes',
       'ie_views', 'ie_views_link', 'ie_views_notes',
       'web_dev_views', 'web_dev_views_link', 'web_dev_views_notes',
-      'security_review_url', 'security_review_status',
-      'privacy_review_url', 'privacy_review_status',
+      'security_review_status', 'privacy_review_status',
       'ergonomics_risks', 'activation_risks', 'security_risks', 'debuggability',
       'all_platforms', 'all_platforms_descr', 'wpt', 'wpt_descr',
       'sample_links', 'devrel', 'ready_for_trial_url', 'comments')
@@ -638,9 +617,7 @@ class Any_DevTrial(forms.Form):
   web_dev_views_link = ALL_FIELDS['web_dev_views_link']
   web_dev_views_notes = ALL_FIELDS['web_dev_views_notes']
 
-  security_review_url = ALL_FIELDS['security_review_url']
   security_review_status = ALL_FIELDS['security_review_status']
-  privacy_review_url = ALL_FIELDS['privacy_review_url']
   privacy_review_status = ALL_FIELDS['privacy_review_status']
 
   ergonomics_risks = ALL_FIELDS['ergonomics_risks']

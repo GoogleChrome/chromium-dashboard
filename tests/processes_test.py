@@ -68,8 +68,8 @@ class HelperFunctionsTest(unittest.TestCase):
     self.assertFalse(processes.review_is_done(None))
     self.assertFalse(processes.review_is_done(0))
     self.assertFalse(processes.review_is_done(models.REVIEW_PENDING))
-    self.assertFalse(processes.review_is_done(models.REVIEW_IN_PROGRESS))
-    self.assertTrue(processes.review_is_done(models.REVIEW_COMPLETED))
+    self.assertFalse(processes.review_is_done(models.REVIEW_ISSUES_OPEN))
+    self.assertTrue(processes.review_is_done(models.REVIEW_ISSUES_ADDRESSED))
     self.assertTrue(processes.review_is_done(models.REVIEW_NA))
 
 
@@ -97,28 +97,16 @@ class ProgressDetectorsTest(unittest.TestCase):
     self.feature_1.explainer_links = ['http://example.com']
     self.assertTrue(detector(self.feature_1))
 
-  def test_security_review_requested(self):
-    detector = processes.PROGRESS_DETECTORS['Security review requested']
-    self.assertFalse(detector(self.feature_1))
-    self.feature_1.security_review_url = 'http://example.com'
-    self.assertTrue(detector(self.feature_1))
-
   def test_security_review_completed(self):
-    detector = processes.PROGRESS_DETECTORS['Security review completed']
+    detector = processes.PROGRESS_DETECTORS['Security review issues addressed']
     self.assertFalse(detector(self.feature_1))
-    self.feature_1.security_review_status = models.REVIEW_COMPLETED
-    self.assertTrue(detector(self.feature_1))
-
-  def test_privacy_review_requested(self):
-    detector = processes.PROGRESS_DETECTORS['Privacy review requested']
-    self.assertFalse(detector(self.feature_1))
-    self.feature_1.privacy_review_url = 'http://example.com'
+    self.feature_1.security_review_status = models.REVIEW_ISSUES_ADDRESSED
     self.assertTrue(detector(self.feature_1))
 
   def test_privacy_review_completed(self):
-    detector = processes.PROGRESS_DETECTORS['Privacy review completed']
+    detector = processes.PROGRESS_DETECTORS['Privacy review issues addressed']
     self.assertFalse(detector(self.feature_1))
-    self.feature_1.privacy_review_status = models.REVIEW_COMPLETED
+    self.feature_1.privacy_review_status = models.REVIEW_ISSUES_ADDRESSED
     self.assertTrue(detector(self.feature_1))
 
   def test_intent_to_prototype_email(self):
@@ -164,9 +152,9 @@ class ProgressDetectorsTest(unittest.TestCase):
     self.assertTrue(detector(self.feature_1))
 
   def test_tag_review_completed(self):
-    detector = processes.PROGRESS_DETECTORS['TAG review completed']
+    detector = processes.PROGRESS_DETECTORS['TAG review issues addressed']
     self.assertFalse(detector(self.feature_1))
-    self.feature_1.tag_review_status = models.REVIEW_COMPLETED
+    self.feature_1.tag_review_status = models.REVIEW_ISSUES_ADDRESSED
     self.assertTrue(detector(self.feature_1))
 
   def test_vendor_signals(self):

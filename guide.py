@@ -120,10 +120,11 @@ class FeatureNew(common.ContentHandler):
 
     # TODO(jrobbins): Validate input, even though it is done on client.
 
+    feature_type = int(self.request.get('feature_type', 0))
     feature = models.Feature(
         category=int(self.request.get('category')),
         name=self.request.get('name'),
-        feature_type=int(self.request.get('feature_type', 0)),
+        feature_type=feature_type,
         intent_stage=models.INTENT_NONE,
         summary=self.request.get('summary'),
         owner=owners,
@@ -131,7 +132,8 @@ class FeatureNew(common.ContentHandler):
         standardization=models.EDITORS_DRAFT,
         unlisted=self.request.get('unlisted') == 'on',
         web_dev_views=models.DEV_NO_SIGNALS,
-        blink_components=blink_components)
+        blink_components=blink_components,
+        tag_review_status=processes.initial_tag_review_status(feature_type))
     key = feature.put()
 
     # TODO(jrobbins): enumerate and remove only the relevant keys.
@@ -259,19 +261,12 @@ class FeatureEditStage(common.ContentHandler):
 
     logging.info('POST is %r', self.request.POST)
 
-    if self.touched('spec_repo_url'):
-      feature.spec_repo_url = self.parse_link('spec_repo_url')
-
     if self.touched('spec_link'):
       feature.spec_link = self.parse_link('spec_link')
 
-    if self.touched('security_review_url'):
-      feature.security_review_url = self.parse_link('security_review_url')
     if self.touched('security_review_status'):
       feature.security_review_status = self.parse_int('security_review_status')
 
-    if self.touched('privacy_review_url'):
-      feature.privacy_review_url = self.parse_link('privacy_review_url')
     if self.touched('privacy_review_status'):
       feature.privacy_review_status = self.parse_int('privacy_review_status')
 
