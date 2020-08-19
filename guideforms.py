@@ -41,7 +41,7 @@ SHIPPED_WEBVIEW_HELP_TXT = (
 # stage-specific fields without repeating the details and help text.
 ALL_FIELDS = {
     'name': forms.CharField(
-        required=True, label='Feature',
+        required=True, label='Feature name',
         # Use a specific autocomplete value to avoid "name" autofill.
         # https://bugs.chromium.org/p/chromium/issues/detail?id=468153#c164
         widget=forms.TextInput(attrs={'autocomplete': 'feature-name'}),
@@ -57,7 +57,7 @@ ALL_FIELDS = {
         )),
 
     'summary': forms.CharField(
-        label='', required=True,
+        required=True,
         widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 500}),
         help_text=
         ('Provide a one sentence description followed by one or '
@@ -243,7 +243,7 @@ ALL_FIELDS = {
                    'maxlength': 1480})),
 
     'ie_views': forms.ChoiceField(
-        required=False, label='Edge',
+        required=False, label='Edge views',
         choices=models.VENDOR_VIEWS_EDGE.items(),
         initial=models.NO_PUBLIC_SIGNALS),
 
@@ -489,7 +489,8 @@ ALL_FIELDS = {
 
     'comments': forms.CharField(
         label='Comments', required=False,
-        widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 1480}),
+        widget=forms.Textarea(attrs={
+            'cols': 50, 'rows': 4, 'maxlength': 1480}),
         help_text='Additional comments, caveats, info...'),
 
     }
@@ -498,32 +499,34 @@ ALL_FIELDS = {
 class NewFeatureForm(forms.Form):
 
   field_order = (
-      'name', 'summary', 'category', 'unlisted', 'owner', 'feature_type',
-      'blink_components')
+      'name', 'summary',
+      'unlisted', 'owner',
+      'blink_components', 'category',
+      'feature_type')
   name = ALL_FIELDS['name']
   summary = ALL_FIELDS['summary']
-  category = ALL_FIELDS['category']
   unlisted = ALL_FIELDS['unlisted']
-  current_user_email = users.get_current_user().email if users.get_current_user() else None
   owner = forms.EmailField(
-      initial=current_user_email, required=True, label='Contact emails',
+      required=True, label='Contact emails',
       widget=forms.EmailInput(
           attrs={'multiple': True, 'placeholder': 'email, email'}),
       help_text=('Comma separated list of full email addresses. '
                  'Prefer @chromium.org.'))
-  # Note: feature_type is done with custom HTML
   blink_components = ALL_FIELDS['blink_components']
+  category = ALL_FIELDS['category']
+  # Note: feature_type is done with custom HTML
 
 
 class MetadataForm(forms.Form):
 
   field_order = (
-      'name', 'summary', 'category', 'unlisted', 'owner', 'feature_type',
-      'intent_stage', 'blink_components', 'bug_url', 'launch_bug_url',
+      'name', 'summary', 'unlisted', 'owner',
+      'blink_components', 'category',
+      'feature_type', 'intent_stage',
+      'bug_url', 'launch_bug_url',
       'impl_status_chrome', 'search_tags')
   name = ALL_FIELDS['name']
   summary = ALL_FIELDS['summary']
-  category = ALL_FIELDS['category']
   unlisted = ALL_FIELDS['unlisted']
   owner = forms.EmailField(
       required=False,
@@ -532,13 +535,14 @@ class MetadataForm(forms.Form):
           attrs={'multiple': True, 'placeholder': 'email, email'}),
       help_text=('Comma separated list of full email addresses. '
                  'Prefer @chromium.org.'))
+  blink_components = ALL_FIELDS['blink_components']
+  category = ALL_FIELDS['category']
   feature_type = ALL_FIELDS['feature_type']
   intent_stage = forms.ChoiceField(
       required=False, label='Feature stage',
       help_text='Select the appropriate process stage.',
       initial=models.INTENT_IMPLEMENT,
       choices=models.INTENT_STAGES.items())
-  blink_components = ALL_FIELDS['blink_components']
   bug_url = ALL_FIELDS['bug_url']
   launch_bug_url = ALL_FIELDS['launch_bug_url']
   impl_status_chrome = ALL_FIELDS['impl_status_chrome']
@@ -548,21 +552,12 @@ class MetadataForm(forms.Form):
 class NewFeature_Incubate(forms.Form):
 
   field_order = (
-      'motivation', 'initial_public_proposal_url',
-      'explainer_links',
-      'owner', 'blink_components', 'footprint',
+      'motivation', 'initial_public_proposal_url', 'explainer_links',
+      'footprint',
       'bug_url', 'launch_bug_url', 'comments')
   motivation = ALL_FIELDS['motivation']
   initial_public_proposal_url = ALL_FIELDS['initial_public_proposal_url']
   explainer_links = ALL_FIELDS['explainer_links']
-  current_user_email = users.get_current_user().email if users.get_current_user() else None
-  owner = forms.EmailField(
-      initial=current_user_email, required=True, label='Contact emails',
-      widget=forms.EmailInput(
-          attrs={'multiple': True, 'placeholder': 'email, email'}),
-      help_text=('Comma separated list of full email addresses. '
-                 'Prefer @chromium.org.'))
-  blink_components = ALL_FIELDS['blink_components']
   footprint = ALL_FIELDS['footprint']
   bug_url = ALL_FIELDS['bug_url']
   launch_bug_url = ALL_FIELDS['launch_bug_url']
@@ -572,9 +567,8 @@ class NewFeature_Incubate(forms.Form):
 class NewFeature_Prototype(forms.Form):
 
   field_order = (
-      'initial_public_proposal_url', 'spec_link',
+      'spec_link',
       'intent_to_implement_url', 'comments')
-  initial_public_proposal_url = ALL_FIELDS['initial_public_proposal_url']
   # TODO(jrobbins): advise user to request a tag review
   spec_link = ALL_FIELDS['spec_link']
   intent_to_implement_url = ALL_FIELDS['intent_to_implement_url']
@@ -583,7 +577,7 @@ class NewFeature_Prototype(forms.Form):
 
 class Any_DevTrial(forms.Form):
   field_order = (
-      'bug_url', 'doc_links', 'spec_link',
+      'bug_url', 'doc_links',
       'interop_compat_risks',
       'safari_views', 'safari_views_link', 'safari_views_notes',
       'ff_views', 'ff_views_link', 'ff_views_notes',
@@ -597,7 +591,6 @@ class Any_DevTrial(forms.Form):
   bug_url = ALL_FIELDS['bug_url']
   doc_links = ALL_FIELDS['doc_links']
   # TODO(jrobbins): api overview link
-  spec_link = ALL_FIELDS['spec_link']
 
   interop_compat_risks = ALL_FIELDS['interop_compat_risks']
 
@@ -737,9 +730,8 @@ class Any_Identify(forms.Form):
   field_order = (
       'owner', 'blink_components', 'motivation', 'explainer_links',
       'footprint', 'bug_url', 'launch_bug_url', 'comments')
-  current_user_email = users.get_current_user().email if users.get_current_user() else None
   owner = forms.EmailField(
-      initial=current_user_email, required=True, label='Contact emails',
+      required=True, label='Contact emails',
       widget=forms.EmailInput(
           attrs={'multiple': True, 'placeholder': 'email, email'}),
       help_text=('Comma separated list of full email addresses. '

@@ -97,8 +97,10 @@ class FeatureNew(common.ContentHandler):
       common.handle_401(self.request, self.response, Exception)
       return
 
+    new_feature_form = guideforms.NewFeatureForm(
+        initial={'owner': user.email()})
     template_data = {
-        'overview_form': guideforms.NewFeatureForm(),
+        'overview_form': new_feature_form,
         }
 
     self._add_common_template_values(template_data)
@@ -304,7 +306,7 @@ class FeatureEditStage(common.ContentHandler):
 
     # Cast incoming milestones to ints.
     # TODO(jrobbins): Consider supporting milestones that are not ints.
-    if self.touched('shipped_milestone = self'):
+    if self.touched('shipped_milestone'):
       feature.shipped_milestone = self.parse_int('shipped_milestone')
 
     if self.touched('shipped_android_milestone'):

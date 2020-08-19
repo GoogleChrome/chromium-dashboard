@@ -60,6 +60,11 @@ class FeatureNewTest(unittest.TestCase):
     mock_render.assert_called_once()
     template_data = mock_render.call_args.kwargs['data']
     self.assertTrue('overview_form' in template_data)
+    form = template_data['overview_form']
+    field = form.fields['owner']
+    self.assertEqual(
+        'user1@google.com',
+        form.get_initial_for_field(field, 'owner'))
 
   def test_post__anon(self):
     """Anon cannot create features, gets a 401."""
@@ -266,6 +271,7 @@ class FeatureEditStageTest(unittest.TestCase):
             'category': '2',
             'name': 'Revised feature name',
             'summary': 'Revised feature summary',
+            'shipped_milestone': '84',
         })
 
     self.handler.post('/guide/stage', self.feature_1.key().id(), self.stage)
@@ -278,3 +284,4 @@ class FeatureEditStageTest(unittest.TestCase):
     self.assertEqual(2, revised_feature.category)
     self.assertEqual('Revised feature name', revised_feature.name)
     self.assertEqual('Revised feature summary', revised_feature.summary)
+    self.assertEqual(84, revised_feature.shipped_milestone)

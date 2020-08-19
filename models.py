@@ -124,7 +124,7 @@ INTENT_STAGES = collections.OrderedDict([
   (INTENT_IMPLEMENT, 'Start prototyping'),
   (INTENT_EXPERIMENT, 'Dev trials'),
   (INTENT_IMPLEMENT_SHIP, 'Evaluate readiness to ship'),
-  (INTENT_EXTEND_TRIAL, 'Origin trials'),
+  (INTENT_EXTEND_TRIAL, 'Origin Trial'),
   (INTENT_SHIP, 'Prepare to ship'),
   (INTENT_REMOVED, 'Removed'),
   (INTENT_SHIPPED, 'Shipped'),
@@ -1130,7 +1130,7 @@ class FeatureForm(forms.Form):
 
   #name = PlaceholderCharField(required=True, placeholder='Feature name')
   name = forms.CharField(
-      required=True, label='Feature',
+      required=True, label='Feature name',
       # Use a specific autocomplete value to avoid "name" autofill.
       # https://bugs.chromium.org/p/chromium/issues/detail?id=468153#c164
       widget=forms.TextInput(attrs={'autocomplete': 'feature-name'}),
@@ -1139,6 +1139,29 @@ class FeatureForm(forms.Form):
   summary = forms.CharField(label='Summary', required=True,
       widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 500}),
       help_text='Provide a one sentence description followed by one or two lines explaining how this feature helps web developers.')
+
+  summary = forms.CharField(label='Feature summary', required=True, max_length=500,
+      widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 500}),
+      help_text='Summarize the feature using complete sentences as you would to an external developer using the feature.')
+
+  unlisted = forms.BooleanField(
+      required=False, initial=False,
+      help_text=('Check this box for draft features that should not appear '
+                 'on the public feature list. Anyone with the link will be able to '
+                 'view the feature on the detail page.'))
+
+  owner = forms.EmailField(
+      required=True, label='Contact emails',
+      widget=forms.EmailInput(
+          attrs={'multiple': True, 'placeholder': 'email, email'}),
+      help_text='Comma separated list of full email addresses. Prefer @chromium.org.')
+
+  blink_components = forms.ChoiceField(
+      required=False,
+      label='Blink component',
+      help_text='Select the most specific component. If unsure, leave as "%s".' % BlinkComponent.DEFAULT_COMPONENT,
+      choices=[(x, x) for x in BlinkComponent.fetch_all_components()],
+      initial=[BlinkComponent.DEFAULT_COMPONENT])
 
   category = forms.ChoiceField(
       required=False,
@@ -1151,17 +1174,6 @@ class FeatureForm(forms.Form):
       label='Intent stage', help_text='Select the appropriate intent stage.',
       initial=INTENT_IMPLEMENT,
       choices=INTENT_STAGES.items())
-
-  current_user_email = users.get_current_user().email if users.get_current_user() else None
-  owner = forms.EmailField(
-      initial=current_user_email, required=True, label='Contact emails',
-      widget=forms.EmailInput(
-          attrs={'multiple': True, 'placeholder': 'email, email'}),
-      help_text='Comma separated list of full email addresses. Prefer @chromium.org.')
-
-  summary = forms.CharField(label='Feature summary', required=True, max_length=500,
-      widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 500}),
-      help_text='Summarize the feature using complete sentences as you would to an external developer using the feature.')
 
   motivation = forms.CharField(label='Motivation', required=True,
       widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 1480}),
@@ -1202,12 +1214,6 @@ class FeatureForm(forms.Form):
       required=False, label='Origin Trial feedback summary',
       widget=forms.URLInput(attrs={'placeholder': 'https://'}),
       help_text='If your feature was available as an Origin Trial, link to a summary of usage and developer feedback. If not, leave this empty.')
-
-  unlisted = forms.BooleanField(
-      required=False, initial=False,
-      help_text=('Check this box for draft features that should not appear '
-                 'on the public feature list. Anyone with the link will be able to '
-                 'view the feature on the detail page.'))
 
   doc_links = forms.CharField(label='Doc link(s)', required=False,
       widget=forms.Textarea(
@@ -1276,7 +1282,7 @@ class FeatureForm(forms.Form):
       widget=forms.Textarea(attrs={'rows': 2, 'cols': 50, 'placeholder': 'Notes', 'maxlength': 1480}))
 
   ie_views = forms.ChoiceField(
-      required=False, label='Edge',
+      required=False, label='Edge views',
       choices=VENDOR_VIEWS_EDGE.items(),
       initial=NO_PUBLIC_SIGNALS)
   ie_views_link = forms.URLField(
@@ -1377,13 +1383,6 @@ class FeatureForm(forms.Form):
           'Link to the first public proposal to create this feature, e.g., '
           'a WICG discourse post.'))
 
-  blink_components = forms.ChoiceField(
-      required=False,
-      label='Blink component',
-      help_text='Select the most specific component. If unsure, leave as "%s".' % BlinkComponent.DEFAULT_COMPONENT,
-      choices=[(x, x) for x in BlinkComponent.fetch_all_components()],
-      initial=[BlinkComponent.DEFAULT_COMPONENT])
-
   devrel = forms.EmailField(
       required=False, label='Developer relations emails',
       widget=forms.EmailInput(
@@ -1426,7 +1425,8 @@ class FeatureForm(forms.Form):
       help_text='Comma separated keywords used only in search')
 
   comments = forms.CharField(label='Comments', required=False,
-      widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 1480}),
+      widget=forms.Textarea(attrs={
+          'cols': 50, 'rows': 4, 'maxlength': 1480}),
       help_text='Additional comments, caveats, info...')
 
   class Meta:
