@@ -138,11 +138,29 @@ ALL_FIELDS = {
                    'order to enable discussion with other browser vendors, '
                    'standards bodies, or other interested parties.')),
 
+    'security_review_status': forms.ChoiceField(
+        required=False,
+        choices=models.REVIEW_STATUS_CHOICES.items(),
+        initial=models.REVIEW_PENDING,
+        help_text=('Status of the security review.')),
+
+    'privacy_review_status': forms.ChoiceField(
+        required=False,
+        choices=models.REVIEW_STATUS_CHOICES.items(),
+        initial=models.REVIEW_PENDING,
+        help_text=('Status of the privacy review.')),
+
     'tag_review': forms.CharField(
         label='TAG Review', required=True,
         widget=forms.Textarea(attrs={'rows': 2, 'cols': 50, 'maxlength': 1480}),
         help_text=('Link(s) to TAG review(s), or explanation why this is '
                    'not needed.')),
+
+    'tag_review_status': forms.ChoiceField(
+        required=False,
+        choices=models.REVIEW_STATUS_CHOICES.items(),
+        initial=models.REVIEW_PENDING,
+        help_text=('Status of the tag review.')),
 
     'intent_to_implement_url': forms.URLField(
         required=False, label='Intent to Prototype link',
@@ -565,6 +583,7 @@ class Any_DevTrial(forms.Form):
       'ff_views', 'ff_views_link', 'ff_views_notes',
       'ie_views', 'ie_views_link', 'ie_views_notes',
       'web_dev_views', 'web_dev_views_link', 'web_dev_views_notes',
+      'security_review_status', 'privacy_review_status',
       'ergonomics_risks', 'activation_risks', 'security_risks', 'debuggability',
       'all_platforms', 'all_platforms_descr', 'wpt', 'wpt_descr',
       'sample_links', 'devrel', 'ready_for_trial_url', 'comments')
@@ -590,6 +609,9 @@ class Any_DevTrial(forms.Form):
   web_dev_views = ALL_FIELDS['web_dev_views']
   web_dev_views_link = ALL_FIELDS['web_dev_views_link']
   web_dev_views_notes = ALL_FIELDS['web_dev_views_notes']
+
+  security_review_status = ALL_FIELDS['security_review_status']
+  privacy_review_status = ALL_FIELDS['privacy_review_status']
 
   ergonomics_risks = ALL_FIELDS['ergonomics_risks']
   activation_risks = ALL_FIELDS['activation_risks']
@@ -670,7 +692,7 @@ class Any_PrepareToShip(forms.Form):
   field_order = (
       'impl_status_chrome', 'shipped_milestone', 'shipped_android_milestone',
       'shipped_ios_milestone', 'shipped_webview_milestone',
-      'footprint', 'tag_review',
+      'footprint', 'tag_review', 'tag_review_status',
       'intent_to_implement_url', 'origin_trial_feedback_url',
       'launch_bug_url', 'intent_to_ship_url', 'comments')
   impl_status_chrome = ALL_FIELDS['impl_status_chrome']
@@ -680,6 +702,7 @@ class Any_PrepareToShip(forms.Form):
   shipped_webview_milestone = ALL_FIELDS['shipped_webview_milestone']
   footprint = ALL_FIELDS['footprint']
   tag_review = ALL_FIELDS['tag_review']
+  tag_review_status = ALL_FIELDS['tag_review_status']
   intent_to_implement_url = ALL_FIELDS['intent_to_implement_url']
   origin_trial_feedback_url = ALL_FIELDS['origin_trial_feedback_url'] # optional
   launch_bug_url = ALL_FIELDS['launch_bug_url']

@@ -506,7 +506,13 @@ class FeatureHandler(common.ContentHandler):
       feature.web_dev_views_notes = self.request.get('web_dev_views_notes')
       feature.prefixed = self.request.get('prefixed') == 'on'
       feature.spec_link = spec_link
+      feature.security_review_status = int(self.request.get(
+          'security_review_status', models.REVIEW_PENDING))
+      feature.privacy_review_status = int(self.request.get(
+          'privacy_review_status', models.REVIEW_PENDING))
       feature.tag_review = self.request.get('tag_review')
+      feature.tag_review_status = int(self.request.get(
+          'tag_review_status', models.REVIEW_PENDING))
       feature.standardization = int(self.request.get('standardization'))
       feature.doc_links = doc_links
       feature.sample_links = sample_links
@@ -574,7 +580,13 @@ class FeatureHandler(common.ContentHandler):
           web_dev_views_notes=self.request.get('web_dev_views_notes'),
           prefixed=self.request.get('prefixed') == 'on',
           spec_link=spec_link,
+          security_review_status=int(self.request.get(
+              'security_review_status', models.REVIEW_PENDING)),
+          privacy_review_status=int(self.request.get(
+              'privacy_review_status', models.REVIEW_PENDING)),
           tag_review=self.request.get('tag_review'),
+          tag_review_status=int(self.request.get(
+              'tag_review_status', models.REVIEW_PENDING)),
           standardization=int(self.request.get('standardization')),
           doc_links=doc_links,
           sample_links=sample_links,
