@@ -280,9 +280,7 @@ ALL_FIELDS = {
     'experiment_timeline': forms.CharField(
         label='Experiment Timeline', required=False,
         widget=forms.Textarea(attrs={'rows': 2, 'cols': 50, 'maxlength': 1480}),
-        help_text=(
-            'For developer trials and origin trials state which versions of '
-            'Chrome will support the trial.')),
+        help_text='State which versions of Chrome will support the origin trial.'),
 
     'experiment_risks': forms.CharField(
         label='Experiment Risks', required=False,
@@ -411,8 +409,10 @@ ALL_FIELDS = {
         widget=forms.EmailInput(
             attrs={'multiple': True, 'placeholder': 'email, email'}),
         help_text=(
-            'If you are working with members of Developer relations, add a '
-            'comma separated list of their email addresses.')),
+            'If Developer Relations staff are actively supporting this feature, '
+            'provide a comma separated list of their email addresses. To request '
+            'support from Developer Relations, send an email to '
+            'web-devrel-chrome-team@google.com')),
 
     'impl_status_chrome': forms.ChoiceField(
         required=False, label='Status in Chromium',
