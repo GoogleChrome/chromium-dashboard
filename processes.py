@@ -65,6 +65,7 @@ BLINK_PROCESS_STAGES = [
       'incubation (WICG) to share ideas.',
       ['Initial public proposal',
        'Motivation',
+       'Explainer',
       ],
       [],
       models.INTENT_NONE, models.INTENT_INCUBATE),
@@ -73,9 +74,7 @@ BLINK_PROCESS_STAGES = [
       'Start prototyping',
       'Share an explainer doc and API. '
       'Start prototyping code in a public repo.',
-      ['Explainer',
-       'API design',
-       'Code in repo',
+      ['API design',
        'Intent to Prototype email',
        'Spec reviewer',
       ],
