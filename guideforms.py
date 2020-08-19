@@ -477,12 +477,6 @@ ALL_FIELDS = {
     'prefixed': forms.BooleanField(
         required=False, initial=False, label='Prefixed?'),
 
-    'footprint': forms.ChoiceField(
-        required=False,
-        label='Technical footprint',
-        choices=models.FOOTPRINT_CHOICES.items(),
-        initial=models.MAJOR_MINOR_NEW_API),
-
     'search_tags': forms.CharField(
         label='Search tags', required=False,
         help_text='Comma separated keywords used only in search'),
@@ -553,12 +547,10 @@ class NewFeature_Incubate(forms.Form):
 
   field_order = (
       'motivation', 'initial_public_proposal_url', 'explainer_links',
-      'footprint',
       'bug_url', 'launch_bug_url', 'comments')
   motivation = ALL_FIELDS['motivation']
   initial_public_proposal_url = ALL_FIELDS['initial_public_proposal_url']
   explainer_links = ALL_FIELDS['explainer_links']
-  footprint = ALL_FIELDS['footprint']
   bug_url = ALL_FIELDS['bug_url']
   launch_bug_url = ALL_FIELDS['launch_bug_url']
   comments = ALL_FIELDS['comments']
@@ -692,7 +684,7 @@ class Any_PrepareToShip(forms.Form):
   field_order = (
       'impl_status_chrome', 'shipped_milestone', 'shipped_android_milestone',
       'shipped_ios_milestone', 'shipped_webview_milestone',
-      'footprint', 'tag_review', 'tag_review_status',
+      'tag_review', 'tag_review_status',
       'intent_to_implement_url', 'origin_trial_feedback_url',
       'launch_bug_url', 'intent_to_ship_url', 'comments')
   impl_status_chrome = ALL_FIELDS['impl_status_chrome']
@@ -700,7 +692,6 @@ class Any_PrepareToShip(forms.Form):
   shipped_android_milestone = ALL_FIELDS['shipped_android_milestone']
   shipped_ios_milestone = ALL_FIELDS['shipped_ios_milestone']
   shipped_webview_milestone = ALL_FIELDS['shipped_webview_milestone']
-  footprint = ALL_FIELDS['footprint']
   tag_review = ALL_FIELDS['tag_review']
   tag_review_status = ALL_FIELDS['tag_review_status']
   intent_to_implement_url = ALL_FIELDS['intent_to_implement_url']
@@ -729,7 +720,7 @@ class Any_Identify(forms.Form):
 
   field_order = (
       'owner', 'blink_components', 'motivation', 'explainer_links',
-      'footprint', 'bug_url', 'launch_bug_url', 'comments')
+      'bug_url', 'launch_bug_url', 'comments')
   owner = forms.EmailField(
       required=True, label='Contact emails',
       widget=forms.EmailInput(
@@ -740,7 +731,6 @@ class Any_Identify(forms.Form):
 
   motivation = ALL_FIELDS['motivation']
   explainer_links = ALL_FIELDS['explainer_links']
-  footprint = ALL_FIELDS['footprint']
   bug_url = ALL_FIELDS['bug_url']
   launch_bug_url = ALL_FIELDS['launch_bug_url']
   comments = ALL_FIELDS['comments']
@@ -778,11 +768,10 @@ class Existing_OriginTrial(forms.Form):
 class Deprecation_PrepareToShip(forms.Form):
 
   field_order = (
-      'impl_status_chrome', 'footprint', 'tag_review',
+      'impl_status_chrome', 'tag_review',
       'intent_to_implement_url', 'origin_trial_feedback_url',
       'launch_bug_url', 'comments')
   impl_status_chrome = ALL_FIELDS['impl_status_chrome']
-  footprint = ALL_FIELDS['footprint']
   tag_review = ALL_FIELDS['tag_review']
   intent_to_implement_url = ALL_FIELDS['intent_to_implement_url']
   origin_trial_feedback_url = ALL_FIELDS['origin_trial_feedback_url'] # optional

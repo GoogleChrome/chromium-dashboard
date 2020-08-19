@@ -195,7 +195,6 @@ class FeatureHandlerTest(unittest.TestCase):
       "name": "name",
       "summary": "sum",
       "impl_status_chrome": 1,
-      "footprint": 1,
       "visibility": 1,
       "ff_views": 1,
       "ie_views": 1,

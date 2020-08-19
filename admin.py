@@ -482,7 +482,6 @@ class FeatureHandler(common.ContentHandler):
       feature.shipped_webview_milestone = shipped_webview_milestone
       feature.shipped_opera_milestone = shipped_opera_milestone
       feature.shipped_opera_android_milestone = shipped_opera_android_milestone
-      feature.footprint = int(self.request.get('footprint'))
       feature.interop_compat_risks = self.request.get('interop_compat_risks')
       feature.ergonomics_risks = self.request.get('ergonomics_risks')
       feature.activation_risks = self.request.get('activation_risks')
@@ -565,7 +564,6 @@ class FeatureHandler(common.ContentHandler):
           all_platforms_descr=self.request.get('all_platforms_descr'),
           wpt=self.request.get('wpt') == 'on',
           wpt_descr=self.request.get('wpt_descr'),
-          footprint=int(self.request.get('footprint')),
           ff_views=int(self.request.get('ff_views')),
           ff_views_link=ff_views_link,
           ff_views_notes=self.request.get('ff_views_notes'),
