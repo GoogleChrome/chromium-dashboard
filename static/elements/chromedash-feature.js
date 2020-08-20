@@ -300,8 +300,11 @@ class ChromedashFeature extends LitElement {
                         to users with edit access.</b></p>
              `: nothing }
           <p><span>${this.feature.summary}</span></p>
-          <p><span>${this.feature.motivation}</span></p>
         </summary>
+        ${this.feature.motivation ?
+          html`<p><label>Motivation</label></p>
+          <p><span>${this.feature.motivation}</span></p>`
+          : nothing }
       </section>
       ${this.open ? html`
         <section class="sidebyside">
