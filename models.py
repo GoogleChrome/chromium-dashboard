@@ -1200,17 +1200,18 @@ class FeatureForm(forms.Form):
       help_text='If your feature was available as an Origin Trial, link to a summary of usage and developer feedback. If not, leave this empty.')
 
   i2e_lgtms = forms.EmailField(
-      required=False, label='i2e LGTM by',
+      required=False, label='Intent to Experiment LGTM by',
       widget=forms.EmailInput(
           attrs={'multiple': True, 'placeholder': 'email'}),
       help_text=('Full email address of API owner who LGTM\'d the '
                  'Intent to Experiment email thread.'))
 
   i2s_lgtms = forms.EmailField(
-      required=False, label='i2s LGTMs by',
+      required=False, label='Intent to Ship LGTMs by',
       widget=forms.EmailInput(
           attrs={'multiple': True, 'placeholder': 'email, email, email'}),
-      help_text=('Full email addresses of API owner who LGTM\'d '
+      help_text=('Comma separated list of '
+                 'full email addresses of API owners who LGTM\'d '
                  'the Intent to Ship email thread.'))
 
   doc_links = forms.CharField(label='Doc link(s)', required=False,

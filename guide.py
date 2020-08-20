@@ -49,7 +49,7 @@ STAGE_FORMS = {
         models.INTENT_EXPERIMENT: guideforms.Any_DevTrial,
         models.INTENT_IMPLEMENT_SHIP: guideforms.NewFeature_EvalReadinessToShip,
         models.INTENT_EXTEND_TRIAL: guideforms.NewFeature_OriginTrial,
-        models.INTENT_SHIP: guideforms.Any_PrepareToShip,
+        models.INTENT_SHIP: guideforms.Most_PrepareToShip,
         models.INTENT_SHIPPED: guideforms.Any_Ship,
         },
 
@@ -58,7 +58,7 @@ STAGE_FORMS = {
         models.INTENT_IMPLEMENT: guideforms.Any_Implement,
         models.INTENT_EXPERIMENT: guideforms.Any_DevTrial,
         models.INTENT_EXTEND_TRIAL: guideforms.Existing_OriginTrial,
-        models.INTENT_SHIP: guideforms.Any_PrepareToShip,
+        models.INTENT_SHIP: guideforms.Most_PrepareToShip,
         models.INTENT_SHIPPED: guideforms.Any_Ship,
         },
 
@@ -66,7 +66,7 @@ STAGE_FORMS = {
         models.INTENT_INCUBATE: guideforms.Any_Identify,
         models.INTENT_IMPLEMENT: guideforms.Any_Implement,
         models.INTENT_EXPERIMENT: guideforms.Any_DevTrial,
-        models.INTENT_SHIP: guideforms.Any_PrepareToShip,
+        models.INTENT_SHIP: guideforms.PSA_PrepareToShip,
         models.INTENT_SHIPPED: guideforms.Any_Ship,
         },
 

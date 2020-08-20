@@ -336,18 +336,26 @@ ALL_FIELDS = {
          'of usage and developer feedback. If not, leave this empty.')),
 
     'i2e_lgtms': forms.EmailField(
-        required=False, label='i2e LGTM by',
+        required=False, label='Intent to Experiment LGTM by',
         widget=forms.EmailInput(
             attrs={'multiple': True, 'placeholder': 'email'}),
         help_text=('Full email address of API owner who LGTM\'d the '
                    'Intent to Experiment email thread.')),
 
     'i2s_lgtms': forms.EmailField(
-        required=False, label='i2s LGTMs by',
+        required=False, label='Intent to Ship LGTMs by',
         widget=forms.EmailInput(
             attrs={'multiple': True, 'placeholder': 'email, email, email'}),
-        help_text=('Full email addresses of API owner who LGTM\'d '
+        help_text=('Comma separated list of '
+                   'full email addresses of API owners who LGTM\'d '
                    'the Intent to Ship email thread.')),
+
+    'r4dt_lgtms': forms.EmailField(  # Sets i2e_lgtms field.
+        required=False, label='Request for Deprecation Trial LGTM by',
+        widget=forms.EmailInput(
+            attrs={'multiple': True, 'placeholder': 'email'}),
+        help_text=('Full email addresses of API owners who LGTM\'d '
+                   'the Request for Deprecation Trial email thread.')),
 
     'debuggability': forms.CharField(
         label='Debuggability', required=False,
@@ -682,7 +690,7 @@ class NewFeature_OriginTrial(forms.Form):
   comments = ALL_FIELDS['comments']
 
 
-class Any_PrepareToShip(forms.Form):
+class Most_PrepareToShip(forms.Form):
 
   field_order = (
       'impl_status_chrome', 'shipped_milestone', 'shipped_android_milestone',
@@ -702,6 +710,27 @@ class Any_PrepareToShip(forms.Form):
   launch_bug_url = ALL_FIELDS['launch_bug_url']
   intent_to_ship_url = ALL_FIELDS['intent_to_ship_url']
   i2s_lgtms = ALL_FIELDS['i2s_lgtms']
+  comments = ALL_FIELDS['comments']
+
+
+class PSA_PrepareToShip(forms.Form):
+
+  field_order = (
+      'impl_status_chrome', 'shipped_milestone', 'shipped_android_milestone',
+      'shipped_ios_milestone', 'shipped_webview_milestone',
+      'tag_review',
+      'intent_to_implement_url', 'origin_trial_feedback_url',
+      'launch_bug_url', 'intent_to_ship_url', 'comments')
+  impl_status_chrome = ALL_FIELDS['impl_status_chrome']
+  shipped_milestone = ALL_FIELDS['shipped_milestone']
+  shipped_android_milestone = ALL_FIELDS['shipped_android_milestone']
+  shipped_ios_milestone = ALL_FIELDS['shipped_ios_milestone']
+  shipped_webview_milestone = ALL_FIELDS['shipped_webview_milestone']
+  tag_review = ALL_FIELDS['tag_review']
+  intent_to_implement_url = ALL_FIELDS['intent_to_implement_url']
+  origin_trial_feedback_url = ALL_FIELDS['origin_trial_feedback_url'] # optional
+  launch_bug_url = ALL_FIELDS['launch_bug_url']
+  intent_to_ship_url = ALL_FIELDS['intent_to_ship_url']
   comments = ALL_FIELDS['comments']
 
 
@@ -757,7 +786,7 @@ class Existing_OriginTrial(forms.Form):
   field_order = (
       'experiment_goals', 'experiment_timeline', 'experiment_risks',
       'experiment_extension_reason', 'ongoing_constraints',
-      'intent_to_experiment_url',
+      'intent_to_experiment_url', 'i2e_lgtms',
       'origin_trial_feedback_url', 'comments')
   experiment_goals = ALL_FIELDS['experiment_goals']
   experiment_timeline = ALL_FIELDS['experiment_timeline']
@@ -765,24 +794,9 @@ class Existing_OriginTrial(forms.Form):
   experiment_extension_reason = ALL_FIELDS['experiment_extension_reason']
   ongoing_constraints = ALL_FIELDS['ongoing_constraints']
   intent_to_experiment_url = ALL_FIELDS['intent_to_experiment_url']
+  i2e_lgtms = ALL_FIELDS['i2e_lgtms']
   origin_trial_feedback_url = ALL_FIELDS['origin_trial_feedback_url'] # optional
   # TODO(jrobbins): action to generate intent to experiement email
-  comments = ALL_FIELDS['comments']
-
-
-# Note: Even though this is similar to another form, it is likely to change.
-class Deprecation_PrepareToShip(forms.Form):
-
-  field_order = (
-      'impl_status_chrome', 'footprint', 'tag_review',
-      'intent_to_implement_url', 'origin_trial_feedback_url',
-      'launch_bug_url', 'comments')
-  impl_status_chrome = ALL_FIELDS['impl_status_chrome']
-  footprint = ALL_FIELDS['footprint']
-  tag_review = ALL_FIELDS['tag_review']
-  intent_to_implement_url = ALL_FIELDS['intent_to_implement_url']
-  origin_trial_feedback_url = ALL_FIELDS['origin_trial_feedback_url'] # optional
-  launch_bug_url = ALL_FIELDS['launch_bug_url']
   comments = ALL_FIELDS['comments']
 
 
@@ -792,14 +806,34 @@ class Deprecation_DeprecationTrial(forms.Form):
   field_order = (
       'experiment_goals', 'experiment_timeline', 'experiment_risks',
       'experiment_extension_reason', 'ongoing_constraints',
+      'intent_to_experiment_url', 'i2e_lgtms',
       'origin_trial_feedback_url', 'comments')
   experiment_goals = ALL_FIELDS['experiment_goals']
   experiment_timeline = ALL_FIELDS['experiment_timeline']
   experiment_risks = ALL_FIELDS['experiment_risks']
   experiment_extension_reason = ALL_FIELDS['experiment_extension_reason']
   ongoing_constraints = ALL_FIELDS['ongoing_constraints']
+  intent_to_experiment_url = ALL_FIELDS['intent_to_experiment_url']
+  i2e_lgtms = ALL_FIELDS['r4dt_lgtms']  # class var name matches underlying field.
   origin_trial_feedback_url = ALL_FIELDS['origin_trial_feedback_url'] # optional
   comments = ALL_FIELDS['comments']
+
+
+# Note: Even though this is similar to another form, it is likely to change.
+class Deprecation_PrepareToShip(forms.Form):
+
+  field_order = (
+      'impl_status_chrome', 'footprint', 'tag_review',
+      'intent_to_ship_url', 'i2s_lgtms',
+      'launch_bug_url', 'comments')
+  impl_status_chrome = ALL_FIELDS['impl_status_chrome']
+  footprint = ALL_FIELDS['footprint']
+  tag_review = ALL_FIELDS['tag_review']
+  intent_to_ship_url = ALL_FIELDS['intent_to_ship_url']
+  i2s_lgtms = ALL_FIELDS['i2s_lgtms']
+  launch_bug_url = ALL_FIELDS['launch_bug_url']
+  comments = ALL_FIELDS['comments']
+
 
 class Deprecation_Removed(forms.Form):
   comments = ALL_FIELDS['comments']

@@ -115,19 +115,20 @@ class ProgressDetectorsTest(unittest.TestCase):
     self.assertTrue(detector(self.feature_1))
 
   def test_one_i2e_lgtm(self):
-    detector = processes.PROGRESS_DETECTORS['One i2e LGTM']
+    detector = processes.PROGRESS_DETECTORS['One LGTM on Intent to Experiment']
     self.assertFalse(detector(self.feature_1))
     self.feature_1.i2e_lgtms = [db.Email('api_owner@chromium.org')]
     self.assertTrue(detector(self.feature_1))
 
-  def test_one_i2s_lgtm(self):
-    detector = processes.PROGRESS_DETECTORS['One i2s LGTM']
+  def test_one_i2e_lgtm(self):
+    detector = processes.PROGRESS_DETECTORS[
+        'One LGTM on Request for Deprecation Trial']
     self.assertFalse(detector(self.feature_1))
-    self.feature_1.i2s_lgtms = [db.Email('api_owner@chromium.org')]
+    self.feature_1.i2e_lgtms = [db.Email('api_owner@chromium.org')]
     self.assertTrue(detector(self.feature_1))
 
   def test_three_i2s_lgtm(self):
-    detector = processes.PROGRESS_DETECTORS['Three i2s LGTMs']
+    detector = processes.PROGRESS_DETECTORS['Three LGTMs on Intent to Ship']
     self.assertFalse(detector(self.feature_1))
     self.feature_1.i2s_lgtms = [
         db.Email('one@chromium.org'),

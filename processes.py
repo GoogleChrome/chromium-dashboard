@@ -118,7 +118,7 @@ BLINK_PROCESS_STAGES = [
        'OT available',
        'OT results',
        'Intent to Experiment email',
-       'One i2e LGTM',
+       'One LGTM on Intent to Experiment',
       ],
       [('Draft Intent to Experiment email', INTENT_EMAIL_URL)],
       models.INTENT_IMPLEMENT_SHIP, models.INTENT_EXTEND_TRIAL),
@@ -132,7 +132,7 @@ BLINK_PROCESS_STAGES = [
        'Updated vendor signals',
        'Updated target milestone',
        'Intent to Ship email',
-       'Three i2s LGTMs',
+       'Three LGTMs on Intent to Ship',
       ],
       [('Draft Intent to Ship email', INTENT_EMAIL_URL)],
       models.INTENT_IMPLEMENT_SHIP, models.INTENT_SHIP),
@@ -196,6 +196,7 @@ BLINK_FAST_TRACK_STAGES = [
        'OT available',
        'OT results',
        'Intent to Experiment email',
+       'One LGTM on Intent to Experiment',
       ],
       [('Draft Intent to Experiment email', INTENT_EMAIL_URL)],
       models.INTENT_EXPERIMENT, models.INTENT_EXTEND_TRIAL),
@@ -207,7 +208,7 @@ BLINK_FAST_TRACK_STAGES = [
       ['Documentation signoff',
        'Updated target milestone',
        'Intent to Ship email',
-       'Three i2s LGTMs',
+       'Three LGTMs on Intent to Ship',
       ],
       [('Draft Intent to Ship email', INTENT_EMAIL_URL)],
       models.INTENT_EXPERIMENT, models.INTENT_SHIP),
@@ -266,7 +267,6 @@ PSA_ONLY_STAGES = [
       ['Web facing PSA email',
        'Updated target milestone',
        'Intent to Ship email',
-       'One i2s LGTM',
       ],
       [('Draft Intent to Ship email', INTENT_EMAIL_URL)],
       models.INTENT_EXPERIMENT, models.INTENT_SHIP),
@@ -304,7 +304,7 @@ DEPRECATION_STAGES = [
 
   # TODO(cwilso): Work out additional steps for flag defaulting to disabled.
   ProcessStage(
-      'Dev trial',
+      'Dev trial of deprecation',
       'Publicize deprecation and address risks. ',
       ['Ready for Trial email',
        'Vendor signals',
@@ -319,8 +319,10 @@ DEPRECATION_STAGES = [
       ['DT request',
        'DT available',
        'Removal of DT',
+       'Request for Deprecation Trial email',
+       'One LGTM on Request for Deprecation Trial',
       ],
-      [('Draft Deprecation Trial email', INTENT_EMAIL_URL)],
+      [('Draft Request for Deprecation Trial email', INTENT_EMAIL_URL)],
       # TODO(jrobbins): Intent to extend deprecation.
       models.INTENT_EXPERIMENT, models.INTENT_EXTEND_TRIAL),
 
@@ -328,9 +330,9 @@ DEPRECATION_STAGES = [
       'Prepare to ship',
       'Lock in shipping milestone. '
       'Finalize docs and announcements before disabling feature by default.',
-      ['Intent to Ship email',
-       'Three LGTMs',
-       'Updated target milestone',
+      ['Updated target milestone',
+       'Intent to Ship email',
+       'Three LGTMs on Intent to Ship',
       ],
       [('Draft Intent to Ship email', INTENT_EMAIL_URL)],
       models.INTENT_EXPERIMENT, models.INTENT_SHIP),
@@ -398,13 +400,13 @@ PROGRESS_DETECTORS = {
     'Intent to Experiment email':
     lambda f: f.intent_to_experiment_url,
 
-    'One i2e LGTM':
+    'One LGTM on Intent to Experiment':
     lambda f: f.i2e_lgtms,
 
-    'One i2s LGTM':
-    lambda f: f.i2s_lgtms,
+    'One LGTM on Request for Deprecation Trial':
+    lambda f: f.i2e_lgtms,
 
-    'Three i2s LGTMs':
+    'Three LGTMs on Intent to Ship':
     lambda f: f.i2s_lgtms and len(f.i2s_lgtms) >= 3,
 
     'Samples':
