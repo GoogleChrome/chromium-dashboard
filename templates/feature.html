@@ -143,25 +143,11 @@
       {% endif %}
       <br>
       <p>
-        {% if feature.shipped_milestone or feature.shipped_android_milestone or feature.shipped_ios_milestone or feature.shipped_webview_milestone %}
-          <b>
-          {% if feature.meta.origintrial %}
-            Origin trial
-          {% else %}
-            {% if feature.meta.needsflag %}
-              Behind a flag
-            {% elif feature.impl_status_chrome == "Deprecated" or feature.impl_status_chrome == "No longer pursuing" %}
-              Deprecated
-            {% elif feature.impl_status_chrome == "Removed" %}
-              Removed
-            {% else %}
-              Enabled by default
-            {% endif %}
-          {% endif %}
-          </b>
-          {% if feature.bug_url %}
+        <b>{{ feature.impl_status_chrome }}</b>
+        {% if feature.bug_url %}
           (<a href="{{feature.bug_url}}" target="_blank">tracking bug</a>)
-          {% endif %}
+        {% endif %}
+        {% if feature.shipped_milestone or feature.shipped_android_milestone or feature.shipped_ios_milestone or feature.shipped_webview_milestone %}
           in:
           <ul>
           {% if feature.shipped_milestone %}
@@ -177,11 +163,6 @@
           <li>Android WebView release {{ feature.shipped_webview_milestone }}</li>
           {% endif %}
           </ul>
-        {% else %}
-          {{ feature.meta.milestone_str }}
-          {% if feature.bug_url %}
-          (<a href="{{ feature.bug_url }}" target="_blank">tracking bug</a>)
-          {% endif %}
         {% endif %}
       </p>
     </section>
