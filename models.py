@@ -1452,6 +1452,10 @@ class UserPref(DictModel):
   # and it bounced.  We will not send to that address again.
   bounced = db.BooleanProperty(default=False)
 
+  # A list of strings identifying on-page help cue cards that the user
+  # has dismissed (clicked "X" or "GOT IT").
+  dismissed_cues = db.StringListProperty()
+
   @classmethod
   def get_signed_in_user_pref(cls):
     """Return a UserPref for the signed in user or None if anon."""
@@ -1466,6 +1470,17 @@ class UserPref(DictModel):
     else:
       user_pref = UserPref(email=signed_in_user.email())
     return user_pref
+
+  @classmethod
+  def dismiss_cue(cls, cue):
+    """Add cue to the signed in user's dismissed_cues."""
+    user_pref = cls.get_signed_in_user_pref()
+    if not user_pref:
+      return  # Anon users cannot store dismissed cue names.
+
+    if cue not in user_pref.dismissed_cues:
+      user_pref.dismissed_cues.append(cue)
+      user_pref.put()
 
   @classmethod
   def get_prefs_for_emails(cls, emails):

@@ -25,7 +25,8 @@
     title='Blink Process'
     feature='{{ feature_json }}'
     process='{{ process_json }}'
-    progress='{{ progress_so_far }}'>
+    progress='{{ progress_so_far }}'
+    dismissedcues='{{ user.dismissed_cues }}'>
   </chromedash-process-overview>
 </section>
 
@@ -40,4 +41,5 @@
 
 {% block js %}
 <script src="/static/js/admin/process_overview_form.min.js"></script>
+<script src="/static/js/cues.min.js"></script>
 {% endblock %}
