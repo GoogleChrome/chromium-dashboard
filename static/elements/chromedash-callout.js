@@ -3,17 +3,40 @@ import {LitElement, css, html} from 'lit-element';
 class ChromedashCallout extends LitElement {
   static get properties() {
     return {
-      targetEl: {type: Element},
+      signedin: {type: Boolean},
+      targetid: {type: String},
       // TODO(jrobbins): Support sides other than "south".
       side: {type: String}, // "north", "south", "east", or "west"
       hidden: {type: Boolean},
+      top: {type: Number},
+      left: {type: Number},
+      cue: {type: String}, // String to send to the server when dismissed.
+      dismissedcues: {attribute: false},
     };
   }
 
   constructor() {
     super();
     this.side = 'south';
-    this.hidden = false;
+    this.hidden = true;
+    this.top = 0;
+    this.left = 0;
+    this.signedin = false;
+    this.dismissedcues = [];
+  }
+
+  connectedCallback() {
+    super.connectedCallback();
+    if (this.dismissedcues.includes(this.cue)) {
+      // Don't show the cue because the user has already dismissed it.
+      return;
+    }
+    let targetEl = this.parentNode.querySelector('#' + this.targetid);
+    if (targetEl) {
+      this.attach(targetEl);
+    } else {
+      console.log('Callout target not found: #' + this.targetid);
+    }
   }
 
   static get styles() {
@@ -26,7 +49,7 @@ class ChromedashCallout extends LitElement {
         --callout-text-color: white;
       }
       #bubble {
-        position: relative;
+        position: absolute;
         display: inline-block;
         background: var(--callout-bg-color);
         border-radius: 8px;
@@ -43,10 +66,10 @@ class ChromedashCallout extends LitElement {
         position: absolute;
         border: 20px solid transparent;
       }
-      /* Bubble will be located on the south side of targetEl. */
+      /* Bubble will be located on the south side of target element. */
       #bubble.south:after {
         top: 0;
-        left: 50%;
+        left: 40px;
         width: 0;
         height: 0;
         border-bottom-color: var(--callout-bg-color);
@@ -61,15 +84,47 @@ class ChromedashCallout extends LitElement {
     `;
   }
 
-  close() {
+  contentOffsetTop(el) {
+    let offset = 0;
+    while (el.offsetParent && el != this.offsetParent) {
+      offset += el.offsetTop;
+      el = el.offsetParent;
+    }
+    return offset;
+  }
+
+  contentOffsetLeft(el) {
+    let offset = 0;
+    while (el.offsetParent && el != this.offsetParent) {
+      offset += el.offsetLeft;
+      el = el.offsetParent;
+    }
+    return offset;
+  }
+
+  attach(el) {
+    if (this.side == 'south') {
+      let targetBot = this.contentOffsetTop(el) + el.offsetHeight;
+      this.top = targetBot + 20;
+      this.left = Math.max(this.contentOffsetLeft(el) - 20, 0);
+    }
+    /* TODO(jrobbins): Implement support for other sides. */
+    this.hidden = false;
+  }
+
+  dismiss() {
     this.hidden = true;
+    if (this.signedin) {
+      window.CuesService.dismissCue(this.cue);
+    }
   }
 
   render() {
     return html`
-      <div id="bubble" class="${this.side}" ?hidden=${this.hidden}>
+      <div id="bubble" class="${this.side}" ?hidden=${this.hidden}
+          style="top:${this.top}px; left:${this.left}px;">
         <iron-icon id="closebox"
-          icon="chromestatus:close" @click=${this.close}></iron-icon>
+          icon="chromestatus:close" @click=${this.dismiss}></iron-icon>
         <div style="margin: 4px">
           <slot></slot>
         </div>
