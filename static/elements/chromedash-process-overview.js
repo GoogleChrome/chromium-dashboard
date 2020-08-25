@@ -14,7 +14,7 @@ class ChromedashProcessOverview extends LitElement {
       feature: {type: Object},
       process: {type: Array},
       progress: {type: Object},
-      dismissedcues: {type: Object},
+      dismissedCues: {type: Object},
     };
   }
 
@@ -23,7 +23,7 @@ class ChromedashProcessOverview extends LitElement {
     this.feature = {};
     this.process = [];
     this.progress = {};
-    this.dismissedcues = {};
+    this.dismissedCues = {};
   }
 
   inFinalStage(stage) {
@@ -145,8 +145,8 @@ class ChromedashProcessOverview extends LitElement {
 
     ${Object.keys(this.progress).length ? html`
       <chromedash-callout
-        cue="progress-checkmarks" targetid="progress-header" signedin
-        .dismissedcues=${this.dismissedcues}>
+        cue="progress-checkmarks" targetid="progress-header" signedin="true"
+        .dismissedCues=${this.dismissedCues}>
           Progress checkmarks appear in this column as you fill in
           fields of the feature entry.  However, you may start the next
           stage regardless of checkmarks.
