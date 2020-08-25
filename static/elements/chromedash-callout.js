@@ -11,7 +11,7 @@ class ChromedashCallout extends LitElement {
       top: {type: Number},
       left: {type: Number},
       cue: {type: String}, // String to send to the server when dismissed.
-      dismissedCues: {attribute: false},
+      dismissedCues: {attribute: false, type: Array},
     };
   }
 

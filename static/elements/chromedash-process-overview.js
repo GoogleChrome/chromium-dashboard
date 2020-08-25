@@ -14,7 +14,7 @@ class ChromedashProcessOverview extends LitElement {
       feature: {type: Object},
       process: {type: Array},
       progress: {type: Object},
-      dismissedCues: {type: Object},
+      dismissedCues: {type: Array},
     };
   }
 
@@ -23,7 +23,7 @@ class ChromedashProcessOverview extends LitElement {
     this.feature = {};
     this.process = [];
     this.progress = {};
-    this.dismissedCues = {};
+    this.dismissedCues = [];
   }
 
   inFinalStage(stage) {
