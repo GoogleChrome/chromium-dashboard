@@ -145,7 +145,7 @@ class ChromedashProcessOverview extends LitElement {
 
     ${Object.keys(this.progress).length ? html`
       <chromedash-callout
-        cue="progress-checkmarks" targetid="progress-header" signedin="true"
+        cue="progress-checkmarks" targetid="progress-header" signedin
         .dismissedCues=${this.dismissedCues}>
           Progress checkmarks appear in this column as you fill in
           fields of the feature entry.  However, you may start the next
