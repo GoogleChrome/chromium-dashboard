@@ -97,8 +97,10 @@ class FeatureNew(common.ContentHandler):
       common.handle_401(self.request, self.response, Exception)
       return
 
+    new_feature_form = guideforms.NewFeatureForm(
+        initial={'owner': user.email()})
     template_data = {
-        'overview_form': guideforms.NewFeatureForm(),
+        'overview_form': new_feature_form,
         }
 
     self._add_common_template_values(template_data)
@@ -119,10 +121,11 @@ class FeatureNew(common.ContentHandler):
 
     # TODO(jrobbins): Validate input, even though it is done on client.
 
+    feature_type = int(self.request.get('feature_type', 0))
     feature = models.Feature(
         category=int(self.request.get('category')),
         name=self.request.get('name'),
-        feature_type=int(self.request.get('feature_type', 0)),
+        feature_type=feature_type,
         intent_stage=models.INTENT_NONE,
         summary=self.request.get('summary'),
         owner=owners,
@@ -130,7 +133,8 @@ class FeatureNew(common.ContentHandler):
         standardization=models.EDITORS_DRAFT,
         unlisted=self.request.get('unlisted') == 'on',
         web_dev_views=models.DEV_NO_SIGNALS,
-        blink_components=blink_components)
+        blink_components=blink_components,
+        tag_review_status=processes.initial_tag_review_status(feature_type))
     key = feature.put()
 
     # TODO(jrobbins): enumerate and remove only the relevant keys.
@@ -261,6 +265,12 @@ class FeatureEditStage(common.ContentHandler):
     if self.touched('spec_link'):
       feature.spec_link = self.parse_link('spec_link')
 
+    if self.touched('security_review_status'):
+      feature.security_review_status = self.parse_int('security_review_status')
+
+    if self.touched('privacy_review_status'):
+      feature.privacy_review_status = self.parse_int('privacy_review_status')
+
     if self.touched('initial_public_proposal_url'):
       feature.initial_public_proposal_url = self.parse_link(
           'initial_public_proposal_url')
@@ -360,8 +370,6 @@ class FeatureEditStage(common.ContentHandler):
       feature.motivation = self.request.get('motivation')
     if self.touched('impl_status_chrome'):
       feature.impl_status_chrome = int(self.request.get('impl_status_chrome'))
-    if self.touched('footprint'):
-      feature.footprint = int(self.request.get('footprint'))
     if self.touched('interop_compat_risks'):
       feature.interop_compat_risks = self.request.get('interop_compat_risks')
     if self.touched('ergonomics_risks'):
@@ -406,8 +414,12 @@ class FeatureEditStage(common.ContentHandler):
       feature.web_dev_views_notes = self.request.get('web_dev_views_notes')
     if self.touched('prefixed'):
       feature.prefixed = self.request.get('prefixed') == 'on'
+
     if self.touched('tag_review'):
       feature.tag_review = self.request.get('tag_review')
+    if self.touched('tag_review_status'):
+      feature.tag_review_status = self.parse_int('tag_review_status')
+
     if self.touched('standardization'):
       feature.standardization = int(self.request.get('standardization'))
     if self.touched('unlisted'):

@@ -490,7 +490,6 @@ class FeatureHandler(common.ContentHandler):
       feature.shipped_webview_milestone = shipped_webview_milestone
       feature.shipped_opera_milestone = shipped_opera_milestone
       feature.shipped_opera_android_milestone = shipped_opera_android_milestone
-      feature.footprint = int(self.request.get('footprint'))
       feature.interop_compat_risks = self.request.get('interop_compat_risks')
       feature.ergonomics_risks = self.request.get('ergonomics_risks')
       feature.activation_risks = self.request.get('activation_risks')
@@ -514,7 +513,13 @@ class FeatureHandler(common.ContentHandler):
       feature.web_dev_views_notes = self.request.get('web_dev_views_notes')
       feature.prefixed = self.request.get('prefixed') == 'on'
       feature.spec_link = spec_link
+      feature.security_review_status = int(self.request.get(
+          'security_review_status', models.REVIEW_PENDING))
+      feature.privacy_review_status = int(self.request.get(
+          'privacy_review_status', models.REVIEW_PENDING))
       feature.tag_review = self.request.get('tag_review')
+      feature.tag_review_status = int(self.request.get(
+          'tag_review_status', models.REVIEW_PENDING))
       feature.standardization = int(self.request.get('standardization'))
       feature.doc_links = doc_links
       feature.sample_links = sample_links
@@ -569,7 +574,6 @@ class FeatureHandler(common.ContentHandler):
           all_platforms_descr=self.request.get('all_platforms_descr'),
           wpt=self.request.get('wpt') == 'on',
           wpt_descr=self.request.get('wpt_descr'),
-          footprint=int(self.request.get('footprint')),
           ff_views=int(self.request.get('ff_views')),
           ff_views_link=ff_views_link,
           ff_views_notes=self.request.get('ff_views_notes'),
@@ -584,7 +588,13 @@ class FeatureHandler(common.ContentHandler):
           web_dev_views_notes=self.request.get('web_dev_views_notes'),
           prefixed=self.request.get('prefixed') == 'on',
           spec_link=spec_link,
+          security_review_status=int(self.request.get(
+              'security_review_status', models.REVIEW_PENDING)),
+          privacy_review_status=int(self.request.get(
+              'privacy_review_status', models.REVIEW_PENDING)),
           tag_review=self.request.get('tag_review'),
+          tag_review_status=int(self.request.get(
+              'tag_review_status', models.REVIEW_PENDING)),
           standardization=int(self.request.get('standardization')),
           doc_links=doc_links,
           sample_links=sample_links,

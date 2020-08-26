@@ -176,12 +176,14 @@ class ContentHandler(BaseHandler):
 
     user = users.get_current_user()
     if user:
+      user_pref = models.UserPref.get_signed_in_user_pref()
       template_data['login'] = (
           'Logout', users.create_logout_url(dest_url=self.request.path))
       template_data['user'] = {
         'can_edit': self.user_can_edit(user),
         'is_admin': users.is_current_user_admin(),
         'email': user.email(),
+        'dismissed_cues': json.dumps(user_pref.dismissed_cues),
       }
     else:
       template_data['user'] = None

@@ -1,6 +1,7 @@
 import {LitElement, html} from 'lit-element';
 import {nothing} from 'lit-html';
 import '@polymer/iron-icon';
+import './chromedash-callout';
 import './chromedash-color-status';
 
 import style from '../css/elements/chromedash-process-overview.css';
@@ -13,6 +14,7 @@ class ChromedashProcessOverview extends LitElement {
       feature: {type: Object},
       process: {type: Array},
       progress: {type: Object},
+      dismissedCues: {type: Object},
     };
   }
 
@@ -21,6 +23,7 @@ class ChromedashProcessOverview extends LitElement {
     this.feature = {};
     this.process = [];
     this.progress = {};
+    this.dismissedCues = {};
   }
 
   inFinalStage(stage) {
@@ -95,13 +98,15 @@ class ChromedashProcessOverview extends LitElement {
     return html`<div class="done">${item}</div>`;
   }
 
+
   render() {
     let featureId = this.feature.id;
     return html`
+     <div style="position: relative">
      <table>
        <tr>
          <th style="width: 30em;">Stage</th>
-         <th style="width: 25em">Progress</th>
+         <th style="width: 25em" id="progress-header">Progress</th>
          <th style="width: 12em"></th>
        </tr>
 
@@ -138,6 +143,18 @@ class ChromedashProcessOverview extends LitElement {
          </tr>
        `)}
      </table>
+
+    ${Object.keys(this.progress).length ? html`
+      <chromedash-callout
+        cue="progress-checkmarks" targetid="progress-header" signedin
+        .dismissedCues=${this.dismissedCues}>
+          Progress checkmarks appear in this column as you fill in
+          fields of the feature entry.  However, you may start the next
+          stage regardless of checkmarks.
+      </chromedash-callout>` :
+      nothing }
+
+    </div>
     `;
   }
 }

@@ -12,6 +12,7 @@ import '@polymer/paper-styles/color.js';
 
 // chromedash components
 import './elements/icons';
+import './elements/chromedash-callout';
 import './elements/chromedash-color-status';
 import './elements/chromedash-feature';
 import './elements/chromedash-featurelist';

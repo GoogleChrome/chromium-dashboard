@@ -138,11 +138,29 @@ ALL_FIELDS = {
                    'order to enable discussion with other browser vendors, '
                    'standards bodies, or other interested parties.')),
 
+    'security_review_status': forms.ChoiceField(
+        required=False,
+        choices=models.REVIEW_STATUS_CHOICES.items(),
+        initial=models.REVIEW_PENDING,
+        help_text=('Status of the security review.')),
+
+    'privacy_review_status': forms.ChoiceField(
+        required=False,
+        choices=models.REVIEW_STATUS_CHOICES.items(),
+        initial=models.REVIEW_PENDING,
+        help_text=('Status of the privacy review.')),
+
     'tag_review': forms.CharField(
         label='TAG Review', required=True,
         widget=forms.Textarea(attrs={'rows': 2, 'cols': 50, 'maxlength': 1480}),
         help_text=('Link(s) to TAG review(s), or explanation why this is '
                    'not needed.')),
+
+    'tag_review_status': forms.ChoiceField(
+        required=False,
+        choices=models.REVIEW_STATUS_CHOICES.items(),
+        initial=models.REVIEW_PENDING,
+        help_text=('Status of the tag review.')),
 
     'intent_to_implement_url': forms.URLField(
         required=False, label='Intent to Prototype link',
@@ -329,10 +347,10 @@ ALL_FIELDS = {
          'For most features, the answer here is "None."')),
 
     'origin_trial_feedback_url': forms.URLField(
-        required=False, label='Origin Trial feedback summary',
+        required=False, label='Origin trial feedback summary',
         widget=forms.URLInput(attrs={'placeholder': 'https://'}),
         help_text=
-        ('If your feature was available as an Origin Trial, link to a summary '
+        ('If your feature was available as an origin trial, link to a summary '
          'of usage and developer feedback. If not, leave this empty.')),
 
     'i2e_lgtms': forms.EmailField(
@@ -481,12 +499,6 @@ ALL_FIELDS = {
     'prefixed': forms.BooleanField(
         required=False, initial=False, label='Prefixed?'),
 
-    'footprint': forms.ChoiceField(
-        required=False,
-        label='Technical footprint',
-        choices=models.FOOTPRINT_CHOICES.items(),
-        initial=models.MAJOR_MINOR_NEW_API),
-
     'search_tags': forms.CharField(
         label='Search tags', required=False,
         help_text='Comma separated keywords used only in search'),
@@ -510,9 +522,8 @@ class NewFeatureForm(forms.Form):
   name = ALL_FIELDS['name']
   summary = ALL_FIELDS['summary']
   unlisted = ALL_FIELDS['unlisted']
-  current_user_email = users.get_current_user().email if users.get_current_user() else None
   owner = forms.EmailField(
-      initial=current_user_email, required=True, label='Contact emails',
+      required=True, label='Contact emails',
       widget=forms.EmailInput(
           attrs={'multiple': True, 'placeholder': 'email, email'}),
       help_text=('Comma separated list of full email addresses. '
@@ -558,13 +569,10 @@ class NewFeature_Incubate(forms.Form):
 
   field_order = (
       'motivation', 'initial_public_proposal_url', 'explainer_links',
-      'footprint',
       'bug_url', 'launch_bug_url', 'comments')
   motivation = ALL_FIELDS['motivation']
   initial_public_proposal_url = ALL_FIELDS['initial_public_proposal_url']
   explainer_links = ALL_FIELDS['explainer_links']
-  current_user_email = users.get_current_user().email if users.get_current_user() else None
-  footprint = ALL_FIELDS['footprint']
   bug_url = ALL_FIELDS['bug_url']
   launch_bug_url = ALL_FIELDS['launch_bug_url']
   comments = ALL_FIELDS['comments']
@@ -589,6 +597,7 @@ class Any_DevTrial(forms.Form):
       'ff_views', 'ff_views_link', 'ff_views_notes',
       'ie_views', 'ie_views_link', 'ie_views_notes',
       'web_dev_views', 'web_dev_views_link', 'web_dev_views_notes',
+      'security_review_status', 'privacy_review_status',
       'ergonomics_risks', 'activation_risks', 'security_risks', 'debuggability',
       'all_platforms', 'all_platforms_descr', 'wpt', 'wpt_descr',
       'sample_links', 'devrel', 'ready_for_trial_url', 'comments')
@@ -614,6 +623,9 @@ class Any_DevTrial(forms.Form):
   web_dev_views = ALL_FIELDS['web_dev_views']
   web_dev_views_link = ALL_FIELDS['web_dev_views_link']
   web_dev_views_notes = ALL_FIELDS['web_dev_views_notes']
+
+  security_review_status = ALL_FIELDS['security_review_status']
+  privacy_review_status = ALL_FIELDS['privacy_review_status']
 
   ergonomics_risks = ALL_FIELDS['ergonomics_risks']
   activation_risks = ALL_FIELDS['activation_risks']
@@ -695,7 +707,7 @@ class Most_PrepareToShip(forms.Form):
   field_order = (
       'impl_status_chrome', 'shipped_milestone', 'shipped_android_milestone',
       'shipped_ios_milestone', 'shipped_webview_milestone',
-      'footprint', 'tag_review',
+      'tag_review', 'tag_review_status',
       'intent_to_implement_url', 'origin_trial_feedback_url',
       'launch_bug_url', 'intent_to_ship_url', 'i2s_lgtms', 'comments')
   impl_status_chrome = ALL_FIELDS['impl_status_chrome']
@@ -703,8 +715,8 @@ class Most_PrepareToShip(forms.Form):
   shipped_android_milestone = ALL_FIELDS['shipped_android_milestone']
   shipped_ios_milestone = ALL_FIELDS['shipped_ios_milestone']
   shipped_webview_milestone = ALL_FIELDS['shipped_webview_milestone']
-  footprint = ALL_FIELDS['footprint']
   tag_review = ALL_FIELDS['tag_review']
+  tag_review_status = ALL_FIELDS['tag_review_status']
   intent_to_implement_url = ALL_FIELDS['intent_to_implement_url']
   origin_trial_feedback_url = ALL_FIELDS['origin_trial_feedback_url'] # optional
   launch_bug_url = ALL_FIELDS['launch_bug_url']
@@ -753,10 +765,9 @@ class Any_Identify(forms.Form):
 
   field_order = (
       'owner', 'blink_components', 'motivation', 'explainer_links',
-      'footprint', 'bug_url', 'launch_bug_url', 'comments')
-  current_user_email = users.get_current_user().email if users.get_current_user() else None
+      'bug_url', 'launch_bug_url', 'comments')
   owner = forms.EmailField(
-      initial=current_user_email, required=True, label='Contact emails',
+      required=True, label='Contact emails',
       widget=forms.EmailInput(
           attrs={'multiple': True, 'placeholder': 'email, email'}),
       help_text=('Comma separated list of full email addresses. '
@@ -765,7 +776,6 @@ class Any_Identify(forms.Form):
 
   motivation = ALL_FIELDS['motivation']
   explainer_links = ALL_FIELDS['explainer_links']
-  footprint = ALL_FIELDS['footprint']
   bug_url = ALL_FIELDS['bug_url']
   launch_bug_url = ALL_FIELDS['launch_bug_url']
   comments = ALL_FIELDS['comments']
@@ -797,6 +807,21 @@ class Existing_OriginTrial(forms.Form):
   i2e_lgtms = ALL_FIELDS['i2e_lgtms']
   origin_trial_feedback_url = ALL_FIELDS['origin_trial_feedback_url'] # optional
   # TODO(jrobbins): action to generate intent to experiement email
+  comments = ALL_FIELDS['comments']
+
+
+# Note: Even though this is similar to another form, it is likely to change.
+class Deprecation_PrepareToShip(forms.Form):
+
+  field_order = (
+      'impl_status_chrome', 'tag_review',
+      'intent_to_implement_url', 'origin_trial_feedback_url',
+      'launch_bug_url', 'comments')
+  impl_status_chrome = ALL_FIELDS['impl_status_chrome']
+  tag_review = ALL_FIELDS['tag_review']
+  intent_to_implement_url = ALL_FIELDS['intent_to_implement_url']
+  origin_trial_feedback_url = ALL_FIELDS['origin_trial_feedback_url'] # optional
+  launch_bug_url = ALL_FIELDS['launch_bug_url']
   comments = ALL_FIELDS['comments']
 
 

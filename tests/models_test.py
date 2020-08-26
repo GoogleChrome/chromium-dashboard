@@ -174,6 +174,31 @@ class UserPrefTest(unittest.TestCase):
     self.assertEqual(False, actual.notify_as_starrer)
     self.assertEqual(True, actual.bounced)
 
+  @mock.patch('google.appengine.api.users.get_current_user')
+  def test_dismiss_cue(self, mock_get_current_user):
+    """We store the fact that a user has dismissed a cue card."""
+    mock_get_current_user.return_value = testing_config.Blank(
+        email=lambda: 'one@example.com')
+
+    models.UserPref.dismiss_cue('welcome-message')
+
+    revised_user_pref = models.UserPref.get_signed_in_user_pref()
+    self.assertEqual('one@example.com', revised_user_pref.email)
+    self.assertEqual(['welcome-message'], revised_user_pref.dismissed_cues)
+
+  @mock.patch('google.appengine.api.users.get_current_user')
+  def test_dismiss_cue__double(self, mock_get_current_user):
+    """We ignore the same user dismissing the same cue multiple times."""
+    mock_get_current_user.return_value = testing_config.Blank(
+        email=lambda: 'one@example.com')
+
+    models.UserPref.dismiss_cue('welcome-message')
+    models.UserPref.dismiss_cue('welcome-message')
+
+    revised_user_pref = models.UserPref.get_signed_in_user_pref()
+    self.assertEqual('one@example.com', revised_user_pref.email)
+    self.assertEqual(['welcome-message'], revised_user_pref.dismissed_cues)
+
   def test_get_prefs_for_emails__some_found(self):
     emails = ['one@example.com', 'two@example.com', 'huh@example.com']
     user_prefs = models.UserPref.get_prefs_for_emails(emails)

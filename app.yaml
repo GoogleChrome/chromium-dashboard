@@ -119,6 +119,11 @@ handlers:
   script: schedule.app
   secure: always
 
+- url: /cues.*
+  script: cues.app
+  login: required # non-admin
+  secure: always
+
 # Everything else
 - url: /.*
   script: server.app
