@@ -249,6 +249,29 @@ class FeatureEditStageTest(unittest.TestCase):
     self.assertTrue('feature' in template_data)
     self.assertTrue('feature_id' in template_data)
     self.assertTrue('feature_form' in template_data)
+    self.assertTrue('already_on_this_stage' in template_data)
+
+  @mock.patch('guide.FeatureEditStage.render')
+  def test_get__not_on_this_stage(self, mock_render):
+    """When feature is no on the stage for the current form, offer checkbox."""
+    testing_config.sign_in('user1@google.com', 1234567890)
+    self.handler.get('/guide/stage', self.feature_1.key().id(), self.stage)
+    self.assertEqual('200 OK', self.handler.response.status)
+    mock_render.assert_called_once()
+    template_data = mock_render.call_args.kwargs['data']
+    self.assertFalse(template_data['already_on_this_stage'])
+
+  @mock.patch('guide.FeatureEditStage.render')
+  def test_get__already_on_this_stage(self, mock_render):
+    """When feature is already on the stage for the current form, say that."""
+    self.feature_1.intent_stage = self.stage
+    self.feature_1.put()
+    testing_config.sign_in('user1@google.com', 1234567890)
+    self.handler.get('/guide/stage', self.feature_1.key().id(), self.stage)
+    self.assertEqual('200 OK', self.handler.response.status)
+    mock_render.assert_called_once()
+    template_data = mock_render.call_args.kwargs['data']
+    self.assertTrue(template_data['already_on_this_stage'])
 
   def test_post__anon(self):
     """Anon cannot edit features, gets a 401."""
