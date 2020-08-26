@@ -242,6 +242,7 @@ class FeatureEditStage(common.ContentHandler):
         'feature': f,
         'feature_id': f.key().id,
         'feature_form': detail_form_class(f.format_for_edit()),
+        'already_on_this_stage': stage_id == f.intent_stage,
     })
 
     self._add_common_template_values(template_data)
