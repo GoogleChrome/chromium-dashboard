@@ -848,11 +848,10 @@ class Deprecation_DeprecationTrial(forms.Form):
 class Deprecation_PrepareToShip(forms.Form):
 
   field_order = (
-      'impl_status_chrome', 'footprint', 'tag_review',
+      'impl_status_chrome', 'tag_review',
       'intent_to_ship_url', 'i2s_lgtms',
       'launch_bug_url', 'comments')
   impl_status_chrome = ALL_FIELDS['impl_status_chrome']
-  footprint = ALL_FIELDS['footprint']
   tag_review = ALL_FIELDS['tag_review']
   intent_to_ship_url = ALL_FIELDS['intent_to_ship_url']
   i2s_lgtms = ALL_FIELDS['i2s_lgtms']
