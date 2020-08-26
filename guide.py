@@ -49,7 +49,7 @@ STAGE_FORMS = {
         models.INTENT_EXPERIMENT: guideforms.Any_DevTrial,
         models.INTENT_IMPLEMENT_SHIP: guideforms.NewFeature_EvalReadinessToShip,
         models.INTENT_EXTEND_TRIAL: guideforms.NewFeature_OriginTrial,
-        models.INTENT_SHIP: guideforms.Any_PrepareToShip,
+        models.INTENT_SHIP: guideforms.Most_PrepareToShip,
         models.INTENT_SHIPPED: guideforms.Any_Ship,
         },
 
@@ -58,7 +58,7 @@ STAGE_FORMS = {
         models.INTENT_IMPLEMENT: guideforms.Any_Implement,
         models.INTENT_EXPERIMENT: guideforms.Any_DevTrial,
         models.INTENT_EXTEND_TRIAL: guideforms.Existing_OriginTrial,
-        models.INTENT_SHIP: guideforms.Any_PrepareToShip,
+        models.INTENT_SHIP: guideforms.Most_PrepareToShip,
         models.INTENT_SHIPPED: guideforms.Any_Ship,
         },
 
@@ -66,7 +66,7 @@ STAGE_FORMS = {
         models.INTENT_INCUBATE: guideforms.Any_Identify,
         models.INTENT_IMPLEMENT: guideforms.Any_Implement,
         models.INTENT_EXPERIMENT: guideforms.Any_DevTrial,
-        models.INTENT_SHIP: guideforms.Any_PrepareToShip,
+        models.INTENT_SHIP: guideforms.PSA_PrepareToShip,
         models.INTENT_SHIPPED: guideforms.Any_Ship,
         },
 
@@ -113,8 +113,7 @@ class FeatureNew(common.ContentHandler):
       common.handle_401(self.request, self.response, Exception)
       return
 
-    owner_addrs = self.split_input('owner', delim=',')
-    owners = [db.Email(addr) for addr in owner_addrs]
+    owners = self.split_emails('owner')
 
     blink_components = (
         self.split_input('blink_components', delim=',') or
@@ -304,6 +303,12 @@ class FeatureEditStage(common.ContentHandler):
       feature.origin_trial_feedback_url = self.parse_link(
           'origin_trial_feedback_url')
 
+    if self.touched('i2e_lgtms'):
+      feature.i2e_lgtms = self.split_emails('i2e_lgtms')
+
+    if self.touched('i2s_lgtms'):
+      feature.i2s_lgtms = self.split_emails('i2s_lgtms')
+
     # Cast incoming milestones to ints.
     # TODO(jrobbins): Consider supporting milestones that are not ints.
     if self.touched('shipped_milestone'):
@@ -328,8 +333,7 @@ class FeatureEditStage(common.ContentHandler):
           'shipped_opera_android_milestone')
 
     if self.touched('owner'):
-      owner_addrs = self.split_input('owner', delim=',')
-      feature.owner = [db.Email(addr) for addr in owner_addrs]
+      feature.owner = self.split_emails('owner')
 
     if self.touched('doc_links'):
       feature.doc_links = self.split_input('doc_links')
@@ -346,8 +350,7 @@ class FeatureEditStage(common.ContentHandler):
           [models.BlinkComponent.DEFAULT_COMPONENT])
 
     if self.touched('devrel'):
-      devrel_addrs = self.split_input('devrel', delim=',')
-      feature.devrel = [db.Email(addr) for addr in devrel_addrs]
+      feature.devrel = self.split_emails('devrel')
 
     if self.touched('feature_type'):
       feature.feature_type = int(self.request.get('feature_type'))

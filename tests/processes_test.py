@@ -17,6 +17,8 @@ import testing_config  # Must be imported before the module under test.
 
 import mock
 
+from google.appengine.ext import db
+
 import models
 import processes
 
@@ -131,6 +133,28 @@ class ProgressDetectorsTest(unittest.TestCase):
     detector = processes.PROGRESS_DETECTORS['Intent to Experiment email']
     self.assertFalse(detector(self.feature_1))
     self.feature_1.intent_to_experiment_url = 'http://example.com'
+    self.assertTrue(detector(self.feature_1))
+
+  def test_one_i2e_lgtm(self):
+    detector = processes.PROGRESS_DETECTORS['One LGTM on Intent to Experiment']
+    self.assertFalse(detector(self.feature_1))
+    self.feature_1.i2e_lgtms = [db.Email('api_owner@chromium.org')]
+    self.assertTrue(detector(self.feature_1))
+
+  def test_one_i2e_lgtm(self):
+    detector = processes.PROGRESS_DETECTORS[
+        'One LGTM on Request for Deprecation Trial']
+    self.assertFalse(detector(self.feature_1))
+    self.feature_1.i2e_lgtms = [db.Email('api_owner@chromium.org')]
+    self.assertTrue(detector(self.feature_1))
+
+  def test_three_i2s_lgtm(self):
+    detector = processes.PROGRESS_DETECTORS['Three LGTMs on Intent to Ship']
+    self.assertFalse(detector(self.feature_1))
+    self.feature_1.i2s_lgtms = [
+        db.Email('one@chromium.org'),
+        db.Email('two@chromium.org'),
+        db.Email('three@chromium.org')]
     self.assertTrue(detector(self.feature_1))
 
   def test_samples(self):
