@@ -1206,9 +1206,9 @@ class FeatureForm(forms.Form):
 
 
   origin_trial_feedback_url = forms.URLField(
-      required=False, label='Origin Trial feedback summary',
+      required=False, label='Origin trial feedback summary',
       widget=forms.URLInput(attrs={'placeholder': 'https://'}),
-      help_text='If your feature was available as an Origin Trial, link to a summary of usage and developer feedback. If not, leave this empty.')
+      help_text='If your feature was available as an origin trial, link to a summary of usage and developer feedback. If not, leave this empty.')
 
   doc_links = forms.CharField(label='Doc link(s)', required=False,
       widget=forms.Textarea(

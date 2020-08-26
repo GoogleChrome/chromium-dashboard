@@ -347,10 +347,10 @@ ALL_FIELDS = {
          'For most features, the answer here is "None."')),
 
     'origin_trial_feedback_url': forms.URLField(
-        required=False, label='Origin Trial feedback summary',
+        required=False, label='Origin trial feedback summary',
         widget=forms.URLInput(attrs={'placeholder': 'https://'}),
         help_text=
-        ('If your feature was available as an Origin Trial, link to a summary '
+        ('If your feature was available as an origin trial, link to a summary '
          'of usage and developer feedback. If not, leave this empty.')),
 
     'debuggability': forms.CharField(
