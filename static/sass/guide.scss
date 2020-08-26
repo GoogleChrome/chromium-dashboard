@@ -33,3 +33,8 @@ table.property-sheet th, #metadata-readonly td {
 table.property-sheet th {
   white-space: nowrap;
 }
+
+#breadcrumbs a {
+  text-decoration: none;
+  color: inherit;
+}

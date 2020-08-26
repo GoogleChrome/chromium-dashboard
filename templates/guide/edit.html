@@ -12,7 +12,12 @@
   <span style="float:right; margin-right: 2em">Beta:
   <a href="https://github.com/GoogleChrome/chromium-dashboard/issues/new?labels=Feedback&template=process-and-guide-ux-feedback.md"
      target="_blank">Process and UI feedback</a></span>
-  <h2>Edit feature: {{ feature.name }}</h2>
+  <h2 id="breadcrumbs">
+    <a href="/feature/{{ feature_id }}">
+      <iron-icon icon="chromestatus:arrow-back"></iron-icon>
+      Edit feature: {{ feature.name }}
+    </a>
+  </h2>
 </div>
 {% endblock %}
 
