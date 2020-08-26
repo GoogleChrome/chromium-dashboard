@@ -2,16 +2,17 @@
 
 {% block css %}
 <link rel="stylesheet" href="/static/css/forms.css">
-<style>
-.delete-button {
-  margin-left: 20px;
-}
-</style>
+<link rel="stylesheet" href="/static/css/guide.css">
 {% endblock %}
 
 {% block subheader %}
 <div id="subheader">
-  <h2>Edit feature: {{ feature.name }}</h2>
+  <h2 id="breadcrumbs">
+    <a href="/guide/edit/{{ feature_id }}">
+      <iron-icon icon="chromestatus:arrow-back"></iron-icon>
+      Edit feature: {{ feature.name }}
+    </a>
+  </h2>
 </div>
 <h3>{{ stage_name }}</h3>
 {% endblock %}
