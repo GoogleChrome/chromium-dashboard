@@ -76,7 +76,7 @@ BLINK_PROCESS_STAGES = [
       'Start prototyping code in a public repo.',
       ['API design',
        'Intent to Prototype email',
-       'Spec reviewer',
+       'Spec mentor',
       ],
       [('Draft Intent to Prototype email', INTENT_EMAIL_URL)],
       models.INTENT_INCUBATE, models.INTENT_IMPLEMENT),
