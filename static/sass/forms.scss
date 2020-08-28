@@ -79,21 +79,32 @@ form[name="feature_form"] {
   }
 }
 
-#stage_form form[name="feature_form"] {
+.stage_form form[name="feature_form"] {
   margin-bottom: 1em;
 }
 
-#stage_form {
+.stage_form, .final_buttons {
   margin-bottom: 6em;
 }
 
-#metadata, #stage_form {
+form section.flat_form + h3, .final_buttons {
+  margin-top: 2em;
+}
+
+#metadata, .stage_form, .flat_form, .final_buttons {
+  max-width: 67em;
+  padding: 1em;
+}
+
+#metadata, .stage_form, .flat_form {
   color: #444;
   background: white;
-  max-width: 67em;
   border: 1px solid #ccc;
-  padding: 1em;
   box-shadow: rgba(0, 0, 0, 0.067) 1px 1px 4px;
+}
+
+.stage_form th, .flat_form th, .final_buttons th {
+  width: 200px;
 }
 
 #metadata-readonly div + div {
