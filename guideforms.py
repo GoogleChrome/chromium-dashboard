@@ -95,7 +95,7 @@ ALL_FIELDS = {
         choices=models.INTENT_STAGES.items()),
 
     'motivation': forms.CharField(
-        label='Motivation', required=True,
+        label='Motivation', required=False,
         widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 1480}),
         help_text=
         ('Explain why the web needs this change. It may be useful '
@@ -164,7 +164,7 @@ ALL_FIELDS = {
         help_text=('Status of the privacy review.')),
 
     'tag_review': forms.CharField(
-        label='TAG Review', required=True,
+        label='TAG Review', required=False,
         widget=forms.Textarea(attrs={'rows': 2, 'cols': 50, 'maxlength': 1480}),
         help_text=('Link(s) to TAG review(s), or explanation why this is '
                    'not needed.')),
@@ -200,7 +200,7 @@ ALL_FIELDS = {
                    'thread, link to it here.')),
 
     'interop_compat_risks': forms.CharField(
-        label='Interoperability and Compatibility Risks', required=True,
+        required=False, label='Interoperability and Compatibility Risks',
         widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 1480}),
         help_text=
         ('Describe the degree of <a target="_blank" '
@@ -420,7 +420,7 @@ ALL_FIELDS = {
         help_text='Is this feature fully tested in Web Platform Tests?'),
 
     'wpt_descr': forms.CharField(
-        label='Web Platform Tests Description', required=True,
+        label='Web Platform Tests Description', required=False,
         widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 1480}),
         help_text=
         ('Please link to the <a href="https://wpt.fyi/results">results on '
