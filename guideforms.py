@@ -68,6 +68,13 @@ ALL_FIELDS = {
          'EditingHelp#summary-example">Example</a>.'
         )),
 
+    'owner': forms.EmailField(
+        required=True, label='Contact emails',
+        widget=forms.EmailInput(
+            attrs={'multiple': True, 'placeholder': 'email, email'}),
+        help_text=('Comma separated list of full email addresses. '
+                   'Prefer @chromium.org.')),
+
     'category': forms.ChoiceField(
         required=False,
         help_text=('Select the most specific category. If unsure, '
@@ -81,8 +88,14 @@ ALL_FIELDS = {
         initial=models.FEATURE_TYPE_INCUBATE_ID,
         choices=sorted(models.FEATURE_TYPES.items())),
 
+    'intent_stage': forms.ChoiceField(
+        required=False, label='Feature stage',
+        help_text='Select the appropriate process stage.',
+        initial=models.INTENT_IMPLEMENT,
+        choices=models.INTENT_STAGES.items()),
+
     'motivation': forms.CharField(
-        label='Motivation', required=True,
+        label='Motivation', required=False,
         widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 1480}),
         help_text=
         ('Explain why the web needs this change. It may be useful '
@@ -151,7 +164,7 @@ ALL_FIELDS = {
         help_text=('Status of the privacy review.')),
 
     'tag_review': forms.CharField(
-        label='TAG Review', required=True,
+        label='TAG Review', required=False,
         widget=forms.Textarea(attrs={'rows': 2, 'cols': 50, 'maxlength': 1480}),
         help_text=('Link(s) to TAG review(s), or explanation why this is '
                    'not needed.')),
@@ -187,7 +200,7 @@ ALL_FIELDS = {
                    'thread, link to it here.')),
 
     'interop_compat_risks': forms.CharField(
-        label='Interoperability and Compatibility Risks', required=True,
+        required=False, label='Interoperability and Compatibility Risks',
         widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 1480}),
         help_text=
         ('Describe the degree of <a target="_blank" '
@@ -407,7 +420,7 @@ ALL_FIELDS = {
         help_text='Is this feature fully tested in Web Platform Tests?'),
 
     'wpt_descr': forms.CharField(
-        label='Web Platform Tests Description', required=True,
+        label='Web Platform Tests Description', required=False,
         widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 1480}),
         help_text=
         ('Please link to the <a href="https://wpt.fyi/results">results on '
@@ -512,352 +525,210 @@ ALL_FIELDS = {
     }
 
 
-class NewFeatureForm(forms.Form):
+def define_form_class_using_shared_fields(class_name, field_spec_list):
+  """Define a new subsblass of forms.Form with the given fields, in order."""
+  # field_spec_list is normally just a list of simple field names,
+  # but entries can also have syntax "form_field=shared_field".
+  class_dict = {'field_order': []}
+  for field_spec in field_spec_list:
+    form_field_name = field_spec.split('=')[0]  # first or only
+    shared_field_name = field_spec.split('=')[-1] # last or only
+    class_dict[form_field_name] = ALL_FIELDS[shared_field_name]
+    class_dict['field_order'].append(form_field_name)
 
-  field_order = (
-      'name', 'summary',
-      'unlisted', 'owner',
-      'blink_components', 'category',
-      'feature_type')
-  name = ALL_FIELDS['name']
-  summary = ALL_FIELDS['summary']
-  unlisted = ALL_FIELDS['unlisted']
-  owner = forms.EmailField(
-      required=True, label='Contact emails',
-      widget=forms.EmailInput(
-          attrs={'multiple': True, 'placeholder': 'email, email'}),
-      help_text=('Comma separated list of full email addresses. '
-                 'Prefer @chromium.org.'))
-  blink_components = ALL_FIELDS['blink_components']
-  category = ALL_FIELDS['category']
-  # Note: feature_type is done with custom HTML
+  return type(class_name, (forms.Form,), class_dict)
 
 
-class MetadataForm(forms.Form):
-
-  field_order = (
-      'name', 'summary', 'unlisted', 'owner',
-      'blink_components', 'category',
-      'feature_type', 'intent_stage',
-      'bug_url', 'launch_bug_url',
-      'impl_status_chrome', 'search_tags')
-  name = ALL_FIELDS['name']
-  summary = ALL_FIELDS['summary']
-  unlisted = ALL_FIELDS['unlisted']
-  owner = forms.EmailField(
-      required=False,
-      label='Contact emails',
-      widget=forms.EmailInput(
-          attrs={'multiple': True, 'placeholder': 'email, email'}),
-      help_text=('Comma separated list of full email addresses. '
-                 'Prefer @chromium.org.'))
-  blink_components = ALL_FIELDS['blink_components']
-  category = ALL_FIELDS['category']
-  feature_type = ALL_FIELDS['feature_type']
-  intent_stage = forms.ChoiceField(
-      required=False, label='Feature stage',
-      help_text='Select the appropriate process stage.',
-      initial=models.INTENT_IMPLEMENT,
-      choices=models.INTENT_STAGES.items())
-  bug_url = ALL_FIELDS['bug_url']
-  launch_bug_url = ALL_FIELDS['launch_bug_url']
-  impl_status_chrome = ALL_FIELDS['impl_status_chrome']
-  search_tags = ALL_FIELDS['search_tags']
+NewFeatureForm = define_form_class_using_shared_fields(
+    'NewFeatureForm',
+    ('name', 'summary',
+     'unlisted', 'owner',
+     'blink_components', 'category'))
+    # Note: feature_type is done with custom HTML
 
 
-class NewFeature_Incubate(forms.Form):
-
-  field_order = (
-      'motivation', 'initial_public_proposal_url', 'explainer_links',
-      'bug_url', 'launch_bug_url', 'comments')
-  motivation = ALL_FIELDS['motivation']
-  initial_public_proposal_url = ALL_FIELDS['initial_public_proposal_url']
-  explainer_links = ALL_FIELDS['explainer_links']
-  bug_url = ALL_FIELDS['bug_url']
-  launch_bug_url = ALL_FIELDS['launch_bug_url']
-  comments = ALL_FIELDS['comments']
+MetadataForm = define_form_class_using_shared_fields(
+    'MetadataForm',
+    ('name', 'summary', 'unlisted', 'owner',
+     'blink_components', 'category',
+     'feature_type', 'intent_stage',
+     'bug_url', 'launch_bug_url',
+     'impl_status_chrome', 'search_tags'))
 
 
-class NewFeature_Prototype(forms.Form):
 
-  field_order = (
-      'spec_link',
-      'intent_to_implement_url', 'comments')
+NewFeature_Incubate = define_form_class_using_shared_fields(
+    'NewFeature_Incubate',
+    ('motivation', 'initial_public_proposal_url', 'explainer_links',
+     'bug_url', 'launch_bug_url', 'comments'))
+
+
+NewFeature_Prototype = define_form_class_using_shared_fields(
+    'NewFeature_Prototype',
+    ('spec_link',
+     'intent_to_implement_url', 'comments'))
   # TODO(jrobbins): advise user to request a tag review
-  spec_link = ALL_FIELDS['spec_link']
-  intent_to_implement_url = ALL_FIELDS['intent_to_implement_url']
-  comments = ALL_FIELDS['comments']
 
 
-class Any_DevTrial(forms.Form):
-  field_order = (
-      'bug_url', 'doc_links',
-      'interop_compat_risks',
-      'safari_views', 'safari_views_link', 'safari_views_notes',
-      'ff_views', 'ff_views_link', 'ff_views_notes',
-      'ie_views', 'ie_views_link', 'ie_views_notes',
-      'web_dev_views', 'web_dev_views_link', 'web_dev_views_notes',
-      'security_review_status', 'privacy_review_status',
-      'ergonomics_risks', 'activation_risks', 'security_risks', 'debuggability',
-      'all_platforms', 'all_platforms_descr', 'wpt', 'wpt_descr',
-      'sample_links', 'devrel', 'ready_for_trial_url', 'comments')
-
-  bug_url = ALL_FIELDS['bug_url']
-  doc_links = ALL_FIELDS['doc_links']
+Any_DevTrial = define_form_class_using_shared_fields(
+    'Any_DevTrial',
+    ('bug_url', 'doc_links',
+     'interop_compat_risks',
+     'safari_views', 'safari_views_link', 'safari_views_notes',
+     'ff_views', 'ff_views_link', 'ff_views_notes',
+     'ie_views', 'ie_views_link', 'ie_views_notes',
+     'web_dev_views', 'web_dev_views_link', 'web_dev_views_notes',
+     'security_review_status', 'privacy_review_status',
+     'ergonomics_risks', 'activation_risks', 'security_risks', 'debuggability',
+     'all_platforms', 'all_platforms_descr', 'wpt', 'wpt_descr',
+     'sample_links', 'devrel', 'ready_for_trial_url', 'comments'))
   # TODO(jrobbins): api overview link
 
-  interop_compat_risks = ALL_FIELDS['interop_compat_risks']
 
-  safari_views = ALL_FIELDS['safari_views']
-  safari_views_link = ALL_FIELDS['safari_views_link']
-  safari_views_notes = ALL_FIELDS['safari_views_notes']
-
-  ff_views = ALL_FIELDS['ff_views']
-  ff_views_link = ALL_FIELDS['ff_views_link']
-  ff_views_notes = ALL_FIELDS['ff_views_notes']
-
-  ie_views = ALL_FIELDS['ie_views']
-  ie_views_link = ALL_FIELDS['ie_views_link']
-  ie_views_notes = ALL_FIELDS['ie_views_notes']
-
-  web_dev_views = ALL_FIELDS['web_dev_views']
-  web_dev_views_link = ALL_FIELDS['web_dev_views_link']
-  web_dev_views_notes = ALL_FIELDS['web_dev_views_notes']
-
-  security_review_status = ALL_FIELDS['security_review_status']
-  privacy_review_status = ALL_FIELDS['privacy_review_status']
-
-  ergonomics_risks = ALL_FIELDS['ergonomics_risks']
-  activation_risks = ALL_FIELDS['activation_risks']
-  security_risks = ALL_FIELDS['security_risks']
-  # TODO(jrobbins): request security and privacy reviews
-  debuggability = ALL_FIELDS['debuggability']
-  all_platforms = ALL_FIELDS['all_platforms']
-  all_platforms_descr = ALL_FIELDS['all_platforms_descr']
-  wpt = ALL_FIELDS['wpt']
-  wpt_descr = ALL_FIELDS['wpt_descr']
-  sample_links = ALL_FIELDS['sample_links']
-  devrel = ALL_FIELDS['devrel']
-  # TODO(jrobbins): generate ready for trial email
-  ready_for_trial_url = ALL_FIELDS['ready_for_trial_url']
-  comments = ALL_FIELDS['comments']
+NewFeature_EvalReadinessToShip = define_form_class_using_shared_fields(
+    'NewFeature_EvalReadinessToShip',
+    ('doc_links', 'tag_review', 'spec_link', 'interop_compat_risks',
+     'safari_views', 'safari_views_link', 'safari_views_notes',
+     'ff_views', 'ff_views_link', 'ff_views_notes',
+     'ie_views', 'ie_views_link', 'ie_views_notes',
+     'web_dev_views', 'web_dev_views_link', 'web_dev_views_notes',
+     'shipped_milestone', 'shipped_android_milestone', 'shipped_ios_milestone',
+     'shipped_webview_milestone', 'prefixed', 'comments'))
 
 
-class NewFeature_EvalReadinessToShip(forms.Form):
-
-  field_order = (
-      'doc_links', 'tag_review', 'spec_link', 'interop_compat_risks',
-      'safari_views', 'safari_views_link', 'safari_views_notes',
-      'ff_views', 'ff_views_link', 'ff_views_notes',
-      'ie_views', 'ie_views_link', 'ie_views_notes',
-      'web_dev_views', 'web_dev_views_link', 'web_dev_views_notes',
-      'shipped_milestone', 'shipped_android_milestone', 'shipped_ios_milestone',
-      'shipped_webview_milestone', 'prefixed', 'comments')
-  doc_links = ALL_FIELDS['doc_links']
-  tag_review = ALL_FIELDS['tag_review']
-  spec_link = ALL_FIELDS['spec_link']
-
-  interop_compat_risks = ALL_FIELDS['interop_compat_risks']
-
-  safari_views = ALL_FIELDS['safari_views']
-  safari_views_link = ALL_FIELDS['safari_views_link']
-  safari_views_notes = ALL_FIELDS['safari_views_notes']
-
-  ff_views = ALL_FIELDS['ff_views']
-  ff_views_link = ALL_FIELDS['ff_views_link']
-  ff_views_notes = ALL_FIELDS['ff_views_notes']
-
-  ie_views = ALL_FIELDS['ie_views']
-  ie_views_link = ALL_FIELDS['ie_views_link']
-  ie_views_notes = ALL_FIELDS['ie_views_notes']
-
-  web_dev_views = ALL_FIELDS['web_dev_views']
-  web_dev_views_link = ALL_FIELDS['web_dev_views_link']
-  web_dev_views_notes = ALL_FIELDS['web_dev_views_notes']
-
-  # TODO(jrobbins): ready to ship email URL
-  shipped_milestone = ALL_FIELDS['shipped_milestone']
-  shipped_android_milestone = ALL_FIELDS['shipped_android_milestone']
-  shipped_ios_milestone = ALL_FIELDS['shipped_ios_milestone']
-  shipped_webview_milestone = ALL_FIELDS['shipped_webview_milestone']
-  prefixed = ALL_FIELDS['prefixed']
-  comments = ALL_FIELDS['comments']
+NewFeature_OriginTrial = define_form_class_using_shared_fields(
+    'NewFeature_OriginTrial',
+    ('experiment_goals', 'experiment_timeline', 'experiment_risks',
+     'experiment_extension_reason', 'ongoing_constraints',
+     'origin_trial_feedback_url', 'intent_to_experiment_url',
+     'i2e_lgtms', 'comments'))
 
 
-class NewFeature_OriginTrial(forms.Form):
-
-  field_order = (
-      'experiment_goals', 'experiment_timeline', 'experiment_risks',
-      'experiment_extension_reason', 'ongoing_constraints',
-      'origin_trial_feedback_url', 'intent_to_experiment_url',
-      'i2e_lgtms', 'comments')
-  experiment_goals = ALL_FIELDS['experiment_goals']
-  experiment_timeline = ALL_FIELDS['experiment_timeline']
-  experiment_risks = ALL_FIELDS['experiment_risks']
-  experiment_extension_reason = ALL_FIELDS['experiment_extension_reason']
-  ongoing_constraints = ALL_FIELDS['ongoing_constraints']
-  origin_trial_feedback_url = ALL_FIELDS['origin_trial_feedback_url'] # optional
-  intent_to_experiment_url = ALL_FIELDS['intent_to_experiment_url']
-  i2e_lgtms = ALL_FIELDS['i2e_lgtms']
-  comments = ALL_FIELDS['comments']
+Most_PrepareToShip = define_form_class_using_shared_fields(
+    'Most_PrepareToShip',
+    ('impl_status_chrome', 'shipped_milestone', 'shipped_android_milestone',
+     'shipped_ios_milestone', 'shipped_webview_milestone',
+     'tag_review', 'tag_review_status',
+     'intent_to_implement_url', 'origin_trial_feedback_url',
+     'launch_bug_url', 'intent_to_ship_url', 'i2s_lgtms', 'comments'))
 
 
-class Most_PrepareToShip(forms.Form):
-
-  field_order = (
-      'impl_status_chrome', 'shipped_milestone', 'shipped_android_milestone',
-      'shipped_ios_milestone', 'shipped_webview_milestone',
-      'tag_review', 'tag_review_status',
-      'intent_to_implement_url', 'origin_trial_feedback_url',
-      'launch_bug_url', 'intent_to_ship_url', 'i2s_lgtms', 'comments')
-  impl_status_chrome = ALL_FIELDS['impl_status_chrome']
-  shipped_milestone = ALL_FIELDS['shipped_milestone']
-  shipped_android_milestone = ALL_FIELDS['shipped_android_milestone']
-  shipped_ios_milestone = ALL_FIELDS['shipped_ios_milestone']
-  shipped_webview_milestone = ALL_FIELDS['shipped_webview_milestone']
-  tag_review = ALL_FIELDS['tag_review']
-  tag_review_status = ALL_FIELDS['tag_review_status']
-  intent_to_implement_url = ALL_FIELDS['intent_to_implement_url']
-  origin_trial_feedback_url = ALL_FIELDS['origin_trial_feedback_url'] # optional
-  launch_bug_url = ALL_FIELDS['launch_bug_url']
-  intent_to_ship_url = ALL_FIELDS['intent_to_ship_url']
-  i2s_lgtms = ALL_FIELDS['i2s_lgtms']
-  comments = ALL_FIELDS['comments']
+PSA_PrepareToShip = define_form_class_using_shared_fields(
+    'PSA_PrepareToShip',
+    ('impl_status_chrome', 'shipped_milestone', 'shipped_android_milestone',
+     'shipped_ios_milestone', 'shipped_webview_milestone',
+     'tag_review',
+     'intent_to_implement_url', 'origin_trial_feedback_url',
+     'launch_bug_url', 'intent_to_ship_url', 'comments'))
 
 
-class PSA_PrepareToShip(forms.Form):
-
-  field_order = (
-      'impl_status_chrome', 'shipped_milestone', 'shipped_android_milestone',
-      'shipped_ios_milestone', 'shipped_webview_milestone',
-      'tag_review',
-      'intent_to_implement_url', 'origin_trial_feedback_url',
-      'launch_bug_url', 'intent_to_ship_url', 'comments')
-  impl_status_chrome = ALL_FIELDS['impl_status_chrome']
-  shipped_milestone = ALL_FIELDS['shipped_milestone']
-  shipped_android_milestone = ALL_FIELDS['shipped_android_milestone']
-  shipped_ios_milestone = ALL_FIELDS['shipped_ios_milestone']
-  shipped_webview_milestone = ALL_FIELDS['shipped_webview_milestone']
-  tag_review = ALL_FIELDS['tag_review']
-  intent_to_implement_url = ALL_FIELDS['intent_to_implement_url']
-  origin_trial_feedback_url = ALL_FIELDS['origin_trial_feedback_url'] # optional
-  launch_bug_url = ALL_FIELDS['launch_bug_url']
-  intent_to_ship_url = ALL_FIELDS['intent_to_ship_url']
-  comments = ALL_FIELDS['comments']
+Any_Ship = define_form_class_using_shared_fields(
+    'Any_Ship',
+    ('impl_status_chrome', 'shipped_milestone', 'shipped_android_milestone',
+     'shipped_ios_milestone', 'shipped_webview_milestone',
+     'launch_bug_url', 'comments'))
 
 
-class Any_Ship(forms.Form):
-
-  field_order = (
-      'impl_status_chrome', 'shipped_milestone', 'shipped_android_milestone',
-      'shipped_ios_milestone', 'shipped_webview_milestone',
-      'launch_bug_url', 'comments')
-  impl_status_chrome = ALL_FIELDS['impl_status_chrome']
-  shipped_milestone = ALL_FIELDS['shipped_milestone']
-  shipped_android_milestone = ALL_FIELDS['shipped_android_milestone']
-  shipped_ios_milestone = ALL_FIELDS['shipped_ios_milestone']
-  shipped_webview_milestone = ALL_FIELDS['shipped_webview_milestone']
-  launch_bug_url = ALL_FIELDS['launch_bug_url']
-  comments = ALL_FIELDS['comments']
+Any_Identify = define_form_class_using_shared_fields(
+    'Any_Identify',
+    ('owner', 'blink_components', 'motivation', 'explainer_links',
+     'bug_url', 'launch_bug_url', 'comments'))
 
 
-class Any_Identify(forms.Form):
-
-  field_order = (
-      'owner', 'blink_components', 'motivation', 'explainer_links',
-      'bug_url', 'launch_bug_url', 'comments')
-  owner = forms.EmailField(
-      required=True, label='Contact emails',
-      widget=forms.EmailInput(
-          attrs={'multiple': True, 'placeholder': 'email, email'}),
-      help_text=('Comma separated list of full email addresses. '
-                 'Prefer @chromium.org.'))
-  blink_components = ALL_FIELDS['blink_components']
-
-  motivation = ALL_FIELDS['motivation']
-  explainer_links = ALL_FIELDS['explainer_links']
-  bug_url = ALL_FIELDS['bug_url']
-  launch_bug_url = ALL_FIELDS['launch_bug_url']
-  comments = ALL_FIELDS['comments']
-
-
-class Any_Implement(forms.Form):
-
-  field_order = (
-      'spec_link', 'comments')
+Any_Implement = define_form_class_using_shared_fields(
+    'Any_Implement',
+    ('spec_link', 'comments'))
   # TODO(jrobbins): advise user to request a tag review
-  spec_link = ALL_FIELDS['spec_link']
-  # TODO(jrobbins): action to generate Intent to Prototype email
-  comments = ALL_FIELDS['comments']
 
 
-class Existing_OriginTrial(forms.Form):
-
-  field_order = (
-      'experiment_goals', 'experiment_timeline', 'experiment_risks',
-      'experiment_extension_reason', 'ongoing_constraints',
-      'intent_to_experiment_url', 'i2e_lgtms',
-      'origin_trial_feedback_url', 'comments')
-  experiment_goals = ALL_FIELDS['experiment_goals']
-  experiment_timeline = ALL_FIELDS['experiment_timeline']
-  experiment_risks = ALL_FIELDS['experiment_risks']
-  experiment_extension_reason = ALL_FIELDS['experiment_extension_reason']
-  ongoing_constraints = ALL_FIELDS['ongoing_constraints']
-  intent_to_experiment_url = ALL_FIELDS['intent_to_experiment_url']
-  i2e_lgtms = ALL_FIELDS['i2e_lgtms']
-  origin_trial_feedback_url = ALL_FIELDS['origin_trial_feedback_url'] # optional
-  # TODO(jrobbins): action to generate intent to experiement email
-  comments = ALL_FIELDS['comments']
+Existing_OriginTrial = define_form_class_using_shared_fields(
+    'Existing_OriginTrial',
+    ('experiment_goals', 'experiment_timeline', 'experiment_risks',
+     'experiment_extension_reason', 'ongoing_constraints',
+     'intent_to_experiment_url', 'i2e_lgtms',
+     'origin_trial_feedback_url', 'comments'))
 
 
 # Note: Even though this is similar to another form, it is likely to change.
-class Deprecation_PrepareToShip(forms.Form):
-
-  field_order = (
-      'impl_status_chrome', 'tag_review',
-      'intent_to_implement_url', 'origin_trial_feedback_url',
-      'launch_bug_url', 'comments')
-  impl_status_chrome = ALL_FIELDS['impl_status_chrome']
-  tag_review = ALL_FIELDS['tag_review']
-  intent_to_implement_url = ALL_FIELDS['intent_to_implement_url']
-  origin_trial_feedback_url = ALL_FIELDS['origin_trial_feedback_url'] # optional
-  launch_bug_url = ALL_FIELDS['launch_bug_url']
-  comments = ALL_FIELDS['comments']
+Deprecation_PrepareToShip = define_form_class_using_shared_fields(
+    'Deprecation_PrepareToShip',
+    ('impl_status_chrome', 'tag_review',
+     'intent_to_implement_url', 'origin_trial_feedback_url',
+     'launch_bug_url', 'comments'))
 
 
 # Note: Even though this is similar to another form, it is likely to change.
-class Deprecation_DeprecationTrial(forms.Form):
-
-  field_order = (
-      'experiment_goals', 'experiment_timeline', 'experiment_risks',
-      'experiment_extension_reason', 'ongoing_constraints',
-      'intent_to_experiment_url', 'i2e_lgtms',
-      'origin_trial_feedback_url', 'comments')
-  experiment_goals = ALL_FIELDS['experiment_goals']
-  experiment_timeline = ALL_FIELDS['experiment_timeline']
-  experiment_risks = ALL_FIELDS['experiment_risks']
-  experiment_extension_reason = ALL_FIELDS['experiment_extension_reason']
-  ongoing_constraints = ALL_FIELDS['ongoing_constraints']
-  intent_to_experiment_url = ALL_FIELDS['intent_to_experiment_url']
-  i2e_lgtms = ALL_FIELDS['r4dt_lgtms']  # class var name matches underlying field.
-  origin_trial_feedback_url = ALL_FIELDS['origin_trial_feedback_url'] # optional
-  comments = ALL_FIELDS['comments']
+Deprecation_DeprecationTrial = define_form_class_using_shared_fields(
+    'Deprecation_DeprecationTrial',
+    ('experiment_goals', 'experiment_timeline', 'experiment_risks',
+     'experiment_extension_reason', 'ongoing_constraints',
+     'intent_to_experiment_url',
+     'i2e_lgtms=r4dt_lgtms',  # form field name matches underlying DB field.
+     'origin_trial_feedback_url', 'comments'))
 
 
 # Note: Even though this is similar to another form, it is likely to change.
-class Deprecation_PrepareToShip(forms.Form):
-
-  field_order = (
-      'impl_status_chrome', 'tag_review',
-      'intent_to_ship_url', 'i2s_lgtms',
-      'launch_bug_url', 'comments')
-  impl_status_chrome = ALL_FIELDS['impl_status_chrome']
-  tag_review = ALL_FIELDS['tag_review']
-  intent_to_ship_url = ALL_FIELDS['intent_to_ship_url']
-  i2s_lgtms = ALL_FIELDS['i2s_lgtms']
-  launch_bug_url = ALL_FIELDS['launch_bug_url']
-  comments = ALL_FIELDS['comments']
+Deprecation_PrepareToShip = define_form_class_using_shared_fields(
+    'Deprecation_PrepareToShip',
+    ('impl_status_chrome', 'tag_review',
+     'intent_to_ship_url', 'i2s_lgtms',
+     'launch_bug_url', 'comments'))
 
 
-class Deprecation_Removed(forms.Form):
-  comments = ALL_FIELDS['comments']
+Deprecation_Removed = define_form_class_using_shared_fields(
+    'Deprecation_Removed',
+    ('comments',))
+
+
+Flat_Metadata = define_form_class_using_shared_fields(
+    'Flat_Metadata',
+    ('name', 'summary', 'unlisted', 'owner',
+     'blink_components', 'category',
+     'feature_type', 'intent_stage',
+     'bug_url', 'launch_bug_url',
+     'impl_status_chrome', 'search_tags', 'comments'))
+
+
+Flat_Identify = define_form_class_using_shared_fields(
+    'Flat_Identify',
+    ('motivation', 'explainer_links'))
+
+
+Flat_Implement = define_form_class_using_shared_fields(
+    'Flat_Implement',
+    ('spec_link', 'intent_to_implement_url'))
+
+
+Flat_DevTrial = define_form_class_using_shared_fields(
+    'Flat_DevTrial',
+    ('doc_links',
+     'interop_compat_risks',
+     'safari_views', 'safari_views_link', 'safari_views_notes',
+     'ff_views', 'ff_views_link', 'ff_views_notes',
+     'ie_views', 'ie_views_link', 'ie_views_notes',
+     'web_dev_views', 'web_dev_views_link', 'web_dev_views_notes',
+     'security_review_status', 'privacy_review_status',
+     'ergonomics_risks', 'activation_risks', 'security_risks', 'debuggability',
+     'all_platforms', 'all_platforms_descr', 'wpt', 'wpt_descr',
+     'sample_links', 'devrel', 'ready_for_trial_url'))
+  # TODO(jrobbins): api overview link
+
+
+Flat_OriginTrial = define_form_class_using_shared_fields(
+    'Flat_OriginTrial',
+    ('experiment_goals', 'experiment_timeline', 'experiment_risks',
+     'experiment_extension_reason', 'ongoing_constraints',
+     'intent_to_experiment_url', 'i2e_lgtms',
+     'origin_trial_feedback_url'))
+
+
+Flat_PrepareToShip = define_form_class_using_shared_fields(
+    'Flat_PrepareToShip',
+    ('tag_review', 'tag_review_status',
+     'intent_to_ship_url', 'i2s_lgtms'))
+
+
+Flat_Ship = define_form_class_using_shared_fields(
+    'Flat_Ship',
+    ('shipped_milestone', 'shipped_android_milestone',
+     'shipped_ios_milestone', 'shipped_webview_milestone'))

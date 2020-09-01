@@ -80,6 +80,18 @@ STAGE_FORMS = {
         },
 }
 
+# Forms to be used on the "Edit all" page that shows a flat list of fields.
+# [('Section name': form_class)].
+FLAT_FORMS = [
+    ('Feature metadata', guideforms.Flat_Metadata),
+    ('Indentify the need', guideforms.Flat_Identify),
+    ('Prototype a solution', guideforms.Flat_Implement),
+    ('Dev trial', guideforms.Flat_DevTrial),
+    ('Origin trial', guideforms.Flat_OriginTrial),
+    ('Prepare to ship', guideforms.Flat_PrepareToShip),
+    ('Ship', guideforms.Flat_Ship),
+]
+
 
 def format_feature_url(feature_id):
   """Return the feature detail page URL for the specified feature."""
@@ -207,7 +219,19 @@ class FeatureEditStage(common.ContentHandler):
     # TODO(jrobbins): Use monorail API instead of scrapping.
     return []
 
+  def get_feature_and_process(self, feature_id):
+    """Look up the feature that the user wants to edit, and its process."""
+    f = models.Feature.get_by_id(feature_id)
+    if f is None:
+      self.abort(404)
+
+    feature_process = processes.ALL_PROCESSES.get(
+        f.feature_type, processes.BLINK_LAUNCH_PROCESS)
+
+    return f, feature_process
+
   def get(self, path, feature_id, stage_id):
+    feature_id = long(feature_id)
     stage_id = int(stage_id)
     user = users.get_current_user()
     if user is None:
@@ -218,12 +242,8 @@ class FeatureEditStage(common.ContentHandler):
       common.handle_401(self.request, self.response, Exception)
       return
 
-    f = models.Feature.get_by_id(long(feature_id))
-    if f is None:
-      self.abort(404)
+    f, feature_process = self.get_feature_and_process(feature_id)
 
-    feature_process = processes.ALL_PROCESSES.get(
-        f.feature_type, processes.BLINK_LAUNCH_PROCESS)
     stage_name = ''
     for stage in feature_process.stages:
       if stage.outgoing_stage == stage_id:
@@ -249,17 +269,18 @@ class FeatureEditStage(common.ContentHandler):
 
     self.render(data=template_data, template_path=os.path.join(path + '.html'))
 
-  def post(self, path, feature_id, stage_id):
+  def post(self, path, feature_id, stage_id=0):
+    feature_id = long(feature_id)
+    stage_id = int(stage_id)
     user = users.get_current_user()
     if user is None or (user and not self.user_can_edit(user)):
       common.handle_401(self.request, self.response, Exception)
       return
 
     if feature_id:
-      feature = models.Feature.get_by_id(long(feature_id))
+      feature = models.Feature.get_by_id(feature_id)
       if feature is None:
         self.abort(404)
-    stage_id = int(stage_id)
 
     logging.info('POST is %r', self.request.POST)
 
@@ -451,9 +472,43 @@ class FeatureEditStage(common.ContentHandler):
     return self.redirect(redirect_url)
 
 
+class FeatureEditAllFields(FeatureEditStage):
+  """Flat form page that lists all fields in seprate sections."""
+
+  def get(self, path, feature_id):
+    feature_id = long(feature_id)
+    user = users.get_current_user()
+    if user is None:
+      # Redirect to public URL for unauthenticated users.
+      return self.redirect(format_feature_url(feature_id))
+
+    if not self.user_can_edit(user):
+      common.handle_401(self.request, self.response, Exception)
+      return
+
+    f, feature_process = self.get_feature_and_process(feature_id)
+
+    feature_edit_dict = f.format_for_edit()
+    # TODO(jrobbins): make flat forms process specific?
+    flat_form_section_list = FLAT_FORMS
+    flat_forms = [
+        (section_name, form_class(feature_edit_dict))
+        for section_name, form_class in flat_form_section_list]
+    template_data = {
+        'feature': f,
+        'feature_id': f.key().id,
+        'flat_forms': flat_forms,
+    }
+
+    self._add_common_template_values(template_data)
+
+    self.render(data=template_data, template_path=os.path.join(path + '.html'))
+
+
 app = webapp2.WSGIApplication([
   ('/(guide/new)', FeatureNew),
   ('/(guide/edit)/([0-9]*)', ProcessOverview),
   # TODO(jrobbins): ('/(guide/delete)/([0-9]*)', FeatureDelete),
   ('/(guide/stage)/([0-9]*)/([0-9]*)', FeatureEditStage),
+  ('/(guide/editall)/([0-9]*)', FeatureEditAllFields),
 ], debug=settings.DEBUG)

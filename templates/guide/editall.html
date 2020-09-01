@@ -1,0 +1,49 @@
+{% extends "_base.html" %}
+
+{% block css %}
+<link rel="stylesheet" href="/static/css/forms.css">
+<link rel="stylesheet" href="/static/css/guide.css">
+{% endblock %}
+
+{% block subheader %}
+<div id="subheader">
+  <h2 id="breadcrumbs">
+    <a href="/guide/edit/{{ feature_id }}">
+      <iron-icon icon="chromestatus:arrow-back"></iron-icon>
+      Edit feature: {{ feature.name }}
+    </a>
+  </h2>
+</div>
+{% endblock %}
+
+{% block content %}
+<form name="feature_form" method="POST" action="{{current_path}}">
+  {% for section_name, flat_form in flat_forms %}
+    <h3>{{ section_name }}</h3>
+    <section class="flat_form">
+      <table>
+        {{ flat_form }}
+      </table>
+    </section>
+  {% endfor %}
+
+  <section class="final_buttons">
+    <table>
+      <tr>
+        <th></th>
+        <td>
+          <input class="button" type="submit" value="Submit">
+          <button id="cancel-button" data-id="{{ feature_id }}">Cancel</button>
+        </td>
+      </tr>
+    </table>
+  </section>
+</form>
+
+{% endblock %}
+
+{% block js %}
+<script>
+  document.body.classList.remove('loading');
+</script>
+{% endblock %}

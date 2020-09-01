@@ -142,6 +142,13 @@ class ChromedashProcessOverview extends LitElement {
            </td>
          </tr>
        `)}
+       <tr>
+         <td><b>Final review</b></td>
+         <td></td>
+         <td>
+          <a href="/guide/editall/${featureId}">Edit all fields</a>
+         </td>
+       </tr>
      </table>
 
     ${Object.keys(this.progress).length ? html`
