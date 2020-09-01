@@ -48,7 +48,7 @@ if (document.querySelector('.delete-button')) {
 
 if (document.querySelector('#cancel-button')) {
   document.querySelector('#cancel-button').addEventListener('click', (e) => {
-    location.href = `/guide/edit/${e.currentTarget.dataset.id}`;
+    window.location.href = `/guide/edit/${e.currentTarget.dataset.id}`;
   });
 }
 
