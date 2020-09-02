@@ -214,7 +214,7 @@ class ChromedashFeature extends LitElement {
         <h2>${this.feature.name}
           ${this.canEdit ? html`
             <span class="tooltip" title="Edit this feature">
-              <a href="/admin/features/edit/${this.feature.id}" data-tooltip>
+              <a href="/guide/edit/${this.feature.id}" data-tooltip>
                 <iron-icon icon="chromestatus:create"></iron-icon>
               </a>
             </span>

@@ -33,7 +33,8 @@
         <th></th>
         <td>
           <input class="button" type="submit" value="Submit">
-          <button id="cancel-button" data-id="{{ feature_id }}">Cancel</button>
+          <button id="cancel-button" data-id="{{ feature_id }}"
+                  type="reset">Cancel</button>
         </td>
       </tr>
     </table>
@@ -44,6 +45,10 @@
 
 {% block js %}
 <script>
+  document.querySelector('#cancel-button').addEventListener('click', (e) => {
+    window.location.href = `/guide/edit/${e.currentTarget.dataset.id}`;
+  });
+
   document.body.classList.remove('loading');
 </script>
 {% endblock %}

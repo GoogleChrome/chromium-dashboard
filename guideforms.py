@@ -691,7 +691,7 @@ Flat_Metadata = define_form_class_using_shared_fields(
 
 Flat_Identify = define_form_class_using_shared_fields(
     'Flat_Identify',
-    ('motivation', 'explainer_links'))
+    ('motivation', 'initial_public_proposal_url', 'explainer_links'))
 
 
 Flat_Implement = define_form_class_using_shared_fields(
