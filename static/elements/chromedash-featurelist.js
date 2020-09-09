@@ -397,8 +397,6 @@ class ChromedashFeaturelist extends LitElement {
             <div
               ?hidden="${this._computeMilestoneHidden(item.feature, this.features, this.filtered)}"
               class="milestone-marker">
-              <iron-icon icon="chromestatus:expand-more"></iron-icon>
-
               ${this._computeMilestoneString(item.feature.browsers.chrome.status.milestone_str)}
             </div>
             <chromedash-feature id="id-${item.feature.id}" tabindex="0"

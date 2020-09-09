@@ -290,6 +290,10 @@ class ChromedashFeature extends LitElement {
                 <iron-icon icon="chromestatus:open-in-new"></iron-icon>
               </a>
             </span>
+            <iron-icon
+              style="margin-left:2em"
+              icon="chromestatus:${this.open ? 'expand-less' : 'expand-more'}">
+            </iron-icon>
           </div>
         </div>
       </hgroup>

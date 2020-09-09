@@ -83,14 +83,19 @@ limitations under the License.
         <div class="main-toolbar">
           <div class="toolbar-content">
             {% include "header.html" %}
-            {% block subheader %}{% endblock %}
           </div>
         </div>
       </app-header>
 
       <div id="content">
         <div id="spinner"><img src="/static/img/ring.svg"></div>
-        {% block content %}{% endblock %}
+        <div id="content-columns">
+          <div id="drawer-column">{% block drawer %}{% endblock %}</div>
+          <div id="content-column">
+            {% block subheader %}{% endblock %}
+            {% block content %}{% endblock %}
+          </div>
+        </div>
       </div>
 
     </app-header-layout>

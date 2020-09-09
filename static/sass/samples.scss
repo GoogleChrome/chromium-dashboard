@@ -1,5 +1,9 @@
 @import "vars";
 
+paper-listbox {
+  background: inherit;
+}
+
 paper-item {
   display: block;
   padding: 12px 16px;
