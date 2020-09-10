@@ -302,7 +302,7 @@ class ChromedashFeature extends LitElement {
           <p><span>${this.feature.summary}</span></p>
         </summary>
         ${this.feature.motivation ?
-          html`<p><label>Motivation</label></p>
+          html`<p><h3>Motivation</h3></p>
           <p><span>${this.feature.motivation}</span></p>`
           : nothing }
       </section>
