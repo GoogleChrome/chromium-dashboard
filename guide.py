@@ -80,6 +80,22 @@ STAGE_FORMS = {
         },
 }
 
+
+IMPL_STATUS_FORMS = {
+    models.INTENT_EXPERIMENT:
+        (models.BEHIND_A_FLAG, guideforms.ImplStatus_DevTrial,),
+    models.INTENT_EXTEND_TRIAL:
+        (models.ORIGIN_TRIAL, guideforms.ImplStatus_OriginTrial,),
+    models.INTENT_IMPLEMENT_SHIP:
+        (None, guideforms.ImplStatus_AllMilestones,),
+    models.INTENT_SHIP:
+        (models.ENABLED_BY_DEFAULT, guideforms.ImplStatus_AllMilestones,),
+    models.INTENT_SHIPPED:
+        (models.ENABLED_BY_DEFAULT, guideforms.ImplStatus_AllMilestones,),
+    models.INTENT_REMOVED:
+        (models.REMOVED, guideforms.ImplStatus_AllMilestones,),
+    }
+
 # Forms to be used on the "Edit all" page that shows a flat list of fields.
 # [('Section name': form_class)].
 FLAT_FORMS = [
@@ -257,12 +273,28 @@ class FeatureEditStage(common.ContentHandler):
     # TODO(jrobbins): show useful error if stage not found.
     detail_form_class = STAGE_FORMS[f.feature_type][stage_id]
 
+    impl_status_offered, impl_status_form_class = IMPL_STATUS_FORMS.get(
+        stage_id, (None, None))
+
+    feature_edit_dict = f.format_for_edit()
+    detail_form = None
+    if detail_form_class:
+      detail_form = detail_form_class(feature_edit_dict)
+    impl_status_form = None
+    if impl_status_form_class:
+      impl_status_form = impl_status_form_class(feature_edit_dict)
+
     # Provide new or populated form to template.
     template_data.update({
         'feature': f,
         'feature_id': f.key().id,
-        'feature_form': detail_form_class(f.format_for_edit()),
+        'feature_form': detail_form,
         'already_on_this_stage': stage_id == f.intent_stage,
+        'already_on_this_impl_status':
+            impl_status_offered == f.impl_status_chrome,
+        'impl_status_form': impl_status_form,
+        'impl_status_name': models.IMPLEMENTATION_STATUS.get(
+            impl_status_offered, None),
     })
 
     self._add_common_template_values(template_data)

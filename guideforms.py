@@ -330,9 +330,31 @@ ALL_FIELDS = {
 
     # TODO(jrobbins): consider splitting this into start and end fields.
     'experiment_timeline': forms.CharField(
-        label='Experiment Timeline', required=False,
+        label='DEPRECATED Experiment Timeline', required=False,
         widget=forms.Textarea(attrs={'rows': 2, 'cols': 50, 'maxlength': 1480}),
-        help_text='When does the experiment start and expire?'),
+        help_text=('When does the experiment start and expire? '
+                   'Please use the following numberic fields instead.')),
+
+    # TODO(jrobbins and jmedley): Refine help text.
+    'ot_milestone_desktop_start': forms.IntegerField(
+        required=False, label='OT desktop start',
+        widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'}),
+        help_text='Desktop:<br/>' + SHIPPED_HELP_TXT),
+
+    'ot_milestone_desktop_end': forms.IntegerField(
+        required=False, label='OT desktop end',
+        widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'}),
+        help_text='Desktop:<br/>' + SHIPPED_HELP_TXT),
+
+    'ot_milestone_android_start': forms.IntegerField(
+        required=False, label='OT android start',
+        widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'}),
+        help_text='Android:<br/>' + SHIPPED_HELP_TXT),
+
+    'ot_milestone_android_end': forms.IntegerField(
+        required=False, label='OT android end',
+        widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'}),
+        help_text='Android:<br/>' + SHIPPED_HELP_TXT),
 
     'experiment_risks': forms.CharField(
         label='Experiment Risks', required=False,
@@ -490,24 +512,28 @@ ALL_FIELDS = {
         choices=models.IMPLEMENTATION_STATUS.items()),
 
     'shipped_milestone': forms.IntegerField(
-        required=False, label='',
+        required=False, label='Chrome for desktop',
         widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'}),
-        help_text='Desktop:<br/>' + SHIPPED_HELP_TXT),
+        help_text=SHIPPED_HELP_TXT),
 
     'shipped_android_milestone': forms.IntegerField(
-        required=False, label='',
+        required=False, label='Chrome for Android',
         widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'}),
-        help_text='Chrome for Android:</br/>' + SHIPPED_HELP_TXT),
+        help_text=SHIPPED_HELP_TXT),
 
     'shipped_ios_milestone': forms.IntegerField(
-        required=False, label='',
+        required=False, label='Chrome for iOS (RARE)',
         widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'}),
-        help_text='Chrome for iOS (RARE):<br/>' + SHIPPED_HELP_TXT),
+        help_text=SHIPPED_HELP_TXT),
 
     'shipped_webview_milestone': forms.IntegerField(
-        required=False, label='',
+        required=False, label='Android Webview',
         widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'}),
-        help_text='Android WebView:<br/>' + SHIPPED_WEBVIEW_HELP_TXT),
+        help_text=SHIPPED_WEBVIEW_HELP_TXT),
+
+    'flag_name': forms.CharField(
+        label='Flag name', required=False,
+        help_text='Name of the flag that enables this feature'),
 
     'prefixed': forms.BooleanField(
         required=False, initial=False, label='Prefixed?'),
@@ -585,6 +611,12 @@ Any_DevTrial = define_form_class_using_shared_fields(
   # TODO(jrobbins): api overview link
 
 
+ImplStatus_DevTrial = define_form_class_using_shared_fields(
+    'ImplStatus_InDevTrial',
+    ('shipped_milestone', 'shipped_android_milestone',
+     'shipped_ios_milestone', 'flag_name'))
+
+
 NewFeature_EvalReadinessToShip = define_form_class_using_shared_fields(
     'NewFeature_EvalReadinessToShip',
     ('doc_links', 'tag_review', 'spec_link', 'interop_compat_risks',
@@ -592,8 +624,13 @@ NewFeature_EvalReadinessToShip = define_form_class_using_shared_fields(
      'ff_views', 'ff_views_link', 'ff_views_notes',
      'ie_views', 'ie_views_link', 'ie_views_notes',
      'web_dev_views', 'web_dev_views_link', 'web_dev_views_notes',
-     'shipped_milestone', 'shipped_android_milestone', 'shipped_ios_milestone',
-     'shipped_webview_milestone', 'prefixed', 'comments'))
+     'prefixed', 'comments'))
+
+
+ImplStatus_AllMilestones = define_form_class_using_shared_fields(
+    'ImplStatus_AllMilestones',
+    ('shipped_milestone', 'shipped_android_milestone',
+     'shipped_ios_milestone', 'shipped_webview_milestone'))
 
 
 NewFeature_OriginTrial = define_form_class_using_shared_fields(
@@ -604,29 +641,29 @@ NewFeature_OriginTrial = define_form_class_using_shared_fields(
      'i2e_lgtms', 'comments'))
 
 
+ImplStatus_OriginTrial = define_form_class_using_shared_fields(
+    'ImplStatus_OriginTrial',
+    ('ot_milestone_desktop_start', 'ot_milestone_desktop_end',
+     'ot_milestone_android_start', 'ot_milestone_android_end'))
+
+
 Most_PrepareToShip = define_form_class_using_shared_fields(
     'Most_PrepareToShip',
-    ('impl_status_chrome', 'shipped_milestone', 'shipped_android_milestone',
-     'shipped_ios_milestone', 'shipped_webview_milestone',
-     'tag_review', 'tag_review_status',
+    ('tag_review', 'tag_review_status',
      'intent_to_implement_url', 'origin_trial_feedback_url',
      'launch_bug_url', 'intent_to_ship_url', 'i2s_lgtms', 'comments'))
 
 
 PSA_PrepareToShip = define_form_class_using_shared_fields(
     'PSA_PrepareToShip',
-    ('impl_status_chrome', 'shipped_milestone', 'shipped_android_milestone',
-     'shipped_ios_milestone', 'shipped_webview_milestone',
-     'tag_review',
+    ('tag_review',
      'intent_to_implement_url', 'origin_trial_feedback_url',
      'launch_bug_url', 'intent_to_ship_url', 'comments'))
 
 
 Any_Ship = define_form_class_using_shared_fields(
     'Any_Ship',
-    ('impl_status_chrome', 'shipped_milestone', 'shipped_android_milestone',
-     'shipped_ios_milestone', 'shipped_webview_milestone',
-     'launch_bug_url', 'comments'))
+    ('launch_bug_url', 'comments'))
 
 
 Any_Identify = define_form_class_using_shared_fields(

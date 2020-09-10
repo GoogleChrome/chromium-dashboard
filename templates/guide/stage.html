@@ -43,6 +43,35 @@
           {% endif %}
         </td>
       </tr>
+
+      <tr>
+        <th></th>
+        <td>
+          {% if already_on_this_impl_status %}
+            This feature already has implementation status:
+            <b>{{ impl_status_name }}</b>.
+          {% elif impl_status_name %}
+            <input type="checkbox" name="set_impl_status"
+                   id="set_impl_status">
+            <label for="set_impl_status">
+              Set implementation status to: <b>{{ impl_status_name }}</b>
+              <br>
+              <span class="helptext">
+                Check this box to also update the implementation
+                status of this feature in Chrome.
+              </span>
+            </label>
+          {% endif %}
+
+          {% if impl_status_form %}
+            <table>
+              {{ impl_status_form }}
+            </table>
+          {% endif %}
+        </td>
+      </tr>
+
+
       <tr>
         <th></th>
         <td>
