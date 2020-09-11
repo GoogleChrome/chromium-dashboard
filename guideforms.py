@@ -330,31 +330,39 @@ ALL_FIELDS = {
 
     # TODO(jrobbins): consider splitting this into start and end fields.
     'experiment_timeline': forms.CharField(
-        label='DEPRECATED Experiment Timeline', required=False,
-        widget=forms.Textarea(attrs={'rows': 2, 'cols': 50, 'maxlength': 1480}),
+        label='Experiment Timeline', required=False,
+        widget=forms.Textarea(attrs={
+            'rows': 2, 'cols': 50, 'maxlength': 1480,
+            'placeholder': 'This field is deprecated',
+            'disabled': 'disabled'}),
         help_text=('When does the experiment start and expire? '
+                   'Deprecated: '
                    'Please use the following numberic fields instead.')),
 
     # TODO(jrobbins and jmedley): Refine help text.
     'ot_milestone_desktop_start': forms.IntegerField(
         required=False, label='OT desktop start',
         widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'}),
-        help_text='Desktop:<br/>' + SHIPPED_HELP_TXT),
+        help_text=('First desktop milestone that will support an origin '
+                   'trial of this feature.')),
 
     'ot_milestone_desktop_end': forms.IntegerField(
         required=False, label='OT desktop end',
         widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'}),
-        help_text='Desktop:<br/>' + SHIPPED_HELP_TXT),
+        help_text=('Last desktop milestone that will support an origin '
+                   'trial of this feature.')),
 
     'ot_milestone_android_start': forms.IntegerField(
         required=False, label='OT android start',
         widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'}),
-        help_text='Android:<br/>' + SHIPPED_HELP_TXT),
+        help_text=('First android milestone that will support an origin '
+                   'trial of this feature.')),
 
     'ot_milestone_android_end': forms.IntegerField(
         required=False, label='OT android end',
         widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'}),
-        help_text='Android:<br/>' + SHIPPED_HELP_TXT),
+        help_text=('Last android milestone that will support an origin '
+                   'trial of this feature.')),
 
     'experiment_risks': forms.CharField(
         label='Experiment Risks', required=False,
@@ -508,8 +516,9 @@ ALL_FIELDS = {
         help_text='Comma separated list of full email addresses.'),
 
     'impl_status_chrome': forms.ChoiceField(
-        required=False, label='Status in Chromium',
-        choices=models.IMPLEMENTATION_STATUS.items()),
+        required=False, label='Implementatino status',
+        choices=models.IMPLEMENTATION_STATUS.items(),
+        help_text='Implementation status in Chromium'),
 
     'shipped_milestone': forms.IntegerField(
         required=False, label='Chrome for desktop',
@@ -533,7 +542,7 @@ ALL_FIELDS = {
 
     'flag_name': forms.CharField(
         label='Flag name', required=False,
-        help_text='Name of the flag that enables this feature'),
+        help_text='Name of the flag that enables this feature.'),
 
     'prefixed': forms.BooleanField(
         required=False, initial=False, label='Prefixed?'),
@@ -576,10 +585,14 @@ NewFeatureForm = define_form_class_using_shared_fields(
 MetadataForm = define_form_class_using_shared_fields(
     'MetadataForm',
     ('name', 'summary', 'unlisted', 'owner',
-     'blink_components', 'category',
+     'category',
      'feature_type', 'intent_stage',
+     'search_tags',
+
+     'impl_status_chrome',
+     'blink_components',
      'bug_url', 'launch_bug_url',
-     'impl_status_chrome', 'search_tags'))
+    ))
 
 
 
@@ -635,7 +648,7 @@ ImplStatus_AllMilestones = define_form_class_using_shared_fields(
 
 NewFeature_OriginTrial = define_form_class_using_shared_fields(
     'NewFeature_OriginTrial',
-    ('experiment_goals', 'experiment_timeline', 'experiment_risks',
+    ('experiment_goals', 'experiment_risks',
      'experiment_extension_reason', 'ongoing_constraints',
      'origin_trial_feedback_url', 'intent_to_experiment_url',
      'i2e_lgtms', 'comments'))
@@ -643,7 +656,8 @@ NewFeature_OriginTrial = define_form_class_using_shared_fields(
 
 ImplStatus_OriginTrial = define_form_class_using_shared_fields(
     'ImplStatus_OriginTrial',
-    ('ot_milestone_desktop_start', 'ot_milestone_desktop_end',
+    ('experiment_timeline',  # deprecated
+     'ot_milestone_desktop_start', 'ot_milestone_desktop_end',
      'ot_milestone_android_start', 'ot_milestone_android_end'))
 
 
@@ -680,7 +694,7 @@ Any_Implement = define_form_class_using_shared_fields(
 
 Existing_OriginTrial = define_form_class_using_shared_fields(
     'Existing_OriginTrial',
-    ('experiment_goals', 'experiment_timeline', 'experiment_risks',
+    ('experiment_goals', 'experiment_risks',
      'experiment_extension_reason', 'ongoing_constraints',
      'intent_to_experiment_url', 'i2e_lgtms',
      'origin_trial_feedback_url', 'comments'))
@@ -719,26 +733,34 @@ Deprecation_Removed = define_form_class_using_shared_fields(
 
 Flat_Metadata = define_form_class_using_shared_fields(
     'Flat_Metadata',
-    ('name', 'summary', 'unlisted', 'owner',
-     'blink_components', 'category',
+    (# Standardizaton
+     'name', 'summary', 'unlisted', 'owner',
+     'category',
      'feature_type', 'intent_stage',
+     'search_tags',
+     # Implementtion
+     'impl_status_chrome',
+     'blink_components',
      'bug_url', 'launch_bug_url',
-     'impl_status_chrome', 'search_tags', 'comments'))
+     'comments'))
 
 
 Flat_Identify = define_form_class_using_shared_fields(
     'Flat_Identify',
-    ('motivation', 'initial_public_proposal_url', 'explainer_links'))
+    (# Standardization
+     'motivation', 'initial_public_proposal_url', 'explainer_links'))
 
 
 Flat_Implement = define_form_class_using_shared_fields(
     'Flat_Implement',
-    ('spec_link', 'intent_to_implement_url'))
+    (# Standardization
+     'spec_link', 'intent_to_implement_url'))
 
 
 Flat_DevTrial = define_form_class_using_shared_fields(
     'Flat_DevTrial',
-    ('doc_links',
+    (# Standardizaton
+     'doc_links',
      'interop_compat_risks',
      'safari_views', 'safari_views_link', 'safari_views_notes',
      'ff_views', 'ff_views_link', 'ff_views_notes',
@@ -747,25 +769,39 @@ Flat_DevTrial = define_form_class_using_shared_fields(
      'security_review_status', 'privacy_review_status',
      'ergonomics_risks', 'activation_risks', 'security_risks', 'debuggability',
      'all_platforms', 'all_platforms_descr', 'wpt', 'wpt_descr',
-     'sample_links', 'devrel', 'ready_for_trial_url'))
+     'sample_links', 'devrel', 'ready_for_trial_url',
+
+     # TODO(jrobbins): UA support signals section
+
+     # Implementation
+     'flag_name'))
   # TODO(jrobbins): api overview link
 
 
 Flat_OriginTrial = define_form_class_using_shared_fields(
     'Flat_OriginTrial',
-    ('experiment_goals', 'experiment_timeline', 'experiment_risks',
+    (# Standardization
+     'experiment_goals',
+     'experiment_risks',
      'experiment_extension_reason', 'ongoing_constraints',
      'intent_to_experiment_url', 'i2e_lgtms',
-     'origin_trial_feedback_url'))
+     'origin_trial_feedback_url',
+
+     # Implementation
+     'experiment_timeline',
+     'ot_milestone_desktop_start', 'ot_milestone_desktop_end',
+     'ot_milestone_android_start', 'ot_milestone_android_end'))
 
 
 Flat_PrepareToShip = define_form_class_using_shared_fields(
     'Flat_PrepareToShip',
-    ('tag_review', 'tag_review_status',
+    (# Standardization
+     'tag_review', 'tag_review_status',
      'intent_to_ship_url', 'i2s_lgtms'))
 
 
 Flat_Ship = define_form_class_using_shared_fields(
     'Flat_Ship',
-    ('shipped_milestone', 'shipped_android_milestone',
+    (# Implementation
+     'shipped_milestone', 'shipped_android_milestone',
      'shipped_ios_milestone', 'shipped_webview_milestone'))

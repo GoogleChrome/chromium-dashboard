@@ -79,8 +79,8 @@ form[name="feature_form"] {
   }
 }
 
-.stage_form form[name="feature_form"] {
-  margin-bottom: 1em;
+form[name="feature_form"] .stage_form {
+  margin-bottom: 2em;
 }
 
 .stage_form, .final_buttons {

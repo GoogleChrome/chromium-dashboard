@@ -607,6 +607,22 @@ class FeatureHandler(common.ContentHandler):
           ongoing_constraints=self.request.get('ongoing_constraints'),
           )
 
+    if self.request.get('flag_name'):
+      feature.flag_name = self.request.get('flag_name')
+    if self.request.get('ot_milestone_desktop_start'):
+      feature.ot_milestone_desktop_start = int(self.request.get(
+          'ot_milestone_desktop_start'))
+    if self.request.get('ot_milestone_desktop_end'):
+      feature.ot_milestone_desktop_end = int(self.request.get(
+          'ot_milestone_desktop_end'))
+    if self.request.get('ot_milestone_android_start'):
+      feature.ot_milestone_android_start = int(self.request.get(
+          'ot_milestone_android_start'))
+    if self.request.get('ot_milestone_android_end'):
+      feature.ot_milestone_android_end = int(self.request.get(
+          'ot_milestone_android_end'))
+
+
     params = []
     if self.request.get('create_launch_bug') == 'on':
       params.append(LAUNCH_PARAM)

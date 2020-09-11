@@ -295,6 +295,7 @@ class FeatureEditStage(common.ContentHandler):
         'impl_status_form': impl_status_form,
         'impl_status_name': models.IMPLEMENTATION_STATUS.get(
             impl_status_offered, None),
+        'impl_status_offered': impl_status_offered,
     })
 
     self._add_common_template_values(template_data)
@@ -386,6 +387,23 @@ class FeatureEditStage(common.ContentHandler):
       feature.shipped_opera_android_milestone = self.parse_int(
           'shipped_opera_android_milestone')
 
+    if self.touched('ot_milestone_desktop_start'):
+      feature.ot_milestone_desktop_start = self.parse_int(
+          'ot_milestone_desktop_start')
+    if self.touched('ot_milestone_desktop_end'):
+      feature.ot_milestone_desktop_end = self.parse_int(
+          'ot_milestone_desktop_end')
+
+    if self.touched('ot_milestone_android_start'):
+      feature.ot_milestone_android_start = self.parse_int(
+          'ot_milestone_android_start')
+    if self.touched('ot_milestone_desktop_end'):
+      feature.ot_milestone_desktop_end = self.parse_int(
+          'ot_milestone_android_end')
+
+    if self.touched('flag_name'):
+      feature.flag_name = self.request.get('flag_name')
+
     if self.touched('owner'):
       feature.owner = self.split_emails('owner')
 
@@ -409,6 +427,7 @@ class FeatureEditStage(common.ContentHandler):
     if self.touched('feature_type'):
       feature.feature_type = int(self.request.get('feature_type'))
 
+    # intent_stage can be be set either by <select> or a checkbox
     if self.touched('intent_stage'):
       feature.intent_stage = int(self.request.get('intent_stage'))
     elif self.request.get('set_stage') == 'on':
@@ -422,8 +441,13 @@ class FeatureEditStage(common.ContentHandler):
       feature.summary = self.request.get('summary')
     if self.touched('motivation'):
       feature.motivation = self.request.get('motivation')
+
+    # impl_status_chrome can be be set either by <select> or a checkbox
     if self.touched('impl_status_chrome'):
       feature.impl_status_chrome = int(self.request.get('impl_status_chrome'))
+    elif self.request.get('set_impl_status') == 'on':
+      feature.impl_status_chrome = self.parse_int('impl_status_offered')
+
     if self.touched('interop_compat_risks'):
       feature.interop_compat_risks = self.request.get('interop_compat_risks')
     if self.touched('ergonomics_risks'):
