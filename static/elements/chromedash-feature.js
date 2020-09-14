@@ -106,7 +106,7 @@ class ChromedashFeature extends LitElement {
       'No active development',
       'Proposed',
       'In development',
-      'Behind a flag',
+      'Behind a flag',  // TODO(jrobbins): Update when PR #1011 lands.
       'Origin trial',
       'On hold',
     ];
