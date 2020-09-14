@@ -20,8 +20,9 @@ import mock
 import webapp2
 from webob import exc
 
-import models
 import admin
+import models
+import processes
 
 
 class IntentEmailPreviewHandlerTest(unittest.TestCase):
@@ -34,7 +35,8 @@ class IntentEmailPreviewHandlerTest(unittest.TestCase):
     self.feature_1.put()
 
     request = webapp2.Request.blank(
-        '/admin/features/launch/%d?intent' % self.feature_1.key().id())
+        '/admin/features/launch/%d/%d?intent' % (
+            models.INTENT_SHIP, self.feature_1.key().id()))
     response = webapp2.Response()
     self.handler = admin.IntentEmailPreviewHandler(request, response)
 
@@ -55,6 +57,16 @@ class IntentEmailPreviewHandlerTest(unittest.TestCase):
     self.handler.get(feature_id=bad_feature_id)
     self.assertEqual('404 Not Found', self.handler.response.status)
 
+  def test_get__no_stage_specified(self):
+    """Allowed user can preview intent email for a feature using an old URL."""
+    self.handler.request = webapp2.Request.blank(
+        '/admin/features/launch/%d?intent' % self.feature_1.key().id())
+    testing_config.sign_in('user1@google.com', 123567890)
+    feature_id = self.feature_1.key().id()
+    self.handler.get(feature_id=feature_id)
+    self.assertEqual('200 OK', self.handler.response.status)
+    self.assertIn('feature one', self.handler.response.body)
+
   def test_get__normal(self):
     """Allowed user can preview intent email for a feature."""
     testing_config.sign_in('user1@google.com', 123567890)
@@ -66,7 +78,8 @@ class IntentEmailPreviewHandlerTest(unittest.TestCase):
   def test_get_page_data(self):
     """page_data has correct values."""
     feature_id = self.feature_1.key().id()
-    page_data = self.handler.get_page_data(feature_id, self.feature_1)
+    page_data = self.handler.get_page_data(
+        feature_id, self.feature_1, models.INTENT_IMPLEMENT)
     self.assertEqual(
         'http://localhost:80/feature/%d' % feature_id,
         page_data['default_url'])
@@ -79,73 +92,73 @@ class IntentEmailPreviewHandlerTest(unittest.TestCase):
 
   def test_compute_subject_prefix__incubate_new_feature(self):
     """We offer users the correct subject line for each intent stage."""
-    self.feature_1.intent_stage = models.INTENT_NONE
     self.assertEqual(
         'Intent stage "None"',
-        self.handler.compute_subject_prefix(self.feature_1))
+        self.handler.compute_subject_prefix(
+            self.feature_1, models.INTENT_NONE))
 
-    self.feature_1.intent_stage = models.INTENT_INCUBATE
     self.assertEqual(
         'Intent stage "Start incubating"',
-        self.handler.compute_subject_prefix(self.feature_1))
+        self.handler.compute_subject_prefix(
+            self.feature_1, models.INTENT_INCUBATE))
 
-    self.feature_1.intent_stage = models.INTENT_IMPLEMENT
     self.assertEqual(
         'Intent to Prototype',
-        self.handler.compute_subject_prefix(self.feature_1))
+        self.handler.compute_subject_prefix(
+            self.feature_1, models.INTENT_IMPLEMENT))
 
-    self.feature_1.intent_stage = models.INTENT_EXPERIMENT
     self.assertEqual(
         'Ready for Trial',
-        self.handler.compute_subject_prefix(self.feature_1))
+        self.handler.compute_subject_prefix(
+            self.feature_1, models.INTENT_EXPERIMENT))
 
-    self.feature_1.intent_stage = models.INTENT_IMPLEMENT_SHIP
     self.assertEqual(
         'Intent stage "Evaluate readiness to ship"',
-        self.handler.compute_subject_prefix(self.feature_1))
+        self.handler.compute_subject_prefix(
+            self.feature_1, models.INTENT_IMPLEMENT_SHIP))
 
-    self.feature_1.intent_stage = models.INTENT_EXTEND_TRIAL
     self.assertEqual(
         'Intent to Experiment',
-        self.handler.compute_subject_prefix(self.feature_1))
+        self.handler.compute_subject_prefix(
+            self.feature_1, models.INTENT_EXTEND_TRIAL))
 
-    self.feature_1.intent_stage = models.INTENT_SHIP
     self.assertEqual(
         'Intent to Ship',
-        self.handler.compute_subject_prefix(self.feature_1))
+        self.handler.compute_subject_prefix(
+            self.feature_1, models.INTENT_SHIP))
 
-    self.feature_1.intent_stage = models.INTENT_REMOVED
     self.assertEqual(
         'Intent stage "Removed"',
-        self.handler.compute_subject_prefix(self.feature_1))
+        self.handler.compute_subject_prefix(
+            self.feature_1, models.INTENT_REMOVED))
 
-    self.feature_1.intent_stage = models.INTENT_SHIPPED
     self.assertEqual(
         'Intent stage "Shipped"',
-        self.handler.compute_subject_prefix(self.feature_1))
+        self.handler.compute_subject_prefix(
+            self.feature_1, models.INTENT_SHIPPED))
 
-    self.feature_1.intent_stage = models.INTENT_PARKED
     self.assertEqual(
         'Intent stage "Parked"',
-        self.handler.compute_subject_prefix(self.feature_1))
+        self.handler.compute_subject_prefix(
+            self.feature_1, models.INTENT_PARKED))
 
   def test_compute_subject_prefix__deprecate_feature(self):
     """We offer users the correct subject line for each intent stage."""
     self.feature_1.feature_type = models.FEATURE_TYPE_DEPRECATION_ID
-    self.feature_1.intent_stage = models.INTENT_NONE
     self.assertEqual(
         'Intent stage "None"',
-        self.handler.compute_subject_prefix(self.feature_1))
+        self.handler.compute_subject_prefix(
+            self.feature_1, models.INTENT_NONE))
 
-    self.feature_1.intent_stage = models.INTENT_INCUBATE
     self.assertEqual(
         'Intent to Deprecate and Remove',
-        self.handler.compute_subject_prefix(self.feature_1))
+        self.handler.compute_subject_prefix(
+            self.feature_1, models.INTENT_INCUBATE))
 
-    self.feature_1.intent_stage = models.INTENT_EXTEND_TRIAL
     self.assertEqual(
         'Request for Deprecation Trial',
-        self.handler.compute_subject_prefix(self.feature_1))
+        self.handler.compute_subject_prefix(
+            self.feature_1, models.INTENT_EXTEND_TRIAL))
 
 
 class FeatureHandlerTest(unittest.TestCase):

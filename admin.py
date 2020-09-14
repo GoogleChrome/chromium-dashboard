@@ -231,7 +231,7 @@ VIEW_FEATURE_URL = '/feature'
 class IntentEmailPreviewHandler(common.ContentHandler):
   """Show a preview of an intent email, as appropriate to the feature stage."""
 
-  def get(self, feature_id=None):
+  def get(self, feature_id=None, stage_id=None):
     user = users.get_current_user()
     if user is None:
       return self.redirect(users.create_login_url(self.request.uri))
@@ -244,22 +244,25 @@ class IntentEmailPreviewHandler(common.ContentHandler):
       common.handle_404(self.request, self.response, None)
       return
 
+    intent_stage = int(stage_id) if stage_id else f.intent_stage
+
     if not self.user_can_edit(user):
       common.handle_401(self.request, self.response, Exception)
       return
 
-    page_data = self.get_page_data(feature_id, f)
+    page_data = self.get_page_data(feature_id, f, intent_stage)
 
     self._add_common_template_values(page_data)
     self.render(data=page_data, template_path='admin/features/launch.html')
 
-  def get_page_data(self, feature_id, f):
+  def get_page_data(self, feature_id, f, intent_stage):
     """Return a dictionary of data used to render the page."""
     page_data = {
-        'subject_prefix': self.compute_subject_prefix(f),
+        'subject_prefix': self.compute_subject_prefix(f, intent_stage),
         'feature': f.format_for_template(),
         'sections_to_show': processes.INTENT_EMAIL_SECTIONS.get(
-            f.intent_stage, []),
+            intent_stage, []),
+        'intent_stage': intent_stage,
         'default_url': '%s://%s%s/%s' % (
             self.request.scheme, self.request.host,
             VIEW_FEATURE_URL, feature_id),
@@ -272,25 +275,25 @@ class IntentEmailPreviewHandler(common.ContentHandler):
 
     return page_data
 
-  def compute_subject_prefix(self, feature):
+  def compute_subject_prefix(self, feature, intent_stage):
     """Return part of the subject line for an intent email."""
 
-    if feature.intent_stage == models.INTENT_INCUBATE:
+    if intent_stage == models.INTENT_INCUBATE:
       if feature.feature_type == models.FEATURE_TYPE_DEPRECATION_ID:
         return 'Intent to Deprecate and Remove'
-    elif feature.intent_stage == models.INTENT_IMPLEMENT:
+    elif intent_stage == models.INTENT_IMPLEMENT:
       return 'Intent to Prototype'
-    elif feature.intent_stage == models.INTENT_EXPERIMENT:
+    elif intent_stage == models.INTENT_EXPERIMENT:
       return 'Ready for Trial'
-    elif feature.intent_stage == models.INTENT_EXTEND_TRIAL:
+    elif intent_stage == models.INTENT_EXTEND_TRIAL:
       if feature.feature_type == models.FEATURE_TYPE_DEPRECATION_ID:
         return 'Request for Deprecation Trial'
       else:
         return 'Intent to Experiment'
-    elif feature.intent_stage == models.INTENT_SHIP:
+    elif intent_stage == models.INTENT_SHIP:
       return 'Intent to Ship'
 
-    return 'Intent stage "%s"' % models.INTENT_STAGES[feature.intent_stage]
+    return 'Intent stage "%s"' % models.INTENT_STAGES[intent_stage]
 
 
 class FeatureHandler(common.ContentHandler):
@@ -640,7 +643,9 @@ app = webapp2.WSGIApplication([
   ('/cron/metrics', YesterdayHandler),
   ('/cron/histograms', HistogramsHandler),
   ('/cron/update_blink_components', BlinkComponentHandler),
-  ('/admin/features/launch/([0-9]*)', IntentEmailPreviewHandler),
+  ('/admin/features/launch/([0-9]+)', IntentEmailPreviewHandler),
+  ('/admin/features/launch/([0-9]+)/([0-9]+)',
+   IntentEmailPreviewHandler),
   ('/(.*)/([0-9]*)', FeatureHandler),
   ('/(.*)', FeatureHandler),
 ], debug=settings.DEBUG)
