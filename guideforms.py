@@ -538,7 +538,7 @@ ALL_FIELDS = {
     'shipped_webview_milestone': forms.IntegerField(
         required=False, label='Android Webview',
         widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'}),
-        help_text=SHIPPED_WEBVIEW_HELP_TXT),
+        help_text=SHIPPED_HELP_TXT),
 
     'flag_name': forms.CharField(
         label='Flag name', required=False,
