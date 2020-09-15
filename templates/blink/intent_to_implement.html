@@ -56,7 +56,10 @@
 
   {% if feature.search_tags %}
     <br><br><h4>Search tags</h4>
-    {{feature.search_tags |join:", "}}
+    {% for tag in feature.search_tags %}
+      <a href="/features#tags:{{tag}}">{{tag}}</a>{% if not forloop.last %}, {% endif %}
+    {% endfor %}
+
   {% endif %}
 
   <br><br><h4>TAG review</h4>
