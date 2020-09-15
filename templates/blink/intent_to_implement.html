@@ -1,3 +1,8 @@
+<p>Email to</p>
+<div class="subject">
+  blink-dev@chromium.org
+</div>
+
 <p>Subject</p>
 <div class="subject">
   {{subject_prefix}}:
@@ -39,10 +44,8 @@
     <br><a href="{{link}}">{{link}}</a>
   {% endfor %}
 
-  {% if feature.spec_link %}
-    <br><br><h4>Specification</h4>
-    <a href="{{feature.spec_link}}">{{feature.spec_link}}</a>
-  {% endif %}
+  <br><br><h4>Specification</h4>
+  {{feature.spec_link|urlize}}
 
   {% if feature.doc_links %}
     <br><br><h4>Design docs</h4>
@@ -59,9 +62,9 @@
   <br><br><h4>TAG review</h4>
   {{feature.tag_review|urlize}}
 
-  {% if feature.tag_review status %}
+  {% if feature.tag_review_status %}
     <br><br><h4>TAG review status</h4>
-    {{feature.tag_review status}}
+    {{feature.tag_review_status}}
   {% endif %}
 
   {% if feature.origin_trial_feedback_url %}
@@ -174,10 +177,7 @@
 <a href="{{default_url}}">{{default_url}}</a>
 
 
-{% if feature.intent_to_implement_url or
-      feature.ready_for_trial_url or
-      feature.intent_to_experiment_url or
-      feature.intent_to_ship_url %}
+{% if feature.intent_to_implement_url or feature.ready_for_trial_url or feature.intent_to_experiment_url or feature.intent_to_ship_url %}
   <br><br><h4>Links to previous Intent discussions</h4>
 
   {% if feature.intent_to_implement_url %}
@@ -205,3 +205,7 @@
 </small></div>
 
 </div> <!-- end email body div -->
+
+<p style="padding-bottom: 6em">
+ <!-- work around overlap by floating footer. -->
+</p>

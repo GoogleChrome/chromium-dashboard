@@ -18,6 +18,14 @@
 
 {% block content %}
 
+{% if feature.unlisted %}
+<div class="alertbox">
+  Important: This feature is currently unlisted.  Please only share
+  feature details with people who are collaborating with you on
+  the feature.
+</div>
+{% endif %}
+
 {% if launch %}
 <section>
 <h3>Click through this link to file a launch-tracking bug</h3>
