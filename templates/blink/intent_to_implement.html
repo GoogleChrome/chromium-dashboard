@@ -23,6 +23,22 @@
     <a href="mailto:{{owner}}">{% if forloop.last %}{{owner}}</a>{% else %}{{owner}}</a>,{% endif %}
   {% endfor %}
 
+  <br><br><h4>Explainer</h4>
+  {% if not feature.explainer_links %}None{% endif %}
+  {% for link in feature.explainer_links %}
+    <br><a href="{{link}}">{{link}}</a>
+  {% endfor %}
+
+  <br><br><h4>Specification</h4>
+  {{feature.spec_link|urlize}}
+
+  {% if feature.doc_links %}
+    <br><br><h4>Design docs</h4>
+    {% for link in feature.doc_links %}
+      <br><a href="{{link}}">{{link}}</a>
+    {% endfor %}
+  {% endif %}
+
   <br><br><h4>Summary</h4>
   {{feature.summary}}
 
@@ -37,21 +53,6 @@
 
     <br><br><h4>Initial public proposal</h4>
     {{feature.initial_public_proposal_url|urlize}}
-  {% endif %}
-
-  <br><br><h4>Explainer</h4>
-  {% for link in feature.explainer_links %}
-    <br><a href="{{link}}">{{link}}</a>
-  {% endfor %}
-
-  <br><br><h4>Specification</h4>
-  {{feature.spec_link|urlize}}
-
-  {% if feature.doc_links %}
-    <br><br><h4>Design docs</h4>
-    {% for link in feature.doc_links %}
-      <br><a href="{{link}}">{{link}}</a>
-    {% endfor %}
   {% endif %}
 
   {% if feature.search_tags %}
@@ -184,19 +185,23 @@
   <br><br><h4>Links to previous Intent discussions</h4>
 
   {% if feature.intent_to_implement_url %}
-    <br>Intent to prototype: {{feature.intent_to_implement_url|urlize}}
+    Intent to prototype: {{feature.intent_to_implement_url|urlize}}
+    <br>
   {% endif %}
 
   {% if feature.ready_for_trial_url %}
-    <br>Intent to prototype: {{feature.ready_for_trial_url|urlize}}
+    Ready for Trial: {{feature.ready_for_trial_url|urlize}}
+    <br>
   {% endif %}
 
   {% if feature.intent_to_experiment_url %}
-    <br>Intent to prototype: {{feature.intent_to_experiment_url|urlize}}
+    Intent to Experiment: {{feature.intent_to_experiment_url|urlize}}
+    <br>
   {% endif %}
 
   {% if feature.intent_to_ship_url %}
-    <br>Intent to prototype: {{feature.intent_to_ship_url|urlize}}
+    Intent to Ship: {{feature.intent_to_ship_url|urlize}}
+    <br>
   {% endif %}
 {% endif %}
 

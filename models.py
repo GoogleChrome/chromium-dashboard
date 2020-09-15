@@ -599,6 +599,7 @@ class Feature(DictModel):
           'val': d.pop('standardization', None),
         },
       }
+      d['tag_review_status'] = REVIEW_STATUS_CHOICES[self.tag_review_status]
       d['resources'] = {
         'samples': d.pop('sample_links', []),
         'docs': d.pop('doc_links', []),
@@ -681,6 +682,7 @@ class Feature(DictModel):
         d['intent_stage'] = INTENT_STAGES[self.intent_stage]
         d['intent_stage_int'] = self.intent_stage
       d['impl_status_chrome'] = IMPLEMENTATION_STATUS[self.impl_status_chrome]
+      d['tag_review_status'] = REVIEW_STATUS_CHOICES[self.tag_review_status]
       d['meta'] = {
         'origintrial': self.impl_status_chrome == ORIGIN_TRIAL,
         'intervention': self.impl_status_chrome == INTERVENTION,
