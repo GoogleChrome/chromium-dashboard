@@ -12,7 +12,6 @@
     margin-bottom: 15px;
 
     > div {
-      @include gradient-bar-bg;
       background: rgba(255,255,255,0.8);
       border-radius: $default-border-radius;
       margin-top: 5px;
