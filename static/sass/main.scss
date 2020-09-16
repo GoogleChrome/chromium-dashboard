@@ -213,7 +213,7 @@ footer {
   div {
     margin-top: $content-padding / 4;
 
-    a + a, a + b, b + a {
+    > * + * {
       margin-left: 1em;
       padding-left: 1em;
     }
