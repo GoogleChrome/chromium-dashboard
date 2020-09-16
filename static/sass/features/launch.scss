@@ -12,13 +12,15 @@
     margin-bottom: 15px;
 
     > div {
-      background: rgba(255,255,255,0.8);
-      border-radius: $default-border-radius;
-      margin-top: 5px;
+      background: $card-background;
+      border: $card-border;
+      box-shadow: $card-box-shadow;
+      padding: 12px;
+      margin: 8px 0 16px 0;
     }
 
     > p {
-      color: #666;
+      color: #444;
     }
   }
 
