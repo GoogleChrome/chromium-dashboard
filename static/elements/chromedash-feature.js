@@ -10,7 +10,6 @@ import sharedStyle from '../css/shared.css';
 const MAX_STANDARDS_VAL = 6;
 const MAX_VENDOR_VIEW = 7;
 const MAX_WEBDEV_VIEW = 6;
-const MAX_RISK = MAX_VENDOR_VIEW + MAX_WEBDEV_VIEW + MAX_STANDARDS_VAL;
 
 class ChromedashFeature extends LitElement {
   static styles = style;
@@ -206,11 +205,6 @@ class ChromedashFeature extends LitElement {
   render() {
     return html`
       <hgroup @click="${this._togglePanelExpansion}">
-        <chromedash-color-status class="tooltip corner"
-          title="Interoperability risk: perceived interest from browser
-              vendors and web developers"
-          .value="${this._interopRisk}"
-          .max="${MAX_RISK}"></chromedash-color-status>
         <h2>${this.feature.name}
           ${this.canEdit ? html`
             <span class="tooltip" title="Edit this feature">
@@ -290,6 +284,10 @@ class ChromedashFeature extends LitElement {
                 <iron-icon icon="chromestatus:open-in-new"></iron-icon>
               </a>
             </span>
+            <iron-icon
+              style="margin-left:2em"
+              icon="chromestatus:${this.open ? 'expand-less' : 'expand-more'}">
+            </iron-icon>
           </div>
         </div>
       </hgroup>
