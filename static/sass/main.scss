@@ -91,16 +91,12 @@ app-header {
   top: 0;
   left: 0;
   z-index: 1;
-
-  &[fixed] {
-    position: fixed;
-  }
 }
 
 .main-toolbar {
   display: flex;
   position: relative;
-  padding: 0 $content-padding;
+  padding: 0;
 }
 
 header, footer {
@@ -120,6 +116,7 @@ header {
 
   nav {
     display: flex;
+    flex: 1;
     align-items: center;
     margin: 0 $content-padding;
     -webkit-font-smoothing: initial;
@@ -196,19 +193,14 @@ header {
 }
 
 footer {
-  font-size: 12px;
-  background: $card-background;
+  // No background: allow footer to blend into page background to de-emphaize it.
   box-shadow: 0 -2px 5px $bar-shadow-color;
   display: flex;
   flex-direction: column;
   justify-content: center;
   text-align: center;
-  position: fixed;
+  margin-top: 6em;
   padding: 8px;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  z-index: 3;
 
   div {
     margin-top: $content-padding / 4;
@@ -290,9 +282,22 @@ footer {
 }
 
 #content {
-  margin: $content-padding 6px;
+  margin: $content-padding;
   position: relative;
-  height: 100%;
+}
+
+#column-container {
+   display: flex;
+   align-items: stretch;
+ }
+
+#drawer-column {
+  padding: 1em 2em 1em 1em;
+}
+
+#content-column {
+  flex: 1;
+  padding-left: 2em;
 }
 
 #panels {
@@ -311,14 +316,12 @@ footer {
 @media only screen and (min-width: 701px) {
   .main-toolbar {
     .toolbar-content {
-      max-width: $max-content-width;
       width: 100%;
     }
   }
   // Overrides styles set by app-header-layout so there's no visual
   // layout FOUC/jump as the drawer panel upgrades.
   app-header {
-    padding-left: $app-drawer-width;
     left: 0 !important;
   }
 }
@@ -337,10 +340,6 @@ footer {
     .main-toolbar {
       padding: 0;
       display: block;
-
-      iron-icon {
-        width: 24px;
-      }
     }
   }
 
@@ -353,6 +352,14 @@ footer {
     margin-right: 0;
   }
 
+
+  #drawer-column {
+    display: none;
+  }
+  #content-column {
+    padding-left: 8px;
+  }
+
   header {
     $logoSize: 24px;
 
@@ -362,22 +369,15 @@ footer {
       display: flex;
       padding: $content-padding / 2;
       border-radius: 0;
-      background-size: $logoSize;
-      background-position: $content-padding + 8 + $logoSize 50%;
+      background: inherit;  // no logo
 
-      hgroup {
-        padding-left: $content-padding + 8 + $logoSize;
-        span {
-          display: none;
-        }
-      }
     }
     nav {
       margin: 0;
       justify-content: center;
       flex-wrap: wrap;
       a {
-        padding: 5px 10px;
+        padding: 8px 16px;
         margin: 0;
         border-radius: 0;
         flex: 1 0 auto;
