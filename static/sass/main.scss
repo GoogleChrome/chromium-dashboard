@@ -9,7 +9,7 @@ body {
   font: 14px "Roboto", sans-serif;
   font-weight: 400;
   -webkit-font-smoothing: antialiased;
-  background-color: $light-grey;
+  background: $page-background;
 
   &.loading {
     #spinner {
@@ -67,6 +67,7 @@ app-drawer {
     height: 100%;
     overflow: auto;
     padding: $content-padding;
+    background: $page-background;
   }
 
   paper-listbox {
@@ -79,7 +80,6 @@ app-drawer {
 
   h3 {
     margin-bottom: $content-padding;
-    text-transform: uppercase;
     font-weight: 500;
     font-size: 14px;
     color: inherit;
@@ -87,7 +87,6 @@ app-drawer {
 }
 
 app-header {
-  background-color: $light-grey;
   right: 0;
   top: 0;
   left: 0;
@@ -107,11 +106,13 @@ app-header {
 header, footer {
   display: flex;
   align-items: center;
-  text-shadow: 0 1px 0 white;
 }
 
 header {
   user-select: none;
+  background: $card-background;
+  border-bottom: $card-border;
+  box-shadow: $card-box-shadow;
 
   a {
     text-decoration: none !important;
@@ -120,24 +121,20 @@ header {
   nav {
     display: flex;
     align-items: center;
-    margin-left: $content-padding;
+    margin: 0 $content-padding;
     -webkit-font-smoothing: initial;
 
     a {
-      @include gradient-bar-bg;
       cursor: pointer;
       font-size: 16px;
       text-align: center;
-      border-radius: $default-border-radius;
-      border-bottom: 1px solid $bar-border-color;
-      border-right: 1px solid $bar-border-color;
+      padding: 8px 16px;
+      color: $nav-link-color;
       white-space: nowrap;
 
-      &:active {
-        position: relative;
-        top: 1px;
-        left: 1px;
-        box-shadow: 3px 3px 4px $bar-shadow-color;
+      &:hover {
+        color: black;
+        background: $light-grey;
       }
 
       &.disabled {
@@ -156,9 +153,13 @@ header {
         left: 0;
         list-style: none;
         z-index: 1;
+        background: $card-background;
+        border-bottom: $card-border;
+        box-shadow: $card-box-shadow;
       }
 
       a {
+	text-align: left;
         display: block;
       }
 
@@ -172,16 +173,9 @@ header {
   aside {
     $logoSize: 32px;
 
-    @include gradient-bar-bg;
-    border-bottom-left-radius: 5px;
-    border-bottom-right-radius: 5px;
-    border-bottom: 1px solid $bar-border-color;
-    border-right: 1px solid $bar-border-color;
-
     background: url(/static/img/chrome_logo.svg) no-repeat $content-padding 50%;
     background-size: $logoSize;
-    background-color: #fafafa;
-    padding: 0.75em 1em;
+    padding: 0.75em 2em;
     padding-left: $logoSize + $content-padding  + $content-padding / 2;
 
     hgroup {
@@ -202,14 +196,15 @@ header {
 }
 
 footer {
-  @include gradient-bar-bg;
   font-size: 12px;
+  background: $card-background;
   box-shadow: 0 -2px 5px $bar-shadow-color;
   display: flex;
   flex-direction: column;
   justify-content: center;
   text-align: center;
   position: fixed;
+  padding: 8px;
   bottom: 0;
   left: 0;
   right: 0;
@@ -217,6 +212,11 @@ footer {
 
   div {
     margin-top: $content-padding / 4;
+
+    > * + * {
+      margin-left: 1em;
+      padding-left: 1em;
+    }
   }
 }
 

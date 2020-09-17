@@ -1,17 +1,20 @@
 <footer>
-  <p>Except as otherwise noted, the content of this page under <a href="https://creativecommons.org/licenses/by/2.5/">CC Attribution 2.5</a> license. Code examples are <a href="https://github.com/GoogleChrome/samples/blob/gh-pages/LICENSE">Apache-2.0</a>.</p>
   <div>
-    <a href="https://groups.google.com/a/chromium.org/forum/#!newtopic/blink-dev"
-       >File content issue</a> |
-    <a href="https://github.com/GoogleChrome/chromium-dashboard/issues"
-       >File an issue</a> |
+     <a href="https://groups.google.com/a/chromium.org/forum/#!newtopic/blink-dev"
+        target="_blank"
+        >Discuss</a>
+     <a href="https://github.com/GoogleChrome/chromium-dashboard/issues"
+        target="_blank"
+       >File an issue</a>
+     <a href="https://www.google.com/policies/privacy/"
+        target="_blank"
+        >Privacy</a>
     <a href="https://docs.google.com/document/d/1jrSlM4Yhae7XCJ8BuasWx71CvDEMMbSKbXwx7hoh1Co/edit?pli=1"
        target="_blank"
-       >About</a> |
+       >About</a>
     {% if user %}
-    <a href="/settings"
-       >Settings</a> |
-      <b>{{user.email}}</b>
+    <a href="/settings">Settings</a>
+    <b>{{user.email}}</b>
     {% endif %}  <a href="{{login.1}}">{{login.0}}</a>
   </div>
 </footer>

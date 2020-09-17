@@ -1,4 +1,6 @@
-$default-font-color: #666666;
+$default-font-color: #222;
+$page-background: #fafafa;
+
 $light-grey: #eee;
 
 $gray-1: #e6e6e6;
@@ -6,9 +8,10 @@ $gray-2: #a9a9a9;
 $gray-3: #797979;
 $gray-4: #515151;
 
+$nav-link-color: #444;
+
 $bar-shadow-color: rgba(0, 0, 0, .065);
 $bar-border-color: #D4D4D4;
-$bar-gradient: linear-gradient(to bottom, white, #F2F2F2);
 
 $chromium-color-dark: #366597;
 $chromium-color-medium: #85b4df;
@@ -17,6 +20,9 @@ $chromium-color-center: #4580c0;
 
 $material-primary-button: #58f;
 
+$card-background: white;
+$card-border: 1px solid #ddd;
+$card-box-shadow: rgba(0, 0, 0, 0.067) 1px 1px 4px;
 
 $md-yellow-100: #FFF9C4;
 $md-yellow-200: #FFF59D;
@@ -30,13 +36,6 @@ $app-drawer-width: 200px;
 $header-height: 135px;
 $max-content-width: 760px;
 /* ----- */
-
-@mixin gradient-bar-bg() {
-  background-color: #FAFAFA;
-  background: $bar-gradient;
-  padding: 0.75em 0.5em;
-  box-shadow: 1px 1px 4px $bar-shadow-color;
-}
 
 // @mixin width-max-content() {
 //   width: -webkit-max-content;

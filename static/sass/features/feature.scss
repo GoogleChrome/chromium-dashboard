@@ -1,8 +1,11 @@
 @import "../vars";
 
 #feature {
-  @include gradient-bar-bg;
+  background: $card-background;
   border-radius: $default-border-radius;
+  border: $card-border;
+  box-shadow: $card-box-shadow;
+
   box-sizing: border-box;
   word-wrap: break-word;
   margin-bottom: $content-padding + 100; // padding + height of footer.

@@ -1,7 +1,6 @@
 @import "element";
 
 :host {
-  @include gradient-bar-bg();
   display: block;
   position: relative;
   border-radius: $default-border-radius;
