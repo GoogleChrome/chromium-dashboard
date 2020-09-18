@@ -347,11 +347,8 @@ class ChromedashFeaturelist extends LitElement {
     let id;
     if (lastSlash > 0) {
       id = parseInt(location.pathname.substring(lastSlash + 1));
-    } else {
-      const milestone = this.metadataEl.implStatuses[this.metadataEl.status.IN_DEVELOPMENT - 1].val;
-      id = this._firstOfMilestone(milestone);
+      this.scrollToId(id);
     }
-    this.scrollToId(id);
   }
 
   _initialize() {

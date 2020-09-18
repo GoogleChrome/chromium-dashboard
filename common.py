@@ -178,7 +178,7 @@ class ContentHandler(BaseHandler):
     if user:
       user_pref = models.UserPref.get_signed_in_user_pref()
       template_data['login'] = (
-          'Logout', users.create_logout_url(dest_url=self.request.path))
+          'Sign out', users.create_logout_url(dest_url=self.request.path))
       template_data['user'] = {
         'can_edit': self.user_can_edit(user),
         'is_admin': users.is_current_user_admin(),
@@ -188,7 +188,7 @@ class ContentHandler(BaseHandler):
     else:
       template_data['user'] = None
       template_data['login'] = (
-          'Login', users.create_login_url(dest_url=self.request.path))
+          'Sign in', users.create_login_url(dest_url=self.request.path))
 
     d.update(template_data)
 
