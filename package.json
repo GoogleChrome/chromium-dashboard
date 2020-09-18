@@ -73,6 +73,9 @@
     "@polymer/paper-ripple": "^3.0.1",
     "@polymer/paper-styles": "^3.0.1",
     "lit-element": "^2.1.0",
-    "lit-html": "^1.1.2"
+    "lit-html": "^1.1.2",
+    "node-fetch": ">=2.6.1",
+    "node-sass": ">=4.13.1",
+    "yargs-parser": ">=13.1.2"
   }
 }
