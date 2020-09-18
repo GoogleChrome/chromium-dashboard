@@ -26,7 +26,7 @@ body {
   align-items: center;
   justify-content: center;
   position: fixed;
-  height: calc(100% - 54px - $header-height); // 100% - height of footer + header.
+  height: 60%; // Centered, half that.
   max-width: $max-content-width;
   width: 100%;
 }
@@ -92,6 +92,11 @@ app-header {
   left: 0;
   z-index: 1;
 }
+
+app-header-layout {
+  flex: 1;
+}
+
 
 .main-toolbar {
   display: flex;
@@ -199,7 +204,7 @@ footer {
   flex-direction: column;
   justify-content: center;
   text-align: center;
-  margin-top: 6em;
+  margin-top: 2em;
   padding: 8px;
 
   div {
@@ -279,6 +284,13 @@ footer {
   flex-direction: column;
   height: 100%;
   width: 100%;
+}
+
+
+#app-content-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
 #content {

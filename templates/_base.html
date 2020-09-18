@@ -77,7 +77,7 @@ limitations under the License.
   {% comment %}
   {% endcomment %}
 
-  <app-drawer-layout fullbleed>
+  <div id="app-content-container">
     <app-header-layout>
       <app-header slot="header">
         <div class="main-toolbar">
@@ -101,7 +101,7 @@ limitations under the License.
     </app-header-layout>
 
     {% include "footer.html" %}
-  </app-drawer-layout>
+  </div>
 
   <chromedash-toast msg="Welcome to chromestatus.com!"></chromedash-toast>
 
