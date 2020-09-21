@@ -1,14 +1,11 @@
-import {LitElement, html} from 'lit-element';
+import {LitElement, css, html} from 'lit-element';
 import {nothing} from 'lit-html';
 import '@polymer/iron-icon';
 import './chromedash-callout';
 import './chromedash-color-status';
-
-import style from '../css/elements/chromedash-process-overview.css';
+import SHARED_STYLES from '../css/shared.css';
 
 class ChromedashProcessOverview extends LitElement {
-  static styles = style;
-
   static get properties() {
     return {
       feature: {type: Object},
@@ -24,6 +21,68 @@ class ChromedashProcessOverview extends LitElement {
     this.process = [];
     this.progress = {};
     this.dismissedCues = {};
+  }
+  static get styles() {
+    return [
+      SHARED_STYLES,
+      css`
+      :host {
+        display: block;
+        position: relative;
+        box-sizing: border-box;
+        contain: content;
+        overflow: hidden;
+        background: inherit;
+      }
+
+      table {
+        border-spacing: 0;
+        width: 100%;
+      }
+
+      th {
+        text-align: left;
+        padding: var(--content-padding-half);
+        background: var(--table-header-background);
+      }
+
+      td {
+        padding: var(--content-padding-half) var(--content-padding) var(--content-padding) var(--content-padding-half);
+        vertical-align: top;
+        border-bottom: var(--table-divider);
+        background: var(--table-row-background);
+      }
+
+      tr.active td {
+        background: var(--light-accent-color);
+      }
+
+      td div.done:before {
+        content: "\\2713";
+        position: absolute;
+        left: 0;
+      }
+
+      td div.pending:before {
+        content: "\\25cb";
+        position: absolute;
+        left: 0;
+      }
+
+      td div.done, td div.pending {
+        position: relative;
+        padding-left: 1.2em;
+      }
+
+      ol {
+        list-style: none;
+        padding: 0;
+      }
+
+      ol li {
+        margin-top: .5em;
+      }
+    `];
   }
 
   inFinalStage(stage) {
