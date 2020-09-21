@@ -3,8 +3,13 @@
 @import "vars";
 
 * {
+  box-sizing: border-box;
+  list-style: none;
+  font: inherit;
+  text-decoration: inherit;
   -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
 }
+
 
 h1, h2, h3, h4 {
   font-weight: 300;
@@ -30,18 +35,17 @@ h3 {
 a {
   text-decoration: none;
   color: var(--link-color);
-  &:hover {
-    text-decoration: underline;
-    color: var(--link-hover-color);
-  }
+}
+a:hover {
+  text-decoration: underline;
+  color: var(--link-hover-color);
 }
 
 input:not([type="submit"]), textarea {
   border: 1px solid $bar-border-color;
-
-  &[disabled] {
-    opacity: 0.5;
-  }
+}
+input:not([type="submit"])[disabled], textarea[disabled] {
+  opacity: 0.5;
 }
 
 button, input[type="submit"], .button {
@@ -63,10 +67,6 @@ button.primary, input[type="submit"], .button.primary {
   font-weight: bold;
 }
 
-// button.primary iron-icon, .button.primary iron-icon {
-//   color: var(--light-icon-fill-color);
-// }
-
 button:not(:disabled):hover {
   border-color: $gray-4;
 }
@@ -83,5 +83,4 @@ button:not(:disabled):hover {
 iron-icon {
   height: var(--icon-size);
   width: var(--icon-size);
-//  color: var(--icon-fill-color);
 }

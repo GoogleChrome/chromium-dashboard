@@ -52,6 +52,7 @@
 
   --heading-background: transparent;
   --heading-color: var(--md-gray-700-alpha);
+  --heading-underbar: 2px solid var(--md-blue-700);
 
   --nav-link-color: var(--md-gray-700-alpha);
   --nav-link-font-size: 16px;
@@ -83,6 +84,10 @@
 
   --callout-bg-color: var(--dark-spot-color);
   --callout-text-color: white;
+
+  --toast-background: var(--md-gray-900-alpha);
+  --toast-color: var(--md-gray-50);
+  --toast-action-color: var(--md-orange-200);
 
   --footer-background: transparent;
 }

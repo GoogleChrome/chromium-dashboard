@@ -1,17 +1,123 @@
-import {LitElement, html} from 'lit-element';
+import {LitElement, css, html} from 'lit-element';
 import {nothing} from 'lit-html';
 import '@polymer/iron-icon';
 import './chromedash-color-status';
-import style from '../css/elements/chromedash-legend.css';
+import SHARED_STYLES from '../css/shared.css';
 
 class ChromedashLegend extends LitElement {
-  static styles = style;
-
   static get properties() {
     return {
       opened: {type: Boolean, reflect: true},
       views: {attribute: false}, // Assigned in features-page.js, value from Django
     };
+  }
+
+  static get styles() {
+    return [
+      SHARED_STYLES,
+      css`
+      :host {
+        position: fixed;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        visibility: hidden;
+      }
+
+      :host::after {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: -1;
+        content: '';
+        transition: opacity 300ms;
+        background: #000;
+        opacity: 0;
+        pointer-events: none;
+        will-change: opacity;
+      }
+
+      :host([opened]) {
+        visibility: visible;
+        z-index: 1;
+      }
+
+      :host([opened])::after {
+        opacity: 0.6;
+      }
+
+      #overlay {
+        background: #fff;
+        padding: 16px;
+        position: relative;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+      }
+
+      h3 {
+        border-bottom: var(--heading-underbar);
+        padding: 0 !important;
+      }
+
+      ul {
+        margin: 0 0 15px 0;
+      }
+
+      ul > li {
+        margin: 5px 0;
+      }
+
+      label {
+        font-weight: 500;
+        text-transform: uppercase;
+      }
+
+      section {
+        margin-top: 10px;
+      }
+      section.views {
+        display: flex;
+      }
+      section.views > div {
+        flex: 1 0 0;
+      }
+      section.views li > span {
+        margin-left: 3px;
+      }
+
+      .queries li span {
+        margin-right: 5px;
+        width: 260px;
+        display: inline-block;
+      }
+
+      p {
+        margin-top: 5px;
+      }
+
+      .close {
+        background: transparent;
+        border: 0;
+        position: absolute;
+        top: var(--content-padding-half);
+        right: var(--content-padding-half);
+        cursor: pointer;
+      }
+
+      @media only screen and (min-width: 701px) {
+        #overlay {
+          width: 80vw;
+          max-height: 80vh;
+        }
+      }
+    `];
   }
 
   toggle() {

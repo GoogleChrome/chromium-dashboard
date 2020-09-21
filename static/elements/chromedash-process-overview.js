@@ -2,7 +2,6 @@ import {LitElement, css, html} from 'lit-element';
 import {nothing} from 'lit-html';
 import '@polymer/iron-icon';
 import './chromedash-callout';
-import './chromedash-color-status';
 import SHARED_STYLES from '../css/shared.css';
 
 class ChromedashProcessOverview extends LitElement {
@@ -22,6 +21,7 @@ class ChromedashProcessOverview extends LitElement {
     this.progress = {};
     this.dismissedCues = {};
   }
+
   static get styles() {
     return [
       SHARED_STYLES,
