@@ -2,11 +2,11 @@
    style rules inside that component. */
 
 #metadata-buttons {
-  margin-left: 20px;
+  margin-left: var(--content-padding);
 }
 
 #metadata-buttons div {
-  margin-top: 20px;
+  margin-top: var(--content-padding);
 }
 
 .flex-cols {
@@ -17,17 +17,17 @@
 }
 
 table.property-sheet {
-  margin-right: 16px;
-  margin-bottom: 16px;
+  margin-right: var(--content-padding);
+  margin-bottom: var(--content-padding);
 }
 
 table.property-sheet tr:nth-of-type(odd) {
-  background: #f8f8f8;
+  background: var(--table-alternate-background);
 }
 
 
 table.property-sheet th, #metadata-readonly td {
-  padding: 6px 30px 6px 6px;
+  padding: var(--content-padding-half) 30px var(--content-padding-half) var(--content-padding-half);
 }
 
 table.property-sheet th {

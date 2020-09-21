@@ -5,11 +5,9 @@ html, body {
 }
 
 body {
-  color: $default-font-color;
-  font: 14px "Roboto", sans-serif;
-  font-weight: 400;
-  -webkit-font-smoothing: antialiased;
-  background: $page-background;
+  color: var(--default-color);
+  font: var(--default-font);
+  background: var(--page-background);
 
   &.loading {
     #spinner {
@@ -27,7 +25,7 @@ body {
   justify-content: center;
   position: fixed;
   height: 60%; // Centered, half that.
-  max-width: $max-content-width;
+  max-width: var(--max-content-width);
   width: 100%;
 }
 
@@ -49,9 +47,7 @@ body {
   box-shadow: inset 0px 5px 6px -3px rgba(0, 0, 0, 0.4);
 
   iron-icon {
-    margin-right: $content-padding / 4;
-    height: 20px;
-    width: 20px;
+    margin-right: var(--content-padding-half);
   }
 
   a {
@@ -111,9 +107,9 @@ header, footer {
 
 header {
   user-select: none;
-  background: $card-background;
-  border-bottom: $card-border;
-  box-shadow: $card-box-shadow;
+  background: var(--card-background);
+  border-bottom: var(--card-border);
+  box-shadow: var(--card-box-shadow);
 
   a {
     text-decoration: none !important;
@@ -123,20 +119,20 @@ header {
     display: flex;
     flex: 1;
     align-items: center;
-    margin: 0 $content-padding;
+    margin: 0 var(--content-padding);
     -webkit-font-smoothing: initial;
 
     a {
       cursor: pointer;
-      font-size: 16px;
+      font-size: var(--nav-link-font-size);
       text-align: center;
-      padding: 8px 16px;
-      color: $nav-link-color;
+      padding: var(--content-padding-half) var(--content-padding);
+      color: var(--nav-link-color);
       white-space: nowrap;
 
       &:hover {
         color: black;
-        background: $light-grey;
+        background: var(--nav-link-hover-background);
       }
 
       &.disabled {
@@ -155,9 +151,9 @@ header {
         left: 0;
         list-style: none;
         z-index: 1;
-        background: $card-background;
-        border-bottom: $card-border;
-        box-shadow: $card-box-shadow;
+        background: var(--card-background);
+        border-bottom: var(--card-border);
+        box-shadow: var(--card-box-shadow);
       }
 
       a {
@@ -182,7 +178,7 @@ header {
 
     hgroup {
       a {
-        color: currentcolor;
+        color: var(--logo-color);
       }
     }
 
@@ -198,21 +194,19 @@ header {
 }
 
 footer {
-  // No background: allow footer to blend into page background to de-emphaize it.
-  box-shadow: 0 -2px 5px $bar-shadow-color;
+  background: var(--footer-background);
+  box-shadow: 0 -2px 5px var(--shadow-color);
   display: flex;
   flex-direction: column;
   justify-content: center;
   text-align: center;
   margin-top: 2em;
-  padding: 8px;
+  padding: var(--content-padding-half);
 
   div {
-    margin-top: $content-padding / 4;
-
     > * + * {
-      margin-left: 1em;
-      padding-left: 1em;
+      margin-left: var(--content-padding);
+      padding-left: var(--content-padding);
     }
   }
 }
@@ -224,8 +218,8 @@ footer {
 #subheader, .subheader {
   display: flex;
   align-items: center;
-  margin: $content-padding 0;
-  max-width: $max-content-width;
+  margin: var(--content-padding) 0;
+  max-width: var(--max-content-width);
   width: 100%;
 
   .num-features {
@@ -248,8 +242,8 @@ footer {
       flex: 1 0 auto;
 
       .blue-button {
-        background: $material-primary-button;
-        color: #fff;
+        background: var(--primary-button-background);
+        color: var(--primary-button-color);
         display: inline-flex;
         align-items: center;
         justify-content: center;
@@ -258,15 +252,14 @@ footer {
         -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
         -webkit-tap-highlight-color: transparent;
         text-decoration: none;
-        border-radius: 3px;
+        border: var(--button-border);
+        border-radius: var(--button-border-radius);
         user-select: none;
         cursor: pointer;
         padding: 0.7em 0.57em;
 
         iron-icon {
           margin-right: $content-padding / 4;
-          height: 18px;
-          width: 18px;
         }
       }
 
@@ -294,7 +287,7 @@ footer {
 }
 
 #content {
-  margin: $content-padding;
+  margin: var(--content-padding);
   position: relative;
 }
 
@@ -322,7 +315,8 @@ footer {
 .alertbox {
   margin: 2em;
   padding: 1em;
-  border: 2px solid orange;
+  background: var(--warning-background);
+  color: var(--warning-color);
 }
 
 @media only screen and (min-width: 701px) {
@@ -369,7 +363,7 @@ footer {
     display: none;
   }
   #content-column {
-    padding-left: 8px;
+    padding-left: var(--content-padding-half);
   }
 
   header {
@@ -379,7 +373,7 @@ footer {
     display: block;
     aside {
       display: flex;
-      padding: $content-padding / 2;
+      padding: var(--content-padding-half);
       border-radius: 0;
       background: inherit;  // no logo
 
@@ -389,7 +383,7 @@ footer {
       justify-content: center;
       flex-wrap: wrap;
       a {
-        padding: 8px 16px;
+        padding: var(--content-padding-half) var(--content-padding);
         margin: 0;
         border-radius: 0;
         flex: 1 0 auto;
@@ -406,7 +400,7 @@ footer {
 
   .subheader {
     .description {
-      margin: 0 $content-padding;
+      margin: 0 var(--content-padding);
     }
   }
 

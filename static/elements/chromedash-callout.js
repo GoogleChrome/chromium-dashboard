@@ -1,4 +1,5 @@
 import {LitElement, css, html} from 'lit-element';
+import SHARED_STYLES from '../css/shared.css';
 
 class ChromedashCallout extends LitElement {
   static get properties() {
@@ -39,20 +40,15 @@ class ChromedashCallout extends LitElement {
   }
 
   static get styles() {
-    return css`
-      :host {
-        /* TODO(jrobins): Put this into a global theme.css file. */
-        --blue-900: #174EA6;
-
-        --callout-bg-color: var(--blue-900);
-        --callout-text-color: white;
-      }
+    return [
+      SHARED_STYLES,
+      css`
       #bubble {
         position: absolute;
         display: inline-block;
         background: var(--callout-bg-color);
-        border-radius: 8px;
-        padding: 8px;
+        border-radius: var(--large-border-radius);
+        padding: var(--content-padding-half);
         max-width: 24em;
         color: var(--callout-text-color);
         font-weight: bold;
@@ -76,12 +72,13 @@ class ChromedashCallout extends LitElement {
      }
      #closebox {
        float: right;
-       margin-left: 8px;
+       margin-left: var(--content-padding-half);
+       color: var(--light-icon-fill-color);
      }
      #cue-content-container {
-       margin: 4px;
+       margin: var(--content-padding-quarter);
      }
-    `;
+    `];
   }
 
   // TODO(jrobbins): Consider using:
