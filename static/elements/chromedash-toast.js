@@ -1,12 +1,10 @@
-import {LitElement, html} from 'lit-element';
-import style from '../css/elements/chromedash-toast.css';
+import {LitElement, css, html} from 'lit-element';
+import SHARED_STYLES from '../css/shared.css';
 
 // Keeps track of the toast currently opened.
 let _currentToast = null;
 
 class ChromedashToast extends LitElement {
-  static styles = style;
-
   static get properties() {
     return {
       msg: {type: String},
@@ -22,6 +20,51 @@ class ChromedashToast extends LitElement {
     this.actionLabel = '';
     this.duration = 7000;
     this.open = false;
+  }
+
+  static get styles() {
+    return [
+      SHARED_STYLES,
+      css`
+      :host {
+        display: flex;
+        justify-content: space-between;
+        position: fixed;
+        background: var(--toast-background);
+        color: var(--toast-color);
+        min-height: 48px;
+        min-width: 288px;
+        padding: var(--content-padding);
+        box-sizing: border-box;
+        box-shadow: var(--card-box-shadow);
+        border-radius: var(--border-radius);
+        margin: var(--content-padding);
+        cursor: default;
+        transition: transform 0.3s, opacity 0.3s;
+        opacity: 0;
+        will-change: opacity, transform;
+        -webkit-transform: translateY(100px);
+        transform: translateY(100px);
+        z-index: 3;
+        bottom: 0;
+      }
+
+      :host([open]) {
+        opacity: 1;
+        transform: translateY(0px);
+      }
+
+      #action {
+        text-transform: uppercase;
+        text-decoration: none;
+        color: var(--toast-action-color);
+        font-weight: bold;
+      }
+
+      #msg {
+        margin-right: var(--content-padding);
+      }
+    `];
   }
 
   /**
