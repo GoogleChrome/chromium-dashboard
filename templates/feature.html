@@ -91,6 +91,7 @@
 
     {% if feature.motivation %}
     <section id="motivation">
+      <h3>Motivation</h3>
       <p>{{ feature.motivation|urlize }}</p>
     </section>
     {% endif %}
@@ -238,7 +239,7 @@
   <script>
     (function() {
       'use strict';
-      
+
       // Variables used in feature-page.js
       const FEATURE_ID = '{{ feature.id }}';
       const FEATURE_NAME = '{{ feature.name|escapejs }}';
