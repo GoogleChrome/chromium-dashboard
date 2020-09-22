@@ -999,6 +999,8 @@ class Feature(DictModel):
   summary = db.StringProperty(required=True, multiline=True)
   origin_trial_feedback_url = db.LinkProperty()
   unlisted = db.BooleanProperty(default=False)
+  # TODO(jrobbins): Add an entry_state enum to track app-specific lifecycle
+  # info for a feature entry as distinct from process-specific stage.
   deleted = db.BooleanProperty(default=False)
   motivation = db.StringProperty(multiline=True)
 
