@@ -26,8 +26,8 @@ class ChromedashColorStatus extends LitElement {
         background-color: rgb(255,0,0);
         border-radius: 50%;
         display: inline-block;
-        height: 10px; // Default.
-        width: 10px; // Default.
+        height: 10px; /* Default. */
+        width: 10px; /* Default. */
       }
 
       :host(.corner) {
@@ -35,7 +35,7 @@ class ChromedashColorStatus extends LitElement {
       }
       :host(.corner) #status {
         border-radius: 0;
-        height: 100%; // Ensures we can color coverage when feature is scrolled.
+        height: 100%; /* Ensures we can color coverage when feature is scrolled.*/
         width: 4px;
       }
 
