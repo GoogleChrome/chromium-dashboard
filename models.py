@@ -174,7 +174,7 @@ REVIEW_NA = 4
 REVIEW_STATUS_CHOICES = {
     REVIEW_PENDING: 'Pending',
     REVIEW_ISSUES_OPEN: 'Issues open',
-    REVIEW_ISSUES_ADDRESSED: 'Issues addessed',
+    REVIEW_ISSUES_ADDRESSED: 'Issues addressed',
     REVIEW_NA: 'Not applicable',
     }
 
