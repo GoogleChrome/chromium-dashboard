@@ -1,9 +1,8 @@
-import {LitElement, html} from 'lit-element';
-import style from '../css/elements/chromedash-userlist.css';
+import {LitElement, css, html} from 'lit-element';
+import SHARED_STYLES from '../css/shared.css';
+
 
 class ChromedashUserlist extends LitElement {
-  static styles = style;
-
   static get properties() {
     return {
       actionPath: {type: String},
@@ -14,6 +13,26 @@ class ChromedashUserlist extends LitElement {
   constructor() {
     super();
     this.users = [];
+  }
+
+  static get styles() {
+    return [
+      SHARED_STYLES,
+      css`
+      ul {
+        margin-top: 10px;
+      }
+      ul li {
+        transition: opacity 600ms ease-in-out;
+        margin-bottom: 5px;
+      }
+      ul li.faded {
+         opacity: 0;
+      }
+      ul li a {
+        margin-right: 10px;
+      }
+    `];
   }
 
   addUser(user) {

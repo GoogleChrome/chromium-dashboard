@@ -1,10 +1,8 @@
 // TODO(yangguang): This component is not tested. Data is not available in devserver, so cannot be tested locally.
-import {LitElement, html} from 'lit-element';
-import style from '../css/elements/chromedash-timeline.css';
+import {LitElement, css, html} from 'lit-element';
+import SHARED_STYLES from '../css/shared.css';
 
 class ChromedashTimeline extends LitElement {
-  static styles = style;
-
   static get properties() {
     return {
       type: {type: String},
@@ -30,6 +28,66 @@ class ChromedashTimeline extends LitElement {
     this.view = '';
     this.props = [];
     this.useRemoteData = false;
+  }
+
+  static get styles() {
+    return [
+      SHARED_STYLES,
+      css`
+      :host {
+        display: block;
+        flex: 1;
+        width: var(--max-content-width);
+      }
+
+      :host label {
+        margin-left: 8px;
+        cursor: pointer;
+      }
+
+      #chart {
+        margin-top: 15px;
+        width: 100%;
+        height: 400px;
+        background: var(--table-alternate-background);
+        border-radius: var(--border-radius);
+      }
+
+      #httparchivedata {
+        border: 0;
+        width: 100%;
+        height: 775px;
+      }
+
+      .header_title {
+        margin: 32px 0 15px 0;
+      }
+
+      .description {
+        margin: 15px 0;
+      }
+
+      .callout {
+        padding: var(--content-padding);
+        margin-top: var(--content-padding);
+        background-color: var(--md-yellow-100);
+        border-color: rgba(27,31,35,0.15);
+        line-height: 1.4;
+      }
+
+      #bigquery:empty {
+        display: none;
+      }
+
+      #bigquery {
+        font-family: 'Courier New', Courier, monospace;
+        font-weight: 600;
+        padding: 15px;
+        margin-bottom: 100px;
+        background: var(--table-alternate-background);
+        display: inline-block;
+      }
+    `];
   }
 
   updated(changedProperties) {
