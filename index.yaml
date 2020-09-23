@@ -136,6 +136,12 @@ indexes:
     direction: desc
   - name: name
 
+- kind: Feature
+  properties:
+  - name: deleted
+  - name: updated
+    direction: desc
+
 - kind: FeatureObserver
   properties:
   - name: bucket_id
