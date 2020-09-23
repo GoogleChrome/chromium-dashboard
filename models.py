@@ -736,6 +736,7 @@ class Feature(DictModel):
 
     if feature_list is None or update_cache:
       query = Feature.all().order(order) #.order('name')
+      query.filter('deleted =', False)
 
       # TODO(ericbidelman): Support more than one filter.
       if filterby:
@@ -777,6 +778,8 @@ class Feature(DictModel):
     if feature is None or update_cache:
       unformatted_feature = Feature.get_by_id(feature_id)
       if unformatted_feature:
+        if unformatted_feature.deleted:
+          return None
         feature = unformatted_feature.format_for_template()
         feature['updated_display'] = unformatted_feature.updated.strftime("%Y-%m-%d")
         feature['new_crbug_url'] = unformatted_feature.new_crbug_url()
@@ -844,10 +847,13 @@ class Feature(DictModel):
       shipping_features.sort(key=lambda f: f._sort_by_milestone, reverse=True)
 
       # Constructor the proper ordering.
-      pre_release.extend(shipping_features)
-      pre_release.extend(no_longer_pursuing_features)
+      all_features = []
+      all_features.extend(pre_release)
+      all_features.extend(shipping_features)
+      all_features.extend(no_longer_pursuing_features)
+      all_features = [f for f in all_features if not f.deleted]
 
-      feature_list = [f.format_for_template(version) for f in pre_release]
+      feature_list = [f.format_for_template(version) for f in all_features]
 
       self._annotate_first_of_milestones(feature_list, version=version)
 
@@ -894,7 +900,7 @@ class Feature(DictModel):
 
       # Filter out features without sample links.
       feature_list = [f.format_for_template() for f in features
-                      if len(f.sample_links)]
+                      if len(f.sample_links) and not f.deleted]
 
       memcache.set(KEY, feature_list)
 
@@ -993,6 +999,9 @@ class Feature(DictModel):
   summary = db.StringProperty(required=True, multiline=True)
   origin_trial_feedback_url = db.LinkProperty()
   unlisted = db.BooleanProperty(default=False)
+  # TODO(jrobbins): Add an entry_state enum to track app-specific lifecycle
+  # info for a feature entry as distinct from process-specific stage.
+  deleted = db.BooleanProperty(default=False)
   motivation = db.StringProperty(multiline=True)
 
   # Tracability to intent discussion threads

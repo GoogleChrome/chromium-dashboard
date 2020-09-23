@@ -460,8 +460,10 @@ class FeatureHandler(common.ContentHandler):
       if feature is None:
         return self.redirect(self.request.path)
 
+      # TODO(jrobbins): implement undelete UI.  For now, use cloud console.
       if 'delete' in path:
-        feature.delete()
+        feature.deleted = True
+        feature.put()
         memcache.flush_all()
         return # Bomb out early for AJAX delete. No need to redirect.
 
