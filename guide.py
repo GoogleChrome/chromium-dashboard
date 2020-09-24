@@ -397,8 +397,8 @@ class FeatureEditStage(common.ContentHandler):
     if self.touched('ot_milestone_android_start'):
       feature.ot_milestone_android_start = self.parse_int(
           'ot_milestone_android_start')
-    if self.touched('ot_milestone_desktop_end'):
-      feature.ot_milestone_desktop_end = self.parse_int(
+    if self.touched('ot_milestone_android_end'):
+      feature.ot_milestone_android_end = self.parse_int(
           'ot_milestone_android_end')
 
     if self.touched('flag_name'):
