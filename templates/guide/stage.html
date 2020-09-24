@@ -18,8 +18,9 @@
 {% endblock %}
 
 {% block content %}
-<section class="stage_form">
-  <form name="feature_form" method="POST" action="{{current_path}}">
+<form name="feature_form" method="POST" action="{{current_path}}">
+
+  <section class="stage_form">
     <table>
       {{ feature_form }}
 
@@ -43,17 +44,54 @@
           {% endif %}
         </td>
       </tr>
-      <tr>
-        <th></th>
-        <td>
-          <input class="button" type="submit" value="Submit">
-          <button id="cancel-button" data-id="{{ feature_id }}"
-                  type="reset">Cancel</button>
-        </td>
-      </tr>
     </table>
-  </form>
-</section>
+  </section>
+
+
+  {% if impl_status_name or impl_status_form %}
+    <h3>Implementation in Chromium</h3>  
+    <section class="stage_form">
+      <table>
+        {% if impl_status_name %}
+          <tr>
+            <th>Implementation status:</th>
+            <td>
+              {% if already_on_this_impl_status %}
+                This feature already has implementation status:
+                <b>{{ impl_status_name }}</b>.
+              {% else %}
+                <input type="hidden" name="impl_status_offered"
+                       value="{{impl_status_offered}}">
+                <input type="checkbox" name="set_impl_status"
+                       id="set_impl_status">
+                <!-- TODO(jrobbins): When checked, make some milestone fields required. -->
+                <label for="set_impl_status">
+                  Set implementation status to: <b>{{ impl_status_name }}</b>
+                  <br>
+                  <span class="helptext">
+                    Check this box to update the implementation
+                    status of this feature in Chromium.
+                  </span>
+                </label>
+              {% endif %}
+            </td>
+          </tr>
+        {% endif %}
+
+        {{ impl_status_form }}
+
+      </table>
+    </section>
+  {% endif %}
+
+
+  <div style="padding-left: 220px" class="final_buttons">
+    <input class="button" type="submit" value="Submit">
+    <button id="cancel-button" data-id="{{ feature_id }}"
+            type="reset">Cancel</button>
+  </div>
+    
+</form>
 
 {% endblock %}
 

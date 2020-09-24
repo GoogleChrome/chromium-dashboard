@@ -80,6 +80,22 @@ STAGE_FORMS = {
         },
 }
 
+
+IMPL_STATUS_FORMS = {
+    models.INTENT_EXPERIMENT:
+        (models.BEHIND_A_FLAG, guideforms.ImplStatus_DevTrial,),
+    models.INTENT_EXTEND_TRIAL:
+        (models.ORIGIN_TRIAL, guideforms.ImplStatus_OriginTrial,),
+    models.INTENT_IMPLEMENT_SHIP:
+        (None, guideforms.ImplStatus_AllMilestones,),
+    models.INTENT_SHIP:
+        (models.ENABLED_BY_DEFAULT, guideforms.ImplStatus_AllMilestones,),
+    models.INTENT_SHIPPED:
+        (models.ENABLED_BY_DEFAULT, guideforms.ImplStatus_AllMilestones,),
+    models.INTENT_REMOVED:
+        (models.REMOVED, guideforms.ImplStatus_AllMilestones,),
+    }
+
 # Forms to be used on the "Edit all" page that shows a flat list of fields.
 # [('Section name': form_class)].
 FLAT_FORMS = [
@@ -257,12 +273,29 @@ class FeatureEditStage(common.ContentHandler):
     # TODO(jrobbins): show useful error if stage not found.
     detail_form_class = STAGE_FORMS[f.feature_type][stage_id]
 
+    impl_status_offered, impl_status_form_class = IMPL_STATUS_FORMS.get(
+        stage_id, (None, None))
+
+    feature_edit_dict = f.format_for_edit()
+    detail_form = None
+    if detail_form_class:
+      detail_form = detail_form_class(feature_edit_dict)
+    impl_status_form = None
+    if impl_status_form_class:
+      impl_status_form = impl_status_form_class(feature_edit_dict)
+
     # Provide new or populated form to template.
     template_data.update({
         'feature': f,
         'feature_id': f.key().id,
-        'feature_form': detail_form_class(f.format_for_edit()),
+        'feature_form': detail_form,
         'already_on_this_stage': stage_id == f.intent_stage,
+        'already_on_this_impl_status':
+            impl_status_offered == f.impl_status_chrome,
+        'impl_status_form': impl_status_form,
+        'impl_status_name': models.IMPLEMENTATION_STATUS.get(
+            impl_status_offered, None),
+        'impl_status_offered': impl_status_offered,
     })
 
     self._add_common_template_values(template_data)
@@ -354,6 +387,23 @@ class FeatureEditStage(common.ContentHandler):
       feature.shipped_opera_android_milestone = self.parse_int(
           'shipped_opera_android_milestone')
 
+    if self.touched('ot_milestone_desktop_start'):
+      feature.ot_milestone_desktop_start = self.parse_int(
+          'ot_milestone_desktop_start')
+    if self.touched('ot_milestone_desktop_end'):
+      feature.ot_milestone_desktop_end = self.parse_int(
+          'ot_milestone_desktop_end')
+
+    if self.touched('ot_milestone_android_start'):
+      feature.ot_milestone_android_start = self.parse_int(
+          'ot_milestone_android_start')
+    if self.touched('ot_milestone_android_end'):
+      feature.ot_milestone_android_end = self.parse_int(
+          'ot_milestone_android_end')
+
+    if self.touched('flag_name'):
+      feature.flag_name = self.request.get('flag_name')
+
     if self.touched('owner'):
       feature.owner = self.split_emails('owner')
 
@@ -377,6 +427,7 @@ class FeatureEditStage(common.ContentHandler):
     if self.touched('feature_type'):
       feature.feature_type = int(self.request.get('feature_type'))
 
+    # intent_stage can be be set either by <select> or a checkbox
     if self.touched('intent_stage'):
       feature.intent_stage = int(self.request.get('intent_stage'))
     elif self.request.get('set_stage') == 'on':
@@ -390,8 +441,13 @@ class FeatureEditStage(common.ContentHandler):
       feature.summary = self.request.get('summary')
     if self.touched('motivation'):
       feature.motivation = self.request.get('motivation')
+
+    # impl_status_chrome can be be set either by <select> or a checkbox
     if self.touched('impl_status_chrome'):
       feature.impl_status_chrome = int(self.request.get('impl_status_chrome'))
+    elif self.request.get('set_impl_status') == 'on':
+      feature.impl_status_chrome = self.parse_int('impl_status_offered')
+
     if self.touched('interop_compat_risks'):
       feature.interop_compat_risks = self.request.get('interop_compat_risks')
     if self.touched('ergonomics_risks'):

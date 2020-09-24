@@ -150,7 +150,7 @@ IMPLEMENTATION_STATUS = OrderedDict()
 IMPLEMENTATION_STATUS[NO_ACTIVE_DEV] = 'No active development'
 IMPLEMENTATION_STATUS[PROPOSED] = 'Proposed'
 IMPLEMENTATION_STATUS[IN_DEVELOPMENT] = 'In development'
-IMPLEMENTATION_STATUS[BEHIND_A_FLAG] = 'Behind a flag'
+IMPLEMENTATION_STATUS[BEHIND_A_FLAG] = 'In developer trial (Behind a flag)'
 IMPLEMENTATION_STATUS[ENABLED_BY_DEFAULT] = 'Enabled by default'
 IMPLEMENTATION_STATUS[DEPRECATED] = 'Deprecated'
 IMPLEMENTATION_STATUS[REMOVED] = 'Removed'
@@ -1024,6 +1024,7 @@ class Feature(DictModel):
   shipped_android_milestone = db.IntegerProperty()
   shipped_ios_milestone = db.IntegerProperty()
   shipped_webview_milestone = db.IntegerProperty()
+  flag_name = db.StringProperty()
 
   owner = db.ListProperty(db.Email)
   footprint = db.IntegerProperty()  # Deprecated
@@ -1079,6 +1080,10 @@ class Feature(DictModel):
 
   experiment_goals = db.StringProperty(multiline=True)
   experiment_timeline = db.StringProperty(multiline=True)
+  ot_milestone_desktop_start = db.IntegerProperty()
+  ot_milestone_desktop_end = db.IntegerProperty()
+  ot_milestone_android_start = db.IntegerProperty()
+  ot_milestone_android_end = db.IntegerProperty()
   experiment_risks = db.StringProperty(multiline=True)
   experiment_extension_reason = db.StringProperty(multiline=True)
   ongoing_constraints = db.StringProperty(multiline=True)
@@ -1120,15 +1125,15 @@ class PlaceholderCharField(forms.CharField):
 class FeatureForm(forms.Form):
 
   SHIPPED_HELP_TXT = ('First milestone to ship with this '
-                      'status. Applies to: Enabled by default, Behind a flag, '
-                      'Origin trial, Browser Intervention, and Deprecated. If '
+                      'status. Applies to: Enabled by default, In developer trial, '
+                      'Browser Intervention, and Deprecated. If '
                       'the flag is \'test\' rather than \'experimental\' set '
                       'status to In development.')
 
   SHIPPED_WEBVIEW_HELP_TXT = ('First milestone to ship with this status. '
                               'Applies to Enabled by default, Browser '
                               'Intervention, and Deprecated.\n\n NOTE: for '
-                              'statuses Behind a flag and Origin trial this '
+                              'statuses In developer trial and Origin trial this '
                               'MUST be blank.')
 
   # Note that the "required" argument in the following field definitions only
@@ -1346,9 +1351,38 @@ class FeatureForm(forms.Form):
       widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 1480}),
       help_text='Which pieces of the API surface are you looking to gain insight on? What metrics/measurement/feedback will you be using to validate designs? Double check that your experiment makes sense given that a large developer (e.g. a Google product or Facebook) likely can\'t use it in production due to the limits enforced by origin trials.\n\nIf Intent to Extend Origin Trial, highlight new/different areas for experimentation. Should not be an exact copy of goals from the first Intent to Experiment.')
 
-  experiment_timeline = forms.CharField(label='Experiment Timeline', required=False,
-      widget=forms.Textarea(attrs={'rows': 2, 'cols': 50, 'maxlength': 1480}),
-      help_text='When does the experiment start and expire?')
+  # TODO(jrobbins): Phase out this field.
+  experiment_timeline = forms.CharField(
+      label='Experiment Timeline', required=False,
+      widget=forms.Textarea(attrs={
+          'rows': 2, 'cols': 50, 'maxlength': 1480,
+          'placeholder': 'This field is deprecated',
+          'disabled': 'disabled'}),
+      help_text=('When does the experiment start and expire? '
+                 'Deprecated: '
+                 'Please use the following numeric fields instead.'))
+
+  # TODO(jrobbins and jmedley): Refine help text.
+  ot_milestone_desktop_start = forms.IntegerField(
+      required=False, label='OT desktop start',
+      widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'}),
+      help_text=('First desktop milestone that will support an origin '
+                 'trial of this feature.'))
+  ot_milestone_desktop_end = forms.IntegerField(
+      required=False, label='OT milestone end',
+      widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'}),
+      help_text=('Last desktop milestone that will support an origin '
+                 'trial of this feature.'))
+  ot_milestone_android_start = forms.IntegerField(
+      required=False, label='OT android start',
+      widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'}),
+      help_text=('First android milestone that will support an origin '
+                 'trial of this feature.'))
+  ot_milestone_android_end = forms.IntegerField(
+      required=False, label='OT android end',
+      widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'}),
+      help_text=('Last android milestone that will support an origin '
+                 'trial of this feature.'))
 
   experiment_risks = forms.CharField(label='Experiment Risks', required=False,
       widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 1480}),
@@ -1415,7 +1449,8 @@ class FeatureForm(forms.Form):
 
   impl_status_chrome = forms.ChoiceField(
       required=False,
-      label='Status in Chromium', choices=IMPLEMENTATION_STATUS.items())
+      label='Implementation status', choices=IMPLEMENTATION_STATUS.items(),
+      help_text='Implementation status in Chromium')
 
   #shipped_milestone = PlaceholderCharField(required=False,
   #                                         placeholder='First milestone the feature shipped with this status (either enabled by default or experimental)')
@@ -1438,6 +1473,9 @@ class FeatureForm(forms.Form):
       required=False, label='',
       widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'}),
       help_text='Android WebView:<br/>' + SHIPPED_WEBVIEW_HELP_TXT)
+
+  flag_name = forms.CharField(label='Flag name', required=False,
+      help_text='Name of the flag that enables this feature.')
 
   prefixed = forms.BooleanField(required=False, initial=False, label='Prefixed?')
 

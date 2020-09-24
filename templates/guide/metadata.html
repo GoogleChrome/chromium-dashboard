@@ -34,11 +34,6 @@
       </tr>
 
       <tr>
-        <th>Blink components</th>
-        <td>{{ feature.blink_components | join:', ' }}</td>
-      </tr>
-
-      <tr>
         <th>Category</th>
         <td>{{ feature.category }}</td>
       </tr>
@@ -52,12 +47,24 @@
         <th>Feature stage</th>
         <td>{{ feature.intent_stage }}</td>
       </tr>
+      <tr>
+        <th>Search tags</th>
+        <td>{{ feature.search_tags | join:', ' }}</td>
+      </tr>
     </table>
 
-        </td>
-        <td>
 
     <table class="property-sheet">
+      <tr>
+        <th>Implementation status</th>
+        <td>{{ feature.impl_status_chrome }}</td>
+      </tr>
+
+      <tr>
+        <th>Blink components</th>
+        <td>{{ feature.blink_components | join:', ' }}</td>
+      </tr>
+
       <tr>
         <th>Tracking bug</th>
         <td>
@@ -79,17 +86,6 @@
           {% endif %}
         </td>
       </tr>
-
-      <tr>
-        <th>Status in Chromium</th>
-        <td>{{ feature.impl_status_chrome }}</td>
-      </tr>
-
-      <tr>
-        <th>Search tags</th>
-        <td>{{ feature.search_tags | join:', ' }}</td>
-      </tr>
-
     </table>
 
     </div> <!-- flex-cols -->
