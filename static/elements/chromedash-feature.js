@@ -1,6 +1,7 @@
 import {LitElement, html} from 'lit-element';
 import {nothing} from 'lit-html';
 import {ifDefined} from 'lit-html/directives/if-defined.js';
+import {autolink} from './utils.js';
 import '@polymer/iron-icon';
 import './chromedash-color-status';
 
@@ -56,7 +57,6 @@ class ChromedashFeature extends LitElement {
     this._isDeprecated = this._getIsDeprecated();
     this._hasDocLinks = this._getHasDocLinks();
     this._hasSampleLinks = this._getHasSampleLinks();
-    this._commentHtml = this._getCommentHtml();
   }
 
   _getCrBugNumber() {
@@ -124,11 +124,6 @@ class ChromedashFeature extends LitElement {
   _getHasSampleLinks() {
     return this.feature.resources.samples &&
         this.feature.resources.samples.length > 0;
-  }
-
-  _getCommentHtml() {
-    return urlize(this.feature.comments,
-      {target: '_blank', trim: 'www', autoescape: true});
   }
 
   _fireEvent(eventName, detail) {
@@ -297,11 +292,11 @@ class ChromedashFeature extends LitElement {
              html`<p><b>This feature is only shown in the feature list
                         to users with edit access.</b></p>
              `: nothing }
-          <p><span>${this.feature.summary}</span></p>
+          <p><span>${autolink(this.feature.summary)}</span></p>
         </summary>
         ${this.feature.motivation ?
           html`<p><h3>Motivation</h3></p>
-          <p><span>${this.feature.motivation}</span></p>`
+        <p><span>${autolink(this.feature.motivation)}</span></p>`
           : nothing }
       </section>
       ${this.open ? html`
@@ -479,7 +474,7 @@ class ChromedashFeature extends LitElement {
         ${this.feature.comments ? html`
           <section>
             <h3>Comments</h3>
-            <summary class="comments">${this._commentHtml}</summary>
+            <summary class="comments">${autolink(this.feature.comments)}</summary>
           </section>
           ` : nothing}
         ` : nothing}
