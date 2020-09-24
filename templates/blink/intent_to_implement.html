@@ -40,7 +40,7 @@
   {% endif %}
 
   <br><br><h4>Summary</h4>
-  {{feature.summary}}
+  {{feature.summary|urlize}}
 
   <br><br><h4>Blink component</h4>
   {% for c in feature.blink_components %}

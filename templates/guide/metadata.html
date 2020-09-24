@@ -11,7 +11,7 @@
                     >Delete</a></div>
           {% endif %}
         </div>
-        <div style="width:60em">{{ feature.summary }}</div>
+        <div style="width:60em">{{ feature.summary | urlize }}</div>
     </div>
 
     {% if feature.unlisted %}
