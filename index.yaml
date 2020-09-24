@@ -42,6 +42,12 @@ indexes:
 
 - kind: Feature
   properties:
+  - name: deleted
+  - name: updated
+    direction: desc
+
+- kind: Feature
+  properties:
   - name: impl_status_chrome
   - name: name
 
@@ -135,12 +141,6 @@ indexes:
   - name: updated
     direction: desc
   - name: name
-
-- kind: Feature
-  properties:
-  - name: deleted
-  - name: updated
-    direction: desc
 
 - kind: FeatureObserver
   properties:
