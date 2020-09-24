@@ -332,7 +332,7 @@ ALL_FIELDS = {
             'disabled': 'disabled'}),
         help_text=('When does the experiment start and expire? '
                    'Deprecated: '
-                   'Please use the following numberic fields instead.')),
+                   'Please use the following numeric fields instead.')),
 
     # TODO(jrobbins and jmedley): Refine help text.
     'ot_milestone_desktop_start': forms.IntegerField(
