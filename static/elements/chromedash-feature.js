@@ -80,17 +80,7 @@ class ChromedashFeature extends LitElement {
     const params = [
       `components=${this.feature.browsers.chrome.blink_components[0] ||
         'Blink'}`];
-    const PRE_LAUNCH_STATUSES = [
-      'No active development',
-      'Proposed',
-      'In development',
-      'Behind a flag',
-      'Origin trial',
-      'On hold',
-    ];
-    if (this._crBugNumber &&
-        PRE_LAUNCH_STATUSES.includes(
-          this.feature.browsers.chrome.status.text)) {
+    if (this._crBugNumber && this._getIsPreLaunch()) {
       params.push(`blocking=${this._crBugNumber}`);
     }
     const owners = this.feature.browsers.chrome.owners;
@@ -108,6 +98,20 @@ class ChromedashFeature extends LitElement {
     const webdevs = this.feature.browsers.webdev.view.val;
     const standards = this.feature.standards.status.val;
     return vendors + webdevs + standards;
+  }
+
+  _getIsPreLaunch() {
+    const PRE_LAUNCH_STATUSES = [
+      'No active development',
+      'Proposed',
+      'In development',
+      // TODO(jrobbins): Update when we change value in models.py.
+      'In developer trial (Behind a flag)',
+      'Origin trial',
+      'On hold',
+    ];
+    return PRE_LAUNCH_STATUSES.includes(
+      this.feature.browsers.chrome.status.text);
   }
 
   _getIsDeprecated() {
@@ -307,42 +311,44 @@ class ChromedashFeature extends LitElement {
               <span class="chromium_status">
                 <label>${this.feature.browsers.chrome.status.text}</label>
               </span>
-              ${this.feature.browsers.chrome.desktop ? html`
-                <span>
-                  <label class="impl_status_label">
-                    <span class="impl_status_icons">
-                      <span class="chrome_icon"></span>
-                    </span>
-                    <span>Chrome desktop</span>
-                  </label>
-                  <span>${this.feature.browsers.chrome.desktop}</span>
-                </span>
-                ` : nothing}
-              ${this.feature.browsers.chrome.android ? html`
-                <span>
-                  <label class="impl_status_label">
-                    <span class="impl_status_icons">
-                      <span class="chrome_icon"></span>
-                      <iron-icon icon="chromestatus:android"
-                                 class="android"></iron-icon>
-                    </span>
-                    <span>Chrome for Android</span>
-                  </label>
-                  <span>${this.feature.browsers.chrome.android}</span>
-                </span>
-                ` : nothing}
-              ${this.feature.browsers.chrome.webview ? html`
-                <span>
-                  <label class="impl_status_label">
-                    <span class="impl_status_icons">
-                      <iron-icon icon="chromestatus:android"
-                                 class="android"></iron-icon>
-                    </span>
-                    <span>Android Webview</span>
-                  </label>
-                  <span>${this.feature.browsers.chrome.webview}</span>
-                </span>
-                ` : nothing}
+              ${this._getIsPreLaunch() ? nothing : html`
+                ${this.feature.browsers.chrome.desktop ? html`
+                  <span>
+                    <label class="impl_status_label">
+                      <span class="impl_status_icons">
+                        <span class="chrome_icon"></span>
+                      </span>
+                      <span>Chrome desktop</span>
+                    </label>
+                    <span>${this.feature.browsers.chrome.desktop}</span>
+                  </span>
+                  ` : nothing}
+                ${this.feature.browsers.chrome.android ? html`
+                  <span>
+                    <label class="impl_status_label">
+                      <span class="impl_status_icons">
+                        <span class="chrome_icon"></span>
+                        <iron-icon icon="chromestatus:android"
+                                   class="android"></iron-icon>
+                      </span>
+                      <span>Chrome for Android</span>
+                    </label>
+                    <span>${this.feature.browsers.chrome.android}</span>
+                  </span>
+                  ` : nothing}
+                ${this.feature.browsers.chrome.webview ? html`
+                  <span>
+                    <label class="impl_status_label">
+                      <span class="impl_status_icons">
+                        <iron-icon icon="chromestatus:android"
+                                   class="android"></iron-icon>
+                      </span>
+                      <span>Android Webview</span>
+                    </label>
+                    <span>${this.feature.browsers.chrome.webview}</span>
+                  </span>
+                  ` : nothing}
+              `}
               ${this.feature.browsers.chrome.prefixed ? html`
                 <span><label>Prefixed</label><span>Yes</span></span>
                 ` : nothing}
