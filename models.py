@@ -1136,6 +1136,12 @@ class FeatureForm(forms.Form):
                               'statuses In developer trial and Origin trial this '
                               'MUST be blank.')
 
+SUMMARY_PLACEHOLDER_TXT = (
+    'NOTE: This text describes this feature in the eventual beta release post '
+    'as well as possibly in other external places externally.&#10;&#10;'
+    'Begin with one line explaining what the feature does. Add one or two '
+    'lines explaining how this feature helps developers.')
+
   # Note that the "required" argument in the following field definitions only
   # mean so much in practice. There's various code in js/admin/feature_form.js,
   # including intentStageChanged(), that adjusts what fields are required (as
@@ -1152,12 +1158,11 @@ class FeatureForm(forms.Form):
       help_text='Capitalize only the first letter and the beginnings of proper nouns.')
 
   summary = forms.CharField(label='Summary', required=True,
-      widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 500}),
-      help_text='Provide a one sentence description followed by one or two lines explaining how this feature helps web developers.')
-
-  summary = forms.CharField(label='Feature summary', required=True, max_length=500,
-      widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 500}),
-      help_text='Summarize the feature using complete sentences as you would to an external developer using the feature.')
+      widget=forms.Textarea(
+          attrs={'cols': 50, 'maxlength': 500, 'placeholder': SUMMARY_PLACEHOLDER_TXT }),
+      help_text='<a target="_blank" href="'
+         'https://github.com/GoogleChrome/chromium-dashboard/wiki/'
+         'EditingHelp#summary-example">Guidelines and example</a>.')
 
   unlisted = forms.BooleanField(
       required=False, initial=False,
