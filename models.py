@@ -144,6 +144,10 @@ INTERVENTION = 9
 ON_HOLD = 10
 NO_LONGER_PURSUING = 1000 # insure bottom of list
 
+RELEASE_IMPL_STATES = {
+  ENABLED_BY_DEFAULT, DEPRECATED, REMOVED, ORIGIN_TRIAL, INTERVENTION,
+}
+
 # Ordered dictionary, make sure the order of this dictionary matches that of
 # the sorted list above!
 IMPLEMENTATION_STATUS = OrderedDict()
@@ -571,6 +575,8 @@ class Feature(DictModel):
   def format_for_template(self, version=None):
     self.migrate_views()
     d = self.to_dict()
+    is_released = self.impl_status_chrome in RELEASE_IMPL_STATES
+    d['is_released'] = is_released
 
     if version == 2:
       if self.is_saved():
@@ -658,9 +664,9 @@ class Feature(DictModel):
         }
       }
 
-      if self.shipped_milestone:
+      if is_released and self.shipped_milestone:
         d['browsers']['chrome']['status']['milestone_str'] = self.shipped_milestone
-      elif self.shipped_milestone is None and self.shipped_android_milestone:
+      elif is_released and self.shipped_android_milestone:
         d['browsers']['chrome']['status']['milestone_str'] = self.shipped_android_milestone
       else:
         d['browsers']['chrome']['status']['milestone_str'] = d['browsers']['chrome']['status']['text']
@@ -688,9 +694,9 @@ class Feature(DictModel):
         'intervention': self.impl_status_chrome == INTERVENTION,
         'needsflag': self.impl_status_chrome == BEHIND_A_FLAG,
         }
-      if self.shipped_milestone:
+      if is_released and self.shipped_milestone:
         d['meta']['milestone_str'] = self.shipped_milestone
-      elif self.shipped_milestone is None and self.shipped_android_milestone:
+      elif is_released and self.shipped_android_milestone:
         d['meta']['milestone_str'] = self.shipped_android_milestone
       else:
         d['meta']['milestone_str'] = d['impl_status_chrome']
