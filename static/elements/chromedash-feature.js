@@ -106,7 +106,8 @@ class ChromedashFeature extends LitElement {
       'No active development',
       'Proposed',
       'In development',
-      'Behind a flag',  // TODO(jrobbins): Update when PR #1011 lands.
+      // TODO(jrobbins): Update when we change value in models.py.
+      'In developer trial (Behind a flag)',
       'Origin trial',
       'On hold',
     ];
