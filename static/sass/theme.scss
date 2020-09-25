@@ -10,6 +10,7 @@
   --md-red-50: #ffebee;
   --md-red-700: #d32f2f;
   --md-light-blue-50: #e1f5fe;
+  --md-blue-100: #bbdefb;
   --md-blue-700: #1976d2;
   --md-blue-900: #01579b;
   --md-orange-50: #fff3e0;
@@ -87,6 +88,10 @@
 
   --callout-bg-color: var(--dark-spot-color);
   --callout-text-color: white;
+
+  --barchart-background: var(--md-blue-100);
+  --barchart-foreground: var(--md-blue-700);
+  --barchart-color: white;
 
   --toast-background: var(--md-gray-900-alpha);
   --toast-color: var(--md-gray-50);

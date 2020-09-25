@@ -1,13 +1,11 @@
-import {LitElement, html} from 'lit-element';
+import {LitElement, css, html} from 'lit-element';
 import {ifDefined} from 'lit-html/directives/if-defined.js';
 
 import '@polymer/iron-icon';
 import './chromedash-x-meter';
-import style from '../css/elements/chromedash-metrics.css';
+import SHARED_STYLES from '../css/shared.css';
 
 class ChromedashMetrics extends LitElement {
-  static styles = style;
-
   static get properties() {
     return {
       type: {type: String},
@@ -29,6 +27,53 @@ class ChromedashMetrics extends LitElement {
       property_name: {reverse: false, activated: false},
       percentage: {reverse: true, activated: true},
     };
+  }
+
+
+  static get styles() {
+    return [
+      SHARED_STYLES,
+      css`
+      :host {
+        display: block;
+        flex: 1;
+        padding: 1px;
+      }
+
+      #stack-rank-list {
+        margin: 0;
+        padding: 0;
+      }
+
+      li {
+          margin: 0;
+          padding: 5px 0;
+          display: flex;
+          align-items: center;
+      }
+
+      #stack-rank-list label {
+        font-weight: 500;
+      }
+
+      li > :first-child {
+        flex: 1;
+        margin-right: 10px;
+      }
+
+      li > :nth-child(2) {
+        flex: 2;
+      }
+
+      li.header {
+        margin-bottom: 10px;
+      }
+
+      chromedash-x-meter {
+        margin-left: 7px;
+        cursor: pointer;
+      }
+    `];
   }
 
   _fireEvent(eventName, detail) {

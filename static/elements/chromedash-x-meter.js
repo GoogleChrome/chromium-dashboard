@@ -1,9 +1,7 @@
-import {LitElement, html} from 'lit-element';
-import style from '../css/elements/chromedash-x-meter.css';
+import {LitElement, css, html} from 'lit-element';
+import SHARED_STYLES from '../css/shared.css';
 
 class ChromedashXMeter extends LitElement {
-  static styles = style;
-
   static get properties() {
     return {
       value: {type: Number},
@@ -18,6 +16,30 @@ class ChromedashXMeter extends LitElement {
     this.value = 0;
     this.max = 100;
     this.href = '#';
+  }
+
+  static get styles() {
+    return [
+      SHARED_STYLES,
+      css`
+      :host {
+        display: inline-block;
+        contain: content;
+        background: var(--barchart-background);
+        border-radius: var(--border-radius);
+        overflow: hidden;
+        height: 1.7em;
+        color: var(--barchart-color);
+      }
+
+      div {
+        background: var(--barchart-foreground);
+        height: 100%;
+        white-space: nowrap;
+        padding: 3px 0;
+        text-indent: 5px;
+      }
+    `];
   }
 
   firstUpdated() {

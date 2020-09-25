@@ -1,17 +1,86 @@
-import {LitElement, html} from 'lit-element';
+import {LitElement, css, html} from 'lit-element';
 import {nothing} from 'lit-html';
 import '@polymer/iron-icon';
-import style from '../css/elements/chromedash-sample-panel.css';
+import SHARED_STYLES from '../css/shared.css';
 
 class ChromedashSamplePanel extends LitElement {
-  static styles = style;
-
   static get properties() {
     return {
       categories: {attribute: false}, // Edited in static/js/samples.js
       features: {attribute: false}, // Edited in static/js/samples.js
       filtered: {attribute: false}, // Edited in static/js/samples.js
     };
+  }
+
+  static get styles() {
+    return [
+      SHARED_STYLES,
+      css`
+      :host {
+        display: block;
+        position: relative;
+        max-width: 750px;
+      }
+
+      ul {
+        padding: 0;
+      }
+
+      li {
+        margin-bottom: var(--content-padding);
+        line-height: 1.4;
+        list-style: none;
+      }
+
+      .card {
+        background: #fff;
+        padding: var(--content-padding);
+        box-shadow: var(--card-box-shadow);
+      }
+      .card iron-icon {
+        flex-shrink: 0;
+      }
+
+      .feature-name {
+        font-weight: 400;
+        display: flex;
+        justify-content: space-between;
+        margin: 0;
+      }
+
+      .sample_links {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .milestone {
+        font-size: 16px;
+        white-space: nowrap;
+      }
+
+      .summary {
+        margin: var(--content-padding) 0;
+      }
+
+      .demo-links {
+        margin-right: var(--content-padding);
+        font-weight: 400;
+        display: flex;
+        flex-wrap: wrap;
+      }
+
+      .demo-link {
+        background-color: var(--table-alternate-background);
+        margin: var(--content-padding-half) var(--content-padding-half) 0 0;
+        display: block;
+        padding: var(--content-padding-half);
+        text-transform: uppercase;
+      }
+      .demo-link:hover {
+        text-decoration: none;
+      }
+    `];
   }
 
   connectedCallback() {
