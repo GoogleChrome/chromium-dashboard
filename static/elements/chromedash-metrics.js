@@ -40,7 +40,7 @@ class ChromedashMetrics extends LitElement {
         padding: 1px;
       }
 
-      #stack-rank-list {
+      .stack-rank-list {
         margin: 0;
         padding: 0;
       }
@@ -52,7 +52,7 @@ class ChromedashMetrics extends LitElement {
           align-items: center;
       }
 
-      #stack-rank-list label {
+      .stack-rank-list label {
         font-weight: 500;
       }
 
@@ -106,11 +106,16 @@ class ChromedashMetrics extends LitElement {
     this.maxPercentage = this.viewList.reduce((accum, currVal) => {
       return Math.max(accum, currVal.percentage);
     }, 0);
+    setTimeout(() => {
+      this._scrollToInitialPosition();
+    }, 300);
+  }
 
+  _scrollToInitialPosition() {
     if (location.hash) {
       const hash = decodeURIComponent(location.hash);
       if (hash) {
-        const el = this.shadowRoot.querySelector('#stack-rank-list ' + hash);
+        const el = this.shadowRoot.querySelector('.stack-rank-list ' + hash);
         el.scrollIntoView(true, {behavior: 'smooth'});
       }
     }
@@ -154,7 +159,7 @@ class ChromedashMetrics extends LitElement {
   render() {
     return html`
       <b>Showing <span>${this.viewList.length}</span> properties</b>
-      <ol id="stack-rank-list">
+      <ol class="stack-rank-list">
         <li class="header">
           <span @click="${this.sort}" data-order="property_name">
             Property name <iron-icon icon="${ifDefined(this.propertyNameSortIcon)}"></iron-icon>
