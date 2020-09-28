@@ -145,7 +145,8 @@ ON_HOLD = 10
 NO_LONGER_PURSUING = 1000 # insure bottom of list
 
 RELEASE_IMPL_STATES = {
-  ENABLED_BY_DEFAULT, DEPRECATED, REMOVED, ORIGIN_TRIAL, INTERVENTION,
+    BEHIND_A_FLAG, ENABLED_BY_DEFAULT,
+    DEPRECATED, REMOVED, ORIGIN_TRIAL, INTERVENTION,
 }
 
 # Ordered dictionary, make sure the order of this dictionary matches that of
