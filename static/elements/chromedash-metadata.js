@@ -1,10 +1,8 @@
-import {LitElement, html} from 'lit-element';
+import {LitElement, css, html} from 'lit-element';
 import {ifDefined} from 'lit-html/directives/if-defined.js';
-import style from '../css/elements/chromedash-metadata.css';
+import SHARED_STYLES from '../css/shared.css';
 
 class ChromedashMetadata extends LitElement {
-  static styles = style;
-
   static get properties() {
     return {
       implStatuses: {type: Array}, // Read in chromedash-featurelist.
@@ -35,6 +33,98 @@ class ChromedashMetadata extends LitElement {
     };
     this._channels = {};
     this._versions = [];
+  }
+
+  static get styles() {
+    return [
+      SHARED_STYLES,
+      css`
+      :host {
+        display: block;
+        contain: content;
+      }
+
+      #versionlist {
+        background-color: inherit;
+        color: var(--leftnav-link-color);
+        padding: 0;
+        margin: 0;
+      }
+
+      .canaryisdev li:nth-of-type(5)::after {
+        content: 'canary/dev';
+      }
+      .canaryisdev li:nth-of-type(6)::after {
+        content: 'beta';
+      }
+      .canaryisdev li:nth-of-type(7)::after {
+        content: 'stable';
+      }
+      .canaryisdev li:nth-of-type(8)::after {
+        content: '';
+      }
+
+      .betaisdev li:nth-of-type(5)::after {
+        content: 'canary';
+      }
+      .betaisdev li:nth-of-type(6)::after {
+        content: 'dev/beta';
+      }
+      .betaisdev li:nth-of-type(7)::after {
+        content: 'stable';
+      }
+      .betaisdev li:nth-of-type(8)::after {
+        content: '';
+      }
+
+      li {
+          cursor: pointer;
+          list-style: none;
+          padding: var(--content-padding-quarter) 0;
+      }
+
+      li::before {
+        content: '';
+        margin-right: var(--content-padding-half);
+        border-left: 2px solid transparent;
+      }
+      li::after {
+        margin-left: var(--content-padding-half);
+      }
+
+      li:nth-of-type(4) {
+        border-bottom: var(--leftnav-divider-border);
+        padding-bottom: var(--content-padding-half);
+        margin-bottom: var(--content-padding-half);
+      }
+      li:nth-of-type(5)::after {
+        content: 'canary';
+      }
+      li:nth-of-type(6)::after {
+        content: 'dev';
+      }
+      li:nth-of-type(7)::after {
+        content: 'beta';
+      }
+      li:nth-of-type(8)::after {
+        content: 'stable';
+      }
+
+      li[selected] {
+        font-weight: 500;
+        color: var(--leftnav-selected-color);
+      }
+      li[selected]::before {
+        border-color: var(--leftnav-selected-color);
+      }
+
+      .error {
+        font-weight: 500;
+        font-style: italic;
+        margin: 100px 0 0 5px;
+        color: var(--error-color);
+      }
+    `];
   }
 
   connectedCallback() {
