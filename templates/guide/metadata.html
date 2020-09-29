@@ -49,7 +49,12 @@
       </tr>
       <tr>
         <th>Search tags</th>
-        <td>{{ feature.search_tags | join:', ' }}</td>
+        <td>
+          {% for tag in feature.search_tags %}
+            <a href="/features#tags:{{tag}}"
+               >{{tag}}</a>{% if not forloop.last %}, {% endif %}
+          {% endfor %}
+        </td>
       </tr>
     </table>
 

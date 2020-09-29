@@ -96,13 +96,6 @@
     </section>
     {% endif %}
 
-    {% if feature.comments %}
-    <section id="comments">
-      <h3>Comments</h3>
-      <p>{{ feature.comments|urlize }}</p>
-    </section>
-    {% endif %}
-
     {% if feature.sample_links %}
     <section id="demo">
       <h3>{% if feature.sample_links|length == 1 %}Demo{% else %}Demos{% endif %}</h3>
@@ -229,8 +222,25 @@
     </section>
     {% endif %}
 
+    {% if feature.comments %}
+    <section id="comments">
+      <h3>Comments</h3>
+      <p>{{ feature.comments|urlize }}</p>
+    </section>
+    {% endif %}
+
+    {% if feature.search_tags %}
+    <section class="comma-sep-links">
+      <h3>Search tags</h3>
+        {% for tag in feature.search_tags %}
+          <a href="/features#tags:{{ tag }}">{{ tag }}</a><span
+            class="conditional-comma"></span>
+        {% endfor %}
+    </section>
+    {% endif %}
+
     <section id="updated">
-      <p>Last updated on {{ feature.updated_display }}</p>
+      <p><span>Last updated on {{ feature.updated_display }}</span></p>
     </section>
   </div>
 {% endblock %}
