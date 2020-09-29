@@ -76,15 +76,8 @@ button:not(:disabled):hover {
   margin-right: .2em;
 }
 
-.comma-sep-links a {
-  margin-right: 0;
-}
-.conditional-comma::after {
-  content: ', ';
-  color: var(--default-color);
-}
-.conditional-comma:last-child::after {
-  content: '';
+.conditional-comma:last-child {
+  display: none;
 }
 
 .no-web-share {

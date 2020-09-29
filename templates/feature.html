@@ -230,11 +230,11 @@
     {% endif %}
 
     {% if feature.search_tags %}
-    <section class="comma-sep-links">
+    <section>
       <h3>Search tags</h3>
         {% for tag in feature.search_tags %}
           <a href="/features#tags:{{ tag }}">{{ tag }}</a><span
-            class="conditional-comma"></span>
+            class="conditional-comma">, </span>
         {% endfor %}
     </section>
     {% endif %}

@@ -52,7 +52,7 @@
         <td>
           {% for tag in feature.search_tags %}
             <a href="/features#tags:{{tag}}"
-               >{{tag}}</a>{% if not forloop.last %}, {% endif %}
+               >{{tag}}</a><span class="conditional-comma">, </span>
           {% endfor %}
         </td>
       </tr>
