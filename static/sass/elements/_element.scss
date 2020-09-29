@@ -21,3 +21,7 @@ $feature-min-height: 75px;
   text-align: center;
   color: $default-font-color;
 }
+
+.conditional-comma:last-child {
+  display: none;
+}

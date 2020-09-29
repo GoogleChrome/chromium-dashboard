@@ -76,6 +76,10 @@ button:not(:disabled):hover {
   margin-right: .2em;
 }
 
+.conditional-comma:last-child {
+  display: none;
+}
+
 .no-web-share {
   display: none;
 }

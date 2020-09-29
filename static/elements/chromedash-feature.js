@@ -484,6 +484,17 @@ class ChromedashFeature extends LitElement {
           </section>
           ` : nothing}
         ` : nothing}
+        ${this.open && this.feature.tags ? html`
+          <section>
+            <h3>Search tags</h3>
+            <div class="resources comma-sep-links">
+              ${this.feature.tags.map((tag) => html`
+                <a href="#tags:${tag}" target="_blank"
+                  >${tag}</a><span class="conditional-comma">,&nbsp; </span>
+              `)}
+            </div>
+          </section>
+          ` : nothing}
     `;
   }
 }
