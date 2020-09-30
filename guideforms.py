@@ -809,7 +809,9 @@ Flat_PrepareToShip = define_form_class_using_shared_fields(
     'Flat_PrepareToShip',
     (# Standardization
      'tag_review', 'tag_review_status',
-     'intent_to_ship_url', 'i2s_lgtms'))
+     'intent_to_ship_url', 'i2s_lgtms',
+     # Implementation
+     'measurement'))
 
 
 Flat_Ship = define_form_class_using_shared_fields(
