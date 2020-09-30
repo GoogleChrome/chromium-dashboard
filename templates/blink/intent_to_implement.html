@@ -168,6 +168,11 @@
   <a href="{{feature.launch_bug_url}}">{{feature.launch_bug_url}}</a>
 {% endif %}
 
+{% if feature.measurement %}
+  <br><br><h4>Measurement</h4>
+  {{feature.measurement|urlize}}
+{% endif %}
+
 {% if 'sample_links' in sections_to_show %}
    {% if feature.sample_links %}
      <br><br><h4>Sample links</h4>

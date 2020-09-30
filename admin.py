@@ -527,6 +527,7 @@ class FeatureHandler(common.ContentHandler):
           'tag_review_status', models.REVIEW_PENDING))
       feature.standardization = int(self.request.get('standardization'))
       feature.doc_links = doc_links
+      feature.measurement = self.request.get('measurement')
       feature.sample_links = sample_links
       feature.search_tags = search_tags
       feature.comments = self.request.get('comments')
@@ -602,6 +603,7 @@ class FeatureHandler(common.ContentHandler):
               'tag_review_status', models.REVIEW_PENDING)),
           standardization=int(self.request.get('standardization')),
           doc_links=doc_links,
+          measurement=self.request.get('measurement'),
           sample_links=sample_links,
           search_tags=search_tags,
           comments=self.request.get('comments'),

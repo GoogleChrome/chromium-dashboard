@@ -83,17 +83,17 @@ STAGE_FORMS = {
 
 IMPL_STATUS_FORMS = {
     models.INTENT_EXPERIMENT:
-        (models.BEHIND_A_FLAG, guideforms.ImplStatus_DevTrial,),
+        (models.BEHIND_A_FLAG, guideforms.ImplStatus_DevTrial),
     models.INTENT_EXTEND_TRIAL:
-        (models.ORIGIN_TRIAL, guideforms.ImplStatus_OriginTrial,),
+        (models.ORIGIN_TRIAL, guideforms.ImplStatus_OriginTrial),
     models.INTENT_IMPLEMENT_SHIP:
-        (None, guideforms.ImplStatus_AllMilestones,),
+        (None, guideforms.ImplStatus_EvalReadinessToShip),
     models.INTENT_SHIP:
-        (models.ENABLED_BY_DEFAULT, guideforms.ImplStatus_AllMilestones,),
+        (models.ENABLED_BY_DEFAULT, guideforms.ImplStatus_AllMilestones),
     models.INTENT_SHIPPED:
-        (models.ENABLED_BY_DEFAULT, guideforms.ImplStatus_AllMilestones,),
+        (models.ENABLED_BY_DEFAULT, guideforms.ImplStatus_AllMilestones),
     models.INTENT_REMOVED:
-        (models.REMOVED, guideforms.ImplStatus_AllMilestones,),
+        (models.REMOVED, guideforms.ImplStatus_AllMilestones),
     }
 
 # Forms to be used on the "Edit all" page that shows a flat list of fields.
@@ -409,6 +409,9 @@ class FeatureEditStage(common.ContentHandler):
 
     if self.touched('doc_links'):
       feature.doc_links = self.split_input('doc_links')
+
+    if self.touched('measurement'):
+      feature.measurement = self.request.get('measurement')
 
     if self.touched('sample_links'):
       feature.sample_links = self.split_input('sample_links')
