@@ -757,7 +757,7 @@ Flat_Identify = define_form_class_using_shared_fields(
 Flat_Implement = define_form_class_using_shared_fields(
     'Flat_Implement',
     (# Standardization
-     'spec_link', 'intent_to_implement_url'))
+     'spec_link', 'api_spec', 'intent_to_implement_url'))
 
 
 Flat_DevTrial = define_form_class_using_shared_fields(
