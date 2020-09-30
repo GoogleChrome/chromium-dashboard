@@ -135,6 +135,14 @@ ALL_FIELDS = {
                    'chromestatus.com entry and the intent thread(s) with the '
                    'spec link when available.')),
 
+    'api_spec': forms.URLField(
+        required=False, label='API spec',
+        widget=forms.URLInput(attrs={'placeholder': 'https://'}),
+        help_text=(
+            'Link to a draft or final API specification in Web IDL. '
+            'This may be part of an explainer, a part of a spec, '
+            'a source file, or existing reference pages on MDN.')),
+
     'explainer_links': forms.CharField(
         label='Explainer link(s)', required=False,
         widget=forms.Textarea(
@@ -599,7 +607,7 @@ NewFeature_Incubate = define_form_class_using_shared_fields(
 
 NewFeature_Prototype = define_form_class_using_shared_fields(
     'NewFeature_Prototype',
-    ('spec_link',
+    ('spec_link', 'api_spec',
      'intent_to_implement_url', 'comments'))
   # TODO(jrobbins): advise user to request a tag review
 
@@ -678,7 +686,7 @@ Any_Ship = define_form_class_using_shared_fields(
 Any_Identify = define_form_class_using_shared_fields(
     'Any_Identify',
     ('owner', 'blink_components', 'motivation', 'explainer_links',
-     'bug_url', 'launch_bug_url', 'comments'))
+     'spec_link', 'api_spec', 'bug_url', 'launch_bug_url', 'comments'))
 
 
 Any_Implement = define_form_class_using_shared_fields(

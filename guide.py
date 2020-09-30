@@ -320,6 +320,9 @@ class FeatureEditStage(common.ContentHandler):
     if self.touched('spec_link'):
       feature.spec_link = self.parse_link('spec_link')
 
+    if self.touched('api_spec'):
+      feature.api_spec = self.parse_link('api_spec')
+
     if self.touched('security_review_status'):
       feature.security_review_status = self.parse_int('security_review_status')
 

@@ -1052,6 +1052,7 @@ class Feature(DictModel):
   # Standards details.
   standardization = db.IntegerProperty(required=True)
   spec_link = db.LinkProperty()
+  api_spec = db.LinkProperty()
   security_review_status = db.IntegerProperty(default=REVIEW_PENDING)
   privacy_review_status = db.IntegerProperty(default=REVIEW_PENDING)
 
@@ -1268,6 +1269,14 @@ class FeatureForm(forms.Form):
       required=False, label='Spec link',
       widget=forms.URLInput(attrs={'placeholder': 'https://'}),
       help_text="Link to spec, if and when available. Please update the chromestatus.com entry and the intent thread(s) with the spec link when available.")
+
+  api_spec = forms.URLField(
+      required=False, label='API spec',
+      widget=forms.URLInput(attrs={'placeholder': 'https://'}),
+      help_text=(
+          'Link to a draft or final API specification in Web IDL. '
+          'This may be part of an explainer, a part of a spec, '
+          'a source file, or existing reference pages on MDN.'))
 
   security_review_status = forms.ChoiceField(
       required=False,
