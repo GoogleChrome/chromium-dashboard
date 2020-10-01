@@ -519,7 +519,7 @@ ALL_FIELDS = {
         help_text='Comma separated list of full email addresses.'),
 
     'impl_status_chrome': forms.ChoiceField(
-        required=False, label='Implementatino status',
+        required=False, label='Implementation status',
         choices=models.IMPLEMENTATION_STATUS.items(),
         help_text='Implementation status in Chromium'),
 
