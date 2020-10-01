@@ -30,12 +30,6 @@ SHIPPED_HELP_TXT = (
     'status to In development. If the flag is for an origin trial set status '
     'to Origin trial.')
 
-SUMMARY_PLACEHOLDER_TXT = (
-    'NOTE: This text describes this feature in the eventual beta release post '
-    'as well as possibly in other external places externally.&#10;&#10;'
-    'Begin with one line explaining what the feature does. Add one or two '
-    'lines explaining how this feature helps developers.')
-
 # We define all form fields here so that they can be include in one or more
 # stage-specific fields without repeating the details and help text.
 ALL_FIELDS = {
@@ -58,7 +52,7 @@ ALL_FIELDS = {
     'summary': forms.CharField(
         required=True,
         widget=forms.Textarea(
-            attrs={'cols': 50, 'maxlength': 500, 'placeholder': SUMMARY_PLACEHOLDER_TXT}),
+            attrs={'cols': 50, 'maxlength': 500, 'placeholder': models.SUMMARY_PLACEHOLDER_TXT}),
         help_text=
         ('<a target="_blank" href="'
          'https://github.com/GoogleChrome/chromium-dashboard/wiki/'
