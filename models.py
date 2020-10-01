@@ -1138,7 +1138,7 @@ class FeatureForm(forms.Form):
 
 SUMMARY_PLACEHOLDER_TXT = (
     'NOTE: This text describes this feature in the eventual beta release post '
-    'as well as possibly in other external places externally.&#10;&#10;'
+    'as well as possibly in other external places externally.\n\n'
     'Begin with one line explaining what the feature does. Add one or two '
     'lines explaining how this feature helps developers.')
 
