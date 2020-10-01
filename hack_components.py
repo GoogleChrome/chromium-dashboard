@@ -147,6 +147,7 @@ HACK_BLINK_COMPONENTS = [
   "Blink>Storage>DataTransfer",
   "Blink>Storage>FileAPI",
   "Blink>Storage>FileSystem",
+  "Blink>Storage>FontAccess",
   "Blink>Storage>IndexedDB",
   "Blink>Storage>Quota",
   "Blink>Storage>WebSQL",
