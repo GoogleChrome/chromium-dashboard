@@ -1079,6 +1079,7 @@ class Feature(DictModel):
   web_dev_views_notes = db.StringProperty(multiline=True)
 
   doc_links = db.StringListProperty()
+  measurement = db.StringProperty(multiline=True)
   sample_links = db.StringListProperty()
   #tests = db.StringProperty()
 
@@ -1257,6 +1258,15 @@ class FeatureForm(forms.Form):
           attrs={'rows': 4, 'cols': 50, 'maxlength': 500,
                  'placeholder': 'https://\nhttps://'}),
       help_text='Links to design doc(s) (one URL per line), if and when available. [This is not required to send out an Intent to Prototype. Please update the intent thread with the design doc when ready]. An explainer and/or design doc is sufficient to start this process. [Note: Please include links and data, where possible, to support any claims.]')
+
+  measurement = forms.CharField(label='Measurement', required=False,
+      widget=forms.Textarea(
+          attrs={'rows': 4, 'cols': 50, 'maxlength': 500}),
+      help_text=(
+          'It\'s important to measure the adoption and success of web-exposed '
+          'features.  Note here what measurements you have added to track the '
+          'success of this feature, such as a link to the UseCounter(s) you '
+          'have set up.'))
 
   standardization = forms.ChoiceField(
       required=False,

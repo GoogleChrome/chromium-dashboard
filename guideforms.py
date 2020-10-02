@@ -115,6 +115,16 @@ ALL_FIELDS = {
                    'include links and data, where possible, to support any '
                    'claims.]')),
 
+    'measurement': forms.CharField(
+        label='Measurement', required=False,
+        widget=forms.Textarea(
+            attrs={'rows': 4, 'cols': 50, 'maxlength': 500}),
+        help_text=
+        ('It\'s important to measure the adoption and success of web-exposed '
+         'features.  Note here what measurements you have added to track the '
+         'success of this feature, such as a link to the UseCounter(s) you '
+         'have set up.')),
+
     'standardization': forms.ChoiceField(
         required=False, label='Standardization',
         choices=models.STANDARDIZATION.items(),
@@ -649,6 +659,13 @@ ImplStatus_AllMilestones = define_form_class_using_shared_fields(
      'shipped_ios_milestone', 'shipped_webview_milestone'))
 
 
+ImplStatus_EvalReadinessToShip = define_form_class_using_shared_fields(
+    'ImplStatus_AllMilestones',
+    ('shipped_milestone', 'shipped_android_milestone',
+     'shipped_ios_milestone', 'shipped_webview_milestone',
+     'measurement'))
+
+
 NewFeature_OriginTrial = define_form_class_using_shared_fields(
     'NewFeature_OriginTrial',
     ('experiment_goals', 'experiment_risks',
@@ -800,7 +817,9 @@ Flat_PrepareToShip = define_form_class_using_shared_fields(
     'Flat_PrepareToShip',
     (# Standardization
      'tag_review', 'tag_review_status',
-     'intent_to_ship_url', 'i2s_lgtms'))
+     'intent_to_ship_url', 'i2s_lgtms',
+     # Implementation
+     'measurement'))
 
 
 Flat_Ship = define_form_class_using_shared_fields(
