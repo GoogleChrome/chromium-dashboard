@@ -1136,7 +1136,7 @@ class FeatureForm(forms.Form):
                               'statuses In developer trial and Origin trial this '
                               'MUST be blank.')
 
-SUMMARY_PLACEHOLDER_TXT = (
+  SUMMARY_PLACEHOLDER_TXT = (
     'NOTE: This text describes this feature in the eventual beta release post '
     'as well as possibly in other external places externally.\n\n'
     'Begin with one line explaining what the feature does. Add one or two '
