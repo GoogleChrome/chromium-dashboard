@@ -52,7 +52,7 @@ ALL_FIELDS = {
     'summary': forms.CharField(
         required=True,
         widget=forms.Textarea(
-            attrs={'cols': 50, 'maxlength': 500, 'placeholder': models.SUMMARY_PLACEHOLDER_TXT}),
+            attrs={'cols': 50, 'maxlength': 500, 'placeholder': models.FeatureForm.SUMMARY_PLACEHOLDER_TXT}),
         help_text=
         ('<a target="_blank" href="'
          'https://github.com/GoogleChrome/chromium-dashboard/wiki/'
