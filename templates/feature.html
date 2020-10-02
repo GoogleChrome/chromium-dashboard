@@ -85,14 +85,14 @@
 
     {% if feature.summary %}
     <section id="summary">
-      <p class="pre-line">{{ feature.summary|urlize }}</p>
+      <p class="preformatted">{{ feature.summary|urlize }}</p>
     </section>
     {% endif %}
 
     {% if feature.motivation %}
     <section id="motivation">
       <h3>Motivation</h3>
-      <p class="pre-line">{{ feature.motivation|urlize }}</p>
+      <p class="preformatted">{{ feature.motivation|urlize }}</p>
     </section>
     {% endif %}
 
@@ -225,7 +225,7 @@
     {% if feature.comments %}
     <section id="comments">
       <h3>Comments</h3>
-      <p class="pre-line">{{ feature.comments|urlize }}</p>
+      <p class="preformatted">{{ feature.comments|urlize }}</p>
     </section>
     {% endif %}
 
