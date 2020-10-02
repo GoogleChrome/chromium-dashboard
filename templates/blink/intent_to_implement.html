@@ -40,7 +40,7 @@
   {% endif %}
 
   <br><br><h4>Summary</h4>
-  {{ feature.summary | urlize }}
+  <p class="preformatted">{{ feature.summary | urlize }}</p>
 
   <br><br><h4>Blink component</h4>
   {% for c in feature.blink_components %}
@@ -49,7 +49,7 @@
 
   {% if 'motivation' in sections_to_show %}
     <br><br><h4>Motivation</h4>
-    {{feature.motivation|urlize}}
+    <p class="preformatted">{{feature.motivation|urlize}}</p>
 
     <br><br><h4>Initial public proposal</h4>
     {{feature.initial_public_proposal_url|urlize}}
@@ -79,7 +79,7 @@
   <br><br><h4>Risks</h4>
   <div style="margin-left: 4em;">
     <br><br><h4>Interoperability and Compatibility</h4>
-    {{feature.interop_compat_risks|urlize}}
+    <p class="preformatted">{{feature.interop_compat_risks|urlize}}</p>
 
     <br><br><i>Gecko</i>: {{feature.ff_views.text}}
     {% if feature.ff_views_link %}
@@ -107,17 +107,17 @@
 
     {% if feature.ergonomics_risks %}
       <br><br><h4>Ergonomics</h4>
-      {{feature.ergonomics_risks|urlize}}
+      <p class="preformatted">{{feature.ergonomics_risks|urlize}}</p>
     {% endif %}
 
     {% if feature.activation_risks %}
       <br><br><h4>Activation</h4>
-      {{feature.activation_risks|urlize}}
+      <p class="preformatted">{{feature.activation_risks|urlize}}</p>
     {% endif %}
 
     {% if feature.security_risks %}
       <br><br><h4>Security</h4>
-      {{feature.security_risks|urlize}}
+      <p class="preformatted">{{feature.security_risks|urlize}}</p>
     {% endif %}
 
   </div> <!-- end risks -->
@@ -125,37 +125,37 @@
 {% if 'experiment' in sections_to_show %}
 
   <br><br><h4>Goals for experimentation</h4>
-  {{feature.experiment_goals|urlize}}
+  <p class="preformatted">{{feature.experiment_goals|urlize}}</p>
 
   {% if feature.experiment_timeline %}
     <br><br><h4>Experimental timeline</h4>
-    {{feature.experiment_timeline|urlize}}
+    <p class="preformatted">{{feature.experiment_timeline|urlize}}</p>
   {% endif %}
 
   {% if 'extension_reason' in sections_to_show %}
     <br><br><h4>Reason this experiment is being extended</h4>
-    {{feature.experiment_extension_reason|urlize}}
+    <p class="preformatted">{{feature.experiment_extension_reason|urlize}}</p>
   {% endif %}
 
   <br><br><h4>Ongoing technical constraints</h4>
-  {{feature.ongoing_constraints|urlize}}
+  <p class="preformatted">{{feature.ongoing_constraints|urlize}}</p>
 
 {% endif %}
 
 {% if feature.debuggability %}
   <br><br><h4>Debuggability</h4>
-  {{feature.debuggability|urlize}}
+  <p class="preformatted">{{feature.debuggability|urlize}}</p>
 {% endif %}
 
 <br><br><h4>Will this feature be supported on all six Blink platforms
     (Windows, Mac, Linux, Chrome OS, Android, and Android WebView)?</h4>
 {% if feature.all_platforms %}Yes{% else %}No{% endif %}
-{{feature.all_platforms_descr|urlize}}
+<p class="preformatted">{{feature.all_platforms_descr|urlize}}</p>
 
 <br><br><h4>Is this feature fully tested by <a href="https://chromium.googlesource.com/chromium/src/+/master/docs/testing/web_platform_tests.md">web-platform-tests</a>?</h4>
 {% if feature.wpt %}Yes{% else %}No{% endif %}
 {% if feature.wpt_desc %}
-  {{feature.wpt_descr|urlize}}
+  <p class="preformatted">{{feature.wpt_descr|urlize}}</p>
 {% endif %}
 
 {% if feature.bug_url %}
@@ -218,7 +218,3 @@
 </small></div>
 
 </div> <!-- end email body div -->
-
-<p style="padding-bottom: 6em">
- <!-- work around overlap by floating footer. -->
-</p>
