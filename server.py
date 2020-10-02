@@ -22,7 +22,9 @@ import webapp2
 
 import settings
 import common
+import guideforms
 import models
+import processes
 import util
 
 from google.appengine.api import users
@@ -32,6 +34,41 @@ import http2push.http2push as http2push
 
 def normalized_name(val):
   return val.lower().replace(' ', '').replace('/', '')
+
+
+class FeatureDetailHandler(common.ContentHandler):
+
+  def get(self, path, feature_id):
+    user = users.get_current_user()
+    if user is None:
+      # Redirect to public URL for unauthenticated users.
+      return self.redirect(format_feature_url(feature_id))
+
+    if not self.user_can_edit(user):
+      common.handle_401(self.request, self.response, Exception)
+      return
+
+    f = models.Feature.get_by_id(long(feature_id))
+    if f is None:
+      self.abort(404)
+
+    feature_process = processes.ALL_PROCESSES.get(
+        f.feature_type, processes.BLINK_LAUNCH_PROCESS)
+    default_field_defs = guideforms.DISPLAY_FIELDS_IN_STAGES[
+        models.FEATURE_TYPE_INCUBATE_ID]
+    field_defs = guideforms.DISPLAY_FIELDS_IN_STAGES.get(
+        f.feature_type, default_field_defs)
+    template_data = {
+        'process_json': json.dumps(processes.process_to_dict(feature_process)),
+        'field_defs_json': json.dumps(field_defs),
+        'feature': f.format_for_template(),
+        'feature_id': f.key().id,
+        'feature_json': json.dumps(f.format_for_template()),
+        'updated_display': f.updated.strftime("%Y-%m-%d"),
+    }
+
+    self._add_common_template_values(template_data)
+    self.render(data=template_data, template_path='feature.html')
 
 
 class MainHandler(http2push.PushHandler, common.ContentHandler, common.JSONHandler):
@@ -200,7 +237,7 @@ class SamplesHandler(common.ContentHandler, common.JSONHandler):
 routes = [
   (r'/features(?:_v(\d+))?.json', FeaturesAPIHandler),
   ('/samples(.*)', SamplesHandler),
-  ('/(.*)/([0-9]*)', MainHandler),
+  ('/(.*)/([0-9]*)', FeatureDetailHandler),
   ('/(.*)', MainHandler),
 ]
 

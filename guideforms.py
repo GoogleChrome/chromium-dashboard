@@ -16,6 +16,7 @@ from __future__ import print_function
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import logging
 from django import forms
 
 from google.appengine.api import users
@@ -820,3 +821,98 @@ Flat_Ship = define_form_class_using_shared_fields(
     (# Implementation
      'shipped_milestone', 'shipped_android_milestone',
      'shipped_ios_milestone', 'shipped_webview_milestone'))
+
+
+FIELD_TYPE_TO_DISPLAY_TYPE = {
+    forms.BooleanField: 'bool',
+    forms.URLField: 'url',
+    # choice, char, int can all render as plain text.
+    }
+
+def make_display_spec(field_name):
+  """@@@"""
+  form_field = ALL_FIELDS[field_name]
+  display_name = form_field.label
+  logging.info('display_name is %r', display_name)
+  field_type = FIELD_TYPE_TO_DISPLAY_TYPE.get(type(form_field), 'text')
+  return (field_name, display_name, field_type);
+
+
+def make_display_specs(*shared_field_names):
+  """@@@"""
+  return [make_display_spec(field_name)
+          for field_name in shared_field_names]
+
+
+DISPLAY_FIELDS_IN_STAGES = {
+    models.FEATURE_TYPE_INCUBATE_ID: {
+        models.INTENT_INCUBATE: make_display_specs(
+            'motivation', 'initial_public_proposal_url', 'explainer_links'),
+        models.INTENT_IMPLEMENT: make_display_specs(
+            'spec_link', 'intent_to_implement_url'),
+        models.INTENT_EXPERIMENT: make_display_specs(
+        'bug_url', 'doc_links',
+        'interop_compat_risks',
+        'safari_views', 'safari_views_link', 'safari_views_notes',
+        'ff_views', 'ff_views_link', 'ff_views_notes',
+        'ie_views', 'ie_views_link', 'ie_views_notes',
+        'web_dev_views', 'web_dev_views_link', 'web_dev_views_notes',
+        'security_review_status', 'privacy_review_status',
+        'ergonomics_risks', 'activation_risks', 'security_risks', 'debuggability',
+        'all_platforms', 'all_platforms_descr', 'wpt', 'wpt_descr',
+        'sample_links', 'devrel', 'ready_for_trial_url'),
+        models.INTENT_IMPLEMENT_SHIP: make_display_specs(
+            'tag_review', 'tag_review_status',
+            'intent_to_ship_url', 'i2s_lgtms'),
+        models.INTENT_EXTEND_TRIAL: make_display_specs(
+            ),
+        models.INTENT_SHIP: make_display_specs(
+            'shipped_milestone', 'shipped_android_milestone',
+            'shipped_ios_milestone', 'shipped_webview_milestone'),
+        models.INTENT_SHIPPED: make_display_specs(
+            ),
+        },
+
+    models.FEATURE_TYPE_EXISTING_ID: {
+        models.INTENT_INCUBATE: make_display_specs(
+            ),
+        models.INTENT_IMPLEMENT: make_display_specs(
+            ),
+        models.INTENT_EXPERIMENT: make_display_specs(
+            ),
+        models.INTENT_EXTEND_TRIAL: make_display_specs(
+            ),
+        models.INTENT_SHIP: make_display_specs(
+            ),
+        models.INTENT_SHIPPED: make_display_specs(
+            ),
+        },
+
+    models.FEATURE_TYPE_CODE_CHANGE_ID: {
+        models.INTENT_INCUBATE: make_display_specs(
+            ),
+        models.INTENT_IMPLEMENT: make_display_specs(
+            ),
+        models.INTENT_EXPERIMENT: make_display_specs(
+            ),
+        models.INTENT_SHIP: make_display_specs(
+            ),
+        models.INTENT_SHIPPED: make_display_specs(
+            ),
+        },
+
+    models.FEATURE_TYPE_DEPRECATION_ID: {
+        models.INTENT_INCUBATE: make_display_specs(
+            ),
+        models.INTENT_IMPLEMENT: make_display_specs(
+            ),
+        models.INTENT_EXPERIMENT: make_display_specs(
+            ),
+        models.INTENT_EXTEND_TRIAL: make_display_specs(
+            ),
+        models.INTENT_SHIP: make_display_specs(
+            ),
+        models.INTENT_REMOVED: make_display_specs(
+            ),
+        },
+}
