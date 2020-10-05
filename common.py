@@ -20,6 +20,8 @@ import datetime
 import json
 import logging
 import re
+import time
+import traceback
 import webapp2
 
 # App Engine imports.
@@ -36,6 +38,48 @@ import django
 # Initialize django so that it'll function when run as a standalone script.
 # https://django.readthedocs.io/en/latest/releases/1.7.html#standalone-scripts
 django.setup()
+
+
+def retry(tries, delay=1, backoff=2):
+  """A retry decorator with exponential backoff.
+
+  Functions are retried when Exceptions occur.
+
+  Args:
+    tries: int Number of times to retry, set to 0 to disable retry.
+    delay: float Initial sleep time in seconds.
+    backoff: float Must be greater than 1, further failures would sleep
+             delay*=backoff seconds.
+  """
+  if backoff <= 1:
+    raise ValueError("backoff must be greater than 1")
+  if tries < 0:
+    raise ValueError("tries must be 0 or greater")
+  if delay <= 0:
+    raise ValueError("delay must be greater than 0")
+
+  def decorator(func):
+    def wrapper(*args, **kwargs):
+      _tries, _delay = tries, delay
+      _tries += 1  # Ensure we call func at least once.
+      while _tries > 0:
+        try:
+          ret = func(*args, **kwargs)
+          return ret
+        except Exception:
+          _tries -= 1
+          if _tries == 0:
+            logging.error('Exceeded maximum number of retries for %s.',
+                          func.__name__)
+            raise
+          trace_str = traceback.format_exc()
+          logging.warning('Retrying %s due to Exception: %s',
+                          func.__name__, trace_str)
+          time.sleep(_delay)
+          _delay *= backoff  # Wait longer the next time we fail.
+    return wrapper
+  return decorator
+
 
 def require_edit_permission(handler):
   """Handler decorator to require the user have edit permission."""

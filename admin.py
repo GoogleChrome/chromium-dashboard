@@ -57,10 +57,12 @@ HISTOGRAMS_URL = 'https://chromium.googlesource.com/chromium/src/+/master/' \
 COOKIE_FILENAME = os.path.join(settings.ROOT_DIR, 'cookie')
 
 
+@common.retry(3, delay=30, backoff=2)
 def _FetchWithCookie(url):
   if settings.PROD:
     # follow_redirects=False according to https://cloud.google.com/appengine/docs/python/appidentity/#asserting_identity_to_other_app_engine_apps
-    return urlfetch.fetch(url, deadline=60, follow_redirects=False)
+    # GAE request limit is 60s, but it could go longer due to start-up latency.
+    return urlfetch.fetch(url, deadline=120, follow_redirects=False)
   try:
     with open(COOKIE_FILENAME, 'r') as f:
       cookie = f.readline()
