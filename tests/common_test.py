@@ -42,6 +42,40 @@ class MockHandler(object):
 
 class CommonFunctionTests(unittest.TestCase):
 
+  @mock.patch('time.sleep')  # Run test full speed.
+  def testRetryDecorator_ExceedFailures(self, mock_sleep):
+    class Tracker(object):
+      func_called = 0
+    tracker = Tracker()
+
+    # Use a function that always fails.
+    @common.retry(2, delay=1, backoff=2)
+    def testFunc(tracker):
+      tracker.func_called += 1
+      raise Exception('Failed')
+
+    with self.assertRaises(Exception):
+      testFunc(tracker)
+    self.assertEquals(3, tracker.func_called)
+    self.assertEqual(2, len(mock_sleep.mock_calls))
+
+  @mock.patch('time.sleep')  # Run test full speed.
+  def testRetryDecorator_EventuallySucceed(self, mock_sleep):
+    class Tracker(object):
+      func_called = 0
+    tracker = Tracker()
+
+    # Use a function that succeeds on the 2nd attempt.
+    @common.retry(2, delay=1, backoff=2)
+    def testFunc(tracker):
+      tracker.func_called += 1
+      if tracker.func_called < 2:
+        raise Exception('Failed')
+
+    testFunc(tracker)
+    self.assertEquals(2, tracker.func_called)
+    self.assertEqual(1, len(mock_sleep.mock_calls))
+
   def test_strip_trailing_slash(self):
     handlerInstance = MockHandler('/request/path')
     handlerInstance.handlerMethod('/request/path')
