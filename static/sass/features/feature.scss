@@ -39,12 +39,6 @@ section {
   }
 }
 
-#summary, #comments, #motivation {
-  p {
-    white-space: pre-line;
-  }
-}
-
 /* TODO(iclelland): DRY - factor this style out of here and
  * chromedash-feature.scss into somewhere common.
  */
