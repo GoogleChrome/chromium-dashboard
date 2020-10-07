@@ -38,15 +38,11 @@ def normalized_name(val):
 
 class FeatureDetailHandler(common.ContentHandler):
 
-  def get(self, path, feature_id):
+  def get(self, feature_id):
     user = users.get_current_user()
     if user is None:
       # Redirect to public URL for unauthenticated users.
       return self.redirect(format_feature_url(feature_id))
-
-    if not self.user_can_edit(user):
-      common.handle_401(self.request, self.response, Exception)
-      return
 
     f = models.Feature.get_by_id(long(feature_id))
     if f is None:
@@ -237,7 +233,8 @@ class SamplesHandler(common.ContentHandler, common.JSONHandler):
 routes = [
   (r'/features(?:_v(\d+))?.json', FeaturesAPIHandler),
   ('/samples(.*)', SamplesHandler),
-  ('/(.*)/([0-9]*)', FeatureDetailHandler),
+  ('/feature/([0-9]*)', FeatureDetailHandler),
+  ('/(.*)/([0-9]*)', MainHandler),
   ('/(.*)', MainHandler),
 ]
 

@@ -101,20 +101,92 @@ class ChromedashFeatureDetail extends LitElement {
         min-width: 300px;
         display: inline-block;
         width: 300px;
+        vertical-align: top;
       }
+
+      .inline-list {
+        display: inline-block;
+        padding: 0;
+        margin: 0;
+      }
+
+      .value-item {
+        padding: var(--content-padding);
+      }
+      .value-item:nth-of-type(odd) {
+        background: var(--table-alternate-background);
+      }
+
+      .longtext {
+        display: block;
+        white-space: pre-wrap;
+        padding: var(--content-padding-half);
+      }
+
     `];
+  }
+
+  isDefinedValue(value) {
+    return !(value === undefined || value === null || value.length == 0);
+  }
+
+  getFieldValue(fieldDef) {
+    const fieldId = fieldDef[0];
+    let value = this.feature[fieldId];
+    if (value && value.text) {
+      value = value.text;
+    }
+    return value;
+  }
+
+  hasFieldValue(fieldDef) {
+    const value = this.getFieldValue(fieldDef);
+    return this.isDefinedValue(value);
+  }
+
+  renderText(value) {
+    value = String(value);
+    if (value.length > 30 || value.includes('\n')) {
+      return html`<span class="longtext">${value}</span>`;
+    }
+    return html`<span class="text">${value}</span>`;
+  }
+
+  renderUrl(value) {
+    if (value.startsWith('http')) {
+      return html`
+        <a href=${value} target="_blank" class="url"
+           >${value}</a>
+      `;
+    }
+    return this.renderText(value);
+  }
+
+  renderValue(fieldType, value) {
+    if (fieldType == 'bool') {
+      return this.renderText(value ? 'True' : 'False');
+    } else if (fieldType == 'url') {
+      return this.renderUrl(value);
+    } else if (fieldType == 'urllist') {
+      return html`
+        <ul class='inline-list'>
+          ${value.map(url => html`<li>${this.renderUrl(url)}</li>`)}
+        </ul>
+      `;
+    }
+    return this.renderText(value);
   }
 
   renderField(fieldDef) {
     const fieldId = fieldDef[0];
     const fieldDisplayName = fieldDef[1];
-    // const fieldType = fieldDef[2];
-    const value = this.feature[fieldId];
-    if (value) {
+    const fieldType = fieldDef[2];
+    const value = this.getFieldValue(fieldDef);
+    if (this.isDefinedValue(value)) {
       return html`
-     <div style="padding: 16px;">
+     <div class="value-item">
        <label id=${fieldId}>${fieldDisplayName}</label>
-       <span>${value}</span>
+       ${this.renderValue(fieldType, value)}
      <div>
     `;
     } else {
@@ -124,16 +196,22 @@ class ChromedashFeatureDetail extends LitElement {
 
   renderStage(stage) {
     let fields = this.fieldDefs[stage.outgoing_stage];
+    if (fields === undefined || fields.length == 0) {
+      return nothing;
+    }
+    let valuesPart = html`<p>No relevant fields have been filled in.</p>`;
+    if (fields.some(fieldDef => this.hasFieldValue(fieldDef))) {
+      valuesPart = fields.map(fieldDef => this.renderField(fieldDef));
+    }
     return html`
-     <section class="card">
-      <h3>${stage.name}</h3>
-      ${fields.map(fieldDef => this.renderField(fieldDef))}
-     </section>
+      <section class="card">
+       <h3>${stage.name}</h3>
+       ${valuesPart}
+      </section>
     `;
   }
 
   render() {
-    // let featureId = this.feature.id;
     return html`
        ${this.process.stages.map(stage => html`
             ${this.renderStage(stage)}

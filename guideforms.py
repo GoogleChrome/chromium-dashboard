@@ -823,19 +823,33 @@ Flat_Ship = define_form_class_using_shared_fields(
      'shipped_ios_milestone', 'shipped_webview_milestone'))
 
 
+FIELD_NAME_TO_DISPLAY_TYPE = {
+    'doc_links': 'urllist',
+    'explainer_links': 'urllist',
+    'sample_links': 'urllist',
+    # Otherwise, FIELD_TYPE_TO_DISPLAY_TYPE is used.
+    }
+
 FIELD_TYPE_TO_DISPLAY_TYPE = {
     forms.BooleanField: 'bool',
     forms.URLField: 'url',
     # choice, char, int can all render as plain text.
     }
 
+
+def make_human_readable(field_name):
+  return field_name.replace('_', ' ').capitalize()
+
+
 def make_display_spec(field_name):
   """@@@"""
   form_field = ALL_FIELDS[field_name]
-  display_name = form_field.label
-  logging.info('display_name is %r', display_name)
-  field_type = FIELD_TYPE_TO_DISPLAY_TYPE.get(type(form_field), 'text')
-  return (field_name, display_name, field_type);
+  display_name = form_field.label or make_human_readable(field_name)
+  field_type = (FIELD_NAME_TO_DISPLAY_TYPE.get(field_name) or
+                FIELD_TYPE_TO_DISPLAY_TYPE.get(type(form_field)) or
+                'text')
+  logging.info('display_name is %r, type is %r', display_name, field_type)
+  return (field_name, display_name, field_type)
 
 
 def make_display_specs(*shared_field_names):
