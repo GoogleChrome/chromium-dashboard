@@ -42,6 +42,11 @@ class MockHandler(object):
 
 class CommonFunctionTests(unittest.TestCase):
 
+  def test_format_feature_url(self):
+    self.assertEqual(
+        '/feature/123',
+        common.format_feature_url(123))
+
   @mock.patch('time.sleep')  # Run test full speed.
   def testRetryDecorator_ExceedFailures(self, mock_sleep):
     class Tracker(object):

@@ -109,11 +109,6 @@ FLAT_FORMS = [
 ]
 
 
-def format_feature_url(feature_id):
-  """Return the feature detail page URL for the specified feature."""
-  return '/feature/%d' % feature_id
-
-
 class FeatureNew(common.ContentHandler):
 
   def get(self, path):
@@ -186,7 +181,7 @@ class ProcessOverview(common.ContentHandler):
     user = users.get_current_user()
     if user is None:
       # Redirect to public URL for unauthenticated users.
-      return self.redirect(format_feature_url(feature_id))
+      return self.redirect(common.format_feature_url(feature_id))
 
     if not self.user_can_edit(user):
       common.handle_401(self.request, self.response, Exception)
@@ -261,7 +256,7 @@ class FeatureEditStage(common.ContentHandler):
     user = users.get_current_user()
     if user is None:
       # Redirect to public URL for unauthenticated users.
-      return self.redirect(format_feature_url(feature_id))
+      return self.redirect(common.format_feature_url(feature_id))
 
     if not self.user_can_edit(user):
       common.handle_401(self.request, self.response, Exception)
@@ -551,7 +546,7 @@ class FeatureEditAllFields(FeatureEditStage):
     user = users.get_current_user()
     if user is None:
       # Redirect to public URL for unauthenticated users.
-      return self.redirect(format_feature_url(feature_id))
+      return self.redirect(common.format_feature_url(feature_id))
 
     if not self.user_can_edit(user):
       common.handle_401(self.request, self.response, Exception)

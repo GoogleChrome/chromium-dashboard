@@ -40,51 +40,12 @@ class ChromedashFeatureDetail extends LitElement {
         background: var(--card-background);
         border: var(--card-border);
         box-shadow:  var(--card-box-shadow);
-        max-width: 760px;
+        max-width: var(--max-content-width);
         margin-top: 1em;
         padding: 16px;
       }
       .card h3 {
         margin-top: 4px;
-      }
-
-      table {
-        border-spacing: 0;
-        width: 100%;
-      }
-
-      th {
-        text-align: left;
-        padding: var(--content-padding-half);
-        background: var(--table-header-background);
-      }
-
-      td {
-        padding: var(--content-padding-half) var(--content-padding) var(--content-padding) var(--content-padding-half);
-        vertical-align: top;
-        border-bottom: var(--table-divider);
-        background: var(--table-row-background);
-      }
-
-      tr.active td {
-        background: var(--light-accent-color);
-      }
-
-      td div.done:before {
-        content: "\\2713";
-        position: absolute;
-        left: 0;
-      }
-
-      td div.pending:before {
-        content: "\\25cb";
-        position: absolute;
-        left: 0;
-      }
-
-      td div.done, td div.pending {
-        position: relative;
-        padding-left: 1.2em;
       }
 
       ol {
@@ -111,7 +72,7 @@ class ChromedashFeatureDetail extends LitElement {
       }
 
       .value-item {
-        padding: var(--content-padding);
+        padding: var(--content-padding-half);
       }
       .value-item:nth-of-type(odd) {
         background: var(--table-alternate-background);
@@ -195,7 +156,15 @@ class ChromedashFeatureDetail extends LitElement {
   }
 
   renderStage(stage) {
-    let fields = this.fieldDefs[stage.outgoing_stage];
+    let fields = [];
+    let stageName = undefined;
+    if (typeof stage == 'string') {
+      fields = this.fieldDefs[stage];
+      stageName = stage;
+    } else {
+      fields = this.fieldDefs[stage.outgoing_stage];
+      stageName = stage.name;
+    }
     if (fields === undefined || fields.length == 0) {
       return nothing;
     }
@@ -205,7 +174,7 @@ class ChromedashFeatureDetail extends LitElement {
     }
     return html`
       <section class="card">
-       <h3>${stage.name}</h3>
+       <h3>${stageName}</h3>
        ${valuesPart}
       </section>
     `;
@@ -216,6 +185,7 @@ class ChromedashFeatureDetail extends LitElement {
        ${this.process.stages.map(stage => html`
             ${this.renderStage(stage)}
        `)}
+       ${this.renderStage('Misc')}
     `;
   }
 }

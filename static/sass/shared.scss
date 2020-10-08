@@ -92,3 +92,13 @@ iron-icon {
 .preformatted {
   white-space: pre-wrap;
 }
+
+#updated {
+  padding-top: var(--content-padding);
+}
+
+#updated span {
+  color: var(--unimportant-text-color);
+  border-top: var(--default-border);
+  padding: var(--content-padding-quarter) var(--content-padding) 0 0;
+}

@@ -10,28 +10,66 @@
 {% endblock %}
 
 {% block css %}
-  <style>{% inline_file "/static/css/features/feature.css" %}</style>
+<link rel="stylesheet" href="/static/css/forms.css">
+<link rel="stylesheet" href="/static/css/guide.css">
 {% endblock %}
 
 {% block rss %}
   <link rel="alternate" type="application/rss+xml" href="https://www.chromestatus.com/features.xml" title="All features" />
 {% endblock %}
 
-{% block subheader %}
+{% block subheader %} 
 <div id="subheader" style="display:block">
+  <div style="float:right">
+  {% if user %}
+    <span class="tooltip" title="Receive an email notification when there are updates">
+      <a href="#" data-tooltip>
+        <iron-icon icon="chromestatus:star-border"
+                    onclick="subscribeToFeature({{ feature.id }})"
+                    class="pushicon"></iron-icon>
+      </a>
+    </span>
+  {% else %}
+    <span class="tooltip" title="Sign in to get email notifications for updates">
+      <a href="{{login.1}}" data-tooltip>
+        <iron-icon icon="chromestatus:star-border"
+                    class="pushicon"></iron-icon>
+      </a>
+    </span>
+  {% endif %}
+  <span class="tooltip" title="File a bug against this feature">
+    <a href="{{ feature.new_crbug_url }}" class="newbug" data-tooltip target="_blank">
+      <iron-icon icon="chromestatus:bug-report"></iron-icon>
+    </a>
+  </span>
+  <span class="tooltip no-web-share" title="Share this feature">
+    <a href="#" data-tooltip>
+      <iron-icon icon="chromestatus:share" onclick="shareFeature()"></iron-icon>
+    </a>
+  </span>
+  {% if user.can_edit %}
+    <span class="tooltip" title="Edit this feature">
+      <a href="/guide/edit/{{ feature.id }}" class="editfeature" data-tooltip>
+        <iron-icon icon="chromestatus:create"></iron-icon>
+      </a>
+    </span>
+  {% endif %}
+  </div>
+  
   <h2 id="breadcrumbs">
     <a href="/features/{{ feature_id }}">
       <iron-icon icon="chromestatus:arrow-back"></iron-icon>
       Feature: {{ feature.name }}
     </a>
   </h2>
+
 </div>
 {% endblock %}
 
 
 {% block content %}  
   <div id="feature">
-    {% include "guide/metadata.html" %}
+    {% include "guide/metadata.html" with offer_editing="no" %}
   </div>
 
   <chromedash-feature-detail

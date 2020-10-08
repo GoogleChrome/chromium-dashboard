@@ -80,16 +80,6 @@ iron-icon {
   font-style: italic;
 }
 
-#updated {
-  padding-top: var(--content-padding);
-}
-
-#updated span {
-  color: var(--unimportant-text-color);
-  border-top: var(--default-border);
-  padding: var(--content-padding-quarter) var(--content-padding) 0 0;
-}
-
 @media only screen and (max-width: 700px) {
   #feature {
     border-radius: 0 !important;

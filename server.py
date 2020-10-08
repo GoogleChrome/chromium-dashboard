@@ -39,21 +39,13 @@ def normalized_name(val):
 class FeatureDetailHandler(common.ContentHandler):
 
   def get(self, feature_id):
-    user = users.get_current_user()
-    if user is None:
-      # Redirect to public URL for unauthenticated users.
-      return self.redirect(format_feature_url(feature_id))
-
     f = models.Feature.get_by_id(long(feature_id))
     if f is None:
       self.abort(404)
 
     feature_process = processes.ALL_PROCESSES.get(
         f.feature_type, processes.BLINK_LAUNCH_PROCESS)
-    default_field_defs = guideforms.DISPLAY_FIELDS_IN_STAGES[
-        models.FEATURE_TYPE_INCUBATE_ID]
-    field_defs = guideforms.DISPLAY_FIELDS_IN_STAGES.get(
-        f.feature_type, default_field_defs)
+    field_defs = guideforms.DISPLAY_FIELDS_IN_STAGES
     template_data = {
         'process_json': json.dumps(processes.process_to_dict(feature_process)),
         'field_defs_json': json.dumps(field_defs),
