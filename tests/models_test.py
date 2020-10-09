@@ -22,6 +22,15 @@ from google.appengine.api import users
 import models
 
 
+class MockQuery(object):
+
+  def __init__(self, result_list):
+    self.result_list = result_list
+
+  def fetch(self, *args, **kw):
+    return self.result_list
+
+
 class ModelsFunctionsTest(unittest.TestCase):
 
   def test_convert_enum_int_to_string__not_an_enum(self):
@@ -80,6 +89,71 @@ class ModelsFunctionsTest(unittest.TestCase):
     self.assertEqual(
         [[1, 2], [3, 4], [5]],
         list(models.list_to_chunks([1, 2, 3, 4, 5], 2)))
+
+  def test_get_chunk_memcache_keys__empty(self):
+    """When there are no entities, we don't need any cache keys."""
+    query = MockQuery([])
+    self.assertEqual(
+        [],
+        models.get_chunk_memcache_keys(query, 'prefix'))
+
+  def test_get_chunk_memcache_keys__one(self):
+    """When getting < 300 entities, they fit in one memcache item."""
+    query = MockQuery(['a', 'b', 'c'])
+    self.assertEqual(
+        ['prefix|chunk0'],
+        models.get_chunk_memcache_keys(query, 'prefix'))
+
+  def test_get_chunk_memcache_keys__multiple(self):
+    """When getting > 300 entities, they will be split across multiple items."""
+    query = MockQuery(['a'] * 1000)
+    self.assertEqual(
+        ['prefix|chunk0', 'prefix|chunk1', 'prefix|chunk2', 'prefix|chunk3'],
+        models.get_chunk_memcache_keys(query, 'prefix'))
+
+  def test_set_chunk_memcache_keys__empty(self):
+    """When setting zero entities, we don't need any memcache items."""
+    entities = []
+    self.assertEqual(
+        {},
+        models.set_chunk_memcache_keys('prefix', entities))
+
+  def test_set_chunk_memcache_keys__one(self):
+    """When setting < 300 entities, they fit in one memcache item."""
+    entities = ['a', 'b', 'c']
+    self.assertEqual(
+        {'prefix|chunk0': entities},
+        models.set_chunk_memcache_keys('prefix', entities))
+
+  def test_set_chunk_memcache_keys__multiple(self):
+    """Setting > 300 entities: they will be split across multiple items."""
+    entities = ['a'] * 1000
+    self.assertEqual(
+        {'prefix|chunk0': ['a'] * 300,
+         'prefix|chunk1': ['a'] * 300,
+         'prefix|chunk2': ['a'] * 300,
+         'prefix|chunk3': ['a'] * 100,
+         },
+        models.set_chunk_memcache_keys('prefix', entities))
+
+  def test_combine_memcache_chunks__empty(self):
+    """Combining empty chunks gives an empty list."""
+    chunk_dict = {}
+    self.assertEqual(
+        [],
+        models.combine_memcache_chunks(chunk_dict))
+
+  def test_combine_memcache_chunks__some(self):
+    """Combining chunks with entities gives a unified list in order."""
+    chunk_dict = {
+      'prefix|chunk0': ['a', 'b'],
+      'prefix|chunk1': ['c'],
+      'prefix|chunk2': [],
+      'prefix|chunk3': ['d'],
+    }
+    self.assertEqual(
+        ['a', 'b', 'c', 'd'],
+        models.combine_memcache_chunks(chunk_dict))
 
 
 class FeatureTest(unittest.TestCase):
