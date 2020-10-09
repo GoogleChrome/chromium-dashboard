@@ -29,6 +29,17 @@ CACHE_AGE = 86400 # 24hrs
 
 class TimelineHandler(common.JSONHandler):
 
+  def make_query(self, bucket_id):
+    query = self.MODEL_CLASS.all()
+    query.filter('bucket_id =', bucket_id)
+    # The switch to new UMA data changed the semantics of the CSS animated
+    # properties. Since showing the historical data alongside the new data
+    # does not make sense, filter out everything before the 2017-10-26 switch.
+    # See https://github.com/GoogleChrome/chromium-dashboard/issues/414
+    if self.MODEL_CLASS == models.AnimatedProperty:
+      query.filter('date >=', datetime.datetime(2017, 10, 26))
+    return query
+
   def get(self):
     try:
       bucket_id = int(self.request.get('bucket_id'))
@@ -37,28 +48,26 @@ class TimelineHandler(common.JSONHandler):
 
     KEY = '%s|%s' % (self.MEMCACHE_KEY, bucket_id)
 
-    data = memcache.get(KEY)
-    if data is None:
-      query = self.MODEL_CLASS.all()
-      query.filter('bucket_id =', bucket_id)
-      # The switch to new UMA data changed the semantics of the CSS animated
-      # properties. Since showing the historical data alongside the new data
-      # does not make sense, filter out everything before the 2017-10-26 switch.
-      # See https://github.com/GoogleChrome/chromium-dashboard/issues/414
-      if self.MODEL_CLASS == models.AnimatedProperty:
-        query.filter('date >=', datetime.datetime(2017, 10, 26))
+    keys = models.get_chunk_memcache_keys(self.make_query(bucket_id), KEY)
+    chunk_dict = memcache.get_multi(keys)
+
+    if chunk_dict and len(chunk_dict) == len(keys):
+      datapoints = models.combine_memcache_chunks(chunk_dict)
+    else:
+      query = self.make_query(bucket_id)
       query.order('date')
-      data = query.fetch(None) # All matching results.
+      datapoints = query.fetch(None) # All matching results.
 
       # Remove outliers if percentage is not between 0-1.
-      #data = filter(lambda x: 0 <= x.day_percentage <= 1, data)
+      #datapoints = filter(lambda x: 0 <= x.day_percentage <= 1, datapoints)
 
-      memcache.set(KEY, data, time=CACHE_AGE)
+      chunk_dict = models.set_chunk_memcache_keys(KEY, datapoints)
+      memcache.set_multi(chunk_dict, time=CACHE_AGE)
 
-    data = self._clean_data(data)
+    datapoints = self._clean_data(datapoints)
     # Metrics json shouldn't be cached by intermediary caches because users
     # see different data when logged in. Set Cache-Control: private.
-    super(TimelineHandler, self).get(data, public=False)
+    super(TimelineHandler, self).get(datapoints, public=False)
 
 
 class PopularityTimelineHandler(TimelineHandler):
@@ -111,21 +120,18 @@ class FeatureHandler(common.JSONHandler):
     # Memcache doesn't support saving values > 1MB. Break up features into chunks
     # and save those to memcache.
     if self.MODEL_CLASS == models.FeatureObserver:
-      keys = self.PROPERTY_CLASS.get_property_chunk_memcache_keys(
-          self.PROPERTY_CLASS, self.MEMCACHE_KEY)
+      keys = models.get_chunk_memcache_keys(
+          self.PROPERTY_CLASS.all(), self.MEMCACHE_KEY)
       properties = memcache.get_multi(keys)
 
-      if len(properties.keys()) != len(properties) or not properties:
+      if len(properties.keys()) != len(keys) or not properties:
         properties = self.__query_metrics_for_properties()
 
         # Memcache doesn't support saving values > 1MB. Break up list into chunks.
-        chunk_keys = self.PROPERTY_CLASS.set_property_chunk_memcache_keys(self.MEMCACHE_KEY, properties)
+        chunk_keys = models.set_chunk_memcache_keys(self.MEMCACHE_KEY, properties)
         memcache.set_multi(chunk_keys, time=CACHE_AGE)
       else:
-        temp_list = []
-        for key in sorted(properties.keys()):
-          temp_list.extend(properties[key])
-        properties = temp_list
+        properties = models.combine_memcache_chunks(properties)
     else:
       properties = memcache.get(self.MEMCACHE_KEY)
       if properties is None:
