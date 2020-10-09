@@ -124,7 +124,11 @@ class FeatureHandler(common.JSONHandler):
           self.PROPERTY_CLASS.all(), self.MEMCACHE_KEY)
       properties = memcache.get_multi(keys)
 
-      if len(properties.keys()) != len(keys) or not properties:
+      # TODO(jrobbins): We are at risk of displaying a partial result if
+      # memcache loses some but not all chunks.  We can't estimate the number of
+      # expected cached items efficiently.  To counter that, we refresh
+      # every 30 minutes via a cron.
+      if not properties or self.request.get('refresh'):
         properties = self.__query_metrics_for_properties()
 
         # Memcache doesn't support saving values > 1MB. Break up list into chunks.
