@@ -475,23 +475,6 @@ class Feature(DictModel):
   """Container for a feature."""
 
   DEFAULT_MEMCACHE_KEY = '%s|features' % (settings.MEMCACHE_KEY_PREFIX)
-  MAX_CHUNK_SIZE = 300 # max num features to save for each memcache chunk.
-
-  @classmethod
-  def get_feature_chunk_memcache_keys(self, key_prefix):
-    num_features = len(Feature.all().fetch(limit=None, keys_only=True))
-    l = list_to_chunks(range(0, num_features), self.MAX_CHUNK_SIZE)
-    return ['%s|chunk%s' % (key_prefix, i) for i,val in enumerate(l)]
-
-  @classmethod
-  def set_feature_chunk_memcache_keys(self, key_prefix, feature_list):
-    chunks = list_to_chunks(feature_list, self.MAX_CHUNK_SIZE)
-    vals = []
-    for i, chunk in enumerate(chunks):
-      vals.append(('%s|chunk%s' % (key_prefix, i), chunk))
-    # d = OrderedDict(sorted(dict(vals).items(), key=lambda t: t[0]))
-    d = dict(vals)
-    return d
 
   @classmethod
   def _first_of_milestone(self, feature_list, milestone, start=0):
@@ -800,7 +783,7 @@ class Feature(DictModel):
     KEY = '%s|%s|%s|%s' % (Feature.DEFAULT_MEMCACHE_KEY,
                            'cronorder', limit, version)
 
-    keys = Feature.get_feature_chunk_memcache_keys(KEY)
+    keys = get_chunk_memcache_keys(Feature.all(), KEY)
     feature_list = memcache.get_multi(keys)
 
     # If we didn't get the expected number of chunks back (or a cache update
@@ -866,13 +849,10 @@ class Feature(DictModel):
 
       # Memcache doesn't support saving values > 1MB. Break up features list into
       # chunks so we don't hit the limit.
-      memcache.set_multi(Feature.set_feature_chunk_memcache_keys(KEY, feature_list))
+      memcache.set_multi(set_chunk_memcache_keys(KEY, feature_list))
     else:
-      temp_feature_list = []
       # Reconstruct feature list by ordering chunks.
-      for key in sorted(feature_list.keys()):
-        temp_feature_list.extend(feature_list[key])
-      feature_list = temp_feature_list
+      feature_list = combine_memcache_chunks(feature_list)
 
     allowed_feature_list = [
         f for f in feature_list
@@ -1667,28 +1647,41 @@ class FeatureOwner(DictModel):
     return self.remove_from_component_subscribers(component_name, remove_as_owner=True)
 
 
+# Max num entities to save for each memcache chunk.
+# We assume that this many entities total less than 1 MB.
+MEMCACHE_CHUNK_SIZE = 300
+
+def get_chunk_memcache_keys(entity_query, key_prefix):
+  """Run the query to count entities, then return a list of chunk keys."""
+  num_entities = len(entity_query.fetch(limit=None, keys_only=True))
+  l = list_to_chunks(range(0, num_entities), MEMCACHE_CHUNK_SIZE)
+  return ['%s|chunk%s' % (key_prefix, i) for i,val in enumerate(l)]
+
+
+def set_chunk_memcache_keys(key_prefix, entity_list):
+  """Cache the given entities in chunks smaller than memcache size limit."""
+  chunks = list_to_chunks(entity_list, MEMCACHE_CHUNK_SIZE)
+  vals = []
+  for i, chunk in enumerate(chunks):
+    vals.append(('%s|chunk%s' % (key_prefix, i), chunk))
+  d = dict(vals)
+  return d
+
+
+def combine_memcache_chunks(chunk_dict):
+  """Sort the memcache chunks by key and concatenate chunk contents."""
+  result_list = []
+  # Reconstruct entity list by ordering chunks.
+  for key in sorted(chunk_dict.keys()):
+    result_list.extend(chunk_dict[key])
+  return result_list
+
+
 class HistogramModel(db.Model):
   """Container for a histogram."""
 
   bucket_id = db.IntegerProperty(required=True)
   property_name = db.StringProperty(required=True)
-
-  MAX_CHUNK_SIZE = 500 # max num features to save for each memcache chunk.
-
-  @classmethod
-  def get_property_chunk_memcache_keys(self, property_class, key_prefix):
-    num_props = len(property_class.all().fetch(limit=None, keys_only=True))
-    l = list_to_chunks(range(0, num_props), self.MAX_CHUNK_SIZE)
-    return ['%s|chunk%s' % (key_prefix, i) for i,val in enumerate(l)]
-
-  @classmethod
-  def set_property_chunk_memcache_keys(self, key_prefix, pop_list):
-    chunks = list_to_chunks(pop_list, self.MAX_CHUNK_SIZE)
-    vals = []
-    for i, chunk in enumerate(chunks):
-      vals.append(('%s|chunk%s' % (key_prefix, i), chunk))
-    d = dict(vals)
-    return d
 
   @classmethod
   def get_all(self):
