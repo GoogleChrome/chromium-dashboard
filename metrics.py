@@ -18,6 +18,7 @@ __author__ = 'ericbidelman@chromium.org (Eric Bidelman)'
 import webapp2
 import datetime
 import json
+import logging
 from google.appengine.api import memcache
 
 import common
@@ -100,21 +101,39 @@ class FeatureObserverTimelineHandler(TimelineHandler):
 class FeatureHandler(common.JSONHandler):
 
   def __query_metrics_for_properties(self):
-    properties = []
+    datapoints = []
+
+    # First, grab a bunch of recent datapoints in a batch.
+    # That operation is fast and makes most of the iterations
+    # of the main loop become in-RAM operations.
+    batch_datapoints_query = self.MODEL_CLASS.all()
+    batch_datapoints_query.order('-date')
+    batch_datapoints_list = batch_datapoints_query.fetch(5000)
+    logging.info('batch query found %r recent datapoints',
+                 len(batch_datapoints_list))
+    batch_datapoints_dict = {}
+    for dp in batch_datapoints_list:
+      if dp.bucket_id not in batch_datapoints_dict:
+        batch_datapoints_dict[dp.bucket_id] = dp
+    logging.info('batch query found datapoints for %r buckets',
+                 len(batch_datapoints_dict))
 
     # For every css property, fetch latest day_percentage.
     buckets = self.PROPERTY_CLASS.all().fetch(None)
     for b in buckets:
-      query = self.MODEL_CLASS.all()
-      query.filter('bucket_id =', b.bucket_id)
-      query.order('-date')
-      last_result = query.get()
-      if last_result:
-        properties.append(last_result)
+      if b.bucket_id in batch_datapoints_dict:
+        datapoints.append(batch_datapoints_dict[b.bucket_id])
+      else:
+        query = self.MODEL_CLASS.all()
+        query.filter('bucket_id =', b.bucket_id)
+        query.order('-date')
+        last_result = query.get()
+        if last_result:
+          datapoints.append(last_result)
 
     # Sort list by percentage. Highest first.
-    properties.sort(key=lambda x: x.day_percentage, reverse=True)
-    return properties
+    datapoints.sort(key=lambda x: x.day_percentage, reverse=True)
+    return datapoints
 
   def get(self):
     # Memcache doesn't support saving values > 1MB. Break up features into chunks
@@ -122,13 +141,20 @@ class FeatureHandler(common.JSONHandler):
     if self.MODEL_CLASS == models.FeatureObserver:
       keys = models.get_chunk_memcache_keys(
           self.PROPERTY_CLASS.all(), self.MEMCACHE_KEY)
+      logging.info('looking for keys %r' % keys)
       properties = memcache.get_multi(keys)
+      logging.info('found chunk keys %r' % (properties and properties.keys()))
 
-      if len(properties.keys()) != len(keys) or not properties:
+      # TODO(jrobbins): We are at risk of displaying a partial result if
+      # memcache loses some but not all chunks.  We can't estimate the number of
+      # expected cached items efficiently.  To counter that, we refresh
+      # every 30 minutes via a cron.
+      if not properties or self.request.get('refresh'):
         properties = self.__query_metrics_for_properties()
 
         # Memcache doesn't support saving values > 1MB. Break up list into chunks.
         chunk_keys = models.set_chunk_memcache_keys(self.MEMCACHE_KEY, properties)
+        logging.info('about to store chunks keys %r' % chunk_keys.keys())
         memcache.set_multi(chunk_keys, time=CACHE_AGE)
       else:
         properties = models.combine_memcache_chunks(properties)

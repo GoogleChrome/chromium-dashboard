@@ -9,5 +9,5 @@ cron:
   url: /cron/update_blink_components
   schedule: every day 04:30
 - description: sort metrics and load into memcache without request time limits
-  url: /data/featurepopularity
+  url: /data/featurepopularity?refresh=1
   schedule: every 30 minutes synchronized
