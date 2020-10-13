@@ -1032,6 +1032,7 @@ class Feature(DictModel):
   # Standards details.
   standardization = db.IntegerProperty(required=True)
   spec_link = db.LinkProperty()
+  api_spec = db.BooleanProperty(default=False)
   security_review_status = db.IntegerProperty(default=REVIEW_PENDING)
   privacy_review_status = db.IntegerProperty(default=REVIEW_PENDING)
 
@@ -1259,6 +1260,11 @@ class FeatureForm(forms.Form):
       widget=forms.URLInput(attrs={'placeholder': 'https://'}),
       help_text="Link to spec, if and when available. Please update the chromestatus.com entry and the intent thread(s) with the spec link when available.")
 
+  api_spec = forms.BooleanField(
+      required=False, initial=False, label='API spec',
+      help_text=('The spec document has details in a specification language '
+                 'such as Web IDL, or there is an existing MDN page.'))
+
   security_review_status = forms.ChoiceField(
       required=False,
       choices=REVIEW_STATUS_CHOICES.items(),
@@ -1398,8 +1404,8 @@ class FeatureForm(forms.Form):
       help_text='Description of the desired DevTools debugging support for your feature. Consider emailing the <a href="https://groups.google.com/forum/?fromgroups#!forum/google-chrome-developer-tools">google-chrome-developer-tools</a> list for additional help. For new language features in V8 specifically, refer to the debugger support checklist. If your feature doesn\'t require changes to DevTools in order to provide a good debugging experience, feel free to leave this section empty.')
 
   all_platforms = forms.BooleanField(required=False, initial=False, label='Supported on all platforms?',
-      help_text='Will this feature be supported on all six Blink platforms (Windows, Mac, Linux, Chrome OS, Android, and Android WebView)?')
-
+      help_text='Will this feature be supported on all six Blink platforms (Windows, Mac, Linux, Chrome OS, Android, and Android WebView)?'
+)
   all_platforms_descr = forms.CharField(label='Platform Support Explanation', required=False,
       widget=forms.Textarea(attrs={'rows': 2, 'cols': 50, 'maxlength': 2000}),
       help_text='Explanation for why this feature is, or is not, supported on all platforms.')

@@ -32,6 +32,12 @@
   <br><br><h4>Specification</h4>
   {{feature.spec_link|urlize}}
 
+  {% if feature.api_spec %}
+    <br><br><h4>API spec</h4>
+    Yes
+  {% endif %}
+
+
   {% if feature.doc_links %}
     <br><br><h4>Design docs</h4>
     {% for link in feature.doc_links %}

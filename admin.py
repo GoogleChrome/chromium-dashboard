@@ -387,6 +387,7 @@ class FeatureHandler(common.ContentHandler):
       return
 
     spec_link = self.__FullQualifyLink('spec_link')
+    api_spec = self.request.get('api_spec') == 'on'
 
     explainer_links = self.request.get('explainer_links') or []
     if explainer_links:
@@ -520,6 +521,7 @@ class FeatureHandler(common.ContentHandler):
       feature.web_dev_views_notes = self.request.get('web_dev_views_notes')
       feature.prefixed = self.request.get('prefixed') == 'on'
       feature.spec_link = spec_link
+      feature.api_spec = api_spec
       feature.security_review_status = int(self.request.get(
           'security_review_status', models.REVIEW_PENDING))
       feature.privacy_review_status = int(self.request.get(
@@ -596,6 +598,7 @@ class FeatureHandler(common.ContentHandler):
           web_dev_views_notes=self.request.get('web_dev_views_notes'),
           prefixed=self.request.get('prefixed') == 'on',
           spec_link=spec_link,
+          api_spec=api_spec,
           security_review_status=int(self.request.get(
               'security_review_status', models.REVIEW_PENDING)),
           privacy_review_status=int(self.request.get(

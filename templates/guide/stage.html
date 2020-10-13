@@ -20,6 +20,12 @@
 {% block content %}
 <form name="feature_form" method="POST" action="{{current_path}}">
 
+  <input type="hidden" name="form_fields"
+         value="{{ feature_form.fields.keys | join:',' }},
+                {% if impl_status_form %}
+                   {{ impl_status_form.fields.keys | join:',' }}
+                 {% endif %}" >
+  
   <section class="stage_form">
     <table>
       {{ feature_form }}

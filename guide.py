@@ -225,10 +225,19 @@ class FeatureEditStage(common.ContentHandler):
     # to have been touched.  Later we will add javascript to populate a
     # hidden form field named "touched" that lists the names of all fields
     # actually touched by the user.
-    # For now, checkboxes are always considered "touched", otherwise there
-    # would be no way to uncheck.
-    if param_name in ('unlisted', 'all_platforms', 'wpt', 'prefixed'):
-      return True
+
+    # For now, checkboxes are always considered "touched", if they are
+    # present on the form.
+    # TODO(jrobbins): Simplify this after next deployment.
+    checkboxes = ('unlisted', 'all_platforms', 'wpt', 'prefixed', 'api_spec')
+    if param_name in checkboxes:
+      form_fields_str = self.request.get('form_fields')
+      if form_fields_str:
+        form_fields = [field_name.strip()
+                       for field_name in form_fields_str.split(',')]
+        return param_name in form_fields
+      else:
+        return True
     return param_name in self.request.POST
 
   def get_blink_component_from_bug(self, blink_components, bug_url):
@@ -319,6 +328,9 @@ class FeatureEditStage(common.ContentHandler):
 
     if self.touched('spec_link'):
       feature.spec_link = self.parse_link('spec_link')
+
+    if self.touched('api_spec'):
+      feature.api_spec = self.request.get('api_spec') == 'on'
 
     if self.touched('security_review_status'):
       feature.security_review_status = self.parse_int('security_review_status')
