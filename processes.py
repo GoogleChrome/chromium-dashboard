@@ -76,9 +76,10 @@ BLINK_PROCESS_STAGES = [
       'Start prototyping',
       'Share an explainer doc and API. '
       'Start prototyping code in a public repo.',
-      ['API design',
+      ['Spec link',
+       'Spec mentor',  # TODO(jrobbins): needs detector.
+       'Draft API spec',
        'Intent to Prototype email',
-       'Spec mentor',
       ],
       [('Draft Intent to Prototype email', INTENT_EMAIL_URL)],
       models.INTENT_INCUBATE, models.INTENT_IMPLEMENT),
@@ -93,7 +94,7 @@ BLINK_PROCESS_STAGES = [
        'Request signals',
        'Security review issues addressed',
        'Privacy review issues addressed',
-       'External reviews',
+       'External reviews',  # TODO(jrobbins): needs detector.
        'Ready for Trial email',
       ],
       [('Draft Ready for Trial email', INTENT_EMAIL_URL)],
@@ -105,7 +106,7 @@ BLINK_PROCESS_STAGES = [
       ['TAG review requested',
        'Vendor signals',
        'Doc links',
-       'Documentation signoff',
+       'Documentation signoff',  # TODO(jrobbins): needs detector.
        'Estimated target milestone',
       ],
       [],
@@ -115,9 +116,9 @@ BLINK_PROCESS_STAGES = [
       'Origin Trial',
       '(Optional) Set up and run an origin trial. '
       'Act on feedback from partners and web developers.',
-      ['OT request',
-       'OT available',
-       'OT results',
+      ['OT request',  # TODO(jrobbins): needs detector.
+       'OT available',  # TODO(jrobbins): needs detector.
+       'OT results',  # TODO(jrobbins): needs detector.
        'Intent to Experiment email',
        'One LGTM on Intent to Experiment',
       ],
@@ -142,8 +143,8 @@ BLINK_PROCESS_STAGES = [
       'Ship',
       'Update milestones and other information when the feature '
       'actually ships.',
-      ['Finalized vendor signals',
-       'Finalized target milestone',
+      ['Finalized vendor signals',  # TODO(jrobbins): needs detector.
+       'Finalized target milestone',  # TODO(jrobbins): needs detector.
       ],
       [],
       models.INTENT_SHIP, models.INTENT_SHIPPED),
@@ -162,7 +163,8 @@ BLINK_FAST_TRACK_STAGES = [
       'Identify feature',
       'Create an initial WebStatus feature entry to implement part '
       'of an existing specification or combinaton of specifications.',
-      ['Spec links',
+      ['Spec link',
+       'API spec',
       ],
       [],
       models.INTENT_NONE, models.INTENT_INCUBATE),
@@ -193,9 +195,9 @@ BLINK_FAST_TRACK_STAGES = [
       'Origin Trial',
       '(Optional) Set up and run an origin trial. '
       'Act on feedback from partners and web developers.',
-      ['OT request',
-       'OT available',
-       'OT results',
+      ['OT request',  # TODO(jrobbins): needs detector.
+       'OT available',  # TODO(jrobbins): needs detector.
+       'OT results',  # TODO(jrobbins): needs detector.
        'Intent to Experiment email',
        'One LGTM on Intent to Experiment',
       ],
@@ -206,8 +208,8 @@ BLINK_FAST_TRACK_STAGES = [
       'Prepare to ship',
       'Lock in shipping milestone. Finalize docs and announcements. '
       'Further standardization.',
-      ['Documentation signoff',
-       'Updated target milestone',
+      ['Documentation signoff',  # TODO(jrobbins): needs detector.
+       'Updated target milestone',  # TODO(jrobbins): needs detector.
        'Intent to Ship email',
        'Three LGTMs on Intent to Ship',
       ],
@@ -218,8 +220,8 @@ BLINK_FAST_TRACK_STAGES = [
       'Ship',
       'Update milestones and other information when the feature '
       'actually ships.',
-      ['Finalized vendor signals',
-       'Finalized target milestone',
+      ['Finalized vendor signals',  # TODO(jrobbins): needs detector.
+       'Finalized target milestone',  # TODO(jrobbins): needs detector.
       ],
       [],
       models.INTENT_SHIP, models.INTENT_SHIPPED),
@@ -276,8 +278,8 @@ PSA_ONLY_STAGES = [
       'Ship',
       'Update milestones and other information when the feature '
       'actually ships.',
-      ['Finalized vendor signals',
-       'Finalized target milestone',
+      ['Finalized vendor signals',  # TODO(jrobbins): needs detector.
+       'Finalized target milestone',  # TODO(jrobbins): needs detector.
       ],
       [],
       models.INTENT_SHIP, models.INTENT_SHIPPED),
@@ -296,7 +298,7 @@ DEPRECATION_STAGES = [
       'Create an initial WebStatus feature entry to deprecate '
       'an existing feature, including motivation and impact. '
       'Then, move existing Chromium code under a flag.',
-      ['Link to existing feature',
+      ['Link to existing feature',  # TODO(jrobbins): needs detector.
        'Motivation',
        'Code in Chromium',
       ],
@@ -317,9 +319,9 @@ DEPRECATION_STAGES = [
   ProcessStage(
       'Prepare for Deprecation Trial',
       '(Optional) Set up and run a deprecation trial. ',
-      ['DT request',
-       'DT available',
-       'Removal of DT',
+      ['DT request',  # TODO(jrobbins): needs detector.
+       'DT available',  # TODO(jrobbins): needs detector.
+       'Removal of DT',  # TODO(jrobbins): needs detector.
        'Request for Deprecation Trial email',
        'One LGTM on Request for Deprecation Trial',
       ],
@@ -331,7 +333,7 @@ DEPRECATION_STAGES = [
       'Prepare to ship',
       'Lock in shipping milestone. '
       'Finalize docs and announcements before disabling feature by default.',
-      ['Updated target milestone',
+      ['Updated target milestone',  # TODO(jrobbins): needs detector.
        'Intent to Ship email',
        'Three LGTMs on Intent to Ship',
       ],
@@ -433,6 +435,15 @@ PROGRESS_DETECTORS = {
 
     'Doc links':
     lambda f: f.doc_links and f.doc_links[0],
+
+    'Spec link':
+    lambda f: f.spec_link,
+
+    'Draft API spec':
+    lambda f: f.api_spec,
+
+    'API spec':
+    lambda f: f.api_spec,
 
     'TAG review requested':
     lambda f: f.tag_review,

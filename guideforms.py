@@ -145,6 +145,11 @@ ALL_FIELDS = {
                    'chromestatus.com entry and the intent thread(s) with the '
                    'spec link when available.')),
 
+    'api_spec': forms.BooleanField(
+        required=False, initial=False, label='API spec',
+        help_text=('The spec document has details in a specification language '
+                   'such as Web IDL, or there is an exsting MDN page.')),
+
     'explainer_links': forms.CharField(
         label='Explainer link(s)', required=False,
         widget=forms.Textarea(
@@ -609,7 +614,7 @@ NewFeature_Incubate = define_form_class_using_shared_fields(
 
 NewFeature_Prototype = define_form_class_using_shared_fields(
     'NewFeature_Prototype',
-    ('spec_link',
+    ('spec_link', 'api_spec',
      'intent_to_implement_url', 'comments'))
   # TODO(jrobbins): advise user to request a tag review
 
@@ -695,7 +700,7 @@ Any_Ship = define_form_class_using_shared_fields(
 Any_Identify = define_form_class_using_shared_fields(
     'Any_Identify',
     ('owner', 'blink_components', 'motivation', 'explainer_links',
-     'bug_url', 'launch_bug_url', 'comments'))
+     'spec_link', 'api_spec', 'bug_url', 'launch_bug_url', 'comments'))
 
 
 Any_Implement = define_form_class_using_shared_fields(
@@ -766,7 +771,7 @@ Flat_Identify = define_form_class_using_shared_fields(
 Flat_Implement = define_form_class_using_shared_fields(
     'Flat_Implement',
     (# Standardization
-     'spec_link', 'intent_to_implement_url'))
+     'spec_link', 'api_spec', 'intent_to_implement_url'))
 
 
 Flat_DevTrial = define_form_class_using_shared_fields(
