@@ -23,14 +23,12 @@ from google.appengine.api import users
 import models
 import processes
 
-
 SHIPPED_HELP_TXT = (
     'First milestone to ship with this status. Applies to: Enabled by '
     'default, Behind a flag, Origin trial, Browser Intervention, and '
     'Deprecated. If the flag is \'test\' rather than \'experimental\' set '
     'status to In development. If the flag is for an origin trial set status '
     'to Origin trial.')
-
 
 # We define all form fields here so that they can be include in one or more
 # stage-specific fields without repeating the details and help text.
@@ -53,14 +51,12 @@ ALL_FIELDS = {
 
     'summary': forms.CharField(
         required=True,
-        widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 500}),
+        widget=forms.Textarea(
+            attrs={'cols': 50, 'maxlength': 500, 'placeholder': models.FeatureForm.SUMMARY_PLACEHOLDER_TXT}),
         help_text=
-        ('Provide a one sentence description followed by one or '
-         'two lines explaining how this feature helps web '
-         'developers. '
-         '<a target="_blank" href="'
+        ('<a target="_blank" href="'
          'https://github.com/GoogleChrome/chromium-dashboard/wiki/'
-         'EditingHelp#summary-example">Example</a>.'
+         'EditingHelp#summary-example">Guidelines and example</a>.'
         )),
 
     'owner': forms.EmailField(
