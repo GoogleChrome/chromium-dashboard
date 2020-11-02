@@ -10,8 +10,9 @@
 {% endblock %}
 
 {% block css %}
-<link rel="stylesheet" href="/static/css/forms.css">
-<link rel="stylesheet" href="/static/css/guide.css">
+    <style>{% inline_file "/static/css/features/feature.css" %}</style>
+    <link rel="stylesheet" href="/static/css/forms.css">
+    <link rel="stylesheet" href="/static/css/guide.css">
 {% endblock %}
 
 {% block rss %}
@@ -61,15 +62,182 @@
       <iron-icon icon="chromestatus:arrow-back"></iron-icon>
       Feature: {{ feature.name }}
     </a>
+        {% if feature.impl_status_chrome == "No longer pursuing" %} (No longer pursuing){% endif %}
+        {% if feature.impl_status_chrome == "Deprecated" %} (deprecated){% endif %}
+        {% if feature.impl_status_chrome == "Removed" %} (removed){% endif %}
   </h2>
 
 </div>
 {% endblock %}
 
 
-{% block content %}  
+{% block content %}
   <div id="feature">
-    {% include "guide/metadata.html" with offer_editing="no" %}
+    {% if feature.unlisted %}
+    <section id="access">
+      <p><b>This feature is only shown in the feature list to users with
+          edit access.</b></p>
+    </section>
+    {% endif %}
+
+    {% if feature.summary %}
+    <section id="summary">
+      <p class="preformatted">{{ feature.summary|urlize }}</p>
+    </section>
+    {% endif %}
+
+    {% if feature.motivation %}
+    <section id="motivation">
+      <h3>Motivation</h3>
+      <p class="preformatted">{{ feature.motivation|urlize }}</p>
+    </section>
+    {% endif %}
+
+    {% if feature.sample_links %}
+    <section id="demo">
+      <h3>{% if feature.sample_links|length == 1 %}Demo{% else %}Demos{% endif %}</h3>
+      <ul>
+        {% for sample_link in feature.sample_links %}
+        <li><a href="{{ sample_link }}">{{ sample_link }}</a></li>
+        {% endfor %}
+      </ul>
+    </section>
+    {% endif %}
+
+    {% if feature.doc_links %}
+    <section id="documentation">
+      <h3>Documentation</h3>
+      <ul>
+        {% for doc_link in feature.doc_links %}
+        <li><a href="{{ doc_link }}">{{ doc_link }}</a></li>
+        {% endfor %}
+      </ul>
+    </section>
+    {% endif %}
+
+    {% if feature.spec_link %}
+    <section id="specification">
+      <h3>Specification</h3>
+      <p><a href="{{feature.spec_link}}" target="_blank">{{feature.standardization.text}}</a></p>
+    </section>
+    {% endif %}
+
+    <section id="status">
+      <h3>Status in Chromium</h3>
+      {% if feature.blink_components %}
+        <p>
+          <label>Blink components:</label>
+          {% for c in feature.blink_components %}
+            <a href="https://bugs.chromium.org/p/chromium/issues/list?q=component:{{c}}" target="_blank">{{c}}</a>
+          {% endfor %}
+        </p>
+      {% endif %}
+      <br>
+      <p>
+        <b>{{ feature.impl_status_chrome }}</b>
+        {% if feature.bug_url %}
+          (<a href="{{feature.bug_url}}" target="_blank">tracking bug</a>)
+        {% endif %}
+        {% if feature.shipped_milestone or feature.shipped_android_milestone or feature.shipped_ios_milestone or feature.shipped_webview_milestone %}
+          in:
+          <ul>
+          {% if feature.shipped_milestone %}
+          <li>Chrome for desktop release {{ feature.meta.milestone_str }}</li>
+          {% endif %}
+          {% if feature.shipped_android_milestone %}
+          <li>Chrome for Android release {{ feature.shipped_android_milestone }}</li>
+          {% endif %}
+          {% if feature.shipped_ios_milestone %}
+          <li>Chrome for iOS release {{ feature.shipped_ios_milestone }}</li>
+          {% endif %}
+          {% if feature.shipped_webview_milestone %}
+          <li>Android WebView release {{ feature.shipped_webview_milestone }}</li>
+          {% endif %}
+          </ul>
+        {% endif %}
+      </p>
+    </section>
+
+    <section id="consensus">
+      <h3>Consensus &amp; Standardization</h3>
+      <div style="font-size:smaller;">After a feature ships in Chrome, the values listed here are not guaranteed to be up to date.</div>
+      <br>
+      <ul>
+        {% if feature.ff_views %}
+        <li>
+          <label>Firefox:</label>
+          {% if feature.ff_views_link %}
+          <a href="{{ feature.ff_views_link }}">{{ feature.ff_views.text }}</a>
+          {% else %}
+          {{ feature.ff_views.text }}
+          {% endif %}
+        </li>
+        {% endif %}
+
+        {% if feature.ie_views %}
+        <li>
+          <label>Edge:</label>
+          {% if feature.ie_views_link %}
+          <a href="{{ feature.ie_views_link }}">{{ feature.ie_views.text }}</a>
+          {% else %}
+          {{ feature.ie_views.text }}
+          {% endif %}
+        </li>
+        {% endif %}
+
+        {% if feature.safari_views %}
+        <li>
+          <label>Safari:</label>
+          {% if feature.safari_views_link %}
+          <a href="{{ feature.safari_views_link }}">{{ feature.safari_views.text }}</a>
+          {% else %}
+          {{ feature.safari_views.text }}
+          {% endif %}
+        </li>
+        {% endif %}
+
+        <li><label>Web Developers:</label> {{ feature.web_dev_views.text }}</li>
+      </ul>
+    </section>
+
+    {% if feature.owner %}
+    <section id="owner">
+      <h3>{% if feature.owner|length == 1 %}Owner{% else %}Owners{% endif %}</h3>
+      <ul>
+        {% for owner in feature.owner %}
+          <li><a href="mailto:{{ owner }}">{{ owner }}</a></li>
+        {% endfor %}
+      </ul>
+    </section>
+    {% endif %}
+
+    {% if feature.intent_to_implement_url %}
+    <section id="intent_to_implement_url">
+      <h3>Intent to Prototype url</h3>
+      <a href="{{ feature.intent_to_implement_url }}">Intent to Prototype thread</a>
+      </ul>
+    </section>
+    {% endif %}
+
+    {% if feature.comments %}
+    <section id="comments">
+      <h3>Comments</h3>
+      <p class="preformatted">{{ feature.comments|urlize }}</p>
+    </section>
+    {% endif %}
+
+    {% if feature.search_tags %}
+    <section>
+      <h3>Search tags</h3>
+        {% for tag in feature.search_tags %}
+          <a href="/features#tags:{{ tag }}">{{ tag }}</a><span
+            class="conditional-comma">, </span>
+        {% endfor %}
+    </section>
+    {% endif %}
+    <section id="updated">
+      <p><span>Last updated on {{ updated_display }}</span></p>
+    </section>
   </div>
 
   <chromedash-feature-detail
@@ -78,10 +246,6 @@
     fielddefs='{{ field_defs_json }}'
     dismissedcues='{{ user.dismissed_cues }}'>
   </chromedash-feature-detail>
-
-  <section id="updated">
-    <p><span>Last updated on {{ updated_display }}</span></p>
-  </section>
 {% endblock %}
 
 {% block js %}
