@@ -843,18 +843,17 @@ def make_human_readable(field_name):
 
 
 def make_display_spec(field_name):
-  """@@@"""
+  """Return a tuple of field info that can easily be sent in JSON."""
   form_field = ALL_FIELDS[field_name]
   display_name = form_field.label or make_human_readable(field_name)
   field_type = (FIELD_NAME_TO_DISPLAY_TYPE.get(field_name) or
                 FIELD_TYPE_TO_DISPLAY_TYPE.get(type(form_field)) or
                 'text')
-  logging.info('display_name is %r, type is %r', display_name, field_type)
   return (field_name, display_name, field_type)
 
 
 def make_display_specs(*shared_field_names):
-  """@@@"""
+  """Return a list of field specs for each of the fields named in the args."""
   return [make_display_spec(field_name)
           for field_name in shared_field_names]
 
