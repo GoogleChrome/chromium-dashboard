@@ -865,7 +865,7 @@ DISPLAY_FIELDS_IN_STAGES = {
     models.INTENT_INCUBATE: make_display_specs(
         'motivation', 'initial_public_proposal_url', 'explainer_links'),
     models.INTENT_IMPLEMENT: make_display_specs(
-        'spec_link', 'intent_to_implement_url'),
+        'spec_link', 'api_spec', 'intent_to_implement_url'),
     models.INTENT_EXPERIMENT: make_display_specs(
         'doc_links',
         'interop_compat_risks',
