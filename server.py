@@ -22,7 +22,9 @@ import webapp2
 
 import settings
 import common
+import guideforms
 import models
+import processes
 import util
 
 from google.appengine.api import users
@@ -32,6 +34,29 @@ import http2push.http2push as http2push
 
 def normalized_name(val):
   return val.lower().replace(' ', '').replace('/', '')
+
+
+class FeatureDetailHandler(common.ContentHandler):
+
+  def get(self, feature_id):
+    f = models.Feature.get_by_id(long(feature_id))
+    if f is None:
+      self.abort(404)
+
+    feature_process = processes.ALL_PROCESSES.get(
+        f.feature_type, processes.BLINK_LAUNCH_PROCESS)
+    field_defs = guideforms.DISPLAY_FIELDS_IN_STAGES
+    template_data = {
+        'process_json': json.dumps(processes.process_to_dict(feature_process)),
+        'field_defs_json': json.dumps(field_defs),
+        'feature': f.format_for_template(),
+        'feature_id': f.key().id,
+        'feature_json': json.dumps(f.format_for_template()),
+        'updated_display': f.updated.strftime("%Y-%m-%d"),
+    }
+
+    self._add_common_template_values(template_data)
+    self.render(data=template_data, template_path='feature.html')
 
 
 class MainHandler(http2push.PushHandler, common.ContentHandler, common.JSONHandler):
@@ -200,6 +225,7 @@ class SamplesHandler(common.ContentHandler, common.JSONHandler):
 routes = [
   (r'/features(?:_v(\d+))?.json', FeaturesAPIHandler),
   ('/samples(.*)', SamplesHandler),
+  ('/feature/([0-9]*)', FeatureDetailHandler),
   ('/(.*)/([0-9]*)', MainHandler),
   ('/(.*)', MainHandler),
 ]

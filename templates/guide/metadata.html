@@ -1,17 +1,25 @@
-<section id="metadata">
+<section id="metadata"
+         {% if offer_editing == "no" %}
+           style="max-width: var(--max-content-width)"
+         {% endif %}
+         >
 
   <div id="metadata-readonly">
     <div style="margin-bottom: 1em">
-        <div id="metadata-buttons" style="float: right">
-          <a id="open-metadata">Edit</a>
-          {% if user.is_admin %}
-            <div><a id="delete-feature"
-                    data-id="{{ feature_id }}"
-                    class="delete-button"
-                    >Delete</a></div>
-          {% endif %}
-        </div>
-        <div style="width:60em">{{ feature.summary | urlize }}</div>
+        {% if offer_editing == "yes" %}
+          <div id="metadata-buttons" style="float: right">
+            <a id="open-metadata">Edit</a>
+            {% if user.is_admin %}
+              <div><a id="delete-feature"
+                      data-id="{{ feature_id }}"
+                      class="delete-button"
+                      >Delete</a></div>
+            {% endif %}
+          </div>
+        {% endif %}
+          <div 
+               {% if offer_editing == "no" %} class="preformatted" {% endif %}
+               >{{ feature.summary | urlize }}</div>
     </div>
 
     {% if feature.unlisted %}
@@ -97,22 +105,25 @@
 
   </div>
 
-  <div id="metadata-editing" style="display:none">
-    <form name="overview_form" method="POST" action="/guide/stage/{{ feature_id }}/0">
-      <input type="hidden" name="form_fields"
-             value="{{ overview_form.fields.keys | join:',' }}" >
+  {% if offer_editing == "yes" %}
+    <div id="metadata-editing" style="display:none">
+      <form name="overview_form" method="POST" action="/guide/stage/{{ feature_id }}/0">
+        <input type="hidden" name="form_fields"
+               value="{{ overview_form.fields.keys | join:',' }}" >
 
-      <table>
-        {{ overview_form }}
+        <table>
+          {{ overview_form }}
 
-        <tr>
-          <th></th>
-          <td>
-            <input class="button" type="submit" value="Submit">
-            <button id="close-metadata" type="reset">Cancel</button>
-          </td>
-        </tr>
-      </table>
-    </form>
-  </div>
+          <tr>
+            <th></th>
+            <td>
+              <input class="button" type="submit" value="Submit">
+              <button id="close-metadata" type="reset">Cancel</button>
+            </td>
+          </tr>
+        </table>
+      </form>
+    </div>
+  {% endif %}
+
 </section>

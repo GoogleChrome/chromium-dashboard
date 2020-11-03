@@ -40,6 +40,11 @@ import django
 django.setup()
 
 
+def format_feature_url(feature_id):
+  """Return the feature detail page URL for the specified feature."""
+  return '/feature/%d' % feature_id
+
+
 def retry(tries, delay=1, backoff=2):
   """A retry decorator with exponential backoff.
 

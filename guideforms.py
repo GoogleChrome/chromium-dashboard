@@ -16,6 +16,7 @@ from __future__ import print_function
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import logging
 from django import forms
 
 from google.appengine.api import users
@@ -565,6 +566,17 @@ ALL_FIELDS = {
 
     }
 
+# These are shown in a top card for all processes.
+METADATA_FIELDS = [
+     'name', 'summary', 'unlisted', 'owner',
+     'category',
+     'feature_type', 'intent_stage',
+     'search_tags',
+     # Implementtion
+     'impl_status_chrome',
+     'blink_components',
+     'bug_url', 'launch_bug_url',
+]
 
 def define_form_class_using_shared_fields(class_name, field_spec_list):
   """Define a new subsblass of forms.Form with the given fields, in order."""
@@ -589,17 +601,7 @@ NewFeatureForm = define_form_class_using_shared_fields(
 
 
 MetadataForm = define_form_class_using_shared_fields(
-    'MetadataForm',
-    ('name', 'summary', 'unlisted', 'owner',
-     'category',
-     'feature_type', 'intent_stage',
-     'search_tags',
-
-     'impl_status_chrome',
-     'blink_components',
-     'bug_url', 'launch_bug_url',
-    ))
-
+    'MetadataForm', METADATA_FIELDS)
 
 
 NewFeature_Incubate = define_form_class_using_shared_fields(
@@ -820,3 +822,80 @@ Flat_Ship = define_form_class_using_shared_fields(
     (# Implementation
      'shipped_milestone', 'shipped_android_milestone',
      'shipped_ios_milestone', 'shipped_webview_milestone'))
+
+
+FIELD_NAME_TO_DISPLAY_TYPE = {
+    'doc_links': 'urllist',
+    'explainer_links': 'urllist',
+    'sample_links': 'urllist',
+    # Otherwise, FIELD_TYPE_TO_DISPLAY_TYPE is used.
+    }
+
+FIELD_TYPE_TO_DISPLAY_TYPE = {
+    forms.BooleanField: 'bool',
+    forms.URLField: 'url',
+    # choice, char, int can all render as plain text.
+    }
+
+
+def make_human_readable(field_name):
+  return field_name.replace('_', ' ').capitalize()
+
+
+def make_display_spec(field_name):
+  """Return a tuple of field info that can easily be sent in JSON."""
+  form_field = ALL_FIELDS[field_name]
+  display_name = form_field.label or make_human_readable(field_name)
+  field_type = (FIELD_NAME_TO_DISPLAY_TYPE.get(field_name) or
+                FIELD_TYPE_TO_DISPLAY_TYPE.get(type(form_field)) or
+                'text')
+  return (field_name, display_name, field_type)
+
+
+def make_display_specs(*shared_field_names):
+  """Return a list of field specs for each of the fields named in the args."""
+  return [make_display_spec(field_name)
+          for field_name in shared_field_names]
+
+
+DEPRECATED_FIELDS = ['standardization']
+
+DISPLAY_FIELDS_IN_STAGES = {
+    models.INTENT_INCUBATE: make_display_specs(
+        'motivation', 'initial_public_proposal_url', 'explainer_links'),
+    models.INTENT_IMPLEMENT: make_display_specs(
+        'spec_link', 'api_spec', 'intent_to_implement_url'),
+    models.INTENT_EXPERIMENT: make_display_specs(
+        'doc_links',
+        'interop_compat_risks',
+        'safari_views', 'safari_views_link', 'safari_views_notes',
+        'ff_views', 'ff_views_link', 'ff_views_notes',
+        'ie_views', 'ie_views_link', 'ie_views_notes',
+        'web_dev_views', 'web_dev_views_link', 'web_dev_views_notes',
+        'security_review_status', 'privacy_review_status',
+        'ergonomics_risks', 'activation_risks', 'security_risks',
+        'debuggability',
+        'all_platforms', 'all_platforms_descr', 'wpt', 'wpt_descr',
+        'sample_links', 'devrel', 'ready_for_trial_url',
+        'flag_name'),
+    models.INTENT_IMPLEMENT_SHIP: make_display_specs(
+        'tag_review', 'tag_review_status',
+        'measurement', 'prefixed'),
+    models.INTENT_EXTEND_TRIAL: make_display_specs(
+        'experiment_goals', 'experiment_risks',
+        'experiment_extension_reason', 'ongoing_constraints',
+        'origin_trial_feedback_url', 'intent_to_experiment_url',
+        'i2e_lgtms', 'r4dt_lgtms',
+        'experiment_timeline',  # Deprecated
+        'ot_milestone_desktop_start', 'ot_milestone_desktop_end',
+        'ot_milestone_android_start', 'ot_milestone_android_end',
+        ),
+    models.INTENT_SHIP: make_display_specs(
+        'shipped_milestone', 'shipped_android_milestone',
+        'shipped_ios_milestone', 'shipped_webview_milestone',
+        'intent_to_ship_url', 'i2s_lgtms'),
+    models.INTENT_SHIPPED: make_display_specs(
+        ),
+    'Misc': make_display_specs(
+        'comments'),
+}

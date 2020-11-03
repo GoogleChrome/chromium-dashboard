@@ -24,14 +24,6 @@ import models
 import guide
 
 
-class HelperFunctionsTest(unittest.TestCase):
-
-  def test_format_feature_url(self):
-    self.assertEqual(
-        '/feature/123',
-        guide.format_feature_url(123))
-
-
 class FeatureNewTest(unittest.TestCase):
 
   def setUp(self):

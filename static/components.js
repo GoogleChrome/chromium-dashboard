@@ -15,6 +15,7 @@ import './elements/icons';
 import './elements/chromedash-callout';
 import './elements/chromedash-color-status';
 import './elements/chromedash-feature';
+import './elements/chromedash-feature-detail';
 import './elements/chromedash-featurelist';
 import './elements/chromedash-legend';
 import './elements/chromedash-metadata';
