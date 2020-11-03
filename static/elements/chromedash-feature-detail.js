@@ -33,7 +33,7 @@ class ChromedashFeatureDetail extends LitElement {
         contain: content;
         overflow: hidden;
         background: inherit;
-        madgin: 1em 0;
+        margin: 1em 0;
       }
 
       .card {
@@ -148,7 +148,7 @@ class ChromedashFeatureDetail extends LitElement {
      <div class="value-item">
        <label id=${fieldId}>${fieldDisplayName}</label>
        ${this.renderValue(fieldType, value)}
-     <div>
+     </div>
     `;
     } else {
       return nothing;
