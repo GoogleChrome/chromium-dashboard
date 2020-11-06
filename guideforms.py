@@ -572,7 +572,7 @@ METADATA_FIELDS = [
      'category',
      'feature_type', 'intent_stage',
      'search_tags',
-     # Implementtion
+     # Implemention
      'impl_status_chrome',
      'blink_components',
      'bug_url', 'launch_bug_url',
