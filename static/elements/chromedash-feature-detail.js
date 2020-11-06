@@ -33,7 +33,6 @@ class ChromedashFeatureDetail extends LitElement {
         contain: content;
         overflow: hidden;
         background: inherit;
-        margin: 1em 0;
       }
 
       .card {
