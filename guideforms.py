@@ -860,9 +860,24 @@ def make_display_specs(*shared_field_names):
 
 DEPRECATED_FIELDS = ['standardization']
 
+DISPLAY_IN_FEATURE_HIGHLIGHTS = [
+    'name', 'summary',
+    'motivation',
+    'unlisted', 'owner',
+    'search_tags',
+    # Implementtion
+    'impl_status_chrome',
+    'blink_components',
+    'bug_url',
+    'comments',
+]
+
 DISPLAY_FIELDS_IN_STAGES = {
+    'Metadata': make_display_specs(
+        'category', 'feature_type', 'intent_stage',
+        ),
     models.INTENT_INCUBATE: make_display_specs(
-        'motivation', 'initial_public_proposal_url', 'explainer_links'),
+        'initial_public_proposal_url', 'explainer_links'),
     models.INTENT_IMPLEMENT: make_display_specs(
         'spec_link', 'api_spec', 'intent_to_implement_url'),
     models.INTENT_EXPERIMENT: make_display_specs(
@@ -879,6 +894,7 @@ DISPLAY_FIELDS_IN_STAGES = {
         'sample_links', 'devrel', 'ready_for_trial_url',
         'flag_name'),
     models.INTENT_IMPLEMENT_SHIP: make_display_specs(
+        'launch_bug_url',
         'tag_review', 'tag_review_status',
         'measurement', 'prefixed'),
     models.INTENT_EXTEND_TRIAL: make_display_specs(
@@ -897,5 +913,5 @@ DISPLAY_FIELDS_IN_STAGES = {
     models.INTENT_SHIPPED: make_display_specs(
         ),
     'Misc': make_display_specs(
-        'comments'),
+        ),
 }

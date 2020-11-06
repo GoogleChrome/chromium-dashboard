@@ -81,6 +81,8 @@
   --card-border: var(--default-border);
   --shadow-color: var(--md-gray-100-alpha);
   --card-box-shadow: var(--shadow-color) 1px 1px 4px;
+  --spot-card-border: 1px solid var(--dark-spot-color);
+  --spot-card-box-shadow: none;
 
   --accordion-background: var(--md-gray-100-alpha);
   --accordion-color: var(--default-color);
