@@ -241,12 +241,14 @@
     </section>
   </div>
 
-  <chromedash-accordion title="Feature details by stage">
+  <chromedash-accordion
+    id="details"
+    title="Additional fields by process phase">
     <chromedash-feature-detail
       feature='{{ feature_json }}'
       process='{{ process_json }}'
       fielddefs='{{ field_defs_json }}'
-      dismissedcues='{{ user.dismissed_cues }}'>
+      dismissedcues='{{ user.dismissed_cues|default:"[]" }}'>
     </chromedash-feature-detail>
   </chromedash-accordion>
 
