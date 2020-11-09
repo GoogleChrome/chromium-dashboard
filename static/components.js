@@ -3,6 +3,7 @@
 // polymer components
 import '@polymer/app-layout';
 import '@polymer/app-layout/app-scroll-effects/effects/waterfall';
+import '@polymer/iron-collapse';
 import '@polymer/iron-icon';
 import '@polymer/iron-iconset-svg';
 import '@polymer/paper-item';
@@ -12,6 +13,7 @@ import '@polymer/paper-styles/color.js';
 
 // chromedash components
 import './elements/icons';
+import './elements/chromedash-accordion';
 import './elements/chromedash-callout';
 import './elements/chromedash-color-status';
 import './elements/chromedash-feature';

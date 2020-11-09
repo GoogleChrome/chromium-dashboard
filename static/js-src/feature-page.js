@@ -61,6 +61,16 @@ if (SHOW_TOAST) {
   }, 500);
 }
 
+// Open an accordion that was bookmarked open
+if (location.hash) {
+  const targetId = decodeURIComponent(location.hash.substr(1));
+  const targetEl = document.getElementById(targetId);
+  if (targetEl && targetEl.tagName == 'CHROMEDASH-ACCORDION') {
+    targetEl.opened = true;
+  }
+}
+
+
 exports.subscribeToFeature = subscribeToFeature;
 exports.shareFeature = shareFeature;
 })(window);

@@ -33,13 +33,12 @@ class ChromedashFeatureDetail extends LitElement {
         contain: content;
         overflow: hidden;
         background: inherit;
-        margin: 1em 0;
       }
 
       .card {
         background: var(--card-background);
         border: var(--card-border);
-        box-shadow:  var(--card-box-shadow);
+        box-shadow: var(--card-box-shadow);
         max-width: var(--max-content-width);
         margin-top: 1em;
         padding: 16px;
@@ -82,6 +81,17 @@ class ChromedashFeatureDetail extends LitElement {
         display: block;
         white-space: pre-wrap;
         padding: var(--content-padding-half);
+      }
+
+      .active {
+        border: var(--spot-card-border);
+        box-shadow: var(--spot-card-box-shadow);
+      }
+
+      .active h3::after {
+        content: "Active stage";
+        float: right;
+        color: var(--dark-spot-color);
       }
 
     `];
@@ -158,12 +168,16 @@ class ChromedashFeatureDetail extends LitElement {
   renderStage(stage) {
     let fields = [];
     let stageName = undefined;
+    let activeClass = '';
     if (typeof stage == 'string') {
       fields = this.fieldDefs[stage];
       stageName = stage;
     } else {
       fields = this.fieldDefs[stage.outgoing_stage];
       stageName = stage.name;
+      if (this.feature.intent_stage_int == stage.outgoing_stage) {
+        activeClass = 'active';
+      }
     }
     if (fields === undefined || fields.length == 0) {
       return nothing;
@@ -173,7 +187,7 @@ class ChromedashFeatureDetail extends LitElement {
       valuesPart = fields.map(fieldDef => this.renderField(fieldDef));
     }
     return html`
-      <section class="card">
+      <section class="card ${activeClass}">
        <h3>${stageName}</h3>
        ${valuesPart}
       </section>
@@ -182,6 +196,7 @@ class ChromedashFeatureDetail extends LitElement {
 
   render() {
     return html`
+       ${this.renderStage('Metadata')}
        ${this.process.stages.map(stage => html`
             ${this.renderStage(stage)}
        `)}
