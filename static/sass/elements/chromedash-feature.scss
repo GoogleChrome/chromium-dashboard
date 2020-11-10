@@ -90,20 +90,6 @@ iron-icon {
 .category-tooltip,
 .topcorner .tooltip {
   margin-left: 4px;
-
-  a {
-    text-decoration: none;
-  }
-
-  &:hover, &:active {
-    &:before {
-      @include tooltip;
-      top: 35px;
-      right: 20px;
-      width: auto;
-      white-space: nowrap;
-    }
-  }
 }
 
 hgroup {
@@ -290,24 +276,6 @@ section {
 
   .flex {
     flex: 0 0 calc(50% - 16px);
-  }
-
-  .tooltip {
-    position: relative;
-
-    a {
-      text-decoration: none;
-    }
-
-    &:hover, &:active {
-      &:before {
-        @include tooltip;
-        bottom: 25px;
-        left: -50px;
-        width: auto;
-        white-space: nowrap;
-      }
-    }
   }
 }
 
