@@ -153,10 +153,14 @@
   <p class="preformatted">{{feature.debuggability|urlize}}</p>
 {% endif %}
 
-<br><br><h4>Will this feature be supported on all six Blink platforms
-    (Windows, Mac, Linux, Chrome OS, Android, and Android WebView)?</h4>
-{% if feature.all_platforms %}Yes{% else %}No{% endif %}
-<p class="preformatted">{{feature.all_platforms_descr|urlize}}</p>
+{% if 'experiment' in sections_to_show %}
+  <br><br><h4>Will this feature be supported on all six Blink platforms
+      (Windows, Mac, Linux, Chrome OS, Android, and Android WebView)?</h4>
+  {% if feature.all_platforms %}Yes{% else %}No{% endif %}
+  {% if feature.all_platforms_descr %}
+    <p class="preformatted">{{feature.all_platforms_descr|urlize}}</p>
+  {% endif %}
+{% endif %}
 
 <br><br><h4>Is this feature fully tested by <a href="https://chromium.googlesource.com/chromium/src/+/master/docs/testing/web_platform_tests.md">web-platform-tests</a>?</h4>
 {% if feature.wpt %}Yes{% else %}No{% endif %}
