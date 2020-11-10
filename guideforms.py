@@ -211,8 +211,8 @@ ALL_FIELDS = {
         widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 1480}),
         help_text=
         ('Describe the degree of <a target="_blank" '
-         'href="https://sites.google.com/a/chromium.org/dev/blink?'
-         'pli=1#TOC-Policy-for-shipping-and-removing-web-platform-API-features'
+         'href="https://www.chromium.org/blink/guidelines/'
+         'web-platform-changes-guidelines#TOC-Finding-balance'
          '">interoperability risk</a>. For a new feature, the main risk is '
          'that it fails to become an interoperable part of the web platform '
          'if other browsers do not implement it. For a removal, please review '
