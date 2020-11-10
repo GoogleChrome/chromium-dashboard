@@ -12,16 +12,6 @@ $feature-min-height: 75px;
   text-decoration: inherit;
 }
 
-@mixin tooltip {
-  content: attr(title) ""; // force to be a string for FF/Safari.
-  position: absolute;
-  box-shadow: 2px 2px 4px $gray-2;
-  border: 1px solid $gray-1;
-  z-index: 100;
-  text-align: center;
-  color: $default-font-color;
-}
-
 .conditional-comma:last-child {
   display: none;
 }
