@@ -1138,7 +1138,8 @@ class FeatureForm(forms.Form):
     'as well as possibly in other external documents.\n\n'
     'Begin with one line explaining what the feature does. Add one or two '
     'lines explaining how this feature helps developers. Avoid language such '
-    'as "a new feature". They all are or have been new features.')
+    'as "a new feature". They all are or have been new features.\n\n'
+    'Follow the example link below for more guidance.')
 
   # Note that the "required" argument in the following field definitions only
   # mean so much in practice. There's various code in js/admin/feature_form.js,
