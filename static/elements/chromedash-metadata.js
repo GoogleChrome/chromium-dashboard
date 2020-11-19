@@ -185,7 +185,7 @@ class ChromedashMetadata extends LitElement {
     for (let i = this._channels.stable - 1; i >= 1; i--) {
       this._versions.push(i);
     }
-    const noActiveDev = this.implStatuses[this.NO_ACTIVE_DEV - 1].val;
+    const noActiveDev = this.implStatuses[this.status.NO_ACTIVE_DEV - 1].val;
     this._versions.push(noActiveDev);
     const noLongerPursuing = this.implStatuses[this.implStatuses.length - 1].val;
     this._versions.push(noLongerPursuing);
