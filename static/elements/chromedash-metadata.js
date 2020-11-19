@@ -51,29 +51,29 @@ class ChromedashMetadata extends LitElement {
         margin: 0;
       }
 
-      .canaryisdev li:nth-of-type(5)::after {
+      .canaryisdev li:nth-of-type(4)::after {
         content: 'canary/dev';
       }
-      .canaryisdev li:nth-of-type(6)::after {
+      .canaryisdev li:nth-of-type(5)::after {
         content: 'beta';
       }
-      .canaryisdev li:nth-of-type(7)::after {
+      .canaryisdev li:nth-of-type(6)::after {
         content: 'stable';
       }
-      .canaryisdev li:nth-of-type(8)::after {
+      .canaryisdev li:nth-of-type(7)::after {
         content: '';
       }
 
-      .betaisdev li:nth-of-type(5)::after {
+      .betaisdev li:nth-of-type(4)::after {
         content: 'canary';
       }
-      .betaisdev li:nth-of-type(6)::after {
+      .betaisdev li:nth-of-type(5)::after {
         content: 'dev/beta';
       }
-      .betaisdev li:nth-of-type(7)::after {
+      .betaisdev li:nth-of-type(6)::after {
         content: 'stable';
       }
-      .betaisdev li:nth-of-type(8)::after {
+      .betaisdev li:nth-of-type(7)::after {
         content: '';
       }
 
@@ -92,21 +92,21 @@ class ChromedashMetadata extends LitElement {
         margin-left: var(--content-padding-half);
       }
 
-      li:nth-of-type(4) {
+      li:nth-of-type(3) {
         border-bottom: var(--leftnav-divider-border);
         padding-bottom: var(--content-padding-half);
         margin-bottom: var(--content-padding-half);
       }
-      li:nth-of-type(5)::after {
+      li:nth-of-type(4)::after {
         content: 'canary';
       }
-      li:nth-of-type(6)::after {
+      li:nth-of-type(5)::after {
         content: 'dev';
       }
-      li:nth-of-type(7)::after {
+      li:nth-of-type(6)::after {
         content: 'beta';
       }
-      li:nth-of-type(8)::after {
+      li:nth-of-type(7)::after {
         content: 'stable';
       }
 
@@ -164,7 +164,6 @@ class ChromedashMetadata extends LitElement {
 
     // Dev channel explicitly left out. Treat same as canary.
     this._versions = [
-      this.implStatuses[this.status.NO_ACTIVE_DEV - 1].val,
       this.implStatuses[this.status.PROPOSED - 1].val,
       this.implStatuses[this.status.IN_DEVELOPMENT - 1].val,
       this.implStatuses[this.status.DEPRECATED - 1].val,
@@ -186,6 +185,8 @@ class ChromedashMetadata extends LitElement {
     for (let i = this._channels.stable - 1; i >= 1; i--) {
       this._versions.push(i);
     }
+    const noActiveDev = this.implStatuses[this.NO_ACTIVE_DEV - 1].val;
+    this._versions.push(noActiveDev);
     const noLongerPursuing = this.implStatuses[this.implStatuses.length - 1].val;
     this._versions.push(noLongerPursuing);
   }

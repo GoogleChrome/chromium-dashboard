@@ -518,12 +518,12 @@ class Feature(DictModel):
       milestones = range(1, LATEST_VERSION + 1)
       milestones.reverse()
       versions = [
-        IMPLEMENTATION_STATUS[NO_ACTIVE_DEV],
         IMPLEMENTATION_STATUS[PROPOSED],
         IMPLEMENTATION_STATUS[IN_DEVELOPMENT],
         IMPLEMENTATION_STATUS[DEPRECATED],
         ]
       versions.extend(milestones)
+      versions.append(IMPLEMENTATION_STATUS[NO_ACTIVE_DEV])
       versions.append(IMPLEMENTATION_STATUS[NO_LONGER_PURSUING])
 
       first_of_milestone_func = Feature._first_of_milestone
@@ -797,11 +797,11 @@ class Feature(DictModel):
     # If we didn't get the expected number of chunks back (or a cache update
     # was requested), do a db query.
     if len(feature_list.keys()) != len(keys) or update_cache:
-      # Features with no active, in dev, proposed features.
+      # Features that are in-dev or proposed.
       q = Feature.all()
       q.order('impl_status_chrome')
       q.order('name')
-      q.filter('impl_status_chrome <=', IN_DEVELOPMENT)
+      q.filter('impl_status_chrome IN', (PROPOSED, IN_DEVELOPMENT))
       pre_release = q.fetch(None)
 
       # Shipping features. Exclude features that do not have a desktop
@@ -819,9 +819,14 @@ class Feature(DictModel):
       q.filter('shipped_milestone =', None)
       android_only_shipping_features = q.fetch(None)
 
+      # Features with no active development.
+      q = Feature.all()
+      q.order('name')
+      q.filter('impl_status_chrome =', NO_ACTIVE_DEV)
+      no_active = q.fetch(None)
+
       # No longer pursuing features.
       q = Feature.all()
-      q.order('impl_status_chrome')
       q.order('name')
       q.filter('impl_status_chrome =', NO_LONGER_PURSUING)
       no_longer_pursuing_features = q.fetch(None)
@@ -848,6 +853,7 @@ class Feature(DictModel):
       all_features = []
       all_features.extend(pre_release)
       all_features.extend(shipping_features)
+      all_features.extend(no_active)
       all_features.extend(no_longer_pursuing_features)
       all_features = [f for f in all_features if not f.deleted]
 
