@@ -249,16 +249,16 @@ class ChromedashTimeline extends LitElement {
       hadEl.src = dsEmbedUrl;
 
       const bigqueryEl = this.shadowRoot.getElementById('bigquery');
-      bigqueryEl.textContent = `#standardSQL  
-SELECT yyyymmdd, client, pct_urls, sample_urls  
-FROM \`httparchive.blink_features.usage\`  
-WHERE feature = '${featureName}'  
+      bigqueryEl.textContent = `#standardSQL
+SELECT yyyymmdd, client, pct_urls, sample_urls
+FROM \`httparchive.blink_features.usage\`
+WHERE feature = '${featureName}'
 ORDER BY yyyymmdd DESC, client`;
     }
   }
 
   render() {
-    return html`  
+    return html`
       <select .value="${this.selectedBucketId}" @change="${this.updateSelectedBucketId}">
         <option disabled value="1">Select a property</option>
         ${this.props.map((prop) => html`
@@ -269,6 +269,8 @@ ORDER BY yyyymmdd DESC, client`;
       <h3 id="usage" class="header_title">Percentage of page loads that use this feature</h3>
       <p class="description">The chart below shows the percentage of page loads (in Chrome) that use
         this feature at least once. Data is across all channels and platforms.
+        Newly added use counters that are not on Chrome stable yet
+        only have data from the Chrome channels they're on.
       </p>
       <div id="chart"></div>
       <p class="callout">
