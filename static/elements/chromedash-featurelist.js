@@ -209,19 +209,25 @@ class ChromedashFeaturelist extends LitElement {
   }
 
   // Directly called from template/features.html
-  filter(val) {
+  filter(val, shouldPushState) {
+    this.searchEl.value = val;
+    const pushOrReplaceState = (
+      history &&
+      (shouldPushState ? history.pushState.bind(history) :
+        history.replaceState.bind(history)));
     // Clear filter if there's no search or if called directly.
     if (!val) {
-      if (history && history.replaceState) {
-        history.replaceState('', document.title, location.pathname + location.search);
+      if (pushOrReplaceState) {
+        pushOrReplaceState({query: ''}, document.title,
+          location.pathname + location.search);
       } else {
         location.hash = '';
       }
       this.filtered = this.features;
     } else {
       val = val.trim();
-      if (history && history.replaceState) {
-        history.replaceState({id: null}, document.title,
+      if (pushOrReplaceState) {
+        pushOrReplaceState({query: val}, document.title,
           '/features#' + encodeURIComponent(val));
       }
 

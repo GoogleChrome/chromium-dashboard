@@ -34,13 +34,13 @@ chromeMetadataEl.addEventListener('query-changed', (e) => {
   const isMilestone = value.match(/^[0-9]+$/);
   searchEl.value = isMilestone ? 'milestone=' + value :
     'browsers.chrome.status:"' + value + '"';
-  featureListEl.filter(searchEl.value);
+  featureListEl.filter(searchEl.value, true);
 });
 
 // Clear input when user clicks the 'x' button.
 searchEl.addEventListener('search', (e) => {
   if (!e.target.value) {
-    featureListEl.filter();
+    featureListEl.filter('', true);
     chromeMetadataEl.selected = null;
   }
 });
@@ -62,24 +62,26 @@ featureListEl.addEventListener('has-scroll-list', () => {
 featureListEl.addEventListener('filter-category', (e) => {
   e.stopPropagation();
   searchEl.value = 'category: ' + e.detail.val;
-  featureListEl.filter(searchEl.value);
+  featureListEl.filter(searchEl.value, true);
 });
 
 featureListEl.addEventListener('filter-owner', (e) => {
   e.stopPropagation();
   searchEl.value = 'browsers.chrome.owners: ' + e.detail.val;
-  featureListEl.filter(searchEl.value);
+  featureListEl.filter(searchEl.value, true);
 });
 
 featureListEl.addEventListener('filter-component', (e) => {
   e.stopPropagation();
   searchEl.value = 'component: ' + e.detail.val;
-  featureListEl.filter(searchEl.value);
+  featureListEl.filter(searchEl.value, true);
 });
 
 window.addEventListener('popstate', (e) => {
-  if (e.state) {
+  if (e.state && e.state.id) {
     featureListEl.scrollToId(e.state.id);
+  } else if (e.state && e.state.query) {
+    featureListEl.filter(e.state.query);
   }
 });
 
