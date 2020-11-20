@@ -213,8 +213,8 @@ class ChromedashFeaturelist extends LitElement {
     this.searchEl.value = val;
     const pushOrReplaceState = (
       history &&
-          shouldPushState ? history.pushState.bind(history) :
-        history.replaceState.bind(history));
+      (shouldPushState ? history.pushState.bind(history) :
+        history.replaceState.bind(history)));
     // Clear filter if there's no search or if called directly.
     if (!val) {
       if (pushOrReplaceState) {
