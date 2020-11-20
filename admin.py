@@ -31,7 +31,6 @@ from HTMLParser import HTMLParser
 from xml.dom import minidom
 
 # Appengine imports.
-import cloudstorage
 from google.appengine.api import memcache
 from google.appengine.api import urlfetch
 from google.appengine.api import users
