@@ -18,7 +18,6 @@ from __future__ import print_function
 
 __author__ = 'ericbidelman@chromium.org (Eric Bidelman)'
 
-
 import datetime
 import json
 import logging

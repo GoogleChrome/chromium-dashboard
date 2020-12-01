@@ -1,3 +1,6 @@
+from __future__ import division
+from __future__ import print_function
+
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 #
@@ -61,16 +64,16 @@ def fix_up(props, corrector_func):
   for p in props:
     if p.bucket_id in need_correcting:
       new_name = need_correcting[p.bucket_id]
-      print p.bucket_id, p.property_name, '->', new_name
+      print(p.bucket_id, p.property_name, '->', new_name)
       p.property_name = new_name
       #p.put() # uncomment commit to the db changes.
 
 props = FetchAllFeaturesWithError()
-print 'Found', str(len(props)), 'properties tagged "ERROR"'
+print('Found', str(len(props)), 'properties tagged "ERROR"')
 fix_up(props, corrector_func=CorrectFeaturePropertyName)
 
 css_props = FetchAllCSSPropertiesWithError()
-print 'Found', str(len(css_props)), 'css properties tagged "ERROR"'
+print('Found', str(len(css_props)), 'css properties tagged "ERROR"')
 fix_up(css_props, corrector_func=CorrectCSSPropertyName)
 
-print 'Done'
+print('Done')

@@ -1,3 +1,6 @@
+from __future__ import division
+from __future__ import print_function
+
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 #
@@ -26,11 +29,11 @@ def downloadUsage(err, downloadUrl=None):
     downloadString = 'Run'
   else:
     downloadString = 'Download available at %s or run' % downloadUrl
-  print '%s\n%s%s' % (
+  print('%s\n%s%s' % (
       err,
       downloadString,
       ' setup.py on the google-api-python-client:\n' +
-      'https://code.google.com/p/google-api-python-client/downloads')
+      'https://code.google.com/p/google-api-python-client/downloads'))
   sys.exit(1)
 
 def importUsage(lib, downloadUrl=None):
@@ -44,7 +47,7 @@ def importUsage(lib, downloadUrl=None):
 
 try:
   from gflags import gflags
-  print gflags.FLAGS
+  print(gflags.FLAGS)
 except:
   importUsage('gflags', 'https://code.google.com/p/python-gflags/downloads/')
 
@@ -78,7 +81,7 @@ if oauth2client_version is None:
 elif (parse_version(oauth2client_version) <
       parse_version(OAUTH2CLIENT_REQUIRED_VERSION)):
   downloadUsage(('oauth2client module version %s is too old.\n' +
-      'Miminum required version is %s.') % (oauth2client_version, 
+      'Miminum required version is %s.') % (oauth2client_version,
       OAUTH2CLIENT_REQUIRED_VERSION))
 
 #
@@ -108,14 +111,14 @@ def main(argv):
   try:
     argv = FLAGS(argv)
   except gflags.FlagsError, e:
-    print '%s\nUsage: %s ARGS\n%s' % (e, sys.argv[0], FLAGS)
+    print('%s\nUsage: %s ARGS\n%s' % (e, sys.argv[0], FLAGS))
     sys.exit(1)
 
   storage = Storage(FLAGS.credentials_file)
   credentials = storage.get()
   if credentials is None or credentials.invalid:
-    print 'Acquiring initial credentials...'
-    
+    print('Acquiring initial credentials...')
+
     # Need to acquire token using @google.com account.
     flow = flow_from_clientsecrets(
         FLAGS.client_secrets_file,
@@ -125,14 +128,14 @@ def main(argv):
 
     credentials = run(flow, storage)
   elif credentials.access_token_expired:
-    print 'Refreshing access token...'
+    print('Refreshing access token...')
     credentials.refresh(httplib2.Http())
 
-  print 'Refresh token:', credentials.refresh_token
-  print 'Access token:', credentials.access_token
+  print('Refresh token:', credentials.refresh_token)
+  print('Access token:', credentials.access_token)
   delta = credentials.token_expiry - datetime.datetime.utcnow()
-  print 'Access token expires: %sZ (%dm %ds)' % (credentials.token_expiry,
-      delta.seconds / 60, delta.seconds % 60)
+  print('Access token expires: %sZ (%dm %ds)' % (credentials.token_expiry,
+      delta.seconds // 60, delta.seconds % 60))
 
 
 if __name__ == '__main__':

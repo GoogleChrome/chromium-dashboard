@@ -1,3 +1,6 @@
+from __future__ import division
+from __future__ import print_function
+
 import os
 # name of the django settings module
 os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
