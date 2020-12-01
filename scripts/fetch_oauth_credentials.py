@@ -135,7 +135,7 @@ def main(argv):
   print('Access token:', credentials.access_token)
   delta = credentials.token_expiry - datetime.datetime.utcnow()
   print('Access token expires: %sZ (%dm %ds)' % (credentials.token_expiry,
-      delta.seconds / 60, delta.seconds % 60))
+      delta.seconds // 60, delta.seconds % 60))
 
 
 if __name__ == '__main__':
