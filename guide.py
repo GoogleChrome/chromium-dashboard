@@ -16,7 +16,6 @@ from __future__ import print_function
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 import datetime
 import json
 import logging

@@ -1,3 +1,6 @@
+from __future__ import division
+from __future__ import print_function
+
 # -*- coding: utf-8 -*-
 # Copyright 2013 Google Inc.
 #
@@ -14,7 +17,6 @@
 # limitations under the License.
 
 __author__ = 'ericbidelman@chromium.org (Eric Bidelman)'
-
 
 import datetime
 import json

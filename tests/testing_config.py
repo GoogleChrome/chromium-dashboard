@@ -1,3 +1,6 @@
+from __future__ import division
+from __future__ import print_function
+
 # Copyright 2020 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
@@ -12,7 +15,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import print_function
 import os
 import sys
 import unittest
