@@ -26,6 +26,7 @@ import os
 import re
 import webapp2
 
+import ramcache
 from google.appengine.ext import db
 from google.appengine.api import mail
 from google.appengine.api import urlfetch
@@ -442,6 +443,7 @@ class NotificationSubscriptionInfoHandler(webapp2.RequestHandler):
 
 class NotificationsListHandler(common.ContentHandler):
   def get(self):
+    ramcache.check_for_distributed_invalidation()
     subscriptions = PushSubscription.all().fetch(None)
 
     template_data = {

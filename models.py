@@ -26,7 +26,7 @@ import time
 from google.appengine.ext import db
 # from google.appengine.ext.db import djangoforms
 from google.appengine.api import mail
-from google.appengine.api import memcache
+import ramcache
 from google.appengine.api import urlfetch
 from google.appengine.api import taskqueue
 from google.appengine.api import users
@@ -383,14 +383,14 @@ class BlinkComponent(DictModel):
     """Returns the list of blink components from live endpoint if unavailable in the cache."""
     key = '%s|blinkcomponents' % (settings.MEMCACHE_KEY_PREFIX)
 
-    components = memcache.get(key)
+    components = ramcache.get(key)
     if components is None or update_cache:
       components = []
       url = self.COMPONENTS_ENDPOINT + '?cache-buster=%s' % time.time()
       result = urlfetch.fetch(url, deadline=60)
       if result.status_code == 200:
         components = sorted(json.loads(result.content))
-        memcache.set(key, components)
+        ramcache.set(key, components)
       else:
         logging.error('Fetching blink components returned: %s' % result.status_code)
 
@@ -405,14 +405,14 @@ class BlinkComponent(DictModel):
     """Returns the /web content that use each blink component."""
     key = '%s|wfcomponents' % (settings.MEMCACHE_KEY_PREFIX)
 
-    components = memcache.get(key)
+    components = ramcache.get(key)
     if components is None or update_cache:
       components = {}
       url = self.WF_CONTENT_ENDPOINT + '?cache-buster=%s' % time.time()
       result = urlfetch.fetch(url, deadline=60)
       if result.status_code == 200:
         components = json.loads(result.content)
-        memcache.set(key, components)
+        ramcache.set(key, components)
       else:
         logging.error('Fetching /web blink components content returned: %s' % result.status_code)
 
@@ -729,7 +729,7 @@ class Feature(DictModel):
       s = ('%s%s' % (filterby[0], filterby[1])).replace(' ', '')
       KEY += '|%s' % s
 
-    feature_list = memcache.get(KEY)
+    feature_list = ramcache.get(KEY)
 
     if feature_list is None or update_cache:
       query = Feature.all().order(order) #.order('name')
@@ -743,7 +743,7 @@ class Feature(DictModel):
 
       feature_list = [f.format_for_template() for f in features]
 
-      memcache.set(KEY, feature_list)
+      ramcache.set(KEY, feature_list)
 
     return feature_list
 
@@ -754,23 +754,23 @@ class Feature(DictModel):
 
     KEY = '%s|%s' % (Feature.DEFAULT_MEMCACHE_KEY, sorted(statuses))
 
-    feature_list = memcache.get(KEY)
+    feature_list = ramcache.get(KEY)
 
     if feature_list is None or update_cache:
       # There's no way to do an OR in a single datastore query, and there's a
       # very good chance that the self.get_all() results will already be in
-      # memcache, so use an array comprehension to grab the features we
+      # ramcache, so use an array comprehension to grab the features we
       # want from the array of everything.
       feature_list = [feature for feature in self.get_all(update_cache=update_cache)
                       if feature['impl_status_chrome'] in statuses]
-      memcache.set(KEY, feature_list)
+      ramcache.set(KEY, feature_list)
 
     return feature_list
 
   @classmethod
   def get_feature(self, feature_id, update_cache=False):
     KEY = '%s|%s' % (Feature.DEFAULT_MEMCACHE_KEY, feature_id)
-    feature = memcache.get(KEY)
+    feature = ramcache.get(KEY)
 
     if feature is None or update_cache:
       unformatted_feature = Feature.get_by_id(feature_id)
@@ -780,7 +780,7 @@ class Feature(DictModel):
         feature = unformatted_feature.format_for_template()
         feature['updated_display'] = unformatted_feature.updated.strftime("%Y-%m-%d")
         feature['new_crbug_url'] = unformatted_feature.new_crbug_url()
-        memcache.set(KEY, feature)
+        ramcache.set(KEY, feature)
 
     return feature
 
@@ -791,11 +791,13 @@ class Feature(DictModel):
                            'cronorder', limit, version)
 
     keys = get_chunk_memcache_keys(Feature.all(), KEY)
-    feature_list = memcache.get_multi(keys)
+    feature_list = ramcache.get_multi(keys)
+    logging.info('getting chronological feature list')
 
     # If we didn't get the expected number of chunks back (or a cache update
     # was requested), do a db query.
     if len(feature_list.keys()) != len(keys) or update_cache:
+      logging.info('recompyting chronological feature list')
       # Features that are in-dev or proposed.
       q = Feature.all()
       q.order('impl_status_chrome')
@@ -862,7 +864,7 @@ class Feature(DictModel):
 
       # Memcache doesn't support saving values > 1MB. Break up features list into
       # chunks so we don't hit the limit.
-      memcache.set_multi(set_chunk_memcache_keys(KEY, feature_list))
+      ramcache.set_multi(set_chunk_memcache_keys(KEY, feature_list))
     else:
       # Reconstruct feature list by ordering chunks.
       feature_list = combine_memcache_chunks(feature_list)
@@ -877,7 +879,7 @@ class Feature(DictModel):
   def get_shipping_samples(self, limit=None, update_cache=False):
     KEY = '%s|%s|%s' % (Feature.DEFAULT_MEMCACHE_KEY, 'samples', limit)
 
-    feature_list = memcache.get(KEY)
+    feature_list = ramcache.get(KEY)
 
     if feature_list is None or update_cache:
       # Get all shipping features. Ordered by shipping milestone (latest first).
@@ -902,7 +904,7 @@ class Feature(DictModel):
       feature_list = [f.format_for_template() for f in features
                       if len(f.sample_links) and not f.deleted]
 
-      memcache.set(KEY, feature_list)
+      ramcache.set(KEY, feature_list)
 
     return feature_list
 
@@ -977,9 +979,9 @@ class Feature(DictModel):
     if notify:
       self.__notify_feature_subscribers_of_changes(is_update)
 
-    # Invalidate memcache for the individual feature view.
-    memcache_key = '%s|%s' % (Feature.DEFAULT_MEMCACHE_KEY, self.key().id())
-    memcache.delete(memcache_key)
+    # Invalidate ramcache for the individual feature view.
+    ramcache_key = '%s|%s' % (Feature.DEFAULT_MEMCACHE_KEY, self.key().id())
+    ramcache.delete(ramcache_key)
 
     return key
 
@@ -1673,6 +1675,9 @@ class FeatureOwner(DictModel):
     return self.remove_from_component_subscribers(component_name, remove_as_owner=True)
 
 
+
+# TODO(jrobbins): ramcache has no limit on item size, so we can delete
+# this code.
 # Max num entities to save for each memcache chunk.
 # We assume that this many entities total less than 1 MB.
 MEMCACHE_CHUNK_SIZE = 300

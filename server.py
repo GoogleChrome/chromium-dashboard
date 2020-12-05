@@ -28,6 +28,7 @@ import common
 import guideforms
 import models
 import processes
+import ramcache
 import util
 
 from google.appengine.api import users
@@ -42,6 +43,7 @@ def normalized_name(val):
 class FeatureDetailHandler(common.ContentHandler):
 
   def get(self, feature_id):
+    ramcache.check_for_distributed_invalidation()
     f = models.Feature.get_by_id(long(feature_id))
     if f is None:
       self.abort(404)
@@ -65,6 +67,7 @@ class FeatureDetailHandler(common.ContentHandler):
 class MainHandler(http2push.PushHandler, common.ContentHandler, common.JSONHandler):
 
   def get(self, path, feature_id=None):
+    ramcache.check_for_distributed_invalidation()
     # Default to features page.
     # TODO: remove later when we want an index.html
     if not path:
@@ -178,6 +181,7 @@ class MainHandler(http2push.PushHandler, common.ContentHandler, common.JSONHandl
 class FeaturesAPIHandler(common.JSONHandler):
 
   def get(self, version=None):
+    ramcache.check_for_distributed_invalidation()
     if version is None:
       version = 2
     else:
@@ -193,6 +197,7 @@ class FeaturesAPIHandler(common.JSONHandler):
 class SamplesHandler(common.ContentHandler, common.JSONHandler):
 
   def get(self, path=None):
+    ramcache.check_for_distributed_invalidation()
     feature_list = models.Feature.get_shipping_samples() # Memcached
 
     if path == '/':

@@ -30,7 +30,7 @@ from HTMLParser import HTMLParser
 from xml.dom import minidom
 
 # Appengine imports.
-from google.appengine.api import memcache
+import ramcache
 from google.appengine.api import urlfetch
 from google.appengine.api import users
 from google.appengine.ext import blobstore
@@ -157,6 +157,7 @@ class YesterdayHandler(webapp2.RequestHandler):
     Args:
       filename: The filename for the data file to be loaded.
     """
+    ramcache.check_for_distributed_invalidation()
     yesterday = datetime.date.today() - datetime.timedelta(1)
 
     for query in UMA_QUERIES:
@@ -195,6 +196,7 @@ class HistogramsHandler(webapp2.RequestHandler):
     )
 
   def get(self):
+    ramcache.check_for_distributed_invalidation()
     # Attempt to fetch enums mapping file.
     result = urlfetch.fetch(HISTOGRAMS_URL, deadline=60)
 
@@ -232,6 +234,7 @@ class IntentEmailPreviewHandler(common.ContentHandler):
   """Show a preview of an intent email, as appropriate to the feature stage."""
 
   def get(self, feature_id=None, stage_id=None):
+    ramcache.check_for_distributed_invalidation()
     user = users.get_current_user()
     if user is None:
       return self.redirect(users.create_login_url(self.request.uri))
@@ -329,6 +332,7 @@ class FeatureHandler(common.ContentHandler):
     return blink_components
 
   def get(self, path, feature_id=None):
+    ramcache.check_for_distributed_invalidation()
     user = users.get_current_user()
     if user is None:
       if feature_id:
@@ -465,7 +469,7 @@ class FeatureHandler(common.ContentHandler):
       if 'delete' in path:
         feature.deleted = True
         feature.put()
-        memcache.flush_all()
+        ramcache.flush_all()
         return # Bomb out early for AJAX delete. No need to redirect.
 
       # Update properties of existing feature.
@@ -644,7 +648,7 @@ class FeatureHandler(common.ContentHandler):
     key = feature.put()
 
     # TODO(ericbidelman): enumerate and remove only the relevant keys.
-    memcache.flush_all()
+    ramcache.flush_all()
 
     redirect_url = '/feature/' + str(key.id())
 

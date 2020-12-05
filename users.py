@@ -38,7 +38,7 @@ class UserHandler(common.ContentHandler):
 
   @common.strip_trailing_slash
   def get(self, path):
-    users = models.AppUser.all().fetch(None) # TODO(ericbidelman): memcache this.
+    users = models.AppUser.all().fetch(None) # TODO(ericbidelman): ramcache this.
 
     user_list = [user.format_for_template() for user in users]
 

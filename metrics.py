@@ -22,7 +22,7 @@ import webapp2
 import datetime
 import json
 import logging
-from google.appengine.api import memcache
+import ramcache
 
 import common
 import models
@@ -45,6 +45,7 @@ class TimelineHandler(common.JSONHandler):
     return query
 
   def get(self):
+    ramcache.check_for_distributed_invalidation()
     try:
       bucket_id = int(self.request.get('bucket_id'))
     except:
@@ -53,7 +54,7 @@ class TimelineHandler(common.JSONHandler):
     KEY = '%s|%s' % (self.MEMCACHE_KEY, bucket_id)
 
     keys = models.get_chunk_memcache_keys(self.make_query(bucket_id), KEY)
-    chunk_dict = memcache.get_multi(keys)
+    chunk_dict = ramcache.get_multi(keys)
 
     if chunk_dict and len(chunk_dict) == len(keys):
       datapoints = models.combine_memcache_chunks(chunk_dict)
@@ -66,7 +67,7 @@ class TimelineHandler(common.JSONHandler):
       #datapoints = filter(lambda x: 0 <= x.day_percentage <= 1, datapoints)
 
       chunk_dict = models.set_chunk_memcache_keys(KEY, datapoints)
-      memcache.set_multi(chunk_dict, time=CACHE_AGE)
+      ramcache.set_multi(chunk_dict, time=CACHE_AGE)
 
     datapoints = self._clean_data(datapoints)
     # Metrics json shouldn't be cached by intermediary caches because users
@@ -139,13 +140,16 @@ class FeatureHandler(common.JSONHandler):
     return datapoints
 
   def get(self):
+    ramcache.check_for_distributed_invalidation()
+    # TODO(jrobbins): chunking is unneeded with ramcache, so we can
+    # simplify this code.
     # Memcache doesn't support saving values > 1MB. Break up features into chunks
     # and save those to memcache.
     if self.MODEL_CLASS == models.FeatureObserver:
       keys = models.get_chunk_memcache_keys(
           self.PROPERTY_CLASS.all(), self.MEMCACHE_KEY)
       logging.info('looking for keys %r' % keys)
-      properties = memcache.get_multi(keys)
+      properties = ramcache.get_multi(keys)
       logging.info('found chunk keys %r' % (properties and properties.keys()))
 
       # TODO(jrobbins): We are at risk of displaying a partial result if
@@ -158,14 +162,14 @@ class FeatureHandler(common.JSONHandler):
         # Memcache doesn't support saving values > 1MB. Break up list into chunks.
         chunk_keys = models.set_chunk_memcache_keys(self.MEMCACHE_KEY, properties)
         logging.info('about to store chunks keys %r' % chunk_keys.keys())
-        memcache.set_multi(chunk_keys, time=CACHE_AGE)
+        ramcache.set_multi(chunk_keys, time=CACHE_AGE)
       else:
         properties = models.combine_memcache_chunks(properties)
     else:
-      properties = memcache.get(self.MEMCACHE_KEY)
+      properties = ramcache.get(self.MEMCACHE_KEY)
       if properties is None:
         properties = self.__query_metrics_for_properties()
-        memcache.set(self.MEMCACHE_KEY, properties, time=CACHE_AGE)
+        ramcache.set(self.MEMCACHE_KEY, properties, time=CACHE_AGE)
 
     properties = self._clean_data(properties)
     # Metrics json shouldn't be cached by intermediary caches because users

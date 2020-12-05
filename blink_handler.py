@@ -25,11 +25,9 @@ import os
 import webapp2
 import yaml
 
-# Appengine imports.
-from google.appengine.api import memcache
-
 import common
 import models
+import ramcache
 import settings
 import util
 from schedule import construct_chrome_channels_details
@@ -93,10 +91,6 @@ class BlinkHandler(common.ContentHandler):
   @common.require_edit_permission
   @common.strip_trailing_slash
   def get(self, path):
-    # key = '%s|blinkcomponentowners' % (settings.MEMCACHE_KEY_PREFIX)
-
-    # data = memcache.get(key)
-    # if data is None:
     components = models.BlinkComponent.all().order('name').fetch(None)
     subscribers = models.FeatureOwner.all().order('name').fetch(None)
 
@@ -114,8 +108,6 @@ class BlinkHandler(common.ContentHandler):
       'subscribers': subscribers,
       'components': components[1:] # ditch generic "Blink" component
     }
-    # memcache.set(key, data)
-
     self.render(data, template_path=os.path.join('admin/blink.html'))
 
   # Remove user from component subscribers.
@@ -134,8 +126,6 @@ class BlinkHandler(common.ContentHandler):
     self.__update_subscribers_list(True, user_id=params.get('userId'),
                                    blink_component=params.get('componentName'),
                                    primary=params.get('primary'))
-    # memcache.flush_all()
-    # memcache.delete('%s|blinkcomponentowners' % (settings.MEMCACHE_KEY_PREFIX))
     self.response.set_status(200, message='User added to subscribers')
     return self.response.write(json.dumps(params))
 
@@ -145,6 +135,7 @@ class SubscribersHandler(common.ContentHandler):
   @common.require_edit_permission
   # @common.strip_trailing_slash
   def get(self, path):
+    ramcache.check_for_distributed_invalidation()
     users = models.FeatureOwner.all().order('name').fetch(None)
     feature_list = models.Feature.get_chronological()
 
