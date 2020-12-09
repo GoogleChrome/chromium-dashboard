@@ -495,7 +495,7 @@ ALL_FIELDS = {
         widget=forms.URLInput(attrs={'placeholder': 'https://'}),
         help_text=(
             'Launch bug url (https://bugs.chromium.org/...) to track launch '
-            'aprpovals. '
+            'approvals. '
             '<a target="_blank" href="'
             'https://bugs.chromium.org/p/chromium/issues/'
             'entry?template=Chrome+Launch+Feature" '
