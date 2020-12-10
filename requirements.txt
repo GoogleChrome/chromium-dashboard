@@ -2,3 +2,4 @@ Django==1.11.29
 beautifulsoup4
 mock
 coverage
+Flask==1.1.2
