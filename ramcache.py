@@ -63,7 +63,7 @@ MAX_CACHE_SIZE = 10000
 
 
 def set(key, value, time=None):
-  """Emulate the memcache.get() method using a RAM cache."""
+  """Emulate the memcache.set() method using a RAM cache."""
   if len(global_cache) + 1 > MAX_CACHE_SIZE:
     popped_item = global_cache.popitem()
     if popped_item[0] in expires:
@@ -82,7 +82,7 @@ def _check_expired(keys):
 
 
 def get(key):
-  """Emulate the memcache.set() method using a RAM cache."""
+  """Emulate the memcache.get() method using a RAM cache."""
   _check_expired([key])
   verb = 'hit' if key in global_cache else 'miss'
   logging.info('cache %s for %r', verb, key)
@@ -95,7 +95,8 @@ def get_multi(keys):
   return {
       key: global_cache[key]
       for key in keys
-      if key in global_cache}
+      if key in global_cache
+  }
 
 
 def set_multi(entries):
