@@ -20,14 +20,14 @@ __author__ = 'ericbidelman@chromium.org (Eric Bidelman)'
 
 import json
 
-from google.appengine.api import memcache
+import ramcache
 from google.appengine.api import urlfetch
 
 def get_omaha_data():
-  omaha_data = memcache.get('omaha_data')
+  omaha_data = ramcache.get('omaha_data')
   if omaha_data is None:
     result = urlfetch.fetch('https://omahaproxy.appspot.com/all.json')
     if result.status_code == 200:
       omaha_data = json.loads(result.content)
-      memcache.set('omaha_data', omaha_data, time=86400) # cache for 24hrs.
+      ramcache.set('omaha_data', omaha_data, time=86400) # cache for 24hrs.
   return omaha_data

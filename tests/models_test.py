@@ -19,7 +19,7 @@ import unittest
 import testing_config  # Must be imported before the module under test.
 
 import mock
-from google.appengine.api import memcache
+import ramcache
 from google.appengine.api import users
 
 import models
@@ -162,6 +162,7 @@ class ModelsFunctionsTest(unittest.TestCase):
 class FeatureTest(unittest.TestCase):
 
   def setUp(self):
+    ramcache.SharedInvalidate.check_for_distributed_invalidation()
     self.feature_1 = models.Feature(
         name='feature one', summary='sum', category=1, visibility=1,
         standardization=1, web_dev_views=1, impl_status_chrome=1)
@@ -175,7 +176,7 @@ class FeatureTest(unittest.TestCase):
   def tearDown(self):
     self.feature_1.delete()
     self.feature_2.delete()
-    memcache.flush_all()
+    ramcache.flush_all()
 
   def test_get_chronological__normal(self):
     """We can retrieve a list of features."""

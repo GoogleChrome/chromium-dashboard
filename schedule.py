@@ -23,7 +23,7 @@ import logging
 import os
 import webapp2
 
-from google.appengine.api import memcache
+import ramcache
 from google.appengine.api import urlfetch
 from google.appengine.api import users
 
@@ -36,7 +36,7 @@ import util
 def fetch_chrome_release_info(version):
   key = '%s|chromerelease|%s' % (settings.MEMCACHE_KEY_PREFIX, version)
 
-  data = memcache.get(key)
+  data = ramcache.get(key)
   if data is None:
     url = ('https://chromiumdash.appspot.com/fetch_milestone_schedule?'
            'mstone=%s' % version)
@@ -50,7 +50,7 @@ def fetch_chrome_release_info(version):
           del data['owners']
           del data['feature_freeze']
           del data['ldaps']
-          memcache.set(key, data)
+          ramcache.set(key, data)
       except ValueError:
         pass  # Handled by next statement
 
@@ -62,7 +62,7 @@ def fetch_chrome_release_info(version):
           'mstone': version,
           'version': version,
       }
-      # Note: we don't put placeholder data into memcache.
+      # Note: we don't put placeholder data into ramcache.
 
   return data
 

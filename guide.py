@@ -26,7 +26,7 @@ import webapp2
 from django import forms
 
 # Appengine imports.
-from google.appengine.api import memcache
+import ramcache
 from google.appengine.api import users
 from google.appengine.ext import db
 from google.appengine.api import taskqueue
@@ -160,7 +160,7 @@ class FeatureNew(common.ContentHandler):
     key = feature.put()
 
     # TODO(jrobbins): enumerate and remove only the relevant keys.
-    memcache.flush_all()
+    ramcache.flush_all()
 
     redirect_url = '/guide/edit/' + str(key.id())
     return self.redirect(redirect_url)
@@ -531,7 +531,7 @@ class FeatureEditStage(common.ContentHandler):
     key = feature.put()
 
     # TODO(jrobbins): enumerate and remove only the relevant keys.
-    memcache.flush_all()
+    ramcache.flush_all()
 
     redirect_url = '/guide/edit/' + str(key.id())
     return self.redirect(redirect_url)
