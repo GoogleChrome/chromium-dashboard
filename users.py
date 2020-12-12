@@ -35,28 +35,26 @@ import models
 import settings
 
 
-class UserListHandler(common.FlaskContentHandler):
+class UserListHandler(common.FlaskHandler):
 
-  @common.strip_trailing_slash
-  def get_template_data(self, path):
+  TEMPLATE_PATH = 'admin/users/new.html'
+
+  def get_template_data(self):
     users = models.AppUser.all().fetch(None) # TODO(ericbidelman): ramcache this.
 
     user_list = [user.format_for_template() for user in users]
 
+    logging.info('user_list is %r', user_list)
     template_data = {
       'users': json.dumps(user_list)
     }
     return template_data
 
 
-class UserAPI(common.FlaskContentHandler):
+class CreateUserAPIHandler(common.FlaskHandler):
 
-  def process_post_data(self, path, user_id=None):
-    if user_id:
-      self._delete(user_id)
-      return {'deleted': user_id}
-
-    email = flask.request.get('email')
+  def process_post_data(self):
+    email = flask.request.form['email']
 
     # Don't add a duplicate email address.
     user = models.AppUser.all(keys_only=True).filter('email = ', email).get()
@@ -65,13 +63,20 @@ class UserAPI(common.FlaskContentHandler):
       user.put()
 
       response_json = user.format_for_template()
-      response_json['message'] = 'Created user'
     else:
       response_json = {
-          'message': 'User already exists',
+          'error_message': 'User already exists',
           'id': user.id()}
 
     return response_json
+
+
+class DeleteUserAPIHandler(common.FlaskHandler):
+
+  def process_post_data(self, user_id=None):
+    if user_id:
+      self._delete(user_id)
+    return flask.redirect('/admin/users/new')
 
   def _delete(self, user_id):
     if user_id:
@@ -80,14 +85,14 @@ class UserAPI(common.FlaskContentHandler):
         found_user.delete()
 
 
-class SettingsHandler(common.FlaskContentHandler):
+class SettingsHandler(common.FlaskHandler):
 
   TEMPLATE_PATH = 'settings.html'
 
   def get_template_data(self):
     user_pref = models.UserPref.get_signed_in_user_pref()
     if not user_pref:
-      return flask.redirect(users.create_login_url(self.request.uri))
+      return flask.redirect(users.create_login_url(flask.request.path))
 
     template_data = {
         'user_pref': user_pref,
@@ -100,7 +105,7 @@ class SettingsHandler(common.FlaskContentHandler):
     if not user_pref:
       flask.abort(403)
 
-    new_notify = flask.request.get('notify_as_starrer')
+    new_notify = flask.request.form.get('notify_as_starrer')
     logging.info('setting notify_as_starrer for %r to %r',
                  user_pref.email, new_notify)
     user_pref.notify_as_starrer = bool(new_notify)
@@ -110,6 +115,7 @@ class SettingsHandler(common.FlaskContentHandler):
 
 app = common.FlaskApplication([
   ('/settings', SettingsHandler),
-  ('/(.*)/([0-9]*)', UserHandler),
-  ('/(.*)', UserHandler),
+  ('/admin/users/create', CreateUserAPIHandler),
+  ('/admin/users/delete/<int:user_id>', DeleteUserAPIHandler),
+  ('/admin/users/new', UserListHandler),
 ], debug=settings.DEBUG)
