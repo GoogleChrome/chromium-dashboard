@@ -116,6 +116,7 @@ def strip_trailing_slash(handler):
   return remove_slash
 
 
+# TODO(jrobbins): phase out this class and have all calls use FlaskHandler.
 class BaseHandler(webapp2.RequestHandler):
 
   def __init__(self, request, response):
@@ -149,6 +150,7 @@ class BaseHandler(webapp2.RequestHandler):
     return can_edit
 
 
+# TODO(jrobbins): phase out this class and have all calls use FlaskHandler.
 class JSONHandler(BaseHandler):
 
   def __truncate_day_percentage(self, data):
@@ -189,6 +191,7 @@ class JSONHandler(BaseHandler):
     return self.response.write(json.dumps(data, separators=(',',':')))
 
 
+# TODO(jrobbins): phase out this class and have all calls use FlaskHandler.
 class ContentHandler(BaseHandler):
 
   def split_input(self, field_name, delim='\\r?\\n'):
@@ -358,9 +361,9 @@ class FlaskHandler(flask.views.MethodView):
     """Subclasses should implement this method to handle a POST request."""
     raise NotImplementedError()
 
-  def get_common_data(self):
+  def get_common_data(self, path=None):
     """Return template data used on all pages, e.g., sign-in info."""
-    current_path = flask.request.path
+    current_path = path or flask.request.path
     common_data = {
       'prod': settings.PROD,
       'APP_TITLE': settings.APP_TITLE,
@@ -404,10 +407,14 @@ class FlaskHandler(flask.views.MethodView):
     return template_data  # the hander can return a redirect or string
 
   def post(self, *args, **kwargs):
-    """POST handlers always process the request then redirect."""
+    """POST handlers process the request then return JSON or a redirect."""
     response_or_dict = self.process_post_data(*args, **kwargs)
     # If it is a dict, Flask will jsonify it.
     return response_or_dict, self.get_headers()
+
+  def abort(self, status):
+    """Support webapp2-style, e.g., self.abort(400)."""
+    flask.abort(status)
 
   def user_can_edit(self, user):
     if not user:
@@ -440,5 +447,10 @@ def FlaskApplication(routes, debug=False):
         pattern,
         view_func=handler_class.as_view(handler_class.__name__))
 
+  # Note: debug parameter is not used because the following accomplishes
+  # what we need it to do.
   app.config["TRAP_BAD_REQUEST_ERRORS"] = True  # Needed to log execptions
+  # Flask apps also have a debug setting that can be used to auto-reload
+  # template source code, but we use django for that.
+
   return app

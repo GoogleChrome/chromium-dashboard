@@ -18,12 +18,10 @@ from __future__ import print_function
 
 import logging
 import json
-import webapp2
+import flask
 
 from google.appengine.ext import db
 from google.appengine.api import users
-
-from django.template.loader import render_to_string
 
 import common
 import models
@@ -34,12 +32,12 @@ import settings
 ALLOWED_CUES = ['progress-checkmarks']
 
 
-class DismissCueHandler(webapp2.RequestHandler):
+class DismissCueHandler(common.FlaskHandler):
   """Handle JSON API requests to dismiss an on-page help cue card."""
 
-  def post(self):
+  def process_post_data(self):
     """Dismisses a cue card for the signed in user."""
-    json_body = json.loads(self.request.body)
+    json_body = flask.request.get_json()
     cue = json_body.get('cue')
     if cue not in ALLOWED_CUES:
       logging.info('Unexpected cue: %r', cue)
@@ -51,11 +49,9 @@ class DismissCueHandler(webapp2.RequestHandler):
       self.abort(400)
 
     models.UserPref.dismiss_cue(cue)
-    data = {}
-    self.response.headers['Content-Type'] = 'application/json;charset=utf-8'
-    result = self.response.write(json.dumps(data, separators=(',',':')))
+    return {}  # Empty JSON response.
 
 
-app = webapp2.WSGIApplication([
+app = common.FlaskApplication([
   ('/cues/dismiss', DismissCueHandler),
 ], debug=settings.DEBUG)
