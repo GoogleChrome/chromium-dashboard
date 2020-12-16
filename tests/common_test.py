@@ -20,6 +20,8 @@ import testing_config  # Must be imported before the module under test.
 
 import mock
 import webapp2
+import flask
+import flask.views
 
 from google.appengine.api import users
 
@@ -143,3 +145,150 @@ class BaseHandlerTests(unittest.TestCase):
     u = users.User(email='user@this-is-not.google.com')
     actual = self.handler.user_can_edit(u)
     self.assertFalse(actual)
+
+
+
+class TestableFlaskHandler(common.FlaskHandler):
+
+  TEMPLATE_PATH = 'test_template.html'
+
+  def get_template_data(self, special_status=None, redirect_to=None):
+    if redirect_to:
+      return flask.redirect(redirect_to)
+
+    template_data = {'name': 'testing'}
+    if special_status:
+      template_data['status'] = special_status
+    return template_data
+
+  def process_post_data(self, redirect_to=None):
+    if redirect_to:
+      return flask.redirect(redirect_to)
+
+    return {'objects': [1, 2, 3]}
+
+
+test_app = common.FlaskApplication(
+    [('/test', TestableFlaskHandler)],
+    debug=True)
+
+
+class FlaskHandlerTests(unittest.TestCase):
+
+  def setUp(self):
+    self.handler = TestableFlaskHandler()
+
+  def test_get_headers(self):
+    """We always use some standard headers."""
+    actual = self.handler.get_headers()
+    self.assertEqual(
+        {'Access-Control-Allow-Origin': '*',
+         'X-UA-Compatible': 'IE=Edge,chrome=1',
+         },
+        actual)
+
+  def test_get_template_data__missing(self):
+    """Every subsclass should overide get_template_data()."""
+    self.handler = common.FlaskHandler()
+    with self.assertRaises(NotImplementedError):
+      self.handler.get_template_data()
+
+  def test_get_template_path__missing(self):
+    """Subsclasses that don't define TEMPLATE_PATH trigger error."""
+    self.handler = common.FlaskHandler()
+    with self.assertRaises(ValueError):
+      self.handler.get_template_path({})
+
+  def test_get_template_path__specified_in_class(self):
+    """Subsclasses can define TEMPLATE_PATH."""
+    actual = self.handler.get_template_path({})
+    self.assertEqual('test_template.html', actual)
+
+  def test_get_template_path__specalized_by_template_data(self):
+    """If get_template_data() returned a template path, we use it."""
+    actual = self.handler.get_template_path(
+        {'template_path': 'special.html'})
+    self.assertEqual('special.html', actual)
+
+  def test_process_post_data__missing(self):
+    """Every subsclass should overide process_post_data()."""
+    self.handler = common.FlaskHandler()
+    with self.assertRaises(NotImplementedError):
+      self.handler.process_post_data()
+
+  def test_get_common_data__signed_out(self):
+    """When user is signed out, offer sign in link."""
+    testing_config.sign_out()
+
+    actual = self.handler.get_common_data(path='/test/path')
+
+    self.assertIn('prod', actual)
+    self.assertIsNone(actual['user'])
+    self.assertEqual('Sign in', actual['login'][0])
+    self.assertIn('/Login', actual['login'][1])
+    self.assertIn('/test/path', actual['login'][1])
+
+  def test_get_common_data__signed_in(self):
+    """When user is signed in, offer sign out link."""
+    testing_config.sign_in('test@example.com', 111)
+
+    actual = self.handler.get_common_data(path='/test/path')
+
+    self.assertIn('prod', actual)
+    self.assertIsNotNone(actual['user'])
+    self.assertEqual('Sign out', actual['login'][0])
+    self.assertIn('/Logout', actual['login'][1])
+    self.assertIn('/test/path', actual['login'][1])
+
+  def test_render(self):
+    """We can render a simple template to a string."""
+    actual = self.handler.render({'name': 'literal'}, 'test_template.html')
+    self.assertIn('Hi literal', actual)
+
+  def test_get__html_page(self):
+    """We can process a request and return HTML and headers."""
+    with test_app.test_request_context('/test'):
+      actual_html, actual_status, actual_headers = self.handler.get()
+
+    self.assertIn('Hi testing', actual_html)
+    self.assertEqual(200, actual_status)
+    self.assertIn('Access-Control-Allow-Origin', actual_headers)
+
+  def test_get__special_status(self):
+    """get_template_data() can return a special HTTP status."""
+    with test_app.test_request_context('/test'):
+      actual_html, actual_status, actual_headers = self.handler.get(
+          special_status=222)
+
+    self.assertIn('Hi testing', actual_html)
+    self.assertEqual(222, actual_status)
+    self.assertIn('Access-Control-Allow-Origin', actual_headers)
+
+  def test_get__redirect(self):
+    """get_template_data() can return a redirect response object."""
+    with test_app.test_request_context('/test'):
+      actual_response = self.handler.get(
+          redirect_to='some/other/path')
+
+    self.assertIn('Response', type(actual_response).__name__)
+    self.assertIn('some/other/path', actual_response.headers['location'])
+
+  def test_post__json(self):
+    """if process_post_data() returns a dict, it is passed to flask."""
+    with test_app.test_request_context('/test'):
+      actual_dict, actual_headers = self.handler.post()
+
+    self.assertEqual(
+        {'objects': [1, 2, 3]},
+        actual_dict)
+    self.assertIn('Access-Control-Allow-Origin', actual_headers)
+
+  def test_post__redirect(self):
+    """if process_post_data() returns a redirect response, it is used."""
+    with test_app.test_request_context('/test'):
+      actual_response, actual_headers = self.handler.post(
+          redirect_to='some/other/path')
+
+    self.assertIn('Response', type(actual_response).__name__)
+    self.assertIn('some/other/path', actual_response.headers['location'])
+    self.assertIn('Access-Control-Allow-Origin', actual_headers)

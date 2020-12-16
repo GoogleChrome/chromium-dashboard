@@ -25,7 +25,6 @@ import os
 import re
 import sys
 import webapp2
-from bs4 import BeautifulSoup
 from HTMLParser import HTMLParser
 from xml.dom import minidom
 
@@ -322,13 +321,9 @@ class FeatureHandler(common.ContentHandler):
 
   def __get_blink_component_from_bug(self, blink_components, bug_url):
     if blink_components[0] == models.BlinkComponent.DEFAULT_COMPONENT and bug_url:
-      result = urlfetch.fetch(bug_url)
-      if result.status_code == 200:
-        soup = BeautifulSoup(result.content, 'html.parser')
-        components = soup.find_all(string=re.compile('^Blink'))
-
-        h = HTMLParser()
-        return [h.unescape(unicode(c)) for c in components]
+        # Scraping the bug URL no longer works because monorail uses
+        # web components and APIs rather than details in an HTML page.
+        return []
     return blink_components
 
   def get(self, path, feature_id=None):

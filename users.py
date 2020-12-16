@@ -23,38 +23,38 @@ __author__ = 'ericbidelman@chromium.org (Eric Bidelman)'
 import json
 import logging
 import os
-import webapp2
 
 # App Engine imports.
 from google.appengine.api import users
 from google.appengine.ext import db
+
+import flask
 
 import common
 import models
 import settings
 
 
-class UserHandler(common.ContentHandler):
+class UserListHandler(common.FlaskHandler):
 
-  @common.strip_trailing_slash
-  def get(self, path):
+  TEMPLATE_PATH = 'admin/users/new.html'
+
+  def get_template_data(self):
     users = models.AppUser.all().fetch(None) # TODO(ericbidelman): ramcache this.
 
     user_list = [user.format_for_template() for user in users]
 
+    logging.info('user_list is %r', user_list)
     template_data = {
       'users': json.dumps(user_list)
     }
+    return template_data
 
-    self.render(data=template_data, template_path=os.path.join(path + '.html'))
 
-  def post(self, path, user_id=None):
-    if user_id:
-      self._delete(user_id)
-      self.redirect('/admin/users/new')
-      return
+class CreateUserAPIHandler(common.FlaskHandler):
 
-    email = self.request.get('email')
+  def process_post_data(self):
+    email = flask.request.form['email']
 
     # Don't add a duplicate email address.
     user = models.AppUser.all(keys_only=True).filter('email = ', email).get()
@@ -62,12 +62,21 @@ class UserHandler(common.ContentHandler):
       user = models.AppUser(email=db.Email(email))
       user.put()
 
-      self.response.set_status(201, message='Created user')
-      self.response.headers['Content-Type'] = 'application/json;charset=utf-8'
-      return self.response.write(json.dumps(user.format_for_template()))
+      response_json = user.format_for_template()
     else:
-      self.response.set_status(200, message='User already exists')
-      self.response.write(json.dumps({'id': user.id()}))
+      response_json = {
+          'error_message': 'User already exists',
+          'id': user.id()}
+
+    return response_json
+
+
+class DeleteUserAPIHandler(common.FlaskHandler):
+
+  def process_post_data(self, user_id=None):
+    if user_id:
+      self._delete(user_id)
+    return flask.redirect('/admin/users/new')
 
   def _delete(self, user_id):
     if user_id:
@@ -76,35 +85,37 @@ class UserHandler(common.ContentHandler):
         found_user.delete()
 
 
-class SettingsHandler(common.ContentHandler):
+class SettingsHandler(common.FlaskHandler):
 
-  def get(self):
+  TEMPLATE_PATH = 'settings.html'
+
+  def get_template_data(self):
     user_pref = models.UserPref.get_signed_in_user_pref()
     if not user_pref:
-      return self.redirect(users.create_login_url(self.request.uri))
+      return flask.redirect(users.create_login_url(flask.request.path))
 
     template_data = {
         'user_pref': user_pref,
         'user_pref_form': models.UserPrefForm(user_pref.to_dict()),
     }
+    return template_data
 
-    self.render(data=template_data, template_path=os.path.join('settings.html'))
-
-  def post(self):
+  def process_post_data(self):
     user_pref = models.UserPref.get_signed_in_user_pref()
     if not user_pref:
-      self.abort(403)
+      flask.abort(403)
 
-    new_notify = self.request.get('notify_as_starrer')
+    new_notify = flask.request.form.get('notify_as_starrer')
     logging.info('setting notify_as_starrer for %r to %r',
                  user_pref.email, new_notify)
     user_pref.notify_as_starrer = bool(new_notify)
     user_pref.put()
-    return self.redirect(self.request.uri)
+    return flask.redirect(flask.request.path)
 
 
-app = webapp2.WSGIApplication([
+app = common.FlaskApplication([
   ('/settings', SettingsHandler),
-  ('/(.*)/([0-9]*)', UserHandler),
-  ('/(.*)', UserHandler),
+  ('/admin/users/create', CreateUserAPIHandler),
+  ('/admin/users/delete/<int:user_id>', DeleteUserAPIHandler),
+  ('/admin/users/new', UserListHandler),
 ], debug=settings.DEBUG)

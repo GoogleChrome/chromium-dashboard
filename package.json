@@ -7,7 +7,7 @@
     "node": ">=6.0.0"
   },
   "scripts": {
-    "deps": "pip install -t lib -r requirements.txt",
+    "deps": "pip install -t lib -r requirements.txt --upgrade",
     "test": "python -m unittest discover -p *_test.py -s tests -b",
     "coverage": "python -m coverage erase && python -m coverage run -m unittest discover -p *_test.py -s tests -b && python -m coverage html",
     "lint": "gulp lint-fix && lit-analyzer \"static/elements/chromedash-!(featurelist)*.js\"",

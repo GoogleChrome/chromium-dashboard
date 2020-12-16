@@ -18,9 +18,9 @@ from __future__ import print_function
 import unittest
 import testing_config  # Must be imported before the module under test.
 
+import flask
 import mock
-import webapp2
-from webob import exc
+import werkzeug.exceptions  # Flask HTTP stuff.
 
 from google.appengine.ext import db
 from google.appengine.api import mail
@@ -39,8 +39,6 @@ class DismissCueHandlerTest(unittest.TestCase):
         notify_as_starrer=False)
     self.user_pref_1.put()
     self.handler = cues.DismissCueHandler()
-    self.handler.request = webapp2.Request.blank('/features/star/set')
-    self.handler.response = webapp2.Response()
 
   def tearDown(self):
     self.user_pref_1.delete()
@@ -49,8 +47,10 @@ class DismissCueHandlerTest(unittest.TestCase):
     """User wants to dismiss a valid cue card ID."""
     testing_config.sign_in('one@example.com', 123567890)
 
-    self.handler.request.body = '{"cue": "progress-checkmarks"}'
-    self.handler.post()
+    with cues.app.test_request_context(
+        '/cues/dismiss', json={"cue": "progress-checkmarks"}):
+      actual_json, actual_headers = self.handler.post()
+    self.assertEqual({}, actual_json)
 
     revised_user_pref = models.UserPref.get_signed_in_user_pref()
     self.assertEqual(['progress-checkmarks'], revised_user_pref.dismissed_cues)
@@ -59,8 +59,9 @@ class DismissCueHandlerTest(unittest.TestCase):
     """User wants to dismiss an invalid cue card ID."""
     testing_config.sign_in('one@example.com', 123567890)
 
-    self.handler.request.body = '{"cue": "xyz"}'
-    with self.assertRaises(exc.HTTPClientError):
+    with cues.app.test_request_context(
+        '/cues/dismiss', json={"cue": "xyz"}):
+      with self.assertRaises(werkzeug.exceptions.BadRequest):
         self.handler.post()
 
     # The invalid string should not be added.

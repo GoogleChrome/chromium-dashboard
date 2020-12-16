@@ -19,8 +19,7 @@ import mock
 import unittest
 import testing_config  # Must be imported before the module under test.
 
-import webapp2
-from webob import exc
+import flask
 
 import models
 import users
@@ -29,25 +28,27 @@ import users
 class SettingsHandlerTests(unittest.TestCase):
 
   def setUp(self):
-    request = webapp2.Request.blank('/settings')
-    response = webapp2.Response()
-    self.handler = users.SettingsHandler(request, response)
+    self.handler = users.SettingsHandler()
 
-  @mock.patch('users.SettingsHandler.redirect')
+  @mock.patch('flask.redirect')
   @mock.patch('models.UserPref.get_signed_in_user_pref')
   def test_get__anon(self, mock_gsiup, mock_redirect):
     mock_gsiup.return_value = None
+    mock_redirect.return_value = 'mock redirect response'
 
-    actual = self.handler.get()
+    with users.app.test_request_context('/settings'):
+      actual = self.handler.get_template_data()
 
     mock_redirect.assert_called_once()
+    self.assertEqual('mock redirect response', actual)
 
-  @mock.patch('users.SettingsHandler.render')
   @mock.patch('models.UserPref.get_signed_in_user_pref')
-  def test_get__signed_in(self, mock_gsiup, mock_render):
+  def test_get__signed_in(self, mock_gsiup):
     mock_gsiup.return_value = models.UserPref(
         email='user@example.com')
 
-    actual = self.handler.get()
+    actual = self.handler.get_template_data()
 
-    mock_render.assert_called_once()
+    self.assertIsInstance(actual, dict)
+    self.assertIn('user_pref', actual)
+    self.assertIn('user_pref_form', actual)

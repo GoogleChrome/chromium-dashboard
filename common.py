@@ -21,10 +21,14 @@ __author__ = 'ericbidelman@chromium.org (Eric Bidelman)'
 import datetime
 import json
 import logging
+import os
 import re
 import time
 import traceback
 import webapp2
+
+import flask
+import flask.views
 
 # App Engine imports.
 from google.appengine.api import users
@@ -112,6 +116,7 @@ def strip_trailing_slash(handler):
   return remove_slash
 
 
+# TODO(jrobbins): phase out this class and have all calls use FlaskHandler.
 class BaseHandler(webapp2.RequestHandler):
 
   def __init__(self, request, response):
@@ -145,6 +150,7 @@ class BaseHandler(webapp2.RequestHandler):
     return can_edit
 
 
+# TODO(jrobbins): phase out this class and have all calls use FlaskHandler.
 class JSONHandler(BaseHandler):
 
   def __truncate_day_percentage(self, data):
@@ -185,6 +191,7 @@ class JSONHandler(BaseHandler):
     return self.response.write(json.dumps(data, separators=(',',':')))
 
 
+# TODO(jrobbins): phase out this class and have all calls use FlaskHandler.
 class ContentHandler(BaseHandler):
 
   def split_input(self, field_name, delim='\\r?\\n'):
@@ -323,3 +330,127 @@ def handle_500(request, response, exception):
     '<h1>Error: 500 Internal Server Error</h1>')
   response.write(ERROR_500)
   response.set_status(500)
+
+
+class FlaskHandler(flask.views.MethodView):
+
+  TEMPLATE_PATH = None  # Subclasses should define this.
+
+  def get_headers(self):
+    """Add CORS and Chrome Frame to all responses."""
+    return {
+        'Access-Control-Allow-Origin': '*',
+        'X-UA-Compatible': 'IE=Edge,chrome=1',
+        }
+
+  def get_template_data(self):
+    """Subclasses should implement this method to handle a GET request."""
+    raise NotImplementedError()
+
+  def get_template_path(self, template_data):
+    """Subclasses can override their class constant via template_data."""
+    if 'template_path' in template_data:
+      return template_data['template_path']
+    if self.TEMPLATE_PATH:
+      return self.TEMPLATE_PATH
+    raise ValueError(
+        'No TEMPLATE_PATH was defined in %r or returned in template_data.' %
+        self.__class__.__name__)
+
+  def process_post_data(self):
+    """Subclasses should implement this method to handle a POST request."""
+    raise NotImplementedError()
+
+  def get_common_data(self, path=None):
+    """Return template data used on all pages, e.g., sign-in info."""
+    current_path = path or flask.request.path
+    common_data = {
+      'prod': settings.PROD,
+      'APP_TITLE': settings.APP_TITLE,
+      'current_path': current_path,
+      'VULCANIZE': settings.VULCANIZE,
+      'TEMPLATE_CACHE_TIME': settings.TEMPLATE_CACHE_TIME
+      }
+
+    user = users.get_current_user()
+    if user:
+      user_pref = models.UserPref.get_signed_in_user_pref()
+      common_data['login'] = (
+          'Sign out', users.create_logout_url(dest_url=current_path))
+      common_data['user'] = {
+        'can_edit': self.user_can_edit(user),
+        'is_admin': users.is_current_user_admin(),
+        'email': user.email(),
+        'dismissed_cues': json.dumps(user_pref.dismissed_cues),
+      }
+    else:
+      common_data['user'] = None
+      common_data['login'] = (
+          'Sign in', users.create_login_url(dest_url=current_path))
+    return common_data
+
+  def render(self, template_data, template_path):
+    return render_to_string(template_path, template_data)
+
+  def get(self, *args, **kwargs):
+    """GET handlers always render templates or do redirects."""
+    template_data = self.get_template_data(*args, **kwargs)
+
+    if type(template_data) == dict:
+      status = template_data.get('status', 200)
+      template_data.update(self.get_common_data())
+      template_path = self.get_template_path(template_data)
+      template_text = self.render(template_data, os.path.join(template_path))
+      headers = self.get_headers()
+      return template_text, status, headers
+
+    return template_data  # the hander can return a redirect or string
+
+  def post(self, *args, **kwargs):
+    """POST handlers process the request then return JSON or a redirect."""
+    response_or_dict = self.process_post_data(*args, **kwargs)
+    # If it is a dict, Flask will jsonify it.
+    return response_or_dict, self.get_headers()
+
+  def abort(self, status):
+    """Support webapp2-style, e.g., self.abort(400)."""
+    flask.abort(status)
+
+  def user_can_edit(self, user):
+    if not user:
+      return False
+
+    can_edit = False
+
+    if users.is_current_user_admin():
+      can_edit = True
+    elif user.email().endswith(('@chromium.org', '@google.com')):
+      can_edit = True
+    else:
+      # TODO(ericbidelman): memcache user lookup.
+      query = models.AppUser.all(keys_only=True).filter('email =', user.email())
+      found_user = query.get()
+
+      if found_user is not None:
+        can_edit = True
+
+    return can_edit
+
+
+
+def FlaskApplication(routes, debug=False):
+  """Make a Flask app and add routes and handlers that work like webapp2."""
+
+  app = flask.Flask(__name__)
+  for pattern, handler_class in routes:
+    app.add_url_rule(
+        pattern,
+        view_func=handler_class.as_view(handler_class.__name__))
+
+  # Note: debug parameter is not used because the following accomplishes
+  # what we need it to do.
+  app.config["TRAP_BAD_REQUEST_ERRORS"] = True  # Needed to log execptions
+  # Flask apps also have a debug setting that can be used to auto-reload
+  # template source code, but we use django for that.
+
+  return app
