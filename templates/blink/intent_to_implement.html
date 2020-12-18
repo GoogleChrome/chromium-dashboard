@@ -95,6 +95,14 @@
      {{feature.ff_views_notes|urlize}}
     {% endif %}
 
+    <br><br><i>Edge</i>: {{feature.ie_views.text}}
+    {% if feature.ie_views_link %}
+      (<a href="{{feature.ie_views_link}}">{{feature.ie_views_link}}</a>)
+    {% endif %}
+    {% if feature.ie_views_notes %}
+     {{feature.ie_views_notes|urlize}}
+    {% endif %}
+
     <br><br><i>WebKit</i>: {{feature.safari_views.text}}
     {% if feature.safari_views_link %}
       (<a href="{{feature.safari_views_link}}">{{feature.safari_views_link}}</a>)
