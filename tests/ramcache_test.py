@@ -73,6 +73,16 @@ class RAMCacheFunctionTests(unittest.TestCase):
     mock_time.return_value = NOW + 61
     self.assertEquals(None, ramcache.get(KEY_1))
 
+    mock_time.return_value = NOW
+    ramcache.set_multi({KEY_1 + 'multi': 101}, time=60)
+    self.assertEquals(101, ramcache.get(KEY_1 + 'multi'))
+
+    mock_time.return_value = NOW + 59
+    self.assertEquals(101, ramcache.get(KEY_1 + 'multi'))
+
+    mock_time.return_value = NOW + 61
+    self.assertEquals(None, ramcache.get(KEY_1 + 'multi'))
+
   @mock.patch('ramcache.SharedInvalidate.invalidate')
   def testDelete_NotFound(self, mock_invalidate):
     """Deleting an item that is not in the cache is a no-op."""
