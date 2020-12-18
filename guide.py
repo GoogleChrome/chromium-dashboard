@@ -17,12 +17,12 @@ from __future__ import print_function
 # limitations under the License.
 
 import datetime
+import flask
 import json
 import logging
 import os
 import re
 import sys
-import webapp2
 from django import forms
 
 # Appengine imports.
@@ -108,32 +108,29 @@ FLAT_FORMS = [
 ]
 
 
-class FeatureNew(common.ContentHandler):
+class FeatureNew(common.FlaskHandler):
 
-  def get(self, path):
+  TEMPLATE_PATH = 'admin/guide/new.html'
+
+  def get_template_data(self):
     user = users.get_current_user()
     if user is None:
-      return self.redirect(users.create_login_url(self.request.uri))
+      return self.redirect(users.create_login_url(self.request_uri))
 
     if not self.user_can_edit(user):
-      common.handle_401(self.request, self.response, Exception)
-      return
+      self.abort(403)
 
     new_feature_form = guideforms.NewFeatureForm(
         initial={'owner': user.email()})
     template_data = {
         'overview_form': new_feature_form,
         }
+    return template_data
 
-    self._add_common_template_values(template_data)
-
-    self.render(data=template_data, template_path=os.path.join(path + '.html'))
-
-  def post(self, path):
+  def process_post_data(self):
     user = users.get_current_user()
     if user is None or (user and not self.user_can_edit(user)):
-      common.handle_401(self.request, self.response, Exception)
-      return
+      self.abort(403)
 
     owners = self.split_emails('owner')
 
@@ -143,17 +140,17 @@ class FeatureNew(common.ContentHandler):
 
     # TODO(jrobbins): Validate input, even though it is done on client.
 
-    feature_type = int(self.request.get('feature_type', 0))
+    feature_type = int(self.form.get('feature_type', 0))
     feature = models.Feature(
-        category=int(self.request.get('category')),
-        name=self.request.get('name'),
+        category=int(self.form.get('category')),
+        name=self.form.get('name'),
         feature_type=feature_type,
         intent_stage=models.INTENT_NONE,
-        summary=self.request.get('summary'),
+        summary=self.form.get('summary'),
         owner=owners,
         impl_status_chrome=models.NO_ACTIVE_DEV,
         standardization=models.EDITORS_DRAFT,
-        unlisted=self.request.get('unlisted') == 'on',
+        unlisted=self.form.get('unlisted') == 'on',
         web_dev_views=models.DEV_NO_SIGNALS,
         blink_components=blink_components,
         tag_review_status=processes.initial_tag_review_status(feature_type))
@@ -166,7 +163,9 @@ class FeatureNew(common.ContentHandler):
     return self.redirect(redirect_url)
 
 
-class ProcessOverview(common.ContentHandler):
+class ProcessOverview(common.FlaskHandler):
+
+  TEMPLATE_PATH = 'guide/edit.html'
 
   def detect_progress(self, f):
     progress_so_far = {}
@@ -176,15 +175,14 @@ class ProcessOverview(common.ContentHandler):
         progress_so_far[progress_item] = str(detected)
     return progress_so_far
 
-  def get(self, path, feature_id):
+  def get_template_data(self, feature_id):
     user = users.get_current_user()
     if user is None:
       # Redirect to public URL for unauthenticated users.
       return self.redirect(common.format_feature_url(feature_id))
 
     if not self.user_can_edit(user):
-      common.handle_401(self.request, self.response, Exception)
-      return
+      self.abort(403)
 
     f = models.Feature.get_by_id(long(feature_id))
     if f is None:
@@ -206,12 +204,12 @@ class ProcessOverview(common.ContentHandler):
         'feature_json': json.dumps(f.format_for_template()),
         'progress_so_far': json.dumps(progress_so_far),
     })
-
-    self._add_common_template_values(template_data)
-    self.render(data=template_data, template_path=os.path.join(path + '.html'))
+    return template_data
 
 
-class FeatureEditStage(common.ContentHandler):
+class FeatureEditStage(common.FlaskHandler):
+
+  TEMPLATE_PATH = 'guide/stage.html'
 
   def touched(self, param_name):
     """Return True if the user edited the specified field."""
@@ -225,14 +223,14 @@ class FeatureEditStage(common.ContentHandler):
     # TODO(jrobbins): Simplify this after next deployment.
     checkboxes = ('unlisted', 'all_platforms', 'wpt', 'prefixed', 'api_spec')
     if param_name in checkboxes:
-      form_fields_str = self.request.get('form_fields')
+      form_fields_str = self.form.get('form_fields')
       if form_fields_str:
         form_fields = [field_name.strip()
                        for field_name in form_fields_str.split(',')]
         return param_name in form_fields
       else:
         return True
-    return param_name in self.request.POST
+    return param_name in self.form
 
   def get_blink_component_from_bug(self, blink_components, bug_url):
     # TODO(jrobbins): Use monorail API instead of scrapping.
@@ -249,17 +247,14 @@ class FeatureEditStage(common.ContentHandler):
 
     return f, feature_process
 
-  def get(self, path, feature_id, stage_id):
-    feature_id = long(feature_id)
-    stage_id = int(stage_id)
+  def get_template_data(self, feature_id, stage_id):
     user = users.get_current_user()
     if user is None:
       # Redirect to public URL for unauthenticated users.
       return self.redirect(common.format_feature_url(feature_id))
 
     if not self.user_can_edit(user):
-      common.handle_401(self.request, self.response, Exception)
-      return
+      self.abort(403)
 
     f, feature_process = self.get_feature_and_process(feature_id)
 
@@ -300,31 +295,25 @@ class FeatureEditStage(common.ContentHandler):
             impl_status_offered, None),
         'impl_status_offered': impl_status_offered,
     })
+    return template_data
 
-    self._add_common_template_values(template_data)
-
-    self.render(data=template_data, template_path=os.path.join(path + '.html'))
-
-  def post(self, path, feature_id, stage_id=0):
-    feature_id = long(feature_id)
-    stage_id = int(stage_id)
+  def process_post_data(self, feature_id, stage_id=0):
     user = users.get_current_user()
     if user is None or (user and not self.user_can_edit(user)):
-      common.handle_401(self.request, self.response, Exception)
-      return
+      self.abort(403)
 
     if feature_id:
       feature = models.Feature.get_by_id(feature_id)
       if feature is None:
         self.abort(404)
 
-    logging.info('POST is %r', self.request.POST)
+    logging.info('POST is %r', self.form)
 
     if self.touched('spec_link'):
       feature.spec_link = self.parse_link('spec_link')
 
     if self.touched('api_spec'):
-      feature.api_spec = self.request.get('api_spec') == 'on'
+      feature.api_spec = self.form.get('api_spec') == 'on'
 
     if self.touched('security_review_status'):
       feature.security_review_status = self.parse_int('security_review_status')
@@ -408,7 +397,7 @@ class FeatureEditStage(common.ContentHandler):
           'ot_milestone_android_end')
 
     if self.touched('flag_name'):
-      feature.flag_name = self.request.get('flag_name')
+      feature.flag_name = self.form.get('flag_name')
 
     if self.touched('owner'):
       feature.owner = self.split_emails('owner')
@@ -417,7 +406,7 @@ class FeatureEditStage(common.ContentHandler):
       feature.doc_links = self.split_input('doc_links')
 
     if self.touched('measurement'):
-      feature.measurement = self.request.get('measurement')
+      feature.measurement = self.form.get('measurement')
 
     if self.touched('sample_links'):
       feature.sample_links = self.split_input('sample_links')
@@ -434,98 +423,98 @@ class FeatureEditStage(common.ContentHandler):
       feature.devrel = self.split_emails('devrel')
 
     if self.touched('feature_type'):
-      feature.feature_type = int(self.request.get('feature_type'))
+      feature.feature_type = int(self.form.get('feature_type'))
 
     # intent_stage can be be set either by <select> or a checkbox
     if self.touched('intent_stage'):
-      feature.intent_stage = int(self.request.get('intent_stage'))
-    elif self.request.get('set_stage') == 'on':
+      feature.intent_stage = int(self.form.get('intent_stage'))
+    elif self.form.get('set_stage') == 'on':
       feature.intent_stage = stage_id
 
     if self.touched('category'):
-      feature.category = int(self.request.get('category'))
+      feature.category = int(self.form.get('category'))
     if self.touched('name'):
-      feature.name = self.request.get('name')
+      feature.name = self.form.get('name')
     if self.touched('summary'):
-      feature.summary = self.request.get('summary')
+      feature.summary = self.form.get('summary')
     if self.touched('motivation'):
-      feature.motivation = self.request.get('motivation')
+      feature.motivation = self.form.get('motivation')
 
     # impl_status_chrome can be be set either by <select> or a checkbox
     if self.touched('impl_status_chrome'):
-      feature.impl_status_chrome = int(self.request.get('impl_status_chrome'))
-    elif self.request.get('set_impl_status') == 'on':
+      feature.impl_status_chrome = int(self.form.get('impl_status_chrome'))
+    elif self.form.get('set_impl_status') == 'on':
       feature.impl_status_chrome = self.parse_int('impl_status_offered')
 
     if self.touched('interop_compat_risks'):
-      feature.interop_compat_risks = self.request.get('interop_compat_risks')
+      feature.interop_compat_risks = self.form.get('interop_compat_risks')
     if self.touched('ergonomics_risks'):
-      feature.ergonomics_risks = self.request.get('ergonomics_risks')
+      feature.ergonomics_risks = self.form.get('ergonomics_risks')
     if self.touched('activation_risks'):
-      feature.activation_risks = self.request.get('activation_risks')
+      feature.activation_risks = self.form.get('activation_risks')
     if self.touched('security_risks'):
-      feature.security_risks = self.request.get('security_risks')
+      feature.security_risks = self.form.get('security_risks')
     if self.touched('debuggability'):
-      feature.debuggability = self.request.get('debuggability')
+      feature.debuggability = self.form.get('debuggability')
     if self.touched('all_platforms'):
-      feature.all_platforms = self.request.get('all_platforms') == 'on'
+      feature.all_platforms = self.form.get('all_platforms') == 'on'
     if self.touched('all_platforms_descr'):
-      feature.all_platforms_descr = self.request.get('all_platforms_descr')
+      feature.all_platforms_descr = self.form.get('all_platforms_descr')
     if self.touched('wpt'):
-      feature.wpt = self.request.get('wpt') == 'on'
+      feature.wpt = self.form.get('wpt') == 'on'
     if self.touched('wpt_descr'):
-      feature.wpt_descr = self.request.get('wpt_descr')
+      feature.wpt_descr = self.form.get('wpt_descr')
     if self.touched('ff_views'):
-      feature.ff_views = int(self.request.get('ff_views'))
+      feature.ff_views = int(self.form.get('ff_views'))
     if self.touched('ff_views_link'):
       feature.ff_views_link = self.parse_link('ff_views_link')
     if self.touched('ff_views_notes'):
-      feature.ff_views_notes = self.request.get('ff_views_notes')
+      feature.ff_views_notes = self.form.get('ff_views_notes')
     if self.touched('ie_views'):
-      feature.ie_views = int(self.request.get('ie_views'))
+      feature.ie_views = int(self.form.get('ie_views'))
     if self.touched('ie_views_link'):
       feature.ie_views_link = self.parse_link('ie_views_link')
     if self.touched('ie_views_notes'):
-      feature.ie_views_notes = self.request.get('ie_views_notes')
+      feature.ie_views_notes = self.form.get('ie_views_notes')
     if self.touched('safari_views'):
-      feature.safari_views = int(self.request.get('safari_views'))
+      feature.safari_views = int(self.form.get('safari_views'))
     if self.touched('safari_views_link'):
       feature.safari_views_link = self.parse_link('safari_views_link')
     if self.touched('safari_views_notes'):
-      feature.safari_views_notes = self.request.get('safari_views_notes')
+      feature.safari_views_notes = self.form.get('safari_views_notes')
     if self.touched('web_dev_views'):
-      feature.web_dev_views = int(self.request.get('web_dev_views'))
+      feature.web_dev_views = int(self.form.get('web_dev_views'))
     if self.touched('web_dev_views'):
       feature.web_dev_views_link = self.parse_link('web_dev_views_link')
     if self.touched('web_dev_views_notes'):
-      feature.web_dev_views_notes = self.request.get('web_dev_views_notes')
+      feature.web_dev_views_notes = self.form.get('web_dev_views_notes')
     if self.touched('prefixed'):
-      feature.prefixed = self.request.get('prefixed') == 'on'
+      feature.prefixed = self.form.get('prefixed') == 'on'
 
     if self.touched('tag_review'):
-      feature.tag_review = self.request.get('tag_review')
+      feature.tag_review = self.form.get('tag_review')
     if self.touched('tag_review_status'):
       feature.tag_review_status = self.parse_int('tag_review_status')
 
     if self.touched('standardization'):
-      feature.standardization = int(self.request.get('standardization'))
+      feature.standardization = int(self.form.get('standardization'))
     if self.touched('unlisted'):
-      feature.unlisted = self.request.get('unlisted') == 'on'
+      feature.unlisted = self.form.get('unlisted') == 'on'
     if self.touched('comments'):
-      feature.comments = self.request.get('comments')
+      feature.comments = self.form.get('comments')
     if self.touched('experiment_goals'):
-      feature.experiment_goals = self.request.get('experiment_goals')
+      feature.experiment_goals = self.form.get('experiment_goals')
     if self.touched('experiment_timeline'):
-      feature.experiment_timeline = self.request.get('experiment_timeline')
+      feature.experiment_timeline = self.form.get('experiment_timeline')
     if self.touched('experiment_risks'):
-      feature.experiment_risks = self.request.get('experiment_risks')
+      feature.experiment_risks = self.form.get('experiment_risks')
     if self.touched('experiment_extension_reason'):
-      feature.experiment_extension_reason = self.request.get(
+      feature.experiment_extension_reason = self.form.get(
           'experiment_extension_reason')
     if self.touched('ongoing_constraints'):
-      feature.ongoing_constraints = self.request.get('ongoing_constraints')
+      feature.ongoing_constraints = self.form.get('ongoing_constraints')
 
-    if self.request.get('intent_to_implement') == 'on':
+    if self.form.get('intent_to_implement') == 'on':
       feature.intent_template_use_count += 1
 
     key = feature.put()
@@ -540,16 +529,16 @@ class FeatureEditStage(common.ContentHandler):
 class FeatureEditAllFields(FeatureEditStage):
   """Flat form page that lists all fields in seprate sections."""
 
-  def get(self, path, feature_id):
-    feature_id = long(feature_id)
+  TEMPLATE_PATH = 'guide/editall.html'
+
+  def get_template_data(self, feature_id):
     user = users.get_current_user()
     if user is None:
       # Redirect to public URL for unauthenticated users.
       return self.redirect(common.format_feature_url(feature_id))
 
     if not self.user_can_edit(user):
-      common.handle_401(self.request, self.response, Exception)
-      return
+      self.abort(403)
 
     f, feature_process = self.get_feature_and_process(feature_id)
 
@@ -564,16 +553,13 @@ class FeatureEditAllFields(FeatureEditStage):
         'feature_id': f.key().id,
         'flat_forms': flat_forms,
     }
-
-    self._add_common_template_values(template_data)
-
-    self.render(data=template_data, template_path=os.path.join(path + '.html'))
+    return template_data
 
 
-app = webapp2.WSGIApplication([
-  ('/(guide/new)', FeatureNew),
-  ('/(guide/edit)/([0-9]*)', ProcessOverview),
-  # TODO(jrobbins): ('/(guide/delete)/([0-9]*)', FeatureDelete),
-  ('/(guide/stage)/([0-9]*)/([0-9]*)', FeatureEditStage),
-  ('/(guide/editall)/([0-9]*)', FeatureEditAllFields),
+app = common.FlaskApplication([
+  ('/guide/new', FeatureNew),
+  ('/guide/edit/<int:feature_id>', ProcessOverview),
+  # TODO(jrobbins): ('/guide/delete/<int:feature_id>', FeatureDelete),
+  ('/guide/stage/<int:feature_id>/<int:stage_id>', FeatureEditStage),
+  ('/guide/editall/<int:feature_id>', FeatureEditAllFields),
 ], debug=settings.DEBUG)
