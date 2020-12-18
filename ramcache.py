@@ -99,12 +99,16 @@ def get_multi(keys):
   }
 
 
-def set_multi(entries):
+def set_multi(entries, time=None):
   """Emulate the memcache.set_multi() method using a RAM cache."""
   if len(global_cache) + len(entries) > MAX_CACHE_SIZE:
     global_cache.clear()
     expires.clear()
   global_cache.update(entries)
+  if time:
+    expire_time = int(time_module.time()) + time
+    for key in entries:
+      expires[key] = expire_time
 
 
 def delete(key):
