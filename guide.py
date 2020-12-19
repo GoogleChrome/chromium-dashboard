@@ -110,7 +110,7 @@ FLAT_FORMS = [
 
 class FeatureNew(common.FlaskHandler):
 
-  TEMPLATE_PATH = 'admin/guide/new.html'
+  TEMPLATE_PATH = 'guide/new.html'
 
   def get_template_data(self):
     user = users.get_current_user()
