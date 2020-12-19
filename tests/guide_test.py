@@ -19,9 +19,8 @@ import unittest
 import testing_config  # Must be imported before the module under test.
 import urllib
 
-import mock
-import webapp2
-from webob import exc
+import flask
+import werkzeug
 
 import models
 import guide
@@ -30,30 +29,28 @@ import guide
 class FeatureNewTest(unittest.TestCase):
 
   def setUp(self):
-    request = webapp2.Request.blank('/guide/new')
-    response = webapp2.Response()
-    self.handler = guide.FeatureNew(request, response)
+    self.handler = guide.FeatureNew()
 
   def test_get__anon(self):
     """Anon cannot create features, gets a redirect to sign in page."""
     testing_config.sign_out()
-    self.handler.get(self.handler.request.path)
-    self.assertEqual('302 Moved Temporarily', self.handler.response.status)
+    with guide.app.test_request_context('/guide/new'):
+      actual_response = self.handler.get_template_data()
+    self.assertEqual('302 FOUND', actual_response.status)
 
   def test_get__non_allowed(self):
-    """Non-allowed cannot create features, gets a 401."""
+    """Non-allowed cannot create features, gets a 403."""
     testing_config.sign_in('user1@example.com', 1234567890)
-    self.handler.get(self.handler.request.path)
-    self.assertEqual('401 Unauthorized', self.handler.response.status)
+    with guide.app.test_request_context('/guide/new'):
+      with self.assertRaises(werkzeug.exceptions.Forbidden):
+        actual_response = self.handler.get_template_data()
 
-  @mock.patch('guide.FeatureNew.render')
-  def test_get__normal(self, mock_render):
+  def test_get__normal(self):
     """Allowed users render a page with a django form."""
     testing_config.sign_in('user1@google.com', 1234567890)
-    self.handler.get(self.handler.request.path)
-    self.assertEqual('200 OK', self.handler.response.status)
-    mock_render.assert_called_once()
-    template_data = mock_render.call_args.kwargs['data']
+    with guide.app.test_request_context('/guide/new'):
+      template_data = self.handler.get_template_data()
+
     self.assertTrue('overview_form' in template_data)
     form = template_data['overview_form']
     field = form.fields['owner']
@@ -62,33 +59,33 @@ class FeatureNewTest(unittest.TestCase):
         form.get_initial_for_field(field, 'owner'))
 
   def test_post__anon(self):
-    """Anon cannot create features, gets a 401."""
+    """Anon cannot create features, gets a 403."""
     testing_config.sign_out()
-    self.handler.post(self.handler.request.path)
-    self.assertEqual('401 Unauthorized', self.handler.response.status)
+    with guide.app.test_request_context('/guide/new'):
+      with self.assertRaises(werkzeug.exceptions.Forbidden):
+        self.handler.process_post_data()
 
   def test_post__non_allowed(self):
-    """Non-allowed cannot create features, gets a 401."""
+    """Non-allowed cannot create features, gets a 403."""
     testing_config.sign_in('user1@example.com', 1234567890)
-    self.handler.post(self.handler.request.path)
-    self.assertEqual('401 Unauthorized', self.handler.response.status)
+    with guide.app.test_request_context('/guide/new'):
+      with self.assertRaises(werkzeug.exceptions.Forbidden):
+        self.handler.post()
 
   def test_post__normal_valid(self):
     """Allowed user can create a feature."""
     testing_config.sign_in('user1@google.com', 1234567890)
-    self.handler.request = webapp2.Request.blank(
-        '/guide/new',
-        POST = {
+    with guide.app.test_request_context(
+        '/guide/new', data={
             'category': '1',
             'name': 'Feature name',
             'summary': 'Feature summary',
-        })
+        }):
+      actual_response = self.handler.process_post_data()
 
-    self.handler.post(self.handler.request.path)
-
-    self.assertEqual('302 Moved Temporarily', self.handler.response.status)
-    location = self.handler.response.headers['location']
-    self.assertTrue(location.startswith('http://localhost/guide/edit/'))
+    self.assertEqual('302 FOUND', actual_response.status)
+    location = actual_response.headers['location']
+    self.assertTrue(location.startswith('/guide/edit/'))
     new_feature_id = int(location.split('/')[-1])
     feature = models.Feature.get_by_id(new_feature_id)
     self.assertEqual(1, feature.category)
@@ -105,10 +102,8 @@ class ProcessOverviewTest(unittest.TestCase):
         standardization=1, web_dev_views=1, impl_status_chrome=1)
     self.feature_1.put()
 
-    request = webapp2.Request.blank(
-        '/guide/edit/%d' % self.feature_1.key().id())
-    response = webapp2.Response()
-    self.handler = guide.ProcessOverview(request, response)
+    self.request_path = '/guide/edit/%d' % self.feature_1.key().id()
+    self.handler = guide.ProcessOverview()
 
   def tearDown(self):
     self.feature_1.delete()
@@ -130,38 +125,37 @@ class ProcessOverviewTest(unittest.TestCase):
     actual = self.handler.detect_progress(self.feature_1)
     self.assertEqual({'Doc links': 'http://one'}, actual)
 
-  @mock.patch('guide.ProcessOverview.render')
-  def test_get__anon(self, mock_render):
+  def test_get__anon(self):
     """Anon cannot edit features, gets a redirect to viewing page."""
     testing_config.sign_out()
-    self.handler.get('/guide/edit', self.feature_1.key().id())
-    self.assertEqual('302 Moved Temporarily', self.handler.response.status)
-    mock_render.assert_not_called()
+    with guide.app.test_request_context(self.request_path):
+      actual_response = self.handler.get_template_data(
+          self.feature_1.key().id())
+    self.assertEqual('302 FOUND', actual_response.status)
 
-  @mock.patch('guide.ProcessOverview.render')
-  def test_get__non_allowed(self, mock_render):
-    """Non-allowed cannot create features, gets a 401."""
+  def test_get__non_allowed(self):
+    """Non-allowed cannot create features, gets a 403."""
     testing_config.sign_in('user1@example.com', 1234567890)
-    self.handler.get('/guide/edit', self.feature_1.key().id())
-    self.assertEqual('401 Unauthorized', self.handler.response.status)
-    mock_render.assert_not_called()
+    with guide.app.test_request_context(self.request_path):
+      with self.assertRaises(werkzeug.exceptions.Forbidden):
+        self.handler.get_template_data(self.feature_1.key().id())
 
-  @mock.patch('guide.ProcessOverview.render')
-  def test_get__not_found(self, mock_render):
+
+  def test_get__not_found(self):
     """Allowed users get a 404 if there is no such feature."""
     testing_config.sign_in('user1@google.com', 1234567890)
-    with self.assertRaises(exc.HTTPNotFound):
-      self.handler.get('/guide/edit', 999)
-    mock_render.assert_not_called()
+    with guide.app.test_request_context(self.request_path):
+      with self.assertRaises(werkzeug.exceptions.NotFound):
+        self.handler.get_template_data(999)
 
-  @mock.patch('guide.ProcessOverview.render')
-  def test_get__normal(self, mock_render):
+  def test_get__normal(self):
     """Allowed users render a page with a process overview."""
     testing_config.sign_in('user1@google.com', 1234567890)
-    self.handler.get('/guide/edit', self.feature_1.key().id())
-    self.assertEqual('200 OK', self.handler.response.status)
-    mock_render.assert_called_once()
-    template_data = mock_render.call_args.kwargs['data']
+
+    with guide.app.test_request_context(self.request_path):
+      template_data = self.handler.get_template_data(
+          self.feature_1.key().id())
+
     self.assertTrue('overview_form' in template_data)
     self.assertTrue('process_json' in template_data)
     self.assertTrue('progress_so_far' in template_data)
@@ -176,127 +170,127 @@ class FeatureEditStageTest(unittest.TestCase):
     self.feature_1.put()
     self.stage = models.INTENT_INCUBATE  # Shows first form
 
-    request = webapp2.Request.blank(
-        '/guide/stage/%d/%d' % (self.feature_1.key().id(), self.stage))
-    response = webapp2.Response()
-    self.handler = guide.FeatureEditStage(request, response)
+    self.request_path = ('/guide/stage/%d/%d' % (
+        self.feature_1.key().id(), self.stage))
+    self.handler = guide.FeatureEditStage()
 
   def tearDown(self):
     self.feature_1.delete()
 
   def test_touched(self):
     """We can tell if the user meant to edit a field."""
-    # TODO(jrobbins): for now, this just looks at all HTML form fields.
-    self.handler.request = webapp2.Request.blank(
-        'path', POST={'name': 'new name'})
-    self.assertTrue(self.handler.touched('name'))
-    self.assertFalse(self.handler.touched('summary'))
+    with guide.app.test_request_context(
+        'path', data={'name': 'new name'}):
+      self.assertTrue(self.handler.touched('name'))
+      self.assertFalse(self.handler.touched('summary'))
 
   def test_split_input(self):
     """We can parse items from multi-item text fields"""
-    self.handler.request = webapp2.Request.blank(
-        'path', POST={
+    with guide.app.test_request_context(
+        'path', data={
             'empty': '',
             'colors': 'yellow\nblue',
             'names': 'alice, bob',
-        })
-    self.assertEqual([], self.handler.split_input('missing'))
-    self.assertEqual([], self.handler.split_input('empty'))
-    self.assertEqual(
-        ['yellow', 'blue'],
-        self.handler.split_input('colors'))
-    self.assertEqual(
-        ['alice', 'bob'],
-        self.handler.split_input('names', delim=','))
+        }):
+      self.assertEqual([], self.handler.split_input('missing'))
+      self.assertEqual([], self.handler.split_input('empty'))
+      self.assertEqual(
+          ['yellow', 'blue'],
+          self.handler.split_input('colors'))
+      self.assertEqual(
+          ['alice', 'bob'],
+          self.handler.split_input('names', delim=','))
 
-  @mock.patch('guide.FeatureEditStage.render')
-  def test_get__anon(self, mock_render):
+  def test_get__anon(self):
     """Anon cannot edit features, gets a redirect to viewing page."""
     testing_config.sign_out()
-    self.handler.get('/guide/stage', self.feature_1.key().id(), self.stage)
-    self.assertEqual('302 Moved Temporarily', self.handler.response.status)
-    mock_render.assert_not_called()
+    with guide.app.test_request_context(self.request_path):
+      actual_response = self.handler.get_template_data(
+          self.feature_1.key().id(), self.stage)
+    self.assertEqual('302 FOUND', actual_response.status)
 
-  @mock.patch('guide.FeatureEditStage.render')
-  def test_get__non_allowed(self, mock_render):
-    """Non-allowed cannot edit features, gets a 401."""
+  def test_get__non_allowed(self):
+    """Non-allowed cannot edit features, gets a 403."""
     testing_config.sign_in('user1@example.com', 1234567890)
-    self.handler.get('/guide/stage', self.feature_1.key().id(), self.stage)
-    self.assertEqual('401 Unauthorized', self.handler.response.status)
-    mock_render.assert_not_called()
+    with guide.app.test_request_context(self.request_path):
+      with self.assertRaises(werkzeug.exceptions.Forbidden):
+        self.handler.get_template_data(
+            self.feature_1.key().id(), self.stage)
 
-  @mock.patch('guide.FeatureEditStage.render')
-  def test_get__not_found(self, mock_render):
+  def test_get__not_found(self):
     """Allowed users get a 404 if there is no such feature."""
     testing_config.sign_in('user1@google.com', 1234567890)
-    with self.assertRaises(exc.HTTPNotFound):
-      self.handler.get('/guide/stage', 999, self.stage)
-    mock_render.assert_not_called()
+    with guide.app.test_request_context(self.request_path):
+      with self.assertRaises(werkzeug.exceptions.NotFound):
+        self.handler.get_template_data(999, self.stage)
 
-  @mock.patch('guide.FeatureEditStage.render')
-  def test_get__normal(self, mock_render):
+  def test_get__normal(self):
     """Allowed users render a page with a django form."""
     testing_config.sign_in('user1@google.com', 1234567890)
-    self.handler.get('/guide/stage', self.feature_1.key().id(), self.stage)
-    self.assertEqual('200 OK', self.handler.response.status)
-    mock_render.assert_called_once()
-    template_data = mock_render.call_args.kwargs['data']
+
+    with guide.app.test_request_context(self.request_path):
+      template_data = self.handler.get_template_data(
+          self.feature_1.key().id(), self.stage)
+
     self.assertTrue('feature' in template_data)
     self.assertTrue('feature_id' in template_data)
     self.assertTrue('feature_form' in template_data)
     self.assertTrue('already_on_this_stage' in template_data)
 
-  @mock.patch('guide.FeatureEditStage.render')
-  def test_get__not_on_this_stage(self, mock_render):
-    """When feature is no on the stage for the current form, offer checkbox."""
+  def test_get__not_on_this_stage(self):
+    """When feature is not on the stage for the current form, offer checkbox."""
     testing_config.sign_in('user1@google.com', 1234567890)
-    self.handler.get('/guide/stage', self.feature_1.key().id(), self.stage)
-    self.assertEqual('200 OK', self.handler.response.status)
-    mock_render.assert_called_once()
-    template_data = mock_render.call_args.kwargs['data']
+
+    with guide.app.test_request_context(self.request_path):
+      template_data = self.handler.get_template_data(
+          self.feature_1.key().id(), self.stage)
+
     self.assertFalse(template_data['already_on_this_stage'])
 
-  @mock.patch('guide.FeatureEditStage.render')
-  def test_get__already_on_this_stage(self, mock_render):
+  def test_get__already_on_this_stage(self):
     """When feature is already on the stage for the current form, say that."""
     self.feature_1.intent_stage = self.stage
     self.feature_1.put()
     testing_config.sign_in('user1@google.com', 1234567890)
-    self.handler.get('/guide/stage', self.feature_1.key().id(), self.stage)
-    self.assertEqual('200 OK', self.handler.response.status)
-    mock_render.assert_called_once()
-    template_data = mock_render.call_args.kwargs['data']
+
+    with guide.app.test_request_context(self.request_path):
+      template_data = self.handler.get_template_data(
+          self.feature_1.key().id(), self.stage)
+
     self.assertTrue(template_data['already_on_this_stage'])
 
   def test_post__anon(self):
-    """Anon cannot edit features, gets a 401."""
+    """Anon cannot edit features, gets a 403."""
     testing_config.sign_out()
-    self.handler.post('/guide/stage', self.feature_1.key().id(), self.stage)
-    self.assertEqual('401 Unauthorized', self.handler.response.status)
+    with guide.app.test_request_context(self.request_path):
+      with self.assertRaises(werkzeug.exceptions.Forbidden):
+        self.handler.process_post_data(
+            self.feature_1.key().id(), self.stage)
 
   def test_post__non_allowed(self):
-    """Non-allowed cannot edit features, gets a 401."""
+    """Non-allowed cannot edit features, gets a 403."""
     testing_config.sign_in('user1@example.com', 1234567890)
-    self.handler.post('/guide/stage', self.feature_1.key().id(), self.stage)
-    self.assertEqual('401 Unauthorized', self.handler.response.status)
+    with guide.app.test_request_context(self.request_path):
+      with self.assertRaises(werkzeug.exceptions.Forbidden):
+        self.handler.process_post_data(
+            self.feature_1.key().id(), self.stage)
 
   def test_post__normal_valid(self):
     """Allowed user can edit a feature."""
     testing_config.sign_in('user1@google.com', 1234567890)
-    self.handler.request = webapp2.Request.blank(
-        '/guide/stage/%d/%d' % (self.feature_1.key().id(), self.stage),
-        POST = {
+    with guide.app.test_request_context(
+        self.request_path, data={
             'category': '2',
             'name': 'Revised feature name',
             'summary': 'Revised feature summary',
             'shipped_milestone': '84',
-        })
+        }):
+      actual_response = self.handler.process_post_data(
+          self.feature_1.key().id(), self.stage)
 
-    self.handler.post('/guide/stage', self.feature_1.key().id(), self.stage)
-
-    self.assertEqual('302 Moved Temporarily', self.handler.response.status)
-    location = self.handler.response.headers['location']
-    self.assertEqual('http://localhost/guide/edit/%d' % self.feature_1.key().id(),
+    self.assertEqual('302 FOUND', actual_response.status)
+    location = actual_response.headers['location']
+    self.assertEqual('/guide/edit/%d' % self.feature_1.key().id(),
                      location)
     revised_feature = models.Feature.get_by_id(self.feature_1.key().id())
     self.assertEqual(2, revised_feature.category)

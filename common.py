@@ -416,6 +416,10 @@ class FlaskHandler(flask.views.MethodView):
     """Support webapp2-style, e.g., self.abort(400)."""
     flask.abort(status)
 
+  def redirect(self, url):
+    """Support webapp2-style, e.g., return self.redirect(url)."""
+    return flask.redirect(url)
+
   def user_can_edit(self, user):
     if not user:
       return False
@@ -436,6 +440,41 @@ class FlaskHandler(flask.views.MethodView):
 
     return can_edit
 
+  @property
+  def request_uri(self):
+    return flask.request.path
+
+  @property
+  def form(self):
+    """Property for POST values dict."""
+    return flask.request.form
+
+  def split_input(self, field_name, delim='\\r?\\n'):
+    """Split the input lines, strip whitespace, and skip blank lines."""
+    input_text = flask.request.form.get(field_name) or ''
+    return filter(bool, [
+        x.strip() for x in re.split(delim, input_text)])
+
+  def split_emails(self, param_name):
+    """Split one input field and construct db.Email objects."""
+    addr_strs = self.split_input(param_name, delim=',')
+    emails = [db.Email(addr) for addr in addr_strs]
+    return emails
+
+  def parse_link(self, param_name):
+    link = flask.request.form.get(param_name) or None
+    if link:
+      if not link.startswith('http'):
+        link = db.Link('http://' + link)
+      else:
+        link = db.Link(link)
+    return link
+
+  def parse_int(self, param_name):
+    param = flask.request.form.get(param_name) or None
+    if param:
+      param = int(param)
+    return param
 
 
 def FlaskApplication(routes, debug=False):
