@@ -115,7 +115,7 @@ class FeatureNew(common.FlaskHandler):
   def get_template_data(self):
     user = users.get_current_user()
     if user is None:
-      return self.redirect(users.create_login_url(self.request_uri))
+      return self.redirect(users.create_login_url(self.request.path))
 
     if not self.user_can_edit(user):
       self.abort(403)

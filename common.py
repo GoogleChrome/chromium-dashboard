@@ -34,6 +34,7 @@ import flask.views
 from google.appengine.api import users
 from google.appengine.ext import db
 
+import ramcache
 import settings
 import models
 
@@ -394,6 +395,7 @@ class FlaskHandler(flask.views.MethodView):
 
   def get(self, *args, **kwargs):
     """GET handlers always render templates or do redirects."""
+    ramcache.check_for_distributed_invalidation()
     template_data = self.get_template_data(*args, **kwargs)
 
     if type(template_data) == dict:
@@ -408,6 +410,7 @@ class FlaskHandler(flask.views.MethodView):
 
   def post(self, *args, **kwargs):
     """POST handlers process the request then return JSON or a redirect."""
+    ramcache.check_for_distributed_invalidation()
     response_or_dict = self.process_post_data(*args, **kwargs)
     # If it is a dict, Flask will jsonify it.
     return response_or_dict, self.get_headers()
@@ -441,8 +444,8 @@ class FlaskHandler(flask.views.MethodView):
     return can_edit
 
   @property
-  def request_uri(self):
-    return flask.request.path
+  def request(self):
+    return flask.request
 
   @property
   def form(self):
@@ -481,10 +484,12 @@ def FlaskApplication(routes, debug=False):
   """Make a Flask app and add routes and handlers that work like webapp2."""
 
   app = flask.Flask(__name__)
-  for pattern, handler_class in routes:
+  for i, (pattern, handler_class) in enumerate(routes):
+    classname = handler_class.__name__
     app.add_url_rule(
         pattern,
-        view_func=handler_class.as_view(handler_class.__name__))
+        endpoint=classname + str(i),  # We don't use it, but it must be unique.
+        view_func=handler_class.as_view(classname))
 
   # Note: debug parameter is not used because the following accomplishes
   # what we need it to do.

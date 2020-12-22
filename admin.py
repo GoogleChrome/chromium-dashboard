@@ -23,19 +23,13 @@ import json
 import logging
 import os
 import re
-import sys
-import webapp2
-from HTMLParser import HTMLParser
 from xml.dom import minidom
 
 # Appengine imports.
 import ramcache
 from google.appengine.api import urlfetch
 from google.appengine.api import users
-from google.appengine.ext import blobstore
 from google.appengine.ext import db
-from google.appengine.api import taskqueue
-from google.appengine.ext.webapp import blobstore_handlers
 
 # File imports.
 import common
@@ -148,26 +142,25 @@ UMA_QUERIES = [
 ]
 
 
-class YesterdayHandler(webapp2.RequestHandler):
+class YesterdayHandler(common.FlaskHandler):
   """Loads yesterday's UMA data."""
-  def get(self):
+  def get_template_data(self):
     """Loads the data file located at |filename|.
 
     Args:
       filename: The filename for the data file to be loaded.
     """
-    ramcache.check_for_distributed_invalidation()
     yesterday = datetime.date.today() - datetime.timedelta(1)
 
     for query in UMA_QUERIES:
       response_code = query.FetchAndSaveData(yesterday)
       if response_code != 200:
-        self.error(response_code)
-        self.response.out.write(
-            ('%s - Error fetching usage data' % response_code))
+        error_message = (
+            'Got error %s while fetching usage data' % response_code)
+        return error_message, 500
 
 
-class HistogramsHandler(webapp2.RequestHandler):
+class HistogramsHandler(common.FlaskHandler):
 
   MODEL_CLASS = {
     'FeatureObserver': models.FeatureObserverHistogram,
@@ -194,8 +187,7 @@ class HistogramsHandler(webapp2.RequestHandler):
       property_name=property_name
     )
 
-  def get(self):
-    ramcache.check_for_distributed_invalidation()
+  def get_template_data(self):
     # Attempt to fetch enums mapping file.
     result = urlfetch.fetch(HISTOGRAMS_URL, deadline=60)
 
@@ -222,6 +214,8 @@ class HistogramsHandler(webapp2.RequestHandler):
           'property_name': child.attributes['label'].value
         }, histogram_id)
 
+    return 'Success'
+
 
 
 INTENT_PARAM = 'intent'
@@ -229,33 +223,29 @@ LAUNCH_PARAM = 'launch'
 VIEW_FEATURE_URL = '/feature'
 
 
-class IntentEmailPreviewHandler(common.ContentHandler):
+class IntentEmailPreviewHandler(common.FlaskHandler):
   """Show a preview of an intent email, as appropriate to the feature stage."""
 
-  def get(self, feature_id=None, stage_id=None):
-    ramcache.check_for_distributed_invalidation()
+  TEMPLATE_PATH = 'admin/features/launch.html'
+
+  def get_template_data(self, feature_id=None, stage_id=None):
     user = users.get_current_user()
     if user is None:
-      return self.redirect(users.create_login_url(self.request.uri))
+      return self.redirect(users.create_login_url(self.request.path))
 
     if not feature_id:
-      common.handle_404(self.request, self.response, None)
-      return
-    f = models.Feature.get_by_id(long(feature_id))
+      self.abort(404)
+    f = models.Feature.get_by_id(feature_id)
     if f is None:
-      common.handle_404(self.request, self.response, None)
-      return
+      self.abort(404)
 
-    intent_stage = int(stage_id) if stage_id else f.intent_stage
+    intent_stage = stage_id if stage_id is not None else f.intent_stage
 
     if not self.user_can_edit(user):
-      common.handle_401(self.request, self.response, Exception)
-      return
+      self.abort(403)
 
     page_data = self.get_page_data(feature_id, f, intent_stage)
-
-    self._add_common_template_values(page_data)
-    self.render(data=page_data, template_path='admin/features/launch.html')
+    return page_data
 
   def get_page_data(self, feature_id, f, intent_stage):
     """Return a dictionary of data used to render the page."""
@@ -270,9 +260,9 @@ class IntentEmailPreviewHandler(common.ContentHandler):
             VIEW_FEATURE_URL, feature_id),
     }
 
-    if LAUNCH_PARAM in self.request.params:
+    if LAUNCH_PARAM in self.request.args:
       page_data[LAUNCH_PARAM] = True
-    if INTENT_PARAM in self.request.params:
+    if INTENT_PARAM in self.request.args:
       page_data[INTENT_PARAM] = True
 
     return page_data
@@ -298,156 +288,83 @@ class IntentEmailPreviewHandler(common.ContentHandler):
     return 'Intent stage "%s"' % models.INTENT_STAGES[intent_stage]
 
 
-class FeatureHandler(common.ContentHandler):
+class BaseFeatureHandler(common.FlaskHandler):
+  """Shared form processing for new and edit forms."""
 
   ADD_NEW_URL = '/admin/features/new'
   EDIT_URL = '/admin/features/edit'
   LAUNCH_URL = '/admin/features/launch'
 
-  def __FullQualifyLink(self, param_name):
-    link = self.request.get(param_name) or None
-    if link:
-      if not link.startswith('http'):
-        link = db.Link('http://' + link)
-      else:
-        link = db.Link(link)
-    return link
-
-  def __ToInt(self, param_name):
-    param = self.request.get(param_name) or None
-    if param:
-      param = int(param)
-    return param
-
-  def __get_blink_component_from_bug(self, blink_components, bug_url):
-    if blink_components[0] == models.BlinkComponent.DEFAULT_COMPONENT and bug_url:
-        # Scraping the bug URL no longer works because monorail uses
-        # web components and APIs rather than details in an HTML page.
-        return []
-    return blink_components
-
-  def get(self, path, feature_id=None):
-    ramcache.check_for_distributed_invalidation()
-    user = users.get_current_user()
-    if user is None:
-      if feature_id:
-        # Redirect to public URL for unauthenticated users.
-        return self.redirect(VIEW_FEATURE_URL + '/' + feature_id)
-      else:
-        return self.redirect(users.create_login_url(self.request.uri))
-
-    # Remove trailing slash from URL and redirect. e.g. /metrics/ -> /metrics
-    if path[-1] == '/':
-      return self.redirect(self.request.path.rstrip('/'))
-
-    # TODO(ericbidelman): This creates a additional call to
-    # user_can_edit() (also called in common.py), resulting in another
-    # db query.
-    if not self.user_can_edit(user):
-      #TODO(ericbidelman): Use render(status=401) instead.
-      #self.render(data={}, template_path=os.path.join(path + '.html'), status=401)
-      common.handle_401(self.request, self.response, Exception)
-      return
-
-    if not feature_id and not 'new' in path:
-      # /features/edit|launch -> /features/new
-      return self.redirect(self.ADD_NEW_URL)
-    elif feature_id and 'new' in path:
-      return self.redirect(self.ADD_NEW_URL)
-
-    template_data = {
-        'feature_form': models.FeatureForm()
-        }
-
-    if feature_id:
-      f = models.Feature.get_by_id(long(feature_id))
-      if f is None:
-        return self.redirect(self.ADD_NEW_URL)
-
-      # Provide new or populated form to template.
-      template_data.update({
-          'feature': f.format_for_template(),
-          'feature_form': models.FeatureForm(f.format_for_edit()),
-          'default_url': '%s://%s%s/%s' % (self.request.scheme, self.request.host,
-                                           VIEW_FEATURE_URL, feature_id),
-          'edit_url': '%s://%s%s/%s' % (self.request.scheme, self.request.host,
-                                        self.EDIT_URL, feature_id)
-          })
-
-    self._add_common_template_values(template_data)
-    self.render(data=template_data, template_path=os.path.join(path + '.html'))
-
-  def post(self, path, feature_id=None):
+  def process_post_data(self, feature_id=None):
     user = users.get_current_user()
     if user is None or (user and not self.user_can_edit(user)):
-      common.handle_401(self.request, self.response, Exception)
-      return
+      self.abort(403)
 
-    spec_link = self.__FullQualifyLink('spec_link')
-    api_spec = self.request.get('api_spec') == 'on'
+    spec_link = self.parse_link('spec_link')
+    api_spec = self.request.form.get('api_spec') == 'on'
 
-    explainer_links = self.request.get('explainer_links') or []
+    explainer_links = self.request.form.get('explainer_links') or []
     if explainer_links:
       explainer_links = filter(bool, [x.strip() for x in re.split('\\r?\\n', explainer_links)])
 
-    bug_url = self.__FullQualifyLink('bug_url')
-    launch_bug_url = self.__FullQualifyLink('launch_bug_url')
-    initial_public_proposal_url = self.__FullQualifyLink(
+    bug_url = self.parse_link('bug_url')
+    launch_bug_url = self.parse_link('launch_bug_url')
+    initial_public_proposal_url = self.parse_link(
         'initial_public_proposal_url')
-    intent_to_implement_url = self.__FullQualifyLink('intent_to_implement_url')
-    intent_to_ship_url = self.__FullQualifyLink('intent_to_ship_url')
-    ready_for_trial_url = self.__FullQualifyLink('ready_for_trial_url')
-    intent_to_experiment_url = self.__FullQualifyLink('intent_to_experiment_url')
-    origin_trial_feedback_url = self.__FullQualifyLink('origin_trial_feedback_url')
-    i2e_lgtms = self.request.get('i2e_lgtms') or []
+    intent_to_implement_url = self.parse_link('intent_to_implement_url')
+    intent_to_ship_url = self.parse_link('intent_to_ship_url')
+    ready_for_trial_url = self.parse_link('ready_for_trial_url')
+    intent_to_experiment_url = self.parse_link('intent_to_experiment_url')
+    origin_trial_feedback_url = self.parse_link('origin_trial_feedback_url')
+    i2e_lgtms = self.request.form.get('i2e_lgtms') or []
     if i2e_lgtms:
       i2e_lgtms = [db.Email(x.strip()) for x in i2e_lgtms.split(',')]
-    i2s_lgtms = self.request.get('i2s_lgtms') or []
+    i2s_lgtms = self.request.form.get('i2s_lgtms') or []
     if i2s_lgtms:
       i2s_lgtms = [db.Email(x.strip()) for x in i2s_lgtms.split(',')]
 
-    ff_views_link = self.__FullQualifyLink('ff_views_link')
-    ie_views_link = self.__FullQualifyLink('ie_views_link')
-    safari_views_link = self.__FullQualifyLink('safari_views_link')
-    web_dev_views_link = self.__FullQualifyLink('web_dev_views_link')
+    ff_views_link = self.parse_link('ff_views_link')
+    ie_views_link = self.parse_link('ie_views_link')
+    safari_views_link = self.parse_link('safari_views_link')
+    web_dev_views_link = self.parse_link('web_dev_views_link')
 
     # Cast incoming milestones to ints.
-    shipped_milestone = self.__ToInt('shipped_milestone')
-    shipped_android_milestone = self.__ToInt('shipped_android_milestone')
-    shipped_ios_milestone = self.__ToInt('shipped_ios_milestone')
-    shipped_webview_milestone = self.__ToInt('shipped_webview_milestone')
-    shipped_opera_milestone = self.__ToInt('shipped_opera_milestone')
-    shipped_opera_android_milestone = self.__ToInt('shipped_opera_android_milestone')
+    shipped_milestone = self.parse_int('shipped_milestone')
+    shipped_android_milestone = self.parse_int('shipped_android_milestone')
+    shipped_ios_milestone = self.parse_int('shipped_ios_milestone')
+    shipped_webview_milestone = self.parse_int('shipped_webview_milestone')
+    shipped_opera_milestone = self.parse_int('shipped_opera_milestone')
+    shipped_opera_android_milestone = self.parse_int('shipped_opera_android_milestone')
 
-    owners = self.request.get('owner') or []
+    owners = self.request.form.get('owner') or []
     if owners:
       owners = [db.Email(x.strip()) for x in owners.split(',')]
 
-    doc_links = self.request.get('doc_links') or []
+    doc_links = self.request.form.get('doc_links') or []
     if doc_links:
       doc_links = filter(bool, [x.strip() for x in re.split('\\r?\\n', doc_links)])
 
-    sample_links = self.request.get('sample_links') or []
+    sample_links = self.request.form.get('sample_links') or []
     if sample_links:
       sample_links = filter(bool, [x.strip() for x in re.split('\\r?\\n', sample_links)])
 
-    search_tags = self.request.get('search_tags') or []
+    search_tags = self.request.form.get('search_tags') or []
     if search_tags:
       search_tags = filter(bool, [x.strip() for x in search_tags.split(',')])
 
-    blink_components = self.request.get('blink_components') or models.BlinkComponent.DEFAULT_COMPONENT
+    blink_components = self.request.form.get('blink_components') or models.BlinkComponent.DEFAULT_COMPONENT
     if blink_components:
       blink_components = filter(bool, [x.strip() for x in blink_components.split(',')])
 
-    devrel = self.request.get('devrel') or []
+    devrel = self.request.form.get('devrel') or []
     if devrel:
       devrel = [db.Email(x.strip()) for x in devrel.split(',')]
 
     try:
-      intent_stage = int(self.request.get('intent_stage'))
+      intent_stage = int(self.request.form.get('intent_stage'))
     except:
       logging.error('Invalid intent_stage \'{}\'' \
-                    .format(self.request.get('intent_stage')))
+                    .format(self.request.form.get('intent_stage')))
 
       # Default the intent stage to 1 (Prototype) if we failed to get a valid
       # intent stage from the request. This should be removed once we
@@ -455,24 +372,17 @@ class FeatureHandler(common.ContentHandler):
       intent_stage = 1
 
     if feature_id: # /admin/edit/1234
-      feature = models.Feature.get_by_id(long(feature_id))
+      feature = models.Feature.get_by_id(feature_id)
 
       if feature is None:
         return self.redirect(self.request.path)
 
-      # TODO(jrobbins): implement undelete UI.  For now, use cloud console.
-      if 'delete' in path:
-        feature.deleted = True
-        feature.put()
-        ramcache.flush_all()
-        return # Bomb out early for AJAX delete. No need to redirect.
-
       # Update properties of existing feature.
-      feature.category = int(self.request.get('category'))
-      feature.name = self.request.get('name')
+      feature.category = int(self.request.form.get('category'))
+      feature.name = self.request.form.get('name')
       feature.intent_stage = intent_stage
-      feature.summary = self.request.get('summary')
-      feature.unlisted = self.request.get('unlisted') == 'on'
+      feature.summary = self.request.form.get('summary')
+      feature.unlisted = self.request.form.get('unlisted') == 'on'
       feature.intent_to_implement_url = intent_to_implement_url
       feature.intent_to_ship_url = intent_to_ship_url
       feature.ready_for_trial_url = ready_for_trial_url
@@ -480,7 +390,7 @@ class FeatureHandler(common.ContentHandler):
       feature.origin_trial_feedback_url = origin_trial_feedback_url
       feature.i2e_lgtms = i2e_lgtms
       feature.i2s_lgtms = i2s_lgtms
-      feature.motivation = self.request.get('motivation')
+      feature.motivation = self.request.form.get('motivation')
       feature.explainer_links = explainer_links
       feature.owner = owners
       feature.bug_url = bug_url
@@ -488,55 +398,55 @@ class FeatureHandler(common.ContentHandler):
       feature.initial_public_proposal_url = initial_public_proposal_url
       feature.blink_components = blink_components
       feature.devrel = devrel
-      feature.impl_status_chrome = int(self.request.get('impl_status_chrome'))
+      feature.impl_status_chrome = int(self.request.form.get('impl_status_chrome'))
       feature.shipped_milestone = shipped_milestone
       feature.shipped_android_milestone = shipped_android_milestone
       feature.shipped_ios_milestone = shipped_ios_milestone
       feature.shipped_webview_milestone = shipped_webview_milestone
       feature.shipped_opera_milestone = shipped_opera_milestone
       feature.shipped_opera_android_milestone = shipped_opera_android_milestone
-      feature.interop_compat_risks = self.request.get('interop_compat_risks')
-      feature.ergonomics_risks = self.request.get('ergonomics_risks')
-      feature.activation_risks = self.request.get('activation_risks')
-      feature.security_risks = self.request.get('security_risks')
-      feature.debuggability = self.request.get('debuggability')
-      feature.all_platforms = self.request.get('all_platforms') == 'on'
-      feature.all_platforms_descr = self.request.get('all_platforms_descr')
-      feature.wpt = self.request.get('wpt') == 'on'
-      feature.wpt_descr = self.request.get('wpt_descr')
-      feature.ff_views = int(self.request.get('ff_views'))
+      feature.interop_compat_risks = self.request.form.get('interop_compat_risks')
+      feature.ergonomics_risks = self.request.form.get('ergonomics_risks')
+      feature.activation_risks = self.request.form.get('activation_risks')
+      feature.security_risks = self.request.form.get('security_risks')
+      feature.debuggability = self.request.form.get('debuggability')
+      feature.all_platforms = self.request.form.get('all_platforms') == 'on'
+      feature.all_platforms_descr = self.request.form.get('all_platforms_descr')
+      feature.wpt = self.request.form.get('wpt') == 'on'
+      feature.wpt_descr = self.request.form.get('wpt_descr')
+      feature.ff_views = int(self.request.form.get('ff_views'))
       feature.ff_views_link = ff_views_link
-      feature.ff_views_notes = self.request.get('ff_views_notes')
-      feature.ie_views = int(self.request.get('ie_views'))
+      feature.ff_views_notes = self.request.form.get('ff_views_notes')
+      feature.ie_views = int(self.request.form.get('ie_views'))
       feature.ie_views_link = ie_views_link
-      feature.ie_views_notes = self.request.get('ie_views_notes')
-      feature.safari_views = int(self.request.get('safari_views'))
+      feature.ie_views_notes = self.request.form.get('ie_views_notes')
+      feature.safari_views = int(self.request.form.get('safari_views'))
       feature.safari_views_link = safari_views_link
-      feature.safari_views_notes = self.request.get('safari_views_notes')
-      feature.web_dev_views = int(self.request.get('web_dev_views'))
+      feature.safari_views_notes = self.request.form.get('safari_views_notes')
+      feature.web_dev_views = int(self.request.form.get('web_dev_views'))
       feature.web_dev_views_link = web_dev_views_link
-      feature.web_dev_views_notes = self.request.get('web_dev_views_notes')
-      feature.prefixed = self.request.get('prefixed') == 'on'
+      feature.web_dev_views_notes = self.request.form.get('web_dev_views_notes')
+      feature.prefixed = self.request.form.get('prefixed') == 'on'
       feature.spec_link = spec_link
       feature.api_spec = api_spec
-      feature.security_review_status = int(self.request.get(
+      feature.security_review_status = int(self.request.form.get(
           'security_review_status', models.REVIEW_PENDING))
-      feature.privacy_review_status = int(self.request.get(
+      feature.privacy_review_status = int(self.request.form.get(
           'privacy_review_status', models.REVIEW_PENDING))
-      feature.tag_review = self.request.get('tag_review')
-      feature.tag_review_status = int(self.request.get(
+      feature.tag_review = self.request.form.get('tag_review')
+      feature.tag_review_status = int(self.request.form.get(
           'tag_review_status', models.REVIEW_PENDING))
-      feature.standardization = int(self.request.get('standardization'))
+      feature.standardization = int(self.request.form.get('standardization'))
       feature.doc_links = doc_links
-      feature.measurement = self.request.get('measurement')
+      feature.measurement = self.request.form.get('measurement')
       feature.sample_links = sample_links
       feature.search_tags = search_tags
-      feature.comments = self.request.get('comments')
-      feature.experiment_goals = self.request.get('experiment_goals')
-      feature.experiment_timeline = self.request.get('experiment_timeline')
-      feature.experiment_risks = self.request.get('experiment_risks')
-      feature.experiment_extension_reason = self.request.get('experiment_extension_reason')
-      feature.ongoing_constraints = self.request.get('ongoing_constraints')
+      feature.comments = self.request.form.get('comments')
+      feature.experiment_goals = self.request.form.get('experiment_goals')
+      feature.experiment_timeline = self.request.form.get('experiment_timeline')
+      feature.experiment_risks = self.request.form.get('experiment_risks')
+      feature.experiment_extension_reason = self.request.form.get('experiment_extension_reason')
+      feature.ongoing_constraints = self.request.form.get('ongoing_constraints')
     else:
       # Check bug for existing blink component(s) used to label the bug. If
       # found, use the first component name instead of the generic "Blink" name.
@@ -546,10 +456,10 @@ class FeatureHandler(common.ContentHandler):
         pass
 
       feature = models.Feature(
-          category=int(self.request.get('category')),
-          name=self.request.get('name'),
+          category=int(self.request.form.get('category')),
+          name=self.request.form.get('name'),
           intent_stage=intent_stage,
-          summary=self.request.get('summary'),
+          summary=self.request.form.get('summary'),
           intent_to_implement_url=intent_to_implement_url,
           intent_to_ship_url=intent_to_ship_url,
           ready_for_trial_url=ready_for_trial_url,
@@ -557,7 +467,7 @@ class FeatureHandler(common.ContentHandler):
           origin_trial_feedback_url=origin_trial_feedback_url,
           i2e_lgtms=i2e_lgtms,
           i2s_lgtms=i2s_lgtms,
-          motivation=self.request.get('motivation'),
+          motivation=self.request.form.get('motivation'),
           explainer_links=explainer_links,
           owner=owners,
           bug_url=bug_url,
@@ -565,77 +475,77 @@ class FeatureHandler(common.ContentHandler):
           initial_public_proposal_url=initial_public_proposal_url,
           blink_components=blink_components,
           devrel=devrel,
-          impl_status_chrome=int(self.request.get('impl_status_chrome')),
+          impl_status_chrome=int(self.request.form.get('impl_status_chrome')),
           shipped_milestone=shipped_milestone,
           shipped_android_milestone=shipped_android_milestone,
           shipped_ios_milestone=shipped_ios_milestone,
           shipped_webview_milestone=shipped_webview_milestone,
           shipped_opera_milestone=shipped_opera_milestone,
           shipped_opera_android_milestone=shipped_opera_android_milestone,
-          interop_compat_risks=self.request.get('interop_compat_risks'),
-          ergonomics_risks=self.request.get('ergonomics_risks'),
-          activation_risks=self.request.get('activation_risks'),
-          security_risks=self.request.get('security_risks'),
-          debuggability=self.request.get('debuggability'),
-          all_platforms=self.request.get('all_platforms') == 'on',
-          all_platforms_descr=self.request.get('all_platforms_descr'),
-          wpt=self.request.get('wpt') == 'on',
-          wpt_descr=self.request.get('wpt_descr'),
-          ff_views=int(self.request.get('ff_views')),
+          interop_compat_risks=self.request.form.get('interop_compat_risks'),
+          ergonomics_risks=self.request.form.get('ergonomics_risks'),
+          activation_risks=self.request.form.get('activation_risks'),
+          security_risks=self.request.form.get('security_risks'),
+          debuggability=self.request.form.get('debuggability'),
+          all_platforms=self.request.form.get('all_platforms') == 'on',
+          all_platforms_descr=self.request.form.get('all_platforms_descr'),
+          wpt=self.request.form.get('wpt') == 'on',
+          wpt_descr=self.request.form.get('wpt_descr'),
+          ff_views=int(self.request.form.get('ff_views')),
           ff_views_link=ff_views_link,
-          ff_views_notes=self.request.get('ff_views_notes'),
-          ie_views=int(self.request.get('ie_views')),
+          ff_views_notes=self.request.form.get('ff_views_notes'),
+          ie_views=int(self.request.form.get('ie_views')),
           ie_views_link=ie_views_link,
-          ie_views_notes=self.request.get('ie_views_notes'),
-          safari_views=int(self.request.get('safari_views')),
+          ie_views_notes=self.request.form.get('ie_views_notes'),
+          safari_views=int(self.request.form.get('safari_views')),
           safari_views_link=safari_views_link,
-          safari_views_notes=self.request.get('safari_views_notes'),
-          web_dev_views=int(self.request.get('web_dev_views')),
+          safari_views_notes=self.request.form.get('safari_views_notes'),
+          web_dev_views=int(self.request.form.get('web_dev_views')),
           web_dev_views_link=web_dev_views_link,
-          web_dev_views_notes=self.request.get('web_dev_views_notes'),
-          prefixed=self.request.get('prefixed') == 'on',
+          web_dev_views_notes=self.request.form.get('web_dev_views_notes'),
+          prefixed=self.request.form.get('prefixed') == 'on',
           spec_link=spec_link,
           api_spec=api_spec,
-          security_review_status=int(self.request.get(
+          security_review_status=int(self.request.form.get(
               'security_review_status', models.REVIEW_PENDING)),
-          privacy_review_status=int(self.request.get(
+          privacy_review_status=int(self.request.form.get(
               'privacy_review_status', models.REVIEW_PENDING)),
-          tag_review=self.request.get('tag_review'),
-          tag_review_status=int(self.request.get(
+          tag_review=self.request.form.get('tag_review'),
+          tag_review_status=int(self.request.form.get(
               'tag_review_status', models.REVIEW_PENDING)),
-          standardization=int(self.request.get('standardization')),
+          standardization=int(self.request.form.get('standardization')),
           doc_links=doc_links,
-          measurement=self.request.get('measurement'),
+          measurement=self.request.form.get('measurement'),
           sample_links=sample_links,
           search_tags=search_tags,
-          comments=self.request.get('comments'),
-          experiment_goals=self.request.get('experiment_goals'),
-          experiment_timeline=self.request.get('experiment_timeline'),
-          experiment_risks=self.request.get('experiment_risks'),
-          experiment_extension_reason=self.request.get('experiment_extension_reason'),
-          ongoing_constraints=self.request.get('ongoing_constraints'),
+          comments=self.request.form.get('comments'),
+          experiment_goals=self.request.form.get('experiment_goals'),
+          experiment_timeline=self.request.form.get('experiment_timeline'),
+          experiment_risks=self.request.form.get('experiment_risks'),
+          experiment_extension_reason=self.request.form.get('experiment_extension_reason'),
+          ongoing_constraints=self.request.form.get('ongoing_constraints'),
           )
 
-    if self.request.get('flag_name'):
-      feature.flag_name = self.request.get('flag_name')
-    if self.request.get('ot_milestone_desktop_start'):
-      feature.ot_milestone_desktop_start = int(self.request.get(
+    if self.request.form.get('flag_name'):
+      feature.flag_name = self.request.form.get('flag_name')
+    if self.request.form.get('ot_milestone_desktop_start'):
+      feature.ot_milestone_desktop_start = int(self.request.form.get(
           'ot_milestone_desktop_start'))
-    if self.request.get('ot_milestone_desktop_end'):
-      feature.ot_milestone_desktop_end = int(self.request.get(
+    if self.request.form.get('ot_milestone_desktop_end'):
+      feature.ot_milestone_desktop_end = int(self.request.form.get(
           'ot_milestone_desktop_end'))
-    if self.request.get('ot_milestone_android_start'):
-      feature.ot_milestone_android_start = int(self.request.get(
+    if self.request.form.get('ot_milestone_android_start'):
+      feature.ot_milestone_android_start = int(self.request.form.get(
           'ot_milestone_android_start'))
-    if self.request.get('ot_milestone_android_end'):
-      feature.ot_milestone_android_end = int(self.request.get(
+    if self.request.form.get('ot_milestone_android_end'):
+      feature.ot_milestone_android_end = int(self.request.form.get(
           'ot_milestone_android_end'))
 
 
     params = []
-    if self.request.get('create_launch_bug') == 'on':
+    if self.request.form.get('create_launch_bug') == 'on':
       params.append(LAUNCH_PARAM)
-    if self.request.get('intent_to_implement') == 'on':
+    if self.request.form.get('intent_to_implement') == 'on':
       params.append(INTENT_PARAM)
 
       feature.intent_template_use_count += 1
@@ -654,20 +564,93 @@ class FeatureHandler(common.ContentHandler):
     return self.redirect(redirect_url)
 
 
-class BlinkComponentHandler(webapp2.RequestHandler):
+class NewFeatureHandler(BaseFeatureHandler):
+
+  TEMPLATE_PATH = 'admin/features/new.html'
+
+  def get_template_data(self):
+    user = users.get_current_user()
+    if user is None:
+      return self.redirect(users.create_login_url(self.request.path))
+
+    if not self.user_can_edit(user):
+      self.abort(403)
+
+    template_data = {
+        'feature_form': models.FeatureForm(),
+        }
+    return template_data
+
+
+class EditFeatureHandler(BaseFeatureHandler):
+
+  TEMPLATE_PATH = 'admin/features/edit.html'
+
+  def __get_blink_component_from_bug(self, blink_components, bug_url):
+    if blink_components[0] == models.BlinkComponent.DEFAULT_COMPONENT and bug_url:
+        # Scraping the bug URL no longer works because monorail uses
+        # web components and APIs rather than details in an HTML page.
+        return []
+    return blink_components
+
+  def get_template_data(self, feature_id=None):
+    user = users.get_current_user()
+    if user is None:
+      # Redirect to public URL for unauthenticated users.
+      return self.redirect(VIEW_FEATURE_URL + '/' + str(feature_id))
+
+    if not self.user_can_edit(user):
+      self.abort(403)
+
+    f = models.Feature.get_by_id(feature_id)
+    if f is None:
+      return self.redirect(self.ADD_NEW_URL)
+
+    template_data = {
+        'feature': f.format_for_template(),
+        'feature_form': models.FeatureForm(f.format_for_edit()),
+        'default_url': '%s://%s%s/%s' % (self.request.scheme, self.request.host,
+                                         VIEW_FEATURE_URL, feature_id),
+        'edit_url': '%s://%s%s/%s' % (self.request.scheme, self.request.host,
+                                      self.EDIT_URL, feature_id),
+        }
+    return template_data
+
+
+# TODO(jrobbins): implement undelete UI.  For now, use cloud console.
+class DeleteFeatureHandler(common.FlaskHandler):
+
+  def process_post_data(self, feature_id):
+    user = users.get_current_user()
+    if user is None:
+      # Redirect to public URL for unauthenticated users.
+      return self.redirect(VIEW_FEATURE_URL + '/' + str(feature_id))
+
+    if not self.user_can_edit(user):
+      self.abort(403)
+
+    feature = models.Feature.get_by_id(feature_id)
+    feature.deleted = True
+    feature.put()
+    ramcache.flush_all()
+    return 'Success'
+
+
+class BlinkComponentHandler(common.FlaskHandler):
   """Updates the list of Blink components in the db."""
-  def get(self):
+  def get_template_data(self):
     models.BlinkComponent.update_db()
-    self.response.out.write('Blink components updated')
+    return 'Blink components updated'
 
 
-app = webapp2.WSGIApplication([
+app = common.FlaskApplication([
   ('/cron/metrics', YesterdayHandler),
   ('/cron/histograms', HistogramsHandler),
   ('/cron/update_blink_components', BlinkComponentHandler),
-  ('/admin/features/launch/([0-9]+)', IntentEmailPreviewHandler),
-  ('/admin/features/launch/([0-9]+)/([0-9]+)',
+  ('/admin/features/launch/<int:feature_id>', IntentEmailPreviewHandler),
+  ('/admin/features/launch/<int:feature_id>/<int:stage_id>',
    IntentEmailPreviewHandler),
-  ('/(.*)/([0-9]*)', FeatureHandler),
-  ('/(.*)', FeatureHandler),
+  ('/admin/features/new', NewFeatureHandler),
+  ('/admin/features/edit/<int:feature_id>', EditFeatureHandler),
+  ('/admin/features/delete/<int:feature_id>', DeleteFeatureHandler),
 ], debug=settings.DEBUG)
