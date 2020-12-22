@@ -154,22 +154,6 @@ class BaseHandler(webapp2.RequestHandler):
 # TODO(jrobbins): phase out this class and have all calls use FlaskHandler.
 class JSONHandler(BaseHandler):
 
-  def __truncate_day_percentage(self, data):
-    # Need 8 decimals b/c num will by multiplied by 100 to get a percentage and
-    # we want 6 decimals.
-    data.day_percentage = float("%.*f" % (8, data.day_percentage))
-    return data
-
-  def _is_googler(self, user):
-    return user and user.email().endswith('@google.com')
-
-  def _clean_data(self, data):
-    user = users.get_current_user()
-    # Don't show raw percentages if user is not a googler.
-    if not self._is_googler(user):
-      data = map(self.__truncate_day_percentage, data)
-    return data
-
   def get(self, data, formatted=False, public=True):
     cache_type = 'public'
     if not public:
@@ -336,13 +320,26 @@ def handle_500(request, response, exception):
 class FlaskHandler(flask.views.MethodView):
 
   TEMPLATE_PATH = None  # Subclasses should define this.
+  HTTP_CACHE_TYPE = None  # Subclasses can use 'public' or 'private'
+  JSONIFY = False  # Set to True for JSON feeds.
+
+  def get_cache_headers(self):
+    """Add cache control headers if HTTP_CACHE_TYPE is set."""
+    if self.HTTP_CACHE_TYPE:
+      directive = '%s, max-age=%s' % (
+          self.HTTP_CACHE_TYPE, settings.DEFAULT_CACHE_TIME)
+      return {'Cache-Control': directive}
+
+    return {}
 
   def get_headers(self):
     """Add CORS and Chrome Frame to all responses."""
-    return {
+    headers = {
         'Access-Control-Allow-Origin': '*',
         'X-UA-Compatible': 'IE=Edge,chrome=1',
         }
+    headers.update(self.get_cache_headers())
+    return headers
 
   def get_template_data(self):
     """Subclasses should implement this method to handle a GET request."""
@@ -394,26 +391,37 @@ class FlaskHandler(flask.views.MethodView):
     return render_to_string(template_path, template_data)
 
   def get(self, *args, **kwargs):
-    """GET handlers always render templates or do redirects."""
+    """GET handlers can render templates, return JSON, or do redirects."""
     ramcache.check_for_distributed_invalidation()
-    template_data = self.get_template_data(*args, **kwargs)
+    handler_data = self.get_template_data(*args, **kwargs)
 
-    if type(template_data) == dict:
-      status = template_data.get('status', 200)
-      template_data.update(self.get_common_data())
-      template_path = self.get_template_path(template_data)
-      template_text = self.render(template_data, os.path.join(template_path))
+    if self.JSONIFY and type(handler_data) in (dict, list):
+      headers = self.get_headers()
+      return flask.jsonify(handler_data), headers
+
+    elif type(handler_data) == dict:
+      status = handler_data.get('status', 200)
+      handler_data.update(self.get_common_data())
+      template_path = self.get_template_path(handler_data)
+      template_text = self.render(handler_data, os.path.join(template_path))
       headers = self.get_headers()
       return template_text, status, headers
 
-    return template_data  # the hander can return a redirect or string
+    else:
+      # handler_data is a string or redirect response object.
+      return handler_data
 
   def post(self, *args, **kwargs):
-    """POST handlers process the request then return JSON or a redirect."""
+    """POST handlers return a string, JSON, or a redirect."""
     ramcache.check_for_distributed_invalidation()
-    response_or_dict = self.process_post_data(*args, **kwargs)
-    # If it is a dict, Flask will jsonify it.
-    return response_or_dict, self.get_headers()
+    handler_data = self.process_post_data(*args, **kwargs)
+    headers = self.get_headers()
+
+    if self.JSONIFY and type(handler_data) in (dict, list):
+      return flask.jsonify(handler_data), headers
+    else:
+      # handler_data is a string or redirect response object.
+      return handler_data, headers
 
   def abort(self, status):
     """Support webapp2-style, e.g., self.abort(400)."""

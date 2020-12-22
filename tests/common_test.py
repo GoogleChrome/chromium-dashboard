@@ -27,6 +27,7 @@ from google.appengine.api import users
 
 import common
 import models
+import settings
 
 
 class MockHandler(object):
@@ -152,9 +153,12 @@ class TestableFlaskHandler(common.FlaskHandler):
 
   TEMPLATE_PATH = 'test_template.html'
 
-  def get_template_data(self, special_status=None, redirect_to=None):
+  def get_template_data(
+      self, special_status=None, redirect_to=None, item_list=None):
     if redirect_to:
       return flask.redirect(redirect_to)
+    if item_list:
+      return item_list
 
     template_data = {'name': 'testing'}
     if special_status:
@@ -177,6 +181,27 @@ class FlaskHandlerTests(unittest.TestCase):
 
   def setUp(self):
     self.handler = TestableFlaskHandler()
+
+  def test_get_cache_headers__disabled(self):
+    """Most handlers return content that should not be cached."""
+    cache_headers = self.handler.get_cache_headers()
+    self.assertEqual({}, cache_headers)
+
+  def test_get_cache_headers__private(self):
+    """Some handlers have content that can be cached for one user."""
+    self.handler.HTTP_CACHE_TYPE = 'private'
+    cache_headers = self.handler.get_cache_headers()
+    self.assertEqual(
+        {'Cache-Control': 'private, max-age=%s' % settings.DEFAULT_CACHE_TIME},
+        cache_headers)
+
+  def test_get_cache_headers__public(self):
+    """Some handlers have content that can be cached for anyone."""
+    self.handler.HTTP_CACHE_TYPE = 'public'
+    cache_headers = self.handler.get_cache_headers()
+    self.assertEqual(
+        {'Cache-Control': 'public, max-age=%s' % settings.DEFAULT_CACHE_TIME},
+        cache_headers)
 
   def test_get_headers(self):
     """We always use some standard headers."""
@@ -252,6 +277,27 @@ class FlaskHandlerTests(unittest.TestCase):
 
     self.assertIn('Hi testing', actual_html)
     self.assertEqual(200, actual_status)
+    self.assertIn('Access-Control-Allow-Origin', actual_headers)
+
+  def test_get__json_dict(self):
+    """We can process a GET request and JSON and headers."""
+    self.handler.JSONIFY = True
+    with test_app.test_request_context('/test'):
+      actual_response, actual_headers = self.handler.get()
+
+    self.assertIn('name', actual_response.get_json())
+    self.assertEqual(200, actual_response.status_code)
+    self.assertIn('Access-Control-Allow-Origin', actual_headers)
+
+  def test_get__json_list(self):
+    """We can process a GET request and JSON and headers."""
+    self.handler.JSONIFY = True
+    with test_app.test_request_context('/test'):
+      actual_response, actual_headers = self.handler.get(
+          item_list=[10, 20, 30])
+
+    self.assertEqual([10, 20, 30], actual_response.get_json())
+    self.assertEqual(200, actual_response.status_code)
     self.assertIn('Access-Control-Allow-Origin', actual_headers)
 
   def test_get__special_status(self):
