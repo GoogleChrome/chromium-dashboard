@@ -18,20 +18,57 @@ from __future__ import print_function
 
 __author__ = 'ericbidelman@chromium.org (Eric Bidelman)'
 
-import webapp2
 import datetime
 import json
 import logging
-import ramcache
+
+from google.appengine.api import users
 
 import common
 import models
+import ramcache
 import settings
 
 CACHE_AGE = 86400 # 24hrs
 
 
-class TimelineHandler(common.JSONHandler):
+
+def _truncate_day_percentage(datapoint):
+  # Need 8 decimals b/c num will by multiplied by 100 to get a percentage and
+  # we want 6 decimals.
+  datapoint.day_percentage = float("%.*f" % (8, datapoint.day_percentage))
+  return datapoint
+
+def _is_googler(user):
+  return user and user.email().endswith('@google.com')
+
+def _clean_data(data):
+  user = users.get_current_user()
+  # Don't show raw percentages if user is not a googler.
+  if not _is_googler(user):
+    data = map(_truncate_day_percentage, data)
+  return data
+
+def _filter_metric_data(data, formatted=False):
+  """Filter out unneeded metric data befor sending."""
+  data = _clean_data(data)
+  if not formatted:
+    data = [entity.to_dict() for entity in data]
+
+  # Remove keys that the frontend doesn't render.
+  for item in data:
+    item.pop('rolling_percentage', None)
+    item.pop('updated', None)
+    item.pop('created', None)
+
+  return data
+
+
+
+class TimelineHandler(common.FlaskHandler):
+
+  HTTP_CACHE_TYPE = 'private'
+  JSONIFY = True
 
   def make_query(self, bucket_id):
     query = self.MODEL_CLASS.all()
@@ -44,12 +81,12 @@ class TimelineHandler(common.JSONHandler):
       query.filter('date >=', datetime.datetime(2017, 10, 26))
     return query
 
-  def get(self):
-    ramcache.check_for_distributed_invalidation()
+  def get_template_data(self):
     try:
-      bucket_id = int(self.request.get('bucket_id'))
+      bucket_id = int(self.request.args.get('bucket_id'))
     except:
-      return super(self.MODEL_CLASS, self).get([])
+      # TODO(jrobbins): Why return [] instead of 400?
+      return []
 
     KEY = '%s|%s' % (self.MEMCACHE_KEY, bucket_id)
 
@@ -69,10 +106,7 @@ class TimelineHandler(common.JSONHandler):
       chunk_dict = models.set_chunk_memcache_keys(KEY, datapoints)
       ramcache.set_multi(chunk_dict, time=CACHE_AGE)
 
-    datapoints = self._clean_data(datapoints)
-    # Metrics json shouldn't be cached by intermediary caches because users
-    # see different data when logged in. Set Cache-Control: private.
-    super(TimelineHandler, self).get(datapoints, public=False)
+    return _filter_metric_data(datapoints)
 
 
 class PopularityTimelineHandler(TimelineHandler):
@@ -80,8 +114,8 @@ class PopularityTimelineHandler(TimelineHandler):
   MEMCACHE_KEY = 'css_pop_timeline'
   MODEL_CLASS = models.StableInstance
 
-  def get(self):
-    super(PopularityTimelineHandler, self).get()
+  def get_template_data(self):
+    return super(PopularityTimelineHandler, self).get_template_data()
 
 
 class AnimatedTimelineHandler(TimelineHandler):
@@ -89,8 +123,8 @@ class AnimatedTimelineHandler(TimelineHandler):
   MEMCACHE_KEY = 'css_animated_timeline'
   MODEL_CLASS = models.AnimatedProperty
 
-  def get(self):
-    super(AnimatedTimelineHandler, self).get()
+  def get_template_data(self):
+    return super(AnimatedTimelineHandler, self).get_template_data()
 
 
 class FeatureObserverTimelineHandler(TimelineHandler):
@@ -98,11 +132,14 @@ class FeatureObserverTimelineHandler(TimelineHandler):
   MEMCACHE_KEY = 'featureob_timeline'
   MODEL_CLASS = models.FeatureObserver
 
-  def get(self):
-    super(FeatureObserverTimelineHandler, self).get()
+  def get_template_data(self):
+    return super(FeatureObserverTimelineHandler, self).get_template_data()
 
 
-class FeatureHandler(common.JSONHandler):
+class FeatureHandler(common.FlaskHandler):
+
+  HTTP_CACHE_TYPE = 'private'
+  JSONIFY = True
 
   def __query_metrics_for_properties(self):
     datapoints = []
@@ -139,8 +176,7 @@ class FeatureHandler(common.JSONHandler):
     datapoints.sort(key=lambda x: x.day_percentage, reverse=True)
     return datapoints
 
-  def get(self):
-    ramcache.check_for_distributed_invalidation()
+  def get_template_data(self):
     # TODO(jrobbins): chunking is unneeded with ramcache, so we can
     # simplify this code.
     # Memcache doesn't support saving values > 1MB. Break up features into chunks
@@ -156,7 +192,7 @@ class FeatureHandler(common.JSONHandler):
       # memcache loses some but not all chunks.  We can't estimate the number of
       # expected cached items efficiently.  To counter that, we refresh
       # every 30 minutes via a cron.
-      if not properties or self.request.get('refresh'):
+      if not properties or self.request.args.get('refresh'):
         properties = self.__query_metrics_for_properties()
 
         # Memcache doesn't support saving values > 1MB. Break up list into chunks.
@@ -171,10 +207,7 @@ class FeatureHandler(common.JSONHandler):
         properties = self.__query_metrics_for_properties()
         ramcache.set(self.MEMCACHE_KEY, properties, time=CACHE_AGE)
 
-    properties = self._clean_data(properties)
-    # Metrics json shouldn't be cached by intermediary caches because users
-    # see different data when logged in. Set Cache-Control: private.
-    super(FeatureHandler, self).get(properties, public=False)
+    return _filter_metric_data(properties)
 
 
 class CSSPopularityHandler(FeatureHandler):
@@ -183,8 +216,8 @@ class CSSPopularityHandler(FeatureHandler):
   MODEL_CLASS = models.StableInstance
   PROPERTY_CLASS = models.CssPropertyHistogram
 
-  def get(self):
-    super(CSSPopularityHandler, self).get()
+  def get_template_data(self):
+    return super(CSSPopularityHandler, self).get_template_data()
 
 
 class CSSAnimatedHandler(FeatureHandler):
@@ -193,8 +226,8 @@ class CSSAnimatedHandler(FeatureHandler):
   MODEL_CLASS = models.AnimatedProperty
   PROPERTY_CLASS = models.CssPropertyHistogram
 
-  def get(self):
-    super(CSSAnimatedHandler, self).get()
+  def get_template_data(self):
+    return super(CSSAnimatedHandler, self).get_template_data()
 
 
 class FeatureObserverPopularityHandler(FeatureHandler):
@@ -203,30 +236,33 @@ class FeatureObserverPopularityHandler(FeatureHandler):
   MODEL_CLASS = models.FeatureObserver
   PROPERTY_CLASS = models.FeatureObserverHistogram
 
-  def get(self):
-    super(FeatureObserverPopularityHandler, self).get()
+  def get_template_data(self):
+    return super(FeatureObserverPopularityHandler, self).get_template_data()
 
 
-class FeatureBucketsHandler(common.BaseHandler):
+# TODO(jrobbins): Is this ever called?  I don't see what calls it.
+# And, I don't see recent requests for it in the server logs.
+# The CL that added it only added this class, no caller.
+class FeatureBucketsHandler(common.FlaskHandler):
+  JSONIFY = True
 
-  def get(self, type):
-    if type == 'cssprops':
+  def get_template_data(self, prop_type):
+    if prop_type == 'cssprops':
       properties = sorted(
           models.CssPropertyHistogram.get_all().iteritems(), key=lambda x:x[1])
     else:
       properties = sorted(
           models.FeatureObserverHistogram.get_all().iteritems(), key=lambda x:x[1])
 
-    self.response.headers['Content-Type'] = 'application/json;charset=utf-8'
-    return self.response.write(json.dumps(properties, separators=(',',':')))
+    return properties
 
 
-app = webapp2.WSGIApplication([
+app = common.FlaskApplication([
   ('/data/timeline/cssanimated', AnimatedTimelineHandler),
   ('/data/timeline/csspopularity', PopularityTimelineHandler),
   ('/data/timeline/featurepopularity', FeatureObserverTimelineHandler),
   ('/data/csspopularity', CSSPopularityHandler),
   ('/data/cssanimated', CSSAnimatedHandler),
   ('/data/featurepopularity', FeatureObserverPopularityHandler),
-  ('/data/blink/(.*)', FeatureBucketsHandler),
+  ('/data/blink/<string:prop_type>', FeatureBucketsHandler),
 ], debug=settings.DEBUG)
