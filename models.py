@@ -409,12 +409,15 @@ class BlinkComponent(DictModel):
     if components is None or update_cache:
       components = {}
       url = self.WF_CONTENT_ENDPOINT + '?cache-buster=%s' % time.time()
-      result = urlfetch.fetch(url, deadline=60)
-      if result.status_code == 200:
-        components = json.loads(result.content)
-        ramcache.set(key, components)
-      else:
-        logging.error('Fetching /web blink components content returned: %s' % result.status_code)
+      try:
+        result = urlfetch.fetch(url, deadline=50)
+        if result.status_code == 200:
+          components = json.loads(result.content)
+          ramcache.set(key, components)
+        else:
+          logging.error('Fetching /web blink components content returned: %s' % result.status_code)
+      except urlfetch.DeadlineExceededError:
+        logging.info('deadline exceeded when fetching %r', url)
 
     if not components:
       components = hack_wf_components.HACK_WF_COMPONENTS

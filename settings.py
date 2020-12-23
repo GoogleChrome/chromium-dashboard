@@ -34,6 +34,7 @@ BOUNCE_ESCALATION_ADDR = 'cr-status-bounces@google.com'
 PROD = False
 DEBUG = True
 SEND_EMAIL = False  # Just log email
+DEV_MODE = os.environ['SERVER_SOFTWARE'].startswith('Development')
 
 APP_ID = app_identity.get_application_id()
 SITE_URL = 'http://%s.appspot.com/' % APP_ID
@@ -41,6 +42,10 @@ SITE_URL = 'http://%s.appspot.com/' % APP_ID
 
 if APP_ID == 'testbed-test':
   APP_TITLE = 'Local testing'
+  SITE_URL = 'http://127.0.0.1:8888/'
+elif DEV_MODE:
+  PROD = False
+  APP_TITLE = 'Chrome Status Dev'
   SITE_URL = 'http://127.0.0.1:8888/'
 elif APP_ID == 'cr-status':
   PROD = True

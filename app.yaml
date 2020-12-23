@@ -115,7 +115,7 @@ handlers:
   script: notifier.app
   secure: always
 
-- url: /features/schedule.*
+- url: /features/schedule
   script: schedule.app
   secure: always
 

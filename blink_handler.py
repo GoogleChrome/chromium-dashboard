@@ -26,10 +26,41 @@ import yaml
 
 import common
 import models
-import ramcache
 import settings
 import util
 from schedule import construct_chrome_channels_details
+
+
+class PopulateSubscribersHandler(common.FlaskHandler):
+
+  def __populate_subscribers(self):
+    """Seeds the database with the team in devrel_team.yaml and adds the team
+      member to the specified blink components in that file. Should only be ran
+      if the FeatureOwner database entries have been cleared"""
+    f = file('%s/data/devrel_team.yaml' % settings.ROOT_DIR, 'r')
+    for profile in yaml.load_all(f):
+      blink_components = profile.get('blink_components', [])
+      blink_components = [models.BlinkComponent.get_by_name(name).key() for name in blink_components]
+      blink_components = filter(None, blink_components) # Filter out None values
+
+      user = models.FeatureOwner(
+        name=unicode(profile['name']),
+        email=unicode(profile['email']),
+        twitter=profile.get('twitter', None),
+        blink_components=blink_components,
+        primary_blink_components=blink_components,
+        watching_all_features=False,
+      )
+      user.put()
+    f.close()
+
+  @common.require_edit_permission
+  def get_template_data(self):
+    if settings.PROD:
+      return 'Handler not allowed in production.'
+    models.BlinkComponent.update_db()
+    self.__populate_subscribers()
+    return self.redirect('/admin/blink')
 
 
 class BlinkHandler(common.FlaskHandler):
@@ -76,12 +107,12 @@ class BlinkHandler(common.FlaskHandler):
       'subscribers': subscribers,
       'components': components[1:] # ditch generic "Blink" component
     }
-    return templatedata
+    return template_data
 
   # Remove user from component subscribers.
   @common.require_edit_permission
   def put(self):
-    params = self.request.json
+    params = self.request.get_json(force=True)
     self.__update_subscribers_list(False, user_id=params.get('userId'),
                                    blink_component=params.get('componentName'),
                                    primary=params.get('primary'))
@@ -90,7 +121,7 @@ class BlinkHandler(common.FlaskHandler):
   # Add user to component subscribers.
   @common.require_edit_permission
   def process_post_data(self):
-    params = self.request.json
+    params = self.request.get_json(force=True)
 
     self.__update_subscribers_list(True, user_id=params.get('userId'),
                                    blink_component=params.get('componentName'),
@@ -137,6 +168,7 @@ class SubscribersHandler(common.FlaskHandler):
 
 
 app = common.FlaskApplication([
+  ('/admin/blink/populate_subscribers', PopulateSubscribersHandler),
   ('/admin/subscribers', SubscribersHandler),
   ('/admin/blink', BlinkHandler),
 ], debug=settings.DEBUG)
