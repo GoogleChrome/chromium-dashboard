@@ -90,11 +90,6 @@ handlers:
   script: users.app
   secure: always
 
-- url: /admin/notifications/.*
-  script: notifier.app
-  login: admin
-  secure: always
-
 - url: /admin/.*
   script: google.appengine.ext.admin.application
   login: admin
@@ -106,10 +101,6 @@ handlers:
 - url: /(features|samples).xml
   script: server.app
   secure: optional
-
-- url: /features/push/.*
-  script: notifier.app
-  secure: always
 
 - url: /features/star/.*
   script: notifier.app
