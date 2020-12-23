@@ -21,7 +21,6 @@ __author__ = 'ericbidelman@chromium.org (Eric Bidelman)'
 import json
 import logging
 import os
-import webapp2
 
 import ramcache
 from google.appengine.api import urlfetch
@@ -90,22 +89,22 @@ def construct_chrome_channels_details():
   return channels
 
 
-class ScheduleHandler(common.ContentHandler):
+class ScheduleHandler(common.FlaskHandler):
 
-  @common.strip_trailing_slash
-  def get(self, path):
+  TEMPLATE_PATH = 'schedule.html'
+
+  def get_template_data(self):
     user = users.get_current_user()
     features = models.Feature.get_chronological(
         show_unlisted=self.user_can_edit(user))
-    data = {
+    template_data = {
       'features': json.dumps(features),
       'channels': json.dumps(construct_chrome_channels_details(),
                              indent=4)
     }
+    return template_data
 
-    self.render(data, template_path=os.path.join('schedule.html'))
 
-
-app = webapp2.WSGIApplication([
-  ('(.*)', ScheduleHandler),
+app = common.FlaskApplication([
+  ('/features/schedule', ScheduleHandler),
 ], debug=settings.DEBUG)

@@ -66,7 +66,7 @@ handlers:
   login: required # non-admin
   secure: always
 
-- url: /admin/subscribers.*
+- url: /admin/subscribers
   script: blink_handler.app
   login: required # non-admin
   secure: always
@@ -115,7 +115,7 @@ handlers:
   script: notifier.app
   secure: always
 
-- url: /features/schedule.*
+- url: /features/schedule
   script: schedule.app
   secure: always
 

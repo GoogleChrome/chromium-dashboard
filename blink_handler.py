@@ -22,18 +22,16 @@ import collections
 import json
 import logging
 import os
-import webapp2
 import yaml
 
 import common
 import models
-import ramcache
 import settings
 import util
 from schedule import construct_chrome_channels_details
 
 
-class PopulateSubscribersHandler(common.ContentHandler):
+class PopulateSubscribersHandler(common.FlaskHandler):
 
   def __populate_subscribers(self):
     """Seeds the database with the team in devrel_team.yaml and adds the team
@@ -57,15 +55,17 @@ class PopulateSubscribersHandler(common.ContentHandler):
     f.close()
 
   @common.require_edit_permission
-  def get(self):
+  def get_template_data(self):
     if settings.PROD:
-      return self.response.out.write('Handler not allowed in production.')
+      return 'Handler not allowed in production.'
     models.BlinkComponent.update_db()
     self.__populate_subscribers()
     return self.redirect('/admin/blink')
 
 
-class BlinkHandler(common.ContentHandler):
+class BlinkHandler(common.FlaskHandler):
+
+  TEMPLATE_PATH = 'admin/blink.html'
 
   def __update_subscribers_list(self, add=True, user_id=None, blink_component=None, primary=False):
     if not user_id or not blink_component:
@@ -89,8 +89,7 @@ class BlinkHandler(common.ContentHandler):
     return True
 
   @common.require_edit_permission
-  @common.strip_trailing_slash
-  def get(self, path):
+  def get_template_data(self):
     components = models.BlinkComponent.all().order('name').fetch(None)
     subscribers = models.FeatureOwner.all().order('name').fetch(None)
 
@@ -104,47 +103,47 @@ class BlinkHandler(common.ContentHandler):
     # for c in components:
     #   c.wf_urls = wf_component_content.get(c.name) or []
 
-    data = {
+    template_data = {
       'subscribers': subscribers,
       'components': components[1:] # ditch generic "Blink" component
     }
-    self.render(data, template_path=os.path.join('admin/blink.html'))
+    return template_data
 
   # Remove user from component subscribers.
-  def put(self, path):
-    params = json.loads(self.request.body)
+  @common.require_edit_permission
+  def put(self):
+    params = self.request.get_json(force=True)
     self.__update_subscribers_list(False, user_id=params.get('userId'),
                                    blink_component=params.get('componentName'),
                                    primary=params.get('primary'))
-    self.response.set_status(200, message='User removed from subscribers')
-    return self.response.write(json.dumps({'done': True}))
+    return {'done': True}
 
   # Add user to component subscribers.
-  def post(self, path):
-    params = json.loads(self.request.body)
+  @common.require_edit_permission
+  def process_post_data(self):
+    params = self.request.get_json(force=True)
 
     self.__update_subscribers_list(True, user_id=params.get('userId'),
                                    blink_component=params.get('componentName'),
                                    primary=params.get('primary'))
-    self.response.set_status(200, message='User added to subscribers')
-    return self.response.write(json.dumps(params))
+    return params
 
 
-class SubscribersHandler(common.ContentHandler):
+class SubscribersHandler(common.FlaskHandler):
+
+  TEMPLATE_PATH = 'admin/subscribers.html'
 
   @common.require_edit_permission
-  # @common.strip_trailing_slash
-  def get(self, path):
-    ramcache.check_for_distributed_invalidation()
+  def get_template_data(self):
     users = models.FeatureOwner.all().order('name').fetch(None)
     feature_list = models.Feature.get_chronological()
 
-    milestone = self.request.get('milestone') or None
+    milestone = self.request.args.get('milestone') or None
     if milestone:
       milestone = int(milestone)
       feature_list = filter(lambda f: (f['shipped_milestone'] or f['shipped_android_milestone']) == milestone, feature_list)
 
-    list_features_per_owner = 'showFeatures' in self.request.GET
+    list_features_per_owner = 'showFeatures' in self.request.args
     for user in users:
       # user.subscribed_components = [models.BlinkComponent.get(key) for key in user.blink_components]
       user.owned_components = [models.BlinkComponent.get(key) for key in user.primary_blink_components]
@@ -155,7 +154,7 @@ class SubscribersHandler(common.ContentHandler):
 
     details = construct_chrome_channels_details()
 
-    data = {
+    template_data = {
       'subscribers': users,
       'channels': collections.OrderedDict([
         ('stable', details['stable']),
@@ -165,12 +164,11 @@ class SubscribersHandler(common.ContentHandler):
       ]),
       'selected_milestone': int(milestone) if milestone else None
     }
+    return template_data
 
-    self.render(data, template_path=os.path.join('admin/subscribers.html'))
 
-
-app = webapp2.WSGIApplication([
+app = common.FlaskApplication([
   ('/admin/blink/populate_subscribers', PopulateSubscribersHandler),
-  ('/admin/subscribers(.*)', SubscribersHandler),
-  ('(.*)', BlinkHandler),
+  ('/admin/subscribers', SubscribersHandler),
+  ('/admin/blink', BlinkHandler),
 ], debug=settings.DEBUG)
