@@ -49,6 +49,7 @@
     "gulp-uglify-es": "^1.0.4",
     "gulp-util": "^3.0.7",
     "http2-push-manifest": "^1.0.0",
+    "ini": ">=1.3.6",
     "kind-of": ">=6.0.3",
     "lighthouse-ci": "https://github.com/ebidel/lighthouse-ci",
     "lit-analyzer": "^1.1.9",
