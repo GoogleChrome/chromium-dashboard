@@ -20,9 +20,9 @@ import json
 import unittest
 import testing_config  # Must be imported before the module under test.
 
+import flask
 import mock
-import webapp2
-from webob import exc
+import werkzeug.exceptions  # Flask HTTP stuff.
 
 from google.appengine.ext import db
 from google.appengine.api import mail
@@ -294,8 +294,7 @@ class OutboundEmailHandlerTest(unittest.TestCase):
 
   def setUp(self):
     self.handler = notifier.OutboundEmailHandler()
-    self.handler.request = webapp2.Request.blank('/tasks/outbound-email')
-    self.handler.response = webapp2.Response()
+    self.request_path = '/tasks/outbound-email'
 
     self.to = 'user@example.com'
     self.subject = 'test subject'
@@ -308,29 +307,34 @@ class OutboundEmailHandlerTest(unittest.TestCase):
   @mock.patch('google.appengine.api.mail.EmailMessage')
   def test_post__prod(self, mock_emailmessage_constructor):
     """On cr-status, we send emails to real users."""
-    self.handler.request.body = json.dumps({
+    params = {
         'to': self.to,
         'subject': self.subject,
         'html': self.html,
-        })
-    self.handler.post()
+        }
+    with notifier.app.test_request_context(self.request_path, json=params):
+      actual_response = self.handler.process_post_data()
+
     mock_emailmessage_constructor.assert_called_once_with(
         sender=self.sender, to=self.to, subject=self.subject,
         html=self.html)
     mock_message = mock_emailmessage_constructor.return_value
     mock_message.check_initialized.assert_called_once_with()
     mock_message.send.assert_called_once_with()
+    self.assertEqual({'message': 'Done'}, actual_response)
 
   @mock.patch('settings.SEND_EMAIL', True)
   @mock.patch('google.appengine.api.mail.EmailMessage')
   def test_post__staging(self, mock_emailmessage_constructor):
     """On cr-status-staging, we send emails to an archive."""
-    self.handler.request.body = json.dumps({
+    params = {
         'to': self.to,
         'subject': self.subject,
         'html': self.html,
-        })
-    self.handler.post()
+        }
+    with notifier.app.test_request_context(self.request_path, json=params):
+      actual_response = self.handler.process_post_data()
+
     expected_to = 'cr-status-staging-emails+user+example.com@google.com'
     mock_emailmessage_constructor.assert_called_once_with(
         sender=self.sender, to=expected_to, subject=self.subject,
@@ -338,17 +342,20 @@ class OutboundEmailHandlerTest(unittest.TestCase):
     mock_message = mock_emailmessage_constructor.return_value
     mock_message.check_initialized.assert_called_once_with()
     mock_message.send.assert_called_once_with()
+    self.assertEqual({'message': 'Done'}, actual_response)
 
   @mock.patch('settings.SEND_EMAIL', False)
   @mock.patch('google.appengine.api.mail.EmailMessage')
   def test_post__local(self, mock_emailmessage_constructor):
     """When running locally, we don't actually send emails."""
-    self.handler.request.body = json.dumps({
+    params = {
         'to': self.to,
         'subject': self.subject,
         'html': self.html,
-        })
-    self.handler.post()
+        }
+    with notifier.app.test_request_context(self.request_path, json=params):
+      actual_response = self.handler.process_post_data()
+
     expected_to = 'cr-status-staging-emails+user+example.com@google.com'
     mock_emailmessage_constructor.assert_called_once_with(
         sender=self.sender, to=expected_to, subject=self.subject,
@@ -356,6 +363,7 @@ class OutboundEmailHandlerTest(unittest.TestCase):
     mock_message = mock_emailmessage_constructor.return_value
     mock_message.check_initialized.assert_called_once_with()
     mock_message.send.assert_not_called()
+    self.assertEqual({'message': 'Done'}, actual_response)
 
 
 class SetStarHandlerTest(unittest.TestCase):
@@ -366,55 +374,64 @@ class SetStarHandlerTest(unittest.TestCase):
         standardization=1, web_dev_views=1, impl_status_chrome=1)
     self.feature_1.put()
     self.handler = notifier.SetStarHandler()
-    self.handler.request = webapp2.Request.blank('/features/star/set')
-    self.handler.response = webapp2.Response()
+    self.request_path = '/features/star/set'
 
   def tearDown(self):
     self.feature_1.delete()
 
   def test_post__invalid_feature_id(self):
     """We reject star requests that don't have an int featureId."""
-    self.handler.request.body = '{}'
-    with self.assertRaises(exc.HTTPClientError):
-      self.handler.post()
+    params = {}
+    with notifier.app.test_request_context(self.request_path, json=params):
+      with self.assertRaises(werkzeug.exceptions.BadRequest):
+        self.handler.process_post_data()
 
-    self.handler.request.body = '{"featureId":"not an int"}'
-    with self.assertRaises(exc.HTTPClientError):
-      self.handler.post()
+    params = {"featureId": "not an int"}
+    with notifier.app.test_request_context(self.request_path, json=params):
+      with self.assertRaises(werkzeug.exceptions.BadRequest):
+        self.handler.process_post_data()
 
   def test_post__feature_id_not_found(self):
     """We reject star requests for features that don't exist."""
-    self.handler.request.body = '{"featureId": 999}'
-    with self.assertRaises(exc.HTTPClientError):
-      self.handler.post()
+    params = {"featureId": 999}
+    with notifier.app.test_request_context(self.request_path, json=params):
+      with self.assertRaises(werkzeug.exceptions.NotFound):
+        self.handler.process_post_data()
 
   def test_post__anon(self):
     """We reject anon star requests."""
     feature_id = self.feature_1.key().id()
-    self.handler.request.body = '{"featureId": %d}' % feature_id
+    params = {"featureId": feature_id}
     testing_config.sign_out()
-    with self.assertRaises(exc.HTTPClientError):
-      self.handler.post()
+    with notifier.app.test_request_context(self.request_path, json=params):
+      with self.assertRaises(werkzeug.exceptions.BadRequest):
+        self.handler.process_post_data()
 
   def test_post__duplicate(self):
     """User sends a duplicate request, which should be a no-op."""
     testing_config.sign_in('user7@example.com', 123567890)
 
     feature_id = self.feature_1.key().id()
-    self.handler.request.body = '{"featureId": %d}' % feature_id
-    self.handler.post()  # Original request
+    params = {"featureId": feature_id}
+    with notifier.app.test_request_context(self.request_path, json=params):
+      self.handler.process_post_data()  # Original request
+
     updated_feature = models.Feature.get_by_id(feature_id)
     self.assertEqual(1, updated_feature.star_count)
-    self.handler.post()  # Duplicate request
+
+    with notifier.app.test_request_context(self.request_path, json=params):
+      self.handler.process_post_data()  # Duplicate request
     updated_feature = models.Feature.get_by_id(feature_id)
     self.assertEqual(1, updated_feature.star_count)  # Still 1, not 2.
 
-    self.handler.request.body = (
-        '{"featureId": %d, "starred": false}' % feature_id)
-    self.handler.post()  # Original request
+    params = {"featureId": feature_id, "starred": False}
+    with notifier.app.test_request_context(self.request_path, json=params):
+      self.handler.process_post_data()  # Original request
     updated_feature = models.Feature.get_by_id(feature_id)
     self.assertEqual(0, updated_feature.star_count)
-    self.handler.post()  # Duplicate request
+
+    with notifier.app.test_request_context(self.request_path, json=params):
+      self.handler.process_post_data()  # Duplicate request
     updated_feature = models.Feature.get_by_id(feature_id)
     self.assertEqual(0, updated_feature.star_count)  # Still 0, not negative.
 
@@ -425,9 +442,9 @@ class SetStarHandlerTest(unittest.TestCase):
     feature_id = self.feature_1.key().id()
     # User never stars the feature in the first place.
 
-    self.handler.request.body = (
-        '{"featureId": %d, "starred": false}' % feature_id)
-    self.handler.post()  # Out-of-step request
+    params = {"featureId": feature_id, "starred": False}
+    with notifier.app.test_request_context(self.request_path, json=params):
+      self.handler.process_post_data()  # Out-of-step request
     updated_feature = models.Feature.get_by_id(feature_id)
     self.assertEqual(0, updated_feature.star_count)  # Still 0, not negative.
 
@@ -436,14 +453,15 @@ class SetStarHandlerTest(unittest.TestCase):
     testing_config.sign_in('user6@example.com', 123567890)
 
     feature_id = self.feature_1.key().id()
-    self.handler.request.body = '{"featureId": %d}' % feature_id
-    self.handler.post()
+    params = {"featureId": feature_id}
+    with notifier.app.test_request_context(self.request_path, json=params):
+      self.handler.process_post_data()
     updated_feature = models.Feature.get_by_id(feature_id)
     self.assertEqual(1, updated_feature.star_count)
 
-    self.handler.request.body = (
-        '{"featureId": %d, "starred": false}' % feature_id)
-    self.handler.post()
+    params = {"featureId": feature_id, "starred": False}
+    with notifier.app.test_request_context(self.request_path, json=params):
+      self.handler.post()
     updated_feature = models.Feature.get_by_id(feature_id)
     self.assertEqual(0, updated_feature.star_count)
 
@@ -456,8 +474,7 @@ class GetUserStarsHandlerTest(unittest.TestCase):
         standardization=1, web_dev_views=1, impl_status_chrome=1)
     self.feature_1.put()
     self.handler = notifier.GetUserStarsHandler()
-    self.handler.request = webapp2.Request.blank('/features/star/list')
-    self.handler.response = webapp2.Response()
+    self.request_path = '/features/star/list'
 
   def tearDown(self):
     self.feature_1.delete()
@@ -465,18 +482,16 @@ class GetUserStarsHandlerTest(unittest.TestCase):
   def test_post__anon(self):
     """Anon should always have an empty list of stars."""
     testing_config.sign_out()
-    self.handler.post()
-    self.assertEqual(
-        '{"featureIds":[]}',
-        self.handler.response.body)
+    with notifier.app.test_request_context(self.request_path):
+      actual_response = self.handler.process_post_data()
+    self.assertEqual({"featureIds": []}, actual_response)
 
   def test_post__no_stars(self):
     """User has not starred any features."""
     testing_config.sign_in('user7@example.com', 123567890)
-    self.handler.post()
-    self.assertEqual(
-        '{"featureIds":[]}',
-        self.handler.response.body)
+    with notifier.app.test_request_context(self.request_path):
+      actual_response = self.handler.process_post_data()
+    self.assertEqual({"featureIds": []}, actual_response)
 
   def test_post__some_stars(self):
     """User has starred some features."""
@@ -484,10 +499,11 @@ class GetUserStarsHandlerTest(unittest.TestCase):
     feature_1_id = self.feature_1.key().id()
     testing_config.sign_in(email, 123567890)
     notifier.FeatureStar.set_star(email, feature_1_id)
-    self.handler.post()
+    with notifier.app.test_request_context(self.request_path):
+      actual_response = self.handler.process_post_data()
     self.assertEqual(
-        '{"featureIds":[%d]}' % feature_1_id,
-        self.handler.response.body)
+        {"featureIds": [feature_1_id]},
+        actual_response)
 
 
 class BouncedEmailHandlerTest(unittest.TestCase):

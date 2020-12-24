@@ -24,7 +24,6 @@ import datetime
 import json
 import os
 import re
-import webapp2
 
 import ramcache
 from google.appengine.ext import db
@@ -32,7 +31,7 @@ from google.appengine.api import mail
 from google.appengine.api import urlfetch
 from google.appengine.api import users
 from google.appengine.api import taskqueue
-from google.appengine.ext.webapp.mail_handlers import BounceNotificationHandler
+from google.appengine.ext.webapp.mail_handlers import BounceNotification
 
 from django.template.loader import render_to_string
 from django.utils.html import conditional_escape as escape
@@ -152,10 +151,6 @@ def make_email_tasks(feature, is_update=False, changes=[]):
   return all_tasks
 
 
-class PushSubscription(models.DictModel):
-  subscription_id = db.StringProperty(required=True)
-
-
 class FeatureStar(models.DictModel):
   """A FeatureStar represent one user's interest in one feature."""
   email = db.EmailProperty(required=True)
@@ -219,11 +214,11 @@ class FeatureStar(models.DictModel):
     return user_prefs
 
 
-class FeatureChangeHandler(webapp2.RequestHandler):
+class FeatureChangeHandler(common.FlaskHandler):
   """This task handles a feature creation or update by making email tasks."""
 
-  def post(self):
-    json_body = json.loads(self.request.body)
+  def process_post_data(self):
+    json_body = self.request.get_json(force=True)
     feature = json_body.get('feature') or None
     is_update = json_body.get('is_update') or False
     changes = json_body.get('changes') or []
@@ -241,12 +236,14 @@ class FeatureChangeHandler(webapp2.RequestHandler):
             target='notifier')
         taskqueue.Queue().add(task)
 
+    return {'message': 'Done'}
 
-class OutboundEmailHandler(webapp2.RequestHandler):
+
+class OutboundEmailHandler(common.FlaskHandler):
   """Task to send a notification email to one recipient."""
 
-  def post(self):
-    json_body = json.loads(self.request.body)
+  def process_post_data(self):
+    json_body = self.request.get_json(force=True)
     to = json_body['to']
     subject = json_body['subject']
     email_html = json_body['html']
@@ -270,31 +267,15 @@ class OutboundEmailHandler(webapp2.RequestHandler):
     else:
       logging.info('Email not sent because of settings.SEND_EMAIL')
 
-
-class NotificationNewSubscriptionHandler(webapp2.RequestHandler):
-
-  def post(self):
-    json_body = json.loads(self.request.body)
-    subscription_id = json_body.get('subscriptionId') or None
-
-    if subscription_id is None:
-      return
-
-    # Don't add duplicate tokens.
-    query = PushSubscription.all(keys_only=True).filter(
-        'subscription_id =', subscription_id)
-    found_token = query.get()
-    if found_token is None:
-      subscription = PushSubscription(subscription_id=subscription_id)
-      subscription.put()
+    return {'message': 'Done'}
 
 
-class SetStarHandler(webapp2.RequestHandler):
+class SetStarHandler(common.FlaskHandler):
   """Handle JSON API requests to set/clear a star."""
 
-  def post(self):
+  def process_post_data(self):
     """Stars or unstars a feature for the signed in user."""
-    json_body = json.loads(self.request.body)
+    json_body = self.request.get_json(force=True)
     feature_id = json_body.get('featureId')
     starred = json_body.get('starred', True)
 
@@ -313,15 +294,13 @@ class SetStarHandler(webapp2.RequestHandler):
       self.abort(400)
 
     FeatureStar.set_star(user.email(), feature_id, starred)
-    data = {}
-    self.response.headers['Content-Type'] = 'application/json;charset=utf-8'
-    result = self.response.write(json.dumps(data, separators=(',',':')))
+    return {'message': 'Done'}
 
 
-class GetUserStarsHandler(webapp2.RequestHandler):
+class GetUserStarsHandler(common.FlaskHandler):
   """Handle JSON API requests list all stars for current user."""
 
-  def post(self):
+  def process_post_data(self):
     """Returns a list of starred feature_ids for the signed in user."""
     # Note: the post body is not used.
 
@@ -334,126 +313,11 @@ class GetUserStarsHandler(webapp2.RequestHandler):
     data = {
         'featureIds': feature_ids,
         }
-    self.response.headers['Content-Type'] = 'application/json;charset=utf-8'
-    result = self.response.write(json.dumps(data, separators=(',',':')))
+    return data
 
 
 
-class NotificationSubscribeHandler(webapp2.RequestHandler):
-
-  def post(self, feature_id=None):
-    """Subscribes or unsubscribes a token to a topic."""
-    json_body = json.loads(self.request.body)
-    subscription_id = json_body.get('subscriptionId') or None
-    remove = json_body.get('remove') or False
-
-    if subscription_id is None or feature_id is None:
-      return
-
-    data = {}
-    topic_id = feature_id if feature_id else 'new-feature'
-    url = ('https://iid.googleapis.com/iid/v1/%s/rel/topics/%s' %
-           (subscription_id, topic_id))
-
-    if remove:
-      url = 'https://iid.googleapis.com/iid/v1:batchRemove'
-      data = """{{
-        "to": "/topics/{topic_id}",
-        "registration_tokens": ["{token}"]
-      }}""".format(topic_id=topic_id, token=subscription_id)
-
-    result = urlfetch.fetch(url=url, payload=data, method=urlfetch.POST,
-                            headers=get_default_headers())
-
-    if result.status_code != 200:
-      logging.error('Error: subscribing %s to topic: %s' %
-                    (subscription_id, topic_id))
-      return
-
-
-class NotificationSendHandler(webapp2.RequestHandler):
-
-  def _send_notification_to_feature_subscribers(self, feature, is_update=False):
-    """Sends a notification to users when new features are added or updated.
-
-    Args:
-      feature: Feature that was added/modified.
-      is_update: True if this was an update to the feature. False if
-          it was newly added.
-    """
-    if not settings.SEND_PUSH_NOTIFICATIONS:
-      return
-
-    feature_id = feature.key().id()
-    topic_id = feature_id if is_update else 'new-feature'
-
-    data = """{{
-      "notification": {{
-        "title": "{title}",
-        "body": "{added_str}. Click here for more information.",
-        "icon": "/static/img/crstatus_192.png",
-        "click_action": "https://www.chromestatus.com/feature/{id}"
-      }},
-      "to": "/topics/{topic_id}"
-    }}""".format(title=feature.name, id=feature_id, topic_id=topic_id,
-        added_str=('Was updated' if is_update else 'New feature added'))
-
-    result = urlfetch.fetch(url='https://fcm.googleapis.com/fcm/send',
-        payload=data, method=urlfetch.POST, headers=get_default_headers())
-
-    if result.status_code != 200:
-      logging.error('Error sending notification to topic %s. %s' %
-                    (topic_id, result.content))
-      return
-
-  def post(self):
-    json_body = json.loads(self.request.body)
-    feature = json_body.get('feature') or None
-    is_update = json_body.get('is_update') or False
-    changes = json_body.get('changes') or []
-
-    # Email feature subscribers if the feature exists and
-    # there were changes to it.
-    feature = models.Feature.get_by_id(feature['id'])
-    if feature and (is_update and len(changes) or not is_update):
-      self._send_notification_to_feature_subscribers(
-          feature=feature, is_update=is_update)
-
-
-class NotificationSubscriptionInfoHandler(webapp2.RequestHandler):
-  def post(self):
-    json_body = json.loads(self.request.body)
-    subscription_id = json_body.get('subscriptionId') or None
-
-    if subscription_id is None:
-      return
-
-    url = 'https://iid.googleapis.com/iid/info/%s?details=true' % subscription_id
-    result = urlfetch.fetch(
-        url=url, method=urlfetch.GET, headers=get_default_headers())
-
-    if result.status_code != 200:
-      logging.error('Error: fetching info for subscription %s' % subscription_id)
-      self.response.set_status(400, message=result.content)
-      self.response.write(result.content)
-      return
-
-    self.response.write(result.content)
-
-
-class NotificationsListHandler(common.ContentHandler):
-  def get(self):
-    ramcache.check_for_distributed_invalidation()
-    subscriptions = PushSubscription.all().fetch(None)
-
-    template_data = {
-      'FIREBASE_SERVER_KEY': settings.FIREBASE_SERVER_KEY,
-      'subscriptions': json.dumps([s.subscription_id for s in subscriptions])
-    }
-    self.render(data=template_data, template_path=os.path.join('admin/notifications/list.html'))
-
-
-class BouncedEmailHandler(BounceNotificationHandler):
+class BouncedEmailHandler(common.FlaskHandler):
   BAD_WRAP_RE = re.compile('=\r\n')
   BAD_EQ_RE = re.compile('=3D')
 
@@ -462,21 +326,9 @@ class BouncedEmailHandler(BounceNotificationHandler):
   # https://cloud.google.com/appengine/docs/python/mail/bounce
   # Source code is in file:
   # google_appengine/google/appengine/ext/webapp/mail_handlers.py
-  def post(self):
-    try:
-      super(BouncedEmailHandler, self).post()
-    except AttributeError:
-      # Work-around for
-      # https://code.google.com/p/googleappengine/issues/detail?id=13512
-      raw_message = self.request.POST.get('raw-message')
-      logging.info('raw_message %r', raw_message)
-      raw_message = self.BAD_WRAP_RE.sub('', raw_message)
-      raw_message = self.BAD_EQ_RE.sub('=', raw_message)
-      logging.info('fixed raw_message %r', raw_message)
-      mime_message = email.message_from_string(raw_message)
-      logging.info('get_payload gives %r', mime_message.get_payload())
-      self.request.POST['raw-message'] = mime_message
-      super(BouncedEmail, self).post()  # Retry with mime_message
+  def process_post_data(self):
+    self.recipient(BounceNotification(self.form))
+    return {'message': 'Done'}
 
   def receive(self, bounce_message):
     email_addr = bounce_message.original.get('to')
@@ -504,20 +356,10 @@ class BouncedEmailHandler(BounceNotificationHandler):
       message.send()
 
 
-app = webapp2.WSGIApplication([
-  ('/admin/notifications/list', NotificationsListHandler),
+app = common.FlaskApplication([
   ('/tasks/email-subscribers', FeatureChangeHandler),
   ('/tasks/outbound-email', OutboundEmailHandler),
-  ('/tasks/send_notifications', NotificationSendHandler),
-  ('/features/push/new', NotificationNewSubscriptionHandler),
-  ('/features/push/info', NotificationSubscriptionInfoHandler),
-  ('/features/push/subscribe/([0-9]*)', NotificationSubscribeHandler),
   ('/features/star/set', SetStarHandler),
   ('/features/star/list', GetUserStarsHandler),
   ('/_ah/bounce', BouncedEmailHandler),
 ], debug=settings.DEBUG)
-
-app.error_handlers[404] = common.handle_404
-
-if settings.PROD and not settings.DEBUG:
-  app.error_handlers[500] = common.handle_500

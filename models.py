@@ -969,12 +969,6 @@ class Feature(DictModel):
         target='notifier', payload=payload)
     queue.add(task)
 
-    # Create task to send push notifications
-    queue = taskqueue.Queue()
-    task = taskqueue.Task(method="POST", url='/tasks/send_notifications',
-        target='notifier', payload=payload)
-    queue.add(task)
-
 
   def put(self, notify=True, **kwargs):
     is_update = self.is_saved()
