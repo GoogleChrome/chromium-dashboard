@@ -52,7 +52,7 @@ class FeatureDetailHandler(common.FlaskHandler):
         'process_json': json.dumps(processes.process_to_dict(feature_process)),
         'field_defs_json': json.dumps(field_defs),
         'feature': f.format_for_template(),
-        'feature_id': f.key().id,
+        'feature_id': f.key().id(),
         'feature_json': json.dumps(f.format_for_template()),
         'updated_display': f.updated.strftime("%Y-%m-%d"),
     }
@@ -97,6 +97,11 @@ class FeatureListHandler(common.FlaskHandler):
   TEMPLATE_PATH = 'features.html'
 
   def get_template_data(self, feature_id=None):
+    # Note: feature_id is not used here but JS gets it from the URL.
+
+    # This template data is all for filtering.  The actual features
+    # are sent by an XHR request for /features.json.
+
     template_data = {}
     template_data['categories'] = [
       (v, normalized_name(v)) for k,v in
@@ -118,11 +123,12 @@ class FeatureListHandler(common.FlaskHandler):
 
 
 
-class CssTimelineHandler(common.FlaskHandler):
+class CssPopularityHandler(common.FlaskHandler):
 
-  TEMPLATE_PATH = 'metrics/css/timeline.html'
+  TEMPLATE_PATH = 'metrics/css/timeline/popularity.html'
 
-  def get_template_data(self):
+  def get_template_data(self, bucket_id=None):
+    # Note: bucket_id is not used, but the JS looks in the URL to get it.
     properties = sorted(
         models.CssPropertyHistogram.get_all().iteritems(), key=lambda x:x[1])
     template_data = {
@@ -132,11 +138,18 @@ class CssTimelineHandler(common.FlaskHandler):
     return template_data
 
 
-class FeatureTimelineHandler(common.FlaskHandler):
+class CssAnimatedHandler(CssPopularityHandler):
 
-  TEMPLATE_PATH = 'metrics/feature/timeline.html'
+  TEMPLATE_PATH = 'metrics/css/timeline/animated.html'
+  # The logic and data is the same, but it is filtered differenly in JS.
 
-  def get_template_data(self):
+
+class FeaturePopularityHandler(common.FlaskHandler):
+
+  TEMPLATE_PATH = 'metrics/feature/timeline/popularity.html'
+
+  def get_template_data(self, bucket_id=None):
+    # Note: bucket_id is not used, but the JS looks in the URL to get it.
     properties = sorted(
         models.FeatureObserverHistogram.get_all().iteritems(), key=lambda x:x[1])
     template_data = {
@@ -237,12 +250,18 @@ routes = [
   ('/features.xml', FeatureListXMLHandler),
 
   # TODO(jrobbins): These seem like they belong in metrics.py.
-  ('/metrics/css/popularity', common.EmptyHandler,
+  ('/metrics/css/popularity', common.ConstHandler,
    {'template_path': 'metrics/css/popularity.html'}),
-  ('/metrics/css/timeline', CssTimelineHandler),
-  ('/metrics/feature/popularity', common.EmptyHandler,
+  ('/metrics/css/animated', common.ConstHandler,
+   {'template_path': 'metrics/css/animated.html'}),
+  ('/metrics/css/timeline/popularity', CssPopularityHandler),
+  ('/metrics/css/timeline/popularity/<int:bucket_id>', CssPopularityHandler),
+  ('/metrics/css/timeline/animated', CssAnimatedHandler),
+  ('/metrics/css/timeline/animated/<int:bucket_id>', CssAnimatedHandler),
+  ('/metrics/feature/popularity', common.ConstHandler,
    {'template_path': 'metrics/feature/popularity.html'}),
-  ('/metrics/feature/timeline', FeatureTimelineHandler),
+  ('/metrics/feature/timeline/popularity', FeaturePopularityHandler),
+  ('/metrics/feature/timeline/popularity/<int:bucket_id>', FeaturePopularityHandler),
 
   # TODO(jrobbins): util.py has only one thing in it, so maybe move
   # it and this handler to a new omaha.py file.

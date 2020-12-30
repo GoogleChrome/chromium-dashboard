@@ -22,6 +22,7 @@ import mock
 import webapp2
 import flask
 import flask.views
+import werkzeug.exceptions  # Flask HTTP stuff.
 
 from google.appengine.api import users
 
@@ -173,8 +174,57 @@ class TestableFlaskHandler(common.FlaskHandler):
 
 
 test_app = common.FlaskApplication(
-    [('/test', TestableFlaskHandler)],
+    [('/test', TestableFlaskHandler),
+     ('/old_path', common.Redirector,
+      {'location': '/new_path'}),
+     ('/just_a_template', common.ConstHandler,
+      {'template_path': 'test_template.html',
+       'name': 'Guest'}),
+     ('/messed_up_template', common.ConstHandler,
+      {'template_path': 'not_a_template'}),
+     ('/ui/density.json', common.ConstHandler,
+      {'UI density': ['default', 'comfortable', 'compact']}),
+     ],
     debug=True)
+
+
+class RedirectorTests(unittest.TestCase):
+
+  def test_redirector(self):
+    """If the user hits a redirector, they get a redirect response."""
+    with test_app.test_request_context('/old_path'):
+      actual_redirect = test_app.dispatch_request()
+
+    self.assertEqual(302, actual_redirect.status_code)
+    self.assertEqual('/new_path', actual_redirect.headers['location'])
+
+
+class ConstHandlerTests(unittest.TestCase):
+
+  def test_template_found(self):
+    """We can run a template that requires no handler logic."""
+    with test_app.test_request_context('/just_a_template'):
+      actual_tuple = test_app.dispatch_request()
+
+    actual_text, actual_status, actual_headers = actual_tuple
+    self.assertIn('Hi Guest,', actual_text)
+    self.assertEqual(200, actual_status)
+    self.assertIn('Access-Control-Allow-Origin', actual_headers)
+
+  def test_bad_template_path(self):
+    """We can run a template that requires no handler logic."""
+    with test_app.test_request_context('/messed_up_template'):
+      with self.assertRaises(werkzeug.exceptions.InternalServerError):
+        test_app.dispatch_request()
+
+  def test_json(self):
+    """We can return constant JSON."""
+    with test_app.test_request_context('/ui/density.json'):
+      actual_response = test_app.dispatch_request()
+
+    self.assertEqual(
+        {'UI density': ['default', 'comfortable', 'compact']},
+        actual_response.json)
 
 
 class FlaskHandlerTests(unittest.TestCase):

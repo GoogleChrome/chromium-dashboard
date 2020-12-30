@@ -500,17 +500,21 @@ class Redirector(FlaskHandler):
     return flask.redirect(location)
 
 
-class EmptyHandler(FlaskHandler):
-  """Reusable handler for templates that require no page-specific data.
+class ConstHandler(FlaskHandler):
+  """Reusable handler for templates that require no page-specific logic.
      Specify the location in the third part of a routing rule using:
      {'template_path': 'path/to/template.html'}."""
 
-  def get_template_data(self, template_path=None):
-    if '.html' not in template_path:
-      self.abort(500)
-    return {
-        'template_path': template_path,
-    }
+  def get_template_data(self, **defaults):
+    """Render a template, or return a JSON constant."""
+    if 'template_path' in defaults:
+      template_path = defaults['template_path']
+      if '.html' not in template_path:
+        logging.error('template_path %r does not end with .html', template_path)
+        self.abort(500)
+      return defaults
+
+    return flask.jsonify(defaults)
 
 
 def FlaskApplication(routes, debug=False):
