@@ -19,7 +19,6 @@ import unittest
 import testing_config  # Must be imported before the module under test.
 
 import mock
-import webapp2
 import flask
 import flask.views
 import werkzeug.exceptions  # Flask HTTP stuff.
@@ -98,55 +97,6 @@ class CommonFunctionTests(unittest.TestCase):
     handlerInstance.handlerMethod('/request/path/')
     self.assertIsNone(handlerInstance.handler_called_with)
     self.assertEqual('/request/path', handlerInstance.redirected_to)
-
-
-class BaseHandlerTests(unittest.TestCase):
-
-  def setUp(self):
-    self.user_1 = models.AppUser(email='registered@example.com')
-    self.user_1.put()
-
-    request = webapp2.Request.blank('/some/path')
-    response = webapp2.Response()
-    self.handler = common.BaseHandler(request, response)
-
-  def tearDown(self):
-    self.user_1.delete()
-
-  def test_user_can_edit__anon(self):
-    """Anon visitors cannot edit features."""
-    actual = self.handler.user_can_edit(None)
-    self.assertFalse(actual)
-
-  def test_user_can_edit__normal(self):
-    """Non-registered signed in users cannot edit features."""
-    u = users.User(email='user@example.com')
-    actual = self.handler.user_can_edit(u)
-    self.assertFalse(actual)
-
-  def test_user_can_edit__registered(self):
-    """Users who have been registed by admins may edit features."""
-    u = users.User(email='registered@example.com')
-    actual = self.handler.user_can_edit(u)
-    self.assertTrue(actual)
-
-  def test_user_can_edit__preferred_domains(self):
-    """Users signed in with certain email addresses may edit."""
-    u = users.User(email='user@chromium.org')
-    actual = self.handler.user_can_edit(u)
-    self.assertTrue(actual)
-
-    u = users.User(email='user@google.com')
-    actual = self.handler.user_can_edit(u)
-    self.assertTrue(actual)
-
-    u = users.User(email='user@this-is-not-google.com')
-    actual = self.handler.user_can_edit(u)
-    self.assertFalse(actual)
-
-    u = users.User(email='user@this-is-not.google.com')
-    actual = self.handler.user_can_edit(u)
-    self.assertFalse(actual)
 
 
 
@@ -230,7 +180,12 @@ class ConstHandlerTests(unittest.TestCase):
 class FlaskHandlerTests(unittest.TestCase):
 
   def setUp(self):
+    self.user_1 = models.AppUser(email='registered@example.com')
+    self.user_1.put()
     self.handler = TestableFlaskHandler()
+
+  def tearDown(self):
+    self.user_1.delete()
 
   def test_get_cache_headers__disabled(self):
     """Most handlers return content that should not be cached."""
@@ -388,3 +343,38 @@ class FlaskHandlerTests(unittest.TestCase):
     self.assertIn('Response', type(actual_response).__name__)
     self.assertIn('some/other/path', actual_response.headers['location'])
     self.assertIn('Access-Control-Allow-Origin', actual_headers)
+
+  def test_user_can_edit__anon(self):
+    """Anon visitors cannot edit features."""
+    actual = self.handler.user_can_edit(None)
+    self.assertFalse(actual)
+
+  def test_user_can_edit__normal(self):
+    """Non-registered signed in users cannot edit features."""
+    u = users.User(email='user@example.com')
+    actual = self.handler.user_can_edit(u)
+    self.assertFalse(actual)
+
+  def test_user_can_edit__registered(self):
+    """Users who have been registed by admins may edit features."""
+    u = users.User(email='registered@example.com')
+    actual = self.handler.user_can_edit(u)
+    self.assertTrue(actual)
+
+  def test_user_can_edit__preferred_domains(self):
+    """Users signed in with certain email addresses may edit."""
+    u = users.User(email='user@chromium.org')
+    actual = self.handler.user_can_edit(u)
+    self.assertTrue(actual)
+
+    u = users.User(email='user@google.com')
+    actual = self.handler.user_can_edit(u)
+    self.assertTrue(actual)
+
+    u = users.User(email='user@this-is-not-google.com')
+    actual = self.handler.user_can_edit(u)
+    self.assertFalse(actual)
+
+    u = users.User(email='user@this-is-not.google.com')
+    actual = self.handler.user_can_edit(u)
+    self.assertFalse(actual)
