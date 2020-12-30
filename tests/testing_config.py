@@ -37,7 +37,6 @@ dev_appserver.fix_sys_path()
 lib_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'lib')
 sys.path.insert(0, lib_path)
 
-from google.appengine.api import memcache
 from google.appengine.ext import ndb
 from google.appengine.ext import testbed
 
@@ -61,7 +60,6 @@ def setUpOurTestbed():
   ourTestbed.init_files_stub()
   ourTestbed.init_logservice_stub()
   ourTestbed.init_mail_stub()
-  ourTestbed.init_memcache_stub()
   ourTestbed.init_modules_stub()
   ourTestbed.init_search_stub()
   ourTestbed.init_taskqueue_stub()

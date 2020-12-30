@@ -61,6 +61,9 @@ expires = {}
 # we can configure larger instances and/or reduce this value.
 MAX_CACHE_SIZE = 10000
 
+total_num_hits = 0
+total_num_misses = 0
+
 
 def set(key, value, time=None):
   """Emulate the memcache.set() method using a RAM cache."""
@@ -81,17 +84,32 @@ def _check_expired(keys):
       del global_cache[key]
 
 
+def _count_hit_or_miss(keys):
+  global total_num_hits, total_num_misses
+  for key in keys:
+    if key in global_cache:
+      total_num_hits += 1
+      verb = 'hit'
+    else:
+      total_num_misses += 1
+      verb = 'miss'
+
+    # TODO(jrobbins): Replace this with proper monitoring variables
+    logging.info('cache %s for %r.  Hit ratio: %5.2f%%.', verb, key,
+                 total_num_hits / (total_num_hits + total_num_misses) * 100)
+
+
 def get(key):
   """Emulate the memcache.get() method using a RAM cache."""
   _check_expired([key])
-  verb = 'hit' if key in global_cache else 'miss'
-  logging.info('cache %s for %r', verb, key)
+  _count_hit_or_miss([key])
   return global_cache.get(key)
 
 
 def get_multi(keys):
   """Emulate the memcache.get_multi() method using a RAM cache."""
   _check_expired(keys)
+  _count_hit_or_miss(keys)
   return {
       key: global_cache[key]
       for key in keys

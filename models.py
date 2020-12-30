@@ -318,12 +318,6 @@ def del_none(d):
       del_none(value)
   return d
 
-def list_to_chunks(l, n):
-  """Yield successive n-sized chunk lists from l."""
-  for i in xrange(0, len(l), n):
-    yield l[i:i + n]
-
-
 class DictModel(db.Model):
   # def to_dict(self):
   #   return dict([(p, unicode(getattr(self, p))) for p in self.properties()])
@@ -790,16 +784,14 @@ class Feature(DictModel):
   @classmethod
   def get_chronological(
       self, limit=None, update_cache=False, version=None, show_unlisted=False):
-    KEY = '%s|%s|%s|%s' % (Feature.DEFAULT_MEMCACHE_KEY,
-                           'cronorder', limit, version)
+    cache_key = '%s|%s|%s|%s' % (Feature.DEFAULT_MEMCACHE_KEY,
+                                 'cronorder', limit, version)
 
-    keys = get_chunk_memcache_keys(Feature.all(), KEY)
-    feature_list = ramcache.get_multi(keys)
+    feature_list = ramcache.get(cache_key)
     logging.info('getting chronological feature list')
 
-    # If we didn't get the expected number of chunks back (or a cache update
-    # was requested), do a db query.
-    if len(feature_list.keys()) != len(keys) or update_cache:
+    # On cache miss, do a db query.
+    if not feature_list or update_cache:
       logging.info('recompyting chronological feature list')
       # Features that are in-dev or proposed.
       q = Feature.all()
@@ -867,10 +859,7 @@ class Feature(DictModel):
 
       # Memcache doesn't support saving values > 1MB. Break up features list into
       # chunks so we don't hit the limit.
-      ramcache.set_multi(set_chunk_memcache_keys(KEY, feature_list))
-    else:
-      # Reconstruct feature list by ordering chunks.
-      feature_list = combine_memcache_chunks(feature_list)
+      ramcache.set(cache_key, feature_list)
 
     allowed_feature_list = [
         f for f in feature_list
@@ -880,9 +869,9 @@ class Feature(DictModel):
 
   @classmethod
   def get_shipping_samples(self, limit=None, update_cache=False):
-    KEY = '%s|%s|%s' % (Feature.DEFAULT_MEMCACHE_KEY, 'samples', limit)
+    cache_key = '%s|%s|%s' % (Feature.DEFAULT_MEMCACHE_KEY, 'samples', limit)
 
-    feature_list = ramcache.get(KEY)
+    feature_list = ramcache.get(cache_key)
 
     if feature_list is None or update_cache:
       # Get all shipping features. Ordered by shipping milestone (latest first).
@@ -907,7 +896,7 @@ class Feature(DictModel):
       feature_list = [f.format_for_template() for f in features
                       if len(f.sample_links) and not f.deleted]
 
-      ramcache.set(KEY, feature_list)
+      ramcache.set(cache_key, feature_list)
 
     return feature_list
 
@@ -977,8 +966,8 @@ class Feature(DictModel):
       self.__notify_feature_subscribers_of_changes(is_update)
 
     # Invalidate ramcache for the individual feature view.
-    ramcache_key = '%s|%s' % (Feature.DEFAULT_MEMCACHE_KEY, self.key().id())
-    ramcache.delete(ramcache_key)
+    cache_key = '%s|%s' % (Feature.DEFAULT_MEMCACHE_KEY, self.key().id())
+    ramcache.delete(cache_key)
 
     return key
 
@@ -1670,39 +1659,6 @@ class FeatureOwner(DictModel):
 
   def remove_as_component_owner(self, component_name):
     return self.remove_from_component_subscribers(component_name, remove_as_owner=True)
-
-
-
-# TODO(jrobbins): ramcache has no limit on item size, so we can delete
-# this code.
-# Max num entities to save for each memcache chunk.
-# We assume that this many entities total less than 1 MB.
-MEMCACHE_CHUNK_SIZE = 300
-
-def get_chunk_memcache_keys(entity_query, key_prefix):
-  """Run the query to count entities, then return a list of chunk keys."""
-  num_entities = len(entity_query.fetch(limit=None, keys_only=True))
-  l = list_to_chunks(range(0, num_entities), MEMCACHE_CHUNK_SIZE)
-  return ['%s|chunk%s' % (key_prefix, i) for i,val in enumerate(l)]
-
-
-def set_chunk_memcache_keys(key_prefix, entity_list):
-  """Cache the given entities in chunks smaller than memcache size limit."""
-  chunks = list_to_chunks(entity_list, MEMCACHE_CHUNK_SIZE)
-  vals = []
-  for i, chunk in enumerate(chunks):
-    vals.append(('%s|chunk%s' % (key_prefix, i), chunk))
-  d = dict(vals)
-  return d
-
-
-def combine_memcache_chunks(chunk_dict):
-  """Sort the memcache chunks by key and concatenate chunk contents."""
-  result_list = []
-  # Reconstruct entity list by ordering chunks.
-  for key in sorted(chunk_dict.keys()):
-    result_list.extend(chunk_dict[key])
-  return result_list
 
 
 class HistogramModel(db.Model):
