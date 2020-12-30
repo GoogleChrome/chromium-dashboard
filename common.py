@@ -249,34 +249,37 @@ class ContentHandler(BaseHandler):
       logging.exception(e)
       handle_404(self.request, self.response, e)
 
-  def render_atom_feed(self, title, data):
-    features_url = '%s://%s%s' % (self.request.scheme,
-                                  self.request.host,
-                                  self.request.path.replace('.xml', ''))
-    feature_url_prefix = '%s://%s%s' % (self.request.scheme,
-                                        self.request.host,
-                                        '/feature')
 
-    feed = feedgenerator.Atom1Feed(
-        title=unicode('%s - %s' % (settings.APP_TITLE, title)),
-        link=features_url,
-        description=u'New features exposed to web developers',
-        language=u'en'
+
+def render_atom_feed(request, title, data):
+  features_url = '%s://%s%s' % (request.scheme,
+                                request.host,
+                                request.path.replace('.xml', ''))
+  feature_url_prefix = '%s://%s%s' % (request.scheme,
+                                      request.host,
+                                      '/feature')
+
+  feed = feedgenerator.Atom1Feed(
+      title=unicode('%s - %s' % (settings.APP_TITLE, title)),
+      link=features_url,
+      description=u'New features exposed to web developers',
+      language=u'en'
+  )
+  for f in data:
+    pubdate = datetime.datetime.strptime(str(f['updated'][:19]),
+                                         '%Y-%m-%d  %H:%M:%S')
+    feed.add_item(
+        title=unicode(f['name']),
+        link='%s/%s' % (feature_url_prefix, f.get('id')),
+        description=f.get('summary', ''),
+        pubdate=pubdate,
+        author_name=unicode(settings.APP_TITLE),
+        categories=[f['category']]
     )
-    for f in data:
-      pubdate = datetime.datetime.strptime(str(f['updated'][:19]),
-                                           '%Y-%m-%d  %H:%M:%S')
-      feed.add_item(
-          title=unicode(f['name']),
-          link='%s/%s' % (feature_url_prefix, f.get('id')),
-          description=f.get('summary', ''),
-          pubdate=pubdate,
-          author_name=unicode(settings.APP_TITLE),
-          categories=[f['category']]
-      )
-    self.response.headers.add_header('Content-Type',
-      'application/atom+xml;charset=utf-8')
-    self.response.out.write(feed.writeString('utf-8'))
+  headers = {
+      'Content-Type': 'application/atom+xml;charset=utf-8'}
+  text = feed.writeString('utf-8')
+  return text, headers
 
 
 def handle_401(request, response, exception):
@@ -488,16 +491,46 @@ class FlaskHandler(flask.views.MethodView):
     return param
 
 
+class Redirector(FlaskHandler):
+  """Reusable handler that always redirects.
+     Specify the location in the third part of a routing rule using:
+     {'location': '/path/to/page'}."""
+
+  def get_template_data(self, location='/'):
+    return flask.redirect(location)
+
+
+class ConstHandler(FlaskHandler):
+  """Reusable handler for templates that require no page-specific logic.
+     Specify the location in the third part of a routing rule using:
+     {'template_path': 'path/to/template.html'}."""
+
+  def get_template_data(self, **defaults):
+    """Render a template, or return a JSON constant."""
+    if 'template_path' in defaults:
+      template_path = defaults['template_path']
+      if '.html' not in template_path:
+        logging.error('template_path %r does not end with .html', template_path)
+        self.abort(500)
+      return defaults
+
+    return flask.jsonify(defaults)
+
+
 def FlaskApplication(routes, debug=False):
   """Make a Flask app and add routes and handlers that work like webapp2."""
 
   app = flask.Flask(__name__)
-  for i, (pattern, handler_class) in enumerate(routes):
+  for i, rule in enumerate(routes):
+    pattern = rule[0]
+    handler_class = rule[1]
+    defaults = rule[2] if len(rule) > 2 else None
     classname = handler_class.__name__
     app.add_url_rule(
         pattern,
         endpoint=classname + str(i),  # We don't use it, but it must be unique.
-        view_func=handler_class.as_view(classname))
+        view_func=handler_class.as_view(classname),
+        defaults=defaults)
 
   # Note: debug parameter is not used because the following accomplishes
   # what we need it to do.

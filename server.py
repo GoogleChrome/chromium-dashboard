@@ -20,8 +20,6 @@ __author__ = 'ericbidelman@chromium.org (Eric Bidelman)'
 
 import json
 import logging
-import os
-import webapp2
 
 import settings
 import common
@@ -33,18 +31,17 @@ import util
 
 from google.appengine.api import users
 
-import http2push.http2push as http2push
-
 
 def normalized_name(val):
   return val.lower().replace(' ', '').replace('/', '')
 
 
-class FeatureDetailHandler(common.ContentHandler):
+class FeatureDetailHandler(common.FlaskHandler):
 
-  def get(self, feature_id):
-    ramcache.check_for_distributed_invalidation()
-    f = models.Feature.get_by_id(long(feature_id))
+  TEMPLATE_PATH = 'feature.html'
+
+  def get_template_data(self, feature_id):
+    f = models.Feature.get_by_id(feature_id)
     if f is None:
       self.abort(404)
 
@@ -55,169 +52,142 @@ class FeatureDetailHandler(common.ContentHandler):
         'process_json': json.dumps(processes.process_to_dict(feature_process)),
         'field_defs_json': json.dumps(field_defs),
         'feature': f.format_for_template(),
-        'feature_id': f.key().id,
+        'feature_id': f.key().id(),
         'feature_json': json.dumps(f.format_for_template()),
         'updated_display': f.updated.strftime("%Y-%m-%d"),
     }
-
-    self._add_common_template_values(template_data)
-    self.render(data=template_data, template_path='feature.html')
+    return template_data
 
 
-class MainHandler(http2push.PushHandler, common.ContentHandler, common.JSONHandler):
+class FeatureListXMLHandler(common.FlaskHandler):
 
-  def get(self, path, feature_id=None):
-    ramcache.check_for_distributed_invalidation()
-    # Default to features page.
-    # TODO: remove later when we want an index.html
-    if not path:
-      return self.redirect('/features')
-
-    # Default /metrics to CSS ranking.
-    # TODO: remove later when we want /metrics/index.html
-    if path == 'metrics' or path == 'metrics/css':
-      return self.redirect('/metrics/css/popularity')
-
-    # Remove trailing slash from URL and redirect. e.g. /metrics/ -> /metrics
-    if feature_id == '':
-      return self.redirect(self.request.path.rstrip('/'))
-
-    template_data = {}
-    push_urls = [] # URLs to push in this response.
-
-    template_data['embed'] = self.request.get('embed', None) is not None
-
-    if path.startswith('features'):
-      if path.endswith('.xml'): # Atom feed request.
-        status = self.request.get('status', None)
-        if status:
-          feature_list = models.Feature.get_all_with_statuses(status.split(','))
-        else:
-          filterby = None
-          category = self.request.get('category', None)
-
-          # Support setting larger-than-default Atom feed sizes so that web
-          # crawlers can use this as a full site feed.
-          try:
-            max_items = int(self.request.get('max-items',
-                                             settings.RSS_FEED_LIMIT))
-          except TypeError:
-            max_items = settings.RSS_FEED_LIMIT
-
-          if category is not None:
-            for k,v in models.FEATURE_CATEGORIES.iteritems():
-              normalized = normalized_name(v)
-              if category == normalized:
-                filterby = ('category =', k)
-                break
-
-          feature_list = models.Feature.get_all( # Memcached
-              limit=max_items,
-              filterby=filterby,
-              order='-updated')
-
-        return self.render_atom_feed('Features', feature_list)
-      else:
-        template_data['categories'] = [
-          (v, normalized_name(v)) for k,v in
-          models.FEATURE_CATEGORIES.iteritems()]
-        template_data['IMPLEMENTATION_STATUSES'] = json.dumps([
-          {'key': k, 'val': v} for k,v in
-          models.IMPLEMENTATION_STATUS.iteritems()])
-        template_data['VENDOR_VIEWS'] = json.dumps([
-          {'key': k, 'val': v} for k,v in
-          models.VENDOR_VIEWS.iteritems()])
-        template_data['WEB_DEV_VIEWS'] = json.dumps([
-          {'key': k, 'val': v} for k,v in
-          models.WEB_DEV_VIEWS.iteritems()])
-        template_data['STANDARDS_VALS'] = json.dumps([
-          {'key': k, 'val': v} for k,v in
-          models.STANDARDIZATION.iteritems()])
-
-        push_urls = http2push.use_push_manifest('push_manifest_features.json')
-
-    elif path.startswith('feature'):
-      feature = None
-      try:
-        feature = models.Feature.get_feature(int(feature_id))
-      except TypeError:
-        pass
-      if feature is None:
-        self.abort(404)
-
-      was_updated = False
-      if self.request.referer:
-        was_updated = (self.request.referer.endswith('/admin/features/new') or
-                       '/admin/features/edit' in self.request.referer)
-
-      template_data['feature'] = feature
-      template_data['was_updated'] = was_updated
-
-    elif path.startswith('metrics/css/timeline'):
-      properties = sorted(
-          models.CssPropertyHistogram.get_all().iteritems(), key=lambda x:x[1])
-      template_data['CSS_PROPERTY_BUCKETS'] = json.dumps(
-          properties, separators=(',',':'))
-    elif path.startswith('metrics/feature/timeline'):
-      properties = sorted(
-          models.FeatureObserverHistogram.get_all().iteritems(), key=lambda x:x[1])
-      template_data['FEATUREOBSERVER_BUCKETS'] = json.dumps(
-          properties, separators=(',',':'))
-    elif path.startswith('omaha_data'):
-      omaha_data = util.get_omaha_data()
-      return common.JSONHandler.get(self, omaha_data, formatted=True)
-
-    if path.startswith('metrics/'):
-      push_urls = http2push.use_push_manifest('push_manifest_metrics.json')
-
-    # Add Link rel=preload header for h2 push on .html file requests.
-    if push_urls:
-      self.response.headers.add_header(
-          'Link', self._generate_link_preload_headers(push_urls))
-
-    self.render(data=template_data, template_path=os.path.join(path + '.html'))
-
-
-class FeaturesAPIHandler(common.JSONHandler):
-
-  def get(self, version=None):
-    ramcache.check_for_distributed_invalidation()
-    if version is None:
-      version = 2
+  def get_template_data(self):
+    status = self.request.args.get('status', None)
+    if status:
+      feature_list = models.Feature.get_all_with_statuses(status.split(','))
     else:
-      version = int(version)
+      filterby = None
+      category = self.request.args.get('category', None)
 
-    user = users.get_current_user()
-    feature_list = models.Feature.get_chronological(
-        version=version, show_unlisted=self.user_can_edit(user))
-    return common.JSONHandler.get(
-        self, feature_list, formatted=True, public=False)
-
-
-class SamplesHandler(common.ContentHandler, common.JSONHandler):
-
-  def get(self, path=None):
-    ramcache.check_for_distributed_invalidation()
-    feature_list = models.Feature.get_shipping_samples() # Memcached
-
-    if path == '/':
-      return self.redirect(self.request.path.rstrip('/'))
-
-    template_data = {}
-
-    if path and path.endswith('.json'): # JSON request.
-      return common.JSONHandler.get(self, feature_list, formatted=True)
-    elif path and path.endswith('.xml'): # Atom feed request.
       # Support setting larger-than-default Atom feed sizes so that web
       # crawlers can use this as a full site feed.
       try:
-        max_items = int(self.request.get('max-items',
-                                          settings.RSS_FEED_LIMIT))
+        max_items = int(self.request.args.get(
+            'max-items', settings.RSS_FEED_LIMIT))
       except TypeError:
         max_items = settings.RSS_FEED_LIMIT
 
-      return self.render_atom_feed('Samples', feature_list)
+      if category is not None:
+        for k,v in models.FEATURE_CATEGORIES.iteritems():
+          normalized = normalized_name(v)
+          if category == normalized:
+            filterby = ('category =', k)
+            break
 
+      feature_list = models.Feature.get_all( # Memcached
+          limit=max_items,
+          filterby=filterby,
+          order='-updated')
+
+    return common.render_atom_feed(self.request, 'Features', feature_list)
+
+
+class FeatureListHandler(common.FlaskHandler):
+
+  TEMPLATE_PATH = 'features.html'
+
+  def get_template_data(self, feature_id=None):
+    # Note: feature_id is not used here but JS gets it from the URL.
+
+    # This template data is all for filtering.  The actual features
+    # are sent by an XHR request for /features.json.
+
+    template_data = {}
+    template_data['categories'] = [
+      (v, normalized_name(v)) for k,v in
+      models.FEATURE_CATEGORIES.iteritems()]
+    template_data['IMPLEMENTATION_STATUSES'] = json.dumps([
+      {'key': k, 'val': v} for k,v in
+      models.IMPLEMENTATION_STATUS.iteritems()])
+    template_data['VENDOR_VIEWS'] = json.dumps([
+      {'key': k, 'val': v} for k,v in
+      models.VENDOR_VIEWS.iteritems()])
+    template_data['WEB_DEV_VIEWS'] = json.dumps([
+      {'key': k, 'val': v} for k,v in
+      models.WEB_DEV_VIEWS.iteritems()])
+    template_data['STANDARDS_VALS'] = json.dumps([
+      {'key': k, 'val': v} for k,v in
+      models.STANDARDIZATION.iteritems()])
+
+    return template_data
+
+
+
+class CssPopularityHandler(common.FlaskHandler):
+
+  TEMPLATE_PATH = 'metrics/css/timeline/popularity.html'
+
+  def get_template_data(self, bucket_id=None):
+    # Note: bucket_id is not used, but the JS looks in the URL to get it.
+    properties = sorted(
+        models.CssPropertyHistogram.get_all().iteritems(), key=lambda x:x[1])
+    template_data = {
+        'CSS_PROPERTY_BUCKETS': json.dumps(
+            properties, separators=(',',':')),
+        }
+    return template_data
+
+
+class CssAnimatedHandler(CssPopularityHandler):
+
+  TEMPLATE_PATH = 'metrics/css/timeline/animated.html'
+  # The logic and data is the same, but it is filtered differenly in JS.
+
+
+class FeaturePopularityHandler(common.FlaskHandler):
+
+  TEMPLATE_PATH = 'metrics/feature/timeline/popularity.html'
+
+  def get_template_data(self, bucket_id=None):
+    # Note: bucket_id is not used, but the JS looks in the URL to get it.
+    properties = sorted(
+        models.FeatureObserverHistogram.get_all().iteritems(), key=lambda x:x[1])
+    template_data = {
+        'FEATUREOBSERVER_BUCKETS': json.dumps(
+            properties, separators=(',',':')),
+    }
+    return template_data
+
+
+class OmahaDataHandler(common.FlaskHandler):
+
+  JSONIFY = True
+
+  def get_template_data(self):
+    omaha_data = util.get_omaha_data()
+    return omaha_data
+
+
+class FeaturesAPIHandler(common.FlaskHandler):
+
+  HTTP_CACHE_TYPE = 'private'
+  JSONIFY = True
+
+  def get_template_data(self, version=2):
+    user = users.get_current_user()
+    feature_list = models.Feature.get_chronological(
+        version=version, show_unlisted=self.user_can_edit(user))
+    return feature_list
+
+
+class SamplesHandler(common.FlaskHandler):
+
+  TEMPLATE_PATH = 'samples.html'
+
+  def get_template_data(self):
+    feature_list = models.Feature.get_shipping_samples() # Memcached
+
+    template_data = {}
     template_data['FEATURES'] = json.dumps(feature_list, separators=(',',':'))
     template_data['CATEGORIES'] = [
       (v, normalized_name(v)) for k,v in
@@ -226,21 +196,76 @@ class SamplesHandler(common.ContentHandler, common.JSONHandler):
       (v, normalized_name(v)) for k,v in
       models.FEATURE_CATEGORIES.iteritems()])
 
-    return self.render(data=template_data, template_path=os.path.join('samples.html'))
+    return template_data
+
+
+class SamplesJSONHandler(common.FlaskHandler):
+
+  JSONIFY = True
+
+  def get_template_data(self):
+    feature_list = models.Feature.get_shipping_samples() # Memcached
+    return feature_list
+
+
+class SamplesXMLHandler(common.FlaskHandler):
+
+  def get_template_data(self):
+    feature_list = models.Feature.get_shipping_samples() # Memcached
+
+    # Support setting larger-than-default Atom feed sizes so that web
+    # crawlers can use this as a full site feed.
+    try:
+      max_items = int(self.request.args.get(
+          'max-items', settings.RSS_FEED_LIMIT))
+    except TypeError:
+      max_items = settings.RSS_FEED_LIMIT
+
+    return common.render_atom_feed(self.request, 'Samples', feature_list)
 
 
 # Main URL routes.
 routes = [
-  (r'/features(?:_v(\d+))?.json', FeaturesAPIHandler),
-  ('/samples(.*)', SamplesHandler),
-  ('/feature/([0-9]*)', FeatureDetailHandler),
-  ('/(.*)/([0-9]*)', MainHandler),
-  ('/(.*)', MainHandler),
+  # Note: The only requests being made now hit /features.json and
+  # /features_v2.json, but both of those cause version == 2.
+  # There was logic to accept another version value, but it it was not used.
+  (r'/features.json', FeaturesAPIHandler),
+  (r'/features_v2.json', FeaturesAPIHandler),
+
+  ('/samples', SamplesHandler),
+  ('/samples.json', SamplesJSONHandler),
+  ('/samples.xml', SamplesXMLHandler),
+
+  ('/feature/<int:feature_id>', FeatureDetailHandler),
+
+  ('/', common.Redirector,
+   {'location': '/features'}),
+  ('/metrics', common.Redirector,
+   {'location': '/metrics/css/popularity'}),
+  ('/metrics/css', common.Redirector,
+   {'location': '/metrics/css/popularity'}),
+
+  ('/features', FeatureListHandler),
+  ('/features/<int:feature_id>', FeatureListHandler),
+  ('/features.xml', FeatureListXMLHandler),
+
+  # TODO(jrobbins): These seem like they belong in metrics.py.
+  ('/metrics/css/popularity', common.ConstHandler,
+   {'template_path': 'metrics/css/popularity.html'}),
+  ('/metrics/css/animated', common.ConstHandler,
+   {'template_path': 'metrics/css/animated.html'}),
+  ('/metrics/css/timeline/popularity', CssPopularityHandler),
+  ('/metrics/css/timeline/popularity/<int:bucket_id>', CssPopularityHandler),
+  ('/metrics/css/timeline/animated', CssAnimatedHandler),
+  ('/metrics/css/timeline/animated/<int:bucket_id>', CssAnimatedHandler),
+  ('/metrics/feature/popularity', common.ConstHandler,
+   {'template_path': 'metrics/feature/popularity.html'}),
+  ('/metrics/feature/timeline/popularity', FeaturePopularityHandler),
+  ('/metrics/feature/timeline/popularity/<int:bucket_id>', FeaturePopularityHandler),
+
+  # TODO(jrobbins): util.py has only one thing in it, so maybe move
+  # it and this handler to a new omaha.py file.
+  ('/omaha_data', OmahaDataHandler),
 ]
 
-app = webapp2.WSGIApplication(routes, debug=settings.DEBUG)
-
-app.error_handlers[404] = common.handle_404
-
-if settings.PROD and not settings.DEBUG:
-  app.error_handlers[500] = common.handle_500
+app = common.FlaskApplication(routes, debug=settings.DEBUG)
