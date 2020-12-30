@@ -88,14 +88,11 @@ class TimelineHandler(common.FlaskHandler):
       # TODO(jrobbins): Why return [] instead of 400?
       return []
 
-    KEY = '%s|%s' % (self.MEMCACHE_KEY, bucket_id)
+    cache_key = '%s|%s' % (self.MEMCACHE_KEY, bucket_id)
 
-    keys = models.get_chunk_memcache_keys(self.make_query(bucket_id), KEY)
-    chunk_dict = ramcache.get_multi(keys)
+    datapoints = ramcache.get(cache_key)
 
-    if chunk_dict and len(chunk_dict) == len(keys):
-      datapoints = models.combine_memcache_chunks(chunk_dict)
-    else:
+    if not datapoints:
       query = self.make_query(bucket_id)
       query.order('date')
       datapoints = query.fetch(None) # All matching results.
@@ -103,8 +100,7 @@ class TimelineHandler(common.FlaskHandler):
       # Remove outliers if percentage is not between 0-1.
       #datapoints = filter(lambda x: 0 <= x.day_percentage <= 1, datapoints)
 
-      chunk_dict = models.set_chunk_memcache_keys(KEY, datapoints)
-      ramcache.set_multi(chunk_dict, time=CACHE_AGE)
+      ramcache.set(cache_key, datapoints, time=CACHE_AGE)
 
     return _filter_metric_data(datapoints)
 
@@ -182,25 +178,12 @@ class FeatureHandler(common.FlaskHandler):
     # Memcache doesn't support saving values > 1MB. Break up features into chunks
     # and save those to memcache.
     if self.MODEL_CLASS == models.FeatureObserver:
-      keys = models.get_chunk_memcache_keys(
-          self.PROPERTY_CLASS.all(), self.MEMCACHE_KEY)
-      logging.info('looking for keys %r' % keys)
-      properties = ramcache.get_multi(keys)
-      logging.info('found chunk keys %r' % (properties and properties.keys()))
+      properties = ramcache.get(self.MEMCACHE_KEY)
 
-      # TODO(jrobbins): We are at risk of displaying a partial result if
-      # memcache loses some but not all chunks.  We can't estimate the number of
-      # expected cached items efficiently.  To counter that, we refresh
-      # every 30 minutes via a cron.
       if not properties or self.request.args.get('refresh'):
         properties = self.__query_metrics_for_properties()
+        ramcache.set(self.MEMCACHE_KEY, properties, time=CACHE_AGE)
 
-        # Memcache doesn't support saving values > 1MB. Break up list into chunks.
-        chunk_keys = models.set_chunk_memcache_keys(self.MEMCACHE_KEY, properties)
-        logging.info('about to store chunks keys %r' % chunk_keys.keys())
-        ramcache.set_multi(chunk_keys, time=CACHE_AGE)
-      else:
-        properties = models.combine_memcache_chunks(properties)
     else:
       properties = ramcache.get(self.MEMCACHE_KEY)
       if properties is None:
