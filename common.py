@@ -25,7 +25,6 @@ import os
 import re
 import time
 import traceback
-import webapp2
 
 import flask
 import flask.views
@@ -100,7 +99,7 @@ def require_edit_permission(handler):
     if not user:
       return self.redirect(users.create_login_url(self.request.uri))
     elif not self.user_can_edit(user):
-      handle_401(self.request, self.response, Exception)
+      flask.abort(403)
       return
 
     return handler(self, *args, **kwargs) # Call the handler method
@@ -115,140 +114,6 @@ def strip_trailing_slash(handler):
 
     return handler(self, *args, **kwargs) # Call the handler method
   return remove_slash
-
-
-# TODO(jrobbins): phase out this class and have all calls use FlaskHandler.
-class BaseHandler(webapp2.RequestHandler):
-
-  def __init__(self, request, response):
-    self.initialize(request, response)
-
-    # Add CORS and Chrome Frame to all responses.
-    self.response.headers.add_header('Access-Control-Allow-Origin', '*')
-    self.response.headers.add_header('X-UA-Compatible', 'IE=Edge,chrome=1')
-
-    # Settings can't be global in python 2.7 env.
-    logging.getLogger().setLevel(logging.DEBUG)
-
-  def user_can_edit(self, user):
-    if not user:
-      return False
-
-    can_edit = False
-
-    if users.is_current_user_admin():
-      can_edit = True
-    elif user.email().endswith(('@chromium.org', '@google.com')):
-      can_edit = True
-    else:
-      # TODO(ericbidelman): ramcache user lookup.
-      query = models.AppUser.all(keys_only=True).filter('email =', user.email())
-      found_user = query.get()
-
-      if found_user is not None:
-        can_edit = True
-
-    return can_edit
-
-
-# TODO(jrobbins): phase out this class and have all calls use FlaskHandler.
-class JSONHandler(BaseHandler):
-
-  def get(self, data, formatted=False, public=True):
-    cache_type = 'public'
-    if not public:
-      cache_type = 'private'
-
-    # Cache script generated json responses.
-    self.response.headers['Cache-Control'] = '%s, max-age=%s' % (
-        cache_type, settings.DEFAULT_CACHE_TIME)
-    self.response.headers['Content-Type'] = 'application/json;charset=utf-8'
-
-    if not formatted:
-      data = [entity.to_dict() for entity in data]
-
-      # Remove keys that the frontend doesn't render.
-      for item in data:
-        item.pop('rolling_percentage', None)
-        item.pop('updated', None)
-        item.pop('created', None)
-
-    return self.response.write(json.dumps(data, separators=(',',':')))
-
-
-# TODO(jrobbins): phase out this class and have all calls use FlaskHandler.
-class ContentHandler(BaseHandler):
-
-  def split_input(self, field_name, delim='\\r?\\n'):
-    """Split the input lines, strip whitespace, and skip blank lines."""
-    input_text = self.request.get(field_name) or ''
-    return filter(bool, [
-        x.strip() for x in re.split(delim, input_text)])
-
-  def split_emails(self, param_name):
-    """Split one input field and construct db.Email objects."""
-    addr_strs = self.split_input(param_name, delim=',')
-    emails = [db.Email(addr) for addr in addr_strs]
-    return emails
-
-  def parse_link(self, param_name):
-    link = self.request.get(param_name) or None
-    if link:
-      if not link.startswith('http'):
-        link = db.Link('http://' + link)
-      else:
-        link = db.Link(link)
-    return link
-
-  def parse_int(self, param_name):
-    param = self.request.get(param_name) or None
-    if param:
-      param = int(param)
-    return param
-
-  def _add_common_template_values(self, d):
-    """Mixin common values for templates into d."""
-
-    template_data = {
-      'prod': settings.PROD,
-      'APP_TITLE': settings.APP_TITLE,
-      'current_path': self.request.path,
-      'VULCANIZE': settings.VULCANIZE,
-      'TEMPLATE_CACHE_TIME': settings.TEMPLATE_CACHE_TIME
-      }
-
-    user = users.get_current_user()
-    if user:
-      user_pref = models.UserPref.get_signed_in_user_pref()
-      template_data['login'] = (
-          'Sign out', users.create_logout_url(dest_url=self.request.path))
-      template_data['user'] = {
-        'can_edit': self.user_can_edit(user),
-        'is_admin': users.is_current_user_admin(),
-        'email': user.email(),
-        'dismissed_cues': json.dumps(user_pref.dismissed_cues),
-      }
-    else:
-      template_data['user'] = None
-      template_data['login'] = (
-          'Sign in', users.create_login_url(dest_url=self.request.path))
-
-    d.update(template_data)
-
-  def render(self, data={}, template_path=None, status=None, message=None,
-             relpath=None):
-    if status is not None and status != 200:
-      self.response.set_status(status, message)
-
-    # Add common template data to every request.
-    self._add_common_template_values(data)
-
-    try:
-      self.response.out.write(render_to_string(template_path, data))
-    except Exception as e:
-      logging.exception(e)
-      handle_404(self.request, self.response, e)
-
 
 
 def render_atom_feed(request, title, data):
@@ -280,44 +145,6 @@ def render_atom_feed(request, title, data):
       'Content-Type': 'application/atom+xml;charset=utf-8'}
   text = feed.writeString('utf-8')
   return text, headers
-
-
-def handle_401(request, response, exception):
-  ERROR_401 = (
-    '<style>'
-      'body { padding: 2em; }'
-      'h1, h2 { font-weight: 300; font-family: "Roboto", sans-serif; }\n'
-    '</style>\n'
-    '<title>401 Unauthorized</title>\n'
-    '<h1>Error: Unauthorized</h1>\n'
-    '<h2>User does not have permission to view this page.</h2>')
-  response.write(ERROR_401)
-  response.set_status(401)
-
-def handle_404(request, response, exception):
-  ERROR_404 = (
-    '<style>'
-      'body { padding: 2em; }'
-      'h1, h2 { font-weight: 300; font-family: "Roboto", sans-serif; }\n'
-    '</style>\n'
-    '<title>404 Not Found</title>\n'
-    '<h1>Error: Not Found</h1>\n'
-    '<h2>The requested URL was not found on this server.'
-    '</h2>')
-  response.write(ERROR_404)
-  response.set_status(404)
-
-def handle_500(request, response, exception):
-  logging.exception(exception)
-  ERROR_500 = (
-    '<style>'
-      'body { padding: 2em; }'
-      'h1, h2 { font-weight: 300; font-family: "Roboto", sans-serif; }\n'
-    '</style>\n'
-    '<title>500 Internal Server Error</title>\n'
-    '<h1>Error: 500 Internal Server Error</h1>')
-  response.write(ERROR_500)
-  response.set_status(500)
 
 
 class FlaskHandler(flask.views.MethodView):
