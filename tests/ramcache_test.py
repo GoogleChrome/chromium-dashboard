@@ -25,13 +25,13 @@ from google.appengine.ext import db
 import ramcache
 
 
-KEY_1 = 'memcache_key|1'
-KEY_2 = 'memcache_key|2'
-KEY_3 = 'memcache_key|3'
-KEY_4 = 'memcache_key|4'
-KEY_5 = 'memcache_key|5'
-KEY_6 = 'memcache_key|6'
-KEY_7 = 'memcache_key|7'
+KEY_1 = 'cache_key|1'
+KEY_2 = 'cache_key|2'
+KEY_3 = 'cache_key|3'
+KEY_4 = 'cache_key|4'
+KEY_5 = 'cache_key|5'
+KEY_6 = 'cache_key|6'
+KEY_7 = 'cache_key|7'
 
 
 class RAMCacheFunctionTests(unittest.TestCase):

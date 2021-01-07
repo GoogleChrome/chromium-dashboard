@@ -375,7 +375,7 @@ class BlinkComponent(DictModel):
   @classmethod
   def fetch_all_components(self, update_cache=False):
     """Returns the list of blink components from live endpoint if unavailable in the cache."""
-    key = '%s|blinkcomponents' % (settings.MEMCACHE_KEY_PREFIX)
+    key = 'blinkcomponents'
 
     components = ramcache.get(key)
     if components is None or update_cache:
@@ -397,7 +397,7 @@ class BlinkComponent(DictModel):
   @classmethod
   def fetch_wf_content_for_components(self, update_cache=False):
     """Returns the /web content that use each blink component."""
-    key = '%s|wfcomponents' % (settings.MEMCACHE_KEY_PREFIX)
+    key = 'wfcomponents'
 
     components = ramcache.get(key)
     if components is None or update_cache:
@@ -422,7 +422,7 @@ class BlinkComponent(DictModel):
   @classmethod
   def update_db(self):
     """Updates the db with new Blink components from the json endpoint"""
-    self.fetch_wf_content_for_components(update_cache=True) # store /web content in memcache
+    self.fetch_wf_content_for_components(update_cache=True) # store /web content in cache
     new_components = self.fetch_all_components(update_cache=True)
     existing_comps = self.all().fetch(None)
     for name in new_components:
@@ -470,7 +470,7 @@ class FeatureObserver(StableInstance):
 class Feature(DictModel):
   """Container for a feature."""
 
-  DEFAULT_MEMCACHE_KEY = '%s|features' % (settings.MEMCACHE_KEY_PREFIX)
+  DEFAULT_CACHE_KEY = 'features'
 
   @classmethod
   def _first_of_milestone(self, feature_list, milestone, start=0):
@@ -719,7 +719,7 @@ class Feature(DictModel):
   @classmethod
   def get_all(self, limit=None, order='-updated', filterby=None,
               update_cache=False):
-    KEY = '%s|%s|%s' % (Feature.DEFAULT_MEMCACHE_KEY, order, limit)
+    KEY = '%s|%s|%s' % (Feature.DEFAULT_CACHE_KEY, order, limit)
 
     # TODO(ericbidelman): Support more than one filter.
     if filterby is not None:
@@ -749,7 +749,7 @@ class Feature(DictModel):
     if not statuses:
       return []
 
-    KEY = '%s|%s' % (Feature.DEFAULT_MEMCACHE_KEY, sorted(statuses))
+    KEY = '%s|%s' % (Feature.DEFAULT_CACHE_KEY, sorted(statuses))
 
     feature_list = ramcache.get(KEY)
 
@@ -766,7 +766,7 @@ class Feature(DictModel):
 
   @classmethod
   def get_feature(self, feature_id, update_cache=False):
-    KEY = '%s|%s' % (Feature.DEFAULT_MEMCACHE_KEY, feature_id)
+    KEY = '%s|%s' % (Feature.DEFAULT_CACHE_KEY, feature_id)
     feature = ramcache.get(KEY)
 
     if feature is None or update_cache:
@@ -784,7 +784,7 @@ class Feature(DictModel):
   @classmethod
   def get_chronological(
       self, limit=None, update_cache=False, version=None, show_unlisted=False):
-    cache_key = '%s|%s|%s|%s' % (Feature.DEFAULT_MEMCACHE_KEY,
+    cache_key = '%s|%s|%s|%s' % (Feature.DEFAULT_CACHE_KEY,
                                  'cronorder', limit, version)
 
     feature_list = ramcache.get(cache_key)
@@ -857,8 +857,6 @@ class Feature(DictModel):
 
       self._annotate_first_of_milestones(feature_list, version=version)
 
-      # Memcache doesn't support saving values > 1MB. Break up features list into
-      # chunks so we don't hit the limit.
       ramcache.set(cache_key, feature_list)
 
     allowed_feature_list = [
@@ -869,7 +867,7 @@ class Feature(DictModel):
 
   @classmethod
   def get_shipping_samples(self, limit=None, update_cache=False):
-    cache_key = '%s|%s|%s' % (Feature.DEFAULT_MEMCACHE_KEY, 'samples', limit)
+    cache_key = '%s|%s|%s' % (Feature.DEFAULT_CACHE_KEY, 'samples', limit)
 
     feature_list = ramcache.get(cache_key)
 
@@ -966,7 +964,7 @@ class Feature(DictModel):
       self.__notify_feature_subscribers_of_changes(is_update)
 
     # Invalidate ramcache for the individual feature view.
-    cache_key = '%s|%s' % (Feature.DEFAULT_MEMCACHE_KEY, self.key().id())
+    cache_key = '%s|%s' % (Feature.DEFAULT_CACHE_KEY, self.key().id())
     ramcache.delete(cache_key)
 
     return key

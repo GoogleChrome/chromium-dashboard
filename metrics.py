@@ -88,7 +88,7 @@ class TimelineHandler(common.FlaskHandler):
       # TODO(jrobbins): Why return [] instead of 400?
       return []
 
-    cache_key = '%s|%s' % (self.MEMCACHE_KEY, bucket_id)
+    cache_key = '%s|%s' % (self.CACHE_KEY, bucket_id)
 
     datapoints = ramcache.get(cache_key)
 
@@ -107,7 +107,7 @@ class TimelineHandler(common.FlaskHandler):
 
 class PopularityTimelineHandler(TimelineHandler):
 
-  MEMCACHE_KEY = 'css_pop_timeline'
+  CACHE_KEY = 'css_pop_timeline'
   MODEL_CLASS = models.StableInstance
 
   def get_template_data(self):
@@ -116,7 +116,7 @@ class PopularityTimelineHandler(TimelineHandler):
 
 class AnimatedTimelineHandler(TimelineHandler):
 
-  MEMCACHE_KEY = 'css_animated_timeline'
+  CACHE_KEY = 'css_animated_timeline'
   MODEL_CLASS = models.AnimatedProperty
 
   def get_template_data(self):
@@ -125,7 +125,7 @@ class AnimatedTimelineHandler(TimelineHandler):
 
 class FeatureObserverTimelineHandler(TimelineHandler):
 
-  MEMCACHE_KEY = 'featureob_timeline'
+  CACHE_KEY = 'featureob_timeline'
   MODEL_CLASS = models.FeatureObserver
 
   def get_template_data(self):
@@ -173,29 +173,25 @@ class FeatureHandler(common.FlaskHandler):
     return datapoints
 
   def get_template_data(self):
-    # TODO(jrobbins): chunking is unneeded with ramcache, so we can
-    # simplify this code.
-    # Memcache doesn't support saving values > 1MB. Break up features into chunks
-    # and save those to memcache.
     if self.MODEL_CLASS == models.FeatureObserver:
-      properties = ramcache.get(self.MEMCACHE_KEY)
+      properties = ramcache.get(self.CACHE_KEY)
 
       if not properties or self.request.args.get('refresh'):
         properties = self.__query_metrics_for_properties()
-        ramcache.set(self.MEMCACHE_KEY, properties, time=CACHE_AGE)
+        ramcache.set(self.CACHE_KEY, properties, time=CACHE_AGE)
 
     else:
-      properties = ramcache.get(self.MEMCACHE_KEY)
+      properties = ramcache.get(self.CACHE_KEY)
       if properties is None:
         properties = self.__query_metrics_for_properties()
-        ramcache.set(self.MEMCACHE_KEY, properties, time=CACHE_AGE)
+        ramcache.set(self.CACHE_KEY, properties, time=CACHE_AGE)
 
     return _filter_metric_data(properties)
 
 
 class CSSPopularityHandler(FeatureHandler):
 
-  MEMCACHE_KEY = 'css_popularity'
+  CACHE_KEY = 'css_popularity'
   MODEL_CLASS = models.StableInstance
   PROPERTY_CLASS = models.CssPropertyHistogram
 
@@ -205,7 +201,7 @@ class CSSPopularityHandler(FeatureHandler):
 
 class CSSAnimatedHandler(FeatureHandler):
 
-  MEMCACHE_KEY = 'css_animated'
+  CACHE_KEY = 'css_animated'
   MODEL_CLASS = models.AnimatedProperty
   PROPERTY_CLASS = models.CssPropertyHistogram
 
@@ -215,7 +211,7 @@ class CSSAnimatedHandler(FeatureHandler):
 
 class FeatureObserverPopularityHandler(FeatureHandler):
 
-  MEMCACHE_KEY = 'featureob_popularity'
+  CACHE_KEY = 'featureob_popularity'
   MODEL_CLASS = models.FeatureObserver
   PROPERTY_CLASS = models.FeatureObserverHistogram
 

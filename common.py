@@ -272,7 +272,7 @@ class FlaskHandler(flask.views.MethodView):
     elif user.email().endswith(('@chromium.org', '@google.com')):
       can_edit = True
     else:
-      # TODO(ericbidelman): memcache user lookup.
+      # TODO(ericbidelman): cache user lookup.
       query = models.AppUser.all(keys_only=True).filter('email =', user.email())
       found_user = query.get()
 
