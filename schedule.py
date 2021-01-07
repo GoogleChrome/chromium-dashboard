@@ -33,7 +33,7 @@ import util
 
 
 def fetch_chrome_release_info(version):
-  key = '%s|chromerelease|%s' % (settings.MEMCACHE_KEY_PREFIX, version)
+  key = 'chromerelease|%s' % version
 
   data = ramcache.get(key)
   if data is None:

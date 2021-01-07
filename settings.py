@@ -64,10 +64,6 @@ SECRET_KEY = os.environ['DJANGO_SECRET']
 
 APP_VERSION = os.environ['CURRENT_VERSION_ID'].split('.')[0]
 
-# TODO(jrobbins): This is not needed with ramcache because each deployment
-# creates fresh appengine instances with empty ramcaches.
-MEMCACHE_KEY_PREFIX = APP_VERSION # For memcache busting on new version
-
 RSS_FEED_LIMIT = 15
 
 VULCANIZE = True #PROD

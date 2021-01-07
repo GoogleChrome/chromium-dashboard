@@ -84,7 +84,7 @@ class FeatureListXMLHandler(common.FlaskHandler):
             filterby = ('category =', k)
             break
 
-      feature_list = models.Feature.get_all( # Memcached
+      feature_list = models.Feature.get_all( # cached
           limit=max_items,
           filterby=filterby,
           order='-updated')
@@ -185,7 +185,7 @@ class SamplesHandler(common.FlaskHandler):
   TEMPLATE_PATH = 'samples.html'
 
   def get_template_data(self):
-    feature_list = models.Feature.get_shipping_samples() # Memcached
+    feature_list = models.Feature.get_shipping_samples() # cached
 
     template_data = {}
     template_data['FEATURES'] = json.dumps(feature_list, separators=(',',':'))
@@ -204,14 +204,14 @@ class SamplesJSONHandler(common.FlaskHandler):
   JSONIFY = True
 
   def get_template_data(self):
-    feature_list = models.Feature.get_shipping_samples() # Memcached
+    feature_list = models.Feature.get_shipping_samples() # cached
     return feature_list
 
 
 class SamplesXMLHandler(common.FlaskHandler):
 
   def get_template_data(self):
-    feature_list = models.Feature.get_shipping_samples() # Memcached
+    feature_list = models.Feature.get_shipping_samples() # cached
 
     # Support setting larger-than-default Atom feed sizes so that web
     # crawlers can use this as a full site feed.
