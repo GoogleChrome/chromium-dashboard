@@ -290,6 +290,14 @@ class FlaskHandler(flask.views.MethodView):
     """Property for POST values dict."""
     return flask.request.form
 
+  def require_task_header(self):
+    """Abort if this is not a Google Cloud Tasks request."""
+    if settings.UNIT_TEST_MODE:
+      return
+    if 'X-AppEngine-QueueName' not in self.request.headers:
+      logging.info('Lacking X-AppEngine-QueueName header')
+      self.abort(403)
+
   def split_input(self, field_name, delim='\\r?\\n'):
     """Split the input lines, strip whitespace, and skip blank lines."""
     input_text = flask.request.form.get(field_name) or ''

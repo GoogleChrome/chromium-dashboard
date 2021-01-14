@@ -4,10 +4,14 @@ threadsafe: true
 service: notifier
 
 handlers:
-- url: /.*
+- url: /tasks/.*
   script: notifier.app
-  login: admin
+  # Header checks prevent raw access to this handler.  Tasks have headers.
 
 includes:
 - skip_files.yaml
 - env_vars.yaml
+
+libraries:
+- name: grpcio
+  version: 1.0.0

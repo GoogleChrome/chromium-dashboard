@@ -378,3 +378,22 @@ class FlaskHandlerTests(unittest.TestCase):
     u = users.User(email='user@this-is-not.google.com')
     actual = self.handler.user_can_edit(u)
     self.assertFalse(actual)
+
+  def test_require_task_header__while_testing(self):
+    """During unit testing of task handlers, we allow it."""
+    with test_app.test_request_context('/test'):
+      self.handler.require_task_header()
+
+  @mock.patch('settings.UNIT_TEST_MODE', False)
+  def test_require_task_header__normal(self):
+    """If the incoming request is from GCT, we allow it."""
+    headers = {'X-AppEngine-QueueName': 'default'}
+    with test_app.test_request_context('/test', headers=headers):
+      self.handler.require_task_header()
+
+  @mock.patch('settings.UNIT_TEST_MODE', False)
+  def test_require_task_header__missing(self):
+    """If the incoming request is not from GCT, abort."""
+    with test_app.test_request_context('/test'):
+      with self.assertRaises(werkzeug.exceptions.Forbidden):
+        self.handler.require_task_header()

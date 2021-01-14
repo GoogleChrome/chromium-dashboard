@@ -51,7 +51,7 @@ handlers:
 
 - url: /tasks/.*
   script: notifier.app
-  login: admin # Prevents raw access to this handler. Tasks runs as admin.
+  # Header checks prevent raw access to this handler.  Tasks have headers.
 
 - url: /_ah/bounce
   script: notifier.app
@@ -127,3 +127,7 @@ includes:
 inbound_services:
 - mail
 - mail_bounce
+
+libraries:
+- name: grpcio
+  version: 1.0.0

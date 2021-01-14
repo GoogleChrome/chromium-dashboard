@@ -35,10 +35,12 @@ PROD = False
 DEBUG = True
 SEND_EMAIL = False  # Just log email
 DEV_MODE = os.environ['SERVER_SOFTWARE'].startswith('Development')
+UNIT_TEST_MODE = os.environ['SERVER_SOFTWARE'].startswith('test')
+
 
 APP_ID = app_identity.get_application_id()
 SITE_URL = 'http://%s.appspot.com/' % APP_ID
-
+CLOUD_TASKS_REGION = 'us-central1'
 
 if APP_ID == 'testbed-test':
   APP_TITLE = 'Local testing'
