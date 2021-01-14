@@ -16,6 +16,9 @@ from __future__ import print_function
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# This code is based on a file from Monorail:
+# https://chromium.googlesource.com/infra/infra/+/master/appengine/monorail/framework/cloud_tasks_helpers.py
+
 import logging
 import json
 
