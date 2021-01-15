@@ -28,6 +28,7 @@ install:
   - npm install -g gulp
   - npm install
   - npm run deps
+  - python -m pip install --no-deps -r requirements.dev.txt
 script:
   - npm run lint
   - npm run test
