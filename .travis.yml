@@ -4,7 +4,7 @@ node_js:
 python:
   - "2.7"
 dist: trusty
-sudo: true
+sudo: false
 git:
   depth: 1
 env:
@@ -27,8 +27,7 @@ before_install:
 install:
   - npm install -g gulp
   - npm install
-  - python -m pip install --no-deps -r requirements.dev.txt
-  - npm run deps
+  - npm run travis-deps
 script:
   - npm run lint
   - npm run test
