@@ -27,7 +27,7 @@ before_install:
 install:
   - npm install -g gulp
   - npm install
-  - npm run deps
+  - npm run travis-deps
 script:
   - npm run lint
   - npm run test

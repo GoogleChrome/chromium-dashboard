@@ -30,12 +30,12 @@ from google.appengine.ext import db
 from google.appengine.api import mail
 from google.appengine.api import urlfetch
 from google.appengine.api import users
-from google.appengine.api import taskqueue
 from google.appengine.ext.webapp.mail_handlers import BounceNotification
 
 from django.template.loader import render_to_string
 from django.utils.html import conditional_escape as escape
 
+import cloud_tasks_helpers
 import common
 import settings
 import models
@@ -218,10 +218,14 @@ class FeatureChangeHandler(common.FlaskHandler):
   """This task handles a feature creation or update by making email tasks."""
 
   def process_post_data(self):
+    self.require_task_header()
+
     json_body = self.request.get_json(force=True)
     feature = json_body.get('feature') or None
     is_update = json_body.get('is_update') or False
     changes = json_body.get('changes') or []
+
+    logging.info('Starting to notify subscribers for feature %r', feature)
 
     # Email feature subscribers if the feature exists and there were
     # actually changes to it.
@@ -229,12 +233,10 @@ class FeatureChangeHandler(common.FlaskHandler):
     if feature and (is_update and len(changes) or not is_update):
       email_tasks = make_email_tasks(
           feature, is_update=is_update, changes=changes)
+      logging.info('Processing %d email tasks', len(email_tasks))
       for one_email_dict in email_tasks:
-        payload = json.dumps(one_email_dict)
-        task = taskqueue.Task(
-            method='POST', url='/tasks/outbound-email', payload=payload,
-            target='notifier')
-        taskqueue.Queue().add(task)
+        cloud_tasks_helpers.enqueue_task(
+            '/tasks/outbound-email', one_email_dict)
 
     return {'message': 'Done'}
 
@@ -243,6 +245,8 @@ class OutboundEmailHandler(common.FlaskHandler):
   """Task to send a notification email to one recipient."""
 
   def process_post_data(self):
+    self.require_task_header()
+
     json_body = self.request.get_json(force=True)
     to = json_body['to']
     subject = json_body['subject']

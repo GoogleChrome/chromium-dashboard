@@ -28,9 +28,10 @@ from google.appengine.ext import db
 from google.appengine.api import mail
 import ramcache
 from google.appengine.api import urlfetch
-from google.appengine.api import taskqueue
 from google.appengine.api import users
 
+import cloud_tasks_helpers
+import common
 import settings
 import util
 
@@ -944,17 +945,14 @@ class Feature(DictModel):
         changed_props.append({
             'prop_name': prop_name, 'old_val': old_val, 'new_val': new_val})
 
-    payload = json.dumps({
+    params = {
       'changes': changed_props,
       'is_update': is_update,
       'feature': self.format_for_template(version=2)
-    })
+    }
 
     # Create task to email subscribers.
-    queue = taskqueue.Queue()#name='emailer')
-    task = taskqueue.Task(method="POST", url='/tasks/email-subscribers',
-        target='notifier', payload=payload)
-    queue.add(task)
+    cloud_tasks_helpers.enqueue_task('/tasks/email-subscribers', params)
 
 
   def put(self, notify=True, **kwargs):

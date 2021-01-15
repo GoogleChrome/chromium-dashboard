@@ -15,6 +15,7 @@ from __future__ import print_function
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import logging
 import os
 import sys
 import unittest
@@ -35,7 +36,8 @@ import dev_appserver
 dev_appserver.fix_sys_path()
 
 lib_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'lib')
-sys.path.insert(0, lib_path)
+from google.appengine.ext import vendor
+vendor.add(lib_path) # add third party libs to "lib" folder.
 
 from google.appengine.ext import ndb
 from google.appengine.ext import testbed
@@ -62,7 +64,6 @@ def setUpOurTestbed():
   ourTestbed.init_mail_stub()
   ourTestbed.init_modules_stub()
   ourTestbed.init_search_stub()
-  ourTestbed.init_taskqueue_stub()
   ourTestbed.init_urlfetch_stub()
   ourTestbed.init_user_stub()
   ourTestbed.init_xmpp_stub()
@@ -71,6 +72,29 @@ def setUpOurTestbed():
 # but we need it to be done before importing any application code because
 # models.py makes GAE API calls to in code that runs during loading.
 setUpOurTestbed()
+
+
+import cloud_tasks_helpers
+
+class FakeCloudTasksClient(object):
+  """We have no GCT server for unit tests, so just log."""
+
+  def queue_path(self, project, location, queue):
+    """Return a fully-qualified queue string."""
+    # This is value is not actually used, but it might be good for debugging.
+    return "projects/{project}/locations/{location}/queues/{queue}".format(
+        project=project, location=location, queue=queue)
+
+  def create_task(self, unused_parent, task, **kwargs):
+    """Just log that the task would have been created URL."""
+    self.uri = task.get('app_engine_http_request').get('relative_uri')
+    self.body = task.get('app_engine_http_request').get('body')
+    logging.info('Task uri: %r', self.uri)
+    logging.info('Task body: %r', self.body)
+    return 'fake task'
+
+
+cloud_tasks_helpers._client = FakeCloudTasksClient()
 
 
 class Blank(object):
