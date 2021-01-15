@@ -159,6 +159,8 @@ class YesterdayHandler(common.FlaskHandler):
             'Got error %s while fetching usage data' % response_code)
         return error_message, 500
 
+    return 'Success'
+
 
 class HistogramsHandler(common.FlaskHandler):
 
