@@ -32,6 +32,7 @@ BOUNCE_ESCALATION_ADDR = 'cr-status-bounces@google.com'
 ################################################################################
 
 PROD = False
+STAGING = False
 DEBUG = True
 SEND_EMAIL = False  # Just log email
 DEV_MODE = os.environ['SERVER_SOFTWARE'].startswith('Development')
@@ -57,6 +58,7 @@ elif APP_ID == 'cr-status':
   SEND_ALL_EMAIL_TO = None  # Deliver it to the intended users
   SITE_URL = 'http://chromestatus.com/'
 elif APP_ID == 'cr-status-staging':
+  STAGING = True
   SEND_EMAIL = True
   APP_TITLE = 'Chrome Platform Status Staging'
 else:

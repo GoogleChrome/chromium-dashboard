@@ -47,7 +47,7 @@ handlers:
 # Admin ------------------------------------------------------------------------
 - url: /cron/.*
   script: admin.app
-  login: admin # Prevents raw access to this handler. Cron runs as admin.
+  # Any cron job must be harmless if it is called too often or with bad args
 
 - url: /tasks/.*
   script: notifier.app
