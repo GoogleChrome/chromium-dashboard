@@ -20,7 +20,7 @@
   <h3>About this data</h3>
   <p class="description">
     We've been using Chrome's <a href="https://cs.chromium.org/chromium/src/tools/metrics/histograms/enums.xml" target="_blank">anonymous usage statistics</a> to count the CSS properties which are animated. <b>Percentages on this page indicate the fraction of Chrome page loads that animates the corresponding CSS property (in a transition or animation) at least once</b>. Data is ~24 hrs old and reflects usage across all channels and platforms.</p>
-  <chromedash-metrics type="css" view="animated" {% if prod %}prod{% endif %}></chromedash-metrics>
+  <chromedash-metrics type="css" view="animated"></chromedash-metrics>
 </div>
 {% endblock %}
 

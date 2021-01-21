@@ -10,7 +10,6 @@ class ChromedashMetrics extends LitElement {
     return {
       type: {type: String},
       view: {type: String},
-      prod: {type: Boolean},
       viewList: {attribute: false},
       propertyNameSortIcon: {attribute: false},
       percentSortIcon: {attribute: false},
@@ -82,7 +81,7 @@ class ChromedashMetrics extends LitElement {
   }
 
   async firstUpdated() {
-    const endpoint = `${!this.prod ? 'https://www.chromestatus.com' : ''}/data/${this.type}${this.view}`;
+    const endpoint = `/data/${this.type}${this.view}`;
     const res = await fetch(endpoint);
     const json = await res.json();
     this._updateAfterData(json);
