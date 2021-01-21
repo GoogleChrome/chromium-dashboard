@@ -14,7 +14,6 @@ class ChromedashTimeline extends LitElement {
       useRemoteData: {attribute: false}, // If true, fetches live data from chromestatus.com instead of localhost.
 
       // Listed in the old code, but seems not used in the component:
-      prod: {type: Boolean},
       timeline: {attribute: false},
     };
   }

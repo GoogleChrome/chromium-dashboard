@@ -182,7 +182,7 @@ class FeatureHandler(common.FlaskHandler):
 
     else:
       properties = ramcache.get(self.CACHE_KEY)
-      logging.info('looked at cache %r and found %R', self.CACHE_KEY, properties)
+      logging.info('looked at cache %r and found %r', self.CACHE_KEY, properties)
       if properties is None:
         logging.info('Loading properties from datastore')
         properties = self.__query_metrics_for_properties()
