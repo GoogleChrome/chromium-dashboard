@@ -42,25 +42,23 @@ UMA_QUERY_SERVER = 'https://uma-export.appspot.com/chromestatus/'
 HISTOGRAMS_URL = 'https://chromium.googlesource.com/chromium/src/+/master/' \
     'tools/metrics/histograms/enums.xml?format=TEXT'
 
-# Path to a local cookie to supply when running dev_appserver
-# Go to https://uma-export.appspot.com/login and login then copy the
-# value of SACSID from browser and write this to a cookie file.
-COOKIE_FILENAME = os.path.join(settings.ROOT_DIR, 'cookie')
+# After we have processed all metrics data for a given kind on a given day,
+# we create a capstone entry with this otherwise unused bucket_id.  Later
+# we check for a capstone entry to avoid retrieving metrics for that
+# same day again.
+CAPSTONE_BUCKET_ID = -1
 
 
 @common.retry(3, delay=30, backoff=2)
-def _FetchWithCookie(url):
-  if settings.PROD:
+def _FetchMetrics(url):
+  if settings.PROD or settings.STAGING:
     # follow_redirects=False according to https://cloud.google.com/appengine/docs/python/appidentity/#asserting_identity_to_other_app_engine_apps
     # GAE request limit is 60s, but it could go longer due to start-up latency.
+    logging.info('Requesting metrics from: %r', url)
     return urlfetch.fetch(url, deadline=120, follow_redirects=False)
-  try:
-    with open(COOKIE_FILENAME, 'r') as f:
-      cookie = f.readline()
-  except IOError, e:
-    logging.error(e)
-  return urlfetch.fetch(
-      url, headers={'cookie': 'SACSID=' + cookie}, deadline=60)
+  else:
+    logging.info('Prod would get metrics from: %r', url)
+    return None  # dev instances cannot access uma-export.
 
 
 class UmaQuery(object):
@@ -71,20 +69,42 @@ class UmaQuery(object):
     self.model_class = model_class
     self.property_map_class = property_map_class
 
+  def _HasCapstone(self, date):
+    query = self.model_class.all()
+    query.filter('bucket_id = ', CAPSTONE_BUCKET_ID)
+    query.filter('date =', date)
+    if query.count() > 0:
+      logging.info('Found existing capstone entry for %r', date)
+      return True
+    else:
+      logging.info('No capstone entry for %r, will request', date)
+      return False
+
+  def _SetCapstone(self, date):
+    entity = self.model_class(
+        property_name='capstone value',
+        bucket_id=CAPSTONE_BUCKET_ID,
+        date=date)
+    entity.put()
+    logging.info('Set capstone entry for %r', date)
+    return entity
+
   def _FetchData(self, date):
     params = '?date=%s' % date.strftime('%Y%m%d')
     url = UMA_QUERY_SERVER + self.query_name + params
-    result = _FetchWithCookie(url)
+    result = _FetchMetrics(url)
 
-    if (result.status_code != 200):
-      logging.error('Unable to retrieve UMA data from %s. Error: %s' % (url, result.status_code))
-      return (None, 404)
+    if not result or result.status_code != 200:
+      logging.error('Unable to retrieve UMA data from %s. Error: %s' % (
+          url, result.status_code))
+      return (None, result.status_code)
 
     json_content = result.content.split('\n', 1)[1]
     j = json.loads(json_content)
     if not j.has_key('r'):
-      logging.error(
+      logging.info(
           '%s results do not have an "r" key in the response' % self.query_name)
+      logging.info('Note: uma-export can take 2 days to produce metrics')
       return (None, 404)
     return (j['r'], result.status_code)
 
@@ -122,7 +142,11 @@ class UmaQuery(object):
           )
       entity.put()
 
+    self._SetCapstone(date)
+
   def FetchAndSaveData(self, date):
+    if self._HasCapstone(date):
+      return 200
     data, response_code = self._FetchData(date)
     if response_code == 200:
       self._SaveData(data, date)
@@ -144,20 +168,37 @@ UMA_QUERIES = [
 
 class YesterdayHandler(common.FlaskHandler):
   """Loads yesterday's UMA data."""
-  def get_template_data(self):
+
+  def get_template_data(self, today=None):
     """Loads the data file located at |filename|.
 
     Args:
       filename: The filename for the data file to be loaded.
+      today: date passed in for testing, defaults to today.
     """
-    yesterday = datetime.date.today() - datetime.timedelta(1)
+    days = []
+    date_str = self.request.args.get('date')
+    if date_str:
+      try:
+        # We accept the same format that is used by uma-export
+        specified_day = datetime.datetime.strptime(date_str, '%Y%m%d').date()
+        days.append(specified_day)
+      except ValueError:
+        logging.info('Falsed to parse date string %r', date_str)
+        self.abort(400)
 
-    for query in UMA_QUERIES:
-      response_code = query.FetchAndSaveData(yesterday)
-      if response_code != 200:
-        error_message = (
-            'Got error %s while fetching usage data' % response_code)
-        return error_message, 500
+    else:
+      today = today or datetime.date.today()
+      days = [today - datetime.timedelta(days_ago)
+              for days_ago in [1, 2, 3, 4, 5]]
+
+    for query_day in days:
+      for query in UMA_QUERIES:
+        response_code = query.FetchAndSaveData(query_day)
+        if response_code != 200:
+          error_message = (
+              'Got error %d while fetching usage data' % response_code)
+          return error_message, 500
 
     return 'Success'
 

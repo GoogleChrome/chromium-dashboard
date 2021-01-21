@@ -32,4 +32,5 @@ gcloud app deploy \
   --project $appName \
   --version $deployVersion \
   --no-promote \
-  $BASEDIR/../app.yaml $BASEDIR/../notifier.yaml $BASEDIR/../dispatch.yaml
+  $BASEDIR/../app.yaml $BASEDIR/../notifier.yaml \
+  $BASEDIR/../dispatch.yaml $BASEDIR/../cron.yaml
