@@ -195,7 +195,7 @@ class YesterdayHandler(common.FlaskHandler):
     for query_day in days:
       for query in UMA_QUERIES:
         response_code = query.FetchAndSaveData(query_day)
-        if response_code != 200:
+        if response_code not in (200, 404):
           error_message = (
               'Got error %d while fetching usage data' % response_code)
           return error_message, 500
