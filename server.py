@@ -45,6 +45,10 @@ class FeatureDetailHandler(common.FlaskHandler):
     if f is None:
       self.abort(404)
 
+    if f.deleted:
+      # TODO(jrobbins): Check permissions and offer option to undelete.
+      self.abort(404)
+
     feature_process = processes.ALL_PROCESSES.get(
         f.feature_type, processes.BLINK_LAUNCH_PROCESS)
     field_defs = guideforms.DISPLAY_FIELDS_IN_STAGES

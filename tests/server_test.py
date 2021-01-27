@@ -74,6 +74,18 @@ class FeatureDetailHandlerTest(TestWithFeature):
       with self.assertRaises(werkzeug.exceptions.NotFound):
         self.handler.get_template_data(feature_id=feature_id)
 
+  def test_get_template_data__deleted(self):
+    """If a feature was soft-deleted, give a 404."""
+    # TODO(jrobbins): split this into admin vs. non-admin when
+    # we implement undelete.
+    self.feature_1.deleted = True
+    self.feature_1.put()
+
+    with server.app.test_request_context(self.request_path):
+      with self.assertRaises(werkzeug.exceptions.NotFound):
+        template_data = self.handler.get_template_data(
+            feature_id=self.feature_id)
+
   def test_get_template_data__normal(self):
     """We can prep to render the feature detail page."""
     with server.app.test_request_context(self.request_path):
