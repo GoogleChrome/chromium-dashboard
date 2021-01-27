@@ -331,7 +331,7 @@ class BouncedEmailHandler(common.FlaskHandler):
   # Source code is in file:
   # google_appengine/google/appengine/ext/webapp/mail_handlers.py
   def process_post_data(self):
-    self.recipient(BounceNotification(self.form))
+    self.receive(BounceNotification(self.form))
     return {'message': 'Done'}
 
   def receive(self, bounce_message):

@@ -514,6 +514,15 @@ class BouncedEmailHandlerTest(unittest.TestCase):
                    settings.APP_ID)
     self.expected_to = settings.BOUNCE_ESCALATION_ADDR
 
+  @mock.patch('notifier.BouncedEmailHandler.receive')
+  def test_process_post_data(self, mock_receive):
+    with notifier.app.test_request_context('/_ah/bounce'):
+      actual_json = self.handler.process_post_data()
+
+    self.assertEqual({'message': 'Done'}, actual_json)
+    mock_receive.assert_called_once()
+
+
   @mock.patch('settings.SEND_EMAIL', True)
   @mock.patch('google.appengine.api.mail.EmailMessage')
   def test_receive__user_has_prefs(self, mock_emailmessage_constructor):
