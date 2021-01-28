@@ -175,10 +175,10 @@ class ChromedashMetadata extends LitElement {
 
     // Consolidate channels if they're the same.
     if (this._channels.canary == this._channels.dev) {
-      this._versions.splice(5, 1);
+      this._versions.splice(4, 1);
       this._className = 'canaryisdev';
     } else if (this._channels.dev == this._channels.beta) {
-      this._versions.splice(6, 1);
+      this._versions.splice(5, 1);
       this._className = 'betaisdev';
     }
 
