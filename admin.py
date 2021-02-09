@@ -103,7 +103,8 @@ class UmaQuery(object):
     j = json.loads(json_content)
     if not j.has_key('r'):
       logging.info(
-          '%s results do not have an "r" key in the response' % self.query_name)
+          '%s results do not have an "r" key in the response: %r' %
+          (self.query_name, j))
       logging.info('Note: uma-export can take 2 days to produce metrics')
       return (None, 404)
     return (j['r'], result.status_code)
@@ -111,16 +112,19 @@ class UmaQuery(object):
   def _SaveData(self, data, date):
     property_map = self.property_map_class.get_all()
 
+    date_query = self.model_class.all()
+    date_query.filter('date =', date)
+    existing_saved_data = date_query.fetch(None)
+    existing_saved_bucket_ids = set()
+    for existing_datapoint in existing_saved_data:
+      existing_saved_bucket_ids.add(existing_datapoint.bucket_id)
+
     for bucket_str, bucket_dict in data.iteritems():
       bucket_id = int(bucket_str)
 
-      query = self.model_class.all()
-      query.filter('bucket_id = ', bucket_id)
-      query.filter('date =', date)
-
       # Only add this entity if one doesn't already exist with the same
       # bucket_id and date.
-      if query.count() > 0:
+      if bucket_id in existing_saved_bucket_ids:
         logging.info('Cron data was already fetched for this date')
         continue
 
@@ -192,12 +196,14 @@ class YesterdayHandler(common.FlaskHandler):
       days = [today - datetime.timedelta(days_ago)
               for days_ago in [1, 2, 3, 4, 5]]
 
-    for query_day in days:
+    for i, query_day in enumerate(days):
       for query in UMA_QUERIES:
         response_code = query.FetchAndSaveData(query_day)
         if response_code not in (200, 404):
           error_message = (
               'Got error %d while fetching usage data' % response_code)
+          if i > 2:
+            logging.error('ALERT-1: Failed to get metrics even after 2 days')
           return error_message, 500
 
     return 'Success'
