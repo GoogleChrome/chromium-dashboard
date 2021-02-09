@@ -206,6 +206,7 @@ class YesterdayHandler(common.FlaskHandler):
             logging.error('ALERT-1: Failed to get metrics even after 2 days')
           return error_message, 500
 
+    ramcache.flush_all()
     return 'Success'
 
 
