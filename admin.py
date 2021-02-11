@@ -203,7 +203,8 @@ class YesterdayHandler(common.FlaskHandler):
           error_message = (
               'Got error %d while fetching usage data' % response_code)
           if i > 2:
-            logging.error('ALERT-1: Failed to get metrics even after 2 days')
+            logging.error(
+                'WebStatusAlert-1: Failed to get metrics even after 2 days')
           return error_message, 500
 
     ramcache.flush_all()
