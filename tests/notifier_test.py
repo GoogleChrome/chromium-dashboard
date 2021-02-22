@@ -98,9 +98,12 @@ class EmailFormattingTest(unittest.TestCase):
   def test_accumulate_reasons(self):
     """We can accumulate lists of reasons why we sent a message to a user."""
     addr_reasons = collections.defaultdict(list)
+
+    # Adding an empty list of users
     notifier.accumulate_reasons(addr_reasons, [], 'a reason')
     self.assertEqual({}, addr_reasons)
 
+    # Adding some users builds up a bigger reason dictionary.
     notifier.accumulate_reasons(addr_reasons, [self.owner_1], 'a reason')
     self.assertEqual(
         {'owner_1@example.com': ['a reason']},
@@ -111,6 +114,16 @@ class EmailFormattingTest(unittest.TestCase):
     self.assertEqual(
         {'owner_1@example.com': ['a reason', 'another reason'],
          'watcher_1@example.com': ['another reason'],
+        },
+        addr_reasons)
+
+    # We can also add email addresses that are not users.
+    notifier.accumulate_reasons(
+        addr_reasons, ['mailing-list@example.com'], 'third reason')
+    self.assertEqual(
+        {'owner_1@example.com': ['a reason', 'another reason'],
+         'watcher_1@example.com': ['another reason'],
+         'mailing-list@example.com': ['third reason'],
         },
         addr_reasons)
 
@@ -129,6 +142,40 @@ class EmailFormattingTest(unittest.TestCase):
     self.assertIn('html', actual['html'])
     self.assertIn('reason 1', actual['html'])
     self.assertIn('reason 2', actual['html'])
+
+  def test_apply_subscription_rules__relevant_match(self):
+    """When a feature and change match a rule, a reason is returned."""
+    self.feature_1.shipped_android_milestone = 88
+    changes = [{'prop_name': 'shipped_android_milestone'}]
+
+    actual = notifier.apply_subscription_rules(self.feature_1, changes)
+
+    self.assertEqual(
+        {notifier.WEBVIEW_RULE_REASON: notifier.WEBVIEW_RULE_ADDRS},
+        actual)
+
+  def test_apply_subscription_rules__irrelevant_match(self):
+    """When a feature matches, but the change is not relevant => skip."""
+    self.feature_1.shipped_android_milestone = 88
+    changes = [{'prop_name': 'some_other_field'}]  # irrelevant changesa
+
+    actual = notifier.apply_subscription_rules(self.feature_1, changes)
+
+    self.assertEqual({}, actual)
+
+  def test_apply_subscription_rules__non_match(self):
+    """When a feature is not a match => skip."""
+    changes = [{'prop_name': 'shipped_android_milestone'}]
+
+    # No milestones of any kind set.
+    actual = notifier.apply_subscription_rules(self.feature_1, changes)
+    self.assertEqual({}, actual)
+
+    # Webview is also set
+    self.feature_1.shipped_android_milestone = 88
+    self.feature_1.shipped_webview_milestone = 89
+    actual = notifier.apply_subscription_rules(self.feature_1, changes)
+    self.assertEqual({}, actual)
 
   @mock.patch('notifier.format_email_body')
   def test_make_email_tasks__new(self, mock_f_e_b):
