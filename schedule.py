@@ -31,6 +31,7 @@ import models
 import settings
 import util
 
+SCHEDULE_CACHE_TIME = 60 * 60  # 1 hour
 
 def fetch_chrome_release_info(version):
   key = 'chromerelease|%s' % version
@@ -49,7 +50,7 @@ def fetch_chrome_release_info(version):
           del data['owners']
           del data['feature_freeze']
           del data['ldaps']
-          ramcache.set(key, data)
+          ramcache.set(key, data, time=SCHEDULE_CACHE_TIME)
       except ValueError:
         pass  # Handled by next statement
 
