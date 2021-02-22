@@ -90,7 +90,10 @@ def format_email_body(is_update, feature, changes):
 def accumulate_reasons(addr_reasons, user_list, reason):
   """Add a reason string for each user."""
   for user in user_list:
-    addr_reasons[user.email].append(reason)
+    if type(user) == str:
+      addr_reasons[user].append(reason)
+    else:
+      addr_reasons[user.email].append(reason)
 
 
 def convert_reasons_to_task(addr, reasons, email_html, subject):
@@ -109,6 +112,29 @@ def convert_reasons_to_task(addr, reasons, email_html, subject):
       'html': email_html_with_footer
   }
   return one_email_task
+
+
+WEBVIEW_RULE_REASON = (
+    'This feature has an android milestone, but not a webview milestone')
+WEBVIEW_RULE_ADDRS = ['webview-leads@google.com']
+
+
+def apply_subscription_rules(feature, changes):
+  """Return {"reason": [addrs]} for users who set up rules."""
+  # Note: for now this is hard-coded, but it will eventually be
+  # configurable through some kind of user preference.
+  changed_field_names = {c['prop_name'] for c in changes}
+  results = {}
+
+  # Check if feature has some other milestone set, but not webview.
+  if (feature.shipped_android_milestone and
+      not feature.shipped_webview_milestone):
+    milestone_fields = ['shipped_android_milestone',
+                        'shipped_webview_milestone']
+    if not changed_field_names.isdisjoint(milestone_fields):
+      results[WEBVIEW_RULE_REASON] = WEBVIEW_RULE_ADDRS
+
+  return results
 
 
 def make_email_tasks(feature, is_update=False, changes=[]):
@@ -145,6 +171,10 @@ def make_email_tasks(feature, is_update=False, changes=[]):
 
   starrers = FeatureStar.get_feature_starrers(feature.key().id())
   accumulate_reasons(addr_reasons, starrers, 'You starred this feature')
+
+  rule_results = apply_subscription_rules(feature, changes)
+  for reason, sub_addrs in rule_results.items():
+    accumulate_reasons(addr_reasons, sub_addrs, reason)
 
   all_tasks = [convert_reasons_to_task(addr, reasons, email_html, subject)
                for addr, reasons in sorted(addr_reasons.items())]
