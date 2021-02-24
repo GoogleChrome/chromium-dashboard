@@ -41,14 +41,6 @@ import settings
 import models
 
 
-def get_default_headers():
-  headers = {
-    'Authorization': 'key=%s' % settings.FIREBASE_SERVER_KEY,
-    'Content-Type': 'application/json'
-    }
-  return headers
-
-
 def format_email_body(is_update, feature, changes):
   """Return an HTML string for a notification email body."""
   if feature.shipped_milestone:
