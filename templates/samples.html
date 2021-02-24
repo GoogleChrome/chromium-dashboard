@@ -1,5 +1,4 @@
 {% extends "_base.html" %}
-{% load verbatim %}
 {% load inline_file %}
 
 {% block rss %}
@@ -12,9 +11,7 @@
 
 {% block drawer %}
   <h3>Category filter</h3>
-  {% verbatim %}
   <paper-listbox id="papermenu">
-  {% endverbatim %}
   {% for k,v in CATEGORIES %}
     {% if v != 'webcomponents' %}
       <paper-item data-category="{{v}}">
