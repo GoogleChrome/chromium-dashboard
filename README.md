@@ -25,10 +25,7 @@ Create a file named `env_vars.yaml` in the root directory and fill it with:
 ```yaml
 env_variables:
   DJANGO_SETTINGS_MODULE: 'settings'
--  FIREBASE_SERVER_KEY: <SERVER_KEY>
- ```
-
--The `FIREBASE_SERVER_KEY` is the Firebase server key obtained from the [Firebase console](https://firebase.corp.google.com/project/cr-status/settings/cloudmessaging/).
+```
 
 ### Developing
 

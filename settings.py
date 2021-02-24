@@ -83,5 +83,3 @@ else:
   TEMPLATE_CACHE_TIME = 600 # seconds
 
 SEND_PUSH_NOTIFICATIONS = PROD # Flag to turn off sending push notifications for all users.
-
-FIREBASE_SERVER_KEY = os.environ.get('FIREBASE_SERVER_KEY')
