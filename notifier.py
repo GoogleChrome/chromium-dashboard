@@ -129,8 +129,7 @@ def apply_subscription_rules(feature, changes):
   # Check if feature has some other milestone set, but not webview.
   if (feature.shipped_android_milestone and
       not feature.shipped_webview_milestone):
-    milestone_fields = ['shipped_android_milestone',
-                        'shipped_webview_milestone']
+    milestone_fields = ['shipped_android_milestone']
     if not changed_field_names.isdisjoint(milestone_fields):
       results[WEBVIEW_RULE_REASON] = WEBVIEW_RULE_ADDRS
 
