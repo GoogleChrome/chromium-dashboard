@@ -14,10 +14,12 @@ handlers:
 - url: /favicon\.ico
   static_files: static/img/chromium-128.png
   upload: static/img/chromium-128\.png
+  secure: always
 
 - url: /robots\.txt
   static_files: static/robots.txt
   upload: static/robots\.txt
+  secure: always
 
 - url: /service-worker\.js
   static_files: static/dist/service-worker.js
@@ -39,10 +41,12 @@ handlers:
   application_readable: true # So static assets can be read by inline_file django tag.
   http_headers:
     Access-Control-Allow-Origin: "*"
+  secure: always
 
 # Metrics data handlers --------------------------------------------------------
 - url: /data/.*
   script: metrics.app
+  secure: always
 
 # Admin ------------------------------------------------------------------------
 - url: /cron/.*
