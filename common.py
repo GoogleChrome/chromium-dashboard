@@ -142,6 +142,8 @@ def render_atom_feed(request, title, data):
         categories=[f['category']]
     )
   headers = {
+      'Strict-Transport-Security':
+          'max-age=63072000; includeSubDomains; preload',
       'Content-Type': 'application/atom+xml;charset=utf-8'}
   text = feed.writeString('utf-8')
   return text, headers
@@ -165,6 +167,8 @@ class FlaskHandler(flask.views.MethodView):
   def get_headers(self):
     """Add CORS and Chrome Frame to all responses."""
     headers = {
+        'Strict-Transport-Security':
+            'max-age=63072000; includeSubDomains; preload',
         'Access-Control-Allow-Origin': '*',
         'X-UA-Compatible': 'IE=Edge,chrome=1',
         }
@@ -332,7 +336,7 @@ class Redirector(FlaskHandler):
      {'location': '/path/to/page'}."""
 
   def get_template_data(self, location='/'):
-    return flask.redirect(location)
+    return flask.redirect(location), self.get_headers()
 
 
 class ConstHandler(FlaskHandler):

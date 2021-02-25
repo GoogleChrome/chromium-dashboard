@@ -212,7 +212,9 @@ class FlaskHandlerTests(unittest.TestCase):
     """We always use some standard headers."""
     actual = self.handler.get_headers()
     self.assertEqual(
-        {'Access-Control-Allow-Origin': '*',
+        {'Strict-Transport-Security':
+             'max-age=63072000; includeSubDomains; preload',
+         'Access-Control-Allow-Origin': '*',
          'X-UA-Compatible': 'IE=Edge,chrome=1',
          },
         actual)
