@@ -19,20 +19,6 @@ handlers:
   static_files: static/robots.txt
   upload: static/robots\.txt
 
-- url: /service-worker\.js
-  static_files: static/dist/service-worker.js
-  upload: static/dist/service-worker\.js
-  application_readable: true
-  expiration: "0m"
-  secure: always
-
-- url: /firebase-messaging-sw\.js
-  static_files: static/firebase-messaging-sw.js
-  upload: static/firebase-messaging-sw\.js
-  # application_readable: true
-  expiration: "0m"
-  secure: always
-
 - url: /static
   static_dir: static
   #expiration: 30s
@@ -56,10 +42,6 @@ handlers:
 - url: /_ah/bounce
   script: notifier.app
   login: admin # Prevents raw access to this handler.
-
-- url: /admin/gae/.*
-  script: google.appengine.ext.admin.application
-  login: admin
 
 - url: /admin/blink.*
   script: blink_handler.app
@@ -88,11 +70,6 @@ handlers:
 
 - url: /settings
   script: users.app
-  secure: always
-
-- url: /admin/.*
-  script: google.appengine.ext.admin.application
-  login: admin
   secure: always
 
 # Main server handlers ---------------------------------------------------------

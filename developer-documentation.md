@@ -20,7 +20,6 @@ All the pages are rendered in a combination of Django template (`/templates`) an
 1. All lit-element components are in `/static/elements`.
 1. All JavaScript files are in `/static/js-src/` and processed by gulp, then output to '/static/js/' and get included in templates.
 1. All CSS files are in `/static/sass/` and processed by gulp, then output to `/static/css/` and get included in templates.
-1. A service worker is created by gulp too. Output in `/static/dist/service-worker.js`.
 
 ## Some nice-to-fix
 
@@ -80,19 +79,19 @@ All the pages are rendered in a combination of Django template (`/templates`) an
 *
 * visiting /cron/histograms calls HistogramsHandler which retrieves FeatureObserver and
 * FeatureObserver histograms from chromium.googlesource.com.
-* 
+*
 * ACTION REQUIRED: we will need to replace histogramID with the appropriate ID.
 * This can be obtained from uma.googleplex.com/data/histograms/ids-chrome-histograms.txt
 * Searching this file for CSS Properties, once our histogram has data should give us a hex
 * value which should be converted to an integer.
 *
-* 
+*
 
 
 ** featurelevel.js
 *
 * Creates charts for the feature level page.
-* 
+*
 * drawVisualization()
 * This function takes in the name of the property for which the graph is being drawn.
 * (This should probably be changed to the propertyID/bucketID in the future.)
@@ -107,7 +106,7 @@ All the pages are rendered in a combination of Django template (`/templates`) an
 * Takes the desired name to have displayed on the chart. Checks if there is a correspinding property (prefixed or unprefixed)
 * adds the given name plus the corresponding name to an array and returns the array.
 *
-** 
+**
 
 
 
@@ -122,7 +121,7 @@ OPTIMIZATIONS
 - recalc style issue perf in chrome 28 (https://src.chromium.org/viewvc/blink?revision=150018&view=revision)
   -> turn on shadow dom polyfill for stable (e.g. Platform = {flags: {shadow: 'polyfill'}};)
 - insertBefore issue being fixed: https://code.google.com/p/chromium/issues/detail?id=255734.
-  -> Remove inline <style> in elements. 
+  -> Remove inline <style> in elements.
 - Calculate a property in a *Changed handler rather than getters. Latter sets
   up timers if o.Observe() is not present. Former is only calculated once when
   the prop changes.
@@ -152,7 +151,7 @@ all elements in SD, then filtered on :hover. Change was to be more specific and 
 .views {
     @include display-flex;
     @include flex-wrap(wrap);
-    
+
     & > span { // was & > * {
       @include display-flex;
       @include align-items(center);
