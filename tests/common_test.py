@@ -143,7 +143,7 @@ class RedirectorTests(unittest.TestCase):
   def test_redirector(self):
     """If the user hits a redirector, they get a redirect response."""
     with test_app.test_request_context('/old_path'):
-      actual_redirect = test_app.dispatch_request()
+      actual_redirect, actual_headers = test_app.dispatch_request()
 
     self.assertEqual(302, actual_redirect.status_code)
     self.assertEqual('/new_path', actual_redirect.headers['location'])
