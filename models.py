@@ -1298,7 +1298,10 @@ class FeatureForm(forms.Form):
   safari_views = forms.ChoiceField(
       required=False, label='Safari views',
       choices=VENDOR_VIEWS_WEBKIT.items(),
-      initial=NO_PUBLIC_SIGNALS)
+      initial=NO_PUBLIC_SIGNALS,
+      help_text=(
+          'See <a target="_blank" href="https://bit.ly/blink-signals">'
+          'https://bit.ly/blink-signals</a>'))
   safari_views_link = forms.URLField(
       required=False, label='',
       widget=forms.URLInput(attrs={'placeholder': 'https://'}),
@@ -1309,7 +1312,10 @@ class FeatureForm(forms.Form):
   ff_views = forms.ChoiceField(
       required=False, label='Firefox views',
       choices=VENDOR_VIEWS_GECKO.items(),
-      initial=NO_PUBLIC_SIGNALS)
+      initial=NO_PUBLIC_SIGNALS,
+      help_text=(
+          'See <a target="_blank" href="https://bit.ly/blink-signals">'
+          'https://bit.ly/blink-signals</a>'))
   ff_views_link = forms.URLField(
       required=False, label='',
       widget=forms.URLInput(attrs={'placeholder': 'https://'}),
@@ -1332,7 +1338,10 @@ class FeatureForm(forms.Form):
       required=False, label='Web / Framework developer views',
       choices=WEB_DEV_VIEWS.items(),
       initial=DEV_NO_SIGNALS,
-      help_text='If unsure, default to "No signals".')
+      help_text=(
+          'If unsure, default to "No signals". '
+          'See <a target="_blank" href="https://goo.gle/developer-signals">'
+          'https://goo.gle/developer-signals</a>'))
 
   web_dev_views_link = forms.URLField(
       required=False, label='',

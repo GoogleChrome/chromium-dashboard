@@ -105,6 +105,7 @@ BLINK_PROCESS_STAGES = [
       'Work through a TAG review and gather vendor signals.',
       ['TAG review requested',
        'Vendor signals',
+       'Web developer signals',
        'Doc links',
        'Documentation signoff',  # TODO(jrobbins): needs detector.
        'Estimated target milestone',
@@ -450,6 +451,10 @@ PROGRESS_DETECTORS = {
 
     'TAG review issues addressed':
     lambda f: review_is_done(f.tag_review_status),
+
+    'Web developer signals':
+    lambda f: bool(f.web_dev_views and
+                   f.web_dev_views != models.DEV_NO_SIGNALS),
 
     'Vendor signals':
     lambda f: bool(

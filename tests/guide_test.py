@@ -99,7 +99,8 @@ class ProcessOverviewTest(unittest.TestCase):
   def setUp(self):
     self.feature_1 = models.Feature(
         name='feature one', summary='sum', category=1, visibility=1,
-        standardization=1, web_dev_views=1, impl_status_chrome=1)
+        standardization=1, web_dev_views=models.DEV_NO_SIGNALS,
+        impl_status_chrome=1)
     self.feature_1.put()
 
     self.request_path = '/guide/edit/%d' % self.feature_1.key().id()
