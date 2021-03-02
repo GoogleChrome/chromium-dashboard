@@ -83,7 +83,8 @@ class ProgressDetectorsTest(unittest.TestCase):
   def setUp(self):
     self.feature_1 = models.Feature(
         name='feature one', summary='sum', category=1, visibility=1,
-        standardization=1, web_dev_views=1, impl_status_chrome=1,
+        standardization=1, web_dev_views=models.DEV_NO_SIGNALS,
+        impl_status_chrome=1,
         intent_stage=models.INTENT_IMPLEMENT)
     self.feature_1.put()
 
@@ -182,6 +183,12 @@ class ProgressDetectorsTest(unittest.TestCase):
     detector = processes.PROGRESS_DETECTORS['TAG review issues addressed']
     self.assertFalse(detector(self.feature_1))
     self.feature_1.tag_review_status = models.REVIEW_ISSUES_ADDRESSED
+    self.assertTrue(detector(self.feature_1))
+
+  def test_web_dav_signals(self):
+    detector = processes.PROGRESS_DETECTORS['Web developer signals']
+    self.assertFalse(detector(self.feature_1))
+    self.feature_1.web_dev_views = models.PUBLIC_SUPPORT
     self.assertTrue(detector(self.feature_1))
 
   def test_vendor_signals(self):

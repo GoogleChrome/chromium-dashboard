@@ -233,7 +233,10 @@ ALL_FIELDS = {
     'safari_views': forms.ChoiceField(
         required=False, label='Safari views',
         choices=models.VENDOR_VIEWS_WEBKIT.items(),
-        initial=models.NO_PUBLIC_SIGNALS),
+        initial=models.NO_PUBLIC_SIGNALS,
+        help_text=(
+            'See <a target="_blank" href="https://bit.ly/blink-signals">'
+            'https://bit.ly/blink-signals</a>')),
 
     'safari_views_link': forms.URLField(
         required=False, label='',
@@ -260,7 +263,10 @@ ALL_FIELDS = {
         required=False, label='',
         widget=forms.Textarea(
             attrs={'rows': 2, 'cols': 50, 'placeholder': 'Notes',
-                   'maxlength': 1480})),
+                   'maxlength': 1480}),
+        help_text=(
+            'See <a target="_blank" href="https://bit.ly/blink-signals">'
+            'https://bit.ly/blink-signals</a>')),
 
     'ie_views': forms.ChoiceField(
         required=False, label='Edge views',
@@ -282,7 +288,10 @@ ALL_FIELDS = {
         required=False, label='Web / Framework developer views',
         choices=models.WEB_DEV_VIEWS.items(),
         initial=models.DEV_NO_SIGNALS,
-        help_text='If unsure, default to "No signals".'),
+        help_text=(
+            'If unsure, default to "No signals". '
+            'See <a target="_blank" href="https://goo.gle/developer-signals">'
+            'https://goo.gle/developer-signals</a>')),
 
     'web_dev_views_link': forms.URLField(
         required=False, label='',
