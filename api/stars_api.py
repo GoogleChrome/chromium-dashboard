@@ -22,9 +22,14 @@ import common
 import models
 import notifier
 
+
 class StarsAPI(common.APIHandler):
+  """Users can star a feature by clicking a star icon.  The client-side has
+  logic to toggle the star icon.  When a user has starred a feature, they
+  will be sent notification emails about changes to that feature."""
 
   def do_get(self):
+    """Return a list of all starred feature IDs for the signed-in user."""
     user = self.get_current_user()
     if user:
       feature_ids = notifier.FeatureStar.get_user_stars(user.email())
@@ -37,6 +42,7 @@ class StarsAPI(common.APIHandler):
     return data
 
   def do_post(self):
+    """Set or clear a star on the specified feature."""
     json_body = self.request.get_json(force=True)
     feature_id = json_body.get('featureId')
     starred = json_body.get('starred', True)
@@ -56,4 +62,5 @@ class StarsAPI(common.APIHandler):
       self.abort(400)
 
     notifier.FeatureStar.set_star(user.email(), feature_id, starred)
+    # Callers don't use the JSON response for this API call.
     return {'message': 'Done'}

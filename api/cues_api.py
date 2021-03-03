@@ -26,6 +26,10 @@ ALLOWED_CUES = ['progress-checkmarks']
 
 
 class CuesAPI(common.APIHandler):
+  """Cues are UI tips that pop up to teach users about some functionality
+  when they first encounter it.   Users can dismiss a cue card by clicking
+  an X icon.  We store a list of dismissed cues for each user so that
+  we do not show the same cue again to that user."""
 
   # Note: there is no do_get yet because we decide to show cues
   # based on data that is include in the HTML page.
@@ -44,4 +48,5 @@ class CuesAPI(common.APIHandler):
       self.abort(400)
 
     models.UserPref.dismiss_cue(cue)
-    return {}  # Empty JSON response.
+    # Callers don't use the JSON response for this API call.
+    return {'message': 'Done'}
