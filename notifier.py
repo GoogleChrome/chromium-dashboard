@@ -295,6 +295,7 @@ class OutboundEmailHandler(common.FlaskHandler):
     return {'message': 'Done'}
 
 
+# TODO(jrobbins): Remove this class after next deployment.
 class SetStarHandler(common.FlaskHandler):
   """Handle JSON API requests to set/clear a star."""
 
@@ -322,6 +323,7 @@ class SetStarHandler(common.FlaskHandler):
     return {'message': 'Done'}
 
 
+# TODO(jrobbins): Remove this class after next deployment.
 class GetUserStarsHandler(common.FlaskHandler):
   """Handle JSON API requests list all stars for current user."""
 

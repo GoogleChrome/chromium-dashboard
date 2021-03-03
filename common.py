@@ -149,7 +149,83 @@ def render_atom_feed(request, title, data):
   return text, headers
 
 
-class FlaskHandler(flask.views.MethodView):
+class BaseHandler(flask.views.MethodView):
+
+  @property
+  def request(self):
+    return flask.request
+
+  def abort(self, status):
+    """Support webapp2-style, e.g., self.abort(400)."""
+    flask.abort(status)
+
+  def redirect(self, url):
+    """Support webapp2-style, e.g., return self.redirect(url)."""
+    return flask.redirect(url)
+
+
+class APIHandler(BaseHandler):
+
+  def get_current_user(self):
+    # TODO(jrobbins): oauth support
+    return users.get_current_user()
+
+  def get_headers(self):
+    """Add CORS and Chrome Frame to all responses."""
+    headers = {
+        'Strict-Transport-Security':
+            'max-age=63072000; includeSubDomains; preload',
+        'Access-Control-Allow-Origin': '*',
+        'X-UA-Compatible': 'IE=Edge,chrome=1',
+        }
+    return headers
+
+  def get(self, *args, **kwargs):
+    """Handle an incoming HTTP GET request."""
+    headers = self.get_headers()
+    ramcache.check_for_distributed_invalidation()
+    handler_data = self.do_get(*args, **kwargs)
+    return flask.jsonify(handler_data), headers
+
+  def post(self, *args, **kwargs):
+    """Handle an incoming HTTP POST request."""
+    headers = self.get_headers()
+    ramcache.check_for_distributed_invalidation()
+    handler_data = self.do_post(*args, **kwargs)
+    return flask.jsonify(handler_data), headers
+
+  def patch(self, *args, **kwargs):
+    """Handle an incoming HTTP PATCH request."""
+    headers = self.get_headers()
+    ramcache.check_for_distributed_invalidation()
+    handler_data = self.do_patch(*args, **kwargs)
+    return flask.jsonify(handler_data), headers
+
+  def delete(self, *args, **kwargs):
+    """Handle an incoming HTTP DELETE request."""
+    headers = self.get_headers()
+    ramcache.check_for_distributed_invalidation()
+    handler_data = self.do_delete(*args, **kwargs)
+    return flask.jsonify(handler_data), headers
+
+  def do_get(self):
+    """Subclasses should implement this method to handle a GET request."""
+    raise NotImplementedError()
+
+  def do_post(self):
+    """Subclasses should implement this method to handle a POST request."""
+    raise NotImplementedError()
+
+  def do_patch(self):
+    """Subclasses should implement this method to handle a PATCH request."""
+    raise NotImplementedError()
+
+  def do_delete(self):
+    """Subclasses should implement this method to handle a DELETE request."""
+    raise NotImplementedError()
+
+
+class FlaskHandler(BaseHandler):
 
   TEMPLATE_PATH = None  # Subclasses should define this.
   HTTP_CACHE_TYPE = None  # Subclasses can use 'public' or 'private'
@@ -257,14 +333,6 @@ class FlaskHandler(flask.views.MethodView):
       # handler_data is a string or redirect response object.
       return handler_data, headers
 
-  def abort(self, status):
-    """Support webapp2-style, e.g., self.abort(400)."""
-    flask.abort(status)
-
-  def redirect(self, url):
-    """Support webapp2-style, e.g., return self.redirect(url)."""
-    return flask.redirect(url)
-
   def user_can_edit(self, user):
     if not user:
       return False
@@ -284,10 +352,6 @@ class FlaskHandler(flask.views.MethodView):
         can_edit = True
 
     return can_edit
-
-  @property
-  def request(self):
-    return flask.request
 
   @property
   def form(self):
@@ -356,7 +420,7 @@ class ConstHandler(FlaskHandler):
     return flask.jsonify(defaults)
 
 
-def FlaskApplication(routes, debug=False):
+def FlaskApplication(routes, pattern_base='', debug=False):
   """Make a Flask app and add routes and handlers that work like webapp2."""
 
   app = flask.Flask(__name__)
@@ -366,7 +430,7 @@ def FlaskApplication(routes, debug=False):
     defaults = rule[2] if len(rule) > 2 else None
     classname = handler_class.__name__
     app.add_url_rule(
-        pattern,
+        pattern_base + pattern,
         endpoint=classname + str(i),  # We don't use it, but it must be unique.
         view_func=handler_class.as_view(classname),
         defaults=defaults)

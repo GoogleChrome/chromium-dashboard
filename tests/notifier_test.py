@@ -413,6 +413,7 @@ class OutboundEmailHandlerTest(unittest.TestCase):
     self.assertEqual({'message': 'Done'}, actual_response)
 
 
+# TODO(jrobbins): remove this whole class after the next deployment.
 class SetStarHandlerTest(unittest.TestCase):
 
   def setUp(self):
@@ -513,6 +514,7 @@ class SetStarHandlerTest(unittest.TestCase):
     self.assertEqual(0, updated_feature.star_count)
 
 
+# TODO(jrobbins): remove this whole class after the next deployment.
 class GetUserStarsHandlerTest(unittest.TestCase):
 
   def setUp(self):
