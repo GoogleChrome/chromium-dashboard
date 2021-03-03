@@ -5,12 +5,11 @@
 class StarService {
   static getStars() {
     const url = location.hostname == 'localhost' ?
-      'https://www.chromestatus.com/features/star/list' :
-      '/features/star/list';
+      'https://www.chromestatus.com/api/v0/currentuser/stars' :
+      '/api/v0/currentuser/stars';
     return fetch(url, {
-      method: 'POST',
+      method: 'GET',
       headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({}),
     })
       .then((res) => res.json())
       .then((res) => res.featureIds);
@@ -19,8 +18,8 @@ class StarService {
 
   static setStar(featureId, starred) {
     const url = location.hostname == 'localhost' ?
-      'https://www.chromestatus.com/features/star/set' :
-      '/features/star/set';
+      'https://www.chromestatus.com/api/v0/currentuser/stars' :
+      '/api/v0/currentuser/stars';
     return fetch(url, {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
