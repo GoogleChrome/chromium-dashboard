@@ -59,6 +59,7 @@ class FeatureDetailHandler(common.FlaskHandler):
         'feature_id': f.key().id(),
         'feature_json': json.dumps(f.format_for_template()),
         'updated_display': f.updated.strftime("%Y-%m-%d"),
+        'new_crbug_url': f.new_crbug_url(),
     }
     return template_data
 
