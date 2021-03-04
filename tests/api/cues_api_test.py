@@ -46,7 +46,7 @@ class CuesAPITest(unittest.TestCase):
     with register.app.test_request_context(
         '/cues/dismiss', json={"cue": "progress-checkmarks"}):
       actual_json = self.handler.do_post()
-    self.assertEqual({}, actual_json)
+    self.assertEqual({'message': 'Done'}, actual_json)
 
     revised_user_pref = models.UserPref.get_signed_in_user_pref()
     self.assertEqual(['progress-checkmarks'], revised_user_pref.dismissed_cues)
