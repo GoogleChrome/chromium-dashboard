@@ -252,7 +252,10 @@ ALL_FIELDS = {
     'ff_views': forms.ChoiceField(
         required=False, label='Firefox views',
         choices=models.VENDOR_VIEWS_GECKO.items(),
-        initial=models.NO_PUBLIC_SIGNALS),
+        initial=models.NO_PUBLIC_SIGNALS,
+        help_text=(
+            'See <a target="_blank" href="https://bit.ly/blink-signals">'
+            'https://bit.ly/blink-signals</a>')),
 
     'ff_views_link': forms.URLField(
         required=False, label='',
@@ -263,10 +266,7 @@ ALL_FIELDS = {
         required=False, label='',
         widget=forms.Textarea(
             attrs={'rows': 2, 'cols': 50, 'placeholder': 'Notes',
-                   'maxlength': 1480}),
-        help_text=(
-            'See <a target="_blank" href="https://bit.ly/blink-signals">'
-            'https://bit.ly/blink-signals</a>')),
+                   'maxlength': 1480})),
 
     'ie_views': forms.ChoiceField(
         required=False, label='Edge views',
