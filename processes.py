@@ -77,7 +77,7 @@ BLINK_PROCESS_STAGES = [
       'Share an explainer doc and API. '
       'Start prototyping code in a public repo.',
       ['Spec link',
-       'Spec mentor',  # TODO(jrobbins): needs detector.
+       'Spec mentor',
        'Draft API spec',
        'Intent to Prototype email',
       ],
@@ -441,10 +441,13 @@ PROGRESS_DETECTORS = {
     lambda f: f.spec_link,
 
     'Draft API spec':
-    lambda f: f.api_spec,
+    lambda f: f.spec_link,
 
     'API spec':
     lambda f: f.api_spec,
+
+    'Spec mentor':
+    lambda f: f.spec_mentors,
 
     'TAG review requested':
     lambda f: f.tag_review,

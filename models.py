@@ -708,6 +708,7 @@ class Feature(DictModel):
     #d['id'] = self.key().id
     d['owner'] = ', '.join(self.owner)
     d['explainer_links'] = '\r\n'.join(self.explainer_links)
+    d['spec_mentors'] = ', '.join(self.spec_mentors)
     d['doc_links'] = '\r\n'.join(self.doc_links)
     d['sample_links'] = '\r\n'.join(self.sample_links)
     d['search_tags'] = ', '.join(self.search_tags)
@@ -1030,6 +1031,7 @@ class Feature(DictModel):
   standardization = db.IntegerProperty(required=True)
   spec_link = db.LinkProperty()
   api_spec = db.BooleanProperty(default=False)
+  spec_mentors = db.ListProperty(db.Email)
   security_review_status = db.IntegerProperty(default=REVIEW_PENDING)
   privacy_review_status = db.IntegerProperty(default=REVIEW_PENDING)
 

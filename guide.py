@@ -314,6 +314,9 @@ class FeatureEditStage(common.FlaskHandler):
     if self.touched('api_spec'):
       feature.api_spec = self.form.get('api_spec') == 'on'
 
+    if self.touched('spec_mentors'):
+      feature.spec_mentors = self.split_emails('spec_mentors')
+
     if self.touched('security_review_status'):
       feature.security_review_status = self.parse_int('security_review_status')
 
