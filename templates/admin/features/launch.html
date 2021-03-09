@@ -35,6 +35,16 @@
 
 {% if intent %}
 <section>
+<h3>Reach out to a spec mentor</h3>
+<p style="margin-left: 1em">
+  Consider showing your draft intent email to your spec mentor or
+  sending it to spec-mentors@chromium.org.  They can help make sure
+  that your intent email is ready for review.</p>
+</section>
+{% endif %}
+
+{% if intent %}
+<section>
 <h3>Copy and send this text for your "Intent to ..." email</h3>
 {% include "blink/intent_to_implement.html" %}
 </section>
