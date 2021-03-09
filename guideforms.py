@@ -147,6 +147,16 @@ ALL_FIELDS = {
         help_text=('The spec document has details in a specification language '
                    'such as Web IDL, or there is an exsting MDN page.')),
 
+    'spec_mentors': forms.EmailField(
+        required=False, label='Spec mentor',
+        widget=forms.EmailInput(
+            attrs={'multiple': True, 'placeholder': 'email'}),
+        help_text=
+        ('Experienced <a target="_blank" '
+         'href="https://www.chromium.org/blink/spec-mentors">'
+         'spec mentors</a> are available to help you improve your '
+         'feature spec.')),
+
     'explainer_links': forms.CharField(
         label='Explainer link(s)', required=False,
         widget=forms.Textarea(
@@ -621,7 +631,7 @@ NewFeature_Incubate = define_form_class_using_shared_fields(
 
 NewFeature_Prototype = define_form_class_using_shared_fields(
     'NewFeature_Prototype',
-    ('spec_link', 'api_spec',
+    ('spec_link', 'api_spec', 'spec_mentors',
      'intent_to_implement_url', 'comments'))
   # TODO(jrobbins): advise user to request a tag review
 
@@ -778,7 +788,7 @@ Flat_Identify = define_form_class_using_shared_fields(
 Flat_Implement = define_form_class_using_shared_fields(
     'Flat_Implement',
     (# Standardization
-     'spec_link', 'api_spec', 'intent_to_implement_url'))
+     'spec_link', 'api_spec', 'spec_mentors', 'intent_to_implement_url'))
 
 
 Flat_DevTrial = define_form_class_using_shared_fields(
@@ -888,7 +898,7 @@ DISPLAY_FIELDS_IN_STAGES = {
     models.INTENT_INCUBATE: make_display_specs(
         'initial_public_proposal_url', 'explainer_links'),
     models.INTENT_IMPLEMENT: make_display_specs(
-        'spec_link', 'api_spec', 'intent_to_implement_url'),
+        'spec_link', 'api_spec', 'spec_mentors', 'intent_to_implement_url'),
     models.INTENT_EXPERIMENT: make_display_specs(
         'doc_links',
         'interop_compat_risks',
