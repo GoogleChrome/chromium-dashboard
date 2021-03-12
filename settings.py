@@ -70,8 +70,6 @@ APP_VERSION = os.environ['CURRENT_VERSION_ID'].split('.')[0]
 
 RSS_FEED_LIMIT = 15
 
-VULCANIZE = True #PROD
-
 DEFAULT_CACHE_TIME = 60 # seconds
 
 USE_I18N = False
