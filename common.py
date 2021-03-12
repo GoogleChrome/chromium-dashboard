@@ -276,7 +276,6 @@ class FlaskHandler(BaseHandler):
       'prod': settings.PROD,
       'APP_TITLE': settings.APP_TITLE,
       'current_path': current_path,
-      'VULCANIZE': settings.VULCANIZE,
       'TEMPLATE_CACHE_TIME': settings.TEMPLATE_CACHE_TIME
       }
 
