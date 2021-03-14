@@ -12,6 +12,7 @@ class ChromedashAccordion extends LitElement {
     return {
       title: {type: String},
       opened: {type: Boolean, reflect: true},
+      focus: {type: Boolean, reflect: false},
     };
   }
 
@@ -34,6 +35,14 @@ class ChromedashAccordion extends LitElement {
   constructor() {
     super();
     this.opened = false;
+    this.addEventListener('focus', ()=>this.focus = true);
+    this.addEventListener('focusout', ()=>this.focus = false);
+    this.addEventListener('keyup', (e)=>{
+      // If the element is not in focus then simply return otherwise toggle
+      if (!this.focus) return;
+      // Open accordion should happen only by Space and Enter key as mentioned in web.dev
+      if (e.code == 'Space' || e.code == 'Enter') this.toggle();
+    });
   }
 
   toggle() {
@@ -46,7 +55,7 @@ class ChromedashAccordion extends LitElement {
 
   render() {
     return html`
-     <h3 @click=${this.toggle} title="Click to expand">
+     <h3 @click=${this.toggle} title="Click to expand" tabindex="0" role="region" aria-expanded=${this.opened}>
        <iron-icon
           icon="chromestatus:${this.opened ? 'expand-less' : 'expand-more'}">
        </iron-icon>
