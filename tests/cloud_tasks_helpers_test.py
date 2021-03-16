@@ -49,7 +49,7 @@ class LocalCloudTasksClientTest(unittest.TestCase):
 
     self.assertIsNone(actual)
     mock_fetch.assert_called_once_with(
-      'GET', 
+      'POST', 
         'http://localhost:8080/handler',
         data='{"a": 1}',
         allow_redirects=False,
