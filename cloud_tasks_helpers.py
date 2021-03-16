@@ -58,7 +58,7 @@ class LocalCloudTasksClient(object):
     target_url = 'http://localhost:8080' + uri
     body = task.get('app_engine_http_request').get('body')
     logging.info('Making request to %r', target_url)
-    handler_response = requests.post(
+    handler_response = requests.request('GET', 
         target_url, data=body, allow_redirects=False,
         # This header can only be set on internal requests, not by users.
         headers={'X-AppEngine-QueueName': 'default'})

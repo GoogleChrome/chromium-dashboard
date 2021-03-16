@@ -38,8 +38,8 @@ class FetchMetricsTest(unittest.TestCase):
     actual = admin._FetchMetrics('a url')
 
     self.assertEqual('mock response', actual)
-    mock_fetch.assert_called_once_with(
-        'a url', deadline=120, follow_redirects=False)
+    mock_fetch.assert_called_once_with('GET',
+        'a url', timeout=120, allow_redirects=False)
 
 
   @mock.patch('settings.STAGING', True)
@@ -50,8 +50,8 @@ class FetchMetricsTest(unittest.TestCase):
     actual = admin._FetchMetrics('a url')
 
     self.assertEqual('mock response', actual)
-    mock_fetch.assert_called_once_with(
-        'a url', deadline=120, follow_redirects=False)
+    mock_fetch.assert_called_once_with('GET', 
+        'a url', timeout=120, allow_redirects=False)
 
   @mock.patch('requests.request')
   def test__dev(self, mock_fetch):
