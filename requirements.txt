@@ -14,7 +14,6 @@ google-api-core==1.22.0
 pytz==2020.1
 google-auth==1.20.1
 setuptools==44.1.1
-requests==2.24.0
 six==1.15.0
 urllib3==1.25.10
 certifi==2020.6.20
@@ -25,6 +24,6 @@ cachetools==3.1.1
 rsa==4.5
 
 # Required for porting Python2 to Python3
-requests==2.24.0
+requests==2.25.1
 
 # See also: requirements.dev.txt

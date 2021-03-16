@@ -22,7 +22,7 @@ from __future__ import print_function
 import logging
 import json
 
-from google.appengine.api import urlfetch
+import requests
 
 import settings
 
@@ -58,9 +58,8 @@ class LocalCloudTasksClient(object):
     target_url = 'http://localhost:8080' + uri
     body = task.get('app_engine_http_request').get('body')
     logging.info('Making request to %r', target_url)
-    handler_response = urlfetch.fetch(
-        target_url, payload=body, method=urlfetch.POST,
-        follow_redirects=False,
+    handler_response = requests.post(
+        target_url, data=body, allow_redirects=False,
         # This header can only be set on internal requests, not by users.
         headers={'X-AppEngine-QueueName': 'default'})
     logging.info('Task handler status: %d', handler_response.status_code)

@@ -27,7 +27,7 @@ from xml.dom import minidom
 
 # Appengine imports.
 import ramcache
-from google.appengine.api import urlfetch
+import requests
 from google.appengine.api import users
 from google.appengine.ext import db
 
@@ -55,7 +55,7 @@ def _FetchMetrics(url):
     # follow_redirects=False according to https://cloud.google.com/appengine/docs/python/appidentity/#asserting_identity_to_other_app_engine_apps
     # GAE request limit is 60s, but it could go longer due to start-up latency.
     logging.info('Requesting metrics from: %r', url)
-    return urlfetch.fetch(url, deadline=120, follow_redirects=False)
+    return requests.get(url, timeout=120.0, allow_redirects=False)
   else:
     logging.info('Prod would get metrics from: %r', url)
     return None  # dev instances cannot access uma-export.
@@ -240,7 +240,7 @@ class HistogramsHandler(common.FlaskHandler):
 
   def get_template_data(self):
     # Attempt to fetch enums mapping file.
-    result = urlfetch.fetch(HISTOGRAMS_URL, deadline=60)
+    result = requests.get(HISTOGRAMS_URL, timeout=60)
 
     if (result.status_code != 200):
       logging.error('Unable to retrieve chromium histograms mapping file.')
