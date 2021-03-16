@@ -18,3 +18,11 @@ pkg_resources.working_set.add_entry(lib_path)
 
 import six
 reload(six)
+
+# This is needed to use the requests library in python 2.7.
+# https://cloud.google.com/appengine/docs/standard/python/issue-requests#requests
+if (sys.version_info < (3, 0)):
+  import requests_toolbelt.adapters.appengine  # noqa: E402
+  # Use the App Engine Requests adapter. This makes sure that Requests uses
+  # URLFetch.
+  requests_toolbelt.adapters.appengine.monkeypatch()
