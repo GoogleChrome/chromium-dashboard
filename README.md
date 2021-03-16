@@ -25,6 +25,7 @@ Create a file named `env_vars.yaml` in the root directory and fill it with:
 ```yaml
 env_variables:
   DJANGO_SETTINGS_MODULE: 'settings'
+  DJANGO_SECRET: 'this-is-a-secret'
 ```
 
 ### Developing
@@ -64,7 +65,7 @@ There are some developing information in developer-documentation.md.
 
 - When installing the GAE SDK, make sure to get the version for python 2.7.  It is no longer the default version.
 
-- When running `npm start` you may get an ImportError for jinja2.tests.  We do not know the root cause of this error yet.  To work around it, include the bopy of lib/jinja2/tests.py at the point of the import.
+- When running `npm start` you may get an ImportError for jinja2.tests.  This was caused by an over-general line in skip_files.yaml.  Pulling the latest source code should resolve the problem.
 
 #### Blink components
 
