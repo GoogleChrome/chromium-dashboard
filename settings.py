@@ -64,8 +64,7 @@ elif APP_ID == 'cr-status-staging':
 else:
   logging.error('Unexpected app ID %r, please configure settings.py.', APP_ID)
 
-# SECRET_KEY = os.environ['DJANGO_SECRET']
-SECRET_KEY = "test secret"
+SECRET_KEY = os.environ['DJANGO_SECRET']
 
 APP_VERSION = os.environ['CURRENT_VERSION_ID'].split('.')[0]
 
