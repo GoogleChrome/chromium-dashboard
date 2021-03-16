@@ -4,8 +4,6 @@ from __future__ import print_function
 import logging
 import os
 
-from google.appengine.api import app_identity
-
 
 #Hack to get custom tags working django 1.3 + python27.
 INSTALLED_APPS = (
@@ -39,7 +37,7 @@ DEV_MODE = os.environ['SERVER_SOFTWARE'].startswith('Development')
 UNIT_TEST_MODE = os.environ['SERVER_SOFTWARE'].startswith('test')
 
 
-APP_ID = app_identity.get_application_id()
+APP_ID = os.environ['APPLICATION_ID']
 SITE_URL = 'http://%s.appspot.com/' % APP_ID
 CLOUD_TASKS_REGION = 'us-central1'
 
