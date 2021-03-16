@@ -55,7 +55,7 @@ def _FetchMetrics(url):
     # follow_redirects=False according to https://cloud.google.com/appengine/docs/python/appidentity/#asserting_identity_to_other_app_engine_apps
     # GAE request limit is 60s, but it could go longer due to start-up latency.
     logging.info('Requesting metrics from: %r', url)
-    return requests.get(url, timeout=120.0, allow_redirects=False)
+    return requests.request('GET', url, timeout=120.0, allow_redirects=False)
   else:
     logging.info('Prod would get metrics from: %r', url)
     return None  # dev instances cannot access uma-export.

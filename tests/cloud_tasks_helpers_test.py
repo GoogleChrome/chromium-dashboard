@@ -19,7 +19,7 @@ import mock
 import unittest
 import testing_config  # Must be imported before the module under test.
 
-from google.appengine.api import urlfetch
+import requests
 
 import cloud_tasks_helpers
 # Note that testing_config sets cloud_tasks_helpers._client to a fake.
@@ -37,7 +37,7 @@ class LocalCloudTasksClientTest(unittest.TestCase):
         'projects/P/locations/L/queues/Q',
         actual)
 
-  @mock.patch('google.appengine.api.urlfetch.fetch')
+  @mock.patch('requests.request')
   def test_create_task(self, mock_fetch):
     """The local stub makes a synchronous HTTP request to the task handler."""
     parent = 'parent'
@@ -49,9 +49,10 @@ class LocalCloudTasksClientTest(unittest.TestCase):
 
     self.assertIsNone(actual)
     mock_fetch.assert_called_once_with(
+      'GET', 
         'http://localhost:8080/handler',
-        payload='{"a": 1}', method=urlfetch.POST,
-        follow_redirects=False,
+        data='{"a": 1}',
+        allow_redirects=False,
         headers={'X-AppEngine-QueueName': 'default'})
 
 

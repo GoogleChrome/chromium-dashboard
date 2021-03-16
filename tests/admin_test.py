@@ -31,7 +31,7 @@ import processes
 class FetchMetricsTest(unittest.TestCase):
 
   @mock.patch('settings.PROD', True)
-  @mock.patch('google.appengine.api.urlfetch.fetch')
+  @mock.patch('requests.request')
   def test__prod(self, mock_fetch):
     """In prod, we actually request metrics from uma-export."""
     mock_fetch.return_value = 'mock response'
@@ -43,7 +43,7 @@ class FetchMetricsTest(unittest.TestCase):
 
 
   @mock.patch('settings.STAGING', True)
-  @mock.patch('google.appengine.api.urlfetch.fetch')
+  @mock.patch('requests.request')
   def test__staging(self, mock_fetch):
     """In prod, we actually request metrics from uma-export."""
     mock_fetch.return_value = 'mock response'
@@ -53,7 +53,7 @@ class FetchMetricsTest(unittest.TestCase):
     mock_fetch.assert_called_once_with(
         'a url', deadline=120, follow_redirects=False)
 
-  @mock.patch('google.appengine.api.urlfetch.fetch')
+  @mock.patch('requests.request')
   def test__dev(self, mock_fetch):
     """In Dev, we cannot access uma-export."""
     actual = admin._FetchMetrics('a url')
