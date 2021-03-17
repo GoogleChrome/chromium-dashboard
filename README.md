@@ -25,6 +25,7 @@ Create a file named `env_vars.yaml` in the root directory and fill it with:
 ```yaml
 env_variables:
   DJANGO_SETTINGS_MODULE: 'settings'
+  DJANGO_SECRET: 'this-is-a-secret'
 ```
 
 ### Developing
@@ -57,18 +58,14 @@ Note: featurelist is temporarily excluded because lit-analyzer throws `Maximum c
 
 There are some developing information in developer-documentation.md.
 
-##### FCM setup
-
-If you want to test push notification features, you'll need to create a file named
-`.fcm_server_key` in the main project root. Copy in the FCM server key obtained
-from the [Firebase console](https://firebase.corp.google.com/project/cr-status/settings/cloudmessaging/).
-
-When `./scripts/start_server.sh` is run, it will populate this value as an environment variable.
-
 
 **Notes**
 
-- Locally, the `/feature` list pulls from prod (https://www.chromestatus.com/features.json). Opening one of the features will 404 because the entry is not actually in the local db. If you want to test local entries, modify [`templates/features.html`](https://github.com/GoogleChrome/chromium-dashboard/blob/0b3e3eb444f1e6b6751140f9524a2f60cdc2ca5d/templates/features.html#L181-L182) to pull locally and add some db entries by signing in to the app (bottom link). Make sure to check the "sign in as admin" box when doing so. Note that you can also simply go to `http://127.0.0.1:8080/` instead of `localhost` to pull locally.
+- Locally, the `/feature` list pulls from prod (https://www.chromestatus.com/features.json). Opening one of the features will 404 because the entry is not actually in the local db. If you want to test local entries, go to `http://127.0.0.1:8080/` instead of `localhost` to use local data.
+
+- When installing the GAE SDK, make sure to get the version for python 2.7.  It is no longer the default version.
+
+- When running `npm start` you may get an ImportError for jinja2.tests.  This was caused by an over-general line in skip_files.yaml.  Pulling the latest source code should resolve the problem.
 
 #### Blink components
 

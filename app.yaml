@@ -118,3 +118,8 @@ inbound_services:
 libraries:
 - name: grpcio
   version: 1.0.0
+- name: ssl
+  version: latest
+
+env_variables:
+  GAE_USE_SOCKETS_HTTPLIB : ''

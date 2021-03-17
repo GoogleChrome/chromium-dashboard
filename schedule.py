@@ -23,7 +23,7 @@ import logging
 import os
 
 import ramcache
-from google.appengine.api import urlfetch
+import requests
 from google.appengine.api import users
 
 import common
@@ -40,7 +40,7 @@ def fetch_chrome_release_info(version):
   if data is None:
     url = ('https://chromiumdash.appspot.com/fetch_milestone_schedule?'
            'mstone=%s' % version)
-    result = urlfetch.fetch(url, deadline=60)
+    result = requests.get(url, timeout=60)
     if result.status_code == 200:
       try:
         logging.info('result.content is:\n%s', result.content)
