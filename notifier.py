@@ -28,7 +28,7 @@ import re
 import ramcache
 from google.appengine.ext import db
 from google.appengine.api import mail
-from google.appengine.api import urlfetch
+import requests
 from google.appengine.api import users
 from google.appengine.ext.webapp.mail_handlers import BounceNotification
 
