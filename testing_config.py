@@ -35,7 +35,7 @@ else:
 import dev_appserver
 dev_appserver.fix_sys_path()
 
-lib_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'lib')
+lib_path = os.path.join(os.path.dirname(__file__), 'lib')
 from google.appengine.ext import vendor
 vendor.add(lib_path) # add third party libs to "lib" folder.
 
@@ -74,7 +74,7 @@ def setUpOurTestbed():
 setUpOurTestbed()
 
 
-import cloud_tasks_helpers
+from framework import cloud_tasks_helpers
 
 class FakeCloudTasksClient(object):
   """We have no GCT server for unit tests, so just log."""

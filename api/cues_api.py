@@ -18,14 +18,14 @@ from __future__ import print_function
 
 import logging
 
-import common
+from framework import basehandlers
 import models
 
 # We only accept known cue name strings.
 ALLOWED_CUES = ['progress-checkmarks']
 
 
-class CuesAPI(common.APIHandler):
+class CuesAPI(basehandlers.APIHandler):
   """Cues are UI tips that pop up to teach users about some functionality
   when they first encounter it.   Users can dismiss a cue card by clicking
   an X icon.  We store a list of dismissed cues for each user so that

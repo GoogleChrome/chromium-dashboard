@@ -1,6 +1,3 @@
-from __future__ import division
-from __future__ import print_function
-
 # Copyright 2020 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
@@ -15,6 +12,9 @@ from __future__ import print_function
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import division
+from __future__ import print_function
+
 import unittest
 import testing_config  # Must be imported before the module under test.
 
@@ -25,82 +25,12 @@ import werkzeug.exceptions  # Flask HTTP stuff.
 
 from google.appengine.api import users
 
-import common
+from framework import basehandlers
 import models
 import settings
 
 
-class MockHandler(object):
-
-  def __init__(self, path):
-    self.handler_called_with = None
-    self.redirected_to = None
-    self.request = self
-    self.path = path
-
-  @common.strip_trailing_slash
-  def handlerMethod(self, *args):
-    self.handler_called_with = args
-
-  def redirect(self, new_path):
-    self.redirected_to = new_path
-
-
-class CommonFunctionTests(unittest.TestCase):
-
-  def test_format_feature_url(self):
-    self.assertEqual(
-        '/feature/123',
-        common.format_feature_url(123))
-
-  @mock.patch('time.sleep')  # Run test full speed.
-  def testRetryDecorator_ExceedFailures(self, mock_sleep):
-    class Tracker(object):
-      func_called = 0
-    tracker = Tracker()
-
-    # Use a function that always fails.
-    @common.retry(2, delay=1, backoff=2)
-    def testFunc(tracker):
-      tracker.func_called += 1
-      raise Exception('Failed')
-
-    with self.assertRaises(Exception):
-      testFunc(tracker)
-    self.assertEquals(3, tracker.func_called)
-    self.assertEqual(2, len(mock_sleep.mock_calls))
-
-  @mock.patch('time.sleep')  # Run test full speed.
-  def testRetryDecorator_EventuallySucceed(self, mock_sleep):
-    class Tracker(object):
-      func_called = 0
-    tracker = Tracker()
-
-    # Use a function that succeeds on the 2nd attempt.
-    @common.retry(2, delay=1, backoff=2)
-    def testFunc(tracker):
-      tracker.func_called += 1
-      if tracker.func_called < 2:
-        raise Exception('Failed')
-
-    testFunc(tracker)
-    self.assertEquals(2, tracker.func_called)
-    self.assertEqual(1, len(mock_sleep.mock_calls))
-
-  def test_strip_trailing_slash(self):
-    handlerInstance = MockHandler('/request/path')
-    handlerInstance.handlerMethod('/request/path')
-    self.assertEqual(('/request/path',), handlerInstance.handler_called_with)
-    self.assertIsNone(handlerInstance.redirected_to)
-
-    handlerInstance = MockHandler('/request/path/')
-    handlerInstance.handlerMethod('/request/path/')
-    self.assertIsNone(handlerInstance.handler_called_with)
-    self.assertEqual('/request/path', handlerInstance.redirected_to)
-
-
-
-class TestableFlaskHandler(common.FlaskHandler):
+class TestableFlaskHandler(basehandlers.FlaskHandler):
 
   TEMPLATE_PATH = 'test_template.html'
 
@@ -123,16 +53,16 @@ class TestableFlaskHandler(common.FlaskHandler):
     return {'objects': [1, 2, 3]}
 
 
-test_app = common.FlaskApplication(
+test_app = basehandlers.FlaskApplication(
     [('/test', TestableFlaskHandler),
-     ('/old_path', common.Redirector,
+     ('/old_path', basehandlers.Redirector,
       {'location': '/new_path'}),
-     ('/just_a_template', common.ConstHandler,
+     ('/just_a_template', basehandlers.ConstHandler,
       {'template_path': 'test_template.html',
        'name': 'Guest'}),
-     ('/messed_up_template', common.ConstHandler,
+     ('/messed_up_template', basehandlers.ConstHandler,
       {'template_path': 'not_a_template'}),
-     ('/ui/density.json', common.ConstHandler,
+     ('/ui/density.json', basehandlers.ConstHandler,
       {'UI density': ['default', 'comfortable', 'compact']}),
      ],
     debug=True)
@@ -221,13 +151,13 @@ class FlaskHandlerTests(unittest.TestCase):
 
   def test_get_template_data__missing(self):
     """Every subsclass should overide get_template_data()."""
-    self.handler = common.FlaskHandler()
+    self.handler = basehandlers.FlaskHandler()
     with self.assertRaises(NotImplementedError):
       self.handler.get_template_data()
 
   def test_get_template_path__missing(self):
     """Subsclasses that don't define TEMPLATE_PATH trigger error."""
-    self.handler = common.FlaskHandler()
+    self.handler = basehandlers.FlaskHandler()
     with self.assertRaises(ValueError):
       self.handler.get_template_path({})
 
@@ -244,7 +174,7 @@ class FlaskHandlerTests(unittest.TestCase):
 
   def test_process_post_data__missing(self):
     """Every subsclass should overide process_post_data()."""
-    self.handler = common.FlaskHandler()
+    self.handler = basehandlers.FlaskHandler()
     with self.assertRaises(NotImplementedError):
       self.handler.process_post_data()
 

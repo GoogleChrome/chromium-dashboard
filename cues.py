@@ -23,7 +23,7 @@ import flask
 from google.appengine.ext import db
 from google.appengine.api import users
 
-import common
+from framework import basehandlers
 import models
 import settings
 
@@ -34,7 +34,7 @@ import settings
 ALLOWED_CUES = ['progress-checkmarks']
 
 
-class DismissCueHandler(common.FlaskHandler):
+class DismissCueHandler(basehandlers.FlaskHandler):
   """Handle JSON API requests to dismiss an on-page help cue card."""
 
   def process_post_data(self):
@@ -54,6 +54,6 @@ class DismissCueHandler(common.FlaskHandler):
     return {}  # Empty JSON response.
 
 
-app = common.FlaskApplication([
+app = basehandlers.FlaskApplication([
   ('/cues/dismiss', DismissCueHandler),
 ], debug=settings.DEBUG)

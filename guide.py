@@ -26,12 +26,12 @@ import sys
 from django import forms
 
 # Appengine imports.
-import ramcache
+from framework import ramcache
 from google.appengine.api import users
 from google.appengine.ext import db
 
-# File imports.
-import common
+from framework import basehandlers
+from framework import utils
 import guideforms
 import models
 import processes
@@ -107,7 +107,7 @@ FLAT_FORMS = [
 ]
 
 
-class FeatureNew(common.FlaskHandler):
+class FeatureNew(basehandlers.FlaskHandler):
 
   TEMPLATE_PATH = 'guide/new.html'
 
@@ -162,7 +162,7 @@ class FeatureNew(common.FlaskHandler):
     return self.redirect(redirect_url)
 
 
-class ProcessOverview(common.FlaskHandler):
+class ProcessOverview(basehandlers.FlaskHandler):
 
   TEMPLATE_PATH = 'guide/edit.html'
 
@@ -178,7 +178,7 @@ class ProcessOverview(common.FlaskHandler):
     user = users.get_current_user()
     if user is None:
       # Redirect to public URL for unauthenticated users.
-      return self.redirect(common.format_feature_url(feature_id))
+      return self.redirect(utils.format_feature_url(feature_id))
 
     if not self.user_can_edit(user):
       self.abort(403)
@@ -206,7 +206,7 @@ class ProcessOverview(common.FlaskHandler):
     return template_data
 
 
-class FeatureEditStage(common.FlaskHandler):
+class FeatureEditStage(basehandlers.FlaskHandler):
 
   TEMPLATE_PATH = 'guide/stage.html'
 
@@ -250,7 +250,7 @@ class FeatureEditStage(common.FlaskHandler):
     user = users.get_current_user()
     if user is None:
       # Redirect to public URL for unauthenticated users.
-      return self.redirect(common.format_feature_url(feature_id))
+      return self.redirect(utils.format_feature_url(feature_id))
 
     if not self.user_can_edit(user):
       self.abort(403)
@@ -537,7 +537,7 @@ class FeatureEditAllFields(FeatureEditStage):
     user = users.get_current_user()
     if user is None:
       # Redirect to public URL for unauthenticated users.
-      return self.redirect(common.format_feature_url(feature_id))
+      return self.redirect(utils.format_feature_url(feature_id))
 
     if not self.user_can_edit(user):
       self.abort(403)
@@ -558,7 +558,7 @@ class FeatureEditAllFields(FeatureEditStage):
     return template_data
 
 
-app = common.FlaskApplication([
+app = basehandlers.FlaskApplication([
   ('/guide/new', FeatureNew),
   ('/guide/edit/<int:feature_id>', ProcessOverview),
   # TODO(jrobbins): ('/guide/delete/<int:feature_id>', FeatureDelete),
