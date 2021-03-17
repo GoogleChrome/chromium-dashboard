@@ -36,12 +36,13 @@ SEND_EMAIL = False  # Just log email
 DEV_MODE = os.environ['SERVER_SOFTWARE'].startswith('Development')
 UNIT_TEST_MODE = os.environ['SERVER_SOFTWARE'].startswith('test')
 
+#setting GOOGLE_CLOUD_PROJECT manually in dev mode
+APP_ID = os.environ.get('GOOGLE_CLOUD_PROJECT', 'dev') if DEV_MODE else os.environ['GOOGLE_CLOUD_PROJECT']
 
-APP_ID = os.environ['APPLICATION_ID']
 SITE_URL = 'http://%s.appspot.com/' % APP_ID
 CLOUD_TASKS_REGION = 'us-central1'
 
-if APP_ID == 'testbed-test':
+if UNIT_TEST_MODE == 'testbed-test':
   APP_TITLE = 'Local testing'
   SITE_URL = 'http://127.0.0.1:8888/'
 elif DEV_MODE:
