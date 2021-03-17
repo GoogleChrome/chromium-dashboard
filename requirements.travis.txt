@@ -3,6 +3,9 @@ mock==3.0.5
 funcsigs
 coverage
 Flask==1.1.2
+# Required for porting from Python 2 to Python 3
+requests==2.25.1
+requests-toolbelt==0.9.1
 
 # Google cloud tasks is not used on travis because one of its dependencies
 # will not compiled.  The unit tests use a fake object as the GCT client.
