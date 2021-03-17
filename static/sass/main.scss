@@ -195,7 +195,11 @@ header {
 
 footer {
   background: var(--footer-background);
+  background-color: #fff;
   box-shadow: 0 -2px 5px var(--shadow-color);
+  width: 100%;
+  position: fixed;
+  bottom: 0;
   display: flex;
   flex-direction: column;
   justify-content: center;
