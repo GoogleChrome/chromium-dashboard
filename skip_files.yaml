@@ -14,7 +14,7 @@ skip_files:
 - ^(.*/)?.*\.sh$
 - ^(.*/)?.*\.scss$
 - ^(.*/)?node_modules
-- ^(.*/)?tests
+- ^(.*/)?tests/
 - ^(.*/)?.[LICENSE|PATENTS|AUTHORS|CONTRIBUTING|COPYING](\.md)?
 - ^(.*/)?.*\.md$
 
