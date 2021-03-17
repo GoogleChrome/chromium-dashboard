@@ -3,3 +3,5 @@
 # python -m pip install --no-deps -r requirements.dev.txt
 
 grpcio==1.31.0
+coverage==5.5
+requests_toolbelt==0.9.1
