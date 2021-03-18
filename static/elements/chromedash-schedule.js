@@ -44,8 +44,9 @@ class ChromedashSchedule extends LitElement {
 
   static get properties() {
     return {
-      channels: {attribute: false}, // Assigned in schedule.js, value from Django
-      showBlink: {attribute: false}, // Edited in schedule.js
+      // Assigned in schedule-apge.js, value from Django
+      channels: {attribute: false},
+      showBlink: {attribute: false}, // Set by code in schedule-page.js
       signedin: {type: Boolean},
       loginUrl: {type: String},
       starredFeatures: {attribute: false},
