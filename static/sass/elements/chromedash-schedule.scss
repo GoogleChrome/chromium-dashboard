@@ -121,19 +121,11 @@ iron-icon {
     display: flex;
     justify-content: space-between;
 
-    &::before {
-      counter-increment: featurecount;
-      content: counter(featurecount) ".";
-      position: absolute;
-      color: $gray-2;
-    }
-
     .icon_row {
       flex-shrink: 0;
     }
 
     > :first-child {
-      margin-left: $content-padding + 4px;
       overflow: hidden;
       text-overflow: ellipsis;
     }
