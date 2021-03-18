@@ -45,7 +45,7 @@ class ChromedashSchedule extends LitElement {
   static get properties() {
     return {
       channels: {attribute: false}, // Assigned in schedule.js, value from Django
-      hideBlink: {attribute: false}, // Edited in schedule.js
+      showBlink: {attribute: false}, // Edited in schedule.js
       signedin: {type: Boolean},
       loginUrl: {type: String},
       starredFeatures: {attribute: false},
@@ -114,7 +114,7 @@ class ChromedashSchedule extends LitElement {
     }
     return html`
       ${['stable', 'beta', 'dev'].map((type) => html`
-        <section class="release ${this.hideBlink ? 'no-components' : nothing}">
+        <section class="release ${this.showBlink ? nothing : 'no-components'}">
           <div class="layout vertical center">
             <h1 class="channel_label">${TEMPLATE_CONTENT[type].channelLabel}</h1>
             <h1 class="chrome_version layout horizontal center ${TEMPLATE_CONTENT[type].h1Class}">
