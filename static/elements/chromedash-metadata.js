@@ -154,7 +154,6 @@ class ChromedashMetadata extends LitElement {
 
   _processResponse(response) {
     // TODO(ericbidelman): Share this data across instances.
-    console.log(response);
     const windowsVersions = response[0];
     for (let i = 0, el; el = windowsVersions.versions[i]; ++i) {
       // Include previous version if current is foobar'd.
