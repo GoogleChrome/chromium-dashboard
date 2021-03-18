@@ -9,6 +9,14 @@
   {% include "metrics/css/_css_metric_nav.html" %}
 {% endblock %}
 
+{% block properties %}
+<nav class="data-panel" style="font-size: smaller;">
+  All Properties:<a href="/metrics/css/timeline/popularity" style="padding-left: 2%; padding-right: 2%;">Timeline</a> | 
+  <a href="/metrics/css/popularity"  style="padding-left: 2%; padding-right: 2%;">Stack Rank</a>
+</nav>
+
+{% endblock %}
+
 {% block subheader %}
 <div id="subheader">
   <h2>CSS usage &gt; all properties > stack rank</h2>

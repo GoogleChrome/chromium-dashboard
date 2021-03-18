@@ -427,6 +427,11 @@ footer {
 
 }
 
+//Horizontal Properties Row should be visible only in narrow view ports
+@media only screen and (min-width: 700px){
+  #properties-row{display: none}
+}
+
 // When banner doesn't block navigation buttons.
 @media only screen and (min-width: 1100px) {
   #site-banner {
