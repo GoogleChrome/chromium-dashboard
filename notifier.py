@@ -108,7 +108,7 @@ def convert_reasons_to_task(addr, reasons, email_html, subject):
 
 WEBVIEW_RULE_REASON = (
     'This feature has an android milestone, but not a webview milestone')
-WEBVIEW_RULE_ADDRS = ['webview-leads@google.com']
+WEBVIEW_RULE_ADDRS = ['webview-leads-external@google.com']
 
 
 def apply_subscription_rules(feature, changes):
