@@ -48,7 +48,7 @@ class ChromedashXMeter extends LitElement {
 
   render() {
     return html`  
-      <div @click="${this.showTimeline} style="width: ${(this.value / this.max * 100)}%">  
+      <div @click="${this.showTimeline}" style="width: ${(this.value / this.max * 100)}%">  
         <span>${this.value <= 0.000001 ? '<=0.000001%' : this.value + '%'}
         </span> 
       </div>  
