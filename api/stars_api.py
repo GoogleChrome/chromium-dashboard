@@ -18,12 +18,12 @@ from __future__ import print_function
 
 import logging
 
-import common
+from framework import basehandlers
 import models
 import notifier
 
 
-class StarsAPI(common.APIHandler):
+class StarsAPI(basehandlers.APIHandler):
   """Users can star a feature by clicking a star icon.  The client-side has
   logic to toggle the star icon.  When a user has starred a feature, they
   will be sent notification emails about changes to that feature."""

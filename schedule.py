@@ -22,11 +22,11 @@ import json
 import logging
 import os
 
-import ramcache
+from framework import ramcache
 import requests
 from google.appengine.api import users
 
-import common
+from framework import basehandlers
 import models
 import settings
 import util
@@ -90,7 +90,7 @@ def construct_chrome_channels_details():
   return channels
 
 
-class ScheduleHandler(common.FlaskHandler):
+class ScheduleHandler(basehandlers.FlaskHandler):
 
   TEMPLATE_PATH = 'schedule.html'
 
@@ -106,6 +106,6 @@ class ScheduleHandler(common.FlaskHandler):
     return template_data
 
 
-app = common.FlaskApplication([
+app = basehandlers.FlaskApplication([
   ('/features/schedule', ScheduleHandler),
 ], debug=settings.DEBUG)

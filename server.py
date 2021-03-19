@@ -22,11 +22,12 @@ import json
 import logging
 
 import settings
-import common
+from framework import basehandlers
+from framework import utils
 import guideforms
 import models
 import processes
-import ramcache
+from framework import ramcache
 import util
 
 from google.appengine.api import users
@@ -36,7 +37,7 @@ def normalized_name(val):
   return val.lower().replace(' ', '').replace('/', '')
 
 
-class FeatureDetailHandler(common.FlaskHandler):
+class FeatureDetailHandler(basehandlers.FlaskHandler):
 
   TEMPLATE_PATH = 'feature.html'
 
@@ -64,7 +65,7 @@ class FeatureDetailHandler(common.FlaskHandler):
     return template_data
 
 
-class FeatureListXMLHandler(common.FlaskHandler):
+class FeatureListXMLHandler(basehandlers.FlaskHandler):
 
   def get_template_data(self):
     status = self.request.args.get('status', None)
@@ -94,10 +95,10 @@ class FeatureListXMLHandler(common.FlaskHandler):
           filterby=filterby,
           order='-updated')
 
-    return common.render_atom_feed(self.request, 'Features', feature_list)
+    return utils.render_atom_feed(self.request, 'Features', feature_list)
 
 
-class FeatureListHandler(common.FlaskHandler):
+class FeatureListHandler(basehandlers.FlaskHandler):
 
   TEMPLATE_PATH = 'features.html'
 
@@ -128,7 +129,7 @@ class FeatureListHandler(common.FlaskHandler):
 
 
 
-class CssPopularityHandler(common.FlaskHandler):
+class CssPopularityHandler(basehandlers.FlaskHandler):
 
   TEMPLATE_PATH = 'metrics/css/timeline/popularity.html'
 
@@ -149,7 +150,7 @@ class CssAnimatedHandler(CssPopularityHandler):
   # The logic and data is the same, but it is filtered differenly in JS.
 
 
-class FeaturePopularityHandler(common.FlaskHandler):
+class FeaturePopularityHandler(basehandlers.FlaskHandler):
 
   TEMPLATE_PATH = 'metrics/feature/timeline/popularity.html'
 
@@ -164,7 +165,7 @@ class FeaturePopularityHandler(common.FlaskHandler):
     return template_data
 
 
-class OmahaDataHandler(common.FlaskHandler):
+class OmahaDataHandler(basehandlers.FlaskHandler):
 
   JSONIFY = True
 
@@ -173,7 +174,7 @@ class OmahaDataHandler(common.FlaskHandler):
     return omaha_data
 
 
-class FeaturesAPIHandler(common.FlaskHandler):
+class FeaturesAPIHandler(basehandlers.FlaskHandler):
 
   HTTP_CACHE_TYPE = 'private'
   JSONIFY = True
@@ -185,7 +186,7 @@ class FeaturesAPIHandler(common.FlaskHandler):
     return feature_list
 
 
-class SamplesHandler(common.FlaskHandler):
+class SamplesHandler(basehandlers.FlaskHandler):
 
   TEMPLATE_PATH = 'samples.html'
 
@@ -204,7 +205,7 @@ class SamplesHandler(common.FlaskHandler):
     return template_data
 
 
-class SamplesJSONHandler(common.FlaskHandler):
+class SamplesJSONHandler(basehandlers.FlaskHandler):
 
   JSONIFY = True
 
@@ -213,7 +214,7 @@ class SamplesJSONHandler(common.FlaskHandler):
     return feature_list
 
 
-class SamplesXMLHandler(common.FlaskHandler):
+class SamplesXMLHandler(basehandlers.FlaskHandler):
 
   def get_template_data(self):
     feature_list = models.Feature.get_shipping_samples() # cached
@@ -226,7 +227,7 @@ class SamplesXMLHandler(common.FlaskHandler):
     except TypeError:
       max_items = settings.RSS_FEED_LIMIT
 
-    return common.render_atom_feed(self.request, 'Samples', feature_list)
+    return utils.render_atom_feed(self.request, 'Samples', feature_list)
 
 
 # Main URL routes.
@@ -243,11 +244,11 @@ routes = [
 
   ('/feature/<int:feature_id>', FeatureDetailHandler),
 
-  ('/', common.Redirector,
+  ('/', basehandlers.Redirector,
    {'location': '/features'}),
-  ('/metrics', common.Redirector,
+  ('/metrics', basehandlers.Redirector,
    {'location': '/metrics/css/popularity'}),
-  ('/metrics/css', common.Redirector,
+  ('/metrics/css', basehandlers.Redirector,
    {'location': '/metrics/css/popularity'}),
 
   ('/features', FeatureListHandler),
@@ -255,15 +256,15 @@ routes = [
   ('/features.xml', FeatureListXMLHandler),
 
   # TODO(jrobbins): These seem like they belong in metrics.py.
-  ('/metrics/css/popularity', common.ConstHandler,
+  ('/metrics/css/popularity', basehandlers.ConstHandler,
    {'template_path': 'metrics/css/popularity.html'}),
-  ('/metrics/css/animated', common.ConstHandler,
+  ('/metrics/css/animated', basehandlers.ConstHandler,
    {'template_path': 'metrics/css/animated.html'}),
   ('/metrics/css/timeline/popularity', CssPopularityHandler),
   ('/metrics/css/timeline/popularity/<int:bucket_id>', CssPopularityHandler),
   ('/metrics/css/timeline/animated', CssAnimatedHandler),
   ('/metrics/css/timeline/animated/<int:bucket_id>', CssAnimatedHandler),
-  ('/metrics/feature/popularity', common.ConstHandler,
+  ('/metrics/feature/popularity', basehandlers.ConstHandler,
    {'template_path': 'metrics/feature/popularity.html'}),
   ('/metrics/feature/timeline/popularity', FeaturePopularityHandler),
   ('/metrics/feature/timeline/popularity/<int:bucket_id>', FeaturePopularityHandler),
@@ -273,4 +274,4 @@ routes = [
   ('/omaha_data', OmahaDataHandler),
 ]
 
-app = common.FlaskApplication(routes, debug=settings.DEBUG)
+app = basehandlers.FlaskApplication(routes, debug=settings.DEBUG)

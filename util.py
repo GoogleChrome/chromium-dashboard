@@ -20,7 +20,7 @@ __author__ = 'ericbidelman@chromium.org (Eric Bidelman)'
 
 import json
 
-import ramcache
+from framework import ramcache
 import requests
 
 def get_omaha_data():

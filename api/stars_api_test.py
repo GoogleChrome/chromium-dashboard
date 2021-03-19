@@ -16,7 +16,7 @@ from __future__ import division
 from __future__ import print_function
 
 import unittest
-from tests import testing_config  # Must be imported before the module under test.
+import testing_config  # Must be imported before the module under test.
 
 import flask
 import mock

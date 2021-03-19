@@ -24,14 +24,15 @@ import logging
 import os
 import yaml
 
-import common
+from framework import basehandlers
+from framework import permissions
 import models
 import settings
 import util
 from schedule import construct_chrome_channels_details
 
 
-class PopulateSubscribersHandler(common.FlaskHandler):
+class PopulateSubscribersHandler(basehandlers.FlaskHandler):
 
   def __populate_subscribers(self):
     """Seeds the database with the team in devrel_team.yaml and adds the team
@@ -54,7 +55,7 @@ class PopulateSubscribersHandler(common.FlaskHandler):
       user.put()
     f.close()
 
-  @common.require_edit_permission
+  @permissions.require_edit_permission
   def get_template_data(self):
     if settings.PROD:
       return 'Handler not allowed in production.'
@@ -63,7 +64,7 @@ class PopulateSubscribersHandler(common.FlaskHandler):
     return self.redirect('/admin/blink')
 
 
-class BlinkHandler(common.FlaskHandler):
+class BlinkHandler(basehandlers.FlaskHandler):
 
   TEMPLATE_PATH = 'admin/blink.html'
 
@@ -88,7 +89,7 @@ class BlinkHandler(common.FlaskHandler):
 
     return True
 
-  @common.require_edit_permission
+  @permissions.require_edit_permission
   def get_template_data(self):
     components = models.BlinkComponent.all().order('name').fetch(None)
     subscribers = models.FeatureOwner.all().order('name').fetch(None)
@@ -110,7 +111,7 @@ class BlinkHandler(common.FlaskHandler):
     return template_data
 
   # Remove user from component subscribers.
-  @common.require_edit_permission
+  @permissions.require_edit_permission
   def put(self):
     params = self.request.get_json(force=True)
     self.__update_subscribers_list(False, user_id=params.get('userId'),
@@ -119,7 +120,7 @@ class BlinkHandler(common.FlaskHandler):
     return {'done': True}
 
   # Add user to component subscribers.
-  @common.require_edit_permission
+  @permissions.require_edit_permission
   def process_post_data(self):
     params = self.request.get_json(force=True)
 
@@ -129,11 +130,11 @@ class BlinkHandler(common.FlaskHandler):
     return params
 
 
-class SubscribersHandler(common.FlaskHandler):
+class SubscribersHandler(basehandlers.FlaskHandler):
 
   TEMPLATE_PATH = 'admin/subscribers.html'
 
-  @common.require_edit_permission
+  @permissions.require_edit_permission
   def get_template_data(self):
     users = models.FeatureOwner.all().order('name').fetch(None)
     feature_list = models.Feature.get_chronological()
@@ -167,7 +168,7 @@ class SubscribersHandler(common.FlaskHandler):
     return template_data
 
 
-app = common.FlaskApplication([
+app = basehandlers.FlaskApplication([
   ('/admin/blink/populate_subscribers', PopulateSubscribersHandler),
   ('/admin/subscribers', SubscribersHandler),
   ('/admin/blink', BlinkHandler),

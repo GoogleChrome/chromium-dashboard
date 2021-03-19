@@ -16,16 +16,16 @@
 from __future__ import division
 from __future__ import print_function
 
-import common
 import settings
 from api import cues_api
 from api import stars_api
+from framework import basehandlers
 
 
 # TODO(jrobbins): Advance this to v1 once we have it fleshed out
 API_BASE = '/api/v0'
 
-app = common.FlaskApplication([
+app = basehandlers.FlaskApplication([
     # ('/features', TODO),
     # ('/features/<int:feature_id>', TODO),
     # ('/features/<int:feature_id>/approvals/<int:field_id>', TODO),
