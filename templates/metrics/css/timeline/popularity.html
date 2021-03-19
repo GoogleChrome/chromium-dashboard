@@ -13,6 +13,14 @@
   {% include "metrics/css/_css_metric_nav.html" %}
 {% endblock %}
 
+{% block horizontalsubnav %}
+<nav class="data-panel">
+  View As:<a href="/metrics/css/timeline/popularity" class="sub-nav-links">Timeline</a> | 
+  <a href="/metrics/css/popularity"  class="sub-nav-links">Stack Rank</a>
+</nav>
+
+{% endblock %}
+
 {% block subheader %}
 <div id="subheader">
   <h2>CSS usage metrics &gt; all properties > timeline</h2>
