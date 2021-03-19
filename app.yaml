@@ -83,19 +83,8 @@ handlers:
   script: server.app
   secure: optional
 
-# TODO(jrobbins): Remove after the next deployment.
-- url: /features/star/.*
-  script: notifier.app
-  secure: always
-
 - url: /features/schedule
   script: schedule.app
-  secure: always
-
-# TODO(jrobbins): Remove after the next deployment.
-- url: /cues.*
-  script: cues.app
-  login: required # non-admin
   secure: always
 
 - url: /api/.*
