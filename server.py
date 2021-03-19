@@ -24,7 +24,7 @@ import logging
 import settings
 from framework import basehandlers
 from framework import utils
-import guideforms
+from pages import guideforms
 import models
 import processes
 from framework import ramcache

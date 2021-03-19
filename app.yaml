@@ -31,7 +31,7 @@ handlers:
 
 # Metrics data handlers --------------------------------------------------------
 - url: /data/.*
-  script: metrics.app
+  script: api.metricsdata.app
   secure: always
 
 # Admin ------------------------------------------------------------------------
@@ -48,12 +48,12 @@ handlers:
   login: admin # Prevents raw access to this handler.
 
 - url: /admin/blink.*
-  script: blink_handler.app
+  script: pages.blink_handler.app
   login: required # non-admin
   secure: always
 
 - url: /admin/subscribers
-  script: blink_handler.app
+  script: pages.blink_handler.app
   login: required # non-admin
   secure: always
 
@@ -63,17 +63,17 @@ handlers:
   secure: always
 
 - url: /guide/.*
-  script: guide.app
+  script: pages.guide.app
   login: required # non-admin
   secure: always
 
 - url: /admin/users/.*
-  script: users.app
+  script: pages.users.app
   login: admin
   secure: always
 
 - url: /settings
-  script: users.app
+  script: pages.users.app
   secure: always
 
 # Main server handlers ---------------------------------------------------------
@@ -84,7 +84,7 @@ handlers:
   secure: optional
 
 - url: /features/schedule
-  script: schedule.app
+  script: pages.schedule.app
   secure: always
 
 - url: /api/.*
