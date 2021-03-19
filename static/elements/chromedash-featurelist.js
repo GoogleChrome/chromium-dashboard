@@ -199,8 +199,8 @@ class ChromedashFeaturelist extends LitElement {
   }
 
   _filterKeyword(regExp, feature) {
-    return (feature.name + '\n' + feature.summary + '\n' + feature.comments)
-      .match(regExp) !== null;
+    return (feature.name + '\n' + feature.summary + '\n' + feature.comments + 
+    '\n' + feature.tags).match(regExp) !== null;
   }
 
   _getKeywordFilter(keyword) {
