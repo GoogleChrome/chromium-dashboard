@@ -26,13 +26,14 @@ import re
 from xml.dom import minidom
 
 # Appengine imports.
-import ramcache
+from framework import ramcache
 import requests
 from google.appengine.api import users
 from google.appengine.ext import db
 
 # File imports.
-import common
+from framework import basehandlers
+from framework import utils
 import models
 import processes
 import settings
@@ -49,7 +50,7 @@ HISTOGRAMS_URL = 'https://chromium.googlesource.com/chromium/src/+/master/' \
 CAPSTONE_BUCKET_ID = -1
 
 
-@common.retry(3, delay=30, backoff=2)
+@utils.retry(3, delay=30, backoff=2)
 def _FetchMetrics(url):
   if settings.PROD or settings.STAGING:
     # follow_redirects=False according to https://cloud.google.com/appengine/docs/python/appidentity/#asserting_identity_to_other_app_engine_apps
@@ -170,7 +171,7 @@ UMA_QUERIES = [
 ]
 
 
-class YesterdayHandler(common.FlaskHandler):
+class YesterdayHandler(basehandlers.FlaskHandler):
   """Loads yesterday's UMA data."""
 
   def get_template_data(self, today=None):
@@ -211,7 +212,7 @@ class YesterdayHandler(common.FlaskHandler):
     return 'Success'
 
 
-class HistogramsHandler(common.FlaskHandler):
+class HistogramsHandler(basehandlers.FlaskHandler):
 
   MODEL_CLASS = {
     'FeatureObserver': models.FeatureObserverHistogram,
@@ -274,7 +275,7 @@ LAUNCH_PARAM = 'launch'
 VIEW_FEATURE_URL = '/feature'
 
 
-class IntentEmailPreviewHandler(common.FlaskHandler):
+class IntentEmailPreviewHandler(basehandlers.FlaskHandler):
   """Show a preview of an intent email, as appropriate to the feature stage."""
 
   TEMPLATE_PATH = 'admin/features/launch.html'
@@ -339,7 +340,7 @@ class IntentEmailPreviewHandler(common.FlaskHandler):
     return 'Intent stage "%s"' % models.INTENT_STAGES[intent_stage]
 
 
-class BaseFeatureHandler(common.FlaskHandler):
+class BaseFeatureHandler(basehandlers.FlaskHandler):
   """Shared form processing for new and edit forms."""
 
   ADD_NEW_URL = '/admin/features/new'
@@ -669,7 +670,7 @@ class EditFeatureHandler(BaseFeatureHandler):
 
 
 # TODO(jrobbins): implement undelete UI.  For now, use cloud console.
-class DeleteFeatureHandler(common.FlaskHandler):
+class DeleteFeatureHandler(basehandlers.FlaskHandler):
 
   def process_post_data(self, feature_id):
     user = users.get_current_user()
@@ -687,14 +688,14 @@ class DeleteFeatureHandler(common.FlaskHandler):
     return 'Success'
 
 
-class BlinkComponentHandler(common.FlaskHandler):
+class BlinkComponentHandler(basehandlers.FlaskHandler):
   """Updates the list of Blink components in the db."""
   def get_template_data(self):
     models.BlinkComponent.update_db()
     return 'Blink components updated'
 
 
-app = common.FlaskApplication([
+app = basehandlers.FlaskApplication([
   ('/cron/metrics', YesterdayHandler),
   ('/cron/histograms', HistogramsHandler),
   ('/cron/update_blink_components', BlinkComponentHandler),

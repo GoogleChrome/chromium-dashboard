@@ -1,5 +1,8 @@
+from __future__ import division
+from __future__ import print_function
+
 # -*- coding: utf-8 -*-
-# Copyright 2021 Google Inc.
+# Copyright 2020 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
 # you may not use this file except in compliance with the License.
@@ -13,40 +16,44 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import division
-from __future__ import print_function
-
 import logging
+import json
+import flask
+
+from google.appengine.ext import db
+from google.appengine.api import users
 
 from framework import basehandlers
 import models
+import settings
+
+
+# TODO(jrobbins): Remove this whole file after next deployment.
 
 # We only accept known cue name strings.
 ALLOWED_CUES = ['progress-checkmarks']
 
 
-class CuesAPI(basehandlers.APIHandler):
-  """Cues are UI tips that pop up to teach users about some functionality
-  when they first encounter it.   Users can dismiss a cue card by clicking
-  an X icon.  We store a list of dismissed cues for each user so that
-  we do not show the same cue again to that user."""
+class DismissCueHandler(basehandlers.FlaskHandler):
+  """Handle JSON API requests to dismiss an on-page help cue card."""
 
-  # Note: there is no do_get yet because we decide to show cues
-  # based on data that is include in the HTML page.
-
-  def do_post(self):
+  def process_post_data(self):
     """Dismisses a cue card for the signed in user."""
-    json_body = self.request.get_json()
+    json_body = flask.request.get_json()
     cue = json_body.get('cue')
     if cue not in ALLOWED_CUES:
       logging.info('Unexpected cue: %r', cue)
       self.abort(400)
 
-    user = self.get_current_user()
+    user = users.get_current_user()
     if not user:
       logging.info('User must be signed in before dismissing cues')
       self.abort(400)
 
     models.UserPref.dismiss_cue(cue)
-    # Callers don't use the JSON response for this API call.
-    return {'message': 'Done'}
+    return {}  # Empty JSON response.
+
+
+app = basehandlers.FlaskApplication([
+  ('/cues/dismiss', DismissCueHandler),
+], debug=settings.DEBUG)

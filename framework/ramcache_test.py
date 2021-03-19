@@ -22,7 +22,7 @@ import unittest
 
 from google.appengine.ext import db
 
-import ramcache
+from framework import ramcache
 
 
 KEY_1 = 'cache_key|1'
@@ -83,14 +83,14 @@ class RAMCacheFunctionTests(unittest.TestCase):
     mock_time.return_value = NOW + 61
     self.assertEquals(None, ramcache.get(KEY_1 + 'multi'))
 
-  @mock.patch('ramcache.SharedInvalidate.invalidate')
+  @mock.patch('framework.ramcache.SharedInvalidate.invalidate')
   def testDelete_NotFound(self, mock_invalidate):
     """Deleting an item that is not in the cache is a no-op."""
     ramcache.delete(KEY_5)
 
     mock_invalidate.assert_not_called()
 
-  @mock.patch('ramcache.SharedInvalidate.invalidate')
+  @mock.patch('framework.ramcache.SharedInvalidate.invalidate')
   def testDelete_Found(self, mock_invalidate):
     """We can delete an item from the cache, causing an invalidation."""
     ramcache.set(KEY_6, 606)
@@ -100,7 +100,7 @@ class RAMCacheFunctionTests(unittest.TestCase):
 
     mock_invalidate.assert_called_once()
 
-  @mock.patch('ramcache.SharedInvalidate.invalidate')
+  @mock.patch('framework.ramcache.SharedInvalidate.invalidate')
   def testFlushAll(self, mock_invalidate):
     """flush_all simply causes an invalidation."""
     ramcache.flush_all()

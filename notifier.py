@@ -25,7 +25,7 @@ import json
 import os
 import re
 
-import ramcache
+from framework import ramcache
 from google.appengine.ext import db
 from google.appengine.api import mail
 import requests
@@ -35,8 +35,8 @@ from google.appengine.ext.webapp.mail_handlers import BounceNotification
 from django.template.loader import render_to_string
 from django.utils.html import conditional_escape as escape
 
-import cloud_tasks_helpers
-import common
+from framework import basehandlers
+from framework import cloud_tasks_helpers
 import settings
 import models
 
@@ -108,7 +108,7 @@ def convert_reasons_to_task(addr, reasons, email_html, subject):
 
 WEBVIEW_RULE_REASON = (
     'This feature has an android milestone, but not a webview milestone')
-WEBVIEW_RULE_ADDRS = ['webview-leads@google.com']
+WEBVIEW_RULE_ADDRS = ['webview-leads-external@google.com']
 
 
 def apply_subscription_rules(feature, changes):
@@ -235,7 +235,7 @@ class FeatureStar(models.DictModel):
     return user_prefs
 
 
-class FeatureChangeHandler(common.FlaskHandler):
+class FeatureChangeHandler(basehandlers.FlaskHandler):
   """This task handles a feature creation or update by making email tasks."""
 
   def process_post_data(self):
@@ -262,7 +262,7 @@ class FeatureChangeHandler(common.FlaskHandler):
     return {'message': 'Done'}
 
 
-class OutboundEmailHandler(common.FlaskHandler):
+class OutboundEmailHandler(basehandlers.FlaskHandler):
   """Task to send a notification email to one recipient."""
 
   def process_post_data(self):
@@ -295,7 +295,7 @@ class OutboundEmailHandler(common.FlaskHandler):
     return {'message': 'Done'}
 
 
-class BouncedEmailHandler(common.FlaskHandler):
+class BouncedEmailHandler(basehandlers.FlaskHandler):
   BAD_WRAP_RE = re.compile('=\r\n')
   BAD_EQ_RE = re.compile('=3D')
 
@@ -334,7 +334,7 @@ class BouncedEmailHandler(common.FlaskHandler):
       message.send()
 
 
-app = common.FlaskApplication([
+app = basehandlers.FlaskApplication([
   ('/tasks/email-subscribers', FeatureChangeHandler),
   ('/tasks/outbound-email', OutboundEmailHandler),
   ('/_ah/bounce', BouncedEmailHandler),

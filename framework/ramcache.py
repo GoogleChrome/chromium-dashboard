@@ -152,9 +152,9 @@ class SharedInvalidateParent(db.Model):
 
 class SharedInvalidate(db.Model):
 
-  PARENT_ENTITY_ID = 123
+  PARENT_ENTITY_ID = 1234
   PARENT_KEY = db.Key.from_path('SharedInvalidateParent', PARENT_ENTITY_ID)
-  SINGLETON_ENTITY_ID = 456
+  SINGLETON_ENTITY_ID = 5678
   SINGLETON_KEY = db.Key.from_path(
       'SharedInvalidateParent', PARENT_ENTITY_ID,
       'SharedInvalidate', SINGLETON_ENTITY_ID)
