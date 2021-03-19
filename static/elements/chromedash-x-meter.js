@@ -42,19 +42,15 @@ class ChromedashXMeter extends LitElement {
     `];
   }
 
-  firstUpdated() {
-    this.valueFormatted = this.value <= 0.000001 ? '<=0.000001%' : this.value + '%';
-    this.addEventListener('click', this.showTimeline);
-  }
-
   showTimeline() {
     window.location.href = this.href;
   }
 
   render() {
     return html`  
-      <div style="width: ${(this.value / this.max * 100)}%">  
-        <span>${this.valueFormatted}</span> 
+      <div @click="${this.showTimeline} style="width: ${(this.value / this.max * 100)}%">  
+        <span>${this.value <= 0.000001 ? '<=0.000001%' : this.value + '%'}
+        </span> 
       </div>  
     `;
   }
