@@ -213,9 +213,7 @@ class ChromedashFeature extends LitElement {
             </span>
             `: nothing}
         </h2>
-        <div class="iconrow
-            ${window.PushNotifier && window.PushNotifier.SUPPORTS_NOTIFICATIONS ?
-              'supports-push-notifications' : nothing}">
+        <div class="iconrow">
           <span class="tooltip category-tooltip"
                 title="Filter by category ${this.feature.category}">
             <a href="#" class="category"
