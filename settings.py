@@ -38,8 +38,8 @@ UNIT_TEST_MODE = os.environ['SERVER_SOFTWARE'].startswith('test')
 
 #setting GOOGLE_CLOUD_PROJECT manually in dev mode
 if DEV_MODE or UNIT_TEST_MODE:
-  APP_ID = os.environ.get('GOOGLE_CLOUD_PROJECT', 'dev')  
-else: 
+  APP_ID = os.environ.get('GOOGLE_CLOUD_PROJECT', 'dev')
+else:
   APP_ID = os.environ['GOOGLE_CLOUD_PROJECT']
 
 SITE_URL = 'http://%s.appspot.com/' % APP_ID
@@ -81,5 +81,3 @@ if DEBUG:
   TEMPLATE_CACHE_TIME = 0
 else:
   TEMPLATE_CACHE_TIME = 600 # seconds
-
-SEND_PUSH_NOTIFICATIONS = PROD # Flag to turn off sending push notifications for all users.
