@@ -23,7 +23,7 @@ import flask
 import werkzeug
 
 import models
-import guide
+from pages import guide
 
 
 class FeatureNewTest(unittest.TestCase):

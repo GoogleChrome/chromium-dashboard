@@ -15,16 +15,16 @@ from __future__ import print_function
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import testing_config  # Must be imported first
 import mock
 import unittest
-import testing_config  # Must be imported before the module under test.
 
-import schedule
+from pages import schedule
 
 
 class ScheduleFunctionsTest(unittest.TestCase):
 
-  @mock.patch('schedule.fetch_chrome_release_info')
+  @mock.patch('pages.schedule.fetch_chrome_release_info')
   @mock.patch('util.get_omaha_data')
   def test_construct_chrome_channels_details(
       self, mock_get_omaha_data, mock_fetch_chrome_release_info):

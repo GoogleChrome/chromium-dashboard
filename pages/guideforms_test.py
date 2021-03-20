@@ -15,12 +15,12 @@ from __future__ import print_function
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import testing_config  # Must be imported first
 import unittest
-import testing_config  # Must be imported before the module under test.
 
 import mock
 
-import guideforms
+from pages import guideforms
 import models
 
 

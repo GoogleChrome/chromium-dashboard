@@ -32,7 +32,7 @@ from google.appengine.ext import db
 
 from framework import basehandlers
 from framework import utils
-import guideforms
+from pages import guideforms
 import models
 import processes
 import settings
