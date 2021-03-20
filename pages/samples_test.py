@@ -93,4 +93,4 @@ class SamplesXMLHandlerTest(TestWithFeature):
 
     # feature_1 is not in the list because it does not have a sample.
     self.assertNotIn('detailed sum', actual_text)
-    self.assertNotIn(str(self.feature_id), actual_text)
+    self.assertNotIn('feature/' + str(self.feature_id), actual_text)
