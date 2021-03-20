@@ -65,69 +65,6 @@ class FeatureDetailHandler(basehandlers.FlaskHandler):
     return template_data
 
 
-class FeatureListXMLHandler(basehandlers.FlaskHandler):
-
-  def get_template_data(self):
-    status = self.request.args.get('status', None)
-    if status:
-      feature_list = models.Feature.get_all_with_statuses(status.split(','))
-    else:
-      filterby = None
-      category = self.request.args.get('category', None)
-
-      # Support setting larger-than-default Atom feed sizes so that web
-      # crawlers can use this as a full site feed.
-      try:
-        max_items = int(self.request.args.get(
-            'max-items', settings.RSS_FEED_LIMIT))
-      except TypeError:
-        max_items = settings.RSS_FEED_LIMIT
-
-      if category is not None:
-        for k,v in models.FEATURE_CATEGORIES.iteritems():
-          normalized = normalized_name(v)
-          if category == normalized:
-            filterby = ('category =', k)
-            break
-
-      feature_list = models.Feature.get_all( # cached
-          limit=max_items,
-          filterby=filterby,
-          order='-updated')
-
-    return utils.render_atom_feed(self.request, 'Features', feature_list)
-
-
-class FeatureListHandler(basehandlers.FlaskHandler):
-
-  TEMPLATE_PATH = 'features.html'
-
-  def get_template_data(self, feature_id=None):
-    # Note: feature_id is not used here but JS gets it from the URL.
-
-    # This template data is all for filtering.  The actual features
-    # are sent by an XHR request for /features.json.
-
-    template_data = {}
-    template_data['categories'] = [
-      (v, normalized_name(v)) for k,v in
-      models.FEATURE_CATEGORIES.iteritems()]
-    template_data['IMPLEMENTATION_STATUSES'] = json.dumps([
-      {'key': k, 'val': v} for k,v in
-      models.IMPLEMENTATION_STATUS.iteritems()])
-    template_data['VENDOR_VIEWS'] = json.dumps([
-      {'key': k, 'val': v} for k,v in
-      models.VENDOR_VIEWS.iteritems()])
-    template_data['WEB_DEV_VIEWS'] = json.dumps([
-      {'key': k, 'val': v} for k,v in
-      models.WEB_DEV_VIEWS.iteritems()])
-    template_data['STANDARDS_VALS'] = json.dumps([
-      {'key': k, 'val': v} for k,v in
-      models.STANDARDIZATION.iteritems()])
-
-    return template_data
-
-
 
 class CssPopularityHandler(basehandlers.FlaskHandler):
 
@@ -172,18 +109,6 @@ class OmahaDataHandler(basehandlers.FlaskHandler):
   def get_template_data(self):
     omaha_data = util.get_omaha_data()
     return omaha_data
-
-
-class FeaturesAPIHandler(basehandlers.FlaskHandler):
-
-  HTTP_CACHE_TYPE = 'private'
-  JSONIFY = True
-
-  def get_template_data(self, version=2):
-    user = users.get_current_user()
-    feature_list = models.Feature.get_chronological(
-        version=version, show_unlisted=self.user_can_edit(user))
-    return feature_list
 
 
 class SamplesHandler(basehandlers.FlaskHandler):
@@ -232,28 +157,15 @@ class SamplesXMLHandler(basehandlers.FlaskHandler):
 
 # Main URL routes.
 routes = [
-  # Note: The only requests being made now hit /features.json and
-  # /features_v2.json, but both of those cause version == 2.
-  # There was logic to accept another version value, but it it was not used.
-  (r'/features.json', FeaturesAPIHandler),
-  (r'/features_v2.json', FeaturesAPIHandler),
 
   ('/samples', SamplesHandler),
   ('/samples.json', SamplesJSONHandler),
   ('/samples.xml', SamplesXMLHandler),
 
-  ('/feature/<int:feature_id>', FeatureDetailHandler),
-
-  ('/', basehandlers.Redirector,
-   {'location': '/features'}),
   ('/metrics', basehandlers.Redirector,
    {'location': '/metrics/css/popularity'}),
   ('/metrics/css', basehandlers.Redirector,
    {'location': '/metrics/css/popularity'}),
-
-  ('/features', FeatureListHandler),
-  ('/features/<int:feature_id>', FeatureListHandler),
-  ('/features.xml', FeatureListXMLHandler),
 
   # TODO(jrobbins): These seem like they belong in metrics.py.
   ('/metrics/css/popularity', basehandlers.ConstHandler,
