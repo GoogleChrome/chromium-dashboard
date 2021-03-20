@@ -40,7 +40,16 @@ class MockHandler(object):
     self.redirected_to = new_path
 
 
-class CommonFunctionTests(unittest.TestCase):
+class UtilsFunctionTests(unittest.TestCase):
+
+  def test_normalized_name(self):
+    self.assertEqual('', utils.normalized_name(''))
+    self.assertEqual('abc', utils.normalized_name('abc'))
+    self.assertEqual('abc', utils.normalized_name('Abc'))
+    self.assertEqual('abc', utils.normalized_name('ABC'))
+    self.assertEqual('abc', utils.normalized_name('A BC'))
+    self.assertEqual('abc', utils.normalized_name('A B/C'))
+    self.assertEqual('abc', utils.normalized_name(' /A B/C /'))
 
   def test_format_feature_url(self):
     self.assertEqual(
