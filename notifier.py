@@ -25,7 +25,7 @@ import json
 import os
 import re
 
-import ramcache
+from framework import ramcache
 from google.appengine.ext import db
 from google.appengine.api import mail
 import requests
@@ -35,8 +35,8 @@ from google.appengine.ext.webapp.mail_handlers import BounceNotification
 from django.template.loader import render_to_string
 from django.utils.html import conditional_escape as escape
 
-import cloud_tasks_helpers
-import common
+from framework import basehandlers
+from framework import cloud_tasks_helpers
 import settings
 import models
 
@@ -108,7 +108,7 @@ def convert_reasons_to_task(addr, reasons, email_html, subject):
 
 WEBVIEW_RULE_REASON = (
     'This feature has an android milestone, but not a webview milestone')
-WEBVIEW_RULE_ADDRS = ['webview-leads@google.com']
+WEBVIEW_RULE_ADDRS = ['webview-leads-external@google.com']
 
 
 def apply_subscription_rules(feature, changes):
@@ -235,7 +235,7 @@ class FeatureStar(models.DictModel):
     return user_prefs
 
 
-class FeatureChangeHandler(common.FlaskHandler):
+class FeatureChangeHandler(basehandlers.FlaskHandler):
   """This task handles a feature creation or update by making email tasks."""
 
   def process_post_data(self):
@@ -262,7 +262,7 @@ class FeatureChangeHandler(common.FlaskHandler):
     return {'message': 'Done'}
 
 
-class OutboundEmailHandler(common.FlaskHandler):
+class OutboundEmailHandler(basehandlers.FlaskHandler):
   """Task to send a notification email to one recipient."""
 
   def process_post_data(self):
@@ -295,56 +295,7 @@ class OutboundEmailHandler(common.FlaskHandler):
     return {'message': 'Done'}
 
 
-# TODO(jrobbins): Remove this class after next deployment.
-class SetStarHandler(common.FlaskHandler):
-  """Handle JSON API requests to set/clear a star."""
-
-  def process_post_data(self):
-    """Stars or unstars a feature for the signed in user."""
-    json_body = self.request.get_json(force=True)
-    feature_id = json_body.get('featureId')
-    starred = json_body.get('starred', True)
-
-    if type(feature_id) != int:
-      logging.info('Invalid feature_id: %r', feature_id)
-      self.abort(400)
-
-    feature = models.Feature.get_feature(feature_id)
-    if not feature:
-      logging.info('feature not found: %r', feature_id)
-      self.abort(404)
-
-    user = users.get_current_user()
-    if not user:
-      logging.info('User must be signed in before starring')
-      self.abort(400)
-
-    FeatureStar.set_star(user.email(), feature_id, starred)
-    return {'message': 'Done'}
-
-
-# TODO(jrobbins): Remove this class after next deployment.
-class GetUserStarsHandler(common.FlaskHandler):
-  """Handle JSON API requests list all stars for current user."""
-
-  def process_post_data(self):
-    """Returns a list of starred feature_ids for the signed in user."""
-    # Note: the post body is not used.
-
-    user = users.get_current_user()
-    if user:
-      feature_ids = FeatureStar.get_user_stars(user.email())
-    else:
-      feature_ids = []  # Anon users cannot star features.
-
-    data = {
-        'featureIds': feature_ids,
-        }
-    return data
-
-
-
-class BouncedEmailHandler(common.FlaskHandler):
+class BouncedEmailHandler(basehandlers.FlaskHandler):
   BAD_WRAP_RE = re.compile('=\r\n')
   BAD_EQ_RE = re.compile('=3D')
 
@@ -383,10 +334,8 @@ class BouncedEmailHandler(common.FlaskHandler):
       message.send()
 
 
-app = common.FlaskApplication([
+app = basehandlers.FlaskApplication([
   ('/tasks/email-subscribers', FeatureChangeHandler),
   ('/tasks/outbound-email', OutboundEmailHandler),
-  ('/features/star/set', SetStarHandler),
-  ('/features/star/list', GetUserStarsHandler),
   ('/_ah/bounce', BouncedEmailHandler),
 ], debug=settings.DEBUG)

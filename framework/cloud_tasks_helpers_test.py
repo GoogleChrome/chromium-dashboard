@@ -21,7 +21,7 @@ import testing_config  # Must be imported before the module under test.
 
 import requests
 
-import cloud_tasks_helpers
+from framework import cloud_tasks_helpers
 # Note that testing_config sets cloud_tasks_helpers._client to a fake.
 
 
@@ -49,7 +49,7 @@ class LocalCloudTasksClientTest(unittest.TestCase):
 
     self.assertIsNone(actual)
     mock_fetch.assert_called_once_with(
-      'POST', 
+      'POST',
         'http://localhost:8080/handler',
         data='{"a": 1}',
         allow_redirects=False,

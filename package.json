@@ -10,7 +10,7 @@
     "deps": "pip install -t lib -r requirements.txt --upgrade",
     "travis-deps": "pip install -t lib -r requirements.travis.txt --upgrade",
     "dev-deps": "pip install -r requirements.dev.txt --upgrade",
-    "test": "python -m unittest discover -p *_test.py -s tests -t . -b",
+    "test": "python -m unittest discover -p *_test.py  -b",
     "coverage": "python -m coverage erase && python -m coverage run -m unittest discover -p *_test.py -s tests -b && python -m coverage html",
     "lint": "gulp lint-fix && lit-analyzer \"static/elements/chromedash-!(featurelist)*.js\"",
     "build": "gulp",

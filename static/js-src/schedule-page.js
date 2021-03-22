@@ -3,9 +3,9 @@ const url = location.hostname == 'localhost' ?
   'https://www.chromestatus.com/features.json' : '/features.json';
 const featuresPromise = fetch(url).then((res) => res.json());
 
-document.querySelector('.hide-blink-checkbox').addEventListener('change', e => {
+document.querySelector('.show-blink-checkbox').addEventListener('change', e => {
   e.stopPropagation();
-  document.querySelector('chromedash-schedule').hideBlink = e.target.checked;
+  document.querySelector('chromedash-schedule').showBlink = e.target.checked;
 });
 
 const header = document.querySelector('app-header-layout app-header');

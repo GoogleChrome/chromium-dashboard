@@ -24,9 +24,9 @@ import logging
 
 from google.appengine.api import users
 
-import common
+from framework import basehandlers
 import models
-import ramcache
+from framework import ramcache
 import settings
 
 CACHE_AGE = 86400 # 24hrs
@@ -65,7 +65,7 @@ def _filter_metric_data(data, formatted=False):
 
 
 
-class TimelineHandler(common.FlaskHandler):
+class TimelineHandler(basehandlers.FlaskHandler):
 
   HTTP_CACHE_TYPE = 'private'
   JSONIFY = True
@@ -132,7 +132,7 @@ class FeatureObserverTimelineHandler(TimelineHandler):
     return super(FeatureObserverTimelineHandler, self).get_template_data()
 
 
-class FeatureHandler(common.FlaskHandler):
+class FeatureHandler(basehandlers.FlaskHandler):
 
   HTTP_CACHE_TYPE = 'private'
   JSONIFY = True
@@ -225,7 +225,7 @@ class FeatureObserverPopularityHandler(FeatureHandler):
 # TODO(jrobbins): Is this ever called?  I don't see what calls it.
 # And, I don't see recent requests for it in the server logs.
 # The CL that added it only added this class, no caller.
-class FeatureBucketsHandler(common.FlaskHandler):
+class FeatureBucketsHandler(basehandlers.FlaskHandler):
   JSONIFY = True
 
   def get_template_data(self, prop_type):
@@ -239,7 +239,7 @@ class FeatureBucketsHandler(common.FlaskHandler):
     return properties
 
 
-app = common.FlaskApplication([
+app = basehandlers.FlaskApplication([
   ('/data/timeline/cssanimated', AnimatedTimelineHandler),
   ('/data/timeline/csspopularity', PopularityTimelineHandler),
   ('/data/timeline/featurepopularity', FeatureObserverTimelineHandler),

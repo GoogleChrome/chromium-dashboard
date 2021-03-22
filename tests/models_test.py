@@ -19,7 +19,7 @@ import unittest
 import testing_config  # Must be imported before the module under test.
 
 import mock
-import ramcache
+from framework import ramcache
 from google.appengine.api import users
 
 import models

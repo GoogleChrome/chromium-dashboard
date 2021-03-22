@@ -215,6 +215,11 @@ footer {
   line-height: 1.4;
 }
 
+.sub-nav-links {
+  padding-left: var(--content-padding-quarter); 
+  padding-right: var(--content-padding-quarter);
+}
+
 #subheader, .subheader {
   display: flex;
   align-items: center;
@@ -425,6 +430,11 @@ footer {
     margin: 0;
   }
 
+}
+
+//Horizontal Properties Row should be visible only in narrow view ports
+@media only screen and (min-width: 700px){
+  #horizontal-sub-nav{display: none}
 }
 
 // When banner doesn't block navigation buttons.

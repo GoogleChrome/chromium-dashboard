@@ -22,7 +22,7 @@ import flask
 import werkzeug
 
 import models
-import ramcache
+from framework import ramcache
 import server
 
 

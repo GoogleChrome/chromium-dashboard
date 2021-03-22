@@ -30,12 +30,12 @@ from google.appengine.ext import db
 
 import flask
 
-import common
+from framework import basehandlers
 import models
 import settings
 
 
-class UserListHandler(common.FlaskHandler):
+class UserListHandler(basehandlers.FlaskHandler):
 
   TEMPLATE_PATH = 'admin/users/new.html'
 
@@ -51,7 +51,7 @@ class UserListHandler(common.FlaskHandler):
     return template_data
 
 
-class CreateUserAPIHandler(common.FlaskHandler):
+class CreateUserAPIHandler(basehandlers.FlaskHandler):
 
   def process_post_data(self):
     email = flask.request.form['email']
@@ -71,7 +71,7 @@ class CreateUserAPIHandler(common.FlaskHandler):
     return response_json
 
 
-class DeleteUserAPIHandler(common.FlaskHandler):
+class DeleteUserAPIHandler(basehandlers.FlaskHandler):
 
   def process_post_data(self, user_id=None):
     if user_id:
@@ -85,7 +85,7 @@ class DeleteUserAPIHandler(common.FlaskHandler):
         found_user.delete()
 
 
-class SettingsHandler(common.FlaskHandler):
+class SettingsHandler(basehandlers.FlaskHandler):
 
   TEMPLATE_PATH = 'settings.html'
 
@@ -113,7 +113,7 @@ class SettingsHandler(common.FlaskHandler):
     return flask.redirect(flask.request.path)
 
 
-app = common.FlaskApplication([
+app = basehandlers.FlaskApplication([
   ('/settings', SettingsHandler),
   ('/admin/users/create', CreateUserAPIHandler),
   ('/admin/users/delete/<int:user_id>', DeleteUserAPIHandler),

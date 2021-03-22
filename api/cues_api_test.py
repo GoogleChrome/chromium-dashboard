@@ -22,25 +22,19 @@ import flask
 import mock
 import werkzeug.exceptions  # Flask HTTP stuff.
 
-from google.appengine.ext import db
-from google.appengine.api import mail
-from google.appengine.api import users
-
-import cues
+from api import cues_api
+from api import register
 import models
-import settings
 
 
-# TODO(jrobbins): Remove this whole file after next deployment.
-
-class DismissCueHandlerTest(unittest.TestCase):
+class CuesAPITest(unittest.TestCase):
 
   def setUp(self):
     self.user_pref_1 = models.UserPref(
         email='one@example.com',
         notify_as_starrer=False)
     self.user_pref_1.put()
-    self.handler = cues.DismissCueHandler()
+    self.handler = cues_api.CuesAPI()
 
   def tearDown(self):
     self.user_pref_1.delete()
@@ -49,10 +43,10 @@ class DismissCueHandlerTest(unittest.TestCase):
     """User wants to dismiss a valid cue card ID."""
     testing_config.sign_in('one@example.com', 123567890)
 
-    with cues.app.test_request_context(
+    with register.app.test_request_context(
         '/cues/dismiss', json={"cue": "progress-checkmarks"}):
-      actual_json, actual_headers = self.handler.post()
-    self.assertEqual({}, actual_json)
+      actual_json = self.handler.do_post()
+    self.assertEqual({'message': 'Done'}, actual_json)
 
     revised_user_pref = models.UserPref.get_signed_in_user_pref()
     self.assertEqual(['progress-checkmarks'], revised_user_pref.dismissed_cues)
@@ -61,10 +55,10 @@ class DismissCueHandlerTest(unittest.TestCase):
     """User wants to dismiss an invalid cue card ID."""
     testing_config.sign_in('one@example.com', 123567890)
 
-    with cues.app.test_request_context(
+    with register.app.test_request_context(
         '/cues/dismiss', json={"cue": "xyz"}):
       with self.assertRaises(werkzeug.exceptions.BadRequest):
-        self.handler.post()
+        self.handler.do_post()
 
     # The invalid string should not be added.
     revised_user_pref = models.UserPref.get_signed_in_user_pref()
