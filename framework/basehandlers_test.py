@@ -91,11 +91,13 @@ class ConstHandlerTests(unittest.TestCase):
     self.assertEqual(200, actual_status)
     self.assertIn('Access-Control-Allow-Origin', actual_headers)
 
-  def test_bad_template_path(self):
+  @mock.patch('logging.error')
+  def test_bad_template_path(self, mock_err):
     """We can run a template that requires no handler logic."""
     with test_app.test_request_context('/messed_up_template'):
       with self.assertRaises(werkzeug.exceptions.InternalServerError):
         test_app.dispatch_request()
+    self.assertEqual(1, len(mock_err.mock_calls))
 
   def test_json(self):
     """We can return constant JSON."""
