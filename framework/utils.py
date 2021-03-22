@@ -29,6 +29,10 @@ import settings
 from django.utils import feedgenerator
 
 
+def normalized_name(val):
+  return val.lower().replace(' ', '').replace('/', '')
+
+
 def format_feature_url(feature_id):
   """Return the feature detail page URL for the specified feature."""
   return '/feature/%d' % feature_id
