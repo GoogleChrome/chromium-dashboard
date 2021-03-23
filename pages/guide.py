@@ -199,7 +199,7 @@ class ProcessOverview(basehandlers.FlaskHandler):
     # Provide new or populated form to template.
     template_data.update({
         'feature': f.format_for_template(),
-        'feature_id': f.key().id,
+        'feature_id': f.key().id(),
         'feature_json': json.dumps(f.format_for_template()),
         'progress_so_far': json.dumps(progress_so_far),
     })
@@ -284,7 +284,7 @@ class FeatureEditStage(basehandlers.FlaskHandler):
     # Provide new or populated form to template.
     template_data.update({
         'feature': f,
-        'feature_id': f.key().id,
+        'feature_id': f.key().id(),
         'feature_form': detail_form,
         'already_on_this_stage': stage_id == f.intent_stage,
         'already_on_this_impl_status':
@@ -552,7 +552,7 @@ class FeatureEditAllFields(FeatureEditStage):
         for section_name, form_class in flat_form_section_list]
     template_data = {
         'feature': f,
-        'feature_id': f.key().id,
+        'feature_id': f.key().id(),
         'flat_forms': flat_forms,
     }
     return template_data
@@ -561,7 +561,6 @@ class FeatureEditAllFields(FeatureEditStage):
 app = basehandlers.FlaskApplication([
   ('/guide/new', FeatureNew),
   ('/guide/edit/<int:feature_id>', ProcessOverview),
-  # TODO(jrobbins): ('/guide/delete/<int:feature_id>', FeatureDelete),
   ('/guide/stage/<int:feature_id>/<int:stage_id>', FeatureEditStage),
   ('/guide/editall/<int:feature_id>', FeatureEditAllFields),
 ], debug=settings.DEBUG)
