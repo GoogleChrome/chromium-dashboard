@@ -29,7 +29,7 @@ from google.appengine.api import users
 from framework import basehandlers
 import models
 import settings
-import util
+from internals import fetchchannels
 
 SCHEDULE_CACHE_TIME = 60 * 60  # 1 hour
 
@@ -67,7 +67,7 @@ def fetch_chrome_release_info(version):
   return data
 
 def construct_chrome_channels_details():
-  omaha_data = util.get_omaha_data()
+  omaha_data = fetchchannels.get_omaha_data()
   channels = {}
   win_versions = omaha_data[0]['versions']
 

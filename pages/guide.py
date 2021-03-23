@@ -34,7 +34,7 @@ from framework import basehandlers
 from framework import utils
 from pages import guideforms
 import models
-import processes
+from internals import processes
 import settings
 
 

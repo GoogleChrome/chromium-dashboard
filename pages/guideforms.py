@@ -22,7 +22,7 @@ from django import forms
 from google.appengine.api import users
 
 import models
-import processes
+from internals import processes
 
 SHIPPED_HELP_TXT = (
     'First milestone to ship with this status. Applies to: Enabled by '

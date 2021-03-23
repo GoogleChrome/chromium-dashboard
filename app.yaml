@@ -36,15 +36,15 @@ handlers:
 
 # Admin ------------------------------------------------------------------------
 - url: /cron/.*
-  script: admin.app
+  script: internals.fetchmetrics.app
   # Any cron job must be harmless if it is called too often or with bad args
 
 - url: /tasks/.*
-  script: notifier.app
+  script: internals.notifier.app
   # Header checks prevent raw access to this handler.  Tasks have headers.
 
 - url: /_ah/bounce
-  script: notifier.app
+  script: internals.notifier.app
   login: admin # Prevents raw access to this handler.
 
 - url: /admin/blink.*
@@ -58,7 +58,7 @@ handlers:
   secure: always
 
 - url: /admin/features/.*
-  script: admin.app
+  script: pages.intentpreview.app
   login: required # non-admin
   secure: always
 

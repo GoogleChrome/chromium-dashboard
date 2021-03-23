@@ -28,7 +28,6 @@ from framework import basehandlers
 from framework import permissions
 import models
 import settings
-import util
 from schedule import construct_chrome_channels_details
 
 
