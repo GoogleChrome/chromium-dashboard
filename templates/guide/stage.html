@@ -25,7 +25,7 @@
                 {% if impl_status_form %}
                    {{ impl_status_form.fields.keys | join:',' }}
                  {% endif %}" >
-  
+
   <section class="stage_form">
     <table>
       {{ feature_form }}
@@ -43,7 +43,7 @@
               <br>
               <span class="helptext">
                 Check this box to move this feature to this
-                phase in the process. Leave it unchecked if you are adding
+                stage in the process. Leave it unchecked if you are adding
                 draft information or revising a previous stage.
               </span>
             </label>
@@ -55,7 +55,7 @@
 
 
   {% if impl_status_name or impl_status_form %}
-    <h3>Implementation in Chromium</h3>  
+    <h3>Implementation in Chromium</h3>
     <section class="stage_form">
       <table>
         {% if impl_status_name %}
@@ -96,7 +96,7 @@
     <button id="cancel-button" data-id="{{ feature_id }}"
             type="reset">Cancel</button>
   </div>
-    
+
 </form>
 
 {% endblock %}

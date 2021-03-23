@@ -77,24 +77,32 @@ handlers:
   secure: always
 
 # Main server handlers ---------------------------------------------------------
-# features.xml needs to support HTTP as well as HTTPS, as some RSS backends don't support SNI certs.
-# Same issue as what's described at https://github.com/Polymer/blog/issues/7
-- url: /(features|samples).xml
-  script: server.app
-  secure: optional
+- url: /
+  script: pages.featurelist.app
 
 - url: /features/schedule
   script: pages.schedule.app
   secure: always
 
+- url: /features.*
+  script: pages.featurelist.app
+
+- url: /feature/.*
+  script: pages.featuredetail.app
+
+- url: /samples.*
+  script: pages.samples.app
+
+- url: /metrics.*
+  script: pages.metrics.app
+
+- url: /omaha_data
+  script: pages.metrics.app
+
 - url: /api/.*
   script: api.register.app
   secure: always
 
-# Everything else
-- url: /.*
-  script: server.app
-  secure: always
 
 includes:
 - skip_files.yaml

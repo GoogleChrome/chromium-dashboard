@@ -81,7 +81,7 @@ ALL_FIELDS = {
         choices=sorted(models.FEATURE_TYPES.items())),
 
     'intent_stage': forms.ChoiceField(
-        required=False, label='Feature stage',
+        required=False, label='Process stage',
         help_text='Select the appropriate process stage.',
         initial=models.INTENT_IMPLEMENT,
         choices=models.INTENT_STAGES.items()),

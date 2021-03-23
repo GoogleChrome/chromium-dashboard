@@ -40,15 +40,27 @@ class MockHandler(object):
     self.redirected_to = new_path
 
 
-class CommonFunctionTests(unittest.TestCase):
+class UtilsFunctionTests(unittest.TestCase):
+
+  def test_normalized_name(self):
+    self.assertEqual('', utils.normalized_name(''))
+    self.assertEqual('abc', utils.normalized_name('abc'))
+    self.assertEqual('abc', utils.normalized_name('Abc'))
+    self.assertEqual('abc', utils.normalized_name('ABC'))
+    self.assertEqual('abc', utils.normalized_name('A BC'))
+    self.assertEqual('abc', utils.normalized_name('A B/C'))
+    self.assertEqual('abc', utils.normalized_name(' /A B/C /'))
 
   def test_format_feature_url(self):
     self.assertEqual(
         '/feature/123',
         utils.format_feature_url(123))
 
+  @mock.patch('logging.error')
+  @mock.patch('logging.warning')
   @mock.patch('time.sleep')  # Run test full speed.
-  def testRetryDecorator_ExceedFailures(self, mock_sleep):
+  def testRetryDecorator_ExceedFailures(
+      self, mock_sleep, mock_warn, mock_err):
     class Tracker(object):
       func_called = 0
     tracker = Tracker()
@@ -63,9 +75,12 @@ class CommonFunctionTests(unittest.TestCase):
       testFunc(tracker)
     self.assertEquals(3, tracker.func_called)
     self.assertEqual(2, len(mock_sleep.mock_calls))
+    self.assertEqual(2, len(mock_warn.mock_calls))
+    self.assertEqual(1, len(mock_err.mock_calls))
 
+  @mock.patch('logging.warning')
   @mock.patch('time.sleep')  # Run test full speed.
-  def testRetryDecorator_EventuallySucceed(self, mock_sleep):
+  def testRetryDecorator_EventuallySucceed(self, mock_sleep, mock_warn):
     class Tracker(object):
       func_called = 0
     tracker = Tracker()
@@ -80,6 +95,7 @@ class CommonFunctionTests(unittest.TestCase):
     testFunc(tracker)
     self.assertEquals(2, tracker.func_called)
     self.assertEqual(1, len(mock_sleep.mock_calls))
+    self.assertEqual(1, len(mock_warn.mock_calls))
 
   def test_strip_trailing_slash(self):
     handlerInstance = MockHandler('/request/path')

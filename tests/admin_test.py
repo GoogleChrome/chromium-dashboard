@@ -50,7 +50,7 @@ class FetchMetricsTest(unittest.TestCase):
     actual = admin._FetchMetrics('a url')
 
     self.assertEqual('mock response', actual)
-    mock_fetch.assert_called_once_with('GET', 
+    mock_fetch.assert_called_once_with('GET',
         'a url', timeout=120, allow_redirects=False)
 
   @mock.patch('requests.request')
@@ -294,8 +294,9 @@ class BaseFeatureHandlerTest(unittest.TestCase):
     """Trying to edit a feature that does not exist redirects."""
     testing_config.sign_in('user1@google.com', 123567890)
     bad_feature_id = self.feature_1.key().id() + 1
+    params = { "intent_stage": "1" }
     path = '/admin/features/edit/%d' % bad_feature_id
-    with admin.app.test_request_context(path):
+    with admin.app.test_request_context(path, data=params):
       actual_response = self.handler.process_post_data(feature_id=bad_feature_id)
     self.assertEqual('302 FOUND', actual_response.status)
 
@@ -307,6 +308,7 @@ class BaseFeatureHandlerTest(unittest.TestCase):
       "category": "1",
       "name": "name",
       "summary": "sum",
+      "intent_stage": "1",
       "impl_status_chrome": "1",
       "visibility": "1",
       "ff_views": "1",
