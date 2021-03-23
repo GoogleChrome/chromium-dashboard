@@ -22,6 +22,22 @@ import flask
 from google.appengine.api import users
 
 
+def can_admin_site():
+  """Return true if the user is a site admin."""
+  return users.is_current_user_admin()
+
+
+def require_admin_site(handler):
+  """Handler decorator to require the user have edit permission."""
+  def check_login(self, *args, **kwargs):
+    if not can_admin_site():
+      flask.abort(403)
+      return
+
+    return handler(self, *args, **kwargs) # Call the handler method
+  return check_login
+
+
 def require_edit_permission(handler):
   """Handler decorator to require the user have edit permission."""
   def check_login(self, *args, **kwargs):

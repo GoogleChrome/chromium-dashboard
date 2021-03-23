@@ -31,6 +31,21 @@ SHIPPED_HELP_TXT = (
     'status to In development. If the flag is for an origin trial set status '
     'to Origin trial.')
 
+SHIPPED_WEBVIEW_HELP_TXT = ('First milestone to ship with this status. '
+                            'Applies to Enabled by default, Browser '
+                            'Intervention, and Deprecated.\n\n NOTE: for '
+                            'statuses In developer trial and Origin trial this '
+                            'MUST be blank.')
+
+SUMMARY_PLACEHOLDER_TXT = (
+  'NOTE: This text describes this feature in the eventual beta release post '
+  'as well as possibly in other external documents.\n\n'
+  'Begin with one line explaining what the feature does. Add one or two '
+  'lines explaining how this feature helps developers. Avoid language such '
+  'as "a new feature". They all are or have been new features.\n\n'
+  'Follow the example link below for more guidance.')
+
+
 # We define all form fields here so that they can be include in one or more
 # stage-specific fields without repeating the details and help text.
 ALL_FIELDS = {
@@ -53,7 +68,8 @@ ALL_FIELDS = {
     'summary': forms.CharField(
         required=True,
         widget=forms.Textarea(
-            attrs={'cols': 50, 'maxlength': 500, 'placeholder': models.FeatureForm.SUMMARY_PLACEHOLDER_TXT}),
+            attrs={'cols': 50, 'maxlength': 500,
+                   'placeholder': SUMMARY_PLACEHOLDER_TXT}),
         help_text=
         ('<a target="_blank" href="'
          'https://github.com/GoogleChrome/chromium-dashboard/wiki/'
@@ -564,7 +580,7 @@ ALL_FIELDS = {
     'shipped_webview_milestone': forms.IntegerField(
         required=False, label='Android Webview',
         widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'}),
-        help_text=SHIPPED_HELP_TXT),
+        help_text=SHIPPED_WEBVIEW_HELP_TXT),
 
     'flag_name': forms.CharField(
         label='Flag name', required=False,

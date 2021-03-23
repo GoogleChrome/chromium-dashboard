@@ -114,12 +114,13 @@ class Blank(object):
 def sign_out():
   """Set env variables to represent a signed out user."""
   ourTestbed.setup_env(
-      user_email='', user_id='', overwrite=True)
+      user_email='', user_id='', user_is_admin='0', overwrite=True)
 
 
-def sign_in(user_email, user_id):
+def sign_in(user_email, user_id, is_admin=False):
   """Set env variables to represent a signed out user."""
   ourTestbed.setup_env(
       user_email=user_email,
       user_id=str(user_id),
+      user_is_admin='1' if is_admin else '0',
       overwrite=True)

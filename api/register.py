@@ -18,6 +18,7 @@ from __future__ import print_function
 
 import settings
 from api import cues_api
+from api import features_api
 from api import stars_api
 from framework import basehandlers
 
@@ -26,8 +27,8 @@ from framework import basehandlers
 API_BASE = '/api/v0'
 
 app = basehandlers.FlaskApplication([
-    # ('/features', TODO),
-    # ('/features/<int:feature_id>', TODO),
+    ('/features', features_api.FeaturesAPI),
+    ('/features/<int:feature_id>', features_api.FeaturesAPI),
     # ('/features/<int:feature_id>/approvals/<int:field_id>', TODO),
     # ('/features/<int:feature_id>/approvals/<int:field_id>/comments', TODO),
 
