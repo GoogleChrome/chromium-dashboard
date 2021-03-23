@@ -140,10 +140,14 @@ class ChromedashFeature extends LitElement {
   }
 
   _togglePanelExpansion(e) {
-    // Don't toggle panel if tooltip or link is being clicked.
+    // Don't toggle panel if tooltip or link is being clicked
+    // or if text is being selected.
     const target = e.currentTarget;
+    const textSelection = window.getSelection();
+
     if (target.classList.contains('tooltip') || 'tooltip' in target.dataset ||
-        target.tagName == 'A' || target.tagName == 'CHROMEDASH-MULTI-LINKS') {
+        target.tagName == 'A' || target.tagName == 'CHROMEDASH-MULTI-LINKS' ||
+        e.path[0].nodeName === 'A' || textSelection.type === 'RANGE' || textSelection.toString()) {
       return;
     }
 
