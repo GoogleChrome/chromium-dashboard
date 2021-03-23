@@ -24,7 +24,7 @@ import werkzeug.exceptions  # Flask HTTP stuff.
 
 from api import features_api
 from api import register
-import models
+from internals import models
 
 
 class FeaturesAPITest(unittest.TestCase):

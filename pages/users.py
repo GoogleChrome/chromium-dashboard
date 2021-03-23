@@ -31,7 +31,7 @@ from google.appengine.ext import db
 import flask
 
 from framework import basehandlers
-import models
+from internals import models
 import settings
 
 

@@ -22,7 +22,7 @@ import urllib
 import flask
 import werkzeug
 
-import models
+from internals import models
 from pages import guide
 
 

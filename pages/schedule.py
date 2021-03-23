@@ -27,7 +27,7 @@ import requests
 from google.appengine.api import users
 
 from framework import basehandlers
-import models
+from internals import models
 import settings
 from internals import fetchchannels
 

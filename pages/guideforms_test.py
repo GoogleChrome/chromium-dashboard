@@ -21,7 +21,7 @@ import unittest
 import mock
 
 from pages import guideforms
-import models
+from internals import models
 
 
 class DisplayFieldsTest(unittest.TestCase):

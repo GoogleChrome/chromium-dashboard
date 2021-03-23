@@ -28,7 +28,7 @@ from google.appengine.ext import db
 from google.appengine.api import mail
 from google.appengine.api import users
 
-import models
+from internals import models
 from internals import notifier
 import settings
 

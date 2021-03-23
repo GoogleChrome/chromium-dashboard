@@ -21,7 +21,7 @@ from django import forms
 
 from google.appengine.api import users
 
-import models
+from internals import models
 from internals import processes
 
 SHIPPED_HELP_TXT = (

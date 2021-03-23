@@ -18,7 +18,7 @@ from __future__ import print_function
 
 from google.appengine.api import users
 
-import models
+from internals import models
 import settings
 from framework import basehandlers
 from internals import processes

@@ -26,7 +26,7 @@ import yaml
 
 from framework import basehandlers
 from framework import permissions
-import models
+from internals import models
 import settings
 from schedule import construct_chrome_channels_details
 

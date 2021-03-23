@@ -24,7 +24,7 @@ import werkzeug.exceptions  # Flask HTTP stuff.
 
 from api import cues_api
 from api import register
-import models
+from internals import models
 
 
 class CuesAPITest(unittest.TestCase):

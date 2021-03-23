@@ -22,7 +22,7 @@ import mock
 from framework import ramcache
 from google.appengine.api import users
 
-import models
+from internals import models
 
 
 class MockQuery(object):

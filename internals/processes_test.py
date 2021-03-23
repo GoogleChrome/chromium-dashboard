@@ -22,7 +22,7 @@ import mock
 
 from google.appengine.ext import db
 
-import models
+from internals import models
 from internals import processes
 
 

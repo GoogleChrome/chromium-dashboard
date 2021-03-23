@@ -29,7 +29,7 @@ from google.appengine.ext import db
 
 from framework import ramcache
 import settings
-import models
+from internals import models
 
 from django.template.loader import render_to_string
 import django

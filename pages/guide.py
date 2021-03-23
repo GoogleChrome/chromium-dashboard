@@ -33,7 +33,7 @@ from google.appengine.ext import db
 from framework import basehandlers
 from framework import utils
 from pages import guideforms
-import models
+from internals import models
 from internals import processes
 import settings
 
