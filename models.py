@@ -32,7 +32,7 @@ from google.appengine.api import users
 
 from framework import cloud_tasks_helpers
 import settings
-import util
+from internals import fetchchannels
 
 import hack_components
 import hack_wf_components
@@ -503,7 +503,7 @@ class Feature(DictModel):
   @classmethod
   def _annotate_first_of_milestones(self, feature_list, version=None):
     try:
-      omaha_data = util.get_omaha_data()
+      omaha_data = fetchchannels.get_omaha_data()
 
       win_versions = omaha_data[0]['versions']
 

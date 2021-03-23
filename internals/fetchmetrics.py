@@ -1,8 +1,5 @@
-from __future__ import division
-from __future__ import print_function
-
 # -*- coding: utf-8 -*-
-# Copyright 2013 Google Inc.
+# Copyright 2021 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
 # you may not use this file except in compliance with the License.
@@ -16,27 +13,34 @@ from __future__ import print_function
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__author__ = 'ericbidelman@chromium.org (Eric Bidelman)'
+from __future__ import division
+from __future__ import print_function
 
 import datetime
 import json
 import logging
-import os
-import re
 from xml.dom import minidom
 
 # Appengine imports.
 from framework import ramcache
 import requests
-from google.appengine.api import users
-from google.appengine.ext import db
 
 # File imports.
 from framework import basehandlers
 from framework import utils
 import models
-import processes
 import settings
+
+
+def get_omaha_data():
+  omaha_data = ramcache.get('omaha_data')
+  if omaha_data is None:
+    result = requests.get('https://omahaproxy.appspot.com/all.json')
+    if result.status_code == 200:
+      omaha_data = json.loads(result.content)
+      ramcache.set('omaha_data', omaha_data, time=86400) # cache for 24hrs.
+  return omaha_data
+
 
 UMA_QUERY_SERVER = 'https://uma-export.appspot.com/chromestatus/'
 
@@ -257,9 +261,12 @@ class HistogramsHandler(basehandlers.FlaskHandler):
 
     enum_tags = dom.getElementsByTagName('enum')
 
-    # Save bucket ids for each histogram type, FeatureObserver and MappedCSSProperties.
+    # Save bucket ids for each histogram type, FeatureObserver and
+    # MappedCSSProperties.
     for histogram_id in self.MODEL_CLASS.keys():
-      enum = filter(lambda enum: enum.attributes['name'].value == histogram_id, enum_tags)[0]
+      enum = filter(
+          lambda enum: enum.attributes['name'].value == histogram_id,
+          enum_tags)[0]
       for child in enum.getElementsByTagName('int'):
         self._SaveData({
           'bucket_id': child.attributes['value'].value,
@@ -267,77 +274,6 @@ class HistogramsHandler(basehandlers.FlaskHandler):
         }, histogram_id)
 
     return 'Success'
-
-
-
-INTENT_PARAM = 'intent'
-LAUNCH_PARAM = 'launch'
-VIEW_FEATURE_URL = '/feature'
-
-
-class IntentEmailPreviewHandler(basehandlers.FlaskHandler):
-  """Show a preview of an intent email, as appropriate to the feature stage."""
-
-  TEMPLATE_PATH = 'admin/features/launch.html'
-
-  def get_template_data(self, feature_id=None, stage_id=None):
-    user = users.get_current_user()
-    if user is None:
-      return self.redirect(users.create_login_url(self.request.path))
-
-    if not feature_id:
-      self.abort(404)
-    f = models.Feature.get_by_id(feature_id)
-    if f is None:
-      self.abort(404)
-
-    intent_stage = stage_id if stage_id is not None else f.intent_stage
-
-    if not self.user_can_edit(user):
-      self.abort(403)
-
-    page_data = self.get_page_data(feature_id, f, intent_stage)
-    return page_data
-
-  def get_page_data(self, feature_id, f, intent_stage):
-    """Return a dictionary of data used to render the page."""
-    page_data = {
-        'subject_prefix': self.compute_subject_prefix(f, intent_stage),
-        'feature': f.format_for_template(),
-        'sections_to_show': processes.INTENT_EMAIL_SECTIONS.get(
-            intent_stage, []),
-        'intent_stage': intent_stage,
-        'default_url': '%s://%s%s/%s' % (
-            self.request.scheme, self.request.host,
-            VIEW_FEATURE_URL, feature_id),
-    }
-
-    if LAUNCH_PARAM in self.request.args:
-      page_data[LAUNCH_PARAM] = True
-    if INTENT_PARAM in self.request.args:
-      page_data[INTENT_PARAM] = True
-
-    return page_data
-
-  def compute_subject_prefix(self, feature, intent_stage):
-    """Return part of the subject line for an intent email."""
-
-    if intent_stage == models.INTENT_INCUBATE:
-      if feature.feature_type == models.FEATURE_TYPE_DEPRECATION_ID:
-        return 'Intent to Deprecate and Remove'
-    elif intent_stage == models.INTENT_IMPLEMENT:
-      return 'Intent to Prototype'
-    elif intent_stage == models.INTENT_EXPERIMENT:
-      return 'Ready for Trial'
-    elif intent_stage == models.INTENT_EXTEND_TRIAL:
-      if feature.feature_type == models.FEATURE_TYPE_DEPRECATION_ID:
-        return 'Request for Deprecation Trial'
-      else:
-        return 'Intent to Experiment'
-    elif intent_stage == models.INTENT_SHIP:
-      return 'Intent to Ship'
-
-    return 'Intent stage "%s"' % models.INTENT_STAGES[intent_stage]
 
 
 class BlinkComponentHandler(basehandlers.FlaskHandler):
@@ -351,7 +287,4 @@ app = basehandlers.FlaskApplication([
   ('/cron/metrics', YesterdayHandler),
   ('/cron/histograms', HistogramsHandler),
   ('/cron/update_blink_components', BlinkComponentHandler),
-  ('/admin/features/launch/<int:feature_id>', IntentEmailPreviewHandler),
-  ('/admin/features/launch/<int:feature_id>/<int:stage_id>',
-   IntentEmailPreviewHandler),
 ], debug=settings.DEBUG)
