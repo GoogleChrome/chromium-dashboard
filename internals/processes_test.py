@@ -23,7 +23,7 @@ import mock
 from google.appengine.ext import db
 
 import models
-import processes
+from internals import processes
 
 
 class HelperFunctionsTest(unittest.TestCase):

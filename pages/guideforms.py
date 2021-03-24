@@ -22,7 +22,7 @@ from django import forms
 from google.appengine.api import users
 
 import models
-import processes
+from internals import processes
 
 SHIPPED_HELP_TXT = (
     'First milestone to ship with this status. Applies to: Enabled by '
@@ -30,6 +30,21 @@ SHIPPED_HELP_TXT = (
     'Deprecated. If the flag is \'test\' rather than \'experimental\' set '
     'status to In development. If the flag is for an origin trial set status '
     'to Origin trial.')
+
+SHIPPED_WEBVIEW_HELP_TXT = ('First milestone to ship with this status. '
+                            'Applies to Enabled by default, Browser '
+                            'Intervention, and Deprecated.\n\n NOTE: for '
+                            'statuses In developer trial and Origin trial this '
+                            'MUST be blank.')
+
+SUMMARY_PLACEHOLDER_TXT = (
+  'NOTE: This text describes this feature in the eventual beta release post '
+  'as well as possibly in other external documents.\n\n'
+  'Begin with one line explaining what the feature does. Add one or two '
+  'lines explaining how this feature helps developers. Avoid language such '
+  'as "a new feature". They all are or have been new features.\n\n'
+  'Follow the example link below for more guidance.')
+
 
 # We define all form fields here so that they can be include in one or more
 # stage-specific fields without repeating the details and help text.
@@ -53,7 +68,8 @@ ALL_FIELDS = {
     'summary': forms.CharField(
         required=True,
         widget=forms.Textarea(
-            attrs={'cols': 50, 'maxlength': 500, 'placeholder': models.FeatureForm.SUMMARY_PLACEHOLDER_TXT}),
+            attrs={'cols': 50, 'maxlength': 500,
+                   'placeholder': SUMMARY_PLACEHOLDER_TXT}),
         help_text=
         ('<a target="_blank" href="'
          'https://github.com/GoogleChrome/chromium-dashboard/wiki/'
@@ -363,7 +379,7 @@ ALL_FIELDS = {
             'disabled': 'disabled'}),
         help_text=('When does the experiment start and expire? '
                    'Deprecated: '
-                   'Please use the following numeric fields instead.')),
+                   'Please use the numeric fields above instead.')),
 
     # TODO(jrobbins and jmedley): Refine help text.
     'ot_milestone_desktop_start': forms.IntegerField(
@@ -564,7 +580,7 @@ ALL_FIELDS = {
     'shipped_webview_milestone': forms.IntegerField(
         required=False, label='Android Webview',
         widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'}),
-        help_text=SHIPPED_HELP_TXT),
+        help_text=SHIPPED_WEBVIEW_HELP_TXT),
 
     'flag_name': forms.CharField(
         label='Flag name', required=False,
@@ -690,9 +706,10 @@ NewFeature_OriginTrial = define_form_class_using_shared_fields(
 
 ImplStatus_OriginTrial = define_form_class_using_shared_fields(
     'ImplStatus_OriginTrial',
-    ('experiment_timeline',  # deprecated
-     'ot_milestone_desktop_start', 'ot_milestone_desktop_end',
-     'ot_milestone_android_start', 'ot_milestone_android_end'))
+    ('ot_milestone_desktop_start', 'ot_milestone_desktop_end',
+     'ot_milestone_android_start', 'ot_milestone_android_end',
+     'experiment_timeline',  # deprecated
+     ))
 
 
 Most_PrepareToShip = define_form_class_using_shared_fields(
@@ -745,7 +762,10 @@ Deprecation_PrepareToShip = define_form_class_using_shared_fields(
 # Note: Even though this is similar to another form, it is likely to change.
 Deprecation_DeprecationTrial = define_form_class_using_shared_fields(
     'Deprecation_DeprecationTrial',
-    ('experiment_goals', 'experiment_timeline', 'experiment_risks',
+    ('experiment_goals', 'experiment_risks',
+     'ot_milestone_desktop_start', 'ot_milestone_desktop_end',
+     'ot_milestone_android_start', 'ot_milestone_android_end',
+     'experiment_timeline',  # deprecated
      'experiment_extension_reason', 'ongoing_constraints',
      'intent_to_experiment_url',
      'i2e_lgtms=r4dt_lgtms',  # form field name matches underlying DB field.
@@ -822,9 +842,10 @@ Flat_OriginTrial = define_form_class_using_shared_fields(
      'origin_trial_feedback_url',
 
      # Implementation
-     'experiment_timeline',
      'ot_milestone_desktop_start', 'ot_milestone_desktop_end',
-     'ot_milestone_android_start', 'ot_milestone_android_end'))
+     'ot_milestone_android_start', 'ot_milestone_android_end',
+     'experiment_timeline',  # deprecated
+    ))
 
 
 Flat_PrepareToShip = define_form_class_using_shared_fields(
@@ -921,9 +942,9 @@ DISPLAY_FIELDS_IN_STAGES = {
         'experiment_extension_reason', 'ongoing_constraints',
         'origin_trial_feedback_url', 'intent_to_experiment_url',
         'i2e_lgtms', 'r4dt_lgtms',
-        'experiment_timeline',  # Deprecated
         'ot_milestone_desktop_start', 'ot_milestone_desktop_end',
         'ot_milestone_android_start', 'ot_milestone_android_end',
+        'experiment_timeline',  # Deprecated
         ),
     models.INTENT_SHIP: make_display_specs(
         'shipped_milestone', 'shipped_android_milestone',

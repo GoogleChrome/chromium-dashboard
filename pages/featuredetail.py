@@ -23,7 +23,7 @@ import settings
 from framework import basehandlers
 from pages import guideforms
 import models
-import processes
+from internals import processes
 
 
 class FeatureDetailHandler(basehandlers.FlaskHandler):
