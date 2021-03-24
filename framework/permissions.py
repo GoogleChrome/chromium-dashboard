@@ -44,7 +44,7 @@ def can_create_feature(user):
   if can_admin_site(user):
     return True
 
-  print('user is %r' % user)
+  # TODO(jrobbins): generalize this.
   if user.email().endswith(('@chromium.org', '@google.com')):
     return True
 

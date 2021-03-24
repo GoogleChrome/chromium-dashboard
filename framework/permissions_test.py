@@ -61,6 +61,7 @@ class PermissionFunctionTests(unittest.TestCase):
     self.assertEqual(normal, func(user, *additional_args))
 
     # Test special users
+    # TODO(jrobbins): generalize this.
     testing_config.sign_in('user@google.com', 123)
     user = users.get_current_user()
     self.assertEqual(special, func(user, *additional_args))
