@@ -162,7 +162,7 @@ class FlaskHandler(BaseHandler):
 
   def get_common_data(self, path=None):
     """Return template data used on all pages, e.g., sign-in info."""
-    current_path = path or flask.request.path
+    current_path = path or flask.request.full_path
     common_data = {
       'prod': settings.PROD,
       'APP_TITLE': settings.APP_TITLE,
