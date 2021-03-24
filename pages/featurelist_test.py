@@ -21,8 +21,8 @@ import unittest
 import flask
 import werkzeug
 
-from internals import models
 from framework import ramcache
+from internals import models
 from pages import featurelist
 
 
