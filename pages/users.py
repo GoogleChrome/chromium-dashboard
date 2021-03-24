@@ -31,6 +31,7 @@ from google.appengine.ext import db
 import flask
 
 from framework import basehandlers
+from framework import permissions
 import models
 import settings
 
@@ -39,6 +40,7 @@ class UserListHandler(basehandlers.FlaskHandler):
 
   TEMPLATE_PATH = 'admin/users/new.html'
 
+  @permissions.require_admin_site
   def get_template_data(self):
     users = models.AppUser.all().fetch(None) # TODO(ericbidelman): ramcache this.
 
@@ -53,6 +55,7 @@ class UserListHandler(basehandlers.FlaskHandler):
 
 class CreateUserAPIHandler(basehandlers.FlaskHandler):
 
+  @permissions.require_admin_site
   def process_post_data(self):
     email = flask.request.form['email']
 
@@ -73,6 +76,7 @@ class CreateUserAPIHandler(basehandlers.FlaskHandler):
 
 class DeleteUserAPIHandler(basehandlers.FlaskHandler):
 
+  @permissions.require_admin_site
   def process_post_data(self, user_id=None):
     if user_id:
       self._delete(user_id)
