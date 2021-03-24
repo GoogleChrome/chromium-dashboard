@@ -22,6 +22,7 @@ import json
 import logging
 import os
 
+from framework import permissions
 from framework import ramcache
 import requests
 from google.appengine.api import users
@@ -97,7 +98,7 @@ class ScheduleHandler(basehandlers.FlaskHandler):
   def get_template_data(self):
     user = users.get_current_user()
     features = models.Feature.get_chronological(
-        show_unlisted=self.user_can_edit(user))
+        show_unlisted=permissions.can_edit_any_feature(user))
     template_data = {
       'features': json.dumps(features),
       'channels': json.dumps(construct_chrome_channels_details(),

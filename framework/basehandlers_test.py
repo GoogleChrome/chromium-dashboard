@@ -278,41 +278,6 @@ class FlaskHandlerTests(unittest.TestCase):
     self.assertIn('some/other/path', actual_response.headers['location'])
     self.assertIn('Access-Control-Allow-Origin', actual_headers)
 
-  def test_user_can_edit__anon(self):
-    """Anon visitors cannot edit features."""
-    actual = self.handler.user_can_edit(None)
-    self.assertFalse(actual)
-
-  def test_user_can_edit__normal(self):
-    """Non-registered signed in users cannot edit features."""
-    u = users.User(email='user@example.com')
-    actual = self.handler.user_can_edit(u)
-    self.assertFalse(actual)
-
-  def test_user_can_edit__registered(self):
-    """Users who have been registed by admins may edit features."""
-    u = users.User(email='registered@example.com')
-    actual = self.handler.user_can_edit(u)
-    self.assertTrue(actual)
-
-  def test_user_can_edit__preferred_domains(self):
-    """Users signed in with certain email addresses may edit."""
-    u = users.User(email='user@chromium.org')
-    actual = self.handler.user_can_edit(u)
-    self.assertTrue(actual)
-
-    u = users.User(email='user@google.com')
-    actual = self.handler.user_can_edit(u)
-    self.assertTrue(actual)
-
-    u = users.User(email='user@this-is-not-google.com')
-    actual = self.handler.user_can_edit(u)
-    self.assertFalse(actual)
-
-    u = users.User(email='user@this-is-not.google.com')
-    actual = self.handler.user_can_edit(u)
-    self.assertFalse(actual)
-
   def test_require_task_header__while_testing(self):
     """During unit testing of task handlers, we allow it."""
     with test_app.test_request_context('/test'):

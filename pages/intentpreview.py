@@ -21,6 +21,7 @@ from google.appengine.api import users
 from internals import models
 import settings
 from framework import basehandlers
+from framework import permissions
 from internals import processes
 
 INTENT_PARAM = 'intent'
@@ -33,11 +34,8 @@ class IntentEmailPreviewHandler(basehandlers.FlaskHandler):
 
   TEMPLATE_PATH = 'admin/features/launch.html'
 
+  @permissions.require_edit_feature
   def get_template_data(self, feature_id=None, stage_id=None):
-    user = users.get_current_user()
-    if user is None:
-      return self.redirect(users.create_login_url(self.request.path))
-
     if not feature_id:
       self.abort(404)
     f = models.Feature.get_by_id(feature_id)
@@ -45,9 +43,6 @@ class IntentEmailPreviewHandler(basehandlers.FlaskHandler):
       self.abort(404)
 
     intent_stage = stage_id if stage_id is not None else f.intent_stage
-
-    if not self.user_can_edit(user):
-      self.abort(403)
 
     page_data = self.get_page_data(feature_id, f, intent_stage)
     return page_data

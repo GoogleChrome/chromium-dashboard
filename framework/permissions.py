@@ -21,32 +21,104 @@ import flask
 
 from google.appengine.api import users
 
+import models
 
-def can_admin_site():
-  """Return true if the user is a site admin."""
+
+def can_admin_site(unused_user):
+  """Return True if the current user is allowed to administer the site."""
+  # TODO(jrobbins): replace this with user.is_admin.
   return users.is_current_user_admin()
 
 
-def require_admin_site(handler):
-  """Handler decorator to require the user have edit permission."""
-  def check_login(self, *args, **kwargs):
-    if not can_admin_site():
-      flask.abort(403)
-      return
+def can_view_feature(unused_user, unused_feature):
+  """Return True if the user is allowed to view the given feature."""
+  # Note, for now there are no private features, only unlisted ones.
+  return True
 
-    return handler(self, *args, **kwargs) # Call the handler method
+
+def can_create_feature(user):
+  """Return True if the user is allowed to create features."""
+  if not user:
+    return False
+
+  if can_admin_site(user):
+    return True
+
+  # TODO(jrobbins): generalize this.
+  if user.email().endswith(('@chromium.org', '@google.com')):
+    return True
+
+  query = models.AppUser.all(keys_only=True).filter('email =', user.email())
+  found_user = query.get()
+  if found_user is not None:
+    return True
+
+  return False
+
+
+def can_edit_any_feature(user):
+  """Return True if the user is allowed to edit features."""
+  return can_create_feature(user)
+
+
+def can_edit_feature(user, feature):
+  """Return True if the user is allowed to edit the given feature."""
+  # TODO(jrobbins): make this per-feature
+  if not can_view_feature(user, feature):
+    return False
+  return can_edit_any_feature(user)
+
+
+def _reject_or_proceed(
+    handler_obj, handler_method, handler_args, handler_kwargs,
+    perm_function):
+  """Redirect, abort(403), or call handler_method."""
+  user = handler_obj.get_current_user()
+  req = handler_obj.request
+
+  # Give the user a chance to sign in
+  if not user and req.method == 'GET':
+    return handler_obj.redirect(users.create_login_url(req.full_path))
+
+  if not perm_function(user):
+    handler_obj.abort(403)
+  else:
+    return handler_method(handler_obj, *handler_args, **handler_kwargs)
+
+
+def require_admin_site(handler):
+  """Handler decorator to require the user can admin the site."""
+  def check_login(self, *args, **kwargs):
+    return _reject_or_proceed(
+        self, handler, args, kwargs, can_admin_site)
+
   return check_login
 
 
-def require_edit_permission(handler):
-  """Handler decorator to require the user have edit permission."""
+def require_view_feature(handler):
+  """Handler decorator to require the user can view the current feature."""
+  # TODO(jrobbins): make this per-feature
   def check_login(self, *args, **kwargs):
-    user = users.get_current_user()
-    if not user:
-      return self.redirect(users.create_login_url(self.request.uri))
-    elif not self.user_can_edit(user):
-      flask.abort(403)
-      return
+    return _reject_or_proceed(
+        self, handler, args, kwargs, can_view_feature)
 
-    return handler(self, *args, **kwargs) # Call the handler method
+  return check_login
+
+
+def require_create_feature(handler):
+  """Handler decorator to require the user can create a feature."""
+  def check_login(self, *args, **kwargs):
+    return _reject_or_proceed(
+        self, handler, args, kwargs, can_create_feature)
+
+  return check_login
+
+
+def require_edit_feature(handler):
+  """Handler decorator to require the user can edit the current feature."""
+  # TODO(jrobbins): make this per-feature
+  def check_login(self, *args, **kwargs):
+    return _reject_or_proceed(
+        self, handler, args, kwargs, can_edit_any_feature)
+
   return check_login

@@ -21,10 +21,13 @@ import testing_config  # Must be imported before the module under test.
 import mock
 import werkzeug.exceptions  # Flask HTTP stuff.
 
+from google.appengine.api import users
+
+from framework import basehandlers
 from framework import permissions
 
 
-class MockHandler(object):
+class MockHandler(basehandlers.BaseHandler):
 
   def __init__(self):
     self.called_with = None
@@ -32,24 +35,74 @@ class MockHandler(object):
   @permissions.require_admin_site
   def do_get(self, *args):
     self.called_with = args
+    return {'message': 'did get'}
+
+  @permissions.require_admin_site
+  def do_post(self, *args):
+    self.called_with = args
+    return {'message': 'did post'}
 
 
-class CanAdminSiteTests(unittest.TestCase):
+test_app = basehandlers.FlaskApplication(
+    [('/path', MockHandler),
+     ],
+    debug=True)
 
-  def test_can_admin_site__normal_user(self):
-    """A normal user is not allowed to administer the site."""
+
+class PermissionFunctionTests(unittest.TestCase):
+
+  def check_function_results(
+      self, func, additional_args,
+      normal='missing', special='missing', admin='missing', anon='missing'):
+    """Test func under four conditions and check expected results."""
+    # Test normal users
     testing_config.sign_in('user@example.com', 123)
-    self.assertFalse(permissions.can_admin_site())
+    user = users.get_current_user()
+    self.assertEqual(normal, func(user, *additional_args))
 
-  def test_can_admin_site__admin_user(self):
-    """An admin user is allowed to administer the site."""
+    # Test special users
+    # TODO(jrobbins): generalize this.
+    testing_config.sign_in('user@google.com', 123)
+    user = users.get_current_user()
+    self.assertEqual(special, func(user, *additional_args))
+    testing_config.sign_in('user@chromium.org', 123)
+    user = users.get_current_user()
+    self.assertEqual(special, func(user, *additional_args))
+
+    # Test admin users
     testing_config.sign_in('user@example.com', 123, is_admin=True)
-    self.assertTrue(permissions.can_admin_site())
+    user = users.get_current_user()
+    self.assertEqual(admin, func(user, *additional_args))
 
-  def test_can_admin_site__anon(self):
-    """An anon visitor is not allowed to administer the site."""
+    # Test anonymous visitors
     testing_config.sign_out()
-    self.assertFalse(permissions.can_admin_site())
+    user = users.get_current_user()
+    self.assertEqual(anon, func(user, *additional_args))
+
+  def test_can_admin_site(self):
+    self.check_function_results(
+        permissions.can_admin_site, tuple(),
+        normal=False, special=False, admin=True, anon=False)
+
+  def test_can_view_feature(self):
+    self.check_function_results(
+        permissions.can_view_feature, (None,),
+        normal=True, special=True, admin=True, anon=True)
+
+  def test_can_create_feature(self):
+    self.check_function_results(
+        permissions.can_create_feature, tuple(),
+        normal=False, special=True, admin=True, anon=False)
+
+  def test_can_edit_any_feature(self):
+    self.check_function_results(
+        permissions.can_edit_any_feature, tuple(),
+        normal=False, special=True, admin=True, anon=False)
+
+  def test_can_edit_feature(self):
+    self.check_function_results(
+        permissions.can_edit_feature, (None,),
+        normal=False, special=True, admin=True, anon=False)
 
 
 class RequireAdminSiteTests(unittest.TestCase):
@@ -58,21 +111,44 @@ class RequireAdminSiteTests(unittest.TestCase):
     """Wrapped method rejects call from normal user."""
     handler = MockHandler()
     testing_config.sign_in('user@example.com', 123)
-    with self.assertRaises(werkzeug.exceptions.Forbidden):
-      handler.do_get()
+    with test_app.test_request_context('/path', method='POST'):
+      with self.assertRaises(werkzeug.exceptions.Forbidden):
+        handler.do_post()
     self.assertEqual(handler.called_with, None)
 
-  def test_require_admin_site__normal_user(self):
-    """Wrapped method rejects call from normal user."""
+  def test_require_admin_site__googler(self):
+    """Wrapped method rejects call from googler."""
+    handler = MockHandler()
+    testing_config.sign_in('user@google.com', 123)
+    with test_app.test_request_context('/path', method='POST'):
+      with self.assertRaises(werkzeug.exceptions.Forbidden):
+        handler.do_post()
+    self.assertEqual(handler.called_with, None)
+
+  def test_require_admin_site__admin(self):
+    """Wrapped method accepts call from an admin user."""
     handler = MockHandler()
     testing_config.sign_in('admin@example.com', 123, is_admin=True)
-    handler.do_get()
-    self.assertEqual(handler.called_with, tuple())
+    with test_app.test_request_context('/path'):
+      actual_response = handler.do_get(123, 234)
+    self.assertEqual(handler.called_with, (123, 234))
+    self.assertEqual({'message': 'did get'}, actual_response)
+
+    with test_app.test_request_context('/path', method='POST'):
+      actual_response = handler.do_post(345, 456)
+    self.assertEqual(handler.called_with, (345, 456))
+    self.assertEqual({'message': 'did post'}, actual_response)
 
   def test_require_admin_site__anon(self):
-    """Wrapped method rejects call from anon."""
+    """Wrapped method rejects call from anon, but offers sign-in."""
     handler = MockHandler()
     testing_config.sign_out()
-    with self.assertRaises(werkzeug.exceptions.Forbidden):
-      handler.do_get()
+    with test_app.test_request_context('/path'):
+      actual_response = handler.do_get(123, 234)
+    self.assertEqual(handler.called_with, None)
+    self.assertEqual(302, actual_response.status_code)
+
+    with test_app.test_request_context('/path', method='POST'):
+      with self.assertRaises(werkzeug.exceptions.Forbidden):
+        handler.do_post(345, 456)
     self.assertEqual(handler.called_with, None)

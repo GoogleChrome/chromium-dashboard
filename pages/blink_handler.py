@@ -54,7 +54,7 @@ class PopulateSubscribersHandler(basehandlers.FlaskHandler):
       user.put()
     f.close()
 
-  @permissions.require_edit_permission
+  @permissions.require_admin_site
   def get_template_data(self):
     if settings.PROD:
       return 'Handler not allowed in production.'
@@ -88,7 +88,7 @@ class BlinkHandler(basehandlers.FlaskHandler):
 
     return True
 
-  @permissions.require_edit_permission
+  @permissions.require_admin_site
   def get_template_data(self):
     components = models.BlinkComponent.all().order('name').fetch(None)
     subscribers = models.FeatureOwner.all().order('name').fetch(None)
@@ -110,7 +110,7 @@ class BlinkHandler(basehandlers.FlaskHandler):
     return template_data
 
   # Remove user from component subscribers.
-  @permissions.require_edit_permission
+  @permissions.require_admin_site
   def put(self):
     params = self.request.get_json(force=True)
     self.__update_subscribers_list(False, user_id=params.get('userId'),
@@ -119,7 +119,7 @@ class BlinkHandler(basehandlers.FlaskHandler):
     return {'done': True}
 
   # Add user to component subscribers.
-  @permissions.require_edit_permission
+  @permissions.require_admin_site
   def process_post_data(self):
     params = self.request.get_json(force=True)
 
@@ -133,7 +133,7 @@ class SubscribersHandler(basehandlers.FlaskHandler):
 
   TEMPLATE_PATH = 'admin/subscribers.html'
 
-  @permissions.require_edit_permission
+  @permissions.require_admin_site
   def get_template_data(self):
     users = models.FeatureOwner.all().order('name').fetch(None)
     feature_list = models.Feature.get_chronological()
