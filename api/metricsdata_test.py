@@ -25,7 +25,7 @@ import flask
 from google.appengine.api import users
 
 from api import metricsdata
-import models
+from internals import models
 
 
 class MetricsFunctionTests(unittest.TestCase):

@@ -23,7 +23,7 @@ import settings
 from framework import basehandlers
 from framework import permissions
 from framework import utils
-import models
+from internals import models
 from framework import ramcache
 
 from google.appengine.api import users

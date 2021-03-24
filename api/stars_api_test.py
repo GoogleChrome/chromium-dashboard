@@ -24,7 +24,7 @@ import werkzeug.exceptions  # Flask HTTP stuff.
 
 from api import register
 from api import stars_api
-import models
+from internals import models
 from internals import notifier
 
 

@@ -32,7 +32,7 @@ import flask
 
 from framework import basehandlers
 from framework import permissions
-import models
+from internals import models
 import settings
 
 

@@ -22,7 +22,7 @@ import logging
 import settings
 from framework import basehandlers
 from framework import utils
-import models
+from internals import models
 
 
 class SamplesHandler(basehandlers.FlaskHandler):

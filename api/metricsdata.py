@@ -25,7 +25,7 @@ import logging
 from google.appengine.api import users
 
 from framework import basehandlers
-import models
+from internals import models
 from framework import ramcache
 import settings
 

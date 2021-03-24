@@ -23,7 +23,7 @@ import flask
 import werkzeug
 
 from pages import intentpreview
-import models
+from internals import models
 
 
 

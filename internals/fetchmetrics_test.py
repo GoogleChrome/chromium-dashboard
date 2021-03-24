@@ -25,7 +25,7 @@ import flask
 import werkzeug
 
 from internals import fetchmetrics
-import models
+from internals import models
 
 
 class FetchMetricsTest(unittest.TestCase):
