@@ -21,7 +21,7 @@ import logging
 from framework import basehandlers
 from framework import permissions
 from framework import ramcache
-import models
+from internals import models
 
 class FeaturesAPI(basehandlers.APIHandler):
   """Features are the the main records that we track."""

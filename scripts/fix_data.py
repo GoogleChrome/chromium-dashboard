@@ -17,7 +17,7 @@ Copy and paste this script into the interactive GAE console. If there are
 deadline errors, run it a few times until there's no more.
 """
 
-import models
+from internals import models
 
 allCssPropertyHistograms = models.CssPropertyHistogram.get_all()
 allFeatureObserverHistograms = models.FeatureObserverHistogram.get_all()

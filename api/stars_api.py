@@ -19,7 +19,7 @@ from __future__ import print_function
 import logging
 
 from framework import basehandlers
-import models
+from internals import models
 from internals import notifier
 
 

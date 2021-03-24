@@ -23,7 +23,7 @@ import settings
 from framework import basehandlers
 from framework import utils
 from pages import guideforms
-import models
+from internals import models
 from framework import ramcache
 from framework import utils
 from internals import fetchchannels

@@ -18,7 +18,7 @@ from __future__ import print_function
 
 import collections
 
-import models
+from internals import models
 
 
 Process = collections.namedtuple(
