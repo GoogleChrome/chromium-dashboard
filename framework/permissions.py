@@ -21,7 +21,7 @@ import flask
 
 from google.appengine.api import users
 
-import models
+from internals import models
 
 
 def can_admin_site(unused_user):
