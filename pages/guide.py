@@ -31,6 +31,7 @@ from google.appengine.api import users
 from google.appengine.ext import db
 
 from framework import basehandlers
+from framework import permissions
 from framework import utils
 from pages import guideforms
 import models
@@ -111,13 +112,9 @@ class FeatureNew(basehandlers.FlaskHandler):
 
   TEMPLATE_PATH = 'guide/new.html'
 
+  @permissions.require_edit_feature
   def get_template_data(self):
-    user = users.get_current_user()
-    if user is None:
-      return self.redirect(users.create_login_url(self.request.path))
-
-    if not self.user_can_edit(user):
-      self.abort(403)
+    user = self.get_current_user()
 
     new_feature_form = guideforms.NewFeatureForm(
         initial={'owner': user.email()})
@@ -126,11 +123,8 @@ class FeatureNew(basehandlers.FlaskHandler):
         }
     return template_data
 
+  @permissions.require_edit_feature
   def process_post_data(self):
-    user = users.get_current_user()
-    if user is None or (user and not self.user_can_edit(user)):
-      self.abort(403)
-
     owners = self.split_emails('owner')
 
     blink_components = (
@@ -174,15 +168,8 @@ class ProcessOverview(basehandlers.FlaskHandler):
         progress_so_far[progress_item] = str(detected)
     return progress_so_far
 
+  @permissions.require_edit_feature
   def get_template_data(self, feature_id):
-    user = users.get_current_user()
-    if user is None:
-      # Redirect to public URL for unauthenticated users.
-      return self.redirect(utils.format_feature_url(feature_id))
-
-    if not self.user_can_edit(user):
-      self.abort(403)
-
     f = models.Feature.get_by_id(long(feature_id))
     if f is None:
       self.abort(404)
@@ -246,15 +233,8 @@ class FeatureEditStage(basehandlers.FlaskHandler):
 
     return f, feature_process
 
+  @permissions.require_edit_feature
   def get_template_data(self, feature_id, stage_id):
-    user = users.get_current_user()
-    if user is None:
-      # Redirect to public URL for unauthenticated users.
-      return self.redirect(utils.format_feature_url(feature_id))
-
-    if not self.user_can_edit(user):
-      self.abort(403)
-
     f, feature_process = self.get_feature_and_process(feature_id)
 
     stage_name = ''
@@ -296,11 +276,8 @@ class FeatureEditStage(basehandlers.FlaskHandler):
     })
     return template_data
 
+  @permissions.require_edit_feature
   def process_post_data(self, feature_id, stage_id=0):
-    user = users.get_current_user()
-    if user is None or (user and not self.user_can_edit(user)):
-      self.abort(403)
-
     if feature_id:
       feature = models.Feature.get_by_id(feature_id)
       if feature is None:
@@ -533,15 +510,8 @@ class FeatureEditAllFields(FeatureEditStage):
 
   TEMPLATE_PATH = 'guide/editall.html'
 
+  @permissions.require_edit_feature
   def get_template_data(self, feature_id):
-    user = users.get_current_user()
-    if user is None:
-      # Redirect to public URL for unauthenticated users.
-      return self.redirect(utils.format_feature_url(feature_id))
-
-    if not self.user_can_edit(user):
-      self.abort(403)
-
     f, feature_process = self.get_feature_and_process(feature_id)
 
     feature_edit_dict = f.format_for_edit()
