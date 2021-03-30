@@ -52,7 +52,7 @@ class ChromedashAccordion extends LitElement {
   render() {
     return html`
      <h3 @click=${this.toggle} title="Click to expand">
-      <button .aria-expanded="false">
+      <button>
         <iron-icon
             icon="chromestatus:${this.opened ? 'expand-less' : 'expand-more'}">
         </iron-icon>
