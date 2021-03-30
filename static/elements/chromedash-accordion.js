@@ -28,6 +28,11 @@ class ChromedashAccordion extends LitElement {
        width: var(--max-content-width);
        cursor: pointer;
       }
+
+      button {
+        padding: 0;
+        font-size: inherit;
+      }
     `];
   }
 
@@ -47,10 +52,12 @@ class ChromedashAccordion extends LitElement {
   render() {
     return html`
      <h3 @click=${this.toggle} title="Click to expand">
-       <iron-icon
-          icon="chromestatus:${this.opened ? 'expand-less' : 'expand-more'}">
-       </iron-icon>
-       ${this.title}
+      <button>
+        <iron-icon
+            icon="chromestatus:${this.opened ? 'expand-less' : 'expand-more'}">
+        </iron-icon>
+        ${this.title}
+      </button>
      </h3>
 
      <iron-collapse ?opened=${this.opened}>
