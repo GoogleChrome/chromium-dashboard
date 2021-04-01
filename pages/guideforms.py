@@ -26,6 +26,7 @@ from google.appengine.api import users
 from internals import models
 from internals import processes
 
+# Custom Form Field for validating multiple emails
 class MultiEmailField(forms.Field):
     def to_python(self, value):
         """Normalize data to a list of strings."""
