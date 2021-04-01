@@ -725,7 +725,7 @@ Any_Ship = define_form_class_using_shared_fields(
 
 
 Existing_Prototype = define_form_class_using_shared_fields(
-    'Most_Prototype',
+    'Existing_Prototype',
     ('owner', 'blink_components', 'motivation', 'explainer_links',
      'spec_link', 'api_spec', 'bug_url', 'launch_bug_url',
      'intent_to_implement_url', 'comments'))
