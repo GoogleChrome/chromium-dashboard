@@ -21,7 +21,7 @@ import unittest
 
 import flask
 
-import models
+from internals import models
 from pages import users
 
 
@@ -31,7 +31,7 @@ class SettingsHandlerTests(unittest.TestCase):
     self.handler = users.SettingsHandler()
 
   @mock.patch('flask.redirect')
-  @mock.patch('models.UserPref.get_signed_in_user_pref')
+  @mock.patch('internals.models.UserPref.get_signed_in_user_pref')
   def test_get__anon(self, mock_gsiup, mock_redirect):
     mock_gsiup.return_value = None
     mock_redirect.return_value = 'mock redirect response'
@@ -42,7 +42,7 @@ class SettingsHandlerTests(unittest.TestCase):
     mock_redirect.assert_called_once()
     self.assertEqual('mock redirect response', actual)
 
-  @mock.patch('models.UserPref.get_signed_in_user_pref')
+  @mock.patch('internals.models.UserPref.get_signed_in_user_pref')
   def test_get__signed_in(self, mock_gsiup):
     mock_gsiup.return_value = models.UserPref(
         email='user@example.com')

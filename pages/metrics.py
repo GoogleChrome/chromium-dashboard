@@ -23,11 +23,10 @@ import settings
 from framework import basehandlers
 from framework import utils
 from pages import guideforms
-import models
-import processes
+from internals import models
 from framework import ramcache
 from framework import utils
-import util
+from internals import fetchchannels
 
 from google.appengine.api import users
 
@@ -74,7 +73,7 @@ class OmahaDataHandler(basehandlers.FlaskHandler):
   JSONIFY = True
 
   def get_template_data(self):
-    omaha_data = util.get_omaha_data()
+    omaha_data = fetchchannels.get_omaha_data()
     return omaha_data
 
 
@@ -99,8 +98,6 @@ routes = [
   ('/metrics/feature/timeline/popularity', FeaturePopularityHandler),
   ('/metrics/feature/timeline/popularity/<int:bucket_id>', FeaturePopularityHandler),
 
-  # TODO(jrobbins): util.py has only one thing in it, so maybe move
-  # it and this handler to a new omaha.py file.
   ('/omaha_data', OmahaDataHandler),
 ]
 

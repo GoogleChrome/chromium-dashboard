@@ -21,8 +21,9 @@ import logging
 
 import settings
 from framework import basehandlers
+from framework import permissions
 from framework import utils
-import models
+from internals import models
 from framework import ramcache
 
 from google.appengine.api import users
@@ -36,7 +37,7 @@ class FeaturesJsonHandler(basehandlers.FlaskHandler):
   def get_template_data(self, version=2):
     user = users.get_current_user()
     feature_list = models.Feature.get_chronological(
-        version=version, show_unlisted=self.user_can_edit(user))
+        version=version, show_unlisted=permissions.can_view_feature(user, None))
     return feature_list
 
 

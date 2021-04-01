@@ -22,7 +22,7 @@ import urllib
 import flask
 import werkzeug
 
-import models
+from internals import models
 from pages import guide
 
 
@@ -61,14 +61,14 @@ class FeatureNewTest(unittest.TestCase):
   def test_post__anon(self):
     """Anon cannot create features, gets a 403."""
     testing_config.sign_out()
-    with guide.app.test_request_context('/guide/new'):
+    with guide.app.test_request_context('/guide/new', method='POST'):
       with self.assertRaises(werkzeug.exceptions.Forbidden):
         self.handler.process_post_data()
 
   def test_post__non_allowed(self):
     """Non-allowed cannot create features, gets a 403."""
     testing_config.sign_in('user1@example.com', 1234567890)
-    with guide.app.test_request_context('/guide/new'):
+    with guide.app.test_request_context('/guide/new', method='POST'):
       with self.assertRaises(werkzeug.exceptions.Forbidden):
         self.handler.post()
 
@@ -80,7 +80,7 @@ class FeatureNewTest(unittest.TestCase):
             'category': '1',
             'name': 'Feature name',
             'summary': 'Feature summary',
-        }):
+        }, method='POST'):
       actual_response = self.handler.process_post_data()
 
     self.assertEqual('302 FOUND', actual_response.status)
@@ -263,7 +263,7 @@ class FeatureEditStageTest(unittest.TestCase):
   def test_post__anon(self):
     """Anon cannot edit features, gets a 403."""
     testing_config.sign_out()
-    with guide.app.test_request_context(self.request_path):
+    with guide.app.test_request_context(self.request_path, method='POST'):
       with self.assertRaises(werkzeug.exceptions.Forbidden):
         self.handler.process_post_data(
             self.feature_1.key().id(), self.stage)
@@ -272,7 +272,7 @@ class FeatureEditStageTest(unittest.TestCase):
     """Non-allowed cannot edit features, gets a 403."""
     testing_config.sign_in('user1@example.com', 1234567890)
     with guide.app.test_request_context(self.request_path):
-      with self.assertRaises(werkzeug.exceptions.Forbidden):
+      with self.assertRaises(werkzeug.exceptions.Forbidden, method='POST'):
         self.handler.process_post_data(
             self.feature_1.key().id(), self.stage)
 

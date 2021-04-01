@@ -25,7 +25,7 @@ from pages import schedule
 class ScheduleFunctionsTest(unittest.TestCase):
 
   @mock.patch('pages.schedule.fetch_chrome_release_info')
-  @mock.patch('util.get_omaha_data')
+  @mock.patch('internals.fetchchannels.get_omaha_data')
   def test_construct_chrome_channels_details(
       self, mock_get_omaha_data, mock_fetch_chrome_release_info):
     win_data = {

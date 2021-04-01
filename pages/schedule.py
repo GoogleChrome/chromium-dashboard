@@ -22,14 +22,15 @@ import json
 import logging
 import os
 
+from framework import permissions
 from framework import ramcache
 import requests
 from google.appengine.api import users
 
 from framework import basehandlers
-import models
+from internals import models
 import settings
-import util
+from internals import fetchchannels
 
 SCHEDULE_CACHE_TIME = 60 * 60  # 1 hour
 
@@ -67,7 +68,7 @@ def fetch_chrome_release_info(version):
   return data
 
 def construct_chrome_channels_details():
-  omaha_data = util.get_omaha_data()
+  omaha_data = fetchchannels.get_omaha_data()
   channels = {}
   win_versions = omaha_data[0]['versions']
 
@@ -97,7 +98,7 @@ class ScheduleHandler(basehandlers.FlaskHandler):
   def get_template_data(self):
     user = users.get_current_user()
     features = models.Feature.get_chronological(
-        show_unlisted=self.user_can_edit(user))
+        show_unlisted=permissions.can_edit_any_feature(user))
     template_data = {
       'features': json.dumps(features),
       'channels': json.dumps(construct_chrome_channels_details(),

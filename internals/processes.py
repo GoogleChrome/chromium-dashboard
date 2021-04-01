@@ -18,7 +18,7 @@ from __future__ import print_function
 
 import collections
 
-import models
+from internals import models
 
 
 Process = collections.namedtuple(
@@ -55,8 +55,8 @@ def process_to_dict(process):
 # details to be omitted and a link to create a launch bug shown instead.
 INTENT_EMAIL_URL = ('/admin/features/launch/{feature_id}'
                     '/{outgoing_stage}'
-                    '?intent')
-LAUNCH_BUG_TEMPLATE_URL = '/admin/features/launch/{feature_id}?launch'
+                    '?intent=1')
+LAUNCH_BUG_TEMPLATE_URL = '/admin/features/launch/{feature_id}?launch=1'
 # TODO(jrobbins): Creation of the launch bug has been a TODO for 5 years.
 
 

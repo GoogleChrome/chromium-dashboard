@@ -28,8 +28,8 @@ from google.appengine.ext import db
 from google.appengine.api import mail
 from google.appengine.api import users
 
-import models
-import notifier
+from internals import models
+from internals import notifier
 import settings
 
 
@@ -177,7 +177,7 @@ class EmailFormattingTest(unittest.TestCase):
     actual = notifier.apply_subscription_rules(self.feature_1, changes)
     self.assertEqual({}, actual)
 
-  @mock.patch('notifier.format_email_body')
+  @mock.patch('internals.notifier.format_email_body')
   def test_make_email_tasks__new(self, mock_f_e_b):
     """We send email to component owners and subscribers for new features."""
     mock_f_e_b.return_value = 'mock body html'
@@ -194,7 +194,7 @@ class EmailFormattingTest(unittest.TestCase):
     mock_f_e_b.assert_called_once_with(
         False, self.feature_1, [])
 
-  @mock.patch('notifier.format_email_body')
+  @mock.patch('internals.notifier.format_email_body')
   def test_make_email_tasks__update(self, mock_f_e_b):
     """We send email to component owners and subscribers for edits."""
     mock_f_e_b.return_value = 'mock body html'
@@ -211,7 +211,7 @@ class EmailFormattingTest(unittest.TestCase):
     mock_f_e_b.assert_called_once_with(
         True, self.feature_1, self.changes)
 
-  @mock.patch('notifier.format_email_body')
+  @mock.patch('internals.notifier.format_email_body')
   def test_make_email_tasks__starrer(self, mock_f_e_b):
     """We send email to users who starred the feature."""
     mock_f_e_b.return_value = 'mock body html'
@@ -232,7 +232,7 @@ class EmailFormattingTest(unittest.TestCase):
         True, self.feature_1, self.changes)
 
 
-  @mock.patch('notifier.format_email_body')
+  @mock.patch('internals.notifier.format_email_body')
   def test_make_email_tasks__starrer_unsubscribed(self, mock_f_e_b):
     """We don't email users who starred the feature but opted out."""
     mock_f_e_b.return_value = 'mock body html'
@@ -421,7 +421,7 @@ class BouncedEmailHandlerTest(unittest.TestCase):
                    settings.APP_ID)
     self.expected_to = settings.BOUNCE_ESCALATION_ADDR
 
-  @mock.patch('notifier.BouncedEmailHandler.receive')
+  @mock.patch('internals.notifier.BouncedEmailHandler.receive')
   def test_process_post_data(self, mock_receive):
     with notifier.app.test_request_context('/_ah/bounce'):
       actual_json = self.handler.process_post_data()

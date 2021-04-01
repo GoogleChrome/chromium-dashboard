@@ -1,7 +1,6 @@
 Django==1.11.29
 mock==3.0.5
 funcsigs
-coverage
 Flask==1.1.2
 
 google-cloud-tasks==1.5.0

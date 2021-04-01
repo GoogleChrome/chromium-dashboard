@@ -1,8 +1,5 @@
-from __future__ import division
-from __future__ import print_function
-
 # -*- coding: utf-8 -*-
-# Copyright 2017 Google Inc.
+# Copyright 2021 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
 # you may not use this file except in compliance with the License.
@@ -16,12 +13,15 @@ from __future__ import print_function
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-__author__ = 'ericbidelman@chromium.org (Eric Bidelman)'
+from __future__ import division
+from __future__ import print_function
 
 import json
+import requests
 
 from framework import ramcache
-import requests
+# Note: this file cannot import models because it would be circular.
+
 
 def get_omaha_data():
   omaha_data = ramcache.get('omaha_data')

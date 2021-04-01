@@ -38,7 +38,7 @@ from django.utils.html import conditional_escape as escape
 from framework import basehandlers
 from framework import cloud_tasks_helpers
 import settings
-import models
+from internals import models
 
 
 def format_email_body(is_update, feature, changes):

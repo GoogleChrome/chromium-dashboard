@@ -19,8 +19,8 @@ from __future__ import print_function
 import logging
 
 from framework import basehandlers
-import models
-import notifier
+from internals import models
+from internals import notifier
 
 
 class StarsAPI(basehandlers.APIHandler):

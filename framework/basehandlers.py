@@ -27,9 +27,10 @@ import flask.views
 from google.appengine.api import users
 from google.appengine.ext import db
 
+from framework import permissions
 from framework import ramcache
 import settings
-import models
+from internals import models
 
 from django.template.loader import render_to_string
 import django
@@ -53,12 +54,12 @@ class BaseHandler(flask.views.MethodView):
     """Support webapp2-style, e.g., return self.redirect(url)."""
     return flask.redirect(url)
 
-
-class APIHandler(BaseHandler):
-
   def get_current_user(self):
     # TODO(jrobbins): oauth support
     return users.get_current_user()
+
+
+class APIHandler(BaseHandler):
 
   def get_headers(self):
     """Add CORS and Chrome Frame to all responses."""
@@ -161,7 +162,7 @@ class FlaskHandler(BaseHandler):
 
   def get_common_data(self, path=None):
     """Return template data used on all pages, e.g., sign-in info."""
-    current_path = path or flask.request.path
+    current_path = path or flask.request.full_path
     common_data = {
       'prod': settings.PROD,
       'APP_TITLE': settings.APP_TITLE,
@@ -169,14 +170,15 @@ class FlaskHandler(BaseHandler):
       'TEMPLATE_CACHE_TIME': settings.TEMPLATE_CACHE_TIME
       }
 
-    user = users.get_current_user()
+    user = self.get_current_user()
     if user:
       user_pref = models.UserPref.get_signed_in_user_pref()
       common_data['login'] = (
           'Sign out', users.create_logout_url(dest_url=current_path))
       common_data['user'] = {
-        'can_edit': self.user_can_edit(user),
-        'is_admin': users.is_current_user_admin(),
+        'can_create_feature': permissions.can_create_feature(user),
+        'can_edit': permissions.can_edit_any_feature(user),
+        'is_admin': permissions.can_admin_site(user),
         'email': user.email(),
         'dismissed_cues': json.dumps(user_pref.dismissed_cues),
       }
@@ -221,26 +223,6 @@ class FlaskHandler(BaseHandler):
     else:
       # handler_data is a string or redirect response object.
       return handler_data, headers
-
-  def user_can_edit(self, user):
-    if not user:
-      return False
-
-    can_edit = False
-
-    if users.is_current_user_admin():
-      can_edit = True
-    elif user.email().endswith(('@chromium.org', '@google.com')):
-      can_edit = True
-    else:
-      # TODO(ericbidelman): cache user lookup.
-      query = models.AppUser.all(keys_only=True).filter('email =', user.email())
-      found_user = query.get()
-
-      if found_user is not None:
-        can_edit = True
-
-    return can_edit
 
   @property
   def form(self):

@@ -8,8 +8,8 @@ if (document.querySelector('.delete-button')) {
       return;
     }
 
-    fetch(`/admin/features/delete/${e.currentTarget.dataset.id}`, {
-      method: 'POST',
+    fetch(`/api/v0/features/${e.currentTarget.dataset.id}`, {
+      method: 'DELETE',
       credentials: 'include',
     }).then((resp) => {
       if (resp.status === 200) {

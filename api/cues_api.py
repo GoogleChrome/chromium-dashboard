@@ -19,7 +19,7 @@ from __future__ import print_function
 import logging
 
 from framework import basehandlers
-import models
+from internals import models
 
 # We only accept known cue name strings.
 ALLOWED_CUES = ['progress-checkmarks']
