@@ -1075,6 +1075,8 @@ class Feature(DictModel):
   experiment_extension_reason = db.StringProperty(multiline=True)
   ongoing_constraints = db.StringProperty(multiline=True)
 
+  finch_url = db.LinkProperty()
+
   star_count = db.IntegerProperty(default=0)
 
 
