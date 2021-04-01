@@ -53,8 +53,7 @@ STAGE_FORMS = {
         },
 
     models.FEATURE_TYPE_EXISTING_ID: {
-        models.INTENT_INCUBATE: guideforms.Any_Identify,
-        models.INTENT_IMPLEMENT: guideforms.Any_Implement,
+        models.INTENT_IMPLEMENT: guideforms.Existing_Prototype,
         models.INTENT_EXPERIMENT: guideforms.Any_DevTrial,
         models.INTENT_EXTEND_TRIAL: guideforms.Existing_OriginTrial,
         models.INTENT_SHIP: guideforms.Most_PrepareToShip,
@@ -62,16 +61,14 @@ STAGE_FORMS = {
         },
 
     models.FEATURE_TYPE_CODE_CHANGE_ID: {
-        models.INTENT_INCUBATE: guideforms.Any_Identify,
-        models.INTENT_IMPLEMENT: guideforms.Any_Implement,
+        models.INTENT_IMPLEMENT: guideforms.PSA_Implement,
         models.INTENT_EXPERIMENT: guideforms.Any_DevTrial,
         models.INTENT_SHIP: guideforms.PSA_PrepareToShip,
         models.INTENT_SHIPPED: guideforms.Any_Ship,
         },
 
     models.FEATURE_TYPE_DEPRECATION_ID: {
-        models.INTENT_INCUBATE: guideforms.Any_Identify,
-        models.INTENT_IMPLEMENT: guideforms.Any_Implement,
+        models.INTENT_IMPLEMENT: guideforms.Deprecation_Implement,
         models.INTENT_EXPERIMENT: guideforms.Any_DevTrial,
         models.INTENT_EXTEND_TRIAL: guideforms.Deprecation_DeprecationTrial,
         models.INTENT_SHIP: guideforms.Deprecation_PrepareToShip,
