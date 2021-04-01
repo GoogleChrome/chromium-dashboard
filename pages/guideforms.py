@@ -39,6 +39,7 @@ class MultiEmailField(forms.Field):
         """Check if value consists only of valid emails."""
         # Use the parent's handling of required fields, etc.
         super(MultiEmailField, self).validate(value)
+        # Check if each email is valid
         for email in value:
             validate_email(string.strip(email))
 
