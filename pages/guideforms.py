@@ -715,15 +715,8 @@ ImplStatus_OriginTrial = define_form_class_using_shared_fields(
 Most_PrepareToShip = define_form_class_using_shared_fields(
     'Most_PrepareToShip',
     ('tag_review', 'tag_review_status',
-     'intent_to_implement_url', 'origin_trial_feedback_url',
+     'origin_trial_feedback_url',
      'launch_bug_url', 'intent_to_ship_url', 'i2s_lgtms', 'comments'))
-
-
-PSA_PrepareToShip = define_form_class_using_shared_fields(
-    'PSA_PrepareToShip',
-    ('tag_review',
-     'intent_to_implement_url', 'origin_trial_feedback_url',
-     'launch_bug_url', 'intent_to_ship_url', 'comments'))
 
 
 Any_Ship = define_form_class_using_shared_fields(
@@ -731,16 +724,11 @@ Any_Ship = define_form_class_using_shared_fields(
     ('launch_bug_url', 'comments'))
 
 
-Any_Identify = define_form_class_using_shared_fields(
-    'Any_Identify',
+Existing_Prototype = define_form_class_using_shared_fields(
+    'Existing_Prototype',
     ('owner', 'blink_components', 'motivation', 'explainer_links',
-     'spec_link', 'api_spec', 'bug_url', 'launch_bug_url', 'comments'))
-
-
-Any_Implement = define_form_class_using_shared_fields(
-    'Any_Implement',
-    ('spec_link', 'comments'))
-  # TODO(jrobbins): advise user to request a tag review
+     'spec_link', 'api_spec', 'bug_url', 'launch_bug_url',
+     'intent_to_implement_url', 'comments'))
 
 
 Existing_OriginTrial = define_form_class_using_shared_fields(
@@ -750,6 +738,23 @@ Existing_OriginTrial = define_form_class_using_shared_fields(
      'intent_to_experiment_url', 'i2e_lgtms',
      'origin_trial_feedback_url', 'comments'))
 
+
+PSA_Implement = define_form_class_using_shared_fields(
+    'Any_Implement',
+    ('spec_link', 'comments'))
+  # TODO(jrobbins): advise user to request a tag review
+
+
+PSA_PrepareToShip = define_form_class_using_shared_fields(
+    'PSA_PrepareToShip',
+    ('tag_review',
+     'intent_to_implement_url', 'origin_trial_feedback_url',
+     'launch_bug_url', 'intent_to_ship_url', 'comments'))
+
+
+Deprecation_Implement = define_form_class_using_shared_fields(
+    'Deprecation_Implement',
+    ('motivation', 'spec_link', 'comments'))
 
 # Note: Even though this is similar to another form, it is likely to change.
 Deprecation_PrepareToShip = define_form_class_using_shared_fields(

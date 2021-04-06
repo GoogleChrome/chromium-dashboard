@@ -161,22 +161,15 @@ BLINK_LAUNCH_PROCESS = Process(
 
 BLINK_FAST_TRACK_STAGES = [
   ProcessStage(
-      'Identify feature',
-      'Create an initial WebStatus feature entry to implement part '
-      'of an existing specification or combinaton of specifications.',
+      'Start prototyping',
+      'Write up use cases and scenarios, start coding as a '
+      'runtime enabled feature.',
       ['Spec link',
        'API spec',
-      ],
-      [],
-      models.INTENT_NONE, models.INTENT_INCUBATE),
-
-  ProcessStage(
-      'Implement',
-      'Check code into Chromium under a flag.',
-      ['Code in Chromium',
-      ],
-      [],
-      models.INTENT_INCUBATE, models.INTENT_IMPLEMENT),
+       'Code in Chromium',
+       ],
+      [('Draft Intent to Prototype email', INTENT_EMAIL_URL)],
+      models.INTENT_NONE, models.INTENT_IMPLEMENT),
 
   ProcessStage(
       'Dev trials and iterate on implementation',
@@ -238,25 +231,17 @@ BLINK_FAST_TRACK_PROCESS = Process(
 
 PSA_ONLY_STAGES = [
   ProcessStage(
-      'Identify feature',
-      'Create an initial WebStatus feature entry for a web developer '
-      'facing change to existing code.',
-      ['Spec links',
-      ],
-      [],
-      models.INTENT_NONE, models.INTENT_INCUBATE),
-
-  ProcessStage(
       'Implement',
       'Check code into Chromium under a flag.',
-      ['Code in Chromium',
+      ['Spec links',
+       'Code in Chromium',
       ],
       [],
-      models.INTENT_INCUBATE, models.INTENT_IMPLEMENT),
+      models.INTENT_NONE, models.INTENT_IMPLEMENT),
 
   ProcessStage(
       'Dev trials and iterate on implementation',
-      'Publicize availablity for developers to try. '
+      '(Optional) Publicize availablity for developers to try. '
       'Act on feedback from partners and web developers.',
       ['Ready for Trial email',
        'Vendor signals',
@@ -304,7 +289,7 @@ DEPRECATION_STAGES = [
        'Code in Chromium',
       ],
       [('Draft Intent to Deprecate and Remove email', INTENT_EMAIL_URL)],
-      models.INTENT_NONE, models.INTENT_INCUBATE),
+      models.INTENT_NONE, models.INTENT_IMPLEMENT),
 
   # TODO(cwilso): Work out additional steps for flag defaulting to disabled.
   ProcessStage(
@@ -315,7 +300,7 @@ DEPRECATION_STAGES = [
        'Estimated target milestone',
       ],
       [('Draft Ready for Trial email', INTENT_EMAIL_URL)],
-      models.INTENT_INCUBATE, models.INTENT_EXPERIMENT),
+      models.INTENT_IMPLEMENT, models.INTENT_EXPERIMENT),
 
   ProcessStage(
       'Prepare for Deprecation Trial',
