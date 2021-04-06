@@ -438,6 +438,14 @@ ALL_FIELDS = {
         ('If your feature was available as an origin trial, link to a summary '
          'of usage and developer feedback. If not, leave this empty.')),
 
+    'finch_url': forms.URLField(
+        required=False, label='Finch experiment',
+        widget=forms.URLInput(attrs={'placeholder': 'https://'}),
+        help_text=
+        ('If your feature will roll out gradually via a '
+         '<a href="go/finch" targe="_blank">Finch experiment</a>, '
+         'link to it here.')),
+
     'i2e_lgtms': forms.EmailField(
         required=False, label='Intent to Experiment LGTM by',
         widget=forms.EmailInput(
@@ -721,7 +729,7 @@ Most_PrepareToShip = define_form_class_using_shared_fields(
 
 Any_Ship = define_form_class_using_shared_fields(
     'Any_Ship',
-    ('launch_bug_url', 'comments'))
+    ('launch_bug_url', 'finch_url', 'comments'))
 
 
 Existing_Prototype = define_form_class_using_shared_fields(
@@ -865,6 +873,7 @@ Flat_PrepareToShip = define_form_class_using_shared_fields(
 Flat_Ship = define_form_class_using_shared_fields(
     'Flat_Ship',
     (# Implementation
+     'finch_url',
      'shipped_milestone', 'shipped_android_milestone',
      'shipped_ios_milestone', 'shipped_webview_milestone'))
 
@@ -952,6 +961,7 @@ DISPLAY_FIELDS_IN_STAGES = {
         'experiment_timeline',  # Deprecated
         ),
     models.INTENT_SHIP: make_display_specs(
+        'finch_url',
         'shipped_milestone', 'shipped_android_milestone',
         'shipped_ios_milestone', 'shipped_webview_milestone',
         'intent_to_ship_url', 'i2s_lgtms'),
