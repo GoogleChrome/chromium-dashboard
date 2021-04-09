@@ -69,6 +69,17 @@ def can_edit_feature(user, feature):
   return can_edit_any_feature(user)
 
 
+def can_approve_feature(user, feature, approvers):
+  """Return True if the user is allowed to approve the given feature."""
+  # TODO(jrobbins): make this per-feature
+  if not can_view_feature(user, feature):
+    return False
+  if can_admin_site(user):
+    return True
+  is_approver = user is not None and user.email() in approvers
+  return is_approver
+
+
 def _reject_or_proceed(
     handler_obj, handler_method, handler_args, handler_kwargs,
     perm_function):
