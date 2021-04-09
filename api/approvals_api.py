@@ -19,6 +19,7 @@ from __future__ import print_function
 import logging
 
 from framework import basehandlers
+from framework import permissions
 from internals import approval_defs
 from internals import models
 
@@ -40,29 +41,28 @@ class ApprovalsAPI(basehandlers.APIHandler):
   def do_post(self):
     """Set an approval value for the specified feature."""
     json_body = self.request.get_json(force=True)
-    feature_id = json_body.get('featureId')
-    field_id = json_body.get('fieldId')
+    feature_id = json_body.get('feature_id')
+    field_id = json_body.get('field_id')
     new_state = json_body.get('state')
+
+    if not approval_defs.is_valid_field_id(field_id):
+      logging.info('Invalid field_id: %r', field_id)
+      self.abort(400)
+
+    if not models.Approval.is_valid_state(new_state):
+      logging.info('Invalid state: %r', new_state)
+      self.abort(400)
 
     if type(feature_id) != int:
       logging.info('Invalid feature_id: %r', feature_id)
       self.abort(400)
-
-    if type(field_id) != int:
-      logging.info('Invalid field_id: %r', field_id)
-      self.abort(400)
-
     feature = models.Feature.get_feature(feature_id)
     if not feature:
-      logging.info('feature not found: %r', feature_id)
+      logging.info('Feature not found: %r', feature_id)
       self.abort(404)
 
-    user = self.get_current_user()
-    if not user:
-      logging.info('User must be signed in before approving')
-      self.abort(400)
 
-    # TODO(jrobbins): Validate field_id
+    user = self.get_current_user()
 
     approvers = approval_defs.get_approvers(field_id)
     if not permissions.can_approve_feature(user, feature, approvers):

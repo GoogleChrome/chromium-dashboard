@@ -1116,26 +1116,29 @@ class Approval(DictModel):
     return approvals
 
   @classmethod
+  def is_valid_state(cls, new_state):
+    """Return true if new_state is valid."""
+    return new_state in cls.APPROVAL_VALUES
+
+  @classmethod
   def set_approval(cls, feature_id, field_id, new_state, set_by_email):
     """Add or update an approval value."""
-    if new_state not in cls.APPROVAL_VALUES:
+    if not cls.is_valid_state(new_state):
       raise ValueError('Invalid approval state')
 
     now = datetime.datetime.now()
     existing = cls.get_approvals(feature_id, field_id=field_id)
-    for appr in existing.values:
+    for appr in existing:
       if appr.set_by == set_by_email:
-        val.set_on = now
-        val.state = new_state
-        val.put()
+        appr.set_on = now
+        appr.state = new_state
+        appr.put()
         return
 
     new_appr = Approval(
         feature_id=feature_id, field_id=field_id, state=new_state,
         set_on=now, set_by=set_by_email)
     new_appr.put()
-
-
 
 
 class UserPref(DictModel):

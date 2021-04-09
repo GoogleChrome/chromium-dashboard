@@ -32,7 +32,7 @@ class FetchOwnersTest(unittest.TestCase):
 
   @mock.patch('requests.get')
   def test__normal(self, mock_get):
-    """We can fetch and parse an OWNERS file."""
+    """We can fetch and parse an OWNERS file.  And reuse cached value."""
     mock_get.return_value = testing_config.Blank(
         status_code=200,
         iter_lines=lambda: [
@@ -46,11 +46,14 @@ class FetchOwnersTest(unittest.TestCase):
         )
 
     actual = approval_defs.fetch_owners('https://example.com')
+    again = approval_defs.fetch_owners('https://example.com')
 
+    # Only called once because second call will be a ramcache hit.
     mock_get.assert_called_once_with('https://example.com')
     self.assertEqual(
         actual,
         ['owner1@example.com', 'owner2@example.com', 'owner3@example.com'])
+    self.assertEqual(again, actual)
 
   @mock.patch('logging.error')
   @mock.patch('requests.get')

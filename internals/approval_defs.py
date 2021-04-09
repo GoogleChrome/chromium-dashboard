@@ -20,6 +20,10 @@ import collections
 import logging
 import requests
 
+from framework import ramcache
+
+CACHE_EXPIRATION = 60 * 60  # One hour
+
 
 ONE_LGTM = 'One LGTM'
 THREE_LGTM = 'Three LGTMs'
@@ -53,10 +57,12 @@ APPROVAL_FIELDS_BY_ID = {
     }
 
 
-# XXX cache
-
 def fetch_owners(url):
   """Load a list of email addresses from an OWNERS file."""
+  cached_owners = ramcache.get(url)
+  if cached_owners:
+    return cached_owners
+
   owners = []
   response = requests.get(url)
   if response.status_code != 200:
@@ -72,6 +78,7 @@ def fetch_owners(url):
     if '@' in line and '.' in line:
       owners.append(line)
 
+  ramcache.set(url, owners, time=CACHE_EXPIRATION)
   return owners
 
 

@@ -30,6 +30,7 @@ from internals import models
 
 NOW = datetime.datetime.now()
 
+
 class ApprovalsAPITest(unittest.TestCase):
 
   def setUp(self):
@@ -111,4 +112,97 @@ class ApprovalsAPITest(unittest.TestCase):
         {"approvals": [self.expected1]},
         actual_response)
 
-  # TODO(jrobbins): tests for POST
+  def test_post__bad_feature_id(self):
+    """Handler rejects requests that don't specify a feature ID correctly."""
+    params = {}
+    with register.app.test_request_context(self.request_path, json=params):
+      with self.assertRaises(werkzeug.exceptions.BadRequest):
+        self.handler.do_post()
+
+    params = {'feature_id': 'not an int'}
+    with register.app.test_request_context(self.request_path, json=params):
+      with self.assertRaises(werkzeug.exceptions.BadRequest):
+        self.handler.do_post()
+
+  def test_post__bad_field_id(self):
+    """Handler rejects requests that don't specify a field ID correctly."""
+    params = {'feature_id': self.feature_id}
+    with register.app.test_request_context(self.request_path, json=params):
+      with self.assertRaises(werkzeug.exceptions.BadRequest):
+        self.handler.do_post()
+
+    params = {'feature_id': self.feature_id, 'field_id': 'not an int'}
+    with register.app.test_request_context(self.request_path, json=params):
+      with self.assertRaises(werkzeug.exceptions.BadRequest):
+        self.handler.do_post()
+
+    params = {'feature_id': self.feature_id, 'field_id': 999}
+    with register.app.test_request_context(self.request_path, json=params):
+      with self.assertRaises(werkzeug.exceptions.BadRequest):
+        self.handler.do_post()
+
+  def test_post__bad_state(self):
+    """Handler rejects requests that don't specify a state correctly."""
+    params = {'feature_id': self.feature_id, 'field_id': 1}
+    with register.app.test_request_context(self.request_path, json=params):
+      with self.assertRaises(werkzeug.exceptions.BadRequest):
+        self.handler.do_post()
+
+    params = {'feature_id': self.feature_id, 'field_id': 1,
+              'state': 'not an int'}
+    with register.app.test_request_context(self.request_path, json=params):
+      with self.assertRaises(werkzeug.exceptions.BadRequest):
+        self.handler.do_post()
+
+    params = {'feature_id': self.feature_id, 'field_id': 1,
+              'state': 999}
+    with register.app.test_request_context(self.request_path, json=params):
+      with self.assertRaises(werkzeug.exceptions.BadRequest):
+        self.handler.do_post()
+
+  def test_post__feature_not_found(self):
+    """Handler rejects requests that don't match an existing feature."""
+    params = {'feature_id': 12345, 'field_id': 1,
+              'state': models.Approval.NEED_INFO }
+    with register.app.test_request_context(self.request_path, json=params):
+      with self.assertRaises(werkzeug.exceptions.NotFound):
+        self.handler.do_post()
+
+  def test_post__forbidden(self):
+    """Handler rejects requests from anon users and non-approvers."""
+    params = {'feature_id': self.feature_id, 'field_id': 1,
+              'state': models.Approval.NEED_INFO}
+
+    testing_config.sign_out()
+    with register.app.test_request_context(self.request_path, json=params):
+      with self.assertRaises(werkzeug.exceptions.Forbidden):
+        self.handler.do_post()
+
+    testing_config.sign_in('user7@example.com', 123567890)
+    with register.app.test_request_context(self.request_path, json=params):
+      with self.assertRaises(werkzeug.exceptions.Forbidden):
+        self.handler.do_post()
+
+    testing_config.sign_in('user@google.com', 123567890)
+    with register.app.test_request_context(self.request_path, json=params):
+      with self.assertRaises(werkzeug.exceptions.Forbidden):
+        self.handler.do_post()
+
+  @mock.patch('internals.approval_defs.get_approvers')
+  def test_post__add_or_update(self, mock_get_approvers):
+    """Handler adds approval when one did not exist before."""
+    mock_get_approvers.return_value = ['owner1@example.com']
+    testing_config.sign_in('owner1@example.com', 123567890)
+    params = {'feature_id': self.feature_id, 'field_id': 1,
+              'state': models.Approval.NEED_INFO}
+    with register.app.test_request_context(self.request_path, json=params):
+      actual = self.handler.do_post()
+
+    self.assertEqual(actual, {'message': 'Done'})
+    updated_approvals = models.Approval.get_approvals(self.feature_id)
+    self.assertEqual(1, len(updated_approvals))
+    appr = updated_approvals[0]
+    self.assertEqual(appr.feature_id, self.feature_id)
+    self.assertEqual(appr.field_id, 1)
+    self.assertEqual(appr.set_by, 'owner1@example.com')
+    self.assertEqual(appr.state, models.Approval.NEED_INFO)
