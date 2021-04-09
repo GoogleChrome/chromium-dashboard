@@ -18,6 +18,7 @@ from __future__ import print_function
 
 import collections
 
+from internals import approval_defs
 from internals import models
 
 
@@ -32,17 +33,22 @@ Process = collections.namedtuple(
 
 ProcessStage = collections.namedtuple(
     'ProcessStage',
-    'name, description, progress_items, actions, '
+    'name, description, progress_items, actions, approvals, '
     'incoming_stage, outgoing_stage')
 
 
 def process_to_dict(process):
   """Return nested dicts for the nested namedtuples of a process."""
+  # These lines are sort of like a deep version of _asdict().
+  stages = [stage._asdict() for stage in process.stages]
+  for stage in stages:
+    stage['approvals'] = [a._asdict() for a in stage['approvals']]
+
   process_dict = {
       'name': process.name,
       'description': process.description,
       'applicability': process.applicability,
-      'stages': [stage._asdict() for stage in process.stages],
+      'stages': stages,
   }
   return process_dict
 
@@ -70,6 +76,7 @@ BLINK_PROCESS_STAGES = [
        'Explainer',
       ],
       [],
+      [],
       models.INTENT_NONE, models.INTENT_INCUBATE),
 
   ProcessStage(
@@ -82,6 +89,7 @@ BLINK_PROCESS_STAGES = [
        'Intent to Prototype email',
       ],
       [('Draft Intent to Prototype email', INTENT_EMAIL_URL)],
+      [approval_defs.PrototypeApproval],
       models.INTENT_INCUBATE, models.INTENT_IMPLEMENT),
 
   ProcessStage(
@@ -98,6 +106,7 @@ BLINK_PROCESS_STAGES = [
        'Ready for Trial email',
       ],
       [('Draft Ready for Trial email', INTENT_EMAIL_URL)],
+      [],
       models.INTENT_IMPLEMENT, models.INTENT_EXPERIMENT),
 
   ProcessStage(
@@ -110,6 +119,7 @@ BLINK_PROCESS_STAGES = [
        'Documentation signoff',  # TODO(jrobbins): needs detector.
        'Estimated target milestone',
       ],
+      [],
       [],
       models.INTENT_EXPERIMENT, models.INTENT_IMPLEMENT_SHIP),
 
@@ -124,6 +134,7 @@ BLINK_PROCESS_STAGES = [
        'One LGTM on Intent to Experiment',
       ],
       [('Draft Intent to Experiment email', INTENT_EMAIL_URL)],
+      [approval_defs.ExperimentApproval],
       models.INTENT_IMPLEMENT_SHIP, models.INTENT_EXTEND_TRIAL),
 
   ProcessStage(
@@ -138,6 +149,7 @@ BLINK_PROCESS_STAGES = [
        'Three LGTMs on Intent to Ship',
       ],
       [('Draft Intent to Ship email', INTENT_EMAIL_URL)],
+      [approval_defs.ShipApproval],
       models.INTENT_IMPLEMENT_SHIP, models.INTENT_SHIP),
 
   ProcessStage(
@@ -147,6 +159,7 @@ BLINK_PROCESS_STAGES = [
       ['Finalized vendor signals',  # TODO(jrobbins): needs detector.
        'Finalized target milestone',  # TODO(jrobbins): needs detector.
       ],
+      [],
       [],
       models.INTENT_SHIP, models.INTENT_SHIPPED),
   ]
@@ -169,6 +182,7 @@ BLINK_FAST_TRACK_STAGES = [
        'Code in Chromium',
        ],
       [('Draft Intent to Prototype email', INTENT_EMAIL_URL)],
+      [approval_defs.PrototypeApproval],
       models.INTENT_NONE, models.INTENT_IMPLEMENT),
 
   ProcessStage(
@@ -183,6 +197,7 @@ BLINK_FAST_TRACK_STAGES = [
        'Estimated target milestone',
       ],
       [('Draft Ready for Trial email', INTENT_EMAIL_URL)],
+      [],
       models.INTENT_IMPLEMENT, models.INTENT_EXPERIMENT),
 
   ProcessStage(
@@ -196,6 +211,7 @@ BLINK_FAST_TRACK_STAGES = [
        'One LGTM on Intent to Experiment',
       ],
       [('Draft Intent to Experiment email', INTENT_EMAIL_URL)],
+      [approval_defs.ExperimentApproval],
       models.INTENT_EXPERIMENT, models.INTENT_EXTEND_TRIAL),
 
   ProcessStage(
@@ -208,6 +224,7 @@ BLINK_FAST_TRACK_STAGES = [
        'Three LGTMs on Intent to Ship',
       ],
       [('Draft Intent to Ship email', INTENT_EMAIL_URL)],
+      [approval_defs.ShipApproval],
       models.INTENT_EXPERIMENT, models.INTENT_SHIP),
 
   ProcessStage(
@@ -217,6 +234,7 @@ BLINK_FAST_TRACK_STAGES = [
       ['Finalized vendor signals',  # TODO(jrobbins): needs detector.
        'Finalized target milestone',  # TODO(jrobbins): needs detector.
       ],
+      [],
       [],
       models.INTENT_SHIP, models.INTENT_SHIPPED),
   ]
@@ -237,6 +255,7 @@ PSA_ONLY_STAGES = [
        'Code in Chromium',
       ],
       [],
+      [],
       models.INTENT_NONE, models.INTENT_IMPLEMENT),
 
   ProcessStage(
@@ -248,6 +267,7 @@ PSA_ONLY_STAGES = [
        'Estimated target milestone',
       ],
       [('Draft Ready for Trial email', INTENT_EMAIL_URL)],
+      [],
       models.INTENT_IMPLEMENT, models.INTENT_EXPERIMENT),
 
   ProcessStage(
@@ -258,6 +278,7 @@ PSA_ONLY_STAGES = [
        'Intent to Ship email',
       ],
       [('Draft Intent to Ship email', INTENT_EMAIL_URL)],
+      [approval_defs.ShipApproval],
       models.INTENT_EXPERIMENT, models.INTENT_SHIP),
 
   ProcessStage(
@@ -267,6 +288,7 @@ PSA_ONLY_STAGES = [
       ['Finalized vendor signals',  # TODO(jrobbins): needs detector.
        'Finalized target milestone',  # TODO(jrobbins): needs detector.
       ],
+      [],
       [],
       models.INTENT_SHIP, models.INTENT_SHIPPED),
   ]
@@ -289,6 +311,7 @@ DEPRECATION_STAGES = [
        'Code in Chromium',
       ],
       [('Draft Intent to Deprecate and Remove email', INTENT_EMAIL_URL)],
+      [approval_defs.PrototypeApproval],
       models.INTENT_NONE, models.INTENT_IMPLEMENT),
 
   # TODO(cwilso): Work out additional steps for flag defaulting to disabled.
@@ -300,6 +323,7 @@ DEPRECATION_STAGES = [
        'Estimated target milestone',
       ],
       [('Draft Ready for Trial email', INTENT_EMAIL_URL)],
+      [],
       models.INTENT_IMPLEMENT, models.INTENT_EXPERIMENT),
 
   ProcessStage(
@@ -313,6 +337,7 @@ DEPRECATION_STAGES = [
       ],
       [('Draft Request for Deprecation Trial email', INTENT_EMAIL_URL)],
       # TODO(jrobbins): Intent to extend deprecation.
+      [approval_defs.ExperimentApproval],
       models.INTENT_EXPERIMENT, models.INTENT_EXTEND_TRIAL),
 
   ProcessStage(
@@ -324,6 +349,7 @@ DEPRECATION_STAGES = [
        'Three LGTMs on Intent to Ship',
       ],
       [('Draft Intent to Ship email', INTENT_EMAIL_URL)],
+      [approval_defs.ShipApproval],
       models.INTENT_EXPERIMENT, models.INTENT_SHIP),
 
   ProcessStage(
@@ -331,6 +357,7 @@ DEPRECATION_STAGES = [
       'Once the feature is no longer available, remove the code.',
       ['Code removed',
       ],
+      [],
       [],
       models.INTENT_SHIP, models.INTENT_REMOVED),
   ]

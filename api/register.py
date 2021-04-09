@@ -17,6 +17,7 @@ from __future__ import division
 from __future__ import print_function
 
 import settings
+from api import approvals_api
 from api import cues_api
 from api import features_api
 from api import stars_api
@@ -29,7 +30,8 @@ API_BASE = '/api/v0'
 app = basehandlers.FlaskApplication([
     ('/features', features_api.FeaturesAPI),
     ('/features/<int:feature_id>', features_api.FeaturesAPI),
-    # ('/features/<int:feature_id>/approvals/<int:field_id>', TODO),
+    ('/features/<int:feature_id>/approvals/<int:field_id>',
+     approvals_api.ApprovalsAPI),
     # ('/features/<int:feature_id>/approvals/<int:field_id>/comments', TODO),
 
     ('/currentuser/stars', stars_api.StarsAPI),

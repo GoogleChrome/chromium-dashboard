@@ -104,6 +104,17 @@ class PermissionFunctionTests(unittest.TestCase):
         permissions.can_edit_feature, (None,),
         normal=False, special=True, admin=True, anon=False)
 
+  def test_can_approve_feature(self):
+    approvers = []
+    self.check_function_results(
+        permissions.can_approve_feature, (None, approvers),
+        normal=False, special=False, admin=True, anon=False)
+
+    approvers = ['user@example.com']
+    self.check_function_results(
+        permissions.can_approve_feature, (None, approvers),
+        normal=True, special=False, admin=True, anon=False)
+
 
 class RequireAdminSiteTests(unittest.TestCase):
 
