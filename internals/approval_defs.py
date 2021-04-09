@@ -71,7 +71,6 @@ def fetch_owners(url):
     raise ValueError('Could not get OWNERS file')
 
   for line in response.iter_lines():
-    print('line is %r' % line)
     if '#' in line:
       line = line[:line.index('#')]
     line = line.strip()
@@ -86,6 +85,9 @@ def get_approvers(field_id):
   """Return a list of email addresses of users allowed to approve."""
   afd = APPROVAL_FIELDS_BY_ID[field_id]
 
+  # afd.approvers can be either a hard-coded list of approver emails
+  # or it can be a URL of an OWNERS file.  Right now we only use the
+  # URL approach, but both are supported.
   if isinstance(afd.approvers, str):
     owners = fetch_owners(afd.approvers)
     return owners
