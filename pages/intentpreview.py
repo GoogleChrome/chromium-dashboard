@@ -36,12 +36,7 @@ class IntentEmailPreviewHandler(basehandlers.FlaskHandler):
 
   @permissions.require_edit_feature
   def get_template_data(self, feature_id=None, stage_id=None):
-    if not feature_id:
-      self.abort(404)
-    f = models.Feature.get_by_id(feature_id)
-    if f is None:
-      self.abort(404)
-
+    f = self.get_specified_feature(feature_id=feature_id)
     intent_stage = stage_id if stage_id is not None else f.intent_stage
 
     page_data = self.get_page_data(feature_id, f, intent_stage)

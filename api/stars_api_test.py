@@ -95,7 +95,7 @@ class StarsAPITest(unittest.TestCase):
     params = {"featureId": feature_id}
     testing_config.sign_out()
     with register.app.test_request_context(self.request_path, json=params):
-      with self.assertRaises(werkzeug.exceptions.BadRequest):
+      with self.assertRaises(werkzeug.exceptions.Forbidden):
         self.handler.do_post()
 
   def test_post__duplicate(self):

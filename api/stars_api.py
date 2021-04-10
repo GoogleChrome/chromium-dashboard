@@ -43,24 +43,10 @@ class StarsAPI(basehandlers.APIHandler):
 
   def do_post(self):
     """Set or clear a star on the specified feature."""
-    json_body = self.request.get_json(force=True)
-    feature_id = json_body.get('featureId')
-    starred = json_body.get('starred', True)
+    feature = self.get_specified_feature()
+    starred = self.get_bool_param('starred', default=True)
+    user = self.get_current_user(required=True)
 
-    if type(feature_id) != int:
-      logging.info('Invalid feature_id: %r', feature_id)
-      self.abort(400)
-
-    feature = models.Feature.get_feature(feature_id)
-    if not feature:
-      logging.info('feature not found: %r', feature_id)
-      self.abort(404)
-
-    user = self.get_current_user()
-    if not user:
-      logging.info('User must be signed in before starring')
-      self.abort(400)
-
-    notifier.FeatureStar.set_star(user.email(), feature_id, starred)
+    notifier.FeatureStar.set_star(user.email(), feature.key().id(), starred)
     # Callers don't use the JSON response for this API call.
     return {'message': 'Done'}

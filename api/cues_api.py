@@ -36,16 +36,8 @@ class CuesAPI(basehandlers.APIHandler):
 
   def do_post(self):
     """Dismisses a cue card for the signed in user."""
-    json_body = self.request.get_json()
-    cue = json_body.get('cue')
-    if cue not in ALLOWED_CUES:
-      logging.info('Unexpected cue: %r', cue)
-      self.abort(400)
-
-    user = self.get_current_user()
-    if not user:
-      logging.info('User must be signed in before dismissing cues')
-      self.abort(400)
+    cue = self.get_param('cue', allowed=ALLOWED_CUES)
+    user = self.get_current_user(required=True)
 
     models.UserPref.dismiss_cue(cue)
     # Callers don't use the JSON response for this API call.

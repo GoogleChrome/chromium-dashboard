@@ -36,15 +36,7 @@ class FeaturesAPI(basehandlers.APIHandler):
   def do_delete(self, feature_id):
     """Delete the specified feature."""
     # TODO(jrobbins): implement undelete UI.  For now, use cloud console.
-    if not feature_id:
-      logging.info('feature_id not specified')
-      self.abort(400)
-
-    feature = models.Feature.get_by_id(feature_id)
-    if not feature:
-      logging.info('feature %r not found' % feature_id)
-      self.abort(404)
-
+    feature = self.get_specified_feature(feature_id=feature_id)
     feature.deleted = True
     feature.put()
     ramcache.flush_all()
