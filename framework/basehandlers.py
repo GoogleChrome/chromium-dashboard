@@ -46,17 +46,71 @@ class BaseHandler(flask.views.MethodView):
   def request(self):
     return flask.request
 
-  def abort(self, status):
+  def abort(self, status, msg=None):
     """Support webapp2-style, e.g., self.abort(400)."""
-    flask.abort(status)
+    if msg:
+      if status == 500:
+        logging.error('ISE: %s' % msg)
+      else:
+        logging.info('Abort %r: %s' % (status, msg))
+      flask.abort(status, msg)
+    else:
+      flask.abort(status)
 
   def redirect(self, url):
     """Support webapp2-style, e.g., return self.redirect(url)."""
     return flask.redirect(url)
 
-  def get_current_user(self):
+  def get_current_user(self, required=False):
     # TODO(jrobbins): oauth support
-    return users.get_current_user()
+    user = users.get_current_user()
+    if required and not user:
+      self.abort(403, msg='User must be signed in')
+    return user
+
+  def get_param(
+      self, name, default=None, required=True, validator=None, allowed=None):
+    """Get the specified JSON parameter."""
+    json_body = self.request.get_json(force=True)
+    val = json_body.get(name, default)
+    if required and not val:
+      self.abort(400, msg='Missing parameter %r' % name)
+    if val and validator and not validator(val):
+      self.abort(400, msg='Invalid value for parameter %r' % name)
+    if val and allowed and val not in allowed:
+      self.abort(400, msg='Unexpected value for parameter %r' % name)
+    return val
+
+  def get_int_param(
+      self, name, default=None, required=True, validator=None, allowed=None):
+    """Get the specified integer JSON parameter."""
+    val = self.get_param(
+        name, default=default, required=required, validator=validator,
+        allowed=allowed)
+    if type(val) != int:
+      self.abort(400, msg='Parameter %r was not an int' % name)
+    return val
+
+  def get_bool_param(self, name, default=False, required=False):
+    """Get the specified boolean JSON parameter."""
+    val = self.get_param(name, default=default, required=required)
+    if type(val) != bool:
+      self.abort(400, msg='Parameter %r was not a bool' % name)
+    return val
+
+  def get_specified_feature(self, feature_id=None, required=True):
+    """Get the feature specified in the featureId parameter."""
+    feature_id = (feature_id or
+                  self.get_int_param('featureId', required=required))
+    if not required and not feature_id:
+      return None
+    feature = models.Feature.get_by_id(feature_id)
+    if required and not feature:
+      self.abort(404, msg='Feature not found')
+    user = self.get_current_user()
+    if not permissions.can_view_feature(user, feature):
+      self.abort(403, msg='Cannot view that feature')
+    return feature
 
 
 class APIHandler(BaseHandler):
@@ -234,8 +288,7 @@ class FlaskHandler(BaseHandler):
     if settings.UNIT_TEST_MODE:
       return
     if 'X-AppEngine-QueueName' not in self.request.headers:
-      logging.info('Lacking X-AppEngine-QueueName header')
-      self.abort(403)
+      self.abort(403, msg='Lacking X-AppEngine-QueueName header')
 
   def split_input(self, field_name, delim='\\r?\\n'):
     """Split the input lines, strip whitespace, and skip blank lines."""
@@ -284,8 +337,8 @@ class ConstHandler(FlaskHandler):
     if 'template_path' in defaults:
       template_path = defaults['template_path']
       if '.html' not in template_path:
-        logging.error('template_path %r does not end with .html', template_path)
-        self.abort(500)
+        self.abort(
+            500, msg='template_path %r does not end with .html' % template_path)
       return defaults
 
     return flask.jsonify(defaults)

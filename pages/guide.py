@@ -169,7 +169,7 @@ class ProcessOverview(basehandlers.FlaskHandler):
   def get_template_data(self, feature_id):
     f = models.Feature.get_by_id(long(feature_id))
     if f is None:
-      self.abort(404)
+      self.abort(404, msg='Feature not found')
 
     feature_process = processes.ALL_PROCESSES.get(
         f.feature_type, processes.BLINK_LAUNCH_PROCESS)
@@ -223,7 +223,7 @@ class FeatureEditStage(basehandlers.FlaskHandler):
     """Look up the feature that the user wants to edit, and its process."""
     f = models.Feature.get_by_id(feature_id)
     if f is None:
-      self.abort(404)
+      self.abort(404, msg='Feature not found')
 
     feature_process = processes.ALL_PROCESSES.get(
         f.feature_type, processes.BLINK_LAUNCH_PROCESS)
@@ -278,7 +278,7 @@ class FeatureEditStage(basehandlers.FlaskHandler):
     if feature_id:
       feature = models.Feature.get_by_id(feature_id)
       if feature is None:
-        self.abort(404)
+        self.abort(404, msg='Feature not found')
 
     logging.info('POST is %r', self.form)
 

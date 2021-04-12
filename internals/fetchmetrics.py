@@ -190,8 +190,7 @@ class YesterdayHandler(basehandlers.FlaskHandler):
         specified_day = datetime.datetime.strptime(date_str, '%Y%m%d').date()
         days.append(specified_day)
       except ValueError:
-        logging.info('Falsed to parse date string %r', date_str)
-        self.abort(400)
+        self.abort(400, msg='Failed to parse date string.')
 
     else:
       today = today or datetime.date.today()

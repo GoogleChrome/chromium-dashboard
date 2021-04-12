@@ -33,11 +33,11 @@ class FeatureDetailHandler(basehandlers.FlaskHandler):
   def get_template_data(self, feature_id):
     f = models.Feature.get_by_id(feature_id)
     if f is None:
-      self.abort(404)
+      self.abort(404, msg='Feature not found')
 
     if f.deleted:
       # TODO(jrobbins): Check permissions and offer option to undelete.
-      self.abort(404)
+      self.abort(404, msg='Feature has been deleted')
 
     feature_process = processes.ALL_PROCESSES.get(
         f.feature_type, processes.BLINK_LAUNCH_PROCESS)

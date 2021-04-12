@@ -119,42 +119,42 @@ class ApprovalsAPITest(unittest.TestCase):
       with self.assertRaises(werkzeug.exceptions.BadRequest):
         self.handler.do_post()
 
-    params = {'feature_id': 'not an int'}
+    params = {'featureId': 'not an int'}
     with register.app.test_request_context(self.request_path, json=params):
       with self.assertRaises(werkzeug.exceptions.BadRequest):
         self.handler.do_post()
 
   def test_post__bad_field_id(self):
     """Handler rejects requests that don't specify a field ID correctly."""
-    params = {'feature_id': self.feature_id}
+    params = {'featureId': self.feature_id}
     with register.app.test_request_context(self.request_path, json=params):
       with self.assertRaises(werkzeug.exceptions.BadRequest):
         self.handler.do_post()
 
-    params = {'feature_id': self.feature_id, 'field_id': 'not an int'}
+    params = {'featureId': self.feature_id, 'fieldId': 'not an int'}
     with register.app.test_request_context(self.request_path, json=params):
       with self.assertRaises(werkzeug.exceptions.BadRequest):
         self.handler.do_post()
 
-    params = {'feature_id': self.feature_id, 'field_id': 999}
+    params = {'featureId': self.feature_id, 'fieldId': 999}
     with register.app.test_request_context(self.request_path, json=params):
       with self.assertRaises(werkzeug.exceptions.BadRequest):
         self.handler.do_post()
 
   def test_post__bad_state(self):
     """Handler rejects requests that don't specify a state correctly."""
-    params = {'feature_id': self.feature_id, 'field_id': 1}
+    params = {'featureId': self.feature_id, 'fieldId': 1}
     with register.app.test_request_context(self.request_path, json=params):
       with self.assertRaises(werkzeug.exceptions.BadRequest):
         self.handler.do_post()
 
-    params = {'feature_id': self.feature_id, 'field_id': 1,
+    params = {'featureId': self.feature_id, 'fieldId': 1,
               'state': 'not an int'}
     with register.app.test_request_context(self.request_path, json=params):
       with self.assertRaises(werkzeug.exceptions.BadRequest):
         self.handler.do_post()
 
-    params = {'feature_id': self.feature_id, 'field_id': 1,
+    params = {'featureId': self.feature_id, 'fieldId': 1,
               'state': 999}
     with register.app.test_request_context(self.request_path, json=params):
       with self.assertRaises(werkzeug.exceptions.BadRequest):
@@ -162,7 +162,7 @@ class ApprovalsAPITest(unittest.TestCase):
 
   def test_post__feature_not_found(self):
     """Handler rejects requests that don't match an existing feature."""
-    params = {'feature_id': 12345, 'field_id': 1,
+    params = {'featureId': 12345, 'fieldId': 1,
               'state': models.Approval.NEED_INFO }
     with register.app.test_request_context(self.request_path, json=params):
       with self.assertRaises(werkzeug.exceptions.NotFound):
@@ -170,7 +170,7 @@ class ApprovalsAPITest(unittest.TestCase):
 
   def test_post__forbidden(self):
     """Handler rejects requests from anon users and non-approvers."""
-    params = {'feature_id': self.feature_id, 'field_id': 1,
+    params = {'featureId': self.feature_id, 'fieldId': 1,
               'state': models.Approval.NEED_INFO}
 
     testing_config.sign_out()
@@ -193,7 +193,7 @@ class ApprovalsAPITest(unittest.TestCase):
     """Handler adds approval when one did not exist before."""
     mock_get_approvers.return_value = ['owner1@example.com']
     testing_config.sign_in('owner1@example.com', 123567890)
-    params = {'feature_id': self.feature_id, 'field_id': 1,
+    params = {'featureId': self.feature_id, 'fieldId': 1,
               'state': models.Approval.NEED_INFO}
     with register.app.test_request_context(self.request_path, json=params):
       actual = self.handler.do_post()

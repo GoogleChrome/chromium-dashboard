@@ -241,10 +241,9 @@ class FeatureChangeHandler(basehandlers.FlaskHandler):
   def process_post_data(self):
     self.require_task_header()
 
-    json_body = self.request.get_json(force=True)
-    feature = json_body.get('feature') or None
-    is_update = json_body.get('is_update') or False
-    changes = json_body.get('changes') or []
+    feature = self.get_param('feature')
+    is_update = self.get_bool_param('is_update')
+    changes = self.get_param('changes', required=False) or []
 
     logging.info('Starting to notify subscribers for feature %r', feature)
 
@@ -268,10 +267,9 @@ class OutboundEmailHandler(basehandlers.FlaskHandler):
   def process_post_data(self):
     self.require_task_header()
 
-    json_body = self.request.get_json(force=True)
-    to = json_body['to']
-    subject = json_body['subject']
-    email_html = json_body['html']
+    to = self.get_param('to', required=True)
+    subject = self.get_param('subject', required=True)
+    email_html = self.get_param('html', required=True)
 
     if settings.SEND_ALL_EMAIL_TO:
       to_user, to_domain = to.split('@')

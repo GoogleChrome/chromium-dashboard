@@ -40,35 +40,17 @@ class ApprovalsAPI(basehandlers.APIHandler):
 
   def do_post(self):
     """Set an approval value for the specified feature."""
-    json_body = self.request.get_json(force=True)
-    feature_id = json_body.get('feature_id')
-    field_id = json_body.get('field_id')
-    new_state = json_body.get('state')
-
-    if not approval_defs.is_valid_field_id(field_id):
-      logging.info('Invalid field_id: %r', field_id)
-      self.abort(400)
-
-    if not models.Approval.is_valid_state(new_state):
-      logging.info('Invalid state: %r', new_state)
-      self.abort(400)
-
-    if type(feature_id) != int:
-      logging.info('Invalid feature_id: %r', feature_id)
-      self.abort(400)
-    feature = models.Feature.get_feature(feature_id)
-    if not feature:
-      logging.info('Feature not found: %r', feature_id)
-      self.abort(404)
-
-
-    user = self.get_current_user()
+    field_id = self.get_int_param('fieldId')
+    new_state = self.get_int_param(
+        'state', validator= models.Approval.is_valid_state)
+    feature = self.get_specified_feature()
+    user = self.get_current_user(required=True)
 
     approvers = approval_defs.get_approvers(field_id)
     if not permissions.can_approve_feature(user, feature, approvers):
-      logging.info('User is not an approver')
-      self.abort(403)
+      self.abort(403, msg='User is not an approver')
 
-    models.Approval.set_approval(feature_id, field_id, new_state, user.email())
+    models.Approval.set_approval(
+        feature.key().id(), field_id, new_state, user.email())
     # Callers don't use the JSON response for this API call.
     return {'message': 'Done'}
