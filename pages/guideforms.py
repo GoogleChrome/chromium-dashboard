@@ -18,11 +18,28 @@ from __future__ import print_function
 
 import logging
 from django import forms
+from django.core.validators import validate_email
+import string
 
 from google.appengine.api import users
 
 from internals import models
 from internals import processes
+
+class MultiEmailField(forms.Field):
+    def to_python(self, value):
+        """Normalize data to a list of strings."""
+        # Return an empty list if no input was given.
+        if not value:
+            return []
+        return value.split(',')
+
+    def validate(self, value):
+        """Check if value consists only of valid emails."""
+        # Use the parent's handling of required fields, etc.
+        super(MultiEmailField, self).validate(value)
+        for email in value:
+            validate_email(string.strip(email))
 
 SHIPPED_HELP_TXT = (
     'First milestone to ship with this status. Applies to: Enabled by '
@@ -76,10 +93,10 @@ ALL_FIELDS = {
          'EditingHelp#summary-example">Guidelines and example</a>.'
         )),
 
-    'owner': forms.EmailField(
+    'owner': MultiEmailField(
         required=True, label='Contact emails',
         widget=forms.EmailInput(
-            attrs={'multiple': True, 'placeholder': 'email, email'}),
+            attrs={'multiple': True, 'placeholder': 'email,email'}),
         help_text=('Comma separated list of full email addresses. '
                    'Prefer @chromium.org.')),
 
