@@ -53,7 +53,7 @@ class BaseHandlerTests(unittest.TestCase):
   def test_abort__with_msg(self, mock_abort, mock_info):
     """We can abort request handling."""
     self.handler.abort(400, msg='You messed up')
-    mock_abort.assert_called_once_with(400, 'You messed up')
+    mock_abort.assert_called_once_with(400, description='You messed up')
     mock_info.assert_called_once()
 
   @mock.patch('logging.error')
@@ -61,7 +61,7 @@ class BaseHandlerTests(unittest.TestCase):
   def test_abort__with_500_msg(self, mock_abort, mock_error):
     """We can abort request handling."""
     self.handler.abort(500, msg='We messed up')
-    mock_abort.assert_called_once_with(500, 'We messed up')
+    mock_abort.assert_called_once_with(500, description='We messed up')
     mock_error.assert_called_once()
 
   @mock.patch('flask.redirect')
@@ -311,26 +311,26 @@ class APIHandlerTests(unittest.TestCase):
 
   @mock.patch('flask.abort')
   def check_bad_HTTP_method(self, handler_method, mock_abort):
-    mock_abort.side_effect = werkzeug.exceptions.BadRequest
+    mock_abort.side_effect = werkzeug.exceptions.MethodNotAllowed
 
     with self.assertRaises(mock_abort.side_effect):
       handler_method()
-    mock_abort.assert_called_once_with(400, 'Unexpected HTTP method')
+    mock_abort.assert_called_once_with(405, valid_methods=['GET'])
 
     # Extra URL parameters do not crash the app.
     with self.assertRaises(mock_abort.side_effect):
       handler_method(feature_id=1234)
 
   def test_do_post(self):
-    """If a subclass does not implement do_post(), return a 400."""
+    """If a subclass does not implement do_post(), return a 405."""
     self.check_bad_HTTP_method(self.handler.do_post)
 
   def test_do_patch(self):
-    """If a subclass does not implement do_patch(), return a 400."""
+    """If a subclass does not implement do_patch(), return a 405."""
     self.check_bad_HTTP_method(self.handler.do_patch)
 
   def test_do_delete(self):
-    """If a subclass does not implement do_delete(), return a 400."""
+    """If a subclass does not implement do_delete(), return a 405."""
     self.check_bad_HTTP_method(self.handler.do_delete)
 
 
@@ -400,9 +400,9 @@ class FlaskHandlerTests(unittest.TestCase):
     self.assertEqual('special.html', actual)
 
   def test_process_post_data__missing(self):
-    """Subsclass that don't overide process_post_data() give a 400."""
+    """Subsclasses that don't override process_post_data() give a 405."""
     self.handler = basehandlers.FlaskHandler()
-    with self.assertRaises(werkzeug.exceptions.BadRequest):
+    with self.assertRaises(werkzeug.exceptions.MethodNotAllowed):
       self.handler.process_post_data()
 
   def test_get_common_data__signed_out(self):
