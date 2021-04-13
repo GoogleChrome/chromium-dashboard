@@ -153,21 +153,21 @@ class APIHandler(BaseHandler):
     handler_data = self.do_delete(*args, **kwargs)
     return flask.jsonify(handler_data), headers
 
-  def do_get(self):
+  def do_get(self, **kwargs):
     """Subclasses should implement this method to handle a GET request."""
-    raise NotImplementedError()
+    self.abort(404)
 
-  def do_post(self):
+  def do_post(self, **kwargs):
     """Subclasses should implement this method to handle a POST request."""
-    raise NotImplementedError()
+    self.abort(400, msg='Unexpected HTTP method')
 
-  def do_patch(self):
+  def do_patch(self, **kwargs):
     """Subclasses should implement this method to handle a PATCH request."""
-    raise NotImplementedError()
+    self.abort(400, msg='Unexpected HTTP method')
 
-  def do_delete(self):
+  def do_delete(self, **kwargs):
     """Subclasses should implement this method to handle a DELETE request."""
-    raise NotImplementedError()
+    self.abort(400, msg='Unexpected HTTP method')
 
 
 class FlaskHandler(BaseHandler):

@@ -31,7 +31,7 @@ import settings
 
 
 
-class BaseHandlertests(unittest.TestCase):
+class BaseHandlerTests(unittest.TestCase):
 
   def setUp(self):
     self.handler = basehandlers.BaseHandler()
@@ -294,6 +294,45 @@ class ConstHandlerTests(unittest.TestCase):
     self.assertEqual(
         {'UI density': ['default', 'comfortable', 'compact']},
         actual_response.json)
+
+
+class APIHandlerTests(unittest.TestCase):
+
+  def setUp(self):
+    self.handler = basehandlers.APIHandler()
+
+  @mock.patch('flask.abort')
+  def check_bad_HTTP_method(self, handler_method, expected_status, mock_abort):
+    if expected_status == 404:
+      mock_abort.side_effect = werkzeug.exceptions.NotFound
+      expected_args = (expected_status,)
+    else:
+      mock_abort.side_effect = werkzeug.exceptions.BadRequest
+      expected_args = (expected_status, 'Unexpected HTTP method')
+
+    with self.assertRaises(mock_abort.side_effect):
+      handler_method()
+    mock_abort.assert_called_once_with(*expected_args)
+
+    # Extra URL parameters do not crash the app.
+    with self.assertRaises(mock_abort.side_effect):
+      handler_method(feature_id=1234)
+
+  def test_do_get(self):
+    """If a subclass does not implement do_get(), return a 404."""
+    self.check_bad_HTTP_method(self.handler.do_get, 404)
+
+  def test_do_post(self):
+    """If a subclass does not implement do_post(), return a 400."""
+    self.check_bad_HTTP_method(self.handler.do_post, 400)
+
+  def test_do_patch(self):
+    """If a subclass does not implement do_patch(), return a 400."""
+    self.check_bad_HTTP_method(self.handler.do_patch, 400)
+
+  def test_do_delete(self):
+    """If a subclass does not implement do_delete(), return a 400."""
+    self.check_bad_HTTP_method(self.handler.do_delete, 400)
 
 
 class FlaskHandlerTests(unittest.TestCase):
