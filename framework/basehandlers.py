@@ -155,7 +155,8 @@ class APIHandler(BaseHandler):
 
   def do_get(self, **kwargs):
     """Subclasses should implement this method to handle a GET request."""
-    self.abort(404)
+    # Every API handler must handle GET.
+    raise NotImplementedError()
 
   def do_post(self, **kwargs):
     """Subclasses should implement this method to handle a POST request."""
@@ -212,7 +213,7 @@ class FlaskHandler(BaseHandler):
 
   def process_post_data(self):
     """Subclasses should implement this method to handle a POST request."""
-    raise NotImplementedError()
+    self.abort(400, msg='Unexpected HTTP method')
 
   def get_common_data(self, path=None):
     """Return template data used on all pages, e.g., sign-in info."""

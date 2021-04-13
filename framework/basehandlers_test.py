@@ -301,38 +301,37 @@ class APIHandlerTests(unittest.TestCase):
   def setUp(self):
     self.handler = basehandlers.APIHandler()
 
+  def test_do_get(self):
+    """If a subclass does not implement do_get(), raise NotImplementedError."""
+    with self.assertRaises(NotImplementedError):
+      self.handler.do_get()
+
+    with self.assertRaises(NotImplementedError):
+      self.handler.do_get(feature_id=1234)
+
   @mock.patch('flask.abort')
-  def check_bad_HTTP_method(self, handler_method, expected_status, mock_abort):
-    if expected_status == 404:
-      mock_abort.side_effect = werkzeug.exceptions.NotFound
-      expected_args = (expected_status,)
-    else:
-      mock_abort.side_effect = werkzeug.exceptions.BadRequest
-      expected_args = (expected_status, 'Unexpected HTTP method')
+  def check_bad_HTTP_method(self, handler_method, mock_abort):
+    mock_abort.side_effect = werkzeug.exceptions.BadRequest
 
     with self.assertRaises(mock_abort.side_effect):
       handler_method()
-    mock_abort.assert_called_once_with(*expected_args)
+    mock_abort.assert_called_once_with(400, 'Unexpected HTTP method')
 
     # Extra URL parameters do not crash the app.
     with self.assertRaises(mock_abort.side_effect):
       handler_method(feature_id=1234)
 
-  def test_do_get(self):
-    """If a subclass does not implement do_get(), return a 404."""
-    self.check_bad_HTTP_method(self.handler.do_get, 404)
-
   def test_do_post(self):
     """If a subclass does not implement do_post(), return a 400."""
-    self.check_bad_HTTP_method(self.handler.do_post, 400)
+    self.check_bad_HTTP_method(self.handler.do_post)
 
   def test_do_patch(self):
     """If a subclass does not implement do_patch(), return a 400."""
-    self.check_bad_HTTP_method(self.handler.do_patch, 400)
+    self.check_bad_HTTP_method(self.handler.do_patch)
 
   def test_do_delete(self):
     """If a subclass does not implement do_delete(), return a 400."""
-    self.check_bad_HTTP_method(self.handler.do_delete, 400)
+    self.check_bad_HTTP_method(self.handler.do_delete)
 
 
 class FlaskHandlerTests(unittest.TestCase):
@@ -401,9 +400,9 @@ class FlaskHandlerTests(unittest.TestCase):
     self.assertEqual('special.html', actual)
 
   def test_process_post_data__missing(self):
-    """Every subsclass should overide process_post_data()."""
+    """Subsclass that don't overide process_post_data() give a 400."""
     self.handler = basehandlers.FlaskHandler()
-    with self.assertRaises(NotImplementedError):
+    with self.assertRaises(werkzeug.exceptions.BadRequest):
       self.handler.process_post_data()
 
   def test_get_common_data__signed_out(self):
