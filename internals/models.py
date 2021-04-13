@@ -982,12 +982,16 @@ class Feature(DictModel):
   feature_type = db.IntegerProperty(default=FEATURE_TYPE_INCUBATE_ID)
   intent_stage = db.IntegerProperty(default=0)
   summary = db.StringProperty(required=True, multiline=True)
-  origin_trial_feedback_url = db.LinkProperty()
   unlisted = db.BooleanProperty(default=False)
   # TODO(jrobbins): Add an entry_state enum to track app-specific lifecycle
   # info for a feature entry as distinct from process-specific stage.
   deleted = db.BooleanProperty(default=False)
   motivation = db.StringProperty(multiline=True)
+  star_count = db.IntegerProperty(default=0)
+  search_tags = db.StringListProperty()
+  comments = db.StringProperty(multiline=True)
+  owner = db.ListProperty(db.Email)
+  footprint = db.IntegerProperty()  # Deprecated
 
   # Tracability to intent discussion threads
   intent_to_implement_url = db.LinkProperty()
@@ -1009,10 +1013,10 @@ class Feature(DictModel):
   shipped_android_milestone = db.IntegerProperty()
   shipped_ios_milestone = db.IntegerProperty()
   shipped_webview_milestone = db.IntegerProperty()
-  flag_name = db.StringProperty()
 
-  owner = db.ListProperty(db.Email)
-  footprint = db.IntegerProperty()  # Deprecated
+  # DevTrial details.
+  devtrial_instructions = db.LinkProperty()
+  flag_name = db.StringProperty()
   interop_compat_risks = db.StringProperty(multiline=True)
   ergonomics_risks = db.StringProperty(multiline=True)
   activation_risks = db.StringProperty(multiline=True)
@@ -1062,10 +1066,6 @@ class Feature(DictModel):
   sample_links = db.StringListProperty()
   #tests = db.StringProperty()
 
-  search_tags = db.StringListProperty()
-
-  comments = db.StringProperty(multiline=True)
-
   experiment_goals = db.StringProperty(multiline=True)
   experiment_timeline = db.StringProperty(multiline=True)
   ot_milestone_desktop_start = db.IntegerProperty()
@@ -1075,10 +1075,9 @@ class Feature(DictModel):
   experiment_risks = db.StringProperty(multiline=True)
   experiment_extension_reason = db.StringProperty(multiline=True)
   ongoing_constraints = db.StringProperty(multiline=True)
+  origin_trial_feedback_url = db.LinkProperty()
 
   finch_url = db.LinkProperty()
-
-  star_count = db.IntegerProperty(default=0)
 
 
 class Approval(DictModel):

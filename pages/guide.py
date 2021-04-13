@@ -375,6 +375,9 @@ class FeatureEditStage(basehandlers.FlaskHandler):
       feature.ot_milestone_android_end = self.parse_int(
           'ot_milestone_android_end')
 
+    if self.touched('devtrial_instructions'):
+      feature.devtrial_instructions = self.parse_link('devtrial_instructions')
+
     if self.touched('flag_name'):
       feature.flag_name = self.form.get('flag_name')
 

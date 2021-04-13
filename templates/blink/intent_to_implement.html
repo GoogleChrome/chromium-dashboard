@@ -168,6 +168,12 @@
   <p class="preformatted">{{feature.wpt_descr|urlize}}</p>
 {% endif %}
 
+{% if feature.devtrial_instructions %}
+  <br><br><h4>DevTrial instructions</h4>
+  <a href="{{feature.devtrial_instructions}}"
+     >{{feature.devtrial_instructions}}</a>
+{% endif %}
+
 <br><br><h4>Flag name</h4>
 {{feature.flag_name}}
 
