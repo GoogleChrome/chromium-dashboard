@@ -46,16 +46,16 @@ class BaseHandler(flask.views.MethodView):
   def request(self):
     return flask.request
 
-  def abort(self, status, msg=None):
+  def abort(self, status, msg=None, **kwargs):
     """Support webapp2-style, e.g., self.abort(400)."""
     if msg:
       if status == 500:
         logging.error('ISE: %s' % msg)
       else:
         logging.info('Abort %r: %s' % (status, msg))
-      flask.abort(status, msg)
+      flask.abort(status, description=msg, **kwargs)
     else:
-      flask.abort(status)
+      flask.abort(status, **kwargs)
 
   def redirect(self, url):
     """Support webapp2-style, e.g., return self.redirect(url)."""
@@ -153,21 +153,33 @@ class APIHandler(BaseHandler):
     handler_data = self.do_delete(*args, **kwargs)
     return flask.jsonify(handler_data), headers
 
-  def do_get(self):
+  def _get_valid_methods(self):
+    """For 405 responses, list methods the concrete handler implements."""
+    valid_methods = ['GET']
+    if self.do_post.__code__ is not APIHandler.do_post.__code__:
+      valid_methods.append('POST')
+    if self.do_patch.__code__ is not APIHandler.do_patch.__code__:
+      valid_methods.append('PATCH')
+    if self.do_delete.__code__ is not APIHandler.do_delete.__code__:
+      valid_methods.append('DELETE')
+    return valid_methods
+
+  def do_get(self, **kwargs):
     """Subclasses should implement this method to handle a GET request."""
+    # Every API handler must handle GET.
     raise NotImplementedError()
 
-  def do_post(self):
+  def do_post(self, **kwargs):
     """Subclasses should implement this method to handle a POST request."""
-    raise NotImplementedError()
+    self.abort(405, valid_methods=self._get_valid_methods())
 
-  def do_patch(self):
+  def do_patch(self, **kwargs):
     """Subclasses should implement this method to handle a PATCH request."""
-    raise NotImplementedError()
+    self.abort(405, valid_methods=self._get_valid_methods())
 
-  def do_delete(self):
+  def do_delete(self, **kwargs):
     """Subclasses should implement this method to handle a DELETE request."""
-    raise NotImplementedError()
+    self.abort(405, valid_methods=self._get_valid_methods())
 
 
 class FlaskHandler(BaseHandler):
@@ -212,7 +224,7 @@ class FlaskHandler(BaseHandler):
 
   def process_post_data(self):
     """Subclasses should implement this method to handle a POST request."""
-    raise NotImplementedError()
+    self.abort(405, msg='Unexpected HTTP method', valid_methods=['GET'])
 
   def get_common_data(self, path=None):
     """Return template data used on all pages, e.g., sign-in info."""
