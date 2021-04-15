@@ -536,7 +536,7 @@ class FlaskHandlerTests(unittest.TestCase):
   @unittest.skip('TODO(jrobbins): enable after next release')
   @mock.patch('settings.UNIT_TEST_MODE', False)
   def test_require_xsrf_token__missing(self):
-    """We reject a POST with a valid token."""
+    """We reject a POST with a missing token."""
     testing_config.sign_in('user1@example.com', 111)
     form_data = {}
     with test_app.test_request_context('/test', data=form_data):
