@@ -6,6 +6,7 @@ class ChromedashUserlist extends LitElement {
   static get properties() {
     return {
       actionPath: {type: String},
+      token: {type: String},
       users: {attribute: false},
     };
   }
@@ -53,6 +54,7 @@ class ChromedashUserlist extends LitElement {
       const email = formEl.querySelector('input[name="email"]').value;
       const formData = new FormData();
       formData.append('email', email);
+      formData.append('token', this.token);
 
       const resp = await fetch(this.actionPath, {
         method: 'POST',
@@ -81,9 +83,12 @@ class ChromedashUserlist extends LitElement {
     }
 
     const idx = e.target.dataset.index;
+    const formData = new FormData();
+    formData.append('token', this.token);
 
     fetch(e.currentTarget.href, {
       method: 'POST',
+      body: formData,
       credentials: 'same-origin',
     }).then(() => {
       this.removeUser(idx);

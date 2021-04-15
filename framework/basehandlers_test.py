@@ -26,6 +26,7 @@ import werkzeug.exceptions  # Flask HTTP stuff.
 from google.appengine.api import users
 
 from framework import basehandlers
+from framework import xsrf
 from internals import models
 import settings
 
@@ -485,6 +486,7 @@ class FlaskHandlerTests(unittest.TestCase):
 
   def test_post__json(self):
     """if process_post_data() returns a dict, it is passed to flask."""
+    testing_config.sign_in('user@example.com', 111)
     with test_app.test_request_context('/test'):
       actual_dict, actual_headers = self.handler.post()
 
@@ -495,6 +497,7 @@ class FlaskHandlerTests(unittest.TestCase):
 
   def test_post__redirect(self):
     """if process_post_data() returns a redirect response, it is used."""
+    testing_config.sign_in('user@example.com', 111)
     with test_app.test_request_context('/test'):
       actual_response, actual_headers = self.handler.post(
           redirect_to='some/other/path')
@@ -521,3 +524,31 @@ class FlaskHandlerTests(unittest.TestCase):
     with test_app.test_request_context('/test'):
       with self.assertRaises(werkzeug.exceptions.Forbidden):
         self.handler.require_task_header()
+
+  @mock.patch('settings.UNIT_TEST_MODE', False)
+  def test_require_xsrf_token__normal(self):
+    """We accept a POST with a valid token."""
+    testing_config.sign_in('user1@example.com', 111)
+    form_data = {'token': xsrf.generate_token('user1@example.com')}
+    with test_app.test_request_context('/test', data=form_data):
+      self.handler.require_xsrf_token()
+
+  @unittest.skip('TODO(jrobbins): enable after next release')
+  @mock.patch('settings.UNIT_TEST_MODE', False)
+  def test_require_xsrf_token__missing(self):
+    """We reject a POST with a missing token."""
+    testing_config.sign_in('user1@example.com', 111)
+    form_data = {}
+    with test_app.test_request_context('/test', data=form_data):
+      with self.assertRaises(werkzeug.exceptions.BadRequest):
+        self.handler.require_xsrf_token()
+
+  @unittest.skip('TODO(jrobbins): enable after next release')
+  @mock.patch('settings.UNIT_TEST_MODE', False)
+  def test_require_xsrf_token__wrong(self):
+    """We reject a POST with a incorrect token."""
+    testing_config.sign_in('user1@example.com', 111)
+    form_data = {'token': xsrf.generate_token('user2@example.com')}
+    with test_app.test_request_context('/test', data=form_data):
+      with self.assertRaises(werkzeug.exceptions.BadRequest):
+        self.handler.require_xsrf_token()

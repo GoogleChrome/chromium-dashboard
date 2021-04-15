@@ -18,6 +18,7 @@
 
 {% block content %}
 <form name="feature_form" method="POST" action="{{current_path}}">
+  <input type="hidden" name="token" value="{{xsrf_token}}">
   {% for section_name, flat_form in flat_forms %}
     <h3>{{ section_name }}</h3>
     <section class="flat_form">

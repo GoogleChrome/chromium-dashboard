@@ -19,7 +19,7 @@
 
 {% block content %}
 <form name="feature_form" method="POST" action="{{current_path}}">
-
+  <input type="hidden" name="token" value="{{xsrf_token}}">
   <input type="hidden" name="form_fields"
          value="{{ feature_form.fields.keys | join:',' }},
                 {% if impl_status_form %}

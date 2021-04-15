@@ -238,6 +238,8 @@ class FeatureStar(models.DictModel):
 class FeatureChangeHandler(basehandlers.FlaskHandler):
   """This task handles a feature creation or update by making email tasks."""
 
+  IS_INTERNAL_HANDLER = True
+
   def process_post_data(self):
     self.require_task_header()
 
@@ -263,6 +265,8 @@ class FeatureChangeHandler(basehandlers.FlaskHandler):
 
 class OutboundEmailHandler(basehandlers.FlaskHandler):
   """Task to send a notification email to one recipient."""
+
+  IS_INTERNAL_HANDLER = True
 
   def process_post_data(self):
     self.require_task_header()
@@ -296,6 +300,7 @@ class OutboundEmailHandler(basehandlers.FlaskHandler):
 class BouncedEmailHandler(basehandlers.FlaskHandler):
   BAD_WRAP_RE = re.compile('=\r\n')
   BAD_EQ_RE = re.compile('=3D')
+  IS_INTERNAL_HANDLER = True
 
   """Handler to notice when email to given user is bouncing."""
   # For docs on AppEngine's bounce email handling, see:

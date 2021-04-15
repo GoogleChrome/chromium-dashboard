@@ -29,6 +29,7 @@ from google.appengine.ext import db
 
 from framework import permissions
 from framework import ramcache
+from framework import xsrf
 import settings
 from internals import models
 
@@ -187,6 +188,7 @@ class FlaskHandler(BaseHandler):
   TEMPLATE_PATH = None  # Subclasses should define this.
   HTTP_CACHE_TYPE = None  # Subclasses can use 'public' or 'private'
   JSONIFY = False  # Set to True for JSON feeds.
+  IS_INTERNAL_HANDLER = False  # Subclasses can skip XSRF check.
 
   def get_cache_headers(self):
     """Add cache control headers if HTTP_CACHE_TYPE is set."""
@@ -233,7 +235,7 @@ class FlaskHandler(BaseHandler):
       'prod': settings.PROD,
       'APP_TITLE': settings.APP_TITLE,
       'current_path': current_path,
-      'TEMPLATE_CACHE_TIME': settings.TEMPLATE_CACHE_TIME
+      'TEMPLATE_CACHE_TIME': settings.TEMPLATE_CACHE_TIME,
       }
 
     user = self.get_current_user()
@@ -248,10 +250,12 @@ class FlaskHandler(BaseHandler):
         'email': user.email(),
         'dismissed_cues': json.dumps(user_pref.dismissed_cues),
       }
+      common_data['xsrf_token'] = xsrf.generate_token(user.email())
     else:
       common_data['user'] = None
       common_data['login'] = (
           'Sign in', users.create_login_url(dest_url=current_path))
+      common_data['xsrf_token'] = xsrf.generate_token(None)
     return common_data
 
   def render(self, template_data, template_path):
@@ -281,6 +285,7 @@ class FlaskHandler(BaseHandler):
   def post(self, *args, **kwargs):
     """POST handlers return a string, JSON, or a redirect."""
     ramcache.check_for_distributed_invalidation()
+    self.require_xsrf_token()
     handler_data = self.process_post_data(*args, **kwargs)
     headers = self.get_headers()
 
@@ -294,6 +299,21 @@ class FlaskHandler(BaseHandler):
   def form(self):
     """Property for POST values dict."""
     return flask.request.form
+
+  def require_xsrf_token(self):
+    """Every UI form submission must have a XSRF token."""
+    if settings.UNIT_TEST_MODE or self.IS_INTERNAL_HANDLER:
+      return
+    token = self.form.get('token')
+    if not token:
+      # TODO(jrobbins): start enforcing in next release
+      logging.info("self.abort(400, msg='Missing XSRF token')")
+    user = self.get_current_user(required=True)
+    try:
+      xsrf.validate_token(token, user.email())
+    except xsrf.TokenIncorrect:
+      # TODO(jrobbins): start enforcing in next release
+      logging.info("self.abort(400, msg='Invalid XSRF token')")
 
   def require_task_header(self):
     """Abort if this is not a Google Cloud Tasks request."""
