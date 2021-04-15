@@ -28,6 +28,10 @@ from google.appengine.ext import db
 from framework import constants
 
 
+# TODO(jrobbins): 2 hours is too short for usability, but a longer value
+# is not secure enough.  So, we will go with 2 hours and also implement
+# token refresh as done in Monorail.
+
 # This is how long tokens are valid.
 TOKEN_TIMEOUT_SEC = 2 * constants.SECS_PER_HOUR
 
