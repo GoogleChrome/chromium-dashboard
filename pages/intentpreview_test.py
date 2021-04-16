@@ -133,7 +133,7 @@ class IntentEmailPreviewHandlerTest(unittest.TestCase):
             self.feature_1, models.INTENT_SHIP))
 
     self.assertEqual(
-        'Intent stage "Removed"',
+        'Intent to Extend Deprecation Trial',
         self.handler.compute_subject_prefix(
             self.feature_1, models.INTENT_REMOVED))
 
