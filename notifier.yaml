@@ -5,7 +5,7 @@ service: notifier
 
 handlers:
 - url: /tasks/.*
-  script: notifier.app
+  script: internals.notifier.app
   # Header checks prevent raw access to this handler.  Tasks have headers.
 
 includes:

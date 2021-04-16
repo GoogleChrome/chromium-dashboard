@@ -129,6 +129,17 @@ class FeatureTest(unittest.TestCase):
         names)
 
 
+class ApprovalTest(unittest.TestCase):
+
+  def test_is_valid_state(self):
+    """We know what approval states are valid."""
+    self.assertTrue(
+        models.Approval.is_valid_state(models.Approval.NEEDS_REVIEW))
+    self.assertFalse(models.Approval.is_valid_state(None))
+    self.assertFalse(models.Approval.is_valid_state('not an int'))
+    self.assertFalse(models.Approval.is_valid_state(999))
+
+
 class UserPrefTest(unittest.TestCase):
 
   def setUp(self):

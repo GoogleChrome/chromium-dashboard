@@ -108,6 +108,7 @@
   {% if offer_editing == "yes" %}
     <div id="metadata-editing" style="display:none">
       <form name="overview_form" method="POST" action="/guide/stage/{{ feature_id }}/0">
+        <input type="hidden" name="token" value="{{xsrf_token}}">
         <input type="hidden" name="form_fields"
                value="{{ overview_form.fields.keys | join:',' }}" >
 

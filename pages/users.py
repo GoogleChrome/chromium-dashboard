@@ -107,7 +107,7 @@ class SettingsHandler(basehandlers.FlaskHandler):
   def process_post_data(self):
     user_pref = models.UserPref.get_signed_in_user_pref()
     if not user_pref:
-      flask.abort(403)
+      self.abort(403, msg='User must be signed in')
 
     new_notify = flask.request.form.get('notify_as_starrer')
     logging.info('setting notify_as_starrer for %r to %r',

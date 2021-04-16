@@ -15,6 +15,7 @@ from __future__ import print_function
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import collections
 import unittest
 import testing_config  # Must be imported before the module under test.
 
@@ -22,9 +23,23 @@ import mock
 
 from google.appengine.ext import db
 
+from internals import approval_defs
 from internals import models
 from internals import processes
 
+
+BakeApproval = approval_defs.ApprovalFieldDef(
+    'Approval for baking',
+    'The head chef must approve of you using the oven',
+    9, approval_defs.ONE_LGTM, ['chef@example.com'])
+
+BAKE_APPROVAL_DEF_DICT = collections.OrderedDict([
+    ('name', 'Approval for baking'),
+    ('description', 'The head chef must approve of you using the oven'),
+    ('field_id', 9),
+    ('rule', approval_defs.ONE_LGTM),
+    ('approvers', ['chef@example.com']),
+    ])
 
 class HelperFunctionsTest(unittest.TestCase):
 
@@ -38,12 +53,14 @@ class HelperFunctionsTest(unittest.TestCase):
             'Mix it and kneed',
             ['Cold dough'],
             [('Share kneeding video', 'https://example.com')],
+            [],
             0, 1),
          processes.ProcessStage(
              'Bake it',
              'Heat at 375 for 40 minutes',
              ['A loaf', 'A dirty pan'],
              [],
+             [BakeApproval],
              1, 2),
          ])
     expected = {
@@ -55,17 +72,22 @@ class HelperFunctionsTest(unittest.TestCase):
              'description': 'Mix it and kneed',
              'progress_items': ['Cold dough'],
              'actions': [('Share kneeding video', 'https://example.com')],
+             'approvals': [],
              'incoming_stage': 0,
              'outgoing_stage': 1},
             {'name': 'Bake it',
              'description': 'Heat at 375 for 40 minutes',
              'progress_items': ['A loaf', 'A dirty pan'],
              'actions': [],
+             'approvals': [BAKE_APPROVAL_DEF_DICT],
              'incoming_stage': 1,
              'outgoing_stage': 2},
         ]
     }
     actual = processes.process_to_dict(process)
+
+    self.assertEqual(expected['stages'][1]['approvals'],
+                     actual['stages'][1]['approvals'])
     self.assertEqual(expected, actual)
 
   def test_review_is_done(self):

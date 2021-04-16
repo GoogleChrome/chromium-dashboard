@@ -13,7 +13,10 @@
 {% block content %}
 <section>
 
-<chromedash-userlist actionPath="/admin/users/create"></chromedeash-userlist>
+  <chromedash-userlist
+    actionPath="/admin/users/create"
+    token="{{xsrf_token}}"
+    ></chromedeash-userlist>
 
 </section>
 {% endblock %}

@@ -322,9 +322,10 @@ class DictModel(db.Model):
   # def to_dict(self):
   #   return dict([(p, unicode(getattr(self, p))) for p in self.properties()])
 
-  def format_for_template(self):
+  def format_for_template(self, add_id=True):
     d = self.to_dict()
-    d['id'] = self.key().id()
+    if add_id:
+      d['id'] = self.key().id()
     return d
 
   def to_dict(self):
@@ -981,12 +982,16 @@ class Feature(DictModel):
   feature_type = db.IntegerProperty(default=FEATURE_TYPE_INCUBATE_ID)
   intent_stage = db.IntegerProperty(default=0)
   summary = db.StringProperty(required=True, multiline=True)
-  origin_trial_feedback_url = db.LinkProperty()
   unlisted = db.BooleanProperty(default=False)
   # TODO(jrobbins): Add an entry_state enum to track app-specific lifecycle
   # info for a feature entry as distinct from process-specific stage.
   deleted = db.BooleanProperty(default=False)
   motivation = db.StringProperty(multiline=True)
+  star_count = db.IntegerProperty(default=0)
+  search_tags = db.StringListProperty()
+  comments = db.StringProperty(multiline=True)
+  owner = db.ListProperty(db.Email)
+  footprint = db.IntegerProperty()  # Deprecated
 
   # Tracability to intent discussion threads
   intent_to_implement_url = db.LinkProperty()
@@ -1008,10 +1013,10 @@ class Feature(DictModel):
   shipped_android_milestone = db.IntegerProperty()
   shipped_ios_milestone = db.IntegerProperty()
   shipped_webview_milestone = db.IntegerProperty()
-  flag_name = db.StringProperty()
 
-  owner = db.ListProperty(db.Email)
-  footprint = db.IntegerProperty()  # Deprecated
+  # DevTrial details.
+  devtrial_instructions = db.LinkProperty()
+  flag_name = db.StringProperty()
   interop_compat_risks = db.StringProperty(multiline=True)
   ergonomics_risks = db.StringProperty(multiline=True)
   activation_risks = db.StringProperty(multiline=True)
@@ -1061,10 +1066,6 @@ class Feature(DictModel):
   sample_links = db.StringListProperty()
   #tests = db.StringProperty()
 
-  search_tags = db.StringListProperty()
-
-  comments = db.StringProperty(multiline=True)
-
   experiment_goals = db.StringProperty(multiline=True)
   experiment_timeline = db.StringProperty(multiline=True)
   ot_milestone_desktop_start = db.IntegerProperty()
@@ -1074,8 +1075,71 @@ class Feature(DictModel):
   experiment_risks = db.StringProperty(multiline=True)
   experiment_extension_reason = db.StringProperty(multiline=True)
   ongoing_constraints = db.StringProperty(multiline=True)
+  origin_trial_feedback_url = db.LinkProperty()
 
-  star_count = db.IntegerProperty(default=0)
+  finch_url = db.LinkProperty()
+
+
+class Approval(DictModel):
+  """Describes the current state of one approval on a feature."""
+
+  NEEDS_REVIEW = 0
+  # NA = 1  Reserved for FLT
+  # REVIEW_REQUESTED = 2  Reserved for FLT
+  REVIEW_STARTED = 3
+  NEED_INFO = 4
+  APPROVED = 5
+  NOT_APPROVED = 6
+  APPROVAL_VALUES = {
+      NEEDS_REVIEW: 'needs_review',
+      # NA: 'na',
+      # REVIEW_REQUESTED: 'review_requested',
+      REVIEW_STARTED: 'review_started',
+      NEED_INFO: 'need_info',
+      APPROVED: 'approved',
+      NOT_APPROVED: 'not_approved'
+  }
+
+  feature_id = db.IntegerProperty(required=True)
+  field_id = db.IntegerProperty(required=True)
+  state = db.IntegerProperty(required=True)
+  set_on = db.DateTimeProperty(required=True)
+  set_by = db.EmailProperty(required=True)
+
+  @classmethod
+  def get_approvals(cls, feature_id, field_id=None):
+    """Return the requested approvals."""
+    query = Approval.all()
+    query.filter('feature_id =', feature_id)
+    if field_id is not None:
+      query.filter('field_id =', field_id)
+    approvals = query.fetch(None)
+    return approvals
+
+  @classmethod
+  def is_valid_state(cls, new_state):
+    """Return true if new_state is valid."""
+    return new_state in cls.APPROVAL_VALUES
+
+  @classmethod
+  def set_approval(cls, feature_id, field_id, new_state, set_by_email):
+    """Add or update an approval value."""
+    if not cls.is_valid_state(new_state):
+      raise ValueError('Invalid approval state')
+
+    now = datetime.datetime.now()
+    existing = cls.get_approvals(feature_id, field_id=field_id)
+    for appr in existing:
+      if appr.set_by == set_by_email:
+        appr.set_on = now
+        appr.state = new_state
+        appr.put()
+        return
+
+    new_appr = Approval(
+        feature_id=feature_id, field_id=field_id, state=new_state,
+        set_on=now, set_by=set_by_email)
+    new_appr.put()
 
 
 class UserPref(DictModel):

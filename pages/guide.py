@@ -169,7 +169,7 @@ class ProcessOverview(basehandlers.FlaskHandler):
   def get_template_data(self, feature_id):
     f = models.Feature.get_by_id(long(feature_id))
     if f is None:
-      self.abort(404)
+      self.abort(404, msg='Feature not found')
 
     feature_process = processes.ALL_PROCESSES.get(
         f.feature_type, processes.BLINK_LAUNCH_PROCESS)
@@ -223,7 +223,7 @@ class FeatureEditStage(basehandlers.FlaskHandler):
     """Look up the feature that the user wants to edit, and its process."""
     f = models.Feature.get_by_id(feature_id)
     if f is None:
-      self.abort(404)
+      self.abort(404, msg='Feature not found')
 
     feature_process = processes.ALL_PROCESSES.get(
         f.feature_type, processes.BLINK_LAUNCH_PROCESS)
@@ -278,7 +278,7 @@ class FeatureEditStage(basehandlers.FlaskHandler):
     if feature_id:
       feature = models.Feature.get_by_id(feature_id)
       if feature is None:
-        self.abort(404)
+        self.abort(404, msg='Feature not found')
 
     logging.info('POST is %r', self.form)
 
@@ -329,6 +329,9 @@ class FeatureEditStage(basehandlers.FlaskHandler):
       feature.origin_trial_feedback_url = self.parse_link(
           'origin_trial_feedback_url')
 
+    if self.touched('finch_url'):
+      feature.finch_url = self.parse_link('finch_url')
+
     if self.touched('i2e_lgtms'):
       feature.i2e_lgtms = self.split_emails('i2e_lgtms')
 
@@ -371,6 +374,9 @@ class FeatureEditStage(basehandlers.FlaskHandler):
     if self.touched('ot_milestone_android_end'):
       feature.ot_milestone_android_end = self.parse_int(
           'ot_milestone_android_end')
+
+    if self.touched('devtrial_instructions'):
+      feature.devtrial_instructions = self.parse_link('devtrial_instructions')
 
     if self.touched('flag_name'):
       feature.flag_name = self.form.get('flag_name')

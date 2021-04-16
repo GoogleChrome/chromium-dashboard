@@ -21,6 +21,7 @@
 
 <section id="stage_form">
   <form name="overview_form" method="POST" action="{{ current_path }}">
+    <input type="hidden" name="token" value="{{xsrf_token}}">
     <table style="max-width: 60em">
       <tr>
         <th></th>

@@ -26,8 +26,196 @@ import werkzeug.exceptions  # Flask HTTP stuff.
 from google.appengine.api import users
 
 from framework import basehandlers
+from framework import xsrf
 from internals import models
 import settings
+
+
+
+class BaseHandlerTests(unittest.TestCase):
+
+  def setUp(self):
+    self.handler = basehandlers.BaseHandler()
+
+  @mock.patch('flask.request', 'fake request')
+  def test_request(self):
+    """We can get the flask request."""
+    actual = self.handler.request
+    self.assertEqual('fake request', actual)
+
+  @mock.patch('flask.abort')
+  def test_abort__no_msg(self, mock_abort):
+    """We can abort request handling."""
+    self.handler.abort(400)
+    mock_abort.assert_called_once_with(400)
+
+  @mock.patch('logging.info')
+  @mock.patch('flask.abort')
+  def test_abort__with_msg(self, mock_abort, mock_info):
+    """We can abort request handling."""
+    self.handler.abort(400, msg='You messed up')
+    mock_abort.assert_called_once_with(400, description='You messed up')
+    mock_info.assert_called_once()
+
+  @mock.patch('logging.error')
+  @mock.patch('flask.abort')
+  def test_abort__with_500_msg(self, mock_abort, mock_error):
+    """We can abort request handling."""
+    self.handler.abort(500, msg='We messed up')
+    mock_abort.assert_called_once_with(500, description='We messed up')
+    mock_error.assert_called_once()
+
+  @mock.patch('flask.redirect')
+  def test_redirect(self, mock_redirect):
+    """We can return a redirect."""
+    mock_redirect.return_value = 'fake response'
+    actual = self.handler.redirect('test url')
+    self.assertEqual('fake response', actual)
+    mock_redirect.assert_called_once_with('test url')
+
+  def test_get_current_user__anon(self):
+    """If the user is signed out, we get back None."""
+    testing_config.sign_out()
+    actual = self.handler.get_current_user()
+    self.assertIsNone(actual)
+
+  @mock.patch('framework.basehandlers.BaseHandler.abort')
+  def test_get_current_user__required_but_anon(self, mock_abort):
+    """If the user is signed out, we give a 403."""
+    mock_abort.side_effect = werkzeug.exceptions.Forbidden
+    testing_config.sign_out()
+    with self.assertRaises(werkzeug.exceptions.Forbidden):
+      self.handler.get_current_user(required=True)
+
+  def test_get_current_user__signed_in(self):
+    """We can get the signed in user."""
+    testing_config.sign_in('test@example.com', 111)
+    actual = self.handler.get_current_user()
+    self.assertEqual('test@example.com', actual.email())
+
+  @mock.patch('flask.request')
+  def test_get_param__simple(self, mock_request):
+    """We can simply get a JSON parameter, with defaults."""
+    mock_request.get_json.return_value = {'x': 1}
+
+    self.assertEqual(1, self.handler.get_param('x'))
+    self.assertEqual(None, self.handler.get_param('missing', required=False))
+    self.assertEqual('usual', self.handler.get_param(
+        'missing', default='usual'))
+
+  @mock.patch('framework.basehandlers.BaseHandler.abort')
+  @mock.patch('flask.request')
+  def test_get_param__missing_required(self, mock_request, mock_abort):
+    """If a required param is missing, we abort."""
+    mock_request.get_json.return_value = {'x': 1}
+    mock_abort.side_effect = werkzeug.exceptions.BadRequest
+
+    with self.assertRaises(werkzeug.exceptions.BadRequest):
+      self.handler.get_param('missing')
+    mock_abort.assert_called_once_with(400, msg="Missing parameter 'missing'")
+
+  @mock.patch('framework.basehandlers.BaseHandler.abort')
+  @mock.patch('flask.request')
+  def test_get_param__validator(self, mock_request, mock_abort):
+    """If a param fails validation, we abort."""
+    mock_request.get_json.return_value = {'x': 1}
+    mock_abort.side_effect = werkzeug.exceptions.BadRequest
+
+    actual = self.handler.get_param(
+        'x', validator=lambda num: num % 2 == 1)
+    self.assertEqual(1, actual)
+
+    actual = self.handler.get_param(
+        'missing', default=3, validator=lambda num: num % 2 == 1)
+    self.assertEqual(3, actual)
+
+    with self.assertRaises(werkzeug.exceptions.BadRequest):
+      self.handler.get_param(
+          'x', validator=lambda num: num % 2 == 0)
+    mock_abort.assert_called_once_with(
+        400, msg="Invalid value for parameter 'x'")
+
+  @mock.patch('framework.basehandlers.BaseHandler.abort')
+  @mock.patch('flask.request')
+  def test_get_param__allowed(self, mock_request, mock_abort):
+    """If a param has an unexpected value, we abort."""
+    mock_request.get_json.return_value = {'x': 1}
+    mock_abort.side_effect = werkzeug.exceptions.BadRequest
+
+    actual = self.handler.get_param('x', allowed=[1, 2, 3])
+    self.assertEqual(1, actual)
+
+    actual = self.handler.get_param(
+        'missing', default=3, allowed=[1, 2, 3])
+    self.assertEqual(3, actual)
+
+    with self.assertRaises(werkzeug.exceptions.BadRequest):
+      self.handler.get_param('x', allowed=[10, 20, 30])
+    mock_abort.assert_called_once_with(
+        400, msg="Unexpected value for parameter 'x'")
+
+  @mock.patch('framework.basehandlers.BaseHandler.abort')
+  @mock.patch('flask.request')
+  def test_get_int_param(self, mock_request, mock_abort):
+    """We can get an int, or abort."""
+    mock_request.get_json.return_value = {'x': 1, 'foo': 'bar'}
+    mock_abort.side_effect = werkzeug.exceptions.BadRequest
+
+    actual = self.handler.get_int_param('x')
+    self.assertEqual(1, actual)
+
+    actual = self.handler.get_int_param('missing', default=3)
+    self.assertEqual(3, actual)
+
+    with self.assertRaises(werkzeug.exceptions.BadRequest):
+      self.handler.get_int_param('foo')
+    mock_abort.assert_called_once_with(
+        400, msg="Parameter 'foo' was not an int")
+
+  @mock.patch('framework.basehandlers.BaseHandler.abort')
+  @mock.patch('flask.request')
+  def test_get_bool_param(self, mock_request, mock_abort):
+    """We can get a bool, or abort."""
+    mock_request.get_json.return_value = {'x': True, 'foo': 'bar'}
+    mock_abort.side_effect = werkzeug.exceptions.BadRequest
+
+    actual = self.handler.get_bool_param('x')
+    self.assertEqual(True, actual)
+
+    actual = self.handler.get_bool_param('missing')
+    self.assertEqual(False, actual)
+
+    actual = self.handler.get_bool_param('missing', default=True)
+    self.assertEqual(True, actual)
+
+    with self.assertRaises(werkzeug.exceptions.BadRequest):
+      self.handler.get_bool_param('foo')
+    mock_abort.assert_called_once_with(
+        400, msg="Parameter 'foo' was not a bool")
+
+  @mock.patch('framework.basehandlers.BaseHandler.abort')
+  @mock.patch('flask.request')
+  def test_get_specified_feature__missing(self, mock_request, mock_abort):
+    """Reject requests that need a feature ID but don't provide one."""
+    mock_request.get_json.return_value = {}
+    mock_abort.side_effect = werkzeug.exceptions.BadRequest
+
+    with self.assertRaises(werkzeug.exceptions.BadRequest):
+      self.handler.get_specified_feature()
+    mock_abort.assert_called_once_with(
+        400, msg="Missing parameter 'featureId'")
+
+  @mock.patch('framework.basehandlers.BaseHandler.abort')
+  @mock.patch('flask.request')
+  def test_get_specified_feature__bad(self, mock_request, mock_abort):
+    """Reject requests that need a feature ID but provide junk."""
+    mock_request.get_json.return_value = {'featureId': 'junk'}
+    mock_abort.side_effect = werkzeug.exceptions.BadRequest
+
+    with self.assertRaises(werkzeug.exceptions.BadRequest):
+      self.handler.get_specified_feature()
+    mock_abort.assert_called_once_with(
+        400, msg="Parameter 'featureId' was not an int")
 
 
 class TestableFlaskHandler(basehandlers.FlaskHandler):
@@ -109,6 +297,44 @@ class ConstHandlerTests(unittest.TestCase):
         actual_response.json)
 
 
+class APIHandlerTests(unittest.TestCase):
+
+  def setUp(self):
+    self.handler = basehandlers.APIHandler()
+
+  def test_do_get(self):
+    """If a subclass does not implement do_get(), raise NotImplementedError."""
+    with self.assertRaises(NotImplementedError):
+      self.handler.do_get()
+
+    with self.assertRaises(NotImplementedError):
+      self.handler.do_get(feature_id=1234)
+
+  @mock.patch('flask.abort')
+  def check_bad_HTTP_method(self, handler_method, mock_abort):
+    mock_abort.side_effect = werkzeug.exceptions.MethodNotAllowed
+
+    with self.assertRaises(mock_abort.side_effect):
+      handler_method()
+    mock_abort.assert_called_once_with(405, valid_methods=['GET'])
+
+    # Extra URL parameters do not crash the app.
+    with self.assertRaises(mock_abort.side_effect):
+      handler_method(feature_id=1234)
+
+  def test_do_post(self):
+    """If a subclass does not implement do_post(), return a 405."""
+    self.check_bad_HTTP_method(self.handler.do_post)
+
+  def test_do_patch(self):
+    """If a subclass does not implement do_patch(), return a 405."""
+    self.check_bad_HTTP_method(self.handler.do_patch)
+
+  def test_do_delete(self):
+    """If a subclass does not implement do_delete(), return a 405."""
+    self.check_bad_HTTP_method(self.handler.do_delete)
+
+
 class FlaskHandlerTests(unittest.TestCase):
 
   def setUp(self):
@@ -175,9 +401,9 @@ class FlaskHandlerTests(unittest.TestCase):
     self.assertEqual('special.html', actual)
 
   def test_process_post_data__missing(self):
-    """Every subsclass should overide process_post_data()."""
+    """Subsclasses that don't override process_post_data() give a 405."""
     self.handler = basehandlers.FlaskHandler()
-    with self.assertRaises(NotImplementedError):
+    with self.assertRaises(werkzeug.exceptions.MethodNotAllowed):
       self.handler.process_post_data()
 
   def test_get_common_data__signed_out(self):
@@ -260,6 +486,7 @@ class FlaskHandlerTests(unittest.TestCase):
 
   def test_post__json(self):
     """if process_post_data() returns a dict, it is passed to flask."""
+    testing_config.sign_in('user@example.com', 111)
     with test_app.test_request_context('/test'):
       actual_dict, actual_headers = self.handler.post()
 
@@ -270,6 +497,7 @@ class FlaskHandlerTests(unittest.TestCase):
 
   def test_post__redirect(self):
     """if process_post_data() returns a redirect response, it is used."""
+    testing_config.sign_in('user@example.com', 111)
     with test_app.test_request_context('/test'):
       actual_response, actual_headers = self.handler.post(
           redirect_to='some/other/path')
@@ -296,3 +524,31 @@ class FlaskHandlerTests(unittest.TestCase):
     with test_app.test_request_context('/test'):
       with self.assertRaises(werkzeug.exceptions.Forbidden):
         self.handler.require_task_header()
+
+  @mock.patch('settings.UNIT_TEST_MODE', False)
+  def test_require_xsrf_token__normal(self):
+    """We accept a POST with a valid token."""
+    testing_config.sign_in('user1@example.com', 111)
+    form_data = {'token': xsrf.generate_token('user1@example.com')}
+    with test_app.test_request_context('/test', data=form_data):
+      self.handler.require_xsrf_token()
+
+  @unittest.skip('TODO(jrobbins): enable after next release')
+  @mock.patch('settings.UNIT_TEST_MODE', False)
+  def test_require_xsrf_token__missing(self):
+    """We reject a POST with a missing token."""
+    testing_config.sign_in('user1@example.com', 111)
+    form_data = {}
+    with test_app.test_request_context('/test', data=form_data):
+      with self.assertRaises(werkzeug.exceptions.BadRequest):
+        self.handler.require_xsrf_token()
+
+  @unittest.skip('TODO(jrobbins): enable after next release')
+  @mock.patch('settings.UNIT_TEST_MODE', False)
+  def test_require_xsrf_token__wrong(self):
+    """We reject a POST with a incorrect token."""
+    testing_config.sign_in('user1@example.com', 111)
+    form_data = {'token': xsrf.generate_token('user2@example.com')}
+    with test_app.test_request_context('/test', data=form_data):
+      with self.assertRaises(werkzeug.exceptions.BadRequest):
+        self.handler.require_xsrf_token()

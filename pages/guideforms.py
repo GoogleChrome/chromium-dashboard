@@ -18,11 +18,28 @@ from __future__ import print_function
 
 import logging
 from django import forms
+from django.core.validators import validate_email
+import string
 
 from google.appengine.api import users
 
 from internals import models
 from internals import processes
+
+class MultiEmailField(forms.Field):
+    def to_python(self, value):
+        """Normalize data to a list of strings."""
+        # Return an empty list if no input was given.
+        if not value:
+            return []
+        return value.split(',')
+
+    def validate(self, value):
+        """Check if value consists only of valid emails."""
+        # Use the parent's handling of required fields, etc.
+        super(MultiEmailField, self).validate(value)
+        for email in value:
+            validate_email(string.strip(email))
 
 SHIPPED_HELP_TXT = (
     'First milestone to ship with this status. Applies to: Enabled by '
@@ -76,10 +93,10 @@ ALL_FIELDS = {
          'EditingHelp#summary-example">Guidelines and example</a>.'
         )),
 
-    'owner': forms.EmailField(
+    'owner': MultiEmailField(
         required=True, label='Contact emails',
         widget=forms.EmailInput(
-            attrs={'multiple': True, 'placeholder': 'email, email'}),
+            attrs={'multiple': True, 'placeholder': 'email,email'}),
         help_text=('Comma separated list of full email addresses. '
                    'Prefer @chromium.org.')),
 
@@ -438,6 +455,14 @@ ALL_FIELDS = {
         ('If your feature was available as an origin trial, link to a summary '
          'of usage and developer feedback. If not, leave this empty.')),
 
+    'finch_url': forms.URLField(
+        required=False, label='Finch experiment',
+        widget=forms.URLInput(attrs={'placeholder': 'https://'}),
+        help_text=
+        ('If your feature will roll out gradually via a '
+         '<a href="go/finch" targe="_blank">Finch experiment</a>, '
+         'link to it here.')),
+
     'i2e_lgtms': forms.EmailField(
         required=False, label='Intent to Experiment LGTM by',
         widget=forms.EmailInput(
@@ -582,6 +607,17 @@ ALL_FIELDS = {
         widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'}),
         help_text=SHIPPED_WEBVIEW_HELP_TXT),
 
+    'devtrial_instructions': forms.URLField(
+        required=False, label='DevTrial instructions',
+        widget=forms.URLInput(attrs={'placeholder': 'https://'}),
+        help_text=(
+            'Link to a HOWTO or FAQ describing how developers can get started '
+            'using this feature in a DevTrial.  <a target="_blank" href="'
+            'https://github.com/samuelgoto/WebID/blob/master/HOWTO.md'
+            '">Example 1</a>.  <a target="_blank" href="'
+            'https://github.com/WICG/idle-detection/blob/main/HOWTO.md'
+            '">Example 2</a>.')),
+
     'flag_name': forms.CharField(
         label='Flag name', required=False,
         help_text='Name of the flag that enables this feature.'),
@@ -654,7 +690,7 @@ NewFeature_Prototype = define_form_class_using_shared_fields(
 
 Any_DevTrial = define_form_class_using_shared_fields(
     'Any_DevTrial',
-    ('bug_url', 'doc_links',
+    ('bug_url', 'devtrial_instructions', 'doc_links',
      'interop_compat_risks',
      'safari_views', 'safari_views_link', 'safari_views_notes',
      'ff_views', 'ff_views_link', 'ff_views_notes',
@@ -721,7 +757,7 @@ Most_PrepareToShip = define_form_class_using_shared_fields(
 
 Any_Ship = define_form_class_using_shared_fields(
     'Any_Ship',
-    ('launch_bug_url', 'comments'))
+    ('launch_bug_url', 'finch_url', 'comments'))
 
 
 Existing_Prototype = define_form_class_using_shared_fields(
@@ -819,7 +855,7 @@ Flat_Implement = define_form_class_using_shared_fields(
 Flat_DevTrial = define_form_class_using_shared_fields(
     'Flat_DevTrial',
     (# Standardizaton
-     'doc_links',
+     'devtrial_instructions', 'doc_links',
      'interop_compat_risks',
      'safari_views', 'safari_views_link', 'safari_views_notes',
      'ff_views', 'ff_views_link', 'ff_views_notes',
@@ -865,6 +901,7 @@ Flat_PrepareToShip = define_form_class_using_shared_fields(
 Flat_Ship = define_form_class_using_shared_fields(
     'Flat_Ship',
     (# Implementation
+     'finch_url',
      'shipped_milestone', 'shipped_android_milestone',
      'shipped_ios_milestone', 'shipped_webview_milestone'))
 
@@ -926,7 +963,7 @@ DISPLAY_FIELDS_IN_STAGES = {
     models.INTENT_IMPLEMENT: make_display_specs(
         'spec_link', 'api_spec', 'spec_mentors', 'intent_to_implement_url'),
     models.INTENT_EXPERIMENT: make_display_specs(
-        'doc_links',
+        'devtrial_instructions', 'doc_links',
         'interop_compat_risks',
         'safari_views', 'safari_views_link', 'safari_views_notes',
         'ff_views', 'ff_views_link', 'ff_views_notes',
@@ -952,6 +989,7 @@ DISPLAY_FIELDS_IN_STAGES = {
         'experiment_timeline',  # Deprecated
         ),
     models.INTENT_SHIP: make_display_specs(
+        'finch_url',
         'shipped_milestone', 'shipped_android_milestone',
         'shipped_ios_milestone', 'shipped_webview_milestone',
         'intent_to_ship_url', 'i2s_lgtms'),

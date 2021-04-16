@@ -29,6 +29,7 @@ from google.appengine.ext import db
 
 from framework import permissions
 from framework import ramcache
+from framework import xsrf
 import settings
 from internals import models
 
@@ -46,17 +47,71 @@ class BaseHandler(flask.views.MethodView):
   def request(self):
     return flask.request
 
-  def abort(self, status):
+  def abort(self, status, msg=None, **kwargs):
     """Support webapp2-style, e.g., self.abort(400)."""
-    flask.abort(status)
+    if msg:
+      if status == 500:
+        logging.error('ISE: %s' % msg)
+      else:
+        logging.info('Abort %r: %s' % (status, msg))
+      flask.abort(status, description=msg, **kwargs)
+    else:
+      flask.abort(status, **kwargs)
 
   def redirect(self, url):
     """Support webapp2-style, e.g., return self.redirect(url)."""
     return flask.redirect(url)
 
-  def get_current_user(self):
+  def get_current_user(self, required=False):
     # TODO(jrobbins): oauth support
-    return users.get_current_user()
+    user = users.get_current_user()
+    if required and not user:
+      self.abort(403, msg='User must be signed in')
+    return user
+
+  def get_param(
+      self, name, default=None, required=True, validator=None, allowed=None):
+    """Get the specified JSON parameter."""
+    json_body = self.request.get_json(force=True)
+    val = json_body.get(name, default)
+    if required and not val:
+      self.abort(400, msg='Missing parameter %r' % name)
+    if val and validator and not validator(val):
+      self.abort(400, msg='Invalid value for parameter %r' % name)
+    if val and allowed and val not in allowed:
+      self.abort(400, msg='Unexpected value for parameter %r' % name)
+    return val
+
+  def get_int_param(
+      self, name, default=None, required=True, validator=None, allowed=None):
+    """Get the specified integer JSON parameter."""
+    val = self.get_param(
+        name, default=default, required=required, validator=validator,
+        allowed=allowed)
+    if type(val) != int:
+      self.abort(400, msg='Parameter %r was not an int' % name)
+    return val
+
+  def get_bool_param(self, name, default=False, required=False):
+    """Get the specified boolean JSON parameter."""
+    val = self.get_param(name, default=default, required=required)
+    if type(val) != bool:
+      self.abort(400, msg='Parameter %r was not a bool' % name)
+    return val
+
+  def get_specified_feature(self, feature_id=None, required=True):
+    """Get the feature specified in the featureId parameter."""
+    feature_id = (feature_id or
+                  self.get_int_param('featureId', required=required))
+    if not required and not feature_id:
+      return None
+    feature = models.Feature.get_by_id(feature_id)
+    if required and not feature:
+      self.abort(404, msg='Feature not found')
+    user = self.get_current_user()
+    if not permissions.can_view_feature(user, feature):
+      self.abort(403, msg='Cannot view that feature')
+    return feature
 
 
 class APIHandler(BaseHandler):
@@ -99,21 +154,33 @@ class APIHandler(BaseHandler):
     handler_data = self.do_delete(*args, **kwargs)
     return flask.jsonify(handler_data), headers
 
-  def do_get(self):
+  def _get_valid_methods(self):
+    """For 405 responses, list methods the concrete handler implements."""
+    valid_methods = ['GET']
+    if self.do_post.__code__ is not APIHandler.do_post.__code__:
+      valid_methods.append('POST')
+    if self.do_patch.__code__ is not APIHandler.do_patch.__code__:
+      valid_methods.append('PATCH')
+    if self.do_delete.__code__ is not APIHandler.do_delete.__code__:
+      valid_methods.append('DELETE')
+    return valid_methods
+
+  def do_get(self, **kwargs):
     """Subclasses should implement this method to handle a GET request."""
+    # Every API handler must handle GET.
     raise NotImplementedError()
 
-  def do_post(self):
+  def do_post(self, **kwargs):
     """Subclasses should implement this method to handle a POST request."""
-    raise NotImplementedError()
+    self.abort(405, valid_methods=self._get_valid_methods())
 
-  def do_patch(self):
+  def do_patch(self, **kwargs):
     """Subclasses should implement this method to handle a PATCH request."""
-    raise NotImplementedError()
+    self.abort(405, valid_methods=self._get_valid_methods())
 
-  def do_delete(self):
+  def do_delete(self, **kwargs):
     """Subclasses should implement this method to handle a DELETE request."""
-    raise NotImplementedError()
+    self.abort(405, valid_methods=self._get_valid_methods())
 
 
 class FlaskHandler(BaseHandler):
@@ -121,6 +188,7 @@ class FlaskHandler(BaseHandler):
   TEMPLATE_PATH = None  # Subclasses should define this.
   HTTP_CACHE_TYPE = None  # Subclasses can use 'public' or 'private'
   JSONIFY = False  # Set to True for JSON feeds.
+  IS_INTERNAL_HANDLER = False  # Subclasses can skip XSRF check.
 
   def get_cache_headers(self):
     """Add cache control headers if HTTP_CACHE_TYPE is set."""
@@ -158,7 +226,7 @@ class FlaskHandler(BaseHandler):
 
   def process_post_data(self):
     """Subclasses should implement this method to handle a POST request."""
-    raise NotImplementedError()
+    self.abort(405, msg='Unexpected HTTP method', valid_methods=['GET'])
 
   def get_common_data(self, path=None):
     """Return template data used on all pages, e.g., sign-in info."""
@@ -167,7 +235,7 @@ class FlaskHandler(BaseHandler):
       'prod': settings.PROD,
       'APP_TITLE': settings.APP_TITLE,
       'current_path': current_path,
-      'TEMPLATE_CACHE_TIME': settings.TEMPLATE_CACHE_TIME
+      'TEMPLATE_CACHE_TIME': settings.TEMPLATE_CACHE_TIME,
       }
 
     user = self.get_current_user()
@@ -182,10 +250,12 @@ class FlaskHandler(BaseHandler):
         'email': user.email(),
         'dismissed_cues': json.dumps(user_pref.dismissed_cues),
       }
+      common_data['xsrf_token'] = xsrf.generate_token(user.email())
     else:
       common_data['user'] = None
       common_data['login'] = (
           'Sign in', users.create_login_url(dest_url=current_path))
+      common_data['xsrf_token'] = xsrf.generate_token(None)
     return common_data
 
   def render(self, template_data, template_path):
@@ -215,6 +285,7 @@ class FlaskHandler(BaseHandler):
   def post(self, *args, **kwargs):
     """POST handlers return a string, JSON, or a redirect."""
     ramcache.check_for_distributed_invalidation()
+    self.require_xsrf_token()
     handler_data = self.process_post_data(*args, **kwargs)
     headers = self.get_headers()
 
@@ -229,13 +300,27 @@ class FlaskHandler(BaseHandler):
     """Property for POST values dict."""
     return flask.request.form
 
+  def require_xsrf_token(self):
+    """Every UI form submission must have a XSRF token."""
+    if settings.UNIT_TEST_MODE or self.IS_INTERNAL_HANDLER:
+      return
+    token = self.form.get('token')
+    if not token:
+      # TODO(jrobbins): start enforcing in next release
+      logging.info("self.abort(400, msg='Missing XSRF token')")
+    user = self.get_current_user(required=True)
+    try:
+      xsrf.validate_token(token, user.email())
+    except xsrf.TokenIncorrect:
+      # TODO(jrobbins): start enforcing in next release
+      logging.info("self.abort(400, msg='Invalid XSRF token')")
+
   def require_task_header(self):
     """Abort if this is not a Google Cloud Tasks request."""
     if settings.UNIT_TEST_MODE:
       return
     if 'X-AppEngine-QueueName' not in self.request.headers:
-      logging.info('Lacking X-AppEngine-QueueName header')
-      self.abort(403)
+      self.abort(403, msg='Lacking X-AppEngine-QueueName header')
 
   def split_input(self, field_name, delim='\\r?\\n'):
     """Split the input lines, strip whitespace, and skip blank lines."""
@@ -284,8 +369,8 @@ class ConstHandler(FlaskHandler):
     if 'template_path' in defaults:
       template_path = defaults['template_path']
       if '.html' not in template_path:
-        logging.error('template_path %r does not end with .html', template_path)
-        self.abort(500)
+        self.abort(
+            500, msg='template_path %r does not end with .html' % template_path)
       return defaults
 
     return flask.jsonify(defaults)

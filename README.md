@@ -16,7 +16,7 @@ Chrome Platform Status
     1. pip, node, npm.
     1. Gulp `npm install -g gulp`
 1. Install npm dependencies `npm ci`
-1. Install other dependencies `npm run deps`
+1. Install other dependencies `npm run deps` and `npm run dev-deps`
 
 ##### Add env_vars.yaml
 
@@ -60,6 +60,8 @@ There are some developing information in developer-documentation.md.
 
 
 **Notes**
+
+- If you get an error saying `No module named protobuf`, try installing it locally with `python -m pip install protobuf`.
 
 - Locally, the `/feature` list pulls from prod (https://www.chromestatus.com/features.json). Opening one of the features will 404 because the entry is not actually in the local db. If you want to test local entries, go to `http://127.0.0.1:8080/` instead of `localhost` to use local data.
 
