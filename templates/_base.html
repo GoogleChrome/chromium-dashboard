@@ -58,6 +58,9 @@ limitations under the License.
 
   {% block css %}{% endblock %}
   
+  {# Google Platform Library for OAuth #}
+  <script src="https://apis.google.com/js/platform.js" async defer></script>
+  
   {# Metric is need by sw registration and page code. #}
   <script>{% inline_file "/static/js/metric.min.js" %}</script>
 
