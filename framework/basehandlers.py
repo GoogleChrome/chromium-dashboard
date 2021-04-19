@@ -70,17 +70,7 @@ class BaseHandler(flask.views.MethodView):
 
   def get_current_user(self, required=False):
     # TODO(jrobbins): oauth support
-    token = session.get('id_token')
-    current_user = None
-    if token:
-      try:
-        CLIENT_ID = '77756740465-e5r4o15qg4hkdfiucjpl231o79k3ipjv.apps.googleusercontent.com'
-        idinfo = id_token.verify_oauth2_token(token, requests.Request(), CLIENT_ID)
-        print(idinfo['email'], file=sys.stderr)
-        current_user = users.User(email=idinfo['email'], _user_id=idinfo['sub'])
-
-      except ValueError:
-        pass
+    current_user = users.get_current_user()
     
     if required and not current_user:
       self.abort(403, msg='User must be signed in')

@@ -38,8 +38,8 @@ class LoginAPI(basehandlers.APIHandler):
     try:
       CLIENT_ID = '77756740465-e5r4o15qg4hkdfiucjpl231o79k3ipjv.apps.googleusercontent.com'
       idinfo = id_token.verify_oauth2_token(token, requests.Request(), CLIENT_ID)
-      userid = idinfo['sub']
-      email = idinfo['email']
+      # userid = idinfo['sub']
+      # email = idinfo['email']
       session["id_token"] = token
       message = "Done"
     except ValueError:
