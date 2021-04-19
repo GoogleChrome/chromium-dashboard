@@ -132,6 +132,19 @@ ALL_FIELDS = {
          'EditingHelp#motivation-example">Example</a>.'
         )),
 
+    'deprecation_motivation': forms.CharField(  # Sets motivation DB field.
+        label='Motivation', required=False,
+        widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 1480}),
+        help_text=
+        ('Deprecations and removals must have strong reasons, backed up '
+         'by measurements.  There must be clear and actionable paths forward '
+         'for developers.  Please see '
+         '<a target="_blank" href="'
+         'https://docs.google.com/a/chromium.org/document/d/'
+         '1LdqUfUILyzM5WEcOgeAWGupQILKrZHidEXrUxevyi_Y/edit?usp=sharing'
+         '">Removal guidelines</a>.'
+        )),
+
     'doc_links': forms.CharField(
         label='Doc link(s)', required=False,
         widget=forms.Textarea(
@@ -248,6 +261,12 @@ ALL_FIELDS = {
         widget=forms.URLInput(attrs={'placeholder': 'https://'}),
         help_text=('After you have started the "Intent to Experiment" discussion '
                    'thread, link to it here.')),
+
+    'r4dt_url': forms.URLField(  # Sets intent_to_experiment_url in DB
+        required=False, label='Request for Deprecation Trial link',
+        widget=forms.URLInput(attrs={'placeholder': 'https://'}),
+        help_text=('After you have started the "Request for Deprecation Trial" '
+                   'discussion thread, link to it here.')),
 
     'interop_compat_risks': forms.CharField(
         required=False, label='Interoperability and Compatibility Risks',
@@ -790,7 +809,8 @@ PSA_PrepareToShip = define_form_class_using_shared_fields(
 
 Deprecation_Implement = define_form_class_using_shared_fields(
     'Deprecation_Implement',
-    ('motivation', 'spec_link', 'comments'))
+    ('motivation=deprecation_motivation',
+     'spec_link', 'comments'))
 
 # Note: Even though this is similar to another form, it is likely to change.
 Deprecation_PrepareToShip = define_form_class_using_shared_fields(
@@ -808,7 +828,7 @@ Deprecation_DeprecationTrial = define_form_class_using_shared_fields(
      'ot_milestone_android_start', 'ot_milestone_android_end',
      'experiment_timeline',  # deprecated
      'experiment_extension_reason', 'ongoing_constraints',
-     'intent_to_experiment_url',
+     'intent_to_experiment_url=r4dt_url',
      'i2e_lgtms=r4dt_lgtms',  # form field name matches underlying DB field.
      'origin_trial_feedback_url', 'comments'))
 
@@ -816,7 +836,7 @@ Deprecation_DeprecationTrial = define_form_class_using_shared_fields(
 # Note: Even though this is similar to another form, it is likely to change.
 Deprecation_PrepareToShip = define_form_class_using_shared_fields(
     'Deprecation_PrepareToShip',
-    ('impl_status_chrome', 'tag_review',
+    ('impl_status_chrome',
      'intent_to_ship_url', 'i2s_lgtms',
      'launch_bug_url', 'comments'))
 
@@ -843,6 +863,7 @@ Flat_Metadata = define_form_class_using_shared_fields(
 Flat_Identify = define_form_class_using_shared_fields(
     'Flat_Identify',
     (# Standardization
+    # TODO(jrobbins): display deprecation_motivation instead when deprecating.
      'motivation', 'initial_public_proposal_url', 'explainer_links'))
 
 
@@ -879,6 +900,7 @@ Flat_OriginTrial = define_form_class_using_shared_fields(
      'experiment_goals',
      'experiment_risks',
      'experiment_extension_reason', 'ongoing_constraints',
+     # TODO(jrobbins): display r4dt_url instead when deprecating.
      'intent_to_experiment_url', 'i2e_lgtms',
      'origin_trial_feedback_url',
 
@@ -944,7 +966,7 @@ DEPRECATED_FIELDS = ['standardization']
 
 DISPLAY_IN_FEATURE_HIGHLIGHTS = [
     'name', 'summary',
-    'motivation',
+    'motivation', 'deprecation_motivation',
     'unlisted', 'owner',
     'search_tags',
     # Implementtion
@@ -982,7 +1004,7 @@ DISPLAY_FIELDS_IN_STAGES = {
     models.INTENT_EXTEND_TRIAL: make_display_specs(
         'experiment_goals', 'experiment_risks',
         'experiment_extension_reason', 'ongoing_constraints',
-        'origin_trial_feedback_url', 'intent_to_experiment_url',
+        'origin_trial_feedback_url', 'intent_to_experiment_url', 'r4dt_url',
         'i2e_lgtms', 'r4dt_lgtms',
         'ot_milestone_desktop_start', 'ot_milestone_desktop_end',
         'ot_milestone_android_start', 'ot_milestone_android_end',

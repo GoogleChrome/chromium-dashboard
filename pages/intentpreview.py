@@ -79,6 +79,8 @@ class IntentEmailPreviewHandler(basehandlers.FlaskHandler):
         return 'Intent to Experiment'
     elif intent_stage == models.INTENT_SHIP:
       return 'Intent to Ship'
+    elif intent_stage == models.INTENT_REMOVED:
+      return 'Intent to Extend Deprecation Trial'
 
     return 'Intent stage "%s"' % models.INTENT_STAGES[intent_stage]
 
