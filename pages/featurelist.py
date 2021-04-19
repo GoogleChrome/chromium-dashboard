@@ -26,7 +26,8 @@ from framework import utils
 from internals import models
 from framework import ramcache
 
-from google.appengine.api import users
+# from google.appengine.api import users
+from framework import users
 
 
 class FeaturesJsonHandler(basehandlers.FlaskHandler):

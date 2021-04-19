@@ -28,7 +28,8 @@ from google.appengine.ext import db
 from google.appengine.api import mail
 from framework import ramcache
 import requests
-from google.appengine.api import users
+# from google.appengine.api import users
+from framework import users
 
 from framework import cloud_tasks_helpers
 import settings

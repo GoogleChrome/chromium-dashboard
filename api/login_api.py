@@ -20,6 +20,7 @@ import logging
 
 from google.oauth2 import id_token
 from google.auth.transport import requests
+from flask import session
 
 
 from framework import basehandlers
@@ -39,6 +40,7 @@ class LoginAPI(basehandlers.APIHandler):
       idinfo = id_token.verify_oauth2_token(token, requests.Request(), CLIENT_ID)
       userid = idinfo['sub']
       email = idinfo['email']
+      session["id_token"] = token
       message = "Done"
     except ValueError:
       message = "Invalid token"

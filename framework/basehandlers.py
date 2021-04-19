@@ -24,7 +24,7 @@ import re
 import flask
 import flask.views
 
-from google.appengine.api import users
+# from google.appengine.api import users
 from google.appengine.ext import db
 
 from framework import permissions
@@ -35,6 +35,12 @@ from internals import models
 
 from django.template.loader import render_to_string
 import django
+
+from google.oauth2 import id_token
+from google.auth.transport import requests
+from flask import session
+import sys
+from framework import users
 
 # Initialize django so that it'll function when run as a standalone script.
 # https://django.readthedocs.io/en/latest/releases/1.7.html#standalone-scripts
@@ -64,10 +70,22 @@ class BaseHandler(flask.views.MethodView):
 
   def get_current_user(self, required=False):
     # TODO(jrobbins): oauth support
-    user = users.get_current_user()
-    if required and not user:
+    token = session.get('id_token')
+    current_user = None
+    if token:
+      try:
+        CLIENT_ID = '77756740465-e5r4o15qg4hkdfiucjpl231o79k3ipjv.apps.googleusercontent.com'
+        idinfo = id_token.verify_oauth2_token(token, requests.Request(), CLIENT_ID)
+        print(idinfo['email'], file=sys.stderr)
+        current_user = users.User(email=idinfo['email'], _user_id=idinfo['sub'])
+
+      except ValueError:
+        pass
+    
+    if required and not current_user:
       self.abort(403, msg='User must be signed in')
-    return user
+    # print(current_user.email(), file=sys.stderr)
+    return current_user
 
   def get_param(
       self, name, default=None, required=True, validator=None, allowed=None):
@@ -242,7 +260,7 @@ class FlaskHandler(BaseHandler):
     if user:
       user_pref = models.UserPref.get_signed_in_user_pref()
       common_data['login'] = (
-          'Sign out', users.create_logout_url(dest_url=current_path))
+          'Sign out', "SignOut")
       common_data['user'] = {
         'can_create_feature': permissions.can_create_feature(user),
         'can_edit': permissions.can_edit_any_feature(user),
@@ -254,7 +272,7 @@ class FlaskHandler(BaseHandler):
     else:
       common_data['user'] = None
       common_data['login'] = (
-          'Sign in', users.create_login_url(dest_url=current_path))
+           'Sign in', "Sign In")
       common_data['xsrf_token'] = xsrf.generate_token(None)
     return common_data
 
@@ -380,6 +398,7 @@ def FlaskApplication(routes, pattern_base='', debug=False):
   """Make a Flask app and add routes and handlers that work like webapp2."""
 
   app = flask.Flask(__name__)
+  app.secret_key = "abc"
   for i, rule in enumerate(routes):
     pattern = rule[0]
     handler_class = rule[1]
