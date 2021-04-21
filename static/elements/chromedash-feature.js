@@ -147,7 +147,8 @@ class ChromedashFeature extends LitElement {
 
     if (target.classList.contains('tooltip') || 'tooltip' in target.dataset ||
         target.tagName == 'A' || target.tagName == 'CHROMEDASH-MULTI-LINKS' ||
-        e.path[0].nodeName === 'A' || textSelection.type === 'RANGE' || textSelection.toString()) {
+        e.composedPath()[0].nodeName === 'A' ||
+        textSelection.type === 'RANGE' || textSelection.toString()) {
       return;
     }
 
