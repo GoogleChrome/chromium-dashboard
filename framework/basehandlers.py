@@ -30,6 +30,7 @@ from google.appengine.ext import db
 from framework import permissions
 from framework import ramcache
 from framework import xsrf
+from framework import secrets
 import settings
 from internals import models
 
@@ -380,6 +381,8 @@ def FlaskApplication(routes, pattern_base='', debug=False):
   """Make a Flask app and add routes and handlers that work like webapp2."""
 
   app = flask.Flask(__name__)
+  app.secret_key = secrets.get_session_secret()  # For flask.session
+
   for i, rule in enumerate(routes):
     pattern = rule[0]
     handler_class = rule[1]
