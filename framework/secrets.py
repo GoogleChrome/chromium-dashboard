@@ -58,12 +58,12 @@ class Secrets(db.Model):
 
     if not singleton.xsrf_secret:
       singleton.xsrf_secret = make_random_key()
-      logging.info('Added XSRF secret: %r' % singleton.xsrf_secret)
+      logging.info('Added XSRF secret: %r' % singleton.xsrf_secret[:8])
       needs_save = True
 
     if not singleton.session_secret:
       singleton.session_secret = make_random_key()
-      logging.info('Added session secret: %r' % singleton.session_secret)
+      logging.info('Added session secret: %r' % singleton.session_secret[:8])
       needs_save = True
 
     if needs_save:

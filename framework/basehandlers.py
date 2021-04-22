@@ -27,11 +27,11 @@ import flask.views
 from google.appengine.api import users
 from google.appengine.ext import db
 
+import settings
 from framework import permissions
 from framework import ramcache
-from framework import xsrf
 from framework import secrets
-import settings
+from framework import xsrf
 from internals import models
 
 from django.template.loader import render_to_string
