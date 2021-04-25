@@ -23,9 +23,8 @@ import random
 import string
 import time
 
-from google.appengine.ext import db
-
 from framework import constants
+from framework import secrets
 
 
 # TODO(jrobbins): 2 hours is too short for usability, but a longer value
@@ -53,42 +52,6 @@ CLOCK_SKEW_SEC = 5
 DELIMITER = ':'
 
 
-# For random key generation
-RANDOM_KEY_LENGTH = 128
-RANDOM_KEY_CHARACTERS = string.ascii_letters + string.digits
-
-
-def make_random_key(length=RANDOM_KEY_LENGTH, chars=RANDOM_KEY_CHARACTERS):
-  """Return a string with lots of random characters."""
-  chars = [random.choice(chars) for _ in range(length)]
-  return ''.join(chars)
-
-
-class Secrets(db.Model):
-  """A server-side-only value that we use to generate security tokens."""
-
-  xsrf_secret = db.StringProperty(required=True)
-
-  @classmethod
-  def _get_or_make_singleton(cls):
-    existing = Secrets.all().fetch(1)
-    if existing:
-      return existing[0]
-
-    logging.info('Creating new secrets')
-    xsrf_secret = make_random_key()
-    new_entity = Secrets(xsrf_secret=xsrf_secret)
-    new_entity.put()
-    return new_entity
-
-  @classmethod
-  def get_xsrf_secret(cls):
-    """Return the xsrf secret key."""
-    singleton = cls._get_or_make_singleton()
-    return singleton.xsrf_secret
-
-
-
 def generate_token(user_email, token_time=None):
   """Return a security token specifically for the given user.
   Args:
@@ -103,7 +66,7 @@ def generate_token(user_email, token_time=None):
     ValueError: if the XSRF secret was not configured.
   """
   token_time = token_time or int(time.time())
-  digester = hmac.new(Secrets.get_xsrf_secret())
+  digester = hmac.new(secrets.get_xsrf_secret())
   digester.update(user_email or '')
   digester.update(DELIMITER)
   digester.update(str(token_time))

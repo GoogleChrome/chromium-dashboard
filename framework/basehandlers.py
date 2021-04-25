@@ -27,10 +27,11 @@ import flask.views
 # from google.appengine.api import users
 from google.appengine.ext import db
 
+import settings
 from framework import permissions
 from framework import ramcache
+from framework import secrets
 from framework import xsrf
-import settings
 from internals import models
 
 from django.template.loader import render_to_string
@@ -388,7 +389,8 @@ def FlaskApplication(routes, pattern_base='', debug=False):
   """Make a Flask app and add routes and handlers that work like webapp2."""
 
   app = flask.Flask(__name__)
-  app.secret_key = "abc"
+  app.secret_key = secrets.get_session_secret()  # For flask.session
+
   for i, rule in enumerate(routes):
     pattern = rule[0]
     handler_class = rule[1]

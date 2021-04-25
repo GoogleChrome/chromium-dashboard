@@ -63,6 +63,32 @@ class FeaturesJsonHandlerTest(TestWithFeature):
     self.assertEqual(1, len(json_data))
     self.assertEqual('feature one', json_data[0]['name'])
 
+  def test_get_template_data__unlisted_no_perms(self):
+    """JSON feed does not include unlisted features for users who can't edit."""
+    self.feature_1.unlisted = True
+    self.feature_1.put()
+
+    testing_config.sign_out()
+    with featurelist.app.test_request_context(self.request_path):
+      json_data = self.handler.get_template_data()
+    self.assertEqual(0, len(json_data))
+
+    testing_config.sign_in('user@example.com', 111)
+    with featurelist.app.test_request_context(self.request_path):
+      json_data = self.handler.get_template_data()
+    self.assertEqual(0, len(json_data))
+
+  def test_get_template_data__unlisted_can_edit(self):
+    """JSON feed includes unlisted features for users who may edit."""
+    self.feature_1.unlisted = True
+    self.feature_1.put()
+
+    testing_config.sign_in('user@google.com', 111)
+    with featurelist.app.test_request_context(self.request_path):
+      json_data = self.handler.get_template_data()
+    self.assertEqual(1, len(json_data))
+    self.assertEqual('feature one', json_data[0]['name'])
+
 
 class FeatureListHandlerTest(TestWithFeature):
 
