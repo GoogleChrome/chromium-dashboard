@@ -28,7 +28,7 @@ from google.appengine.ext import db
 from google.appengine.api import mail
 from framework import ramcache
 import requests
-# from google.appengine.api import users
+from google.appengine.api import users as gae_users
 from framework import users
 
 from framework import cloud_tasks_helpers
@@ -347,7 +347,7 @@ class DictModel(db.Model):
         output[key] = {'lat': value.lat, 'lon': value.lon}
       elif isinstance(value, db.Model):
         output[key] = to_dict(value)
-      elif isinstance(value, users.User):
+      elif isinstance(value, gae_users.User):
         output[key] = value.email()
       else:
         raise ValueError('cannot encode ' + repr(prop))

@@ -70,7 +70,8 @@ limitations under the License.
       xhr.open('POST', '/api/v0/login');
       xhr.setRequestHeader('Content-Type', 'application/json');
       xhr.onload = function() {
-        window.location.reload()
+        window.location.replace(window.location.href.split("?")[0])
+        
       };
       let data = JSON.stringify({ "id_token": id_token})
       xhr.send(data);
@@ -98,6 +99,16 @@ limitations under the License.
         gapi.auth2.init();
       });
     }
+
+    function getQueryStringValue (key) {  
+      return decodeURIComponent(window.location.search.replace(new RegExp("^(?:.*[&\\?]" + encodeURIComponent(key).replace(/[\.\+\*]/g, "\\$&") + "(?:\\=([^&]*))?)?.*$", "i"), "$1"));  
+    }
+    
+    if (getQueryStringValue("loginStatus") == 'False') {
+      alert('Please log in.')
+    } 
+    
+
     
   </script>
 

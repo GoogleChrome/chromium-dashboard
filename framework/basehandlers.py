@@ -24,7 +24,7 @@ import re
 import flask
 import flask.views
 
-# from google.appengine.api import users
+from google.appengine.api import users as gae_users
 from google.appengine.ext import db
 
 import settings
@@ -71,8 +71,13 @@ class BaseHandler(flask.views.MethodView):
 
   def get_current_user(self, required=False):
     # TODO(jrobbins): oauth support
-    current_user = users.get_current_user()
-    
+    current_user = None 
+    if self.request.method == 'POST':
+      current_user = users.get_current_user() or gae_users.get_current_user()
+    else:
+      current_user = users.get_current_user()
+
+
     if required and not current_user:
       self.abort(403, msg='User must be signed in')
     # print(current_user.email(), file=sys.stderr)

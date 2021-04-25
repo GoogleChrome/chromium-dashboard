@@ -177,6 +177,7 @@ class User(object):
 
 
 def get_current_user():
+
     token = session.get('id_token')
     current_user = None
     if token:
@@ -187,7 +188,12 @@ def get_current_user():
         current_user = User(email=idinfo['email'], _user_id=idinfo['sub'])
 
       except ValueError:
-        pass
+          current_user = None
+          pass
 
     # print(current_user.email(), file=sys.stderr)
     return current_user
+
+
+def is_current_user_admin():
+    return True
