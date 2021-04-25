@@ -169,6 +169,10 @@ class User(object):
         Returns:
         `True` if the user is an administrator; all other user types return `False`.
         """
+
+        # This environment variable was set by GAE based on a GAE session cookie. 
+        # With Google Sign-In, it will probably never be present. Hence, currently is always False
+        # TODO (jrobbins): Implement this method 
         return (os.environ.get('USER_IS_ADMIN', '0')) == '1'
 
 
