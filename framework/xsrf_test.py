@@ -26,18 +26,6 @@ from framework import xsrf
 class XsrfTest(unittest.TestCase):
   """Set of unit tests for blocking XSRF attacks."""
 
-  def test_make_random_key__long(self):
-    """The random keys have the desired length."""
-    key = xsrf.make_random_key()
-    self.assertEqual(xsrf.RANDOM_KEY_LENGTH, len(key))
-
-  def test_make_random_key__distinct(self):
-    """The random keys are different."""
-    key_set = set()
-    for i in range(1000):
-      key_set.add(xsrf.make_random_key())
-    self.assertEqual(1000, len(key_set))
-
   def test_generate_token__anon(self):
     """Anon users get a real token."""
     self.assertNotEqual('', xsrf.generate_token(None))

@@ -357,7 +357,7 @@ DEPRECATION_STAGES = [
       'Once the feature is no longer available, remove the code.',
       ['Code removed',
       ],
-      [],
+      [('Generate an Intent to Extend Deprecation Trial', INTENT_EMAIL_URL)],
       [],
       models.INTENT_SHIP, models.INTENT_REMOVED),
   ]
