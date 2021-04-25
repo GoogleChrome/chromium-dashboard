@@ -196,4 +196,4 @@ def get_current_user():
 
 
 def is_current_user_admin():
-    return True
+    return False
