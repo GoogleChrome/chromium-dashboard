@@ -19,7 +19,7 @@ from __future__ import print_function
 import logging
 import flask
 
-# from google.appengine.api import users
+from google.appengine.api import users as gae_users
 from framework import users
 from internals import models
 
@@ -30,7 +30,7 @@ def can_admin_site(unused_user):
   # if self.request().method == 'POST':
   #   return users.is_current_user_admin() or google.appengine.api.users.is_current_user_admin()
   # else:
-  return users.is_current_user_admin()
+  return users.is_current_user_admin() or gae_users.is_current_user_admin()
 
 
 
