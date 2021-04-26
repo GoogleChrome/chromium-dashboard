@@ -136,6 +136,7 @@ class APIHandler(BaseHandler):
 
   def post(self, *args, **kwargs):
     """Handle an incoming HTTP POST request."""
+    self.require_signed_in_and_xsrf_token()
     headers = self.get_headers()
     ramcache.check_for_distributed_invalidation()
     handler_data = self.do_post(*args, **kwargs)
@@ -143,6 +144,7 @@ class APIHandler(BaseHandler):
 
   def patch(self, *args, **kwargs):
     """Handle an incoming HTTP PATCH request."""
+    self.require_signed_in_and_xsrf_token()
     headers = self.get_headers()
     ramcache.check_for_distributed_invalidation()
     handler_data = self.do_patch(*args, **kwargs)
@@ -150,6 +152,7 @@ class APIHandler(BaseHandler):
 
   def delete(self, *args, **kwargs):
     """Handle an incoming HTTP DELETE request."""
+    self.require_signed_in_and_xsrf_token()
     headers = self.get_headers()
     ramcache.check_for_distributed_invalidation()
     handler_data = self.do_delete(*args, **kwargs)
@@ -182,6 +185,26 @@ class APIHandler(BaseHandler):
   def do_delete(self, **kwargs):
     """Subclasses should implement this method to handle a DELETE request."""
     self.abort(405, valid_methods=self._get_valid_methods())
+
+  def validate_token(self, token, email):
+    """If the token is not valid, raise an exception."""
+    # This is a separate method so that the refresh handler can override it.
+    xsrf.validate_token(token, email)
+
+  def require_signed_in_and_xsrf_token(self):
+    """Every API POST, PUT, or DELETE must be signed in with an XSRF token."""
+    user = self.get_current_user(required=True)
+    if not user:
+      self.abort(403, msg='Sign in required')
+    token = self.get_param('token', required=False)
+    if not token:
+      # TODO(jrobbins): start enforcing in next release
+      logging.info("would do self.abort(400, msg='Missing XSRF token')")
+    try:
+      self.validate_token(token, user.email())
+    except xsrf.TokenIncorrect:
+      # TODO(jrobbins): start enforcing in next release
+      logging.info("would do self.abort(400, msg='Invalid XSRF token')")
 
 
 class FlaskHandler(BaseHandler):
@@ -308,13 +331,13 @@ class FlaskHandler(BaseHandler):
     token = self.form.get('token')
     if not token:
       # TODO(jrobbins): start enforcing in next release
-      logging.info("self.abort(400, msg='Missing XSRF token')")
+      logging.info("would do self.abort(400, msg='Missing XSRF token')")
     user = self.get_current_user(required=True)
     try:
       xsrf.validate_token(token, user.email())
     except xsrf.TokenIncorrect:
       # TODO(jrobbins): start enforcing in next release
-      logging.info("self.abort(400, msg='Invalid XSRF token')")
+      logging.info("would do self.abort(400, msg='Invalid XSRF token')")
 
   def require_task_header(self):
     """Abort if this is not a Google Cloud Tasks request."""
