@@ -334,6 +334,47 @@ class APIHandlerTests(unittest.TestCase):
     """If a subclass does not implement do_delete(), return a 405."""
     self.check_bad_HTTP_method(self.handler.do_delete)
 
+  @mock.patch('framework.basehandlers.APIHandler.validate_token')
+  def test_require_signed_in_and_xsrf_token__OK(self, mock_validate_token):
+    """User is signed in and has a token."""
+    testing_config.sign_in('user@example.com', 111)
+    params = {'token': 'valid token'}
+    with test_app.test_request_context('/path', json=params):
+      self.handler.require_signed_in_and_xsrf_token()
+    mock_validate_token.assert_called_once()
+
+  @unittest.skip('TODO(jrobbins): enable after next release')
+  @mock.patch('framework.basehandlers.APIHandler.validate_token')
+  def test_require_signed_in_and_xsrf_token__missing(self, mock_validate_token):
+    """User is signed in but missing a token."""
+    testing_config.sign_in('user@example.com', 111)
+    params = {}  # No token
+    with test_app.test_request_context('/path', json=params):
+      with self.assertRaises(werkzeug.exceptions.BadRequest):
+        self.handler.require_signed_in_and_xsrf_token()
+    mock_validate_token.assert_not_called()
+
+  @unittest.skip('TODO(jrobbins): enable after next release')
+  @mock.patch('framework.basehandlers.APIHandler.validate_token')
+  def test_require_signed_in_and_xsrf_token__bad(self, mock_validate_token):
+    """User is signed in but missing a token."""
+    testing_config.sign_in('user@example.com', 111)
+    mock_validate_token.side_effect = xsrf.TokenIncorrect()
+    params = {'token': 'bad token'}
+    with test_app.test_request_context('/path', json=params):
+      with self.assertRaises(werkzeug.exceptions.BadRequest):
+        self.handler.require_signed_in_and_xsrf_token()
+    mock_validate_token.assert_called()
+
+  @mock.patch('framework.basehandlers.APIHandler.validate_token')
+  def test_require_signed_in_and_xsrf_token__anon(self, mock_validate_token):
+    """User is signed out, so reject."""
+    testing_config.sign_out()
+    with test_app.test_request_context('/path', json={}):
+      with self.assertRaises(werkzeug.exceptions.Forbidden):
+        self.handler.require_signed_in_and_xsrf_token()
+    mock_validate_token.assert_not_called()
+
 
 class FlaskHandlerTests(unittest.TestCase):
 

@@ -21,6 +21,7 @@ from api import approvals_api
 from api import cues_api
 from api import features_api
 from api import stars_api
+from api import token_refresh_api
 from framework import basehandlers
 
 
@@ -36,6 +37,7 @@ app = basehandlers.FlaskApplication([
 
     ('/currentuser/stars', stars_api.StarsAPI),
     ('/currentuser/cues', cues_api.CuesAPI),
+    ('/currentuser/token', token_refresh_api.TokenRefreshAPI),
     # ('/currentuser/autosaves', TODO),
     # ('/currentuser/settings', TODO),
 
