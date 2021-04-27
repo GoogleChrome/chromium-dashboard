@@ -496,9 +496,6 @@ class FeatureEditStage(basehandlers.FlaskHandler):
     if self.touched('ongoing_constraints'):
       feature.ongoing_constraints = self.form.get('ongoing_constraints')
 
-    if self.form.get('intent_to_implement') == 'on':
-      feature.intent_template_use_count += 1
-
     key = feature.put()
 
     # TODO(jrobbins): enumerate and remove only the relevant keys.
