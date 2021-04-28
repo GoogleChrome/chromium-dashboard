@@ -133,7 +133,7 @@ def delete(key):
   """Emulate the memcache.delete() method using a RAM cache."""
   if key in global_cache:
     del global_cache[key]
-    flush_all()  # Note: this is wasteful but infrequent in our app.
+  flush_all()  # Note: this is wasteful but infrequent in our app.
 
 
 def flush_all():
