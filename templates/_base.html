@@ -57,9 +57,19 @@ limitations under the License.
   </style>
 
   {% block css %}{% endblock %}
-  
-  {# Metric is need by sw registration and page code. #}
-  <script>{% inline_file "/static/js/metric.min.js" %}</script>
+
+  {# Loaded immediately because it is used by JS code on the page. #}
+  <script>
+    {% inline_file "/static/js/metric.min.js" %}
+    {% inline_file "/static/js/cs-client.min.js" %}
+
+    window.CS_env = {
+        token: '{{xsrf_token}}',
+        tokenExpiresSec: {{xsrf_token_expires}},
+    };
+    window.csClient = new ChromeStatusClient(
+        window.CS_env.token, window.CS_env.tokenExpiresSec);
+  </script>
 
   <script src="https://unpkg.com/@webcomponents/webcomponentsjs/webcomponents-loader.js" defer></script>
   <script type="module">

@@ -8,14 +8,12 @@ if (document.querySelector('.delete-button')) {
       return;
     }
 
-    fetch(`/api/v0/features/${e.currentTarget.dataset.id}`, {
-      method: 'DELETE',
-      credentials: 'include',
-    }).then((resp) => {
-      if (resp.status === 200) {
+    window.csClient.doDelete(`/features/${e.currentTarget.dataset.id}`)
+     .then((resp) => {
+       if (resp.message === 'Done') {
         location.href = '/features';
       }
-    });
+     });
   });
 }
 

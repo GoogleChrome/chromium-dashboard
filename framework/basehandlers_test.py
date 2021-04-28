@@ -18,6 +18,7 @@ from __future__ import print_function
 import unittest
 import testing_config  # Must be imported before the module under test.
 
+import json
 import mock
 import flask
 import flask.views
@@ -302,6 +303,27 @@ class APIHandlerTests(unittest.TestCase):
   def setUp(self):
     self.handler = basehandlers.APIHandler()
 
+  def test_get_headers(self):
+    """We always use some standard headers."""
+    actual = self.handler.get_headers()
+    self.assertEqual(
+        {'Strict-Transport-Security':
+             'max-age=63072000; includeSubDomains; preload',
+         'Access-Control-Allow-Origin': '*',
+         'X-UA-Compatible': 'IE=Edge,chrome=1',
+         },
+        actual)
+
+  def test_defensive_jsonify(self):
+    """We prefix our JSON responses with defensive characters."""
+    handler_data = {'one': 1, 'two': 2}
+    with test_app.test_request_context('/path'):
+      actual = self.handler.defensive_jsonify(handler_data)
+
+    actual_sent_text = actual.response[0]
+    self.assertTrue(actual_sent_text.startswith(basehandlers.XSSI_PREFIX))
+    self.assertIn(json.dumps(handler_data), actual_sent_text)
+
   def test_do_get(self):
     """If a subclass does not implement do_get(), raise NotImplementedError."""
     with self.assertRaises(NotImplementedError):
@@ -335,13 +357,25 @@ class APIHandlerTests(unittest.TestCase):
     self.check_bad_HTTP_method(self.handler.do_delete)
 
   @mock.patch('framework.basehandlers.APIHandler.validate_token')
-  def test_require_signed_in_and_xsrf_token__OK(self, mock_validate_token):
-    """User is signed in and has a token."""
+  def test_require_signed_in_and_xsrf_token__OK_body(self, mock_validate_token):
+    """User is signed in and has a token in the request body."""
     testing_config.sign_in('user@example.com', 111)
-    params = {'token': 'valid token'}
+    params = {'token': 'valid body token'}
     with test_app.test_request_context('/path', json=params):
       self.handler.require_signed_in_and_xsrf_token()
-    mock_validate_token.assert_called_once()
+    mock_validate_token.assert_called_once_with(
+        'valid body token', 'user@example.com')
+
+  @mock.patch('framework.basehandlers.APIHandler.validate_token')
+  def test_require_signed_in_and_xsrf_token__OK_header(self, mock_validate_token):
+    """User is signed in and has a token in the request header."""
+    testing_config.sign_in('user@example.com', 111)
+    headers = {'X-Xsrf-Token': 'valid header token'}
+    params = {}
+    with test_app.test_request_context('/path', headers=headers, json=params):
+      self.handler.require_signed_in_and_xsrf_token()
+    mock_validate_token.assert_called_once_with(
+        'valid header token', 'user@example.com')
 
   @unittest.skip('TODO(jrobbins): enable after next release')
   @mock.patch('framework.basehandlers.APIHandler.validate_token')
