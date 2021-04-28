@@ -128,17 +128,6 @@ limitations under the License.
     (function() {
       'use strict';
 
-      // Unregister any existing service workers.
-      // Note, this leaves existing service workers on existing browser tabs.
-      // TODO(jrobbins): remove this in a future release.
-      if (window.navigator && navigator.serviceWorker) {
-        navigator.serviceWorker.getRegistrations().then(function(registrations) {
-          for (let registration of registrations) {
-            registration.unregister();
-          }
-        });
-      }
-
       {% inline_file "/static/js/shared.min.js" %}
     })();
   </script>
