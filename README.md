@@ -35,6 +35,7 @@ To start the main server and the notifier backend, run:
 ```bash
 npm start
 ```
+Then visit `http://localhost:8080/`.
 
 To start front end code watching (sass, js lint check, babel, minify files), run
 
@@ -62,8 +63,6 @@ There are some developing information in developer-documentation.md.
 **Notes**
 
 - If you get an error saying `No module named protobuf`, try installing it locally with `python -m pip install protobuf`.
-
-- Locally, the `/feature` list pulls from prod (https://www.chromestatus.com/features.json). Opening one of the features will 404 because the entry is not actually in the local db. If you want to test local entries, go to `http://127.0.0.1:8080/` instead of `localhost` to use local data.
 
 - When installing the GAE SDK, make sure to get the version for python 2.7.  It is no longer the default version.
 

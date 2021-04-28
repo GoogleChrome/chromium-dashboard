@@ -51,8 +51,7 @@ class ChromedashFeaturelist extends LitElement {
   }
 
   async _loadData() {
-    const featureUrl = location.hostname == 'localhost' ?
-      'https://www.chromestatus.com/features_v2.json' : '/features_v2.json';
+    const featureUrl = '/features_v2.json';
 
     try {
       const features = await (await fetch(featureUrl)).json();
