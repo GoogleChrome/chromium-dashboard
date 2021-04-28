@@ -11,7 +11,6 @@ class ChromedashTimeline extends LitElement {
       selectedBucketId: {attribute: false},
       showAllHistoricalData: {attribute: false},
       props: {attribute: false}, // Directly edited from metrics/css/timeline/popularity and metrics/feature/timeline/popularity
-      useRemoteData: {attribute: false}, // If true, fetches live data from chromestatus.com instead of localhost.
 
       // Listed in the old code, but seems not used in the component:
       timeline: {attribute: false},
@@ -26,7 +25,6 @@ class ChromedashTimeline extends LitElement {
     this.type = '';
     this.view = '';
     this.props = [];
-    this.useRemoteData = false;
   }
 
   static get styles() {
@@ -94,7 +92,6 @@ class ChromedashTimeline extends LitElement {
       'selectedBucketId',
       'type',
       'view',
-      'useRemoteData',
       'showAllHistoricalData',
     ];
     if (TRACKING_PROPERTIES.some((property) => changedProperties.has(property))) {
@@ -213,9 +210,7 @@ class ChromedashTimeline extends LitElement {
       return;
     }
 
-    const prefix = this.useRemoteData ? 'https://www.chromestatus.com' : '';
-
-    const url = prefix + '/data/timeline/' + this.type + this.view +
+    const url = '/data/timeline/' + this.type + this.view +
               '?bucket_id=' + this.selectedBucketId;
 
     this._renderHTTPArchiveData();

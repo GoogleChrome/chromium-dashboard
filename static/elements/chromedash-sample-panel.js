@@ -95,8 +95,7 @@ class ChromedashSamplePanel extends LitElement {
 
   async _loadData() {
     // Fire of samples.json XHR right away so data can populate faster.
-    const url = location.hostname == 'localhost' ?
-      'https://www.chromestatus.com/samples.json' : '/samples.json';
+    const url = '/samples.json';
     this.features = await (await fetch(url)).json();
     this.features.forEach((feature) => {
       feature.sample_links = feature.sample_links.map((link) => {
