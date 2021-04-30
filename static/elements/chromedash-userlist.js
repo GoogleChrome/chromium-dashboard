@@ -7,7 +7,6 @@ class ChromedashUserlist extends LitElement {
   static get properties() {
     return {
       actionPath: {type: String},
-      token: {type: String},
       users: {attribute: false},
     };
   }
@@ -59,6 +58,7 @@ class ChromedashUserlist extends LitElement {
     this.users = this.users.slice(0); // Refresh the list
   }
 
+  // TODO(jrobbins): Change this to be a JSON API call via csClient.
   async ajaxSubmit(e) {
     e.preventDefault();
     const formEl = this.shadowRoot.querySelector('form');
@@ -71,7 +71,8 @@ class ChromedashUserlist extends LitElement {
       if (isAdmin) {
         formData.append('is_admin', 'on');
       }
-      formData.append('token', this.token);
+      await window.csClient.ensureTokenIsValid();
+      formData.append('token', window.csClient.token);
 
       const resp = await fetch(this.actionPath, {
         method: 'POST',

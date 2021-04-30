@@ -25,3 +25,6 @@ gtag('js', new Date());
 
 gtag('config', 'UA-179341418-1');
 // End Google Analytics
+
+
+window.csClient.addFormSubmitListner();
