@@ -63,12 +63,8 @@ limitations under the License.
     {% inline_file "/static/js/metric.min.js" %}
     {% inline_file "/static/js/cs-client.min.js" %}
 
-    window.CS_env = {
-        token: '{{xsrf_token}}',
-        tokenExpiresSec: {{xsrf_token_expires}},
-    };
     window.csClient = new ChromeStatusClient(
-        window.CS_env.token, window.CS_env.tokenExpiresSec);
+        '{{xsrf_token}}', {{xsrf_token_expires}});
   </script>
 
   <script src="https://unpkg.com/@webcomponents/webcomponentsjs/webcomponents-loader.js" defer></script>
