@@ -32,6 +32,7 @@ import settings
 from framework import permissions
 from framework import ramcache
 from framework import secrets
+from framework import utils
 from framework import xsrf
 from internals import models
 
@@ -277,7 +278,9 @@ class FlaskHandler(BaseHandler):
       'APP_TITLE': settings.APP_TITLE,
       'current_path': current_path,
       'TEMPLATE_CACHE_TIME': settings.TEMPLATE_CACHE_TIME,
-      }
+      'banner_message': settings.BANNER_MESSAGE,
+      'banner_time': utils.get_banner_time(settings.BANNER_TIME),
+    }
 
     user = self.get_current_user()
     if user:

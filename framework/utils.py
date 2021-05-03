@@ -16,6 +16,7 @@
 from __future__ import division
 from __future__ import print_function
 
+import calendar
 import datetime
 import flask
 import logging
@@ -121,3 +122,32 @@ def render_atom_feed(request, title, data):
       'Content-Type': 'application/atom+xml;charset=utf-8'}
   text = feed.writeString('utf-8')
   return text, headers
+
+
+_ZERO = datetime.timedelta(0)
+
+class _UTCTimeZone(datetime.tzinfo):
+    """UTC"""
+    def utcoffset(self, _dt):
+        return _ZERO
+    def tzname(self, _dt):
+        return "UTC"
+    def dst(self, _dt):
+        return _ZERO
+
+_UTC = _UTCTimeZone()
+
+
+def get_banner_time(timestamp):
+  """Converts a timestamp into data so it can appear in the banner.
+  Args:
+    timestamp: timestamp expressed in the following format:
+         [year,month,day,hour,minute,second]
+         e.g. [2009,3,20,21,45,50] represents March 20 2009 9:45:50 PM
+  Returns:
+    EZT-ready data used to display the time inside the banner message.
+  """
+  if timestamp is None:
+    return None
+  ts = datetime.datetime(*timestamp, tzinfo=_UTC)
+  return calendar.timegm(ts.timetuple())

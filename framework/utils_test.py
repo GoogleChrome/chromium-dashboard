@@ -107,3 +107,13 @@ class UtilsFunctionTests(unittest.TestCase):
     handlerInstance.handlerMethod('/request/path/')
     self.assertIsNone(handlerInstance.handler_called_with)
     self.assertEqual('/request/path', handlerInstance.redirected_to)
+
+  def test_get_banner_time__None(self):
+    """If no time specified, it returns None."""
+    self.assertIsNone(utils.get_banner_time(None))
+
+  def test_get_banner_time__tuple(self):
+    """If a time tuple is specified, it returns a timestamp."""
+    time_tuple = (2019, 6, 13, 18, 30)
+    actual = utils.get_banner_time(time_tuple)
+    self.assertEqual(1560450600, actual)
