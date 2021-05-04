@@ -29,7 +29,8 @@ import time
 
 from google.appengine.api import app_identity
 from google.appengine.api import memcache
-from google.appengine.api import users
+# from google.appengine.api import users
+from framework import users
 from google.appengine.ext import db
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp.util import login_required

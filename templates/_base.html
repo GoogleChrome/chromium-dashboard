@@ -29,6 +29,7 @@ limitations under the License.
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="google-signin-client_id" content="77756740465-e5r4o15qg4hkdfiucjpl231o79k3ipjv.apps.googleusercontent.com">
 
   <link rel="apple-touch-icon" href="/static/img/crstatus_128.png">
   <link rel="apple-touch-icon-precomposed" href="/static/img/crstatus_128.png">
@@ -57,6 +58,60 @@ limitations under the License.
   </style>
 
   {% block css %}{% endblock %}
+  
+  {# Google Platform Library for OAuth #}
+  <script src="https://apis.google.com/js/platform.js?onload=onLoad" async defer></script>
+  <script>
+    
+    function onSignIn(googleUser) {
+      var profile = googleUser.getBasicProfile();
+      var id_token = googleUser.getAuthResponse().id_token;
+      var xhr = new XMLHttpRequest();
+      xhr.open('POST', '/api/v0/login');
+      xhr.setRequestHeader('Content-Type', 'application/json');
+      xhr.onload = function() {
+        window.location.replace(window.location.href.split("?")[0])
+        
+      };
+      let data = JSON.stringify({ "id_token": id_token})
+      xhr.send(data);
+      
+    }
+    
+    function signOut() {
+      var auth2 = gapi.auth2.getAuthInstance();
+      auth2.signOut().then(function () {
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', '/api/v0/logout');
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.onload = function() {
+          console.log('Signed Out' + xhr.responseText);
+          window.location.reload()
+        };
+        // let data = JSON.stringify({ "id_token": id_token})
+        xhr.send();
+        console.log('User signed out.');
+      });
+    }
+
+    function onLoad() {
+      gapi.load('auth2', function() {
+        gapi.auth2.init();
+      });
+    }
+
+    function getQueryStringValue (key) {  
+      return decodeURIComponent(window.location.search.replace(new RegExp("^(?:.*[&\\?]" + encodeURIComponent(key).replace(/[\.\+\*]/g, "\\$&") + "(?:\\=([^&]*))?)?.*$", "i"), "$1"));  
+    }
+    
+    if (getQueryStringValue("loginStatus") == 'False') {
+      alert('Please log in.')
+    } 
+    
+
+    
+  </script>
+
   
   {# Metric is need by sw registration and page code. #}
   <script>{% inline_file "/static/js/metric.min.js" %}</script>
@@ -114,6 +169,7 @@ limitations under the License.
   {% block js %}{% endblock %}
 
   <script async src="https://www.googletagmanager.com/gtag/js?id=UA-179341418-1"></script>
+  
   <script>
     (function() {
       'use strict';

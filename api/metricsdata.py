@@ -22,7 +22,8 @@ import datetime
 import json
 import logging
 
-from google.appengine.api import users
+# from google.appengine.api import users
+from framework import users
 
 from framework import basehandlers
 from internals import models

@@ -24,7 +24,7 @@ import re
 import flask
 import flask.views
 
-from google.appengine.api import users
+from google.appengine.api import users as gae_users
 from google.appengine.ext import db
 
 import settings
@@ -36,6 +36,12 @@ from internals import models
 
 from django.template.loader import render_to_string
 import django
+
+from google.oauth2 import id_token
+from google.auth.transport import requests
+from flask import session
+import sys
+from framework import users
 
 # Initialize django so that it'll function when run as a standalone script.
 # https://django.readthedocs.io/en/latest/releases/1.7.html#standalone-scripts
@@ -65,10 +71,17 @@ class BaseHandler(flask.views.MethodView):
 
   def get_current_user(self, required=False):
     # TODO(jrobbins): oauth support
-    user = users.get_current_user()
-    if required and not user:
+    current_user = None 
+    if self.request.method == 'POST':
+      current_user = users.get_current_user() or gae_users.get_current_user()
+    else:
+      current_user = users.get_current_user()
+
+
+    if required and not current_user:
       self.abort(403, msg='User must be signed in')
-    return user
+    # print(current_user.email(), file=sys.stderr)
+    return current_user
 
   def get_param(
       self, name, default=None, required=True, validator=None, allowed=None):
@@ -243,7 +256,7 @@ class FlaskHandler(BaseHandler):
     if user:
       user_pref = models.UserPref.get_signed_in_user_pref()
       common_data['login'] = (
-          'Sign out', users.create_logout_url(dest_url=current_path))
+          'Sign out', "SignOut")
       common_data['user'] = {
         'can_create_feature': permissions.can_create_feature(user),
         'can_edit': permissions.can_edit_any_feature(user),
@@ -255,7 +268,7 @@ class FlaskHandler(BaseHandler):
     else:
       common_data['user'] = None
       common_data['login'] = (
-          'Sign in', users.create_login_url(dest_url=current_path))
+           'Sign in', "Sign In")
       common_data['xsrf_token'] = xsrf.generate_token(None)
     return common_data
 

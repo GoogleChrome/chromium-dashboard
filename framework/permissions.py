@@ -19,15 +19,19 @@ from __future__ import print_function
 import logging
 import flask
 
-from google.appengine.api import users
-
+from google.appengine.api import users as gae_users
+from framework import users
 from internals import models
 
 
 def can_admin_site(unused_user):
   """Return True if the current user is allowed to administer the site."""
   # TODO(jrobbins): replace this with user.is_admin.
-  return users.is_current_user_admin()
+  # if self.request().method == 'POST':
+  #   return users.is_current_user_admin() or google.appengine.api.users.is_current_user_admin()
+  # else:
+  return users.is_current_user_admin() or gae_users.is_current_user_admin()
+
 
 
 def can_view_feature(unused_user, unused_feature):
@@ -89,7 +93,7 @@ def _reject_or_proceed(
 
   # Give the user a chance to sign in
   if not user and req.method == 'GET':
-    return handler_obj.redirect(users.create_login_url(req.full_path))
+    return handler_obj.redirect('/features?loginStatus=False')
 
   if not perm_function(user):
     handler_obj.abort(403)
