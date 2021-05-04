@@ -1245,12 +1245,9 @@ class AppUser(DictModel):
 
     query = cls.all()
     query.filter('email =', email)
-    found_app_user = query.get()
-    if found_app_user:
-      ramcache.set(cache_key, found_app_user)
-      return found_app_user
-
-    return None
+    found_app_user_or_none = query.get()
+    ramcache.set(cache_key, found_app_user_or_none)
+    return found_app_user_or_none
 
 
 def list_with_component(l, component):
