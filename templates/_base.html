@@ -112,9 +112,14 @@ limitations under the License.
     
   </script>
 
-  
-  {# Metric is need by sw registration and page code. #}
-  <script>{% inline_file "/static/js/metric.min.js" %}</script>
+  {# Loaded immediately because it is used by JS code on the page. #}
+  <script>
+    {% inline_file "/static/js/metric.min.js" %}
+    {% inline_file "/static/js/cs-client.min.js" %}
+
+    window.csClient = new ChromeStatusClient(
+        '{{xsrf_token}}', {{xsrf_token_expires}});
+  </script>
 
   <script src="https://unpkg.com/@webcomponents/webcomponentsjs/webcomponents-loader.js" defer></script>
   <script type="module">
@@ -173,17 +178,6 @@ limitations under the License.
   <script>
     (function() {
       'use strict';
-
-      // Unregister any existing service workers.
-      // Note, this leaves existing service workers on existing browser tabs.
-      // TODO(jrobbins): remove this in a future release.
-      if (window.navigator && navigator.serviceWorker) {
-        navigator.serviceWorker.getRegistrations().then(function(registrations) {
-          for (let registration of registrations) {
-            registration.unregister();
-          }
-        });
-      }
 
       {% inline_file "/static/js/shared.min.js" %}
     })();

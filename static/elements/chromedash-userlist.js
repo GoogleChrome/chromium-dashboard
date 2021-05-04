@@ -1,12 +1,12 @@
 import {LitElement, css, html} from 'lit-element';
 import SHARED_STYLES from '../css/shared.css';
+import {nothing} from 'lit-html';
 
 
 class ChromedashUserlist extends LitElement {
   static get properties() {
     return {
       actionPath: {type: String},
-      token: {type: String},
       users: {attribute: false},
     };
   }
@@ -20,6 +20,18 @@ class ChromedashUserlist extends LitElement {
     return [
       SHARED_STYLES,
       css`
+      form {
+        padding: var(--content-padding);
+        background: var(--card-background);
+        border: var(--card-border);
+        box-shadow: var(--card-box-shadow);
+        margin-bottom: var(--content-padding);
+        max-width: 20em;
+      }
+      form > * + * {
+        margin-top: var(--content-padding-half);
+      }
+
       ul {
         margin-top: 10px;
       }
@@ -46,15 +58,21 @@ class ChromedashUserlist extends LitElement {
     this.users = this.users.slice(0); // Refresh the list
   }
 
+  // TODO(jrobbins): Change this to be a JSON API call via csClient.
   async ajaxSubmit(e) {
     e.preventDefault();
     const formEl = this.shadowRoot.querySelector('form');
 
     if (formEl.checkValidity()) {
       const email = formEl.querySelector('input[name="email"]').value;
+      const isAdmin = formEl.querySelector('input[name="is_admin"]').checked;
       const formData = new FormData();
       formData.append('email', email);
-      formData.append('token', this.token);
+      if (isAdmin) {
+        formData.append('is_admin', 'on');
+      }
+      await window.csClient.ensureTokenIsValid();
+      formData.append('token', window.csClient.token);
 
       const resp = await fetch(this.actionPath, {
         method: 'POST',
@@ -98,14 +116,25 @@ class ChromedashUserlist extends LitElement {
   render() {
     return html`
       <form id="form" name="user_form" method="POST" action="${this.actionPath}" onsubmit="return false;">
-        <input type="email" placeholder="Email address" name="email" id="id_email" required>
-        <td><input type="submit" @click="${this.ajaxSubmit}">
+        <div>
+          <input type="email" placeholder="Email address" name="email"
+                 required>
+        </div>
+        <div>
+          <label><input type="checkbox" name="is_admin"> User is admin</label>
+        </div>
+        <div>
+          <input type="submit" @click="${this.ajaxSubmit}" value="Add user">
+        </div>
       </form>
+
       <ul id="user-list">
         ${this.users.map((user, index) => html`
           <li>
-            <a href="/admin/users/delete/${user.id}" data-index="${index}" @click="${this.ajaxDelete}">delete</a>
+            <a href="/admin/users/delete/${user.id}"
+               data-index="${index}" @click="${this.ajaxDelete}">delete</a>
             <span>${user.email}</span>
+            ${user.is_admin ? html`(admin)` : nothing}
           </li>
           `)}
       </ul>

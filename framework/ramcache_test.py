@@ -85,10 +85,10 @@ class RAMCacheFunctionTests(unittest.TestCase):
 
   @mock.patch('framework.ramcache.SharedInvalidate.invalidate')
   def testDelete_NotFound(self, mock_invalidate):
-    """Deleting an item that is not in the cache is a no-op."""
+    """Deleting an item that is not in the cache still invalidates."""
     ramcache.delete(KEY_5)
 
-    mock_invalidate.assert_not_called()
+    mock_invalidate.assert_called()
 
   @mock.patch('framework.ramcache.SharedInvalidate.invalidate')
   def testDelete_Found(self, mock_invalidate):

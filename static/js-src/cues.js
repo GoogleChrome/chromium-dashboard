@@ -4,15 +4,8 @@
 
 class CuesService {
   static dismissCue(cue) {
-    const url = location.hostname == 'localhost' ?
-      'https://www.chromestatus.com/api/v0/currentuser/cues' :
-      '/api/v0/currentuser/cues';
-    return fetch(url, {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({cue: cue}),
-    })
-      .then((res) => res.json);
+    return window.csClient.doPost('/currentuser/cues', {cue: cue})
+      .then((res) => res);
     // TODO: catch((error) => { display message }
   }
 }

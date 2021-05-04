@@ -41,5 +41,4 @@ class FeaturesAPI(basehandlers.APIHandler):
     feature.put()
     ramcache.flush_all()
 
-    # Callers don't use the JSON response for this API call.
     return {'message': 'Done'}

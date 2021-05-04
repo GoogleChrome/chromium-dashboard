@@ -24,14 +24,20 @@ from framework import users
 from internals import models
 
 
-def can_admin_site(unused_user):
+def can_admin_site(user):
   """Return True if the current user is allowed to administer the site."""
-  # TODO(jrobbins): replace this with user.is_admin.
-  # if self.request().method == 'POST':
-  #   return users.is_current_user_admin() or google.appengine.api.users.is_current_user_admin()
-  # else:
-  return users.is_current_user_admin() or gae_users.is_current_user_admin()
+  # A user is an admin if they are an admin of the GAE project.
+  # TODO(jrobbins): delete this statement after legacy admins moved to AppUser.
+  if gae_users.is_current_user_admin():
+    return True
 
+  # A user is an admin if they have an AppUser entity that has is_admin set.
+  if user:
+    app_user = models.AppUser.get_app_user(user.email())
+    if app_user is not None:
+      return app_user.is_admin
+
+  return False
 
 
 def can_view_feature(unused_user, unused_feature):
