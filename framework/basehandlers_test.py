@@ -24,7 +24,8 @@ import flask
 import flask.views
 import werkzeug.exceptions  # Flask HTTP stuff.
 
-from google.appengine.api import users
+# from google.appengine.api import users
+from framework import users
 
 from framework import basehandlers
 from framework import xsrf

@@ -22,8 +22,8 @@ import datetime
 import mock
 import flask
 
-from google.appengine.api import users
-# from framework import users
+# from google.appengine.api import users
+from framework import users
 
 from api import metricsdata
 from internals import models

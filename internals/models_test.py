@@ -20,7 +20,8 @@ import testing_config  # Must be imported before the module under test.
 
 import mock
 from framework import ramcache
-from google.appengine.api import users
+# from google.appengine.api import users
+from framework import users
 
 from internals import models
 
@@ -154,13 +155,15 @@ class UserPrefTest(unittest.TestCase):
     self.user_pref_1.delete()
     self.user_pref_2.delete()
 
-  @mock.patch('google.appengine.api.users.get_current_user')
+  # @mock.patch('google.appengine.api.users.get_current_user')
+  @mock.patch('framework.users.get_current_user')
   def test_get_signed_in_user_pref__anon(self, mock_get_current_user):
     mock_get_current_user.return_value = None
     actual = models.UserPref.get_signed_in_user_pref()
     self.assertIsNone(actual)
 
-  @mock.patch('google.appengine.api.users.get_current_user')
+  # @mock.patch('google.appengine.api.users.get_current_user')
+  @mock.patch('framework.users.get_current_user')
   def test_get_signed_in_user_pref__first_time(self, mock_get_current_user):
     mock_get_current_user.return_value = testing_config.Blank(
         email=lambda: 'user1@example.com')
@@ -171,7 +174,8 @@ class UserPrefTest(unittest.TestCase):
     self.assertEqual(True, actual.notify_as_starrer)
     self.assertEqual(False, actual.bounced)
 
-  @mock.patch('google.appengine.api.users.get_current_user')
+  # @mock.patch('google.appengine.api.users.get_current_user')
+  @mock.patch('framework.users.get_current_user')
   def test_get_signed_in_user_pref__had_pref(self, mock_get_current_user):
     mock_get_current_user.return_value = testing_config.Blank(
         email=lambda: 'user2@example.com')
@@ -185,7 +189,8 @@ class UserPrefTest(unittest.TestCase):
     self.assertEqual(False, actual.notify_as_starrer)
     self.assertEqual(True, actual.bounced)
 
-  @mock.patch('google.appengine.api.users.get_current_user')
+  # @mock.patch('google.appengine.api.users.get_current_user')
+  @mock.patch('framework.users.get_current_user')
   def test_dismiss_cue(self, mock_get_current_user):
     """We store the fact that a user has dismissed a cue card."""
     mock_get_current_user.return_value = testing_config.Blank(
@@ -197,7 +202,8 @@ class UserPrefTest(unittest.TestCase):
     self.assertEqual('one@example.com', revised_user_pref.email)
     self.assertEqual(['welcome-message'], revised_user_pref.dismissed_cues)
 
-  @mock.patch('google.appengine.api.users.get_current_user')
+  # @mock.patch('google.appengine.api.users.get_current_user')
+  @mock.patch('framework.users.get_current_user')
   def test_dismiss_cue__double(self, mock_get_current_user):
     """We ignore the same user dismissing the same cue multiple times."""
     mock_get_current_user.return_value = testing_config.Blank(

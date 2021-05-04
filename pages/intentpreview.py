@@ -16,7 +16,8 @@
 from __future__ import division
 from __future__ import print_function
 
-from google.appengine.api import users
+# from google.appengine.api import users
+from framework import users
 
 from internals import models
 import settings

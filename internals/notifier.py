@@ -29,7 +29,8 @@ from framework import ramcache
 from google.appengine.ext import db
 from google.appengine.api import mail
 import requests
-from google.appengine.api import users
+# from google.appengine.api import users
+from framework import users
 from google.appengine.ext.webapp.mail_handlers import BounceNotification
 
 from django.template.loader import render_to_string
