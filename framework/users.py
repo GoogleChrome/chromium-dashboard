@@ -187,6 +187,8 @@ def get_current_user():
         current_user = User(email=idinfo['email'], _user_id=idinfo['sub'])
 
       except ValueError:
+          # Remove the id_token from session if it is invalid or expired
+          session.clear()
           current_user = None
           pass
 
