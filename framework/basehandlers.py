@@ -85,7 +85,6 @@ class BaseHandler(flask.views.MethodView):
 
     if required and not current_user:
       self.abort(403, msg='User must be signed in')
-    # print(current_user.email(), file=sys.stderr)
     return current_user
 
   def get_param(
@@ -161,7 +160,10 @@ class APIHandler(BaseHandler):
 
   def post(self, *args, **kwargs):
     """Handle an incoming HTTP POST request."""
-    self.require_signed_in_and_xsrf_token()
+    is_login_request = str(self.request.url_rule) == '/api/v0/login'
+
+    if not is_login_request:
+      self.require_signed_in_and_xsrf_token()
     headers = self.get_headers()
     ramcache.check_for_distributed_invalidation()
     handler_data = self.do_post(*args, **kwargs)

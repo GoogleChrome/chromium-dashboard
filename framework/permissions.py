@@ -23,7 +23,6 @@ from google.appengine.api import users as gae_users
 from framework import users
 from internals import models
 
-
 def can_admin_site(user):
   """Return True if the current user is allowed to administer the site."""
   # A user is an admin if they are an admin of the GAE project.

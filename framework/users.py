@@ -184,14 +184,12 @@ def get_current_user():
       try:
         CLIENT_ID = '77756740465-e5r4o15qg4hkdfiucjpl231o79k3ipjv.apps.googleusercontent.com'
         idinfo = id_token.verify_oauth2_token(token, requests.Request(), CLIENT_ID)
-        # print(idinfo['email'], file=sys.stderr)
         current_user = User(email=idinfo['email'], _user_id=idinfo['sub'])
 
       except ValueError:
           current_user = None
           pass
 
-    # print(current_user.email(), file=sys.stderr)
     return current_user
 
 
