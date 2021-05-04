@@ -23,6 +23,7 @@ import re
 
 import flask
 import flask.views
+import werkzeug.exceptions
 
 from google.appengine.api import users as gae_users
 from google.appengine.ext import db
@@ -47,6 +48,10 @@ from framework import users
 # https://django.readthedocs.io/en/latest/releases/1.7.html#standalone-scripts
 django.setup()
 
+
+# Our API responses are prefixed with this ro prevent attacks that
+# exploit <script src="...">.  See go/xssi.
+XSSI_PREFIX = ')]}\'\n';
 
 class BaseHandler(flask.views.MethodView):
 
@@ -80,7 +85,6 @@ class BaseHandler(flask.views.MethodView):
 
     if required and not current_user:
       self.abort(403, msg='User must be signed in')
-    # print(current_user.email(), file=sys.stderr)
     return current_user
 
   def get_param(
@@ -140,33 +144,46 @@ class APIHandler(BaseHandler):
         }
     return headers
 
+  def defensive_jsonify(self, handler_data):
+    """Return a Flask Response object with a JSON string prefixed with junk."""
+    body = json.dumps(handler_data)
+    return flask.current_app.response_class(
+        XSSI_PREFIX + body,
+        mimetype=flask.current_app.config['JSONIFY_MIMETYPE'])
+
   def get(self, *args, **kwargs):
     """Handle an incoming HTTP GET request."""
     headers = self.get_headers()
     ramcache.check_for_distributed_invalidation()
     handler_data = self.do_get(*args, **kwargs)
-    return flask.jsonify(handler_data), headers
+    return self.defensive_jsonify(handler_data), headers
 
   def post(self, *args, **kwargs):
     """Handle an incoming HTTP POST request."""
+    is_login_request = str(self.request.url_rule) == '/api/v0/login'
+
+    if not is_login_request:
+      self.require_signed_in_and_xsrf_token()
     headers = self.get_headers()
     ramcache.check_for_distributed_invalidation()
     handler_data = self.do_post(*args, **kwargs)
-    return flask.jsonify(handler_data), headers
+    return self.defensive_jsonify(handler_data), headers
 
   def patch(self, *args, **kwargs):
     """Handle an incoming HTTP PATCH request."""
+    self.require_signed_in_and_xsrf_token()
     headers = self.get_headers()
     ramcache.check_for_distributed_invalidation()
     handler_data = self.do_patch(*args, **kwargs)
-    return flask.jsonify(handler_data), headers
+    return self.defensive_jsonify(handler_data), headers
 
   def delete(self, *args, **kwargs):
     """Handle an incoming HTTP DELETE request."""
+    self.require_signed_in_and_xsrf_token()
     headers = self.get_headers()
     ramcache.check_for_distributed_invalidation()
     handler_data = self.do_delete(*args, **kwargs)
-    return flask.jsonify(handler_data), headers
+    return self.defensive_jsonify(handler_data), headers
 
   def _get_valid_methods(self):
     """For 405 responses, list methods the concrete handler implements."""
@@ -195,6 +212,31 @@ class APIHandler(BaseHandler):
   def do_delete(self, **kwargs):
     """Subclasses should implement this method to handle a DELETE request."""
     self.abort(405, valid_methods=self._get_valid_methods())
+
+  def validate_token(self, token, email):
+    """If the token is not valid, raise an exception."""
+    # This is a separate method so that the refresh handler can override it.
+    xsrf.validate_token(token, email)
+
+  def require_signed_in_and_xsrf_token(self):
+    """Every API POST, PUT, or DELETE must be signed in with an XSRF token."""
+    user = self.get_current_user(required=True)
+    if not user:
+      self.abort(403, msg='Sign in required')
+    token = self.request.headers.get('X-Xsrf-Token')
+    if not token:
+      try:
+        token = self.get_param('token', required=False)
+      except werkzeug.exceptions.BadRequest:
+        pass  # Raised when the request has no body.
+    if not token:
+      # TODO(jrobbins): start enforcing in next release
+      logging.info("would do self.abort(400, msg='Missing XSRF token')")
+    try:
+      self.validate_token(token, user.email())
+    except xsrf.TokenIncorrect:
+      # TODO(jrobbins): start enforcing in next release
+      logging.info("would do self.abort(400, msg='Invalid XSRF token')")
 
 
 class FlaskHandler(BaseHandler):
@@ -265,11 +307,13 @@ class FlaskHandler(BaseHandler):
         'dismissed_cues': json.dumps(user_pref.dismissed_cues),
       }
       common_data['xsrf_token'] = xsrf.generate_token(user.email())
+      common_data['xsrf_token_expires'] = xsrf.token_expires_sec()
     else:
       common_data['user'] = None
       common_data['login'] = (
            'Sign in', "Sign In")
       common_data['xsrf_token'] = xsrf.generate_token(None)
+      common_data['xsrf_token_expires'] = 0
     return common_data
 
   def render(self, template_data, template_path):
@@ -321,13 +365,13 @@ class FlaskHandler(BaseHandler):
     token = self.form.get('token')
     if not token:
       # TODO(jrobbins): start enforcing in next release
-      logging.info("self.abort(400, msg='Missing XSRF token')")
+      logging.info("would do self.abort(400, msg='Missing XSRF token')")
     user = self.get_current_user(required=True)
     try:
       xsrf.validate_token(token, user.email())
     except xsrf.TokenIncorrect:
       # TODO(jrobbins): start enforcing in next release
-      logging.info("self.abort(400, msg='Invalid XSRF token')")
+      logging.info("would do self.abort(400, msg='Invalid XSRF token')")
 
   def require_task_header(self):
     """Abort if this is not a Google Cloud Tasks request."""

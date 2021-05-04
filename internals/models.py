@@ -975,8 +975,6 @@ class Feature(DictModel):
   updated_by = db.UserProperty(auto_current_user=True)
   created_by = db.UserProperty(auto_current_user_add=True)
 
-  intent_template_use_count = db.IntegerProperty(default = 0)
-
   # General info.
   category = db.IntegerProperty(required=True)
   name = db.StringProperty(required=True)
@@ -1222,9 +1220,38 @@ class AppUser(DictModel):
 
   #user = db.UserProperty(required=True, verbose_name='Google Account')
   email = db.EmailProperty(required=True)
-  #is_admin = db.BooleanProperty(default=False)
+  is_admin = db.BooleanProperty(default=False)
   created = db.DateTimeProperty(auto_now_add=True)
   updated = db.DateTimeProperty(auto_now=True)
+
+  def put(self, **kwargs):
+    """when we update an AppUser, also invalidate ramcache."""
+    key = super(DictModel, self).put(**kwargs)
+    cache_key = 'user|%s' % self.email
+    ramcache.delete(cache_key)
+
+  def delete(self, **kwargs):
+    """when we delete an AppUser, also invalidate ramcache."""
+    key = super(DictModel, self).delete(**kwargs)
+    cache_key = 'user|%s' % self.email
+    ramcache.delete(cache_key)
+
+  @classmethod
+  def get_app_user(cls, email):
+    """Return the AppUser for the specified user, or None."""
+    cache_key = 'user|%s' % email
+    cached_app_user = ramcache.get(cache_key)
+    if cached_app_user:
+      return cached_app_user
+
+    query = cls.all()
+    query.filter('email =', email)
+    found_app_user = query.get()
+    if found_app_user:
+      ramcache.set(cache_key, found_app_user)
+      return found_app_user
+
+    return None
 
 
 def list_with_component(l, component):

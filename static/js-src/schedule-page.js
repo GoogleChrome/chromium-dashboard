@@ -1,6 +1,5 @@
 // Start fetching right away.
-const url = location.hostname == 'localhost' ?
-  'https://www.chromestatus.com/features.json' : '/features.json';
+const url = '/features.json';
 const featuresPromise = fetch(url).then((res) => res.json());
 
 document.querySelector('.show-blink-checkbox').addEventListener('change', e => {

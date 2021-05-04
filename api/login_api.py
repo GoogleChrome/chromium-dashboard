@@ -42,6 +42,7 @@ class LoginAPI(basehandlers.APIHandler):
       # email = idinfo['email']
       session["id_token"] = token
       message = "Done"
+      # print(idinfo['email'], file=sys.stderr)
     except ValueError:
       message = "Invalid token"
       pass

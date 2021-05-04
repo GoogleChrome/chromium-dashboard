@@ -25,6 +25,7 @@ from google.appengine.api import users
 
 from framework import basehandlers
 from framework import permissions
+from internals import models
 
 
 class MockHandler(basehandlers.BaseHandler):
@@ -83,6 +84,30 @@ class PermissionFunctionTests(unittest.TestCase):
     self.check_function_results(
         permissions.can_admin_site, tuple(),
         normal=False, special=False, admin=True, anon=False)
+
+  def test_can_admin_site__appuser(self):
+    """A registered AppUser that has is_admin set can admin the site."""
+    email = 'app-admin@example.com'
+    testing_config.sign_in(email, 111)
+    user = users.get_current_user()
+
+    # Make sure there is no left over entity from past runs.
+    query = models.AppUser.all().filter('email =', email)
+    for old_app_user in query.fetch(None):
+      old_app_user.delete()
+
+    self.assertFalse(permissions.can_admin_site(user))
+
+    app_user = models.AppUser(email=email)
+    app_user.put()
+    self.assertFalse(permissions.can_admin_site(user))
+
+    app_user.is_admin = True
+    app_user.put()
+    print('user is %r' % user)
+    print('get_app_user is %r' % models.AppUser.get_app_user(email))
+    print('get_app_user.is_admin is %r' % models.AppUser.get_app_user(email).is_admin)
+    self.assertTrue(permissions.can_admin_site(user))
 
   def test_can_view_feature(self):
     self.check_function_results(

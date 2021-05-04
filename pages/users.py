@@ -57,12 +57,13 @@ class CreateUserAPIHandler(basehandlers.FlaskHandler):
 
   @permissions.require_admin_site
   def process_post_data(self):
-    email = flask.request.form['email']
+    email = self.form['email']
 
     # Don't add a duplicate email address.
     user = models.AppUser.all(keys_only=True).filter('email = ', email).get()
     if not user:
       user = models.AppUser(email=db.Email(email))
+      user.is_admin = 'is_admin' in self.form
       user.put()
 
       response_json = user.format_for_template()
