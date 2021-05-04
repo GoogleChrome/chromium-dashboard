@@ -13,8 +13,8 @@ class ChromedashBanner extends LitElement {
 
   constructor() {
     super();
-    this.timestamp = (new Date()).getTime() / 1000;
-    this.message = null;
+    this.timestamp = null; // Unix timestamp: seconds since 1970-01-01.
+    this.message = '';
   }
 
   static get styles() {
