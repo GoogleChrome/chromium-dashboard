@@ -73,6 +73,10 @@ limitations under the License.
         if (xhr.status == 200) {
           window.location.replace(window.location.href.split("?")[0])
         }
+        else {
+          // signout if cookie not set
+          signOut();
+        }
       };
       let data = JSON.stringify({ "id_token": id_token})
       xhr.send(data);
