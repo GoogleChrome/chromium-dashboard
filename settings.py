@@ -36,7 +36,7 @@ BANNER_MESSAGE = ('This site will have a new method of signing in. '
 # described in the banner message takes effect.  Or, None.  It is
 # expressed as a tuple of ints: (year, month, day[, hour[, minute[, second]]])
 # e.g. (2009, 3, 20, 21, 45) represents March 20 2009 9:45PM UTC.
-BANNER_TIME = (2021, 3, 11, 20, 00)  # May 11, noon pacific
+BANNER_TIME = (2021, 5, 11, 20, 00)  # May 11, noon pacific
 
 ################################################################################
 
