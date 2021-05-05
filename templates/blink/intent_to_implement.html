@@ -23,11 +23,13 @@
     <a href="mailto:{{owner}}">{% if forloop.last %}{{owner}}</a>{% else %}{{owner}}</a>,{% endif %}
   {% endfor %}
 
-  <br><br><h4>Explainer</h4>
-  {% if not feature.explainer_links %}None{% endif %}
-  {% for link in feature.explainer_links %}
-    <br><a href="{{link}}">{{link}}</a>
-  {% endfor %}
+  {% if feature.explainer_links or feature.feature_type_int != 2 %}
+    <br><br><h4>Explainer</h4>
+    {% if not feature.explainer_links %}None{% endif %}
+    {% for link in feature.explainer_links %}
+      {% if forloop.counter0 %}<br>{% endif %}<a href="{{link}}">{{link}}</a>
+    {% endfor %}
+  {% endif %}
 
   <br><br><h4>Specification</h4>
   {{feature.spec_link|urlize}}
