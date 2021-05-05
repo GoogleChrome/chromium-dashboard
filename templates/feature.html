@@ -39,7 +39,7 @@
     </span>
   {% endif %}
   <span class="tooltip" title="File a bug against this feature">
-    <a href="{{ new_crbug_url }}" class="newbug" data-tooltip target="_blank">
+    <a href="{{ new_crbug_url }}" class="newbug" data-tooltip target="_blank" rel="noopener">
       <iron-icon icon="chromestatus:bug-report"></iron-icon>
     </a>
   </span>
@@ -118,7 +118,8 @@
     {% if feature.spec_link %}
     <section id="specification">
       <h3>Specification</h3>
-      <p><a href="{{feature.spec_link}}" target="_blank">{{feature.standardization.text}}</a></p>
+      <p><a href="{{feature.spec_link}}" target="_blank" rel="noopener"
+            >{{feature.standardization.text}}</a></p>
     </section>
     {% endif %}
 
@@ -128,7 +129,8 @@
         <p>
           <label>Blink components:</label>
           {% for c in feature.blink_components %}
-            <a href="https://bugs.chromium.org/p/chromium/issues/list?q=component:{{c}}" target="_blank">{{c}}</a>
+          <a href="https://bugs.chromium.org/p/chromium/issues/list?q=component:{{c}}"
+             target="_blank" rel="noopener">{{c}}</a>
           {% endfor %}
         </p>
       {% endif %}
@@ -136,7 +138,8 @@
       <p>
         <b>{{ feature.impl_status_chrome }}</b>
         {% if feature.bug_url %}
-          (<a href="{{feature.bug_url}}" target="_blank">tracking bug</a>)
+          (<a href="{{feature.bug_url}}" target="_blank" rel="noopener"
+              >tracking bug</a>)
         {% endif %}
         {% if feature.shipped_milestone or feature.shipped_android_milestone or feature.shipped_ios_milestone or feature.shipped_webview_milestone %}
           in:
