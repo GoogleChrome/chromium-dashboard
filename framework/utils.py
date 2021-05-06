@@ -23,7 +23,8 @@ import logging
 import time
 import traceback
 
-from google.appengine.api import users
+# from google.appengine.api import users
+from framework import users
 
 import settings
 

@@ -25,7 +25,8 @@ import os
 from framework import permissions
 from framework import ramcache
 import requests
-from google.appengine.api import users
+# from google.appengine.api import users
+from framework import users
 
 from framework import basehandlers
 from internals import models

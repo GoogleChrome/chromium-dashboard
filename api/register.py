@@ -24,6 +24,9 @@ from api import stars_api
 from api import token_refresh_api
 from framework import basehandlers
 
+from api import login_api
+from api import logout_api
+
 
 # TODO(jrobbins): Advance this to v1 once we have it fleshed out
 API_BASE = '/api/v0'
@@ -34,7 +37,8 @@ app = basehandlers.FlaskApplication([
     ('/features/<int:feature_id>/approvals/<int:field_id>',
      approvals_api.ApprovalsAPI),
     # ('/features/<int:feature_id>/approvals/<int:field_id>/comments', TODO),
-
+    ('/login', login_api.LoginAPI),
+    ('/logout', logout_api.LogoutAPI),
     ('/currentuser/stars', stars_api.StarsAPI),
     ('/currentuser/cues', cues_api.CuesAPI),
     ('/currentuser/token', token_refresh_api.TokenRefreshAPI),

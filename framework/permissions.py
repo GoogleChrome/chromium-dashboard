@@ -19,16 +19,15 @@ from __future__ import print_function
 import logging
 import flask
 
-from google.appengine.api import users
-
+from google.appengine.api import users as gae_users
+from framework import users
 from internals import models
-
 
 def can_admin_site(user):
   """Return True if the current user is allowed to administer the site."""
   # A user is an admin if they are an admin of the GAE project.
   # TODO(jrobbins): delete this statement after legacy admins moved to AppUser.
-  if users.is_current_user_admin():
+  if gae_users.is_current_user_admin():
     return True
 
   # A user is an admin if they have an AppUser entity that has is_admin set.
@@ -99,7 +98,7 @@ def _reject_or_proceed(
 
   # Give the user a chance to sign in
   if not user and req.method == 'GET':
-    return handler_obj.redirect(users.create_login_url(req.full_path))
+    return handler_obj.redirect('/features?loginStatus=False')
 
   if not perm_function(user):
     handler_obj.abort(403)

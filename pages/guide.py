@@ -27,7 +27,8 @@ from django import forms
 
 # Appengine imports.
 from framework import ramcache
-from google.appengine.api import users
+# from google.appengine.api import users
+from framework import users
 from google.appengine.ext import db
 
 from framework import basehandlers

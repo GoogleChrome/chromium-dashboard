@@ -21,7 +21,8 @@ import testing_config  # Must be imported before the module under test.
 import mock
 import werkzeug.exceptions  # Flask HTTP stuff.
 
-from google.appengine.api import users
+# from google.appengine.api import users
+from framework import users
 
 from framework import basehandlers
 from framework import permissions

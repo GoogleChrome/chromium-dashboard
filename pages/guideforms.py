@@ -21,7 +21,8 @@ from django import forms
 from django.core.validators import validate_email
 import string
 
-from google.appengine.api import users
+# from google.appengine.api import users
+from framework import users
 
 from internals import models
 from internals import processes
