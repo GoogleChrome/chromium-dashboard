@@ -182,7 +182,10 @@ def get_current_user():
 
     if UNIT_TEST_MODE:
         # if session.get('id_token') == "test":
-        current_user = User(email=os.environ['USER_EMAIL'], _user_id=os.environ['USER_ID'])
+        if os.environ['USER_EMAIL']!= '':
+            current_user = User(email=os.environ['USER_EMAIL'], _user_id=os.environ['USER_ID'])
+        else:
+            current_user = None
         return current_user
 
     token = session.get('id_token')
