@@ -181,7 +181,6 @@ class User(object):
 def get_current_user():
 
     if UNIT_TEST_MODE:
-        # if session.get('id_token') == "test":
         if os.environ['USER_EMAIL']!= '':
             current_user = User(email=os.environ['USER_EMAIL'], _user_id=os.environ['USER_ID'])
         else:
