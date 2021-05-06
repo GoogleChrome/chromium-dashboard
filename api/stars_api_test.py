@@ -93,10 +93,11 @@ class StarsAPITest(unittest.TestCase):
     """We reject anon star requests."""
     feature_id = self.feature_1.key().id()
     params = {"featureId": feature_id}
-    testing_config.sign_out()
+    # testing_config.sign_out()
     with register.app.test_request_context(self.request_path, json=params):
       with self.assertRaises(werkzeug.exceptions.Forbidden):
         self.handler.do_post()
+    testing_config.sign_out()
 
   def test_post__duplicate(self):
     """User sends a duplicate request, which should be a no-op."""

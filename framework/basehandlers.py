@@ -43,6 +43,7 @@ from google.auth.transport import requests
 from flask import session
 import sys
 from framework import users
+from settings import UNIT_TEST_MODE
 
 # Initialize django so that it'll function when run as a standalone script.
 # https://django.readthedocs.io/en/latest/releases/1.7.html#standalone-scripts
@@ -77,11 +78,10 @@ class BaseHandler(flask.views.MethodView):
   def get_current_user(self, required=False):
     # TODO(jrobbins): oauth support
     current_user = None 
-    if self.request.method == 'POST':
+    if not UNIT_TEST_MODE and self.request.method == 'POST':
       current_user = users.get_current_user() or gae_users.get_current_user()
     else:
-      current_user = users.get_current_user()
-
+      current_user = users.get_current_user()      
 
     if required and not current_user:
       self.abort(403, msg='User must be signed in')
