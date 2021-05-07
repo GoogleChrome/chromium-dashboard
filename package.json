@@ -54,7 +54,7 @@
     "ini": ">=1.3.6",
     "kind-of": ">=6.0.3",
     "lit-analyzer": "^1.1.9",
-    "lodash": ">=4.17.19",
+    "lodash": ">=4.17.21",
     "lodash.template": ">=4.5.0",
     "minimist": ">=0.2.1",
     "regenerator-runtime": "^0.13.3",
