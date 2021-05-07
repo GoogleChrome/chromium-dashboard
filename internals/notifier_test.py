@@ -26,7 +26,8 @@ import werkzeug.exceptions  # Flask HTTP stuff.
 
 from google.appengine.ext import db
 from google.appengine.api import mail
-# from google.appengine.api import users
+# TODO(jrobbins): phase out gae_users.
+from google.appengine.api import users as gae_users
 from framework import users
 
 from internals import models
@@ -40,8 +41,8 @@ class EmailFormattingTest(unittest.TestCase):
     self.feature_1 = models.Feature(
         name='feature one', summary='sum', category=1, visibility=1,
         standardization=1, web_dev_views=1, impl_status_chrome=1,
-        created_by=users.User(email='creator@example.com'),
-        updated_by=users.User(email='editor@example.com'),
+        created_by=gae_users.User(email='creator@example.com'),
+        updated_by=gae_users.User(email='editor@example.com'),
         blink_components=['Blink'])
     self.feature_1.put()
     self.component_1 = models.BlinkComponent(name='Blink')
@@ -59,8 +60,8 @@ class EmailFormattingTest(unittest.TestCase):
     self.feature_2 = models.Feature(
         name='feature two', summary='sum', category=1, visibility=1,
         standardization=1, web_dev_views=1, impl_status_chrome=1,
-        created_by=users.User(email='creator@example.com'),
-        updated_by=users.User(email='editor@example.com'),
+        created_by=gae_users.User(email='creator@example.com'),
+        updated_by=gae_users.User(email='editor@example.com'),
         blink_components=['Blink'])
     self.feature_2.put()
 
