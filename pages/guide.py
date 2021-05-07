@@ -27,7 +27,8 @@ from django import forms
 
 # Appengine imports.
 from framework import ramcache
-# from google.appengine.api import users
+# TODO(jrobbins): phase out gae_users
+from google.appengine.api import users as gae_users
 from framework import users
 from google.appengine.ext import db
 
@@ -132,6 +133,7 @@ class FeatureNew(basehandlers.FlaskHandler):
     # TODO(jrobbins): Validate input, even though it is done on client.
 
     feature_type = int(self.form.get('feature_type', 0))
+    gae_user = gae_users.User(email=self.get_current_user().email())
     feature = models.Feature(
         category=int(self.form.get('category')),
         name=self.form.get('name'),
@@ -144,7 +146,9 @@ class FeatureNew(basehandlers.FlaskHandler):
         unlisted=self.form.get('unlisted') == 'on',
         web_dev_views=models.DEV_NO_SIGNALS,
         blink_components=blink_components,
-        tag_review_status=processes.initial_tag_review_status(feature_type))
+        tag_review_status=processes.initial_tag_review_status(feature_type),
+        created_by=gae_user,
+        updated_by=gae_user)
     key = feature.put()
 
     # TODO(jrobbins): enumerate and remove only the relevant keys.
@@ -497,6 +501,7 @@ class FeatureEditStage(basehandlers.FlaskHandler):
     if self.touched('ongoing_constraints'):
       feature.ongoing_constraints = self.form.get('ongoing_constraints')
 
+    feature.updated_by = gae_users.User(email=self.get_current_user().email())
     key = feature.put()
 
     # TODO(jrobbins): enumerate and remove only the relevant keys.

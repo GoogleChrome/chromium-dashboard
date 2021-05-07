@@ -939,6 +939,8 @@ class Feature(DictModel):
     # Diff values to see what properties have changed.
     changed_props = []
     for prop_name, prop in self.properties().iteritems():
+      if prop_name in ('created_by', 'updated_by'):
+        continue
       new_val = getattr(self, prop_name, None)
       old_val = getattr(self, '_old_' + prop_name, None)
       if new_val != old_val:
@@ -972,8 +974,8 @@ class Feature(DictModel):
   # Metadata.
   created = db.DateTimeProperty(auto_now_add=True)
   updated = db.DateTimeProperty(auto_now=True)
-  updated_by = db.UserProperty(auto_current_user=True)
-  created_by = db.UserProperty(auto_current_user_add=True)
+  updated_by = db.UserProperty()
+  created_by = db.UserProperty()
 
   # General info.
   category = db.IntegerProperty(required=True)
