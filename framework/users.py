@@ -1,7 +1,9 @@
-import sys
+import os
 from flask import session
 from google.oauth2 import id_token
 from google.auth.transport import requests
+import settings
+
 
 class User(object):
     """Provides the email address, nickname, and ID for a user.
@@ -15,7 +17,7 @@ class User(object):
     `federated_identity` and `federated_provider` are decommissioned and should
     not be used.
 
-    This class is based on google.appengine.api.users.User class 
+    This class is based on google.appengine.api.users.User class
     """
 
 
@@ -170,27 +172,34 @@ class User(object):
         `True` if the user is an administrator; all other user types return `False`.
         """
 
-        # This environment variable was set by GAE based on a GAE session cookie. 
+        # This environment variable was set by GAE based on a GAE session cookie.
         # With Google Sign-In, it will probably never be present. Hence, currently is always False
-        # TODO (jrobbins): Implement this method 
+        # TODO (jrobbins): Implement this method
         return (os.environ.get('USER_IS_ADMIN', '0')) == '1'
 
 
 def get_current_user():
+    if settings.UNIT_TEST_MODE:
+      if os.environ['USER_EMAIL']!= '':
+        current_user = User(
+            email=os.environ['USER_EMAIL'],
+            _user_id=os.environ['USER_ID'])
+      else:
+        current_user = None
+      return current_user
 
     token = session.get('id_token')
     current_user = None
     if token:
       try:
-        CLIENT_ID = '77756740465-e5r4o15qg4hkdfiucjpl231o79k3ipjv.apps.googleusercontent.com'
-        idinfo = id_token.verify_oauth2_token(token, requests.Request(), CLIENT_ID)
+        idinfo = id_token.verify_oauth2_token(
+            token, requests.Request(), settings.GOOGLE_SIGN_IN_CLIENT_ID)
         current_user = User(email=idinfo['email'], _user_id=idinfo['sub'])
 
       except ValueError:
           # Remove the id_token from session if it is invalid or expired
           session.clear()
           current_user = None
-          pass
 
     return current_user
 

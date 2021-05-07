@@ -22,7 +22,8 @@
   <section id="releases-section">
     <chromedash-schedule
       {% if user %}signedin{% endif %}
-      loginurl="{{login.1}}"
+      {# TODO(jrobbins): Fix to work with google sign-in #}
+      loginurl="#"
     ></chromedash-schedule>
   </section>
 {% endblock %}
