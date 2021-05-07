@@ -77,12 +77,11 @@ class BaseHandler(flask.views.MethodView):
 
   def get_current_user(self, required=False):
     # TODO(jrobbins): oauth support
-    current_user = None 
-    if self.request.method == 'POST':
+    current_user = None
+    if not settings.UNIT_TEST_MODE and self.request.method == 'POST':
       current_user = users.get_current_user() or gae_users.get_current_user()
     else:
       current_user = users.get_current_user()
-
 
     if required and not current_user:
       self.abort(403, msg='User must be signed in')
@@ -291,6 +290,7 @@ class FlaskHandler(BaseHandler):
     common_data = {
       'prod': settings.PROD,
       'APP_TITLE': settings.APP_TITLE,
+      'google_sign_in_client_id': settings.GOOGLE_SIGN_IN_CLIENT_ID,
       'current_path': current_path,
       'TEMPLATE_CACHE_TIME': settings.TEMPLATE_CACHE_TIME,
       'banner_message': settings.BANNER_MESSAGE,
@@ -300,8 +300,6 @@ class FlaskHandler(BaseHandler):
     user = self.get_current_user()
     if user:
       user_pref = models.UserPref.get_signed_in_user_pref()
-      common_data['login'] = (
-          'Sign out', "SignOut")
       common_data['user'] = {
         'can_create_feature': permissions.can_create_feature(user),
         'can_edit': permissions.can_edit_any_feature(user),
@@ -313,8 +311,6 @@ class FlaskHandler(BaseHandler):
       common_data['xsrf_token_expires'] = xsrf.token_expires_sec()
     else:
       common_data['user'] = None
-      common_data['login'] = (
-           'Sign in', "Sign In")
       common_data['xsrf_token'] = xsrf.generate_token(None)
       common_data['xsrf_token_expires'] = 0
     return common_data

@@ -52,7 +52,8 @@
 {% block content %}
   <chromedash-featurelist
     {% if user %}signedin{% endif %}
-    loginurl="{{login.1}}"
+    {# TODO(jrobbins): Fix to work with Google Sign-In #}
+    loginurl="#"
     {% if user.can_edit %}canedit{% endif %}
     ></chromedash-featurelist>
 {% endblock %}

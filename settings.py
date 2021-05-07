@@ -56,6 +56,10 @@ else:
 SITE_URL = 'http://%s.appspot.com/' % APP_ID
 CLOUD_TASKS_REGION = 'us-central1'
 
+GOOGLE_SIGN_IN_CLIENT_ID = (
+    '914217904764-enfcea61q4hqe7ak8kkuteglrbhk8el1.'
+    'apps.googleusercontent.com')
+
 if UNIT_TEST_MODE:
   APP_TITLE = 'Local testing'
   SITE_URL = 'http://127.0.0.1:8888/'

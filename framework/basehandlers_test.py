@@ -28,6 +28,7 @@ import werkzeug.exceptions  # Flask HTTP stuff.
 from framework import users
 
 from framework import basehandlers
+from framework import users
 from framework import xsrf
 from internals import models
 import settings
@@ -490,9 +491,6 @@ class FlaskHandlerTests(unittest.TestCase):
 
     self.assertIn('prod', actual)
     self.assertIsNone(actual['user'])
-    self.assertEqual('Sign in', actual['login'][0])
-    self.assertIn('/Login', actual['login'][1])
-    self.assertIn('/test/path', actual['login'][1])
 
   def test_get_common_data__signed_in(self):
     """When user is signed in, offer sign out link."""
@@ -502,9 +500,6 @@ class FlaskHandlerTests(unittest.TestCase):
 
     self.assertIn('prod', actual)
     self.assertIsNotNone(actual['user'])
-    self.assertEqual('Sign out', actual['login'][0])
-    self.assertIn('/Logout', actual['login'][1])
-    self.assertIn('/test/path', actual['login'][1])
 
   def test_render(self):
     """We can render a simple template to a string."""
@@ -602,9 +597,11 @@ class FlaskHandlerTests(unittest.TestCase):
         self.handler.require_task_header()
 
   @mock.patch('settings.UNIT_TEST_MODE', False)
-  def test_require_xsrf_token__normal(self):
+  @mock.patch('framework.users.get_current_user')
+  def test_require_xsrf_token__normal(self, mock_get_user):
     """We accept a POST with a valid token."""
     testing_config.sign_in('user1@example.com', 111)
+    mock_get_user.return_value = users.User(email='user1@example.com')
     form_data = {'token': xsrf.generate_token('user1@example.com')}
     with test_app.test_request_context('/test', data=form_data):
       self.handler.require_xsrf_token()
