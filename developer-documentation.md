@@ -2,7 +2,13 @@
 
 This doc covers some basic overview of the codebase to help developers navigate.
 
-In summary, this web app is using Django as the backend and lit-element in the front end.
+In summary, this web app is using a combination of Django & Flask as the backend and lit-element in the front end. It uses [Google Sign-In](https://developers.google.com/identity/sign-in/web/sign-in) for authentication.
+
+## Back end
+
+In the Backend,
+* **Django** is used just for HTML templates and forms (see `FlaskHandler.render()` in `Framework/basehandlers.py` and `pages/guideforms.py`). 
+* **Flask** is being used for all the request handlers (see `basehandlers.py` and all the code under `api/` and `pages/`).
 
 ## Front end
 
