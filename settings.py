@@ -74,6 +74,9 @@ elif APP_ID == 'cr-status':
   SEND_EMAIL = True
   SEND_ALL_EMAIL_TO = None  # Deliver it to the intended users
   SITE_URL = 'http://chromestatus.com/'
+  GOOGLE_SIGN_IN_CLIENT_ID = (
+      '999517574127-7ueh2a17bv1ave9thlgtap19pt5qjp4g.'
+      'apps.googleusercontent.com')
 elif APP_ID == 'cr-status-staging':
   STAGING = True
   SEND_EMAIL = True
