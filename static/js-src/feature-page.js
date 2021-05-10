@@ -52,6 +52,12 @@ StarService.getStars().then((subscribedFeatures) => {
   }
 });
 
+const starWhenSignedOutEl = document.querySelector('#star-when-signed-out');
+if (starWhenSignedOutEl) {
+  starWhenSignedOutEl.addEventListener('click', function(e) {
+    window.promptSignIn(e);
+  });
+}
 
 if (SHOW_TOAST) {
   setTimeout(() => {
