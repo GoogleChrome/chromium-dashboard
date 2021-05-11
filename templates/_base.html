@@ -66,12 +66,16 @@ limitations under the License.
     function onSignIn(googleUser) {
       var profile = googleUser.getBasicProfile();
       var id_token = googleUser.getAuthResponse().id_token;
-      var xhr = new XMLHttpRequest();
+        var xhr = new XMLHttpRequest();
       xhr.open('POST', '/api/v0/login');
       xhr.setRequestHeader('Content-Type', 'application/json');
       xhr.onload = function() {
         if (xhr.status == 200) {
-          window.location.replace(window.location.href.split("?")[0])
+            if (window.location.href.includes('?')) {
+                window.location.replace(window.location.href.split("?")[0])
+            } else {
+                window.location.reload();
+            }
         }
         else {
           // signout if cookie not set
@@ -111,8 +115,19 @@ limitations under the License.
       return decodeURIComponent(window.location.search.replace(new RegExp("^(?:.*[&\\?]" + encodeURIComponent(key).replace(/[\.\+\*]/g, "\\$&") + "(?:\\=([^&]*))?)?.*$", "i"), "$1"));
     }
 
+    function promptSignIn(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      let auth2 = gapi.auth2.getAuthInstance();
+      auth2.signIn().then(onSignIn);
+    }
+
+
+    // This happens when an anon visitor tries to view a page that
+    // requires being signed in.  We cannot promptSignIn(), because
+    // lacking a user-initiated event, the popup will be blocked.
     if (getQueryStringValue("loginStatus") == 'False') {
-      alert('Please log in.')
+      alert('Please log in.');
     }
 
 
