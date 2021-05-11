@@ -75,6 +75,7 @@ handlers:
 # Main server handlers ---------------------------------------------------------
 - url: /
   script: pages.featurelist.app
+  secure: always
 
 - url: /features/schedule
   script: pages.schedule.app
@@ -82,18 +83,23 @@ handlers:
 
 - url: /features.*
   script: pages.featurelist.app
+  secure: always
 
 - url: /feature/.*
   script: pages.featuredetail.app
+  secure: always
 
 - url: /samples.*
   script: pages.samples.app
+  secure: always
 
 - url: /metrics.*
   script: pages.metrics.app
+  secure: always
 
 - url: /omaha_data
   script: pages.metrics.app
+  secure: always
 
 - url: /api/.*
   script: api.register.app
