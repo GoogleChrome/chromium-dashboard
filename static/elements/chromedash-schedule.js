@@ -98,7 +98,7 @@ class ChromedashSchedule extends LitElement {
     const iconEl = e.target;
     const featureId = Number(iconEl.dataset.featureId);
     const newStarred = !this.starredFeatures.has(featureId);
-    window.StarService.setStar(featureId, newStarred);
+    window.csClient.setStar(featureId, newStarred);
 
     const newStarredFeatures = new Set(this.starredFeatures);
     if (newStarred) {
