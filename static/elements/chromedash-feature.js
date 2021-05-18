@@ -20,7 +20,6 @@ class ChromedashFeature extends LitElement {
       feature: {type: Object},
       canEdit: {type: Boolean},
       signedin: {type: Boolean},
-      loginUrl: {type: String},
       open: {type: Boolean, reflect: true}, // Attribute used in the parent for styling
       starred: {type: Boolean},
       // Values used in the template

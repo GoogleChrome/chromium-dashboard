@@ -12,7 +12,6 @@ class ChromedashFeaturelist extends LitElement {
     return {
       canEdit: {type: Boolean},
       signedin: {type: Boolean},
-      loginUrl: {type: String},
       features: {attribute: false}, // Directly edited and accessed in template/features.html
       metadataEl: {attribute: false}, // The metadata component element. Directly edited in template/features.html
       searchEl: {attribute: false}, // The search input element. Directly edited in template/features.html
@@ -405,7 +404,6 @@ class ChromedashFeaturelist extends LitElement {
                  @feature-toggled="${this._onFeatureToggledBound}"
                  @star-toggled="${this._onStarToggledBound}"
                  .feature="${item.feature}"
-                 loginurl="${this.loginUrl}"
                  ?canedit="${this.canEdit}"
                  ?signedin="${this.signedin}"
           ></chromedash-feature>

@@ -182,7 +182,7 @@ class ChromedashSchedule extends LitElement {
                       ` : html`
                         <span class="tooltip"
                               title="Sign in to get email notifications for updates">
-                          <a href="${this.loginUrl}" data-tooltip>
+                          <a href="#"  @click="${window.promptSignIn}" data-tooltip>
                             <iron-icon icon="chromestatus:star-border"
                                        class="pushicon"></iron-icon>
                           </a>
