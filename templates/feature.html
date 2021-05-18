@@ -269,7 +269,6 @@
       const FEATUER_SUMMARY = '{{ feature.summary|escapejs }}';
       const SHOW_TOAST = {% if was_updated %}true{% else %}false{% endif %};
 
-      {% inline_file "/static/js/notifications.min.js" %}
       {% inline_file "/static/js/feature-page.min.js" %}
     })();
   </script>
