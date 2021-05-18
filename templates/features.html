@@ -29,7 +29,6 @@
       <button class="legend-button"><iron-icon icon="chromestatus:help"></iron-icon></button>
     </div>
     <div class="actionlinks">
-      <!-- TODO(jrobbins): Re-implement Subscribe button to use emails. -->
       {% if user.can_edit %}
         <a href="/guide/new" class="blue-button" title="Adds a new feature to the site"><iron-icon icon="chromestatus:add-circle-outline"></iron-icon><span>Add new feature</span></a>
       {% endif %}
@@ -52,8 +51,6 @@
 {% block content %}
   <chromedash-featurelist
     {% if user %}signedin{% endif %}
-    {# TODO(jrobbins): Fix to work with Google Sign-In #}
-    loginurl="#"
     {% if user.can_edit %}canedit{% endif %}
     ></chromedash-featurelist>
 {% endblock %}
