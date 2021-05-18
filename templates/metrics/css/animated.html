@@ -49,7 +49,7 @@
 {% endblock %}
 
 {% block js %}
-<script>
+<script nonce="{{nonce}}">
   (function() {
     'use strict';
     {% inline_file "/static/js/metrics-page.min.js" %}

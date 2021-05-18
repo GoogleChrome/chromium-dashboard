@@ -21,7 +21,7 @@
 {% endblock %}
 
 {% block js %}
-<script>
+<script nonce="{{nonce}}">
   const el = document.querySelector('chromedash-userlist');
   el.users = {{users|safe}};
 

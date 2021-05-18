@@ -45,7 +45,7 @@
 {% endblock %}
 
 {% block js %}
-<script>
+<script nonce="{{nonce}}">
   document.querySelector('#cancel-button').addEventListener('click', (e) => {
     window.location.href = `/guide/edit/${e.currentTarget.dataset.id}`;
   });

@@ -60,9 +60,10 @@ limitations under the License.
   {% block css %}{% endblock %}
 
   {# Google Platform Library for OAuth #}
-  <script src="https://apis.google.com/js/platform.js?onload=onLoad" async defer></script>
-  <script>
+  <script src="https://apis.google.com/js/platform.js?onload=onLoad"
+          async defer nonce="{{nonce}}"></script>
 
+  <script nonce="{{nonce}}">
     function onSignIn(googleUser) {
       var profile = googleUser.getBasicProfile();
       var id_token = googleUser.getAuthResponse().id_token;
@@ -135,7 +136,7 @@ limitations under the License.
   </script>
 
   {# Loaded immediately because it is used by JS code on the page. #}
-  <script>
+  <script nonce="{{nonce}}">
     {% inline_file "/static/js/metric.min.js" %}
     {% inline_file "/static/js/cs-client.min.js" %}
 
@@ -143,8 +144,9 @@ limitations under the License.
         '{{xsrf_token}}', {{xsrf_token_expires}});
   </script>
 
-  <script src="https://unpkg.com/@webcomponents/webcomponentsjs/webcomponents-loader.js" defer></script>
-  <script type="module">
+  <script src="https://unpkg.com/@webcomponents/webcomponentsjs/webcomponents-loader.js"
+          defer nonce="{{nonce}}"></script>
+  <script type="module" nonce="{{nonce}}">
     WebComponents.waitFor(() => {
       return import('/static/dist/components.js');
     });
@@ -193,13 +195,15 @@ limitations under the License.
   {% block overlay %}{% endblock %}
 
   <!-- https://github.com/ljosa/urlize.js.git. This package does not have ES module support. It sets window.urlize in browsers. -->
-  <script src="https://unpkg.com/urlize.js/urlize.js"></script>
+  <script src="https://unpkg.com/urlize.js/urlize.js"
+          nonce="{{nonce}}"></script>
 
   {% block js %}{% endblock %}
 
-  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-179341418-1"></script>
+  <script src="https://www.googletagmanager.com/gtag/js?id=UA-179341418-1"
+          async nonce="{{nonce}}"></script>
 
-  <script>
+  <script nonce="{{nonce}}">
     (function() {
       'use strict';
 
