@@ -7,5 +7,5 @@
 # The directory in which this script resides.
 readonly BASEDIR=$(dirname $BASH_SOURCE)
 
-dev_appserver.py -A cr-status \
+dev_appserver.py -A cr-status --enable_console=1 \
   $BASEDIR/../app.yaml $BASEDIR/../notifier.yaml
