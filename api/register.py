@@ -17,6 +17,7 @@ from __future__ import division
 from __future__ import print_function
 
 import settings
+from api import accounts_api
 from api import approvals_api
 from api import cues_api
 from api import features_api
@@ -37,6 +38,7 @@ app = basehandlers.FlaskApplication([
     ('/features/<int:feature_id>/approvals/<int:field_id>',
      approvals_api.ApprovalsAPI),
     # ('/features/<int:feature_id>/approvals/<int:field_id>/comments', TODO),
+
     ('/login', login_api.LoginAPI),
     ('/logout', logout_api.LogoutAPI),
     ('/currentuser/stars', stars_api.StarsAPI),
@@ -45,7 +47,9 @@ app = basehandlers.FlaskApplication([
     # ('/currentuser/autosaves', TODO),
     # ('/currentuser/settings', TODO),
 
-    # ('/users', TODO),  # Admin pages to list, add, delete users.
+    # Admin operations for user accounts
+    ('/accounts', accounts_api.AccountsAPI),
+    ('/accounts/<int:account_id>', accounts_api.AccountsAPI),
 
     # ('/channels', TODO),  # omaha data
     # ('/schedule', TODO),  # chromiumdash data

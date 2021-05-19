@@ -53,43 +53,6 @@ class UserListHandler(basehandlers.FlaskHandler):
     return template_data
 
 
-class CreateUserAPIHandler(basehandlers.FlaskHandler):
-
-  @permissions.require_admin_site
-  def process_post_data(self):
-    email = self.form['email']
-
-    # Don't add a duplicate email address.
-    user = models.AppUser.all(keys_only=True).filter('email = ', email).get()
-    if not user:
-      user = models.AppUser(email=db.Email(email))
-      user.is_admin = 'is_admin' in self.form
-      user.put()
-
-      response_json = user.format_for_template()
-    else:
-      response_json = {
-          'error_message': 'User already exists',
-          'id': user.id()}
-
-    return response_json
-
-
-class DeleteUserAPIHandler(basehandlers.FlaskHandler):
-
-  @permissions.require_admin_site
-  def process_post_data(self, user_id=None):
-    if user_id:
-      self._delete(user_id)
-    return flask.redirect('/admin/users/new')
-
-  def _delete(self, user_id):
-    if user_id:
-      found_user = models.AppUser.get_by_id(long(user_id))
-      if found_user:
-        found_user.delete()
-
-
 class SettingsHandler(basehandlers.FlaskHandler):
 
   TEMPLATE_PATH = 'settings.html'
@@ -120,7 +83,5 @@ class SettingsHandler(basehandlers.FlaskHandler):
 
 app = basehandlers.FlaskApplication([
   ('/settings', SettingsHandler),
-  ('/admin/users/create', CreateUserAPIHandler),
-  ('/admin/users/delete/<int:user_id>', DeleteUserAPIHandler),
   ('/admin/users/new', UserListHandler),
 ], debug=settings.DEBUG)

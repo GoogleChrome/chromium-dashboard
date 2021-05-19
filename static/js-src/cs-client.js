@@ -154,6 +154,18 @@ class ChromeStatusClient {
       .then((res) => res);
     // TODO: catch((error) => { display message }
   }
+
+  // Accounts API
+
+  createAccount(email, isAdmin) {
+    return this.doPost('/accounts', {email, isAdmin});
+    // TODO: catch((error) => { display message }
+  }
+
+  deleteAccount(accountId) {
+    return this.doDelete('/accounts/' + accountId);
+    // TODO: catch((error) => { display message }
+  }
 };
 
 exports.ChromeStatusClient = ChromeStatusClient;

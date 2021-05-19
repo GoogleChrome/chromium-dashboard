@@ -66,31 +66,14 @@ class ChromedashUserlist extends LitElement {
     if (formEl.checkValidity()) {
       const email = formEl.querySelector('input[name="email"]').value;
       const isAdmin = formEl.querySelector('input[name="is_admin"]').checked;
-      const formData = new FormData();
-      formData.append('email', email);
-      if (isAdmin) {
-        formData.append('is_admin', 'on');
-      }
-      await window.csClient.ensureTokenIsValid();
-      formData.append('token', window.csClient.token);
-
-      const resp = await fetch(this.actionPath, {
-        method: 'POST',
-        body: formData,
-        credentials: 'same-origin', // Needed for admin permissions to be sent.
-      });
-
-      if (resp.status !== 200) {
-        throw new Error('Server error adding new user');
-      } else {
-        const json = await resp.json();
+      window.csClient.createAccount(email, isAdmin).then((json) => {
         if (json.error_message) {
           alert(json.error_message);
         } else {
           this.addUser(json);
           formEl.reset();
         }
-      }
+      });
     }
   }
 
@@ -101,14 +84,7 @@ class ChromedashUserlist extends LitElement {
     }
 
     const idx = e.target.dataset.index;
-    const formData = new FormData();
-    formData.append('token', this.token);
-
-    fetch(e.currentTarget.href, {
-      method: 'POST',
-      body: formData,
-      credentials: 'same-origin',
-    }).then(() => {
+    window.csClient.deleteAccount(e.target.dataset.account).then(() => {
       this.removeUser(idx);
     });
   }
@@ -131,8 +107,10 @@ class ChromedashUserlist extends LitElement {
       <ul id="user-list">
         ${this.users.map((user, index) => html`
           <li>
-            <a href="/admin/users/delete/${user.id}"
-               data-index="${index}" @click="${this.ajaxDelete}">delete</a>
+            <a href="#"
+               data-index="${index}"
+               data-account="${user.id}"
+               @click="${this.ajaxDelete}">delete</a>
             <span>${user.email}</span>
             ${user.is_admin ? html`(admin)` : nothing}
           </li>
