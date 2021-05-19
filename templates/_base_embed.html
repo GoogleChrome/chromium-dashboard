@@ -35,7 +35,7 @@ limitations under the License.
   <link rel="shortcut icon" href="/static/img/crstatus_128.png">
 
   <link rel="preconnect" href="https://www.google-analytics.com" crossorigin>
-  
+
   {% block meta %}{% endblock %}
 
   <style>
@@ -64,7 +64,7 @@ limitations under the License.
   </style>
 
   {% block css %}{% endblock %}
-  
+
   <script src="https://unpkg.com/@webcomponents/webcomponentsjs/webcomponents-loader.js" defer></script>
   <script type="module">
     WebComponents.waitFor(() => {
@@ -88,7 +88,7 @@ limitations under the License.
 
   {% block js %}{% endblock %}
 
-  <script>
+  <script nonce="{{nonce}}">
     (function() {
       'use strict';
       {% inline_file "/static/js/shared.min.js" %}

@@ -65,7 +65,7 @@ after that, you're free to ship your feature.
 {% endblock %}
 
 {% block js %}
-<script>
+<script nonce="{{nonce}}">
 // Remove loading spinner at page load.
 document.body.classList.remove('loading');
 </script>

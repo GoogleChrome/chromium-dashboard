@@ -105,6 +105,10 @@ handlers:
   script: api.register.app
   secure: always
 
+- url: /csp
+  script: framework.csp.app
+  secure: always
+
 
 includes:
 - skip_files.yaml

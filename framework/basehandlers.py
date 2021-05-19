@@ -29,6 +29,7 @@ from google.appengine.api import users as gae_users
 from google.appengine.ext import db
 
 import settings
+from framework import csp
 from framework import permissions
 from framework import ramcache
 from framework import secrets
@@ -330,9 +331,12 @@ class FlaskHandler(BaseHandler):
     elif type(handler_data) == dict:
       status = handler_data.get('status', 200)
       handler_data.update(self.get_common_data())
+      nonce = csp.get_nonce()
+      handler_data['nonce'] = nonce
       template_path = self.get_template_path(handler_data)
       template_text = self.render(handler_data, os.path.join(template_path))
       headers = self.get_headers()
+      headers.update(csp.get_headers(nonce))
       return template_text, status, headers
 
     else:

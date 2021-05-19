@@ -51,7 +51,7 @@
 {% endblock %}
 
 {% block js %}
-  <script>
+  <script nonce="{{nonce}}">
     (function() {
       'use strict';
       const CATEGORIES = {{categories|safe}};
