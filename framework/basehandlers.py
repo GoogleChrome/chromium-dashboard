@@ -160,6 +160,7 @@ class APIHandler(BaseHandler):
 
   def post(self, *args, **kwargs):
     """Handle an incoming HTTP POST request."""
+    logging.info('POST data is %r', self.request.get_json())
     is_login_request = str(self.request.url_rule) == '/api/v0/login'
 
     if not is_login_request:
