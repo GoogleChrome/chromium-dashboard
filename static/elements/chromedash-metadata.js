@@ -189,6 +189,19 @@ class ChromedashMetadata extends LitElement {
     this._versions.push(noActiveDev);
     const noLongerPursuing = this.implStatuses[this.implStatuses.length - 1].val;
     this._versions.push(noLongerPursuing);
+    const behindAFlag = this.implStatuses[this.status.BEHIND_A_FLAG - 1].val;
+    this._versions.push(behindAFlag);
+
+    const enabledByDefault = this.implStatuses[this.status.ENABLED_BY_DEFAULT - 1].val;
+    this._versions.push(enabledByDefault);
+    const removed = this.implStatuses[this.status.REMOVED - 1].val;
+    this._versions.push(removed);
+    const originTrial = this.implStatuses[this.status.ORIGINTRIAL - 1].val;
+    this._versions.push(originTrial);
+    const intervention = this.implStatuses[this.status.INTERVENTION - 1].val;
+    this._versions.push(intervention);
+    const onHold = this.implStatuses[this.status.ON_HOLD - 1].val;
+    this._versions.push(onHold);
   }
 
   render() {
