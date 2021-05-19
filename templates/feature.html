@@ -32,7 +32,6 @@
     </span>
   {% else %}
     <span class="tooltip" title="Sign in to get email notifications for updates">
-      {# TODO(jrobbins): redo to use Google Sign-in #}
       <a href="#" id="star-when-signed-out" data-tooltip>
         <iron-icon icon="chromestatus:star-border"
                     class="pushicon"></iron-icon>
@@ -269,7 +268,6 @@
       const FEATUER_SUMMARY = '{{ feature.summary|escapejs }}';
       const SHOW_TOAST = {% if was_updated %}true{% else %}false{% endif %};
 
-      {% inline_file "/static/js/notifications.min.js" %}
       {% inline_file "/static/js/feature-page.min.js" %}
     })();
   </script>

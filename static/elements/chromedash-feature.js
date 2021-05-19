@@ -20,7 +20,6 @@ class ChromedashFeature extends LitElement {
       feature: {type: Object},
       canEdit: {type: Boolean},
       signedin: {type: Boolean},
-      loginUrl: {type: String},
       open: {type: Boolean, reflect: true}, // Attribute used in the parent for styling
       starred: {type: Boolean},
       // Values used in the template
@@ -197,7 +196,7 @@ class ChromedashFeature extends LitElement {
     // ChromedashFeature object to be created with the new state.
     const newStarred = !this.starred;
 
-    window.StarService.setStar(featureId, newStarred);
+    window.csClient.setStar(featureId, newStarred);
 
     // Handled in `chromedash-featurelist`
     this._fireEvent('star-toggled', {

@@ -115,7 +115,7 @@ class ChromedashCallout extends LitElement {
   dismiss() {
     this.hidden = true;
     if (this.signedIn) {
-      window.CuesService.dismissCue(this.cue);
+      window.csClient.dismissCue(this.cue);
     }
     // Signed out users simply hide this element without storing
     // the fact that the cue was dismissed.

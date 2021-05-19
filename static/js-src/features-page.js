@@ -88,7 +88,7 @@ window.addEventListener('popstate', (e) => {
 featureListEl.addEventListener('app-ready', () => {
   document.body.classList.remove('loading');
 
-  StarService.getStars().then((starredFeatureIds) => {
+  window.csClient.getStars().then((starredFeatureIds) => {
     featureListEl.starredFeatures = new Set(starredFeatureIds);
   });
 });

@@ -3,11 +3,11 @@
 const subscribeToFeature = (featureId) => {
   const iconEl = document.querySelector('.pushicon');
   if (iconEl.icon === 'chromestatus:star') {
-    StarService.setStar(featureId, false).then(() => {
+    window.csClient.setStar(featureId, false).then(() => {
       iconEl.icon = 'chromestatus:star-border';
     });
   } else {
-    StarService.setStar(featureId, true).then(() => {
+    window.csClient.setStar(featureId, true).then(() => {
       iconEl.icon = 'chromestatus:star';
     });
   }
@@ -43,7 +43,7 @@ if (navigator.share) {
 }
 
 // Show the star icon if the user has starred this feature.
-StarService.getStars().then((subscribedFeatures) => {
+window.csClient.getStars().then((subscribedFeatures) => {
   const iconEl = document.querySelector('.pushicon');
   if (subscribedFeatures.includes(Number(FEATURE_ID))) {
     iconEl.icon = 'chromestatus:star';

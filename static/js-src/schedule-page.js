@@ -25,7 +25,7 @@ async function init() {
   const scheduleEl = document.querySelector('chromedash-schedule');
   scheduleEl.channels = CHANNELS;
 
-  StarService.getStars().then((starredFeatureIds) => {
+  window.csClient.getStars().then((starredFeatureIds) => {
     scheduleEl.starredFeatures = new Set(starredFeatureIds);
   });
 }

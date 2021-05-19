@@ -126,6 +126,34 @@ class ChromeStatusClient {
       return this.doFetch(resource, 'DELETE', null);
     });
   }
+
+
+  // //////////////////////////////////////////////////////////////
+  // Specific API calls
+
+  // Cues API
+
+  dismissCue(cue) {
+    return this.doPost('/currentuser/cues', {cue: cue})
+      .then((res) => res);
+    // TODO: catch((error) => { display message }
+  }
+
+  // Star API
+
+  getStars() {
+    return this.doGet('/currentuser/stars')
+      .then((res) => res.featureIds);
+    // TODO: catch((error) => { display message }
+  }
+
+  setStar(featureId, starred) {
+    return this.doPost(
+      '/currentuser/stars',
+      {featureId: featureId, starred: starred})
+      .then((res) => res);
+    // TODO: catch((error) => { display message }
+  }
 };
 
 exports.ChromeStatusClient = ChromeStatusClient;
