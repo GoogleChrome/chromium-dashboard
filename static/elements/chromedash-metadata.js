@@ -143,7 +143,7 @@ class ChromedashMetadata extends LitElement {
 
   _clickMilestone(e) {
     // Came from an internal click.
-    this.selected = e.currentTarget.dataset.version;
+    this.selected = e.currentTarget.value;
     this._fireEvent('query-changed', {version: this.selected});
   }
 
@@ -193,12 +193,12 @@ class ChromedashMetadata extends LitElement {
 
   render() {
     return html`
-      <ul id="versionlist" class="${ifDefined(this._className)}">
+      <select id="versionlist" class="${ifDefined(this._className)}" @change="${this._clickMilestone}">
+        <option value="" disabled selected>Select Chrome Version</option>
         ${this._versions.map((version) => html`
-          <li data-version="${version}" @click="${this._clickMilestone}"
-              ?selected="${this.selected === version}">${version}</li>
+          <option value="${version}">${version}</option>
           `)}
-      </ul>
+      </select>
       <div ?hidden="${!this._fetchError}" class="error">Error fetching version information.</div>
     `;
   }
