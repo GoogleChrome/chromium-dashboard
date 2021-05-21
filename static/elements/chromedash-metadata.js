@@ -144,7 +144,7 @@ class ChromedashMetadata extends LitElement {
   render() {
     return html`
       <select id="versionlist" class="${ifDefined(this._className)}" @change="${this._clickMilestone}">
-        <option value="" disabled selected>Select Chrome Version</option>
+        <option value="" disabled selected>Select Chrome Version/Status</option>
         ${this._versions.map((version, index) =>
       typeof this._className !== 'undefined' ?
         this._className == 'canaryisdev' ?

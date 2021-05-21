@@ -37,7 +37,7 @@
 {% endblock %}
 
 {% block drawer %}
-  <h3>Chrome versions</h3>
+  <h3>Filter By</h3>
   {% cache TEMPLATE_CACHE_TIME chromedashmetadata %}
     <!-- Use single quote here. The value is a json string with double quote. -->
     <chromedash-metadata implstatuses='{{IMPLEMENTATION_STATUSES|safe}}'></chromedash-metadata>
