@@ -51,73 +51,6 @@ class ChromedashMetadata extends LitElement {
         margin: 0;
       }
 
-      .canaryisdev li:nth-of-type(4)::after {
-        content: 'canary/dev';
-      }
-      .canaryisdev li:nth-of-type(5)::after {
-        content: 'beta';
-      }
-      .canaryisdev li:nth-of-type(6)::after {
-        content: 'stable';
-      }
-      .canaryisdev li:nth-of-type(7)::after {
-        content: '';
-      }
-
-      .betaisdev li:nth-of-type(4)::after {
-        content: 'canary';
-      }
-      .betaisdev li:nth-of-type(5)::after {
-        content: 'dev/beta';
-      }
-      .betaisdev li:nth-of-type(6)::after {
-        content: 'stable';
-      }
-      .betaisdev li:nth-of-type(7)::after {
-        content: '';
-      }
-
-      li {
-          cursor: pointer;
-          list-style: none;
-          padding: var(--content-padding-quarter) 0;
-      }
-
-      li::before {
-        content: '';
-        margin-right: var(--content-padding-half);
-        border-left: 2px solid transparent;
-      }
-      li::after {
-        margin-left: var(--content-padding-half);
-      }
-
-      li:nth-of-type(3) {
-        border-bottom: var(--leftnav-divider-border);
-        padding-bottom: var(--content-padding-half);
-        margin-bottom: var(--content-padding-half);
-      }
-      li:nth-of-type(4)::after {
-        content: 'canary';
-      }
-      li:nth-of-type(5)::after {
-        content: 'dev';
-      }
-      li:nth-of-type(6)::after {
-        content: 'beta';
-      }
-      li:nth-of-type(7)::after {
-        content: 'stable';
-      }
-
-      li[selected] {
-        font-weight: 500;
-        color: var(--leftnav-selected-color);
-      }
-      li[selected]::before {
-        border-color: var(--leftnav-selected-color);
-      }
-
       .error {
         font-weight: 500;
         font-style: italic;
@@ -143,13 +76,17 @@ class ChromedashMetadata extends LitElement {
 
   _clickMilestone(e) {
     // Came from an internal click.
-    this.selected = e.currentTarget.dataset.version;
+    this.selected = e.currentTarget.value;
     this._fireEvent('query-changed', {version: this.selected});
   }
 
   // Directly called in chromedash-featurelist
   selectMilestone(feature) {
     this.selected = feature.browsers.chrome.status.milestone_str;
+  }
+
+  selectInVersionList(index) {
+    this.shadowRoot.getElementById('versionlist').selectedIndex = index; ; // log null
   }
 
   _processResponse(response) {
@@ -189,16 +126,36 @@ class ChromedashMetadata extends LitElement {
     this._versions.push(noActiveDev);
     const noLongerPursuing = this.implStatuses[this.implStatuses.length - 1].val;
     this._versions.push(noLongerPursuing);
+    const behindAFlag = this.implStatuses[this.status.BEHIND_A_FLAG - 1].val;
+    this._versions.push(behindAFlag);
+
+    const enabledByDefault = this.implStatuses[this.status.ENABLED_BY_DEFAULT - 1].val;
+    this._versions.push(enabledByDefault);
+    const removed = this.implStatuses[this.status.REMOVED - 1].val;
+    this._versions.push(removed);
+    const originTrial = this.implStatuses[this.status.ORIGINTRIAL - 1].val;
+    this._versions.push(originTrial);
+    const intervention = this.implStatuses[this.status.INTERVENTION - 1].val;
+    this._versions.push(intervention);
+    const onHold = this.implStatuses[this.status.ON_HOLD - 1].val;
+    this._versions.push(onHold);
   }
 
   render() {
     return html`
-      <ul id="versionlist" class="${ifDefined(this._className)}">
-        ${this._versions.map((version) => html`
-          <li data-version="${version}" @click="${this._clickMilestone}"
-              ?selected="${this.selected === version}">${version}</li>
-          `)}
-      </ul>
+      <select id="versionlist" class="${ifDefined(this._className)}" @change="${this._clickMilestone}">
+        <option value="" disabled selected>Select Chrome Version/Status</option>
+        ${this._versions.map((version, index) =>
+      typeof this._className !== 'undefined' ?
+        this._className == 'canaryisdev' ?
+          html`<option value="${version}">${version} ${index == 3 ? 'canary/dev' : index == 4 ? 'beta' : index == 5 ? 'stable' : ''}</option>`
+          : this._className == 'betaisdev' ?
+            html`<option value="${version}">${version} ${index == 3 ? 'canary' : index == 4 ? 'dev/beta' : index == 5 ? 'stable' : ''}</option>`
+            : ''
+        :
+        html`<option value="${version}">${version} ${index == 3 ? 'canary' : index == 4 ? 'dev' : index == 5 ? 'beta' : index == 6 ? 'stable' : ''}</option>`
+    )}
+      </select>
       <div ?hidden="${!this._fetchError}" class="error">Error fetching version information.</div>
     `;
   }
