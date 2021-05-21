@@ -85,6 +85,10 @@ class ChromedashMetadata extends LitElement {
     this.selected = feature.browsers.chrome.status.milestone_str;
   }
 
+  selectInVersionList(index) {
+    this.shadowRoot.getElementById('versionlist').selectedIndex = index; ; // log null
+  }
+
   _processResponse(response) {
     // TODO(ericbidelman): Share this data across instances.
     const windowsVersions = response[0];

@@ -3,6 +3,7 @@ const chromeMetadataEl = document.querySelector('chromedash-metadata');
 const searchEl = document.querySelector('.search input');
 const legendEl = document.querySelector('chromedash-legend');
 
+
 /**
  * Simple debouncer to handle text input.  Don't try to hit the server
  * until the user has stopped typing for a few seconds.  E.g.,
@@ -42,6 +43,7 @@ searchEl.addEventListener('search', (e) => {
   if (!e.target.value) {
     featureListEl.filter('', true);
     chromeMetadataEl.selected = null;
+    chromeMetadataEl.selectInVersionList('0');
   }
 });
 
