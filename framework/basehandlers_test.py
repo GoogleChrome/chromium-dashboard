@@ -170,6 +170,13 @@ class BaseHandlerTests(unittest.TestCase):
     actual = self.handler.get_int_param('missing', default=3)
     self.assertEqual(3, actual)
 
+    actual = self.handler.get_int_param('missing', required=False)
+    self.assertIsNone(actual)
+
+    actual = self.handler.get_int_param(
+        'missing', required=False, validator=lambda x: x % 2 == 1)
+    self.assertIsNone(actual)
+
     with self.assertRaises(werkzeug.exceptions.BadRequest):
       self.handler.get_int_param('foo')
     mock_abort.assert_called_once_with(

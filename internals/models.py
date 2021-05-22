@@ -1108,12 +1108,14 @@ class Approval(DictModel):
   set_by = db.EmailProperty(required=True)
 
   @classmethod
-  def get_approvals(cls, feature_id, field_id=None):
+  def get_approvals(cls, feature_id, field_id=None, set_by=None):
     """Return the requested approvals."""
     query = Approval.all()
     query.filter('feature_id =', feature_id)
     if field_id is not None:
       query.filter('field_id =', field_id)
+    if set_by is not None:
+      query.filter('set_by =', set_by)
     approvals = query.fetch(None)
     return approvals
 
@@ -1129,18 +1131,44 @@ class Approval(DictModel):
       raise ValueError('Invalid approval state')
 
     now = datetime.datetime.now()
-    existing = cls.get_approvals(feature_id, field_id=field_id)
-    for appr in existing:
-      if appr.set_by == set_by_email:
-        appr.set_on = now
-        appr.state = new_state
-        appr.put()
-        return
+    existing_list = cls.get_approvals(
+        feature_id, field_id=field_id, set_by=set_by_email)
+    if existing_list:
+      existing = existing_list[0]
+      existing.set_on = now
+      existing.state = new_state
+      existing.put()
+      return
 
     new_appr = Approval(
         feature_id=feature_id, field_id=field_id, state=new_state,
         set_on=now, set_by=set_by_email)
     new_appr.put()
+
+
+
+class Comment(DictModel):
+  """A review comment on a feature."""
+  feature_id = db.IntegerProperty(required=True)
+  field_id = db.IntegerProperty()  # The approval field_id, or general comment.
+  created = db.DateTimeProperty(auto_now=True)
+  author = db.EmailProperty()
+  content = db.StringProperty(multiline=True)
+  deleted_by = db.EmailProperty()
+  # If the user set an approval value, we capture that here so that we can
+  # display a change log.  This could be generalized to a list of separate
+  # Amendment entities, but that complexity is not needed yet.
+  old_approval_state = db.IntegerProperty()
+  new_approval_state = db.IntegerProperty()
+
+  @classmethod
+  def get_comments(cls, feature_id, field_id):
+    """Return review comments for an approval."""
+    query = Comment.all().order('created')
+    query.filter('feature_id =', feature_id)
+    query.filter('field_id = ', field_id)
+    comments = query.fetch(None)
+    return comments
 
 
 class UserPref(DictModel):
