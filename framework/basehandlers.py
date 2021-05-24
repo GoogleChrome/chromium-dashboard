@@ -107,7 +107,7 @@ class BaseHandler(flask.views.MethodView):
     val = self.get_param(
         name, default=default, required=required, validator=validator,
         allowed=allowed)
-    if type(val) != int:
+    if val and type(val) != int:
       self.abort(400, msg='Parameter %r was not an int' % name)
     return val
 

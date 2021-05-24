@@ -166,6 +166,18 @@ class ChromeStatusClient {
     return this.doDelete('/accounts/' + accountId);
     // TODO: catch((error) => { display message }
   }
+
+  // Review comments
+
+  getComments(featureId, fieldId) {
+    return this.doGet(`/features/${featureId}/approvals/${fieldId}/comments`);
+  }
+
+  postComment(featureId, fieldId, state, comment) {
+    return this.doPost(
+        `/features/${featureId}/approvals/${fieldId}/comments`,
+        {state, comment});
+  }
 };
 
 exports.ChromeStatusClient = ChromeStatusClient;
