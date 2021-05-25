@@ -27,6 +27,7 @@ class ChromedashBanner extends LitElement {
         color: var(--warning-color);
         border-radius: var(--border-radius);
         padding: var(--content-padding);
+        width:100%;
       }
     `];
   }
