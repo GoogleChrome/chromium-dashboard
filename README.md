@@ -7,7 +7,7 @@ Chrome Platform Status
 
 ### Get the code
 
-    git clone --recursive https://github.com/GoogleChrome/chromium-dashboard
+    git clone https://github.com/GoogleChrome/chromium-dashboard
 
 ### Installation
 

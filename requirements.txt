@@ -1,8 +1,9 @@
+
+# Libraries that we use directly.
 Django==1.11.29
 mock==3.0.5
 funcsigs
 Flask==1.1.2
-
 google-cloud-tasks==1.5.0
 
 # Required by google-cloud-tasks
@@ -21,6 +22,15 @@ idna==2.10
 pyasn1-modules==0.2.8
 cachetools==3.1.1
 rsa==4.5
+
+# These are some libraries used indirectly below.  Pin them to versions that
+# work on python 2.7.
+# TODO(jrobbins): Eliminate these once we are on py3.
+Jinja2==2.11.3
+MarkupSafe==1.1.1
+Werkzeug==1.0.1
+click==7.1.2
+itsdangerous==1.1.0
 
 # Required for porting Python2 to Python3
 requests==2.25.1
