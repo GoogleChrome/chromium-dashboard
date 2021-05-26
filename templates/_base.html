@@ -65,16 +65,23 @@ limitations under the License.
 
   <script nonce="{{nonce}}">
     function onSignIn(googleUser) {
-        csClient.signIn(googleUser).then(response => {
-            console.log(response);
-            window.location.replace(window.location.href.split("?")[0]);
-        });
+        csClient.signIn(googleUser)
+            .then(responseJson => {
+                console.log('Signed in:');
+                console.log(responseJson);
+                window.location.replace(window.location.href.split("?")[0]);
+            })
+            .catch(() => {
+                console.error('Sign in failed, so signing out to allow retry');
+                signOut();
+            });
     }
 
     function signOut() {
         let auth2 = gapi.auth2.getAuthInstance();
         csClient.signOut(auth2).then(responseJson => {
-            console.log('Signed Out: ' + responseJson);
+            console.log('Signed out:');
+            console.log(responseJson);
             window.location.reload();
         });
     }

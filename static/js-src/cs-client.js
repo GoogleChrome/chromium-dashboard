@@ -92,7 +92,7 @@ class ChromeStatusClient {
 
     if (response.status !== 200) {
       throw new Error(
-          `Got error response from server: ${response.status}`);
+          `Got error response from server ${resource}: ${response.status}`);
     }
     const rawResponseText = await response.text();
     const XSSIPrefix = ')]}\'\n';
