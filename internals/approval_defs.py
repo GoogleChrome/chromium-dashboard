@@ -16,6 +16,7 @@
 from __future__ import division
 from __future__ import print_function
 
+import base64
 import collections
 import logging
 import requests
@@ -28,9 +29,8 @@ CACHE_EXPIRATION = 60 * 60  # One hour
 ONE_LGTM = 'One LGTM'
 THREE_LGTM = 'Three LGTMs'
 API_OWNERS_URL = (
-    'https://source.chromium.org/chromium/chromium/src/+/'
-    # TODO(jrobbins): branch name will change soon
-    'master:third_party/blink/API_OWNERS')
+    'https://chromium.googlesource.com/chromium/src/+/'
+    'main/third_party/blink/API_OWNERS?format=TEXT')
 
 ApprovalFieldDef = collections.namedtuple(
     'ApprovalField',
@@ -70,7 +70,9 @@ def fetch_owners(url):
     logging.error('Got response %r', response)
     raise ValueError('Could not get OWNERS file')
 
-  for line in response.iter_lines():
+  decoded = base64.b64decode(response.content)
+  for line in decoded.split('\n'):
+    logging.info('got line: '  + line)
     if '#' in line:
       line = line[:line.index('#')]
     line = line.strip()
