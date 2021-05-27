@@ -65,45 +65,25 @@ limitations under the License.
 
   <script nonce="{{nonce}}">
     function onSignIn(googleUser) {
-      var profile = googleUser.getBasicProfile();
-      var id_token = googleUser.getAuthResponse().id_token;
-        var xhr = new XMLHttpRequest();
-      xhr.open('POST', '/api/v0/login');
-      xhr.setRequestHeader('Content-Type', 'application/json');
-      xhr.onload = function() {
-        if (xhr.status == 200) {
-            if (window.location.href.includes('?')) {
-                window.location.replace(window.location.href.split("?")[0])
-            } else {
-                window.location.reload();
-            }
-        }
-        else {
-          // signout if cookie not set
-          signOut();
-        }
-      };
-      let data = JSON.stringify({ "id_token": id_token})
-      xhr.send(data);
-
+        csClient.signIn(googleUser)
+            .then(responseJson => {
+                console.log('Signed in:');
+                console.log(responseJson);
+                window.location.replace(window.location.href.split("?")[0]);
+            })
+            .catch(() => {
+                console.error('Sign in failed, so signing out to allow retry');
+                signOut();
+            });
     }
 
     function signOut() {
-      var auth2 = gapi.auth2.getAuthInstance();
-      auth2.signOut().then(function () {
-        var xhr = new XMLHttpRequest();
-        xhr.open('POST', '/api/v0/logout');
-        xhr.setRequestHeader('Content-Type', 'application/json');
-        xhr.onload = function() {
-          if (xhr.status == 200) {
-            console.log('Signed Out' + xhr.responseText);
-            window.location.reload()
-          }
-        };
-        // let data = JSON.stringify({ "id_token": id_token})
-        xhr.send();
-        console.log('User signed out.');
-      });
+        let auth2 = gapi.auth2.getAuthInstance();
+        csClient.signOut(auth2).then(responseJson => {
+            console.log('Signed out:');
+            console.log(responseJson);
+            window.location.reload();
+        });
     }
 
     function onLoad() {

@@ -30,7 +30,7 @@
         </a>
         <ul>
           <li><a href="/settings">Settings</a></li>
-          <li><a href="#" onclick="signOut()">Sign out</a></li>
+          <li><a href="#" id="sign-out-link">Sign out</a></li>
 
         </ul>
       </div>
@@ -41,3 +41,15 @@
 
   </nav>
 </header>
+
+{% if user %}
+  <script nonce="{{nonce}}">
+    const signOutEl = document.querySelector('#sign-out-link');
+    if (signOutEl) {
+        signOutEl.addEventListener('click', (e) => {
+            e.preventDefault();
+            signOut();
+        });
+    }
+  </script>
+{% endif %}
