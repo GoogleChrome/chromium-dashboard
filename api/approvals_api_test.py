@@ -168,8 +168,10 @@ class ApprovalsAPITest(unittest.TestCase):
       with self.assertRaises(werkzeug.exceptions.NotFound):
         self.handler.do_post()
 
-  def test_post__forbidden(self):
+  @mock.patch('internals.approval_defs.get_approvers')
+  def test_post__forbidden(self, mock_get_approvers):
     """Handler rejects requests from anon users and non-approvers."""
+    mock_get_approvers.return_value = ['owner1@example.com']
     params = {'featureId': self.feature_id, 'fieldId': 1,
               'state': models.Approval.NEED_INFO}
 

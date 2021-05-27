@@ -116,8 +116,10 @@ class CommentsAPITest(unittest.TestCase):
       with self.assertRaises(werkzeug.exceptions.NotFound):
         self.handler.do_post(12345, self.field_id)
 
-  def test_post__forbidden(self):
+  @mock.patch('internals.approval_defs.get_approvers')
+  def test_post__forbidden(self, mock_get_approvers):
     """Handler rejects requests from anon users and non-approvers."""
+    mock_get_approvers.return_value = ['owner1@example.com']
     params = {'state': models.Approval.NEED_INFO}
 
     testing_config.sign_out()
@@ -159,8 +161,10 @@ class CommentsAPITest(unittest.TestCase):
     self.assertEqual(models.Approval.APPROVED, cmnt.old_approval_state)
     self.assertEqual(models.Approval.NEED_INFO, cmnt.new_approval_state)
 
-  def test_post__comment_only(self):
-    """Handler adds a comment only."""
+  @mock.patch('internals.approval_defs.get_approvers')
+  def test_post__comment_only(self, mock_get_approvers):
+    """Handler adds a comment only, does not require approval permission."""
+    mock_get_approvers.return_value = []
     testing_config.sign_in('owner2@example.com', 123567890)
     params = {'comment': 'Congratulations'}
     with register.app.test_request_context(self.request_path, json=params):

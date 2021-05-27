@@ -15,6 +15,7 @@
 from __future__ import division
 from __future__ import print_function
 
+import base64
 import datetime
 import unittest
 import testing_config  # Must be imported before the module under test.
@@ -126,3 +127,56 @@ class YesterdayHandlerTest(unittest.TestCase):
         mock.call(datetime.date(2021, 1, 20))
         for query in fetchmetrics.UMA_QUERIES]
     mock_FetchAndSaveData.assert_has_calls(expected_calls)
+
+
+class HistogramsHandlerTest(unittest.TestCase):
+
+  ENUMS_TEXT = '''
+     <histogram-configuration>
+
+     <!-- Enum types -->
+
+     <enums>
+
+     <enum name="FeatureObserver">
+       <!-- Generated from third_party/blink/public/mojom/...
+            Called by update_use_counter_feature_enum.py.-->
+
+       <int value="0" label="OBSOLETE_PageDestruction"/>
+       <int value="1" label="LegacyNotifications"/>
+       <int value="2" label="MultipartMainResource"/>
+       <int value="3" label="PrefixedIndexedDB"/>
+       <int value="4" label="WorkerStart"/>
+     </enum>
+
+     <enum name="MappedCSSProperties">
+
+       <!-- Generated from third_party/blink/public/...
+            Called by update_use_counter_css.py.-->
+
+       <int value="1" label="Total Pages Measured"/>
+       <int value="2" label="color"/>
+       <int value="3" label="direction"/>
+       <int value="4" label="display"/>
+     </enum>
+
+     </enums>
+     </histogram-configuration>
+     '''
+
+  def setUp(self):
+    self.request_path = '/cron/histograms'
+    self.handler = fetchmetrics.HistogramsHandler()
+
+  @mock.patch('requests.get')
+  @mock.patch('internals.fetchmetrics.HistogramsHandler._SaveData')
+  def test_get_template_data__normal(self, mock_save_data, mock_requests_get):
+    """We can fetch and parse XML for metrics."""
+    mock_requests_get.return_value = testing_config.Blank(
+        status_code=200,
+        content=base64.b64encode(self.ENUMS_TEXT))
+    with fetchmetrics.app.test_request_context(self.request_path):
+      actual_response = self.handler.get_template_data()
+
+    self.assertEqual('Success', actual_response)
+    self.assertEqual(9, mock_save_data.call_count)
