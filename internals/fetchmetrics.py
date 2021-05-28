@@ -16,6 +16,7 @@
 from __future__ import division
 from __future__ import print_function
 
+import base64
 import datetime
 import json
 import logging
@@ -241,13 +242,13 @@ class HistogramsHandler(basehandlers.FlaskHandler):
 
   def get_template_data(self):
     # Attempt to fetch enums mapping file.
-    result = requests.get(HISTOGRAMS_URL, timeout=60)
+    response = requests.get(HISTOGRAMS_URL, timeout=60)
 
-    if (result.status_code != 200):
+    if (response.status_code != 200):
       logging.error('Unable to retrieve chromium histograms mapping file.')
       return
 
-    histograms_content = result.content.decode('base64')
+    histograms_content = base64.b64decode(response.content).decode()
     dom = minidom.parseString(histograms_content)
 
     # The enums.xml file looks like this:

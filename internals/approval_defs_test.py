@@ -15,6 +15,7 @@
 from __future__ import division
 from __future__ import print_function
 
+import base64
 import requests
 import testing_config  # Must be imported before the module under test.
 import unittest
@@ -33,17 +34,18 @@ class FetchOwnersTest(unittest.TestCase):
   @mock.patch('requests.get')
   def test__normal(self, mock_get):
     """We can fetch and parse an OWNERS file.  And reuse cached value."""
+    file_contents = (
+        '# Blink API owners are responsible for ...\n'
+        '#\n'
+        '# See https://www.chromium.org/blink#new-features for details.\n'
+        'owner1@example.com\n'
+        'owner2@example.com\n'
+        'owner3@example.com\n'
+        '\n')
+    encoded = base64.b64encode(file_contents)
     mock_get.return_value = testing_config.Blank(
         status_code=200,
-        iter_lines=lambda: [
-            '# This is an owners file',
-            'owner1@example.com',
-            '  owner2@example.com   ',
-            '# if those two are not available',
-            'owner3@example.com  # use URGENT in subject line',
-            '- - nothing below this line - -',
-            '']
-        )
+        content=encoded)
 
     actual = approval_defs.fetch_owners('https://example.com')
     again = approval_defs.fetch_owners('https://example.com')
