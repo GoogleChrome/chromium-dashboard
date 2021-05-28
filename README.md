@@ -18,6 +18,8 @@ Chrome Platform Status
 1. Install npm dependencies `npm ci`
 1. Install other dependencies `npm run deps` and `npm run dev-deps`
 
+If you face any error during the installation process, the section **Notes** (later in this README.md) may help. 
+
 ##### Add env_vars.yaml
 
 Create a file named `env_vars.yaml` in the root directory and fill it with:
@@ -62,7 +64,7 @@ There are some developing information in developer-documentation.md.
 
 **Notes**
 
-- If you get an error saying `No module named protobuf`, try installing it locally with `python -m pip install protobuf`.
+- If you get an error saying `No module named protobuf` or `No module named six` or `No module named enum` , try installing them locally with `pip install six enum34 protobuf`.
 
 - When installing the GAE SDK, make sure to get the version for python 2.7.  It is no longer the default version.
 
