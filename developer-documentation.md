@@ -27,6 +27,19 @@ All the pages are rendered in a combination of Django template (`/templates`) an
 1. All JavaScript files are in `/static/js-src/` and processed by gulp, then output to '/static/js/' and get included in templates.
 1. All CSS files are in `/static/sass/` and processed by gulp, then output to `/static/css/` and get included in templates.
 
+
+## Creating a user with admin privileges
+To create or edit features, you must log in using an email which has admin privileges. An email has admin privileges if it is stored in the Datastore with `is_admin` property set to `True`. To create an admin user for your local installation follow these steps:-
+1. Access Admin Server using the url mentioned in the command line output of `npm start`.
+1. Click on interactive console and execute the following query:-
+```
+from internals import models
+appuser_1 = models.AppUser(email='your_account@domain_name.tld', is_admin=True)
+appuser_1.put()
+```
+To view and edit the users datastore, you can click on Datastore Viewer. Make sure that `Entity Kind` is set to `AppUser`.
+
+
 ## Some nice-to-fix
 
 - Wrap page in a component, so the data flow is more clear. Benefits: no need to assigns component properties from js files; no need to pass element reference to components to get value (e.g. we are passing searchEl to chromedash-featurelist.).
