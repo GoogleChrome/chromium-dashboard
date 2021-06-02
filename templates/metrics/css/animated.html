@@ -9,30 +9,6 @@
   {% include "metrics/css/_css_metric_nav.html" %}
 {% endblock %}
 
-{% block horizontalsubnav %}
-<table>
-  <tr>
-    <nav class="data-panel">
-      <td>View All Properties As:</td>
-      <td>
-        <a href="/metrics/css/timeline/popularity" class="sub-nav-links">Timeline</a> |
-        <a href="/metrics/css/popularity"  class="sub-nav-links">Stack Rank</a>
-      </td>
-    </nav>
-  </tr>
-
-  <tr>
-    <nav class="data-panel">
-      <td>View Animated Properties As:</td>
-      <td>
-        <a href="/metrics/css/timeline/animated" class="sub-nav-links">Timeline</a> |
-        <a href="/metrics/css/animated"  class="sub-nav-links">Stack Rank</a>
-      </td>
-    </nav>
-  </tr>
-</table>
-{% endblock %}
-
 {% block subheader %}
 <div id="subheader">
   <h2>CSS usage metrics &gt; animated properties > stack rank</h2>
