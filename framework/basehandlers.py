@@ -364,7 +364,9 @@ class FlaskHandler(BaseHandler):
     """Every UI form submission must have a XSRF token."""
     if settings.UNIT_TEST_MODE or self.IS_INTERNAL_HANDLER:
       return
-    token = self.form.get('token')
+    token = self.request.headers.get('X-Xsrf-Token')
+    if not token:
+      token = self.form.get('token')
     if not token:
       self.abort(400, msg='Missing XSRF token')
     user = self.get_current_user(required=True)
