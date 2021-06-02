@@ -56,7 +56,6 @@ class TokenRefreshAPITest(unittest.TestCase):
       with self.assertRaises(werkzeug.exceptions.Forbidden):
         self.handler.post()
 
-  @unittest.skip('TODO(jrobbins): enable after next release')
   def test_post__missing(self):
     """We reject token requests that do not include a previous token."""
     testing_config.sign_in('user@example.com', 111)
@@ -65,7 +64,6 @@ class TokenRefreshAPITest(unittest.TestCase):
       with self.assertRaises(werkzeug.exceptions.BadRequest):
         self.handler.post()
 
-  @unittest.skip('TODO(jrobbins): enable after next release')
   @mock.patch('api.token_refresh_api.TokenRefreshAPI.validate_token')
   def test_post__bad(self, mock_validate_token):
     """We reject token requests that have a bad token."""
