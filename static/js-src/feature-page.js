@@ -42,6 +42,14 @@ if (navigator.share) {
   });
 }
 
+const shareFeatureEl = document.querySelector('#share-feature');
+if (shareFeatureEl) {
+  shareFeatureEl.addEventListener('click', function() {
+    shareFeature();
+  });
+}
+
+
 // Show the star icon if the user has starred this feature.
 window.csClient.getStars().then((subscribedFeatures) => {
   const iconEl = document.querySelector('.pushicon');
@@ -56,6 +64,13 @@ const starWhenSignedOutEl = document.querySelector('#star-when-signed-out');
 if (starWhenSignedOutEl) {
   starWhenSignedOutEl.addEventListener('click', function(e) {
     window.promptSignIn(e);
+  });
+}
+
+const starWhenSignedInEl = document.querySelector('#star-when-signed-in');
+if (starWhenSignedInEl) {
+  starWhenSignedInEl.addEventListener('click', function() {
+    subscribeToFeature(Number(FEATURE_ID));
   });
 }
 

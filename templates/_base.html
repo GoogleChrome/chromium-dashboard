@@ -125,13 +125,9 @@ limitations under the License.
   </script>
 
   <script src="https://unpkg.com/@webcomponents/webcomponentsjs/webcomponents-loader.js"
-          defer nonce="{{nonce}}"></script>
-  <script type="module" nonce="{{nonce}}">
-    WebComponents.waitFor(() => {
-      return import('/static/dist/components.js');
-    });
-  </script>
-
+          nonce="{{nonce}}"></script>
+  <script type="module" nonce="{{nonce}}" defer
+          src="/static/dist/components.js"></script>
   {% block preload %}{% endblock %}
 
   {% block rss %}{% endblock%}
