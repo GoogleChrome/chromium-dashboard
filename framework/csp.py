@@ -30,6 +30,11 @@ USE_NONCE_ONLY_POLICY = True  # Recommended
 REPORT_URI = '/csp'
 NONCE_LENGTH = 30
 
+# Note: This is an addition beyond the reference csp.py example code.
+HOST_SOURCES = [
+    'https://www.gstatic.com',
+    ]
+
 DEFAULT_POLICY = {
     # Disallow base tags.
     'base-uri': ["'none'"],
@@ -45,7 +50,7 @@ DEFAULT_POLICY = {
         # Fallback. Ignored in presence of strict-dynamic.
         'https:',
         'http:'
-    ],
+    ] + HOST_SOURCES,
 }
 
 # This is a stricter version of the DEFAULT_POLICY.
@@ -59,7 +64,7 @@ NONCE_ONLY_POLICY = {
     'script-src': [
         # Fallback. Ignored in presence of a nonce (which is added below).
         "'unsafe-inline'"
-    ],
+    ] + HOST_SOURCES,
 }
 
 HEADER_KEY_ENFORCE = 'Content-Security-Policy'

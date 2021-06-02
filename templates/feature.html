@@ -24,9 +24,8 @@
   <div style="float:right">
   {% if user %}
     <span class="tooltip" title="Receive an email notification when there are updates">
-      <a href="#" data-tooltip>
+      <a href="#" data-tooltip id="star-when-signed-in">
         <iron-icon icon="chromestatus:star-border"
-                    onclick="subscribeToFeature({{ feature.id }})"
                     class="pushicon"></iron-icon>
       </a>
     </span>
@@ -44,8 +43,8 @@
     </a>
   </span>
   <span class="tooltip no-web-share" title="Share this feature">
-    <a href="#" data-tooltip>
-      <iron-icon icon="chromestatus:share" onclick="shareFeature()"></iron-icon>
+    <a href="#" data-tooltip id="share-feature">
+      <iron-icon icon="chromestatus:share"></iron-icon>
     </a>
   </span>
   {% if user.can_edit %}
