@@ -28,6 +28,8 @@ Create a file named `env_vars.yaml` in the root directory and fill it with:
 env_variables:
   DJANGO_SETTINGS_MODULE: 'settings'
   DJANGO_SECRET: 'this-is-a-secret'
+  DATASTORE_EMULATOR_HOST: 'localhost:15606'
+  DATASTORE_PROJECT_ID: 'chromestatus'
 ```
 
 ### Developing
