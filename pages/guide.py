@@ -31,6 +31,7 @@ from framework import ramcache
 from google.appengine.api import users as gae_users
 from framework import users
 from google.appengine.ext import db
+from google.cloud import ndb
 
 from framework import basehandlers
 from framework import permissions

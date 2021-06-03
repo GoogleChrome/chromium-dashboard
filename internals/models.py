@@ -24,6 +24,8 @@ import re
 import time
 
 from google.appengine.ext import db
+from google.cloud import ndb
+
 # from google.appengine.ext.db import djangoforms
 from google.appengine.api import mail
 from framework import ramcache
@@ -319,7 +321,7 @@ def del_none(d):
       del_none(value)
   return d
 
-class DictModel(db.Model):
+class DictModel(ndb.Model):
   # def to_dict(self):
   #   return dict([(p, unicode(getattr(self, p))) for p in self.properties()])
 
@@ -332,7 +334,7 @@ class DictModel(db.Model):
   def to_dict(self):
     output = {}
 
-    for key, prop in self.properties().iteritems():
+    for key, prop in self._properties.iteritems():
       value = getattr(self, key)
 
       if value is None or isinstance(value, SIMPLE_TYPES):
@@ -343,9 +345,9 @@ class DictModel(db.Model):
         #ms += getattr(value, 'microseconds', 0) / 1000
         #output[key] = int(ms)
         output[key] = unicode(value)
-      elif isinstance(value, db.GeoPt):
+      elif isinstance(value, ndb.GeoPt):
         output[key] = {'lat': value.lat, 'lon': value.lon}
-      elif isinstance(value, db.Model):
+      elif isinstance(value, ndb.Model):
         output[key] = to_dict(value)
       elif isinstance(value, gae_users.User):
         output[key] = value.email()
@@ -362,9 +364,9 @@ class BlinkComponent(DictModel):
   COMPONENTS_ENDPOINT = '%s/blinkcomponents' % COMPONENTS_URL
   WF_CONTENT_ENDPOINT = '%s/wfcomponents' % COMPONENTS_URL
 
-  name = db.StringProperty(required=True, default=DEFAULT_COMPONENT)
-  created = db.DateTimeProperty(auto_now_add=True)
-  updated = db.DateTimeProperty(auto_now=True)
+  name = ndb.StringProperty(required=True, default=DEFAULT_COMPONENT)
+  created = ndb.DateTimeProperty(auto_now_add=True)
+  updated = ndb.DateTimeProperty(auto_now=True)
 
   @property
   def subscribers(self):
@@ -447,17 +449,17 @@ class BlinkComponent(DictModel):
 
 # UMA metrics.
 class StableInstance(DictModel):
-  created = db.DateTimeProperty(auto_now_add=True)
-  updated = db.DateTimeProperty(auto_now=True)
+  created = ndb.DateTimeProperty(auto_now_add=True)
+  updated = ndb.DateTimeProperty(auto_now=True)
 
-  property_name = db.StringProperty(required=True)
-  bucket_id = db.IntegerProperty(required=True)
-  date = db.DateProperty(verbose_name='When the data was fetched',
+  property_name = ndb.StringProperty(required=True)
+  bucket_id = ndb.IntegerProperty(required=True)
+  date = ndb.DateProperty(verbose_name='When the data was fetched',
                          required=True)
   #hits = db.IntegerProperty(required=True)
   #total_pages = db.IntegerProperty()
-  day_percentage = db.FloatProperty()
-  rolling_percentage = db.FloatProperty()
+  day_percentage = ndb.FloatProperty()
+  rolling_percentage = ndb.FloatProperty()
 
 
 class AnimatedProperty(StableInstance):
@@ -929,7 +931,7 @@ class Feature(DictModel):
 
     # Stash existing values when entity is created so we can diff property
     # values later in put() to know what's changed. https://stackoverflow.com/a/41344898
-    for prop_name, prop in self.properties().iteritems():
+    for prop_name, prop in self._properties.iteritems():
       old_val = getattr(self, prop_name, None)
       setattr(self, '_old_' + prop_name, old_val)
 
@@ -938,7 +940,7 @@ class Feature(DictModel):
        posting to a task queue."""
     # Diff values to see what properties have changed.
     changed_props = []
-    for prop_name, prop in self.properties().iteritems():
+    for prop_name, prop in self._properties.iteritems():
       if prop_name in ('created_by', 'updated_by'):
         continue
       new_val = getattr(self, prop_name, None)
@@ -972,113 +974,135 @@ class Feature(DictModel):
     return key
 
   # Metadata.
-  created = db.DateTimeProperty(auto_now_add=True)
-  updated = db.DateTimeProperty(auto_now=True)
-  updated_by = db.UserProperty()
-  created_by = db.UserProperty()
+  created = ndb.DateTimeProperty(auto_now_add=True)
+  updated = ndb.DateTimeProperty(auto_now=True)
+  updated_by = ndb.UserProperty()
+  created_by = ndb.UserProperty()
 
   # General info.
-  category = db.IntegerProperty(required=True)
-  name = db.StringProperty(required=True)
-  feature_type = db.IntegerProperty(default=FEATURE_TYPE_INCUBATE_ID)
-  intent_stage = db.IntegerProperty(default=0)
-  summary = db.StringProperty(required=True, multiline=True)
-  unlisted = db.BooleanProperty(default=False)
+  category = ndb.IntegerProperty(required=True)
+  name = ndb.StringProperty(required=True)
+  feature_type = ndb.IntegerProperty(default=FEATURE_TYPE_INCUBATE_ID)
+  intent_stage = ndb.IntegerProperty(default=0)
+  summary = ndb.StringProperty(required=True)
+  unlisted = ndb.BooleanProperty(default=False)
   # TODO(jrobbins): Add an entry_state enum to track app-specific lifecycle
   # info for a feature entry as distinct from process-specific stage.
-  deleted = db.BooleanProperty(default=False)
-  motivation = db.StringProperty(multiline=True)
-  star_count = db.IntegerProperty(default=0)
-  search_tags = db.StringListProperty()
-  comments = db.StringProperty(multiline=True)
-  owner = db.ListProperty(db.Email)
-  footprint = db.IntegerProperty()  # Deprecated
+  deleted = ndb.BooleanProperty(default=False)
+  motivation = ndb.StringProperty()
+  star_count = ndb.IntegerProperty(default=0)
+  search_tags = ndb.StringProperty(repeated=True)
+  comments = ndb.StringProperty()
+  # owner = ndb.ListProperty(ndb.Email)
+  owner = ndb.StringProperty(repeated=True)
+  footprint = ndb.IntegerProperty()  # Deprecated
 
   # Tracability to intent discussion threads
-  intent_to_implement_url = db.LinkProperty()
-  intent_to_ship_url = db.LinkProperty()
-  ready_for_trial_url = db.LinkProperty()
-  intent_to_experiment_url = db.LinkProperty()
-  i2e_lgtms = db.ListProperty(db.Email)  # Currently, only one is needed.
-  i2s_lgtms = db.ListProperty(db.Email)
+  # intent_to_implement_url = ndb.LinkProperty()
+  intent_to_implement_url = ndb.StringProperty()
+  # intent_to_ship_url = ndb.LinkProperty()
+  # ready_for_trial_url = ndb.LinkProperty()
+  # intent_to_experiment_url = ndb.LinkProperty()
+  # i2e_lgtms = ndb.ListProperty(ndb.Email)  # Currently, only one is needed.
+  # i2s_lgtms = ndb.ListProperty(ndb.Email)
+  intent_to_ship_url = ndb.StringProperty()
+  ready_for_trial_url = ndb.StringProperty()
+  intent_to_experiment_url = ndb.StringProperty()
+  i2e_lgtms = ndb.StringProperty(repeated=True)  # Currently, only one is needed.
+  i2s_lgtms = ndb.StringProperty(repeated=True)
 
   # Chromium details.
-  bug_url = db.LinkProperty()
-  launch_bug_url = db.LinkProperty()
-  initial_public_proposal_url = db.LinkProperty()
-  blink_components = db.StringListProperty(required=True, default=[BlinkComponent.DEFAULT_COMPONENT])
-  devrel = db.ListProperty(db.Email)
+  # bug_url = ndb.LinkProperty()
+  # launch_bug_url = ndb.LinkProperty()
+  # initial_public_proposal_url = ndb.LinkProperty()
+  bug_url = ndb.StringProperty()
+  launch_bug_url = ndb.StringProperty()
+  initial_public_proposal_url = ndb.StringProperty()
+  # blink_components = ndb.StringListProperty(required=True, default=[BlinkComponent.DEFAULT_COMPONENT])
+  blink_components = ndb.StringProperty(repeated=True)
+  # devrel = ndb.ListProperty(db.Email)
+  devrel = ndb.StringProperty(repeated=True)
 
-  impl_status_chrome = db.IntegerProperty(required=True)
-  shipped_milestone = db.IntegerProperty()
-  shipped_android_milestone = db.IntegerProperty()
-  shipped_ios_milestone = db.IntegerProperty()
-  shipped_webview_milestone = db.IntegerProperty()
+  impl_status_chrome = ndb.IntegerProperty(required=True)
+  shipped_milestone = ndb.IntegerProperty()
+  shipped_android_milestone = ndb.IntegerProperty()
+  shipped_ios_milestone = ndb.IntegerProperty()
+  shipped_webview_milestone = ndb.IntegerProperty()
 
   # DevTrial details.
-  devtrial_instructions = db.LinkProperty()
-  flag_name = db.StringProperty()
-  interop_compat_risks = db.StringProperty(multiline=True)
-  ergonomics_risks = db.StringProperty(multiline=True)
-  activation_risks = db.StringProperty(multiline=True)
-  security_risks = db.StringProperty(multiline=True)
-  debuggability = db.StringProperty(multiline=True)
-  all_platforms = db.BooleanProperty()
-  all_platforms_descr = db.StringProperty(multiline=True)
-  wpt = db.BooleanProperty()
-  wpt_descr = db.StringProperty(multiline=True)
+  # devtrial_instructions = db.LinkProperty()
+  devtrial_instructions = ndb.StringProperty()
+  flag_name = ndb.StringProperty()
+  interop_compat_risks = ndb.StringProperty()
+  ergonomics_risks = ndb.StringProperty()
+  activation_risks = ndb.StringProperty()
+  security_risks = ndb.StringProperty()
+  debuggability = ndb.StringProperty()
+  all_platforms = ndb.BooleanProperty()
+  all_platforms_descr = ndb.StringProperty()
+  wpt = ndb.BooleanProperty()
+  wpt_descr = ndb.StringProperty()
 
-  visibility = db.IntegerProperty(required=False)  # Deprecated
+  visibility = ndb.IntegerProperty(required=False)  # Deprecated
 
   #webbiness = db.IntegerProperty() # TODO: figure out what this is
 
   # Standards details.
-  standardization = db.IntegerProperty(required=True)
-  spec_link = db.LinkProperty()
-  api_spec = db.BooleanProperty(default=False)
-  spec_mentors = db.ListProperty(db.Email)
-  security_review_status = db.IntegerProperty(default=REVIEW_PENDING)
-  privacy_review_status = db.IntegerProperty(default=REVIEW_PENDING)
+  standardization = ndb.IntegerProperty(required=True)
+  # spec_link = db.LinkProperty()
+  spec_link = ndb.StringProperty()
+  api_spec = ndb.BooleanProperty(default=False)
+  # spec_mentors = db.ListProperty(db.Email)
+  spec_mentors = ndb.StringProperty(repeated=True)
 
-  tag_review = db.StringProperty(multiline=True)
-  tag_review_status = db.IntegerProperty(default=REVIEW_PENDING)
+  security_review_status = ndb.IntegerProperty(default=REVIEW_PENDING)
+  privacy_review_status = ndb.IntegerProperty(default=REVIEW_PENDING)
 
-  prefixed = db.BooleanProperty()
+  tag_review = ndb.StringProperty()
+  tag_review_status = ndb.IntegerProperty(default=REVIEW_PENDING)
 
-  explainer_links = db.StringListProperty()
+  prefixed = ndb.BooleanProperty()
 
-  ff_views = db.IntegerProperty(required=True, default=NO_PUBLIC_SIGNALS)
-  ie_views = db.IntegerProperty(required=True, default=NO_PUBLIC_SIGNALS)
-  safari_views = db.IntegerProperty(required=True, default=NO_PUBLIC_SIGNALS)
-  web_dev_views = db.IntegerProperty(required=True)
+  explainer_links = ndb.StringProperty(repeated=True)
 
-  ff_views_link = db.LinkProperty()
-  ie_views_link = db.LinkProperty()
-  safari_views_link = db.LinkProperty()
-  web_dev_views_link = db.LinkProperty()
+  ff_views = ndb.IntegerProperty(required=True, default=NO_PUBLIC_SIGNALS)
+  ie_views = ndb.IntegerProperty(required=True, default=NO_PUBLIC_SIGNALS)
+  safari_views = ndb.IntegerProperty(required=True, default=NO_PUBLIC_SIGNALS)
+  web_dev_views = ndb.IntegerProperty(required=True)
 
-  ff_views_notes = db.StringProperty(multiline=True)
-  ie_views_notes = db.StringProperty(multiline=True)
-  safari_views_notes = db.StringProperty(multiline=True)
-  web_dev_views_notes = db.StringProperty(multiline=True)
+  # ff_views_link = db.LinkProperty()
+  # ie_views_link = db.LinkProperty()
+  # safari_views_link = db.LinkProperty()
+  # web_dev_views_link = db.LinkProperty()
+  ff_views_link = ndb.StringProperty()
+  ie_views_link = ndb.StringProperty()
+  safari_views_link = ndb.StringProperty()
+  web_dev_views_link = ndb.StringProperty()
 
-  doc_links = db.StringListProperty()
-  measurement = db.StringProperty(multiline=True)
-  sample_links = db.StringListProperty()
+  ff_views_notes = ndb.StringProperty()
+  ie_views_notes = ndb.StringProperty()
+  safari_views_notes = ndb.StringProperty()
+  web_dev_views_notes = ndb.StringProperty()
+
+  doc_links = ndb.StringProperty(repeated=True)
+  measurement = ndb.StringProperty()
+  sample_links = ndb.StringProperty(repeated=True)
   #tests = db.StringProperty()
 
-  experiment_goals = db.StringProperty(multiline=True)
-  experiment_timeline = db.StringProperty(multiline=True)
-  ot_milestone_desktop_start = db.IntegerProperty()
-  ot_milestone_desktop_end = db.IntegerProperty()
-  ot_milestone_android_start = db.IntegerProperty()
-  ot_milestone_android_end = db.IntegerProperty()
-  experiment_risks = db.StringProperty(multiline=True)
-  experiment_extension_reason = db.StringProperty(multiline=True)
-  ongoing_constraints = db.StringProperty(multiline=True)
-  origin_trial_feedback_url = db.LinkProperty()
+  experiment_goals = ndb.StringProperty()
+  experiment_timeline = ndb.StringProperty()
+  ot_milestone_desktop_start = ndb.IntegerProperty()
+  ot_milestone_desktop_end = ndb.IntegerProperty()
+  ot_milestone_android_start = ndb.IntegerProperty()
+  ot_milestone_android_end = ndb.IntegerProperty()
+  experiment_risks = ndb.StringProperty()
+  experiment_extension_reason = ndb.StringProperty()
+  ongoing_constraints = ndb.StringProperty()
+  # origin_trial_feedback_url = db.LinkProperty()
+  origin_trial_feedback_url = ndb.StringProperty()
 
-  finch_url = db.LinkProperty()
+  # finch_url = db.LinkProperty()
+  finch_url = ndb.StringProperty()
 
 
 class Approval(DictModel):
@@ -1101,11 +1125,12 @@ class Approval(DictModel):
       NOT_APPROVED: 'not_approved'
   }
 
-  feature_id = db.IntegerProperty(required=True)
-  field_id = db.IntegerProperty(required=True)
-  state = db.IntegerProperty(required=True)
-  set_on = db.DateTimeProperty(required=True)
-  set_by = db.EmailProperty(required=True)
+  feature_id = ndb.IntegerProperty(required=True)
+  field_id = ndb.IntegerProperty(required=True)
+  state = ndb.IntegerProperty(required=True)
+  set_on = ndb.DateTimeProperty(required=True)
+  # set_by = db.EmailProperty(required=True)
+  set_by = ndb.StringProperty(required=True)
 
   @classmethod
   def get_approvals(cls, feature_id, field_id=None, set_by=None):
@@ -1149,17 +1174,19 @@ class Approval(DictModel):
 
 class Comment(DictModel):
   """A review comment on a feature."""
-  feature_id = db.IntegerProperty(required=True)
-  field_id = db.IntegerProperty()  # The approval field_id, or general comment.
-  created = db.DateTimeProperty(auto_now=True)
-  author = db.EmailProperty()
-  content = db.StringProperty(multiline=True)
-  deleted_by = db.EmailProperty()
+  feature_id = ndb.IntegerProperty(required=True)
+  field_id = ndb.IntegerProperty()  # The approval field_id, or general comment.
+  created = ndb.DateTimeProperty(auto_now=True)
+  # author = db.EmailProperty()
+  author = ndb.StringProperty()
+  content = ndb.StringProperty()
+  # deleted_by = db.EmailProperty()
+  deleted_by = ndb.StringProperty()
   # If the user set an approval value, we capture that here so that we can
   # display a change log.  This could be generalized to a list of separate
   # Amendment entities, but that complexity is not needed yet.
-  old_approval_state = db.IntegerProperty()
-  new_approval_state = db.IntegerProperty()
+  old_approval_state = ndb.IntegerProperty()
+  new_approval_state = ndb.IntegerProperty()
 
   @classmethod
   def get_comments(cls, feature_id, field_id):
@@ -1174,19 +1201,20 @@ class Comment(DictModel):
 class UserPref(DictModel):
   """Describes a user's application preferences."""
 
-  email = db.EmailProperty(required=True)
+  # email = db.EmailProperty(required=True)
+  email = ndb.StringProperty(required=True)
 
   # True means that user should be sent a notification email after each change
   # to each feature that the user starred.
-  notify_as_starrer = db.BooleanProperty(default=True)
+  notify_as_starrer = ndb.BooleanProperty(default=True)
 
   # True means that we sent an email message to this user in the past
   # and it bounced.  We will not send to that address again.
-  bounced = db.BooleanProperty(default=False)
+  bounced = ndb.BooleanProperty(default=False)
 
   # A list of strings identifying on-page help cue cards that the user
   # has dismissed (clicked "X" or "GOT IT").
-  dismissed_cues = db.StringListProperty()
+  dismissed_cues = ndb.StringProperty(repeated=True)
 
   @classmethod
   def get_signed_in_user_pref(cls):
@@ -1249,10 +1277,11 @@ class AppUser(DictModel):
   """Describes a user for permission checking."""
 
   #user = db.UserProperty(required=True, verbose_name='Google Account')
-  email = db.EmailProperty(required=True)
-  is_admin = db.BooleanProperty(default=False)
-  created = db.DateTimeProperty(auto_now_add=True)
-  updated = db.DateTimeProperty(auto_now=True)
+  # email = db.EmailProperty(required=True)
+  email = ndb.StringProperty(required=True)
+  is_admin = ndb.BooleanProperty(default=False)
+  created = ndb.DateTimeProperty(auto_now_add=True)
+  updated = ndb.DateTimeProperty(auto_now=True)
 
   def put(self, **kwargs):
     """when we update an AppUser, also invalidate ramcache."""
@@ -1290,14 +1319,15 @@ def list_without_component(l, component):
 
 class FeatureOwner(DictModel):
   """Describes subscribers of a web platform feature."""
-  created = db.DateTimeProperty(auto_now_add=True)
-  updated = db.DateTimeProperty(auto_now=True)
-  name = db.StringProperty(required=True)
-  email = db.EmailProperty(required=True)
-  twitter = db.StringProperty()
-  blink_components = db.ListProperty(db.Key)
-  primary_blink_components = db.ListProperty(db.Key)
-  watching_all_features = db.BooleanProperty(default=False)
+  created = ndb.DateTimeProperty(auto_now_add=True)
+  updated = ndb.DateTimeProperty(auto_now=True)
+  name = ndb.StringProperty(required=True)
+  # email = db.EmailProperty(required=True)
+  email = ndb.StringProperty(required=True)
+  twitter = ndb.StringProperty()
+  blink_components = ndb.KeyProperty(repeated=True)
+  primary_blink_components = ndb.KeyProperty(repeated=True)
+  watching_all_features = ndb.BooleanProperty(default=False)
 
   # def __eq__(self, other):
   #   return self.key().id() == other.key().id()
@@ -1341,11 +1371,11 @@ class FeatureOwner(DictModel):
     return self.remove_from_component_subscribers(component_name, remove_as_owner=True)
 
 
-class HistogramModel(db.Model):
+class HistogramModel(ndb.Model):
   """Container for a histogram."""
 
-  bucket_id = db.IntegerProperty(required=True)
-  property_name = db.StringProperty(required=True)
+  bucket_id = ndb.IntegerProperty(required=True)
+  property_name = ndb.StringProperty(required=True)
 
   @classmethod
   def get_all(self):

@@ -27,6 +27,7 @@ import werkzeug.exceptions
 
 from google.appengine.api import users as gae_users
 from google.appengine.ext import db
+from google.cloud import ndb
 
 import settings
 from framework import csp
@@ -438,10 +439,22 @@ class ConstHandler(FlaskHandler):
     return flask.jsonify(defaults)
 
 
+def ndb_wsgi_middleware(wsgi_app):
+  """Create a new runtime context for cloud ndb for every request"""
+  client = ndb.Client()
+  
+  def middleware(environ, start_response):
+    with client.context():
+      return wsgi_app(environ, start_response)
+
+  return middleware
+
+
 def FlaskApplication(routes, pattern_base='', debug=False):
   """Make a Flask app and add routes and handlers that work like webapp2."""
-
+  
   app = flask.Flask(__name__)
+  app.wsgi_app = ndb_wsgi_middleware(app.wsgi_app)
   app.secret_key = secrets.get_session_secret()  # For flask.session
 
   for i, rule in enumerate(routes):
