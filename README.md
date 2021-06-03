@@ -12,9 +12,9 @@ Chrome Platform Status
 ### Installation
 
 1. Install global CLIs
-    1. [Google App Engine SDK for Python](https://developers.google.com/appengine/downloads#Google_App_Engine_SDK_for_Python).
+    1. [Google App Engine SDK for Python](https://cloud.google.com/appengine/docs/standard/python/setting-up-environment). Make sure to select Python 2.7.
     1. pip, node, npm.
-    1. Gulp `npm install -g gulp`
+    1. Gulp `npm install --global gulp-cli`
 1. Install npm dependencies `npm ci`
 1. Install other dependencies `npm run deps` and `npm run dev-deps`
 
