@@ -232,13 +232,11 @@ class APIHandler(BaseHandler):
       except werkzeug.exceptions.BadRequest:
         pass  # Raised when the request has no body.
     if not token:
-      # TODO(jrobbins): start enforcing in next release
-      logging.info("would do self.abort(400, msg='Missing XSRF token')")
+      self.abort(400, msg='Missing XSRF token')
     try:
       self.validate_token(token, user.email())
     except xsrf.TokenIncorrect:
-      # TODO(jrobbins): start enforcing in next release
-      logging.info("would do self.abort(400, msg='Invalid XSRF token')")
+      self.abort(400, msg='Invalid XSRF token')
 
 
 class FlaskHandler(BaseHandler):
@@ -366,16 +364,16 @@ class FlaskHandler(BaseHandler):
     """Every UI form submission must have a XSRF token."""
     if settings.UNIT_TEST_MODE or self.IS_INTERNAL_HANDLER:
       return
-    token = self.form.get('token')
+    token = self.request.headers.get('X-Xsrf-Token')
     if not token:
-      # TODO(jrobbins): start enforcing in next release
-      logging.info("would do self.abort(400, msg='Missing XSRF token')")
+      token = self.form.get('token')
+    if not token:
+      self.abort(400, msg='Missing XSRF token')
     user = self.get_current_user(required=True)
     try:
       xsrf.validate_token(token, user.email())
     except xsrf.TokenIncorrect:
-      # TODO(jrobbins): start enforcing in next release
-      logging.info("would do self.abort(400, msg='Invalid XSRF token')")
+      self.abort(400, msg='Invalid XSRF token')
 
   def require_task_header(self):
     """Abort if this is not a Google Cloud Tasks request."""

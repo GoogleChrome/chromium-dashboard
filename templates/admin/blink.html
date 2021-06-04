@@ -160,7 +160,14 @@ document.querySelector('#components_list').addEventListener('click', function(e)
   fetch('/admin/blink', {
     method: removeUser ? 'PUT' : 'POST',
     credentials: 'include',
-    body: JSON.stringify({userId, componentName, primary: toggleAsOwner})
+    headers: {
+        'X-Xsrf-Token': window.csClient.token,
+    },
+    body: JSON.stringify({
+        userId,
+        componentName,
+        primary: toggleAsOwner
+    })
   })
   .then(resp => resp.json())
   .then(json => {
