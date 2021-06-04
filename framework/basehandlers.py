@@ -455,7 +455,10 @@ def FlaskApplication(routes, pattern_base='', debug=False):
   
   app = flask.Flask(__name__)
   app.wsgi_app = ndb_wsgi_middleware(app.wsgi_app)
-  app.secret_key = secrets.get_session_secret()  # For flask.session
+  
+  client = ndb.Client()
+  with client.context():
+    app.secret_key = secrets.get_session_secret()  # For flask.session
 
   for i, rule in enumerate(routes):
     pattern = rule[0]

@@ -49,8 +49,8 @@ class Secrets(ndb.Model):
   def _get_or_make_singleton(cls):
     needs_save = False
     singleton = None
-    with client.context():
-      existing = Secrets.query().fetch(1)
+    existing = Secrets.query().fetch(1)
+
     if existing:
       singleton = existing[0]
 

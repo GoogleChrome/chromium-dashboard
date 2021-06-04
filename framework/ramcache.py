@@ -50,7 +50,9 @@ whenever a cached value would become invalid, it must be invalidated.
 import logging
 import time as time_module
 from google.appengine.ext import db
+from google.cloud import ndb
 
+client = ndb.Client()
 
 global_cache = {}
 expires = {}
@@ -146,29 +148,33 @@ def flush_all():
   SharedInvalidate.invalidate()
 
 
-class SharedInvalidateParent(db.Model):
+class SharedInvalidateParent(ndb.Model):
   pass
 
 
-class SharedInvalidate(db.Model):
+class SharedInvalidate(ndb.Model):
 
   PARENT_ENTITY_ID = 1234
-  PARENT_KEY = db.Key.from_path('SharedInvalidateParent', PARENT_ENTITY_ID)
+  with client.context():
+    PARENT_KEY = ndb.Key('SharedInvalidateParent', PARENT_ENTITY_ID)
   SINGLETON_ENTITY_ID = 5678
-  SINGLETON_KEY = db.Key.from_path(
-      'SharedInvalidateParent', PARENT_ENTITY_ID,
-      'SharedInvalidate', SINGLETON_ENTITY_ID)
+  with client.context():
+    SINGLETON_KEY = ndb.Key(
+        'SharedInvalidateParent', PARENT_ENTITY_ID,
+        'SharedInvalidate', SINGLETON_ENTITY_ID)
   last_processed_timestamp = None
 
-  updated = db.DateTimeProperty(auto_now=True)
+  updated = ndb.DateTimeProperty(auto_now=True)
 
   @classmethod
   def invalidate(cls):
     """Tell this and other appengine instances to invalidate their caches."""
-    singleton = cls.get(cls.SINGLETON_KEY)
+    with client.context():
+      singleton = cls.SINGLETON_KEY.get()
     if not singleton:
       singleton = SharedInvalidate(key=cls.SINGLETON_KEY)
-    singleton.put()  # automatically sets singleton.updated to now.
+    with client.context():
+      singleton.put()  # automatically sets singleton.updated to now.
     # The cache in each instance (including this one) will be
     # cleared on the next call to check_for_distributed_invalidation()
     # which should happen at the start of request processing.
@@ -176,7 +182,7 @@ class SharedInvalidate(db.Model):
   @classmethod
   def check_for_distributed_invalidation(cls):
     """Check if any appengine instance has invlidated the cache."""
-    singleton = cls.get(cls.SINGLETON_KEY, read_policy=db.STRONG_CONSISTENCY)
+    singleton = cls.SINGLETON_KEY.get()
     if not singleton:
       return  # No news is good news
     if (cls.last_processed_timestamp is None or
