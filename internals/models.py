@@ -993,18 +993,18 @@ class Feature(DictModel):
   star_count = ndb.IntegerProperty(default=0)
   search_tags = ndb.StringProperty(repeated=True)
   comments = ndb.StringProperty()
-  # owner = ndb.ListProperty(ndb.Email)
+  # owner = db.ListProperty(db.Email)
   owner = ndb.StringProperty(repeated=True)
   footprint = ndb.IntegerProperty()  # Deprecated
 
   # Tracability to intent discussion threads
-  # intent_to_implement_url = ndb.LinkProperty()
+  # intent_to_implement_url = db.LinkProperty()
   intent_to_implement_url = ndb.StringProperty()
-  # intent_to_ship_url = ndb.LinkProperty()
-  # ready_for_trial_url = ndb.LinkProperty()
-  # intent_to_experiment_url = ndb.LinkProperty()
-  # i2e_lgtms = ndb.ListProperty(ndb.Email)  # Currently, only one is needed.
-  # i2s_lgtms = ndb.ListProperty(ndb.Email)
+  # intent_to_ship_url = db.LinkProperty()
+  # ready_for_trial_url = db.LinkProperty()
+  # intent_to_experiment_url = db.LinkProperty()
+  # i2e_lgtms = db.ListProperty(db.Email)  # Currently, only one is needed.
+  # i2s_lgtms = db.ListProperty(db.Email)
   intent_to_ship_url = ndb.StringProperty()
   ready_for_trial_url = ndb.StringProperty()
   intent_to_experiment_url = ndb.StringProperty()
@@ -1012,15 +1012,15 @@ class Feature(DictModel):
   i2s_lgtms = ndb.StringProperty(repeated=True)
 
   # Chromium details.
-  # bug_url = ndb.LinkProperty()
-  # launch_bug_url = ndb.LinkProperty()
-  # initial_public_proposal_url = ndb.LinkProperty()
+  # bug_url = db.LinkProperty()
+  # launch_bug_url = db.LinkProperty()
+  # initial_public_proposal_url = db.LinkProperty()
   bug_url = ndb.StringProperty()
   launch_bug_url = ndb.StringProperty()
   initial_public_proposal_url = ndb.StringProperty()
-  # blink_components = ndb.StringListProperty(required=True, default=[BlinkComponent.DEFAULT_COMPONENT])
+  # blink_components = db.StringListProperty(required=True, default=[BlinkComponent.DEFAULT_COMPONENT])
   blink_components = ndb.StringProperty(repeated=True)
-  # devrel = ndb.ListProperty(db.Email)
+  # devrel = db.ListProperty(db.Email)
   devrel = ndb.StringProperty(repeated=True)
 
   impl_status_chrome = ndb.IntegerProperty(required=True)
