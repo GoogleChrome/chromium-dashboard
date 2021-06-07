@@ -3,7 +3,7 @@ from __future__ import print_function
 
 import datetime
 
-from google.appengine.ext import db
+from google.appengine.ext import ndb
 # from google.appengine.api import users
 from framework import users
 
@@ -11,7 +11,7 @@ def email_to_list():
   def wrapper(value):
     if value == '' or value is None or value == []:
       return None
-    return [db.Email(x.strip()) for x in value.split(',')]
+    return [str(x.strip()) for x in value.split(',')]
 
   return wrapper
 
