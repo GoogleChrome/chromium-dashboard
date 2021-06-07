@@ -18,7 +18,7 @@ from __future__ import print_function
 
 import logging
 
-from google.appengine.ext import db
+from google.appengine.ext import ndb
 
 from framework import basehandlers
 from framework import permissions
@@ -42,9 +42,9 @@ class AccountsAPI(basehandlers.APIHandler):
   def create_account(self, email, is_admin):
     """Create and store a new account entity."""
     # Don't add a duplicate email address.
-    user = models.AppUser.all(keys_only=True).filter('email = ', email).get()
+    user = models.AppUser.query(keys_only=True).filter(AppUser.email == email).get()
     if not user:
-      user = models.AppUser(email=db.Email(email))
+      user = models.AppUser(email=str(email))
       user.is_admin = is_admin
       user.put()
       return user
@@ -67,7 +67,7 @@ class AccountsAPI(basehandlers.APIHandler):
     if account_id:
       found_user = models.AppUser.get_by_id(long(account_id))
       if found_user:
-        found_user.delete()
+        found_user.key.delete()
         ramcache.flush_all()
       else:
         self.abort(404, msg='Specified account ID not found')
