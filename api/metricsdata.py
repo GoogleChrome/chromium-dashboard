@@ -72,14 +72,14 @@ class TimelineHandler(basehandlers.FlaskHandler):
   JSONIFY = True
 
   def make_query(self, bucket_id):
-    query = self.MODEL_CLASS.all()
-    query.filter('bucket_id =', bucket_id)
+    query = self.MODEL_CLASS.query()
+    query.filter(self.MODEL_CLASS.bucket_id == bucket_id)
     # The switch to new UMA data changed the semantics of the CSS animated
     # properties. Since showing the historical data alongside the new data
     # does not make sense, filter out everything before the 2017-10-26 switch.
     # See https://github.com/GoogleChrome/chromium-dashboard/issues/414
     if self.MODEL_CLASS == models.AnimatedProperty:
-      query.filter('date >=', datetime.datetime(2017, 10, 26))
+      query.filter(self.MODEL_CLASS.date >= datetime.datetime(2017, 10, 26))
     return query
 
   def get_template_data(self):
@@ -144,7 +144,7 @@ class FeatureHandler(basehandlers.FlaskHandler):
     # First, grab a bunch of recent datapoints in a batch.
     # That operation is fast and makes most of the iterations
     # of the main loop become in-RAM operations.
-    batch_datapoints_query = self.MODEL_CLASS.all()
+    batch_datapoints_query = self.MODEL_CLASS.query()
     batch_datapoints_query.order('-date')
     batch_datapoints_list = batch_datapoints_query.fetch(5000)
     logging.info('batch query found %r recent datapoints',
@@ -157,12 +157,12 @@ class FeatureHandler(basehandlers.FlaskHandler):
                  len(batch_datapoints_dict))
 
     # For every css property, fetch latest day_percentage.
-    buckets = self.PROPERTY_CLASS.all().fetch(None)
+    buckets = self.PROPERTY_CLASS.query().fetch(None)
     for b in buckets:
       if b.bucket_id in batch_datapoints_dict:
         datapoints.append(batch_datapoints_dict[b.bucket_id])
       else:
-        query = self.MODEL_CLASS.all()
+        query = self.MODEL_CLASS.query()
         query.filter('bucket_id =', b.bucket_id)
         query.order('-date')
         last_result = query.get()
