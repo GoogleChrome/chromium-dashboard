@@ -34,7 +34,7 @@ def CorrectFeaturePropertyName(bucket_id):
 
 
 def FetchAllCSSPropertiesWithError(bucket_id=None):
-  q = models.StableInstance.all()
+  q = models.StableInstance.query()
   if bucket_id:
     q.filter('bucket_id =', bucket_id)
   q.filter('property_name =', 'ERROR')
@@ -47,7 +47,7 @@ def FetchAllCSSPropertiesWithError(bucket_id=None):
   return props
 
 def FetchAllFeaturesWithError(bucket_id=None):
-  q = models.FeatureObserver.all()
+  q = models.FeatureObserver.query()
   if bucket_id:
     q.filter('bucket_id =', bucket_id)
   q.filter('property_name =', 'ERROR')
