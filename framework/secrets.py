@@ -23,7 +23,7 @@ import random
 import string
 import time
 
-from google.appengine.ext import db
+from google.appengine.ext import ndb
 
 
 # For random key generation
@@ -37,17 +37,17 @@ def make_random_key(length=RANDOM_KEY_LENGTH, chars=RANDOM_KEY_CHARACTERS):
   return ''.join(chars)
 
 
-class Secrets(db.Model):
+class Secrets(ndb.Model):
   """A server-side-only value that we use to generate security tokens."""
 
-  xsrf_secret = db.StringProperty()
-  session_secret = db.StringProperty()
+  xsrf_secret = ndb.StringProperty()
+  session_secret = ndb.StringProperty()
 
   @classmethod
   def _get_or_make_singleton(cls):
     needs_save = False
     singleton = None
-    existing = Secrets.all().fetch(1)
+    existing = Secrets.query().fetch(1)
     if existing:
       singleton = existing[0]
 
