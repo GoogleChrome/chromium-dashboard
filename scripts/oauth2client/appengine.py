@@ -31,7 +31,7 @@ from google.appengine.api import app_identity
 from google.appengine.api import memcache
 # from google.appengine.api import users
 from framework import users
-from google.appengine.ext import db
+from google.appengine.ext import ndb
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp.util import login_required
 from google.appengine.ext.webapp.util import run_wsgi_app
@@ -51,10 +51,10 @@ from oauth2client.client import Storage
 
 # TODO(dhermes): Resolve import issue.
 # This is a temporary fix for a Google internal issue.
-try:
-  from google.appengine.ext import ndb
-except ImportError:
-  ndb = None
+# try:
+#   from google.appengine.ext import ndb
+# except ImportError:
+#   ndb = None
 
 
 logger = logging.getLogger(__name__)
@@ -84,7 +84,7 @@ class InvalidXsrfTokenError(Exception):
   """The XSRF token is invalid or expired."""
 
 
-class SiteXsrfSecretKey(db.Model):
+class SiteXsrfSecretKey(ndb.Model):
   """Storage for the sites XSRF secret key.
 
   There will only be one instance stored of this model, the one used for the
@@ -92,7 +92,7 @@ class SiteXsrfSecretKey(db.Model):
   """
   secret = db.StringProperty()
 
-if ndb is not None:
+if ndb is None:
   class SiteXsrfSecretKeyNDB(ndb.Model):
     """NDB Model for storage for the sites XSRF secret key.
 
@@ -192,7 +192,7 @@ class AppAssertionCredentials(AssertionCredentials):
     self.access_token = token
 
 
-class FlowProperty(db.Property):
+class FlowProperty(ndb.Property):
   """App Engine datastore Property for Flow.
 
   Utility property that allows easy storage and retrieval of an
@@ -205,7 +205,7 @@ class FlowProperty(db.Property):
   def get_value_for_datastore(self, model_instance):
     flow = super(FlowProperty,
                  self).get_value_for_datastore(model_instance)
-    return db.Blob(pickle.dumps(flow))
+    return ndb.Blob(pickle.dumps(flow))
 
   # For reading from datastore.
   def make_value_from_datastore(self, value):
@@ -215,7 +215,7 @@ class FlowProperty(db.Property):
 
   def validate(self, value):
     if value is not None and not isinstance(value, Flow):
-      raise db.BadValueError('Property %s must be convertible '
+      raise ndb.BadValueError('Property %s must be convertible '
                           'to a FlowThreeLegged instance (%s)' %
                           (self.name, value))
     return super(FlowProperty, self).validate(value)
@@ -224,7 +224,7 @@ class FlowProperty(db.Property):
     return not value
 
 
-if ndb is not None:
+if ndb is None:
   class FlowNDBProperty(ndb.PickleProperty):
     """App Engine NDB datastore Property for Flow.
 
@@ -251,7 +251,7 @@ if ndb is not None:
                         'instance; received: %s.' % (self._name, value))
 
 
-class CredentialsProperty(db.Property):
+class CredentialsProperty(ndb.Property):
   """App Engine datastore Property for Credentials.
 
   Utility property that allows easy storage and retrieval of
@@ -270,7 +270,7 @@ class CredentialsProperty(db.Property):
       cred = ''
     else:
       cred = cred.to_json()
-    return db.Blob(cred)
+    return ndb.Blob(cred)
 
   # For reading from datastore.
   def make_value_from_datastore(self, value):
@@ -297,7 +297,7 @@ class CredentialsProperty(db.Property):
     return value
 
 
-if ndb is not None:
+if ndb is None:
   # TODO(dhermes): Turn this into a JsonProperty and overhaul the Credentials
   #                and subclass mechanics to use new_from_dict, to_dict,
   #                from_dict, etc.
@@ -470,7 +470,7 @@ class StorageByKeyName(Storage):
     self._delete_entity()
 
 
-class CredentialsModel(db.Model):
+class CredentialsModel(ndb.Model):
   """Storage for OAuth 2.0 Credentials
 
   Storage of the model is keyed by the user.user_id().
@@ -478,7 +478,7 @@ class CredentialsModel(db.Model):
   credentials = CredentialsProperty()
 
 
-if ndb is not None:
+if ndb is None:
   class CredentialsNDBModel(ndb.Model):
     """NDB Model for storage of OAuth 2.0 Credentials
 
