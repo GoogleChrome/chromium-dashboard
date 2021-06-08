@@ -90,8 +90,8 @@ class BlinkHandler(basehandlers.FlaskHandler):
 
   @permissions.require_admin_site
   def get_template_data(self):
-    components = models.BlinkComponent.all().order('name').fetch(None)
-    subscribers = models.FeatureOwner.all().order('name').fetch(None)
+    components = models.BlinkComponent.query().order(models.BlinkComponent.name).fetch(None)
+    subscribers = models.FeatureOwner.query().order(models.BlinkComponent.name).fetch(None)
 
     # Format for django template
     subscribers = [x.format_for_template() for x in subscribers]
@@ -135,7 +135,7 @@ class SubscribersHandler(basehandlers.FlaskHandler):
 
   @permissions.require_admin_site
   def get_template_data(self):
-    users = models.FeatureOwner.all().order('name').fetch(None)
+    users = models.FeatureOwner.query().order(models.FeatureOwner.name).fetch(None)
     feature_list = models.Feature.get_chronological()
 
     milestone = self.request.args.get('milestone') or None
