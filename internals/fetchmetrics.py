@@ -73,7 +73,7 @@ class UmaQuery(object):
     self.property_map_class = property_map_class
 
   def _HasCapstone(self, date):
-    query = self.model_class.all()
+    query = self.model_class.query()
     query.filter('bucket_id = ', CAPSTONE_BUCKET_ID)
     query.filter('date =', date)
     if query.count() > 0:
@@ -115,7 +115,7 @@ class UmaQuery(object):
   def _SaveData(self, data, date):
     property_map = self.property_map_class.get_all()
 
-    date_query = self.model_class.all()
+    date_query = self.model_class.query()
     date_query.filter('date =', date)
     existing_saved_data = date_query.fetch(None)
     existing_saved_bucket_ids = set()
