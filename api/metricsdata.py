@@ -95,7 +95,7 @@ class TimelineHandler(basehandlers.FlaskHandler):
 
     if not datapoints:
       query = self.make_query(bucket_id)
-      query.order('date')
+      query.order(self.MODEL_CLASS.date)
       datapoints = query.fetch(None) # All matching results.
 
       # Remove outliers if percentage is not between 0-1.
@@ -145,7 +145,7 @@ class FeatureHandler(basehandlers.FlaskHandler):
     # That operation is fast and makes most of the iterations
     # of the main loop become in-RAM operations.
     batch_datapoints_query = self.MODEL_CLASS.query()
-    batch_datapoints_query.order('-date')
+    batch_datapoints_query.order(-self.MODEL_CLASS.date)
     batch_datapoints_list = batch_datapoints_query.fetch(5000)
     logging.info('batch query found %r recent datapoints',
                  len(batch_datapoints_list))
@@ -164,7 +164,7 @@ class FeatureHandler(basehandlers.FlaskHandler):
       else:
         query = self.MODEL_CLASS.query()
         query.filter('bucket_id =', b.bucket_id)
-        query.order('-date')
+        query.order(-self.MODEL_CLASS.date)
         last_result = query.get()
         if last_result:
           datapoints.append(last_result)
