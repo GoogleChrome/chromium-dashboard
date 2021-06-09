@@ -954,7 +954,7 @@ class Feature(DictModel):
     # Diff values to see what properties have changed.
     changed_props = []
     for prop_name, prop in self._properties.iteritems():
-      if prop_name in ('created_by', 'updated_by'):
+      if prop_name in ('created_by', 'updated_by', 'updated', 'created'):
         continue
       new_val = getattr(self, prop_name, None)
       old_val = getattr(self, '_old_' + prop_name, None)
