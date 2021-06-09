@@ -46,7 +46,7 @@ class FeatureDetailHandler(basehandlers.FlaskHandler):
         'process_json': json.dumps(processes.process_to_dict(feature_process)),
         'field_defs_json': json.dumps(field_defs),
         'feature': f.format_for_template(),
-        'feature_id': f.key().id(),
+        'feature_id': f.key.integer_id(),
         'feature_json': json.dumps(f.format_for_template()),
         'updated_display': f.updated.strftime("%Y-%m-%d"),
         'new_crbug_url': f.new_crbug_url(),

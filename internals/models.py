@@ -341,7 +341,7 @@ class DictModel(ndb.Model):
   def format_for_template(self, add_id=True):
     d = self.to_dict()
     if add_id:
-      d['id'] = self.key.id()
+      d['id'] = self.key.integer_id()
     return d
 
   def to_dict(self):
@@ -577,7 +577,7 @@ class Feature(DictModel):
 
     if version == 2:
       if self.is_saved():
-        d['id'] = self.key.id()
+        d['id'] = self.key.integer_id()
       else:
         d['id'] = None
       d['category'] = FEATURE_CATEGORIES[self.category]
@@ -678,7 +678,7 @@ class Feature(DictModel):
 
     else:
       if self.is_saved():
-        d['id'] = self.key.id()
+        d['id'] = self.key.integer_id()
       else:
         d['id'] = None
       d['category'] = FEATURE_CATEGORIES[self.category]
@@ -981,7 +981,7 @@ class Feature(DictModel):
       self.__notify_feature_subscribers_of_changes(is_update)
 
     # Invalidate ramcache for the individual feature view.
-    cache_key = '%s|%s' % (Feature.DEFAULT_CACHE_KEY, self.key.id())
+    cache_key = '%s|%s' % (Feature.DEFAULT_CACHE_KEY, self.key.integer_id())
     ramcache.delete(cache_key)
 
     return key
@@ -1324,10 +1324,10 @@ class AppUser(DictModel):
 
 
 def list_with_component(l, component):
-  return [x for x in l if x.id() == component.key.id()]
+  return [x for x in l if x.id() == component.key.integer_id()]
 
 def list_without_component(l, component):
-  return [x for x in l if x.id() != component.key.id()]
+  return [x for x in l if x.id() != component.key.integer_id()]
 
 
 class FeatureOwner(DictModel):

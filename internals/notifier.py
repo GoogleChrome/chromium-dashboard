@@ -68,7 +68,7 @@ def format_email_body(is_update, feature, changes):
 
   body_data = {
       'feature': feature,
-      'id': feature.key().id(),
+      'id': feature.key.integer_id(),
       'milestone': milestone_str,
       'status': models.IMPLEMENTATION_STATUS[feature.impl_status_chrome],
       'formatted_changes': formatted_changes,
@@ -161,7 +161,7 @@ def make_email_tasks(feature, is_update=False, changes=[]):
         addr_reasons, component.subscribers,
         'You subscribe to this feature\'s component')
 
-  starrers = FeatureStar.get_feature_starrers(feature.key().id())
+  starrers = FeatureStar.get_feature_starrers(feature.key.integer_id())
   accumulate_reasons(addr_reasons, starrers, 'You starred this feature')
 
   rule_results = apply_subscription_rules(feature, changes)

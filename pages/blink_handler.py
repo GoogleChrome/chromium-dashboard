@@ -40,7 +40,7 @@ class PopulateSubscribersHandler(basehandlers.FlaskHandler):
     f = file('%s/data/devrel_team.yaml' % settings.ROOT_DIR, 'r')
     for profile in yaml.load_all(f):
       blink_components = profile.get('blink_components', [])
-      blink_components = [models.BlinkComponent.get_by_name(name).key() for name in blink_components]
+      blink_components = [models.BlinkComponent.get_by_name(name).key for name in blink_components]
       blink_components = filter(None, blink_components) # Filter out None values
 
       user = models.FeatureOwner(
