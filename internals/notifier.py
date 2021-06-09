@@ -175,7 +175,7 @@ def make_email_tasks(feature, is_update=False, changes=[]):
 
 class FeatureStar(models.DictModel):
   """A FeatureStar represent one user's interest in one feature."""
-  email = ndb.EmailProperty(required=True)
+  email = ndb.StringProperty(required=True)
   feature_id = ndb.IntegerProperty(required=True)
   # This is so that we do not sync a bell to a star that the user has removed.
   starred = ndb.BooleanProperty(default=True)

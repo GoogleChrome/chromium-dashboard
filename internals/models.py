@@ -335,7 +335,7 @@ class DictModel(ndb.Model):
   def _post_put_hook(self, future):
     self.saved = True
 
-  def is_saved():
+  def is_saved(self):
     return self.saved
 
   def format_for_template(self, add_id=True):
@@ -815,7 +815,7 @@ class Feature(DictModel):
       q = Feature.query()
       q.order(Feature.impl_status_chrome)
       q.order(Feature.name)
-      q.filter(Feature.impl_status_chrome in (PROPOSED, IN_DEVELOPMENT))
+      q.filter(Feature.impl_status_chrome.IN((PROPOSED, IN_DEVELOPMENT)))
       pre_release = q.fetch(None)
 
       # Shipping features. Exclude features that do not have a desktop
@@ -828,7 +828,7 @@ class Feature(DictModel):
 
       # Features with an android shipping milestone but no desktop milestone.
       q = Feature.query()
-      q.order(Feature.-shipped_android_milestone)
+      q.order(-Feature.shipped_android_milestone)
       q.order(Feature.name)
       q.filter(Feature.shipped_milestone == None)
       android_only_shipping_features = q.fetch(None)
