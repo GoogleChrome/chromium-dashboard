@@ -752,7 +752,7 @@ class Feature(DictModel):
 
       # TODO(ericbidelman): Support more than one filter.
       if filterby:
-        query.filter(Feature.filterby[0] == filterby[1])
+        query.filter(Feature.category == category)
 
       features = query.fetch(limit)
 
