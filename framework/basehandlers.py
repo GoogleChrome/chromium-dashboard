@@ -448,9 +448,10 @@ def FlaskApplication(routes, pattern_base='', debug=False):
         view_func=handler_class.as_view(classname),
         defaults=defaults)
 
-  # Note: debug parameter is not used because the following accomplishes
-  # what we need it to do.
-  app.config["TRAP_BAD_REQUEST_ERRORS"] = True  # Needed to log execptions
+  # The following causes flask to print a stack trace and return 500
+  # when we are running locally and a handler raises a BadRequest exception.
+  # In production, it will return a status 400.
+  app.config["TRAP_BAD_REQUEST_ERRORS"] = settings.DEV_MODE
   # Flask apps also have a debug setting that can be used to auto-reload
   # template source code, but we use django for that.
 
