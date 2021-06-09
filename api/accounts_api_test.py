@@ -31,6 +31,9 @@ from internals import models
 class AccountsAPITest(unittest.TestCase):
 
   def setUp(self):
+    self.app_admin = models.AppUser(email='admin@example.com')
+    self.app_admin.is_admin = True
+    self.app_admin.put()
     self.appuser_1 = models.AppUser(email='user@example.com')
     self.appuser_1.put()
     self.appuser_id = self.appuser_1.key().id()
@@ -39,11 +42,12 @@ class AccountsAPITest(unittest.TestCase):
     self.handler = accounts_api.AccountsAPI()
 
   def tearDown(self):
+    self.app_admin.delete()
     self.appuser_1.delete()
 
   def test_create__normal_valid(self):
     """Admin wants to register a normal account."""
-    testing_config.sign_in('admin@example.com', 123567890, is_admin=True)
+    testing_config.sign_in('admin@example.com', 123567890)
 
     json_data = {'email': 'new@example.com', 'isAdmin': False}
     with register.app.test_request_context(self.request_path, json=json_data):
@@ -58,7 +62,7 @@ class AccountsAPITest(unittest.TestCase):
 
   def test_create__admin_valid(self):
     """Admin wants to register a new admin account."""
-    testing_config.sign_in('admin@example.com', 123567890, is_admin=True)
+    testing_config.sign_in('admin@example.com', 123567890)
 
     json_data = {'email': 'new_admin@example.com', 'isAdmin': True}
     with register.app.test_request_context(self.request_path, json=json_data):
@@ -85,7 +89,7 @@ class AccountsAPITest(unittest.TestCase):
 
   def test_create__invalid(self):
     """We cannot create an account without an email address."""
-    testing_config.sign_in('admin@example.com', 123567890, is_admin=True)
+    testing_config.sign_in('admin@example.com', 123567890)
 
     json_data = {'isAdmin': False}  # No email
     with register.app.test_request_context(self.request_path):
@@ -98,7 +102,7 @@ class AccountsAPITest(unittest.TestCase):
 
   def test_create__duplicate(self):
     """We cannot create an account with a duplicate email."""
-    testing_config.sign_in('admin@example.com', 123567890, is_admin=True)
+    testing_config.sign_in('admin@example.com', 123567890)
 
     json_data = {'email': 'user@example.com'}
     with register.app.test_request_context(self.request_path, json=json_data):
@@ -110,7 +114,7 @@ class AccountsAPITest(unittest.TestCase):
 
   def test_delete__valid(self):
     """Admin wants to delete an account."""
-    testing_config.sign_in('admin@example.com', 123567890, is_admin=True)
+    testing_config.sign_in('admin@example.com', 123567890)
 
     with register.app.test_request_context(self.request_path):
       actual_json = self.handler.do_delete(self.appuser_id)
@@ -132,7 +136,7 @@ class AccountsAPITest(unittest.TestCase):
 
   def test_delete__invalid(self):
     """We cannot delete an account without an account_id."""
-    testing_config.sign_in('admin@example.com', 123567890, is_admin=True)
+    testing_config.sign_in('admin@example.com', 123567890)
 
     with register.app.test_request_context(self.request_path):
       with self.assertRaises(werkzeug.exceptions.BadRequest):
@@ -144,7 +148,7 @@ class AccountsAPITest(unittest.TestCase):
 
   def test_delete__not_found(self):
     """We cannot delete an account with the wrong account_id."""
-    testing_config.sign_in('admin@example.com', 123567890, is_admin=True)
+    testing_config.sign_in('admin@example.com', 123567890)
 
     with register.app.test_request_context(self.request_path):
       with self.assertRaises(werkzeug.exceptions.NotFound):

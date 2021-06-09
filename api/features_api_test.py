@@ -40,12 +40,17 @@ class FeaturesAPITest(unittest.TestCase):
     self.request_path = '/api/v0/features/%d' % self.feature_id
     self.handler = features_api.FeaturesAPI()
 
+    self.app_admin = models.AppUser(email='admin@example.com')
+    self.app_admin.is_admin = True
+    self.app_admin.put()
+
   def tearDown(self):
     self.feature_1.delete()
+    self.app_admin.delete()
 
   def test_delete__valid(self):
     """Admin wants to soft-delete a feature."""
-    testing_config.sign_in('admin@example.com', 123567890, is_admin=True)
+    testing_config.sign_in('admin@example.com', 123567890)
 
     with register.app.test_request_context(self.request_path):
       actual_json = self.handler.do_delete(self.feature_id)
@@ -67,7 +72,7 @@ class FeaturesAPITest(unittest.TestCase):
 
   def test_delete__invalid(self):
     """We cannot soft-delete a feature without a feature_id."""
-    testing_config.sign_in('admin@example.com', 123567890, is_admin=True)
+    testing_config.sign_in('admin@example.com', 123567890)
 
     with register.app.test_request_context(self.request_path):
       with self.assertRaises(werkzeug.exceptions.BadRequest):
@@ -78,7 +83,7 @@ class FeaturesAPITest(unittest.TestCase):
 
   def test_delete__not_found(self):
     """We cannot soft-delete a feature with the wrong feature_id."""
-    testing_config.sign_in('admin@example.com', 123567890, is_admin=True)
+    testing_config.sign_in('admin@example.com', 123567890)
 
     with register.app.test_request_context(self.request_path):
       with self.assertRaises(werkzeug.exceptions.NotFound):
