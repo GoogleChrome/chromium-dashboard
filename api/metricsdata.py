@@ -163,7 +163,7 @@ class FeatureHandler(basehandlers.FlaskHandler):
         datapoints.append(batch_datapoints_dict[b.bucket_id])
       else:
         query = self.MODEL_CLASS.query()
-        query.filter('bucket_id =', b.bucket_id)
+        query.filter(self.MODEL_CLASS.bucket_id == b.bucket_id)
         query.order(-self.MODEL_CLASS.date)
         last_result = query.get()
         if last_result:
