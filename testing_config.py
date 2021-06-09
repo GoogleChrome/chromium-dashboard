@@ -53,20 +53,19 @@ def setUpOurTestbed():
   # needed because endpoints expects a . in this value
   ourTestbed.setup_env(current_version_id='testbed.version')
   ourTestbed.activate()
+
   # Can't use init_all_stubs() because PIL isn't in wheel.
   ourTestbed.init_app_identity_stub()
   ourTestbed.init_blobstore_stub()
   ourTestbed.init_capability_stub()
-  ourTestbed.init_channel_stub()
   ourTestbed.init_datastore_v3_stub()
   ourTestbed.init_files_stub()
   ourTestbed.init_logservice_stub()
   ourTestbed.init_mail_stub()
-  ourTestbed.init_modules_stub()
   ourTestbed.init_search_stub()
   ourTestbed.init_urlfetch_stub()
   ourTestbed.init_user_stub()
-  ourTestbed.init_xmpp_stub()
+
 
 # Normally this would be done in the setUp() methods of individual test files,
 # but we need it to be done before importing any application code because
