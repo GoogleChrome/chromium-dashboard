@@ -165,7 +165,10 @@ class SharedInvalidate(db.Model):
   @classmethod
   def invalidate(cls):
     """Tell this and other appengine instances to invalidate their caches."""
-    singleton = cls.get(cls.SINGLETON_KEY)
+    singleton = None
+    entities = cls.all().ancestor(cls.PARENT_KEY).fetch(1)
+    if entities:
+      singleton = entities[0]
     if not singleton:
       singleton = SharedInvalidate(key=cls.SINGLETON_KEY)
     singleton.put()  # automatically sets singleton.updated to now.
