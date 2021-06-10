@@ -323,20 +323,11 @@ def del_none(d):
 class DictModel(ndb.Model):
   # def to_dict(self):
   #   return dict([(p, unicode(getattr(self, p))) for p in self.properties()])
-  saved = False  # class variable provides default value
-
-  @classmethod
-  def _post_get_hook(cls, key, future):
-    obj = future.get_result()
-    if obj is not None:
-      # test needed because post_get_hook is called even if get() fails!
-      obj.saved = True
-
-  def _post_put_hook(self, future):
-    self.saved = True
 
   def is_saved(self):
-    return self.saved
+    if self.key:
+      return True 
+    return False
 
   def format_for_template(self, add_id=True):
     d = self.to_dict()
