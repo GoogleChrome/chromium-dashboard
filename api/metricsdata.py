@@ -73,13 +73,13 @@ class TimelineHandler(basehandlers.FlaskHandler):
 
   def make_query(self, bucket_id):
     query = self.MODEL_CLASS.query()
-    query.filter(self.MODEL_CLASS.bucket_id == bucket_id)
+    query = query.filter(self.MODEL_CLASS.bucket_id == bucket_id)
     # The switch to new UMA data changed the semantics of the CSS animated
     # properties. Since showing the historical data alongside the new data
     # does not make sense, filter out everything before the 2017-10-26 switch.
     # See https://github.com/GoogleChrome/chromium-dashboard/issues/414
     if self.MODEL_CLASS == models.AnimatedProperty:
-      query.filter(self.MODEL_CLASS.date >= datetime.datetime(2017, 10, 26))
+      query = query.filter(self.MODEL_CLASS.date >= datetime.datetime(2017, 10, 26))
     return query
 
   def get_template_data(self):
@@ -163,8 +163,8 @@ class FeatureHandler(basehandlers.FlaskHandler):
         datapoints.append(batch_datapoints_dict[b.bucket_id])
       else:
         query = self.MODEL_CLASS.query()
-        query.filter(self.MODEL_CLASS.bucket_id == b.bucket_id)
-        query.order(-self.MODEL_CLASS.date)
+        query = query.filter(self.MODEL_CLASS.bucket_id == b.bucket_id)
+        query = query.order(-self.MODEL_CLASS.date)
         last_result = query.get()
         if last_result:
           datapoints.append(last_result)

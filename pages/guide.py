@@ -149,6 +149,7 @@ class FeatureNew(basehandlers.FlaskHandler):
         tag_review_status=processes.initial_tag_review_status(feature_type),
         created_by=gae_user,
         updated_by=gae_user)
+    print("Entering the feature", file=sys.stderr)
     key = feature.put()
 
     # TODO(jrobbins): enumerate and remove only the relevant keys.

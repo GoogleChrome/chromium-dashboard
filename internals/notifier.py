@@ -131,8 +131,7 @@ def apply_subscription_rules(feature, changes):
 
 def make_email_tasks(feature, is_update=False, changes=[]):
   """Return a list of task dicts to notify users of feature changes."""
-  feature_watchers = models.FeatureOwner.query().filter(
-      models.FeatureOwner.watching_all_features == True).fetch(None)
+  feature_watchers = models.FeatureOwner.query(models.FeatureOwner.watching_all_features == True).fetch(None)
 
   email_html = format_email_body(is_update, feature, changes)
   if is_update:
@@ -184,8 +183,8 @@ class FeatureStar(models.DictModel):
   def get_star(self, email, feature_id):
     """If that user starred that feature, return the model or None."""
     q = FeatureStar.query()
-    q.filter(FeatureStar.email == email)
-    q.filter(FeatureStar.feature_id == feature_id)
+    q = q.filter(FeatureStar.email == email)
+    q = q.filter(FeatureStar.feature_id == feature_id)
     return q.get()
 
   @classmethod
@@ -212,8 +211,8 @@ class FeatureStar(models.DictModel):
   def get_user_stars(self, email):
     """Return a list of feature_ids of all features that the user starred."""
     q = FeatureStar.query()
-    q.filter(FeatureStar.email == email)
-    q.filter(FeatureStar.starred == True)
+    q = q.filter(FeatureStar.email == email)
+    q = q.filter(FeatureStar.starred == True)
     feature_stars = q.fetch(None)
     logging.info('found %d stars for %r', len(feature_stars), email)
     feature_ids = [fs.feature_id for fs in feature_stars]
@@ -224,8 +223,8 @@ class FeatureStar(models.DictModel):
   def get_feature_starrers(self, feature_id):
     """Return list of UserPref objects for starrers that want notifications."""
     q = FeatureStar.query()
-    q.filter(FeatureStar.feature_id == feature_id)
-    q.filter(FeatureStar.starred == True)
+    q = q.filter(FeatureStar.feature_id == feature_id)
+    q = q.filter(FeatureStar.starred == True)
     feature_stars = q.fetch(None)
     logging.info('found %d stars for %r', len(feature_stars), feature_id)
     emails = [fs.email for fs in feature_stars]

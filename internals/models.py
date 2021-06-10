@@ -383,11 +383,11 @@ class BlinkComponent(DictModel):
 
   @property
   def subscribers(self):
-    return FeatureOwner.query().filter(FeatureOwner.blink_components == self.key).order(FeatureOwner.name).fetch(None)
+    return FeatureOwner.query(FeatureOwner.blink_components == self.key).order(FeatureOwner.name).fetch(None)
 
   @property
   def owners(self):
-    return FeatureOwner.query().filter(FeatureOwner.primary_blink_components == self.key).order(FeatureOwner.name).fetch(None)
+    return FeatureOwner.query(FeatureOwner.primary_blink_components == self.key).order(FeatureOwner.name).fetch(None)
 
   @classmethod
   def fetch_all_components(self, update_cache=False):
@@ -452,7 +452,7 @@ class BlinkComponent(DictModel):
   def get_by_name(self, component_name):
     """Fetch blink component with given name."""
     q = self.query()
-    q.filter(self.name == component_name)
+    q = q.filter(self.name == component_name)
     component = q.fetch(1)
     if not component:
       logging.error('%s is an unknown BlinkComponent.' % (component_name))
@@ -748,11 +748,11 @@ class Feature(DictModel):
 
     if feature_list is None or update_cache:
       query = Feature.query().order(Feature.order) #.order('name')
-      query.filter(Feature.deleted == False)
+      query = query.filter(Feature.deleted == False)
 
       # TODO(ericbidelman): Support more than one filter.
       if filterby:
-        query.filter(Feature.category == category)
+        query = query.filter(Feature.category == category)
 
       features = query.fetch(limit)
 
@@ -813,36 +813,36 @@ class Feature(DictModel):
       logging.info('recompyting chronological feature list')
       # Features that are in-dev or proposed.
       q = Feature.query()
-      q.order(Feature.impl_status_chrome)
-      q.order(Feature.name)
-      q.filter(Feature.impl_status_chrome.IN((PROPOSED, IN_DEVELOPMENT)))
+      q = q.order(Feature.impl_status_chrome)
+      q = q.order(Feature.name)
+      q = q.filter(Feature.impl_status_chrome.IN((PROPOSED, IN_DEVELOPMENT)))
       pre_release = q.fetch(None)
 
       # Shipping features. Exclude features that do not have a desktop
       # shipping milestone.
       q = Feature.query()
-      q.order(-Feature.shipped_milestone)
-      q.order(Feature.name)
-      q.filter(Feature.shipped_milestone != None)
+      q = q.order(-Feature.shipped_milestone)
+      q = q.order(Feature.name)
+      q = q.filter(Feature.shipped_milestone != None)
       shipping_features = q.fetch(None)
 
       # Features with an android shipping milestone but no desktop milestone.
       q = Feature.query()
-      q.order(-Feature.shipped_android_milestone)
-      q.order(Feature.name)
-      q.filter(Feature.shipped_milestone == None)
+      q = q.order(-Feature.shipped_android_milestone)
+      q = q.order(Feature.name)
+      q = q.filter(Feature.shipped_milestone == None)
       android_only_shipping_features = q.fetch(None)
 
       # Features with no active development.
       q = Feature.query()
-      q.order(Feature.name)
-      q.filter(Feature.impl_status_chrome == NO_ACTIVE_DEV)
+      q = q.order(Feature.name)
+      q = q.filter(Feature.impl_status_chrome == NO_ACTIVE_DEV)
       no_active = q.fetch(None)
 
       # No longer pursuing features.
       q = Feature.query()
-      q.order(Feature.name)
-      q.filter(Feature.impl_status_chrome == NO_LONGER_PURSUING)
+      q = q.order(Feature.name)
+      q = q.filter(Feature.impl_status_chrome == NO_LONGER_PURSUING)
       no_longer_pursuing_features = q.fetch(None)
 
       shipping_features.extend(android_only_shipping_features)
@@ -892,19 +892,19 @@ class Feature(DictModel):
     if feature_list is None or update_cache:
       # Get all shipping features. Ordered by shipping milestone (latest first).
       q = Feature.query()
-      q.filter(Feature.impl_status_chrome in [ENABLED_BY_DEFAULT, ORIGIN_TRIAL, INTERVENTION])
-      q.order(-Feature.impl_status_chrome)
-      q.order(-Feature.shipped_milestone)
-      q.order(Feature.name)
+      q = q.filter(Feature.impl_status_chrome in [ENABLED_BY_DEFAULT, ORIGIN_TRIAL, INTERVENTION])
+      q = q.order(-Feature.impl_status_chrome)
+      q = q.order(-Feature.shipped_milestone)
+      q = q.order(Feature.name)
       features = q.fetch(None)
 
       # Get non-shipping features (sans removed or deprecated ones) and
       # append to bottom of list.
       q = Feature.query()
-      q.filter(Feature.impl_status_chrome < ENABLED_BY_DEFAULT)
-      q.order(-Feature.impl_status_chrome)
-      q.order(-Feature.shipped_milestone)
-      q.order(Feature.name)
+      q = q.filter(Feature.impl_status_chrome < ENABLED_BY_DEFAULT)
+      q = q.order(-Feature.impl_status_chrome)
+      q = q.order(-Feature.shipped_milestone)
+      q = q.order(Feature.name)
       others = q.fetch(None)
       features.extend(others)
 
@@ -1149,11 +1149,11 @@ class Approval(DictModel):
   def get_approvals(cls, feature_id, field_id=None, set_by=None):
     """Return the requested approvals."""
     query = Approval.query()
-    query.filter(Approval.feature_id == feature_id)
+    query = query.filter(Approval.feature_id == feature_id)
     if field_id is not None:
-      query.filter(Approval.field_id == field_id)
+      query = query.filter(Approval.field_id == field_id)
     if set_by is not None:
-      query.filter(Approval.set_by == set_by)
+      query = query.filter(Approval.set_by == set_by)
     approvals = query.fetch(None)
     return approvals
 
@@ -1205,8 +1205,8 @@ class Comment(DictModel):
   def get_comments(cls, feature_id, field_id):
     """Return review comments for an approval."""
     query = Comment.query().order(Comment.created)
-    query.filter(Comment.feature_id == feature_id)
-    query.filter(Comment.field_id == field_id)
+    query = query.filter(Comment.feature_id == feature_id)
+    query = query.filter(Comment.field_id == field_id)
     comments = query.fetch(None)
     return comments
 
@@ -1264,7 +1264,7 @@ class UserPref(DictModel):
               for i in range(0, len(emails), CHUNK_SIZE)]
     for chunk_emails in chunks:
       q = UserPref.query()
-      q.filter(UserPref.email in chunk_emails)
+      q = q.filter(UserPref.email in chunk_emails)
       chunk_prefs = q.fetch(None)
       result.extend(chunk_prefs)
       found_set = set(up.email for up in chunk_prefs)
@@ -1317,7 +1317,7 @@ class AppUser(DictModel):
       return cached_app_user
 
     query = cls.query()
-    query.filter(cls.email == email)
+    query = query.filter(cls.email == email)
     found_app_user_or_none = query.get()
     ramcache.set(cache_key, found_app_user_or_none)
     return found_app_user_or_none
