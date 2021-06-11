@@ -38,7 +38,7 @@ class ApprovalsAPITest(unittest.TestCase):
         name='feature one', summary='sum', category=1, visibility=1,
         standardization=1, web_dev_views=1, impl_status_chrome=1)
     self.feature_1.put()
-    self.feature_id = self.feature_1.key().id()
+    self.feature_id = self.feature_1.key.integer_id()
     self.handler = approvals_api.ApprovalsAPI()
     self.request_path = '/api/v0/features/%d/approvals' % self.feature_id
 
@@ -68,9 +68,9 @@ class ApprovalsAPITest(unittest.TestCase):
         }
 
   def tearDown(self):
-    self.feature_1.delete()
-    for appr in models.Approval.all():
-      appr.delete()
+    self.feature_1.key.delete()
+    for appr in models.Approval.query():
+      appr.key.delete()
 
   def test_get__all_empty(self):
     """We can get all approvals for a given feature, even if there none."""

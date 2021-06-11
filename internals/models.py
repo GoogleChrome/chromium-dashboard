@@ -1294,7 +1294,7 @@ class AppUser(DictModel):
 
   def delete(self, **kwargs):
     """when we delete an AppUser, also invalidate ramcache."""
-    key = super(DictModel, self).delete(**kwargs)
+    key = super(DictModel, self).key.delete(**kwargs)
     cache_key = 'user|%s' % self.email
     ramcache.delete(cache_key)
 

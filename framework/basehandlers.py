@@ -391,7 +391,7 @@ class FlaskHandler(BaseHandler):
         x.strip() for x in re.split(delim, input_text)])
 
   def split_emails(self, param_name):
-    """Split one input field and construct db.Email objects."""
+    """Split one input field and construct objects for ndb.StringProperty()."""
     addr_strs = self.split_input(param_name, delim=',')
     emails = [str(addr) for addr in addr_strs]
     return emails

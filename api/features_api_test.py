@@ -35,13 +35,13 @@ class FeaturesAPITest(unittest.TestCase):
         standardization=1, web_dev_views=1, impl_status_chrome=1,
         intent_stage=models.INTENT_IMPLEMENT)
     self.feature_1.put()
-    self.feature_id = self.feature_1.key().id()
+    self.feature_id = self.feature_1.key.integer_id()
 
     self.request_path = '/api/v0/features/%d' % self.feature_id
     self.handler = features_api.FeaturesAPI()
 
   def tearDown(self):
-    self.feature_1.delete()
+    self.feature_1.key.delete()
 
   def test_delete__valid(self):
     """Admin wants to soft-delete a feature."""

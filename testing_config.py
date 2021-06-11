@@ -67,6 +67,7 @@ def setUpOurTestbed():
   ourTestbed.init_urlfetch_stub()
   ourTestbed.init_user_stub()
   ourTestbed.init_xmpp_stub()
+  ourTestbed.init_memcache_stub()
 
 # Normally this would be done in the setUp() methods of individual test files,
 # but we need it to be done before importing any application code because

@@ -37,7 +37,7 @@ class TestWithFeature(unittest.TestCase):
         standardization=1, web_dev_views=1, impl_status_chrome=1,
         intent_stage=models.INTENT_IMPLEMENT)
     self.feature_1.put()
-    self.feature_id = self.feature_1.key().id()
+    self.feature_id = self.feature_1.key.integer_id()
 
     self.request_path = self.REQUEST_PATH_FORMAT % {
         'feature_id': self.feature_id,
@@ -45,7 +45,7 @@ class TestWithFeature(unittest.TestCase):
     self.handler = self.HANDLER_CLASS()
 
   def tearDown(self):
-    self.feature_1.delete()
+    self.feature_1.key.delete()
     ramcache.flush_all()
     ramcache.check_for_distributed_invalidation()
 

@@ -20,7 +20,7 @@ import mock
 import testing_config  # Must be imported before the module under test.
 import unittest
 
-from google.appengine.ext import db
+from google.appengine.ext import ndb
 
 from framework import ramcache
 
@@ -110,9 +110,7 @@ class RAMCacheFunctionTests(unittest.TestCase):
 class SharedInvalidateTests(unittest.TestCase):
 
   def assertTimestampWasUpdated(self, start_time):
-    singleton = ramcache.SharedInvalidate.get(
-        ramcache.SharedInvalidate.SINGLETON_KEY,
-        read_policy=db.STRONG_CONSISTENCY)
+    singleton = ramcache.SharedInvalidate.SINGLETON_KEY.get()
     self.assertTrue(singleton.updated > start_time)
 
   def testInvalidate(self):
@@ -123,7 +121,7 @@ class SharedInvalidateTests(unittest.TestCase):
 
   def testCheckForDistributedInvalidation_Unneeded_NoEntity(self):
     """When the system first launches, no need to clear cache."""
-    db.delete(ramcache.SharedInvalidate.SINGLETON_KEY)
+    ramcache.SharedInvalidate.SINGLETON_KEY.delete()
     ramcache.SharedInvalidate.last_processed_timestamp = None
     ramcache.global_cache = {KEY_7: 777}
     ramcache.SharedInvalidate.check_for_distributed_invalidation()

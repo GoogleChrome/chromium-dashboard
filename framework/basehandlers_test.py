@@ -427,7 +427,7 @@ class FlaskHandlerTests(unittest.TestCase):
     self.handler = TestableFlaskHandler()
 
   def tearDown(self):
-    self.user_1.delete()
+    self.user_1.key.delete()
 
   def test_get_cache_headers__disabled(self):
     """Most handlers return content that should not be cached."""

@@ -91,7 +91,7 @@ class FeatureNewTest(unittest.TestCase):
     self.assertEqual(1, feature.category)
     self.assertEqual('Feature name', feature.name)
     self.assertEqual('Feature summary', feature.summary)
-    feature.delete()
+    feature.key.delete()
 
 
 class ProcessOverviewTest(unittest.TestCase):
@@ -103,11 +103,11 @@ class ProcessOverviewTest(unittest.TestCase):
         impl_status_chrome=1)
     self.feature_1.put()
 
-    self.request_path = '/guide/edit/%d' % self.feature_1.key().id()
+    self.request_path = '/guide/edit/%d' % self.feature_1.key.integer_id()
     self.handler = guide.ProcessOverview()
 
   def tearDown(self):
-    self.feature_1.delete()
+    self.feature_1.key.delete()
 
   def test_detect_progress__no_progress(self):
     """A new feature has earned no progress items."""
@@ -131,7 +131,7 @@ class ProcessOverviewTest(unittest.TestCase):
     testing_config.sign_out()
     with guide.app.test_request_context(self.request_path):
       actual_response = self.handler.get_template_data(
-          self.feature_1.key().id())
+          self.feature_1.key.integer_id())
     self.assertEqual('302 FOUND', actual_response.status)
 
   def test_get__non_allowed(self):
@@ -139,7 +139,7 @@ class ProcessOverviewTest(unittest.TestCase):
     testing_config.sign_in('user1@example.com', 1234567890)
     with guide.app.test_request_context(self.request_path):
       with self.assertRaises(werkzeug.exceptions.Forbidden):
-        self.handler.get_template_data(self.feature_1.key().id())
+        self.handler.get_template_data(self.feature_1.key.integer_id())
 
 
   def test_get__not_found(self):
@@ -155,7 +155,7 @@ class ProcessOverviewTest(unittest.TestCase):
 
     with guide.app.test_request_context(self.request_path):
       template_data = self.handler.get_template_data(
-          self.feature_1.key().id())
+          self.feature_1.key.integer_id())
 
     self.assertTrue('overview_form' in template_data)
     self.assertTrue('process_json' in template_data)
@@ -172,11 +172,11 @@ class FeatureEditStageTest(unittest.TestCase):
     self.stage = models.INTENT_INCUBATE  # Shows first form
 
     self.request_path = ('/guide/stage/%d/%d' % (
-        self.feature_1.key().id(), self.stage))
+        self.feature_1.key.integer_id(), self.stage))
     self.handler = guide.FeatureEditStage()
 
   def tearDown(self):
-    self.feature_1.delete()
+    self.feature_1.key.delete()
 
   def test_touched(self):
     """We can tell if the user meant to edit a field."""
@@ -207,7 +207,7 @@ class FeatureEditStageTest(unittest.TestCase):
     testing_config.sign_out()
     with guide.app.test_request_context(self.request_path):
       actual_response = self.handler.get_template_data(
-          self.feature_1.key().id(), self.stage)
+          self.feature_1.key.integer_id(), self.stage)
     self.assertEqual('302 FOUND', actual_response.status)
 
   def test_get__non_allowed(self):
@@ -216,7 +216,7 @@ class FeatureEditStageTest(unittest.TestCase):
     with guide.app.test_request_context(self.request_path):
       with self.assertRaises(werkzeug.exceptions.Forbidden):
         self.handler.get_template_data(
-            self.feature_1.key().id(), self.stage)
+            self.feature_1.key.integer_id(), self.stage)
 
   def test_get__not_found(self):
     """Allowed users get a 404 if there is no such feature."""
@@ -231,7 +231,7 @@ class FeatureEditStageTest(unittest.TestCase):
 
     with guide.app.test_request_context(self.request_path):
       template_data = self.handler.get_template_data(
-          self.feature_1.key().id(), self.stage)
+          self.feature_1.key.integer_id(), self.stage)
 
     self.assertTrue('feature' in template_data)
     self.assertTrue('feature_id' in template_data)
@@ -244,7 +244,7 @@ class FeatureEditStageTest(unittest.TestCase):
 
     with guide.app.test_request_context(self.request_path):
       template_data = self.handler.get_template_data(
-          self.feature_1.key().id(), self.stage)
+          self.feature_1.key.integer_id(), self.stage)
 
     self.assertFalse(template_data['already_on_this_stage'])
 
@@ -256,7 +256,7 @@ class FeatureEditStageTest(unittest.TestCase):
 
     with guide.app.test_request_context(self.request_path):
       template_data = self.handler.get_template_data(
-          self.feature_1.key().id(), self.stage)
+          self.feature_1.key.integer_id(), self.stage)
 
     self.assertTrue(template_data['already_on_this_stage'])
 
@@ -266,7 +266,7 @@ class FeatureEditStageTest(unittest.TestCase):
     with guide.app.test_request_context(self.request_path, method='POST'):
       with self.assertRaises(werkzeug.exceptions.Forbidden):
         self.handler.process_post_data(
-            self.feature_1.key().id(), self.stage)
+            self.feature_1.key.integer_id(), self.stage)
 
   def test_post__non_allowed(self):
     """Non-allowed cannot edit features, gets a 403."""
@@ -274,7 +274,7 @@ class FeatureEditStageTest(unittest.TestCase):
     with guide.app.test_request_context(self.request_path):
       with self.assertRaises(werkzeug.exceptions.Forbidden, method='POST'):
         self.handler.process_post_data(
-            self.feature_1.key().id(), self.stage)
+            self.feature_1.key.integer_id(), self.stage)
 
   def test_post__normal_valid(self):
     """Allowed user can edit a feature."""
@@ -287,13 +287,13 @@ class FeatureEditStageTest(unittest.TestCase):
             'shipped_milestone': '84',
         }):
       actual_response = self.handler.process_post_data(
-          self.feature_1.key().id(), self.stage)
+          self.feature_1.key.integer_id(), self.stage)
 
     self.assertEqual('302 FOUND', actual_response.status)
     location = actual_response.headers['location']
-    self.assertEqual('/guide/edit/%d' % self.feature_1.key().id(),
+    self.assertEqual('/guide/edit/%d' % self.feature_1.key.integer_id(),
                      location)
-    revised_feature = models.Feature.get_by_id(self.feature_1.key().id())
+    revised_feature = models.Feature.get_by_id(self.feature_1.key.integer_id())
     self.assertEqual(2, revised_feature.category)
     self.assertEqual('Revised feature name', revised_feature.name)
     self.assertEqual('Revised feature summary', revised_feature.summary)

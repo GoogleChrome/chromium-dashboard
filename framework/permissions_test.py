@@ -93,9 +93,9 @@ class PermissionFunctionTests(unittest.TestCase):
     user = users.get_current_user()
 
     # Make sure there is no left over entity from past runs.
-    query = models.AppUser.all().filter('email =', email)
+    query = models.AppUser.query(models.AppUser.email == email)
     for old_app_user in query.fetch(None):
-      old_app_user.delete()
+      old_app_user.key.delete()
 
     self.assertFalse(permissions.can_admin_site(user))
 

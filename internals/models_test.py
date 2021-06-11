@@ -97,8 +97,8 @@ class FeatureTest(unittest.TestCase):
     self.feature_2.put()
 
   def tearDown(self):
-    self.feature_1.delete()
-    self.feature_2.delete()
+    self.feature_1.key.delete()
+    self.feature_2.key.delete()
     ramcache.flush_all()
 
   def test_get_chronological__normal(self):
@@ -152,8 +152,8 @@ class UserPrefTest(unittest.TestCase):
     self.user_pref_2.put()
 
   def tearDown(self):
-    self.user_pref_1.delete()
-    self.user_pref_2.delete()
+    self.user_pref_1.key.delete()
+    self.user_pref_2.key.delete()
 
   # @mock.patch('google.appengine.api.users.get_current_user')
   @mock.patch('framework.users.get_current_user')

@@ -57,8 +57,8 @@ class SecretsTest(unittest.TestCase):
   """Set of unit tests for generating and storing server-side secret values."""
 
   def delete_all(self):
-    for old_entity in secrets.Secrets.all():
-      old_entity.delete()
+    for old_entity in secrets.Secrets.query():
+      old_entity.key.delete()
 
   def setUp(self):
     self.delete_all()
