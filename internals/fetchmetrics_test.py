@@ -85,7 +85,7 @@ class UmaQueryTest(unittest.TestCase):
     try:
       actual = self.uma_query._HasCapstone(query_date)
     finally:
-      capstone.delete()
+      capstone.key.delete()
 
     self.assertTrue(actual)
 
