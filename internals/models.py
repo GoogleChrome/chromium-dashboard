@@ -930,8 +930,7 @@ class Feature(DictModel):
       params.append('cc=' + ','.join(self.owner))
     return url + '?' + '&'.join(params)
 
-  def __init__(self, *args, **kwargs):
-    super(Feature, self).__init__(*args, **kwargs)
+  def _pre_put_hook(self):
 
     # Stash existing values when entity is created so we can diff property
     # values later in put() to know what's changed. https://stackoverflow.com/a/41344898
