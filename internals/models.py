@@ -1254,7 +1254,7 @@ class UserPref(DictModel):
               for i in range(0, len(emails), CHUNK_SIZE)]
     for chunk_emails in chunks:
       q = UserPref.query()
-      q = q.filter(UserPref.email in chunk_emails)
+      q = q.filter(UserPref.email.IN(chunk_emails))
       chunk_prefs = q.fetch(None)
       result.extend(chunk_prefs)
       found_set = set(up.email for up in chunk_prefs)
