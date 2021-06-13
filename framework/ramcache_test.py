@@ -110,7 +110,12 @@ class RAMCacheFunctionTests(unittest.TestCase):
 class SharedInvalidateTests(unittest.TestCase):
 
   def assertTimestampWasUpdated(self, start_time):
-    singleton = ramcache.SharedInvalidate.SINGLETON_KEY.get()
+
+    singleton = None
+    entities = ramcache.SharedInvalidate.query(ancestor=ramcache.SharedInvalidate.PARENT_KEY).fetch(1)
+    if entities:
+      singleton = entities[0]
+
     self.assertTrue(singleton.updated > start_time)
 
   def testInvalidate(self):

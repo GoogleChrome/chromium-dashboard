@@ -165,7 +165,10 @@ class SharedInvalidate(ndb.Model):
   @classmethod
   def invalidate(cls):
     """Tell this and other appengine instances to invalidate their caches."""
-    singleton = cls.SINGLETON_KEY.get()
+    singleton = None
+    entities = cls.query(ancestor=cls.PARENT_KEY).fetch(1)
+    if entities:
+      singleton = entities[0]
     if not singleton:
       singleton = SharedInvalidate(key=cls.SINGLETON_KEY)
     singleton.put()  # automatically sets singleton.updated to now.
