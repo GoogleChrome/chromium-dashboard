@@ -480,6 +480,13 @@ class Feature(DictModel):
 
   DEFAULT_CACHE_KEY = 'features'
 
+  def __init__(self, *args, **kwargs):
+    # Initialise Feature.blink_components with a default value
+    if 'blink_components' not in kwargs:
+      kwargs['blink_components'] = [BlinkComponent.DEFAULT_COMPONENT]
+
+    super(Feature, self).__init__(*args, **kwargs)
+
   @classmethod
   def _first_of_milestone(self, feature_list, milestone, start=0):
     for i in xrange(start, len(feature_list)):
