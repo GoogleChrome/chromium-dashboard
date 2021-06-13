@@ -738,12 +738,12 @@ class Feature(DictModel):
     feature_list = ramcache.get(KEY)
 
     if feature_list is None or update_cache:
-      query = Feature.query().order(Feature.order) #.order('name')
+      query = Feature.query().order(-Feature.updated) #.order('name')
       query = query.filter(Feature.deleted == False)
 
       # TODO(ericbidelman): Support more than one filter.
       if filterby:
-        query = query.filter(Feature.category == category)
+        query = query.filter(Feature.category == filterby[1])
 
       features = query.fetch(limit)
 
