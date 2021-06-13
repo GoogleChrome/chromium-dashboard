@@ -916,7 +916,10 @@ class Feature(DictModel):
 
   def new_crbug_url(self):
     url = 'https://bugs.chromium.org/p/chromium/issues/entry'
-    params = ['components=' + self.blink_components[0] or BlinkComponent.DEFAULT_COMPONENT]
+    if len(self.blink_components) > 0:
+      params = ['components=' + self.blink_components[0]]
+    else:
+      params = ['components=' + BlinkComponent.DEFAULT_COMPONENT]
     crbug_number = self.crbug_number()
     if crbug_number and self.impl_status_chrome in (
         NO_ACTIVE_DEV,
