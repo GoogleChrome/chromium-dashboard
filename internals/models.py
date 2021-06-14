@@ -482,8 +482,10 @@ class Feature(DictModel):
 
   def __init__(self, *args, **kwargs):
     # Initialise Feature.blink_components with a default value
-    if 'blink_components' not in kwargs:
-      kwargs['blink_components'] = [BlinkComponent.DEFAULT_COMPONENT]
+    if 'name' in kwargs:        # If name is present in kwargs then it would mean constructor is being called for creating a 
+                                # new feature rather than for fetching an existing feature. 
+      if 'blink_components' not in kwargs:
+        kwargs['blink_components'] = [BlinkComponent.DEFAULT_COMPONENT]
 
     super(Feature, self).__init__(*args, **kwargs)
 
@@ -940,13 +942,18 @@ class Feature(DictModel):
       params.append('cc=' + ','.join(self.owner))
     return url + '?' + '&'.join(params)
 
-  def _pre_put_hook(self):
+  @classmethod
+  def _from_pb(cls, pb, set_key=True, ent=None, key=None):
 
     # Stash existing values when entity is created so we can diff property
     # values later in put() to know what's changed. https://stackoverflow.com/a/41344898
-    for prop_name, prop in self._properties.iteritems():
-      old_val = getattr(self, prop_name, None)
-      setattr(self, '_old_' + prop_name, old_val)
+    entity = super(Feature, cls)._from_pb(pb, set_key=set_key, ent=ent, key=key)
+    
+    for prop_name, prop in entity._properties.iteritems():
+      old_val = getattr(entity, prop_name, None)
+      setattr(entity, '_old_' + prop_name, old_val)
+
+    return entity
 
   def __notify_feature_subscribers_of_changes(self, is_update):
     """Async notifies subscribers of new features and property changes to features by
