@@ -19,18 +19,12 @@ from __future__ import print_function
 import logging
 import flask
 
-from google.appengine.api import users as gae_users
 from framework import users
 from internals import models
 from google.appengine.ext.ndb import QueryOptions
 
 def can_admin_site(user):
   """Return True if the current user is allowed to administer the site."""
-  # A user is an admin if they are an admin of the GAE project.
-  # TODO(jrobbins): delete this statement after legacy admins moved to AppUser.
-  if gae_users.is_current_user_admin():
-    return True
-
   # A user is an admin if they have an AppUser entity that has is_admin set.
   if user:
     app_user = models.AppUser.get_app_user(user.email())

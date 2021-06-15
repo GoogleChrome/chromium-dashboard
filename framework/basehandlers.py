@@ -25,7 +25,6 @@ import flask
 import flask.views
 import werkzeug.exceptions
 
-from google.appengine.api import users as gae_users
 from google.appengine.ext import ndb
 
 import settings
@@ -78,11 +77,7 @@ class BaseHandler(flask.views.MethodView):
 
   def get_current_user(self, required=False):
     # TODO(jrobbins): oauth support
-    current_user = None
-    if not settings.UNIT_TEST_MODE and self.request.method == 'POST':
-      current_user = users.get_current_user() or gae_users.get_current_user()
-    else:
-      current_user = users.get_current_user()
+    current_user = users.get_current_user()
 
     if required and not current_user:
       self.abort(403, msg='User must be signed in')
@@ -232,13 +227,11 @@ class APIHandler(BaseHandler):
       except werkzeug.exceptions.BadRequest:
         pass  # Raised when the request has no body.
     if not token:
-      # TODO(jrobbins): start enforcing in next release
-      logging.info("would do self.abort(400, msg='Missing XSRF token')")
+      self.abort(400, msg='Missing XSRF token')
     try:
       self.validate_token(token, user.email())
     except xsrf.TokenIncorrect:
-      # TODO(jrobbins): start enforcing in next release
-      logging.info("would do self.abort(400, msg='Invalid XSRF token')")
+      self.abort(400, msg='Invalid XSRF token')
 
 
 class FlaskHandler(BaseHandler):
@@ -366,16 +359,16 @@ class FlaskHandler(BaseHandler):
     """Every UI form submission must have a XSRF token."""
     if settings.UNIT_TEST_MODE or self.IS_INTERNAL_HANDLER:
       return
-    token = self.form.get('token')
+    token = self.request.headers.get('X-Xsrf-Token')
     if not token:
-      # TODO(jrobbins): start enforcing in next release
-      logging.info("would do self.abort(400, msg='Missing XSRF token')")
+      token = self.form.get('token')
+    if not token:
+      self.abort(400, msg='Missing XSRF token')
     user = self.get_current_user(required=True)
     try:
       xsrf.validate_token(token, user.email())
     except xsrf.TokenIncorrect:
-      # TODO(jrobbins): start enforcing in next release
-      logging.info("would do self.abort(400, msg='Invalid XSRF token')")
+      self.abort(400, msg='Invalid XSRF token')
 
   def require_task_header(self):
     """Abort if this is not a Google Cloud Tasks request."""
@@ -455,9 +448,10 @@ def FlaskApplication(routes, pattern_base='', debug=False):
         view_func=handler_class.as_view(classname),
         defaults=defaults)
 
-  # Note: debug parameter is not used because the following accomplishes
-  # what we need it to do.
-  app.config["TRAP_BAD_REQUEST_ERRORS"] = True  # Needed to log execptions
+  # The following causes flask to print a stack trace and return 500
+  # when we are running locally and a handler raises a BadRequest exception.
+  # In production, it will return a status 400.
+  app.config["TRAP_BAD_REQUEST_ERRORS"] = settings.DEV_MODE
   # Flask apps also have a debug setting that can be used to auto-reload
   # template source code, but we use django for that.
 

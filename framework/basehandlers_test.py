@@ -386,7 +386,6 @@ class APIHandlerTests(unittest.TestCase):
     mock_validate_token.assert_called_once_with(
         'valid header token', 'user@example.com')
 
-  @unittest.skip('TODO(jrobbins): enable after next release')
   @mock.patch('framework.basehandlers.APIHandler.validate_token')
   def test_require_signed_in_and_xsrf_token__missing(self, mock_validate_token):
     """User is signed in but missing a token."""
@@ -397,7 +396,6 @@ class APIHandlerTests(unittest.TestCase):
         self.handler.require_signed_in_and_xsrf_token()
     mock_validate_token.assert_not_called()
 
-  @unittest.skip('TODO(jrobbins): enable after next release')
   @mock.patch('framework.basehandlers.APIHandler.validate_token')
   def test_require_signed_in_and_xsrf_token__bad(self, mock_validate_token):
     """User is signed in but missing a token."""
@@ -613,7 +611,6 @@ class FlaskHandlerTests(unittest.TestCase):
     with test_app.test_request_context('/test', data=form_data):
       self.handler.require_xsrf_token()
 
-  @unittest.skip('TODO(jrobbins): enable after next release')
   @mock.patch('settings.UNIT_TEST_MODE', False)
   def test_require_xsrf_token__missing(self):
     """We reject a POST with a missing token."""
@@ -623,11 +620,15 @@ class FlaskHandlerTests(unittest.TestCase):
       with self.assertRaises(werkzeug.exceptions.BadRequest):
         self.handler.require_xsrf_token()
 
-  @unittest.skip('TODO(jrobbins): enable after next release')
   @mock.patch('settings.UNIT_TEST_MODE', False)
-  def test_require_xsrf_token__wrong(self):
+  @mock.patch('framework.basehandlers.BaseHandler.get_current_user')
+  def test_require_xsrf_token__wrong(self, mock_get_current_user):
     """We reject a POST with a incorrect token."""
     testing_config.sign_in('user1@example.com', 111)
+    # Also mock get_current_user because it will not use the usual
+    # unit test configuration if we have UNIT_TEST_MODE == False.
+    mock_get_current_user.return_value = users.User('user1@example.com', 111)
+    # Form has a token intended for a different user.
     form_data = {'token': xsrf.generate_token('user2@example.com')}
     with test_app.test_request_context('/test', data=form_data):
       with self.assertRaises(werkzeug.exceptions.BadRequest):
