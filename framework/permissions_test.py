@@ -53,14 +53,32 @@ test_app = basehandlers.FlaskApplication(
 
 class PermissionFunctionTests(unittest.TestCase):
 
+  def setUp(self):
+    self.app_user = models.AppUser(email='registered@example.com')
+    self.app_user.put()
+
+    self.app_admin = models.AppUser(email='admin@example.com')
+    self.app_admin.is_admin = True
+    self.app_admin.put()
+
+  def tearDown(self):
+    self.app_user.delete()
+    self.app_admin.delete()
+
   def check_function_results(
       self, func, additional_args,
-      normal='missing', special='missing', admin='missing', anon='missing'):
+      unregistered='missing', registered='missing',
+      special='missing', admin='missing', anon='missing'):
     """Test func under four conditions and check expected results."""
-    # Test normal users
-    testing_config.sign_in('user@example.com', 123)
+    # Test unregistered users
+    testing_config.sign_in('unregistered@example.com', 123)
     user = users.get_current_user()
-    self.assertEqual(normal, func(user, *additional_args))
+    self.assertEqual(unregistered, func(user, *additional_args))
+
+    # Test registered users
+    testing_config.sign_in('registered@example.com', 123)
+    user = users.get_current_user()
+    self.assertEqual(registered, func(user, *additional_args))
 
     # Test special users
     # TODO(jrobbins): generalize this.
@@ -72,7 +90,7 @@ class PermissionFunctionTests(unittest.TestCase):
     self.assertEqual(special, func(user, *additional_args))
 
     # Test admin users
-    testing_config.sign_in('user@example.com', 123, is_admin=True)
+    testing_config.sign_in('admin@example.com', 123)
     user = users.get_current_user()
     self.assertEqual(admin, func(user, *additional_args))
 
@@ -84,70 +102,74 @@ class PermissionFunctionTests(unittest.TestCase):
   def test_can_admin_site(self):
     self.check_function_results(
         permissions.can_admin_site, tuple(),
-        normal=False, special=False, admin=True, anon=False)
-
-  def test_can_admin_site__appuser(self):
-    """A registered AppUser that has is_admin set can admin the site."""
-    email = 'app-admin@example.com'
-    testing_config.sign_in(email, 111)
-    user = users.get_current_user()
-
-    # Make sure there is no left over entity from past runs.
-    query = models.AppUser.query(models.AppUser.email == email)
-    for old_app_user in query.fetch(None):
-      old_app_user.key.delete()
-
-    self.assertFalse(permissions.can_admin_site(user))
-
-    app_user = models.AppUser(email=email)
-    app_user.put()
-    self.assertFalse(permissions.can_admin_site(user))
-
-    app_user.is_admin = True
-    app_user.put()
-    print('user is %r' % user)
-    print('get_app_user is %r' % models.AppUser.get_app_user(email))
-    print('get_app_user.is_admin is %r' % models.AppUser.get_app_user(email).is_admin)
-    self.assertTrue(permissions.can_admin_site(user))
+        unregistered=False, registered=False,
+        special=False, admin=True, anon=False)
 
   def test_can_view_feature(self):
     self.check_function_results(
         permissions.can_view_feature, (None,),
-        normal=True, special=True, admin=True, anon=True)
+        unregistered=True, registered=True,
+        special=True, admin=True, anon=True)
 
   def test_can_create_feature(self):
     self.check_function_results(
         permissions.can_create_feature, tuple(),
-        normal=False, special=True, admin=True, anon=False)
+        unregistered=False, registered=True,
+        special=True, admin=True, anon=False)
 
   def test_can_edit_any_feature(self):
     self.check_function_results(
         permissions.can_edit_any_feature, tuple(),
-        normal=False, special=True, admin=True, anon=False)
+        unregistered=False, registered=True,
+        special=True, admin=True, anon=False)
 
   def test_can_edit_feature(self):
     self.check_function_results(
         permissions.can_edit_feature, (None,),
-        normal=False, special=True, admin=True, anon=False)
+        unregistered=False, registered=True,
+        special=True, admin=True, anon=False)
 
   def test_can_approve_feature(self):
     approvers = []
     self.check_function_results(
         permissions.can_approve_feature, (None, approvers),
-        normal=False, special=False, admin=True, anon=False)
+        unregistered=False, registered=False,
+        special=False, admin=True, anon=False)
 
-    approvers = ['user@example.com']
+    approvers = ['registered@example.com']
     self.check_function_results(
         permissions.can_approve_feature, (None, approvers),
-        normal=True, special=False, admin=True, anon=False)
+        unregistered=False, registered=True,
+        special=False, admin=True, anon=False)
 
 
 class RequireAdminSiteTests(unittest.TestCase):
 
-  def test_require_admin_site__normal_user(self):
-    """Wrapped method rejects call from normal user."""
+  def setUp(self):
+    self.app_user = models.AppUser(email='registered@example.com')
+    self.app_user.put()
+
+    self.app_admin = models.AppUser(email='admin@example.com')
+    self.app_admin.is_admin = True
+    self.app_admin.put()
+
+  def tearDown(self):
+    self.app_user.delete()
+    self.app_admin.delete()
+
+  def test_require_admin_site__unregistered_user(self):
+    """Wrapped method rejects call from an unregistered user."""
     handler = MockHandler()
-    testing_config.sign_in('user@example.com', 123)
+    testing_config.sign_in('unregistered@example.com', 123)
+    with test_app.test_request_context('/path', method='POST'):
+      with self.assertRaises(werkzeug.exceptions.Forbidden):
+        handler.do_post()
+    self.assertEqual(handler.called_with, None)
+
+  def test_require_admin_site__registered_user(self):
+    """Wrapped method rejects call from registered non-admin user."""
+    handler = MockHandler()
+    testing_config.sign_in('registered@example.com', 123)
     with test_app.test_request_context('/path', method='POST'):
       with self.assertRaises(werkzeug.exceptions.Forbidden):
         handler.do_post()
@@ -165,7 +187,7 @@ class RequireAdminSiteTests(unittest.TestCase):
   def test_require_admin_site__admin(self):
     """Wrapped method accepts call from an admin user."""
     handler = MockHandler()
-    testing_config.sign_in('admin@example.com', 123, is_admin=True)
+    testing_config.sign_in('admin@example.com', 123)
     with test_app.test_request_context('/path'):
       actual_response = handler.do_get(123, 234)
     self.assertEqual(handler.called_with, (123, 234))

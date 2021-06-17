@@ -38,6 +38,7 @@
     "dot-prop": ">=5.1.1",
     "eslint": "^5.2.0",
     "eslint-config-google": "^0.9.1",
+    "glob-parent": ">=5.1.2",
     "gulp": "^4.0.0",
     "gulp-autoprefixer": "^5.0.0",
     "gulp-babel": "^8.0.0",
@@ -64,7 +65,8 @@
     "rollup-plugin-lit-css": "^2.0.0",
     "rollup-plugin-node-resolve": "^5.2.0",
     "sw-precache": "^5.2.1",
-    "sw-toolbox": "^3.6.0"
+    "sw-toolbox": "^3.6.0",
+    "trim-newlines": ">=3.0.1"
   },
   "dependencies": {
     "@polymer/app-layout": "^3.1.0",
