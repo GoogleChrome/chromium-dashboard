@@ -339,6 +339,10 @@ class DictModel(ndb.Model):
     output = {}
 
     for key, prop in self._properties.iteritems():
+      # Skip obsolete values that are still in our datastore
+      if not hasattr(self, key):
+        continue
+
       value = getattr(self, key)
 
       if value is None or isinstance(value, SIMPLE_TYPES):
