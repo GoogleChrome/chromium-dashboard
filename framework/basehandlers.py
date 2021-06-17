@@ -25,8 +25,6 @@ import flask
 import flask.views
 import werkzeug.exceptions
 
-from google.appengine.ext import ndb
-
 import settings
 from framework import csp
 from framework import permissions

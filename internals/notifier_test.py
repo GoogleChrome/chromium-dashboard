@@ -24,7 +24,6 @@ import flask
 import mock
 import werkzeug.exceptions  # Flask HTTP stuff.
 
-from google.appengine.ext import ndb
 from google.appengine.api import mail
 # TODO(jrobbins): phase out gae_users.
 from google.appengine.api import users as gae_users

@@ -40,10 +40,8 @@ import hack_components
 import hack_wf_components
 
 
-#from django.forms import ModelForm
 from collections import OrderedDict
 from django import forms
-# import google.appengine.ext.django as django
 
 
 SIMPLE_TYPES = (int, long, float, bool, dict, basestring, list)
@@ -326,7 +324,7 @@ class DictModel(ndb.Model):
 
   def is_saved(self):
     if self.key:
-      return True 
+      return True
     return False
 
   def format_for_template(self, add_id=True):
@@ -464,8 +462,6 @@ class StableInstance(DictModel):
   bucket_id = ndb.IntegerProperty(required=True)
   date = ndb.DateProperty(verbose_name='When the data was fetched',
                          required=True)
-  #hits = db.IntegerProperty(required=True)
-  #total_pages = db.IntegerProperty()
   day_percentage = ndb.FloatProperty()
   rolling_percentage = ndb.FloatProperty()
 
@@ -486,8 +482,8 @@ class Feature(DictModel):
 
   def __init__(self, *args, **kwargs):
     # Initialise Feature.blink_components with a default value
-    if 'name' in kwargs:        # If name is present in kwargs then it would mean constructor is being called for creating a 
-                                # new feature rather than for fetching an existing feature. 
+    if 'name' in kwargs:        # If name is present in kwargs then it would mean constructor is being called for creating a
+                                # new feature rather than for fetching an existing feature.
       if 'blink_components' not in kwargs:
         kwargs['blink_components'] = [BlinkComponent.DEFAULT_COMPONENT]
 
@@ -814,7 +810,7 @@ class Feature(DictModel):
 
     # On cache miss, do a db query.
     if not feature_list or update_cache:
-      logging.info('recompyting chronological feature list')
+      logging.info('recomputing chronological feature list')
       # Features that are in-dev or proposed.
       q = Feature.query()
       q = q.order(Feature.impl_status_chrome)
@@ -952,7 +948,7 @@ class Feature(DictModel):
     # Stash existing values when entity is created so we can diff property
     # values later in put() to know what's changed. https://stackoverflow.com/a/41344898
     entity = super(Feature, cls)._from_pb(pb, set_key=set_key, ent=ent, key=key)
-    
+
     for prop_name, prop in entity._properties.iteritems():
       old_val = getattr(entity, prop_name, None)
       setattr(entity, '_old_' + prop_name, old_val)
@@ -1019,18 +1015,11 @@ class Feature(DictModel):
   star_count = ndb.IntegerProperty(default=0)
   search_tags = ndb.StringProperty(repeated=True)
   comments = ndb.StringProperty()
-  # owner = db.ListProperty(db.Email)
   owner = ndb.StringProperty(repeated=True)
   footprint = ndb.IntegerProperty()  # Deprecated
 
   # Tracability to intent discussion threads
-  # intent_to_implement_url = db.LinkProperty()
   intent_to_implement_url = ndb.StringProperty()
-  # intent_to_ship_url = db.LinkProperty()
-  # ready_for_trial_url = db.LinkProperty()
-  # intent_to_experiment_url = db.LinkProperty()
-  # i2e_lgtms = db.ListProperty(db.Email)  # Currently, only one is needed.
-  # i2s_lgtms = db.ListProperty(db.Email)
   intent_to_ship_url = ndb.StringProperty()
   ready_for_trial_url = ndb.StringProperty()
   intent_to_experiment_url = ndb.StringProperty()
@@ -1038,15 +1027,10 @@ class Feature(DictModel):
   i2s_lgtms = ndb.StringProperty(repeated=True)
 
   # Chromium details.
-  # bug_url = db.LinkProperty()
-  # launch_bug_url = db.LinkProperty()
-  # initial_public_proposal_url = db.LinkProperty()
   bug_url = ndb.StringProperty()
   launch_bug_url = ndb.StringProperty()
   initial_public_proposal_url = ndb.StringProperty()
-  # blink_components = db.StringListProperty(required=True, default=[BlinkComponent.DEFAULT_COMPONENT])
   blink_components = ndb.StringProperty(repeated=True)
-  # devrel = db.ListProperty(db.Email)
   devrel = ndb.StringProperty(repeated=True)
 
   impl_status_chrome = ndb.IntegerProperty(required=True)
@@ -1056,7 +1040,6 @@ class Feature(DictModel):
   shipped_webview_milestone = ndb.IntegerProperty()
 
   # DevTrial details.
-  # devtrial_instructions = db.LinkProperty()
   devtrial_instructions = ndb.StringProperty()
   flag_name = ndb.StringProperty()
   interop_compat_risks = ndb.StringProperty()
@@ -1071,14 +1054,10 @@ class Feature(DictModel):
 
   visibility = ndb.IntegerProperty(required=False)  # Deprecated
 
-  #webbiness = db.IntegerProperty() # TODO: figure out what this is
-
   # Standards details.
   standardization = ndb.IntegerProperty(required=True)
-  # spec_link = db.LinkProperty()
   spec_link = ndb.StringProperty()
   api_spec = ndb.BooleanProperty(default=False)
-  # spec_mentors = db.ListProperty(db.Email)
   spec_mentors = ndb.StringProperty(repeated=True)
 
   security_review_status = ndb.IntegerProperty(default=REVIEW_PENDING)
@@ -1096,10 +1075,6 @@ class Feature(DictModel):
   safari_views = ndb.IntegerProperty(required=True, default=NO_PUBLIC_SIGNALS)
   web_dev_views = ndb.IntegerProperty(required=True)
 
-  # ff_views_link = db.LinkProperty()
-  # ie_views_link = db.LinkProperty()
-  # safari_views_link = db.LinkProperty()
-  # web_dev_views_link = db.LinkProperty()
   ff_views_link = ndb.StringProperty()
   ie_views_link = ndb.StringProperty()
   safari_views_link = ndb.StringProperty()
@@ -1113,7 +1088,6 @@ class Feature(DictModel):
   doc_links = ndb.StringProperty(repeated=True)
   measurement = ndb.StringProperty()
   sample_links = ndb.StringProperty(repeated=True)
-  #tests = db.StringProperty()
 
   experiment_goals = ndb.StringProperty()
   experiment_timeline = ndb.StringProperty()
@@ -1124,10 +1098,8 @@ class Feature(DictModel):
   experiment_risks = ndb.StringProperty()
   experiment_extension_reason = ndb.StringProperty()
   ongoing_constraints = ndb.StringProperty()
-  # origin_trial_feedback_url = db.LinkProperty()
   origin_trial_feedback_url = ndb.StringProperty()
 
-  # finch_url = db.LinkProperty()
   finch_url = ndb.StringProperty()
 
 
@@ -1155,7 +1127,6 @@ class Approval(DictModel):
   field_id = ndb.IntegerProperty(required=True)
   state = ndb.IntegerProperty(required=True)
   set_on = ndb.DateTimeProperty(required=True)
-  # set_by = db.EmailProperty(required=True)
   set_by = ndb.StringProperty(required=True)
 
   @classmethod
@@ -1203,10 +1174,8 @@ class Comment(DictModel):
   feature_id = ndb.IntegerProperty(required=True)
   field_id = ndb.IntegerProperty()  # The approval field_id, or general comment.
   created = ndb.DateTimeProperty(auto_now=True)
-  # author = db.EmailProperty()
   author = ndb.StringProperty()
   content = ndb.StringProperty()
-  # deleted_by = db.EmailProperty()
   deleted_by = ndb.StringProperty()
   # If the user set an approval value, we capture that here so that we can
   # display a change log.  This could be generalized to a list of separate
@@ -1227,7 +1196,6 @@ class Comment(DictModel):
 class UserPref(DictModel):
   """Describes a user's application preferences."""
 
-  # email = db.EmailProperty(required=True)
   email = ndb.StringProperty(required=True)
 
   # True means that user should be sent a notification email after each change
@@ -1302,8 +1270,6 @@ class UserPrefForm(forms.Form):
 class AppUser(DictModel):
   """Describes a user for permission checking."""
 
-  #user = db.UserProperty(required=True, verbose_name='Google Account')
-  # email = db.EmailProperty(required=True)
   email = ndb.StringProperty(required=True)
   is_admin = ndb.BooleanProperty(default=False)
   created = ndb.DateTimeProperty(auto_now_add=True)
@@ -1348,7 +1314,6 @@ class FeatureOwner(DictModel):
   created = ndb.DateTimeProperty(auto_now_add=True)
   updated = ndb.DateTimeProperty(auto_now=True)
   name = ndb.StringProperty(required=True)
-  # email = db.EmailProperty(required=True)
   email = ndb.StringProperty(required=True)
   twitter = ndb.StringProperty()
   blink_components = ndb.KeyProperty(repeated=True)
