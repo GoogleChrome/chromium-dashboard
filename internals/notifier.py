@@ -26,7 +26,7 @@ import os
 import re
 
 from framework import ramcache
-from google.appengine.ext import db
+from google.appengine.ext import ndb
 from google.appengine.api import mail
 import requests
 # from google.appengine.api import users
@@ -68,7 +68,7 @@ def format_email_body(is_update, feature, changes):
 
   body_data = {
       'feature': feature,
-      'id': feature.key().id(),
+      'id': feature.key.integer_id(),
       'milestone': milestone_str,
       'status': models.IMPLEMENTATION_STATUS[feature.impl_status_chrome],
       'formatted_changes': formatted_changes,
@@ -131,8 +131,7 @@ def apply_subscription_rules(feature, changes):
 
 def make_email_tasks(feature, is_update=False, changes=[]):
   """Return a list of task dicts to notify users of feature changes."""
-  feature_watchers = models.FeatureOwner.all().filter(
-      'watching_all_features = ', True).fetch(None)
+  feature_watchers = models.FeatureOwner.query(models.FeatureOwner.watching_all_features == True).fetch(None)
 
   email_html = format_email_body(is_update, feature, changes)
   if is_update:
@@ -161,7 +160,7 @@ def make_email_tasks(feature, is_update=False, changes=[]):
         addr_reasons, component.subscribers,
         'You subscribe to this feature\'s component')
 
-  starrers = FeatureStar.get_feature_starrers(feature.key().id())
+  starrers = FeatureStar.get_feature_starrers(feature.key.integer_id())
   accumulate_reasons(addr_reasons, starrers, 'You starred this feature')
 
   rule_results = apply_subscription_rules(feature, changes)
@@ -175,17 +174,17 @@ def make_email_tasks(feature, is_update=False, changes=[]):
 
 class FeatureStar(models.DictModel):
   """A FeatureStar represent one user's interest in one feature."""
-  email = db.EmailProperty(required=True)
-  feature_id = db.IntegerProperty(required=True)
+  email = ndb.StringProperty(required=True)
+  feature_id = ndb.IntegerProperty(required=True)
   # This is so that we do not sync a bell to a star that the user has removed.
-  starred = db.BooleanProperty(default=True)
+  starred = ndb.BooleanProperty(default=True)
 
   @classmethod
   def get_star(self, email, feature_id):
     """If that user starred that feature, return the model or None."""
-    q = FeatureStar.all()
-    q.filter('email =', email)
-    q.filter('feature_id =', feature_id)
+    q = FeatureStar.query()
+    q = q.filter(FeatureStar.email == email)
+    q = q.filter(FeatureStar.feature_id == feature_id)
     return q.get()
 
   @classmethod
@@ -211,9 +210,9 @@ class FeatureStar(models.DictModel):
   @classmethod
   def get_user_stars(self, email):
     """Return a list of feature_ids of all features that the user starred."""
-    q = FeatureStar.all()
-    q.filter('email =', email)
-    q.filter('starred =', True)
+    q = FeatureStar.query()
+    q = q.filter(FeatureStar.email == email)
+    q = q.filter(FeatureStar.starred == True)
     feature_stars = q.fetch(None)
     logging.info('found %d stars for %r', len(feature_stars), email)
     feature_ids = [fs.feature_id for fs in feature_stars]
@@ -223,9 +222,9 @@ class FeatureStar(models.DictModel):
   @classmethod
   def get_feature_starrers(self, feature_id):
     """Return list of UserPref objects for starrers that want notifications."""
-    q = FeatureStar.all()
-    q.filter('feature_id =', feature_id)
-    q.filter('starred =', True)
+    q = FeatureStar.query()
+    q = q.filter(FeatureStar.feature_id == feature_id)
+    q = q.filter(FeatureStar.starred == True)
     feature_stars = q.fetch(None)
     logging.info('found %d stars for %r', len(feature_stars), feature_id)
     emails = [fs.email for fs in feature_stars]

@@ -78,11 +78,11 @@ class PopularityTimelineHandlerTests(unittest.TestCase):
     self.datapoint.put()
 
   def tearDown(self):
-    self.datapoint.delete()
+    self.datapoint.key.delete()
 
   def test_make_query(self):
     actual_query = self.handler.make_query(1)
-    self.assertEqual(actual_query._model_class, models.StableInstance)
+    self.assertEqual(actual_query.kind, models.StableInstance._get_kind())
 
   def test_get_template_data__bad_bucket(self):
     url = '/data/timeline/csspopularity?bucket_id=not-a-number'
@@ -120,10 +120,10 @@ class FeatureBucketsHandlerTest(unittest.TestCase):
     self.prop_4.put()
 
   def tearDown(self):
-    self.prop_1.delete()
-    self.prop_2.delete()
-    self.prop_3.delete()
-    self.prop_4.delete()
+    self.prop_1.key.delete()
+    self.prop_2.key.delete()
+    self.prop_3.key.delete()
+    self.prop_4.key.delete()
 
   def test_get_template_data__css(self):
     with metricsdata.app.test_request_context('/data/blink/cssprops'):

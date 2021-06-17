@@ -58,7 +58,7 @@ class CommentsAPI(basehandlers.APIHandler):
       if not permissions.can_approve_feature(user, feature, approvers):
         self.abort(403, msg='User is not an approver')
       models.Approval.set_approval(
-          feature.key().id(), field_id, new_state, user.email())
+          feature.key.integer_id(), field_id, new_state, user.email())
 
     comment_content = self.get_param('comment', required=False)
 

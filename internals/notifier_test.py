@@ -24,7 +24,7 @@ import flask
 import mock
 import werkzeug.exceptions  # Flask HTTP stuff.
 
-from google.appengine.ext import db
+from google.appengine.ext import ndb
 from google.appengine.api import mail
 # TODO(jrobbins): phase out gae_users.
 from google.appengine.api import users as gae_users
@@ -49,7 +49,7 @@ class EmailFormattingTest(unittest.TestCase):
     self.component_1.put()
     self.owner_1 = models.FeatureOwner(
         name='owner_1', email='owner_1@example.com',
-        primary_blink_components=[self.component_1.key()])
+        primary_blink_components=[self.component_1.key])
     self.owner_1.put()
     self.watcher_1 = models.FeatureOwner(
         name='watcher_1', email='watcher_1@example.com',
@@ -66,8 +66,8 @@ class EmailFormattingTest(unittest.TestCase):
     self.feature_2.put()
 
   def tearDown(self):
-    self.feature_1.delete()
-    self.feature_2.delete()
+    self.feature_1.key.delete()
+    self.feature_2.key.delete()
 
   def test_format_email_body__new(self):
     """We generate an email body for new features."""
@@ -75,7 +75,7 @@ class EmailFormattingTest(unittest.TestCase):
         False, self.feature_1, [])
     self.assertIn('Blink', body_html)
     self.assertIn('creator@example.com added', body_html)
-    self.assertIn('www.chromestatus.com/feature/%d' % self.feature_1.key().id(),
+    self.assertIn('www.chromestatus.com/feature/%d' % self.feature_1.key.integer_id(),
                   body_html)
     self.assertNotIn('watcher_1,', body_html)
 
@@ -92,7 +92,7 @@ class EmailFormattingTest(unittest.TestCase):
     body_html = notifier.format_email_body(
         True, self.feature_1, self.changes)
     self.assertIn('test_prop', body_html)
-    self.assertIn('www.chromestatus.com/feature/%d' % self.feature_1.key().id(),
+    self.assertIn('www.chromestatus.com/feature/%d' % self.feature_1.key.integer_id(),
                   body_html)
     self.assertIn('test old value', body_html)
     self.assertIn('test new value', body_html)
@@ -218,7 +218,7 @@ class EmailFormattingTest(unittest.TestCase):
     """We send email to users who starred the feature."""
     mock_f_e_b.return_value = 'mock body html'
     notifier.FeatureStar.set_star(
-        'starrer_1@example.com', self.feature_1.key().id())
+        'starrer_1@example.com', self.feature_1.key.integer_id())
     actual_tasks = notifier.make_email_tasks(
         self.feature_1, True, self.changes)
     self.assertEqual(3, len(actual_tasks))
@@ -243,7 +243,7 @@ class EmailFormattingTest(unittest.TestCase):
         notify_as_starrer=False)
     starrer_2_pref.put()
     notifier.FeatureStar.set_star(
-        'starrer_2@example.com', self.feature_2.key().id())
+        'starrer_2@example.com', self.feature_2.key.integer_id())
     actual_tasks = notifier.make_email_tasks(
         self.feature_2, True, self.changes)
     self.assertEqual(2, len(actual_tasks))
@@ -268,20 +268,20 @@ class FeatureStarTest(unittest.TestCase):
     self.feature_2.put()
 
   def tearDown(self):
-    self.feature_1.delete()
-    self.feature_2.delete()
+    self.feature_1.key.delete()
+    self.feature_2.key.delete()
 
   def test_get_star__no_existing(self):
     """User has never starred the given feature."""
     email = 'user1@example.com'
-    feature_id = self.feature_1.key().id()
+    feature_id = self.feature_1.key.integer_id()
     actual = notifier.FeatureStar.get_star(email, feature_id)
     self.assertEqual(None, actual)
 
   def test_get_and_set_star(self):
     """User can star and unstar a feature."""
     email = 'user2@example.com'
-    feature_id = self.feature_1.key().id()
+    feature_id = self.feature_1.key.integer_id()
     notifier.FeatureStar.set_star(email, feature_id)
     actual = notifier.FeatureStar.get_star(email, feature_id)
     self.assertEqual(email, actual.email)
@@ -307,8 +307,8 @@ class FeatureStarTest(unittest.TestCase):
   def test_get_user_stars__some_stars(self):
     """User has starred two features."""
     email = 'user5@example.com'
-    feature_1_id = self.feature_1.key().id()
-    feature_2_id = self.feature_2.key().id()
+    feature_1_id = self.feature_1.key.integer_id()
+    feature_2_id = self.feature_2.key.integer_id()
     notifier.FeatureStar.set_star(email, feature_1_id)
     notifier.FeatureStar.set_star(email, feature_2_id)
 
@@ -319,7 +319,7 @@ class FeatureStarTest(unittest.TestCase):
 
   def test_get_feature_starrers__no_stars(self):
     """No user has starred the given feature."""
-    feature_1_id = self.feature_1.key().id()
+    feature_1_id = self.feature_1.key.integer_id()
     actual = notifier.FeatureStar.get_feature_starrers(feature_1_id)
     self.assertEqual([], actual)
 
@@ -329,7 +329,7 @@ class FeatureStarTest(unittest.TestCase):
     app_user_1.put()
     app_user_2 = models.AppUser(email='user17@example.com')
     app_user_2.put()
-    feature_1_id = self.feature_1.key().id()
+    feature_1_id = self.feature_1.key.integer_id()
     notifier.FeatureStar.set_star(app_user_1.email, feature_1_id)
     notifier.FeatureStar.set_star(app_user_2.email, feature_1_id)
 
@@ -449,7 +449,7 @@ class BouncedEmailHandlerTest(unittest.TestCase):
 
     self.handler.receive(bounce_message)
 
-    updated_pref = models.UserPref.get_by_id(starrer_3_pref.key().id())
+    updated_pref = models.UserPref.get_by_id(starrer_3_pref.key.integer_id())
     self.assertEqual('starrer_3@example.com', updated_pref.email)
     self.assertTrue(updated_pref.bounced)
     self.assertFalse(updated_pref.notify_as_starrer)

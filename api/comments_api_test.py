@@ -39,7 +39,7 @@ class CommentsAPITest(unittest.TestCase):
         name='feature one', summary='sum', category=1, visibility=1,
         standardization=1, web_dev_views=1, impl_status_chrome=1)
     self.feature_1.put()
-    self.feature_id = self.feature_1.key().id()
+    self.feature_id = self.feature_1.key.integer_id()
     self.field_id = 1
     self.handler = comments_api.CommentsAPI()
     self.request_path = ('/api/v0/features/%d/approvals/%d/comments' %
@@ -69,11 +69,11 @@ class CommentsAPITest(unittest.TestCase):
         }
 
   def tearDown(self):
-    self.feature_1.delete()
-    for appr in models.Approval.all():
-      appr.delete()
-    for cmnt in models.Comment.all():
-      cmnt.delete()
+    self.feature_1.key.delete()
+    for appr in models.Approval.query():
+      appr.key.delete()
+    for cmnt in models.Comment.query():
+      cmnt.key.delete()
 
   def test_get__empty(self):
     """We can get comments for a given approval, even if there none."""

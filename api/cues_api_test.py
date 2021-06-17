@@ -37,7 +37,7 @@ class CuesAPITest(unittest.TestCase):
     self.handler = cues_api.CuesAPI()
 
   def tearDown(self):
-    self.user_pref_1.delete()
+    self.user_pref_1.key.delete()
 
   def test_post__valid(self):
     """User wants to dismiss a valid cue card ID."""

@@ -49,7 +49,7 @@ whenever a cached value would become invalid, it must be invalidated.
 
 import logging
 import time as time_module
-from google.appengine.ext import db
+from google.appengine.ext import ndb
 
 
 global_cache = {}
@@ -146,27 +146,27 @@ def flush_all():
   SharedInvalidate.invalidate()
 
 
-class SharedInvalidateParent(db.Model):
+class SharedInvalidateParent(ndb.Model):
   pass
 
 
-class SharedInvalidate(db.Model):
+class SharedInvalidate(ndb.Model):
 
   PARENT_ENTITY_ID = 1234
-  PARENT_KEY = db.Key.from_path('SharedInvalidateParent', PARENT_ENTITY_ID)
+  PARENT_KEY = ndb.Key('SharedInvalidateParent', PARENT_ENTITY_ID)
   SINGLETON_ENTITY_ID = 5678
-  SINGLETON_KEY = db.Key.from_path(
+  SINGLETON_KEY = ndb.Key(
       'SharedInvalidateParent', PARENT_ENTITY_ID,
       'SharedInvalidate', SINGLETON_ENTITY_ID)
   last_processed_timestamp = None
 
-  updated = db.DateTimeProperty(auto_now=True)
+  updated = ndb.DateTimeProperty(auto_now=True)
 
   @classmethod
   def invalidate(cls):
     """Tell this and other appengine instances to invalidate their caches."""
     singleton = None
-    entities = cls.all().ancestor(cls.PARENT_KEY).fetch(1)
+    entities = cls.query(ancestor=cls.PARENT_KEY).fetch(1)
     if entities:
       singleton = entities[0]
     if not singleton:
@@ -179,7 +179,10 @@ class SharedInvalidate(db.Model):
   @classmethod
   def check_for_distributed_invalidation(cls):
     """Check if any appengine instance has invlidated the cache."""
-    singleton = cls.get(cls.SINGLETON_KEY, read_policy=db.STRONG_CONSISTENCY)
+    singleton = None
+    entities = cls.query(ancestor=cls.PARENT_KEY).fetch(1)
+    if entities:
+      singleton = entities[0]
     if not singleton:
       return  # No news is good news
     if (cls.last_processed_timestamp is None or

@@ -25,7 +25,7 @@ import flask
 import flask.views
 import werkzeug.exceptions
 
-from google.appengine.ext import db
+from google.appengine.ext import ndb
 
 import settings
 from framework import csp
@@ -384,18 +384,18 @@ class FlaskHandler(BaseHandler):
         x.strip() for x in re.split(delim, input_text)])
 
   def split_emails(self, param_name):
-    """Split one input field and construct db.Email objects."""
+    """Split one input field and construct objects for ndb.StringProperty()."""
     addr_strs = self.split_input(param_name, delim=',')
-    emails = [db.Email(addr) for addr in addr_strs]
+    emails = [str(addr) for addr in addr_strs]
     return emails
 
   def parse_link(self, param_name):
     link = flask.request.form.get(param_name) or None
     if link:
       if not link.startswith('http'):
-        link = db.Link('http://' + link)
+        link = str('http://' + link)
       else:
-        link = db.Link(link)
+        link = str(link)
     return link
 
   def parse_int(self, param_name):

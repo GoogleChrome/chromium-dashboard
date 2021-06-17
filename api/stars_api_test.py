@@ -40,9 +40,9 @@ class StarsAPITest(unittest.TestCase):
     self.request_path = '/api/v0/currentuser/stars'
 
   def tearDown(self):
-    self.feature_1.delete()
-    for star in notifier.FeatureStar.all():
-      star.delete()
+    self.feature_1.key.delete()
+    for star in notifier.FeatureStar.query():
+      star.key.delete()
 
   def test_get__anon(self):
     """Anon should always have an empty list of stars."""
@@ -61,7 +61,7 @@ class StarsAPITest(unittest.TestCase):
   def test_get__some_stars(self):
     """User has starred some features."""
     email = 'user8@example.com'
-    feature_1_id = self.feature_1.key().id()
+    feature_1_id = self.feature_1.key.integer_id()
     testing_config.sign_in(email, 123567890)
     notifier.FeatureStar.set_star(email, feature_1_id)
     with register.app.test_request_context(self.request_path):
@@ -91,7 +91,7 @@ class StarsAPITest(unittest.TestCase):
 
   def test_post__anon(self):
     """We reject anon star requests."""
-    feature_id = self.feature_1.key().id()
+    feature_id = self.feature_1.key.integer_id()
     params = {"featureId": feature_id}
     testing_config.sign_out()
     with register.app.test_request_context(self.request_path, json=params):
@@ -102,7 +102,7 @@ class StarsAPITest(unittest.TestCase):
     """User sends a duplicate request, which should be a no-op."""
     testing_config.sign_in('user7@example.com', 123567890)
 
-    feature_id = self.feature_1.key().id()
+    feature_id = self.feature_1.key.integer_id()
     params = {"featureId": feature_id}
     with register.app.test_request_context(self.request_path, json=params):
       self.handler.do_post()  # Original request
@@ -130,7 +130,7 @@ class StarsAPITest(unittest.TestCase):
     """User tries to unstar feature that they never starred: no-op."""
     testing_config.sign_in('user8@example.com', 123567890)
 
-    feature_id = self.feature_1.key().id()
+    feature_id = self.feature_1.key.integer_id()
     # User never stars the feature in the first place.
 
     params = {"featureId": feature_id, "starred": False}
@@ -143,7 +143,7 @@ class StarsAPITest(unittest.TestCase):
     """User can star and unstar."""
     testing_config.sign_in('user6@example.com', 123567890)
 
-    feature_id = self.feature_1.key().id()
+    feature_id = self.feature_1.key.integer_id()
     params = {"featureId": feature_id}
     with register.app.test_request_context(self.request_path, json=params):
       self.handler.do_post()

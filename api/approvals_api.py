@@ -51,6 +51,6 @@ class ApprovalsAPI(basehandlers.APIHandler):
       self.abort(403, msg='User is not an approver')
 
     models.Approval.set_approval(
-        feature.key().id(), field_id, new_state, user.email())
+        feature.key.integer_id(), field_id, new_state, user.email())
     # Callers don't use the JSON response for this API call.
     return {'message': 'Done'}

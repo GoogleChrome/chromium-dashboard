@@ -21,6 +21,7 @@ import flask
 
 from framework import users
 from internals import models
+from google.appengine.ext.ndb import QueryOptions
 
 def can_admin_site(user):
   """Return True if the current user is allowed to administer the site."""
@@ -51,7 +52,7 @@ def can_create_feature(user):
   if user.email().endswith(('@chromium.org', '@google.com')):
     return True
 
-  query = models.AppUser.all(keys_only=True).filter('email =', user.email())
+  query = models.AppUser.query(models.AppUser.email == user.email(), default_options=QueryOptions(keys_only=True))
   found_user = query.get()
   if found_user is not None:
     return True

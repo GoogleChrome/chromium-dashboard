@@ -26,7 +26,7 @@ import os
 
 # App Engine imports.
 from google.appengine.api import users
-from google.appengine.ext import db
+from google.appengine.ext import ndb
 
 import flask
 
@@ -42,7 +42,7 @@ class UserListHandler(basehandlers.FlaskHandler):
 
   @permissions.require_admin_site
   def get_template_data(self):
-    users = models.AppUser.all().fetch(None) # TODO(ericbidelman): ramcache this.
+    users = models.AppUser.query().fetch(None) # TODO(ericbidelman): ramcache this.
 
     user_list = [user.format_for_template() for user in users]
 

@@ -30,7 +30,6 @@ from framework import ramcache
 # TODO(jrobbins): phase out gae_users
 from google.appengine.api import users as gae_users
 from framework import users
-from google.appengine.ext import db
 
 from framework import basehandlers
 from framework import permissions
@@ -154,7 +153,7 @@ class FeatureNew(basehandlers.FlaskHandler):
     # TODO(jrobbins): enumerate and remove only the relevant keys.
     ramcache.flush_all()
 
-    redirect_url = '/guide/edit/' + str(key.id())
+    redirect_url = '/guide/edit/' + str(key.integer_id())
     return self.redirect(redirect_url)
 
 
@@ -188,7 +187,7 @@ class ProcessOverview(basehandlers.FlaskHandler):
     # Provide new or populated form to template.
     template_data.update({
         'feature': f.format_for_template(),
-        'feature_id': f.key().id(),
+        'feature_id': f.key.integer_id(),
         'feature_json': json.dumps(f.format_for_template()),
         'progress_so_far': json.dumps(progress_so_far),
     })
@@ -266,7 +265,7 @@ class FeatureEditStage(basehandlers.FlaskHandler):
     # Provide new or populated form to template.
     template_data.update({
         'feature': f,
-        'feature_id': f.key().id(),
+        'feature_id': f.key.integer_id(),
         'feature_form': detail_form,
         'already_on_this_stage': stage_id == f.intent_stage,
         'already_on_this_impl_status':
@@ -507,7 +506,7 @@ class FeatureEditStage(basehandlers.FlaskHandler):
     # TODO(jrobbins): enumerate and remove only the relevant keys.
     ramcache.flush_all()
 
-    redirect_url = '/guide/edit/' + str(key.id())
+    redirect_url = '/guide/edit/' + str(key.integer_id())
     return self.redirect(redirect_url)
 
 
@@ -528,7 +527,7 @@ class FeatureEditAllFields(FeatureEditStage):
         for section_name, form_class in flat_form_section_list]
     template_data = {
         'feature': f,
-        'feature_id': f.key().id(),
+        'feature_id': f.key.integer_id(),
         'flat_forms': flat_forms,
     }
     return template_data

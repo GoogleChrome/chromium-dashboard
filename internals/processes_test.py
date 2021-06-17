@@ -21,7 +21,7 @@ import testing_config  # Must be imported before the module under test.
 
 import mock
 
-from google.appengine.ext import db
+from google.appengine.ext import ndb
 
 from internals import approval_defs
 from internals import models
@@ -111,7 +111,7 @@ class ProgressDetectorsTest(unittest.TestCase):
     self.feature_1.put()
 
   def tearDown(self):
-    self.feature_1.delete()
+    self.feature_1.key.delete()
 
   def test_initial_public_proposal_url(self):
     detector = processes.PROGRESS_DETECTORS['Initial public proposal']
@@ -164,23 +164,23 @@ class ProgressDetectorsTest(unittest.TestCase):
   def test_one_i2e_lgtm(self):
     detector = processes.PROGRESS_DETECTORS['One LGTM on Intent to Experiment']
     self.assertFalse(detector(self.feature_1))
-    self.feature_1.i2e_lgtms = [db.Email('api_owner@chromium.org')]
+    self.feature_1.i2e_lgtms = ['api_owner@chromium.org']
     self.assertTrue(detector(self.feature_1))
 
   def test_one_i2e_lgtm(self):
     detector = processes.PROGRESS_DETECTORS[
         'One LGTM on Request for Deprecation Trial']
     self.assertFalse(detector(self.feature_1))
-    self.feature_1.i2e_lgtms = [db.Email('api_owner@chromium.org')]
+    self.feature_1.i2e_lgtms = ['api_owner@chromium.org']
     self.assertTrue(detector(self.feature_1))
 
   def test_three_i2s_lgtm(self):
     detector = processes.PROGRESS_DETECTORS['Three LGTMs on Intent to Ship']
     self.assertFalse(detector(self.feature_1))
     self.feature_1.i2s_lgtms = [
-        db.Email('one@chromium.org'),
-        db.Email('two@chromium.org'),
-        db.Email('three@chromium.org')]
+        'one@chromium.org',
+        'two@chromium.org',
+        'three@chromium.org']
     self.assertTrue(detector(self.feature_1))
 
   def test_samples(self):
