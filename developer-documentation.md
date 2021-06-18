@@ -2,13 +2,17 @@
 
 This doc covers some basic overview of the codebase to help developers navigate.
 
-In summary, this web app is using a combination of Django & Flask as the backend and lit-element in the front end. It uses [Google Sign-In](https://developers.google.com/identity/sign-in/web/sign-in) for authentication.
+In summary, this web app is using a combination of Django & Flask as the backend and lit-element in the front end. It uses [Google Sign-In](https://developers.google.com/identity/sign-in/web/sign-in) for authentication. **Google Cloud Datastore** is used as database. 
 
 ## Back end
 
 In the Backend,
 * **Django** is used just for HTML templates and forms (see `FlaskHandler.render()` in `Framework/basehandlers.py` and `pages/guideforms.py`). 
 * **Flask** is being used for all the request handlers (see `basehandlers.py` and all the code under `api/` and `pages/`).
+
+HISTORY:-
+* The app used to use a combination of Django plus Webapp2. However, now it uses Django plus Flask as mentioned above.
+* The app used to use *DB Client Library* for interacting with Google Cloud DataStore. However, now it uses *NDB Client Library*.
 
 ## Front end
 
