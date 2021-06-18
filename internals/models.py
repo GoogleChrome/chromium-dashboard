@@ -970,7 +970,7 @@ class Feature(DictModel):
       new_val = getattr(self, prop_name, None)
       old_val = getattr(self, '_old_' + prop_name, None)
       if new_val != old_val:
-        if new_val == '' and old_val is None:
+        if (new_val == '' or new_val == False) and old_val is None:
           continue
         new_val = convert_enum_int_to_string(prop_name, new_val)
         old_val = convert_enum_int_to_string(prop_name, old_val)
