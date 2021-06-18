@@ -59,11 +59,10 @@
   <script nonce="{{nonce}}">
     (function() {
       'use strict';
-      // Get values from server. used in /static/js/features-page.js
+      // Get values from server. used in /static/js-src/features-page.js
       const VIEWS = {
         vendors: {{VENDOR_VIEWS|safe}},
         webdevs: {{WEB_DEV_VIEWS|safe}},
-        standards: {{STANDARDS_VALS|safe}}
       };
       {% inline_file "/static/js/features-page.min.js" %}
     })();

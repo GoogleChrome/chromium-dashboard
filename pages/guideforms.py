@@ -169,13 +169,6 @@ ALL_FIELDS = {
          'success of this feature, such as a link to the UseCounter(s) you '
          'have set up.')),
 
-    'standardization': forms.ChoiceField(
-        required=False, label='Standardization',
-        choices=models.STANDARDIZATION.items(),
-        initial=models.EDITORS_DRAFT,
-        help_text=("The standardization status of the API. In bodies that don't "
-                   "use this nomenclature, use the closest equivalent.")),
-
     'unlisted': forms.BooleanField(
       required=False, initial=False,
       help_text=('Check this box for draft features that should not appear '
@@ -963,7 +956,7 @@ def make_display_specs(*shared_field_names):
           for field_name in shared_field_names]
 
 
-DEPRECATED_FIELDS = ['standardization']
+DEPRECATED_FIELDS = []
 
 DISPLAY_IN_FEATURE_HIGHLIGHTS = [
     'name', 'summary',

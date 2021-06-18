@@ -258,15 +258,6 @@ EDITORS_DRAFT = 4
 PUBLIC_DISCUSSION = 5
 NO_STD_OR_DISCUSSION = 6
 
-STANDARDIZATION = {
-  DEFACTO_STD: 'De-facto standard',
-  ESTABLISHED_STD: 'Established standard',
-  WORKING_DRAFT: 'Working draft or equivalent',
-  EDITORS_DRAFT: "Editor's draft",
-  PUBLIC_DISCUSSION: 'Public discussion',
-  NO_STD_OR_DISCUSSION: 'No public standards discussion',
-  }
-
 DEV_STRONG_POSITIVE = 1
 DEV_POSITIVE = 2
 DEV_MIXED_SIGNALS = 3
@@ -290,7 +281,6 @@ PROPERTY_NAMES_TO_ENUM_DICTS = {
     'impl_status_chrome': IMPLEMENTATION_STATUS,
     'security_review_status': REVIEW_STATUS_CHOICES,
     'privacy_review_status': REVIEW_STATUS_CHOICES,
-    'standardization': STANDARDIZATION,
     'ff_views': VENDOR_VIEWS,
     'ie_views': VENDOR_VIEWS,
     'safari_views': VENDOR_VIEWS,
@@ -597,10 +587,6 @@ class Feature(DictModel):
       }
       d['standards'] = {
         'spec': d.pop('spec_link', None),
-        'status': {
-          'text': STANDARDIZATION[self.standardization],
-          'val': d.pop('standardization', None),
-        },
       }
       d['tag_review_status'] = REVIEW_STATUS_CHOICES[self.tag_review_status]
       d['security_review_status'] = REVIEW_STATUS_CHOICES[
@@ -711,8 +697,6 @@ class Feature(DictModel):
                        'text': VENDOR_VIEWS[self.ie_views]}
       d['safari_views'] = {'value': self.safari_views,
                            'text': VENDOR_VIEWS[self.safari_views]}
-      d['standardization'] = {'value': self.standardization,
-                              'text': STANDARDIZATION[self.standardization]}
       d['web_dev_views'] = {'value': self.web_dev_views,
                             'text': WEB_DEV_VIEWS[self.web_dev_views]}
 
@@ -1055,7 +1039,7 @@ class Feature(DictModel):
   visibility = ndb.IntegerProperty(required=False)  # Deprecated
 
   # Standards details.
-  standardization = ndb.IntegerProperty(required=True)
+  standardization = ndb.IntegerProperty(required=True)  # Deprecated
   spec_link = ndb.StringProperty()
   api_spec = ndb.BooleanProperty(default=False)
   spec_mentors = ndb.StringProperty(repeated=True)

@@ -4,6 +4,9 @@ import '@polymer/iron-icon';
 import './chromedash-color-status';
 import SHARED_STYLES from '../css/shared.css';
 
+// This element implements the help dialog that appears when the user
+// clicks on the '?' icon near the search field.
+
 class ChromedashLegend extends LitElement {
   static get properties() {
     return {
@@ -147,7 +150,7 @@ class ChromedashLegend extends LitElement {
         <p>Colors indicate the "interoperability risk" for a given feature. The
           risk increases as
           <chromedash-color-status value="0"
-              .max="${this.views.vendors.length}"></chromedash-color-status> → 
+              .max="${this.views.vendors.length}"></chromedash-color-status> →
           <chromedash-color-status .value="${this.views.vendors.length}"
               .max="${this.views.vendors.length}"></chromedash-color-status>, and the
           color meaning differs for browser vendors, web developers, and the
@@ -174,18 +177,6 @@ class ChromedashLegend extends LitElement {
                                            .max="${this.views.webdevs.length}">
                                            </chromedash-color-status>
                   <span>${webdev.val}</span></li>
-                `)}
-            </ul>
-          </div>
-          <div>
-            <p>Standards values</p>
-            <ul>
-              ${this.views.standards.map((standard) => html`
-                <li>
-                  <chromedash-color-status .value="${standard.key}"
-                                           .max="${this.views.standards.length}">
-                                           </chromedash-color-status>
-                  <span>${standard.val}</span></li>
                 `)}
             </ul>
           </div>

@@ -8,7 +8,6 @@ import './chromedash-color-status';
 import style from '../css/elements/chromedash-feature.css';
 import sharedStyle from '../css/shared.css';
 
-const MAX_STANDARDS_VAL = 6;
 const MAX_VENDOR_VIEW = 7;
 const MAX_WEBDEV_VIEW = 6;
 
@@ -441,17 +440,12 @@ class ChromedashFeature extends LitElement {
                     .max="${MAX_WEBDEV_VIEW}"></chromedash-color-status>
                 <iron-icon icon="chromestatus:accessibility"></iron-icon>
               </span>
-              <span class="standardization view">
-                <chromedash-color-status class="bottom"
-                    .value="${this.feature.standards.status.val}"
-                    .max="${MAX_STANDARDS_VAL}"></chromedash-color-status>
-                ${this.feature.standards.spec ? html`
+             ${this.feature.standards.spec ? html`
+                <span class="standardization view">
                   <a href="${this.feature.standards.spec}"
-                     target="_blank">${this.feature.standards.status.text}</a>
-                  ` : html`
-                  <label>${this.feature.standards.status.text}</label>
-                  `}
-              </span>
+                     target="_blank">Spec</a>
+                </span>` :
+               nothing}
             </div>
             <div style="font-size:smaller">
               After a feature ships in Chrome, the values listed here are not

@@ -66,9 +66,6 @@ class FeatureListHandler(basehandlers.FlaskHandler):
     template_data['WEB_DEV_VIEWS'] = json.dumps([
       {'key': k, 'val': v} for k,v in
       models.WEB_DEV_VIEWS.iteritems()])
-    template_data['STANDARDS_VALS'] = json.dumps([
-      {'key': k, 'val': v} for k,v in
-      models.STANDARDIZATION.iteritems()])
 
     return template_data
 
