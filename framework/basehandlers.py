@@ -446,8 +446,12 @@ def FlaskApplication(routes, pattern_base='', debug=False):
   """Make a Flask app and add routes and handlers that work like webapp2."""
 
   app = flask.Flask(__name__)
-  app.secret_key = secrets.get_session_secret()  # For flask.session
   app.wsgi_app = ndb_wsgi_middleware(app.wsgi_app) # For Cloud NDB Context
+  client = ndb.Client()
+  with client.context():
+    app.secret_key = secrets.get_session_secret()  # For flask.session
+
+
 
   for i, rule in enumerate(routes):
     pattern = rule[0]
