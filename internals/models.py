@@ -360,6 +360,8 @@ class DictModel(ndb.Model):
         output[key] = to_dict(value)
       elif isinstance(value, gae_users.User):
         output[key] = value.email()
+      elif isinstance(value, ndb.model.User):
+        output[key] = value.email()
       else:
         raise ValueError('cannot encode ' + repr(prop))
 
