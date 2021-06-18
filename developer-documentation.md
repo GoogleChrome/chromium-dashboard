@@ -43,6 +43,14 @@ appuser_1.put()
 ```
 To view and edit the users datastore, you can click on Datastore Viewer. Make sure that `Entity Kind` is set to `AppUser`.
 
+## Generating Diffs for sending emails to subscribers of a feature
+* When someone edits a feature, everyone who have subscribed to that feature will receive a email stating what fields were edited, the old values and the new values.
+* The body of this email (diffs) can be seen in the console logs. To see the logs, follow these steps:-
+  1. Create a feature using one account.
+  1. Now, signout and login with another account.
+  1. Click on the star present in the feature box in the all features page.
+  1. Now login again using the first account and edit a feature.
+  1. On pressing submit after editing the feature, you will be able to see the diff in the console logs. 
 
 ## Some nice-to-fix
 
