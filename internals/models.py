@@ -23,7 +23,8 @@ import logging
 import re
 import time
 
-from google.appengine.ext import ndb
+# from google.appengine.ext import ndb
+from google.cloud import ndb
 
 # from google.appengine.ext.db import djangoforms
 from google.appengine.api import mail
