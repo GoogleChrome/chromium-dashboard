@@ -21,8 +21,6 @@ import testing_config  # Must be imported before the module under test.
 
 import mock
 
-from google.appengine.ext import ndb
-
 from internals import approval_defs
 from internals import models
 from internals import processes
