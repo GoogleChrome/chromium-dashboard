@@ -24,9 +24,6 @@ import json
 import logging
 import os
 
-# App Engine imports.
-from google.appengine.ext import ndb
-
 import flask
 
 from framework import basehandlers

@@ -20,8 +20,6 @@ import mock
 import testing_config  # Must be imported before the module under test.
 import unittest
 
-from google.appengine.ext import ndb
-
 from framework import ramcache
 
 
