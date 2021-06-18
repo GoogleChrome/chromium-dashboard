@@ -21,7 +21,7 @@ import flask
 
 from framework import users
 from internals import models
-from google.appengine.ext.ndb import QueryOptions
+from google.cloud.ndb import QueryOptions
 
 def can_admin_site(user):
   """Return True if the current user is allowed to administer the site."""
