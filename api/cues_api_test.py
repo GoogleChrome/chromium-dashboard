@@ -25,6 +25,9 @@ import werkzeug.exceptions  # Flask HTTP stuff.
 from api import cues_api
 from api import register
 from internals import models
+from google.cloud import ndb
+
+client = ndb.Client()
 
 
 class CuesAPITest(unittest.TestCase):
@@ -33,11 +36,13 @@ class CuesAPITest(unittest.TestCase):
     self.user_pref_1 = models.UserPref(
         email='one@example.com',
         notify_as_starrer=False)
-    self.user_pref_1.put()
+    with client.context():
+      self.user_pref_1.put()
     self.handler = cues_api.CuesAPI()
 
   def tearDown(self):
-    self.user_pref_1.key.delete()
+    with client.context():
+      self.user_pref_1.key.delete()
 
   def test_post__valid(self):
     """User wants to dismiss a valid cue card ID."""
@@ -45,10 +50,12 @@ class CuesAPITest(unittest.TestCase):
 
     with register.app.test_request_context(
         '/cues/dismiss', json={"cue": "progress-checkmarks"}):
-      actual_json = self.handler.do_post()
+      with client.context():
+        actual_json = self.handler.do_post()
     self.assertEqual({'message': 'Done'}, actual_json)
 
-    revised_user_pref = models.UserPref.get_signed_in_user_pref()
+    with client.context():
+      revised_user_pref = models.UserPref.get_signed_in_user_pref()
     self.assertEqual(['progress-checkmarks'], revised_user_pref.dismissed_cues)
 
   def test_post__invalid(self):
@@ -61,5 +68,6 @@ class CuesAPITest(unittest.TestCase):
         self.handler.do_post()
 
     # The invalid string should not be added.
-    revised_user_pref = models.UserPref.get_signed_in_user_pref()
+    with client.context():
+      revised_user_pref = models.UserPref.get_signed_in_user_pref()
     self.assertEqual([], revised_user_pref.dismissed_cues)
