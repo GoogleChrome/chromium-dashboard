@@ -46,6 +46,7 @@ from google.appengine.ext import testbed
 os.environ['DJANGO_SECRET'] = 'test secret'
 os.environ['SERVER_SOFTWARE'] = 'test ' + os.environ.get('SERVER_SOFTWARE', '')
 os.environ['CURRENT_VERSION_ID'] = 'test.123'
+os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
 
 
 ourTestbed = testbed.Testbed()

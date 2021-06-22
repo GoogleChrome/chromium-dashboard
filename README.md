@@ -10,7 +10,7 @@ Chrome Platform Status
     git clone https://github.com/GoogleChrome/chromium-dashboard
 
 ### Installation
-
+1. Before you begin, make sure that you have a java JRE (version 8 or greater) installed. JRE is required to use the DataStore Emulator. 
 1. Install global CLIs
     1. [Google App Engine SDK for Python](https://cloud.google.com/appengine/docs/standard/python/setting-up-environment). Make sure to select Python 2.7.
     1. pip, node, npm.
