@@ -27,6 +27,9 @@ from framework import users
 
 from api import metricsdata
 from internals import models
+from google.cloud import ndb
+
+client = ndb.Client()
 
 
 class MetricsFunctionTests(unittest.TestCase):
@@ -75,10 +78,12 @@ class PopularityTimelineHandlerTests(unittest.TestCase):
     self.datapoint = models.StableInstance(
         day_percentage=0.0123456789, date=datetime.date.today(),
         bucket_id=1, property_name='prop')
-    self.datapoint.put()
+    with client.context():
+      self.datapoint.put()
 
   def tearDown(self):
-    self.datapoint.key.delete()
+    with client.context():
+      self.datapoint.key.delete()
 
   def test_make_query(self):
     actual_query = self.handler.make_query(1)
@@ -94,7 +99,8 @@ class PopularityTimelineHandlerTests(unittest.TestCase):
     testing_config.sign_out()
     url = '/data/timeline/csspopularity?bucket_id=1'
     with metricsdata.app.test_request_context(url):
-      actual_datapoints = self.handler.get_template_data()
+      with client.context():
+        actual_datapoints = self.handler.get_template_data()
     self.assertEqual(1, len(actual_datapoints))
     self.assertEqual(0.01234568, actual_datapoints[0]['day_percentage'])
 
@@ -108,33 +114,38 @@ class FeatureBucketsHandlerTest(unittest.TestCase):
     self.handler = metricsdata.FeatureBucketsHandler()
     self.prop_1 = models.CssPropertyHistogram(
         bucket_id=1, property_name='b prop')
-    self.prop_1.put()
     self.prop_2 = models.CssPropertyHistogram(
         bucket_id=2, property_name='a prop')
-    self.prop_2.put()
     self.prop_3 = models.FeatureObserverHistogram(
         bucket_id=3, property_name='b feat')
-    self.prop_3.put()
     self.prop_4 = models.FeatureObserverHistogram(
         bucket_id=4, property_name='a feat')
-    self.prop_4.put()
+    with client.context():
+      self.prop_1.put()
+      self.prop_2.put()
+      self.prop_3.put()
+      self.prop_4.put()
+      
 
   def tearDown(self):
-    self.prop_1.key.delete()
-    self.prop_2.key.delete()
-    self.prop_3.key.delete()
-    self.prop_4.key.delete()
+    with client.context():
+      self.prop_1.key.delete()
+      self.prop_2.key.delete()
+      self.prop_3.key.delete()
+      self.prop_4.key.delete()
 
   def test_get_template_data__css(self):
     with metricsdata.app.test_request_context('/data/blink/cssprops'):
-      actual_buckets = self.handler.get_template_data('cssprops')
+      with client.context():
+        actual_buckets = self.handler.get_template_data('cssprops')
     self.assertEqual(
         [(2, 'a prop'), (1, 'b prop')],
         actual_buckets)
 
   def test_get_template_data__js(self):
     with metricsdata.app.test_request_context('/data/blink/features'):
-      actual_buckets = self.handler.get_template_data('features')
+      with client.context():
+        actual_buckets = self.handler.get_template_data('features')
     self.assertEqual(
         [(4, 'a feat'), (3, 'b feat')],
         actual_buckets)
