@@ -24,6 +24,10 @@ import werkzeug
 from framework import ramcache
 from internals import models
 from pages import featurelist
+from google.cloud import ndb
+
+client = ndb.Client()
+
 
 
 class TestWithFeature(unittest.TestCase):
@@ -36,7 +40,8 @@ class TestWithFeature(unittest.TestCase):
         name='feature one', summary='detailed sum', category=1, visibility=1,
         standardization=1, web_dev_views=1, impl_status_chrome=1,
         intent_stage=models.INTENT_IMPLEMENT)
-    self.feature_1.put()
+    with client.context():
+      self.feature_1.put()
     self.feature_id = self.feature_1.key.integer_id()
 
     self.request_path = self.REQUEST_PATH_FORMAT % {
@@ -45,9 +50,10 @@ class TestWithFeature(unittest.TestCase):
     self.handler = self.HANDLER_CLASS()
 
   def tearDown(self):
-    self.feature_1.key.delete()
-    ramcache.flush_all()
-    ramcache.check_for_distributed_invalidation()
+    with client.context():
+      self.feature_1.key.delete()
+      ramcache.flush_all()
+      ramcache.check_for_distributed_invalidation()
 
 
 class FeaturesJsonHandlerTest(TestWithFeature):
@@ -58,7 +64,8 @@ class FeaturesJsonHandlerTest(TestWithFeature):
   def test_get_template_data(self):
     """User can get a JSON feed of all features."""
     with featurelist.app.test_request_context(self.request_path):
-      json_data = self.handler.get_template_data()
+      with client.context():
+        json_data = self.handler.get_template_data()
 
     self.assertEqual(1, len(json_data))
     self.assertEqual('feature one', json_data[0]['name'])
@@ -66,26 +73,31 @@ class FeaturesJsonHandlerTest(TestWithFeature):
   def test_get_template_data__unlisted_no_perms(self):
     """JSON feed does not include unlisted features for users who can't edit."""
     self.feature_1.unlisted = True
-    self.feature_1.put()
+    with client.context():
+      self.feature_1.put()
 
     testing_config.sign_out()
     with featurelist.app.test_request_context(self.request_path):
-      json_data = self.handler.get_template_data()
+      with client.context():
+        json_data = self.handler.get_template_data()
     self.assertEqual(0, len(json_data))
 
     testing_config.sign_in('user@example.com', 111)
     with featurelist.app.test_request_context(self.request_path):
-      json_data = self.handler.get_template_data()
+      with client.context():
+        json_data = self.handler.get_template_data()
     self.assertEqual(0, len(json_data))
 
   def test_get_template_data__unlisted_can_edit(self):
     """JSON feed includes unlisted features for users who may edit."""
     self.feature_1.unlisted = True
-    self.feature_1.put()
+    with client.context():
+      self.feature_1.put()
 
     testing_config.sign_in('user@google.com', 111)
     with featurelist.app.test_request_context(self.request_path):
-      json_data = self.handler.get_template_data()
+      with client.context():
+        json_data = self.handler.get_template_data()
     self.assertEqual(1, len(json_data))
     self.assertEqual('feature one', json_data[0]['name'])
 
@@ -98,7 +110,8 @@ class FeatureListHandlerTest(TestWithFeature):
   def test_get_template_data(self):
     """User can get a feature list page."""
     with featurelist.app.test_request_context(self.request_path):
-      template_data = self.handler.get_template_data()
+      with client.context():
+        template_data = self.handler.get_template_data()
 
     self.assertIn('IMPLEMENTATION_STATUSES', template_data)
 
@@ -111,7 +124,8 @@ class FeatureListXMLHandlerTest(TestWithFeature):
   def test_get_template_data__no_filters(self):
     """User can get an XML feed of all features."""
     with featurelist.app.test_request_context(self.request_path):
-      actual_text, actual_headers = self.handler.get_template_data()
+      with client.context():
+        actual_text, actual_headers = self.handler.get_template_data()
 
     self.assertTrue(actual_text.startswith('<?xml'))
     self.assertIn('feature one', actual_text)
@@ -124,7 +138,8 @@ class FeatureListXMLHandlerTest(TestWithFeature):
     """User can get an XML feed of features by category."""
     request_path = self.request_path + '?category=web components'
     with featurelist.app.test_request_context(request_path):
-      actual_text, actual_headers = self.handler.get_template_data()
+      with client.context():
+        actual_text, actual_headers = self.handler.get_template_data()
 
     # It is an XML feed
     self.assertTrue(actual_text.startswith('<?xml'))
@@ -139,7 +154,8 @@ class FeatureListXMLHandlerTest(TestWithFeature):
 
     request_path = self.request_path + '?category=css'
     with featurelist.app.test_request_context(request_path):
-      actual_text, actual_headers = self.handler.get_template_data()
+      with client.context():
+        actual_text, actual_headers = self.handler.get_template_data()
 
     self.assertTrue(actual_text.startswith('<?xml'))
     self.assertNotIn('feature one', actual_text)
