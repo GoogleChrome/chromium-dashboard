@@ -21,7 +21,9 @@ import testing_config  # Must be imported before the module under test.
 import unittest
 
 from framework import ramcache
+from google.cloud import ndb
 
+client = ndb.Client()
 
 KEY_1 = 'cache_key|1'
 KEY_2 = 'cache_key|2'
@@ -101,7 +103,8 @@ class RAMCacheFunctionTests(unittest.TestCase):
   @mock.patch('framework.ramcache.SharedInvalidate.invalidate')
   def testFlushAll(self, mock_invalidate):
     """flush_all simply causes an invalidation."""
-    ramcache.flush_all()
+    with client.context():
+      ramcache.flush_all()
     mock_invalidate.assert_called_once()
 
 
@@ -110,7 +113,8 @@ class SharedInvalidateTests(unittest.TestCase):
   def assertTimestampWasUpdated(self, start_time):
 
     singleton = None
-    entities = ramcache.SharedInvalidate.query(ancestor=ramcache.SharedInvalidate.PARENT_KEY).fetch(1)
+    with client.context():
+      entities = ramcache.SharedInvalidate.query(ancestor=ramcache.SharedInvalidate.PARENT_KEY).fetch(1)
     if entities:
       singleton = entities[0]
 
@@ -119,26 +123,31 @@ class SharedInvalidateTests(unittest.TestCase):
   def testInvalidate(self):
     """Calling invalidate sets a new updated time."""
     start_time = datetime.datetime.now()
-    ramcache.SharedInvalidate.invalidate()
+    with client.context():
+      ramcache.SharedInvalidate.invalidate()
     self.assertTimestampWasUpdated(start_time)
 
   def testCheckForDistributedInvalidation_Unneeded_NoEntity(self):
     """When the system first launches, no need to clear cache."""
-    ramcache.SharedInvalidate.SINGLETON_KEY.delete()
+    with client.context():
+      ramcache.SharedInvalidate.SINGLETON_KEY.delete()
     ramcache.SharedInvalidate.last_processed_timestamp = None
     ramcache.global_cache = {KEY_7: 777}
-    ramcache.SharedInvalidate.check_for_distributed_invalidation()
+    with client.context():
+      ramcache.SharedInvalidate.check_for_distributed_invalidation()
     self.assertEquals({KEY_7: 777}, ramcache.global_cache)
     self.assertIsNone(ramcache.SharedInvalidate.last_processed_timestamp)
 
   def testCheckForDistributedInvalidation_Unneeded_Fresh(self):
     """When no other instance has invalidated, this cache is fresh."""
-    ramcache.SharedInvalidate.invalidate()
-    ramcache.SharedInvalidate.check_for_distributed_invalidation()
+    with client.context():
+      ramcache.SharedInvalidate.invalidate()
+      ramcache.SharedInvalidate.check_for_distributed_invalidation()
     # From this point on there are no invalidations, so our cache is fresh.
 
     ramcache.global_cache = {KEY_7: 777}
-    ramcache.SharedInvalidate.check_for_distributed_invalidation()
+    with client.context():
+      ramcache.SharedInvalidate.check_for_distributed_invalidation()
     # Since cache is fresh, it is not cleared.
     self.assertEquals({KEY_7: 777}, ramcache.global_cache)
 
@@ -147,8 +156,9 @@ class SharedInvalidateTests(unittest.TestCase):
     start_time = datetime.datetime.now()
     ramcache.SharedInvalidate.last_processed_timestamp = None
     ramcache.global_cache = {KEY_7: 777}
-    ramcache.flush_all()
-    ramcache.SharedInvalidate.check_for_distributed_invalidation()
+    with client.context():
+      ramcache.flush_all()
+      ramcache.SharedInvalidate.check_for_distributed_invalidation()
     self.assertEquals({}, ramcache.global_cache)
     self.assertTimestampWasUpdated(start_time)
 
@@ -157,7 +167,8 @@ class SharedInvalidateTests(unittest.TestCase):
     start_time = datetime.datetime.now()
     ramcache.SharedInvalidate.last_processed_timestamp = start_time
     ramcache.global_cache = {KEY_7: 777}
-    ramcache.flush_all()
-    ramcache.SharedInvalidate.check_for_distributed_invalidation()
+    with client.context():
+      ramcache.flush_all()
+      ramcache.SharedInvalidate.check_for_distributed_invalidation()
     self.assertEquals({}, ramcache.global_cache)
     self.assertTimestampWasUpdated(start_time)
