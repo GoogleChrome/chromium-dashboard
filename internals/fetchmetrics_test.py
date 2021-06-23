@@ -28,6 +28,10 @@ import werkzeug
 from internals import fetchmetrics
 from internals import models
 
+from google.cloud import ndb
+
+client = ndb.Client()
+
 
 class FetchMetricsTest(unittest.TestCase):
 
@@ -74,18 +78,22 @@ class UmaQueryTest(unittest.TestCase):
   def testHasCapstone__not_found(self):
     """If there is no capstone entry, we get False."""
     query_date = datetime.date(2021, 1, 20)
-    actual = self.uma_query._HasCapstone(query_date)
+    with client.context():
+      actual = self.uma_query._HasCapstone(query_date)
     self.assertFalse(actual)
 
   def testHasCapstone__found(self):
     """If we set a capstone entry, we can find it."""
     query_date = datetime.date(2021, 1, 20)
-    capstone = self.uma_query._SetCapstone(query_date)
+    with client.context():
+      capstone = self.uma_query._SetCapstone(query_date)
 
     try:
-      actual = self.uma_query._HasCapstone(query_date)
+      with client.context():
+        actual = self.uma_query._HasCapstone(query_date)
     finally:
-      capstone.key.delete()
+      with client.context():
+        capstone.key.delete()
 
     self.assertTrue(actual)
 
@@ -103,7 +111,8 @@ class YesterdayHandlerTest(unittest.TestCase):
     today = datetime.date(2021, 1, 20)
 
     with fetchmetrics.app.test_request_context(self.request_path):
-      actual_response = self.handler.get_template_data(today=today)
+      with client.context():
+        actual_response = self.handler.get_template_data(today=today)
 
     self.assertEqual('Success', actual_response)
     expected_calls = [
@@ -120,7 +129,8 @@ class YesterdayHandlerTest(unittest.TestCase):
 
     with fetchmetrics.app.test_request_context(
         self.request_path, query_string={'date': '20210120'}):
-      actual_response = self.handler.get_template_data(today=today)
+      with client.context():
+        actual_response = self.handler.get_template_data(today=today)
 
     self.assertEqual('Success', actual_response)
     expected_calls = [
@@ -176,7 +186,8 @@ class HistogramsHandlerTest(unittest.TestCase):
         status_code=200,
         content=base64.b64encode(self.ENUMS_TEXT))
     with fetchmetrics.app.test_request_context(self.request_path):
-      actual_response = self.handler.get_template_data()
+      with client.context():
+        actual_response = self.handler.get_template_data()
 
     self.assertEqual('Success', actual_response)
     self.assertEqual(9, mock_save_data.call_count)
