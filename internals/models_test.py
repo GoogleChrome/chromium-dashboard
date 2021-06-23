@@ -24,6 +24,9 @@ from framework import ramcache
 from framework import users
 
 from internals import models
+from google.cloud import ndb
+
+client = ndb.Client()
 
 
 class MockQuery(object):
@@ -85,25 +88,30 @@ class ModelsFunctionsTest(unittest.TestCase):
 class FeatureTest(unittest.TestCase):
 
   def setUp(self):
-    ramcache.SharedInvalidate.check_for_distributed_invalidation()
+    with client.context():
+      ramcache.SharedInvalidate.check_for_distributed_invalidation()
     self.feature_1 = models.Feature(
         name='feature one', summary='sum', category=1, visibility=1,
         standardization=1, web_dev_views=1, impl_status_chrome=1)
-    self.feature_1.put()
+    with client.context():
+      self.feature_1.put()
 
     self.feature_2 = models.Feature(
         name='feature two', summary='sum', category=1, visibility=1,
         standardization=1, web_dev_views=1, impl_status_chrome=1)
-    self.feature_2.put()
+    with client.context():
+      self.feature_2.put()
 
   def tearDown(self):
-    self.feature_1.key.delete()
-    self.feature_2.key.delete()
-    ramcache.flush_all()
+    with client.context():
+      self.feature_1.key.delete()
+      self.feature_2.key.delete()
+      ramcache.flush_all()
 
   def test_get_chronological__normal(self):
     """We can retrieve a list of features."""
-    actual = models.Feature.get_chronological()
+    with client.context():
+      actual = models.Feature.get_chronological()
     names = [f['name'] for f in actual]
     self.assertEqual(
         ['feature one', 'feature two'],
@@ -112,8 +120,9 @@ class FeatureTest(unittest.TestCase):
   def test_get_chronological__unlisted(self):
     """Unlisted features are not included in the list."""
     self.feature_2.unlisted = True
-    self.feature_2.put()
-    actual = models.Feature.get_chronological()
+    with client.context():
+      self.feature_2.put()
+      actual = models.Feature.get_chronological()
     names = [f['name'] for f in actual]
     self.assertEqual(
         ['feature one'],
@@ -122,8 +131,9 @@ class FeatureTest(unittest.TestCase):
   def test_get_chronological__unlisted_shown(self):
     """Unlisted features are included for users with edit access."""
     self.feature_2.unlisted = True
-    self.feature_2.put()
-    actual = models.Feature.get_chronological(show_unlisted=True)
+    with client.context():
+      self.feature_2.put()
+      actual = models.Feature.get_chronological(show_unlisted=True)
     names = [f['name'] for f in actual]
     self.assertEqual(
         ['feature one', 'feature two'],
@@ -146,20 +156,24 @@ class UserPrefTest(unittest.TestCase):
   def setUp(self):
     self.user_pref_1 = models.UserPref(email='one@example.com')
     self.user_pref_1.notify_as_starrer = False
-    self.user_pref_1.put()
+    with client.context():
+      self.user_pref_1.put()
 
     self.user_pref_2 = models.UserPref(email='two@example.com')
-    self.user_pref_2.put()
+    with client.context():
+      self.user_pref_2.put()
 
   def tearDown(self):
-    self.user_pref_1.key.delete()
-    self.user_pref_2.key.delete()
+    with client.context():
+      self.user_pref_1.key.delete()
+      self.user_pref_2.key.delete()
 
   # @mock.patch('google.appengine.api.users.get_current_user')
   @mock.patch('framework.users.get_current_user')
   def test_get_signed_in_user_pref__anon(self, mock_get_current_user):
     mock_get_current_user.return_value = None
-    actual = models.UserPref.get_signed_in_user_pref()
+    with client.context():
+      actual = models.UserPref.get_signed_in_user_pref()
     self.assertIsNone(actual)
 
   # @mock.patch('google.appengine.api.users.get_current_user')
@@ -168,7 +182,8 @@ class UserPrefTest(unittest.TestCase):
     mock_get_current_user.return_value = testing_config.Blank(
         email=lambda: 'user1@example.com')
 
-    actual = models.UserPref.get_signed_in_user_pref()
+    with client.context():
+      actual = models.UserPref.get_signed_in_user_pref()
 
     self.assertEqual('user1@example.com', actual.email)
     self.assertEqual(True, actual.notify_as_starrer)
@@ -181,9 +196,9 @@ class UserPrefTest(unittest.TestCase):
         email=lambda: 'user2@example.com')
     user_pref = models.UserPref(
         email='user2@example.com', notify_as_starrer=False, bounced=True)
-    user_pref.put()
-
-    actual = models.UserPref.get_signed_in_user_pref()
+    with client.context():
+      user_pref.put()
+      actual = models.UserPref.get_signed_in_user_pref()
 
     self.assertEqual('user2@example.com', actual.email)
     self.assertEqual(False, actual.notify_as_starrer)
@@ -196,9 +211,9 @@ class UserPrefTest(unittest.TestCase):
     mock_get_current_user.return_value = testing_config.Blank(
         email=lambda: 'one@example.com')
 
-    models.UserPref.dismiss_cue('welcome-message')
-
-    revised_user_pref = models.UserPref.get_signed_in_user_pref()
+    with client.context():
+      models.UserPref.dismiss_cue('welcome-message')
+      revised_user_pref = models.UserPref.get_signed_in_user_pref()
     self.assertEqual('one@example.com', revised_user_pref.email)
     self.assertEqual(['welcome-message'], revised_user_pref.dismissed_cues)
 
@@ -209,16 +224,18 @@ class UserPrefTest(unittest.TestCase):
     mock_get_current_user.return_value = testing_config.Blank(
         email=lambda: 'one@example.com')
 
-    models.UserPref.dismiss_cue('welcome-message')
-    models.UserPref.dismiss_cue('welcome-message')
+    with client.context():
+      models.UserPref.dismiss_cue('welcome-message')
+      models.UserPref.dismiss_cue('welcome-message')
 
-    revised_user_pref = models.UserPref.get_signed_in_user_pref()
+      revised_user_pref = models.UserPref.get_signed_in_user_pref()
     self.assertEqual('one@example.com', revised_user_pref.email)
     self.assertEqual(['welcome-message'], revised_user_pref.dismissed_cues)
 
   def test_get_prefs_for_emails__some_found(self):
     emails = ['one@example.com', 'two@example.com', 'huh@example.com']
-    user_prefs = models.UserPref.get_prefs_for_emails(emails)
+    with client.context():
+      user_prefs = models.UserPref.get_prefs_for_emails(emails)
     self.assertEqual(3, len(user_prefs))
     one, two, huh = user_prefs
     self.assertEqual('one@example.com', one.email)
@@ -232,6 +249,7 @@ class UserPrefTest(unittest.TestCase):
   def test_get_prefs_for_emails__long_list(self):
     emails = ['user_%d@example.com' % i
               for i in range(100)]
-    user_prefs = models.UserPref.get_prefs_for_emails(emails)
+    with client.context():
+      user_prefs = models.UserPref.get_prefs_for_emails(emails)
     self.assertEqual(100, len(user_prefs))
     self.assertEqual('user_0@example.com', user_prefs[0].email)
