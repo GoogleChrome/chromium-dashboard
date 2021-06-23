@@ -24,6 +24,9 @@ import mock
 from internals import approval_defs
 from internals import models
 from internals import processes
+from google.cloud import ndb
+
+client = ndb.Client()
 
 
 BakeApproval = approval_defs.ApprovalFieldDef(
@@ -106,10 +109,12 @@ class ProgressDetectorsTest(unittest.TestCase):
         standardization=1, web_dev_views=models.DEV_NO_SIGNALS,
         impl_status_chrome=1,
         intent_stage=models.INTENT_IMPLEMENT)
-    self.feature_1.put()
+    with client.context():
+      self.feature_1.put()
 
   def tearDown(self):
-    self.feature_1.key.delete()
+    with client.context():
+      self.feature_1.key.delete()
 
   def test_initial_public_proposal_url(self):
     detector = processes.PROGRESS_DETECTORS['Initial public proposal']
