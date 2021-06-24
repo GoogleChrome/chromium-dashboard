@@ -52,6 +52,12 @@ To view and edit the users datastore, you can click on Datastore Viewer. Make su
   1. Now login again using the first account and edit a feature.
   1. On pressing submit after editing the feature, you will be able to see the diff in the console logs. 
 
+## Local Development
+* When run locally, Datastore Emulator is used for storing all the entries. To check the entries present in the DataStore emulator, access the admin server using the url mentioned in the command line output of `npm start` and click on `Datastore Viewer` button.
+* Executing `npm start` runs `dev_appserver.py` which automatically starts the Datastore Emulator. Hence, we do not have to start it explicitly. However, when running unittests, we will have to start the Datastore Emulator manually using `npm run start-emulator`.
+* `npm run test` will first reset the datastore emulator and then run the tests. 
+* To stop the emulator, use `npm run stop-emulator`. You do not have to stop and start the Datastore Emulator between consecutive runs of `npm run test`.  
+
 ## Some nice-to-fix
 
 - Wrap page in a component, so the data flow is more clear. Benefits: no need to assigns component properties from js files; no need to pass element reference to components to get value (e.g. we are passing searchEl to chromedash-featurelist.).
