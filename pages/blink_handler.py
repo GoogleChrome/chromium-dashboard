@@ -145,8 +145,8 @@ class SubscribersHandler(basehandlers.FlaskHandler):
 
     list_features_per_owner = 'showFeatures' in self.request.args
     for user in users:
-      # user.subscribed_components = [models.BlinkComponent.get(key) for key in user.blink_components]
-      user.owned_components = [models.BlinkComponent.get(key) for key in user.primary_blink_components]
+      # user.subscribed_components = [key.get() for key in user.blink_components]
+      user.owned_components = [key.get() for key in user.primary_blink_components]
       for component in user.owned_components:
         component.features = []
         if list_features_per_owner:

@@ -3,7 +3,6 @@ from __future__ import print_function
 
 import datetime
 
-# from google.appengine.api import users
 from framework import users
 
 def email_to_list():
