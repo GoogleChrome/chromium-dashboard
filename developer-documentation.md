@@ -2,13 +2,17 @@
 
 This doc covers some basic overview of the codebase to help developers navigate.
 
-In summary, this web app is using a combination of Django & Flask as the backend and lit-element in the front end. It uses [Google Sign-In](https://developers.google.com/identity/sign-in/web/sign-in) for authentication.
+In summary, this web app is using a combination of Django & Flask as the backend and lit-element in the front end. It uses [Google Sign-In](https://developers.google.com/identity/sign-in/web/sign-in) for authentication. **Google Cloud Datastore** is used as database. 
 
 ## Back end
 
 In the Backend,
 * **Django** is used just for HTML templates and forms (see `FlaskHandler.render()` in `Framework/basehandlers.py` and `pages/guideforms.py`). 
 * **Flask** is being used for all the request handlers (see `basehandlers.py` and all the code under `api/` and `pages/`).
+
+HISTORY:-
+* The app used to use a combination of Django plus Webapp2. However, now it uses Django plus Flask as mentioned above.
+* The app used to use *DB Client Library* for interacting with Google Cloud DataStore. However, now it uses *NDB Client Library*.
 
 ## Front end
 
@@ -39,6 +43,14 @@ appuser_1.put()
 ```
 To view and edit the users datastore, you can click on Datastore Viewer. Make sure that `Entity Kind` is set to `AppUser`.
 
+## Generating Diffs for sending emails to subscribers of a feature
+* When someone edits a feature, everyone who have subscribed to that feature will receive a email stating what fields were edited, the old values and the new values.
+* The body of this email (diffs) can be seen in the console logs. To see the logs, follow these steps:-
+  1. Create a feature using one account.
+  1. Now, signout and login with another account.
+  1. Click on the star present in the feature box in the all features page.
+  1. Now login again using the first account and edit a feature.
+  1. On pressing submit after editing the feature, you will be able to see the diff in the console logs. 
 
 ## Some nice-to-fix
 

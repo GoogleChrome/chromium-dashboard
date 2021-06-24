@@ -24,15 +24,14 @@ import json
 import logging
 import os
 
-# App Engine imports.
-from google.appengine.api import users
-
 import flask
 
 from framework import basehandlers
 from framework import permissions
 from internals import models
 import settings
+
+LOGIN_PAGE_URL = '/features?loginStatus=False'
 
 
 class UserListHandler(basehandlers.FlaskHandler):
@@ -59,7 +58,7 @@ class SettingsHandler(basehandlers.FlaskHandler):
   def get_template_data(self):
     user_pref = models.UserPref.get_signed_in_user_pref()
     if not user_pref:
-      return flask.redirect(users.create_login_url(flask.request.path))
+      return flask.redirect(LOGIN_PAGE_URL)
 
     template_data = {
         'user_pref': user_pref,
