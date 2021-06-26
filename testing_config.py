@@ -39,7 +39,6 @@ lib_path = os.path.join(os.path.dirname(__file__), 'lib')
 from google.appengine.ext import vendor
 vendor.add(lib_path) # add third party libs to "lib" folder.
 
-# from google.appengine.ext import ndb
 from google.cloud import ndb
 from google.appengine.ext import testbed
 

@@ -18,7 +18,6 @@ from __future__ import print_function
 
 import logging
 
-# from google.appengine.ext import ndb
 from google.cloud import ndb
 
 from framework import basehandlers

@@ -49,7 +49,6 @@ whenever a cached value would become invalid, it must be invalidated.
 
 import logging
 import time as time_module
-# from google.appengine.ext import ndb
 from google.cloud import ndb
 
 client = ndb.Client()

@@ -31,7 +31,7 @@ from google.appengine.api import app_identity
 from google.appengine.api import memcache
 # from google.appengine.api import users
 from framework import users
-from google.appengine.ext import ndb
+from google.cloud import ndb
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp.util import login_required
 from google.appengine.ext.webapp.util import run_wsgi_app
