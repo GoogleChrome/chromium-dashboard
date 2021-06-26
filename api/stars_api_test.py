@@ -15,7 +15,6 @@
 from __future__ import division
 from __future__ import print_function
 
-import unittest
 import testing_config  # Must be imported before the module under test.
 
 import flask
@@ -26,43 +25,36 @@ from api import register
 from api import stars_api
 from internals import models
 from internals import notifier
-from google.cloud import ndb
-
-client = ndb.Client()
 
 
 
-class StarsAPITest(unittest.TestCase):
+class StarsAPITest(testing_config.CustomTestCase):
 
   def setUp(self):
     self.feature_1 = models.Feature(
         name='feature one', summary='sum', category=1, visibility=1,
         standardization=1, web_dev_views=1, impl_status_chrome=1)
-    with client.context():
-      self.feature_1.put()
+    self.feature_1.put()
     self.handler = stars_api.StarsAPI()
     self.request_path = '/api/v0/currentuser/stars'
 
   def tearDown(self):
-    with client.context():  
-      self.feature_1.key.delete()
-      for star in notifier.FeatureStar.query():
-        star.key.delete()
+    self.feature_1.key.delete()
+    for star in notifier.FeatureStar.query():
+      star.key.delete()
 
   def test_get__anon(self):
     """Anon should always have an empty list of stars."""
     testing_config.sign_out()
     with register.app.test_request_context(self.request_path):
-      with client.context():
-        actual_response = self.handler.do_get()
+      actual_response = self.handler.do_get()
     self.assertEqual({"featureIds": []}, actual_response)
 
   def test_get__no_stars(self):
     """User has not starred any features."""
     testing_config.sign_in('user7@example.com', 123567890)
     with register.app.test_request_context(self.request_path):
-      with client.context():
-        actual_response = self.handler.do_get()
+      actual_response = self.handler.do_get()
     self.assertEqual({"featureIds": []}, actual_response)
 
   def test_get__some_stars(self):
@@ -70,11 +62,9 @@ class StarsAPITest(unittest.TestCase):
     email = 'user8@example.com'
     feature_1_id = self.feature_1.key.integer_id()
     testing_config.sign_in(email, 123567890)
-    with client.context():
-      notifier.FeatureStar.set_star(email, feature_1_id)
+    notifier.FeatureStar.set_star(email, feature_1_id)
     with register.app.test_request_context(self.request_path):
-      with client.context():
-        actual_response = self.handler.do_get()
+      actual_response = self.handler.do_get()
     self.assertEqual(
         {"featureIds": [feature_1_id]},
         actual_response)
@@ -84,22 +74,19 @@ class StarsAPITest(unittest.TestCase):
     params = {}
     with register.app.test_request_context(self.request_path, json=params):
       with self.assertRaises(werkzeug.exceptions.BadRequest):
-        with client.context():
-          self.handler.do_post()
+        self.handler.do_post()
 
     params = {"featureId": "not an int"}
     with register.app.test_request_context(self.request_path, json=params):
       with self.assertRaises(werkzeug.exceptions.BadRequest):
-        with client.context():
-          self.handler.do_post()
+        self.handler.do_post()
 
   def test_post__feature_id_not_found(self):
     """We reject star requests for features that don't exist."""
     params = {"featureId": 999}
     with register.app.test_request_context(self.request_path, json=params):
       with self.assertRaises(werkzeug.exceptions.NotFound):
-        with client.context():
-          self.handler.do_post()
+        self.handler.do_post()
 
   def test_post__anon(self):
     """We reject anon star requests."""
@@ -108,8 +95,7 @@ class StarsAPITest(unittest.TestCase):
     testing_config.sign_out()
     with register.app.test_request_context(self.request_path, json=params):
       with self.assertRaises(werkzeug.exceptions.Forbidden):
-        with client.context():
-          self.handler.do_post()
+        self.handler.do_post()
 
   def test_post__duplicate(self):
     """User sends a duplicate request, which should be a no-op."""
@@ -118,33 +104,25 @@ class StarsAPITest(unittest.TestCase):
     feature_id = self.feature_1.key.integer_id()
     params = {"featureId": feature_id}
     with register.app.test_request_context(self.request_path, json=params):
-      with client.context():
-        self.handler.do_post()  # Original request
+      self.handler.do_post()  # Original request
 
-    with client.context():
-      updated_feature = models.Feature.get_by_id(feature_id)
+    updated_feature = models.Feature.get_by_id(feature_id)
     self.assertEqual(1, updated_feature.star_count)
 
     with register.app.test_request_context(self.request_path, json=params):
-      with client.context():
-        self.handler.do_post()  # Duplicate request
-    with client.context():
-      updated_feature = models.Feature.get_by_id(feature_id)
+      self.handler.do_post()  # Duplicate request
+    updated_feature = models.Feature.get_by_id(feature_id)
     self.assertEqual(1, updated_feature.star_count)  # Still 1, not 2.
 
     params = {"featureId": feature_id, "starred": False}
     with register.app.test_request_context(self.request_path, json=params):
-      with client.context():
-        self.handler.do_post()  # Original request
-    with client.context():
-      updated_feature = models.Feature.get_by_id(feature_id)
+      self.handler.do_post()  # Original request
+    updated_feature = models.Feature.get_by_id(feature_id)
     self.assertEqual(0, updated_feature.star_count)
 
     with register.app.test_request_context(self.request_path, json=params):
-      with client.context():
-        self.handler.do_post()  # Duplicate request
-    with client.context():
-      updated_feature = models.Feature.get_by_id(feature_id)
+      self.handler.do_post()  # Duplicate request
+    updated_feature = models.Feature.get_by_id(feature_id)
     self.assertEqual(0, updated_feature.star_count)  # Still 0, not negative.
 
   def test_post__unmatched_unstar(self):
@@ -156,10 +134,8 @@ class StarsAPITest(unittest.TestCase):
 
     params = {"featureId": feature_id, "starred": False}
     with register.app.test_request_context(self.request_path, json=params):
-      with client.context():
-        self.handler.do_post()  # Out-of-step request
-    with client.context():
-      updated_feature = models.Feature.get_by_id(feature_id)
+      self.handler.do_post()  # Out-of-step request
+    updated_feature = models.Feature.get_by_id(feature_id)
     self.assertEqual(0, updated_feature.star_count)  # Still 0, not negative.
 
   def test_post__normal(self):
@@ -169,16 +145,12 @@ class StarsAPITest(unittest.TestCase):
     feature_id = self.feature_1.key.integer_id()
     params = {"featureId": feature_id}
     with register.app.test_request_context(self.request_path, json=params):
-      with client.context():
-        self.handler.do_post()
-    with client.context():
-      updated_feature = models.Feature.get_by_id(feature_id)
+      self.handler.do_post()
+    updated_feature = models.Feature.get_by_id(feature_id)
     self.assertEqual(1, updated_feature.star_count)
 
     params = {"featureId": feature_id, "starred": False}
     with register.app.test_request_context(self.request_path, json=params):
-      with client.context():
-        self.handler.do_post()
-    with client.context():
-      updated_feature = models.Feature.get_by_id(feature_id)
+      self.handler.do_post()
+    updated_feature = models.Feature.get_by_id(feature_id)
     self.assertEqual(0, updated_feature.star_count)

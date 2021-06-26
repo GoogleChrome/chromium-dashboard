@@ -15,7 +15,6 @@
 from __future__ import division
 from __future__ import print_function
 
-import unittest
 import testing_config  # Must be imported before the module under test.
 
 import mock
@@ -24,38 +23,31 @@ import werkzeug
 
 from pages import intentpreview
 from internals import models
-from google.cloud import ndb
-
-client = ndb.Client()
 
 
 
-
-class IntentEmailPreviewHandlerTest(unittest.TestCase):
+class IntentEmailPreviewHandlerTest(testing_config.CustomTestCase):
 
   def setUp(self):
     self.feature_1 = models.Feature(
         name='feature one', summary='sum', category=1, visibility=1,
         standardization=1, web_dev_views=1, impl_status_chrome=1,
         intent_stage=models.INTENT_IMPLEMENT)
-    with client.context():
-      self.feature_1.put()
+    self.feature_1.put()
 
     self.request_path = '/admin/features/launch/%d/%d?intent' % (
         models.INTENT_SHIP, self.feature_1.key.integer_id())
     self.handler = intentpreview.IntentEmailPreviewHandler()
 
   def tearDown(self):
-    with client.context():
-      self.feature_1.key.delete()
+    self.feature_1.key.delete()
 
   def test_get__anon(self):
     """Anon cannot view this preview features, gets redirected to login."""
     testing_config.sign_out()
     feature_id = self.feature_1.key.integer_id()
     with intentpreview.app.test_request_context(self.request_path):
-      with client.context():
-        actual_response = self.handler.get_template_data(feature_id=feature_id)
+      actual_response = self.handler.get_template_data(feature_id=feature_id)
     self.assertEqual('302 FOUND', actual_response.status)
 
   def test_get__no_existing(self):
@@ -64,8 +56,7 @@ class IntentEmailPreviewHandlerTest(unittest.TestCase):
     bad_feature_id = self.feature_1.key.integer_id() + 1
     with intentpreview.app.test_request_context(self.request_path):
       with self.assertRaises(werkzeug.exceptions.NotFound):
-        with client.context():
-          self.handler.get_template_data(feature_id=bad_feature_id)
+        self.handler.get_template_data(feature_id=bad_feature_id)
 
   def test_get__no_stage_specified(self):
     """Allowed user can preview intent email for a feature using an old URL."""
@@ -74,8 +65,7 @@ class IntentEmailPreviewHandlerTest(unittest.TestCase):
     testing_config.sign_in('user1@google.com', 123567890)
     feature_id = self.feature_1.key.integer_id()
     with intentpreview.app.test_request_context(self.request_path):
-      with client.context():
-        actual_data = self.handler.get_template_data(feature_id=feature_id)
+      actual_data = self.handler.get_template_data(feature_id=feature_id)
     self.assertIn('feature', actual_data)
     self.assertEqual('feature one', actual_data['feature']['name'])
 
@@ -84,8 +74,7 @@ class IntentEmailPreviewHandlerTest(unittest.TestCase):
     testing_config.sign_in('user1@google.com', 123567890)
     feature_id = self.feature_1.key.integer_id()
     with intentpreview.app.test_request_context(self.request_path):
-      with client.context():
-        actual_data = self.handler.get_template_data(feature_id=feature_id)
+      actual_data = self.handler.get_template_data(feature_id=feature_id)
     self.assertIn('feature', actual_data)
     self.assertEqual('feature one', actual_data['feature']['name'])
 

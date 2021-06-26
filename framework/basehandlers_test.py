@@ -15,7 +15,6 @@
 from __future__ import division
 from __future__ import print_function
 
-import unittest
 import testing_config  # Must be imported before the module under test.
 
 import json
@@ -32,12 +31,10 @@ from framework import users
 from framework import xsrf
 from internals import models
 import settings
-from google.cloud import ndb
-
-client = ndb.Client()
 
 
-class BaseHandlerTests(unittest.TestCase):
+
+class BaseHandlerTests(testing_config.CustomTestCase):
 
   def setUp(self):
     self.handler = basehandlers.BaseHandler()
@@ -268,25 +265,23 @@ test_app = basehandlers.FlaskApplication(
     debug=True)
 
 
-class RedirectorTests(unittest.TestCase):
+class RedirectorTests(testing_config.CustomTestCase):
 
   def test_redirector(self):
     """If the user hits a redirector, they get a redirect response."""
     with test_app.test_request_context('/old_path'):
-      with client.context():
-        actual_redirect, actual_headers = test_app.dispatch_request()
+      actual_redirect, actual_headers = test_app.dispatch_request()
 
     self.assertEqual(302, actual_redirect.status_code)
     self.assertEqual('/new_path', actual_redirect.headers['location'])
 
 
-class ConstHandlerTests(unittest.TestCase):
+class ConstHandlerTests(testing_config.CustomTestCase):
 
   def test_template_found(self):
     """We can run a template that requires no handler logic."""
     with test_app.test_request_context('/just_a_template'):
-      with client.context():
-        actual_tuple = test_app.dispatch_request()
+      actual_tuple = test_app.dispatch_request()
 
     actual_text, actual_status, actual_headers = actual_tuple
     self.assertIn('Hi Guest,', actual_text)
@@ -298,22 +293,20 @@ class ConstHandlerTests(unittest.TestCase):
     """We can run a template that requires no handler logic."""
     with test_app.test_request_context('/messed_up_template'):
       with self.assertRaises(werkzeug.exceptions.InternalServerError):
-        with client.context():
-          test_app.dispatch_request()
+        test_app.dispatch_request()
     self.assertEqual(1, len(mock_err.mock_calls))
 
   def test_json(self):
     """We can return constant JSON."""
     with test_app.test_request_context('/ui/density.json'):
-      with client.context():
-        actual_response = test_app.dispatch_request()
+      actual_response = test_app.dispatch_request()
 
     self.assertEqual(
         {'UI density': ['default', 'comfortable', 'compact']},
         actual_response.json)
 
 
-class APIHandlerTests(unittest.TestCase):
+class APIHandlerTests(testing_config.CustomTestCase):
 
   def setUp(self):
     self.handler = basehandlers.APIHandler()
@@ -423,17 +416,15 @@ class APIHandlerTests(unittest.TestCase):
     mock_validate_token.assert_not_called()
 
 
-class FlaskHandlerTests(unittest.TestCase):
+class FlaskHandlerTests(testing_config.CustomTestCase):
 
   def setUp(self):
     self.user_1 = models.AppUser(email='registered@example.com')
-    with client.context():
-      self.user_1.put()
+    self.user_1.put()
     self.handler = TestableFlaskHandler()
 
   def tearDown(self):
-    with client.context():
-      self.user_1.key.delete()
+    self.user_1.key.delete()
 
   def test_get_cache_headers__disabled(self):
     """Most handlers return content that should not be cached."""
@@ -499,8 +490,8 @@ class FlaskHandlerTests(unittest.TestCase):
   def test_get_common_data__signed_out(self):
     """When user is signed out, offer sign in link."""
     testing_config.sign_out()
-    with client.context():
-      actual = self.handler.get_common_data(path='/test/path')
+
+    actual = self.handler.get_common_data(path='/test/path')
 
     self.assertIn('prod', actual)
     self.assertIsNone(actual['user'])
@@ -509,8 +500,7 @@ class FlaskHandlerTests(unittest.TestCase):
     """When user is signed in, offer sign out link."""
     testing_config.sign_in('test@example.com', 111)
 
-    with client.context():
-      actual = self.handler.get_common_data(path='/test/path')
+    actual = self.handler.get_common_data(path='/test/path')
 
     self.assertIn('prod', actual)
     self.assertIsNotNone(actual['user'])
@@ -523,8 +513,7 @@ class FlaskHandlerTests(unittest.TestCase):
   def test_get__html_page(self):
     """We can process a request and return HTML and headers."""
     with test_app.test_request_context('/test'):
-      with client.context():
-        actual_html, actual_status, actual_headers = self.handler.get()
+      actual_html, actual_status, actual_headers = self.handler.get()
 
     self.assertIn('Hi testing', actual_html)
     self.assertEqual(200, actual_status)
@@ -534,8 +523,7 @@ class FlaskHandlerTests(unittest.TestCase):
     """We can process a GET request and JSON and headers."""
     self.handler.JSONIFY = True
     with test_app.test_request_context('/test'):
-      with client.context():
-        actual_response, actual_headers = self.handler.get()
+      actual_response, actual_headers = self.handler.get()
 
     self.assertIn('name', actual_response.get_json())
     self.assertEqual(200, actual_response.status_code)
@@ -545,8 +533,7 @@ class FlaskHandlerTests(unittest.TestCase):
     """We can process a GET request and JSON and headers."""
     self.handler.JSONIFY = True
     with test_app.test_request_context('/test'):
-      with client.context():
-        actual_response, actual_headers = self.handler.get(
+      actual_response, actual_headers = self.handler.get(
           item_list=[10, 20, 30])
 
     self.assertEqual([10, 20, 30], actual_response.get_json())
@@ -556,8 +543,7 @@ class FlaskHandlerTests(unittest.TestCase):
   def test_get__special_status(self):
     """get_template_data() can return a special HTTP status."""
     with test_app.test_request_context('/test'):
-      with client.context():
-        actual_html, actual_status, actual_headers = self.handler.get(
+      actual_html, actual_status, actual_headers = self.handler.get(
           special_status=222)
 
     self.assertIn('Hi testing', actual_html)
@@ -567,8 +553,7 @@ class FlaskHandlerTests(unittest.TestCase):
   def test_get__redirect(self):
     """get_template_data() can return a redirect response object."""
     with test_app.test_request_context('/test'):
-      with client.context():
-        actual_response = self.handler.get(
+      actual_response = self.handler.get(
           redirect_to='some/other/path')
 
     self.assertIn('Response', type(actual_response).__name__)
@@ -578,8 +563,7 @@ class FlaskHandlerTests(unittest.TestCase):
     """if process_post_data() returns a dict, it is passed to flask."""
     testing_config.sign_in('user@example.com', 111)
     with test_app.test_request_context('/test'):
-      with client.context():
-        actual_dict, actual_headers = self.handler.post()
+      actual_dict, actual_headers = self.handler.post()
 
     self.assertEqual(
         {'objects': [1, 2, 3]},
@@ -590,8 +574,7 @@ class FlaskHandlerTests(unittest.TestCase):
     """if process_post_data() returns a redirect response, it is used."""
     testing_config.sign_in('user@example.com', 111)
     with test_app.test_request_context('/test'):
-      with client.context():
-        actual_response, actual_headers = self.handler.post(
+      actual_response, actual_headers = self.handler.post(
           redirect_to='some/other/path')
 
     self.assertIn('Response', type(actual_response).__name__)
@@ -623,11 +606,9 @@ class FlaskHandlerTests(unittest.TestCase):
     """We accept a POST with a valid token."""
     testing_config.sign_in('user1@example.com', 111)
     mock_get_user.return_value = users.User(email='user1@example.com')
-    with client.context():
-      form_data = {'token': xsrf.generate_token('user1@example.com')}
+    form_data = {'token': xsrf.generate_token('user1@example.com')}
     with test_app.test_request_context('/test', data=form_data):
-      with client.context():
-        self.handler.require_xsrf_token()
+      self.handler.require_xsrf_token()
 
   @mock.patch('settings.UNIT_TEST_MODE', False)
   def test_require_xsrf_token__missing(self):
@@ -636,8 +617,7 @@ class FlaskHandlerTests(unittest.TestCase):
     form_data = {}
     with test_app.test_request_context('/test', data=form_data):
       with self.assertRaises(werkzeug.exceptions.BadRequest):
-        with client.context():
-          self.handler.require_xsrf_token()
+        self.handler.require_xsrf_token()
 
   @mock.patch('settings.UNIT_TEST_MODE', False)
   @mock.patch('framework.basehandlers.BaseHandler.get_current_user')
@@ -648,9 +628,7 @@ class FlaskHandlerTests(unittest.TestCase):
     # unit test configuration if we have UNIT_TEST_MODE == False.
     mock_get_current_user.return_value = users.User('user1@example.com', 111)
     # Form has a token intended for a different user.
-    with client.context():
-      form_data = {'token': xsrf.generate_token('user2@example.com')}
+    form_data = {'token': xsrf.generate_token('user2@example.com')}
     with test_app.test_request_context('/test', data=form_data):
       with self.assertRaises(werkzeug.exceptions.BadRequest):
-        with client.context():
-          self.handler.require_xsrf_token()
+        self.handler.require_xsrf_token()

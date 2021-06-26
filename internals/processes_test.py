@@ -16,7 +16,6 @@ from __future__ import print_function
 # limitations under the License.
 
 import collections
-import unittest
 import testing_config  # Must be imported before the module under test.
 
 import mock
@@ -24,9 +23,6 @@ import mock
 from internals import approval_defs
 from internals import models
 from internals import processes
-from google.cloud import ndb
-
-client = ndb.Client()
 
 
 BakeApproval = approval_defs.ApprovalFieldDef(
@@ -42,7 +38,7 @@ BAKE_APPROVAL_DEF_DICT = collections.OrderedDict([
     ('approvers', ['chef@example.com']),
     ])
 
-class HelperFunctionsTest(unittest.TestCase):
+class HelperFunctionsTest(testing_config.CustomTestCase):
 
   def test_process_to_dict(self):
     process = processes.Process(
@@ -101,7 +97,7 @@ class HelperFunctionsTest(unittest.TestCase):
     self.assertTrue(processes.review_is_done(models.REVIEW_NA))
 
 
-class ProgressDetectorsTest(unittest.TestCase):
+class ProgressDetectorsTest(testing_config.CustomTestCase):
 
   def setUp(self):
     self.feature_1 = models.Feature(
@@ -109,12 +105,10 @@ class ProgressDetectorsTest(unittest.TestCase):
         standardization=1, web_dev_views=models.DEV_NO_SIGNALS,
         impl_status_chrome=1,
         intent_stage=models.INTENT_IMPLEMENT)
-    with client.context():
-      self.feature_1.put()
+    self.feature_1.put()
 
   def tearDown(self):
-    with client.context():
-      self.feature_1.key.delete()
+    self.feature_1.key.delete()
 
   def test_initial_public_proposal_url(self):
     detector = processes.PROGRESS_DETECTORS['Initial public proposal']

@@ -15,7 +15,6 @@
 from __future__ import division
 from __future__ import print_function
 
-import unittest
 import testing_config  # Must be imported before the module under test.
 
 import flask
@@ -25,13 +24,10 @@ import werkzeug.exceptions  # Flask HTTP stuff.
 from api import register
 from api import token_refresh_api
 from framework import xsrf
-from google.cloud import ndb
-
-client = ndb.Client()
 
 
 
-class TokenRefreshAPITest(unittest.TestCase):
+class TokenRefreshAPITest(testing_config.CustomTestCase):
 
   def setUp(self):
     self.handler = token_refresh_api.TokenRefreshAPI()
@@ -83,7 +79,6 @@ class TokenRefreshAPITest(unittest.TestCase):
     testing_config.sign_in('user@example.com', 111)
     params = {'token': 'checked in base class'}
     with register.app.test_request_context(self.request_path, json=params):
-      with client.context():
-        actual = self.handler.do_post()
+      actual = self.handler.do_post()
     self.assertIn('token', actual)
     self.assertIn('token_expires_sec', actual)

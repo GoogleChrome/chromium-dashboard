@@ -123,3 +123,11 @@ def sign_in(user_email, user_id):
       user_id=str(user_id),
       user_is_admin='0',  # This was for GAE user admin, we use AppUser.
       overwrite=True)
+
+
+class CustomTestCase(unittest.TestCase):
+
+  def run(self, result=None):
+    client = ndb.Client()
+    with client.context():
+      super(CustomTestCase, self).run(result=result)

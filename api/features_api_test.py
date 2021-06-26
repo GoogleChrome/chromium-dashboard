@@ -15,7 +15,6 @@
 from __future__ import division
 from __future__ import print_function
 
-import unittest
 import testing_config  # Must be imported before the module under test.
 
 import flask
@@ -25,20 +24,16 @@ import werkzeug.exceptions  # Flask HTTP stuff.
 from api import features_api
 from api import register
 from internals import models
-from google.cloud import ndb
-
-client = ndb.Client()
 
 
-class FeaturesAPITest(unittest.TestCase):
+class FeaturesAPITest(testing_config.CustomTestCase):
 
   def setUp(self):
     self.feature_1 = models.Feature(
         name='feature one', summary='sum', category=1, visibility=1,
         standardization=1, web_dev_views=1, impl_status_chrome=1,
         intent_stage=models.INTENT_IMPLEMENT)
-    with client.context():
-      self.feature_1.put()
+    self.feature_1.put()
     self.feature_id = self.feature_1.key.integer_id()
 
     self.request_path = '/api/v0/features/%d' % self.feature_id
@@ -46,25 +41,21 @@ class FeaturesAPITest(unittest.TestCase):
 
     self.app_admin = models.AppUser(email='admin@example.com')
     self.app_admin.is_admin = True
-    with client.context():
-      self.app_admin.put()
+    self.app_admin.put()
 
   def tearDown(self):
-    with client.context():
-      self.feature_1.key.delete()
-      self.app_admin.key.delete()
+    self.feature_1.key.delete()
+    self.app_admin.key.delete()
 
   def test_delete__valid(self):
     """Admin wants to soft-delete a feature."""
     testing_config.sign_in('admin@example.com', 123567890)
 
     with register.app.test_request_context(self.request_path):
-      with client.context():
-        actual_json = self.handler.do_delete(self.feature_id)
+      actual_json = self.handler.do_delete(self.feature_id)
     self.assertEqual({'message': 'Done'}, actual_json)
 
-    with client.context():
-      revised_feature = models.Feature.get_by_id(self.feature_id)
+    revised_feature = models.Feature.get_by_id(self.feature_id)
     self.assertTrue(revised_feature.deleted)
 
   def test_delete__forbidden(self):
@@ -73,11 +64,9 @@ class FeaturesAPITest(unittest.TestCase):
 
     with register.app.test_request_context(self.request_path):
       with self.assertRaises(werkzeug.exceptions.Forbidden):
-        with client.context():
-          self.handler.do_delete(self.feature_id)
+        self.handler.do_delete(self.feature_id)
 
-    with client.context():
-      revised_feature = models.Feature.get_by_id(self.feature_id)
+    revised_feature = models.Feature.get_by_id(self.feature_id)
     self.assertFalse(revised_feature.deleted)
 
   def test_delete__invalid(self):
@@ -86,11 +75,9 @@ class FeaturesAPITest(unittest.TestCase):
 
     with register.app.test_request_context(self.request_path):
       with self.assertRaises(werkzeug.exceptions.BadRequest):
-        with client.context():
-          self.handler.do_delete(None)
+        self.handler.do_delete(None)
 
-    with client.context():
-      revised_feature = models.Feature.get_by_id(self.feature_id)
+    revised_feature = models.Feature.get_by_id(self.feature_id)
     self.assertFalse(revised_feature.deleted)
 
   def test_delete__not_found(self):
@@ -99,9 +86,7 @@ class FeaturesAPITest(unittest.TestCase):
 
     with register.app.test_request_context(self.request_path):
       with self.assertRaises(werkzeug.exceptions.NotFound):
-        with client.context():
-          self.handler.do_delete(self.feature_id + 1)
+        self.handler.do_delete(self.feature_id + 1)
 
-    with client.context():
-      revised_feature = models.Feature.get_by_id(self.feature_id)
+    revised_feature = models.Feature.get_by_id(self.feature_id)
     self.assertFalse(revised_feature.deleted)

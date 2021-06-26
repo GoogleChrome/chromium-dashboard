@@ -17,7 +17,6 @@ from __future__ import print_function
 
 import base64
 import datetime
-import unittest
 import testing_config  # Must be imported before the module under test.
 import urllib
 
@@ -28,12 +27,8 @@ import werkzeug
 from internals import fetchmetrics
 from internals import models
 
-from google.cloud import ndb
 
-client = ndb.Client()
-
-
-class FetchMetricsTest(unittest.TestCase):
+class FetchMetricsTest(testing_config.CustomTestCase):
 
   @mock.patch('settings.PROD', True)
   @mock.patch('requests.request')
@@ -67,7 +62,7 @@ class FetchMetricsTest(unittest.TestCase):
     mock_fetch.assert_not_called()
 
 
-class UmaQueryTest(unittest.TestCase):
+class UmaQueryTest(testing_config.CustomTestCase):
 
   def setUp(self):
     self.uma_query = fetchmetrics.UmaQuery(
@@ -78,27 +73,23 @@ class UmaQueryTest(unittest.TestCase):
   def testHasCapstone__not_found(self):
     """If there is no capstone entry, we get False."""
     query_date = datetime.date(2021, 1, 20)
-    with client.context():
-      actual = self.uma_query._HasCapstone(query_date)
+    actual = self.uma_query._HasCapstone(query_date)
     self.assertFalse(actual)
 
   def testHasCapstone__found(self):
     """If we set a capstone entry, we can find it."""
     query_date = datetime.date(2021, 1, 20)
-    with client.context():
-      capstone = self.uma_query._SetCapstone(query_date)
+    capstone = self.uma_query._SetCapstone(query_date)
 
     try:
-      with client.context():
-        actual = self.uma_query._HasCapstone(query_date)
+      actual = self.uma_query._HasCapstone(query_date)
     finally:
-      with client.context():
-        capstone.key.delete()
+      capstone.key.delete()
 
     self.assertTrue(actual)
 
 
-class YesterdayHandlerTest(unittest.TestCase):
+class YesterdayHandlerTest(testing_config.CustomTestCase):
 
   def setUp(self):
     self.request_path = '/cron/metrics'
@@ -111,8 +102,7 @@ class YesterdayHandlerTest(unittest.TestCase):
     today = datetime.date(2021, 1, 20)
 
     with fetchmetrics.app.test_request_context(self.request_path):
-      with client.context():
-        actual_response = self.handler.get_template_data(today=today)
+      actual_response = self.handler.get_template_data(today=today)
 
     self.assertEqual('Success', actual_response)
     expected_calls = [
@@ -129,8 +119,7 @@ class YesterdayHandlerTest(unittest.TestCase):
 
     with fetchmetrics.app.test_request_context(
         self.request_path, query_string={'date': '20210120'}):
-      with client.context():
-        actual_response = self.handler.get_template_data(today=today)
+      actual_response = self.handler.get_template_data(today=today)
 
     self.assertEqual('Success', actual_response)
     expected_calls = [
@@ -139,7 +128,7 @@ class YesterdayHandlerTest(unittest.TestCase):
     mock_FetchAndSaveData.assert_has_calls(expected_calls)
 
 
-class HistogramsHandlerTest(unittest.TestCase):
+class HistogramsHandlerTest(testing_config.CustomTestCase):
 
   ENUMS_TEXT = '''
      <histogram-configuration>
@@ -186,8 +175,7 @@ class HistogramsHandlerTest(unittest.TestCase):
         status_code=200,
         content=base64.b64encode(self.ENUMS_TEXT))
     with fetchmetrics.app.test_request_context(self.request_path):
-      with client.context():
-        actual_response = self.handler.get_template_data()
+      actual_response = self.handler.get_template_data()
 
     self.assertEqual('Success', actual_response)
     self.assertEqual(9, mock_save_data.call_count)

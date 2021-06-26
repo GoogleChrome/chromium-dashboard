@@ -15,19 +15,14 @@
 from __future__ import division
 from __future__ import print_function
 
-import unittest
 import testing_config  # Must be imported before the module under test.
 
 import mock
 
 from framework import secrets
 
-from google.cloud import ndb
 
-client = ndb.Client()
-
-
-class SecretsFunctionsTest(unittest.TestCase):
+class SecretsFunctionsTest(testing_config.CustomTestCase):
   """Set of unit tests for accessing server-side secret values."""
 
   def test_make_random_key__long(self):
@@ -44,28 +39,25 @@ class SecretsFunctionsTest(unittest.TestCase):
 
   def test_get_xsrf_secret(self):
     """We can get this secret, and it is the same for repeated calls."""
-    with client.context():
-      s1 = secrets.get_xsrf_secret()
-      s2 = secrets.get_xsrf_secret()
+    s1 = secrets.get_xsrf_secret()
+    s2 = secrets.get_xsrf_secret()
     self.assertIsNotNone(s1)
     self.assertEqual(s1, s2)
 
   def test_get_session_secret(self):
     """We can get this secret, and it is the same for repeated calls."""
-    with client.context():
-      s1 = secrets.get_session_secret()
-      s2 = secrets.get_session_secret()
+    s1 = secrets.get_session_secret()
+    s2 = secrets.get_session_secret()
     self.assertIsNotNone(s1)
     self.assertEqual(s1, s2)
 
 
-class SecretsTest(unittest.TestCase):
+class SecretsTest(testing_config.CustomTestCase):
   """Set of unit tests for generating and storing server-side secret values."""
 
   def delete_all(self):
-    with client.context():
-      for old_entity in secrets.Secrets.query():
-        old_entity.key.delete()
+    for old_entity in secrets.Secrets.query():
+      old_entity.key.delete()
 
   def setUp(self):
     self.delete_all()
@@ -75,12 +67,10 @@ class SecretsTest(unittest.TestCase):
 
   def test_create_and_persist(self):
     """When a new instance is deployed, it sets up secrets."""
-    with client.context():
-      singleton = secrets.Secrets._get_or_make_singleton()
+    singleton = secrets.Secrets._get_or_make_singleton()
     self.assertIsInstance(singleton, secrets.Secrets)
 
-    with client.context():
-      singleton2 = secrets.Secrets._get_or_make_singleton()
+    singleton2 = secrets.Secrets._get_or_make_singleton()
     self.assertEqual(singleton.xsrf_secret, singleton2.xsrf_secret)
     self.assertEqual(singleton.session_secret, singleton2.session_secret)
 
@@ -89,10 +79,9 @@ class SecretsTest(unittest.TestCase):
     """When we add a new secret field, it is added to existing secrets."""
     mock_make_random_key.return_value = 'fake new random'
     singleton = secrets.Secrets(xsrf_secret='old secret field')
-    with client.context():
-      singleton.put()
-      
-      singleton2 = secrets.Secrets._get_or_make_singleton()
+    singleton.put()
+
+    singleton2 = secrets.Secrets._get_or_make_singleton()
     mock_make_random_key.assert_called_once_with()
     self.assertEqual(singleton2.xsrf_secret, 'old secret field')
     self.assertEqual(singleton2.session_secret, 'fake new random')

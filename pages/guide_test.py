@@ -15,7 +15,6 @@ from __future__ import print_function
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import unittest
 import testing_config  # Must be imported before the module under test.
 import urllib
 
@@ -24,13 +23,9 @@ import werkzeug
 
 from internals import models
 from pages import guide
-from google.cloud import ndb
-
-client = ndb.Client()
 
 
-
-class FeatureNewTest(unittest.TestCase):
+class FeatureNewTest(testing_config.CustomTestCase):
 
   def setUp(self):
     self.handler = guide.FeatureNew()
@@ -39,8 +34,7 @@ class FeatureNewTest(unittest.TestCase):
     """Anon cannot create features, gets a redirect to sign in page."""
     testing_config.sign_out()
     with guide.app.test_request_context('/guide/new'):
-      with client.context():
-        actual_response = self.handler.get_template_data()
+      actual_response = self.handler.get_template_data()
     self.assertEqual('302 FOUND', actual_response.status)
 
   def test_get__non_allowed(self):
@@ -48,15 +42,13 @@ class FeatureNewTest(unittest.TestCase):
     testing_config.sign_in('user1@example.com', 1234567890)
     with guide.app.test_request_context('/guide/new'):
       with self.assertRaises(werkzeug.exceptions.Forbidden):
-        with client.context():
-          actual_response = self.handler.get_template_data()
+        actual_response = self.handler.get_template_data()
 
   def test_get__normal(self):
     """Allowed users render a page with a django form."""
     testing_config.sign_in('user1@google.com', 1234567890)
     with guide.app.test_request_context('/guide/new'):
-      with client.context():
-        template_data = self.handler.get_template_data()
+      template_data = self.handler.get_template_data()
 
     self.assertTrue('overview_form' in template_data)
     form = template_data['overview_form']
@@ -70,16 +62,14 @@ class FeatureNewTest(unittest.TestCase):
     testing_config.sign_out()
     with guide.app.test_request_context('/guide/new', method='POST'):
       with self.assertRaises(werkzeug.exceptions.Forbidden):
-        with client.context():
-          self.handler.process_post_data()
+        self.handler.process_post_data()
 
   def test_post__non_allowed(self):
     """Non-allowed cannot create features, gets a 403."""
     testing_config.sign_in('user1@example.com', 1234567890)
     with guide.app.test_request_context('/guide/new', method='POST'):
       with self.assertRaises(werkzeug.exceptions.Forbidden):
-        with client.context():
-          self.handler.post()
+        self.handler.post()
 
   def test_post__normal_valid(self):
     """Allowed user can create a feature."""
@@ -90,38 +80,33 @@ class FeatureNewTest(unittest.TestCase):
             'name': 'Feature name',
             'summary': 'Feature summary',
         }, method='POST'):
-      with client.context():
-        actual_response = self.handler.process_post_data()
+      actual_response = self.handler.process_post_data()
 
     self.assertEqual('302 FOUND', actual_response.status)
     location = actual_response.headers['location']
     self.assertTrue(location.startswith('/guide/edit/'))
     new_feature_id = int(location.split('/')[-1])
-    with client.context():
-      feature = models.Feature.get_by_id(new_feature_id)
+    feature = models.Feature.get_by_id(new_feature_id)
     self.assertEqual(1, feature.category)
     self.assertEqual('Feature name', feature.name)
     self.assertEqual('Feature summary', feature.summary)
-    with client.context():
-      feature.key.delete()
+    feature.key.delete()
 
 
-class ProcessOverviewTest(unittest.TestCase):
+class ProcessOverviewTest(testing_config.CustomTestCase):
 
   def setUp(self):
     self.feature_1 = models.Feature(
         name='feature one', summary='sum', category=1, visibility=1,
         standardization=1, web_dev_views=models.DEV_NO_SIGNALS,
         impl_status_chrome=1)
-    with client.context():
-      self.feature_1.put()
+    self.feature_1.put()
 
     self.request_path = '/guide/edit/%d' % self.feature_1.key.integer_id()
     self.handler = guide.ProcessOverview()
 
   def tearDown(self):
-    with client.context():
-      self.feature_1.key.delete()
+    self.feature_1.key.delete()
 
   def test_detect_progress__no_progress(self):
     """A new feature has earned no progress items."""
@@ -144,8 +129,7 @@ class ProcessOverviewTest(unittest.TestCase):
     """Anon cannot edit features, gets a redirect to viewing page."""
     testing_config.sign_out()
     with guide.app.test_request_context(self.request_path):
-      with client.context():
-        actual_response = self.handler.get_template_data(
+      actual_response = self.handler.get_template_data(
           self.feature_1.key.integer_id())
     self.assertEqual('302 FOUND', actual_response.status)
 
@@ -154,8 +138,7 @@ class ProcessOverviewTest(unittest.TestCase):
     testing_config.sign_in('user1@example.com', 1234567890)
     with guide.app.test_request_context(self.request_path):
       with self.assertRaises(werkzeug.exceptions.Forbidden):
-        with client.context():
-          self.handler.get_template_data(self.feature_1.key.integer_id())
+        self.handler.get_template_data(self.feature_1.key.integer_id())
 
 
   def test_get__not_found(self):
@@ -163,16 +146,14 @@ class ProcessOverviewTest(unittest.TestCase):
     testing_config.sign_in('user1@google.com', 1234567890)
     with guide.app.test_request_context(self.request_path):
       with self.assertRaises(werkzeug.exceptions.NotFound):
-        with client.context():
-          self.handler.get_template_data(999)
+        self.handler.get_template_data(999)
 
   def test_get__normal(self):
     """Allowed users render a page with a process overview."""
     testing_config.sign_in('user1@google.com', 1234567890)
 
     with guide.app.test_request_context(self.request_path):
-      with client.context():
-        template_data = self.handler.get_template_data(
+      template_data = self.handler.get_template_data(
           self.feature_1.key.integer_id())
 
     self.assertTrue('overview_form' in template_data)
@@ -180,14 +161,13 @@ class ProcessOverviewTest(unittest.TestCase):
     self.assertTrue('progress_so_far' in template_data)
 
 
-class FeatureEditStageTest(unittest.TestCase):
+class FeatureEditStageTest(testing_config.CustomTestCase):
 
   def setUp(self):
     self.feature_1 = models.Feature(
         name='feature one', summary='sum', category=1, visibility=1,
         standardization=1, web_dev_views=1, impl_status_chrome=1)
-    with client.context():
-      self.feature_1.put()
+    self.feature_1.put()
     self.stage = models.INTENT_INCUBATE  # Shows first form
 
     self.request_path = ('/guide/stage/%d/%d' % (
@@ -195,8 +175,7 @@ class FeatureEditStageTest(unittest.TestCase):
     self.handler = guide.FeatureEditStage()
 
   def tearDown(self):
-    with client.context():
-      self.feature_1.key.delete()
+    self.feature_1.key.delete()
 
   def test_touched(self):
     """We can tell if the user meant to edit a field."""
@@ -226,8 +205,7 @@ class FeatureEditStageTest(unittest.TestCase):
     """Anon cannot edit features, gets a redirect to viewing page."""
     testing_config.sign_out()
     with guide.app.test_request_context(self.request_path):
-      with client.context():
-        actual_response = self.handler.get_template_data(
+      actual_response = self.handler.get_template_data(
           self.feature_1.key.integer_id(), self.stage)
     self.assertEqual('302 FOUND', actual_response.status)
 
@@ -236,8 +214,7 @@ class FeatureEditStageTest(unittest.TestCase):
     testing_config.sign_in('user1@example.com', 1234567890)
     with guide.app.test_request_context(self.request_path):
       with self.assertRaises(werkzeug.exceptions.Forbidden):
-        with client.context():
-          self.handler.get_template_data(
+        self.handler.get_template_data(
             self.feature_1.key.integer_id(), self.stage)
 
   def test_get__not_found(self):
@@ -245,16 +222,14 @@ class FeatureEditStageTest(unittest.TestCase):
     testing_config.sign_in('user1@google.com', 1234567890)
     with guide.app.test_request_context(self.request_path):
       with self.assertRaises(werkzeug.exceptions.NotFound):
-        with client.context():
-          self.handler.get_template_data(999, self.stage)
+        self.handler.get_template_data(999, self.stage)
 
   def test_get__normal(self):
     """Allowed users render a page with a django form."""
     testing_config.sign_in('user1@google.com', 1234567890)
 
     with guide.app.test_request_context(self.request_path):
-      with client.context():
-        template_data = self.handler.get_template_data(
+      template_data = self.handler.get_template_data(
           self.feature_1.key.integer_id(), self.stage)
 
     self.assertTrue('feature' in template_data)
@@ -267,8 +242,7 @@ class FeatureEditStageTest(unittest.TestCase):
     testing_config.sign_in('user1@google.com', 1234567890)
 
     with guide.app.test_request_context(self.request_path):
-      with client.context():
-        template_data = self.handler.get_template_data(
+      template_data = self.handler.get_template_data(
           self.feature_1.key.integer_id(), self.stage)
 
     self.assertFalse(template_data['already_on_this_stage'])
@@ -276,13 +250,11 @@ class FeatureEditStageTest(unittest.TestCase):
   def test_get__already_on_this_stage(self):
     """When feature is already on the stage for the current form, say that."""
     self.feature_1.intent_stage = self.stage
-    with client.context():
-      self.feature_1.put()
+    self.feature_1.put()
     testing_config.sign_in('user1@google.com', 1234567890)
 
     with guide.app.test_request_context(self.request_path):
-      with client.context():
-        template_data = self.handler.get_template_data(
+      template_data = self.handler.get_template_data(
           self.feature_1.key.integer_id(), self.stage)
 
     self.assertTrue(template_data['already_on_this_stage'])
@@ -292,8 +264,7 @@ class FeatureEditStageTest(unittest.TestCase):
     testing_config.sign_out()
     with guide.app.test_request_context(self.request_path, method='POST'):
       with self.assertRaises(werkzeug.exceptions.Forbidden):
-        with client.context():
-          self.handler.process_post_data(
+        self.handler.process_post_data(
             self.feature_1.key.integer_id(), self.stage)
 
   def test_post__non_allowed(self):
@@ -301,8 +272,7 @@ class FeatureEditStageTest(unittest.TestCase):
     testing_config.sign_in('user1@example.com', 1234567890)
     with guide.app.test_request_context(self.request_path):
       with self.assertRaises(werkzeug.exceptions.Forbidden, method='POST'):
-        with client.context():
-          self.handler.process_post_data(
+        self.handler.process_post_data(
             self.feature_1.key.integer_id(), self.stage)
 
   def test_post__normal_valid(self):
@@ -315,16 +285,14 @@ class FeatureEditStageTest(unittest.TestCase):
             'summary': 'Revised feature summary',
             'shipped_milestone': '84',
         }):
-      with client.context():
-        actual_response = self.handler.process_post_data(
+      actual_response = self.handler.process_post_data(
           self.feature_1.key.integer_id(), self.stage)
 
     self.assertEqual('302 FOUND', actual_response.status)
     location = actual_response.headers['location']
     self.assertEqual('/guide/edit/%d' % self.feature_1.key.integer_id(),
                      location)
-    with client.context():
-      revised_feature = models.Feature.get_by_id(self.feature_1.key.integer_id())
+    revised_feature = models.Feature.get_by_id(self.feature_1.key.integer_id())
     self.assertEqual(2, revised_feature.category)
     self.assertEqual('Revised feature name', revised_feature.name)
     self.assertEqual('Revised feature summary', revised_feature.summary)

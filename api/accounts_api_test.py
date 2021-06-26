@@ -16,7 +16,6 @@
 from __future__ import division
 from __future__ import print_function
 
-import unittest
 import testing_config  # Must be imported before the module under test.
 
 import flask
@@ -26,30 +25,24 @@ import werkzeug.exceptions  # Flask HTTP stuff.
 from api import accounts_api
 from api import register
 from internals import models
-from google.cloud import ndb
-
-client = ndb.Client()
 
 
-class AccountsAPITest(unittest.TestCase):
+class AccountsAPITest(testing_config.CustomTestCase):
 
   def setUp(self):
     self.app_admin = models.AppUser(email='admin@example.com')
     self.app_admin.is_admin = True
-    with client.context():
-      self.app_admin.put()
+    self.app_admin.put()
     self.appuser_1 = models.AppUser(email='user@example.com')
-    with client.context():
-      self.appuser_1.put()
+    self.appuser_1.put()
     self.appuser_id = self.appuser_1.key.integer_id()
 
     self.request_path = '/api/v0/accounts/%d' % self.appuser_id
     self.handler = accounts_api.AccountsAPI()
 
   def tearDown(self):
-    with client.context():
-      self.appuser_1.key.delete()
-      self.app_admin.key.delete()
+    self.appuser_1.key.delete()
+    self.app_admin.key.delete()
 
   def test_create__normal_valid(self):
     """Admin wants to register a normal account."""
@@ -57,13 +50,11 @@ class AccountsAPITest(unittest.TestCase):
 
     json_data = {'email': 'new@example.com', 'isAdmin': False}
     with register.app.test_request_context(self.request_path, json=json_data):
-      with client.context():
-        actual_json = self.handler.do_post()
+      actual_json = self.handler.do_post()
     self.assertEqual('new@example.com', actual_json['email'])
     self.assertFalse(actual_json['is_admin'])
 
-    with client.context():
-      new_appuser = (models.AppUser.query(models.AppUser.email == 'new@example.com').get())
+    new_appuser = (models.AppUser.query(models.AppUser.email == 'new@example.com').get())
     self.assertEqual('new@example.com', new_appuser.email)
     self.assertFalse(new_appuser.is_admin)
 
@@ -73,13 +64,11 @@ class AccountsAPITest(unittest.TestCase):
 
     json_data = {'email': 'new_admin@example.com', 'isAdmin': True}
     with register.app.test_request_context(self.request_path, json=json_data):
-      with client.context():
-        actual_json = self.handler.do_post()
+      actual_json = self.handler.do_post()
     self.assertEqual('new_admin@example.com', actual_json['email'])
     self.assertTrue(actual_json['is_admin'])
 
-    with client.context():
-      new_appuser = (models.AppUser.query(models.AppUser.email == 'new_admin@example.com').get())
+    new_appuser = (models.AppUser.query(models.AppUser.email == 'new_admin@example.com').get())
     self.assertEqual('new_admin@example.com', new_appuser.email)
     self.assertTrue(new_appuser.is_admin)
 
@@ -89,11 +78,9 @@ class AccountsAPITest(unittest.TestCase):
 
     with register.app.test_request_context(self.request_path):
       with self.assertRaises(werkzeug.exceptions.Forbidden):
-        with client.context():
-          self.handler.do_post(self.appuser_id)
+        self.handler.do_post(self.appuser_id)
 
-    with client.context():
-      new_appuser = (models.AppUser.query(models.AppUser.email == 'new@example.com').get())
+    new_appuser = (models.AppUser.query(models.AppUser.email == 'new@example.com').get())
     self.assertIsNone(new_appuser)
 
   def test_create__invalid(self):
@@ -103,11 +90,9 @@ class AccountsAPITest(unittest.TestCase):
     json_data = {'isAdmin': False}  # No email
     with register.app.test_request_context(self.request_path):
       with self.assertRaises(werkzeug.exceptions.BadRequest, json=json_data):
-        with client.context():
-          self.handler.do_post()
+        self.handler.do_post()
 
-    with client.context():
-      new_appuser = (models.AppUser.query(models.AppUser.email == 'new@example.com').get())
+    new_appuser = (models.AppUser.query(models.AppUser.email == 'new@example.com').get())
     self.assertIsNone(new_appuser)
 
   def test_create__duplicate(self):
@@ -117,11 +102,9 @@ class AccountsAPITest(unittest.TestCase):
     json_data = {'email': 'user@example.com'}
     with register.app.test_request_context(self.request_path, json=json_data):
       with self.assertRaises(werkzeug.exceptions.BadRequest):
-        with client.context():
-          self.handler.do_post()
-    
-    with client.context():
-      unrevised_appuser = models.AppUser.get_by_id(self.appuser_id)
+        self.handler.do_post()
+
+    unrevised_appuser = models.AppUser.get_by_id(self.appuser_id)
     self.assertEqual('user@example.com', unrevised_appuser.email)
 
   def test_delete__valid(self):
@@ -129,12 +112,10 @@ class AccountsAPITest(unittest.TestCase):
     testing_config.sign_in('admin@example.com', 123567890)
 
     with register.app.test_request_context(self.request_path):
-      with client.context():
-        actual_json = self.handler.do_delete(self.appuser_id)
+      actual_json = self.handler.do_delete(self.appuser_id)
     self.assertEqual({'message': 'Done'}, actual_json)
 
-    with client.context():
-      revised_appuser = models.AppUser.get_by_id(self.appuser_id)
+    revised_appuser = models.AppUser.get_by_id(self.appuser_id)
     self.assertIsNone(revised_appuser)
 
   def test_delete__forbidden(self):
@@ -143,11 +124,9 @@ class AccountsAPITest(unittest.TestCase):
 
     with register.app.test_request_context(self.request_path):
       with self.assertRaises(werkzeug.exceptions.Forbidden):
-        with client.context():
-          self.handler.do_delete(self.appuser_id)
+        self.handler.do_delete(self.appuser_id)
 
-    with client.context():
-      unrevised_appuser = models.AppUser.get_by_id(self.appuser_id)
+    unrevised_appuser = models.AppUser.get_by_id(self.appuser_id)
     self.assertEqual('user@example.com', unrevised_appuser.email)
 
   def test_delete__invalid(self):
@@ -156,11 +135,9 @@ class AccountsAPITest(unittest.TestCase):
 
     with register.app.test_request_context(self.request_path):
       with self.assertRaises(werkzeug.exceptions.BadRequest):
-        with client.context():
-          self.handler.do_delete(None)
+        self.handler.do_delete(None)
 
-    with client.context():
-      unrevised_appuser = models.AppUser.get_by_id(self.appuser_id)
+    unrevised_appuser = models.AppUser.get_by_id(self.appuser_id)
     self.assertEqual('user@example.com', unrevised_appuser.email)
 
 
@@ -170,9 +147,7 @@ class AccountsAPITest(unittest.TestCase):
 
     with register.app.test_request_context(self.request_path):
       with self.assertRaises(werkzeug.exceptions.NotFound):
-        with client.context():
-          self.handler.do_delete(self.appuser_id + 1)
-    
-    with client.context():
-      unrevised_appuser = models.AppUser.get_by_id(self.appuser_id)
+        self.handler.do_delete(self.appuser_id + 1)
+
+    unrevised_appuser = models.AppUser.get_by_id(self.appuser_id)
     self.assertEqual('user@example.com', unrevised_appuser.email)

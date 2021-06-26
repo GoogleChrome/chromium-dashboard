@@ -16,7 +16,6 @@ from __future__ import division
 from __future__ import print_function
 
 import testing_config  # Must be imported first
-import unittest
 
 import flask
 import werkzeug
@@ -24,13 +23,9 @@ import werkzeug
 from internals import models
 from framework import ramcache
 from pages import samples
-from google.cloud import ndb
-
-client = ndb.Client()
 
 
-
-class TestWithFeature(unittest.TestCase):
+class TestWithFeature(testing_config.CustomTestCase):
 
   REQUEST_PATH_FORMAT = 'subclasses fill this in'
   HANDLER_CLASS = 'subclasses fill this in'
@@ -40,8 +35,7 @@ class TestWithFeature(unittest.TestCase):
         name='feature one', summary='detailed sum', category=1, visibility=1,
         standardization=1, web_dev_views=1, impl_status_chrome=1,
         intent_stage=models.INTENT_IMPLEMENT)
-    with client.context():
-      self.feature_1.put()
+    self.feature_1.put()
     self.feature_id = self.feature_1.key.integer_id()
 
     self.request_path = self.REQUEST_PATH_FORMAT % {
@@ -50,10 +44,9 @@ class TestWithFeature(unittest.TestCase):
     self.handler = self.HANDLER_CLASS()
 
   def tearDown(self):
-    with client.context():
-      self.feature_1.key.delete()
-      ramcache.flush_all()
-      ramcache.check_for_distributed_invalidation()
+    self.feature_1.key.delete()
+    ramcache.flush_all()
+    ramcache.check_for_distributed_invalidation()
 
 
 class SamplesHandlerTest(TestWithFeature):
@@ -64,8 +57,7 @@ class SamplesHandlerTest(TestWithFeature):
   def test_get_template_data(self):
     """User can get a page with all samples."""
     with samples.app.test_request_context(self.request_path):
-      with client.context():
-        template_data = self.handler.get_template_data()
+      template_data = self.handler.get_template_data()
 
     self.assertIn('FEATURES', template_data)
 
@@ -78,8 +70,7 @@ class SamplesJSONHandlerTest(TestWithFeature):
   def test_get_template_data(self):
     """User can get a JSON feed of all samples."""
     with samples.app.test_request_context(self.request_path):
-      with client.context():
-        json_data = self.handler.get_template_data()
+      json_data = self.handler.get_template_data()
 
     self.assertEqual([], json_data)
 
@@ -92,8 +83,7 @@ class SamplesXMLHandlerTest(TestWithFeature):
   def test_get_template_data(self):
     """User can get an XML feed of all samples."""
     with samples.app.test_request_context(self.request_path):
-      with client.context():
-        actual_text, actual_headers = self.handler.get_template_data()
+      actual_text, actual_headers = self.handler.get_template_data()
 
     # It is an XML feed
     self.assertTrue(actual_text.startswith('<?xml'))

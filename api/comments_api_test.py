@@ -17,7 +17,6 @@ from __future__ import division
 from __future__ import print_function
 
 import datetime
-import unittest
 import testing_config  # Must be imported before the module under test.
 
 import flask
@@ -28,21 +27,17 @@ from api import register
 from api import comments_api
 from internals import models
 
-from google.cloud import ndb
-
-client = ndb.Client()
 
 NOW = datetime.datetime.now()
 
 
-class CommentsAPITest(unittest.TestCase):
+class CommentsAPITest(testing_config.CustomTestCase):
 
   def setUp(self):
     self.feature_1 = models.Feature(
         name='feature one', summary='sum', category=1, visibility=1,
         standardization=1, web_dev_views=1, impl_status_chrome=1)
-    with client.context():
-      self.feature_1.put()
+    self.feature_1.put()
     self.feature_id = self.feature_1.key.integer_id()
     self.field_id = 1
     self.handler = comments_api.CommentsAPI()
@@ -53,8 +48,7 @@ class CommentsAPITest(unittest.TestCase):
         feature_id=self.feature_id, field_id=1,
         set_by='owner1@example.com', set_on=NOW,
         state=models.Approval.APPROVED)
-    with client.context():
-      self.appr_1_1.put()
+    self.appr_1_1.put()
 
     # This is not in the datastore unless a specific test calls put().
     self.cmnt_1_1 = models.Comment(
@@ -74,30 +68,26 @@ class CommentsAPITest(unittest.TestCase):
         }
 
   def tearDown(self):
-    with client.context():
-      self.feature_1.key.delete()
-      for appr in models.Approval.query():
-        appr.key.delete()
-      for cmnt in models.Comment.query():
-        cmnt.key.delete()
+    self.feature_1.key.delete()
+    for appr in models.Approval.query():
+      appr.key.delete()
+    for cmnt in models.Comment.query():
+      cmnt.key.delete()
 
   def test_get__empty(self):
     """We can get comments for a given approval, even if there none."""
     testing_config.sign_out()
     with register.app.test_request_context(self.request_path):
-      with client.context():
-        actual_response = self.handler.do_get(self.feature_id, self.field_id)
+      actual_response = self.handler.do_get(self.feature_id, self.field_id)
     self.assertEqual({'comments': []}, actual_response)
 
   def test_get__all_some(self):
     """We can get all comments for a given approval."""
     testing_config.sign_out()
-    with client.context():
-      self.cmnt_1_1.put()
+    self.cmnt_1_1.put()
 
     with register.app.test_request_context(self.request_path):
-      with client.context():
-        actual_response = self.handler.do_get(self.feature_id, self.field_id)
+      actual_response = self.handler.do_get(self.feature_id, self.field_id)
 
     actual_comment = actual_response['comments'][0]
     del actual_comment['created']
@@ -110,14 +100,12 @@ class CommentsAPITest(unittest.TestCase):
     params = {'state': 'not an int'}
     with register.app.test_request_context(self.request_path, json=params):
       with self.assertRaises(werkzeug.exceptions.BadRequest):
-        with client.context():
-          self.handler.do_post(self.feature_id, self.field_id)
+        self.handler.do_post(self.feature_id, self.field_id)
 
     params = {'state': 999}
     with register.app.test_request_context(self.request_path, json=params):
       with self.assertRaises(werkzeug.exceptions.BadRequest):
-        with client.context():
-          self.handler.do_post(self.feature_id, self.field_id)
+        self.handler.do_post(self.feature_id, self.field_id)
 
   def test_post__feature_not_found(self):
     """Handler rejects requests that don't match an existing feature."""
@@ -125,8 +113,7 @@ class CommentsAPITest(unittest.TestCase):
     params = {'state': models.Approval.NEED_INFO }
     with register.app.test_request_context(bad_path, json=params):
       with self.assertRaises(werkzeug.exceptions.NotFound):
-        with client.context():
-          self.handler.do_post(12345, self.field_id)
+        self.handler.do_post(12345, self.field_id)
 
   @mock.patch('internals.approval_defs.get_approvers')
   def test_post__forbidden(self, mock_get_approvers):
@@ -137,20 +124,17 @@ class CommentsAPITest(unittest.TestCase):
     testing_config.sign_out()
     with register.app.test_request_context(self.request_path, json=params):
       with self.assertRaises(werkzeug.exceptions.Forbidden):
-        with client.context():
-          self.handler.do_post(self.feature_id, self.field_id)
+        self.handler.do_post(self.feature_id, self.field_id)
 
     testing_config.sign_in('user7@example.com', 123567890)
     with register.app.test_request_context(self.request_path, json=params):
       with self.assertRaises(werkzeug.exceptions.Forbidden):
-        with client.context():
-          self.handler.do_post(self.feature_id, self.field_id)
+        self.handler.do_post(self.feature_id, self.field_id)
 
     testing_config.sign_in('user@google.com', 123567890)
     with register.app.test_request_context(self.request_path, json=params):
       with self.assertRaises(werkzeug.exceptions.Forbidden):
-        with client.context():
-          self.handler.do_post(self.feature_id, self.field_id)
+        self.handler.do_post(self.feature_id, self.field_id)
 
   @mock.patch('internals.approval_defs.get_approvers')
   def test_post__update(self, mock_get_approvers):
@@ -159,20 +143,17 @@ class CommentsAPITest(unittest.TestCase):
     testing_config.sign_in('owner1@example.com', 123567890)
     params = {'state': models.Approval.NEED_INFO}
     with register.app.test_request_context(self.request_path, json=params):
-      with client.context():
-        actual = self.handler.do_post(self.feature_id, self.field_id)
+      actual = self.handler.do_post(self.feature_id, self.field_id)
 
     self.assertEqual(actual, {'message': 'Done'})
-    with client.context():
-      updated_approvals = models.Approval.get_approvals(self.feature_id)
+    updated_approvals = models.Approval.get_approvals(self.feature_id)
     self.assertEqual(1, len(updated_approvals))
     appr = updated_approvals[0]
     self.assertEqual(appr.feature_id, self.feature_id)
     self.assertEqual(appr.field_id, 1)
     self.assertEqual(appr.set_by, 'owner1@example.com')
     self.assertEqual(appr.state, models.Approval.NEED_INFO)
-    with client.context():
-      updated_comments = models.Comment.get_comments(
+    updated_comments = models.Comment.get_comments(
         self.feature_id, self.field_id)
     cmnt = updated_comments[0]
     self.assertEqual(None, cmnt.content)
@@ -186,20 +167,18 @@ class CommentsAPITest(unittest.TestCase):
     testing_config.sign_in('owner2@example.com', 123567890)
     params = {'comment': 'Congratulations'}
     with register.app.test_request_context(self.request_path, json=params):
-      with client.context():
-        actual = self.handler.do_post(self.feature_id, self.field_id)
+      actual = self.handler.do_post(self.feature_id, self.field_id)
 
     self.assertEqual(actual, {'message': 'Done'})
-    with client.context():
-      updated_approvals = models.Approval.get_approvals(self.feature_id)
+    updated_approvals = models.Approval.get_approvals(self.feature_id)
     self.assertEqual(1, len(updated_approvals))
     appr = updated_approvals[0]
     self.assertEqual(appr.feature_id, self.feature_id)
     self.assertEqual(appr.field_id, 1)
     self.assertEqual(appr.set_by, 'owner1@example.com')  # Unchanged
     self.assertEqual(appr.state, models.Approval.APPROVED)  # Unchanged
-    with client.context():
-      updated_comments = models.Comment.get_comments(self.feature_id, self.field_id)
+    updated_comments = models.Comment.get_comments(
+        self.feature_id, self.field_id)
     cmnt = updated_comments[0]
     self.assertEqual('Congratulations', cmnt.content)
     self.assertIsNone(cmnt.old_approval_state)

@@ -16,7 +16,6 @@ from __future__ import print_function
 # limitations under the License.
 
 import testing_config  # Must be imported first
-import unittest
 
 import datetime
 import mock
@@ -27,12 +26,9 @@ from framework import users
 
 from api import metricsdata
 from internals import models
-from google.cloud import ndb
-
-client = ndb.Client()
 
 
-class MetricsFunctionTests(unittest.TestCase):
+class MetricsFunctionTests(testing_config.CustomTestCase):
 
   def setUp(self):
     self.datapoint = models.StableInstance(
@@ -71,19 +67,17 @@ class MetricsFunctionTests(unittest.TestCase):
     self.assertEqual(0.01234568, updated_datapoints[0].day_percentage)
 
 
-class PopularityTimelineHandlerTests(unittest.TestCase):
+class PopularityTimelineHandlerTests(testing_config.CustomTestCase):
 
   def setUp(self):
     self.handler = metricsdata.PopularityTimelineHandler()
     self.datapoint = models.StableInstance(
         day_percentage=0.0123456789, date=datetime.date.today(),
         bucket_id=1, property_name='prop')
-    with client.context():
-      self.datapoint.put()
+    self.datapoint.put()
 
   def tearDown(self):
-    with client.context():
-      self.datapoint.key.delete()
+    self.datapoint.key.delete()
 
   def test_make_query(self):
     actual_query = self.handler.make_query(1)
@@ -99,8 +93,7 @@ class PopularityTimelineHandlerTests(unittest.TestCase):
     testing_config.sign_out()
     url = '/data/timeline/csspopularity?bucket_id=1'
     with metricsdata.app.test_request_context(url):
-      with client.context():
-        actual_datapoints = self.handler.get_template_data()
+      actual_datapoints = self.handler.get_template_data()
     self.assertEqual(1, len(actual_datapoints))
     self.assertEqual(0.01234568, actual_datapoints[0]['day_percentage'])
 
@@ -108,44 +101,39 @@ class PopularityTimelineHandlerTests(unittest.TestCase):
 # TODO(jrobbins): Test for metricsdata.FeatureHandler.
 
 
-class FeatureBucketsHandlerTest(unittest.TestCase):
+class FeatureBucketsHandlerTest(testing_config.CustomTestCase):
 
   def setUp(self):
     self.handler = metricsdata.FeatureBucketsHandler()
     self.prop_1 = models.CssPropertyHistogram(
         bucket_id=1, property_name='b prop')
+    self.prop_1.put()
     self.prop_2 = models.CssPropertyHistogram(
         bucket_id=2, property_name='a prop')
+    self.prop_2.put()
     self.prop_3 = models.FeatureObserverHistogram(
         bucket_id=3, property_name='b feat')
+    self.prop_3.put()
     self.prop_4 = models.FeatureObserverHistogram(
         bucket_id=4, property_name='a feat')
-    with client.context():
-      self.prop_1.put()
-      self.prop_2.put()
-      self.prop_3.put()
-      self.prop_4.put()
-      
+    self.prop_4.put()
 
   def tearDown(self):
-    with client.context():
-      self.prop_1.key.delete()
-      self.prop_2.key.delete()
-      self.prop_3.key.delete()
-      self.prop_4.key.delete()
+    self.prop_1.key.delete()
+    self.prop_2.key.delete()
+    self.prop_3.key.delete()
+    self.prop_4.key.delete()
 
   def test_get_template_data__css(self):
     with metricsdata.app.test_request_context('/data/blink/cssprops'):
-      with client.context():
-        actual_buckets = self.handler.get_template_data('cssprops')
+      actual_buckets = self.handler.get_template_data('cssprops')
     self.assertEqual(
         [(2, 'a prop'), (1, 'b prop')],
         actual_buckets)
 
   def test_get_template_data__js(self):
     with metricsdata.app.test_request_context('/data/blink/features'):
-      with client.context():
-        actual_buckets = self.handler.get_template_data('features')
+      actual_buckets = self.handler.get_template_data('features')
     self.assertEqual(
         [(4, 'a feat'), (3, 'b feat')],
         actual_buckets)

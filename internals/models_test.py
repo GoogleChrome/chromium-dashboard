@@ -15,7 +15,6 @@ from __future__ import print_function
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import unittest
 import testing_config  # Must be imported before the module under test.
 
 import mock
@@ -24,9 +23,6 @@ from framework import ramcache
 from framework import users
 
 from internals import models
-from google.cloud import ndb
-
-client = ndb.Client()
 
 
 class MockQuery(object):
@@ -38,7 +34,7 @@ class MockQuery(object):
     return self.result_list
 
 
-class ModelsFunctionsTest(unittest.TestCase):
+class ModelsFunctionsTest(testing_config.CustomTestCase):
 
   def test_convert_enum_int_to_string__not_an_enum(self):
     """If the property is not an enum, just use the property value."""
@@ -85,33 +81,28 @@ class ModelsFunctionsTest(unittest.TestCase):
         models.del_none(d))
 
 
-class FeatureTest(unittest.TestCase):
+class FeatureTest(testing_config.CustomTestCase):
 
   def setUp(self):
-    with client.context():
-      ramcache.SharedInvalidate.check_for_distributed_invalidation()
+    ramcache.SharedInvalidate.check_for_distributed_invalidation()
     self.feature_1 = models.Feature(
         name='feature one', summary='sum', category=1, visibility=1,
         standardization=1, web_dev_views=1, impl_status_chrome=1)
-    with client.context():
-      self.feature_1.put()
+    self.feature_1.put()
 
     self.feature_2 = models.Feature(
         name='feature two', summary='sum', category=1, visibility=1,
         standardization=1, web_dev_views=1, impl_status_chrome=1)
-    with client.context():
-      self.feature_2.put()
+    self.feature_2.put()
 
   def tearDown(self):
-    with client.context():
-      self.feature_1.key.delete()
-      self.feature_2.key.delete()
-      ramcache.flush_all()
+    self.feature_1.key.delete()
+    self.feature_2.key.delete()
+    ramcache.flush_all()
 
   def test_get_chronological__normal(self):
     """We can retrieve a list of features."""
-    with client.context():
-      actual = models.Feature.get_chronological()
+    actual = models.Feature.get_chronological()
     names = [f['name'] for f in actual]
     self.assertEqual(
         ['feature one', 'feature two'],
@@ -120,9 +111,8 @@ class FeatureTest(unittest.TestCase):
   def test_get_chronological__unlisted(self):
     """Unlisted features are not included in the list."""
     self.feature_2.unlisted = True
-    with client.context():
-      self.feature_2.put()
-      actual = models.Feature.get_chronological()
+    self.feature_2.put()
+    actual = models.Feature.get_chronological()
     names = [f['name'] for f in actual]
     self.assertEqual(
         ['feature one'],
@@ -131,16 +121,15 @@ class FeatureTest(unittest.TestCase):
   def test_get_chronological__unlisted_shown(self):
     """Unlisted features are included for users with edit access."""
     self.feature_2.unlisted = True
-    with client.context():
-      self.feature_2.put()
-      actual = models.Feature.get_chronological(show_unlisted=True)
+    self.feature_2.put()
+    actual = models.Feature.get_chronological(show_unlisted=True)
     names = [f['name'] for f in actual]
     self.assertEqual(
         ['feature one', 'feature two'],
         names)
 
 
-class ApprovalTest(unittest.TestCase):
+class ApprovalTest(testing_config.CustomTestCase):
 
   def test_is_valid_state(self):
     """We know what approval states are valid."""
@@ -151,29 +140,25 @@ class ApprovalTest(unittest.TestCase):
     self.assertFalse(models.Approval.is_valid_state(999))
 
 
-class UserPrefTest(unittest.TestCase):
+class UserPrefTest(testing_config.CustomTestCase):
 
   def setUp(self):
     self.user_pref_1 = models.UserPref(email='one@example.com')
     self.user_pref_1.notify_as_starrer = False
-    with client.context():
-      self.user_pref_1.put()
+    self.user_pref_1.put()
 
     self.user_pref_2 = models.UserPref(email='two@example.com')
-    with client.context():
-      self.user_pref_2.put()
+    self.user_pref_2.put()
 
   def tearDown(self):
-    with client.context():
-      self.user_pref_1.key.delete()
-      self.user_pref_2.key.delete()
+    self.user_pref_1.key.delete()
+    self.user_pref_2.key.delete()
 
   # @mock.patch('google.appengine.api.users.get_current_user')
   @mock.patch('framework.users.get_current_user')
   def test_get_signed_in_user_pref__anon(self, mock_get_current_user):
     mock_get_current_user.return_value = None
-    with client.context():
-      actual = models.UserPref.get_signed_in_user_pref()
+    actual = models.UserPref.get_signed_in_user_pref()
     self.assertIsNone(actual)
 
   # @mock.patch('google.appengine.api.users.get_current_user')
@@ -182,8 +167,7 @@ class UserPrefTest(unittest.TestCase):
     mock_get_current_user.return_value = testing_config.Blank(
         email=lambda: 'user1@example.com')
 
-    with client.context():
-      actual = models.UserPref.get_signed_in_user_pref()
+    actual = models.UserPref.get_signed_in_user_pref()
 
     self.assertEqual('user1@example.com', actual.email)
     self.assertEqual(True, actual.notify_as_starrer)
@@ -196,9 +180,9 @@ class UserPrefTest(unittest.TestCase):
         email=lambda: 'user2@example.com')
     user_pref = models.UserPref(
         email='user2@example.com', notify_as_starrer=False, bounced=True)
-    with client.context():
-      user_pref.put()
-      actual = models.UserPref.get_signed_in_user_pref()
+    user_pref.put()
+
+    actual = models.UserPref.get_signed_in_user_pref()
 
     self.assertEqual('user2@example.com', actual.email)
     self.assertEqual(False, actual.notify_as_starrer)
@@ -211,9 +195,9 @@ class UserPrefTest(unittest.TestCase):
     mock_get_current_user.return_value = testing_config.Blank(
         email=lambda: 'one@example.com')
 
-    with client.context():
-      models.UserPref.dismiss_cue('welcome-message')
-      revised_user_pref = models.UserPref.get_signed_in_user_pref()
+    models.UserPref.dismiss_cue('welcome-message')
+
+    revised_user_pref = models.UserPref.get_signed_in_user_pref()
     self.assertEqual('one@example.com', revised_user_pref.email)
     self.assertEqual(['welcome-message'], revised_user_pref.dismissed_cues)
 
@@ -224,18 +208,16 @@ class UserPrefTest(unittest.TestCase):
     mock_get_current_user.return_value = testing_config.Blank(
         email=lambda: 'one@example.com')
 
-    with client.context():
-      models.UserPref.dismiss_cue('welcome-message')
-      models.UserPref.dismiss_cue('welcome-message')
+    models.UserPref.dismiss_cue('welcome-message')
+    models.UserPref.dismiss_cue('welcome-message')
 
-      revised_user_pref = models.UserPref.get_signed_in_user_pref()
+    revised_user_pref = models.UserPref.get_signed_in_user_pref()
     self.assertEqual('one@example.com', revised_user_pref.email)
     self.assertEqual(['welcome-message'], revised_user_pref.dismissed_cues)
 
   def test_get_prefs_for_emails__some_found(self):
     emails = ['one@example.com', 'two@example.com', 'huh@example.com']
-    with client.context():
-      user_prefs = models.UserPref.get_prefs_for_emails(emails)
+    user_prefs = models.UserPref.get_prefs_for_emails(emails)
     self.assertEqual(3, len(user_prefs))
     one, two, huh = user_prefs
     self.assertEqual('one@example.com', one.email)
@@ -249,7 +231,6 @@ class UserPrefTest(unittest.TestCase):
   def test_get_prefs_for_emails__long_list(self):
     emails = ['user_%d@example.com' % i
               for i in range(100)]
-    with client.context():
-      user_prefs = models.UserPref.get_prefs_for_emails(emails)
+    user_prefs = models.UserPref.get_prefs_for_emails(emails)
     self.assertEqual(100, len(user_prefs))
     self.assertEqual('user_0@example.com', user_prefs[0].email)

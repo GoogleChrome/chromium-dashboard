@@ -15,7 +15,6 @@
 from __future__ import division
 from __future__ import print_function
 
-import unittest
 import testing_config  # Must be imported before the module under test.
 
 import mock
@@ -27,9 +26,6 @@ from framework import users
 from framework import basehandlers
 from framework import permissions
 from internals import models
-from google.cloud import ndb
-
-client = ndb.Client()
 
 
 class MockHandler(basehandlers.BaseHandler):
@@ -54,22 +50,19 @@ test_app = basehandlers.FlaskApplication(
     debug=True)
 
 
-class PermissionFunctionTests(unittest.TestCase):
+class PermissionFunctionTests(testing_config.CustomTestCase):
 
   def setUp(self):
     self.app_user = models.AppUser(email='registered@example.com')
-    with client.context():
-      self.app_user.put()
+    self.app_user.put()
 
     self.app_admin = models.AppUser(email='admin@example.com')
     self.app_admin.is_admin = True
-    with client.context():
-      self.app_admin.put()
+    self.app_admin.put()
 
   def tearDown(self):
-    with client.context():
-      self.app_user.delete()
-      self.app_admin.delete()
+    self.app_user.delete()
+    self.app_admin.delete()
 
   def check_function_results(
       self, func, additional_args,
@@ -79,37 +72,31 @@ class PermissionFunctionTests(unittest.TestCase):
     # Test unregistered users
     testing_config.sign_in('unregistered@example.com', 123)
     user = users.get_current_user()
-    with client.context():
-      self.assertEqual(unregistered, func(user, *additional_args))
+    self.assertEqual(unregistered, func(user, *additional_args))
 
     # Test registered users
     testing_config.sign_in('registered@example.com', 123)
     user = users.get_current_user()
-    with client.context():
-      self.assertEqual(registered, func(user, *additional_args))
+    self.assertEqual(registered, func(user, *additional_args))
 
     # Test special users
     # TODO(jrobbins): generalize this.
     testing_config.sign_in('user@google.com', 123)
     user = users.get_current_user()
-    with client.context():
-      self.assertEqual(special, func(user, *additional_args))
+    self.assertEqual(special, func(user, *additional_args))
     testing_config.sign_in('user@chromium.org', 123)
     user = users.get_current_user()
-    with client.context():
-      self.assertEqual(special, func(user, *additional_args))
+    self.assertEqual(special, func(user, *additional_args))
 
     # Test admin users
     testing_config.sign_in('admin@example.com', 123)
     user = users.get_current_user()
-    with client.context():
-      self.assertEqual(admin, func(user, *additional_args))
+    self.assertEqual(admin, func(user, *additional_args))
 
     # Test anonymous visitors
     testing_config.sign_out()
     user = users.get_current_user()
-    with client.context():
-      self.assertEqual(anon, func(user, *additional_args))
+    self.assertEqual(anon, func(user, *additional_args))
 
   def test_can_admin_site(self):
     self.check_function_results(
@@ -155,22 +142,19 @@ class PermissionFunctionTests(unittest.TestCase):
         special=False, admin=True, anon=False)
 
 
-class RequireAdminSiteTests(unittest.TestCase):
+class RequireAdminSiteTests(testing_config.CustomTestCase):
 
   def setUp(self):
     self.app_user = models.AppUser(email='registered@example.com')
-    with client.context():
-      self.app_user.put()
+    self.app_user.put()
 
     self.app_admin = models.AppUser(email='admin@example.com')
     self.app_admin.is_admin = True
-    with client.context():
-      self.app_admin.put()
+    self.app_admin.put()
 
   def tearDown(self):
-    with client.context():
-      self.app_user.delete()
-      self.app_admin.delete()
+    self.app_user.delete()
+    self.app_admin.delete()
 
   def test_require_admin_site__unregistered_user(self):
     """Wrapped method rejects call from an unregistered user."""
@@ -178,8 +162,7 @@ class RequireAdminSiteTests(unittest.TestCase):
     testing_config.sign_in('unregistered@example.com', 123)
     with test_app.test_request_context('/path', method='POST'):
       with self.assertRaises(werkzeug.exceptions.Forbidden):
-        with client.context():
-          handler.do_post()
+        handler.do_post()
     self.assertEqual(handler.called_with, None)
 
   def test_require_admin_site__registered_user(self):
@@ -188,8 +171,7 @@ class RequireAdminSiteTests(unittest.TestCase):
     testing_config.sign_in('registered@example.com', 123)
     with test_app.test_request_context('/path', method='POST'):
       with self.assertRaises(werkzeug.exceptions.Forbidden):
-        with client.context():
-          handler.do_post()
+        handler.do_post()
     self.assertEqual(handler.called_with, None)
 
   def test_require_admin_site__googler(self):
@@ -198,8 +180,7 @@ class RequireAdminSiteTests(unittest.TestCase):
     testing_config.sign_in('user@google.com', 123)
     with test_app.test_request_context('/path', method='POST'):
       with self.assertRaises(werkzeug.exceptions.Forbidden):
-        with client.context():
-          handler.do_post()
+        handler.do_post()
     self.assertEqual(handler.called_with, None)
 
   def test_require_admin_site__admin(self):
@@ -207,14 +188,12 @@ class RequireAdminSiteTests(unittest.TestCase):
     handler = MockHandler()
     testing_config.sign_in('admin@example.com', 123)
     with test_app.test_request_context('/path'):
-      with client.context():
-        actual_response = handler.do_get(123, 234)
+      actual_response = handler.do_get(123, 234)
     self.assertEqual(handler.called_with, (123, 234))
     self.assertEqual({'message': 'did get'}, actual_response)
 
     with test_app.test_request_context('/path', method='POST'):
-      with client.context():
-        actual_response = handler.do_post(345, 456)
+      actual_response = handler.do_post(345, 456)
     self.assertEqual(handler.called_with, (345, 456))
     self.assertEqual({'message': 'did post'}, actual_response)
 
@@ -223,13 +202,11 @@ class RequireAdminSiteTests(unittest.TestCase):
     handler = MockHandler()
     testing_config.sign_out()
     with test_app.test_request_context('/path'):
-      with client.context():
-        actual_response = handler.do_get(123, 234)
+      actual_response = handler.do_get(123, 234)
     self.assertEqual(handler.called_with, None)
     self.assertEqual(302, actual_response.status_code)
 
     with test_app.test_request_context('/path', method='POST'):
       with self.assertRaises(werkzeug.exceptions.Forbidden):
-        with client.context():
-          handler.do_post(345, 456)
+        handler.do_post(345, 456)
     self.assertEqual(handler.called_with, None)
