@@ -1038,6 +1038,7 @@ class Feature(DictModel):
   shipped_android_milestone = ndb.IntegerProperty()
   shipped_ios_milestone = ndb.IntegerProperty()
   shipped_webview_milestone = ndb.IntegerProperty()
+  requires_embedder_support = ndb.BooleanProperty(default=False)
 
   # DevTrial details.
   devtrial_instructions = ndb.StringProperty()

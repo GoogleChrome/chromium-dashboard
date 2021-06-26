@@ -79,6 +79,8 @@ STAGE_FORMS = {
 
 
 IMPL_STATUS_FORMS = {
+    models.INTENT_INCUBATE:
+        (None, guideforms.ImplStatus_Incubate),
     models.INTENT_EXPERIMENT:
         (models.BEHIND_A_FLAG, guideforms.ImplStatus_DevTrial),
     models.INTENT_EXTEND_TRIAL:
@@ -208,7 +210,8 @@ class FeatureEditStage(basehandlers.FlaskHandler):
     # For now, checkboxes are always considered "touched", if they are
     # present on the form.
     # TODO(jrobbins): Simplify this after next deployment.
-    checkboxes = ('unlisted', 'all_platforms', 'wpt', 'prefixed', 'api_spec')
+    checkboxes = ('unlisted', 'all_platforms', 'wpt', 'prefixed', 'api_spec',
+                  'requires_embedder_support')
     if param_name in checkboxes:
       form_fields_str = self.form.get('form_fields')
       if form_fields_str:
@@ -378,6 +381,10 @@ class FeatureEditStage(basehandlers.FlaskHandler):
     if self.touched('ot_milestone_android_end'):
       feature.ot_milestone_android_end = self.parse_int(
           'ot_milestone_android_end')
+
+    if self.touched('requires_embedder_support'):
+      feature.requires_embedder_support = (
+          self.form.get('requires_embedder_support') == 'on')
 
     if self.touched('devtrial_instructions'):
       feature.devtrial_instructions = self.parse_link('devtrial_instructions')

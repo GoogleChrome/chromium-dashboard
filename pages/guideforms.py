@@ -627,6 +627,15 @@ ALL_FIELDS = {
         widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'}),
         help_text=SHIPPED_WEBVIEW_HELP_TXT),
 
+    'requires_embedder_support': forms.BooleanField(
+      required=False, initial=False,
+      help_text=('Will this feature require support in //chrome?  '
+                 'If so, other embedders will need to make corresponding '
+                 'changes.  Please add a row to this '
+                 '<a href="https://docs.google.com/spreadsheets/d/'
+                 '1QV4SW4JBG3IyLzaonohUhim7nzncwK4ioop2cgUYevw/edit#gid=0'
+                 '" target="_blank">tracking spreadsheet</a>.')),
+
     'devtrial_instructions': forms.URLField(
         required=False, label='DevTrial instructions',
         widget=forms.URLInput(attrs={'placeholder': 'https://'}),
@@ -699,6 +708,11 @@ NewFeature_Incubate = define_form_class_using_shared_fields(
     'NewFeature_Incubate',
     ('motivation', 'initial_public_proposal_url', 'explainer_links',
      'bug_url', 'launch_bug_url', 'comments'))
+
+ImplStatus_Incubate = define_form_class_using_shared_fields(
+    'ImplStatus_Incubate',
+    ('requires_embedder_support',
+     ))
 
 
 NewFeature_Prototype = define_form_class_using_shared_fields(
@@ -865,7 +879,10 @@ Flat_Identify = define_form_class_using_shared_fields(
     'Flat_Identify',
     (# Standardization
     # TODO(jrobbins): display deprecation_motivation instead when deprecating.
-     'motivation', 'initial_public_proposal_url', 'explainer_links'))
+     'motivation', 'initial_public_proposal_url', 'explainer_links',
+
+     # Implementtion
+    'requires_embedder_support'))
 
 
 Flat_Implement = define_form_class_using_shared_fields(
@@ -982,7 +999,8 @@ DISPLAY_FIELDS_IN_STAGES = {
         'category', 'feature_type', 'intent_stage',
         ),
     models.INTENT_INCUBATE: make_display_specs(
-        'initial_public_proposal_url', 'explainer_links'),
+        'initial_public_proposal_url', 'explainer_links',
+        'requires_embedder_support'),
     models.INTENT_IMPLEMENT: make_display_specs(
         'spec_link', 'api_spec', 'spec_mentors', 'intent_to_implement_url'),
     models.INTENT_EXPERIMENT: make_display_specs(
