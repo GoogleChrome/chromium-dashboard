@@ -157,7 +157,6 @@ header {
       }
 
       a {
-	text-align: left;
         display: block;
       }
 
@@ -459,3 +458,38 @@ footer {
 }
 
 @import 'fouc';
+
+.flex-container {
+  display: flex;
+  justify-content: space-between;
+}
+
+.flex-container-outer {
+	flex-wrap: wrap;
+  width: 100%;
+}
+
+@media only screen and (max-width: 700px) {
+	.flex-container-inner-first {
+  	justify-content: space-between;
+    width: 100%;
+  }
+
+  .flex-item {
+    padding-left: 0px;
+    padding-right: 0px;
+    flex: 1 0 auto;
+  }
+
+  .flex-item-inner {
+    padding-left: 0px;
+    padding-right: 0px;
+    text-align: center;
+    flex: 0 1 auto;
+  }
+
+  .flex-container-inner-second {
+    justify-content: center;
+    width: 100%;
+  }
+}
