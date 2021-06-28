@@ -420,8 +420,12 @@ footer {
 
       &.search {
         text-align: center;
-        flex: 1 0 0;
+        min-width: 0;
         margin: 0;
+
+        input {
+          width: auto;
+        }
       }
     }
   }
