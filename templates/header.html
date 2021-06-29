@@ -38,13 +38,11 @@
       {% else %}
         <!-- <div class="g-signin2" data-onsuccess="onSignIn"></div> -->
         <div id="gSignInWrapper">
-          <span class="gSignInLabel">Sign in with:</span>
           <div id="gSignInCustomBtn" class="customGPlusSignIn">
               <span class="gSignInIcon"></span>
-              <span class="gSignInButtonText">Google</span>
           </div>
         </div>
-        <script>startApp();</script>
+        <script nonce="{{nonce}}">startApp();</script>
       {% endif %}
       </div>
     </div>
