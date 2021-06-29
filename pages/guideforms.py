@@ -509,15 +509,9 @@ ALL_FIELDS = {
         label='Debuggability', required=False,
         widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 1480}),
         help_text=
-        ('Description of the desired DevTools debugging support for your '
-         'feature. Consider emailing the '
-         '<a href="https://groups.google.com/forum/?'
-         'fromgroups#!forum/google-chrome-developer-tools">'
-         'google-chrome-developer-tools</a> list for additional help. '
-         'For new language features in V8 specifically, refer to the '
-         'debugger support checklist. If your feature doesn\'t require '
-         'changes to DevTools to provide a good debugging '
-         'experience, feel free to leave this section empty.')),
+        ('Description of the DevTools debugging support for your feature. '
+         'Please follow <a href="https://goo.gle/devtools-checklist">the '
+         'DevTools support checklist</a> for guidance.')),
 
     'all_platforms': forms.BooleanField(
         required=False, initial=False, label='Supported on all platforms?',
