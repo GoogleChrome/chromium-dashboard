@@ -15,7 +15,6 @@ from __future__ import print_function
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import unittest
 import testing_config  # Must be imported before the module under test.
 import urllib
 
@@ -26,7 +25,7 @@ from internals import models
 from pages import guide
 
 
-class FeatureNewTest(unittest.TestCase):
+class FeatureNewTest(testing_config.CustomTestCase):
 
   def setUp(self):
     self.handler = guide.FeatureNew()
@@ -94,7 +93,7 @@ class FeatureNewTest(unittest.TestCase):
     feature.key.delete()
 
 
-class ProcessOverviewTest(unittest.TestCase):
+class ProcessOverviewTest(testing_config.CustomTestCase):
 
   def setUp(self):
     self.feature_1 = models.Feature(
@@ -162,7 +161,7 @@ class ProcessOverviewTest(unittest.TestCase):
     self.assertTrue('progress_so_far' in template_data)
 
 
-class FeatureEditStageTest(unittest.TestCase):
+class FeatureEditStageTest(testing_config.CustomTestCase):
 
   def setUp(self):
     self.feature_1 = models.Feature(

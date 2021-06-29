@@ -16,7 +16,6 @@
 from __future__ import division
 from __future__ import print_function
 
-import unittest
 import testing_config  # Must be imported before the module under test.
 
 import flask
@@ -28,7 +27,7 @@ from api import register
 from internals import models
 
 
-class AccountsAPITest(unittest.TestCase):
+class AccountsAPITest(testing_config.CustomTestCase):
 
   def setUp(self):
     self.app_admin = models.AppUser(email='admin@example.com')

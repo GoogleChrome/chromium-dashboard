@@ -17,7 +17,6 @@ from __future__ import print_function
 
 import collections
 import json
-import unittest
 import testing_config  # Must be imported before the module under test.
 
 import flask
@@ -34,7 +33,7 @@ from internals import notifier
 import settings
 
 
-class EmailFormattingTest(unittest.TestCase):
+class EmailFormattingTest(testing_config.CustomTestCase):
 
   def setUp(self):
     self.feature_1 = models.Feature(
@@ -254,7 +253,7 @@ class EmailFormattingTest(unittest.TestCase):
         True, self.feature_2, self.changes)
 
 
-class FeatureStarTest(unittest.TestCase):
+class FeatureStarTest(testing_config.CustomTestCase):
 
   def setUp(self):
     self.feature_1 = models.Feature(
@@ -338,7 +337,7 @@ class FeatureStarTest(unittest.TestCase):
         [au.email for au in actual])
 
 
-class OutboundEmailHandlerTest(unittest.TestCase):
+class OutboundEmailHandlerTest(testing_config.CustomTestCase):
 
   def setUp(self):
     self.handler = notifier.OutboundEmailHandler()
@@ -414,7 +413,7 @@ class OutboundEmailHandlerTest(unittest.TestCase):
     self.assertEqual({'message': 'Done'}, actual_response)
 
 
-class BouncedEmailHandlerTest(unittest.TestCase):
+class BouncedEmailHandlerTest(testing_config.CustomTestCase):
 
   def setUp(self):
     self.handler = notifier.BouncedEmailHandler()

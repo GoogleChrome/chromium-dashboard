@@ -16,7 +16,6 @@ from __future__ import print_function
 # limitations under the License.
 
 import testing_config  # Must be imported first
-import unittest
 
 import datetime
 import mock
@@ -29,7 +28,7 @@ from api import metricsdata
 from internals import models
 
 
-class MetricsFunctionTests(unittest.TestCase):
+class MetricsFunctionTests(testing_config.CustomTestCase):
 
   def setUp(self):
     self.datapoint = models.StableInstance(
@@ -68,7 +67,7 @@ class MetricsFunctionTests(unittest.TestCase):
     self.assertEqual(0.01234568, updated_datapoints[0].day_percentage)
 
 
-class PopularityTimelineHandlerTests(unittest.TestCase):
+class PopularityTimelineHandlerTests(testing_config.CustomTestCase):
 
   def setUp(self):
     self.handler = metricsdata.PopularityTimelineHandler()
@@ -102,7 +101,7 @@ class PopularityTimelineHandlerTests(unittest.TestCase):
 # TODO(jrobbins): Test for metricsdata.FeatureHandler.
 
 
-class FeatureBucketsHandlerTest(unittest.TestCase):
+class FeatureBucketsHandlerTest(testing_config.CustomTestCase):
 
   def setUp(self):
     self.handler = metricsdata.FeatureBucketsHandler()

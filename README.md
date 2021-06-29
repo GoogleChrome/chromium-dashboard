@@ -10,7 +10,7 @@ Chrome Platform Status
     git clone https://github.com/GoogleChrome/chromium-dashboard
 
 ### Installation
-
+1. Before you begin, make sure that you have a java JRE (version 8 or greater) installed. JRE is required to use the DataStore Emulator. 
 1. Install global CLIs
     1. [Google App Engine SDK for Python](https://cloud.google.com/appengine/docs/standard/python/setting-up-environment). Make sure to select Python 2.7.
     1. pip, node, npm.
@@ -28,6 +28,7 @@ Create a file named `env_vars.yaml` in the root directory and fill it with:
 env_variables:
   DJANGO_SETTINGS_MODULE: 'settings'
   DJANGO_SECRET: 'this-is-a-secret'
+  DATASTORE_EMULATOR_HOST: 'localhost:15606'
 ```
 
 ### Developing
@@ -54,7 +55,9 @@ npm run lint
 To run unit tests:
 
 ```bash
-npm run test
+npm run start-emulator      # Start the emulator
+npm run test                # Reset the datastore emulator and start testing
+npm run stop-emulator       # Stop the emulator. You do not have to stop the emulator between consecutive tests
 ```
 
 Note: featurelist is temporarily excluded because lit-analyzer throws `Maximum call stack size exceeded`.

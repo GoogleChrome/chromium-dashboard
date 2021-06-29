@@ -17,7 +17,6 @@ from __future__ import division
 from __future__ import print_function
 
 import datetime
-import unittest
 import testing_config  # Must be imported before the module under test.
 
 import flask
@@ -32,7 +31,7 @@ from internals import models
 NOW = datetime.datetime.now()
 
 
-class CommentsAPITest(unittest.TestCase):
+class CommentsAPITest(testing_config.CustomTestCase):
 
   def setUp(self):
     self.feature_1 = models.Feature(

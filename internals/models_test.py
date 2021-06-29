@@ -15,7 +15,6 @@ from __future__ import print_function
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import unittest
 import testing_config  # Must be imported before the module under test.
 
 import mock
@@ -35,7 +34,7 @@ class MockQuery(object):
     return self.result_list
 
 
-class ModelsFunctionsTest(unittest.TestCase):
+class ModelsFunctionsTest(testing_config.CustomTestCase):
 
   def test_convert_enum_int_to_string__not_an_enum(self):
     """If the property is not an enum, just use the property value."""
@@ -82,7 +81,7 @@ class ModelsFunctionsTest(unittest.TestCase):
         models.del_none(d))
 
 
-class FeatureTest(unittest.TestCase):
+class FeatureTest(testing_config.CustomTestCase):
 
   def setUp(self):
     ramcache.SharedInvalidate.check_for_distributed_invalidation()
@@ -130,7 +129,7 @@ class FeatureTest(unittest.TestCase):
         names)
 
 
-class ApprovalTest(unittest.TestCase):
+class ApprovalTest(testing_config.CustomTestCase):
 
   def test_is_valid_state(self):
     """We know what approval states are valid."""
@@ -141,7 +140,7 @@ class ApprovalTest(unittest.TestCase):
     self.assertFalse(models.Approval.is_valid_state(999))
 
 
-class UserPrefTest(unittest.TestCase):
+class UserPrefTest(testing_config.CustomTestCase):
 
   def setUp(self):
     self.user_pref_1 = models.UserPref(email='one@example.com')

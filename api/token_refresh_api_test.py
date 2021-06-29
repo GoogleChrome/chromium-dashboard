@@ -15,7 +15,6 @@
 from __future__ import division
 from __future__ import print_function
 
-import unittest
 import testing_config  # Must be imported before the module under test.
 
 import flask
@@ -28,7 +27,7 @@ from framework import xsrf
 
 
 
-class TokenRefreshAPITest(unittest.TestCase):
+class TokenRefreshAPITest(testing_config.CustomTestCase):
 
   def setUp(self):
     self.handler = token_refresh_api.TokenRefreshAPI()

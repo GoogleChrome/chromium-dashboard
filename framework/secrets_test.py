@@ -15,7 +15,6 @@
 from __future__ import division
 from __future__ import print_function
 
-import unittest
 import testing_config  # Must be imported before the module under test.
 
 import mock
@@ -23,7 +22,7 @@ import mock
 from framework import secrets
 
 
-class SecretsFunctionsTest(unittest.TestCase):
+class SecretsFunctionsTest(testing_config.CustomTestCase):
   """Set of unit tests for accessing server-side secret values."""
 
   def test_make_random_key__long(self):
@@ -53,7 +52,7 @@ class SecretsFunctionsTest(unittest.TestCase):
     self.assertEqual(s1, s2)
 
 
-class SecretsTest(unittest.TestCase):
+class SecretsTest(testing_config.CustomTestCase):
   """Set of unit tests for generating and storing server-side secret values."""
 
   def delete_all(self):

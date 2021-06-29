@@ -16,7 +16,6 @@ from __future__ import division
 from __future__ import print_function
 
 import testing_config  # Must be imported first
-import unittest
 
 import flask
 import werkzeug
@@ -26,7 +25,7 @@ from framework import ramcache
 from pages import samples
 
 
-class TestWithFeature(unittest.TestCase):
+class TestWithFeature(testing_config.CustomTestCase):
 
   REQUEST_PATH_FORMAT = 'subclasses fill this in'
   HANDLER_CLASS = 'subclasses fill this in'

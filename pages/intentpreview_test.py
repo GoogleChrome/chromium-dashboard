@@ -15,7 +15,6 @@
 from __future__ import division
 from __future__ import print_function
 
-import unittest
 import testing_config  # Must be imported before the module under test.
 
 import mock
@@ -27,7 +26,7 @@ from internals import models
 
 
 
-class IntentEmailPreviewHandlerTest(unittest.TestCase):
+class IntentEmailPreviewHandlerTest(testing_config.CustomTestCase):
 
   def setUp(self):
     self.feature_1 = models.Feature(

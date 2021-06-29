@@ -15,7 +15,6 @@
 from __future__ import division
 from __future__ import print_function
 
-import unittest
 import testing_config  # Must be imported before the module under test.
 
 import flask
@@ -27,7 +26,7 @@ from api import register
 from internals import models
 
 
-class CuesAPITest(unittest.TestCase):
+class CuesAPITest(testing_config.CustomTestCase):
 
   def setUp(self):
     self.user_pref_1 = models.UserPref(

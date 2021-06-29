@@ -23,7 +23,7 @@ import random
 import string
 import time
 
-from google.appengine.ext import ndb
+from google.cloud import ndb
 
 
 # For random key generation

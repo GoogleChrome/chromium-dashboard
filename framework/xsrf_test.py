@@ -15,7 +15,6 @@
 from __future__ import division
 from __future__ import print_function
 
-import unittest
 import testing_config  # Must be imported before the module under test.
 
 import mock
@@ -23,7 +22,7 @@ import mock
 from framework import xsrf
 
 
-class XsrfTest(unittest.TestCase):
+class XsrfTest(testing_config.CustomTestCase):
   """Set of unit tests for blocking XSRF attacks."""
 
   def test_generate_token__anon(self):

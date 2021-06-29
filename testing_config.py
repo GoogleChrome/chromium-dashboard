@@ -39,13 +39,15 @@ lib_path = os.path.join(os.path.dirname(__file__), 'lib')
 from google.appengine.ext import vendor
 vendor.add(lib_path) # add third party libs to "lib" folder.
 
-from google.appengine.ext import ndb
+from google.cloud import ndb
 from google.appengine.ext import testbed
 
 os.environ['DJANGO_SECRET'] = 'test secret'
 os.environ['SERVER_SOFTWARE'] = 'test ' + os.environ.get('SERVER_SOFTWARE', '')
 os.environ['CURRENT_VERSION_ID'] = 'test.123'
-
+os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
+os.environ['DATASTORE_EMULATOR_HOST'] = 'localhost:15606'
+ 
 
 ourTestbed = testbed.Testbed()
 
@@ -58,14 +60,12 @@ def setUpOurTestbed():
   ourTestbed.init_app_identity_stub()
   ourTestbed.init_blobstore_stub()
   ourTestbed.init_capability_stub()
-  ourTestbed.init_datastore_v3_stub()
   ourTestbed.init_files_stub()
   ourTestbed.init_logservice_stub()
   ourTestbed.init_mail_stub()
   ourTestbed.init_search_stub()
   ourTestbed.init_urlfetch_stub()
   ourTestbed.init_user_stub()
-  ourTestbed.init_memcache_stub()
 
 # Normally this would be done in the setUp() methods of individual test files,
 # but we need it to be done before importing any application code because
@@ -123,3 +123,11 @@ def sign_in(user_email, user_id):
       user_id=str(user_id),
       user_is_admin='0',  # This was for GAE user admin, we use AppUser.
       overwrite=True)
+
+
+class CustomTestCase(unittest.TestCase):
+
+  def run(self, result=None):
+    client = ndb.Client()
+    with client.context():
+      super(CustomTestCase, self).run(result=result)

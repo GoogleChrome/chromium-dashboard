@@ -17,7 +17,6 @@ from __future__ import print_function
 
 import base64
 import datetime
-import unittest
 import testing_config  # Must be imported before the module under test.
 import urllib
 
@@ -29,7 +28,7 @@ from internals import fetchmetrics
 from internals import models
 
 
-class FetchMetricsTest(unittest.TestCase):
+class FetchMetricsTest(testing_config.CustomTestCase):
 
   @mock.patch('settings.PROD', True)
   @mock.patch('requests.request')
@@ -63,7 +62,7 @@ class FetchMetricsTest(unittest.TestCase):
     mock_fetch.assert_not_called()
 
 
-class UmaQueryTest(unittest.TestCase):
+class UmaQueryTest(testing_config.CustomTestCase):
 
   def setUp(self):
     self.uma_query = fetchmetrics.UmaQuery(
@@ -90,7 +89,7 @@ class UmaQueryTest(unittest.TestCase):
     self.assertTrue(actual)
 
 
-class YesterdayHandlerTest(unittest.TestCase):
+class YesterdayHandlerTest(testing_config.CustomTestCase):
 
   def setUp(self):
     self.request_path = '/cron/metrics'
@@ -129,7 +128,7 @@ class YesterdayHandlerTest(unittest.TestCase):
     mock_FetchAndSaveData.assert_has_calls(expected_calls)
 
 
-class HistogramsHandlerTest(unittest.TestCase):
+class HistogramsHandlerTest(testing_config.CustomTestCase):
 
   ENUMS_TEXT = '''
      <histogram-configuration>

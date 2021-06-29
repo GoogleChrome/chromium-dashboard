@@ -23,7 +23,7 @@ import logging
 import re
 import time
 
-from google.appengine.ext import ndb
+from google.cloud import ndb
 
 # from google.appengine.ext.db import djangoforms
 from google.appengine.api import mail
@@ -356,6 +356,8 @@ class DictModel(ndb.Model):
       elif isinstance(value, ndb.Model):
         output[key] = to_dict(value)
       elif isinstance(value, gae_users.User):
+        output[key] = value.email()
+      elif isinstance(value, ndb.model.User):
         output[key] = value.email()
       else:
         raise ValueError('cannot encode ' + repr(prop))
@@ -942,18 +944,15 @@ class Feature(DictModel):
       params.append('cc=' + ','.join(self.owner))
     return url + '?' + '&'.join(params)
 
-  @classmethod
-  def _from_pb(cls, pb, set_key=True, ent=None, key=None):
+  def stash_values(self):
 
     # Stash existing values when entity is created so we can diff property
     # values later in put() to know what's changed. https://stackoverflow.com/a/41344898
-    entity = super(Feature, cls)._from_pb(pb, set_key=set_key, ent=ent, key=key)
-
-    for prop_name, prop in entity._properties.iteritems():
-      old_val = getattr(entity, prop_name, None)
-      setattr(entity, '_old_' + prop_name, old_val)
-
-    return entity
+    
+    for prop_name, prop in self._properties.iteritems():
+      old_val = getattr(self, prop_name, None)
+      setattr(self, '_old_' + prop_name, old_val)
+      
 
   def __notify_feature_subscribers_of_changes(self, is_update):
     """Async notifies subscribers of new features and property changes to features by

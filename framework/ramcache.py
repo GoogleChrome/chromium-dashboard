@@ -49,7 +49,9 @@ whenever a cached value would become invalid, it must be invalidated.
 
 import logging
 import time as time_module
-from google.appengine.ext import ndb
+from google.cloud import ndb
+
+client = ndb.Client()
 
 
 global_cache = {}
@@ -153,11 +155,13 @@ class SharedInvalidateParent(ndb.Model):
 class SharedInvalidate(ndb.Model):
 
   PARENT_ENTITY_ID = 1234
-  PARENT_KEY = ndb.Key('SharedInvalidateParent', PARENT_ENTITY_ID)
   SINGLETON_ENTITY_ID = 5678
-  SINGLETON_KEY = ndb.Key(
+  with client.context():
+    PARENT_KEY = ndb.Key('SharedInvalidateParent', PARENT_ENTITY_ID)
+    SINGLETON_KEY = ndb.Key(
       'SharedInvalidateParent', PARENT_ENTITY_ID,
       'SharedInvalidate', SINGLETON_ENTITY_ID)
+  
   last_processed_timestamp = None
 
   updated = ndb.DateTimeProperty(auto_now=True)

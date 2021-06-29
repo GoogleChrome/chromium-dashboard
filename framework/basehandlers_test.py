@@ -15,7 +15,6 @@
 from __future__ import division
 from __future__ import print_function
 
-import unittest
 import testing_config  # Must be imported before the module under test.
 
 import json
@@ -35,7 +34,7 @@ import settings
 
 
 
-class BaseHandlerTests(unittest.TestCase):
+class BaseHandlerTests(testing_config.CustomTestCase):
 
   def setUp(self):
     self.handler = basehandlers.BaseHandler()
@@ -266,7 +265,7 @@ test_app = basehandlers.FlaskApplication(
     debug=True)
 
 
-class RedirectorTests(unittest.TestCase):
+class RedirectorTests(testing_config.CustomTestCase):
 
   def test_redirector(self):
     """If the user hits a redirector, they get a redirect response."""
@@ -277,7 +276,7 @@ class RedirectorTests(unittest.TestCase):
     self.assertEqual('/new_path', actual_redirect.headers['location'])
 
 
-class ConstHandlerTests(unittest.TestCase):
+class ConstHandlerTests(testing_config.CustomTestCase):
 
   def test_template_found(self):
     """We can run a template that requires no handler logic."""
@@ -307,7 +306,7 @@ class ConstHandlerTests(unittest.TestCase):
         actual_response.json)
 
 
-class APIHandlerTests(unittest.TestCase):
+class APIHandlerTests(testing_config.CustomTestCase):
 
   def setUp(self):
     self.handler = basehandlers.APIHandler()
@@ -417,7 +416,7 @@ class APIHandlerTests(unittest.TestCase):
     mock_validate_token.assert_not_called()
 
 
-class FlaskHandlerTests(unittest.TestCase):
+class FlaskHandlerTests(testing_config.CustomTestCase):
 
   def setUp(self):
     self.user_1 = models.AppUser(email='registered@example.com')

@@ -16,7 +16,6 @@ from __future__ import print_function
 # limitations under the License.
 
 import collections
-import unittest
 import testing_config  # Must be imported before the module under test.
 
 import mock
@@ -39,7 +38,7 @@ BAKE_APPROVAL_DEF_DICT = collections.OrderedDict([
     ('approvers', ['chef@example.com']),
     ])
 
-class HelperFunctionsTest(unittest.TestCase):
+class HelperFunctionsTest(testing_config.CustomTestCase):
 
   def test_process_to_dict(self):
     process = processes.Process(
@@ -98,7 +97,7 @@ class HelperFunctionsTest(unittest.TestCase):
     self.assertTrue(processes.review_is_done(models.REVIEW_NA))
 
 
-class ProgressDetectorsTest(unittest.TestCase):
+class ProgressDetectorsTest(testing_config.CustomTestCase):
 
   def setUp(self):
     self.feature_1 = models.Feature(

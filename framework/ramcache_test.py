@@ -18,7 +18,6 @@ from __future__ import print_function
 import datetime
 import mock
 import testing_config  # Must be imported before the module under test.
-import unittest
 
 from framework import ramcache
 
@@ -32,7 +31,7 @@ KEY_6 = 'cache_key|6'
 KEY_7 = 'cache_key|7'
 
 
-class RAMCacheFunctionTests(unittest.TestCase):
+class RAMCacheFunctionTests(testing_config.CustomTestCase):
 
   def testSetAndGet(self):
     """We can cache a value and retrieve it from the cache."""
@@ -105,7 +104,7 @@ class RAMCacheFunctionTests(unittest.TestCase):
     mock_invalidate.assert_called_once()
 
 
-class SharedInvalidateTests(unittest.TestCase):
+class SharedInvalidateTests(testing_config.CustomTestCase):
 
   def assertTimestampWasUpdated(self, start_time):
 

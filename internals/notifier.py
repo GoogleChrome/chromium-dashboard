@@ -26,7 +26,7 @@ import os
 import re
 
 from framework import ramcache
-from google.appengine.ext import ndb
+from google.cloud import ndb
 from google.appengine.api import mail
 import requests
 # from google.appengine.api import users

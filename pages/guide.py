@@ -283,6 +283,8 @@ class FeatureEditStage(basehandlers.FlaskHandler):
       feature = models.Feature.get_by_id(feature_id)
       if feature is None:
         self.abort(404, msg='Feature not found')
+      else:
+        feature.stash_values()
 
     logging.info('POST is %r', self.form)
 

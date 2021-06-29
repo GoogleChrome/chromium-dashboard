@@ -15,7 +15,6 @@
 from __future__ import division
 from __future__ import print_function
 
-import unittest
 import testing_config  # Must be imported before the module under test.
 
 import mock
@@ -51,7 +50,7 @@ test_app = basehandlers.FlaskApplication(
     debug=True)
 
 
-class PermissionFunctionTests(unittest.TestCase):
+class PermissionFunctionTests(testing_config.CustomTestCase):
 
   def setUp(self):
     self.app_user = models.AppUser(email='registered@example.com')
@@ -143,7 +142,7 @@ class PermissionFunctionTests(unittest.TestCase):
         special=False, admin=True, anon=False)
 
 
-class RequireAdminSiteTests(unittest.TestCase):
+class RequireAdminSiteTests(testing_config.CustomTestCase):
 
   def setUp(self):
     self.app_user = models.AppUser(email='registered@example.com')
