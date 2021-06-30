@@ -2,12 +2,12 @@
 
 This doc covers some basic overview of the codebase to help developers navigate.
 
-In summary, this web app is using a combination of Django & Flask as the backend and lit-element in the front end. It uses [Google Sign-In](https://developers.google.com/identity/sign-in/web/sign-in) for authentication. **Google Cloud Datastore** is used as database. 
+In summary, this web app is using a combination of Django & Flask as the backend and lit-element in the front end. It uses [Google Sign-In](https://developers.google.com/identity/sign-in/web/sign-in) for authentication. **Google Cloud Datastore** is used as database.
 
 ## Back end
 
 In the Backend,
-* **Django** is used just for HTML templates and forms (see `FlaskHandler.render()` in `Framework/basehandlers.py` and `pages/guideforms.py`). 
+* **Django** is used just for HTML templates and forms (see `FlaskHandler.render()` in `Framework/basehandlers.py` and `pages/guideforms.py`).
 * **Flask** is being used for all the request handlers (see `basehandlers.py` and all the code under `api/` and `pages/`).
 
 HISTORY:-
@@ -37,9 +37,14 @@ To create or edit features, you must log in using an email which has admin privi
 1. Access Admin Server using the url mentioned in the command line output of `npm start`.
 1. Click on interactive console and execute the following query:-
 ```
+from google.cloud import ndb
 from internals import models
-appuser_1 = models.AppUser(email='your_account@domain_name.tld', is_admin=True)
-appuser_1.put()
+
+client = ndb.Client()
+with client.context():
+  appuser_1 = models.AppUser(email='your_account@domain_name.tld', is_admin=True)
+  appuser_1.put()
+
 ```
 To view and edit the users datastore, you can click on Datastore Viewer. Make sure that `Entity Kind` is set to `AppUser`.
 
@@ -50,13 +55,13 @@ To view and edit the users datastore, you can click on Datastore Viewer. Make su
   1. Now, signout and login with another account.
   1. Click on the star present in the feature box in the all features page.
   1. Now login again using the first account and edit a feature.
-  1. On pressing submit after editing the feature, you will be able to see the diff in the console logs. 
+  1. On pressing submit after editing the feature, you will be able to see the diff in the console logs.
 
 ## Local Development
 * When run locally, Datastore Emulator is used for storing all the entries. To check the entries present in the DataStore emulator, access the admin server using the url mentioned in the command line output of `npm start` and click on `Datastore Viewer` button.
 * Executing `npm start` runs `dev_appserver.py` which automatically starts the Datastore Emulator. Hence, we do not have to start it explicitly. However, when running unittests, we will have to start the Datastore Emulator manually using `npm run start-emulator`.
-* `npm run test` will first reset the datastore emulator and then run the tests. 
-* To stop the emulator, use `npm run stop-emulator`. You do not have to stop and start the Datastore Emulator between consecutive runs of `npm run test`.  
+* `npm run test` will first reset the datastore emulator and then run the tests.
+* To stop the emulator, use `npm run stop-emulator`. You do not have to stop and start the Datastore Emulator between consecutive runs of `npm run test`.
 
 ## Some nice-to-fix
 
