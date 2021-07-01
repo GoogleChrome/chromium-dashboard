@@ -12,7 +12,7 @@ In the Backend,
 
 HISTORY:-
 * The app used to use a combination of Django plus Webapp2. However, now it uses Django plus Flask as mentioned above.
-* The app used to use *DB Client Library* for interacting with Google Cloud DataStore. However, now it uses *NDB Client Library*.
+* The app used to use *DB Client Library* for interacting with Google Cloud DataStore. It was later replaced by *NDB Client Library*. Now, it uses the *Cloud NDB Library*
 
 ## Front end
 
