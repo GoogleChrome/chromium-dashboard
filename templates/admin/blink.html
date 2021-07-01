@@ -61,9 +61,9 @@
       <div class="owners_list layout horizontal center">
         <div>
           <div class="column_header">Receives email updates:</div>
-          <select multiple disabled id="owner_list_{{forloop.counter}}" size="{{c.subscribers|length}}">
-            {% for s in c.subscribers %}
-              <option class="owner_name {% if s.name in c.primaries %}component_owner{% endif %}"
+          <select multiple disabled id="owner_list_{{forloop.counter}}" size="{{c.computed_subscribers|length}}">
+            {% for s in c.computed_subscribers %}
+              <option class="owner_name {% if s.name in c.computed_owners %}component_owner{% endif %}"
                       value="{{s.id}}">{{s.name}}: {{s.email}}</option>
             {% endfor %}
           </select>
@@ -72,7 +72,7 @@
           <div>
             <select class="owner_candidates">
               <option selected disabled>Select owner to add/remove</option>
-              {% for s in subscribers %}
+              {% for s in possible_subscribers %}
                 <option class="owner_name" value="{{s.id}}" data-email="{{s.email}}">{{s.name}}</option>
               {% endfor %}
             </select><br>

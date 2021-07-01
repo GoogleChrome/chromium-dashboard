@@ -90,21 +90,29 @@ class BlinkHandler(basehandlers.FlaskHandler):
 
   @permissions.require_admin_site
   def get_template_data(self):
-    components = models.BlinkComponent.query().order(models.BlinkComponent.name).fetch(None)
-    subscribers = models.FeatureOwner.query().order(models.BlinkComponent.name).fetch(None)
+    components = models.BlinkComponent.query().order(
+        models.BlinkComponent.name).fetch(None)
+    possible_subscribers = models.FeatureOwner.query().order(
+        models.FeatureOwner.name).fetch(None)
 
     # Format for django template
-    subscribers = [x.format_for_template() for x in subscribers]
+    possible_subscriber_dicts = [
+        x.format_for_template() for x in possible_subscribers]
+
+    component_to_subscribers = {c.key: [] for c in components}
+    component_to_owners = {c.key: [] for c in components}
+    for ps in possible_subscribers:
+      for subed_component_key in ps.blink_components:
+        component_to_subscribers[subed_component_key].append(ps)
+      for owned_component_key in ps.primary_blink_components:
+        component_to_owners[owned_component_key].append(ps.name)
 
     for c in components:
-      c.primaries = [o.name for o in c.owners]
-
-    # wf_component_content = models.BlinkComponent.fetch_wf_content_for_components()
-    # for c in components:
-    #   c.wf_urls = wf_component_content.get(c.name) or []
+      c.computed_subscribers = component_to_subscribers[c.key]
+      c.computed_owners = component_to_owners[c.key]
 
     template_data = {
-      'subscribers': subscribers,
+      'possible_subscribers': possible_subscriber_dicts,
       'components': components[1:] # ditch generic "Blink" component
     }
     return template_data
@@ -122,7 +130,6 @@ class BlinkHandler(basehandlers.FlaskHandler):
   @permissions.require_admin_site
   def process_post_data(self):
     params = self.request.get_json(force=True)
-
     self.__update_subscribers_list(True, user_id=params.get('userId'),
                                    blink_component=params.get('componentName'),
                                    primary=params.get('primary'))
