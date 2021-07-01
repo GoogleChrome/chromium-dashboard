@@ -116,7 +116,7 @@ The production site should only have versions that match versions on staging.
 
 ### LICENSE
 
-Copyright (c) 2013-2016 Google Inc. All rights reserved.
+Copyright (c) 2013-2021 Google Inc. All rights reserved.
 
 Apache2 License.
 
