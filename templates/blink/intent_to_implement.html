@@ -79,11 +79,6 @@
     {{feature.tag_review_status}}
   {% endif %}
 
-  {% if feature.origin_trial_feedback_url %}
-    <br><br><h4>Link to origin trial feedback summary</h4>
-    {{feature.origin_trial_feedback_url}}
-  {% endif %}
-
   <br><br><h4>Risks</h4>
   <div style="margin-left: 4em;">
     <br><br><h4>Interoperability and Compatibility</h4>
@@ -132,23 +127,46 @@
 
 {% if 'experiment' in sections_to_show %}
 
-  <br><br><h4>Goals for experimentation</h4>
-  <p class="preformatted">{{feature.experiment_goals|urlize}}</p>
+  <br><br><h4>Origin trial info</h4>
+  <div style="margin-left: 4em;">
 
-  {% if feature.experiment_timeline %}
-    <br><br><h4>Experimental timeline</h4>
-    <p class="preformatted">{{feature.experiment_timeline|urlize}}</p>
-  {% endif %}
+    <br><br><h4>Goals for experimentation</h4>
+    <p class="preformatted">{{feature.experiment_goals|urlize}}</p>
 
-  {% if 'extension_reason' in sections_to_show %}
-    <br><br><h4>Reason this experiment is being extended</h4>
-    <p class="preformatted">{{feature.experiment_extension_reason|urlize}}</p>
-  {% endif %}
+    <br><br><h4>OT desktop start</h4>
+    {{feature.ot_milestone_desktop_start}}
+    <br><br><h4>OT desktop end</h4>
+    {{feature.ot_milestone_desktop_end}}
 
-  <br><br><h4>Ongoing technical constraints</h4>
-  <p class="preformatted">{{feature.ongoing_constraints|urlize}}</p>
+    <br><br><h4>OT android start</h4>
+    {{feature.ot_milestone_android_start}}
+    <br><br><h4>OT android end</h4>
+    {{feature.ot_milestone_android_end}}
 
+    {% if feature.experiment_timeline %}
+      <br><br><h4>Experimental timeline</h4>
+      <p class="preformatted">{{feature.experiment_timeline|urlize}}</p>
+    {% endif %}
+
+    {% if 'extension_reason' in sections_to_show %}
+      <br><br><h4>Reason this experiment is being extended</h4>
+      <p class="preformatted">{{feature.experiment_extension_reason|urlize}}</p>
+    {% endif %}
+
+    <br><br><h4>Ongoing technical constraints</h4>
+    <p class="preformatted">{{feature.ongoing_constraints|urlize}}</p>
+
+    <br><br><h4>Experiment risks</h4>
+    <p class="preformatted">{{feature.experiment_risks|urlize}}</p>
+  </div>
 {% endif %}
+
+{% if feature.origin_trial_feedback_url %}
+  <br><br><h4>Link to origin trial feedback summary</h4>
+  {{feature.origin_trial_feedback_url}}
+{% endif %}
+
+
 
 {% if feature.debuggability %}
   <br><br><h4>Debuggability</h4>
