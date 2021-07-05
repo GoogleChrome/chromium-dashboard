@@ -21,12 +21,18 @@ import logging
 from framework import basehandlers
 from framework import permissions
 from framework import ramcache
+from framework import users
 from internals import models
 
 class FeaturesAPI(basehandlers.APIHandler):
   """Features are the the main records that we track."""
 
-  # TODO(jrobbins): do_get
+  def do_get(self):
+    user = users.get_current_user()
+    feature_list = models.Feature.get_chronological(
+        version=2,
+        show_unlisted=permissions.can_edit_feature(user, None))
+    return feature_list
 
   # TODO(jrobbins): do_post
 

@@ -97,11 +97,7 @@ class ScheduleHandler(basehandlers.FlaskHandler):
   TEMPLATE_PATH = 'schedule.html'
 
   def get_template_data(self):
-    user = users.get_current_user()
-    features = models.Feature.get_chronological(
-        show_unlisted=permissions.can_edit_any_feature(user))
     template_data = {
-      'features': json.dumps(features),
       'channels': json.dumps(construct_chrome_channels_details(),
                              indent=4)
     }
