@@ -90,3 +90,10 @@ class FeaturesAPITest(testing_config.CustomTestCase):
 
     revised_feature = models.Feature.get_by_id(self.feature_id)
     self.assertFalse(revised_feature.deleted)
+
+  def test_get__all_features(self):
+    """Get all features."""
+    with register.app.test_request_context(self.request_path):
+      actual_response = self.handler.do_get()
+    self.assertEqual(1, len(actual_response))
+    self.assertEqual('feature one', actual_response[0]['name'])
