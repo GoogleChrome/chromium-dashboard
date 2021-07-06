@@ -35,6 +35,7 @@ from internals import fetchchannels
 
 SCHEDULE_CACHE_TIME = 60 * 60  # 1 hour
 
+# TODO(shivamag00): remove these methods and use Channels API instead
 def fetch_chrome_release_info(version):
   key = 'chromerelease|%s' % version
 
@@ -95,6 +96,7 @@ def construct_chrome_channels_details():
 class ScheduleHandler(basehandlers.FlaskHandler):
 
   TEMPLATE_PATH = 'schedule.html'
+  # TODO(shivamag00): fetch data from Channels API and Features API using JS instead of passing it here
 
   def get_template_data(self):
     user = users.get_current_user()
