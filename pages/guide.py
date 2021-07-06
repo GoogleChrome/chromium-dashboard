@@ -99,7 +99,7 @@ IMPL_STATUS_FORMS = {
 # [('Section name': form_class)].
 FLAT_FORMS = [
     ('Feature metadata', guideforms.Flat_Metadata),
-    ('Indentify the need', guideforms.Flat_Identify),
+    ('Identify the need', guideforms.Flat_Identify),
     ('Prototype a solution', guideforms.Flat_Implement),
     ('Dev trial', guideforms.Flat_DevTrial),
     ('Origin trial', guideforms.Flat_OriginTrial),
