@@ -25,7 +25,7 @@ from api import channels_api
 class ChannelsAPITest(unittest.TestCase):
 
   @mock.patch('api.channels_api.fetch_chrome_release_info')
-  @mock.patch('api.channels_api.fetchchannels.get_omaha_data')
+  @mock.patch('internals.fetchchannels.get_omaha_data')
   def test_construct_chrome_channels_details(
       self, mock_get_omaha_data, mock_fetch_chrome_release_info):
     win_data = {
