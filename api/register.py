@@ -24,6 +24,7 @@ from api import cues_api
 from api import features_api
 from api import stars_api
 from api import token_refresh_api
+from api import channels_api
 from framework import basehandlers
 
 from api import login_api
@@ -53,7 +54,7 @@ app = basehandlers.FlaskApplication([
     ('/accounts', accounts_api.AccountsAPI),
     ('/accounts/<int:account_id>', accounts_api.AccountsAPI),
 
-    # ('/channels', TODO),  # omaha data
+    ('/channels', channels_api.ChannelsAPI),  # omaha data
     # ('/schedule', TODO),  # chromiumdash data
     # ('/metrics/<str:kind>', TODO),  # uma-export data
     # ('/metrics/<str:kind>/<int:bucket_id>', TODO),
