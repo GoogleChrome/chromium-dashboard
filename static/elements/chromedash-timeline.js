@@ -253,12 +253,13 @@ ORDER BY yyyymmdd DESC, client`;
 
   render() {
     return html`
-      <select .value="${this.selectedBucketId}" @change="${this.updateSelectedBucketId}">
-        <option disabled value="1">Select a property</option>
-        ${this.props.map((prop) => html`
-          <option value="${prop[0]}">${prop[1]}</option>
+      <input .value="${this.selectedBucketId}" @change="${this.updateSelectedBucketId}" type="search" list="features">
+        <datalist id="features">
+          <option disabled name="1">Select a property</option>
+             ${this.props.map((prop) => html`
+          <option name="${prop[0]}">${prop[1]}</option>
           `)}
-      </select>
+      </datalist></input>
       <label>Show all historical data: <input type="checkbox" ?checked="${this.showAllHistoricalData}" @change="${this.toggleShowAllHistoricalData}"></label>
       <h3 id="usage" class="header_title">Percentage of page loads that use this feature</h3>
       <p class="description">The chart below shows the percentage of page loads (in Chrome) that use
