@@ -10,7 +10,7 @@ Chrome Platform Status
     git clone https://github.com/GoogleChrome/chromium-dashboard
 
 ### Installation
-1. Before you begin, make sure that you have a java JRE (version 8 or greater) installed. JRE is required to use the DataStore Emulator. 
+1. Before you begin, make sure that you have a java JRE (version 8 or greater) installed. JRE is required to use the DataStore Emulator.
 1. Install global CLIs
     1. [Google App Engine SDK for Python](https://cloud.google.com/appengine/docs/standard/python/setting-up-environment). Make sure to select Python 2.7.
     1. pip, node, npm.
@@ -18,7 +18,7 @@ Chrome Platform Status
 1. Install npm dependencies `npm ci`
 1. Install other dependencies `npm run deps` and `npm run dev-deps`
 
-If you face any error during the installation process, the section **Notes** (later in this README.md) may help. 
+If you face any error during the installation process, the section **Notes** (later in this README.md) may help.
 
 ##### Add env_vars.yaml
 
@@ -28,7 +28,6 @@ Create a file named `env_vars.yaml` in the root directory and fill it with:
 env_variables:
   DJANGO_SETTINGS_MODULE: 'settings'
   DJANGO_SECRET: 'this-is-a-secret'
-  DATASTORE_EMULATOR_HOST: 'localhost:15606'
 ```
 
 ### Developing
