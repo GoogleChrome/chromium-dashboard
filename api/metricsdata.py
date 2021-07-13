@@ -31,7 +31,7 @@ from framework import ramcache
 import settings
 
 CACHE_AGE = 86400 # 24hrs
-
+BATCH_SIZE = 15000
 
 
 def _truncate_day_percentage(datapoint):
@@ -146,7 +146,7 @@ class FeatureHandler(basehandlers.FlaskHandler):
     # of the main loop become in-RAM operations.
     batch_datapoints_query = self.MODEL_CLASS.query()
     batch_datapoints_query.order(-self.MODEL_CLASS.date)
-    batch_datapoints_list = batch_datapoints_query.fetch(5000)
+    batch_datapoints_list = batch_datapoints_query.fetch(BATCH_SIZE)
     logging.info('batch query found %r recent datapoints',
                  len(batch_datapoints_list))
     batch_datapoints_dict = {}
@@ -158,10 +158,13 @@ class FeatureHandler(basehandlers.FlaskHandler):
 
     # For every css property, fetch latest day_percentage.
     buckets = self.PROPERTY_CLASS.query().fetch(None)
+    logging.info('got buckets')
     for b in buckets:
+      logging.info('checking bucket %r', b.bucket_id)
       if b.bucket_id in batch_datapoints_dict:
         datapoints.append(batch_datapoints_dict[b.bucket_id])
       else:
+        logging.info('querying bucket %r', b.bucket_id)
         query = self.MODEL_CLASS.query()
         query = query.filter(self.MODEL_CLASS.bucket_id == b.bucket_id)
         query = query.order(-self.MODEL_CLASS.date)

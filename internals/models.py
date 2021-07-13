@@ -819,6 +819,7 @@ class Feature(DictModel):
       q = q.order(Feature.name)
       q = q.filter(Feature.impl_status_chrome.IN((PROPOSED, IN_DEVELOPMENT)))
       pre_release = q.fetch(None)
+      logging.info('got prerelease')
 
       # Shipping features. Exclude features that do not have a desktop
       # shipping milestone.
@@ -827,6 +828,7 @@ class Feature(DictModel):
       q = q.order(Feature.name)
       q = q.filter(Feature.shipped_milestone != None)
       shipping_features = q.fetch(None)
+      logging.info('got shipping')
 
       # Features with an android shipping milestone but no desktop milestone.
       q = Feature.query()
@@ -834,18 +836,21 @@ class Feature(DictModel):
       q = q.order(Feature.name)
       q = q.filter(Feature.shipped_milestone == None)
       android_only_shipping_features = q.fetch(None)
+      logging.info('got android')
 
       # Features with no active development.
       q = Feature.query()
       q = q.order(Feature.name)
       q = q.filter(Feature.impl_status_chrome == NO_ACTIVE_DEV)
       no_active = q.fetch(None)
+      logging.info('got no_active')
 
       # No longer pursuing features.
       q = Feature.query()
       q = q.order(Feature.name)
       q = q.filter(Feature.impl_status_chrome == NO_LONGER_PURSUING)
       no_longer_pursuing_features = q.fetch(None)
+      logging.info('got no_longer_pursuing_features')
 
       shipping_features.extend(android_only_shipping_features)
 
@@ -864,6 +869,7 @@ class Feature(DictModel):
       # First sort by name, then sort by feature milestone (latest first).
       shipping_features.sort(key=lambda f: f.name, reverse=False)
       shipping_features.sort(key=lambda f: f._sort_by_milestone, reverse=True)
+      logging.info('got sorted')
 
       # Constructor the proper ordering.
       all_features = []
@@ -899,6 +905,7 @@ class Feature(DictModel):
       q = q.order(-Feature.shipped_milestone)
       q = q.order(Feature.name)
       features = q.fetch(None)
+      logging.info('got features')
 
       # Get non-shipping features (sans removed or deprecated ones) and
       # append to bottom of list.
@@ -909,10 +916,12 @@ class Feature(DictModel):
       q = q.order(Feature.name)
       others = q.fetch(None)
       features.extend(others)
+      logging.info('got others')
 
       # Filter out features without sample links.
       feature_list = [f.format_for_template() for f in features
                       if len(f.sample_links) and not f.deleted]
+      logging.info('formatted')
 
       ramcache.set(cache_key, feature_list)
 
@@ -948,11 +957,11 @@ class Feature(DictModel):
 
     # Stash existing values when entity is created so we can diff property
     # values later in put() to know what's changed. https://stackoverflow.com/a/41344898
-    
+
     for prop_name, prop in self._properties.iteritems():
       old_val = getattr(self, prop_name, None)
       setattr(self, '_old_' + prop_name, old_val)
-      
+
 
   def __notify_feature_subscribers_of_changes(self, is_update):
     """Async notifies subscribers of new features and property changes to features by
