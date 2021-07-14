@@ -510,7 +510,8 @@ ALL_FIELDS = {
         widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 1480}),
         help_text=
         ('Description of the DevTools debugging support for your feature. '
-         'Please follow <a href="https://goo.gle/devtools-checklist">the '
+         'Please follow <a target="_blank" '
+         'href="https://goo.gle/devtools-checklist">the '
          'DevTools support checklist</a> for guidance.')),
 
     'all_platforms': forms.BooleanField(
