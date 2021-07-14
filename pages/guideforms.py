@@ -506,7 +506,7 @@ ALL_FIELDS = {
                    'the Request for Deprecation Trial email thread.')),
 
     'debuggability': forms.CharField(
-        label='Debuggability', required=False,
+        label='Debuggability', required=True,
         widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 1480}),
         help_text=
         ('Description of the DevTools debugging support for your feature. '
