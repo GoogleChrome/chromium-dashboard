@@ -141,6 +141,8 @@ class FeatureHandler(basehandlers.FlaskHandler):
   def __query_metrics_for_properties(self):
     datapoints = []
 
+    buckets_future = self.PROPERTY_CLASS.query().fetch_async(None)
+
     # First, grab a bunch of recent datapoints in a batch.
     # That operation is fast and makes most of the iterations
     # of the main loop become in-RAM operations.
@@ -157,7 +159,8 @@ class FeatureHandler(basehandlers.FlaskHandler):
                  len(batch_datapoints_dict))
 
     # For every css property, fetch latest day_percentage.
-    buckets = self.PROPERTY_CLASS.query().fetch(None)
+    buckets = buckets_future.get_result()
+    futures = []
     for b in buckets:
       if b.bucket_id in batch_datapoints_dict:
         datapoints.append(batch_datapoints_dict[b.bucket_id])
@@ -165,9 +168,12 @@ class FeatureHandler(basehandlers.FlaskHandler):
         query = self.MODEL_CLASS.query()
         query = query.filter(self.MODEL_CLASS.bucket_id == b.bucket_id)
         query = query.order(-self.MODEL_CLASS.date)
-        last_result = query.get()
-        if last_result:
-          datapoints.append(last_result)
+        futures.append(query.get_async())
+
+    for f in futures:
+      last_result = f.result()
+      if last_result:
+        datapoints.append(last_result)
 
     # Sort list by percentage. Highest first.
     datapoints.sort(key=lambda x: x.day_percentage, reverse=True)

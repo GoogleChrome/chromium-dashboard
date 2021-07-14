@@ -818,7 +818,7 @@ class Feature(DictModel):
       q = q.order(Feature.impl_status_chrome)
       q = q.order(Feature.name)
       q = q.filter(Feature.impl_status_chrome.IN((PROPOSED, IN_DEVELOPMENT)))
-      pre_release = q.fetch(None)
+      pre_release_future = q.fetch_async(None)
 
       # Shipping features. Exclude features that do not have a desktop
       # shipping milestone.
@@ -826,26 +826,35 @@ class Feature(DictModel):
       q = q.order(-Feature.shipped_milestone)
       q = q.order(Feature.name)
       q = q.filter(Feature.shipped_milestone != None)
-      shipping_features = q.fetch(None)
+      shipping_features_future = q.fetch_async(None)
 
       # Features with an android shipping milestone but no desktop milestone.
       q = Feature.query()
       q = q.order(-Feature.shipped_android_milestone)
       q = q.order(Feature.name)
       q = q.filter(Feature.shipped_milestone == None)
-      android_only_shipping_features = q.fetch(None)
+      android_only_shipping_features_future = q.fetch_async(None)
 
       # Features with no active development.
       q = Feature.query()
       q = q.order(Feature.name)
       q = q.filter(Feature.impl_status_chrome == NO_ACTIVE_DEV)
-      no_active = q.fetch(None)
+      no_active_future = q.fetch_async(None)
 
       # No longer pursuing features.
       q = Feature.query()
       q = q.order(Feature.name)
       q = q.filter(Feature.impl_status_chrome == NO_LONGER_PURSUING)
-      no_longer_pursuing_features = q.fetch(None)
+      no_longer_pursuing_features_future = q.fetch_async(None)
+
+      logging.info('Waiting on futures')
+      pre_release = pre_release_future.result()
+      android_only_shipping_features = (
+          android_only_shipping_features_future.result())
+      no_active = no_active_future.result()
+      no_longer_pursuing_features = no_longer_pursuing_features_future.result()
+      logging.info('Waiting on shipping_features_future')
+      shipping_features = shipping_features_future.result()
 
       shipping_features.extend(android_only_shipping_features)
 
@@ -948,11 +957,11 @@ class Feature(DictModel):
 
     # Stash existing values when entity is created so we can diff property
     # values later in put() to know what's changed. https://stackoverflow.com/a/41344898
-    
+
     for prop_name, prop in self._properties.iteritems():
       old_val = getattr(self, prop_name, None)
       setattr(self, '_old_' + prop_name, old_val)
-      
+
 
   def __notify_feature_subscribers_of_changes(self, is_update):
     """Async notifies subscribers of new features and property changes to features by
