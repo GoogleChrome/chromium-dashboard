@@ -886,6 +886,46 @@ class Feature(DictModel):
     return allowed_feature_list
 
   @classmethod
+  def get_in_milestone(
+      self, version=None, show_unlisted=False, milestone=None):
+    if milestone == None:
+      return None
+
+    logging.info('Getting chronological feature list in milestone %d', milestone)
+    q = Feature.query()
+    q = q.order(Feature.name)
+    q = q.filter(Feature.shipped_milestone == milestone)
+    desktop_shipping_features = q.fetch(None)
+
+    # Features with an android shipping milestone but no desktop milestone.
+    q = Feature.query()
+    q = q.order(Feature.name)
+    q = q.filter(Feature.shipped_android_milestone == milestone)
+    q = q.filter(Feature.shipped_milestone == None)
+    android_only_shipping_features = q.fetch(None)
+
+    # Constructor the proper ordering.
+    all_features = []
+    all_features.extend(desktop_shipping_features)
+    all_features.extend(android_only_shipping_features)
+
+    # First sort by name, then sort by feature milestone (latest first).
+    all_features.sort(key=lambda f: f.name, reverse=False)
+
+    all_features = [f for f in all_features if not f.deleted]
+
+    feature_list = [f.format_for_template(version) for f in all_features]
+
+    self._annotate_first_of_milestones(feature_list, version=version)
+
+    allowed_feature_list = [
+        f for f in feature_list
+        if show_unlisted or not f['unlisted']]
+
+    return allowed_feature_list
+
+  
+  @classmethod
   def get_shipping_samples(self, limit=None, update_cache=False):
     cache_key = '%s|%s|%s' % (Feature.DEFAULT_CACHE_KEY, 'samples', limit)
 
