@@ -948,11 +948,11 @@ class Feature(DictModel):
 
     # Stash existing values when entity is created so we can diff property
     # values later in put() to know what's changed. https://stackoverflow.com/a/41344898
-    
+
     for prop_name, prop in self._properties.iteritems():
       old_val = getattr(self, prop_name, None)
       setattr(self, '_old_' + prop_name, old_val)
-      
+
 
   def __notify_feature_subscribers_of_changes(self, is_update):
     """Async notifies subscribers of new features and property changes to features by
@@ -1051,6 +1051,12 @@ class Feature(DictModel):
   all_platforms_descr = ndb.StringProperty()
   wpt = ndb.BooleanProperty()
   wpt_descr = ndb.StringProperty()
+  dt_milestone_desktop_start = ndb.IntegerProperty()
+  dt_milestone_android_start = ndb.IntegerProperty()
+  dt_milestone_ios_start = ndb.IntegerProperty()
+  dt_milestone_webview_start = ndb.IntegerProperty()
+  # Note: There are no dt end milestones because a dev trail implicitly
+  # ends when the feature ships or is abandoned.
 
   visibility = ndb.IntegerProperty(required=False)  # Deprecated
 

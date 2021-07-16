@@ -391,6 +391,22 @@ class FeatureEditStage(basehandlers.FlaskHandler):
     if self.touched('devtrial_instructions'):
       feature.devtrial_instructions = self.parse_link('devtrial_instructions')
 
+    if self.touched('dt_milestone_desktop_start'):
+      feature.dt_milestone_desktop_start = self.parse_int(
+          'dt_milestone_desktop_start')
+
+    if self.touched('dt_milestone_android_start'):
+      feature.dt_milestone_android_start = self.parse_int(
+          'dt_milestone_android_start')
+
+    if self.touched('dt_milestone_ios_start'):
+      feature.dt_milestone_ios_start = self.parse_int(
+          'dt_milestone_ios_start')
+
+    if self.touched('dt_milestone_webview_start'):
+      feature.dt_milestone_webview_start = self.parse_int(
+          'dt_milestone_webview_start')
+
     if self.touched('flag_name'):
       feature.flag_name = self.form.get('flag_name')
 
