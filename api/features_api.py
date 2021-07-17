@@ -29,6 +29,7 @@ class FeaturesAPI(basehandlers.APIHandler):
 
   def do_get(self):
     user = users.get_current_user()
+    show_unlisted_features = permissions.can_edit_feature(user, None)
     feature_list = None
 
     # Query-string parameter 'milestone' is provided
@@ -37,7 +38,7 @@ class FeaturesAPI(basehandlers.APIHandler):
         milestone = int(self.request.args.get('milestone'))
         feature_list = models.Feature.get_in_milestone(
           version=2,
-          show_unlisted=permissions.can_edit_feature(user, None), 
+          show_unlisted=show_unlisted_features, 
           milestone=milestone)
       except ValueError:
         self.abort(400, msg='Invalid  Milestone')
@@ -46,7 +47,7 @@ class FeaturesAPI(basehandlers.APIHandler):
     if feature_list is None:
       feature_list = models.Feature.get_chronological(
           version=2,
-          show_unlisted=permissions.can_edit_feature(user, None))
+          show_unlisted=show_unlisted_features)
 
     return feature_list
 
