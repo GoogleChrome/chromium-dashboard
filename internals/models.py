@@ -909,7 +909,7 @@ class Feature(DictModel):
     all_features.extend(desktop_shipping_features)
     all_features.extend(android_only_shipping_features)
 
-    # First sort by name, then sort by feature milestone (latest first).
+    # Sort by name
     all_features.sort(key=lambda f: f.name, reverse=False)
 
     all_features = [f for f in all_features if not f.deleted]
