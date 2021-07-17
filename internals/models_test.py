@@ -85,19 +85,31 @@ class FeatureTest(testing_config.CustomTestCase):
 
   def setUp(self):
     ramcache.SharedInvalidate.check_for_distributed_invalidation()
+    self.feature_2 = models.Feature(
+        name='feature b', summary='sum', category=1, visibility=1,
+        standardization=1, web_dev_views=1, impl_status_chrome=3)
+    self.feature_2.put()
+
     self.feature_1 = models.Feature(
-        name='feature one', summary='sum', category=1, visibility=1,
-        standardization=1, web_dev_views=1, impl_status_chrome=1)
+        name='feature a', summary='sum', category=1, visibility=1,
+        standardization=1, web_dev_views=1, impl_status_chrome=3)
     self.feature_1.put()
 
-    self.feature_2 = models.Feature(
-        name='feature two', summary='sum', category=1, visibility=1,
-        standardization=1, web_dev_views=1, impl_status_chrome=1)
-    self.feature_2.put()
+    self.feature_4 = models.Feature(
+        name='feature d', summary='sum', category=1, visibility=1,
+        standardization=1, web_dev_views=1, impl_status_chrome=2)
+    self.feature_4.put()
+
+    self.feature_3 = models.Feature(
+        name='feature c', summary='sum', category=1, visibility=1,
+        standardization=1, web_dev_views=1, impl_status_chrome=2)
+    self.feature_3.put()
 
   def tearDown(self):
     self.feature_1.key.delete()
     self.feature_2.key.delete()
+    self.feature_3.key.delete()
+    self.feature_4.key.delete()
     ramcache.flush_all()
 
   def test_get_chronological__normal(self):
@@ -105,8 +117,12 @@ class FeatureTest(testing_config.CustomTestCase):
     actual = models.Feature.get_chronological()
     names = [f['name'] for f in actual]
     self.assertEqual(
-        ['feature one', 'feature two'],
+        ['feature c', 'feature d', 'feature a', 'feature b'],
         names)
+    self.assertEqual(True, actual[0]['first_of_milestone'])
+    self.assertEqual(False, hasattr(actual[1], 'first_of_milestone'))
+    self.assertEqual(True, actual[2]['first_of_milestone'])
+    self.assertEqual(False, hasattr(actual[3], 'first_of_milestone'))
 
   def test_get_chronological__unlisted(self):
     """Unlisted features are not included in the list."""
@@ -115,7 +131,7 @@ class FeatureTest(testing_config.CustomTestCase):
     actual = models.Feature.get_chronological()
     names = [f['name'] for f in actual]
     self.assertEqual(
-        ['feature one'],
+        ['feature c', 'feature d', 'feature a'],
         names)
 
   def test_get_chronological__unlisted_shown(self):
@@ -125,8 +141,90 @@ class FeatureTest(testing_config.CustomTestCase):
     actual = models.Feature.get_chronological(show_unlisted=True)
     names = [f['name'] for f in actual]
     self.assertEqual(
-        ['feature one', 'feature two'],
+        ['feature c', 'feature d', 'feature a', 'feature b'],
         names)
+
+  def test_get_in_milestone__normal(self):
+    """We can retrieve a list of features."""
+    self.feature_2.impl_status_chrome = 7
+    self.feature_2.shipped_milestone = 1
+    self.feature_2.put()
+
+    self.feature_1.impl_status_chrome = 5
+    self.feature_1.shipped_milestone = 1
+    self.feature_1.put()
+
+    self.feature_3.impl_status_chrome = 5
+    self.feature_3.shipped_milestone = 1
+    self.feature_3.put()
+
+    self.feature_4.impl_status_chrome = 7
+    self.feature_4.shipped_milestone = 2
+    self.feature_4.put()
+
+    actual = models.Feature.get_in_milestone(milestone=1)
+    names = [f['name'] for f in actual]
+    self.assertEqual(
+        ['feature a', 'feature c', 'feature b'],
+        names)
+    self.assertEqual(True, actual[0]['first_of_milestone'])
+    self.assertEqual(False, hasattr(actual[1], 'first_of_milestone'))
+    self.assertEqual(True, actual[2]['first_of_milestone'])
+
+  def test_get_in_milestone__unlisted(self):
+    """Unlisted features should not be listed for users who can't edit."""
+    self.feature_2.unlisted = True
+    self.feature_2.impl_status_chrome = 7
+    self.feature_2.shipped_milestone = 1
+    self.feature_2.put()
+
+    self.feature_1.impl_status_chrome = 5
+    self.feature_1.shipped_milestone = 1
+    self.feature_1.put()
+
+    self.feature_3.impl_status_chrome = 5
+    self.feature_3.shipped_milestone = 1
+    self.feature_3.put()
+
+    self.feature_4.impl_status_chrome = 7
+    self.feature_4.shipped_milestone = 2
+    self.feature_4.put()
+
+    actual = models.Feature.get_in_milestone(milestone=1)
+    names = [f['name'] for f in actual]
+    self.assertEqual(
+        ['feature a', 'feature c'],
+        names)
+    self.assertEqual(True, actual[0]['first_of_milestone'])
+    self.assertEqual(False, hasattr(actual[1], 'first_of_milestone'))
+
+  def test_get_in_milestone__unlisted_shown(self):
+    """Unlisted features should be listed for users who can edit."""
+    self.feature_2.unlisted = True
+    self.feature_2.impl_status_chrome = 7
+    self.feature_2.shipped_milestone = 1
+    self.feature_2.put()
+
+    self.feature_1.impl_status_chrome = 5
+    self.feature_1.shipped_milestone = 1
+    self.feature_1.put()
+
+    self.feature_3.impl_status_chrome = 5
+    self.feature_3.shipped_milestone = 1
+    self.feature_3.put()
+
+    self.feature_4.impl_status_chrome = 7
+    self.feature_4.shipped_milestone = 2
+    self.feature_4.put()
+
+    actual = models.Feature.get_in_milestone(milestone=1, show_unlisted=True)
+    names = [f['name'] for f in actual]
+    self.assertEqual(
+        ['feature a', 'feature c', 'feature b'],
+        names)
+    self.assertEqual(True, actual[0]['first_of_milestone'])
+    self.assertEqual(False, hasattr(actual[1], 'first_of_milestone'))
+    self.assertEqual(True, actual[2]['first_of_milestone'])
 
 
 class ApprovalTest(testing_config.CustomTestCase):
