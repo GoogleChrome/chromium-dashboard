@@ -554,6 +554,30 @@ class Feature(DictModel):
     except Exception as e:
       logging.error(e)
 
+  @classmethod
+  def _annotate_first_of_impl_status_in_milestones(self, feature_list, version=None):
+    try:
+      versions = [
+        IMPLEMENTATION_STATUS[BEHIND_A_FLAG],
+        IMPLEMENTATION_STATUS[ENABLED_BY_DEFAULT],
+        IMPLEMENTATION_STATUS[REMOVED],
+        IMPLEMENTATION_STATUS[ORIGIN_TRIAL],
+        IMPLEMENTATION_STATUS[INTERVENTION],
+        IMPLEMENTATION_STATUS[ON_HOLD]
+      ]
+      first_of_milestone_func = Feature._first_of_milestone
+      if version == 2:
+        first_of_milestone_func = Feature._first_of_milestone_v2
+
+      last_good_idx = 0
+      for i, ver in enumerate(versions):
+        idx = first_of_milestone_func(feature_list, ver, start=last_good_idx)
+        if idx != -1:
+          feature_list[idx]['first_of_milestone'] = True
+          last_good_idx = idx
+    except Exception as e:
+      logging.error(e)
+
   def migrate_views(self):
     """Migrate obsolete values for views on first edit."""
     if self.ff_views == MIXED_SIGNALS:
@@ -909,14 +933,16 @@ class Feature(DictModel):
     all_features.extend(desktop_shipping_features)
     all_features.extend(android_only_shipping_features)
 
-    # Sort by name
+    # Feature list must be first sorted by implementation status and then by name. 
+    # The implementation may seem to be counter-intuitive using sort() method.
     all_features.sort(key=lambda f: f.name, reverse=False)
+    all_features.sort(key=lambda f: f.impl_status_chrome, reverse=False)
 
     all_features = [f for f in all_features if not f.deleted]
 
     feature_list = [f.format_for_template(version) for f in all_features]
 
-    self._annotate_first_of_milestones(feature_list, version=version)
+    self._annotate_first_of_impl_status_in_milestones(feature_list, version=version)
 
     allowed_feature_list = [
         f for f in feature_list
