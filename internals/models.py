@@ -557,7 +557,7 @@ class Feature(DictModel):
   @classmethod
   def _annotate_first_of_impl_status_in_milestones(self, feature_list, version=2):
     try:
-      versions = [
+      statuses = [
         IMPLEMENTATION_STATUS[BEHIND_A_FLAG],
         IMPLEMENTATION_STATUS[ENABLED_BY_DEFAULT],
         IMPLEMENTATION_STATUS[REMOVED],
@@ -570,8 +570,8 @@ class Feature(DictModel):
         first_of_milestone_func = Feature._first_of_milestone_v2
 
       last_good_idx = 0
-      for i, ver in enumerate(versions):
-        idx = first_of_milestone_func(feature_list, ver, start=last_good_idx)
+      for i, status in enumerate(statuses):
+        idx = first_of_milestone_func(feature_list, status, start=last_good_idx)
         if idx != -1:
           feature_list[idx]['first_of_milestone'] = True
           last_good_idx = idx
