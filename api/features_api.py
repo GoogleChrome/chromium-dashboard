@@ -37,7 +37,6 @@ class FeaturesAPI(basehandlers.APIHandler):
       try:
         milestone = int(self.request.args.get('milestone'))
         feature_list = models.Feature.get_in_milestone(
-          version=2,
           show_unlisted=show_unlisted_features, 
           milestone=milestone)
       except ValueError:

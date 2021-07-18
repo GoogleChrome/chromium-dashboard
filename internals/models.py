@@ -555,7 +555,7 @@ class Feature(DictModel):
       logging.error(e)
 
   @classmethod
-  def _annotate_first_of_impl_status_in_milestones(self, feature_list, version=None):
+  def _annotate_first_of_impl_status_in_milestones(self, feature_list, version=2):
     try:
       versions = [
         IMPLEMENTATION_STATUS[BEHIND_A_FLAG],
@@ -595,7 +595,7 @@ class Feature(DictModel):
     if self.safari_views == PUBLIC_SKEPTICISM:
       self.safari_views = OPPOSED
 
-  def format_for_template(self, version=None):
+  def format_for_template(self, version=2):
     self.migrate_views()
     d = self.to_dict()
     is_released = self.impl_status_chrome in RELEASE_IMPL_STATES
@@ -911,7 +911,7 @@ class Feature(DictModel):
 
   @classmethod
   def get_in_milestone(
-      self, version=None, show_unlisted=False, milestone=None):
+      self, show_unlisted=False, milestone=None):
     if milestone == None:
       return None
 
@@ -940,9 +940,9 @@ class Feature(DictModel):
 
     all_features = [f for f in all_features if not f.deleted]
 
-    feature_list = [f.format_for_template(version) for f in all_features]
+    feature_list = [f.format_for_template() for f in all_features]
 
-    self._annotate_first_of_impl_status_in_milestones(feature_list, version=version)
+    self._annotate_first_of_impl_status_in_milestones(feature_list)
 
     allowed_feature_list = [
         f for f in feature_list
