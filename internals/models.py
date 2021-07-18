@@ -935,8 +935,8 @@ class Feature(DictModel):
 
     # Feature list must be first sorted by implementation status and then by name. 
     # The implementation may seem to be counter-intuitive using sort() method.
-    all_features.sort(key=lambda f: f.name, reverse=False)
-    all_features.sort(key=lambda f: f.impl_status_chrome, reverse=False)
+    all_features.sort(key=lambda f: f.name)
+    all_features.sort(key=lambda f: f.impl_status_chrome)
 
     all_features = [f for f in all_features if not f.deleted]
 
