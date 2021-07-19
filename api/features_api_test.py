@@ -27,7 +27,7 @@ from internals import models
 from framework import ramcache
 
 
-class FeaturesAPITest(testing_config.CustomTestCase):
+class FeaturesAPITestDelete(testing_config.CustomTestCase):
 
   def setUp(self):
     self.feature_1 = models.Feature(
@@ -95,6 +95,31 @@ class FeaturesAPITest(testing_config.CustomTestCase):
     revised_feature = models.Feature.get_by_id(self.feature_id)
     self.assertFalse(revised_feature.deleted)
   
+
+class FeaturesAPITestGet(testing_config.CustomTestCase):
+
+  def setUp(self):
+    self.feature_1 = models.Feature(
+        name='feature one', summary='sum', category=1, visibility=1,
+        standardization=1, web_dev_views=1, impl_status_chrome=5,
+        intent_stage=models.INTENT_IMPLEMENT, shipped_milestone=1)
+    self.feature_1.put()
+    self.feature_id = self.feature_1.key.integer_id()
+
+    self.request_path = '/api/v0/features'
+    self.handler = features_api.FeaturesAPI()
+
+    self.app_admin = models.AppUser(email='admin@example.com')
+    self.app_admin.is_admin = True
+    self.app_admin.put()
+
+  def tearDown(self):
+    self.feature_1.key.delete()
+    self.app_admin.key.delete()
+    testing_config.sign_out()
+    ramcache.flush_all()
+    ramcache.check_for_distributed_invalidation()
+
   def test_get__all_listed(self):
     """Get all features that are listed."""
     with register.app.test_request_context(self.request_path):
@@ -105,16 +130,14 @@ class FeaturesAPITest(testing_config.CustomTestCase):
     self.assertEqual(1, len(actual_response))
     self.assertEqual('feature one', actual_response[0]['name'])
 
-  def test_get__unlisted_no_perms(self):
+  def test_get__all_unlisted_no_perms(self):
     """JSON feed does not include unlisted features for users who can't edit."""
     self.feature_1.unlisted = True
     self.feature_1.put()
 
     # No signed-in user
     with register.app.test_request_context(self.request_path):
-      actual_response = self.handler.do_get()
-    # Comparing only the total number of features and name of the feature 
-    # as certain fields like `updated` cannot be compared 
+      actual_response = self.handler.do_get() 
     self.assertEqual(0, len(actual_response))
 
     # Signed-in user with no permissions
@@ -123,15 +146,73 @@ class FeaturesAPITest(testing_config.CustomTestCase):
       actual_response = self.handler.do_get()
     self.assertEqual(0, len(actual_response))
 
-  def test_get__unlisted_can_edit(self):
+  def test_get__all_unlisted_can_edit(self):
     """JSON feed includes unlisted features for users who may edit."""
     self.feature_1.unlisted = True
     self.feature_1.put()
 
-    # No signed-in user
-    # Signed-in user with no permissions
+    # Signed-in user with permissions
     testing_config.sign_in('admin@example.com', 123567890)
     with register.app.test_request_context(self.request_path):
       actual_response = self.handler.do_get()
     self.assertEqual(1, len(actual_response))
     self.assertEqual('feature one', actual_response[0]['name'])
+
+  def test_get__in_milestone_listed(self):
+    """Get all features in a specific milestone that are listed."""
+    # Atleast one feature is present in milestone
+    with register.app.test_request_context(self.request_path+'?milestone=1'):
+      actual_response = self.handler.do_get()
+    self.assertEqual(1, len(actual_response))
+    self.assertEqual('feature one', actual_response[0]['name'])
+    self.assertEqual(1, actual_response[0]['browsers']['chrome']['status']['milestone_str'])
+
+    # No Feature is present in milestone
+    with register.app.test_request_context(self.request_path+'?milestone=2'):
+      actual_response = self.handler.do_get()
+    self.assertEqual(0, len(actual_response))
+
+  def test_get__in_milestone_unlisted_no_perms(self):
+    """JSON feed does not include unlisted features for users who can't edit."""
+    self.feature_1.unlisted = True
+    self.feature_1.put()
+
+    # No signed-in user
+    with register.app.test_request_context(self.request_path+'?milestone=1'):
+      actual_response = self.handler.do_get()
+    self.assertEqual(0, len(actual_response))
+
+    # Signed-in user with no permissions
+    testing_config.sign_in('one@example.com', 123567890)
+    with register.app.test_request_context(self.request_path+'?milestone=1'):
+      actual_response = self.handler.do_get()
+    self.assertEqual(0, len(actual_response))
+
+  def test_get__in_milestone_unlisted_can_edit(self):
+    """JSON feed includes unlisted features for users who may edit."""
+    self.feature_1.unlisted = True
+    self.feature_1.put()
+
+    # Signed-in user with permissions
+    testing_config.sign_in('admin@example.com', 123567890)
+
+    # Feature is present in milestone
+    with register.app.test_request_context(self.request_path+'?milestone=1'):
+      actual_response = self.handler.do_get()
+    self.assertEqual(1, len(actual_response))
+    self.assertEqual('feature one', actual_response[0]['name'])
+    self.assertEqual(1, actual_response[0]['browsers']['chrome']['status']['milestone_str'])
+
+    # Feature is not present in milestone
+    with register.app.test_request_context(self.request_path+'?milestone=2'):
+      actual_response = self.handler.do_get()
+    self.assertEqual(0, len(actual_response))
+
+  @mock.patch('flask.abort')
+  def test_get__in_milestone_invalid_query(self, mock_abort):
+    """Invalid value of milestone should not be processed."""
+
+    # Feature is present in milestone
+    with register.app.test_request_context(self.request_path+'?milestone=chromium'):
+      actual_response = self.handler.do_get()
+    mock_abort.assert_called_once_with(400, description='Invalid  Milestone')

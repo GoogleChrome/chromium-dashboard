@@ -554,6 +554,30 @@ class Feature(DictModel):
     except Exception as e:
       logging.error(e)
 
+  @classmethod
+  def _annotate_first_of_impl_status_in_milestones(self, feature_list, version=2):
+    try:
+      statuses = [
+        IMPLEMENTATION_STATUS[BEHIND_A_FLAG],
+        IMPLEMENTATION_STATUS[ENABLED_BY_DEFAULT],
+        IMPLEMENTATION_STATUS[REMOVED],
+        IMPLEMENTATION_STATUS[ORIGIN_TRIAL],
+        IMPLEMENTATION_STATUS[INTERVENTION],
+        IMPLEMENTATION_STATUS[ON_HOLD]
+      ]
+      first_of_milestone_func = Feature._first_of_milestone
+      if version == 2:
+        first_of_milestone_func = Feature._first_of_milestone_v2
+
+      last_good_idx = 0
+      for i, status in enumerate(statuses):
+        idx = first_of_milestone_func(feature_list, status, start=last_good_idx)
+        if idx != -1:
+          feature_list[idx]['first_of_milestone'] = True
+          last_good_idx = idx
+    except Exception as e:
+      logging.error(e)
+
   def migrate_views(self):
     """Migrate obsolete values for views on first edit."""
     if self.ff_views == MIXED_SIGNALS:
@@ -571,7 +595,7 @@ class Feature(DictModel):
     if self.safari_views == PUBLIC_SKEPTICISM:
       self.safari_views = OPPOSED
 
-  def format_for_template(self, version=None):
+  def format_for_template(self, version=2):
     self.migrate_views()
     d = self.to_dict()
     is_released = self.impl_status_chrome in RELEASE_IMPL_STATES
@@ -894,6 +918,48 @@ class Feature(DictModel):
 
     return allowed_feature_list
 
+  @classmethod
+  def get_in_milestone(
+      self, show_unlisted=False, milestone=None):
+    if milestone == None:
+      return None
+
+    logging.info('Getting chronological feature list in milestone %d', milestone)
+    q = Feature.query()
+    q = q.order(Feature.name)
+    q = q.filter(Feature.shipped_milestone == milestone)
+    desktop_shipping_features = q.fetch(None)
+
+    # Features with an android shipping milestone but no desktop milestone.
+    q = Feature.query()
+    q = q.order(Feature.name)
+    q = q.filter(Feature.shipped_android_milestone == milestone)
+    q = q.filter(Feature.shipped_milestone == None)
+    android_only_shipping_features = q.fetch(None)
+
+    # Constructor the proper ordering.
+    all_features = []
+    all_features.extend(desktop_shipping_features)
+    all_features.extend(android_only_shipping_features)
+
+    # Feature list must be first sorted by implementation status and then by name. 
+    # The implementation may seem to be counter-intuitive using sort() method.
+    all_features.sort(key=lambda f: f.name)
+    all_features.sort(key=lambda f: f.impl_status_chrome)
+
+    all_features = [f for f in all_features if not f.deleted]
+
+    feature_list = [f.format_for_template() for f in all_features]
+
+    self._annotate_first_of_impl_status_in_milestones(feature_list)
+
+    allowed_feature_list = [
+        f for f in feature_list
+        if show_unlisted or not f['unlisted']]
+
+    return allowed_feature_list
+
+  
   @classmethod
   def get_shipping_samples(self, limit=None, update_cache=False):
     cache_key = '%s|%s|%s' % (Feature.DEFAULT_CACHE_KEY, 'samples', limit)
