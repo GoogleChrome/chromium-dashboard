@@ -1,6 +1,14 @@
 // Start fetching right away.
-const url = '/features.json';
-const featuresPromise = fetch(url).then((res) => res.json());
+const urlFeatures = '/api/v0/features';
+const urlChannels = '/api/v0/channels';
+
+const featuresPromise = fetch(urlFeatures)
+  .then((res) => res.text())
+  .then((res) => JSON.parse(res.substring(5))); // Ignore XSSI prefix
+
+const channelsPromise = fetch(urlChannels)
+  .then((res) => res.text())
+  .then((res) => JSON.parse(res.substring(5)));
 
 document.querySelector('.show-blink-checkbox').addEventListener('change', e => {
   e.stopPropagation();
@@ -17,6 +25,8 @@ async function init() {
 
   // Prepare data for chromedash-schedule
   const features = await featuresPromise;
+  const CHANNELS = await channelsPromise;
+
   ['stable', 'beta', 'dev'].forEach((channel) => {
     CHANNELS[channel].components = mapFeaturesToComponents(features.filter(f =>
       f.browsers.chrome.status.milestone_str === CHANNELS[channel].version));
