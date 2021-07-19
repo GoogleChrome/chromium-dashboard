@@ -1,12 +1,9 @@
 // Start fetching right away.
-const urlFeatures = '/api/v0/features';
-const urlChannels = '/api/v0/channels';
+const FEATURES_API_URL = '/api/v0/features';
+const CHANNELS_API_URL = '/api/v0/channels';
+const channelsArray = ['stable', 'beta', 'dev'];
 
-const featuresPromise = fetch(urlFeatures)
-  .then((res) => res.text())
-  .then((res) => JSON.parse(res.substring(5))); // Ignore XSSI prefix
-
-const channelsPromise = fetch(urlChannels)
+const channelsPromise = fetch(CHANNELS_API_URL)
   .then((res) => res.text())
   .then((res) => JSON.parse(res.substring(5)));
 
@@ -21,19 +18,33 @@ if (header) {
 }
 
 async function init() {
+  // Prepare data for chromedash-schedule
+  const channels = await channelsPromise;
+  let featuresPromise = {};
+
+  channelsArray.forEach((channel) => {
+    let queryStringUrl = `${FEATURES_API_URL}?milestone=${channels[channel].version}`;
+    featuresPromise[channel] = fetch(queryStringUrl)
+      .then((res) => res.text())
+      .then((res) => JSON.parse(res.substring(5))); // Ignore XSSI prefix
+  });
+
+  const features = {};
+
+  for (let channel of channelsArray) {
+    features[channel] = await featuresPromise[channel];
+  }
+
+  // Remove the loading sign once the data has been fetched from the APIs
   document.body.classList.remove('loading');
 
-  // Prepare data for chromedash-schedule
-  const features = await featuresPromise;
-  const CHANNELS = await channelsPromise;
-
-  ['stable', 'beta', 'dev'].forEach((channel) => {
-    CHANNELS[channel].components = mapFeaturesToComponents(features.filter(f =>
-      f.browsers.chrome.status.milestone_str === CHANNELS[channel].version));
+  channelsArray.forEach((channel) => {
+    channels[channel].components = mapFeaturesToComponents(features[channel].filter(f =>
+      f.browsers.chrome.status.milestone_str === channels[channel].version));
   });
 
   const scheduleEl = document.querySelector('chromedash-schedule');
-  scheduleEl.channels = CHANNELS;
+  scheduleEl.channels = channels;
 
   window.csClient.getStars().then((starredFeatureIds) => {
     scheduleEl.starredFeatures = new Set(starredFeatureIds);
