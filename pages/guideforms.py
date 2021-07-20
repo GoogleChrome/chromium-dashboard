@@ -169,12 +169,14 @@ ALL_FIELDS = {
          'success of this feature, such as a link to the UseCounter(s) you '
          'have set up.')),
 
-    'standardization': forms.ChoiceField(
-        required=False, label='Standardization',
-        choices=models.STANDARDIZATION.items(),
-        initial=models.EDITORS_DRAFT,
-        help_text=("The standardization status of the API. In bodies that don't "
-                   "use this nomenclature, use the closest equivalent.")),
+    # 'standardization' is deprecated
+
+    'standard_maturity': forms.ChoiceField(
+        required=False, label='Standard maturity',
+        choices=models.STANDARD_MATURITY_CHOICES.items(),
+        initial=models.PROPOSAL_STD,
+        help_text=('How far along is the standard that this '
+                   'feature implements?')),
 
     'unlisted': forms.BooleanField(
       required=False, initial=False,
@@ -712,7 +714,7 @@ ImplStatus_Incubate = define_form_class_using_shared_fields(
 
 NewFeature_Prototype = define_form_class_using_shared_fields(
     'NewFeature_Prototype',
-    ('spec_link', 'api_spec', 'spec_mentors',
+    ('spec_link', 'standard_maturity', 'api_spec', 'spec_mentors',
      'intent_to_implement_url', 'comments'))
   # TODO(jrobbins): advise user to request a tag review
 
@@ -740,7 +742,8 @@ ImplStatus_DevTrial = define_form_class_using_shared_fields(
 
 NewFeature_EvalReadinessToShip = define_form_class_using_shared_fields(
     'NewFeature_EvalReadinessToShip',
-    ('doc_links', 'tag_review', 'spec_link', 'interop_compat_risks',
+    ('doc_links', 'tag_review', 'spec_link',
+     'standard_maturity', 'interop_compat_risks',
      'safari_views', 'safari_views_link', 'safari_views_notes',
      'ff_views', 'ff_views_link', 'ff_views_notes',
      'ie_views', 'ie_views_link', 'ie_views_notes',
@@ -792,7 +795,7 @@ Any_Ship = define_form_class_using_shared_fields(
 Existing_Prototype = define_form_class_using_shared_fields(
     'Existing_Prototype',
     ('owner', 'blink_components', 'motivation', 'explainer_links',
-     'spec_link', 'api_spec', 'bug_url', 'launch_bug_url',
+     'spec_link', 'standard_maturity', 'api_spec', 'bug_url', 'launch_bug_url',
      'intent_to_implement_url', 'comments'))
 
 
@@ -806,7 +809,7 @@ Existing_OriginTrial = define_form_class_using_shared_fields(
 
 PSA_Implement = define_form_class_using_shared_fields(
     'Any_Implement',
-    ('spec_link', 'comments'))
+    ('spec_link', 'standard_maturity', 'comments'))
   # TODO(jrobbins): advise user to request a tag review
 
 
@@ -883,7 +886,8 @@ Flat_Identify = define_form_class_using_shared_fields(
 Flat_Implement = define_form_class_using_shared_fields(
     'Flat_Implement',
     (# Standardization
-     'spec_link', 'api_spec', 'spec_mentors', 'intent_to_implement_url'))
+     'spec_link', 'standard_maturity', 'api_spec', 'spec_mentors',
+     'intent_to_implement_url'))
 
 
 Flat_DevTrial = define_form_class_using_shared_fields(
@@ -997,7 +1001,8 @@ DISPLAY_FIELDS_IN_STAGES = {
         'initial_public_proposal_url', 'explainer_links',
         'requires_embedder_support'),
     models.INTENT_IMPLEMENT: make_display_specs(
-        'spec_link', 'api_spec', 'spec_mentors', 'intent_to_implement_url'),
+        'spec_link', 'standard_maturity', 'api_spec', 'spec_mentors',
+        'intent_to_implement_url'),
     models.INTENT_EXPERIMENT: make_display_specs(
         'devtrial_instructions', 'doc_links',
         'interop_compat_risks',

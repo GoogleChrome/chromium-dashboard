@@ -182,6 +182,7 @@ REVIEW_STATUS_CHOICES = {
     REVIEW_NA: 'Not applicable',
     }
 
+
 FOOTPRINT_CHOICES = {
   MAJOR_NEW_API: ('A major new independent API (e.g. adding many '
                   'independent concepts with many methods/properties/objects)'),
@@ -267,6 +268,22 @@ STANDARDIZATION = {
   NO_STD_OR_DISCUSSION: 'No public standards discussion',
   }
 
+UNKNOWN_STD = 1
+PROPOSAL_STD = 2
+INCUBATION_STD = 3
+WORKINGDRAFT_STD = 4
+STANDARD_STD = 5
+
+STANDARD_MATURITY_CHOICES = {
+  UNKNOWN_STD: 'Unknown standards status - check spec link for status',
+  PROPOSAL_STD: 'Proposal in a personal repository, no adoption from community',
+  INCUBATION_STD: 'Specification being incubated in a Community Group',
+  WORKINGDRAFT_STD: ('Specification currently under development in a '
+                     'Working Group'),
+  STANDARD_STD: ('Final published standard: Recommendation, Living Standard, '
+                 'Candidate Recommendation, or similar final form'),
+}
+
 DEV_STRONG_POSITIVE = 1
 DEV_POSITIVE = 2
 DEV_MIXED_SIGNALS = 3
@@ -290,6 +307,7 @@ PROPERTY_NAMES_TO_ENUM_DICTS = {
     'impl_status_chrome': IMPLEMENTATION_STATUS,
     'security_review_status': REVIEW_STATUS_CHOICES,
     'privacy_review_status': REVIEW_STATUS_CHOICES,
+    'standard_maturity': STANDARD_MATURITY_CHOICES,
     'standardization': STANDARDIZATION,
     'ff_views': VENDOR_VIEWS,
     'ie_views': VENDOR_VIEWS,
@@ -627,6 +645,10 @@ class Feature(DictModel):
           'text': STANDARDIZATION[self.standardization],
           'val': d.pop('standardization', None),
         },
+        'maturity': {
+          'text': STANDARD_MATURITY_CHOICES.get(self.standard_maturity),
+          'val': d.pop('standard_maturity', None),
+        },
       }
       d['tag_review_status'] = REVIEW_STATUS_CHOICES[self.tag_review_status]
       d['security_review_status'] = REVIEW_STATUS_CHOICES[
@@ -942,7 +964,7 @@ class Feature(DictModel):
     all_features.extend(desktop_shipping_features)
     all_features.extend(android_only_shipping_features)
 
-    # Feature list must be first sorted by implementation status and then by name. 
+    # Feature list must be first sorted by implementation status and then by name.
     # The implementation may seem to be counter-intuitive using sort() method.
     all_features.sort(key=lambda f: f.name)
     all_features.sort(key=lambda f: f.impl_status_chrome)
@@ -959,7 +981,7 @@ class Feature(DictModel):
 
     return allowed_feature_list
 
-  
+
   @classmethod
   def get_shipping_samples(self, limit=None, update_cache=False):
     cache_key = '%s|%s|%s' % (Feature.DEFAULT_CACHE_KEY, 'samples', limit)
@@ -1130,7 +1152,8 @@ class Feature(DictModel):
   visibility = ndb.IntegerProperty(required=False)  # Deprecated
 
   # Standards details.
-  standardization = ndb.IntegerProperty(required=True)
+  standardization = ndb.IntegerProperty(required=True)  # Deprecated
+  standard_maturity = ndb.IntegerProperty(required=True, default=UNKNOWN_STD)
   spec_link = ndb.StringProperty()
   api_spec = ndb.BooleanProperty(default=False)
   spec_mentors = ndb.StringProperty(repeated=True)

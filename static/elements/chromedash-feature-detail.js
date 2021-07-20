@@ -104,6 +104,12 @@ class ChromedashFeatureDetail extends LitElement {
   getFieldValue(fieldDef) {
     const fieldId = fieldDef[0];
     let value = this.feature[fieldId];
+    if (fieldId == 'spec_link') {
+      value = this.feature.standards.spec;
+    }
+    if (fieldId == 'standard_maturity') {
+      value = this.feature.standards.maturity;
+    }
     if (value && value.text) {
       value = value.text;
     }
