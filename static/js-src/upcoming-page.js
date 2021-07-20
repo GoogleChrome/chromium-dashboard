@@ -46,9 +46,6 @@ async function init() {
 }
 
 function mapFeaturesToComponents(features) {
-  let set = new Set();
-  features.forEach(f => set.add(...f.browsers.chrome.blink_components));
-
   const featuresMappedToComponents = {};
   features.forEach(f => {
     const components = f.browsers.chrome.blink_components;
