@@ -194,6 +194,16 @@ class ChromeStatusClient {
         `/features/${featureId}/approvals/${fieldId}/comments`,
         {state, comment});
   }
+
+  // Features API
+  getFeaturesInMilestone(milestone) {
+    return this.doGet(`/features?milestone?=${milestone}`);
+  }
+
+  // Channels API
+  getChannels() {
+    return this.doGet('/channels');
+  }
 };
 
 exports.ChromeStatusClient = ChromeStatusClient;

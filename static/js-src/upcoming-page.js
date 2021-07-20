@@ -1,11 +1,8 @@
 // Start fetching right away.
-const FEATURES_API_URL = '/api/v0/features';
-const CHANNELS_API_URL = '/api/v0/channels';
 const channelsArray = ['stable', 'beta', 'dev'];
 
-const channelsPromise = fetch(CHANNELS_API_URL)
-  .then((res) => res.text())
-  .then((res) => JSON.parse(res.substring(5)));
+const channelsPromise = window.csClient.getChannels();
+
 
 document.querySelector('.show-blink-checkbox').addEventListener('change', e => {
   e.stopPropagation();
@@ -23,10 +20,7 @@ async function init() {
   let featuresPromise = {};
 
   channelsArray.forEach((channel) => {
-    let queryStringUrl = `${FEATURES_API_URL}?milestone=${channels[channel].version}`;
-    featuresPromise[channel] = fetch(queryStringUrl)
-      .then((res) => res.text())
-      .then((res) => JSON.parse(res.substring(5))); // Ignore XSSI prefix
+    featuresPromise[channel] = window.csClient.getFeaturesInMilestone(channels[channel].version);
   });
 
   const features = {};
