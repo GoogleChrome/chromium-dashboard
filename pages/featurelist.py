@@ -101,7 +101,8 @@ class FeatureListXMLHandler(basehandlers.FlaskHandler):
       feature_list = models.Feature.get_all( # cached
           limit=max_items,
           filterby=filterby,
-          order='-updated')
+          order='-updated',
+          version=1)
 
     return utils.render_atom_feed(self.request, 'Features', feature_list)
 

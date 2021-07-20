@@ -762,7 +762,7 @@ class Feature(DictModel):
 
   @classmethod
   def get_all(self, limit=None, order='-updated', filterby=None,
-              update_cache=False):
+              update_cache=False, version=2):
     KEY = '%s|%s|%s' % (Feature.DEFAULT_CACHE_KEY, order, limit)
 
     # TODO(ericbidelman): Support more than one filter.
@@ -782,7 +782,8 @@ class Feature(DictModel):
 
       features = query.fetch(limit)
 
-      feature_list = [f.format_for_template() for f in features]
+      feature_list = [
+          f.format_for_template(version=version) for f in features]
 
       ramcache.set(KEY, feature_list)
 
@@ -942,7 +943,7 @@ class Feature(DictModel):
     all_features.extend(desktop_shipping_features)
     all_features.extend(android_only_shipping_features)
 
-    # Feature list must be first sorted by implementation status and then by name. 
+    # Feature list must be first sorted by implementation status and then by name.
     # The implementation may seem to be counter-intuitive using sort() method.
     all_features.sort(key=lambda f: f.name)
     all_features.sort(key=lambda f: f.impl_status_chrome)
@@ -959,7 +960,7 @@ class Feature(DictModel):
 
     return allowed_feature_list
 
-  
+
   @classmethod
   def get_shipping_samples(self, limit=None, update_cache=False):
     cache_key = '%s|%s|%s' % (Feature.DEFAULT_CACHE_KEY, 'samples', limit)
