@@ -77,6 +77,10 @@ handlers:
   script: pages.featurelist.app
   secure: always
 
+- url: /upcoming
+  script: pages.upcoming.app
+  secure: always
+
 - url: /features/schedule
   script: pages.schedule.app
   secure: always

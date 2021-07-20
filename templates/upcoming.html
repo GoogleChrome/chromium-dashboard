@@ -1,0 +1,39 @@
+{% extends "_base.html" %}
+{% load inline_file %}
+
+{% block css %}
+  <style>{% inline_file "/static/css/upcoming.css" %}</style>
+{% endblock %}
+
+{% block subheader %}
+  <div id="subheader">
+    <!--<h2>Chrome release timeline</h2>-->
+    <div style="flex:1">
+      <h3>Release timeline</h3>
+      <!-- p class="description">Please note, all dates are estimates and are subject to change.</p -->
+    </div>
+    <!-- <paper-toggle-button> doesn't working here. Related links:
+      https://github.com/PolymerElements/paper-toggle-button/pull/132 -->
+    <label><input type="checkbox" class="show-blink-checkbox">Show Blink components</label>
+  </div>
+{% endblock %}
+
+{% block content %}
+  <section id="releases-section">
+    <chromedash-schedule
+      {% if user %}signedin{% endif %}
+      {# TODO(jrobbins): Fix to work with google sign-in #}
+      loginurl="#"
+    ></chromedash-schedule>
+  </section>
+{% endblock %}
+
+{% block js %}
+  <script nonce="{{nonce}}">
+    (function() {
+      'use strict';
+
+      {% inline_file "/static/js/upcoming-page.min.js" %}
+    })();
+  </script>
+{% endblock %}

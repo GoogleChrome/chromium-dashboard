@@ -1,0 +1,24 @@
+@import "vars";
+@import "layout";
+
+body[data-path*='features/schedule'] {
+  --app-drawer-width: 0;
+
+  app-drawer {
+    display: none;
+  }
+
+  #spinner {
+    display: none;
+  }
+
+}
+
+.hide-blink-checkbox {
+  margin-right: 8px;
+}
+
+#subheader {
+  max-width: 100%;
+  justify-content: center;
+}
