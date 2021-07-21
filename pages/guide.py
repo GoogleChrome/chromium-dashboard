@@ -294,6 +294,9 @@ class FeatureEditStage(basehandlers.FlaskHandler):
     if self.touched('spec_link'):
       feature.spec_link = self.parse_link('spec_link')
 
+    if self.touched('standard_maturity'):
+      feature.standard_maturity = self.parse_int('standard_maturity')
+
     if self.touched('api_spec'):
       feature.api_spec = self.form.get('api_spec') == 'on'
 
