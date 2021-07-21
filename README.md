@@ -54,12 +54,10 @@ npm run lint
 To run unit tests:
 
 ```bash
-npm run start-emulator      # Start the emulator
-npm run test                # Reset the datastore emulator and start testing
-npm run stop-emulator       # Stop the emulator. You do not have to stop the emulator between consecutive tests
+npm test
 ```
 
-Note: featurelist is temporarily excluded because lit-analyzer throws `Maximum call stack size exceeded`.
+This will start a local datastore emulator, run unit tests, and then shut down the emulator.
 
 There are some developing information in developer-documentation.md.
 
@@ -70,7 +68,6 @@ There are some developing information in developer-documentation.md.
 
 - When installing the GAE SDK, make sure to get the version for python 2.7.  It is no longer the default version.
 
-- When running `npm start` you may get an ImportError for jinja2.tests.  This was caused by an over-general line in skip_files.yaml.  Pulling the latest source code should resolve the problem.
 
 #### Blink components
 
