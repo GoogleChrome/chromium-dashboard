@@ -423,13 +423,17 @@ ALL_FIELDS = {
         required=False, label='OT desktop start',
         widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'}),
         help_text=('First desktop milestone that will support an origin '
-                   'trial of this feature.')),
+                   'trial of this feature.  '
+                   'Setting this automatically sets the android '
+                   'milestone, unless they are different.')),
 
     'ot_milestone_desktop_end': forms.IntegerField(
         required=False, label='OT desktop end',
         widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'}),
         help_text=('Last desktop milestone that will support an origin '
-                   'trial of this feature.')),
+                   'trial of this feature.  '
+                   'Setting this automatically sets the android '
+                   'milestone, unless they are different.')),
 
     'ot_milestone_android_start': forms.IntegerField(
         required=False, label='OT android start',
@@ -646,7 +650,9 @@ ALL_FIELDS = {
         required=False, label='DevTrail on desktop',
         widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'}),
         help_text=('First milestone that allows developers to try '
-                   'this feature on desktop platforms by setting a flag.')),
+                   'this feature on desktop platforms by setting a flag.  '
+                   'Setting this automatically sets android and webview '
+                   'milestones, unless they are different.')),
 
     'dt_milestone_android_start': forms.IntegerField(
         required=False, label='DevTrail on Android',
