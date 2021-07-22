@@ -784,7 +784,7 @@ class Feature(DictModel):
 
   @classmethod
   def get_all(self, limit=None, order='-updated', filterby=None,
-              update_cache=False):
+              update_cache=False, version=2):
     KEY = '%s|%s|%s' % (Feature.DEFAULT_CACHE_KEY, order, limit)
 
     # TODO(ericbidelman): Support more than one filter.
@@ -804,7 +804,8 @@ class Feature(DictModel):
 
       features = query.fetch(limit)
 
-      feature_list = [f.format_for_template() for f in features]
+      feature_list = [
+          f.format_for_template(version=version) for f in features]
 
       ramcache.set(KEY, feature_list)
 
