@@ -645,29 +645,26 @@ ALL_FIELDS = {
     'dt_milestone_desktop_start': forms.IntegerField(
         required=False, label='DevTrail on desktop',
         widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'}),
-        help_text=('First milestone that will allow developers to try out '
+        help_text=('First milestone that allows developers to try '
                    'this feature on desktop platforms by setting a flag.')),
 
     'dt_milestone_android_start': forms.IntegerField(
         required=False, label='DevTrail on Android',
         widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'}),
-        help_text=('First milestone that will allow developers to try out '
-                   'this feature on iOS by setting a flag.  '
-                   'Set this only if different from desktop milestone.')),
+        help_text=('First milestone that allows developers to try '
+                   'this feature on iOS by setting a flag.')),
 
     'dt_milestone_ios_start': forms.IntegerField(
         required=False, label='DevTrial on iOS (RARE)',
         widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'}),
-        help_text=('First milestone that will allow developers to try out '
-                   'this feature on iOS by setting a flag.  '
-                   'Set this only if different from desktop milestone.')),
+        help_text=('First milestone that allows developers to try '
+                   'this feature on iOS by setting a flag.')),
 
     'dt_milestone_webview_start': forms.IntegerField(
         required=False, label='DevTrial on Webview',
         widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'}),
-        help_text=('First milestone that will allow developers to try out '
-                   'this feature on Webview by setting a flag.  '
-                   'Set this only if different from desktop milestone.')),
+        help_text=('First milestone that allows developers to try '
+                   'this feature on Webview by setting a flag.')),
 
     'flag_name': forms.CharField(
         label='Flag name', required=False,

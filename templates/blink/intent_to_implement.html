@@ -229,13 +229,23 @@
   {% endif %}
 
   {% if feature.ot_milestone_desktop_start %}
-    <tr><td>OriginTrial first</td>
+    <tr><td>OriginTrial desktop first</td>
     <td>{{feature.ot_milestone_desktop_start}}</td></tr>
   {% endif %}
 
   {% if feature.ot_milestone_desktop_end %}
-    <tr><td>OriginTrial last</td>
+    <tr><td>OriginTrial desktop last</td>
     <td>{{feature.ot_milestone_desktop_end}}</td></tr>
+  {% endif %}
+
+  {% if feature.ot_milestone_android_start %}
+    <tr><td>OriginTrial android first</td>
+    <td>{{feature.ot_milestone_android_start}}</td></tr>
+  {% endif %}
+
+  {% if feature.ot_milestone_android_end %}
+    <tr><td>OriginTrial android last</td>
+    <td>{{feature.ot_milestone_android_end}}</td></tr>
   {% endif %}
 
   {% if feature.shipped_milestone %}
