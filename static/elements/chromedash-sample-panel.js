@@ -98,7 +98,7 @@ class ChromedashSamplePanel extends LitElement {
     const url = '/samples.json';
     this.features = await (await fetch(url)).json();
     this.features.forEach((feature) => {
-      feature.sample_links = feature.sample_links.map((link) => {
+      feature.resources.samples = feature.resources.samples.map((link) => {
         return link.replace(/github.com\/GoogleChrome\/samples\/tree\/gh-pages\/(.*)/i, 'googlechrome.github.io/samples/$1');
       });
     });
@@ -202,7 +202,7 @@ class ChromedashSamplePanel extends LitElement {
               <div class="summary">${feature.summary}</div>
               <div class="sample_links">
                 <div class="demo-links layout horizontal center">
-                  ${feature.sample_links.map((link) => html`
+                  ${feature.resources.samples.map((link) => html`
                     <a href="${link}" target="_blank" class="demo-link">
                       <iron-icon icon="chromestatus:open-in-browser"></iron-icon> View Demo
                     </a>
