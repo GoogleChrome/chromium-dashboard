@@ -20,11 +20,11 @@
 
 {% block content %}
   <section id="releases-section">
-    <chromedash-schedule
+    <chromedash-upcoming
       {% if user %}signedin{% endif %}
       {# TODO(jrobbins): Fix to work with google sign-in #}
       loginurl="#"
-    ></chromedash-schedule>
+    ></chromedash-upcoming>
   </section>
 {% endblock %}
 

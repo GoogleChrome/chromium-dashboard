@@ -37,11 +37,11 @@ async function init() {
       f.browsers.chrome.status.milestone_str === channels[channel].version));
   });
 
-  const scheduleEl = document.querySelector('chromedash-schedule');
-  scheduleEl.channels = channels;
+  const upcomingEl = document.querySelector('chromedash-upcoming');
+  upcomingEl.channels = channels;
 
   window.csClient.getStars().then((starredFeatureIds) => {
-    scheduleEl.starredFeatures = new Set(starredFeatureIds);
+    upcomingEl.starredFeatures = new Set(starredFeatureIds);
   });
 }
 
