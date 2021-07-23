@@ -1,6 +1,6 @@
 import {LitElement, html} from 'lit-element';
 import {nothing} from 'lit-html';
-import style from '../css/elements/chromedash-schedule.css';
+import style from '../css/elements/chromedash-upcoming-milestone-card.css';
 
 class ChromedashUpcomingMilestoneCard extends LitElement {
   static styles = style;

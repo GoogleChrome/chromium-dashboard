@@ -1,6 +1,6 @@
 import {LitElement, html} from 'lit-element';
 import '@polymer/iron-icon';
-import style from '../css/elements/chromedash-schedule.css';
+import style from '../css/elements/chromedash-upcoming.css';
 
 const TEMPLATE_CONTENT = {
   stable: {
@@ -70,7 +70,7 @@ class ChromedashUpcoming extends LitElement {
 
     return html`
       ${['stable', 'beta', 'dev'].map((type) => html`
-        <chromedash-upcoming-milestone-card 
+        <chromedash-upcoming-milestone-card
           channel=${JSON.stringify(this.channels[type])}
           templatecontent=${JSON.stringify(TEMPLATE_CONTENT[type])}
           showdates='${SHOW_DATES}'
