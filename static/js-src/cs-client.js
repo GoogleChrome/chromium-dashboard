@@ -197,7 +197,7 @@ class ChromeStatusClient {
 
   // Features API
   getFeaturesInMilestone(milestone) {
-    return this.doGet(`/features?milestone?=${milestone}`);
+    return this.doGet(`/features?milestone=${milestone}`);
   }
 
   // Channels API

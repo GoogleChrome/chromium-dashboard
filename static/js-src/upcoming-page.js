@@ -6,7 +6,7 @@ const channelsPromise = window.csClient.getChannels();
 
 document.querySelector('.show-blink-checkbox').addEventListener('change', e => {
   e.stopPropagation();
-  document.querySelector('chromedash-schedule').showBlink = e.target.checked;
+  document.querySelector('chromedash-upcoming').showBlink = e.target.checked;
 });
 
 const header = document.querySelector('app-header-layout app-header');
@@ -15,7 +15,7 @@ if (header) {
 }
 
 async function init() {
-  // Prepare data for chromedash-schedule
+  // Prepare data for chromedash-upcoming
   const channels = await channelsPromise;
   let featuresPromise = {};
 
@@ -33,8 +33,7 @@ async function init() {
   document.body.classList.remove('loading');
 
   channelsArray.forEach((channel) => {
-    channels[channel].components = mapFeaturesToComponents(features[channel].filter(f =>
-      f.browsers.chrome.status.milestone_str === channels[channel].version));
+    channels[channel].components = mapFeaturesToComponents(features[channel]);
   });
 
   const upcomingEl = document.querySelector('chromedash-upcoming');
