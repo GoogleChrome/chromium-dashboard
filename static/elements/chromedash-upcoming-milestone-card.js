@@ -7,7 +7,7 @@ class ChromedashUpcomingMilestoneCard extends LitElement {
   static get properties() {
     return {
       // Assigned in schedule-apge.js, value from Django
-      showBlink: {attribute: false}, // Set by code in schedule-page.js
+      showBlink: {type: Boolean},
       starredFeatures: {type: Array},
       templateContent: {type: Object},
       channel: {type: Object},

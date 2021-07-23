@@ -78,6 +78,7 @@ class ChromedashUpcoming extends LitElement {
           deprecatedstatus='${JSON.stringify(DEPRECATED_STATUS)}'
           starredfeatures='${JSON.stringify([...this.starredFeatures])}'
           ?signedin=${this.signedIn}
+          ?showblink=${this.showBlink}
           @star-toggle-event=${this.handleStarToggle}
         >
         </chromedash-upcoming-milestone-card>        

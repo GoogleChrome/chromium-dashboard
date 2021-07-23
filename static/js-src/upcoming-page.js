@@ -33,7 +33,7 @@ async function init() {
   document.body.classList.remove('loading');
 
   channelsArray.forEach((channel) => {
-    channels[channel].components = mapFeaturesToComponents(features[channel]);
+    channels[channel].components = mapFeaturesToShippingType(features[channel]);
   });
 
   const upcomingEl = document.querySelector('chromedash-upcoming');
@@ -44,23 +44,21 @@ async function init() {
   });
 }
 
-function mapFeaturesToComponents(features) {
-  const featuresMappedToComponents = {};
+function mapFeaturesToShippingType(features) {
+  const featuresMappedToShippingType = {};
   features.forEach(f => {
-    const components = f.browsers.chrome.blink_components;
-    components.forEach(component => {
-      if (!featuresMappedToComponents[component]) {
-        featuresMappedToComponents[component] = [];
-      }
-      featuresMappedToComponents[component].push(f);
-    });
+    const component = f.browsers.chrome.status.text;
+    if (!featuresMappedToShippingType[component]) {
+      featuresMappedToShippingType[component] = [];
+    }
+    featuresMappedToShippingType[component].push(f);
   });
 
-  for (let [, feautreList] of Object.entries(featuresMappedToComponents)) {
+  for (let [, feautreList] of Object.entries(featuresMappedToShippingType)) {
     sortFeaturesByName(feautreList);
   }
 
-  return featuresMappedToComponents;
+  return featuresMappedToShippingType;
 }
 
 
