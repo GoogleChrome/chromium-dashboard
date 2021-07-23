@@ -14,7 +14,7 @@ class ChromedashUpcomingMilestoneCard extends LitElement {
       showDates: {type: Boolean},
       removedStatus: {type: Array},
       deprecatedStatus: {type: Array},
-      signedin: {type: Boolean},
+      signedIn: {type: Boolean},
     };
   }
 
@@ -128,7 +128,7 @@ class ChromedashUpcomingMilestoneCard extends LitElement {
                     <iron-icon icon="chromestatus:warning" class="deprecated" data-tooltip></iron-icon>
                   </span>
                   ` : nothing}
-                  ${this.signedin ? html`
+                  ${this.signedIn ? html`
                   <span class="tooltip"
                     title="Receive an email notification when there are updates">
                     <iron-icon

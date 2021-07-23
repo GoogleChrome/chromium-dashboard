@@ -1,5 +1,6 @@
 import {LitElement, html} from 'lit-element';
 import '@polymer/iron-icon';
+import style from '../css/elements/chromedash-schedule.css';
 
 const TEMPLATE_CONTENT = {
   stable: {
@@ -32,12 +33,14 @@ const DEPRECATED_STATUS = ['Deprecated', 'No longer pursuing'];
 const SHOW_DATES = true;
 
 class ChromedashUpcoming extends LitElement {
+  static styles = style;
+
   static get properties() {
     return {
       // Assigned in upcoming-page.js,
       channels: {attribute: false},
       showBlink: {attribute: false},
-      signedin: {type: Boolean},
+      signedIn: {type: Boolean},
       loginUrl: {type: String},
       starredFeatures: {type: Object},
     };
@@ -47,6 +50,7 @@ class ChromedashUpcoming extends LitElement {
     super();
   }
 
+  // Handles the Star-Toggle event fired by any one of the child components
   handleStarToggle(e) {
     const newStarredFeatures = new Set(this.starredFeatures);
     window.csClient.setStar(e.detail.feature, e.detail.doStar);
@@ -73,7 +77,7 @@ class ChromedashUpcoming extends LitElement {
           removedstatus='${JSON.stringify(REMOVED_STATUS)}'
           deprecatedstatus='${JSON.stringify(DEPRECATED_STATUS)}'
           starredfeatures='${JSON.stringify([...this.starredFeatures])}'
-          signedin='${this.signedin}',
+          ?signedin=${this.signedIn}
           @star-toggle-event=${this.handleStarToggle}
         >
         </chromedash-upcoming-milestone-card>        
