@@ -40,6 +40,15 @@ class ChromedashUpcomingMilestoneCard extends LitElement {
     return new Intl.DateTimeFormat('en-US', opts).format(date);
   }
 
+  _fireEvent(eventName, detail) {
+    let event = new CustomEvent(eventName, {
+      bubbles: true,
+      composed: true,
+      detail,
+    });
+    this.dispatchEvent(event);
+  }
+
   toggleStar(e) {
     e.preventDefault();
     e.stopPropagation();
@@ -47,14 +56,11 @@ class ChromedashUpcomingMilestoneCard extends LitElement {
     const iconEl = e.target;
     const featureId = Number(iconEl.dataset.featureId);
     const newStarred = !this.starredFeatures.includes(featureId);
-    let event = new CustomEvent('star-toggle-event', {
-      detail: {
-        feature: featureId,
-        doStar: newStarred,
-      },
-    });
 
-    this.dispatchEvent(event);
+    this._fireEvent('star-toggle-event', {
+      feature: featureId,
+      doStar: newStarred,
+    });
   }
 
   _computeDaysUntil(dateStr) {
