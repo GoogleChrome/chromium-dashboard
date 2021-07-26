@@ -196,13 +196,17 @@ class ChromedashFeature extends LitElement {
     // ChromedashFeature object to be created with the new state.
     const newStarred = !this.starred;
 
-    window.csClient.setStar(featureId, newStarred);
-
-    // Handled in `chromedash-featurelist`
-    this._fireEvent('star-toggled', {
-      feature: this.feature,
-      starred: newStarred,
-    });
+    window.csClient.setStar(featureId, newStarred)
+      .then(() => {
+      // Handled in `chromedash-featurelist`
+        this._fireEvent('star-toggled', {
+          feature: this.feature,
+          starred: newStarred,
+        });
+      })
+      .catch(() => {
+        alert('Unable to star the Feature. Please try again.');
+      });
   }
 
   render() {
