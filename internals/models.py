@@ -1149,6 +1149,12 @@ class Feature(DictModel):
   all_platforms_descr = ndb.StringProperty()
   wpt = ndb.BooleanProperty()
   wpt_descr = ndb.StringProperty()
+  dt_milestone_desktop_start = ndb.IntegerProperty()
+  dt_milestone_android_start = ndb.IntegerProperty()
+  dt_milestone_ios_start = ndb.IntegerProperty()
+  dt_milestone_webview_start = ndb.IntegerProperty()
+  # Note: There are no dt end milestones because a dev trail implicitly
+  # ends when the feature ships or is abandoned.
 
   visibility = ndb.IntegerProperty(required=False)  # Deprecated
 

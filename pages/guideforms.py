@@ -425,13 +425,17 @@ ALL_FIELDS = {
         required=False, label='OT desktop start',
         widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'}),
         help_text=('First desktop milestone that will support an origin '
-                   'trial of this feature.')),
+                   'trial of this feature.  '
+                   'Setting this automatically sets the android '
+                   'milestone, unless they are different.')),
 
     'ot_milestone_desktop_end': forms.IntegerField(
         required=False, label='OT desktop end',
         widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'}),
         help_text=('Last desktop milestone that will support an origin '
-                   'trial of this feature.')),
+                   'trial of this feature.  '
+                   'Setting this automatically sets the android '
+                   'milestone, unless they are different.')),
 
     'ot_milestone_android_start': forms.IntegerField(
         required=False, label='OT android start',
@@ -644,6 +648,32 @@ ALL_FIELDS = {
             'https://github.com/WICG/idle-detection/blob/main/HOWTO.md'
             '">Example 2</a>.')),
 
+    'dt_milestone_desktop_start': forms.IntegerField(
+        required=False, label='DevTrail on desktop',
+        widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'}),
+        help_text=('First milestone that allows developers to try '
+                   'this feature on desktop platforms by setting a flag.  '
+                   'Setting this automatically sets android and webview '
+                   'milestones, unless they are different.')),
+
+    'dt_milestone_android_start': forms.IntegerField(
+        required=False, label='DevTrail on Android',
+        widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'}),
+        help_text=('First milestone that allows developers to try '
+                   'this feature on iOS by setting a flag.')),
+
+    'dt_milestone_ios_start': forms.IntegerField(
+        required=False, label='DevTrial on iOS (RARE)',
+        widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'}),
+        help_text=('First milestone that allows developers to try '
+                   'this feature on iOS by setting a flag.')),
+
+    'dt_milestone_webview_start': forms.IntegerField(
+        required=False, label='DevTrial on Webview',
+        widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'}),
+        help_text=('First milestone that allows developers to try '
+                   'this feature on Webview by setting a flag.')),
+
     'flag_name': forms.CharField(
         label='Flag name', required=False,
         help_text='Name of the flag that enables this feature.'),
@@ -736,8 +766,9 @@ Any_DevTrial = define_form_class_using_shared_fields(
 
 ImplStatus_DevTrial = define_form_class_using_shared_fields(
     'ImplStatus_InDevTrial',
-    ('shipped_milestone', 'shipped_android_milestone',
-     'shipped_ios_milestone', 'flag_name'))
+    ('dt_milestone_desktop_start', 'dt_milestone_android_start',
+     'dt_milestone_ios_start', 'dt_milestone_webview_start',
+     'flag_name'))
 
 
 NewFeature_EvalReadinessToShip = define_form_class_using_shared_fields(
@@ -907,6 +938,8 @@ Flat_DevTrial = define_form_class_using_shared_fields(
      # TODO(jrobbins): UA support signals section
 
      # Implementation
+     'dt_milestone_desktop_start', 'dt_milestone_android_start',
+     'dt_milestone_ios_start', 'dt_milestone_webview_start',
      'flag_name'))
   # TODO(jrobbins): api overview link
 
@@ -1015,6 +1048,8 @@ DISPLAY_FIELDS_IN_STAGES = {
         'debuggability',
         'all_platforms', 'all_platforms_descr', 'wpt', 'wpt_descr',
         'sample_links', 'devrel', 'ready_for_trial_url',
+        'dt_milestone_desktop_start', 'dt_milestone_android_start',
+        'dt_milestone_ios_start', 'dt_milestone_webview_start',
         'flag_name'),
     models.INTENT_IMPLEMENT_SHIP: make_display_specs(
         'launch_bug_url',

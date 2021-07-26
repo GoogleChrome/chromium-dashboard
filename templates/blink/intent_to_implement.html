@@ -204,6 +204,74 @@
    {% endif %}
 {% endif %}
 
+
+<br><br><h4>Estimated milestones</h4>
+<table>
+
+  {% if feature.dt_milestone_desktop_start %}
+    <tr><td>DevTrial on desktop</td>
+    <td>{{feature.dt_milestone_desktop_start}}</td></tr>
+  {% endif %}
+
+  {% if feature.dt_milestone_andorid_start %}
+    <tr><td>DevTrial on android</td>
+    <td>{{feature.dt_milestone_android_start}}</td></tr>
+  {% endif %}
+
+  {% if feature.dt_milestone_ios_start %}
+    <tr><td>DevTrial on iOS</td>
+    <td>{{feature.dt_milestone_ios_start}}</td></tr>
+  {% endif %}
+
+  {% if feature.dt_milestone_webview_start %}
+    <tr><td>DevTrial on Webview</td>
+    <td>{{feature.dt_milestone_webview_start}}</td></tr>
+  {% endif %}
+
+  {% if feature.ot_milestone_desktop_start %}
+    <tr><td>OriginTrial desktop first</td>
+    <td>{{feature.ot_milestone_desktop_start}}</td></tr>
+  {% endif %}
+
+  {% if feature.ot_milestone_desktop_end %}
+    <tr><td>OriginTrial desktop last</td>
+    <td>{{feature.ot_milestone_desktop_end}}</td></tr>
+  {% endif %}
+
+  {% if feature.ot_milestone_android_start %}
+    <tr><td>OriginTrial android first</td>
+    <td>{{feature.ot_milestone_android_start}}</td></tr>
+  {% endif %}
+
+  {% if feature.ot_milestone_android_end %}
+    <tr><td>OriginTrial android last</td>
+    <td>{{feature.ot_milestone_android_end}}</td></tr>
+  {% endif %}
+
+  {% if feature.shipped_milestone %}
+    <tr><td>Shipping on desktop</td>
+    <td>{{feature.shipped_milestone}}</td></tr>
+  {% endif %}
+
+  {% if feature.shipped_android_milestone %}
+    <tr><td>Shipping on Android</td>
+    <td>{{feature.shipped_android_milestone}}</td></tr>
+  {% endif %}
+
+  {% if feature.shipped_ios_milestone %}
+    <tr><td>Shipping on iOS</td>
+    <td>{{feature.shipped_ios_milestone}}</td></tr>
+  {% endif %}
+
+  {% if feature.shipped_webview_milestone %}
+    <tr><td>Shipping on Webview</td>
+    <td>{{feature.shipped_webview_milestone}}</td></tr>
+  {% endif %}
+
+</table>
+
+
+
 <br><br><h4>Link to entry on the {{APP_TITLE}}</h4>
 <a href="{{default_url}}">{{default_url}}</a>
 
