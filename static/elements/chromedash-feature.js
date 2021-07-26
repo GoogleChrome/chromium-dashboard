@@ -205,7 +205,7 @@ class ChromedashFeature extends LitElement {
         });
       })
       .catch(() => {
-        alert('Unable to star the Feature. Please try again.');
+        alert('Unable to toggle the star. Please try again.');
       });
   }
 

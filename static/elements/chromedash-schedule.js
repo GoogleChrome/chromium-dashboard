@@ -98,15 +98,18 @@ class ChromedashSchedule extends LitElement {
     const iconEl = e.target;
     const featureId = Number(iconEl.dataset.featureId);
     const newStarred = !this.starredFeatures.has(featureId);
-    window.csClient.setStar(featureId, newStarred);
-
-    const newStarredFeatures = new Set(this.starredFeatures);
-    if (newStarred) {
-      newStarredFeatures.add(featureId);
-    } else {
-      newStarredFeatures.delete(featureId);
-    }
-    this.starredFeatures = newStarredFeatures;
+    window.csClient.setStar(featureId, newStarred).then(() => {
+      const newStarredFeatures = new Set(this.starredFeatures);
+      if (newStarred) {
+        newStarredFeatures.add(featureId);
+      } else {
+        newStarredFeatures.delete(featureId);
+      }
+      this.starredFeatures = newStarredFeatures;
+    })
+      .catch(() => {
+        alert('Unable to toggle the star. Please try again.');
+      });
   }
 
   render() {
