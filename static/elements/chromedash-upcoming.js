@@ -53,13 +53,18 @@ class ChromedashUpcoming extends LitElement {
   // Handles the Star-Toggle event fired by any one of the child components
   handleStarToggle(e) {
     const newStarredFeatures = new Set(this.starredFeatures);
-    window.csClient.setStar(e.detail.feature, e.detail.doStar);
-    if (e.detail.doStar) {
-      newStarredFeatures.add(e.detail.feature);
-    } else {
-      newStarredFeatures.delete(e.detail.feature);
-    }
-    this.starredFeatures = newStarredFeatures;
+    window.csClient.setStar(e.detail.feature, e.detail.doStar)
+      .then(() => {
+        if (e.detail.doStar) {
+          newStarredFeatures.add(e.detail.feature);
+        } else {
+          newStarredFeatures.delete(e.detail.feature);
+        }
+        this.starredFeatures = newStarredFeatures;
+      })
+      .catch(() => {
+        alert('Unable to star the Feature. Please Try Again.');
+      });
   }
 
 
