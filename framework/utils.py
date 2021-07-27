@@ -20,15 +20,18 @@ import calendar
 import datetime
 import flask
 import logging
+import settings
 import time
 import traceback
 
 # from google.appengine.api import users
 from framework import users
-
-import settings
-
 from django.utils import feedgenerator
+import google.cloud.logging
+
+client = google.cloud.logging.Client()
+client.get_default_handler()
+client.setup_logging()
 
 
 def normalized_name(val):

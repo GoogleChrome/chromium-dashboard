@@ -28,6 +28,11 @@ from framework import ramcache
 from framework import utils
 from internals import models
 import settings
+import google.cloud.logging
+
+client = google.cloud.logging.Client()
+client.get_default_handler()
+client.setup_logging()
 
 
 def get_omaha_data():

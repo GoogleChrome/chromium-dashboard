@@ -8,6 +8,13 @@ from django.utils.safestring import mark_safe
 
 register = template.Library()
 
+import google.cloud.logging
+
+client = google.cloud.logging.Client()
+client.get_default_handler()
+client.setup_logging()
+
+
 @register.simple_tag
 def inline_file(path):
   if path[0] == '/':

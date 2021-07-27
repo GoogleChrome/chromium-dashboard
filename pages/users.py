@@ -31,6 +31,12 @@ from framework import permissions
 from internals import models
 import settings
 
+import google.cloud.logging
+
+client = google.cloud.logging.Client()
+client.get_default_handler()
+client.setup_logging()
+
 LOGIN_PAGE_URL = '/features?loginStatus=False'
 
 

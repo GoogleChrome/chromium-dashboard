@@ -30,8 +30,11 @@ if not settings.UNIT_TEST_MODE:
   import grpc  # See requirements.dev.txt.
   from google.api_core import retry
   from google.cloud import tasks
-
-
+  import google.cloud.logging
+  
+  client = google.cloud.logging.Client()
+  client.get_default_handler()
+  client.setup_logging()
 
 _client = None
 

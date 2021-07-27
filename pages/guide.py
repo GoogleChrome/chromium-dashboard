@@ -39,6 +39,11 @@ from internals import models
 from internals import processes
 import settings
 
+import google.cloud.logging
+
+client = google.cloud.logging.Client()
+client.get_default_handler()
+client.setup_logging()
 
 # Forms to be used for each stage of each process.
 # { feature_type_id: { stage_id: stage_specific_form} }

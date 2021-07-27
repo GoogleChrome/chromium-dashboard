@@ -24,7 +24,11 @@ import string
 import time
 
 from google.cloud import ndb
+import google.cloud.logging
 
+client = google.cloud.logging.Client()
+client.get_default_handler()
+client.setup_logging()
 
 # For random key generation
 RANDOM_KEY_LENGTH = 128

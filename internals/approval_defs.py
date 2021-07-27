@@ -22,9 +22,13 @@ import logging
 import requests
 
 from framework import ramcache
+import google.cloud.logging
+
+client = google.cloud.logging.Client()
+client.get_default_handler()
+client.setup_logging()
 
 CACHE_EXPIRATION = 60 * 60  # One hour
-
 
 ONE_LGTM = 'One LGTM'
 THREE_LGTM = 'Three LGTMs'

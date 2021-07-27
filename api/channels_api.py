@@ -25,6 +25,12 @@ import requests
 
 from internals import fetchchannels
 
+import google.cloud.logging
+
+client = google.cloud.logging.Client()
+client.get_default_handler()
+client.setup_logging()
+
 SCHEDULE_CACHE_TIME = 60 * 60  # 1 hour
 
 def construct_chrome_channels_details():

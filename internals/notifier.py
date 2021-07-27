@@ -25,11 +25,17 @@ import json
 import os
 import re
 
-from framework import ramcache
 from google.cloud import ndb
+import google.cloud.logging
+
+client = google.cloud.logging.Client()
+client.get_default_handler()
+client.setup_logging()
+
 from google.appengine.api import mail
 import requests
 # from google.appengine.api import users
+from framework import ramcache
 from framework import users
 from google.appengine.ext.webapp.mail_handlers import BounceNotification
 

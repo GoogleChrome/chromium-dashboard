@@ -16,8 +16,6 @@
 from __future__ import division
 from __future__ import print_function
 
-import logging
-
 from google.cloud import ndb
 
 from framework import basehandlers

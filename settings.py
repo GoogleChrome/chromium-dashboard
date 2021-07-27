@@ -4,6 +4,11 @@ from __future__ import print_function
 import logging
 import os
 
+import google.cloud.logging
+
+client = google.cloud.logging.Client()
+client.get_default_handler()
+client.setup_logging()
 
 #Hack to get custom tags working django 1.3 + python27.
 INSTALLED_APPS = (

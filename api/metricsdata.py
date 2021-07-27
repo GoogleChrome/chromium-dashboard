@@ -30,8 +30,13 @@ from internals import models
 from framework import ramcache
 import settings
 
-CACHE_AGE = 86400 # 24hrs
+import google.cloud.logging
 
+client = google.cloud.logging.Client()
+client.get_default_handler()
+client.setup_logging()
+
+CACHE_AGE = 86400 # 24hrs
 
 
 def _truncate_day_percentage(datapoint):

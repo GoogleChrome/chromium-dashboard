@@ -45,6 +45,12 @@ from flask import session
 import sys
 from framework import users
 
+import google.cloud.logging
+
+client = google.cloud.logging.Client()
+client.get_default_handler()
+client.setup_logging()
+
 # Initialize django so that it'll function when run as a standalone script.
 # https://django.readthedocs.io/en/latest/releases/1.7.html#standalone-scripts
 django.setup()

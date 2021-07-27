@@ -16,8 +16,6 @@
 from __future__ import division
 from __future__ import print_function
 
-import logging
-
 from framework import basehandlers
 from framework import permissions
 from internals import approval_defs

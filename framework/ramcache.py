@@ -53,6 +53,11 @@ from google.cloud import ndb
 
 client = ndb.Client()
 
+import google.cloud.logging
+
+gcl_client = google.cloud.logging.Client()
+gcl_client.get_default_handler()
+gcl_client.setup_logging()
 
 global_cache = {}
 expires = {}

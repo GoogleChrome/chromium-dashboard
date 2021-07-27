@@ -33,6 +33,12 @@ from internals import models
 import settings
 from internals import fetchchannels
 
+import google.cloud.logging
+
+client = google.cloud.logging.Client()
+client.get_default_handler()
+client.setup_logging()
+
 SCHEDULE_CACHE_TIME = 60 * 60  # 1 hour
 
 # TODO(shivamag00): remove these methods and use Channels API instead

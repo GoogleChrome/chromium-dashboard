@@ -32,6 +32,12 @@ from google.appengine.api import memcache
 # from google.appengine.api import users
 from framework import users
 from google.cloud import ndb
+import google.cloud.logging
+
+client = google.cloud.logging.Client()
+client.get_default_handler()
+client.setup_logging()
+
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp.util import login_required
 from google.appengine.ext.webapp.util import run_wsgi_app

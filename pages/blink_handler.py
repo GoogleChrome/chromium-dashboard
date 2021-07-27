@@ -20,7 +20,6 @@ __author__ = 'ericbidelman@chromium.org (Eric Bidelman)'
 
 import collections
 import json
-import logging
 import os
 import yaml
 

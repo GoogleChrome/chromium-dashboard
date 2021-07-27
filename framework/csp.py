@@ -23,7 +23,11 @@ import os
 import six
 
 import flask
+import google.cloud.logging
 
+client = google.cloud.logging.Client()
+client.get_default_handler()
+client.setup_logging()
 
 REPORT_ONLY = True
 USE_NONCE_ONLY_POLICY = True  # Recommended

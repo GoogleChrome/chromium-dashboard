@@ -24,6 +24,11 @@ import re
 import time
 
 from google.cloud import ndb
+import google.cloud.logging
+
+client = google.cloud.logging.Client()
+client.get_default_handler()
+client.setup_logging()
 
 # from google.appengine.ext.db import djangoforms
 from google.appengine.api import mail

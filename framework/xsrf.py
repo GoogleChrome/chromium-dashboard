@@ -18,7 +18,6 @@ from __future__ import print_function
 
 import base64
 import hmac
-import logging
 import random
 import string
 import time
