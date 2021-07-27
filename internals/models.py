@@ -825,8 +825,9 @@ class Feature(DictModel):
       # very good chance that the self.get_all() results will already be in
       # ramcache, so use an array comprehension to grab the features we
       # want from the array of everything.
-      feature_list = [feature for feature in self.get_all(update_cache=update_cache)
-                      if feature['impl_status_chrome'] in statuses]
+      feature_list = [
+          feature for feature in self.get_all(update_cache=update_cache)
+          if feature['browsers']['chrome']['status']['text'] in statuses]
       ramcache.set(KEY, feature_list)
 
     return feature_list
