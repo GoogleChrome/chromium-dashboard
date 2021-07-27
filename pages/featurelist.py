@@ -102,7 +102,7 @@ class FeatureListXMLHandler(basehandlers.FlaskHandler):
           limit=max_items,
           filterby=filterby,
           order='-updated',
-          version=1)
+          version=2)
 
     return utils.render_atom_feed(self.request, 'Features', feature_list)
 

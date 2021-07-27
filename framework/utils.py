@@ -107,7 +107,8 @@ def render_atom_feed(request, title, data):
       language=u'en'
   )
   for f in data:
-    pubdate = datetime.datetime.strptime(str(f['updated'][:19]),
+    updated = f['updated']['when']
+    pubdate = datetime.datetime.strptime(str(updated[:19]),
                                          '%Y-%m-%d  %H:%M:%S')
     feed.add_item(
         title=unicode(f['name']),
