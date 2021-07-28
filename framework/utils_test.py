@@ -108,6 +108,60 @@ class UtilsFunctionTests(unittest.TestCase):
     self.assertIsNone(handlerInstance.handler_called_with)
     self.assertEqual('/request/path', handlerInstance.redirected_to)
 
+  def test_render_atom_feed__empty(self):
+    """It can render a feed with zero items."""
+    request = testing_config.Blank(
+        scheme='https', host='host',
+        path='/samples.xml')
+    data = []
+
+    actual_text, actual_headers = utils.render_atom_feed(
+        request, 'test feed', data)
+
+    self.assertEqual(
+        actual_headers,
+        {
+            'Strict-Transport-Security':
+                'max-age=63072000; includeSubDomains; preload',
+            'Content-Type': 'application/atom+xml;charset=utf-8',
+        })
+    self.assertIn('http://www.w3.org/2005/Atom', actual_text)
+    self.assertIn('<title>Local testing - test feed</title>', actual_text)
+    self.assertIn('<id>https://host/samples</id>', actual_text)
+
+  def test_render_atom_feed__some(self):
+    """It can render a feed with some items."""
+    request = testing_config.Blank(
+        scheme='https', host='host',
+        path='/samples.xml')
+    data = [
+        {'updated': {'when': '2021-07-27 12:25:00'},
+         'name': 'feature one',
+         'id': 12345678,
+         'summary': 'one for testing',
+         'category': 'CSS',
+         },
+        {'updated': {'when': '2021-06-03 11:22:00'},
+         'name': 'feature two',
+         'id': 23456789,
+         'summary': 'two for testing',
+         'category': 'Device',
+         },
+    ]
+
+    actual_text, actual_headers = utils.render_atom_feed(
+        request, 'test feed', data)
+
+    self.assertIn('<title>feature one</title>', actual_text)
+    self.assertIn('one for testing</summary>', actual_text)
+    self.assertIn('/feature/12345678/</id>', actual_text)
+    self.assertIn('<category term="CSS"></category>', actual_text)
+
+    self.assertIn('<title>feature two</title>', actual_text)
+    self.assertIn('two for testing</summary>', actual_text)
+    self.assertIn('/feature/23456789/</id>', actual_text)
+    self.assertIn('<category term="Device"></category>', actual_text)
+
   def test_get_banner_time__None(self):
     """If no time specified, it returns None."""
     self.assertIsNone(utils.get_banner_time(None))

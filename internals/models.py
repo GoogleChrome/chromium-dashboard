@@ -613,6 +613,7 @@ class Feature(DictModel):
     if self.safari_views == PUBLIC_SKEPTICISM:
       self.safari_views = OPPOSED
 
+  # TODO(jrobbins): Eliminate format version 1.
   def format_for_template(self, version=2):
     self.migrate_views()
     d = self.to_dict()
