@@ -42,7 +42,7 @@ class ChromedashUpcoming extends LitElement {
       showBlink: {attribute: false},
       signedIn: {type: Boolean},
       loginUrl: {type: String},
-      starredFeatures: {type: Object},
+      starredFeatures: {type: Object},  // will contain a set of starred features
     };
   }
 
