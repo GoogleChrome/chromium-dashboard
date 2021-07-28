@@ -76,12 +76,12 @@ class ChromedashUpcoming extends LitElement {
     return html`
       ${['stable', 'beta', 'dev'].map((type) => html`
         <chromedash-upcoming-milestone-card
-          channel=${JSON.stringify(this.channels[type])}
-          templatecontent=${JSON.stringify(TEMPLATE_CONTENT[type])}
+          .channel=${this.channels[type]}
+          .templateContent=${TEMPLATE_CONTENT[type]}
           showdates='${SHOW_DATES}'
-          removedstatus='${JSON.stringify(REMOVED_STATUS)}'
-          deprecatedstatus='${JSON.stringify(DEPRECATED_STATUS)}'
-          starredfeatures='${JSON.stringify([...this.starredFeatures])}'
+          .removedStatus='${REMOVED_STATUS}'
+          .deprecatedStatus='${DEPRECATED_STATUS}'
+          .starredFeatures='${[...this.starredFeatures]}'
           ?signedin=${this.signedIn}
           ?showblink=${this.showBlink}
           @star-toggle-event=${this.handleStarToggle}
