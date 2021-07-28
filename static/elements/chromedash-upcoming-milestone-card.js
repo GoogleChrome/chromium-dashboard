@@ -66,10 +66,13 @@ class ChromedashUpcomingMilestoneCard extends LitElement {
   _computeDaysUntil(dateStr) {
     const today = new Date();
     const diff = this._dateDiffInDays(new Date(dateStr), today);
-    const prefix = diff.future ? 'in' : '';
-    const days = diff.days > 1 ? 's' : '';
-    const ago = !diff.future ? 'ago' : '';
-    return `${prefix} ${diff.days} day${days} ${ago}`;
+    const dayWord = diff.days == 1 ? 'day' : 'days';
+
+    if (diff.future) {
+      return `in ${diff.days} ${dayWord}`;
+    } else {
+      return `${diff.days} ${dayWord} ago`;
+    }
   }
 
   _objKeys(obj) {
