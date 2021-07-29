@@ -35,7 +35,7 @@
       <tr>
         <th>Owners</th>
         <td>
-          {% for owner in feature.owner %}
+          {% for owner in feature.browsers.chrome.owners %}
             <a href="mailto:{{ owner }}">{{ owner }}</a>
           {% endfor %}
         </td>
@@ -58,7 +58,7 @@
       <tr>
         <th>Search tags</th>
         <td>
-          {% for tag in feature.search_tags %}
+          {% for tag in feature.tags %}
             <a href="/features#tags:{{tag}}"
                >{{tag}}</a><span class="conditional-comma">, </span>
           {% endfor %}
@@ -70,19 +70,19 @@
     <table class="property-sheet">
       <tr>
         <th>Implementation status</th>
-        <td>{{ feature.impl_status_chrome }}</td>
+        <td>{{ feature.browsers.chrome.status.text }}</td>
       </tr>
 
       <tr>
         <th>Blink components</th>
-        <td>{{ feature.blink_components | join:', ' }}</td>
+        <td>{{ feature.browsers.chrome.blink_components | join:', ' }}</td>
       </tr>
 
       <tr>
         <th>Tracking bug</th>
         <td>
-          {% if feature.bug_url %}
-            <a href="{{ feature.bug_url }}">{{ feature.bug_url }}</a>
+          {% if feature.browsers.chrome.bug %}
+            <a href="{{ feature.browsers.chrome.bug }}">{{ feature.browsers.chrome.bug }}</a>
           {% else %}
             None
           {% endif %}

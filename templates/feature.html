@@ -61,9 +61,9 @@
       <iron-icon icon="chromestatus:arrow-back"></iron-icon>
       Feature: {{ feature.name }}
     </a>
-        {% if feature.impl_status_chrome == "No longer pursuing" %} (No longer pursuing){% endif %}
-        {% if feature.impl_status_chrome == "Deprecated" %} (deprecated){% endif %}
-        {% if feature.impl_status_chrome == "Removed" %} (removed){% endif %}
+        {% if feature.browsers.chrome.status.text == "No longer pursuing" %} (No longer pursuing){% endif %}
+        {% if feature.browsers.chrome.status.text == "Deprecated" %} (deprecated){% endif %}
+        {% if feature.browsers.chrome.status.text == "Removed" %} (removed){% endif %}
   </h2>
 
 </div>
@@ -202,11 +202,11 @@
       </ul>
     </section>
 
-    {% if feature.owner %}
+    {% if feature.browsers.chrome.owners %}
     <section id="owner">
-      <h3>{% if feature.owner|length == 1 %}Owner{% else %}Owners{% endif %}</h3>
+      <h3>{% if feature.browsers.chrome.owners|length == 1 %}Owner{% else %}Owners{% endif %}</h3>
       <ul>
-        {% for owner in feature.owner %}
+        {% for owner in feature.browsers.chrome.owners %}
           <li><a href="mailto:{{ owner }}">{{ owner }}</a></li>
         {% endfor %}
       </ul>
@@ -228,10 +228,10 @@
     </section>
     {% endif %}
 
-    {% if feature.search_tags %}
+    {% if feature.tags %}
     <section>
       <h3>Search tags</h3>
-        {% for tag in feature.search_tags %}
+        {% for tag in feature.tags %}
           <a href="/features#tags:{{ tag }}">{{ tag }}</a><span
             class="conditional-comma">, </span>
         {% endfor %}
