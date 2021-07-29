@@ -6,7 +6,7 @@ const channelsPromise = window.csClient.getChannels();
 
 document.querySelector('.show-blink-checkbox').addEventListener('change', e => {
   e.stopPropagation();
-  document.querySelector('chromedash-upcoming').showBlink = e.target.checked;
+  document.querySelector('chromedash-upcoming').showShippingType = e.target.checked;
 });
 
 const header = document.querySelector('app-header-layout app-header');

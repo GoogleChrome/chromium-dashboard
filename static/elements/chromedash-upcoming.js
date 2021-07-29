@@ -39,7 +39,7 @@ class ChromedashUpcoming extends LitElement {
     return {
       // Assigned in upcoming-page.js,
       channels: {attribute: false},
-      showBlink: {attribute: false},
+      showShippingType: {attribute: false},
       signedIn: {type: Boolean},
       loginUrl: {type: String},
       starredFeatures: {type: Object}, // will contain a set of starred features
@@ -83,7 +83,7 @@ class ChromedashUpcoming extends LitElement {
           .deprecatedStatus=${DEPRECATED_STATUS}
           .starredFeatures=${[...this.starredFeatures]}
           ?signedin=${this.signedIn}
-          ?showblink=${this.showBlink}
+          ?showShippingType=${this.showShippingType}
           @star-toggle-event=${this.handleStarToggle}
         >
         </chromedash-upcoming-milestone-card>        
