@@ -630,12 +630,15 @@ ALL_FIELDS = {
 
     'requires_embedder_support': forms.BooleanField(
       required=False, initial=False,
-      help_text=('Will this feature require support in //chrome?  '
-                 'If so, other embedders will need to make corresponding '
-                 'changes.  Please add a row to this '
-                 '<a href="https://docs.google.com/spreadsheets/d/'
-                 '1QV4SW4JBG3IyLzaonohUhim7nzncwK4ioop2cgUYevw/edit#gid=0'
-                 '" target="_blank">tracking spreadsheet</a>.')),
+      help_text=(
+          'Will this feature require support in //chrome?  '
+          'That includes any code in //chrome, even if that is for '
+          'functionality on top of the spec.  Other //content embedders '
+          'will need to be aware of that functionality. '
+          'Please add a row to this '
+          '<a href="https://docs.google.com/spreadsheets/d/'
+          '1QV4SW4JBG3IyLzaonohUhim7nzncwK4ioop2cgUYevw/edit#gid=0'
+          '" target="_blank">tracking spreadsheet</a>.')),
 
     'devtrial_instructions': forms.URLField(
         required=False, label='DevTrial instructions',
