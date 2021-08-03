@@ -6,7 +6,7 @@ const channelsPromise = window.csClient.getChannels();
 
 document.querySelector('.show-blink-checkbox').addEventListener('change', e => {
   e.stopPropagation();
-  document.querySelector('chromedash-schedule').showBlink = e.target.checked;
+  document.querySelector('chromedash-upcoming').showShippingType = e.target.checked;
 });
 
 const header = document.querySelector('app-header-layout app-header');
@@ -15,7 +15,7 @@ if (header) {
 }
 
 async function init() {
-  // Prepare data for chromedash-schedule
+  // Prepare data for chromedash-upcoming
   const channels = await channelsPromise;
   let featuresPromise = {};
 
@@ -33,35 +33,32 @@ async function init() {
   document.body.classList.remove('loading');
 
   channelsArray.forEach((channel) => {
-    channels[channel].components = mapFeaturesToComponents(features[channel].filter(f =>
-      f.browsers.chrome.status.milestone_str === channels[channel].version));
+    channels[channel].components = mapFeaturesToShippingType(features[channel]);
   });
 
-  const scheduleEl = document.querySelector('chromedash-schedule');
-  scheduleEl.channels = channels;
+  const upcomingEl = document.querySelector('chromedash-upcoming');
+  upcomingEl.channels = channels;
 
   window.csClient.getStars().then((starredFeatureIds) => {
-    scheduleEl.starredFeatures = new Set(starredFeatureIds);
+    upcomingEl.starredFeatures = new Set(starredFeatureIds);
   });
 }
 
-function mapFeaturesToComponents(features) {
-  const featuresMappedToComponents = {};
+function mapFeaturesToShippingType(features) {
+  const featuresMappedToShippingType = {};
   features.forEach(f => {
-    const components = f.browsers.chrome.blink_components;
-    components.forEach(component => {
-      if (!featuresMappedToComponents[component]) {
-        featuresMappedToComponents[component] = [];
-      }
-      featuresMappedToComponents[component].push(f);
-    });
+    const component = f.browsers.chrome.status.text;
+    if (!featuresMappedToShippingType[component]) {
+      featuresMappedToShippingType[component] = [];
+    }
+    featuresMappedToShippingType[component].push(f);
   });
 
-  for (let [, feautreList] of Object.entries(featuresMappedToComponents)) {
+  for (let [, feautreList] of Object.entries(featuresMappedToShippingType)) {
     sortFeaturesByName(feautreList);
   }
 
-  return featuresMappedToComponents;
+  return featuresMappedToShippingType;
 }
 
 

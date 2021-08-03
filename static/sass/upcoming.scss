@@ -1,7 +1,7 @@
 @import "vars";
 @import "layout";
 
-body[data-path*='features/schedule'] {
+body[data-path*='upcoming'] {
   --app-drawer-width: 0;
 
   app-drawer {
@@ -12,6 +12,14 @@ body[data-path*='features/schedule'] {
     display: none;
   }
 
+}
+
+#drawer-column {
+  display: none;
+}
+
+#content-column {
+  padding-right: 2em;
 }
 
 .hide-blink-checkbox {

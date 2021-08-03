@@ -14,17 +14,17 @@
     </div>
     <!-- <paper-toggle-button> doesn't working here. Related links:
       https://github.com/PolymerElements/paper-toggle-button/pull/132 -->
-    <label><input type="checkbox" class="show-blink-checkbox">Show Blink components</label>
+    <label><input type="checkbox" class="show-blink-checkbox">Show Shipping Type</label>
   </div>
 {% endblock %}
 
 {% block content %}
   <section id="releases-section">
-    <chromedash-schedule
+    <chromedash-upcoming
       {% if user %}signedin{% endif %}
       {# TODO(jrobbins): Fix to work with google sign-in #}
       loginurl="#"
-    ></chromedash-schedule>
+    ></chromedash-upcoming>
   </section>
 {% endblock %}
 

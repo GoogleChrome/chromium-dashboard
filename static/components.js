@@ -28,5 +28,7 @@ import './elements/chromedash-sample-panel';
 import './elements/chromedash-schedule';
 import './elements/chromedash-timeline';
 import './elements/chromedash-toast';
+import './elements/chromedash-upcoming';
+import './elements/chromedash-upcoming-milestone-card';
 import './elements/chromedash-userlist';
 import './elements/chromedash-x-meter';
