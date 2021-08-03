@@ -48,6 +48,11 @@ def construct_chrome_channels_details():
     channels['dev'] = fetch_chrome_release_info(new_dev_version)
     channels['dev']['version'] = new_dev_version
 
+  # Fetch Details of the next major version after Dev
+  dev_plus_one_version = channels['dev']['version']+1
+  channels['dev_plus_one'] = fetch_chrome_release_info(dev_plus_one_version)
+  channels['dev_plus_one']['version'] = dev_plus_one_version 
+
   return channels
 
 def fetch_chrome_release_info(version):
