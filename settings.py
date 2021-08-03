@@ -1,9 +1,8 @@
 from __future__ import division
 from __future__ import print_function
 
-import logging
 import os
-
+from framework import logging
 
 #Hack to get custom tags working django 1.3 + python27.
 INSTALLED_APPS = (

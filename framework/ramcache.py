@@ -47,7 +47,7 @@ Unlike memcache, this RAM cache has no concept of expiration time.  So,
 whenever a cached value would become invalid, it must be invalidated.
 """
 
-import logging
+from framework import logging
 import time as time_module
 from google.cloud import ndb
 
@@ -161,7 +161,7 @@ class SharedInvalidate(ndb.Model):
     SINGLETON_KEY = ndb.Key(
       'SharedInvalidateParent', PARENT_ENTITY_ID,
       'SharedInvalidate', SINGLETON_ENTITY_ID)
-  
+
   last_processed_timestamp = None
 
   updated = ndb.DateTimeProperty(auto_now=True)

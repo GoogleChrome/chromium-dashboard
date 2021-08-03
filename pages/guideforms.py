@@ -16,11 +16,11 @@ from __future__ import print_function
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import logging
 from django import forms
 from django.core.validators import validate_email
 import string
 
+from framework import logging
 # from google.appengine.api import users
 from framework import users
 

@@ -16,9 +16,9 @@
 from __future__ import division
 from __future__ import print_function
 
-import logging
 import flask
 
+from framework import logging
 from framework import users
 from internals import models
 

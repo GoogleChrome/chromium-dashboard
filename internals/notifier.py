@@ -19,12 +19,12 @@ from __future__ import print_function
 __author__ = 'ericbidelman@chromium.org (Eric Bidelman)'
 
 import collections
-import logging
 import datetime
 import json
 import os
 import re
 
+from framework import logging
 from framework import ramcache
 from google.cloud import ndb
 from google.appengine.api import mail

@@ -20,11 +20,11 @@ __author__ = 'ericbidelman@chromium.org (Eric Bidelman)'
 
 import collections
 import json
-import logging
 import os
 import yaml
 
 from framework import basehandlers
+from framework import logging
 from framework import permissions
 from internals import models
 import settings

@@ -16,9 +16,8 @@
 from __future__ import division
 from __future__ import print_function
 
-import logging
-
 from framework import basehandlers
+from framework import logging
 from framework import xsrf
 from internals import models
 

@@ -16,9 +16,8 @@
 from __future__ import division
 from __future__ import print_function
 
-import logging
-
 from framework import basehandlers
+from framework import logging
 from framework import permissions
 from framework import ramcache
 from framework import users
@@ -37,7 +36,7 @@ class FeaturesAPI(basehandlers.APIHandler):
       try:
         milestone = int(self.request.args.get('milestone'))
         feature_list = models.Feature.get_in_milestone(
-          show_unlisted=show_unlisted_features, 
+          show_unlisted=show_unlisted_features,
           milestone=milestone)
       except ValueError:
         self.abort(400, msg='Invalid  Milestone')

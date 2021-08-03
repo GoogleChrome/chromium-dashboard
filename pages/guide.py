@@ -19,13 +19,13 @@ from __future__ import print_function
 import datetime
 import flask
 import json
-import logging
 import os
 import re
 import sys
 from django import forms
 
 # Appengine imports.
+from framework import logging
 from framework import ramcache
 # TODO(jrobbins): phase out gae_users
 from google.appengine.api import users as gae_users

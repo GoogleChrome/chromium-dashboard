@@ -17,7 +17,6 @@ from __future__ import division
 from __future__ import print_function
 
 import json
-import logging
 import os
 import re
 
@@ -29,6 +28,7 @@ from google.cloud import ndb
 
 import settings
 from framework import csp
+from framework import logging
 from framework import permissions
 from framework import ramcache
 from framework import secrets
@@ -149,6 +149,7 @@ class APIHandler(BaseHandler):
 
   def get(self, *args, **kwargs):
     """Handle an incoming HTTP GET request."""
+    print('started the GET handler')
     headers = self.get_headers()
     ramcache.check_for_distributed_invalidation()
     handler_data = self.do_get(*args, **kwargs)
@@ -315,6 +316,7 @@ class FlaskHandler(BaseHandler):
 
   def get(self, *args, **kwargs):
     """GET handlers can render templates, return JSON, or do redirects."""
+    print('started the GET handler')
     ramcache.check_for_distributed_invalidation()
     handler_data = self.get_template_data(*args, **kwargs)
 

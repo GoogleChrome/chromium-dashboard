@@ -19,9 +19,9 @@ from __future__ import print_function
 __author__ = 'ericbidelman@chromium.org (Eric Bidelman)'
 
 import json
-import logging
 import os
 
+from framework import logging
 from framework import permissions
 from framework import ramcache
 import requests

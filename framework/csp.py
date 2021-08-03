@@ -18,12 +18,12 @@ from __future__ import print_function
 
 import base64
 import copy
-import logging
 import os
 import six
 
 import flask
 
+from framework import logging
 
 REPORT_ONLY = True
 USE_NONCE_ONLY_POLICY = True  # Recommended

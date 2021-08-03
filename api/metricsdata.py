@@ -20,12 +20,12 @@ __author__ = 'ericbidelman@chromium.org (Eric Bidelman)'
 
 import datetime
 import json
-import logging
 
 # from google.appengine.api import users
 from framework import users
 
 from framework import basehandlers
+from framework import logging
 from internals import models
 from framework import ramcache
 import settings

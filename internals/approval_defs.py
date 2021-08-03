@@ -18,9 +18,9 @@ from __future__ import print_function
 
 import base64
 import collections
-import logging
 import requests
 
+from framework import logging
 from framework import ramcache
 
 CACHE_EXPIRATION = 60 * 60  # One hour

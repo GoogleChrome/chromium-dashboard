@@ -16,14 +16,12 @@
 from __future__ import division
 from __future__ import print_function
 
-import logging
-
 from google.oauth2 import id_token
 from google.auth.transport import requests
 from flask import session
 
-
 from framework import basehandlers
+from framework import logging
 import settings
 
 class LoginAPI(basehandlers.APIHandler):

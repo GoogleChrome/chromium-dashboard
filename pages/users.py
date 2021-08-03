@@ -21,12 +21,12 @@ __author__ = 'ericbidelman@chromium.org (Eric Bidelman)'
 
 #import datetime
 import json
-import logging
 import os
 
 import flask
 
 from framework import basehandlers
+from framework import loggging
 from framework import permissions
 from internals import models
 import settings

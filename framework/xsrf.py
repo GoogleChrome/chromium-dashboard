@@ -18,12 +18,12 @@ from __future__ import print_function
 
 import base64
 import hmac
-import logging
 import random
 import string
 import time
 
 from framework import constants
+from framework import logging
 from framework import secrets
 
 

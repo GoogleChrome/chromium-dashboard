@@ -19,12 +19,11 @@ from __future__ import print_function
 # This code is based on a file from Monorail:
 # https://chromium.googlesource.com/infra/infra/+/master/appengine/monorail/framework/cloud_tasks_helpers.py
 
-import logging
 import json
-
 import requests
-
 import settings
+
+from framework import logging
 
 if not settings.UNIT_TEST_MODE:
   import grpc  # See requirements.dev.txt.
@@ -58,7 +57,7 @@ class LocalCloudTasksClient(object):
     target_url = 'http://localhost:8080' + uri
     body = task.get('app_engine_http_request').get('body')
     logging.info('Making request to %r', target_url)
-    handler_response = requests.request('POST', 
+    handler_response = requests.request('POST',
         target_url, data=body, allow_redirects=False,
         # This header can only be set on internal requests, not by users.
         headers={'X-AppEngine-QueueName': 'default'})

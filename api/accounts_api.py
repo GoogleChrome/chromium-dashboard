@@ -16,11 +16,10 @@
 from __future__ import division
 from __future__ import print_function
 
-import logging
-
 from google.cloud import ndb
 
 from framework import basehandlers
+from framework import logging
 from framework import permissions
 from framework import ramcache
 from internals import models

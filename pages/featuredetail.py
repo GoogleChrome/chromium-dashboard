@@ -17,10 +17,10 @@ from __future__ import division
 from __future__ import print_function
 
 import json
-import logging
 
 import settings
 from framework import basehandlers
+from framework import logging
 from pages import guideforms
 from internals import models
 from internals import processes

@@ -19,7 +19,6 @@ from __future__ import print_function
 import collections
 import datetime
 import json
-import logging
 import re
 import time
 
@@ -27,6 +26,7 @@ from google.cloud import ndb
 
 # from google.appengine.ext.db import djangoforms
 from google.appengine.api import mail
+from framework import logging
 from framework import ramcache
 import requests
 from google.appengine.api import users as gae_users

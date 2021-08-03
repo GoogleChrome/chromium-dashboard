@@ -16,10 +16,10 @@
 from __future__ import division
 from __future__ import print_function
 
-import logging
 import json
 
 from framework import basehandlers
+from framework import logging
 from framework import ramcache
 import requests
 

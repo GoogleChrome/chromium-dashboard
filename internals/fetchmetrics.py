@@ -19,11 +19,11 @@ from __future__ import print_function
 import base64
 import datetime
 import json
-import logging
 from xml.dom import minidom
 import requests
 
 from framework import basehandlers
+from framework import logging
 from framework import ramcache
 from framework import utils
 from internals import models

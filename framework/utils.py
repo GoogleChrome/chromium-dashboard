@@ -19,10 +19,10 @@ from __future__ import print_function
 import calendar
 import datetime
 import flask
-import logging
 import time
 import traceback
 
+from framework import logging
 # from google.appengine.api import users
 from framework import users
 
