@@ -1,9 +1,27 @@
-import {LitElement, html} from 'lit-element';
+import {LitElement, html, unsafeCSS, css} from 'lit-element';
 import {nothing} from 'lit-html';
 import style from '../css/elements/chromedash-upcoming-milestone-card.css';
 
 class ChromedashUpcomingMilestoneCard extends LitElement {
-  static styles = style;
+  static get styles() {
+    function _computeWidth() {
+      let cardContainer = document.querySelector('#releases-section');
+      let containerWidth = cardContainer.offsetWidth;
+      let items = 3;
+      let margin=16;
+      let val = (containerWidth/items)-margin;
+      return val;
+    }
+
+    return css`
+      ${style}
+
+      :host {
+        width: ${unsafeCSS(_computeWidth())}px;
+        margin: 8px;
+      }
+    `;
+  };
   static get properties() {
     return {
       // Assigned in schedule-apge.js, value from Django

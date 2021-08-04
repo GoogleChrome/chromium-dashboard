@@ -79,4 +79,19 @@ function sortFeaturesByName(features) {
   });
 }
 
+function move(e) {
+  var change = divWidth+divMargin*2;
+  if (ele.id=="right-button"){
+      jumpSlideWidth-= change;
+      container.style.marginLeft=jumpSlideWidth + "px";
+  } else {
+      jumpSlideWidth+=change;
+      container.style.marginLeft=jumpSlideWidth + "px";
+  }
+}
+
+
+document.getElementById("#left-button").addEventListener("click", moveLeft);
+document.getElementById("#right-button").addEventListener("click", moveRight);
+
 init();

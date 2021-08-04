@@ -1,6 +1,19 @@
 @import "element";
 @import "../_layout";
 
+:host {
+  padding: $content-padding;
+  background: #fff;
+  padding: $content-padding;
+  margin-bottom: $content-padding !important;
+  border-radius: $default-border-radius;
+  width: 600px;
+  margin-right: $content-padding !important;
+  counter-reset: featurecount;
+}
+
+
+
 iron-icon {
   --iron-icon-height: 18px;
   --iron-icon-width: 18px;
@@ -68,7 +81,7 @@ iron-icon {
   background-size: 42px;
 }
 
-:host, .release {
+.release {
   padding: $content-padding;
   background: #fff;
   padding: $content-padding;
