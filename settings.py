@@ -4,6 +4,9 @@ from __future__ import print_function
 import logging
 import os
 
+# Configure logging to print INFO lines so that they are captured
+# when written to stdout on GAE py3.
+#logging.basicConfig(level=logging.INFO)
 
 #Hack to get custom tags working django 1.3 + python27.
 INSTALLED_APPS = (
