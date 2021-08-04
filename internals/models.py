@@ -268,6 +268,7 @@ STANDARDIZATION = {
   NO_STD_OR_DISCUSSION: 'No public standards discussion',
   }
 
+UNSET_STD = 0
 UNKNOWN_STD = 1
 PROPOSAL_STD = 2
 INCUBATION_STD = 3
@@ -275,6 +276,7 @@ WORKINGDRAFT_STD = 4
 STANDARD_STD = 5
 
 STANDARD_MATURITY_CHOICES = {
+  # No text for UNSET_STD.  One of the values below will be set on first edit.
   UNKNOWN_STD: 'Unknown standards status - check spec link for status',
   PROPOSAL_STD: 'Proposal in a personal repository, no adoption from community',
   INCUBATION_STD: 'Specification being incubated in a Community Group',
@@ -282,6 +284,26 @@ STANDARD_MATURITY_CHOICES = {
                      'Working Group'),
   STANDARD_STD: ('Final published standard: Recommendation, Living Standard, '
                  'Candidate Recommendation, or similar final form'),
+}
+
+STANDARD_MATURITY_SHORT = {
+  UNSET_STD: 'Unknown status',
+  UNKNOWN_STD: 'Unknown status',
+  PROPOSAL_STD: 'Pre-incubation',
+  INCUBATION_STD: 'Incubation',
+  WORKINGDRAFT_STD: 'Working draft',
+  STANDARD_STD: 'Published standard',
+}
+
+# For features that don't have a standard_maturity value set, but do have
+# the old standardization field, infer a maturity.
+STANDARD_MATURITY_BACKFILL = {
+    DEFACTO_STD: STANDARD_STD,
+    ESTABLISHED_STD: STANDARD_STD,
+    WORKING_DRAFT: WORKINGDRAFT_STD,
+    EDITORS_DRAFT: INCUBATION_STD,
+    PUBLIC_DISCUSSION: INCUBATION_STD,
+    NO_STD_OR_DISCUSSION: PROPOSAL_STD,
 }
 
 DEV_STRONG_POSITIVE = 1
@@ -620,6 +642,11 @@ class Feature(DictModel):
     is_released = self.impl_status_chrome in RELEASE_IMPL_STATES
     d['is_released'] = is_released
 
+    standard_maturity_val = self.standard_maturity
+    if (standard_maturity_val == UNSET_STD and
+        self.standardization > 0):
+      standard_maturity_val = STANDARD_MATURITY_BACKFILL[self.standardization]
+
     if version == 2:
       if self.is_saved():
         d['id'] = self.key.integer_id()
@@ -647,10 +674,12 @@ class Feature(DictModel):
           'val': d.pop('standardization', None),
         },
         'maturity': {
-          'text': STANDARD_MATURITY_CHOICES.get(self.standard_maturity),
-          'val': d.pop('standard_maturity', None),
+          'text': STANDARD_MATURITY_CHOICES.get(standard_maturity_val),
+          'short_text': STANDARD_MATURITY_SHORT.get(standard_maturity_val),
+          'val': standard_maturity_val,
         },
       }
+      del d['standard_maturity']
       d['tag_review_status'] = REVIEW_STATUS_CHOICES[self.tag_review_status]
       d['security_review_status'] = REVIEW_STATUS_CHOICES[
           self.security_review_status]
@@ -774,6 +803,7 @@ class Feature(DictModel):
     d['owner'] = ', '.join(self.owner)
     d['explainer_links'] = '\r\n'.join(self.explainer_links)
     d['spec_mentors'] = ', '.join(self.spec_mentors)
+    d['standard_maturity'] = self.standard_maturity or UNKNOWN_STD
     d['doc_links'] = '\r\n'.join(self.doc_links)
     d['sample_links'] = '\r\n'.join(self.sample_links)
     d['search_tags'] = ', '.join(self.search_tags)
@@ -1162,7 +1192,7 @@ class Feature(DictModel):
 
   # Standards details.
   standardization = ndb.IntegerProperty(required=True)  # Deprecated
-  standard_maturity = ndb.IntegerProperty(required=True, default=UNKNOWN_STD)
+  standard_maturity = ndb.IntegerProperty(required=True, default=UNSET_STD)
   spec_link = ndb.StringProperty()
   api_spec = ndb.BooleanProperty(default=False)
   spec_mentors = ndb.StringProperty(repeated=True)
