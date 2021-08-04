@@ -27,6 +27,14 @@ const TEMPLATE_CONTENT = {
     dateText: 'coming',
     featureHeader: 'Features planned in this release',
   },
+  dev_plus_one: {
+    channelLabel: 'Later',
+    h1Class: 'chrome_version--dev_plus_one',
+    downloadUrl: '#',
+    downloadTitle: '',
+    dateText: 'coming',
+    featureHeader: 'Features planned in this release',
+  },
 };
 const REMOVED_STATUS = ['Removed'];
 const DEPRECATED_STATUS = ['Deprecated', 'No longer pursuing'];
@@ -74,7 +82,7 @@ class ChromedashUpcoming extends LitElement {
     }
 
     return html`
-      ${['stable', 'beta', 'dev'].map((type) => html`
+      ${['stable', 'beta', 'dev', 'dev_plus_one'].map((type) => html`
         <chromedash-upcoming-milestone-card
           .channel=${this.channels[type]}
           .templateContent=${TEMPLATE_CONTENT[type]}

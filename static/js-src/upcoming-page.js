@@ -1,5 +1,5 @@
 // Start fetching right away.
-const channelsArray = ['stable', 'beta', 'dev'];
+const channelsArray = ['stable', 'beta', 'dev', 'dev_plus_one'];
 
 const channelsPromise = window.csClient.getChannels();
 
