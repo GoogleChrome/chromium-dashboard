@@ -4,9 +4,6 @@ from __future__ import print_function
 import logging
 import os
 
-# Configure logging to print INFO lines so that they are captured
-# when written to stdout on GAE py3.
-#logging.basicConfig(level=logging.INFO)
 
 #Hack to get custom tags working django 1.3 + python27.
 INSTALLED_APPS = (
@@ -54,6 +51,10 @@ if DEV_MODE or UNIT_TEST_MODE:
   APP_ID = os.environ.get('GOOGLE_CLOUD_PROJECT', 'dev')
 else:
   APP_ID = os.environ['GOOGLE_CLOUD_PROJECT']
+
+  # Configure logging to print INFO lines so that they are captured
+  # when written to stdout on GAE py3.
+  logging.basicConfig(level=logging.INFO)
 
 SITE_URL = 'http://%s.appspot.com/' % APP_ID
 CLOUD_TASKS_REGION = 'us-central1'
