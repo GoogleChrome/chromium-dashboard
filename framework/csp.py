@@ -25,7 +25,7 @@ import six
 import flask
 
 
-REPORT_ONLY = True
+REPORT_ONLY = False
 USE_NONCE_ONLY_POLICY = True  # Recommended
 REPORT_URI = '/csp'
 NONCE_LENGTH = 30
