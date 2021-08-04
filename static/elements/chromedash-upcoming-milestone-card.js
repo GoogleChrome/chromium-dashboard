@@ -1,23 +1,13 @@
-import {LitElement, html, unsafeCSS, css} from 'lit-element';
+import {LitElement, html, css} from 'lit-element';
 import {nothing} from 'lit-html';
 import style from '../css/elements/chromedash-upcoming-milestone-card.css';
 
 class ChromedashUpcomingMilestoneCard extends LitElement {
   static get styles() {
-    function _computeWidth() {
-      let cardContainer = document.querySelector('#releases-section');
-      let containerWidth = cardContainer.offsetWidth;
-      let items = 3;
-      let margin=16;
-      let val = (containerWidth/items)-margin;
-      return val;
-    }
-
     return css`
       ${style}
 
       :host {
-        width: ${unsafeCSS(_computeWidth())}px;
         margin: 8px;
       }
     `;
@@ -33,6 +23,7 @@ class ChromedashUpcomingMilestoneCard extends LitElement {
       removedStatus: {type: Array},
       deprecatedStatus: {type: Array},
       signedIn: {type: Boolean},
+      cardWidth: {type: Number},
     };
   }
 
@@ -197,8 +188,29 @@ class ChromedashUpcomingMilestoneCard extends LitElement {
     `;
   }
 
+  _computeWidth() {
+    let cardContainer = document.querySelector('#releases-section');
+    let containerWidth = cardContainer.offsetWidth;
+    let items = 3;
+    let margin=16;
+    let val = (containerWidth/items)-margin;
+    this.cardWidth = val;
+    return val;
+  };
+
+  _widthStyle() {
+    return html`
+      <style>
+        :host {
+          width: ${this._computeWidth()}px;
+        }
+      </style>
+    `;
+  }
+
   render() {
     return html`
+      ${this._widthStyle()}
       <section class="release ${this.showShippingType ? '' : 'no-components'}">
         ${this._cardHeaderTemplate()}
         ${this._cardFeatureListTemplate()}    
