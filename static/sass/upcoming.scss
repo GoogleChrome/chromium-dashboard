@@ -48,5 +48,6 @@ body[data-path*='upcoming'] {
 
   #timeline-controls {
     display: block;
+    padding-bottom: $content-padding;
   }
 }
