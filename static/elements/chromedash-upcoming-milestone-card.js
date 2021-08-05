@@ -1,17 +1,9 @@
-import {LitElement, html, css} from 'lit-element';
+import {LitElement, html} from 'lit-element';
 import {nothing} from 'lit-html';
 import style from '../css/elements/chromedash-upcoming-milestone-card.css';
 
 class ChromedashUpcomingMilestoneCard extends LitElement {
-  static get styles() {
-    return css`
-      ${style}
-
-      :host {
-        margin: 8px;
-      }
-    `;
-  };
+  static styles = style;
   static get properties() {
     return {
       // Assigned in schedule-apge.js, value from Django

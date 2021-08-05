@@ -19,7 +19,6 @@ body[data-path*='upcoming'] {
 }
 
 #content-column {
-  padding-right: 2em;
   overflow: hidden;
 }
 
@@ -39,4 +38,11 @@ body[data-path*='upcoming'] {
 #timeline-controls {
   text-align: center;
   display: none;
+}
+
+@media only screen and (min-width: 701px) {
+
+  #content-column {
+    padding-right: 2em;
+  }
 }

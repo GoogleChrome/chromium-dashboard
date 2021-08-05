@@ -9,9 +9,8 @@
   border-radius: $default-border-radius;
   margin-right: $content-padding !important;
   counter-reset: featurecount;
+  margin: $content-padding / 2;
 }
-
-
 
 iron-icon {
   --iron-icon-height: 18px;
@@ -88,7 +87,7 @@ iron-icon {
   border-radius: $default-border-radius;
   flex: 1 0 0;
   min-width: 300px;
-  margin-right: $content-padding !important;
+  margin-right: $content-padding;
   counter-reset: featurecount;
 
   &.no-components {
@@ -152,4 +151,14 @@ iron-icon {
   margin-top: $content-padding;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+@media only screen and (max-width: 600px) {
+  :host {
+    width: 100%;
+  }
+
+  .release {
+    margin-right: 0px;
+  }
 }
