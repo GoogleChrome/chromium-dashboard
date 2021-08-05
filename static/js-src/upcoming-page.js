@@ -96,11 +96,6 @@ function move(e) {
   }
 }
 
-// display the timeline controls after milestone cards have been loaded
-setTimeout(function() {
-  document.querySelector('#timeline-controls').style.display = 'block';
-}, 3000);
-
 // event listeners for timeline control
 document.getElementById('left-button').addEventListener('click', move);
 document.getElementById('right-button').addEventListener('click', move);
