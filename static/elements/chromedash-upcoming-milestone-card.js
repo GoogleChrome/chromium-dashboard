@@ -15,7 +15,13 @@ class ChromedashUpcomingMilestoneCard extends LitElement {
       removedStatus: {type: Array},
       deprecatedStatus: {type: Array},
       signedIn: {type: Boolean},
+      cardWidth: {type: Number},
     };
+  }
+
+  constructor() {
+    super();
+    this.cardWidth = this._computeWidth();
   }
 
   /**
@@ -179,8 +185,28 @@ class ChromedashUpcomingMilestoneCard extends LitElement {
     `;
   }
 
+  _computeWidth() {
+    let cardContainer = document.querySelector('#releases-section');
+    let containerWidth = cardContainer.offsetWidth;
+    let items = 3;
+    let margin=16;
+    let val = (containerWidth/items)-margin;
+    return val;
+  };
+
+  _widthStyle() {
+    return html`
+      <style>
+        :host {
+          width: ${this.cardWidth}px;
+        }
+      </style>
+    `;
+  }
+
   render() {
     return html`
+      ${this._widthStyle()}
       <section class="release ${this.showShippingType ? '' : 'no-components'}">
         ${this._cardHeaderTemplate()}
         ${this._cardFeatureListTemplate()}    

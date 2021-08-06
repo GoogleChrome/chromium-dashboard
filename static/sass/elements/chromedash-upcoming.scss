@@ -2,8 +2,15 @@
 @import "../_layout";
 
 :host {
-  display: flex;
-  flex-wrap: wrap;
+  display: inline-flex;
   padding: 0 1em $content-padding * 5;
   margin-right: $content-padding * -1;
+  transition: margin 1s ease;
+}
+
+@media only screen and (max-width: 600px) {
+  :host {
+    width: 100%;
+    flex-direction: column;
+  }
 }

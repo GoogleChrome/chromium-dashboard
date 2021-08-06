@@ -1,7 +1,8 @@
 // Start fetching right away.
-const channelsArray = ['stable', 'beta', 'dev'];
+const channelsArray = ['stable', 'beta', 'dev', 'dev_plus_one'];
 
 const channelsPromise = window.csClient.getChannels();
+let jumpSlideWidth = 0;
 
 
 document.querySelector('.show-blink-checkbox').addEventListener('change', e => {
@@ -78,5 +79,25 @@ function sortFeaturesByName(features) {
     return 0;
   });
 }
+
+// Slide to newer or older version
+function move(e) {
+  let container = document.querySelector('chromedash-upcoming');
+  let divWidth = container.shadowRoot.querySelector('chromedash-upcoming-milestone-card').cardWidth;
+  let margin = 8;
+  let change = divWidth+margin*2;
+
+  if (e.target.id=='right-button') {
+    jumpSlideWidth-= change; // move to newer version
+    container.style.marginLeft=jumpSlideWidth + 'px';
+  } else {
+    jumpSlideWidth+=change; // move to older version
+    container.style.marginLeft=jumpSlideWidth + 'px';
+  }
+}
+
+// event listeners for timeline control
+document.getElementById('left-button').addEventListener('click', move);
+document.getElementById('right-button').addEventListener('click', move);
 
 init();

@@ -19,7 +19,7 @@ body[data-path*='upcoming'] {
 }
 
 #content-column {
-  padding-right: 2em;
+  overflow: hidden;
 }
 
 .hide-blink-checkbox {
@@ -29,4 +29,25 @@ body[data-path*='upcoming'] {
 #subheader {
   max-width: 100%;
   justify-content: center;
+}
+
+#releases-section {
+  overflow: hidden;
+}
+
+#timeline-controls {
+  text-align: center;
+  display: none;
+}
+
+@media only screen and (min-width: 701px) {
+
+  #content-column {
+    padding-right: 2em;
+  }
+
+  #timeline-controls {
+    display: block;
+    padding-bottom: $content-padding;
+  }
 }
