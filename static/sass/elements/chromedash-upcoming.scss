@@ -7,10 +7,3 @@
   margin-right: $content-padding * -1;
   transition: margin 1s ease;
 }
-
-@media only screen and (max-width: 600px) {
-  :host {
-    width: 100%;
-    flex-direction: column;
-  }
-}

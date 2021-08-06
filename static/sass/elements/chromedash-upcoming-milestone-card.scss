@@ -158,13 +158,3 @@ iron-icon {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-
-@media only screen and (max-width: 600px) {
-  :host {
-    width: 100%;
-  }
-
-  .release {
-    margin-right: 0px;
-  }
-}
