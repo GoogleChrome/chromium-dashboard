@@ -20,9 +20,8 @@
 
 {% block content %}
   <section id="releases-section">
-    <div id="timeline-controls">
+    <div class="timeline-controls">
       <button id="left-button">Previous</button>
-      <button id="right-button">Next</button>
     </div>
 
     <chromedash-upcoming
@@ -30,6 +29,10 @@
       {# TODO(jrobbins): Fix to work with google sign-in #}
       loginurl="#"
     ></chromedash-upcoming>
+
+    <div class="timeline-controls">
+      <button id="right-button">Next</button>
+    </div>
   </section>
 {% endblock %}
 

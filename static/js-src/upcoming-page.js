@@ -100,4 +100,10 @@ function move(e) {
 document.getElementById('left-button').addEventListener('click', move);
 document.getElementById('right-button').addEventListener('click', move);
 
+let mobile = '(max-width: 767px)';
+if (!window.matchMedia(mobile).matches) {
+  let nextButton = document.getElementById('right-button');
+  document.getElementsByClassName('timeline-controls')[0].appendChild(nextButton);
+}
+
 init();
