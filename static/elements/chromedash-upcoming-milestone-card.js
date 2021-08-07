@@ -8,7 +8,7 @@ class ChromedashUpcomingMilestoneCard extends LitElement {
     return {
       // Assigned in schedule-apge.js, value from Django
       showShippingType: {type: Boolean},
-      starredFeatures: {type: Array},
+      starredFeatures: {type: Object},
       templateContent: {type: Object},
       channel: {type: Object},
       showDates: {type: Boolean},
@@ -17,6 +17,11 @@ class ChromedashUpcomingMilestoneCard extends LitElement {
       signedIn: {type: Boolean},
       cardWidth: {type: Number},
     };
+  }
+
+  constructor() {
+    super();
+    this.starredFeatures = new Set();
   }
 
   /**
@@ -56,7 +61,7 @@ class ChromedashUpcomingMilestoneCard extends LitElement {
 
     const iconEl = e.target;
     const featureId = Number(iconEl.dataset.featureId);
-    const newStarred = !this.starredFeatures.includes(featureId);
+    const newStarred = !this.starredFeatures.has(featureId);
 
     this._fireEvent('star-toggle-event', {
       feature: featureId,
@@ -139,7 +144,7 @@ class ChromedashUpcomingMilestoneCard extends LitElement {
         <span class="tooltip"
           title="Receive an email notification when there are updates">
           <iron-icon
-            icon="${this.starredFeatures.includes(Number(f.id)) ?
+            icon="${this.starredFeatures.has(Number(f.id)) ?
             'chromestatus:star' :
             'chromestatus:star-border'}"
             class="pushicon"
