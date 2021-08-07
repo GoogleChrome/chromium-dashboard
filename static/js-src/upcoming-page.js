@@ -30,6 +30,7 @@ async function init() {
     features[channel] = await featuresPromise[channel];
   }
 
+
   // Remove the loading sign once the data has been fetched from the APIs
   document.body.classList.remove('loading');
 
@@ -39,6 +40,7 @@ async function init() {
 
   const upcomingEl = document.querySelector('chromedash-upcoming');
   upcomingEl.channels = channels;
+  upcomingEl.lastMilestoneFetched = channels[channelsArray[2]].version;
 
   window.csClient.getStars().then((starredFeatureIds) => {
     upcomingEl.starredFeatures = new Set(starredFeatureIds);

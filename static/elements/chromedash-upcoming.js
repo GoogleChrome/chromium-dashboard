@@ -52,12 +52,90 @@ class ChromedashUpcoming extends LitElement {
       loginUrl: {type: String},
       starredFeatures: {type: Object}, // will contain a set of starred features
       cardWidth: {type: Number},
+      lastMilestoneFetched: {type: Number},
     };
+  }
+
+  set lastMilestoneFetched(val) {
+    let oldVal = this._lastMilestoneFetched;
+    this._lastMilestoneFetched = val;
+    this.fetchNextBatch();
+    this.requestUpdate('prop', oldVal);
   }
 
   constructor() {
     super();
     this.cardWidth = this.computeWidthofCard();
+    this.starredFeatures = new Set();
+  }
+
+  async fetchNextBatch() {
+    const nextMilestones = window.csClient.getSpecifiedChannels(this._lastMilestoneFetched+1,
+      this._lastMilestoneFetched+3);
+    let milestoneArray = [this._lastMilestoneFetched+1,
+      this._lastMilestoneFetched+2, this._lastMilestoneFetched+3];
+    let milestoneFeaturePromise = {};
+
+    milestoneArray.forEach((milestone) => {
+      milestoneFeaturePromise[milestone] = window.csClient.getFeaturesInMilestone(milestone);
+    });
+
+    const milestoneFeatures = {};
+    let milestoneInfo = await nextMilestones;
+    for (let milestone of milestoneArray) {
+      milestoneFeatures[milestone] = await milestoneFeaturePromise[milestone];
+    }
+
+    milestoneArray.forEach((milestone) => {
+      milestoneInfo[milestone].version = milestone;
+      milestoneInfo[milestone].components =
+          this.mapFeaturesToShippingType(milestoneFeatures[milestone]);
+
+      let node = document.createElement('chromedash-upcoming-milestone-card');
+      node.channel = milestoneInfo[milestone];
+      node.templateContent=TEMPLATE_CONTENT['dev_plus_one'];
+      SHOW_DATES ? node.setAttribute('showdates', 'showdates') : '';
+      node.removedStatus=REMOVED_STATUS;
+      node.deprecatedStatus=DEPRECATED_STATUS;
+      node.starredFeatures=this.starredFeatures;
+      node.cardWidth=this.cardWidth;
+      this.signedIn ? node.setAttribute('signedin', 'signedin') : '';
+      this.showShippingType ? node.setAttribute('showShippingType', 'showShippingType'): '';
+      node.addEventListener('star-toggle-event', this.handleStarToggle);
+      document.querySelector('chromedash-upcoming').shadowRoot.appendChild(node);
+    });
+  }
+
+  mapFeaturesToShippingType(features) {
+    const featuresMappedToShippingType = {};
+    features.forEach(f => {
+      const component = f.browsers.chrome.status.text;
+      if (!featuresMappedToShippingType[component]) {
+        featuresMappedToShippingType[component] = [];
+      }
+      featuresMappedToShippingType[component].push(f);
+    });
+
+    for (let [, feautreList] of Object.entries(featuresMappedToShippingType)) {
+      this.sortFeaturesByName(feautreList);
+    }
+
+    return featuresMappedToShippingType;
+  }
+
+
+  sortFeaturesByName(features) {
+    features.sort((a, b) => {
+      a = a.name.toLowerCase();
+      b = b.name.toLowerCase();
+      if (a < b) {
+        return -1;
+      }
+      if (a > b) {
+        return 1;
+      }
+      return 0;
+    });
   }
 
   // Handles the Star-Toggle event fired by any one of the child components
@@ -80,14 +158,13 @@ class ChromedashUpcoming extends LitElement {
   computeWidthofCard() {
     let cardContainer = document.querySelector('#releases-section');
     let containerWidth = cardContainer.offsetWidth;
-    let items = this.computeItems(containerWidth);
+    let items = this.computeItems();
     let margin=16;
     let val = (containerWidth/items)-margin;
     return val;
   };
 
-  computeItems(width) {
-    console.log(width);
+  computeItems() {
     if (window.matchMedia('(max-width: 768px)').matches) {
       return 1;
     } else if (window.matchMedia('(max-width: 992px)').matches) {
@@ -111,7 +188,7 @@ class ChromedashUpcoming extends LitElement {
           ?showdates=${SHOW_DATES}
           .removedStatus=${REMOVED_STATUS}
           .deprecatedStatus=${DEPRECATED_STATUS}
-          .starredFeatures=${[...this.starredFeatures]}
+          .starredFeatures=${this.starredFeatures}
           .cardWidth=${this.cardWidth}
           ?signedin=${this.signedIn}
           ?showShippingType=${this.showShippingType}
