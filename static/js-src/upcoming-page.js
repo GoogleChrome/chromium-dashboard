@@ -1,5 +1,5 @@
 // Start fetching right away.
-const channelsArray = ['stable', 'beta', 'dev', 'dev_plus_one'];
+const channelsArray = ['stable', 'beta', 'dev'];
 
 const channelsPromise = window.csClient.getChannels();
 let jumpSlideWidth = 0;
