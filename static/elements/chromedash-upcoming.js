@@ -53,6 +53,8 @@ class ChromedashUpcoming extends LitElement {
       starredFeatures: {type: Object}, // will contain a set of starred features
       cardWidth: {type: Number},
       lastMilestoneFetched: {type: Number},
+      milestoneArray: {type: Array},
+      milestoneInfo: {type: Object},
     };
   }
 
@@ -67,43 +69,45 @@ class ChromedashUpcoming extends LitElement {
     super();
     this.cardWidth = this.computeWidthofCard();
     this.starredFeatures = new Set();
+    this.milestoneArray = [];
+    this.milestoneInfo = {};
   }
 
   async fetchNextBatch() {
+    // promise to fetch next milestones
     const nextMilestones = window.csClient.getSpecifiedChannels(this._lastMilestoneFetched+1,
       this._lastMilestoneFetched+3);
-    let milestoneArray = [this._lastMilestoneFetched+1,
-      this._lastMilestoneFetched+2, this._lastMilestoneFetched+3];
-    let milestoneFeaturePromise = {};
 
-    milestoneArray.forEach((milestone) => {
+    let tempMilestoneArray = [this._lastMilestoneFetched+1,
+      this._lastMilestoneFetched+2, this._lastMilestoneFetched+3];
+
+    // promise to fetch features in next milestones
+    let milestoneFeaturePromise = {};
+    tempMilestoneArray.forEach((milestone) => {
       milestoneFeaturePromise[milestone] = window.csClient.getFeaturesInMilestone(milestone);
     });
 
-    const milestoneFeatures = {};
-    let milestoneInfo = await nextMilestones;
-    for (let milestone of milestoneArray) {
+    let tempMilestoneInfo = await nextMilestones;
+
+    let milestoneFeatures = {};
+    for (let milestone of tempMilestoneArray) {
       milestoneFeatures[milestone] = await milestoneFeaturePromise[milestone];
     }
 
-    milestoneArray.forEach((milestone) => {
-      milestoneInfo[milestone].version = milestone;
-      milestoneInfo[milestone].components =
+    // add some details to milestone information fetched
+    tempMilestoneArray.forEach((milestone) => {
+      tempMilestoneInfo[milestone].version = milestone;
+      tempMilestoneInfo[milestone].components =
           this.mapFeaturesToShippingType(milestoneFeatures[milestone]);
-
-      let node = document.createElement('chromedash-upcoming-milestone-card');
-      node.channel = milestoneInfo[milestone];
-      node.templateContent=TEMPLATE_CONTENT['dev_plus_one'];
-      SHOW_DATES ? node.setAttribute('showdates', 'showdates') : '';
-      node.removedStatus=REMOVED_STATUS;
-      node.deprecatedStatus=DEPRECATED_STATUS;
-      node.starredFeatures=this.starredFeatures;
-      node.cardWidth=this.cardWidth;
-      this.signedIn ? node.setAttribute('signedin', 'signedin') : '';
-      this.showShippingType ? node.setAttribute('showShippingType', 'showShippingType'): '';
-      node.addEventListener('star-toggle-event', this.handleStarToggle);
-      document.querySelector('chromedash-upcoming').shadowRoot.appendChild(node);
     });
+
+    // update the properties to render the latest milestone cards
+    this.milestoneInfo = {
+      ...this,
+      ...tempMilestoneInfo,
+    };
+
+    this.milestoneArray = [...this.milestoneArray, ...tempMilestoneArray];
   }
 
   mapFeaturesToShippingType(features) {
@@ -181,10 +185,26 @@ class ChromedashUpcoming extends LitElement {
     }
 
     return html`
-      ${['stable', 'beta', 'dev', 'dev_plus_one'].map((type) => html`
+      ${['stable', 'beta', 'dev'].map((type) => html`
         <chromedash-upcoming-milestone-card
           .channel=${this.channels[type]}
           .templateContent=${TEMPLATE_CONTENT[type]}
+          ?showdates=${SHOW_DATES}
+          .removedStatus=${REMOVED_STATUS}
+          .deprecatedStatus=${DEPRECATED_STATUS}
+          .starredFeatures=${this.starredFeatures}
+          .cardWidth=${this.cardWidth}
+          ?signedin=${this.signedIn}
+          ?showShippingType=${this.showShippingType}
+          @star-toggle-event=${this.handleStarToggle}
+        >
+        </chromedash-upcoming-milestone-card>        
+      `)}
+
+      ${this.milestoneArray.map((milestone) => html`
+        <chromedash-upcoming-milestone-card
+          .channel=${this.milestoneInfo[milestone]}
+          .templateContent=${TEMPLATE_CONTENT['dev_plus_one']}
           ?showdates=${SHOW_DATES}
           .removedStatus=${REMOVED_STATUS}
           .deprecatedStatus=${DEPRECATED_STATUS}
