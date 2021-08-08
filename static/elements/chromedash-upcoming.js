@@ -52,17 +52,22 @@ class ChromedashUpcoming extends LitElement {
       loginUrl: {type: String},
       starredFeatures: {type: Object}, // will contain a set of starred features
       cardWidth: {type: Number},
-      lastMilestoneFetched: {type: Number},
+      lastFetchedOn: {type: Number},
+      lastMilestoneVisible: {type: Number},
       milestoneArray: {type: Array},
       milestoneInfo: {type: Object},
     };
   }
 
-  set lastMilestoneFetched(val) {
-    let oldVal = this._lastMilestoneFetched;
-    this._lastMilestoneFetched = val;
+  set lastFetchedOn(val) {
+    let oldVal = this._lastFetchedOn;
+    this._lastFetchedOn = val;
     this.fetchNextBatch();
-    this.requestUpdate('prop', oldVal);
+    this.requestUpdate('lastFetchedOn', oldVal);
+  }
+
+  get lastFetchedOn() {
+    return this._lastFetchedOn;
   }
 
   constructor() {
@@ -75,11 +80,11 @@ class ChromedashUpcoming extends LitElement {
 
   async fetchNextBatch() {
     // promise to fetch next milestones
-    const nextMilestones = window.csClient.getSpecifiedChannels(this._lastMilestoneFetched+1,
-      this._lastMilestoneFetched+3);
+    const nextMilestones = window.csClient.getSpecifiedChannels(this._lastFetchedOn+2,
+      this._lastFetchedOn+4);
 
-    let tempMilestoneArray = [this._lastMilestoneFetched+1,
-      this._lastMilestoneFetched+2, this._lastMilestoneFetched+3];
+    let tempMilestoneArray = [this._lastFetchedOn+2,
+      this._lastFetchedOn+3, this._lastFetchedOn+4];
 
     // promise to fetch features in next milestones
     let milestoneFeaturePromise = {};
@@ -102,10 +107,7 @@ class ChromedashUpcoming extends LitElement {
     });
 
     // update the properties to render the latest milestone cards
-    this.milestoneInfo = {
-      ...this,
-      ...tempMilestoneInfo,
-    };
+    this.milestoneInfo = Object.assign({}, this.milestoneInfo, tempMilestoneInfo);
 
     this.milestoneArray = [...this.milestoneArray, ...tempMilestoneArray];
   }
