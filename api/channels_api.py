@@ -96,7 +96,7 @@ class ChannelsAPI(basehandlers.APIHandler):
   """Channels are the Chrome Versions across platforms."""
 
   def do_get(self):
-    # Query-string parameters 'start' and 'end' are provided is provided
+    # Query-string parameters 'start' and 'end' are provided
     if self.request.args.get('start') is not None and self.request.args.get('end') is not None:
       try:
         start = int(self.request.args.get('start'))
