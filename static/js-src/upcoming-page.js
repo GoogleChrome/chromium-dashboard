@@ -66,9 +66,11 @@ function move(e) {
       container.style.marginLeft=jumpSlideWidth + 'px';
       container.lastMilestoneVisible += 1;
     } else {
-      jumpSlideWidth+=change; // move to older version
-      container.style.marginLeft=jumpSlideWidth + 'px';
-      container.lastMilestoneVisible -=1;
+      if (jumpSlideWidth < 0) {
+        jumpSlideWidth+=change; // move to older version
+        container.style.marginLeft=jumpSlideWidth + 'px';
+        container.lastMilestoneVisible -=1;
+      }
     }
 
     // Fetch when second last card is displayed
