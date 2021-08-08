@@ -2,6 +2,7 @@
 const channelsArray = ['stable', 'beta', 'dev'];
 
 const channelsPromise = window.csClient.getChannels();
+
 let jumpSlideWidth = 0;
 
 
@@ -41,7 +42,8 @@ async function init() {
 
 
   upcomingEl.channels = channels;
-  upcomingEl.lastMilestoneFetched = channels[channelsArray[2]].version;
+  upcomingEl.lastFetchedOn = channels[channelsArray[1]].version;
+  upcomingEl.lastMilestoneVisible = channels[channelsArray[1]].version;
 
   window.csClient.getStars().then((starredFeatureIds) => {
     upcomingEl.starredFeatures = new Set(starredFeatureIds);
@@ -55,12 +57,20 @@ function move(e) {
   let margin = 8;
   let change = divWidth+margin*2;
 
-  if (e.target.id=='next-button') {
-    jumpSlideWidth-= change; // move to newer version
-    container.style.marginLeft=jumpSlideWidth + 'px';
-  } else {
-    jumpSlideWidth+=change; // move to older version
-    container.style.marginLeft=jumpSlideWidth + 'px';
+  if (container.lastFetchedOn) {
+    if (e.target.id=='next-button') {
+      jumpSlideWidth-= change; // move to newer version
+      container.style.marginLeft=jumpSlideWidth + 'px';
+      container.lastMilestoneVisible += 1;
+    } else {
+      jumpSlideWidth+=change; // move to older version
+      container.style.marginLeft=jumpSlideWidth + 'px';
+      container.lastMilestoneVisible -=1;
+    }
+
+    if (container.lastMilestoneVisible - container.lastFetchedOn == 3) {
+      container.lastFetchedOn +=3;
+    }
   }
 }
 
