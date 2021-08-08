@@ -63,8 +63,11 @@ class ChromedashUpcoming extends LitElement {
   set lastFetchedOn(val) {
     let oldVal = this._lastFetchedOn;
     this._lastFetchedOn = val;
-    this.fetchNextBatch();
-    this.requestUpdate('lastFetchedOn', oldVal);
+    this.fetchNextBatch().then(()=>{
+      this.requestUpdate('lastFetchedOn', oldVal);
+    }).catch(() => {
+      alert('Some error occurred. Please refresh the page or try again later.');
+    });
   }
 
   get lastFetchedOn() {
@@ -96,12 +99,19 @@ class ChromedashUpcoming extends LitElement {
       milestoneFeaturePromise[milestone] = window.csClient.getFeaturesInMilestone(milestone);
     });
 
-    let tempMilestoneInfo = await nextMilestones;
-
+    let tempMilestoneInfo;
     let milestoneFeatures = {};
-    for (let milestone of tempMilestoneArray) {
-      milestoneFeatures[milestone] = await milestoneFeaturePromise[milestone];
+
+    try {
+      tempMilestoneInfo = await nextMilestones;
+
+      for (let milestone of tempMilestoneArray) {
+        milestoneFeatures[milestone] = await milestoneFeaturePromise[milestone];
+      }
+    } catch (err) {
+      throw (new Error('Unable to load Features'));
     }
+
 
     // add some details to milestone information fetched
     tempMilestoneArray.forEach((milestone) => {
