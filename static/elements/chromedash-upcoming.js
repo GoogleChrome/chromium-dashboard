@@ -97,7 +97,7 @@ class ChromedashUpcoming extends LitElement {
     // add some details to milestone information fetched
     tempMilestoneArray.forEach((milestone) => {
       tempMilestoneInfo[milestone].version = milestone;
-      tempMilestoneInfo[milestone].components =
+      tempMilestoneInfo[milestone].features =
           this.mapFeaturesToShippingType(milestoneFeatures[milestone]);
     });
 

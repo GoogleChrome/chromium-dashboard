@@ -173,10 +173,10 @@ class ChromedashUpcomingMilestoneCard extends LitElement {
       <div class="features_list">
         <div class="features_header">${this.templateContent.featureHeader}:</div>
 
-          ${this._objKeys(this.channel.components).map((componentName) => html`
-          <h3 class="feature_components">${componentName}</h3>
+          ${this._objKeys(this.channel.features).map((shippingType) => html`
+          <h3 class="feature_shipping_type">${shippingType}</h3>
           <ul>
-            ${this.channel.components[componentName].map((f) => html`
+            ${this.channel.features[shippingType].map((f) => html`
               ${this._cardFeatureItemTemplate(f)}
             `)}
           </ul>

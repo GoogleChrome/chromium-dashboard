@@ -97,11 +97,11 @@ iron-icon {
   counter-reset: featurecount;
 
   &.no-components {
-    .feature_components {
+    .feature_shipping_type {
       display: none;
     }
 
-    .feature_components + ul {
+    .feature_shipping_type + ul {
       margin-top: 0;
     }
   }
@@ -153,7 +153,7 @@ iron-icon {
   }
 }
 
-.feature_components {
+.feature_shipping_type {
   margin-top: $content-padding;
   overflow: hidden;
   text-overflow: ellipsis;
