@@ -4,6 +4,7 @@ const channelsArray = ['stable', 'beta', 'dev'];
 const channelsPromise = window.csClient.getChannels();
 
 let jumpSlideWidth = 0;
+let cardsToFetchInAdvance;
 
 
 document.querySelector('.show-blink-checkbox').addEventListener('change', e => {
@@ -43,7 +44,9 @@ async function init() {
 
   upcomingEl.channels = channels;
   upcomingEl.lastFetchedOn = channels[channelsArray[1]].version;
-  upcomingEl.lastMilestoneVisible = channels[channelsArray[1]].version;
+  let cardsDisplayed = upcomingEl.computeItems();
+  upcomingEl.lastMilestoneVisible = channels[channelsArray[cardsDisplayed-1]].version;
+  cardsToFetchInAdvance = upcomingEl.cardsToFetchInAdvance;
 
   window.csClient.getStars().then((starredFeatureIds) => {
     upcomingEl.starredFeatures = new Set(starredFeatureIds);
@@ -68,8 +71,9 @@ function move(e) {
       container.lastMilestoneVisible -=1;
     }
 
-    if (container.lastMilestoneVisible - container.lastFetchedOn == 3) {
-      container.lastFetchedOn +=3;
+    // Fetch when second last card is displayed
+    if (container.lastMilestoneVisible - container.lastFetchedOn == cardsToFetchInAdvance) {
+      container.lastFetchedOn +=cardsToFetchInAdvance;
     }
   }
 }

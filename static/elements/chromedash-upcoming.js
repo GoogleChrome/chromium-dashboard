@@ -56,6 +56,7 @@ class ChromedashUpcoming extends LitElement {
       lastMilestoneVisible: {type: Number},
       milestoneArray: {type: Array},
       milestoneInfo: {type: Object},
+      cardsToFetchInAdvance: {type: Number},
     };
   }
 
@@ -76,15 +77,18 @@ class ChromedashUpcoming extends LitElement {
     this.starredFeatures = new Set();
     this.milestoneArray = [];
     this.milestoneInfo = {};
+    this.cardsToFetchInAdvance = 3;
   }
 
   async fetchNextBatch() {
     // promise to fetch next milestones
-    const nextMilestones = window.csClient.getSpecifiedChannels(this._lastFetchedOn+2,
-      this._lastFetchedOn+4);
+    const nextMilestones = window.csClient.getSpecifiedChannels(this._lastFetchedOn+1+1,
+      this._lastFetchedOn+1+this.cardsToFetchInAdvance);
 
-    let tempMilestoneArray = [this._lastFetchedOn+2,
-      this._lastFetchedOn+3, this._lastFetchedOn+4];
+    let tempMilestoneArray = [];
+    for (let i = 1; i <= this.cardsToFetchInAdvance; i++) {
+      tempMilestoneArray.push(this._lastFetchedOn+1+i);
+    }
 
     // promise to fetch features in next milestones
     let milestoneFeaturePromise = {};
