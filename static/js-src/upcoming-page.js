@@ -35,7 +35,7 @@ async function init() {
   document.body.classList.remove('loading');
 
   channelsArray.forEach((channel) => {
-    channels[channel].components = mapFeaturesToShippingType(features[channel]);
+    channels[channel].features = mapFeaturesToShippingType(features[channel]);
   });
 
   const upcomingEl = document.querySelector('chromedash-upcoming');
