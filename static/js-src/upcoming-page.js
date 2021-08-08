@@ -34,51 +34,17 @@ async function init() {
   // Remove the loading sign once the data has been fetched from the APIs
   document.body.classList.remove('loading');
 
+  const upcomingEl = document.querySelector('chromedash-upcoming');
   channelsArray.forEach((channel) => {
-    channels[channel].features = mapFeaturesToShippingType(features[channel]);
+    channels[channel].features = upcomingEl.mapFeaturesToShippingType(features[channel]);
   });
 
-  const upcomingEl = document.querySelector('chromedash-upcoming');
+
   upcomingEl.channels = channels;
   upcomingEl.lastMilestoneFetched = channels[channelsArray[2]].version;
 
   window.csClient.getStars().then((starredFeatureIds) => {
     upcomingEl.starredFeatures = new Set(starredFeatureIds);
-  });
-}
-
-function mapFeaturesToShippingType(features) {
-  const featuresMappedToShippingType = {};
-  features.forEach(f => {
-    const component = f.browsers.chrome.status.text;
-    if (!featuresMappedToShippingType[component]) {
-      featuresMappedToShippingType[component] = [];
-    }
-    featuresMappedToShippingType[component].push(f);
-  });
-
-  for (let [, feautreList] of Object.entries(featuresMappedToShippingType)) {
-    sortFeaturesByName(feautreList);
-  }
-
-  return featuresMappedToShippingType;
-}
-
-
-/**
- *  @param {!Array<!Object>} features
- */
-function sortFeaturesByName(features) {
-  features.sort((a, b) => {
-    a = a.name.toLowerCase();
-    b = b.name.toLowerCase();
-    if (a < b) {
-      return -1;
-    }
-    if (a > b) {
-      return 1;
-    }
-    return 0;
   });
 }
 
