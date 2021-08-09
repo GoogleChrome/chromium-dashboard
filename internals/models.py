@@ -953,6 +953,7 @@ class Feature(DictModel):
     q = Feature.query()
     q = q.order(Feature.name)
     q = q.filter(Feature.shipped_milestone == milestone)
+    q = q.filter(Feature.impl_status_chrome.IN([ENABLED_BY_DEFAULT, DEPRECATED, REMOVED]))
     desktop_shipping_features = q.fetch(None)
 
     # Features with an android shipping milestone but no desktop milestone.
@@ -960,12 +961,71 @@ class Feature(DictModel):
     q = q.order(Feature.name)
     q = q.filter(Feature.shipped_android_milestone == milestone)
     q = q.filter(Feature.shipped_milestone == None)
+    q = q.filter(Feature.impl_status_chrome.IN([ENABLED_BY_DEFAULT, DEPRECATED, REMOVED]))
     android_only_shipping_features = q.fetch(None)
+
+    # Features that are in origin trial (Desktop) in this milestone
+    q = Feature.query()
+    q = q.filter(ndb.AND(Feature.ot_milestone_desktop_start != None, Feature.ot_milestone_desktop_start <= milestone))
+    q = q.filter(Feature.impl_status_chrome.IN([ORIGIN_TRIAL]))
+    desktop_origin_trial_features = q.fetch(None)
+    desktop_origin_trial_features = filter(lambda f: f.ot_milestone_desktop_end >= milestone, desktop_origin_trial_features)
+    desktop_origin_trial_features.sort(key=lambda f: f.name)
+    
+    # Features that are in origin trial (Android) in this milestone
+    q = Feature.query()
+    q = q.filter(ndb.AND(Feature.ot_milestone_android_start != None, Feature.ot_milestone_android_start <= milestone))
+    q = q.filter(Feature.ot_milestone_desktop_start == None)
+    q = q.filter(Feature.impl_status_chrome.IN([ORIGIN_TRIAL]))
+    android_origin_trial_features = q.fetch(None)
+    android_origin_trial_features = filter(lambda f: f.ot_milestone_android_end >= milestone, android_origin_trial_features)
+    android_origin_trial_features.sort(key=lambda f: f.name)
+
+    # Features that are in dev trial (Desktop) in this milestone
+    q = Feature.query()
+    q = q.filter(ndb.AND(Feature.dt_milestone_desktop_start != None, Feature.dt_milestone_desktop_start == milestone))
+    q = q.filter(Feature.impl_status_chrome.IN([BEHIND_A_FLAG]))
+    desktop_dev_trial_features = q.fetch(None)
+
+    q = Feature.query()
+    q = q.order(Feature.name)
+    q = q.filter(Feature.shipped_milestone == milestone) # Old Entries that do not have dt_milestone_start field 
+    q = q.filter(Feature.impl_status_chrome.IN([BEHIND_A_FLAG]))
+    q = q.filter(Feature.dt_milestone_desktop_start == None)
+    q = q.filter(Feature.dt_milestone_android_start == None)
+    desktop_dev_trial_features_legacy = q.fetch(None)
+
+    desktop_dev_trial_features.extend(desktop_dev_trial_features_legacy)
+    desktop_dev_trial_features.sort(key=lambda f: f.name)
+    
+    # Features that are in dev trial (Android) in this milestone
+    q = Feature.query()
+    q = q.filter(ndb.AND(Feature.dt_milestone_android_start != None, Feature.dt_milestone_android_start == milestone))
+    q = q.filter(Feature.dt_milestone_desktop_start == None)
+    q = q.filter(Feature.impl_status_chrome.IN([BEHIND_A_FLAG]))
+    android_dev_trial_features = q.fetch(None)
+
+    q = Feature.query()
+    q = q.order(Feature.name)
+    q = q.filter(Feature.shipped_android_milestone == milestone)
+    q = q.filter(Feature.shipped_milestone == None)
+    q = q.filter(Feature.impl_status_chrome.IN([BEHIND_A_FLAG]))
+    q = q.filter(Feature.dt_milestone_desktop_start == None)
+    q = q.filter(Feature.dt_milestone_android_start == None)
+    android_dev_trial_features_legacy = q.fetch(None)
+
+    android_dev_trial_features.extend(android_dev_trial_features_legacy)
+    android_dev_trial_features.sort(key=lambda f: f.name)
+
 
     # Constructor the proper ordering.
     all_features = []
     all_features.extend(desktop_shipping_features)
     all_features.extend(android_only_shipping_features)
+    all_features.extend(desktop_origin_trial_features)
+    all_features.extend(android_origin_trial_features)
+    all_features.extend(desktop_dev_trial_features)
+    all_features.extend(android_dev_trial_features)
 
     # Feature list must be first sorted by implementation status and then by name.
     # The implementation may seem to be counter-intuitive using sort() method.
