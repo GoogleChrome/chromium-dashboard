@@ -8,7 +8,7 @@ import './chromedash-color-status';
 import style from '../css/elements/chromedash-feature.css';
 import sharedStyle from '../css/shared.css';
 
-const MAX_STANDARDS_VAL = 6;
+const MAX_STANDARDS_VAL = 5;
 const MAX_VENDOR_VIEW = 7;
 const MAX_WEBDEV_VIEW = 6;
 
@@ -23,7 +23,6 @@ class ChromedashFeature extends LitElement {
       open: {type: Boolean, reflect: true}, // Attribute used in the parent for styling
       starred: {type: Boolean},
       // Values used in the template
-      _interopRisk: {attribute: false},
       _isDeprecated: {attribute: false},
       _hasDocLinks: {attribute: false},
       _hasSampleLinks: {attribute: false},
@@ -52,7 +51,6 @@ class ChromedashFeature extends LitElement {
   _initializeValues() {
     this._crBugNumber = this._getCrBugNumber();
     this._newBugUrl = this._getNewBugUrl();
-    this._interopRisk = this._getInteropRisk();
     this._isDeprecated = this._getIsDeprecated();
     this._hasDocLinks = this._getHasDocLinks();
     this._hasSampleLinks = this._getHasSampleLinks();
@@ -87,16 +85,6 @@ class ChromedashFeature extends LitElement {
       params.push(`cc=${owners.map(encodeURIComponent)}`);
     }
     return `${url}?${params.join('&')}`;
-  }
-
-  _getInteropRisk() {
-    if (!this.feature) return undefined;
-    const vendors = (this.feature.browsers.ff.view.val +
-                   this.feature.browsers.edge.view.val +
-                   this.feature.browsers.safari.view.val) / 3;
-    const webdevs = this.feature.browsers.webdev.view.val;
-    const standards = this.feature.standards.status.val;
-    return vendors + webdevs + standards;
   }
 
   _getIsPreLaunch() {
@@ -445,15 +433,16 @@ class ChromedashFeature extends LitElement {
                     .max="${MAX_WEBDEV_VIEW}"></chromedash-color-status>
                 <iron-icon icon="chromestatus:accessibility"></iron-icon>
               </span>
-              <span class="standardization view">
+              <span title="${this.feature.standards.maturity.text}"
+                    class="standardization view">
                 <chromedash-color-status class="bottom"
-                    .value="${this.feature.standards.status.val}"
+                    .value="${MAX_STANDARDS_VAL - this.feature.standards.maturity.val}"
                     .max="${MAX_STANDARDS_VAL}"></chromedash-color-status>
                 ${this.feature.standards.spec ? html`
                   <a href="${this.feature.standards.spec}"
-                     target="_blank">${this.feature.standards.status.text}</a>
+                     target="_blank">${this.feature.standards.maturity.short_text}</a>
                   ` : html`
-                  <label>${this.feature.standards.status.text}</label>
+                  <label>${this.feature.standards.maturity.short_text}</label>
                   `}
               </span>
             </div>
