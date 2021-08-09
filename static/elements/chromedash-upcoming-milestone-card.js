@@ -19,11 +19,6 @@ class ChromedashUpcomingMilestoneCard extends LitElement {
     };
   }
 
-  constructor() {
-    super();
-    this.cardWidth = this._computeWidth();
-  }
-
   /**
    *  Returns the number of days between a and b.
    *  @param {!Date} a
@@ -185,14 +180,6 @@ class ChromedashUpcomingMilestoneCard extends LitElement {
     `;
   }
 
-  _computeWidth() {
-    let cardContainer = document.querySelector('#releases-section');
-    let containerWidth = cardContainer.offsetWidth;
-    let items = 3;
-    let margin=16;
-    let val = (containerWidth/items)-margin;
-    return val;
-  };
 
   _widthStyle() {
     return html`

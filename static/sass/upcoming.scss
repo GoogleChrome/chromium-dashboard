@@ -35,19 +35,14 @@ body[data-path*='upcoming'] {
   overflow: hidden;
 }
 
-#timeline-controls {
+.timeline-controls {
   text-align: center;
-  display: none;
+  padding-bottom: $content-padding;
 }
 
 @media only screen and (min-width: 701px) {
 
   #content-column {
     padding-right: 2em;
-  }
-
-  #timeline-controls {
-    display: block;
-    padding-bottom: $content-padding;
   }
 }
