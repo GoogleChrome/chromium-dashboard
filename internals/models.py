@@ -983,13 +983,13 @@ class Feature(DictModel):
 
     # Features that are in dev trial (Desktop) in this milestone
     q = Feature.query()
-    q = q.filter(ndb.AND(Feature.dt_milestone_desktop_start != None, Feature.dt_milestone_desktop_start <= milestone))
+    q = q.filter(ndb.AND(Feature.dt_milestone_desktop_start != None, Feature.dt_milestone_desktop_start == milestone))
     q = q.filter(Feature.impl_status_chrome.IN([BEHIND_A_FLAG]))
     desktop_dev_trial_features = q.fetch(None)
 
     q = Feature.query()
     q = q.order(Feature.name)
-    q = q.filter(Feature.shipped_milestone == milestone)
+    q = q.filter(Feature.shipped_milestone == milestone) # Old Entries that do not have dt_milestone_start field 
     q = q.filter(Feature.impl_status_chrome.IN([BEHIND_A_FLAG]))
     q = q.filter(Feature.dt_milestone_desktop_start == None)
     q = q.filter(Feature.dt_milestone_android_start == None)
@@ -1000,7 +1000,7 @@ class Feature(DictModel):
     
     # Features that are in dev trial (Android) in this milestone
     q = Feature.query()
-    q = q.filter(ndb.AND(Feature.dt_milestone_android_start != None, Feature.dt_milestone_android_start <= milestone))
+    q = q.filter(ndb.AND(Feature.dt_milestone_android_start != None, Feature.dt_milestone_android_start == milestone))
     q = q.filter(Feature.dt_milestone_desktop_start == None)
     q = q.filter(Feature.impl_status_chrome.IN([BEHIND_A_FLAG]))
     android_dev_trial_features = q.fetch(None)
