@@ -206,7 +206,7 @@ class ChromeStatusClient {
   }
 
   getSpecifiedChannels(start, end) {
-    return this.doGet(`/channels?start=${start}&&end=${end}`);
+    return this.doGet(`/channels?start=${start}&end=${end}`);
   }
 };
 
