@@ -27,6 +27,14 @@ const TEMPLATE_CONTENT = {
     dateText: 'coming',
     featureHeader: 'Features planned in this release',
   },
+  dev_plus_one: {
+    channelLabel: 'Later',
+    h1Class: 'chrome_version--dev_plus_one',
+    downloadUrl: '#',
+    downloadTitle: '',
+    dateText: 'coming',
+    featureHeader: 'Features planned in this release',
+  },
 };
 const REMOVED_STATUS = ['Removed'];
 const DEPRECATED_STATUS = ['Deprecated', 'No longer pursuing'];
@@ -43,11 +51,13 @@ class ChromedashUpcoming extends LitElement {
       signedIn: {type: Boolean},
       loginUrl: {type: String},
       starredFeatures: {type: Object}, // will contain a set of starred features
+      cardWidth: {type: Number},
     };
   }
 
   constructor() {
     super();
+    this.cardWidth = this.computeWidthofCard();
   }
 
   // Handles the Star-Toggle event fired by any one of the child components
@@ -67,6 +77,26 @@ class ChromedashUpcoming extends LitElement {
       });
   }
 
+  computeWidthofCard() {
+    let cardContainer = document.querySelector('#releases-section');
+    let containerWidth = cardContainer.offsetWidth;
+    let items = this.computeItems(containerWidth);
+    let margin=16;
+    let val = (containerWidth/items)-margin;
+    return val;
+  };
+
+  computeItems(width) {
+    console.log(width);
+    if (window.matchMedia('(max-width: 768px)').matches) {
+      return 1;
+    } else if (window.matchMedia('(max-width: 992px)').matches) {
+      return 2;
+    } else {
+      return 3;
+    }
+  }
+
 
   render() {
     if (!this.channels) {
@@ -74,7 +104,7 @@ class ChromedashUpcoming extends LitElement {
     }
 
     return html`
-      ${['stable', 'beta', 'dev'].map((type) => html`
+      ${['stable', 'beta', 'dev', 'dev_plus_one'].map((type) => html`
         <chromedash-upcoming-milestone-card
           .channel=${this.channels[type]}
           .templateContent=${TEMPLATE_CONTENT[type]}
@@ -82,6 +112,7 @@ class ChromedashUpcoming extends LitElement {
           .removedStatus=${REMOVED_STATUS}
           .deprecatedStatus=${DEPRECATED_STATUS}
           .starredFeatures=${[...this.starredFeatures]}
+          .cardWidth=${this.cardWidth}
           ?signedin=${this.signedIn}
           ?showShippingType=${this.showShippingType}
           @star-toggle-event=${this.handleStarToggle}

@@ -46,6 +46,11 @@ SEND_EMAIL = False  # Just log email
 DEV_MODE = os.environ['SERVER_SOFTWARE'].startswith('Development')
 UNIT_TEST_MODE = os.environ['SERVER_SOFTWARE'].startswith('test')
 
+if not UNIT_TEST_MODE:
+  # Configure logging to print INFO lines so that they are captured
+  # when written to stdout on GAE py3.
+  logging.basicConfig(level=logging.INFO)
+
 #setting GOOGLE_CLOUD_PROJECT manually in dev mode
 if DEV_MODE or UNIT_TEST_MODE:
   APP_ID = os.environ.get('GOOGLE_CLOUD_PROJECT', 'dev')

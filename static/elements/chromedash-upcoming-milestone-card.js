@@ -15,6 +15,7 @@ class ChromedashUpcomingMilestoneCard extends LitElement {
       removedStatus: {type: Array},
       deprecatedStatus: {type: Array},
       signedIn: {type: Boolean},
+      cardWidth: {type: Number},
     };
   }
 
@@ -179,8 +180,20 @@ class ChromedashUpcomingMilestoneCard extends LitElement {
     `;
   }
 
+
+  _widthStyle() {
+    return html`
+      <style>
+        :host {
+          width: ${this.cardWidth}px;
+        }
+      </style>
+    `;
+  }
+
   render() {
     return html`
+      ${this._widthStyle()}
       <section class="release ${this.showShippingType ? '' : 'no-components'}">
         ${this._cardHeaderTemplate()}
         ${this._cardFeatureListTemplate()}    

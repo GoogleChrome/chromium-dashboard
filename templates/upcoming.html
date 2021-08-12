@@ -20,11 +20,20 @@
 
 {% block content %}
   <section id="releases-section">
+    <div class="timeline-controls">
+      <button id="previous-button">Previous</button>
+      <button id="next-button">Next</button>
+    </div>
+
     <chromedash-upcoming
       {% if user %}signedin{% endif %}
       {# TODO(jrobbins): Fix to work with google sign-in #}
       loginurl="#"
     ></chromedash-upcoming>
+
+    <div class="timeline-controls">
+      
+    </div>
   </section>
 {% endblock %}
 
