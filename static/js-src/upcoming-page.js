@@ -61,21 +61,21 @@ function move(e) {
   let change = divWidth+margin*2;
 
   if (container.lastFetchedOn) {
-    if (e.target.id=='next-button') {
-      jumpSlideWidth-= change; // move to newer version
-      container.style.marginLeft=jumpSlideWidth + 'px';
+    if (e.target.id == 'next-button') {
+      jumpSlideWidth -= change; // move to newer version
+      container.style.marginLeft = jumpSlideWidth + 'px';
       container.lastMilestoneVisible += 1;
     } else {
       if (jumpSlideWidth < 0) {
-        jumpSlideWidth+=change; // move to older version
-        container.style.marginLeft=jumpSlideWidth + 'px';
-        container.lastMilestoneVisible -=1;
+        jumpSlideWidth += change; // move to older version
+        container.style.marginLeft = jumpSlideWidth + 'px';
+        container.lastMilestoneVisible -= 1;
       }
     }
 
     // Fetch when second last card is displayed
     if (container.lastMilestoneVisible - container.lastFetchedOn == cardsToFetchInAdvance) {
-      container.lastFetchedOn +=cardsToFetchInAdvance;
+      container.lastFetchedOn += cardsToFetchInAdvance;
     }
   }
 }
