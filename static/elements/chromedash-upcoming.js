@@ -143,15 +143,7 @@ class ChromedashUpcoming extends LitElement {
 
   sortFeaturesByName(features) {
     features.sort((a, b) => {
-      a = a.name.toLowerCase();
-      b = b.name.toLowerCase();
-      if (a < b) {
-        return -1;
-      }
-      if (a > b) {
-        return 1;
-      }
-      return 0;
+      a.name.localeCompare(b.name, 'en', {'sensitivity': 'base'});
     });
   }
 
