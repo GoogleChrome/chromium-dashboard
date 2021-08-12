@@ -77,7 +77,7 @@ class ChromedashUpcoming extends LitElement {
 
   constructor() {
     super();
-    this.cardWidth = this.computeWidthofCard();
+    this.cardWidth = this.computeWidthOfCard();
     this.starredFeatures = new Set();
     this.milestoneArray = [];
     this.milestoneInfo = {};
@@ -176,7 +176,7 @@ class ChromedashUpcoming extends LitElement {
       });
   }
 
-  computeWidthofCard() {
+  computeWidthOfCard() {
     let cardContainer = document.querySelector('#releases-section');
     let containerWidth = cardContainer.offsetWidth;
     let items = this.computeItems();
