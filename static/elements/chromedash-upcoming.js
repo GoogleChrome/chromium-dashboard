@@ -89,25 +89,25 @@ class ChromedashUpcoming extends LitElement {
     const nextMilestones = window.csClient.getSpecifiedChannels(this._lastFetchedOn+1+1,
       this._lastFetchedOn+1+this.cardsToFetchInAdvance);
 
-    let tempMilestoneArray = [];
+    let milestoneNumsArray = [];
     for (let i = 1; i <= this.cardsToFetchInAdvance; i++) {
-      tempMilestoneArray.push(this._lastFetchedOn+1+i);
+      milestoneNumsArray.push(this._lastFetchedOn+1+i);
     }
 
     // promise to fetch features in next milestones
     let milestoneFeaturePromise = {};
-    tempMilestoneArray.forEach((milestone) => {
-      milestoneFeaturePromise[milestone] = window.csClient.getFeaturesInMilestone(milestone);
+    milestoneNumsArray.forEach((milestoneNum) => {
+      milestoneFeaturePromise[milestoneNum] = window.csClient.getFeaturesInMilestone(milestoneNum);
     });
 
-    let tempMilestoneInfo;
+    let newMilestonesInfo;
     let milestoneFeatures = {};
 
     try {
-      tempMilestoneInfo = await nextMilestones;
+      newMilestonesInfo = await nextMilestones;
 
-      for (let milestone of tempMilestoneArray) {
-        milestoneFeatures[milestone] = await milestoneFeaturePromise[milestone];
+      for (let milestoneNum of milestoneNumsArray) {
+        milestoneFeatures[milestoneNum] = await milestoneFeaturePromise[milestoneNum];
       }
     } catch (err) {
       throw (new Error('Unable to load Features'));
@@ -115,16 +115,16 @@ class ChromedashUpcoming extends LitElement {
 
 
     // add some details to milestone information fetched
-    tempMilestoneArray.forEach((milestone) => {
-      tempMilestoneInfo[milestone].version = milestone;
-      tempMilestoneInfo[milestone].features =
-          this.mapFeaturesToShippingType(milestoneFeatures[milestone]);
+    milestoneNumsArray.forEach((milestoneNum) => {
+      newMilestonesInfo[milestoneNum].version = milestoneNum;
+      newMilestonesInfo[milestoneNum].features =
+          this.mapFeaturesToShippingType(milestoneFeatures[milestoneNum]);
     });
 
     // update the properties to render the latest milestone cards
-    this.milestoneInfo = Object.assign({}, this.milestoneInfo, tempMilestoneInfo);
+    this.milestoneInfo = Object.assign({}, this.milestoneInfo, newMilestonesInfo);
 
-    this.milestoneArray = [...this.milestoneArray, ...tempMilestoneArray];
+    this.milestoneArray = [...this.milestoneArray, ...milestoneNumsArray];
   }
 
   mapFeaturesToShippingType(features) {
