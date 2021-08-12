@@ -105,14 +105,12 @@ class ChromedashUpcoming extends LitElement {
 
     try {
       newMilestonesInfo = await nextMilestones;
-
       for (let milestoneNum of milestoneNumsArray) {
         milestoneFeatures[milestoneNum] = await milestoneFeaturePromise[milestoneNum];
       }
     } catch (err) {
       throw (new Error('Unable to load Features'));
     }
-
 
     // add some details to milestone information fetched
     milestoneNumsArray.forEach((milestoneNum) => {
@@ -123,7 +121,6 @@ class ChromedashUpcoming extends LitElement {
 
     // update the properties to render the latest milestone cards
     this.milestoneInfo = Object.assign({}, this.milestoneInfo, newMilestonesInfo);
-
     this.milestoneArray = [...this.milestoneArray, ...milestoneNumsArray];
   }
 
@@ -143,7 +140,6 @@ class ChromedashUpcoming extends LitElement {
 
     return featuresMappedToShippingType;
   }
-
 
   sortFeaturesByName(features) {
     features.sort((a, b) => {
@@ -194,7 +190,6 @@ class ChromedashUpcoming extends LitElement {
       return 3;
     }
   }
-
 
   render() {
     if (!this.channels) {
