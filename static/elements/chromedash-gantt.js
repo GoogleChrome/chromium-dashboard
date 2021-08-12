@@ -113,12 +113,14 @@ class ChromedashGantt extends LitElement {
   }
 
   renderRow(
-      platform, devTrialMilestone, originTrialMilestone, shippingMilestone) {
+    platform, devTrialMilestone, originTrialMilestone, shippingMilestone) {
     return html`
        <ul class="bar ${originTrialMilestone ? 'with-ot' : 'without-ot'}">
          <li class="platform">${platform}</li>
          <li>${this.renderDevTrial(devTrialMilestone)}</li>
-         <li>${this.renderOriginTrial(originTrialMilestone)}</li>
+         <li class="${originTrialMilestone == 92 ? 'offset_1' : nothing}">
+           ${this.renderOriginTrial(originTrialMilestone)}
+         </li>
          <li>${this.renderShipping(shippingMilestone)}</li>
        </ul>
     `;
@@ -133,7 +135,7 @@ class ChromedashGantt extends LitElement {
          <li>Shipping</li>
        </ul>
        ${this.renderRow('Desktop', 89, 91, 94)}
-       ${this.renderRow('Android', 89, null, 94)}
+       ${this.renderRow('Android', 89, 92, 94)}
        ${this.renderRow('iOS', 89, null, null)}
        ${this.renderRow('Webview', null, null, 94)}
     `;
