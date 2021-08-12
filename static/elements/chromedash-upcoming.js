@@ -127,11 +127,11 @@ class ChromedashUpcoming extends LitElement {
   mapFeaturesToShippingType(features) {
     const featuresMappedToShippingType = {};
     features.forEach(f => {
-      const component = f.browsers.chrome.status.text;
-      if (!featuresMappedToShippingType[component]) {
-        featuresMappedToShippingType[component] = [];
+      const shippingType = f.browsers.chrome.status.text;
+      if (!featuresMappedToShippingType[shippingType]) {
+        featuresMappedToShippingType[shippingType] = [];
       }
-      featuresMappedToShippingType[component].push(f);
+      featuresMappedToShippingType[shippingType].push(f);
     });
 
     for (let [, feautreList] of Object.entries(featuresMappedToShippingType)) {
