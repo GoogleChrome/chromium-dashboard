@@ -39,6 +39,7 @@ const TEMPLATE_CONTENT = {
 const REMOVED_STATUS = ['Removed'];
 const DEPRECATED_STATUS = ['Deprecated', 'No longer pursuing'];
 const SHOW_DATES = true;
+const CARDS_TO_FETCH_IN_ADVANCE = 3;
 
 class ChromedashUpcoming extends LitElement {
   static styles = style;
@@ -51,12 +52,12 @@ class ChromedashUpcoming extends LitElement {
       signedIn: {type: Boolean},
       loginUrl: {type: String},
       starredFeatures: {type: Object}, // will contain a set of starred features
-      cardWidth: {type: Number},
-      lastFetchedOn: {type: Number},
-      lastMilestoneVisible: {type: Number},
-      milestoneArray: {type: Array},
-      milestoneInfo: {type: Object},
-      cardsToFetchInAdvance: {type: Number},
+      cardWidth: {type: Number}, // width of each milestone card
+      lastFetchedOn: {type: Number}, // milestone number rendering of which caused fetching of next milestones
+      lastMilestoneVisible: {type: Number}, // milestone number visible on screen to the user
+      milestoneArray: {type: Array}, // array to store the milestone numbers fetched after dev channel
+      milestoneInfo: {type: Object}, // object to store milestone details (features version etc.) fetched after dev channel
+      cardsToFetchInAdvance: {type: Number}, // number of milestones to fetch in advance
     };
   }
 
@@ -80,7 +81,7 @@ class ChromedashUpcoming extends LitElement {
     this.starredFeatures = new Set();
     this.milestoneArray = [];
     this.milestoneInfo = {};
-    this.cardsToFetchInAdvance = 3;
+    this.cardsToFetchInAdvance = CARDS_TO_FETCH_IN_ADVANCE;
   }
 
   async fetchNextBatch() {
