@@ -89,7 +89,7 @@ class ChromedashUpcoming extends LitElement {
     // promise to fetch next milestones
     const nextMilestones = window.csClient.getSpecifiedChannels(this._lastFetchedOn+1+1,
       this._lastFetchedOn+1+this.cardsToFetchInAdvance);
-    
+
     let milestoneNumsArray = [];
     for (let i = 1; i <= this.cardsToFetchInAdvance; i++) {
       milestoneNumsArray.push(this._lastFetchedOn+1+i);
@@ -108,7 +108,6 @@ class ChromedashUpcoming extends LitElement {
       newMilestonesInfo = await nextMilestones;
       for (let milestoneNum of milestoneNumsArray) {
         milestoneFeatures[milestoneNum] = await milestoneFeaturePromise[milestoneNum];
-
       }
     } catch (err) {
       throw (new Error('Unable to load Features'));
