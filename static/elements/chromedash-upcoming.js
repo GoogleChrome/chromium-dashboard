@@ -60,6 +60,7 @@ class ChromedashUpcoming extends LitElement {
       milestoneArray: {type: Array}, // array to store the milestone numbers fetched after dev channel
       milestoneInfo: {type: Object}, // object to store milestone details (features version etc.) fetched after dev channel
       cardsToFetchInAdvance: {type: Number}, // number of milestones to fetch in advance
+      highlightFeature: {type: Number}, // feature to highlight
     };
   }
 
@@ -142,6 +143,10 @@ class ChromedashUpcoming extends LitElement {
       });
   }
 
+  handleHighlightEvent(e) {
+    this.highlightFeature = e.detail.feature;
+  }
+
   computeWidthOfCard() {
     let cardContainer = document.querySelector('#releases-section');
     let containerWidth = cardContainer.offsetWidth;
@@ -178,9 +183,11 @@ class ChromedashUpcoming extends LitElement {
           .browserInterventionStatus=${BROWSER_INTERVENTION}
           .starredFeatures=${this.starredFeatures}
           .cardWidth=${this.cardWidth}
+          .highlightFeature=${this.highlightFeature}
           ?signedin=${this.signedIn}
           ?showShippingType=${this.showShippingType}
           @star-toggle-event=${this.handleStarToggle}
+          @highlight-feature-event=${this.handleHighlightEvent}
         >
         </chromedash-upcoming-milestone-card>        
       `)}
@@ -196,9 +203,11 @@ class ChromedashUpcoming extends LitElement {
           .browserInterventionStatus=${BROWSER_INTERVENTION}
           .starredFeatures=${this.starredFeatures}
           .cardWidth=${this.cardWidth}
+          .highlightFeature=${this.highlightFeature}
           ?signedin=${this.signedIn}
           ?showShippingType=${this.showShippingType}
           @star-toggle-event=${this.handleStarToggle}
+          @highlight-feature-event=${this.handleHighlightEvent}
         >
         </chromedash-upcoming-milestone-card>        
       `)}

@@ -9,6 +9,7 @@ class ChromedashUpcomingMilestoneCard extends LitElement {
       // Assigned in schedule-apge.js, value from Django
       showShippingType: {type: Boolean},
       starredFeatures: {type: Object},
+      highlightFeature: {type: Number},
       templateContent: {type: Object},
       channel: {type: Object},
       showDates: {type: Boolean},
@@ -83,6 +84,18 @@ class ChromedashUpcomingMilestoneCard extends LitElement {
     });
   }
 
+  highlight(e) {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const iconEl = e.target.parentNode;
+    const featureId = Number(iconEl.dataset.featureId);
+
+    this._fireEvent('highlight-feature-event', {
+      feature: featureId,
+    });
+  }
+
   _computeDaysUntil(dateStr) {
     const today = new Date();
     const diff = this._dateDiffInDays(new Date(dateStr), today);
@@ -132,7 +145,7 @@ class ChromedashUpcomingMilestoneCard extends LitElement {
   _cardFeatureItemTemplate(f, shippingType) {
     return html `
     <li data-feature-id="${f.id}">
-      <a href="/feature/${f.id}">${f.name}</a>
+      <a href="/feature/${f.id}" @mouseenter="${this.highlight}" class="${f.id == this.highlightFeature ? 'highlight' : ''}">${f.name}</a>
       <span class="icon_row">
         ${this.originTrialStatus.includes(shippingType) ? html`
         <span class="tooltip" title="Origin Trial">
