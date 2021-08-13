@@ -48,11 +48,6 @@ def construct_chrome_channels_details():
     channels['dev'] = fetch_chrome_release_info(new_dev_version)
     channels['dev']['version'] = new_dev_version
 
-  # Fetch Details of the next major version after Dev
-  dev_plus_one_version = channels['dev']['version']+1
-  channels['dev_plus_one'] = fetch_chrome_release_info(dev_plus_one_version)
-  channels['dev_plus_one']['version'] = dev_plus_one_version 
-
   return channels
 
 def fetch_chrome_release_info(version):
@@ -88,11 +83,32 @@ def fetch_chrome_release_info(version):
 
   return data
 
+def construct_specified_milestones_details(start, end):
+  channels = {}
+  win_versions = range(start,end+1)
+
+  for milestone in win_versions:
+    channels[milestone] = fetch_chrome_release_info(milestone)
+
+  return channels
+
 class ChannelsAPI(basehandlers.APIHandler):
   """Channels are the Chrome Versions across platforms."""
 
   def do_get(self):
-    channels = construct_chrome_channels_details()
+    # Query-string parameters 'start' and 'end' are provided
+    if self.request.args.get('start') is not None and self.request.args.get('end') is not None:
+      try:
+        start = int(self.request.args.get('start'))
+        end = int(self.request.args.get('end'))
+        if (start > end):
+          raise ValueError
+        channels = construct_specified_milestones_details(start, end)
+      except ValueError:
+        self.abort(400, msg='Invalid  Start and End Values provided')
+    else:
+      channels = construct_chrome_channels_details()
+    
     return channels
 
   # TODO(jrobbins): do_post

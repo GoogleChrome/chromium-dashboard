@@ -39,6 +39,7 @@ const TEMPLATE_CONTENT = {
 const REMOVED_STATUS = ['Removed'];
 const DEPRECATED_STATUS = ['Deprecated', 'No longer pursuing'];
 const SHOW_DATES = true;
+const CARDS_TO_FETCH_IN_ADVANCE = 3;
 
 class ChromedashUpcoming extends LitElement {
   static styles = style;
@@ -51,13 +52,99 @@ class ChromedashUpcoming extends LitElement {
       signedIn: {type: Boolean},
       loginUrl: {type: String},
       starredFeatures: {type: Object}, // will contain a set of starred features
-      cardWidth: {type: Number},
+      cardWidth: {type: Number}, // width of each milestone card
+      lastFetchedOn: {type: Number}, // milestone number rendering of which caused fetching of next milestones
+      lastMilestoneVisible: {type: Number}, // milestone number visible on screen to the user
+      milestoneArray: {type: Array}, // array to store the milestone numbers fetched after dev channel
+      milestoneInfo: {type: Object}, // object to store milestone details (features version etc.) fetched after dev channel
+      cardsToFetchInAdvance: {type: Number}, // number of milestones to fetch in advance
     };
+  }
+
+  set lastFetchedOn(val) {
+    let oldVal = this._lastFetchedOn;
+    this._lastFetchedOn = val;
+    this.fetchNextBatch().then(()=>{
+      this.requestUpdate('lastFetchedOn', oldVal);
+    }).catch(() => {
+      alert('Some error occurred. Please refresh the page or try again later.');
+    });
+  }
+
+  get lastFetchedOn() {
+    return this._lastFetchedOn;
   }
 
   constructor() {
     super();
-    this.cardWidth = this.computeWidthofCard();
+    this.cardWidth = this.computeWidthOfCard();
+    this.starredFeatures = new Set();
+    this.milestoneArray = [];
+    this.milestoneInfo = {};
+    this.cardsToFetchInAdvance = CARDS_TO_FETCH_IN_ADVANCE;
+  }
+
+  async fetchNextBatch() {
+    // promise to fetch next milestones
+    const nextMilestones = window.csClient.getSpecifiedChannels(this._lastFetchedOn+1+1,
+      this._lastFetchedOn+1+this.cardsToFetchInAdvance);
+
+    let milestoneNumsArray = [];
+    for (let i = 1; i <= this.cardsToFetchInAdvance; i++) {
+      milestoneNumsArray.push(this._lastFetchedOn+1+i);
+    }
+
+    // promise to fetch features in next milestones
+    let milestoneFeaturePromise = {};
+    milestoneNumsArray.forEach((milestoneNum) => {
+      milestoneFeaturePromise[milestoneNum] = window.csClient.getFeaturesInMilestone(milestoneNum);
+    });
+
+    let newMilestonesInfo;
+    let milestoneFeatures = {};
+
+    try {
+      newMilestonesInfo = await nextMilestones;
+      for (let milestoneNum of milestoneNumsArray) {
+        milestoneFeatures[milestoneNum] = await milestoneFeaturePromise[milestoneNum];
+      }
+    } catch (err) {
+      throw (new Error('Unable to load Features'));
+    }
+
+    // add some details to milestone information fetched
+    milestoneNumsArray.forEach((milestoneNum) => {
+      newMilestonesInfo[milestoneNum].version = milestoneNum;
+      newMilestonesInfo[milestoneNum].features =
+          this.mapFeaturesToShippingType(milestoneFeatures[milestoneNum]);
+    });
+
+    // update the properties to render the latest milestone cards
+    this.milestoneInfo = Object.assign({}, this.milestoneInfo, newMilestonesInfo);
+    this.milestoneArray = [...this.milestoneArray, ...milestoneNumsArray];
+  }
+
+  mapFeaturesToShippingType(features) {
+    const featuresMappedToShippingType = {};
+    features.forEach(f => {
+      const shippingType = f.browsers.chrome.status.text;
+      if (!featuresMappedToShippingType[shippingType]) {
+        featuresMappedToShippingType[shippingType] = [];
+      }
+      featuresMappedToShippingType[shippingType].push(f);
+    });
+
+    for (let [, feautreList] of Object.entries(featuresMappedToShippingType)) {
+      this.sortFeaturesByName(feautreList);
+    }
+
+    return featuresMappedToShippingType;
+  }
+
+  sortFeaturesByName(features) {
+    features.sort((a, b) =>
+      a.name.toLowerCase().localeCompare(b.name.toLowerCase())
+    );
   }
 
   // Handles the Star-Toggle event fired by any one of the child components
@@ -77,17 +164,16 @@ class ChromedashUpcoming extends LitElement {
       });
   }
 
-  computeWidthofCard() {
+  computeWidthOfCard() {
     let cardContainer = document.querySelector('#releases-section');
     let containerWidth = cardContainer.offsetWidth;
-    let items = this.computeItems(containerWidth);
+    let items = this.computeItems();
     let margin=16;
     let val = (containerWidth/items)-margin;
     return val;
   };
 
-  computeItems(width) {
-    console.log(width);
+  computeItems() {
     if (window.matchMedia('(max-width: 768px)').matches) {
       return 1;
     } else if (window.matchMedia('(max-width: 992px)').matches) {
@@ -97,21 +183,36 @@ class ChromedashUpcoming extends LitElement {
     }
   }
 
-
   render() {
     if (!this.channels) {
       return html``;
     }
 
     return html`
-      ${['stable', 'beta', 'dev', 'dev_plus_one'].map((type) => html`
+      ${['stable', 'beta', 'dev'].map((type) => html`
         <chromedash-upcoming-milestone-card
           .channel=${this.channels[type]}
           .templateContent=${TEMPLATE_CONTENT[type]}
           ?showdates=${SHOW_DATES}
           .removedStatus=${REMOVED_STATUS}
           .deprecatedStatus=${DEPRECATED_STATUS}
-          .starredFeatures=${[...this.starredFeatures]}
+          .starredFeatures=${this.starredFeatures}
+          .cardWidth=${this.cardWidth}
+          ?signedin=${this.signedIn}
+          ?showShippingType=${this.showShippingType}
+          @star-toggle-event=${this.handleStarToggle}
+        >
+        </chromedash-upcoming-milestone-card>        
+      `)}
+
+      ${this.milestoneArray.map((milestone) => html`
+        <chromedash-upcoming-milestone-card
+          .channel=${this.milestoneInfo[milestone]}
+          .templateContent=${TEMPLATE_CONTENT['dev_plus_one']}
+          ?showdates=${SHOW_DATES}
+          .removedStatus=${REMOVED_STATUS}
+          .deprecatedStatus=${DEPRECATED_STATUS}
+          .starredFeatures=${this.starredFeatures}
           .cardWidth=${this.cardWidth}
           ?signedin=${this.signedIn}
           ?showShippingType=${this.showShippingType}

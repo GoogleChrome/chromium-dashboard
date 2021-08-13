@@ -8,7 +8,7 @@ class ChromedashUpcomingMilestoneCard extends LitElement {
     return {
       // Assigned in schedule-apge.js, value from Django
       showShippingType: {type: Boolean},
-      starredFeatures: {type: Array},
+      starredFeatures: {type: Object},
       templateContent: {type: Object},
       channel: {type: Object},
       showDates: {type: Boolean},
@@ -17,6 +17,11 @@ class ChromedashUpcomingMilestoneCard extends LitElement {
       signedIn: {type: Boolean},
       cardWidth: {type: Number},
     };
+  }
+
+  constructor() {
+    super();
+    this.starredFeatures = new Set();
   }
 
   /**
@@ -56,7 +61,7 @@ class ChromedashUpcomingMilestoneCard extends LitElement {
 
     const iconEl = e.target;
     const featureId = Number(iconEl.dataset.featureId);
-    const newStarred = !this.starredFeatures.includes(featureId);
+    const newStarred = !this.starredFeatures.has(featureId);
 
     this._fireEvent('star-toggle-event', {
       feature: featureId,
@@ -139,7 +144,7 @@ class ChromedashUpcomingMilestoneCard extends LitElement {
         <span class="tooltip"
           title="Receive an email notification when there are updates">
           <iron-icon
-            icon="${this.starredFeatures.includes(Number(f.id)) ?
+            icon="${this.starredFeatures.has(Number(f.id)) ?
             'chromestatus:star' :
             'chromestatus:star-border'}"
             class="pushicon"
@@ -168,10 +173,10 @@ class ChromedashUpcomingMilestoneCard extends LitElement {
       <div class="features_list">
         <div class="features_header">${this.templateContent.featureHeader}:</div>
 
-          ${this._objKeys(this.channel.components).map((componentName) => html`
-          <h3 class="feature_components">${componentName}</h3>
+          ${this._objKeys(this.channel.features).map((shippingType) => html`
+          <h3 class="feature_shipping_type">${shippingType}</h3>
           <ul>
-            ${this.channel.components[componentName].map((f) => html`
+            ${this.channel.features[shippingType].map((f) => html`
               ${this._cardFeatureItemTemplate(f)}
             `)}
           </ul>

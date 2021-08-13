@@ -1,8 +1,10 @@
 // Start fetching right away.
-const channelsArray = ['stable', 'beta', 'dev', 'dev_plus_one'];
+const channelsArray = ['stable', 'beta', 'dev'];
 
 const channelsPromise = window.csClient.getChannels();
+
 let jumpSlideWidth = 0;
+let cardsToFetchInAdvance;
 
 
 document.querySelector('.show-blink-checkbox').addEventListener('change', e => {
@@ -30,53 +32,24 @@ async function init() {
     features[channel] = await featuresPromise[channel];
   }
 
+
   // Remove the loading sign once the data has been fetched from the APIs
   document.body.classList.remove('loading');
 
+  const upcomingEl = document.querySelector('chromedash-upcoming');
   channelsArray.forEach((channel) => {
-    channels[channel].components = mapFeaturesToShippingType(features[channel]);
+    channels[channel].features = upcomingEl.mapFeaturesToShippingType(features[channel]);
   });
 
-  const upcomingEl = document.querySelector('chromedash-upcoming');
+
   upcomingEl.channels = channels;
+  upcomingEl.lastFetchedOn = channels[channelsArray[1]].version;
+  let cardsDisplayed = upcomingEl.computeItems();
+  upcomingEl.lastMilestoneVisible = channels[channelsArray[cardsDisplayed-1]].version;
+  cardsToFetchInAdvance = upcomingEl.cardsToFetchInAdvance;
 
   window.csClient.getStars().then((starredFeatureIds) => {
     upcomingEl.starredFeatures = new Set(starredFeatureIds);
-  });
-}
-
-function mapFeaturesToShippingType(features) {
-  const featuresMappedToShippingType = {};
-  features.forEach(f => {
-    const component = f.browsers.chrome.status.text;
-    if (!featuresMappedToShippingType[component]) {
-      featuresMappedToShippingType[component] = [];
-    }
-    featuresMappedToShippingType[component].push(f);
-  });
-
-  for (let [, feautreList] of Object.entries(featuresMappedToShippingType)) {
-    sortFeaturesByName(feautreList);
-  }
-
-  return featuresMappedToShippingType;
-}
-
-
-/**
- *  @param {!Array<!Object>} features
- */
-function sortFeaturesByName(features) {
-  features.sort((a, b) => {
-    a = a.name.toLowerCase();
-    b = b.name.toLowerCase();
-    if (a < b) {
-      return -1;
-    }
-    if (a > b) {
-      return 1;
-    }
-    return 0;
   });
 }
 
@@ -87,12 +60,23 @@ function move(e) {
   let margin = 8;
   let change = divWidth+margin*2;
 
-  if (e.target.id=='next-button') {
-    jumpSlideWidth-= change; // move to newer version
-    container.style.marginLeft=jumpSlideWidth + 'px';
-  } else {
-    jumpSlideWidth+=change; // move to older version
-    container.style.marginLeft=jumpSlideWidth + 'px';
+  if (container.lastFetchedOn) {
+    if (e.target.id == 'next-button') {
+      jumpSlideWidth -= change; // move to newer version
+      container.style.marginLeft = jumpSlideWidth + 'px';
+      container.lastMilestoneVisible += 1;
+    } else {
+      if (jumpSlideWidth < 0) {
+        jumpSlideWidth += change; // move to older version
+        container.style.marginLeft = jumpSlideWidth + 'px';
+        container.lastMilestoneVisible -= 1;
+      }
+    }
+
+    // Fetch when second last card is displayed
+    if (container.lastMilestoneVisible - container.lastFetchedOn == cardsToFetchInAdvance) {
+      container.lastFetchedOn += cardsToFetchInAdvance;
+    }
   }
 }
 
