@@ -142,9 +142,9 @@ class ChromedashUpcoming extends LitElement {
   }
 
   sortFeaturesByName(features) {
-    features.sort((a, b) => {
-      a.name.localeCompare(b.name, 'en', {'sensitivity': 'base'});
-    });
+    features.sort((a, b) =>
+      a.name.toLowerCase().localeCompare(b.name.toLowerCase())
+    );
   }
 
   // Handles the Star-Toggle event fired by any one of the child components
