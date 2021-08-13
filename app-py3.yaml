@@ -1,0 +1,9 @@
+# TODO(jrobbins): This file is not used yet.
+# It will contain lines to configure a GAE service running in py3.
+
+runtime: python39
+service: app-py3
+
+handlers:
+- url: /hello
+  script: auto
