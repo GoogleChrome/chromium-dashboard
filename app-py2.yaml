@@ -48,7 +48,7 @@ handlers:
 
 # Note: This handler must remain in this file because it requires GAE py2.
 - url: /tasks/outbound-email
-  script: internals.semdemail.app
+  script: internals.sendemail.app
   # Header checks prevent raw access to this handler.  Tasks have headers.
 
 # Note: This handler must remain in this file because it requires GAE py2.
