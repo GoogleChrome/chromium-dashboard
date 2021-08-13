@@ -39,6 +39,7 @@ const TEMPLATE_CONTENT = {
 const REMOVED_STATUS = ['Removed'];
 const DEPRECATED_STATUS = ['Deprecated', 'No longer pursuing'];
 const SHOW_DATES = true;
+const CARDS_TO_FETCH_IN_ADVANCE = 3;
 
 class ChromedashUpcoming extends LitElement {
   static styles = style;
@@ -51,13 +52,13 @@ class ChromedashUpcoming extends LitElement {
       signedIn: {type: Boolean},
       loginUrl: {type: String},
       starredFeatures: {type: Object}, // will contain a set of starred features
-      cardWidth: {type: Number},
-      lastFetchedOn: {type: Number},
-      lastMilestoneVisible: {type: Number},
-      milestoneArray: {type: Array},
-      milestoneInfo: {type: Object},
-      cardsToFetchInAdvance: {type: Number},
-      highlightFeature: {type: Number},
+      cardWidth: {type: Number}, // width of each milestone card
+      lastFetchedOn: {type: Number}, // milestone number rendering of which caused fetching of next milestones
+      lastMilestoneVisible: {type: Number}, // milestone number visible on screen to the user
+      milestoneArray: {type: Array}, // array to store the milestone numbers fetched after dev channel
+      milestoneInfo: {type: Object}, // object to store milestone details (features version etc.) fetched after dev channel
+      cardsToFetchInAdvance: {type: Number}, // number of milestones to fetch in advance
+      highlightFeature: {type: Number}, // feature to highlight
     };
   }
 
@@ -77,64 +78,62 @@ class ChromedashUpcoming extends LitElement {
 
   constructor() {
     super();
-    this.cardWidth = this.computeWidthofCard();
+    this.cardWidth = this.computeWidthOfCard();
     this.starredFeatures = new Set();
     this.milestoneArray = [];
     this.milestoneInfo = {};
-    this.cardsToFetchInAdvance = 3;
+    this.cardsToFetchInAdvance = CARDS_TO_FETCH_IN_ADVANCE;
   }
 
   async fetchNextBatch() {
     // promise to fetch next milestones
     const nextMilestones = window.csClient.getSpecifiedChannels(this._lastFetchedOn+1+1,
       this._lastFetchedOn+1+this.cardsToFetchInAdvance);
-
-    let tempMilestoneArray = [];
+    
+    let milestoneNumsArray = [];
     for (let i = 1; i <= this.cardsToFetchInAdvance; i++) {
-      tempMilestoneArray.push(this._lastFetchedOn+1+i);
+      milestoneNumsArray.push(this._lastFetchedOn+1+i);
     }
 
     // promise to fetch features in next milestones
     let milestoneFeaturePromise = {};
-    tempMilestoneArray.forEach((milestone) => {
-      milestoneFeaturePromise[milestone] = window.csClient.getFeaturesInMilestone(milestone);
+    milestoneNumsArray.forEach((milestoneNum) => {
+      milestoneFeaturePromise[milestoneNum] = window.csClient.getFeaturesInMilestone(milestoneNum);
     });
 
-    let tempMilestoneInfo;
+    let newMilestonesInfo;
     let milestoneFeatures = {};
 
     try {
-      tempMilestoneInfo = await nextMilestones;
+      newMilestonesInfo = await nextMilestones;
+      for (let milestoneNum of milestoneNumsArray) {
+        milestoneFeatures[milestoneNum] = await milestoneFeaturePromise[milestoneNum];
 
-      for (let milestone of tempMilestoneArray) {
-        milestoneFeatures[milestone] = await milestoneFeaturePromise[milestone];
       }
     } catch (err) {
       throw (new Error('Unable to load Features'));
     }
 
-
     // add some details to milestone information fetched
-    tempMilestoneArray.forEach((milestone) => {
-      tempMilestoneInfo[milestone].version = milestone;
-      tempMilestoneInfo[milestone].features =
-          this.mapFeaturesToShippingType(milestoneFeatures[milestone]);
+    milestoneNumsArray.forEach((milestoneNum) => {
+      newMilestonesInfo[milestoneNum].version = milestoneNum;
+      newMilestonesInfo[milestoneNum].features =
+          this.mapFeaturesToShippingType(milestoneFeatures[milestoneNum]);
     });
 
     // update the properties to render the latest milestone cards
-    this.milestoneInfo = Object.assign({}, this.milestoneInfo, tempMilestoneInfo);
-
-    this.milestoneArray = [...this.milestoneArray, ...tempMilestoneArray];
+    this.milestoneInfo = Object.assign({}, this.milestoneInfo, newMilestonesInfo);
+    this.milestoneArray = [...this.milestoneArray, ...milestoneNumsArray];
   }
 
   mapFeaturesToShippingType(features) {
     const featuresMappedToShippingType = {};
     features.forEach(f => {
-      const component = f.browsers.chrome.status.text;
-      if (!featuresMappedToShippingType[component]) {
-        featuresMappedToShippingType[component] = [];
+      const shippingType = f.browsers.chrome.status.text;
+      if (!featuresMappedToShippingType[shippingType]) {
+        featuresMappedToShippingType[shippingType] = [];
       }
-      featuresMappedToShippingType[component].push(f);
+      featuresMappedToShippingType[shippingType].push(f);
     });
 
     for (let [, feautreList] of Object.entries(featuresMappedToShippingType)) {
@@ -144,19 +143,10 @@ class ChromedashUpcoming extends LitElement {
     return featuresMappedToShippingType;
   }
 
-
   sortFeaturesByName(features) {
-    features.sort((a, b) => {
-      a = a.name.toLowerCase();
-      b = b.name.toLowerCase();
-      if (a < b) {
-        return -1;
-      }
-      if (a > b) {
-        return 1;
-      }
-      return 0;
-    });
+    features.sort((a, b) =>
+      a.name.toLowerCase().localeCompare(b.name.toLowerCase())
+    );
   }
 
   // Handles the Star-Toggle event fired by any one of the child components
@@ -180,7 +170,7 @@ class ChromedashUpcoming extends LitElement {
     this.highlightFeature = e.detail.feature;
   }
 
-  computeWidthofCard() {
+  computeWidthOfCard() {
     let cardContainer = document.querySelector('#releases-section');
     let containerWidth = cardContainer.offsetWidth;
     let items = this.computeItems();
@@ -198,7 +188,6 @@ class ChromedashUpcoming extends LitElement {
       return 3;
     }
   }
-
 
   render() {
     if (!this.channels) {

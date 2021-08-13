@@ -268,6 +268,7 @@ STANDARDIZATION = {
   NO_STD_OR_DISCUSSION: 'No public standards discussion',
   }
 
+UNSET_STD = 0
 UNKNOWN_STD = 1
 PROPOSAL_STD = 2
 INCUBATION_STD = 3
@@ -275,6 +276,7 @@ WORKINGDRAFT_STD = 4
 STANDARD_STD = 5
 
 STANDARD_MATURITY_CHOICES = {
+  # No text for UNSET_STD.  One of the values below will be set on first edit.
   UNKNOWN_STD: 'Unknown standards status - check spec link for status',
   PROPOSAL_STD: 'Proposal in a personal repository, no adoption from community',
   INCUBATION_STD: 'Specification being incubated in a Community Group',
@@ -282,6 +284,26 @@ STANDARD_MATURITY_CHOICES = {
                      'Working Group'),
   STANDARD_STD: ('Final published standard: Recommendation, Living Standard, '
                  'Candidate Recommendation, or similar final form'),
+}
+
+STANDARD_MATURITY_SHORT = {
+  UNSET_STD: 'Unknown status',
+  UNKNOWN_STD: 'Unknown status',
+  PROPOSAL_STD: 'Pre-incubation',
+  INCUBATION_STD: 'Incubation',
+  WORKINGDRAFT_STD: 'Working draft',
+  STANDARD_STD: 'Published standard',
+}
+
+# For features that don't have a standard_maturity value set, but do have
+# the old standardization field, infer a maturity.
+STANDARD_MATURITY_BACKFILL = {
+    DEFACTO_STD: STANDARD_STD,
+    ESTABLISHED_STD: STANDARD_STD,
+    WORKING_DRAFT: WORKINGDRAFT_STD,
+    EDITORS_DRAFT: INCUBATION_STD,
+    PUBLIC_DISCUSSION: INCUBATION_STD,
+    NO_STD_OR_DISCUSSION: PROPOSAL_STD,
 }
 
 DEV_STRONG_POSITIVE = 1
@@ -572,30 +594,6 @@ class Feature(DictModel):
     except Exception as e:
       logging.error(e)
 
-  @classmethod
-  def _annotate_first_of_impl_status_in_milestones(self, feature_list, version=2):
-    try:
-      statuses = [
-        IMPLEMENTATION_STATUS[BEHIND_A_FLAG],
-        IMPLEMENTATION_STATUS[ENABLED_BY_DEFAULT],
-        IMPLEMENTATION_STATUS[REMOVED],
-        IMPLEMENTATION_STATUS[ORIGIN_TRIAL],
-        IMPLEMENTATION_STATUS[INTERVENTION],
-        IMPLEMENTATION_STATUS[ON_HOLD]
-      ]
-      first_of_milestone_func = Feature._first_of_milestone
-      if version == 2:
-        first_of_milestone_func = Feature._first_of_milestone_v2
-
-      last_good_idx = 0
-      for i, status in enumerate(statuses):
-        idx = first_of_milestone_func(feature_list, status, start=last_good_idx)
-        if idx != -1:
-          feature_list[idx]['first_of_milestone'] = True
-          last_good_idx = idx
-    except Exception as e:
-      logging.error(e)
-
   def migrate_views(self):
     """Migrate obsolete values for views on first edit."""
     if self.ff_views == MIXED_SIGNALS:
@@ -619,6 +617,11 @@ class Feature(DictModel):
     d = self.to_dict()
     is_released = self.impl_status_chrome in RELEASE_IMPL_STATES
     d['is_released'] = is_released
+
+    standard_maturity_val = self.standard_maturity
+    if (standard_maturity_val == UNSET_STD and
+        self.standardization > 0):
+      standard_maturity_val = STANDARD_MATURITY_BACKFILL[self.standardization]
 
     if version == 2:
       if self.is_saved():
@@ -647,10 +650,12 @@ class Feature(DictModel):
           'val': d.pop('standardization', None),
         },
         'maturity': {
-          'text': STANDARD_MATURITY_CHOICES.get(self.standard_maturity),
-          'val': d.pop('standard_maturity', None),
+          'text': STANDARD_MATURITY_CHOICES.get(standard_maturity_val),
+          'short_text': STANDARD_MATURITY_SHORT.get(standard_maturity_val),
+          'val': standard_maturity_val,
         },
       }
+      del d['standard_maturity']
       d['tag_review_status'] = REVIEW_STATUS_CHOICES[self.tag_review_status]
       d['security_review_status'] = REVIEW_STATUS_CHOICES[
           self.security_review_status]
@@ -774,6 +779,7 @@ class Feature(DictModel):
     d['owner'] = ', '.join(self.owner)
     d['explainer_links'] = '\r\n'.join(self.explainer_links)
     d['spec_mentors'] = ', '.join(self.spec_mentors)
+    d['standard_maturity'] = self.standard_maturity or UNKNOWN_STD
     d['doc_links'] = '\r\n'.join(self.doc_links)
     d['sample_links'] = '\r\n'.join(self.sample_links)
     d['search_tags'] = ', '.join(self.search_tags)
@@ -954,6 +960,12 @@ class Feature(DictModel):
     q = q.order(Feature.name)
     q = q.filter(Feature.shipped_milestone == milestone)
     desktop_shipping_features = q.fetch(None)
+    for feature in desktop_shipping_features:
+      if feature.impl_status_chrome not in {ENABLED_BY_DEFAULT, DEPRECATED, REMOVED}:
+        if feature.feature_type == FEATURE_TYPE_DEPRECATION_ID and Feature.dt_milestone_desktop_start != None:
+          feature.impl_status_chrome = DEPRECATED
+        if feature.feature_type == FEATURE_TYPE_INCUBATE_ID:
+          feature.impl_status_chrome = ENABLED_BY_DEFAULT
 
     # Features with an android shipping milestone but no desktop milestone.
     q = Feature.query()
@@ -961,29 +973,64 @@ class Feature(DictModel):
     q = q.filter(Feature.shipped_android_milestone == milestone)
     q = q.filter(Feature.shipped_milestone == None)
     android_only_shipping_features = q.fetch(None)
+    for feature in android_only_shipping_features:
+      if feature.impl_status_chrome not in {ENABLED_BY_DEFAULT, DEPRECATED, REMOVED}:
+        if feature.feature_type == FEATURE_TYPE_DEPRECATION_ID and Feature.dt_milestone_android_start != None:
+          feature.impl_status_chrome = DEPRECATED
+        if feature.feature_type == FEATURE_TYPE_INCUBATE_ID:
+          feature.impl_status_chrome = ENABLED_BY_DEFAULT
+
+    # Features that are in origin trial (Desktop) in this milestone
+    q = Feature.query()
+    q = q.order(Feature.name)
+    q = q.filter(Feature.ot_milestone_desktop_start == milestone)
+    desktop_origin_trial_features = q.fetch(None)
+    for feature in desktop_origin_trial_features:
+      feature.impl_status_chrome = ORIGIN_TRIAL
+    
+    # Features that are in origin trial (Android) in this milestone
+    q = Feature.query()
+    q = q.order(Feature.name)
+    q = q.filter(Feature.ot_milestone_android_start == milestone)
+    q = q.filter(Feature.ot_milestone_desktop_start == None)
+    android_origin_trial_features = q.fetch(None)
+    for feature in android_origin_trial_features:
+      feature.impl_status_chrome = ORIGIN_TRIAL
+
+    # Features that are in dev trial (Desktop) in this milestone
+    q = Feature.query()
+    q = q.order(Feature.name)
+    q = q.filter(Feature.dt_milestone_desktop_start == milestone)
+    desktop_dev_trial_features = q.fetch(None)
+    for feature in desktop_dev_trial_features:
+      feature.impl_status_chrome = BEHIND_A_FLAG
+    
+    # Features that are in dev trial (Android) in this milestone
+    q = Feature.query()
+    q = q.order(Feature.name)
+    q = q.filter(Feature.dt_milestone_android_start == milestone)
+    q = q.filter(Feature.dt_milestone_desktop_start == None)
+    android_dev_trial_features = q.fetch(None)
+    for feature in android_dev_trial_features:
+      feature.impl_status_chrome = BEHIND_A_FLAG
 
     # Constructor the proper ordering.
     all_features = []
     all_features.extend(desktop_shipping_features)
     all_features.extend(android_only_shipping_features)
-
-    # Feature list must be first sorted by implementation status and then by name.
-    # The implementation may seem to be counter-intuitive using sort() method.
-    all_features.sort(key=lambda f: f.name)
-    all_features.sort(key=lambda f: f.impl_status_chrome)
+    all_features.extend(desktop_origin_trial_features)
+    all_features.extend(android_origin_trial_features)
+    all_features.extend(desktop_dev_trial_features)
+    all_features.extend(android_dev_trial_features)
 
     all_features = [f for f in all_features if not f.deleted]
-
     feature_list = [f.format_for_template() for f in all_features]
-
-    self._annotate_first_of_impl_status_in_milestones(feature_list)
 
     allowed_feature_list = [
         f for f in feature_list
         if show_unlisted or not f['unlisted']]
 
     return allowed_feature_list
-
 
   @classmethod
   def get_shipping_samples(self, limit=None, update_cache=False):
@@ -1053,7 +1100,6 @@ class Feature(DictModel):
       old_val = getattr(self, prop_name, None)
       setattr(self, '_old_' + prop_name, old_val)
 
-
   def __notify_feature_subscribers_of_changes(self, is_update):
     """Async notifies subscribers of new features and property changes to features by
        posting to a task queue."""
@@ -1080,7 +1126,6 @@ class Feature(DictModel):
 
     # Create task to email subscribers.
     cloud_tasks_helpers.enqueue_task('/tasks/email-subscribers', params)
-
 
   def put(self, notify=True, **kwargs):
     is_update = self.is_saved()
@@ -1162,7 +1207,7 @@ class Feature(DictModel):
 
   # Standards details.
   standardization = ndb.IntegerProperty(required=True)  # Deprecated
-  standard_maturity = ndb.IntegerProperty(required=True, default=UNKNOWN_STD)
+  standard_maturity = ndb.IntegerProperty(required=True, default=UNSET_STD)
   spec_link = ndb.StringProperty()
   api_spec = ndb.BooleanProperty(default=False)
   spec_mentors = ndb.StringProperty(repeated=True)
