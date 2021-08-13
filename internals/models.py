@@ -572,30 +572,6 @@ class Feature(DictModel):
     except Exception as e:
       logging.error(e)
 
-  @classmethod
-  def _annotate_first_of_impl_status_in_milestones(self, feature_list, version=2):
-    try:
-      statuses = [
-        IMPLEMENTATION_STATUS[BEHIND_A_FLAG],
-        IMPLEMENTATION_STATUS[ENABLED_BY_DEFAULT],
-        IMPLEMENTATION_STATUS[REMOVED],
-        IMPLEMENTATION_STATUS[ORIGIN_TRIAL],
-        IMPLEMENTATION_STATUS[INTERVENTION],
-        IMPLEMENTATION_STATUS[ON_HOLD]
-      ]
-      first_of_milestone_func = Feature._first_of_milestone
-      if version == 2:
-        first_of_milestone_func = Feature._first_of_milestone_v2
-
-      last_good_idx = 0
-      for i, status in enumerate(statuses):
-        idx = first_of_milestone_func(feature_list, status, start=last_good_idx)
-        if idx != -1:
-          feature_list[idx]['first_of_milestone'] = True
-          last_good_idx = idx
-    except Exception as e:
-      logging.error(e)
-
   def migrate_views(self):
     """Migrate obsolete values for views on first edit."""
     if self.ff_views == MIXED_SIGNALS:
@@ -1017,23 +993,14 @@ class Feature(DictModel):
     all_features.extend(desktop_dev_trial_features)
     all_features.extend(android_dev_trial_features)
 
-    # Feature list must be first sorted by implementation status and then by name.
-    # The implementation may seem to be counter-intuitive using sort() method.
-    all_features.sort(key=lambda f: f.name)
-    all_features.sort(key=lambda f: f.impl_status_chrome)
-
     all_features = [f for f in all_features if not f.deleted]
-
     feature_list = [f.format_for_template() for f in all_features]
-
-    self._annotate_first_of_impl_status_in_milestones(feature_list)
 
     allowed_feature_list = [
         f for f in feature_list
         if show_unlisted or not f['unlisted']]
 
     return allowed_feature_list
-
 
   @classmethod
   def get_shipping_samples(self, limit=None, update_cache=False):
@@ -1103,7 +1070,6 @@ class Feature(DictModel):
       old_val = getattr(self, prop_name, None)
       setattr(self, '_old_' + prop_name, old_val)
 
-
   def __notify_feature_subscribers_of_changes(self, is_update):
     """Async notifies subscribers of new features and property changes to features by
        posting to a task queue."""
@@ -1130,7 +1096,6 @@ class Feature(DictModel):
 
     # Create task to email subscribers.
     cloud_tasks_helpers.enqueue_task('/tasks/email-subscribers', params)
-
 
   def put(self, notify=True, **kwargs):
     is_update = self.is_saved()
