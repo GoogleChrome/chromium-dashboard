@@ -163,14 +163,14 @@ class FeaturesAPITestGet(testing_config.CustomTestCase):
     # Atleast one feature is present in milestone
     with register.app.test_request_context(self.request_path+'?milestone=1'):
       actual_response = self.handler.do_get()
-    self.assertEqual(1, len(actual_response))
-    self.assertEqual('feature one', actual_response[0]['name'])
-    self.assertEqual(1, actual_response[0]['browsers']['chrome']['status']['milestone_str'])
+    self.assertEqual(6, len(actual_response))
+    self.assertEqual(1, len(actual_response['Enabled by default']))
 
     # No Feature is present in milestone
     with register.app.test_request_context(self.request_path+'?milestone=2'):
       actual_response = self.handler.do_get()
-    self.assertEqual(0, len(actual_response))
+    self.assertEqual(6, len(actual_response))
+    self.assertEqual(0, len(actual_response['Enabled by default']))
 
   def test_get__in_milestone_unlisted_no_perms(self):
     """JSON feed does not include unlisted features for users who can't edit."""
@@ -180,13 +180,15 @@ class FeaturesAPITestGet(testing_config.CustomTestCase):
     # No signed-in user
     with register.app.test_request_context(self.request_path+'?milestone=1'):
       actual_response = self.handler.do_get()
-    self.assertEqual(0, len(actual_response))
+    self.assertEqual(6, len(actual_response))
+    self.assertEqual(0, len(actual_response['Enabled by default']))
 
     # Signed-in user with no permissions
     testing_config.sign_in('one@example.com', 123567890)
     with register.app.test_request_context(self.request_path+'?milestone=1'):
       actual_response = self.handler.do_get()
-    self.assertEqual(0, len(actual_response))
+    self.assertEqual(6, len(actual_response))
+    self.assertEqual(0, len(actual_response['Enabled by default']))
 
   def test_get__in_milestone_unlisted_can_edit(self):
     """JSON feed includes unlisted features for users who may edit."""
@@ -199,14 +201,14 @@ class FeaturesAPITestGet(testing_config.CustomTestCase):
     # Feature is present in milestone
     with register.app.test_request_context(self.request_path+'?milestone=1'):
       actual_response = self.handler.do_get()
-    self.assertEqual(1, len(actual_response))
-    self.assertEqual('feature one', actual_response[0]['name'])
-    self.assertEqual(1, actual_response[0]['browsers']['chrome']['status']['milestone_str'])
+    self.assertEqual(6, len(actual_response))
+    self.assertEqual(1, len(actual_response['Enabled by default']))
 
     # Feature is not present in milestone
     with register.app.test_request_context(self.request_path+'?milestone=2'):
       actual_response = self.handler.do_get()
-    self.assertEqual(0, len(actual_response))
+    self.assertEqual(6, len(actual_response))
+    self.assertEqual(0, len(actual_response['Enabled by default']))
 
   @mock.patch('flask.abort')
   def test_get__in_milestone_invalid_query(self, mock_abort):
