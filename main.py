@@ -12,7 +12,7 @@ app = Flask(__name__)
 def hello():
     """Return a friendly HTTP greeting."""
     logging.info('In hello()  !')
-    return 'Hello World!'
+    return 'Hello python 3!'
 
 if __name__ == '__main__':
     # This is used when running locally only. When deploying to Google App

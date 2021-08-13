@@ -30,6 +30,7 @@ gcloud app deploy \
   --version $deployVersion \
   --no-promote \
   $BASEDIR/../app-py2.yaml $BASEDIR/../notifier.yaml \
+  $BASEDIR/../app-py3.yaml  \
   $BASEDIR/../dispatch.yaml $BASEDIR/../cron.yaml
 
 # TODO(jrobbins): Add app_py3.yaml when it has some contents.
