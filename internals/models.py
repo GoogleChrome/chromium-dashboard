@@ -594,30 +594,6 @@ class Feature(DictModel):
     except Exception as e:
       logging.error(e)
 
-  @classmethod
-  def _annotate_first_of_impl_status_in_milestones(self, feature_list, version=2):
-    try:
-      statuses = [
-        IMPLEMENTATION_STATUS[BEHIND_A_FLAG],
-        IMPLEMENTATION_STATUS[ENABLED_BY_DEFAULT],
-        IMPLEMENTATION_STATUS[REMOVED],
-        IMPLEMENTATION_STATUS[ORIGIN_TRIAL],
-        IMPLEMENTATION_STATUS[INTERVENTION],
-        IMPLEMENTATION_STATUS[ON_HOLD]
-      ]
-      first_of_milestone_func = Feature._first_of_milestone
-      if version == 2:
-        first_of_milestone_func = Feature._first_of_milestone_v2
-
-      last_good_idx = 0
-      for i, status in enumerate(statuses):
-        idx = first_of_milestone_func(feature_list, status, start=last_good_idx)
-        if idx != -1:
-          feature_list[idx]['first_of_milestone'] = True
-          last_good_idx = idx
-    except Exception as e:
-      logging.error(e)
-
   def migrate_views(self):
     """Migrate obsolete values for views on first edit."""
     if self.ff_views == MIXED_SIGNALS:
@@ -984,6 +960,12 @@ class Feature(DictModel):
     q = q.order(Feature.name)
     q = q.filter(Feature.shipped_milestone == milestone)
     desktop_shipping_features = q.fetch(None)
+    for feature in desktop_shipping_features:
+      if feature.impl_status_chrome not in {ENABLED_BY_DEFAULT, DEPRECATED, REMOVED}:
+        if feature.feature_type == FEATURE_TYPE_DEPRECATION_ID and Feature.dt_milestone_desktop_start != None:
+          feature.impl_status_chrome = DEPRECATED
+        if feature.feature_type == FEATURE_TYPE_INCUBATE_ID:
+          feature.impl_status_chrome = ENABLED_BY_DEFAULT
 
     # Features with an android shipping milestone but no desktop milestone.
     q = Feature.query()
@@ -991,29 +973,64 @@ class Feature(DictModel):
     q = q.filter(Feature.shipped_android_milestone == milestone)
     q = q.filter(Feature.shipped_milestone == None)
     android_only_shipping_features = q.fetch(None)
+    for feature in android_only_shipping_features:
+      if feature.impl_status_chrome not in {ENABLED_BY_DEFAULT, DEPRECATED, REMOVED}:
+        if feature.feature_type == FEATURE_TYPE_DEPRECATION_ID and Feature.dt_milestone_android_start != None:
+          feature.impl_status_chrome = DEPRECATED
+        if feature.feature_type == FEATURE_TYPE_INCUBATE_ID:
+          feature.impl_status_chrome = ENABLED_BY_DEFAULT
+
+    # Features that are in origin trial (Desktop) in this milestone
+    q = Feature.query()
+    q = q.order(Feature.name)
+    q = q.filter(Feature.ot_milestone_desktop_start == milestone)
+    desktop_origin_trial_features = q.fetch(None)
+    for feature in desktop_origin_trial_features:
+      feature.impl_status_chrome = ORIGIN_TRIAL
+    
+    # Features that are in origin trial (Android) in this milestone
+    q = Feature.query()
+    q = q.order(Feature.name)
+    q = q.filter(Feature.ot_milestone_android_start == milestone)
+    q = q.filter(Feature.ot_milestone_desktop_start == None)
+    android_origin_trial_features = q.fetch(None)
+    for feature in android_origin_trial_features:
+      feature.impl_status_chrome = ORIGIN_TRIAL
+
+    # Features that are in dev trial (Desktop) in this milestone
+    q = Feature.query()
+    q = q.order(Feature.name)
+    q = q.filter(Feature.dt_milestone_desktop_start == milestone)
+    desktop_dev_trial_features = q.fetch(None)
+    for feature in desktop_dev_trial_features:
+      feature.impl_status_chrome = BEHIND_A_FLAG
+    
+    # Features that are in dev trial (Android) in this milestone
+    q = Feature.query()
+    q = q.order(Feature.name)
+    q = q.filter(Feature.dt_milestone_android_start == milestone)
+    q = q.filter(Feature.dt_milestone_desktop_start == None)
+    android_dev_trial_features = q.fetch(None)
+    for feature in android_dev_trial_features:
+      feature.impl_status_chrome = BEHIND_A_FLAG
 
     # Constructor the proper ordering.
     all_features = []
     all_features.extend(desktop_shipping_features)
     all_features.extend(android_only_shipping_features)
-
-    # Feature list must be first sorted by implementation status and then by name.
-    # The implementation may seem to be counter-intuitive using sort() method.
-    all_features.sort(key=lambda f: f.name)
-    all_features.sort(key=lambda f: f.impl_status_chrome)
+    all_features.extend(desktop_origin_trial_features)
+    all_features.extend(android_origin_trial_features)
+    all_features.extend(desktop_dev_trial_features)
+    all_features.extend(android_dev_trial_features)
 
     all_features = [f for f in all_features if not f.deleted]
-
     feature_list = [f.format_for_template() for f in all_features]
-
-    self._annotate_first_of_impl_status_in_milestones(feature_list)
 
     allowed_feature_list = [
         f for f in feature_list
         if show_unlisted or not f['unlisted']]
 
     return allowed_feature_list
-
 
   @classmethod
   def get_shipping_samples(self, limit=None, update_cache=False):
@@ -1083,7 +1100,6 @@ class Feature(DictModel):
       old_val = getattr(self, prop_name, None)
       setattr(self, '_old_' + prop_name, old_val)
 
-
   def __notify_feature_subscribers_of_changes(self, is_update):
     """Async notifies subscribers of new features and property changes to features by
        posting to a task queue."""
@@ -1110,7 +1126,6 @@ class Feature(DictModel):
 
     # Create task to email subscribers.
     cloud_tasks_helpers.enqueue_task('/tasks/email-subscribers', params)
-
 
   def put(self, notify=True, **kwargs):
     is_update = self.is_saved()
