@@ -37,7 +37,6 @@ import settings
 from internals import fetchchannels
 
 import hack_components
-import hack_wf_components
 
 
 from collections import OrderedDict
@@ -410,7 +409,6 @@ class BlinkComponent(DictModel):
   DEFAULT_COMPONENT = 'Blink'
   COMPONENTS_URL = 'https://blinkcomponents-b48b5.firebaseapp.com'
   COMPONENTS_ENDPOINT = '%s/blinkcomponents' % COMPONENTS_URL
-  WF_CONTENT_ENDPOINT = '%s/wfcomponents' % COMPONENTS_URL
 
   name = ndb.StringProperty(required=True, default=DEFAULT_COMPONENT)
   created = ndb.DateTimeProperty(auto_now_add=True)
@@ -447,34 +445,8 @@ class BlinkComponent(DictModel):
     return components
 
   @classmethod
-  def fetch_wf_content_for_components(self, update_cache=False):
-    """Returns the /web content that use each blink component."""
-    key = 'wfcomponents'
-
-    components = ramcache.get(key)
-    if components is None or update_cache:
-      components = {}
-      url = self.WF_CONTENT_ENDPOINT + '?cache-buster=%s' % time.time()
-      try:
-        result = requests.get(url, timeout=50)
-        if result.status_code == 200:
-          components = json.loads(result.content)
-          ramcache.set(key, components)
-        else:
-          logging.error('Fetching /web blink components content returned: %s' % result.status_code)
-      except requests.Timeout:
-        logging.info('deadline exceeded when fetching %r', url)
-
-    if not components:
-      components = hack_wf_components.HACK_WF_COMPONENTS
-      logging.info('using hard-coded WF components')
-
-    return components
-
-  @classmethod
   def update_db(self):
     """Updates the db with new Blink components from the json endpoint"""
-    self.fetch_wf_content_for_components(update_cache=True) # store /web content in cache
     new_components = self.fetch_all_components(update_cache=True)
     existing_comps = self.query().fetch(None)
     for name in new_components:
@@ -960,15 +932,15 @@ class Feature(DictModel):
     all_features[IMPLEMENTATION_STATUS[DEPRECATED]] = []
     all_features[IMPLEMENTATION_STATUS[REMOVED]] = []
     all_features[IMPLEMENTATION_STATUS[INTERVENTION]] = []
-    all_features[IMPLEMENTATION_STATUS[ORIGIN_TRIAL]] = [] 
+    all_features[IMPLEMENTATION_STATUS[ORIGIN_TRIAL]] = []
     all_features[IMPLEMENTATION_STATUS[BEHIND_A_FLAG]] = []
-    
+
     logging.info('Getting chronological feature list in milestone %d', milestone)
     q = Feature.query()
     q = q.order(Feature.name)
     q = q.filter(Feature.shipped_milestone == milestone)
     desktop_shipping_features = q.fetch(None)
-    
+
     # Push feature to list corresponding to the implementation status of feature in queried milestone
     for feature in desktop_shipping_features:
       if feature.impl_status_chrome == ENABLED_BY_DEFAULT:
@@ -998,12 +970,12 @@ class Feature(DictModel):
       elif feature.impl_status_chrome == DEPRECATED:
         all_features[IMPLEMENTATION_STATUS[DEPRECATED]].append(feature)
       elif feature.impl_status_chrome == REMOVED:
-        all_features[IMPLEMENTATION_STATUS[REMOVED]].append(feature)   
+        all_features[IMPLEMENTATION_STATUS[REMOVED]].append(feature)
       elif feature.feature_type == FEATURE_TYPE_DEPRECATION_ID and Feature.dt_milestone_android_start != None:
           all_features[IMPLEMENTATION_STATUS[DEPRECATED]].append(feature)
       elif feature.feature_type == FEATURE_TYPE_INCUBATE_ID:
           all_features[IMPLEMENTATION_STATUS[ENABLED_BY_DEFAULT]].append(feature)
-    
+
     # Features that are in origin trial (Desktop) in this milestone
     q = Feature.query()
     q = q.order(Feature.name)
@@ -1011,7 +983,7 @@ class Feature(DictModel):
     desktop_origin_trial_features = q.fetch(None)
     for feature in desktop_origin_trial_features:
       all_features[IMPLEMENTATION_STATUS[ORIGIN_TRIAL]].append(feature)
-    
+
     # Features that are in origin trial (Android) in this milestone
     q = Feature.query()
     q = q.order(Feature.name)
@@ -1028,7 +1000,7 @@ class Feature(DictModel):
     desktop_dev_trial_features = q.fetch(None)
     for feature in desktop_dev_trial_features:
       all_features[IMPLEMENTATION_STATUS[BEHIND_A_FLAG]].append(feature)
-    
+
     # Features that are in dev trial (Android) in this milestone
     q = Feature.query()
     q = q.order(Feature.name)
@@ -1049,9 +1021,9 @@ class Feature(DictModel):
       allowed_feature_list[shippingType] = [
         f for f in feature_list[shippingType]
         if show_unlisted or not f['unlisted']]
-    
+
     return allowed_feature_list
-    
+
   @classmethod
   def get_shipping_samples(self, limit=None, update_cache=False):
     cache_key = '%s|%s|%s' % (Feature.DEFAULT_CACHE_KEY, 'samples', limit)

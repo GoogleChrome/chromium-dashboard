@@ -22,6 +22,14 @@ indexes:
   - name: "shipped_android_milestone"
     direction: desc
   - name: "name"
+- kind: "FeatureOwner"
+  properties:
+  - name: "primary_blink_components"
+  - name: "name"
+- kind: "FeatureOwner"
+  properties:
+  - name: "blink_components"
+  - name: "name"
 - kind: "AnimatedProperty"
   properties:
   - name: "bucket_id"
@@ -132,14 +140,6 @@ indexes:
   - name: "date"
   - name: "day_percentage"
     direction: desc
-- kind: "FeatureOwner"
-  properties:
-  - name: "blink_components"
-  - name: "name"
-- kind: "FeatureOwner"
-  properties:
-  - name: "primary_blink_components"
-  - name: "name"
 - kind: "StableInstance"
   properties:
   - name: "bucket_id"
