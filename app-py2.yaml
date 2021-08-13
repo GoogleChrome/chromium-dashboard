@@ -54,7 +54,7 @@ handlers:
 # Note: This handler must remain in this file because it requires GAE py2.
 - url: /_ah/bounce
   # TODO(jrobbins): phase out this handler when we redo email.
-  script: internals.sendmail.app
+  script: internals.sendemail.app
   login: admin # Prevents raw access to this handler.
 
 - url: /admin/blink.*
