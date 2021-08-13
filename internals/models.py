@@ -955,17 +955,34 @@ class Feature(DictModel):
     if milestone == None:
       return None
 
+    all_features = {}
+    all_features[IMPLEMENTATION_STATUS[ENABLED_BY_DEFAULT]] = []
+    all_features[IMPLEMENTATION_STATUS[DEPRECATED]] = []
+    all_features[IMPLEMENTATION_STATUS[REMOVED]] = []
+    all_features[IMPLEMENTATION_STATUS[INTERVENTION]] = []
+    all_features[IMPLEMENTATION_STATUS[ORIGIN_TRIAL]] = [] 
+    all_features[IMPLEMENTATION_STATUS[BEHIND_A_FLAG]] = []
+    
     logging.info('Getting chronological feature list in milestone %d', milestone)
     q = Feature.query()
     q = q.order(Feature.name)
     q = q.filter(Feature.shipped_milestone == milestone)
     desktop_shipping_features = q.fetch(None)
+    
+    # Push feature to list corresponding to the implementation status of feature in queried milestone
     for feature in desktop_shipping_features:
-      if feature.impl_status_chrome not in {ENABLED_BY_DEFAULT, DEPRECATED, REMOVED}:
-        if feature.feature_type == FEATURE_TYPE_DEPRECATION_ID and Feature.dt_milestone_desktop_start != None:
-          feature.impl_status_chrome = DEPRECATED
-        if feature.feature_type == FEATURE_TYPE_INCUBATE_ID:
-          feature.impl_status_chrome = ENABLED_BY_DEFAULT
+      if feature.impl_status_chrome == ENABLED_BY_DEFAULT:
+        all_features[IMPLEMENTATION_STATUS[ENABLED_BY_DEFAULT]].append(feature)
+      elif feature.impl_status_chrome == DEPRECATED:
+        all_features[IMPLEMENTATION_STATUS[DEPRECATED]].append(feature)
+      elif feature.impl_status_chrome == REMOVED:
+        all_features[IMPLEMENTATION_STATUS[REMOVED]].append(feature)
+      elif feature.impl_status_chrome == INTERVENTION:
+        all_features[IMPLEMENTATION_STATUS[INTERVENTION]].append(feature)
+      elif feature.feature_type == FEATURE_TYPE_DEPRECATION_ID and Feature.dt_milestone_desktop_start != None:
+          all_features[IMPLEMENTATION_STATUS[DEPRECATED]].append(feature)
+      elif feature.feature_type == FEATURE_TYPE_INCUBATE_ID:
+          all_features[IMPLEMENTATION_STATUS[ENABLED_BY_DEFAULT]].append(feature)
 
     # Features with an android shipping milestone but no desktop milestone.
     q = Feature.query()
@@ -973,20 +990,27 @@ class Feature(DictModel):
     q = q.filter(Feature.shipped_android_milestone == milestone)
     q = q.filter(Feature.shipped_milestone == None)
     android_only_shipping_features = q.fetch(None)
-    for feature in android_only_shipping_features:
-      if feature.impl_status_chrome not in {ENABLED_BY_DEFAULT, DEPRECATED, REMOVED}:
-        if feature.feature_type == FEATURE_TYPE_DEPRECATION_ID and Feature.dt_milestone_android_start != None:
-          feature.impl_status_chrome = DEPRECATED
-        if feature.feature_type == FEATURE_TYPE_INCUBATE_ID:
-          feature.impl_status_chrome = ENABLED_BY_DEFAULT
 
+    # Push feature to list corresponding to the implementation status of feature in queried milestone
+    for feature in android_only_shipping_features:
+      if feature.impl_status_chrome == ENABLED_BY_DEFAULT:
+        all_features[IMPLEMENTATION_STATUS[ENABLED_BY_DEFAULT]].append(feature)
+      elif feature.impl_status_chrome == DEPRECATED:
+        all_features[IMPLEMENTATION_STATUS[DEPRECATED]].append(feature)
+      elif feature.impl_status_chrome == REMOVED:
+        all_features[IMPLEMENTATION_STATUS[REMOVED]].append(feature)   
+      elif feature.feature_type == FEATURE_TYPE_DEPRECATION_ID and Feature.dt_milestone_android_start != None:
+          all_features[IMPLEMENTATION_STATUS[DEPRECATED]].append(feature)
+      elif feature.feature_type == FEATURE_TYPE_INCUBATE_ID:
+          all_features[IMPLEMENTATION_STATUS[ENABLED_BY_DEFAULT]].append(feature)
+    
     # Features that are in origin trial (Desktop) in this milestone
     q = Feature.query()
     q = q.order(Feature.name)
     q = q.filter(Feature.ot_milestone_desktop_start == milestone)
     desktop_origin_trial_features = q.fetch(None)
     for feature in desktop_origin_trial_features:
-      feature.impl_status_chrome = ORIGIN_TRIAL
+      all_features[IMPLEMENTATION_STATUS[ORIGIN_TRIAL]].append(feature)
     
     # Features that are in origin trial (Android) in this milestone
     q = Feature.query()
@@ -995,7 +1019,7 @@ class Feature(DictModel):
     q = q.filter(Feature.ot_milestone_desktop_start == None)
     android_origin_trial_features = q.fetch(None)
     for feature in android_origin_trial_features:
-      feature.impl_status_chrome = ORIGIN_TRIAL
+      all_features[IMPLEMENTATION_STATUS[ORIGIN_TRIAL]].append(feature)
 
     # Features that are in dev trial (Desktop) in this milestone
     q = Feature.query()
@@ -1003,7 +1027,7 @@ class Feature(DictModel):
     q = q.filter(Feature.dt_milestone_desktop_start == milestone)
     desktop_dev_trial_features = q.fetch(None)
     for feature in desktop_dev_trial_features:
-      feature.impl_status_chrome = BEHIND_A_FLAG
+      all_features[IMPLEMENTATION_STATUS[BEHIND_A_FLAG]].append(feature)
     
     # Features that are in dev trial (Android) in this milestone
     q = Feature.query()
@@ -1012,26 +1036,22 @@ class Feature(DictModel):
     q = q.filter(Feature.dt_milestone_desktop_start == None)
     android_dev_trial_features = q.fetch(None)
     for feature in android_dev_trial_features:
-      feature.impl_status_chrome = BEHIND_A_FLAG
+      all_features[IMPLEMENTATION_STATUS[BEHIND_A_FLAG]].append(feature)
 
-    # Constructor the proper ordering.
-    all_features = []
-    all_features.extend(desktop_shipping_features)
-    all_features.extend(android_only_shipping_features)
-    all_features.extend(desktop_origin_trial_features)
-    all_features.extend(android_origin_trial_features)
-    all_features.extend(desktop_dev_trial_features)
-    all_features.extend(android_dev_trial_features)
+    feature_list = {}
+    allowed_feature_list = {}
 
-    all_features = [f for f in all_features if not f.deleted]
-    feature_list = [f.format_for_template() for f in all_features]
-
-    allowed_feature_list = [
-        f for f in feature_list
+    # Constructor the proper format.
+    for shippingType in all_features:
+      all_features[shippingType].sort(key=lambda f: f.name)
+      all_features[shippingType] = [f for f in all_features[shippingType] if not f.deleted]
+      feature_list[shippingType] = [f.format_for_template() for f in all_features[shippingType]]
+      allowed_feature_list[shippingType] = [
+        f for f in feature_list[shippingType]
         if show_unlisted or not f['unlisted']]
-
+    
     return allowed_feature_list
-
+    
   @classmethod
   def get_shipping_samples(self, limit=None, update_cache=False):
     cache_key = '%s|%s|%s' % (Feature.DEFAULT_CACHE_KEY, 'samples', limit)
