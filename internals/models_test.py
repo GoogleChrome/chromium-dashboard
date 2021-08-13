@@ -163,13 +163,15 @@ class FeatureTest(testing_config.CustomTestCase):
     self.feature_4.put()
 
     actual = models.Feature.get_in_milestone(milestone=1)
-    names = [f['name'] for f in actual]
+    removed = [f['name'] for f in actual['Removed']]
+    enabled_by_default = [f['name'] for f in actual['Enabled by default']]
     self.assertEqual(
-        ['feature a', 'feature c', 'feature b'],
-        names)
-    self.assertEqual(True, actual[0]['first_of_milestone'])
-    self.assertEqual(False, hasattr(actual[1], 'first_of_milestone'))
-    self.assertEqual(True, actual[2]['first_of_milestone'])
+        ['feature b'],
+        removed)
+    self.assertEqual(
+        ['feature a', 'feature c'],
+        enabled_by_default)
+    self.assertEqual(6, len(actual))
 
   def test_get_in_milestone__unlisted(self):
     """Unlisted features should not be listed for users who can't edit."""
@@ -191,12 +193,9 @@ class FeatureTest(testing_config.CustomTestCase):
     self.feature_4.put()
 
     actual = models.Feature.get_in_milestone(milestone=1)
-    names = [f['name'] for f in actual]
     self.assertEqual(
-        ['feature a', 'feature c'],
-        names)
-    self.assertEqual(True, actual[0]['first_of_milestone'])
-    self.assertEqual(False, hasattr(actual[1], 'first_of_milestone'))
+        0,
+        len(actual['Removed']))
 
   def test_get_in_milestone__unlisted_shown(self):
     """Unlisted features should be listed for users who can edit."""
@@ -218,13 +217,9 @@ class FeatureTest(testing_config.CustomTestCase):
     self.feature_4.put()
 
     actual = models.Feature.get_in_milestone(milestone=1, show_unlisted=True)
-    names = [f['name'] for f in actual]
     self.assertEqual(
-        ['feature a', 'feature c', 'feature b'],
-        names)
-    self.assertEqual(True, actual[0]['first_of_milestone'])
-    self.assertEqual(False, hasattr(actual[1], 'first_of_milestone'))
-    self.assertEqual(True, actual[2]['first_of_milestone'])
+        1,
+        len(actual['Removed']))
 
 
 class ApprovalTest(testing_config.CustomTestCase):

@@ -38,7 +38,7 @@ async function init() {
 
   const upcomingEl = document.querySelector('chromedash-upcoming');
   channelsArray.forEach((channel) => {
-    channels[channel].features = upcomingEl.mapFeaturesToShippingType(features[channel]);
+    channels[channel].features = features[channel];
   });
 
 

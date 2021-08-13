@@ -38,6 +38,8 @@ const TEMPLATE_CONTENT = {
 };
 const REMOVED_STATUS = ['Removed'];
 const DEPRECATED_STATUS = ['Deprecated', 'No longer pursuing'];
+const ORIGIN_TRIAL = ['Origin trial'];
+const BROWSER_INTERVENTION = ['Browser Intervention'];
 const SHOW_DATES = true;
 const CARDS_TO_FETCH_IN_ADVANCE = 3;
 
@@ -115,36 +117,12 @@ class ChromedashUpcoming extends LitElement {
     // add some details to milestone information fetched
     milestoneNumsArray.forEach((milestoneNum) => {
       newMilestonesInfo[milestoneNum].version = milestoneNum;
-      newMilestonesInfo[milestoneNum].features =
-          this.mapFeaturesToShippingType(milestoneFeatures[milestoneNum]);
+      newMilestonesInfo[milestoneNum].features = milestoneFeatures[milestoneNum];
     });
 
     // update the properties to render the latest milestone cards
     this.milestoneInfo = Object.assign({}, this.milestoneInfo, newMilestonesInfo);
     this.milestoneArray = [...this.milestoneArray, ...milestoneNumsArray];
-  }
-
-  mapFeaturesToShippingType(features) {
-    const featuresMappedToShippingType = {};
-    features.forEach(f => {
-      const shippingType = f.browsers.chrome.status.text;
-      if (!featuresMappedToShippingType[shippingType]) {
-        featuresMappedToShippingType[shippingType] = [];
-      }
-      featuresMappedToShippingType[shippingType].push(f);
-    });
-
-    for (let [, feautreList] of Object.entries(featuresMappedToShippingType)) {
-      this.sortFeaturesByName(feautreList);
-    }
-
-    return featuresMappedToShippingType;
-  }
-
-  sortFeaturesByName(features) {
-    features.sort((a, b) =>
-      a.name.toLowerCase().localeCompare(b.name.toLowerCase())
-    );
   }
 
   // Handles the Star-Toggle event fired by any one of the child components
@@ -196,6 +174,8 @@ class ChromedashUpcoming extends LitElement {
           ?showdates=${SHOW_DATES}
           .removedStatus=${REMOVED_STATUS}
           .deprecatedStatus=${DEPRECATED_STATUS}
+          .originTrialStatus=${ORIGIN_TRIAL}
+          .browserInterventionStatus=${BROWSER_INTERVENTION}
           .starredFeatures=${this.starredFeatures}
           .cardWidth=${this.cardWidth}
           ?signedin=${this.signedIn}
@@ -212,6 +192,8 @@ class ChromedashUpcoming extends LitElement {
           ?showdates=${SHOW_DATES}
           .removedStatus=${REMOVED_STATUS}
           .deprecatedStatus=${DEPRECATED_STATUS}
+          .originTrialStatus=${ORIGIN_TRIAL}
+          .browserInterventionStatus=${BROWSER_INTERVENTION}
           .starredFeatures=${this.starredFeatures}
           .cardWidth=${this.cardWidth}
           ?signedin=${this.signedIn}
