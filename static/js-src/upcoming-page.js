@@ -3,10 +3,6 @@ const channelsArray = ['stable', 'beta', 'dev'];
 
 const channelsPromise = window.csClient.getChannels();
 
-let jumpSlideWidth = 0;
-let cardsToFetchInAdvance;
-
-
 document.querySelector('.show-blink-checkbox').addEventListener('change', e => {
   e.stopPropagation();
   document.querySelector('chromedash-upcoming').showShippingType = e.target.checked;
@@ -32,7 +28,6 @@ async function init() {
     features[channel] = await featuresPromise[channel];
   }
 
-
   // Remove the loading sign once the data has been fetched from the APIs
   document.body.classList.remove('loading');
 
@@ -41,12 +36,11 @@ async function init() {
     channels[channel].features = features[channel];
   });
 
-
   upcomingEl.channels = channels;
-  upcomingEl.lastFetchedOn = channels[channelsArray[1]].version;
+  upcomingEl.lastFutureFetchedOn = channels[channelsArray[1]].version;
+  upcomingEl.lastPastFetchedOn = channels[channelsArray[1]].version;
   let cardsDisplayed = upcomingEl.computeItems();
   upcomingEl.lastMilestoneVisible = channels[channelsArray[cardsDisplayed-1]].version;
-  cardsToFetchInAdvance = upcomingEl.cardsToFetchInAdvance;
 
   window.csClient.getStars().then((starredFeatureIds) => {
     upcomingEl.starredFeatures = new Set(starredFeatureIds);
@@ -55,27 +49,33 @@ async function init() {
 
 // Slide to newer or older version
 function move(e) {
-  let container = document.querySelector('chromedash-upcoming');
-  let divWidth = container.shadowRoot.querySelector('chromedash-upcoming-milestone-card').cardWidth;
-  let margin = 8;
-  let change = divWidth+margin*2;
+  const container = document.querySelector('chromedash-upcoming');
+  const divWidth = container.shadowRoot
+    .querySelector('chromedash-upcoming-milestone-card').cardWidth;
+  const margin = 8;
+  const change = divWidth + margin * 2;
+  container.classList.add('animate');
 
-  if (container.lastFetchedOn) {
+  if (container.lastFutureFetchedOn) {
     if (e.target.id == 'next-button') {
-      jumpSlideWidth -= change; // move to newer version
-      container.style.marginLeft = jumpSlideWidth + 'px';
+      container.jumpSlideWidth -= change; // move to newer version
+      container.style.marginLeft = container.jumpSlideWidth + 'px';
       container.lastMilestoneVisible += 1;
     } else {
-      if (jumpSlideWidth < 0) {
-        jumpSlideWidth += change; // move to older version
-        container.style.marginLeft = jumpSlideWidth + 'px';
+      if (container.jumpSlideWidth < 0) {
+        container.jumpSlideWidth += change; // move to older version
+        container.style.marginLeft = container.jumpSlideWidth + 'px';
         container.lastMilestoneVisible -= 1;
       }
     }
 
     // Fetch when second last card is displayed
-    if (container.lastMilestoneVisible - container.lastFetchedOn == cardsToFetchInAdvance) {
-      container.lastFetchedOn += cardsToFetchInAdvance;
+    if (container.lastMilestoneVisible - container.lastFutureFetchedOn > 1) {
+      container.lastFutureFetchedOn += 1;
+    }
+
+    if (container.lastPastFetchedOn - container.lastMilestoneVisible == 0) {
+      container.lastPastFetchedOn -= 1;
     }
   }
 }
