@@ -119,7 +119,7 @@ class ChromedashUpcoming extends LitElement {
 
     let nextMilestones;
     let milestoneNumsArray = [];
-    const cardsToFetchInAdvance = 3;
+    const cardsToFetchInAdvance = 3; // number of milestones to fetch while fetching for the first time
 
     // promise to fetch next milestones
     // if fetching first time, fetch next cardsToFetchInAdvance milestones, else fetch only the next milestone.
@@ -130,9 +130,10 @@ class ChromedashUpcoming extends LitElement {
         milestoneNumsArray.push(this._lastFutureFetchedOn+1+i);
       }
     } else {
-      nextMilestones = window.csClient.getSpecifiedChannels(this._lastFutureFetchedOn+3+1,
-        this._lastFutureFetchedOn+3+1);
-      milestoneNumsArray.push(this._lastFutureFetchedOn+3+1);
+      nextMilestones = window.csClient.
+        getSpecifiedChannels(this._lastFutureFetchedOn+cardsToFetchInAdvance+1,
+          this._lastFutureFetchedOn+cardsToFetchInAdvance+1);
+      milestoneNumsArray.push(this._lastFutureFetchedOn+cardsToFetchInAdvance+1);
     }
 
     // promise to fetch features in next milestones
