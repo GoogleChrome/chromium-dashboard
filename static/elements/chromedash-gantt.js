@@ -6,12 +6,16 @@ class ChromedashGantt extends LitElement {
   static get properties() {
     return {
       feature: {type: Object},
+      stableMilestone: {type: Number},
     };
   }
 
   constructor() {
     super();
     this.feature = {};
+    this.stableMilestone = null;
+    window.csClient.getChannels().then((channels) =>
+      this.stableMilestone = channels['stable'].version);
   }
 
   static get styles() {
@@ -22,12 +26,12 @@ class ChromedashGantt extends LitElement {
         width: 200px;
         margin-top: 8px;
       }
-
       ul {
         display: block;
         font-size: 12px;
         vertical-align: top;
         padding: 0;
+        margin: var(--content-padding-half);
       }
       li {
         display: inline-block;
@@ -71,27 +75,29 @@ class ChromedashGantt extends LitElement {
         color: white;
       }
       .stable {
-        border-color: gray;
+        border-color: #444;
       }
       .diamond span {
         font-size: 14px;
         font-weight: bold;
         display: table-cell;
         transform: rotate(-45deg);
-        width: 36px;
-        height: 36px;
+        width: 34px;
+        height: 34px;
         vertical-align: middle;
       }
-      .offset_1 { padding-left: 16px; }
-      .offset_2 { padding-left: 24px; }
-      .offset_3 { padding-left: 32px; }
+      .offset_0 { padding-left: 0px; }
+      .offset_1 { padding-left: 8px; }
+      .offset_2 { padding-left: 16px; }
+      .offset_3 { padding-left: 24px; }
     `];
   }
 
   renderDevTrial(milestone) {
     if (!milestone) return nothing;
     return html`
-      <div class="diamond dev_trial"
+      <div class="diamond dev_trial
+                  ${milestone == this.stableMilestone ? 'stable' : ''}"
        title="First milestone with this feature available to developers"
       ><span>${milestone}</span></div>`;
   }
@@ -99,7 +105,8 @@ class ChromedashGantt extends LitElement {
   renderOriginTrial(milestone) {
     if (!milestone) return nothing;
     return html`
-      <div class="diamond origin_trial"
+      <div class="diamond origin_trial
+                  ${milestone == this.stableMilestone ? 'stable' : ''}"
        title="First milestone with this feature enabled on specific origins"
       ><span>${milestone}</span></div>`;
   }
@@ -107,37 +114,83 @@ class ChromedashGantt extends LitElement {
   renderShipping(milestone) {
     if (!milestone) return nothing;
     return html`
-      <div class="diamond shipping"
+      <div class="diamond shipping
+                  ${milestone == this.stableMilestone ? 'stable' : ''}"
        title="Milestone with this feature enabled by default"
       ><span>${milestone}</span></div>`;
   }
 
   renderRow(
-    platform, devTrialMilestone, originTrialMilestone, shippingMilestone) {
+    platform, devTrialMilestone, originTrialMilestone, shippingMilestone,
+    sortedMilestones) {
+    if (!devTrialMilestone && !originTrialMilestone && !shippingMilestone) {
+      return nothing;
+    }
+
+    let dtOffset = sortedMilestones.dt.indexOf(devTrialMilestone);
+    let otOffset = sortedMilestones.ot.indexOf(originTrialMilestone);
+    let shipOffset = sortedMilestones.ship.indexOf(shippingMilestone);
+
     return html`
        <ul class="bar ${originTrialMilestone ? 'with-ot' : 'without-ot'}">
          <li class="platform">${platform}</li>
-         <li>${this.renderDevTrial(devTrialMilestone)}</li>
-         <li class="${originTrialMilestone == 92 ? 'offset_1' : nothing}">
+         <li class="${'offset_' + dtOffset}">
+           ${this.renderDevTrial(devTrialMilestone)}
+         </li>
+         <li class="${'offset_' + otOffset}">
            ${this.renderOriginTrial(originTrialMilestone)}
          </li>
-         <li>${this.renderShipping(shippingMilestone)}</li>
+         <li class="${'offset_' + shipOffset}">
+           ${this.renderShipping(shippingMilestone)}
+         </li>
        </ul>
     `;
   }
 
   render() {
+    let f = this.feature;
+    let dtDesktop = f.dt_milestone_desktop_start;
+    let otDesktop = f.ot_milestone_desktop_start;
+    let shipDesktop = f.browsers.chrome.desktop;
+    let dtAndroid = f.dt_milestone_android_start;
+    let otAndroid = f.ot_milestone_android_start;
+    let shipAndroid = f.browsers.chrome.android;
+    let dtIos = f.dt_milestone_ios_start;
+    let otIos = null;
+    let shipIos = f.browsers.chrome.ios;
+    let dtWebview = f.dt_milestone_webview_start;
+    let otWebview = null;
+    let shipWebview = f.browsers.chrome.webview;
+
+    if (!dtDesktop && !otDesktop && !shipDesktop &&
+        !dtAndroid && !otAndroid && !shipAndroid &&
+        !dtIos && !otIos && !shipIos &&
+        !dtWebview && !otWebview && !shipWebview) {
+      return html`<p>No milestones specified</p>`;
+    }
+
+    let sortedMilestones = {
+      dt: [dtDesktop, dtAndroid, dtIos, dtWebview].sort(),
+      ot: [otDesktop, otAndroid, otIos, otWebview].sort(),
+      ship: [shipDesktop, shipAndroid, shipIos, shipWebview].sort(),
+    };
+
     return html`
+       <p>Estimated milestones:</p>
        <ul class="header">
          <li></li>
          <li>Dev Trial</li>
          <li>Origin Trial</li>
          <li>Shipping</li>
        </ul>
-       ${this.renderRow('Desktop', 89, 91, 94)}
-       ${this.renderRow('Android', 89, 92, 94)}
-       ${this.renderRow('iOS', 89, null, null)}
-       ${this.renderRow('Webview', null, null, 94)}
+       ${this.renderRow('Desktop',
+          dtDesktop, otDesktop, shipDesktop, sortedMilestones)}
+       ${this.renderRow('Android',
+          dtAndroid, otAndroid, shipAndroid, sortedMilestones)}
+       ${this.renderRow('iOS',
+          dtIos, otIos, shipIos, sortedMilestones)}
+       ${this.renderRow('Webview',
+          dtWebview, otWebview, shipWebview, sortedMilestones)}
     `;
   }
 }
