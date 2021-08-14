@@ -40,6 +40,10 @@ body[data-path*='upcoming'] {
   padding-bottom: $content-padding;
 }
 
+.animate {
+  transition: margin .4s ease;
+}
+
 @media only screen and (min-width: 701px) {
 
   #content-column {

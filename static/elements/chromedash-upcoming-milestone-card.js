@@ -8,15 +8,25 @@ class ChromedashUpcomingMilestoneCard extends LitElement {
     return {
       // Assigned in schedule-apge.js, value from Django
       showShippingType: {type: Boolean},
-      starredFeatures: {type: Array},
+      starredFeatures: {type: Object},
+      highlightFeature: {type: Number},
       templateContent: {type: Object},
       channel: {type: Object},
       showDates: {type: Boolean},
       removedStatus: {type: Array},
+      originTrialStatus: {type: Array},
+      browserInterventionStatus: {type: Array},
       deprecatedStatus: {type: Array},
       signedIn: {type: Boolean},
       cardWidth: {type: Number},
+      noFeatureString: {type: String},
     };
+  }
+
+  constructor() {
+    super();
+    this.starredFeatures = new Set();
+    this.noFeatureString = 'NO FEATURE HAS BEEN PLANNED IN THIS RELEASE YET';
   }
 
   /**
@@ -50,17 +60,39 @@ class ChromedashUpcomingMilestoneCard extends LitElement {
     this.dispatchEvent(event);
   }
 
+  _isAnyFeatureReleased() {
+    for (const shippingType of this._objKeys(this.channel.features)) {
+      if (this.channel.features[shippingType].length != 0) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
   toggleStar(e) {
     e.preventDefault();
     e.stopPropagation();
 
     const iconEl = e.target;
     const featureId = Number(iconEl.dataset.featureId);
-    const newStarred = !this.starredFeatures.includes(featureId);
+    const newStarred = !this.starredFeatures.has(featureId);
 
     this._fireEvent('star-toggle-event', {
       feature: featureId,
       doStar: newStarred,
+    });
+  }
+
+  highlight(e) {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const iconEl = e.target.parentNode;
+    const featureId = Number(iconEl.dataset.featureId);
+
+    this._fireEvent('highlight-feature-event', {
+      feature: featureId,
     });
   }
 
@@ -110,27 +142,27 @@ class ChromedashUpcomingMilestoneCard extends LitElement {
     `;
   }
 
-  _cardFeatureItemTemplate(f) {
+  _cardFeatureItemTemplate(f, shippingType) {
     return html `
     <li data-feature-id="${f.id}">
-      <a href="/feature/${f.id}">${f.name}</a>
+      <a href="/feature/${f.id}" @mouseenter="${this.highlight}" class="${f.id == this.highlightFeature ? 'highlight' : ''}">${f.name}</a>
       <span class="icon_row">
-        ${f.browsers.chrome.origintrial ? html`
+        ${this.originTrialStatus.includes(shippingType) ? html`
         <span class="tooltip" title="Origin Trial">
           <iron-icon icon="chromestatus:extension" class="experimental" data-tooltip></iron-icon>
         </span>
         ` : nothing}
-        ${f.browsers.chrome.intervention ? html`
+        ${this.browserInterventionStatus.includes(shippingType) ? html`
         <span class="tooltip" title="Browser intervention">
           <iron-icon icon="chromestatus:pan-tool" class="intervention" data-tooltip></iron-icon>
         </span>
         ` : nothing}
-        ${this.removedStatus.includes(f.browsers.chrome.status.text) ? html`
+        ${this.removedStatus.includes(shippingType) ? html`
         <span class="tooltip" title="Removed">
           <iron-icon icon="chromestatus:cancel" class="remove" data-tooltip></iron-icon>
         </span>
         ` : nothing}
-        ${this.deprecatedStatus.includes(f.browsers.chrome.status.text) ? html`
+        ${this.deprecatedStatus.includes(shippingType) ? html`
         <span class="tooltip" title="Deprecated">
           <iron-icon icon="chromestatus:warning" class="deprecated" data-tooltip></iron-icon>
         </span>
@@ -139,7 +171,7 @@ class ChromedashUpcomingMilestoneCard extends LitElement {
         <span class="tooltip"
           title="Receive an email notification when there are updates">
           <iron-icon
-            icon="${this.starredFeatures.includes(Number(f.id)) ?
+            icon="${this.starredFeatures.has(Number(f.id)) ?
             'chromestatus:star' :
             'chromestatus:star-border'}"
             class="pushicon"
@@ -166,17 +198,19 @@ class ChromedashUpcomingMilestoneCard extends LitElement {
   _cardFeatureListTemplate() {
     return html `
       <div class="features_list">
-        <div class="features_header">${this.templateContent.featureHeader}:</div>
-
-          ${this._objKeys(this.channel.components).map((componentName) => html`
-          <h3 class="feature_components">${componentName}</h3>
+      ${this._isAnyFeatureReleased() ? html `
+      <div class="features_header">${this.templateContent.featureHeader}:</div>
+          ${this._objKeys(this.channel.features).map((shippingType) => this.channel.features[shippingType] != 0 ? html`
+          <h3 class="feature_shipping_type">${shippingType}</h3>
           <ul>
-            ${this.channel.components[componentName].map((f) => html`
-              ${this._cardFeatureItemTemplate(f)}
+            ${this.channel.features[shippingType].map((f) => html`
+              ${this._cardFeatureItemTemplate(f, shippingType)}
             `)}
           </ul>
-        `)}
-      </div>
+          ` : nothing)}
+          </div>` : html `
+          <div class="features_header no_feature_released">${this.noFeatureString}</div>
+          `}
     `;
   }
 

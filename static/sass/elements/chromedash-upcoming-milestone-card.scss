@@ -97,11 +97,11 @@ iron-icon {
   counter-reset: featurecount;
 
   &.no-components {
-    .feature_components {
+    .feature_shipping_type {
       display: none;
     }
 
-    .feature_components + ul {
+    .feature_shipping_type + ul {
       margin-top: 0;
     }
   }
@@ -120,6 +120,10 @@ iron-icon {
     font-weight: 500;
     text-transform: none;
   }
+}
+
+.no_feature_released {
+  color: #737373;
 }
 
 .features_list {
@@ -153,8 +157,18 @@ iron-icon {
   }
 }
 
-.feature_components {
+.feature_shipping_type {
   margin-top: $content-padding;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.highlight {
+  font-weight: bold;
+  font-size: large;
+  color: orangered;
+}
+
+li a:hover {
+  color: orangered;
 }

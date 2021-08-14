@@ -1,9 +1,7 @@
 // Start fetching right away.
-const channelsArray = ['stable', 'beta', 'dev', 'dev_plus_one'];
+const channelsArray = ['stable', 'beta', 'dev'];
 
 const channelsPromise = window.csClient.getChannels();
-let jumpSlideWidth = 0;
-
 
 document.querySelector('.show-blink-checkbox').addEventListener('change', e => {
   e.stopPropagation();
@@ -33,66 +31,52 @@ async function init() {
   // Remove the loading sign once the data has been fetched from the APIs
   document.body.classList.remove('loading');
 
+  const upcomingEl = document.querySelector('chromedash-upcoming');
   channelsArray.forEach((channel) => {
-    channels[channel].components = mapFeaturesToShippingType(features[channel]);
+    channels[channel].features = features[channel];
   });
 
-  const upcomingEl = document.querySelector('chromedash-upcoming');
   upcomingEl.channels = channels;
+  upcomingEl.lastFutureFetchedOn = channels[channelsArray[1]].version;
+  upcomingEl.lastPastFetchedOn = channels[channelsArray[1]].version;
+  let cardsDisplayed = upcomingEl.computeItems();
+  upcomingEl.lastMilestoneVisible = channels[channelsArray[cardsDisplayed-1]].version;
 
   window.csClient.getStars().then((starredFeatureIds) => {
     upcomingEl.starredFeatures = new Set(starredFeatureIds);
   });
 }
 
-function mapFeaturesToShippingType(features) {
-  const featuresMappedToShippingType = {};
-  features.forEach(f => {
-    const component = f.browsers.chrome.status.text;
-    if (!featuresMappedToShippingType[component]) {
-      featuresMappedToShippingType[component] = [];
-    }
-    featuresMappedToShippingType[component].push(f);
-  });
-
-  for (let [, feautreList] of Object.entries(featuresMappedToShippingType)) {
-    sortFeaturesByName(feautreList);
-  }
-
-  return featuresMappedToShippingType;
-}
-
-
-/**
- *  @param {!Array<!Object>} features
- */
-function sortFeaturesByName(features) {
-  features.sort((a, b) => {
-    a = a.name.toLowerCase();
-    b = b.name.toLowerCase();
-    if (a < b) {
-      return -1;
-    }
-    if (a > b) {
-      return 1;
-    }
-    return 0;
-  });
-}
-
 // Slide to newer or older version
 function move(e) {
-  let container = document.querySelector('chromedash-upcoming');
-  let divWidth = container.shadowRoot.querySelector('chromedash-upcoming-milestone-card').cardWidth;
-  let margin = 8;
-  let change = divWidth+margin*2;
+  const container = document.querySelector('chromedash-upcoming');
+  const divWidth = container.shadowRoot
+    .querySelector('chromedash-upcoming-milestone-card').cardWidth;
+  const margin = 8;
+  const change = divWidth + margin * 2;
+  container.classList.add('animate');
 
-  if (e.target.id=='next-button') {
-    jumpSlideWidth-= change; // move to newer version
-    container.style.marginLeft=jumpSlideWidth + 'px';
-  } else {
-    jumpSlideWidth+=change; // move to older version
-    container.style.marginLeft=jumpSlideWidth + 'px';
+  if (container.lastFutureFetchedOn) {
+    if (e.target.id == 'next-button') {
+      container.jumpSlideWidth -= change; // move to newer version
+      container.style.marginLeft = container.jumpSlideWidth + 'px';
+      container.lastMilestoneVisible += 1;
+    } else {
+      if (container.jumpSlideWidth < 0) {
+        container.jumpSlideWidth += change; // move to older version
+        container.style.marginLeft = container.jumpSlideWidth + 'px';
+        container.lastMilestoneVisible -= 1;
+      }
+    }
+
+    // Fetch when second last card is displayed
+    if (container.lastMilestoneVisible - container.lastFutureFetchedOn > 1) {
+      container.lastFutureFetchedOn += 1;
+    }
+
+    if (container.lastPastFetchedOn - container.lastMilestoneVisible == 0) {
+      container.lastPastFetchedOn -= 1;
+    }
   }
 }
 
