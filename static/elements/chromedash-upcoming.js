@@ -49,7 +49,6 @@ const DEPRECATED_STATUS = ['Deprecated', 'No longer pursuing'];
 const ORIGIN_TRIAL = ['Origin trial'];
 const BROWSER_INTERVENTION = ['Browser Intervention'];
 const SHOW_DATES = true;
-const CARDS_TO_FETCH_IN_ADVANCE = 3;
 
 class ChromedashUpcoming extends LitElement {
   static styles = style;
@@ -69,7 +68,6 @@ class ChromedashUpcoming extends LitElement {
       futureMilestoneArray: {type: Array}, // array to store the milestone numbers fetched after dev channel
       pastMilestoneArray: {type: Array}, // array to store the milestone numbers fetched before stable channel
       milestoneInfo: {type: Object}, // object to store milestone details (features version etc.) fetched after dev channel
-      cardsToFetchInAdvance: {type: Number}, // number of milestones to fetch in advance
       highlightFeature: {type: Number}, // feature to highlight
       jumpSlideWidth: {type: Number}, // left margin value
       isChromeOneFetched: {type: Boolean}, // is the first release of Chrome fetched
@@ -113,18 +111,28 @@ class ChromedashUpcoming extends LitElement {
     this.futureMilestoneArray = [];
     this.pastMilestoneArray = [];
     this.milestoneInfo = {};
-    this.cardsToFetchInAdvance = CARDS_TO_FETCH_IN_ADVANCE;
     this.jumpSlideWidth = 0;
   }
 
   async fetchNextBatch() {
-    // promise to fetch next milestones
-    const nextMilestones = window.csClient.getSpecifiedChannels(this._lastFutureFetchedOn+1+1,
-      this._lastFutureFetchedOn+1+this.cardsToFetchInAdvance);
+    const isFetchedFirstTime = this._lastFutureFetchedOn == this.channels['beta'].version;
 
+    let nextMilestones;
     let milestoneNumsArray = [];
-    for (let i = 1; i <= this.cardsToFetchInAdvance; i++) {
-      milestoneNumsArray.push(this._lastFutureFetchedOn+1+i);
+    const cardsToFetchInAdvance = 3;
+
+    // promise to fetch next milestones
+    // if fetching first time, fetch next cardsToFetchInAdvance milestones, else fetch only the next milestone.
+    if (isFetchedFirstTime) {
+      nextMilestones = window.csClient.getSpecifiedChannels(this._lastFutureFetchedOn+1+1,
+        this._lastFutureFetchedOn+1+cardsToFetchInAdvance);
+      for (let i = 1; i <= cardsToFetchInAdvance; i++) {
+        milestoneNumsArray.push(this._lastFutureFetchedOn+1+i);
+      }
+    } else {
+      nextMilestones = window.csClient.getSpecifiedChannels(this._lastFutureFetchedOn+3+1,
+        this._lastFutureFetchedOn+3+1);
+      milestoneNumsArray.push(this._lastFutureFetchedOn+3+1);
     }
 
     // promise to fetch features in next milestones
@@ -156,26 +164,20 @@ class ChromedashUpcoming extends LitElement {
     this.futureMilestoneArray = [...this.futureMilestoneArray, ...milestoneNumsArray];
   }
 
+  // Fetch 1 earlier released milestone
   async fetchPreviousBatch() {
-    // Chrome 1 is the first release.
-    if (this._lastPastFetchedOn-1-this.cardsToFetchInAdvance < 2) {
+    // Chrome 1 is the first release. Hence, do not fetch if already fetched Chrome 1.
+    if (this._lastPastFetchedOn - 2 < 2) {
       this.isChromeOneFetched = true;
     }
 
-    // promise to fetch next milestones
-    const nextMilestones = window.csClient.getSpecifiedChannels(
-      Math.max(this._lastPastFetchedOn-1-this.cardsToFetchInAdvance, 1),
-      this._lastPastFetchedOn-1-1);
+    let nextMilestones = window.csClient.getSpecifiedChannels(this._lastPastFetchedOn - 2,
+      this._lastPastFetchedOn - 2);
 
     let milestoneNumsArray = [];
-    for (let i = 1; i <= this.cardsToFetchInAdvance; i++) {
-      let milestoneNum = this._lastPastFetchedOn-1-4+i;
-      if (milestoneNum > 0) {
-        milestoneNumsArray.push(this._lastPastFetchedOn-1-4+i);
-      }
-    }
+    milestoneNumsArray.push(this._lastPastFetchedOn - 2);
 
-    // promise to fetch features in next milestones
+    // promise to fetch features in the earlier released milestone
     let milestoneFeaturePromise = {};
     milestoneNumsArray.forEach((milestoneNum) => {
       milestoneFeaturePromise[milestoneNum] = window.csClient.getFeaturesInMilestone(milestoneNum);
@@ -199,13 +201,16 @@ class ChromedashUpcoming extends LitElement {
       newMilestonesInfo[milestoneNum].features = milestoneFeatures[milestoneNum];
     });
 
-    // update the properties to render the latest milestone cards
+    // update the properties to render the newly fetched milestones
     this.milestoneInfo = Object.assign({}, this.milestoneInfo, newMilestonesInfo);
     this.pastMilestoneArray = [...milestoneNumsArray, ...this.pastMilestoneArray];
-    let container = document.querySelector('chromedash-upcoming');
-    let divWidth = container.cardWidth;
-    let margin = 8;
-    let change = 3*(divWidth+margin*2);
+
+    // add the newly fetched milestone to the starting of the list and adjust the margin
+    // without animation so that user does not get disturbed
+    const container = document.querySelector('chromedash-upcoming');
+    const divWidth = container.cardWidth;
+    const margin = 8;
+    const change = divWidth + margin * 2;
     this.jumpSlideWidth -= change;
     container.classList.remove('animate');
     container.style.marginLeft = this.jumpSlideWidth + 'px';
