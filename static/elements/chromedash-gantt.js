@@ -93,12 +93,20 @@ class ChromedashGantt extends LitElement {
     `];
   }
 
+  firstPhrase(milestone) {
+    if (milestone <= this.stableMilestone) {
+      return 'First milestone with this feature';
+    } else {
+      return 'First expected milestone with this feature';
+    }
+  }
+
   renderDevTrial(milestone) {
     if (!milestone) return nothing;
     return html`
       <div class="diamond dev_trial
                   ${milestone == this.stableMilestone ? 'stable' : ''}"
-       title="First milestone with this feature available to developers"
+       title="${this.firstPhrase(milestone)} available to developers behind a flag"
       ><span>${milestone}</span></div>`;
   }
 
@@ -107,7 +115,7 @@ class ChromedashGantt extends LitElement {
     return html`
       <div class="diamond origin_trial
                   ${milestone == this.stableMilestone ? 'stable' : ''}"
-       title="First milestone with this feature enabled on specific origins"
+       title="${this.firstPhrase(milestone)} enabled on participating origins"
       ><span>${milestone}</span></div>`;
   }
 
@@ -116,7 +124,7 @@ class ChromedashGantt extends LitElement {
     return html`
       <div class="diamond shipping
                   ${milestone == this.stableMilestone ? 'stable' : ''}"
-       title="Milestone with this feature enabled by default"
+       title="${this.firstPhrase(milestone)} enabled by default"
       ><span>${milestone}</span></div>`;
   }
 
