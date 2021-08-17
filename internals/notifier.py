@@ -258,10 +258,13 @@ class FeatureChangeHandler(basehandlers.FlaskHandler):
           cloud_tasks_helpers.enqueue_task(
               '/tasks/outbound-email', one_email_dict)
         else:
-          logging.info('Would send the following email:\n')
-          logging.info('To: %s', one_email_dict['to'])
-          logging.info('Subject: %s', one_email_dict['subject'])
-          logging.info('Body:\n%s', one_email_dict['html'])
+          logging.info(
+              'Would send the following email:\n'
+              'To: %s\n'
+              'Subject: %s\n'
+              'Body:\n%s',
+              one_email_dict['to'], one_email_dict['subject'],
+              one_email_dict['html'])
 
     return {'message': 'Done'}
 
