@@ -1,3 +1,6 @@
+# TODO(jrobbins): This GAE service will eventually be almost emptied
+# out as most handlers are moved over to app-p3.yaml.
+
 runtime: python27
 threadsafe: false
 api_version: 1
@@ -43,13 +46,15 @@ handlers:
   script: internals.fetchmetrics.app
   # Any cron job must be harmless if it is called too often or with bad args
 
-- url: /tasks/.*
-  script: internals.notifier.app
+# Note: This handler must remain in this file because it requires GAE py2.
+- url: /tasks/outbound-email
+  script: internals.sendemail.app
   # Header checks prevent raw access to this handler.  Tasks have headers.
 
+# Note: This handler must remain in this file because it requires GAE py2.
 - url: /_ah/bounce
   # TODO(jrobbins): phase out this handler when we redo email.
-  script: internals.notifier.app
+  script: internals.sendemail.app
   login: admin # Prevents raw access to this handler.
 
 - url: /admin/blink.*
@@ -119,7 +124,6 @@ handlers:
 
 
 includes:
-- skip_files.yaml
 - env_vars.yaml
 
 inbound_services:

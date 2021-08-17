@@ -9,7 +9,6 @@ handlers:
   # Header checks prevent raw access to this handler.  Tasks have headers.
 
 includes:
-- skip_files.yaml
 - env_vars.yaml
 
 libraries:

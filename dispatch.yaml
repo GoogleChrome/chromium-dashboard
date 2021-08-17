@@ -1,3 +1,17 @@
 dispatch:
-- url: "*/tasks/*"
+
+# These will never match, because /_ah/ requests are not routed by dispatch.yaml.
+# https://cloud.google.com/appengine/docs/standard/python/reference/dispatch-yaml
+# So, these two handlers must remain in the default service (app-py2).
+# - url: "*/_ah/bounce"
+#  service: app-py2
+# - url: "*/tasks/outbound-email"
+#  service: app-py2
+
+- url: "*/tasks/email-subscribers"
   service: notifier
+
+- url: "*/hello"
+  service: app-py3
+
+# TODO(jrobbins): Gradually route most requests to service app-py3.
