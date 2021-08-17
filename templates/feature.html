@@ -141,23 +141,7 @@
           (<a href="{{feature.browsers.chrome.bug}}" target="_blank" rel="noopener"
               >tracking bug</a>)
         {% endif %}
-        {% if feature.browsers.chrome.desktop or feature.browsers.chrome.android or feature.browsers.chrome.ios or feature.browsers.chrome.webview %}
-          in:
-          <ul>
-          {% if feature.browsers.chrome.desktop %}
-          <li>Chrome for desktop release {{ feature.browsers.chrome.desktop }}</li>
-          {% endif %}
-          {% if feature.browsers.chrome.android %}
-          <li>Chrome for Android release {{ feature.browsers.chrome.android }}</li>
-          {% endif %}
-          {% if feature.browsers.chrome.ios %}
-          <li>Chrome for iOS release {{ feature.browsers.chrome.ios }}</li>
-          {% endif %}
-          {% if feature.browsers.chrome.webview %}
-          <li>Android WebView release {{ feature.browsers.chrome.webview }}</li>
-          {% endif %}
-          </ul>
-        {% endif %}
+        <chromedash-gantt feature="{{feature_json}}"></chromedash-gantt>
       </p>
     </section>
 

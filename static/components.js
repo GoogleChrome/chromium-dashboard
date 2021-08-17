@@ -20,6 +20,7 @@ import './elements/chromedash-color-status';
 import './elements/chromedash-feature';
 import './elements/chromedash-feature-detail';
 import './elements/chromedash-featurelist';
+import './elements/chromedash-gantt';
 import './elements/chromedash-legend';
 import './elements/chromedash-metadata';
 import './elements/chromedash-metrics';
