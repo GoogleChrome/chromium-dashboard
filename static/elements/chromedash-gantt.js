@@ -135,9 +135,9 @@ class ChromedashGantt extends LitElement {
       return nothing;
     }
 
-    let dtOffset = sortedMilestones.dt.indexOf(devTrialMilestone);
-    let otOffset = sortedMilestones.ot.indexOf(originTrialMilestone);
-    let shipOffset = sortedMilestones.ship.indexOf(shippingMilestone);
+    const dtOffset = sortedMilestones.dt.indexOf(devTrialMilestone);
+    const otOffset = sortedMilestones.ot.indexOf(originTrialMilestone);
+    const shipOffset = sortedMilestones.ship.indexOf(shippingMilestone);
 
     return html`
        <ul class="bar ${originTrialMilestone ? 'with-ot' : 'without-ot'}">
@@ -156,19 +156,19 @@ class ChromedashGantt extends LitElement {
   }
 
   render() {
-    let f = this.feature;
-    let dtDesktop = f.dt_milestone_desktop_start;
-    let otDesktop = f.ot_milestone_desktop_start;
-    let shipDesktop = f.browsers.chrome.desktop;
-    let dtAndroid = f.dt_milestone_android_start;
-    let otAndroid = f.ot_milestone_android_start;
-    let shipAndroid = f.browsers.chrome.android;
-    let dtIos = f.dt_milestone_ios_start;
-    let otIos = null;
-    let shipIos = f.browsers.chrome.ios;
-    let dtWebview = f.dt_milestone_webview_start;
-    let otWebview = null;
-    let shipWebview = f.browsers.chrome.webview;
+    const f = this.feature;
+    const dtDesktop = f.dt_milestone_desktop_start;
+    const otDesktop = f.ot_milestone_desktop_start;
+    const shipDesktop = f.browsers.chrome.desktop;
+    const dtAndroid = f.dt_milestone_android_start;
+    const otAndroid = f.ot_milestone_android_start;
+    const shipAndroid = f.browsers.chrome.android;
+    const dtIos = f.dt_milestone_ios_start;
+    const otIos = null; // Chrome on iOS does not support OT.
+    const shipIos = f.browsers.chrome.ios;
+    const dtWebview = f.dt_milestone_webview_start;
+    const otWebview = null; // Webview does not support OT.
+    const shipWebview = f.browsers.chrome.webview;
 
     if (!dtDesktop && !otDesktop && !shipDesktop &&
         !dtAndroid && !otAndroid && !shipAndroid &&
@@ -177,7 +177,7 @@ class ChromedashGantt extends LitElement {
       return html`<p>No milestones specified</p>`;
     }
 
-    let sortedMilestones = {
+    const sortedMilestones = {
       dt: [dtDesktop, dtAndroid, dtIos, dtWebview].sort(),
       ot: [otDesktop, otAndroid, otIos, otWebview].sort(),
       ship: [shipDesktop, shipAndroid, shipIos, shipWebview].sort(),
