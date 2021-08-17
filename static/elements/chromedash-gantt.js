@@ -105,7 +105,7 @@ class ChromedashGantt extends LitElement {
     if (!milestone) return nothing;
     return html`
       <div class="diamond dev_trial
-                  ${milestone == this.stableMilestone ? 'stable' : ''}"
+                  ${milestone === this.stableMilestone ? 'stable' : ''}"
        title="${this.firstPhrase(milestone)} available to developers behind a flag"
       ><span>${milestone}</span></div>`;
   }
@@ -114,7 +114,7 @@ class ChromedashGantt extends LitElement {
     if (!milestone) return nothing;
     return html`
       <div class="diamond origin_trial
-                  ${milestone == this.stableMilestone ? 'stable' : ''}"
+                  ${milestone === this.stableMilestone ? 'stable' : ''}"
        title="${this.firstPhrase(milestone)} enabled on participating origins"
       ><span>${milestone}</span></div>`;
   }
@@ -123,7 +123,7 @@ class ChromedashGantt extends LitElement {
     if (!milestone) return nothing;
     return html`
       <div class="diamond shipping
-                  ${milestone == this.stableMilestone ? 'stable' : ''}"
+                  ${milestone === this.stableMilestone ? 'stable' : ''}"
        title="${this.firstPhrase(milestone)} enabled by default"
       ><span>${milestone}</span></div>`;
   }
