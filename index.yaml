@@ -14,7 +14,6 @@ indexes:
 - kind: "Feature"
   properties:
   - name: "shipped_milestone"
-  - name: "shipped_android_milestone"
     direction: desc
   - name: "name"
 - kind: "Feature"
