@@ -7,5 +7,5 @@ Flask==1.1.2
 requests==2.25.1
 requests-toolbelt==0.9.1
 
-# Google cloud tasks is not used on travis because one of its dependencies
+# Google cloud tasks is not used on GitHub Actions because one of its dependencies
 # will not compiled.  The unit tests use a fake object as the GCT client.

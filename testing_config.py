@@ -23,6 +23,8 @@ import unittest
 app_engine_path = os.environ.get('APP_ENGINE_PATH', '')
 if not app_engine_path:
   app_engine_path = '/usr/lib/google-cloud-sdk/platform/google_appengine'
+
+#TODO(kyleju): fix this path once GitHub actions is working.
 if not os.path.exists(app_engine_path):
   app_engine_path = '/home/travis/google-cloud-sdk/platform/google_appengine'
 if os.path.exists(app_engine_path):

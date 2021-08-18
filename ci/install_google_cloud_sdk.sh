@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-# Note: We now install and update the Google Cloud SDK in .travis.yml.
+# Note: We now install and update the Google Cloud SDK in ci.yml.
 # The rest of this file does configuraton and authorization steps.
 
 # Decrypt the Service Account Key
