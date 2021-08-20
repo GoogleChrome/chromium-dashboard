@@ -25,7 +25,7 @@ jobs:
           if [ ! -d $HOME/google-cloud-sdk/bin ]; then rm -rf $HOME/google-cloud-sdk; curl https://sdk.cloud.google.com | bash > /dev/null; fi
           source $HOME/google-cloud-sdk/path.bash.inc
           gcloud components update -q
-          gcloud components install app-engine-python beta
+          gcloud components install app-engine-python beta cloud-datastore-emulator app-engine-python-extras
           gcloud version
 
       - name: installation
