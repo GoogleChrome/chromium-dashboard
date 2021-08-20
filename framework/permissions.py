@@ -19,8 +19,10 @@ from __future__ import print_function
 import logging
 import flask
 
+import settings
 from framework import users
 from internals import models
+
 
 def can_admin_site(user):
   """Return True if the current user is allowed to administer the site."""
@@ -92,7 +94,7 @@ def _reject_or_proceed(
 
   # Give the user a chance to sign in
   if not user and req.method == 'GET':
-    return handler_obj.redirect('/features?loginStatus=False')
+    return handler_obj.redirect(settings.LOGIN_PAGE_URL)
 
   if not perm_function(user):
     handler_obj.abort(403)

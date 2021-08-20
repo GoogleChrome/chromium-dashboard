@@ -102,6 +102,10 @@ handlers:
   script: pages.featuredetail.app
   secure: always
 
+- url: /myfeatures
+  script: pages.myfeatures.app
+  secure: always
+
 - url: /samples.*
   script: pages.samples.app
   secure: always
