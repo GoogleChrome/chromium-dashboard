@@ -22,6 +22,7 @@ jobs:
 
       - name: pre-installation
         run: |
+          apt-get remove google-cloud-sdk
           curl -s https://sdk.cloud.google.com > install-gcloud.sh
           bash ./install-gcloud.sh --disable-prompts --install-dir=$(HOME) > /dev/null
           rm -f ./install-gcloud.sh
