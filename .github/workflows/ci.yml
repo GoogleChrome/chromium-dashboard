@@ -24,12 +24,9 @@ jobs:
         run: |
           echo "deb https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
           curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
-          apt-get update -qqy && apt-get install -qqy \
-          google-cloud-sdk \
-          google-cloud-sdk-app-engine-python \
-          google-cloud-sdk-beta \
-          google-cloud-sdk-cloud-datastore-emulator \
-          google-cloud-sdk-app-engine-python-extras
+          sudo apt-get update && sudo apt-get install google-cloud-sdk
+          sudo apt-get install google-cloud-sdk-app-engine-python google-cloud-sdk-cloud-datastore-emulator google-cloud-sdk-app-engine-python-extras
+          gcloud init
           gcloud version
 
       - name: installation
