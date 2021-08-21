@@ -22,15 +22,14 @@ jobs:
 
       - name: pre-installation
         run: |
-          sudo snap remove google-cloud-sdk
-          curl -s https://sdk.cloud.google.com > install-gcloud.sh
-          bash ./install-gcloud.sh --disable-prompts --install-dir=$(HOME) > /dev/null
-          rm -f ./install-gcloud.sh
-          source $HOME/google-cloud-sdk/path.bash.inc
-          gcloud components update -q
-          gcloud components install app-engine-python beta cloud-datastore-emulator app-engine-python-extras
+          echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list          curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
+          apt-get update -qqy && apt-get install -qqy \
+          google-cloud-sdk \
+          google-cloud-sdk-app-engine-python \
+          google-cloud-sdk-beta \
+          google-cloud-sdk-cloud-datastore-emulator \
+          google-cloud-sdk-app-engine-python-extras
           gcloud version
-          sudo apt-get install google-cloud-sdk-datastore-emulator
 
       - name: installation
         run: |
@@ -42,7 +41,7 @@ jobs:
         run: npm run lint
 
       - name: test
-        run: gcloud beta emulators datastore start --host-port=:15606 --no-store-on-disk --consistency=1.0
+        run: npm run start-emulator
 
       - name: build
         run: npm run build
