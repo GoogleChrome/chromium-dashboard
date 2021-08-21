@@ -22,7 +22,7 @@ jobs:
 
       - name: pre-installation
         run: |
-          if [ ! -d /usr/lib/google-cloud-sdk/bin ]; then rm -rf /usr/lib//google-cloud-sdk; curl https://sdk.cloud.google.com | bash > /dev/null; fi
+          if [ ! -d /usr/lib/google-cloud-sdk/bin ]; then rm -rf /usr/lib/google-cloud-sdk; curl https://sdk.cloud.google.com | bash > /dev/null; fi
           source $HOME/google-cloud-sdk/path.bash.inc
           gcloud components update -q
           gcloud components install app-engine-python beta cloud-datastore-emulator app-engine-python-extras
