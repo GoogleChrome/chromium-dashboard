@@ -30,6 +30,7 @@ jobs:
           gcloud components update -q
           gcloud components install app-engine-python beta cloud-datastore-emulator app-engine-python-extras
           gcloud version
+          sudo apt-get install google-cloud-sdk-datastore-emulator
 
       - name: installation
         run: |
