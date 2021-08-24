@@ -25,6 +25,7 @@ if not app_engine_path:
   app_engine_path = '/usr/lib/google-cloud-sdk/platform/google_appengine'
 
 if not os.path.exists(app_engine_path):
+  # app_engine_path for GitHub Action CI.
   app_engine_path = '/home/runner/google-cloud-sdk/platform/google_appengine'
 if os.path.exists(app_engine_path):
   sys.path.insert(0, app_engine_path)
