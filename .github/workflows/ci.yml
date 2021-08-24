@@ -27,7 +27,7 @@ jobs:
           curl https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-353.0.0-linux-x86_64.tar.gz | tar -zx > /dev/null
           sudo mv google-cloud-sdk /usr/lib/
           ls -al /usr/bin | grep google-cloud
-          gcloud components install app-engine-python beta cloud-datastore-emulator app-engine-python-extras
+          sudo gcloud components install app-engine-python beta cloud-datastore-emulator app-engine-python-extras
           gcloud version
 
       - name: installation
