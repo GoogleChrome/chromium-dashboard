@@ -23,6 +23,8 @@ jobs:
       - name: pre-installation
         run: |
           sudo snap remove google-cloud-sdk
+          sudo apt-get remove google-cloud-sdk
+          if [ ! -d /usr/lib/google-cloud-sdk/bin ]; then rm -rf /usr/lib/google-cloud-sdk; fi
           which gcloud
           curl https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-353.0.0-linux-x86_64.tar.gz | tar -zx > /dev/null
           ./google-cloud-sdk/install.sh
