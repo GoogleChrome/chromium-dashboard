@@ -23,8 +23,8 @@ jobs:
       - name: pre-installation
         run: |
           curl https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-353.0.0-linux-x86_64.tar.gz > /dev/null
-          tar -zxf google-cloud-sdk-*
-          ./google-cloud-sdk/install.sh
+          tar -zxf $HOME/google-cloud-sdk-*
+          ./$HOME/google-cloud-sdk/install.sh
           source ~/.bashrc
           gcloud components update -q
           gcloud components install app-engine-python beta cloud-datastore-emulator app-engine-python-extras
