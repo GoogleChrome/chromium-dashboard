@@ -41,7 +41,7 @@ jobs:
         run: npm run lint
 
       - name: test
-        run: npm run start-emulator
+        run: npm test
 
       - name: build
         run: npm run build
