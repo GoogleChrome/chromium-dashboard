@@ -22,7 +22,7 @@ jobs:
 
       - name: pre-installation
         run: |
-          ll /usr/bin | grep google-cloud
+          ls -al /usr/bin | grep google-cloud
           rm -rf /usr/lib/google-cloud-sdk
           which gcloud
           curl https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-353.0.0-linux-x86_64.tar.gz | tar -zx > /dev/null
