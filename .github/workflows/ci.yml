@@ -26,9 +26,10 @@ jobs:
           sudo rm -rf /usr/lib/google-cloud-sdk
           curl https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-353.0.0-linux-x86_64.tar.gz | tar -zx > /dev/null
           sudo mv google-cloud-sdk /usr/lib/
-          ls -al /usr/bin | grep google-cloud
+          sudo gcloud components update
           sudo gcloud components install app-engine-python beta cloud-datastore-emulator app-engine-python-extras
           gcloud version
+          gcloud config set project cr-status-staging
 
       - name: installation
         run: |
