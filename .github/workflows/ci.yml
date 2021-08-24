@@ -22,12 +22,12 @@ jobs:
 
       - name: pre-installation
         run: |
-          sudo snap remove google-cloud-sdk
-          sudo apt-get remove google-cloud-sdk
+          ll /usr/bin | grep google-cloud
+          rm -rf /usr/lib/google-cloud-sdk
           which gcloud
           curl https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-353.0.0-linux-x86_64.tar.gz | tar -zx > /dev/null
-          ./google-cloud-sdk/install.sh
-          which gcloud
+          mv google-cloud-sdk /usr/lib/
+          gcloud components update
           gcloud components install app-engine-python beta cloud-datastore-emulator app-engine-python-extras
           gcloud version
 
