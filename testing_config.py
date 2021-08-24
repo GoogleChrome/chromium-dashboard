@@ -23,7 +23,6 @@ import unittest
 app_engine_path = os.environ.get('APP_ENGINE_PATH', '')
 if not app_engine_path:
   app_engine_path = '/usr/lib/google-cloud-sdk/platform/google_appengine'
-
 if not os.path.exists(app_engine_path):
   # app_engine_path for GitHub Action CI.
   app_engine_path = '/home/runner/google-cloud-sdk/platform/google_appengine'
