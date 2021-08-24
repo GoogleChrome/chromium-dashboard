@@ -34,8 +34,9 @@ jobs:
       - name: installation
         run: |
           npm install -g gulp
-          npm install
-          npm run ci-dep
+          npm ci
+          npm run deps
+          npm run dev-deps
 
       - name: lint
         run: npm run lint
