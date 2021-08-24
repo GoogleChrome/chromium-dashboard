@@ -1,0 +1,49 @@
+name: Continuous Integration
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+jobs:
+  python_tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '8.x'
+
+      - name: set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '2.7'
+
+      - name: pre-installation
+        run: |
+          # Remove existing google-cloud-sdk packages in Ubuntu.
+          sudo rm -rf /usr/lib/google-cloud-sdk
+          curl https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-353.0.0-linux-x86_64.tar.gz | tar -zx > /dev/null
+          # Substitute the downloaded google-cloud-sdk packages, due to https://stackoverflow.com/questions/42697026/install-google-cloud-components-error-from-gcloud-command.
+          sudo mv google-cloud-sdk /usr/lib/
+          sudo gcloud components update
+          sudo gcloud components install app-engine-python beta cloud-datastore-emulator app-engine-python-extras
+          gcloud config set project cr-status-staging
+          gcloud version
+
+      - name: installation
+        run: |
+          npm install -g gulp
+          npm ci
+          npm run deps
+          npm run dev-deps
+
+      - name: lint
+        run: npm run lint
+
+      - name: test
+        run: npm test
+
+      - name: build
+        run: npm run build
