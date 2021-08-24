@@ -22,11 +22,12 @@ jobs:
 
       - name: pre-installation
         run: |
-          echo "deb https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
-          curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
-          sudo apt-get update && sudo apt-get install google-cloud-sdk
-          sudo apt-get install google-cloud-sdk-app-engine-python google-cloud-sdk-cloud-datastore-emulator google-cloud-sdk-app-engine-python-extras
-          gcloud init
+          curl https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-353.0.0-linux-x86_64.tar.gz
+          tar -zxf google-cloud-sdk-*
+          ./google-cloud-sdk/install.sh
+          source ~/.bashrc
+          gcloud components update -q
+          gcloud components install app-engine-python beta cloud-datastore-emulator app-engine-python-extras
           gcloud version
 
       - name: installation
