@@ -25,7 +25,6 @@ jobs:
           sudo snap remove google-cloud-sdk
           curl https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-353.0.0-linux-x86_64.tar.gz | tar -zx > /dev/null
           ./google-cloud-sdk/install.sh
-          ./google-cloud-sdk/bin/gcloud init
           which gcloud
           gcloud components install app-engine-python beta cloud-datastore-emulator app-engine-python-extras
           gcloud version
