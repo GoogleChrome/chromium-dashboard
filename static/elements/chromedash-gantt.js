@@ -101,6 +101,13 @@ class ChromedashGantt extends LitElement {
     }
   }
 
+  _isInactive() {
+    const status = this.feature.browsers.chrome.status.text;
+    return (status === 'No active development' ||
+            status === 'On hold' ||
+            status === 'No longer pursuing');
+  }
+
   renderDevTrial(milestone) {
     if (!milestone) return nothing;
     return html`
@@ -175,6 +182,12 @@ class ChromedashGantt extends LitElement {
         !dtIos && !otIos && !shipIos &&
         !dtWebview && !otWebview && !shipWebview) {
       return html`<p>No milestones specified</p>`;
+    }
+
+    // Don't show the visualization if there is no active development.
+    // But, any milestones are available as text in the details section.
+    if (this._isInactive()) {
+      return nothing;
     }
 
     const sortedMilestones = {
