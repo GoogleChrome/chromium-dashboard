@@ -61,6 +61,7 @@
     "lodash": ">=4.17.21",
     "lodash.template": ">=4.5.0",
     "minimist": ">=0.2.1",
+    "path-parse": ">=1.0.7",
     "regenerator-runtime": "^0.13.3",
     "rollup": "^1.17.0",
     "rollup-plugin-babel": "^4.3.3",
