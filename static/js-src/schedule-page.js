@@ -17,13 +17,25 @@ async function init() {
 
   // Prepare data for chromedash-schedule
   const features = await featuresPromise;
-  ['stable', 'beta', 'dev'].forEach((channel) => {
+  let columns = ['stable', 'beta', 'dev'];
+
+  // If there is a gap between stable, beta, or dev then display "gap" column.
+  if (CHANNELS['beta'].version > CHANNELS['stable'].version + 1) {
+    CHANNELS['gap'] = {version: CHANNELS['stable'].version + 1};
+    columns = ['stable', 'gap', 'beta'];
+  } else if (CHANNELS['dev'].version > CHANNELS['beta'].version + 1) {
+    CHANNELS['gap'] = {version: CHANNELS['beta'].version + 1};
+    columns = ['stable', 'beta', 'gap'];
+  }
+
+  columns.forEach((channel) => {
     CHANNELS[channel].components = mapFeaturesToComponents(features.filter(f =>
       f.browsers.chrome.status.milestone_str === CHANNELS[channel].version));
   });
 
   const scheduleEl = document.querySelector('chromedash-schedule');
   scheduleEl.channels = CHANNELS;
+  scheduleEl.columns = columns;
 
   window.csClient.getStars().then((starredFeatureIds) => {
     scheduleEl.starredFeatures = new Set(starredFeatureIds);
