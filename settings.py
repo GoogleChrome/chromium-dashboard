@@ -64,6 +64,11 @@ GOOGLE_SIGN_IN_CLIENT_ID = (
     '914217904764-enfcea61q4hqe7ak8kkuteglrbhk8el1.'
     'apps.googleusercontent.com')
 
+# This is where the an anon user is redirected if they try to access a
+# page that requires being signed in.
+LOGIN_PAGE_URL = '/features?loginStatus=False'
+
+
 if UNIT_TEST_MODE:
   APP_TITLE = 'Local testing'
   SITE_URL = 'http://127.0.0.1:8888/'

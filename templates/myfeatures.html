@@ -1,0 +1,63 @@
+{% extends "_base.html" %}
+
+{% block css %}
+{% endblock %}
+
+{% block subheader %}
+<div id="subheader">
+  <h2>My features</h2>
+</div>
+{% endblock %}
+
+{% block content %}
+<style>
+  ul li {
+      background: white;
+      border: 1px solid gray;
+      margin: 16px;
+      padding: 16px;
+  }
+</style>
+
+<chromedash-accordion
+  id="features_pending_my_approval"
+  title="Features pending my approval"
+  opened>
+
+  <chromedash-feature-table
+    query="pending-approval-by:me"
+    rows=10 columns="approvals">
+  </chromedash-feature-table>
+</chromedash-accordion>
+
+
+<chromedash-accordion
+  id="features_i_starred"
+  title="Features I starred">
+
+  <chromedash-feature-table
+    query="pending-approval-by:me"
+    rows="10">
+  </chromedash-feature-table>
+</chromedash-accordion>
+
+
+<chromedash-accordion
+  id="features_i_own"
+  title="Features I own">
+
+  <chromedash-feature-table
+    query="pending-approval-by:me"
+    rows="10">
+  </chromedash-feature-table>
+</chromedash-accordion>
+
+
+
+{% endblock %}
+
+{% block js %}
+<script nonce="{{nonce}}">
+  document.body.classList.remove('loading');
+</script>
+{% endblock %}
