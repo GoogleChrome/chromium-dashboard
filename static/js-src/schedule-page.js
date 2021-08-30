@@ -19,14 +19,23 @@ async function init() {
   const features = await featuresPromise;
   let columns = ['stable', 'beta', 'dev'];
 
+  let gapMilestone = null;
+
   // If there is a gap between stable, beta, or dev then display "gap" column.
   if (CHANNELS['beta'].version > CHANNELS['stable'].version + 1) {
-    CHANNELS['gap'] = {version: CHANNELS['stable'].version + 1};
+    gapMilestone = CHANNELS['stable'].version + 1;
     columns = ['stable', 'gap', 'beta'];
   } else if (CHANNELS['dev'].version > CHANNELS['beta'].version + 1) {
-    CHANNELS['gap'] = {version: CHANNELS['beta'].version + 1};
+    gapMilestone = CHANNELS['beta'].version + 1;
     columns = ['stable', 'beta', 'gap'];
   }
+  if (gapMilestone) {
+    const gapInfo = await window.csClient.getSpecifiedChannels(
+      gapMilestone, gapMilestone);
+    console.log(gapInfo);
+    CHANNELS['gap'] = gapInfo[gapMilestone];
+  }
+  console.log(CHANNELS);
 
   columns.forEach((channel) => {
     CHANNELS[channel].components = mapFeaturesToComponents(features.filter(f =>
