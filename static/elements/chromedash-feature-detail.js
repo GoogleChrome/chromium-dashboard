@@ -127,7 +127,6 @@ class ChromedashFeatureDetail extends LitElement {
     };
     if (fieldIdMapping[fieldId]) {
       value = this.feature;
-      console.log(fieldIdMapping[fieldId]);
       for (let step of fieldIdMapping[fieldId].split('.')) {
         if (value) {
           value = value[step];
