@@ -104,14 +104,35 @@ class ChromedashFeatureDetail extends LitElement {
   getFieldValue(fieldDef) {
     const fieldId = fieldDef[0];
     let value = this.feature[fieldId];
-    if (fieldId == 'spec_link') {
-      value = this.feature.standards.spec;
-    }
-    if (fieldId == 'standard_maturity') {
-      value = this.feature.standards.maturity;
-    }
-    if (value && value.text) {
-      value = value.text;
+    const fieldIdMapping = {
+      spec_link: 'standards.spec',
+      standard_maturity: 'standards.maturity.text',
+      sample_links: 'resources.samples',
+      docs_links: 'resources.docs',
+      bug_url: 'browsers.chrome.bug',
+      blink_components: 'browsers.chrome.blink_components',
+      devrel: 'browsers.chrome.devrel',
+      prefixed: 'browsers.chrome.prefixed',
+      impl_status_chrome: 'browsers.chrome.status.text',
+      shipped_milestone: 'browsers.chrome.desktop',
+      shipped_android_milestone: 'browsers.chrome.android',
+      shipped_webview_milestone: 'browsers.chrome.webview',
+      shipped_ios_milestone: 'browsers.chrome.ios',
+      ff_views: 'browsers.ff.views.text',
+      ff_views_link: 'browsers.ff.views.url',
+      safari_views: 'browsers.safari.views.text',
+      safari_views_link: 'browsers.safari.views.url',
+      webdev_views: 'browsers.webdev.views.text',
+      webdev_views_link: 'browsers.webdev.views.url',
+    };
+    if (fieldIdMapping[fieldId]) {
+      value = this.feature;
+      console.log(fieldIdMapping[fieldId]);
+      for (let step of fieldIdMapping[fieldId].split('.')) {
+        if (value) {
+          value = value[step];
+        }
+      }
     }
     return value;
   }
