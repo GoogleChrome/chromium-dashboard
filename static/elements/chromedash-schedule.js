@@ -9,7 +9,6 @@ const TEMPLATE_CONTENT = {
     h1Class: '',
     downloadUrl: 'https://www.google.com/chrome/',
     downloadTitle: 'Download Chrome Stable',
-    dateText: 'was',
     featureHeader: 'Features in this release',
   },
   beta: {
@@ -17,7 +16,6 @@ const TEMPLATE_CONTENT = {
     h1Class: 'chrome_version--beta',
     downloadUrl: 'https://www.google.com/chrome/beta/',
     downloadTitle: 'Download Chrome Beta',
-    dateText: 'between',
     featureHeader: 'Features planned in this release',
   },
   dev: {
@@ -25,14 +23,12 @@ const TEMPLATE_CONTENT = {
     h1Class: 'chrome_version--dev',
     downloadUrl: 'https://www.google.com/chrome/dev',
     downloadTitle: 'Download Chrome Dev',
-    dateText: 'coming',
     featureHeader: 'Features planned in this release',
   },
   gap: {
     channelLabel: '',
     h1Class: '',
     downloadUrl: null,
-    dateText: 'coming',
     featureHeader: 'Features planned in this release',
   },
 };
@@ -130,7 +126,7 @@ class ChromedashSchedule extends LitElement {
       ${this.columns.map((type) => html`
         <section class="release ${this.showBlink ? nothing : 'no-components'}">
           <div class="layout vertical center">
-            <h1 class="channel_label">${TEMPLATE_CONTENT[type].channelLabel}</h1>
+        <h1 class="channel_label">${TEMPLATE_CONTENT[type].channelLabel || html`&nbsp;`}</h1>
             <h1 class="chrome_version layout horizontal center ${TEMPLATE_CONTENT[type].h1Class}">
               <span class="chrome-logo"></span>
                ${TEMPLATE_CONTENT[type].downloadUrl ? html`
@@ -144,7 +140,7 @@ class ChromedashSchedule extends LitElement {
           ${SHOW_DATES && this.channels[type].earliest_beta ? html`
             <div class="milestone_info layout horizontal center-center">
               <h3>
-                <span class="channel_label">Beta</span> ${TEMPLATE_CONTENT[type].dateText}
+                <span class="channel_label">Beta</span>
                 <span class="milestone_info-beta">${this._computeDate(this.channels[type].earliest_beta)} - ${this._computeDate(this.channels[type].latest_beta)}</span>
               </h3>
             </div>
