@@ -30,10 +30,13 @@ async function init() {
     columns = ['stable', 'beta', 'gap'];
   }
   if (gapMilestone) {
-    const gapInfo = await window.csClient.getSpecifiedChannels(
-      gapMilestone, gapMilestone);
-    console.log(gapInfo);
-    CHANNELS['gap'] = gapInfo[gapMilestone];
+    try {
+      const gapInfo = await window.csClient.getSpecifiedChannels(
+        gapMilestone, gapMilestone);
+      CHANNELS['gap'] = gapInfo[gapMilestone];
+    } catch (err) {
+      throw (new Error('Unable to load schedule for ' + gapMilestone));
+    }
   }
   console.log(CHANNELS);
 
