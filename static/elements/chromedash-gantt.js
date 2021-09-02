@@ -52,6 +52,9 @@ class ChromedashGantt extends LitElement {
       .with-ot {
         background-image: url(/static/img/gantt-bar-with-ot.png);
       }
+      .with-ot-gap {
+        background-image: url(/static/img/gantt-bar-with-ot-gap.png);
+      }
       .platform {
         padding-top: 15px;
         vertical-align: top;
@@ -135,25 +138,48 @@ class ChromedashGantt extends LitElement {
       ><span>${milestone}</span></div>`;
   }
 
+  chooseBackground(
+    originTrialMilestoneFirst, originTrialMilestoneLast, shippingMilestone) {
+    // Feature has no OT planned.
+    if (!originTrialMilestoneFirst) {
+      return 'without-ot';
+    }
+    // Feature has a single-release OT planned, so just OT diamond on background
+    // that has no extended OT area.
+    if (originTrialMilestoneFirst === originTrialMilestoneLast) {
+      return 'without-ot';
+    }
+    // Feature has a "gapless" OT planned.
+    if (originTrialMilestoneLast >= shippingMilestone - 1) {
+      return 'with-ot';
+    }
+
+    // Otherwise, assume a normal OT that has a gap.
+    return 'with-ot-gap';
+  }
+
   renderRow(
-    platform, devTrialMilestone, originTrialMilestone, shippingMilestone,
+    platform, devTrialMilestone, originTrialMilestoneFirst,
+    originTrialMilestoneLast, shippingMilestone,
     sortedMilestones) {
-    if (!devTrialMilestone && !originTrialMilestone && !shippingMilestone) {
+    if (!devTrialMilestone && !originTrialMilestoneFirst && !shippingMilestone) {
       return nothing;
     }
 
     const dtOffset = sortedMilestones.dt.indexOf(devTrialMilestone);
-    const otOffset = sortedMilestones.ot.indexOf(originTrialMilestone);
+    const otOffset = sortedMilestones.ot.indexOf(originTrialMilestoneFirst);
     const shipOffset = sortedMilestones.ship.indexOf(shippingMilestone);
 
     return html`
-       <ul class="bar ${originTrialMilestone ? 'with-ot' : 'without-ot'}">
+       <ul class="bar ${this.chooseBackground(
+            originTrialMilestoneFirst, originTrialMilestoneLast,
+            shippingMilestone)}">
          <li class="platform">${platform}</li>
          <li class="${'offset_' + dtOffset}">
            ${this.renderDevTrial(devTrialMilestone)}
          </li>
          <li class="${'offset_' + otOffset}">
-           ${this.renderOriginTrial(originTrialMilestone)}
+           ${this.renderOriginTrial(originTrialMilestoneFirst)}
          </li>
          <li class="${'offset_' + shipOffset}">
            ${this.renderShipping(shippingMilestone)}
@@ -165,10 +191,12 @@ class ChromedashGantt extends LitElement {
   render() {
     const f = this.feature;
     const dtDesktop = f.dt_milestone_desktop_start;
-    const otDesktop = f.ot_milestone_desktop_start;
+    const otDesktopFirst = f.ot_milestone_desktop_start;
+    const otDesktopLast = f.ot_milestone_desktop_end;
     const shipDesktop = f.browsers.chrome.desktop;
     const dtAndroid = f.dt_milestone_android_start;
-    const otAndroid = f.ot_milestone_android_start;
+    const otAndroidFirst = f.ot_milestone_android_start;
+    const otAndroidLast = f.ot_milestone_android_end;
     const shipAndroid = f.browsers.chrome.android;
     const dtIos = f.dt_milestone_ios_start;
     const otIos = null; // Chrome on iOS does not support OT.
@@ -177,8 +205,8 @@ class ChromedashGantt extends LitElement {
     const otWebview = null; // Webview does not support OT.
     const shipWebview = f.browsers.chrome.webview;
 
-    if (!dtDesktop && !otDesktop && !shipDesktop &&
-        !dtAndroid && !otAndroid && !shipAndroid &&
+    if (!dtDesktop && !otDesktopFirst && !shipDesktop &&
+        !dtAndroid && !otAndroidFirst && !shipAndroid &&
         !dtIos && !otIos && !shipIos &&
         !dtWebview && !otWebview && !shipWebview) {
       return html`<p>No milestones specified</p>`;
@@ -192,7 +220,7 @@ class ChromedashGantt extends LitElement {
 
     const sortedMilestones = {
       dt: [dtDesktop, dtAndroid, dtIos, dtWebview].sort(),
-      ot: [otDesktop, otAndroid, otIos, otWebview].sort(),
+      ot: [otDesktopFirst, otAndroidFirst, otIos, otWebview].sort(),
       ship: [shipDesktop, shipAndroid, shipIos, shipWebview].sort(),
     };
 
@@ -205,13 +233,17 @@ class ChromedashGantt extends LitElement {
          <li>Shipping</li>
        </ul>
        ${this.renderRow('Desktop',
-          dtDesktop, otDesktop, shipDesktop, sortedMilestones)}
+          dtDesktop, otDesktopFirst, otDesktopLast, shipDesktop,
+          sortedMilestones)}
        ${this.renderRow('Android',
-          dtAndroid, otAndroid, shipAndroid, sortedMilestones)}
+          dtAndroid, otAndroidFirst, otAndroidLast, shipAndroid,
+          sortedMilestones)}
        ${this.renderRow('iOS',
-          dtIos, otIos, shipIos, sortedMilestones)}
+          dtIos, otIos, otIos, shipIos,
+          sortedMilestones)}
        ${this.renderRow('Webview',
-          dtWebview, otWebview, shipWebview, sortedMilestones)}
+          dtWebview, otWebview, otWebview, shipWebview,
+          sortedMilestones)}
     `;
   }
 }
