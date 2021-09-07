@@ -92,7 +92,7 @@
     </section>
     {% endif %}
 
-    {% if feature.resources && feature.resources.samples %}
+    {% if feature.resources and feature.resources.samples %}
     <section id="demo">
       <h3>{% if feature.resources.samples|length == 1 %}Demo{% else %}Demos{% endif %}</h3>
       <ul>
@@ -103,7 +103,7 @@
     </section>
     {% endif %}
 
-    {% if feature.resources && feature.resources.docs %}
+    {% if feature.resources and feature.resources.docs %}
     <section id="documentation">
       <h3>Documentation</h3>
       <ul>
