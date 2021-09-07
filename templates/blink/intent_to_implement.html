@@ -34,7 +34,7 @@
   <br><br><h4>Specification</h4>
   {{feature.standards.spec|urlize}}
 
-  {% if feature.doc_links %}
+  {% if feature.resources && feature.resources.docs %}
     <br><br><h4>Design docs</h4>
     {% for link in feature.resources.docs %}
       <br><a href="{{link}}">{{link}}</a>
@@ -190,9 +190,9 @@
 {% endif %}
 
 {% if 'sample_links' in sections_to_show %}
-   {% if feature.sample_links %}
+   {% if feature.resources && feature.resources.samples %}
      <br><br><h4>Sample links</h4>
-     {% for link in feature.sample_links %}
+     {% for link in feature.resources.samples %}
        <br><a href="{{link}}">{{link}}</a>
      {% endfor %}
    {% endif %}
