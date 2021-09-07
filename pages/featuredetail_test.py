@@ -17,6 +17,7 @@ from __future__ import print_function
 
 import testing_config  # Must be imported first
 
+import os
 import flask
 import werkzeug
 
@@ -81,3 +82,49 @@ class FeatureDetailHandlerTest(TestWithFeature):
 
     self.assertEqual(self.feature_id, template_data['feature_id'])
     self.assertEqual('detailed sum', template_data['feature']['summary'])
+
+
+class FeatureDetailTemplateTest(TestWithFeature):
+
+  HANDLER_CLASS = featuredetail.FeatureDetailHandler
+
+  def setUp(self):
+    super(FeatureDetailTemplateTest, self).setUp()
+    with featuredetail.app.test_request_context(self.request_path):
+      self.template_data = self.handler.get_template_data(
+          feature_id=self.feature_id)
+
+      self.template_data.update(self.handler.get_common_data())
+      self.template_data['nonce'] = 'fake nonce'
+      template_path = self.handler.get_template_path(self.template_data)
+      self.full_template_path = os.path.join(template_path)
+
+  def test_basic_rendering(self):
+    """We can render the template."""
+    template_text = self.handler.render(
+        self.template_data, self.full_template_path)
+    self.assertIn('feature one', template_text)
+    self.assertIn('detailed sum', template_text)
+
+  def test_links(self):
+    """We we generate clickable links."""
+    self.template_data['new_crbug_url'] = 'fake crbug link'
+    resources = self.template_data['feature']['resources']
+    resources['samples'] = ['fake sample link one',
+                            'fake sample link two']
+    resources['docs'] = ['fake doc link one',
+                         'fake doc link two']
+    self.template_data['feature']['standards']['spec'] = 'fake spec link'
+    self.template_data['feature']['tags'] = ['tag_one']
+
+    template_text = self.handler.render(
+        self.template_data, self.full_template_path)
+
+    self.assertIn('href="fake crbug link"', template_text)
+    self.assertIn('href="/features/%d' % self.feature_id , template_text)
+    self.assertIn('href="fake sample link one"', template_text)
+    self.assertIn('href="fake sample link two"', template_text)
+    self.assertIn('href="fake doc link one"', template_text)
+    self.assertIn('href="fake doc link two"', template_text)
+    self.assertIn('href="fake spec link"', template_text)
+    self.assertIn('href="/features#tags:tag_one"', template_text)
