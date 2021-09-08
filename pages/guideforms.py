@@ -652,7 +652,7 @@ ALL_FIELDS = {
         required=False, label='DevTrail on Android',
         widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'}),
         help_text=('First milestone that allows developers to try '
-                   'this feature on iOS by setting a flag.')),
+                   'this feature on Android by setting a flag.')),
 
     'dt_milestone_ios_start': forms.IntegerField(
         required=False, label='DevTrial on iOS (RARE)',
