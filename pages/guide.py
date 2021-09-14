@@ -24,11 +24,10 @@ import os
 import re
 import sys
 from django import forms
+from google.cloud import ndb
 
 # Appengine imports.
 from framework import ramcache
-# TODO(jrobbins): phase out gae_users
-from google.appengine.api import users as gae_users
 from framework import users
 
 from framework import basehandlers
@@ -134,7 +133,9 @@ class FeatureNew(basehandlers.FlaskHandler):
     # TODO(jrobbins): Validate input, even though it is done on client.
 
     feature_type = int(self.form.get('feature_type', 0))
-    gae_user = gae_users.User(email=self.get_current_user().email())
+    signed_in_user = ndb.User(
+        email=self.get_current_user().email(),
+        _auth_domain='gmail.com')
     feature = models.Feature(
         category=int(self.form.get('category')),
         name=self.form.get('name'),
@@ -148,8 +149,8 @@ class FeatureNew(basehandlers.FlaskHandler):
         web_dev_views=models.DEV_NO_SIGNALS,
         blink_components=blink_components,
         tag_review_status=processes.initial_tag_review_status(feature_type),
-        created_by=gae_user,
-        updated_by=gae_user)
+        created_by=signed_in_user,
+        updated_by=signed_in_user)
     key = feature.put()
 
     # TODO(jrobbins): enumerate and remove only the relevant keys.
@@ -528,7 +529,9 @@ class FeatureEditStage(basehandlers.FlaskHandler):
     if self.touched('ongoing_constraints'):
       feature.ongoing_constraints = self.form.get('ongoing_constraints')
 
-    feature.updated_by = gae_users.User(email=self.get_current_user().email())
+    feature.updated_by = ndb.User(
+        email=self.get_current_user().email(),
+        _auth_domain='gmail.com')
     key = feature.put()
 
     # TODO(jrobbins): enumerate and remove only the relevant keys.

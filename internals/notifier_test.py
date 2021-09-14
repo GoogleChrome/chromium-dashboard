@@ -22,9 +22,8 @@ import testing_config  # Must be imported before the module under test.
 import flask
 import mock
 import werkzeug.exceptions  # Flask HTTP stuff.
+from google.cloud import ndb
 
-# TODO(jrobbins): phase out gae_users.
-from google.appengine.api import users as gae_users
 from framework import users
 
 from internals import models
@@ -38,8 +37,10 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     self.feature_1 = models.Feature(
         name='feature one', summary='sum', category=1, visibility=1,
         standardization=1, web_dev_views=1, impl_status_chrome=1,
-        created_by=gae_users.User(email='creator@example.com'),
-        updated_by=gae_users.User(email='editor@example.com'),
+        created_by=ndb.User(
+            email='creator@example.com', _auth_domain='gmail.com'),
+        updated_by=ndb.User(
+            email='editor@example.com', _auth_domain='gmail.com'),
         blink_components=['Blink'])
     self.feature_1.put()
     self.component_1 = models.BlinkComponent(name='Blink')
@@ -57,8 +58,10 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     self.feature_2 = models.Feature(
         name='feature two', summary='sum', category=1, visibility=1,
         standardization=1, web_dev_views=1, impl_status_chrome=1,
-        created_by=gae_users.User(email='creator@example.com'),
-        updated_by=gae_users.User(email='editor@example.com'),
+        created_by=ndb.User(
+            email='creator@example.com', _auth_domain='gmail.com'),
+        updated_by=ndb.User(
+            email='editor@example.com', _auth_domain='gmail.com'),
         blink_components=['Blink'])
     self.feature_2.put()
 
