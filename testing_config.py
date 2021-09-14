@@ -47,6 +47,7 @@ os.environ['SERVER_SOFTWARE'] = 'test ' + os.environ.get('SERVER_SOFTWARE', '')
 os.environ['CURRENT_VERSION_ID'] = 'test.123'
 os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
 os.environ['DATASTORE_EMULATOR_HOST'] = 'localhost:15606'
+os.environ['APPLICATION_ID'] = 'testing'
 
 
 from framework import cloud_tasks_helpers
