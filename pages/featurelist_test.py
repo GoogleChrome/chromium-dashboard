@@ -56,6 +56,7 @@ class FeaturesJsonHandlerTest(TestWithFeature):
 
   def test_get_template_data(self):
     """User can get a JSON feed of all features."""
+    testing_config.sign_in('user@example.com', 111)
     with featurelist.app.test_request_context(self.request_path):
       json_data = self.handler.get_template_data()
 
