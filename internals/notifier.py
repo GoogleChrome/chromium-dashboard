@@ -214,7 +214,7 @@ class FeatureStar(models.DictModel):
     logging.info('found %d stars for %r', len(feature_stars), email)
     feature_ids = [fs.feature_id for fs in feature_stars]
     logging.info('returning %r', feature_ids)
-    return feature_ids
+    return sorted(feature_ids, reverse=True)
 
   @classmethod
   def get_feature_starrers(self, feature_id):

@@ -1,11 +1,12 @@
 import {LitElement, css, html} from 'lit-element';
-// import {nothing} from 'lit-html';
+import {nothing} from 'lit-html';
 import SHARED_STYLES from '../css/shared.css';
 
 class ChromedashFeatureTable extends LitElement {
   static get properties() {
     return {
       query: {type: String},
+      features: {type: Array},
       rows: {type: Number},
       columns: {type: String},
       signedIn: {type: Boolean},
@@ -16,9 +17,18 @@ class ChromedashFeatureTable extends LitElement {
 
   constructor() {
     super();
+    this.loading = true;
     this.starredFeatures = new Set();
-    // TODO(jrobbins): use query to fetch features from server
-    this.features = ['One', 'Two', 'Three', 'Four'];
+    this.features = [];
+    this.noResultsMessage = 'No results';
+  }
+
+  connectedCallback() {
+    super.connectedCallback();
+    window.csClient.searchFeatures(this.query).then((features) => {
+      this.features = features;
+      this.loading = false;
+    });
   }
 
   static get styles() {
@@ -38,11 +48,25 @@ class ChromedashFeatureTable extends LitElement {
     `];
   }
 
+  renderMessages() {
+    if (this.loading) {
+      return html`
+        <tr><td>Loading...</td></tr>
+      `;
+    }
+    if (this.features.length == 0) {
+      return html`
+        <tr><td>${this.noResultsMessage}</td></tr>
+      `;
+    }
+    return nothing;
+  }
+
   renderFeature(feature) {
     // TODO(jrobbins): Add correct links and icons
     return html`
       <tr>
-        <td><a href="#">${feature}</a></td>
+        <td><a href="/feature/${feature.id}">${feature.name}</a></td>
       </tr>
     `;
   }
@@ -51,6 +75,7 @@ class ChromedashFeatureTable extends LitElement {
     return html`
       <table>
         ${this.features.map(this.renderFeature)}
+        ${this.renderMessages()}
       </table>
     `;
   }

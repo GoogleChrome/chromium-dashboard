@@ -9,12 +9,18 @@ indexes:
 
 - kind: "Feature"
   properties:
-  - name: "impl_status_chrome"
-  - name: "name"
+  - name: "deleted"
+  - name: "owner"
+  - name: "updated"
+    direction: desc
 - kind: "Feature"
   properties:
   - name: "shipped_milestone"
     direction: desc
+  - name: "name"
+- kind: "Feature"
+  properties:
+  - name: "impl_status_chrome"
   - name: "name"
 - kind: "Feature"
   properties:
