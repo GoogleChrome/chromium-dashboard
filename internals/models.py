@@ -29,7 +29,6 @@ from google.cloud import ndb
 from google.appengine.api import mail
 from framework import ramcache
 import requests
-from google.appengine.api import users as gae_users
 from framework import users
 
 from framework import cloud_tasks_helpers
@@ -394,8 +393,6 @@ class DictModel(ndb.Model):
         output[key] = {'lat': value.lat, 'lon': value.lon}
       elif isinstance(value, ndb.Model):
         output[key] = to_dict(value)
-      elif isinstance(value, gae_users.User):
-        output[key] = value.email()
       elif isinstance(value, ndb.model.User):
         output[key] = value.email()
       else:
