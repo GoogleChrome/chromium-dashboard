@@ -3,11 +3,6 @@ const channelsArray = ['stable', 'beta', 'dev'];
 
 const channelsPromise = window.csClient.getChannels();
 
-document.querySelector('.show-blink-checkbox').addEventListener('change', e => {
-  e.stopPropagation();
-  document.querySelector('chromedash-upcoming').showShippingType = e.target.checked;
-});
-
 const header = document.querySelector('app-header-layout app-header');
 if (header) {
   header.fixed = false;
