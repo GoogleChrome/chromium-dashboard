@@ -854,7 +854,6 @@ class Feature(DictModel):
         if feature_id in result_dict]
     return result_list
 
-
   @classmethod
   def get_chronological(
       self, limit=None, update_cache=False, version=None, show_unlisted=False):
