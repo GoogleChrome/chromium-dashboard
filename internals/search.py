@@ -24,12 +24,13 @@ from internals import notifier
 
 
 def process_pending_approval_me_query():
-  """Process a query."""
+  """Return a list of features needing approval by current user."""
+  # TODO(jrobbins): write this
   return []
 
 
 def process_starred_me_query():
-  """Process a query."""
+  """Return a list of features starred by the current user."""
   feature_ids = []
   user = users.get_current_user()
   if user:
@@ -40,26 +41,23 @@ def process_starred_me_query():
 
 
 def process_owner_me_query():
-  """Process a query."""
+  """Return features that the current user owns."""
   user = users.get_current_user()
   if not user:
     return []
-
   features = models.Feature.get_all(filterby=('owner', user.email()))
   return features
 
 
-
-# TODO(jrobbins): Replace this with a more general approach.
-PREDEFINED_QUERIES = {
-    'pending-approval-by:me': process_pending_approval_me_query,
-    'starred-by:me': process_starred_me_query,
-    'owner:me': process_owner_me_query,
-    }
-
 def process_query(user_query):
   """Parse and run a user-supplied query, if we can handle it."""
-  query_handler = PREDEFINED_QUERIES.get(user_query)
-  if query_handler:
-    return query_handler()
+  # TODO(jrobbins): Replace this with a more general approach.
+  if user_query == 'pending-approval-by:me':
+    return process_pending_approval_me_query()
+  if user_query == 'starred-by:me':
+    return process_starred_me_query()
+  if user_query == 'owner:me':
+    return process_owner_me_query()
+
+  logging.warn('Unexpected query: %r', user_query)
   return []
