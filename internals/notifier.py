@@ -146,8 +146,8 @@ def make_email_tasks(feature, is_update=False, changes=[]):
   for component_name in feature.blink_components:
     component = models.BlinkComponent.get_by_name(component_name)
     if not component:
-      logging.warn('Blink component "%s" not found.'
-                   'Not sending email to subscribers' % component_name)
+      logging.warning('Blink component "%s" not found.'
+                      'Not sending email to subscribers' % component_name)
       continue
 
     accumulate_reasons(

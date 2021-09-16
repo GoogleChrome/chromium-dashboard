@@ -59,5 +59,5 @@ def process_query(user_query):
   if user_query == 'owner:me':
     return process_owner_me_query()
 
-  logging.warn('Unexpected query: %r', user_query)
+  logging.warning('Unexpected query: %r', user_query)
   return []

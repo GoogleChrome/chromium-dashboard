@@ -78,10 +78,12 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
     self.assertEqual(len(actual), 1)
     self.assertEqual(actual[0]['summary'], 'sum')
 
+  @mock.patch('logging.warning')
   @mock.patch('internals.search.process_pending_approval_me_query')
   @mock.patch('internals.search.process_starred_me_query')
   @mock.patch('internals.search.process_owner_me_query')
-  def test_process_query(self, mock_own_me, mock_star_me, mock_pend_me):
+  def test_process_query(
+      self, mock_own_me, mock_star_me, mock_pend_me, mock_warn):
     """We can match predefined queries."""
     mock_own_me.return_value = 'fake owner result'
     mock_star_me.return_value = 'fake star result'
@@ -102,3 +104,4 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
     self.assertEqual(
         search.process_query('anything else'),
         [])
+    mock_warn.assert_called_once()
