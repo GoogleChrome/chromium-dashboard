@@ -66,7 +66,7 @@ def generate_token(user_email, token_time=None):
     ValueError: if the XSRF secret was not configured.
   """
   token_time = token_time or int(time.time())
-  digester = hmac.new(secrets.get_xsrf_secret())
+  digester = hmac.new(secrets.get_xsrf_secret().encode())
   digester.update(user_email or '')
   digester.update(DELIMITER)
   digester.update(str(token_time))

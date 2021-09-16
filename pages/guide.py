@@ -174,7 +174,7 @@ class ProcessOverview(basehandlers.FlaskHandler):
 
   @permissions.require_edit_feature
   def get_template_data(self, feature_id):
-    f = models.Feature.get_by_id(long(feature_id))
+    f = models.Feature.get_by_id(int(feature_id))
     if f is None:
       self.abort(404, msg='Feature not found')
 

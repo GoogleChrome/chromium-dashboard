@@ -71,7 +71,7 @@ class BlinkHandler(basehandlers.FlaskHandler):
     if not user_id or not blink_component:
       return False
 
-    user = models.FeatureOwner.get_by_id(long(user_id))
+    user = models.FeatureOwner.get_by_id(int(user_id))
     if not user:
       return True
 

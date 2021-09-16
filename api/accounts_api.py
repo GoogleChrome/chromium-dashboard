@@ -65,7 +65,7 @@ class AccountsAPI(basehandlers.APIHandler):
   def delete_account(self, account_id):
     """Delete the specified account."""
     if account_id:
-      found_user = models.AppUser.get_by_id(long(account_id))
+      found_user = models.AppUser.get_by_id(int(account_id))
       if found_user:
         found_user.key.delete()
         ramcache.flush_all()
