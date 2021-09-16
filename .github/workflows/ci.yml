@@ -18,7 +18,7 @@ jobs:
       - name: set up Python
         uses: actions/setup-python@v2
         with:
-          python-version: '2.7'
+          python-version: '3.x'
 
       - name: pre-installation
         run: |
