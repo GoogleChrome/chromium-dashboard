@@ -7,7 +7,6 @@ class ChromedashUpcomingMilestoneCard extends LitElement {
   static get properties() {
     return {
       // Assigned in schedule-apge.js, value from Django
-      showShippingType: {type: Boolean},
       starredFeatures: {type: Object},
       highlightFeature: {type: Number},
       templateContent: {type: Object},
@@ -26,7 +25,7 @@ class ChromedashUpcomingMilestoneCard extends LitElement {
   constructor() {
     super();
     this.starredFeatures = new Set();
-    this.noFeatureString = 'NO FEATURE HAS BEEN PLANNED IN THIS RELEASE YET';
+    this.noFeatureString = 'NO FEATURES ARE PLANNED FOR THIS MILESTONE YET';
   }
 
   /**
@@ -135,7 +134,7 @@ class ChromedashUpcomingMilestoneCard extends LitElement {
       <div class="milestone_info layout horizontal center-center">
         <h3>
           <span class="channel_label">Stable</span> ${this._computeDaysUntil(this.channel.stable_date)}
-          <span class="release-stable">( ${this._computeDate(this.channel.stable_date)} )</span>
+          <span class="release-stable">(${this._computeDate(this.channel.stable_date)})</span>
         </h3>
       </div>
       ` : nothing}
@@ -191,7 +190,7 @@ class ChromedashUpcomingMilestoneCard extends LitElement {
         `}
       </span>
     </li>
-    
+
     `;
   }
 
@@ -228,9 +227,9 @@ class ChromedashUpcomingMilestoneCard extends LitElement {
   render() {
     return html`
       ${this._widthStyle()}
-      <section class="release ${this.showShippingType ? '' : 'no-components'}">
+      <section class="release">
         ${this._cardHeaderTemplate()}
-        ${this._cardFeatureListTemplate()}    
+        ${this._cardFeatureListTemplate()}
       </section>
     `;
   }
