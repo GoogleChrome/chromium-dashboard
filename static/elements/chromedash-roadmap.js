@@ -1,6 +1,6 @@
 import {LitElement, html} from 'lit-element';
 import '@polymer/iron-icon';
-import style from '../css/elements/chromedash-upcoming.css';
+import style from '../css/elements/chromedash-roadmap.css';
 
 const TEMPLATE_CONTENT = {
   stable_minus_one: {
@@ -50,12 +50,12 @@ const ORIGIN_TRIAL = ['Origin trial'];
 const BROWSER_INTERVENTION = ['Browser Intervention'];
 const SHOW_DATES = true;
 
-class ChromedashUpcoming extends LitElement {
+class ChromedashRoadmap extends LitElement {
   static styles = style;
 
   static get properties() {
     return {
-      // Assigned in upcoming-page.js,
+      // Assigned in roadmap-page.js,
       channels: {attribute: false},
       signedIn: {type: Boolean},
       loginUrl: {type: String},
@@ -207,7 +207,7 @@ class ChromedashUpcoming extends LitElement {
 
     // add the newly fetched milestone to the starting of the list and adjust the margin
     // without animation so that user does not get disturbed
-    const container = document.querySelector('chromedash-upcoming');
+    const container = document.querySelector('chromedash-roadmap');
     const divWidth = container.cardWidth;
     const margin = 8;
     const change = divWidth + margin * 2;
@@ -263,7 +263,7 @@ class ChromedashUpcoming extends LitElement {
 
     return html`
         ${this.pastMilestoneArray.map((milestone) => html`
-        <chromedash-upcoming-milestone-card
+        <chromedash-roadmap-milestone-card
           .channel=${this.milestoneInfo[milestone]}
           .templateContent=${TEMPLATE_CONTENT['stable_minus_one']}
           ?showdates=${SHOW_DATES}
@@ -278,11 +278,11 @@ class ChromedashUpcoming extends LitElement {
           @star-toggle-event=${this.handleStarToggle}
           @highlight-feature-event=${this.handleHighlightEvent}
         >
-        </chromedash-upcoming-milestone-card>
+        </chromedash-roadmap-milestone-card>
       `)}
 
       ${['stable', 'beta', 'dev'].map((type) => html`
-        <chromedash-upcoming-milestone-card
+        <chromedash-roadmap-milestone-card
           .channel=${this.channels[type]}
           .templateContent=${TEMPLATE_CONTENT[type]}
           ?showdates=${SHOW_DATES}
@@ -297,11 +297,11 @@ class ChromedashUpcoming extends LitElement {
           @star-toggle-event=${this.handleStarToggle}
           @highlight-feature-event=${this.handleHighlightEvent}
         >
-        </chromedash-upcoming-milestone-card>
+        </chromedash-roadmap-milestone-card>
       `)}
 
       ${this.futureMilestoneArray.map((milestone) => html`
-        <chromedash-upcoming-milestone-card
+        <chromedash-roadmap-milestone-card
           .channel=${this.milestoneInfo[milestone]}
           .templateContent=${TEMPLATE_CONTENT['dev_plus_one']}
           ?showdates=${SHOW_DATES}
@@ -316,10 +316,10 @@ class ChromedashUpcoming extends LitElement {
           @star-toggle-event=${this.handleStarToggle}
           @highlight-feature-event=${this.handleHighlightEvent}
         >
-        </chromedash-upcoming-milestone-card>
+        </chromedash-roadmap-milestone-card>
       `)}
     `;
   }
 }
 
-customElements.define('chromedash-upcoming', ChromedashUpcoming);
+customElements.define('chromedash-roadmap', ChromedashRoadmap);

@@ -1,8 +1,8 @@
 import {LitElement, html} from 'lit-element';
 import {nothing} from 'lit-html';
-import style from '../css/elements/chromedash-upcoming-milestone-card.css';
+import style from '../css/elements/chromedash-roadmap-milestone-card.css';
 
-class ChromedashUpcomingMilestoneCard extends LitElement {
+class ChromedashRoadmapMilestoneCard extends LitElement {
   static styles = style;
   static get properties() {
     return {
@@ -235,4 +235,6 @@ class ChromedashUpcomingMilestoneCard extends LitElement {
   }
 }
 
-customElements.define('chromedash-upcoming-milestone-card', ChromedashUpcomingMilestoneCard);
+customElements.define(
+  'chromedash-roadmap-milestone-card',
+  ChromedashRoadmapMilestoneCard);

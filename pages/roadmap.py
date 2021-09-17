@@ -21,14 +21,14 @@ __author__ = 'shivam.agrawal.2000@gmail.com (Shivam Agarwal)'
 from framework import basehandlers
 import settings
 
-class UpcomingHandler(basehandlers.FlaskHandler):
+class RoadmapHandler(basehandlers.FlaskHandler):
 
-  TEMPLATE_PATH = 'upcoming.html'
+  TEMPLATE_PATH = 'roadmap.html'
 
   def get_template_data(self):
     return {}
 
 
 app = basehandlers.FlaskApplication([
-  ('/upcoming', UpcomingHandler),
+  ('/roadmap', RoadmapHandler),
 ], debug=settings.DEBUG)

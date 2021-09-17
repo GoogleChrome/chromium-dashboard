@@ -1,7 +1,7 @@
 @import "vars";
 @import "layout";
 
-body[data-path*='upcoming'] {
+body[data-path*='roadmap'] {
   --app-drawer-width: 0;
 
   app-drawer {
