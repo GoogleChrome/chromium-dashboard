@@ -7,6 +7,7 @@ class ChromedashFeatureTable extends LitElement {
     return {
       query: {type: String},
       features: {type: Array},
+      loading: {type: Boolean},
       rows: {type: Number},
       columns: {type: String},
       signedIn: {type: Boolean},

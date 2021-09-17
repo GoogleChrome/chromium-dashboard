@@ -31,11 +31,11 @@ def process_pending_approval_me_query():
 
 def process_starred_me_query():
   """Return a list of features starred by the current user."""
-  feature_ids = []
   user = users.get_current_user()
-  if user:
-    feature_ids = notifier.FeatureStar.get_user_stars(user.email())
+  if not user:
+    return []
 
+  feature_ids = notifier.FeatureStar.get_user_stars(user.email())
   features = models.Feature.get_by_ids(feature_ids)
   return features
 
