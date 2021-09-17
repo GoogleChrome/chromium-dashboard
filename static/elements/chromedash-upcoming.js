@@ -57,7 +57,6 @@ class ChromedashUpcoming extends LitElement {
     return {
       // Assigned in upcoming-page.js,
       channels: {attribute: false},
-      showShippingType: {attribute: false},
       signedIn: {type: Boolean},
       loginUrl: {type: String},
       starredFeatures: {type: Object}, // will contain a set of starred features
@@ -276,11 +275,10 @@ class ChromedashUpcoming extends LitElement {
           .cardWidth=${this.cardWidth}
           .highlightFeature=${this.highlightFeature}
           ?signedin=${this.signedIn}
-          ?showShippingType=${this.showShippingType}
           @star-toggle-event=${this.handleStarToggle}
           @highlight-feature-event=${this.handleHighlightEvent}
         >
-        </chromedash-upcoming-milestone-card>        
+        </chromedash-upcoming-milestone-card>
       `)}
 
       ${['stable', 'beta', 'dev'].map((type) => html`
@@ -296,11 +294,10 @@ class ChromedashUpcoming extends LitElement {
           .cardWidth=${this.cardWidth}
           .highlightFeature=${this.highlightFeature}
           ?signedin=${this.signedIn}
-          ?showShippingType=${this.showShippingType}
           @star-toggle-event=${this.handleStarToggle}
           @highlight-feature-event=${this.handleHighlightEvent}
         >
-        </chromedash-upcoming-milestone-card>        
+        </chromedash-upcoming-milestone-card>
       `)}
 
       ${this.futureMilestoneArray.map((milestone) => html`
@@ -316,11 +313,10 @@ class ChromedashUpcoming extends LitElement {
           .cardWidth=${this.cardWidth}
           .highlightFeature=${this.highlightFeature}
           ?signedin=${this.signedIn}
-          ?showShippingType=${this.showShippingType}
           @star-toggle-event=${this.handleStarToggle}
           @highlight-feature-event=${this.handleHighlightEvent}
         >
-        </chromedash-upcoming-milestone-card>        
+        </chromedash-upcoming-milestone-card>
       `)}
     `;
   }
