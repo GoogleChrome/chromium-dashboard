@@ -143,8 +143,9 @@ class ChromedashRoadmapMilestoneCard extends LitElement {
 
   _cardFeatureItemTemplate(f, shippingType) {
     return html `
-    <li data-feature-id="${f.id}">
-      <a href="/feature/${f.id}" @mouseenter="${this.highlight}" class="${f.id == this.highlightFeature ? 'highlight' : ''}">${f.name}</a>
+    <li data-feature-id="${f.id}"
+        class="${f.id == this.highlightFeature ? 'highlight' : ''}">
+      <a href="/feature/${f.id}" @mouseenter="${this.highlight}">${f.name}</a>
       <span class="icon_row">
         ${this.originTrialStatus.includes(shippingType) ? html`
         <span class="tooltip" title="Origin Trial">
