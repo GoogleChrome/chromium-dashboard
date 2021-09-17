@@ -86,8 +86,8 @@ handlers:
   script: pages.featurelist.app
   secure: always
 
-- url: /upcoming
-  script: pages.upcoming.app
+- url: /roadmap
+  script: pages.roadmap.app
   secure: always
 
 - url: /features/schedule
