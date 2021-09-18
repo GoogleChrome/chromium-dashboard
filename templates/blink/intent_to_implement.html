@@ -14,7 +14,16 @@
   that can be copied and pasted into a text editor.
 {% endcomment %}
 
-<p>Body</p>
+<p>Body
+  <span class="tooltip copy-text" style="float:right"
+        title="Copy text to clipboard">
+      <a href="#" data-tooltip>
+        <iron-icon icon="chromestatus:content_copy"
+                   id="copy-email-body"></iron-icon>
+      </a>
+  </span>
+</p>
+
 <div class="email">
 
   <h4>Contact emails</h4>

@@ -1,4 +1,7 @@
 (function(exports) {
+const toastEl = document.querySelector('chromedash-toast');
+const copyLinkEl = document.querySelector('#copy-link');
+
 // Event handler. Used in feature.html template.
 const subscribeToFeature = (featureId) => {
   const iconEl = document.querySelector('.pushicon');
@@ -32,6 +35,14 @@ const shareFeature = () => {
   }
 };
 
+function copyURLToClipboard() {
+  event.preventDefault();
+  const url = copyLinkEl.href;
+  navigator.clipboard.writeText(url).then(() => {
+    toastEl.showMessage('Link copied');
+  });
+}
+
 // Remove loading spinner at page load.
 document.body.classList.remove('loading');
 
@@ -49,6 +60,11 @@ if (shareFeatureEl) {
   });
 }
 
+if (copyLinkEl) {
+  copyLinkEl.addEventListener('click', function() {
+    copyURLToClipboard();
+  });
+}
 
 // Show the star icon if the user has starred this feature.
 window.csClient.getStars().then((subscribedFeatures) => {
@@ -76,7 +92,6 @@ if (starWhenSignedInEl) {
 
 if (SHOW_TOAST) {
   setTimeout(() => {
-    const toastEl = document.querySelector('chromedash-toast');
     toastEl.showMessage('Your feature was saved! It may take a few minutes to ' +
                       'show up in the main list.', null, null, -1);
   }, 500);
