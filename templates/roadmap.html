@@ -2,19 +2,14 @@
 {% load inline_file %}
 
 {% block css %}
-  <style>{% inline_file "/static/css/upcoming.css" %}</style>
+  <style>{% inline_file "/static/css/roadmap.css" %}</style>
 {% endblock %}
 
 {% block subheader %}
   <div id="subheader">
-    <!--<h2>Chrome release timeline</h2>-->
     <div style="flex:1">
-      <h3>Release timeline</h3>
-      <!-- p class="description">Please note, all dates are estimates and are subject to change.</p -->
+      <h3>Roadmap</h3>
     </div>
-    <!-- <paper-toggle-button> doesn't working here. Related links:
-      https://github.com/PolymerElements/paper-toggle-button/pull/132 -->
-    <label><input type="checkbox" class="show-blink-checkbox">Show Shipping Type</label>
   </div>
 {% endblock %}
 
@@ -25,15 +20,15 @@
       <button id="next-button" aria-label="Button to move to later release">Next</button>
     </div>
 
-    <chromedash-upcoming class="animate"
+    <chromedash-roadmap class="animate"
       {% if user %}signedin{% endif %}
       {# TODO(jrobbins): Fix to work with google sign-in #}
       loginurl="#"
       aria-label="List of milestone releases"
-    ></chromedash-upcoming>
+    ></chromedash-roadmap>
 
     <div class="timeline-controls">
-      
+
     </div>
   </section>
 {% endblock %}
@@ -43,7 +38,7 @@
     (function() {
       'use strict';
 
-      {% inline_file "/static/js/upcoming-page.min.js" %}
+      {% inline_file "/static/js/roadmap-page.min.js" %}
     })();
   </script>
 {% endblock %}

@@ -774,7 +774,10 @@ class Feature(DictModel):
 
       # TODO(ericbidelman): Support more than one filter.
       if filterby:
-        query = query.filter(Feature.category == filterby[1])
+        if filterby[0] == 'category':
+          query = query.filter(Feature.category == filterby[1])
+        elif filterby[0] == 'owner':
+          query = query.filter(Feature.owner == filterby[1])
 
       features = query.fetch(limit)
 
@@ -822,6 +825,32 @@ class Feature(DictModel):
         ramcache.set(KEY, feature)
 
     return feature
+
+  @classmethod
+  def get_by_ids(self, feature_ids, update_cache=False):
+    result_dict = {}
+    futures = []
+
+    for feature_id in feature_ids:
+      KEY = '%s|%s' % (Feature.DEFAULT_CACHE_KEY, feature_id)
+      feature = ramcache.get(KEY)
+
+      if feature is None or update_cache:
+        futures.append(Feature.get_by_id_async(feature_id))
+
+    for future in futures:
+      unformatted_feature = future.get_result()
+      if unformatted_feature and not unformatted_feature.deleted:
+        feature = unformatted_feature.format_for_template()
+        feature['updated_display'] = unformatted_feature.updated.strftime("%Y-%m-%d")
+        feature['new_crbug_url'] = unformatted_feature.new_crbug_url()
+        ramcache.set(KEY, feature)
+        result_dict[unformatted_feature.key.integer_id()] = feature
+
+    result_list = [
+        result_dict.get(feature_id) for feature_id in feature_ids
+        if feature_id in result_dict]
+    return result_list
 
   @classmethod
   def get_chronological(

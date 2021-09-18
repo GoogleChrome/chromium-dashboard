@@ -266,10 +266,15 @@ class FeatureStarTest(testing_config.CustomTestCase):
         name='feature two', summary='sum', category=1, visibility=1,
         standardization=1, web_dev_views=1, impl_status_chrome=1)
     self.feature_2.put()
+    self.feature_3 = models.Feature(
+        name='feature three', summary='sum', category=1, visibility=1,
+        standardization=1, web_dev_views=1, impl_status_chrome=1)
+    self.feature_3.put()
 
   def tearDown(self):
     self.feature_1.key.delete()
     self.feature_2.key.delete()
+    self.feature_3.key.delete()
 
   def test_get_star__no_existing(self):
     """User has never starred the given feature."""
@@ -309,7 +314,10 @@ class FeatureStarTest(testing_config.CustomTestCase):
     email = 'user5@example.com'
     feature_1_id = self.feature_1.key.integer_id()
     feature_2_id = self.feature_2.key.integer_id()
+    feature_3_id = self.feature_3.key.integer_id()
+    # Note intermixed order
     notifier.FeatureStar.set_star(email, feature_1_id)
+    notifier.FeatureStar.set_star(email, feature_3_id)
     notifier.FeatureStar.set_star(email, feature_2_id)
 
     actual = notifier.FeatureStar.get_user_stars(email)

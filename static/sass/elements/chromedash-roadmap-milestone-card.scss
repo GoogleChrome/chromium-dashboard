@@ -38,12 +38,12 @@ iron-icon {
     cursor: pointer;
   }
 }
-  
+
 .main-toolbar .toolbar-content {
   max-width: 100%; // override.
   width: 100%;
 }
-  
+
 .chrome_version {
   font-size: 45px;
   margin: $content-padding / 2 0 $content-padding 0;
@@ -135,7 +135,7 @@ iron-icon {
   }
 
   li {
-    padding: $content-padding / 2 0;
+    padding: $content-padding / 2;
     font-weight: 500;
     display: flex;
     justify-content: space-between;
@@ -164,11 +164,5 @@ iron-icon {
 }
 
 .highlight {
-  font-weight: bold;
-  font-size: large;
-  color: orangered;
-}
-
-li a:hover {
-  color: orangered;
+  background: var(--light-accent-color);
 }

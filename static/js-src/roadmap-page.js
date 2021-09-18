@@ -3,18 +3,13 @@ const channelsArray = ['stable', 'beta', 'dev'];
 
 const channelsPromise = window.csClient.getChannels();
 
-document.querySelector('.show-blink-checkbox').addEventListener('change', e => {
-  e.stopPropagation();
-  document.querySelector('chromedash-upcoming').showShippingType = e.target.checked;
-});
-
 const header = document.querySelector('app-header-layout app-header');
 if (header) {
   header.fixed = false;
 }
 
 async function init() {
-  // Prepare data for chromedash-upcoming
+  // Prepare data for chromedash-roadmap
   const channels = await channelsPromise;
   let featuresPromise = {};
 
@@ -31,27 +26,27 @@ async function init() {
   // Remove the loading sign once the data has been fetched from the APIs
   document.body.classList.remove('loading');
 
-  const upcomingEl = document.querySelector('chromedash-upcoming');
+  const roadmapEl = document.querySelector('chromedash-roadmap');
   channelsArray.forEach((channel) => {
     channels[channel].features = features[channel];
   });
 
-  upcomingEl.channels = channels;
-  upcomingEl.lastFutureFetchedOn = channels[channelsArray[1]].version;
-  upcomingEl.lastPastFetchedOn = channels[channelsArray[1]].version;
-  let cardsDisplayed = upcomingEl.computeItems();
-  upcomingEl.lastMilestoneVisible = channels[channelsArray[cardsDisplayed-1]].version;
+  roadmapEl.channels = channels;
+  roadmapEl.lastFutureFetchedOn = channels[channelsArray[1]].version;
+  roadmapEl.lastPastFetchedOn = channels[channelsArray[1]].version;
+  let cardsDisplayed = roadmapEl.computeItems();
+  roadmapEl.lastMilestoneVisible = channels[channelsArray[cardsDisplayed-1]].version;
 
   window.csClient.getStars().then((starredFeatureIds) => {
-    upcomingEl.starredFeatures = new Set(starredFeatureIds);
+    roadmapEl.starredFeatures = new Set(starredFeatureIds);
   });
 }
 
 // Slide to newer or older version
 function move(e) {
-  const container = document.querySelector('chromedash-upcoming');
+  const container = document.querySelector('chromedash-roadmap');
   const divWidth = container.shadowRoot
-    .querySelector('chromedash-upcoming-milestone-card').cardWidth;
+    .querySelector('chromedash-roadmap-milestone-card').cardWidth;
   const margin = 8;
   const change = divWidth + margin * 2;
   container.classList.add('animate');

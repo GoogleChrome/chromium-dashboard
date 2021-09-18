@@ -23,6 +23,8 @@ from framework import permissions
 from framework import ramcache
 from framework import users
 from internals import models
+from internals import search
+
 
 class FeaturesAPI(basehandlers.APIHandler):
   """Features are the the main records that we track."""
@@ -37,10 +39,14 @@ class FeaturesAPI(basehandlers.APIHandler):
       try:
         milestone = int(self.request.args.get('milestone'))
         feature_list = models.Feature.get_in_milestone(
-          show_unlisted=show_unlisted_features, 
+          show_unlisted=show_unlisted_features,
           milestone=milestone)
       except ValueError:
         self.abort(400, msg='Invalid  Milestone')
+
+    user_query = self.request.args.get('q')
+    if user_query:
+      feature_list = search.process_query(user_query)
 
     # No Query-string parameter is provided
     if feature_list is None:
