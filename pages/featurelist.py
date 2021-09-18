@@ -56,19 +56,19 @@ class FeatureListHandler(basehandlers.FlaskHandler):
     template_data = {}
     template_data['categories'] = [
       (v, utils.normalized_name(v)) for k,v in
-      models.FEATURE_CATEGORIES.iteritems()]
+      models.FEATURE_CATEGORIES.items()]
     template_data['IMPLEMENTATION_STATUSES'] = json.dumps([
       {'key': k, 'val': v} for k,v in
-      models.IMPLEMENTATION_STATUS.iteritems()])
+      models.IMPLEMENTATION_STATUS.items()])
     template_data['VENDOR_VIEWS'] = json.dumps([
       {'key': k, 'val': v} for k,v in
-      models.VENDOR_VIEWS.iteritems()])
+      models.VENDOR_VIEWS.items()])
     template_data['WEB_DEV_VIEWS'] = json.dumps([
       {'key': k, 'val': v} for k,v in
-      models.WEB_DEV_VIEWS.iteritems()])
+      models.WEB_DEV_VIEWS.items()])
     template_data['STANDARDS_VALS'] = json.dumps([
       {'key': k, 'val': v} for k,v in
-      models.STANDARDIZATION.iteritems()])
+      models.STANDARDIZATION.items()])
 
     return template_data
 
@@ -92,7 +92,7 @@ class FeatureListXMLHandler(basehandlers.FlaskHandler):
         max_items = settings.RSS_FEED_LIMIT
 
       if category is not None:
-        for k,v in models.FEATURE_CATEGORIES.iteritems():
+        for k,v in models.FEATURE_CATEGORIES.items():
           normalized = utils.normalized_name(v)
           if category == normalized:
             filterby = ('category =', k)

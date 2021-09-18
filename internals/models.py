@@ -356,7 +356,7 @@ def del_none(d):
 
 class DictModel(ndb.Model):
   # def to_dict(self):
-  #   return dict([(p, unicode(getattr(self, p))) for p in self.properties()])
+  #   return dict([(p, str(getattr(self, p))) for p in self.properties()])
 
   def is_saved(self):
     if self.key:

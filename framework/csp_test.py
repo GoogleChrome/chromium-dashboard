@@ -51,14 +51,14 @@ class CspTest(unittest.TestCase):
   def test_get_default_policy__strict(self):
     """We can get the regular strict policy."""
     policy = csp.get_default_policy(nonce=12345)
-    self.assertItemsEqual(csp.DEFAULT_POLICY.keys(), policy.keys())
+    self.assertCountEqual(csp.DEFAULT_POLICY.keys(), policy.keys())
     self.assertIn('strict-dynamic', policy['script-src'])
 
   @mock.patch('framework.csp.USE_NONCE_ONLY_POLICY', True)
   def test_get_default_policy__strict(self):
     """We can get the even stricter nonce-only policy."""
     policy = csp.get_default_policy(nonce=12345)
-    self.assertItemsEqual(csp.NONCE_ONLY_POLICY.keys(), policy.keys())
+    self.assertCountEqual(csp.NONCE_ONLY_POLICY.keys(), policy.keys())
     self.assertNotIn('strict-dynamic', policy['script-src'])
 
   @mock.patch('framework.csp.REPORT_ONLY', False)
@@ -83,7 +83,7 @@ class CspTest(unittest.TestCase):
     ]
     result = csp.build_policy(self.test_policy)
     result_directives = [x.strip() for x in result.split(';')]
-    self.assertItemsEqual(expected_directives, result_directives)
+    self.assertCountEqual(expected_directives, result_directives)
 
   @mock.patch('framework.csp.REPORT_ONLY', True)
   def test_get_headers(self):

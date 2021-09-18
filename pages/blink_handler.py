@@ -44,8 +44,8 @@ class PopulateSubscribersHandler(basehandlers.FlaskHandler):
       blink_components = filter(None, blink_components) # Filter out None values
 
       user = models.FeatureOwner(
-        name=unicode(profile['name']),
-        email=unicode(profile['email']),
+        name=str(profile['name']),
+        email=str(profile['email']),
         twitter=profile.get('twitter', None),
         blink_components=blink_components,
         primary_blink_components=blink_components,

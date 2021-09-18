@@ -58,13 +58,13 @@ class MetricsFunctionTests(testing_config.CustomTestCase):
     testing_config.sign_in('test@google.com', 111)
     datapoints = [self.datapoint]
     updated_datapoints = metricsdata._clean_data(datapoints)
-    self.assertEqual(0.0123456789, updated_datapoints[0].day_percentage)
+    self.assertEqual(0.0123456789, list(updated_datapoints)[0].day_percentage)
 
   def test_clean_data__clean_datapoints(self):
     testing_config.sign_out()
     datapoints = [self.datapoint]
     updated_datapoints = metricsdata._clean_data(datapoints)
-    self.assertEqual(0.01234568, updated_datapoints[0].day_percentage)
+    self.assertEqual(0.01234568, list(updated_datapoints)[0].day_percentage)
 
 
 class PopularityTimelineHandlerTests(testing_config.CustomTestCase):

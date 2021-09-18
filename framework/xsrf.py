@@ -22,6 +22,7 @@ import logging
 import random
 import string
 import time
+import hashlib
 
 from framework import constants
 from framework import secrets
@@ -49,7 +50,7 @@ TOKEN_TIMEOUT_MARGIN_SEC = 5 * constants.SECS_PER_MINUTE
 # generated the token could be a little ahead of the one checking.
 CLOCK_SKEW_SEC = 5
 
-DELIMITER = ':'
+DELIMITER = ':'.encode()
 
 
 def generate_token(user_email, token_time=None):
@@ -66,12 +67,13 @@ def generate_token(user_email, token_time=None):
     ValueError: if the XSRF secret was not configured.
   """
   token_time = token_time or int(time.time())
-  digester = hmac.new(secrets.get_xsrf_secret().encode())
-  digester.update(user_email or '')
+  token_time = str(token_time).encode()
+  digester = hmac.new(secrets.get_xsrf_secret().encode(), digestmod=hashlib.sha256)
+  digester.update(user_email.encode() if user_email else b'')
   digester.update(DELIMITER)
-  digester.update(str(token_time))
+  digester.update(token_time)
   digest = digester.digest()
-  token = base64.urlsafe_b64encode('%s%s%d' % (digest, DELIMITER, token_time))
+  token = base64.urlsafe_b64encode(digest+ DELIMITER + token_time)
   return token
 
 

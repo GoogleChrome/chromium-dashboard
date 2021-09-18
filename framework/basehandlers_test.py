@@ -328,8 +328,8 @@ class APIHandlerTests(testing_config.CustomTestCase):
     with test_app.test_request_context('/path'):
       actual = self.handler.defensive_jsonify(handler_data)
 
-    actual_sent_text = actual.response[0]
-    self.assertTrue(actual_sent_text.startswith(basehandlers.XSSI_PREFIX))
+    actual_sent_text = actual.response[0].encode()
+    self.assertTrue(actual_sent_text.startswith(basehandlers.XSSI_PREFIX).encode())
     self.assertIn(json.dumps(handler_data), actual_sent_text)
 
   def test_do_get(self):

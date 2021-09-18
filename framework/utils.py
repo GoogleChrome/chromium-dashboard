@@ -101,7 +101,7 @@ def render_atom_feed(request, title, data):
                                       '/feature')
 
   feed = feedgenerator.Atom1Feed(
-      title=unicode('%s - %s' % (settings.APP_TITLE, title)),
+      title=str('%s - %s' % (settings.APP_TITLE, title)),
       link=features_url,
       description=u'New features exposed to web developers',
       language=u'en'
@@ -111,11 +111,11 @@ def render_atom_feed(request, title, data):
     pubdate = datetime.datetime.strptime(str(updated[:19]),
                                          '%Y-%m-%d  %H:%M:%S')
     feed.add_item(
-        title=unicode(f['name']),
+        title=str(f['name']),
         link='%s/%s' % (feature_url_prefix, f.get('id')),
         description=f.get('summary', ''),
         pubdate=pubdate,
-        author_name=unicode(settings.APP_TITLE),
+        author_name=str(settings.APP_TITLE),
         categories=[f['category']]
     )
   headers = {
