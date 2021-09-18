@@ -146,8 +146,8 @@ def make_email_tasks(feature, is_update=False, changes=[]):
   for component_name in feature.blink_components:
     component = models.BlinkComponent.get_by_name(component_name)
     if not component:
-      logging.warn('Blink component "%s" not found.'
-                   'Not sending email to subscribers' % component_name)
+      logging.warning('Blink component "%s" not found.'
+                      'Not sending email to subscribers' % component_name)
       continue
 
     accumulate_reasons(
@@ -214,7 +214,7 @@ class FeatureStar(models.DictModel):
     logging.info('found %d stars for %r', len(feature_stars), email)
     feature_ids = [fs.feature_id for fs in feature_stars]
     logging.info('returning %r', feature_ids)
-    return feature_ids
+    return sorted(feature_ids, reverse=True)
 
   @classmethod
   def get_feature_starrers(self, feature_id):

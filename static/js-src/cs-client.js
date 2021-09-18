@@ -200,6 +200,10 @@ class ChromeStatusClient {
     return this.doGet(`/features?milestone=${milestone}`);
   }
 
+  searchFeatures(userQuery) {
+    return this.doGet(`/features?q=${userQuery}`);
+  }
+
   // Channels API
   getChannels() {
     return this.doGet('/channels');

@@ -95,7 +95,7 @@ class FeatureListXMLHandler(basehandlers.FlaskHandler):
         for k,v in models.FEATURE_CATEGORIES.iteritems():
           normalized = utils.normalized_name(v)
           if category == normalized:
-            filterby = ('category =', k)
+            filterby = ('category', k)
             break
 
       feature_list = models.Feature.get_all( # cached

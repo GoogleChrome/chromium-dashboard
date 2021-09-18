@@ -112,6 +112,58 @@ class FeatureTest(testing_config.CustomTestCase):
     self.feature_4.key.delete()
     ramcache.flush_all()
 
+  def test_get_all__normal(self):
+    """We can retrieve a list of all features with no filter."""
+    actual = models.Feature.get_all(update_cache=True)
+    names = [f['name'] for f in actual]
+    self.assertEqual(
+        ['feature c', 'feature d', 'feature a', 'feature b'],
+        names)
+
+    self.feature_1.summary = 'revised summary'
+    self.feature_1.put()  # Changes updated field.
+    actual = models.Feature.get_all(update_cache=True)
+    names = [f['name'] for f in actual]
+    self.assertEqual(
+        ['feature a', 'feature c', 'feature d', 'feature b'],
+        names)
+
+  def test_get_all__category(self):
+    """We can retrieve a list of all features of a given category."""
+    actual = models.Feature.get_all(
+        filterby=('category', models.CSS), update_cache=True)
+    names = [f['name'] for f in actual]
+    self.assertEqual(
+        [],
+        names)
+
+    self.feature_1.category = models.CSS
+    self.feature_1.put()  # Changes updated field.
+    actual = models.Feature.get_all(
+        filterby=('category', models.CSS), update_cache=True)
+    names = [f['name'] for f in actual]
+    self.assertEqual(
+        ['feature a'],
+        names)
+
+  def test_get_all__owner(self):
+    """We can retrieve a list of all features with a given owner."""
+    actual = models.Feature.get_all(
+        filterby=('owner', 'owner@example.com'), update_cache=True)
+    names = [f['name'] for f in actual]
+    self.assertEqual(
+        [],
+        names)
+
+    self.feature_1.owner = ['owner@example.com']
+    self.feature_1.put()  # Changes updated field.
+    actual = models.Feature.get_all(
+        filterby=('owner', 'owner@example.com'), update_cache=True)
+    names = [f['name'] for f in actual]
+    self.assertEqual(
+        ['feature a'],
+        names)
+
   def test_get_chronological__normal(self):
     """We can retrieve a list of features."""
     actual = models.Feature.get_chronological()
