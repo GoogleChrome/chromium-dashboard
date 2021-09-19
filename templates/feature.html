@@ -47,6 +47,11 @@
       <iron-icon icon="chromestatus:share"></iron-icon>
     </a>
   </span>
+  <span class="tooltip copy-to-clipboard" title="Copy link to clipboard">
+    <a href="/feature/{{ feature.id }}" data-tooltip id="copy-link">
+      <iron-icon icon="chromestatus:link"></iron-icon>
+    </a>
+  </span>
   {% if user.can_edit %}
     <span class="tooltip" title="Edit this feature">
       <a href="/guide/edit/{{ feature.id }}" class="editfeature" data-tooltip>
