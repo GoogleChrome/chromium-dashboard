@@ -84,7 +84,7 @@ class ChromedashToast extends LitElement {
       }
     }, {once: true});
 
-    let duration = optDuration || DEFAULT_DURATION;
+    const duration = optDuration || DEFAULT_DURATION;
     if (duration > 0) {
       window.setTimeout(() => {
         this.open = false;
