@@ -953,6 +953,12 @@ class Feature(DictModel):
     if milestone == None:
       return None
 
+    cache_key = '%s|%s|%s|%s' % (
+        Feature.DEFAULT_CACHE_KEY, 'milestone', show_unlisted, milestone)
+    cached_allowed_features_by_type = ramcache.get(cache_key)
+    if cached_allowed_features_by_type:
+      return cached_allowed_features_by_type
+
     all_features = {}
     all_features[IMPLEMENTATION_STATUS[ENABLED_BY_DEFAULT]] = []
     all_features[IMPLEMENTATION_STATUS[DEPRECATED]] = []
@@ -962,10 +968,55 @@ class Feature(DictModel):
     all_features[IMPLEMENTATION_STATUS[BEHIND_A_FLAG]] = []
 
     logging.info('Getting chronological feature list in milestone %d', milestone)
+    # Start each query asynchronously in parallel.
     q = Feature.query()
     q = q.order(Feature.name)
     q = q.filter(Feature.shipped_milestone == milestone)
-    desktop_shipping_features = q.fetch(None)
+    desktop_shipping_features_future = q.fetch_async(None)
+
+    # Features with an android shipping milestone but no desktop milestone.
+    q = Feature.query()
+    q = q.order(Feature.name)
+    q = q.filter(Feature.shipped_android_milestone == milestone)
+    q = q.filter(Feature.shipped_milestone == None)
+    android_only_shipping_features_future = q.fetch_async(None)
+
+    # Features that are in origin trial (Desktop) in this milestone
+    q = Feature.query()
+    q = q.order(Feature.name)
+    q = q.filter(Feature.ot_milestone_desktop_start == milestone)
+    desktop_origin_trial_features_future = q.fetch_async(None)
+
+    # Features that are in origin trial (Android) in this milestone
+    q = Feature.query()
+    q = q.order(Feature.name)
+    q = q.filter(Feature.ot_milestone_android_start == milestone)
+    q = q.filter(Feature.ot_milestone_desktop_start == None)
+    android_origin_trial_features_future = q.fetch_async(None)
+
+    # Features that are in dev trial (Desktop) in this milestone
+    q = Feature.query()
+    q = q.order(Feature.name)
+    q = q.filter(Feature.dt_milestone_desktop_start == milestone)
+    desktop_dev_trial_features_future = q.fetch_async(None)
+
+    # Features that are in dev trial (Android) in this milestone
+    q = Feature.query()
+    q = q.order(Feature.name)
+    q = q.filter(Feature.dt_milestone_android_start == milestone)
+    q = q.filter(Feature.dt_milestone_desktop_start == None)
+    android_dev_trial_features_future = q.fetch_async(None)
+
+    # Wait for all futures to complete.
+    desktop_shipping_features = desktop_shipping_features_future.result()
+    android_only_shipping_features = (
+        android_only_shipping_features_future.result())
+    desktop_origin_trial_features = (
+        desktop_origin_trial_features_future.result())
+    android_origin_trial_features = (
+        android_origin_trial_features_future.result())
+    desktop_dev_trial_features = desktop_dev_trial_features_future.result()
+    android_dev_trial_features = android_dev_trial_features_future.result()
 
     # Push feature to list corresponding to the implementation status of feature in queried milestone
     for feature in desktop_shipping_features:
@@ -982,13 +1033,6 @@ class Feature(DictModel):
       elif feature.feature_type == FEATURE_TYPE_INCUBATE_ID:
           all_features[IMPLEMENTATION_STATUS[ENABLED_BY_DEFAULT]].append(feature)
 
-    # Features with an android shipping milestone but no desktop milestone.
-    q = Feature.query()
-    q = q.order(Feature.name)
-    q = q.filter(Feature.shipped_android_milestone == milestone)
-    q = q.filter(Feature.shipped_milestone == None)
-    android_only_shipping_features = q.fetch(None)
-
     # Push feature to list corresponding to the implementation status of feature in queried milestone
     for feature in android_only_shipping_features:
       if feature.impl_status_chrome == ENABLED_BY_DEFAULT:
@@ -1002,53 +1046,35 @@ class Feature(DictModel):
       elif feature.feature_type == FEATURE_TYPE_INCUBATE_ID:
           all_features[IMPLEMENTATION_STATUS[ENABLED_BY_DEFAULT]].append(feature)
 
-    # Features that are in origin trial (Desktop) in this milestone
-    q = Feature.query()
-    q = q.order(Feature.name)
-    q = q.filter(Feature.ot_milestone_desktop_start == milestone)
-    desktop_origin_trial_features = q.fetch(None)
     for feature in desktop_origin_trial_features:
       all_features[IMPLEMENTATION_STATUS[ORIGIN_TRIAL]].append(feature)
 
-    # Features that are in origin trial (Android) in this milestone
-    q = Feature.query()
-    q = q.order(Feature.name)
-    q = q.filter(Feature.ot_milestone_android_start == milestone)
-    q = q.filter(Feature.ot_milestone_desktop_start == None)
-    android_origin_trial_features = q.fetch(None)
     for feature in android_origin_trial_features:
       all_features[IMPLEMENTATION_STATUS[ORIGIN_TRIAL]].append(feature)
 
-    # Features that are in dev trial (Desktop) in this milestone
-    q = Feature.query()
-    q = q.order(Feature.name)
-    q = q.filter(Feature.dt_milestone_desktop_start == milestone)
-    desktop_dev_trial_features = q.fetch(None)
     for feature in desktop_dev_trial_features:
       all_features[IMPLEMENTATION_STATUS[BEHIND_A_FLAG]].append(feature)
 
-    # Features that are in dev trial (Android) in this milestone
-    q = Feature.query()
-    q = q.order(Feature.name)
-    q = q.filter(Feature.dt_milestone_android_start == milestone)
-    q = q.filter(Feature.dt_milestone_desktop_start == None)
-    android_dev_trial_features = q.fetch(None)
     for feature in android_dev_trial_features:
       all_features[IMPLEMENTATION_STATUS[BEHIND_A_FLAG]].append(feature)
 
-    feature_list = {}
-    allowed_feature_list = {}
+    features_by_type = {}
+    allowed_features_by_type = {}
 
-    # Constructor the proper format.
+    # Construct results as: {type: [json_feature, ...], ...}.
     for shippingType in all_features:
       all_features[shippingType].sort(key=lambda f: f.name)
-      all_features[shippingType] = [f for f in all_features[shippingType] if not f.deleted]
-      feature_list[shippingType] = [f.format_for_template() for f in all_features[shippingType]]
-      allowed_feature_list[shippingType] = [
-        f for f in feature_list[shippingType]
+      all_features[shippingType] = [
+          f for f in all_features[shippingType] if not f.deleted]
+      features_by_type[shippingType] = [
+          f.format_for_template() for f in all_features[shippingType]]
+      allowed_features_by_type[shippingType] = [
+        f for f in features_by_type[shippingType]
         if show_unlisted or not f['unlisted']]
 
-    return allowed_feature_list
+    ramcache.set(cache_key, allowed_features_by_type)
+
+    return allowed_features_by_type
 
   @classmethod
   def get_shipping_samples(self, limit=None, update_cache=False):

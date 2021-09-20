@@ -225,6 +225,12 @@ class FeatureTest(testing_config.CustomTestCase):
         enabled_by_default)
     self.assertEqual(6, len(actual))
 
+    cache_key = '%s|%s|%s|%s' % (
+        models.Feature.DEFAULT_CACHE_KEY, 'milestone', False, 1)
+    cached_result = ramcache.get(cache_key)
+    self.assertEqual(cached_result, actual)
+
+
   def test_get_in_milestone__unlisted(self):
     """Unlisted features should not be listed for users who can't edit."""
     self.feature_2.unlisted = True
@@ -272,6 +278,17 @@ class FeatureTest(testing_config.CustomTestCase):
     self.assertEqual(
         1,
         len(actual['Removed']))
+
+  def test_get_in_milestone__cached(self):
+    """If there is something in the cache, we use it."""
+    cache_key = '%s|%s|%s|%s' % (
+        models.Feature.DEFAULT_CACHE_KEY, 'milestone', False, 1)
+    ramcache.set(cache_key, 'fake feature dict')
+
+    actual = models.Feature.get_in_milestone(milestone=1)
+    self.assertEqual(
+        'fake feature dict',
+        actual)
 
 
 class ApprovalTest(testing_config.CustomTestCase):
