@@ -152,9 +152,6 @@ To view and edit the users datastore, you can click on Datastore Viewer. Make su
 
 
 
-appcfg.py upload_data --config_file=bulkloader.yaml --kind=Feature --url=https://chromestatus.googleplex.com/_ah/remote_api --filename=import.csv
-
-
 
 ---
 

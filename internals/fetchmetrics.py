@@ -30,16 +30,6 @@ from internals import models
 import settings
 
 
-def get_omaha_data():
-  omaha_data = ramcache.get('omaha_data')
-  if omaha_data is None:
-    result = requests.get('https://omahaproxy.appspot.com/all.json')
-    if result.status_code == 200:
-      omaha_data = json.loads(result.content)
-      ramcache.set('omaha_data', omaha_data, time=86400) # cache for 24hrs.
-  return omaha_data
-
-
 UMA_QUERY_SERVER = 'https://uma-export.appspot.com/chromestatus/'
 
 HISTOGRAMS_URL = 'https://chromium.googlesource.com/chromium/src/+/master/' \
