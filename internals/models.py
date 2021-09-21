@@ -922,8 +922,8 @@ class Feature(DictModel):
       shipping_features = map(getSortingMilestone, shipping_features)
 
       # First sort by name, then sort by feature milestone (latest first).
-      sorted(shipping_features, key=lambda f: f.name, reverse=False)
-      sorted(shipping_features, key=lambda f: f._sort_by_milestone, reverse=True)
+      shipping_features = sorted(shipping_features, key=lambda f: f.name, reverse=False)
+      shipping_features = sorted(shipping_features, key=lambda f: f._sort_by_milestone, reverse=True)
 
       # Constructor the proper ordering.
       all_features = []
