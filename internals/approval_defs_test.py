@@ -42,7 +42,7 @@ class FetchOwnersTest(unittest.TestCase):
         'owner2@example.com\n'
         'owner3@example.com\n'
         '\n')
-    encoded = base64.b64encode(file_contents)
+    encoded = base64.b64encode(file_contents.encode())
     mock_get.return_value = testing_config.Blank(
         status_code=200,
         content=encoded)

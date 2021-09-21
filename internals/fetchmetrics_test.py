@@ -173,7 +173,7 @@ class HistogramsHandlerTest(testing_config.CustomTestCase):
     """We can fetch and parse XML for metrics."""
     mock_requests_get.return_value = testing_config.Blank(
         status_code=200,
-        content=base64.b64encode(self.ENUMS_TEXT))
+        content=base64.b64encode(self.ENUMS_TEXT.encode()))
     with fetchmetrics.app.test_request_context(self.request_path):
       actual_response = self.handler.get_template_data()
 

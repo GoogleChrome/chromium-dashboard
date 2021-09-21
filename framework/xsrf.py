@@ -90,7 +90,7 @@ def validate_token(
   if not token:
     raise TokenIncorrect('missing token')
   try:
-    decoded = base64.urlsafe_b64decode(str(token))
+    decoded = base64.urlsafe_b64decode(token)
     token_time = int(decoded.split(DELIMITER)[-1])
   except (TypeError, ValueError):
     raise TokenIncorrect('could not decode token')
@@ -103,8 +103,8 @@ def validate_token(
 
   # Perform constant time comparison to avoid timing attacks
   different = 0
-  for x, y in zip(token, expected_token):
-    different |= ord(x) ^ ord(y)
+  for res in zip(str(token), str(expected_token)):
+    different |= ord(res[0]) ^ ord(res[1])
   if different:
     raise TokenIncorrect(
         'presented token does not match expected token: %r != %r' % (
