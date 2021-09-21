@@ -24,7 +24,6 @@ readonly BASEDIR=$(dirname $BASH_SOURCE)
 
 gulp
 
-$BASEDIR/oauthtoken.sh deploy
 gcloud app deploy \
   --project $appName \
   --version $deployVersion \

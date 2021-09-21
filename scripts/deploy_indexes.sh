@@ -12,7 +12,6 @@ usage="Usage: deploy_indexes.sh cr-status-staging"
 # The directory in which this script resides.
 readonly BASEDIR=$(dirname $BASH_SOURCE)
 
-$BASEDIR/oauthtoken.sh deploy
 gcloud app deploy \
   --project $appName \
   $BASEDIR/../index.yaml
