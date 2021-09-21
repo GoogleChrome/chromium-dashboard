@@ -46,8 +46,13 @@ os.environ['DJANGO_SECRET'] = 'test secret'
 os.environ['SERVER_SOFTWARE'] = 'test ' + os.environ.get('SERVER_SOFTWARE', '')
 os.environ['CURRENT_VERSION_ID'] = 'test.123'
 os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
-os.environ['DATASTORE_EMULATOR_HOST'] = 'localhost:15606'
 os.environ['APPLICATION_ID'] = 'testing'
+# Envs for datastore-emulator, same as running `gcloud beta emulators datastore env-init`.
+os.environ['DATASTORE_DATASET'] = 'cr-status-staging'
+os.environ['DATASTORE_EMULATOR_HOST'] = 'localhost:15606'
+os.environ['DATASTORE_EMULATOR_HOST_PATH'] = 'localhost:15606/datastore'
+os.environ['DATASTORE_HOST'] = 'http//localhost:15606'
+os.environ['DATASTORE_PROJECT_ID'] = 'cr-status-staging'
 
 
 from framework import cloud_tasks_helpers
