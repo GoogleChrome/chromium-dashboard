@@ -136,7 +136,7 @@ class EmailFormattingTest(testing_config.CustomTestCase):
   def test_convert_reasons_to_task__normal(self):
     actual = notifier.convert_reasons_to_task(
         'addr', ['reason 1', 'reason 2'], 'html', 'subject')
-    self.assertItemsEqual(
+    self.assertCountEqual(
         ['to', 'subject', 'html'],
         actual.keys())
     self.assertEqual('addr', actual['to'])
@@ -321,9 +321,8 @@ class FeatureStarTest(testing_config.CustomTestCase):
     notifier.FeatureStar.set_star(email, feature_2_id)
 
     actual = notifier.FeatureStar.get_user_stars(email)
-    self.assertEqual(
-        sorted([feature_3_id, feature_2_id, feature_1_id],
-               reverse=True),
+    self.assertCountEqual(
+        [feature_1_id, feature_2_id],
         actual)
 
   def test_get_feature_starrers__no_stars(self):
@@ -343,6 +342,6 @@ class FeatureStarTest(testing_config.CustomTestCase):
     notifier.FeatureStar.set_star(app_user_2.email, feature_1_id)
 
     actual = notifier.FeatureStar.get_feature_starrers(feature_1_id)
-    self.assertItemsEqual(
+    self.assertCountEqual(
         [app_user_1.email, app_user_2.email],
         [au.email for au in actual])

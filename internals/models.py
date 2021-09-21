@@ -25,8 +25,6 @@ import time
 
 from google.cloud import ndb
 
-# from google.appengine.ext.db import djangoforms
-from google.appengine.api import mail
 from framework import ramcache
 import requests
 from framework import users
@@ -42,7 +40,7 @@ from collections import OrderedDict
 from django import forms
 
 
-SIMPLE_TYPES = (int, long, float, bool, dict, basestring, list)
+SIMPLE_TYPES = (int, float, bool, dict, str, list)
 
 WEBCOMPONENTS = 1
 MISC = 2
@@ -349,7 +347,7 @@ def del_none(d):
   """
   Delete dict keys with None values, and empty lists, recursively.
   """
-  for key, value in d.items():
+  for key, value in list(d.items()):
     if value is None or (isinstance(value, list) and len(value) == 0):
       del d[key]
     elif isinstance(value, dict):
@@ -358,7 +356,7 @@ def del_none(d):
 
 class DictModel(ndb.Model):
   # def to_dict(self):
-  #   return dict([(p, unicode(getattr(self, p))) for p in self.properties()])
+  #   return dict([(p, str(getattr(self, p))) for p in self.properties()])
 
   def is_saved(self):
     if self.key:
@@ -374,7 +372,7 @@ class DictModel(ndb.Model):
   def to_dict(self):
     output = {}
 
-    for key, prop in self._properties.iteritems():
+    for key, prop in self._properties.items():
       # Skip obsolete values that are still in our datastore
       if not hasattr(self, key):
         continue
@@ -388,7 +386,7 @@ class DictModel(ndb.Model):
         #ms = time.mktime(value.utctimetuple())
         #ms += getattr(value, 'microseconds', 0) / 1000
         #output[key] = int(ms)
-        output[key] = unicode(value)
+        output[key] = str(value)
       elif isinstance(value, ndb.GeoPt):
         output[key] = {'lat': value.lat, 'lon': value.lon}
       elif isinstance(value, ndb.Model):
@@ -921,7 +919,7 @@ class Feature(DictModel):
       # Sort the feature list on either Android shipping milestone or desktop
       # shipping milestone, depending on which is specified. If a desktop
       # milestone is defined, that will take default.
-      shipping_features = map(getSortingMilestone, shipping_features)
+      shipping_features = list(map(getSortingMilestone, shipping_features))
 
       # First sort by name, then sort by feature milestone (latest first).
       shipping_features.sort(key=lambda f: f.name, reverse=False)
@@ -1140,7 +1138,7 @@ class Feature(DictModel):
     # Stash existing values when entity is created so we can diff property
     # values later in put() to know what's changed. https://stackoverflow.com/a/41344898
 
-    for prop_name, prop in self._properties.iteritems():
+    for prop_name, prop in self._properties.items():
       old_val = getattr(self, prop_name, None)
       setattr(self, '_old_' + prop_name, old_val)
 
@@ -1149,7 +1147,7 @@ class Feature(DictModel):
        posting to a task queue."""
     # Diff values to see what properties have changed.
     changed_props = []
-    for prop_name, prop in self._properties.iteritems():
+    for prop_name, prop in self._properties.items():
       if prop_name in ('created_by', 'updated_by', 'updated', 'created'):
         continue
       new_val = getattr(self, prop_name, None)

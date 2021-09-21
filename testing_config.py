@@ -23,9 +23,6 @@ import unittest
 app_engine_path = os.environ.get('APP_ENGINE_PATH', '')
 if not app_engine_path:
   app_engine_path = '/usr/lib/google-cloud-sdk/platform/google_appengine'
-if not os.path.exists(app_engine_path):
-  # app_engine_path for GitHub Action CI.
-  app_engine_path = '/home/runner/google-cloud-sdk/platform/google_appengine'
 if os.path.exists(app_engine_path):
   sys.path.insert(0, app_engine_path)
 else:
@@ -46,8 +43,13 @@ os.environ['DJANGO_SECRET'] = 'test secret'
 os.environ['SERVER_SOFTWARE'] = 'test ' + os.environ.get('SERVER_SOFTWARE', '')
 os.environ['CURRENT_VERSION_ID'] = 'test.123'
 os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
-os.environ['DATASTORE_EMULATOR_HOST'] = 'localhost:15606'
 os.environ['APPLICATION_ID'] = 'testing'
+# Envs for datastore-emulator, same as running `gcloud beta emulators datastore env-init`.
+os.environ['DATASTORE_DATASET'] = 'cr-status-staging'
+os.environ['DATASTORE_EMULATOR_HOST'] = 'localhost:15606'
+os.environ['DATASTORE_EMULATOR_HOST_PATH'] = 'localhost:15606/datastore'
+os.environ['DATASTORE_HOST'] = 'http//localhost:15606'
+os.environ['DATASTORE_PROJECT_ID'] = 'cr-status-staging'
 
 
 from framework import cloud_tasks_helpers

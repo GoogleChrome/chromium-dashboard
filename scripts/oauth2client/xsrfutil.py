@@ -88,7 +88,7 @@ def validate_token(key, token, user_id, action_id="", current_time=None):
     return False
   try:
     decoded = base64.urlsafe_b64decode(str(token))
-    token_time = long(decoded.split(DELIMITER)[-1])
+    token_time = int(decoded.split(DELIMITER)[-1])
   except (TypeError, ValueError):
     return False
   if current_time is None:

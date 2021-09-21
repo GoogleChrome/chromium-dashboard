@@ -238,10 +238,10 @@ class FeatureBucketsHandler(basehandlers.FlaskHandler):
   def get_template_data(self, prop_type):
     if prop_type == 'cssprops':
       properties = sorted(
-          models.CssPropertyHistogram.get_all().iteritems(), key=lambda x:x[1])
+          models.CssPropertyHistogram.get_all().items(), key=lambda x:x[1])
     else:
       properties = sorted(
-          models.FeatureObserverHistogram.get_all().iteritems(), key=lambda x:x[1])
+          models.FeatureObserverHistogram.get_all().items(), key=lambda x:x[1])
 
     return properties
 

@@ -122,7 +122,7 @@ class UmaQuery(object):
     for existing_datapoint in existing_saved_data:
       existing_saved_bucket_ids.add(existing_datapoint.bucket_id)
 
-    for bucket_str, bucket_dict in data.iteritems():
+    for bucket_str, bucket_dict in data.items():
       bucket_id = int(bucket_str)
 
       # Only add this entity if one doesn't already exist with the same
