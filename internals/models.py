@@ -919,11 +919,11 @@ class Feature(DictModel):
       # Sort the feature list on either Android shipping milestone or desktop
       # shipping milestone, depending on which is specified. If a desktop
       # milestone is defined, that will take default.
-      shipping_features = map(getSortingMilestone, shipping_features)
+      shipping_features = list(map(getSortingMilestone, shipping_features))
 
       # First sort by name, then sort by feature milestone (latest first).
-      shipping_features = sorted(shipping_features, key=lambda f: f.name, reverse=False)
-      shipping_features = sorted(shipping_features, key=lambda f: f._sort_by_milestone, reverse=True)
+      shipping_features.sort(key=lambda f: f.name, reverse=False)
+      shipping_features.sort(key=lambda f: f._sort_by_milestone, reverse=True)
 
       # Constructor the proper ordering.
       all_features = []
