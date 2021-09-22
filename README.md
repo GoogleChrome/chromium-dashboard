@@ -23,7 +23,7 @@ Chrome Platform Status
 1. Install other dependencies `npm run deps` and `npm run dev-deps`
 
 You will need to activate the venv in every shell that you use.
-1. `python3 -m venv cs-env`
+1. `source cs-env/bin/activate`
 
 
 If you face any error during the installation process, the section **Notes** (later in this README.md) may help.
