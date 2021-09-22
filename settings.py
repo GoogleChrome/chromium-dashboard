@@ -95,8 +95,6 @@ else:
 
 SECRET_KEY = os.environ['DJANGO_SECRET']
 
-APP_VERSION = os.environ['CURRENT_VERSION_ID'].split('.')[0]
-
 RSS_FEED_LIMIT = 15
 
 DEFAULT_CACHE_TIME = 60 # seconds

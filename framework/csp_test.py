@@ -18,10 +18,13 @@ from __future__ import print_function
 import unittest
 import testing_config  # Must be imported before the module under test.
 
+import flask
 import mock
 import werkzeug.exceptions  # Flask HTTP stuff.
 
 from framework import csp
+
+test_app = flask.Flask(__name__)
 
 
 class CspTest(unittest.TestCase):
@@ -97,7 +100,7 @@ class CspReporttest(unittest.TestCase):
   @mock.patch('logging.error')
   def test_report_handler(self, mock_error):
     """The report handler logs something for each request."""
-    with csp.app.test_request_context('/csp', data='12345', method='POST'):
+    with test_app.test_request_context('/csp', data='12345', method='POST'):
       actual = csp.report_handler()
 
     self.assertEqual('', actual)

@@ -27,6 +27,8 @@ import werkzeug
 from internals import fetchmetrics
 from internals import models
 
+test_app = flask.Flask(__name__)
+
 
 class FetchMetricsTest(testing_config.CustomTestCase):
 
@@ -101,7 +103,7 @@ class YesterdayHandlerTest(testing_config.CustomTestCase):
     mock_FetchAndSaveData.return_value = 200
     today = datetime.date(2021, 1, 20)
 
-    with fetchmetrics.app.test_request_context(self.request_path):
+    with test_app.test_request_context(self.request_path):
       actual_response = self.handler.get_template_data(today=today)
 
     self.assertEqual('Success', actual_response)
@@ -117,7 +119,7 @@ class YesterdayHandlerTest(testing_config.CustomTestCase):
     mock_FetchAndSaveData.return_value = 200
     today = datetime.date(2021, 1, 20)
 
-    with fetchmetrics.app.test_request_context(
+    with test_app.test_request_context(
         self.request_path, query_string={'date': '20210120'}):
       actual_response = self.handler.get_template_data(today=today)
 
@@ -174,7 +176,7 @@ class HistogramsHandlerTest(testing_config.CustomTestCase):
     mock_requests_get.return_value = testing_config.Blank(
         status_code=200,
         content=base64.b64encode(self.ENUMS_TEXT.encode()))
-    with fetchmetrics.app.test_request_context(self.request_path):
+    with test_app.test_request_context(self.request_path):
       actual_response = self.handler.get_template_data()
 
     self.assertEqual('Success', actual_response)

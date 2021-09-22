@@ -268,10 +268,3 @@ class BlinkComponentHandler(basehandlers.FlaskHandler):
   def get_template_data(self):
     models.BlinkComponent.update_db()
     return 'Blink components updated'
-
-
-app = basehandlers.FlaskApplication([
-  ('/cron/metrics', YesterdayHandler),
-  ('/cron/histograms', HistogramsHandler),
-  ('/cron/update_blink_components', BlinkComponentHandler),
-], debug=settings.DEBUG)

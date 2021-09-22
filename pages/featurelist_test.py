@@ -24,6 +24,8 @@ from framework import ramcache
 from internals import models
 from pages import featurelist
 
+test_app = flask.Flask(__name__)
+
 
 class TestWithFeature(testing_config.CustomTestCase):
 
@@ -57,7 +59,7 @@ class FeaturesJsonHandlerTest(TestWithFeature):
   def test_get_template_data(self):
     """User can get a JSON feed of all features."""
     testing_config.sign_in('user@example.com', 111)
-    with featurelist.app.test_request_context(self.request_path):
+    with test_app.test_request_context(self.request_path):
       json_data = self.handler.get_template_data()
 
     self.assertEqual(1, len(json_data))
@@ -69,12 +71,12 @@ class FeaturesJsonHandlerTest(TestWithFeature):
     self.feature_1.put()
 
     testing_config.sign_out()
-    with featurelist.app.test_request_context(self.request_path):
+    with test_app.test_request_context(self.request_path):
       json_data = self.handler.get_template_data()
     self.assertEqual(0, len(json_data))
 
     testing_config.sign_in('user@example.com', 111)
-    with featurelist.app.test_request_context(self.request_path):
+    with test_app.test_request_context(self.request_path):
       json_data = self.handler.get_template_data()
     self.assertEqual(0, len(json_data))
 
@@ -84,7 +86,7 @@ class FeaturesJsonHandlerTest(TestWithFeature):
     self.feature_1.put()
 
     testing_config.sign_in('user@google.com', 111)
-    with featurelist.app.test_request_context(self.request_path):
+    with test_app.test_request_context(self.request_path):
       json_data = self.handler.get_template_data()
     self.assertEqual(1, len(json_data))
     self.assertEqual('feature one', json_data[0]['name'])
@@ -97,7 +99,7 @@ class FeatureListHandlerTest(TestWithFeature):
 
   def test_get_template_data(self):
     """User can get a feature list page."""
-    with featurelist.app.test_request_context(self.request_path):
+    with test_app.test_request_context(self.request_path):
       template_data = self.handler.get_template_data()
 
     self.assertIn('IMPLEMENTATION_STATUSES', template_data)
@@ -110,7 +112,7 @@ class FeatureListXMLHandlerTest(TestWithFeature):
 
   def test_get_template_data__no_filters(self):
     """User can get an XML feed of all features."""
-    with featurelist.app.test_request_context(self.request_path):
+    with test_app.test_request_context(self.request_path):
       actual_text, actual_headers = self.handler.get_template_data()
 
     self.assertTrue(actual_text.startswith('<?xml'))
@@ -123,7 +125,7 @@ class FeatureListXMLHandlerTest(TestWithFeature):
   def test_get_template_data__category(self):
     """User can get an XML feed of features by category."""
     request_path = self.request_path + '?category=web components'
-    with featurelist.app.test_request_context(request_path):
+    with test_app.test_request_context(request_path):
       actual_text, actual_headers = self.handler.get_template_data()
 
     # It is an XML feed
@@ -138,7 +140,7 @@ class FeatureListXMLHandlerTest(TestWithFeature):
 
 
     request_path = self.request_path + '?category=css'
-    with featurelist.app.test_request_context(request_path):
+    with test_app.test_request_context(request_path):
       actual_text, actual_headers = self.handler.get_template_data()
 
     self.assertTrue(actual_text.startswith('<?xml'))

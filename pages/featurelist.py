@@ -105,21 +105,3 @@ class FeatureListXMLHandler(basehandlers.FlaskHandler):
           version=2)
 
     return utils.render_atom_feed(self.request, 'Features', feature_list)
-
-
-routes = [
-  # Note: The only requests being made now hit /features.json and
-  # /features_v2.json, but both of those cause version == 2.
-  # There was logic to accept another version value, but it it was not used.
-  (r'/features.json', FeaturesJsonHandler),
-  (r'/features_v2.json', FeaturesJsonHandler),
-
-  ('/', basehandlers.Redirector,
-   {'location': '/features'}),
-
-  ('/features', FeatureListHandler),
-  ('/features/<int:feature_id>', FeatureListHandler),
-  ('/features.xml', FeatureListXMLHandler),
-]
-
-app = basehandlers.FlaskApplication(routes, debug=settings.DEBUG)

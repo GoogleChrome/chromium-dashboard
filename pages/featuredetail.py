@@ -19,7 +19,6 @@ from __future__ import print_function
 import json
 import logging
 
-import settings
 from framework import basehandlers
 from pages import guideforms
 from internals import models
@@ -52,10 +51,3 @@ class FeatureDetailHandler(basehandlers.FlaskHandler):
         'new_crbug_url': f.new_crbug_url(),
     }
     return template_data
-
-
-routes = [
-  ('/feature/<int:feature_id>', FeatureDetailHandler),
-]
-
-app = basehandlers.FlaskApplication(routes, debug=settings.DEBUG)

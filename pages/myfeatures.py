@@ -37,9 +37,3 @@ class MyFeaturesHandler(basehandlers.FlaskHandler):
 
     template_data = {}
     return template_data
-
-routes = [
-  ('/myfeatures', MyFeaturesHandler),
-]
-
-app = basehandlers.FlaskApplication(routes, debug=settings.DEBUG)

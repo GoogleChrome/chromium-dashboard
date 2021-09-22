@@ -67,12 +67,3 @@ class SamplesXMLHandler(basehandlers.FlaskHandler):
       max_items = settings.RSS_FEED_LIMIT
 
     return utils.render_atom_feed(self.request, 'Samples', feature_list)
-
-
-routes = [
-  ('/samples', SamplesHandler),
-  ('/samples.json', SamplesJSONHandler),
-  ('/samples.xml', SamplesXMLHandler),
-]
-
-app = basehandlers.FlaskApplication(routes, debug=settings.DEBUG)

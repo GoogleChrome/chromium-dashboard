@@ -75,9 +75,3 @@ class SettingsHandler(basehandlers.FlaskHandler):
     user_pref.notify_as_starrer = bool(new_notify)
     user_pref.put()
     return flask.redirect(flask.request.path)
-
-
-app = basehandlers.FlaskApplication([
-  ('/settings', SettingsHandler),
-  ('/admin/users/new', UserListHandler),
-], debug=settings.DEBUG)

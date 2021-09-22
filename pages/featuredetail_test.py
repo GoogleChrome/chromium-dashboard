@@ -25,6 +25,8 @@ from internals import models
 from framework import ramcache
 from pages import featuredetail
 
+test_app = flask.Flask(__name__)
+
 
 class TestWithFeature(testing_config.CustomTestCase):
 
@@ -58,7 +60,7 @@ class FeatureDetailHandlerTest(TestWithFeature):
   def test_get_template_data__missing(self):
     """If a feature is not found, give a 404."""
     feature_id = 123456
-    with featuredetail.app.test_request_context('/feature/123456'):
+    with test_app.test_request_context('/feature/123456'):
       with self.assertRaises(werkzeug.exceptions.NotFound):
         self.handler.get_template_data(feature_id=feature_id)
 
@@ -69,14 +71,14 @@ class FeatureDetailHandlerTest(TestWithFeature):
     self.feature_1.deleted = True
     self.feature_1.put()
 
-    with featuredetail.app.test_request_context(self.request_path):
+    with test_app.test_request_context(self.request_path):
       with self.assertRaises(werkzeug.exceptions.NotFound):
         template_data = self.handler.get_template_data(
             feature_id=self.feature_id)
 
   def test_get_template_data__normal(self):
     """We can prep to render the feature detail page."""
-    with featuredetail.app.test_request_context(self.request_path):
+    with test_app.test_request_context(self.request_path):
       template_data = self.handler.get_template_data(
           feature_id=self.feature_id)
 
@@ -90,7 +92,7 @@ class FeatureDetailTemplateTest(TestWithFeature):
 
   def setUp(self):
     super(FeatureDetailTemplateTest, self).setUp()
-    with featuredetail.app.test_request_context(self.request_path):
+    with test_app.test_request_context(self.request_path):
       self.template_data = self.handler.get_template_data(
           feature_id=self.feature_id)
 

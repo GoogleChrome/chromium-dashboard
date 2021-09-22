@@ -30,7 +30,6 @@ from framework import users
 
 from framework import basehandlers
 from internals import models
-import settings
 from internals import fetchchannels
 
 SCHEDULE_CACHE_TIME = 60 * 60  # 1 hour
@@ -104,8 +103,3 @@ class ScheduleHandler(basehandlers.FlaskHandler):
                              indent=4)
     }
     return template_data
-
-
-app = basehandlers.FlaskApplication([
-  ('/features/schedule', ScheduleHandler),
-], debug=settings.DEBUG)

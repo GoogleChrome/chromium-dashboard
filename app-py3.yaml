@@ -1,9 +1,34 @@
-# TODO(jrobbins): This file is not used yet.
-# It will contain lines to configure a GAE service running in py3.
+# This GAE service contains most of the app, including all UI pages.
 
 runtime: python39
 service: app-py3
 
 handlers:
-- url: /hello
+# Static handlers ---------------------------------------------------------------
+- url: /favicon\.ico
+  static_files: static/img/chromium-128.png
+  upload: static/img/chromium-128\.png
+  secure: always
+
+- url: /robots\.txt
+  static_files: static/robots.txt
+  upload: static/robots\.txt
+  secure: always
+
+- url: /static
+  static_dir: static
+  # TODO(jrobbins): application_readable is not supported in py3
+  # application_readable: true # So static assets can be read by inline_file django tag.
+  http_headers:
+    Access-Control-Allow-Origin: "*"
+  secure: always
+
+- url: /.*
   script: auto
+  secure: always
+
+includes:
+- env_vars.yaml
+
+env_variables:
+  GAE_USE_SOCKETS_HTTPLIB : ''

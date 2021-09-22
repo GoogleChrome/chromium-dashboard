@@ -115,9 +115,6 @@ def get_headers(nonce):
   return {csp_header_key: csp_directives}
 
 
-app = flask.Flask(__name__)
-
-@app.route('/csp', methods=['POST'])
 def report_handler():
   """Log any CSP violations that are reported to our app."""
   logging.error('CSP Violation: %r' % flask.request.data)

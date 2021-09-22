@@ -23,8 +23,9 @@ import mock
 import werkzeug.exceptions  # Flask HTTP stuff.
 
 from api import accounts_api
-from api import register
 from internals import models
+
+test_app = flask.Flask(__name__)
 
 
 class AccountsAPITest(testing_config.CustomTestCase):
@@ -49,7 +50,7 @@ class AccountsAPITest(testing_config.CustomTestCase):
     testing_config.sign_in('admin@example.com', 123567890)
 
     json_data = {'email': 'new@example.com', 'isAdmin': False}
-    with register.app.test_request_context(self.request_path, json=json_data):
+    with test_app.test_request_context(self.request_path, json=json_data):
       actual_json = self.handler.do_post()
     self.assertEqual('new@example.com', actual_json['email'])
     self.assertFalse(actual_json['is_admin'])
@@ -63,7 +64,7 @@ class AccountsAPITest(testing_config.CustomTestCase):
     testing_config.sign_in('admin@example.com', 123567890)
 
     json_data = {'email': 'new_admin@example.com', 'isAdmin': True}
-    with register.app.test_request_context(self.request_path, json=json_data):
+    with test_app.test_request_context(self.request_path, json=json_data):
       actual_json = self.handler.do_post()
     self.assertEqual('new_admin@example.com', actual_json['email'])
     self.assertTrue(actual_json['is_admin'])
@@ -76,7 +77,7 @@ class AccountsAPITest(testing_config.CustomTestCase):
     """Regular user cannot create an account."""
     testing_config.sign_in('one@example.com', 123567890)
 
-    with register.app.test_request_context(self.request_path):
+    with test_app.test_request_context(self.request_path):
       with self.assertRaises(werkzeug.exceptions.Forbidden):
         self.handler.do_post(self.appuser_id)
 
@@ -88,7 +89,7 @@ class AccountsAPITest(testing_config.CustomTestCase):
     testing_config.sign_in('admin@example.com', 123567890)
 
     json_data = {'isAdmin': False}  # No email
-    with register.app.test_request_context(self.request_path, json=json_data):
+    with test_app.test_request_context(self.request_path, json=json_data):
       with self.assertRaises(werkzeug.exceptions.BadRequest):
         self.handler.do_post()
 
@@ -100,7 +101,7 @@ class AccountsAPITest(testing_config.CustomTestCase):
     testing_config.sign_in('admin@example.com', 123567890)
 
     json_data = {'email': 'user@example.com'}
-    with register.app.test_request_context(self.request_path, json=json_data):
+    with test_app.test_request_context(self.request_path, json=json_data):
       with self.assertRaises(werkzeug.exceptions.BadRequest):
         self.handler.do_post()
 
@@ -111,7 +112,7 @@ class AccountsAPITest(testing_config.CustomTestCase):
     """Admin wants to delete an account."""
     testing_config.sign_in('admin@example.com', 123567890)
 
-    with register.app.test_request_context(self.request_path):
+    with test_app.test_request_context(self.request_path):
       actual_json = self.handler.do_delete(self.appuser_id)
     self.assertEqual({'message': 'Done'}, actual_json)
 
@@ -122,7 +123,7 @@ class AccountsAPITest(testing_config.CustomTestCase):
     """Regular user cannot delete an account."""
     testing_config.sign_in('one@example.com', 123567890)
 
-    with register.app.test_request_context(self.request_path):
+    with test_app.test_request_context(self.request_path):
       with self.assertRaises(werkzeug.exceptions.Forbidden):
         self.handler.do_delete(self.appuser_id)
 
@@ -133,7 +134,7 @@ class AccountsAPITest(testing_config.CustomTestCase):
     """We cannot delete an account without an account_id."""
     testing_config.sign_in('admin@example.com', 123567890)
 
-    with register.app.test_request_context(self.request_path):
+    with test_app.test_request_context(self.request_path):
       with self.assertRaises(werkzeug.exceptions.BadRequest):
         self.handler.do_delete(None)
 
@@ -145,7 +146,7 @@ class AccountsAPITest(testing_config.CustomTestCase):
     """We cannot delete an account with the wrong account_id."""
     testing_config.sign_in('admin@example.com', 123567890)
 
-    with register.app.test_request_context(self.request_path):
+    with test_app.test_request_context(self.request_path):
       with self.assertRaises(werkzeug.exceptions.NotFound):
         self.handler.do_delete(self.appuser_id + 1)
 
