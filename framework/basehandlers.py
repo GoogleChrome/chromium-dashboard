@@ -380,8 +380,8 @@ class FlaskHandler(BaseHandler):
   def split_input(self, field_name, delim='\\r?\\n'):
     """Split the input lines, strip whitespace, and skip blank lines."""
     input_text = flask.request.form.get(field_name) or ''
-    return filter(bool, [
-        x.strip() for x in re.split(delim, input_text)])
+    return [x.strip() for x in re.split(delim, input_text)
+            if x]
 
   def split_emails(self, param_name):
     """Split one input field and construct objects for ndb.StringProperty()."""

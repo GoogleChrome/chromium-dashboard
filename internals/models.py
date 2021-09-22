@@ -500,7 +500,7 @@ class Feature(DictModel):
 
   @classmethod
   def _first_of_milestone(self, feature_list, milestone, start=0):
-    for i in xrange(start, len(feature_list)):
+    for i in range(start, len(feature_list)):
       f = feature_list[i]
       if (str(f['shipped_milestone']) == str(milestone) or
           f['impl_status_chrome'] == str(milestone)):
@@ -513,7 +513,7 @@ class Feature(DictModel):
 
   @classmethod
   def _first_of_milestone_v2(self, feature_list, milestone, start=0):
-    for i in xrange(start, len(feature_list)):
+    for i in range(start, len(feature_list)):
       f = feature_list[i]
       desktop_milestone = f['browsers']['chrome'].get('desktop', None)
       android_milestone = f['browsers']['chrome'].get('android', None)
@@ -537,7 +537,7 @@ class Feature(DictModel):
       canary_versions = [x for x in win_versions if x.get('channel') and x.get('channel').startswith('canary')]
       LATEST_VERSION = int(canary_versions[0].get('version').split('.')[0])
 
-      milestones = range(1, LATEST_VERSION + 1)
+      milestones = list(range(1, LATEST_VERSION + 1))
       milestones.reverse()
       versions = [
         IMPLEMENTATION_STATUS[PROPOSED],
