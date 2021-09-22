@@ -372,7 +372,7 @@ class DictModel(ndb.Model):
   def to_dict(self):
     output = {}
 
-    for key, prop in list(self._properties.items()):
+    for key, prop in self._properties.items():
       # Skip obsolete values that are still in our datastore
       if not hasattr(self, key):
         continue
