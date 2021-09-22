@@ -13,8 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import division
-from __future__ import print_function
+
+
 
 import base64
 import datetime
@@ -94,7 +94,7 @@ class UmaQuery(object):
 
     json_content = result.content.split('\n', 1)[1]
     j = json.loads(json_content)
-    if not j.has_key('r'):
+    if 'r' not in j:
       logging.info(
           '%s results do not have an "r" key in the response: %r' %
           (self.query_name, j))
@@ -112,7 +112,7 @@ class UmaQuery(object):
     for existing_datapoint in existing_saved_data:
       existing_saved_bucket_ids.add(existing_datapoint.bucket_id)
 
-    for bucket_str, bucket_dict in data.items():
+    for bucket_str, bucket_dict in list(data.items()):
       bucket_id = int(bucket_str)
 
       # Only add this entity if one doesn't already exist with the same
@@ -250,10 +250,8 @@ class HistogramsHandler(basehandlers.FlaskHandler):
 
     # Save bucket ids for each histogram type, FeatureObserver and
     # MappedCSSProperties.
-    for histogram_id in self.MODEL_CLASS.keys():
-      enum = list(filter(
-          lambda enum: enum.attributes['name'].value == histogram_id,
-          enum_tags))[0]
+    for histogram_id in list(self.MODEL_CLASS.keys()):
+      enum = list([enum for enum in enum_tags if enum.attributes['name'].value == histogram_id])[0]
       for child in enum.getElementsByTagName('int'):
         self._SaveData({
           'bucket_id': child.attributes['value'].value,

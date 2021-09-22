@@ -1,5 +1,5 @@
-from __future__ import division
-from __future__ import print_function
+
+
 
 # -*- coding: utf-8 -*-
 # Copyright 2017 Google Inc.
@@ -28,7 +28,7 @@ from framework import basehandlers
 from framework import permissions
 from internals import models
 import settings
-from schedule import construct_chrome_channels_details
+from .schedule import construct_chrome_channels_details
 
 
 class PopulateSubscribersHandler(basehandlers.FlaskHandler):
@@ -41,7 +41,7 @@ class PopulateSubscribersHandler(basehandlers.FlaskHandler):
     for profile in yaml.load_all(f):
       blink_components = profile.get('blink_components', [])
       blink_components = [models.BlinkComponent.get_by_name(name).key for name in blink_components]
-      blink_components = filter(None, blink_components) # Filter out None values
+      blink_components = [_f for _f in blink_components if _f] # Filter out None values
 
       user = models.FeatureOwner(
         name=str(profile['name']),
@@ -148,7 +148,7 @@ class SubscribersHandler(basehandlers.FlaskHandler):
     milestone = self.request.args.get('milestone') or None
     if milestone:
       milestone = int(milestone)
-      feature_list = filter(lambda f: (f['shipped_milestone'] or f['shipped_android_milestone']) == milestone, feature_list)
+      feature_list = [f for f in feature_list if (f['shipped_milestone'] or f['shipped_android_milestone']) == milestone]
 
     list_features_per_owner = 'showFeatures' in self.request.args
     for user in users:
@@ -157,7 +157,7 @@ class SubscribersHandler(basehandlers.FlaskHandler):
       for component in user.owned_components:
         component.features = []
         if list_features_per_owner:
-          component.features = filter(lambda f: component.name in f['blink_components'], feature_list)
+          component.features = [f for f in feature_list if component.name in f['blink_components']]
 
     details = construct_chrome_channels_details()
 

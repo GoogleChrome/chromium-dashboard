@@ -12,14 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import division
-from __future__ import print_function
+
+
 
 import base64
 import requests
 import testing_config  # Must be imported before the module under test.
 import unittest
-import urllib
+import urllib.request, urllib.parse, urllib.error
 
 import mock
 import flask

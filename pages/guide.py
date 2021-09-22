@@ -1,5 +1,5 @@
-from __future__ import division
-from __future__ import print_function
+
+
 
 # -*- coding: utf-8 -*-
 # Copyright 2020 Google Inc.
@@ -166,7 +166,7 @@ class ProcessOverview(basehandlers.FlaskHandler):
 
   def detect_progress(self, f):
     progress_so_far = {}
-    for progress_item, detector in processes.PROGRESS_DETECTORS.items():
+    for progress_item, detector in list(processes.PROGRESS_DETECTORS.items()):
       detected = detector(f)
       if detected:
         progress_so_far[progress_item] = str(detected)
