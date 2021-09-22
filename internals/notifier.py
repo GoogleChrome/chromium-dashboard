@@ -161,7 +161,7 @@ def make_email_tasks(feature, is_update=False, changes=[]):
   accumulate_reasons(addr_reasons, starrers, 'You starred this feature')
 
   rule_results = apply_subscription_rules(feature, changes)
-  for reason, sub_addrs in list(rule_results.items()):
+  for reason, sub_addrs in rule_results.items():
     accumulate_reasons(addr_reasons, sub_addrs, reason)
 
   all_tasks = [convert_reasons_to_task(addr, reasons, email_html, subject)
