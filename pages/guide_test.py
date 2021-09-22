@@ -270,8 +270,8 @@ class FeatureEditStageTest(testing_config.CustomTestCase):
   def test_post__non_allowed(self):
     """Non-allowed cannot edit features, gets a 403."""
     testing_config.sign_in('user1@example.com', 1234567890)
-    with guide.app.test_request_context(self.request_path):
-      with self.assertRaises(werkzeug.exceptions.Forbidden, method='POST'):
+    with guide.app.test_request_context(self.request_path, method='POST'):
+      with self.assertRaises(werkzeug.exceptions.Forbidden):
         self.handler.process_post_data(
             self.feature_1.key.integer_id(), self.stage)
 
