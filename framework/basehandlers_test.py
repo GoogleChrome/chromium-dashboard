@@ -328,7 +328,7 @@ class APIHandlerTests(testing_config.CustomTestCase):
     with test_app.test_request_context('/path'):
       actual = self.handler.defensive_jsonify(handler_data)
 
-    actual_sent_text = str(actual.response[0])
+    actual_sent_text = actual.response[0].decode()
     self.assertTrue(actual_sent_text.startswith(basehandlers.XSSI_PREFIX))
     self.assertIn(json.dumps(handler_data), actual_sent_text)
 

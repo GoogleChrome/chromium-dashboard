@@ -73,7 +73,8 @@ def generate_token(user_email, token_time=None):
   digester.update(DELIMITER)
   digester.update(token_time)
   digest = digester.digest()
-  token = base64.urlsafe_b64encode(digest+ DELIMITER + token_time)
+  binary_token = base64.urlsafe_b64encode(digest+ DELIMITER + token_time)
+  token = binary_token.decode()
   return token
 
 

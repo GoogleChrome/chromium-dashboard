@@ -310,7 +310,7 @@ class FeatureStarTest(testing_config.CustomTestCase):
     self.assertEqual([], actual)
 
   def test_get_user_stars__some_stars(self):
-    """User has starred two features."""
+    """User has starred three features."""
     email = 'user5@example.com'
     feature_1_id = self.feature_1.key.integer_id()
     feature_2_id = self.feature_2.key.integer_id()
@@ -321,8 +321,9 @@ class FeatureStarTest(testing_config.CustomTestCase):
     notifier.FeatureStar.set_star(email, feature_2_id)
 
     actual = notifier.FeatureStar.get_user_stars(email)
-    self.assertCountEqual(
-        [feature_1_id, feature_2_id],
+    self.assertEqual(
+        sorted([feature_1_id, feature_2_id, feature_3_id],
+                      reverse=True),
         actual)
 
   def test_get_feature_starrers__no_stars(self):
