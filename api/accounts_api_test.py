@@ -88,8 +88,8 @@ class AccountsAPITest(testing_config.CustomTestCase):
     testing_config.sign_in('admin@example.com', 123567890)
 
     json_data = {'isAdmin': False}  # No email
-    with register.app.test_request_context(self.request_path):
-      with self.assertRaises(werkzeug.exceptions.BadRequest, json=json_data):
+    with register.app.test_request_context(self.request_path, json=json_data):
+      with self.assertRaises(werkzeug.exceptions.BadRequest):
         self.handler.do_post()
 
     new_appuser = (models.AppUser.query(models.AppUser.email == 'new@example.com').get())
