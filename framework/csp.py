@@ -74,7 +74,8 @@ HEADER_KEY_REPORT_ONLY = 'Content-Security-Policy-Report-Only'
 def get_nonce():
   """Returns a random nonce."""
   length = NONCE_LENGTH
-  return base64.b64encode(os.urandom(length * 2))[:length]
+  b_nonce = base64.b64encode(os.urandom(length * 2))[:length]
+  return b_nonce.decode()
 
 
 def get_default_policy(nonce=None):
