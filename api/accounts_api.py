@@ -42,7 +42,8 @@ class AccountsAPI(basehandlers.APIHandler):
   def create_account(self, email, is_admin):
     """Create and store a new account entity."""
     # Don't add a duplicate email address.
-    user = models.AppUser.query(models.AppUser.email == email).get(keys_only=True)
+    user = models.AppUser.query(
+        models.AppUser.email == email).get(keys_only=True)
     if not user:
       user = models.AppUser(email=str(email))
       user.is_admin = is_admin

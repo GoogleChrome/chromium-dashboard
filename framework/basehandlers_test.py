@@ -375,7 +375,8 @@ class APIHandlerTests(testing_config.CustomTestCase):
         'valid body token', 'user@example.com')
 
   @mock.patch('framework.basehandlers.APIHandler.validate_token')
-  def test_require_signed_in_and_xsrf_token__OK_header(self, mock_validate_token):
+  def test_require_signed_in_and_xsrf_token__OK_header(
+      self, mock_validate_token):
     """User is signed in and has a token in the request header."""
     testing_config.sign_in('user@example.com', 111)
     headers = {'X-Xsrf-Token': 'valid header token'}
