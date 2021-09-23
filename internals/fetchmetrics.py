@@ -251,7 +251,7 @@ class HistogramsHandler(basehandlers.FlaskHandler):
     # Save bucket ids for each histogram type, FeatureObserver and
     # MappedCSSProperties.
     for histogram_id in list(self.MODEL_CLASS.keys()):
-      enum = list([enum for enum in enum_tags if enum.attributes['name'].value == histogram_id])[0]
+      enum = [enum for enum in enum_tags if enum.attributes['name'].value == histogram_id][0]
       for child in enum.getElementsByTagName('int'):
         self._SaveData({
           'bucket_id': child.attributes['value'].value,
