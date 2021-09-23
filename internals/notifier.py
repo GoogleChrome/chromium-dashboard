@@ -128,7 +128,8 @@ def apply_subscription_rules(feature, changes):
 
 def make_email_tasks(feature, is_update=False, changes=[]):
   """Return a list of task dicts to notify users of feature changes."""
-  feature_watchers = models.FeatureOwner.query(models.FeatureOwner.watching_all_features == True).fetch(None)
+  feature_watchers = models.FeatureOwner.query(
+      models.FeatureOwner.watching_all_features == True).fetch(None)
 
   email_html = format_email_body(is_update, feature, changes)
   if is_update:

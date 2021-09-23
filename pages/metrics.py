@@ -56,7 +56,7 @@ class FeaturePopularityHandler(basehandlers.FlaskHandler):
   def get_template_data(self, bucket_id=None):
     # Note: bucket_id is not used, but the JS looks in the URL to get it.
     properties = sorted(
-        list(models.FeatureObserverHistogram.get_all().items()), key=lambda x:x[1])
+        models.FeatureObserverHistogram.get_all().items(), key=lambda x:x[1])
     template_data = {
         'FEATUREOBSERVER_BUCKETS': json.dumps(
             properties, separators=(',',':')),

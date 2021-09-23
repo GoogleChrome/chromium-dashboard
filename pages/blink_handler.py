@@ -34,7 +34,8 @@ class BlinkHandler(basehandlers.FlaskHandler):
 
   TEMPLATE_PATH = 'admin/blink.html'
 
-  def __update_subscribers_list(self, add=True, user_id=None, blink_component=None, primary=False):
+  def __update_subscribers_list(
+      self, add=True, user_id=None, blink_component=None, primary=False):
     if not user_id or not blink_component:
       return False
 
@@ -109,22 +110,29 @@ class SubscribersHandler(basehandlers.FlaskHandler):
 
   @permissions.require_admin_site
   def get_template_data(self):
-    users = models.FeatureOwner.query().order(models.FeatureOwner.name).fetch(None)
+    users = models.FeatureOwner.query().order(
+        models.FeatureOwner.name).fetch(None)
     feature_list = models.Feature.get_chronological()
 
     milestone = self.request.args.get('milestone') or None
     if milestone:
       milestone = int(milestone)
-      feature_list = [f for f in feature_list if (f['shipped_milestone'] or f['shipped_android_milestone']) == milestone]
+      feature_list = [
+          f for f in feature_list
+          if (f['shipped_milestone'] or
+              f['shipped_android_milestone']) == milestone]
 
     list_features_per_owner = 'showFeatures' in self.request.args
     for user in users:
       # user.subscribed_components = [key.get() for key in user.blink_components]
-      user.owned_components = [key.get() for key in user.primary_blink_components]
+      user.owned_components = [
+          key.get() for key in user.primary_blink_components]
       for component in user.owned_components:
         component.features = []
         if list_features_per_owner:
-          component.features = [f for f in feature_list if component.name in f['blink_components']]
+          component.features = [
+              f for f in feature_list
+              if component.name in f['blink_components']]
 
     details = construct_chrome_channels_details()
 

@@ -55,7 +55,8 @@ class AccountsAPITest(testing_config.CustomTestCase):
     self.assertEqual('new@example.com', actual_json['email'])
     self.assertFalse(actual_json['is_admin'])
 
-    new_appuser = (models.AppUser.query(models.AppUser.email == 'new@example.com').get())
+    new_appuser = (models.AppUser.query(
+        models.AppUser.email == 'new@example.com').get())
     self.assertEqual('new@example.com', new_appuser.email)
     self.assertFalse(new_appuser.is_admin)
 
@@ -69,7 +70,8 @@ class AccountsAPITest(testing_config.CustomTestCase):
     self.assertEqual('new_admin@example.com', actual_json['email'])
     self.assertTrue(actual_json['is_admin'])
 
-    new_appuser = (models.AppUser.query(models.AppUser.email == 'new_admin@example.com').get())
+    new_appuser = models.AppUser.query(
+        models.AppUser.email == 'new_admin@example.com').get()
     self.assertEqual('new_admin@example.com', new_appuser.email)
     self.assertTrue(new_appuser.is_admin)
 
@@ -81,7 +83,8 @@ class AccountsAPITest(testing_config.CustomTestCase):
       with self.assertRaises(werkzeug.exceptions.Forbidden):
         self.handler.do_post(self.appuser_id)
 
-    new_appuser = (models.AppUser.query(models.AppUser.email == 'new@example.com').get())
+    new_appuser = models.AppUser.query(
+        models.AppUser.email == 'new@example.com').get()
     self.assertIsNone(new_appuser)
 
   def test_create__invalid(self):
@@ -93,7 +96,8 @@ class AccountsAPITest(testing_config.CustomTestCase):
       with self.assertRaises(werkzeug.exceptions.BadRequest):
         self.handler.do_post()
 
-    new_appuser = (models.AppUser.query(models.AppUser.email == 'new@example.com').get())
+    new_appuser = models.AppUser.query(
+        models.AppUser.email == 'new@example.com').get()
     self.assertIsNone(new_appuser)
 
   def test_create__duplicate(self):

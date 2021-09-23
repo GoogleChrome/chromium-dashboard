@@ -411,15 +411,19 @@ class BlinkComponent(DictModel):
 
   @property
   def subscribers(self):
-    return FeatureOwner.query(FeatureOwner.blink_components == self.key).order(FeatureOwner.name).fetch(None)
+    q = FeatureOwner.query(FeatureOwner.blink_components == self.key)
+    q = q.order(FeatureOwner.name)
+    return q.fetch(None)
 
   @property
   def owners(self):
-    return FeatureOwner.query(FeatureOwner.primary_blink_components == self.key).order(FeatureOwner.name).fetch(None)
+    q = FeatureOwner.query(FeatureOwner.primary_blink_components == self.key)
+    q = q.order(FeatureOwner.name)
+    return q.fetch(None)
 
   @classmethod
   def fetch_all_components(self, update_cache=False):
-    """Returns the list of blink components from live endpoint if unavailable in the cache."""
+    """Returns the list of blink components."""
     key = 'blinkcomponents'
 
     components = ramcache.get(key)
@@ -431,7 +435,8 @@ class BlinkComponent(DictModel):
         components = sorted(json.loads(result.content))
         ramcache.set(key, components)
       else:
-        logging.error('Fetching blink components returned: %s' % result.status_code)
+        logging.error('Fetching blink components returned: %s' %
+                      result.status_code)
 
     if not components:
       components = sorted(hack_components.HACK_BLINK_COMPONENTS)
@@ -490,9 +495,11 @@ class Feature(DictModel):
   DEFAULT_CACHE_KEY = 'features'
 
   def __init__(self, *args, **kwargs):
-    # Initialise Feature.blink_components with a default value
-    if 'name' in kwargs:        # If name is present in kwargs then it would mean constructor is being called for creating a
-                                # new feature rather than for fetching an existing feature.
+    # Initialise Feature.blink_components with a default value.  If
+    # name is present in kwargs then it would mean constructor is
+    # being called for creating a new feature rather than for fetching
+    # an existing feature.
+    if 'name' in kwargs:
       if 'blink_components' not in kwargs:
         kwargs['blink_components'] = [BlinkComponent.DEFAULT_COMPONENT]
 
@@ -521,7 +528,8 @@ class Feature(DictModel):
 
       if (str(desktop_milestone) == str(milestone) or status == str(milestone)):
         return i
-      elif (desktop_milestone == None and str(android_milestone) == str(milestone)):
+      elif (desktop_milestone == None and
+            str(android_milestone) == str(milestone)):
         return i
 
     return -1
@@ -534,7 +542,9 @@ class Feature(DictModel):
       win_versions = omaha_data[0]['versions']
 
       # Find the latest canary major version from the list of windows versions.
-      canary_versions = [x for x in win_versions if x.get('channel') and x.get('channel').startswith('canary')]
+      canary_versions = [
+          x for x in win_versions
+          if x.get('channel') and x.get('channel').startswith('canary')]
       LATEST_VERSION = int(canary_versions[0].get('version').split('.')[0])
 
       milestones = list(range(1, LATEST_VERSION + 1))
@@ -751,7 +761,7 @@ class Feature(DictModel):
     d['doc_links'] = '\r\n'.join(self.doc_links)
     d['sample_links'] = '\r\n'.join(self.sample_links)
     d['search_tags'] = ', '.join(self.search_tags)
-    d['blink_components'] = self.blink_components[0] #TODO: support more than one component.
+    d['blink_components'] = self.blink_components[0]
     d['devrel'] = ', '.join(self.devrel)
     d['i2e_lgtms'] = ', '.join(self.i2e_lgtms)
     d['i2s_lgtms'] = ', '.join(self.i2s_lgtms)
@@ -821,7 +831,8 @@ class Feature(DictModel):
         if unformatted_feature.deleted:
           return None
         feature = unformatted_feature.format_for_template()
-        feature['updated_display'] = unformatted_feature.updated.strftime("%Y-%m-%d")
+        feature['updated_display'] = (
+            unformatted_feature.updated.strftime("%Y-%m-%d"))
         feature['new_crbug_url'] = unformatted_feature.new_crbug_url()
         ramcache.set(KEY, feature)
 
@@ -843,7 +854,8 @@ class Feature(DictModel):
       unformatted_feature = future.get_result()
       if unformatted_feature and not unformatted_feature.deleted:
         feature = unformatted_feature.format_for_template()
-        feature['updated_display'] = unformatted_feature.updated.strftime("%Y-%m-%d")
+        feature['updated_display'] = (
+            unformatted_feature.updated.strftime("%Y-%m-%d"))
         feature['new_crbug_url'] = unformatted_feature.new_crbug_url()
         ramcache.set(KEY, feature)
         result_dict[unformatted_feature.key.integer_id()] = feature
@@ -910,7 +922,9 @@ class Feature(DictModel):
 
       shipping_features.extend(android_only_shipping_features)
 
-      shipping_features = [f for f in shipping_features if (IN_DEVELOPMENT < f.impl_status_chrome < NO_LONGER_PURSUING)]
+      shipping_features = [
+          f for f in shipping_features
+          if (IN_DEVELOPMENT < f.impl_status_chrome < NO_LONGER_PURSUING)]
 
       def getSortingMilestone(feature):
         feature._sort_by_milestone = (feature.shipped_milestone or
@@ -966,7 +980,8 @@ class Feature(DictModel):
     all_features[IMPLEMENTATION_STATUS[ORIGIN_TRIAL]] = []
     all_features[IMPLEMENTATION_STATUS[BEHIND_A_FLAG]] = []
 
-    logging.info('Getting chronological feature list in milestone %d', milestone)
+    logging.info('Getting chronological feature list in milestone %d',
+                 milestone)
     # Start each query asynchronously in parallel.
     q = Feature.query()
     q = q.order(Feature.name)
@@ -1017,7 +1032,8 @@ class Feature(DictModel):
     desktop_dev_trial_features = desktop_dev_trial_features_future.result()
     android_dev_trial_features = android_dev_trial_features_future.result()
 
-    # Push feature to list corresponding to the implementation status of feature in queried milestone
+    # Push feature to list corresponding to the implementation status of
+    # feature in queried milestone
     for feature in desktop_shipping_features:
       if feature.impl_status_chrome == ENABLED_BY_DEFAULT:
         all_features[IMPLEMENTATION_STATUS[ENABLED_BY_DEFAULT]].append(feature)
@@ -1027,12 +1043,14 @@ class Feature(DictModel):
         all_features[IMPLEMENTATION_STATUS[REMOVED]].append(feature)
       elif feature.impl_status_chrome == INTERVENTION:
         all_features[IMPLEMENTATION_STATUS[INTERVENTION]].append(feature)
-      elif feature.feature_type == FEATURE_TYPE_DEPRECATION_ID and Feature.dt_milestone_desktop_start != None:
+      elif (feature.feature_type == FEATURE_TYPE_DEPRECATION_ID and
+            Feature.dt_milestone_desktop_start != None):
           all_features[IMPLEMENTATION_STATUS[DEPRECATED]].append(feature)
       elif feature.feature_type == FEATURE_TYPE_INCUBATE_ID:
           all_features[IMPLEMENTATION_STATUS[ENABLED_BY_DEFAULT]].append(feature)
 
-    # Push feature to list corresponding to the implementation status of feature in queried milestone
+    # Push feature to list corresponding to the implementation status
+    # of feature in queried milestone
     for feature in android_only_shipping_features:
       if feature.impl_status_chrome == ENABLED_BY_DEFAULT:
         all_features[IMPLEMENTATION_STATUS[ENABLED_BY_DEFAULT]].append(feature)
@@ -1040,7 +1058,8 @@ class Feature(DictModel):
         all_features[IMPLEMENTATION_STATUS[DEPRECATED]].append(feature)
       elif feature.impl_status_chrome == REMOVED:
         all_features[IMPLEMENTATION_STATUS[REMOVED]].append(feature)
-      elif feature.feature_type == FEATURE_TYPE_DEPRECATION_ID and Feature.dt_milestone_android_start != None:
+      elif (feature.feature_type == FEATURE_TYPE_DEPRECATION_ID and
+            Feature.dt_milestone_android_start != None):
           all_features[IMPLEMENTATION_STATUS[DEPRECATED]].append(feature)
       elif feature.feature_type == FEATURE_TYPE_INCUBATE_ID:
           all_features[IMPLEMENTATION_STATUS[ENABLED_BY_DEFAULT]].append(feature)
@@ -1084,7 +1103,8 @@ class Feature(DictModel):
     if feature_list is None or update_cache:
       # Get all shipping features. Ordered by shipping milestone (latest first).
       q = Feature.query()
-      q = q.filter(Feature.impl_status_chrome.IN([ENABLED_BY_DEFAULT, ORIGIN_TRIAL, INTERVENTION]))
+      q = q.filter(Feature.impl_status_chrome.IN([
+          ENABLED_BY_DEFAULT, ORIGIN_TRIAL, INTERVENTION]))
       q = q.order(-Feature.impl_status_chrome)
       q = q.order(-Feature.shipped_milestone)
       q = q.order(Feature.name)
@@ -1137,15 +1157,17 @@ class Feature(DictModel):
   def stash_values(self):
 
     # Stash existing values when entity is created so we can diff property
-    # values later in put() to know what's changed. https://stackoverflow.com/a/41344898
+    # values later in put() to know what's changed.
+    # https://stackoverflow.com/a/41344898
 
     for prop_name, prop in list(self._properties.items()):
       old_val = getattr(self, prop_name, None)
       setattr(self, '_old_' + prop_name, old_val)
 
   def __notify_feature_subscribers_of_changes(self, is_update):
-    """Async notifies subscribers of new features and property changes to features by
-       posting to a task queue."""
+    """Async notifies subscribers of new features and property changes to
+       features by posting to a task queue.
+    """
     # Diff values to see what properties have changed.
     changed_props = []
     for prop_name, prop in list(self._properties.items()):
@@ -1210,7 +1232,8 @@ class Feature(DictModel):
   intent_to_ship_url = ndb.StringProperty()
   ready_for_trial_url = ndb.StringProperty()
   intent_to_experiment_url = ndb.StringProperty()
-  i2e_lgtms = ndb.StringProperty(repeated=True)  # Currently, only one is needed.
+  # Currently, only one is needed.
+  i2e_lgtms = ndb.StringProperty(repeated=True)
   i2s_lgtms = ndb.StringProperty(repeated=True)
 
   # Chromium details.
@@ -1528,16 +1551,20 @@ class FeatureOwner(DictModel):
         return self.put()
     return None
 
-  def remove_from_component_subscribers(self, component_name, remove_as_owner=False):
-    """Removes the user from the list of Blink component subscribers or as the owner
-       of the component."""
+  def remove_from_component_subscribers(
+      self, component_name, remove_as_owner=False):
+    """Removes the user from the list of Blink component subscribers or as
+       the owner of the component.
+    """
     c = BlinkComponent.get_by_name(component_name)
     if c:
       if remove_as_owner:
-        self.primary_blink_components = list_without_component(self.primary_blink_components, c)
+        self.primary_blink_components = (
+            list_without_component(self.primary_blink_components, c))
       else:
         self.blink_components = list_without_component(self.blink_components, c)
-        self.primary_blink_components = list_without_component(self.primary_blink_components, c)
+        self.primary_blink_components = (
+            list_without_component(self.primary_blink_components, c))
       return self.put()
     return None
 
@@ -1554,7 +1581,8 @@ class FeatureOwner(DictModel):
     return None
 
   def remove_as_component_owner(self, component_name):
-    return self.remove_from_component_subscribers(component_name, remove_as_owner=True)
+    return self.remove_from_component_subscribers(
+        component_name, remove_as_owner=True)
 
 
 class HistogramModel(ndb.Model):

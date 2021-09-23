@@ -45,7 +45,8 @@ CAPSTONE_BUCKET_ID = -1
 @utils.retry(3, delay=30, backoff=2)
 def _FetchMetrics(url):
   if settings.PROD or settings.STAGING:
-    # follow_redirects=False according to https://cloud.google.com/appengine/docs/python/appidentity/#asserting_identity_to_other_app_engine_apps
+    # follow_redirects=False according to
+    # https://cloud.google.com/appengine/docs/python/appidentity/#asserting_identity_to_other_app_engine_apps
     # GAE request limit is 60s, but it could go longer due to start-up latency.
     logging.info('Requesting metrics from: %r', url)
     return requests.request('GET', url, timeout=120.0, allow_redirects=False)
@@ -251,7 +252,8 @@ class HistogramsHandler(basehandlers.FlaskHandler):
     # Save bucket ids for each histogram type, FeatureObserver and
     # MappedCSSProperties.
     for histogram_id in list(self.MODEL_CLASS.keys()):
-      enum = [enum for enum in enum_tags if enum.attributes['name'].value == histogram_id][0]
+      enum = [enum for enum in enum_tags
+              if enum.attributes['name'].value == histogram_id][0]
       for child in enum.getElementsByTagName('int'):
         self._SaveData({
           'bucket_id': child.attributes['value'].value,

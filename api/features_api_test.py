@@ -216,6 +216,9 @@ class FeaturesAPITestGet(testing_config.CustomTestCase):
     """Invalid value of milestone should not be processed."""
 
     # Feature is present in milestone
-    with test_app.test_request_context(self.request_path+'?milestone=chromium'):
+    with test_app.test_request_context(
+        self.request_path+'?milestone=chromium'):
+    with register.app.test_request_context(
+        self.request_path + '?milestone=chromium'):
       actual_response = self.handler.do_get()
     mock_abort.assert_called_once_with(400, description='Invalid  Milestone')

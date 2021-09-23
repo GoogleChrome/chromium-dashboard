@@ -101,7 +101,7 @@ ALL_FIELDS = {
         help_text=('Select the most specific category. If unsure, '
                    'leave as "%s".' % models.FEATURE_CATEGORIES[models.MISC]),
         initial=models.MISC,
-        choices=sorted(list(models.FEATURE_CATEGORIES.items()), key=lambda x: x[1])),
+        choices=sorted(models.FEATURE_CATEGORIES.items(), key=lambda x: x[1])),
 
     'feature_type': forms.ChoiceField(
         required=False,
@@ -239,8 +239,8 @@ ALL_FIELDS = {
     'intent_to_implement_url': forms.URLField(
         required=False, label='Intent to Prototype link',
         widget=forms.URLInput(attrs={'placeholder': 'https://'}),
-        help_text=('After you have started the "Intent to Prototype" discussion '
-                   'thread, link to it here.')),
+        help_text=('After you have started the "Intent to Prototype" '
+                   ' discussion thread, link to it here.')),
 
     'intent_to_ship_url': forms.URLField(
         required=False, label='Intent to Ship link',
@@ -257,8 +257,8 @@ ALL_FIELDS = {
     'intent_to_experiment_url': forms.URLField(
         required=False, label='Intent to Experiment link',
         widget=forms.URLInput(attrs={'placeholder': 'https://'}),
-        help_text=('After you have started the "Intent to Experiment" discussion '
-                   'thread, link to it here.')),
+        help_text=('After you have started the "Intent to Experiment" '
+                   ' discussion thread, link to it here.')),
 
     'r4dt_url': forms.URLField(  # Sets intent_to_experiment_url in DB
         required=False, label='Request for Deprecation Trial link',

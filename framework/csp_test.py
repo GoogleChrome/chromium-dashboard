@@ -45,7 +45,7 @@ class CspTest(unittest.TestCase):
   def test_get_nonce(self):
     """Many different nonce values are all different."""
     nonces = []
-    for i in range(1000):
+    for _ in range(1000):
       nonces.append(csp.get_nonce())
 
     self.assertEqual(len(nonces), len(set(nonces)))
@@ -53,16 +53,18 @@ class CspTest(unittest.TestCase):
   @mock.patch('framework.csp.USE_NONCE_ONLY_POLICY', False)
   def test_get_default_policy__strict(self):
     """We can get the regular strict policy."""
-    policy = csp.get_default_policy(nonce=12345)
+    policy = csp.get_default_policy(nonce='12345')
     self.assertCountEqual(list(csp.DEFAULT_POLICY.keys()), list(policy.keys()))
     self.assertIn('strict-dynamic', policy['script-src'])
+    self.assertIn("'nonce-12345'", policy['script-src'])
 
   @mock.patch('framework.csp.USE_NONCE_ONLY_POLICY', True)
   def test_get_default_policy__strict(self):
     """We can get the even stricter nonce-only policy."""
-    policy = csp.get_default_policy(nonce=12345)
+    policy = csp.get_default_policy(nonce='12345')
     self.assertCountEqual(list(csp.NONCE_ONLY_POLICY.keys()), list(policy.keys()))
     self.assertNotIn('strict-dynamic', policy['script-src'])
+    self.assertIn("'nonce-12345'", policy['script-src'])
 
   @mock.patch('framework.csp.REPORT_ONLY', False)
   def test_get_csp_header_key__enforced(self):
@@ -91,7 +93,7 @@ class CspTest(unittest.TestCase):
   @mock.patch('framework.csp.REPORT_ONLY', True)
   def test_get_headers(self):
     """We can get a complete header dict."""
-    actual = csp.get_headers(12345)
+    actual = csp.get_headers('12345')
     self.assertIn('12345', actual[csp.HEADER_KEY_REPORT_ONLY])
 
 

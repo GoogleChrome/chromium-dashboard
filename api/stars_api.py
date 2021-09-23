@@ -47,6 +47,7 @@ class StarsAPI(basehandlers.APIHandler):
     starred = self.get_bool_param('starred', default=True)
     user = self.get_current_user(required=True)
 
-    notifier.FeatureStar.set_star(user.email(), feature.key.integer_id(), starred)
+    notifier.FeatureStar.set_star(
+        user.email(), feature.key.integer_id(), starred)
     # Callers don't use the JSON response for this API call.
     return {'message': 'Done'}
