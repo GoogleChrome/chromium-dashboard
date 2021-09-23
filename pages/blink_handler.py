@@ -22,47 +22,12 @@ import collections
 import json
 import logging
 import os
-import yaml
 
 from framework import basehandlers
 from framework import permissions
 from internals import models
 import settings
-from .schedule import construct_chrome_channels_details
-
-
-class PopulateSubscribersHandler(basehandlers.FlaskHandler):
-
-  def __populate_subscribers(self):
-    """Seeds the database with the team in devrel_team.yaml and adds the team
-      member to the specified blink components in that file. Should only be ran
-      if the FeatureOwner database entries have been cleared"""
-    f = file('%s/data/devrel_team.yaml' % settings.ROOT_DIR, 'r')
-    for profile in yaml.load_all(f):
-      blink_components = profile.get('blink_components', [])
-      blink_components = [
-          models.BlinkComponent.get_by_name(name).key
-          for name in blink_components]
-      blink_components = [f for f in blink_components if f]
-
-      user = models.FeatureOwner(
-        name=str(profile['name']),
-        email=str(profile['email']),
-        twitter=profile.get('twitter', None),
-        blink_components=blink_components,
-        primary_blink_components=blink_components,
-        watching_all_features=False,
-      )
-      user.put()
-    f.close()
-
-  @permissions.require_admin_site
-  def get_template_data(self):
-    if settings.PROD:
-      return 'Handler not allowed in production.'
-    models.BlinkComponent.update_db()
-    self.__populate_subscribers()
-    return self.redirect('/admin/blink')
+from pages.schedule import construct_chrome_channels_details
 
 
 class BlinkHandler(basehandlers.FlaskHandler):
@@ -182,10 +147,3 @@ class SubscribersHandler(basehandlers.FlaskHandler):
       'selected_milestone': int(milestone) if milestone else None
     }
     return template_data
-
-
-app = basehandlers.FlaskApplication([
-  ('/admin/blink/populate_subscribers', PopulateSubscribersHandler),
-  ('/admin/subscribers', SubscribersHandler),
-  ('/admin/blink', BlinkHandler),
-], debug=settings.DEBUG)

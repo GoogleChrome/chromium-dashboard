@@ -24,6 +24,8 @@ import flask
 from internals import models
 from pages import users
 
+test_app = flask.Flask(__name__)
+
 
 class SettingsHandlerTests(unittest.TestCase):
 
@@ -36,7 +38,7 @@ class SettingsHandlerTests(unittest.TestCase):
     mock_gsiup.return_value = None
     mock_redirect.return_value = 'mock redirect response'
 
-    with users.app.test_request_context('/settings'):
+    with test_app.test_request_context('/settings'):
       actual = self.handler.get_template_data()
 
     mock_redirect.assert_called_once()

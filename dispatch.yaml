@@ -11,7 +11,8 @@ dispatch:
 - url: "*/tasks/email-subscribers"
   service: notifier
 
-- url: "*/hello"
-  service: app-py3
+- url: "*/tasks/outbound-email"
+  service: default
 
-# TODO(jrobbins): Gradually route most requests to service app-py3.
+- url: "*/*"
+  service: app-py3

@@ -23,10 +23,10 @@ import flask
 import mock
 import werkzeug.exceptions  # Flask HTTP stuff.
 
-from api import register
 from api import comments_api
 from internals import models
 
+test_app = flask.Flask(__name__)
 
 NOW = datetime.datetime.now()
 
@@ -77,7 +77,7 @@ class CommentsAPITest(testing_config.CustomTestCase):
   def test_get__empty(self):
     """We can get comments for a given approval, even if there none."""
     testing_config.sign_out()
-    with register.app.test_request_context(self.request_path):
+    with test_app.test_request_context(self.request_path):
       actual_response = self.handler.do_get(self.feature_id, self.field_id)
     self.assertEqual({'comments': []}, actual_response)
 
@@ -86,7 +86,7 @@ class CommentsAPITest(testing_config.CustomTestCase):
     testing_config.sign_out()
     self.cmnt_1_1.put()
 
-    with register.app.test_request_context(self.request_path):
+    with test_app.test_request_context(self.request_path):
       actual_response = self.handler.do_get(self.feature_id, self.field_id)
 
     actual_comment = actual_response['comments'][0]
@@ -98,12 +98,12 @@ class CommentsAPITest(testing_config.CustomTestCase):
   def test_post__bad_state(self):
     """Handler rejects requests that don't specify a state correctly."""
     params = {'state': 'not an int'}
-    with register.app.test_request_context(self.request_path, json=params):
+    with test_app.test_request_context(self.request_path, json=params):
       with self.assertRaises(werkzeug.exceptions.BadRequest):
         self.handler.do_post(self.feature_id, self.field_id)
 
     params = {'state': 999}
-    with register.app.test_request_context(self.request_path, json=params):
+    with test_app.test_request_context(self.request_path, json=params):
       with self.assertRaises(werkzeug.exceptions.BadRequest):
         self.handler.do_post(self.feature_id, self.field_id)
 
@@ -111,7 +111,7 @@ class CommentsAPITest(testing_config.CustomTestCase):
     """Handler rejects requests that don't match an existing feature."""
     bad_path = '/api/v0/features/12345/approvals/1/comments'
     params = {'state': models.Approval.NEED_INFO }
-    with register.app.test_request_context(bad_path, json=params):
+    with test_app.test_request_context(bad_path, json=params):
       with self.assertRaises(werkzeug.exceptions.NotFound):
         self.handler.do_post(12345, self.field_id)
 
@@ -122,17 +122,17 @@ class CommentsAPITest(testing_config.CustomTestCase):
     params = {'state': models.Approval.NEED_INFO}
 
     testing_config.sign_out()
-    with register.app.test_request_context(self.request_path, json=params):
+    with test_app.test_request_context(self.request_path, json=params):
       with self.assertRaises(werkzeug.exceptions.Forbidden):
         self.handler.do_post(self.feature_id, self.field_id)
 
     testing_config.sign_in('user7@example.com', 123567890)
-    with register.app.test_request_context(self.request_path, json=params):
+    with test_app.test_request_context(self.request_path, json=params):
       with self.assertRaises(werkzeug.exceptions.Forbidden):
         self.handler.do_post(self.feature_id, self.field_id)
 
     testing_config.sign_in('user@google.com', 123567890)
-    with register.app.test_request_context(self.request_path, json=params):
+    with test_app.test_request_context(self.request_path, json=params):
       with self.assertRaises(werkzeug.exceptions.Forbidden):
         self.handler.do_post(self.feature_id, self.field_id)
 
@@ -142,7 +142,7 @@ class CommentsAPITest(testing_config.CustomTestCase):
     mock_get_approvers.return_value = ['owner1@example.com']
     testing_config.sign_in('owner1@example.com', 123567890)
     params = {'state': models.Approval.NEED_INFO}
-    with register.app.test_request_context(self.request_path, json=params):
+    with test_app.test_request_context(self.request_path, json=params):
       actual = self.handler.do_post(self.feature_id, self.field_id)
 
     self.assertEqual(actual, {'message': 'Done'})
@@ -166,7 +166,7 @@ class CommentsAPITest(testing_config.CustomTestCase):
     mock_get_approvers.return_value = []
     testing_config.sign_in('owner2@example.com', 123567890)
     params = {'comment': 'Congratulations'}
-    with register.app.test_request_context(self.request_path, json=params):
+    with test_app.test_request_context(self.request_path, json=params):
       actual = self.handler.do_post(self.feature_id, self.field_id)
 
     self.assertEqual(actual, {'message': 'Done'})

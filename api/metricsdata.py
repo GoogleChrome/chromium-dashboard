@@ -28,10 +28,8 @@ from framework import users
 from framework import basehandlers
 from internals import models
 from framework import ramcache
-import settings
 
 CACHE_AGE = 86400 # 24hrs
-
 
 
 def _truncate_day_percentage(datapoint):
@@ -247,14 +245,3 @@ class FeatureBucketsHandler(basehandlers.FlaskHandler):
           models.FeatureObserverHistogram.get_all().items(), key=lambda x:x[1])
 
     return properties
-
-
-app = basehandlers.FlaskApplication([
-  ('/data/timeline/cssanimated', AnimatedTimelineHandler),
-  ('/data/timeline/csspopularity', PopularityTimelineHandler),
-  ('/data/timeline/featurepopularity', FeatureObserverTimelineHandler),
-  ('/data/csspopularity', CSSPopularityHandler),
-  ('/data/cssanimated', CSSAnimatedHandler),
-  ('/data/featurepopularity', FeatureObserverPopularityHandler),
-  ('/data/blink/<string:prop_type>', FeatureBucketsHandler),
-], debug=settings.DEBUG)

@@ -26,6 +26,8 @@ from framework import ramcache
 from internals import models
 from pages import myfeatures
 
+test_app = flask.Flask(__name__)
+
 
 class MyFeaturesHandlerTest(testing_config.CustomTestCase):
 
@@ -39,7 +41,7 @@ class MyFeaturesHandlerTest(testing_config.CustomTestCase):
     mock_gsiup.return_value = None
     mock_redirect.return_value = 'mock redirect response'
 
-    with myfeatures.app.test_request_context(self.request_path):
+    with test_app.test_request_context(self.request_path):
       actual = self.handler.get_template_data()
 
     mock_redirect.assert_called_once_with(settings.LOGIN_PAGE_URL)
@@ -50,7 +52,7 @@ class MyFeaturesHandlerTest(testing_config.CustomTestCase):
     """User can get a 'my feature' page."""
     mock_gsiup.return_value = models.UserPref(
         email='user@example.com')
-    with myfeatures.app.test_request_context(self.request_path):
+    with test_app.test_request_context(self.request_path):
       template_data = self.handler.get_template_data()
 
     # Everything is done in JS, so there is no template_data

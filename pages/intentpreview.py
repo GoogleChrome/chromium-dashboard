@@ -20,7 +20,6 @@
 from framework import users
 
 from internals import models
-import settings
 from framework import basehandlers
 from framework import permissions
 from internals import processes
@@ -84,9 +83,3 @@ class IntentEmailPreviewHandler(basehandlers.FlaskHandler):
       return 'Intent to Extend Deprecation Trial'
 
     return 'Intent stage "%s"' % models.INTENT_STAGES[intent_stage]
-
-app = basehandlers.FlaskApplication([
-  ('/admin/features/launch/<int:feature_id>', IntentEmailPreviewHandler),
-  ('/admin/features/launch/<int:feature_id>/<int:stage_id>',
-   IntentEmailPreviewHandler),
-], debug=settings.DEBUG)

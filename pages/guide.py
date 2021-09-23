@@ -36,7 +36,6 @@ from framework import utils
 from pages import guideforms
 from internals import models
 from internals import processes
-import settings
 
 
 # Forms to be used for each stage of each process.
@@ -563,11 +562,3 @@ class FeatureEditAllFields(FeatureEditStage):
         'flat_forms': flat_forms,
     }
     return template_data
-
-
-app = basehandlers.FlaskApplication([
-  ('/guide/new', FeatureNew),
-  ('/guide/edit/<int:feature_id>', ProcessOverview),
-  ('/guide/stage/<int:feature_id>/<int:stage_id>', FeatureEditStage),
-  ('/guide/editall/<int:feature_id>', FeatureEditAllFields),
-], debug=settings.DEBUG)

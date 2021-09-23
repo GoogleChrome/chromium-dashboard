@@ -24,6 +24,7 @@ import werkzeug
 from pages import intentpreview
 from internals import models
 
+test_app = flask.Flask(__name__)
 
 
 class IntentEmailPreviewHandlerTest(testing_config.CustomTestCase):
@@ -46,7 +47,7 @@ class IntentEmailPreviewHandlerTest(testing_config.CustomTestCase):
     """Anon cannot view this preview features, gets redirected to login."""
     testing_config.sign_out()
     feature_id = self.feature_1.key.integer_id()
-    with intentpreview.app.test_request_context(self.request_path):
+    with test_app.test_request_context(self.request_path):
       actual_response = self.handler.get_template_data(feature_id=feature_id)
     self.assertEqual('302 FOUND', actual_response.status)
 
@@ -54,7 +55,7 @@ class IntentEmailPreviewHandlerTest(testing_config.CustomTestCase):
     """Trying to view a feature that does not exist gives a 404."""
     testing_config.sign_in('user1@google.com', 123567890)
     bad_feature_id = self.feature_1.key.integer_id() + 1
-    with intentpreview.app.test_request_context(self.request_path):
+    with test_app.test_request_context(self.request_path):
       with self.assertRaises(werkzeug.exceptions.NotFound):
         self.handler.get_template_data(feature_id=bad_feature_id)
 
@@ -64,7 +65,7 @@ class IntentEmailPreviewHandlerTest(testing_config.CustomTestCase):
         '/admin/features/launch/%d?intent' % self.feature_1.key.integer_id())
     testing_config.sign_in('user1@google.com', 123567890)
     feature_id = self.feature_1.key.integer_id()
-    with intentpreview.app.test_request_context(self.request_path):
+    with test_app.test_request_context(self.request_path):
       actual_data = self.handler.get_template_data(feature_id=feature_id)
     self.assertIn('feature', actual_data)
     self.assertEqual('feature one', actual_data['feature']['name'])
@@ -73,7 +74,7 @@ class IntentEmailPreviewHandlerTest(testing_config.CustomTestCase):
     """Allowed user can preview intent email for a feature."""
     testing_config.sign_in('user1@google.com', 123567890)
     feature_id = self.feature_1.key.integer_id()
-    with intentpreview.app.test_request_context(self.request_path):
+    with test_app.test_request_context(self.request_path):
       actual_data = self.handler.get_template_data(feature_id=feature_id)
     self.assertIn('feature', actual_data)
     self.assertEqual('feature one', actual_data['feature']['name'])
@@ -81,7 +82,7 @@ class IntentEmailPreviewHandlerTest(testing_config.CustomTestCase):
   def test_get_page_data(self):
     """page_data has correct values."""
     feature_id = self.feature_1.key.integer_id()
-    with intentpreview.app.test_request_context(self.request_path):
+    with test_app.test_request_context(self.request_path):
       page_data = self.handler.get_page_data(
           feature_id, self.feature_1, models.INTENT_IMPLEMENT)
     self.assertEqual(

@@ -19,7 +19,6 @@
 import json
 import logging
 
-import settings
 from framework import basehandlers
 from framework import utils
 from pages import guideforms
@@ -27,9 +26,6 @@ from internals import models
 from framework import ramcache
 from framework import utils
 from internals import fetchchannels
-
-from google.appengine.api import users
-
 
 
 class CssPopularityHandler(basehandlers.FlaskHandler):
@@ -75,30 +71,3 @@ class OmahaDataHandler(basehandlers.FlaskHandler):
   def get_template_data(self):
     omaha_data = fetchchannels.get_omaha_data()
     return omaha_data
-
-
-# Main URL routes.
-routes = [
-  ('/metrics', basehandlers.Redirector,
-   {'location': '/metrics/css/popularity'}),
-  ('/metrics/css', basehandlers.Redirector,
-   {'location': '/metrics/css/popularity'}),
-
-  # TODO(jrobbins): These seem like they belong in metrics.py.
-  ('/metrics/css/popularity', basehandlers.ConstHandler,
-   {'template_path': 'metrics/css/popularity.html'}),
-  ('/metrics/css/animated', basehandlers.ConstHandler,
-   {'template_path': 'metrics/css/animated.html'}),
-  ('/metrics/css/timeline/popularity', CssPopularityHandler),
-  ('/metrics/css/timeline/popularity/<int:bucket_id>', CssPopularityHandler),
-  ('/metrics/css/timeline/animated', CssAnimatedHandler),
-  ('/metrics/css/timeline/animated/<int:bucket_id>', CssAnimatedHandler),
-  ('/metrics/feature/popularity', basehandlers.ConstHandler,
-   {'template_path': 'metrics/feature/popularity.html'}),
-  ('/metrics/feature/timeline/popularity', FeaturePopularityHandler),
-  ('/metrics/feature/timeline/popularity/<int:bucket_id>', FeaturePopularityHandler),
-
-  ('/omaha_data', OmahaDataHandler),
-]
-
-app = basehandlers.FlaskApplication(routes, debug=settings.DEBUG)
