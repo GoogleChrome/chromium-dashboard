@@ -18,7 +18,6 @@
 
 import json
 import logging
-import os
 
 import settings
 from framework import basehandlers
