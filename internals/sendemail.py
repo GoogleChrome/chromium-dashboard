@@ -16,94 +16,105 @@
 from __future__ import division
 from __future__ import print_function
 
+import flask
 import logging
 import re
 
 from google.appengine.api import mail
 from google.appengine.ext.webapp.mail_handlers import BounceNotification
 
-# TODO(jrobbins): For now, these files and files that they import must
-# remain compatible with both py2 and py3.  We could split those files too.
 import settings
-from framework import basehandlers
-from internals import models
+
+app = flask.Flask(__name__)
 
 
-class OutboundEmailHandler(basehandlers.FlaskHandler):
+def require_task_header():
+  """Abort if this is not a Google Cloud Tasks request."""
+  if settings.UNIT_TEST_MODE:
+    return
+  if 'X-AppEngine-QueueName' not in flask.request.headers:
+    flask.abort(403, msg='Lacking X-AppEngine-QueueName header')
+
+
+def get_param(request, name):
+  """Get the specified JSON parameter."""
+  json_body = request.get_json(force=True)
+  val = json_body.get(name)
+  if not val:
+    flask.abort(400, msg='Missing parameter %r' % name)
+  return val
+
+
+@app.route('/tasks/outbound-email', methods=['POST'])
+def handle_outbound_mail_task():
   """Task to send a notification email to one recipient."""
+  require_task_header()
 
-  IS_INTERNAL_HANDLER = True
+  to = get_param(flask.request, 'to')
+  subject = get_param(flask.request, 'subject')
+  email_html = get_param(flask.request, 'html')
 
-  def process_post_data(self):
-    self.require_task_header()
+  if settings.SEND_ALL_EMAIL_TO:
+    to_user, to_domain = to.split('@')
+    to = settings.SEND_ALL_EMAIL_TO % {'user': to_user, 'domain': to_domain}
 
-    to = self.get_param('to', required=True)
-    subject = self.get_param('subject', required=True)
-    email_html = self.get_param('html', required=True)
+  message = mail.EmailMessage(
+      sender='Chromestatus <admin@%s.appspotmail.com>' % settings.APP_ID,
+      to=to, subject=subject, html=email_html)
+  message.check_initialized()
 
-    if settings.SEND_ALL_EMAIL_TO:
-      to_user, to_domain = to.split('@')
-      to = settings.SEND_ALL_EMAIL_TO % {'user': to_user, 'domain': to_domain}
+  logging.info('Will send the following email:\n')
+  logging.info('To: %s', message.to)
+  logging.info('Subject: %s', message.subject)
+  logging.info('Body:\n%s', message.html)
+  if settings.SEND_EMAIL:
+    message.send()
+    logging.info('Email sent')
+  else:
+    logging.info('Email not sent because of settings.SEND_EMAIL')
 
-    message = mail.EmailMessage(
-        sender='Chromestatus <admin@%s.appspotmail.com>' % settings.APP_ID,
-        to=to, subject=subject, html=email_html)
-    message.check_initialized()
-
-    logging.info('Will send the following email:\n')
-    logging.info('To: %s', message.to)
-    logging.info('Subject: %s', message.subject)
-    logging.info('Body:\n%s', message.html)
-    if settings.SEND_EMAIL:
-      message.send()
-      logging.info('Email sent')
-    else:
-      logging.info('Email not sent because of settings.SEND_EMAIL')
-
-    return {'message': 'Done'}
+  return {'message': 'Done'}
 
 
-class BouncedEmailHandler(basehandlers.FlaskHandler):
-  BAD_WRAP_RE = re.compile('=\r\n')
-  BAD_EQ_RE = re.compile('=3D')
-  IS_INTERNAL_HANDLER = True
+BAD_WRAP_RE = re.compile('=\r\n')
+BAD_EQ_RE = re.compile('=3D')
+IS_INTERNAL_HANDLER = True
 
+# For docs on AppEngine's bounce email handling, see:
+# https://cloud.google.com/appengine/docs/python/mail/bounce
+# Source code is in file:
+# google_appengine/google/appengine/ext/webapp/mail_handlers.py
+
+@app.route('/_ah/bounce', methods=['POST'])
+def handle_bounce():
   """Handler to notice when email to given user is bouncing."""
-  # For docs on AppEngine's bounce email handling, see:
-  # https://cloud.google.com/appengine/docs/python/mail/bounce
-  # Source code is in file:
-  # google_appengine/google/appengine/ext/webapp/mail_handlers.py
-  def process_post_data(self):
-    self.receive(BounceNotification(self.form))
-    return {'message': 'Done'}
+  receive(BounceNotification(flask.request.form))
+  return {'message': 'Done'}
 
-  def receive(self, bounce_message):
-    email_addr = bounce_message.original.get('to')
-    subject = 'Mail to %r bounced' % email_addr
-    logging.info(subject)
-    pref_list = models.UserPref.get_prefs_for_emails([email_addr])
-    user_pref = pref_list[0]
-    user_pref.bounced = True
-    user_pref.put()
+def receive(bounce_message):
+  email_addr = bounce_message.original.get('to')
+  subject = 'Mail to %r bounced' % email_addr
+  logging.info(subject)
 
-    # Escalate to someone who might do something about it, e.g.
-    # find a new owner for a component.
-    body = ('The following message bounced.\n'
-            '=================\n'
-            'From: {from}\n'
-            'To: {to}\n'
-            'Subject: {subject}\n\n'
-            '{text}\n'.format(**bounce_message.original))
-    logging.info(body)
-    message = mail.EmailMessage(
-        sender='Chromestatus <admin@%s.appspotmail.com>' % settings.APP_ID,
-        to=settings.BOUNCE_ESCALATION_ADDR, subject=subject, body=body)
-    message.check_initialized()
-    if settings.SEND_EMAIL:
-      message.send()
+  # TODO(jrobbins): Re-implement this without depending on models.
+  # Instead create a task and then have that processed in py3.
+  # pref_list = models.UserPref.get_prefs_for_emails([email_addr])
+  # user_pref = pref_list[0]
+  # user_pref.bounced = True
+  # user_pref.put()
 
-
-app = basehandlers.FlaskApplication([
-  ('/tasks/outbound-email', OutboundEmailHandler),
-  ('/_ah/bounce', BouncedEmailHandler),
-], debug=settings.DEBUG)
+  # Escalate to someone who might do something about it, e.g.
+  # find a new owner for a component.
+  body = ('The following message bounced.\n'
+          '=================\n'
+          'From: {from}\n'
+          'To: {to}\n'
+          'Subject: {subject}\n\n'
+          '{text}\n'.format(**bounce_message.original))
+  logging.info(body)
+  message = mail.EmailMessage(
+      sender='Chromestatus <admin@%s.appspotmail.com>' % settings.APP_ID,
+      to=settings.BOUNCE_ESCALATION_ADDR, subject=subject, body=body)
+  message.check_initialized()
+  if settings.SEND_EMAIL:
+    message.send()
