@@ -13,8 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import division
-from __future__ import print_function
+
+
 
 import json
 import logging
@@ -36,10 +36,10 @@ class SamplesHandler(basehandlers.FlaskHandler):
     template_data['FEATURES'] = json.dumps(feature_list, separators=(',',':'))
     template_data['CATEGORIES'] = [
       (v, utils.normalized_name(v)) for k,v in
-      models.FEATURE_CATEGORIES.items()]
+      list(models.FEATURE_CATEGORIES.items())]
     template_data['categories'] = dict([
       (v, utils.normalized_name(v)) for k,v in
-      models.FEATURE_CATEGORIES.items()])
+      list(models.FEATURE_CATEGORIES.items())])
 
     return template_data
 

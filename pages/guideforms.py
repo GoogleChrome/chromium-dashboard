@@ -1,5 +1,5 @@
-from __future__ import division
-from __future__ import print_function
+
+
 
 # -*- coding: utf-8 -*-
 # Copyright 2020 Google Inc.
@@ -101,7 +101,7 @@ ALL_FIELDS = {
         help_text=('Select the most specific category. If unsure, '
                    'leave as "%s".' % models.FEATURE_CATEGORIES[models.MISC]),
         initial=models.MISC,
-        choices=sorted(models.FEATURE_CATEGORIES.items(), key=lambda x: x[1])),
+        choices=sorted(list(models.FEATURE_CATEGORIES.items()), key=lambda x: x[1])),
 
     'feature_type': forms.ChoiceField(
         required=False,
@@ -113,7 +113,7 @@ ALL_FIELDS = {
         required=False, label='Process stage',
         help_text='Select the appropriate process stage.',
         initial=models.INTENT_IMPLEMENT,
-        choices=models.INTENT_STAGES.items()),
+        choices=list(models.INTENT_STAGES.items())),
 
     'motivation': forms.CharField(
         label='Motivation', required=False,
@@ -168,7 +168,7 @@ ALL_FIELDS = {
 
     'standard_maturity': forms.ChoiceField(
         required=False, label='Standard maturity',
-        choices=models.STANDARD_MATURITY_CHOICES.items(),
+        choices=list(models.STANDARD_MATURITY_CHOICES.items()),
         initial=models.PROPOSAL_STD,
         help_text=('How far along is the standard that this '
                    'feature implements?')),
@@ -214,13 +214,13 @@ ALL_FIELDS = {
 
     'security_review_status': forms.ChoiceField(
         required=False,
-        choices=models.REVIEW_STATUS_CHOICES.items(),
+        choices=list(models.REVIEW_STATUS_CHOICES.items()),
         initial=models.REVIEW_PENDING,
         help_text=('Status of the security review.')),
 
     'privacy_review_status': forms.ChoiceField(
         required=False,
-        choices=models.REVIEW_STATUS_CHOICES.items(),
+        choices=list(models.REVIEW_STATUS_CHOICES.items()),
         initial=models.REVIEW_PENDING,
         help_text=('Status of the privacy review.')),
 
@@ -232,7 +232,7 @@ ALL_FIELDS = {
 
     'tag_review_status': forms.ChoiceField(
         required=False,
-        choices=models.REVIEW_STATUS_CHOICES.items(),
+        choices=list(models.REVIEW_STATUS_CHOICES.items()),
         initial=models.REVIEW_PENDING,
         help_text=('Status of the tag review.')),
 
@@ -292,7 +292,7 @@ ALL_FIELDS = {
 
     'safari_views': forms.ChoiceField(
         required=False, label='Safari views',
-        choices=models.VENDOR_VIEWS_WEBKIT.items(),
+        choices=list(models.VENDOR_VIEWS_WEBKIT.items()),
         initial=models.NO_PUBLIC_SIGNALS,
         help_text=(
             'See <a target="_blank" href="https://bit.ly/blink-signals">'
@@ -311,7 +311,7 @@ ALL_FIELDS = {
 
     'ff_views': forms.ChoiceField(
         required=False, label='Firefox views',
-        choices=models.VENDOR_VIEWS_GECKO.items(),
+        choices=list(models.VENDOR_VIEWS_GECKO.items()),
         initial=models.NO_PUBLIC_SIGNALS,
         help_text=(
             'See <a target="_blank" href="https://bit.ly/blink-signals">'
@@ -330,7 +330,7 @@ ALL_FIELDS = {
 
     'ie_views': forms.ChoiceField(
         required=False, label='Edge views',
-        choices=models.VENDOR_VIEWS_EDGE.items(),
+        choices=list(models.VENDOR_VIEWS_EDGE.items()),
         initial=models.NO_PUBLIC_SIGNALS),
 
     'ie_views_link': forms.URLField(
@@ -346,7 +346,7 @@ ALL_FIELDS = {
 
     'web_dev_views': forms.ChoiceField(
         required=False, label='Web / Framework developer views',
-        choices=models.WEB_DEV_VIEWS.items(),
+        choices=list(models.WEB_DEV_VIEWS.items()),
         initial=models.DEV_NO_SIGNALS,
         help_text=(
             'If unsure, default to "No signals". '
@@ -596,7 +596,7 @@ ALL_FIELDS = {
 
     'impl_status_chrome': forms.ChoiceField(
         required=False, label='Implementation status',
-        choices=models.IMPLEMENTATION_STATUS.items(),
+        choices=list(models.IMPLEMENTATION_STATUS.items()),
         help_text='Implementation status in Chromium'),
 
     'shipped_milestone': forms.IntegerField(

@@ -1,5 +1,5 @@
-from __future__ import division
-from __future__ import print_function
+
+
 
 # Copyright 2020 Google Inc.
 #
@@ -16,7 +16,7 @@ from __future__ import print_function
 # limitations under the License.
 
 import testing_config  # Must be imported before the module under test.
-import urllib
+import urllib.request, urllib.parse, urllib.error
 
 import flask
 import werkzeug

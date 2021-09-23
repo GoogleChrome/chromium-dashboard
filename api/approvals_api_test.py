@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import division
-from __future__ import print_function
+
+
 
 import datetime
 import testing_config  # Must be imported before the module under test.
@@ -54,7 +54,7 @@ class ApprovalsAPITest(testing_config.CustomTestCase):
     self.expected1 = {
         'feature_id': self.feature_id,
         'field_id': 1,
-        'set_by': u'owner1@example.com',
+        'set_by': 'owner1@example.com',
         'set_on': str(NOW),
         'state': models.Approval.APPROVED,
         }

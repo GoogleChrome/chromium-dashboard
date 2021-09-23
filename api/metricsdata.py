@@ -1,5 +1,5 @@
-from __future__ import division
-from __future__ import print_function
+
+
 
 # -*- coding: utf-8 -*-
 # Copyright 2013 Google Inc.
@@ -45,7 +45,7 @@ def _clean_data(data):
   user = users.get_current_user()
   # Don't show raw percentages if user is not a googler.
   if not _is_googler(user):
-    data = map(_truncate_day_percentage, data)
+    data = list(map(_truncate_day_percentage, data))
   return data
 
 def _filter_metric_data(data, formatted=False):
@@ -236,9 +236,9 @@ class FeatureBucketsHandler(basehandlers.FlaskHandler):
   def get_template_data(self, prop_type):
     if prop_type == 'cssprops':
       properties = sorted(
-          models.CssPropertyHistogram.get_all().items(), key=lambda x:x[1])
+          list(models.CssPropertyHistogram.get_all().items()), key=lambda x:x[1])
     else:
       properties = sorted(
-          models.FeatureObserverHistogram.get_all().items(), key=lambda x:x[1])
+          list(models.FeatureObserverHistogram.get_all().items()), key=lambda x:x[1])
 
     return properties

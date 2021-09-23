@@ -1,5 +1,5 @@
-from __future__ import division
-from __future__ import print_function
+
+
 
 # -*- coding: utf-8 -*-
 # Copyright 2017 Google Inc.
@@ -115,7 +115,7 @@ class SubscribersHandler(basehandlers.FlaskHandler):
     milestone = self.request.args.get('milestone') or None
     if milestone:
       milestone = int(milestone)
-      feature_list = filter(lambda f: (f['shipped_milestone'] or f['shipped_android_milestone']) == milestone, feature_list)
+      feature_list = [f for f in feature_list if (f['shipped_milestone'] or f['shipped_android_milestone']) == milestone]
 
     list_features_per_owner = 'showFeatures' in self.request.args
     for user in users:
@@ -124,7 +124,7 @@ class SubscribersHandler(basehandlers.FlaskHandler):
       for component in user.owned_components:
         component.features = []
         if list_features_per_owner:
-          component.features = filter(lambda f: component.name in f['blink_components'], feature_list)
+          component.features = [f for f in feature_list if component.name in f['blink_components']]
 
     details = construct_chrome_channels_details()
 

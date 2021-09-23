@@ -13,8 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import division
-from __future__ import print_function
+
+
 
 import datetime
 import testing_config  # Must be imported before the module under test.
@@ -60,9 +60,9 @@ class CommentsAPITest(testing_config.CustomTestCase):
     self.expected_1 = {
         'feature_id': self.feature_id,
         'field_id': self.field_id,
-        'author': u'owner1@example.com',
+        'author': 'owner1@example.com',
         'deleted_by': None,
-        'content': u'Good job',
+        'content': 'Good job',
         'old_approval_state': None,
         'new_approval_state': models.Approval.APPROVED,
         }

@@ -1,5 +1,5 @@
-from __future__ import division
-from __future__ import print_function
+
+
 
 # Copyright 2020 Google Inc.
 #
@@ -55,7 +55,7 @@ class DisplayFieldsTest(unittest.TestCase):
     """Each field appears at most once."""
     fields_seen = set(guideforms.DISPLAY_IN_FEATURE_HIGHLIGHTS +
                       guideforms.DEPRECATED_FIELDS)
-    for stage_id, field_spec_list in guideforms.DISPLAY_FIELDS_IN_STAGES.items():
+    for stage_id, field_spec_list in list(guideforms.DISPLAY_FIELDS_IN_STAGES.items()):
       for field_spec in field_spec_list:
         field_name = field_spec[0]
         self.assertNotIn(
@@ -67,11 +67,11 @@ class DisplayFieldsTest(unittest.TestCase):
     """Each field appears at least once."""
     fields_seen = set(guideforms.DISPLAY_IN_FEATURE_HIGHLIGHTS +
                       guideforms.DEPRECATED_FIELDS)
-    for stage_id, field_spec_list in guideforms.DISPLAY_FIELDS_IN_STAGES.items():
+    for stage_id, field_spec_list in list(guideforms.DISPLAY_FIELDS_IN_STAGES.items()):
       for field_spec in field_spec_list:
         field_name = field_spec[0]
         fields_seen.add(field_name)
-    for field_name in guideforms.ALL_FIELDS.keys():
+    for field_name in list(guideforms.ALL_FIELDS.keys()):
       self.assertIn(
           field_name, fields_seen,
           msg='Field %r is missing in DISPLAY_FIELDS_IN_STAGES' % field_name)
