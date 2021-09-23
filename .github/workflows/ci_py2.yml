@@ -1,0 +1,44 @@
+name: Continuous Integration py2
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+jobs:
+  python2_tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: set up Python2
+        uses: actions/setup-python@v2
+        with:
+          python-version: '2.7'
+
+      - name: pre-installation
+        run: |
+          # Remove existing google-cloud-sdk packages in Ubuntu.
+          sudo rm -rf /usr/lib/google-cloud-sdk
+          curl https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-353.0.0-linux-x86_64.tar.gz | tar -zx > /dev/null
+          # Substitute the downloaded google-cloud-sdk packages, due to https://stackoverflow.com/questions/42697026/install-google-cloud-components-error-from-gcloud-command.
+          sudo mv google-cloud-sdk /usr/lib/
+          sudo gcloud components update
+          sudo gcloud components install app-engine-python beta cloud-datastore-emulator app-engine-python-extras
+          gcloud config set project cr-status-staging
+          gcloud version
+
+      - name: installation
+        run: |
+          npm install -g gulp
+          npm ci
+          python -m pip install -t lib -r requirements.txt --upgrade
+          python -m pip install --no-deps -r requirements.dev.txt
+
+      - name: lint
+        run: npm run lint
+
+      - name: test
+        run: python -m unittest discover -p '*_py2test.py'
+
+      - name: build
+        run: npm run build

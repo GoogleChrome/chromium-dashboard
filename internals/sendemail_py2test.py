@@ -17,11 +17,8 @@ from __future__ import print_function
 
 import collections
 import json
-import testing_config  # Must be imported before the module under test.
-
-import flask
+import testing_config_py2  # Must be imported before the module under test.
 import mock
-import werkzeug.exceptions  # Flask HTTP stuff.
 
 from google.appengine.api import mail
 
@@ -29,7 +26,7 @@ import settings
 from internals import models
 from internals import sendemail
 
-class OutboundEmailHandlerTest(testing_config.CustomTestCase):
+class OutboundEmailHandlerTest(unittest.TestCase):
 
   def setUp(self):
     self.handler = sendemail.OutboundEmailHandler()
@@ -105,7 +102,7 @@ class OutboundEmailHandlerTest(testing_config.CustomTestCase):
     self.assertEqual({'message': 'Done'}, actual_response)
 
 
-class BouncedEmailHandlerTest(testing_config.CustomTestCase):
+class BouncedEmailHandlerTest(unittest.TestCase):
 
   def setUp(self):
     self.handler = sendemail.BouncedEmailHandler()
@@ -131,7 +128,7 @@ class BouncedEmailHandlerTest(testing_config.CustomTestCase):
         notify_as_starrer=False)
     starrer_3_pref.put()
 
-    bounce_message = testing_config.Blank(
+    bounce_message = testing_config_py2.Blank(
         original={'to': 'starrer_3@example.com',
                   'from': 'sender',
                   'subject': 'subject',
@@ -157,7 +154,7 @@ class BouncedEmailHandlerTest(testing_config.CustomTestCase):
     """When we get a bounce, we create the UserPrefs for that user."""
     # Note, no existing UserPref for starrer_4.
 
-    bounce_message = testing_config.Blank(
+    bounce_message = testing_config_py2.Blank(
         original={'to': 'starrer_4@example.com',
                   'from': 'sender',
                   'subject': 'subject',
