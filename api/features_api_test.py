@@ -94,7 +94,7 @@ class FeaturesAPITestDelete(testing_config.CustomTestCase):
 
     revised_feature = models.Feature.get_by_id(self.feature_id)
     self.assertFalse(revised_feature.deleted)
-  
+
 
 class FeaturesAPITestGet(testing_config.CustomTestCase):
 
@@ -125,8 +125,8 @@ class FeaturesAPITestGet(testing_config.CustomTestCase):
     with register.app.test_request_context(self.request_path):
       actual_response = self.handler.do_get()
 
-    # Comparing only the total number of features and name of the feature 
-    # as certain fields like `updated` cannot be compared 
+    # Comparing only the total number of features and name of the feature
+    # as certain fields like `updated` cannot be compared
     self.assertEqual(1, len(actual_response))
     self.assertEqual('feature one', actual_response[0]['name'])
 
@@ -137,7 +137,7 @@ class FeaturesAPITestGet(testing_config.CustomTestCase):
 
     # No signed-in user
     with register.app.test_request_context(self.request_path):
-      actual_response = self.handler.do_get() 
+      actual_response = self.handler.do_get()
     self.assertEqual(0, len(actual_response))
 
     # Signed-in user with no permissions
@@ -215,6 +215,7 @@ class FeaturesAPITestGet(testing_config.CustomTestCase):
     """Invalid value of milestone should not be processed."""
 
     # Feature is present in milestone
-    with register.app.test_request_context(self.request_path+'?milestone=chromium'):
+    with register.app.test_request_context(
+        self.request_path + '?milestone=chromium'):
       actual_response = self.handler.do_get()
     mock_abort.assert_called_once_with(400, description='Invalid  Milestone')

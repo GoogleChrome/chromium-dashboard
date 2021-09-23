@@ -68,7 +68,8 @@ def generate_token(user_email, token_time=None):
   """
   token_time = token_time or int(time.time())
   token_time = str(token_time).encode()
-  digester = hmac.new(secrets.get_xsrf_secret().encode(), digestmod=hashlib.sha256)
+  digester = hmac.new(secrets.get_xsrf_secret().encode(),
+                      digestmod=hashlib.sha256)
   digester.update(user_email.encode() if user_email else b'')
   digester.update(DELIMITER)
   digester.update(token_time)

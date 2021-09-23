@@ -96,7 +96,8 @@ def construct_chrome_channels_details():
 class ScheduleHandler(basehandlers.FlaskHandler):
 
   TEMPLATE_PATH = 'schedule.html'
-  # TODO(shivamag00): fetch data from Channels API and Features API using JS instead of passing it here
+  # TODO(shivamag00): fetch data from Channels API and Features API
+  # using JS instead of passing it here
 
   def get_template_data(self):
     template_data = {

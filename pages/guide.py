@@ -368,7 +368,8 @@ class FeatureEditStage(basehandlers.FlaskHandler):
           'shipped_webview_milestone')
 
     if self.touched('shipped_opera_milestone'):
-      feature.shipped_opera_milestone = self.parse_int('shipped_opera_milestone')
+      feature.shipped_opera_milestone = (
+          self.parse_int('shipped_opera_milestone'))
 
     if self.touched('shipped_opera_android'):
       feature.shipped_opera_android_milestone = self.parse_int(
