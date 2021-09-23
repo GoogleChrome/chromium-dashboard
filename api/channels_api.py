@@ -13,8 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import division
-from __future__ import print_function
+
+
 
 import logging
 import json
@@ -85,7 +85,7 @@ def fetch_chrome_release_info(version):
 
 def construct_specified_milestones_details(start, end):
   channels = {}
-  win_versions = range(start,end+1)
+  win_versions = list(range(start,end+1))
 
   for milestone in win_versions:
     channels[milestone] = fetch_chrome_release_info(milestone)

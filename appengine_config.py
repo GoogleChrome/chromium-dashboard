@@ -1,9 +1,10 @@
-from __future__ import division
-from __future__ import print_function
-from __future__ import absolute_import
+
+
+
 
 import os
 import sys
+import importlib
 # name of the django settings module
 os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
 
@@ -17,7 +18,7 @@ import pkg_resources
 pkg_resources.working_set.add_entry(lib_path)
 
 import six
-reload(six)
+importlib.reload(six)
 
 # This is needed to use the requests library in python 2.7.
 # https://cloud.google.com/appengine/docs/standard/python/issue-requests#requests

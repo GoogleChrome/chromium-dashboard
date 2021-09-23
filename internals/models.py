@@ -1,5 +1,5 @@
-from __future__ import division
-from __future__ import print_function
+
+
 
 # -*- coding: utf-8 -*-
 # Copyright 2020 Google Inc.
@@ -1138,7 +1138,7 @@ class Feature(DictModel):
     # Stash existing values when entity is created so we can diff property
     # values later in put() to know what's changed. https://stackoverflow.com/a/41344898
 
-    for prop_name, prop in self._properties.items():
+    for prop_name, prop in list(self._properties.items()):
       old_val = getattr(self, prop_name, None)
       setattr(self, '_old_' + prop_name, old_val)
 
@@ -1147,7 +1147,7 @@ class Feature(DictModel):
        posting to a task queue."""
     # Diff values to see what properties have changed.
     changed_props = []
-    for prop_name, prop in self._properties.items():
+    for prop_name, prop in list(self._properties.items()):
       if prop_name in ('created_by', 'updated_by', 'updated', 'created'):
         continue
       new_val = getattr(self, prop_name, None)
