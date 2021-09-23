@@ -17,22 +17,18 @@
 
 import collections
 import json
-import testing_config  # Must be imported before the module under test.
-
-import flask
+import testing_config_py2  # Must be imported before the module under test.
 import mock
-import werkzeug.exceptions  # Flask HTTP stuff.
+import unittest
 
 from google.appengine.api import mail
 
 import settings
-from internals import models
 from internals import sendemail
 
-class OutboundEmailHandlerTest(testing_config.CustomTestCase):
+class OutboundEmailHandlerTest(unittest.TestCase):
 
   def setUp(self):
-    self.handler = sendemail.OutboundEmailHandler()
     self.request_path = '/tasks/outbound-email'
 
     self.to = 'user@example.com'
@@ -52,7 +48,7 @@ class OutboundEmailHandlerTest(testing_config.CustomTestCase):
         'html': self.html,
         }
     with sendemail.app.test_request_context(self.request_path, json=params):
-      actual_response = self.handler.process_post_data()
+      actual_response = sendemail.handle_outbound_mail_task()
 
     mock_emailmessage_constructor.assert_called_once_with(
         sender=self.sender, to=self.to, subject=self.subject,
@@ -72,7 +68,7 @@ class OutboundEmailHandlerTest(testing_config.CustomTestCase):
         'html': self.html,
         }
     with sendemail.app.test_request_context(self.request_path, json=params):
-      actual_response = self.handler.process_post_data()
+      actual_response = sendemail.handle_outbound_mail_task()
 
     expected_to = 'cr-status-staging-emails+user+example.com@google.com'
     mock_emailmessage_constructor.assert_called_once_with(
@@ -93,7 +89,7 @@ class OutboundEmailHandlerTest(testing_config.CustomTestCase):
         'html': self.html,
         }
     with sendemail.app.test_request_context(self.request_path, json=params):
-      actual_response = self.handler.process_post_data()
+      actual_response = sendemail.handle_outbound_mail_task()
 
     expected_to = 'cr-status-staging-emails+user+example.com@google.com'
     mock_emailmessage_constructor.assert_called_once_with(
@@ -105,18 +101,17 @@ class OutboundEmailHandlerTest(testing_config.CustomTestCase):
     self.assertEqual({'message': 'Done'}, actual_response)
 
 
-class BouncedEmailHandlerTest(testing_config.CustomTestCase):
+class BouncedEmailHandlerTest(unittest.TestCase):
 
   def setUp(self):
-    self.handler = sendemail.BouncedEmailHandler()
     self.sender = ('Chromestatus <admin@%s.appspotmail.com>' %
                    settings.APP_ID)
     self.expected_to = settings.BOUNCE_ESCALATION_ADDR
 
-  @mock.patch('internals.sendemail.BouncedEmailHandler.receive')
+  @mock.patch('internals.sendemail.receive')
   def test_process_post_data(self, mock_receive):
     with sendemail.app.test_request_context('/_ah/bounce'):
-      actual_json = self.handler.process_post_data()
+      actual_json = sendemail.handle_bounce()
 
     self.assertEqual({'message': 'Done'}, actual_json)
     mock_receive.assert_called_once()
@@ -126,23 +121,26 @@ class BouncedEmailHandlerTest(testing_config.CustomTestCase):
   @mock.patch('google.appengine.api.mail.EmailMessage')
   def test_receive__user_has_prefs(self, mock_emailmessage_constructor):
     """When we get a bounce, we update the UserPrefs for that user."""
-    starrer_3_pref = models.UserPref(
-        email='starrer_3@example.com',
-        notify_as_starrer=False)
-    starrer_3_pref.put()
+    #starrer_3_pref = models.UserPref(
+    #    email='starrer_3@example.com',
+    #    notify_as_starrer=False)
+    #starrer_3_pref.put()
 
-    bounce_message = testing_config.Blank(
+    bounce_message = testing_config_py2.Blank(
         original={'to': 'starrer_3@example.com',
                   'from': 'sender',
                   'subject': 'subject',
                   'text': 'body'})
 
-    self.handler.receive(bounce_message)
+    sendemail.receive(bounce_message)
 
-    updated_pref = models.UserPref.get_by_id(starrer_3_pref.key.integer_id())
-    self.assertEqual('starrer_3@example.com', updated_pref.email)
-    self.assertTrue(updated_pref.bounced)
-    self.assertFalse(updated_pref.notify_as_starrer)
+    # TODO(jrobbins): Redo this testing after this aspect of the code is
+    # re-implemented.
+    # updated_pref = models.UserPref.get_by_id(starrer_3_pref.key.integer_id())
+    # self.assertEqual('starrer_3@example.com', updated_pref.email)
+    # self.assertTrue(updated_pref.bounced)
+    # self.assertFalse(updated_pref.notify_as_starrer)
+
     expected_subject = "Mail to 'starrer_3@example.com' bounced"
     mock_emailmessage_constructor.assert_called_once_with(
         sender=self.sender, to=self.expected_to, subject=expected_subject,
@@ -157,20 +155,23 @@ class BouncedEmailHandlerTest(testing_config.CustomTestCase):
     """When we get a bounce, we create the UserPrefs for that user."""
     # Note, no existing UserPref for starrer_4.
 
-    bounce_message = testing_config.Blank(
+    bounce_message = testing_config_py2.Blank(
         original={'to': 'starrer_4@example.com',
                   'from': 'sender',
                   'subject': 'subject',
                   'text': 'body'})
 
-    self.handler.receive(bounce_message)
+    sendemail.receive(bounce_message)
 
-    prefs_list = models.UserPref.get_prefs_for_emails(
-        ['starrer_4@example.com'])
-    updated_pref = prefs_list[0]
-    self.assertEqual('starrer_4@example.com', updated_pref.email)
-    self.assertTrue(updated_pref.bounced)
-    self.assertTrue(updated_pref.notify_as_starrer)
+    # TODO(jrobbins): Redo this testing after this aspect of the code is
+    # re-implemented.
+    # prefs_list = models.UserPref.get_prefs_for_emails(
+    #     ['starrer_4@example.com'])
+    # updated_pref = prefs_list[0]
+    # self.assertEqual('starrer_4@example.com', updated_pref.email)
+    # self.assertTrue(updated_pref.bounced)
+    # self.assertTrue(updated_pref.notify_as_starrer)
+
     expected_subject = "Mail to 'starrer_4@example.com' bounced"
     mock_emailmessage_constructor.assert_called_once_with(
         sender=self.sender, to=self.expected_to, subject=expected_subject,
