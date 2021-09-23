@@ -17,8 +17,6 @@ handlers:
 
 - url: /static
   static_dir: static
-  # TODO(jrobbins): application_readable is not supported in py3
-  # application_readable: true # So static assets can be read by inline_file django tag.
   http_headers:
     Access-Control-Allow-Origin: "*"
   secure: always
