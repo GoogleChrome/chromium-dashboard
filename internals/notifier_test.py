@@ -1,5 +1,5 @@
-from __future__ import division
-from __future__ import print_function
+
+
 
 # Copyright 2020 Google Inc.
 #
@@ -138,7 +138,7 @@ class EmailFormattingTest(testing_config.CustomTestCase):
         'addr', ['reason 1', 'reason 2'], 'html', 'subject')
     self.assertCountEqual(
         ['to', 'subject', 'html'],
-        actual.keys())
+        list(actual.keys()))
     self.assertEqual('addr', actual['to'])
     self.assertEqual('subject', actual['subject'])
     self.assertIn('html', actual['html'])

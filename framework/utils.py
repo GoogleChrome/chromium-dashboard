@@ -13,8 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import division
-from __future__ import print_function
+
+
 
 import calendar
 import datetime
@@ -103,8 +103,8 @@ def render_atom_feed(request, title, data):
   feed = feedgenerator.Atom1Feed(
       title=str('%s - %s' % (settings.APP_TITLE, title)),
       link=features_url,
-      description=u'New features exposed to web developers',
-      language=u'en'
+      description='New features exposed to web developers',
+      language='en'
   )
   for f in data:
     updated = f['updated']['when']
