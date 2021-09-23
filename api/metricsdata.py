@@ -79,7 +79,8 @@ class TimelineHandler(basehandlers.FlaskHandler):
     # does not make sense, filter out everything before the 2017-10-26 switch.
     # See https://github.com/GoogleChrome/chromium-dashboard/issues/414
     if self.MODEL_CLASS == models.AnimatedProperty:
-      query = query.filter(self.MODEL_CLASS.date >= datetime.datetime(2017, 10, 26))
+      query = query.filter(
+          self.MODEL_CLASS.date >= datetime.datetime(2017, 10, 26))
     return query
 
   def get_template_data(self):
@@ -147,7 +148,8 @@ class FeatureHandler(basehandlers.FlaskHandler):
     # That operation is fast and makes most of the iterations
     # of the main loop become in-RAM operations.
     batch_datapoints_query = self.MODEL_CLASS.query()
-    batch_datapoints_query = batch_datapoints_query.order(-self.MODEL_CLASS.date)
+    batch_datapoints_query = batch_datapoints_query.order(
+        -self.MODEL_CLASS.date)
     batch_datapoints_list = batch_datapoints_query.fetch(5000)
     logging.info('batch query found %r recent datapoints',
                  len(batch_datapoints_list))
@@ -189,7 +191,8 @@ class FeatureHandler(basehandlers.FlaskHandler):
 
     else:
       properties = ramcache.get(self.CACHE_KEY)
-      logging.info('looked at cache %r and found %r', self.CACHE_KEY, properties)
+      logging.info(
+          'looked at cache %r and found %r', self.CACHE_KEY, properties)
       if properties is None:
         logging.info('Loading properties from datastore')
         properties = self.__query_metrics_for_properties()
@@ -238,10 +241,10 @@ class FeatureBucketsHandler(basehandlers.FlaskHandler):
   def get_template_data(self, prop_type):
     if prop_type == 'cssprops':
       properties = sorted(
-          list(models.CssPropertyHistogram.get_all().items()), key=lambda x:x[1])
+          models.CssPropertyHistogram.get_all().items(), key=lambda x:x[1])
     else:
       properties = sorted(
-          list(models.FeatureObserverHistogram.get_all().items()), key=lambda x:x[1])
+          models.FeatureObserverHistogram.get_all().items(), key=lambda x:x[1])
 
     return properties
 

@@ -42,7 +42,7 @@ class CspTest(unittest.TestCase):
   def test_get_nonce(self):
     """Many different nonce values are all different."""
     nonces = []
-    for i in range(1000):
+    for _ in range(1000):
       nonces.append(csp.get_nonce())
 
     self.assertEqual(len(nonces), len(set(nonces)))

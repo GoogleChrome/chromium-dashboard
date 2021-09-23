@@ -38,8 +38,7 @@ class UserListHandler(basehandlers.FlaskHandler):
 
   @permissions.require_admin_site
   def get_template_data(self):
-    users = models.AppUser.query().fetch(None) # TODO(ericbidelman): ramcache this.
-
+    users = models.AppUser.query().fetch(None)
     user_list = [user.format_for_template() for user in users]
 
     logging.info('user_list is %r', user_list)

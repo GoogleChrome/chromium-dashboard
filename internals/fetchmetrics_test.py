@@ -108,7 +108,7 @@ class YesterdayHandlerTest(testing_config.CustomTestCase):
     expected_calls = [
         mock.call(datetime.date(2021, 1, day))
         for day in [19, 18, 17, 16, 15]
-        for query in fetchmetrics.UMA_QUERIES]
+        for unused_query in fetchmetrics.UMA_QUERIES]
     mock_FetchAndSaveData.assert_has_calls(expected_calls)
 
   @mock.patch('internals.fetchmetrics.UmaQuery.FetchAndSaveData')
@@ -124,7 +124,7 @@ class YesterdayHandlerTest(testing_config.CustomTestCase):
     self.assertEqual('Success', actual_response)
     expected_calls = [
         mock.call(datetime.date(2021, 1, 20))
-        for query in fetchmetrics.UMA_QUERIES]
+        for unused_query in fetchmetrics.UMA_QUERIES]
     mock_FetchAndSaveData.assert_has_calls(expected_calls)
 
 
