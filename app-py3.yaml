@@ -2,6 +2,12 @@
 
 runtime: python39
 service: app-py3
+instance_class: F4
+
+automatic_scaling:
+  min_idle_instances: 1
+  max_pending_latency: 0.2s
+
 
 handlers:
 # Static handlers ---------------------------------------------------------------

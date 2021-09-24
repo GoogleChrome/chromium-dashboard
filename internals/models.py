@@ -928,7 +928,8 @@ class Feature(DictModel):
 
       def getSortingMilestone(feature):
         feature._sort_by_milestone = (feature.shipped_milestone or
-                                      feature.shipped_android_milestone)
+                                      feature.shipped_android_milestone or
+                                      0)
         return feature
 
       # Sort the feature list on either Android shipping milestone or desktop

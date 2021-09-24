@@ -19,7 +19,6 @@
 import logging
 from django import forms
 from django.core.validators import validate_email
-import string
 
 # from google.appengine.api import users
 from framework import users
@@ -40,7 +39,7 @@ class MultiEmailField(forms.Field):
         # Use the parent's handling of required fields, etc.
         super(MultiEmailField, self).validate(value)
         for email in value:
-            validate_email(string.strip(email))
+            validate_email(email.strip())
 
 SHIPPED_HELP_TXT = (
     'First milestone to ship with this status. Applies to: Enabled by '
