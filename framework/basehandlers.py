@@ -86,7 +86,7 @@ class BaseHandler(flask.views.MethodView):
   def get_param(
       self, name, default=None, required=True, validator=None, allowed=None):
     """Get the specified JSON parameter."""
-    json_body = self.request.get_json(force=True)
+    json_body = self.request.get_json(force=True, silent=True) or {}
     val = json_body.get(name, default)
     if required and not val:
       self.abort(400, msg='Missing parameter %r' % name)
@@ -156,7 +156,8 @@ class APIHandler(BaseHandler):
 
   def post(self, *args, **kwargs):
     """Handle an incoming HTTP POST request."""
-    logging.info('POST data is %r', self.request.get_json())
+    json_body = self.request.get_json(force=True, silent=True) or {}
+    logging.info('POST data is %r', json_body)
     is_login_request = str(self.request.url_rule) == '/api/v0/login'
 
     if not is_login_request:
