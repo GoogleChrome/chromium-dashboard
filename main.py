@@ -30,6 +30,7 @@ from api import token_refresh_api
 from framework import basehandlers
 from framework import csp
 from internals import fetchmetrics
+from internals import notifier
 from pages import blink_handler
 from pages import featuredetail
 from pages import featurelist
@@ -157,6 +158,8 @@ internals_routes = [
   ('/cron/metrics', fetchmetrics.YesterdayHandler),
   ('/cron/histograms', fetchmetrics.HistogramsHandler),
   ('/cron/update_blink_components', fetchmetrics.BlinkComponentHandler),
+
+  ('/tasks/email-subscribers', notifier.FeatureChangeHandler),
 ]
 
 

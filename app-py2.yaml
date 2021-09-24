@@ -28,6 +28,9 @@ handlers:
   script: internals.sendemail.app
   login: admin # Prevents raw access to this handler.
 
+includes:
+- env_vars.yaml
+
 inbound_services:
 - mail
 - mail_bounce

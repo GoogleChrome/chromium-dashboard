@@ -44,3 +44,7 @@ static/js-src/
 # Test coverage tool
 .coverage
 htmlcov
+
+# Python venv directory
+cs-env
+tutorial-env

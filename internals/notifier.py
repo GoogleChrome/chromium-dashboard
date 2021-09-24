@@ -268,8 +268,3 @@ class FeatureChangeHandler(basehandlers.FlaskHandler):
               one_email_dict['html'])
 
     return {'message': 'Done'}
-
-
-app = basehandlers.FlaskApplication([
-  ('/tasks/email-subscribers', FeatureChangeHandler),
-], debug=settings.DEBUG)
