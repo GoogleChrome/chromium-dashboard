@@ -69,6 +69,8 @@ GOOGLE_SIGN_IN_CLIENT_ID = (
 # page that requires being signed in.
 LOGIN_PAGE_URL = '/features?loginStatus=False'
 
+INBOUND_EMAIL_ADDR = 'chromestatus@cr-status-staging.appspotmail.com'
+
 
 if UNIT_TEST_MODE:
   APP_TITLE = 'Local testing'
@@ -87,6 +89,7 @@ elif APP_ID == 'cr-status':
   GOOGLE_SIGN_IN_CLIENT_ID = (
       '999517574127-7ueh2a17bv1ave9thlgtap19pt5qjp4g.'
       'apps.googleusercontent.com')
+  INBOUND_EMAIL_ADDR = 'chromestatus@cr-status.appspotmail.com'
 elif APP_ID == 'cr-status-staging':
   STAGING = True
   SEND_EMAIL = True

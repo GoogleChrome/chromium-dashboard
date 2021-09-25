@@ -26,7 +26,7 @@ import requests
 
 import settings
 
-if not settings.UNIT_TEST_MODE:
+if not settings.UNIT_TEST_MODE and not settings.DEV_MODE:
   import grpc  # See requirements.dev.txt.
   from google.api_core import retry
   from google.cloud import tasks
@@ -38,7 +38,7 @@ _client = None
 # Default exponential backoff retry config for enqueueing, not to be confused
 # with retry config for dispatching, which exists per queue.
 _DEFAULT_RETRY = None
-if not settings.UNIT_TEST_MODE:
+if not settings.UNIT_TEST_MODE and not settings.DEV_MODE:
   _DEFAULT_RETRY = retry.Retry(
       initial=.1, maximum=1.6, multiplier=2, deadline=10)
 

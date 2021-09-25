@@ -13,24 +13,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-
-
 import flask
 import logging
 import re
+import urllib
+import rfc822
 
 from google.appengine.api import mail
 from google.appengine.ext.webapp.mail_handlers import BounceNotification
 
+from framework import cloud_tasks_helpers
 import settings
 
 app = flask.Flask(__name__)
 
+# Parsing very large messages could cause out-of-memory errors.
+MAX_BODY_SIZE = 100 * 1024
+
 
 def require_task_header():
   """Abort if this is not a Google Cloud Tasks request."""
-  if settings.UNIT_TEST_MODE:
+  if settings.UNIT_TEST_MODE or settings.DEV_MODE:
     return
   if 'X-AppEngine-QueueName' not in flask.request.headers:
     flask.abort(403, msg='Lacking X-AppEngine-QueueName header')
@@ -118,3 +121,71 @@ def receive(bounce_message):
   message.check_initialized()
   if settings.SEND_EMAIL:
     message.send()
+
+
+def _ExtractAddrs(header_value):
+  """Given a message header value, return email address found there."""
+  friendly_addr_pairs = list(rfc822.AddressList(header_value))
+  return [addr for _friendly, addr in friendly_addr_pairs]
+
+
+@app.route('/_ah/mail/<string:addr>', methods=['POST'])
+def handle_incoming_mail(addr=None):
+  """Handle an incoming email by making a task to examine it.
+
+  This code checks some basic properties of the incoming message
+  to make sure that it is worth examining.  Then it puts all the
+  relevent fields into a dict and makes a new Cloud Task which
+  is futher processed in python 3 code.
+  """
+  logging.info('Request Headers: %r', flask.request.headers)
+
+  logging.info('\n\n\nPOST for InboundEmail and addr is %r', addr)
+  if addr != settings.INBOUND_EMAIL_ADDR:
+    logging.info('Message not sent directly to our address')
+    return {'message': 'Wrong address'}
+
+  if flask.request.content_length > MAX_BODY_SIZE:
+    logging.info('Message too big, ignoring')
+    return {'message': 'Too big'}
+
+  msg = mail.InboundEmailMessage(flask.request.get_data(as_text=True)).original
+
+  precedence = msg.get('precedence', '')
+  if precedence.lower() in ['bulk', 'junk']:
+    logging.info('Precedence: %r indicates an autoresponder', precedence)
+    return {'message': 'Wrong precedence'}
+  from_addrs = _ExtractAddrs(msg.get('from', ''))
+  if from_addrs:
+    from_addr = from_addrs[0]
+  else:
+    logging.info('could not parse from addr')
+    return {'message': 'Missing From'}
+  in_reply_to = msg.get('in-reply-to', '')
+
+  body = u''
+  for part in msg.walk():
+    # We only process plain text emails.
+    if part.get_content_type() == 'text/plain':
+      body = part.get_payload(decode=True)
+      if not isinstance(body, unicode):
+        body = body.decode('utf-8')
+      break  # Only consider the first text part.
+
+  to_addr = urllib.unquote(addr)
+  subject = msg.get('subject', '')
+  task_dict = {
+      'to_addr': to_addr,
+      'from_addr': from_addr,
+      'subject': subject,
+      'in_reply_to': in_reply_to,
+      'body': body
+      }
+  logging.info('To addr:     %r', to_addr)
+  logging.info('From addr:   %r', from_addr)
+  logging.info('Subject:     %r', subject)
+  logging.info('In reply to: %r', in_reply_to)
+  logging.info('Body:        %r', body)
+  cloud_tasks_helpers.enqueue_task('/tasks/detect-intent', task_dict)
+
+  return {'message': 'Done'}

@@ -8,6 +8,9 @@ dispatch:
 # - url: "*/tasks/outbound-email"
 #  service: app-py2
 
+- url: "*/tasks/detect-intent"
+  service: notifier
+
 - url: "*/tasks/email-subscribers"
   service: notifier
 

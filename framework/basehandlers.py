@@ -373,7 +373,7 @@ class FlaskHandler(BaseHandler):
 
   def require_task_header(self):
     """Abort if this is not a Google Cloud Tasks request."""
-    if settings.UNIT_TEST_MODE:
+    if settings.UNIT_TEST_MODE or settings.DEV_MODE:
       return
     if 'X-AppEngine-QueueName' not in self.request.headers:
       self.abort(403, msg='Lacking X-AppEngine-QueueName header')
