@@ -595,6 +595,13 @@ class FlaskHandlerTests(testing_config.CustomTestCase):
       self.handler.require_task_header()
 
   @mock.patch('settings.UNIT_TEST_MODE', False)
+  def test_require_task_header__same_app(self):
+    """If the incoming request is from our own app, we allow it."""
+    headers = {'X-Appengine-Inbound-Appid': 'dev'}
+    with test_app.test_request_context('/test', headers=headers):
+      self.handler.require_task_header()
+
+  @mock.patch('settings.UNIT_TEST_MODE', False)
   def test_require_task_header__missing(self):
     """If the incoming request is not from GCT, abort."""
     with test_app.test_request_context('/test'):

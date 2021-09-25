@@ -14,15 +14,16 @@
 # limitations under the License.
 
 import flask
+import json
 import logging
 import re
 import urllib
+import requests
 import rfc822
 
 from google.appengine.api import mail
 from google.appengine.ext.webapp.mail_handlers import BounceNotification
 
-from framework import cloud_tasks_helpers
 import settings
 
 app = flask.Flask(__name__)
@@ -123,10 +124,39 @@ def receive(bounce_message):
     message.send()
 
 
-def _ExtractAddrs(header_value):
+def _extract_addrs(header_value):
   """Given a message header value, return email address found there."""
   friendly_addr_pairs = list(rfc822.AddressList(header_value))
   return [addr for _friendly, addr in friendly_addr_pairs]
+
+
+def call_py3_task_handler(handler_path, task_dict):
+  """Request that our py3 code handle the rest of the work."""
+  handler_host = 'http://localhost:8080'
+  if settings.APP_ID == 'cr-status':
+    handler_host = 'https://chromestatus.com'
+  if settings.APP_ID == 'cr-status-staging':
+    handler_host = 'https://cr-status-staging.appspot.com'
+  handler_url = handler_host + handler_path
+
+  request_body = json.dumps(task_dict).encode()
+  logging.info('request_body is %r', request_body)
+
+  # AppEngine automatically sets header X-Appengine-Inbound-Appid,
+  # and that header is stripped from external requests.  So,
+  # require_task_header() can check for it to authenticate.
+  handler_response = requests.request(
+      'POST', handler_url, data=request_body, allow_redirects=False)
+
+  logging.info('request_response is %r', handler_response)
+  return handler_response
+
+
+def get_incoming_message():
+  """Get an email message object from the request data."""
+  data = flask.request.get_data(as_text=True)
+  msg = mail.InboundEmailMessage(data).original
+  return msg
 
 
 @app.route('/_ah/mail/<string:addr>', methods=['POST'])
@@ -149,13 +179,13 @@ def handle_incoming_mail(addr=None):
     logging.info('Message too big, ignoring')
     return {'message': 'Too big'}
 
-  msg = mail.InboundEmailMessage(flask.request.get_data(as_text=True)).original
+  msg = get_incoming_message()
 
   precedence = msg.get('precedence', '')
   if precedence.lower() in ['bulk', 'junk']:
     logging.info('Precedence: %r indicates an autoresponder', precedence)
     return {'message': 'Wrong precedence'}
-  from_addrs = _ExtractAddrs(msg.get('from', ''))
+  from_addrs = _extract_addrs(msg.get('from', ''))
   if from_addrs:
     from_addr = from_addrs[0]
   else:
@@ -179,13 +209,8 @@ def handle_incoming_mail(addr=None):
       'from_addr': from_addr,
       'subject': subject,
       'in_reply_to': in_reply_to,
-      'body': body
+      'body': body,
       }
-  logging.info('To addr:     %r', to_addr)
-  logging.info('From addr:   %r', from_addr)
-  logging.info('Subject:     %r', subject)
-  logging.info('In reply to: %r', in_reply_to)
-  logging.info('Body:        %r', body)
-  cloud_tasks_helpers.enqueue_task('/tasks/detect-intent', task_dict)
+  call_py3_task_handler('/tasks/detect-intent', task_dict)
 
   return {'message': 'Done'}
