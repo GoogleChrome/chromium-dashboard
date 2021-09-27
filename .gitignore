@@ -28,3 +28,6 @@ static/js/
 # Test coverage tool
 .coverage
 htmlcov
+
+# venv directory
+cs-env
