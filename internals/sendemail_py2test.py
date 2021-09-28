@@ -290,6 +290,7 @@ class InboundEmailHandlerTest(unittest.TestCase):
     """Reject the incoming email if it we cannot parse the From: line."""
     msg = MakeMessage(HEADER_LINES, 'Please review')
     mock_get_incoming_message.return_value = msg
+    mock_call_py3.return_value = testing_config_py2.Blank(status_code=200)
 
     with sendemail.app.test_request_context(
         '/_ah/mail/%s' % settings.INBOUND_EMAIL_ADDR):
