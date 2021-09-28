@@ -213,8 +213,8 @@ def handle_incoming_mail(addr=None):
       }
   response = call_py3_task_handler('/tasks/detect-intent', task_dict)
 
-  if response.status_code != 200:
+  if response.status_code and response.status_code != 200:
     logging.warning('Handoff to py3 failed.')
-    flask.abort(response.status_code)
+    flask.abort(400)
 
   return {'message': 'Done'}
