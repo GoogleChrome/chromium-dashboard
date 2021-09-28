@@ -140,7 +140,7 @@ def call_py3_task_handler(handler_path, task_dict):
   handler_url = handler_host + handler_path
 
   request_body = json.dumps(task_dict).encode()
-  logging.info('request_body is %r', request_body)
+  logging.info('task_dict is %r', task_dict)
 
   # AppEngine automatically sets header X-Appengine-Inbound-Appid,
   # and that header is stripped from external requests.  So,
@@ -211,6 +211,10 @@ def handle_incoming_mail(addr=None):
       'in_reply_to': in_reply_to,
       'body': body,
       }
-  call_py3_task_handler('/tasks/detect-intent', task_dict)
+  response = call_py3_task_handler('/tasks/detect-intent', task_dict)
+
+  if response.status_code != 200:
+    logging.warning('Handoff to py3 failed.')
+    flask.abort(response.status_code)
 
   return {'message': 'Done'}

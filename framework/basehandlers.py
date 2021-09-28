@@ -384,7 +384,8 @@ class FlaskHandler(BaseHandler):
     for k, v in self.request.headers:
       logging.info('%r: %r', k, v)
 
-    self.abort(403, msg='Lacking X-AppEngine-QueueName header')
+    self.abort(403, msg=('Lacking X-AppEngine-QueueName or '
+                         'incorrect X-Appengine-Inbound-Appid headers'))
 
   def split_input(self, field_name, delim='\\r?\\n'):
     """Split the input lines, strip whitespace, and skip blank lines."""

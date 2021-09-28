@@ -35,11 +35,12 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
     in_reply_to = self.get_param('in_reply_to', required=False)
     body = self.get_param('body')
 
-    logging.info('In IntentEmailHandler')
-    logging.info('From addr:   %r', from_addr)
-    logging.info('Subject:     %r', subject)
-    logging.info('In reply to: %r', in_reply_to)
-    logging.info('Body:        %r', body)
+    logging.info('In IntentEmailHandler:\n'
+                 'From addr:   %r\n'
+                 'Subject:     %r\n'
+                 'In reply to: %r\n'
+                 'Body:        %r\n',
+                 from_addr, subject, in_reply_to, body)
 
     # TODO(jrobbins): Write code to parse out:
     # 1. The type of intent.
