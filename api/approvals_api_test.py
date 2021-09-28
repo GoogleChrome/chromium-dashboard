@@ -200,7 +200,8 @@ class ApprovalsAPITest(testing_config.CustomTestCase):
       actual = self.handler.do_post()
 
     self.assertEqual(actual, {'message': 'Done'})
-    updated_approvals = models.Approval.get_approvals(self.feature_id)
+    updated_approvals = models.Approval.get_approvals(
+        feature_id=self.feature_id)
     self.assertEqual(1, len(updated_approvals))
     appr = updated_approvals[0]
     self.assertEqual(appr.feature_id, self.feature_id)
