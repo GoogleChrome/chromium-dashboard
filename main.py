@@ -29,6 +29,7 @@ from api import stars_api
 from api import token_refresh_api
 from framework import basehandlers
 from framework import csp
+from internals import detect_intent
 from internals import fetchmetrics
 from internals import notifier
 from pages import blink_handler
@@ -160,6 +161,8 @@ internals_routes = [
   ('/cron/update_blink_components', fetchmetrics.BlinkComponentHandler),
 
   ('/tasks/email-subscribers', notifier.FeatureChangeHandler),
+
+  ('/tasks/detect-intent', detect_intent.IntentEmailHandler),
 ]
 
 

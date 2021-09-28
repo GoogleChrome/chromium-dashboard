@@ -2,7 +2,11 @@ runtime: python39
 service: notifier
 
 handlers:
-- url: /tasks/.*
+- url: /tasks/detect-intent
+  script: auto
+  # Header checks prevent raw access to this handler.  Tasks have headers.
+
+- url: /tasks/email-subscribers
   script: auto
   # Header checks prevent raw access to this handler.  Tasks have headers.
 

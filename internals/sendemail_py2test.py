@@ -1,6 +1,3 @@
-
-
-
 # Copyright 2021 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
@@ -15,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import email
 import collections
 import json
 import testing_config_py2  # Must be imported before the module under test.
@@ -179,3 +177,132 @@ class BouncedEmailHandlerTest(unittest.TestCase):
     mock_message = mock_emailmessage_constructor.return_value
     mock_message.check_initialized.assert_called_once_with()
     mock_message.send.assert_called()
+
+
+class FunctionTest(unittest.TestCase):
+
+  def test_extract_addrs(self):
+    """We can parse email From: lines."""
+    header_val = ''
+    self.assertEqual(
+        [], sendemail._extract_addrs(header_val))
+
+    header_val = 'J. Robbins <a@b.com>, c@d.com,\n Nick "Name" Dude <e@f.com>'
+    self.assertEqual(
+        ['a@b.com', 'c@d.com', 'e@f.com'],
+        sendemail._extract_addrs(header_val))
+
+    header_val = ('hot: J. O\'Robbins <a@b.com>; '
+                  'cool: "friendly" <e.g-h@i-j.k-L.com>')
+    self.assertEqual(
+        ['a@b.com', 'e.g-h@i-j.k-L.com'],
+        sendemail._extract_addrs(header_val))
+
+  @mock.patch('requests.request')
+  def test_call_py3_task_handler(self, mock_request):
+    """Our py2 code can make a request to our py3 code."""
+    mock_request.return_value = 'mock response'
+
+    actual = sendemail.call_py3_task_handler('/path', {'a': 1})
+
+    self.assertEqual('mock response', actual)
+    mock_request.assert_called_once_with(
+        'POST', 'http://localhost:8080/path',
+        data=b'{"a": 1}', allow_redirects=False)
+
+
+def MakeMessage(header_list, body):
+  """Convenience function to make an email.message.Message."""
+  msg = email.message.Message()
+  for key, value in header_list:
+    msg[key] = value
+  msg.set_payload(body)
+  return msg
+
+
+HEADER_LINES = [
+    ('From', 'user@example.com'),
+    ('To', settings.INBOUND_EMAIL_ADDR),
+    ('Cc', 'other@chromium.org'),
+    ('Subject', 'Intent to Ship: Featurename'),
+    ('In-Reply-To', 'fake message id'),
+    ]
+
+
+class InboundEmailHandlerTest(unittest.TestCase):
+
+  def test_handle_incoming_mail__wrong_to_addr(self):
+    """Reject the email if the app was not on the To: line."""
+    with sendemail.app.test_request_context('/_ah/mail/other@example.com'):
+      actual = sendemail.handle_incoming_mail('other@example.com')
+
+    self.assertEqual(
+        {'message': 'Wrong address'},
+        actual)
+
+  def test_handle_incoming_mail__too_big(self):
+    """Reject the incoming email if it is huge."""
+    data = b'x' * sendemail.MAX_BODY_SIZE + b' is too big'
+
+    with sendemail.app.test_request_context(
+        '/_ah/mail/%s' % settings.INBOUND_EMAIL_ADDR, data=data):
+      actual = sendemail.handle_incoming_mail(settings.INBOUND_EMAIL_ADDR)
+
+    self.assertEqual(
+        {'message': 'Too big'},
+        actual)
+
+  @mock.patch('internals.sendemail.get_incoming_message')
+  def test_handle_incoming_mail__junk_mail(self, mock_get_incoming_message):
+    """Reject the incoming email if it has the wrong precedence header."""
+    for precedence in ['Bulk', 'Junk']:
+      msg = MakeMessage(
+          HEADER_LINES + [('Precedence', precedence)],
+          'I am on vacation!')
+      mock_get_incoming_message.return_value = msg
+
+      with sendemail.app.test_request_context(
+          '/_ah/mail/%s' % settings.INBOUND_EMAIL_ADDR):
+        actual = sendemail.handle_incoming_mail(settings.INBOUND_EMAIL_ADDR)
+
+      self.assertEqual(
+          {'message': 'Wrong precedence'},
+          actual)
+
+  @mock.patch('internals.sendemail.get_incoming_message')
+  def test_handle_incoming_mail__unclear_from(self, mock_get_incoming_message):
+    """Reject the incoming email if it we cannot parse the From: line."""
+    msg = MakeMessage([], 'Guess who this is')
+    mock_get_incoming_message.return_value = msg
+
+    with sendemail.app.test_request_context(
+        '/_ah/mail/%s' % settings.INBOUND_EMAIL_ADDR):
+      actual = sendemail.handle_incoming_mail(settings.INBOUND_EMAIL_ADDR)
+
+    self.assertEqual(
+        {'message': 'Missing From'},
+        actual)
+
+  @mock.patch('internals.sendemail.call_py3_task_handler')
+  @mock.patch('internals.sendemail.get_incoming_message')
+  def test_handle_incoming_mail__normal(
+      self, mock_get_incoming_message, mock_call_py3):
+    """Reject the incoming email if it we cannot parse the From: line."""
+    msg = MakeMessage(HEADER_LINES, 'Please review')
+    mock_get_incoming_message.return_value = msg
+    mock_call_py3.return_value = testing_config_py2.Blank(status_code=200)
+
+    with sendemail.app.test_request_context(
+        '/_ah/mail/%s' % settings.INBOUND_EMAIL_ADDR):
+      actual = sendemail.handle_incoming_mail(settings.INBOUND_EMAIL_ADDR)
+
+    self.assertEqual({'message': 'Done'}, actual)
+    expected_task_dict = {
+      'to_addr': settings.INBOUND_EMAIL_ADDR,
+      'from_addr': 'user@example.com',
+      'subject': 'Intent to Ship: Featurename',
+      'in_reply_to': 'fake message id',
+      'body': 'Please review',
+    }
+    mock_call_py3.assert_called_once_with(
+        '/tasks/detect-intent', expected_task_dict)

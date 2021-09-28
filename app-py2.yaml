@@ -15,16 +15,20 @@ automatic_scaling:
 builtins:
 - remote_api: on
 
+# These handlers are in this file because they require GAE py2.
+# TODO(jrobbins): phase out all of this when we redo email.
+
 handlers:
 
-# Note: This handler must remain in this file because it requires GAE py2.
 - url: /tasks/outbound-email
   script: internals.sendemail.app
   # Header checks prevent raw access to this handler.  Tasks have headers.
 
-# Note: This handler must remain in this file because it requires GAE py2.
+- url: /_ah/mail/.+
+  script: internals.sendemail.app
+  login: admin # Prevents raw access to this handler.
+
 - url: /_ah/bounce
-  # TODO(jrobbins): phase out this handler when we redo email.
   script: internals.sendemail.app
   login: admin # Prevents raw access to this handler.
 
