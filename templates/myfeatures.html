@@ -1,4 +1,5 @@
 {% extends "_base.html" %}
+{% load inline_file %}
 
 {% block css %}
 {% endblock %}
@@ -11,45 +12,22 @@
 
 {% block content %}
 
-<chromedash-accordion
-  id="features_pending_my_approval"
-  title="Features pending my approval"
-  opened>
-
-  <chromedash-feature-table
-    query="pending-approval-by:me"
-    rows=10 columns="approvals">
-  </chromedash-feature-table>
-</chromedash-accordion>
-
-
-<chromedash-accordion
-  id="features_i_starred"
-  title="Features I starred">
-
-  <chromedash-feature-table
-    query="starred-by:me"
-    rows=10>
-  </chromedash-feature-table>
-</chromedash-accordion>
-
-
-<chromedash-accordion
-  id="features_i_own"
-  title="Features I own">
-
-  <chromedash-feature-table
-    query="owner:me"
-    rows=10>
-  </chromedash-feature-table>
-</chromedash-accordion>
-
+<chromedash-myfeatures
+  {% if user %} signedin {% endif %}
+  {% if user.can_edit %} canedit {% endif %}
+  {% if user.can_approve %} canapprove {% endif %}
+  >
+</chromedash-myfeatures>
 
 
 {% endblock %}
 
 {% block js %}
 <script nonce="{{nonce}}">
-  document.body.classList.remove('loading');
+    (function() {
+      'use strict';
+
+      {% inline_file "/static/js/myfeatures-page.min.js" %}
+    })();
 </script>
 {% endblock %}
