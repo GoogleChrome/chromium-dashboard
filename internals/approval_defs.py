@@ -13,14 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-
-
 import base64
 import collections
 import logging
 import requests
 
+from framework import permissions
 from framework import ramcache
 
 CACHE_EXPIRATION = 60 * 60  # One hour
@@ -95,6 +93,18 @@ def get_approvers(field_id):
     return owners
 
   return afd.approvers
+
+
+def fields_approvable_by(user):
+  """Return a set of field IDs that the user is allowed to approve."""
+  if permissions.can_admin_site(user):
+    return set(APPROVAL_FIELDS_BY_ID.keys())
+
+  email = user.email()
+  approvable_ids = {
+      field_id for field_id in APPROVAL_FIELDS_BY_ID
+      if email in get_approvers(field_id)}
+  return approvable_ids
 
 
 def is_valid_field_id(field_id):

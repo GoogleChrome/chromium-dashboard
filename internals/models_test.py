@@ -1,6 +1,3 @@
-
-
-
 # Copyright 2020 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
@@ -17,6 +14,7 @@
 
 import testing_config  # Must be imported before the module under test.
 
+import datetime
 import mock
 from framework import ramcache
 # from google.appengine.api import users
@@ -293,6 +291,38 @@ class FeatureTest(testing_config.CustomTestCase):
 
 class ApprovalTest(testing_config.CustomTestCase):
 
+  def setUp(self):
+    self.feature_1 = models.Feature(
+        name='feature a', summary='sum', category=1, visibility=1,
+        standardization=1, web_dev_views=1, impl_status_chrome=3)
+    self.feature_1.put()
+    self.feature_1_id = self.feature_1.key.integer_id()
+    self.appr_1 = models.Approval(
+        feature_id=self.feature_1_id, field_id=1, state=2,
+        set_on=datetime.datetime.now(),
+        set_by='one@example.com')
+    self.appr_1.put()
+
+  def tearDown(self):
+    self.feature_1.key.delete()
+    for appr in models.Approval.query().fetch(None):
+      appr.key.delete()
+
+  def test_get_approvals(self):
+    """We can retrieve Approval entities."""
+    actual = models.Approval.get_approvals(feature_id=self.feature_1_id)
+    self.assertEqual(1, len(actual))
+    self.assertEqual(self.feature_1_id, actual[0].feature_id)
+
+    actual = models.Approval.get_approvals(field_id=1)
+    self.assertEqual(1, len(actual))
+
+    actual = models.Approval.get_approvals(states={2, 3})
+    self.assertEqual(1, len(actual))
+
+    actual = models.Approval.get_approvals(set_by='one@example.com')
+    self.assertEqual(1, len(actual))
+
   def test_is_valid_state(self):
     """We know what approval states are valid."""
     self.assertTrue(
@@ -300,6 +330,14 @@ class ApprovalTest(testing_config.CustomTestCase):
     self.assertFalse(models.Approval.is_valid_state(None))
     self.assertFalse(models.Approval.is_valid_state('not an int'))
     self.assertFalse(models.Approval.is_valid_state(999))
+
+  def test_set_approval(self):
+    """We can set an Approval entity."""
+    models.Approval.set_approval(
+        self.feature_1_id, 2, 0, 'owner@example.com')
+    self.assertEqual(
+        2,
+        len(models.Approval.query().fetch(None)))
 
 
 class UserPrefTest(testing_config.CustomTestCase):

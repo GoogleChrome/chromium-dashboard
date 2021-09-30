@@ -12,11 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-
-
 import testing_config  # Must be imported before the module under test.
 
+import datetime
 import mock
 
 from internals import models
@@ -32,6 +30,11 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
         standardization=1, web_dev_views=1, impl_status_chrome=3)
     self.feature_1.owner = ['owner@example.com']
     self.feature_1.put()
+    self.feature_2 = models.Feature(
+        name='feature 2', summary='sum', category=1, visibility=1,
+        standardization=1, web_dev_views=1, impl_status_chrome=3)
+    self.feature_2.owner = ['owner@example.com']
+    self.feature_2.put()
     notifier.FeatureStar.set_star(
         'starrer@example.com', self.feature_1.key.integer_id())
 
@@ -40,11 +43,64 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
         'starrer@example.com', self.feature_1.key.integer_id(),
         starred=False)
     self.feature_1.key.delete()
+    self.feature_2.key.delete()
 
-  def test_process_pending_approval_me_query(self):
+  @mock.patch('internals.models.Approval.get_approvals')
+  @mock.patch('internals.approval_defs.fields_approvable_by')
+  def test_process_pending_approval_me_query__none(
+      self, mock_approvable_by, mock_get_approvals):
+    """Nothing is pending."""
+    testing_config.sign_in('oner@example.com', 111)
+    now = datetime.datetime.now()
+    mock_approvable_by.return_value = set()
+    mock_get_approvals.return_value = []
+
+    features = search.process_pending_approval_me_query()
+
+    self.assertEqual(0, len(features))
+
+  @mock.patch('internals.models.Approval.get_approvals')
+  @mock.patch('internals.approval_defs.fields_approvable_by')
+  def test_process_pending_approval_me_query__some__nonapprover(
+      self, mock_approvable_by, mock_get_approvals):
+    """It's not a pending approval for you."""
+    testing_config.sign_in('visitor@example.com', 111)
+    now = datetime.datetime.now()
+    mock_approvable_by.return_value = set()
+    mock_get_approvals.return_value = [
+        models.Approval(
+            feature_id=self.feature_1.key.integer_id(),
+            field_id=1, state=0, set_on=now)]
+
+    features = search.process_pending_approval_me_query()
+
+    self.assertEqual(0, len(features))
+
+  @mock.patch('internals.models.Approval.get_approvals')
+  @mock.patch('internals.approval_defs.fields_approvable_by')
+  def test_process_pending_approval_me_query__some__approver(
+      self, mock_approvable_by, mock_get_approvals):
     """We can return a list of features pending approval."""
-    # TODO(jrobbins): write this
-    pass
+    testing_config.sign_in('owner@example.com', 111)
+    time_1 = datetime.datetime.now() - datetime.timedelta(days=4)
+    time_2 = datetime.datetime.now()
+    mock_approvable_by.return_value = set([1, 2, 3])
+    mock_get_approvals.return_value = [
+        models.Approval(
+            feature_id=self.feature_1.key.integer_id(),
+            field_id=1, state=0, set_on=time_2),
+        models.Approval(
+            feature_id=self.feature_2.key.integer_id(),
+            field_id=1, state=0, set_on=time_1),
+    ]
+
+    features = search.process_pending_approval_me_query()
+    self.assertEqual(2, len(features))
+    # Results are sorted by set_on timestamp.
+    self.assertEqual(
+        [self.feature_2.key.integer_id(),
+         self.feature_1.key.integer_id()],
+        [f['id'] for f in features])
 
   def test_process_starred_me_query__anon(self):
     """Anon always has an empty list of starred features."""
@@ -75,7 +131,7 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
     """We can return a list of features owned by the user."""
     testing_config.sign_in('owner@example.com', 111)
     actual = search.process_owner_me_query()
-    self.assertEqual(len(actual), 1)
+    self.assertEqual(len(actual), 2)
     self.assertEqual(actual[0]['summary'], 'sum')
 
   @mock.patch('logging.warning')
