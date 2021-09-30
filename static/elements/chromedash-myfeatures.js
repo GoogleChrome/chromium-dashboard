@@ -86,8 +86,8 @@ class ChromedashMyFeatures extends LitElement {
   render() {
     return html`
       ${this.canApprove ? this.renderPendingApprovals() : nothing}
-      ${this.renderIStarred()}
       ${this.renderIOwn()}
+      ${this.renderIStarred()}
     `;
   }
 }
