@@ -26,12 +26,10 @@ class ChromedashDialog extends LitElement {
         align-items: center;
         justify-content: center;
       }
-      :host(:not([opened])), [hidden] {
+      :host(:not([opened])) {
         display: none;
-        visibility: hidden;
       }
-      :host([closeOnOutsideClick]),
-      :host([closeOnOutsideClick]) .dialog::backdrop {
+      :host, .dialog::backdrop {
         /* TODO(zhangtiff): Deprecate custom backdrop in favor of native
         * browser backdrop.
         */
@@ -65,25 +63,6 @@ class ChromedashDialog extends LitElement {
     `;
   }
 
-  render() {
-    return html`
-      <dialog class="dialog" role="dialog" @cancel=${this._cancelHandler}>
-        <div class="dialog-content">
-          <button id="close-icon" @click=${this.close}>
-             <iron-icon icon="chromestatus:close"></iron-icon>
-          </button>
-          <slot></slot>
-        </div>
-      </dialog>
-    `;
-  }
-
-  static get properties() {
-    return {
-      opened: {type: Boolean, reflect: true},
-    };
-  }
-
   constructor() {
     super();
     this.opened = false;
@@ -94,13 +73,13 @@ class ChromedashDialog extends LitElement {
     super.connectedCallback();
     this.addEventListener('click', (evt) => {
       if (!this.opened) return;
-      const hasDialog = evt.composedPath().find(
-        (node) => {
-          return node.classList && node.classList.contains('dialog-content');
-        }
+      // A click outside the dialog box will close the dialog.
+      const clickIsOutsideDialog = !evt.composedPath().find(
+        (node) => node.classList && node.classList.contains('dialog-content')
       );
-      if (hasDialog) return;
-      this.close();
+      if (clickIsOutsideDialog) {
+        this.close();
+      }
     });
     window.addEventListener('keydown', this._boundKeydownHandler, true);
   }
@@ -152,6 +131,19 @@ class ChromedashDialog extends LitElement {
         dialog.setAttribute('open', undefined);
       }
     }
+  }
+
+  render() {
+    return html`
+      <dialog class="dialog" role="dialog" @cancel=${this._cancelHandler}>
+        <div class="dialog-content">
+          <button id="close-icon" @click=${this.close}>
+             <iron-icon icon="chromestatus:close"></iron-icon>
+          </button>
+          <slot></slot>
+        </div>
+      </dialog>
+    `;
   }
 }
 
