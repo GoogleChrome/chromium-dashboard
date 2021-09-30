@@ -54,8 +54,8 @@
   </nav>
 </header>
 
-{% if user %}
-  <script nonce="{{nonce}}">
+<script nonce="{{nonce}}">
+  {% if user %}
     const signOutEl = document.querySelector('#sign-out-link');
     if (signOutEl) {
         signOutEl.addEventListener('click', (e) => {
@@ -63,13 +63,13 @@
             signOut();
         });
     }
+  {% endif %}
 
-    const maintabsEl = document.querySelector('#maintabs');
-    for (let tabEl of maintabs.children) {
-        const path = tabEl.getAttribute('href');
-        if (window.location.pathname.startsWith(path)) {
-            tabEl.classList.add('active');
-        }
-    }
-  </script>
-{% endif %}
+  const maintabsEl = document.querySelector('#maintabs');
+  for (let tabEl of maintabs.children) {
+      const path = tabEl.getAttribute('href');
+      if (window.location.pathname.startsWith(path)) {
+          tabEl.classList.add('active');
+      }
+  }
+</script>
