@@ -13,9 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-
-
 import json
 import logging
 import os
@@ -34,6 +31,7 @@ from framework import ramcache
 from framework import secrets
 from framework import utils
 from framework import xsrf
+from internals import approval_defs
 from internals import models
 
 from django.template.loader import render_to_string
@@ -295,9 +293,13 @@ class FlaskHandler(BaseHandler):
 
     user = self.get_current_user()
     if user:
+      field_id = approval_defs.ShipApproval.field_id
+      approvers = approval_defs.get_approvers(field_id)
       user_pref = models.UserPref.get_signed_in_user_pref()
       common_data['user'] = {
         'can_create_feature': permissions.can_create_feature(user),
+        'can_approve': permissions.can_approve_feature(
+            user, None, approvers),
         'can_edit': permissions.can_edit_any_feature(user),
         'is_admin': permissions.can_admin_site(user),
         'email': user.email(),

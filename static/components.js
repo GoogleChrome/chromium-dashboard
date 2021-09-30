@@ -25,6 +25,7 @@ import './elements/chromedash-gantt';
 import './elements/chromedash-legend';
 import './elements/chromedash-metadata';
 import './elements/chromedash-metrics';
+import './elements/chromedash-myfeatures';
 import './elements/chromedash-process-overview';
 import './elements/chromedash-sample-panel';
 import './elements/chromedash-schedule';
