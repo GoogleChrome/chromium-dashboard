@@ -56,7 +56,6 @@ class ChromedashFeatureTable extends LitElement {
       td.icon_col {
         white-space: nowrap;
       }
-
       iron-icon {
         --iron-icon-height: 18px;
         --iron-icon-width: 18px;
