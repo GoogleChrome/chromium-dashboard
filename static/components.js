@@ -17,6 +17,7 @@ import './elements/chromedash-accordion';
 import './elements/chromedash-banner';
 import './elements/chromedash-callout';
 import './elements/chromedash-color-status';
+import './elements/chromedash-dialog';
 import './elements/chromedash-feature';
 import './elements/chromedash-feature-detail';
 import './elements/chromedash-feature-table';

@@ -99,5 +99,5 @@ legendEl.views = VIEWS;
 
 document.querySelector('.legend-button').addEventListener('click', (e) => {
   e.preventDefault();
-  legendEl.toggle();
+  legendEl.open();
 });
