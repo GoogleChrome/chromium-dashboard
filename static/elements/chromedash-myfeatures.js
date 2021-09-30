@@ -1,6 +1,7 @@
-import {LitElement, html} from 'lit-element';
+import {LitElement, css, html} from 'lit-element';
 import {nothing} from 'lit-html';
-import '@polymer/iron-icon';
+import SHARED_STYLES from '../css/shared.css';
+
 
 class ChromedashMyFeatures extends LitElement {
   static get properties() {
@@ -18,6 +19,16 @@ class ChromedashMyFeatures extends LitElement {
     this.starredFeatures = new Set();
     this.canEdit = false;
     this.canApprove = false;
+  }
+
+  static get styles() {
+    return [
+      SHARED_STYLES,
+      css`
+        chromedash-accordion {
+          padding: 0 var(--content-padding);
+        }
+      `];
   }
 
   // Handles the Star-Toggle event fired by any one of the child components

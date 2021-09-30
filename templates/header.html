@@ -8,11 +8,13 @@
   <nav>
     <div class="flex-container flex-container-outer">
 
-      <div class="flex-container flex-container-inner-first">
+      <div id="maintabs" class="flex-container flex-container-inner-first">
         <a class="flex-item" href="/roadmap">Roadmap</a>
-        {# TODO(jrobbins): link to myfeatures #}
+        {% if user %}
+          <a class="flex-item" href="/myfeatures">My features</a>
+        {% endif %}
         <a class="flex-item" href="/features">All features</a>
-        <div class="nav-dropdown-container flex-item">
+        <div class="nav-dropdown-container flex-item" href="/metrics">
           <a class="nav-dropdown-trigger flex-item-inner">Stats
             <iron-icon icon="chromestatus:arrow-drop-down"></iron-icon>
           </a>
@@ -60,6 +62,14 @@
             e.preventDefault();
             signOut();
         });
+    }
+
+    const maintabsEl = document.querySelector('#maintabs');
+    for (let tabEl of maintabs.children) {
+        const path = tabEl.getAttribute('href');
+        if (window.location.pathname.startsWith(path)) {
+            tabEl.classList.add('active');
+        }
     }
   </script>
 {% endif %}
