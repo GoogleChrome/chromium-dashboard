@@ -31,6 +31,7 @@ class FunctionTest(testing_config.CustomTestCase):
     test_data = {
       approval_defs.PrototypeApproval: [
           'Intent to Prototype: Something cool',
+          'Re: Re:Intent to Prototype: Something cool',
           'intent to prototype: something cool',
           'Intent to Prototype request for Something cool',
         ],
@@ -38,6 +39,8 @@ class FunctionTest(testing_config.CustomTestCase):
           'Intent to Experiment: Something cool',
           'intent to experiment: something cool',
           'Intent to experiment on Something cool',
+      ],
+      approval_defs.ExtendExperimentApproval: [
           'Intent to Continue Experiment: Something cool',
           'Intent to Extend Experiment: Something cool',
           'Intent to Continue Experiment: Something cool',

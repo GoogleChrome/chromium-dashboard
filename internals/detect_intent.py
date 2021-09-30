@@ -30,26 +30,31 @@ def detect_field(subject):
   """
   subject = subject.lower().strip()
   if subject.startswith('[blink-dev]'):
-    subject = subject[len('[blink-dev]'):]
-  while subject.startswith('re: '):
-    subject = subject[len('re: ')]
-  subject = subject.strip()
+    subject = subject[len('[blink-dev]'):].strip()
+  while subject.startswith('re:'):
+    subject = subject[len('re:'):].strip()
 
   if (subject.startswith('intent to ship') or
-      subject.startswith('intent to prototype and ship')):
+      subject.startswith('intent to prototype and ship') or
+      subject.startswith('intent to implement and ship') or
+      subject.startswith('intent to deprecate and remove') or
+      subject.startswith('intent to remove')):
     return approval_defs.ShipApproval
 
-  if subject.startswith('intent to prototype'):
+  if (subject.startswith('intent to prototype') or
+      subject.startswith('intent to implement') or
+      subject.startswith('intent to deprecate')):
     return approval_defs.PrototypeApproval
 
   if (subject.startswith('intent to experiment') or
-      subject.startswith('intent to continue experiment') or
-      subject.startswith('intent to extend experiment') or
-      subject.startswith('intent to extend origin')):
+      subject.startswith('request for deprecation trial')):
     return approval_defs.ExperimentApproval
 
-  # TODO(jrobbins): deprecate and remove
-  # TODO(jrobbins): deprecation trials
+  if (subject.startswith('intent to continue experiment') or
+      subject.startswith('intent to extend experiment') or
+      subject.startswith('intent to continue origin') or
+      subject.startswith('intent to extend origin')):
+    return approval_defs.ExtendExperimentApproval
 
   return None
 
