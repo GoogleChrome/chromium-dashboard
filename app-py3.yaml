@@ -1,0 +1,38 @@
+# This GAE service contains most of the app, including all UI pages.
+
+runtime: python39
+service: app-py3
+instance_class: F4
+
+automatic_scaling:
+  min_idle_instances: 1
+  max_pending_latency: 0.2s
+
+
+handlers:
+# Static handlers ---------------------------------------------------------------
+- url: /favicon\.ico
+  static_files: static/img/chromium-128.png
+  upload: static/img/chromium-128\.png
+  secure: always
+
+- url: /robots\.txt
+  static_files: static/robots.txt
+  upload: static/robots\.txt
+  secure: always
+
+- url: /static
+  static_dir: static
+  http_headers:
+    Access-Control-Allow-Origin: "*"
+  secure: always
+
+- url: /.*
+  script: auto
+  secure: always
+
+includes:
+- env_vars.yaml
+
+env_variables:
+  GAE_USE_SOCKETS_HTTPLIB : ''

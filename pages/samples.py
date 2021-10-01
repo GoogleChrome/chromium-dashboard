@@ -13,8 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import division
-from __future__ import print_function
+
+
 
 import json
 
@@ -35,10 +35,10 @@ class SamplesHandler(basehandlers.FlaskHandler):
     template_data['FEATURES'] = json.dumps(feature_list, separators=(',',':'))
     template_data['CATEGORIES'] = [
       (v, utils.normalized_name(v)) for k,v in
-      models.FEATURE_CATEGORIES.iteritems()]
+      list(models.FEATURE_CATEGORIES.items())]
     template_data['categories'] = dict([
       (v, utils.normalized_name(v)) for k,v in
-      models.FEATURE_CATEGORIES.iteritems()])
+      list(models.FEATURE_CATEGORIES.items())])
 
     return template_data
 
@@ -66,12 +66,3 @@ class SamplesXMLHandler(basehandlers.FlaskHandler):
       max_items = settings.RSS_FEED_LIMIT
 
     return utils.render_atom_feed(self.request, 'Samples', feature_list)
-
-
-routes = [
-  ('/samples', SamplesHandler),
-  ('/samples.json', SamplesJSONHandler),
-  ('/samples.xml', SamplesXMLHandler),
-]
-
-app = basehandlers.FlaskApplication(routes, debug=settings.DEBUG)

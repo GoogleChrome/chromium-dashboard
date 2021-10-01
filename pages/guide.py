@@ -1,5 +1,5 @@
-from __future__ import division
-from __future__ import print_function
+
+
 
 # -*- coding: utf-8 -*-
 # Copyright 2020 Google Inc.
@@ -24,11 +24,10 @@ import os
 import re
 import sys
 from django import forms
+from google.cloud import ndb
 
 # Appengine imports.
 from framework import ramcache
-# TODO(jrobbins): phase out gae_users
-from google.appengine.api import users as gae_users
 from framework import users
 
 from framework import basehandlers
@@ -37,7 +36,6 @@ from framework import utils
 from pages import guideforms
 from internals import models
 from internals import processes
-import settings
 
 import google.cloud.logging
 
@@ -139,7 +137,9 @@ class FeatureNew(basehandlers.FlaskHandler):
     # TODO(jrobbins): Validate input, even though it is done on client.
 
     feature_type = int(self.form.get('feature_type', 0))
-    gae_user = gae_users.User(email=self.get_current_user().email())
+    signed_in_user = ndb.User(
+        email=self.get_current_user().email(),
+        _auth_domain='gmail.com')
     feature = models.Feature(
         category=int(self.form.get('category')),
         name=self.form.get('name'),
@@ -153,8 +153,8 @@ class FeatureNew(basehandlers.FlaskHandler):
         web_dev_views=models.DEV_NO_SIGNALS,
         blink_components=blink_components,
         tag_review_status=processes.initial_tag_review_status(feature_type),
-        created_by=gae_user,
-        updated_by=gae_user)
+        created_by=signed_in_user,
+        updated_by=signed_in_user)
     key = feature.put()
 
     # TODO(jrobbins): enumerate and remove only the relevant keys.
@@ -170,7 +170,7 @@ class ProcessOverview(basehandlers.FlaskHandler):
 
   def detect_progress(self, f):
     progress_so_far = {}
-    for progress_item, detector in processes.PROGRESS_DETECTORS.items():
+    for progress_item, detector in list(processes.PROGRESS_DETECTORS.items()):
       detected = detector(f)
       if detected:
         progress_so_far[progress_item] = str(detected)
@@ -178,7 +178,7 @@ class ProcessOverview(basehandlers.FlaskHandler):
 
   @permissions.require_edit_feature
   def get_template_data(self, feature_id):
-    f = models.Feature.get_by_id(long(feature_id))
+    f = models.Feature.get_by_id(int(feature_id))
     if f is None:
       self.abort(404, msg='Feature not found')
 
@@ -372,7 +372,8 @@ class FeatureEditStage(basehandlers.FlaskHandler):
           'shipped_webview_milestone')
 
     if self.touched('shipped_opera_milestone'):
-      feature.shipped_opera_milestone = self.parse_int('shipped_opera_milestone')
+      feature.shipped_opera_milestone = (
+          self.parse_int('shipped_opera_milestone'))
 
     if self.touched('shipped_opera_android'):
       feature.shipped_opera_android_milestone = self.parse_int(
@@ -533,7 +534,9 @@ class FeatureEditStage(basehandlers.FlaskHandler):
     if self.touched('ongoing_constraints'):
       feature.ongoing_constraints = self.form.get('ongoing_constraints')
 
-    feature.updated_by = gae_users.User(email=self.get_current_user().email())
+    feature.updated_by = ndb.User(
+        email=self.get_current_user().email(),
+        _auth_domain='gmail.com')
     key = feature.put()
 
     # TODO(jrobbins): enumerate and remove only the relevant keys.
@@ -564,11 +567,3 @@ class FeatureEditAllFields(FeatureEditStage):
         'flat_forms': flat_forms,
     }
     return template_data
-
-
-app = basehandlers.FlaskApplication([
-  ('/guide/new', FeatureNew),
-  ('/guide/edit/<int:feature_id>', ProcessOverview),
-  ('/guide/stage/<int:feature_id>/<int:stage_id>', FeatureEditStage),
-  ('/guide/editall/<int:feature_id>', FeatureEditAllFields),
-], debug=settings.DEBUG)

@@ -13,8 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import division
-from __future__ import print_function
+
+
 
 from framework import basehandlers
 from framework import permissions
@@ -29,7 +29,8 @@ class ApprovalsAPI(basehandlers.APIHandler):
   def do_get(self, feature_id, field_id=None):
     """Return a list of all approval values on the given feature."""
     # Note: We assume that anyone may view approvals.
-    approvals = models.Approval.get_approvals(feature_id, field_id=field_id)
+    approvals = models.Approval.get_approvals(
+        feature_id=feature_id, field_id=field_id)
     dicts = [av.format_for_template(add_id=False) for av in approvals]
     data = {
         'approvals': dicts,

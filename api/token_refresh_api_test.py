@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import division
-from __future__ import print_function
+
+
 
 import testing_config  # Must be imported before the module under test.
 
@@ -21,10 +21,10 @@ import flask
 import mock
 import werkzeug.exceptions  # Flask HTTP stuff.
 
-from api import register
 from api import token_refresh_api
 from framework import xsrf
 
+test_app = flask.Flask(__name__)
 
 
 class TokenRefreshAPITest(testing_config.CustomTestCase):
@@ -43,7 +43,7 @@ class TokenRefreshAPITest(testing_config.CustomTestCase):
 
   def test_do_get(self):
     """This handler does not respond to GET requests."""
-    with register.app.test_request_context(self.request_path):
+    with test_app.test_request_context(self.request_path):
       with self.assertRaises(NotImplementedError):
         self.handler.do_get()
 
@@ -51,7 +51,7 @@ class TokenRefreshAPITest(testing_config.CustomTestCase):
     """We reject token requests from signed out users."""
     testing_config.sign_out()
     params = {}
-    with register.app.test_request_context(self.request_path, json=params):
+    with test_app.test_request_context(self.request_path, json=params):
       with self.assertRaises(werkzeug.exceptions.Forbidden):
         self.handler.post()
 
@@ -59,7 +59,7 @@ class TokenRefreshAPITest(testing_config.CustomTestCase):
     """We reject token requests that do not include a previous token."""
     testing_config.sign_in('user@example.com', 111)
     params = {}
-    with register.app.test_request_context(self.request_path, json=params):
+    with test_app.test_request_context(self.request_path, json=params):
       with self.assertRaises(werkzeug.exceptions.BadRequest):
         self.handler.post()
 
@@ -69,7 +69,7 @@ class TokenRefreshAPITest(testing_config.CustomTestCase):
     testing_config.sign_in('user@example.com', 111)
     mock_validate_token.side_effect = xsrf.TokenIncorrect()
     params = {'token': 'bad'}
-    with register.app.test_request_context(self.request_path, json=params):
+    with test_app.test_request_context(self.request_path, json=params):
       with self.assertRaises(werkzeug.exceptions.BadRequest):
         self.handler.post()
     mock_validate_token.assert_called_once()
@@ -78,7 +78,7 @@ class TokenRefreshAPITest(testing_config.CustomTestCase):
     """If the request is accepted, we return a new token."""
     testing_config.sign_in('user@example.com', 111)
     params = {'token': 'checked in base class'}
-    with register.app.test_request_context(self.request_path, json=params):
+    with test_app.test_request_context(self.request_path, json=params):
       actual = self.handler.do_post()
     self.assertIn('token', actual)
     self.assertIn('token_expires_sec', actual)

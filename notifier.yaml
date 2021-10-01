@@ -1,17 +1,14 @@
-runtime: python27
-api_version: 1
-threadsafe: true
+runtime: python39
 service: notifier
 
 handlers:
-- url: /tasks/.*
-  script: internals.notifier.app
+- url: /tasks/detect-intent
+  script: auto
+  # Header checks prevent raw access to this handler.  Tasks have headers.
+
+- url: /tasks/email-subscribers
+  script: auto
   # Header checks prevent raw access to this handler.  Tasks have headers.
 
 includes:
-- skip_files.yaml
 - env_vars.yaml
-
-libraries:
-- name: grpcio
-  version: 1.0.0

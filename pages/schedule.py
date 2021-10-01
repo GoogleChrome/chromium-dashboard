@@ -1,5 +1,5 @@
-from __future__ import division
-from __future__ import print_function
+
+
 
 # -*- coding: utf-8 -*-
 # Copyright 2017 Google Inc.
@@ -30,7 +30,6 @@ from framework import users
 
 from framework import basehandlers
 from internals import models
-import settings
 from internals import fetchchannels
 
 import google.cloud.logging
@@ -102,7 +101,8 @@ def construct_chrome_channels_details():
 class ScheduleHandler(basehandlers.FlaskHandler):
 
   TEMPLATE_PATH = 'schedule.html'
-  # TODO(shivamag00): fetch data from Channels API and Features API using JS instead of passing it here
+  # TODO(shivamag00): fetch data from Channels API and Features API
+  # using JS instead of passing it here
 
   def get_template_data(self):
     template_data = {
@@ -110,8 +110,3 @@ class ScheduleHandler(basehandlers.FlaskHandler):
                              indent=4)
     }
     return template_data
-
-
-app = basehandlers.FlaskApplication([
-  ('/features/schedule', ScheduleHandler),
-], debug=settings.DEBUG)

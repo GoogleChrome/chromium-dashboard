@@ -1,5 +1,5 @@
-from __future__ import division
-from __future__ import print_function
+
+
 
 # -*- coding: utf-8 -*-
 # Copyright 2017 Google Inc.
@@ -23,7 +23,6 @@ import logging
 import datetime
 import json
 import os
-import re
 
 from google.cloud import ndb
 import google.cloud.logging
@@ -32,12 +31,10 @@ client = google.cloud.logging.Client()
 client.get_default_handler()
 client.setup_logging()
 
-from google.appengine.api import mail
 import requests
 # from google.appengine.api import users
 from framework import ramcache
 from framework import users
-from google.appengine.ext.webapp.mail_handlers import BounceNotification
 
 from django.template.loader import render_to_string
 from django.utils.html import conditional_escape as escape
@@ -137,7 +134,8 @@ def apply_subscription_rules(feature, changes):
 
 def make_email_tasks(feature, is_update=False, changes=[]):
   """Return a list of task dicts to notify users of feature changes."""
-  feature_watchers = models.FeatureOwner.query(models.FeatureOwner.watching_all_features == True).fetch(None)
+  feature_watchers = models.FeatureOwner.query(
+      models.FeatureOwner.watching_all_features == True).fetch(None)
 
   email_html = format_email_body(is_update, feature, changes)
   if is_update:
@@ -155,8 +153,8 @@ def make_email_tasks(feature, is_update=False, changes=[]):
   for component_name in feature.blink_components:
     component = models.BlinkComponent.get_by_name(component_name)
     if not component:
-      logging.warn('Blink component "%s" not found.'
-                   'Not sending email to subscribers' % component_name)
+      logging.warning('Blink component "%s" not found.'
+                      'Not sending email to subscribers' % component_name)
       continue
 
     accumulate_reasons(
@@ -223,7 +221,7 @@ class FeatureStar(models.DictModel):
     logging.info('found %d stars for %r', len(feature_stars), email)
     feature_ids = [fs.feature_id for fs in feature_stars]
     logging.info('returning %r', feature_ids)
-    return feature_ids
+    return sorted(feature_ids, reverse=True)
 
   @classmethod
   def get_feature_starrers(self, feature_id):
@@ -263,88 +261,16 @@ class FeatureChangeHandler(basehandlers.FlaskHandler):
           feature, is_update=is_update, changes=changes)
       logging.info('Processing %d email tasks', len(email_tasks))
       for one_email_dict in email_tasks:
-        cloud_tasks_helpers.enqueue_task(
-            '/tasks/outbound-email', one_email_dict)
+        if settings.SEND_EMAIL:
+          cloud_tasks_helpers.enqueue_task(
+              '/tasks/outbound-email', one_email_dict)
+        else:
+          logging.info(
+              'Would send the following email:\n'
+              'To: %s\n'
+              'Subject: %s\n'
+              'Body:\n%s',
+              one_email_dict['to'], one_email_dict['subject'],
+              one_email_dict['html'])
 
     return {'message': 'Done'}
-
-
-class OutboundEmailHandler(basehandlers.FlaskHandler):
-  """Task to send a notification email to one recipient."""
-
-  IS_INTERNAL_HANDLER = True
-
-  def process_post_data(self):
-    self.require_task_header()
-
-    to = self.get_param('to', required=True)
-    subject = self.get_param('subject', required=True)
-    email_html = self.get_param('html', required=True)
-
-    if settings.SEND_ALL_EMAIL_TO:
-      to_user, to_domain = to.split('@')
-      to = settings.SEND_ALL_EMAIL_TO % {'user': to_user, 'domain': to_domain}
-
-    message = mail.EmailMessage(
-        sender='Chromestatus <admin@%s.appspotmail.com>' % settings.APP_ID,
-        to=to, subject=subject, html=email_html)
-    message.check_initialized()
-
-    logging.info('Will send the following email:\n')
-    logging.info('To: %s', message.to)
-    logging.info('Subject: %s', message.subject)
-    logging.info('Body:\n%s', message.html)
-    if settings.SEND_EMAIL:
-      message.send()
-      logging.info('Email sent')
-    else:
-      logging.info('Email not sent because of settings.SEND_EMAIL')
-
-    return {'message': 'Done'}
-
-
-class BouncedEmailHandler(basehandlers.FlaskHandler):
-  BAD_WRAP_RE = re.compile('=\r\n')
-  BAD_EQ_RE = re.compile('=3D')
-  IS_INTERNAL_HANDLER = True
-
-  """Handler to notice when email to given user is bouncing."""
-  # For docs on AppEngine's bounce email handling, see:
-  # https://cloud.google.com/appengine/docs/python/mail/bounce
-  # Source code is in file:
-  # google_appengine/google/appengine/ext/webapp/mail_handlers.py
-  def process_post_data(self):
-    self.receive(BounceNotification(self.form))
-    return {'message': 'Done'}
-
-  def receive(self, bounce_message):
-    email_addr = bounce_message.original.get('to')
-    subject = 'Mail to %r bounced' % email_addr
-    logging.info(subject)
-    pref_list = models.UserPref.get_prefs_for_emails([email_addr])
-    user_pref = pref_list[0]
-    user_pref.bounced = True
-    user_pref.put()
-
-    # Escalate to someone who might do something about it, e.g.
-    # find a new owner for a component.
-    body = ('The following message bounced.\n'
-            '=================\n'
-            'From: {from}\n'
-            'To: {to}\n'
-            'Subject: {subject}\n\n'
-            '{text}\n'.format(**bounce_message.original))
-    logging.info(body)
-    message = mail.EmailMessage(
-        sender='Chromestatus <admin@%s.appspotmail.com>' % settings.APP_ID,
-        to=settings.BOUNCE_ESCALATION_ADDR, subject=subject, body=body)
-    message.check_initialized()
-    if settings.SEND_EMAIL:
-      message.send()
-
-
-app = basehandlers.FlaskApplication([
-  ('/tasks/email-subscribers', FeatureChangeHandler),
-  ('/tasks/outbound-email', OutboundEmailHandler),
-  ('/_ah/bounce', BouncedEmailHandler),
-], debug=settings.DEBUG)

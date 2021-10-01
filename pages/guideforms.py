@@ -1,5 +1,5 @@
-from __future__ import division
-from __future__ import print_function
+
+
 
 # -*- coding: utf-8 -*-
 # Copyright 2020 Google Inc.
@@ -18,7 +18,6 @@ from __future__ import print_function
 
 from django import forms
 from django.core.validators import validate_email
-import string
 
 # from google.appengine.api import users
 from framework import users
@@ -39,20 +38,15 @@ class MultiEmailField(forms.Field):
         # Use the parent's handling of required fields, etc.
         super(MultiEmailField, self).validate(value)
         for email in value:
-            validate_email(string.strip(email))
+            validate_email(email.strip())
 
 SHIPPED_HELP_TXT = (
     'First milestone to ship with this status. Applies to: Enabled by '
-    'default, Behind a flag, Origin trial, Browser Intervention, and '
-    'Deprecated. If the flag is \'test\' rather than \'experimental\' set '
-    'status to In development. If the flag is for an origin trial set status '
-    'to Origin trial.')
+    'default, Browser Intervention, Deprecated and Removed.')
 
 SHIPPED_WEBVIEW_HELP_TXT = ('First milestone to ship with this status. '
                             'Applies to Enabled by default, Browser '
-                            'Intervention, and Deprecated.\n\n NOTE: for '
-                            'statuses In developer trial and Origin trial this '
-                            'MUST be blank.')
+                            'Intervention, Deprecated, and Removed.')
 
 SUMMARY_PLACEHOLDER_TXT = (
   'NOTE: This text describes this feature in the eventual beta release post '
@@ -117,7 +111,7 @@ ALL_FIELDS = {
         required=False, label='Process stage',
         help_text='Select the appropriate process stage.',
         initial=models.INTENT_IMPLEMENT,
-        choices=models.INTENT_STAGES.items()),
+        choices=list(models.INTENT_STAGES.items())),
 
     'motivation': forms.CharField(
         label='Motivation', required=False,
@@ -172,7 +166,7 @@ ALL_FIELDS = {
 
     'standard_maturity': forms.ChoiceField(
         required=False, label='Standard maturity',
-        choices=models.STANDARD_MATURITY_CHOICES.items(),
+        choices=list(models.STANDARD_MATURITY_CHOICES.items()),
         initial=models.PROPOSAL_STD,
         help_text=('How far along is the standard that this '
                    'feature implements?')),
@@ -218,13 +212,13 @@ ALL_FIELDS = {
 
     'security_review_status': forms.ChoiceField(
         required=False,
-        choices=models.REVIEW_STATUS_CHOICES.items(),
+        choices=list(models.REVIEW_STATUS_CHOICES.items()),
         initial=models.REVIEW_PENDING,
         help_text=('Status of the security review.')),
 
     'privacy_review_status': forms.ChoiceField(
         required=False,
-        choices=models.REVIEW_STATUS_CHOICES.items(),
+        choices=list(models.REVIEW_STATUS_CHOICES.items()),
         initial=models.REVIEW_PENDING,
         help_text=('Status of the privacy review.')),
 
@@ -236,15 +230,15 @@ ALL_FIELDS = {
 
     'tag_review_status': forms.ChoiceField(
         required=False,
-        choices=models.REVIEW_STATUS_CHOICES.items(),
+        choices=list(models.REVIEW_STATUS_CHOICES.items()),
         initial=models.REVIEW_PENDING,
         help_text=('Status of the tag review.')),
 
     'intent_to_implement_url': forms.URLField(
         required=False, label='Intent to Prototype link',
         widget=forms.URLInput(attrs={'placeholder': 'https://'}),
-        help_text=('After you have started the "Intent to Prototype" discussion '
-                   'thread, link to it here.')),
+        help_text=('After you have started the "Intent to Prototype" '
+                   ' discussion thread, link to it here.')),
 
     'intent_to_ship_url': forms.URLField(
         required=False, label='Intent to Ship link',
@@ -261,8 +255,8 @@ ALL_FIELDS = {
     'intent_to_experiment_url': forms.URLField(
         required=False, label='Intent to Experiment link',
         widget=forms.URLInput(attrs={'placeholder': 'https://'}),
-        help_text=('After you have started the "Intent to Experiment" discussion '
-                   'thread, link to it here.')),
+        help_text=('After you have started the "Intent to Experiment" '
+                   ' discussion thread, link to it here.')),
 
     'r4dt_url': forms.URLField(  # Sets intent_to_experiment_url in DB
         required=False, label='Request for Deprecation Trial link',
@@ -296,7 +290,7 @@ ALL_FIELDS = {
 
     'safari_views': forms.ChoiceField(
         required=False, label='Safari views',
-        choices=models.VENDOR_VIEWS_WEBKIT.items(),
+        choices=list(models.VENDOR_VIEWS_WEBKIT.items()),
         initial=models.NO_PUBLIC_SIGNALS,
         help_text=(
             'See <a target="_blank" href="https://bit.ly/blink-signals">'
@@ -315,7 +309,7 @@ ALL_FIELDS = {
 
     'ff_views': forms.ChoiceField(
         required=False, label='Firefox views',
-        choices=models.VENDOR_VIEWS_GECKO.items(),
+        choices=list(models.VENDOR_VIEWS_GECKO.items()),
         initial=models.NO_PUBLIC_SIGNALS,
         help_text=(
             'See <a target="_blank" href="https://bit.ly/blink-signals">'
@@ -334,7 +328,7 @@ ALL_FIELDS = {
 
     'ie_views': forms.ChoiceField(
         required=False, label='Edge views',
-        choices=models.VENDOR_VIEWS_EDGE.items(),
+        choices=list(models.VENDOR_VIEWS_EDGE.items()),
         initial=models.NO_PUBLIC_SIGNALS),
 
     'ie_views_link': forms.URLField(
@@ -350,7 +344,7 @@ ALL_FIELDS = {
 
     'web_dev_views': forms.ChoiceField(
         required=False, label='Web / Framework developer views',
-        choices=models.WEB_DEV_VIEWS.items(),
+        choices=list(models.WEB_DEV_VIEWS.items()),
         initial=models.DEV_NO_SIGNALS,
         help_text=(
             'If unsure, default to "No signals". '
@@ -424,17 +418,13 @@ ALL_FIELDS = {
         required=False, label='OT desktop start',
         widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'}),
         help_text=('First desktop milestone that will support an origin '
-                   'trial of this feature.  '
-                   'Setting this automatically sets the android '
-                   'milestone, unless they are different.')),
+                   'trial of this feature.')),
 
     'ot_milestone_desktop_end': forms.IntegerField(
         required=False, label='OT desktop end',
         widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'}),
         help_text=('Last desktop milestone that will support an origin '
-                   'trial of this feature.  '
-                   'Setting this automatically sets the android '
-                   'milestone, unless they are different.')),
+                   'trial of this feature.')),
 
     'ot_milestone_android_start': forms.IntegerField(
         required=False, label='OT android start',
@@ -604,7 +594,7 @@ ALL_FIELDS = {
 
     'impl_status_chrome': forms.ChoiceField(
         required=False, label='Implementation status',
-        choices=models.IMPLEMENTATION_STATUS.items(),
+        choices=list(models.IMPLEMENTATION_STATUS.items()),
         help_text='Implementation status in Chromium'),
 
     'shipped_milestone': forms.IntegerField(
@@ -629,12 +619,15 @@ ALL_FIELDS = {
 
     'requires_embedder_support': forms.BooleanField(
       required=False, initial=False,
-      help_text=('Will this feature require support in //chrome?  '
-                 'If so, other embedders will need to make corresponding '
-                 'changes.  Please add a row to this '
-                 '<a href="https://docs.google.com/spreadsheets/d/'
-                 '1QV4SW4JBG3IyLzaonohUhim7nzncwK4ioop2cgUYevw/edit#gid=0'
-                 '" target="_blank">tracking spreadsheet</a>.')),
+      help_text=(
+          'Will this feature require support in //chrome?  '
+          'That includes any code in //chrome, even if that is for '
+          'functionality on top of the spec.  Other //content embedders '
+          'will need to be aware of that functionality. '
+          'Please add a row to this '
+          '<a href="https://docs.google.com/spreadsheets/d/'
+          '1QV4SW4JBG3IyLzaonohUhim7nzncwK4ioop2cgUYevw/edit#gid=0'
+          '" target="_blank">tracking spreadsheet</a>.')),
 
     'devtrial_instructions': forms.URLField(
         required=False, label='DevTrial instructions',
@@ -651,15 +644,13 @@ ALL_FIELDS = {
         required=False, label='DevTrail on desktop',
         widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'}),
         help_text=('First milestone that allows developers to try '
-                   'this feature on desktop platforms by setting a flag.  '
-                   'Setting this automatically sets android and webview '
-                   'milestones, unless they are different.')),
+                   'this feature on desktop platforms by setting a flag.')),
 
     'dt_milestone_android_start': forms.IntegerField(
         required=False, label='DevTrail on Android',
         widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'}),
         help_text=('First milestone that allows developers to try '
-                   'this feature on iOS by setting a flag.')),
+                   'this feature on Android by setting a flag.')),
 
     'dt_milestone_ios_start': forms.IntegerField(
         required=False, label='DevTrial on iOS (RARE)',

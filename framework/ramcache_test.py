@@ -1,5 +1,5 @@
-from __future__ import division
-from __future__ import print_function
+
+
 
 # Copyright 2020 Google Inc.
 #
@@ -35,24 +35,24 @@ class RAMCacheFunctionTests(testing_config.CustomTestCase):
 
   def testSetAndGet(self):
     """We can cache a value and retrieve it from the cache."""
-    self.assertEquals(None, ramcache.get(KEY_1))
+    self.assertEqual(None, ramcache.get(KEY_1))
 
     ramcache.set(KEY_1, 101)
-    self.assertEquals(101, ramcache.get(KEY_1))
+    self.assertEqual(101, ramcache.get(KEY_1))
 
   def testSetAndGetMulti(self):
     """We can cache values and retrieve them from the cache."""
-    self.assertEquals({}, ramcache.get_multi([]))
+    self.assertEqual({}, ramcache.get_multi([]))
 
-    self.assertEquals({}, ramcache.get_multi([KEY_2, KEY_3]))
+    self.assertEqual({}, ramcache.get_multi([KEY_2, KEY_3]))
 
     ramcache.set_multi({KEY_2: 202, KEY_3: 303})
-    self.assertEquals(
+    self.assertEqual(
         {KEY_2: 202, KEY_3: 303},
         ramcache.get_multi([KEY_2, KEY_3]))
 
     ramcache.set_multi({KEY_2: 202, KEY_3: 303})
-    self.assertEquals(
+    self.assertEqual(
         {KEY_2: 202, KEY_3: 303},
         ramcache.get_multi([KEY_2, KEY_3, KEY_4]))
 
@@ -62,23 +62,23 @@ class RAMCacheFunctionTests(testing_config.CustomTestCase):
     NOW = 1607128969
     mock_time.return_value = NOW
     ramcache.set(KEY_1, 101, time=60)
-    self.assertEquals(101, ramcache.get(KEY_1))
+    self.assertEqual(101, ramcache.get(KEY_1))
 
     mock_time.return_value = NOW + 59
-    self.assertEquals(101, ramcache.get(KEY_1))
+    self.assertEqual(101, ramcache.get(KEY_1))
 
     mock_time.return_value = NOW + 61
-    self.assertEquals(None, ramcache.get(KEY_1))
+    self.assertEqual(None, ramcache.get(KEY_1))
 
     mock_time.return_value = NOW
     ramcache.set_multi({KEY_1 + 'multi': 101}, time=60)
-    self.assertEquals(101, ramcache.get(KEY_1 + 'multi'))
+    self.assertEqual(101, ramcache.get(KEY_1 + 'multi'))
 
     mock_time.return_value = NOW + 59
-    self.assertEquals(101, ramcache.get(KEY_1 + 'multi'))
+    self.assertEqual(101, ramcache.get(KEY_1 + 'multi'))
 
     mock_time.return_value = NOW + 61
-    self.assertEquals(None, ramcache.get(KEY_1 + 'multi'))
+    self.assertEqual(None, ramcache.get(KEY_1 + 'multi'))
 
   @mock.patch('framework.ramcache.SharedInvalidate.invalidate')
   def testDelete_NotFound(self, mock_invalidate):
@@ -91,9 +91,9 @@ class RAMCacheFunctionTests(testing_config.CustomTestCase):
   def testDelete_Found(self, mock_invalidate):
     """We can delete an item from the cache, causing an invalidation."""
     ramcache.set(KEY_6, 606)
-    self.assertEquals(606, ramcache.get(KEY_6))
+    self.assertEqual(606, ramcache.get(KEY_6))
     ramcache.delete(KEY_6)
-    self.assertEquals(None, ramcache.get(KEY_6))
+    self.assertEqual(None, ramcache.get(KEY_6))
 
     mock_invalidate.assert_called_once()
 
@@ -109,7 +109,8 @@ class SharedInvalidateTests(testing_config.CustomTestCase):
   def assertTimestampWasUpdated(self, start_time):
 
     singleton = None
-    entities = ramcache.SharedInvalidate.query(ancestor=ramcache.SharedInvalidate.PARENT_KEY).fetch(1)
+    entities = ramcache.SharedInvalidate.query(
+        ancestor=ramcache.SharedInvalidate.PARENT_KEY).fetch(1)
     if entities:
       singleton = entities[0]
 
@@ -127,7 +128,7 @@ class SharedInvalidateTests(testing_config.CustomTestCase):
     ramcache.SharedInvalidate.last_processed_timestamp = None
     ramcache.global_cache = {KEY_7: 777}
     ramcache.SharedInvalidate.check_for_distributed_invalidation()
-    self.assertEquals({KEY_7: 777}, ramcache.global_cache)
+    self.assertEqual({KEY_7: 777}, ramcache.global_cache)
     self.assertIsNone(ramcache.SharedInvalidate.last_processed_timestamp)
 
   def testCheckForDistributedInvalidation_Unneeded_Fresh(self):
@@ -139,7 +140,7 @@ class SharedInvalidateTests(testing_config.CustomTestCase):
     ramcache.global_cache = {KEY_7: 777}
     ramcache.SharedInvalidate.check_for_distributed_invalidation()
     # Since cache is fresh, it is not cleared.
-    self.assertEquals({KEY_7: 777}, ramcache.global_cache)
+    self.assertEqual({KEY_7: 777}, ramcache.global_cache)
 
   def testCheckForDistributedInvalidation_Needed_None(self):
     """When needed, we clear our local RAM cache."""
@@ -148,7 +149,7 @@ class SharedInvalidateTests(testing_config.CustomTestCase):
     ramcache.global_cache = {KEY_7: 777}
     ramcache.flush_all()
     ramcache.SharedInvalidate.check_for_distributed_invalidation()
-    self.assertEquals({}, ramcache.global_cache)
+    self.assertEqual({}, ramcache.global_cache)
     self.assertTimestampWasUpdated(start_time)
 
   def testCheckForDistributedInvalidation_Needed_Stale(self):
@@ -158,5 +159,5 @@ class SharedInvalidateTests(testing_config.CustomTestCase):
     ramcache.global_cache = {KEY_7: 777}
     ramcache.flush_all()
     ramcache.SharedInvalidate.check_for_distributed_invalidation()
-    self.assertEquals({}, ramcache.global_cache)
+    self.assertEqual({}, ramcache.global_cache)
     self.assertTimestampWasUpdated(start_time)

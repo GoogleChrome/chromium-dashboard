@@ -1,5 +1,5 @@
-from __future__ import division
-from __future__ import print_function
+
+
 
 # Copyright 2020 Google Inc.
 #
@@ -23,8 +23,6 @@ import unittest
 app_engine_path = os.environ.get('APP_ENGINE_PATH', '')
 if not app_engine_path:
   app_engine_path = '/usr/lib/google-cloud-sdk/platform/google_appengine'
-if not os.path.exists(app_engine_path):
-  app_engine_path = '/home/travis/google-cloud-sdk/platform/google_appengine'
 if os.path.exists(app_engine_path):
   sys.path.insert(0, app_engine_path)
 else:
@@ -40,37 +38,18 @@ from google.appengine.ext import vendor
 vendor.add(lib_path) # add third party libs to "lib" folder.
 
 from google.cloud import ndb
-from google.appengine.ext import testbed
 
 os.environ['DJANGO_SECRET'] = 'test secret'
 os.environ['SERVER_SOFTWARE'] = 'test ' + os.environ.get('SERVER_SOFTWARE', '')
 os.environ['CURRENT_VERSION_ID'] = 'test.123'
 os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
+os.environ['APPLICATION_ID'] = 'testing'
+# Envs for datastore-emulator, same as running `gcloud beta emulators datastore env-init`.
+os.environ['DATASTORE_DATASET'] = 'cr-status-staging'
 os.environ['DATASTORE_EMULATOR_HOST'] = 'localhost:15606'
- 
-
-ourTestbed = testbed.Testbed()
-
-def setUpOurTestbed():
-  # needed because endpoints expects a . in this value
-  ourTestbed.setup_env(current_version_id='testbed.version')
-  ourTestbed.activate()
-
-  # Can't use init_all_stubs() because PIL isn't in wheel.
-  ourTestbed.init_app_identity_stub()
-  ourTestbed.init_blobstore_stub()
-  ourTestbed.init_capability_stub()
-  ourTestbed.init_files_stub()
-  ourTestbed.init_logservice_stub()
-  ourTestbed.init_mail_stub()
-  ourTestbed.init_search_stub()
-  ourTestbed.init_urlfetch_stub()
-  ourTestbed.init_user_stub()
-
-# Normally this would be done in the setUp() methods of individual test files,
-# but we need it to be done before importing any application code because
-# models.py makes GAE API calls to in code that runs during loading.
-setUpOurTestbed()
+os.environ['DATASTORE_EMULATOR_HOST_PATH'] = 'localhost:15606/datastore'
+os.environ['DATASTORE_HOST'] = 'http//localhost:15606'
+os.environ['DATASTORE_PROJECT_ID'] = 'cr-status-staging'
 
 
 from framework import cloud_tasks_helpers
@@ -112,17 +91,17 @@ class Blank(object):
 
 def sign_out():
   """Set env variables to represent a signed out user."""
-  ourTestbed.setup_env(
-      user_email='', user_id='', user_is_admin='0', overwrite=True)
-
+  os.environ['USER_EMAIL'] = ''
+  os.environ['USER_ID'] = ''
+  os.environ['USER_IS_ADMIN'] = '0'
+  os.environ['AUTH_DOMAIN'] = '1'
 
 def sign_in(user_email, user_id):
   """Set env variables to represent a signed out user."""
-  ourTestbed.setup_env(
-      user_email=user_email,
-      user_id=str(user_id),
-      user_is_admin='0',  # This was for GAE user admin, we use AppUser.
-      overwrite=True)
+  os.environ['USER_EMAIL'] = user_email
+  os.environ['USER_ID'] = str(user_id)
+  os.environ['USER_IS_ADMIN'] = '0'
+  os.environ['AUTH_DOMAIN'] = '0'
 
 
 class CustomTestCase(unittest.TestCase):

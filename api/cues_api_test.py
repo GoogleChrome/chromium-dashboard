@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import division
-from __future__ import print_function
+
+
 
 import testing_config  # Must be imported before the module under test.
 
@@ -22,8 +22,9 @@ import mock
 import werkzeug.exceptions  # Flask HTTP stuff.
 
 from api import cues_api
-from api import register
 from internals import models
+
+test_app = flask.Flask(__name__)
 
 
 class CuesAPITest(testing_config.CustomTestCase):
@@ -42,7 +43,7 @@ class CuesAPITest(testing_config.CustomTestCase):
     """User wants to dismiss a valid cue card ID."""
     testing_config.sign_in('one@example.com', 123567890)
 
-    with register.app.test_request_context(
+    with test_app.test_request_context(
         '/cues/dismiss', json={"cue": "progress-checkmarks"}):
       actual_json = self.handler.do_post()
     self.assertEqual({'message': 'Done'}, actual_json)
@@ -54,7 +55,7 @@ class CuesAPITest(testing_config.CustomTestCase):
     """User wants to dismiss an invalid cue card ID."""
     testing_config.sign_in('one@example.com', 123567890)
 
-    with register.app.test_request_context(
+    with test_app.test_request_context(
         '/cues/dismiss', json={"cue": "xyz"}):
       with self.assertRaises(werkzeug.exceptions.BadRequest):
         self.handler.do_post()

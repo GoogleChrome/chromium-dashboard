@@ -1,6 +1,3 @@
-from __future__ import division
-from __future__ import print_function
-
 # Copyright 2020 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
@@ -17,6 +14,7 @@ from __future__ import print_function
 
 import testing_config  # Must be imported before the module under test.
 
+import datetime
 import mock
 from framework import ramcache
 # from google.appengine.api import users
@@ -112,6 +110,58 @@ class FeatureTest(testing_config.CustomTestCase):
     self.feature_4.key.delete()
     ramcache.flush_all()
 
+  def test_get_all__normal(self):
+    """We can retrieve a list of all features with no filter."""
+    actual = models.Feature.get_all(update_cache=True)
+    names = [f['name'] for f in actual]
+    self.assertEqual(
+        ['feature c', 'feature d', 'feature a', 'feature b'],
+        names)
+
+    self.feature_1.summary = 'revised summary'
+    self.feature_1.put()  # Changes updated field.
+    actual = models.Feature.get_all(update_cache=True)
+    names = [f['name'] for f in actual]
+    self.assertEqual(
+        ['feature a', 'feature c', 'feature d', 'feature b'],
+        names)
+
+  def test_get_all__category(self):
+    """We can retrieve a list of all features of a given category."""
+    actual = models.Feature.get_all(
+        filterby=('category', models.CSS), update_cache=True)
+    names = [f['name'] for f in actual]
+    self.assertEqual(
+        [],
+        names)
+
+    self.feature_1.category = models.CSS
+    self.feature_1.put()  # Changes updated field.
+    actual = models.Feature.get_all(
+        filterby=('category', models.CSS), update_cache=True)
+    names = [f['name'] for f in actual]
+    self.assertEqual(
+        ['feature a'],
+        names)
+
+  def test_get_all__owner(self):
+    """We can retrieve a list of all features with a given owner."""
+    actual = models.Feature.get_all(
+        filterby=('owner', 'owner@example.com'), update_cache=True)
+    names = [f['name'] for f in actual]
+    self.assertEqual(
+        [],
+        names)
+
+    self.feature_1.owner = ['owner@example.com']
+    self.feature_1.put()  # Changes updated field.
+    actual = models.Feature.get_all(
+        filterby=('owner', 'owner@example.com'), update_cache=True)
+    names = [f['name'] for f in actual]
+    self.assertEqual(
+        ['feature a'],
+        names)
+
   def test_get_chronological__normal(self):
     """We can retrieve a list of features."""
     actual = models.Feature.get_chronological()
@@ -163,13 +213,21 @@ class FeatureTest(testing_config.CustomTestCase):
     self.feature_4.put()
 
     actual = models.Feature.get_in_milestone(milestone=1)
-    names = [f['name'] for f in actual]
+    removed = [f['name'] for f in actual['Removed']]
+    enabled_by_default = [f['name'] for f in actual['Enabled by default']]
     self.assertEqual(
-        ['feature a', 'feature c', 'feature b'],
-        names)
-    self.assertEqual(True, actual[0]['first_of_milestone'])
-    self.assertEqual(False, hasattr(actual[1], 'first_of_milestone'))
-    self.assertEqual(True, actual[2]['first_of_milestone'])
+        ['feature b'],
+        removed)
+    self.assertEqual(
+        ['feature a', 'feature c'],
+        enabled_by_default)
+    self.assertEqual(6, len(actual))
+
+    cache_key = '%s|%s|%s|%s' % (
+        models.Feature.DEFAULT_CACHE_KEY, 'milestone', False, 1)
+    cached_result = ramcache.get(cache_key)
+    self.assertEqual(cached_result, actual)
+
 
   def test_get_in_milestone__unlisted(self):
     """Unlisted features should not be listed for users who can't edit."""
@@ -191,12 +249,9 @@ class FeatureTest(testing_config.CustomTestCase):
     self.feature_4.put()
 
     actual = models.Feature.get_in_milestone(milestone=1)
-    names = [f['name'] for f in actual]
     self.assertEqual(
-        ['feature a', 'feature c'],
-        names)
-    self.assertEqual(True, actual[0]['first_of_milestone'])
-    self.assertEqual(False, hasattr(actual[1], 'first_of_milestone'))
+        0,
+        len(actual['Removed']))
 
   def test_get_in_milestone__unlisted_shown(self):
     """Unlisted features should be listed for users who can edit."""
@@ -218,16 +273,55 @@ class FeatureTest(testing_config.CustomTestCase):
     self.feature_4.put()
 
     actual = models.Feature.get_in_milestone(milestone=1, show_unlisted=True)
-    names = [f['name'] for f in actual]
     self.assertEqual(
-        ['feature a', 'feature c', 'feature b'],
-        names)
-    self.assertEqual(True, actual[0]['first_of_milestone'])
-    self.assertEqual(False, hasattr(actual[1], 'first_of_milestone'))
-    self.assertEqual(True, actual[2]['first_of_milestone'])
+        1,
+        len(actual['Removed']))
+
+  def test_get_in_milestone__cached(self):
+    """If there is something in the cache, we use it."""
+    cache_key = '%s|%s|%s|%s' % (
+        models.Feature.DEFAULT_CACHE_KEY, 'milestone', False, 1)
+    ramcache.set(cache_key, 'fake feature dict')
+
+    actual = models.Feature.get_in_milestone(milestone=1)
+    self.assertEqual(
+        'fake feature dict',
+        actual)
 
 
 class ApprovalTest(testing_config.CustomTestCase):
+
+  def setUp(self):
+    self.feature_1 = models.Feature(
+        name='feature a', summary='sum', category=1, visibility=1,
+        standardization=1, web_dev_views=1, impl_status_chrome=3)
+    self.feature_1.put()
+    self.feature_1_id = self.feature_1.key.integer_id()
+    self.appr_1 = models.Approval(
+        feature_id=self.feature_1_id, field_id=1, state=2,
+        set_on=datetime.datetime.now(),
+        set_by='one@example.com')
+    self.appr_1.put()
+
+  def tearDown(self):
+    self.feature_1.key.delete()
+    for appr in models.Approval.query().fetch(None):
+      appr.key.delete()
+
+  def test_get_approvals(self):
+    """We can retrieve Approval entities."""
+    actual = models.Approval.get_approvals(feature_id=self.feature_1_id)
+    self.assertEqual(1, len(actual))
+    self.assertEqual(self.feature_1_id, actual[0].feature_id)
+
+    actual = models.Approval.get_approvals(field_id=1)
+    self.assertEqual(1, len(actual))
+
+    actual = models.Approval.get_approvals(states={2, 3})
+    self.assertEqual(1, len(actual))
+
+    actual = models.Approval.get_approvals(set_by='one@example.com')
+    self.assertEqual(1, len(actual))
 
   def test_is_valid_state(self):
     """We know what approval states are valid."""
@@ -236,6 +330,14 @@ class ApprovalTest(testing_config.CustomTestCase):
     self.assertFalse(models.Approval.is_valid_state(None))
     self.assertFalse(models.Approval.is_valid_state('not an int'))
     self.assertFalse(models.Approval.is_valid_state(999))
+
+  def test_set_approval(self):
+    """We can set an Approval entity."""
+    models.Approval.set_approval(
+        self.feature_1_id, 2, 0, 'owner@example.com')
+    self.assertEqual(
+        2,
+        len(models.Approval.query().fetch(None)))
 
 
 class UserPrefTest(testing_config.CustomTestCase):

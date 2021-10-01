@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import division
-from __future__ import print_function
+
+
 
 import testing_config  # Must be imported before the module under test.
 
@@ -33,7 +33,7 @@ class SecretsFunctionsTest(testing_config.CustomTestCase):
   def test_make_random_key__distinct(self):
     """The random keys are different."""
     key_set = set()
-    for i in range(1000):
+    for _ in range(1000):
       key_set.add(secrets.make_random_key())
     self.assertEqual(1000, len(key_set))
 

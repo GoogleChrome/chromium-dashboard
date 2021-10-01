@@ -13,8 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import division
-from __future__ import print_function
+
+
 
 import base64
 import datetime
@@ -35,16 +35,6 @@ client.get_default_handler()
 client.setup_logging()
 
 
-def get_omaha_data():
-  omaha_data = ramcache.get('omaha_data')
-  if omaha_data is None:
-    result = requests.get('https://omahaproxy.appspot.com/all.json')
-    if result.status_code == 200:
-      omaha_data = json.loads(result.content)
-      ramcache.set('omaha_data', omaha_data, time=86400) # cache for 24hrs.
-  return omaha_data
-
-
 UMA_QUERY_SERVER = 'https://uma-export.appspot.com/chromestatus/'
 
 HISTOGRAMS_URL = 'https://chromium.googlesource.com/chromium/src/+/master/' \
@@ -60,7 +50,8 @@ CAPSTONE_BUCKET_ID = -1
 @utils.retry(3, delay=30, backoff=2)
 def _FetchMetrics(url):
   if settings.PROD or settings.STAGING:
-    # follow_redirects=False according to https://cloud.google.com/appengine/docs/python/appidentity/#asserting_identity_to_other_app_engine_apps
+    # follow_redirects=False according to
+    # https://cloud.google.com/appengine/docs/python/appidentity/#asserting_identity_to_other_app_engine_apps
     # GAE request limit is 60s, but it could go longer due to start-up latency.
     logging.info('Requesting metrics from: %r', url)
     return requests.request('GET', url, timeout=120.0, allow_redirects=False)
@@ -109,7 +100,7 @@ class UmaQuery(object):
 
     json_content = result.content.split('\n', 1)[1]
     j = json.loads(json_content)
-    if not j.has_key('r'):
+    if 'r' not in j:
       logging.info(
           '%s results do not have an "r" key in the response: %r' %
           (self.query_name, j))
@@ -127,7 +118,7 @@ class UmaQuery(object):
     for existing_datapoint in existing_saved_data:
       existing_saved_bucket_ids.add(existing_datapoint.bucket_id)
 
-    for bucket_str, bucket_dict in data.iteritems():
+    for bucket_str, bucket_dict in data.items():
       bucket_id = int(bucket_str)
 
       # Only add this entity if one doesn't already exist with the same
@@ -265,10 +256,9 @@ class HistogramsHandler(basehandlers.FlaskHandler):
 
     # Save bucket ids for each histogram type, FeatureObserver and
     # MappedCSSProperties.
-    for histogram_id in self.MODEL_CLASS.keys():
-      enum = filter(
-          lambda enum: enum.attributes['name'].value == histogram_id,
-          enum_tags)[0]
+    for histogram_id in list(self.MODEL_CLASS.keys()):
+      enum = [enum for enum in enum_tags
+              if enum.attributes['name'].value == histogram_id][0]
       for child in enum.getElementsByTagName('int'):
         self._SaveData({
           'bucket_id': child.attributes['value'].value,
@@ -283,10 +273,3 @@ class BlinkComponentHandler(basehandlers.FlaskHandler):
   def get_template_data(self):
     models.BlinkComponent.update_db()
     return 'Blink components updated'
-
-
-app = basehandlers.FlaskApplication([
-  ('/cron/metrics', YesterdayHandler),
-  ('/cron/histograms', HistogramsHandler),
-  ('/cron/update_blink_components', BlinkComponentHandler),
-], debug=settings.DEBUG)

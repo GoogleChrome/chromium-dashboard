@@ -13,8 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import division
-from __future__ import print_function
+
+
 
 from framework import basehandlers
 from internals import models
@@ -35,7 +35,7 @@ class CuesAPI(basehandlers.APIHandler):
   def do_post(self):
     """Dismisses a cue card for the signed in user."""
     cue = self.get_param('cue', allowed=ALLOWED_CUES)
-    user = self.get_current_user(required=True)
+    unused_user = self.get_current_user(required=True)
 
     models.UserPref.dismiss_cue(cue)
     # Callers don't use the JSON response for this API call.

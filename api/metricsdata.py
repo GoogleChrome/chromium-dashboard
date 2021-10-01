@@ -1,5 +1,5 @@
-from __future__ import division
-from __future__ import print_function
+
+
 
 # -*- coding: utf-8 -*-
 # Copyright 2013 Google Inc.
@@ -28,7 +28,6 @@ from framework import users
 from framework import basehandlers
 from internals import models
 from framework import ramcache
-import settings
 
 import google.cloud.logging
 
@@ -37,7 +36,6 @@ client.get_default_handler()
 client.setup_logging()
 
 CACHE_AGE = 86400 # 24hrs
-
 
 def _truncate_day_percentage(datapoint):
   # Need 8 decimals b/c num will by multiplied by 100 to get a percentage and
@@ -52,7 +50,7 @@ def _clean_data(data):
   user = users.get_current_user()
   # Don't show raw percentages if user is not a googler.
   if not _is_googler(user):
-    data = map(_truncate_day_percentage, data)
+    data = list(map(_truncate_day_percentage, data))
   return data
 
 def _filter_metric_data(data, formatted=False):
@@ -84,7 +82,8 @@ class TimelineHandler(basehandlers.FlaskHandler):
     # does not make sense, filter out everything before the 2017-10-26 switch.
     # See https://github.com/GoogleChrome/chromium-dashboard/issues/414
     if self.MODEL_CLASS == models.AnimatedProperty:
-      query = query.filter(self.MODEL_CLASS.date >= datetime.datetime(2017, 10, 26))
+      query = query.filter(
+          self.MODEL_CLASS.date >= datetime.datetime(2017, 10, 26))
     return query
 
   def get_template_data(self):
@@ -152,7 +151,8 @@ class FeatureHandler(basehandlers.FlaskHandler):
     # That operation is fast and makes most of the iterations
     # of the main loop become in-RAM operations.
     batch_datapoints_query = self.MODEL_CLASS.query()
-    batch_datapoints_query = batch_datapoints_query.order(-self.MODEL_CLASS.date)
+    batch_datapoints_query = batch_datapoints_query.order(
+        -self.MODEL_CLASS.date)
     batch_datapoints_list = batch_datapoints_query.fetch(5000)
     logging.info('batch query found %r recent datapoints',
                  len(batch_datapoints_list))
@@ -194,7 +194,8 @@ class FeatureHandler(basehandlers.FlaskHandler):
 
     else:
       properties = ramcache.get(self.CACHE_KEY)
-      logging.info('looked at cache %r and found %r', self.CACHE_KEY, properties)
+      logging.info(
+          'looked at cache %r and found %r', self.CACHE_KEY, properties)
       if properties is None:
         logging.info('Loading properties from datastore')
         properties = self.__query_metrics_for_properties()
@@ -243,20 +244,9 @@ class FeatureBucketsHandler(basehandlers.FlaskHandler):
   def get_template_data(self, prop_type):
     if prop_type == 'cssprops':
       properties = sorted(
-          models.CssPropertyHistogram.get_all().iteritems(), key=lambda x:x[1])
+          models.CssPropertyHistogram.get_all().items(), key=lambda x:x[1])
     else:
       properties = sorted(
-          models.FeatureObserverHistogram.get_all().iteritems(), key=lambda x:x[1])
+          models.FeatureObserverHistogram.get_all().items(), key=lambda x:x[1])
 
     return properties
-
-
-app = basehandlers.FlaskApplication([
-  ('/data/timeline/cssanimated', AnimatedTimelineHandler),
-  ('/data/timeline/csspopularity', PopularityTimelineHandler),
-  ('/data/timeline/featurepopularity', FeatureObserverTimelineHandler),
-  ('/data/csspopularity', CSSPopularityHandler),
-  ('/data/cssanimated', CSSAnimatedHandler),
-  ('/data/featurepopularity', FeatureObserverPopularityHandler),
-  ('/data/blink/<string:prop_type>', FeatureBucketsHandler),
-], debug=settings.DEBUG)

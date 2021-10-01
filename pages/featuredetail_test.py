@@ -12,17 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import division
-from __future__ import print_function
+
+
 
 import testing_config  # Must be imported first
 
+import os
 import flask
 import werkzeug
 
 from internals import models
 from framework import ramcache
 from pages import featuredetail
+
+test_app = flask.Flask(__name__)
 
 
 class TestWithFeature(testing_config.CustomTestCase):
@@ -57,7 +60,7 @@ class FeatureDetailHandlerTest(TestWithFeature):
   def test_get_template_data__missing(self):
     """If a feature is not found, give a 404."""
     feature_id = 123456
-    with featuredetail.app.test_request_context('/feature/123456'):
+    with test_app.test_request_context('/feature/123456'):
       with self.assertRaises(werkzeug.exceptions.NotFound):
         self.handler.get_template_data(feature_id=feature_id)
 
@@ -68,16 +71,62 @@ class FeatureDetailHandlerTest(TestWithFeature):
     self.feature_1.deleted = True
     self.feature_1.put()
 
-    with featuredetail.app.test_request_context(self.request_path):
+    with test_app.test_request_context(self.request_path):
       with self.assertRaises(werkzeug.exceptions.NotFound):
         template_data = self.handler.get_template_data(
             feature_id=self.feature_id)
 
   def test_get_template_data__normal(self):
     """We can prep to render the feature detail page."""
-    with featuredetail.app.test_request_context(self.request_path):
+    with test_app.test_request_context(self.request_path):
       template_data = self.handler.get_template_data(
           feature_id=self.feature_id)
 
     self.assertEqual(self.feature_id, template_data['feature_id'])
     self.assertEqual('detailed sum', template_data['feature']['summary'])
+
+
+class FeatureDetailTemplateTest(TestWithFeature):
+
+  HANDLER_CLASS = featuredetail.FeatureDetailHandler
+
+  def setUp(self):
+    super(FeatureDetailTemplateTest, self).setUp()
+    with test_app.test_request_context(self.request_path):
+      self.template_data = self.handler.get_template_data(
+          feature_id=self.feature_id)
+
+      self.template_data.update(self.handler.get_common_data())
+      self.template_data['nonce'] = 'fake nonce'
+      template_path = self.handler.get_template_path(self.template_data)
+      self.full_template_path = os.path.join(template_path)
+
+  def test_basic_rendering(self):
+    """We can render the template."""
+    template_text = self.handler.render(
+        self.template_data, self.full_template_path)
+    self.assertIn('feature one', template_text)
+    self.assertIn('detailed sum', template_text)
+
+  def test_links(self):
+    """We we generate clickable links."""
+    self.template_data['new_crbug_url'] = 'fake crbug link'
+    resources = self.template_data['feature']['resources']
+    resources['samples'] = ['fake sample link one',
+                            'fake sample link two']
+    resources['docs'] = ['fake doc link one',
+                         'fake doc link two']
+    self.template_data['feature']['standards']['spec'] = 'fake spec link'
+    self.template_data['feature']['tags'] = ['tag_one']
+
+    template_text = self.handler.render(
+        self.template_data, self.full_template_path)
+
+    self.assertIn('href="fake crbug link"', template_text)
+    self.assertIn('href="/features/%d' % self.feature_id , template_text)
+    self.assertIn('href="fake sample link one"', template_text)
+    self.assertIn('href="fake sample link two"', template_text)
+    self.assertIn('href="fake doc link one"', template_text)
+    self.assertIn('href="fake doc link two"', template_text)
+    self.assertIn('href="fake spec link"', template_text)
+    self.assertIn('href="/features#tags:tag_one"', template_text)

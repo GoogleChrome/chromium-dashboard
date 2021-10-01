@@ -1,5 +1,5 @@
-from __future__ import division
-from __future__ import print_function
+
+
 
 # Copyright 2020 Google Inc.
 #
@@ -22,10 +22,8 @@ import testing_config  # Must be imported before the module under test.
 import flask
 import mock
 import werkzeug.exceptions  # Flask HTTP stuff.
+from google.cloud import ndb
 
-from google.appengine.api import mail
-# TODO(jrobbins): phase out gae_users.
-from google.appengine.api import users as gae_users
 from framework import users
 
 from internals import models
@@ -39,8 +37,10 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     self.feature_1 = models.Feature(
         name='feature one', summary='sum', category=1, visibility=1,
         standardization=1, web_dev_views=1, impl_status_chrome=1,
-        created_by=gae_users.User(email='creator@example.com'),
-        updated_by=gae_users.User(email='editor@example.com'),
+        created_by=ndb.User(
+            email='creator@example.com', _auth_domain='gmail.com'),
+        updated_by=ndb.User(
+            email='editor@example.com', _auth_domain='gmail.com'),
         blink_components=['Blink'])
     self.feature_1.put()
     self.component_1 = models.BlinkComponent(name='Blink')
@@ -58,8 +58,10 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     self.feature_2 = models.Feature(
         name='feature two', summary='sum', category=1, visibility=1,
         standardization=1, web_dev_views=1, impl_status_chrome=1,
-        created_by=gae_users.User(email='creator@example.com'),
-        updated_by=gae_users.User(email='editor@example.com'),
+        created_by=ndb.User(
+            email='creator@example.com', _auth_domain='gmail.com'),
+        updated_by=ndb.User(
+            email='editor@example.com', _auth_domain='gmail.com'),
         blink_components=['Blink'])
     self.feature_2.put()
 
@@ -73,7 +75,8 @@ class EmailFormattingTest(testing_config.CustomTestCase):
         False, self.feature_1, [])
     self.assertIn('Blink', body_html)
     self.assertIn('creator@example.com added', body_html)
-    self.assertIn('www.chromestatus.com/feature/%d' % self.feature_1.key.integer_id(),
+    self.assertIn('www.chromestatus.com/feature/%d' %
+                  self.feature_1.key.integer_id(),
                   body_html)
     self.assertNotIn('watcher_1,', body_html)
 
@@ -90,7 +93,8 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     body_html = notifier.format_email_body(
         True, self.feature_1, self.changes)
     self.assertIn('test_prop', body_html)
-    self.assertIn('www.chromestatus.com/feature/%d' % self.feature_1.key.integer_id(),
+    self.assertIn('www.chromestatus.com/feature/%d' %
+                  self.feature_1.key.integer_id(),
                   body_html)
     self.assertIn('test old value', body_html)
     self.assertIn('test new value', body_html)
@@ -134,9 +138,9 @@ class EmailFormattingTest(testing_config.CustomTestCase):
   def test_convert_reasons_to_task__normal(self):
     actual = notifier.convert_reasons_to_task(
         'addr', ['reason 1', 'reason 2'], 'html', 'subject')
-    self.assertItemsEqual(
+    self.assertCountEqual(
         ['to', 'subject', 'html'],
-        actual.keys())
+        list(actual.keys()))
     self.assertEqual('addr', actual['to'])
     self.assertEqual('subject', actual['subject'])
     self.assertIn('html', actual['html'])
@@ -264,10 +268,15 @@ class FeatureStarTest(testing_config.CustomTestCase):
         name='feature two', summary='sum', category=1, visibility=1,
         standardization=1, web_dev_views=1, impl_status_chrome=1)
     self.feature_2.put()
+    self.feature_3 = models.Feature(
+        name='feature three', summary='sum', category=1, visibility=1,
+        standardization=1, web_dev_views=1, impl_status_chrome=1)
+    self.feature_3.put()
 
   def tearDown(self):
     self.feature_1.key.delete()
     self.feature_2.key.delete()
+    self.feature_3.key.delete()
 
   def test_get_star__no_existing(self):
     """User has never starred the given feature."""
@@ -303,16 +312,20 @@ class FeatureStarTest(testing_config.CustomTestCase):
     self.assertEqual([], actual)
 
   def test_get_user_stars__some_stars(self):
-    """User has starred two features."""
+    """User has starred three features."""
     email = 'user5@example.com'
     feature_1_id = self.feature_1.key.integer_id()
     feature_2_id = self.feature_2.key.integer_id()
+    feature_3_id = self.feature_3.key.integer_id()
+    # Note intermixed order
     notifier.FeatureStar.set_star(email, feature_1_id)
+    notifier.FeatureStar.set_star(email, feature_3_id)
     notifier.FeatureStar.set_star(email, feature_2_id)
 
     actual = notifier.FeatureStar.get_user_stars(email)
-    self.assertItemsEqual(
-        [feature_1_id, feature_2_id],
+    self.assertEqual(
+        sorted([feature_1_id, feature_2_id, feature_3_id],
+                      reverse=True),
         actual)
 
   def test_get_feature_starrers__no_stars(self):
@@ -332,157 +345,6 @@ class FeatureStarTest(testing_config.CustomTestCase):
     notifier.FeatureStar.set_star(app_user_2.email, feature_1_id)
 
     actual = notifier.FeatureStar.get_feature_starrers(feature_1_id)
-    self.assertItemsEqual(
+    self.assertCountEqual(
         [app_user_1.email, app_user_2.email],
         [au.email for au in actual])
-
-
-class OutboundEmailHandlerTest(testing_config.CustomTestCase):
-
-  def setUp(self):
-    self.handler = notifier.OutboundEmailHandler()
-    self.request_path = '/tasks/outbound-email'
-
-    self.to = 'user@example.com'
-    self.subject = 'test subject'
-    self.html = '<b>body</b>'
-    self.sender = ('Chromestatus <admin@%s.appspotmail.com>' %
-                   settings.APP_ID)
-
-  @mock.patch('settings.SEND_EMAIL', True)
-  @mock.patch('settings.SEND_ALL_EMAIL_TO', None)
-  @mock.patch('google.appengine.api.mail.EmailMessage')
-  def test_post__prod(self, mock_emailmessage_constructor):
-    """On cr-status, we send emails to real users."""
-    params = {
-        'to': self.to,
-        'subject': self.subject,
-        'html': self.html,
-        }
-    with notifier.app.test_request_context(self.request_path, json=params):
-      actual_response = self.handler.process_post_data()
-
-    mock_emailmessage_constructor.assert_called_once_with(
-        sender=self.sender, to=self.to, subject=self.subject,
-        html=self.html)
-    mock_message = mock_emailmessage_constructor.return_value
-    mock_message.check_initialized.assert_called_once_with()
-    mock_message.send.assert_called_once_with()
-    self.assertEqual({'message': 'Done'}, actual_response)
-
-  @mock.patch('settings.SEND_EMAIL', True)
-  @mock.patch('google.appengine.api.mail.EmailMessage')
-  def test_post__staging(self, mock_emailmessage_constructor):
-    """On cr-status-staging, we send emails to an archive."""
-    params = {
-        'to': self.to,
-        'subject': self.subject,
-        'html': self.html,
-        }
-    with notifier.app.test_request_context(self.request_path, json=params):
-      actual_response = self.handler.process_post_data()
-
-    expected_to = 'cr-status-staging-emails+user+example.com@google.com'
-    mock_emailmessage_constructor.assert_called_once_with(
-        sender=self.sender, to=expected_to, subject=self.subject,
-        html=self.html)
-    mock_message = mock_emailmessage_constructor.return_value
-    mock_message.check_initialized.assert_called_once_with()
-    mock_message.send.assert_called_once_with()
-    self.assertEqual({'message': 'Done'}, actual_response)
-
-  @mock.patch('settings.SEND_EMAIL', False)
-  @mock.patch('google.appengine.api.mail.EmailMessage')
-  def test_post__local(self, mock_emailmessage_constructor):
-    """When running locally, we don't actually send emails."""
-    params = {
-        'to': self.to,
-        'subject': self.subject,
-        'html': self.html,
-        }
-    with notifier.app.test_request_context(self.request_path, json=params):
-      actual_response = self.handler.process_post_data()
-
-    expected_to = 'cr-status-staging-emails+user+example.com@google.com'
-    mock_emailmessage_constructor.assert_called_once_with(
-        sender=self.sender, to=expected_to, subject=self.subject,
-        html=self.html)
-    mock_message = mock_emailmessage_constructor.return_value
-    mock_message.check_initialized.assert_called_once_with()
-    mock_message.send.assert_not_called()
-    self.assertEqual({'message': 'Done'}, actual_response)
-
-
-class BouncedEmailHandlerTest(testing_config.CustomTestCase):
-
-  def setUp(self):
-    self.handler = notifier.BouncedEmailHandler()
-    self.sender = ('Chromestatus <admin@%s.appspotmail.com>' %
-                   settings.APP_ID)
-    self.expected_to = settings.BOUNCE_ESCALATION_ADDR
-
-  @mock.patch('internals.notifier.BouncedEmailHandler.receive')
-  def test_process_post_data(self, mock_receive):
-    with notifier.app.test_request_context('/_ah/bounce'):
-      actual_json = self.handler.process_post_data()
-
-    self.assertEqual({'message': 'Done'}, actual_json)
-    mock_receive.assert_called_once()
-
-
-  @mock.patch('settings.SEND_EMAIL', True)
-  @mock.patch('google.appengine.api.mail.EmailMessage')
-  def test_receive__user_has_prefs(self, mock_emailmessage_constructor):
-    """When we get a bounce, we update the UserPrefs for that user."""
-    starrer_3_pref = models.UserPref(
-        email='starrer_3@example.com',
-        notify_as_starrer=False)
-    starrer_3_pref.put()
-
-    bounce_message = testing_config.Blank(
-        original={'to': 'starrer_3@example.com',
-                  'from': 'sender',
-                  'subject': 'subject',
-                  'text': 'body'})
-
-    self.handler.receive(bounce_message)
-
-    updated_pref = models.UserPref.get_by_id(starrer_3_pref.key.integer_id())
-    self.assertEqual('starrer_3@example.com', updated_pref.email)
-    self.assertTrue(updated_pref.bounced)
-    self.assertFalse(updated_pref.notify_as_starrer)
-    expected_subject = "Mail to 'starrer_3@example.com' bounced"
-    mock_emailmessage_constructor.assert_called_once_with(
-        sender=self.sender, to=self.expected_to, subject=expected_subject,
-        body=mock.ANY)
-    mock_message = mock_emailmessage_constructor.return_value
-    mock_message.check_initialized.assert_called_once_with()
-    mock_message.send.assert_called()
-
-  @mock.patch('settings.SEND_EMAIL', True)
-  @mock.patch('google.appengine.api.mail.EmailMessage')
-  def test_receive__create_prefs(self, mock_emailmessage_constructor):
-    """When we get a bounce, we create the UserPrefs for that user."""
-    # Note, no existing UserPref for starrer_4.
-
-    bounce_message = testing_config.Blank(
-        original={'to': 'starrer_4@example.com',
-                  'from': 'sender',
-                  'subject': 'subject',
-                  'text': 'body'})
-
-    self.handler.receive(bounce_message)
-
-    prefs_list = models.UserPref.get_prefs_for_emails(
-        ['starrer_4@example.com'])
-    updated_pref = prefs_list[0]
-    self.assertEqual('starrer_4@example.com', updated_pref.email)
-    self.assertTrue(updated_pref.bounced)
-    self.assertTrue(updated_pref.notify_as_starrer)
-    expected_subject = "Mail to 'starrer_4@example.com' bounced"
-    mock_emailmessage_constructor.assert_called_once_with(
-        sender=self.sender, to=self.expected_to, subject=expected_subject,
-        body=mock.ANY)
-    mock_message = mock_emailmessage_constructor.return_value
-    mock_message.check_initialized.assert_called_once_with()
-    mock_message.send.assert_called()

@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import division
-from __future__ import print_function
+
+
 
 import testing_config  # Must be imported before the module under test.
 
@@ -328,7 +328,7 @@ class APIHandlerTests(testing_config.CustomTestCase):
     with test_app.test_request_context('/path'):
       actual = self.handler.defensive_jsonify(handler_data)
 
-    actual_sent_text = actual.response[0]
+    actual_sent_text = actual.response[0].decode()
     self.assertTrue(actual_sent_text.startswith(basehandlers.XSSI_PREFIX))
     self.assertIn(json.dumps(handler_data), actual_sent_text)
 
@@ -375,7 +375,8 @@ class APIHandlerTests(testing_config.CustomTestCase):
         'valid body token', 'user@example.com')
 
   @mock.patch('framework.basehandlers.APIHandler.validate_token')
-  def test_require_signed_in_and_xsrf_token__OK_header(self, mock_validate_token):
+  def test_require_signed_in_and_xsrf_token__OK_header(
+      self, mock_validate_token):
     """User is signed in and has a token in the request header."""
     testing_config.sign_in('user@example.com', 111)
     headers = {'X-Xsrf-Token': 'valid header token'}
@@ -590,6 +591,13 @@ class FlaskHandlerTests(testing_config.CustomTestCase):
   def test_require_task_header__normal(self):
     """If the incoming request is from GCT, we allow it."""
     headers = {'X-AppEngine-QueueName': 'default'}
+    with test_app.test_request_context('/test', headers=headers):
+      self.handler.require_task_header()
+
+  @mock.patch('settings.UNIT_TEST_MODE', False)
+  def test_require_task_header__same_app(self):
+    """If the incoming request is from our own app, we allow it."""
+    headers = {'X-Appengine-Inbound-Appid': 'dev'}
     with test_app.test_request_context('/test', headers=headers):
       self.handler.require_task_header()
 

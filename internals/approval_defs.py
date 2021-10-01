@@ -13,14 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import division
-from __future__ import print_function
-
 import base64
 import collections
 import logging
 import requests
 
+from framework import permissions
 from framework import ramcache
 import google.cloud.logging
 
@@ -41,19 +39,24 @@ ApprovalFieldDef = collections.namedtuple(
     'name, description, field_id, rule, approvers')
 
 PrototypeApproval = ApprovalFieldDef(
-    'Intent to prototype approval',
+    'Intent to prototype',
     'One API Owner must approve your intent',
     1, ONE_LGTM, API_OWNERS_URL)
 
 ExperimentApproval = ApprovalFieldDef(
-    'Intent to experiment approval',
+    'Intent to experiment',
     'One API Owner must approve your intent',
     2, ONE_LGTM, API_OWNERS_URL)
 
+ExtendExperimentApproval = ApprovalFieldDef(
+    'Intent to extend experiment',
+    'One API Owner must approve your intent',
+    3, ONE_LGTM, API_OWNERS_URL)
+
 ShipApproval = ApprovalFieldDef(
-    'Intent to ship approval',
+    'Intent to ship',
     'Three API Owners must approve your intent',
-    3, THREE_LGTM, API_OWNERS_URL)
+    4, THREE_LGTM, API_OWNERS_URL)
 
 APPROVAL_FIELDS_BY_ID = {
     afd.field_id: afd
@@ -99,6 +102,18 @@ def get_approvers(field_id):
     return owners
 
   return afd.approvers
+
+
+def fields_approvable_by(user):
+  """Return a set of field IDs that the user is allowed to approve."""
+  if permissions.can_admin_site(user):
+    return set(APPROVAL_FIELDS_BY_ID.keys())
+
+  email = user.email()
+  approvable_ids = {
+      field_id for field_id in APPROVAL_FIELDS_BY_ID
+      if email in get_approvers(field_id)}
+  return approvable_ids
 
 
 def is_valid_field_id(field_id):

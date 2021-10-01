@@ -13,8 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import division
-from __future__ import print_function
+
+
 
 from google.cloud import ndb
 
@@ -40,7 +40,8 @@ class AccountsAPI(basehandlers.APIHandler):
   def create_account(self, email, is_admin):
     """Create and store a new account entity."""
     # Don't add a duplicate email address.
-    user = models.AppUser.query(models.AppUser.email == email).get(keys_only=True)
+    user = models.AppUser.query(
+        models.AppUser.email == email).get(keys_only=True)
     if not user:
       user = models.AppUser(email=str(email))
       user.is_admin = is_admin
@@ -63,7 +64,7 @@ class AccountsAPI(basehandlers.APIHandler):
   def delete_account(self, account_id):
     """Delete the specified account."""
     if account_id:
-      found_user = models.AppUser.get_by_id(long(account_id))
+      found_user = models.AppUser.get_by_id(int(account_id))
       if found_user:
         found_user.key.delete()
         ramcache.flush_all()

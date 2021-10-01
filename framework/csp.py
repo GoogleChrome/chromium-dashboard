@@ -13,8 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import division
-from __future__ import print_function
+
+
 
 import base64
 import copy
@@ -29,7 +29,7 @@ client = google.cloud.logging.Client()
 client.get_default_handler()
 client.setup_logging()
 
-REPORT_ONLY = True
+REPORT_ONLY = False
 USE_NONCE_ONLY_POLICY = True  # Recommended
 REPORT_URI = '/csp'
 NONCE_LENGTH = 30
@@ -78,7 +78,8 @@ HEADER_KEY_REPORT_ONLY = 'Content-Security-Policy-Report-Only'
 def get_nonce():
   """Returns a random nonce."""
   length = NONCE_LENGTH
-  return base64.b64encode(os.urandom(length * 2))[:length]
+  b_nonce = base64.b64encode(os.urandom(length * 2))[:length]
+  return b_nonce.decode()
 
 
 def get_default_policy(nonce=None):
@@ -119,9 +120,6 @@ def get_headers(nonce):
   return {csp_header_key: csp_directives}
 
 
-app = flask.Flask(__name__)
-
-@app.route('/csp', methods=['POST'])
 def report_handler():
   """Log any CSP violations that are reported to our app."""
   logging.error('CSP Violation: %r' % flask.request.data)

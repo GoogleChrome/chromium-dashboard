@@ -12,16 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import division
-from __future__ import print_function
+
+
 
 import unittest
 import testing_config  # Must be imported before the module under test.
 
+import flask
 import mock
 import werkzeug.exceptions  # Flask HTTP stuff.
 
 from framework import csp
+
+test_app = flask.Flask(__name__)
 
 
 class CspTest(unittest.TestCase):
@@ -42,7 +45,7 @@ class CspTest(unittest.TestCase):
   def test_get_nonce(self):
     """Many different nonce values are all different."""
     nonces = []
-    for i in range(1000):
+    for _ in range(1000):
       nonces.append(csp.get_nonce())
 
     self.assertEqual(len(nonces), len(set(nonces)))
@@ -50,16 +53,18 @@ class CspTest(unittest.TestCase):
   @mock.patch('framework.csp.USE_NONCE_ONLY_POLICY', False)
   def test_get_default_policy__strict(self):
     """We can get the regular strict policy."""
-    policy = csp.get_default_policy(nonce=12345)
-    self.assertItemsEqual(csp.DEFAULT_POLICY.keys(), policy.keys())
+    policy = csp.get_default_policy(nonce='12345')
+    self.assertCountEqual(list(csp.DEFAULT_POLICY.keys()), list(policy.keys()))
     self.assertIn('strict-dynamic', policy['script-src'])
+    self.assertIn("'nonce-12345'", policy['script-src'])
 
   @mock.patch('framework.csp.USE_NONCE_ONLY_POLICY', True)
   def test_get_default_policy__strict(self):
     """We can get the even stricter nonce-only policy."""
-    policy = csp.get_default_policy(nonce=12345)
-    self.assertItemsEqual(csp.NONCE_ONLY_POLICY.keys(), policy.keys())
+    policy = csp.get_default_policy(nonce='12345')
+    self.assertCountEqual(list(csp.NONCE_ONLY_POLICY.keys()), list(policy.keys()))
     self.assertNotIn('strict-dynamic', policy['script-src'])
+    self.assertIn("'nonce-12345'", policy['script-src'])
 
   @mock.patch('framework.csp.REPORT_ONLY', False)
   def test_get_csp_header_key__enforced(self):
@@ -83,12 +88,12 @@ class CspTest(unittest.TestCase):
     ]
     result = csp.build_policy(self.test_policy)
     result_directives = [x.strip() for x in result.split(';')]
-    self.assertItemsEqual(expected_directives, result_directives)
+    self.assertCountEqual(expected_directives, result_directives)
 
   @mock.patch('framework.csp.REPORT_ONLY', True)
   def test_get_headers(self):
     """We can get a complete header dict."""
-    actual = csp.get_headers(12345)
+    actual = csp.get_headers('12345')
     self.assertIn('12345', actual[csp.HEADER_KEY_REPORT_ONLY])
 
 
@@ -97,7 +102,7 @@ class CspReporttest(unittest.TestCase):
   @mock.patch('logging.error')
   def test_report_handler(self, mock_error):
     """The report handler logs something for each request."""
-    with csp.app.test_request_context('/csp', data='12345', method='POST'):
+    with test_app.test_request_context('/csp', data='12345', method='POST'):
       actual = csp.report_handler()
 
     self.assertEqual('', actual)

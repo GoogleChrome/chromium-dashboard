@@ -24,10 +24,10 @@ readonly BASEDIR=$(dirname $BASH_SOURCE)
 
 gulp
 
-$BASEDIR/oauthtoken.sh deploy
 gcloud app deploy \
   --project $appName \
   --version $deployVersion \
   --no-promote \
-  $BASEDIR/../app.yaml $BASEDIR/../notifier.yaml \
+  $BASEDIR/../app-py2.yaml $BASEDIR/../notifier.yaml \
+  $BASEDIR/../app-py3.yaml  \
   $BASEDIR/../dispatch.yaml $BASEDIR/../cron.yaml

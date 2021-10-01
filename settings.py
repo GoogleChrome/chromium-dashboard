@@ -1,5 +1,5 @@
-from __future__ import division
-from __future__ import print_function
+
+
 
 import logging
 import os
@@ -48,8 +48,14 @@ PROD = False
 STAGING = False
 DEBUG = True
 SEND_EMAIL = False  # Just log email
-DEV_MODE = os.environ['SERVER_SOFTWARE'].startswith('Development')
+DEV_MODE = (os.environ['SERVER_SOFTWARE'].startswith('Development') or
+            os.environ.get('GAE_ENV', '').startswith('localdev'))
 UNIT_TEST_MODE = os.environ['SERVER_SOFTWARE'].startswith('test')
+
+if not UNIT_TEST_MODE:
+  # Configure logging to print INFO lines so that they are captured
+  # when written to stdout on GAE py3.
+  logging.basicConfig(level=logging.INFO)
 
 #setting GOOGLE_CLOUD_PROJECT manually in dev mode
 if DEV_MODE or UNIT_TEST_MODE:
@@ -63,6 +69,13 @@ CLOUD_TASKS_REGION = 'us-central1'
 GOOGLE_SIGN_IN_CLIENT_ID = (
     '914217904764-enfcea61q4hqe7ak8kkuteglrbhk8el1.'
     'apps.googleusercontent.com')
+
+# This is where the an anon user is redirected if they try to access a
+# page that requires being signed in.
+LOGIN_PAGE_URL = '/features?loginStatus=False'
+
+INBOUND_EMAIL_ADDR = 'chromestatus@cr-status-staging.appspotmail.com'
+
 
 if UNIT_TEST_MODE:
   APP_TITLE = 'Local testing'
@@ -81,6 +94,7 @@ elif APP_ID == 'cr-status':
   GOOGLE_SIGN_IN_CLIENT_ID = (
       '999517574127-7ueh2a17bv1ave9thlgtap19pt5qjp4g.'
       'apps.googleusercontent.com')
+  INBOUND_EMAIL_ADDR = 'chromestatus@cr-status.appspotmail.com'
 elif APP_ID == 'cr-status-staging':
   STAGING = True
   SEND_EMAIL = True
@@ -89,8 +103,6 @@ else:
   logging.error('Unexpected app ID %r, please configure settings.py.', APP_ID)
 
 SECRET_KEY = os.environ['DJANGO_SECRET']
-
-APP_VERSION = os.environ['CURRENT_VERSION_ID'].split('.')[0]
 
 RSS_FEED_LIMIT = 15
 

@@ -6,7 +6,6 @@ import {nothing} from 'lit-html';
 class ChromedashUserlist extends LitElement {
   static get properties() {
     return {
-      actionPath: {type: String},
       users: {attribute: false},
     };
   }
@@ -91,7 +90,7 @@ class ChromedashUserlist extends LitElement {
 
   render() {
     return html`
-      <form id="form" name="user_form" method="POST" action="${this.actionPath}" onsubmit="return false;">
+      <form id="form" name="user_form" method="POST">
         <div>
           <input type="email" placeholder="Email address" name="email"
                  required>

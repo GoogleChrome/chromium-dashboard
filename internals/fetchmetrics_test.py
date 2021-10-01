@@ -12,13 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import division
-from __future__ import print_function
+
+
 
 import base64
 import datetime
 import testing_config  # Must be imported before the module under test.
-import urllib
+import urllib.request, urllib.parse, urllib.error
 
 import mock
 import flask
@@ -26,6 +26,8 @@ import werkzeug
 
 from internals import fetchmetrics
 from internals import models
+
+test_app = flask.Flask(__name__)
 
 
 class FetchMetricsTest(testing_config.CustomTestCase):
@@ -101,14 +103,14 @@ class YesterdayHandlerTest(testing_config.CustomTestCase):
     mock_FetchAndSaveData.return_value = 200
     today = datetime.date(2021, 1, 20)
 
-    with fetchmetrics.app.test_request_context(self.request_path):
+    with test_app.test_request_context(self.request_path):
       actual_response = self.handler.get_template_data(today=today)
 
     self.assertEqual('Success', actual_response)
     expected_calls = [
         mock.call(datetime.date(2021, 1, day))
         for day in [19, 18, 17, 16, 15]
-        for query in fetchmetrics.UMA_QUERIES]
+        for unused_query in fetchmetrics.UMA_QUERIES]
     mock_FetchAndSaveData.assert_has_calls(expected_calls)
 
   @mock.patch('internals.fetchmetrics.UmaQuery.FetchAndSaveData')
@@ -117,14 +119,14 @@ class YesterdayHandlerTest(testing_config.CustomTestCase):
     mock_FetchAndSaveData.return_value = 200
     today = datetime.date(2021, 1, 20)
 
-    with fetchmetrics.app.test_request_context(
+    with test_app.test_request_context(
         self.request_path, query_string={'date': '20210120'}):
       actual_response = self.handler.get_template_data(today=today)
 
     self.assertEqual('Success', actual_response)
     expected_calls = [
         mock.call(datetime.date(2021, 1, 20))
-        for query in fetchmetrics.UMA_QUERIES]
+        for unused_query in fetchmetrics.UMA_QUERIES]
     mock_FetchAndSaveData.assert_has_calls(expected_calls)
 
 
@@ -173,8 +175,8 @@ class HistogramsHandlerTest(testing_config.CustomTestCase):
     """We can fetch and parse XML for metrics."""
     mock_requests_get.return_value = testing_config.Blank(
         status_code=200,
-        content=base64.b64encode(self.ENUMS_TEXT))
-    with fetchmetrics.app.test_request_context(self.request_path):
+        content=base64.b64encode(self.ENUMS_TEXT.encode()))
+    with test_app.test_request_context(self.request_path):
       actual_response = self.handler.get_template_data()
 
     self.assertEqual('Success', actual_response)

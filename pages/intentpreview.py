@@ -13,14 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import division
-from __future__ import print_function
+
+
 
 # from google.appengine.api import users
 from framework import users
 
 from internals import models
-import settings
 from framework import basehandlers
 from framework import permissions
 from internals import processes
@@ -84,9 +83,3 @@ class IntentEmailPreviewHandler(basehandlers.FlaskHandler):
       return 'Intent to Extend Deprecation Trial'
 
     return 'Intent stage "%s"' % models.INTENT_STAGES[intent_stage]
-
-app = basehandlers.FlaskApplication([
-  ('/admin/features/launch/<int:feature_id>', IntentEmailPreviewHandler),
-  ('/admin/features/launch/<int:feature_id>/<int:stage_id>',
-   IntentEmailPreviewHandler),
-], debug=settings.DEBUG)

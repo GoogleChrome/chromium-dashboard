@@ -197,12 +197,20 @@ class ChromeStatusClient {
 
   // Features API
   getFeaturesInMilestone(milestone) {
-    return this.doGet(`/features?milestone?=${milestone}`);
+    return this.doGet(`/features?milestone=${milestone}`);
+  }
+
+  searchFeatures(userQuery) {
+    return this.doGet(`/features?q=${userQuery}`);
   }
 
   // Channels API
   getChannels() {
     return this.doGet('/channels');
+  }
+
+  getSpecifiedChannels(start, end) {
+    return this.doGet(`/channels?start=${start}&end=${end}`);
   }
 };
 

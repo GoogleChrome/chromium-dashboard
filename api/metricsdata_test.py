@@ -1,5 +1,5 @@
-from __future__ import division
-from __future__ import print_function
+
+
 
 # Copyright 2020 Google Inc.
 #
@@ -26,6 +26,8 @@ from framework import users
 
 from api import metricsdata
 from internals import models
+
+test_app = flask.Flask(__name__)
 
 
 class MetricsFunctionTests(testing_config.CustomTestCase):
@@ -58,13 +60,13 @@ class MetricsFunctionTests(testing_config.CustomTestCase):
     testing_config.sign_in('test@google.com', 111)
     datapoints = [self.datapoint]
     updated_datapoints = metricsdata._clean_data(datapoints)
-    self.assertEqual(0.0123456789, updated_datapoints[0].day_percentage)
+    self.assertEqual(0.0123456789, list(updated_datapoints)[0].day_percentage)
 
   def test_clean_data__clean_datapoints(self):
     testing_config.sign_out()
     datapoints = [self.datapoint]
     updated_datapoints = metricsdata._clean_data(datapoints)
-    self.assertEqual(0.01234568, updated_datapoints[0].day_percentage)
+    self.assertEqual(0.01234568, list(updated_datapoints)[0].day_percentage)
 
 
 class PopularityTimelineHandlerTests(testing_config.CustomTestCase):
@@ -85,14 +87,14 @@ class PopularityTimelineHandlerTests(testing_config.CustomTestCase):
 
   def test_get_template_data__bad_bucket(self):
     url = '/data/timeline/csspopularity?bucket_id=not-a-number'
-    with metricsdata.app.test_request_context(url):
+    with test_app.test_request_context(url):
       actual = self.handler.get_template_data()
     self.assertEqual([], actual)
 
   def test_get_template_data__normal(self):
     testing_config.sign_out()
     url = '/data/timeline/csspopularity?bucket_id=1'
-    with metricsdata.app.test_request_context(url):
+    with test_app.test_request_context(url):
       actual_datapoints = self.handler.get_template_data()
     self.assertEqual(1, len(actual_datapoints))
     self.assertEqual(0.01234568, actual_datapoints[0]['day_percentage'])
@@ -125,14 +127,14 @@ class FeatureBucketsHandlerTest(testing_config.CustomTestCase):
     self.prop_4.key.delete()
 
   def test_get_template_data__css(self):
-    with metricsdata.app.test_request_context('/data/blink/cssprops'):
+    with test_app.test_request_context('/data/blink/cssprops'):
       actual_buckets = self.handler.get_template_data('cssprops')
     self.assertEqual(
         [(2, 'a prop'), (1, 'b prop')],
         actual_buckets)
 
   def test_get_template_data__js(self):
-    with metricsdata.app.test_request_context('/data/blink/features'):
+    with test_app.test_request_context('/data/blink/features'):
       actual_buckets = self.handler.get_template_data('features')
     self.assertEqual(
         [(4, 'a feat'), (3, 'b feat')],

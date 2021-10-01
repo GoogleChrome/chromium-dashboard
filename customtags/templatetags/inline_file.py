@@ -1,5 +1,5 @@
-from __future__ import division
-from __future__ import print_function
+
+
 
 import logging
 
@@ -24,6 +24,6 @@ def inline_file(path):
   try:
     with open(path, 'r') as f:
       content = f.read()
-  except IOError, e:
+  except IOError as e:
     logging.error('inline_file cannot read file - ' + str(e))
   return mark_safe(content)

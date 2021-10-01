@@ -1,0 +1,46 @@
+# This GAE service only contains email related handlers because those
+# require py2.  Everything else is routed through app-py3.yaml.
+
+runtime: python27
+threadsafe: false
+api_version: 1
+instance_class: F4
+
+automatic_scaling:
+  min_idle_instances: 1
+  max_pending_latency: 0.2s
+
+# default_expiration: "30s"
+
+builtins:
+- remote_api: on
+
+# These handlers are in this file because they require GAE py2.
+# TODO(jrobbins): phase out all of this when we redo email.
+
+handlers:
+
+- url: /tasks/outbound-email
+  script: internals.sendemail.app
+  # Header checks prevent raw access to this handler.  Tasks have headers.
+
+- url: /_ah/mail/.+
+  script: internals.sendemail.app
+  login: admin # Prevents raw access to this handler.
+
+- url: /_ah/bounce
+  script: internals.sendemail.app
+  login: admin # Prevents raw access to this handler.
+
+includes:
+- env_vars.yaml
+
+inbound_services:
+- mail
+- mail_bounce
+
+libraries:
+- name: grpcio
+  version: 1.0.0
+- name: ssl
+  version: latest

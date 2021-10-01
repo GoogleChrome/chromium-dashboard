@@ -13,14 +13,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import division
-from __future__ import print_function
+
+
 
 import base64
 import hmac
 import random
 import string
 import time
+import hashlib
 
 from framework import constants
 from framework import secrets
@@ -48,7 +49,7 @@ TOKEN_TIMEOUT_MARGIN_SEC = 5 * constants.SECS_PER_MINUTE
 # generated the token could be a little ahead of the one checking.
 CLOCK_SKEW_SEC = 5
 
-DELIMITER = ':'
+DELIMITER = ':'.encode()
 
 
 def generate_token(user_email, token_time=None):
@@ -65,12 +66,15 @@ def generate_token(user_email, token_time=None):
     ValueError: if the XSRF secret was not configured.
   """
   token_time = token_time or int(time.time())
-  digester = hmac.new(secrets.get_xsrf_secret())
-  digester.update(user_email or '')
+  token_time = str(token_time).encode()
+  digester = hmac.new(secrets.get_xsrf_secret().encode(),
+                      digestmod=hashlib.sha256)
+  digester.update(user_email.encode() if user_email else b'')
   digester.update(DELIMITER)
-  digester.update(str(token_time))
+  digester.update(token_time)
   digest = digester.digest()
-  token = base64.urlsafe_b64encode('%s%s%d' % (digest, DELIMITER, token_time))
+  binary_token = base64.urlsafe_b64encode(digest+ DELIMITER + token_time)
+  token = binary_token.decode()
   return token
 
 
@@ -87,7 +91,7 @@ def validate_token(
   if not token:
     raise TokenIncorrect('missing token')
   try:
-    decoded = base64.urlsafe_b64decode(str(token))
+    decoded = base64.urlsafe_b64decode(token)
     token_time = int(decoded.split(DELIMITER)[-1])
   except (TypeError, ValueError):
     raise TokenIncorrect('could not decode token')
@@ -100,8 +104,8 @@ def validate_token(
 
   # Perform constant time comparison to avoid timing attacks
   different = 0
-  for x, y in zip(token, expected_token):
-    different |= ord(x) ^ ord(y)
+  for res in zip(str(token), str(expected_token)):
+    different |= ord(res[0]) ^ ord(res[1])
   if different:
     raise TokenIncorrect(
         'presented token does not match expected token: %r != %r' % (

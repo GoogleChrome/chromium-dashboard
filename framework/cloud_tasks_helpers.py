@@ -1,5 +1,5 @@
-from __future__ import division
-from __future__ import print_function
+
+
 
 # -*- coding: utf-8 -*-
 # Copyright 2020 Google Inc.
@@ -61,7 +61,7 @@ class LocalCloudTasksClient(object):
     target_url = 'http://localhost:8080' + uri
     body = task.get('app_engine_http_request').get('body')
     logging.info('Making request to %r', target_url)
-    handler_response = requests.request('POST', 
+    handler_response = requests.request('POST',
         target_url, data=body, allow_redirects=False,
         # This header can only be set on internal requests, not by users.
         headers={'X-AppEngine-QueueName': 'default'})
@@ -85,7 +85,7 @@ def _make_task(handler_path, task_params):
   return {
       'app_engine_http_request': {
           'relative_uri': handler_path,
-          'body': body_json,
+          'body': body_json.encode(),
       }
   }
 

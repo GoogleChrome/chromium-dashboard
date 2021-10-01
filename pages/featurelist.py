@@ -13,8 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import division
-from __future__ import print_function
+
+
 
 import json
 
@@ -55,19 +55,19 @@ class FeatureListHandler(basehandlers.FlaskHandler):
     template_data = {}
     template_data['categories'] = [
       (v, utils.normalized_name(v)) for k,v in
-      models.FEATURE_CATEGORIES.iteritems()]
+      list(models.FEATURE_CATEGORIES.items())]
     template_data['IMPLEMENTATION_STATUSES'] = json.dumps([
       {'key': k, 'val': v} for k,v in
-      models.IMPLEMENTATION_STATUS.iteritems()])
+      list(models.IMPLEMENTATION_STATUS.items())])
     template_data['VENDOR_VIEWS'] = json.dumps([
       {'key': k, 'val': v} for k,v in
-      models.VENDOR_VIEWS.iteritems()])
+      list(models.VENDOR_VIEWS.items())])
     template_data['WEB_DEV_VIEWS'] = json.dumps([
       {'key': k, 'val': v} for k,v in
-      models.WEB_DEV_VIEWS.iteritems()])
+      list(models.WEB_DEV_VIEWS.items())])
     template_data['STANDARDS_VALS'] = json.dumps([
       {'key': k, 'val': v} for k,v in
-      models.STANDARDIZATION.iteritems()])
+      list(models.STANDARDIZATION.items())])
 
     return template_data
 
@@ -91,34 +91,16 @@ class FeatureListXMLHandler(basehandlers.FlaskHandler):
         max_items = settings.RSS_FEED_LIMIT
 
       if category is not None:
-        for k,v in models.FEATURE_CATEGORIES.iteritems():
+        for k,v in list(models.FEATURE_CATEGORIES.items()):
           normalized = utils.normalized_name(v)
           if category == normalized:
-            filterby = ('category =', k)
+            filterby = ('category', k)
             break
 
       feature_list = models.Feature.get_all( # cached
           limit=max_items,
           filterby=filterby,
           order='-updated',
-          version=1)
+          version=2)
 
     return utils.render_atom_feed(self.request, 'Features', feature_list)
-
-
-routes = [
-  # Note: The only requests being made now hit /features.json and
-  # /features_v2.json, but both of those cause version == 2.
-  # There was logic to accept another version value, but it it was not used.
-  (r'/features.json', FeaturesJsonHandler),
-  (r'/features_v2.json', FeaturesJsonHandler),
-
-  ('/', basehandlers.Redirector,
-   {'location': '/features'}),
-
-  ('/features', FeatureListHandler),
-  ('/features/<int:feature_id>', FeatureListHandler),
-  ('/features.xml', FeatureListXMLHandler),
-]
-
-app = basehandlers.FlaskApplication(routes, debug=settings.DEBUG)

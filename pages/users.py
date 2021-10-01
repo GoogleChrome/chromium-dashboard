@@ -1,5 +1,5 @@
-from __future__ import division
-from __future__ import print_function
+
+
 
 # -*- coding: utf-8 -*-
 # Copyright 2013 Google Inc.
@@ -37,8 +37,6 @@ client = google.cloud.logging.Client()
 client.get_default_handler()
 client.setup_logging()
 
-LOGIN_PAGE_URL = '/features?loginStatus=False'
-
 
 class UserListHandler(basehandlers.FlaskHandler):
 
@@ -46,8 +44,7 @@ class UserListHandler(basehandlers.FlaskHandler):
 
   @permissions.require_admin_site
   def get_template_data(self):
-    users = models.AppUser.query().fetch(None) # TODO(ericbidelman): ramcache this.
-
+    users = models.AppUser.query().fetch(None)
     user_list = [user.format_for_template() for user in users]
 
     logging.info('user_list is %r', user_list)
@@ -64,7 +61,7 @@ class SettingsHandler(basehandlers.FlaskHandler):
   def get_template_data(self):
     user_pref = models.UserPref.get_signed_in_user_pref()
     if not user_pref:
-      return flask.redirect(LOGIN_PAGE_URL)
+      return flask.redirect(settings.LOGIN_PAGE_URL)
 
     template_data = {
         'user_pref': user_pref,
@@ -83,9 +80,3 @@ class SettingsHandler(basehandlers.FlaskHandler):
     user_pref.notify_as_starrer = bool(new_notify)
     user_pref.put()
     return flask.redirect(flask.request.path)
-
-
-app = basehandlers.FlaskApplication([
-  ('/settings', SettingsHandler),
-  ('/admin/users/new', UserListHandler),
-], debug=settings.DEBUG)

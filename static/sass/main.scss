@@ -100,7 +100,12 @@ app-header-layout {
   padding: 0;
 }
 
-header, footer {
+header {
+  display: flex;
+  align-items: baseline;
+}
+
+footer {
   display: flex;
   align-items: center;
 }
@@ -129,6 +134,7 @@ header {
       padding: var(--content-padding-half) var(--content-padding);
       color: var(--nav-link-color);
       white-space: nowrap;
+      border-bottom: var(--nav-link-border);
 
       &:hover {
         color: black;
@@ -138,6 +144,15 @@ header {
       &.disabled {
         opacity: 0.5;
         pointer-events: none;
+      }
+    }
+
+    .active {
+      color: var(--nav-link-active-color);
+      border-bottom: var(--nav-link-active-border);
+
+      a {
+        color: var(--nav-link-active-color);
       }
     }
 
@@ -215,7 +230,7 @@ footer {
 }
 
 .sub-nav-links {
-  padding-left: var(--content-padding-quarter); 
+  padding-left: var(--content-padding-quarter);
   padding-right: var(--content-padding-quarter);
 }
 
@@ -445,7 +460,7 @@ footer {
 //Horizontal Sub-Nav should not be visible in wider view ports
 @media only screen and (min-width: 700px){
   #horizontal-sub-nav{display: none}
-  
+
 }
 
 

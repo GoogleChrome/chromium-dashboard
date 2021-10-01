@@ -7,25 +7,28 @@ const TEMPLATE_CONTENT = {
   stable: {
     channelLabel: 'Stable',
     h1Class: '',
-    downloadUrl: 'https://www.google.com/chrome/browser/desktop/index.html',
-    downloadTitle: 'Download Chrome stable',
-    dateText: 'was',
+    downloadUrl: 'https://www.google.com/chrome/',
+    downloadTitle: 'Download Chrome Stable',
     featureHeader: 'Features in this release',
   },
   beta: {
     channelLabel: 'Next up',
     h1Class: 'chrome_version--beta',
-    downloadUrl: 'https://www.google.com/chrome/browser/beta.html',
+    downloadUrl: 'https://www.google.com/chrome/beta/',
     downloadTitle: 'Download Chrome Beta',
-    dateText: 'between',
     featureHeader: 'Features planned in this release',
   },
   dev: {
     channelLabel: 'Dev',
     h1Class: 'chrome_version--dev',
-    downloadUrl: 'https://www.google.com/chrome/browser/canary.html',
-    downloadTitle: 'Download Chrome Canary',
-    dateText: 'coming',
+    downloadUrl: 'https://www.google.com/chrome/dev',
+    downloadTitle: 'Download Chrome Dev',
+    featureHeader: 'Features planned in this release',
+  },
+  gap: {
+    channelLabel: '',
+    h1Class: '',
+    downloadUrl: null,
     featureHeader: 'Features planned in this release',
   },
 };
@@ -40,12 +43,14 @@ class ChromedashSchedule extends LitElement {
   constructor() {
     super();
     this.starredFeatures = new Set();
+    this.columns = ['stable', 'beta', 'dev'];
   }
 
   static get properties() {
     return {
       // Assigned in schedule-apge.js, value from Django
       channels: {attribute: false},
+      columns: {attribute: false},
       showBlink: {attribute: false}, // Set by code in schedule-page.js
       signedin: {type: Boolean},
       loginUrl: {type: String},
@@ -116,21 +121,26 @@ class ChromedashSchedule extends LitElement {
     if (!this.channels) {
       return html``;
     }
+
     return html`
-      ${['stable', 'beta', 'dev'].map((type) => html`
+      ${this.columns.map((type) => html`
         <section class="release ${this.showBlink ? nothing : 'no-components'}">
           <div class="layout vertical center">
-            <h1 class="channel_label">${TEMPLATE_CONTENT[type].channelLabel}</h1>
+        <h1 class="channel_label">${TEMPLATE_CONTENT[type].channelLabel || html`&nbsp;`}</h1>
             <h1 class="chrome_version layout horizontal center ${TEMPLATE_CONTENT[type].h1Class}">
               <span class="chrome-logo"></span>
-              <a href="${TEMPLATE_CONTENT[type].downloadUrl}" title="${TEMPLATE_CONTENT[type].downloadTitle}"
-                 target="_blank">Chrome ${this.channels[type].version}</a>
+               ${TEMPLATE_CONTENT[type].downloadUrl ? html`
+                 <a href="${TEMPLATE_CONTENT[type].downloadUrl}"
+                    title="${TEMPLATE_CONTENT[type].downloadTitle}"
+                    target="_blank">Chrome ${this.channels[type].version}</a>`
+                 : html`
+                 Chrome ${this.channels[type].version}`}
             </h1>
           </div>
           ${SHOW_DATES && this.channels[type].earliest_beta ? html`
             <div class="milestone_info layout horizontal center-center">
               <h3>
-                <span class="channel_label">Beta</span> ${TEMPLATE_CONTENT[type].dateText}
+                <span class="channel_label">Beta</span>
                 <span class="milestone_info-beta">${this._computeDate(this.channels[type].earliest_beta)} - ${this._computeDate(this.channels[type].latest_beta)}</span>
               </h3>
             </div>
@@ -140,7 +150,7 @@ class ChromedashSchedule extends LitElement {
                 <span class="release-stable">( ${this._computeDate(this.channels[type].stable_date)} )</span>
               </h3>
             </div>
-          ` : nothing}
+          ` : html`<div style="border-bottom: 1px solid #e6e6e6; height: 7em"></div>`}
           <div class="features_list">
             <div class="features_header">${TEMPLATE_CONTENT[type].featureHeader}:</div>
 

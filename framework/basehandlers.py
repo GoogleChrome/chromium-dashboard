@@ -13,9 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import division
-from __future__ import print_function
-
 import json
 import logging
 import os
@@ -34,6 +31,7 @@ from framework import ramcache
 from framework import secrets
 from framework import utils
 from framework import xsrf
+from internals import approval_defs
 from internals import models
 
 from django.template.loader import render_to_string
@@ -92,7 +90,7 @@ class BaseHandler(flask.views.MethodView):
   def get_param(
       self, name, default=None, required=True, validator=None, allowed=None):
     """Get the specified JSON parameter."""
-    json_body = self.request.get_json(force=True)
+    json_body = self.request.get_json(force=True, silent=True) or {}
     val = json_body.get(name, default)
     if required and not val:
       self.abort(400, msg='Missing parameter %r' % name)
@@ -162,7 +160,8 @@ class APIHandler(BaseHandler):
 
   def post(self, *args, **kwargs):
     """Handle an incoming HTTP POST request."""
-    logging.info('POST data is %r', self.request.get_json())
+    json_body = self.request.get_json(force=True, silent=True) or {}
+    logging.info('POST data is %r', json_body)
     is_login_request = str(self.request.url_rule) == '/api/v0/login'
 
     if not is_login_request:
@@ -300,9 +299,13 @@ class FlaskHandler(BaseHandler):
 
     user = self.get_current_user()
     if user:
+      field_id = approval_defs.ShipApproval.field_id
+      approvers = approval_defs.get_approvers(field_id)
       user_pref = models.UserPref.get_signed_in_user_pref()
       common_data['user'] = {
         'can_create_feature': permissions.can_create_feature(user),
+        'can_approve': permissions.can_approve_feature(
+            user, None, approvers),
         'can_edit': permissions.can_edit_any_feature(user),
         'is_admin': permissions.can_admin_site(user),
         'email': user.email(),
@@ -378,16 +381,25 @@ class FlaskHandler(BaseHandler):
 
   def require_task_header(self):
     """Abort if this is not a Google Cloud Tasks request."""
-    if settings.UNIT_TEST_MODE:
+    if settings.UNIT_TEST_MODE or settings.DEV_MODE:
       return
-    if 'X-AppEngine-QueueName' not in self.request.headers:
-      self.abort(403, msg='Lacking X-AppEngine-QueueName header')
+    if 'X-AppEngine-QueueName' in self.request.headers:
+      return
+    if self.request.headers.get('X-Appengine-Inbound-Appid') == settings.APP_ID:
+      return
+
+    logging.info('headers lack needed header:')
+    for k, v in self.request.headers:
+      logging.info('%r: %r', k, v)
+
+    self.abort(403, msg=('Lacking X-AppEngine-QueueName or '
+                         'incorrect X-Appengine-Inbound-Appid headers'))
 
   def split_input(self, field_name, delim='\\r?\\n'):
     """Split the input lines, strip whitespace, and skip blank lines."""
     input_text = flask.request.form.get(field_name) or ''
-    return filter(bool, [
-        x.strip() for x in re.split(delim, input_text)])
+    return [x.strip() for x in re.split(delim, input_text)
+            if x]
 
   def split_emails(self, param_name):
     """Split one input field and construct objects for ndb.StringProperty()."""

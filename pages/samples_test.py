@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import division
-from __future__ import print_function
+
+
 
 import testing_config  # Must be imported first
 
@@ -23,6 +23,8 @@ import werkzeug
 from internals import models
 from framework import ramcache
 from pages import samples
+
+test_app = flask.Flask(__name__)
 
 
 class TestWithFeature(testing_config.CustomTestCase):
@@ -56,7 +58,7 @@ class SamplesHandlerTest(TestWithFeature):
 
   def test_get_template_data(self):
     """User can get a page with all samples."""
-    with samples.app.test_request_context(self.request_path):
+    with test_app.test_request_context(self.request_path):
       template_data = self.handler.get_template_data()
 
     self.assertIn('FEATURES', template_data)
@@ -69,7 +71,7 @@ class SamplesJSONHandlerTest(TestWithFeature):
 
   def test_get_template_data(self):
     """User can get a JSON feed of all samples."""
-    with samples.app.test_request_context(self.request_path):
+    with test_app.test_request_context(self.request_path):
       json_data = self.handler.get_template_data()
 
     self.assertEqual([], json_data)
@@ -82,7 +84,7 @@ class SamplesXMLHandlerTest(TestWithFeature):
 
   def test_get_template_data(self):
     """User can get an XML feed of all samples."""
-    with samples.app.test_request_context(self.request_path):
+    with test_app.test_request_context(self.request_path):
       actual_text, actual_headers = self.handler.get_template_data()
 
     # It is an XML feed

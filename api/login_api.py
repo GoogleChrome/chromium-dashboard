@@ -13,8 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import division
-from __future__ import print_function
+
+
 
 from google.oauth2 import id_token
 from google.auth.transport import requests
@@ -31,7 +31,7 @@ class LoginAPI(basehandlers.APIHandler):
     message = "Unable to Authenticate"
 
     try:
-      idinfo = id_token.verify_oauth2_token(
+      unused_idinfo = id_token.verify_oauth2_token(
           token, requests.Request(),
           settings.GOOGLE_SIGN_IN_CLIENT_ID)
       # userid = idinfo['sub']
@@ -41,6 +41,5 @@ class LoginAPI(basehandlers.APIHandler):
       # print(idinfo['email'], file=sys.stderr)
     except ValueError:
       message = "Invalid token"
-      pass
 
     return {'message': message}

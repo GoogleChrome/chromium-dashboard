@@ -22,6 +22,60 @@ indexes:
   - name: "shipped_android_milestone"
     direction: desc
   - name: "name"
+- kind: "Feature"
+  properties:
+  - name: "deleted"
+  - name: "owner"
+  - name: "updated"
+    direction: desc
+- kind: "Feature"
+  properties:
+  - name: "impl_status_chrome"
+  - name: "shipped_milestone"
+    direction: desc
+  - name: "name"
+- kind: "Feature"
+  properties:
+  - name: "impl_status_chrome"
+    direction: desc
+  - name: "shipped_milestone"
+    direction: desc
+  - name: "name"
+- kind: "FeatureOwner"
+  properties:
+  - name: "primary_blink_components"
+  - name: "name"
+- kind: "FeatureOwner"
+  properties:
+  - name: "blink_components"
+  - name: "name"
+- kind: "Feature"
+  properties:
+  - name: "shipped_milestone"
+  - name: "name"
+- kind: "Feature"
+  properties:
+  - name: "shipped_android_milestone"
+  - name: "shipped_milestone"
+  - name: "name"
+- kind: "Feature"
+  properties:
+  - name: "ot_milestone_desktop_start"
+  - name: "name"
+- kind: "Feature"
+  properties:
+  - name: "ot_milestone_android_start"
+  - name: "ot_milestone_desktop_start"
+  - name: "name"
+- kind: "Feature"
+  properties:
+  - name: "dt_milestone_desktop_start"
+  - name: "name"
+- kind: "Feature"
+  properties:
+  - name: "dt_milestone_android_start"
+  - name: "dt_milestone_desktop_start"
+  - name: "name"
 - kind: "AnimatedProperty"
   properties:
   - name: "bucket_id"
@@ -68,20 +122,7 @@ indexes:
   - name: "shipped_milestone"
     direction: desc
   - name: "name"
-- kind: "Feature"
-  properties:
-  - name: "impl_status_chrome"
-  - name: "shipped_milestone"
     direction: desc
-  - name: "name"
-    direction: desc
-- kind: "Feature"
-  properties:
-  - name: "impl_status_chrome"
-    direction: desc
-  - name: "shipped_milestone"
-    direction: desc
-  - name: "name"
 - kind: "Feature"
   properties:
   - name: "name"
@@ -96,10 +137,6 @@ indexes:
   - name: "sample_links"
   - name: "updated"
     direction: desc
-- kind: "Feature"
-  properties:
-  - name: "shipped_milestone"
-  - name: "name"
 - kind: "Feature"
   properties:
   - name: "shipped_milestone"
@@ -132,14 +169,6 @@ indexes:
   - name: "date"
   - name: "day_percentage"
     direction: desc
-- kind: "FeatureOwner"
-  properties:
-  - name: "blink_components"
-  - name: "name"
-- kind: "FeatureOwner"
-  properties:
-  - name: "primary_blink_components"
-  - name: "name"
 - kind: "StableInstance"
   properties:
   - name: "bucket_id"
