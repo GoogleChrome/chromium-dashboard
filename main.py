@@ -64,7 +64,6 @@ metrics_chart_routes = [
     ('/data/blink/<string:prop_type>', metricsdata.FeatureBucketsHandler),
 ]
 
-
 # TODO(jrobbins): Advance this to v1 once we have it fleshed out
 API_BASE = '/api/v0'
 api_routes = [
