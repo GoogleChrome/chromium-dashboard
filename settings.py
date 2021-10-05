@@ -47,10 +47,12 @@ DEV_MODE = (os.environ['SERVER_SOFTWARE'].startswith('Development') or
             os.environ.get('GAE_ENV', '').startswith('localdev'))
 UNIT_TEST_MODE = os.environ['SERVER_SOFTWARE'].startswith('test')
 
-if not UNIT_TEST_MODE:
-  # Configure logging to print INFO lines so that they are captured
-  # when written to stdout on GAE py3.
-  logging.basicConfig(level=logging.INFO)
+# Sets up Cloud Logging client library.
+if not UNIT_TEST_MODE and not DEV_MODE:
+  import google.cloud.logging
+  client = google.cloud.logging.Client()
+  client.get_default_handler()
+  client.setup_logging()
 
 #setting GOOGLE_CLOUD_PROJECT manually in dev mode
 if DEV_MODE or UNIT_TEST_MODE:

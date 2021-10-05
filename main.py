@@ -45,8 +45,6 @@ from pages import schedule
 from pages import users
 import settings
 
-logging.basicConfig(level=logging.INFO)
-
 
 metrics_chart_routes = [
     ('/data/timeline/cssanimated', metricsdata.AnimatedTimelineHandler),
