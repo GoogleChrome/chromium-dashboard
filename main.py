@@ -46,6 +46,13 @@ from pages import users
 import settings
 
 
+# Sets up Cloud Logging client library.
+if not settings.UNIT_TEST_MODE and not settings.DEV_MODE:
+  import google.cloud.logging
+  client = google.cloud.logging.Client()
+  client.get_default_handler()
+  client.setup_logging()
+
 metrics_chart_routes = [
     ('/data/timeline/cssanimated', metricsdata.AnimatedTimelineHandler),
     ('/data/timeline/csspopularity', metricsdata.PopularityTimelineHandler),
@@ -56,6 +63,7 @@ metrics_chart_routes = [
     ('/data/featurepopularity', metricsdata.FeatureObserverPopularityHandler),
     ('/data/blink/<string:prop_type>', metricsdata.FeatureBucketsHandler),
 ]
+
 
 # TODO(jrobbins): Advance this to v1 once we have it fleshed out
 API_BASE = '/api/v0'

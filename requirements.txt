@@ -6,7 +6,7 @@ funcsigs
 Flask==1.1.2
 google-cloud-tasks==1.5.0
 google-cloud-ndb
-google-cloud-logging==1.14.0
+google-cloud-logging
 
 # Required by google-cloud-tasks
 googleapis-common-protos==1.52.0

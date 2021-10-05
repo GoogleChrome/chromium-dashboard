@@ -47,13 +47,6 @@ DEV_MODE = (os.environ['SERVER_SOFTWARE'].startswith('Development') or
             os.environ.get('GAE_ENV', '').startswith('localdev'))
 UNIT_TEST_MODE = os.environ['SERVER_SOFTWARE'].startswith('test')
 
-# Sets up Cloud Logging client library.
-if not UNIT_TEST_MODE and not DEV_MODE:
-  import google.cloud.logging
-  client = google.cloud.logging.Client()
-  client.get_default_handler()
-  client.setup_logging()
-
 #setting GOOGLE_CLOUD_PROJECT manually in dev mode
 if DEV_MODE or UNIT_TEST_MODE:
   APP_ID = os.environ.get('GOOGLE_CLOUD_PROJECT', 'dev')
