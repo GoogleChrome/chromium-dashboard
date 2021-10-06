@@ -87,7 +87,7 @@ class ChromedashFeatureTable extends LitElement {
 
     // handled in chromedash-myfeatures.js
     this._fireEvent('star-toggle-event', {
-      feature: featureId,
+      featureId: featureId,
       doStar: newStarred,
     });
   }
@@ -106,14 +106,17 @@ class ChromedashFeatureTable extends LitElement {
     return nothing;
   }
 
-  openApprovalsDialog(feature) {
-    alert('TODO show approvals for ' + feature.id);
+  openApprovalsDialog(featureId) {
+    // handled in chromedash-myfeatures.js
+    this._fireEvent('open-approvals-event', {
+      featureId: featureId,
+    });
   }
 
   renderApprovalsIcon(feature) {
     return html`
       <a href="#" class="tooltip"
-        @click="${() => this.openApprovalsDialog(feature)}"
+        @click="${() => this.openApprovalsDialog(feature.id)}"
         title="Review approvals">
         <iron-icon icon="chromestatus:approval"></iron-icon>
       </span>

@@ -29,7 +29,11 @@ from internals import search
 class FeaturesAPI(basehandlers.APIHandler):
   """Features are the the main records that we track."""
 
-  def do_get(self):
+  def get_one_feature(self, feature_id):
+    feature = models.Feature.get_by_ids([feature_id])[0]
+    return feature
+
+  def do_search(self):
     user = users.get_current_user()
     show_unlisted_features = permissions.can_edit_feature(user, None)
     feature_list = None
@@ -55,6 +59,12 @@ class FeaturesAPI(basehandlers.APIHandler):
           show_unlisted=show_unlisted_features)
 
     return feature_list
+
+  def do_get(self, feature_id=None):
+    if feature_id:
+      return self.get_one_feature(feature_id)
+    else:
+      return self.do_search()
 
   # TODO(jrobbins): do_post
 
