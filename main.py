@@ -45,13 +45,21 @@ from pages import schedule
 from pages import users
 import settings
 
-
 # Sets up Cloud Logging client library.
 if not settings.UNIT_TEST_MODE and not settings.DEV_MODE:
   import google.cloud.logging
   client = google.cloud.logging.Client()
   client.get_default_handler()
   client.setup_logging()
+
+# Sets up Cloud Debugger client library.
+if not settings.UNIT_TEST_MODE and not settings.DEV_MODE:
+  try:
+    import googleclouddebugger
+    googleclouddebugger.enable(breakpoint_enable_canary=False)
+  except ImportError:
+    pass
+
 
 metrics_chart_routes = [
     ('/data/timeline/cssanimated', metricsdata.AnimatedTimelineHandler),
