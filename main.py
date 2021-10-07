@@ -61,7 +61,6 @@ if not settings.UNIT_TEST_MODE and not settings.DEV_MODE:
     pass
 
 
-
 metrics_chart_routes = [
     ('/data/timeline/cssanimated', metricsdata.AnimatedTimelineHandler),
     ('/data/timeline/csspopularity', metricsdata.PopularityTimelineHandler),
