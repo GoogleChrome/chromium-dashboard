@@ -40,20 +40,22 @@ class FetchMetricsTest(testing_config.CustomTestCase):
     actual = fetchmetrics._FetchMetrics('a url')
 
     self.assertEqual('mock response', actual)
-    mock_fetch.assert_called_once_with('GET',
-        'a url', timeout=120, allow_redirects=False)
+    mock_fetch.assert_called_once_with(
+        'GET', 'a url', timeout=120, allow_redirects=False,
+        headers={'Authorization': mock.ANY})
 
 
   @mock.patch('settings.STAGING', True)
   @mock.patch('requests.request')
   def test__staging(self, mock_fetch):
-    """In prod, we actually request metrics from uma-export."""
+    """In staging, we actually request metrics from uma-export."""
     mock_fetch.return_value = 'mock response'
     actual = fetchmetrics._FetchMetrics('a url')
 
     self.assertEqual('mock response', actual)
-    mock_fetch.assert_called_once_with('GET',
-        'a url', timeout=120, allow_redirects=False)
+    mock_fetch.assert_called_once_with(
+        'GET', 'a url', timeout=120, allow_redirects=False,
+        headers={'Authorization': mock.ANY})
 
   @mock.patch('requests.request')
   def test__dev(self, mock_fetch):
