@@ -20,6 +20,7 @@ import requests
 
 from framework import permissions
 from framework import ramcache
+import settings
 
 CACHE_EXPIRATION = 60 * 60  # One hour
 
@@ -70,12 +71,12 @@ def fetch_owners(url):
   response = requests.get(url)
   if response.status_code != 200:
     logging.error('Could not fetch %r', url)
-    logging.error('Got response %r', response)
+    logging.error('Got response %s', repr(response)[:settings.MAX_LOG_LINE])
     raise ValueError('Could not get OWNERS file')
 
   decoded = base64.b64decode(response.content).decode()
   for line in decoded.split('\n'):
-    logging.info('got line: '  + line)
+    logging.info('got line: '  + line[:settings.MAX_LOG_LINE])
     if '#' in line:
       line = line[:line.index('#')]
     line = line.strip()

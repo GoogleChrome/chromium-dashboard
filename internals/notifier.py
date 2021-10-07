@@ -226,7 +226,7 @@ class FeatureStar(models.DictModel):
     feature_stars = q.fetch(None)
     logging.info('found %d stars for %r', len(feature_stars), feature_id)
     emails = [fs.email for fs in feature_stars]
-    logging.info('looking up %r', emails)
+    logging.info('looking up %r', repr(emails)[:settings.MAX_LOG_LINE])
     user_prefs = models.UserPref.get_prefs_for_emails(emails)
     user_prefs = [up for up in user_prefs
                   if up.notify_as_starrer and not up.bounced]
@@ -245,7 +245,8 @@ class FeatureChangeHandler(basehandlers.FlaskHandler):
     is_update = self.get_bool_param('is_update')
     changes = self.get_param('changes', required=False) or []
 
-    logging.info('Starting to notify subscribers for feature %r', feature)
+    logging.info('Starting to notify subscribers for feature %s',
+                 repr(feature)[:settings.MAX_LOG_LINE])
 
     # Email feature subscribers if the feature exists and there were
     # actually changes to it.
@@ -265,6 +266,6 @@ class FeatureChangeHandler(basehandlers.FlaskHandler):
               'Subject: %s\n'
               'Body:\n%s',
               one_email_dict['to'], one_email_dict['subject'],
-              one_email_dict['html'])
+              one_email_dict['html'][:settings.MAX_LOG_LINE])
 
     return {'message': 'Done'}

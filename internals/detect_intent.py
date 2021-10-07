@@ -104,7 +104,7 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
                  'Subject:     %r\n'
                  'In reply to: %r\n'
                  'Body:        %r\n',
-                 from_addr, subject, in_reply_to, body)
+                 from_addr, subject, in_reply_to, body[:settings.MAX_LOG_LINE])
 
     approval_field = detect_field(subject)
     if not approval_field:
