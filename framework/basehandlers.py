@@ -157,7 +157,7 @@ class APIHandler(BaseHandler):
     json_body = self.request.get_json(force=True, silent=True) or {}
     logging.info('POST data is:')
     for k, v in json_body.items():
-      logging.info('%r: %r', k, str(v)[:settings.MAX_LOG_LINE])
+      logging.info('%r: %s', k, repr(v)[:settings.MAX_LOG_LINE])
     is_login_request = str(self.request.url_rule) == '/api/v0/login'
 
     if not is_login_request:

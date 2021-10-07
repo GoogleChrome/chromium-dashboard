@@ -186,15 +186,15 @@ class FeatureHandler(basehandlers.FlaskHandler):
     else:
       properties = ramcache.get(self.CACHE_KEY)
       logging.info(
-          'looked at cache %r and found %r', self.CACHE_KEY,
-          str(properties)[:settings.MAX_LOG_LINE])
+          'looked at cache %r and found %s', self.CACHE_KEY,
+          repr(properties)[:settings.MAX_LOG_LINE])
       if properties is None:
         logging.info('Loading properties from datastore')
         properties = self.__query_metrics_for_properties()
         ramcache.set(self.CACHE_KEY, properties, time=CACHE_AGE)
 
-    logging.info('before filtering: %r',
-                 str(properties)[:settings.MAX_LOG_LINE])
+    logging.info('before filtering: %s',
+                 repr(properties)[:settings.MAX_LOG_LINE])
     return _filter_metric_data(properties)
 
 

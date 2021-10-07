@@ -71,7 +71,7 @@ def fetch_owners(url):
   response = requests.get(url)
   if response.status_code != 200:
     logging.error('Could not fetch %r', url)
-    logging.error('Got response %r', response)
+    logging.error('Got response %s', repr(response)[:settings.MAX_LOG_LINE])
     raise ValueError('Could not get OWNERS file')
 
   decoded = base64.b64decode(response.content).decode()

@@ -245,7 +245,8 @@ class FeatureChangeHandler(basehandlers.FlaskHandler):
     is_update = self.get_bool_param('is_update')
     changes = self.get_param('changes', required=False) or []
 
-    logging.info('Starting to notify subscribers for feature %r', feature)
+    logging.info('Starting to notify subscribers for feature %s',
+                 repr(feature)[:settings.MAX_LOG_LINE])
 
     # Email feature subscribers if the feature exists and there were
     # actually changes to it.
@@ -265,6 +266,6 @@ class FeatureChangeHandler(basehandlers.FlaskHandler):
               'Subject: %s\n'
               'Body:\n%s',
               one_email_dict['to'], one_email_dict['subject'],
-              one_email_dict['html'])
+              one_email_dict['html'][:settings.MAX_LOG_LINE])
 
     return {'message': 'Done'}

@@ -44,6 +44,11 @@ DEV_MODE = (os.environ['SERVER_SOFTWARE'].startswith('Development') or
             os.environ.get('GAE_ENV', '').startswith('localdev'))
 UNIT_TEST_MODE = os.environ['SERVER_SOFTWARE'].startswith('test')
 
+if not UNIT_TEST_MODE:
+  # Py3 defaults to level WARN.
+  logging.basicConfig(level=logging.INFO)
+
+
 #setting GOOGLE_CLOUD_PROJECT manually in dev mode
 if DEV_MODE or UNIT_TEST_MODE:
   APP_ID = os.environ.get('GOOGLE_CLOUD_PROJECT', 'dev')

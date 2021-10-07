@@ -94,7 +94,7 @@ class UmaQuery(object):
     j = json.loads(json_content)
     if 'r' not in j:
       logging.info(
-          '%s results do not have an "r" key in the response: %r' %
+          '%s results do not have an "r" key in the response: %s' %
           (self.query_name, repr(j)[:settings.MAX_LOG_LINE]))
       logging.info('Note: uma-export can take 2 days to produce metrics')
       return (None, 404)
