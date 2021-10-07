@@ -13,9 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-
-
 import base64
 import datetime
 import json
@@ -98,7 +95,7 @@ class UmaQuery(object):
     if 'r' not in j:
       logging.info(
           '%s results do not have an "r" key in the response: %r' %
-          (self.query_name, j))
+          (self.query_name, repr(j)[:settings.MAX_LOG_LINE]))
       logging.info('Note: uma-export can take 2 days to produce metrics')
       return (None, 404)
     return (j['r'], result.status_code)

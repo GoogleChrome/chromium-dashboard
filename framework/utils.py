@@ -13,9 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-
-
 import calendar
 import datetime
 import flask
@@ -23,9 +20,7 @@ import logging
 import time
 import traceback
 
-# from google.appengine.api import users
 from framework import users
-
 import settings
 
 from django.utils import feedgenerator
@@ -74,7 +69,7 @@ def retry(tries, delay=1, backoff=2):
             raise
           trace_str = traceback.format_exc()
           logging.warning('Retrying %s due to Exception: %s',
-                          func.__name__, trace_str)
+                          func.__name__, trace_str[:settings.MAX_LOG_LINE])
           time.sleep(_delay)
           _delay *= backoff  # Wait longer the next time we fail.
     return wrapper

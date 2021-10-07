@@ -20,6 +20,7 @@ import requests
 
 from framework import permissions
 from framework import ramcache
+import settings
 
 CACHE_EXPIRATION = 60 * 60  # One hour
 
@@ -75,7 +76,7 @@ def fetch_owners(url):
 
   decoded = base64.b64decode(response.content).decode()
   for line in decoded.split('\n'):
-    logging.info('got line: '  + line)
+    logging.info('got line: '  + line[:settings.MAX_LOG_LINE])
     if '#' in line:
       line = line[:line.index('#')]
     line = line.strip()

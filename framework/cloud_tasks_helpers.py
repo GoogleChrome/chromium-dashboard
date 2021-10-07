@@ -1,6 +1,3 @@
-
-
-
 # -*- coding: utf-8 -*-
 # Copyright 2020 Google Inc.
 #
@@ -63,7 +60,8 @@ class LocalCloudTasksClient(object):
         # This header can only be set on internal requests, not by users.
         headers={'X-AppEngine-QueueName': 'default'})
     logging.info('Task handler status: %d', handler_response.status_code)
-    logging.info('Task handler text: %r', handler_response.content)
+    logging.info('Task handler text: %r',
+                 handler_response.content[:settings.MAX_LOG_LINE])
 
 
 def _get_client():

@@ -70,7 +70,7 @@ def handle_outbound_mail_task():
   logging.info('Will send the following email:\n')
   logging.info('To: %s', message.to)
   logging.info('Subject: %s', message.subject)
-  logging.info('Body:\n%s', message.html)
+  logging.info('Body:\n%s', message.html[:settings.MAX_LOG_LINE])
   if settings.SEND_EMAIL:
     message.send()
     logging.info('Email sent')

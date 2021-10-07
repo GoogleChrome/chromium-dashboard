@@ -60,7 +60,8 @@ def fetch_chrome_release_info(version):
     result = requests.get(url, timeout=60)
     if result.status_code == 200:
       try:
-        logging.info('result.content is:\n%s', result.content)
+        logging.info(
+            'result.content is:\n%s', result.content[:settings.MAX_LOG_LINE])
         result_json = json.loads(result.content)
         if 'mstones' in result_json:
           data = result_json['mstones'][0]

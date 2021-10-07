@@ -118,5 +118,6 @@ def get_headers(nonce):
 
 def report_handler():
   """Log any CSP violations that are reported to our app."""
-  logging.error('CSP Violation: %r' % flask.request.data)
+  logging.error('CSP Violation: %r' %
+                str(flask.request.data)[:settings.MAX_LOG_LINE])
   return ''

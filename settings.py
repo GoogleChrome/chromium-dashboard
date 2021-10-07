@@ -1,6 +1,3 @@
-
-
-
 import logging
 import os
 
@@ -65,6 +62,9 @@ GOOGLE_SIGN_IN_CLIENT_ID = (
 LOGIN_PAGE_URL = '/features?loginStatus=False'
 
 INBOUND_EMAIL_ADDR = 'chromestatus@cr-status-staging.appspotmail.com'
+
+# Truncate some log lines to stay under limits of Google Cloud Logging.
+MAX_LOG_LINE = 200 * 1000
 
 
 if UNIT_TEST_MODE:

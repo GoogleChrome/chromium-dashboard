@@ -1,6 +1,3 @@
-
-
-
 # -*- coding: utf-8 -*-
 # Copyright 2013 Google Inc.
 #
@@ -22,12 +19,11 @@ import datetime
 import json
 import logging
 
-# from google.appengine.api import users
 from framework import users
-
 from framework import basehandlers
 from internals import models
 from framework import ramcache
+import settings
 
 CACHE_AGE = 86400 # 24hrs
 
@@ -190,13 +186,15 @@ class FeatureHandler(basehandlers.FlaskHandler):
     else:
       properties = ramcache.get(self.CACHE_KEY)
       logging.info(
-          'looked at cache %r and found %r', self.CACHE_KEY, properties)
+          'looked at cache %r and found %r', self.CACHE_KEY,
+          str(properties)[:settings.MAX_LOG_LINE])
       if properties is None:
         logging.info('Loading properties from datastore')
         properties = self.__query_metrics_for_properties()
         ramcache.set(self.CACHE_KEY, properties, time=CACHE_AGE)
 
-    logging.info('before filtering: %r', properties)
+    logging.info('before filtering: %r',
+                 str(properties)[:settings.MAX_LOG_LINE])
     return _filter_metric_data(properties)
 
 

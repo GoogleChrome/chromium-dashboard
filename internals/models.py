@@ -588,7 +588,8 @@ class Feature(DictModel):
   # TODO(jrobbins): Eliminate format version 1.
   def format_for_template(self, version=2):
     self.migrate_views()
-    logging.info('In format_for_template for %r', self)
+    logging.info('In format_for_template for %r',
+                 repr(self)[:settings.MAX_LOG_LINE])
     d = self.to_dict()
     is_released = self.impl_status_chrome in RELEASE_IMPL_STATES
     d['is_released'] = is_released

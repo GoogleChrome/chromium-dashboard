@@ -226,7 +226,7 @@ class FeatureStar(models.DictModel):
     feature_stars = q.fetch(None)
     logging.info('found %d stars for %r', len(feature_stars), feature_id)
     emails = [fs.email for fs in feature_stars]
-    logging.info('looking up %r', emails)
+    logging.info('looking up %r', repr(emails)[:settings.MAX_LOG_LINE])
     user_prefs = models.UserPref.get_prefs_for_emails(emails)
     user_prefs = [up for up in user_prefs
                   if up.notify_as_starrer and not up.bounced]
