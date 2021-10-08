@@ -97,7 +97,7 @@ class UmaQuery(object):
           url, result.status_code))
       return (None, result.status_code)
 
-    json_content = result.content.split('\n', 1)[1]
+    json_content = result.content.decode().split('\n', 1)[1]
     j = json.loads(json_content)
     if 'r' not in j:
       logging.info(
