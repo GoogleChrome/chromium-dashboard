@@ -475,7 +475,7 @@ PROGRESS_DETECTORS = {
     lambda f: bool(
         f.ff_views != models.NO_PUBLIC_SIGNALS or
         f.safari_views != models.NO_PUBLIC_SIGNALS or
-        f.ie_views != models.NO_PUBLIC_SIGNALS),
+        f.ie_views != models.NO_PUBLIC_SIGNALS),  # Deprecated
 
     'Estimated target milestone':
     lambda f: bool(f.shipped_milestone),

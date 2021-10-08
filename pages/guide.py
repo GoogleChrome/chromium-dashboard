@@ -485,12 +485,15 @@ class FeatureEditStage(basehandlers.FlaskHandler):
       feature.ff_views_link = self.parse_link('ff_views_link')
     if self.touched('ff_views_notes'):
       feature.ff_views_notes = self.form.get('ff_views_notes')
+
+    # TODO(jrobbins): Delete after the next deployment
     if self.touched('ie_views'):
       feature.ie_views = int(self.form.get('ie_views'))
     if self.touched('ie_views_link'):
       feature.ie_views_link = self.parse_link('ie_views_link')
     if self.touched('ie_views_notes'):
       feature.ie_views_notes = self.form.get('ie_views_notes')
+
     if self.touched('safari_views'):
       feature.safari_views = int(self.form.get('safari_views'))
     if self.touched('safari_views_link'):
@@ -503,6 +506,8 @@ class FeatureEditStage(basehandlers.FlaskHandler):
       feature.web_dev_views_link = self.parse_link('web_dev_views_link')
     if self.touched('web_dev_views_notes'):
       feature.web_dev_views_notes = self.form.get('web_dev_views_notes')
+    if self.touched('other_views_notes'):
+      feature.other_views_notes = self.form.get('other_views_notes')
     if self.touched('prefixed'):
       feature.prefixed = self.form.get('prefixed') == 'on'
 
