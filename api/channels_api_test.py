@@ -1,6 +1,3 @@
-
-
-
 # Copyright 2020 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
@@ -16,6 +13,7 @@
 # limitations under the License.
 
 import testing_config  # Must be imported first
+import json
 import mock
 import unittest
 
@@ -88,3 +86,40 @@ class ChannelsAPITest(unittest.TestCase):
     }
     self.maxDiff = None
     self.assertEqual(expected, actual)
+
+  @mock.patch('requests.get')
+  def test_fetch_chrome_release_info__found(self, mock_requests_get):
+    """We can get channel data from the chromiumdash app."""
+    mock_requests_get.return_value = testing_config.Blank(
+        status_code=200,
+        content=json.dumps({
+            'mstones': [{
+                'owners': 'ignored',
+                'feature_freeze': 'ignored',
+                'ldaps': 'ignored',
+                'everything else': 'kept',
+             }],
+        }))
+
+    actual = channels_api.fetch_chrome_release_info(90)
+
+    self.assertEqual(
+        {'everything else': 'kept'},
+        actual)
+
+  @mock.patch('requests.get')
+  def test_fetch_chrome_release_info__not_found(self, mock_requests_get):
+    """If chromiumdash app does not have the data, use a placeholder."""
+    mock_requests_get.return_value = testing_config.Blank(
+        status_code=404, content='')
+
+    actual = channels_api.fetch_chrome_release_info(91)
+
+    self.assertEqual(
+        {'stable_date': None,
+         'earliest_beta': None,
+         'latest_beta': None,
+         'mstone': 91,
+         'version': 91,
+         },
+        actual)
