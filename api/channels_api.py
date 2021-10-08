@@ -13,19 +13,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-
-
 import logging
 import json
+import requests
 
 from framework import basehandlers
 from framework import ramcache
-import requests
-
 from internals import fetchchannels
+import settings
+
 
 SCHEDULE_CACHE_TIME = 60 * 60  # 1 hour
+
 
 def construct_chrome_channels_details():
   omaha_data = fetchchannels.get_omaha_data()
@@ -49,6 +48,7 @@ def construct_chrome_channels_details():
     channels['dev']['version'] = new_dev_version
 
   return channels
+
 
 def fetch_chrome_release_info(version):
   key = 'chromerelease|%s' % version
@@ -84,6 +84,7 @@ def fetch_chrome_release_info(version):
 
   return data
 
+
 def construct_specified_milestones_details(start, end):
   channels = {}
   win_versions = list(range(start,end+1))
@@ -92,6 +93,7 @@ def construct_specified_milestones_details(start, end):
     channels[milestone] = fetch_chrome_release_info(milestone)
 
   return channels
+
 
 class ChannelsAPI(basehandlers.APIHandler):
   """Channels are the Chrome Versions across platforms."""
