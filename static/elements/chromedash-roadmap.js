@@ -80,7 +80,7 @@ class ChromedashRoadmap extends LitElement {
       this.requestUpdate('lastFutureFetchedOn', oldVal);
     }).catch(() => {
       const toastEl = document.querySelector('chromedash-toast');
-      toastEl.showMessage('Some error occurred. Please refresh the page or try again later.');
+      toastEl.showMessage('Some errors occurred. Please refresh the page or try again later.');
     });
   }
 
