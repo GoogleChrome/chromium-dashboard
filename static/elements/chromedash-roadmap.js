@@ -79,7 +79,8 @@ class ChromedashRoadmap extends LitElement {
     this.fetchNextBatch().then(()=>{
       this.requestUpdate('lastFutureFetchedOn', oldVal);
     }).catch(() => {
-      alert('Some error occurred. Please refresh the page or try again later.');
+      const toastEl = document.querySelector('chromedash-toast');
+      toastEl.showMessage('Some error occurred. Please refresh the page or try again later.');
     });
   }
 
@@ -90,7 +91,8 @@ class ChromedashRoadmap extends LitElement {
       this.fetchPreviousBatch().then(()=>{
         this.requestUpdate('lastPastFetchedOn', oldVal);
       }).catch(() => {
-        alert('Some error occurred. Please refresh the page or try again later.');
+        const toastEl = document.querySelector('chromedash-toast');
+        toastEl.showMessage('Some error occurred. Please refresh the page or try again later.');
       });
     }
   }
