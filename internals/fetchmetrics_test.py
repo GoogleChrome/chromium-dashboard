@@ -33,29 +33,35 @@ test_app = flask.Flask(__name__)
 class FetchMetricsTest(testing_config.CustomTestCase):
 
   @mock.patch('settings.PROD', True)
+  @mock.patch('google.oauth2.id_token.fetch_id_token')
   @mock.patch('requests.request')
-  def test__prod(self, mock_fetch):
+  def test__prod(self, mock_fetch, mock_fetch_id_token):
     """In prod, we actually request metrics from uma-export."""
     mock_fetch.return_value = 'mock response'
+    mock_fetch_id_token.return_value = 'fake-token'
+
     actual = fetchmetrics._FetchMetrics('a url')
 
     self.assertEqual('mock response', actual)
     mock_fetch.assert_called_once_with(
         'GET', 'a url', timeout=120, allow_redirects=False,
-        headers={'Authorization': mock.ANY})
+        headers={'Authorization': 'Bearer fake-token'})
 
 
   @mock.patch('settings.STAGING', True)
+  @mock.patch('google.oauth2.id_token.fetch_id_token')
   @mock.patch('requests.request')
-  def test__staging(self, mock_fetch):
+  def test__staging(self, mock_fetch, mock_fetch_id_token):
     """In staging, we actually request metrics from uma-export."""
     mock_fetch.return_value = 'mock response'
+    mock_fetch_id_token.return_value = 'fake-token'
+
     actual = fetchmetrics._FetchMetrics('a url')
 
     self.assertEqual('mock response', actual)
     mock_fetch.assert_called_once_with(
         'GET', 'a url', timeout=120, allow_redirects=False,
-        headers={'Authorization': mock.ANY})
+        headers={'Authorization': 'Bearer fake-token'})
 
   @mock.patch('requests.request')
   def test__dev(self, mock_fetch):
