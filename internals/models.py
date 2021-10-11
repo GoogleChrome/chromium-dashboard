@@ -1255,6 +1255,8 @@ class Feature(DictModel):
   dt_milestone_desktop_start = ndb.IntegerProperty()
   dt_milestone_android_start = ndb.IntegerProperty()
   dt_milestone_ios_start = ndb.IntegerProperty()
+  # Webview DT is currently not offered in the UI because there is no way
+  # to set flags.
   dt_milestone_webview_start = ndb.IntegerProperty()
   # Note: There are no dt end milestones because a dev trail implicitly
   # ends when the feature ships or is abandoned.
