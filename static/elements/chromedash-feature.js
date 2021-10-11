@@ -87,6 +87,35 @@ class ChromedashFeature extends LitElement {
     return `${url}?${params.join('&')}`;
   }
 
+  _getIsPreAvailability() {
+    const PRE_LAUNCH_STATUSES = [
+      'No active development',
+      'Proposed',
+      'In development',
+      // TODO(jrobbins): Update when we change value in models.py.
+      'On hold',
+    ];
+    return PRE_LAUNCH_STATUSES.includes(
+      this.feature.browsers.chrome.status.text);
+  }
+
+  _getMilestone(platform) {
+    switch (this.feature.browsers.chrome.status.text) {
+      case 'In developer trial (Behind a flag)':
+        return this[`dt_milestone_${platform}_start`];
+      case 'Origin trial':
+        if (platform === 'webview') { return; }
+        const start = this[`ot_milestone_${platform}_start`];
+        const end = this[`ot_milestone_${platform}_end`];
+        return `${start} to ${end}`;
+      case 'Enabled by default':
+        return this[`feature.browsers.chrome.${platform}`]
+        break;
+      default:
+        return;
+    }
+  }
+
   _getIsPreLaunch() {
     const PRE_LAUNCH_STATUSES = [
       'No active development',
@@ -309,8 +338,8 @@ class ChromedashFeature extends LitElement {
               <span class="chromium_status">
                 <label>${this.feature.browsers.chrome.status.text}</label>
               </span>
-              ${this._getIsPreLaunch() ? nothing : html`
-                ${this.feature.browsers.chrome.desktop ? html`
+              ${this._getIsPreAvailability() ? nothing : html`
+                ${this._getMilestone('desktop') ? html`
                   <span>
                     <label class="impl_status_label">
                       <span class="impl_status_icons">
@@ -318,10 +347,10 @@ class ChromedashFeature extends LitElement {
                       </span>
                       <span>Chrome desktop</span>
                     </label>
-                    <span>${this.feature.browsers.chrome.desktop}</span>
+                    <span>${this._getMilestone('desktop')}</span>
                   </span>
                   ` : nothing}
-                ${this.feature.browsers.chrome.android ? html`
+                ${this._getMilestone('android') ? html`
                   <span>
                     <label class="impl_status_label">
                       <span class="impl_status_icons">
@@ -331,10 +360,10 @@ class ChromedashFeature extends LitElement {
                       </span>
                       <span>Chrome for Android</span>
                     </label>
-                    <span>${this.feature.browsers.chrome.android}</span>
+                    <span>${this._getMilestone('android')}</span>
                   </span>
                   ` : nothing}
-                ${this.feature.browsers.chrome.webview ? html`
+                ${this._getMilestone('webview') ? html`
                   <span>
                     <label class="impl_status_label">
                       <span class="impl_status_icons">
@@ -343,7 +372,7 @@ class ChromedashFeature extends LitElement {
                       </span>
                       <span>Android Webview</span>
                     </label>
-                    <span>${this.feature.browsers.chrome.webview}</span>
+                    <span>${this._getMilestone('webview')}</span>
                   </span>
                   ` : nothing}
               `}
