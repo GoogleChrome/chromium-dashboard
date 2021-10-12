@@ -23,7 +23,6 @@ import time
 from google.cloud import ndb
 
 from framework import ramcache
-import requests
 from framework import users
 
 from framework import cloud_tasks_helpers
@@ -399,8 +398,6 @@ class DictModel(ndb.Model):
 class BlinkComponent(DictModel):
 
   DEFAULT_COMPONENT = 'Blink'
-  COMPONENTS_URL = 'https://blinkcomponents-b48b5.firebaseapp.com'
-  COMPONENTS_ENDPOINT = '%s/blinkcomponents' % COMPONENTS_URL
 
   name = ndb.StringProperty(required=True, default=DEFAULT_COMPONENT)
   created = ndb.DateTimeProperty(auto_now_add=True)
@@ -425,15 +422,9 @@ class BlinkComponent(DictModel):
 
     components = ramcache.get(key)
     if components is None or update_cache:
-      components = []
-      url = self.COMPONENTS_ENDPOINT + '?cache-buster=%s' % time.time()
-      result = requests.get(url, timeout=60)
-      if result.status_code == 200:
-        components = sorted(json.loads(result.content))
-        ramcache.set(key, components)
-      else:
-        logging.error('Fetching blink components returned: %s' %
-                      result.status_code)
+      # TODO(jrobbins): Re-implement fetching the list of blink components
+      # by getting it via the monorail API.
+      pass
 
     if not components:
       components = sorted(hack_components.HACK_BLINK_COMPONENTS)
@@ -588,7 +579,8 @@ class Feature(DictModel):
   # TODO(jrobbins): Eliminate format version 1.
   def format_for_template(self, version=2):
     self.migrate_views()
-    logging.info('In format_for_template for %r', self)
+    logging.info('In format_for_template for %s',
+                 repr(self)[:settings.MAX_LOG_LINE])
     d = self.to_dict()
     is_released = self.impl_status_chrome in RELEASE_IMPL_STATES
     d['is_released'] = is_released

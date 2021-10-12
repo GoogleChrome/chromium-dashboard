@@ -1,6 +1,3 @@
-
-
-
 import logging
 import os
 
@@ -48,9 +45,9 @@ DEV_MODE = (os.environ['SERVER_SOFTWARE'].startswith('Development') or
 UNIT_TEST_MODE = os.environ['SERVER_SOFTWARE'].startswith('test')
 
 if not UNIT_TEST_MODE:
-  # Configure logging to print INFO lines so that they are captured
-  # when written to stdout on GAE py3.
+  # Py3 defaults to level WARN.
   logging.basicConfig(level=logging.INFO)
+
 
 #setting GOOGLE_CLOUD_PROJECT manually in dev mode
 if DEV_MODE or UNIT_TEST_MODE:
@@ -70,6 +67,9 @@ GOOGLE_SIGN_IN_CLIENT_ID = (
 LOGIN_PAGE_URL = '/features?loginStatus=False'
 
 INBOUND_EMAIL_ADDR = 'chromestatus@cr-status-staging.appspotmail.com'
+
+# Truncate some log lines to stay under limits of Google Cloud Logging.
+MAX_LOG_LINE = 200 * 1000
 
 
 if UNIT_TEST_MODE:

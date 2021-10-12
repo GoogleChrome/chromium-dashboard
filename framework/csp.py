@@ -13,9 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-
-
 import base64
 import copy
 import logging
@@ -23,6 +20,8 @@ import os
 import six
 
 import flask
+
+import settings
 
 
 REPORT_ONLY = False
@@ -118,5 +117,6 @@ def get_headers(nonce):
 
 def report_handler():
   """Log any CSP violations that are reported to our app."""
-  logging.error('CSP Violation: %r' % flask.request.data)
+  logging.error('CSP Violation: %s' %
+                repr(flask.request.data)[:settings.MAX_LOG_LINE])
   return ''

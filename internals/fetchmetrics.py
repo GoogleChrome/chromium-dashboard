@@ -13,15 +13,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-
-
 import base64
 import datetime
 import json
 import logging
 from xml.dom import minidom
 import requests
+
+from google.auth.transport import requests as reqs
+from google.oauth2 import id_token
 
 from framework import basehandlers
 from framework import ramcache
@@ -49,7 +49,11 @@ def _FetchMetrics(url):
     # https://cloud.google.com/appengine/docs/python/appidentity/#asserting_identity_to_other_app_engine_apps
     # GAE request limit is 60s, but it could go longer due to start-up latency.
     logging.info('Requesting metrics from: %r', url)
-    return requests.request('GET', url, timeout=120.0, allow_redirects=False)
+    token = id_token.fetch_id_token(reqs.Request(), url)
+    logging.info('token is %r', token)
+    return requests.request(
+        'GET', url, timeout=120.0, allow_redirects=False,
+        headers={'Authorization': 'Bearer {}'.format(token)})
   else:
     logging.info('Prod would get metrics from: %r', url)
     return None  # dev instances cannot access uma-export.
@@ -93,12 +97,12 @@ class UmaQuery(object):
           url, result.status_code))
       return (None, result.status_code)
 
-    json_content = result.content.split('\n', 1)[1]
+    json_content = result.content.decode().split('\n', 1)[1]
     j = json.loads(json_content)
     if 'r' not in j:
       logging.info(
-          '%s results do not have an "r" key in the response: %r' %
-          (self.query_name, j))
+          '%s results do not have an "r" key in the response: %s' %
+          (self.query_name, repr(j)[:settings.MAX_LOG_LINE]))
       logging.info('Note: uma-export can take 2 days to produce metrics')
       return (None, 404)
     return (j['r'], result.status_code)
