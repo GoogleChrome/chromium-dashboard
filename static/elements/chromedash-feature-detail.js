@@ -118,12 +118,13 @@ class ChromedashFeatureDetail extends LitElement {
       shipped_android_milestone: 'browsers.chrome.android',
       shipped_webview_milestone: 'browsers.chrome.webview',
       shipped_ios_milestone: 'browsers.chrome.ios',
-      ff_views: 'browsers.ff.views.text',
-      ff_views_link: 'browsers.ff.views.url',
-      safari_views: 'browsers.safari.views.text',
-      safari_views_link: 'browsers.safari.views.url',
-      webdev_views: 'browsers.webdev.views.text',
-      webdev_views_link: 'browsers.webdev.views.url',
+      ff_views: 'browsers.ff.view.text',
+      ff_views_link: 'browsers.ff.view.url',
+      safari_views: 'browsers.safari.view.text',
+      safari_views_link: 'browsers.safari.view.url',
+      webdev_views: 'browsers.webdev.view.text',
+      webdev_views_link: 'browsers.webdev.view.url',
+      other_views_notes: 'browsers.other.view.notes',
     };
     if (fieldIdMapping[fieldId]) {
       value = this.feature;

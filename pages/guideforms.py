@@ -327,22 +327,6 @@ ALL_FIELDS = {
             attrs={'rows': 2, 'cols': 50, 'placeholder': 'Notes',
                    'maxlength': 1480})),
 
-    'ie_views': forms.ChoiceField(
-        required=False, label='Edge views',
-        choices=list(models.VENDOR_VIEWS_EDGE.items()),
-        initial=models.NO_PUBLIC_SIGNALS),
-
-    'ie_views_link': forms.URLField(
-        required=False, label='',
-        widget=forms.URLInput(attrs={'placeholder': 'https://'}),
-        help_text='Citation link.'),
-
-    'ie_views_notes': forms.CharField(
-        required=False, label='',
-        widget=forms.Textarea(
-            attrs={'rows': 2, 'cols': 50, 'placeholder': 'Notes',
-                   'maxlength': 1480})),
-
     'web_dev_views': forms.ChoiceField(
         required=False, label='Web / Framework developer views',
         choices=list(models.WEB_DEV_VIEWS.items()),
@@ -364,6 +348,13 @@ ALL_FIELDS = {
                    'maxlength': 1480}),
         help_text=('Reference known representative examples of opinion, '
                    'both positive and negative.')),
+
+    'other_views_notes': forms.CharField(
+        required=False, label='Other views',
+        widget=forms.Textarea(
+            attrs={'rows': 4, 'cols': 50, 'placeholder': 'Notes',
+                   'maxlength': 1480}),
+        help_text=('For example, other browsers.')),
 
     'ergonomics_risks': forms.CharField(
         label='Ergonomics Risks', required=False,
@@ -746,8 +737,8 @@ Any_DevTrial = define_form_class_using_shared_fields(
      'interop_compat_risks',
      'safari_views', 'safari_views_link', 'safari_views_notes',
      'ff_views', 'ff_views_link', 'ff_views_notes',
-     'ie_views', 'ie_views_link', 'ie_views_notes',
      'web_dev_views', 'web_dev_views_link', 'web_dev_views_notes',
+     'other_views_notes',
      'security_review_status', 'privacy_review_status',
      'ergonomics_risks', 'activation_risks', 'security_risks', 'debuggability',
      'all_platforms', 'all_platforms_descr', 'wpt', 'wpt_descr',
@@ -768,8 +759,8 @@ NewFeature_EvalReadinessToShip = define_form_class_using_shared_fields(
      'standard_maturity', 'interop_compat_risks',
      'safari_views', 'safari_views_link', 'safari_views_notes',
      'ff_views', 'ff_views_link', 'ff_views_notes',
-     'ie_views', 'ie_views_link', 'ie_views_notes',
      'web_dev_views', 'web_dev_views_link', 'web_dev_views_notes',
+     'other_views_notes',
      'prefixed', 'comments'))
 
 
@@ -919,8 +910,8 @@ Flat_DevTrial = define_form_class_using_shared_fields(
      'interop_compat_risks',
      'safari_views', 'safari_views_link', 'safari_views_notes',
      'ff_views', 'ff_views_link', 'ff_views_notes',
-     'ie_views', 'ie_views_link', 'ie_views_notes',
      'web_dev_views', 'web_dev_views_link', 'web_dev_views_notes',
+     'other_views_notes',
      'security_review_status', 'privacy_review_status',
      'ergonomics_risks', 'activation_risks', 'security_risks', 'debuggability',
      'all_platforms', 'all_platforms_descr', 'wpt', 'wpt_descr',
@@ -1032,8 +1023,8 @@ DISPLAY_FIELDS_IN_STAGES = {
         'interop_compat_risks',
         'safari_views', 'safari_views_link', 'safari_views_notes',
         'ff_views', 'ff_views_link', 'ff_views_notes',
-        'ie_views', 'ie_views_link', 'ie_views_notes',
         'web_dev_views', 'web_dev_views_link', 'web_dev_views_notes',
+        'other_views_notes',
         'security_review_status', 'privacy_review_status',
         'ergonomics_risks', 'activation_risks', 'security_risks',
         'debuggability',

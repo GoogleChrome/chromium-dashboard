@@ -171,17 +171,6 @@
         </li>
         {% endif %}
 
-        {% if feature.browsers.edge.view.val %}
-        <li>
-          <label>Edge:</label>
-          {% if feature.browsers.edge.view.url %}
-          <a href="{{ feature.browsers.edge.view.url }}">{{ feature.browsers.edge.view.text }}</a>
-          {% else %}
-          {{ feature.browsers.edge.view.text }}
-          {% endif %}
-        </li>
-        {% endif %}
-
         {% if feature.browsers.safari.view.val %}
         <li>
           <label>Safari:</label>
