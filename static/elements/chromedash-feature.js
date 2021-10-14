@@ -402,18 +402,6 @@ class ChromedashFeature extends LitElement {
                   </a>
                   ` : html`<span class="vendor-view ff-view"></span>`}
               </span>
-              <span title="${this.feature.browsers.edge.view.text}"
-                    class="view tooltip">
-                <chromedash-color-status class="bottom"
-                    .value="${this.feature.browsers.edge.view.val}"
-                    .max="${MAX_VENDOR_VIEW}"></chromedash-color-status>
-                ${this.feature.browsers.edge.view.url ? html`
-                  <a href="${this.feature.browsers.edge.view.url}"
-                     target="_blank">
-                    <span class="vendor-view edge-view"></span>
-                  </a>
-                  ` : html`<span class="vendor-view edge-view"></span>`}
-              </span>
               <span title="${this.feature.browsers.safari.view.text}"
                     class="view tooltip">
                 <chromedash-color-status class="bottom"

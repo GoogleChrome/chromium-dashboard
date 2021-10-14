@@ -660,7 +660,7 @@ class Feature(DictModel):
             'notes': d.pop('ff_views_notes', None),
           }
         },
-        'edge': {
+        'edge': {  # Deprecated
           'view': {
             'text': VENDOR_VIEWS[self.ie_views],
             'val': d.pop('ie_views', None),
@@ -683,7 +683,12 @@ class Feature(DictModel):
             'url': d.pop('web_dev_views_link', None),
             'notes': d.pop('web_dev_views_notes', None),
           }
-        }
+        },
+        'other': {
+          'view': {
+            'notes': d.pop('other_views_notes', None),
+          }
+        },
       }
 
       if is_released and self.shipped_milestone:
@@ -728,6 +733,7 @@ class Feature(DictModel):
         d['meta']['milestone_str'] = d['impl_status_chrome']
       d['ff_views'] = {'value': self.ff_views,
                        'text': VENDOR_VIEWS[self.ff_views]}
+      # Deprecated
       d['ie_views'] = {'value': self.ie_views,
                        'text': VENDOR_VIEWS[self.ie_views]}
       d['safari_views'] = {'value': self.safari_views,
@@ -1255,6 +1261,8 @@ class Feature(DictModel):
   dt_milestone_desktop_start = ndb.IntegerProperty()
   dt_milestone_android_start = ndb.IntegerProperty()
   dt_milestone_ios_start = ndb.IntegerProperty()
+  # Webview DT is currently not offered in the UI because there is no way
+  # to set flags.
   dt_milestone_webview_start = ndb.IntegerProperty()
   # Note: There are no dt end milestones because a dev trail implicitly
   # ends when the feature ships or is abandoned.
@@ -1279,19 +1287,21 @@ class Feature(DictModel):
   explainer_links = ndb.StringProperty(repeated=True)
 
   ff_views = ndb.IntegerProperty(required=True, default=NO_PUBLIC_SIGNALS)
+  # Deprecated
   ie_views = ndb.IntegerProperty(required=True, default=NO_PUBLIC_SIGNALS)
   safari_views = ndb.IntegerProperty(required=True, default=NO_PUBLIC_SIGNALS)
   web_dev_views = ndb.IntegerProperty(required=True)
 
   ff_views_link = ndb.StringProperty()
-  ie_views_link = ndb.StringProperty()
+  ie_views_link = ndb.StringProperty()  # Deprecated
   safari_views_link = ndb.StringProperty()
   web_dev_views_link = ndb.StringProperty()
 
   ff_views_notes = ndb.StringProperty()
-  ie_views_notes = ndb.StringProperty()
+  ie_views_notes = ndb.StringProperty()  # Deprecated
   safari_views_notes = ndb.StringProperty()
   web_dev_views_notes = ndb.StringProperty()
+  other_views_notes = ndb.StringProperty()
 
   doc_links = ndb.StringProperty(repeated=True)
   measurement = ndb.StringProperty()

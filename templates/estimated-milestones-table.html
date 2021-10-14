@@ -1,4 +1,4 @@
-{% if feature.shipped_milestone or feature.ot_milestone_desktop_end or feature.ot_milestone_desktop_start or feature.dt_milestone_desktop_start or feature.shipped_android_milestone or feature.ot_milestone_android_end or feature.ot_milestone_android_start or feature.dt_milestone_android_start or feature.shipped_ios_milestone or feature.dt_milestone_ios_start or feature.shipped_webview_milestone or feature.dt_milestone_webview_start %}
+{% if feature.shipped_milestone or feature.ot_milestone_desktop_end or feature.ot_milestone_desktop_start or feature.dt_milestone_desktop_start or feature.shipped_android_milestone or feature.ot_milestone_android_end or feature.ot_milestone_android_start or feature.dt_milestone_android_start or feature.shipped_ios_milestone or feature.dt_milestone_ios_start or feature.shipped_webview_milestone %}
 
   <table>
 
@@ -63,11 +63,6 @@
     {% if feature.shipped_webview_milestone %}
       <tr><td>Shipping on Webview</td>
       <td>{{feature.shipped_webview_milestone}}</td></tr>
-    {% endif %}
-
-    {% if feature.dt_milestone_webview_start %}
-      <tr><td>DevTrial on Webview</td>
-      <td>{{feature.dt_milestone_webview_start}}</td></tr>
     {% endif %}
 
   </table>
