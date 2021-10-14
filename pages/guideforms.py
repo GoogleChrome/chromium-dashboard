@@ -650,12 +650,6 @@ ALL_FIELDS = {
         help_text=('First milestone that allows developers to try '
                    'this feature on iOS by setting a flag.')),
 
-    'dt_milestone_webview_start': forms.IntegerField(
-        required=False, label='DevTrial on Webview',
-        widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'}),
-        help_text=('First milestone that allows developers to try '
-                   'this feature on Webview by setting a flag.')),
-
     'flag_name': forms.CharField(
         label='Flag name', required=False,
         help_text='Name of the flag that enables this feature.'),
@@ -749,7 +743,7 @@ Any_DevTrial = define_form_class_using_shared_fields(
 ImplStatus_DevTrial = define_form_class_using_shared_fields(
     'ImplStatus_InDevTrial',
     ('dt_milestone_desktop_start', 'dt_milestone_android_start',
-     'dt_milestone_ios_start', 'dt_milestone_webview_start',
+     'dt_milestone_ios_start',
      'flag_name'))
 
 
@@ -921,7 +915,7 @@ Flat_DevTrial = define_form_class_using_shared_fields(
 
      # Implementation
      'dt_milestone_desktop_start', 'dt_milestone_android_start',
-     'dt_milestone_ios_start', 'dt_milestone_webview_start',
+     'dt_milestone_ios_start',
      'flag_name'))
   # TODO(jrobbins): api overview link
 
@@ -1031,7 +1025,7 @@ DISPLAY_FIELDS_IN_STAGES = {
         'all_platforms', 'all_platforms_descr', 'wpt', 'wpt_descr',
         'sample_links', 'devrel', 'ready_for_trial_url',
         'dt_milestone_desktop_start', 'dt_milestone_android_start',
-        'dt_milestone_ios_start', 'dt_milestone_webview_start',
+        'dt_milestone_ios_start',
         'flag_name'),
     models.INTENT_IMPLEMENT_SHIP: make_display_specs(
         'launch_bug_url',
