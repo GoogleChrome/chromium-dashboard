@@ -28,7 +28,7 @@ class CommentsAPI(basehandlers.APIHandler):
   """Users may see the list of comments on one of the approvals of a feature,
    and add their own, if allowed."""
 
-  def do_get(self, feature_id, field_id):
+  def do_get(self, feature_id, field_id=None):
     """Return a list of all review comments on the given feature."""
     # Note: We assume that anyone may view approval comments.
     comments = models.Comment.get_comments(feature_id, field_id)

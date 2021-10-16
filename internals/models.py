@@ -1407,11 +1407,12 @@ class Comment(DictModel):
   new_approval_state = ndb.IntegerProperty()
 
   @classmethod
-  def get_comments(cls, feature_id, field_id):
+  def get_comments(cls, feature_id, field_id=None):
     """Return review comments for an approval."""
     query = Comment.query().order(Comment.created)
     query = query.filter(Comment.feature_id == feature_id)
-    query = query.filter(Comment.field_id == field_id)
+    if field_id:
+      query = query.filter(Comment.field_id == field_id)
     comments = query.fetch(None)
     return comments
 

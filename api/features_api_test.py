@@ -220,3 +220,17 @@ class FeaturesAPITestGet(testing_config.CustomTestCase):
         self.request_path+'?milestone=chromium'):
       actual_response = self.handler.do_get()
     mock_abort.assert_called_once_with(400, description='Invalid  Milestone')
+
+  def test_get__specific_id__found(self):
+    """JSON feed has just the feature requested."""
+    request_path = self.request_path + '/' + str(self.feature_id)
+    with test_app.test_request_context(request_path):
+      actual_response = self.handler.do_get(feature_id=self.feature_id)
+    self.assertEqual('feature one', actual_response['name'])
+
+  def test_get__specific_id__not_found(self):
+    """We give 404 if the feature requested feature was not found."""
+    request_path = self.request_path + '/999'
+    with test_app.test_request_context(request_path):
+      with self.assertRaises(werkzeug.exceptions.NotFound):
+        self.handler.do_get(feature_id=999)

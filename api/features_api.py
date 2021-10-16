@@ -13,9 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-
-
 import logging
 
 from framework import basehandlers
@@ -30,8 +27,10 @@ class FeaturesAPI(basehandlers.APIHandler):
   """Features are the the main records that we track."""
 
   def get_one_feature(self, feature_id):
-    feature = models.Feature.get_by_ids([feature_id])[0]
-    return feature
+    features = models.Feature.get_by_ids([feature_id])
+    if not features:
+      self.abort(404, msg='Feature not found')
+    return features[0]
 
   def do_search(self):
     user = users.get_current_user()

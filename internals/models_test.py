@@ -340,6 +340,64 @@ class ApprovalTest(testing_config.CustomTestCase):
         len(models.Approval.query().fetch(None)))
 
 
+class CommentTest(testing_config.CustomTestCase):
+
+  def setUp(self):
+    self.feature_1 = models.Feature(
+        name='feature a', summary='sum', category=1, visibility=1,
+        standardization=1, web_dev_views=1, impl_status_chrome=3)
+    self.feature_1.put()
+    self.feature_1_id = self.feature_1.key.integer_id()
+    self.comment_1_1 = models.Comment(
+        feature_id=self.feature_1_id, field_id=1,
+        author='one@example.com',
+        content='some text')
+    self.comment_1_1.put()
+    self.comment_1_2 = models.Comment(
+        feature_id=self.feature_1_id, field_id=2,
+        author='one@example.com',
+        content='some other text')
+    self.comment_1_2.put()
+
+    self.feature_2 = models.Feature(
+        name='feature b', summary='sum', category=1, visibility=1,
+        standardization=1, web_dev_views=1, impl_status_chrome=3)
+    self.feature_2.put()
+    self.feature_2_id = self.feature_2.key.integer_id()
+
+  def tearDown(self):
+    self.feature_1.key.delete()
+    self.feature_2.key.delete()
+    for comm in models.Comment.query().fetch(None):
+      comm.key.delete()
+
+  def test_get_comments__none(self):
+    """We get [] if feature has no review comments."""
+    actual = models.Comment.get_comments(self.feature_2_id)
+    self.assertEqual([], actual)
+
+  def test_get_comments__some(self):
+    """We get review comments if the feature has some."""
+    actual = models.Comment.get_comments(self.feature_1_id)
+    self.assertEqual(2, len(actual))
+    self.assertEqual(
+        ['some text', 'some other text'],
+        [c.content for c in actual])
+
+  def test_get_comments__specific_fields(self):
+    """We get review comments for specific approval fields if requested."""
+    actual_1 = models.Comment.get_comments(self.feature_1_id, 1)
+    self.assertEqual(1, len(actual_1))
+    self.assertEqual('some text', actual_1[0].content)
+
+    actual_2 = models.Comment.get_comments(self.feature_1_id, 2)
+    self.assertEqual(1, len(actual_2))
+    self.assertEqual('some other text', actual_2[0].content)
+
+    actual_3 = models.Comment.get_comments(self.feature_1_id, 3)
+    self.assertEqual([], actual_3)
+
+
 class UserPrefTest(testing_config.CustomTestCase):
 
   def setUp(self):
