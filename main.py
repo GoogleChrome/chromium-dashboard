@@ -77,8 +77,12 @@ API_BASE = '/api/v0'
 api_routes = [
     (API_BASE + '/features', features_api.FeaturesAPI),
     (API_BASE + '/features/<int:feature_id>', features_api.FeaturesAPI),
+    (API_BASE + '/features/<int:feature_id>/approvals',
+     approvals_api.ApprovalsAPI),
     (API_BASE + '/features/<int:feature_id>/approvals/<int:field_id>',
      approvals_api.ApprovalsAPI),
+    (API_BASE + '/features/<int:feature_id>/approvals/comments',
+     comments_api.CommentsAPI),
     (API_BASE + '/features/<int:feature_id>/approvals/<int:field_id>/comments',
      comments_api.CommentsAPI),
 

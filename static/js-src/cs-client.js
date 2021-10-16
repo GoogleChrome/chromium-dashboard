@@ -183,10 +183,24 @@ class ChromeStatusClient {
     // TODO: catch((error) => { display message }
   }
 
-  // Review comments
+  // Approvals and review comments
+
+  getApprovals(featureId) {
+    return this.doGet(`/features/${featureId}/approvals`);
+  }
+
+  setApproval(featureId, fieldId, state) {
+    return this.doPost(
+        `/features/${featureId}/approvals`,
+        {featureId, fieldId, state});
+  }
 
   getComments(featureId, fieldId) {
-    return this.doGet(`/features/${featureId}/approvals/${fieldId}/comments`);
+    if (fieldId) {
+      return this.doGet(`/features/${featureId}/approvals/${fieldId}/comments`);
+    } else {
+      return this.doGet(`/features/${featureId}/approvals/0/comments`);
+    }
   }
 
   postComment(featureId, fieldId, state, comment) {
@@ -196,6 +210,10 @@ class ChromeStatusClient {
   }
 
   // Features API
+  getFeature(featureId) {
+    return this.doGet(`/features/${featureId}`);
+  }
+
   getFeaturesInMilestone(milestone) {
     return this.doGet(`/features?milestone=${milestone}`);
   }
