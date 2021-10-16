@@ -3,9 +3,21 @@ import {nothing} from 'lit-html';
 import './chromedash-dialog';
 import SHARED_STYLES from '../css/shared.css';
 
+const STATE_NAMES = [
+  [-1, 'No value'],
+  [0, 'Needs review'],
+  [1, 'N/a or Ack'],
+  [3, 'Review started'],
+  [4, 'Need info'],
+  [5, 'Approved'],
+  [6, 'Not approved'],
+];
+
+
 class ChromedashApprovalsDialog extends LitElement {
   static get properties() {
     return {
+      signedInUser: {type: String},
       featureId: {type: Number},
       feature: {type: Object},
       approvals: {type: Array},
@@ -16,6 +28,7 @@ class ChromedashApprovalsDialog extends LitElement {
 
   constructor() {
     super();
+    this.signedInUser = ''; // email address
     this.featureId = 0;
     this.feature = {};
     this.approvals = [];
@@ -31,13 +44,32 @@ class ChromedashApprovalsDialog extends LitElement {
     return [
       SHARED_STYLES,
       css`
+        h3 {
+          margin-bottom: var(--content-padding-half);
+        }
+
+        .approval_section div {
+          margin-left: var(--content-padding-half);
+        }
+
+        .approval_row {
+          width: 30em;
+          margin-bottom: var(--content-padding-half);
+        }
+
         .set_by {
-          width: 6em;
+          width: 16em;
           overflow: hidden;
           text-overflow: ellipsis;
           white-space: nowrap;
           display: inline-block;
         }
+
+        .controls {
+          padding: var(--content-padding);
+          text-align: right;
+        }
+
       `];
   }
 
@@ -79,23 +111,45 @@ class ChromedashApprovalsDialog extends LitElement {
     }
   }
 
-  renderApproval(approvalName) { // , approvalValues
+  renderApprovalValue(approvalValue) {
     return html`
       <div class="approval_row">
-        <h3>${approvalName}</h3>
+        <span class="set_by">${approvalValue.set_by}</span>
+        ${approvalValue.set_by == this.signedInUser ? html`
+          <select value=${approvalValue.state}>
+            ${STATE_NAMES.map((valName) => html`
+              <option value="${valName[0]}">${valName[1]}</option>`
+              )}
+          </select>` : html`
+          ${STATE_NAMES[approvalValue.state + 1][1]}
+          `}
+       </div>
+    `;
+  }
+
+  renderAddApproval() {
+    // conditional
+    return this.renderApprovalValue(
+      {set_by: this.signedInUser, value: -1});
+  }
+
+  renderApproval(approvalName, approvalValues, threadField) {
+    let threadLink = nothing;
+    if (this.feature[threadField]) {
+      threadLink = html`
         <div>
-          <span class="set_by">Set by: TODO</span>
-          <select>
-            <option value="-1">No value</option>
-            <option value="0>Needs review</option>
-            <option value="1">N/a or Ack</option>
-            <option value="3">Review started</option>
-            <option value="4">Need info</option>
-            <option value="5">Approved</option>
-            <option value="6">Not approved</option>
-          </select>
-         </div>
-        <div><a href="#" target="_blank">blink-dev thread</a></div>
+          <a href="${this.feature[threadField]}" target="_blank"
+             >blink-dev thread</a>
+        </div>
+      `;
+    }
+
+    return html`
+      <div class="approval_section">
+        <h3>${approvalName}</h3>
+        ${approvalValues.map(this.renderApprovalValue.bind(this))}
+        ${this.renderAddApproval()}
+        ${threadLink}
       </div>
     `;
   }
@@ -103,16 +157,20 @@ class ChromedashApprovalsDialog extends LitElement {
   renderAllApprovals() {
     const prototype = this.renderApproval(
       'Intent to Prototype',
-      this.approvals.filter((a) => a.field_id == 1));
+      this.approvals.filter((a) => a.field_id == 1),
+      'intent_to_implement_url');
     const experiment = this.renderApproval(
       'Intent to Experiment',
-      this.approvals.filter((a) => a.field_id == 2));
+      this.approvals.filter((a) => a.field_id == 2),
+      'intent_to_experiment_url');
     const extend = this.renderApproval(
       'Intent to Extend Experiment',
-      this.approvals.filter((a) => a.field_id == 3));
+      this.approvals.filter((a) => a.field_id == 3),
+      'intent_to_extend_experiment_url');
     const ship = this.renderApproval(
       'Intent to Ship',
-      this.approvals.filter((a) => a.field_id == 4));
+      this.approvals.filter((a) => a.field_id == 4),
+      'intent_to_ship_url');
     return [prototype, experiment, extend, ship];
   }
 
@@ -136,7 +194,7 @@ class ChromedashApprovalsDialog extends LitElement {
   renderControls() {
     return html`
      <div class="controls">
-       <button>Save</button>
+       <button class="primary">Save</button>
        <button>Cancel</button>
      </div>
     `;
