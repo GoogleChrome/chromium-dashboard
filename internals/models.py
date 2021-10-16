@@ -841,9 +841,10 @@ class Feature(DictModel):
     for feature_id in feature_ids:
       KEY = '%s|%s' % (Feature.DEFAULT_CACHE_KEY, feature_id)
       feature = ramcache.get(KEY)
-
       if feature is None or update_cache:
         futures.append(Feature.get_by_id_async(feature_id))
+      else:
+        result_dict[feature_id] = feature
 
     for future in futures:
       unformatted_feature = future.get_result()

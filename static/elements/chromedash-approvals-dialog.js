@@ -73,17 +73,8 @@ class ChromedashApprovalsDialog extends LitElement {
       `];
   }
 
-  updated(changedProperties) {
-    if (changedProperties.has('featureId')) {
-      this.featureIdChanged();
-    }
-  }
-
-  featureIdChanged() {
-    if (!this.featureId) {
-      return;
-    }
-    console.log(this.featureId);
+  openWithFeature(featureId) {
+    this.featureId = featureId;
     const p1 = window.csClient.getFeature(this.featureId).then(
       (feature) => {
         this.feature = feature;
@@ -96,9 +87,7 @@ class ChromedashApprovalsDialog extends LitElement {
       (res) => {
         this.comments = res.comments;
       });
-    console.log('waiting');
     Promise.all([p1, p2, p3]).then(() => {
-      console.log('waited');
       this.shadowRoot.querySelector('chromedash-dialog').open();
     });
   }
@@ -201,10 +190,9 @@ class ChromedashApprovalsDialog extends LitElement {
   }
 
   render() {
-    console.log('this.comments');
-    console.log(this.comments);
+    const title = this.feature && this.feature.name || '';
     return html`
-      <chromedash-dialog>
+      <chromedash-dialog title="${title}">
         ${this.renderLoading()}
         ${this.renderAllApprovals()}
         ${this.comments.map(this.renderComment)}

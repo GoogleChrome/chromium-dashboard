@@ -56,7 +56,7 @@ class ChromedashMyFeatures extends LitElement {
     console.log(e);
     const featureId = e.detail.featureId;
     const dialog = this.shadowRoot.querySelector('chromedash-approvals-dialog');
-    dialog.featureId = featureId; // Automatically opens it.
+    dialog.openWithFeature(featureId);
   }
 
   renderBox(title, query, columns) {
