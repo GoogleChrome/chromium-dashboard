@@ -65,11 +65,22 @@ class FunctionTest(testing_config.CustomTestCase):
           actual = detect_intent.detect_field(subject)
           self.assertEqual(expected, actual)
 
-  def test_detect_feature_id(self):
-    """We can parse the feature ID from a link inthe body."""
+  def test_detect_feature_id__generated(self):
+    """We can parse the feature ID from a link in the generated body."""
     body = (
         'blah blah blah\n'
         'Link to entry on the Chrome Platform Status\n'
+        'https://www.chromestatus.com/feature/5144822362931200\n'
+        'blah blah blah')
+    self.assertEqual(
+        5144822362931200,
+        detect_intent.detect_feature_id(body))
+
+  def test_detect_feature_id__alternative(self):
+    """We can parse the feature ID from another common link."""
+    body = (
+        'blah blah blah\n'
+        'Entry on the feature dashboard\n'
         'https://www.chromestatus.com/feature/5144822362931200\n'
         'blah blah blah')
     self.assertEqual(
@@ -106,7 +117,7 @@ class IntentEmailHandlerTest(testing_config.CustomTestCase):
     self.request_path = '/tasks/detect-intent'
 
     self.entry_link = (
-        '\nLink to entry on the Chrome Platform Status\n'
+        '\n*Link to entry on the Chrome Platform Status*\n'
         'https://www.chromestatus.com/feature/%d\n' % self.feature_id)
     self.footer = (
         '\n--\n'

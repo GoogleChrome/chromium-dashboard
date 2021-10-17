@@ -221,7 +221,7 @@
 <a href="{{default_url}}">{{default_url}}</a>
 
 
-{% if feature.intent_to_implement_url or feature.ready_for_trial_url or feature.intent_to_experiment_url or feature.intent_to_ship_url %}
+{% if feature.intent_to_implement_url or feature.ready_for_trial_url or feature.intent_to_experiment_url or feature.intent_to_experiment_url or feature.intent_to_ship_url %}
   <br><br><h4>Links to previous Intent discussions</h4>
 
   {% if feature.intent_to_implement_url %}
@@ -236,6 +236,11 @@
 
   {% if feature.intent_to_experiment_url %}
     Intent to Experiment: {{feature.intent_to_experiment_url|urlize}}
+    <br>
+  {% endif %}
+
+  {% if feature.intent_to_extend_experiment_url %}
+    Intent to Extend Experiment: {{feature.intent_to_extend_experiment_url|urlize}}
     <br>
   {% endif %}
 

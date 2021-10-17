@@ -337,6 +337,10 @@ class FeatureEditStage(basehandlers.FlaskHandler):
       feature.intent_to_experiment_url = self.parse_link(
           'intent_to_experiment_url')
 
+    if self.touched('intent_to_extend_experiment_url'):
+      feature.intent_to_extend_experiment_url = self.parse_link(
+          'intent_to_extend_experiment_url')
+
     if self.touched('origin_trial_feedback_url'):
       feature.origin_trial_feedback_url = self.parse_link(
           'origin_trial_feedback_url')
