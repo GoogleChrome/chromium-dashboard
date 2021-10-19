@@ -61,6 +61,13 @@ if not settings.UNIT_TEST_MODE and not settings.DEV_MODE:
     pass
 
 
+# Note: In the URLs below, parameters like <int:feature_id> are
+# required for the URL to match the route, but we still accecpt
+# those parameters as keywords in those handlers where the same
+# handler might be used for multiple routes that have the field
+# or not.
+
+
 metrics_chart_routes = [
     ('/data/timeline/cssanimated', metricsdata.AnimatedTimelineHandler),
     ('/data/timeline/csspopularity', metricsdata.PopularityTimelineHandler),
@@ -77,8 +84,12 @@ API_BASE = '/api/v0'
 api_routes = [
     (API_BASE + '/features', features_api.FeaturesAPI),
     (API_BASE + '/features/<int:feature_id>', features_api.FeaturesAPI),
+    (API_BASE + '/features/<int:feature_id>/approvals',
+     approvals_api.ApprovalsAPI),
     (API_BASE + '/features/<int:feature_id>/approvals/<int:field_id>',
      approvals_api.ApprovalsAPI),
+    (API_BASE + '/features/<int:feature_id>/approvals/comments',
+     comments_api.CommentsAPI),
     (API_BASE + '/features/<int:feature_id>/approvals/<int:field_id>/comments',
      comments_api.CommentsAPI),
 
