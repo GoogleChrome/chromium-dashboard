@@ -1228,6 +1228,7 @@ class Feature(DictModel):
   intent_to_ship_url = ndb.StringProperty()
   ready_for_trial_url = ndb.StringProperty()
   intent_to_experiment_url = ndb.StringProperty()
+  intent_to_extend_experiment_url = ndb.StringProperty()
   # Currently, only one is needed.
   i2e_lgtms = ndb.StringProperty(repeated=True)
   i2s_lgtms = ndb.StringProperty(repeated=True)

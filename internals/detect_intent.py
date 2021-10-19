@@ -59,14 +59,18 @@ def detect_field(subject):
   return None
 
 
-CHROMESTATUS_LINK_RE = re.compile(
-    r'Link to entry on the Chrome Platform Status:?\s+'
+CHROMESTATUS_LINK_GENERATED_RE = re.compile(
+    r'entry on the Chrome Platform Status:?\s+'
+    r'https://www.chromestatus.com/feature/(\d+)', re.I)
+CHROMESTATUS_LINK_ALTERNATE_RE = re.compile(
+    r'entry on the feature dashboard:?\s+'
     r'https://www.chromestatus.com/feature/(\d+)', re.I)
 
 
 def detect_feature_id(body):
   """Look for the link to a chromestatus entry."""
-  match = CHROMESTATUS_LINK_RE.search(body)
+  match = (CHROMESTATUS_LINK_GENERATED_RE.search(body) or
+           CHROMESTATUS_LINK_ALTERNATE_RE.search(body))
   if match:
     return int(match.group(1))
   return None
@@ -86,6 +90,11 @@ def detect_thread_url(body):
   return None
 
 
+def remove_markdown(body):
+  """Remove the simple markdown used by Google Groups."""
+  return body.replace('*', '')
+
+
 class IntentEmailHandler(basehandlers.FlaskHandler):
   """This task handles an inbound email to detect intent threads."""
 
@@ -98,6 +107,7 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
     subject = self.get_param('subject')
     in_reply_to = self.get_param('in_reply_to', required=False)
     body = self.get_param('body')
+    body = remove_markdown(body)
 
     logging.info('In IntentEmailHandler:\n'
                  'From addr:   %r\n'
@@ -141,6 +151,11 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
     if (approval_field == approval_defs.ExperimentApproval and
         not feature.intent_to_experiment_url):
       feature.intent_to_experiment_url = thread_url
+      feature.put()
+
+    if (approval_field == approval_defs.ExtendExperimentApproval and
+        not feature.intent_to_extend_experiment_url):
+      feature.intent_to_extend_experiment_url = thread_url
       feature.put()
 
     if (approval_field == approval_defs.ShipApproval and
