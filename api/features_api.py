@@ -29,7 +29,7 @@ class FeaturesAPI(basehandlers.APIHandler):
   def get_one_feature(self, feature_id):
     features = models.Feature.get_by_ids([feature_id])
     if not features:
-      self.abort(404, msg='Feature not found')
+      self.abort(404, msg='Feature %r not found' % feature_id)
     return features[0]
 
   def do_search(self):
@@ -60,6 +60,7 @@ class FeaturesAPI(basehandlers.APIHandler):
     return feature_list
 
   def do_get(self, feature_id=None):
+    """Handle GET requests for a single feature or a search."""
     if feature_id:
       return self.get_one_feature(feature_id)
     else:

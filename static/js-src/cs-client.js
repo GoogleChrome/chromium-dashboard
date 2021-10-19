@@ -199,7 +199,7 @@ class ChromeStatusClient {
     if (fieldId) {
       return this.doGet(`/features/${featureId}/approvals/${fieldId}/comments`);
     } else {
-      return this.doGet(`/features/${featureId}/approvals/0/comments`);
+      return this.doGet(`/features/${featureId}/approvals/comments`);
     }
   }
 

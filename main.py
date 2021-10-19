@@ -61,6 +61,12 @@ if not settings.UNIT_TEST_MODE and not settings.DEV_MODE:
     pass
 
 
+# Note: in the URLs below, parameters like <int:feature_id> are
+# required for the URL to match the route, but we still accecpt
+# those parameters as keywords in the handlers because the same
+# handler might be used for multiple routes.
+
+
 metrics_chart_routes = [
     ('/data/timeline/cssanimated', metricsdata.AnimatedTimelineHandler),
     ('/data/timeline/csspopularity', metricsdata.PopularityTimelineHandler),
