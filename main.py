@@ -61,10 +61,11 @@ if not settings.UNIT_TEST_MODE and not settings.DEV_MODE:
     pass
 
 
-# Note: in the URLs below, parameters like <int:feature_id> are
+# Note: In the URLs below, parameters like <int:feature_id> are
 # required for the URL to match the route, but we still accecpt
-# those parameters as keywords in the handlers because the same
-# handler might be used for multiple routes.
+# those parameters as keywords in those handlers where the same
+# handler might be used for multiple routes that have the field
+# or not.
 
 
 metrics_chart_routes = [
