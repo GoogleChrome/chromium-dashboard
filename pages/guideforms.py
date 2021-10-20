@@ -259,6 +259,12 @@ ALL_FIELDS = {
         help_text=('After you have started the "Intent to Experiment" '
                    ' discussion thread, link to it here.')),
 
+    'intent_to_extend_experiment_url': forms.URLField(
+        required=False, label='Intent to Extend Experiment link',
+        widget=forms.URLInput(attrs={'placeholder': 'https://'}),
+        help_text=('If this feature has an "Intent to Extend Experiment" '
+                   ' discussion thread, link to it here.')),
+
     'r4dt_url': forms.URLField(  # Sets intent_to_experiment_url in DB
         required=False, label='Request for Deprecation Trial link',
         widget=forms.URLInput(attrs={'placeholder': 'https://'}),
@@ -442,9 +448,8 @@ ALL_FIELDS = {
         label='Experiment Extension Reason', required=False,
         widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 1480}),
         help_text=
-        ('If this is a repeat experiment, link to the previous Intent to '
-         'Experiment thread and explain why you want to extend this '
-         'experiment.')),
+        ('If this is a repeat experiment, explain why you want to extend this '
+         'experiment.  Also, fill in discussion link fields below.')),
 
     'ongoing_constraints': forms.CharField(
         label='Ongoing Constraints', required=False,
@@ -776,6 +781,7 @@ NewFeature_OriginTrial = define_form_class_using_shared_fields(
     ('experiment_goals', 'experiment_risks',
      'experiment_extension_reason', 'ongoing_constraints',
      'origin_trial_feedback_url', 'intent_to_experiment_url',
+     'intent_to_extend_experiment_url',
      'i2e_lgtms', 'comments'))
 
 
@@ -810,8 +816,8 @@ Existing_OriginTrial = define_form_class_using_shared_fields(
     'Existing_OriginTrial',
     ('experiment_goals', 'experiment_risks',
      'experiment_extension_reason', 'ongoing_constraints',
-     'intent_to_experiment_url', 'i2e_lgtms',
-     'origin_trial_feedback_url', 'comments'))
+     'intent_to_experiment_url', 'intent_to_extend_experiment_url',
+     'i2e_lgtms', 'origin_trial_feedback_url', 'comments'))
 
 
 PSA_Implement = define_form_class_using_shared_fields(
@@ -849,6 +855,7 @@ Deprecation_DeprecationTrial = define_form_class_using_shared_fields(
      'experiment_timeline',  # deprecated
      'experiment_extension_reason', 'ongoing_constraints',
      'intent_to_experiment_url=r4dt_url',
+     'intent_to_extend_experiment_url',
      'i2e_lgtms=r4dt_lgtms',  # form field name matches underlying DB field.
      'origin_trial_feedback_url', 'comments'))
 
@@ -927,7 +934,8 @@ Flat_OriginTrial = define_form_class_using_shared_fields(
      'experiment_risks',
      'experiment_extension_reason', 'ongoing_constraints',
      # TODO(jrobbins): display r4dt_url instead when deprecating.
-     'intent_to_experiment_url', 'i2e_lgtms',
+     'intent_to_experiment_url', 'intent_to_extend_experiment_url',
+     'i2e_lgtms',
      'origin_trial_feedback_url',
 
      # Implementation
@@ -1034,7 +1042,9 @@ DISPLAY_FIELDS_IN_STAGES = {
     models.INTENT_EXTEND_TRIAL: make_display_specs(
         'experiment_goals', 'experiment_risks',
         'experiment_extension_reason', 'ongoing_constraints',
-        'origin_trial_feedback_url', 'intent_to_experiment_url', 'r4dt_url',
+        'origin_trial_feedback_url', 'intent_to_experiment_url',
+        'r4dt_url',
+        'intent_to_extend_experiment_url',
         'i2e_lgtms', 'r4dt_lgtms',
         'ot_milestone_desktop_start', 'ot_milestone_desktop_end',
         'ot_milestone_android_start', 'ot_milestone_android_end',
