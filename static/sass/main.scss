@@ -93,7 +93,6 @@ app-header-layout {
   flex: 1;
 }
 
-
 .main-toolbar {
   display: flex;
   position: relative;
@@ -103,14 +102,6 @@ app-header-layout {
 header {
   display: flex;
   align-items: baseline;
-}
-
-footer {
-  display: flex;
-  align-items: center;
-}
-
-header {
   user-select: none;
   background: var(--card-background);
   border-bottom: var(--card-border);
@@ -214,6 +205,7 @@ footer {
   flex-direction: column;
   justify-content: center;
   text-align: center;
+  align-items: center;
   margin-top: 2em;
   padding: var(--content-padding-half);
 
