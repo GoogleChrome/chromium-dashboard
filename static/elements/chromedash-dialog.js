@@ -7,7 +7,7 @@ import '@polymer/iron-icon';
 class ChromedashDialog extends LitElement {
   static get properties() {
     return {
-      title: {type: String},
+      name: {type: String},
       opened: {type: Boolean, reflect: true},
     };
   }
@@ -41,7 +41,7 @@ class ChromedashDialog extends LitElement {
         border: 0;
         max-width: 90%;
       }
-      #title {
+      #name {
         margin-top: 0;
         font-weight: normal;
       }
@@ -70,7 +70,7 @@ class ChromedashDialog extends LitElement {
 
   constructor() {
     super();
-    this.title = '';
+    this.name = '';
     this.opened = false;
     this._boundKeydownHandler = this._keydownHandler.bind(this);
   }
@@ -146,7 +146,7 @@ class ChromedashDialog extends LitElement {
           <button id="close-icon" @click=${this.close}>
              <iron-icon icon="chromestatus:close"></iron-icon>
           </button>
-          <h2 id="title">${this.title}</h2>
+          <h2 id="name">${this.name}</h2>
           <slot></slot>
         </div>
       </dialog>

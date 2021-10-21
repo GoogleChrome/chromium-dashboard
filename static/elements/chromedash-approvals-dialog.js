@@ -12,6 +12,26 @@ const STATE_NAMES = [
   [5, 'Approved'],
   [6, 'Not approved'],
 ];
+const ACTIVE_STATES = [0, 3, 4];
+
+const APPROVAL_DEFS = [
+  {name: 'Intent to Prototype',
+    id: 1,
+    threadField: 'intent_to_implement_url',
+  },
+  {name: 'Intent to Experiment',
+    id: 2,
+    threadField: 'intent_to_experiment_url',
+  },
+  {name: 'Intent to Extend Experiment',
+    id: 3,
+    threadField: 'intent_to_extend_experiment_url',
+  },
+  {name: 'Intent to Ship',
+    id: 4,
+    threadField: 'intent_to_ship_url',
+  },
+];
 
 
 class ChromedashApprovalsDialog extends LitElement {
@@ -23,6 +43,7 @@ class ChromedashApprovalsDialog extends LitElement {
       approvals: {type: Array},
       comments: {type: Array},
       canApprove: {type: Boolean},
+      showAllIntents: {type: Boolean},
     };
   }
 
@@ -34,6 +55,8 @@ class ChromedashApprovalsDialog extends LitElement {
     this.approvals = [];
     this.comments = [];
     this.canApprove = false;
+    this.subsetPending = false;
+    this.showAllIntents = false;
   }
 
   connectedCallback() {
@@ -45,7 +68,11 @@ class ChromedashApprovalsDialog extends LitElement {
       SHARED_STYLES,
       css`
         h3 {
-          margin-bottom: var(--content-padding-half);
+          margin: var(--content-padding-half);
+        }
+
+        .approval_section {
+          margin-top: var(--content-padding);
         }
 
         .approval_section div {
@@ -70,6 +97,10 @@ class ChromedashApprovalsDialog extends LitElement {
           text-align: right;
         }
 
+        #show_all_checkbox {
+         float: left;
+        }
+
       `];
   }
 
@@ -82,6 +113,11 @@ class ChromedashApprovalsDialog extends LitElement {
     const p2 = window.csClient.getApprovals(this.featureId).then(
       (res) => {
         this.approvals = res.approvals;
+        const numPending = this.approvals.filter((av) =>
+          ACTIVE_STATES.includes(av.state)).length;
+        this.subsetPending = (numPending > 0 &&
+                              numPending < APPROVAL_DEFS.length);
+        this.showAllIntents = numPending == 0;
       });
     const p3 = window.csClient.getComments(this.featureId).then(
       (res) => {
@@ -92,9 +128,14 @@ class ChromedashApprovalsDialog extends LitElement {
     });
   }
 
+
+  toggleShowAllIntents() {
+    this.showAllIntents = !this.showAllIntents;
+  }
+
   renderLoading() {
     if (this.feature === {}) {
-      return html`<p>Loading...</p`;
+      return html`<p>Loading...</p>`;
     } else {
       return nothing;
     }
@@ -122,12 +163,19 @@ class ChromedashApprovalsDialog extends LitElement {
       {set_by: this.signedInUser, value: -1});
   }
 
-  renderApproval(approvalName, approvalValues, threadField) {
+  renderApproval(approvalDef) {
+    const approvalValues = this.approvals.filter((a) =>
+      a.field_id == approvalDef.id);
+    const isActive = approvalValues.some((av) =>
+      ACTIVE_STATES.includes(av.state));
+
+    if (!isActive && !this.showAllIntents) return nothing;
+
     let threadLink = nothing;
-    if (this.feature[threadField]) {
+    if (this.feature[approvalDef.threadField]) {
       threadLink = html`
         <div>
-          <a href="${this.feature[threadField]}" target="_blank"
+          <a href="${this.feature[approvalDef.threadField]}" target="_blank"
              >blink-dev thread</a>
         </div>
       `;
@@ -135,8 +183,8 @@ class ChromedashApprovalsDialog extends LitElement {
 
     return html`
       <div class="approval_section">
-        <h3>${approvalName}</h3>
-        ${approvalValues.map(this.renderApprovalValue.bind(this))}
+        <h3>${approvalDef.name}</h3>
+        ${approvalValues.map((av) => this.renderApprovalValue(av))}
         ${this.renderAddApproval()}
         ${threadLink}
       </div>
@@ -144,23 +192,8 @@ class ChromedashApprovalsDialog extends LitElement {
   }
 
   renderAllApprovals() {
-    const prototype = this.renderApproval(
-      'Intent to Prototype',
-      this.approvals.filter((a) => a.field_id == 1),
-      'intent_to_implement_url');
-    const experiment = this.renderApproval(
-      'Intent to Experiment',
-      this.approvals.filter((a) => a.field_id == 2),
-      'intent_to_experiment_url');
-    const extend = this.renderApproval(
-      'Intent to Extend Experiment',
-      this.approvals.filter((a) => a.field_id == 3),
-      'intent_to_extend_experiment_url');
-    const ship = this.renderApproval(
-      'Intent to Ship',
-      this.approvals.filter((a) => a.field_id == 4),
-      'intent_to_ship_url');
-    return [prototype, experiment, extend, ship];
+    return APPROVAL_DEFS.map((apprDef) =>
+      this.renderApproval(apprDef));
   }
 
   renderComment(comment) {
@@ -181,8 +214,19 @@ class ChromedashApprovalsDialog extends LitElement {
 
 
   renderControls() {
+    let showAllCheckbox = nothing;
+    if (this.subsetPending) {
+      showAllCheckbox = html`
+         <label id="show_all_checkbox"><input
+          type="checkbox" ?checked=${this.showAllIntents}
+          @click=${this.toggleShowAllIntents}
+          >Show all intents</label>
+      `;
+    }
+
     return html`
      <div class="controls">
+       ${showAllCheckbox}
        <button class="primary">Save</button>
        <button>Cancel</button>
      </div>
@@ -190,9 +234,9 @@ class ChromedashApprovalsDialog extends LitElement {
   }
 
   render() {
-    const title = this.feature && this.feature.name || '';
+    const dialogName = this.feature && this.feature.name || '';
     return html`
-      <chromedash-dialog title="${title}">
+      <chromedash-dialog name="${dialogName}">
         ${this.renderLoading()}
         ${this.renderAllApprovals()}
         ${this.comments.map(this.renderComment)}
