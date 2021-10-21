@@ -225,8 +225,14 @@ class ChromedashApprovalsDialog extends LitElement {
     }
 
     return html`
+     <div style="margin-top:2em">
+      <textarea rows=4 cols=80></textarea>
+     </div>
      <div class="controls">
        ${showAllCheckbox}
+         <label id="post_link_dev" style="margin-right:1em"><input
+          type="checkbox"
+          >Post to blink-dev</label>
        <button class="primary">Save</button>
        <button>Cancel</button>
      </div>
