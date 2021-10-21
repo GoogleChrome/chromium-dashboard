@@ -53,10 +53,12 @@ chromedash-featurelist {
 }
 
 @media only screen and (min-width: 701px) {
-  #content {
-    &::after {
-      width: $max-content-width;
-    }
+
+  footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
   }
 }
 
