@@ -20,6 +20,7 @@ import mock
 import unittest
 
 from google.appengine.api import mail
+from google.appengine.api import urlfetch
 
 import settings
 from internals import sendemail
@@ -198,17 +199,17 @@ class FunctionTest(unittest.TestCase):
         ['a@b.com', 'e.g-h@i-j.k-L.com'],
         sendemail._extract_addrs(header_val))
 
-  @mock.patch('requests.request')
-  def test_call_py3_task_handler(self, mock_request):
+  @mock.patch('google.appengine.api.urlfetch.fetch')
+  def test_call_py3_task_handler(self, mock_fetch):
     """Our py2 code can make a request to our py3 code."""
-    mock_request.return_value = 'mock response'
+    mock_fetch.return_value = 'mock response'
 
     actual = sendemail.call_py3_task_handler('/path', {'a': 1})
 
     self.assertEqual('mock response', actual)
-    mock_request.assert_called_once_with(
-        'POST', 'http://localhost:8080/path',
-        data=b'{"a": 1}', allow_redirects=False)
+    mock_fetch.assert_called_once_with(
+        url='http://localhost:8080/path', method=urlfetch.POST,
+        payload=b'{"a": 1}', follow_redirects=False)
 
 
 def MakeMessage(header_list, body):
