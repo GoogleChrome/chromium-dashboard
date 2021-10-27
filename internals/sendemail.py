@@ -18,10 +18,10 @@ import json
 import logging
 import re
 import urllib
-import requests
 import rfc822
 
 from google.appengine.api import mail
+from google.appengine.api import urlfetch
 from google.appengine.ext.webapp.mail_handlers import BounceNotification
 
 import settings
@@ -145,8 +145,9 @@ def call_py3_task_handler(handler_path, task_dict):
   # AppEngine automatically sets header X-Appengine-Inbound-Appid,
   # and that header is stripped from external requests.  So,
   # require_task_header() can check for it to authenticate.
-  handler_response = requests.request(
-      'POST', handler_url, data=request_body, allow_redirects=False)
+  handler_response = urlfetch.fetch(
+      url=handler_url, payload=request_body, method=urlfetch.POST,
+      follow_redirects=False)
 
   logging.info('request_response is %r', handler_response)
   return handler_response
