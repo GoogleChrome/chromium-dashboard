@@ -31,6 +31,16 @@
   }
 }
 
+@media only screen and (min-width: 701px) {
+
+  footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+  }
+}
+
 @media only screen and (max-width: 700px) {
   #subheader {
     margin: $content-padding 0;
