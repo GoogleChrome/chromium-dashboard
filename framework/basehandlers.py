@@ -86,7 +86,7 @@ class BaseHandler(flask.views.MethodView):
     """Get the specified JSON parameter."""
     json_body = self.request.get_json(force=True, silent=True) or {}
     val = json_body.get(name, default)
-    if required and not val:
+    if required and val is None:
       self.abort(400, msg='Missing parameter %r' % name)
     if val and validator and not validator(val):
       self.abort(400, msg='Invalid value for parameter %r' % name)
