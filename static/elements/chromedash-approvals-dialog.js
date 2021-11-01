@@ -301,9 +301,9 @@ class ChromedashApprovalsDialog extends LitElement {
   }
 
   render() {
-    const dialogName = this.feature && this.feature.name || '';
+    const heading = this.feature && this.feature.name || '';
     return html`
-      <chromedash-dialog name="${dialogName}">
+      <chromedash-dialog heading="${heading}">
         ${this.renderLoading()}
         ${this.renderAllApprovals()}
         ${this.renderAllComments()}
