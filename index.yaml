@@ -8,7 +8,7 @@ indexes:
 # If you want to manage some indexes manually, move them above the marker line.
 
 - kind: "Comment"
-   properties:
+  properties:
    - name: "feature_id"
    - name: "created"
 - kind: "Feature"
