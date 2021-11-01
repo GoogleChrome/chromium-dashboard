@@ -7,6 +7,7 @@ import '@polymer/iron-icon';
 class ChromedashDialog extends LitElement {
   static get properties() {
     return {
+      heading: {type: String},
       opened: {type: Boolean, reflect: true},
     };
   }
@@ -40,6 +41,10 @@ class ChromedashDialog extends LitElement {
         border: 0;
         max-width: 90%;
       }
+      #heading {
+        margin-top: 0;
+        font-weight: normal;
+      }
       .dialog-content {
         /* This extra div is here because otherwise the browser can't
         * differentiate between a click event that hits the dialog element or
@@ -65,6 +70,7 @@ class ChromedashDialog extends LitElement {
 
   constructor() {
     super();
+    this.heading = '';
     this.opened = false;
     this._boundKeydownHandler = this._keydownHandler.bind(this);
   }
@@ -140,6 +146,7 @@ class ChromedashDialog extends LitElement {
           <button id="close-icon" @click=${this.close}>
              <iron-icon icon="chromestatus:close"></iron-icon>
           </button>
+          <h2 id="heading">${this.heading}</h2>
           <slot></slot>
         </div>
       </dialog>
