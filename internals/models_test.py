@@ -162,6 +162,47 @@ class FeatureTest(testing_config.CustomTestCase):
         ['feature a'],
         names)
 
+  def test_get_by_ids__empty(self):
+    """A request to load zero features returns zero results."""
+    actual = models.Feature.get_by_ids([])
+    self.assertEqual([], actual)
+
+  def test_get_by_ids__cache_miss(self):
+    """We can load features from datastore."""
+    ramcache.global_cache.clear()
+
+    actual = models.Feature.get_by_ids([self.feature_1.key.integer_id()])
+
+    self.assertEqual(1, len(actual))
+    self.assertEqual('feature a', actual[0]['name'])
+
+  def test_get_by_ids__cache_hit(self):
+    """We can load features from ramcache."""
+    ramcache.global_cache.clear()
+    cache_key = '%s|%s' % (
+        models.Feature.DEFAULT_CACHE_KEY, self.feature_1.key.integer_id())
+    ramcache.set(cache_key, 'fake cached feature')
+
+    actual = models.Feature.get_by_ids([self.feature_1.key.integer_id()])
+
+    self.assertEqual(1, len(actual))
+    self.assertEqual('fake cached feature', actual[0])
+
+  def test_get_by_ids__batch_order(self):
+    """Features are returned in the order of the given IDs."""
+    actual = models.Feature.get_by_ids([
+        self.feature_4.key.integer_id(),
+        self.feature_1.key.integer_id(),
+        self.feature_3.key.integer_id(),
+        self.feature_2.key.integer_id(),
+    ])
+
+    self.assertEqual(4, len(actual))
+    self.assertEqual('feature d', actual[0]['name'])
+    self.assertEqual('feature a', actual[1]['name'])
+    self.assertEqual('feature c', actual[2]['name'])
+    self.assertEqual('feature b', actual[3]['name'])
+
   def test_get_chronological__normal(self):
     """We can retrieve a list of features."""
     actual = models.Feature.get_chronological()
