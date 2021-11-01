@@ -38,7 +38,7 @@ class CommentsAPI(basehandlers.APIHandler):
         }
     return data
 
-  def do_post(self, feature_id, field_id):
+  def do_post(self, feature_id, field_id=None):
     """Add a review comment and possibly set a approval value."""
     new_state = self.get_int_param(
         'state', required=False,
@@ -47,14 +47,14 @@ class CommentsAPI(basehandlers.APIHandler):
     user = self.get_current_user(required=True)
 
     old_state = None
-    old_approvals = models.Approval.get_approvals(
-        feature_id=feature_id, field_id=field_id,
-        set_by=user.email())
-    if old_approvals:
-      old_state = old_approvals[0].state
+    if field_id is not None and new_state is not None:
+      old_approvals = models.Approval.get_approvals(
+          feature_id=feature_id, field_id=field_id,
+          set_by=user.email())
+      if old_approvals:
+        old_state = old_approvals[0].state
 
-    approvers = approval_defs.get_approvers(field_id)
-    if new_state is not None:
+      approvers = approval_defs.get_approvers(field_id)
       if not permissions.can_approve_feature(user, feature, approvers):
         self.abort(403, msg='User is not an approver')
       models.Approval.set_approval(
