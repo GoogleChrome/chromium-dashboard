@@ -160,11 +160,14 @@ class BaseHandlerTests(testing_config.CustomTestCase):
   @mock.patch('flask.request')
   def test_get_int_param(self, mock_request, mock_abort):
     """We can get an int, or abort."""
-    mock_request.get_json.return_value = {'x': 1, 'foo': 'bar'}
+    mock_request.get_json.return_value = {'x': 1, 'y': 0, 'foo': 'bar'}
     mock_abort.side_effect = werkzeug.exceptions.BadRequest
 
     actual = self.handler.get_int_param('x')
     self.assertEqual(1, actual)
+
+    actual = self.handler.get_int_param('y')
+    self.assertEqual(0, actual)
 
     actual = self.handler.get_int_param('missing', default=3)
     self.assertEqual(3, actual)
