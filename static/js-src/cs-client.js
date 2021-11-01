@@ -192,7 +192,8 @@ class ChromeStatusClient {
   setApproval(featureId, fieldId, state) {
     return this.doPost(
         `/features/${featureId}/approvals`,
-        {featureId, fieldId, state});
+        {fieldId: Number(fieldId),
+          state: Number(state)});
   }
 
   getComments(featureId, fieldId) {

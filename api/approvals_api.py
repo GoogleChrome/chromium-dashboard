@@ -39,12 +39,12 @@ class ApprovalsAPI(basehandlers.APIHandler):
         }
     return data
 
-  def do_post(self):
+  def do_post(self, feature_id=None):
     """Set an approval value for the specified feature."""
     field_id = self.get_int_param('fieldId')
     new_state = self.get_int_param(
-        'state', validator= models.Approval.is_valid_state)
-    feature = self.get_specified_feature()
+        'state', validator=models.Approval.is_valid_state)
+    feature = self.get_specified_feature(feature_id=feature_id)
     user = self.get_current_user(required=True)
 
     approvers = approval_defs.get_approvers(field_id)

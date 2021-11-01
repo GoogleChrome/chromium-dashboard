@@ -844,6 +844,8 @@ class Feature(DictModel):
 
       if feature is None or update_cache:
         futures.append(Feature.get_by_id_async(feature_id))
+      else:
+        result_dict[feature_id] = feature
 
     for future in futures:
       unformatted_feature = future.get_result()
