@@ -78,7 +78,13 @@ class ChromedashApprovalsDialog extends LitElement {
           margin-top: var(--content-padding);
         }
 
-        .approval_section div {
+        .comment_section {
+          max-height: 250px;
+          overflow: scroll;
+        }
+
+        .approval_section div,
+        .comment {
           margin-left: var(--content-padding);
         }
 
@@ -93,6 +99,14 @@ class ChromedashApprovalsDialog extends LitElement {
           text-overflow: ellipsis;
           white-space: nowrap;
           display: inline-block;
+        }
+
+        .comment_body {
+          background: var(--table-alternate-background);
+          padding: var(--content-padding-half);
+          white-space: pre-wrap;
+          width: 46em;
+          margin-bottom: var(--content-padding);
         }
 
         .controls {
@@ -132,6 +146,8 @@ class ChromedashApprovalsDialog extends LitElement {
         this.comments = res.comments;
       });
     Promise.all([p1, p2, p3]).then(() => {
+      // Clear out any previously typed comment.
+      this.shadowRoot.querySelector('#comment_area').value = '';
       this.shadowRoot.querySelector('chromedash-dialog').open();
     });
   }
@@ -228,16 +244,14 @@ class ChromedashApprovalsDialog extends LitElement {
 
   renderComment(comment) {
     return html`
-      <div class="comment_section">
+      <div class="comment">
         <div class="comment_header">
-           <span class="author"">author name</span>
+           <span class="author"">${comment.author}</span>
            on
-           <span class="date"">date</span>
+           <span class="date"">${comment.created}</span>
            wrote:
         </div>
-        <div class="comment_body">
-          <pre>${comment.content}</pre>
-        </div>
+        <div class="comment_body">${comment.content}</div>
       </div>
     `;
   }
@@ -245,7 +259,9 @@ class ChromedashApprovalsDialog extends LitElement {
   renderAllComments() {
     return html`
         <h3>Comments</h3>
-        ${this.comments.map(this.renderComment)}
+        <div class="comment_section">
+          ${this.comments.map(this.renderComment)}
+        </div>
     `;
   }
 
@@ -254,28 +270,32 @@ class ChromedashApprovalsDialog extends LitElement {
     if (this.subsetPending) {
       showAllCheckbox = html`
          <label id="show_all_checkbox"><input
-          type="checkbox" ?checked=${this.showAllIntents}
-          @click=${this.toggleShowAllIntents}
-          >Show all intents</label>
+           type="checkbox" ?checked=${this.showAllIntents}
+           @click=${this.toggleShowAllIntents}
+           >Show all intents</label>
       `;
     }
 
     return html`
      <div>
-      <textarea rows=4 cols=80 placeholder="Add a comment"></textarea>
+      <textarea id="comment_area" rows=4 cols=80
+        @change=${this.checkNeedsSave}
+        @keypress=${this.checkNeedsSave}
+        placeholder="Add a comment"
+        ></textarea>
      </div>
      <div class="controls">
        ${showAllCheckbox}
-         <label id="post_link_dev" style="margin-right:1em"><input
-          type="checkbox"
-          >Post to blink-dev</label>
+       <label id="post_link_dev" style="margin-right:1em"><input
+         type="checkbox"
+         >Post to blink-dev</label>
        <button class="primary"
-          @click=${this.handleSave}
-          ?disabled=${!this.needsSave}
-          >Save</button>
+         @click=${this.handleSave}
+         ?disabled=${!this.needsSave}
+         >Save</button>
        <button
-          @click=${this.handleCancel}
-          >Cancel</button>
+         @click=${this.handleCancel}
+         >Cancel</button>
      </div>
     `;
   }
@@ -292,18 +312,29 @@ class ChromedashApprovalsDialog extends LitElement {
     `;
   }
 
-  handleSelectChanged(e) {
-    console.log('In handleSelectChanged()');
-    const fieldId = e.target.dataset['field'];
-    const newVal = e.target.value;
-    this.changedApprovalsByField.set(fieldId, newVal);
-    this.needsSave = true;
-    console.log(this.changedApprovalsByField);
+  checkNeedsSave() {
+    console.log('In checkNeedsSave()');
+    let newNeedsSave = false;
+    const commentArea = this.shadowRoot.querySelector('#comment_area');
+    const newVal = commentArea.value;
+    if (newVal != '') newNeedsSave = true;
+    for (let fieldId of this.changedApprovalsByField.keys()) {
+      if (this.changedApprovalsByField.get(fieldId) != -1) {
+        newNeedsSave = true;
+      }
+    }
+    this.needsSave = newNeedsSave;
     console.log(this.needsSave);
   }
 
+  handleSelectChanged(e) {
+    const fieldId = e.target.dataset['field'];
+    const newVal = e.target.value;
+    this.changedApprovalsByField.set(fieldId, newVal);
+    this.checkNeedsSave();
+  }
+
   handleSave() {
-    console.log('In save()');
     const promises = [];
     for (let fieldId of this.changedApprovalsByField.keys()) {
       if (this.changedApprovalsByField.get(fieldId) != -1) {
@@ -312,6 +343,13 @@ class ChromedashApprovalsDialog extends LitElement {
             this.feature.id, fieldId,
             this.changedApprovalsByField.get(fieldId)));
       }
+    }
+    const commentArea = this.shadowRoot.querySelector('#comment_area');
+    const commentText = commentArea.value;
+    if (commentText != '') {
+      promises.push(
+        window.csClient.postComment(
+          this.feature.id, null, null, commentText));
     }
     Promise.all(promises).then(() => {
       this.shadowRoot.querySelector('chromedash-dialog').close();
