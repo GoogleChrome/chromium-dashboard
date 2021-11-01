@@ -9,8 +9,8 @@ indexes:
 
 - kind: "Comment"
   properties:
-   - name: "feature_id"
-   - name: "created"
+  - name: "feature_id"
+  - name: "created"
 - kind: "Feature"
   properties:
   - name: "impl_status_chrome"
