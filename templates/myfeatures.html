@@ -13,12 +13,11 @@
 {% block content %}
 
 <chromedash-myfeatures
-  {% if user %} signedin {% endif %}
+  {% if user %} signedinuser="{{user.email}}" {% endif %}
   {% if user.can_edit %} canedit {% endif %}
   {% if user.can_approve %} canapprove {% endif %}
   >
 </chromedash-myfeatures>
-
 
 {% endblock %}
 
