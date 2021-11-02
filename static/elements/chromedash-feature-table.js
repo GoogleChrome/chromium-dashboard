@@ -119,7 +119,7 @@ class ChromedashFeatureTable extends LitElement {
         @click="${() => this.openApprovalsDialog(feature.id)}"
         title="Review approvals">
         <iron-icon icon="chromestatus:approval"></iron-icon>
-      </span>
+      </a>
     `;
   }
 
@@ -128,7 +128,7 @@ class ChromedashFeatureTable extends LitElement {
       <a href="/guide/edit/${feature.id}" class="tooltip"
         title="Edit feature">
         <iron-icon icon="chromestatus:create"></iron-icon>
-      </span>
+      </a>
     `;
   }
 
