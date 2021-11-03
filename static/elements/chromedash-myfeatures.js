@@ -53,7 +53,6 @@ class ChromedashMyFeatures extends LitElement {
   }
 
   handleOpenApprovals(e) {
-    console.log(e);
     const featureId = e.detail.featureId;
     const dialog = this.shadowRoot.querySelector('chromedash-approvals-dialog');
     dialog.openWithFeature(featureId);
@@ -67,7 +66,7 @@ class ChromedashMyFeatures extends LitElement {
 
         <chromedash-feature-table
           query="${query}"
-          ?signedIn=${this.signedInUser}
+          ?signedIn=${Boolean(this.signedInUser)}
           ?canEdit=${this.canEdit}
           ?canApprove=${this.canApprove}
           .starredFeatures=${this.starredFeatures}

@@ -38,12 +38,12 @@ class ChromedashApprovalsDialog extends LitElement {
     return {
       signedInUser: {type: String},
       featureId: {type: Number},
+      canApprove: {type: Boolean},
       feature: {type: Object},
       approvals: {type: Array},
       comments: {type: Array},
-      canApprove: {type: Boolean},
       showAllIntents: {type: Boolean},
-      changedApprovalsByField: {type: Map},
+      changedApprovalsByField: {attribute: false},
       needsSave: {type: Boolean},
     };
   }
@@ -51,19 +51,15 @@ class ChromedashApprovalsDialog extends LitElement {
   constructor() {
     super();
     this.signedInUser = ''; // email address
+    this.canApprove = false;
     this.featureId = 0;
     this.feature = {};
     this.approvals = [];
     this.comments = [];
-    this.canApprove = false;
     this.subsetPending = false;
     this.showAllIntents = false;
     this.changedApprovalsByField = new Map();
     this.needsSave = false;
-  }
-
-  connectedCallback() {
-    super.connectedCallback();
   }
 
   static get styles() {
@@ -80,7 +76,7 @@ class ChromedashApprovalsDialog extends LitElement {
 
         .comment_section {
           max-height: 250px;
-          overflow: scroll;
+          overflow-y: scroll;
         }
 
         .approval_section div,
@@ -89,16 +85,23 @@ class ChromedashApprovalsDialog extends LitElement {
         }
 
         .approval_row {
-          width: 30em;
+          width: 650px;
           margin-bottom: var(--content-padding-half);
         }
 
-        .set_by {
-          width: 16em;
+        .set_by,
+        .set_on,
+        .appr_val {
+          display: inline-block;
+          width: 200px;
+          margin-right: var(--content-padding-half);
           overflow: hidden;
           text-overflow: ellipsis;
           white-space: nowrap;
-          display: inline-block;
+        }
+
+        select {
+          margin: 0;
         }
 
         .comment_body {
@@ -157,12 +160,8 @@ class ChromedashApprovalsDialog extends LitElement {
     this.showAllIntents = !this.showAllIntents;
   }
 
-  renderLoading() {
-    if (this.feature === {}) {
-      return html`<p>Loading...</p>`;
-    } else {
-      return nothing;
-    }
+  formatDate(dateStr) {
+    return dateStr.split('.')[0]; // Ignore microseconds.
   }
 
   renderApprovalValue(approvalValue) {
@@ -179,33 +178,39 @@ class ChromedashApprovalsDialog extends LitElement {
     return html`
       <div class="approval_row">
         <span class="set_by">${approvalValue.set_by}</span>
-        ${approvalValue.set_by == this.signedInUser ? html`
-        <select
-          selected=${selectedValue}
-          data-field="${approvalValue.field_id}"
-          @change=${this.handleSelectChanged}
-        >
-            ${placeholderOption}
-            ${STATE_NAMES.map((valName) => html`
-              <option value="${valName[0]}"
-                ?selected=${valName[0] == selectedValue}
-               >${valName[1]}</option>`
-              )}
-          </select>` : html`
-          ${STATE_NAMES[approvalValue.state][1]}
-          `}
-       </div>
+        <span class="set_on">${this.formatDate(approvalValue.set_on)}</span>
+        <span class="appr_val">
+          ${approvalValue.set_by == this.signedInUser ? html`
+          <select
+            selected=${selectedValue}
+            data-field="${approvalValue.field_id}"
+            @change=${this.handleSelectChanged}
+          >
+              ${placeholderOption}
+              ${STATE_NAMES.map((valName) => html`
+                <option value="${valName[0]}"
+                  ?selected=${valName[0] == selectedValue}
+                 >${valName[1]}</option>`
+                )}
+            </select>` : html`
+            ${STATE_NAMES[approvalValue.state][1]}
+            `}
+        </span>
+      </div>
     `;
   }
 
   renderAddApproval(fieldId) {
     const existingApprovalByMe = this.approvals.some((a) =>
-      a.field_id == fieldId);
+      a.field_id == fieldId && a.set_by == this.signedInUser);
     if (existingApprovalByMe) {
       return nothing;
     } else {
       return this.renderApprovalValue(
-        {set_by: this.signedInUser, state: -1, field_id: fieldId});
+        {set_by: this.signedInUser,
+          set_on: '',
+          state: -1,
+          field_id: fieldId});
     }
   }
 
@@ -246,9 +251,9 @@ class ChromedashApprovalsDialog extends LitElement {
     return html`
       <div class="comment">
         <div class="comment_header">
-           <span class="author"">${comment.author}</span>
+           <span class="author">${comment.author}</span>
            on
-           <span class="date"">${comment.created}</span>
+           <span class="date">${this.formatDate(comment.created)}</span>
            wrote:
         </div>
         <div class="comment_body">${comment.content}</div>
@@ -260,7 +265,7 @@ class ChromedashApprovalsDialog extends LitElement {
     return html`
         <h3>Comments</h3>
         <div class="comment_section">
-          ${this.comments.map(this.renderComment)}
+          ${this.comments.map(this.renderComment.bind(this))}
         </div>
     `;
   }
@@ -275,6 +280,8 @@ class ChromedashApprovalsDialog extends LitElement {
            >Show all intents</label>
       `;
     }
+    // TODO: add this when backend implements it.
+    let postToListCheckbox = nothing;
 
     return html`
      <div>
@@ -286,9 +293,7 @@ class ChromedashApprovalsDialog extends LitElement {
      </div>
      <div class="controls">
        ${showAllCheckbox}
-       <label id="post_link_dev" style="margin-right:1em"><input
-         type="checkbox"
-         >Post to blink-dev</label>
+       ${postToListCheckbox}
        <button class="primary"
          @click=${this.handleSave}
          ?disabled=${!this.needsSave}
@@ -304,7 +309,6 @@ class ChromedashApprovalsDialog extends LitElement {
     const heading = this.feature && this.feature.name || '';
     return html`
       <chromedash-dialog heading="${heading}">
-        ${this.renderLoading()}
         ${this.renderAllApprovals()}
         ${this.renderAllComments()}
         ${this.renderControls()}
