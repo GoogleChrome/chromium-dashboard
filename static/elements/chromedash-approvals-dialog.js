@@ -175,12 +175,9 @@ class ChromedashApprovalsDialog extends LitElement {
     const selectedValue = (
       this.changedApprovalsByField.get(approvalValue.field_id) ||
           approvalValue.state);
-    let placeholderOption = nothing;
-    if (approvalValue.state == -1) {
-      placeholderOption = html`
-        <option value="-1" selected>No value</option>
-      `;
-    }
+    const placeholderOption = (approvalValue.state == -1) ?
+      html`<option value="-1" selected>No value</option>` :
+      nothing;
 
     return html`
       <div class="approval_row">
