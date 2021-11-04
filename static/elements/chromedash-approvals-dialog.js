@@ -45,6 +45,7 @@ class ChromedashApprovalsDialog extends LitElement {
       showAllIntents: {type: Boolean},
       changedApprovalsByField: {attribute: false},
       needsSave: {type: Boolean},
+      loading: {attribute: false},
     };
   }
 
@@ -60,12 +61,18 @@ class ChromedashApprovalsDialog extends LitElement {
     this.showAllIntents = false;
     this.changedApprovalsByField = new Map();
     this.needsSave = false;
+    this.loading = true;
   }
 
   static get styles() {
     return [
       SHARED_STYLES,
       css`
+        .loading {
+          width: 650px;
+          height: 400px;
+        }
+
         h3 {
           margin: var(--content-padding-half);
         }
@@ -123,12 +130,15 @@ class ChromedashApprovalsDialog extends LitElement {
 
         textarea {
           padding: 4px;
+          resize: both;
         }
       `];
   }
 
   openWithFeature(featureId) {
     this.featureId = featureId;
+    this.loading = true;
+    this.shadowRoot.querySelector('chromedash-dialog').open();
     const p1 = window.csClient.getFeature(this.featureId).then(
       (feature) => {
         this.feature = feature;
@@ -149,12 +159,9 @@ class ChromedashApprovalsDialog extends LitElement {
         this.comments = res.comments;
       });
     Promise.all([p1, p2, p3]).then(() => {
-      // Clear out any previously typed comment.
-      this.shadowRoot.querySelector('#comment_area').value = '';
-      this.shadowRoot.querySelector('chromedash-dialog').open();
+      this.loading = false;
     });
   }
-
 
   toggleShowAllIntents() {
     this.showAllIntents = !this.showAllIntents;
@@ -306,21 +313,27 @@ class ChromedashApprovalsDialog extends LitElement {
   }
 
   render() {
-    const heading = this.feature && this.feature.name || '';
+    const heading = !this.loading && this.feature.name || '';
     return html`
       <chromedash-dialog heading="${heading}">
-        ${this.renderAllApprovals()}
-        ${this.renderAllComments()}
-        ${this.renderControls()}
+        ${this.loading ?
+          html`
+           <div class="loading">
+             <div id="spinner"><img src="/static/img/ring.svg"></div>
+           </div>` :
+          html`
+            ${this.renderAllApprovals()}
+            ${this.renderAllComments()}
+            ${this.renderControls()}
+          `}
       </chromedash-dialog>
     `;
   }
 
   checkNeedsSave() {
-    console.log('In checkNeedsSave()');
     let newNeedsSave = false;
     const commentArea = this.shadowRoot.querySelector('#comment_area');
-    const newVal = commentArea.value;
+    const newVal = commentArea && commentArea.value.trim() || '';
     if (newVal != '') newNeedsSave = true;
     for (let fieldId of this.changedApprovalsByField.keys()) {
       if (this.changedApprovalsByField.get(fieldId) != -1) {
@@ -328,7 +341,6 @@ class ChromedashApprovalsDialog extends LitElement {
       }
     }
     this.needsSave = newNeedsSave;
-    console.log(this.needsSave);
   }
 
   handleSelectChanged(e) {
@@ -349,7 +361,7 @@ class ChromedashApprovalsDialog extends LitElement {
       }
     }
     const commentArea = this.shadowRoot.querySelector('#comment_area');
-    const commentText = commentArea.value;
+    const commentText = commentArea.value.trim();
     if (commentText != '') {
       promises.push(
         window.csClient.postComment(
