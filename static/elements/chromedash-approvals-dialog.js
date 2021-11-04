@@ -171,6 +171,15 @@ class ChromedashApprovalsDialog extends LitElement {
     return dateStr.split('.')[0]; // Ignore microseconds.
   }
 
+  findStateName(state) {
+    for (let item of STATE_NAMES) {
+      if (item[0] == state) {
+        return item[1];
+      }
+    }
+    throw new Error(`Unexpected approval state ${state}`);
+  }
+
   renderApprovalValue(approvalValue) {
     const selectedValue = (
       this.changedApprovalsByField.get(approvalValue.field_id) ||
@@ -197,7 +206,7 @@ class ChromedashApprovalsDialog extends LitElement {
                  >${valName[1]}</option>`
                 )}
             </select>` : html`
-            ${STATE_NAMES[approvalValue.state][1]}
+           ${this.findStateName(approvalValue.state)}
             `}
         </span>
       </div>
