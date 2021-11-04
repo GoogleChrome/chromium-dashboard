@@ -45,6 +45,7 @@ class ApprovalsAPI(basehandlers.APIHandler):
     new_state = self.get_int_param(
         'state', validator=models.Approval.is_valid_state)
     feature = self.get_specified_feature(feature_id=feature_id)
+    feature_id = feature.key.integer_id()
     user = self.get_current_user(required=True)
 
     approvers = approval_defs.get_approvers(field_id)
@@ -52,6 +53,11 @@ class ApprovalsAPI(basehandlers.APIHandler):
       self.abort(403, msg='User is not an approver')
 
     models.Approval.set_approval(
-        feature.key.integer_id(), field_id, new_state, user.email())
+        feature_id, field_id, new_state, user.email())
+
+    all_approval_values = models.Approval.get_approvals(feature_id, field_id)
+    if approval_defs.is_resolved(all_approval_values, field_id):
+      models.Approval.clear_request(feature_id, field_id)
+
     # Callers don't use the JSON response for this API call.
     return {'message': 'Done'}
