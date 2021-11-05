@@ -369,7 +369,7 @@ class ApprovalTest(testing_config.CustomTestCase):
   def test_is_valid_state(self):
     """We know what approval states are valid."""
     self.assertTrue(
-        models.Approval.is_valid_state(models.Approval.NEEDS_REVIEW))
+        models.Approval.is_valid_state(models.Approval.REVIEW_REQUESTED))
     self.assertFalse(models.Approval.is_valid_state(None))
     self.assertFalse(models.Approval.is_valid_state('not an int'))
     self.assertFalse(models.Approval.is_valid_state(999))
@@ -377,7 +377,8 @@ class ApprovalTest(testing_config.CustomTestCase):
   def test_set_approval(self):
     """We can set an Approval entity."""
     models.Approval.set_approval(
-        self.feature_1_id, 2, 0, 'owner@example.com')
+        self.feature_1_id, 2, models.Approval.REVIEW_REQUESTED,
+        'owner@example.com')
     self.assertEqual(
         2,
         len(models.Approval.query().fetch(None)))

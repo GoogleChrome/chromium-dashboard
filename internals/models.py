@@ -1326,17 +1326,17 @@ class Feature(DictModel):
 class Approval(DictModel):
   """Describes the current state of one approval on a feature."""
 
-  NEEDS_REVIEW = 0
+  # Not used: NEEDS_REVIEW = 0
   NA = 1
-  # REVIEW_REQUESTED = 2  Reserved for FLT
+  REVIEW_REQUESTED = 2
   REVIEW_STARTED = 3
   NEED_INFO = 4
   APPROVED = 5
   NOT_APPROVED = 6
   APPROVAL_VALUES = {
-      NEEDS_REVIEW: 'needs_review',
+      # Not used: NEEDS_REVIEW: 'needs_review',
       NA: 'na',
-      # REVIEW_REQUESTED: 'review_requested',
+      REVIEW_REQUESTED: 'review_requested',
       REVIEW_STARTED: 'review_started',
       NEED_INFO: 'need_info',
       APPROVED: 'approved',

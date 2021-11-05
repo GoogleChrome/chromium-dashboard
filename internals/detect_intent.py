@@ -164,16 +164,16 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
       feature.put()
 
   def create_approvals(self, feature_id, approval_field, from_addr, body):
-    """Store either a NEEDS_REVIEW or an APPROVED approval value."""
+    """Store either a REVIEW_REQUESTED or an APPROVED approval value."""
     # Case 1: This is a new intent thread
     existing_approvals = models.Approval.get_approvals(
         feature_id=feature_id, field_id=approval_field.field_id)
     if not existing_approvals:
       models.Approval.set_approval(
           feature_id, approval_field.field_id,
-          models.Approval.NEEDS_REVIEW, from_addr)
+          models.Approval.REVIEW_REQUESTED, from_addr)
 
     # Case 2: This is an existing intent thread
     # TODO(jrobbins): Detect LGTMs in body, verify that sender has permission,
-    # set an approval value, and clear the original NEEDS_REVIEW if
+    # set an approval value, and clear the original REVIEW_REQUESTED if
     # the approval rule (1 or 3 LTGMs) is satisfied.

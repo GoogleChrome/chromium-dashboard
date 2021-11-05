@@ -22,7 +22,7 @@ from internals import notifier
 
 
 PENDING_STATES = [
-    models.Approval.NEEDS_REVIEW, models.Approval.REVIEW_STARTED,
+    models.Approval.REVIEW_REQUESTED, models.Approval.REVIEW_STARTED,
     models.Approval.NEED_INFO]
 
 def process_pending_approval_me_query():
