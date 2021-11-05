@@ -58,11 +58,11 @@ class ChromedashMyFeatures extends LitElement {
     dialog.openWithFeature(featureId);
   }
 
-  renderBox(title, query, columns) {
+  renderBox(title, query, columns, opened=true) {
     return html`
       <chromedash-accordion
         title="${title}"
-        opened>
+        ?opened=${opened}>
 
         <chromedash-feature-table
           query="${query}"
@@ -78,9 +78,12 @@ class ChromedashMyFeatures extends LitElement {
     `;
   }
 
-  renderPendingApprovals() {
-    return this.renderBox(
+  renderPendingAndRecentApprovals() {
+    const pendingBox = this.renderBox(
       'Features pending my approval', 'pending-approval-by:me', 'approvals');
+    const recentBox = this.renderBox(
+      'Recently reviewed features', 'is:recently-reviewed', 'approvals', false);
+    return [pendingBox, recentBox];
   }
 
   renderIStarred() {
@@ -95,7 +98,7 @@ class ChromedashMyFeatures extends LitElement {
 
   render() {
     return html`
-      ${this.canApprove ? this.renderPendingApprovals() : nothing}
+      ${this.canApprove ? this.renderPendingAndRecentApprovals() : nothing}
       ${this.renderIOwn()}
       ${this.renderIStarred()}
       <chromedash-approvals-dialog

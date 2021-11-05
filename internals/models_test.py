@@ -339,10 +339,17 @@ class ApprovalTest(testing_config.CustomTestCase):
     self.feature_1.put()
     self.feature_1_id = self.feature_1.key.integer_id()
     self.appr_1 = models.Approval(
-        feature_id=self.feature_1_id, field_id=1, state=2,
-        set_on=datetime.datetime.now(),
+        feature_id=self.feature_1_id, field_id=1,
+        state=models.Approval.REVIEW_REQUESTED,
+        set_on=datetime.datetime.now() - datetime.timedelta(1),
         set_by='one@example.com')
     self.appr_1.put()
+    self.appr_2 = models.Approval(
+        feature_id=self.feature_1_id, field_id=1,
+        state=models.Approval.APPROVED,
+        set_on=datetime.datetime.now(),
+        set_by='two@example.com')
+    self.appr_2.put()
 
   def tearDown(self):
     self.feature_1.key.delete()
@@ -352,17 +359,39 @@ class ApprovalTest(testing_config.CustomTestCase):
   def test_get_approvals(self):
     """We can retrieve Approval entities."""
     actual = models.Approval.get_approvals(feature_id=self.feature_1_id)
-    self.assertEqual(1, len(actual))
-    self.assertEqual(self.feature_1_id, actual[0].feature_id)
+    self.assertEqual(2, len(actual))
+    self.assertEqual(models.Approval.REVIEW_REQUESTED, actual[0].state)
+    self.assertEqual(models.Approval.APPROVED, actual[1].state)
 
     actual = models.Approval.get_approvals(field_id=1)
-    self.assertEqual(1, len(actual))
+    self.assertEqual(models.Approval.REVIEW_REQUESTED, actual[0].state)
+    self.assertEqual(models.Approval.APPROVED, actual[1].state)
 
-    actual = models.Approval.get_approvals(states={2, 3})
+    actual = models.Approval.get_approvals(
+        states={models.Approval.REVIEW_REQUESTED,
+                models.Approval.REVIEW_STARTED})
     self.assertEqual(1, len(actual))
 
     actual = models.Approval.get_approvals(set_by='one@example.com')
     self.assertEqual(1, len(actual))
+    self.assertEqual(models.Approval.REVIEW_REQUESTED, actual[0].state)
+
+    actual = models.Approval.get_approvals(
+        order=-models.Approval.set_on, limit=10)
+    self.assertEqual(2, len(actual))
+    self.assertEqual(models.Approval.APPROVED, actual[0].state)
+    self.assertEqual(models.Approval.REVIEW_REQUESTED, actual[1].state)
+
+    actual = models.Approval.get_approvals(
+        order=-models.Approval.set_on, limit=1)
+    self.assertEqual(1, len(actual))
+    self.assertEqual(models.Approval.APPROVED, actual[0].state)
+
+    actual = models.Approval.get_approvals(
+        order=-models.Approval.set_on, states=[models.Approval.APPROVED],
+        limit=10)
+    self.assertEqual(1, len(actual))
+    self.assertEqual(models.Approval.APPROVED, actual[0].state)
 
   def test_is_valid_state(self):
     """We know what approval states are valid."""
@@ -378,7 +407,7 @@ class ApprovalTest(testing_config.CustomTestCase):
         self.feature_1_id, 2, models.Approval.REVIEW_REQUESTED,
         'owner@example.com')
     self.assertEqual(
-        2,
+        3,
         len(models.Approval.query().fetch(None)))
 
 

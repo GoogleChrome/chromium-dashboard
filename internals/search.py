@@ -24,6 +24,23 @@ from internals import notifier
 PENDING_STATES = [
     models.Approval.REVIEW_REQUESTED, models.Approval.REVIEW_STARTED,
     models.Approval.NEED_INFO]
+FINAL_STATES = [
+    models.Approval.NA, models.Approval.APPROVED,
+    models.Approval.NOT_APPROVED]
+
+def _get_referenced_features(approvals, reverse=False):
+  """Retrieve the features being approved, withuot duplicates."""
+  logging.info('approvals is %r', [(a.feature_id, a.state) for a in approvals])
+  feature_ids = []
+  seen = set()
+  for appr in approvals:
+    if appr.feature_id not in seen:
+      seen.add(appr.feature_id)
+      feature_ids.append(appr.feature_id)
+
+  features = models.Feature.get_by_ids(feature_ids)
+  return features
+
 
 def process_pending_approval_me_query():
   """Return a list of features needing approval by current user."""
@@ -36,18 +53,8 @@ def process_pending_approval_me_query():
   logging.info('pending_approvals is %r', pending_approvals)
   pending_approvals = [pa for pa in pending_approvals
                        if pa.field_id in approvable_fields_ids]
-  pending_approvals.sort(key=lambda pa: pa.set_on)
 
-  # De-duplicate feature_ids while maintaining set_on order.
-  feature_ids = []
-  seen = set()
-  for pa in pending_approvals:
-    if pa.feature_id not in seen:
-      seen.add(pa.feature_id)
-      feature_ids.append(pa.feature_id)
-
-  features = models.Feature.get_by_ids(feature_ids)
-
+  features = _get_referenced_features(pending_approvals)
   return features
 
 
@@ -71,6 +78,20 @@ def process_owner_me_query():
   return features
 
 
+def process_recent_reviews_query():
+  """Return features that were reviewed recently."""
+  user = users.get_current_user()
+  if not user:
+    return []
+
+  logging.info('in process_recent_reviews_query')
+  recent_approvals = models.Approval.get_approvals(
+      states=FINAL_STATES, order=-models.Approval.set_on, limit=10)
+
+  features = _get_referenced_features(recent_approvals, reverse=True)
+  return features
+
+
 def process_query(user_query):
   """Parse and run a user-supplied query, if we can handle it."""
   # TODO(jrobbins): Replace this with a more general approach.
@@ -80,6 +101,8 @@ def process_query(user_query):
     return process_starred_me_query()
   if user_query == 'owner:me':
     return process_owner_me_query()
+  if user_query == 'is:recently-reviewed':
+    return process_recent_reviews_query()
 
   logging.warning('Unexpected query: %r', user_query)
   return []

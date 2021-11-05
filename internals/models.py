@@ -1351,9 +1351,12 @@ class Approval(DictModel):
 
   @classmethod
   def get_approvals(
-      cls, feature_id=None, field_id=None, states=None, set_by=None):
+      cls, feature_id=None, field_id=None, states=None, set_by=None,
+      order=None, limit=None):
     """Return the requested approvals."""
-    query = Approval.query()
+    if order is None:
+      order = Approval.set_on
+    query = Approval.query().order(order)
     if feature_id is not None:
       query = query.filter(Approval.feature_id == feature_id)
     if field_id is not None:
@@ -1362,7 +1365,7 @@ class Approval(DictModel):
       query = query.filter(Approval.state.IN(states))
     if set_by is not None:
       query = query.filter(Approval.set_by == set_by)
-    approvals = query.fetch(None)
+    approvals = query.fetch(limit)
     return approvals
 
   @classmethod

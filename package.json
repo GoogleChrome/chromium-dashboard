@@ -12,7 +12,7 @@
     "do-tests": "curl -X POST 'http://localhost:15606/reset' && python3 -m unittest discover -p '*_test.py'  -b",
     "start-emulator": "gcloud beta emulators datastore start --host-port=:15606 --no-store-on-disk --consistency=1.0",
     "stop-emulator": "curl -X POST 'http://localhost:15606/shutdown'",
-    "test": "(npm run start-emulator > /dev/null 2>&1 &); sleep 3; curl --retry 4 http://localhost:15606/ --retry-connrefused; npm run do-tests; status=$?; npm run stop-emulator; exit $status",
+    "test": "(npm run start-emulator > /dev/null 2>&1 &); sleep 6; curl --retry 4 http://localhost:15606/ --retry-connrefused; npm run do-tests; status=$?; npm run stop-emulator; exit $status",
     "test2": "python2 -m unittest discover -p '*_py2test.py'  -b",
     "do-coverage": "coverage3 erase && coverage3 run -m unittest discover -p '*_test.py' -b && coverage3 html",
     "coverage": "(npm run start-emulator > /dev/null 2>&1 &); sleep 3; curl --retry 4 http://localhost:15606/ --retry-connrefused; npm run do-coverage;  npm run stop-emulator",

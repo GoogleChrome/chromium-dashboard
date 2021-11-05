@@ -26,7 +26,7 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
 
   def setUp(self):
     self.feature_1 = models.Feature(
-        name='feature a', summary='sum', category=1, visibility=1,
+        name='feature 1', summary='sum', category=1, visibility=1,
         standardization=1, web_dev_views=1, impl_status_chrome=3)
     self.feature_1.owner = ['owner@example.com']
     self.feature_1.put()
@@ -87,11 +87,11 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
     mock_approvable_by.return_value = set([1, 2, 3])
     mock_get_approvals.return_value = [
         models.Approval(
-            feature_id=self.feature_1.key.integer_id(),
-            field_id=1, state=0, set_on=time_2),
-        models.Approval(
             feature_id=self.feature_2.key.integer_id(),
             field_id=1, state=0, set_on=time_1),
+        models.Approval(
+            feature_id=self.feature_1.key.integer_id(),
+            field_id=1, state=0, set_on=time_2),
     ]
 
     features = search.process_pending_approval_me_query()
@@ -119,7 +119,7 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
     testing_config.sign_in('starrer@example.com', 111)
     actual = search.process_starred_me_query()
     self.assertEqual(len(actual), 1)
-    self.assertEqual(actual[0]['summary'], 'sum')
+    self.assertEqual(actual[0]['name'], 'feature 1')
 
   def test_process_owner_me_query__none(self):
     """We can return a list of features owned by the user."""
@@ -132,15 +132,53 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
     testing_config.sign_in('owner@example.com', 111)
     actual = search.process_owner_me_query()
     self.assertEqual(len(actual), 2)
-    self.assertEqual(actual[0]['summary'], 'sum')
+    self.assertEqual(actual[0]['name'], 'feature 1')
+    self.assertEqual(actual[1]['name'], 'feature 2')
+
+  @mock.patch('internals.models.Approval.get_approvals')
+  @mock.patch('internals.approval_defs.fields_approvable_by')
+  def test_process_recent_reviews_query__none(
+      self, mock_approvable_by, mock_get_approvals):
+    """Nothing has been reviewed recently."""
+    mock_approvable_by.return_value = set({1, 2, 3})
+    mock_get_approvals.return_value = []
+
+    actual = search.process_recent_reviews_query()
+
+    self.assertEqual(0, len(actual))
+
+  @mock.patch('internals.models.Approval.get_approvals')
+  @mock.patch('internals.approval_defs.fields_approvable_by')
+  def test_process_recent_reviews_query__some(
+      self, mock_approvable_by, mock_get_approvals):
+    """Some features have been reviewed recently."""
+    mock_approvable_by.return_value = set({1, 2, 3})
+    time_1 = datetime.datetime.now() - datetime.timedelta(days=4)
+    time_2 = datetime.datetime.now()
+    mock_get_approvals.return_value = [
+        models.Approval(
+            feature_id=self.feature_1.key.integer_id(),
+            field_id=1, state=models.Approval.NA, set_on=time_2),
+        models.Approval(
+            feature_id=self.feature_2.key.integer_id(),
+            field_id=1, state=models.Approval.APPROVED, set_on=time_1),
+    ]
+
+    actual = search.process_recent_reviews_query()
+
+    self.assertEqual(2, len(actual))
+    self.assertEqual(actual[0]['name'], 'feature 1')  # Most recent
+    self.assertEqual(actual[1]['name'], 'feature 2')
 
   @mock.patch('logging.warning')
   @mock.patch('internals.search.process_pending_approval_me_query')
   @mock.patch('internals.search.process_starred_me_query')
   @mock.patch('internals.search.process_owner_me_query')
+  @mock.patch('internals.search.process_recent_reviews_query')
   def test_process_query(
-      self, mock_own_me, mock_star_me, mock_pend_me, mock_warn):
+      self, mock_recent, mock_own_me, mock_star_me, mock_pend_me, mock_warn):
     """We can match predefined queries."""
+    mock_recent.return_value = 'fake recent result'
     mock_own_me.return_value = 'fake owner result'
     mock_star_me.return_value = 'fake star result'
     mock_pend_me.return_value = 'fake pend result'
@@ -156,6 +194,10 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
     self.assertEqual(
         search.process_query('owner:me'),
         'fake owner result')
+
+    self.assertEqual(
+        search.process_query('is:recently-reviewed'),
+        'fake recent result')
 
     self.assertEqual(
         search.process_query('anything else'),
