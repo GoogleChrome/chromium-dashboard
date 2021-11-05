@@ -150,7 +150,7 @@ class IntentEmailHandlerTest(testing_config.CustomTestCase):
     appr = created_approvals[0]
     self.assertEqual(self.feature_id, appr.feature_id)
     self.assertEqual(approval_defs.ShipApproval.field_id, appr.field_id)
-    self.assertEqual(models.Approval.NEEDS_REVIEW, appr.state)
+    self.assertEqual(models.Approval.REVIEW_REQUESTED, appr.state)
     self.assertEqual('user@example.com', appr.set_by)
     self.assertEqual(
         self.feature_1.intent_to_ship_url,

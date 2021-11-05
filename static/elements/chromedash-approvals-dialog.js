@@ -4,14 +4,15 @@ import './chromedash-dialog';
 import SHARED_STYLES from '../css/shared.css';
 
 const STATE_NAMES = [
-  [0, 'Needs review'],
+  // Not used: [0, 'Needs review'],
   [1, 'N/a or Ack'],
+  [2, 'Review requested'],
   [3, 'Review started'],
   [4, 'Need info'],
   [5, 'Approved'],
   [6, 'Not approved'],
 ];
-const ACTIVE_STATES = [0, 3, 4];
+const PENDING_STATES = [2, 3, 4];
 
 const APPROVAL_DEFS = [
   {name: 'Intent to Prototype',
@@ -147,7 +148,7 @@ class ChromedashApprovalsDialog extends LitElement {
       (res) => {
         this.approvals = res.approvals;
         const numPending = this.approvals.filter((av) =>
-          ACTIVE_STATES.includes(av.state)).length;
+          PENDING_STATES.includes(av.state)).length;
         this.subsetPending = (numPending > 0 &&
                               numPending < APPROVAL_DEFS.length);
         this.showAllIntents = numPending == 0;
@@ -169,6 +170,17 @@ class ChromedashApprovalsDialog extends LitElement {
 
   formatDate(dateStr) {
     return dateStr.split('.')[0]; // Ignore microseconds.
+  }
+
+  findStateName(state) {
+    for (let item of STATE_NAMES) {
+      if (item[0] == state) {
+        return item[1];
+      }
+    }
+    // This should not normally be seen by users, but it will help us
+    // cope with data migration.
+    return `State ${state}`;
   }
 
   renderApprovalValue(approvalValue) {
@@ -197,7 +209,7 @@ class ChromedashApprovalsDialog extends LitElement {
                  >${valName[1]}</option>`
                 )}
             </select>` : html`
-            ${STATE_NAMES[approvalValue.state][1]}
+           ${this.findStateName(approvalValue.state)}
             `}
         </span>
       </div>
@@ -222,7 +234,7 @@ class ChromedashApprovalsDialog extends LitElement {
     const approvalValues = this.approvals.filter((a) =>
       a.field_id == approvalDef.id);
     const isActive = approvalValues.some((av) =>
-      ACTIVE_STATES.includes(av.state));
+      PENDING_STATES.includes(av.state));
 
     if (!isActive && !this.showAllIntents) return nothing;
 
