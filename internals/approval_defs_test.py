@@ -120,7 +120,7 @@ class IsApprovedTest(unittest.TestCase):
     feature_1_id = 123456
     self.appr_nr = models.Approval(
         feature_id=feature_1_id, field_id=1,
-        state=models.Approval.NEEDS_REVIEW,
+        state=models.Approval.REVIEW_REQUESTED,
         set_on=datetime.datetime.now(),
         set_by='one@example.com')
     self.appr_no = models.Approval(

@@ -1395,7 +1395,7 @@ class Approval(DictModel):
   def clear_request(cls, feature_id, field_id):
     """After the review requirement has been satisfied, remove the request."""
     review_requests = cls.get_approvals(
-        feature_id=feature_id, field_id=field_id, states=[cls.NEEDS_REVIEW])
+        feature_id=feature_id, field_id=field_id, states=[cls.REVIEW_REQUESTED])
     for rr in review_requests:
       rr.key.delete()
 
