@@ -50,7 +50,6 @@ def process_pending_approval_me_query():
 
   approvable_fields_ids = approval_defs.fields_approvable_by(user)
   pending_approvals = models.Approval.get_approvals(states=PENDING_STATES)
-  logging.info('pending_approvals is %r', pending_approvals)
   pending_approvals = [pa for pa in pending_approvals
                        if pa.field_id in approvable_fields_ids]
 
@@ -84,7 +83,6 @@ def process_recent_reviews_query():
   if not user:
     return []
 
-  logging.info('in process_recent_reviews_query')
   recent_approvals = models.Approval.get_approvals(
       states=FINAL_STATES, order=-models.Approval.set_on, limit=10)
 
