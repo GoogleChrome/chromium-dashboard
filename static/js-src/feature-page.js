@@ -1,6 +1,7 @@
 (function(exports) {
 const toastEl = document.querySelector('chromedash-toast');
 const copyLinkEl = document.querySelector('#copy-link');
+const approvalsIconEl = document.querySelector('#approvals-icon');
 
 // Event handler. Used in feature.html template.
 const subscribeToFeature = (featureId) => {
@@ -36,11 +37,15 @@ const shareFeature = () => {
 };
 
 function copyURLToClipboard() {
-  event.preventDefault();
   const url = copyLinkEl.href;
   navigator.clipboard.writeText(url).then(() => {
     toastEl.showMessage('Link copied');
   });
+}
+
+function openApprovalsDialog() {
+  const dialog = document.querySelector('chromedash-approvals-dialog');
+  dialog.openWithFeature(Number(FEATURE_ID));
 }
 
 // Remove loading spinner at page load.
@@ -63,6 +68,12 @@ if (shareFeatureEl) {
 if (copyLinkEl) {
   copyLinkEl.addEventListener('click', function() {
     copyURLToClipboard();
+  });
+}
+
+if (approvalsIconEl) {
+  approvalsIconEl.addEventListener('click', function() {
+    openApprovalsDialog();
   });
 }
 

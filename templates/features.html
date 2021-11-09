@@ -50,8 +50,9 @@
 
 {% block content %}
   <chromedash-featurelist
-    {% if user %}signedin{% endif %}
-    {% if user.can_edit %}canedit{% endif %}
+    {% if user %} signedInUser="{{user.email}}" {% endif %}
+    {% if user.can_edit %}canEdit{% endif %}
+    {% if user.can_approve %}canApprove{% endif %}
     ></chromedash-featurelist>
 {% endblock %}
 
