@@ -11,7 +11,8 @@ class ChromedashFeaturelist extends LitElement {
   static get properties() {
     return {
       canEdit: {type: Boolean},
-      signedin: {type: Boolean},
+      canApprove: {type: Boolean},
+      signedInUser: {type: String},
       features: {attribute: false}, // Directly edited and accessed in template/features.html
       metadataEl: {attribute: false}, // The metadata component element. Directly edited in template/features.html
       searchEl: {attribute: false}, // The search input element. Directly edited in template/features.html
@@ -28,7 +29,8 @@ class ChromedashFeaturelist extends LitElement {
     this.metadataEl = document.querySelector('chromedash-metadata');
     this.searchEl = document.querySelector('.search input');
     this.canEdit = false;
-    this.signedin = false;
+    this.canApprove = false;
+    this.signedInUser = '';
     this._hasInitialized = false; // Used to check initialization code.
     this._hasScrolledByUser = false; // Used to set the app header state.
     /* When scrollTo(), we also expand the feature. This is the id of the feature. */
@@ -45,6 +47,7 @@ class ChromedashFeaturelist extends LitElement {
      * to be bound to `this`. */
     this._onFeatureToggledBound = this._onFeatureToggled.bind(this);
     this._onStarToggledBound = this._onStarToggled.bind(this);
+    this._onOpenApprovalsBound = this._onOpenApprovals.bind(this);
 
     this._loadData();
   }
@@ -177,6 +180,12 @@ class ChromedashFeaturelist extends LitElement {
       newStarredFeatures.delete(feature.id);
     }
     this.starredFeatures = newStarredFeatures;
+  }
+
+  _onOpenApprovals(e) {
+    const featureId = e.detail.featureId;
+    const dialog = this.shadowRoot.querySelector('chromedash-approvals-dialog');
+    dialog.openWithFeature(featureId);
   }
 
   _filterProperty(propPath, regExp, feature) {
@@ -403,9 +412,11 @@ class ChromedashFeaturelist extends LitElement {
                  ?starred="${item.starred}"
                  @feature-toggled="${this._onFeatureToggledBound}"
                  @star-toggled="${this._onStarToggledBound}"
+                 @open-approvals-event="${this._onOpenApprovalsBound}"
                  .feature="${item.feature}"
-                 ?canedit="${this.canEdit}"
-                 ?signedin="${this.signedin}"
+                 ?canEdit="${this.canEdit}"
+                 ?canApprove="${this.canApprove}"
+                 ?signedIn="${this.signedInUser != ''}"
           ></chromedash-feature>
           </div>
         `)}
@@ -413,6 +424,10 @@ class ChromedashFeaturelist extends LitElement {
       ${numOverLimit > 0 ?
         html`<p>To see ${numOverLimit} earlier features, please enter a more specific query.</p>` :
         ''}
+
+      <chromedash-approvals-dialog
+        .signedInUser=${this.signedInUser}
+      ></chromedash-approvals-dialog>
     `;
   }
 }
