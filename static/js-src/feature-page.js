@@ -60,19 +60,22 @@ if (navigator.share) {
 
 const shareFeatureEl = document.querySelector('#share-feature');
 if (shareFeatureEl) {
-  shareFeatureEl.addEventListener('click', function() {
+  shareFeatureEl.addEventListener('click', function(event) {
+    event.preventDefault();
     shareFeature();
   });
 }
 
 if (copyLinkEl) {
-  copyLinkEl.addEventListener('click', function() {
+  copyLinkEl.addEventListener('click', function(event) {
+    event.preventDefault();
     copyURLToClipboard();
   });
 }
 
 if (approvalsIconEl) {
-  approvalsIconEl.addEventListener('click', function() {
+  approvalsIconEl.addEventListener('click', function(event) {
+    event.preventDefault();
     openApprovalsDialog();
   });
 }
@@ -89,14 +92,16 @@ window.csClient.getStars().then((subscribedFeatures) => {
 
 const starWhenSignedOutEl = document.querySelector('#star-when-signed-out');
 if (starWhenSignedOutEl) {
-  starWhenSignedOutEl.addEventListener('click', function(e) {
-    window.promptSignIn(e);
+  starWhenSignedOutEl.addEventListener('click', function(event) {
+    event.preventDefault();
+    window.promptSignIn(event);
   });
 }
 
 const starWhenSignedInEl = document.querySelector('#star-when-signed-in');
 if (starWhenSignedInEl) {
-  starWhenSignedInEl.addEventListener('click', function() {
+  starWhenSignedInEl.addEventListener('click', function(event) {
+    event.preventDefault();
     subscribeToFeature(Number(FEATURE_ID));
   });
 }
