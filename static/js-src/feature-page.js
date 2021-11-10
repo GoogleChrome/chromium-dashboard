@@ -1,6 +1,7 @@
 (function(exports) {
 const toastEl = document.querySelector('chromedash-toast');
 const copyLinkEl = document.querySelector('#copy-link');
+const approvalsIconEl = document.querySelector('#approvals-icon');
 
 // Event handler. Used in feature.html template.
 const subscribeToFeature = (featureId) => {
@@ -36,11 +37,15 @@ const shareFeature = () => {
 };
 
 function copyURLToClipboard() {
-  event.preventDefault();
   const url = copyLinkEl.href;
   navigator.clipboard.writeText(url).then(() => {
     toastEl.showMessage('Link copied');
   });
+}
+
+function openApprovalsDialog() {
+  const dialog = document.querySelector('chromedash-approvals-dialog');
+  dialog.openWithFeature(Number(FEATURE_ID));
 }
 
 // Remove loading spinner at page load.
@@ -55,14 +60,23 @@ if (navigator.share) {
 
 const shareFeatureEl = document.querySelector('#share-feature');
 if (shareFeatureEl) {
-  shareFeatureEl.addEventListener('click', function() {
+  shareFeatureEl.addEventListener('click', function(event) {
+    event.preventDefault();
     shareFeature();
   });
 }
 
 if (copyLinkEl) {
-  copyLinkEl.addEventListener('click', function() {
+  copyLinkEl.addEventListener('click', function(event) {
+    event.preventDefault();
     copyURLToClipboard();
+  });
+}
+
+if (approvalsIconEl) {
+  approvalsIconEl.addEventListener('click', function(event) {
+    event.preventDefault();
+    openApprovalsDialog();
   });
 }
 
@@ -78,14 +92,16 @@ window.csClient.getStars().then((subscribedFeatures) => {
 
 const starWhenSignedOutEl = document.querySelector('#star-when-signed-out');
 if (starWhenSignedOutEl) {
-  starWhenSignedOutEl.addEventListener('click', function(e) {
-    window.promptSignIn(e);
+  starWhenSignedOutEl.addEventListener('click', function(event) {
+    event.preventDefault();
+    window.promptSignIn(event);
   });
 }
 
 const starWhenSignedInEl = document.querySelector('#star-when-signed-in');
 if (starWhenSignedInEl) {
-  starWhenSignedInEl.addEventListener('click', function() {
+  starWhenSignedInEl.addEventListener('click', function(event) {
+    event.preventDefault();
     subscribeToFeature(Number(FEATURE_ID));
   });
 }

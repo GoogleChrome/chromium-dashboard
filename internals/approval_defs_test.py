@@ -12,10 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-
-
 import base64
+import datetime
 import requests
 import testing_config  # Must be imported before the module under test.
 import unittest
@@ -79,7 +77,7 @@ MOCK_APPROVALS_BY_ID = {
     2: approval_defs.ApprovalFieldDef(
         'Intent to optimize',
         'You need permission to optimize',
-        2, approval_defs.ONE_LGTM, 'https://example.com'),
+        2, approval_defs.THREE_LGTM, 'https://example.com'),
 }
 
 
@@ -114,3 +112,83 @@ class IsValidFieldIdTest(unittest.TestCase):
     self.assertTrue(approval_defs.is_valid_field_id(1))
     self.assertTrue(approval_defs.is_valid_field_id(2))
     self.assertFalse(approval_defs.is_valid_field_id(3))
+
+
+class IsApprovedTest(unittest.TestCase):
+
+  def setUp(self):
+    feature_1_id = 123456
+    self.appr_nr = models.Approval(
+        feature_id=feature_1_id, field_id=1,
+        state=models.Approval.REVIEW_REQUESTED,
+        set_on=datetime.datetime.now(),
+        set_by='one@example.com')
+    self.appr_no = models.Approval(
+        feature_id=feature_1_id, field_id=1,
+        state=models.Approval.NOT_APPROVED,
+        set_on=datetime.datetime.now(),
+        set_by='two@example.com')
+    self.appr_yes = models.Approval(
+        feature_id=feature_1_id, field_id=1,
+        state=models.Approval.APPROVED,
+        set_on=datetime.datetime.now(),
+        set_by='three@example.com')
+
+  @mock.patch('internals.approval_defs.APPROVAL_FIELDS_BY_ID',
+              MOCK_APPROVALS_BY_ID)
+  def test_is_approved(self):
+    """We know if an approval rule has been satisfied."""
+
+    # Field requires 1 LGTM
+    self.assertFalse(approval_defs.is_approved([], 1))
+    self.assertFalse(approval_defs.is_approved([self.appr_nr], 1))
+    self.assertFalse(approval_defs.is_approved([self.appr_no], 1))
+    self.assertTrue(approval_defs.is_approved([self.appr_yes], 1))
+    self.assertFalse(approval_defs.is_approved([self.appr_nr, self.appr_no], 1))
+    self.assertFalse(approval_defs.is_approved(
+        [self.appr_nr, self.appr_no, self.appr_yes], 1))
+    self.assertTrue(approval_defs.is_approved([self.appr_nr, self.appr_yes], 1))
+
+    # Field requires 3 LGTMs
+    self.assertFalse(approval_defs.is_approved([], 2))
+    self.assertFalse(approval_defs.is_approved([self.appr_nr], 2))
+    self.assertFalse(approval_defs.is_approved([self.appr_no], 2))
+    self.assertFalse(approval_defs.is_approved([self.appr_yes], 2))
+    self.assertFalse(approval_defs.is_approved([self.appr_nr, self.appr_no], 2))
+    self.assertFalse(approval_defs.is_approved(
+        [self.appr_nr, self.appr_no, self.appr_yes], 2))
+    self.assertFalse(approval_defs.is_approved([self.appr_nr, self.appr_yes], 2))
+
+    self.assertTrue(approval_defs.is_approved(
+        [self.appr_yes, self.appr_yes, self.appr_yes], 2))
+    self.assertFalse(approval_defs.is_approved(
+        [self.appr_yes, self.appr_yes, self.appr_yes, self.appr_no], 2))
+
+  @mock.patch('internals.approval_defs.APPROVAL_FIELDS_BY_ID',
+              MOCK_APPROVALS_BY_ID)
+  def test_is_resolved(self):
+    """We know if an approval request has been resolved."""
+    # Field requires 1 LGTM
+    self.assertFalse(approval_defs.is_resolved([], 1))
+    self.assertFalse(approval_defs.is_resolved([self.appr_nr], 1))
+    self.assertTrue(approval_defs.is_resolved([self.appr_no], 1))
+    self.assertTrue(approval_defs.is_resolved([self.appr_yes], 1))
+    self.assertTrue(approval_defs.is_resolved([self.appr_nr, self.appr_no], 1))
+    self.assertTrue(approval_defs.is_resolved(
+        [self.appr_nr, self.appr_no, self.appr_yes], 1))
+    self.assertTrue(approval_defs.is_resolved([self.appr_nr, self.appr_yes], 1))
+
+    # Field requires 3 LGTMs
+    self.assertFalse(approval_defs.is_resolved([], 2))
+    self.assertFalse(approval_defs.is_resolved([self.appr_nr], 2))
+    self.assertTrue(approval_defs.is_resolved([self.appr_no], 2))
+    self.assertFalse(approval_defs.is_resolved([self.appr_yes], 2))
+    self.assertTrue(approval_defs.is_resolved([self.appr_nr, self.appr_no], 2))
+    self.assertTrue(approval_defs.is_resolved(
+        [self.appr_nr, self.appr_no, self.appr_yes], 2))
+    self.assertFalse(approval_defs.is_resolved([self.appr_nr, self.appr_yes], 2))
+
+    self.assertTrue(approval_defs.is_resolved(
+        [self.appr_yes, self.appr_yes, self.appr_yes], 2))
+    self.assertTrue(approval_defs.is_resolved(
+        [self.appr_yes, self.appr_yes, self.appr_yes, self.appr_no], 2))

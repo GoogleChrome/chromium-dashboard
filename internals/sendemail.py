@@ -134,7 +134,7 @@ def call_py3_task_handler(handler_path, task_dict):
   """Request that our py3 code handle the rest of the work."""
   handler_host = 'http://localhost:8080'
   if settings.APP_ID == 'cr-status':
-    handler_host = 'https://chromestatus.com'
+    handler_host = 'https://cr-status.appspot.com'
   if settings.APP_ID == 'cr-status-staging':
     handler_host = 'https://cr-status-staging.appspot.com'
   handler_url = handler_host + handler_path

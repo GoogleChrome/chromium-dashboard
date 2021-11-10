@@ -20,6 +20,7 @@ import requests
 
 from framework import permissions
 from framework import ramcache
+from internals import models
 import settings
 
 CACHE_EXPIRATION = 60 * 60  # One hour
@@ -116,3 +117,35 @@ def fields_approvable_by(user):
 def is_valid_field_id(field_id):
   """Return true if field_id is a known field."""
   return field_id in APPROVAL_FIELDS_BY_ID
+
+
+def is_approved(approval_values, field_id):
+  """Return true if we have all needed APPROVED values and no NOT_APPROVED."""
+  count = 0
+  for av in approval_values:
+    if av.state == models.Approval.APPROVED:
+      count += 1
+    elif av.state == models.Approval.NOT_APPROVED:
+      return False
+  afd = APPROVAL_FIELDS_BY_ID[field_id]
+
+  if afd.rule == ONE_LGTM:
+    return count >= 1
+  elif afd.rule == THREE_LGTM:
+    return count >= 3
+  else:
+    logging.error('Unexpected approval rule')
+    return False
+
+
+def is_resolved(approval_values, field_id):
+  """Return true if the review is done (approved or not approved)."""
+  if is_approved(approval_values, field_id):
+    return True
+
+  # Any NOT_APPROVED value means that the review is no longer pending.
+  for av in approval_values:
+    if av.state == models.Approval.NOT_APPROVED:
+      return True
+
+  return False

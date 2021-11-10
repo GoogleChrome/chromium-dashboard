@@ -410,6 +410,18 @@ class ApprovalTest(testing_config.CustomTestCase):
         3,
         len(models.Approval.query().fetch(None)))
 
+  def test_clear_request(self):
+    """We can clear a review request so that it is no longer pending."""
+    self.appr_1.state = models.Approval.REVIEW_REQUESTED
+    self.appr_1.put()
+
+    models.Approval.clear_request(self.feature_1_id, 1)
+
+    remaining_apprs = models.Approval.get_approvals(
+        feature_id=self.feature_1_id, field_id=1,
+        states=[models.Approval.REVIEW_REQUESTED])
+    self.assertEqual([], remaining_apprs)
+
 
 class CommentTest(testing_config.CustomTestCase):
 
