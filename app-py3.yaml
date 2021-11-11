@@ -2,7 +2,7 @@
 
 runtime: python39
 service: app-py3
-instance_class: F4
+instance_class: F4_1G
 
 automatic_scaling:
   min_idle_instances: 1
