@@ -121,7 +121,7 @@ section {
     color: $gray-3;
     line-height: 20px;
 
-    summary {
+    summary p:not(.preformatted) {
       text-overflow: ellipsis;
       overflow: hidden;
       white-space: nowrap;
