@@ -186,7 +186,8 @@ def handle_incoming_mail(addr=None):
   if precedence.lower() in ['bulk', 'junk']:
     logging.info('Precedence: %r indicates an autoresponder', precedence)
     return {'message': 'Wrong precedence'}
-  from_addrs = _extract_addrs(msg.get('from', ''))
+  from_addrs = (_extract_addrs(msg.get('x-original-from', '')) or
+                _extract_addrs(msg.get('from', '')))
   if from_addrs:
     from_addr = from_addrs[0]
   else:
@@ -212,6 +213,7 @@ def handle_incoming_mail(addr=None):
       'in_reply_to': in_reply_to,
       'body': body,
       }
+  logging.info('task_dict is %r', task_dict)
   response = call_py3_task_handler('/tasks/detect-intent', task_dict)
 
   if response.status_code and response.status_code != 200:
