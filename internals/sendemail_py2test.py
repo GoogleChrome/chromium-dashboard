@@ -222,7 +222,8 @@ def MakeMessage(header_list, body):
 
 
 HEADER_LINES = [
-    ('From', 'user@example.com'),
+    ('X-Original-From', 'user@example.com'),
+    ('From', 'mailing-list@example.com'),
     ('To', settings.INBOUND_EMAIL_ADDR),
     ('Cc', 'other@chromium.org'),
     ('Subject', 'Intent to Ship: Featurename'),
@@ -288,7 +289,7 @@ class InboundEmailHandlerTest(unittest.TestCase):
   @mock.patch('internals.sendemail.get_incoming_message')
   def test_handle_incoming_mail__normal(
       self, mock_get_incoming_message, mock_call_py3):
-    """Reject the incoming email if it we cannot parse the From: line."""
+    """A valid incoming email is handed off to py3 code."""
     msg = MakeMessage(HEADER_LINES, 'Please review')
     mock_get_incoming_message.return_value = msg
     mock_call_py3.return_value = testing_config_py2.Blank(status_code=200)
@@ -301,6 +302,31 @@ class InboundEmailHandlerTest(unittest.TestCase):
     expected_task_dict = {
       'to_addr': settings.INBOUND_EMAIL_ADDR,
       'from_addr': 'user@example.com',
+      'subject': 'Intent to Ship: Featurename',
+      'in_reply_to': 'fake message id',
+      'body': 'Please review',
+    }
+    mock_call_py3.assert_called_once_with(
+        '/tasks/detect-intent', expected_task_dict)
+
+  @mock.patch('internals.sendemail.call_py3_task_handler')
+  @mock.patch('internals.sendemail.get_incoming_message')
+  def test_handle_incoming_mail__fallback_to_mailing_list(
+      self, mock_get_incoming_message, mock_call_py3):
+    """If there is no personal X-Original-From, use the mailing list From:."""
+    msg = MakeMessage(HEADER_LINES, 'Please review')
+    del msg['X-Original-From']
+    mock_get_incoming_message.return_value = msg
+    mock_call_py3.return_value = testing_config_py2.Blank(status_code=200)
+
+    with sendemail.app.test_request_context(
+        '/_ah/mail/%s' % settings.INBOUND_EMAIL_ADDR):
+      actual = sendemail.handle_incoming_mail(settings.INBOUND_EMAIL_ADDR)
+
+    self.assertEqual({'message': 'Done'}, actual)
+    expected_task_dict = {
+      'to_addr': settings.INBOUND_EMAIL_ADDR,
+      'from_addr': 'mailing-list@example.com',
       'subject': 'Intent to Ship: Featurename',
       'in_reply_to': 'fake message id',
       'body': 'Please review',
