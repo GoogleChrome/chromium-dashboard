@@ -238,7 +238,7 @@ class ChromedashTimeline extends LitElement {
         featureName = convertToCamelCaseFeatureName(featureName);
       }
       const REPORT_ID = '1M8kXOqPkwYNKjJhtag_nvDNJCpvmw_ri';
-      const dsEmbedUrl = `https://datastudio.google.com/embed/reporting/${REPORT_ID}/page/tc5b?config=%7B"df3":"include%25EE%2580%25800%25EE%2580%2580IN%25EE%2580%2580${featureName}"%7D`;
+      const dsEmbedUrl = `https://datastudio.google.com/embed/reporting/${REPORT_ID}/page/tc5b?params=%7B"df3":"include%25EE%2580%25800%25EE%2580%2580IN%25EE%2580%2580${featureName}"%7D`;
       const hadEl = this.shadowRoot.getElementById('httparchivedata');
       hadEl.src = dsEmbedUrl;
 
