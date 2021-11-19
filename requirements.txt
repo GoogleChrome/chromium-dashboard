@@ -39,3 +39,7 @@ itsdangerous==1.1.0
 requests==2.25.1
 
 # See also: requirements.dev.txt
+
+# Work-around for failure to deploy
+# https://stackoverflow.com/questions/69936420/google-cloud-platform-app-deploy-failure-due-to-pyparsing
+pyparsing==2.4.7

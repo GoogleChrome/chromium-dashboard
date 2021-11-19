@@ -286,6 +286,15 @@ class ChromedashApprovalsDialog extends LitElement {
     `;
   }
 
+  canPostTo(threadArchiveUrl) {
+    return (
+      threadArchiveUrl &&
+        (threadArchiveUrl.startsWith(
+          'https://groups.google.com/a/chromium.org/d/msgid/blink-dev/') ||
+         threadArchiveUrl.startsWith(
+           'https://groups.google.com/d/msgid/jrobbins-test')));
+  }
+
   renderControls() {
     let showAllCheckbox = nothing;
     if (this.subsetPending) {
@@ -296,8 +305,16 @@ class ChromedashApprovalsDialog extends LitElement {
            >Show all intents</label>
       `;
     }
-    // TODO: add this when backend implements it.
-    let postToListCheckbox = nothing;
+    let postToSelect = html`
+      <select style="margin-right:1em" id="post_to_approval_field">
+        <option value="0">Don't post to mailing list</option>
+        ${APPROVAL_DEFS.map((apprDef) => html`
+          <option value="${apprDef.id}"
+                  ?disabled=${!this.canPostTo(this.feature[apprDef.threadField])}
+          >Post to ${apprDef.name} thread</option>
+        `)}
+      </select>
+      `;
 
     return html`
      <div>
@@ -309,7 +326,7 @@ class ChromedashApprovalsDialog extends LitElement {
      </div>
      <div class="controls">
        ${showAllCheckbox}
-       ${postToListCheckbox}
+       ${postToSelect}
        <button class="primary"
          @click=${this.handleSave}
          ?disabled=${!this.needsSave}
@@ -371,10 +388,14 @@ class ChromedashApprovalsDialog extends LitElement {
     }
     const commentArea = this.shadowRoot.querySelector('#comment_area');
     const commentText = commentArea.value.trim();
+    const postToSelect = this.shadowRoot.querySelector(
+      '#post_to_approval_field');
+    const postToApprovalFieldId = postToSelect && postToSelect.value || 0;
     if (commentText != '') {
       promises.push(
         window.csClient.postComment(
-          this.feature.id, null, null, commentText));
+          this.feature.id, null, null, commentText,
+          Number(postToApprovalFieldId)));
     }
     Promise.all(promises).then(() => {
       this.shadowRoot.querySelector('chromedash-dialog').close();
