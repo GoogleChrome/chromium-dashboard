@@ -1,6 +1,3 @@
-
-
-
 # -*- coding: utf-8 -*-
 # Copyright 2017 Google Inc.
 #
@@ -27,8 +24,6 @@ import os
 from framework import ramcache
 from google.cloud import ndb
 import requests
-# from google.appengine.api import users
-from framework import users
 
 from django.template.loader import render_to_string
 from django.utils.html import conditional_escape as escape
@@ -36,6 +31,7 @@ from django.utils.html import conditional_escape as escape
 from framework import basehandlers
 from framework import cloud_tasks_helpers
 import settings
+from internals import approval_defs
 from internals import models
 
 
@@ -269,3 +265,70 @@ class FeatureChangeHandler(basehandlers.FlaskHandler):
               one_email_dict['html'][:settings.MAX_LOG_LINE])
 
     return {'message': 'Done'}
+
+
+BLINK_DEV_ARCHIVE_URL_PREFIX = (
+    'https://groups.google.com/a/chromium.org/d/msgid/blink-dev/')
+TEST_ARCHIVE_URL_PREFIX = (
+    'https://groups.google.com/d/msgid/jrobbins-test/')
+
+def get_thread_id(feature, approval_field):
+  """If we have the URL of the Google Groups thread, we can get its ID."""
+  if approval_field == approval_defs.PrototypeApproval:
+    thread_url = feature.intent_to_implement_url
+  # TODO(jrobbins): Ready-for-trial threads
+  if approval_field == approval_defs.ExperimentApproval:
+    thread_url = feature.intent_to_experiment_url
+  if approval_field == approval_defs.ExtendExperimentApproval:
+    thread_url = feature.intent_to_extend_experiment_url
+  if approval_field == approval_defs.ShipApproval:
+    thread_url = feature.intent_to_ship_url
+
+  if not thread_url:
+    return None
+
+  thread_id = None
+  if thread_url.startswith(BLINK_DEV_ARCHIVE_URL_PREFIX):
+    thread_id = thread_url[len(BLINK_DEV_ARCHIVE_URL_PREFIX):]
+  if thread_url.startswith(TEST_ARCHIVE_URL_PREFIX):
+    thread_id = thread_url[len(TEST_ARCHIVE_URL_PREFIX):]
+
+  return thread_id
+
+
+def post_comment_to_mailing_list(
+    feature, approval_field_id, author_addr, comment_content):
+  """Post a message to the intent thread."""
+  to_addr = settings.REVIEW_COMMENT_MAILING_LIST
+  from_user = author_addr.split('@')[0]
+  approval_field = approval_defs.APPROVAL_FIELDS_BY_ID[approval_field_id]
+  subject = '%s: %s' % (approval_field.name, feature.name)
+  thread_id = get_thread_id(feature, approval_field)
+  references = None
+  if thread_id:
+    references = '<%s>' % thread_id
+  html = render_to_string(
+      'review-comment-email.html', {'comment_content': comment_content})
+
+  one_email_task = {
+      'to': to_addr,
+      'from_user': from_user,
+      'references': references,
+      'subject': subject,
+      'html': html,
+      }
+
+  if settings.SEND_EMAIL:
+    cloud_tasks_helpers.enqueue_task(
+        '/tasks/outbound-email', one_email_task)
+  else:
+    logging.info(
+        'Would send the following email:\n'
+        'To: %s\n'
+        'From: %s\n'
+        'References: %s\n'
+        'Subject: %s\n'
+        'Body:\n%s',
+        one_email_task['to'], one_email_task['from_user'],
+        one_email_task['references'], one_email_task['subject'],
+        one_email_task['html'][:settings.MAX_LOG_LINE])

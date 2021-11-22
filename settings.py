@@ -68,6 +68,9 @@ LOGIN_PAGE_URL = '/features?loginStatus=False'
 
 INBOUND_EMAIL_ADDR = 'chromestatus@cr-status-staging.appspotmail.com'
 
+# This is where review comment emails are sent:
+REVIEW_COMMENT_MAILING_LIST = 'jrobbins-test@googlegroups.com'
+
 # Truncate some log lines to stay under limits of Google Cloud Logging.
 MAX_LOG_LINE = 200 * 1000
 
@@ -90,6 +93,7 @@ elif APP_ID == 'cr-status':
       '999517574127-7ueh2a17bv1ave9thlgtap19pt5qjp4g.'
       'apps.googleusercontent.com')
   INBOUND_EMAIL_ADDR = 'chromestatus@cr-status.appspotmail.com'
+  REVIEW_COMMENT_MAILING_LIST = 'blink-dev@chromium.org'
 elif APP_ID == 'cr-status-staging':
   STAGING = True
   SEND_EMAIL = True
