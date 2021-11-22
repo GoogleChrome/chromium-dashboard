@@ -90,6 +90,38 @@ def detect_thread_url(body):
   return None
 
 
+LGTM_RE = re.compile(
+    r'To view this discussion on the web visit\s+'
+    r'(https://groups.google.com/a/chromium.org/d/msgid/blink-dev/'
+    r'\S+)[.]')
+
+
+def detect_lgtm(body):
+  """Return true if LGTM is on first non-blank line."""
+  lines = body.split('\n')
+
+  first_nonblank_line = ''
+  for line in lines:
+    if line.strip():
+      first_nonblank_line = line.strip()
+      break
+
+  match = LGTM_RE.search(first_nonblank_line)
+  return match
+
+
+def is_lgtm_allowed(feature, approval_field, from_addr):
+  """Return true if the user is allowed to approve this feature."""
+  return False
+
+
+def detect_new_thread(feature_id, approval_field):
+  """Return True if there are no previous approval values for this intent."""
+  existing_approvals = models.Approval.get_approvals(
+      feature_id=feature_id, field_id=approval_field.field_id)
+  return not existing_approvals
+
+
 def remove_markdown(body):
   """Remove the simple markdown used by Google Groups."""
   return body.replace('*', '')
@@ -122,19 +154,59 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
       return {'message': 'Not an intent'}
 
     feature_id = detect_feature_id(body)
-    if not feature_id:
-      logging.info('Could not find feature ID')
-      return {'message': 'No feature ID'}
-    feature = models.Feature.get_by_id(feature_id)
-    if not feature:
-      logging.info('Could not retrieve feature')
-      return {'message': 'Feature not found'}
-
     thread_url = detect_thread_url(body)
+    feature, message = self.load_detected_feature(
+        feature_id, thread_url, approval_field)
+    if message:
+      logging.info(message)
+      return {'message': message}
 
     self.set_intent_thread_url(feature, approval_field, thread_url)
-    self.create_approvals(feature_id, approval_field, from_addr, body)
+    self.create_approvals(feature, approval_field, from_addr, body)
     return {'message': 'Done'}
+
+  def load_detected_feature(self, feature_id, thread_url, approval_field):
+    """Find the feature being referenced by this email message."""
+    # If the message had a link to a chromestatus entry, use its ID.
+    if feature_id:
+      return models.Feature.get_by_id(feature_id), None
+
+    # If there is a discussion link, and we previously stored that link
+    # for a feature, then that is the feature being updated.
+    if thread_url:
+      matching_features = []
+      if approval_field == approval_defs.PrototypeApproval:
+        query = models.Feature.query(
+            models.Feature.intent_to_implement_url == thread_url)
+        matching_features = query.fetch()
+      # TODO(jrobbins): Ready-for-trial threads
+      elif approval_field == approval_defs.ExperimentApproval:
+        query = models.Feature.query(
+            models.Feature.intent_to_experiment_url == thread_url)
+        matching_features = query.fetch()
+      elif approval_field == approval_defs.ExtendExperimentApproval:
+        query = models.Feature.query(
+            models.Feature.intent_to_extend_experiment_url == thread_url)
+        matching_features = query.fetch()
+      elif approval_field == approval_defs.ShipApproval:
+        query = models.Feature.query(
+            models.Feature.intent_to_ship_url == thread_url)
+        matching_features = query.fetch()
+      else:
+        return None, 'Unsupported approval field'
+
+      if len(matching_features) == 0:
+        return None, 'No feature entry references this discussion thread'
+      if len(matching_features) > 1:
+        ids = [f.key.integer_id() for f in matching_features]
+        return None, 'Ambiguous feature entries %r' % ids
+
+    # We could not find the feature.  Try to give a helpful error message.
+    if not feature_id:
+      return None, 'No feature ID or discussion link'
+
+    if not feature:
+      return None, 'Feature not found'
 
   def set_intent_thread_url(self, feature, approval_field, thread_url):
     """If the feature has no previous thread URL for this intent, set it."""
@@ -163,17 +235,20 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
       feature.intent_to_ship_url = thread_url
       feature.put()
 
-  def create_approvals(self, feature_id, approval_field, from_addr, body):
+  def create_approvals(self, feature, approval_field, from_addr, body):
     """Store either a REVIEW_REQUESTED or an APPROVED approval value."""
-    # Case 1: This is a new intent thread
-    existing_approvals = models.Approval.get_approvals(
-        feature_id=feature_id, field_id=approval_field.field_id)
-    if not existing_approvals:
+    feature_id = feature.key.integer_id()
+
+    # Case 1: Detect LGTMs in body, verify that sender has permission,
+    # set an approval value, and clear the original REVIEW_REQUESTED if
+    # the approval rule (1 or 3 LTGMs) is satisfied.
+    if (detect_lgtm(body) and
+        is_lgtm_allowed(feature, approval_field, from_addr)):
+      logging.info('found LGTM @@@')
+
+    # Case 2: Create a review request for any discussion that does not already
+    # have any approval values stored.
+    elif detect_new_thread(feature_id, approval_field):
       models.Approval.set_approval(
           feature_id, approval_field.field_id,
           models.Approval.REVIEW_REQUESTED, from_addr)
-
-    # Case 2: This is an existing intent thread
-    # TODO(jrobbins): Detect LGTMs in body, verify that sender has permission,
-    # set an approval value, and clear the original REVIEW_REQUESTED if
-    # the approval rule (1 or 3 LTGMs) is satisfied.
