@@ -273,7 +273,7 @@ TEST_ARCHIVE_URL_PREFIX = (
     'https://groups.google.com/d/msgid/jrobbins-test/')
 
 def get_thread_id(feature, approval_field):
-  """If we have the URL of the Google Groups thread, we can get it's ID."""
+  """If we have the URL of the Google Groups thread, we can get its ID."""
   if approval_field == approval_defs.PrototypeApproval:
     thread_url = feature.intent_to_implement_url
   # TODO(jrobbins): Ready-for-trial threads
