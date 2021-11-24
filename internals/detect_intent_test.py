@@ -27,6 +27,16 @@ test_app = flask.Flask(__name__)
 
 class FunctionTest(testing_config.CustomTestCase):
 
+  def setUp(self):
+    self.feature_1 = models.Feature(
+        name='feature one', summary='detailed sum', category=1, visibility=1,
+        standardization=1, web_dev_views=1, impl_status_chrome=1,
+        intent_stage=models.INTENT_IMPLEMENT)
+    self.feature_1.put()
+
+  def tearDown(self):
+    self.feature_1.key.delete()
+
   def test_detect_field(self):
     """We can detect intent thread type by subject line."""
     test_data = {
@@ -104,79 +114,83 @@ class FunctionTest(testing_config.CustomTestCase):
          '-oNTb%2BZjiJk%2B6RNb9%2Bv05w%40mail.gmail.com'),
         detect_intent.detect_thread_url(footer))
 
-    def test_detect_lgtm__good(self):
-      """We can find an LGTM in the email body text."""
-      self.assertTrue(detect_intent.detect_lgtm('LGTM'))
-      self.assertTrue(detect_intent.detect_lgtm('Lgtm'))
-      self.assertTrue(detect_intent.detect_lgtm('lgtm'))
-      self.assertTrue(detect_intent.detect_lgtm('LGTM1'))
-      self.assertTrue(detect_intent.detect_lgtm('LGTM2'))
-      self.assertTrue(detect_intent.detect_lgtm('LGTM3'))
+  def test_detect_lgtm__good(self):
+    """We can find an LGTM in the email body text."""
+    self.assertTrue(detect_intent.detect_lgtm('LGTM'))
+    self.assertTrue(detect_intent.detect_lgtm('Lgtm'))
+    self.assertTrue(detect_intent.detect_lgtm('lgtm'))
+    self.assertTrue(detect_intent.detect_lgtm('LGTM1'))
+    self.assertTrue(detect_intent.detect_lgtm('LGTM2'))
+    self.assertTrue(detect_intent.detect_lgtm('LGTM3'))
 
-      self.assertTrue(detect_intent.detect_lgtm('LGTM with nits'))
-      self.assertTrue(detect_intent.detect_lgtm('This LGTM!'))
-      self.assertTrue(detect_intent.detect_lgtm('Sounds good! LGTM2'))
-      self.assertTrue(detect_intent.detect_lgtm('LGTM to extend M94-M97'))
+    self.assertTrue(detect_intent.detect_lgtm('LGTM with nits'))
+    self.assertTrue(detect_intent.detect_lgtm('This LGTM!'))
+    self.assertTrue(detect_intent.detect_lgtm('Sounds good! LGTM2'))
+    self.assertTrue(detect_intent.detect_lgtm('LGTM to extend M94-M97'))
 
-      self.assertTrue(detect_intent.detect_lgtm('''
+    self.assertTrue(detect_intent.detect_lgtm('''
 
-        LGTM
+      LGTM
 
-        Thanks for all your work.
+      Thanks for all your work.
+    '''))
+
+  def test_detect_lgtm__bad(self):
+    """We don't mistakenly count a message as an LGTM ."""
+    self.assertFalse(detect_intent.detect_lgtm("> LGTM from other approver"))
+
+    self.assertFalse(detect_intent.detect_lgtm('LG'))
+    self.assertFalse(detect_intent.detect_lgtm('Looks good to me'))
+
+    self.assertFalse(detect_intent.detect_lgtm('Almost LGTM'))
+    self.assertFalse(detect_intent.detect_lgtm('This is not an LGTM'))
+    self.assertFalse(detect_intent.detect_lgtm('Not LGTM yet'))
+    self.assertFalse(detect_intent.detect_lgtm('You still need LGTM'))
+    self.assertFalse(detect_intent.detect_lgtm("You're missing LGTM"))
+    self.assertFalse(detect_intent.detect_lgtm("You're missing a LGTM"))
+    self.assertFalse(detect_intent.detect_lgtm("You're missing an LGTM"))
+
+    self.assertFalse(detect_intent.detect_lgtm('''
+      Any discussion whatsoever that might even include the word
+      LGTM on any line other than the first line.
       '''))
 
-    def test_detect_lgtm__bad(self):
-      """We don't mistakenly count a message as an LGTM ."""
-      self.assertFalse(detect_intent.detect_lgtm("> LGTM from other approver"))
+  @mock.patch('internals.approval_defs.get_approvers')
+  def test_is_lgtm_allowed__approver(self, mock_get_approvers):
+    """A user who is in the list of approvers can LGTM."""
+    mock_get_approvers.return_value = ['owner@example.com']
+    self.assertTrue(detect_intent.is_lgtm_allowed(
+        'owner@example.com', self.feature_1, approval_defs.ShipApproval))
+    mock_get_approvers.assert_called_once_with(
+        approval_defs.ShipApproval.field_id)
 
-      self.assertFalse(detect_intent.detect_lgtm('LG'))
-      self.assertFalse(detect_intent.detect_lgtm('Looks good to me'))
+  @mock.patch('framework.permissions.can_admin_site')
+  @mock.patch('internals.approval_defs.get_approvers')
+  def test_is_lgtm_allowed__admin(
+      self, mock_get_approvers, mock_can_admin_site):
+    """A site admin can LGTM."""
+    mock_get_approvers.return_value = ['owner@example.com']
+    mock_can_admin_site.return_value = True
+    self.assertTrue(detect_intent.is_lgtm_allowed(
+        'admin@example.com', self.feature_1, approval_defs.ShipApproval))
 
-      self.assertFalse(detect_intent.detect_lgtm('Almost LGTM'))
-      self.assertFalse(detect_intent.detect_lgtm('This is not an LGTM'))
-      self.assertFalse(detect_intent.detect_lgtm('Not LGTM yet'))
-      self.assertFalse(detect_intent.detect_lgtm('You still need LGTM'))
-      self.assertFalse(detect_intent.detect_lgtm("You're missing LGTM"))
-      self.assertFalse(detect_intent.detect_lgtm("You're missing a LGTM"))
-      self.assertFalse(detect_intent.detect_lgtm("You're missing an LGTM"))
+  @mock.patch('internals.approval_defs.get_approvers')
+  def test_is_lgtm_allowed__other(self, mock_get_approvers):
+    """An average user cannot LGTM."""
+    mock_get_approvers.return_value = ['owner@example.com']
+    self.assertFalse(detect_intent.is_lgtm_allowed(
+        'other@example.com', self.feature_1, approval_defs.ShipApproval))
 
-      self.assertFalse(detect_intent.detect_lgtm('''
-        Any discussion whatsoever that might even include the word
-        LGTM on any line other than the first line.
-        '''))
+  @mock.patch('internals.models.Approval.get_approvals')
+  def test_detect_new_thread(self, mock_get_approvals):
+    """A thread is new if there are no previous approval values."""
+    mock_get_approvals.return_value = []
+    self.assertTrue(detect_intent.detect_new_thread(
+        self.feature_1.key.integer_id(), approval_defs.ShipApproval))
 
-    @mock.patch('internals.approval_defs.get_approvers')
-    def test_is_lgtm_allowed__approver(self, mock_get_approvers):
-      """A user who is in the list of approvers can LGTM."""
-      mock_get_approvers.return_value = ['owner@example.com']
-      self.assertTrue(detect_intent.is_lgtm_allowed(
-          'owner@example.com', f, approval_defs.ShipApproval))
-
-    @mock.patch('framework.permissions.can_admin_site')
-    @mock.patch('internals.approval_defs.get_approvers')
-    def test_is_lgtm_allowed__admin(
-        self, mock_get_approvers, mock_can_admin_site):
-      """A site admin can LGTM."""
-      mock_get_approvers.return_value = ['owner@example.com']
-      mock_can_admin_site.return_value = True
-      self.assertTrue(detect_intent.is_lgtm_allowed(
-          'admin@example.com', f, approval_defs.ShipApproval))
-
-    @mock.patch('internals.approval_defs.get_approvers')
-    def test_is_lgtm_allowed__other(self, mock_get_approvers):
-      """An average user cannot LGTM."""
-      mock_get_approvers.return_value = ['owner@example.com']
-      self.assertFalse(detect_intent.is_lgtm_allowed(
-          'other@example.com', f, approval_defs.ShipApproval))
-
-    @mock.patch('internals.models.Approval.get_approvals')
-    def test_detect_new_thread(self, mock_get_approvals):
-      """A thread is new if there are no previsou approval values."""
-      mock_get_approvals.return_value = []
-      self.assertTrue(detect_intent.detect_new_thread('id', 'field'))
-
-      mock_get_approvals.return_value = ['fake approval value']
-      self.assertTrue(detect_intent.detect_new_thread('id', 'field'))
+    mock_get_approvals.return_value = ['fake approval value']
+    self.assertFalse(detect_intent.detect_new_thread(
+        self.feature_1.key.integer_id(), approval_defs.ShipApproval))
 
 
 class IntentEmailHandlerTest(testing_config.CustomTestCase):

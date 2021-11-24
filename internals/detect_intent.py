@@ -117,7 +117,7 @@ def detect_lgtm(body):
 def is_lgtm_allowed(from_addr, feature, approval_field):
   """Return true if the user is allowed to approve this feature."""
   user = users.User(email=from_addr)
-  approvers = approval_defs.get_approvers(field_id)
+  approvers = approval_defs.get_approvers(approval_field.field_id)
   allowed = permissions.can_approve_feature(user, feature, approvers)
   return allowed
 
@@ -271,16 +271,13 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
 
   def record_lgtm(self, feature, approval_field, from_addr):
     """Add from_addr to the old way or recording LGTMs."""
-
-    # Note: Intent to prototype has no old field
-    # TODO(jrobbins): Ready-for-trial threads
+    # Note: Intent-to-prototype and Intent-to-extend are not checked
+    # here because there are no old fields for them.
 
     if (approval_field == approval_defs.ExperimentApproval and
         from_addr not in feature.i2e_lgtms):
       feature.i2e_lgtms += [from_addr]
       feature.put()
-
-    # Note: Intent to extend experiment has no old field
 
     if (approval_field == approval_defs.ShipApproval and
         from_addr not in feature.i2s_lgtms):
