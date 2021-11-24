@@ -497,6 +497,15 @@ ALL_FIELDS = {
         help_text=('Full email addresses of API owners who LGTM\'d '
                    'the Request for Deprecation Trial email thread.')),
 
+    'next_review_date': forms.DateField(
+        required=False, label='Next review date',
+        # Django DateField and DateInput default to plain text,
+        # so tell it use type="date".
+        widget=forms.DateInput(attrs={'type': 'date'}),
+        help_text=('If you have gotten review feedback and need time '
+                   'to respond before this feature is reviewed again, '
+                   'fill in the date that you will be ready.')),
+
     'debuggability': forms.CharField(
         label='Debuggability', required=True,
         widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 1480}),
@@ -726,7 +735,7 @@ ImplStatus_Incubate = define_form_class_using_shared_fields(
 NewFeature_Prototype = define_form_class_using_shared_fields(
     'NewFeature_Prototype',
     ('spec_link', 'standard_maturity', 'api_spec', 'spec_mentors',
-     'intent_to_implement_url', 'comments'))
+     'intent_to_implement_url', 'next_review_date', 'comments'))
   # TODO(jrobbins): advise user to request a tag review
 
 
@@ -782,7 +791,7 @@ NewFeature_OriginTrial = define_form_class_using_shared_fields(
      'experiment_extension_reason', 'ongoing_constraints',
      'origin_trial_feedback_url', 'intent_to_experiment_url',
      'intent_to_extend_experiment_url',
-     'i2e_lgtms', 'comments'))
+     'i2e_lgtms', 'next_review_date', 'comments'))
 
 
 ImplStatus_OriginTrial = define_form_class_using_shared_fields(
@@ -797,7 +806,8 @@ Most_PrepareToShip = define_form_class_using_shared_fields(
     'Most_PrepareToShip',
     ('tag_review', 'tag_review_status',
      'origin_trial_feedback_url',
-     'launch_bug_url', 'intent_to_ship_url', 'i2s_lgtms', 'comments'))
+     'launch_bug_url', 'intent_to_ship_url', 'i2s_lgtms',
+     'next_review_date', 'comments'))
 
 
 Any_Ship = define_form_class_using_shared_fields(
@@ -809,7 +819,7 @@ Existing_Prototype = define_form_class_using_shared_fields(
     'Existing_Prototype',
     ('owner', 'blink_components', 'motivation', 'explainer_links',
      'spec_link', 'standard_maturity', 'api_spec', 'bug_url', 'launch_bug_url',
-     'intent_to_implement_url', 'comments'))
+     'intent_to_implement_url', 'next_review_date', 'comments'))
 
 
 Existing_OriginTrial = define_form_class_using_shared_fields(
@@ -817,7 +827,7 @@ Existing_OriginTrial = define_form_class_using_shared_fields(
     ('experiment_goals', 'experiment_risks',
      'experiment_extension_reason', 'ongoing_constraints',
      'intent_to_experiment_url', 'intent_to_extend_experiment_url',
-     'i2e_lgtms', 'origin_trial_feedback_url', 'comments'))
+     'i2e_lgtms', 'next_review_date', 'origin_trial_feedback_url', 'comments'))
 
 
 PSA_Implement = define_form_class_using_shared_fields(
@@ -830,7 +840,7 @@ PSA_PrepareToShip = define_form_class_using_shared_fields(
     'PSA_PrepareToShip',
     ('tag_review',
      'intent_to_implement_url', 'origin_trial_feedback_url',
-     'launch_bug_url', 'intent_to_ship_url', 'comments'))
+     'launch_bug_url', 'intent_to_ship_url', 'next_review_date', 'comments'))
 
 
 Deprecation_Implement = define_form_class_using_shared_fields(
@@ -843,7 +853,7 @@ Deprecation_PrepareToShip = define_form_class_using_shared_fields(
     'Deprecation_PrepareToShip',
     ('impl_status_chrome', 'tag_review',
      'intent_to_implement_url', 'origin_trial_feedback_url',
-     'launch_bug_url', 'comments'))
+     'next_review_date', 'launch_bug_url', 'comments'))
 
 
 # Note: Even though this is similar to another form, it is likely to change.
@@ -857,14 +867,14 @@ Deprecation_DeprecationTrial = define_form_class_using_shared_fields(
      'intent_to_experiment_url=r4dt_url',
      'intent_to_extend_experiment_url',
      'i2e_lgtms=r4dt_lgtms',  # form field name matches underlying DB field.
-     'origin_trial_feedback_url', 'comments'))
+     'next_review_date', 'origin_trial_feedback_url', 'comments'))
 
 
 # Note: Even though this is similar to another form, it is likely to change.
 Deprecation_PrepareToShip = define_form_class_using_shared_fields(
     'Deprecation_PrepareToShip',
     ('impl_status_chrome',
-     'intent_to_ship_url', 'i2s_lgtms',
+     'intent_to_ship_url', 'i2s_lgtms', 'next_review_date',
      'launch_bug_url', 'comments'))
 
 
@@ -884,6 +894,7 @@ Flat_Metadata = define_form_class_using_shared_fields(
      'impl_status_chrome',
      'blink_components',
      'bug_url', 'launch_bug_url',
+     'next_review_date',
      'comments'))
 
 
@@ -1012,7 +1023,7 @@ DISPLAY_IN_FEATURE_HIGHLIGHTS = [
 
 DISPLAY_FIELDS_IN_STAGES = {
     'Metadata': make_display_specs(
-        'category', 'feature_type', 'intent_stage',
+        'category', 'feature_type', 'intent_stage', 'next_review_date',
         ),
     models.INTENT_INCUBATE: make_display_specs(
         'initial_public_proposal_url', 'explainer_links',

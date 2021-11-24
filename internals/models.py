@@ -1178,7 +1178,10 @@ class Feature(DictModel):
         new_val = convert_enum_int_to_string(prop_name, new_val)
         old_val = convert_enum_int_to_string(prop_name, old_val)
         changed_props.append({
-            'prop_name': prop_name, 'old_val': old_val, 'new_val': new_val})
+            'prop_name': prop_name,
+            'old_val': str(old_val),
+            'new_val': str(new_val),
+        })
 
     params = {
       'changes': changed_props,
@@ -1233,6 +1236,7 @@ class Feature(DictModel):
   # Currently, only one is needed.
   i2e_lgtms = ndb.StringProperty(repeated=True)
   i2s_lgtms = ndb.StringProperty(repeated=True)
+  next_review_date = ndb.DateProperty()
 
   # Chromium details.
   bug_url = ndb.StringProperty()
