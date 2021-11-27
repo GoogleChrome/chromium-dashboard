@@ -55,6 +55,21 @@ class ChromedashFeatureTable extends LitElement {
       }
       td.icon_col {
         white-space: nowrap;
+        vertical-align: top;
+      }
+      .quick_actions {
+        white-space: nowrap;
+        float: right;
+      }
+      .highlights {
+        padding-left: var(--content-padding);
+      }
+      .highlights div {
+        color: var(--unimportant-text-color);
+        padding: var(--content-padding-quarter);
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        overflow: hidden;
       }
       iron-icon {
         --iron-icon-height: 18px;
@@ -63,6 +78,11 @@ class ChromedashFeatureTable extends LitElement {
       }
       iron-icon:hover {
         color: var(--link-hover-color);
+      }
+      button {
+        border: var(--default-border);
+        padding: 0 6px;
+        font-size: var(--button-small-font-size);
       }
     `];
   }
@@ -111,6 +131,16 @@ class ChromedashFeatureTable extends LitElement {
     this._fireEvent('open-approvals-event', {
       featureId: featureId,
     });
+  }
+
+  doLGTM(featureId) {
+    // TODO(jrobbins): Make it pre-select Approved and add comment.
+    this.openApprovalsDialog(featureId);
+  }
+
+  doSnooze(featureId) {
+    // TODO(jrobbins): Make it pre-set a new next-review-date value.
+    this.openApprovalsDialog(featureId);
   }
 
   renderApprovalsIcon(feature) {
@@ -175,11 +205,71 @@ class ChromedashFeatureTable extends LitElement {
     }
   }
 
+  renderQuickActions(feature) {
+    if (this.columns == 'approvals') {
+      // TODO(jrobbins): compute thread link here.
+      let threadLink = html`
+        <a href="#" target="_blank">Thread</a>
+      `;
+      let lgtmButton = html`
+        <button data-feature-id="${feature.id}"
+                @click="${() => this.doLGTM(feature.id)}">
+          Add LGTM
+        </button>
+      `;
+      let snoozeButton = html`
+        <button data-feature-id="${feature.id}"
+                @click="${() => this.doSnooze(feature.id)}">
+          Snooze
+        </button>
+      `;
+      return html`
+        <span class="quick_actions">
+          ${threadLink}
+          ${lgtmButton}
+          ${snoozeButton}
+        </span>
+      `;
+    }
+    return nothing;
+  }
+
+
+  renderHighlights(feature) {
+    if (this.columns == 'approvals') {
+      let nextReviewItem = nothing;
+      let previousLGTMsItem = nothing;
+      let recentCommentItem = nothing;
+
+      if (feature.next_review_date && feature.next_review_date.length > 0) {
+        nextReviewItem = html`
+          <div>
+            Next review date: ${feature.next_review_date}
+          </div>
+        `;
+      }
+
+      // TODO(jrobbins): check currently pendinging approvals and show LGTMs.
+      // TODO(jrobbins): get recent comments and show the last one.
+
+      return html`
+        <div class="highlights">
+          ${nextReviewItem}
+          ${previousLGTMsItem}
+          ${recentCommentItem}
+        </div>
+      `;
+    }
+    return nothing;
+  }
+
   renderFeature(feature) {
     return html`
       <tr>
         <td class="name_col">
+          ${this.renderQuickActions(feature)}
           <a href="/feature/${feature.id}">${feature.name}</a>
+          ${this.renderHighlights(feature)}
         </td>
         <td class="icon_col">
           ${this.renderIcons(feature)}

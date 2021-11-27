@@ -82,7 +82,7 @@ class ChromedashMyFeatures extends LitElement {
     const pendingBox = this.renderBox(
       'Features pending my approval', 'pending-approval-by:me', 'approvals');
     const recentBox = this.renderBox(
-      'Recently reviewed features', 'is:recently-reviewed', 'approvals', false);
+      'Recently reviewed features', 'is:recently-reviewed', 'normal', false);
     return [pendingBox, recentBox];
   }
 
