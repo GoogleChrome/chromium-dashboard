@@ -63,10 +63,10 @@ def detect_field(subject):
 
 CHROMESTATUS_LINK_GENERATED_RE = re.compile(
     r'entry on the Chrome Platform Status:?\s+'
-    r'https://www.chromestatus.com/feature/(\d+)', re.I)
+    r'https?://(www.)?chromestatus.com/feature/(?P<id>\d+)', re.I)
 CHROMESTATUS_LINK_ALTERNATE_RE = re.compile(
     r'entry on the feature dashboard:?\s+'
-    r'https://www.chromestatus.com/feature/(\d+)', re.I)
+    r'https?://(www.)?chromestatus.com/feature/(?P<id>\d+)', re.I)
 NOT_LGTM_RE = re.compile(
     r'\b(not|almost|need|want|missing) (a |an )?LGTM\b',
     re.I)
@@ -78,7 +78,7 @@ def detect_feature_id(body):
   match = (CHROMESTATUS_LINK_GENERATED_RE.search(body) or
            CHROMESTATUS_LINK_ALTERNATE_RE.search(body))
   if match:
-    return int(match.group(1))
+    return int(match.group('id'))
   return None
 
 
