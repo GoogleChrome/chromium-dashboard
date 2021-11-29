@@ -1407,6 +1407,41 @@ class Approval(DictModel):
       rr.key.delete()
 
 
+class ApprovalConfig(DictModel):
+  """Allows customization of an approval field for one feature."""
+
+  feature_id = ndb.IntegerProperty(required=True)
+  field_id = ndb.IntegerProperty(required=True)
+  owners = ndb.StringProperty(repeated=True)
+  next_action = ndb.DateProperty()
+  additional_review = ndb.BooleanProperty(default=False)
+
+  @classmethod
+  def get_configs(cls, feature_id):
+    """Return approval configs for all approval fields."""
+    query = ApprovalConfig.query(ApprovalConfig.feature_id == feature_id)
+    configs = list(query.fetch(None))
+    return configs
+
+  @classmethod
+  def set_config(
+      cls, feature_id, field_id, owners=None, next_action=None,
+      additional_review=None):
+    """Add or update an approval config object."""
+    config = ApprovalConfig(feature_id=feature_id, field_id=field_id)
+    for existing in cls.get_approval_configs(feature_id):
+      if existing.field_id == field_id:
+        config = existing
+
+    if owners is not None:
+      config.owners = owners
+    if next_action is not None:
+      config.next_action = next_action
+    if additional_review is not None:
+      config.additional_review = additional_review
+    config.put()
+
+
 class Comment(DictModel):
   """A review comment on a feature."""
   feature_id = ndb.IntegerProperty(required=True)
