@@ -1,3 +1,6 @@
+
+
+
 # -*- coding: utf-8 -*-
 # Copyright 2020 Google Inc.
 #
@@ -350,11 +353,6 @@ class FeatureEditStage(basehandlers.FlaskHandler):
 
     if self.touched('i2s_lgtms'):
       feature.i2s_lgtms = self.split_emails('i2s_lgtms')
-
-    if self.touched('next_review_date'):
-      date_str = self.form.get('next_review_date')
-      date_val = datetime.date.fromisoformat(date_str)
-      feature.next_review_date = date_val
 
     # Cast incoming milestones to ints.
     # TODO(jrobbins): Consider supporting milestones that are not ints.
