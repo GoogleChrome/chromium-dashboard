@@ -80,6 +80,7 @@ class ApprovalConfigsAPI(basehandlers.APIHandler):
     owners_str = self.get_param('owners', required=False)
     next_action_str = self.get_param('next_action', required=False)
     additional_review = self.get_param('additional_review', required=False)
+    feature = self.get_specified_feature(feature_id=feature_id)
     user = self.get_current_user(required=True)
 
     # A user can set the config iff they could approve.
@@ -91,7 +92,7 @@ class ApprovalConfigsAPI(basehandlers.APIHandler):
     if owners_str:
       owners = self.split_emails('owners')
 
-    next_action = Nnoe
+    next_action = None
     if next_action_str:
       next_action = datetime.date.fromisoformat(next_action_str)
 

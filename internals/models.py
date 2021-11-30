@@ -1416,7 +1416,7 @@ class ApprovalConfig(DictModel):
   def get_configs(cls, feature_id):
     """Return approval configs for all approval fields."""
     query = ApprovalConfig.query(ApprovalConfig.feature_id == feature_id)
-    configs = list(query.fetch(None))
+    configs = query.fetch(None)
     return configs
 
   @classmethod
@@ -1425,7 +1425,7 @@ class ApprovalConfig(DictModel):
       additional_review=None):
     """Add or update an approval config object."""
     config = ApprovalConfig(feature_id=feature_id, field_id=field_id)
-    for existing in cls.get_approval_configs(feature_id):
+    for existing in cls.get_configs(feature_id):
       if existing.field_id == field_id:
         config = existing
 
