@@ -156,7 +156,8 @@ def call_py3_task_handler(handler_path, task_dict):
       url=handler_url, payload=request_body, method=urlfetch.POST,
       follow_redirects=False)
 
-  logging.info('request_response is %r', handler_response)
+  logging.info('request_response is %r:\n%r',
+               handler_response.status_code, handler_response.content)
   return handler_response
 
 

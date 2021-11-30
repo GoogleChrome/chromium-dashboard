@@ -1,6 +1,3 @@
-
-
-
 # Copyright 2020 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
@@ -26,6 +23,7 @@ from google.cloud import ndb
 
 from framework import users
 
+from internals import approval_defs
 from internals import models
 from internals import notifier
 import settings
@@ -348,3 +346,37 @@ class FeatureStarTest(testing_config.CustomTestCase):
     self.assertCountEqual(
         [app_user_1.email, app_user_2.email],
         [au.email for au in actual])
+
+
+class FunctionsTest(testing_config.CustomTestCase):
+
+  def setUp(self):
+    self.feature_1 = models.Feature(
+        name='feature one', summary='sum', category=1, visibility=1,
+        standardization=1, web_dev_views=1, impl_status_chrome=1,
+        intent_to_implement_url=notifier.BLINK_DEV_ARCHIVE_URL_PREFIX + '123',
+        intent_to_experiment_url=notifier.TEST_ARCHIVE_URL_PREFIX + '456')
+    # Note: There is no need to put() it in the datastore.
+
+  def test_get_thread_id__normal(self):
+    """We can select the correct approval thread field of a feature."""
+    self.assertEqual(
+        '123',
+        notifier.get_thread_id(
+            self.feature_1, approval_defs.PrototypeApproval))
+    self.assertEqual(
+        '456',
+        notifier.get_thread_id(
+            self.feature_1, approval_defs.ExperimentApproval))
+    self.assertEqual(
+        None,
+        notifier.get_thread_id(
+            self.feature_1, approval_defs.ShipApproval))
+
+  def test_get_thread_id__trailing_junk(self):
+    """We can select the correct approval thread field of a feature."""
+    self.feature_1.intent_to_implement_url += '?param=val#anchor'
+    self.assertEqual(
+        '123',
+        notifier.get_thread_id(
+            self.feature_1, approval_defs.PrototypeApproval))
