@@ -120,6 +120,19 @@ class FunctionTest(testing_config.CustomTestCase):
         5144822362931200,
         detect_intent.detect_feature_id(body))
 
+  def test_detect_feature_id__quoted(self):
+    """We can parse the feature ID from link in quoted body text."""
+    body = (
+        'I have something more to add\n'
+        '\n'
+        'On Monday, November 29, 2021 at 3:49:24 PM UTC-8 a user wrote:\n'
+        '>>> Entry on the feature dashboard\n'
+        '>>> http://chromestatus.com/feature/5144822362931200\n'
+        '>>> blah blah blah')
+    self.assertEqual(
+        5144822362931200,
+        detect_intent.detect_feature_id(body))
+
   def test_detect_thread_url(self):
     """We can parse the thread archive link from the body footer."""
     footer = (
@@ -133,6 +146,22 @@ class FunctionTest(testing_config.CustomTestCase):
     self.assertEqual(
         ('https://groups.google.com'
          '/a/chromium.org/d/msgid/blink-dev/CAMO6jDPGfXfE5z6hJcWO112zX3We'
+         '-oNTb%2BZjiJk%2B6RNb9%2Bv05w%40mail.gmail.com'),
+        detect_intent.detect_thread_url(footer))
+
+  def test_detect_thread_url__staging(self):
+    """We can parse the staging thread archive link from the body footer."""
+    footer = (
+        'You received this message because you are subscribed to the Google '
+        'Groups "jrobbins-test" group.\n'
+        'To unsubscribe from this group and stop receiving emails from it,'
+        'send an email to jrobbins-test+unsubscribe@googlegroups.com.\n'
+        'To view this discussion on the web visit https://groups.google.com'
+        '/d/msgid/jrobbins-test/CAMO6jDPGfXfE5z6hJcWO112zX3We'
+        '-oNTb%2BZjiJk%2B6RNb9%2Bv05w%40mail.gmail.com.')
+    self.assertEqual(
+        ('https://groups.google.com'
+         '/d/msgid/jrobbins-test/CAMO6jDPGfXfE5z6hJcWO112zX3We'
          '-oNTb%2BZjiJk%2B6RNb9%2Bv05w%40mail.gmail.com'),
         detect_intent.detect_thread_url(footer))
 

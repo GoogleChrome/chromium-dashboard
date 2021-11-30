@@ -63,10 +63,10 @@ def detect_field(subject):
 
 CHROMESTATUS_LINK_GENERATED_RE = re.compile(
     r'entry on the Chrome Platform Status:?\s+'
-    r'https?://(www.)?chromestatus.com/feature/(?P<id>\d+)', re.I)
+    r'[> ]*https?://(www.)?chromestatus.com/feature/(?P<id>\d+)', re.I)
 CHROMESTATUS_LINK_ALTERNATE_RE = re.compile(
     r'entry on the feature dashboard:?\s+'
-    r'https?://(www.)?chromestatus.com/feature/(?P<id>\d+)', re.I)
+    r'[> ]*https?://(www.)?chromestatus.com/feature/(?P<id>\d+)', re.I)
 NOT_LGTM_RE = re.compile(
     r'\b(not|almost|need|want|missing) (a |an )?LGTM\b',
     re.I)
@@ -86,11 +86,16 @@ THREAD_LINK_RE = re.compile(
     r'To view this discussion on the web visit\s+'
     r'(https://groups.google.com/a/chromium.org/d/msgid/blink-dev/'
     r'\S+)[.]')
+STAGING_THREAD_LINK_RE = re.compile(
+    r'To view this discussion on the web visit\s+'
+    r'(https://groups.google.com/d/msgid/jrobbins-test/'
+    r'\S+)[.]')
 
 
 def detect_thread_url(body):
   """Look for the link to the thread in the blink-dev archive."""
-  match = THREAD_LINK_RE.search(body)
+  match = (THREAD_LINK_RE.search(body) or
+           STAGING_THREAD_LINK_RE.search(body))
   if match:
     return match.group(1)
   return None
