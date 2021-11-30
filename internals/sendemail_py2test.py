@@ -202,11 +202,13 @@ class FunctionTest(unittest.TestCase):
   @mock.patch('google.appengine.api.urlfetch.fetch')
   def test_call_py3_task_handler(self, mock_fetch):
     """Our py2 code can make a request to our py3 code."""
-    mock_fetch.return_value = 'mock response'
+    mock_response = testing_config_py2.Blank(
+        status_code=200, content='mock content')
+    mock_fetch.return_value = mock_response
 
     actual = sendemail.call_py3_task_handler('/path', {'a': 1})
 
-    self.assertEqual('mock response', actual)
+    self.assertEqual(mock_response, actual)
     mock_fetch.assert_called_once_with(
         url='http://localhost:8080/path', method=urlfetch.POST,
         payload=b'{"a": 1}', follow_redirects=False)
