@@ -287,6 +287,9 @@ def get_thread_id(feature, approval_field):
   if not thread_url:
     return None
 
+  thread_url = thread_url.split('#')[0]  # Chop off any anchor
+  thread_url = thread_url.split('?')[0]  # Chop off any query string params
+
   thread_id = None
   if thread_url.startswith(BLINK_DEV_ARCHIVE_URL_PREFIX):
     thread_id = thread_url[len(BLINK_DEV_ARCHIVE_URL_PREFIX):]

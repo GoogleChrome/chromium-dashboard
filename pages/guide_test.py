@@ -1,3 +1,6 @@
+
+
+
 # Copyright 2020 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
@@ -15,7 +18,6 @@
 import testing_config  # Must be imported before the module under test.
 import urllib.request, urllib.parse, urllib.error
 
-import datetime
 import flask
 import werkzeug
 
@@ -285,7 +287,6 @@ class FeatureEditStageTest(testing_config.CustomTestCase):
             'name': 'Revised feature name',
             'summary': 'Revised feature summary',
             'shipped_milestone': '84',
-            'next_review_date': '2021-11-24',
         }):
       actual_response = self.handler.process_post_data(
           self.feature_1.key.integer_id(), self.stage)
@@ -298,6 +299,4 @@ class FeatureEditStageTest(testing_config.CustomTestCase):
     self.assertEqual(2, revised_feature.category)
     self.assertEqual('Revised feature name', revised_feature.name)
     self.assertEqual('Revised feature summary', revised_feature.summary)
-    self.assertEqual(datetime.date.fromisoformat('2021-11-24'),
-                     revised_feature.next_review_date)
     self.assertEqual(84, revised_feature.shipped_milestone)

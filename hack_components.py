@@ -256,6 +256,7 @@ HACK_BLINK_COMPONENTS = [
   "Blink>WebHD>Portals",
   "Blink>WebHD>WebPackaging",
   "Blink>WebMIDI",
+  "Blink>WebML",
   "Blink>WebOTP",
   "Blink>WebRTC",
   "Blink>WebRTC>Audio",
