@@ -345,3 +345,19 @@ class ApprovalConfigsAPITest(testing_config.CustomTestCase):
                      new_config.next_action)
     self.assertEqual([], new_config.owners)
     self.assertEqual(False, new_config.additional_review)
+
+  @mock.patch('internals.approval_defs.get_approvers')
+  def test_do_post__bad_date(self, mock_get_approvers):
+    """We reject bad date formats and values."""
+    mock_get_approvers.return_value = ['owner1@example.com']
+    testing_config.sign_in('owner1@example.com', 123567890)
+
+    params = {'next_action': '11/30/21'}
+    with test_app.test_request_context(self.request_path, json=params):
+      with self.assertRaises(werkzeug.exceptions.BadRequest):
+        self.handler.do_post(self.feature_3_id)
+
+    params = {'next_action': '2021-11-35'}
+    with test_app.test_request_context(self.request_path, json=params):
+      with self.assertRaises(werkzeug.exceptions.BadRequest):
+        self.handler.do_post(self.feature_3_id)
