@@ -94,7 +94,10 @@ class ApprovalConfigsAPI(basehandlers.APIHandler):
 
     next_action = None
     if next_action_str:
-      next_action = datetime.date.fromisoformat(next_action_str)
+      try:
+        next_action = datetime.date.fromisoformat(next_action_str)
+      except ValueError:
+        self.abort(400, msg='Invalid date formate or value')
 
     models.ApprovalConfig.set_config(
         feature_id, field_id, owners, next_action, additional_review)
