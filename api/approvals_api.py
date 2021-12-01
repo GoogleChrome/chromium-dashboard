@@ -13,9 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-
-
+import datetime
 import logging
 
 from framework import basehandlers
@@ -58,6 +56,51 @@ class ApprovalsAPI(basehandlers.APIHandler):
     all_approval_values = models.Approval.get_approvals(feature_id, field_id)
     if approval_defs.is_resolved(all_approval_values, field_id):
       models.Approval.clear_request(feature_id, field_id)
+
+    # Callers don't use the JSON response for this API call.
+    return {'message': 'Done'}
+
+
+class ApprovalConfigsAPI(basehandlers.APIHandler):
+  """Get and set the approval configs for a feature."""
+
+  def do_get(self, feature_id):
+    """Return a list of all approval configs on the given feature."""
+    # Note: We assume that anyone may view approval configs.
+    configs = models.ApprovalConfig.get_configs(feature_id)
+    dicts = [ac.format_for_template(add_id=False) for ac in configs]
+    data = {
+        'configs': dicts,
+        }
+    return data
+
+  def do_post(self, feature_id):
+    """Set an approval config for the specified feature."""
+    field_id = self.get_int_param('fieldId')
+    owners_str = self.get_param('owners', required=False)
+    next_action_str = self.get_param('next_action', required=False)
+    additional_review = self.get_param('additional_review', required=False)
+    feature = self.get_specified_feature(feature_id=feature_id)
+    user = self.get_current_user(required=True)
+
+    # A user can set the config iff they could approve.
+    approvers = approval_defs.get_approvers(field_id)
+    if not permissions.can_approve_feature(user, feature, approvers):
+      self.abort(403, msg='User is not an approver')
+
+    owners = None
+    if owners_str:
+      owners = self.split_emails('owners')
+
+    next_action = None
+    if next_action_str:
+      try:
+        next_action = datetime.date.fromisoformat(next_action_str)
+      except ValueError:
+        self.abort(400, msg='Invalid date formate or value')
+
+    models.ApprovalConfig.set_config(
+        feature_id, field_id, owners, next_action, additional_review)
 
     # Callers don't use the JSON response for this API call.
     return {'message': 'Done'}
