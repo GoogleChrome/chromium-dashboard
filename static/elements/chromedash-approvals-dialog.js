@@ -1,6 +1,7 @@
 import {LitElement, css, html} from 'lit-element';
 import {nothing} from 'lit-html';
 import './chromedash-dialog';
+import '@polymer/iron-icon';
 import SHARED_STYLES from '../css/shared.css';
 
 const STATE_NAMES = [
@@ -43,6 +44,7 @@ class ChromedashApprovalsDialog extends LitElement {
       feature: {type: Object},
       approvals: {type: Array},
       comments: {type: Array},
+      showConfigs: {type: Object},
       showAllIntents: {type: Boolean},
       changedApprovalsByField: {attribute: false},
       needsSave: {type: Boolean},
@@ -59,6 +61,7 @@ class ChromedashApprovalsDialog extends LitElement {
     this.approvals = [];
     this.comments = [];
     this.subsetPending = false;
+    this.showConfigs = new Set();
     this.showAllIntents = false;
     this.changedApprovalsByField = new Map();
     this.needsSave = false;
@@ -118,6 +121,11 @@ class ChromedashApprovalsDialog extends LitElement {
           white-space: pre-wrap;
           width: 46em;
           margin-bottom: var(--content-padding);
+        }
+
+        .config-area {
+          margin-left: var(--content-padding);
+          background: var(--table-alternate-background);
         }
 
         .controls {
@@ -230,6 +238,30 @@ class ChromedashApprovalsDialog extends LitElement {
     }
   }
 
+  renderConfigWidgets(approvalDef) {
+    const isOpen = this.showConfigs.has(approvalDef.id);
+
+    if (!isOpen) {
+      return nothing;
+    }
+    return html`
+     <table class="config-area">
+       <tr>
+         <td>Owner:</td>
+         <td><input size=20></td>
+       </tr>
+       <tr>
+        <td>Next action:</td>
+        <td><input type=date name="next_action_${approvalDef.id}"></td>
+       </tr>
+       <tr>
+        <td>Additional review:</td>
+        <td><input type=checkbox></td>
+       </tr>
+     </table>
+    `;
+  }
+
   renderApproval(approvalDef) {
     const approvalValues = this.approvals.filter((a) =>
       a.field_id == approvalDef.id);
@@ -237,6 +269,17 @@ class ChromedashApprovalsDialog extends LitElement {
       PENDING_STATES.includes(av.state));
 
     if (!isActive && !this.showAllIntents) return nothing;
+
+    const isOpen = this.showConfigs.has(approvalDef.id);
+    let configExpandIcon = html`
+      <iron-icon
+         style="margin-left:4px"
+         @click="${() => {
+      this.toggleConfig(approvalDef);
+    }}"
+         icon="chromestatus:${isOpen ? 'expand-less' : 'expand-more'}">
+      </iron-icon>
+    `;
 
     let threadLink = nothing;
     if (this.feature[approvalDef.threadField]) {
@@ -250,7 +293,11 @@ class ChromedashApprovalsDialog extends LitElement {
 
     return html`
       <div class="approval_section">
-        <h3>${approvalDef.name}</h3>
+        <h3>
+          ${approvalDef.name}
+          ${configExpandIcon}
+        </h3>
+        ${this.renderConfigWidgets(approvalDef)}
         ${approvalValues.map((av) => this.renderApprovalValue(av))}
         ${this.renderAddApproval(approvalDef.id)}
         ${threadLink}
@@ -404,6 +451,16 @@ class ChromedashApprovalsDialog extends LitElement {
 
   handleCancel() {
     this.shadowRoot.querySelector('chromedash-dialog').close();
+  }
+
+  toggleConfig(approvalDef) {
+    let newConfigs = new Set([...this.showConfigs]); // Make a copy.
+    if (newConfigs.has(approvalDef.id)) {
+      newConfigs.delete(approvalDef.id);
+    } else {
+      newConfigs.add(approvalDef.id);
+    }
+    this.showConfigs = newConfigs;
   }
 }
 
