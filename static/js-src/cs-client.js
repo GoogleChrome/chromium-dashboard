@@ -183,7 +183,7 @@ class ChromeStatusClient {
     // TODO: catch((error) => { display message }
   }
 
-  // Approvals and review comments
+  // Approvals, configs, and review comments
 
   getApprovals(featureId) {
     return this.doGet(`/features/${featureId}/approvals`);
@@ -194,6 +194,19 @@ class ChromeStatusClient {
         `/features/${featureId}/approvals`,
         {fieldId: Number(fieldId),
           state: Number(state)});
+  }
+
+  getApprovalConfigs(featureId) {
+    return this.doGet(`/features/${featureId}/configs`);
+  }
+
+  setApprovalConfig(featureId, fieldId, owners, nextAction, additionalReview) {
+    return this.doPost(
+        `/features/${featureId}/configs`,
+        {fieldId: Number(fieldId),
+          owners,
+          nextAction,
+          additionalReview});
   }
 
   getComments(featureId, fieldId) {

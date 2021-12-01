@@ -88,6 +88,8 @@ api_routes = [
      approvals_api.ApprovalsAPI),
     (API_BASE + '/features/<int:feature_id>/approvals/<int:field_id>',
      approvals_api.ApprovalsAPI),
+    (API_BASE + '/features/<int:feature_id>/configs',
+     approvals_api.ApprovalConfigsAPI),
     (API_BASE + '/features/<int:feature_id>/approvals/comments',
      comments_api.CommentsAPI),
     (API_BASE + '/features/<int:feature_id>/approvals/<int:field_id>/comments',
