@@ -44,6 +44,7 @@ class ChromedashApprovalsDialog extends LitElement {
       feature: {type: Object},
       approvals: {type: Array},
       comments: {type: Array},
+      configs: {type: Array},
       showConfigs: {type: Object},
       showAllIntents: {type: Boolean},
       changedApprovalsByField: {attribute: false},
@@ -60,6 +61,7 @@ class ChromedashApprovalsDialog extends LitElement {
     this.feature = {};
     this.approvals = [];
     this.comments = [];
+    this.configs = [];
     this.subsetPending = false;
     this.showConfigs = new Set();
     this.showAllIntents = false;
@@ -167,7 +169,12 @@ class ChromedashApprovalsDialog extends LitElement {
       (res) => {
         this.comments = res.comments;
       });
-    Promise.all([p1, p2, p3]).then(() => {
+    const p4 = window.csClient.getApprovalConfigs(this.featureId).then(
+      (res) => {
+        this.configs = res.configs;
+        this.showConfigs = new Set(this.configs.map(c => c.field_id));
+      });
+    Promise.all([p1, p2, p3, p4]).then(() => {
       this.loading = false;
     });
   }
@@ -240,23 +247,29 @@ class ChromedashApprovalsDialog extends LitElement {
 
   renderConfigWidgets(approvalDef) {
     const isOpen = this.showConfigs.has(approvalDef.id);
-
     if (!isOpen) {
       return nothing;
     }
+
+    const config = this.configs.find(c => c.field_id == approvalDef.id);
+    const owners = (config && config.owners || []).join(', ');
+    const nextAction = (config && config.next_action || '');
+    const additionalReview = (config && config.additional_review);
+
     return html`
      <table class="config-area">
        <tr>
          <td>Owner:</td>
-         <td><input size=20></td>
+         <td><input size=20 value="${owners}"></td>
        </tr>
        <tr>
         <td>Next action:</td>
-        <td><input type=date name="next_action_${approvalDef.id}"></td>
+        <td><input type=date name="next_action_${approvalDef.id}"
+                   value="${nextAction}"></td>
        </tr>
        <tr>
         <td>Additional review:</td>
-        <td><input type=checkbox></td>
+        <td><input type=checkbox ?checked=${additionalReview}></td>
        </tr>
      </table>
     `;
@@ -269,6 +282,7 @@ class ChromedashApprovalsDialog extends LitElement {
       PENDING_STATES.includes(av.state));
 
     if (!isActive && !this.showAllIntents) return nothing;
+
 
     const isOpen = this.showConfigs.has(approvalDef.id);
     let configExpandIcon = html`
