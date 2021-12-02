@@ -97,13 +97,20 @@ class UmaQuery(object):
           url, result.status_code))
       return (None, result.status_code)
 
-    json_content = result.content.decode().split('\n', 1)[1]
+    full_response_content = result.content.decode()
+    logging.info('full response: %r',
+                 full_response_content[:settings.MAX_LOG_LINE])
+    # Skip XSSI protection line.
+    json_content = full_response_content.split('\n', 1)[1]
     j = json.loads(json_content)
-    if 'r' not in j:
-      logging.info(
-          '%s results do not have an "r" key in the response: %s' %
-          (self.query_name, repr(j)[:settings.MAX_LOG_LINE]))
+    for key, val in j.items():
+      logging.info('key: %r', key)
+      logging.info('val: %r', repr(val)[:settings.MAX_LOG_LINE])
+    if 'r' not in j or not j['r']:
       logging.info('Note: uma-export can take 2 days to produce metrics')
+      return (None, 404)
+    if 'e' in j:
+      logging.error('uma-export gave an error message: %r', j['e'])
       return (None, 404)
     return (j['r'], result.status_code)
 
