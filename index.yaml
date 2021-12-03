@@ -22,25 +22,6 @@ indexes:
   - name: "shipped_milestone"
     direction: desc
   - name: "name"
-- kind: "Comment"
-  properties:
-  - name: "feature_id"
-  - name: "created"
-- kind: "Approval"
-  properties:
-  - name: "feature_id"
-  - name: "set_on"
-- kind: "Approval"
-  properties:
-  - name: "feature_id"
-  - name: "field_id"
-  - name: "set_by"
-  - name: "set_on"
-- kind: "Approval"
-  properties:
-  - name: "feature_id"
-  - name: "field_id"
-  - name: "set_on"
 - kind: "Approval"
   properties:
   - name: "set_by"
@@ -64,6 +45,14 @@ indexes:
   - name: "owner"
   - name: "updated"
     direction: desc
+- kind: "Approval"
+  properties:
+  - name: "feature_id"
+  - name: "set_on"
+- kind: "Comment"
+  properties:
+  - name: "feature_id"
+  - name: "created"
 - kind: "Feature"
   properties:
   - name: "impl_status_chrome"
