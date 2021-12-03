@@ -265,8 +265,13 @@ class ApprovalConfigsAPITest(testing_config.CustomTestCase):
             'additional_review': False,
             'next_action': None,
             }],
-          'possible_owners': {1: ['owner@example.com']},
+         'possible_owners': {
+             1: ['owner@example.com'],
+             2: ['owner@example.com'],
+             3: ['owner@example.com'],
+             4: ['owner@example.com'],
          },
+        },
         actual)
 
     testing_config.sign_out()
@@ -280,18 +285,30 @@ class ApprovalConfigsAPITest(testing_config.CustomTestCase):
             'additional_review': False,
             'next_action': None,
             }],
-         'possible_owners': {2: ['owner@example.com']},
+         'possible_owners': {
+             1: ['owner@example.com'],
+             2: ['owner@example.com'],
+             3: ['owner@example.com'],
+             4: ['owner@example.com'],
          },
+        },
         actual)
 
-  def test_do_get__no_configs(self):
+  @mock.patch('internals.approval_defs.get_approvers')
+  def test_do_get__no_configs(self, mock_get_approvers):
     """If there are no configs, we return an empty list."""
+    mock_get_approvers.return_value = ['owner@example.com']
     with test_app.test_request_context(self.request_path):
       actual = self.handler.do_get(self.feature_3_id)
 
-    self.assertEqual({
-          'configs': [],
-          'possible_owners': {},
+    self.assertEqual(
+        {'configs': [],
+         'possible_owners': {
+             1: ['owner@example.com'],
+             2: ['owner@example.com'],
+             3: ['owner@example.com'],
+             4: ['owner@example.com'],
+         },
         },
         actual)
 

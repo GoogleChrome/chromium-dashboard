@@ -72,7 +72,7 @@ class ApprovalConfigsAPI(basehandlers.APIHandler):
     dicts = [ac.format_for_template(add_id=False) for ac in configs]
     possible_owners_by_field = {
         field_id: approval_defs.get_approvers(field_id)
-        for field_id in [config.field_id for config in configs]
+        for field_id in approval_defs.APPROVAL_FIELDS_BY_ID
     }
     data = {
         'configs': dicts,
