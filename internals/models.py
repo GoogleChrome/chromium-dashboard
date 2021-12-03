@@ -1421,20 +1421,16 @@ class ApprovalConfig(DictModel):
 
   @classmethod
   def set_config(
-      cls, feature_id, field_id, owners=None, next_action=None,
-      additional_review=None):
+      cls, feature_id, field_id, owners, next_action, additional_review):
     """Add or update an approval config object."""
     config = ApprovalConfig(feature_id=feature_id, field_id=field_id)
     for existing in cls.get_configs(feature_id):
       if existing.field_id == field_id:
         config = existing
 
-    if owners is not None:
-      config.owners = owners
-    if next_action is not None:
-      config.next_action = next_action
-    if additional_review is not None:
-      config.additional_review = additional_review
+    config.owners = owners or []
+    config.next_action = next_action
+    config.additional_review = additional_review
     config.put()
 
 

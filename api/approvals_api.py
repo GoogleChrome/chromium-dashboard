@@ -15,6 +15,7 @@
 
 import datetime
 import logging
+import re
 
 from framework import basehandlers
 from framework import permissions
@@ -69,17 +70,22 @@ class ApprovalConfigsAPI(basehandlers.APIHandler):
     # Note: We assume that anyone may view approval configs.
     configs = models.ApprovalConfig.get_configs(feature_id)
     dicts = [ac.format_for_template(add_id=False) for ac in configs]
+    possible_owners_by_field = {
+        field_id: approval_defs.get_approvers(field_id)
+        for field_id in [config.field_id for config in configs]
+    }
     data = {
         'configs': dicts,
+        'possible_owners': possible_owners_by_field,
         }
     return data
 
   def do_post(self, feature_id):
     """Set an approval config for the specified feature."""
     field_id = self.get_int_param('fieldId')
-    owners_str = self.get_param('owners', required=False)
-    next_action_str = self.get_param('next_action', required=False)
-    additional_review = self.get_param('additional_review', required=False)
+    owners_str = self.get_param('owners')
+    next_action_str = self.get_param('nextAction')
+    additional_review = self.get_param('additionalReview')
     feature = self.get_specified_feature(feature_id=feature_id)
     user = self.get_current_user(required=True)
 
@@ -89,8 +95,9 @@ class ApprovalConfigsAPI(basehandlers.APIHandler):
       self.abort(403, msg='User is not an approver')
 
     owners = None
-    if owners_str:
-      owners = self.split_emails('owners')
+    if owners_str is not None:
+      owners = [addr.strip() for addr in re.split(',', owners_str)
+                if addr.strip()]
 
     next_action = None
     if next_action_str:
