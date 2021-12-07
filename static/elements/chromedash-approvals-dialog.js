@@ -182,6 +182,10 @@ class ChromedashApprovalsDialog extends LitElement {
       });
     Promise.all([p1, p2, p3, p4]).then(() => {
       this.loading = false;
+    }).catch(() => {
+      const toastEl = document.querySelector('chromedash-toast');
+      toastEl.showMessage('Some errors occurred. Please refresh the page or try again later.');
+      this.handleCancel();
     });
   }
 
@@ -291,7 +295,7 @@ class ChromedashApprovalsDialog extends LitElement {
     return html`
      <table class="config-area">
        <tr>
-         <td>Owner:</td>
+         <td>Owners:</td>
          <td>${ownerWidget}</td>
        </tr>
        <tr>
