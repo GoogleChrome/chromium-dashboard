@@ -204,9 +204,10 @@ class ChromeStatusClient {
     return this.doPost(
         `/features/${featureId}/configs`,
         {fieldId: Number(fieldId),
-          owners,
-          nextAction,
-          additionalReview});
+          owners: owners || '',
+          nextAction: nextAction || '',
+          additionalReview: additionalReview || false,
+        });
   }
 
   getComments(featureId, fieldId) {

@@ -58,7 +58,9 @@ ShipApproval = ApprovalFieldDef(
 
 APPROVAL_FIELDS_BY_ID = {
     afd.field_id: afd
-    for afd in [PrototypeApproval, ExperimentApproval, ShipApproval]
+    for afd in [
+        PrototypeApproval, ExperimentApproval, ExtendExperimentApproval,
+        ShipApproval]
     }
 
 

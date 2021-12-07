@@ -15,6 +15,9 @@ class ChromedashFeatureTable extends LitElement {
       canApprove: {type: Boolean},
       starredFeatures: {type: Object},
       noResultsMessage: {type: String},
+      approvals: {type: Object},
+      comments: {type: Object},
+      configs: {type: Object},
     };
   }
 
@@ -26,6 +29,9 @@ class ChromedashFeatureTable extends LitElement {
     this.noResultsMessage = 'No results';
     this.canEdit = false;
     this.canApprove = false;
+    this.approvals = {};
+    this.comments = {};
+    this.configs = {};
   }
 
   connectedCallback() {
@@ -33,7 +39,30 @@ class ChromedashFeatureTable extends LitElement {
     window.csClient.searchFeatures(this.query).then((features) => {
       this.features = features;
       this.loading = false;
+      if (this.columns == 'approvals') {
+        this.loadApprovalData();
+      }
     });
+  }
+
+  loadApprovalData() {
+    for (let feature of this.features) {
+      window.csClient.getApprovals(feature.id).then(res => {
+        const newApprovals = {...this.approvals};
+        newApprovals[feature.id] = res.approvals;
+        this.approvals = newApprovals;
+      });
+      window.csClient.getComments(feature.id).then(res => {
+        const newComments = {...this.comments};
+        newComments[feature.id] = res.comments;
+        this.comments = newComments;
+      });
+      window.csClient.getApprovalConfigs(feature.id).then(res => {
+        const newConfigs = {...this.configs};
+        newConfigs[feature.id] = res.configs;
+        this.configs = newConfigs;
+      });
+    }
   }
 
   static get styles() {
@@ -234,29 +263,61 @@ class ChromedashFeatureTable extends LitElement {
     return nothing;
   }
 
+  getEarliestReviewDate(feature) {
+    const configs = this.configs[feature.id];
+    const allDates = configs.map(c => c.next_action).filter(d => d);
+    return Math.min(null, ...allDates);
+  }
+
+  getActiveOwners(feature) {
+    const configs = this.configs[feature.id];
+    let allOwners = configs.map(c => c.owners).flat();
+    // TODO(jrobbins): Limit to only owners of active intents
+    allOwners = [...new Set(allOwners)];
+    allOwners.sort();
+    return allOwners;
+  }
+
+  getActiveApprovals(feature) {
+    return feature ? null : null;
+  }
+
+  getRecentComment(feature) {
+    return feature ? null : null;
+  }
 
   renderHighlights(feature) {
     if (this.columns == 'approvals') {
-      let nextReviewItem = nothing;
-      let previousLGTMsItem = nothing;
-      let recentCommentItem = nothing;
+      const nextReviewDate = this.getEarliestReviewDate(feature);
+      const owners = this.getActiveOwners(feature);
+      const activeApprovals = this.getActiveApprovals(feature);
+      const recentComment = this.getRecentComment(feature);
 
-      if (feature.next_review_date && feature.next_review_date.length > 0) {
-        nextReviewItem = html`
-          <div>
-            Next review date: ${feature.next_review_date}
-          </div>
-        `;
-      }
 
-      // TODO(jrobbins): check currently pendinging approvals and show LGTMs.
       // TODO(jrobbins): get recent comments and show the last one.
 
       return html`
         <div class="highlights">
-          ${nextReviewItem}
-          ${previousLGTMsItem}
-          ${recentCommentItem}
+          ${nextReviewDate ? html`
+            <div>
+              Next review date: ${nextReviewDate}
+            </div>
+            ` : nothing}
+          ${owners.length > 0 ? html`
+            <div>
+              Owners: ${owners}
+            </div>
+            ` : nothing}
+          ${activeApprovals.length > 0 ? html`
+            <div>
+              Approvals: ${activeApprovals}
+            </div>
+            ` : nothing}
+          ${recentComment ? html`
+            <div>
+              Comment: ${recentComment.content}
+            </div>
+            ` : nothing}
         </div>
       `;
     }
