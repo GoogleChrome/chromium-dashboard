@@ -268,7 +268,7 @@ class ChromedashFeatureTable extends LitElement {
       <tr>
         <td class="name_col">
           ${this.renderQuickActions(feature)}
-          <a href="/feature/${feature.id}">${feature.name}</a>
+          <a href="/feature/${feature.id}?context=myfeatures">${feature.name}</a>
           ${this.renderHighlights(feature)}
         </td>
         <td class="icon_col">
