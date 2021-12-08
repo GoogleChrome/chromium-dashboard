@@ -207,27 +207,28 @@ class ChromedashFeatureTable extends LitElement {
 
   renderQuickActions(feature) {
     if (this.columns == 'approvals') {
-      // TODO(jrobbins): compute thread link here.
-      let threadLink = html`
-        <a href="#" target="_blank">Thread</a>
-      `;
-      let lgtmButton = html`
-        <button data-feature-id="${feature.id}"
-                @click="${() => this.doLGTM(feature.id)}">
-          Add LGTM
-        </button>
-      `;
-      let snoozeButton = html`
-        <button data-feature-id="${feature.id}"
-                @click="${() => this.doSnooze(feature.id)}">
-          Snooze
-        </button>
-      `;
+      // TODO(jrobbins): Show only thread link for active intent.
+      // Blocked on merge of PR that adds fetching that info.
+      // Work around unused function parameter lint error.
+      const threadLinks = feature ? [] : [];
+
+      // TODO(jrobbins): Show these buttons when they work.
+      // let lgtmButton = html`
+      //  <button data-feature-id="${feature.id}"
+      //          @click="${() => this.doLGTM(feature.id)}">
+      //    Add LGTM
+      //  </button>
+      // `;
+      // let snoozeButton = html`
+      //  <button data-feature-id="${feature.id}"
+      //          @click="${() => this.doSnooze(feature.id)}">
+      //    Snooze
+      //  </button>
+      // `;
+
       return html`
         <span class="quick_actions">
-          ${threadLink}
-          ${lgtmButton}
-          ${snoozeButton}
+          ${threadLinks}
         </span>
       `;
     }
