@@ -263,9 +263,9 @@ class ChromedashApprovalsDialog extends LitElement {
     }
 
     const config = this.configs.find(c => c.field_id == fieldId);
-    const owners = (config && config.owners || []).join(', ');
-    const nextAction = (config && config.next_action || '');
-    const additionalReview = (config && config.additional_review);
+    const owners = (config ? config.owners : []).join(', ');
+    const nextAction = config ? config.next_action : '';
+    const additionalReview = config && config.additional_review;
     const offerAdditionalReview = fieldId == 2 || fieldId == 3;
 
     const ownerWidget = html`

@@ -514,6 +514,15 @@ class FlaskHandlerTests(testing_config.CustomTestCase):
     actual = self.handler.render({'name': 'literal'}, 'test_template.html')
     self.assertIn('Hi literal', actual)
 
+  def test_get__remove_www(self):
+    """Requests to www.DOMAIN are redirected to the bare domain."""
+    with test_app.test_request_context(
+        '/test?foo=bar', base_url='https://www.chromestatus.com'):
+      actual_response = self.handler.get()
+
+    self.assertIn('/test?foo=bar', actual_response.headers['location'])
+    self.assertNotIn('www', actual_response.headers['location'])
+
   def test_get__html_page(self):
     """We can process a request and return HTML and headers."""
     with test_app.test_request_context('/test'):

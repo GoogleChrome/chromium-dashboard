@@ -123,6 +123,11 @@ class IsApprovedTest(unittest.TestCase):
         state=models.Approval.REVIEW_REQUESTED,
         set_on=datetime.datetime.now(),
         set_by='one@example.com')
+    self.appr_na = models.Approval(
+        feature_id=feature_1_id, field_id=1,
+        state=models.Approval.NA,
+        set_on=datetime.datetime.now(),
+        set_by='one@example.com')
     self.appr_no = models.Approval(
         feature_id=feature_1_id, field_id=1,
         state=models.Approval.NOT_APPROVED,
@@ -144,16 +149,19 @@ class IsApprovedTest(unittest.TestCase):
     self.assertFalse(approval_defs.is_approved([self.appr_nr], 1))
     self.assertFalse(approval_defs.is_approved([self.appr_no], 1))
     self.assertTrue(approval_defs.is_approved([self.appr_yes], 1))
+    self.assertTrue(approval_defs.is_approved([self.appr_na], 1))
     self.assertFalse(approval_defs.is_approved([self.appr_nr, self.appr_no], 1))
     self.assertFalse(approval_defs.is_approved(
         [self.appr_nr, self.appr_no, self.appr_yes], 1))
     self.assertTrue(approval_defs.is_approved([self.appr_nr, self.appr_yes], 1))
+    self.assertTrue(approval_defs.is_approved([self.appr_nr, self.appr_na], 1))
 
     # Field requires 3 LGTMs
     self.assertFalse(approval_defs.is_approved([], 2))
     self.assertFalse(approval_defs.is_approved([self.appr_nr], 2))
     self.assertFalse(approval_defs.is_approved([self.appr_no], 2))
     self.assertFalse(approval_defs.is_approved([self.appr_yes], 2))
+    self.assertFalse(approval_defs.is_approved([self.appr_na], 2))
     self.assertFalse(approval_defs.is_approved([self.appr_nr, self.appr_no], 2))
     self.assertFalse(approval_defs.is_approved(
         [self.appr_nr, self.appr_no, self.appr_yes], 2))
@@ -161,8 +169,14 @@ class IsApprovedTest(unittest.TestCase):
 
     self.assertTrue(approval_defs.is_approved(
         [self.appr_yes, self.appr_yes, self.appr_yes], 2))
+    self.assertTrue(approval_defs.is_approved(
+        [self.appr_yes, self.appr_yes, self.appr_na], 2))
+    self.assertTrue(approval_defs.is_approved(
+        [self.appr_na, self.appr_na, self.appr_na], 2))
     self.assertFalse(approval_defs.is_approved(
         [self.appr_yes, self.appr_yes, self.appr_yes, self.appr_no], 2))
+    self.assertFalse(approval_defs.is_approved(
+        [self.appr_na, self.appr_yes, self.appr_yes, self.appr_no], 2))
 
   @mock.patch('internals.approval_defs.APPROVAL_FIELDS_BY_ID',
               MOCK_APPROVALS_BY_ID)

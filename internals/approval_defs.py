@@ -125,7 +125,7 @@ def is_approved(approval_values, field_id):
   """Return true if we have all needed APPROVED values and no NOT_APPROVED."""
   count = 0
   for av in approval_values:
-    if av.state == models.Approval.APPROVED:
+    if av.state in (models.Approval.APPROVED, models.Approval.NA):
       count += 1
     elif av.state == models.Approval.NOT_APPROVED:
       return False
