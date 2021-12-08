@@ -250,8 +250,10 @@ class ApprovalConfigsAPITest(testing_config.CustomTestCase):
     for config in models.ApprovalConfig.query():
       config.key.delete()
 
-  def test_do_get__found(self):
+  @mock.patch('internals.approval_defs.get_approvers')
+  def test_do_get__found(self, mock_get_approvers):
     """Anon or any user can get some configs."""
+    mock_get_approvers.return_value = ['owner@example.com']
     testing_config.sign_in('other@example.com', 123567890)
     with test_app.test_request_context(self.request_path):
       actual = self.handler.do_get(self.feature_1_id)
@@ -262,7 +264,14 @@ class ApprovalConfigsAPITest(testing_config.CustomTestCase):
             'owners': ['one_a@example.com', 'one_b@example.com'],
             'additional_review': False,
             'next_action': None,
-            }]},
+            }],
+         'possible_owners': {
+             1: ['owner@example.com'],
+             2: ['owner@example.com'],
+             3: ['owner@example.com'],
+             4: ['owner@example.com'],
+         },
+        },
         actual)
 
     testing_config.sign_out()
@@ -275,16 +284,32 @@ class ApprovalConfigsAPITest(testing_config.CustomTestCase):
             'owners': ['two_a@example.com', 'two_b@example.com'],
             'additional_review': False,
             'next_action': None,
-            }]},
+            }],
+         'possible_owners': {
+             1: ['owner@example.com'],
+             2: ['owner@example.com'],
+             3: ['owner@example.com'],
+             4: ['owner@example.com'],
+         },
+        },
         actual)
 
-  def test_do_get__no_configs(self):
+  @mock.patch('internals.approval_defs.get_approvers')
+  def test_do_get__no_configs(self, mock_get_approvers):
     """If there are no configs, we return an empty list."""
+    mock_get_approvers.return_value = ['owner@example.com']
     with test_app.test_request_context(self.request_path):
       actual = self.handler.do_get(self.feature_3_id)
 
     self.assertEqual(
-        {'configs': []},
+        {'configs': [],
+         'possible_owners': {
+             1: ['owner@example.com'],
+             2: ['owner@example.com'],
+             3: ['owner@example.com'],
+             4: ['owner@example.com'],
+         },
+        },
         actual)
 
   @mock.patch('internals.approval_defs.get_approvers')
@@ -294,14 +319,21 @@ class ApprovalConfigsAPITest(testing_config.CustomTestCase):
     testing_config.sign_in('owner1@example.com', 123567890)
 
     params = {'fieldId': 3,
-              'next_action': '2021-11-30'}
+              'owners': ' one@example.com, two@example.com, ',
+              'nextAction': '2021-11-30',
+              'additionalReview': False}
     with test_app.test_request_context(self.request_path, json=params):
       actual = self.handler.do_post(self.feature_1_id)
 
     self.assertEqual({'message': 'Done'}, actual)
     revised_configs = models.ApprovalConfig.query(
-        models.ApprovalConfig.feature_id == self.feature_1_id).fetch(None)
+        models.ApprovalConfig.feature_id == self.feature_1_id).order(
+            models.ApprovalConfig.field_id).fetch(None)
     self.assertEqual(2, len(revised_configs))
+    revised_config_3 = revised_configs[1]
+    self.assertEqual(3, revised_config_3.field_id)
+    self.assertEqual(['one@example.com', 'two@example.com'],
+                     revised_config_3.owners)
 
   @mock.patch('internals.approval_defs.get_approvers')
   def test_do_post__update(self, mock_get_approvers):
@@ -310,7 +342,9 @@ class ApprovalConfigsAPITest(testing_config.CustomTestCase):
     testing_config.sign_in('owner1@example.com', 123567890)
 
     params = {'fieldId': 1,
-              'next_action': '2021-11-30'}
+              'owners': 'one_a@example.com, one_b@example.com',
+              'nextAction': '2021-11-30',
+              'additionalReview': False}
     with test_app.test_request_context(self.request_path, json=params):
       actual = self.handler.do_post(self.feature_1_id)
 
@@ -326,13 +360,37 @@ class ApprovalConfigsAPITest(testing_config.CustomTestCase):
     self.assertEqual(False, revised_config.additional_review)
 
   @mock.patch('internals.approval_defs.get_approvers')
+  def test_do_post__clear(self, mock_get_approvers):
+    """We can update an existing config to clear values."""
+    mock_get_approvers.return_value = ['owner1@example.com']
+    testing_config.sign_in('owner1@example.com', 123567890)
+
+    params = {'fieldId': 1,
+              'owners': '',
+              'nextAction': '',
+              'additionalReview': False}
+    with test_app.test_request_context(self.request_path, json=params):
+      actual = self.handler.do_post(self.feature_1_id)
+
+    self.assertEqual({'message': 'Done'}, actual)
+    revised_config = models.ApprovalConfig.query(
+        models.ApprovalConfig.feature_id == self.feature_1_id).fetch(None)[0]
+    self.assertEqual(self.feature_1_id, revised_config.feature_id)
+    self.assertEqual(1, revised_config.field_id)
+    self.assertEqual(None, revised_config.next_action)
+    self.assertEqual([], revised_config.owners)
+    self.assertEqual(False, revised_config.additional_review)
+
+  @mock.patch('internals.approval_defs.get_approvers')
   def test_do_post__no_configs(self, mock_get_approvers):
     """If there are no existing configs, we create one."""
     mock_get_approvers.return_value = ['owner1@example.com']
     testing_config.sign_in('owner1@example.com', 123567890)
 
     params = {'fieldId': 3,
-              'next_action': '2021-11-30'}
+              'owners': '',
+              'nextAction': '2021-11-30',
+              'additionalReview': False}
     with test_app.test_request_context(self.request_path, json=params):
       actual = self.handler.do_post(self.feature_3_id)
 
@@ -352,12 +410,18 @@ class ApprovalConfigsAPITest(testing_config.CustomTestCase):
     mock_get_approvers.return_value = ['owner1@example.com']
     testing_config.sign_in('owner1@example.com', 123567890)
 
-    params = {'next_action': '11/30/21'}
+    params = {'fieldId': 3,
+              'owners': '',
+              'nextAction': '11/30/21',
+              'additionalReview': False}
     with test_app.test_request_context(self.request_path, json=params):
       with self.assertRaises(werkzeug.exceptions.BadRequest):
         self.handler.do_post(self.feature_3_id)
 
-    params = {'next_action': '2021-11-35'}
+    params = {'fieldId': 3,
+              'owners': '',
+              'nextAction': '2021-11-35',
+              'additionalReview': False}
     with test_app.test_request_context(self.request_path, json=params):
       with self.assertRaises(werkzeug.exceptions.BadRequest):
         self.handler.do_post(self.feature_3_id)
