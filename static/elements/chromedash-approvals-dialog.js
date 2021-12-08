@@ -4,7 +4,7 @@ import './chromedash-dialog';
 import '@polymer/iron-icon';
 import SHARED_STYLES from '../css/shared.css';
 
-const STATE_NAMES = [
+export const STATE_NAMES = [
   // Not used: [0, 'Needs review'],
   [1, 'N/a or Ack'],
   [2, 'Review requested'],

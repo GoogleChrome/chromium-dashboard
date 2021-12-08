@@ -1,6 +1,7 @@
 import {LitElement, css, html} from 'lit-element';
 import {nothing} from 'lit-html';
 import SHARED_STYLES from '../css/shared.css';
+import {STATE_NAMES} from './chromedash-approvals-dialog.js';
 
 class ChromedashFeatureTable extends LitElement {
   static get properties() {
@@ -266,24 +267,47 @@ class ChromedashFeatureTable extends LitElement {
   getEarliestReviewDate(feature) {
     const configs = this.configs[feature.id];
     const allDates = configs.map(c => c.next_action).filter(d => d);
-    return Math.min(null, ...allDates);
+    if (allDates.length > 0) {
+      allDates.sort();
+      return allDates[0];
+    }
+    return null;
   }
 
   getActiveOwners(feature) {
-    const configs = this.configs[feature.id];
-    let allOwners = configs.map(c => c.owners).flat();
+    const featureConfigs = this.configs[feature.id];
+    let allOwners = featureConfigs.map(c => c.owners).flat();
     // TODO(jrobbins): Limit to only owners of active intents
-    allOwners = [...new Set(allOwners)];
-    allOwners.sort();
-    return allOwners;
+    let activeOwners = allOwners;
+    activeOwners = [...new Set(activeOwners)]; // de-dup.
+    activeOwners.sort();
+    return activeOwners;
   }
 
   getActiveApprovals(feature) {
-    return feature ? null : null;
+    const featureApprovals = this.approvals[feature.id];
+    // TODO(jrobbins): Limit to only owners of active intents
+    const activeApprovals = featureApprovals;
+    return activeApprovals;
   }
 
   getRecentComment(feature) {
+    // TODO(jrobbins): implement this.
     return feature ? null : null;
+  }
+
+  renderApprovalsSoFar(approvals) {
+    const result = [];
+    for (let stateItem of STATE_NAMES) {
+      const state = stateItem[0];
+      const stateName = stateItem[1];
+      const approvalsWithThatState = approvals.filter(a => a.state == state);
+      const setters = approvalsWithThatState.map(a => a.set_by.split('@')[0]);
+      if (setters.length > 0) {
+        result.push(html`<span>${stateName}: ${setters.join(', ')}. </span>`);
+      }
+    }
+    return result;
   }
 
   renderHighlights(feature) {
@@ -292,9 +316,7 @@ class ChromedashFeatureTable extends LitElement {
       const owners = this.getActiveOwners(feature);
       const activeApprovals = this.getActiveApprovals(feature);
       const recentComment = this.getRecentComment(feature);
-
-
-      // TODO(jrobbins): get recent comments and show the last one.
+      // TODO(jrobbins): show additional_review.
 
       return html`
         <div class="highlights">
@@ -303,14 +325,19 @@ class ChromedashFeatureTable extends LitElement {
               Next review date: ${nextReviewDate}
             </div>
             ` : nothing}
-          ${owners.length > 0 ? html`
+          ${owners.length == 1 ? html`
             <div>
-              Owners: ${owners}
+              Owner: ${owners[0]}
+            </div>
+            ` : nothing}
+          ${owners.length > 1 ? html`
+            <div>
+              Owners: ${owners.join(', ')}
             </div>
             ` : nothing}
           ${activeApprovals.length > 0 ? html`
             <div>
-              Approvals: ${activeApprovals}
+              ${this.renderApprovalsSoFar(activeApprovals)}
             </div>
             ` : nothing}
           ${recentComment ? html`
