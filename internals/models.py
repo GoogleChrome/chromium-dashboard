@@ -839,8 +839,8 @@ class Feature(DictModel):
     futures = []
 
     for feature_id in feature_ids:
-      KEY = '%s|%s' % (Feature.DEFAULT_CACHE_KEY, feature_id)
-      feature = ramcache.get(KEY)
+      lookup_key = '%s|%s' % (Feature.DEFAULT_CACHE_KEY, feature_id)
+      feature = ramcache.get(lookup_key)
       if feature is None or update_cache:
         futures.append(Feature.get_by_id_async(feature_id))
       else:
@@ -853,7 +853,9 @@ class Feature(DictModel):
         feature['updated_display'] = (
             unformatted_feature.updated.strftime("%Y-%m-%d"))
         feature['new_crbug_url'] = unformatted_feature.new_crbug_url()
-        ramcache.set(KEY, feature)
+        store_key = '%s|%s' % (Feature.DEFAULT_CACHE_KEY,
+                               unformatted_feature.key.integer_id())
+        ramcache.set(store_key, feature)
         result_dict[unformatted_feature.key.integer_id()] = feature
 
     result_list = [

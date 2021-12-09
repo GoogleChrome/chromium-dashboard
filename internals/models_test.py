@@ -168,13 +168,23 @@ class FeatureTest(testing_config.CustomTestCase):
     self.assertEqual([], actual)
 
   def test_get_by_ids__cache_miss(self):
-    """We can load features from datastore."""
+    """We can load features from datastore, and cache them for later."""
     ramcache.global_cache.clear()
 
-    actual = models.Feature.get_by_ids([self.feature_1.key.integer_id()])
+    actual = models.Feature.get_by_ids([
+        self.feature_1.key.integer_id(),
+        self.feature_2.key.integer_id()])
 
-    self.assertEqual(1, len(actual))
+    self.assertEqual(2, len(actual))
     self.assertEqual('feature a', actual[0]['name'])
+    self.assertEqual('feature b', actual[1]['name'])
+
+    lookup_key_1 = '%s|%s' % (models.Feature.DEFAULT_CACHE_KEY,
+                              self.feature_1.key.integer_id())
+    lookup_key_2 = '%s|%s' % (models.Feature.DEFAULT_CACHE_KEY,
+                              self.feature_2.key.integer_id())
+    self.assertEqual('feature a', ramcache.get(lookup_key_1)['name'])
+    self.assertEqual('feature b', ramcache.get(lookup_key_2)['name'])
 
   def test_get_by_ids__cache_hit(self):
     """We can load features from ramcache."""
