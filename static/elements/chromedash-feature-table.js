@@ -1,6 +1,7 @@
 import {LitElement, css, html} from 'lit-element';
 import {nothing} from 'lit-html';
 import SHARED_STYLES from '../css/shared.css';
+import {STATE_NAMES} from './chromedash-approvals-dialog.js';
 
 class ChromedashFeatureTable extends LitElement {
   static get properties() {
@@ -15,6 +16,9 @@ class ChromedashFeatureTable extends LitElement {
       canApprove: {type: Boolean},
       starredFeatures: {type: Object},
       noResultsMessage: {type: String},
+      approvals: {type: Object},
+      comments: {type: Object},
+      configs: {type: Object},
     };
   }
 
@@ -26,6 +30,9 @@ class ChromedashFeatureTable extends LitElement {
     this.noResultsMessage = 'No results';
     this.canEdit = false;
     this.canApprove = false;
+    this.approvals = {};
+    this.comments = {};
+    this.configs = {};
   }
 
   connectedCallback() {
@@ -33,7 +40,30 @@ class ChromedashFeatureTable extends LitElement {
     window.csClient.searchFeatures(this.query).then((features) => {
       this.features = features;
       this.loading = false;
+      if (this.columns == 'approvals') {
+        this.loadApprovalData();
+      }
     });
+  }
+
+  loadApprovalData() {
+    for (let feature of this.features) {
+      window.csClient.getApprovals(feature.id).then(res => {
+        const newApprovals = {...this.approvals};
+        newApprovals[feature.id] = res.approvals;
+        this.approvals = newApprovals;
+      });
+      window.csClient.getComments(feature.id).then(res => {
+        const newComments = {...this.comments};
+        newComments[feature.id] = res.comments;
+        this.comments = newComments;
+      });
+      window.csClient.getApprovalConfigs(feature.id).then(res => {
+        const newConfigs = {...this.configs};
+        newConfigs[feature.id] = res.configs;
+        this.configs = newConfigs;
+      });
+    }
   }
 
   static get styles() {
@@ -235,29 +265,87 @@ class ChromedashFeatureTable extends LitElement {
     return nothing;
   }
 
+  getEarliestReviewDate(feature) {
+    const configs = this.configs[feature.id];
+    const allDates = configs.map(c => c.next_action).filter(d => d);
+    if (allDates.length > 0) {
+      allDates.sort();
+      return allDates[0];
+    }
+    return null;
+  }
+
+  getActiveOwners(feature) {
+    const featureConfigs = this.configs[feature.id];
+    let allOwners = featureConfigs.map(c => c.owners).flat();
+    // TODO(jrobbins): Limit to only owners of active intents
+    let activeOwners = allOwners;
+    activeOwners = [...new Set(activeOwners)]; // de-dup.
+    activeOwners.sort();
+    return activeOwners;
+  }
+
+  getActiveApprovals(feature) {
+    const featureApprovals = this.approvals[feature.id];
+    // TODO(jrobbins): Limit to only owners of active intents
+    const activeApprovals = featureApprovals;
+    return activeApprovals;
+  }
+
+  getRecentComment(feature) {
+    // TODO(jrobbins): implement this.
+    return feature ? null : null;
+  }
+
+  renderApprovalsSoFar(approvals) {
+    const result = [];
+    for (let stateItem of STATE_NAMES) {
+      const state = stateItem[0];
+      const stateName = stateItem[1];
+      const approvalsWithThatState = approvals.filter(a => a.state == state);
+      const setters = approvalsWithThatState.map(a => a.set_by.split('@')[0]);
+      if (setters.length > 0) {
+        result.push(html`<span>${stateName}: ${setters.join(', ')}. </span>`);
+      }
+    }
+    return result;
+  }
 
   renderHighlights(feature) {
     if (this.columns == 'approvals') {
-      let nextReviewItem = nothing;
-      let previousLGTMsItem = nothing;
-      let recentCommentItem = nothing;
-
-      if (feature.next_review_date && feature.next_review_date.length > 0) {
-        nextReviewItem = html`
-          <div>
-            Next review date: ${feature.next_review_date}
-          </div>
-        `;
-      }
-
-      // TODO(jrobbins): check currently pendinging approvals and show LGTMs.
-      // TODO(jrobbins): get recent comments and show the last one.
+      const nextReviewDate = this.getEarliestReviewDate(feature);
+      const owners = this.getActiveOwners(feature);
+      const activeApprovals = this.getActiveApprovals(feature);
+      const recentComment = this.getRecentComment(feature);
+      // TODO(jrobbins): show additional_review.
 
       return html`
         <div class="highlights">
-          ${nextReviewItem}
-          ${previousLGTMsItem}
-          ${recentCommentItem}
+          ${nextReviewDate ? html`
+            <div>
+              Next review date: ${nextReviewDate}
+            </div>
+            ` : nothing}
+          ${owners.length == 1 ? html`
+            <div>
+              Owner: ${owners[0]}
+            </div>
+            ` : nothing}
+          ${owners.length > 1 ? html`
+            <div>
+              Owners: ${owners.join(', ')}
+            </div>
+            ` : nothing}
+          ${activeApprovals.length > 0 ? html`
+            <div>
+              ${this.renderApprovalsSoFar(activeApprovals)}
+            </div>
+            ` : nothing}
+          ${recentComment ? html`
+            <div>
+              Comment: ${recentComment.content}
+            </div>
+            ` : nothing}
         </div>
       `;
     }
