@@ -213,6 +213,36 @@ class FeatureTest(testing_config.CustomTestCase):
     self.assertEqual('feature c', actual[2]['name'])
     self.assertEqual('feature b', actual[3]['name'])
 
+  def test_get_by_ids__cached_correctly(self):
+    """We should no longer be able to trigger bug #1647."""
+    # Cache one to try to trigger the bug.
+    ramcache.global_cache.clear()
+    models.Feature.get_by_ids([
+        self.feature_2.key.integer_id(),
+        ])
+
+    # Now do the lookup, but it would cache feature_2 at the key for feature_3.
+    models.Feature.get_by_ids([
+        self.feature_4.key.integer_id(),
+        self.feature_1.key.integer_id(),
+        self.feature_3.key.integer_id(),
+        self.feature_2.key.integer_id(),
+    ])
+
+    # This would read the incorrect cache entry and use it.
+    actual = models.Feature.get_by_ids([
+        self.feature_4.key.integer_id(),
+        self.feature_1.key.integer_id(),
+        self.feature_3.key.integer_id(),
+        self.feature_2.key.integer_id(),
+    ])
+
+    self.assertEqual(4, len(actual))
+    self.assertEqual('feature d', actual[0]['name'])
+    self.assertEqual('feature a', actual[1]['name'])
+    self.assertEqual('feature c', actual[2]['name'])
+    self.assertEqual('feature b', actual[3]['name'])
+
   def test_get_chronological__normal(self):
     """We can retrieve a list of features."""
     actual = models.Feature.get_chronological()
