@@ -10,15 +10,6 @@ google-cloud-ndb
 google-cloud-logging
 google-auth==1.24.0
 
-# These are some libraries used indirectly below.  Pin them to versions that
-# work on python 2.7.
-# TODO(jrobbins): Eliminate these once we are on py3.
-Jinja2==2.11.3
-MarkupSafe==1.1.1
-Werkzeug==1.0.1
-click==7.1.2
-itsdangerous==1.1.0
-
 # Py2 Libraries
 mock==3.0.5
 Flask==1.1.2
