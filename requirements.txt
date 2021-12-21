@@ -5,26 +5,9 @@
 Django==1.11.29
 funcsigs
 google-python-cloud-debugger
-google-cloud-tasks==1.5.0
+google-cloud-tasks
 google-cloud-ndb
 google-cloud-logging
-
-# Required by google-cloud-tasks
-googleapis-common-protos==1.52.0
-enum34==1.1.10
-grpc-google-iam-v1==0.12.3
-google-api-core==1.22.0
-pytz==2020.1
-google-auth==1.24.0
-setuptools==44.1.1
-six==1.15.0
-urllib3==1.26.5
-certifi==2020.6.20
-chardet==3.0.4
-idna==2.10
-pyasn1-modules==0.2.8
-cachetools==3.1.1
-rsa==4.5
 
 # These are some libraries used indirectly below.  Pin them to versions that
 # work on python 2.7.
