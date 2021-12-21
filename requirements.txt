@@ -9,13 +9,11 @@ google-cloud-tasks
 google-cloud-ndb
 google-cloud-logging
 google-auth==1.24.0
+requests
 
 # Py2 Libraries
 mock==3.0.5
 Flask==1.1.2
-
-# Required for porting Python2 to Python3
-requests==2.25.1
 
 # Work-around for failure to deploy
 # https://stackoverflow.com/questions/69936420/google-cloud-platform-app-deploy-failure-due-to-pyparsing
