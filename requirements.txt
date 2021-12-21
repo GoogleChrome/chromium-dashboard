@@ -1,44 +1,19 @@
 
-# Libraries that we use directly.
+# Also see requirements.dev.txt
+
+# Py3 Libraries
 Django==1.11.29
-mock==3.0.5
 funcsigs
-Flask==1.1.2
 google-python-cloud-debugger
-google-cloud-tasks==1.5.0
+google-cloud-tasks
 google-cloud-ndb
 google-cloud-logging
-
-# Required by google-cloud-tasks
-googleapis-common-protos==1.52.0
-enum34==1.1.10
-grpc-google-iam-v1==0.12.3
-google-api-core==1.22.0
-pytz==2020.1
 google-auth==1.24.0
-setuptools==44.1.1
-six==1.15.0
-urllib3==1.26.5
-certifi==2020.6.20
-chardet==3.0.4
-idna==2.10
-pyasn1-modules==0.2.8
-cachetools==3.1.1
-rsa==4.5
+requests
 
-# These are some libraries used indirectly below.  Pin them to versions that
-# work on python 2.7.
-# TODO(jrobbins): Eliminate these once we are on py3.
-Jinja2==2.11.3
-MarkupSafe==1.1.1
-Werkzeug==1.0.1
-click==7.1.2
-itsdangerous==1.1.0
-
-# Required for porting Python2 to Python3
-requests==2.25.1
-
-# See also: requirements.dev.txt
+# Py2 Libraries
+mock==3.0.5
+Flask==1.1.2
 
 # Work-around for failure to deploy
 # https://stackoverflow.com/questions/69936420/google-cloud-platform-app-deploy-failure-due-to-pyparsing
