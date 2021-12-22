@@ -2,7 +2,7 @@
 # Also see requirements.dev.txt
 
 # Py3 Libraries
-Django==2.1
+Django==2.2.25
 funcsigs
 google-python-cloud-debugger
 google-cloud-tasks
