@@ -106,4 +106,4 @@ def enqueue_task(handler_path, task_params, queue='default', **kwargs):
   logging.info('Enqueueing %s task to %s', target, parent)
 
   kwargs.setdefault('retry', _DEFAULT_RETRY)
-  return client.create_task(parent, task, **kwargs)
+  return client.create_task(parent=parent, task=task, **kwargs)
