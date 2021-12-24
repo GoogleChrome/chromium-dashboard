@@ -63,7 +63,7 @@ class FakeCloudTasksClient(object):
     return "projects/{project}/locations/{location}/queues/{queue}".format(
         project=project, location=location, queue=queue)
 
-  def create_task(self, unused_parent, task, **kwargs):
+  def create_task(self, parent=None, task=None, **kwargs):
     """Just log that the task would have been created URL."""
     self.uri = task.get('app_engine_http_request').get('relative_uri')
     self.body = task.get('app_engine_http_request').get('body')

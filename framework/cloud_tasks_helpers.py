@@ -49,7 +49,7 @@ class LocalCloudTasksClient(object):
     return "projects/{project}/locations/{location}/queues/{queue}".format(
         project=project, location=location, queue=queue)
 
-  def create_task(self, unused_parent, task, **kwargs):
+  def create_task(self, parent=None, task=None, **kwargs):
     """Immediately hit the target URL."""
     uri = task.get('app_engine_http_request').get('relative_uri')
     target_url = 'http://localhost:8080' + uri
@@ -106,4 +106,4 @@ def enqueue_task(handler_path, task_params, queue='default', **kwargs):
   logging.info('Enqueueing %s task to %s', target, parent)
 
   kwargs.setdefault('retry', _DEFAULT_RETRY)
-  return client.create_task(parent, task, **kwargs)
+  return client.create_task(parent=parent, task=task, **kwargs)
