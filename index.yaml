@@ -24,6 +24,23 @@ indexes:
   - name: "name"
 - kind: "Approval"
   properties:
+  - name: "feature_id"
+  - name: "field_id"
+  - name: "set_by"
+  - name: "set_on"
+- kind: "Approval"
+  properties:
+  - name: "feature_id"
+  - name: "field_id"
+  - name: "set_on"
+- kind: "Approval"
+  properties:
+  - name: "feature_id"
+  - name: "field_id"
+  - name: "state"
+  - name: "set_on"
+- kind: "Approval"
+  properties:
   - name: "set_by"
   - name: "set_on"
 - kind: "Approval"

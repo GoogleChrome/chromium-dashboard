@@ -54,7 +54,8 @@ class ApprovalsAPI(basehandlers.APIHandler):
     models.Approval.set_approval(
         feature_id, field_id, new_state, user.email())
 
-    all_approval_values = models.Approval.get_approvals(feature_id, field_id)
+    all_approval_values = models.Approval.get_approvals(
+        feature_id=feature_id, field_id=field_id)
     if approval_defs.is_resolved(all_approval_values, field_id):
       models.Approval.clear_request(feature_id, field_id)
 
