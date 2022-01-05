@@ -18,6 +18,11 @@ jobs:
         with:
           python-version: '2.7'
 
+      - name: set up Python 3
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.9'
+
       - name: pre-installation
         run: |
           # Remove existing google-cloud-sdk packages in Ubuntu.
@@ -34,10 +39,13 @@ jobs:
         run: |
           npm install -g gulp
           npm ci
+
           pushd py2
-          python -m pip install -t lib -r requirements.txt --upgrade
+          python3 -m pip install -t lib -r requirements.txt --upgrade
           popd
-          python -m pip install --no-deps -r requirements.dev.txt
+          python3 -m pip install --no-deps -r requirements.dev.txt
+          python3 -m pip install -t lib -r requirements.txt --upgrade
+          python3 -m pip install --no-deps -r requirements.dev.txt
 
       - name: lint
         run: |
@@ -48,8 +56,9 @@ jobs:
       - name: test
         run: |
           pushd py2
-          python -m unittest discover -p '*_py2test.py'
+          python2 -m unittest discover -p '*_py2test.py'
           popd
+        run: python2 -m unittest discover -p '*_py2test.py'
 
       - name: build
         run: npm run build
