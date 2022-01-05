@@ -11,8 +11,12 @@ google-cloud-logging
 google-auth==1.24.0
 requests
 
-# Py2 Libraries
+# TODO(jrobbins): Remove this after we upgrade all py3 unit tests to use:
+# import unittest.mock.
 mock==3.0.5
+
+# TODO(jrobbins): Update to a 2.x version of flask, which may require source
+# code changes.
 Flask==1.1.2
 
 # Work-around for failure to deploy
