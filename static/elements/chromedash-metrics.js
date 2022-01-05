@@ -58,6 +58,7 @@ class ChromedashMetrics extends LitElement {
       li > :first-child {
         flex: 1;
         margin-right: 10px;
+        word-break: break-all;
       }
 
       li > :nth-child(2) {
