@@ -58,7 +58,6 @@ jobs:
           pushd py2
           python2 -m unittest discover -p '*_py2test.py'
           popd
-        run: python2 -m unittest discover -p '*_py2test.py'
 
       - name: build
         run: npm run build
