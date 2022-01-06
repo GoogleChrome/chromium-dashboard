@@ -39,13 +39,25 @@ jobs:
         run: |
           npm install -g gulp
           npm ci
+
+          pushd py2
+          python3 -m pip install -t lib -r requirements.txt --upgrade
+          popd
+          python3 -m pip install --no-deps -r requirements.dev.txt
           python3 -m pip install -t lib -r requirements.txt --upgrade
           python3 -m pip install --no-deps -r requirements.dev.txt
 
       - name: lint
-        run: npm run lint
+        run: |
+          pushd py2
+          npm run lint
+          popd
 
       - name: test
+        run: |
+          pushd py2
+          python2 -m unittest discover -p '*_py2test.py'
+          popd
         run: python2 -m unittest discover -p '*_py2test.py'
 
       - name: build

@@ -49,6 +49,12 @@ def get_param(request, name, required=True):
   return val
 
 
+@app.route('/py2')
+def py2_health_check():
+  """Prove that this GAE module is responding."""
+  return {'message': 'OK py2'}
+
+
 @app.route('/tasks/outbound-email', methods=['POST'])
 def handle_outbound_mail_task():
   """Task to send a notification email to one recipient."""

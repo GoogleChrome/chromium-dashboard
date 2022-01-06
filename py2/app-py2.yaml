@@ -20,20 +20,23 @@ builtins:
 
 handlers:
 
+- url: /py2
+  script: sendemail.app
+
 - url: /tasks/outbound-email
-  script: internals.sendemail.app
+  script: sendemail.app
   # Header checks prevent raw access to this handler.  Tasks have headers.
 
 - url: /_ah/mail/.+
-  script: internals.sendemail.app
+  script: sendemail.app
   login: admin # Prevents raw access to this handler.
 
 - url: /_ah/bounce
-  script: internals.sendemail.app
+  script: sendemail.app
   login: admin # Prevents raw access to this handler.
 
 includes:
-- env_vars.yaml
+- ../env_vars.yaml
 
 inbound_services:
 - mail

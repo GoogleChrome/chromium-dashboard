@@ -17,5 +17,8 @@ dispatch:
 - url: "*/tasks/outbound-email"
   service: default
 
+- url: "*/py2"
+  service: default
+
 - url: "*/*"
   service: app-py3
