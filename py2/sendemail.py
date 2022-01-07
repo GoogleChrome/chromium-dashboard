@@ -79,10 +79,14 @@ def handle_outbound_mail_task():
       sender=sender, to=to, subject=subject, html=email_html)
   message.check_initialized()
 
+  if references:
+    message.headers = {'References': references}
+
   logging.info('Will send the following email:\n')
   logging.info('Sender: %s', message.sender)
   logging.info('To: %s', message.to)
   logging.info('Subject: %s', message.subject)
+  logging.info('References: %s', references or '(not included)')
   logging.info('Body:\n%s', message.html[:settings.MAX_LOG_LINE])
   if settings.SEND_EMAIL:
     message.send()

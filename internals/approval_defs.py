@@ -37,22 +37,22 @@ ApprovalFieldDef = collections.namedtuple(
     'name, description, field_id, rule, approvers')
 
 PrototypeApproval = ApprovalFieldDef(
-    'Intent to prototype',
+    'Intent to Prototype',
     'One API Owner must approve your intent',
     1, ONE_LGTM, API_OWNERS_URL)
 
 ExperimentApproval = ApprovalFieldDef(
-    'Intent to experiment',
+    'Intent to Experiment',
     'One API Owner must approve your intent',
     2, ONE_LGTM, API_OWNERS_URL)
 
 ExtendExperimentApproval = ApprovalFieldDef(
-    'Intent to extend experiment',
+    'Intent to Extend Experiment',
     'One API Owner must approve your intent',
     3, ONE_LGTM, API_OWNERS_URL)
 
 ShipApproval = ApprovalFieldDef(
-    'Intent to ship',
+    'Intent to Ship',
     'Three API Owners must approve your intent',
     4, THREE_LGTM, API_OWNERS_URL)
 
