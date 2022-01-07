@@ -35,6 +35,7 @@ class OutboundEmailHandlerTest(unittest.TestCase):
     self.html = '<b>body</b>'
     self.sender = ('Chromestatus <admin@%s.appspotmail.com>' %
                    settings.APP_ID)
+    self.refs = 'fake-message-id-of-previous-message'
 
   @mock.patch('settings.SEND_EMAIL', True)
   @mock.patch('settings.SEND_ALL_EMAIL_TO', None)
@@ -45,6 +46,7 @@ class OutboundEmailHandlerTest(unittest.TestCase):
         'to': self.to,
         'subject': self.subject,
         'html': self.html,
+        'references': self.refs,
         }
     with sendemail.app.test_request_context(self.request_path, json=params):
       actual_response = sendemail.handle_outbound_mail_task()
@@ -56,6 +58,7 @@ class OutboundEmailHandlerTest(unittest.TestCase):
     mock_message.check_initialized.assert_called_once_with()
     mock_message.send.assert_called_once_with()
     self.assertEqual({'message': 'Done'}, actual_response)
+    self.assertEqual(self.refs, mock_message.headers['References'])
 
   @mock.patch('settings.SEND_EMAIL', True)
   @mock.patch('google.appengine.api.mail.EmailMessage')
