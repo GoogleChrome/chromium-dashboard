@@ -351,21 +351,24 @@ class FeatureStarTest(testing_config.CustomTestCase):
 class FunctionsTest(testing_config.CustomTestCase):
 
   def setUp(self):
+    quoted_msg_id = 'xxx%3Dyyy%40mail.gmail.com'
+    impl_url = notifier.BLINK_DEV_ARCHIVE_URL_PREFIX + '123' + quoted_msg_id
+    expr_url = notifier.TEST_ARCHIVE_URL_PREFIX + '456' + quoted_msg_id
     self.feature_1 = models.Feature(
         name='feature one', summary='sum', category=1, visibility=1,
         standardization=1, web_dev_views=1, impl_status_chrome=1,
-        intent_to_implement_url=notifier.BLINK_DEV_ARCHIVE_URL_PREFIX + '123',
-        intent_to_experiment_url=notifier.TEST_ARCHIVE_URL_PREFIX + '456')
+        intent_to_implement_url=impl_url,
+        intent_to_experiment_url=expr_url)
     # Note: There is no need to put() it in the datastore.
 
   def test_get_thread_id__normal(self):
     """We can select the correct approval thread field of a feature."""
     self.assertEqual(
-        '123',
+        '123xxx=yyy@mail.gmail.com',
         notifier.get_thread_id(
             self.feature_1, approval_defs.PrototypeApproval))
     self.assertEqual(
-        '456',
+        '456xxx=yyy@mail.gmail.com',
         notifier.get_thread_id(
             self.feature_1, approval_defs.ExperimentApproval))
     self.assertEqual(
@@ -377,6 +380,6 @@ class FunctionsTest(testing_config.CustomTestCase):
     """We can select the correct approval thread field of a feature."""
     self.feature_1.intent_to_implement_url += '?param=val#anchor'
     self.assertEqual(
-        '123',
+        '123xxx=yyy@mail.gmail.com',
         notifier.get_thread_id(
             self.feature_1, approval_defs.PrototypeApproval))

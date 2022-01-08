@@ -20,6 +20,7 @@ import logging
 import datetime
 import json
 import os
+import urllib
 
 from framework import ramcache
 from google.cloud import ndb
@@ -289,6 +290,7 @@ def get_thread_id(feature, approval_field):
 
   thread_url = thread_url.split('#')[0]  # Chop off any anchor
   thread_url = thread_url.split('?')[0]  # Chop off any query string params
+  thread_url = urllib.parse.unquote(thread_url)  # Convert %40 to @.
 
   thread_id = None
   if thread_url.startswith(BLINK_DEV_ARCHIVE_URL_PREFIX):
@@ -305,7 +307,7 @@ def post_comment_to_mailing_list(
   to_addr = settings.REVIEW_COMMENT_MAILING_LIST
   from_user = author_addr.split('@')[0]
   approval_field = approval_defs.APPROVAL_FIELDS_BY_ID[approval_field_id]
-  subject = '%s: %s' % (approval_field.name, feature.name)
+  subject = 'Re: %s: %s' % (approval_field.name, feature.name)
   thread_id = get_thread_id(feature, approval_field)
   references = None
   if thread_id:

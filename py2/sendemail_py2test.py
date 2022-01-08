@@ -59,6 +59,7 @@ class OutboundEmailHandlerTest(unittest.TestCase):
     mock_message.send.assert_called_once_with()
     self.assertEqual({'message': 'Done'}, actual_response)
     self.assertEqual(self.refs, mock_message.headers['References'])
+    self.assertEqual(self.refs, mock_message.headers['In-Reply-To'])
 
   @mock.patch('settings.SEND_EMAIL', True)
   @mock.patch('google.appengine.api.mail.EmailMessage')
