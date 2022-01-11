@@ -1,6 +1,3 @@
-
-
-
 # Copyright 2020 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
@@ -18,7 +15,7 @@
 import testing_config  # Must be imported first
 import unittest
 
-import mock
+from unittest import mock
 
 from pages import guideforms
 from internals import models

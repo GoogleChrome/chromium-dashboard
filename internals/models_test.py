@@ -15,9 +15,8 @@
 import testing_config  # Must be imported before the module under test.
 
 import datetime
-import mock
+from unittest import mock
 from framework import ramcache
-# from google.appengine.api import users
 from framework import users
 
 from internals import models

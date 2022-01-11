@@ -1,6 +1,3 @@
-
-
-
 # Copyright 2020 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
@@ -18,7 +15,7 @@
 import collections
 import testing_config  # Must be imported before the module under test.
 
-import mock
+from unittest import mock
 
 from internals import approval_defs
 from internals import models
