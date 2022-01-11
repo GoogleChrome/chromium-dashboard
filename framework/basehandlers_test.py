@@ -12,13 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-
-
 import testing_config  # Must be imported before the module under test.
 
 import json
-import mock
+from unittest import mock
 import flask
 import flask.views
 import werkzeug.exceptions  # Flask HTTP stuff.
@@ -32,6 +29,43 @@ from framework import xsrf
 from internals import models
 import settings
 
+
+class TestableFlaskHandler(basehandlers.FlaskHandler):
+
+  TEMPLATE_PATH = 'test_template.html'
+
+  def get_template_data(
+      self, special_status=None, redirect_to=None, item_list=None):
+    if redirect_to:
+      return flask.redirect(redirect_to)
+    if item_list:
+      return item_list
+
+    template_data = {'name': 'testing'}
+    if special_status:
+      template_data['status'] = special_status
+    return template_data
+
+  def process_post_data(self, redirect_to=None):
+    if redirect_to:
+      return flask.redirect(redirect_to)
+
+    return {'objects': [1, 2, 3]}
+
+
+test_app = basehandlers.FlaskApplication(
+    [('/test', TestableFlaskHandler),
+     ('/old_path', basehandlers.Redirector,
+      {'location': '/new_path'}),
+     ('/just_a_template', basehandlers.ConstHandler,
+      {'template_path': 'test_template.html',
+       'name': 'Guest'}),
+     ('/messed_up_template', basehandlers.ConstHandler,
+      {'template_path': 'not_a_template'}),
+     ('/ui/density.json', basehandlers.ConstHandler,
+      {'UI density': ['default', 'comfortable', 'compact']}),
+     ],
+    debug=True)
 
 
 class BaseHandlerTests(testing_config.CustomTestCase):
@@ -95,177 +129,132 @@ class BaseHandlerTests(testing_config.CustomTestCase):
     actual = self.handler.get_current_user()
     self.assertEqual('test@example.com', actual.email())
 
-  @mock.patch('flask.request')
-  def test_get_param__simple(self, mock_request):
+  def test_get_param__simple(self):
     """We can simply get a JSON parameter, with defaults."""
-    mock_request.get_json.return_value = {'x': 1}
-
-    self.assertEqual(1, self.handler.get_param('x'))
-    self.assertEqual(None, self.handler.get_param('missing', required=False))
-    self.assertEqual('usual', self.handler.get_param(
-        'missing', default='usual'))
+    with test_app.test_request_context('/test', json={'x': 1}):
+      self.assertEqual(1, self.handler.get_param('x'))
+      self.assertEqual(None, self.handler.get_param('missing', required=False))
+      self.assertEqual('usual', self.handler.get_param(
+          'missing', default='usual'))
 
   @mock.patch('framework.basehandlers.BaseHandler.abort')
-  @mock.patch('flask.request')
-  def test_get_param__missing_required(self, mock_request, mock_abort):
+  def test_get_param__missing_required(self, mock_abort):
     """If a required param is missing, we abort."""
-    mock_request.get_json.return_value = {'x': 1}
     mock_abort.side_effect = werkzeug.exceptions.BadRequest
 
-    with self.assertRaises(werkzeug.exceptions.BadRequest):
-      self.handler.get_param('missing')
+    with test_app.test_request_context('/test', json={'x': 1}):
+      with self.assertRaises(werkzeug.exceptions.BadRequest):
+        self.handler.get_param('missing')
     mock_abort.assert_called_once_with(400, msg="Missing parameter 'missing'")
 
   @mock.patch('framework.basehandlers.BaseHandler.abort')
-  @mock.patch('flask.request')
-  def test_get_param__validator(self, mock_request, mock_abort):
+  def test_get_param__validator(self, mock_abort):
     """If a param fails validation, we abort."""
-    mock_request.get_json.return_value = {'x': 1}
     mock_abort.side_effect = werkzeug.exceptions.BadRequest
 
-    actual = self.handler.get_param(
-        'x', validator=lambda num: num % 2 == 1)
-    self.assertEqual(1, actual)
+    with test_app.test_request_context('/test', json={'x': 1}):
+      actual = self.handler.get_param(
+          'x', validator=lambda num: num % 2 == 1)
+      self.assertEqual(1, actual)
 
-    actual = self.handler.get_param(
-        'missing', default=3, validator=lambda num: num % 2 == 1)
-    self.assertEqual(3, actual)
+      actual = self.handler.get_param(
+          'missing', default=3, validator=lambda num: num % 2 == 1)
+      self.assertEqual(3, actual)
 
-    with self.assertRaises(werkzeug.exceptions.BadRequest):
-      self.handler.get_param(
-          'x', validator=lambda num: num % 2 == 0)
-    mock_abort.assert_called_once_with(
-        400, msg="Invalid value for parameter 'x'")
+      with self.assertRaises(werkzeug.exceptions.BadRequest):
+        self.handler.get_param(
+            'x', validator=lambda num: num % 2 == 0)
+      mock_abort.assert_called_once_with(
+          400, msg="Invalid value for parameter 'x'")
 
   @mock.patch('framework.basehandlers.BaseHandler.abort')
-  @mock.patch('flask.request')
-  def test_get_param__allowed(self, mock_request, mock_abort):
+  def test_get_param__allowed(self, mock_abort):
     """If a param has an unexpected value, we abort."""
-    mock_request.get_json.return_value = {'x': 1}
     mock_abort.side_effect = werkzeug.exceptions.BadRequest
 
-    actual = self.handler.get_param('x', allowed=[1, 2, 3])
-    self.assertEqual(1, actual)
+    with test_app.test_request_context('/test', json={'x': 1}):
+      actual = self.handler.get_param('x', allowed=[1, 2, 3])
+      self.assertEqual(1, actual)
 
-    actual = self.handler.get_param(
-        'missing', default=3, allowed=[1, 2, 3])
-    self.assertEqual(3, actual)
+      actual = self.handler.get_param(
+          'missing', default=3, allowed=[1, 2, 3])
+      self.assertEqual(3, actual)
 
-    with self.assertRaises(werkzeug.exceptions.BadRequest):
-      self.handler.get_param('x', allowed=[10, 20, 30])
-    mock_abort.assert_called_once_with(
-        400, msg="Unexpected value for parameter 'x'")
+      with self.assertRaises(werkzeug.exceptions.BadRequest):
+        self.handler.get_param('x', allowed=[10, 20, 30])
+      mock_abort.assert_called_once_with(
+          400, msg="Unexpected value for parameter 'x'")
 
   @mock.patch('framework.basehandlers.BaseHandler.abort')
-  @mock.patch('flask.request')
-  def test_get_int_param(self, mock_request, mock_abort):
+  def test_get_int_param(self, mock_abort):
     """We can get an int, or abort."""
-    mock_request.get_json.return_value = {'x': 1, 'y': 0, 'foo': 'bar'}
     mock_abort.side_effect = werkzeug.exceptions.BadRequest
 
-    actual = self.handler.get_int_param('x')
-    self.assertEqual(1, actual)
+    with test_app.test_request_context(
+        '/test', json={'x': 1, 'y': 0, 'foo': 'bar'}):
+      actual = self.handler.get_int_param('x')
+      self.assertEqual(1, actual)
 
-    actual = self.handler.get_int_param('y')
-    self.assertEqual(0, actual)
+      actual = self.handler.get_int_param('y')
+      self.assertEqual(0, actual)
 
-    actual = self.handler.get_int_param('missing', default=3)
-    self.assertEqual(3, actual)
+      actual = self.handler.get_int_param('missing', default=3)
+      self.assertEqual(3, actual)
 
-    actual = self.handler.get_int_param('missing', required=False)
-    self.assertIsNone(actual)
+      actual = self.handler.get_int_param('missing', required=False)
+      self.assertIsNone(actual)
 
-    actual = self.handler.get_int_param(
-        'missing', required=False, validator=lambda x: x % 2 == 1)
-    self.assertIsNone(actual)
+      actual = self.handler.get_int_param(
+          'missing', required=False, validator=lambda x: x % 2 == 1)
+      self.assertIsNone(actual)
 
-    with self.assertRaises(werkzeug.exceptions.BadRequest):
-      self.handler.get_int_param('foo')
-    mock_abort.assert_called_once_with(
-        400, msg="Parameter 'foo' was not an int")
+      with self.assertRaises(werkzeug.exceptions.BadRequest):
+        self.handler.get_int_param('foo')
+      mock_abort.assert_called_once_with(
+          400, msg="Parameter 'foo' was not an int")
 
   @mock.patch('framework.basehandlers.BaseHandler.abort')
-  @mock.patch('flask.request')
-  def test_get_bool_param(self, mock_request, mock_abort):
+  def test_get_bool_param(self, mock_abort):
     """We can get a bool, or abort."""
-    mock_request.get_json.return_value = {'x': True, 'foo': 'bar'}
     mock_abort.side_effect = werkzeug.exceptions.BadRequest
 
-    actual = self.handler.get_bool_param('x')
-    self.assertEqual(True, actual)
+    with test_app.test_request_context(
+        '/test', json={'x': True, 'foo': 'bar'}):
+      actual = self.handler.get_bool_param('x')
+      self.assertEqual(True, actual)
 
-    actual = self.handler.get_bool_param('missing')
-    self.assertEqual(False, actual)
+      actual = self.handler.get_bool_param('missing')
+      self.assertEqual(False, actual)
 
-    actual = self.handler.get_bool_param('missing', default=True)
-    self.assertEqual(True, actual)
+      actual = self.handler.get_bool_param('missing', default=True)
+      self.assertEqual(True, actual)
 
-    with self.assertRaises(werkzeug.exceptions.BadRequest):
-      self.handler.get_bool_param('foo')
-    mock_abort.assert_called_once_with(
-        400, msg="Parameter 'foo' was not a bool")
+      with self.assertRaises(werkzeug.exceptions.BadRequest):
+        self.handler.get_bool_param('foo')
+      mock_abort.assert_called_once_with(
+          400, msg="Parameter 'foo' was not a bool")
 
   @mock.patch('framework.basehandlers.BaseHandler.abort')
-  @mock.patch('flask.request')
-  def test_get_specified_feature__missing(self, mock_request, mock_abort):
+  def test_get_specified_feature__missing(self, mock_abort):
     """Reject requests that need a feature ID but don't provide one."""
-    mock_request.get_json.return_value = {}
     mock_abort.side_effect = werkzeug.exceptions.BadRequest
 
-    with self.assertRaises(werkzeug.exceptions.BadRequest):
-      self.handler.get_specified_feature()
-    mock_abort.assert_called_once_with(
-        400, msg="Missing parameter 'featureId'")
+    with test_app.test_request_context('/test', json={}):
+      with self.assertRaises(werkzeug.exceptions.BadRequest):
+        self.handler.get_specified_feature()
+      mock_abort.assert_called_once_with(
+          400, msg="Missing parameter 'featureId'")
 
   @mock.patch('framework.basehandlers.BaseHandler.abort')
-  @mock.patch('flask.request')
-  def test_get_specified_feature__bad(self, mock_request, mock_abort):
+  def test_get_specified_feature__bad(self, mock_abort):
     """Reject requests that need a feature ID but provide junk."""
-    mock_request.get_json.return_value = {'featureId': 'junk'}
     mock_abort.side_effect = werkzeug.exceptions.BadRequest
 
-    with self.assertRaises(werkzeug.exceptions.BadRequest):
-      self.handler.get_specified_feature()
-    mock_abort.assert_called_once_with(
-        400, msg="Parameter 'featureId' was not an int")
-
-
-class TestableFlaskHandler(basehandlers.FlaskHandler):
-
-  TEMPLATE_PATH = 'test_template.html'
-
-  def get_template_data(
-      self, special_status=None, redirect_to=None, item_list=None):
-    if redirect_to:
-      return flask.redirect(redirect_to)
-    if item_list:
-      return item_list
-
-    template_data = {'name': 'testing'}
-    if special_status:
-      template_data['status'] = special_status
-    return template_data
-
-  def process_post_data(self, redirect_to=None):
-    if redirect_to:
-      return flask.redirect(redirect_to)
-
-    return {'objects': [1, 2, 3]}
-
-
-test_app = basehandlers.FlaskApplication(
-    [('/test', TestableFlaskHandler),
-     ('/old_path', basehandlers.Redirector,
-      {'location': '/new_path'}),
-     ('/just_a_template', basehandlers.ConstHandler,
-      {'template_path': 'test_template.html',
-       'name': 'Guest'}),
-     ('/messed_up_template', basehandlers.ConstHandler,
-      {'template_path': 'not_a_template'}),
-     ('/ui/density.json', basehandlers.ConstHandler,
-      {'UI density': ['default', 'comfortable', 'compact']}),
-     ],
-    debug=True)
+    with test_app.test_request_context('/test', json={'featureId': 'junk'}):
+      with self.assertRaises(werkzeug.exceptions.BadRequest):
+        self.handler.get_specified_feature()
+      mock_abort.assert_called_once_with(
+          400, msg="Parameter 'featureId' was not an int")
 
 
 class RedirectorTests(testing_config.CustomTestCase):

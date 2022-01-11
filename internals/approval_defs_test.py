@@ -19,7 +19,7 @@ import testing_config  # Must be imported before the module under test.
 import unittest
 import urllib.request, urllib.parse, urllib.error
 
-import mock
+from unittest import mock
 import flask
 import werkzeug
 

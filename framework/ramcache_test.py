@@ -1,6 +1,3 @@
-
-
-
 # Copyright 2020 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
@@ -16,7 +13,7 @@
 # limitations under the License.
 
 import datetime
-import mock
+from unittest import mock
 import testing_config  # Must be imported before the module under test.
 
 from framework import ramcache

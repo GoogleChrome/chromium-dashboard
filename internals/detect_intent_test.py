@@ -15,7 +15,7 @@
 import testing_config  # Must be imported first
 
 import flask
-import mock
+from unittest import mock
 import werkzeug
 
 from internals import models

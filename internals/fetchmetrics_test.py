@@ -12,14 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 import base64
 import datetime
 import json
 import testing_config  # Must be imported before the module under test.
 import urllib.request, urllib.parse, urllib.error
 
-import mock
+from unittest import mock
 import flask
 import werkzeug
 
