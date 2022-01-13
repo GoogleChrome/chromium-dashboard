@@ -7,6 +7,7 @@ HACK_BLINK_COMPONENTS = [
   "Blink>AudioOutputDevices",
   "Blink>BackgroundFetch",
   "Blink>BackgroundSync",
+  "Blink>BatteryStatus",
   "Blink>Bindings",
   "Blink>Bluetooth",
   "Blink>CSS",
