@@ -1,6 +1,3 @@
-
-
-
 # -*- coding: utf-8 -*-
 # Copyright 2020 Google Inc.
 #
@@ -514,6 +511,8 @@ class FeatureEditStage(basehandlers.FlaskHandler):
       feature.other_views_notes = self.form.get('other_views_notes')
     if self.touched('prefixed'):
       feature.prefixed = self.form.get('prefixed') == 'on'
+    if self.touched('non_oss_deps'):
+      feature.non_oss_deps = self.form.get('non_oss_deps')
 
     if self.touched('tag_review'):
       feature.tag_review = self.form.get('tag_review')
