@@ -203,6 +203,16 @@
   {{feature.measurement|urlize}}
 {% endif %}
 
+{% if feature.non_oss_deps %}
+  <br><br><h4>Non-OSS dependencies</h4>
+  <div>Does the feature depend on any code or APIs outside the Chromium
+  open source repository and its open-source dependencies to
+  function?</div>
+
+  {{feature.non_oss_deps|urlize}}
+{% endif %}
+
+
 {% if 'sample_links' in sections_to_show %}
    {% if feature.resources and feature.resources.samples %}
      <br><br><h4>Sample links</h4>

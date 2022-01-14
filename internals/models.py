@@ -1310,6 +1310,7 @@ class Feature(DictModel):
   doc_links = ndb.StringProperty(repeated=True)
   measurement = ndb.StringProperty()
   sample_links = ndb.StringProperty(repeated=True)
+  non_oss_deps = ndb.StringProperty()
 
   experiment_goals = ndb.StringProperty()
   experiment_timeline = ndb.StringProperty()
