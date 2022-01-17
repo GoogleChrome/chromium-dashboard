@@ -49,7 +49,7 @@
     "gulp": "^4.0.0",
     "gulp-autoprefixer": "^5.0.0",
     "gulp-babel": "^8.0.0",
-    "gulp-eslint": "^5.0.0",
+    "gulp-eslint": "^6.0.0",
     "gulp-eslint-if-fixed": "^1.0.0",
     "gulp-license": "^1.1.0",
     "gulp-load-plugins": "^1.6.0",
