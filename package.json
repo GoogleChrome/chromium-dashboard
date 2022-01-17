@@ -88,7 +88,7 @@
     "@polymer/paper-styles": "^3.0.1",
     "lit-element": "^2.1.0",
     "lit-html": "^1.1.2",
-    "node-fetch": ">=2.6.1",
+    "node-fetch": ">=3.1.1",
     "node-sass": ">=4.13.1",
     "urijs": ">=1.19.7",
     "yargs-parser": ">=13.1.2"
