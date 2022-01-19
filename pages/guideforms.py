@@ -646,13 +646,13 @@ ALL_FIELDS = {
             '">Example 2</a>.')),
 
     'dt_milestone_desktop_start': forms.IntegerField(
-        required=False, label='DevTrail on desktop',
+        required=False, label='DevTrial on desktop',
         widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'}),
         help_text=('First milestone that allows developers to try '
                    'this feature on desktop platforms by setting a flag.')),
 
     'dt_milestone_android_start': forms.IntegerField(
-        required=False, label='DevTrail on Android',
+        required=False, label='DevTrial on Android',
         widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'}),
         help_text=('First milestone that allows developers to try '
                    'this feature on Android by setting a flag.')),
