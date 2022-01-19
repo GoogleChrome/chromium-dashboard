@@ -231,7 +231,7 @@ class ChromedashApprovalsDialog extends LitElement {
               ${STATE_NAMES.map((valName) => html`
                 <option value="${valName[0]}"
                   ?selected=${valName[0] == selectedValue}
-                 >${valName[1]}</option>`
+                 >${valName[1]}</option>`,
                 )}
             </select>` : html`
            ${this.findStateName(approvalValue.state)}

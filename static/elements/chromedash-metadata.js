@@ -155,7 +155,7 @@ class ChromedashMetadata extends LitElement {
             html`<option value="${version}">${version} ${index == 3 ? 'canary' : index == 4 ? 'dev/beta' : index == 5 ? 'stable' : ''}</option>`
             : ''
         :
-        html`<option value="${version}">${version} ${index == 3 ? 'canary' : index == 4 ? 'dev' : index == 5 ? 'beta' : index == 6 ? 'stable' : ''}</option>`
+        html`<option value="${version}">${version} ${index == 3 ? 'canary' : index == 4 ? 'dev' : index == 5 ? 'beta' : index == 6 ? 'stable' : ''}</option>`,
     )}
       </select>
       <div ?hidden="${!this._fetchError}" class="error">Error fetching version information.</div>
