@@ -159,7 +159,7 @@ class ChromedashTimeline extends LitElement {
         type: 'number',
         label: 'Monthly Average',
       }],
-      [{column: 2, type: 'string'}]
+      [{column: 2, type: 'string'}],
     );
 
     const formatter = new window.google.visualization.NumberFormat({fractionDigits: 6});
