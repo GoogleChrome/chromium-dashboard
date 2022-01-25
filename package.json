@@ -43,7 +43,7 @@
     "color-string": ">=1.5.5",
     "del": "^3.0.0",
     "dot-prop": ">=7.1.1",
-    "eslint": "^5.2.0",
+    "eslint": "^8.7.0",
     "eslint-config-google": "^0.14.0",
     "glob-parent": ">=5.1.2",
     "gulp": "^4.0.0",
