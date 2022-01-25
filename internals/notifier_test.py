@@ -97,6 +97,19 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     self.assertIn('test old value', body_html)
     self.assertIn('test new value', body_html)
 
+  def test_format_email_body__mozdev_links(self):
+    """We generate an email body with links to developer.mozilla.org."""
+    self.feature_1.doc_links = ['https://developer.mozilla.org/look-here']
+    body_html = notifier.format_email_body(
+        True, self.feature_1, self.changes)
+    self.assertIn('look-here', body_html)
+
+    self.feature_1.doc_links = [
+        'https://hacker-site.org/developer.mozilla.org/look-here']
+    body_html = notifier.format_email_body(
+        True, self.feature_1, self.changes)
+    self.assertNotIn('look-here', body_html)
+
   def test_accumulate_reasons(self):
     """We can accumulate lists of reasons why we sent a message to a user."""
     addr_reasons = collections.defaultdict(list)
