@@ -13,9 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-
-
 import base64
 import hmac
 import logging
@@ -58,12 +55,14 @@ class Secrets(ndb.Model):
 
     if not singleton.xsrf_secret:
       singleton.xsrf_secret = make_random_key()
-      logging.info('Added XSRF secret: %r' % singleton.xsrf_secret[:8])
+      xsrf_prefix_for_debugging = singleton.xsrf_secret[:8]
+      logging.info('Added XSRF info: %r' % xsrf_prefix_for_debugging)
       needs_save = True
 
     if not singleton.session_secret:
       singleton.session_secret = make_random_key()
-      logging.info('Added session secret: %r' % singleton.session_secret[:8])
+      sess_prefix_for_debugging = singleton.session_secret[:8]
+      logging.info('Added session info: %r' % sess_prefix_for_debugging)
       needs_save = True
 
     if needs_save:
