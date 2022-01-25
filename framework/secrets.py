@@ -54,13 +54,15 @@ class Secrets(ndb.Model):
       needs_save = True
 
     if not singleton.xsrf_secret:
-      singleton.xsrf_secret = make_random_key()
-      logging.info('Added XSRF info')
+      random_xsrf = make_random_key()
+      singleton.xsrf_secret = random_xsrf
+      logging.info('Added XSRF info: %r', random_xsrf[:8])
       needs_save = True
 
     if not singleton.session_secret:
-      singleton.session_secret = make_random_key()
-      logging.info('Added session info')
+      random_sess = make_random_key()
+      singleton.session_secret = random_sess
+      logging.info('Added session info: %r', random_sess[:8])
       needs_save = True
 
     if needs_save:
