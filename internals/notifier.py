@@ -46,7 +46,7 @@ def format_email_body(is_update, feature, changes):
     milestone_str = 'not yet assigned'
 
   moz_link_urls = [link for link in feature.doc_links
-                   if 'developer.mozilla.org' in link]
+                   if link.startswith('https://developer.mozilla.org')]
 
   formatted_changes = ''
   for prop in changes:
