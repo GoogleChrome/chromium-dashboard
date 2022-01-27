@@ -36,9 +36,12 @@ ApprovalFieldDef = collections.namedtuple(
     'ApprovalField',
     'name, description, field_id, rule, approvers')
 
+# Note: This can be requested manually through the UI, but it is not
+# triggered by a blink-dev thread because i2p intents are only FYIs to
+# bilnk-dev and don't actually need approval by the API Owners.
 PrototypeApproval = ApprovalFieldDef(
     'Intent to Prototype',
-    'One API Owner must approve your intent',
+    'Not normally used.  If a review is requested, API Owners can approve.',
     1, ONE_LGTM, API_OWNERS_URL)
 
 ExperimentApproval = ApprovalFieldDef(

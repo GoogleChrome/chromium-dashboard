@@ -301,6 +301,19 @@ class IntentEmailHandlerTest(testing_config.CustomTestCase):
     self.assertEqual('user@example.com', appr.set_by)
     self.assertEqual(self.feature_1.intent_to_ship_url, self.thread_url)
 
+  def test_process_post_data__new_thread_just_FYI(self):
+    """When we detect a new thread, it might not require a review."""
+    self.review_json_data['subject'] = 'Intent to Prototype: featurename'
+    with test_app.test_request_context(
+        self.request_path, json=self.review_json_data):
+      actual = self.handler.process_post_data()
+
+    self.assertEqual(actual, {'message': 'Done'})
+
+    created_approvals = list(models.Approval.query().fetch(None))
+    self.assertEqual(0, len(created_approvals))
+    self.assertEqual(self.feature_1.intent_to_implement_url, self.thread_url)
+
   @mock.patch('internals.detect_intent.is_lgtm_allowed')
   def test_process_post_data__lgtm(self, mock_is_lgtm_allowed):
     """If we get an LGTM, we store the approval value and update the feature."""

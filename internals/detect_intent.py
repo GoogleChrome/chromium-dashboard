@@ -24,6 +24,12 @@ from internals import approval_defs
 from internals import models
 
 
+FIELDS_REQUIRING_LGTMS = [
+    approval_defs.ShipApproval, approval_defs.ExperimentApproval,
+    approval_defs.ExtendExperimentApproval,
+    ]
+
+
 def detect_field(subject):
   """Look for key words in the subject line that indicate intent type.
 
@@ -270,9 +276,11 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
     # have any approval values stored.
     elif detect_new_thread(feature_id, approval_field):
       logging.info('found new thread')
-      models.Approval.set_approval(
-          feature_id, approval_field.field_id,
-          models.Approval.REVIEW_REQUESTED, from_addr)
+      if approval_field in FIELDS_REQUIRING_LGTMS:
+        logging.info('requesting a review')
+        models.Approval.set_approval(
+            feature_id, approval_field.field_id,
+            models.Approval.REVIEW_REQUESTED, from_addr)
 
   def record_lgtm(self, feature, approval_field, from_addr):
     """Add from_addr to the old way or recording LGTMs."""
