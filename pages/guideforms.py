@@ -830,7 +830,7 @@ Existing_OriginTrial = define_form_class_using_shared_fields(
 
 PSA_Implement = define_form_class_using_shared_fields(
     'Any_Implement',
-    ('spec_link', 'standard_maturity', 'comments'))
+    ('motivation', 'spec_link', 'standard_maturity', 'comments'))
   # TODO(jrobbins): advise user to request a tag review
 
 
