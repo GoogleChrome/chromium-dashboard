@@ -1,4 +1,4 @@
-import {LitElement, css, html} from 'lit-element';
+import {LitElement, css, html} from 'lit';
 import '@polymer/iron-icon';
 
 // This is a simplfied version of chops-dialog:

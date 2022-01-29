@@ -1,5 +1,4 @@
-import {LitElement, css, html} from 'lit-element';
-import {nothing} from 'lit-html';
+import {LitElement, css, html, nothing} from 'lit';
 import './chromedash-dialog';
 import '@polymer/iron-icon';
 import SHARED_STYLES from '../css/shared.css';
@@ -198,7 +197,7 @@ class ChromedashApprovalsDialog extends LitElement {
   }
 
   findStateName(state) {
-    for (let item of STATE_NAMES) {
+    for (const item of STATE_NAMES) {
       if (item[0] == state) {
         return item[1];
       }
@@ -322,7 +321,7 @@ class ChromedashApprovalsDialog extends LitElement {
 
 
     const isOpen = this.showConfigs.has(approvalDef.id);
-    let configExpandIcon = html`
+    const configExpandIcon = html`
       <iron-icon
          style="margin-left:4px"
          @click="${() => {
@@ -403,7 +402,7 @@ class ChromedashApprovalsDialog extends LitElement {
            >Show all intents</label>
       `;
     }
-    let postToSelect = html`
+    const postToSelect = html`
       <select style="margin-right:1em" id="post_to_approval_field">
         <option value="0">Don't post to mailing list</option>
         ${APPROVAL_DEFS.map((apprDef) => html`
@@ -459,7 +458,7 @@ class ChromedashApprovalsDialog extends LitElement {
     const commentArea = this.shadowRoot.querySelector('#comment_area');
     const newVal = commentArea && commentArea.value.trim() || '';
     if (newVal != '') newNeedsSave = true;
-    for (let fieldId of this.changedApprovalsByField.keys()) {
+    for (const fieldId of this.changedApprovalsByField.keys()) {
       if (this.changedApprovalsByField.get(fieldId) != -1) {
         newNeedsSave = true;
       }
@@ -493,7 +492,7 @@ class ChromedashApprovalsDialog extends LitElement {
 
   handleSave() {
     const promises = [];
-    for (let fieldId of this.changedApprovalsByField.keys()) {
+    for (const fieldId of this.changedApprovalsByField.keys()) {
       if (this.changedApprovalsByField.get(fieldId) != -1) {
         promises.push(
           window.csClient.setApproval(
@@ -501,7 +500,7 @@ class ChromedashApprovalsDialog extends LitElement {
             this.changedApprovalsByField.get(fieldId)));
       }
     }
-    for (let fieldId of this.changedConfigsByField.keys()) {
+    for (const fieldId of this.changedConfigsByField.keys()) {
       const config = this.changedConfigsByField.get(fieldId);
       promises.push(
         window.csClient.setApprovalConfig(
@@ -529,7 +528,7 @@ class ChromedashApprovalsDialog extends LitElement {
   }
 
   toggleConfig(approvalDef) {
-    let newConfigs = new Set([...this.showConfigs]); // Make a copy.
+    const newConfigs = new Set([...this.showConfigs]); // Make a copy.
     if (newConfigs.has(approvalDef.id)) {
       newConfigs.delete(approvalDef.id);
     } else {

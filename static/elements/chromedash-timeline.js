@@ -1,5 +1,5 @@
 // TODO(yangguang): This component is not tested. Data is not available in devserver, so cannot be tested locally.
-import {LitElement, css, html} from 'lit-element';
+import {LitElement, css, html} from 'lit';
 import SHARED_STYLES from '../css/shared.css';
 
 class ChromedashTimeline extends LitElement {
@@ -146,8 +146,8 @@ class ChromedashTimeline extends LitElement {
     datatable.addRows(rowArray);
 
     function aggregateByMonth(date) {
-      let month = date.getMonth();
-      let year = date.getFullYear();
+      const month = date.getMonth();
+      const year = date.getFullYear();
       return new Date(year, month);
     }
 
@@ -288,7 +288,7 @@ ORDER BY yyyymmdd DESC, client`;
 
 // Capitalizes the first letter of a word.
 function capitalize(word) {
-  let letters = word.split('');
+  const letters = word.split('');
   letters[0] = letters[0].toUpperCase();
   return letters.join('');
 }

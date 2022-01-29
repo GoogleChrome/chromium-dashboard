@@ -72,14 +72,14 @@ class ChromeStatusClient {
    * Then strip off the defensive prefix from the response. */
   async doFetch(resource, httpMethod, body, includeToken=true) {
     const url = this.baseUrl + resource;
-    let headers = {
+    const headers = {
       'accept': 'application/json',
       'content-type': 'application/json',
     };
     if (includeToken) {
       headers['X-Xsrf-Token'] = this.token;
     }
-    let options = {
+    const options = {
       method: httpMethod,
       credentials: 'same-origin',
       headers: headers,
@@ -136,7 +136,7 @@ class ChromeStatusClient {
   signIn(googleUser) {
     // TODO(jrobbins): Consider using profile pic.
     // let profile = googleUser.getBasicProfile();
-    let idToken = googleUser.getAuthResponse().id_token;
+    const idToken = googleUser.getAuthResponse().id_token;
     // We don't use doPost because we don't already have a XSRF token.
     return this.doFetch('/login', 'POST', {'id_token': idToken}, false);
   }

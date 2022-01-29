@@ -1,4 +1,4 @@
-import {LitElement, css, html} from 'lit-element';
+import {LitElement, css, html} from 'lit';
 import SHARED_STYLES from '../css/shared.css';
 
 const DEFAULT_DURATION = 7000;

@@ -1,5 +1,4 @@
-import {LitElement, css, html} from 'lit-element';
-import {nothing} from 'lit-html';
+import {LitElement, css, html, nothing} from 'lit';
 import '@polymer/iron-icon';
 import './chromedash-callout';
 import SHARED_STYLES from '../css/shared.css';
@@ -128,7 +127,7 @@ class ChromedashFeatureDetail extends LitElement {
     };
     if (fieldIdMapping[fieldId]) {
       value = this.feature;
-      for (let step of fieldIdMapping[fieldId].split('.')) {
+      for (const step of fieldIdMapping[fieldId].split('.')) {
         if (value) {
           value = value[step];
         }

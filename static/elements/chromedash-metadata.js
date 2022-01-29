@@ -1,5 +1,5 @@
-import {LitElement, css, html} from 'lit-element';
-import {ifDefined} from 'lit-html/directives/if-defined.js';
+import {LitElement, css, html} from 'lit';
+import {ifDefined} from 'lit/directives/if-defined.js';
 import SHARED_STYLES from '../css/shared.css';
 
 class ChromedashMetadata extends LitElement {
@@ -70,7 +70,7 @@ class ChromedashMetadata extends LitElement {
   }
 
   _fireEvent(eventName, detail) {
-    let event = new CustomEvent(eventName, {detail});
+    const event = new CustomEvent(eventName, {detail});
     this.dispatchEvent(event);
   }
 
@@ -150,11 +150,10 @@ class ChromedashMetadata extends LitElement {
         ${this._versions.map((version, index) =>
       typeof this._className !== 'undefined' ?
         this._className == 'canaryisdev' ?
-          html`<option value="${version}">${version} ${index == 3 ? 'canary/dev' : index == 4 ? 'beta' : index == 5 ? 'stable' : ''}</option>`
-          : this._className == 'betaisdev' ?
-            html`<option value="${version}">${version} ${index == 3 ? 'canary' : index == 4 ? 'dev/beta' : index == 5 ? 'stable' : ''}</option>`
-            : ''
-        :
+          html`<option value="${version}">${version} ${index == 3 ? 'canary/dev' : index == 4 ? 'beta' : index == 5 ? 'stable' : ''}</option>` :
+          this._className == 'betaisdev' ?
+            html`<option value="${version}">${version} ${index == 3 ? 'canary' : index == 4 ? 'dev/beta' : index == 5 ? 'stable' : ''}</option>` :
+            '' :
         html`<option value="${version}">${version} ${index == 3 ? 'canary' : index == 4 ? 'dev' : index == 5 ? 'beta' : index == 6 ? 'stable' : ''}</option>`,
     )}
       </select>
