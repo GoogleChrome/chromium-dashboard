@@ -18,7 +18,7 @@ Chrome Platform Status
 1. We recommend using an older node version, e.g. node 10
     1. Use `node -v` to check the default node version
     2. `nvm use 10` to switch to node 10
-3. cd into the Chromestatus repo and install npm dependencies `npm ci`
+3. `cd` into the Chromestatus repo and install npm dependencies `npm ci`
 4. Create a virtual environment.
     1. `apt install python3.9-venv`
     1. `python3 -m venv cs-env`
