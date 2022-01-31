@@ -24,7 +24,7 @@ Chrome Platform Status
     1. `python3 -m venv cs-env`
 5. Install pip for python2
     1. curl https://bootstrap.pypa.io/pip/2.7/get-pip.py --output get-pip.py
-    1. sudo python2 get-pip.py
+    1. python2 get-pip.py
 6. Install other dependencies 
     1. `npm run deps`
     1. `npm run dev-deps`
