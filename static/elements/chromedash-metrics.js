@@ -1,5 +1,5 @@
-import {LitElement, css, html} from 'lit-element';
-import {ifDefined} from 'lit-html/directives/if-defined.js';
+import {LitElement, css, html} from 'lit';
+import {ifDefined} from 'lit/directives/if-defined.js';
 
 import '@polymer/iron-icon';
 import './chromedash-x-meter';
@@ -77,7 +77,7 @@ class ChromedashMetrics extends LitElement {
   }
 
   _fireEvent(eventName, detail) {
-    let event = new CustomEvent(eventName, {detail});
+    const event = new CustomEvent(eventName, {detail});
     this.dispatchEvent(event);
   }
 

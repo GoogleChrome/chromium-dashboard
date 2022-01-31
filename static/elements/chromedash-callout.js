@@ -1,4 +1,4 @@
-import {LitElement, css, html} from 'lit-element';
+import {LitElement, css, html} from 'lit';
 import SHARED_STYLES from '../css/shared.css';
 
 class ChromedashCallout extends LitElement {
@@ -104,7 +104,7 @@ class ChromedashCallout extends LitElement {
 
   attachToTarget(el) {
     if (this.side == 'south') {
-      let targetBottom = this.contentOffsetTop(el) + el.offsetHeight;
+      const targetBottom = this.contentOffsetTop(el) + el.offsetHeight;
       this.top = targetBottom + 20;
       this.left = Math.max(this.contentOffsetLeft(el) - 20, 0);
     }

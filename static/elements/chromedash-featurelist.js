@@ -1,4 +1,4 @@
-import {LitElement, html} from 'lit-element';
+import {LitElement, html} from 'lit';
 // eslint-disable-next-line no-unused-vars
 import './chromedash-feature';
 import style from '../css/elements/chromedash-featurelist.css';
@@ -82,7 +82,7 @@ class ChromedashFeaturelist extends LitElement {
   }
 
   _fireEvent(eventName, detail) {
-    let event = new CustomEvent(eventName, {detail});
+    const event = new CustomEvent(eventName, {detail});
     this.dispatchEvent(event);
   }
 

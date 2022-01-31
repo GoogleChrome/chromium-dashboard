@@ -1,5 +1,4 @@
-import {LitElement, html} from 'lit-element';
-import {nothing} from 'lit-html';
+import {LitElement, html, nothing} from 'lit';
 import style from '../css/elements/chromedash-roadmap-milestone-card.css';
 
 class ChromedashRoadmapMilestoneCard extends LitElement {
@@ -51,7 +50,7 @@ class ChromedashRoadmapMilestoneCard extends LitElement {
   }
 
   _fireEvent(eventName, detail) {
-    let event = new CustomEvent(eventName, {
+    const event = new CustomEvent(eventName, {
       bubbles: true,
       composed: true,
       detail,

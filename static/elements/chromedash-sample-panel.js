@@ -1,5 +1,4 @@
-import {LitElement, css, html} from 'lit-element';
-import {nothing} from 'lit-html';
+import {LitElement, css, html, nothing} from 'lit';
 import '@polymer/iron-icon';
 import SHARED_STYLES from '../css/shared.css';
 
@@ -89,7 +88,7 @@ class ChromedashSamplePanel extends LitElement {
   }
 
   _fireEvent(eventName, detail) {
-    let event = new CustomEvent(eventName, {detail});
+    const event = new CustomEvent(eventName, {detail});
     this.dispatchEvent(event);
   }
 

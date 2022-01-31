@@ -3,7 +3,7 @@
  * This file uses a similar pattern used in iron-icons (https://github.com/PolymerElements/iron-icons/blob/master/iron-icons.js)
  */
 
-import {html} from 'lit-element';
+import {html, render} from 'lit';
 import '@polymer/iron-icon';
 import '@polymer/iron-iconset-svg';
 
@@ -103,5 +103,4 @@ const template = html`
 </iron-iconset-svg>
 `;
 
-const element = template.getTemplateElement().content.firstElementChild;
-document.head.appendChild(element);
+render(template, document.body);

@@ -1,5 +1,4 @@
-import {LitElement, css, html} from 'lit-element';
-import {nothing} from 'lit-html';
+import {LitElement, css, html, nothing} from 'lit';
 import './chromedash-color-status';
 import './chromedash-dialog';
 import SHARED_STYLES from '../css/shared.css';

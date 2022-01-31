@@ -55,7 +55,7 @@ async function init() {
 }
 
 function mapFeaturesToComponents(features) {
-  let set = new Set();
+  const set = new Set();
   features.forEach(f => set.add(...f.browsers.chrome.blink_components));
 
   const featuresMappedToComponents = {};
@@ -69,7 +69,7 @@ function mapFeaturesToComponents(features) {
     });
   });
 
-  for (let [, feautreList] of Object.entries(featuresMappedToComponents)) {
+  for (const [, feautreList] of Object.entries(featuresMappedToComponents)) {
     sortFeaturesByName(feautreList);
   }
 

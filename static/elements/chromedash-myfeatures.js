@@ -1,5 +1,4 @@
-import {LitElement, css, html} from 'lit-element';
-import {nothing} from 'lit-html';
+import {LitElement, css, html, nothing} from 'lit';
 import './chromedash-accordion';
 import './chromedash-approvals-dialog';
 import './chromedash-feature-table';

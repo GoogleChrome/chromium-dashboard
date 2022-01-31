@@ -1,5 +1,4 @@
-import {LitElement, html} from 'lit-element';
-import {nothing} from 'lit-html';
+import {LitElement, html, nothing} from 'lit';
 import '@polymer/iron-icon';
 import style from '../css/elements/chromedash-schedule.css';
 
@@ -132,8 +131,8 @@ class ChromedashSchedule extends LitElement {
                ${TEMPLATE_CONTENT[type].downloadUrl ? html`
                  <a href="${TEMPLATE_CONTENT[type].downloadUrl}"
                     title="${TEMPLATE_CONTENT[type].downloadTitle}"
-                    target="_blank">Chrome ${this.channels[type].version}</a>`
-                 : html`
+                    target="_blank">Chrome ${this.channels[type].version}</a>` :
+                 html`
                  Chrome ${this.channels[type].version}`}
             </h1>
           </div>

@@ -1,5 +1,4 @@
-import {LitElement, css, html} from 'lit-element';
-import {nothing} from 'lit-html';
+import {LitElement, css, html, nothing} from 'lit';
 import SHARED_STYLES from '../css/shared.css';
 import {STATE_NAMES} from './chromedash-approvals-dialog.js';
 
@@ -47,7 +46,7 @@ class ChromedashFeatureTable extends LitElement {
   }
 
   loadApprovalData() {
-    for (let feature of this.features) {
+    for (const feature of this.features) {
       window.csClient.getApprovals(feature.id).then(res => {
         const newApprovals = {...this.approvals};
         newApprovals[feature.id] = res.approvals;
@@ -118,7 +117,7 @@ class ChromedashFeatureTable extends LitElement {
   }
 
   _fireEvent(eventName, detail) {
-    let event = new CustomEvent(eventName, {
+    const event = new CustomEvent(eventName, {
       bubbles: true,
       composed: true,
       detail,
@@ -277,7 +276,7 @@ class ChromedashFeatureTable extends LitElement {
 
   getActiveOwners(feature) {
     const featureConfigs = this.configs[feature.id];
-    let allOwners = featureConfigs.map(c => c.owners).flat();
+    const allOwners = featureConfigs.map(c => c.owners).flat();
     // TODO(jrobbins): Limit to only owners of active intents
     let activeOwners = allOwners;
     activeOwners = [...new Set(activeOwners)]; // de-dup.
@@ -299,7 +298,7 @@ class ChromedashFeatureTable extends LitElement {
 
   renderApprovalsSoFar(approvals) {
     const result = [];
-    for (let stateItem of STATE_NAMES) {
+    for (const stateItem of STATE_NAMES) {
       const state = stateItem[0];
       const stateName = stateItem[1];
       const approvalsWithThatState = approvals.filter(a => a.state == state);

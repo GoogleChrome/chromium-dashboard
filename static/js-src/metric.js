@@ -85,9 +85,9 @@ class Metric {
     // Use User Timing API results if available, otherwise return
     // performance.now() fallback.
     if (Metric.supportsPerfNow) {
-      let items = window.performance.getEntriesByName(name);
+      const items = window.performance.getEntriesByName(name);
       for (let i = 0; i < items.length; ++i) {
-        let item = items[i];
+        const item = items[i];
         console.info(name, item.duration, 'ms');
       }
     }
@@ -128,8 +128,8 @@ class Metric {
 
     // Support: developer.mozilla.org/en-US/docs/Web/API/Performance/mark
     if (Metric.supportsPerfMark) {
-      let startMark = `mark_${this.name}_start`;
-      let endMark = `mark_${this.name}_end`;
+      const startMark = `mark_${this.name}_start`;
+      const endMark = `mark_${this.name}_end`;
       performance.mark(endMark);
       performance.measure(this.name, startMark, endMark);
     }

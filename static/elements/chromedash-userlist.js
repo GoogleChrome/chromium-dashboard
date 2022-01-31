@@ -1,6 +1,5 @@
-import {LitElement, css, html} from 'lit-element';
+import {LitElement, css, html, nothing} from 'lit';
 import SHARED_STYLES from '../css/shared.css';
-import {nothing} from 'lit-html';
 
 
 class ChromedashUserlist extends LitElement {
