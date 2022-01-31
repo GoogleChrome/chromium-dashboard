@@ -26,8 +26,8 @@ Chrome Platform Status
     1. curl https://bootstrap.pypa.io/pip/2.7/get-pip.py --output get-pip.py
     1. sudo python2 get-pip.py
 6. Install other dependencies 
-    1.`npm run deps`
-    2.`npm run dev-deps`
+    1. `npm run deps`
+    1. `npm run dev-deps`
 
 You will need to activate the venv in every shell that you use.
 1. `source cs-env/bin/activate`
