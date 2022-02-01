@@ -207,7 +207,7 @@ class ChromedashFeature extends LitElement {
   render() {
     return html`
       <hgroup @click="${this._togglePanelExpansion}">
-        <h2>${this.feature.name}
+        <h2><a href="/feature/${this.feature.id}">${this.feature.name}</a>
           ${this.canApprove ? html`
             <span class="tooltip" title="Review approvals">
               <a href="#" id="approvals-icon" data-tooltip

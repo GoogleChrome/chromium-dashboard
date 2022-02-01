@@ -41,7 +41,7 @@ class FeatureDetailHandler(basehandlers.FlaskHandler):
     feature_process = processes.ALL_PROCESSES.get(
         f.feature_type, processes.BLINK_LAUNCH_PROCESS)
     field_defs = guideforms.DISPLAY_FIELDS_IN_STAGES
-    context_link = '/features/%d' % feature_id
+    context_link = '/features'
     if self.request.args.get('context') == 'myfeatures':
       context_link = '/myfeatures'
 
