@@ -20,7 +20,7 @@ Chrome Platform Status
     2. `nvm use 12` to switch to node 12
 3. `cd` into the Chromestatus repo and install npm dependencies `npm ci`
 4. Create a virtual environment.
-    1. `apt install python3.9-venv`
+    1. `sudo apt install python3.9-venv`
     1. `python3 -m venv cs-env`
 5. Install pip for python2
     1. curl https://bootstrap.pypa.io/pip/2.7/get-pip.py --output get-pip.py
