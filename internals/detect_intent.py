@@ -46,6 +46,9 @@ def detect_field(subject):
       subject.startswith('intent to prototype and ship') or
       subject.startswith('intent to implement and ship') or
       subject.startswith('intent to deprecate and remove') or
+      subject.startswith('intent to prototype & ship') or
+      subject.startswith('intent to implement & ship') or
+      subject.startswith('intent to deprecate & remove') or
       subject.startswith('intent to remove')):
     return approval_defs.ShipApproval
 
