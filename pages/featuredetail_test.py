@@ -123,7 +123,7 @@ class FeatureDetailTemplateTest(TestWithFeature):
         self.template_data, self.full_template_path)
 
     self.assertIn('href="fake crbug link"', template_text)
-    self.assertIn('href="/features/%d' % self.feature_id , template_text)
+    self.assertIn('href="/features"', template_text)
     self.assertIn('href="fake sample link one"', template_text)
     self.assertIn('href="fake sample link two"', template_text)
     self.assertIn('href="fake doc link one"', template_text)

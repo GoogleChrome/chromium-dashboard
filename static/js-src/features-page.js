@@ -1,3 +1,13 @@
+/** If the user followed a link with an ID, redirect there. */
+const lastSlash = window.location.pathname.lastIndexOf('/');
+if (lastSlash > 0) {
+  const id = parseInt(window.location.pathname.substring(lastSlash + 1));
+  if (id) {
+    window.location.replace(`/feature/${id}`);
+  }
+}
+
+
 const featureListEl = document.querySelector('chromedash-featurelist');
 const chromeMetadataEl = document.querySelector('chromedash-metadata');
 const searchEl = document.querySelector('.search input');
