@@ -47,7 +47,7 @@
     "eslint-config-google": "^0.14.0",
     "glob-parent": ">=5.1.2",
     "gulp": "^4.0.0",
-    "gulp-autoprefixer": "^5.0.0",
+    "gulp-autoprefixer": "^8.0.0",
     "gulp-babel": "^8.0.0",
     "gulp-eslint": "^6.0.0",
     "gulp-eslint-if-fixed": "^1.0.0",
