@@ -88,6 +88,8 @@ api_routes = [
      approvals_api.ApprovalsAPI),
     (API_BASE + '/features/<int:feature_id>/approvals/<int:field_id>',
      approvals_api.ApprovalsAPI),
+    (API_BASE + '/features/<int:feature_id>/configs',
+     approvals_api.ApprovalConfigsAPI),
     (API_BASE + '/features/<int:feature_id>/approvals/comments',
      comments_api.CommentsAPI),
     (API_BASE + '/features/<int:feature_id>/approvals/<int:field_id>/comments',
@@ -193,8 +195,7 @@ internals_routes = [
 # All requests to the app-py3 GAE service are handled by this Flask app.
 app = basehandlers.FlaskApplication(
     (metrics_chart_routes + api_routes + page_routes +
-     internals_routes),
-    debug=settings.DEBUG)
+     internals_routes))
 
 # TODO(jrobbins): Make the CSP handler be a class like our others.
 app.add_url_rule(
@@ -206,4 +207,4 @@ if __name__ == '__main__':
     # This is used when running locally only. When deploying to Google App
     # Engine, a webserver process such as Gunicorn will serve the app. This
     # can be configured by adding an `entrypoint` to app.yaml.
-    app.run(host='127.0.0.1', port=8080, debug=True)
+    app.run(host='127.0.0.1', port=8080)

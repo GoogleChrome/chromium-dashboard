@@ -84,7 +84,7 @@ def process_recent_reviews_query():
     return []
 
   recent_approvals = models.Approval.get_approvals(
-      states=FINAL_STATES, order=-models.Approval.set_on, limit=10)
+      states=FINAL_STATES, order=-models.Approval.set_on, limit=40)
 
   features = _get_referenced_features(recent_approvals, reverse=True)
   return features

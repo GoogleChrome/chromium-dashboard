@@ -1,9 +1,9 @@
-import {LitElement, css, html} from 'lit-element';
-import {nothing} from 'lit-html';
+import {LitElement, css, html, nothing} from 'lit';
 import './chromedash-dialog';
+import '@polymer/iron-icon';
 import SHARED_STYLES from '../css/shared.css';
 
-const STATE_NAMES = [
+export const STATE_NAMES = [
   // Not used: [0, 'Needs review'],
   [1, 'N/a or Ack'],
   [2, 'Review requested'],
@@ -43,8 +43,12 @@ class ChromedashApprovalsDialog extends LitElement {
       feature: {type: Object},
       approvals: {type: Array},
       comments: {type: Array},
+      configs: {type: Array},
+      possibleOwners: {type: Object},
+      showConfigs: {type: Object},
       showAllIntents: {type: Boolean},
       changedApprovalsByField: {attribute: false},
+      changedConfigsByField: {attribute: false},
       needsSave: {type: Boolean},
       loading: {attribute: false},
     };
@@ -58,9 +62,13 @@ class ChromedashApprovalsDialog extends LitElement {
     this.feature = {};
     this.approvals = [];
     this.comments = [];
+    this.configs = [];
     this.subsetPending = false;
+    this.possibleOwners = {};
+    this.showConfigs = new Set();
     this.showAllIntents = false;
     this.changedApprovalsByField = new Map();
+    this.changedConfigsByField = new Map();
     this.needsSave = false;
     this.loading = true;
   }
@@ -120,6 +128,11 @@ class ChromedashApprovalsDialog extends LitElement {
           margin-bottom: var(--content-padding);
         }
 
+        .config-area {
+          margin-left: var(--content-padding);
+          background: var(--table-alternate-background);
+        }
+
         .controls {
           padding: var(--content-padding);
           text-align: right;
@@ -159,8 +172,19 @@ class ChromedashApprovalsDialog extends LitElement {
       (res) => {
         this.comments = res.comments;
       });
-    Promise.all([p1, p2, p3]).then(() => {
+    const p4 = window.csClient.getApprovalConfigs(this.featureId).then(
+      (res) => {
+        this.configs = res.configs;
+        this.showConfigs = new Set(this.configs.map(c => c.field_id));
+        this.changedConfigsByField = new Map();
+        this.possibleOwners = res.possible_owners;
+      });
+    Promise.all([p1, p2, p3, p4]).then(() => {
       this.loading = false;
+    }).catch(() => {
+      const toastEl = document.querySelector('chromedash-toast');
+      toastEl.showMessage('Some errors occurred. Please refresh the page or try again later.');
+      this.handleCancel();
     });
   }
 
@@ -173,7 +197,7 @@ class ChromedashApprovalsDialog extends LitElement {
   }
 
   findStateName(state) {
-    for (let item of STATE_NAMES) {
+    for (const item of STATE_NAMES) {
       if (item[0] == state) {
         return item[1];
       }
@@ -206,7 +230,7 @@ class ChromedashApprovalsDialog extends LitElement {
               ${STATE_NAMES.map((valName) => html`
                 <option value="${valName[0]}"
                   ?selected=${valName[0] == selectedValue}
-                 >${valName[1]}</option>`
+                 >${valName[1]}</option>`,
                 )}
             </select>` : html`
            ${this.findStateName(approvalValue.state)}
@@ -230,6 +254,63 @@ class ChromedashApprovalsDialog extends LitElement {
     }
   }
 
+  renderConfigWidgets(approvalDef) {
+    const fieldId = approvalDef.id;
+    const isOpen = this.showConfigs.has(fieldId);
+    if (!isOpen) {
+      return nothing;
+    }
+
+    const config = this.configs.find(c => c.field_id == fieldId);
+    const owners = (config ? config.owners : []).join(', ');
+    const nextAction = config ? config.next_action : '';
+    const additionalReview = config && config.additional_review;
+    const offerAdditionalReview = fieldId == 2 || fieldId == 3;
+
+    const ownerWidget = html`
+      <input id="owners-${fieldId}" data-field="${fieldId}"
+             @change=${this.handleConfigChanged}
+             size=30 type="email" multiple placeholder="emails"
+             list="possible-owners-${fieldId}"
+             value="${owners}">
+      <datalist id="possible-owners-${fieldId}">
+         ${(this.possibleOwners[fieldId] || []).map(po => html`
+            <option value="${po}">
+         `)}
+      </datalist>
+    `;
+    const nextActionWidget = html`
+      <input id="next-action-${fieldId}" data-field="${fieldId}"
+             @change=${this.handleConfigChanged}
+             type=date name="next_action_${fieldId}"
+             value="${nextAction}">
+    `;
+    const additionalReviewWidget = html`
+      <input id="additional-review-${fieldId}" data-field="${fieldId}"
+             @change=${this.handleConfigChanged}
+             type=checkbox ?checked=${additionalReview}>
+    `;
+
+    return html`
+     <table class="config-area">
+       <tr>
+         <td>Owners:</td>
+         <td>${ownerWidget}</td>
+       </tr>
+       <tr>
+        <td>Next action:</td>
+        <td>${nextActionWidget}</td>
+       </tr>
+       ${offerAdditionalReview ? html`
+         <tr>
+          <td>Additional review:</td>
+          <td>${additionalReviewWidget}</td>
+         </tr>
+        `: nothing }
+     </table>
+    `;
+  }
+
   renderApproval(approvalDef) {
     const approvalValues = this.approvals.filter((a) =>
       a.field_id == approvalDef.id);
@@ -237,6 +318,18 @@ class ChromedashApprovalsDialog extends LitElement {
       PENDING_STATES.includes(av.state));
 
     if (!isActive && !this.showAllIntents) return nothing;
+
+
+    const isOpen = this.showConfigs.has(approvalDef.id);
+    const configExpandIcon = html`
+      <iron-icon
+         style="margin-left:4px"
+         @click="${() => {
+      this.toggleConfig(approvalDef);
+    }}"
+         icon="chromestatus:${isOpen ? 'expand-less' : 'expand-more'}">
+      </iron-icon>
+    `;
 
     let threadLink = nothing;
     if (this.feature[approvalDef.threadField]) {
@@ -250,7 +343,11 @@ class ChromedashApprovalsDialog extends LitElement {
 
     return html`
       <div class="approval_section">
-        <h3>${approvalDef.name}</h3>
+        <h3>
+          ${approvalDef.name}
+          ${configExpandIcon}
+        </h3>
+        ${this.renderConfigWidgets(approvalDef)}
         ${approvalValues.map((av) => this.renderApprovalValue(av))}
         ${this.renderAddApproval(approvalDef.id)}
         ${threadLink}
@@ -286,6 +383,15 @@ class ChromedashApprovalsDialog extends LitElement {
     `;
   }
 
+  canPostTo(threadArchiveUrl) {
+    return (
+      threadArchiveUrl &&
+        (threadArchiveUrl.startsWith(
+          'https://groups.google.com/a/chromium.org/d/msgid/blink-dev/') ||
+         threadArchiveUrl.startsWith(
+           'https://groups.google.com/d/msgid/jrobbins-test')));
+  }
+
   renderControls() {
     let showAllCheckbox = nothing;
     if (this.subsetPending) {
@@ -296,8 +402,16 @@ class ChromedashApprovalsDialog extends LitElement {
            >Show all intents</label>
       `;
     }
-    // TODO: add this when backend implements it.
-    let postToListCheckbox = nothing;
+    const postToSelect = html`
+      <select style="margin-right:1em" id="post_to_approval_field">
+        <option value="0">Don't post to mailing list</option>
+        ${APPROVAL_DEFS.map((apprDef) => html`
+          <option value="${apprDef.id}"
+                  ?disabled=${!this.canPostTo(this.feature[apprDef.threadField])}
+          >Post to ${apprDef.name} thread</option>
+        `)}
+      </select>
+      `;
 
     return html`
      <div>
@@ -309,7 +423,7 @@ class ChromedashApprovalsDialog extends LitElement {
      </div>
      <div class="controls">
        ${showAllCheckbox}
-       ${postToListCheckbox}
+       ${postToSelect}
        <button class="primary"
          @click=${this.handleSave}
          ?disabled=${!this.needsSave}
@@ -344,10 +458,13 @@ class ChromedashApprovalsDialog extends LitElement {
     const commentArea = this.shadowRoot.querySelector('#comment_area');
     const newVal = commentArea && commentArea.value.trim() || '';
     if (newVal != '') newNeedsSave = true;
-    for (let fieldId of this.changedApprovalsByField.keys()) {
+    for (const fieldId of this.changedApprovalsByField.keys()) {
       if (this.changedApprovalsByField.get(fieldId) != -1) {
         newNeedsSave = true;
       }
+    }
+    if (this.changedConfigsByField.size > 0) {
+      newNeedsSave = true;
     }
     this.needsSave = newNeedsSave;
   }
@@ -359,9 +476,23 @@ class ChromedashApprovalsDialog extends LitElement {
     this.checkNeedsSave();
   }
 
+  handleConfigChanged(e) {
+    const fieldId = e.target.dataset['field'];
+    const owners = this.shadowRoot.querySelector('#owners-' + fieldId).value;
+    const nextAction = this.shadowRoot.querySelector(
+      '#next-action-' + fieldId).value;
+    const additionalReviewEl = this.shadowRoot.querySelector(
+      '#additional-review-' + fieldId);
+    const additionalReview = additionalReviewEl && additionalReviewEl.checked;
+
+    this.changedConfigsByField.set(
+      fieldId, {owners, nextAction, additionalReview});
+    this.checkNeedsSave();
+  }
+
   handleSave() {
     const promises = [];
-    for (let fieldId of this.changedApprovalsByField.keys()) {
+    for (const fieldId of this.changedApprovalsByField.keys()) {
       if (this.changedApprovalsByField.get(fieldId) != -1) {
         promises.push(
           window.csClient.setApproval(
@@ -369,12 +500,23 @@ class ChromedashApprovalsDialog extends LitElement {
             this.changedApprovalsByField.get(fieldId)));
       }
     }
+    for (const fieldId of this.changedConfigsByField.keys()) {
+      const config = this.changedConfigsByField.get(fieldId);
+      promises.push(
+        window.csClient.setApprovalConfig(
+          this.feature.id, fieldId, config['owners'],
+          config['nextAction'], config['additionalReview']));
+    }
     const commentArea = this.shadowRoot.querySelector('#comment_area');
     const commentText = commentArea.value.trim();
+    const postToSelect = this.shadowRoot.querySelector(
+      '#post_to_approval_field');
+    const postToApprovalFieldId = postToSelect && postToSelect.value || 0;
     if (commentText != '') {
       promises.push(
         window.csClient.postComment(
-          this.feature.id, null, null, commentText));
+          this.feature.id, null, null, commentText,
+          Number(postToApprovalFieldId)));
     }
     Promise.all(promises).then(() => {
       this.shadowRoot.querySelector('chromedash-dialog').close();
@@ -383,6 +525,16 @@ class ChromedashApprovalsDialog extends LitElement {
 
   handleCancel() {
     this.shadowRoot.querySelector('chromedash-dialog').close();
+  }
+
+  toggleConfig(approvalDef) {
+    const newConfigs = new Set([...this.showConfigs]); // Make a copy.
+    if (newConfigs.has(approvalDef.id)) {
+      newConfigs.delete(approvalDef.id);
+    } else {
+      newConfigs.add(approvalDef.id);
+    }
+    this.showConfigs = newConfigs;
   }
 }
 

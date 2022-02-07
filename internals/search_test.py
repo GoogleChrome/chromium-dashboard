@@ -15,7 +15,7 @@
 import testing_config  # Must be imported before the module under test.
 
 import datetime
-import mock
+from unittest import mock
 
 from internals import models
 from internals import notifier

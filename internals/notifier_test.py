@@ -1,6 +1,3 @@
-
-
-
 # Copyright 2020 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
@@ -20,12 +17,13 @@ import json
 import testing_config  # Must be imported before the module under test.
 
 import flask
-import mock
+from unittest import mock
 import werkzeug.exceptions  # Flask HTTP stuff.
 from google.cloud import ndb
 
 from framework import users
 
+from internals import approval_defs
 from internals import models
 from internals import notifier
 import settings
@@ -75,7 +73,7 @@ class EmailFormattingTest(testing_config.CustomTestCase):
         False, self.feature_1, [])
     self.assertIn('Blink', body_html)
     self.assertIn('creator@example.com added', body_html)
-    self.assertIn('www.chromestatus.com/feature/%d' %
+    self.assertIn('chromestatus.com/feature/%d' %
                   self.feature_1.key.integer_id(),
                   body_html)
     self.assertNotIn('watcher_1,', body_html)
@@ -93,11 +91,24 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     body_html = notifier.format_email_body(
         True, self.feature_1, self.changes)
     self.assertIn('test_prop', body_html)
-    self.assertIn('www.chromestatus.com/feature/%d' %
+    self.assertIn('chromestatus.com/feature/%d' %
                   self.feature_1.key.integer_id(),
                   body_html)
     self.assertIn('test old value', body_html)
     self.assertIn('test new value', body_html)
+
+  def test_format_email_body__mozdev_links(self):
+    """We generate an email body with links to developer.mozilla.org."""
+    self.feature_1.doc_links = ['https://developer.mozilla.org/look-here']
+    body_html = notifier.format_email_body(
+        True, self.feature_1, self.changes)
+    self.assertIn('look-here', body_html)
+
+    self.feature_1.doc_links = [
+        'https://hacker-site.org/developer.mozilla.org/look-here']
+    body_html = notifier.format_email_body(
+        True, self.feature_1, self.changes)
+    self.assertNotIn('look-here', body_html)
 
   def test_accumulate_reasons(self):
     """We can accumulate lists of reasons why we sent a message to a user."""
@@ -348,3 +359,40 @@ class FeatureStarTest(testing_config.CustomTestCase):
     self.assertCountEqual(
         [app_user_1.email, app_user_2.email],
         [au.email for au in actual])
+
+
+class FunctionsTest(testing_config.CustomTestCase):
+
+  def setUp(self):
+    quoted_msg_id = 'xxx%3Dyyy%40mail.gmail.com'
+    impl_url = notifier.BLINK_DEV_ARCHIVE_URL_PREFIX + '123' + quoted_msg_id
+    expr_url = notifier.TEST_ARCHIVE_URL_PREFIX + '456' + quoted_msg_id
+    self.feature_1 = models.Feature(
+        name='feature one', summary='sum', category=1, visibility=1,
+        standardization=1, web_dev_views=1, impl_status_chrome=1,
+        intent_to_implement_url=impl_url,
+        intent_to_experiment_url=expr_url)
+    # Note: There is no need to put() it in the datastore.
+
+  def test_get_thread_id__normal(self):
+    """We can select the correct approval thread field of a feature."""
+    self.assertEqual(
+        '123xxx=yyy@mail.gmail.com',
+        notifier.get_thread_id(
+            self.feature_1, approval_defs.PrototypeApproval))
+    self.assertEqual(
+        '456xxx=yyy@mail.gmail.com',
+        notifier.get_thread_id(
+            self.feature_1, approval_defs.ExperimentApproval))
+    self.assertEqual(
+        None,
+        notifier.get_thread_id(
+            self.feature_1, approval_defs.ShipApproval))
+
+  def test_get_thread_id__trailing_junk(self):
+    """We can select the correct approval thread field of a feature."""
+    self.feature_1.intent_to_implement_url += '?param=val#anchor'
+    self.assertEqual(
+        '123xxx=yyy@mail.gmail.com',
+        notifier.get_thread_id(
+            self.feature_1, approval_defs.PrototypeApproval))

@@ -72,14 +72,14 @@ class ChromeStatusClient {
    * Then strip off the defensive prefix from the response. */
   async doFetch(resource, httpMethod, body, includeToken=true) {
     const url = this.baseUrl + resource;
-    let headers = {
+    const headers = {
       'accept': 'application/json',
       'content-type': 'application/json',
     };
     if (includeToken) {
       headers['X-Xsrf-Token'] = this.token;
     }
-    let options = {
+    const options = {
       method: httpMethod,
       credentials: 'same-origin',
       headers: headers,
@@ -136,7 +136,7 @@ class ChromeStatusClient {
   signIn(googleUser) {
     // TODO(jrobbins): Consider using profile pic.
     // let profile = googleUser.getBasicProfile();
-    let idToken = googleUser.getAuthResponse().id_token;
+    const idToken = googleUser.getAuthResponse().id_token;
     // We don't use doPost because we don't already have a XSRF token.
     return this.doFetch('/login', 'POST', {'id_token': idToken}, false);
   }
@@ -183,7 +183,7 @@ class ChromeStatusClient {
     // TODO: catch((error) => { display message }
   }
 
-  // Approvals and review comments
+  // Approvals, configs, and review comments
 
   getApprovals(featureId) {
     return this.doGet(`/features/${featureId}/approvals`);
@@ -196,6 +196,20 @@ class ChromeStatusClient {
           state: Number(state)});
   }
 
+  getApprovalConfigs(featureId) {
+    return this.doGet(`/features/${featureId}/configs`);
+  }
+
+  setApprovalConfig(featureId, fieldId, owners, nextAction, additionalReview) {
+    return this.doPost(
+        `/features/${featureId}/configs`,
+        {fieldId: Number(fieldId),
+          owners: owners || '',
+          nextAction: nextAction || '',
+          additionalReview: additionalReview || false,
+        });
+  }
+
   getComments(featureId, fieldId) {
     if (fieldId) {
       return this.doGet(`/features/${featureId}/approvals/${fieldId}/comments`);
@@ -204,15 +218,15 @@ class ChromeStatusClient {
     }
   }
 
-  postComment(featureId, fieldId, state, comment) {
+  postComment(featureId, fieldId, state, comment, postToApprovalFieldId) {
     if (fieldId) {
       return this.doPost(
           `/features/${featureId}/approvals/${fieldId}/comments`,
-          {state, comment});
+          {state, comment, postToApprovalFieldId});
     } else {
       return this.doPost(
           `/features/${featureId}/approvals/comments`,
-          {comment});
+          {comment, postToApprovalFieldId});
     }
   }
 

@@ -14,7 +14,7 @@
 
 import testing_config  # Must be imported first
 import json
-import mock
+from unittest import mock
 import unittest
 
 from api import channels_api

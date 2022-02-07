@@ -41,6 +41,10 @@ class FeatureDetailHandler(basehandlers.FlaskHandler):
     feature_process = processes.ALL_PROCESSES.get(
         f.feature_type, processes.BLINK_LAUNCH_PROCESS)
     field_defs = guideforms.DISPLAY_FIELDS_IN_STAGES
+    context_link = '/features'
+    if self.request.args.get('context') == 'myfeatures':
+      context_link = '/myfeatures'
+
     template_data = {
         'process_json': json.dumps(processes.process_to_dict(feature_process)),
         'field_defs_json': json.dumps(field_defs),
@@ -49,5 +53,6 @@ class FeatureDetailHandler(basehandlers.FlaskHandler):
         'feature_json': json.dumps(f.format_for_template()),
         'updated_display': f.updated.strftime("%Y-%m-%d"),
         'new_crbug_url': f.new_crbug_url(),
+        'context_link': context_link,
     }
     return template_data

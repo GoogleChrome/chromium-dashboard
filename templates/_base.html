@@ -118,21 +118,44 @@ limitations under the License.
             window.location.reload();
         });
     }
-    
+
+    function refreshSession() {
+        console.log('refreshing google sigin-in session');
+        let cu = auth2.currentUser.get();
+        cu.reloadAuthResponse().then(function(unused_auth_response) {
+            // Calling this sets the flask session cookie.
+            csClient.signIn(auth2.currentUser.get());
+        }).catch(() => {
+            console.error('Refreshing session failed.');
+            let ar = cu.getAuthResponse();
+            let expires_at = ar.expires_at;
+            if (expires_at < Number(new Date())) {
+                signOut();
+                console.log('Explicitly signing out because session expired.');
+            }
+        });
+
+    }
+
     var googleUser = {};
-    var startApp = function() {
+    function startApp() {
         gapi.load('auth2', function(){
           auth2 = gapi.auth2.init({
               client_id: '{{google_sign_in_client_id}}',
               cookiepolicy: 'single_host_origin',
               scope: 'profile email'
           });
-          
           if (document.getElementById('gSignInCustomBtn')) {
             attachSignin(document.getElementById('gSignInCustomBtn'));
+          } else {
+            // Google Sign-In sessions only last 1-hour.  Refresh the
+            // session immediately after each page naviagation
+            // and once every 10 minutes the user sits on a page.
+            refreshSession();
+            window.setInterval(refreshSession, 10 * 60 * 1000);
           }
         });
-    };
+    }
 
     function attachSignin(element) {
       auth2.attachClickHandler(element, {},
@@ -142,13 +165,9 @@ limitations under the License.
               console.log(error);
           });
     }
-    
+
     function onLoad() {
       startApp();
-    }
-
-    function getQueryStringValue (key) {
-      return decodeURIComponent(window.location.search.replace(new RegExp("^(?:.*[&\\?]" + encodeURIComponent(key).replace(/[\.\+\*]/g, "\\$&") + "(?:\\=([^&]*))?)?.*$", "i"), "$1"));
     }
 
     function promptSignIn(e) {
@@ -162,7 +181,8 @@ limitations under the License.
     // This happens when an anon visitor tries to view a page that
     // requires being signed in.  We cannot promptSignIn(), because
     // lacking a user-initiated event, the popup will be blocked.
-    if (getQueryStringValue("loginStatus") == 'False') {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get("loginStatus") == 'False') {
       alert('Please log in.');
     }
 

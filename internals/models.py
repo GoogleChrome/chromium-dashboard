@@ -839,8 +839,8 @@ class Feature(DictModel):
     futures = []
 
     for feature_id in feature_ids:
-      KEY = '%s|%s' % (Feature.DEFAULT_CACHE_KEY, feature_id)
-      feature = ramcache.get(KEY)
+      lookup_key = '%s|%s' % (Feature.DEFAULT_CACHE_KEY, feature_id)
+      feature = ramcache.get(lookup_key)
       if feature is None or update_cache:
         futures.append(Feature.get_by_id_async(feature_id))
       else:
@@ -853,7 +853,9 @@ class Feature(DictModel):
         feature['updated_display'] = (
             unformatted_feature.updated.strftime("%Y-%m-%d"))
         feature['new_crbug_url'] = unformatted_feature.new_crbug_url()
-        ramcache.set(KEY, feature)
+        store_key = '%s|%s' % (Feature.DEFAULT_CACHE_KEY,
+                               unformatted_feature.key.integer_id())
+        ramcache.set(store_key, feature)
         result_dict[unformatted_feature.key.integer_id()] = feature
 
     result_list = [
@@ -1308,6 +1310,7 @@ class Feature(DictModel):
   doc_links = ndb.StringProperty(repeated=True)
   measurement = ndb.StringProperty()
   sample_links = ndb.StringProperty(repeated=True)
+  non_oss_deps = ndb.StringProperty()
 
   experiment_goals = ndb.StringProperty()
   experiment_timeline = ndb.StringProperty()
@@ -1401,6 +1404,37 @@ class Approval(DictModel):
         feature_id=feature_id, field_id=field_id, states=[cls.REVIEW_REQUESTED])
     for rr in review_requests:
       rr.key.delete()
+
+
+class ApprovalConfig(DictModel):
+  """Allows customization of an approval field for one feature."""
+
+  feature_id = ndb.IntegerProperty(required=True)
+  field_id = ndb.IntegerProperty(required=True)
+  owners = ndb.StringProperty(repeated=True)
+  next_action = ndb.DateProperty()
+  additional_review = ndb.BooleanProperty(default=False)
+
+  @classmethod
+  def get_configs(cls, feature_id):
+    """Return approval configs for all approval fields."""
+    query = ApprovalConfig.query(ApprovalConfig.feature_id == feature_id)
+    configs = query.fetch(None)
+    return configs
+
+  @classmethod
+  def set_config(
+      cls, feature_id, field_id, owners, next_action, additional_review):
+    """Add or update an approval config object."""
+    config = ApprovalConfig(feature_id=feature_id, field_id=field_id)
+    for existing in cls.get_configs(feature_id):
+      if existing.field_id == field_id:
+        config = existing
+
+    config.owners = owners or []
+    config.next_action = next_action
+    config.additional_review = additional_review
+    config.put()
 
 
 class Comment(DictModel):

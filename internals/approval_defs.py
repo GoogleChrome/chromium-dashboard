@@ -36,29 +36,34 @@ ApprovalFieldDef = collections.namedtuple(
     'ApprovalField',
     'name, description, field_id, rule, approvers')
 
+# Note: This can be requested manually through the UI, but it is not
+# triggered by a blink-dev thread because i2p intents are only FYIs to
+# bilnk-dev and don't actually need approval by the API Owners.
 PrototypeApproval = ApprovalFieldDef(
-    'Intent to prototype',
-    'One API Owner must approve your intent',
+    'Intent to Prototype',
+    'Not normally used.  If a review is requested, API Owners can approve.',
     1, ONE_LGTM, API_OWNERS_URL)
 
 ExperimentApproval = ApprovalFieldDef(
-    'Intent to experiment',
+    'Intent to Experiment',
     'One API Owner must approve your intent',
     2, ONE_LGTM, API_OWNERS_URL)
 
 ExtendExperimentApproval = ApprovalFieldDef(
-    'Intent to extend experiment',
+    'Intent to Extend Experiment',
     'One API Owner must approve your intent',
     3, ONE_LGTM, API_OWNERS_URL)
 
 ShipApproval = ApprovalFieldDef(
-    'Intent to ship',
+    'Intent to Ship',
     'Three API Owners must approve your intent',
     4, THREE_LGTM, API_OWNERS_URL)
 
 APPROVAL_FIELDS_BY_ID = {
     afd.field_id: afd
-    for afd in [PrototypeApproval, ExperimentApproval, ShipApproval]
+    for afd in [
+        PrototypeApproval, ExperimentApproval, ExtendExperimentApproval,
+        ShipApproval]
     }
 
 
@@ -123,7 +128,7 @@ def is_approved(approval_values, field_id):
   """Return true if we have all needed APPROVED values and no NOT_APPROVED."""
   count = 0
   for av in approval_values:
-    if av.state == models.Approval.APPROVED:
+    if av.state in (models.Approval.APPROVED, models.Approval.NA):
       count += 1
     elif av.state == models.Approval.NOT_APPROVED:
       return False

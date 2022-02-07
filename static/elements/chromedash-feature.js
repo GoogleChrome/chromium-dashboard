@@ -1,6 +1,5 @@
-import {LitElement, html} from 'lit-element';
-import {nothing} from 'lit-html';
-import {ifDefined} from 'lit-html/directives/if-defined.js';
+import {LitElement, html, nothing} from 'lit';
+import {ifDefined} from 'lit/directives/if-defined.js';
 import {autolink} from './utils.js';
 import '@polymer/iron-icon';
 import './chromedash-color-status';
@@ -119,7 +118,7 @@ class ChromedashFeature extends LitElement {
   }
 
   _fireEvent(eventName, detail) {
-    let event = new CustomEvent(eventName, {
+    const event = new CustomEvent(eventName, {
       bubbles: true,
       composed: true,
       detail,
@@ -208,7 +207,7 @@ class ChromedashFeature extends LitElement {
   render() {
     return html`
       <hgroup @click="${this._togglePanelExpansion}">
-        <h2>${this.feature.name}
+        <h2><a href="/feature/${this.feature.id}">${this.feature.name}</a>
           ${this.canApprove ? html`
             <span class="tooltip" title="Review approvals">
               <a href="#" id="approvals-icon" data-tooltip
@@ -314,8 +313,8 @@ class ChromedashFeature extends LitElement {
           html`<p><h3>Motivation</h3></p>
         <p class="${this.open ? 'preformatted' : ''}"
           ><span>${autolink(this.feature.motivation)}</span
-        ></p>`
-          : nothing }
+        ></p>` :
+          nothing }
       </section>
       ${this.open ? html`
         <section class="sidebyside">

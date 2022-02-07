@@ -12,13 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-
-
 import testing_config  # Must be imported before the module under test.
 
 import flask
-import mock
+from unittest import mock
 import werkzeug.exceptions  # Flask HTTP stuff.
 
 from api import features_api

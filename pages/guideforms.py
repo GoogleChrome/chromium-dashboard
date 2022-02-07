@@ -1,6 +1,3 @@
-
-
-
 # -*- coding: utf-8 -*-
 # Copyright 2020 Google Inc.
 #
@@ -547,6 +544,17 @@ ALL_FIELDS = {
                    'placeholder': 'https://\nhttps://'}),
         help_text='Links to samples (one URL per line).'),
 
+    'non_oss_deps': forms.CharField(
+        label='Non-OSS dependencies', required=False,
+        widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 1480}),
+        help_text=
+        ('Does the feature depend on any code or APIs outside the Chromium '
+         'open source repository and its open-source dependencies to '
+         'function? (e.g. server-side APIs, operating system APIs '
+         'tailored to this feature or closed-source code bundles) '
+         'Yes or no. If yes, explain why this is necessary.'
+         )),
+
     'bug_url': forms.URLField(
         required=False, label='Tracking bug URL',
         widget=forms.URLInput(attrs={'placeholder': 'https://'}),
@@ -638,13 +646,13 @@ ALL_FIELDS = {
             '">Example 2</a>.')),
 
     'dt_milestone_desktop_start': forms.IntegerField(
-        required=False, label='DevTrail on desktop',
+        required=False, label='DevTrial on desktop',
         widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'}),
         help_text=('First milestone that allows developers to try '
                    'this feature on desktop platforms by setting a flag.')),
 
     'dt_milestone_android_start': forms.IntegerField(
-        required=False, label='DevTrail on Android',
+        required=False, label='DevTrial on Android',
         widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'}),
         help_text=('First milestone that allows developers to try '
                    'this feature on Android by setting a flag.')),
@@ -760,7 +768,7 @@ NewFeature_EvalReadinessToShip = define_form_class_using_shared_fields(
      'ff_views', 'ff_views_link', 'ff_views_notes',
      'web_dev_views', 'web_dev_views_link', 'web_dev_views_notes',
      'other_views_notes',
-     'prefixed', 'comments'))
+     'prefixed', 'non_oss_deps', 'comments'))
 
 
 ImplStatus_AllMilestones = define_form_class_using_shared_fields(
@@ -795,7 +803,7 @@ ImplStatus_OriginTrial = define_form_class_using_shared_fields(
 
 Most_PrepareToShip = define_form_class_using_shared_fields(
     'Most_PrepareToShip',
-    ('tag_review', 'tag_review_status',
+    ('tag_review', 'tag_review_status', 'non_oss_deps',
      'origin_trial_feedback_url',
      'launch_bug_url', 'intent_to_ship_url', 'i2s_lgtms', 'comments'))
 
@@ -822,7 +830,7 @@ Existing_OriginTrial = define_form_class_using_shared_fields(
 
 PSA_Implement = define_form_class_using_shared_fields(
     'Any_Implement',
-    ('spec_link', 'standard_maturity', 'comments'))
+    ('motivation', 'spec_link', 'standard_maturity', 'comments'))
   # TODO(jrobbins): advise user to request a tag review
 
 
@@ -951,7 +959,8 @@ Flat_PrepareToShip = define_form_class_using_shared_fields(
      'tag_review', 'tag_review_status',
      'intent_to_ship_url', 'i2s_lgtms',
      # Implementation
-     'measurement'))
+     'measurement',
+     'non_oss_deps'))
 
 
 Flat_Ship = define_form_class_using_shared_fields(
@@ -1038,7 +1047,8 @@ DISPLAY_FIELDS_IN_STAGES = {
     models.INTENT_IMPLEMENT_SHIP: make_display_specs(
         'launch_bug_url',
         'tag_review', 'tag_review_status',
-        'measurement', 'prefixed'),
+        'measurement', 'prefixed', 'non_oss_deps',
+        ),
     models.INTENT_EXTEND_TRIAL: make_display_specs(
         'experiment_goals', 'experiment_risks',
         'experiment_extension_reason', 'ongoing_constraints',

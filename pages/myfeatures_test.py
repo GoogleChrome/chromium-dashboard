@@ -12,13 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-
-
 import testing_config  # Must be imported first
 
 import flask
-import mock
+from unittest import mock
 import werkzeug
 
 import settings

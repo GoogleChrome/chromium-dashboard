@@ -11,7 +11,7 @@ if (header) {
 async function init() {
   // Prepare data for chromedash-roadmap
   const channels = await channelsPromise;
-  let featuresPromise = {};
+  const featuresPromise = {};
 
   channelsArray.forEach((channel) => {
     featuresPromise[channel] = window.csClient.getFeaturesInMilestone(channels[channel].version);
@@ -19,7 +19,7 @@ async function init() {
 
   const features = {};
 
-  for (let channel of channelsArray) {
+  for (const channel of channelsArray) {
     features[channel] = await featuresPromise[channel];
   }
 
@@ -34,7 +34,7 @@ async function init() {
   roadmapEl.channels = channels;
   roadmapEl.lastFutureFetchedOn = channels[channelsArray[1]].version;
   roadmapEl.lastPastFetchedOn = channels[channelsArray[1]].version;
-  let cardsDisplayed = roadmapEl.computeItems();
+  const cardsDisplayed = roadmapEl.computeItems();
   roadmapEl.lastMilestoneVisible = channels[channelsArray[cardsDisplayed-1]].version;
 
   window.csClient.getStars().then((starredFeatureIds) => {

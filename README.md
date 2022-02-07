@@ -11,16 +11,23 @@ Chrome Platform Status
 
 ### Installation
 1. Before you begin, make sure that you have a java JRE (version 8 or greater) installed. JRE is required to use the DataStore Emulator.
-1. Install global CLIs
+1. Install global CLIs in the home directory
     1. [Google App Engine SDK for Python](https://cloud.google.com/appengine/docs/standard/python3/setting-up-environment). Make sure to select Python 3.
     1. pip, node, npm.
     1. Gulp `npm install --global gulp-cli`
-1. Install npm dependencies `npm ci`
-1. Create a virtual environment.
-    1. `apt install python3.9-venv`
+1. We recommend using an older node version, e.g. node 10
+    1. Use `node -v` to check the default node version
+    2. `nvm use 12` to switch to node 12
+3. `cd` into the Chromestatus repo and install npm dependencies `npm ci`
+4. Create a virtual environment.
+    1. `sudo apt install python3.9-venv`
     1. `python3 -m venv cs-env`
-    1. `source cs-env/bin/activate`
-1. Install other dependencies `npm run deps` and `npm run dev-deps`
+5. Install pip for python2
+    1. curl https://bootstrap.pypa.io/pip/2.7/get-pip.py --output get-pip.py
+    1. python2 get-pip.py
+6. Install other dependencies 
+    1. `npm run deps`
+    1. `npm run dev-deps`
 
 You will need to activate the venv in every shell that you use.
 1. `source cs-env/bin/activate`

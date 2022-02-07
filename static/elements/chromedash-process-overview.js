@@ -1,5 +1,4 @@
-import {LitElement, css, html} from 'lit-element';
-import {nothing} from 'lit-html';
+import {LitElement, css, html, nothing} from 'lit';
 import '@polymer/iron-icon';
 import './chromedash-callout';
 import SHARED_STYLES from '../css/shared.css';
@@ -97,9 +96,9 @@ class ChromedashProcessOverview extends LitElement {
     // if (this.inFinalStage(stage)) {
     //   return true;
     // }
-    let stageOrder = this.process.stages.map(s => s.outgoing_stage);
-    let viewedOutgoingStageIndex = stageOrder.indexOf(stage.outgoing_stage);
-    let featureStageIndex = stageOrder.indexOf(this.feature.intent_stage_int);
+    const stageOrder = this.process.stages.map(s => s.outgoing_stage);
+    const viewedOutgoingStageIndex = stageOrder.indexOf(stage.outgoing_stage);
+    const featureStageIndex = stageOrder.indexOf(this.feature.intent_stage_int);
     return (viewedOutgoingStageIndex < featureStageIndex);
   }
 
@@ -110,10 +109,10 @@ class ChromedashProcessOverview extends LitElement {
     if (this.inFinalStage(stage)) {
       return false;
     }
-    let stageOrder = this.process.stages.map(s => s.outgoing_stage);
-    let viewedIncomingStageIndex = stageOrder.indexOf(stage.incoming_stage);
-    let viewedOutgoingStageIndex = stageOrder.indexOf(stage.outgoing_stage);
-    let featureStageIndex = stageOrder.indexOf(this.feature.intent_stage_int);
+    const stageOrder = this.process.stages.map(s => s.outgoing_stage);
+    const viewedIncomingStageIndex = stageOrder.indexOf(stage.incoming_stage);
+    const viewedOutgoingStageIndex = stageOrder.indexOf(stage.outgoing_stage);
+    const featureStageIndex = stageOrder.indexOf(this.feature.intent_stage_int);
     return (viewedIncomingStageIndex <= featureStageIndex &&
             viewedOutgoingStageIndex > featureStageIndex);
   }
@@ -123,9 +122,9 @@ class ChromedashProcessOverview extends LitElement {
     if (this.inFinalStage(stage)) {
       return false;
     }
-    let stageOrder = this.process.stages.map(s => s.outgoing_stage);
-    let viewedIncomingStageIndex = stageOrder.indexOf(stage.incoming_stage);
-    let featureStageIndex = stageOrder.indexOf(this.feature.intent_stage_int);
+    const stageOrder = this.process.stages.map(s => s.outgoing_stage);
+    const viewedIncomingStageIndex = stageOrder.indexOf(stage.incoming_stage);
+    const featureStageIndex = stageOrder.indexOf(this.feature.intent_stage_int);
     return (viewedIncomingStageIndex > featureStageIndex);
   }
 
@@ -167,7 +166,7 @@ class ChromedashProcessOverview extends LitElement {
 
 
   render() {
-    let featureId = this.feature.id;
+    const featureId = this.feature.id;
     return html`
      <div style="position: relative">
      <table>

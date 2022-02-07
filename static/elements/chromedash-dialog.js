@@ -1,4 +1,4 @@
-import {LitElement, css, html} from 'lit-element';
+import {LitElement, css, html} from 'lit';
 import '@polymer/iron-icon';
 
 // This is a simplfied version of chops-dialog:
@@ -81,7 +81,7 @@ class ChromedashDialog extends LitElement {
       if (!this.opened) return;
       // A click outside the dialog box will close the dialog.
       const clickIsOutsideDialog = !evt.composedPath().find(
-        (node) => node.classList && node.classList.contains('dialog-content')
+        (node) => node.classList && node.classList.contains('dialog-content'),
       );
       if (clickIsOutsideDialog) {
         this.close();

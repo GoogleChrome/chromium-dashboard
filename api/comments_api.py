@@ -13,15 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-
-
 import logging
 
 from framework import basehandlers
 from framework import permissions
 from internals import approval_defs
 from internals import models
+from internals import notifier
 
 
 class CommentsAPI(basehandlers.APIHandler):
@@ -45,6 +43,8 @@ class CommentsAPI(basehandlers.APIHandler):
         validator=models.Approval.is_valid_state)
     feature = self.get_specified_feature(feature_id=feature_id)
     user = self.get_current_user(required=True)
+    post_to_approval_field_id = self.get_param(
+        'postToApprovalFieldId', required=False)
 
     old_state = None
     if field_id is not None and new_state is not None:
@@ -70,7 +70,9 @@ class CommentsAPI(basehandlers.APIHandler):
           new_approval_state=new_state)
       comment.put()
 
-    # TODO(jrobbins): Trigger notificaton emails (or not).
+    if post_to_approval_field_id:
+      notifier.post_comment_to_mailing_list(
+          feature, post_to_approval_field_id, user.email(), comment_content)
 
     # Callers don't use the JSON response for this API call.
     return {'message': 'Done'}

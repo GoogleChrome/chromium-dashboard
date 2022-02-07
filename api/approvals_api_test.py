@@ -12,14 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-
-
 import datetime
 import testing_config  # Must be imported before the module under test.
 
 import flask
-import mock
+from unittest import mock
 import werkzeug.exceptions  # Flask HTTP stuff.
 
 from api import approvals_api
@@ -208,3 +205,220 @@ class ApprovalsAPITest(testing_config.CustomTestCase):
     self.assertEqual(appr.field_id, 1)
     self.assertEqual(appr.set_by, 'owner1@example.com')
     self.assertEqual(appr.state, models.Approval.NEED_INFO)
+
+
+class ApprovalConfigsAPITest(testing_config.CustomTestCase):
+
+  def setUp(self):
+    self.feature_1 = models.Feature(
+        name='feature one', summary='sum', category=1, visibility=1,
+        standardization=1, web_dev_views=1, impl_status_chrome=1)
+    self.feature_1.put()
+    self.feature_1_id = self.feature_1.key.integer_id()
+    self.config_1 = models.ApprovalConfig(
+        feature_id=self.feature_1_id, field_id=1,
+        owners=['one_a@example.com', 'one_b@example.com'])
+    self.config_1.put()
+
+    self.feature_2 = models.Feature(
+        name='feature two', summary='sum', category=1, visibility=1,
+        standardization=1, web_dev_views=1, impl_status_chrome=1)
+    self.feature_2.put()
+    self.feature_2_id = self.feature_2.key.integer_id()
+    self.config_2 = models.ApprovalConfig(
+        feature_id=self.feature_2_id, field_id=2,
+        owners=['two_a@example.com', 'two_b@example.com'])
+    self.config_2.put()
+
+    self.feature_3 = models.Feature(
+        name='feature three', summary='sum', category=1, visibility=1,
+        standardization=1, web_dev_views=1, impl_status_chrome=1)
+    self.feature_3.put()
+    self.feature_3_id = self.feature_3.key.integer_id()
+    # Feature 3 has no configs
+
+    self.handler = approvals_api.ApprovalConfigsAPI()
+    self.request_path = '/api/v0/features/%d/configs' % self.feature_1_id
+
+  def tearDown(self):
+    self.feature_1.key.delete()
+    self.feature_2.key.delete()
+    self.feature_3.key.delete()
+    for config in models.ApprovalConfig.query():
+      config.key.delete()
+
+  @mock.patch('internals.approval_defs.get_approvers')
+  def test_do_get__found(self, mock_get_approvers):
+    """Anon or any user can get some configs."""
+    mock_get_approvers.return_value = ['owner@example.com']
+    testing_config.sign_in('other@example.com', 123567890)
+    with test_app.test_request_context(self.request_path):
+      actual = self.handler.do_get(self.feature_1_id)
+    self.assertEqual(
+        {'configs': [{
+            'feature_id': self.feature_1_id,
+            'field_id': 1,
+            'owners': ['one_a@example.com', 'one_b@example.com'],
+            'additional_review': False,
+            'next_action': None,
+            }],
+         'possible_owners': {
+             1: ['owner@example.com'],
+             2: ['owner@example.com'],
+             3: ['owner@example.com'],
+             4: ['owner@example.com'],
+         },
+        },
+        actual)
+
+    testing_config.sign_out()
+    with test_app.test_request_context(self.request_path):
+      actual = self.handler.do_get(self.feature_2_id)
+    self.assertEqual(
+        {'configs': [{
+            'feature_id': self.feature_2_id,
+            'field_id': 2,
+            'owners': ['two_a@example.com', 'two_b@example.com'],
+            'additional_review': False,
+            'next_action': None,
+            }],
+         'possible_owners': {
+             1: ['owner@example.com'],
+             2: ['owner@example.com'],
+             3: ['owner@example.com'],
+             4: ['owner@example.com'],
+         },
+        },
+        actual)
+
+  @mock.patch('internals.approval_defs.get_approvers')
+  def test_do_get__no_configs(self, mock_get_approvers):
+    """If there are no configs, we return an empty list."""
+    mock_get_approvers.return_value = ['owner@example.com']
+    with test_app.test_request_context(self.request_path):
+      actual = self.handler.do_get(self.feature_3_id)
+
+    self.assertEqual(
+        {'configs': [],
+         'possible_owners': {
+             1: ['owner@example.com'],
+             2: ['owner@example.com'],
+             3: ['owner@example.com'],
+             4: ['owner@example.com'],
+         },
+        },
+        actual)
+
+  @mock.patch('internals.approval_defs.get_approvers')
+  def test_do_post__add_a_config(self, mock_get_approvers):
+    """If there are already existing configs, we can add new one."""
+    mock_get_approvers.return_value = ['owner1@example.com']
+    testing_config.sign_in('owner1@example.com', 123567890)
+
+    params = {'fieldId': 3,
+              'owners': ' one@example.com, two@example.com, ',
+              'nextAction': '2021-11-30',
+              'additionalReview': False}
+    with test_app.test_request_context(self.request_path, json=params):
+      actual = self.handler.do_post(self.feature_1_id)
+
+    self.assertEqual({'message': 'Done'}, actual)
+    revised_configs = models.ApprovalConfig.query(
+        models.ApprovalConfig.feature_id == self.feature_1_id).order(
+            models.ApprovalConfig.field_id).fetch(None)
+    self.assertEqual(2, len(revised_configs))
+    revised_config_3 = revised_configs[1]
+    self.assertEqual(3, revised_config_3.field_id)
+    self.assertEqual(['one@example.com', 'two@example.com'],
+                     revised_config_3.owners)
+
+  @mock.patch('internals.approval_defs.get_approvers')
+  def test_do_post__update(self, mock_get_approvers):
+    """We can update an existing config."""
+    mock_get_approvers.return_value = ['owner1@example.com']
+    testing_config.sign_in('owner1@example.com', 123567890)
+
+    params = {'fieldId': 1,
+              'owners': 'one_a@example.com, one_b@example.com',
+              'nextAction': '2021-11-30',
+              'additionalReview': False}
+    with test_app.test_request_context(self.request_path, json=params):
+      actual = self.handler.do_post(self.feature_1_id)
+
+    self.assertEqual({'message': 'Done'}, actual)
+    revised_config = models.ApprovalConfig.query(
+        models.ApprovalConfig.feature_id == self.feature_1_id).fetch(None)[0]
+    self.assertEqual(self.feature_1_id, revised_config.feature_id)
+    self.assertEqual(1, revised_config.field_id)
+    self.assertEqual(datetime.date.fromisoformat('2021-11-30'),
+                     revised_config.next_action)
+    self.assertEqual(['one_a@example.com', 'one_b@example.com'],
+                     revised_config.owners)
+    self.assertEqual(False, revised_config.additional_review)
+
+  @mock.patch('internals.approval_defs.get_approvers')
+  def test_do_post__clear(self, mock_get_approvers):
+    """We can update an existing config to clear values."""
+    mock_get_approvers.return_value = ['owner1@example.com']
+    testing_config.sign_in('owner1@example.com', 123567890)
+
+    params = {'fieldId': 1,
+              'owners': '',
+              'nextAction': '',
+              'additionalReview': False}
+    with test_app.test_request_context(self.request_path, json=params):
+      actual = self.handler.do_post(self.feature_1_id)
+
+    self.assertEqual({'message': 'Done'}, actual)
+    revised_config = models.ApprovalConfig.query(
+        models.ApprovalConfig.feature_id == self.feature_1_id).fetch(None)[0]
+    self.assertEqual(self.feature_1_id, revised_config.feature_id)
+    self.assertEqual(1, revised_config.field_id)
+    self.assertEqual(None, revised_config.next_action)
+    self.assertEqual([], revised_config.owners)
+    self.assertEqual(False, revised_config.additional_review)
+
+  @mock.patch('internals.approval_defs.get_approvers')
+  def test_do_post__no_configs(self, mock_get_approvers):
+    """If there are no existing configs, we create one."""
+    mock_get_approvers.return_value = ['owner1@example.com']
+    testing_config.sign_in('owner1@example.com', 123567890)
+
+    params = {'fieldId': 3,
+              'owners': '',
+              'nextAction': '2021-11-30',
+              'additionalReview': False}
+    with test_app.test_request_context(self.request_path, json=params):
+      actual = self.handler.do_post(self.feature_3_id)
+
+    self.assertEqual({'message': 'Done'}, actual)
+    new_config = models.ApprovalConfig.query(
+        models.ApprovalConfig.feature_id == self.feature_3_id).fetch(None)[0]
+    self.assertEqual(self.feature_3_id, new_config.feature_id)
+    self.assertEqual(3, new_config.field_id)
+    self.assertEqual(datetime.date.fromisoformat('2021-11-30'),
+                     new_config.next_action)
+    self.assertEqual([], new_config.owners)
+    self.assertEqual(False, new_config.additional_review)
+
+  @mock.patch('internals.approval_defs.get_approvers')
+  def test_do_post__bad_date(self, mock_get_approvers):
+    """We reject bad date formats and values."""
+    mock_get_approvers.return_value = ['owner1@example.com']
+    testing_config.sign_in('owner1@example.com', 123567890)
+
+    params = {'fieldId': 3,
+              'owners': '',
+              'nextAction': '11/30/21',
+              'additionalReview': False}
+    with test_app.test_request_context(self.request_path, json=params):
+      with self.assertRaises(werkzeug.exceptions.BadRequest):
+        self.handler.do_post(self.feature_3_id)
+
+    params = {'fieldId': 3,
+              'owners': '',
+              'nextAction': '2021-11-35',
+              'additionalReview': False}
+    with test_app.test_request_context(self.request_path, json=params):
+      with self.assertRaises(werkzeug.exceptions.BadRequest):
+        self.handler.do_post(self.feature_3_id)

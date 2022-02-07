@@ -1,4 +1,4 @@
-import {LitElement, css, html} from 'lit-element';
+import {LitElement, css, html} from 'lit';
 import SHARED_STYLES from '../css/shared.css';
 
 class ChromedashXMeter extends LitElement {
@@ -46,11 +46,11 @@ class ChromedashXMeter extends LitElement {
   }
 
   render() {
-    return html`  
-      <div @click="${this.showTimeline}" style="width: ${(this.value / this.max * 100)}%">  
+    return html`
+      <div @click="${this.showTimeline}" style="width: ${(this.value / this.max * 100)}%">
         <span>${this.value <= 0.000001 ? '<=0.000001%' : this.value + '%'}
-        </span> 
-      </div>  
+        </span>
+      </div>
     `;
   }
 }

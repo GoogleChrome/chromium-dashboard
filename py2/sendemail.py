@@ -40,13 +40,19 @@ def require_task_header():
     flask.abort(403, msg='Lacking X-AppEngine-QueueName header')
 
 
-def get_param(request, name):
+def get_param(request, name, required=True):
   """Get the specified JSON parameter."""
   json_body = request.get_json(force=True)
   val = json_body.get(name)
-  if not val:
+  if required and not val:
     flask.abort(400, msg='Missing parameter %r' % name)
   return val
+
+
+@app.route('/py2')
+def py2_health_check():
+  """Prove that this GAE module is responding."""
+  return {'message': 'OK py2'}
 
 
 @app.route('/tasks/outbound-email', methods=['POST'])
@@ -55,21 +61,36 @@ def handle_outbound_mail_task():
   require_task_header()
 
   to = get_param(flask.request, 'to')
+  from_user = get_param(flask.request, 'from_user', required=False)
   subject = get_param(flask.request, 'subject')
   email_html = get_param(flask.request, 'html')
+  references = get_param(flask.request, 'references', required=False)
 
-  if settings.SEND_ALL_EMAIL_TO:
+  if settings.SEND_ALL_EMAIL_TO and to != settings.REVIEW_COMMENT_MAILING_LIST:
     to_user, to_domain = to.split('@')
     to = settings.SEND_ALL_EMAIL_TO % {'user': to_user, 'domain': to_domain}
 
+  sender = 'Chromestatus <admin@%s.appspotmail.com>' % settings.APP_ID
+  if from_user:
+    sender = '%s via Chromestatus <admin+%s@%s.appspotmail.com>' % (
+        from_user, from_user, settings.APP_ID)
+
   message = mail.EmailMessage(
-      sender='Chromestatus <admin@%s.appspotmail.com>' % settings.APP_ID,
-      to=to, subject=subject, html=email_html)
+      sender=sender, to=to, subject=subject, html=email_html)
   message.check_initialized()
 
+  if references:
+    message.headers = {
+        'References': references,
+        'In-Reply-To': references,
+    }
+
   logging.info('Will send the following email:\n')
+  logging.info('Sender: %s', message.sender)
   logging.info('To: %s', message.to)
   logging.info('Subject: %s', message.subject)
+  logging.info('References: %s', references or '(not included)')
+  logging.info('In-Reply-To: %s', references or '(not included)')
   logging.info('Body:\n%s', message.html[:settings.MAX_LOG_LINE])
   if settings.SEND_EMAIL:
     message.send()
@@ -149,7 +170,8 @@ def call_py3_task_handler(handler_path, task_dict):
       url=handler_url, payload=request_body, method=urlfetch.POST,
       follow_redirects=False)
 
-  logging.info('request_response is %r', handler_response)
+  logging.info('request_response is %r:\n%r',
+               handler_response.status_code, handler_response.content)
   return handler_response
 
 

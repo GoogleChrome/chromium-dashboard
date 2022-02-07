@@ -15,9 +15,8 @@
 import testing_config  # Must be imported before the module under test.
 
 import datetime
-import mock
+from unittest import mock
 from framework import ramcache
-# from google.appengine.api import users
 from framework import users
 
 from internals import models
@@ -168,13 +167,23 @@ class FeatureTest(testing_config.CustomTestCase):
     self.assertEqual([], actual)
 
   def test_get_by_ids__cache_miss(self):
-    """We can load features from datastore."""
+    """We can load features from datastore, and cache them for later."""
     ramcache.global_cache.clear()
 
-    actual = models.Feature.get_by_ids([self.feature_1.key.integer_id()])
+    actual = models.Feature.get_by_ids([
+        self.feature_1.key.integer_id(),
+        self.feature_2.key.integer_id()])
 
-    self.assertEqual(1, len(actual))
+    self.assertEqual(2, len(actual))
     self.assertEqual('feature a', actual[0]['name'])
+    self.assertEqual('feature b', actual[1]['name'])
+
+    lookup_key_1 = '%s|%s' % (models.Feature.DEFAULT_CACHE_KEY,
+                              self.feature_1.key.integer_id())
+    lookup_key_2 = '%s|%s' % (models.Feature.DEFAULT_CACHE_KEY,
+                              self.feature_2.key.integer_id())
+    self.assertEqual('feature a', ramcache.get(lookup_key_1)['name'])
+    self.assertEqual('feature b', ramcache.get(lookup_key_2)['name'])
 
   def test_get_by_ids__cache_hit(self):
     """We can load features from ramcache."""
@@ -190,6 +199,36 @@ class FeatureTest(testing_config.CustomTestCase):
 
   def test_get_by_ids__batch_order(self):
     """Features are returned in the order of the given IDs."""
+    actual = models.Feature.get_by_ids([
+        self.feature_4.key.integer_id(),
+        self.feature_1.key.integer_id(),
+        self.feature_3.key.integer_id(),
+        self.feature_2.key.integer_id(),
+    ])
+
+    self.assertEqual(4, len(actual))
+    self.assertEqual('feature d', actual[0]['name'])
+    self.assertEqual('feature a', actual[1]['name'])
+    self.assertEqual('feature c', actual[2]['name'])
+    self.assertEqual('feature b', actual[3]['name'])
+
+  def test_get_by_ids__cached_correctly(self):
+    """We should no longer be able to trigger bug #1647."""
+    # Cache one to try to trigger the bug.
+    ramcache.global_cache.clear()
+    models.Feature.get_by_ids([
+        self.feature_2.key.integer_id(),
+        ])
+
+    # Now do the lookup, but it would cache feature_2 at the key for feature_3.
+    models.Feature.get_by_ids([
+        self.feature_4.key.integer_id(),
+        self.feature_1.key.integer_id(),
+        self.feature_3.key.integer_id(),
+        self.feature_2.key.integer_id(),
+    ])
+
+    # This would read the incorrect cache entry and use it.
     actual = models.Feature.get_by_ids([
         self.feature_4.key.integer_id(),
         self.feature_1.key.integer_id(),

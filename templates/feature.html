@@ -16,7 +16,7 @@
 {% endblock %}
 
 {% block rss %}
-  <link rel="alternate" type="application/rss+xml" href="https://www.chromestatus.com/features.xml" title="All features" />
+  <link rel="alternate" type="application/rss+xml" href="https://chromestatus.com/features.xml" title="All features" />
 {% endblock %}
 
 {% block subheader %}
@@ -69,8 +69,10 @@
   </div>
 
   <h2 id="breadcrumbs">
-    <a href="/features/{{ feature_id }}">
+    <a href="{{ context_link }}">
       <iron-icon icon="chromestatus:arrow-back"></iron-icon>
+    </a>
+    <a href="/feature/{{ feature.id }}">
       Feature: {{ feature.name }}
     </a>
         {% if feature.browsers.chrome.status.text == "No longer pursuing" %} (No longer pursuing){% endif %}

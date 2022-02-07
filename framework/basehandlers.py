@@ -320,6 +320,11 @@ class FlaskHandler(BaseHandler):
 
   def get(self, *args, **kwargs):
     """GET handlers can render templates, return JSON, or do redirects."""
+    if self.request.host.startswith('www.'):
+      location = self.request.url.replace('www.', '', 1)
+      logging.info('Striping www and redirecting to %r', location)
+      return self.redirect(location)
+
     ramcache.check_for_distributed_invalidation()
     handler_data = self.get_template_data(*args, **kwargs)
 

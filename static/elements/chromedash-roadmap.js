@@ -1,4 +1,4 @@
-import {LitElement, html} from 'lit-element';
+import {LitElement, html} from 'lit';
 import '@polymer/iron-icon';
 import style from '../css/elements/chromedash-roadmap.css';
 
@@ -74,7 +74,7 @@ class ChromedashRoadmap extends LitElement {
   }
 
   set lastFutureFetchedOn(val) {
-    let oldVal = this._lastFutureFetchedOn;
+    const oldVal = this._lastFutureFetchedOn;
     this._lastFutureFetchedOn = val;
     this.fetchNextBatch().then(()=>{
       this.requestUpdate('lastFutureFetchedOn', oldVal);
@@ -85,7 +85,7 @@ class ChromedashRoadmap extends LitElement {
   }
 
   set lastPastFetchedOn(val) {
-    let oldVal = this._lastPastFetchedOn;
+    const oldVal = this._lastPastFetchedOn;
     this._lastPastFetchedOn = val;
     if (!this.isChromeOneFetched) {
       this.fetchPreviousBatch().then(()=>{
@@ -119,7 +119,7 @@ class ChromedashRoadmap extends LitElement {
     const isFetchedFirstTime = this._lastFutureFetchedOn == this.channels['beta'].version;
 
     let nextMilestones;
-    let milestoneNumsArray = [];
+    const milestoneNumsArray = [];
     const cardsToFetchInAdvance = 3; // number of milestones to fetch while fetching for the first time
 
     // promise to fetch next milestones
@@ -138,17 +138,17 @@ class ChromedashRoadmap extends LitElement {
     }
 
     // promise to fetch features in next milestones
-    let milestoneFeaturePromise = {};
+    const milestoneFeaturePromise = {};
     milestoneNumsArray.forEach((milestoneNum) => {
       milestoneFeaturePromise[milestoneNum] = window.csClient.getFeaturesInMilestone(milestoneNum);
     });
 
     let newMilestonesInfo;
-    let milestoneFeatures = {};
+    const milestoneFeatures = {};
 
     try {
       newMilestonesInfo = await nextMilestones;
-      for (let milestoneNum of milestoneNumsArray) {
+      for (const milestoneNum of milestoneNumsArray) {
         milestoneFeatures[milestoneNum] = await milestoneFeaturePromise[milestoneNum];
       }
     } catch (err) {
@@ -173,24 +173,24 @@ class ChromedashRoadmap extends LitElement {
       this.isChromeOneFetched = true;
     }
 
-    let nextMilestones = window.csClient.getSpecifiedChannels(this._lastPastFetchedOn - 2,
+    const nextMilestones = window.csClient.getSpecifiedChannels(this._lastPastFetchedOn - 2,
       this._lastPastFetchedOn - 2);
 
-    let milestoneNumsArray = [];
+    const milestoneNumsArray = [];
     milestoneNumsArray.push(this._lastPastFetchedOn - 2);
 
     // promise to fetch features in the earlier released milestone
-    let milestoneFeaturePromise = {};
+    const milestoneFeaturePromise = {};
     milestoneNumsArray.forEach((milestoneNum) => {
       milestoneFeaturePromise[milestoneNum] = window.csClient.getFeaturesInMilestone(milestoneNum);
     });
 
     let newMilestonesInfo;
-    let milestoneFeatures = {};
+    const milestoneFeatures = {};
 
     try {
       newMilestonesInfo = await nextMilestones;
-      for (let milestoneNum of milestoneNumsArray) {
+      for (const milestoneNum of milestoneNumsArray) {
         milestoneFeatures[milestoneNum] = await milestoneFeaturePromise[milestoneNum];
       }
     } catch (err) {
@@ -240,11 +240,11 @@ class ChromedashRoadmap extends LitElement {
   }
 
   computeWidthOfCard() {
-    let cardContainer = document.querySelector('#releases-section');
-    let containerWidth = cardContainer.offsetWidth;
-    let items = this.computeItems();
-    let margin=16;
-    let val = (containerWidth/items)-margin;
+    const cardContainer = document.querySelector('#releases-section');
+    const containerWidth = cardContainer.offsetWidth;
+    const items = this.computeItems();
+    const margin=16;
+    const val = (containerWidth/items)-margin;
     return val;
   };
 

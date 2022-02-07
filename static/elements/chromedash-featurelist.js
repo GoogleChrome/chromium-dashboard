@@ -1,4 +1,4 @@
-import {LitElement, html} from 'lit-element';
+import {LitElement, html} from 'lit';
 // eslint-disable-next-line no-unused-vars
 import './chromedash-feature';
 import style from '../css/elements/chromedash-featurelist.css';
@@ -82,7 +82,7 @@ class ChromedashFeaturelist extends LitElement {
   }
 
   _fireEvent(eventName, detail) {
-    let event = new CustomEvent(eventName, {detail});
+    const event = new CustomEvent(eventName, {detail});
     this.dispatchEvent(event);
   }
 
@@ -158,15 +158,6 @@ class ChromedashFeaturelist extends LitElement {
     const feature = e.detail.feature;
     const open = e.detail.open;
     this._setOpenFeatures(feature.id, open);
-
-    if (history && history.replaceState) {
-      if (open) {
-        history.pushState({id: feature.id}, feature.name, '/features/' + feature.id);
-      } else {
-        const hash = this.searchEl.value ? '#' + this.searchEl.value : '';
-        history.replaceState({id: null}, feature.name, '/features' + hash);
-      }
-    }
   }
 
   _onStarToggled(e) {
@@ -356,23 +347,10 @@ class ChromedashFeaturelist extends LitElement {
     }
   }
 
-  /** Scroll to the item in the URL. Otherwise the first 'In development' item */
-  _scrollToInitialPosition() {
-    const lastSlash = location.pathname.lastIndexOf('/');
-    let id;
-    if (lastSlash > 0) {
-      id = parseInt(location.pathname.substring(lastSlash + 1));
-      this.scrollToId(id);
-    }
-  }
-
   _initialize() {
     this._featuresUnveilMetric.end().log().sendToAnalytics('features', 'unveil');
     this._fireEvent('app-ready');
     this._hasInitialized = true;
-    setTimeout(() => {
-      this._scrollToInitialPosition();
-    }, 300);
   }
 
   _computeMilestoneHidden(feature, features, filtered) {

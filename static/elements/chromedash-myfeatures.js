@@ -1,5 +1,4 @@
-import {LitElement, css, html} from 'lit-element';
-import {nothing} from 'lit-html';
+import {LitElement, css, html, nothing} from 'lit';
 import './chromedash-accordion';
 import './chromedash-approvals-dialog';
 import './chromedash-feature-table';
@@ -82,7 +81,7 @@ class ChromedashMyFeatures extends LitElement {
     const pendingBox = this.renderBox(
       'Features pending my approval', 'pending-approval-by:me', 'approvals');
     const recentBox = this.renderBox(
-      'Recently reviewed features', 'is:recently-reviewed', 'approvals', false);
+      'Recently reviewed features', 'is:recently-reviewed', 'normal', false);
     return [pendingBox, recentBox];
   }
 

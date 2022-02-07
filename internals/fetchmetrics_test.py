@@ -12,15 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-
-
 import base64
 import datetime
+import json
 import testing_config  # Must be imported before the module under test.
 import urllib.request, urllib.parse, urllib.error
 
-import mock
+from unittest import mock
 import flask
 import werkzeug
 
@@ -97,6 +95,68 @@ class UmaQueryTest(testing_config.CustomTestCase):
       capstone.key.delete()
 
     self.assertTrue(actual)
+
+  @mock.patch('internals.fetchmetrics._FetchMetrics')
+  def test_FetchData__ready(self, mock_fetch_metrics):
+    """When the uma-export data is ready, we parse and return it."""
+    r = {'123': {'rate': 0.001},
+         '234': {'rate': 0.002}}
+    XSSI_PROTECTION = ')]}\' // XSSI prefix (go/xssi).'
+    response_content = '\n'.join([XSSI_PROTECTION, json.dumps({'r': r})])
+    mock_fetch_metrics.return_value = testing_config.Blank(
+        status_code=200, content=response_content.encode())
+    query_date = datetime.date.fromisoformat('2021-12-02')
+
+    actual_r, actual_status = self.uma_query._FetchData(query_date)
+
+    self.assertEqual(r, actual_r)
+    self.assertEqual(200, actual_status)
+
+  @mock.patch('internals.fetchmetrics._FetchMetrics')
+  def test_FetchData__empty(self, mock_fetch_metrics):
+    """When the uma-export data is empty, we treat that as not ready."""
+    r = {}
+    XSSI_PROTECTION = ')]}\' // XSSI prefix (go/xssi).'
+    response_content = '\n'.join([XSSI_PROTECTION, json.dumps({'r': r})])
+    mock_fetch_metrics.return_value = testing_config.Blank(
+        status_code=200, content=response_content.encode())
+    query_date = datetime.date.fromisoformat('2021-12-02')
+
+    actual_r, actual_status = self.uma_query._FetchData(query_date)
+
+    self.assertEqual(None, actual_r)
+    self.assertEqual(404, actual_status)
+
+  @mock.patch('logging.error')
+  @mock.patch('internals.fetchmetrics._FetchMetrics')
+  def test_FetchData__error_msg(self, mock_fetch_metrics, mock_logging_error):
+    """When uma-export gives any error message, we treat that as not ready."""
+    r = {'123': 'anything'}
+    e = 'mock uma error message'
+    XSSI_PROTECTION = ')]}\' // XSSI prefix (go/xssi).'
+    response_content = '\n'.join([XSSI_PROTECTION, json.dumps({'r': r, 'e': e})])
+    mock_fetch_metrics.return_value = testing_config.Blank(
+        status_code=200, content=response_content.encode())
+    query_date = datetime.date.fromisoformat('2021-12-02')
+
+    actual_r, actual_status = self.uma_query._FetchData(query_date)
+
+    self.assertEqual(None, actual_r)
+    self.assertEqual(404, actual_status)
+
+  @mock.patch('logging.error')
+  @mock.patch('internals.fetchmetrics._FetchMetrics')
+  def test_FetchData__error_status(self, mock_fetch_metrics, mock_logging_error):
+    """When uma-export gives a non-200, we treat that as not ready."""
+    response_content = 'Error!!!!1'
+    mock_fetch_metrics.return_value = testing_config.Blank(
+        status_code=500, content=response_content.encode())
+    query_date = datetime.date.fromisoformat('2021-12-02')
+
+    actual_r, actual_status = self.uma_query._FetchData(query_date)
+
+    self.assertEqual(None, actual_r)
+    self.assertEqual(500, actual_status)
 
 
 class YesterdayHandlerTest(testing_config.CustomTestCase):

@@ -1,5 +1,5 @@
 // TODO(yangguang): This component is not tested. Data is not available in devserver, so cannot be tested locally.
-import {LitElement, css, html} from 'lit-element';
+import {LitElement, css, html} from 'lit';
 import SHARED_STYLES from '../css/shared.css';
 
 class ChromedashTimeline extends LitElement {
@@ -146,8 +146,8 @@ class ChromedashTimeline extends LitElement {
     datatable.addRows(rowArray);
 
     function aggregateByMonth(date) {
-      let month = date.getMonth();
-      let year = date.getFullYear();
+      const month = date.getMonth();
+      const year = date.getFullYear();
       return new Date(year, month);
     }
 
@@ -159,7 +159,7 @@ class ChromedashTimeline extends LitElement {
         type: 'number',
         label: 'Monthly Average',
       }],
-      [{column: 2, type: 'string'}]
+      [{column: 2, type: 'string'}],
     );
 
     const formatter = new window.google.visualization.NumberFormat({fractionDigits: 6});
@@ -238,7 +238,7 @@ class ChromedashTimeline extends LitElement {
         featureName = convertToCamelCaseFeatureName(featureName);
       }
       const REPORT_ID = '1M8kXOqPkwYNKjJhtag_nvDNJCpvmw_ri';
-      const dsEmbedUrl = `https://datastudio.google.com/embed/reporting/${REPORT_ID}/page/tc5b?config=%7B"df3":"include%25EE%2580%25800%25EE%2580%2580IN%25EE%2580%2580${featureName}"%7D`;
+      const dsEmbedUrl = `https://datastudio.google.com/embed/reporting/${REPORT_ID}/page/tc5b?params=%7B"df3":"include%25EE%2580%25800%25EE%2580%2580IN%25EE%2580%2580${featureName}"%7D`;
       const hadEl = this.shadowRoot.getElementById('httparchivedata');
       hadEl.src = dsEmbedUrl;
 
@@ -288,7 +288,7 @@ ORDER BY yyyymmdd DESC, client`;
 
 // Capitalizes the first letter of a word.
 function capitalize(word) {
-  let letters = word.split('');
+  const letters = word.split('');
   letters[0] = letters[0].toUpperCase();
   return letters.join('');
 }
