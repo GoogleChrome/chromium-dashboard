@@ -20,6 +20,7 @@ import testing_config  # Must be imported first
 import os
 import flask
 import werkzeug
+import html5lib
 
 from internals import models
 from framework import ramcache
@@ -83,6 +84,7 @@ class FeatureDetailHandlerTest(TestWithFeature):
           feature_id=self.feature_id)
 
     self.assertEqual(self.feature_id, template_data['feature_id'])
+    self.assertEqual('feature one', template_data['feature']['name'])
     self.assertEqual('detailed sum', template_data['feature']['summary'])
 
 
@@ -108,8 +110,15 @@ class FeatureDetailTemplateTest(TestWithFeature):
     self.assertIn('feature one', template_text)
     self.assertIn('detailed sum', template_text)
 
+  def test_html_rendering(self):
+    """We can render the template with valid html."""
+    template_text = self.handler.render(
+        self.template_data, self.full_template_path)
+    parser = html5lib.HTMLParser(strict=True)
+    document = parser.parse(template_text)
+
   def test_links(self):
-    """We we generate clickable links."""
+    """We can generate clickable links."""
     self.template_data['new_crbug_url'] = 'fake crbug link'
     resources = self.template_data['feature']['resources']
     resources['samples'] = ['fake sample link one',
