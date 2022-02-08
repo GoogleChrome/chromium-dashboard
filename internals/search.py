@@ -27,8 +27,9 @@ PENDING_STATES = [
 FINAL_STATES = [
     models.Approval.NA, models.Approval.APPROVED,
     models.Approval.NOT_APPROVED]
+MAX_TERMS = 6
 
-def _get_referenced_features(approvals, reverse=False):
+def _get_referenced_feature_ids(approvals, reverse=False):
   """Retrieve the features being approved, withuot duplicates."""
   logging.info('approvals is %r', [(a.feature_id, a.state) for a in approvals])
   feature_ids = []
@@ -38,8 +39,7 @@ def _get_referenced_features(approvals, reverse=False):
       seen.add(appr.feature_id)
       feature_ids.append(appr.feature_id)
 
-  features = models.Feature.get_by_ids(feature_ids)
-  return features
+  return feature_ids
 
 
 def process_pending_approval_me_query():
@@ -53,8 +53,8 @@ def process_pending_approval_me_query():
   pending_approvals = [pa for pa in pending_approvals
                        if pa.field_id in approvable_fields_ids]
 
-  features = _get_referenced_features(pending_approvals)
-  return features
+  feature_ids = _get_referenced_feature_ids(pending_approvals)
+  return feature_ids
 
 
 def process_starred_me_query():
@@ -64,8 +64,7 @@ def process_starred_me_query():
     return []
 
   feature_ids = notifier.FeatureStar.get_user_stars(user.email())
-  features = models.Feature.get_by_ids(feature_ids)
-  return features
+  return feature_ids
 
 
 def process_owner_me_query():
@@ -74,7 +73,8 @@ def process_owner_me_query():
   if not user:
     return []
   features = models.Feature.get_all(filterby=('owner', user.email()))
-  return features
+  feature_ids = [f['id'] for f in features]
+  return feature_ids
 
 
 def process_recent_reviews_query():
@@ -86,21 +86,67 @@ def process_recent_reviews_query():
   recent_approvals = models.Approval.get_approvals(
       states=FINAL_STATES, order=-models.Approval.set_on, limit=40)
 
-  features = _get_referenced_features(recent_approvals, reverse=True)
-  return features
+  feature_ids = _get_referenced_feature_ids(recent_approvals, reverse=True)
+  return feature_ids
+
+
+def process_queriable_field(field_name, operator, val_str):
+  if val_str == 'true':
+    val = True
+  elif val_str == 'false':
+    val = False
+  else:
+    try:
+      val = int(val_str)
+    except ValueError:
+      val = val_str
+
+  logging.info('trying %r %r %r', field_name, operator, val)
+  promise = models.Feature.single_field_query_async(field_name, operator, val)
+  if type(promise) == list:
+    return promise
+  else:
+    return promise.get_result()  # TODO: in parallel
+
+def process_query_term(query_term):
+  """Parse and run a user-supplied query, if we can handle it."""
+  # TODO(jrobbins): Replace this with a more general approach.
+  if query_term == 'pending-approval-by:me':
+    return process_pending_approval_me_query()
+  if query_term == 'starred-by:me':
+    return process_starred_me_query()
+  if query_term == 'owner:me':
+    return process_owner_me_query()
+  if query_term == 'is:recently-reviewed':
+    return process_recent_reviews_query()
+
+  if '=' in query_term:
+    field_name, val_str = query_term.split('=', 1)
+    return process_queriable_field(field_name, '=', val_str)
+
+  logging.warning('Unexpected query: %r', query_term)
+  return []
 
 
 def process_query(user_query):
-  """Parse and run a user-supplied query, if we can handle it."""
-  # TODO(jrobbins): Replace this with a more general approach.
-  if user_query == 'pending-approval-by:me':
-    return process_pending_approval_me_query()
-  if user_query == 'starred-by:me':
-    return process_starred_me_query()
-  if user_query == 'owner:me':
-    return process_owner_me_query()
-  if user_query == 'is:recently-reviewed':
-    return process_recent_reviews_query()
+  """xxx"""
+  feature_id_futures = []
+  terms = user_query.split()[:MAX_TERMS]
+  logging.info('creating parallel queries for %r', terms)
+  for term in terms:
+    future = process_query_term(term)
+    feature_id_futures.append(future)
+  logging.info('now waiting on futures')
+  result_id_set = None
+  for future in feature_id_futures:
+    feature_ids = future  # TODO use futures and .get_result()
+    term_id_set = set(feature_ids)
+    if result_id_set is None:
+      result_id_set = set(feature_ids)
+    else:
+      result_id_set.intersection_update(feature_ids)
 
-  logging.warning('Unexpected query: %r', user_query)
-  return []
+  # TODO: sort by user-specified field
+  sorted_result_ids = sorted(result_id_set)
+  features = models.Feature.get_by_ids(sorted_result_ids)
+  return features

@@ -795,6 +795,18 @@ class Feature(DictModel):
     return feature_list
 
   @classmethod
+  def single_field_query_async(
+      cls, field_name, operator, val, limit=None):
+    field = QUERIABLE_FIELDS.get(field_name)
+    if field is None:
+      logging.info('Ignoring field name %r', field_name)
+      return []  # TODO: return a future
+    query = Feature.query()
+    query.filter(field == val)
+    ids_promise = query.fetch_async(projection=Feature.id, limit=limit)
+    return ids_promise
+
+  @classmethod
   def get_all_with_statuses(self, statuses, update_cache=False):
     if not statuses:
       return []
@@ -1325,6 +1337,14 @@ class Feature(DictModel):
 
   finch_url = ndb.StringProperty()
 
+
+
+QUERIABLE_FIELDS = {
+    'prefixed': Feature.prefixed,
+    'shipped_milestone': Feature.shipped_milestone,
+    'component': Feature.blink_components,
+    'flag_name': Feature.flag_name,
+    }
 
 class Approval(DictModel):
   """Describes the current state of one approval on a feature."""
