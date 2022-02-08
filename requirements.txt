@@ -2,6 +2,7 @@
 # Also see requirements.dev.txt
 
 # Py3 Libraries
+html5lib
 Django==3.2.11
 funcsigs
 google-python-cloud-debugger
