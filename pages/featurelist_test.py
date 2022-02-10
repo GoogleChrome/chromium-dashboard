@@ -121,12 +121,6 @@ class FeatureListTemplateTest(TestWithFeature):
       self.template_data['nonce'] = 'fake nonce'
       template_path = self.handler.get_template_path(self.template_data)
       self.full_template_path = os.path.join(template_path)
-
-  # def test_basic_rendering(self):
-  #   """We can render the template."""
-  #   template_text = self.handler.render(
-  #       self.template_data, self.full_template_path)
-  #   self.assertIn('IMPLEMENTATION_STATUSES', self.template_data)
     
   def test_html_rendering(self):
     """We can render the template with valid html."""
