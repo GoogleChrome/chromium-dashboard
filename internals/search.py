@@ -13,7 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import datetime
 import logging
+import re
 
 from framework import users
 from internals import approval_defs
@@ -90,23 +92,43 @@ def process_recent_reviews_query():
   return feature_ids
 
 
-def process_queriable_field(field_name, operator, val_str):
+def parse_query_value(val_str):
+  """Return a python object that can be used as a value in an NDB query."""
   if val_str == 'true':
-    val = True
-  elif val_str == 'false':
-    val = False
-  else:
-    try:
-      val = int(val_str)
-    except ValueError:
-      val = val_str
+    return True
+  if val_str == 'false':
+    return False
 
+  try:
+    return datetime.datetime.strptime(val_str, '%Y-%m-%d')
+  except ValueError:
+    logging.info('%r is not a date' % val_str)
+    pass
+
+  try:
+    return int(val_str)
+  except ValueError:
+    pass
+
+  return val_str
+
+
+def process_queriable_field(field_name, operator, val_str):
+  """Return a list of feature IDs or a promise for keys."""
+  val = parse_query_value(val_str)
   logging.info('trying %r %r %r', field_name, operator, val)
   promise = models.Feature.single_field_query_async(field_name, operator, val)
-  if type(promise) == list:
-    return promise
-  else:
-    return promise.get_result()  # TODO: in parallel
+  return promise
+
+FIELD_NAME_PATTERN = r'[a-z_0-9]+'
+OPERATORS_PATTERN = r'=|<=|<|>=|>|!='
+VALUE_PATTERN = r'\S+'  # Only single word values are currently supported
+
+TERM_RE = re.compile(
+    '(?P<field>%s)(?P<op>%s)(?P<val>%s)' % (
+        FIELD_NAME_PATTERN, OPERATORS_PATTERN, VALUE_PATTERN),
+    re.I)
+
 
 def process_query_term(query_term):
   """Parse and run a user-supplied query, if we can handle it."""
@@ -120,33 +142,65 @@ def process_query_term(query_term):
   if query_term == 'is:recently-reviewed':
     return process_recent_reviews_query()
 
-  if '=' in query_term:
-    field_name, val_str = query_term.split('=', 1)
-    return process_queriable_field(field_name, '=', val_str)
+  m = TERM_RE.match(query_term)
+  if m:
+    field_name = m.group('field')
+    op_str = m.group('op')
+    val_str = m.group('val')
+    return process_queriable_field(field_name, op_str, val_str)
 
   logging.warning('Unexpected query: %r', query_term)
   return []
 
 
-def process_query(user_query):
+def _resolve_promise_to_id_list(promise):
   """xxx"""
+  if type(promise) == list:
+    logging.info('got list %r', promise)
+    return promise  # Which is actually an ID list.
+  else:
+    key_list = promise.get_result()  # TODO: in parallel @@@
+    id_list = [k.integer_id() for k in key_list]
+    logging.info('got promise that yielded %r', id_list)
+    return id_list
+
+
+def process_query(user_query, show_unlisted=False):
+  """xxx"""
+  # 1. Parse the user query into terms.
   feature_id_futures = []
   terms = user_query.split()[:MAX_TERMS]
+
+  # 2. Create parallel queries for each term.  Each yields a future.
   logging.info('creating parallel queries for %r', terms)
   for term in terms:
     future = process_query_term(term)
     feature_id_futures.append(future)
+
+  # 3. Get the result of each future and combine them into a result ID set.
   logging.info('now waiting on futures')
   result_id_set = None
   for future in feature_id_futures:
-    feature_ids = future  # TODO use futures and .get_result()
-    term_id_set = set(feature_ids)
+    feature_ids = _resolve_promise_to_id_list(future)
     if result_id_set is None:
+      logging.info('first term yields %r', feature_ids)
       result_id_set = set(feature_ids)
     else:
+      logging.info('combining result so far with %r', feature_ids)
       result_id_set.intersection_update(feature_ids)
 
-  # TODO: sort by user-specified field
-  sorted_result_ids = sorted(result_id_set)
-  features = models.Feature.get_by_ids(sorted_result_ids)
-  return features
+  # 4. Fetch the actual issues that have those IDs in the sorted results.
+  feature_list = models.Feature.get_by_ids(list(result_id_set))
+
+  # 5. Filter by permissions.
+  allowed_feature_list = [
+      f for f in feature_list
+      if show_unlisted or not f['unlisted']]
+
+  logging.info('allowed_feature_list is %r', allowed_feature_list)
+  # 6. Sort.
+  # TODO(jrobbins): sort by user-specified field.  And paginate.
+  sorted_allowed_feature_list = sorted(
+      allowed_feature_list, key=lambda f: f['created']['when'])
+
+  return allowed_feature_list

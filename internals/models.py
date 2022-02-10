@@ -698,8 +698,6 @@ class Feature(DictModel):
       else:
         d['browsers']['chrome']['status']['milestone_str'] = d['browsers']['chrome']['status']['text']
 
-      del d['created']
-
       del_none(d) # Further prune response by removing null/[] values.
 
     else:
@@ -797,14 +795,33 @@ class Feature(DictModel):
   @classmethod
   def single_field_query_async(
       cls, field_name, operator, val, limit=None):
+    """xxx"""
     field = QUERIABLE_FIELDS.get(field_name)
     if field is None:
       logging.info('Ignoring field name %r', field_name)
       return []  # TODO: return a future
     query = Feature.query()
-    query.filter(field == val)
-    ids_promise = query.fetch_async(projection=Feature.id, limit=limit)
-    return ids_promise
+    # Note: We cannot exclude deleted features at this point because
+    # that would require an index on two fields.  Deleted features are
+    # filtered out in get_by_ids().
+
+    if (operator == '='):
+      query = query.filter(field == val)
+    elif (operator == '<='):
+      query = query.filter(field <= val)
+    elif (operator == '<'):
+      query = query.filter(field < val)
+    elif (operator == '>='):
+      query = query.filter(field >= val)
+    elif (operator == '>'):
+      query = query.filter(field > val)
+    elif (operator == '!='):
+      query = query.filter(field != val)
+    else:
+      raise ValueError('Unexpected query operator')
+
+    keys_promise = query.fetch_async(keys_only=True, limit=limit)
+    return keys_promise
 
   @classmethod
   def get_all_with_statuses(self, statuses, update_cache=False):
@@ -1344,6 +1361,79 @@ QUERIABLE_FIELDS = {
     'shipped_milestone': Feature.shipped_milestone,
     'component': Feature.blink_components,
     'flag_name': Feature.flag_name,
+
+    'created': Feature.created,
+    'updated': Feature.updated,
+    'created_by': Feature.created_by,
+    'updated_by': Feature.updated_by,
+
+    'category': Feature.category,
+    'name': Feature.name,
+    'feature_type': Feature.feature_type,
+    'intent_stage': Feature.intent_stage,
+    'summary': Feature.summary,
+    'unlisted': Feature.unlisted,
+    'motivation': Feature.motivation,
+    'star_count': Feature.star_count,
+    'search_tags': Feature.search_tags,
+    'owner': Feature.owner,
+    'intent_to_implement_url': Feature.intent_to_implement_url,
+    'intent_to_ship_url': Feature.intent_to_ship_url,
+    'ready_for_trial_url': Feature.ready_for_trial_url,
+    'intent_to_experiment_url': Feature.intent_to_experiment_url,
+    'intent_to_extend_experiment_url': Feature.intent_to_extend_experiment_url,
+    'i2e_lgtms': Feature.i2e_lgtms,
+    'i2s_lgtms': Feature.i2s_lgtms,
+    'bug_url': Feature.bug_url,
+    'launch_bug_url': Feature.launch_bug_url,
+    'initial_public_proposal_url': Feature.initial_public_proposal_url,
+    'blink_components': Feature.blink_components,
+    'devrel': Feature.devrel,
+
+    'impl_status_chrome': Feature.impl_status_chrome,
+    'shipped_milestone': Feature.shipped_milestone,
+    'shipped_android_milestone': Feature.shipped_android_milestone,
+    'shipped_ios_milestone': Feature.shipped_ios_milestone,
+    'shipped_webview_milestone': Feature.shipped_webview_milestone,
+    'requires_embedder_support': Feature.requires_embedder_support,
+
+    'flag_name': Feature.flag_name,
+    'all_platforms': Feature.all_platforms,
+    'all_platforms_descr': Feature.all_platforms_descr,
+    'wpt': Feature.wpt,
+    'dt_milestone_desktop_start': Feature.dt_milestone_desktop_start,
+    'dt_milestone_android_start': Feature.dt_milestone_android_start,
+    'dt_milestone_ios_start': Feature.dt_milestone_ios_start,
+    'dt_milestone_webview_start': Feature.dt_milestone_webview_start,
+
+    'standard_maturity': Feature.standard_maturity,
+    'spec_link': Feature.spec_link,
+    'api_spec': Feature.api_spec,
+    'spec_mentors': Feature.spec_mentors,
+    'security_review_status': Feature.security_review_status,
+    'privacy_review_status': Feature.privacy_review_status,
+    'tag_review': Feature.tag_review,
+    'tag_review_status': Feature.tag_review_status,
+    'prefixed': Feature.prefixed,
+    'explainer_links': Feature.explainer_links,
+
+    'ff_views': Feature.ff_views,
+    'safari_views': Feature.safari_views,
+    'web_dev_views': Feature.web_dev_views,
+    'ff_views_link': Feature.ff_views_link,
+    'ie_views_link': Feature.ie_views_link,
+    'safari_views_link': Feature.safari_views_link,
+    'web_dev_views_link': Feature.web_dev_views_link,
+
+    'doc_links': Feature.doc_links,
+    'non_oss_deps': Feature.non_oss_deps,
+
+    'ot_milestone_desktop_start': Feature.ot_milestone_desktop_start,
+    'ot_milestone_desktop_end': Feature.ot_milestone_desktop_end,
+    'ot_milestone_android_start': Feature.ot_milestone_android_start,
+    'ot_milestone_android_end': Feature.ot_milestone_android_end,
+    'origin_trial_feedback_url': Feature.origin_trial_feedback_url,
+    'finch_url': Feature.finch_url,
     }
 
 class Approval(DictModel):
