@@ -1,0 +1,17 @@
+# This GAE service is just an empty placeholder because we need a default
+# service in py3 when doing development on workstations.  On GAE, the
+# py2 service defined in py/app-py2.yaml is used.
+
+runtime: python39
+
+automatic_scaling:
+  min_idle_instances: 1
+  max_pending_latency: 0.2s
+
+# No handlers
+
+includes:
+- env_vars.yaml
+
+env_variables:
+  GAE_USE_SOCKETS_HTTPLIB : ''

@@ -13,9 +13,11 @@ dev_appserver.py -A cr-status --enable_console=1 \
   --env_var DATASTORE_EMULATOR_HOST='localhost:15606' \
   $BASEDIR/../dispatch.yaml \
   $BASEDIR/../notifier.yaml \
-  $BASEDIR/../py2/app-py2.yaml \
+  $BASEDIR/../dev-default.yaml \
   $BASEDIR/../app-py3.yaml
 
-# Note: We don't create tasks in dev mode, so the app-py2 service is
-# normally idle.  You can hit the URL http://localhost:8080/py2
-# to see if the app-py2 service is responding at all.
+# Note: When running locally, the default service is dev-default.yaml
+# which is a py3 service which does nothing.  That avoids needing py2
+# on the developer's workstation.
+# On GAE, the default service is py2/app-py2.yaml which uses the GAE
+# py2 runtime.
