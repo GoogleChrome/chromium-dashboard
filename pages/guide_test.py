@@ -18,14 +18,31 @@
 import testing_config  # Must be imported before the module under test.
 import urllib.request, urllib.parse, urllib.error
 
+import os
 import flask
 import werkzeug
+import html5lib
 
+from framework import ramcache
 from internals import models
 from pages import guide
 
 
 test_app = flask.Flask(__name__)
+
+
+class TestWithFeature(testing_config.CustomTestCase):
+
+  REQUEST_PATH_FORMAT = 'subclasses fill this in'
+  HANDLER_CLASS = 'subclasses fill this in'
+
+  def setUp(self):
+    self.request_path = self.REQUEST_PATH_FORMAT
+    self.handler = self.HANDLER_CLASS()
+
+  def tearDown(self):
+    ramcache.flush_all()
+    ramcache.check_for_distributed_invalidation()
 
 
 class FeatureNewTest(testing_config.CustomTestCase):
@@ -94,6 +111,29 @@ class FeatureNewTest(testing_config.CustomTestCase):
     self.assertEqual('Feature name', feature.name)
     self.assertEqual('Feature summary', feature.summary)
     feature.key.delete()
+
+
+class FeatureNewTemplateTest(TestWithFeature):
+
+  HANDLER_CLASS = guide.FeatureNew
+
+  def setUp(self):
+    super(FeatureNewTemplateTest, self).setUp()
+    with test_app.test_request_context(self.request_path):
+      self.template_data = self.handler.get_template_data()
+
+      self.template_data.update(self.handler.get_common_data())
+      self.template_data['nonce'] = 'fake nonce'
+      template_path = self.handler.get_template_path(self.template_data)
+      self.full_template_path = os.path.join(template_path)
+
+  def test_html_rendering(self):
+    """We can render the template with valid html."""
+    testing_config.sign_in('user1@google.com', 1234567890)
+    template_text = self.handler.render(
+        self.template_data, self.full_template_path)
+    parser = html5lib.HTMLParser(strict=True)
+    document = parser.parse(template_text)
 
 
 class ProcessOverviewTest(testing_config.CustomTestCase):
