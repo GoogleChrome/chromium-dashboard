@@ -194,6 +194,7 @@ internals_routes = [
 
 # All requests to the app-py3 GAE service are handled by this Flask app.
 app = basehandlers.FlaskApplication(
+    __name__,
     (metrics_chart_routes + api_routes + page_routes +
      internals_routes))
 

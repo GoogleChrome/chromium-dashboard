@@ -42,6 +42,7 @@ class MockHandler(basehandlers.BaseHandler):
 
 
 test_app = basehandlers.FlaskApplication(
+    __name__,
     [('/path', MockHandler),
      ],
     debug=True)
