@@ -45,7 +45,7 @@
     "dot-prop": ">=7.1.1",
     "eslint": "^5.2.0",
     "eslint-config-google": "^0.14.0",
-    "glob-parent": ">=5.1.2",
+    "glob-parent": ">=6.0.2",
     "gulp": "^4.0.0",
     "gulp-autoprefixer": "^8.0.0",
     "gulp-babel": "^8.0.0",
