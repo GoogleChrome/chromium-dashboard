@@ -7,7 +7,7 @@
     "node": ">=6.0.0"
   },
   "scripts": {
-    "deps": "python3 -m pip install -t lib -r requirements.txt --upgrade; cd py2; python3 -m pip install -t lib -r requirements.txt --upgrade",
+    "deps": "pip install -r requirements.txt --upgrade; cd py2; python3 -m pip install -t lib -r requirements.txt --upgrade",
     "dev-deps": "python2 -m pip install --no-deps -r requirements.dev.txt",
     "do-tests": "curl -X POST 'http://localhost:15606/reset' && python3 -m unittest discover -p '*_test.py'  -b",
     "start-emulator-persist": "gcloud beta emulators datastore start --host-port=:15606 --consistency=1.0",
