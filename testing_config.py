@@ -1,6 +1,3 @@
-
-
-
 # Copyright 2020 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
@@ -29,13 +26,6 @@ else:
   print('Could not find appengine, please set APP_ENGINE_PATH',
         file=sys.stderr)
   sys.exit(1)
-
-import dev_appserver
-dev_appserver.fix_sys_path()
-
-lib_path = os.path.join(os.path.dirname(__file__), 'lib')
-from google.appengine.ext import vendor
-vendor.add(lib_path) # add third party libs to "lib" folder.
 
 from google.cloud import ndb
 
