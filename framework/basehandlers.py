@@ -460,10 +460,10 @@ def ndb_wsgi_middleware(wsgi_app):
   return middleware
 
 
-def FlaskApplication(routes, pattern_base='', debug=False):
+def FlaskApplication(import_name, routes, pattern_base='', debug=False):
   """Make a Flask app and add routes and handlers that work like webapp2."""
 
-  app = flask.Flask(__name__)
+  app = flask.Flask(import_name)
   app.wsgi_app = ndb_wsgi_middleware(app.wsgi_app) # For Cloud NDB Context
   client = ndb.Client()
   with client.context():

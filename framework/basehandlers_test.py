@@ -54,6 +54,7 @@ class TestableFlaskHandler(basehandlers.FlaskHandler):
 
 
 test_app = basehandlers.FlaskApplication(
+    __name__,
     [('/test', TestableFlaskHandler),
      ('/old_path', basehandlers.Redirector,
       {'location': '/new_path'}),
