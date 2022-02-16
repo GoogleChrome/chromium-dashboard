@@ -574,7 +574,7 @@ ALL_FIELDS = {
             '<a target="_blank" href="'
             'https://bugs.chromium.org/p/chromium/issues/'
             'entry?template=Chrome+Launch+Feature" '
-            '>Create launch bug<a>.')),
+            '>Create launch bug</a>.')),
 
     'initial_public_proposal_url': forms.URLField(
         required=False, label='Initial public proposal URL',
