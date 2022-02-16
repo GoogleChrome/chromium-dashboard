@@ -204,6 +204,44 @@ class ProcessOverviewTest(testing_config.CustomTestCase):
     self.assertTrue('progress_so_far' in template_data)
 
 
+class ProcessOverviewTemplateTest(TestWithFeature):
+
+  HANDLER_CLASS = guide.ProcessOverview
+
+  def setUp(self):
+    super(ProcessOverviewTemplateTest, self).setUp()
+
+    self.feature_1 = models.Feature(
+        name='feature one', summary='sum', category=1, visibility=1,
+        standardization=1, web_dev_views=models.DEV_NO_SIGNALS,
+        impl_status_chrome=1)
+    self.feature_1.put()
+    self.request_path = '/guide/edit/%d' % self.feature_1.key.integer_id()
+
+    with test_app.test_request_context(self.request_path):
+      self.template_data = self.handler.get_template_data(
+        self.feature_1.key.integer_id()
+      )
+
+      self.template_data.update(self.handler.get_common_data())
+      self.template_data['nonce'] = 'fake nonce'
+      template_path = self.handler.get_template_path(self.template_data)
+      self.full_template_path = os.path.join(template_path)
+
+  def test_html_rendering(self):
+    """We can render the template with valid html."""
+    testing_config.sign_in('user1@google.com', 1234567890)
+
+    with test_app.test_request_context(self.request_path):
+      template_data = self.handler.get_template_data(
+          self.feature_1.key.integer_id())
+
+    template_text = self.handler.render(
+        template_data, self.full_template_path)
+    parser = html5lib.HTMLParser(strict=True)
+    document = parser.parse(template_text)
+
+
 class FeatureEditStageTest(testing_config.CustomTestCase):
 
   def setUp(self):
