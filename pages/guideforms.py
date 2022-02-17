@@ -649,19 +649,25 @@ ALL_FIELDS = {
         required=False, label='DevTrial on desktop',
         widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'}),
         help_text=('First milestone that allows developers to try '
-                   'this feature on desktop platforms by setting a flag.')),
+                   'this feature on desktop platforms by setting a flag. '
+                   'When flags are enabled by default in preparation for '
+                   'removal, please use the fields in the ship stage.')),
 
     'dt_milestone_android_start': forms.IntegerField(
         required=False, label='DevTrial on Android',
         widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'}),
         help_text=('First milestone that allows developers to try '
-                   'this feature on Android by setting a flag.')),
+                   'this feature on desktop platforms by setting a flag. '
+                   'When flags are enabled by default in preparation for '
+                   'removal, please use the fields in the ship stage.')),
 
     'dt_milestone_ios_start': forms.IntegerField(
         required=False, label='DevTrial on iOS (RARE)',
         widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'}),
         help_text=('First milestone that allows developers to try '
-                   'this feature on iOS by setting a flag.')),
+                   'this feature on desktop platforms by setting a flag. '
+                   'When flags are enabled by default in preparation for '
+                   'removal, please use the fields in the ship stage.')),
 
     'flag_name': forms.CharField(
         label='Flag name', required=False,

@@ -13,7 +13,7 @@ Chrome Platform Status
 1. Before you begin, make sure that you have a java JRE (version 8 or greater) installed. JRE is required to use the DataStore Emulator.
 1. Install global CLIs in the home directory
     1. [Google App Engine SDK for Python](https://cloud.google.com/appengine/docs/standard/python3/setting-up-environment). Make sure to select Python 3.
-    1. pip, node, npm.
+    1. pip, node, npm, and gunicorn.
     1. Gulp `npm install --global gulp-cli`
 1. We recommend using an older node version, e.g. node 10
     1. Use `node -v` to check the default node version
@@ -25,7 +25,7 @@ Chrome Platform Status
 5. Install pip for python2
     1. curl https://bootstrap.pypa.io/pip/2.7/get-pip.py --output get-pip.py
     1. python2 get-pip.py
-6. Install other dependencies 
+6. Install other dependencies
     1. `npm run deps`
     1. `npm run dev-deps`
 

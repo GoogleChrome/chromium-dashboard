@@ -1,0 +1,23 @@
+# This GAE service is just an empty placeholder because we need a default
+# service in py3 when doing development on workstations.  On GAE, the
+# py2 service defined in py/app-py2.yaml is used.
+
+# As of 2022-02-14 this file is not actually used because start_server.sh
+# runs gunicorn directly instead of using dev_appserver.   If dev_appserver
+# is updated to work under py3, then we could start using it again and we
+# would use this file.
+
+
+runtime: python39
+
+automatic_scaling:
+  min_idle_instances: 1
+  max_pending_latency: 0.2s
+
+# No handlers
+
+includes:
+- env_vars.yaml
+
+env_variables:
+  GAE_USE_SOCKETS_HTTPLIB : ''
