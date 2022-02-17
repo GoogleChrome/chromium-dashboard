@@ -18,14 +18,31 @@
 import testing_config  # Must be imported before the module under test.
 import urllib.request, urllib.parse, urllib.error
 
+import os
 import flask
 import werkzeug
+import html5lib
 
+from framework import ramcache
 from internals import models
 from pages import guide
 
 
 test_app = flask.Flask(__name__)
+
+
+class TestWithFeature(testing_config.CustomTestCase):
+
+  REQUEST_PATH_FORMAT = 'subclasses fill this in'
+  HANDLER_CLASS = 'subclasses fill this in'
+
+  def setUp(self):
+    self.request_path = self.REQUEST_PATH_FORMAT
+    self.handler = self.HANDLER_CLASS()
+
+  def tearDown(self):
+    ramcache.flush_all()
+    ramcache.check_for_distributed_invalidation()
 
 
 class FeatureNewTest(testing_config.CustomTestCase):
@@ -96,6 +113,29 @@ class FeatureNewTest(testing_config.CustomTestCase):
     feature.key.delete()
 
 
+class FeatureNewTemplateTest(TestWithFeature):
+
+  HANDLER_CLASS = guide.FeatureNew
+
+  def setUp(self):
+    super(FeatureNewTemplateTest, self).setUp()
+    with test_app.test_request_context(self.request_path):
+      self.template_data = self.handler.get_template_data()
+
+      self.template_data.update(self.handler.get_common_data())
+      self.template_data['nonce'] = 'fake nonce'
+      template_path = self.handler.get_template_path(self.template_data)
+      self.full_template_path = os.path.join(template_path)
+
+  def test_html_rendering(self):
+    """We can render the template with valid html."""
+    testing_config.sign_in('user1@google.com', 1234567890)
+    template_text = self.handler.render(
+        self.template_data, self.full_template_path)
+    parser = html5lib.HTMLParser(strict=True)
+    document = parser.parse(template_text)
+
+
 class ProcessOverviewTest(testing_config.CustomTestCase):
 
   def setUp(self):
@@ -162,6 +202,44 @@ class ProcessOverviewTest(testing_config.CustomTestCase):
     self.assertTrue('overview_form' in template_data)
     self.assertTrue('process_json' in template_data)
     self.assertTrue('progress_so_far' in template_data)
+
+
+class ProcessOverviewTemplateTest(TestWithFeature):
+
+  HANDLER_CLASS = guide.ProcessOverview
+
+  def setUp(self):
+    super(ProcessOverviewTemplateTest, self).setUp()
+
+    self.feature_1 = models.Feature(
+        name='feature one', summary='sum', category=1, visibility=1,
+        standardization=1, web_dev_views=models.DEV_NO_SIGNALS,
+        impl_status_chrome=1)
+    self.feature_1.put()
+    self.request_path = '/guide/edit/%d' % self.feature_1.key.integer_id()
+
+    with test_app.test_request_context(self.request_path):
+      self.template_data = self.handler.get_template_data(
+        self.feature_1.key.integer_id()
+      )
+
+      self.template_data.update(self.handler.get_common_data())
+      self.template_data['nonce'] = 'fake nonce'
+      template_path = self.handler.get_template_path(self.template_data)
+      self.full_template_path = os.path.join(template_path)
+
+  def test_html_rendering(self):
+    """We can render the template with valid html."""
+    testing_config.sign_in('user1@google.com', 1234567890)
+
+    with test_app.test_request_context(self.request_path):
+      template_data = self.handler.get_template_data(
+          self.feature_1.key.integer_id())
+
+    template_text = self.handler.render(
+        template_data, self.full_template_path)
+    parser = html5lib.HTMLParser(strict=True)
+    document = parser.parse(template_text)
 
 
 class FeatureEditStageTest(testing_config.CustomTestCase):

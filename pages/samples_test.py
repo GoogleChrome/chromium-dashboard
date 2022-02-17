@@ -17,8 +17,10 @@
 
 import testing_config  # Must be imported first
 
+import os
 import flask
 import werkzeug
+import html5lib
 
 from internals import models
 from framework import ramcache
@@ -63,6 +65,26 @@ class SamplesHandlerTest(TestWithFeature):
 
     self.assertIn('FEATURES', template_data)
 
+class SamplesTemplateTest(TestWithFeature):
+
+  HANDLER_CLASS = samples.SamplesHandler
+
+  def setUp(self):
+    super(SamplesTemplateTest, self).setUp()
+    with test_app.test_request_context(self.request_path):
+      self.template_data = self.handler.get_template_data()
+
+      self.template_data.update(self.handler.get_common_data())
+      self.template_data['nonce'] = 'fake nonce'
+      template_path = self.handler.get_template_path(self.template_data)
+      self.full_template_path = os.path.join(template_path)
+
+  def test_html_rendering(self):
+    """We can render the template with valid html."""
+    template_text = self.handler.render(
+        self.template_data, self.full_template_path)
+    parser = html5lib.HTMLParser(strict=True)
+    document = parser.parse(template_text)
 
 class SamplesJSONHandlerTest(TestWithFeature):
 
