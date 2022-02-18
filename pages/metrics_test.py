@@ -66,3 +66,24 @@ class CssAnimatedHandlerTemplateTest(testing_config.CustomTestCase):
         self.template_data, self.full_template_path)
     parser = html5lib.HTMLParser(strict=True)
     document = parser.parse(template_text)
+
+
+class FeaturePopularityHandlerTemplateTest(testing_config.CustomTestCase):
+
+  HANDLER_CLASS = metrics.FeaturePopularityHandler
+
+  def setUp(self):        
+
+    self.request_path = ''
+    self.handler = self.HANDLER_CLASS()
+
+    with test_app.test_request_context(self.request_path):
+      self.template_data = self.handler.get_template_data()
+    self.full_template_path = self.handler.get_template_path(self.template_data)
+
+  def test_html_rendering(self):
+    """We can render the template with valid html."""
+    template_text = self.handler.render(
+        self.template_data, self.full_template_path)
+    parser = html5lib.HTMLParser(strict=True)
+    document = parser.parse(template_text)
