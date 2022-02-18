@@ -120,8 +120,9 @@ def process_queriable_field(field_name, operator, val_str):
   promise = models.Feature.single_field_query_async(field_name, operator, val)
   return promise
 
-FIELD_NAME_PATTERN = r'[a-z_0-9]+'
-OPERATORS_PATTERN = r'=|<=|<|>=|>|!='
+
+FIELD_NAME_PATTERN = r'[.a-z_0-9]+'
+OPERATORS_PATTERN = r':|=|<=|<|>=|>|!='
 VALUE_PATTERN = r'\S+'  # Only single word values are currently supported
 
 TERM_RE = re.compile(
@@ -154,7 +155,7 @@ def process_query_term(query_term):
 
 
 def _resolve_promise_to_id_list(promise):
-  """xxx"""
+  """Given an object that might be a promise or an ID list, return IDs."""
   if type(promise) == list:
     logging.info('got list %r', promise)
     return promise  # Which is actually an ID list.
@@ -166,7 +167,7 @@ def _resolve_promise_to_id_list(promise):
 
 
 def process_query(user_query, show_unlisted=False):
-  """xxx"""
+  """Parse the user's query, run it, and return a list of features."""
   # 1. Parse the user query into terms.
   feature_id_futures = []
   terms = user_query.split()[:MAX_TERMS]

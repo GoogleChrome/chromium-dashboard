@@ -31,7 +31,7 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
     self.feature_1.owner = ['owner@example.com']
     self.feature_1.put()
     self.feature_2 = models.Feature(
-        name='feature 2', summary='sum', category=1, visibility=1,
+        name='feature 2', summary='sum', category=2, visibility=1,
         standardization=1, web_dev_views=1, impl_status_chrome=3)
     self.feature_2.owner = ['owner@example.com']
     self.feature_2.put()
@@ -55,9 +55,9 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
     mock_approvable_by.return_value = set()
     mock_get_approvals.return_value = []
 
-    features = search.process_pending_approval_me_query()
+    feature_ids = search.process_pending_approval_me_query()
 
-    self.assertEqual(0, len(features))
+    self.assertEqual(0, len(feature_ids))
 
   @mock.patch('internals.models.Approval.get_approvals')
   @mock.patch('internals.approval_defs.fields_approvable_by')
@@ -72,9 +72,9 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
             feature_id=self.feature_1.key.integer_id(),
             field_id=1, state=0, set_on=now)]
 
-    features = search.process_pending_approval_me_query()
+    feature_ids = search.process_pending_approval_me_query()
 
-    self.assertEqual(0, len(features))
+    self.assertEqual(0, len(feature_ids))
 
   @mock.patch('internals.models.Approval.get_approvals')
   @mock.patch('internals.approval_defs.fields_approvable_by')
@@ -94,13 +94,13 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
             field_id=1, state=0, set_on=time_2),
     ]
 
-    features = search.process_pending_approval_me_query()
-    self.assertEqual(2, len(features))
+    feature_ids = search.process_pending_approval_me_query()
+    self.assertEqual(2, len(feature_ids))
     # Results are sorted by set_on timestamp.
     self.assertEqual(
         [self.feature_2.key.integer_id(),
          self.feature_1.key.integer_id()],
-        [f['id'] for f in features])
+        feature_ids)
 
   def test_process_starred_me_query__anon(self):
     """Anon always has an empty list of starred features."""
@@ -119,7 +119,7 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
     testing_config.sign_in('starrer@example.com', 111)
     actual = search.process_starred_me_query()
     self.assertEqual(len(actual), 1)
-    self.assertEqual(actual[0]['name'], 'feature 1')
+    self.assertEqual(actual[0], self.feature_1.key.integer_id())
 
   def test_process_owner_me_query__none(self):
     """We can return a list of features owned by the user."""
@@ -132,8 +132,8 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
     testing_config.sign_in('owner@example.com', 111)
     actual = search.process_owner_me_query()
     self.assertEqual(len(actual), 2)
-    self.assertEqual(actual[0]['name'], 'feature 1')
-    self.assertEqual(actual[1]['name'], 'feature 2')
+    self.assertEqual(actual[0], self.feature_1.key.integer_id())
+    self.assertEqual(actual[1], self.feature_2.key.integer_id())
 
   @mock.patch('internals.models.Approval.get_approvals')
   @mock.patch('internals.approval_defs.fields_approvable_by')
@@ -167,39 +167,55 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
     actual = search.process_recent_reviews_query()
 
     self.assertEqual(2, len(actual))
-    self.assertEqual(actual[0]['name'], 'feature 1')  # Most recent
-    self.assertEqual(actual[1]['name'], 'feature 2')
+    self.assertEqual(actual[0], self.feature_1.key.integer_id())  # Most recent
+    self.assertEqual(actual[1], self.feature_2.key.integer_id())
 
-  @mock.patch('logging.warning')
   @mock.patch('internals.search.process_pending_approval_me_query')
   @mock.patch('internals.search.process_starred_me_query')
   @mock.patch('internals.search.process_owner_me_query')
   @mock.patch('internals.search.process_recent_reviews_query')
-  def test_process_query(
-      self, mock_recent, mock_own_me, mock_star_me, mock_pend_me, mock_warn):
+  def test_process_query__predefined(
+      self, mock_recent, mock_own_me, mock_star_me, mock_pend_me):
     """We can match predefined queries."""
-    mock_recent.return_value = 'fake recent result'
-    mock_own_me.return_value = 'fake owner result'
-    mock_star_me.return_value = 'fake star result'
-    mock_pend_me.return_value = 'fake pend result'
+    mock_recent.return_value = [self.feature_1.key.integer_id()]
+    mock_own_me.return_value = [self.feature_2.key.integer_id()]
+    mock_star_me.return_value = [self.feature_1.key.integer_id()]
+    mock_pend_me.return_value = [self.feature_2.key.integer_id()]
 
-    self.assertEqual(
-        search.process_query('pending-approval-by:me'),
-        'fake pend result')
+    actual_pending = search.process_query('pending-approval-by:me')
+    self.assertEqual(actual_pending[0]['name'], 'feature 2')
 
-    self.assertEqual(
-        search.process_query('starred-by:me'),
-        'fake star result')
+    actual_star_me = search.process_query('starred-by:me')
+    self.assertEqual(actual_star_me[0]['name'], 'feature 1')
 
-    self.assertEqual(
-        search.process_query('owner:me'),
-        'fake owner result')
+    actual_own_me = search.process_query('owner:me')
+    self.assertEqual(actual_own_me[0]['name'], 'feature 2')
 
-    self.assertEqual(
-        search.process_query('is:recently-reviewed'),
-        'fake recent result')
+    actual_recent = search.process_query('is:recently-reviewed')
+    self.assertEqual(actual_recent[0]['name'],'feature 1')
 
+  def test_process_query__single_field(self):
+    """We can can run single-field queries."""
+
+    actual = search.process_query('category=1')
+    self.assertEqual(1, len(actual))
+    self.assertEqual(actual[0]['name'], 'feature 1')
+
+    actual = search.process_query('category=2')
+    self.assertEqual(1, len(actual))
+    self.assertEqual(actual[0]['name'], 'feature 2')
+
+    actual = search.process_query('browsers.webdev.view=1')
+    self.assertEqual(2, len(actual))
+    self.assertCountEqual(
+        [f['name'] for f in actual],
+        ['feature 1', 'feature 2'])
+
+
+  @mock.patch('logging.warning')
+  def test_process_query__bad(self, mock_warn):
+    """Query terms that are not predefined or field-op-value, give warnings."""
     self.assertEqual(
         search.process_query('anything else'),
         [])
-    mock_warn.assert_called_once()
+    self.assertEqual(2, len(mock_warn.mock_calls))
