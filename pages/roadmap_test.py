@@ -32,7 +32,7 @@ class RoadmapHandlerTemplateTest(testing_config.CustomTestCase):
 
   def setUp(self):        
 
-    self.request_path = ''
+    self.request_path = self.HANDLER_CLASS.TEMPLATE_PATH
     self.handler = self.HANDLER_CLASS()
 
     with test_app.test_request_context(self.request_path):
