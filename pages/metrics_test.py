@@ -47,7 +47,7 @@ class CssPopularityTemplateTest(testing_config.CustomTestCase):
     document = parser.parse(template_text)
 
 
-class CssAnimatedHandlerTemplateTest(testing_config.CustomTestCase):
+class CssAnimatedTemplateTest(testing_config.CustomTestCase):
 
   HANDLER_CLASS = metrics.CssAnimatedHandler
 
@@ -68,7 +68,7 @@ class CssAnimatedHandlerTemplateTest(testing_config.CustomTestCase):
     document = parser.parse(template_text)
 
 
-class FeaturePopularityHandlerTemplateTest(testing_config.CustomTestCase):
+class FeaturePopularityTemplateTest(testing_config.CustomTestCase):
 
   HANDLER_CLASS = metrics.FeaturePopularityHandler
 
