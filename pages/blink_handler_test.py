@@ -27,7 +27,7 @@ from internals import models
 test_app = flask.Flask(__name__)
 
 
-class BlinkHandlerTemplateTest(testing_config.CustomTestCase):
+class BlinkTemplateTest(testing_config.CustomTestCase):
 
   HANDLER_CLASS = blink_handler.BlinkHandler
 
@@ -39,7 +39,6 @@ class BlinkHandlerTemplateTest(testing_config.CustomTestCase):
     self.app_admin = models.AppUser(email='admin@example.com')
     self.app_admin.is_admin = True
     self.app_admin.put()
-
     testing_config.sign_in('admin@example.com', 123567890)
 
     with test_app.test_request_context(self.request_path):
@@ -54,7 +53,7 @@ class BlinkHandlerTemplateTest(testing_config.CustomTestCase):
     document = parser.parse(template_text)
 
 
-class SubscribersHandlerTemplateTest(testing_config.CustomTestCase):
+class SubscribersTemplateTest(testing_config.CustomTestCase):
 
   HANDLER_CLASS = blink_handler.SubscribersHandler
 
