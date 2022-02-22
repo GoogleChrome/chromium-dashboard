@@ -26,7 +26,7 @@ from pages import roadmap
 test_app = flask.Flask(__name__)
 
 
-class RoadmapHandlerTemplateTest(testing_config.CustomTestCase):
+class RoadmapTemplateTest(testing_config.CustomTestCase):
 
   HANDLER_CLASS = roadmap.RoadmapHandler
 
