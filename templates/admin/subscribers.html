@@ -30,10 +30,10 @@
   </div>
   {% for key,channel in channels.items %}
     <div class="chrome_version layout horizontal center chrome_version--{{key}} {% if selected_milestone == channel.mstone %}highlight{% endif %}" title="Show only features for the current {{key}}">
-      <a href="?showFeatures&milestone={{channel.mstone}}" class="layout horizontal center">
+      <a href="?showFeatures&amp;milestone={{channel.mstone}}" class="layout horizontal center">
         <div class="chrome-logo"></div>
         <!-- <span>{{key}}</span> -->
-        <span class="milestone_number">{{channel.mstone}}<span>
+        <span class="milestone_number">{{channel.mstone}}</span>
       </a>
     </div>
   {% endfor %}
@@ -42,30 +42,6 @@
 {% if selected_milestone %}
   <div class="filtering">Showing features in M{{selected_milestone}}. <a href="?showFeatures"><b>CLEAR MILESTONE ✘</b></a></div>
 {% endif %}
-
-<!-- <div id="channels" class="layout horizontal center">
-  <h3>Filter by milestone:</h3>
-  <div class="chrome_version layout horizontal center chrome_version--stable" title="Current Stable">
-    <span class="chrome-logo"></span>
-    <span>Stable</span>
-    <a href=""></a>
-  </div>
-  <div class="chrome_version layout horizontal center chrome_version--beta" title="Current Beta">
-    <span class="chrome-logo"></span>
-    <span>Beta</span>
-    <a href=""></a>
-  </div>
-  <div class="chrome_version layout horizontal center chrome_version--dev" title="Current Dev">
-    <span class="chrome-logo"></span>
-    <span>Dev</span>
-    <a href=""></a>
-  </div>
-  <div class="chrome_version layout horizontal center chrome_version--canary" title="Current Canary">
-    <span class="chrome-logo"></span>
-    <span>Canary</span>
-    <a href=""></a>
-  </div>
-</div> -->
 
 <section>
 

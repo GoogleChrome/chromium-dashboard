@@ -15,8 +15,11 @@
 import testing_config  # Must be imported before the module under test.
 
 from unittest import mock
+
+import os
 import flask
 import werkzeug
+import html5lib
 
 from pages import intentpreview
 from internals import models
@@ -161,3 +164,43 @@ class IntentEmailPreviewHandlerTest(testing_config.CustomTestCase):
         'Request for Deprecation Trial',
         self.handler.compute_subject_prefix(
             self.feature_1, models.INTENT_EXTEND_TRIAL))
+
+
+class IntentEmailPreviewTemplateTest(testing_config.CustomTestCase):
+
+  HANDLER_CLASS = intentpreview.IntentEmailPreviewHandler
+
+  def setUp(self):
+    super(IntentEmailPreviewTemplateTest, self).setUp()
+    self.feature_1 = models.Feature(
+        name='feature one', summary='sum', category=1, visibility=1,
+        standardization=1, web_dev_views=1, impl_status_chrome=1,
+        intent_stage=models.INTENT_IMPLEMENT)
+    self.feature_1.put()
+
+    self.request_path = '/admin/features/launch/%d/%d?intent' % (
+        models.INTENT_SHIP, self.feature_1.key.integer_id())
+    self.handler = self.HANDLER_CLASS()
+    self.feature_id = self.feature_1.key.integer_id()
+
+    with test_app.test_request_context(self.request_path):
+      self.template_data = self.handler.get_template_data(
+        self.feature_id)
+      page_data = self.handler.get_page_data(
+          self.feature_id, self.feature_1, models.INTENT_IMPLEMENT)
+
+    self.template_data.update(page_data)
+    self.template_data['nonce'] = 'fake nonce'
+    template_path = self.handler.get_template_path(self.template_data)
+    self.full_template_path = os.path.join(template_path)
+
+  def test_html_rendering(self):
+    """We can render the template with valid html."""
+    testing_config.sign_in('user1@google.com', 123567890)
+    with test_app.test_request_context(self.request_path):
+      actual_data = self.handler.get_template_data(feature_id=self.feature_id)
+
+    template_text = self.handler.render(
+        actual_data, self.full_template_path)
+    parser = html5lib.HTMLParser(strict=True)
+    document = parser.parse(template_text)
