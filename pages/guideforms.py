@@ -48,10 +48,11 @@ SHIPPED_WEBVIEW_HELP_TXT = ('First milestone to ship with this status. '
 
 SUMMARY_PLACEHOLDER_TXT = (
   'NOTE: This text describes this feature in the eventual beta release post '
-  'as well as possibly in other external documents.\n\n'
+  'and possibly in other external documents.\n\n'
   'Begin with one line explaining what the feature does. Add one or two '
   'lines explaining how this feature helps developers. Avoid language such '
   'as "a new feature". They all are or have been new features.\n\n'
+  'Write it from a web developer\'s point of view.\n\n'
   'Follow the example link below for more guidance.')
 
 
