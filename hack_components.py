@@ -102,7 +102,7 @@ HACK_BLINK_COMPONENTS = [
   "Blink>History",
   "Blink>HitTesting",
   "Blink>Identity",
-  "Blink>Identity>WebID",
+  "Blink>Identity>FedCM",
   "Blink>Image",
   "Blink>ImageCapture",
   "Blink>Infra",
