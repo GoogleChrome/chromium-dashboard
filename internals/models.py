@@ -796,7 +796,7 @@ class Feature(DictModel):
   def single_field_query_async(
       cls, field_name, operator, val, limit=None):
     """Create a query for one Feature field and run it, returning a promise."""
-    field = QUERIABLE_FIELDS.get(field_name)
+    field = QUERIABLE_FIELDS.get(field_name.lower())
     if field is None:
       logging.info('Ignoring field name %r', field_name)
       return []  # TODO: return a future
@@ -819,7 +819,7 @@ class Feature(DictModel):
     elif (operator == '!='):
       query = query.filter(field != val)
     else:
-      raise ValueError('Unexpected query operator')
+      raise ValueError('Unexpected query operator: %r' % operator)
 
     keys_promise = query.fetch_async(keys_only=True, limit=limit)
     return keys_promise
@@ -1354,7 +1354,6 @@ class Feature(DictModel):
   origin_trial_feedback_url = ndb.StringProperty()
 
   finch_url = ndb.StringProperty()
-
 
 
 QUERIABLE_FIELDS = {
