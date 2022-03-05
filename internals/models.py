@@ -698,8 +698,6 @@ class Feature(DictModel):
       else:
         d['browsers']['chrome']['status']['milestone_str'] = d['browsers']['chrome']['status']['text']
 
-      del d['created']
-
       del_none(d) # Further prune response by removing null/[] values.
 
     else:
@@ -793,6 +791,38 @@ class Feature(DictModel):
       ramcache.set(KEY, feature_list)
 
     return feature_list
+
+  @classmethod
+  def single_field_query_async(
+      cls, field_name, operator, val, limit=None):
+    """Create a query for one Feature field and run it, returning a promise."""
+    field = QUERIABLE_FIELDS.get(field_name.lower())
+    if field is None:
+      logging.info('Ignoring field name %r', field_name)
+      return []
+    query = Feature.query()
+    # Note: We cannot exclude deleted features at this point because
+    # that would require an index on two fields.  Deleted features are
+    # filtered out in get_by_ids().
+
+    # TODO(jrobbins): Handle ":" operator as substrings for text fields.
+    if (operator == '='):
+      query = query.filter(field == val)
+    elif (operator == '<='):
+      query = query.filter(field <= val)
+    elif (operator == '<'):
+      query = query.filter(field < val)
+    elif (operator == '>='):
+      query = query.filter(field >= val)
+    elif (operator == '>'):
+      query = query.filter(field > val)
+    elif (operator == '!='):
+      query = query.filter(field != val)
+    else:
+      raise ValueError('Unexpected query operator: %r' % operator)
+
+    keys_promise = query.fetch_async(keys_only=True, limit=limit)
+    return keys_promise
 
   @classmethod
   def get_all_with_statuses(self, statuses, update_cache=False):
@@ -1325,6 +1355,81 @@ class Feature(DictModel):
 
   finch_url = ndb.StringProperty()
 
+
+QUERIABLE_FIELDS = {
+    'created.when': Feature.created,
+    'updated.when': Feature.updated,
+    'created.by': Feature.created_by,
+    'updated.by': Feature.updated_by,
+
+    'category': Feature.category,
+    'name': Feature.name,
+    'feature_type': Feature.feature_type,
+    'intent_stage': Feature.intent_stage,
+    'summary': Feature.summary,
+    'unlisted': Feature.unlisted,
+    'motivation': Feature.motivation,
+    'star_count': Feature.star_count,
+    'tags': Feature.search_tags,
+    'owner': Feature.owner,
+    'browsers.chrome.owners': Feature.owner,
+    'intent_to_implement_url': Feature.intent_to_implement_url,
+    'intent_to_ship_url': Feature.intent_to_ship_url,
+    'ready_for_trial_url': Feature.ready_for_trial_url,
+    'intent_to_experiment_url': Feature.intent_to_experiment_url,
+    'intent_to_extend_experiment_url': Feature.intent_to_extend_experiment_url,
+    'i2e_lgtms': Feature.i2e_lgtms,
+    'i2s_lgtms': Feature.i2s_lgtms,
+    'browsers.chrome.bug': Feature.bug_url,
+    'launch_bug_url': Feature.launch_bug_url,
+    'initial_public_proposal_url': Feature.initial_public_proposal_url,
+    'browsers.chrome.blink_components': Feature.blink_components,
+    'browsers.chrome.devrel': Feature.devrel,
+    'browsers.chrome.prefixed': Feature.prefixed,
+
+    'browsers.chrome.status': Feature.impl_status_chrome,
+    'browsers.chrome.desktop': Feature.shipped_milestone,
+    'browsers.chrome.android': Feature.shipped_android_milestone,
+    'browsers.chrome.ios': Feature.shipped_ios_milestone,
+    'browsers.chrome.webview': Feature.shipped_webview_milestone,
+    'requires_embedder_support': Feature.requires_embedder_support,
+
+    'browsers.chrome.flag_name': Feature.flag_name,
+    'all_platforms': Feature.all_platforms,
+    'all_platforms_descr': Feature.all_platforms_descr,
+    'wpt': Feature.wpt,
+    'browsers.chrome.devtrial.desktop.start': Feature.dt_milestone_desktop_start,
+    'browsers.chrome.devtrial.android.start': Feature.dt_milestone_android_start,
+    'browsers.chrome.devtrial.ios.start': Feature.dt_milestone_ios_start,
+    'browsers.chrome.devtrial.webview.start': Feature.dt_milestone_webview_start,
+
+    'standards.maturity': Feature.standard_maturity,
+    'standards.spec': Feature.spec_link,
+    'api_spec': Feature.api_spec,
+    'spec_mentors': Feature.spec_mentors,
+    'security_review_status': Feature.security_review_status,
+    'privacy_review_status': Feature.privacy_review_status,
+    'tag_review.url': Feature.tag_review,
+    'tag_review.status': Feature.tag_review_status,
+    'explainer': Feature.explainer_links,
+
+    'browsers.ff.view': Feature.ff_views,
+    'browsers.safari.view': Feature.safari_views,
+    'browsers.webdev.view': Feature.web_dev_views,
+    'browsers.ff.view.url': Feature.ff_views_link,
+    'browsers.safari.view.url': Feature.safari_views_link,
+    'browsers.webdev.url.url': Feature.web_dev_views_link,
+
+    'resources.docs': Feature.doc_links,
+    'non_oss_deps': Feature.non_oss_deps,
+
+    'browsers.chrome.ot.desktop.start': Feature.ot_milestone_desktop_start,
+    'browsers.chrome.ot.desktop.end': Feature.ot_milestone_desktop_end,
+    'browsers.chrome.ot.android.start': Feature.ot_milestone_android_start,
+    'browsers.chrome.ot.android.end': Feature.ot_milestone_android_end,
+    'browsers.chrome.ot.feedback_url': Feature.origin_trial_feedback_url,
+    'finch_url': Feature.finch_url,
+    }
 
 class Approval(DictModel):
   """Describes the current state of one approval on a feature."""
