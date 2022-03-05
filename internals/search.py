@@ -13,7 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import datetime
 import logging
+import re
 
 from framework import users
 from internals import approval_defs
@@ -27,8 +29,9 @@ PENDING_STATES = [
 FINAL_STATES = [
     models.Approval.NA, models.Approval.APPROVED,
     models.Approval.NOT_APPROVED]
+MAX_TERMS = 6
 
-def _get_referenced_features(approvals, reverse=False):
+def _get_referenced_feature_ids(approvals, reverse=False):
   """Retrieve the features being approved, withuot duplicates."""
   logging.info('approvals is %r', [(a.feature_id, a.state) for a in approvals])
   feature_ids = []
@@ -38,8 +41,7 @@ def _get_referenced_features(approvals, reverse=False):
       seen.add(appr.feature_id)
       feature_ids.append(appr.feature_id)
 
-  features = models.Feature.get_by_ids(feature_ids)
-  return features
+  return feature_ids
 
 
 def process_pending_approval_me_query():
@@ -53,8 +55,8 @@ def process_pending_approval_me_query():
   pending_approvals = [pa for pa in pending_approvals
                        if pa.field_id in approvable_fields_ids]
 
-  features = _get_referenced_features(pending_approvals)
-  return features
+  feature_ids = _get_referenced_feature_ids(pending_approvals)
+  return feature_ids
 
 
 def process_starred_me_query():
@@ -64,8 +66,7 @@ def process_starred_me_query():
     return []
 
   feature_ids = notifier.FeatureStar.get_user_stars(user.email())
-  features = models.Feature.get_by_ids(feature_ids)
-  return features
+  return feature_ids
 
 
 def process_owner_me_query():
@@ -74,7 +75,8 @@ def process_owner_me_query():
   if not user:
     return []
   features = models.Feature.get_all(filterby=('owner', user.email()))
-  return features
+  feature_ids = [f['id'] for f in features]
+  return feature_ids
 
 
 def process_recent_reviews_query():
@@ -86,21 +88,120 @@ def process_recent_reviews_query():
   recent_approvals = models.Approval.get_approvals(
       states=FINAL_STATES, order=-models.Approval.set_on, limit=40)
 
-  features = _get_referenced_features(recent_approvals, reverse=True)
-  return features
+  feature_ids = _get_referenced_feature_ids(recent_approvals, reverse=True)
+  return feature_ids
 
 
-def process_query(user_query):
+def parse_query_value(val_str):
+  """Return a python object that can be used as a value in an NDB query."""
+  if val_str == 'true':
+    return True
+  if val_str == 'false':
+    return False
+
+  try:
+    return datetime.datetime.strptime(val_str, '%Y-%m-%d')
+  except ValueError:
+    logging.info('%r is not a date' % val_str)
+    pass
+
+  try:
+    return int(val_str)
+  except ValueError:
+    pass
+
+  return val_str
+
+
+def process_queriable_field(field_name, operator, val_str):
+  """Return a list of feature IDs or a promise for keys."""
+  val = parse_query_value(val_str)
+  logging.info('trying %r %r %r', field_name, operator, val)
+  promise = models.Feature.single_field_query_async(field_name, operator, val)
+  return promise
+
+
+FIELD_NAME_PATTERN = r'[.a-z_0-9]+'
+OPERATORS_PATTERN = r':|=|<=|<|>=|>|!='
+VALUE_PATTERN = r'\S+'  # Only single word values are currently supported
+
+TERM_RE = re.compile(
+    '(?P<field>%s)(?P<op>%s)(?P<val>%s)' % (
+        FIELD_NAME_PATTERN, OPERATORS_PATTERN, VALUE_PATTERN),
+    re.I)
+
+
+def process_query_term(query_term):
   """Parse and run a user-supplied query, if we can handle it."""
   # TODO(jrobbins): Replace this with a more general approach.
-  if user_query == 'pending-approval-by:me':
+  if query_term == 'pending-approval-by:me':
     return process_pending_approval_me_query()
-  if user_query == 'starred-by:me':
+  if query_term == 'starred-by:me':
     return process_starred_me_query()
-  if user_query == 'owner:me':
+  if query_term == 'owner:me':
     return process_owner_me_query()
-  if user_query == 'is:recently-reviewed':
+  if query_term == 'is:recently-reviewed':
     return process_recent_reviews_query()
 
-  logging.warning('Unexpected query: %r', user_query)
+  m = TERM_RE.match(query_term)
+  if m:
+    field_name = m.group('field')
+    op_str = m.group('op')
+    val_str = m.group('val')
+    return process_queriable_field(field_name, op_str, val_str)
+
+  logging.warning('Unexpected query: %r', query_term)
   return []
+
+
+def _resolve_promise_to_id_list(promise):
+  """Given an object that might be a promise or an ID list, return IDs."""
+  if type(promise) == list:
+    logging.info('got list %r', promise)
+    return promise  # Which is actually an ID list.
+  else:
+    key_list = promise.get_result()
+    id_list = [k.integer_id() for k in key_list]
+    logging.info('got promise that yielded %r', id_list)
+    return id_list
+
+
+def process_query(user_query, show_unlisted=False):
+  """Parse the user's query, run it, and return a list of features."""
+  # 1. Parse the user query into terms.
+  feature_id_futures = []
+  terms = user_query.split()[:MAX_TERMS]
+
+  # 2. Create parallel queries for each term.  Each yields a future.
+  logging.info('creating parallel queries for %r', terms)
+  for term in terms:
+    future = process_query_term(term)
+    feature_id_futures.append(future)
+
+  # 3. Get the result of each future and combine them into a result ID set.
+  logging.info('now waiting on futures')
+  result_id_set = None
+  for future in feature_id_futures:
+    feature_ids = _resolve_promise_to_id_list(future)
+    if result_id_set is None:
+      logging.info('first term yields %r', feature_ids)
+      result_id_set = set(feature_ids)
+    else:
+      logging.info('combining result so far with %r', feature_ids)
+      result_id_set.intersection_update(feature_ids)
+
+  # 4. Fetch the actual issues that have those IDs in the sorted results.
+  feature_list = models.Feature.get_by_ids(list(result_id_set))
+
+  # 5. Filter by permissions.
+  allowed_feature_list = [
+      f for f in feature_list
+      if show_unlisted or not f['unlisted']]
+
+  logging.info('allowed_feature_list is %r', allowed_feature_list)
+  # 6. Sort.
+  # TODO(jrobbins): sort by user-specified field.  And paginate.
+  sorted_allowed_feature_list = sorted(
+      allowed_feature_list, key=lambda f: f['created']['when'])
+
+  return allowed_feature_list

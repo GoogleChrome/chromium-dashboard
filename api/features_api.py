@@ -49,7 +49,8 @@ class FeaturesAPI(basehandlers.APIHandler):
 
     user_query = self.request.args.get('q')
     if user_query:
-      feature_list = search.process_query(user_query)
+      feature_list = search.process_query(
+          user_query, show_unlisted=show_unlisted_features)
 
     # No Query-string parameter is provided
     if feature_list is None:
