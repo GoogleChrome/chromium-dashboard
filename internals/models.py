@@ -799,7 +799,7 @@ class Feature(DictModel):
     field = QUERIABLE_FIELDS.get(field_name.lower())
     if field is None:
       logging.info('Ignoring field name %r', field_name)
-      return []  # TODO: return a future
+      return []
     query = Feature.query()
     # Note: We cannot exclude deleted features at this point because
     # that would require an index on two fields.  Deleted features are

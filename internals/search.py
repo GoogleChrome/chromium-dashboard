@@ -160,7 +160,7 @@ def _resolve_promise_to_id_list(promise):
     logging.info('got list %r', promise)
     return promise  # Which is actually an ID list.
   else:
-    key_list = promise.get_result()  # TODO: in parallel @@@
+    key_list = promise.get_result()
     id_list = [k.integer_id() for k in key_list]
     logging.info('got promise that yielded %r', id_list)
     return id_list
