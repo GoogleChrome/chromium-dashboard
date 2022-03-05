@@ -215,8 +215,8 @@ def get_current_user():
             signature,
             str(user_info),
             timeout=xsrf.REFRESH_TOKEN_TIMEOUT_SEC)
-        user_via_session = User(email=user_info['email'])
-        return user_via_session
+        user_via_signed_user_info = User(email=user_info['email'])
+        return user_via_signed_user_info
 
       except xsrf.TokenIncorrect:
         # If anything is not right, give the user a fresh session.
