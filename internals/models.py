@@ -1287,6 +1287,7 @@ class Feature(DictModel):
   ergonomics_risks = ndb.StringProperty()
   activation_risks = ndb.StringProperty()
   security_risks = ndb.StringProperty()
+  webview_risks = ndb.StringProperty()
   debuggability = ndb.StringProperty()
   all_platforms = ndb.BooleanProperty()
   all_platforms_descr = ndb.StringProperty()

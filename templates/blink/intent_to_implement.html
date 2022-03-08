@@ -136,6 +136,13 @@
       <p class="preformatted">{{feature.security_risks|urlize}}</p>
     {% endif %}
 
+    <br><br><h4>WebView Application Risks</h4>
+    <p style="font-style: italic">
+      Does this intent deprecate or change behavior of existing APIs,
+      such that it has potentially high risk for Android WebView-based
+      applications?</p>
+    <p class="preformatted">{{feature.webview_risks|urlize}}</p>
+
   </div> <!-- end risks -->
 
 {% if 'experiment' in sections_to_show %}
@@ -205,9 +212,10 @@
 
 {% if feature.non_oss_deps %}
   <br><br><h4>Non-OSS dependencies</h4>
-  <div>Does the feature depend on any code or APIs outside the Chromium
-  open source repository and its open-source dependencies to
-  function?</div>
+  <p style="font-style: italic">
+    Does the feature depend on any code or APIs outside the Chromium
+    open source repository and its open-source dependencies to
+    function?</p>
 
   {{feature.non_oss_deps|urlize}}
 {% endif %}

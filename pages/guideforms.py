@@ -385,6 +385,29 @@ ALL_FIELDS = {
         ('List any security considerations that were taken into account '
          'when deigning this feature.')),
 
+    'webview_risks': forms.CharField(
+        label='WebView Application Risks', required=False,
+        widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 1480}),
+        help_text=
+        ('Does this intent deprecate or change behavior of existing APIs, '
+         'such that it has potentially high risk for Android WebView-based '
+         'applications? (See <a href="'
+         'https://new.chromium.org/developers/webview-changes/'
+         '" target="_blank">here</a> for more a definition of "potentially high '
+         'risk", information on why changes to this platform carry higher '
+         'risk, and general rules of thumb for which changes have higher or '
+         'lower risk) If so:'
+         '<ul>'
+         '<li>Please use a base::Feature killswitch (<a href="'
+         'https://source.chromium.org/chromium/chromium/src/+/main:third_party/blink/public/common/features.h'
+         '" target="_blank">examples here</a>) that can '
+         'be flipped off in case of compat issues</li>'
+         '<li>Consider reaching out to android-webview-dev@chromium.org for '
+         'advice</li>'
+         '<li>If you are not sure, just put "not sure" as the answer here and '
+         'the API owners can help during the review of your intent-to-ship</li>'
+         '</ul>')),
+
     'experiment_goals': forms.CharField(
         label='Experiment Goals', required=False,
         widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 1480}),
@@ -811,7 +834,7 @@ ImplStatus_OriginTrial = define_form_class_using_shared_fields(
 Most_PrepareToShip = define_form_class_using_shared_fields(
     'Most_PrepareToShip',
     ('tag_review', 'tag_review_status', 'non_oss_deps',
-     'origin_trial_feedback_url',
+     'webview_risks', 'origin_trial_feedback_url',
      'launch_bug_url', 'intent_to_ship_url', 'i2s_lgtms', 'comments'))
 
 
@@ -857,6 +880,7 @@ Deprecation_Implement = define_form_class_using_shared_fields(
 Deprecation_PrepareToShip = define_form_class_using_shared_fields(
     'Deprecation_PrepareToShip',
     ('impl_status_chrome', 'tag_review',
+     'webview_risks',
      'intent_to_implement_url', 'origin_trial_feedback_url',
      'launch_bug_url', 'comments'))
 
@@ -964,6 +988,7 @@ Flat_PrepareToShip = define_form_class_using_shared_fields(
     'Flat_PrepareToShip',
     (# Standardization
      'tag_review', 'tag_review_status',
+     'webview_risks',
      'intent_to_ship_url', 'i2s_lgtms',
      # Implementation
      'measurement',
@@ -1054,6 +1079,7 @@ DISPLAY_FIELDS_IN_STAGES = {
     models.INTENT_IMPLEMENT_SHIP: make_display_specs(
         'launch_bug_url',
         'tag_review', 'tag_review_status',
+        'webview_risks',
         'measurement', 'prefixed', 'non_oss_deps',
         ),
     models.INTENT_EXTEND_TRIAL: make_display_specs(
