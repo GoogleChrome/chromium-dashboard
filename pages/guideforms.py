@@ -383,7 +383,7 @@ ALL_FIELDS = {
         widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 1480}),
         help_text=
         ('List any security considerations that were taken into account '
-         'when deigning this feature.')),
+         'when designing this feature.')),
 
     'webview_risks': forms.CharField(
         label='WebView Application Risks', required=False,
