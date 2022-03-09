@@ -393,7 +393,7 @@ ALL_FIELDS = {
          'such that it has potentially high risk for Android WebView-based '
          'applications? (See <a href="'
          'https://new.chromium.org/developers/webview-changes/'
-         '" target="_blank">here</a> for more a definition of "potentially high '
+         '" target="_blank">here</a> for a definition of "potentially high '
          'risk", information on why changes to this platform carry higher '
          'risk, and general rules of thumb for which changes have higher or '
          'lower risk) If so:'
