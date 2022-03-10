@@ -129,6 +129,7 @@ class APIHandler(BaseHandler):
 
   def get_headers(self):
     """Add CORS and Chrome Frame to all responses."""
+    session.permanent = True
     headers = {
         'Strict-Transport-Security':
             'max-age=63072000; includeSubDomains; preload',
@@ -252,6 +253,7 @@ class FlaskHandler(BaseHandler):
 
   def get_headers(self):
     """Add CORS and Chrome Frame to all responses."""
+    session.permanent = True
     headers = {
         'Strict-Transport-Security':
             'max-age=63072000; includeSubDomains; preload',
@@ -467,8 +469,7 @@ def FlaskApplication(import_name, routes, pattern_base='', debug=False):
   client = ndb.Client()
   with client.context():
     app.secret_key = secrets.get_session_secret()  # For flask.session
-
-
+    app.permanent_session_lifetime = xsrf.REFRESH_TOKEN_TIMEOUT_SEC
 
   for i, rule in enumerate(routes):
     pattern = rule[0]

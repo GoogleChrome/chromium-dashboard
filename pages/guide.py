@@ -518,6 +518,8 @@ class FeatureEditStage(basehandlers.FlaskHandler):
       feature.tag_review = self.form.get('tag_review')
     if self.touched('tag_review_status'):
       feature.tag_review_status = self.parse_int('tag_review_status')
+    if self.touched('webview_risks'):
+      feature.webview_risks = self.form.get('webview_risks')
 
     if self.touched('standardization'):
       feature.standardization = int(self.form.get('standardization'))
