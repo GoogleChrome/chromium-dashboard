@@ -306,7 +306,8 @@ class APIHandlerTests(testing_config.CustomTestCase):
 
   def test_get_headers(self):
     """We always use some standard headers."""
-    actual = self.handler.get_headers()
+    with test_app.test_request_context('/path'):
+      actual = self.handler.get_headers()
     self.assertEqual(
         {'Strict-Transport-Security':
              'max-age=63072000; includeSubDomains; preload',
@@ -443,7 +444,8 @@ class FlaskHandlerTests(testing_config.CustomTestCase):
 
   def test_get_headers(self):
     """We always use some standard headers."""
-    actual = self.handler.get_headers()
+    with test_app.test_request_context('/path'):
+      actual = self.handler.get_headers()
     self.assertEqual(
         {'Strict-Transport-Security':
              'max-age=63072000; includeSubDomains; preload',
