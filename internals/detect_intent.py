@@ -30,6 +30,10 @@ FIELDS_REQUIRING_LGTMS = [
     ]
 
 
+# Email prefixes that we don't care about: Re: or [blink-dev] or Fwd:
+PREFIX_RE = re.compile(r're:|fwd:|\[[-._\w]+\]')
+
+
 def detect_field(subject):
   """Look for key words in the subject line that indicate intent type.
 
@@ -37,18 +41,16 @@ def detect_field(subject):
   archive: https://groups.google.com/a/chromium.org/g/blink-dev.
   """
   subject = subject.lower().strip()
-  if subject.startswith('[blink-dev]'):
-    subject = subject[len('[blink-dev]'):].strip()
-  while subject.startswith('re:'):
-    subject = subject[len('re:'):].strip()
+  subject = PREFIX_RE.sub('', subject)  # Strip any number of prefixes
+
+  subject = subject.replace('&', ' and ')
+  subject = subject.replace('+', ' and ')
+  subject = ' '.join(subject.split())  # collapse multiple spaces
 
   if (subject.startswith('intent to ship') or
       subject.startswith('intent to prototype and ship') or
       subject.startswith('intent to implement and ship') or
       subject.startswith('intent to deprecate and remove') or
-      subject.startswith('intent to prototype & ship') or
-      subject.startswith('intent to implement & ship') or
-      subject.startswith('intent to deprecate & remove') or
       subject.startswith('intent to remove')):
     return approval_defs.ShipApproval
 
