@@ -37,7 +37,6 @@ from internals import models
 from django.template.loader import render_to_string
 import django
 
-from google.oauth2 import id_token
 from google.auth.transport import requests
 from flask import session
 import sys

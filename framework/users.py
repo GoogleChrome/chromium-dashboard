@@ -1,7 +1,11 @@
+import logging
 import os
+
 from flask import session
 from google.oauth2 import id_token
 from google.auth.transport import requests
+
+from framework import xsrf
 import settings
 
 
@@ -185,28 +189,41 @@ class User(object):
 
 def get_current_user():
     if settings.UNIT_TEST_MODE:
+      user_via_env = None
       if os.environ['USER_EMAIL']!= '':
-        current_user = User(
-            email=os.environ['USER_EMAIL'],
-            _user_id=os.environ['USER_ID'])
-      else:
-        current_user = None
-      return current_user
+        user_via_env = User(email=os.environ['USER_EMAIL'])
+      return user_via_env
 
-    token = session.get('id_token')
-    current_user = None
-    if token:
+    # TODO(jrobbins): Remove this code path after 30 days.
+    jwt = session.get('id_token')
+    if jwt:
       try:
         idinfo = id_token.verify_oauth2_token(
-            token, requests.Request(), settings.GOOGLE_SIGN_IN_CLIENT_ID)
-        current_user = User(email=idinfo['email'], _user_id=idinfo['sub'])
+            jwt, requests.Request(), settings.GOOGLE_SIGN_IN_CLIENT_ID)
+        user_via_jwt = User(email=idinfo['email'])
+        return user_via_jwt
 
       except ValueError:
-          # Remove the id_token from session if it is invalid or expired
-          session.clear()
-          current_user = None
+        # If anything is not right, give the user a fresh session.
+        session.clear()
+        pass
 
-    return current_user
+    user_info, signature = session.get('signed_user_info', (None, None))
+    if user_info:
+      try:
+        xsrf.validate_token(
+            signature,
+            str(user_info),
+            timeout=xsrf.REFRESH_TOKEN_TIMEOUT_SEC)
+        user_via_signed_user_info = User(email=user_info['email'])
+        return user_via_signed_user_info
+
+      except xsrf.TokenIncorrect:
+        # If anything is not right, give the user a fresh session.
+        session.clear()
+        pass
+
+    return None  # User is not signed in.
 
 
 def is_current_user_admin():
