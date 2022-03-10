@@ -32,7 +32,6 @@ NONCE_LENGTH = 30
 # Note: This is an addition beyond the reference csp.py example code.
 HOST_SOURCES = [
     'https://www.gstatic.com',
-    'https://accounts.google.com',
     ]
 
 DEFAULT_POLICY = {
