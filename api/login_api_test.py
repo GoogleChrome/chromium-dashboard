@@ -32,8 +32,8 @@ class LoginAPITest(testing_config.CustomTestCase):
     self.handler = login_api.LoginAPI()
     self.request_path = '/api/v0/login'
 
-  def test_post__missing_id_token(self):
-    """We reject login requests that don't have any id_token."""
+  def test_post__missing_credential_token(self):
+    """We reject login requests that don't have any credential_token."""
     params = {}
     with test_app.test_request_context(self.request_path, json=params):
       session.clear()
@@ -42,9 +42,9 @@ class LoginAPITest(testing_config.CustomTestCase):
         self.handler.do_post()
       self.assertEqual(1, len(session))
 
-  def test_post__invalid_id_token(self):
-    """We reject login requests that have an invalid id_token."""
-    params = {'id_token': 'fake bad token'}
+  def test_post__invalid_credential_token(self):
+    """We reject login requests that have an invalid credential_token."""
+    params = {'credential': 'fake bad token'}
     with test_app.test_request_context(self.request_path, json=params):
       session['something else'] = 'some other aspect of the session'
       actual_response = self.handler.do_post()
@@ -53,9 +53,9 @@ class LoginAPITest(testing_config.CustomTestCase):
 
   @mock.patch('google.oauth2.id_token.verify_oauth2_token')
   def test_post__normal(self, mock_verify):
-    """We log in the user if they provide a good id_token."""
+    """We log in the user if they provide a good credential_token."""
     mock_verify.return_value = {'email': 'user@example.com'}
-    params = {'id_token': 'fake bad token'}
+    params = {'credential': 'fake bad token'}
     with test_app.test_request_context(self.request_path, json=params):
       session.clear()
       session['something else'] = 'some other aspect of the session'
