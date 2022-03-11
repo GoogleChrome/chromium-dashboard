@@ -54,51 +54,16 @@ limitations under the License.
     app-drawer-layout:not([narrow]) [drawer-toggle] {
       display: none;
     }
-
-    /* CSS For Google Sign In Button */
-    #gSignInCustomBtn {
-      display: inline-block;
-      background: white;
-      color: #444;
-      width: 190px;
-      box-shadow: 1px 0px 5px grey;
-      white-space: nowrap;
-    }
-
-    #gSignInCustomBtn:hover {
-      cursor: pointer;
-      box-shadow: 0px 0px 5px 1px #84a3d8;
-    }
-
-    #gSignInCustomBtn:active .gSignInIcon {
-      background: url('/static/img/google_sign_in/btn_google_signin_light_pressed_web@2x.png');
-      background-size: contain;
-      display: inline-block;
-      vertical-align: middle;
-      width: 191px;
-      height: 41px;
-    }
-
-    .gSignInIcon {
-      background: url('/static/img/google_sign_in/btn_google_signin_light_normal_web@2x.png');
-      background-size: contain;
-      display: inline-block;
-      vertical-align: middle;
-      width: 191px;
-      height: 41px;
-    }
-
   </style>
 
   {% block css %}{% endblock %}
 
-  {# Google Platform Library for OAuth #}
-  <script src="https://apis.google.com/js/platform.js?onload=onLoad"
-          async defer nonce="{{nonce}}"></script>
+  {# Google Identity Services library for OAuth #}
+  <script src="https://accounts.google.com/gsi/client" async defer nonce="{{nonce}}"></script>
 
   <script nonce="{{nonce}}">
-    function onSignIn(googleUser) {
-        csClient.signIn(googleUser)
+    function handleCredentialResponse(credentialResponse) {
+        csClient.signIn(credentialResponse)
             .then(responseJson => {
                 console.log('Signed in:');
                 console.log(responseJson);
@@ -111,70 +76,16 @@ limitations under the License.
     }
 
     function signOut() {
-        let auth2 = gapi.auth2.getAuthInstance();
-        csClient.signOut(auth2).then(responseJson => {
+        csClient.signOut().then(responseJson => {
             console.log('Signed out:');
             console.log(responseJson);
             window.location.reload();
         });
     }
 
-    function refreshSession() {
-        console.log('refreshing google sigin-in session');
-        let cu = auth2.currentUser.get();
-        cu.reloadAuthResponse().then(function(unused_auth_response) {
-            // Calling this sets the flask session cookie.
-            csClient.signIn(auth2.currentUser.get());
-        }).catch(() => {
-            console.error('Refreshing session failed.');
-            let ar = cu.getAuthResponse();
-            let expires_at = ar.expires_at;
-            if (expires_at < Number(new Date())) {
-                signOut();
-                console.log('Explicitly signing out because session expired.');
-            }
-        });
-
-    }
-
-    var googleUser = {};
-    function startApp() {
-        gapi.load('auth2', function(){
-          auth2 = gapi.auth2.init({
-              client_id: '{{google_sign_in_client_id}}',
-              cookiepolicy: 'single_host_origin',
-              scope: 'profile email'
-          });
-          if (document.getElementById('gSignInCustomBtn')) {
-            attachSignin(document.getElementById('gSignInCustomBtn'));
-          } else {
-            // Google Sign-In sessions only last 1-hour.  Refresh the
-            // session immediately after each page naviagation
-            // and once every 10 minutes the user sits on a page.
-            refreshSession();
-            window.setInterval(refreshSession, 10 * 60 * 1000);
-          }
-        });
-    }
-
-    function attachSignin(element) {
-      auth2.attachClickHandler(element, {},
-          function(googleUser) {
-            onSignIn(googleUser);
-          }, function(error) {
-              console.log(error);
-          });
-    }
-
-    function onLoad() {
-      startApp();
-    }
-
     function promptSignIn(e) {
       e.preventDefault();
       e.stopPropagation();
-      let auth2 = gapi.auth2.getAuthInstance();
-      auth2.signIn().then(onSignIn);
     }
 
 

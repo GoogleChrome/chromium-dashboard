@@ -38,12 +38,10 @@
           </ul>
         </div>
       {% else %}
-        <!-- <div class="g-signin2" data-onsuccess="onSignIn"></div> -->
-        <div id="gSignInWrapper">
-          <div id="gSignInCustomBtn" class="customGPlusSignIn">
-              <span class="gSignInIcon"></span>
-          </div>
+        <div id="g_id_onload" data-client_id="{{google_sign_in_client_id}}"
+          data-callback="handleCredentialResponse">
         </div>
+        <div class="g_id_signin" data-type="standard"></div>
       {% endif %}
       </div>
     </div>
