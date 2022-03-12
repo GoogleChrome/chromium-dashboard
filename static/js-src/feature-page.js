@@ -90,14 +90,6 @@ window.csClient.getStars().then((subscribedFeatures) => {
   }
 });
 
-const starWhenSignedOutEl = document.querySelector('#star-when-signed-out');
-if (starWhenSignedOutEl) {
-  starWhenSignedOutEl.addEventListener('click', function(event) {
-    event.preventDefault();
-    window.promptSignIn(event);
-  });
-}
-
 const starWhenSignedInEl = document.querySelector('#star-when-signed-in');
 if (starWhenSignedInEl) {
   starWhenSignedInEl.addEventListener('click', function(event) {

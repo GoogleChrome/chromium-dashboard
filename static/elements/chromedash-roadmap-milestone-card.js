@@ -178,16 +178,7 @@ class ChromedashRoadmapMilestoneCard extends LitElement {
             @click="${this.toggleStar}">
           </iron-icon>
         </span>
-        ` : html`
-        <span class="tooltip"
-          title="Sign in to get email notifications for updates">
-          <a href="#"  @click="${window.promptSignIn}" data-tooltip>
-            <iron-icon icon="chromestatus:star-border"
-              class="pushicon">
-            </iron-icon>
-          </a>
-        </span>
-        `}
+        ` : nothing}
       </span>
     </li>
 

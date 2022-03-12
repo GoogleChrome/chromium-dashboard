@@ -207,19 +207,6 @@ class ChromedashFeatureTable extends LitElement {
     `;
   }
 
-  renderSignedOutStarIcon() {
-    return html`
-      <span class="tooltip"
-        title="Sign in to get email notifications for updates">
-        <a href="#"  @click="${window.promptSignIn}" data-tooltip>
-          <iron-icon icon="chromestatus:star-border"
-            class="pushicon">
-          </iron-icon>
-        </a>
-      </span>
-    `;
-  }
-
   renderIcons(feature) {
     if (this.signedIn) {
       return html`
@@ -228,9 +215,7 @@ class ChromedashFeatureTable extends LitElement {
         ${this.renderStarIcon(feature)}
       `;
     } else {
-      return html`
-        ${this.renderSignedOutStarIcon()}
-      `;
+      return nothing;
     }
   }
 

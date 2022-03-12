@@ -83,15 +83,8 @@ limitations under the License.
         });
     }
 
-    function promptSignIn(e) {
-      e.preventDefault();
-      e.stopPropagation();
-    }
-
-
     // This happens when an anon visitor tries to view a page that
-    // requires being signed in.  We cannot promptSignIn(), because
-    // lacking a user-initiated event, the popup will be blocked.
+    // requires being signed in.
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get("loginStatus") == 'False') {
       alert('Please log in.');
