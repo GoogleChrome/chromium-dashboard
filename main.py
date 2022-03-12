@@ -40,8 +40,6 @@ from pages import intentpreview
 from pages import metrics
 from pages import myfeatures
 from pages import roadmap
-from pages import samples
-from pages import schedule
 from pages import users
 import settings
 
@@ -169,12 +167,6 @@ page_routes = [
     ('/myfeatures', myfeatures.MyFeaturesHandler),
 
     ('/roadmap', roadmap.RoadmapHandler),
-
-    ('/samples', samples.SamplesHandler),
-    ('/samples.json', samples.SamplesJSONHandler),
-    ('/samples.xml', samples.SamplesXMLHandler),
-
-    ('/features/schedule', schedule.ScheduleHandler),
 
     ('/settings', users.SettingsHandler),
     ('/admin/users/new', users.UserListHandler),
