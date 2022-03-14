@@ -1,6 +1,3 @@
-
-
-
 # -*- coding: utf-8 -*-
 # Copyright 2017 Google Inc.
 #
@@ -27,7 +24,7 @@ from framework import basehandlers
 from framework import permissions
 from internals import models
 import settings
-from pages.schedule import construct_chrome_channels_details
+from api.channels_api import construct_chrome_channels_details
 
 
 class BlinkHandler(basehandlers.FlaskHandler):
