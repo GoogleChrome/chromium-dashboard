@@ -31,7 +31,7 @@ class LoginAPI(basehandlers.APIHandler):
     # TODO(jrobbins): Remove id_token after next deployment.
     token = (self.get_param('id_token', required=False) or
              self.get_param('credential'))
-    message = "Unable to Authenticate.  Please sign in again."
+    message = "Unable to Authenticate. Please sign in again."
 
     try:
       idinfo = id_token.verify_oauth2_token(
