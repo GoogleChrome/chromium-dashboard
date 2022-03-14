@@ -265,8 +265,8 @@ class ChromedashFeatureTable extends LitElement {
   }
 
   getEarliestReviewDate(feature) {
-    const configs = this.configs[feature.id];
-    const allDates = configs.map(c => c.next_action).filter(d => d);
+    const featureConfigs = this.configs[feature.id] || [];
+    const allDates = featureConfigs.map(c => c.next_action).filter(d => d);
     if (allDates.length > 0) {
       allDates.sort();
       return allDates[0];
@@ -275,7 +275,7 @@ class ChromedashFeatureTable extends LitElement {
   }
 
   getActiveOwners(feature) {
-    const featureConfigs = this.configs[feature.id];
+    const featureConfigs = this.configs[feature.id] || [];
     const allOwners = featureConfigs.map(c => c.owners).flat();
     // TODO(jrobbins): Limit to only owners of active intents
     let activeOwners = allOwners;
@@ -335,7 +335,7 @@ class ChromedashFeatureTable extends LitElement {
               Owners: ${owners.join(', ')}
             </div>
             ` : nothing}
-          ${activeApprovals.length > 0 ? html`
+          ${activeApprovals && activeApprovals.length > 0 ? html`
             <div>
               ${this.renderApprovalsSoFar(activeApprovals)}
             </div>
