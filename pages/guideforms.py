@@ -87,7 +87,7 @@ ALL_FIELDS = {
         )),
 
     'owner': MultiEmailField(
-        required=True, label='Contact emails',
+        required=True, label='Feature owners',
         widget=forms.EmailInput(
             attrs={'multiple': True, 'placeholder': 'email,email'}),
         help_text=('Comma separated list of full email addresses. '
