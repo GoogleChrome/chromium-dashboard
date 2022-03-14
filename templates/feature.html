@@ -18,20 +18,13 @@
 {% block rss %}
   <link rel="alternate" type="application/rss+xml" href="https://chromestatus.com/features.xml" title="All features" />
 {% endblock %}
- 
+
 {% block subheader %}
 <div id="subheader" style="display:block">
   <div style="float:right">
   {% if user %}
     <span class="tooltip" title="Receive an email notification when there are updates">
       <a href="#" data-tooltip id="star-when-signed-in">
-        <iron-icon icon="chromestatus:star-border"
-                    class="pushicon"></iron-icon>
-      </a>
-    </span>
-  {% else %}
-    <span class="tooltip" title="Sign in to get email notifications for updates">
-      <a href="#" id="star-when-signed-out" data-tooltip>
         <iron-icon icon="chromestatus:star-border"
                     class="pushicon"></iron-icon>
       </a>

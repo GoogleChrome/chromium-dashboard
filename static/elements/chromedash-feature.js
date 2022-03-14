@@ -273,15 +273,7 @@ class ChromedashFeature extends LitElement {
                              class="pushicon"></iron-icon>
                 </a>
               </span>
-             ` : html`
-                <span class="tooltip"
-                    title="Sign in to get email notifications for updates">
-                <a href="#" @click="${window.promptSignIn}" data-tooltip>
-                  <iron-icon icon="chromestatus:star-border"
-                             class="pushicon"></iron-icon>
-                </a>
-              </span>
-             `}
+             ` : nothing}
             <span class="tooltip" title="File a bug against this feature">
               <a href="${ifDefined(this._newBugUrl)}" data-tooltip>
                 <iron-icon icon="chromestatus:bug-report"></iron-icon>
