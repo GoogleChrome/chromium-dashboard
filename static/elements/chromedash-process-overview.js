@@ -1,6 +1,7 @@
 import {LitElement, css, html, nothing} from 'lit';
 import '@polymer/iron-icon';
 import './chromedash-callout';
+import './chromedash-dialog';
 import SHARED_STYLES from '../css/shared.css';
 
 class ChromedashProcessOverview extends LitElement {
@@ -10,6 +11,7 @@ class ChromedashProcessOverview extends LitElement {
       process: {type: Array},
       progress: {type: Object},
       dismissedCues: {type: Object},
+      pendingItems: {type: Array},
     };
   }
 
@@ -19,6 +21,7 @@ class ChromedashProcessOverview extends LitElement {
     this.process = [];
     this.progress = {};
     this.dismissedCues = {};
+    this.pendingItems = [];
   }
 
   static get styles() {
@@ -71,6 +74,11 @@ class ChromedashProcessOverview extends LitElement {
       td div.done, td div.pending {
         position: relative;
         padding-left: 1.2em;
+      }
+
+      ol.pending li {
+        list-style: circle;
+        margin-left: 2em;
       }
 
       ol {
@@ -132,16 +140,34 @@ class ChromedashProcessOverview extends LitElement {
     const label = action[0];
     const url = (action[1].replace('{feature_id}', this.feature.id)
       .replace('{outgoing_stage}', stage.outgoing_stage));
+    const checkCompletion = () => {
+      const pendingItems = stage.progress_items.filter(
+        item => {
+          // Ignore "...email" items.
+          const isEmailStep = item.match(/ email$/);
+          return !isEmailStep && !this.progress.hasOwnProperty(item);
+        });
+      this.pendingItems = pendingItems;
+      if (pendingItems.length > 0) {
+        pendingItems.continueUrl = url;
+        pendingItems.stage = stage;
+        this.shadowRoot.querySelector('chromedash-dialog').open();
+        return;
+      } else {
+        const draftWindow = window.open(url, '_blank');
+        draftWindow.focus(); // Act like user clicked left button.
+      }
+    };
     return html`
       <li>
-        <a href=${url} target="_blank">${label}</a>
+        <a @click=${checkCompletion}>${label}</a>
       </li>`;
   }
 
   renderActions(stage) {
     if (stage.actions) {
       return html`
-        <ol>
+        <ol> 
          ${stage.actions.map(act => this.renderAction(act, stage))}
         </ol>`;
     } else {
@@ -229,6 +255,15 @@ class ChromedashProcessOverview extends LitElement {
       nothing }
 
     </div>
+
+    <chromedash-dialog heading="Progress Steps Missing">
+      <ol class="pending">
+        ${this.pendingItems.map((item) => html`<li>${item}</li>`)}
+      </ol>
+      <a href="/guide/stage/${featureId}/${this.pendingItems.stage ? this.pendingItems.stage.outgoing_stage : ''}"
+        target="_blank" class="button primary">Edit Steps</a>
+      <a href="${this.pendingItems.continueUrl}" target="_blank">Continue to Draft Email</a>
+    </chromedash-dialog>
     `;
   }
 }
