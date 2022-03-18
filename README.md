@@ -33,7 +33,7 @@ You will need to activate the venv in every shell that you use.
 1. `source cs-env/bin/activate`
 
 
-If you face any error during the installation process, the section **Notes** (later in this README.md) may help.
+If you encounter any error during the installation process, the section **Notes** (later in this README.md) may help.
 
 ##### Add env_vars.yaml
 
@@ -81,12 +81,14 @@ There are some developing information in developer-documentation.md.
 
 - If you get an error saying `No module named protobuf` or `No module named six` or `No module named enum` , try installing them locally with `pip install six enum34 protobuf`.
 
-- When installing the GAE SDK, make sure to get the version for python 2.7.  It is no longer the default version.
+- When installing the GAE SDK, make sure to get the version for python 3.
+
+- If you run the server locally, and then you are disconnected from your terminial window, the jobs might remain running which will prevent you from starting the server again.  To work around this, use `ps aux | grep gunicorn` and then use the unix `kill -9` command to terminate those jobs.
 
 
 #### Blink components
 
-Chromestatus gets the list of Blink components from a separate [app running on Firebase](https://blinkcomponents-b48b5.firebaseapp.com/blinkcomponents). See [source](https://github.com/ebidel/blink-components).
+Chromestatus currently gets the list of Blink components from the file `hack_components.py`.
 
 #### Seed the blink component owners
 
@@ -127,7 +129,7 @@ The production site should only have versions that match versions on staging.
 
 ### LICENSE
 
-Copyright (c) 2013-2016 Google Inc. All rights reserved.
+Copyright (c) 2013-2022 Google Inc. All rights reserved.
 
 Apache2 License.
 
