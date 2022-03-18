@@ -28,68 +28,79 @@ class ChromedashProcessOverview extends LitElement {
     return [
       SHARED_STYLES,
       css`
-      :host {
-        display: block;
-        position: relative;
-        box-sizing: border-box;
-        contain: content;
-        overflow: hidden;
-        background: inherit;
-      }
+        :host {
+          display: block;
+          position: relative;
+          box-sizing: border-box;
+          contain: content;
+          overflow: hidden;
+          background: inherit;
+        }
 
-      table {
-        border-spacing: 0;
-        width: 100%;
-      }
+        table {
+          border-spacing: 0;
+          width: 100%;
+        }
 
-      th {
-        text-align: left;
-        padding: var(--content-padding-half);
-        background: var(--table-header-background);
-      }
+        th {
+          text-align: left;
+          padding: var(--content-padding-half);
+          background: var(--table-header-background);
+        }
 
-      td {
-        padding: var(--content-padding-half) var(--content-padding) var(--content-padding) var(--content-padding-half);
-        vertical-align: top;
-        border-bottom: var(--table-divider);
-        background: var(--table-row-background);
-      }
+        td {
+          padding: var(--content-padding-half) var(--content-padding)
+            var(--content-padding) var(--content-padding-half);
+          vertical-align: top;
+          border-bottom: var(--table-divider);
+          background: var(--table-row-background);
+        }
 
-      tr.active td {
-        background: var(--light-accent-color);
-      }
+        tr.active td {
+          background: var(--light-accent-color);
+        }
 
-      td div.done:before {
-        content: "\\2713";
-        position: absolute;
-        left: 0;
-      }
+        td div.done:before {
+          content: "\\2713";
+          position: absolute;
+          left: 0;
+        }
 
-      td div.pending:before {
-        content: "\\25cb";
-        position: absolute;
-        left: 0;
-      }
+        td div.pending:before {
+          content: "\\25cb";
+          position: absolute;
+          left: 0;
+        }
 
-      td div.done, td div.pending {
-        position: relative;
-        padding-left: 1.2em;
-      }
+        td div.done,
+        td div.pending {
+          position: relative;
+          padding-left: 1.2em;
+        }
 
-      ol.pending li {
-        list-style: circle;
-        margin-left: 2em;
-      }
+        ol.pending li {
+          list-style: circle;
+          margin-left: 2em;
+        }
 
-      ol {
-        list-style: none;
-        padding: 0;
-      }
+        ol {
+          list-style: none;
+          padding: 0;
+        }
 
-      ol li {
-        margin-top: .5em;
-      }
-    `];
+        ol li {
+          margin-top: 0.5em;
+        }
+
+        .button.secondary {
+          margin: var(--content-padding);
+          border: var(--default-border);
+          border-color: var(--primary-border-background);
+          padding: 4px 16px;
+          border-radius: var(--border-radius);
+        }
+      `,
+    ];
   }
 
   inFinalStage(stage) {
@@ -256,13 +267,13 @@ class ChromedashProcessOverview extends LitElement {
 
     </div>
 
-    <chromedash-dialog heading="Progress Steps Missing">
+    <chromedash-dialog heading="Missing Fields">
       <ol class="pending">
         ${this.pendingItems.map((item) => html`<li>${item}</li>`)}
       </ol>
       <a href="/guide/stage/${featureId}/${this.pendingItems.stage ? this.pendingItems.stage.outgoing_stage : ''}"
-        target="_blank" class="button primary">Edit Steps</a>
-      <a href="${this.pendingItems.continueUrl}" target="_blank">Continue to Draft Email</a>
+        target="_blank" class="button primary">Edit fields</a>
+      <a href="${this.pendingItems.continueUrl}" target="_blank" class="button secondary">Proceed</a>
     </chromedash-dialog>
     `;
   }
