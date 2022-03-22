@@ -115,9 +115,9 @@ PI_I2E_LGTMS = ProgressItem('One LGTM on Intent to Experiment', 'i2e_lgtms')
 PI_MIGRATE_INCUBATION = ProgressItem('Request to migrate incubation', None)
 PI_TAG_ADDRESSED = ProgressItem(
     'TAG review issues addressed', 'tag_review_status')
-PI_UPDATE_VENDOR_SIGNALS = ProgressItem(
+PI_UPDATED_VENDOR_SIGNALS = ProgressItem(
     'Updated vendor signals', 'safari_views')
-PI_UPDATE_TARGET_MILESTONE = ProgressItem(
+PI_UPDATED_TARGET_MILESTONE = ProgressItem(
     'Updated target milestone', 'shipped_milestone')
 PI_I2S_EMAIL = ProgressItem('Intent to Ship email', 'intent_to_ship_url')
 PI_I2S_LGTMS = ProgressItem('Three LGTMs on Intent to Ship', 'i2s_lgtms')
@@ -128,7 +128,7 @@ PI_FINAL_VENDOR_SIGNALS = ProgressItem('Finalized vendor signals', 'safari_views
 PI_FINAL_TARGET_MILESTONE = ProgressItem(
     'Finalized target milestone', 'shipped_milestone')
 
-PI_CODE = ProgressItem('Code in Chromium', None)
+PI_CODE_IN_CHROMIUM = ProgressItem('Code in Chromium', None)
 
 PI_PSA_EMAIL = ProgressItem('Web facing PSA email', None)
 
@@ -172,7 +172,8 @@ BLINK_PROCESS_STAGES = [
        PI_I2P_EMAIL,
       ],
       [Action('Draft Intent to Prototype email', INTENT_EMAIL_URL,
-              [PI_SPEC_LINK])],
+              [PI_INITIAL_PUBLIC_PROPOSAL.name, PI_MOTIVATION.name,
+               PI_EXPLAINER.name, PI_SPEC_LINK.name])],
       [approval_defs.PrototypeApproval],
       models.INTENT_INCUBATE, models.INTENT_IMPLEMENT),
 
@@ -189,7 +190,9 @@ BLINK_PROCESS_STAGES = [
        PI_EXTERNAL_REVIEWS,
        PI_R4DT_EMAIL,
       ],
-      [Action('Draft Ready for Trial email', INTENT_EMAIL_URL, [])],
+      [Action('Draft Ready for Trial email', INTENT_EMAIL_URL,
+              [PI_INITIAL_PUBLIC_PROPOSAL.name, PI_MOTIVATION.name,
+               PI_EXPLAINER.name, PI_SPEC_LINK.name])],
       [],
       models.INTENT_IMPLEMENT, models.INTENT_EXPERIMENT),
 
@@ -217,7 +220,10 @@ BLINK_PROCESS_STAGES = [
        PI_I2E_EMAIL,
        PI_I2E_LGTMS,
       ],
-      [Action('Draft Intent to Experiment email', INTENT_EMAIL_URL, [])],
+      [Action('Draft Intent to Experiment email', INTENT_EMAIL_URL,
+              [PI_INITIAL_PUBLIC_PROPOSAL.name, PI_MOTIVATION.name,
+               PI_EXPLAINER.name, PI_SPEC_LINK.name,
+               PI_EST_TARGET_MILESTONE.name])],
       [approval_defs.ExperimentApproval],
       models.INTENT_IMPLEMENT_SHIP, models.INTENT_EXTEND_TRIAL),
 
@@ -227,12 +233,16 @@ BLINK_PROCESS_STAGES = [
       'Further standardization.',
       [PI_MIGRATE_INCUBATION,
        PI_TAG_ADDRESSED,
-       PI_UPDATE_VENDOR_SIGNALS,
-       PI_UPDATE_TARGET_MILESTONE,
+       PI_UPDATED_VENDOR_SIGNALS,
+       PI_UPDATED_TARGET_MILESTONE,
        PI_I2S_EMAIL,
        PI_I2S_LGTMS,
       ],
-      [Action('Draft Intent to Ship email', INTENT_EMAIL_URL, [])],
+      [Action('Draft Intent to Ship email', INTENT_EMAIL_URL,
+              [PI_INITIAL_PUBLIC_PROPOSAL.name, PI_MOTIVATION.name,
+               PI_EXPLAINER.name, PI_SPEC_LINK.name,
+               PI_TAG_ADDRESSED.name, PI_UPDATED_VENDOR_SIGNALS.name,
+               PI_UPDATED_TARGET_MILESTONE.name])],
       [approval_defs.ShipApproval],
       models.INTENT_IMPLEMENT_SHIP, models.INTENT_SHIP),
 
@@ -262,9 +272,10 @@ BLINK_FAST_TRACK_STAGES = [
       'Write up use cases and scenarios, start coding as a '
       'runtime enabled feature.',
       [PI_SPEC_LINK,
-       PI_CODE,
+       PI_CODE_IN_CHROMIUM,
        ],
-      [Action('Draft Intent to Prototype email', INTENT_EMAIL_URL, [])],
+      [Action('Draft Intent to Prototype email', INTENT_EMAIL_URL,
+              [PI_SPEC_LINK.name])],
       [approval_defs.PrototypeApproval],
       models.INTENT_NONE, models.INTENT_IMPLEMENT),
 
@@ -279,7 +290,8 @@ BLINK_FAST_TRACK_STAGES = [
        PI_VENDOR_SIGNALS,
        PI_EST_TARGET_MILESTONE,
       ],
-      [Action('Draft Ready for Trial email', INTENT_EMAIL_URL, [])],
+      [Action('Draft Ready for Trial email', INTENT_EMAIL_URL,
+              [PI_SPEC_LINK.name, PI_EST_TARGET_MILESTONE.name])],
       [],
       models.INTENT_IMPLEMENT, models.INTENT_EXPERIMENT),
 
@@ -293,7 +305,8 @@ BLINK_FAST_TRACK_STAGES = [
        PI_I2E_EMAIL,
        PI_I2E_LGTMS,
       ],
-      [Action('Draft Intent to Experiment email', INTENT_EMAIL_URL, [])],
+      [Action('Draft Intent to Experiment email', INTENT_EMAIL_URL,
+              [PI_SPEC_LINK.name, PI_EST_TARGET_MILESTONE.name])],
       [approval_defs.ExperimentApproval],
       models.INTENT_EXPERIMENT, models.INTENT_EXTEND_TRIAL),
 
@@ -302,11 +315,12 @@ BLINK_FAST_TRACK_STAGES = [
       'Lock in shipping milestone. Finalize docs and announcements. '
       'Further standardization.',
       [PI_DOC_SIGNOFF,
-       PI_UPDATE_TARGET_MILESTONE,
+       PI_UPDATED_TARGET_MILESTONE,
        PI_I2S_EMAIL,
        PI_I2S_LGTMS,
       ],
-      [Action('Draft Intent to Ship email', INTENT_EMAIL_URL, [])],
+      [Action('Draft Intent to Ship email', INTENT_EMAIL_URL,
+              [PI_SPEC_LINK.name, PI_UPDATED_TARGET_MILESTONE.name])],
       [approval_defs.ShipApproval],
       models.INTENT_EXPERIMENT, models.INTENT_SHIP),
 
@@ -335,7 +349,7 @@ PSA_ONLY_STAGES = [
       'Implement',
       'Check code into Chromium under a flag.',
       [PI_SPEC_LINK,
-       PI_CODE,
+       PI_CODE_IN_CHROMIUM,
       ],
       [],
       [],
@@ -349,7 +363,8 @@ PSA_ONLY_STAGES = [
        PI_VENDOR_SIGNALS,
        PI_EST_TARGET_MILESTONE,
       ],
-      [Action('Draft Ready for Trial email', INTENT_EMAIL_URL, [])],
+      [Action('Draft Ready for Trial email', INTENT_EMAIL_URL,
+              [PI_SPEC_LINK.name, PI_EST_TARGET_MILESTONE.name])],
       [],
       models.INTENT_IMPLEMENT, models.INTENT_EXPERIMENT),
 
@@ -357,10 +372,11 @@ PSA_ONLY_STAGES = [
       'Prepare to ship',
       'Lock in shipping milestone.',
       [PI_PSA_EMAIL,
-       PI_UPDATE_TARGET_MILESTONE,
+       PI_UPDATED_TARGET_MILESTONE,
        PI_I2S_EMAIL,
       ],
-      [Action('Draft Intent to Ship email', INTENT_EMAIL_URL, [])],
+      [Action('Draft Intent to Ship email', INTENT_EMAIL_URL,
+              [PI_SPEC_LINK.name, PI_UPDATED_TARGET_MILESTONE.name])],
       [approval_defs.ShipApproval],
       models.INTENT_EXPERIMENT, models.INTENT_SHIP),
 
@@ -375,6 +391,7 @@ PSA_ONLY_STAGES = [
       [],
       models.INTENT_SHIP, models.INTENT_SHIPPED),
   ]
+
 
 PSA_ONLY_PROCESS = Process(
     'Web developer facing change to existing code',
@@ -391,10 +408,9 @@ DEPRECATION_STAGES = [
       'Then, move existing Chromium code under a flag.',
       [PI_EXISTING_FEATURE,
        PI_MOTIVATION,
-       PI_CODE,
       ],
       [Action('Draft Intent to Deprecate and Remove email', INTENT_EMAIL_URL,
-              [])],
+              [PI_MOTIVATION.name])],
       [approval_defs.PrototypeApproval],
       models.INTENT_NONE, models.INTENT_IMPLEMENT),
 
@@ -406,7 +422,9 @@ DEPRECATION_STAGES = [
        PI_VENDOR_SIGNALS,
        PI_EST_TARGET_MILESTONE,
       ],
-      [Action('Draft Ready for Trial email', INTENT_EMAIL_URL, [])],
+      [Action('Draft Ready for Trial email', INTENT_EMAIL_URL,
+              [PI_MOTIVATION.name, PI_VENDOR_SIGNALS.name,
+               PI_EST_TARGET_MILESTONE.name])],
       [],
       models.INTENT_IMPLEMENT, models.INTENT_EXPERIMENT),
 
@@ -420,7 +438,8 @@ DEPRECATION_STAGES = [
        PI_DT_LGTMS,
       ],
       [Action('Draft Request for Deprecation Trial email', INTENT_EMAIL_URL,
-              [])],
+              [PI_MOTIVATION.name, PI_VENDOR_SIGNALS.name,
+               PI_EST_TARGET_MILESTONE.name])],
       # TODO(jrobbins): Intent to extend deprecation.
       [approval_defs.ExperimentApproval],
       models.INTENT_EXPERIMENT, models.INTENT_EXTEND_TRIAL),
@@ -429,11 +448,13 @@ DEPRECATION_STAGES = [
       'Prepare to ship',
       'Lock in shipping milestone. '
       'Finalize docs and announcements before disabling feature by default.',
-      [PI_UPDATE_TARGET_MILESTONE,
+      [PI_UPDATED_TARGET_MILESTONE,
        PI_I2S_EMAIL,
        PI_I2S_LGTMS,
       ],
-      [Action('Draft Intent to Ship email', INTENT_EMAIL_URL, [])],
+      [Action('Draft Intent to Ship email', INTENT_EMAIL_URL,
+              [PI_MOTIVATION.name, PI_VENDOR_SIGNALS.name,
+               PI_UPDATED_TARGET_MILESTONE.name])],
       [approval_defs.ShipApproval],
       models.INTENT_EXPERIMENT, models.INTENT_SHIP),
 
@@ -443,7 +464,9 @@ DEPRECATION_STAGES = [
       [PI_CODE_REMOVED,
       ],
       [Action('Generate an Intent to Extend Deprecation Trial',
-              INTENT_EMAIL_URL, []),
+              INTENT_EMAIL_URL,
+              [PI_MOTIVATION.name, PI_VENDOR_SIGNALS.name,
+               PI_UPDATED_TARGET_MILESTONE.name]),
        ],
       [],
       models.INTENT_SHIP, models.INTENT_REMOVED),
@@ -562,9 +585,24 @@ PROGRESS_DETECTORS = {
     lambda f: bool(
         f.ff_views != models.NO_PUBLIC_SIGNALS or
         f.safari_views != models.NO_PUBLIC_SIGNALS or
-        f.ie_views != models.NO_PUBLIC_SIGNALS),  # Deprecated
+        f.ie_views != models.NO_PUBLIC_SIGNALS),  # IE Deprecated
+
+    'Updated vendor signals':
+    lambda f: bool(
+        f.ff_views != models.NO_PUBLIC_SIGNALS or
+        f.safari_views != models.NO_PUBLIC_SIGNALS or
+        f.ie_views != models.NO_PUBLIC_SIGNALS),  # IE Deprecated
+
+    'Final vendor signals':
+    lambda f: bool(
+        f.ff_views != models.NO_PUBLIC_SIGNALS or
+        f.safari_views != models.NO_PUBLIC_SIGNALS or
+        f.ie_views != models.NO_PUBLIC_SIGNALS),  # IE Deprecated
 
     'Estimated target milestone':
+    lambda f: bool(f.shipped_milestone),
+
+    'Final target milestone':
     lambda f: bool(f.shipped_milestone),
 
     'Code in Chromium':

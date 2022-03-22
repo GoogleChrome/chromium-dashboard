@@ -39,6 +39,7 @@ PI_COLD_DOUGH = processes.ProgressItem('Cold dough', 'dough')
 PI_LOAF = processes.ProgressItem('A loaf', None)
 PI_DIRTY_PAN = processes.ProgressItem('A dirty pan', None)
 
+
 class HelperFunctionsTest(testing_config.CustomTestCase):
 
   def test_process_to_dict(self):
@@ -102,6 +103,37 @@ class HelperFunctionsTest(testing_config.CustomTestCase):
     self.assertFalse(processes.review_is_done(models.REVIEW_ISSUES_OPEN))
     self.assertTrue(processes.review_is_done(models.REVIEW_ISSUES_ADDRESSED))
     self.assertTrue(processes.review_is_done(models.REVIEW_NA))
+
+
+class ProcessesWellFormedTest(testing_config.CustomTestCase):
+  """Verify that our processes have no undefined references."""
+
+  def verify_references_to_prerequisites(self, process):
+    progress_items_so_far = {}
+    for stage in process.stages:
+      progress_items_so_far.update({
+          pi.name: pi
+          for pi in stage.progress_items})
+      for action in stage.actions:
+        for prereq_name in action.prerequisites:
+          self.assertIn(prereq_name, progress_items_so_far)
+          self.assertTrue(progress_items_so_far[prereq_name].field)
+
+  def test_BLINK_LAUNCH_PROCESS(self):
+    """Prerequisites in BLINK_LAUNCH_PROCESS are defined and actionable."""
+    self.verify_references_to_prerequisites(processes.BLINK_LAUNCH_PROCESS)
+
+  def test_BLINK_FAST_TRACK_PROCESS(self):
+    """Prerequisites in BLINK_FAST_TRACK_PROCESS are defined and actionable."""
+    self.verify_references_to_prerequisites(processes.BLINK_FAST_TRACK_PROCESS)
+
+  def test_PSA_ONLY_PROCESS(self):
+    """Prerequisites in PSA_ONLY_PROCESS are defined and actionable."""
+    self.verify_references_to_prerequisites(processes.PSA_ONLY_PROCESS)
+
+  def test_DEPRECATION_PROCESS(self):
+    """Prerequisites in DEPRECATION_PROCESS are defined and actionable."""
+    self.verify_references_to_prerequisites(processes.DEPRECATION_PROCESS)
 
 
 class ProgressDetectorsTest(testing_config.CustomTestCase):
