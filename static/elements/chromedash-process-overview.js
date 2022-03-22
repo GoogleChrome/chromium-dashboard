@@ -81,6 +81,16 @@ class ChromedashProcessOverview extends LitElement {
       ol li {
         margin-top: .5em;
       }
+
+      .edit-progress-item {
+        display: none;
+        margin-left: var(--content-padding-half);
+      }
+
+      .pending:hover .edit-progress-item,
+      .done:hover .edit-progress-item {
+        display: inline;
+      }
     `];
   }
 
@@ -129,8 +139,8 @@ class ChromedashProcessOverview extends LitElement {
   }
 
   renderAction(action, stage) {
-    const label = action[0];
-    const url = (action[1].replace('{feature_id}', this.feature.id)
+    const label = action.name;
+    const url = (action.url.replace('{feature_id}', this.feature.id)
       .replace('{outgoing_stage}', stage.outgoing_stage));
     return html`
       <li>
@@ -149,19 +159,43 @@ class ChromedashProcessOverview extends LitElement {
     }
   }
 
-  renderProgressItem(item) {
-    if (!this.progress.hasOwnProperty(item)) {
-      return html`<div class="pending">${item}</div>`;
+  renderProgressItem(stage, item) {
+    const featureId = this.feature.id;
+    let editEl = nothing;
+    if (item.field) {
+      editEl = html`
+        <a class="edit-progress-item"
+           href="/guide/stage/${featureId}/${stage.outgoing_stage}#id_${item.field}">
+          Edit
+        </a>
+      `;
     }
 
-    if (this.progress[item].startsWith('http://') ||
-        this.progress[item].startsWith('https://')) {
-      return html`<div class="done"><a target="_blank"
-        href="${this.progress[item]}"
-        >${item}</a></div>`;
+    if (!this.progress.hasOwnProperty(item.name)) {
+      return html`
+        <div class="pending">
+          ${item.name}
+          ${editEl}
+        </div>`;
     }
 
-    return html`<div class="done">${item}</div>`;
+    const progressValue = this.progress[item.name];
+    if (progressValue.startsWith('http://') ||
+        progressValue.startsWith('https://')) {
+      return html`
+        <div class="done">
+          <a target="_blank" href="${progressValue}">
+            ${item.name}
+          </a>
+          ${editEl}
+        </div>`;
+    }
+
+    return html`
+      <div class="done">
+        ${item.name}
+        ${editEl}
+      </div>`;
   }
 
 
@@ -184,7 +218,8 @@ class ChromedashProcessOverview extends LitElement {
              <div>${stage.description}</div>
            </td>
            <td>
-             ${stage.progress_items.map(item => this.renderProgressItem(item))}
+             ${stage.progress_items.map(item =>
+                        this.renderProgressItem(stage, item))}
            </td>
            <td>
             ${this.feature.intent_stage_int == stage.outgoing_stage ?

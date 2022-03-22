@@ -35,6 +35,11 @@ BAKE_APPROVAL_DEF_DICT = collections.OrderedDict([
     ('approvers', ['chef@example.com']),
     ])
 
+PI_COLD_DOUGH = processes.ProgressItem('Cold dough', 'dough')
+PI_LOAF = processes.ProgressItem('A loaf', None)
+PI_DIRTY_PAN = processes.ProgressItem('A dirty pan', None)
+
+
 class HelperFunctionsTest(testing_config.CustomTestCase):
 
   def test_process_to_dict(self):
@@ -45,14 +50,15 @@ class HelperFunctionsTest(testing_config.CustomTestCase):
         [processes.ProcessStage(
             'Make dough',
             'Mix it and kneed',
-            ['Cold dough'],
-            [('Share kneeding video', 'https://example.com')],
+            [PI_COLD_DOUGH],
+            [processes.Action(
+                'Share kneeding video', 'https://example.com', [])],
             [],
             0, 1),
          processes.ProcessStage(
              'Bake it',
              'Heat at 375 for 40 minutes',
-             ['A loaf', 'A dirty pan'],
+             [PI_LOAF, PI_DIRTY_PAN],
              [],
              [BakeApproval],
              1, 2),
@@ -64,14 +70,19 @@ class HelperFunctionsTest(testing_config.CustomTestCase):
         'stages': [
             {'name': 'Make dough',
              'description': 'Mix it and kneed',
-             'progress_items': ['Cold dough'],
-             'actions': [('Share kneeding video', 'https://example.com')],
+             'progress_items': [{'name': 'Cold dough', 'field': 'dough'}],
+             'actions': [{
+                 'name': 'Share kneeding video',
+                 'url': 'https://example.com',
+                 'prerequisites': []}],
              'approvals': [],
              'incoming_stage': 0,
              'outgoing_stage': 1},
             {'name': 'Bake it',
              'description': 'Heat at 375 for 40 minutes',
-             'progress_items': ['A loaf', 'A dirty pan'],
+             'progress_items': [
+                 {'name': 'A loaf', 'field': None},
+                 {'name': 'A dirty pan', 'field': None}],
              'actions': [],
              'approvals': [BAKE_APPROVAL_DEF_DICT],
              'incoming_stage': 1,
@@ -92,6 +103,37 @@ class HelperFunctionsTest(testing_config.CustomTestCase):
     self.assertFalse(processes.review_is_done(models.REVIEW_ISSUES_OPEN))
     self.assertTrue(processes.review_is_done(models.REVIEW_ISSUES_ADDRESSED))
     self.assertTrue(processes.review_is_done(models.REVIEW_NA))
+
+
+class ProcessesWellFormedTest(testing_config.CustomTestCase):
+  """Verify that our processes have no undefined references."""
+
+  def verify_references_to_prerequisites(self, process):
+    progress_items_so_far = {}
+    for stage in process.stages:
+      progress_items_so_far.update({
+          pi.name: pi
+          for pi in stage.progress_items})
+      for action in stage.actions:
+        for prereq_name in action.prerequisites:
+          self.assertIn(prereq_name, progress_items_so_far)
+          self.assertTrue(progress_items_so_far[prereq_name].field)
+
+  def test_BLINK_LAUNCH_PROCESS(self):
+    """Prerequisites in BLINK_LAUNCH_PROCESS are defined and actionable."""
+    self.verify_references_to_prerequisites(processes.BLINK_LAUNCH_PROCESS)
+
+  def test_BLINK_FAST_TRACK_PROCESS(self):
+    """Prerequisites in BLINK_FAST_TRACK_PROCESS are defined and actionable."""
+    self.verify_references_to_prerequisites(processes.BLINK_FAST_TRACK_PROCESS)
+
+  def test_PSA_ONLY_PROCESS(self):
+    """Prerequisites in PSA_ONLY_PROCESS are defined and actionable."""
+    self.verify_references_to_prerequisites(processes.PSA_ONLY_PROCESS)
+
+  def test_DEPRECATION_PROCESS(self):
+    """Prerequisites in DEPRECATION_PROCESS are defined and actionable."""
+    self.verify_references_to_prerequisites(processes.DEPRECATION_PROCESS)
 
 
 class ProgressDetectorsTest(testing_config.CustomTestCase):
