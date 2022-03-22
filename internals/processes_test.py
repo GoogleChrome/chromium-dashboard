@@ -35,6 +35,10 @@ BAKE_APPROVAL_DEF_DICT = collections.OrderedDict([
     ('approvers', ['chef@example.com']),
     ])
 
+PI_COLD_DOUGH = processes.ProgressItem('Cold dough', 'dough')
+PI_LOAF = processes.ProgressItem('A loaf', None)
+PI_DIRTY_PAN = processes.ProgressItem('A dirty pan', None)
+
 class HelperFunctionsTest(testing_config.CustomTestCase):
 
   def test_process_to_dict(self):
@@ -45,14 +49,15 @@ class HelperFunctionsTest(testing_config.CustomTestCase):
         [processes.ProcessStage(
             'Make dough',
             'Mix it and kneed',
-            ['Cold dough'],
-            [('Share kneeding video', 'https://example.com')],
+            [PI_COLD_DOUGH],
+            [processes.Action(
+                'Share kneeding video', 'https://example.com', [])],
             [],
             0, 1),
          processes.ProcessStage(
              'Bake it',
              'Heat at 375 for 40 minutes',
-             ['A loaf', 'A dirty pan'],
+             [PI_LOAF, PI_DIRTY_PAN],
              [],
              [BakeApproval],
              1, 2),
@@ -64,14 +69,19 @@ class HelperFunctionsTest(testing_config.CustomTestCase):
         'stages': [
             {'name': 'Make dough',
              'description': 'Mix it and kneed',
-             'progress_items': ['Cold dough'],
-             'actions': [('Share kneeding video', 'https://example.com')],
+             'progress_items': [{'name': 'Cold dough', 'field': 'dough'}],
+             'actions': [{
+                 'name': 'Share kneeding video',
+                 'url': 'https://example.com',
+                 'prerequisites': []}],
              'approvals': [],
              'incoming_stage': 0,
              'outgoing_stage': 1},
             {'name': 'Bake it',
              'description': 'Heat at 375 for 40 minutes',
-             'progress_items': ['A loaf', 'A dirty pan'],
+             'progress_items': [
+                 {'name': 'A loaf', 'field': None},
+                 {'name': 'A dirty pan', 'field': None}],
              'actions': [],
              'approvals': [BAKE_APPROVAL_DEF_DICT],
              'incoming_stage': 1,
