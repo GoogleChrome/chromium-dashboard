@@ -98,3 +98,17 @@ class UsersTest(testing_config.CustomTestCase):
     """We never consider a user an admin based on old GAE auth info."""
     actual = users.is_current_user_admin()
     self.assertFalse(actual)
+
+  def test_add_signed_user_info_to_session(self):
+    """We log in the user by adding a signed user_info to the session."""
+    with test_app.test_request_context('/any/path'):
+      session.clear()
+      session['something else'] = 'some other aspect of the session'
+      users.add_signed_user_info_to_session('user@example.com')
+      self.assertEqual(2, len(session))
+      user_info, signature = session['signed_user_info']
+      self.assertEqual({'email': 'user@example.com'}, user_info)
+      xsrf.validate_token(
+          signature,
+          str(user_info),
+          timeout=xsrf.REFRESH_TOKEN_TIMEOUT_SEC)

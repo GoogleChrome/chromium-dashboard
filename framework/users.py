@@ -228,3 +228,12 @@ def get_current_user():
 
 def is_current_user_admin():
     return False
+
+
+def add_signed_user_info_to_session(email):
+  """Create and sign the user info in the Flask session."""
+  user_info = {
+      'email': email,
+  }
+  signature = xsrf.generate_token(str(user_info))
+  session['signed_user_info'] = user_info, signature

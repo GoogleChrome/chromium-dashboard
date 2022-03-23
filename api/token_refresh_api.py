@@ -13,14 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-
-
 import logging
 
 from framework import basehandlers
 from framework import xsrf
-from internals import models
+from framework import users
 
 
 class TokenRefreshAPI(basehandlers.APIHandler):
@@ -41,8 +38,9 @@ class TokenRefreshAPI(basehandlers.APIHandler):
 
   # Note: we use only POST instead of GET to avoid attacks that use GETs.
   def do_post(self):
-    """Return a new XSRF token for the current user."""
+    """Refresh the session and return a new XSRF token for the current user."""
     user = self.get_current_user()
+    users.add_signed_user_info_to_session(user.email())
     result = {
         'token': xsrf.generate_token(user.email()),
         'token_expires_sec': xsrf.token_expires_sec(),
