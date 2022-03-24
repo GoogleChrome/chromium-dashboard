@@ -14,7 +14,7 @@
     "start-emulator": "gcloud beta emulators datastore start --host-port=:15606 --no-store-on-disk --consistency=1.0",
     "stop-emulator": "curl -X POST 'http://localhost:15606/shutdown'",
     "test": "(npm run start-emulator > /dev/null 2>&1 &); sleep 6; curl --retry 4 http://localhost:15606/ --retry-connrefused; npm run do-tests; status=$?; npm run stop-emulator; exit $status",
-    "test2": "cd py2; python2 -m unittest discover -p '*_py2test.py'  -b",
+    "test2": "cd py2; python2 -m unittest discover -p '*_py2test.py' -b",
     "do-coverage": "coverage3 erase && coverage3 run -m unittest discover -p '*_test.py' -b && coverage3 html",
     "coverage": "(npm run start-emulator > /dev/null 2>&1 &); sleep 3; curl --retry 4 http://localhost:15606/ --retry-connrefused; npm run do-coverage;  npm run stop-emulator",
     "view-coverage": "pushd htmlcov/; python3 -m http.server 8080; popd",
@@ -25,7 +25,8 @@
     "deploy": "npm run build && ./scripts/deploy_site.sh `git describe --always --abbrev=7 --match 'NOT A TAG' --dirty='-tainted'` && ./scripts/deploy_site.sh rc",
     "staging": "npm run build && ./scripts/deploy_site.sh `git describe --always --abbrev=7 --match 'NOT A TAG' --dirty='-tainted'` cr-status-staging && ./scripts/deploy_site.sh rc cr-status-staging",
     "start-app": "npm run build && ./scripts/start_server.sh",
-    "start": "source cs-env/bin/activate; (npm run start-emulator-persist > /dev/null 2>&1 &); sleep 6; curl --retry 4 http://localhost:15606/ --retry-connrefused; npm run start-app; status=$?; npm run stop-emulator; exit $status"
+    "start": "source cs-env/bin/activate; (npm run start-emulator-persist > /dev/null 2>&1 &); sleep 6; curl --retry 4 http://localhost:15606/ --retry-connrefused; npm run start-app; status=$?; npm run stop-emulator; exit $status",
+    "stop": "killall 'gunicorn: master'"
   },
   "repository": {
     "type": "git",
