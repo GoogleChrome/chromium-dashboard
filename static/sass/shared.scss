@@ -39,6 +39,7 @@ a {
 a:hover {
   text-decoration: underline;
   color: var(--link-hover-color);
+  cursor: pointer;
 }
 
 input:not([type="submit"]), textarea {

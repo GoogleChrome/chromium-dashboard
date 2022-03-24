@@ -1,6 +1,7 @@
 import {LitElement, css, html, nothing} from 'lit';
 import '@polymer/iron-icon';
 import './chromedash-callout';
+import './chromedash-dialog';
 import SHARED_STYLES from '../css/shared.css';
 
 class ChromedashProcessOverview extends LitElement {
@@ -10,6 +11,7 @@ class ChromedashProcessOverview extends LitElement {
       process: {type: Array},
       progress: {type: Object},
       dismissedCues: {type: Object},
+      pendingItems: {type: Array},
     };
   }
 
@@ -19,6 +21,7 @@ class ChromedashProcessOverview extends LitElement {
     this.process = [];
     this.progress = {};
     this.dismissedCues = {};
+    this.pendingItems = [];
   }
 
   static get styles() {
@@ -82,6 +85,11 @@ class ChromedashProcessOverview extends LitElement {
         margin-top: .5em;
       }
 
+      ol.pending li {
+        list-style: circle;
+        margin-left: 2em;
+      }
+
       .edit-progress-item {
         display: none;
         margin-left: var(--content-padding-half);
@@ -90,6 +98,14 @@ class ChromedashProcessOverview extends LitElement {
       .pending:hover .edit-progress-item,
       .done:hover .edit-progress-item {
         display: inline;
+      }
+
+      .button.secondary {
+        margin: var(--content-padding);
+        border: var(--default-border);
+        border-color: var(--primary-border-background);
+        padding: 4px 16px;
+        border-radius: var(--border-radius);
       }
     `];
   }
@@ -142,9 +158,29 @@ class ChromedashProcessOverview extends LitElement {
     const label = action.name;
     const url = (action.url.replace('{feature_id}', this.feature.id)
       .replace('{outgoing_stage}', stage.outgoing_stage));
+    const checkCompletion = () => {
+      let foundEmailItem = false;
+      const pendingItems = stage.progress_items.filter(
+        item => {
+          // Ignore "...email" item, and any after that.
+          if (foundEmailItem) return false;
+          foundEmailItem = item.name.match(/ email$/);
+          return !foundEmailItem && !this.progress.hasOwnProperty(item.name);
+        });
+      this.pendingItems = pendingItems;
+      if (pendingItems.length > 0) {
+        pendingItems.continueUrl = url;
+        pendingItems.stage = stage;
+        this.shadowRoot.querySelector('chromedash-dialog').open();
+        return;
+      } else {
+        const draftWindow = window.open(url, '_blank');
+        draftWindow.focus(); // Act like user clicked left button.
+      }
+    };
     return html`
       <li>
-        <a href=${url} target="_blank">${label}</a>
+        <a @click=${checkCompletion}>${label}</a>
       </li>`;
   }
 
@@ -159,7 +195,7 @@ class ChromedashProcessOverview extends LitElement {
     }
   }
 
-  renderProgressItem(stage, item) {
+  renderEditLink(stage, item) {
     const featureId = this.feature.id;
     let editEl = nothing;
     if (item.field) {
@@ -170,6 +206,11 @@ class ChromedashProcessOverview extends LitElement {
         </a>
       `;
     }
+    return editEl;
+  }
+
+  renderProgressItem(stage, item) {
+    const editEl = this.renderEditLink(stage, item);
 
     if (!this.progress.hasOwnProperty(item.name)) {
       return html`
@@ -264,6 +305,16 @@ class ChromedashProcessOverview extends LitElement {
       nothing }
 
     </div>
+
+    <chromedash-dialog heading="Missing Fields">
+      <ol class="pending">
+        ${this.pendingItems.map((item) =>
+        html`<li>${item.name} ${this.renderEditLink(this.pendingItems.stage, item)}</li>`)}
+      </ol>
+      <a href="/guide/stage/${featureId}/${this.pendingItems.stage ? this.pendingItems.stage.outgoing_stage : ''}"
+        target="_blank" class="button primary">Edit fields</a>
+      <a href="${this.pendingItems.continueUrl}" target="_blank" class="button secondary">Proceed</a>
+    </chromedash-dialog>
     `;
   }
 }
