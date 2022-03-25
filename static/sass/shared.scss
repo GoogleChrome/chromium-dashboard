@@ -68,6 +68,13 @@ button.primary, input[type="submit"], .button.primary {
   font-weight: bold;
 }
 
+.button.secondary {
+  margin: var(--content-padding);
+  border: var(--default-border);
+  border-color: var(--primary-border-background);
+  border-radius: var(--border-radius);
+}
+
 button:not(:disabled):hover {
   border-color: $gray-4;
 }

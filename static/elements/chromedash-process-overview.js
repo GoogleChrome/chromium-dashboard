@@ -22,6 +22,7 @@ class ChromedashProcessOverview extends LitElement {
     this.progress = {};
     this.dismissedCues = {};
     this.pendingItems = [];
+    this.item_stage_map = null; // null means uninitialized.
   }
 
   static get styles() {
@@ -85,27 +86,19 @@ class ChromedashProcessOverview extends LitElement {
         margin-top: .5em;
       }
 
-      ol.pending li {
+      ol.missingPrereqs li {
         list-style: circle;
         margin-left: 2em;
       }
 
       .edit-progress-item {
-        display: none;
+        visibility: hidden;
         margin-left: var(--content-padding-half);
       }
 
       .pending:hover .edit-progress-item,
       .done:hover .edit-progress-item {
-        display: inline;
-      }
-
-      .button.secondary {
-        margin: var(--content-padding);
-        border: var(--default-border);
-        border-color: var(--primary-border-background);
-        padding: 4px 16px;
-        border-radius: var(--border-radius);
+        visibility: visible;
       }
     `];
   }
@@ -159,23 +152,23 @@ class ChromedashProcessOverview extends LitElement {
     const url = (action.url.replace('{feature_id}', this.feature.id)
       .replace('{outgoing_stage}', stage.outgoing_stage));
     const checkCompletion = () => {
-      let foundEmailItem = false;
-      const pendingItems = stage.progress_items.filter(
-        item => {
-          // Ignore "...email" item, and any after that.
-          if (foundEmailItem) return false;
-          foundEmailItem = item.name.match(/ email$/);
-          return !foundEmailItem && !this.progress.hasOwnProperty(item.name);
+      const pendingItemsNames = action.prerequisites.filter(
+        itemName => {
+          return !this.progress.hasOwnProperty(itemName);
         });
-      this.pendingItems = pendingItems;
-      if (pendingItems.length > 0) {
-        pendingItems.continueUrl = url;
-        pendingItems.stage = stage;
+      this.pendingItems = pendingItemsNames.map(name => {
+        // return {name, field, stage} for the named item.
+        return this.item_stage_map[name];
+      });
+      if (this.pendingItems.length > 0) {
+        this.pendingItems.continueUrl = url;
+        // Open the dialog.
         this.shadowRoot.querySelector('chromedash-dialog').open();
         return;
       } else {
+        // Act like user clicked left button to go to the draft email window.
         const draftWindow = window.open(url, '_blank');
-        draftWindow.focus(); // Act like user clicked left button.
+        draftWindow.focus();
       }
     };
     return html`
@@ -241,6 +234,19 @@ class ChromedashProcessOverview extends LitElement {
 
 
   render() {
+    if (this.process && this.item_stage_map == null) {
+      // We will need to find the stages of prerequisites for actions of each stage.
+      // So we will loop over all progress items of all stages
+      // one time to rebuild this map at the start of each full page render.
+      this.item_stage_map = {};
+      this.process.stages.forEach(
+        stage => stage.progress_items.forEach(
+          item => {
+            this.item_stage_map[item.name] = {...item, stage: stage};
+          },
+        ));
+    }
+
     const featureId = this.feature.id;
     return html`
      <div style="position: relative">
@@ -306,10 +312,12 @@ class ChromedashProcessOverview extends LitElement {
 
     </div>
 
-    <chromedash-dialog heading="Missing Fields">
-      <ol class="pending">
+    <chromedash-dialog heading="Missing Prerequisites">
+      <ol class="missingPrereqs">
         ${this.pendingItems.map((item) =>
-        html`<li>${item.name} ${this.renderEditLink(this.pendingItems.stage, item)}</li>`)}
+        html`<li class="pending">
+          ${item.stage.name}:
+          ${item.name} ${this.renderEditLink(item.stage, item)}</li>`)}
       </ol>
       <a href="/guide/stage/${featureId}/${this.pendingItems.stage ? this.pendingItems.stage.outgoing_stage : ''}"
         target="_blank" class="button primary">Edit fields</a>
