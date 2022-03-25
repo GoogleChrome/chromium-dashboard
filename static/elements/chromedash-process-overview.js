@@ -235,12 +235,11 @@ class ChromedashProcessOverview extends LitElement {
       </div>`;
   }
 
-
-  render() {
+  willUpdate() {
     if (this.process && this.item_stage_map == null) {
       // We will need to find the stages of prerequisites for actions of each stage.
-      // So we will loop over all progress items of all stages
-      // one time to rebuild this map at the start of each full page render.
+      // So we will loop over all progress items of all stages one time
+      // to rebuild this map at the start of each full page render.
       this.item_stage_map = {};
       this.process.stages.forEach(
         stage => stage.progress_items.forEach(
@@ -249,7 +248,9 @@ class ChromedashProcessOverview extends LitElement {
           },
         ));
     }
+  }
 
+  render() {
     const featureId = this.feature.id;
     return html`
      <div style="position: relative">
@@ -322,7 +323,7 @@ class ChromedashProcessOverview extends LitElement {
           ${item.stage.name}:
           ${item.name} ${this.renderEditLink(item.stage, item)}</li>`)}
       </ol>
-      <a href="${this.pendingItems.continueUrl}" target="_blank" class="button secondary">Proceed</a>
+      <a href="${this.pendingItems.continueUrl}" target="_blank" class="button primary">Proceed</a>
     </chromedash-dialog>
     `;
   }
