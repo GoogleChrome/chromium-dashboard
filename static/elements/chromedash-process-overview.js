@@ -149,19 +149,22 @@ class ChromedashProcessOverview extends LitElement {
 
   renderAction(action, stage) {
     const label = action.name;
-    const url = (action.url.replace('{feature_id}', this.feature.id)
-      .replace('{outgoing_stage}', stage.outgoing_stage));
     const checkCompletion = () => {
+      const url = action.url
+        .replace('{feature_id}', this.feature.id)
+        .replace('{outgoing_stage}', stage.outgoing_stage);
       const pendingItemsNames = action.prerequisites.filter(
         itemName => {
           return !this.progress.hasOwnProperty(itemName);
         });
-      this.pendingItems = pendingItemsNames.map(name => {
+      const pendingItems = pendingItemsNames.map(name => {
         // return {name, field, stage} for the named item.
         return this.item_stage_map[name];
       });
-      if (this.pendingItems.length > 0) {
-        this.pendingItems.continueUrl = url;
+      if (pendingItems.length > 0) {
+        pendingItems.continueUrl = url;
+        console.info('url', url);
+        this.pendingItems = pendingItems; // Note: one assignment to this.pendingItems.
         // Open the dialog.
         this.shadowRoot.querySelector('chromedash-dialog').open();
         return;
@@ -319,8 +322,6 @@ class ChromedashProcessOverview extends LitElement {
           ${item.stage.name}:
           ${item.name} ${this.renderEditLink(item.stage, item)}</li>`)}
       </ol>
-      <a href="/guide/stage/${featureId}/${this.pendingItems.stage ? this.pendingItems.stage.outgoing_stage : ''}"
-        target="_blank" class="button primary">Edit fields</a>
       <a href="${this.pendingItems.continueUrl}" target="_blank" class="button secondary">Proceed</a>
     </chromedash-dialog>
     `;
