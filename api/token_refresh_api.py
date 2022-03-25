@@ -40,7 +40,7 @@ class TokenRefreshAPI(basehandlers.APIHandler):
   def do_post(self):
     """Refresh the session and return a new XSRF token for the current user."""
     user = self.get_current_user()
-    users.add_signed_user_info_to_session(user.email())
+    users.refresh_user_session()
     result = {
         'token': xsrf.generate_token(user.email()),
         'token_expires_sec': xsrf.token_expires_sec(),

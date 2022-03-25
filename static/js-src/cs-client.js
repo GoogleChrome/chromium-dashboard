@@ -31,7 +31,7 @@ class ChromeStatusClient {
       const refreshResponse = await this.doFetch(
         '/currentuser/token', 'POST', null);
       this.token = refreshResponse.token;
-      this.tokenExpiresSec = refreshResponse.tokenExpiresSec;
+      this.tokenExpiresSec = refreshResponse.token_expires_sec;
     }
   }
 

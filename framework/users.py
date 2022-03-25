@@ -237,3 +237,10 @@ def add_signed_user_info_to_session(email):
   }
   signature = xsrf.generate_token(str(user_info))
   session['signed_user_info'] = user_info, signature
+
+
+def refresh_user_session():
+  """If the user is signed in, update the signed user info with a new date."""
+  user = get_current_user()
+  if user:
+    add_signed_user_info_to_session(user.email())

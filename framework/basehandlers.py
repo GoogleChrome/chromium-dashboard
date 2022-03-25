@@ -29,6 +29,7 @@ from framework import csp
 from framework import permissions
 from framework import ramcache
 from framework import secrets
+from framework import users
 from framework import utils
 from framework import xsrf
 from internals import approval_defs
@@ -40,7 +41,6 @@ import django
 from google.auth.transport import requests
 from flask import session
 import sys
-from framework import users
 
 # Initialize django so that it'll function when run as a standalone script.
 # https://django.readthedocs.io/en/latest/releases/1.7.html#standalone-scripts
@@ -328,6 +328,7 @@ class FlaskHandler(BaseHandler):
 
     ramcache.check_for_distributed_invalidation()
     handler_data = self.get_template_data(*args, **kwargs)
+    users.refresh_user_session()
 
     if self.JSONIFY and type(handler_data) in (dict, list):
       headers = self.get_headers()
