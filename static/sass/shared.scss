@@ -39,6 +39,7 @@ a {
 a:hover {
   text-decoration: underline;
   color: var(--link-hover-color);
+  cursor: pointer;
 }
 
 input:not([type="submit"]), textarea {
@@ -65,6 +66,13 @@ button.primary, input[type="submit"], .button.primary {
   background: var(--primary-button-background);
   color: var(--primary-button-color);
   font-weight: bold;
+}
+
+.button.secondary {
+  margin: var(--content-padding);
+  border: var(--default-border);
+  border-color: var(--primary-border-background);
+  border-radius: var(--border-radius);
 }
 
 button:not(:disabled):hover {
