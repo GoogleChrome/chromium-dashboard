@@ -490,4 +490,11 @@ def FlaskApplication(import_name, routes, pattern_base='', debug=False):
   # Flask apps also have a debug setting that can be used to auto-reload
   # template source code, but we use django for that.
 
+  # Set cookie headers in Flask; see https://flask.palletsprojects.com/en/2.0.x/config/
+  # for more details.
+  app.config["SESSION_COOKIE_SECUR"] = True
+  app.config["SESSION_COOKIE_HTTPONLY"] = True
+  app.config["SESSION_COOKIE_SAMESITE"] = 'Lax'
+
+
   return app
