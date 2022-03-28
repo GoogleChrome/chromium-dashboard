@@ -161,7 +161,7 @@ class ChromedashRoadmap extends LitElement {
       newMilestonesInfo[milestoneNum].version = milestoneNum;
       newMilestonesInfo[milestoneNum].features = milestoneFeatures[milestoneNum];
       Object.keys(newMilestonesInfo[milestoneNum].features).forEach(status => {
-        newMilestonesInfo[milestoneNum].features[status].sort( (a, b) => compareFeatures(a, b));
+        newMilestonesInfo[milestoneNum].features[status].sort(compareFeatures);
       });
     });
 
@@ -206,7 +206,7 @@ class ChromedashRoadmap extends LitElement {
       newMilestonesInfo[milestoneNum].version = milestoneNum;
       newMilestonesInfo[milestoneNum].features = milestoneFeatures[milestoneNum];
       Object.keys(newMilestonesInfo[milestoneNum].features).forEach(status => {
-        newMilestonesInfo[milestoneNum].features[status].sort( (a, b) => compareFeatures(a, b));
+        newMilestonesInfo[milestoneNum].features[status].sort(compareFeatures);
       });
     });
 

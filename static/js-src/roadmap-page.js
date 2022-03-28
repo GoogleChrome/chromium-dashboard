@@ -31,7 +31,7 @@ async function init() {
   channelsArray.forEach((channel) => {
     channels[channel].features = features[channel];
     Object.keys(channels[channel].features).forEach(status => {
-      channels[channel].features[status].sort( (a, b) => compareFeatures(a, b));
+      channels[channel].features[status].sort(compareFeatures);
     });
   });
 
