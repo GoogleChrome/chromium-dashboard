@@ -1,7 +1,7 @@
 import {LitElement, css, html, nothing} from 'lit';
 import './chromedash-dialog';
 import '@polymer/iron-icon';
-import SHARED_STYLES from '../css/shared.css';
+import {SHARED_STYLES} from '../sass/shared-css.js';
 
 export const STATE_NAMES = [
   // Not used: [0, 'Needs review'],
@@ -75,7 +75,7 @@ class ChromedashApprovalsDialog extends LitElement {
 
   static get styles() {
     return [
-      SHARED_STYLES,
+      ...SHARED_STYLES,
       css`
         .loading {
           width: 650px;

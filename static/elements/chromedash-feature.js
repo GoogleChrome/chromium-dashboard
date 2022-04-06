@@ -5,7 +5,7 @@ import '@polymer/iron-icon';
 import './chromedash-color-status';
 
 import style from '../css/elements/chromedash-feature.css';
-import sharedStyle from '../css/shared.css';
+import {SHARED_STYLES} from '../sass/shared-css.js';
 
 const MAX_STANDARDS_VAL = 5;
 const MAX_VENDOR_VIEW = 7;
@@ -497,7 +497,7 @@ customElements.define('chromedash-feature', ChromedashFeature);
 
 
 class ChromedashMultiLinks extends LitElement {
-  static styles = sharedStyle;
+  static styles = SHARED_STYLES;
 
   static get properties() {
     return {

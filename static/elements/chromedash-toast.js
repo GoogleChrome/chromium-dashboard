@@ -1,5 +1,5 @@
 import {LitElement, css, html} from 'lit';
-import SHARED_STYLES from '../css/shared.css';
+import {SHARED_STYLES} from '../sass/shared-css.js';
 
 const DEFAULT_DURATION = 7000;
 
@@ -21,7 +21,7 @@ class ChromedashToast extends LitElement {
 
   static get styles() {
     return [
-      SHARED_STYLES,
+      ...SHARED_STYLES,
       css`
       :host {
         display: flex;

@@ -1,5 +1,5 @@
 import {LitElement, css, html, nothing} from 'lit';
-import SHARED_STYLES from '../css/shared.css';
+import {SHARED_STYLES} from '../sass/shared-css.js';
 import {STATE_NAMES} from './chromedash-approvals-dialog.js';
 
 class ChromedashFeatureTable extends LitElement {
@@ -67,7 +67,7 @@ class ChromedashFeatureTable extends LitElement {
 
   static get styles() {
     return [
-      SHARED_STYLES,
+      ...SHARED_STYLES,
       css`
       table {
         width: var(--max-content-width);
