@@ -17,10 +17,9 @@ import logging
 
 from google.oauth2 import id_token
 from google.auth.transport import requests
-from flask import session
 
 from framework import basehandlers
-from framework import xsrf
+from framework import users
 import settings
 
 
@@ -37,11 +36,7 @@ class LoginAPI(basehandlers.APIHandler):
       idinfo = id_token.verify_oauth2_token(
           token, requests.Request(),
           settings.GOOGLE_SIGN_IN_CLIENT_ID)
-      user_info = {
-          'email': idinfo['email'],
-          }
-      signature = xsrf.generate_token(str(user_info))
-      session['signed_user_info'] = user_info, signature
+      users.add_signed_user_info_to_session(idinfo['email'])
       message = "Done"
       # print(idinfo['email'], file=sys.stderr)
     except ValueError:
