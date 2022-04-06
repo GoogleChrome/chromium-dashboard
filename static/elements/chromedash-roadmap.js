@@ -49,6 +49,7 @@ const DEPRECATED_STATUS = ['Deprecated', 'No longer pursuing'];
 const ORIGIN_TRIAL = ['Origin trial'];
 const BROWSER_INTERVENTION = ['Browser Intervention'];
 const SHOW_DATES = true;
+const compareFeatures = (a, b) => a.name.localeCompare(b.name, 'fr', {ignorePunctuation: true}); // comparator for sorting milestone features
 
 class ChromedashRoadmap extends LitElement {
   static styles = style;
@@ -159,6 +160,9 @@ class ChromedashRoadmap extends LitElement {
     milestoneNumsArray.forEach((milestoneNum) => {
       newMilestonesInfo[milestoneNum].version = milestoneNum;
       newMilestonesInfo[milestoneNum].features = milestoneFeatures[milestoneNum];
+      Object.keys(newMilestonesInfo[milestoneNum].features).forEach(status => {
+        newMilestonesInfo[milestoneNum].features[status].sort(compareFeatures);
+      });
     });
 
     // update the properties to render the latest milestone cards
@@ -201,6 +205,9 @@ class ChromedashRoadmap extends LitElement {
     milestoneNumsArray.forEach((milestoneNum) => {
       newMilestonesInfo[milestoneNum].version = milestoneNum;
       newMilestonesInfo[milestoneNum].features = milestoneFeatures[milestoneNum];
+      Object.keys(newMilestonesInfo[milestoneNum].features).forEach(status => {
+        newMilestonesInfo[milestoneNum].features[status].sort(compareFeatures);
+      });
     });
 
     // update the properties to render the newly fetched milestones

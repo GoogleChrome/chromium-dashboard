@@ -46,25 +46,18 @@ class LoginAPITest(testing_config.CustomTestCase):
     """We reject login requests that have an invalid credential_token."""
     params = {'credential': 'fake bad token'}
     with test_app.test_request_context(self.request_path, json=params):
-      session['something else'] = 'some other aspect of the session'
+      session.clear()
       actual_response = self.handler.do_post()
       self.assertEqual({'message': 'Invalid token'}, actual_response)
-      self.assertEqual(1, len(session))
+      self.assertNotIn('signed_user_info', session)
 
   @mock.patch('google.oauth2.id_token.verify_oauth2_token')
   def test_post__normal(self, mock_verify):
     """We log in the user if they provide a good credential_token."""
     mock_verify.return_value = {'email': 'user@example.com'}
-    params = {'credential': 'fake bad token'}
+    params = {'credential': 'fake good token'}
     with test_app.test_request_context(self.request_path, json=params):
       session.clear()
-      session['something else'] = 'some other aspect of the session'
       actual_response = self.handler.do_post()
       self.assertEqual({'message': 'Done'}, actual_response)
-      self.assertEqual(2, len(session))
-      user_info, signature = session['signed_user_info']
-      self.assertEqual({'email': 'user@example.com'}, user_info)
-      xsrf.validate_token(
-          signature,
-          str(user_info),
-          timeout=xsrf.REFRESH_TOKEN_TIMEOUT_SEC)
+      self.assertIn('signed_user_info', session)

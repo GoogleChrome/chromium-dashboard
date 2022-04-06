@@ -27,8 +27,12 @@ async function init() {
   document.body.classList.remove('loading');
 
   const roadmapEl = document.querySelector('chromedash-roadmap');
+  const compareFeatures = (a, b) => a.name.localeCompare(b.name, 'fr', {ignorePunctuation: true});
   channelsArray.forEach((channel) => {
     channels[channel].features = features[channel];
+    Object.keys(channels[channel].features).forEach(status => {
+      channels[channel].features[status].sort(compareFeatures);
+    });
   });
 
   roadmapEl.channels = channels;
