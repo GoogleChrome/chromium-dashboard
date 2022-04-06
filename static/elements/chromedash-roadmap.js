@@ -1,6 +1,6 @@
 import {LitElement, html} from 'lit';
 import '@polymer/iron-icon';
-import style from '../css/elements/chromedash-roadmap.css';
+import {ROADMAP_CSS} from '../sass/elements/chromedash-roadmap-css.js';
 
 const TEMPLATE_CONTENT = {
   stable_minus_one: {
@@ -52,7 +52,7 @@ const SHOW_DATES = true;
 const compareFeatures = (a, b) => a.name.localeCompare(b.name, 'fr', {ignorePunctuation: true}); // comparator for sorting milestone features
 
 class ChromedashRoadmap extends LitElement {
-  static styles = style;
+  static styles = ROADMAP_CSS;
 
   static get properties() {
     return {

@@ -4,7 +4,7 @@ import {autolink} from './utils.js';
 import '@polymer/iron-icon';
 import './chromedash-color-status';
 
-import style from '../css/elements/chromedash-feature.css';
+import {FEATURE_CSS} from '../sass/elements/chromedash-feature-css.js';
 import {SHARED_STYLES} from '../sass/shared-css.js';
 
 const MAX_STANDARDS_VAL = 5;
@@ -12,7 +12,7 @@ const MAX_VENDOR_VIEW = 7;
 const MAX_WEBDEV_VIEW = 6;
 
 class ChromedashFeature extends LitElement {
-  static styles = style;
+  static styles = FEATURE_CSS;
 
   static get properties() {
     return {

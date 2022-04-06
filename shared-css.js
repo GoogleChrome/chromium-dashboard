@@ -5,18 +5,6 @@ export const SHARED_STYLES = [
   VARS,
   css`
 
-  * {
-    box-sizing: border-box;
-    list-style: none;
-    font: inherit;
-    text-decoration: inherit;
-    -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
-  }
-
-  .conditional-comma:last-child {
-    display: none;
-  }
-
   h1,
   h2,
   h3,
@@ -101,6 +89,7 @@ export const SHARED_STYLES = [
     content: ",";
     margin-right: 0.2em;
   }
+
 
   .no-web-share {
     display: none;
