@@ -121,19 +121,31 @@ def process_queriable_field(field_name, operator, val_str):
   return promise
 
 
-FIELD_NAME_PATTERN = r'[.a-z_0-9]+'
+# A full-text query term consisting of a single word or quoted string.
+# The single word case cannot contain an operator.
+# We do not support any kind of escaped quotes in quoted strings.
+TEXT_PATTERN = r'[^":=><! ]+|"[^S]+"'
+# The JSON field name of a feature field.
+FIELD_NAME_PATTERN = r'[-.a-z_0-9]+'
+# Comparison operators.
 OPERATORS_PATTERN = r':|=|<=|<|>=|>|!='
-VALUE_PATTERN = r'\S+'  # Only single word values are currently supported
+# A value that a feature field can be compared against.  It can be
+# a single word or a quoted string.
+VALUE_PATTERN = r'[^" ]+|"[^"]+"'
 
+# Overall, a query term can be either a structured term or a full-text term.
+# Structured terms look like: FIELD OPERATOR VALUE.
+# Full-text terms look like: SINGLE_WORD, or like: "QUOTED STRING".
 TERM_RE = re.compile(
-    '(?P<field>%s)(?P<op>%s)(?P<val>%s)' % (
-        FIELD_NAME_PATTERN, OPERATORS_PATTERN, VALUE_PATTERN),
+    '(?P<field>%s)(?P<op>%s)(?P<val>%s)\s+|(?P<textterm>%s)\s+' % (
+        FIELD_NAME_PATTERN, OPERATORS_PATTERN, VALUE_PATTERN,
+        TEXT_PATTERN),
     re.I)
 
 
-def process_query_term(query_term):
+def process_query_term(field_name, op_str, val_str):
   """Parse and run a user-supplied query, if we can handle it."""
-  # TODO(jrobbins): Replace this with a more general approach.
+  query_term = field_name + op_str + val_str
   if query_term == 'pending-approval-by:me':
     return process_pending_approval_me_query()
   if query_term == 'starred-by:me':
@@ -143,12 +155,9 @@ def process_query_term(query_term):
   if query_term == 'is:recently-reviewed':
     return process_recent_reviews_query()
 
-  m = TERM_RE.match(query_term)
-  if m:
-    field_name = m.group('field')
-    op_str = m.group('op')
-    val_str = m.group('val')
-    return process_queriable_field(field_name, op_str, val_str)
+  if val_str.startswith('"') and val_str.endswith('"'):
+    val_str = val_str[1:-1]
+  return process_queriable_field(field_name, op_str, val_str)
 
   logging.warning('Unexpected query: %r', query_term)
   return []
@@ -170,12 +179,14 @@ def process_query(user_query, show_unlisted=False):
   """Parse the user's query, run it, and return a list of features."""
   # 1. Parse the user query into terms.
   feature_id_futures = []
-  terms = user_query.split()[:MAX_TERMS]
+  terms = TERM_RE.findall(user_query + ' ')[:MAX_TERMS] or []
 
   # 2. Create parallel queries for each term.  Each yields a future.
   logging.info('creating parallel queries for %r', terms)
-  for term in terms:
-    future = process_query_term(term)
+  for field_name, op_str, val_str, textterm in terms:
+    if textterm:
+      logging.warning('Full-text term %r not supported yet', textterm)
+    future = process_query_term(field_name, op_str, val_str)
     feature_id_futures.append(future)
 
   # 3. Get the result of each future and combine them into a result ID set.
@@ -191,7 +202,7 @@ def process_query(user_query, show_unlisted=False):
       result_id_set.intersection_update(feature_ids)
 
   # 4. Fetch the actual issues that have those IDs in the sorted results.
-  feature_list = models.Feature.get_by_ids(list(result_id_set))
+  feature_list = models.Feature.get_by_ids(list(result_id_set or []))
 
   # 5. Filter by permissions.
   allowed_feature_list = [
