@@ -1,6 +1,7 @@
 import { css } from "lit";
 
-export const LAYOUT_CSS = css`.layout {
+export const LAYOUT_CSS = css`
+.layout {
   display: flex;
 }
 .layout.wrap {

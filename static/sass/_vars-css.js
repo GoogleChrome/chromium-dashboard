@@ -34,6 +34,8 @@ export const VARS = css`
   /* App specific */
   --invalid-color: rgba(255,0,0,0.75);
   --content-padding: 16px;
+  --content-padding-negative: -16px;
+  --content-padding-huge: 80px;
   --default-border-radius: 3px;
   
   --app-drawer-width: 200px;

@@ -8,8 +8,8 @@ export const ROADMAP_CSS = [
   css`
     :host {
       display: inline-flex;
-      padding: 0 0em $content-padding * 5;
-      margin-right: $content-padding * -1;
+      padding: 0 0em var(--content-padding-huge);
+      margin-right: var(--content-padding-negative);
     }
   `,
 ];
