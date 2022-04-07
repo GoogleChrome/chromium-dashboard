@@ -121,11 +121,21 @@ def process_queriable_field(field_name, operator, val_str):
   return promise
 
 
+# A full-text query term consisting of a single word or quoted string.
+# The single word case cannot contain an operator.
+# We do not support any kind of escaped quotes in quoted strings.
 TEXT_PATTERN = r'[^":=><! ]+|"[^S]+"'
+# The JSON field name of a feature field.
 FIELD_NAME_PATTERN = r'[-.a-z_0-9]+'
+# Comparison operators.
 OPERATORS_PATTERN = r':|=|<=|<|>=|>|!='
+# A value that a feature field can be compared against.  It can be
+# a single word or a quoted string.
 VALUE_PATTERN = r'[^" ]+|"[^"]+"'
 
+# Overall, a query term can be either a structured term or a full-text term.
+# Structured terms look like: FIELD OPERATOR VALUE.
+# Full-text terms look like: SINGLE_WORD, or like: "QUOTED STRING".
 TERM_RE = re.compile(
     '(?P<field>%s)(?P<op>%s)(?P<val>%s)\s+|(?P<textterm>%s)\s+' % (
         FIELD_NAME_PATTERN, OPERATORS_PATTERN, VALUE_PATTERN,
