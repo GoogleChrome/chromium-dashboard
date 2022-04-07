@@ -205,6 +205,14 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
     self.assertEqual(1, len(actual))
     self.assertEqual(actual[0]['name'], 'feature 2')
 
+    actual = search.process_query('category="2"')
+    self.assertEqual(1, len(actual))
+    self.assertEqual(actual[0]['name'], 'feature 2')
+
+    actual = search.process_query('name="feature 2"')
+    self.assertEqual(1, len(actual))
+    self.assertEqual(actual[0]['name'], 'feature 2')
+
     actual = search.process_query('browsers.webdev.view=1')
     self.assertEqual(2, len(actual))
     self.assertCountEqual(
