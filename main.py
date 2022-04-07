@@ -35,6 +35,7 @@ from internals import notifier
 from pages import blink_handler
 from pages import featuredetail
 from pages import featurelist
+from pages import newfeaturelist
 from pages import guide
 from pages import intentpreview
 from pages import metrics
@@ -127,6 +128,7 @@ page_routes = [
     ('/', basehandlers.Redirector,
      {'location': '/features'}),
 
+    ('/newfeatures', newfeaturelist.NewFeatureListHandler),
     ('/features', featurelist.FeatureListHandler),
     ('/features/<int:feature_id>', featurelist.FeatureListHandler),
     ('/features.xml', featurelist.FeatureListXMLHandler),
