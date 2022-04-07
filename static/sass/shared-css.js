@@ -55,7 +55,7 @@ export const SHARED_STYLES = [
 
   input:not([type="submit"]),
   textarea {
-    border: 1px solid $bar-border-color;
+    border: 1px solid var(--bar-border-color);
   }
   input:not([type="submit"])[disabled],
   textarea[disabled],
@@ -94,7 +94,7 @@ export const SHARED_STYLES = [
   }
 
   button:not(:disabled):hover {
-    border-color: $gray-4;
+    border-color: var(--gray-4);
   }
 
   .comma::after {

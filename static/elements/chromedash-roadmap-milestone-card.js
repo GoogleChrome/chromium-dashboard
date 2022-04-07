@@ -1,6 +1,6 @@
 import {LitElement, html, nothing} from 'lit';
 import {ROADMAP_MILESTONE_CARD_CSS} from
-  '../sass/elements/chromedash-roadmap-milestone-card-css.js';
+'../sass/elements/chromedash-roadmap-milestone-card-css.js';
 
 class ChromedashRoadmapMilestoneCard extends LitElement {
   static styles = ROADMAP_MILESTONE_CARD_CSS;

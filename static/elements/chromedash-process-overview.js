@@ -4,7 +4,7 @@ import './chromedash-callout';
 import './chromedash-dialog';
 import {SHARED_STYLES} from '../sass/shared-css.js';
 
-class ChromedashProcessOverview extends LitElement {
+export class ChromedashProcessOverview extends LitElement {
   static get properties() {
     return {
       feature: {type: Object},
