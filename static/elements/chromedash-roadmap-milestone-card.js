@@ -188,8 +188,8 @@ class ChromedashRoadmapMilestoneCard extends LitElement {
   _cardFeatureListTemplate() {
     return html `
       <div class="features_list">
-      ${this._isAnyFeatureReleased() ? html `
-      <div class="features_header">${this.templateContent.featureHeader}:</div>
+        ${this._isAnyFeatureReleased() ? html `
+        <div class="features_header">${this.templateContent.featureHeader}:</div>
           ${this._objKeys(this.channel.features).map((shippingType) => this.channel.features[shippingType] != 0 ? html`
           <h3 class="feature_shipping_type">${shippingType}</h3>
           <ul>
@@ -200,7 +200,8 @@ class ChromedashRoadmapMilestoneCard extends LitElement {
           ` : nothing)}
           </div>` : html `
           <div class="features_header no_feature_released">${this.noFeatureString}</div>
-          `}
+        `}
+      </div>
     `;
   }
 

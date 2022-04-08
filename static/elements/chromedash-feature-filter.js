@@ -8,26 +8,35 @@ const BETWEEN_OP = 'Between';
 const CONTAINS_OP = 'Contains';
 
 const TEXT_TYPE = 'text';
-const NUM_TYPE = 'numbet';
+const NUM_TYPE = 'number';
 const DATE_TYPE = 'date';
 const EMAIL_TYPE = 'email';
-const ENUM_TYPE = 'enum';
-const BOOL_TYPE = 'bool';
+// const ENUM_TYPE = 'enum';
+// const BOOL_TYPE = 'bool';
+
+// This works around a lint warning for <input type="${inputType}">.
+const FIELD_TYPE_TO_INPUT_TYPE = {
+  text: 'text', number: 'number', date: 'date', email: 'email',
+};
+
 
 const AVAILABLE_OPS = {};
 AVAILABLE_OPS[TEXT_TYPE] = [EQ_OP, CONTAINS_OP];
 AVAILABLE_OPS[NUM_TYPE] = [BETWEEN_OP, EQ_OP];
 AVAILABLE_OPS[DATE_TYPE] = [BETWEEN_OP];
 AVAILABLE_OPS[EMAIL_TYPE] = [EQ_OP, CONTAINS_OP];
-AVAILABLE_OPS[ENUM_TYPE] = [EQ_OP];
-AVAILABLE_OPS[BOOL_TYPE] = [EQ_OP];
+// AVAILABLE_OPS[ENUM_TYPE] = [EQ_OP];
+// AVAILABLE_OPS[BOOL_TYPE] = [EQ_OP];
 
 
 const QUERIABLE_FIELDS = [
   {name: 'created.when', display: 'Created', type: DATE_TYPE},
   {name: 'updated.when', display: 'Updated', type: DATE_TYPE},
-  {name: 'created.by', display: 'Created by', type: EMAIL_TYPE},
-  {name: 'updated.by', display: 'Updated by', type: EMAIL_TYPE},
+
+  // TODO(jrobbins): The backend cannot handle User-type fields.
+  // These need to be migrated to string fields with emails.
+  // {name: 'created.by', display: 'Created by', type: EMAIL_TYPE},
+  // {name: 'updated.by', display: 'Updated by', type: EMAIL_TYPE},
 
   // {name: 'category', display: 'Category', type: ENUM_TYPE,
   //  values: ['one', 'two', 'three']},
@@ -53,7 +62,7 @@ const QUERIABLE_FIELDS = [
   //  'initial_public_proposal_url': Feature.initial_public_proposal_url,
   //  'browsers.chrome.blink_components': Feature.blink_components,
   {name: 'browsers.chrome.devrel', display: 'DevRel contact', type: EMAIL_TYPE},
-  {name: 'browsers.chrome.prefixed', display: 'Prefixed', type: BOOL_TYPE},
+  // {name: 'browsers.chrome.prefixed', display: 'Prefixed', type: BOOL_TYPE},
 
   //  'browsers.chrome.status': Feature.impl_status_chrome,
   {name: 'browsers.chrome.desktop',
@@ -345,10 +354,11 @@ class ChromedashFeatureFilter extends LitElement {
 
   renderFilterValues(cond, index) {
     const field = QUERIABLE_FIELDS.find(f => f.name == cond.fieldName);
+    const inputType = FIELD_TYPE_TO_INPUT_TYPE[field && field.type] || 'text';
 
     if (cond.op == EQ_OP) {
       return html`
-        <input type="${field.type}" value="${cond.value || ''}"
+        <input type="${inputType}" value="${cond.value || ''}"
                @change="${(e) => this.handleChangeValue(e.target.value, index)}">
         `;
     }
@@ -356,10 +366,10 @@ class ChromedashFeatureFilter extends LitElement {
     if (cond.op == BETWEEN_OP) {
       return html`
         <label>Min:</label>
-        <input type="${field.type}" value="${cond.low}"
+        <input type="${inputType}" value="${cond.low}"
                @change="${(e) => this.handleChangeLow(e.target.value, index)}">
         <label>Max:</label>
-        <input type="${field.type}" value="${cond.high}"
+        <input type="${inputType}" value="${cond.high}"
                @change="${(e) => this.handleChangeHigh(e.target.value, index)}">
         `;
     }
@@ -394,7 +404,7 @@ class ChromedashFeatureFilter extends LitElement {
 
   renderFilterRow(cond, index) {
     return html`
-     <div class="filterrow"">
+     <div class="filterrow">
       ${this.renderFilterFieldMenu(cond.fieldName, index)}
       ${this.renderFilterOpMenu(cond, index)}
       ${this.renderFilterValues(cond, index)}
@@ -410,12 +420,13 @@ class ChromedashFeatureFilter extends LitElement {
      <div class="filterrow">
       <select id="choose_field" class="cond-field-menu"
               @change="${this.addFilterCondition}">
-       <option disabled=disabled selected value="choose"
+       <option disabled selected value="choose"
          >Select field name</option>
        ${QUERIABLE_FIELDS.map((item) => html`
         <option value="${item.name}">${item.display}</option>
          `)}
       </select>
+     </div>
     `;
   }
 

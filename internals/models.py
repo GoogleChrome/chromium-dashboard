@@ -1360,8 +1360,11 @@ class Feature(DictModel):
 QUERIABLE_FIELDS = {
     'created.when': Feature.created,
     'updated.when': Feature.updated,
-    'created.by': Feature.created_by,
-    'updated.by': Feature.updated_by,
+
+    # TODO(jrobbins): We cannot query user fields because Cloud NDB does not
+    # seem to support it.  We should migrate these to string fields.
+    #'created.by': Feature.created_by,
+    #'updated.by': Feature.updated_by,
 
     'category': Feature.category,
     'name': Feature.name,
