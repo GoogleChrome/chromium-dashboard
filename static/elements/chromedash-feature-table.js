@@ -1,11 +1,13 @@
 import {LitElement, css, html, nothing} from 'lit';
 import SHARED_STYLES from '../css/shared.css';
 import {STATE_NAMES} from './chromedash-approvals-dialog.js';
+import './chromedash-feature-filter';
 
 class ChromedashFeatureTable extends LitElement {
   static get properties() {
     return {
       query: {type: String},
+      showQuery: {type: Boolean},
       features: {type: Array},
       loading: {type: Boolean},
       rows: {type: Number},
@@ -23,6 +25,8 @@ class ChromedashFeatureTable extends LitElement {
 
   constructor() {
     super();
+    this.query = '';
+    this.showQuery = false;
     this.loading = true;
     this.starredFeatures = new Set();
     this.features = [];
@@ -36,6 +40,10 @@ class ChromedashFeatureTable extends LitElement {
 
   connectedCallback() {
     super.connectedCallback();
+    this.fetchFeatures();
+  }
+
+  fetchFeatures() {
     window.csClient.searchFeatures(this.query).then((features) => {
       this.features = features;
       this.loading = false;
@@ -63,6 +71,12 @@ class ChromedashFeatureTable extends LitElement {
         this.configs = newConfigs;
       });
     }
+  }
+
+  handleSearch(event) {
+    this.loading = true;
+    this.query = event.detail.query;
+    this.fetchFeatures();
   }
 
   static get styles() {
@@ -152,7 +166,7 @@ class ChromedashFeatureTable extends LitElement {
         <tr><td>${this.noResultsMessage}</td></tr>
       `;
     }
-    return nothing;
+    return false; // Causes features to render instead.
   }
 
   openApprovalsDialog(featureId) {
@@ -295,6 +309,17 @@ class ChromedashFeatureTable extends LitElement {
     return result;
   }
 
+  renderSearch() {
+    if (this.showQuery) {
+      return html`
+       <chromedash-feature-filter
+        @search="${this.handleSearch}"
+       ></chromedash-feature-filter>
+      `;
+    }
+    return nothing;
+  }
+
   renderHighlights(feature) {
     if (this.columns == 'approvals') {
       const nextReviewDate = this.getEarliestReviewDate(feature);
@@ -353,11 +378,12 @@ class ChromedashFeatureTable extends LitElement {
 
   render() {
     return html`
-      <table>
-        ${this.features.map(this.renderFeature.bind(this))}
-        ${this.renderMessages()}
-      </table>
-    `;
+      ${this.renderSearch()}
+       <table>
+        ${this.renderMessages() ||
+          this.features.map(this.renderFeature.bind(this))}
+       </table>
+     `;
   }
 }
 
