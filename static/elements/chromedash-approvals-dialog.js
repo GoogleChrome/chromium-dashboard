@@ -275,7 +275,7 @@ class ChromedashApprovalsDialog extends LitElement {
              value="${owners}">
       <datalist id="possible-owners-${fieldId}">
          ${(this.possibleOwners[fieldId] || []).map(po => html`
-            <option value="${po}">
+            <option value="${po}"></option>
          `)}
       </datalist>
     `;

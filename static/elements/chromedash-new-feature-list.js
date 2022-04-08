@@ -57,7 +57,7 @@ class ChromedashNewFeatureList extends LitElement {
     return html`
         <chromedash-feature-table
           query="${query}"
-          showQuery="true"
+          showQuery
           ?signedIn=${Boolean(this.signedInUser)}
           ?canEdit=${this.canEdit}
           ?canApprove=${this.canApprove}
