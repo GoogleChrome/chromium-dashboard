@@ -1,11 +1,10 @@
-import {LitElement, css, html, nothing} from 'lit';
-import './chromedash-accordion';
+import {LitElement, css, html} from 'lit';
 import './chromedash-approvals-dialog';
 import './chromedash-feature-table';
-import {SHARED_STYLES} from '../sass/shared-css.js';
+import SHARED_STYLES from '../css/shared.css';
 
 
-class ChromedashMyFeatures extends LitElement {
+class ChromedashNewFeatureList extends LitElement {
   static get properties() {
     return {
       signedInUser: {type: String},
@@ -26,11 +25,8 @@ class ChromedashMyFeatures extends LitElement {
 
   static get styles() {
     return [
-      ...SHARED_STYLES,
+      SHARED_STYLES,
       css`
-        chromedash-accordion {
-          padding: 0 var(--content-padding);
-        }
       `];
   }
 
@@ -57,49 +53,29 @@ class ChromedashMyFeatures extends LitElement {
     dialog.openWithFeature(featureId);
   }
 
-  renderBox(title, query, columns, opened=true) {
+  renderBox(query) {
     return html`
-      <chromedash-accordion
-        title="${title}"
-        ?opened=${opened}>
-
         <chromedash-feature-table
           query="${query}"
+          showQuery="true"
           ?signedIn=${Boolean(this.signedInUser)}
           ?canEdit=${this.canEdit}
           ?canApprove=${this.canApprove}
           .starredFeatures=${this.starredFeatures}
           @star-toggle-event=${this.handleStarToggle}
           @open-approvals-event=${this.handleOpenApprovals}
-          rows=10 columns=${columns}>
+          rows=100 columns="normal">
         </chromedash-feature-table>
-      </chromedash-accordion>
     `;
   }
 
-  renderPendingAndRecentApprovals() {
-    const pendingBox = this.renderBox(
-      'Features pending my approval', 'pending-approval-by:me', 'approvals');
-    const recentBox = this.renderBox(
-      'Recently reviewed features', 'is:recently-reviewed', 'normal', false);
-    return [pendingBox, recentBox];
-  }
-
-  renderIStarred() {
-    return this.renderBox(
-      'Features I starred', 'starred-by:me', 'normal');
-  }
-
-  renderIOwn() {
-    return this.renderBox(
-      'Features I own', 'owner:me', 'normal');
+  renderFeatureList() {
+    return this.renderBox('');
   }
 
   render() {
     return html`
-      ${this.canApprove ? this.renderPendingAndRecentApprovals() : nothing}
-      ${this.renderIOwn()}
-      ${this.renderIStarred()}
+      ${this.renderFeatureList()}
       <chromedash-approvals-dialog
         .signedInUser=${this.signedInUser}
       ></chromedash-approvals-dialog>
@@ -107,4 +83,4 @@ class ChromedashMyFeatures extends LitElement {
   }
 }
 
-customElements.define('chromedash-myfeatures', ChromedashMyFeatures);
+customElements.define('chromedash-new-feature-list', ChromedashNewFeatureList);

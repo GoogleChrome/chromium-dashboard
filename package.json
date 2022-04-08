@@ -67,7 +67,7 @@
     "lit-analyzer": "^1.1.9",
     "lodash": ">=4.17.21",
     "lodash.template": ">=4.5.0",
-    "minimist": ">=0.2.1",
+    "minimist": ">=1.2.6",
     "path-parse": ">=1.0.7",
     "regenerator-runtime": "^0.13.9",
     "rollup": "^1.17.0",

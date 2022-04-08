@@ -1,8 +1,9 @@
 import {LitElement, html, nothing} from 'lit';
-import style from '../css/elements/chromedash-roadmap-milestone-card.css';
+import {ROADMAP_MILESTONE_CARD_CSS} from
+  '../sass/elements/chromedash-roadmap-milestone-card-css.js';
 
 class ChromedashRoadmapMilestoneCard extends LitElement {
-  static styles = style;
+  static styles = ROADMAP_MILESTONE_CARD_CSS;
   static get properties() {
     return {
       // Assigned in schedule-apge.js, value from Django

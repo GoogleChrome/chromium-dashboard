@@ -1,12 +1,12 @@
 import {LitElement, html} from 'lit';
 // eslint-disable-next-line no-unused-vars
 import './chromedash-feature';
-import style from '../css/elements/chromedash-featurelist.css';
+import {FEATURELIST_CSS} from '../sass/elements/chromedash-featurelist-css.js';
 
 const MAX_FEATURES_SHOWN = 500;
 
 class ChromedashFeaturelist extends LitElement {
-  static styles = style;
+  static styles = FEATURELIST_CSS;
 
   static get properties() {
     return {

@@ -1,6 +1,6 @@
 // TODO(yangguang): This component is not tested. Data is not available in devserver, so cannot be tested locally.
 import {LitElement, css, html} from 'lit';
-import SHARED_STYLES from '../css/shared.css';
+import {SHARED_STYLES} from '../sass/shared-css.js';
 
 class ChromedashTimeline extends LitElement {
   static get properties() {
@@ -29,7 +29,7 @@ class ChromedashTimeline extends LitElement {
 
   static get styles() {
     return [
-      SHARED_STYLES,
+      ...SHARED_STYLES,
       css`
       :host {
         display: block;

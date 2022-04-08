@@ -1,0 +1,32 @@
+{% extends "_base.html" %}
+{% load inline_file %}
+
+{% block css %}
+{% endblock %}
+
+{% block subheader %}
+  <div class="feature-count">
+    <h2>Features</h2>
+  </div>
+{% endblock %}
+
+
+{% block content %}
+<chromedash-new-feature-list
+  {% if user %} signedinuser="{{user.email}}" {% endif %}
+  {% if user.can_edit %} canedit {% endif %}
+  {% if user.can_approve %} canapprove {% endif %}
+  >
+</chromedash-new-feature-list>
+{% endblock %}
+
+
+{% block js %}
+<script nonce="{{nonce}}">
+    (function() {
+      'use strict';
+
+      {% inline_file "/static/js/new-feature-list-page.min.js" %}
+    })();
+</script>
+{% endblock %}

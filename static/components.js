@@ -23,6 +23,7 @@ import './elements/chromedash-feature';
 import './elements/chromedash-feature-detail';
 import './elements/chromedash-feature-table';
 import './elements/chromedash-featurelist';
+import './elements/chromedash-new-feature-list';
 import './elements/chromedash-gantt';
 import './elements/chromedash-legend';
 import './elements/chromedash-metadata';
