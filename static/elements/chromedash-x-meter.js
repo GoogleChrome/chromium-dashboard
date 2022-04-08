@@ -1,5 +1,5 @@
 import {LitElement, css, html} from 'lit';
-import SHARED_STYLES from '../css/shared.css';
+import {SHARED_STYLES} from '../sass/shared-css.js';
 
 class ChromedashXMeter extends LitElement {
   static get properties() {
@@ -19,7 +19,7 @@ class ChromedashXMeter extends LitElement {
 
   static get styles() {
     return [
-      SHARED_STYLES,
+      ...SHARED_STYLES,
       css`
       :host {
         display: inline-block;

@@ -1,6 +1,5 @@
 import {LitElement, css, html, nothing} from 'lit';
-import SHARED_STYLES from '../css/shared.css';
-
+import {SHARED_STYLES} from '../sass/shared-css.js';
 
 class ChromedashUserlist extends LitElement {
   static get properties() {
@@ -16,7 +15,7 @@ class ChromedashUserlist extends LitElement {
 
   static get styles() {
     return [
-      SHARED_STYLES,
+      ...SHARED_STYLES,
       css`
       form {
         padding: var(--content-padding);

@@ -2,7 +2,7 @@ import {LitElement, css, html, nothing} from 'lit';
 import './chromedash-accordion';
 import './chromedash-approvals-dialog';
 import './chromedash-feature-table';
-import SHARED_STYLES from '../css/shared.css';
+import {SHARED_STYLES} from '../sass/shared-css.js';
 
 
 class ChromedashMyFeatures extends LitElement {
@@ -26,7 +26,7 @@ class ChromedashMyFeatures extends LitElement {
 
   static get styles() {
     return [
-      SHARED_STYLES,
+      ...SHARED_STYLES,
       css`
         chromedash-accordion {
           padding: 0 var(--content-padding);

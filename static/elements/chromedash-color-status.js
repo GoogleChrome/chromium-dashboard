@@ -1,6 +1,6 @@
 import {LitElement, css, html} from 'lit';
 
-import SHARED_STYLES from '../css/shared.css';
+import {SHARED_STYLES} from '../sass/shared-css.js';
 
 const CYAN = 120;
 const DEFAULT_MAX = 7;
@@ -20,7 +20,7 @@ class ChromedashColorStatus extends LitElement {
 
   static get styles() {
     return [
-      SHARED_STYLES,
+      ...SHARED_STYLES,
       css`
       span {
         background-color: rgb(255,0,0);

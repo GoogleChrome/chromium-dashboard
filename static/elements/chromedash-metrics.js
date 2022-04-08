@@ -3,7 +3,7 @@ import {ifDefined} from 'lit/directives/if-defined.js';
 
 import '@polymer/iron-icon';
 import './chromedash-x-meter';
-import SHARED_STYLES from '../css/shared.css';
+import {SHARED_STYLES} from '../sass/shared-css.js';
 
 class ChromedashMetrics extends LitElement {
   static get properties() {
@@ -31,7 +31,7 @@ class ChromedashMetrics extends LitElement {
 
   static get styles() {
     return [
-      SHARED_STYLES,
+      ...SHARED_STYLES,
       css`
       :host {
         display: block;
