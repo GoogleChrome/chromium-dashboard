@@ -446,15 +446,27 @@ ALL_FIELDS = {
                    'trial of this feature.')),
 
     'ot_milestone_android_start': forms.IntegerField(
-        required=False, label='OT android start',
+        required=False, label='OT Android start',
         widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'}),
         help_text=('First android milestone that will support an origin '
                    'trial of this feature.')),
 
     'ot_milestone_android_end': forms.IntegerField(
-        required=False, label='OT android end',
+        required=False, label='OT Android end',
         widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'}),
         help_text=('Last android milestone that will support an origin '
+                   'trial of this feature.')),
+
+    'ot_milestone_webview_start': forms.IntegerField(
+        required=False, label='OT WebView start',
+        widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'}),
+        help_text=('First webview milestone that will support an origin '
+                   'trial of this feature.')),
+
+    'ot_milestone_webview_end': forms.IntegerField(
+        required=False, label='OT WebView end',
+        widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'}),
+        help_text=('Last webview milestone that will support an origin '
                    'trial of this feature.')),
 
     'experiment_risks': forms.CharField(
@@ -827,6 +839,7 @@ ImplStatus_OriginTrial = define_form_class_using_shared_fields(
     'ImplStatus_OriginTrial',
     ('ot_milestone_desktop_start', 'ot_milestone_desktop_end',
      'ot_milestone_android_start', 'ot_milestone_android_end',
+     'ot_milestone_webview_start', 'ot_milestone_webview_end',
      'experiment_timeline',  # deprecated
      ))
 
@@ -891,6 +904,7 @@ Deprecation_DeprecationTrial = define_form_class_using_shared_fields(
     ('experiment_goals', 'experiment_risks',
      'ot_milestone_desktop_start', 'ot_milestone_desktop_end',
      'ot_milestone_android_start', 'ot_milestone_android_end',
+     'ot_milestone_webview_start', 'ot_milestone_webview_end',
      'experiment_timeline',  # deprecated
      'experiment_extension_reason', 'ongoing_constraints',
      'intent_to_experiment_url=r4dt_url',
@@ -980,6 +994,7 @@ Flat_OriginTrial = define_form_class_using_shared_fields(
      # Implementation
      'ot_milestone_desktop_start', 'ot_milestone_desktop_end',
      'ot_milestone_android_start', 'ot_milestone_android_end',
+     'ot_milestone_webview_start', 'ot_milestone_webview_end',
      'experiment_timeline',  # deprecated
     ))
 
@@ -1091,6 +1106,7 @@ DISPLAY_FIELDS_IN_STAGES = {
         'i2e_lgtms', 'r4dt_lgtms',
         'ot_milestone_desktop_start', 'ot_milestone_desktop_end',
         'ot_milestone_android_start', 'ot_milestone_android_end',
+        'ot_milestone_webview_start', 'ot_milestone_webview_end',
         'experiment_timeline',  # Deprecated
         ),
     models.INTENT_SHIP: make_display_specs(
