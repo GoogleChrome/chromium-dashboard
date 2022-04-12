@@ -389,6 +389,13 @@ class FeatureEditStage(basehandlers.FlaskHandler):
       feature.ot_milestone_android_end = self.parse_int(
           'ot_milestone_android_end')
 
+    if self.touched('ot_milestone_webview_start'):
+      feature.ot_milestone_webview_start = self.parse_int(
+          'ot_milestone_webview_start')
+    if self.touched('ot_milestone_webview_end'):
+      feature.ot_milestone_webview_end = self.parse_int(
+          'ot_milestone_webview_end')
+
     if self.touched('requires_embedder_support'):
       feature.requires_embedder_support = (
           self.form.get('requires_embedder_support') == 'on')
