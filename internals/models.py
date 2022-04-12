@@ -1367,6 +1367,7 @@ class Feature(DictModel):
   experiment_extension_reason = ndb.StringProperty()
   ongoing_constraints = ndb.StringProperty()
   origin_trial_feedback_url = ndb.StringProperty()
+  anticipated_spec_changes = ndb.StringProperty()
 
   finch_url = ndb.StringProperty()
 
@@ -1423,6 +1424,7 @@ QUERIABLE_FIELDS = {
 
     'standards.maturity': Feature.standard_maturity,
     'standards.spec': Feature.spec_link,
+    'standards.anticipated_spec_changes': Feature.anticipated_spec_changes,
     'api_spec': Feature.api_spec,
     'spec_mentors': Feature.spec_mentors,
     'security_review_status': Feature.security_review_status,

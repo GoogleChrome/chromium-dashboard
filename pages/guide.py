@@ -342,6 +342,10 @@ class FeatureEditStage(basehandlers.FlaskHandler):
       feature.origin_trial_feedback_url = self.parse_link(
           'origin_trial_feedback_url')
 
+    if self.touched('anticipated_spec_changes'):
+      feature.anticipated_spec_changes = self.form.get(
+          'anticipated_spec_changes')
+
     if self.touched('finch_url'):
       feature.finch_url = self.parse_link('finch_url')
 

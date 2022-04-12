@@ -386,7 +386,7 @@ ALL_FIELDS = {
          'when designing this feature.')),
 
     'webview_risks': forms.CharField(
-        label='WebView Application Risks', required=False,
+        label='WebView application risks', required=False,
         widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 1480}),
         help_text=
         ('Does this intent deprecate or change behavior of existing APIs, '
@@ -499,6 +499,16 @@ ALL_FIELDS = {
         help_text=
         ('If your feature was available as an origin trial, link to a summary '
          'of usage and developer feedback. If not, leave this empty.')),
+
+    'anticipated_spec_changes': forms.CharField(
+        required=False, label='Anticipated spec changes',
+        widget=forms.Textarea(
+            attrs={'rows': 4, 'cols': 50, 'maxlength': 500,
+                   'placeholder': 'https://\nhttps://'}),
+        help_text=
+        ('Please list known spec issues whose resolution may introduce '
+         'web compat risk (e.g., change to naming or structure of '
+         'the API).')),
 
     'finch_url': forms.URLField(
         required=False, label='Finch experiment',
@@ -847,7 +857,7 @@ ImplStatus_OriginTrial = define_form_class_using_shared_fields(
 Most_PrepareToShip = define_form_class_using_shared_fields(
     'Most_PrepareToShip',
     ('tag_review', 'tag_review_status', 'non_oss_deps',
-     'webview_risks', 'origin_trial_feedback_url',
+     'webview_risks', 'anticipated_spec_changes', 'origin_trial_feedback_url',
      'launch_bug_url', 'intent_to_ship_url', 'i2s_lgtms', 'comments'))
 
 
@@ -1003,7 +1013,7 @@ Flat_PrepareToShip = define_form_class_using_shared_fields(
     'Flat_PrepareToShip',
     (# Standardization
      'tag_review', 'tag_review_status',
-     'webview_risks',
+     'webview_risks', 'anticipated_spec_changes',
      'intent_to_ship_url', 'i2s_lgtms',
      # Implementation
      'measurement',
@@ -1110,7 +1120,7 @@ DISPLAY_FIELDS_IN_STAGES = {
         'experiment_timeline',  # Deprecated
         ),
     models.INTENT_SHIP: make_display_specs(
-        'finch_url',
+        'finch_url', 'anticipated_spec_changes',
         'shipped_milestone', 'shipped_android_milestone',
         'shipped_ios_milestone', 'shipped_webview_milestone',
         'intent_to_ship_url', 'i2s_lgtms'),
