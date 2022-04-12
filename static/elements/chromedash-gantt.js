@@ -22,76 +22,42 @@ class ChromedashGantt extends LitElement {
       ...SHARED_STYLES,
       css`
       :host {
-        width: 200px;
+        width: 600px;
         margin-top: 8px;
       }
-      ul {
-        display: block;
-        font-size: 12px;
-        vertical-align: top;
-        padding: 0;
-        margin: var(--content-padding-half);
-      }
-      li {
-        display: inline-block;
-        width: 80px;
-        padding: 4px 8px;
-      }
-      .header li {
-        text-align: center;
-      }
-      .bar {
-        background-repeat: no-repeat;
-        background-size: 210px;
-        background-position: 100px;
-      }
-      .without-ot {
-        background-image: url(/static/img/gantt-bar-without-ot.png);
-      }
-      .with-ot {
-        background-image: url(/static/img/gantt-bar-with-ot.png);
-      }
-      .with-ot-gap {
-        background-image: url(/static/img/gantt-bar-with-ot-gap.png);
-      }
       .platform {
+        display: inline-block;
         padding-top: 15px;
         vertical-align: top;
+        width: 100px;
       }
-      .diamond {
-        transform: rotate(45deg);
-        width: 36px;
-        height: 36px;
-        text-align: center;
-        margin: auto;
-        border: 2px solid white;
+      .chart {
+        display: inline-block;
       }
-      .dev_trial {
+
+
+      .strip div {
+        display: inline-block;
+        width: 50px;
+        height: 30px;
+        overflow: visible;
+        white-space: nowrap;
+        background: #eee;
+        padding: 4px;
+        line-height: 22px;
+        margin: 3px 2px;
+      }
+
+      .strip div.dev_trial {
         background: #cfe2f3ff;
       }
-      .origin_trial {
+      .strip div.origin_trial {
         background: #6fa8dcff;
       }
-      .shipping {
+      .strip div.shipping {
         background: #0b5394ff;
         color: white;
       }
-      .stable {
-        border-color: #444;
-      }
-      .diamond span {
-        font-size: 14px;
-        font-weight: bold;
-        display: table-cell;
-        transform: rotate(-45deg);
-        width: 34px;
-        height: 34px;
-        vertical-align: middle;
-      }
-      .offset_0 { padding-left: 0px; }
-      .offset_1 { padding-left: 8px; }
-      .offset_2 { padding-left: 16px; }
-      .offset_3 { padding-left: 24px; }
     `];
   }
 
@@ -110,54 +76,7 @@ class ChromedashGantt extends LitElement {
             status === 'No longer pursuing');
   }
 
-  renderDevTrial(milestone) {
-    if (!milestone) return nothing;
-    return html`
-      <div class="diamond dev_trial
-                  ${milestone === this.stableMilestone ? 'stable' : ''}"
-       title="${this.firstPhrase(milestone)} available to developers behind a flag"
-      ><span>${milestone}</span></div>`;
-  }
-
-  renderOriginTrial(milestone) {
-    if (!milestone) return nothing;
-    return html`
-      <div class="diamond origin_trial
-                  ${milestone === this.stableMilestone ? 'stable' : ''}"
-       title="${this.firstPhrase(milestone)} enabled on participating origins"
-      ><span>${milestone}</span></div>`;
-  }
-
-  renderShipping(milestone) {
-    if (!milestone) return nothing;
-    return html`
-      <div class="diamond shipping
-                  ${milestone === this.stableMilestone ? 'stable' : ''}"
-       title="${this.firstPhrase(milestone)} enabled by default"
-      ><span>${milestone}</span></div>`;
-  }
-
-  chooseBackground(
-    originTrialMilestoneFirst, originTrialMilestoneLast, shippingMilestone) {
-    // Feature has no OT planned.
-    if (!originTrialMilestoneFirst) {
-      return 'without-ot';
-    }
-    // Feature has a single-release OT planned, so just OT diamond on background
-    // that has no extended OT area.
-    if (originTrialMilestoneFirst === originTrialMilestoneLast) {
-      return 'without-ot';
-    }
-    // Feature has a "gapless" OT planned.
-    if (originTrialMilestoneLast >= shippingMilestone - 1) {
-      return 'with-ot';
-    }
-
-    // Otherwise, assume a normal OT that has a gap.
-    return 'with-ot-gap';
-  }
-
-  renderRow(
+  renderPlatform(
     platform, devTrialMilestone, originTrialMilestoneFirst,
     originTrialMilestoneLast, shippingMilestone,
     sortedMilestones) {
@@ -170,20 +89,25 @@ class ChromedashGantt extends LitElement {
     const shipOffset = sortedMilestones.ship.indexOf(shippingMilestone);
 
     return html`
-       <ul class="bar ${this.chooseBackground(
-            originTrialMilestoneFirst, originTrialMilestoneLast,
-            shippingMilestone)}">
-         <li class="platform">${platform}</li>
-         <li class="${'offset_' + dtOffset}">
-           ${this.renderDevTrial(devTrialMilestone)}
-         </li>
-         <li class="${'offset_' + otOffset}">
-           ${this.renderOriginTrial(originTrialMilestoneFirst)}
-         </li>
-         <li class="${'offset_' + shipOffset}">
-           ${this.renderShipping(shippingMilestone)}
-         </li>
-       </ul>
+       <li><div class="platform">${platform}</div>
+
+       <div class="chart">
+           <div class="strip">
+             <div>97</div><div>98</div
+             ><div style="width: ${7*50 + 4*6}px" class="dev_trial">${devTrialMilestone}  ${dtOffset}</div
+             ><div>106</div><div>107</div>
+           </div>
+           <div class="strip">
+             <div>97</div><div>98</div><div>99</div><div>100</div
+             ><div style="width: ${4*50 + 4*3}px" class="origin_trial">${originTrialMilestoneFirst}  ${otOffset}</div
+             ><div>105</div><div>106</div><div>107</div>
+           </div>
+           <div class="strip">
+             <div>97</div><div>98</div><div>99</div><div>100</div><div>101</div><div>102</div><div>103</div><div>104</div><div>105</div
+             ><div style="width: ${2*50 + 4*1}px" class="shipping">${shippingMilestone} ${shipOffset}</div>
+           </div>
+         </div>
+       </li>
     `;
   }
 
@@ -225,24 +149,20 @@ class ChromedashGantt extends LitElement {
 
     return html`
        <p>Estimated milestones:</p>
-       <ul class="header">
-         <li></li>
-         <li>Dev Trial</li>
-         <li>Origin Trial</li>
-         <li>Shipping</li>
-       </ul>
-       ${this.renderRow('Desktop',
+       <ul>
+       ${this.renderPlatform('Desktop',
           dtDesktop, otDesktopFirst, otDesktopLast, shipDesktop,
           sortedMilestones)}
-       ${this.renderRow('Android',
+       ${this.renderPlatform('Android',
           dtAndroid, otAndroidFirst, otAndroidLast, shipAndroid,
           sortedMilestones)}
-       ${this.renderRow('iOS',
+       ${this.renderPlatform('iOS',
           dtIos, otIos, otIos, shipIos,
           sortedMilestones)}
-       ${this.renderRow('Webview',
+       ${this.renderPlatform('Webview',
           dtWebview, otWebview, otWebview, shipWebview,
           sortedMilestones)}
+       </ul>
     `;
   }
 }
