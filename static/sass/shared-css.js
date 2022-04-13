@@ -1,15 +1,15 @@
 import { css } from "lit";
 import {VARS} from "./_vars-css.js";
+import {RESET} from "./_reset-css.js";
 
 export const SHARED_STYLES = [
   VARS,
+  RESET,
   css`
 
   * {
     box-sizing: border-box;
     list-style: none;
-    margin: 0;
-    padding: 0;
     font: inherit;
     text-decoration: inherit;
     -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
