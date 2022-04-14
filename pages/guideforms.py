@@ -506,9 +506,12 @@ ALL_FIELDS = {
             attrs={'rows': 4, 'cols': 50, 'maxlength': 500,
                    'placeholder': 'https://\nhttps://'}),
         help_text=
-        ('Please list known spec issues whose resolution may introduce '
-         'web compat risk (e.g., change to naming or structure of '
-         'the API).')),
+        ('Open questions about a feature may be a source of future web compat '
+         'or interop issues. Please list open issues (e.g. links to known '
+         'github issues in the project for the feature specification) whose '
+         'resolution may introduce web compat/interop risk (e.g., changing '
+         'to naming or structure of the API in a '
+         'non-backward-compatible way).')),
 
     'finch_url': forms.URLField(
         required=False, label='Finch experiment',
