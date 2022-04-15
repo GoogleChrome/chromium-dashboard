@@ -22,85 +22,76 @@ class ChromedashGantt extends LitElement {
       ...SHARED_STYLES,
       css`
       :host {
-        width: 200px;
-        margin-top: 8px;
+        width: 600px;
       }
-      ul {
-        display: block;
-        font-size: 12px;
-        vertical-align: top;
-        padding: 0;
-        margin: var(--content-padding-half);
-      }
-      li {
-        display: inline-block;
-        width: 80px;
-        padding: 4px 8px;
-      }
-      .header li {
-        text-align: center;
-      }
-      .bar {
-        background-repeat: no-repeat;
-        background-size: 210px;
-        background-position: 100px;
-      }
-      .without-ot {
-        background-image: url(/static/img/gantt-bar-without-ot.png);
-      }
-      .with-ot {
-        background-image: url(/static/img/gantt-bar-with-ot.png);
-      }
-      .with-ot-gap {
-        background-image: url(/static/img/gantt-bar-with-ot-gap.png);
-      }
-      .platform {
-        padding-top: 15px;
-        vertical-align: top;
-      }
-      .diamond {
-        transform: rotate(45deg);
-        width: 36px;
-        height: 36px;
-        text-align: center;
-        margin: auto;
-        border: 2px solid white;
-      }
-      .dev_trial {
-        background: #cfe2f3ff;
-      }
-      .origin_trial {
-        background: #6fa8dcff;
-      }
-      .shipping {
-        background: #0b5394ff;
-        color: white;
-      }
-      .stable {
-        border-color: #444;
-      }
-      .diamond span {
-        font-size: 14px;
-        font-weight: bold;
-        display: table-cell;
-        transform: rotate(-45deg);
-        width: 34px;
-        height: 34px;
-        vertical-align: middle;
-      }
-      .offset_0 { padding-left: 0px; }
-      .offset_1 { padding-left: 8px; }
-      .offset_2 { padding-left: 16px; }
-      .offset_3 { padding-left: 24px; }
-    `];
-  }
 
-  firstPhrase(milestone) {
-    if (milestone <= this.stableMilestone) {
-      return 'First milestone with this feature';
-    } else {
-      return 'First expected milestone with this feature';
-    }
+      label {
+        display: block;
+        font-weight: 500;
+        margin-right: 5px;
+        padding-top: var(--content-padding);
+      }
+
+      .platform-row {
+        margin: var(--content-padding) 0;
+      }
+
+      .platform {
+        display: inline-block;
+        padding-top: 7px;
+        vertical-align: top;
+        width: 100px;
+      }
+
+      /* On small displays, show milestones as a bullet list. */
+      .chart li {
+        list-style: circle;
+        margin-left: var(--content-padding);
+      }
+
+      .empty {
+        display: none;
+      }
+
+      /* On large displays, show milestones as a gantt chart. */
+      @media only screen and (min-width: 701px) {
+        .chart {
+          display: inline-grid;
+          grid-auto-columns: 50px;
+          grid-auto-rows: 30px;
+          gap: 2px;
+        }
+
+        .chart li {
+          list-style: none;
+          margin-left: 0;
+          height: 30px;
+          overflow: visible;
+          white-space: nowrap;
+          padding: 4px;
+          line-height: 22px;
+        }
+
+        .empty {
+          display: block;
+          background: #eee;
+        }
+
+        .chart .dev_trial {
+          background: #cfe2f3ff;
+        }
+
+        .chart .origin_trial {
+          background: #6fa8dcff;
+        }
+
+        .chart .shipping {
+          background: #0b5394ff;
+          color: white;
+        }
+      }
+
+    `];
   }
 
   _isInactive() {
@@ -110,80 +101,89 @@ class ChromedashGantt extends LitElement {
             status === 'No longer pursuing');
   }
 
-  renderDevTrial(milestone) {
-    if (!milestone) return nothing;
-    return html`
-      <div class="diamond dev_trial
-                  ${milestone === this.stableMilestone ? 'stable' : ''}"
-       title="${this.firstPhrase(milestone)} available to developers behind a flag"
-      ><span>${milestone}</span></div>`;
-  }
-
-  renderOriginTrial(milestone) {
-    if (!milestone) return nothing;
-    return html`
-      <div class="diamond origin_trial
-                  ${milestone === this.stableMilestone ? 'stable' : ''}"
-       title="${this.firstPhrase(milestone)} enabled on participating origins"
-      ><span>${milestone}</span></div>`;
-  }
-
-  renderShipping(milestone) {
-    if (!milestone) return nothing;
-    return html`
-      <div class="diamond shipping
-                  ${milestone === this.stableMilestone ? 'stable' : ''}"
-       title="${this.firstPhrase(milestone)} enabled by default"
-      ><span>${milestone}</span></div>`;
-  }
-
-  chooseBackground(
-    originTrialMilestoneFirst, originTrialMilestoneLast, shippingMilestone) {
-    // Feature has no OT planned.
-    if (!originTrialMilestoneFirst) {
-      return 'without-ot';
-    }
-    // Feature has a single-release OT planned, so just OT diamond on background
-    // that has no extended OT area.
-    if (originTrialMilestoneFirst === originTrialMilestoneLast) {
-      return 'without-ot';
-    }
-    // Feature has a "gapless" OT planned.
-    if (originTrialMilestoneLast >= shippingMilestone - 1) {
-      return 'with-ot';
+  renderChartRow(gridRow, first, last, sortedMilestones, cssClass, label) {
+    const cellsOnRow = [];
+    for (let col = 0; col < sortedMilestones.length; col++) {
+      const m = sortedMilestones[col];
+      if (m < first || m > last) {
+        cellsOnRow.push(html`
+          <li style="grid-row: ${gridRow};
+                     grid-column: ${col + 1}"
+              class="empty"></li>
+        `);
+      }
     }
 
-    // Otherwise, assume a normal OT that has a gap.
-    return 'with-ot-gap';
+    const firstCol = sortedMilestones.indexOf(first);
+    const lastCol = sortedMilestones.indexOf(last);
+    const span = Math.max(0, lastCol - firstCol) + 1;
+    cellsOnRow.push(html`
+      <li style="grid-row: ${gridRow};
+                 grid-column: ${firstCol + 1} / span ${span}"
+          class="${cssClass}">
+        ${label}
+      </li>
+    `);
+
+    return cellsOnRow;
   }
 
-  renderRow(
+
+  renderPlatform(
     platform, devTrialMilestone, originTrialMilestoneFirst,
     originTrialMilestoneLast, shippingMilestone,
     sortedMilestones) {
     if (!devTrialMilestone && !originTrialMilestoneFirst && !shippingMilestone) {
       return nothing;
     }
+    const maxMilestone = Math.max(...sortedMilestones);
 
-    const dtOffset = sortedMilestones.dt.indexOf(devTrialMilestone);
-    const otOffset = sortedMilestones.ot.indexOf(originTrialMilestoneFirst);
-    const shipOffset = sortedMilestones.ship.indexOf(shippingMilestone);
+    let gridRow = 1;
+
+    let dtChartRow = nothing;
+    if (devTrialMilestone) {
+      let devTrialMilestoneLast = maxMilestone;
+      // If there is a shipping milestone, Dev trial stops just before it.
+      if (shippingMilestone) {
+        const shippingIndex = sortedMilestones.indexOf(shippingMilestone);
+        devTrialMilestoneLast = sortedMilestones[shippingIndex - 1];
+      }
+      dtChartRow = this.renderChartRow(
+        gridRow, devTrialMilestone, devTrialMilestoneLast,
+        sortedMilestones, 'dev_trial',
+        'Dev Trial: ' + devTrialMilestone);
+      gridRow++;
+    }
+
+    let otChartRow = nothing;
+    if (originTrialMilestoneFirst) {
+      otChartRow = this.renderChartRow(
+        gridRow, originTrialMilestoneFirst, originTrialMilestoneLast,
+        sortedMilestones, 'origin_trial',
+        'Origin Trial: ' + originTrialMilestoneFirst +
+          ' to ' + originTrialMilestoneLast);
+      gridRow++;
+    }
+
+    let shipChartRow = nothing;
+    if (shippingMilestone) {
+      shipChartRow = this.renderChartRow(
+        gridRow, shippingMilestone, maxMilestone,
+        sortedMilestones, 'shipping',
+        'Shipping: ' + shippingMilestone);
+      gridRow++;
+    }
 
     return html`
-       <ul class="bar ${this.chooseBackground(
-            originTrialMilestoneFirst, originTrialMilestoneLast,
-            shippingMilestone)}">
-         <li class="platform">${platform}</li>
-         <li class="${'offset_' + dtOffset}">
-           ${this.renderDevTrial(devTrialMilestone)}
-         </li>
-         <li class="${'offset_' + otOffset}">
-           ${this.renderOriginTrial(originTrialMilestoneFirst)}
-         </li>
-         <li class="${'offset_' + shipOffset}">
-           ${this.renderShipping(shippingMilestone)}
-         </li>
-       </ul>
+       <li class="platform-row">
+         <div class="platform">${platform}</div>
+
+         <ul class="chart">
+            ${dtChartRow}
+            ${otChartRow}
+            ${shipChartRow}
+         </ul>
+       </li>
     `;
   }
 
@@ -198,18 +198,13 @@ class ChromedashGantt extends LitElement {
     const otAndroidLast = f.ot_milestone_android_end;
     const shipAndroid = f.browsers.chrome.android;
     const dtIos = f.dt_milestone_ios_start;
-    const otIos = null; // Chrome on iOS does not support OT.
+    const otIosFirst = null; // Chrome on iOS does not support OT.
+    const otIosLast = null; // Chrome on iOS does not support OT.
     const shipIos = f.browsers.chrome.ios;
     const dtWebview = f.dt_milestone_webview_start;
-    const otWebview = null; // Webview does not support OT.
+    const otWebviewFirst = null; // Webview does not support OT.
+    const otWebviewLast = null; // Webview does not support OT.
     const shipWebview = f.browsers.chrome.webview;
-
-    if (!dtDesktop && !otDesktopFirst && !shipDesktop &&
-        !dtAndroid && !otAndroidFirst && !shipAndroid &&
-        !dtIos && !otIos && !shipIos &&
-        !dtWebview && !otWebview && !shipWebview) {
-      return html`<p>No milestones specified</p>`;
-    }
 
     // Don't show the visualization if there is no active development.
     // But, any milestones are available as text in the details section.
@@ -217,32 +212,71 @@ class ChromedashGantt extends LitElement {
       return nothing;
     }
 
-    const sortedMilestones = {
-      dt: [dtDesktop, dtAndroid, dtIos, dtWebview].sort(),
-      ot: [otDesktopFirst, otAndroidFirst, otIos, otWebview].sort(),
-      ship: [shipDesktop, shipAndroid, shipIos, shipWebview].sort(),
-    };
+    const allMilestones = [
+      dtDesktop, dtAndroid, dtIos, dtWebview,
+      otDesktopFirst, otDesktopLast,
+      otAndroidFirst, otAndroidLast,
+      otIosFirst, otIosLast,
+      otWebviewFirst, otWebviewLast,
+      shipDesktop, shipAndroid, shipIos, shipWebview].filter(x => x);
+
+    if (allMilestones.length == 0) {
+      return html`<p>No milestones specified</p>`;
+    }
+
+    const minMilestone = Math.min(...allMilestones);
+    const maxMilestone = Math.max(...allMilestones);
+    // We always show one extra after the last milestone so that the
+    // "Shipped" block has room for that text.
+    const milestoneRange = (maxMilestone - minMilestone + 1) + 1;
+    // sortedMilestones would be the list of column heading labels,
+    // execpt that they are not shown.
+    let sortedMilestones;
+
+    if (milestoneRange <= 12) {
+      // First choice:
+      // Use columns for every milestone in the range min...max.
+      // In python it would be range(minMilestone, maxMilestone + 1)
+      sortedMilestones = Array(milestoneRange).fill(minMilestone).map(
+        (x, y) => x + y);
+    } else {
+      // Second choice:
+      // Use columns for each milestone value and the one after it
+      // even if that means that milestone numbers are not consecutive.
+      const augmentedMilestoneSet = new Set(allMilestones);
+      for (const m of allMilestones) {
+        augmentedMilestoneSet.add(m + 1);
+      }
+      sortedMilestones = Array.from(augmentedMilestoneSet).sort(
+        (a, b) => a - b);
+
+      if (sortedMilestones.length > 12) {
+        // Third choice:
+        // Use columns for exactly those milestones that are actually used
+        // even if that means that milestone numbers are not consecutive.
+        const milestoneSet = new Set(allMilestones);
+        sortedMilestones = Array.from(milestoneSet).sort(
+          (a, b) => a - b);
+        sortedMilestones.push(maxMilestone + 1); // After Shipped.
+      }
+    }
 
     return html`
-       <p>Estimated milestones:</p>
-       <ul class="header">
-         <li></li>
-         <li>Dev Trial</li>
-         <li>Origin Trial</li>
-         <li>Shipping</li>
-       </ul>
-       ${this.renderRow('Desktop',
+       <label>Estimated milestones:</label>
+       <ul>
+       ${this.renderPlatform('Desktop',
           dtDesktop, otDesktopFirst, otDesktopLast, shipDesktop,
           sortedMilestones)}
-       ${this.renderRow('Android',
+       ${this.renderPlatform('Android',
           dtAndroid, otAndroidFirst, otAndroidLast, shipAndroid,
           sortedMilestones)}
-       ${this.renderRow('iOS',
-          dtIos, otIos, otIos, shipIos,
+       ${this.renderPlatform('iOS',
+          dtIos, otIosFirst, otIosLast, shipIos,
           sortedMilestones)}
-       ${this.renderRow('Webview',
-          dtWebview, otWebview, otWebview, shipWebview,
+       ${this.renderPlatform('Webview',
+          dtWebview, otWebviewFirst, otWebviewLast, shipWebview,
           sortedMilestones)}
+       </ul>
     `;
   }
 }
