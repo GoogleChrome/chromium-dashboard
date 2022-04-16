@@ -95,6 +95,15 @@ class ChromedashRoadmapMilestoneCard extends LitElement {
     });
   }
 
+  removeHighlight(e) {
+    e.preventDefault();
+    e.stopPropagation();
+
+    this._fireEvent('highlight-feature-event', {
+      feature: null,
+    });
+  }
+
   _computeDaysUntil(dateStr) {
     const today = new Date();
     const diff = this._dateDiffInDays(new Date(dateStr), today);
@@ -145,7 +154,7 @@ class ChromedashRoadmapMilestoneCard extends LitElement {
     return html `
     <li data-feature-id="${f.id}"
         class="${f.id == this.highlightFeature ? 'highlight' : ''}">
-      <a href="/feature/${f.id}" @mouseenter="${this.highlight}">${f.name}</a>
+      <a href="/feature/${f.id}" @mouseenter="${this.highlight}" @mouseleave="${this.removeHighlight}">${f.name}</a>
       <span class="icon_row">
         ${this.originTrialStatus.includes(shippingType) ? html`
         <span class="tooltip" title="Origin Trial">
