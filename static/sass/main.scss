@@ -27,6 +27,9 @@ body {
   height: 60%; // Centered, half that.
   max-width: var(--max-content-width);
   width: 100%;
+  left: 0px;
+  right: 0px;
+  margin: auto;
 }
 
 #site-banner {
