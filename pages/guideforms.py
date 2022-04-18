@@ -460,13 +460,13 @@ ALL_FIELDS = {
     'ot_milestone_webview_start': forms.IntegerField(
         required=False, label='OT WebView start',
         widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'}),
-        help_text=('First webview milestone that will support an origin '
+        help_text=('First WebView milestone that will support an origin '
                    'trial of this feature.')),
 
     'ot_milestone_webview_end': forms.IntegerField(
         required=False, label='OT WebView end',
         widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'}),
-        help_text=('Last webview milestone that will support an origin '
+        help_text=('Last WebView milestone that will support an origin '
                    'trial of this feature.')),
 
     'experiment_risks': forms.CharField(
