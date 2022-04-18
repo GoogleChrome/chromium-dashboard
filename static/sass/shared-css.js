@@ -1,7 +1,7 @@
 import { css } from "lit";
-import {VARS} from "./_vars-css.js";
+import { VARS } from "./_vars-css.js";
 
-export const SHARED_STYLES = [ 
+export const SHARED_STYLES = [
   VARS,
   css`
 
@@ -123,5 +123,19 @@ export const SHARED_STYLES = [
     color: var(--unimportant-text-color);
     border-top: var(--default-border);
     padding: var(--content-padding-quarter) var(--content-padding) 0 0;
+  }
+
+  sl-dialog::part(title) {
+    padding-top: calc(var(--header-spacing) / 2);
+    padding-bottom: calc(var(--header-spacing) / 2);
+  }
+
+  sl-dialog::part(close-button) {
+    padding-right: 0;
+  }
+
+  sl-dialog::part(body) {
+    padding-top: 0;
+    padding-bottom: calc(var(--body-spacing) / 2);
   }
 `];

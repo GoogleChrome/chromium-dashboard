@@ -86,7 +86,7 @@ export class ChromedashProcessOverview extends LitElement {
         margin-top: .5em;
       }
 
-      ol.missingPrereqs li {
+      .missing-prereqs ol li {
         list-style: circle;
         margin-left: 2em;
       }
@@ -165,7 +165,7 @@ export class ChromedashProcessOverview extends LitElement {
         pendingItems.continueUrl = url;
         this.pendingItems = pendingItems; // Note: one assignment to this.pendingItems.
         // Open the dialog.
-        this.shadowRoot.querySelector('chromedash-dialog').open();
+        this.shadowRoot.querySelector('.missing-prereqs').show();
         return;
       } else {
         // Act like user clicked left button to go to the draft email window.
@@ -315,15 +315,17 @@ export class ChromedashProcessOverview extends LitElement {
 
     </div>
 
-    <chromedash-dialog heading="Missing Prerequisites">
-      <ol class="missingPrereqs">
+    <sl-dialog class="missing-prereqs" label="Missing Prerequisites" style="--width:fit-content"
+      @cancel=${this._cancelHandler}> 
+      <ol class="missing-prereqs-list">
         ${this.pendingItems.map((item) =>
         html`<li class="pending">
           ${item.stage.name}:
           ${item.name} ${this.renderEditLink(item.stage, item)}</li>`)}
       </ol>
-      <a href="${this.pendingItems.continueUrl}" target="_blank" class="button primary">Proceed</a>
-    </chromedash-dialog>
+      <sl-button href="${this.pendingItems.continueUrl}" 
+        target="_blank" variant="primary" size="small">Proceed</sl-button>
+    </sl-dialog>
     `;
   }
 }
