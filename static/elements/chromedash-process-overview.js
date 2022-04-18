@@ -1,7 +1,6 @@
 import {LitElement, css, html, nothing} from 'lit';
 import '@polymer/iron-icon';
 import './chromedash-callout';
-import './chromedash-dialog';
 import {SHARED_STYLES} from '../sass/shared-css.js';
 
 export class ChromedashProcessOverview extends LitElement {

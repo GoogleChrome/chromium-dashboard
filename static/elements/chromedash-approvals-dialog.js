@@ -1,5 +1,4 @@
 import {LitElement, css, html, nothing} from 'lit';
-import './chromedash-dialog';
 import '@polymer/iron-icon';
 import {SHARED_STYLES} from '../sass/shared-css.js';
 
@@ -77,37 +76,37 @@ class ChromedashApprovalsDialog extends LitElement {
     return [
       ...SHARED_STYLES,
       css`
-        .loading {
+        :host .loading {
           width: 650px;
           height: 400px;
         }
 
-        h3 {
+        :host h3 {
           margin: var(--content-padding-half);
         }
 
-        .approval_section {
+        :host .approval_section {
           margin-top: var(--content-padding);
         }
 
-        .comment_section {
+        :host .comment_section {
           max-height: 250px;
           overflow-y: scroll;
         }
 
-        .approval_section div,
-        .comment {
+        :host .approval_section div,
+        :host .comment {
           margin-left: var(--content-padding);
         }
 
-        .approval_row {
+        :host .approval_row {
           width: 650px;
           margin-bottom: var(--content-padding-half);
         }
 
-        .set_by,
-        .set_on,
-        .appr_val {
+        :host .set_by,
+        :host .set_on,
+        :host .appr_val {
           display: inline-block;
           width: 200px;
           margin-right: var(--content-padding-half);
@@ -116,11 +115,11 @@ class ChromedashApprovalsDialog extends LitElement {
           white-space: nowrap;
         }
 
-        select {
+        :host select {
           margin: 0;
         }
 
-        .comment_body {
+        :host .comment_body {
           background: var(--table-alternate-background);
           padding: var(--content-padding-half);
           white-space: pre-wrap;
@@ -128,21 +127,21 @@ class ChromedashApprovalsDialog extends LitElement {
           margin-bottom: var(--content-padding);
         }
 
-        .config-area {
+        :host .config-area {
           margin-left: var(--content-padding);
           background: var(--table-alternate-background);
         }
 
-        .controls {
+        :host .controls {
           padding: var(--content-padding);
           text-align: right;
         }
 
-        #show_all_checkbox {
+        :host #show_all_checkbox {
          float: left;
         }
 
-        textarea {
+        :host textarea {
           padding: 4px;
           resize: both;
         }
@@ -152,7 +151,7 @@ class ChromedashApprovalsDialog extends LitElement {
   openWithFeature(featureId) {
     this.featureId = featureId;
     this.loading = true;
-    this.shadowRoot.querySelector('chromedash-dialog').open();
+    this.shadowRoot.querySelector('sl-dialog').show();
     const p1 = window.csClient.getFeature(this.featureId).then(
       (feature) => {
         this.feature = feature;
@@ -438,7 +437,7 @@ class ChromedashApprovalsDialog extends LitElement {
   render() {
     const heading = !this.loading && this.feature.name || '';
     return html`
-      <chromedash-dialog heading="${heading}">
+      <sl-dialog label="${heading}" style="--width:fit-content">
         ${this.loading ?
           html`
            <div class="loading">
@@ -449,7 +448,7 @@ class ChromedashApprovalsDialog extends LitElement {
             ${this.renderAllComments()}
             ${this.renderControls()}
           `}
-      </chromedash-dialog>
+      </sl-dialog>
     `;
   }
 
@@ -519,12 +518,12 @@ class ChromedashApprovalsDialog extends LitElement {
           Number(postToApprovalFieldId)));
     }
     Promise.all(promises).then(() => {
-      this.shadowRoot.querySelector('chromedash-dialog').close();
+      this.shadowRoot.querySelector('sl-dialog').hide();
     });
   }
 
   handleCancel() {
-    this.shadowRoot.querySelector('chromedash-dialog').close();
+    this.shadowRoot.querySelector('sl-dialog').hide();
   }
 
   toggleConfig(approvalDef) {

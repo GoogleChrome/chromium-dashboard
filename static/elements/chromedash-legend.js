@@ -1,6 +1,5 @@
 import {LitElement, css, html, nothing} from 'lit';
 import './chromedash-color-status';
-import './chromedash-dialog';
 import {SHARED_STYLES} from '../sass/shared-css.js';
 
 class ChromedashLegend extends LitElement {
@@ -15,49 +14,50 @@ class ChromedashLegend extends LitElement {
     return [
       ...SHARED_STYLES,
       css`
-      h3 {
+      :host h3 {
+        margin-top: 1em;
         border-bottom: var(--heading-underbar);
         padding: 0 !important;
       }
 
-      ul {
-        margin: 0 0 15px 0;
+      :host ul {
+        margin: 0 0 15px 15px;
       }
 
-      ul > li {
+      :host ul > li {
         margin: 5px 0;
       }
 
-      label {
+      :host label {
         font-weight: 500;
         text-transform: uppercase;
       }
 
-      section {
+      :host section {
         margin-top: 10px;
       }
-      section.views {
+      :host section.views {
         display: flex;
       }
-      section.views > div {
+      :host section.views > div {
         flex: 1 0 0;
       }
-      section.views li > span {
+      :host section.views li > span {
         margin-left: 3px;
       }
 
-      .queries li span {
+      :host .queries li span {
         margin-right: 5px;
         width: 260px;
         display: inline-block;
       }
 
-      p {
+      :host p {
         margin-top: 5px;
       }
 
       @media only screen and (min-width: 701px) {
-        #overlay {
+        sl-dialog::part(panel) {
           width: 80vw;
           max-height: 80vh;
         }
@@ -66,11 +66,11 @@ class ChromedashLegend extends LitElement {
   }
 
   open() {
-    this.shadowRoot.querySelector('chromedash-dialog').open();
+    this.shadowRoot.querySelector('sl-dialog').show();
   }
 
   close() {
-    this.shadowRoot.querySelector('chromedash-dialog').close();
+    this.shadowRoot.querySelector('sl-dialog').hide();
   }
 
   render() {
@@ -78,8 +78,8 @@ class ChromedashLegend extends LitElement {
       return nothing;
     }
     return html`
-      <chromedash-dialog>
-        <h3>About the data</h3>
+      <sl-dialog class="legend" style="--width:fit-content">
+        <h3>About the data</h3> 
         <section class="content-wrapper">
           <p class="description">What you're looking at is a mostly
           comprehensive list of web platform features that have landed in
@@ -162,7 +162,7 @@ class ChromedashLegend extends LitElement {
             </li>
           </ul>
         </section>
-      </chromedash-dialog>
+      </sl-dialog>
     `;
   }
 }
