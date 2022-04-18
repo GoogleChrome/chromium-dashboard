@@ -420,7 +420,7 @@ footer {
 
   #subheader {
     div {
-      &:not(.search):not(.actionlinks) {
+      &:not(.search):not(.actionlinks):not(.tooltips) {
         display: none;
       }
 

@@ -342,6 +342,10 @@ class FeatureEditStage(basehandlers.FlaskHandler):
       feature.origin_trial_feedback_url = self.parse_link(
           'origin_trial_feedback_url')
 
+    if self.touched('anticipated_spec_changes'):
+      feature.anticipated_spec_changes = self.form.get(
+          'anticipated_spec_changes')
+
     if self.touched('finch_url'):
       feature.finch_url = self.parse_link('finch_url')
 
@@ -388,6 +392,13 @@ class FeatureEditStage(basehandlers.FlaskHandler):
     if self.touched('ot_milestone_android_end'):
       feature.ot_milestone_android_end = self.parse_int(
           'ot_milestone_android_end')
+
+    if self.touched('ot_milestone_webview_start'):
+      feature.ot_milestone_webview_start = self.parse_int(
+          'ot_milestone_webview_start')
+    if self.touched('ot_milestone_webview_end'):
+      feature.ot_milestone_webview_end = self.parse_int(
+          'ot_milestone_webview_end')
 
     if self.touched('requires_embedder_support'):
       feature.requires_embedder_support = (

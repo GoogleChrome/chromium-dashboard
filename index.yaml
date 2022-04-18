@@ -111,6 +111,11 @@ indexes:
   - name: "name"
 - kind: "Feature"
   properties:
+  - name: "ot_milestone_webview_start"
+  - name: "ot_milestone_desktop_start"
+  - name: "name"
+- kind: "Feature"
+  properties:
   - name: "dt_milestone_desktop_start"
   - name: "name"
 - kind: "Feature"

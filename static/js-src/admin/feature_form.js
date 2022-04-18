@@ -34,6 +34,8 @@
     // Don't autofill dt_milestone_ios_start because it is rare.
     ['ot_milestone_desktop_start', 'ot_milestone_android_start'],
     ['ot_milestone_desktop_end', 'ot_milestone_android_end'],
+    ['ot_milestone_desktop_start', 'ot_milestone_webview_start'],
+    ['ot_milestone_desktop_end', 'ot_milestone_webview_end'],
   ];
 
   for (let [srcId, dstId] of COPY_ON_EDIT) {

@@ -386,7 +386,7 @@ ALL_FIELDS = {
          'when designing this feature.')),
 
     'webview_risks': forms.CharField(
-        label='WebView Application Risks', required=False,
+        label='WebView application risks', required=False,
         widget=forms.Textarea(attrs={'cols': 50, 'maxlength': 1480}),
         help_text=
         ('Does this intent deprecate or change behavior of existing APIs, '
@@ -446,15 +446,27 @@ ALL_FIELDS = {
                    'trial of this feature.')),
 
     'ot_milestone_android_start': forms.IntegerField(
-        required=False, label='OT android start',
+        required=False, label='OT Android start',
         widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'}),
         help_text=('First android milestone that will support an origin '
                    'trial of this feature.')),
 
     'ot_milestone_android_end': forms.IntegerField(
-        required=False, label='OT android end',
+        required=False, label='OT Android end',
         widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'}),
         help_text=('Last android milestone that will support an origin '
+                   'trial of this feature.')),
+
+    'ot_milestone_webview_start': forms.IntegerField(
+        required=False, label='OT WebView start',
+        widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'}),
+        help_text=('First WebView milestone that will support an origin '
+                   'trial of this feature.')),
+
+    'ot_milestone_webview_end': forms.IntegerField(
+        required=False, label='OT WebView end',
+        widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'}),
+        help_text=('Last WebView milestone that will support an origin '
                    'trial of this feature.')),
 
     'experiment_risks': forms.CharField(
@@ -487,6 +499,19 @@ ALL_FIELDS = {
         help_text=
         ('If your feature was available as an origin trial, link to a summary '
          'of usage and developer feedback. If not, leave this empty.')),
+
+    'anticipated_spec_changes': forms.CharField(
+        required=False, label='Anticipated spec changes',
+        widget=forms.Textarea(
+            attrs={'rows': 4, 'cols': 50, 'maxlength': 500,
+                   'placeholder': 'https://\nhttps://'}),
+        help_text=
+        ('Open questions about a feature may be a source of future web compat '
+         'or interop issues. Please list open issues (e.g. links to known '
+         'github issues in the project for the feature specification) whose '
+         'resolution may introduce web compat/interop risk (e.g., changing '
+         'to naming or structure of the API in a '
+         'non-backward-compatible way).')),
 
     'finch_url': forms.URLField(
         required=False, label='Finch experiment',
@@ -827,6 +852,7 @@ ImplStatus_OriginTrial = define_form_class_using_shared_fields(
     'ImplStatus_OriginTrial',
     ('ot_milestone_desktop_start', 'ot_milestone_desktop_end',
      'ot_milestone_android_start', 'ot_milestone_android_end',
+     'ot_milestone_webview_start', 'ot_milestone_webview_end',
      'experiment_timeline',  # deprecated
      ))
 
@@ -834,7 +860,7 @@ ImplStatus_OriginTrial = define_form_class_using_shared_fields(
 Most_PrepareToShip = define_form_class_using_shared_fields(
     'Most_PrepareToShip',
     ('tag_review', 'tag_review_status', 'non_oss_deps',
-     'webview_risks', 'origin_trial_feedback_url',
+     'webview_risks', 'anticipated_spec_changes', 'origin_trial_feedback_url',
      'launch_bug_url', 'intent_to_ship_url', 'i2s_lgtms', 'comments'))
 
 
@@ -891,6 +917,7 @@ Deprecation_DeprecationTrial = define_form_class_using_shared_fields(
     ('experiment_goals', 'experiment_risks',
      'ot_milestone_desktop_start', 'ot_milestone_desktop_end',
      'ot_milestone_android_start', 'ot_milestone_android_end',
+     'ot_milestone_webview_start', 'ot_milestone_webview_end',
      'experiment_timeline',  # deprecated
      'experiment_extension_reason', 'ongoing_constraints',
      'intent_to_experiment_url=r4dt_url',
@@ -980,6 +1007,7 @@ Flat_OriginTrial = define_form_class_using_shared_fields(
      # Implementation
      'ot_milestone_desktop_start', 'ot_milestone_desktop_end',
      'ot_milestone_android_start', 'ot_milestone_android_end',
+     'ot_milestone_webview_start', 'ot_milestone_webview_end',
      'experiment_timeline',  # deprecated
     ))
 
@@ -988,7 +1016,7 @@ Flat_PrepareToShip = define_form_class_using_shared_fields(
     'Flat_PrepareToShip',
     (# Standardization
      'tag_review', 'tag_review_status',
-     'webview_risks',
+     'webview_risks', 'anticipated_spec_changes',
      'intent_to_ship_url', 'i2s_lgtms',
      # Implementation
      'measurement',
@@ -1091,10 +1119,11 @@ DISPLAY_FIELDS_IN_STAGES = {
         'i2e_lgtms', 'r4dt_lgtms',
         'ot_milestone_desktop_start', 'ot_milestone_desktop_end',
         'ot_milestone_android_start', 'ot_milestone_android_end',
+        'ot_milestone_webview_start', 'ot_milestone_webview_end',
         'experiment_timeline',  # Deprecated
         ),
     models.INTENT_SHIP: make_display_specs(
-        'finch_url',
+        'finch_url', 'anticipated_spec_changes',
         'shipped_milestone', 'shipped_android_milestone',
         'shipped_ios_milestone', 'shipped_webview_milestone',
         'intent_to_ship_url', 'i2s_lgtms'),

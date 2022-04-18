@@ -136,7 +136,7 @@
       <p class="preformatted">{{feature.security_risks|urlize}}</p>
     {% endif %}
 
-    <br><br><h4>WebView Application Risks</h4>
+    <br><br><h4>WebView application risks</h4>
     <p style="font-style: italic">
       Does this intent deprecate or change behavior of existing APIs,
       such that it has potentially high risk for Android WebView-based
@@ -234,6 +234,18 @@
 <br><br><h4>Estimated milestones</h4>
 {% include "../estimated-milestones-table.html" %}
 
+
+{% if 'anticipated_spec_changes' in sections_to_show or feature.anticipated_spec_changes %}
+  <br><br><h4>Anticipated spec changes</h4>
+  <p style="font-style: italic">
+    Open questions about a feature may be a source of future web compat or
+    interop issues. Please list open issues (e.g. links to known github
+    issues in the project for the feature specification) whose resolution
+    may introduce web compat/interop risk (e.g., changing to naming or
+    structure of the API in a non-backward-compatible way).</p>
+
+  {{feature.anticipated_spec_changes|urlize}}
+{% endif %}
 
 <br><br><h4>Link to entry on the {{APP_TITLE}}</h4>
 <a href="{{default_url}}">{{default_url}}</a>

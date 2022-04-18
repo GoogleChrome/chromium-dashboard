@@ -1037,6 +1037,13 @@ class Feature(DictModel):
     q = q.filter(Feature.ot_milestone_desktop_start == None)
     android_origin_trial_features_future = q.fetch_async(None)
 
+    # Features that are in origin trial (Webview) in this milestone
+    q = Feature.query()
+    q = q.order(Feature.name)
+    q = q.filter(Feature.ot_milestone_webview_start == milestone)
+    q = q.filter(Feature.ot_milestone_desktop_start == None)
+    webview_origin_trial_features_future = q.fetch_async(None)
+
     # Features that are in dev trial (Desktop) in this milestone
     q = Feature.query()
     q = q.order(Feature.name)
@@ -1058,6 +1065,8 @@ class Feature(DictModel):
         desktop_origin_trial_features_future.result())
     android_origin_trial_features = (
         android_origin_trial_features_future.result())
+    webview_origin_trial_features = (
+        webview_origin_trial_features_future.result())
     desktop_dev_trial_features = desktop_dev_trial_features_future.result()
     android_dev_trial_features = android_dev_trial_features_future.result()
 
@@ -1097,6 +1106,9 @@ class Feature(DictModel):
       all_features[IMPLEMENTATION_STATUS[ORIGIN_TRIAL]].append(feature)
 
     for feature in android_origin_trial_features:
+      all_features[IMPLEMENTATION_STATUS[ORIGIN_TRIAL]].append(feature)
+
+    for feature in webview_origin_trial_features:
       all_features[IMPLEMENTATION_STATUS[ORIGIN_TRIAL]].append(feature)
 
     for feature in desktop_dev_trial_features:
@@ -1349,10 +1361,13 @@ class Feature(DictModel):
   ot_milestone_desktop_end = ndb.IntegerProperty()
   ot_milestone_android_start = ndb.IntegerProperty()
   ot_milestone_android_end = ndb.IntegerProperty()
+  ot_milestone_webview_start = ndb.IntegerProperty()
+  ot_milestone_webview_end = ndb.IntegerProperty()
   experiment_risks = ndb.StringProperty()
   experiment_extension_reason = ndb.StringProperty()
   ongoing_constraints = ndb.StringProperty()
   origin_trial_feedback_url = ndb.StringProperty()
+  anticipated_spec_changes = ndb.StringProperty()
 
   finch_url = ndb.StringProperty()
 
@@ -1360,8 +1375,11 @@ class Feature(DictModel):
 QUERIABLE_FIELDS = {
     'created.when': Feature.created,
     'updated.when': Feature.updated,
-    'created.by': Feature.created_by,
-    'updated.by': Feature.updated_by,
+
+    # TODO(jrobbins): We cannot query user fields because Cloud NDB does not
+    # seem to support it.  We should migrate these to string fields.
+    #'created.by': Feature.created_by,
+    #'updated.by': Feature.updated_by,
 
     'category': Feature.category,
     'name': Feature.name,
@@ -1406,6 +1424,7 @@ QUERIABLE_FIELDS = {
 
     'standards.maturity': Feature.standard_maturity,
     'standards.spec': Feature.spec_link,
+    'standards.anticipated_spec_changes': Feature.anticipated_spec_changes,
     'api_spec': Feature.api_spec,
     'spec_mentors': Feature.spec_mentors,
     'security_review_status': Feature.security_review_status,
@@ -1428,6 +1447,8 @@ QUERIABLE_FIELDS = {
     'browsers.chrome.ot.desktop.end': Feature.ot_milestone_desktop_end,
     'browsers.chrome.ot.android.start': Feature.ot_milestone_android_start,
     'browsers.chrome.ot.android.end': Feature.ot_milestone_android_end,
+    'browsers.chrome.ot.webview.start': Feature.ot_milestone_webview_start,
+    'browsers.chrome.ot.webview.end': Feature.ot_milestone_webview_end,
     'browsers.chrome.ot.feedback_url': Feature.origin_trial_feedback_url,
     'finch_url': Feature.finch_url,
     }

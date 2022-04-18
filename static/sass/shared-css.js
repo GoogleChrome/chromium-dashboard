@@ -1,8 +1,10 @@
 import { css } from "lit";
-import { VARS } from "./_vars-css.js";
+import {VARS} from "./_vars-css.js";
+import {RESET} from "./_reset-css.js";
 
 export const SHARED_STYLES = [
   VARS,
+  RESET,
   css`
 
   * {
