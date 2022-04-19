@@ -158,10 +158,6 @@ export const SHARED_STYLES = [
     padding: var(--content-padding-quarter) var(--content-padding-half)
   }
 
-  sl-details::part(summary-icon) {
-    font-size: 16px;
-  }
-
   sl-details::part(content) {
     padding: 0;
   }
