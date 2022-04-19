@@ -1,5 +1,4 @@
 import {LitElement, css, html, nothing} from 'lit';
-import './chromedash-dialog';
 import '@polymer/iron-icon';
 import {SHARED_STYLES} from '../sass/shared-css.js';
 
@@ -152,7 +151,7 @@ class ChromedashApprovalsDialog extends LitElement {
   openWithFeature(featureId) {
     this.featureId = featureId;
     this.loading = true;
-    this.shadowRoot.querySelector('chromedash-dialog').open();
+    this.shadowRoot.querySelector('sl-dialog').show();
     const p1 = window.csClient.getFeature(this.featureId).then(
       (feature) => {
         this.feature = feature;
@@ -438,7 +437,7 @@ class ChromedashApprovalsDialog extends LitElement {
   render() {
     const heading = !this.loading && this.feature.name || '';
     return html`
-      <chromedash-dialog heading="${heading}">
+      <sl-dialog label="${heading}" style="--width:fit-content">
         ${this.loading ?
           html`
            <div class="loading">
@@ -449,7 +448,7 @@ class ChromedashApprovalsDialog extends LitElement {
             ${this.renderAllComments()}
             ${this.renderControls()}
           `}
-      </chromedash-dialog>
+      </sl-dialog>
     `;
   }
 
@@ -519,12 +518,12 @@ class ChromedashApprovalsDialog extends LitElement {
           Number(postToApprovalFieldId)));
     }
     Promise.all(promises).then(() => {
-      this.shadowRoot.querySelector('chromedash-dialog').close();
+      this.shadowRoot.querySelector('sl-dialog').hide();
     });
   }
 
   handleCancel() {
-    this.shadowRoot.querySelector('chromedash-dialog').close();
+    this.shadowRoot.querySelector('sl-dialog').hide();
   }
 
   toggleConfig(approvalDef) {
