@@ -14,45 +14,45 @@ class ChromedashLegend extends LitElement {
     return [
       ...SHARED_STYLES,
       css`
-      :host h3 {
+      h3 {
         margin-top: 1em;
         border-bottom: var(--heading-underbar);
         padding: 0 !important;
       }
 
-      :host ul {
+      ul {
         margin: 0 0 15px 15px;
       }
 
-      :host ul > li {
+      ul > li {
         margin: 5px 0;
       }
 
-      :host label {
+      label {
         font-weight: 500;
         text-transform: uppercase;
       }
 
-      :host section {
+      section {
         margin-top: 10px;
       }
-      :host section.views {
+      section.views {
         display: flex;
       }
-      :host section.views > div {
+      section.views > div {
         flex: 1 0 0;
       }
-      :host section.views li > span {
+      section.views li > span {
         margin-left: 3px;
       }
 
-      :host .queries li span {
+      .queries li span {
         margin-right: 5px;
         width: 260px;
         display: inline-block;
       }
 
-      :host p {
+      p {
         margin-top: 5px;
       }
 

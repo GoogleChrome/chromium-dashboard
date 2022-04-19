@@ -76,37 +76,37 @@ class ChromedashApprovalsDialog extends LitElement {
     return [
       ...SHARED_STYLES,
       css`
-        :host .loading {
+        .loading {
           width: 650px;
           height: 400px;
         }
 
-        :host h3 {
+        h3 {
           margin: var(--content-padding-half);
         }
 
-        :host .approval_section {
+        .approval_section {
           margin-top: var(--content-padding);
         }
 
-        :host .comment_section {
+        .comment_section {
           max-height: 250px;
           overflow-y: scroll;
         }
 
-        :host .approval_section div,
-        :host .comment {
+        .approval_section div,
+        .comment {
           margin-left: var(--content-padding);
         }
 
-        :host .approval_row {
+        .approval_row {
           width: 650px;
           margin-bottom: var(--content-padding-half);
         }
 
-        :host .set_by,
-        :host .set_on,
-        :host .appr_val {
+        .set_by,
+        .set_on,
+        .appr_val {
           display: inline-block;
           width: 200px;
           margin-right: var(--content-padding-half);
@@ -115,11 +115,11 @@ class ChromedashApprovalsDialog extends LitElement {
           white-space: nowrap;
         }
 
-        :host select {
+        select {
           margin: 0;
         }
 
-        :host .comment_body {
+        .comment_body {
           background: var(--table-alternate-background);
           padding: var(--content-padding-half);
           white-space: pre-wrap;
@@ -127,21 +127,21 @@ class ChromedashApprovalsDialog extends LitElement {
           margin-bottom: var(--content-padding);
         }
 
-        :host .config-area {
+        .config-area {
           margin-left: var(--content-padding);
           background: var(--table-alternate-background);
         }
 
-        :host .controls {
+        .controls {
           padding: var(--content-padding);
           text-align: right;
         }
 
-        :host #show_all_checkbox {
+        #show_all_checkbox {
          float: left;
         }
 
-        :host textarea {
+        textarea {
           padding: 4px;
           resize: both;
         }
