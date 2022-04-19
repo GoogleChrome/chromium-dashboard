@@ -140,4 +140,29 @@ export const SHARED_STYLES = [
     padding-top: 0;
     padding-bottom: calc(var(--body-spacing) / 2);
   }
+
+  sl-details::part(base) {
+    margin: var(--content-padding-half) 0 0 0;
+    color: var(--accordion-color);
+    width: var(--max-content-width);
+    border: none;
+    border-radius: 0;
+    background-color: transparent;
+  }
+
+  sl-details::part(header) {
+    border-radius: var(--accordion-border-radius);
+    background: var(--accordion-background);
+    font-weight: 300;
+    font-size: 20px;
+    padding: var(--content-padding-quarter) var(--content-padding-half)
+  }
+
+  sl-details::part(summary-icon) {
+    font-size: 16px;
+  }
+
+  sl-details::part(content) {
+    padding: 0;
+  }
 `];
