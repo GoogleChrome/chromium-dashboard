@@ -1,5 +1,4 @@
 import {LitElement, css, html, nothing} from 'lit';
-import './chromedash-accordion';
 import './chromedash-approvals-dialog';
 import './chromedash-feature-table';
 import {SHARED_STYLES} from '../sass/shared-css.js';
@@ -28,7 +27,7 @@ class ChromedashMyFeatures extends LitElement {
     return [
       ...SHARED_STYLES,
       css`
-        chromedash-accordion {
+        sl-details {
           padding: 0 var(--content-padding);
         }
       `];
@@ -59,9 +58,9 @@ class ChromedashMyFeatures extends LitElement {
 
   renderBox(title, query, columns, opened=true) {
     return html`
-      <chromedash-accordion
-        title="${title}"
-        ?opened=${opened}>
+      <sl-details
+        summary="${title}"
+        ?open=${opened}>
 
         <chromedash-feature-table
           query="${query}"
@@ -73,7 +72,7 @@ class ChromedashMyFeatures extends LitElement {
           @open-approvals-event=${this.handleOpenApprovals}
           rows=10 columns=${columns}>
         </chromedash-feature-table>
-      </chromedash-accordion>
+      </sl-details>
     `;
   }
 
