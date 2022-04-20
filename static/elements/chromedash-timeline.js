@@ -86,7 +86,7 @@ class ChromedashTimeline extends LitElement {
       }
 
       #datalistinput {
-        width: 560px;
+        width: 20em;
       }
     `];
   }
@@ -104,7 +104,7 @@ class ChromedashTimeline extends LitElement {
   }
 
   updateSelectedBucketId(e) {
-    const feature = this.props.find((el) => el[0] === e.currentTarget.value);
+    const feature = this.props.find((el) => el[1] === e.currentTarget.value);
     if (feature) {
       this.selectedBucketId = feature[0];
     }
@@ -266,7 +266,7 @@ ORDER BY yyyymmdd DESC, client`;
       <input id="datalistinput" type="search" list="features" placeholder="Select or search a property" @change="${this.updateSelectedBucketId}" />
       <datalist id="features">
         ${this.props.map((prop) => html`
-          <option value="${prop[1]}" />
+          <option value="${prop[1]}" dataset-debug-bucket-id="${prop[0]}" />
         `)}
       </datalist>
       <label>Show all historical data: <input type="checkbox" ?checked="${this.showAllHistoricalData}" @change="${this.toggleShowAllHistoricalData}"></label>
