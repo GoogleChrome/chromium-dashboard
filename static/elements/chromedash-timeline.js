@@ -84,6 +84,10 @@ class ChromedashTimeline extends LitElement {
         background: var(--table-alternate-background);
         display: inline-block;
       }
+
+      #datalistinput {
+        width: 20em;
+      }
     `];
   }
 
@@ -100,7 +104,10 @@ class ChromedashTimeline extends LitElement {
   }
 
   updateSelectedBucketId(e) {
-    this.selectedBucketId = e.currentTarget.value;
+    const feature = this.props.find((el) => el[1] === e.currentTarget.value);
+    if (feature) {
+      this.selectedBucketId = feature[0];
+    }
   }
 
   toggleShowAllHistoricalData() {
@@ -234,6 +241,9 @@ class ChromedashTimeline extends LitElement {
     const feature = this.props.find((el) => el[0] === parseInt(this.selectedBucketId));
     if (feature) {
       let featureName = feature[1];
+      const inputEl = this.shadowRoot.getElementById('datalistinput');
+      inputEl.value = featureName;
+
       if (this.type == 'css') {
         featureName = convertToCamelCaseFeatureName(featureName);
       }
@@ -253,12 +263,12 @@ ORDER BY yyyymmdd DESC, client`;
 
   render() {
     return html`
-      <select .value="${this.selectedBucketId}" @change="${this.updateSelectedBucketId}">
-        <option disabled value="1">Select a property</option>
+      <input id="datalistinput" type="search" list="features" placeholder="Select or search a property" @change="${this.updateSelectedBucketId}" />
+      <datalist id="features">
         ${this.props.map((prop) => html`
-          <option value="${prop[0]}">${prop[1]}</option>
-          `)}
-      </select>
+          <option value="${prop[1]}" dataset-debug-bucket-id="${prop[0]}" />
+        `)}
+      </datalist>
       <label>Show all historical data: <input type="checkbox" ?checked="${this.showAllHistoricalData}" @change="${this.toggleShowAllHistoricalData}"></label>
       <h3 id="usage" class="header_title">Percentage of page loads that use this feature</h3>
       <p class="description">The chart below shows the percentage of page loads (in Chrome) that use

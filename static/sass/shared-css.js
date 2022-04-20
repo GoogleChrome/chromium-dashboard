@@ -55,7 +55,7 @@ export const SHARED_STYLES = [
     cursor: pointer;
   }
 
-  input:not([type="submit"]),
+  input:not([type="submit"]):not([type="search"]),
   textarea {
     border: 1px solid var(--bar-border-color);
   }
