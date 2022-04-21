@@ -38,19 +38,29 @@ class ChromedashXMeter extends LitElement {
         padding: 3px 0;
         text-indent: 5px;
       }
-    `];
-  }
+      
+      a {
+        text-decoration: none;
+        color: var(--barchart-color);
+      }
 
-  showTimeline() {
-    window.location.href = this.href;
+      a:hover {
+        text-decoration: none;
+        color: var(--barchart-color);
+        cursor: pointer;
+      }
+
+    `];
   }
 
   render() {
     return html`
-      <div @click="${this.showTimeline}" style="width: ${(this.value / this.max * 100)}%">
-        <span>${this.value <= 0.000001 ? '<=0.000001%' : this.value + '%'}
-        </span>
-      </div>
+      <a href = "${this.href}">
+        <div style="width: ${(this.value / this.max * 100)}%">
+          <span>${this.value <= 0.000001 ? '<=0.000001%' : this.value + '%'}
+          </span>
+        </div>
+      </a>
     `;
   }
 }
