@@ -55,7 +55,7 @@ class ChromedashXMeter extends LitElement {
 
   render() {
     return html`
-      <a href = "${this.href}">
+      <a href="${this.href}">
         <div style="width: ${(this.value / this.max * 100)}%">
           <span>${this.value <= 0.000001 ? '<=0.000001%' : this.value + '%'}
           </span>
