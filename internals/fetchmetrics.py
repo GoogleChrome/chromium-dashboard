@@ -32,7 +32,7 @@ import settings
 
 UMA_QUERY_SERVER = 'https://uma-export.appspot.com/chromestatus/'
 
-HISTOGRAMS_URL = 'https://chromium.googlesource.com/chromium/src/+/master/' \
+HISTOGRAMS_URL = 'https://chromium.googlesource.com/chromium/src/+/main/' \
     'tools/metrics/histograms/enums.xml?format=TEXT'
 
 # After we have processed all metrics data for a given kind on a given day,
