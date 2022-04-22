@@ -417,9 +417,12 @@ class FlaskHandler(BaseHandler):
       url_pattern = (r'\b(http:\/\/|https:\/\/)?([\w_-]+(?:(?:\.[\w_-]+)+))'
                      r'([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?\b')
       match_obj = re.search(url_pattern, str(link))
-      link = match_obj.group() or None
-      if not link.startswith(('http://', 'https://')):
-        link = 'http://' + link
+      if match_obj:
+        link = match_obj.group()
+        if not link.startswith(('http://', 'https://')):
+          link = 'http://' + link
+      else:
+        link = None
     return link
 
   def parse_int(self, param_name):
