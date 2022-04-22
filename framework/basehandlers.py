@@ -413,10 +413,16 @@ class FlaskHandler(BaseHandler):
   def parse_link(self, param_name):
     link = flask.request.form.get(param_name) or None
     if link:
-      if not link.startswith('http'):
-        link = str('http://' + link)
+      # see https://www.regextester.com/93901 for url regex
+      url_pattern = (r'\b(http:\/\/|https:\/\/)?([\w_-]+(?:(?:\.[\w_-]+)+))'
+                     r'([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?\b')
+      match_obj = re.search(url_pattern, str(link))
+      if match_obj:
+        link = match_obj.group()
+        if not link.startswith(('http://', 'https://')):
+          link = 'http://' + link
       else:
-        link = str(link)
+        link = None
     return link
 
   def parse_int(self, param_name):
