@@ -235,6 +235,11 @@ export class ChromedashProcessOverview extends LitElement {
 
   willUpdate() {
     if (this.process && this.item_stage_map == null) {
+      // Make sure this.process.stages is an array.
+      if (!this.process.stages) {
+        this.process.stages = [];
+      }
+     
       // We will need to find the stages of prerequisites for actions of each stage.
       // So we will loop over all progress items of all stages one time
       // to rebuild this map at the start of each full page render.
