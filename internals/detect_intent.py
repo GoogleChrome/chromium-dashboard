@@ -33,6 +33,17 @@ FIELDS_REQUIRING_LGTMS = [
 # Email prefixes that we don't care about: Re: or [blink-dev] or Fwd:
 PREFIX_RE = re.compile(r're:|fwd:|\[[-._\w]+\]')
 
+INTEND_PATTERN = r'(intent|intend(ing)?|request(ing)?) (to|for)'
+SHIP_PATTERN = r'(ship|remove|\w+ and ship|\w+ and remove)'
+PROTO_PATTERN = r'(prototype|prototyping|implement|deprecate)'
+EXPERIMENT_PATTERN = r'(experiment|deprecation)'
+EXTEND_PATTERN = r'(continue|continuing|extend|extending) (experiment|origin)'
+
+SHIP_RE = re.compile('%s %s' % (INTEND_PATTERN, SHIP_PATTERN))
+PROTO_RE = re.compile('%s %s' % (INTEND_PATTERN, PROTO_PATTERN))
+EXPERIMENT_RE = re.compile('%s %s' % (INTEND_PATTERN, EXPERIMENT_PATTERN))
+EXTEND_RE = re.compile('%s %s' % (INTEND_PATTERN, EXTEND_PATTERN))
+
 
 def detect_field(subject):
   """Look for key words in the subject line that indicate intent type.
@@ -47,26 +58,16 @@ def detect_field(subject):
   subject = subject.replace('+', ' and ')
   subject = ' '.join(subject.split())  # collapse multiple spaces
 
-  if (subject.startswith('intent to ship') or
-      subject.startswith('intent to prototype and ship') or
-      subject.startswith('intent to implement and ship') or
-      subject.startswith('intent to deprecate and remove') or
-      subject.startswith('intent to remove')):
+  if SHIP_RE.match(subject):
     return approval_defs.ShipApproval
 
-  if (subject.startswith('intent to prototype') or
-      subject.startswith('intent to implement') or
-      subject.startswith('intent to deprecate')):
+  if PROTO_RE.match(subject):
     return approval_defs.PrototypeApproval
 
-  if (subject.startswith('intent to experiment') or
-      subject.startswith('request for deprecation trial')):
+  if EXPERIMENT_RE.match(subject):
     return approval_defs.ExperimentApproval
 
-  if (subject.startswith('intent to continue experiment') or
-      subject.startswith('intent to extend experiment') or
-      subject.startswith('intent to continue origin') or
-      subject.startswith('intent to extend origin')):
+  if EXTEND_RE.match(subject):
     return approval_defs.ExtendExperimentApproval
 
   return None
