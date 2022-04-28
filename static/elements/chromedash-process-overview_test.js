@@ -3,18 +3,17 @@ import {assert, fixture} from '@open-wc/testing';
 import {ChromedashProcessOverview} from './chromedash-process-overview';
 
 describe('chromedash-proces-overview', () => {
-
-  let process, feature;
+  let process; let feature;
 
   beforeEach(() => {
     process = {
-      stages: [
-        {name: 'stage one',
-         description: 'a description',
-         progress_items: [],
-         outgoing_stage: 1,
-         actions: [],
-        }]
+      stages: [{
+        name: 'stage one',
+        description: 'a description',
+        progress_items: [],
+        outgoing_stage: 1,
+        actions: [],
+      }],
     };
     feature = {
       id: 123456,
@@ -24,7 +23,7 @@ describe('chromedash-proces-overview', () => {
 
   it('renders with no data', async () => {
     const component = await fixture(
-        html`<chromedash-process-overview></chromedash-process-overview>`);
+      html`<chromedash-process-overview></chromedash-process-overview>`);
     assert.exists(component);
     assert.instanceOf(component, ChromedashProcessOverview);
     const stageHeader = component.shadowRoot.querySelector('th');
@@ -33,7 +32,7 @@ describe('chromedash-proces-overview', () => {
 
   it('highlights the active stage', async () => {
     const component = await fixture(
-        html`<chromedash-process-overview
+      html`<chromedash-process-overview
               .process=${process}
               .feature=${feature}
              ></chromedash-process-overview>`);
@@ -47,7 +46,7 @@ describe('chromedash-proces-overview', () => {
   it('does not highlight when there is no active stage', async () => {
     feature.intent_stage_int = 4;
     const component = await fixture(
-        html`<chromedash-process-overview
+      html`<chromedash-process-overview
               .process=${process}
               .feature=${feature}
              ></chromedash-process-overview>`);
@@ -56,5 +55,4 @@ describe('chromedash-proces-overview', () => {
     const activeRow = component.shadowRoot.querySelector('tr.active');
     assert.isNull(activeRow);
   });
-
 });
