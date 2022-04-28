@@ -10,6 +10,6 @@ import {unsafeHTML} from 'lit/directives/unsafe-html.js';
 export function autolink(s) {
   const markup = urlize(
     s,
-    {target: '_blank', trim: 'www', autoescape: true});
+    {target: '_blank', autoescape: true});
   return html`${unsafeHTML(markup)}`;
 }

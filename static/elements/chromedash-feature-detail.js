@@ -1,7 +1,11 @@
 import {LitElement, css, html, nothing} from 'lit';
 import '@polymer/iron-icon';
 import './chromedash-callout';
+import {autolink} from './utils.js';
 import {SHARED_STYLES} from '../sass/shared-css.js';
+
+const LONG_TEXT = 60;
+
 
 class ChromedashFeatureDetail extends LitElement {
   static get properties() {
@@ -82,6 +86,11 @@ class ChromedashFeatureDetail extends LitElement {
         padding: var(--content-padding-half);
       }
 
+      .longurl {
+        display: block;
+        padding: var(--content-padding-half);
+      }
+
       .active {
         border: var(--spot-card-border);
         box-shadow: var(--spot-card-box-shadow);
@@ -143,16 +152,18 @@ class ChromedashFeatureDetail extends LitElement {
 
   renderText(value) {
     value = String(value);
-    if (value.length > 30 || value.includes('\n')) {
-      return html`<span class="longtext">${value}</span>`;
+    const markup = autolink(value);
+    if (value.length > LONG_TEXT || value.includes('\n')) {
+      return html`<span class="longtext">${markup}</span>`;
     }
-    return html`<span class="text">${value}</span>`;
+    return html`<span class="text">${markup}</span>`;
   }
 
   renderUrl(value) {
     if (value.startsWith('http')) {
       return html`
-        <a href=${value} target="_blank" class="url"
+        <a href=${value} target="_blank"
+           class="url ${value.length > LONG_TEXT ? 'longurl' : ''}"
            >${value}</a>
       `;
     }
