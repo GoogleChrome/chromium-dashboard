@@ -95,7 +95,7 @@
     "@polymer/paper-ripple": "^3.0.2",
     "@polymer/paper-styles": "^3.0.1",
     "lit": "^2",
-    "node-fetch": ">=3.2.3",
+    "node-fetch": ">=3.2.4",
     "node-sass": ">=4.13.1",
     "urijs": ">=1.19.11",
     "yargs-parser": ">=21.0.1"
