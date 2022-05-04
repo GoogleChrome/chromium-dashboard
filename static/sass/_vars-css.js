@@ -16,6 +16,7 @@ export const VARS = css`
 
   --bar-shadow-color: rgba(0, 0, 0, .065);
   --bar-border-color: #D4D4D4;
+  --error-border-color: #FF0000;
 
   --chromium-color-dark: #366597;
   --chromium-color-medium: #85b4df;
