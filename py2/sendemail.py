@@ -29,7 +29,7 @@ import settings
 app = flask.Flask(__name__)
 
 # Parsing very large messages could cause out-of-memory errors.
-MAX_BODY_SIZE = 100 * 1024
+MAX_BODY_SIZE = 20 * 1024 * 1024  # 20 MB
 
 
 def require_task_header():
