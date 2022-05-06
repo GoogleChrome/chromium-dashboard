@@ -51,6 +51,16 @@ django.setup()
 # exploit <script src="...">.  See go/xssi.
 XSSI_PREFIX = ')]}\'\n';
 
+
+# See https://www.regextester.com/93901 for url regex
+SCHEME_PATTERN = r'((?P<scheme>[a-z]+):(\/\/)?)?'
+DOMAIN_PATTERN = r'([\w-]+(\.[\w-]+)+)'
+PATH_PARAMS_ANCHOR_PATTERN = r'([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?'
+URL_RE = re.compile(r'\b%s%s%s\b' % (
+    SCHEME_PATTERN, DOMAIN_PATTERN, PATH_PARAMS_ANCHOR_PATTERN))
+ALLOWED_SCHEMES = [None, 'http', 'https']
+
+
 class BaseHandler(flask.views.MethodView):
 
   @property
@@ -402,7 +412,7 @@ class FlaskHandler(BaseHandler):
     """Split the input lines, strip whitespace, and skip blank lines."""
     input_text = flask.request.form.get(field_name) or ''
     return [x.strip() for x in re.split(delim, input_text)
-            if x]
+            if x.strip()]
 
   def split_emails(self, param_name):
     """Split one input field and construct objects for ndb.StringProperty()."""
@@ -410,20 +420,26 @@ class FlaskHandler(BaseHandler):
     emails = [str(addr) for addr in addr_strs]
     return emails
 
-  def parse_link(self, param_name):
-    link = flask.request.form.get(param_name) or None
-    if link:
-      # see https://www.regextester.com/93901 for url regex
-      url_pattern = (r'\b(http:\/\/|https:\/\/)?([\w_-]+(?:(?:\.[\w_-]+)+))'
-                     r'([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?\b')
-      match_obj = re.search(url_pattern, str(link))
-      if match_obj:
+  def _extract_link(self, s):
+    if s:
+      match_obj = URL_RE.search(str(s))
+      if match_obj and match_obj.group('scheme') in ALLOWED_SCHEMES:
         link = match_obj.group()
         if not link.startswith(('http://', 'https://')):
           link = 'http://' + link
-      else:
-        link = None
-    return link
+        return link
+
+    return None
+
+  def parse_link(self, param_name):
+    s = flask.request.form.get(param_name) or None
+    return self._extract_link(s)
+
+  def parse_links(self, param_name):
+    strings = self.split_input(param_name)
+    links = [self._extract_link(s) for s in strings]
+    links = [link for link in links if link]  # Drop any bad ones.
+    return links
 
   def parse_int(self, param_name):
     param = flask.request.form.get(param_name) or None
