@@ -644,3 +644,190 @@ class FlaskHandlerTests(testing_config.CustomTestCase):
     with test_app.test_request_context('/test', data=form_data):
       with self.assertRaises(werkzeug.exceptions.BadRequest):
         self.handler.require_xsrf_token()
+
+  def test_split_input(self):
+    """We can parse items from multi-item text fields."""
+    with test_app.test_request_context(
+        'path', data={
+            'empty': '',
+            'blanks': '   ',
+            'colors': 'yellow\nblue',
+            'names': 'alice, bob',
+        }):
+      self.assertEqual([], self.handler.split_input('missing'))
+      self.assertEqual([], self.handler.split_input('empty'))
+      self.assertEqual([], self.handler.split_input('blanks'))
+      self.assertEqual(
+          ['yellow', 'blue'],
+          self.handler.split_input('colors'))
+      self.assertEqual(
+          ['alice', 'bob'],
+          self.handler.split_input('names', delim=','))
+
+  def test_split_emails(self):
+    """We can parse emails from input fields with commas."""
+    with test_app.test_request_context(
+        'path', data={
+            'empty': '',
+            'blanks': '   ',
+            'single': 'user@example.com',
+            'nospace': 'user1@example.com,user2@example.com',
+            'withspace': ' user1@example.com, user2@example.com ',
+            'extracommas': ',user1@example.com, ,,user2@example.com, ',
+        }):
+      self.assertEqual([], self.handler.split_emails('missing'))
+      self.assertEqual([], self.handler.split_emails('empty'))
+      self.assertEqual([], self.handler.split_emails('blanks'))
+      self.assertEqual(
+          ['user@example.com'],
+          self.handler.split_emails('single'))
+      self.assertEqual(
+          ['user1@example.com', 'user2@example.com'],
+          self.handler.split_emails('nospace'))
+      self.assertEqual(
+          ['user1@example.com', 'user2@example.com'],
+          self.handler.split_emails('withspace'))
+      self.assertEqual(
+          ['user1@example.com', 'user2@example.com'],
+          self.handler.split_emails('extracommas'))
+
+  def test_extract_link__normal(self):
+    """We can detect a link (discarding other text)."""
+    self.assertEqual(
+        'http://example.com',
+        self.handler._extract_link('http://example.com'))
+    self.assertEqual(
+        'http://example.com',
+        self.handler._extract_link('http://example.com/'))
+    self.assertEqual(
+        'http://example.com/path#anchor',
+        self.handler._extract_link('http://example.com/path#anchor'))
+    self.assertEqual(
+        'http://example.com/1/2/c?x=y&z=2+2',
+        self.handler._extract_link('http://example.com/1/2/c?x=y&z=2+2'))
+    self.assertEqual(
+        'https://example.com',
+        self.handler._extract_link('https://example.com'))
+    self.assertEqual(
+        'http://example.com',
+        self.handler._extract_link('http://example.com is a website'))
+    self.assertEqual(
+        'http://example.com',
+        self.handler._extract_link('Please see http://example.com.'))
+    self.assertEqual(
+        'http://example.com?x=y',
+        self.handler._extract_link('<a href="http://example.com?x=y"'))
+    self.assertEqual(
+        'http://example.com:8080?x=y',
+        self.handler._extract_link('<a href="http://example.com:8080?x=y"'))
+
+  def test_extract_link__add_http(self):
+    """We add http:// when no scheme is found."""
+    self.assertEqual(
+        'http://example.com',
+        self.handler._extract_link('example.com'))
+    self.assertEqual(
+        'http://example.com/1/2/c?x=y&z=2+2',
+        self.handler._extract_link('example.com/1/2/c?x=y&z=2+2'))
+    self.assertEqual(
+        'http://192.168.0.1/1/2/c?x=y&z=2+2',
+        self.handler._extract_link('192.168.0.1/1/2/c?x=y&z=2+2'))
+    self.assertEqual(
+        'http://example.com',
+        self.handler._extract_link('<a href="example.com"'))
+    self.assertEqual(
+        'http://example.com',
+        self.handler._extract_link('mailto:user@example.com'))
+
+  def test_extract_link__bad(self):
+    """We do not accept these as links."""
+    self.assertIsNone(self.handler._extract_link(
+        None))
+    self.assertIsNone(self.handler._extract_link(
+        ''))
+    self.assertIsNone(self.handler._extract_link(
+        '  '))
+    self.assertIsNone(self.handler._extract_link(
+        'example..com'))
+    self.assertIsNone(self.handler._extract_link(
+        'TBD'))
+    self.assertIsNone(self.handler._extract_link(
+        'Coming soon'))
+    self.assertIsNone(self.handler._extract_link(
+        'http://localhost/'))
+    self.assertIsNone(self.handler._extract_link(
+        'http://localhost:8080/'))
+
+    self.assertIsNone(self.handler._extract_link(
+        'ftp://example.com/ftp'))
+    self.assertIsNone(self.handler._extract_link(
+        'javascript:alert(1)'))
+    self.assertIsNone(self.handler._extract_link(
+        'javascript:window.alert(1)'))
+    self.assertIsNone(self.handler._extract_link(
+        'about:flags'))
+
+
+    # We might add support for these sometime, but not now.
+    self.assertIsNone(self.handler._extract_link(
+        'b/1234'))
+    self.assertIsNone(self.handler._extract_link(
+        'go/1234'))
+
+  def test_parse_link(self):
+    """We can parse a link from POST data."""
+    with test_app.test_request_context(
+        'path', data={
+            'empty': '',
+            'blanks': '   ',
+            'noturl': 'Coming soon',
+            'plain': 'http://example.com',
+            'noscheme': 'example.com',
+            'withspace': ' example.com ',
+            'extrajunk': ' please see example.com, ',
+        }):
+      self.assertIsNone(self.handler.parse_link('missing'))
+      self.assertIsNone(self.handler.parse_link('empty'))
+      self.assertIsNone(self.handler.parse_link('blanks'))
+      self.assertIsNone(self.handler.parse_link('noturl'))
+      self.assertEqual(
+          'http://example.com',
+          self.handler.parse_link('plain'))
+      self.assertEqual(
+          'http://example.com',
+          self.handler.parse_link('noscheme'))
+      self.assertEqual(
+          'http://example.com',
+          self.handler.parse_link('withspace'))
+      self.assertEqual(
+          'http://example.com',
+          self.handler.parse_link('extrajunk'))
+
+  def test_parse_links(self):
+    """We can parse links that are on separate lines."""
+    with test_app.test_request_context(
+        'path', data={
+            'empty': '',
+            'blanks': '   ',
+            'noturl': ' Coming soon  ',
+            'single': 'https://example.com',
+            'multiple': 'example1.com\nexample2.com',
+            'withspace': ' example1.com\n example2.com ',
+            'extrajunk': ',example1.com,\n TODO: example2.com, ',
+        }):
+      self.assertEqual([], self.handler.parse_links('missing'))
+      self.assertEqual([], self.handler.parse_links('empty'))
+      self.assertEqual([], self.handler.parse_links('blanks'))
+      self.assertEqual([], self.handler.parse_links('noturl'))
+      self.assertEqual(
+          ['https://example.com'],
+          self.handler.parse_links('single'))
+      self.assertEqual(
+          ['http://example1.com', 'http://example2.com'],
+          self.handler.parse_links('multiple'))
+      self.assertEqual(
+          ['http://example1.com', 'http://example2.com'],
+          self.handler.parse_links('withspace'))
+      self.assertEqual(
+          ['http://example1.com', 'http://example2.com'],
+          self.handler.parse_links('extrajunk'))

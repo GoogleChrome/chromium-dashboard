@@ -311,7 +311,7 @@ class FeatureEditStage(basehandlers.FlaskHandler):
           'initial_public_proposal_url')
 
     if self.touched('explainer_links'):
-      feature.explainer_links = self.split_input('explainer_links')
+      feature.explainer_links = self.parse_links('explainer_links')
 
     if self.touched('bug_url'):
       feature.bug_url = self.parse_link('bug_url')
@@ -430,13 +430,13 @@ class FeatureEditStage(basehandlers.FlaskHandler):
       feature.owner = self.split_emails('owner')
 
     if self.touched('doc_links'):
-      feature.doc_links = self.split_input('doc_links')
+      feature.doc_links = self.parse_links('doc_links')
 
     if self.touched('measurement'):
       feature.measurement = self.form.get('measurement')
 
     if self.touched('sample_links'):
-      feature.sample_links = self.split_input('sample_links')
+      feature.sample_links = self.parse_links('sample_links')
 
     if self.touched('search_tags'):
       feature.search_tags = self.split_input('search_tags', delim=',')

@@ -1,6 +1,3 @@
-
-
-
 # Copyright 2020 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
@@ -265,23 +262,6 @@ class FeatureEditStageTest(testing_config.CustomTestCase):
       self.assertTrue(self.handler.touched('name'))
       self.assertFalse(self.handler.touched('summary'))
 
-  def test_split_input(self):
-    """We can parse items from multi-item text fields"""
-    with test_app.test_request_context(
-        'path', data={
-            'empty': '',
-            'colors': 'yellow\nblue',
-            'names': 'alice, bob',
-        }):
-      self.assertEqual([], self.handler.split_input('missing'))
-      self.assertEqual([], self.handler.split_input('empty'))
-      self.assertEqual(
-          ['yellow', 'blue'],
-          self.handler.split_input('colors'))
-      self.assertEqual(
-          ['alice', 'bob'],
-          self.handler.split_input('names', delim=','))
-
   def test_get__anon(self):
     """Anon cannot edit features, gets a redirect to viewing page."""
     testing_config.sign_out()
@@ -391,7 +371,7 @@ class FeatureEditStageTemplateTest(TestWithFeature):
         standardization=1, web_dev_views=models.DEV_NO_SIGNALS,
         impl_status_chrome=1)
     self.feature_1.put()
-    self.stage = models.INTENT_INCUBATE  # Shows first form  
+    self.stage = models.INTENT_INCUBATE  # Shows first form
     testing_config.sign_in('user1@google.com', 1234567890)
 
     with test_app.test_request_context(self.request_path):
@@ -423,7 +403,7 @@ class FeatureEditAllFieldsTemplateTest(TestWithFeature):
         standardization=1, web_dev_views=models.DEV_NO_SIGNALS,
         impl_status_chrome=1)
     self.feature_1.put()
-    self.stage = models.INTENT_INCUBATE  # Shows first form  
+    self.stage = models.INTENT_INCUBATE  # Shows first form
     testing_config.sign_in('user1@google.com', 1234567890)
 
     with test_app.test_request_context(self.request_path):
@@ -441,4 +421,3 @@ class FeatureEditAllFieldsTemplateTest(TestWithFeature):
         self.template_data, self.full_template_path)
     parser = html5lib.HTMLParser(strict=True)
     document = parser.parse(template_text)
-
