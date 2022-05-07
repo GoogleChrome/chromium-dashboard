@@ -143,7 +143,6 @@ class APIHandler(BaseHandler):
     headers = {
         'Strict-Transport-Security':
             'max-age=63072000; includeSubDomains; preload',
-        'Access-Control-Allow-Origin': '*',
         'X-UA-Compatible': 'IE=Edge,chrome=1',
         }
     return headers
@@ -267,7 +266,6 @@ class FlaskHandler(BaseHandler):
     headers = {
         'Strict-Transport-Security':
             'max-age=63072000; includeSubDomains; preload',
-        'Access-Control-Allow-Origin': '*',
         'X-UA-Compatible': 'IE=Edge,chrome=1',
         }
     headers.update(self.get_cache_headers())
