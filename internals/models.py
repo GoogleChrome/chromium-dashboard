@@ -1270,10 +1270,14 @@ class Feature(DictModel):
 
   # Tracability to intent discussion threads
   intent_to_implement_url = ndb.StringProperty()
+  intent_to_implement_subject_line = ndb.StringProperty()
   intent_to_ship_url = ndb.StringProperty()
+  intent_to_ship_subject_line = ndb.StringProperty()
   ready_for_trial_url = ndb.StringProperty()
   intent_to_experiment_url = ndb.StringProperty()
+  intent_to_experiment_subject_line = ndb.StringProperty()
   intent_to_extend_experiment_url = ndb.StringProperty()
+  intent_to_extend_experiment_subject_line = ndb.StringProperty()
   # Currently, only one is needed.
   i2e_lgtms = ndb.StringProperty(repeated=True)
   i2s_lgtms = ndb.StringProperty(repeated=True)

@@ -389,6 +389,69 @@ class FunctionsTest(testing_config.CustomTestCase):
         notifier.get_thread_id(
             self.feature_1, approval_defs.ShipApproval))
 
+  def test_get_existing_thread_subject__none(self):
+    """If a feature does not store an existing thread subject, use None."""
+    self.assertIsNone(notifier.get_existing_thread_subject(
+        self.feature_1, approval_defs.PrototypeApproval))
+
+  def test_get_existing_thread_subject__found(self):
+    """If a feature does not store an existing thread subject, use it."""
+    self.feature_1.intent_to_ship_subject_line = (
+        'Intent to really ship: feature one')
+    actual = notifier.get_existing_thread_subject(
+        self.feature_1, approval_defs.ShipApproval)
+    self.assertEqual('Intent to really ship: feature one', actual)
+
+  def test_get_existing_thread_subject__unknown(self):
+    """Raise ValueError if called with an unknown approval field."""
+    PivotApproval = approval_defs.ApprovalFieldDef(
+        'Intent to Pivot',
+        'One API Owner must approve your intent',
+        99, approval_defs.ONE_LGTM, [])
+    with self.assertRaises(ValueError):
+      notifier.get_existing_thread_subject(
+          self.feature_1, PivotApproval)
+
+  def test_generate_thread_subject__normal(self):
+    """Most intents just use the name of the intent."""
+    self.assertEqual(
+        'Intent to Prototype: feature one',
+        notifier.generate_thread_subject(
+            self.feature_1, approval_defs.PrototypeApproval))
+    self.assertEqual(
+        'Intent to Experiment: feature one',
+        notifier.generate_thread_subject(
+            self.feature_1, approval_defs.ExperimentApproval))
+    self.assertEqual(
+        'Intent to Extend Experiment: feature one',
+        notifier.generate_thread_subject(
+            self.feature_1, approval_defs.ExtendExperimentApproval))
+    self.assertEqual(
+        'Intent to Ship: feature one',
+        notifier.generate_thread_subject(
+            self.feature_1, approval_defs.ShipApproval))
+
+  def test_generate_thread_subject__deprecation(self):
+    """Deprecation intents use different subjects for most intents."""
+    self.feature_1.feature_type = models.FEATURE_TYPE_DEPRECATION_ID
+    self.assertEqual(
+        'Intent to Deprecate and Remove: feature one',
+        notifier.generate_thread_subject(
+            self.feature_1, approval_defs.PrototypeApproval))
+    self.assertEqual(
+        'Request for Deprecation Trial: feature one',
+        notifier.generate_thread_subject(
+            self.feature_1, approval_defs.ExperimentApproval))
+    self.assertEqual(
+        'Intent to Extend Deprecation Trial: feature one',
+        notifier.generate_thread_subject(
+            self.feature_1, approval_defs.ExtendExperimentApproval))
+    self.assertEqual(
+        'Intent to Ship: feature one',
+        notifier.generate_thread_subject(
+            self.feature_1, approval_defs.ShipApproval))
+
+
   def test_get_thread_id__trailing_junk(self):
     """We can select the correct approval thread field of a feature."""
     self.feature_1.intent_to_implement_url += '?param=val#anchor'

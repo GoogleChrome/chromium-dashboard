@@ -315,7 +315,7 @@ class IntentEmailHandlerTest(testing_config.CustomTestCase):
         }
     self.lgtm_json_data = {
         'from_addr': 'user@example.com',
-        'subject': 'Intent to Ship: Featurename',
+        'subject': 'Re: Intent to Ship: Featurename',
         'body': 'LGTM. ' + self.footer,
         }
     self.handler = detect_intent.IntentEmailHandler()
@@ -341,6 +341,8 @@ class IntentEmailHandlerTest(testing_config.CustomTestCase):
     self.assertEqual(models.Approval.REVIEW_REQUESTED, appr.state)
     self.assertEqual('user@example.com', appr.set_by)
     self.assertEqual(self.feature_1.intent_to_ship_url, self.thread_url)
+    self.assertEqual(self.feature_1.intent_to_ship_subject_line,
+                     self.review_json_data['subject'])
 
   def test_process_post_data__new_thread_just_FYI(self):
     """When we detect a new thread, it might not require a review."""
@@ -354,12 +356,15 @@ class IntentEmailHandlerTest(testing_config.CustomTestCase):
     created_approvals = list(models.Approval.query().fetch(None))
     self.assertEqual(0, len(created_approvals))
     self.assertEqual(self.feature_1.intent_to_implement_url, self.thread_url)
+    self.assertEqual(self.feature_1.intent_to_implement_subject_line,
+                     self.review_json_data['subject'])
 
   @mock.patch('internals.detect_intent.is_lgtm_allowed')
   def test_process_post_data__lgtm(self, mock_is_lgtm_allowed):
     """If we get an LGTM, we store the approval value and update the feature."""
     mock_is_lgtm_allowed.return_value = True
     self.feature_1.intent_to_ship_url = self.thread_url
+    self.feature_1.intent_to_ship_subject_line = 'orig subject'
     self.feature_1.put()
 
     with test_app.test_request_context(
@@ -376,4 +381,6 @@ class IntentEmailHandlerTest(testing_config.CustomTestCase):
     self.assertEqual(models.Approval.APPROVED, appr.state)
     self.assertEqual('user@example.com', appr.set_by)
     self.assertEqual(self.feature_1.intent_to_ship_url, self.thread_url)
+    self.assertEqual(
+        self.feature_1.intent_to_ship_subject_line, 'orig subject')
     self.assertEqual(self.feature_1.i2s_lgtms, ['user@example.com'])
