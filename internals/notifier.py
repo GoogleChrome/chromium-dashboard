@@ -342,7 +342,8 @@ def post_comment_to_mailing_list(
   approval_field = approval_defs.APPROVAL_FIELDS_BY_ID[approval_field_id]
   subject = (get_existing_thread_subject(feature, approval_field) or
              generate_thread_subject(feature, approval_field))
-  subject = 'Re: ' + subject
+  if not subject.startswith('Re: '):
+    subject = 'Re: ' + subject
   thread_id = get_thread_id(feature, approval_field)
   references = None
   if thread_id:
