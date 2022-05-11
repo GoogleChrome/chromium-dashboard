@@ -41,29 +41,6 @@ class UsersTest(testing_config.CustomTestCase):
     self.assertIsNone(actual_user)
 
   @mock.patch('settings.UNIT_TEST_MODE', False)
-  @mock.patch('google.oauth2.id_token.verify_oauth2_token')
-  def test_get_current_user__signed_in_jwt(self, mock_verify):
-    """A valid jwt means the user is signed in."""
-    mock_verify.return_value = {'email': 'user_222@example.com'}
-    with test_app.test_request_context('/any-path'):
-      session.clear()
-      session['id_token'] = 'fake good token'
-      actual_user = users.get_current_user()
-      self.assertEqual('user_222@example.com', actual_user.email())
-
-  @mock.patch('settings.UNIT_TEST_MODE', False)
-  @mock.patch('google.oauth2.id_token.verify_oauth2_token')
-  def test_get_current_user__bad_jwt(self, mock_verify):
-    """We reject bad JWTs and clear the session."""
-    mock_verify.side_effect = ValueError()
-    with test_app.test_request_context('/any-path'):
-      session.clear()
-      session['id_token'] = 'fake bad token'
-      actual_user = users.get_current_user()
-      self.assertIsNone(actual_user)
-      self.assertEqual(0, len(session))
-
-  @mock.patch('settings.UNIT_TEST_MODE', False)
   @mock.patch('framework.xsrf.validate_token')
   def test_get_current_user__signed_in_sui(self, mock_validate):
     """A valid signed user_info means the user is signed in."""

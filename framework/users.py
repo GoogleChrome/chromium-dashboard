@@ -181,9 +181,9 @@ class User(object):
         """
 
         # This env variable was set by GAE based on a GAE session cookie.
-        # With Google Sign-In, it will probably never be present.
-        # Hence, currently is always False
-        # TODO (jrobbins): Implement this method
+        # Using Sign-In With Google, it will probably never be present.
+        # Hence, currently is always False.
+        # We don't use this.  We check a boolean in the AppUser model.
         return (os.environ.get('USER_IS_ADMIN', '0')) == '1'
 
 
@@ -193,20 +193,6 @@ def get_current_user():
       if os.environ['USER_EMAIL']!= '':
         user_via_env = User(email=os.environ['USER_EMAIL'])
       return user_via_env
-
-    # TODO(jrobbins): Remove this code path after 30 days.
-    jwt = session.get('id_token')
-    if jwt:
-      try:
-        idinfo = id_token.verify_oauth2_token(
-            jwt, requests.Request(), settings.GOOGLE_SIGN_IN_CLIENT_ID)
-        user_via_jwt = User(email=idinfo['email'])
-        return user_via_jwt
-
-      except ValueError:
-        # If anything is not right, give the user a fresh session.
-        session.clear()
-        pass
 
     user_info, signature = session.get('signed_user_info', (None, None))
     if user_info:
