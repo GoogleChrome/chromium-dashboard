@@ -274,6 +274,38 @@ BLINK_DEV_ARCHIVE_URL_PREFIX = (
 TEST_ARCHIVE_URL_PREFIX = (
     'https://groups.google.com/d/msgid/jrobbins-test/')
 
+
+def get_existing_thread_subject(feature, approval_field):
+  """If we have the subject line of the Google Groups thread, use it."""
+  # This improves message threading in gmail.
+
+  if approval_field == approval_defs.PrototypeApproval:
+    return feature.intent_to_implement_subject_line
+  # TODO(jrobbins): Ready-for-trial threads
+  elif approval_field == approval_defs.ExperimentApproval:
+    return feature.intent_to_experiment_subject_line
+  elif approval_field == approval_defs.ExtendExperimentApproval:
+    return feature.intent_to_extend_experiment_subject_line
+  elif approval_field == approval_defs.ShipApproval:
+    return feature.intent_to_ship_subject_line
+  else:
+    raise ValueError('Unexpected approval type')
+
+
+def generate_thread_subject(feature, approval_field):
+  """Use the expected subject based on the feature type and approval type."""
+  intent_phrase = approval_field.name
+  if feature.feature_type == models.FEATURE_TYPE_DEPRECATION_ID:
+    if approval_field == approval_defs.PrototypeApproval:
+      intent_phrase = 'Intent to Deprecate and Remove'
+    if approval_field == approval_defs.ExperimentApproval:
+      intent_phrase = 'Request for Deprecation Trial'
+    if approval_field == approval_defs.ExtendExperimentApproval:
+      intent_phrase = 'Intent to Extend Deprecation Trial'
+
+  return '%s: %s' % (intent_phrase, feature.name)
+
+
 def get_thread_id(feature, approval_field):
   """If we have the URL of the Google Groups thread, we can get its ID."""
   if approval_field == approval_defs.PrototypeApproval:
@@ -308,7 +340,10 @@ def post_comment_to_mailing_list(
   to_addr = settings.REVIEW_COMMENT_MAILING_LIST
   from_user = author_addr.split('@')[0]
   approval_field = approval_defs.APPROVAL_FIELDS_BY_ID[approval_field_id]
-  subject = 'Re: %s: %s' % (approval_field.name, feature.name)
+  subject = (get_existing_thread_subject(feature, approval_field) or
+             generate_thread_subject(feature, approval_field))
+  if not subject.startswith('Re: '):
+    subject = 'Re: ' + subject
   thread_id = get_thread_id(feature, approval_field)
   references = None
   if thread_id:

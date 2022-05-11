@@ -37,7 +37,8 @@ INTEND_PATTERN = r'(intent|intend(ing)?|request(ing)?) (to|for)'
 SHIP_PATTERN = r'(ship|remove|\w+ and ship|\w+ and remove)'
 PROTO_PATTERN = r'(prototype|prototyping|implement|deprecate)'
 EXPERIMENT_PATTERN = r'(experiment|deprecation)'
-EXTEND_PATTERN = r'(continue|continuing|extend|extending) (experiment|origin)'
+EXTEND_PATTERN = (r'(continue|continuing|extend|extending) '
+                  r'(experiment|origin|deprecation)')
 
 SHIP_RE = re.compile('%s %s' % (INTEND_PATTERN, SHIP_PATTERN))
 PROTO_RE = re.compile('%s %s' % (INTEND_PATTERN, PROTO_PATTERN))
@@ -188,7 +189,7 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
       logging.info('Could not retrieve feature')
       return {'message': 'Feature not found'}
 
-    self.set_intent_thread_url(feature, approval_field, thread_url)
+    self.set_intent_thread_url(feature, approval_field, thread_url, subject)
     self.create_approvals(feature, approval_field, from_addr, body)
     return {'message': 'Done'}
 
@@ -236,7 +237,8 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
 
     return matching_features[0], None
 
-  def set_intent_thread_url(self, feature, approval_field, thread_url):
+  def set_intent_thread_url(
+      self, feature, approval_field, thread_url, subject):
     """If the feature has no previous thread URL for this intent, set it."""
     if not thread_url:
       return
@@ -244,6 +246,7 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
     if (approval_field == approval_defs.PrototypeApproval and
         not feature.intent_to_implement_url):
       feature.intent_to_implement_url = thread_url
+      feature.intent_to_implement_subject_line = subject
       feature.put()
 
     # TODO(jrobbins): Ready-for-trial threads
@@ -251,16 +254,19 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
     if (approval_field == approval_defs.ExperimentApproval and
         not feature.intent_to_experiment_url):
       feature.intent_to_experiment_url = thread_url
+      feature.intent_to_experiment_subject_line = subject
       feature.put()
 
     if (approval_field == approval_defs.ExtendExperimentApproval and
         not feature.intent_to_extend_experiment_url):
       feature.intent_to_extend_experiment_url = thread_url
+      feature.intent_to_extend_experiment_subject_line = subject
       feature.put()
 
     if (approval_field == approval_defs.ShipApproval and
         not feature.intent_to_ship_url):
       feature.intent_to_ship_url = thread_url
+      feature.intent_to_ship_subject_line = subject
       feature.put()
 
   def create_approvals(self, feature, approval_field, from_addr, body):
