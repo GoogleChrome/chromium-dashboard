@@ -59,7 +59,6 @@ class ChromedashRoadmap extends LitElement {
       // Assigned in roadmap-page.js,
       channels: {attribute: false},
       signedIn: {type: Boolean},
-      loginUrl: {type: String},
       starredFeatures: {type: Object}, // will contain a set of starred features
       cardWidth: {type: Number}, // width of each milestone card
       lastFutureFetchedOn: {type: Number}, // milestone number rendering of which caused fetching of next milestones
