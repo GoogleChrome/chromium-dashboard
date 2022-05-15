@@ -47,7 +47,53 @@ jobs:
       - name: build
         run: npm run build
 
+
+  web_tests:
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [12.x]
+        # TODO: Add 14.x, 16.x.
+        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.9'
+
+      - name: pre-installation
+        run: |
+          # Remove existing google-cloud-sdk packages in Ubuntu.
+          sudo rm -rf /usr/lib/google-cloud-sdk
+          curl https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-353.0.0-linux-x86_64.tar.gz | tar -zx > /dev/null
+          # Substitute the downloaded google-cloud-sdk packages, due to https://stackoverflow.com/questions/42697026/install-google-cloud-components-error-from-gcloud-command.
+          sudo mv google-cloud-sdk /usr/lib/
+          sudo gcloud components update
+          sudo gcloud components install app-engine-python beta cloud-datastore-emulator app-engine-python-extras
+          gcloud config set project cr-status-staging
+          gcloud version
+
+      - name: installation
+        run: |
+          npm install -g gulp
+
+      - run: npm ci
+      - run: npm run deps
+      - run: npm run build --if-present
+      - run: npm test
+
       - run: npx playwright install-deps
 
-      - name: webtest
+      - name: Run web test runner
         run: npm run webtest

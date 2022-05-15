@@ -15,7 +15,7 @@
     "stop-emulator": "curl -X POST 'http://localhost:15606/shutdown'",
     "test": "(npm run start-emulator > /dev/null 2>&1 &); sleep 6; curl --retry 4 http://localhost:15606/ --retry-connrefused; npm run do-tests; status=$?; npm run stop-emulator; exit $status",
     "test2": "cd py2; python2 -m unittest discover -p '*_py2test.py' -b",
-    "webtest": "web-test-runner \"static/**/*_test.js\" --node-resolve",
+    "webtest": "web-test-runner \"static/**/*_test.js\" --node-resolve --playwright --browsers chromium firefox",
     "do-coverage": "coverage3 erase && coverage3 run -m unittest discover -p '*_test.py' -b && coverage3 html",
     "coverage": "(npm run start-emulator > /dev/null 2>&1 &); sleep 3; curl --retry 4 http://localhost:15606/ --retry-connrefused; npm run do-coverage;  npm run stop-emulator",
     "view-coverage": "pushd htmlcov/; python3 -m http.server 8080; popd",
