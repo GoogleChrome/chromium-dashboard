@@ -46,3 +46,6 @@ jobs:
 
       - name: build
         run: npm run build
+
+      - name: webtest
+        run: npm run webtest
