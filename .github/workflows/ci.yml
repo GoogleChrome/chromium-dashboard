@@ -47,5 +47,7 @@ jobs:
       - name: build
         run: npm run build
 
+      - run: npx playwright install-deps
+
       - name: webtest
         run: npm run webtest
