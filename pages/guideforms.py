@@ -55,6 +55,17 @@ SUMMARY_PLACEHOLDER_TXT = (
   'Write it from a web developer\'s point of view.\n\n'
   'Follow the example link below for more guidance.')
 
+# This email address pattern is more restrictive than actually allowed, but it covers most reasonable uses.
+EMAIL_ADDRESS_PATTERN = '[ ]*([a-zA-Z0-9_\-\.]+)@([a-zA-Z0-9\-\.]+)\.([a-zA-Z]{2,5}){1,25}[ ]*'
+
+EMAIL_ADDRESSES_PATTERN = '^' + EMAIL_ADDRESS_PATTERN + '(,' + EMAIL_ADDRESS_PATTERN + ')*$'
+
+MULTI_EMAIL_FIELD_ATTRS = {
+    'title':"Enter one or more comma-separated complete email addresses.",
+    'multiple': True, 
+    'placeholder': 'address1@domain.com, address2@chromium.org',
+    'pattern': EMAIL_ADDRESSES_PATTERN
+}
 
 # We define all form fields here so that they can be include in one or more
 # stage-specific fields without repeating the details and help text.
@@ -88,8 +99,7 @@ ALL_FIELDS = {
 
     'owner': MultiEmailField(
         required=True, label='Feature owners',
-        widget=forms.EmailInput(
-            attrs={'multiple': True, 'placeholder': 'email,email'}),
+        widget=forms.EmailInput(attrs=MULTI_EMAIL_FIELD_ATTRS),
         help_text=('Comma separated list of full email addresses. '
                    'Prefer @chromium.org.')),
 
@@ -188,10 +198,9 @@ ALL_FIELDS = {
         help_text=('The spec document has details in a specification language '
                    'such as Web IDL, or there is an exsting MDN page.')),
 
-    'spec_mentors': forms.EmailField(
+    'spec_mentors': MultiEmailField(
         required=False, label='Spec mentor',
-        widget=forms.EmailInput(
-            attrs={'multiple': True, 'placeholder': 'email'}),
+        widget=forms.EmailInput(attrs=MULTI_EMAIL_FIELD_ATTRS),
         help_text=
         ('Experienced <a target="_blank" '
          'href="https://www.chromium.org/blink/spec-mentors">'
@@ -521,25 +530,22 @@ ALL_FIELDS = {
          '<a href="go/finch" targe="_blank">Finch experiment</a>, '
          'link to it here.')),
 
-    'i2e_lgtms': forms.EmailField(
+    'i2e_lgtms': MultiEmailField(
         required=False, label='Intent to Experiment LGTM by',
-        widget=forms.EmailInput(
-            attrs={'multiple': True, 'placeholder': 'email'}),
+        widget=forms.EmailInput(attrs=MULTI_EMAIL_FIELD_ATTRS),
         help_text=('Full email address of API owner who LGTM\'d the '
                    'Intent to Experiment email thread.')),
 
-    'i2s_lgtms': forms.EmailField(
+    'i2s_lgtms': MultiEmailField(
         required=False, label='Intent to Ship LGTMs by',
-        widget=forms.EmailInput(
-            attrs={'multiple': True, 'placeholder': 'email, email, email'}),
+        widget=forms.EmailInput(attrs=MULTI_EMAIL_FIELD_ATTRS),
         help_text=('Comma separated list of '
                    'full email addresses of API owners who LGTM\'d '
                    'the Intent to Ship email thread.')),
 
-    'r4dt_lgtms': forms.EmailField(  # Sets i2e_lgtms field.
+    'r4dt_lgtms': MultiEmailField(  # Sets i2e_lgtms field.
         required=False, label='Request for Deprecation Trial LGTM by',
-        widget=forms.EmailInput(
-            attrs={'multiple': True, 'placeholder': 'email'}),
+        widget=forms.EmailInput(attrs=MULTI_EMAIL_FIELD_ATTRS),
         help_text=('Full email addresses of API owners who LGTM\'d '
                    'the Request for Deprecation Trial email thread.')),
 
@@ -640,10 +646,9 @@ ALL_FIELDS = {
       choices=[(x, x) for x in models.BlinkComponent.fetch_all_components()],
       initial=[models.BlinkComponent.DEFAULT_COMPONENT]),
 
-    'devrel': forms.EmailField(
+    'devrel': MultiEmailField(
         required=False, label='Developer relations emails',
-        widget=forms.EmailInput(
-            attrs={'multiple': True, 'placeholder': 'email, email'}),
+        widget=forms.EmailInput(attrs=MULTI_EMAIL_FIELD_ATTRS),
         help_text='Comma separated list of full email addresses.'),
 
     'impl_status_chrome': forms.ChoiceField(

@@ -59,14 +59,6 @@ export const SHARED_STYLES = [
   textarea {
     border: 1px solid var(--bar-border-color);
   }
-  input:not([type="submit"]):not([type="search"]):invalid:not(:focus) {
-    outline: 1px dotted var(--error-border-color);
-    background-color: #FFEDF5;
-  }
-  input:not([type="submit"]):not([type="search"]):invalid:not(:focus) ~ span::after {
-    color: $error-border-color;
-    content: ' (Currently invalid)';
-  }
 
   input:not([type="submit"])[disabled],
   textarea[disabled],

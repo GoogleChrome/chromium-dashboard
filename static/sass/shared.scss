@@ -45,14 +45,7 @@ a:hover {
 input:not([type="submit"]), textarea {
   border: 1px solid $bar-border-color;
 }
-input:not([type="submit"]):not([type="search"]):invalid:not(:focus) {
-  outline: 1px dotted $error-border-color;
-  background-color: #FFEDF5;
-}
-input:not([type="submit"]):not([type="search"]):invalid:not(:focus) ~ span::after {
-  color: $error-border-color;
-  content: ' (Currently invalid)';
-}
+
 input:not([type="submit"])[disabled], textarea[disabled], button[disabled] {
   opacity: 0.5;
 }
