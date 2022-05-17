@@ -99,6 +99,8 @@ export class ChromedashProcessOverview extends LitElement {
         margin-left: var(--content-padding-half);
       }
 
+      .active .edit-progress-item,
+      .missing-prereqs .edit-progress-item,
       .pending:hover .edit-progress-item,
       .done:hover .edit-progress-item {
         visibility: visible;
