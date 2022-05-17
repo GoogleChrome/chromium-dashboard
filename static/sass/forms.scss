@@ -56,6 +56,11 @@ table {
     border: 1px solid $invalid-color;
   }
 
+  input:not([type="submit"]):not([type="search"]):invalid:not(:focus) {
+    outline: 1px dotted var(--error-border-color);
+    background-color: #FFEDF5;
+  }
+
   .errorlist {
     color: red;
   }

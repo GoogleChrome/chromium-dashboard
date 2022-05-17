@@ -59,6 +59,7 @@ export const SHARED_STYLES = [
   textarea {
     border: 1px solid var(--bar-border-color);
   }
+
   input:not([type="submit"])[disabled],
   textarea[disabled],
   button[disabled] {

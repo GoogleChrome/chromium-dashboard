@@ -45,6 +45,7 @@ a:hover {
 input:not([type="submit"]), textarea {
   border: 1px solid $bar-border-color;
 }
+
 input:not([type="submit"])[disabled], textarea[disabled], button[disabled] {
   opacity: 0.5;
 }
