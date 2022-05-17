@@ -55,16 +55,20 @@ SUMMARY_PLACEHOLDER_TXT = (
   'Write it from a web developer\'s point of view.\n\n'
   'Follow the example link below for more guidance.')
 
-# This email address pattern is more restrictive than actually allowed, but it covers most reasonable uses.
-EMAIL_ADDRESS_PATTERN = '[ ]*([a-zA-Z0-9_\-\.]+)@([a-zA-Z0-9\-\.]+)\.([a-zA-Z]{2,5}){1,25}[ ]*'
+# Patterns from https://www.oreilly.com/library/view/regular-expressions-cookbook/9781449327453/ch04s01.html
+# Removing single quote ('), backtick (`), and pipe (|) since they are risky unless properly escaped everywhere.
+# Also removing ! and % because they have special meaning for some older email routing systems.
+USER_REGEX = '[A-Za-z0-9_#$&*+/=?{}~^.-]+'
+DOMAIN_REGEX = '(([A-Za-z0-9-]+\.)+[A-Za-z]{2,6})'
 
-EMAIL_ADDRESSES_PATTERN = '^' + EMAIL_ADDRESS_PATTERN + '(,' + EMAIL_ADDRESS_PATTERN + ')*$'
+EMAIL_ADDRESS_REGEX = USER_REGEX + '@' + DOMAIN_REGEX
+EMAIL_ADDRESSES_REGEX = EMAIL_ADDRESS_REGEX + '([ ]*,[ ]*' + EMAIL_ADDRESS_REGEX + ')*'
 
 MULTI_EMAIL_FIELD_ATTRS = {
     'title':"Enter one or more comma-separated complete email addresses.",
     'multiple': True, 
-    'placeholder': 'address1@domain.com, address2@chromium.org',
-    'pattern': EMAIL_ADDRESSES_PATTERN
+    'placeholder': 'user1@domain.com, user2@chromium.org',
+    'pattern': EMAIL_ADDRESSES_REGEX
 }
 
 # We define all form fields here so that they can be include in one or more
