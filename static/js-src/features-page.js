@@ -66,11 +66,6 @@ featureListEl.addEventListener('filtered', (e) => {
   document.querySelector('.num-features').textContent = e.detail.count;
 });
 
-featureListEl.addEventListener('has-scroll-list', () => {
-  const headerEl = document.querySelector('app-header-layout app-header');
-  headerEl.fixed = false;
-});
-
 featureListEl.addEventListener('filter-category', (e) => {
   e.stopPropagation();
   searchEl.value = 'category: ' + e.detail.val;

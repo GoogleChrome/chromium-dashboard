@@ -1,15 +1,9 @@
 /** This is the entry file for rollup. It bundles all the web components: polymer-paper components and our own components */
 
 // polymer components
-import '@polymer/app-layout';
-import '@polymer/app-layout/app-scroll-effects/effects/waterfall';
 import '@polymer/iron-collapse';
 import '@polymer/iron-icon';
 import '@polymer/iron-iconset-svg';
-import '@polymer/paper-item';
-import '@polymer/paper-listbox';
-import '@polymer/paper-ripple';
-import '@polymer/paper-styles/color.js';
 
 // Shoelace components
 // css is imported via _base.html in base.css, built by gulpfile.babel.js.

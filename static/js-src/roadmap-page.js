@@ -3,11 +3,6 @@ const channelsArray = ['stable', 'beta', 'dev'];
 
 const channelsPromise = window.csClient.getChannels();
 
-const header = document.querySelector('app-header-layout app-header');
-if (header) {
-  header.fixed = false;
-}
-
 async function init() {
   // Prepare data for chromedash-roadmap
   const channels = await channelsPromise;

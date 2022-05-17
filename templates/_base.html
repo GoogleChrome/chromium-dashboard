@@ -51,12 +51,6 @@ limitations under the License.
     .drawer-content-wrapper {
       background: #eee;
     }
-
-    /* Manually hide the toggle button
-     * https://github.com/PolymerElements/app-layout/tree/master/app-drawer-layout */
-    app-drawer-layout:not([narrow]) [drawer-toggle] {
-      display: none;
-    }
   </style>
 
   {% block css %}{% endblock %}
@@ -120,14 +114,12 @@ limitations under the License.
   {% endcomment %}
 
   <div id="app-content-container">
-    <app-header-layout>
-      <app-header slot="header">
-        <div class="main-toolbar">
-          <div class="toolbar-content">
-            {% include "header.html" %}
-          </div>
+    <div>
+      <div class="main-toolbar">
+        <div class="toolbar-content">
+          {% include "header.html" %}
         </div>
-      </app-header>
+      </div>
 
       <div id="content">
         <div id="spinner"><img src="/static/img/ring.svg"></div>
@@ -142,7 +134,7 @@ limitations under the License.
         </div>
       </div>
 
-    </app-header-layout>
+    </div>
 
     {% include "footer.html" %}
   </div>
