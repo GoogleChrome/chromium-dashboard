@@ -39,6 +39,10 @@ limitations under the License.
 
   <link rel="preconnect" href="https://www.google-analytics.com" crossorigin>
 
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300&amp;display=swap" rel="stylesheet">
+
   {% block meta %}{% endblock %}
 
   <style>
@@ -50,12 +54,6 @@ limitations under the License.
     /* Set the left sidebar the same background color as the page. */
     .drawer-content-wrapper {
       background: #eee;
-    }
-
-    /* Manually hide the toggle button
-     * https://github.com/PolymerElements/app-layout/tree/master/app-drawer-layout */
-    app-drawer-layout:not([narrow]) [drawer-toggle] {
-      display: none;
     }
   </style>
 
@@ -120,14 +118,12 @@ limitations under the License.
   {% endcomment %}
 
   <div id="app-content-container">
-    <app-header-layout>
-      <app-header slot="header">
-        <div class="main-toolbar">
-          <div class="toolbar-content">
-            {% include "header.html" %}
-          </div>
+    <div>
+      <div class="main-toolbar">
+        <div class="toolbar-content">
+          {% include "header.html" %}
         </div>
-      </app-header>
+      </div>
 
       <div id="content">
         <div id="spinner"><img src="/static/img/ring.svg"></div>
@@ -142,7 +138,7 @@ limitations under the License.
         </div>
       </div>
 
-    </app-header-layout>
+    </div>
 
     {% include "footer.html" %}
   </div>
