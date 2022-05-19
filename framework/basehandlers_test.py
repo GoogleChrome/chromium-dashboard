@@ -311,7 +311,6 @@ class APIHandlerTests(testing_config.CustomTestCase):
     self.assertEqual(
         {'Strict-Transport-Security':
              'max-age=63072000; includeSubDomains; preload',
-         'Access-Control-Allow-Origin': '*',
          'X-UA-Compatible': 'IE=Edge,chrome=1',
          },
         actual)
@@ -449,7 +448,6 @@ class FlaskHandlerTests(testing_config.CustomTestCase):
     self.assertEqual(
         {'Strict-Transport-Security':
              'max-age=63072000; includeSubDomains; preload',
-         'Access-Control-Allow-Origin': '*',
          'X-UA-Compatible': 'IE=Edge,chrome=1',
          },
         actual)
