@@ -279,7 +279,7 @@ class ConstHandlerTests(testing_config.CustomTestCase):
     actual_text, actual_status, actual_headers = actual_tuple
     self.assertIn('Hi Guest,', actual_text)
     self.assertEqual(200, actual_status)
-    self.assertIn('Access-Control-Allow-Origin', actual_headers)
+    self.assertNotIn('Access-Control-Allow-Origin', actual_headers)
 
   @mock.patch('logging.error')
   def test_bad_template_path(self, mock_err):
@@ -311,7 +311,6 @@ class APIHandlerTests(testing_config.CustomTestCase):
     self.assertEqual(
         {'Strict-Transport-Security':
              'max-age=63072000; includeSubDomains; preload',
-         'Access-Control-Allow-Origin': '*',
          'X-UA-Compatible': 'IE=Edge,chrome=1',
          },
         actual)
@@ -449,7 +448,6 @@ class FlaskHandlerTests(testing_config.CustomTestCase):
     self.assertEqual(
         {'Strict-Transport-Security':
              'max-age=63072000; includeSubDomains; preload',
-         'Access-Control-Allow-Origin': '*',
          'X-UA-Compatible': 'IE=Edge,chrome=1',
          },
         actual)
@@ -522,7 +520,7 @@ class FlaskHandlerTests(testing_config.CustomTestCase):
 
     self.assertIn('Hi testing', actual_html)
     self.assertEqual(200, actual_status)
-    self.assertIn('Access-Control-Allow-Origin', actual_headers)
+    self.assertNotIn('Access-Control-Allow-Origin', actual_headers)
 
   def test_get__json_dict(self):
     """We can process a GET request and JSON and headers."""
@@ -532,7 +530,7 @@ class FlaskHandlerTests(testing_config.CustomTestCase):
 
     self.assertIn('name', actual_response.get_json())
     self.assertEqual(200, actual_response.status_code)
-    self.assertIn('Access-Control-Allow-Origin', actual_headers)
+    self.assertNotIn('Access-Control-Allow-Origin', actual_headers)
 
   def test_get__json_list(self):
     """We can process a GET request and JSON and headers."""
@@ -543,7 +541,7 @@ class FlaskHandlerTests(testing_config.CustomTestCase):
 
     self.assertEqual([10, 20, 30], actual_response.get_json())
     self.assertEqual(200, actual_response.status_code)
-    self.assertIn('Access-Control-Allow-Origin', actual_headers)
+    self.assertNotIn('Access-Control-Allow-Origin', actual_headers)
 
   def test_get__special_status(self):
     """get_template_data() can return a special HTTP status."""
@@ -553,7 +551,7 @@ class FlaskHandlerTests(testing_config.CustomTestCase):
 
     self.assertIn('Hi testing', actual_html)
     self.assertEqual(222, actual_status)
-    self.assertIn('Access-Control-Allow-Origin', actual_headers)
+    self.assertNotIn('Access-Control-Allow-Origin', actual_headers)
 
   def test_get__redirect(self):
     """get_template_data() can return a redirect response object."""
@@ -573,7 +571,7 @@ class FlaskHandlerTests(testing_config.CustomTestCase):
     self.assertEqual(
         {'objects': [1, 2, 3]},
         actual_dict)
-    self.assertIn('Access-Control-Allow-Origin', actual_headers)
+    self.assertNotIn('Access-Control-Allow-Origin', actual_headers)
 
   def test_post__redirect(self):
     """if process_post_data() returns a redirect response, it is used."""
@@ -584,7 +582,7 @@ class FlaskHandlerTests(testing_config.CustomTestCase):
 
     self.assertIn('Response', type(actual_response).__name__)
     self.assertIn('some/other/path', actual_response.headers['location'])
-    self.assertIn('Access-Control-Allow-Origin', actual_headers)
+    self.assertNotIn('Access-Control-Allow-Origin', actual_headers)
 
   def test_require_task_header__while_testing(self):
     """During unit testing of task handlers, we allow it."""
