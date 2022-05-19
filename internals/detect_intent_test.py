@@ -133,7 +133,7 @@ class FunctionTest(testing_config.CustomTestCase):
     body = (
         'blah blah blah\n'
         'Link to entry on the Chrome Platform Status\n'
-        'https://www.chromestatus.com/edit/5144822362931200\n'
+        'https://www.chromestatus.com/guide/edit/5144822362931200\n'
         'blah blah blah')
     self.assertEqual(
         5144822362931200,
@@ -166,7 +166,7 @@ class FunctionTest(testing_config.CustomTestCase):
     body = (
         'blah blah blah\n'
         'Entry on the feature dashboard\n'
-        'https://www.chromestatus.com/edit/5144822362931200\n'
+        'https://www.chromestatus.com/guide/edit/5144822362931200\n'
         'blah blah blah')
     self.assertEqual(
         5144822362931200,

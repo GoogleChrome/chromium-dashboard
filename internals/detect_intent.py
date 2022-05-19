@@ -77,11 +77,11 @@ def detect_field(subject):
 CHROMESTATUS_LINK_GENERATED_RE = re.compile(
     r'entry on the Chrome Platform Status:?\s+'
     r'[> ]*https?://(www\.)?chromestatus\.com/'
-    r'(feature|edit)/(?P<id>\d+)', re.I)
+    r'(feature|guide/edit)/(?P<id>\d+)', re.I)
 CHROMESTATUS_LINK_ALTERNATE_RE = re.compile(
     r'entry on the feature dashboard.*\s+'
     r'[> ]*https?://(www\.)?chromestatus\.com/'
-    r'(feature|edit)/(?P<id>\d+)', re.I)
+    r'(feature|guide/edit)/(?P<id>\d+)', re.I)
 NOT_LGTM_RE = re.compile(
     r'\b(not|almost|need|want|missing) (a |an )?LGTM\b',
     re.I)
