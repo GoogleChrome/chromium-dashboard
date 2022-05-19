@@ -128,6 +128,17 @@ class FunctionTest(testing_config.CustomTestCase):
         5144822362931200,
         detect_intent.detect_feature_id(body))
 
+  def test_detect_feature_id__generated_edit(self):
+    """We can parse the feature ID from a link in the generated body."""
+    body = (
+        'blah blah blah\n'
+        'Link to entry on the Chrome Platform Status\n'
+        'https://www.chromestatus.com/edit/5144822362931200\n'
+        'blah blah blah')
+    self.assertEqual(
+        5144822362931200,
+        detect_intent.detect_feature_id(body))
+
   def test_detect_feature_id__generated_no_www(self):
     """We can parse the feature ID from a link in the generated body."""
     body = (
@@ -145,6 +156,17 @@ class FunctionTest(testing_config.CustomTestCase):
         'blah blah blah\n'
         'Entry on the feature dashboard\n'
         'https://www.chromestatus.com/feature/5144822362931200\n'
+        'blah blah blah')
+    self.assertEqual(
+        5144822362931200,
+        detect_intent.detect_feature_id(body))
+
+  def test_detect_feature_id__alternative_edit(self):
+    """We can parse the feature ID from another common link."""
+    body = (
+        'blah blah blah\n'
+        'Entry on the feature dashboard\n'
+        'https://www.chromestatus.com/edit/5144822362931200\n'
         'blah blah blah')
     self.assertEqual(
         5144822362931200,
