@@ -10,7 +10,7 @@ export const SHARED_STYLES = [
   * {
     box-sizing: border-box;
     list-style: none;
-    font: inherit;
+     /* font: inherit; */
     text-decoration: inherit;
     -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
   }
