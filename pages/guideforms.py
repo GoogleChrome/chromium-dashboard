@@ -14,8 +14,11 @@
 # limitations under the License.
 
 import logging
+import re
+
 from django import forms
 from django.core.validators import validate_email
+from django.forms.widgets import Textarea
 
 # from google.appengine.api import users
 from framework import users
@@ -37,6 +40,27 @@ class MultiEmailField(forms.Field):
         super(MultiEmailField, self).validate(value)
         for email in value:
             validate_email(email.strip())
+
+
+def validate_url(url):
+    return re.match(URL_REGEX, url)
+
+
+class MultiUrlField(forms.Field):
+    def to_python(self, value):
+        """Normalize data to a list of strings."""
+        # Return an empty list if no input was given.
+        if not value:
+            return []
+        return value.split('\n')
+
+    def validate(self, value):
+        """Check if value consists only of valid urls."""
+        # Use the parent's handling of required fields, etc.
+        super(MultiUrlField, self).validate(value)
+        for url in value:
+            validate_url(url.strip())
+
 
 SHIPPED_HELP_TXT = (
     'First milestone to ship with this status. Applies to: Enabled by '
@@ -85,8 +109,8 @@ URL_FIELD_ATTRS = {
 MULTI_URL_FIELD_ATTRS = {
     'title': 'Enter one or more full URLs, one per line:\nhttps://...\nhttps://...',
     'placeholder': 'https://...\nhttps://...',
-    'pattern': MULTI_URL_REGEX,
     'rows': 4, 'cols': 50, 'maxlength': 500
+    # 'pattern': MULTI_URL_REGEX,  # pattern is not yet used with textarea.
 }
 
 # We define all form fields here so that they can be include in one or more
@@ -170,7 +194,7 @@ ALL_FIELDS = {
          '">Removal guidelines</a>.'
         )),
 
-    'doc_links': forms.CharField(
+    'doc_links': MultiUrlField(
         label='Doc link(s)', required=False,
         widget=forms.Textarea(attrs=MULTI_URL_FIELD_ATTRS),
         help_text=('Links to design doc(s) (one URL per line), if and when '
@@ -227,7 +251,7 @@ ALL_FIELDS = {
          'spec mentors</a> are available to help you improve your '
          'feature spec.')),
 
-    'explainer_links': forms.CharField(
+    'explainer_links': MultiUrlField(
         label='Explainer link(s)', required=False,
         widget=forms.Textarea(attrs=MULTI_URL_FIELD_ATTRS),
         help_text=('Link to explainer(s) (one URL per line). You should have '
@@ -527,7 +551,7 @@ ALL_FIELDS = {
         ('If your feature was available as an origin trial, link to a summary '
          'of usage and developer feedback. If not, leave this empty.')),
 
-    'anticipated_spec_changes': forms.CharField(
+    'anticipated_spec_changes': MultiUrlField(
         required=False, label='Anticipated spec changes',
         widget=forms.Textarea(attrs=MULTI_URL_FIELD_ATTRS),
         help_text=
@@ -608,7 +632,7 @@ ALL_FIELDS = {
          'https://bugs.chromium.org/p/chromium/issues/detail?id=695486">'
          'example</a>).')),
 
-    'sample_links': forms.CharField(
+    'sample_links': MultiUrlField(
         label='Samples links', required=False,
         widget=forms.Textarea(attrs=MULTI_URL_FIELD_ATTRS),
         help_text='Links to samples (one URL per line).'),
