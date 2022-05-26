@@ -168,7 +168,7 @@
 <br><br><h4>Debuggability</h4>
 <p class="preformatted">{{feature.debuggability|urlize}}</p>
 
-{% if 'experiment' in sections_to_show %}
+{% if 'experiment' in sections_to_show or 'ship' in sections_to_show %}
   <br><br><h4>Will this feature be supported on all six Blink platforms
       (Windows, Mac, Linux, Chrome OS, Android, and Android WebView)?</h4>
   {% if feature.all_platforms %}Yes{% else %}No{% endif %}

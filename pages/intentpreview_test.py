@@ -79,7 +79,7 @@ class IntentEmailPreviewHandlerTest(testing_config.CustomTestCase):
     self.assertIn('feature', actual_data)
     self.assertEqual('feature one', actual_data['feature']['name'])
 
-  def test_get_page_data(self):
+  def test_get_page_data__implement(self):
     """page_data has correct values."""
     feature_id = self.feature_1.key.integer_id()
     with test_app.test_request_context(self.request_path):
@@ -93,6 +93,20 @@ class IntentEmailPreviewHandlerTest(testing_config.CustomTestCase):
         page_data['sections_to_show'])
     self.assertEqual(
         'Intent to Prototype',
+        page_data['subject_prefix'])
+
+  def test_get_page_data__ship(self):
+    """page_data has correct values."""
+    feature_id = self.feature_1.key.integer_id()
+    with test_app.test_request_context(self.request_path):
+      page_data = self.handler.get_page_data(
+          feature_id, self.feature_1, models.INTENT_SHIP)
+    self.assertEqual(
+        'http://localhost/feature/%d' % feature_id,
+        page_data['default_url'])
+    self.assertIn('ship', page_data['sections_to_show'])
+    self.assertEqual(
+        'Intent to Ship',
         page_data['subject_prefix'])
 
   def test_compute_subject_prefix__incubate_new_feature(self):
