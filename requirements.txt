@@ -2,15 +2,15 @@
 # Also see requirements.dev.txt
 
 # Py3 Libraries
-html5lib
+html5lib==1.1
 Django==3.2.13
-funcsigs
-google-python-cloud-debugger
-google-cloud-tasks
-google-cloud-ndb
-google-cloud-logging
+funcsigs==1.0.2
+google-python-cloud-debugger==2.18
+google-cloud-tasks==2.7.0
+google-cloud-ndb==1.11.1
+google-cloud-logging==3.0.0
 google-auth==1.24.0
-requests
+requests==2.27.1
 
 # TODO(jrobbins): Update to a 2.x version of flask, which may require source
 # code changes.
