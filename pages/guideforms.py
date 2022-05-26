@@ -18,6 +18,7 @@ import re
 
 from django import forms
 from django.core.validators import validate_email
+from django.core.exceptions import ValidationError
 from django.forms.widgets import Textarea
 
 # from google.appengine.api import users
@@ -42,8 +43,12 @@ class MultiEmailField(forms.Field):
             validate_email(email.strip())
 
 
-def validate_url(url):
-    return re.match(URL_REGEX, url)
+def validate_url(value):
+    """Check that the value matches the single URL regex."""
+    if (re.match(URL_REGEX, value)):
+        pass
+    else:
+        raise ValidationError('Invalid URL', code=None, params={'value': value})
 
 
 class MultiUrlField(forms.Field):
@@ -96,7 +101,7 @@ MULTI_EMAIL_FIELD_ATTRS = {
 }
 
 # From https://rodneyrehm.de/t/url-regex.html#imme_emosol+ht-%26f-tp%28s%29
-URL_REGEX = '[ ]*(https?|ftp)://(-\.)?([^\s/?\.#-]+\.?)+(/[^\s]*)?[ ]*'
+URL_REGEX = '[ ]*(https?)://(-\.)?([^\s/?\.#-]+\.?)+(/[^\s]*)?[ ]*'
 # Multiple URLs, one per line
 MULTI_URL_REGEX = URL_REGEX + '(\\n' + URL_REGEX + ')*'
 
@@ -109,7 +114,7 @@ URL_FIELD_ATTRS = {
 MULTI_URL_FIELD_ATTRS = {
     'title': 'Enter one or more full URLs, one per line:\nhttps://...\nhttps://...',
     'placeholder': 'https://...\nhttps://...',
-    'rows': 4, 'cols': 50, 'maxlength': 500
+    'rows': 4, 'cols': 50, 'maxlength': 5000
     # 'pattern': MULTI_URL_REGEX,  # pattern is not yet used with textarea.
 }
 

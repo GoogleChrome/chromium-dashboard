@@ -17,6 +17,8 @@ import unittest
 
 from unittest import mock
 
+from django.core.exceptions import ValidationError
+
 from pages import guideforms
 from internals import models
 
@@ -71,4 +73,19 @@ class DisplayFieldsTest(unittest.TestCase):
     for field_name in list(guideforms.ALL_FIELDS.keys()):
       self.assertIn(
           field_name, fields_seen,
-          msg='Field %r is missing in DISPLAY_FIELDS_IN_STAGES' % field_name)
+          msg='Field %r is missing in DISPLAY_FIELDS_IN_STAGES' % field_name)  
+
+  def test_validate_url(self):
+    guideforms.validate_url('http://www.google.com')
+    guideforms.validate_url('https://www.google.com')
+    guideforms.validate_url('https://chromium.org')
+
+    with self.assertRaises(ValidationError):
+      # Disallow ftp URLs.
+      guideforms.validate_url('ftp://chromium.org')
+    with self.assertRaises(ValidationError):
+      # Disallow schema-only URLs.
+      guideforms.validate_url('http:')
+    with self.assertRaises(ValidationError):
+      # Disallow schema-less URLs.
+      guideforms.validate_url('www.google.com')
