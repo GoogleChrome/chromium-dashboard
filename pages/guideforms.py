@@ -101,6 +101,7 @@ MULTI_EMAIL_FIELD_ATTRS = {
 }
 
 # From https://rodneyrehm.de/t/url-regex.html#imme_emosol+ht-%26f-tp%28s%29
+# Using imme_emosol but without ftp, torrent, image, and irc
 URL_REGEX = '[ ]*(https?)://(-\.)?([^\s/?\.#-]+\.?)+(/[^\s]*)?[ ]*'
 # Multiple URLs, one per line
 MULTI_URL_REGEX = URL_REGEX + '(\\n' + URL_REGEX + ')*'
