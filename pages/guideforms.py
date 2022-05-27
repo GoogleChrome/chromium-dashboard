@@ -14,8 +14,12 @@
 # limitations under the License.
 
 import logging
+import re
+
 from django import forms
 from django.core.validators import validate_email
+from django.core.exceptions import ValidationError
+from django.forms.widgets import Textarea
 
 # from google.appengine.api import users
 from framework import users
@@ -37,6 +41,31 @@ class MultiEmailField(forms.Field):
         super(MultiEmailField, self).validate(value)
         for email in value:
             validate_email(email.strip())
+
+
+def validate_url(value):
+    """Check that the value matches the single URL regex."""
+    if (re.match(URL_REGEX, value)):
+        pass
+    else:
+        raise ValidationError('Invalid URL', code=None, params={'value': value})
+
+
+class MultiUrlField(forms.Field):
+    def to_python(self, value):
+        """Normalize data to a list of strings."""
+        # Return an empty list if no input was given.
+        if not value:
+            return []
+        return value.split('\n')
+
+    def validate(self, value):
+        """Check if value consists only of valid urls."""
+        # Use the parent's handling of required fields, etc.
+        super(MultiUrlField, self).validate(value)
+        for url in value:
+            validate_url(url.strip())
+
 
 SHIPPED_HELP_TXT = (
     'First milestone to ship with this status. Applies to: Enabled by '
@@ -69,6 +98,25 @@ MULTI_EMAIL_FIELD_ATTRS = {
     'multiple': True, 
     'placeholder': 'user1@domain.com, user2@chromium.org',
     'pattern': EMAIL_ADDRESSES_REGEX
+}
+
+# From https://rodneyrehm.de/t/url-regex.html#imme_emosol+ht-%26f-tp%28s%29
+# Using imme_emosol but without ftp, torrent, image, and irc
+URL_REGEX = '[ ]*(https?)://(-\.)?([^\s/?\.#-]+\.?)+(/[^\s]*)?[ ]*'
+# Multiple URLs, one per line
+MULTI_URL_REGEX = URL_REGEX + '(\\n' + URL_REGEX + ')*'
+
+URL_FIELD_ATTRS = {
+    'title': 'Enter a full URL https://...',
+    'placeholder': 'https://...',
+    'pattern': URL_REGEX
+}
+
+MULTI_URL_FIELD_ATTRS = {
+    'title': 'Enter one or more full URLs, one per line:\nhttps://...\nhttps://...',
+    'placeholder': 'https://...\nhttps://...',
+    'rows': 4, 'cols': 50, 'maxlength': 5000
+    # 'pattern': MULTI_URL_REGEX,  # pattern is not yet used with textarea.
 }
 
 # We define all form fields here so that they can be include in one or more
@@ -152,11 +200,9 @@ ALL_FIELDS = {
          '">Removal guidelines</a>.'
         )),
 
-    'doc_links': forms.CharField(
+    'doc_links': MultiUrlField(
         label='Doc link(s)', required=False,
-        widget=forms.Textarea(
-            attrs={'rows': 4, 'cols': 50, 'maxlength': 500,
-                   'placeholder': 'https://\nhttps://'}),
+        widget=forms.Textarea(attrs=MULTI_URL_FIELD_ATTRS),
         help_text=('Links to design doc(s) (one URL per line), if and when '
                    'available. [This is not required to send out an Intent '
                    'to Prototype. Please update the intent thread with the '
@@ -192,7 +238,7 @@ ALL_FIELDS = {
 
     'spec_link': forms.URLField(
         required=False, label='Spec link',
-        widget=forms.URLInput(attrs={'placeholder': 'https://'}),
+        widget=forms.URLInput(attrs=URL_FIELD_ATTRS),
         help_text=('Link to spec, if and when available.  Please update the '
                    'chromestatus.com entry and the intent thread(s) with the '
                    'spec link when available.')),
@@ -211,11 +257,9 @@ ALL_FIELDS = {
          'spec mentors</a> are available to help you improve your '
          'feature spec.')),
 
-    'explainer_links': forms.CharField(
+    'explainer_links': MultiUrlField(
         label='Explainer link(s)', required=False,
-        widget=forms.Textarea(
-            attrs={'rows': 4, 'cols': 50, 'maxlength': 500,
-                   'placeholder': 'https://\nhttps://'}),
+        widget=forms.Textarea(attrs=MULTI_URL_FIELD_ATTRS),
         help_text=('Link to explainer(s) (one URL per line). You should have '
                    'at least an explainer in hand and have shared it on a '
                    'public forum before sending an Intent to Prototype in '
@@ -248,37 +292,37 @@ ALL_FIELDS = {
 
     'intent_to_implement_url': forms.URLField(
         required=False, label='Intent to Prototype link',
-        widget=forms.URLInput(attrs={'placeholder': 'https://'}),
+        widget=forms.URLInput(attrs=URL_FIELD_ATTRS),
         help_text=('After you have started the "Intent to Prototype" '
                    ' discussion thread, link to it here.')),
 
     'intent_to_ship_url': forms.URLField(
         required=False, label='Intent to Ship link',
-        widget=forms.URLInput(attrs={'placeholder': 'https://'}),
+        widget=forms.URLInput(attrs=URL_FIELD_ATTRS),
         help_text=('After you have started the "Intent to Ship" discussion '
                    'thread, link to it here.')),
 
     'ready_for_trial_url': forms.URLField(
         required=False, label='Ready for Trial link',
-        widget=forms.URLInput(attrs={'placeholder': 'https://'}),
+        widget=forms.URLInput(attrs=URL_FIELD_ATTRS),
         help_text=('After you have started the "Ready for Trial" discussion '
                    'thread, link to it here.')),
 
     'intent_to_experiment_url': forms.URLField(
         required=False, label='Intent to Experiment link',
-        widget=forms.URLInput(attrs={'placeholder': 'https://'}),
+        widget=forms.URLInput(attrs=URL_FIELD_ATTRS),
         help_text=('After you have started the "Intent to Experiment" '
                    ' discussion thread, link to it here.')),
 
     'intent_to_extend_experiment_url': forms.URLField(
         required=False, label='Intent to Extend Experiment link',
-        widget=forms.URLInput(attrs={'placeholder': 'https://'}),
+        widget=forms.URLInput(attrs=URL_FIELD_ATTRS),
         help_text=('If this feature has an "Intent to Extend Experiment" '
                    ' discussion thread, link to it here.')),
 
     'r4dt_url': forms.URLField(  # Sets intent_to_experiment_url in DB
         required=False, label='Request for Deprecation Trial link',
-        widget=forms.URLInput(attrs={'placeholder': 'https://'}),
+        widget=forms.URLInput(attrs=URL_FIELD_ATTRS),
         help_text=('After you have started the "Request for Deprecation Trial" '
                    'discussion thread, link to it here.')),
 
@@ -316,7 +360,7 @@ ALL_FIELDS = {
 
     'safari_views_link': forms.URLField(
         required=False, label='',
-        widget=forms.URLInput(attrs={'placeholder': 'https://'}),
+        widget=forms.URLInput(attrs=URL_FIELD_ATTRS),
         help_text='Citation link.'),
 
     'safari_views_notes': forms.CharField(
@@ -335,7 +379,7 @@ ALL_FIELDS = {
 
     'ff_views_link': forms.URLField(
         required=False, label='',
-        widget=forms.URLInput(attrs={'placeholder': 'https://'}),
+        widget=forms.URLInput(attrs=URL_FIELD_ATTRS),
         help_text='Citation link.'),
 
     'ff_views_notes': forms.CharField(
@@ -355,7 +399,7 @@ ALL_FIELDS = {
 
     'web_dev_views_link': forms.URLField(
         required=False, label='',
-        widget=forms.URLInput(attrs={'placeholder': 'https://'}),
+        widget=forms.URLInput(attrs=URL_FIELD_ATTRS),
         help_text='Citation link.'),
 
     'web_dev_views_notes': forms.CharField(
@@ -508,16 +552,14 @@ ALL_FIELDS = {
 
     'origin_trial_feedback_url': forms.URLField(
         required=False, label='Origin trial feedback summary',
-        widget=forms.URLInput(attrs={'placeholder': 'https://'}),
+        widget=forms.URLInput(attrs=URL_FIELD_ATTRS),
         help_text=
         ('If your feature was available as an origin trial, link to a summary '
          'of usage and developer feedback. If not, leave this empty.')),
 
-    'anticipated_spec_changes': forms.CharField(
+    'anticipated_spec_changes': MultiUrlField(
         required=False, label='Anticipated spec changes',
-        widget=forms.Textarea(
-            attrs={'rows': 4, 'cols': 50, 'maxlength': 500,
-                   'placeholder': 'https://\nhttps://'}),
+        widget=forms.Textarea(attrs=MULTI_URL_FIELD_ATTRS),
         help_text=
         ('Open questions about a feature may be a source of future web compat '
          'or interop issues. Please list open issues (e.g. links to known '
@@ -528,7 +570,7 @@ ALL_FIELDS = {
 
     'finch_url': forms.URLField(
         required=False, label='Finch experiment',
-        widget=forms.URLInput(attrs={'placeholder': 'https://'}),
+        widget=forms.URLInput(attrs=URL_FIELD_ATTRS),
         help_text=
         ('If your feature will roll out gradually via a '
          '<a href="go/finch" targe="_blank">Finch experiment</a>, '
@@ -596,11 +638,9 @@ ALL_FIELDS = {
          'https://bugs.chromium.org/p/chromium/issues/detail?id=695486">'
          'example</a>).')),
 
-    'sample_links': forms.CharField(
+    'sample_links': MultiUrlField(
         label='Samples links', required=False,
-        widget=forms.Textarea(
-            attrs={'cols': 50, 'maxlength': 500,
-                   'placeholder': 'https://\nhttps://'}),
+        widget=forms.Textarea(attrs=MULTI_URL_FIELD_ATTRS),
         help_text='Links to samples (one URL per line).'),
 
     'non_oss_deps': forms.CharField(
@@ -616,7 +656,7 @@ ALL_FIELDS = {
 
     'bug_url': forms.URLField(
         required=False, label='Tracking bug URL',
-        widget=forms.URLInput(attrs={'placeholder': 'https://'}),
+        widget=forms.URLInput(attrs=URL_FIELD_ATTRS),
         help_text=
         ('Tracking bug url (https://bugs.chromium.org/...). This bug '
          'should have "Type=Feature" set and be world readable. '
@@ -626,7 +666,7 @@ ALL_FIELDS = {
     # or a deep link that has some feature details filled in.
     'launch_bug_url': forms.URLField(
         required=False, label='Launch bug URL',
-        widget=forms.URLInput(attrs={'placeholder': 'https://'}),
+        widget=forms.URLInput(attrs=URL_FIELD_ATTRS),
         help_text=(
             'Launch bug url (https://bugs.chromium.org/...) to track launch '
             'approvals. '
@@ -637,7 +677,7 @@ ALL_FIELDS = {
 
     'initial_public_proposal_url': forms.URLField(
         required=False, label='Initial public proposal URL',
-        widget=forms.URLInput(attrs={'placeholder': 'https://'}),
+        widget=forms.URLInput(attrs=URL_FIELD_ATTRS),
         help_text=(
             'Link to the first public proposal to create this feature, e.g., '
             'a WICG discourse post.')),
@@ -694,7 +734,7 @@ ALL_FIELDS = {
 
     'devtrial_instructions': forms.URLField(
         required=False, label='DevTrial instructions',
-        widget=forms.URLInput(attrs={'placeholder': 'https://'}),
+        widget=forms.URLInput(attrs=URL_FIELD_ATTRS),
         help_text=(
             'Link to a HOWTO or FAQ describing how developers can get started '
             'using this feature in a DevTrial.  <a target="_blank" href="'
