@@ -76,7 +76,7 @@
     "minimist": ">=1.2.6",
     "path-parse": ">=1.0.7",
     "regenerator-runtime": "^0.13.9",
-    "rollup": "^1.17.0",
+    "rollup": "^2.75.3",
     "rollup-plugin-babel": "^4.4.0",
     "rollup-plugin-babel-minify": "^9.1.0",
     "rollup-plugin-lit-css": "^2.0.0",
