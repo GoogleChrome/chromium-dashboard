@@ -43,7 +43,7 @@
     "@babel/preset-env": "^7.6.2",
     "@babel/register": "^7.17.7",
     "@open-wc/testing": "^3.1.5",
-    "@shoelace-style/shoelace": "^2.0.0-beta.73",
+    "@shoelace-style/shoelace": "^2.0.0-beta.74",
     "@web/test-runner": "^0.13.28",
     "@web/test-runner-playwright": "^0.8.8",
     "acorn": ">=8.7.1",
