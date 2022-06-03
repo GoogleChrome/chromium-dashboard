@@ -144,6 +144,7 @@ class APIHandler(BaseHandler):
         'Strict-Transport-Security':
             'max-age=63072000; includeSubDomains; preload',
         'X-UA-Compatible': 'IE=Edge,chrome=1',
+        'X-Frame-Options': 'DENY',
         }
     return headers
 
@@ -267,6 +268,7 @@ class FlaskHandler(BaseHandler):
         'Strict-Transport-Security':
             'max-age=63072000; includeSubDomains; preload',
         'X-UA-Compatible': 'IE=Edge,chrome=1',
+        'X-Frame-Options': 'DENY',
         }
     headers.update(self.get_cache_headers())
     return headers
