@@ -28,7 +28,7 @@ gunicorn --bind :8080 --workers 4 main:app
 #  $BASEDIR/../dispatch.yaml \
 #  $BASEDIR/../notifier.yaml \
 #  $BASEDIR/../dev-default.yaml \
-#  $BASEDIR/../app-py3.yaml
+#  $BASEDIR/../app.yaml
 
 # Note: When running locally, the default service is dev-default.yaml
 # which is a py3 service which does nothing.  That avoids needing py2

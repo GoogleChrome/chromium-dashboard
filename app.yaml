@@ -1,7 +1,7 @@
 # This GAE service contains most of the app, including all UI pages.
 
 runtime: python39
-service: app-py3
+service: default
 instance_class: F4_1G
 
 automatic_scaling:
@@ -32,5 +32,11 @@ handlers:
 includes:
 - env_vars.yaml
 
+app_engine_apis: true
+
 env_variables:
   GAE_USE_SOCKETS_HTTPLIB : ''
+
+inbound_services:
+- mail
+- mail_bounce

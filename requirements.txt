@@ -2,6 +2,7 @@
 # Also see requirements.dev.txt
 
 # Py3 Libraries
+appengine-python-standard>=1.0.0
 html5lib==1.1
 Django==3.2.13
 funcsigs==1.0.2
@@ -9,7 +10,7 @@ google-python-cloud-debugger==2.18
 google-cloud-tasks==2.7.0
 google-cloud-ndb==1.11.1
 google-cloud-logging==3.0.0
-google-auth==1.24.0
+google-auth==1.31.0
 requests==2.27.1
 
 # TODO(jrobbins): Update to a 2.x version of flask, which may require source

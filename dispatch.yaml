@@ -14,11 +14,5 @@ dispatch:
 - url: "*/tasks/email-subscribers"
   service: notifier
 
-- url: "*/tasks/outbound-email"
-  service: default
-
-- url: "*/py2"
-  service: default
-
 - url: "*/*"
-  service: app-py3
+  service: default

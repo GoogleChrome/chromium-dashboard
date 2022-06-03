@@ -28,8 +28,7 @@ gcloud app deploy \
   --project $appName \
   --version $deployVersion \
   --no-promote \
-  $BASEDIR/../py2/app-py2.yaml \
   $BASEDIR/../notifier.yaml \
-  $BASEDIR/../app-py3.yaml  \
+  $BASEDIR/../app.yaml  \
   $BASEDIR/../dispatch.yaml \
   $BASEDIR/../cron.yaml

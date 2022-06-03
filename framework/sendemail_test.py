@@ -14,18 +14,22 @@
 
 import email
 import collections
+import flask
 import json
-import testing_config_py2  # Must be imported before the module under test.
-import mock
-import unittest
+import testing_config  # Must be imported before the module under test.
+from unittest import mock
 
 from google.appengine.api import mail
-from google.appengine.api import urlfetch
 
 import settings
-import sendemail
+from framework import cloud_tasks_helpers
+from framework import sendemail
 
-class OutboundEmailHandlerTest(unittest.TestCase):
+
+test_app = flask.Flask(__name__)
+
+
+class OutboundEmailHandlerTest(testing_config.CustomTestCase):
 
   def setUp(self):
     self.request_path = '/tasks/outbound-email'
@@ -48,7 +52,7 @@ class OutboundEmailHandlerTest(unittest.TestCase):
         'html': self.html,
         'references': self.refs,
         }
-    with sendemail.app.test_request_context(self.request_path, json=params):
+    with test_app.test_request_context(self.request_path, json=params):
       actual_response = sendemail.handle_outbound_mail_task()
 
     mock_emailmessage_constructor.assert_called_once_with(
@@ -70,7 +74,7 @@ class OutboundEmailHandlerTest(unittest.TestCase):
         'subject': self.subject,
         'html': self.html,
         }
-    with sendemail.app.test_request_context(self.request_path, json=params):
+    with test_app.test_request_context(self.request_path, json=params):
       actual_response = sendemail.handle_outbound_mail_task()
 
     expected_to = 'cr-status-staging-emails+user+example.com@google.com'
@@ -91,7 +95,7 @@ class OutboundEmailHandlerTest(unittest.TestCase):
         'subject': self.subject,
         'html': self.html,
         }
-    with sendemail.app.test_request_context(self.request_path, json=params):
+    with test_app.test_request_context(self.request_path, json=params):
       actual_response = sendemail.handle_outbound_mail_task()
 
     expected_to = 'cr-status-staging-emails+user+example.com@google.com'
@@ -104,16 +108,16 @@ class OutboundEmailHandlerTest(unittest.TestCase):
     self.assertEqual({'message': 'Done'}, actual_response)
 
 
-class BouncedEmailHandlerTest(unittest.TestCase):
+class BouncedEmailHandlerTest(testing_config.CustomTestCase):
 
   def setUp(self):
     self.sender = ('Chromestatus <admin@%s.appspotmail.com>' %
                    settings.APP_ID)
     self.expected_to = settings.BOUNCE_ESCALATION_ADDR
 
-  @mock.patch('sendemail.receive')
+  @mock.patch('framework.sendemail.receive')
   def test_process_post_data(self, mock_receive):
-    with sendemail.app.test_request_context('/_ah/bounce'):
+    with test_app.test_request_context('/_ah/bounce'):
       actual_json = sendemail.handle_bounce()
 
     self.assertEqual({'message': 'Done'}, actual_json)
@@ -129,7 +133,7 @@ class BouncedEmailHandlerTest(unittest.TestCase):
     #    notify_as_starrer=False)
     #starrer_3_pref.put()
 
-    bounce_message = testing_config_py2.Blank(
+    bounce_message = testing_config.Blank(
         original={'to': 'starrer_3@example.com',
                   'from': 'sender',
                   'subject': 'subject',
@@ -158,7 +162,7 @@ class BouncedEmailHandlerTest(unittest.TestCase):
     """When we get a bounce, we create the UserPrefs for that user."""
     # Note, no existing UserPref for starrer_4.
 
-    bounce_message = testing_config_py2.Blank(
+    bounce_message = testing_config.Blank(
         original={'to': 'starrer_4@example.com',
                   'from': 'sender',
                   'subject': 'subject',
@@ -184,7 +188,7 @@ class BouncedEmailHandlerTest(unittest.TestCase):
     mock_message.send.assert_called()
 
 
-class FunctionTest(unittest.TestCase):
+class FunctionTest(testing_config.CustomTestCase):
 
   def test_extract_addrs(self):
     """We can parse email From: lines."""
@@ -203,26 +207,12 @@ class FunctionTest(unittest.TestCase):
         ['a@b.com', 'e.g-h@i-j.k-L.com'],
         sendemail._extract_addrs(header_val))
 
-  @mock.patch('google.appengine.api.urlfetch.fetch')
-  def test_call_py3_task_handler(self, mock_fetch):
-    """Our py2 code can make a request to our py3 code."""
-    mock_response = testing_config_py2.Blank(
-        status_code=200, content='mock content')
-    mock_fetch.return_value = mock_response
-
-    actual = sendemail.call_py3_task_handler('/path', {'a': 1})
-
-    self.assertEqual(mock_response, actual)
-    mock_fetch.assert_called_once_with(
-        url='http://localhost:8080/path', method=urlfetch.POST,
-        payload=b'{"a": 1}', follow_redirects=False)
-
 
 def MakeMessage(header_list, body):
   """Convenience function to make an email.message.Message."""
   msg = email.message.Message()
   for key, value in header_list:
-    msg[key] = value
+    msg.add_header(key, value)
   msg.set_payload(body)
   return msg
 
@@ -237,11 +227,11 @@ HEADER_LINES = [
     ]
 
 
-class InboundEmailHandlerTest(unittest.TestCase):
+class InboundEmailHandlerTest(testing_config.CustomTestCase):
 
   def test_handle_incoming_mail__wrong_to_addr(self):
     """Reject the email if the app was not on the To: line."""
-    with sendemail.app.test_request_context('/_ah/mail/other@example.com'):
+    with test_app.test_request_context('/_ah/mail/other@example.com'):
       actual = sendemail.handle_incoming_mail('other@example.com')
 
     self.assertEqual(
@@ -252,7 +242,7 @@ class InboundEmailHandlerTest(unittest.TestCase):
     """Reject the incoming email if it is huge."""
     data = b'x' * sendemail.MAX_BODY_SIZE + b' is too big'
 
-    with sendemail.app.test_request_context(
+    with test_app.test_request_context(
         '/_ah/mail/%s' % settings.INBOUND_EMAIL_ADDR, data=data):
       actual = sendemail.handle_incoming_mail(settings.INBOUND_EMAIL_ADDR)
 
@@ -260,7 +250,7 @@ class InboundEmailHandlerTest(unittest.TestCase):
         {'message': 'Too big'},
         actual)
 
-  @mock.patch('sendemail.get_incoming_message')
+  @mock.patch('framework.sendemail.get_incoming_message')
   def test_handle_incoming_mail__junk_mail(self, mock_get_incoming_message):
     """Reject the incoming email if it has the wrong precedence header."""
     for precedence in ['Bulk', 'Junk']:
@@ -269,39 +259,38 @@ class InboundEmailHandlerTest(unittest.TestCase):
           'I am on vacation!')
       mock_get_incoming_message.return_value = msg
 
-      with sendemail.app.test_request_context(
-          '/_ah/mail/%s' % settings.INBOUND_EMAIL_ADDR):
+      with test_app.test_request_context(
+          '/_ah/mail/%s' % settings.INBOUND_EMAIL_ADDR, data='fake msg'):
         actual = sendemail.handle_incoming_mail(settings.INBOUND_EMAIL_ADDR)
 
       self.assertEqual(
           {'message': 'Wrong precedence'},
           actual)
 
-  @mock.patch('sendemail.get_incoming_message')
+  @mock.patch('framework.sendemail.get_incoming_message')
   def test_handle_incoming_mail__unclear_from(self, mock_get_incoming_message):
     """Reject the incoming email if it we cannot parse the From: line."""
     msg = MakeMessage([], 'Guess who this is')
     mock_get_incoming_message.return_value = msg
 
-    with sendemail.app.test_request_context(
-        '/_ah/mail/%s' % settings.INBOUND_EMAIL_ADDR):
+    with test_app.test_request_context(
+        '/_ah/mail/%s' % settings.INBOUND_EMAIL_ADDR, data='fake msg'):
       actual = sendemail.handle_incoming_mail(settings.INBOUND_EMAIL_ADDR)
 
     self.assertEqual(
         {'message': 'Missing From'},
         actual)
 
-  @mock.patch('sendemail.call_py3_task_handler')
-  @mock.patch('sendemail.get_incoming_message')
+  @mock.patch('framework.cloud_tasks_helpers.enqueue_task')
+  @mock.patch('framework.sendemail.get_incoming_message')
   def test_handle_incoming_mail__normal(
-      self, mock_get_incoming_message, mock_call_py3):
-    """A valid incoming email is handed off to py3 code."""
+      self, mock_get_incoming_message, mock_enqueue_task):
+    """A valid incoming email is handed off to detect-intent task."""
     msg = MakeMessage(HEADER_LINES, 'Please review')
     mock_get_incoming_message.return_value = msg
-    mock_call_py3.return_value = testing_config_py2.Blank(status_code=200)
 
-    with sendemail.app.test_request_context(
-        '/_ah/mail/%s' % settings.INBOUND_EMAIL_ADDR):
+    with test_app.test_request_context(
+        '/_ah/mail/%s' % settings.INBOUND_EMAIL_ADDR, data='fake msg'):
       actual = sendemail.handle_incoming_mail(settings.INBOUND_EMAIL_ADDR)
 
     self.assertEqual({'message': 'Done'}, actual)
@@ -312,21 +301,20 @@ class InboundEmailHandlerTest(unittest.TestCase):
       'in_reply_to': 'fake message id',
       'body': 'Please review',
     }
-    mock_call_py3.assert_called_once_with(
+    mock_enqueue_task.assert_called_once_with(
         '/tasks/detect-intent', expected_task_dict)
 
-  @mock.patch('sendemail.call_py3_task_handler')
-  @mock.patch('sendemail.get_incoming_message')
+  @mock.patch('framework.cloud_tasks_helpers.enqueue_task')
+  @mock.patch('framework.sendemail.get_incoming_message')
   def test_handle_incoming_mail__fallback_to_mailing_list(
-      self, mock_get_incoming_message, mock_call_py3):
+      self, mock_get_incoming_message, mock_enqueue_task):
     """If there is no personal X-Original-From, use the mailing list From:."""
     msg = MakeMessage(HEADER_LINES, 'Please review')
     del msg['X-Original-From']
     mock_get_incoming_message.return_value = msg
-    mock_call_py3.return_value = testing_config_py2.Blank(status_code=200)
 
-    with sendemail.app.test_request_context(
-        '/_ah/mail/%s' % settings.INBOUND_EMAIL_ADDR):
+    with test_app.test_request_context(
+        '/_ah/mail/%s' % settings.INBOUND_EMAIL_ADDR, data='fake msg'):
       actual = sendemail.handle_incoming_mail(settings.INBOUND_EMAIL_ADDR)
 
     self.assertEqual({'message': 'Done'}, actual)
@@ -337,5 +325,5 @@ class InboundEmailHandlerTest(unittest.TestCase):
       'in_reply_to': 'fake message id',
       'body': 'Please review',
     }
-    mock_call_py3.assert_called_once_with(
+    mock_enqueue_task.assert_called_once_with(
         '/tasks/detect-intent', expected_task_dict)
