@@ -312,6 +312,7 @@ class APIHandlerTests(testing_config.CustomTestCase):
         {'Strict-Transport-Security':
              'max-age=63072000; includeSubDomains; preload',
          'X-UA-Compatible': 'IE=Edge,chrome=1',
+         'X-Frame-Options': 'DENY',
          },
         actual)
 
@@ -449,6 +450,7 @@ class FlaskHandlerTests(testing_config.CustomTestCase):
         {'Strict-Transport-Security':
              'max-age=63072000; includeSubDomains; preload',
          'X-UA-Compatible': 'IE=Edge,chrome=1',
+         'X-Frame-Options': 'DENY',
          },
         actual)
 
