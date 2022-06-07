@@ -45,7 +45,7 @@
     "@open-wc/testing": "^3.1.5",
     "@shoelace-style/shoelace": "^2.0.0-beta.74",
     "@web/test-runner": "^0.13.28",
-    "@web/test-runner-playwright": "^0.8.8",
+    "@web/test-runner-playwright": "^0.8.9",
     "acorn": ">=8.7.1",
     "babel-eslint": "^10.0.3",
     "color-string": ">=1.9.0",
