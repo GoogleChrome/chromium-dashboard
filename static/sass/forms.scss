@@ -116,3 +116,14 @@ form section.flat_form + h3, .final_buttons {
 #metadata-readonly div + div {
   margin-top: 4px;
 }
+
+sl-input::part(base) {
+  overflow: visible;
+}
+
+sl-input[invalid]::part(input):not(:focus),
+chromedash-textarea[invalid]::part(textarea):not(:focus)
+{
+  outline: 1px dotted red;
+  background-color: #FFEDF5;
+}

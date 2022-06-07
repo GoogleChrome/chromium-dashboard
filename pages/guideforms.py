@@ -17,9 +17,9 @@ import logging
 import re
 
 from django import forms
+from django.forms.widgets import Textarea, Input
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
-from django.forms.widgets import Textarea
 
 # from google.appengine.api import users
 from framework import users
@@ -44,8 +44,8 @@ class MultiEmailField(forms.Field):
 
 
 def validate_url(value):
-    """Check that the value matches the single URL regex."""
-    if (re.match(URL_REGEX, value)):
+    """Check that the value matches the single URL regex, ignoring whitespace before and after."""
+    if (re.match(URL_REGEX, value.strip())):
         pass
     else:
         raise ValidationError('Invalid URL', code=None, params={'value': value})
@@ -57,7 +57,7 @@ class MultiUrlField(forms.Field):
         # Return an empty list if no input was given.
         if not value:
             return []
-        return value.split('\n')
+        return value.split(r'\s+')
 
     def validate(self, value):
         """Check if value consists only of valid urls."""
@@ -65,6 +65,21 @@ class MultiUrlField(forms.Field):
         super(MultiUrlField, self).validate(value)
         for url in value:
             validate_url(url.strip())
+
+class ChromedashTextInput(forms.widgets.Input):
+    template_name = 'django/forms/widgets/text.html'
+
+class ChromedashTextarea(forms.widgets.Textarea):
+    template_name = 'django/forms/widgets/chromedash-textarea.html'
+
+    def __init__(self, attrs=None):
+        # Use slightly better defaults than HTML's 20x2 box
+        default_attrs = {
+            'cols': 50, 'rows': 10,  'maxlength': 500,
+            'placeholder': SUMMARY_PLACEHOLDER_TXT}
+        if attrs:
+            default_attrs.update(attrs)
+        super().__init__(default_attrs)
 
 
 SHIPPED_HELP_TXT = (
@@ -88,7 +103,7 @@ SUMMARY_PLACEHOLDER_TXT = (
 # Removing single quote ('), backtick (`), and pipe (|) since they are risky unless properly escaped everywhere.
 # Also removing ! and % because they have special meaning for some older email routing systems.
 USER_REGEX = '[A-Za-z0-9_#$&*+/=?{}~^.-]+'
-DOMAIN_REGEX = '(([A-Za-z0-9-]+\.)+[A-Za-z]{2,6})'
+DOMAIN_REGEX = r"(([A-Za-z0-9-]+\.)+[A-Za-z]{2,6})"
 
 EMAIL_ADDRESS_REGEX = USER_REGEX + '@' + DOMAIN_REGEX
 EMAIL_ADDRESSES_REGEX = EMAIL_ADDRESS_REGEX + '([ ]*,[ ]*' + EMAIL_ADDRESS_REGEX + ')*'
@@ -100,23 +115,24 @@ MULTI_EMAIL_FIELD_ATTRS = {
     'pattern': EMAIL_ADDRESSES_REGEX
 }
 
-# From https://rodneyrehm.de/t/url-regex.html#imme_emosol+ht-%26f-tp%28s%29
-# Using imme_emosol but without ftp, torrent, image, and irc
-URL_REGEX = '[ ]*(https?)://(-\.)?([^\s/?\.#-]+\.?)+(/[^\s]*)?[ ]*'
-# Multiple URLs, one per line
-MULTI_URL_REGEX = URL_REGEX + '(\\n' + URL_REGEX + ')*'
+# Simple http URLs
+PORTNUM_REGEX = "(:[0-9]+)?"
+URL_REGEX = "(https?)://" + DOMAIN_REGEX + PORTNUM_REGEX + r"(/[^\s]*)?"
+URL_PADDED_REGEX = r"\s*" + URL_REGEX + r"\s*"
 
 URL_FIELD_ATTRS = {
     'title': 'Enter a full URL https://...',
     'placeholder': 'https://...',
-    'pattern': URL_REGEX
+    'pattern': URL_PADDED_REGEX
 }
 
 MULTI_URL_FIELD_ATTRS = {
     'title': 'Enter one or more full URLs, one per line:\nhttps://...\nhttps://...',
+    'multiple': True,
     'placeholder': 'https://...\nhttps://...',
-    'rows': 4, 'cols': 50, 'maxlength': 5000
-    # 'pattern': MULTI_URL_REGEX,  # pattern is not yet used with textarea.
+    'rows': 4, 'cols': 50, 'maxlength': 5000,
+    'chromedash_single_pattern': URL_REGEX,
+    'chromedash_split_pattern': r"\s+"
 }
 
 # We define all form fields here so that they can be include in one or more
@@ -126,7 +142,7 @@ ALL_FIELDS = {
         required=True, label='Feature name',
         # Use a specific autocomplete value to avoid "name" autofill.
         # https://bugs.chromium.org/p/chromium/issues/detail?id=468153#c164
-        widget=forms.TextInput(attrs={'autocomplete': 'feature-name'}),
+        widget=ChromedashTextInput(attrs={'autocomplete': 'feature-name'}),
         help_text=
         ('Capitalize only the first letter and the beginnings of '
          'proper nouns. '
@@ -140,9 +156,7 @@ ALL_FIELDS = {
 
     'summary': forms.CharField(
         required=True,
-        widget=forms.Textarea(
-            attrs={'cols': 50, 'maxlength': 500,
-                   'placeholder': SUMMARY_PLACEHOLDER_TXT}),
+        widget=ChromedashTextarea(),
         help_text=
         ('<a target="_blank" href="'
          'https://github.com/GoogleChrome/chromium-dashboard/wiki/'
@@ -202,7 +216,7 @@ ALL_FIELDS = {
 
     'doc_links': MultiUrlField(
         label='Doc link(s)', required=False,
-        widget=forms.Textarea(attrs=MULTI_URL_FIELD_ATTRS),
+        widget=ChromedashTextarea(attrs=MULTI_URL_FIELD_ATTRS),
         help_text=('Links to design doc(s) (one URL per line), if and when '
                    'available. [This is not required to send out an Intent '
                    'to Prototype. Please update the intent thread with the '
