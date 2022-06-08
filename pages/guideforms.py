@@ -76,7 +76,7 @@ SHIPPED_WEBVIEW_HELP_TXT = ('First milestone to ship with this status. '
                             'Intervention, Deprecated, and Removed.')
 
 SUMMARY_PLACEHOLDER_TXT = (
-  'NOTE: Text in the beta release post, the enterprise release notes
+  'NOTE: Text in the beta release post, the enterprise release notes'
   'and other external sources is based on this text.\n\n'
   'Begin with one line explaining what the feature does. Add one or two '
   'lines explaining how this feature helps developers. Avoid language such '
