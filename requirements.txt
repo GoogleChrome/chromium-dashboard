@@ -16,6 +16,7 @@ requests==2.27.1
 # TODO(jrobbins): Update to a 2.x version of flask, which may require source
 # code changes.
 Flask==1.1.2
+flask-cors==3.0.10
 funcsigs==1.0.2
 Jinja2==2.11.3
 MarkupSafe==1.1.1
