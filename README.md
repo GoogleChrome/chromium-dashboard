@@ -22,9 +22,6 @@ Chrome Platform Status
 4. Create a virtual environment.
     1. `sudo apt install python3.9-venv`
     1. `python3 -m venv cs-env`
-5. Install pip for python2
-    1. curl https://bootstrap.pypa.io/pip/2.7/get-pip.py --output get-pip.py
-    1. python2 get-pip.py
 6. Install other dependencies
     1. `npm run deps`
     1. `npm run dev-deps`

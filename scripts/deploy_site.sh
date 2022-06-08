@@ -24,7 +24,7 @@ readonly BASEDIR=$(dirname $BASH_SOURCE)
 
 gulp
 
-gcloud app deploy \
+gcloud beta app deploy \
   --project $appName \
   --version $deployVersion \
   --no-promote \

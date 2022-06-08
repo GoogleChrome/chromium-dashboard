@@ -196,15 +196,10 @@ class FunctionTest(testing_config.CustomTestCase):
     self.assertEqual(
         [], sendemail._extract_addrs(header_val))
 
-    header_val = 'J. Robbins <a@b.com>, c@d.com,\n Nick "Name" Dude <e@f.com>'
+    header_val = [
+        'J. Robbins <a@b.com>', 'c@d.com', 'Nick "Name" Dude <e@f.com>']
     self.assertEqual(
         ['a@b.com', 'c@d.com', 'e@f.com'],
-        sendemail._extract_addrs(header_val))
-
-    header_val = ('hot: J. O\'Robbins <a@b.com>; '
-                  'cool: "friendly" <e.g-h@i-j.k-L.com>')
-    self.assertEqual(
-        ['a@b.com', 'e.g-h@i-j.k-L.com'],
         sendemail._extract_addrs(header_val))
 
 

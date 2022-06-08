@@ -47,11 +47,6 @@ def get_param(request, name, required=True):
   return val
 
 
-def py2_health_check():
-  """Prove that this GAE module is responding."""
-  return {'message': 'OK py2'}
-
-
 def handle_outbound_mail_task():
   """Task to send a notification email to one recipient."""
   require_task_header()
@@ -193,8 +188,8 @@ def handle_incoming_mail(addr=None):
     # We only process plain text emails.
     if part.get_content_type() == 'text/plain':
       body = part.get_payload(decode=True)
-      #if not isinstance(body, unicode):
-      #  body = body.decode('utf-8')
+      if not isinstance(body, str):
+        body = body.decode('utf-8')
       break  # Only consider the first text part.
 
   to_addr = urllib.parse.unquote(addr)
@@ -214,8 +209,7 @@ def handle_incoming_mail(addr=None):
 
 
 def add_routes(app):
-  """Xxx"""
-  app.add_url_rule('/py2', view_func=py2_health_check)
+  """Add routes to the given flask app for email handlers."""
   app.add_url_rule(
       '/tasks/outbound-email', view_func=handle_outbound_mail_task,
       methods=['POST'])
