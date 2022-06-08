@@ -454,6 +454,18 @@ class FlaskHandlerTests(testing_config.CustomTestCase):
          },
         actual)
 
+  def test_get_CORS_headers(self):
+    """Test CORS headers for intended APIs."""
+    with test_app.test_request_context('/data/path'):
+      actual = self.handler.get_headers()
+    self.assertEqual(
+        {'Strict-Transport-Security':
+             'max-age=63072000; includeSubDomains; preload',
+         'Access-Control-Allow-Origin': '*',
+         'X-UA-Compatible': 'IE=Edge,chrome=1',
+         },
+        actual)
+
   def test_get_template_data__missing(self):
     """Every subsclass should overide get_template_data()."""
     self.handler = basehandlers.FlaskHandler()
