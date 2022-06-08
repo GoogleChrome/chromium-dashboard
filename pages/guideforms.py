@@ -76,8 +76,8 @@ SHIPPED_WEBVIEW_HELP_TXT = ('First milestone to ship with this status. '
                             'Intervention, Deprecated, and Removed.')
 
 SUMMARY_PLACEHOLDER_TXT = (
-  'NOTE: This text describes this feature in the eventual beta release post '
-  'and possibly in other external documents.\n\n'
+  'NOTE: Text in the beta release post, the enterprise release notes
+  'and other external sources is based on this text.\n\n'
   'Begin with one line explaining what the feature does. Add one or two '
   'lines explaining how this feature helps developers. Avoid language such '
   'as "a new feature". They all are or have been new features.\n\n'
@@ -95,7 +95,7 @@ EMAIL_ADDRESSES_REGEX = EMAIL_ADDRESS_REGEX + '([ ]*,[ ]*' + EMAIL_ADDRESS_REGEX
 
 MULTI_EMAIL_FIELD_ATTRS = {
     'title':"Enter one or more comma-separated complete email addresses.",
-    'multiple': True, 
+    'multiple': True,
     'placeholder': 'user1@domain.com, user2@chromium.org',
     'pattern': EMAIL_ADDRESSES_REGEX
 }
