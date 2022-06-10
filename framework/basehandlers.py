@@ -22,6 +22,7 @@ import flask
 import flask.views
 import werkzeug.exceptions
 
+import google.appengine.api
 from google.cloud import ndb
 
 import settings
@@ -489,6 +490,8 @@ def FlaskApplication(import_name, routes, pattern_base='', debug=False):
 
   app = flask.Flask(import_name)
   app.wsgi_app = ndb_wsgi_middleware(app.wsgi_app) # For Cloud NDB Context
+  # For GAE legacy libraries
+  app.wsgi_app = google.appengine.api.wrap_wsgi_app(app.wsgi_app)
   client = ndb.Client()
   with client.context():
     app.secret_key = secrets.get_session_secret()  # For flask.session

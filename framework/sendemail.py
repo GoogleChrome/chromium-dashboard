@@ -18,15 +18,13 @@ import json
 import logging
 import re
 import urllib
-import rfc822
+from email import utils
 
 from google.appengine.api import mail
-from google.appengine.api import urlfetch
-from google.appengine.ext.webapp.mail_handlers import BounceNotification
 
 import settings
+from framework import cloud_tasks_helpers
 
-app = flask.Flask(__name__)
 
 # Parsing very large messages could cause out-of-memory errors.
 MAX_BODY_SIZE = 20 * 1024 * 1024  # 20 MB
@@ -49,13 +47,6 @@ def get_param(request, name, required=True):
   return val
 
 
-@app.route('/py2')
-def py2_health_check():
-  """Prove that this GAE module is responding."""
-  return {'message': 'OK py2'}
-
-
-@app.route('/tasks/outbound-email', methods=['POST'])
 def handle_outbound_mail_task():
   """Task to send a notification email to one recipient."""
   require_task_header()
@@ -110,11 +101,11 @@ IS_INTERNAL_HANDLER = True
 # Source code is in file:
 # google_appengine/google/appengine/ext/webapp/mail_handlers.py
 
-@app.route('/_ah/bounce', methods=['POST'])
 def handle_bounce():
   """Handler to notice when email to given user is bouncing."""
-  receive(BounceNotification(flask.request.form))
+  receive(mail.BounceNotification(flask.request.form))
   return {'message': 'Done'}
+
 
 def receive(bounce_message):
   email_addr = bounce_message.original.get('to')
@@ -147,32 +138,8 @@ def receive(bounce_message):
 
 def _extract_addrs(header_value):
   """Given a message header value, return email address found there."""
-  friendly_addr_pairs = list(rfc822.AddressList(header_value))
+  friendly_addr_pairs = utils.getaddresses(header_value)
   return [addr for _friendly, addr in friendly_addr_pairs]
-
-
-def call_py3_task_handler(handler_path, task_dict):
-  """Request that our py3 code handle the rest of the work."""
-  handler_host = 'http://localhost:8080'
-  if settings.APP_ID == 'cr-status':
-    handler_host = 'https://cr-status.appspot.com'
-  if settings.APP_ID == 'cr-status-staging':
-    handler_host = 'https://cr-status-staging.appspot.com'
-  handler_url = handler_host + handler_path
-
-  request_body = json.dumps(task_dict).encode()
-  logging.info('task_dict is %r', task_dict)
-
-  # AppEngine automatically sets header X-Appengine-Inbound-Appid,
-  # and that header is stripped from external requests.  So,
-  # require_task_header() can check for it to authenticate.
-  handler_response = urlfetch.fetch(
-      url=handler_url, payload=request_body, method=urlfetch.POST,
-      follow_redirects=False)
-
-  logging.info('request_response is %r:\n%r',
-               handler_response.status_code, handler_response.content)
-  return handler_response
 
 
 def get_incoming_message():
@@ -182,7 +149,6 @@ def get_incoming_message():
   return msg
 
 
-@app.route('/_ah/mail/<string:addr>', methods=['POST'])
 def handle_incoming_mail(addr=None):
   """Handle an incoming email by making a task to examine it.
 
@@ -208,8 +174,8 @@ def handle_incoming_mail(addr=None):
   if precedence.lower() in ['bulk', 'junk']:
     logging.info('Precedence: %r indicates an autoresponder', precedence)
     return {'message': 'Wrong precedence'}
-  from_addrs = (_extract_addrs(msg.get('x-original-from', '')) or
-                _extract_addrs(msg.get('from', '')))
+  from_addrs = (_extract_addrs(msg.get_all('x-original-from', [])) or
+                _extract_addrs(msg.get_all('from', [])))
   if from_addrs:
     from_addr = from_addrs[0]
   else:
@@ -222,11 +188,11 @@ def handle_incoming_mail(addr=None):
     # We only process plain text emails.
     if part.get_content_type() == 'text/plain':
       body = part.get_payload(decode=True)
-      if not isinstance(body, unicode):
+      if not isinstance(body, str):
         body = body.decode('utf-8')
       break  # Only consider the first text part.
 
-  to_addr = urllib.unquote(addr)
+  to_addr = urllib.parse.unquote(addr)
   subject = msg.get('subject', '')
   task_dict = {
       'to_addr': to_addr,
@@ -236,10 +202,17 @@ def handle_incoming_mail(addr=None):
       'body': body,
       }
   logging.info('task_dict is %r', task_dict)
-  response = call_py3_task_handler('/tasks/detect-intent', task_dict)
-
-  if response.status_code and response.status_code != 200:
-    logging.warning('Handoff to py3 failed.')
-    flask.abort(400)
+  cloud_tasks_helpers.enqueue_task(
+      '/tasks/detect-intent', task_dict)
 
   return {'message': 'Done'}
+
+
+def add_routes(app):
+  """Add routes to the given flask app for email handlers."""
+  app.add_url_rule(
+      '/tasks/outbound-email', view_func=handle_outbound_mail_task,
+      methods=['POST'])
+  app.add_url_rule('/_ah/bounce', view_func=handle_bounce, methods=['POST'])
+  app.add_url_rule(
+      '/_ah/mail/<string:addr>', view_func=handle_incoming_mail, methods=['POST'])

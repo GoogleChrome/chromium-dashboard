@@ -14,18 +14,7 @@
 
 import logging
 import os
-import sys
 import unittest
-
-app_engine_path = os.environ.get('APP_ENGINE_PATH', '')
-if not app_engine_path:
-  app_engine_path = '/usr/lib/google-cloud-sdk/platform/google_appengine'
-if os.path.exists(app_engine_path):
-  sys.path.insert(0, app_engine_path)
-else:
-  print('Could not find appengine, please set APP_ENGINE_PATH',
-        file=sys.stderr)
-  sys.exit(1)
 
 from google.cloud import ndb
 

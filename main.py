@@ -29,6 +29,7 @@ from api import stars_api
 from api import token_refresh_api
 from framework import basehandlers
 from framework import csp
+from framework import sendemail
 from internals import detect_intent
 from internals import fetchmetrics
 from internals import notifier
@@ -197,6 +198,7 @@ app.add_url_rule(
     '/csp', view_func=csp.report_handler,
      methods=['POST'])
 
+sendemail.add_routes(app)
 
 if __name__ == '__main__':
     # This is used when running locally only. When deploying to Google App

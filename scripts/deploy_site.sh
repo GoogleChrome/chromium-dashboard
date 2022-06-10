@@ -24,12 +24,11 @@ readonly BASEDIR=$(dirname $BASH_SOURCE)
 
 gulp
 
-gcloud app deploy \
+gcloud beta app deploy \
   --project $appName \
   --version $deployVersion \
   --no-promote \
-  $BASEDIR/../py2/app-py2.yaml \
   $BASEDIR/../notifier.yaml \
-  $BASEDIR/../app-py3.yaml  \
+  $BASEDIR/../app.yaml  \
   $BASEDIR/../dispatch.yaml \
   $BASEDIR/../cron.yaml

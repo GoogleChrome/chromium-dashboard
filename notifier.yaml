@@ -10,5 +10,7 @@ handlers:
   script: auto
   # Header checks prevent raw access to this handler.  Tasks have headers.
 
+app_engine_apis: true
+
 includes:
 - env_vars.yaml
