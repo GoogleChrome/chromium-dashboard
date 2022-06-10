@@ -27,7 +27,6 @@ gunicorn --bind :8080 --workers 4 main:app
 #  --env_var DATASTORE_EMULATOR_HOST='localhost:15606' \
 #  $BASEDIR/../dispatch.yaml \
 #  $BASEDIR/../notifier.yaml \
-#  $BASEDIR/../dev-default.yaml \
 #  $BASEDIR/../app.yaml
 
 # Note: When running locally, the default service is dev-default.yaml
