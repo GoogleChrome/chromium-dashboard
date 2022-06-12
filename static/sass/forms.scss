@@ -56,7 +56,7 @@ table {
     border: 1px solid $invalid-color;
   }
 
-  input:not([type="submit"]):not([type="search"]):invalid:not(:focus) {
+  input:not([type="submit"]):not([type="search"]) {
     outline: 1px dotted var(--error-border-color);
     background-color: #FFEDF5;
   }
@@ -115,4 +115,15 @@ form section.flat_form + h3, .final_buttons {
 
 #metadata-readonly div + div {
   margin-top: 4px;
+}
+
+sl-input::part(base) {
+  overflow: visible;
+}
+
+sl-input[invalid]::part(input),
+chromedash-textarea[invalid]::part(textarea)
+{
+  outline: 1px dotted red;
+  background-color: #FFEDF5;
 }

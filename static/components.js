@@ -10,6 +10,8 @@ import '@polymer/iron-iconset-svg';
 import '@shoelace-style/shoelace/dist/components/button/button.js';
 import '@shoelace-style/shoelace/dist/components/dialog/dialog.js';
 import '@shoelace-style/shoelace/dist/components/details/details.js';
+import '@shoelace-style/shoelace/dist/components/input/input.js';
+import '@shoelace-style/shoelace/dist/components/textarea/textarea.js';
 import { setBasePath } from '@shoelace-style/shoelace/dist/utilities/base-path.js';
 
 // Set the base path to the folder you copied Shoelace's assets to
@@ -33,6 +35,7 @@ import './elements/chromedash-metadata';
 import './elements/chromedash-metrics';
 import './elements/chromedash-myfeatures';
 import './elements/chromedash-process-overview';
+import './elements/chromedash-textarea';
 import './elements/chromedash-timeline';
 import './elements/chromedash-toast';
 import './elements/chromedash-roadmap';

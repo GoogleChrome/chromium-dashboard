@@ -6,6 +6,7 @@ import os
 INSTALLED_APPS = (
   #'nothing',
   'customtags',
+  'django.forms'
 )
 
 ROOT_DIR = os.path.abspath(os.path.dirname(__file__))
@@ -17,6 +18,9 @@ TEMPLATES = [
     'APP_DIRS': True,
   },
 ]
+
+# This is necessary to override django templates.
+FORM_RENDERER = 'django.forms.renderers.TemplatesSetting'
 
 # By default, send all email to an archive for debugging.
 # For the live cr-status server, this setting is None.

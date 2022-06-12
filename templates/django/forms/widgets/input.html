@@ -1,0 +1,8 @@
+<sl-input type="{{ widget.type }}" 
+    name="{{ widget.name }}"
+    {% if widget.value != None %} 
+    value="{{ widget.value|stringformat:'s' }}"
+    {% endif %}
+    size="small"
+    {% include "django/forms/widgets/attrs.html" %}>
+</sl-input>
