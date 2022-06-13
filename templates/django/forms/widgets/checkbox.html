@@ -1,8 +1,8 @@
-<sl-input type="{{ widget.type }}"
+<sl-checkbox
     name="{{ widget.name }}"
-    {% if widget.value != None %}
+    {% if widget.value != None %} 
     value="{{ widget.value|stringformat:'s' }}"
     {% endif %}
     size="small"
     {% include "django/forms/widgets/attrs.html" %}>
-</sl-input>
+</sl-checkbox>
