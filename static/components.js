@@ -8,6 +8,7 @@ import '@polymer/iron-iconset-svg';
 // Shoelace components
 // css is imported via _base.html in base.css, built by gulpfile.babel.js.
 import '@shoelace-style/shoelace/dist/components/button/button.js';
+import '@shoelace-style/shoelace/dist/components/checkbox/checkbox.js';
 import '@shoelace-style/shoelace/dist/components/dialog/dialog.js';
 import '@shoelace-style/shoelace/dist/components/details/details.js';
 import '@shoelace-style/shoelace/dist/components/input/input.js';
