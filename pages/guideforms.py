@@ -69,6 +69,13 @@ class MultiUrlField(forms.Field):
 class ChromedashTextInput(forms.widgets.Input):
     template_name = 'django/forms/widgets/text.html'
 
+    def __init__(self, attrs=None):
+        default_attrs = {'autocomplete': 'off'}
+        if attrs:
+            default_attrs.update(attrs)
+        super().__init__(default_attrs)
+
+
 class ChromedashTextarea(forms.widgets.Textarea):
     template_name = 'django/forms/widgets/chromedash-textarea.html'
 
