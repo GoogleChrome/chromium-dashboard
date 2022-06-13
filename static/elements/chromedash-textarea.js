@@ -24,11 +24,11 @@ export class ChromedashTextarea extends SlTextarea {
   customCheckValidity(value) {
     if (this.multiple) {
       if (this.chromedash_split_pattern &&
-        this.chromedash_single_pattern) {
-          const items = value.split(new RegExp(this.chromedash_split_pattern));
-          const singleItemRegex =
+          this.chromedash_single_pattern) {
+        const items = value.split(new RegExp(this.chromedash_split_pattern));
+        const singleItemRegex =
             new RegExp('^' + this.chromedash_single_pattern + '$', '');
-          const valid = items.every((item) => {
+        const valid = items.every((item) => {
           if (!item) {
             // ignore empty items
             return true;
