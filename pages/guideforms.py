@@ -69,12 +69,6 @@ class MultiUrlField(forms.Field):
 class ChromedashTextInput(forms.widgets.Input):
     template_name = 'django/forms/widgets/text.html'
 
-    def __init__(self, attrs=None):
-        default_attrs = {'autocomplete': 'off'}
-        if attrs:
-            default_attrs.update(attrs)
-        super().__init__(default_attrs)
-
 
 class ChromedashTextarea(forms.widgets.Textarea):
     template_name = 'django/forms/widgets/chromedash-textarea.html'
@@ -145,9 +139,7 @@ MULTI_URL_FIELD_ATTRS = {
 ALL_FIELDS = {
     'name': forms.CharField(
         required=True, label='Feature name',
-        # Use a specific autocomplete value to avoid "name" autofill.
-        # https://bugs.chromium.org/p/chromium/issues/detail?id=468153#c164
-        widget=ChromedashTextInput(attrs={'autocomplete': 'feature-name'}),
+        widget=ChromedashTextInput(),
         help_text=
         ('Capitalize only the first letter and the beginnings of '
          'proper nouns. '
