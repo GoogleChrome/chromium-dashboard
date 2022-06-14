@@ -19,6 +19,7 @@ from unittest import mock
 import flask
 import flask.views
 import werkzeug.exceptions  # Flask HTTP stuff.
+from flask_cors import CORS
 
 # from google.appengine.api import users
 from framework import users
@@ -456,7 +457,8 @@ class FlaskHandlerTests(testing_config.CustomTestCase):
 
   def test_get_CORS_headers(self):
     """Test CORS headers for intended APIs."""
-    with test_app.test_request_context('/data/path'):
+    CORS(test_app, resources={r'/fakepath/*': {'origins': '*'}})
+    with test_app.test_request_context('/fakepath/path'):
       actual = self.handler.get_headers()
     self.assertEqual(
         {'Strict-Transport-Security':
