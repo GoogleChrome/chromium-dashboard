@@ -109,6 +109,9 @@ EMAIL_ADDRESSES_REGEX = EMAIL_ADDRESS_REGEX + '([ ]*,[ ]*' + EMAIL_ADDRESS_REGEX
 
 MULTI_EMAIL_FIELD_ATTRS = {
     'title':"Enter one or more comma-separated complete email addresses.",
+    # Don't specify type="email" because browsers consider multiple emails
+    # invalid, regardles of the multiple attribute.
+    'type': 'text',
     'multiple': True,
     'placeholder': 'user1@domain.com, user2@chromium.org',
     'pattern': EMAIL_ADDRESSES_REGEX
