@@ -132,3 +132,20 @@ sl-select[size="small"] sl-menu-item::part(base) {
   font-size: 12px;  /* == --sl-font-size-x-small */
   padding: 0px;
 }
+
+/* Hide select until loading is done and the component is defined. */
+:not(:defined) {
+  visibility: hidden;
+}
+
+/* menu items for selects should not be displayed at all, until defined */
+sl-select sl-menu-item:not(:defined) {
+   display: none 
+}
+
+/* Hide extra br following display:block elements */
+chromedash-textarea+br,
+sl-select+br,
+sl-input+br {
+  display: none;
+}
