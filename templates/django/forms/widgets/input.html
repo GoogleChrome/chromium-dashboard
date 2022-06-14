@@ -1,9 +1,9 @@
 <sl-input type="{{ widget.type }}"
     name="{{ widget.name }}"
+    size="small"
+    autocomplete="off"
     {% if widget.value != None %}
     value="{{ widget.value|stringformat:'s' }}"
     {% endif %}
-    size="small"
-    {% include "django/forms/widgets/attrs.html" %}
-    autocomplete="off">
+    {% include "django/forms/widgets/attrs.html" %}>
 </sl-input>
