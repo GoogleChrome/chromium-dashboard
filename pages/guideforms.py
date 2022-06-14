@@ -111,6 +111,7 @@ MULTI_EMAIL_FIELD_ATTRS = {
     'title':"Enter one or more comma-separated complete email addresses.",
     # Don't specify type="email" because browsers consider multiple emails
     # invalid, regardles of the multiple attribute.
+    'type': 'text',
     'multiple': True,
     'placeholder': 'user1@domain.com, user2@chromium.org',
     'pattern': EMAIL_ADDRESSES_REGEX
@@ -164,7 +165,7 @@ ALL_FIELDS = {
 
     'owner': MultiEmailField(
         required=True, label='Feature owners',
-        widget=forms.widgets.Input(attrs=MULTI_EMAIL_FIELD_ATTRS),
+        widget=forms.EmailInput(attrs=MULTI_EMAIL_FIELD_ATTRS),
         help_text=('Comma separated list of full email addresses. '
                    'Prefer @chromium.org.')),
 
@@ -263,7 +264,7 @@ ALL_FIELDS = {
 
     'spec_mentors': MultiEmailField(
         required=False, label='Spec mentor',
-        widget=forms.widgets.Input(attrs=MULTI_EMAIL_FIELD_ATTRS),
+        widget=forms.EmailInput(attrs=MULTI_EMAIL_FIELD_ATTRS),
         help_text=
         ('Experienced <a target="_blank" '
          'href="https://www.chromium.org/blink/spec-mentors">'
@@ -591,20 +592,20 @@ ALL_FIELDS = {
 
     'i2e_lgtms': MultiEmailField(
         required=False, label='Intent to Experiment LGTM by',
-        widget=forms.widgets.Input(attrs=MULTI_EMAIL_FIELD_ATTRS),
+        widget=forms.EmailInput(attrs=MULTI_EMAIL_FIELD_ATTRS),
         help_text=('Full email address of API owner who LGTM\'d the '
                    'Intent to Experiment email thread.')),
 
     'i2s_lgtms': MultiEmailField(
         required=False, label='Intent to Ship LGTMs by',
-        widget=forms.widgets.Input(attrs=MULTI_EMAIL_FIELD_ATTRS),
+        widget=forms.EmailInput(attrs=MULTI_EMAIL_FIELD_ATTRS),
         help_text=('Comma separated list of '
                    'full email addresses of API owners who LGTM\'d '
                    'the Intent to Ship email thread.')),
 
     'r4dt_lgtms': MultiEmailField(  # Sets i2e_lgtms field.
         required=False, label='Request for Deprecation Trial LGTM by',
-        widget=forms.widgets.Input(attrs=MULTI_EMAIL_FIELD_ATTRS),
+        widget=forms.EmailInput(attrs=MULTI_EMAIL_FIELD_ATTRS),
         help_text=('Full email addresses of API owners who LGTM\'d '
                    'the Request for Deprecation Trial email thread.')),
 
@@ -705,7 +706,7 @@ ALL_FIELDS = {
 
     'devrel': MultiEmailField(
         required=False, label='Developer relations emails',
-        widget=forms.widgets.Input(attrs=MULTI_EMAIL_FIELD_ATTRS),
+        widget=forms.EmailInput(attrs=MULTI_EMAIL_FIELD_ATTRS),
         help_text='Comma separated list of full email addresses.'),
 
     'impl_status_chrome': forms.ChoiceField(
