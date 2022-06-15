@@ -41,6 +41,7 @@ import django
 
 from google.auth.transport import requests
 from flask import session
+from flask_cors import CORS
 import sys
 
 # Initialize django so that it'll function when run as a standalone script.
@@ -514,6 +515,9 @@ def FlaskApplication(import_name, routes, pattern_base='', debug=False):
   app.config["TRAP_BAD_REQUEST_ERRORS"] = settings.DEV_MODE
   # Flask apps also have a debug setting that can be used to auto-reload
   # template source code, but we use django for that.
+
+  # Set the CORS HEADERS.
+  CORS(app, resources={r'/data/*': {'origins': '*'}})
 
   # Set cookie headers in Flask; see
   # https://flask.palletsprojects.com/en/2.0.x/config/
