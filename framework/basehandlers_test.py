@@ -19,7 +19,6 @@ from unittest import mock
 import flask
 import flask.views
 import werkzeug.exceptions  # Flask HTTP stuff.
-from flask_cors import CORS
 
 # from google.appengine.api import users
 from framework import users
@@ -452,19 +451,6 @@ class FlaskHandlerTests(testing_config.CustomTestCase):
              'max-age=63072000; includeSubDomains; preload',
          'X-UA-Compatible': 'IE=Edge,chrome=1',
          'X-Frame-Options': 'DENY',
-         },
-        actual)
-
-  def test_get_CORS_headers(self):
-    """Test CORS headers for intended APIs."""
-    CORS(test_app, resources={r'/fakepath/*': {'origins': '*'}})
-    with test_app.test_request_context('/fakepath/path'):
-      actual = self.handler.get_headers()
-    self.assertEqual(
-        {'Strict-Transport-Security':
-             'max-age=63072000; includeSubDomains; preload',
-         'Access-Control-Allow-Origin': '*',
-         'X-UA-Compatible': 'IE=Edge,chrome=1',
          },
         actual)
 
