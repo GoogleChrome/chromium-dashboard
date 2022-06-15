@@ -27,6 +27,13 @@ from framework import users
 from internals import models
 from internals import processes
 
+
+# This is the longest string that a cloud ndb StringProperty seems to accept.
+# Fields that accept a URL list can be longer, provided that each individual
+# URL is no more than this length.
+MAX_LENGTH = 1472
+
+
 class MultiEmailField(forms.Field):
     def to_python(self, value):
         """Normalize data to a list of strings."""
@@ -75,7 +82,7 @@ class ChromedashTextarea(forms.widgets.Textarea):
 
     def __init__(self, attrs=None):
         # Use slightly better defaults than HTML's 20x2 box
-        default_attrs = {'cols': 50, 'rows': 10,  'maxlength': 5000}
+        default_attrs = {'cols': 50, 'rows': 10,  'maxlength': MAX_LENGTH}
         if attrs:
             default_attrs.update(attrs)
         super().__init__(default_attrs)
@@ -190,7 +197,7 @@ ALL_FIELDS = {
 
     'motivation': forms.CharField(
         label='Motivation', required=False,
-        widget=ChromedashTextarea(attrs={'cols': 50, 'maxlength': 1480}),
+        widget=ChromedashTextarea(),
         help_text=
         ('Explain why the web needs this change. It may be useful '
          'to describe what web developers are forced to do without '
@@ -203,7 +210,7 @@ ALL_FIELDS = {
 
     'deprecation_motivation': forms.CharField(  # Sets motivation DB field.
         label='Motivation', required=False,
-        widget=ChromedashTextarea(attrs={'cols': 50, 'maxlength': 1480}),
+        widget=ChromedashTextarea(),
         help_text=
         ('Deprecations and removals must have strong reasons, backed up '
          'by measurements.  There must be clear and actionable paths forward '
@@ -228,7 +235,7 @@ ALL_FIELDS = {
     'measurement': forms.CharField(
         label='Measurement', required=False,
         widget=ChromedashTextarea(
-            attrs={'rows': 4, 'cols': 50, 'maxlength': 500}),
+            attrs={'rows': 4}),
         help_text=
         ('It\'s important to measure the adoption and success of web-exposed '
          'features.  Note here what measurements you have added to track the '
@@ -294,7 +301,7 @@ ALL_FIELDS = {
 
     'tag_review': forms.CharField(
         label='TAG Review', required=False,
-        widget=ChromedashTextarea(attrs={'rows': 2, 'cols': 50, 'maxlength': 1480}),
+        widget=ChromedashTextarea(attrs={'rows': 2}),
         help_text=('Link(s) to TAG review(s), or explanation why this is '
                    'not needed.')),
 
@@ -342,7 +349,7 @@ ALL_FIELDS = {
 
     'interop_compat_risks': forms.CharField(
         required=False, label='Interoperability and Compatibility Risks',
-        widget=ChromedashTextarea(attrs={'cols': 50, 'maxlength': 1480}),
+        widget=ChromedashTextarea(),
         help_text=
         ('Describe the degree of <a target="_blank" '
          'href="https://www.chromium.org/blink/guidelines/'
@@ -380,8 +387,7 @@ ALL_FIELDS = {
     'safari_views_notes': forms.CharField(
         required=False, label='',
         widget=ChromedashTextarea(
-            attrs={'rows': 2, 'cols': 50, 'placeholder': 'Notes',
-                   'maxlength': 1480})),
+            attrs={'rows': 2, 'placeholder': 'Notes'})),
 
     'ff_views': forms.ChoiceField(
         required=False, label='Firefox views',
@@ -399,8 +405,7 @@ ALL_FIELDS = {
     'ff_views_notes': forms.CharField(
         required=False, label='',
         widget=ChromedashTextarea(
-            attrs={'rows': 2, 'cols': 50, 'placeholder': 'Notes',
-                   'maxlength': 1480})),
+            attrs={'rows': 2, 'placeholder': 'Notes'})),
 
     'web_dev_views': forms.ChoiceField(
         required=False, label='Web / Framework developer views',
@@ -419,21 +424,19 @@ ALL_FIELDS = {
     'web_dev_views_notes': forms.CharField(
         required=False, label='',
         widget=ChromedashTextarea(
-            attrs={'rows': 2, 'cols': 50, 'placeholder': 'Notes',
-                   'maxlength': 1480}),
+            attrs={'rows': 2, 'placeholder': 'Notes'}),
         help_text=('Reference known representative examples of opinion, '
                    'both positive and negative.')),
 
     'other_views_notes': forms.CharField(
         required=False, label='Other views',
         widget=ChromedashTextarea(
-            attrs={'rows': 4, 'cols': 50, 'placeholder': 'Notes',
-                   'maxlength': 1480}),
+            attrs={'rows': 4, 'placeholder': 'Notes'}),
         help_text=('For example, other browsers.')),
 
     'ergonomics_risks': forms.CharField(
         label='Ergonomics Risks', required=False,
-        widget=ChromedashTextarea(attrs={'cols': 50, 'maxlength': 1480}),
+        widget=ChromedashTextarea(),
         help_text=
         ('Are there any other platform APIs this feature will frequently be '
          'used in tandem with? Could the default usage of this API make it '
@@ -442,7 +445,7 @@ ALL_FIELDS = {
 
     'activation_risks': forms.CharField(
         label='Activation Risks', required=False,
-        widget=ChromedashTextarea(attrs={'cols': 50, 'maxlength': 1480}),
+        widget=ChromedashTextarea(),
         help_text=
         ('Will it be challenging for developers to take advantage of this '
          'feature immediately, as-is? Would this feature benefit from '
@@ -451,14 +454,14 @@ ALL_FIELDS = {
 
     'security_risks': forms.CharField(
         label='Security Risks', required=False,
-        widget=ChromedashTextarea(attrs={'cols': 50, 'maxlength': 1480}),
+        widget=ChromedashTextarea(),
         help_text=
         ('List any security considerations that were taken into account '
          'when designing this feature.')),
 
     'webview_risks': forms.CharField(
         label='WebView application risks', required=False,
-        widget=ChromedashTextarea(attrs={'cols': 50, 'maxlength': 1480}),
+        widget=ChromedashTextarea(),
         help_text=
         ('Does this intent deprecate or change behavior of existing APIs, '
          'such that it has potentially high risk for Android WebView-based '
@@ -481,7 +484,7 @@ ALL_FIELDS = {
 
     'experiment_goals': forms.CharField(
         label='Experiment Goals', required=False,
-        widget=ChromedashTextarea(attrs={'cols': 50, 'maxlength': 1480}),
+        widget=ChromedashTextarea(),
         help_text=
         ('Which pieces of the API surface are you looking to gain insight on? '
          'What metrics/measurement/feedback will you be using to validate '
@@ -496,7 +499,7 @@ ALL_FIELDS = {
     'experiment_timeline': forms.CharField(
         label='Experiment Timeline', required=False,
         widget=ChromedashTextarea(attrs={
-            'rows': 2, 'cols': 50, 'maxlength': 1480,
+            'rows': 2,
             'placeholder': 'This field is deprecated',
             'disabled': 'disabled'}),
         help_text=('When does the experiment start and expire? '
@@ -542,7 +545,7 @@ ALL_FIELDS = {
 
     'experiment_risks': forms.CharField(
         label='Experiment Risks', required=False,
-        widget=ChromedashTextarea(attrs={'cols': 50, 'maxlength': 1480}),
+        widget=ChromedashTextarea(),
         help_text=
         ('When this experiment comes to an end are there any risks to the '
          'sites that were using it, for example losing access to important '
@@ -550,14 +553,14 @@ ALL_FIELDS = {
 
     'experiment_extension_reason': forms.CharField(
         label='Experiment Extension Reason', required=False,
-        widget=ChromedashTextarea(attrs={'cols': 50, 'maxlength': 1480}),
+        widget=ChromedashTextarea(),
         help_text=
         ('If this is a repeat experiment, explain why you want to extend this '
          'experiment.  Also, fill in discussion link fields below.')),
 
     'ongoing_constraints': forms.CharField(
         label='Ongoing Constraints', required=False,
-        widget=ChromedashTextarea(attrs={'cols': 50, 'maxlength': 1480}),
+        widget=ChromedashTextarea(),
         help_text=
         ('Do you anticipate adding any ongoing technical constraints to '
          'the codebase while implementing this feature? We prefer to avoid '
@@ -611,7 +614,7 @@ ALL_FIELDS = {
 
     'debuggability': forms.CharField(
         label='Debuggability', required=True,
-        widget=ChromedashTextarea(attrs={'cols': 50, 'maxlength': 1480}),
+        widget=ChromedashTextarea(),
         help_text=
         ('Description of the DevTools debugging support for your feature. '
          'Please follow <a target="_blank" '
@@ -626,10 +629,11 @@ ALL_FIELDS = {
 
     'all_platforms_descr': forms.CharField(
         label='Platform Support Explanation', required=False,
-        widget=ChromedashTextarea(attrs={'rows': 2, 'cols': 50, 'maxlength': 2000}),
-        help_text=
-        ('Explain why this feature is, or is not, '
-         'supported on all platforms.')),
+        widget=ChromedashTextarea(
+            attrs={'rows': 2}),
+            help_text=(
+                'Explain why this feature is, or is not, '
+                'supported on all platforms.')),
 
     'wpt': forms.BooleanField(
         required=False, initial=False, label='Web Platform Tests',
@@ -637,7 +641,7 @@ ALL_FIELDS = {
 
     'wpt_descr': forms.CharField(
         label='Web Platform Tests Description', required=False,
-        widget=ChromedashTextarea(attrs={'cols': 50, 'maxlength': 1480}),
+        widget=ChromedashTextarea(),
         help_text=
         ('Please link to the <a href="https://wpt.fyi/results">results on '
          'wpt.fyi</a>. If any part of the feature is not tested by '
@@ -659,7 +663,7 @@ ALL_FIELDS = {
 
     'non_oss_deps': forms.CharField(
         label='Non-OSS dependencies', required=False,
-        widget=ChromedashTextarea(attrs={'cols': 50, 'maxlength': 1480}),
+        widget=ChromedashTextarea(),
         help_text=
         ('Does the feature depend on any code or APIs outside the Chromium '
          'open source repository and its open-source dependencies to '
@@ -794,8 +798,7 @@ ALL_FIELDS = {
 
     'comments': forms.CharField(
         label='Comments', required=False,
-        widget=ChromedashTextarea(attrs={
-            'cols': 50, 'rows': 4, 'maxlength': 1480}),
+        widget=ChromedashTextarea(attrs={'rows': 4}),
         help_text='Additional comments, caveats, info...'),
 
     }
