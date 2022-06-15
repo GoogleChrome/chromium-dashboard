@@ -31,7 +31,7 @@ from internals import processes
 # This is the longest string that a cloud ndb StringProperty seems to accept.
 # Fields that accept a URL list can be longer, provided that each individual
 # URL is no more than this length.
-MAX_LENGTH = 1472
+MAX_LENGTH = 1400
 
 
 class MultiEmailField(forms.Field):
