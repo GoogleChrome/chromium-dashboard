@@ -56,6 +56,7 @@ class TestableFlaskHandler(basehandlers.FlaskHandler):
 test_app = basehandlers.FlaskApplication(
     __name__,
     [('/test', TestableFlaskHandler),
+     ('/data/test', TestableFlaskHandler),
      ('/old_path', basehandlers.Redirector,
       {'location': '/new_path'}),
      ('/just_a_template', basehandlers.ConstHandler,
@@ -831,3 +832,22 @@ class FlaskHandlerTests(testing_config.CustomTestCase):
       self.assertEqual(
           ['http://example1.com', 'http://example2.com'],
           self.handler.parse_links('extrajunk'))
+
+
+class TestCORS(testing_config.CustomTestCase):
+
+  def test_with_allow_origin(self):
+    """If the request hits a /data path, they get '*'."""
+    with test_app.test_request_context('/data/test'):
+      actual_response = test_app.full_dispatch_request()
+
+    self.assertEqual(
+        '*',
+        actual_response.headers['Access-Control-Allow-Origin'])
+
+  def test_without_allow_origin(self):
+    """If the request hits any non-/data path, they get no header."""
+    with test_app.test_request_context('/test'):
+      actual_response = test_app.full_dispatch_request()
+
+    self.assertNotIn('Access-Control-Allow-Origin', actual_response.headers)
