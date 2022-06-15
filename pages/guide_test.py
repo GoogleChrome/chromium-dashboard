@@ -262,6 +262,32 @@ class FeatureEditStageTest(testing_config.CustomTestCase):
       self.assertTrue(self.handler.touched('name'))
       self.assertFalse(self.handler.touched('summary'))
 
+  def test_touched__checkboxes(self):
+    """For now, any checkbox listed in form_fields is considered touched."""
+    with test_app.test_request_context(
+        'path', data={'form_fields': 'unlisted, api_spec',
+                      'unlisted': 'yes',
+                      'wpt': 'yes'}):
+      # unlisted is in this form and the user checked the box.
+      self.assertTrue(self.handler.touched('unlisted'))
+      # api_spec is this form and the user did not check the box.
+      self.assertTrue(self.handler.touched('api_spec'))
+      # wpt is not part of this form, regardless if a value was given.
+      self.assertFalse(self.handler.touched('wpt'))
+
+  def test_touched__selects(self):
+    """For now, any select in the form data considered touched if not ''."""
+    with test_app.test_request_context(
+        'path', data={'form_fields': 'not used for this case',
+                      'category': '',
+                      'feature_type': '4'}):
+      # The user did not choose any value for category.
+      self.assertFalse(self.handler.touched('category'))
+      # The user did select a value, or one was already set.
+      self.assertTrue(self.handler.touched('feature_type'))
+      # intent_state is a select, but it was not present in this POST.
+      self.assertFalse(self.handler.touched('select'))
+
   def test_get__anon(self):
     """Anon cannot edit features, gets a redirect to viewing page."""
     testing_config.sign_out()
@@ -341,6 +367,7 @@ class FeatureEditStageTest(testing_config.CustomTestCase):
     testing_config.sign_in('user1@google.com', 1234567890)
     with test_app.test_request_context(
         self.request_path, data={
+            'form_fields': 'category, name, summary, shipped_milestone',
             'category': '2',
             'name': 'Revised feature name',
             'summary': 'Revised feature summary',
