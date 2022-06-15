@@ -812,6 +812,18 @@ METADATA_FIELDS = [
      'bug_url', 'launch_bug_url',
 ]
 
+class ChromedashForm(forms.Form):
+
+    def as_table(self):
+        "Return this form rendered as HTML <tr>s -- excluding the <table></table>."
+        return self._html_output(
+            normal_row='<tr%(html_class_attr)s><th>%(label)s</th><td>%(errors)s%(field)s%(help_text)s</td></tr>',
+            error_row='<tr><td colspan="2">%s</td></tr>',
+            row_ender='</td></tr>',
+            help_text_html='<span class="helptext">%s</span>',
+            errors_on_separate_row=False,
+        )
+
 def define_form_class_using_shared_fields(class_name, field_spec_list):
   """Define a new subsblass of forms.Form with the given fields, in order."""
   # field_spec_list is normally just a list of simple field names,
@@ -823,7 +835,7 @@ def define_form_class_using_shared_fields(class_name, field_spec_list):
     class_dict[form_field_name] = ALL_FIELDS[shared_field_name]
     class_dict['field_order'].append(form_field_name)
 
-  return type(class_name, (forms.Form,), class_dict)
+  return type(class_name, (ChromedashForm,), class_dict)
 
 
 NewFeatureForm = define_form_class_using_shared_fields(

@@ -1,0 +1,9 @@
+<sl-radio
+    name="{{ widget.name }}"
+    size="small"
+    {% if widget.value != None %} 
+      value="{{ widget.value|stringformat:'s' }}"
+    {% endif %}
+    {% include "django/forms/widgets/attrs.html" %}>
+    {% if widget.wrap_label %} {{ widget.label }}{% endif %}
+</sl-radio>
