@@ -10,7 +10,6 @@
 {% endblock %}
 
 {% block css %}
-    <style>{% inline_file "/static/css/features/feature.css" %}</style>
     <link rel="stylesheet" href="/static/css/forms.css">
     <link rel="stylesheet" href="/static/css/guide.css">
 {% endblock %}
@@ -96,8 +95,8 @@
 
   {% if user and user.can_approve %}
     <chromedash-approvals-dialog
-      signedInUser="{{user.email}}"
-      ></chromedash-approvals-dialog>
+      signedInUser="{{user.email}}">
+    </chromedash-approvals-dialog>
   {% endif %}
 
 {% endblock %}

@@ -1,10 +1,59 @@
-import {LitElement, html, nothing} from 'lit';
+import {LitElement, css, html, nothing} from 'lit';
 
-import {FEATURE_CSS} from '../sass/elements/chromedash-feature-css.js';
-// import {SHARED_STYLES} from '../sass/shared-css.js';
+import {SHARED_STYLES} from '../sass/shared-css.js';
 
 class ChromedashFeaturePage extends LitElement {
-  static styles = FEATURE_CSS;
+  static get styles() {
+    return [
+      ...SHARED_STYLES,
+      css`
+        #feature {
+          background: var(--card-background);
+          border-radius: var(--default-border-radius);
+          border: var(--card-border);
+          box-shadow: var(--card-box-shadow);
+
+          box-sizing: border-box;
+          word-wrap: break-word;
+          margin-bottom: var(--content-padding);
+          max-width: var(--max-content-width);
+        }
+        #feature ul {
+          list-style-position:inside;
+          list-style:none;
+        }
+        section {
+          margin-bottom:1em;
+        }
+        section h3{
+          margin:24px 0 12px;
+        }
+        section label{
+          font-weight:500;
+          margin-right:5px;
+        }
+        
+        #consensus li{
+          display:flex;
+        }
+        #consensus li label{
+          width:125px;
+        }
+        
+        @media only screen and (max-width: 700px) {
+          #feature {
+            border-radius:0 !important;
+            margin:7px initial !important;
+          }
+        }
+        
+        @media only screen and (min-width: 701px) {
+          #feature {
+            padding:30px 40px;
+          }
+        }
+    `];
+  }
 
   static get properties() {
     return {
@@ -28,21 +77,14 @@ class ChromedashFeaturePage extends LitElement {
 
   fetchFeature() {
     this.loading = true;
-    // this.shadowRoot.querySelector('sl-dialog').show();
     window.csClient.getFeature(this.featureId).then(
       (feature) => {
         this.loading = false;
         this.feature = feature;
-        console.info(this.feature);
       }).catch(() => {
       const toastEl = document.querySelector('chromedash-toast');
       toastEl.showMessage('Some errors occurred. Please refresh the page or try again later.');
-      this.handleCancel();
     });
-  }
-
-  handleCancel() {
-    // this.shadowRoot.querySelector('sl-dialog').hide();
   }
 
   renderFeatureContent() {
@@ -127,7 +169,7 @@ class ChromedashFeaturePage extends LitElement {
               tracking bug
             </a>
           `: nothing}
-          <chromedash-gantt feature=${this.feature}></chromedash-gantt>
+          <chromedash-gantt feature=${JSON.stringify(this.feature)}></chromedash-gantt>
         </p>
       </section>
   
@@ -203,10 +245,17 @@ class ChromedashFeaturePage extends LitElement {
 
   render() {
     return html`
-      <div id="feature">
-        ${this.renderFeatureContent()}
-        ${this.renderFeatureStatus()}
-      </div>
+      ${this.loading ?
+        html`
+          <div class="loading">
+            <div id="spinner"><img src="/static/img/ring.svg"></div>
+          </div>` :
+        html`
+          <div id="feature">
+            ${this.renderFeatureContent()}
+            ${this.renderFeatureStatus()}
+          </div>
+      `}
     `;
   }
 }
