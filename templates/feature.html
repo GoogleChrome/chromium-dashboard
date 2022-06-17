@@ -1,4 +1,4 @@
-{% extends embed|yesno:"_base_embed.html,_base.html" %}
+{% extends "_base.html" %}
 {% load inline_file %}
 
 {% block page_title %}{% if feature.name %}{{ feature.name }} - {% endif %}{% endblock %}
