@@ -99,7 +99,7 @@ export class ChromedashFeaturePage extends LitElement {
    
       ${this.feature.summary ? html`
         <section id="summary">
-          <p class="preformatted">${autolink(this.feature.comments)}</p>
+          <p class="preformatted">${autolink(this.feature.summary)}</p>
         </section>
       `: nothing}
 
