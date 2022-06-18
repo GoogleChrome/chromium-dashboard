@@ -1,8 +1,9 @@
 import {LitElement, css, html, nothing} from 'lit';
+import {autolink} from './utils.js';
 
 import {SHARED_STYLES} from '../sass/shared-css.js';
 
-class ChromedashFeaturePage extends LitElement {
+export class ChromedashFeaturePage extends LitElement {
   static get styles() {
     return [
       ...SHARED_STYLES,
@@ -98,14 +99,14 @@ class ChromedashFeaturePage extends LitElement {
    
       ${this.feature.summary ? html`
         <section id="summary">
-          <p class="preformatted">${this.feature.summary}</p>
+          <p class="preformatted">${autolink(this.feature.comments)}</p>
         </section>
       `: nothing}
 
       ${this.feature.motivation ? html`
         <section id="motivation">
           <h3>Motivation</h3>
-          <p class="preformatted">${feature.motivation}</p>
+          <p class="preformatted">${autolink(this.feature.motivation)}</p>
         </section>
       `: nothing}
 
@@ -223,12 +224,12 @@ class ChromedashFeaturePage extends LitElement {
       ${this.feature.comments ? html`
         <section id="comments">
           <h3>Comments</h3>
-          <p class="preformatted">${feature.comments}</p>
+          <p class="preformatted">${autolink(this.feature.comments)}</p>
         </section>
       `: nothing}
 
       ${this.feature.tags ? html`
-        <section>
+        <section id="tags">
           <h3>Search tags</h3>
             ${this.feature.tags.map((tag) => html`
               <a href="/features#tags:${tag}">${tag}</a><span
