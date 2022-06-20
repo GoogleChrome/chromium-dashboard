@@ -1,22 +1,49 @@
 import {html} from 'lit';
 import {assert, fixture} from '@open-wc/testing';
 import {ChromedashFeaturePage} from './chromedash-feature-page';
+import './chromedash-toast';
+import '../js-src/cs-client';
+import sinon from 'sinon';
 
 describe('chromedash-feature-page', () => {
-  let feature;
+  const featureId = 123456;
+  const invalidFeaturePromise = Promise.reject(new Error('Got error response from server'));
+  const validFeaturePromise = Promise.resolve({
+    id: 123456,
+    browsers: {
+      chrome: {
+        blink_component: ['Blink'],
+        owners: ['fake chrome owner one', 'fake chrome owner two'],
+        status: {text: 'fake chrome status text'},
+      },
+      ff: {view: {text: 'fake ff view text'}},
+      safari: {view: {text: 'fake safari view text'}},
+      webdev: {view: {text: 'fake webdev view text'}},
+    },
+    resources: {
+      samples: ['fake sample link one', 'fake sample link two'],
+      docs: ['fake doc link one', 'fake doc link two'],
+    },
+    standards: {
+      spec: 'fake spec link',
+      maturity: {test: 'Unknown standards status - check spec link for status'},
+    },
+    tags: ['tag_one'],
+  });
 
-  beforeEach(() => {
-    feature = {
-      id: 123456,
-      resources: {
-        samples: ['fake sample link one', 'fake sample link two'],
-        docs: ['fake doc link one', 'fake doc link two'],
-      },
-      standards: {
-        spec: 'fake spec link',
-      },
-      tags: ['tag_one'],
-    };
+  /* window.csClient and <chromedash-toast> are initialized at _base.html
+   * which are not available here, so we initialize them before each test.
+   * We also stub out the getFeature API call here so that it returns test data. */
+  beforeEach(async () => {
+    window.csClient = new ChromeStatusClient('fake_token', 1);
+    await fixture(html`<chromedash-toast></chromedash-toast>`);
+    sinon.stub(window.csClient, 'getFeature');
+    window.csClient.getFeature.withArgs(0).returns(invalidFeaturePromise);
+    window.csClient.getFeature.withArgs(featureId).returns(validFeaturePromise);
+  });
+
+  afterEach(() => {
+    window.csClient.getFeature.restore();
   });
 
   it('renders with no data', async () => {
@@ -24,14 +51,18 @@ describe('chromedash-feature-page', () => {
       html`<chromedash-feature-page></chromedash-feature-page>`);
     assert.exists(component);
     assert.instanceOf(component, ChromedashFeaturePage);
-    const featureDiv = component.shadowRoot.querySelector('div#feature');
-    assert.exists(featureDiv);
+
+    // invalid feature requests would trigger the toast to show message
+    const toastEl = document.querySelector('chromedash-toast');
+    const toastMsgSpan = toastEl.shadowRoot.querySelector('span');
+    assert.include(toastMsgSpan.innerHTML,
+      'Some errors occurred. Please refresh the page or try again later.');
   });
 
   it('renders with fake data', async () => {
     const component = await fixture(
       html`<chromedash-feature-page
-              .feature=${feature}
+              .featureId=${featureId}
              ></chromedash-feature-page>`);
     assert.exists(component);
 
