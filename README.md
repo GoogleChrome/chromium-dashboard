@@ -32,16 +32,6 @@ You will need to activate the venv in every shell that you use.
 
 If you encounter any error during the installation process, the section **Notes** (later in this README.md) may help.
 
-##### Add env_vars.yaml
-
-Create a file named `env_vars.yaml` in the root directory and fill it with:
-
-```yaml
-env_variables:
-  DJANGO_SETTINGS_MODULE: 'settings'
-  DJANGO_SECRET: 'this-is-a-secret'
-```
-
 ### Developing
 
 To start the main server and the notifier backend, run:

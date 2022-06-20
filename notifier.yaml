@@ -12,5 +12,6 @@ handlers:
 
 app_engine_apis: true
 
-includes:
-- env_vars.yaml
+env_variables:
+  DJANGO_SETTINGS_MODULE: 'settings'
+  DJANGO_SECRET: 'this-is-a-secret'
