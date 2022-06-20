@@ -104,8 +104,6 @@ limitations under the License.
         '{{xsrf_token}}', {{xsrf_token_expires}});
   </script>
 
-  <script src="https://unpkg.com/@webcomponents/webcomponentsjs/webcomponents-loader.js"
-          nonce="{{nonce}}"></script>
   <script type="module" nonce="{{nonce}}" defer
           src="/static/dist/components.js"></script>
   {% block preload %}{% endblock %}
@@ -146,10 +144,6 @@ limitations under the License.
   <chromedash-toast msg="Welcome to chromestatus.com!"></chromedash-toast>
 
   {% block overlay %}{% endblock %}
-
-  <!-- https://github.com/ljosa/urlize.js.git. This package does not have ES module support. It sets window.urlize in browsers. -->
-  <script src="https://unpkg.com/urlize.js/urlize.js"
-          nonce="{{nonce}}"></script>
 
   {% block js %}{% endblock %}
 

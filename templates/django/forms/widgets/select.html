@@ -1,6 +1,7 @@
-<sl-select 
+<chromedash-select 
     name="{{ widget.name }}"
     size="small"
+    value="{{ widget.value|first }}"
     {% include "django/forms/widgets/attrs.html" %}>
   {% for group_name, group_choices, group_index in widget.optgroups %}
     {% if group_name %}
@@ -13,5 +14,4 @@
     </optgroup>
     {% endif %}
   {% endfor %}
-</sl-select>
-  
+</chromedash-select>

@@ -188,7 +188,7 @@ class ChromedashFeatureTable extends LitElement {
 
   renderApprovalsIcon(feature) {
     return html`
-      <a href="#" class="tooltip"
+      <a class="tooltip"
         @click="${() => this.openApprovalsDialog(feature.id)}"
         title="Review approvals">
         <iron-icon icon="chromestatus:approval"></iron-icon>
