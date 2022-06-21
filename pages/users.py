@@ -56,10 +56,13 @@ class SettingsHandler(basehandlers.FlaskHandler):
     user_pref = models.UserPref.get_signed_in_user_pref()
     if not user_pref:
       return flask.redirect(settings.LOGIN_PAGE_URL)
+    referer = self.request.headers.get('Referer', '')
+    recently_saved = referer.endswith('/settings')
 
     template_data = {
         'user_pref': user_pref,
         'user_pref_form': models.UserPrefForm(user_pref.to_dict()),
+        'recently_saved': recently_saved,
     }
     return template_data
 
@@ -73,4 +76,4 @@ class SettingsHandler(basehandlers.FlaskHandler):
                  user_pref.email, new_notify)
     user_pref.notify_as_starrer = bool(new_notify)
     user_pref.put()
-    return flask.redirect('/admin/users/new')
+    return flask.redirect('/settings')
