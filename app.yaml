@@ -29,13 +29,12 @@ handlers:
   script: auto
   secure: always
 
-includes:
-- env_vars.yaml
-
 app_engine_apis: true
 
 env_variables:
   GAE_USE_SOCKETS_HTTPLIB : ''
+  DJANGO_SETTINGS_MODULE: 'settings'
+  DJANGO_SECRET: 'this-is-a-secret'
 
 inbound_services:
 - mail
