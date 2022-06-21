@@ -29,19 +29,15 @@ test_app = flask.Flask(__name__)
 
 class UsersListTemplateTest(testing_config.CustomTestCase):
 
-  HANDLER_CLASS = users.UserListHandler
-
-  def setUp(self):        
-
-    self.request_path = self.HANDLER_CLASS.TEMPLATE_PATH
-    self.handler = self.HANDLER_CLASS()
+  def setUp(self):
+    self.handler = users.UserListHandler()
 
     self.app_admin = models.AppUser(email='admin@example.com')
     self.app_admin.is_admin = True
     self.app_admin.put()
-    testing_config.sign_in('admin@example.com', 123567890) 
+    testing_config.sign_in('admin@example.com', 123567890)
 
-    with test_app.test_request_context(self.request_path):
+    with test_app.test_request_context('/request_path'):
       self.template_data = self.handler.get_template_data()
     self.full_template_path = self.handler.get_template_path(self.template_data)
 
@@ -64,7 +60,7 @@ class SettingsHandlerTests(unittest.TestCase):
     mock_gsiup.return_value = None
     mock_redirect.return_value = 'mock redirect response'
 
-    with test_app.test_request_context('/settings'):
+    with test_app.test_request_context('/request_path'):
       actual = self.handler.get_template_data()
 
     mock_redirect.assert_called_once()
@@ -75,28 +71,26 @@ class SettingsHandlerTests(unittest.TestCase):
     mock_gsiup.return_value = models.UserPref(
         email='user@example.com')
 
-    actual = self.handler.get_template_data()
+    with test_app.test_request_context('/request_path'):
+      actual = self.handler.get_template_data()
 
     self.assertIsInstance(actual, dict)
     self.assertIn('user_pref', actual)
     self.assertIn('user_pref_form', actual)
 
+
 class SettingsTemplateTest(testing_config.CustomTestCase):
 
-  HANDLER_CLASS = users.SettingsHandler
+  def setUp(self):
+    self.handler = users.SettingsHandler()
 
-  def setUp(self):        
-
-    self.request_path = self.HANDLER_CLASS.TEMPLATE_PATH
-    self.handler = self.HANDLER_CLASS()
-
-    with test_app.test_request_context(self.request_path):
+    testing_config.sign_in('user1@google.com', 123567890)
+    with test_app.test_request_context('/request_path'):
       self.template_data = self.handler.get_template_data()
     self.full_template_path = self.handler.get_template_path(self.template_data)
 
   def test_html_rendering(self):
     """We can render the template with valid html."""
-    testing_config.sign_in('user1@google.com', 123567890)
     template_text = self.handler.render(
         self.template_data, self.full_template_path)
     parser = html5lib.HTMLParser(strict=True)
