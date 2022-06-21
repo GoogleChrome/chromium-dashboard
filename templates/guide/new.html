@@ -4,13 +4,13 @@
 <link rel="stylesheet" href="/static/css/forms.css">
 
 <!--
- The following style is a workaround until sl-radio does validation.
- We CAN depend on sl-focus-ring being defined.
+ The following style is a workaround to better support radio buttons
+ without sl-radio which does not yet do validation.
+ We do depend on sl-focus-ring being defined.
 -->
 <style>
 table label input[type=radio]:focus { 
   box-shadow: var(--sl-focus-ring);
-
 }
 </style>
 {% endblock %}
