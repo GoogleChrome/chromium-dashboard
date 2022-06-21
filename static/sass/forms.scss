@@ -122,6 +122,7 @@ sl-input::part(base) {
 }
 
 sl-input[invalid]::part(input),
+sl-checkbox[invalid]::part(input),
 chromedash-textarea[invalid]::part(textarea)
 {
   outline: 1px dotted red;
@@ -141,11 +142,4 @@ sl-select[size="small"] sl-menu-item::part(base) {
 /* menu items for selects should not be displayed at all, until defined */
 sl-select sl-menu-item:not(:defined) {
    display: none 
-}
-
-/* Hide extra br following display:block elements */
-chromedash-textarea+br,
-sl-select+br,
-sl-input+br {
-  display: none;
 }
