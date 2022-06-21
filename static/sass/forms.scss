@@ -123,7 +123,6 @@ sl-input::part(base) {
 
 sl-input[invalid]::part(input),
 sl-checkbox[invalid]::part(input),
-radio[invalid],
 chromedash-textarea[invalid]::part(textarea)
 {
   outline: 1px dotted red;
