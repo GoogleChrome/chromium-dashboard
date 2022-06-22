@@ -112,7 +112,7 @@ export class ChromedashFeaturePage extends LitElement {
 
       ${this.feature.resources && this.feature.resources.samples ? html`
         <section id="demo">
-          <h3>${this.feature.resources.length == 1 ? 'Demo' : 'Demos'}</h3>
+          <h3>${this.feature.resources.samples.length == 1 ? 'Demo' : 'Demos'}</h3>
           <ul>
             ${this.feature.resources.samples.map((sampleLink) => html`
               <li><a href="${sampleLink}">${sampleLink}</a></li>
@@ -166,9 +166,7 @@ export class ChromedashFeaturePage extends LitElement {
           <label>Implementation status:</label>
           <b>${this.feature.browsers.chrome.status.text}</b>
           ${this.feature.browsers.chrome.bug ? html`
-            <a href=${this.feature.browsers.chrome.bug} target="_blank" rel="noopener">
-              tracking bug
-            </a>
+            (<a href=${this.feature.browsers.chrome.bug} target="_blank" rel="noopener">tracking bug</a>)
           `: nothing}
           <chromedash-gantt .feature=${this.feature}></chromedash-gantt>
         </p>
@@ -191,7 +189,7 @@ export class ChromedashFeaturePage extends LitElement {
           `: nothing}
           ${this.feature.browsers.safari.view.val ? html`
             <li>
-              <label>Firefox:</label>
+              <label>Safari:</label>
               ${this.feature.browsers.safari.view.url ? html`
                 <a href=${this.feature.browsers.safari.view.url}>${this.feature.browsers.safari.view.text}</a>
               `: html`
