@@ -39,7 +39,6 @@ import './elements/chromedash-metadata';
 import './elements/chromedash-metrics';
 import './elements/chromedash-myfeatures';
 import './elements/chromedash-process-overview';
-import './elements/chromedash-select';
 import './elements/chromedash-textarea';
 import './elements/chromedash-timeline';
 import './elements/chromedash-toast';
