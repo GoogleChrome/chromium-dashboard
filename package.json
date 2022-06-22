@@ -80,6 +80,7 @@
     "rollup-plugin-babel-minify": "^9.1.0",
     "rollup-plugin-lit-css": "^2.0.0",
     "rollup-plugin-node-resolve": "^5.2.0",
+    "sinon": "^14.0.0",
     "sw-precache": "^5.2.1",
     "sw-toolbox": "^3.6.0",
     "tar": ">=3.2.3",
