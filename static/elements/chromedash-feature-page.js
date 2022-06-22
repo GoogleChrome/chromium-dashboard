@@ -20,37 +20,37 @@ export class ChromedashFeaturePage extends LitElement {
           max-width: var(--max-content-width);
         }
         #feature ul {
-          list-style-position:inside;
-          list-style:none;
+          list-style-position: inside;
+          list-style: none;
         }
         section {
-          margin-bottom:1em;
+          margin-bottom: 1em;
         }
-        section h3{
-          margin:24px 0 12px;
+        section h3 {
+          margin: 24px 0 12px;
         }
-        section label{
-          font-weight:500;
-          margin-right:5px;
+        section label {
+          font-weight: 500;
+          margin-right: 5px;
         }
         
-        #consensus li{
-          display:flex;
+        #consensus li {
+          display: flex;
         }
-        #consensus li label{
-          width:125px;
+        #consensus li label {
+          width: 125px;
         }
         
         @media only screen and (max-width: 700px) {
           #feature {
-            border-radius:0 !important;
-            margin:7px initial !important;
+            border-radius: 0 !important;
+            margin: 7px initial !important;
           }
         }
         
         @media only screen and (min-width: 701px) {
           #feature {
-            padding:30px 40px;
+            padding: 30px 40px;
           }
         }
     `];
@@ -170,7 +170,7 @@ export class ChromedashFeaturePage extends LitElement {
               tracking bug
             </a>
           `: nothing}
-          <chromedash-gantt feature=${JSON.stringify(this.feature)}></chromedash-gantt>
+          <chromedash-gantt .feature=${this.feature}></chromedash-gantt>
         </p>
       </section>
   

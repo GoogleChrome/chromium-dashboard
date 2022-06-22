@@ -26,7 +26,7 @@ describe('chromedash-feature-page', () => {
     },
     standards: {
       spec: 'fake spec link',
-      maturity: {test: 'Unknown standards status - check spec link for status'},
+      maturity: {text: 'Unknown standards status - check spec link for status'},
     },
     tags: ['tag_one'],
   });
