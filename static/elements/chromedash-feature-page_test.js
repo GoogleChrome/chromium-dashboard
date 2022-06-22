@@ -6,40 +6,13 @@ import '../js-src/cs-client';
 import sinon from 'sinon';
 
 describe('chromedash-feature-page', () => {
-  const featureId = 123456;
-  const invalidFeaturePromise = Promise.reject(new Error('Got error response from server'));
-  const validFeaturePromise = Promise.resolve({
-    id: 123456,
-    browsers: {
-      chrome: {
-        blink_component: ['Blink'],
-        owners: ['fake chrome owner one', 'fake chrome owner two'],
-        status: {text: 'fake chrome status text'},
-      },
-      ff: {view: {text: 'fake ff view text'}},
-      safari: {view: {text: 'fake safari view text'}},
-      webdev: {view: {text: 'fake webdev view text'}},
-    },
-    resources: {
-      samples: ['fake sample link one', 'fake sample link two'],
-      docs: ['fake doc link one', 'fake doc link two'],
-    },
-    standards: {
-      spec: 'fake spec link',
-      maturity: {text: 'Unknown standards status - check spec link for status'},
-    },
-    tags: ['tag_one'],
-  });
-
   /* window.csClient and <chromedash-toast> are initialized at _base.html
    * which are not available here, so we initialize them before each test.
    * We also stub out the getFeature API call here so that it returns test data. */
   beforeEach(async () => {
-    window.csClient = new ChromeStatusClient('fake_token', 1);
     await fixture(html`<chromedash-toast></chromedash-toast>`);
+    window.csClient = new ChromeStatusClient('fake_token', 1);
     sinon.stub(window.csClient, 'getFeature');
-    window.csClient.getFeature.withArgs(0).returns(invalidFeaturePromise);
-    window.csClient.getFeature.withArgs(featureId).returns(validFeaturePromise);
   });
 
   afterEach(() => {
@@ -47,6 +20,9 @@ describe('chromedash-feature-page', () => {
   });
 
   it('renders with no data', async () => {
+    const invalidFeaturePromise = Promise.reject(new Error('Got error response from server'));
+    window.csClient.getFeature.withArgs(0).returns(invalidFeaturePromise);
+
     const component = await fixture(
       html`<chromedash-feature-page></chromedash-feature-page>`);
     assert.exists(component);
@@ -60,6 +36,31 @@ describe('chromedash-feature-page', () => {
   });
 
   it('renders with fake data', async () => {
+    const featureId = 123456;
+    const validFeaturePromise = Promise.resolve({
+      id: 123456,
+      browsers: {
+        chrome: {
+          blink_component: ['Blink'],
+          owners: ['fake chrome owner one', 'fake chrome owner two'],
+          status: {text: 'fake chrome status text'},
+        },
+        ff: {view: {text: 'fake ff view text'}},
+        safari: {view: {text: 'fake safari view text'}},
+        webdev: {view: {text: 'fake webdev view text'}},
+      },
+      resources: {
+        samples: ['fake sample link one', 'fake sample link two'],
+        docs: ['fake doc link one', 'fake doc link two'],
+      },
+      standards: {
+        spec: 'fake spec link',
+        maturity: {text: 'Unknown standards status - check spec link for status'},
+      },
+      tags: ['tag_one'],
+    });
+    window.csClient.getFeature.withArgs(featureId).returns(validFeaturePromise);
+
     const component = await fixture(
       html`<chromedash-feature-page
               .featureId=${featureId}
