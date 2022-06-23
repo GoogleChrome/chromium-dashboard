@@ -58,16 +58,22 @@ export class ChromedashFeaturePage extends LitElement {
 
   static get properties() {
     return {
-      feature: {type: Object},
       featureId: {type: Number},
+      feature: {type: Object},
+      process: {type: Object},
+      fieldDefs: {type: Object},
+      dismissedCues: {type: Array},
       loading: {attribute: false},
     };
   }
 
   constructor() {
     super();
-    this.feature = {};
     this.featureId = 0;
+    this.feature = {};
+    this.process = {};
+    this.fieldDefs = {};
+    this.dismissedCues = [];
     this.loading = true;
   }
 
@@ -78,11 +84,25 @@ export class ChromedashFeaturePage extends LitElement {
 
   fetchFeature() {
     this.loading = true;
-    window.csClient.getFeature(this.featureId).then(
+    const p1 = window.csClient.getFeature(this.featureId).then(
       (feature) => {
-        this.loading = false;
         this.feature = feature;
-      }).catch(() => {
+      });
+    const p2 = window.csClient.getProcess(this.featureId).then(
+      (process) => {
+        this.process = process;
+      });
+    const p3 = window.csClient.getFieldDefs().then(
+      (fieldDefs) => {
+        this.fieldDefs = fieldDefs;
+      });
+    const p4 = window.csClient.getDismissedCues().then(
+      (dismissedCues) => {
+        this.dismissedCues = dismissedCues;
+      });
+    Promise.all([p1, p2, p3, p4]).then(() => {
+      this.loading = false;
+    }).catch(() => {
       const toastEl = document.querySelector('chromedash-toast');
       toastEl.showMessage('Some errors occurred. Please refresh the page or try again later.');
     });
@@ -242,6 +262,21 @@ export class ChromedashFeaturePage extends LitElement {
     `;
   }
 
+  renderFeatureDetails() {
+    return html`
+      <sl-details
+        id="details"
+        summary="Additional fields by process phase">
+        <chromedash-feature-detail
+          .feature=${this.feature}
+          .process=${this.process}
+          .fieldDefs=${this.fieldDefs}
+          .dismissedCues=${this.dismissedCues}>
+        </chromedash-feature-detail>
+      </sl-details>
+    `;
+  }
+
   render() {
     return html`
       ${this.loading ?
@@ -254,6 +289,7 @@ export class ChromedashFeaturePage extends LitElement {
             ${this.renderFeatureContent()}
             ${this.renderFeatureStatus()}
           </div>
+          ${this.renderFeatureDetails()}
       `}
     `;
   }

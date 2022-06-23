@@ -22,9 +22,11 @@ from api import channels_api
 from api import comments_api
 from api import cues_api
 from api import features_api
+from api import fielddefs_api
 from api import login_api
 from api import logout_api
 from api import metricsdata
+from api import processes_api
 from api import stars_api
 from api import token_refresh_api
 from framework import basehandlers
@@ -94,6 +96,10 @@ api_routes = [
      comments_api.CommentsAPI),
     (API_BASE + '/features/<int:feature_id>/approvals/<int:field_id>/comments',
      comments_api.CommentsAPI),
+
+    (API_BASE + '/fielddefs', fielddefs_api.FieldDefsAPI),
+
+    (API_BASE + '/processes/<int:feature_id>', processes_api.ProcessesAPI),
 
     (API_BASE + '/login', login_api.LoginAPI),
     (API_BASE + '/logout', logout_api.LogoutAPI),

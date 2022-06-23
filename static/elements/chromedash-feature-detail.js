@@ -11,18 +11,18 @@ class ChromedashFeatureDetail extends LitElement {
   static get properties() {
     return {
       feature: {type: Object},
-      process: {type: Array},
+      process: {type: Object},
       fieldDefs: {type: Object},
-      dismissedCues: {type: Object},
+      dismissedCues: {type: Array},
     };
   }
 
   constructor() {
     super();
     this.feature = {};
-    this.process = [];
-    this.fieldDefs = [];
-    this.dismissedCues = {};
+    this.process = {};
+    this.fieldDefs = {};
+    this.dismissedCues = [];
   }
 
   static get styles() {
@@ -233,11 +233,11 @@ class ChromedashFeatureDetail extends LitElement {
 
   render() {
     return html`
-       ${this.renderStage('Metadata')}
-       ${this.process.stages.map(stage => html`
-            ${this.renderStage(stage)}
-       `)}
-       ${this.renderStage('Misc')}
+      ${this.renderStage('Metadata')}
+      ${this.process.stages.map(stage => html`
+          ${this.renderStage(stage)}
+      `)}
+      ${this.renderStage('Misc')}
     `;
   }
 }

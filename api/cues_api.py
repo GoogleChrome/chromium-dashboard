@@ -42,3 +42,8 @@ class CuesAPI(basehandlers.APIHandler):
     models.UserPref.dismiss_cue(cue)
     # Callers don't use the JSON response for this API call.
     return {'message': 'Done'}
+
+  def do_get(self):
+    """Return a list of the dismissed cue cards"""
+    user_pref = models.UserPref.get_signed_in_user_pref()
+    return user_pref.dismissed_cues

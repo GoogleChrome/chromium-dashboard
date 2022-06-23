@@ -145,6 +145,10 @@ class ChromeStatusClient {
 
   // Cues API
 
+  getDismissedCues() {
+    return this.doGet(`/currentuser/cues`);
+  }
+
   dismissCue(cue) {
     return this.doPost('/currentuser/cues', {cue: cue})
       .then((res) => res);
@@ -237,6 +241,16 @@ class ChromeStatusClient {
 
   searchFeatures(userQuery) {
     return this.doGet(`/features?q=${userQuery}`);
+  }
+
+  // Fielddefs API
+  getFieldDefs() {
+    return this.doGet(`/fielddefs`);
+  }
+
+  // Processes API
+  getProcess(featureId) {
+    return this.doGet(`/processes/${featureId}`);
   }
 
   // Channels API

@@ -78,20 +78,9 @@
 
 {% block content %}
   <!-- TODO(kevinshen56714): get feature_id from SPA router -->
-  <chromedash-feature-page 
+  <chromedash-feature-page
       featureId='{{ feature_id }}'>
   </chromedash-feature-page>
-
-  <sl-details
-    id="details"
-    summary="Additional fields by process phase">
-    <chromedash-feature-detail
-      feature='{{ feature_json }}'
-      process='{{ process_json }}'
-      fielddefs='{{ field_defs_json }}'
-      dismissedcues='{{ user.dismissed_cues|default:"[]" }}'>
-    </chromedash-feature-detail>
-  </sl-details>
 
   {% if user and user.can_approve %}
     <chromedash-approvals-dialog
