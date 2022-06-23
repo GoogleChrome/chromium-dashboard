@@ -8,22 +8,23 @@ table {
   }
 
   th {
-    max-width: 200px;
-    padding: 12px 10px 10px 0;
+    padding: 12px 10px 5px 0;
     vertical-align: top;
   }
 
   td {
-    padding: 10px;
+    max-width: 50%;
+    width: 50%;
+    padding: 6px 10px;
     vertical-align: top;
   }
+
   .choices label {
     font-weight: bold;
   }
   .choices div {
     margin-top: 1em;
   }
-
   .choices p {
     margin: .5em 1.5em 1em;
   }
@@ -35,6 +36,7 @@ table {
     max-width: 40em;
     margin-top: 2px;
   }
+
   input[type="text"], input[type="url"], input[type="email"], textarea {
     width: 100%;
     font: var(--form-element-font);
@@ -110,7 +112,7 @@ form section.flat_form + h3, .final_buttons {
 }
 
 .stage_form th, .flat_form th, .final_buttons th {
-  width: 200px;
+  // width: 200px;
 }
 
 #metadata-readonly div + div {

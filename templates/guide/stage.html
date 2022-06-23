@@ -32,24 +32,29 @@
       {{ feature_form }}
 
       <tr>
-        <th><label>Process stage:</label></th>
-        <td>
+        <th colspan="2"><b>Process stage:</b></th>
+      </tr>
+      <tr>
           {% if already_on_this_stage %}
+          <td colspan="2">
             This feature is already in stage <b>{{ stage_name }}</b>.
+          </td>
           {% else %}
+          <td>
             <input type="checkbox" name="set_stage"
                    id="set_stage">
             <label for="set_stage">
               Set to: <b>{{ stage_name }}</b>
-              <br>
+            </label>
+          </td>
+          <td>
               <span class="helptext">
                 Check this box to move this feature to this
                 stage in the process. Leave it unchecked if you are adding
                 draft information or revising a previous stage.
               </span>
-            </label>
+          </td> 
           {% endif %}
-        </td>
       </tr>
     </table>
   </section>
@@ -61,12 +66,16 @@
       <table>
         {% if impl_status_name %}
           <tr>
-            <th>Implementation status:</th>
-            <td>
+            <th colspan="2">Implementation status:</th>
+          </tr>
+          <tr>
               {% if already_on_this_impl_status %}
+              <td colspan="2">
                 This feature already has implementation status:
                 <b>{{ impl_status_name }}</b>.
+              </td>
               {% else %}
+              <td>
                 <input type="hidden" name="impl_status_offered"
                        value="{{impl_status_offered}}">
                 <input type="checkbox" name="set_impl_status"
@@ -74,14 +83,17 @@
                 <!-- TODO(jrobbins): When checked, make some milestone fields required. -->
                 <label for="set_impl_status">
                   Set implementation status to: <b>{{ impl_status_name }}</b>
-                  <br>
-                  <span class="helptext">
-                    Check this box to update the implementation
-                    status of this feature in Chromium.
-                  </span>
                 </label>
+              </td>
+              <td>
+                <br>
+                <span class="helptext">
+                  Check this box to update the implementation
+                  status of this feature in Chromium.
+                </span>
+              </td>
               {% endif %}
-            </td>
+
           </tr>
         {% endif %}
 

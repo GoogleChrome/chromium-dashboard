@@ -96,7 +96,7 @@ SHIPPED_WEBVIEW_HELP_TXT = ('First milestone to ship with this status. '
                             'Applies to Enabled by default, Browser '
                             'Intervention, Deprecated, and Removed.')
 
-SUMMARY_PLACEHOLDER_TXT = (
+SUMMARY_HELP_TXT = (
   'NOTE: Text in the beta release post, the enterprise release notes, '
   'and other external sources will be based on this text.\n\n'
   'Begin with one line explaining what the feature does. Add one or two '
@@ -163,9 +163,10 @@ ALL_FIELDS = {
 
     'summary': forms.CharField(
         required=True,
-        widget=ChromedashTextarea(attrs={'placeholder': SUMMARY_PLACEHOLDER_TXT}),
+        widget=ChromedashTextarea(),
         help_text=
-        ('<a target="_blank" href="'
+        (SUMMARY_HELP_TXT +
+         '<br><a target="_blank" href="'
          'https://github.com/GoogleChrome/chromium-dashboard/wiki/'
          'EditingHelp#summary-example">Guidelines and example</a>.'
         )),
@@ -819,8 +820,10 @@ class ChromedashForm(forms.Form):
 
     def as_table(self):
         "Return this form rendered as HTML <tr>s -- excluding the <table></table>."
+        header = '<tr%(html_class_attr)s><th colspan="2"><b>%(label)s</b></th></tr>'
+        html = header + '<tr%(html_class_attr)s><td>%(errors)s%(field)s</td><td>%(help_text)s</td></tr>'
         return self._html_output(
-            normal_row='<tr%(html_class_attr)s><th>%(label)s</th><td>%(errors)s%(field)s%(help_text)s</td></tr>',
+            normal_row=html,
             error_row='<tr><td colspan="2">%s</td></tr>',
             row_ender='</td></tr>',
             help_text_html='<span class="helptext">%s</span>',
