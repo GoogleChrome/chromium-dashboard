@@ -26,6 +26,7 @@ from api import fielddefs_api
 from api import login_api
 from api import logout_api
 from api import metricsdata
+from api import permissions_api
 from api import processes_api
 from api import stars_api
 from api import token_refresh_api
@@ -103,6 +104,7 @@ api_routes = [
 
     (API_BASE + '/login', login_api.LoginAPI),
     (API_BASE + '/logout', logout_api.LogoutAPI),
+    (API_BASE + '/currentuser/permissions', permissions_api.PermissionsAPI),
     (API_BASE + '/currentuser/stars', stars_api.StarsAPI),
     (API_BASE + '/currentuser/cues', cues_api.CuesAPI),
     (API_BASE + '/currentuser/token', token_refresh_api.TokenRefreshAPI),

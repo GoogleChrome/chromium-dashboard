@@ -1,4 +1,5 @@
 import {LitElement, css, html, nothing} from 'lit';
+import {choose} from 'lit/directives/choose.js';
 import {autolink} from './utils.js';
 
 import {SHARED_STYLES} from '../sass/shared-css.js';
@@ -58,47 +59,164 @@ export class ChromedashFeaturePage extends LitElement {
 
   static get properties() {
     return {
+      user: {type: Object},
       featureId: {type: Number},
       feature: {type: Object},
       process: {type: Object},
       fieldDefs: {type: Object},
       dismissedCues: {type: Array},
+      contextLink: {type: String},
+      toastEl: {type: Element},
+      starred: {type: Boolean},
       loading: {attribute: false},
     };
   }
 
   constructor() {
     super();
+    this.user = {};
     this.featureId = 0;
     this.feature = {};
     this.process = {};
     this.fieldDefs = {};
     this.dismissedCues = [];
+    this.contextLink = '';
+    this.toastEl = document.querySelector('chromedash-toast');
+    this.starred = false;
     this.loading = true;
   }
 
   connectedCallback() {
     super.connectedCallback();
-    this.fetchFeatureData();
+    this.fetchData();
   }
 
-  fetchFeatureData() {
+  fetchData() {
     this.loading = true;
     Promise.all([
+      window.csClient.getPermissions(),
       window.csClient.getFeature(this.featureId),
       window.csClient.getProcess(this.featureId),
       window.csClient.getFieldDefs(),
       window.csClient.getDismissedCues(),
-    ]).then(([feature, process, fieldDefs, dismissedCues]) => {
+      window.csClient.getStars(),
+    ]).then(([permissionsRes, feature, process, fieldDefs, dismissedCues, subscribedFeatures]) => {
+      this.user = permissionsRes.user;
       this.feature = feature;
       this.process = process;
       this.fieldDefs = fieldDefs;
       this.dismissedCues = dismissedCues;
+
+      if (subscribedFeatures.includes(this.featureId)) {
+        this.starred = true;
+      }
       this.loading = false;
+
+      // TODO(kevinshen56714): Remove this once SPA index page is set up.
+      // Has to include this for now to remove the spinner at _base.html.
+      document.body.classList.remove('loading');
     }).catch(() => {
-      const toastEl = document.querySelector('chromedash-toast');
-      toastEl.showMessage('Some errors occurred. Please refresh the page or try again later.');
+      this.toastEl.showMessage('Some errors occurred. Please refresh the page or try again later.');
     });
+  }
+
+  handleStarClick(e) {
+    e.preventDefault();
+    window.csClient.setStar(this.featureId, !this.starred).then(() => {
+      this.starred = !this.starred;
+    });
+  }
+
+  handleShareClick(e) {
+    e.preventDefault();
+    if (navigator.share) {
+      const url = '/feature/' + this.featureId;
+      navigator.share({
+        title: this.feature.name,
+        text: this.feature.summary,
+        url: url,
+      }).then(() => {
+        ga('send', 'social',
+          {
+            'socialNetwork': 'web',
+            'socialAction': 'share',
+            'socialTarget': url,
+          });
+      });
+    }
+  }
+
+  handleCopyLinkClick(e) {
+    e.preventDefault();
+    const url = e.currentTarget.href;
+    navigator.clipboard.writeText(url).then(() => {
+      this.toastEl.showMessage('Link copied');
+    });
+  }
+
+  handleApprovalClick(e) {
+    e.preventDefault();
+    const dialog = this.shadowRoot.querySelector('chromedash-approvals-dialog');
+    dialog.openWithFeature(this.featureId);
+  }
+
+  renderSubHeader() {
+    return html`
+      <div id="subheader" style="display:block">
+        <div class="tooltips" style="float:right">
+          ${this.user ? html`
+            <span class="tooltip" title="Receive an email notification when there are updates">
+              <a href="#" data-tooltip id="star-when-signed-in" @click=${this.handleStarClick}>
+                <iron-icon icon=${this.starred ? 'chromestatus:star' : 'chromestatus:star-border'} class="pushicon"></iron-icon>
+              </a>
+            </span>
+          `: nothing}
+          <span class="tooltip" title="File a bug against this feature">
+            <a href=${this.feature.new_crbug_url} class="newbug" data-tooltip target="_blank" rel="noopener">
+              <iron-icon icon="chromestatus:bug-report"></iron-icon>
+            </a>
+          </span>
+          <span class="tooltip ${navigator.share ? '' : 'no-web-share'}" title="Share this feature">
+            <a href="#" data-tooltip id="share-feature" @click=${this.handleShareClick}>
+              <iron-icon icon="chromestatus:share"></iron-icon>
+            </a>
+          </span>
+          <span class="tooltip copy-to-clipboard" title="Copy link to clipboard">
+            <a href="/feature/${this.featureId}" data-tooltip id="copy-link" @click=${this.handleCopyLinkClick}>
+              <iron-icon icon="chromestatus:link"></iron-icon>
+            </a>
+          </span>
+          ${this.user && this.user.can_approve ? html`
+            <span class="tooltip" title="Review approvals">
+              <a href="#" id="approvals-icon" data-tooltip @click=${this.handleApprovalClick}>
+                <iron-icon icon="chromestatus:approval"></iron-icon>
+              </a>
+            </span>
+          `: nothing}
+          ${this.user && this.user.can_edit ? html`
+            <span class="tooltip" title="Edit this feature">
+              <a href="/guide/edit/${this.featureId}" class="editfeature" data-tooltip>
+                <iron-icon icon="chromestatus:create"></iron-icon>
+              </a>
+            </span>
+          `: nothing}
+        </div>
+        <h2 id="breadcrumbs">
+          <a href="${this.contextLink}">
+            <iron-icon icon="chromestatus:arrow-back"></iron-icon>
+          </a>
+          <a href="/feature/${this.featureId}">
+            Feature: ${this.feature.name}
+          </a>
+          ${choose(this.feature.browsers.chrome.status.text,
+            [
+              ['No longer pursuing', () => html`(No longer pursuing)`],
+              ['Deprecated', () => html`(deprecated)`],
+              ['Removed', () => html`(removed)`],
+            ])}
+        </h2>
+      </div>
+    `;
   }
 
   renderFeatureContent() {
@@ -267,17 +385,29 @@ export class ChromedashFeaturePage extends LitElement {
           .dismissedCues=${this.dismissedCues}>
         </chromedash-feature-detail>
       </sl-details>
+
+      ${this.user && this.user.can_approve ? html`
+        <chromedash-approvals-dialog
+          signedInUser="${this.user.email}">
+        </chromedash-approvals-dialog>
+      `: nothing}
     `;
   }
 
   render() {
+    // TODO: Created precomiled main, forms, and guide css files,
+    // and import them instead of inlining them here
     return html`
+      <link rel="stylesheet" href="/static/css/main.css">
+      <link rel="stylesheet" href="/static/css/forms.css">
+      <link rel="stylesheet" href="/static/css/guide.css">
       ${this.loading ?
         html`
           <div class="loading">
             <div id="spinner"><img src="/static/img/ring.svg"></div>
           </div>` :
         html`
+          ${this.renderSubHeader()}
           <div id="feature">
             ${this.renderFeatureContent()}
             ${this.renderFeatureStatus()}
