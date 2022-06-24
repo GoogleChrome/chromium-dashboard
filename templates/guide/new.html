@@ -33,7 +33,7 @@ table label input[type=radio]:focus {
 <section id="stage_form">
   <form name="overview_form" method="POST" action="{{ current_path }}">
     <input type="hidden" name="token" value="{{xsrf_token}}">
-    <table style="max-width: 60em">
+    <table style="max-width: 80em">
       <tr>
         <th></th>
         <td>
@@ -51,14 +51,13 @@ table label input[type=radio]:focus {
       </tr>
 
       <tr>
-        <td class="choices" style="padding-top:0">
+        <td colspan="2" class="choices" style="padding-top:0">
             <label for="id_feature_type_0">
               <input id="id_feature_type_0" name="feature_type" type="radio"
                      value="0" required>
               New feature incubation
             </label>
-        </td>
-        <td>
+
             <p>When building new features, we follow a
               process that emphasizes engagement with the WICG and other
               stakeholders early.</p>
@@ -66,28 +65,26 @@ table label input[type=radio]:focus {
       </tr>
 
       <tr>
-        <td>
+        <td colspan="2" class="choices">
             <label for="id_feature_type_1">
               <input id="id_feature_type_1" name="feature_type" type="radio"
                      value="1" required>
               Existing feature implementation
             </label>
-        </td>
-        <td>
+
             <p>If there is already an agreed specification, work may
               quickly start on implementation and origin trials.</p>
         </td>
       </tr>
 
       <tr>
-        <td>
+        <td colspan="2" class="choices">
             <label for="id_feature_type_2">
               <input id="id_feature_type_2" name="feature_type" type="radio"
                      value="2" required>
               Web developer facing change to existing code
             </label>
-        </td>
-        <td>
+
             <p>Sometimes a change to a shipped feature requires an additional
               feature entry.  This type of feature entry can be referenced
               from a PSA immediately.</p>
@@ -95,14 +92,13 @@ table label input[type=radio]:focus {
       </tr>
 
       <tr>
-        <td>
+        <td colspan="2" class="choices">
             <label for="id_feature_type_3">
               <input id="id_feature_type_3" name="feature_type" type="radio"
                      value="3" required>
               Feature deprecation
             </label>
-        </td>
-        <td>
+
             <p>Deprecate and remove an old feature.</p>
         </td>
       </tr>

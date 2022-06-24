@@ -13,10 +13,12 @@ table {
   }
 
   td {
-    max-width: 50%;
-    width: 50%;
     padding: 6px 10px;
     vertical-align: top;
+  }
+
+  td:first-of-type { 
+    width: 60% 
   }
 
   .choices label {
@@ -31,8 +33,7 @@ table {
 
   .helptext {
     display: block;
-    font-style: italic;
-    font-size: smaller;
+    font-size: small;
     max-width: 40em;
     margin-top: 2px;
   }

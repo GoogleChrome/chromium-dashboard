@@ -253,7 +253,7 @@ ALL_FIELDS = {
                    'feature implements?')),
 
     'unlisted': forms.BooleanField(
-      required=False, initial=False,
+      required=False, initial=False, label="Set to: unlisted",
       help_text=('Check this box for draft features that should not appear '
                  'in the feature list. Anyone with the link will be able to '
                  'view the feature on the detail page.')),
@@ -268,7 +268,7 @@ ALL_FIELDS = {
     'api_spec': forms.BooleanField(
         required=False, initial=False, label='API spec',
         help_text=('The spec document has details in a specification language '
-                   'such as Web IDL, or there is an exsting MDN page.')),
+                   'such as Web IDL, or there is an existing MDN page.')),
 
     'spec_mentors': MultiEmailField(
         required=False, label='Spec mentor',
