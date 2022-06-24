@@ -25,6 +25,9 @@ class ProcessesAPI(basehandlers.APIHandler):
   def do_get(self, feature_id):
     """Return the process of the feature."""
     f = models.Feature.get_by_id(feature_id)
+    if f is None:
+      self.abort(404, msg=f'Feature {feature_id} not found')
+
     feature_process = processes.ALL_PROCESSES.get(
       f.feature_type, processes.BLINK_LAUNCH_PROCESS)
 

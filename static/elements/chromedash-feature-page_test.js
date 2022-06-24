@@ -6,17 +6,35 @@ import '../js-src/cs-client';
 import sinon from 'sinon';
 
 describe('chromedash-feature-page', () => {
+  const processPromise = Promise.resolve({
+    name: 'fake process',
+    stages: [{name: 'fake stage name', outgoing_stage: 1}],
+  });
+  const fieldDefsPromise = Promise.resolve({
+    1: ['fake field one', 'fake field two', 'fake field three'],
+  });
+  const dismissedCuesPromise = Promise.resolve(['progress-checkmarks']);
+
   /* window.csClient and <chromedash-toast> are initialized at _base.html
    * which are not available here, so we initialize them before each test.
-   * We also stub out the getFeature API call here so that it returns test data. */
+   * We also stub out the API calls here so that it returns test data. */
   beforeEach(async () => {
     await fixture(html`<chromedash-toast></chromedash-toast>`);
     window.csClient = new ChromeStatusClient('fake_token', 1);
     sinon.stub(window.csClient, 'getFeature');
+    sinon.stub(window.csClient, 'getProcess');
+    sinon.stub(window.csClient, 'getFieldDefs');
+    sinon.stub(window.csClient, 'getDismissedCues');
+    window.csClient.getProcess.returns(processPromise);
+    window.csClient.getFieldDefs.returns(fieldDefsPromise);
+    window.csClient.getDismissedCues.returns(dismissedCuesPromise);
   });
 
   afterEach(() => {
     window.csClient.getFeature.restore();
+    window.csClient.getProcess.restore();
+    window.csClient.getFieldDefs.restore();
+    window.csClient.getDismissedCues.restore();
   });
 
   it('renders with no data', async () => {
@@ -30,7 +48,7 @@ describe('chromedash-feature-page', () => {
 
     // invalid feature requests would trigger the toast to show message
     const toastEl = document.querySelector('chromedash-toast');
-    const toastMsgSpan = toastEl.shadowRoot.querySelector('span');
+    const toastMsgSpan = toastEl.shadowRoot.querySelector('span#msg');
     assert.include(toastMsgSpan.innerHTML,
       'Some errors occurred. Please refresh the page or try again later.');
   });

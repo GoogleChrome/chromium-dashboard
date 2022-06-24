@@ -79,28 +79,21 @@ export class ChromedashFeaturePage extends LitElement {
 
   connectedCallback() {
     super.connectedCallback();
-    this.fetchFeature();
+    this.fetchFeatureData();
   }
 
-  fetchFeature() {
+  fetchFeatureData() {
     this.loading = true;
-    const p1 = window.csClient.getFeature(this.featureId).then(
-      (feature) => {
-        this.feature = feature;
-      });
-    const p2 = window.csClient.getProcess(this.featureId).then(
-      (process) => {
-        this.process = process;
-      });
-    const p3 = window.csClient.getFieldDefs().then(
-      (fieldDefs) => {
-        this.fieldDefs = fieldDefs;
-      });
-    const p4 = window.csClient.getDismissedCues().then(
-      (dismissedCues) => {
-        this.dismissedCues = dismissedCues;
-      });
-    Promise.all([p1, p2, p3, p4]).then(() => {
+    Promise.all([
+      window.csClient.getFeature(this.featureId),
+      window.csClient.getProcess(this.featureId),
+      window.csClient.getFieldDefs(),
+      window.csClient.getDismissedCues(),
+    ]).then(([feature, process, fieldDefs, dismissedCues]) => {
+      this.feature = feature;
+      this.process = process;
+      this.fieldDefs = fieldDefs;
+      this.dismissedCues = dismissedCues;
       this.loading = false;
     }).catch(() => {
       const toastEl = document.querySelector('chromedash-toast');

@@ -31,10 +31,20 @@ class CuesAPITest(testing_config.CustomTestCase):
         email='one@example.com',
         notify_as_starrer=False)
     self.user_pref_1.put()
+
+    self.user_pref_2 = models.UserPref(
+        email='two@example.com',
+        notify_as_starrer=False,
+        dismissed_cues=['progress-checkmarks'])
+    self.user_pref_2.put()
+
+    self.request_path = '/api/v0/currentuser/cues'
     self.handler = cues_api.CuesAPI()
 
   def tearDown(self):
     self.user_pref_1.key.delete()
+    self.user_pref_2.key.delete()
+    testing_config.sign_out()
 
   def test_post__valid(self):
     """User wants to dismiss a valid cue card ID."""
@@ -60,3 +70,17 @@ class CuesAPITest(testing_config.CustomTestCase):
     # The invalid string should not be added.
     revised_user_pref = models.UserPref.get_signed_in_user_pref()
     self.assertEqual([], revised_user_pref.dismissed_cues)
+
+  def test_get__anon(self):
+    """Anon should always have an empty list of dismissed cues."""
+    testing_config.sign_out()
+    with test_app.test_request_context(self.request_path):
+      actual_response = self.handler.do_get()
+    self.assertEqual([], actual_response)
+
+  def test_get__signed_in(self):
+    """Signed-in user has dismissed a cue."""
+    testing_config.sign_in('two@example.com', 123567890)
+    with test_app.test_request_context(self.request_path):
+      actual_response = self.handler.do_get()
+    self.assertEqual(['progress-checkmarks'], actual_response)
