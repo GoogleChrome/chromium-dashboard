@@ -266,7 +266,7 @@ ORDER BY yyyymmdd DESC, client`;
       <input id="datalistinput" type="search" list="features" placeholder="Select or search a property" @change="${this.updateSelectedBucketId}" />
       <datalist id="features">
         ${this.props.map((prop) => html`
-          <option value="${prop[1]}" dataset-debug-bucket-id="${prop[0]}" />
+          <option value="${prop[1]}" dataset-debug-bucket-id="${prop[0]}"></option>
         `)}
       </datalist>
       <label>Show all historical data: <input type="checkbox" ?checked="${this.showAllHistoricalData}" @change="${this.toggleShowAllHistoricalData}"></label>
