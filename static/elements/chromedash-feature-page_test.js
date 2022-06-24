@@ -17,7 +17,7 @@ describe('chromedash-feature-page', () => {
 
   /* window.csClient and <chromedash-toast> are initialized at _base.html
    * which are not available here, so we initialize them before each test.
-   * We also stub out the API calls here so that it returns test data. */
+   * We also stub out the API calls here so that they return test data. */
   beforeEach(async () => {
     await fixture(html`<chromedash-toast></chromedash-toast>`);
     window.csClient = new ChromeStatusClient('fake_token', 1);

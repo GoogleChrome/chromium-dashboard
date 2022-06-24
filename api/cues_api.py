@@ -49,6 +49,6 @@ class CuesAPI(basehandlers.APIHandler):
 
     dismissed_cues = []
     if user_pref:
-      return user_pref.dismissed_cues
+      dismissed_cues = user_pref.dismissed_cues
 
     return dismissed_cues
