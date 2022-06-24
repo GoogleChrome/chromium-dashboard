@@ -27,7 +27,7 @@ class PermissionsAPITest(testing_config.CustomTestCase):
 
   def setUp(self):    
     self.handler = permissions_api.PermissionsAPI()
-    self.request_path = f'/api/v0/currentuser/permissions'
+    self.request_path = '/api/v0/currentuser/permissions'
 
   def tearDown(self):
     testing_config.sign_out()

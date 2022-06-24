@@ -96,7 +96,7 @@ export class ChromedashFeaturePage extends LitElement {
     Promise.all([
       window.csClient.getPermissions(),
       window.csClient.getFeature(this.featureId),
-      window.csClient.getProcess(this.featureId),
+      window.csClient.getFeatureProcess(this.featureId),
       window.csClient.getFieldDefs(),
       window.csClient.getDismissedCues(),
       window.csClient.getStars(),
@@ -395,7 +395,7 @@ export class ChromedashFeaturePage extends LitElement {
   }
 
   render() {
-    // TODO: Created precomiled main, forms, and guide css files,
+    // TODO: Create precomiled main, forms, and guide css files,
     // and import them instead of inlining them here
     return html`
       <link rel="stylesheet" href="/static/css/main.css">

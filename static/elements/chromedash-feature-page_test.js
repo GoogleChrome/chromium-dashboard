@@ -33,12 +33,12 @@ describe('chromedash-feature-page', () => {
     window.csClient = new ChromeStatusClient('fake_token', 1);
     sinon.stub(window.csClient, 'getPermissions');
     sinon.stub(window.csClient, 'getFeature');
-    sinon.stub(window.csClient, 'getProcess');
+    sinon.stub(window.csClient, 'getFeatureProcess');
     sinon.stub(window.csClient, 'getFieldDefs');
     sinon.stub(window.csClient, 'getDismissedCues');
     sinon.stub(window.csClient, 'getStars');
     window.csClient.getPermissions.returns(permissionsPromise);
-    window.csClient.getProcess.returns(processPromise);
+    window.csClient.getFeatureProcess.returns(processPromise);
     window.csClient.getFieldDefs.returns(fieldDefsPromise);
     window.csClient.getDismissedCues.returns(dismissedCuesPromise);
     window.csClient.getStars.returns(starsPromise);
@@ -47,7 +47,7 @@ describe('chromedash-feature-page', () => {
   afterEach(() => {
     window.csClient.getPermissions.restore();
     window.csClient.getFeature.restore();
-    window.csClient.getProcess.restore();
+    window.csClient.getFeatureProcess.restore();
     window.csClient.getFieldDefs.restore();
     window.csClient.getDismissedCues.restore();
     window.csClient.getStars.restore();

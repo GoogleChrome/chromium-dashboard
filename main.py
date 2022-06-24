@@ -97,10 +97,9 @@ api_routes = [
      comments_api.CommentsAPI),
     (API_BASE + '/features/<int:feature_id>/approvals/<int:field_id>/comments',
      comments_api.CommentsAPI),
+    (API_BASE + '/features/<int:feature_id>/process', processes_api.ProcessesAPI),
 
     (API_BASE + '/fielddefs', fielddefs_api.FieldDefsAPI),
-
-    (API_BASE + '/processes/<int:feature_id>', processes_api.ProcessesAPI),
 
     (API_BASE + '/login', login_api.LoginAPI),
     (API_BASE + '/logout', logout_api.LogoutAPI),

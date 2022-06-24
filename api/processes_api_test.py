@@ -35,7 +35,7 @@ class ProcessesAPITest(testing_config.CustomTestCase):
     self.feature_id = self.feature_1.key.integer_id()
     
     self.handler = processes_api.ProcessesAPI()
-    self.request_path = f'/api/v0/processes/{self.feature_id}'
+    self.request_path = f'/api/v0/features/{self.feature_id}/process'
 
   def tearDown(self):
     self.feature_1.key.delete()

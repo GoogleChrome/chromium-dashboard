@@ -248,14 +248,14 @@ class ChromeStatusClient {
     return this.doGet(`/features?q=${userQuery}`);
   }
 
+  // Processes API
+  getFeatureProcess(featureId) {
+    return this.doGet(`/features/${featureId}/process`);
+  }
+
   // Fielddefs API
   getFieldDefs() {
     return this.doGet(`/fielddefs`);
-  }
-
-  // Processes API
-  getProcess(featureId) {
-    return this.doGet(`/processes/${featureId}`);
   }
 
   // Channels API
