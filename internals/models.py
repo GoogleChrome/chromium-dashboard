@@ -113,12 +113,12 @@ INTENT_STAGES = collections.OrderedDict([
   (INTENT_NONE, 'None'),
   (INTENT_INCUBATE, 'Start incubating'),
   (INTENT_IMPLEMENT, 'Start prototyping'),
-  (INTENT_EXPERIMENT, 'Dev trials'),
+  (INTENT_EXPERIMENT, 'In developer trial (Behind a flag)'),
   (INTENT_IMPLEMENT_SHIP, 'Evaluate readiness to ship'),
   (INTENT_EXTEND_TRIAL, 'Origin Trial'),
   (INTENT_SHIP, 'Prepare to ship'),
   (INTENT_REMOVED, 'Removed'),
-  (INTENT_SHIPPED, 'Shipped'),
+  (INTENT_SHIPPED, 'Shipped (Enabled by default)'),
   (INTENT_PARKED, 'Parked'),
 ])
 
@@ -147,7 +147,7 @@ IMPLEMENTATION_STATUS[NO_ACTIVE_DEV] = 'No active development'
 IMPLEMENTATION_STATUS[PROPOSED] = 'Proposed'
 IMPLEMENTATION_STATUS[IN_DEVELOPMENT] = 'In development'
 IMPLEMENTATION_STATUS[BEHIND_A_FLAG] = 'In developer trial (Behind a flag)'
-IMPLEMENTATION_STATUS[ENABLED_BY_DEFAULT] = 'Enabled by default'
+IMPLEMENTATION_STATUS[ENABLED_BY_DEFAULT] = 'Shipped (Enabled by default)'
 IMPLEMENTATION_STATUS[DEPRECATED] = 'Deprecated'
 IMPLEMENTATION_STATUS[REMOVED] = 'Removed'
 IMPLEMENTATION_STATUS[ORIGIN_TRIAL] = 'Origin trial'
