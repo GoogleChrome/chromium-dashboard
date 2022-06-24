@@ -8,6 +8,10 @@ automatic_scaling:
   min_idle_instances: 1
   max_pending_latency: 0.2s
 
+# Use a long HTTP cache expiration time for css and JS, but also
+# include the GAE version number as a query string parameter so that on
+# each deployment, users get new static files to match the new app version.
+default_expiration: "10d"
 
 handlers:
 # Static handlers ---------------------------------------------------------------

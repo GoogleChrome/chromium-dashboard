@@ -1,7 +1,7 @@
 {% extends "_base.html" %}
 
 {% block css %}
-<link rel="stylesheet" href="/static/css/forms.css">
+<link rel="stylesheet" href="/static/css/forms.css?v={{app_version}}">
 
 <!--
  The following style is a workaround to better support radio buttons
@@ -9,7 +9,7 @@
  We do depend on sl-focus-ring being defined.
 -->
 <style>
-table label input[type=radio]:focus { 
+table label input[type=radio]:focus {
   box-shadow: var(--sl-focus-ring);
 }
 </style>
@@ -101,6 +101,6 @@ table label input[type=radio]:focus {
 {% endblock %}
 
 {% block js %}
-<script src="/static/js/admin/process_overview_form.min.js"
+<script src="/static/js/admin/process_overview_form.min.js?v={{app_version}}"
         nonce="{{nonce}}"></script>
 {% endblock %}

@@ -10,8 +10,8 @@
 {% endblock %}
 
 {% block css %}
-    <link rel="stylesheet" href="/static/css/forms.css">
-    <link rel="stylesheet" href="/static/css/guide.css">
+    <link rel="stylesheet" href="/static/css/forms.css?v={{app_version}}">
+    <link rel="stylesheet" href="/static/css/guide.css?v={{app_version}}">
 {% endblock %}
 
 {% block rss %}
@@ -78,7 +78,7 @@
 
 {% block content %}
   <!-- TODO(kevinshen56714): get feature_id from SPA router -->
-  <chromedash-feature-page 
+  <chromedash-feature-page
       featureId='{{ feature_id }}'>
   </chromedash-feature-page>
 

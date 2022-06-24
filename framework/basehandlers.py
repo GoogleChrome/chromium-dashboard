@@ -296,6 +296,8 @@ class FlaskHandler(BaseHandler):
   def get_common_data(self, path=None):
     """Return template data used on all pages, e.g., sign-in info."""
     current_path = path or flask.request.full_path
+    # Used to make browser load new JS and CSS for each GAE version.
+    app_version = os.environ.get('GAE_VERSION', 'Undeployed')
     common_data = {
       'prod': settings.PROD,
       'APP_TITLE': settings.APP_TITLE,
@@ -304,6 +306,7 @@ class FlaskHandler(BaseHandler):
       'TEMPLATE_CACHE_TIME': settings.TEMPLATE_CACHE_TIME,
       'banner_message': settings.BANNER_MESSAGE,
       'banner_time': utils.get_banner_time(settings.BANNER_TIME),
+      'app_version': app_version,
     }
 
     user = self.get_current_user()
