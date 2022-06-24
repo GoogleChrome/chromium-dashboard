@@ -86,7 +86,7 @@ export class ChromedashFeaturePage extends LitElement {
     this.loading = true;
     Promise.all([
       window.csClient.getFeature(this.featureId),
-      window.csClient.getProcess(this.featureId),
+      window.csClient.getFeatureProcess(this.featureId),
       window.csClient.getFieldDefs(),
       window.csClient.getDismissedCues(),
     ]).then(([feature, process, fieldDefs, dismissedCues]) => {

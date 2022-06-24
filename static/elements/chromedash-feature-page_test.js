@@ -22,17 +22,17 @@ describe('chromedash-feature-page', () => {
     await fixture(html`<chromedash-toast></chromedash-toast>`);
     window.csClient = new ChromeStatusClient('fake_token', 1);
     sinon.stub(window.csClient, 'getFeature');
-    sinon.stub(window.csClient, 'getProcess');
+    sinon.stub(window.csClient, 'getFeatureProcess');
     sinon.stub(window.csClient, 'getFieldDefs');
     sinon.stub(window.csClient, 'getDismissedCues');
-    window.csClient.getProcess.returns(processPromise);
+    window.csClient.getFeatureProcess.returns(processPromise);
     window.csClient.getFieldDefs.returns(fieldDefsPromise);
     window.csClient.getDismissedCues.returns(dismissedCuesPromise);
   });
 
   afterEach(() => {
     window.csClient.getFeature.restore();
-    window.csClient.getProcess.restore();
+    window.csClient.getFeatureProcess.restore();
     window.csClient.getFieldDefs.restore();
     window.csClient.getDismissedCues.restore();
   });

@@ -84,3 +84,4 @@ class CuesAPITest(testing_config.CustomTestCase):
     with test_app.test_request_context(self.request_path):
       actual_response = self.handler.do_get()
     self.assertEqual(['progress-checkmarks'], actual_response)
+    
