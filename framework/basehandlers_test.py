@@ -492,6 +492,7 @@ class FlaskHandlerTests(testing_config.CustomTestCase):
 
     self.assertIn('prod', actual)
     self.assertIsNone(actual['user'])
+    self.assertEqual(actual['app_version'], 'Undeployed')
 
   def test_get_common_data__signed_in(self):
     """When user is signed in, offer sign out link."""
