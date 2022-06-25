@@ -9,99 +9,14 @@
   {% endif %}
 {% endblock %}
 
-{% block css %}
-    <link rel="stylesheet" href="/static/css/forms.css?v={{app_version}}">
-    <link rel="stylesheet" href="/static/css/guide.css?v={{app_version}}">
-{% endblock %}
-
 {% block rss %}
   <link rel="alternate" type="application/rss+xml" href="https://chromestatus.com/features.xml" title="All features" />
 {% endblock %}
 
-{% block subheader %}
-<div id="subheader" style="display:block">
-  <div class="tooltips" style="float:right">
-  {% if user %}
-    <span class="tooltip" title="Receive an email notification when there are updates">
-      <a href="#" data-tooltip id="star-when-signed-in">
-        <iron-icon icon="chromestatus:star-border"
-                    class="pushicon"></iron-icon>
-      </a>
-    </span>
-  {% endif %}
-  <span class="tooltip" title="File a bug against this feature">
-    <a href="{{ new_crbug_url }}" class="newbug" data-tooltip target="_blank" rel="noopener">
-      <iron-icon icon="chromestatus:bug-report"></iron-icon>
-    </a>
-  </span>
-  <span class="tooltip no-web-share" title="Share this feature">
-    <a href="#" data-tooltip id="share-feature">
-      <iron-icon icon="chromestatus:share"></iron-icon>
-    </a>
-  </span>
-  <span class="tooltip copy-to-clipboard" title="Copy link to clipboard">
-    <a href="/feature/{{ feature.id }}" data-tooltip id="copy-link">
-      <iron-icon icon="chromestatus:link"></iron-icon>
-    </a>
-  </span>
-  {% if user.can_approve %}
-    <span class="tooltip" title="Review approvals">
-      <a href="#" id="approvals-icon" data-tooltip>
-        <iron-icon icon="chromestatus:approval"></iron-icon>
-      </a>
-    </span>
-  {% endif %}
-  {% if user.can_edit %}
-    <span class="tooltip" title="Edit this feature">
-      <a href="/guide/edit/{{ feature.id }}" class="editfeature" data-tooltip>
-        <iron-icon icon="chromestatus:create"></iron-icon>
-      </a>
-    </span>
-  {% endif %}
-  </div>
-
-  <h2 id="breadcrumbs">
-    <a href="{{ context_link }}">
-      <iron-icon icon="chromestatus:arrow-back"></iron-icon>
-    </a>
-    <a href="/feature/{{ feature.id }}">
-      Feature: {{ feature.name }}
-    </a>
-        {% if feature.browsers.chrome.status.text == "No longer pursuing" %} (No longer pursuing){% endif %}
-        {% if feature.browsers.chrome.status.text == "Deprecated" %} (deprecated){% endif %}
-        {% if feature.browsers.chrome.status.text == "Removed" %} (removed){% endif %}
-  </h2>
-
-</div>
-{% endblock %}
-
-
 {% block content %}
-  <!-- TODO(kevinshen56714): get feature_id from SPA router -->
+  {# TODO(kevinshen56714): get feature_id and context_link from SPA router #}
   <chromedash-feature-page
-      featureId='{{ feature_id }}'>
+      featureId='{{ feature_id }}'
+      contextLink='{{ context_link }}'>
   </chromedash-feature-page>
-
-  {% if user and user.can_approve %}
-    <chromedash-approvals-dialog
-      signedInUser="{{user.email}}">
-    </chromedash-approvals-dialog>
-  {% endif %}
-
-{% endblock %}
-
-{% block js %}
-  <script nonce="{{nonce}}">
-    (function() {
-      'use strict';
-
-      // Variables used in feature-page.js
-      const FEATURE_ID = '{{ feature.id }}';
-      const FEATURE_NAME = '{{ feature.name|escapejs }}';
-      const FEATUER_SUMMARY = '{{ feature.summary|escapejs }}';
-      const SHOW_TOAST = {% if was_updated %}true{% else %}false{% endif %};
-
-      {% inline_file "/static/js/feature-page.min.js" %}
-    })();
-  </script>
 {% endblock %}

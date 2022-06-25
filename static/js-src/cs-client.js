@@ -155,6 +155,11 @@ class ChromeStatusClient {
     // TODO: catch((error) => { display message }
   }
 
+  // Permissions API
+  getPermissions() {
+    return this.doGet('/currentuser/permissions');
+  }
+
   // Star API
 
   getStars() {

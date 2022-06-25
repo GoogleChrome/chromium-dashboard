@@ -107,37 +107,5 @@ class FeatureDetailTemplateTest(TestWithFeature):
     """We can render the template."""
     template_text = self.handler.render(
         self.template_data, self.full_template_path)
-    self.assertIn('feature one', template_text)
-    self.assertIn('detailed sum', template_text)
-
-  def test_html_rendering(self):
-    """We can render the template with valid html."""
-    template_text = self.handler.render(
-        self.template_data, self.full_template_path)
-    parser = html5lib.HTMLParser(strict=True)
-    document = parser.parse(template_text)
-
-  def test_links(self):
-    """We can generate clickable links."""
-    self.template_data['new_crbug_url'] = 'fake crbug link'
-    resources = self.template_data['feature']['resources']
-    resources['samples'] = ['fake sample link one',
-                            'fake sample link two']
-    resources['docs'] = ['fake doc link one',
-                         'fake doc link two']
-    self.template_data['feature']['standards']['spec'] = 'fake spec link'
-    self.template_data['feature']['tags'] = ['tag_one']
-
-    template_text = self.handler.render(
-        self.template_data, self.full_template_path)
-
-    self.assertIn('href="fake crbug link"', template_text)
-    self.assertIn('href="/features"', template_text)
-    # TODO(kevinshen56714): ultimately remove all the tests here and convert
-    # to js unit tests
-    # self.assertIn('href="fake sample link one"', template_text)
-    # self.assertIn('href="fake sample link two"', template_text)
-    # self.assertIn('href="fake doc link one"', template_text)
-    # self.assertIn('href="fake doc link two"', template_text)
-    # self.assertIn('href="fake spec link"', template_text)
-    # self.assertIn('href="/features#tags:tag_one"', template_text)
+    self.assertIn('feature one', template_text) # still exists at the title section
+    self.assertIn('detailed sum', template_text) # still exists at the meta section

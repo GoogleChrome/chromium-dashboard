@@ -182,7 +182,7 @@ class SharedInvalidate(ndb.Model):
 
   @classmethod
   def check_for_distributed_invalidation(cls):
-    """Check if any appengine instance has invlidated the cache."""
+    """Check if any appengine instance has invalidated the cache."""
     singleton = None
     entities = cls.query(ancestor=cls.PARENT_KEY).fetch(1)
     if entities:

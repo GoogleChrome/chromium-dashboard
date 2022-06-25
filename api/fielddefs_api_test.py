@@ -33,12 +33,12 @@ class FieldDefsAPITest(testing_config.CustomTestCase):
     """We can get field definitions as an anonymous."""
     testing_config.sign_out()
     with test_app.test_request_context(self.request_path):
-      actual_response = self.handler.do_get()
-    self.assertEqual(guideforms.DISPLAY_FIELDS_IN_STAGES, actual_response)
+      actual = self.handler.do_get()
+    self.assertEqual(guideforms.DISPLAY_FIELDS_IN_STAGES, actual)
 
   def test_get__signed_in(self):
     """We can get field definitions as a signed-in user."""
     testing_config.sign_in('one@example.com', 123567890)
     with test_app.test_request_context(self.request_path):
-      actual_response = self.handler.do_get()
-    self.assertEqual(guideforms.DISPLAY_FIELDS_IN_STAGES, actual_response)
+      actual = self.handler.do_get()
+    self.assertEqual(guideforms.DISPLAY_FIELDS_IN_STAGES, actual)
