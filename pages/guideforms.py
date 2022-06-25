@@ -253,7 +253,9 @@ ALL_FIELDS = {
                    'feature implements?')),
 
     'unlisted': forms.BooleanField(
-      required=False, initial=False, label="Set to: unlisted",
+      label="Unlisted",
+      widget=forms.CheckboxInput(attrs={'label': "Unlisted"}),
+      required=False, initial=False,
       help_text=('Check this box for draft features that should not appear '
                  'in the feature list. Anyone with the link will be able to '
                  'view the feature on the detail page.')),
@@ -266,7 +268,9 @@ ALL_FIELDS = {
                    'spec link when available.')),
 
     'api_spec': forms.BooleanField(
-        required=False, initial=False, label='API spec',
+        label='API spec',
+        widget=forms.CheckboxInput(attrs={'label': "API spec"}),
+        required=False, initial=False,
         help_text=('The spec document has details in a specification language '
                    'such as Web IDL, or there is an existing MDN page.')),
 
@@ -623,7 +627,9 @@ ALL_FIELDS = {
          'DevTools support checklist</a> for guidance.')),
 
     'all_platforms': forms.BooleanField(
-        required=False, initial=False, label='Supported on all platforms?',
+        label='Supported on all platforms?',
+        widget=forms.CheckboxInput(attrs={'label': "Supported on all platforms"}),
+        required=False, initial=False, 
         help_text=
         ('Will this feature be supported on all six Blink platforms '
          '(Windows, Mac, Linux, Chrome OS, Android, and Android WebView)?')),
@@ -637,7 +643,9 @@ ALL_FIELDS = {
                 'supported on all platforms.')),
 
     'wpt': forms.BooleanField(
-        required=False, initial=False, label='Web Platform Tests',
+        label='Web Platform Tests',
+        widget=forms.CheckboxInput(attrs={'label': "Web Platform Tests"}),
+        required=False, initial=False, 
         help_text='Is this feature fully tested in Web Platform Tests?'),
 
     'wpt_descr': forms.CharField(
@@ -740,6 +748,8 @@ ALL_FIELDS = {
         help_text=SHIPPED_WEBVIEW_HELP_TXT),
 
     'requires_embedder_support': forms.BooleanField(
+      label='Requires Embedder Support',
+      widget=forms.CheckboxInput(attrs={'label': "Requires Embedder Support"}),
       required=False, initial=False,
       help_text=(
           'Will this feature require support in //chrome?  '
@@ -791,7 +801,9 @@ ALL_FIELDS = {
         help_text='Name of the flag that enables this feature.'),
 
     'prefixed': forms.BooleanField(
-        required=False, initial=False, label='Prefixed?'),
+        label='Prefixed?',
+        widget=forms.CheckboxInput(attrs={'label': "Prefixed"}),
+        required=False, initial=False),
 
     'search_tags': forms.CharField(
         label='Search tags', required=False,

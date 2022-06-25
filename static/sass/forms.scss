@@ -112,10 +112,6 @@ form section.flat_form + h3, .final_buttons {
   box-shadow: rgba(0, 0, 0, 0.067) 1px 1px 4px;
 }
 
-.stage_form th, .flat_form th, .final_buttons th {
-  // width: 200px;
-}
-
 #metadata-readonly div + div {
   margin-top: 4px;
 }
@@ -133,7 +129,7 @@ chromedash-textarea[invalid]::part(textarea)
 }
 
 sl-select[size="small"] sl-menu-item::part(base) {
-  font-size: 12px;  /* == --sl-font-size-x-small */
+  font-size: var(--sl-font-size-x-small);
   padding: 0px;
 }
 
