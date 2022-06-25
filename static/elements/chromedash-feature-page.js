@@ -1,5 +1,4 @@
 import {LitElement, css, html, nothing} from 'lit';
-import {choose} from 'lit/directives/choose.js';
 import {autolink} from './utils.js';
 
 import {SHARED_STYLES} from '../sass/shared-css.js';
@@ -208,12 +207,7 @@ export class ChromedashFeaturePage extends LitElement {
           <a href="/feature/${this.featureId}">
             Feature: ${this.feature.name}
           </a>
-          ${choose(this.feature.browsers.chrome.status.text,
-            [
-              ['No longer pursuing', () => html`(No longer pursuing)`],
-              ['Deprecated', () => html`(deprecated)`],
-              ['Removed', () => html`(removed)`],
-            ])}
+          (${this.feature.browsers.chrome.status.text})
         </h2>
       </div>
     `;
@@ -397,6 +391,8 @@ export class ChromedashFeaturePage extends LitElement {
   render() {
     // TODO: Create precomiled main, forms, and guide css files,
     // and import them instead of inlining them here
+    // TODO: create another element - chromedash-feature-highlights
+    // for all the content of the <div id="feature"> part of the page
     return html`
       <link rel="stylesheet" href="/static/css/main.css">
       <link rel="stylesheet" href="/static/css/forms.css">

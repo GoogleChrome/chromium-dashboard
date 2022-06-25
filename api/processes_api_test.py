@@ -45,38 +45,38 @@ class ProcessesAPITest(testing_config.CustomTestCase):
   def test_get__default_feature_type(self):
     """We can get process for features with the default feature type (New feature incubation)."""
     with test_app.test_request_context(self.request_path):
-      actual_response = self.handler.do_get(self.feature_id)
-    expected_response = processes.process_to_dict(processes.BLINK_LAUNCH_PROCESS)
-    self.assertEqual(expected_response, actual_response)
+      actual = self.handler.do_get(self.feature_id)
+    expected = processes.process_to_dict(processes.BLINK_LAUNCH_PROCESS)
+    self.assertEqual(expected, actual)
 
   def test_get__feature_type_0(self):
     """We can get process for features with feature type 0 (New feature incubation)."""
     self.feature_1.feature_type = 0
     with test_app.test_request_context(self.request_path):
-      actual_response = self.handler.do_get(self.feature_id)
-    expected_response = processes.process_to_dict(processes.BLINK_LAUNCH_PROCESS)
-    self.assertEqual(expected_response, actual_response)
+      actual = self.handler.do_get(self.feature_id)
+    expected = processes.process_to_dict(processes.BLINK_LAUNCH_PROCESS)
+    self.assertEqual(expected, actual)
 
   def test_get__feature_type_1(self):
     """We can get process for features with feature type 1 (Existing feature implementation)."""
     self.feature_1.feature_type = 1
     with test_app.test_request_context(self.request_path):
-      actual_response = self.handler.do_get(self.feature_id)
-    expected_response = processes.process_to_dict(processes.BLINK_FAST_TRACK_PROCESS)
-    self.assertEqual(expected_response, actual_response)
+      actual = self.handler.do_get(self.feature_id)
+    expected = processes.process_to_dict(processes.BLINK_FAST_TRACK_PROCESS)
+    self.assertEqual(expected, actual)
 
   def test_get__feature_type_2(self):
     """We can get process for features with feature type 2 (Web developer facing change to existing code)."""
     self.feature_1.feature_type = 2
     with test_app.test_request_context(self.request_path):
-      actual_response = self.handler.do_get(self.feature_id)
-    expected_response = processes.process_to_dict(processes.PSA_ONLY_PROCESS)
-    self.assertEqual(expected_response, actual_response)
+      actual = self.handler.do_get(self.feature_id)
+    expected = processes.process_to_dict(processes.PSA_ONLY_PROCESS)
+    self.assertEqual(expected, actual)
 
   def test_get__feature_type_3(self):
     """We can get process for features with feature type 3 (Feature deprecation)."""
     self.feature_1.feature_type = 3
     with test_app.test_request_context(self.request_path):
-      actual_response = self.handler.do_get(self.feature_id)
-    expected_response = processes.process_to_dict(processes.DEPRECATION_PROCESS)
-    self.assertEqual(expected_response, actual_response)
+      actual = self.handler.do_get(self.feature_id)
+    expected = processes.process_to_dict(processes.DEPRECATION_PROCESS)
+    self.assertEqual(expected, actual)

@@ -75,12 +75,12 @@ class CuesAPITest(testing_config.CustomTestCase):
     """Anon should always have an empty list of dismissed cues."""
     testing_config.sign_out()
     with test_app.test_request_context(self.request_path):
-      actual_response = self.handler.do_get()
-    self.assertEqual([], actual_response)
+      actual = self.handler.do_get()
+    self.assertEqual([], actual)
 
   def test_get__signed_in(self):
     """Signed-in user has dismissed a cue."""
     testing_config.sign_in('two@example.com', 123567890)
     with test_app.test_request_context(self.request_path):
-      actual_response = self.handler.do_get()
-    self.assertEqual(['progress-checkmarks'], actual_response)
+      actual = self.handler.do_get()
+    self.assertEqual(['progress-checkmarks'], actual)

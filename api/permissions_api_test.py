@@ -38,15 +38,15 @@ class PermissionsAPITest(testing_config.CustomTestCase):
     """Returns no user object if not signed in"""
     testing_config.sign_out()
     with test_app.test_request_context(self.request_path):
-      actual_response = self.handler.do_get()
-    self.assertEqual({'user': None}, actual_response)
+      actual = self.handler.do_get()
+    self.assertEqual({'user': None}, actual)
 
   def test_get__non_googler(self):
     """Non-googlers have no permissions by default"""
     testing_config.sign_in('one@example.com', 12345)
     with test_app.test_request_context(self.request_path):
-      actual_response = self.handler.do_get()
-    expected_response = {
+      actual = self.handler.do_get()
+    expected = {
       'user': {
         'can_create_feature': False,
         'can_approve': False,
@@ -54,14 +54,14 @@ class PermissionsAPITest(testing_config.CustomTestCase):
         'is_admin': False,
         'email': 'one@example.com'
         }}
-    self.assertEqual(expected_response, actual_response)
+    self.assertEqual(expected, actual)
 
   def test_get__googler(self):
     """Googlers have default permissions to create feature and edit."""
     testing_config.sign_in('one@google.com', 67890)
     with test_app.test_request_context(self.request_path):
-      actual_response = self.handler.do_get()
-    expected_response = {
+      actual = self.handler.do_get()
+    expected = {
       'user': {
         'can_create_feature': True,
         'can_approve': False,
@@ -69,4 +69,4 @@ class PermissionsAPITest(testing_config.CustomTestCase):
         'is_admin': False,
         'email': 'one@google.com'
         }}
-    self.assertEqual(expected_response, actual_response)
+    self.assertEqual(expected, actual)
