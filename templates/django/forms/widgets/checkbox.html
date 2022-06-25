@@ -1,8 +1,8 @@
-<sl-checkbox
+<chromedash-checkbox
     name="{{ widget.name }}"
     size="small"
     {% if widget.value != None %} 
       value="{{ widget.value|stringformat:'s' }}"
     {% endif %}
     {% include "django/forms/widgets/attrs.html" %}>
-</sl-checkbox>
+</chromedash-checkbox>

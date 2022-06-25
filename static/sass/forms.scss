@@ -8,33 +8,36 @@ table {
   }
 
   th {
-    max-width: 200px;
-    padding: 12px 10px 10px 0;
+    padding: 12px 10px 5px 0;
     vertical-align: top;
   }
 
   td {
-    padding: 10px;
+    padding: 6px 10px;
     vertical-align: top;
   }
+
+  td:first-of-type { 
+    width: 60% 
+  }
+
   .choices label {
     font-weight: bold;
   }
   .choices div {
     margin-top: 1em;
   }
-
   .choices p {
     margin: .5em 1.5em 1em;
   }
 
   .helptext {
     display: block;
-    font-style: italic;
-    font-size: smaller;
+    font-size: small;
     max-width: 40em;
     margin-top: 2px;
   }
+
   input[type="text"], input[type="url"], input[type="email"], textarea {
     width: 100%;
     font: var(--form-element-font);
@@ -109,10 +112,6 @@ form section.flat_form + h3, .final_buttons {
   box-shadow: rgba(0, 0, 0, 0.067) 1px 1px 4px;
 }
 
-.stage_form th, .flat_form th, .final_buttons th {
-  width: 200px;
-}
-
 #metadata-readonly div + div {
   margin-top: 4px;
 }
@@ -130,7 +129,7 @@ chromedash-textarea[invalid]::part(textarea)
 }
 
 sl-select[size="small"] sl-menu-item::part(base) {
-  font-size: 12px;  /* == --sl-font-size-x-small */
+  font-size: var(--sl-font-size-x-small);
   padding: 0px;
 }
 

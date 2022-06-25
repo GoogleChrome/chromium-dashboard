@@ -96,7 +96,7 @@ SHIPPED_WEBVIEW_HELP_TXT = ('First milestone to ship with this status. '
                             'Applies to Enabled by default, Browser '
                             'Intervention, Deprecated, and Removed.')
 
-SUMMARY_PLACEHOLDER_TXT = (
+SUMMARY_HELP_TXT = (
   'NOTE: Text in the beta release post, the enterprise release notes, '
   'and other external sources will be based on this text.\n\n'
   'Begin with one line explaining what the feature does. Add one or two '
@@ -163,9 +163,10 @@ ALL_FIELDS = {
 
     'summary': forms.CharField(
         required=True,
-        widget=ChromedashTextarea(attrs={'placeholder': SUMMARY_PLACEHOLDER_TXT}),
+        widget=ChromedashTextarea(),
         help_text=
-        ('<a target="_blank" href="'
+        (SUMMARY_HELP_TXT +
+         '<br><a target="_blank" href="'
          'https://github.com/GoogleChrome/chromium-dashboard/wiki/'
          'EditingHelp#summary-example">Guidelines and example</a>.'
         )),
@@ -252,6 +253,8 @@ ALL_FIELDS = {
                    'feature implements?')),
 
     'unlisted': forms.BooleanField(
+      label="Unlisted",
+      widget=forms.CheckboxInput(attrs={'label': "Unlisted"}),
       required=False, initial=False,
       help_text=('Check this box for draft features that should not appear '
                  'in the feature list. Anyone with the link will be able to '
@@ -265,9 +268,11 @@ ALL_FIELDS = {
                    'spec link when available.')),
 
     'api_spec': forms.BooleanField(
-        required=False, initial=False, label='API spec',
+        label='API spec',
+        widget=forms.CheckboxInput(attrs={'label': "API spec"}),
+        required=False, initial=False,
         help_text=('The spec document has details in a specification language '
-                   'such as Web IDL, or there is an exsting MDN page.')),
+                   'such as Web IDL, or there is an existing MDN page.')),
 
     'spec_mentors': MultiEmailField(
         required=False, label='Spec mentor',
@@ -622,7 +627,9 @@ ALL_FIELDS = {
          'DevTools support checklist</a> for guidance.')),
 
     'all_platforms': forms.BooleanField(
-        required=False, initial=False, label='Supported on all platforms?',
+        label='Supported on all platforms?',
+        widget=forms.CheckboxInput(attrs={'label': "Supported on all platforms"}),
+        required=False, initial=False, 
         help_text=
         ('Will this feature be supported on all six Blink platforms '
          '(Windows, Mac, Linux, Chrome OS, Android, and Android WebView)?')),
@@ -636,7 +643,9 @@ ALL_FIELDS = {
                 'supported on all platforms.')),
 
     'wpt': forms.BooleanField(
-        required=False, initial=False, label='Web Platform Tests',
+        label='Web Platform Tests',
+        widget=forms.CheckboxInput(attrs={'label': "Web Platform Tests"}),
+        required=False, initial=False, 
         help_text='Is this feature fully tested in Web Platform Tests?'),
 
     'wpt_descr': forms.CharField(
@@ -739,6 +748,8 @@ ALL_FIELDS = {
         help_text=SHIPPED_WEBVIEW_HELP_TXT),
 
     'requires_embedder_support': forms.BooleanField(
+      label='Requires Embedder Support',
+      widget=forms.CheckboxInput(attrs={'label': "Requires Embedder Support"}),
       required=False, initial=False,
       help_text=(
           'Will this feature require support in //chrome?  '
@@ -790,7 +801,9 @@ ALL_FIELDS = {
         help_text='Name of the flag that enables this feature.'),
 
     'prefixed': forms.BooleanField(
-        required=False, initial=False, label='Prefixed?'),
+        label='Prefixed?',
+        widget=forms.CheckboxInput(attrs={'label': "Prefixed"}),
+        required=False, initial=False),
 
     'search_tags': forms.CharField(
         label='Search tags', required=False,
@@ -819,8 +832,10 @@ class ChromedashForm(forms.Form):
 
     def as_table(self):
         "Return this form rendered as HTML <tr>s -- excluding the <table></table>."
+        header = '<tr%(html_class_attr)s><th colspan="2"><b>%(label)s</b></th></tr>'
+        html = header + '<tr%(html_class_attr)s><td>%(errors)s%(field)s</td><td>%(help_text)s</td></tr>'
         return self._html_output(
-            normal_row='<tr%(html_class_attr)s><th>%(label)s</th><td>%(errors)s%(field)s%(help_text)s</td></tr>',
+            normal_row=html,
             error_row='<tr><td colspan="2">%s</td></tr>',
             row_ender='</td></tr>',
             help_text_html='<span class="helptext">%s</span>',
