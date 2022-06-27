@@ -3,14 +3,14 @@
 {% block css %}
 <link rel="stylesheet" href="/static/css/forms.css?v={{app_version}}">
 
-<!--
+{% comment %}
  The following style is a workaround to better support radio buttons
  without sl-radio which does not yet do validation.
  We do depend on sl-focus-ring being defined.
--->
+{% endcomment %}
 <style>
-table label input[type=radio]:focus {
-  box-shadow: var(--sl-focus-ring);
+table td label input[type=radio]:focus {
+  box-shadow: 0 0 0 var(--sl-focus-ring-width) var(--sl-input-focus-ring-color);
 }
 </style>
 {% endblock %}
