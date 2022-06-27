@@ -1135,40 +1135,6 @@ class Feature(DictModel):
 
     return allowed_features_by_type
 
-  @classmethod
-  def get_shipping_samples(self, limit=None, update_cache=False):
-    cache_key = '%s|%s|%s' % (Feature.DEFAULT_CACHE_KEY, 'samples', limit)
-
-    feature_list = ramcache.get(cache_key)
-
-    if feature_list is None or update_cache:
-      # Get all shipping features. Ordered by shipping milestone (latest first).
-      q = Feature.query()
-      q = q.filter(Feature.impl_status_chrome.IN([
-          ENABLED_BY_DEFAULT, ORIGIN_TRIAL, INTERVENTION]))
-      q = q.order(-Feature.impl_status_chrome)
-      q = q.order(-Feature.shipped_milestone)
-      q = q.order(Feature.name)
-      features = q.fetch(None)
-
-      # Get non-shipping features (sans removed or deprecated ones) and
-      # append to bottom of list.
-      q = Feature.query()
-      q = q.filter(Feature.impl_status_chrome < ENABLED_BY_DEFAULT)
-      q = q.order(-Feature.impl_status_chrome)
-      q = q.order(-Feature.shipped_milestone)
-      q = q.order(Feature.name)
-      others = q.fetch(None)
-      features.extend(others)
-
-      # Filter out features without sample links.
-      feature_list = [f.format_for_template() for f in features
-                      if len(f.sample_links) and not f.deleted]
-
-      ramcache.set(cache_key, feature_list)
-
-    return feature_list
-
   def crbug_number(self):
     if not self.bug_url:
       return
