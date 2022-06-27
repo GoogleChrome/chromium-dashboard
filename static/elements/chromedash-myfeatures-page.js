@@ -1,28 +1,9 @@
 import {LitElement, css, html, nothing} from 'lit';
-import './chromedash-approvals-dialog';
-import './chromedash-feature-table';
+
 import {SHARED_STYLES} from '../sass/shared-css.js';
 
 
-class ChromedashMyFeaturesPage extends LitElement {
-  static get properties() {
-    return {
-      signedInUser: {type: String},
-      canEdit: {type: Boolean},
-      canApprove: {type: Boolean},
-      loginUrl: {type: String},
-      starredFeatures: {type: Object}, // will contain a set of starred features
-    };
-  }
-
-  constructor() {
-    super();
-    this.signedInUser = ''; // email address
-    this.starredFeatures = new Set();
-    this.canEdit = false;
-    this.canApprove = false;
-  }
-
+export class ChromedashMyFeaturesPage extends LitElement {
   static get styles() {
     return [
       ...SHARED_STYLES,
@@ -31,6 +12,42 @@ class ChromedashMyFeaturesPage extends LitElement {
           padding: 0 var(--content-padding);
         }
       `];
+  }
+
+  static get properties() {
+    return {
+      user: {type: Object},
+      starredFeatures: {type: Set}, // will contain a set of starred features
+      toastEl: {type: Element},
+    };
+  }
+
+  constructor() {
+    super();
+    this.user = {};
+    this.starredFeatures = new Set();
+    this.toastEl = document.querySelector('chromedash-toast');
+  }
+
+  connectedCallback() {
+    super.connectedCallback();
+    this.fetchData();
+  }
+
+  fetchData() {
+    Promise.all([
+      window.csClient.getPermissions(),
+      window.csClient.getStars(),
+    ]).then(([user, starredFeatures]) => {
+      this.user = user;
+      this.starredFeatures = new Set(starredFeatures);
+
+      // TODO(kevinshen56714): Remove this once SPA index page is set up.
+      // Has to include this for now to remove the spinner at _base.html.
+      document.body.classList.remove('loading');
+    }).catch(() => {
+      this.toastEl.showMessage('Some errors occurred. Please refresh the page or try again later.');
+    });
   }
 
   // Handles the Star-Toggle event fired by any one of the child components
@@ -46,7 +63,7 @@ class ChromedashMyFeaturesPage extends LitElement {
         this.starredFeatures = newStarredFeatures;
       })
       .catch(() => {
-        alert('Unable to star the Feature. Please Try Again.');
+        this.toastEl.showMessage('Unable to star the Feature. Please Try Again.');
       });
   }
 
@@ -64,9 +81,9 @@ class ChromedashMyFeaturesPage extends LitElement {
 
         <chromedash-feature-table
           query="${query}"
-          ?signedIn=${Boolean(this.signedInUser)}
-          ?canEdit=${this.canEdit}
-          ?canApprove=${this.canApprove}
+          ?signedIn=${Boolean(this.user)}
+          ?canEdit=${this.user && this.user.can_edit}
+          ?canApprove=${this.user && this.user.can_approve}
           .starredFeatures=${this.starredFeatures}
           @star-toggle-event=${this.handleStarToggle}
           @open-approvals-event=${this.handleOpenApprovals}
@@ -96,12 +113,17 @@ class ChromedashMyFeaturesPage extends LitElement {
 
   render() {
     return html`
-      ${this.canApprove ? this.renderPendingAndRecentApprovals() : nothing}
+      <div id="subheader">
+        <h2>My features</h2>
+      </div>
+      ${this.user && this.user.can_approve ? this.renderPendingAndRecentApprovals() : nothing}
       ${this.renderIOwn()}
       ${this.renderIStarred()}
-      <chromedash-approvals-dialog
-        .signedInUser=${this.signedInUser}
-      ></chromedash-approvals-dialog>
+      ${this.user && this.user.can_approve ? html`
+        <chromedash-approvals-dialog
+          .signedInUser="${this.user.email}">
+        </chromedash-approvals-dialog>
+      `: nothing}
     `;
   }
 }

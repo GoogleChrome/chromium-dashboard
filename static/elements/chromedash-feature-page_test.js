@@ -7,13 +7,11 @@ import sinon from 'sinon';
 
 describe('chromedash-feature-page', () => {
   const permissionsPromise = Promise.resolve({
-    user: {
-      can_approve: false,
-      can_create_feature: true,
-      can_edit: true,
-      is_admin: false,
-      email: 'example@google.com',
-    },
+    can_approve: false,
+    can_create_feature: true,
+    can_edit: true,
+    is_admin: false,
+    email: 'example@google.com',
   });
   const processPromise = Promise.resolve({
     name: 'fake process',

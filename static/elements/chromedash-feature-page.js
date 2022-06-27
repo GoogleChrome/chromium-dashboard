@@ -99,8 +99,8 @@ export class ChromedashFeaturePage extends LitElement {
       window.csClient.getFieldDefs(),
       window.csClient.getDismissedCues(),
       window.csClient.getStars(),
-    ]).then(([permissionsRes, feature, process, fieldDefs, dismissedCues, starredFeatures]) => {
-      this.user = permissionsRes.user;
+    ]).then(([user, feature, process, fieldDefs, dismissedCues, starredFeatures]) => {
+      this.user = user;
       this.feature = feature;
       this.process = process;
       this.fieldDefs = fieldDefs;
@@ -382,7 +382,7 @@ export class ChromedashFeaturePage extends LitElement {
 
       ${this.user && this.user.can_approve ? html`
         <chromedash-approvals-dialog
-          signedInUser="${this.user.email}">
+          .signedInUser="${this.user.email}">
         </chromedash-approvals-dialog>
       `: nothing}
     `;

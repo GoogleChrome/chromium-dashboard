@@ -4,29 +4,6 @@
 {% block css %}
 {% endblock %}
 
-{% block subheader %}
-<div id="subheader">
-  <h2>My features</h2>
-</div>
-{% endblock %}
-
 {% block content %}
-
-<chromedash-myfeatures-page
-  {% if user %} signedinuser="{{user.email}}" {% endif %}
-  {% if user.can_edit %} canedit {% endif %}
-  {% if user.can_approve %} canapprove {% endif %}
-  >
-</chromedash-myfeatures-page>
-
-{% endblock %}
-
-{% block js %}
-<script nonce="{{nonce}}">
-    (function() {
-      'use strict';
-
-      {% inline_file "/static/js/myfeatures-page.min.js" %}
-    })();
-</script>
+<chromedash-myfeatures-page></chromedash-myfeatures-page>
 {% endblock %}
