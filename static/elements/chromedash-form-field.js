@@ -54,6 +54,9 @@ export class ChromedashFormField extends LitElement {
           margin-top: 2px;
         }
 
+        .errorlist {
+          color: red;
+        }
       `,
     ];
   }
@@ -70,8 +73,8 @@ export class ChromedashFormField extends LitElement {
       </tr>
       <tr class="${ifDefined(this.class)}">
         <td>
+          <slot name="error" class="errorlist"></slot>
           <slot name="field"></slot>
-          <slot name="error"></slot>
         </td>
         <td>
           <slot name="help" class="helptext"></slot>

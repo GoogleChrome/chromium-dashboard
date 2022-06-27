@@ -841,7 +841,7 @@ class ChromedashForm(forms.Form):
         html = '<chromedash-form-field %(html_class_attr)s>' + label + field + error + help + '%(label)s' + '</chromedash-form-field>'
         return self._html_output(
             normal_row=html,
-            error_row='<chromedash-form-field error_text="%s"></chromedash-form-field>',
+            error_row='<chromedash-form-field><span slot="error">%s</span></chromedash-form-field>',
             row_ender='</chromedash-form-field>',
             help_text_html='<span class="helptext">%s</span>',
             errors_on_separate_row=False,
