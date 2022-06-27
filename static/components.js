@@ -34,6 +34,8 @@ import './elements/chromedash-feature-filter';
 import './elements/chromedash-feature-page';
 import './elements/chromedash-feature-table';
 import './elements/chromedash-featurelist';
+import './elements/chromedash-form-field';
+import './elements/chromedash-form-table';
 import './elements/chromedash-new-feature-list';
 import './elements/chromedash-gantt';
 import './elements/chromedash-legend';
