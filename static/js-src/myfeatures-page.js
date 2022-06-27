@@ -1,4 +1,4 @@
-const myFeaturesEl = document.querySelector('chromedash-myfeatures');
+const myFeaturesEl = document.querySelector('chromedash-myfeatures-page');
 
 window.csClient.getStars().then((starredFeatureIds) => {
   myFeaturesEl.starredFeatures = new Set(starredFeatureIds);

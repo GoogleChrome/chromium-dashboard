@@ -4,7 +4,7 @@ import './chromedash-feature-table';
 import {SHARED_STYLES} from '../sass/shared-css.js';
 
 
-class ChromedashMyFeatures extends LitElement {
+class ChromedashMyFeaturesPage extends LitElement {
   static get properties() {
     return {
       signedInUser: {type: String},
@@ -106,4 +106,4 @@ class ChromedashMyFeatures extends LitElement {
   }
 }
 
-customElements.define('chromedash-myfeatures', ChromedashMyFeatures);
+customElements.define('chromedash-myfeatures-page', ChromedashMyFeaturesPage);

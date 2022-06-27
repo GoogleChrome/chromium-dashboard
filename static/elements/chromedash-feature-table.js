@@ -148,7 +148,7 @@ class ChromedashFeatureTable extends LitElement {
     const featureId = Number(iconEl.dataset.featureId);
     const newStarred = !this.starredFeatures.has(featureId);
 
-    // handled in chromedash-myfeatures.js
+    // handled in chromedash-myfeatures-page.js
     this._fireEvent('star-toggle-event', {
       featureId: featureId,
       doStar: newStarred,
@@ -170,7 +170,7 @@ class ChromedashFeatureTable extends LitElement {
   }
 
   openApprovalsDialog(featureId) {
-    // handled in chromedash-myfeatures.js
+    // handled in chromedash-myfeatures-page.js
     this._fireEvent('open-approvals-event', {
       featureId: featureId,
     });

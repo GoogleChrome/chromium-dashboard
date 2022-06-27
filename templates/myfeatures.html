@@ -12,12 +12,12 @@
 
 {% block content %}
 
-<chromedash-myfeatures
+<chromedash-myfeatures-page
   {% if user %} signedinuser="{{user.email}}" {% endif %}
   {% if user.can_edit %} canedit {% endif %}
   {% if user.can_approve %} canapprove {% endif %}
   >
-</chromedash-myfeatures>
+</chromedash-myfeatures-page>
 
 {% endblock %}
 

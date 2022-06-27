@@ -99,14 +99,14 @@ export class ChromedashFeaturePage extends LitElement {
       window.csClient.getFieldDefs(),
       window.csClient.getDismissedCues(),
       window.csClient.getStars(),
-    ]).then(([permissionsRes, feature, process, fieldDefs, dismissedCues, subscribedFeatures]) => {
+    ]).then(([permissionsRes, feature, process, fieldDefs, dismissedCues, starredFeatures]) => {
       this.user = permissionsRes.user;
       this.feature = feature;
       this.process = process;
       this.fieldDefs = fieldDefs;
       this.dismissedCues = dismissedCues;
 
-      if (subscribedFeatures.includes(this.featureId)) {
+      if (starredFeatures.includes(this.featureId)) {
         this.starred = true;
       }
       this.loading = false;
