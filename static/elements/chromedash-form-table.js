@@ -24,8 +24,8 @@ export class ChromedashFormTable extends LitElement {
 
   render() {
     return html`
-<table><tbody><slot></slot></tbody></table>
-`;
+      <slot style="display:contents"></slot>
+    `;
   }
 }
 
