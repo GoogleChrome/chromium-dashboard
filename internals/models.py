@@ -801,9 +801,7 @@ class Feature(DictModel):
       logging.info('Ignoring field name %r', field_name)
       return []
     query = Feature.query()
-    # Note: We cannot exclude deleted features at this point because
-    # that would require an index on two fields.  Deleted features are
-    # filtered out in get_by_ids().
+    # Note: We don't exclude deleted features, that's done by process_query.
 
     # TODO(jrobbins): Handle ":" operator as substrings for text fields.
     if (operator == '='):
@@ -822,6 +820,25 @@ class Feature(DictModel):
       raise ValueError('Unexpected query operator: %r' % operator)
 
     keys_promise = query.fetch_async(keys_only=True, limit=limit)
+    return keys_promise
+
+  @classmethod
+  def total_order_query_async(cls, sort_spec):
+    """Create a query promise for all Feature IDs sorted by sort_spec."""
+    # TODO(jrobbins): Support multi-column sort.
+    descending = False
+    if sort_spec.startswith('-'):
+      descending = True
+      sort_spec = sort_spec[1:]
+    field = QUERIABLE_FIELDS.get(sort_spec.lower())
+    if field is None:
+      logging.info('Ignoring sort field name %r', sort_spec)
+      return []
+    if descending:
+      field = -field
+    query = Feature.query().order(field)
+
+    keys_promise = query.fetch_async(keys_only=True)
     return keys_promise
 
   @classmethod
@@ -1379,6 +1396,7 @@ class Feature(DictModel):
 QUERIABLE_FIELDS = {
     'created.when': Feature.created,
     'updated.when': Feature.updated,
+    'deleted': Feature.deleted,
 
     # TODO(jrobbins): We cannot query user fields because Cloud NDB does not
     # seem to support it.  We should migrate these to string fields.

@@ -121,12 +121,13 @@ class FeaturesAPITestGet(testing_config.CustomTestCase):
   def test_get__all_listed(self):
     """Get all features that are listed."""
     with test_app.test_request_context(self.request_path):
-      actual_response = self.handler.do_get()
+      actual = self.handler.do_get()
 
     # Comparing only the total number of features and name of the feature
     # as certain fields like `updated` cannot be compared
-    self.assertEqual(1, len(actual_response))
-    self.assertEqual('feature one', actual_response[0]['name'])
+    self.assertEqual(1, len(actual['features']))
+    self.assertEqual(1, actual['total_count'])
+    self.assertEqual('feature one', actual['features'][0]['name'])
 
   def test_get__all_unlisted_no_perms(self):
     """JSON feed does not include unlisted features for users who can't edit."""
@@ -135,14 +136,16 @@ class FeaturesAPITestGet(testing_config.CustomTestCase):
 
     # No signed-in user
     with test_app.test_request_context(self.request_path):
-      actual_response = self.handler.do_get()
-    self.assertEqual(0, len(actual_response))
+      actual = self.handler.do_get()
+    self.assertEqual(0, len(actual['features']))
+    self.assertEqual(0, actual['total_count'])
 
     # Signed-in user with no permissions
     testing_config.sign_in('one@example.com', 123567890)
     with test_app.test_request_context(self.request_path):
-      actual_response = self.handler.do_get()
-    self.assertEqual(0, len(actual_response))
+      actual = self.handler.do_get()
+    self.assertEqual(0, len(actual['features']))
+    self.assertEqual(0, actual['total_count'])
 
   def test_get__all_unlisted_can_edit(self):
     """JSON feed includes unlisted features for users who may edit."""
@@ -152,23 +155,26 @@ class FeaturesAPITestGet(testing_config.CustomTestCase):
     # Signed-in user with permissions
     testing_config.sign_in('admin@example.com', 123567890)
     with test_app.test_request_context(self.request_path):
-      actual_response = self.handler.do_get()
-    self.assertEqual(1, len(actual_response))
-    self.assertEqual('feature one', actual_response[0]['name'])
+      actual = self.handler.do_get()
+    self.assertEqual(1, len(actual['features']))
+    self.assertEqual(1, actual['total_count'])
+    self.assertEqual('feature one', actual['features'][0]['name'])
 
   def test_get__in_milestone_listed(self):
     """Get all features in a specific milestone that are listed."""
     # Atleast one feature is present in milestone
     with test_app.test_request_context(self.request_path+'?milestone=1'):
-      actual_response = self.handler.do_get()
-    self.assertEqual(6, len(actual_response))
-    self.assertEqual(1, len(actual_response['Enabled by default']))
+      actual = self.handler.do_get()
+    self.assertEqual(6, len(actual['features_by_type']))
+    self.assertEqual(1, actual['total_count'])
+    self.assertEqual(1, len(actual['features_by_type']['Enabled by default']))
 
     # No Feature is present in milestone
     with test_app.test_request_context(self.request_path+'?milestone=2'):
-      actual_response = self.handler.do_get()
-    self.assertEqual(6, len(actual_response))
-    self.assertEqual(0, len(actual_response['Enabled by default']))
+      actual = self.handler.do_get()
+    self.assertEqual(6, len(actual['features_by_type']))
+    self.assertEqual(0, actual['total_count'])
+    self.assertEqual(0, len(actual['features_by_type']['Enabled by default']))
 
   def test_get__in_milestone_unlisted_no_perms(self):
     """JSON feed does not include unlisted features for users who can't edit."""
@@ -177,16 +183,18 @@ class FeaturesAPITestGet(testing_config.CustomTestCase):
 
     # No signed-in user
     with test_app.test_request_context(self.request_path+'?milestone=1'):
-      actual_response = self.handler.do_get()
-    self.assertEqual(6, len(actual_response))
-    self.assertEqual(0, len(actual_response['Enabled by default']))
+      actual = self.handler.do_get()
+    self.assertEqual(6, len(actual['features_by_type']))
+    self.assertEqual(0, actual['total_count'])
+    self.assertEqual(0, len(actual['features_by_type']['Enabled by default']))
 
     # Signed-in user with no permissions
     testing_config.sign_in('one@example.com', 123567890)
     with test_app.test_request_context(self.request_path+'?milestone=1'):
-      actual_response = self.handler.do_get()
-    self.assertEqual(6, len(actual_response))
-    self.assertEqual(0, len(actual_response['Enabled by default']))
+      actual = self.handler.do_get()
+    self.assertEqual(6, len(actual['features_by_type']))
+    self.assertEqual(0, actual['total_count'])
+    self.assertEqual(0, len(actual['features_by_type']['Enabled by default']))
 
   def test_get__in_milestone_unlisted_can_edit(self):
     """JSON feed includes unlisted features for users who may edit."""
@@ -198,15 +206,17 @@ class FeaturesAPITestGet(testing_config.CustomTestCase):
 
     # Feature is present in milestone
     with test_app.test_request_context(self.request_path+'?milestone=1'):
-      actual_response = self.handler.do_get()
-    self.assertEqual(6, len(actual_response))
-    self.assertEqual(1, len(actual_response['Enabled by default']))
+      actual = self.handler.do_get()
+    self.assertEqual(6, len(actual['features_by_type']))
+    self.assertEqual(1, actual['total_count'])
+    self.assertEqual(1, len(actual['features_by_type']['Enabled by default']))
 
     # Feature is not present in milestone
     with test_app.test_request_context(self.request_path+'?milestone=2'):
-      actual_response = self.handler.do_get()
-    self.assertEqual(6, len(actual_response))
-    self.assertEqual(0, len(actual_response['Enabled by default']))
+      actual = self.handler.do_get()
+    self.assertEqual(6, len(actual['features_by_type']))
+    self.assertEqual(0, actual['total_count'])
+    self.assertEqual(0, len(actual['features_by_type']['Enabled by default']))
 
   @mock.patch('flask.abort')
   def test_get__in_milestone_invalid_query(self, mock_abort):
@@ -215,15 +225,15 @@ class FeaturesAPITestGet(testing_config.CustomTestCase):
     # Feature is present in milestone
     with test_app.test_request_context(
         self.request_path+'?milestone=chromium'):
-      actual_response = self.handler.do_get()
+      actual = self.handler.do_get()
     mock_abort.assert_called_once_with(400, description='Invalid  Milestone')
 
   def test_get__specific_id__found(self):
     """JSON feed has just the feature requested."""
     request_path = self.request_path + '/' + str(self.feature_id)
     with test_app.test_request_context(request_path):
-      actual_response = self.handler.do_get(feature_id=self.feature_id)
-    self.assertEqual('feature one', actual_response['name'])
+      actual = self.handler.do_get(feature_id=self.feature_id)
+    self.assertEqual('feature one', actual['name'])
 
   def test_get__specific_id__not_found(self):
     """We give 404 if the feature requested feature was not found."""
