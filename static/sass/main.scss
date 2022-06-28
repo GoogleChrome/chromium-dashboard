@@ -334,6 +334,14 @@ footer {
       width: 100%;
     }
   }
+  
+  footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+  }
+  
   // Overrides styles set by app-header-layout so there's no visual
   // layout FOUC/jump as the drawer panel upgrades.
   app-header {
