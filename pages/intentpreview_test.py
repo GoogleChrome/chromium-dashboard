@@ -152,7 +152,7 @@ class IntentEmailPreviewHandlerTest(testing_config.CustomTestCase):
             self.feature_1, models.INTENT_REMOVED))
 
     self.assertEqual(
-        'Intent stage "Shipped"',
+        'Intent stage "Shipped (Enabled by default)"',
         self.handler.compute_subject_prefix(
             self.feature_1, models.INTENT_SHIPPED))
 

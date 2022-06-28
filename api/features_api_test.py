@@ -162,13 +162,13 @@ class FeaturesAPITestGet(testing_config.CustomTestCase):
     with test_app.test_request_context(self.request_path+'?milestone=1'):
       actual_response = self.handler.do_get()
     self.assertEqual(6, len(actual_response))
-    self.assertEqual(1, len(actual_response['Enabled by default']))
+    self.assertEqual(1, len(actual_response['Shipped (Enabled by default)']))
 
     # No Feature is present in milestone
     with test_app.test_request_context(self.request_path+'?milestone=2'):
       actual_response = self.handler.do_get()
     self.assertEqual(6, len(actual_response))
-    self.assertEqual(0, len(actual_response['Enabled by default']))
+    self.assertEqual(0, len(actual_response['Shipped (Enabled by default)']))
 
   def test_get__in_milestone_unlisted_no_perms(self):
     """JSON feed does not include unlisted features for users who can't edit."""
@@ -179,14 +179,14 @@ class FeaturesAPITestGet(testing_config.CustomTestCase):
     with test_app.test_request_context(self.request_path+'?milestone=1'):
       actual_response = self.handler.do_get()
     self.assertEqual(6, len(actual_response))
-    self.assertEqual(0, len(actual_response['Enabled by default']))
+    self.assertEqual(0, len(actual_response['Shipped (Enabled by default)']))
 
     # Signed-in user with no permissions
     testing_config.sign_in('one@example.com', 123567890)
     with test_app.test_request_context(self.request_path+'?milestone=1'):
       actual_response = self.handler.do_get()
     self.assertEqual(6, len(actual_response))
-    self.assertEqual(0, len(actual_response['Enabled by default']))
+    self.assertEqual(0, len(actual_response['Shipped (Enabled by default)']))
 
   def test_get__in_milestone_unlisted_can_edit(self):
     """JSON feed includes unlisted features for users who may edit."""
@@ -200,13 +200,13 @@ class FeaturesAPITestGet(testing_config.CustomTestCase):
     with test_app.test_request_context(self.request_path+'?milestone=1'):
       actual_response = self.handler.do_get()
     self.assertEqual(6, len(actual_response))
-    self.assertEqual(1, len(actual_response['Enabled by default']))
+    self.assertEqual(1, len(actual_response['Shipped (Enabled by default)']))
 
     # Feature is not present in milestone
     with test_app.test_request_context(self.request_path+'?milestone=2'):
       actual_response = self.handler.do_get()
     self.assertEqual(6, len(actual_response))
-    self.assertEqual(0, len(actual_response['Enabled by default']))
+    self.assertEqual(0, len(actual_response['Shipped (Enabled by default)']))
 
   @mock.patch('flask.abort')
   def test_get__in_milestone_invalid_query(self, mock_abort):

@@ -294,7 +294,8 @@ class FeatureTest(testing_config.CustomTestCase):
 
     actual = models.Feature.get_in_milestone(milestone=1)
     removed = [f['name'] for f in actual['Removed']]
-    enabled_by_default = [f['name'] for f in actual['Enabled by default']]
+    enabled_by_default = [
+        f['name'] for f in actual['Shipped (Enabled by default)']]
     self.assertEqual(
         ['feature b'],
         removed)
