@@ -328,18 +328,25 @@ footer {
   color: var(--warning-color);
 }
 
-@media only screen and (min-width: 701px) {
-  .main-toolbar {
-    .toolbar-content {
-      width: 100%;
-    }
-  }
-  
+// Enable sticky footer when the screen is wide and long enough
+@media only screen and (min-width: 601px) and (min-height: 601px) {
   footer {
     position: fixed;
     bottom: 0;
     left: 0;
     width: 100%;
+  }
+
+  #content-column {
+    margin-bottom: 54px + $content-padding * 2; // bottom bar + some.
+  }
+}
+
+@media only screen and (min-width: 701px) {
+  .main-toolbar {
+    .toolbar-content {
+      width: 100%;
+    }
   }
   
   // Overrides styles set by app-header-layout so there's no visual
