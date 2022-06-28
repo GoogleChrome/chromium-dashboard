@@ -1,6 +1,7 @@
-# This must be installed on your local venv or system, not in lib.
-# Via the command:
-# python -m pip install --no-deps -r requirements.dev.txt
+# This file is also processed when you run `npm run deps` on your workstation,
+# but these libraries will not be install when running on GAE.  These packages
+# are not needed on GAE because they are only for local development, or GAE
+# provides its own copy.
 
-grpcio==1.31.0
 coverage==5.5
+gunicorn==20.1.0
