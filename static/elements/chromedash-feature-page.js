@@ -1,5 +1,8 @@
 import {LitElement, css, html, nothing} from 'lit';
-import {autolink} from './utils.js';
+import './chromedash-approvals-dialog';
+import './chromedash-feature-detail';
+import './chromedash-gantt';
+import {autolink, showToastMessage} from './utils.js';
 
 import {SHARED_STYLES} from '../sass/shared-css.js';
 
@@ -65,7 +68,6 @@ export class ChromedashFeaturePage extends LitElement {
       fieldDefs: {type: Object},
       dismissedCues: {type: Array},
       contextLink: {type: String},
-      toastEl: {type: Element},
       starred: {type: Boolean},
       loading: {attribute: false},
     };
@@ -80,7 +82,6 @@ export class ChromedashFeaturePage extends LitElement {
     this.fieldDefs = {};
     this.dismissedCues = [];
     this.contextLink = '';
-    this.toastEl = document.querySelector('chromedash-toast');
     this.starred = false;
     this.loading = true;
   }
@@ -115,7 +116,7 @@ export class ChromedashFeaturePage extends LitElement {
       // Has to include this for now to remove the spinner at _base.html.
       document.body.classList.remove('loading');
     }).catch(() => {
-      this.toastEl.showMessage('Some errors occurred. Please refresh the page or try again later.');
+      showToastMessage('Some errors occurred. Please refresh the page or try again later.');
     });
   }
 
@@ -149,7 +150,7 @@ export class ChromedashFeaturePage extends LitElement {
     e.preventDefault();
     const url = e.currentTarget.href;
     navigator.clipboard.writeText(url).then(() => {
-      this.toastEl.showMessage('Link copied');
+      showToastMessage('Link copied');
     });
   }
 

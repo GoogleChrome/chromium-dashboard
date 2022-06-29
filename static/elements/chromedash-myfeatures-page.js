@@ -1,4 +1,7 @@
 import {LitElement, css, html, nothing} from 'lit';
+import './chromedash-approvals-dialog';
+import './chromedash-feature-table';
+import {showToastMessage} from './utils.js';
 
 import {SHARED_STYLES} from '../sass/shared-css.js';
 
@@ -18,7 +21,6 @@ export class ChromedashMyFeaturesPage extends LitElement {
     return {
       user: {type: Object},
       starredFeatures: {type: Set}, // will contain a set of starred features
-      toastEl: {type: Element},
     };
   }
 
@@ -26,7 +28,6 @@ export class ChromedashMyFeaturesPage extends LitElement {
     super();
     this.user = {};
     this.starredFeatures = new Set();
-    this.toastEl = document.querySelector('chromedash-toast');
   }
 
   connectedCallback() {
@@ -46,7 +47,7 @@ export class ChromedashMyFeaturesPage extends LitElement {
       // Has to include this for now to remove the spinner at _base.html.
       document.body.classList.remove('loading');
     }).catch(() => {
-      this.toastEl.showMessage('Some errors occurred. Please refresh the page or try again later.');
+      showToastMessage('Some errors occurred. Please refresh the page or try again later.');
     });
   }
 
@@ -63,7 +64,7 @@ export class ChromedashMyFeaturesPage extends LitElement {
         this.starredFeatures = newStarredFeatures;
       })
       .catch(() => {
-        this.toastEl.showMessage('Unable to star the Feature. Please Try Again.');
+        showToastMessage('Unable to star the Feature. Please Try Again.');
       });
   }
 
