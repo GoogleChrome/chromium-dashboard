@@ -1,7 +1,7 @@
 import {LitElement, css, html, nothing} from 'lit';
 import './chromedash-feature-detail';
 import './chromedash-gantt';
-import {autolink, showToastMessage} from './utils.js';
+import {autolink, showToastMessage, openApprovalsDialog} from './utils.js';
 
 import {SHARED_STYLES} from '../sass/shared-css.js';
 
@@ -155,8 +155,7 @@ export class ChromedashFeaturePage extends LitElement {
 
   handleApprovalClick(e) {
     e.preventDefault();
-    const dialog = this.shadowRoot.querySelector('chromedash-approvals-dialog');
-    dialog.openWithFeature(this.featureId);
+    openApprovalsDialog(this.featureId);
   }
 
   renderSubHeader() {

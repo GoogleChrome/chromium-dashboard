@@ -1,6 +1,6 @@
 import {LitElement, css, html, nothing} from 'lit';
 import './chromedash-feature-table';
-import {showToastMessage} from './utils.js';
+import {showToastMessage, openApprovalsDialog} from './utils.js';
 
 import {SHARED_STYLES} from '../sass/shared-css.js';
 
@@ -69,8 +69,7 @@ export class ChromedashMyFeaturesPage extends LitElement {
 
   handleOpenApprovals(e) {
     const featureId = e.detail.featureId;
-    const dialog = this.shadowRoot.querySelector('chromedash-approvals-dialog');
-    dialog.openWithFeature(featureId);
+    openApprovalsDialog(featureId);
   }
 
   renderBox(title, query, columns, opened=true) {
