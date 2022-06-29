@@ -157,7 +157,8 @@ class ChromeStatusClient {
 
   // Permissions API
   getPermissions() {
-    return this.doGet('/currentuser/permissions');
+    return this.doGet('/currentuser/permissions')
+      .then((res) => res.user);
   }
 
   // Star API

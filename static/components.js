@@ -39,7 +39,7 @@ import './elements/chromedash-gantt';
 import './elements/chromedash-legend';
 import './elements/chromedash-metadata';
 import './elements/chromedash-metrics';
-import './elements/chromedash-myfeatures';
+import './elements/chromedash-myfeatures-page';
 import './elements/chromedash-process-overview';
 import './elements/chromedash-textarea';
 import './elements/chromedash-timeline';
