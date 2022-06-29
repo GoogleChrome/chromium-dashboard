@@ -1,5 +1,4 @@
 import {LitElement, css, html, nothing} from 'lit';
-import './chromedash-approvals-dialog';
 import './chromedash-feature-detail';
 import './chromedash-gantt';
 import {autolink, showToastMessage} from './utils.js';
@@ -380,12 +379,6 @@ export class ChromedashFeaturePage extends LitElement {
           .dismissedCues=${this.dismissedCues}>
         </chromedash-feature-detail>
       </sl-details>
-
-      ${this.user && this.user.can_approve ? html`
-        <chromedash-approvals-dialog
-          .signedInUser="${this.user.email}">
-        </chromedash-approvals-dialog>
-      `: nothing}
     `;
   }
 

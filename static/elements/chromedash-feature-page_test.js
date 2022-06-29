@@ -22,6 +22,33 @@ describe('chromedash-feature-page', () => {
   });
   const dismissedCuesPromise = Promise.resolve(['progress-checkmarks']);
   const starsPromise = Promise.resolve([123456]);
+  const channelsPromise = Promise.resolve({
+    'canary_asan': {
+      'version': 81,
+      'earliest_beta': '2020-02-13T00:00:00',
+      'mstone': 'fake milestone number',
+    },
+    'canary': {
+      'version': 81,
+      'earliest_beta': '2020-02-13T00:00:00',
+      'mstone': 'fake milestone number',
+    },
+    'dev': {
+      'version': 81,
+      'earliest_beta': '2020-02-13T00:00:00',
+      'mstone': 'fake milestone number',
+    },
+    'beta': {
+      'version': 80,
+      'earliest_beta': '2020-02-13T00:00:00',
+      'mstone': 'fake milestone number',
+    },
+    'stable': {
+      'version': 79,
+      'earliest_beta': '2020-02-13T00:00:00',
+      'mstone': 'fake milestone number',
+    },
+  });
 
   /* window.csClient and <chromedash-toast> are initialized at _base.html
    * which are not available here, so we initialize them before each test.
@@ -40,6 +67,10 @@ describe('chromedash-feature-page', () => {
     window.csClient.getFieldDefs.returns(fieldDefsPromise);
     window.csClient.getDismissedCues.returns(dismissedCuesPromise);
     window.csClient.getStars.returns(starsPromise);
+
+    // For the child component - chromedash-gantt
+    sinon.stub(window.csClient, 'getChannels');
+    window.csClient.getChannels.returns(Promise.resolve(channelsPromise));
   });
 
   afterEach(() => {
@@ -49,6 +80,7 @@ describe('chromedash-feature-page', () => {
     window.csClient.getFieldDefs.restore();
     window.csClient.getDismissedCues.restore();
     window.csClient.getStars.restore();
+    window.csClient.getChannels.restore();
   });
 
   it('renders with no data', async () => {

@@ -1,5 +1,4 @@
 import {LitElement, css, html, nothing} from 'lit';
-import './chromedash-approvals-dialog';
 import './chromedash-feature-table';
 import {showToastMessage} from './utils.js';
 
@@ -120,11 +119,6 @@ export class ChromedashMyFeaturesPage extends LitElement {
       ${this.user && this.user.can_approve ? this.renderPendingAndRecentApprovals() : nothing}
       ${this.renderIOwn()}
       ${this.renderIStarred()}
-      ${this.user && this.user.can_approve ? html`
-        <chromedash-approvals-dialog
-          .signedInUser="${this.user.email}">
-        </chromedash-approvals-dialog>
-      `: nothing}
     `;
   }
 }
