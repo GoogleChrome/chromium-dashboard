@@ -26,3 +26,14 @@ export function openApprovalsDialog(featureId) {
   if (!approvalDialogEl) approvalDialogEl = document.querySelector('chromedash-approvals-dialog');
   approvalDialogEl.openWithFeature(featureId);
 }
+
+/**
+ * Returns the rendered elements of the named slot of component.
+ * @param {Element} component
+ * @param {string} slotName
+ * @return {Element}
+ */
+ export function slotAssignedElements(component, slotName) {
+  const slotSelector = slotName ? `slot[name=${slotName}]` : 'slot';
+  return component.shadowRoot.querySelector(slotSelector).assignedElements({flatten: true});
+}

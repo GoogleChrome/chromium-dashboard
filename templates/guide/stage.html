@@ -28,78 +28,71 @@
                  {% endif %}" >
 
   <section class="stage_form">
-    <table>
+    <chromedash-form-table>
       {{ feature_form }}
 
-      <tr>
-        <th colspan="2"><b>Process stage:</b></th>
-      </tr>
-      <tr>
+      <chromedash-form-field>
+        <span slot="label">Process stage:</span>
+        <span slot="field">
           {% if already_on_this_stage %}
-          <td colspan="2">
-            This feature is already in stage <b>{{ stage_name }}</b>.
-          </td>
           {% else %}
-          <td>
-            <input type="checkbox" name="set_stage"
-                   id="set_stage">
+            <input type="checkbox" name="set_stage" id="set_stage">
             <label for="set_stage">
               Set to: <b>{{ stage_name }}</b>
             </label>
-          </td>
-          <td>
-              <span class="helptext">
-                Check this box to move this feature to this
-                stage in the process. Leave it unchecked if you are adding
-                draft information or revising a previous stage.
-              </span>
-          </td> 
           {% endif %}
-      </tr>
-    </table>
+        </span>
+        <span slot="help">
+          {% if already_on_this_stage %}
+            This feature is already in stage <b>{{ stage_name }}</b>.
+          {% else %}
+            Check this box to move this feature to this
+            stage in the process. Leave it unchecked if you are adding
+            draft information or revising a previous stage.
+          {% endif %}
+        </span>
+      </chromedash-form-field>
+
+    </chromedash-form-table>
   </section>
 
 
   {% if impl_status_name or impl_status_form %}
     <h3>Implementation in Chromium</h3>
     <section class="stage_form">
-      <table>
+      <chromedash-form-table>
         {% if impl_status_name %}
-          <tr>
-            <th colspan="2">Implementation status:</th>
-          </tr>
-          <tr>
-              {% if already_on_this_impl_status %}
-              <td colspan="2">
+        <chromedash-form-field>
+          <span slot="label">Implementation status:</span>
+
+          {% if already_on_this_impl_status %}
+            <span slot="help">
                 This feature already has implementation status:
                 <b>{{ impl_status_name }}</b>.
               </td>
-              {% else %}
-              <td>
-                <input type="hidden" name="impl_status_offered"
-                       value="{{impl_status_offered}}">
-                <input type="checkbox" name="set_impl_status"
-                       id="set_impl_status">
-                <!-- TODO(jrobbins): When checked, make some milestone fields required. -->
-                <label for="set_impl_status">
-                  Set implementation status to: <b>{{ impl_status_name }}</b>
-                </label>
-              </td>
-              <td>
-                <br>
-                <span class="helptext">
-                  Check this box to update the implementation
-                  status of this feature in Chromium.
-                </span>
-              </td>
-              {% endif %}
-
-          </tr>
+            </span>
+          {% else %}
+            <span slot="field">
+              <input type="hidden" name="impl_status_offered"
+                      value="{{impl_status_offered}}">
+              <input type="checkbox" name="set_impl_status"
+                      id="set_impl_status">
+              <!-- TODO(jrobbins): When checked, make some milestone fields required. -->
+              <label for="set_impl_status">
+                Set implementation status to: <b>{{ impl_status_name }}</b>
+              </label>
+            </span>
+            <span slot="help">
+                Check this box to update the implementation
+                status of this feature in Chromium.
+            </span>
+          {% endif %}
+        </chromedash-form-field>
         {% endif %}
 
         {{ impl_status_form }}
 
-      </table>
+      </chromedash-form-table>
     </section>
   {% endif %}
 

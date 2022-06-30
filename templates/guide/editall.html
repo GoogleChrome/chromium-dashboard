@@ -23,23 +23,22 @@
   {% for section_name, flat_form in flat_forms %}
     <h3>{{ section_name }}</h3>
     <section class="flat_form">
-      <table>
+      <chromedash-form-table>
         {{ flat_form }}
-      </table>
+      </chromedash-form-table>
     </section>
   {% endfor %}
 
   <section class="final_buttons">
-    <table>
-      <tr>
-        <th></th>
-        <td>
-          <input class="button" type="submit" value="Submit">
-          <button id="cancel-button" data-id="{{ feature_id }}"
-                  type="reset">Cancel</button>
-        </td>
-      </tr>
-    </table>
+    <chromedash-form-table>
+      <chromedash-form-field>
+        <span slot="field">
+            <input class="button" type="submit" value="Submit">
+            <button id="cancel-button" data-id="{{ feature_id }}"
+                    type="reset">Cancel</button>
+        </span>
+      </chromedash-form-field>
+    </chromedash-form-table>
   </section>
 </form>
 

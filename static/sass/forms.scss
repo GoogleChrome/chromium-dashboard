@@ -21,16 +21,6 @@ table {
     width: 60% 
   }
 
-  .choices label {
-    font-weight: bold;
-  }
-  .choices div {
-    margin-top: 1em;
-  }
-  .choices p {
-    margin: .5em 1.5em 1em;
-  }
-
   .helptext {
     display: block;
     font-size: small;
@@ -62,10 +52,6 @@ table {
   input:not([type="submit"]):not([type="search"]) {
     outline: 1px dotted var(--error-border-color);
     background-color: #FFEDF5;
-  }
-
-  .errorlist {
-    color: red;
   }
 }
 

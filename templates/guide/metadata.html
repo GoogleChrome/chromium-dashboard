@@ -112,16 +112,16 @@
         <input type="hidden" name="form_fields"
                value="{{ overview_form.fields.keys | join:',' }}" >
 
-        <table>
+        <chromedash-form-table>
           {{ overview_form }}
 
-          <tr>
-            <th colspan="2">
+          <chromedash-form-field>
+            <span slot="field">
               <input class="button" type="submit" value="Submit">
               <button id="close-metadata" type="reset">Cancel</button>
-            </th>
-          </tr>
-        </table>
+            </span>
+          </chromedash-form-field>
+        </chromedash-form-table>
       </form>
     </div>
   {% endif %}
