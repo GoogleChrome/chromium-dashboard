@@ -35,21 +35,21 @@ export class ChromedashFeaturePage extends LitElement {
           font-weight: 500;
           margin-right: 5px;
         }
-        
+
         #consensus li {
           display: flex;
         }
         #consensus li label {
           width: 125px;
         }
-        
+
         @media only screen and (max-width: 700px) {
           #feature {
             border-radius: 0 !important;
             margin: 7px initial !important;
           }
         }
-        
+
         @media only screen and (min-width: 701px) {
           #feature {
             padding: 30px 40px;
@@ -158,6 +158,29 @@ export class ChromedashFeaturePage extends LitElement {
     openApprovalsDialog(this.featureId);
   }
 
+  renderSkeletonSection() {
+    return html`
+          <section>
+            <h3><sl-skeleton effect="sheen"></sl-skeleton></h3>
+            <p>
+              <sl-skeleton effect="sheen"></sl-skeleton>
+              <sl-skeleton effect="sheen"></sl-skeleton>
+            </p>
+          </section>
+    `;
+  }
+
+  renderSkeletons() {
+    return html`
+        <div id="feature" style="margin-top: 65px;">
+          ${this.renderSkeletonSection()}
+          ${this.renderSkeletonSection()}
+          ${this.renderSkeletonSection()}
+          ${this.renderSkeletonSection()}
+      </div>
+   `;
+  }
+
   renderSubHeader() {
     return html`
       <div id="subheader" style="display:block">
@@ -220,7 +243,7 @@ export class ChromedashFeaturePage extends LitElement {
         edit access.</b></p>
         </section>
       `: nothing}
-   
+
       ${this.feature.summary ? html`
         <section id="summary">
           <p class="preformatted">${autolink(this.feature.summary)}</p>
@@ -295,7 +318,7 @@ export class ChromedashFeaturePage extends LitElement {
           <chromedash-gantt .feature=${this.feature}></chromedash-gantt>
         </p>
       </section>
-  
+
       <section id="consensus">
         <h3>Consensus &amp; Standardization</h3>
         <div style="font-size:smaller;">After a feature ships in Chrome, the values listed here are not guaranteed to be up to date.</div>
@@ -359,7 +382,7 @@ export class ChromedashFeaturePage extends LitElement {
             `)}
         </section>
       `: nothing}
-  
+
       <section id="updated">
         <p><span>Last updated on ${this.feature.updated_display}</span></p>
       </section>
@@ -391,10 +414,7 @@ export class ChromedashFeaturePage extends LitElement {
       <link rel="stylesheet" href="/static/css/forms.css">
       <link rel="stylesheet" href="/static/css/guide.css">
       ${this.loading ?
-        html`
-          <div class="loading">
-            <div id="spinner"><img src="/static/img/ring.svg"></div>
-          </div>` :
+        this.renderSkeletons() :
         html`
           ${this.renderSubHeader()}
           <div id="feature">
