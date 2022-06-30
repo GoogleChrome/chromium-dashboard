@@ -198,7 +198,7 @@ class ChromedashFeature extends LitElement {
   }
 
   openApprovalsDialog(featureId) {
-    // handled in chromedash-myfeatures.js
+    // handled in chromedash-myfeatures-page.js
     this._fireEvent('open-approvals-event', {
       featureId: featureId,
     });

@@ -7,7 +7,7 @@
     "node": ">=6.0.0"
   },
   "scripts": {
-    "deps": "source cs-env/bin/activate; pip install -r requirements.txt --upgrade",
+    "deps": "source cs-env/bin/activate; pip install -r requirements.txt --upgrade; pip install -r requirements.dev.txt --upgrade",
     "dev-deps": "echo 'dev-deps is no longer needed'",
     "do-tests": "source cs-env/bin/activate; curl -X POST 'http://localhost:15606/reset' && python3 -m unittest discover -p '*_test.py'  -b",
     "start-emulator-persist": "gcloud beta emulators datastore start --host-port=:15606 --consistency=1.0",
@@ -16,7 +16,7 @@
     "test": "(npm run start-emulator > /dev/null 2>&1 &); sleep 6; curl --retry 4 http://localhost:15606/ --retry-connrefused; npm run do-tests; status=$?; npm run stop-emulator; exit $status",
     "webtest": "web-test-runner \"static/**/*_test.js\" --node-resolve --playwright --browsers chromium firefox",
     "do-coverage": "coverage3 erase && coverage3 run -m unittest discover -p '*_test.py' -b && coverage3 html",
-    "coverage": "(npm run start-emulator > /dev/null 2>&1 &); sleep 3; curl --retry 4 http://localhost:15606/ --retry-connrefused; npm run do-coverage;  npm run stop-emulator",
+    "coverage": "source cs-env/bin/activate; (npm run start-emulator > /dev/null 2>&1 &); sleep 3; curl --retry 4 http://localhost:15606/ --retry-connrefused; npm run do-coverage;  npm run stop-emulator",
     "view-coverage": "pushd htmlcov/; python3 -m http.server 8080; popd",
     "lint": "gulp lint-fix && lit-analyzer \"static/elements/chromedash-!(featurelist)*.js\"",
     "pylint": "pylint --output-format=parseable *py api/*py customtags/*py framework/*py internals/*py pages/*py",
@@ -26,7 +26,7 @@
     "staging": "npm run build && ./scripts/deploy_site.sh `git describe --always --abbrev=7 --match 'NOT A TAG' --dirty='-tainted'` cr-status-staging && ./scripts/deploy_site.sh rc cr-status-staging",
     "start-app": "npm run build && ./scripts/start_server.sh",
     "start": "source cs-env/bin/activate; (npm run start-emulator-persist > /dev/null 2>&1 &); sleep 6; curl --retry 4 http://localhost:15606/ --retry-connrefused; npm run start-app; status=$?; npm run stop-emulator; exit $status",
-    "stop": "killall 'gunicorn: master'"
+    "stop": "killall cs-env/bin/python3.9"
   },
   "repository": {
     "type": "git",

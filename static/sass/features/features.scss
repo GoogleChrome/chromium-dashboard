@@ -38,7 +38,6 @@ chromedash-legend {
 
 chromedash-featurelist {
   max-width: $max-content-width;
-  margin-bottom: 54px + $content-padding * 2; // bottom bar + some.
 }
 
 #subheader {
@@ -49,16 +48,6 @@ chromedash-featurelist {
     .blue-button {
       margin-left: 4px;
     }
-  }
-}
-
-@media only screen and (min-width: 701px) {
-
-  footer {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
   }
 }
 

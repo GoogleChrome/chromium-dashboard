@@ -16,7 +16,14 @@
 {% block content %}
   {# TODO(kevinshen56714): get feature_id and context_link from SPA router #}
   <chromedash-feature-page
-      featureId='{{ feature_id }}'
-      contextLink='{{ context_link }}'>
+    featureId='{{ feature_id }}'
+    contextLink='{{ context_link }}'>
   </chromedash-feature-page>
+  
+  {# TODO(kevinshen56714): move the approvals-dialog to the SPA index page #}
+  {% if user and user.can_approve %}
+    <chromedash-approvals-dialog 
+      signedInUser="{{user.email}}">
+    </chromedash-approvals-dialog>
+  {% endif %}
 {% endblock %}

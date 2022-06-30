@@ -4,6 +4,8 @@ import {html} from 'lit';
 import {unsafeHTML} from 'lit/directives/unsafe-html.js';
 import Autolinker from 'autolinker';
 
+let toastEl; let approvalDialogEl;
+
 /* Convert user-entered text into safe HTML with clickable links
  * where appropriate.  Returns a lit-html TemplateResult.
  */

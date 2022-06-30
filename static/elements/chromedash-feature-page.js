@@ -1,5 +1,7 @@
 import {LitElement, css, html, nothing} from 'lit';
-import {autolink} from './utils.js';
+import './chromedash-feature-detail';
+import './chromedash-gantt';
+import {autolink, showToastMessage, openApprovalsDialog} from './utils.js';
 
 import {SHARED_STYLES} from '../sass/shared-css.js';
 
@@ -65,7 +67,6 @@ export class ChromedashFeaturePage extends LitElement {
       fieldDefs: {type: Object},
       dismissedCues: {type: Array},
       contextLink: {type: String},
-      toastEl: {type: Element},
       starred: {type: Boolean},
       loading: {attribute: false},
     };
@@ -80,7 +81,6 @@ export class ChromedashFeaturePage extends LitElement {
     this.fieldDefs = {};
     this.dismissedCues = [];
     this.contextLink = '';
-    this.toastEl = document.querySelector('chromedash-toast');
     this.starred = false;
     this.loading = true;
   }
@@ -99,14 +99,14 @@ export class ChromedashFeaturePage extends LitElement {
       window.csClient.getFieldDefs(),
       window.csClient.getDismissedCues(),
       window.csClient.getStars(),
-    ]).then(([permissionsRes, feature, process, fieldDefs, dismissedCues, subscribedFeatures]) => {
-      this.user = permissionsRes.user;
+    ]).then(([user, feature, process, fieldDefs, dismissedCues, starredFeatures]) => {
+      this.user = user;
       this.feature = feature;
       this.process = process;
       this.fieldDefs = fieldDefs;
       this.dismissedCues = dismissedCues;
 
-      if (subscribedFeatures.includes(this.featureId)) {
+      if (starredFeatures.includes(this.featureId)) {
         this.starred = true;
       }
       this.loading = false;
@@ -115,7 +115,7 @@ export class ChromedashFeaturePage extends LitElement {
       // Has to include this for now to remove the spinner at _base.html.
       document.body.classList.remove('loading');
     }).catch(() => {
-      this.toastEl.showMessage('Some errors occurred. Please refresh the page or try again later.');
+      showToastMessage('Some errors occurred. Please refresh the page or try again later.');
     });
   }
 
@@ -149,14 +149,13 @@ export class ChromedashFeaturePage extends LitElement {
     e.preventDefault();
     const url = e.currentTarget.href;
     navigator.clipboard.writeText(url).then(() => {
-      this.toastEl.showMessage('Link copied');
+      showToastMessage('Link copied');
     });
   }
 
   handleApprovalClick(e) {
     e.preventDefault();
-    const dialog = this.shadowRoot.querySelector('chromedash-approvals-dialog');
-    dialog.openWithFeature(this.featureId);
+    openApprovalsDialog(this.featureId);
   }
 
   renderSubHeader() {
@@ -379,12 +378,6 @@ export class ChromedashFeaturePage extends LitElement {
           .dismissedCues=${this.dismissedCues}>
         </chromedash-feature-detail>
       </sl-details>
-
-      ${this.user && this.user.can_approve ? html`
-        <chromedash-approvals-dialog
-          signedInUser="${this.user.email}">
-        </chromedash-approvals-dialog>
-      `: nothing}
     `;
   }
 

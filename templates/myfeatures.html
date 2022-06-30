@@ -4,29 +4,13 @@
 {% block css %}
 {% endblock %}
 
-{% block subheader %}
-<div id="subheader">
-  <h2>My features</h2>
-</div>
-{% endblock %}
-
 {% block content %}
+  <chromedash-myfeatures-page></chromedash-myfeatures-page>
 
-<chromedash-myfeatures
-  {% if user %} signedinuser="{{user.email}}" {% endif %}
-  {% if user.can_edit %} canedit {% endif %}
-  {% if user.can_approve %} canapprove {% endif %}
-  >
-</chromedash-myfeatures>
-
-{% endblock %}
-
-{% block js %}
-<script nonce="{{nonce}}">
-    (function() {
-      'use strict';
-
-      {% inline_file "/static/js/myfeatures-page.min.js" %}
-    })();
-</script>
+  {# TODO(kevinshen56714): move the approvals-dialog to the SPA index page #}
+  {% if user and user.can_approve %}
+    <chromedash-approvals-dialog      
+      signedInUser="{{user.email}}">
+    </chromedash-approvals-dialog>
+  {% endif %}
 {% endblock %}

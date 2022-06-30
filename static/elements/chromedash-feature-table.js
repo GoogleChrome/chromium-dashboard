@@ -73,6 +73,15 @@ class ChromedashFeatureTable extends LitElement {
     }
   }
 
+  // For rerendering of the "Features I starred" section when a feature is starred
+  // only re-fetch if !this.loading to avoid double fetching on first update.
+  updated(changedProperties) {
+    if (this.query == 'starred-by:me' && !this.loading &&
+      changedProperties.has('starredFeatures')) {
+      this.fetchFeatures();
+    }
+  }
+
   handleSearch(event) {
     this.loading = true;
     this.query = event.detail.query;
@@ -140,7 +149,6 @@ class ChromedashFeatureTable extends LitElement {
   }
 
   toggleStar(e) {
-    console.log('toggleStar');
     e.preventDefault();
     e.stopPropagation();
 
@@ -148,7 +156,7 @@ class ChromedashFeatureTable extends LitElement {
     const featureId = Number(iconEl.dataset.featureId);
     const newStarred = !this.starredFeatures.has(featureId);
 
-    // handled in chromedash-myfeatures.js
+    // handled in chromedash-myfeatures-page.js
     this._fireEvent('star-toggle-event', {
       featureId: featureId,
       doStar: newStarred,
@@ -170,7 +178,7 @@ class ChromedashFeatureTable extends LitElement {
   }
 
   openApprovalsDialog(featureId) {
-    // handled in chromedash-myfeatures.js
+    // handled in chromedash-myfeatures-page.js
     this._fireEvent('open-approvals-event', {
       featureId: featureId,
     });
@@ -207,17 +215,16 @@ class ChromedashFeatureTable extends LitElement {
 
   renderStarIcon(feature) {
     return html`
-      <span class="tooltip"
+      <a href="#" class="tooltip" data-tooltip @click=${this.toggleStar}
         title="Receive an email notification when there are updates">
         <iron-icon
           icon="${this.starredFeatures.has(Number(feature.id)) ?
           'chromestatus:star' :
           'chromestatus:star-border'}"
           class="pushicon"
-          data-feature-id="${feature.id}"
-          @click="${this.toggleStar}">
+          data-feature-id="${feature.id}">
         </iron-icon>
-      </span>
+      </a>
     `;
   }
 
@@ -381,7 +388,7 @@ class ChromedashFeatureTable extends LitElement {
       ${this.renderSearch()}
        <table>
         ${this.renderMessages() ||
-          this.features.map(this.renderFeature.bind(this))}
+          this.features.map((feature) => this.renderFeature(feature))}
        </table>
      `;
   }
