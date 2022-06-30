@@ -175,21 +175,31 @@ def _resolve_promise_to_id_list(promise):
     return id_list
 
 
-def process_query(user_query, show_unlisted=False):
+def process_query(
+    user_query, sort_spec=None, show_unlisted=False, show_deleted=False,
+    start=0, num=100):
   """Parse the user's query, run it, and return a list of features."""
-  # 1. Parse the user query into terms.
+  # 1a. Parse the user query into terms.  And, add permission terms.
   feature_id_futures = []
   terms = TERM_RE.findall(user_query + ' ')[:MAX_TERMS] or []
+  if not show_deleted:
+    terms.append(('deleted', '=', 'false', None))
+  if not show_unlisted:
+    terms.append(('unlisted', '=', 'false', None))
+  # 1b. Parse the sort directive.
+  sort_spec = sort_spec or '-created.when'
 
-  # 2. Create parallel queries for each term.  Each yields a future.
+  # 2a. Create parallel queries for each term.  Each yields a future.
   logging.info('creating parallel queries for %r', terms)
   for field_name, op_str, val_str, textterm in terms:
     if textterm:
       logging.warning('Full-text term %r not supported yet', textterm)
     future = process_query_term(field_name, op_str, val_str)
     feature_id_futures.append(future)
+  # 2b. Create a parallel query for total sort order.
+  total_order_promise = models.Feature.total_order_query_async(sort_spec)
 
-  # 3. Get the result of each future and combine them into a result ID set.
+  # 3a. Get the result of each future and combine them into a result ID set.
   logging.info('now waiting on futures')
   result_id_set = None
   for future in feature_id_futures:
@@ -200,19 +210,22 @@ def process_query(user_query, show_unlisted=False):
     else:
       logging.info('combining result so far with %r', feature_ids)
       result_id_set.intersection_update(feature_ids)
+  result_id_list = list(result_id_set or [])
+  total_count = len(result_id_list)
+  # 3b. Finish getting the total sort order.
+  total_order_ids = _resolve_promise_to_id_list(total_order_promise)
 
-  # 4. Fetch the actual issues that have those IDs in the sorted results.
-  feature_list = models.Feature.get_by_ids(list(result_id_set or []))
+  # 4. Sort the IDs according to their position in the complete sorted list.
+  total_order_dict = {f_id: idx for idx, f_id in enumerate(total_order_ids)}
+  sorted_id_list = sorted(
+      result_id_list,
+      key=lambda f_id: total_order_dict[f_id])
 
-  # 5. Filter by permissions.
-  allowed_feature_list = [
-      f for f in feature_list
-      if show_unlisted or not f['unlisted']]
+  # 5. Paginate
+  paginated_id_list = sorted_id_list[start : start + num]
 
-  logging.info('allowed_feature_list is %r', allowed_feature_list)
-  # 6. Sort.
-  # TODO(jrobbins): sort by user-specified field.  And paginate.
-  sorted_allowed_feature_list = sorted(
-      allowed_feature_list, key=lambda f: f['created']['when'])
+  # 6. Fetch the actual issues that have those IDs in the sorted results.
+  features_on_page = models.Feature.get_by_ids(paginated_id_list)
 
-  return allowed_feature_list
+  logging.info('features_on_page is %r', features_on_page)
+  return features_on_page, total_count

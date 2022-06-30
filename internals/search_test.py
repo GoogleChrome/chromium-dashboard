@@ -182,38 +182,38 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
     mock_star_me.return_value = [self.feature_1.key.integer_id()]
     mock_pend_me.return_value = [self.feature_2.key.integer_id()]
 
-    actual_pending = search.process_query('pending-approval-by:me')
+    actual_pending, tc = search.process_query('pending-approval-by:me')
     self.assertEqual(actual_pending[0]['name'], 'feature 2')
 
-    actual_star_me = search.process_query('starred-by:me')
+    actual_star_me, tc = search.process_query('starred-by:me')
     self.assertEqual(actual_star_me[0]['name'], 'feature 1')
 
-    actual_own_me = search.process_query('owner:me')
+    actual_own_me, tc = search.process_query('owner:me')
     self.assertEqual(actual_own_me[0]['name'], 'feature 2')
 
-    actual_recent = search.process_query('is:recently-reviewed')
+    actual_recent, tc = search.process_query('is:recently-reviewed')
     self.assertEqual(actual_recent[0]['name'],'feature 1')
 
   def test_process_query__single_field(self):
     """We can can run single-field queries."""
 
-    actual = search.process_query('category=1')
+    actual, tc = search.process_query('category=1')
     self.assertEqual(1, len(actual))
     self.assertEqual(actual[0]['name'], 'feature 1')
 
-    actual = search.process_query('category=2')
+    actual, tc = search.process_query('category=2')
     self.assertEqual(1, len(actual))
     self.assertEqual(actual[0]['name'], 'feature 2')
 
-    actual = search.process_query('category="2"')
+    actual, tc = search.process_query('category="2"')
     self.assertEqual(1, len(actual))
     self.assertEqual(actual[0]['name'], 'feature 2')
 
-    actual = search.process_query('name="feature 2"')
+    actual, tc = search.process_query('name="feature 2"')
     self.assertEqual(1, len(actual))
     self.assertEqual(actual[0]['name'], 'feature 2')
 
-    actual = search.process_query('browsers.webdev.view=1')
+    actual, tc = search.process_query('browsers.webdev.view=1')
     self.assertEqual(2, len(actual))
     self.assertCountEqual(
         [f['name'] for f in actual],
@@ -225,5 +225,5 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
     """Query terms that are not predefined or field-op-value, give warnings."""
     self.assertEqual(
         search.process_query('anything else'),
-        [])
+        ([], 0))
     self.assertEqual(2, len(mock_warn.mock_calls))

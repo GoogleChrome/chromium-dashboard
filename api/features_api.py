@@ -35,30 +35,31 @@ class FeaturesAPI(basehandlers.APIHandler):
   def do_search(self):
     user = users.get_current_user()
     show_unlisted_features = permissions.can_edit_feature(user, None)
-    feature_list = None
+    features_on_page = None
 
     # Query-string parameter 'milestone' is provided
     if self.request.args.get('milestone') is not None:
       try:
         milestone = int(self.request.args.get('milestone'))
-        feature_list = models.Feature.get_in_milestone(
+        features_by_type = models.Feature.get_in_milestone(
           show_unlisted=show_unlisted_features,
           milestone=milestone)
+        total_count = sum(len(features_by_type[t]) for t in features_by_type)
+        return {
+            'features_by_type': features_by_type,
+            'total_count': total_count,
+            }
       except ValueError:
         self.abort(400, msg='Invalid  Milestone')
 
-    user_query = self.request.args.get('q')
-    if user_query:
-      feature_list = search.process_query(
-          user_query, show_unlisted=show_unlisted_features)
+    user_query = self.request.args.get('q', '')
+    features_on_page, total_count = search.process_query(
+        user_query, show_unlisted=show_unlisted_features)
 
-    # No Query-string parameter is provided
-    if feature_list is None:
-      feature_list = models.Feature.get_chronological(
-          version=2,
-          show_unlisted=show_unlisted_features)
-
-    return feature_list
+    return {
+        'total_count': total_count,
+        'features': features_on_page,
+        }
 
   def do_get(self, feature_id=None):
     """Handle GET requests for a single feature or a search."""

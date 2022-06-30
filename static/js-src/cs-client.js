@@ -242,7 +242,8 @@ class ChromeStatusClient {
   }
 
   getFeaturesInMilestone(milestone) {
-    return this.doGet(`/features?milestone=${milestone}`);
+    return this.doGet(`/features?milestone=${milestone}`).then(
+      (resp) => resp['features_by_type']);
   }
 
   searchFeatures(userQuery) {

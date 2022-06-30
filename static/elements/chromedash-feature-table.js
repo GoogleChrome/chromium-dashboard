@@ -9,6 +9,7 @@ class ChromedashFeatureTable extends LitElement {
       query: {type: String},
       showQuery: {type: Boolean},
       features: {type: Array},
+      total_count: {type: Number},
       loading: {type: Boolean},
       rows: {type: Number},
       columns: {type: String},
@@ -44,8 +45,9 @@ class ChromedashFeatureTable extends LitElement {
   }
 
   fetchFeatures() {
-    window.csClient.searchFeatures(this.query).then((features) => {
-      this.features = features;
+    window.csClient.searchFeatures(this.query).then((resp) => {
+      this.features = resp.features;
+      this.total_count = resp.total_count;
       this.loading = false;
       if (this.columns == 'approvals') {
         this.loadApprovalData();
