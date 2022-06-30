@@ -1,9 +1,9 @@
 import {html} from 'lit';
 import {assert, fixture} from '@open-wc/testing';
 import {ChromedashFormField} from './chromedash-form-field';
+import {slotAssignedElements} from './utils';
 
 describe('chromedash-form-field', () => {
-
   it('renders with no data', async () => {
     const component = await fixture(
       html`<chromedash-form-field></chromedash-form-field>`);
@@ -23,16 +23,22 @@ describe('chromedash-form-field', () => {
         <span slot="help">Help</span>
       </chromedash-form-field>`);
     assert.exists(component);
+    await component.updateComplete;
 
-    const firstRow = component.shadowRoot.querySelector('tr');
-    assert.exists(firstRow);
-    assert.exists(firstRow.querySelector('slot[name="label"'));
+    const labelElements = slotAssignedElements(component, 'label');
+    assert.exists(labelElements);
+    assert.include(labelElements[0].innerHTML, 'Label');
 
-    const secondRow = component.shadowRoot.querySelector('tr:nth-child(2)');
-    assert.exists(secondRow);
-    assert.exists(secondRow.querySelector('slot[name="error"'));
-    assert.exists(secondRow.querySelector('slot[name="field"'));
-    assert.exists(secondRow.querySelector('slot[name="help"'));
+    const fieldElements = slotAssignedElements(component, 'field');
+    assert.exists(fieldElements);
+    assert.include(fieldElements[0].innerHTML, 'Field');
+
+    const errorElements = slotAssignedElements(component, 'error');
+    assert.exists(errorElements);
+    assert.include(errorElements[0].innerHTML, 'Error');
+
+    const helpElements = slotAssignedElements(component, 'help');
+    assert.exists(helpElements);
+    assert.include(helpElements[0].innerHTML, 'Help');
   });
-
 });

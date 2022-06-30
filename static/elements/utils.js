@@ -14,3 +14,14 @@ export function autolink(s) {
     {stripPrefix: false, sanitizeHtml: true});
   return html`${unsafeHTML(markup)}`;
 }
+
+/**
+ * Returns the rendered elements of the named slot of component.
+ * @param {Element} component
+ * @param {string} slotName
+ * @return {Element}
+ */
+ export function slotAssignedElements(component, slotName) {
+  const slotSelector = slotName ? `slot[name=${slotName}]` : 'slot';
+  return component.shadowRoot.querySelector(slotSelector).assignedElements({flatten: true});
+}

@@ -832,8 +832,6 @@ class ChromedashForm(forms.Form):
 
     def as_table(self):
         "Return this form rendered as HTML <tr>s -- excluding the <table></table>."
-        # header = '<tr%(html_class_attr)s><th colspan="2"><b>%(label)s</b></th></tr>'
-        # html = header + '<tr%(html_class_attr)s><td>%(errors)s%(field)s</td><td>%(help_text)s</td></tr>'
         label = '<span slot="label">%(label)s</span>'
         field = '<span slot="field">%(field)s</span>'
         error = '<span slot="error">%(errors)s</span>'

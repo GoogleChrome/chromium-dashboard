@@ -1,10 +1,8 @@
 import {LitElement, css, html} from 'lit';
-import {SHARED_STYLES} from '../sass/shared-css.js';
 
 export class ChromedashFormField extends LitElement {
   static get styles() {
     return [
-      ...SHARED_STYLES,
       css`
         :host {
           display: table-row-group;
@@ -15,14 +13,17 @@ export class ChromedashFormField extends LitElement {
           padding: 0;
         }
 
+        th, td {
+          text-align: left;
+          vertical-align: top;
+        }
+
         th {
           padding: 12px 10px 5px 0;
-          vertical-align: top;
         }
 
         td {
           padding: 6px 10px;
-          vertical-align: top;
         }
 
         td:first-of-type {
@@ -48,7 +49,7 @@ export class ChromedashFormField extends LitElement {
       <tr>
         <th colspan="2">
           <b>
-          <slot name="label"></slot>
+          <slot name="label">the label goes here</slot>
           </b>
         </th>
       </tr>

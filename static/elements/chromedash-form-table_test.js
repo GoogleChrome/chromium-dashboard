@@ -1,6 +1,7 @@
 import {html} from 'lit';
 import {assert, fixture} from '@open-wc/testing';
 import {ChromedashFormTable} from './chromedash-form-table';
+import {slotAssignedElements} from './utils';
 
 describe('chromedash-form-table', () => {
   it('renders with no data', async () => {
@@ -20,14 +21,16 @@ describe('chromedash-form-table', () => {
       <span>Row 2</span>
       </chromedash-form-table>`);
     assert.exists(component);
+    await component.updateComplete;
 
-    // console.log('component.innerHTML', component.innerHTML);
-    // console.log('component.shadowRoot.innerHTML', component.shadowRoot.innerHTML);
+    const children = slotAssignedElements(component, '');
 
-    // const firstRow = component.shadowRoot.querySelector('span');
-    // assert.exists(firstRow);
+    const firstRow = children[0];
+    assert.exists(firstRow);
+    assert.include(firstRow.innerHTML, 'Row 1');
 
-    // const secondRow = component.shadowRoot.querySelector('span:nth-child(2)');
-    // assert.exists(secondRow);
+    const secondRow = children[1];
+    assert.exists(secondRow);
+    assert.include(secondRow.innerHTML, 'Row 2');
   });
 });
