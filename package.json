@@ -7,12 +7,21 @@
     "node": ">=6.0.0"
   },
   "scripts": {
+    "setup": "npm ci; python3.9 -m venv cs-env; npm run deps",
+    "clean-setup": "rm -rf node_modules cs-env; npm run setup",
     "deps": "source cs-env/bin/activate; pip install -r requirements.txt --upgrade; pip install -r requirements.dev.txt --upgrade",
     "dev-deps": "echo 'dev-deps is no longer needed'",
+
     "do-tests": "source cs-env/bin/activate; curl -X POST 'http://localhost:15606/reset' && python3 -m unittest discover -p '*_test.py'  -b",
     "start-emulator-persist": "gcloud beta emulators datastore start --host-port=:15606 --consistency=1.0",
     "start-emulator": "gcloud beta emulators datastore start --host-port=:15606 --no-store-on-disk --consistency=1.0",
     "stop-emulator": "curl -X POST 'http://localhost:15606/shutdown'",
+    "build": "gulp",
+    "watch": "gulp watch",
+    "start-app": "npm run build && ./scripts/start_server.sh",
+    "start": "source cs-env/bin/activate; (npm run start-emulator-persist > /dev/null 2>&1 &); sleep 6; curl --retry 4 http://localhost:15606/ --retry-connrefused; npm run start-app; status=$?; npm run stop-emulator; exit $status",
+    "stop": "killall cs-env/bin/python3.9",
+
     "test": "(npm run start-emulator > /dev/null 2>&1 &); sleep 6; curl --retry 4 http://localhost:15606/ --retry-connrefused; npm run do-tests; status=$?; npm run stop-emulator; exit $status",
     "webtest": "web-test-runner \"static/**/*_test.js\" --node-resolve --playwright --browsers chromium firefox",
     "do-coverage": "coverage3 erase && coverage3 run -m unittest discover -p '*_test.py' -b && coverage3 html",
@@ -20,13 +29,9 @@
     "view-coverage": "pushd htmlcov/; python3 -m http.server 8080; popd",
     "lint": "gulp lint-fix && lit-analyzer \"static/elements/chromedash-!(featurelist)*.js\"",
     "pylint": "pylint --output-format=parseable *py api/*py customtags/*py framework/*py internals/*py pages/*py",
-    "build": "gulp",
-    "watch": "gulp watch",
-    "deploy": "npm run build && ./scripts/deploy_site.sh `git describe --always --abbrev=7 --match 'NOT A TAG' --dirty='-tainted'` && ./scripts/deploy_site.sh rc",
+
     "staging": "npm run build && ./scripts/deploy_site.sh `git describe --always --abbrev=7 --match 'NOT A TAG' --dirty='-tainted'` cr-status-staging && ./scripts/deploy_site.sh rc cr-status-staging",
-    "start-app": "npm run build && ./scripts/start_server.sh",
-    "start": "source cs-env/bin/activate; (npm run start-emulator-persist > /dev/null 2>&1 &); sleep 6; curl --retry 4 http://localhost:15606/ --retry-connrefused; npm run start-app; status=$?; npm run stop-emulator; exit $status",
-    "stop": "killall cs-env/bin/python3.9"
+    "deploy": "npm run build && ./scripts/deploy_site.sh `git describe --always --abbrev=7 --match 'NOT A TAG' --dirty='-tainted'` && ./scripts/deploy_site.sh rc"
   },
   "repository": {
     "type": "git",

@@ -14,17 +14,13 @@ Chrome Platform Status
 1. Install global CLIs in the home directory
     1. [Google App Engine SDK for Python](https://cloud.google.com/appengine/docs/standard/python3/setting-up-environment). Make sure to select Python 3.
     1. node and npm.
-    1. Gulp `npm install --global gulp-cli`
+    1. Gulp: `npm install --global gulp-cli`
+    1. Python virtual environment: `sudo apt install python3.9-venv`
 1. We recommend using an older node version, e.g. node 10
     1. Use `node -v` to check the default node version
     2. `nvm use 12` to switch to node 12
-3. `cd` into the Chromestatus repo and install npm dependencies `npm ci`
-4. Create a virtual environment.
-    1. `sudo apt install python3.9-venv`
-    1. `python3.9 -m venv cs-env`
-6. Install other dependencies
-    1. `npm run deps`
-    1. `npm run dev-deps`
+1. `cd chromium-dashboard`
+1. Install JS an python dependencies: `npm run setup`
 
 If you encounter any error during the installation process, the section **Notes** (later in this README.md) may help.
 
@@ -66,8 +62,9 @@ There are some developing information in developer-documentation.md.
 
 - When installing the GAE SDK, make sure to get the version for python 3.
 
-- If you run the server locally, and then you are disconnected from your terminial window, the jobs might remain running which will prevent you from starting the server again.  To work around this, use `ps aux | grep gunicorn` and then use the unix `kill -9` command to terminate those jobs.
+- If you run the server locally, and then you are disconnected from your terminial window, the jobs might remain running which will prevent you from starting the server again.  To work around this, use `npm run stop-emulator; npm stop`.  Or, use `ps aux | grep gunicorn` and/or `ps aux | grep emulator`, then use the unix `kill -9` command to terminate those jobs.
 
+- If you need to test or debug anything to do with dependencies, you can get a clean start by running `npm run clean-setup`.
 
 #### Blink components
 
