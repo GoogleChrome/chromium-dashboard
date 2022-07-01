@@ -67,7 +67,6 @@ class ChromedashRoadmap extends LitElement {
       milestoneInfo: {type: Object}, // object to store milestone details (features version etc.) fetched after dev channel
       highlightFeature: {type: Number}, // feature to highlight
       cardOffset: {type: Number}, // left margin value
-      isChromeOneFetched: {type: Boolean}, // is the first release of Chrome fetched
     };
   }
 
@@ -156,9 +155,7 @@ class ChromedashRoadmap extends LitElement {
   fetchPreviousBatch(version) {
     const versionToFetch = version - 2;
     // Chrome 1 is the first release. Hence, do not fetch if already fetched Chrome 1.
-    if (versionToFetch < 2) {
-      this.isChromeOneFetched = true;
-    }
+    if (versionToFetch < 2) return;
 
     // Promises to get the info and features of specified milestone versions
     const milestonePromise = window.csClient.getSpecifiedChannels(versionToFetch, versionToFetch);
