@@ -53,7 +53,7 @@ export class ChromedashFormField extends LitElement {
 
   render() {
     const fieldProps = ALL_FIELDS[this.name] || {};
-    this.helpText = fieldProps.help_text;
+    const helpText = fieldProps.help_text || '';
     return html`
       <tr>
         <th colspan="2">
@@ -68,7 +68,7 @@ export class ChromedashFormField extends LitElement {
           <slot name="error" class="errorlist"></slot>
         </td>
         <td>
-          ${this.helpText}
+          ${helpText}
           <slot name="help" class="helptext"></slot>
         </td>
       </tr>`;
@@ -80,10 +80,95 @@ customElements.define('chromedash-form-field', ChromedashFormField);
 const ALL_FIELDS = {
   'name': {
     help_text: html`
-      Override: Capitalize only the first letter and the beginnings of proper nouns.
+      Capitalize only the first letter and the beginnings of proper nouns.
       <a target="_blank" 
         href="https://github.com/GoogleChrome/chromium-dashboard/wiki/EditingHelp#feature-name">Learn more</a>
       <a target="_blank" 
         href="https://github.com/GoogleChrome/chromium-dashboard/wiki/EditingHelp#feature-name-example">Example</a>
     `},
+
+  'summary': {
+    help_text: html`
+      NOTE: Text in the beta release post, the enterprise release notes, 
+      and other external sources will be based on this text.
+
+      Begin with one line explaining what the feature does. Add one or two 
+      lines explaining how this feature helps developers. Avoid language such 
+      as "a new feature". They all are or have been new features.
+
+      Write it from a web developer's point of view.
+      Follow the example link below for more guidance.<br>
+      <a target="_blank" 
+          href="https://github.com/GoogleChrome/chromium-dashboard/wiki/EditingHelp#summary-example">
+        Guidelines and example</a>.`,
+  },
+
+  'owner': {
+    help_text: html`
+      Comma separated list of full email addresses. Prefer @chromium.org.`,
+  },
+
+  'unlisted': {
+    help_text: html`
+      Check this box for draft features that should not appear 
+      in the feature list. Anyone with the link will be able to 
+      view the feature on the detail page.`,
+  },
+
+  'blink_components': {
+    help_text: html`
+      Select the most specific component. If unsure, leave as "Blink".`,
+  },
+
+  'category': {
+    help_text: html`
+      Select the most specific category. If unsure, leave as "Miscellaneous".`,
+  },
+
+  'feature_type': {
+    help_text: html`
+      Select the feature type.`,
+  },
+
+  'intent_stage': {
+    help_text: html`
+      Select the appropriate process stage.`,
+  },
+
+  'search_tags': {
+    help_text: html`
+      Comma separated keywords used only in search.`,
+  },
+
+  'impl_status_chrome': {
+    help_text: html`
+      Implementation status in Chromium.`,
+  },
+
+  'bug_url': {
+    help_text: html`
+      Tracking bug url (https://bugs.chromium.org/...). This bug 
+      should have "Type=Feature" set and be world readable. 
+      Note: This field only accepts one URL.`,
+  },
+
+  'launch_bug_url': {
+    help_text: html`
+      Launch bug url (https://bugs.chromium.org/...) to track launch 
+      approvals. 
+      <a target="_blank" 
+          href="https://bugs.chromium.org/p/chromium/issues/entry?template=Chrome+Launch+Feature">
+        Create launch bug</a>.`,
+  },
+
+  'motivation': {
+    help_text: html`
+      Explain why the web needs this change. It may be useful 
+      to describe what web developers are forced to do without 
+      it. When possible, add links to your explainer 
+      backing up your claims. 
+      <a target="_blank" 
+          href="https://github.com/GoogleChrome/chromium-dashboard/wiki/EditingHelp#motivation-example">
+        Example</a>.`,
+  },
 };
