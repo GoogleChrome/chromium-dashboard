@@ -4,7 +4,6 @@ export class ChromedashFormField extends LitElement {
   static get properties() {
     return {
       name: {type: String},
-      helpText: {type: String},
     };
   }
 
@@ -77,6 +76,12 @@ export class ChromedashFormField extends LitElement {
 
 customElements.define('chromedash-form-field', ChromedashFormField);
 
+// Map of specifications for all form fields.
+// Actually, this includes only fields for which we have migrated the help_text from the guideforms.py specifications.
+// TODO: 
+//   * Finish migrating remaining fields.
+//   * Migrate other properties.
+//   * Move to its own file.
 const ALL_FIELDS = {
   'name': {
     help_text: html`

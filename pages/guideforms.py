@@ -774,7 +774,11 @@ METADATA_FIELDS = [
 
 class ChromedashForm(forms.Form):
     def simple_html_output(self, normal_row, help_text_html):
-        "Output HTML. Used by as_table(), as_ul(), as_p()."
+        """
+        Output HTML. Used by override of as_table() to support chromedash uses only.
+        Simplified to drop support for hidden form fields and errors at the top, 
+        which we are not using.
+        """
         output = []
 
         for name, field in self.fields.items():
