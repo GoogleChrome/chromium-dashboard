@@ -1,6 +1,6 @@
-import { css } from "lit";
-import { SHARED_STYLES } from "../shared-css.js";
-import { LAYOUT_CSS } from "../_layout-css.js";
+import {css} from 'lit';
+import {SHARED_STYLES} from '../shared-css.js';
+import {LAYOUT_CSS} from '../_layout-css.js';
 
 export const ROADMAP_MILESTONE_CARD_CSS = [
   SHARED_STYLES,
@@ -159,6 +159,9 @@ export const ROADMAP_MILESTONE_CARD_CSS = [
     }
     .highlight {
       background: var(--light-accent-color);
+    }
+    #feature_link {
+      width: 100%;
     }
   `,
 ];

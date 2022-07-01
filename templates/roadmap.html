@@ -1,42 +1,11 @@
 {% extends "_base.html" %}
 {% load inline_file %}
 
+{# TODO(kevinshen56714): move the CSS to the SPA app component #}
 {% block css %}
   <style>{% inline_file "/static/css/roadmap.css" %}</style>
 {% endblock %}
 
-{% block subheader %}
-  <div id="subheader">
-    <div style="flex:1">
-      <h3>Roadmap</h3>
-    </div>
-  </div>
-{% endblock %}
-
 {% block content %}
-  <section id="releases-section">
-    <div class="timeline-controls">
-      <button id="previous-button" aria-label="Button to move to previous release">Previous</button>
-      <button id="next-button" aria-label="Button to move to later release">Next</button>
-    </div>
-
-    <chromedash-roadmap class="animate"
-      {% if user %}signedin{% endif %}
-      aria-label="List of milestone releases"
-    ></chromedash-roadmap>
-
-    <div class="timeline-controls">
-
-    </div>
-  </section>
-{% endblock %}
-
-{% block js %}
-  <script nonce="{{nonce}}">
-    (function() {
-      'use strict';
-
-      {% inline_file "/static/js/roadmap-page.min.js" %}
-    })();
-  </script>
+  <chromedash-roadmap-page></chromedash-roadmap-page>
 {% endblock %}
