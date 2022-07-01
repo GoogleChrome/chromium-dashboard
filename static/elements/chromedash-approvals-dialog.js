@@ -1,5 +1,7 @@
 import {LitElement, css, html, nothing} from 'lit';
 import '@polymer/iron-icon';
+import {showToastMessage} from './utils.js';
+
 import {SHARED_STYLES} from '../sass/shared-css.js';
 
 export const STATE_NAMES = [
@@ -31,6 +33,18 @@ const APPROVAL_DEFS = [
     threadField: 'intent_to_ship_url',
   },
 ];
+
+let approvalDialogEl;
+
+export async function openApprovalsDialog(signedInUser, featureId) {
+  if (!approvalDialogEl) {
+    approvalDialogEl = document.createElement('chromedash-approvals-dialog');
+    approvalDialogEl.signedInUser = signedInUser;
+    document.body.appendChild(approvalDialogEl);
+    await approvalDialogEl.updateComplete;
+  }
+  approvalDialogEl.openWithFeature(featureId);
+}
 
 
 class ChromedashApprovalsDialog extends LitElement {
@@ -152,37 +166,32 @@ class ChromedashApprovalsDialog extends LitElement {
     this.featureId = featureId;
     this.loading = true;
     this.shadowRoot.querySelector('sl-dialog').show();
-    const p1 = window.csClient.getFeature(this.featureId).then(
-      (feature) => {
-        this.feature = feature;
-      });
-    const p2 = window.csClient.getApprovals(this.featureId).then(
-      (res) => {
-        this.approvals = res.approvals;
-        const numPending = this.approvals.filter((av) =>
-          PENDING_STATES.includes(av.state)).length;
-        this.subsetPending = (numPending > 0 &&
-                              numPending < APPROVAL_DEFS.length);
-        this.showAllIntents = numPending == 0;
-        this.changedApprovalsByField = new Map();
-        this.needsSave = false;
-      });
-    const p3 = window.csClient.getComments(this.featureId).then(
-      (res) => {
-        this.comments = res.comments;
-      });
-    const p4 = window.csClient.getApprovalConfigs(this.featureId).then(
-      (res) => {
-        this.configs = res.configs;
-        this.showConfigs = new Set(this.configs.map(c => c.field_id));
-        this.changedConfigsByField = new Map();
-        this.possibleOwners = res.possible_owners;
-      });
-    Promise.all([p1, p2, p3, p4]).then(() => {
+    Promise.all([
+      window.csClient.getFeature(this.featureId),
+      window.csClient.getApprovals(this.featureId),
+      window.csClient.getComments(this.featureId),
+      window.csClient.getApprovalConfigs(this.featureId),
+    ]).then(([feature, approvalRes, commentRes, configRes]) => {
+      this.feature = feature;
+      this.comments = commentRes.comments;
+
+      this.approvals = approvalRes.approvals;
+      const numPending = this.approvals.filter((av) =>
+        PENDING_STATES.includes(av.state)).length;
+      this.subsetPending = (numPending > 0 &&
+                            numPending < APPROVAL_DEFS.length);
+      this.showAllIntents = numPending == 0;
+      this.changedApprovalsByField = new Map();
+      this.needsSave = false;
+
+      this.configs = configRes.configs;
+      this.showConfigs = new Set(this.configs.map(c => c.field_id));
+      this.changedConfigsByField = new Map();
+      this.possibleOwners = configRes.possible_owners;
+
       this.loading = false;
     }).catch(() => {
-      const toastEl = document.querySelector('chromedash-toast');
-      toastEl.showMessage('Some errors occurred. Please refresh the page or try again later.');
+      showToastMessage('Some errors occurred. Please refresh the page or try again later.');
       this.handleCancel();
     });
   }

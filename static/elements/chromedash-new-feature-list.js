@@ -1,5 +1,5 @@
 import {LitElement, css, html} from 'lit';
-import './chromedash-approvals-dialog';
+import {openApprovalsDialog} from './chromedash-approvals-dialog';
 import './chromedash-feature-table';
 import SHARED_STYLES from '../css/shared.css';
 
@@ -49,8 +49,7 @@ class ChromedashNewFeatureList extends LitElement {
 
   handleOpenApprovals(e) {
     const featureId = e.detail.featureId;
-    const dialog = this.shadowRoot.querySelector('chromedash-approvals-dialog');
-    dialog.openWithFeature(featureId);
+    openApprovalsDialog(this.signedInUser, featureId);
   }
 
   renderBox(query) {
@@ -76,9 +75,6 @@ class ChromedashNewFeatureList extends LitElement {
   render() {
     return html`
       ${this.renderFeatureList()}
-      <chromedash-approvals-dialog
-        .signedInUser=${this.signedInUser}
-      ></chromedash-approvals-dialog>
     `;
   }
 }

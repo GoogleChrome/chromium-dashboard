@@ -1,4 +1,5 @@
 import {LitElement, html} from 'lit';
+import {openApprovalsDialog} from './chromedash-approvals-dialog';
 // eslint-disable-next-line no-unused-vars
 import './chromedash-feature';
 import {FEATURELIST_CSS} from '../sass/elements/chromedash-featurelist-css.js';
@@ -175,8 +176,7 @@ class ChromedashFeaturelist extends LitElement {
 
   _onOpenApprovals(e) {
     const featureId = e.detail.featureId;
-    const dialog = this.shadowRoot.querySelector('chromedash-approvals-dialog');
-    dialog.openWithFeature(featureId);
+    openApprovalsDialog(this.signedInUser, featureId);
   }
 
   _filterProperty(propPath, regExp, feature) {
@@ -402,10 +402,6 @@ class ChromedashFeaturelist extends LitElement {
       ${numOverLimit > 0 ?
         html`<p>To see ${numOverLimit} earlier features, please enter a more specific query.</p>` :
         ''}
-
-      <chromedash-approvals-dialog
-        .signedInUser=${this.signedInUser}
-      ></chromedash-approvals-dialog>
     `;
   }
 }
