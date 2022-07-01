@@ -33,7 +33,7 @@ export function openApprovalsDialog(featureId) {
  * @param {string} slotName
  * @return {Element}
  */
- export function slotAssignedElements(component, slotName) {
+export function slotAssignedElements(component, slotName) {
   const slotSelector = slotName ? `slot[name=${slotName}]` : 'slot';
   return component.shadowRoot.querySelector(slotSelector).assignedElements({flatten: true});
 }
