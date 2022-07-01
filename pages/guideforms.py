@@ -21,6 +21,9 @@ from django.forms.widgets import Textarea, Input
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
 
+from django.utils.html import conditional_escape
+from django.utils.safestring import mark_safe
+
 # from google.appengine.api import users
 from framework import users
 
@@ -149,17 +152,18 @@ MULTI_URL_FIELD_ATTRS = {
 ALL_FIELDS = {
     'name': forms.CharField(
         required=True, label='Feature name',
-        widget=ChromedashTextInput(),
-        help_text=
-        ('Capitalize only the first letter and the beginnings of '
-         'proper nouns. '
-         '<a target="_blank" href="'
-         'https://github.com/GoogleChrome/chromium-dashboard/wiki/'
-         'EditingHelp#feature-name">Learn more</a>. '
-         '<a target="_blank" href="'
-         'https://github.com/GoogleChrome/chromium-dashboard/wiki/'
-         'EditingHelp#feature-name-example">Example</a>.'
-        )),
+        widget=ChromedashTextInput()
+        # help_text=
+        # ('Capitalize only the first letter and the beginnings of '
+        #  'proper nouns. '
+        #  '<a target="_blank" href="'
+        #  'https://github.com/GoogleChrome/chromium-dashboard/wiki/'
+        #  'EditingHelp#feature-name">Learn more</a>. '
+        #  '<a target="_blank" href="'
+        #  'https://github.com/GoogleChrome/chromium-dashboard/wiki/'
+        #  'EditingHelp#feature-name-example">Example</a>.'
+        # )
+        ),
 
     'summary': forms.CharField(
         required=True,
@@ -829,20 +833,57 @@ METADATA_FIELDS = [
 ]
 
 class ChromedashForm(forms.Form):
+    def simple_html_output(self, normal_row, help_text_html):
+        "Output HTML. Used by as_table(), as_ul(), as_p()."
+        output = []
+
+        for name, field in self.fields.items():
+            html_class_attr = ''
+            bf = self[name]
+            bf_errors = self.error_class(bf.errors)
+
+            # Create a 'class="..."' attribute if the row should have any
+            # CSS classes applied.
+            css_classes = bf.css_classes()
+            if css_classes:
+                html_class_attr = ' class="%s"' % css_classes
+
+            if bf.label:
+                label = conditional_escape(bf.label)
+                label = bf.label_tag(label) or ''
+            else:
+                label = ''
+
+            if field.help_text:
+                help_text = help_text_html % field.help_text
+            else:
+                help_text = ''
+
+            output.append(normal_row % {
+                'name': name,
+                'errors': bf_errors,
+                'label': label,
+                'field': bf,
+                'help_text': help_text,
+                'html_class_attr': html_class_attr,
+                'css_classes': css_classes,
+                'field_name': bf.html_name,
+            })
+
+        return mark_safe('\n'.join(output))
 
     def as_table(self):
         "Return this form rendered as HTML <tr>s -- excluding the <table></table>."
         label = '<span slot="label">%(label)s</span>'
         field = '<span slot="field">%(field)s</span>'
         error = '<span slot="error">%(errors)s</span>'
-        help =  '<span slot="help">%(help_text)s</span>'
-        html = '<chromedash-form-field %(html_class_attr)s>' + label + field + error + help + '%(label)s' + '</chromedash-form-field>'
-        return self._html_output(
+        help = '<span slot="help">%(help_text)s</span>'
+        # 
+        html = '<chromedash-form-field name="%(name)s" %(html_class_attr)s>' + label + field + error + help + '%(label)s' + '</chromedash-form-field>'
+        return self.simple_html_output(
             normal_row=html,
-            error_row='<chromedash-form-field><span slot="error">%s</span></chromedash-form-field>',
-            row_ender='</chromedash-form-field>',
-            help_text_html='<span class="helptext">%s</span>',
-            errors_on_separate_row=False,
+            # error_row='<chromedash-form-field><span slot="error">%s</span></chromedash-form-field>',
+            help_text_html='<span class="helptext">%s</span>'
         )
 
 def define_form_class_using_shared_fields(class_name, field_spec_list):
@@ -853,7 +894,8 @@ def define_form_class_using_shared_fields(class_name, field_spec_list):
   for field_spec in field_spec_list:
     form_field_name = field_spec.split('=')[0]  # first or only
     shared_field_name = field_spec.split('=')[-1] # last or only
-    class_dict[form_field_name] = ALL_FIELDS[shared_field_name]
+    properties = ALL_FIELDS[shared_field_name]
+    class_dict[form_field_name] = properties
     class_dict['field_order'].append(form_field_name)
 
   return type(class_name, (ChromedashForm,), class_dict)
