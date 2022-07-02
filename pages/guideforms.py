@@ -21,6 +21,9 @@ from django.forms.widgets import Textarea, Input
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
 
+from django.utils.html import conditional_escape
+from django.utils.safestring import mark_safe
+
 # from google.appengine.api import users
 from framework import users
 
@@ -96,15 +99,6 @@ SHIPPED_WEBVIEW_HELP_TXT = ('First milestone to ship with this status. '
                             'Applies to Enabled by default, Browser '
                             'Intervention, Deprecated, and Removed.')
 
-SUMMARY_HELP_TXT = (
-  'NOTE: Text in the beta release post, the enterprise release notes, '
-  'and other external sources will be based on this text.\n\n'
-  'Begin with one line explaining what the feature does. Add one or two '
-  'lines explaining how this feature helps developers. Avoid language such '
-  'as "a new feature". They all are or have been new features.\n\n'
-  'Write it from a web developer\'s point of view.\n\n'
-  'Follow the example link below for more guidance.')
-
 # Patterns from https://www.oreilly.com/library/view/regular-expressions-cookbook/9781449327453/ch04s01.html
 # Removing single quote ('), backtick (`), and pipe (|) since they are risky unless properly escaped everywhere.
 # Also removing ! and % because they have special meaning for some older email routing systems.
@@ -149,65 +143,34 @@ MULTI_URL_FIELD_ATTRS = {
 ALL_FIELDS = {
     'name': forms.CharField(
         required=True, label='Feature name',
-        widget=ChromedashTextInput(),
-        help_text=
-        ('Capitalize only the first letter and the beginnings of '
-         'proper nouns. '
-         '<a target="_blank" href="'
-         'https://github.com/GoogleChrome/chromium-dashboard/wiki/'
-         'EditingHelp#feature-name">Learn more</a>. '
-         '<a target="_blank" href="'
-         'https://github.com/GoogleChrome/chromium-dashboard/wiki/'
-         'EditingHelp#feature-name-example">Example</a>.'
-        )),
+        widget=ChromedashTextInput()),
 
     'summary': forms.CharField(
         required=True,
-        widget=ChromedashTextarea(),
-        help_text=
-        (SUMMARY_HELP_TXT +
-         '<br><a target="_blank" href="'
-         'https://github.com/GoogleChrome/chromium-dashboard/wiki/'
-         'EditingHelp#summary-example">Guidelines and example</a>.'
-        )),
+        widget=ChromedashTextarea()),
 
     'owner': MultiEmailField(
         required=True, label='Feature owners',
-        widget=forms.EmailInput(attrs=MULTI_EMAIL_FIELD_ATTRS),
-        help_text=('Comma separated list of full email addresses. '
-                   'Prefer @chromium.org.')),
+        widget=forms.EmailInput(attrs=MULTI_EMAIL_FIELD_ATTRS)),
 
     'category': forms.ChoiceField(
         required=False,
-        help_text=('Select the most specific category. If unsure, '
-                   'leave as "%s".' % models.FEATURE_CATEGORIES[models.MISC]),
         initial=models.MISC,
         choices=sorted(models.FEATURE_CATEGORIES.items(), key=lambda x: x[1])),
 
     'feature_type': forms.ChoiceField(
         required=False,
-        help_text=('Select the feature type.'),
         initial=models.FEATURE_TYPE_INCUBATE_ID,
         choices=sorted(models.FEATURE_TYPES.items())),
 
     'intent_stage': forms.ChoiceField(
         required=False, label='Process stage',
-        help_text='Select the appropriate process stage.',
         initial=models.INTENT_IMPLEMENT,
         choices=list(models.INTENT_STAGES.items())),
 
     'motivation': forms.CharField(
         label='Motivation', required=False,
-        widget=ChromedashTextarea(),
-        help_text=
-        ('Explain why the web needs this change. It may be useful '
-         'to describe what web developers are forced to do without '
-         'it. When possible, add links to your explainer '
-         'backing up your claims. '
-         '<a target="_blank" href="'
-         'https://github.com/GoogleChrome/chromium-dashboard/wiki/'
-         'EditingHelp#motivation-example">Example</a>.'
-        )),
+        widget=ChromedashTextarea()),
 
     'deprecation_motivation': forms.CharField(  # Sets motivation DB field.
         label='Motivation', required=False,
@@ -255,10 +218,7 @@ ALL_FIELDS = {
     'unlisted': forms.BooleanField(
       label="Unlisted",
       widget=forms.CheckboxInput(attrs={'label': "Unlisted"}),
-      required=False, initial=False,
-      help_text=('Check this box for draft features that should not appear '
-                 'in the feature list. Anyone with the link will be able to '
-                 'view the feature on the detail page.')),
+      required=False, initial=False),
 
     'spec_link': forms.URLField(
         required=False, label='Spec link',
@@ -683,24 +643,13 @@ ALL_FIELDS = {
 
     'bug_url': forms.URLField(
         required=False, label='Tracking bug URL',
-        widget=forms.URLInput(attrs=URL_FIELD_ATTRS),
-        help_text=
-        ('Tracking bug url (https://bugs.chromium.org/...). This bug '
-         'should have "Type=Feature" set and be world readable. '
-         'Note: This field only accepts one URL.')),
+        widget=forms.URLInput(attrs=URL_FIELD_ATTRS)),
 
     # TODO(jrobbins): Consider a button to file the launch bug automatically,
     # or a deep link that has some feature details filled in.
     'launch_bug_url': forms.URLField(
         required=False, label='Launch bug URL',
-        widget=forms.URLInput(attrs=URL_FIELD_ATTRS),
-        help_text=(
-            'Launch bug url (https://bugs.chromium.org/...) to track launch '
-            'approvals. '
-            '<a target="_blank" href="'
-            'https://bugs.chromium.org/p/chromium/issues/'
-            'entry?template=Chrome+Launch+Feature" '
-            '>Create launch bug</a>.')),
+        widget=forms.URLInput(attrs=URL_FIELD_ATTRS)),
 
     'initial_public_proposal_url': forms.URLField(
         required=False, label='Initial public proposal URL',
@@ -711,9 +660,6 @@ ALL_FIELDS = {
 
     'blink_components': forms.ChoiceField(
       required=False, label='Blink component',
-      help_text=
-      ('Select the most specific component. If unsure, leave as "%s".' %
-       models.BlinkComponent.DEFAULT_COMPONENT),
       choices=[(x, x) for x in models.BlinkComponent.fetch_all_components()],
       initial=[models.BlinkComponent.DEFAULT_COMPONENT]),
 
@@ -724,8 +670,7 @@ ALL_FIELDS = {
 
     'impl_status_chrome': forms.ChoiceField(
         required=False, label='Implementation status',
-        choices=list(models.IMPLEMENTATION_STATUS.items()),
-        help_text='Implementation status in Chromium'),
+        choices=list(models.IMPLEMENTATION_STATUS.items())),
 
     'shipped_milestone': forms.IntegerField(
         required=False, label='Chrome for desktop',
@@ -806,8 +751,7 @@ ALL_FIELDS = {
         required=False, initial=False),
 
     'search_tags': forms.CharField(
-        label='Search tags', required=False,
-        help_text='Comma separated keywords used only in search'),
+        label='Search tags', required=False),
 
     'comments': forms.CharField(
         label='Comments', required=False,
@@ -829,20 +773,59 @@ METADATA_FIELDS = [
 ]
 
 class ChromedashForm(forms.Form):
+    def simple_html_output(self, normal_row, help_text_html):
+        """
+        Output HTML. Used by override of as_table() to support chromedash uses only.
+        Simplified to drop support for hidden form fields and errors at the top, 
+        which we are not using.
+        """
+        output = []
+
+        for name, field in self.fields.items():
+            html_class_attr = ''
+            bf = self[name]
+            bf_errors = self.error_class(bf.errors)
+
+            # Create a 'class="..."' attribute if the row should have any
+            # CSS classes applied.
+            css_classes = bf.css_classes()
+            if css_classes:
+                html_class_attr = ' class="%s"' % css_classes
+
+            if bf.label:
+                label = conditional_escape(bf.label)
+                label = bf.label_tag(label) or ''
+            else:
+                label = ''
+
+            if field.help_text:
+                help_text = help_text_html % field.help_text
+            else:
+                help_text = ''
+
+            output.append(normal_row % {
+                'name': name,
+                'errors': bf_errors,
+                'label': label,
+                'field': bf,
+                'help_text': help_text,
+                'html_class_attr': html_class_attr,
+                'css_classes': css_classes,
+                'field_name': bf.html_name,
+            })
+
+        return mark_safe('\n'.join(output))
 
     def as_table(self):
         "Return this form rendered as HTML <tr>s -- excluding the <table></table>."
         label = '<span slot="label">%(label)s</span>'
         field = '<span slot="field">%(field)s</span>'
         error = '<span slot="error">%(errors)s</span>'
-        help =  '<span slot="help">%(help_text)s</span>'
-        html = '<chromedash-form-field %(html_class_attr)s>' + label + field + error + help + '%(label)s' + '</chromedash-form-field>'
-        return self._html_output(
+        help = '<span slot="help">%(help_text)s</span>'
+        html = '<chromedash-form-field name="%(name)s" %(html_class_attr)s>' + label + field + error + help + '%(label)s' + '</chromedash-form-field>'
+        return self.simple_html_output(
             normal_row=html,
-            error_row='<chromedash-form-field><span slot="error">%s</span></chromedash-form-field>',
-            row_ender='</chromedash-form-field>',
-            help_text_html='<span class="helptext">%s</span>',
-            errors_on_separate_row=False,
+            help_text_html='<span class="helptext">%s</span>'
         )
 
 def define_form_class_using_shared_fields(class_name, field_spec_list):
@@ -853,7 +836,8 @@ def define_form_class_using_shared_fields(class_name, field_spec_list):
   for field_spec in field_spec_list:
     form_field_name = field_spec.split('=')[0]  # first or only
     shared_field_name = field_spec.split('=')[-1] # last or only
-    class_dict[form_field_name] = ALL_FIELDS[shared_field_name]
+    properties = ALL_FIELDS[shared_field_name]
+    class_dict[form_field_name] = properties
     class_dict['field_order'].append(form_field_name)
 
   return type(class_name, (ChromedashForm,), class_dict)
