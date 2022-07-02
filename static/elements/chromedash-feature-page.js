@@ -1,7 +1,8 @@
 import {LitElement, css, html, nothing} from 'lit';
 import './chromedash-feature-detail';
 import './chromedash-gantt';
-import {autolink, showToastMessage, openApprovalsDialog} from './utils.js';
+import {openApprovalsDialog} from './chromedash-approvals-dialog';
+import {autolink, showToastMessage} from './utils.js';
 
 import {SHARED_STYLES} from '../sass/shared-css.js';
 
@@ -155,28 +156,28 @@ export class ChromedashFeaturePage extends LitElement {
 
   handleApprovalClick(e) {
     e.preventDefault();
-    openApprovalsDialog(this.featureId);
+    openApprovalsDialog(this.user.email, this.featureId);
   }
 
   renderSkeletonSection() {
     return html`
-          <section>
-            <h3><sl-skeleton effect="sheen"></sl-skeleton></h3>
-            <p>
-              <sl-skeleton effect="sheen"></sl-skeleton>
-              <sl-skeleton effect="sheen"></sl-skeleton>
-            </p>
-          </section>
+      <section>
+        <h3><sl-skeleton effect="sheen"></sl-skeleton></h3>
+        <p>
+          <sl-skeleton effect="sheen"></sl-skeleton>
+          <sl-skeleton effect="sheen"></sl-skeleton>
+        </p>
+      </section>
     `;
   }
 
   renderSkeletons() {
     return html`
-        <div id="feature" style="margin-top: 65px;">
-          ${this.renderSkeletonSection()}
-          ${this.renderSkeletonSection()}
-          ${this.renderSkeletonSection()}
-          ${this.renderSkeletonSection()}
+      <div id="feature" style="margin-top: 65px;">
+        ${this.renderSkeletonSection()}
+        ${this.renderSkeletonSection()}
+        ${this.renderSkeletonSection()}
+        ${this.renderSkeletonSection()}
       </div>
    `;
   }
