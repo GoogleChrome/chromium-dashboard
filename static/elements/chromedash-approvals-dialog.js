@@ -36,14 +36,14 @@ const APPROVAL_DEFS = [
 
 let approvalDialogEl;
 
-export async function openApprovalsDialog(signedInUser, featureId) {
+export async function openApprovalsDialog(signedInUser, feature) {
   if (!approvalDialogEl) {
     approvalDialogEl = document.createElement('chromedash-approvals-dialog');
     approvalDialogEl.signedInUser = signedInUser;
     document.body.appendChild(approvalDialogEl);
     await approvalDialogEl.updateComplete;
   }
-  approvalDialogEl.openWithFeature(featureId);
+  approvalDialogEl.openWithFeature(feature);
 }
 
 
@@ -51,7 +51,6 @@ class ChromedashApprovalsDialog extends LitElement {
   static get properties() {
     return {
       signedInUser: {type: String},
-      featureId: {type: Number},
       canApprove: {type: Boolean},
       feature: {type: Object},
       approvals: {type: Array},
@@ -71,7 +70,6 @@ class ChromedashApprovalsDialog extends LitElement {
     super();
     this.signedInUser = ''; // email address
     this.canApprove = false;
-    this.featureId = 0;
     this.feature = {};
     this.approvals = [];
     this.comments = [];
@@ -162,19 +160,16 @@ class ChromedashApprovalsDialog extends LitElement {
       `];
   }
 
-  openWithFeature(featureId) {
-    this.featureId = featureId;
+  openWithFeature(feature) {
     this.loading = true;
+    this.feature = feature;
     this.shadowRoot.querySelector('sl-dialog').show();
+    const featureId = this.feature.id;
     Promise.all([
-      window.csClient.getFeature(this.featureId),
-      window.csClient.getApprovals(this.featureId),
-      window.csClient.getComments(this.featureId),
-      window.csClient.getApprovalConfigs(this.featureId),
-    ]).then(([feature, approvalRes, commentRes, configRes]) => {
-      this.feature = feature;
-      this.comments = commentRes.comments;
-
+      window.csClient.getApprovals(featureId),
+      window.csClient.getComments(featureId),
+      window.csClient.getApprovalConfigs(featureId),
+    ]).then(([approvalRes, commentRes, configRes]) => {
       this.approvals = approvalRes.approvals;
       const numPending = this.approvals.filter((av) =>
         PENDING_STATES.includes(av.state)).length;
@@ -183,6 +178,8 @@ class ChromedashApprovalsDialog extends LitElement {
       this.showAllIntents = numPending == 0;
       this.changedApprovalsByField = new Map();
       this.needsSave = false;
+
+      this.comments = commentRes.comments;
 
       this.configs = configRes.configs;
       this.showConfigs = new Set(this.configs.map(c => c.field_id));

@@ -69,8 +69,7 @@ export class ChromedashMyFeaturesPage extends LitElement {
   }
 
   handleOpenApprovals(e) {
-    const featureId = e.detail.featureId;
-    openApprovalsDialog(this.user.email, featureId);
+    openApprovalsDialog(this.user.email, e.detail.feature);
   }
 
   renderBox(title, query, columns, opened=true) {

@@ -78,7 +78,7 @@ customElements.define('chromedash-form-field', ChromedashFormField);
 
 // Map of specifications for all form fields.
 // Actually, this includes only fields for which we have migrated the help_text from the guideforms.py specifications.
-// TODO: 
+// TODO:
 //   * Finish migrating remaining fields.
 //   * Migrate other properties.
 //   * Move to its own file.
