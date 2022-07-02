@@ -2,6 +2,11 @@ import {LitElement, html, nothing} from 'lit';
 import {ROADMAP_MILESTONE_CARD_CSS} from
   '../sass/elements/chromedash-roadmap-milestone-card-css.js';
 
+const REMOVED_STATUS = ['Removed'];
+const DEPRECATED_STATUS = ['Deprecated', 'No longer pursuing'];
+const ORIGIN_TRIAL = ['Origin trial'];
+const BROWSER_INTERVENTION = ['Browser Intervention'];
+
 class ChromedashRoadmapMilestoneCard extends LitElement {
   static styles = ROADMAP_MILESTONE_CARD_CSS;
   static get properties() {
@@ -12,12 +17,7 @@ class ChromedashRoadmapMilestoneCard extends LitElement {
       templateContent: {type: Object},
       channel: {type: Object},
       showDates: {type: Boolean},
-      removedStatus: {type: Array},
-      originTrialStatus: {type: Array},
-      browserInterventionStatus: {type: Array},
-      deprecatedStatus: {type: Array},
       signedIn: {type: Boolean},
-      cardWidth: {type: Number},
       noFeatureString: {type: String},
     };
   }
@@ -152,26 +152,27 @@ class ChromedashRoadmapMilestoneCard extends LitElement {
 
   _cardFeatureItemTemplate(f, shippingType) {
     return html `
-    <li data-feature-id="${f.id}"
-        class="${f.id == this.highlightFeature ? 'highlight' : ''}">
-      <a href="/feature/${f.id}" @mouseenter="${this.highlight}" @mouseleave="${this.removeHighlight}">${f.name}</a>
+    <li data-feature-id="${f.id}" class="${f.id == this.highlightFeature ? 'highlight' : ''}">
+      <a id="feature_link" href="/feature/${f.id}" @mouseenter="${this.highlight}" @mouseleave="${this.removeHighlight}">
+        ${f.name}
+      </a>
       <span class="icon_row">
-        ${this.originTrialStatus.includes(shippingType) ? html`
+        ${ORIGIN_TRIAL.includes(shippingType) ? html`
         <span class="tooltip" title="Origin Trial">
           <iron-icon icon="chromestatus:extension" class="experimental" data-tooltip></iron-icon>
         </span>
         ` : nothing}
-        ${this.browserInterventionStatus.includes(shippingType) ? html`
+        ${BROWSER_INTERVENTION.includes(shippingType) ? html`
         <span class="tooltip" title="Browser intervention">
           <iron-icon icon="chromestatus:pan-tool" class="intervention" data-tooltip></iron-icon>
         </span>
         ` : nothing}
-        ${this.removedStatus.includes(shippingType) ? html`
+        ${REMOVED_STATUS.includes(shippingType) ? html`
         <span class="tooltip" title="Removed">
           <iron-icon icon="chromestatus:cancel" class="remove" data-tooltip></iron-icon>
         </span>
         ` : nothing}
-        ${this.deprecatedStatus.includes(shippingType) ? html`
+        ${DEPRECATED_STATUS.includes(shippingType) ? html`
         <span class="tooltip" title="Deprecated">
           <iron-icon icon="chromestatus:warning" class="deprecated" data-tooltip></iron-icon>
         </span>
@@ -215,20 +216,8 @@ class ChromedashRoadmapMilestoneCard extends LitElement {
     `;
   }
 
-
-  _widthStyle() {
-    return html`
-      <style>
-        :host {
-          width: ${this.cardWidth}px;
-        }
-      </style>
-    `;
-  }
-
   render() {
     return html`
-      ${this._widthStyle()}
       <section class="release">
         ${this._cardHeaderTemplate()}
         ${this._cardFeatureListTemplate()}

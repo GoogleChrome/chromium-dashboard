@@ -70,7 +70,7 @@ describe('chromedash-feature-page', () => {
 
     // For the child component - chromedash-gantt
     sinon.stub(window.csClient, 'getChannels');
-    window.csClient.getChannels.returns(Promise.resolve(channelsPromise));
+    window.csClient.getChannels.returns(channelsPromise);
   });
 
   afterEach(() => {

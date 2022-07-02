@@ -49,5 +49,6 @@ import './elements/chromedash-timeline';
 import './elements/chromedash-toast';
 import './elements/chromedash-roadmap';
 import './elements/chromedash-roadmap-milestone-card';
+import './elements/chromedash-roadmap-page';
 import './elements/chromedash-userlist';
 import './elements/chromedash-x-meter';

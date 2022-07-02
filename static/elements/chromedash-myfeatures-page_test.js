@@ -20,7 +20,7 @@ describe('chromedash-myfeatures-page', () => {
 
     // For the child component - chromedash-feature-table
     sinon.stub(window.csClient, 'searchFeatures');
-    window.csClient.searchFeatures.returns(Promise.resolve([]));
+    window.csClient.searchFeatures.returns(Promise.resolve({features: []}));
 
     recentReview = null;
     pendingReview = null;
