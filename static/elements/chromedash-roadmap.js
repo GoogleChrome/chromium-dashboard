@@ -57,7 +57,7 @@ class ChromedashRoadmap extends LitElement {
       channels: {attribute: false},
       signedIn: {type: Boolean},
       starredFeatures: {type: Object}, // will contain a set of starred features
-      columnNumber: {type: Number},
+      numColumns: {type: Number},
       cardWidth: {type: Number}, // width of each milestone card
       lastFutureFetchedOn: {type: Number}, // milestone number rendering of which caused fetching of next milestones
       lastPastFetchedOn: {type: Number}, // milestone number rendering of which caused fetching of previous milestones
@@ -72,7 +72,7 @@ class ChromedashRoadmap extends LitElement {
 
   constructor() {
     super();
-    this.columnNumber = 0;
+    this.numColumns = 0;
     this.cardWidth = 0;
     this.starredFeatures = new Set();
     this.futureMilestoneArray = [];
@@ -110,7 +110,7 @@ class ChromedashRoadmap extends LitElement {
       this.channels = channels;
       this.fetchNextBatch(channels[DEFAULT_CHANNEL_TYPES[1]].version, true);
       this.fetchPreviousBatch(channels[DEFAULT_CHANNEL_TYPES[1]].version);
-      this.lastMilestoneVisible = channels[DEFAULT_CHANNEL_TYPES[this.columnNumber-1]].version;
+      this.lastMilestoneVisible = channels[DEFAULT_CHANNEL_TYPES[this.numColumns-1]].version;
 
       // TODO(kevinshen56714): Remove this once SPA index page is set up.
       // Has to include this for now to remove the spinner at _base.html.

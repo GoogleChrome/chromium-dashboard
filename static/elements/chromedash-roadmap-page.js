@@ -6,6 +6,9 @@ import {showToastMessage} from './utils';
 import {SHARED_STYLES} from '../sass/shared-css.js';
 
 export class ChromedashRoadmapPage extends LitElement {
+  sectionRef = createRef();
+  roadmapRef = createRef();
+
   static get styles() {
     return [
       ...SHARED_STYLES,
@@ -34,8 +37,7 @@ export class ChromedashRoadmapPage extends LitElement {
     return {
       user: {type: Object},
       cardWidth: {type: Number},
-      columnNumber: {type: Number},
-      roadmapRef: {type: Element},
+      numColumns: {type: Number},
     };
   }
 
@@ -43,8 +45,7 @@ export class ChromedashRoadmapPage extends LitElement {
     super();
     this.user = {};
     this.cardWidth = 0;
-    this.columnNumber = 0;
-    this.roadmapRef = createRef();
+    this.numColumns = 0;
   }
 
   connectedCallback() {
@@ -63,7 +64,6 @@ export class ChromedashRoadmapPage extends LitElement {
   }
 
   fetchData() {
-    this.loading = true;
     window.csClient.getPermissions().then((user) => {
       this.user = user;
     }).catch(() => {
@@ -72,18 +72,17 @@ export class ChromedashRoadmapPage extends LitElement {
   }
 
   handleResize() {
-    const cardContainer = this.shadowRoot.querySelector('#releases-section');
-    const containerWidth = cardContainer.offsetWidth;
+    const containerWidth = this.sectionRef.value.offsetWidth;
     const margin = 16;
 
-    let columnNumber = 3;
+    let numColumns = 3;
     if (window.matchMedia('(max-width: 768px)').matches) {
-      columnNumber = 1;
+      numColumns = 1;
     } else if (window.matchMedia('(max-width: 1152px)').matches) {
-      columnNumber = 2;
+      numColumns = 2;
     }
-    this.columnNumber = columnNumber;
-    this.cardWidth = (containerWidth/columnNumber) - margin;
+    this.numColumns = numColumns;
+    this.cardWidth = (containerWidth/numColumns) - margin;
 
     this.updateRoadmapMargin(false);
   };
@@ -130,7 +129,7 @@ export class ChromedashRoadmapPage extends LitElement {
           <h3>Roadmap</h3>
         </div>
       </div>
-      <section id="releases-section">
+      <section id="releases-section" ${ref(this.sectionRef)}>
         <div class="timeline-controls">
           <button id="previous-button" aria-label="Button to move to previous release" @click=${this.handleMove}>Previous</button>
           <button id="next-button" aria-label="Button to move to later release" @click=${this.handleMove}>Next</button>
@@ -139,11 +138,10 @@ export class ChromedashRoadmapPage extends LitElement {
           ${ref(this.roadmapRef)}
           class="animate"
           aria-label="List of milestone releases"
-          .columnNumber=${this.columnNumber}
+          .numColumns=${this.numColumns}
           .cardWidth=${this.cardWidth}
           ?signedIn=${Boolean(this.user)}>
         </chromedash-roadmap>
-        <div class="timeline-controls"></div>
       </section>
     `;
   }
