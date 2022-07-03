@@ -100,8 +100,7 @@ export class ChromedashSettingsPage extends LitElement {
                 <td>
                   <chromedash-checkbox
                     id="id_notify_as_starrer"
-                    .name="notify_as_starrer"
-                    .size="small"
+                    name="notify_as_starrer"
                     ?checked=${this.notify_as_starrer}
                     @input=${this.handleChange}>
                   </chromedash-checkbox>

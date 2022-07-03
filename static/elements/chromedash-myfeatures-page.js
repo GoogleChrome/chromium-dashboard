@@ -20,7 +20,7 @@ export class ChromedashMyFeaturesPage extends LitElement {
   static get properties() {
     return {
       user: {type: Object},
-      starredFeatures: {type: Set}, // will contain a set of starred features
+      starredFeatures: {attribute: false}, // will contain a set of starred features
     };
   }
 
