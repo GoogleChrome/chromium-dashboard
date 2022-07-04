@@ -1,7 +1,7 @@
 import {LitElement, html} from 'lit';
 
 
-class ChromedashFooter extends LitElement {
+export class ChromedashFooter extends LitElement {
   render() {
     // TODO: Create a precomiled main css file and import it instead of inlining it here
     return html`
