@@ -194,25 +194,6 @@ header {
   }
 }
 
-footer {
-  background: var(--footer-background);
-  box-shadow: 0 -2px 5px var(--shadow-color);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  text-align: center;
-  align-items: center;
-  margin-top: 2em;
-  padding: var(--content-padding-half);
-
-  div {
-    > * + * {
-      margin-left: var(--content-padding);
-      padding-left: var(--content-padding);
-    }
-  }
-}
-
 .description {
   line-height: 1.4;
 }
@@ -328,15 +309,8 @@ footer {
   color: var(--warning-color);
 }
 
-// Enable sticky footer when the screen is wide and long enough
+// Add margin-bottom when sticky footer is enabled
 @media only screen and (min-width: 601px) and (min-height: 601px) {
-  footer {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-  }
-
   #content-column {
     margin-bottom: 54px + $content-padding * 2; // bottom bar + some.
   }
