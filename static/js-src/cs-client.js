@@ -161,6 +161,16 @@ class ChromeStatusClient {
       .then((res) => res.user);
   }
 
+  // Settings API
+
+  getSettings() {
+    return this.doGet('/currentuser/settings');
+  }
+
+  setSettings(notify) {
+    return this.doPost('/currentuser/settings', {notify: notify});
+  }
+
   // Star API
 
   getStars() {

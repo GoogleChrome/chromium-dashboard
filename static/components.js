@@ -44,6 +44,7 @@ import './elements/chromedash-metadata';
 import './elements/chromedash-metrics';
 import './elements/chromedash-myfeatures-page';
 import './elements/chromedash-process-overview';
+import './elements/chromedash-settings-page';
 import './elements/chromedash-textarea';
 import './elements/chromedash-timeline';
 import './elements/chromedash-toast';
