@@ -179,27 +179,27 @@ class ChromedashFeatureTable extends LitElement {
     return false; // Causes features to render instead.
   }
 
-  openApprovalsDialog(featureId) {
+  openApprovalsDialog(feature) {
     // handled in chromedash-myfeatures-page.js
     this._fireEvent('open-approvals-event', {
-      featureId: featureId,
+      feature: feature,
     });
   }
 
-  doLGTM(featureId) {
+  doLGTM(feature) {
     // TODO(jrobbins): Make it pre-select Approved and add comment.
-    this.openApprovalsDialog(featureId);
+    this.openApprovalsDialog(feature);
   }
 
-  doSnooze(featureId) {
+  doSnooze(feature) {
     // TODO(jrobbins): Make it pre-set a new next-review-date value.
-    this.openApprovalsDialog(featureId);
+    this.openApprovalsDialog(feature);
   }
 
   renderApprovalsIcon(feature) {
     return html`
       <a class="tooltip"
-        @click="${() => this.openApprovalsDialog(feature.id)}"
+        @click="${() => this.openApprovalsDialog(feature)}"
         title="Review approvals">
         <iron-icon icon="chromestatus:approval"></iron-icon>
       </a>
@@ -252,13 +252,13 @@ class ChromedashFeatureTable extends LitElement {
       // TODO(jrobbins): Show these buttons when they work.
       // let lgtmButton = html`
       //  <button data-feature-id="${feature.id}"
-      //          @click="${() => this.doLGTM(feature.id)}">
+      //          @click="${() => this.doLGTM(feature)}">
       //    Add LGTM
       //  </button>
       // `;
       // let snoozeButton = html`
       //  <button data-feature-id="${feature.id}"
-      //          @click="${() => this.doSnooze(feature.id)}">
+      //          @click="${() => this.doSnooze(feature)}">
       //    Snooze
       //  </button>
       // `;

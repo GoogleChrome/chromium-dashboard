@@ -21,10 +21,10 @@ export class ChromedashCheckbox extends LitElement {
     return [
       ...SHARED_STYLES,
       css`
-:host sl-checkbox::part(label) {
-    font-size: var(--sl-input-font-size-small);
-}
-  `];
+        :host sl-checkbox::part(label) {
+            font-size: var(--sl-input-font-size-small);
+        }
+    `];
   }
 
   render() {

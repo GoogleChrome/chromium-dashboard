@@ -48,8 +48,7 @@ class ChromedashNewFeatureList extends LitElement {
   }
 
   handleOpenApprovals(e) {
-    const featureId = e.detail.featureId;
-    openApprovalsDialog(this.signedInUser, featureId);
+    openApprovalsDialog(this.signedInUser, e.detail.feature);
   }
 
   renderBox(query) {

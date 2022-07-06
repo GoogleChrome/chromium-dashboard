@@ -197,10 +197,10 @@ class ChromedashFeature extends LitElement {
       });
   }
 
-  openApprovalsDialog(featureId) {
+  openApprovalsDialog(feature) {
     // handled in chromedash-myfeatures-page.js
     this._fireEvent('open-approvals-event', {
-      featureId: featureId,
+      feature: feature,
     });
   }
 
@@ -211,7 +211,7 @@ class ChromedashFeature extends LitElement {
           ${this.canApprove ? html`
             <span class="tooltip" title="Review approvals">
               <a id="approvals-icon" data-tooltip
-                 @click="${() => this.openApprovalsDialog(this.feature.id)}">
+                 @click="${() => this.openApprovalsDialog(this.feature)}">
                 <iron-icon icon="chromestatus:approval"></iron-icon>
               </a>
             </span>

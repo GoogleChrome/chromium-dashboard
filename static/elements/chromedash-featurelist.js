@@ -175,8 +175,7 @@ class ChromedashFeaturelist extends LitElement {
   }
 
   _onOpenApprovals(e) {
-    const featureId = e.detail.featureId;
-    openApprovalsDialog(this.signedInUser, featureId);
+    openApprovalsDialog(this.signedInUser, e.detail.feature);
   }
 
   _filterProperty(propPath, regExp, feature) {

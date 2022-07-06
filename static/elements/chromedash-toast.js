@@ -9,6 +9,8 @@ class ChromedashToast extends LitElement {
       msg: {type: String},
       open: {type: Boolean, reflect: true},
       actionLabel: {attribute: false},
+      currentTimeout: {type: Number},
+      waitingForTransition: {type: Boolean},
     };
   }
 
@@ -17,6 +19,8 @@ class ChromedashToast extends LitElement {
     this.msg = '';
     this.actionLabel = '';
     this.open = false;
+    this.currentTimeout = null;
+    this.waitingForTransition = false;
   }
 
   static get styles() {
@@ -75,27 +79,42 @@ class ChromedashToast extends LitElement {
    *     Use -1 to keep the toast open indefinitely.
    */
   showMessage(msg, optAction, optTapHandler, optDuration) {
+    if (this.waitingForTransition) return;
+
     this.msg = msg;
     this.actionLabel = optAction;
-    this.shadowRoot.querySelector('#action').addEventListener('click', (e) => {
-      e.preventDefault();
-      if (optTapHandler) {
-        optTapHandler();
-      }
-    }, {once: true});
 
+    if (optTapHandler) {
+      this.shadowRoot.querySelector('#action').addEventListener('click', (e) => {
+        e.preventDefault();
+        optTapHandler();
+      }, {once: true});
+    }
+
+    if (this.open) {
+      // triggers the previous toast to slide out
+      this.open = false;
+      this.waitingForTransition = true;
+      clearTimeout(this.currentTimeout);
+      // Don't show the new toast until the transition is over
+      // (wait for the previous toast to be completely gone)
+      this.addEventListener('transitionend', () => {
+        this.show(optDuration);
+        this.waitingForTransition = false;
+      }, {once: true});
+    } else {
+      this.show(optDuration);
+    }
+  }
+
+  show(optDuration) {
     const duration = optDuration || DEFAULT_DURATION;
     if (duration > 0) {
-      window.setTimeout(() => {
+      this.currentTimeout = window.setTimeout(() => {
         this.open = false;
       }, duration);
     }
-
     this.open = true;
-  }
-
-  close() {
-    this.open = false;
   }
 
   render() {

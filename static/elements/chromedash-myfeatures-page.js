@@ -20,7 +20,7 @@ export class ChromedashMyFeaturesPage extends LitElement {
   static get properties() {
     return {
       user: {type: Object},
-      starredFeatures: {type: Set}, // will contain a set of starred features
+      starredFeatures: {attribute: false}, // will contain a set of starred features
     };
   }
 
@@ -69,8 +69,7 @@ export class ChromedashMyFeaturesPage extends LitElement {
   }
 
   handleOpenApprovals(e) {
-    const featureId = e.detail.featureId;
-    openApprovalsDialog(this.user.email, featureId);
+    openApprovalsDialog(this.user.email, e.detail.feature);
   }
 
   renderBox(title, query, columns, opened=true) {

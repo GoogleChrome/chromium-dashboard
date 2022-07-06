@@ -156,7 +156,7 @@ export class ChromedashFeaturePage extends LitElement {
 
   handleApprovalClick(e) {
     e.preventDefault();
-    openApprovalsDialog(this.user.email, this.featureId);
+    openApprovalsDialog(this.user.email, this.feature);
   }
 
   renderSkeletonSection() {
