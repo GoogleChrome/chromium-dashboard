@@ -309,13 +309,6 @@ header {
   color: var(--warning-color);
 }
 
-// Add margin-bottom when sticky footer is enabled
-@media only screen and (min-width: 601px) and (min-height: 601px) {
-  #content-column {
-    margin-bottom: 54px + $content-padding * 2; // bottom bar + some.
-  }
-}
-
 @media only screen and (min-width: 701px) {
   .main-toolbar {
     .toolbar-content {

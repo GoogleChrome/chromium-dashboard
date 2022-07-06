@@ -24,6 +24,11 @@ export class ChromedashFooter extends LitElement {
           padding-left: var(--content-padding);
         }
 
+        #footer-spacer {
+          display: none;
+          height: calc(54px + var(--content-padding) * 2);
+        }
+
         @media only screen and (min-width: 601px) and (min-height: 601px) {
           footer {
             position: fixed;
@@ -31,12 +36,17 @@ export class ChromedashFooter extends LitElement {
             left: 0;
             width: 100%;
           }
+
+          #footer-spacer {
+            display: block;
+          }
         } 
     `];
   }
 
   render() {
     return html`
+      <div id="footer-spacer"></div>
       <footer>
         <div>
           <a href="https://github.com/GoogleChrome/chromium-dashboard/wiki/"
