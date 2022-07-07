@@ -6,6 +6,11 @@ import {autolink, showToastMessage} from './utils.js';
 
 import {SHARED_STYLES} from '../sass/shared-css.js';
 
+const INACTIVE_STATES = [
+  'No longer pursuing',
+  'Deprecated',
+  'Removed'];
+
 export class ChromedashFeaturePage extends LitElement {
   static get styles() {
     return [
@@ -182,6 +187,11 @@ export class ChromedashFeaturePage extends LitElement {
    `;
   }
 
+  featureIsInactive() {
+    const status = this.feature && this.feature.browsers.chrome.status.text;
+    return INACTIVE_STATES.includes(status);
+  }
+
   renderSubHeader() {
     return html`
       <div id="subheader" style="display:block">
@@ -230,7 +240,9 @@ export class ChromedashFeaturePage extends LitElement {
           <a href="/feature/${this.featureId}">
             Feature: ${this.feature.name}
           </a>
-          (${this.feature.browsers.chrome.status.text})
+          ${this.featureIsInactive() ?
+            html`(${this.feature.browsers.chrome.status.text})` :
+            nothing}
         </h2>
       </div>
     `;
