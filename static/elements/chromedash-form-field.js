@@ -34,6 +34,7 @@ export class ChromedashFormField extends LitElement {
 
         td:first-of-type {
           width: 60%;
+          max-width: 35em;
         }
 
         .helptext {
