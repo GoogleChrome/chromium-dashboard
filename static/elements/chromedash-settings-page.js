@@ -9,7 +9,7 @@ export class ChromedashSettingsPage extends LitElement {
         td {
           padding: 4px;
         }
-      
+
         input[type="submit"] {
           margin: 20px;
         }
@@ -98,12 +98,12 @@ export class ChromedashSettingsPage extends LitElement {
                   <label for="id_notify_as_starrer">Notify as starrer:</label>
                 </th>
                 <td>
-                  <chromedash-checkbox
+                  <sl-checkbox
                     id="id_notify_as_starrer"
                     name="notify_as_starrer"
                     ?checked=${this.notify_as_starrer}
                     @input=${this.handleChange}>
-                  </chromedash-checkbox>
+                  </sl-checkbox>
                   <span class="helptext"> Send you notification emails for features that you starred?</span>
                 </td>
               </tr>
