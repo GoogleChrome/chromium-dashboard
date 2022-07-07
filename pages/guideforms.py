@@ -174,46 +174,22 @@ ALL_FIELDS = {
 
     'deprecation_motivation': forms.CharField(  # Sets motivation DB field.
         label='Motivation', required=False,
-        widget=ChromedashTextarea(),
-        help_text=
-        ('Deprecations and removals must have strong reasons, backed up '
-         'by measurements.  There must be clear and actionable paths forward '
-         'for developers.  Please see '
-         '<a target="_blank" href="'
-         'https://docs.google.com/a/chromium.org/document/d/'
-         '1LdqUfUILyzM5WEcOgeAWGupQILKrZHidEXrUxevyi_Y/edit?usp=sharing'
-         '">Removal guidelines</a>.'
-        )),
+        widget=ChromedashTextarea()),
 
     'doc_links': MultiUrlField(
         label='Doc link(s)', required=False,
-        widget=ChromedashTextarea(attrs=MULTI_URL_FIELD_ATTRS),
-        help_text=('Links to design doc(s) (one URL per line), if and when '
-                   'available. [This is not required to send out an Intent '
-                   'to Prototype. Please update the intent thread with the '
-                   'design doc when ready]. An explainer and/or design doc '
-                   'is sufficient to start this process. [Note: Please '
-                   'include links and data, where possible, to support any '
-                   'claims.]')),
+        widget=ChromedashTextarea(attrs=MULTI_URL_FIELD_ATTRS)),
 
     'measurement': forms.CharField(
         label='Measurement', required=False,
-        widget=ChromedashTextarea(
-            attrs={'rows': 4}),
-        help_text=
-        ('It\'s important to measure the adoption and success of web-exposed '
-         'features.  Note here what measurements you have added to track the '
-         'success of this feature, such as a link to the UseCounter(s) you '
-         'have set up.')),
+        widget=ChromedashTextarea(attrs={'rows': 4})),
 
     # 'standardization' is deprecated
 
     'standard_maturity': forms.ChoiceField(
         required=False, label='Standard maturity',
         choices=list(models.STANDARD_MATURITY_CHOICES.items()),
-        initial=models.PROPOSAL_STD,
-        help_text=('How far along is the standard that this '
-                   'feature implements?')),
+        initial=models.PROPOSAL_STD),
 
     'unlisted': forms.BooleanField(
       label="Unlisted",
@@ -222,35 +198,20 @@ ALL_FIELDS = {
 
     'spec_link': forms.URLField(
         required=False, label='Spec link',
-        widget=forms.URLInput(attrs=URL_FIELD_ATTRS),
-        help_text=('Link to spec, if and when available.  Please update the '
-                   'chromestatus.com entry and the intent thread(s) with the '
-                   'spec link when available.')),
+        widget=forms.URLInput(attrs=URL_FIELD_ATTRS)),
 
     'api_spec': forms.BooleanField(
         label='API spec',
         widget=forms.CheckboxInput(attrs={'label': "API spec"}),
-        required=False, initial=False,
-        help_text=('The spec document has details in a specification language '
-                   'such as Web IDL, or there is an existing MDN page.')),
+        required=False, initial=False),
 
     'spec_mentors': MultiEmailField(
         required=False, label='Spec mentor',
-        widget=forms.EmailInput(attrs=MULTI_EMAIL_FIELD_ATTRS),
-        help_text=
-        ('Experienced <a target="_blank" '
-         'href="https://www.chromium.org/blink/spec-mentors">'
-         'spec mentors</a> are available to help you improve your '
-         'feature spec.')),
+        widget=forms.EmailInput(attrs=MULTI_EMAIL_FIELD_ATTRS)),
 
     'explainer_links': MultiUrlField(
         label='Explainer link(s)', required=False,
-        widget=ChromedashTextarea(attrs=MULTI_URL_FIELD_ATTRS),
-        help_text=('Link to explainer(s) (one URL per line). You should have '
-                   'at least an explainer in hand and have shared it on a '
-                   'public forum before sending an Intent to Prototype in '
-                   'order to enable discussion with other browser vendors, '
-                   'standards bodies, or other interested parties.')),
+        widget=ChromedashTextarea(attrs=MULTI_URL_FIELD_ATTRS)),
 
     'security_review_status': forms.ChoiceField(
         required=False,
@@ -278,9 +239,7 @@ ALL_FIELDS = {
 
     'intent_to_implement_url': forms.URLField(
         required=False, label='Intent to Prototype link',
-        widget=forms.URLInput(attrs=URL_FIELD_ATTRS),
-        help_text=('After you have started the "Intent to Prototype" '
-                   ' discussion thread, link to it here.')),
+        widget=forms.URLInput(attrs=URL_FIELD_ATTRS)),
 
     'intent_to_ship_url': forms.URLField(
         required=False, label='Intent to Ship link',
@@ -653,10 +612,7 @@ ALL_FIELDS = {
 
     'initial_public_proposal_url': forms.URLField(
         required=False, label='Initial public proposal URL',
-        widget=forms.URLInput(attrs=URL_FIELD_ATTRS),
-        help_text=(
-            'Link to the first public proposal to create this feature, e.g., '
-            'a WICG discourse post.')),
+        widget=forms.URLInput(attrs=URL_FIELD_ATTRS)),
 
     'blink_components': forms.ChoiceField(
       required=False, label='Blink component',
@@ -755,8 +711,7 @@ ALL_FIELDS = {
 
     'comments': forms.CharField(
         label='Comments', required=False,
-        widget=ChromedashTextarea(attrs={'rows': 4}),
-        help_text='Additional comments, caveats, info...'),
+        widget=ChromedashTextarea(attrs={'rows': 4})),
 
     }
 
@@ -778,6 +733,7 @@ class ChromedashForm(forms.Form):
         Output HTML. Used by override of as_table() to support chromedash uses only.
         Simplified to drop support for hidden form fields and errors at the top, 
         which we are not using.
+        Added field 'name' property for use in the normal_row template.
         """
         output = []
 
