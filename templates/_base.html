@@ -63,36 +63,10 @@ limitations under the License.
   <script src="https://accounts.google.com/gsi/client" async defer nonce="{{nonce}}"></script>
 
   <script nonce="{{nonce}}">
-    function handleCredentialResponse(credentialResponse) {
-        csClient.signIn(credentialResponse)
-            .then(responseJson => {
-                console.log('Signed in:');
-                console.log(responseJson);
-                window.location.replace(window.location.href.split("?")[0]);
-            })
-            .catch(() => {
-                console.error('Sign in failed, so signing out to allow retry');
-                signOut();
-            });
-    }
-
-    function signOut() {
-        csClient.signOut().then(responseJson => {
-            console.log('Signed out:');
-            console.log(responseJson);
-            window.location.reload();
-        });
-    }
-
-    // This happens when an anon visitor tries to view a page that
-    // requires being signed in.
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get("loginStatus") == 'False') {
       alert('Please log in.');
     }
-
-
-
   </script>
 
   {# Loaded immediately because it is used by JS code on the page. #}
@@ -119,14 +93,19 @@ limitations under the License.
     <div>
       <div class="main-toolbar">
         <div class="toolbar-content">
-          {% include "header.html" %}
+          <chromedash-header
+            appTitle="{{APP_TITLE}}" 
+            google_sign_in_client_id="{{google_sign_in_client_id}}">
+          </chromedash-header>
         </div>
       </div>
 
       <div id="content">
         <div id="spinner"><img src="/static/img/ring.svg"></div>
-        <chromedash-banner message="{{banner_message}}"
-                               timestamp="{{banner_time}}"></chromedash-banner>
+        <chromedash-banner 
+          message="{{banner_message}}"
+          timestamp="{{banner_time}}">
+        </chromedash-banner>
         <div id="column-container">
           <div id="drawer-column">{% block drawer %}{% endblock %}</div>
           <div id="content-column">
