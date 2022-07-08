@@ -633,6 +633,7 @@ class Feature(DictModel):
         'docs': d.pop('doc_links', []),
       }
       d['tags'] = d.pop('search_tags', [])
+      d['editors'] = d.pop('editor', [])
       d['browsers'] = {
         'chrome': {
           'bug': d.pop('bug_url', None),
@@ -782,6 +783,8 @@ class Feature(DictModel):
           query = query.filter(Feature.category == filterby[1])
         elif filterby[0] == 'owner':
           query = query.filter(Feature.owner == filterby[1])
+        elif filterby[0] == 'user_edit':
+          query = query.filter(Feature.owner == filterby[1] or Feature.editor == filterby[1])
 
       features = query.fetch(limit)
 
@@ -1249,6 +1252,7 @@ class Feature(DictModel):
   search_tags = ndb.StringProperty(repeated=True)
   comments = ndb.StringProperty()
   owner = ndb.StringProperty(repeated=True)
+  editor = ndb.StringProperty(repeated=True)
   footprint = ndb.IntegerProperty()  # Deprecated
 
   # Tracability to intent discussion threads

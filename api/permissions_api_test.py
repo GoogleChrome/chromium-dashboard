@@ -50,9 +50,10 @@ class PermissionsAPITest(testing_config.CustomTestCase):
       'user': {
         'can_create_feature': False,
         'can_approve': False,
-        'can_edit': False,
+        'can_edit_all': False,
         'is_admin': False,
-        'email': 'one@example.com'
+        'email': 'one@example.com',
+        'editable_features': []
         }}
     self.assertEqual(expected, actual)
 
@@ -65,8 +66,9 @@ class PermissionsAPITest(testing_config.CustomTestCase):
       'user': {
         'can_create_feature': True,
         'can_approve': False,
-        'can_edit': True,
+        'can_edit_all': True,
         'is_admin': False,
-        'email': 'one@google.com'
+        'email': 'one@google.com',
+        'editable_features': []
         }}
     self.assertEqual(expected, actual)

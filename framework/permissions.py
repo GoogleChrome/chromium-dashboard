@@ -62,16 +62,43 @@ def can_create_feature(user):
 
 
 def can_edit_any_feature(user):
-  """Return True if the user is allowed to edit features."""
-  return can_create_feature(user)
-
-
-def can_edit_feature(user, feature):
-  """Return True if the user is allowed to edit the given feature."""
-  # TODO(jrobbins): make this per-feature
-  if not can_view_feature(user, feature):
+  """Return True if the user is allowed to edit all features."""
+  if not user:
     return False
-  return can_edit_any_feature(user)
+  app_user = models.AppUser.get_app_user(user.email())
+  return app_user and (app_user.is_admin or app_user.is_site_editor)
+
+
+def feature_edit_list(user):
+  """Return a list of features the current user can edit"""
+  if not user:
+    return False
+  
+  # If the user can edit any feature, we don't need the full list.
+  # We can just assume they will have edit access to all features.
+  if can_edit_any_feature(user):
+    return []
+
+  # Query features to find which can be edited.
+  editable_features = models.Feature.get_all(filterby=['user_edit', user.email()])
+  # Return a list of ids of features that can be edited. d
+  return [feature['id'] for feature in editable_features]
+
+
+def can_edit_feature(user, feature_id=None):
+  """Return True if the user is allowed to edit the given feature."""
+  # If the user can edit any feature, they can edit this feature.
+  if can_edit_any_feature(user):
+    return True
+
+  if not feature_id:
+    return False
+
+  # Check if the user is an owner or editor for this feature. If yes, can edit.
+  feature = models.Feature.get_feature(feature_id)
+  return (feature and
+            (user.email() in feature['browsers']['chrome']['owners'] or
+            user.email() in feature['editors']))
 
 
 def can_approve_feature(user, feature, approvers):
@@ -88,6 +115,7 @@ def can_approve_feature(user, feature, approvers):
 def _reject_or_proceed(
     handler_obj, handler_method, handler_args, handler_kwargs,
     perm_function):
+
   """Redirect, abort(403), or call handler_method."""
   user = handler_obj.get_current_user()
   req = handler_obj.request
@@ -96,7 +124,7 @@ def _reject_or_proceed(
   if not user and req.method == 'GET':
     return handler_obj.redirect(settings.LOGIN_PAGE_URL)
 
-  if not perm_function(user):
+  if not perm_function(user, handler_kwargs.get('feature_id', None)):
     handler_obj.abort(403)
   else:
     return handler_method(handler_obj, *handler_args, **handler_kwargs)
@@ -132,9 +160,8 @@ def require_create_feature(handler):
 
 def require_edit_feature(handler):
   """Handler decorator to require the user can edit the current feature."""
-  # TODO(jrobbins): make this per-feature
   def check_login(self, *args, **kwargs):
     return _reject_or_proceed(
-        self, handler, args, kwargs, can_edit_any_feature)
+        self, handler, args, kwargs, can_edit_feature)
 
   return check_login

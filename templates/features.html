@@ -29,7 +29,7 @@
       <button class="legend-button"><iron-icon icon="chromestatus:help"></iron-icon></button>
     </div>
     <div class="actionlinks">
-      {% if user.can_edit %}
+      {% if user.can_create_feature %}
         <a href="/guide/new" class="blue-button" title="Adds a new feature to the site"><iron-icon icon="chromestatus:add-circle-outline"></iron-icon><span>Add new feature</span></a>
       {% endif %}
     </div>
@@ -51,7 +51,8 @@
 {% block content %}
   <chromedash-featurelist
     {% if user %} signedInUser="{{user.email}}" {% endif %}
-    {% if user.can_edit %}canEdit{% endif %}
+    {% if user.can_edit_all %}canEdit{% endif %}
+    {% if user %} editableFeatures="{{user.editable_features}}" {% endif %}
     {% if user.can_approve %}canApprove{% endif %}
     ></chromedash-featurelist>
 {% endblock %}

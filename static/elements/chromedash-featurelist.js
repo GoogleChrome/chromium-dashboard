@@ -14,6 +14,7 @@ class ChromedashFeaturelist extends LitElement {
       canEdit: {type: Boolean},
       canApprove: {type: Boolean},
       signedInUser: {type: String},
+      editableFeatures: {type: Object},
       features: {attribute: false}, // Directly edited and accessed in template/features.html
       metadataEl: {attribute: false}, // The metadata component element. Directly edited in template/features.html
       searchEl: {attribute: false}, // The search input element. Directly edited in template/features.html
@@ -26,6 +27,7 @@ class ChromedashFeaturelist extends LitElement {
   constructor() {
     super();
     this.features = [];
+    this.editableFeatures = [];
     this.filtered = [];
     this.metadataEl = document.querySelector('chromedash-metadata');
     this.searchEl = document.querySelector('.search input');
@@ -363,10 +365,13 @@ class ChromedashFeaturelist extends LitElement {
   render() {
     // TODO: Avoid computing values in render().
     let filteredWithState = this.filtered.map((feature) => {
+      const editable = this.isEditor ||
+        (this.editableFeatures && this.editableFeatures.includes(feature.id));
       return {
         feature: feature,
         open: this.openFeatures.has(feature.id),
         starred: this.starredFeatures.has(feature.id),
+        canEditFeature: editable,
       };
     });
     let numOverLimit = 0;
@@ -391,7 +396,7 @@ class ChromedashFeaturelist extends LitElement {
                  @star-toggled="${this._onStarToggledBound}"
                  @open-approvals-event="${this._onOpenApprovalsBound}"
                  .feature="${item.feature}"
-                 ?canEdit="${this.canEdit}"
+                 ?canEdit="${item.canEditFeature}"
                  ?canApprove="${this.canApprove}"
                  ?signedIn="${this.signedInUser != ''}"
           ></chromedash-feature>

@@ -37,9 +37,10 @@ describe('chromedash-myfeatures-page', () => {
     window.csClient.getPermissions.returns(Promise.resolve({
       can_approve: false,
       can_create_feature: true,
-      can_edit: true,
+      can_edit_all: true,
       is_admin: false,
       email: 'example@gmail.com',
+      editable_features: [],
     }));
     const component = await fixture(
       html`<chromedash-myfeatures-page></chromedash-myfeatures-page>`);
@@ -76,9 +77,10 @@ describe('chromedash-myfeatures-page', () => {
     window.csClient.getPermissions.returns(Promise.resolve({
       can_approve: true,
       can_create_feature: true,
-      can_edit: true,
+      can_edit_all: true,
       is_admin: false,
       email: 'example@gmail.com',
+      editable_features: [],
     }));
     const component = await fixture(
       html`<chromedash-myfeatures-page></chromedash-myfeatures-page>`);

@@ -107,7 +107,7 @@ class FeatureNew(basehandlers.FlaskHandler):
 
   TEMPLATE_PATH = 'guide/new.html'
 
-  @permissions.require_edit_feature
+  @permissions.require_create_feature
   def get_template_data(self):
     user = self.get_current_user()
 

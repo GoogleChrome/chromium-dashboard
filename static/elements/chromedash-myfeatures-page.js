@@ -81,7 +81,7 @@ export class ChromedashMyFeaturesPage extends LitElement {
         <chromedash-feature-table
           query="${query}"
           ?signedIn=${Boolean(this.user)}
-          ?canEdit=${this.user && this.user.can_edit}
+          ?canEdit=${this.user && this.user.can_edit_all}
           ?canApprove=${this.user && this.user.can_approve}
           .starredFeatures=${this.starredFeatures}
           @star-toggle-event=${this.handleStarToggle}
