@@ -69,8 +69,9 @@ export class ChromedashFormField extends LitElement {
           <slot name="error" class="errorlist"></slot>
         </td>
         <td>
-          ${helpText}
-          <slot name="help" class="helptext"></slot>
+          <span class="helptext">
+            ${helpText}
+          </span>
         </td>
       </tr>`;
   }
