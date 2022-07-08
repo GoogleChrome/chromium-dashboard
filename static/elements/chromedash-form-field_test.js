@@ -20,7 +20,6 @@ describe('chromedash-form-field', () => {
         <span slot="label">Label</span>
         <span slot="field">Field</span>
         <span slot="error">Error</span>
-        <span slot="help">Help</span>
       </chromedash-form-field>`);
     assert.exists(component);
     await component.updateComplete;
@@ -36,9 +35,5 @@ describe('chromedash-form-field', () => {
     const errorElements = slotAssignedElements(component, 'error');
     assert.exists(errorElements);
     assert.include(errorElements[0].innerHTML, 'Error');
-
-    const helpElements = slotAssignedElements(component, 'help');
-    assert.exists(helpElements);
-    assert.include(helpElements[0].innerHTML, 'Help');
   });
 });
