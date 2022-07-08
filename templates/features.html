@@ -51,7 +51,7 @@
 {% block content %}
   <chromedash-featurelist
     {% if user %} signedInUser="{{user.email}}" {% endif %}
-    {% if user.can_edit_all %}canEdit{% endif %}
+    {% if user.can_edit_all %}isSiteEditor{% endif %}
     {% if user %} editableFeatures="{{user.editable_features}}" {% endif %}
     {% if user.can_approve %}canApprove{% endif %}
     ></chromedash-featurelist>

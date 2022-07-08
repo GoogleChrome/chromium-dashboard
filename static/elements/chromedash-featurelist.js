@@ -11,7 +11,7 @@ class ChromedashFeaturelist extends LitElement {
 
   static get properties() {
     return {
-      canEdit: {type: Boolean},
+      isSiteEditor: {type: Boolean},
       canApprove: {type: Boolean},
       signedInUser: {type: String},
       editableFeatures: {type: Object},
@@ -31,7 +31,7 @@ class ChromedashFeaturelist extends LitElement {
     this.filtered = [];
     this.metadataEl = document.querySelector('chromedash-metadata');
     this.searchEl = document.querySelector('.search input');
-    this.canEdit = false;
+    this.isSiteEditor = false;
     this.canApprove = false;
     this.signedInUser = '';
     this._hasInitialized = false; // Used to check initialization code.
@@ -365,7 +365,7 @@ class ChromedashFeaturelist extends LitElement {
   render() {
     // TODO: Avoid computing values in render().
     let filteredWithState = this.filtered.map((feature) => {
-      const editable = this.isEditor ||
+      const editable = this.isSiteEditor ||
         (this.editableFeatures && this.editableFeatures.includes(feature.id));
       return {
         feature: feature,
