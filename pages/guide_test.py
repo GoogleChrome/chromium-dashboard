@@ -137,9 +137,9 @@ class ProcessOverviewTest(testing_config.CustomTestCase):
 
   def setUp(self):
     self.feature_1 = models.Feature(
-        name='feature one', summary='sum', category=1, visibility=1,
-        standardization=1, web_dev_views=models.DEV_NO_SIGNALS,
-        impl_status_chrome=1)
+        name='feature one', summary='sum', owner=['user1@google.com'],
+        category=1, visibility=1, standardization=1,
+        web_dev_views=models.DEV_NO_SIGNALS, impl_status_chrome=1)
     self.feature_1.put()
 
     self.request_path = '/guide/edit/%d' % self.feature_1.key.integer_id()
@@ -209,9 +209,9 @@ class ProcessOverviewTemplateTest(TestWithFeature):
     super(ProcessOverviewTemplateTest, self).setUp()
 
     self.feature_1 = models.Feature(
-        name='feature one', summary='sum', category=1, visibility=1,
-        standardization=1, web_dev_views=models.DEV_NO_SIGNALS,
-        impl_status_chrome=1)
+        name='feature one', summary='sum', owner=['user1@google.com'],
+        category=1, visibility=1, standardization=1,
+        web_dev_views=models.DEV_NO_SIGNALS, impl_status_chrome=1)
     self.feature_1.put()
     self.request_path = '/guide/edit/%d' % self.feature_1.key.integer_id()
 
@@ -243,8 +243,9 @@ class FeatureEditStageTest(testing_config.CustomTestCase):
 
   def setUp(self):
     self.feature_1 = models.Feature(
-        name='feature one', summary='sum', category=1, visibility=1,
-        standardization=1, web_dev_views=1, impl_status_chrome=1)
+        name='feature one', summary='sum', owner=['user1@google.com'],
+        category=1, visibility=1, standardization=1, web_dev_views=1,
+        impl_status_chrome=1)
     self.feature_1.put()
     self.stage = models.INTENT_INCUBATE  # Shows first form
 
@@ -394,9 +395,9 @@ class FeatureEditStageTemplateTest(TestWithFeature):
   def setUp(self):
     super(FeatureEditStageTemplateTest, self).setUp()
     self.feature_1 = models.Feature(
-        name='feature one', summary='sum', category=1, visibility=1,
-        standardization=1, web_dev_views=models.DEV_NO_SIGNALS,
-        impl_status_chrome=1)
+        name='feature one', summary='sum', owner=['user1@google.com'],
+        category=1, visibility=1, standardization=1,
+        web_dev_views=models.DEV_NO_SIGNALS, impl_status_chrome=1)
     self.feature_1.put()
     self.stage = models.INTENT_INCUBATE  # Shows first form
     testing_config.sign_in('user1@google.com', 1234567890)
@@ -426,9 +427,9 @@ class FeatureEditAllFieldsTemplateTest(TestWithFeature):
   def setUp(self):
     super(FeatureEditAllFieldsTemplateTest, self).setUp()
     self.feature_1 = models.Feature(
-        name='feature one', summary='sum', category=1, visibility=1,
-        standardization=1, web_dev_views=models.DEV_NO_SIGNALS,
-        impl_status_chrome=1)
+        name='feature one', summary='sum', owner=['user1@google.com'],
+        category=1, visibility=1, standardization=1,
+        web_dev_views=models.DEV_NO_SIGNALS, impl_status_chrome=1)
     self.feature_1.put()
     self.stage = models.INTENT_INCUBATE  # Shows first form
     testing_config.sign_in('user1@google.com', 1234567890)

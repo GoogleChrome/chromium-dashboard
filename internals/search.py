@@ -69,11 +69,12 @@ def process_starred_me_query():
   return feature_ids
 
 
-def process_me_query(field):
-  """Return features that the current user owns."""
+def process_access_me_query(field):
+  """Return features that the current user owns or can edit."""
   user = users.get_current_user()
   if not user:
     return []
+  # Checks if the user's email exists in the given field.
   features = models.Feature.get_all(filterby=(field, user.email()))
   feature_ids = [f['id'] for f in features]
   return feature_ids
@@ -151,9 +152,9 @@ def process_query_term(field_name, op_str, val_str):
   if query_term == 'starred-by:me':
     return process_starred_me_query()
   if query_term == 'owner:me':
-    return process_me_query('owner')
+    return process_access_me_query('owner')
   if query_term == 'editor:me':
-    return process_me_query('editors')
+    return process_access_me_query('editors')
   if query_term == 'is:recently-reviewed':
     return process_recent_reviews_query()
 

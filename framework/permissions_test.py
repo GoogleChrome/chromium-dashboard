@@ -117,14 +117,14 @@ class PermissionFunctionTests(testing_config.CustomTestCase):
   def test_can_edit_any_feature(self):
     self.check_function_results(
         permissions.can_edit_any_feature, tuple(),
-        unregistered=False, registered=True,
-        special=True, admin=True, anon=False)
+        unregistered=False, registered=False,
+        special=False, admin=True, anon=False)
 
   def test_can_edit_feature(self):
     self.check_function_results(
         permissions.can_edit_feature, (None,),
-        unregistered=False, registered=True,
-        special=True, admin=True, anon=False)
+        unregistered=False, registered=False,
+        special=False, admin=True, anon=False)
 
   def test_can_approve_feature(self):
     approvers = []

@@ -29,6 +29,7 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
         name='feature 1', summary='sum', category=1, visibility=1,
         standardization=1, web_dev_views=1, impl_status_chrome=3)
     self.feature_1.owner = ['owner@example.com']
+    self.feature_1.editors = ['editor@example.com']
     self.feature_1.put()
     self.feature_2 = models.Feature(
         name='feature 2', summary='sum', category=2, visibility=1,
@@ -121,19 +122,32 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
     self.assertEqual(len(actual), 1)
     self.assertEqual(actual[0], self.feature_1.key.integer_id())
 
-  def test_process_owner_me_query__none(self):
+  def test_process_access_me_query__owner_none(self):
     """We can return a list of features owned by the user."""
     testing_config.sign_in('visitor@example.com', 111)
-    actual = search.process_owner_me_query()
+    actual = search.process_access_me_query('owner')
     self.assertEqual(actual, [])
 
-  def test_process_owner_me_query__some(self):
+  def test_process_access_me_query__owner_some(self):
     """We can return a list of features owned by the user."""
     testing_config.sign_in('owner@example.com', 111)
-    actual = search.process_owner_me_query()
+    actual = search.process_access_me_query('owner')
     self.assertEqual(len(actual), 2)
     self.assertEqual(actual[0], self.feature_1.key.integer_id())
     self.assertEqual(actual[1], self.feature_2.key.integer_id())
+
+  def test_process_access_me_query__editors_none(self):
+    """We can return a list of features the user can edit."""
+    testing_config.sign_in('visitor@example.com', 111)
+    actual = search.process_access_me_query('editors')
+    self.assertEqual(actual, [])
+
+  def test_process_access_me_query__editors_some(self):
+    """We can return a list of features the user can edit."""
+    testing_config.sign_in('editor@example.com', 111)
+    actual = search.process_access_me_query('editors')
+    self.assertEqual(len(actual), 1)
+    self.assertEqual(actual[0], self.feature_1.key.integer_id())
 
   @mock.patch('internals.models.Approval.get_approvals')
   @mock.patch('internals.approval_defs.fields_approvable_by')
@@ -172,7 +186,7 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
 
   @mock.patch('internals.search.process_pending_approval_me_query')
   @mock.patch('internals.search.process_starred_me_query')
-  @mock.patch('internals.search.process_owner_me_query')
+  @mock.patch('internals.search.process_access_me_query')
   @mock.patch('internals.search.process_recent_reviews_query')
   def test_process_query__predefined(
       self, mock_recent, mock_own_me, mock_star_me, mock_pend_me):

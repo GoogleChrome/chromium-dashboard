@@ -34,8 +34,12 @@ class IntentEmailPreviewHandler(basehandlers.FlaskHandler):
 
   TEMPLATE_PATH = 'admin/features/launch.html'
 
-  @permissions.require_edit_feature
   def get_template_data(self, feature_id=None, stage_id=None):
+    perm_result = permissions.require_edit_feature_permission(self, feature_id)
+    # Return if redirect is required to user to sign in.
+    if perm_result is not None and perm_result.status == '302 FOUND':
+      return perm_result
+
     f = self.get_specified_feature(feature_id=feature_id)
     intent_stage = stage_id if stage_id is not None else f.intent_stage
 

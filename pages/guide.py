@@ -170,8 +170,12 @@ class ProcessOverview(basehandlers.FlaskHandler):
         progress_so_far[progress_item] = str(detected)
     return progress_so_far
 
-  @permissions.require_edit_feature
   def get_template_data(self, feature_id):
+    perm_result = permissions.require_edit_feature_permission(self, feature_id)
+    # Return if redirect is required to user to sign in.
+    if perm_result is not None and perm_result.status == '302 FOUND':
+      return perm_result
+
     f = models.Feature.get_by_id(int(feature_id))
     if f is None:
       self.abort(404, msg='Feature not found')
@@ -246,8 +250,12 @@ class FeatureEditStage(basehandlers.FlaskHandler):
 
     return f, feature_process
 
-  @permissions.require_edit_feature
   def get_template_data(self, feature_id, stage_id):
+    perm_result = permissions.require_edit_feature_permission(self, feature_id)
+    # Return if redirect is required to user to sign in.
+    if perm_result is not None and perm_result.status == '302 FOUND':
+      return perm_result
+
     f, feature_process = self.get_feature_and_process(feature_id)
 
     stage_name = ''
@@ -289,8 +297,12 @@ class FeatureEditStage(basehandlers.FlaskHandler):
     })
     return template_data
 
-  @permissions.require_edit_feature
   def process_post_data(self, feature_id, stage_id=0):
+    perm_result = permissions.require_edit_feature_permission(self, feature_id)
+    # Return if redirect is required to user to sign in.
+    if perm_result is not None and perm_result.status == '302 FOUND':
+      return perm_result
+
     if feature_id:
       feature = models.Feature.get_by_id(feature_id)
       if feature is None:
@@ -582,8 +594,12 @@ class FeatureEditAllFields(FeatureEditStage):
 
   TEMPLATE_PATH = 'guide/editall.html'
 
-  @permissions.require_edit_feature
   def get_template_data(self, feature_id):
+    perm_result = permissions.require_edit_feature_permission(self, feature_id)
+    # Return if redirect is required to user to sign in.
+    if perm_result is not None and perm_result.status == '302 FOUND':
+      return perm_result
+
     f, feature_process = self.get_feature_and_process(feature_id)
 
     feature_edit_dict = f.format_for_edit()
