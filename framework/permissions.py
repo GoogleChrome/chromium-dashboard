@@ -66,6 +66,7 @@ def can_edit_any_feature(user):
   if not user:
     return False
   app_user = models.AppUser.get_app_user(user.email())
+  # Site editors or admins should be able to edit any feature.
   return app_user and (app_user.is_admin or app_user.is_site_editor)
 
 

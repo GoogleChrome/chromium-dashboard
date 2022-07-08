@@ -1661,6 +1661,7 @@ class AppUser(DictModel):
 
   email = ndb.StringProperty(required=True)
   is_admin = ndb.BooleanProperty(default=False)
+  is_site_editor = ndb.BooleanProperty(default=False)
   created = ndb.DateTimeProperty(auto_now_add=True)
   updated = ndb.DateTimeProperty(auto_now=True)
 

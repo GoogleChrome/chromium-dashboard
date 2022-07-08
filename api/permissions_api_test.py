@@ -52,6 +52,7 @@ class PermissionsAPITest(testing_config.CustomTestCase):
         'can_approve': False,
         'can_edit_all': False,
         'is_admin': False,
+        'is_site_editor': False,
         'email': 'one@example.com',
         'editable_features': []
         }}
@@ -68,6 +69,7 @@ class PermissionsAPITest(testing_config.CustomTestCase):
         'can_approve': False,
         'can_edit_all': True,
         'is_admin': False,
+        'is_site_editor': False,
         'email': 'one@google.com',
         'editable_features': []
         }}

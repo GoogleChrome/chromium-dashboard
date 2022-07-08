@@ -35,11 +35,12 @@ class AccountsAPI(basehandlers.APIHandler):
     """Process a request to create an account."""
     email = self.get_param('email', required=True)
     is_admin = self.get_bool_param('isAdmin')
-    user = self.create_account(email, is_admin)
+    is_site_editor = self.get_bool_param('isSiteEditor')
+    user = self.create_account(email, is_admin, is_site_editor)
     response_json = user.format_for_template()
     return response_json
 
-  def create_account(self, email, is_admin):
+  def create_account(self, email, is_admin, is_site_editor):
     """Create and store a new account entity."""
     # Don't add a duplicate email address.
     user = models.AppUser.query(
@@ -47,6 +48,7 @@ class AccountsAPI(basehandlers.APIHandler):
     if not user:
       user = models.AppUser(email=str(email))
       user.is_admin = is_admin
+      user.is_site_editor = is_site_editor
       user.put()
       return user
     else:
