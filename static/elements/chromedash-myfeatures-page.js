@@ -110,6 +110,11 @@ export class ChromedashMyFeaturesPage extends LitElement {
       'Features I own', 'owner:me', 'normal');
   }
 
+  renderICanEdit() {
+    return this.renderBox(
+      'Features I can edit', 'editor:me', 'normal');
+  }
+
   render() {
     return html`
       <div id="subheader">
@@ -117,6 +122,7 @@ export class ChromedashMyFeaturesPage extends LitElement {
       </div>
       ${this.user && this.user.can_approve ? this.renderPendingAndRecentApprovals() : nothing}
       ${this.renderIOwn()}
+      ${this.renderICanEdit()}
       ${this.renderIStarred()}
     `;
   }
