@@ -153,6 +153,10 @@ ALL_FIELDS = {
         required=True, label='Feature owners',
         widget=forms.EmailInput(attrs=MULTI_EMAIL_FIELD_ATTRS)),
 
+    'editor': MultiEmailField(
+        required=False, label='Feature editors',
+        widget=forms.EmailInput(attrs=MULTI_EMAIL_FIELD_ATTRS)),
+
     'category': forms.ChoiceField(
         required=False,
         initial=models.MISC,
@@ -718,7 +722,7 @@ ALL_FIELDS = {
 # These are shown in a top card for all processes.
 METADATA_FIELDS = [
      'name', 'summary', 'unlisted', 'owner',
-     'category',
+     'editor', 'category',
      'feature_type', 'intent_stage',
      'search_tags',
      # Implemention
@@ -802,7 +806,7 @@ def define_form_class_using_shared_fields(class_name, field_spec_list):
 NewFeatureForm = define_form_class_using_shared_fields(
     'NewFeatureForm',
     ('name', 'summary',
-     'unlisted', 'owner',
+     'unlisted', 'owner', 'editor',
      'blink_components', 'category'))
     # Note: feature_type is done with custom HTML
 
@@ -907,7 +911,7 @@ Any_Ship = define_form_class_using_shared_fields(
 
 Existing_Prototype = define_form_class_using_shared_fields(
     'Existing_Prototype',
-    ('owner', 'blink_components', 'motivation', 'explainer_links',
+    ('owner', 'editor', 'blink_components', 'motivation', 'explainer_links',
      'spec_link', 'standard_maturity', 'api_spec', 'bug_url', 'launch_bug_url',
      'intent_to_implement_url', 'comments'))
 
@@ -979,7 +983,7 @@ Flat_Metadata = define_form_class_using_shared_fields(
     'Flat_Metadata',
     (# Standardizaton
      'name', 'summary', 'unlisted', 'owner',
-     'category',
+     'editor', 'category',
      'feature_type', 'intent_stage',
      'search_tags',
      # Implementtion
@@ -1106,7 +1110,7 @@ DEPRECATED_FIELDS = ['standardization']
 DISPLAY_IN_FEATURE_HIGHLIGHTS = [
     'name', 'summary',
     'motivation', 'deprecation_motivation',
-    'unlisted', 'owner',
+    'unlisted', 'owner', 'editor',
     'search_tags',
     # Implementtion
     'impl_status_chrome',

@@ -749,6 +749,7 @@ class Feature(DictModel):
     d = self.to_dict()
     #d['id'] = self.key().id
     d['owner'] = ', '.join(self.owner)
+    d['editor'] = ', '.join(self.editor)
     d['explainer_links'] = '\r\n'.join(self.explainer_links)
     d['spec_mentors'] = ', '.join(self.spec_mentors)
     d['standard_maturity'] = self.standard_maturity or UNKNOWN_STD
