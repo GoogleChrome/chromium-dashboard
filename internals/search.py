@@ -153,7 +153,7 @@ def process_query_term(field_name, op_str, val_str):
   if query_term == 'owner:me':
     return process_me_query('owner')
   if query_term == 'editor:me':
-    return process_me_query('editor')
+    return process_me_query('editors')
   if query_term == 'is:recently-reviewed':
     return process_recent_reviews_query()
 

@@ -633,7 +633,7 @@ class Feature(DictModel):
         'docs': d.pop('doc_links', []),
       }
       d['tags'] = d.pop('search_tags', [])
-      d['editors'] = d.pop('editor', [])
+      d['editors'] = d.pop('editors', [])
       d['browsers'] = {
         'chrome': {
           'bug': d.pop('bug_url', None),
@@ -749,7 +749,7 @@ class Feature(DictModel):
     d = self.to_dict()
     #d['id'] = self.key().id
     d['owner'] = ', '.join(self.owner)
-    d['editor'] = ', '.join(self.editor)
+    d['editors'] = ', '.join(self.editors)
     d['explainer_links'] = '\r\n'.join(self.explainer_links)
     d['spec_mentors'] = ', '.join(self.spec_mentors)
     d['standard_maturity'] = self.standard_maturity or UNKNOWN_STD
@@ -784,8 +784,8 @@ class Feature(DictModel):
           query = query.filter(Feature.category == filterby[1])
         elif filterby[0] == 'owner':
           query = query.filter(Feature.owner == filterby[1])
-        elif filterby[0] == 'editor':
-          query = query.filter(Feature.editor == filterby[1])
+        elif filterby[0] == 'editors':
+          query = query.filter(Feature.editors == filterby[1])
 
       features = query.fetch(limit)
 
@@ -1253,7 +1253,7 @@ class Feature(DictModel):
   search_tags = ndb.StringProperty(repeated=True)
   comments = ndb.StringProperty()
   owner = ndb.StringProperty(repeated=True)
-  editor = ndb.StringProperty(repeated=True)
+  editors = ndb.StringProperty(repeated=True)
   footprint = ndb.IntegerProperty()  # Deprecated
 
   # Tracability to intent discussion threads

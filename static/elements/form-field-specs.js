@@ -38,7 +38,7 @@ export const ALL_FIELDS = {
         Comma separated list of full email addresses. Prefer @chromium.org.`,
   },
 
-  'editor': {
+  'editors': {
     help_text: html`
         Comma separated list of full email addresses. These users will be
         allowed to edit this feature, but will not be listed as feature owners.`,

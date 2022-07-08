@@ -121,7 +121,7 @@ class FeatureNew(basehandlers.FlaskHandler):
   @permissions.require_create_feature
   def process_post_data(self):
     owners = self.split_emails('owner')
-    editors = self.split_emails('editor')
+    editors = self.split_emails('editors')
 
     blink_components = (
         self.split_input('blink_components', delim=',') or
@@ -140,7 +140,7 @@ class FeatureNew(basehandlers.FlaskHandler):
         intent_stage=models.INTENT_NONE,
         summary=self.form.get('summary'),
         owner=owners,
-        editor=editors,
+        editors=editors,
         impl_status_chrome=models.NO_ACTIVE_DEV,
         standardization=models.EDITORS_DRAFT,
         unlisted=self.form.get('unlisted') == 'on',
@@ -441,8 +441,8 @@ class FeatureEditStage(basehandlers.FlaskHandler):
     if self.touched('owner'):
       feature.owner = self.split_emails('owner')
     
-    if self.touched('editor'):
-      feature.editor = self.split_emails('editor')
+    if self.touched('editors'):
+      feature.editors = self.split_emails('editors')
 
     if self.touched('doc_links'):
       feature.doc_links = self.parse_links('doc_links')
