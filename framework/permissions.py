@@ -124,7 +124,15 @@ def _reject_or_proceed(
   if not user and req.method == 'GET':
     return handler_obj.redirect(settings.LOGIN_PAGE_URL)
 
-  if not perm_function(user, handler_kwargs.get('feature_id', None)):
+  allowed = False
+  # Use the id of the feature if it is available.
+  feature_id = handler_kwargs.get('feature_id', None)
+  if feature_id:
+    allowed = perm_function(user, feature_id)
+  else:
+    allowed = perm_function(user)
+
+  if not allowed:
     handler_obj.abort(403)
   else:
     return handler_method(handler_obj, *handler_args, **handler_kwargs)
