@@ -34,7 +34,7 @@ class FeaturesAPI(basehandlers.APIHandler):
 
   def do_search(self):
     user = users.get_current_user()
-    show_unlisted_features = permissions.can_edit_any_feature(user, None)
+    show_unlisted_features = permissions.can_edit_any_feature(user)
     features_on_page = None
 
     # Query-string parameter 'milestone' is provided

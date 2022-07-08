@@ -784,8 +784,8 @@ class Feature(DictModel):
           query = query.filter(Feature.category == filterby[1])
         elif filterby[0] == 'owner':
           query = query.filter(Feature.owner == filterby[1])
-        elif filterby[0] == 'user_edit':
-          query = query.filter(Feature.owner == filterby[1] or Feature.editor == filterby[1])
+        elif filterby[0] == 'editor':
+          query = query.filter(Feature.editor == filterby[1])
 
       features = query.fetch(limit)
 

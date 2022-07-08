@@ -80,9 +80,10 @@ def feature_edit_list(user):
     return []
 
   # Query features to find which can be edited.
-  editable_features = models.Feature.get_all(filterby=['user_edit', user.email()])
-  # Return a list of ids of features that can be edited. d
-  return [feature['id'] for feature in editable_features]
+  features_editable = models.Feature.get_all(filterby=('owner', user.email()))
+  features_editable += models.Feature.get_all(filterby=('editor', user.email()))
+  # Return a list of unique ids of features that can be edited.
+  return list(set([f['id'] for f in features_editable]))
 
 
 def can_edit_feature(user, feature_id=None):
