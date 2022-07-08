@@ -9,7 +9,7 @@
         {% if offer_editing == "yes" %}
           <div id="metadata-buttons" style="float: right">
             <a id="open-metadata">Edit</a>
-            {% if user.is_admin %}
+            {% if offer_editing == "yes" %}
               <div><a id="delete-feature"
                       data-id="{{ feature_id }}"
                       class="delete-button"

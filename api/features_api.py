@@ -72,7 +72,7 @@ class FeaturesAPI(basehandlers.APIHandler):
 
   # TODO(jrobbins): do_patch
 
-  @permissions.require_admin_site
+  @permissions.require_edit_feature
   def do_delete(self, feature_id):
     """Delete the specified feature."""
     # TODO(jrobbins): implement undelete UI.  For now, use cloud console.
