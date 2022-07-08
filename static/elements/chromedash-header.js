@@ -232,15 +232,19 @@ export class ChromedashHeader extends LitElement {
     });
   }
 
+  isCurrentPage(href) {
+    return this.currentPage.startsWith(href);
+  }
+
   renderTabs() {
     return html`
       <div id="maintabs" class="flex-container flex-container-inner-first">
-        <a class="flex-item" href="/roadmap" ?active=${this.currentPage.startsWith('/roadmap')}>Roadmap</a>
+        <a class="flex-item" href="/roadmap" ?active=${this.isCurrentPage('/roadmap')}>Roadmap</a>
         ${this.user ? html`
-          <a class="flex-item" href="/myfeatures" ?active=${this.currentPage.startsWith('/myfeatures')}>My features</a>
+          <a class="flex-item" href="/myfeatures" ?active=${this.isCurrentPage('/myfeatures')}>My features</a>
         ` : nothing}
-        <a class="flex-item" href="/features" ?active=${this.currentPage.startsWith('/features')}>All features</a>
-        <div class="nav-dropdown-container flex-item" href="/metrics" ?active=${this.currentPage.startsWith('/metrics')}>
+        <a class="flex-item" href="/features" ?active=${this.isCurrentPage('/features')}>All features</a>
+        <div class="nav-dropdown-container flex-item" href="/metrics" ?active=${this.isCurrentPage('/metrics')}>
           <a class="nav-dropdown-trigger flex-item-inner">Stats
             <iron-icon icon="chromestatus:arrow-drop-down"></iron-icon>
           </a>
