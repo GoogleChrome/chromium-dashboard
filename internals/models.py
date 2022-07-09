@@ -1004,9 +1004,17 @@ class Feature(DictModel):
 
       ramcache.set(cache_key, feature_list)
 
-    allowed_feature_list = [
-        f for f in feature_list
-        if show_unlisted or not f['unlisted']]
+    user = users.get_current_user()
+    email = None
+    if user:
+      email = user.email()
+    allowed_feature_list = []
+    for f in feature_list:
+      # Owners and editors of a feature should still be able to see their features.
+      if (show_unlisted or not f['unlisted'] or
+          ('browsers' in f and email in f['browsers']['chrome']['owners']) or
+          ('editors' in f and email in f['editors'])):
+        allowed_feature_list.append(f)
 
     return allowed_feature_list
 
@@ -1016,8 +1024,8 @@ class Feature(DictModel):
     if milestone == None:
       return None
 
-    cache_key = '%s|%s|%s|%s' % (
-        Feature.DEFAULT_CACHE_KEY, 'milestone', show_unlisted, milestone)
+    cache_key = '%s|%s|%s' % (
+        Feature.DEFAULT_CACHE_KEY, 'milestone', milestone)
     cached_allowed_features_by_type = ramcache.get(cache_key)
     if cached_allowed_features_by_type:
       return cached_allowed_features_by_type
@@ -1141,6 +1149,11 @@ class Feature(DictModel):
     features_by_type = {}
     allowed_features_by_type = {}
 
+    user = users.get_current_user()
+    email = None
+    if user:
+      email = user.email()
+
     # Construct results as: {type: [json_feature, ...], ...}.
     for shippingType in all_features:
       all_features[shippingType].sort(key=lambda f: f.name)
@@ -1148,9 +1161,14 @@ class Feature(DictModel):
           f for f in all_features[shippingType] if not f.deleted]
       features_by_type[shippingType] = [
           f.format_for_template() for f in all_features[shippingType]]
-      allowed_features_by_type[shippingType] = [
-        f for f in features_by_type[shippingType]
-        if show_unlisted or not f['unlisted']]
+
+      allowed_features_by_type[shippingType] = []
+      for f in features_by_type[shippingType]:
+        # Owners and editors of a feature should still be able to see their features.
+        if (show_unlisted or not f['unlisted'] or
+            ('browsers' in f and email in f['browsers']['chrome']['owners']) or
+            ('editors' in f and email in f['editors'])):
+          allowed_features_by_type[shippingType].append(f)
 
     ramcache.set(cache_key, allowed_features_by_type)
 
@@ -1385,6 +1403,7 @@ QUERIABLE_FIELDS = {
     'tags': Feature.search_tags,
     'owner': Feature.owner,
     'browsers.chrome.owners': Feature.owner,
+    'editors': Feature.editors,
     'intent_to_implement_url': Feature.intent_to_implement_url,
     'intent_to_ship_url': Feature.intent_to_ship_url,
     'ready_for_trial_url': Feature.ready_for_trial_url,

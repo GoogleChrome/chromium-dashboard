@@ -83,23 +83,27 @@ class FeatureTest(testing_config.CustomTestCase):
   def setUp(self):
     ramcache.SharedInvalidate.check_for_distributed_invalidation()
     self.feature_2 = models.Feature(
-        name='feature b', summary='sum', category=1, visibility=1,
-        standardization=1, web_dev_views=1, impl_status_chrome=3)
+        name='feature b', summary='sum', owner=['feature_owner@example.com'],
+        category=1, visibility=1, standardization=1, web_dev_views=1,
+        impl_status_chrome=3)
     self.feature_2.put()
 
     self.feature_1 = models.Feature(
-        name='feature a', summary='sum', category=1, visibility=1,
-        standardization=1, web_dev_views=1, impl_status_chrome=3)
+        name='feature a', summary='sum', owner=['feature_owner@example.com'],
+        category=1, visibility=1, standardization=1, web_dev_views=1,
+        impl_status_chrome=3)
     self.feature_1.put()
 
     self.feature_4 = models.Feature(
-        name='feature d', summary='sum', category=1, visibility=1,
-        standardization=1, web_dev_views=1, impl_status_chrome=2)
+        name='feature d', summary='sum', owner=['feature_owner@example.com'],
+        category=1, visibility=1, standardization=1, web_dev_views=1,
+        impl_status_chrome=2)
     self.feature_4.put()
 
     self.feature_3 = models.Feature(
-        name='feature c', summary='sum', category=1, visibility=1,
-        standardization=1, web_dev_views=1, impl_status_chrome=2)
+        name='feature c', summary='sum', owner=['feature_owner@example.com'],
+        category=1, visibility=1, standardization=1, web_dev_views=1,
+        impl_status_chrome=2)
     self.feature_3.put()
 
   def tearDown(self):
@@ -303,8 +307,8 @@ class FeatureTest(testing_config.CustomTestCase):
         enabled_by_default)
     self.assertEqual(6, len(actual))
 
-    cache_key = '%s|%s|%s|%s' % (
-        models.Feature.DEFAULT_CACHE_KEY, 'milestone', False, 1)
+    cache_key = '%s|%s|%s' % (
+        models.Feature.DEFAULT_CACHE_KEY, 'milestone', 1)
     cached_result = ramcache.get(cache_key)
     self.assertEqual(cached_result, actual)
 
@@ -359,8 +363,8 @@ class FeatureTest(testing_config.CustomTestCase):
 
   def test_get_in_milestone__cached(self):
     """If there is something in the cache, we use it."""
-    cache_key = '%s|%s|%s|%s' % (
-        models.Feature.DEFAULT_CACHE_KEY, 'milestone', False, 1)
+    cache_key = '%s|%s|%s' % (
+        models.Feature.DEFAULT_CACHE_KEY, 'milestone', 1)
     ramcache.set(cache_key, 'fake feature dict')
 
     actual = models.Feature.get_in_milestone(milestone=1)
@@ -466,8 +470,9 @@ class CommentTest(testing_config.CustomTestCase):
 
   def setUp(self):
     self.feature_1 = models.Feature(
-        name='feature a', summary='sum', category=1, visibility=1,
-        standardization=1, web_dev_views=1, impl_status_chrome=3)
+        name='feature a', summary='sum',  owner=['feature_owner@example.com'],
+        category=1, visibility=1, standardization=1, web_dev_views=1,
+        impl_status_chrome=3)
     self.feature_1.put()
     self.feature_1_id = self.feature_1.key.integer_id()
     self.comment_1_1 = models.Comment(
@@ -482,8 +487,9 @@ class CommentTest(testing_config.CustomTestCase):
     self.comment_1_2.put()
 
     self.feature_2 = models.Feature(
-        name='feature b', summary='sum', category=1, visibility=1,
-        standardization=1, web_dev_views=1, impl_status_chrome=3)
+        name='feature b', summary='sum', owner=['feature_owner@example.com'],
+        category=1, visibility=1, standardization=1, web_dev_views=1,
+        impl_status_chrome=3)
     self.feature_2.put()
     self.feature_2_id = self.feature_2.key.integer_id()
 

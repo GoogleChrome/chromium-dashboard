@@ -43,9 +43,9 @@ class TestWithFeature(testing_config.CustomTestCase):
     self.app_admin.put()
 
     self.feature_1 = models.Feature(
-        name='feature one', summary='detailed sum', category=1, visibility=1,
-        standardization=1, web_dev_views=1, impl_status_chrome=1,
-        intent_stage=models.INTENT_IMPLEMENT)
+        name='feature one', summary='detailed sum', owner=['owner@example.com'],
+        category=1, visibility=1, standardization=1, web_dev_views=1,
+        impl_status_chrome=1, intent_stage=models.INTENT_IMPLEMENT)
     self.feature_1.put()
     self.feature_id = self.feature_1.key.integer_id()
 
