@@ -781,15 +781,17 @@ class Feature(DictModel):
 
       # TODO(ericbidelman): Support more than one filter.
       if filterby:
-        if filterby[0] == 'category':
-          query = query.filter(Feature.category == filterby[1])
-        elif filterby[0] == 'owner':
-          query = query.filter(Feature.owner == filterby[1])
-        elif filterby[0] == 'can_edit':
-          email = filterby[1]
+        filter_type, comparator = filterby
+        # can_edit will check if the user has any access to edit the feature.
+        # This includes being an owner, editor, or the original creator
+        # of the feature.
+        if filter_type == 'can_edit':
           query = query.filter(
-            ndb.OR(Feature.owner == email,
-              ndb.OR(Feature.editors == email, Feature.creator == email)))
+            ndb.OR(Feature.owner == comparator,
+              ndb.OR(Feature.editors == comparator,
+                     Feature.creator == comparator)))
+        else:
+          query = query.filter(getattr(Feature, filter_type) == comparator)
 
       features = query.fetch(limit)
 
@@ -1018,7 +1020,7 @@ class Feature(DictModel):
       if (show_unlisted or not f['unlisted'] or
           ('browsers' in f and email in f['browsers']['chrome']['owners']) or
           ('editors' in f and email in f['editors']) or
-          ('creator' in f and email in f['creator'])):
+          (f.get('creator') is not None and email == f['creator'])):
         allowed_feature_list.append(f)
 
     return allowed_feature_list
@@ -1173,7 +1175,7 @@ class Feature(DictModel):
         if (show_unlisted or not f['unlisted'] or
             ('browsers' in f and email in f['browsers']['chrome']['owners']) or
             ('editors' in f and email in f['editors']) or
-            ('creator' in f and email in f['creator'])):
+            ('creator' in f and email == f['creator'])):
           allowed_features_by_type[shippingType].append(f)
 
     ramcache.set(cache_key, allowed_features_by_type)
