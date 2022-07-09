@@ -164,6 +164,30 @@ class FeatureTest(testing_config.CustomTestCase):
     self.assertEqual(
         ['feature a'],
         names)
+  
+  def test_get_all__owner_unlisted(self):
+    """Unlisted features should still be visible to their owners."""
+    self.feature_2.unlisted = True
+    self.feature_2.owner = ['feature_owner@example.com']
+    self.feature_2.put()
+    testing_config.sign_in('feature_owner@example.com', 1234567890)
+    actual = models.Feature.get_all(update_cache=True)
+    names = [f['name'] for f in actual]
+    testing_config.sign_out()
+    self.assertEqual(
+      ['feature b', 'feature c', 'feature d', 'feature a'], names)
+
+  def test_get_all__editor_unlisted(self):
+    """Unlisted features should still be visible to feature editors."""
+    self.feature_2.unlisted = True
+    self.feature_2.editors = ['feature_editor@example.com']
+    self.feature_2.put()
+    testing_config.sign_in("feature_editor@example.com", 1234567890)
+    actual = models.Feature.get_all(update_cache=True)
+    names = [f['name'] for f in actual]
+    testing_config.sign_out()
+    self.assertEqual(
+      ['feature b', 'feature c', 'feature d', 'feature a'], names)
 
   def test_get_by_ids__empty(self):
     """A request to load zero features returns zero results."""
