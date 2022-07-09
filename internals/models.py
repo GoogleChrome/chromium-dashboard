@@ -634,6 +634,7 @@ class Feature(DictModel):
       }
       d['tags'] = d.pop('search_tags', [])
       d['editors'] = d.pop('editors', [])
+      d['creator'] = d.pop('creator', None)
       d['browsers'] = {
         'chrome': {
           'bug': d.pop('bug_url', None),
@@ -784,8 +785,11 @@ class Feature(DictModel):
           query = query.filter(Feature.category == filterby[1])
         elif filterby[0] == 'owner':
           query = query.filter(Feature.owner == filterby[1])
-        elif filterby[0] == 'editors':
-          query = query.filter(Feature.editors == filterby[1])
+        elif filterby[0] == 'can_edit':
+          email = filterby[1]
+          query = query.filter(
+            ndb.OR(Feature.owner == email,
+              ndb.OR(Feature.editors == email, Feature.creator == email)))
 
       features = query.fetch(limit)
 
@@ -1013,7 +1017,8 @@ class Feature(DictModel):
       # Owners and editors of a feature should still be able to see their features.
       if (show_unlisted or not f['unlisted'] or
           ('browsers' in f and email in f['browsers']['chrome']['owners']) or
-          ('editors' in f and email in f['editors'])):
+          ('editors' in f and email in f['editors']) or
+          ('creator' in f and email in f['creator'])):
         allowed_feature_list.append(f)
 
     return allowed_feature_list
@@ -1167,7 +1172,8 @@ class Feature(DictModel):
         # Owners and editors of a feature should still be able to see their features.
         if (show_unlisted or not f['unlisted'] or
             ('browsers' in f and email in f['browsers']['chrome']['owners']) or
-            ('editors' in f and email in f['editors'])):
+            ('editors' in f and email in f['editors']) or
+            ('creator' in f and email in f['creator'])):
           allowed_features_by_type[shippingType].append(f)
 
     ramcache.set(cache_key, allowed_features_by_type)
@@ -1258,6 +1264,7 @@ class Feature(DictModel):
 
   # General info.
   category = ndb.IntegerProperty(required=True)
+  creator = ndb.StringProperty()
   name = ndb.StringProperty(required=True)
   feature_type = ndb.IntegerProperty(default=FEATURE_TYPE_INCUBATE_ID)
   intent_stage = ndb.IntegerProperty(default=0)
@@ -1402,6 +1409,7 @@ QUERIABLE_FIELDS = {
     'star_count': Feature.star_count,
     'tags': Feature.search_tags,
     'owner': Feature.owner,
+    'creator': Feature.creator,
     'browsers.chrome.owners': Feature.owner,
     'editors': Feature.editors,
     'intent_to_implement_url': Feature.intent_to_implement_url,
