@@ -405,19 +405,7 @@ header {
     left: 0;
     margin: 0;
   }
-
-  //Vertical Sub-Nav should not be visible in narrow view ports
-  .metric-nav{display: none}
-
 }
-
-//Horizontal Sub-Nav should not be visible in wider view ports
-@media only screen and (min-width: 700px){
-  #horizontal-sub-nav{display: none}
-
-}
-
-
 
 // When banner doesn't block navigation buttons.
 @media only screen and (min-width: 1100px) {

@@ -51,7 +51,12 @@
   }
 }
 
-@media only screen and (max-width: 700px) {
+@media only screen and (max-width: 1100px) {
+  //Vertical Sub-Nav should not be visible in narrow view ports
+  .metric-nav {
+    display: none
+  }
+
   #column-container {
     flex-direction: column;
   }
@@ -72,5 +77,12 @@
 
   .data-panel {
     margin: 0 10px;
+  }
+}
+
+//Horizontal Sub-Nav should not be visible in wider view ports
+@media only screen and (min-width: 1100px) {
+  #horizontal-sub-nav {
+    display: none
   }
 }
