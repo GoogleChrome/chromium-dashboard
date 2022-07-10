@@ -5,36 +5,35 @@
   <style>{% inline_file "/static/css/metrics.css" %}</style>
 {% endblock %}
 
-{% block drawer %}
-  {% include "metrics/css/_css_metric_nav.html" %}
-{% endblock %}
-
-
-{% block subheader %}
-<div id="subheader">
-  <h2>CSS usage &gt; all properties > stack rank</h2>
-</div>
-{% endblock %}
-
 {% block content %}
-<div class="data-panel">
-  <h3>About this data</h3>
-  <p class="description">
-    We've been using Chrome's <a
-    href="https://cs.chromium.org/chromium/src/tools/metrics/histograms/enums.xml"
-    target="_blank" rel="noopener">anonymous usage statistics</a> to count the
-    occurrences of certain CSS features in the wild. The numbers on
-    this page indicate the <b>percentages of Chrome page loads (across
-    all channels and platforms) that use the corresponding CSS
-    property at least once</b>.
+  <div id="column-container">
+    <div id="drawer-column">
+      {% include "metrics/css/_css_metric_nav.html" %}
+    </div>
+    <div id="content-column">
+      <div id="subheader">
+        <h2>CSS usage &gt; all properties > stack rank</h2>
+      </div>
+      <div class="data-panel">
+        <h3>About this data</h3>
+        <p class="description">
+          We've been using Chrome's <a
+          href="https://cs.chromium.org/chromium/src/tools/metrics/histograms/enums.xml"
+          target="_blank" rel="noopener">anonymous usage statistics</a> to count the
+          occurrences of certain CSS features in the wild. The numbers on
+          this page indicate the <b>percentages of Chrome page loads (across
+          all channels and platforms) that use the corresponding CSS
+          property at least once</b>.
 
-    Newly added use counters that are not on Chrome stable yet only
-    have data from the Chrome channels they're on, which makes them
-    hard to compare to older use counters.
+          Newly added use counters that are not on Chrome stable yet only
+          have data from the Chrome channels they're on, which makes them
+          hard to compare to older use counters.
 
-    Data is ~24 hrs old.</p>
-  <chromedash-metrics type="css" view="popularity"></chromedash-metrics>
-</div>
+          Data is ~24 hrs old.</p>
+        <chromedash-metrics type="css" view="popularity"></chromedash-metrics>
+      </div>
+    </div>
+  </div>
 {% endblock %}
 
 {% block js %}

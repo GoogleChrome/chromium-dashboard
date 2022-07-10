@@ -279,20 +279,15 @@ header {
   position: relative;
 }
 
-#column-container {
-   display: flex;
-   align-items: stretch;
-   flex-direction: row;
- }
-
-#drawer-column {
-  padding: 1em 2em 1em 1em;
-  margin-left: 8px;
+#content-flex-wrapper {
+  display: flex;
+  justify-content: center;
+  width: 100%;
 }
 
-#content-column {
-  flex: 1;
-  padding-left: 2em;
+#content-component-wrapper {
+  width: var(--max-content-width);
+  max-width: 95%;
 }
 
 #panels {
@@ -300,7 +295,6 @@ header {
   width: 100%;
   overflow: hidden;
 }
-
 
 .alertbox {
   margin: 2em;
@@ -347,15 +341,6 @@ header {
   #content {
     margin-left: 0;
     margin-right: 0;
-  }
-
-
-  #column-container {
-    flex-direction: column;
-  }
-  #content-column {
-    padding-left: var(--content-padding-half);
-    padding-right: var(--content-padding-half);
   }
 
   header {
@@ -423,7 +408,6 @@ header {
 
   //Vertical Sub-Nav should not be visible in narrow view ports
   .metric-nav{display: none}
-  #drawer-column{padding: 0em;}
 
 }
 

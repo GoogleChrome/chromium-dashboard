@@ -129,7 +129,6 @@ sl-dialog::part(body) {
 sl-details::part(base) {
   margin: var(--content-padding-half) 0 0 0;
   color: var(--accordion-color);
-  width: var(--max-content-width);
   border: none;
   border-radius: 0;
   background-color: transparent;

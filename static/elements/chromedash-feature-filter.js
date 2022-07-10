@@ -231,7 +231,6 @@ class ChromedashFeatureFilter extends LitElement {
        margin: 4px;
        background: #eee;
        border-radius: 8px;
-       width: var(--max-content-width);
       }
       #searchbar {
        display: flex;
@@ -285,7 +284,7 @@ class ChromedashFeatureFilter extends LitElement {
                @click="${this.handleSearchClick}">
         <iron-icon icon="chromestatus:search"></iron-icon>
        </button>
-       <input id="searchbox" type="search" placeholder="Search" size=60
+       <input id="searchbox" type="search" placeholder="Search"
               @keyup="${this.handleSearchKey}">
        <button id="showfilters" @click="${this.toggleFilters}">
         <iron-icon icon="chromestatus:filter-list-from-gmail"></iron-icon>
