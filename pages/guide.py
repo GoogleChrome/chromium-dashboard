@@ -141,6 +141,7 @@ class FeatureNew(basehandlers.FlaskHandler):
         summary=self.form.get('summary'),
         owner=owners,
         editors=editors,
+        creator=signed_in_user.email(),
         impl_status_chrome=models.NO_ACTIVE_DEV,
         standardization=models.EDITORS_DRAFT,
         unlisted=self.form.get('unlisted') == 'on',
