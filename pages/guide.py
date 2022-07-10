@@ -171,10 +171,10 @@ class ProcessOverview(basehandlers.FlaskHandler):
     return progress_so_far
 
   def get_template_data(self, feature_id):
-    perm_result = permissions.require_edit_feature_permission(self, feature_id)
-    # Return if redirect is required to user to sign in.
-    if perm_result is not None and perm_result.status == '302 FOUND':
-      return perm_result
+    # Validate the user has edit permissions and redirect if needed.
+    redirect_resp = permissions.validate_feature_edit_permission(self, feature_id)
+    if redirect_resp:
+      return redirect_resp
 
     f = models.Feature.get_by_id(int(feature_id))
     if f is None:
@@ -251,10 +251,10 @@ class FeatureEditStage(basehandlers.FlaskHandler):
     return f, feature_process
 
   def get_template_data(self, feature_id, stage_id):
-    perm_result = permissions.require_edit_feature_permission(self, feature_id)
-    # Return if redirect is required to user to sign in.
-    if perm_result is not None and perm_result.status == '302 FOUND':
-      return perm_result
+    # Validate the user has edit permissions and redirect if needed.
+    redirect_resp = permissions.validate_feature_edit_permission(self, feature_id)
+    if redirect_resp:
+      return redirect_resp
 
     f, feature_process = self.get_feature_and_process(feature_id)
 
@@ -298,10 +298,10 @@ class FeatureEditStage(basehandlers.FlaskHandler):
     return template_data
 
   def process_post_data(self, feature_id, stage_id=0):
-    perm_result = permissions.require_edit_feature_permission(self, feature_id)
-    # Return if redirect is required to user to sign in.
-    if perm_result is not None and perm_result.status == '302 FOUND':
-      return perm_result
+    # Validate the user has edit permissions and redirect if needed.
+    redirect_resp = permissions.validate_feature_edit_permission(self, feature_id)
+    if redirect_resp:
+      return redirect_resp
 
     if feature_id:
       feature = models.Feature.get_by_id(feature_id)
@@ -595,10 +595,10 @@ class FeatureEditAllFields(FeatureEditStage):
   TEMPLATE_PATH = 'guide/editall.html'
 
   def get_template_data(self, feature_id):
-    perm_result = permissions.require_edit_feature_permission(self, feature_id)
-    # Return if redirect is required to user to sign in.
-    if perm_result is not None and perm_result.status == '302 FOUND':
-      return perm_result
+    # Validate the user has edit permissions and redirect if needed.
+    redirect_resp = permissions.validate_feature_edit_permission(self, feature_id)
+    if redirect_resp:
+      return redirect_resp
 
     f, feature_process = self.get_feature_and_process(feature_id)
 

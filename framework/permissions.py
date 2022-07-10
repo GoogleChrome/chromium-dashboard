@@ -175,7 +175,7 @@ def require_create_feature(handler):
   return check_login
 
 
-def require_edit_feature_permission(obj, feature_id):
+def validate_feature_edit_permission(obj, feature_id):
   """Check if user has permission to edit feature and abort if not."""
   """Redirect, abort(403), or call handler_method."""
   user = obj.get_current_user()

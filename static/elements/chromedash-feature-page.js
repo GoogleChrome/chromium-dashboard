@@ -252,8 +252,8 @@ export class ChromedashFeaturePage extends LitElement {
     return html`
       ${this.feature.unlisted ? html`
         <section id="access">
-        <p><b>This feature is only shown in the feature list to users with
-        edit access.</b></p>
+        <p><b>This feature is only shown in the feature list
+        to users with access to edit this feature.</b></p>
         </section>
       `: nothing}
 
