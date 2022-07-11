@@ -899,10 +899,10 @@ class Feature(DictModel):
     listed_features = []
     for f in feature_list:
       # Owners and editors of a feature should still be able to see their features.
-      if (('unlisted' in f and not f['unlisted']) or
+      if ((not f.get('unlisted', False)) or
           ('browsers' in f and email in f['browsers']['chrome']['owners']) or
-          ('editors' in f and email in f['editors']) or
-          (f.get('creator') is not None and email == f['creator'])):
+          (email in f.get('editors', [])) or
+          (email is not None and f.get('creator') == email)):
         listed_features.append(f)
     
     return listed_features
