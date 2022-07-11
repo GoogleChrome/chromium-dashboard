@@ -103,11 +103,12 @@ def can_edit_feature(user, feature_id):
   if not feature:
     return False
   
+  email = user.email()
   # Check if the user is an owner or editor for this feature. If yes, can edit.
-  is_owner = ('owners' in feature['browsers']['chrome'] and
-                user.email() in feature['browsers']['chrome']['owners'])
-  is_editor = 'editors' in feature and user.email() in feature['editors']
-  return is_owner or is_editor
+  is_owner = email in feature['browsers']['chrome'].get('owners')
+  is_editor = email in feature.get('editors', [])
+  is_creator = email == feature.get('creator')
+  return is_owner or is_editor or is_creator
 
 
 def can_approve_feature(user, feature, approvers):
