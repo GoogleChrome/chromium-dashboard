@@ -125,7 +125,6 @@ def can_approve_feature(user, feature, approvers):
 def _reject_or_proceed(
     handler_obj, handler_method, handler_args, handler_kwargs,
     perm_function):
-
   """Redirect, abort(403), or call handler_method."""
   user = handler_obj.get_current_user()
   req = handler_obj.request
@@ -134,15 +133,7 @@ def _reject_or_proceed(
   if not user and req.method == 'GET':
     return handler_obj.redirect(settings.LOGIN_PAGE_URL)
 
-  allowed = False
-  # Use the id of the feature if it is available.
-  feature_id = handler_kwargs.get('feature_id', None)
-  if feature_id:
-    allowed = perm_function(user, feature_id)
-  else:
-    allowed = perm_function(user)
-
-  if not allowed:
+  if not perm_function(user):
     handler_obj.abort(403)
   else:
     return handler_method(handler_obj, *handler_args, **handler_kwargs)

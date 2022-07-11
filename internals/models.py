@@ -892,6 +892,7 @@ class Feature(DictModel):
   
   @classmethod
   def filter_unlisted(self, feature_list):
+    """Filters a feature list to display only features the user should see."""
     user = users.get_current_user()
     email = None
     if user:
