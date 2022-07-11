@@ -15,34 +15,38 @@ export const ALL_FIELDS = {
         <a target="_blank"
             href="https://github.com/GoogleChrome/chromium-dashboard/wiki/EditingHelp#feature-name-example">
           Example</a>
-      `},
+    `},
 
   'summary': {
     help_text: html`
-        NOTE: Text in the beta release post, the enterprise release notes, 
-        and other external sources will be based on this text.
+        <p>Text in the beta release post, the enterprise release notes, 
+        and other external sources will be based on this text.</p>
   
-        Begin with one line explaining what the feature does. Add one or two 
-        lines explaining how this feature helps developers. Avoid language such 
-        as "a new feature". They all are or have been new features.
-  
-        Write it from a web developer's point of view.
-        Follow the example link below for more guidance.<br>
-        <a target="_blank" 
-            href="https://github.com/GoogleChrome/chromium-dashboard/wiki/EditingHelp#summary-example">
-          Guidelines and example</a>.`,
-  },
+        <p>Write from a web developer's point of view. Begin with one line
+        explaining what the feature does. Add one or two lines explaining
+        how this feature helps developers. Write in a matter-of-fact
+        manner and in the present tense. (This summary will be visible long after
+        your project is finished.) Avoid language such as "a new feature" and
+        "we propose".</p>
+
+        <a target="_blank"
+            href="https://github.com/GoogleChrome/chromium-dashboard/wiki/EditingHelp#summary">
+          Learn more</a>
+        <a target="_blank"
+            href="https://github.com/GoogleChrome/chromium-dashboard/wiki/EditingHelp#example-1">
+          Example</a>
+      `},
 
   'owner': {
     help_text: html`
-        Comma separated list of full email addresses. Prefer @chromium.org.`,
+        Comma separated list of all owners' email addresses. Accounts 
+        from @chromium.org are preferred.`,
   },
 
   'unlisted': {
     help_text: html`
-        Check this box for draft features that should not appear
-        in the feature list. Anyone with the link will be able to
-        view the feature on the detail page.`,
+        Check this box to hide draft emails in list views. Anyone with
+        a link will be able to view the feature's detail page.`,
   },
 
   'blink_components': {
@@ -62,7 +66,9 @@ export const ALL_FIELDS = {
 
   'intent_stage': {
     help_text: html`
-        Select the appropriate process stage.`,
+        Select the appropriate spec process stage. If you select
+        Dev trials, Origin Trial, or Shipped, be sure to set the
+        equivalent Implementation status.`,
   },
 
   'search_tags': {
@@ -72,14 +78,19 @@ export const ALL_FIELDS = {
 
   'impl_status_chrome': {
     help_text: html`
-        Implementation status in Chromium.`,
+        Select the appropriate Chromium development stage. If you
+        select In developer trial, Origin trial, or Enabled by
+        default, be sure to set the equivalent Process stage.`,
   },
 
   'bug_url': {
     help_text: html`
         Tracking bug url (https://bugs.chromium.org/...). This bug
         should have "Type=Feature" set and be world readable.
-        Note: This field only accepts one URL.`,
+        Note: This field only accepts one URL.\n\n
+        <a target="_blank"
+            href="https://bugs.chromium.org/p/chromium/issues/entry">
+          Create tracking bug</a>`,
   },
 
   'launch_bug_url': {
@@ -95,7 +106,11 @@ export const ALL_FIELDS = {
         Explain why the web needs this change. It may be useful 
         to describe what web developers are forced to do without 
         it. When possible, add links to your explainer 
-        backing up your claims. 
+        backing up your claims.\n\n
+        This text is sometimes included with the summary in the
+        beta post, enterprise release notes and other external
+        documents. Write in a matter-of-fact manner and in the
+        present tense.\n\n
         <a target="_blank" 
             href="https://github.com/GoogleChrome/chromium-dashboard/wiki/EditingHelp#motivation-example">
           Example</a>.`,
@@ -104,8 +119,13 @@ export const ALL_FIELDS = {
   'deprecation_motivation': {
     help_text: html`
         Deprecations and removals must have strong reasons, backed up
-        by measurements.  There must be clear and actionable paths forward
-        for developers.  Please see
+        by measurements. There must be clear and actionable paths forward
+        for developers.\n\n
+        This text is sometimes included with the summary in the
+        beta post, enterprise release notes and other external
+        documents. Write in a matter-of-fact manner and in the
+        present tense.\n\n
+        Please see
         <a target="_blank" 
             href="https://docs.google.com/a/chromium.org/document/d/1LdqUfUILyzM5WEcOgeAWGupQILKrZHidEXrUxevyi_Y/edit?usp=sharing">
           Removal guidelines</a>.`,
@@ -128,9 +148,9 @@ export const ALL_FIELDS = {
 
   'spec_link': {
     help_text: html`
-        Link to spec, if and when available.  Please update the
-        chromestatus.com entry and the intent thread(s) with the
-        spec link when available.`,
+        Link to the spec, if and when available. When implementing
+        a spec update, please link to a heading in a published spec
+        rather than a pull request when possible.`,
   },
 
   'comments': {

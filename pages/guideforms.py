@@ -93,7 +93,7 @@ class ChromedashTextarea(forms.widgets.Textarea):
 
 SHIPPED_HELP_TXT = (
     'First milestone to ship with this status. Applies to: Enabled by '
-    'default, Browser Intervention, Deprecated and Removed.')
+    'default, Browser Intervention, Deprecated, and Removed.')
 
 SHIPPED_WEBVIEW_HELP_TXT = ('First milestone to ship with this status. '
                             'Applies to Enabled by default, Browser '
@@ -349,7 +349,7 @@ ALL_FIELDS = {
         required=False, label='',
         widget=ChromedashTextarea(
             attrs={'rows': 2, 'placeholder': 'Notes'}),
-        help_text=('Reference known representative examples of opinion, '
+        help_text=('Reference known representative examples of opinions, '
                    'both positive and negative.')),
 
     'other_views_notes': forms.CharField(
@@ -387,7 +387,7 @@ ALL_FIELDS = {
         label='WebView application risks', required=False,
         widget=ChromedashTextarea(),
         help_text=
-        ('Does this intent deprecate or change behavior of existing APIs, '
+        ('Does this feature deprecate or change behavior of existing APIs, '
          'such that it has potentially high risk for Android WebView-based '
          'applications? (See <a href="'
          'https://new.chromium.org/developers/webview-changes/'
@@ -400,10 +400,10 @@ ALL_FIELDS = {
          'https://source.chromium.org/chromium/chromium/src/+/main:third_party/blink/public/common/features.h'
          '" target="_blank">examples here</a>) that can '
          'be flipped off in case of compat issues</li>'
-         '<li>Consider reaching out to android-webview-dev@chromium.org for '
+         '<li>Consider contacting android-webview-dev@chromium.org for '
          'advice</li>'
-         '<li>If you are not sure, just put "not sure" as the answer here and '
-         'the API owners can help during the review of your intent-to-ship</li>'
+         '<li>If you are not sure, just put "not sure" as the answer and '
+         'the API owners can help during the review of your intent to ship</li>'
          '</ul>')),
 
     'experiment_goals': forms.CharField(
@@ -415,11 +415,10 @@ ALL_FIELDS = {
          'designs? Double check that your experiment makes sense given that '
          'a large developer (e.g. a Google product or Facebook) likely '
          'can\'t use it in production due to the limits enforced by origin '
-         'trials.\n\nIf Intent to Extend Origin Trial, highlight new/different '
-         'areas for experimentation. Should not be an exact copy of goals '
-         'from the first Intent to Experiment.')),
+         'trials.\n\nIf you send an Intent to Extend Origin Trial, highlight '
+         'new/different areas for experimentation. They should not be an exact '
+         'copy of the goals from the first Intent to Experiment.')),
 
-    # TODO(jrobbins): consider splitting this into start and end fields.
     'experiment_timeline': forms.CharField(
         label='Experiment Timeline', required=False,
         widget=ChromedashTextarea(attrs={
@@ -430,40 +429,39 @@ ALL_FIELDS = {
                    'Deprecated: '
                    'Please use the numeric fields above instead.')),
 
-    # TODO(jrobbins and jmedley): Refine help text.
     'ot_milestone_desktop_start': forms.IntegerField(
         required=False, label='OT desktop start',
-        widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'}),
+        widget=forms.NumberInput(attrs={'placeholder': 'Milestone number'}),
         help_text=('First desktop milestone that will support an origin '
                    'trial of this feature.')),
 
     'ot_milestone_desktop_end': forms.IntegerField(
         required=False, label='OT desktop end',
-        widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'}),
+        widget=forms.NumberInput(attrs={'placeholder': 'Milestone number'}),
         help_text=('Last desktop milestone that will support an origin '
                    'trial of this feature.')),
 
     'ot_milestone_android_start': forms.IntegerField(
         required=False, label='OT Android start',
-        widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'}),
+        widget=forms.NumberInput(attrs={'placeholder': 'Milestone number'}),
         help_text=('First android milestone that will support an origin '
                    'trial of this feature.')),
 
     'ot_milestone_android_end': forms.IntegerField(
         required=False, label='OT Android end',
-        widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'}),
+        widget=forms.NumberInput(attrs={'placeholder': 'Milestone number'}),
         help_text=('Last android milestone that will support an origin '
                    'trial of this feature.')),
 
     'ot_milestone_webview_start': forms.IntegerField(
         required=False, label='OT WebView start',
-        widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'}),
+        widget=forms.NumberInput(attrs={'placeholder': 'Milestone number'}),
         help_text=('First WebView milestone that will support an origin '
                    'trial of this feature.')),
 
     'ot_milestone_webview_end': forms.IntegerField(
         required=False, label='OT WebView end',
-        widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'}),
+        widget=forms.NumberInput(attrs={'placeholder': 'Milestone number'}),
         help_text=('Last WebView milestone that will support an origin '
                    'trial of this feature.')),
 
@@ -479,8 +477,8 @@ ALL_FIELDS = {
         label='Experiment Extension Reason', required=False,
         widget=ChromedashTextarea(),
         help_text=
-        ('If this is a repeat experiment, explain why you want to extend this '
-         'experiment.  Also, fill in discussion link fields below.')),
+        ('If this is a repeated or extended experiment, explain why it\'s '
+         'being repeated or extended. Also, fill in discussion link fields below.')),
 
     'ongoing_constraints': forms.CharField(
         label='Ongoing Constraints', required=False,
@@ -488,8 +486,8 @@ ALL_FIELDS = {
         help_text=
         ('Do you anticipate adding any ongoing technical constraints to '
          'the codebase while implementing this feature? We prefer to avoid '
-         'features which require or assume a specific architecture. '
-         'For most features, the answer here is "None."')),
+         'features that require or assume a specific architecture. '
+         'For most features, the answer is "None."')),
 
     'origin_trial_feedback_url': forms.URLField(
         required=False, label='Origin trial feedback summary',
@@ -504,9 +502,9 @@ ALL_FIELDS = {
         help_text=
         ('Open questions about a feature may be a source of future web compat '
          'or interop issues. Please list open issues (e.g. links to known '
-         'github issues in the project for the feature specification) whose '
+         'github issues in the repo for the feature specification) whose '
          'resolution may introduce web compat/interop risk (e.g., changing '
-         'to naming or structure of the API in a '
+         'the naming or structure of the API in a '
          'non-backward-compatible way).')),
 
     'finch_url': forms.URLField(
@@ -521,28 +519,33 @@ ALL_FIELDS = {
         required=False, label='Intent to Experiment LGTM by',
         widget=forms.EmailInput(attrs=MULTI_EMAIL_FIELD_ATTRS),
         help_text=('Full email address of API owner who LGTM\'d the '
-                   'Intent to Experiment email thread.')),
+                   'Intent to Experiment email thread. This field fills '
+                   'automatically if you use the Chrome Status '
+                   'generated email text.')),
 
     'i2s_lgtms': MultiEmailField(
         required=False, label='Intent to Ship LGTMs by',
         widget=forms.EmailInput(attrs=MULTI_EMAIL_FIELD_ATTRS),
-        help_text=('Comma separated list of '
-                   'full email addresses of API owners who LGTM\'d '
-                   'the Intent to Ship email thread.')),
+        help_text=('Comma separated list of the email addresses of API '
+                   'owners who LGTM\'d the Intent to Ship email thread. '
+                   'This field fills automatically if you use the Chrome '
+                   'Status generated email text. ')),
 
     'r4dt_lgtms': MultiEmailField(  # Sets i2e_lgtms field.
         required=False, label='Request for Deprecation Trial LGTM by',
         widget=forms.EmailInput(attrs=MULTI_EMAIL_FIELD_ATTRS),
-        help_text=('Full email addresses of API owners who LGTM\'d '
-                   'the Request for Deprecation Trial email thread.')),
+        help_text=('Comma separated list of the email addresses of API '
+                   'owners who LGTM\'d the Request for Deprecation Trial '
+                   'email thread. This field fills automatically if you '
+                   'use the Chrome Status generated email text. ')),
 
     'debuggability': forms.CharField(
         label='Debuggability', required=True,
         widget=ChromedashTextarea(),
         help_text=
         ('Description of the DevTools debugging support for your feature. '
-         'Please follow <a target="_blank" '
-         'href="https://goo.gle/devtools-checklist">the '
+         'Please follow the <a target="_blank" '
+         'href="https://goo.gle/devtools-checklist">'
          'DevTools support checklist</a> for guidance.')),
 
     'all_platforms': forms.BooleanField(
@@ -573,7 +576,7 @@ ALL_FIELDS = {
         help_text=
         ('Please link to the <a href="https://wpt.fyi/results">results on '
          'wpt.fyi</a>. If any part of the feature is not tested by '
-         'web-platform-tests. Please include links to issues, e.g. a '
+         'web-platform-tests, please include links to issues, e.g. a '
          'web-platform-tests issue with the "infra" label explaining why a '
          'certain thing cannot be tested (<a '
          'href="https://github.com/w3c/web-platform-tests/issues/3867">'
@@ -630,22 +633,22 @@ ALL_FIELDS = {
 
     'shipped_milestone': forms.IntegerField(
         required=False, label='Chrome for desktop',
-        widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'}),
+        widget=forms.NumberInput(attrs={'placeholder': 'Milestone number'}),
         help_text=SHIPPED_HELP_TXT),
 
     'shipped_android_milestone': forms.IntegerField(
         required=False, label='Chrome for Android',
-        widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'}),
+        widget=forms.NumberInput(attrs={'placeholder': 'Milestone number'}),
         help_text=SHIPPED_HELP_TXT),
 
     'shipped_ios_milestone': forms.IntegerField(
         required=False, label='Chrome for iOS (RARE)',
-        widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'}),
+        widget=forms.NumberInput(attrs={'placeholder': 'Milestone number'}),
         help_text=SHIPPED_HELP_TXT),
 
     'shipped_webview_milestone': forms.IntegerField(
         required=False, label='Android Webview',
-        widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'}),
+        widget=forms.NumberInput(attrs={'placeholder': 'Milestone number'}),
         help_text=SHIPPED_WEBVIEW_HELP_TXT),
 
     'requires_embedder_support': forms.BooleanField(
@@ -675,31 +678,31 @@ ALL_FIELDS = {
 
     'dt_milestone_desktop_start': forms.IntegerField(
         required=False, label='DevTrial on desktop',
-        widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'}),
-        help_text=('First milestone that allows developers to try '
+        widget=forms.NumberInput(attrs={'placeholder': 'Milestone number'}),
+        help_text=('First milestone that allows web developers to try '
                    'this feature on desktop platforms by setting a flag. '
                    'When flags are enabled by default in preparation for '
-                   'removal, please use the fields in the ship stage.')),
+                   'shipping or removal, please use the fields in the ship stage.')),
 
     'dt_milestone_android_start': forms.IntegerField(
         required=False, label='DevTrial on Android',
-        widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'}),
-        help_text=('First milestone that allows developers to try '
-                   'this feature on desktop platforms by setting a flag. '
+        widget=forms.NumberInput(attrs={'placeholder': 'Milestone number'}),
+        help_text=('First milestone that allows web developers to try '
+                   'this feature on Android by setting a flag. '
                    'When flags are enabled by default in preparation for '
-                   'removal, please use the fields in the ship stage.')),
+                   'shipping or removal, please use the fields in the ship stage.')),
 
     'dt_milestone_ios_start': forms.IntegerField(
         required=False, label='DevTrial on iOS (RARE)',
-        widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'}),
-        help_text=('First milestone that allows developers to try '
-                   'this feature on desktop platforms by setting a flag. '
+        widget=forms.NumberInput(attrs={'placeholder': 'Milestone number'}),
+        help_text=('First milestone that allows web developers to try '
+                   'this feature on iOS by setting a flag. '
                    'When flags are enabled by default in preparation for '
-                   'removal, please use the fields in the ship stage.')),
+                   'shipping or removal, please use the fields in the ship stage.')),
 
     'flag_name': forms.CharField(
         label='Flag name', required=False,
-        help_text='Name of the flag that enables this feature.'),
+        help_text='Name of the flag on chrome://flags that enables this feature.'),
 
     'prefixed': forms.BooleanField(
         label='Prefixed?',
