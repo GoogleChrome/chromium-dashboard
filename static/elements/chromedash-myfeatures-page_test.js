@@ -6,7 +6,7 @@ import '../js-src/cs-client';
 import sinon from 'sinon';
 
 describe('chromedash-myfeatures-page', () => {
-  let recentReview; let pendingReview; let featureIOwn; let featureIStarred;
+  let recentReview; let pendingReview; let featureICanEdit; let featureIStarred;
 
   /* window.csClient and <chromedash-toast> are initialized at _base.html
    * which are not available here, so we initialize them before each test.
@@ -24,7 +24,7 @@ describe('chromedash-myfeatures-page', () => {
 
     recentReview = null;
     pendingReview = null;
-    featureIOwn = null;
+    featureICanEdit = null;
     featureIStarred = null;
   });
 
@@ -54,7 +54,7 @@ describe('chromedash-myfeatures-page', () => {
     const slDetails = component.shadowRoot.querySelectorAll('sl-details');
     slDetails.forEach((item) => {
       const itemHTML = item.outerHTML;
-      if (itemHTML.includes('summary="Features I own"')) featureIOwn = item;
+      if (itemHTML.includes('summary="Features I can edit"')) featureICanEdit = item;
       if (itemHTML.includes('summary="Features I starred"')) featureIStarred = item;
       if (itemHTML.includes('summary="Features pending my approval"')) pendingReview = item;
       if (itemHTML.includes('summary="Recently reviewed features"')) recentReview = item;
@@ -64,9 +64,9 @@ describe('chromedash-myfeatures-page', () => {
     assert.notExists(pendingReview);
     assert.notExists(recentReview);
 
-    // Features I own sl-details exists and has a correct query
-    assert.exists(featureIOwn);
-    assert.include(featureIOwn.innerHTML, 'query="owner:me"');
+    // "Features I can edit" sl-details exists and has a correct query
+    assert.exists(featureICanEdit);
+    assert.include(featureICanEdit.innerHTML, 'query="can_edit:me"');
 
     // Features I starred sl-details exists and has a correct query
     assert.exists(featureIStarred);
@@ -92,9 +92,10 @@ describe('chromedash-myfeatures-page', () => {
     assert.include(subheaderDiv.innerHTML, 'My features');
 
     const slDetails = component.shadowRoot.querySelectorAll('sl-details');
+    console.log(slDetails)
     slDetails.forEach((item) => {
       const itemHTML = item.outerHTML;
-      if (itemHTML.includes('summary="Features I own"')) featureIOwn = item;
+      if (itemHTML.includes('summary="Features I can edit')) featureICanEdit = item;
       if (itemHTML.includes('summary="Features I starred"')) featureIStarred = item;
       if (itemHTML.includes('summary="Features pending my approval"')) pendingReview = item;
       if (itemHTML.includes('summary="Recently reviewed features"')) recentReview = item;
@@ -108,9 +109,9 @@ describe('chromedash-myfeatures-page', () => {
     assert.exists(recentReview);
     assert.include(recentReview.innerHTML, 'query="is:recently-reviewed"');
 
-    // "Features I own" sl-details exists and has a correct query
-    assert.exists(featureIOwn);
-    assert.include(featureIOwn.innerHTML, 'query="owner:me"');
+    // "Features I can edit" sl-details exists and has a correct query
+    assert.exists(featureICanEdit);
+    assert.include(featureICanEdit.innerHTML, 'query="can_edit:me"');
 
     // "Features I starred" sl-details exists and has a correct query
     assert.exists(featureIStarred);
