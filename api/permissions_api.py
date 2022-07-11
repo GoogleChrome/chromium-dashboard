@@ -38,10 +38,10 @@ class PermissionsAPI(basehandlers.APIHandler):
         'can_create_feature': permissions.can_create_feature(user),
         'can_approve': permissions.can_approve_feature(
             user, None, approvers),
-        'can_edit_all': permissions.can_edit_any_feature(user),
+        'can_edit_all': permissions.can_edit_feature(user, None),
         'is_admin': permissions.can_admin_site(user),
         'email': user.email(),
-        'editable_features': permissions.feature_edit_list(user)
+        'editable_features': []
       }
 
     return {'user': user_data}

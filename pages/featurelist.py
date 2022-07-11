@@ -39,7 +39,7 @@ class FeaturesJsonHandler(basehandlers.FlaskHandler):
     user = users.get_current_user()
     feature_list = models.Feature.get_chronological(
         version=version,
-        show_unlisted=permissions.can_edit_any_feature(user))
+        show_unlisted=permissions.can_edit_feature(user, None))
     return feature_list
 
 

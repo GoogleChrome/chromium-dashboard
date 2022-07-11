@@ -156,7 +156,7 @@ class PermissionFunctionTests(testing_config.CustomTestCase):
     # Test feature editors
     testing_config.sign_in('feature_creator@example.com', 123)
     user = users.get_current_user()
-    self.assertEqual(feature_editor, func(user, *additional_args))
+    self.assertEqual(creator, func(user, *additional_args))
 
     # Test site editor user
     testing_config.sign_in('editor@example.com', 123)
@@ -196,21 +196,21 @@ class PermissionFunctionTests(testing_config.CustomTestCase):
   def test_can_edit_any_feature(self):
     self.check_function_results(
         permissions.can_edit_any_feature, tuple(),
-        unregistered=False, registered=False,
-        special=False, site_editor=True, admin=True, anon=False)
+        unregistered=False, registered=True,
+        special=True, site_editor=True, admin=True, anon=False)
 
   def test_can_edit_feature(self):
     self.check_function_results(
         permissions.can_edit_feature, (None,),
-        unregistered=False, registered=False,
-        special=False, site_editor=True, admin=True, anon=False)
+        unregistered=False, registered=True,
+        special=True, site_editor=True, admin=True, anon=False)
     
     # Check in context of specific feature.
     self.check_function_results_with_feature(
       permissions.can_edit_feature, (self.feature_id,),
-      unregistered=False, registered=False,
+      unregistered=False, registered=True,
       feature_owner=True, feature_editor=True,
-      creator=True, site_editor=True, admin=True
+      creator=False, site_editor=True, admin=True
     )
 
   def test_can_approve_feature(self):

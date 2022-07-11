@@ -320,7 +320,7 @@ class FlaskHandler(BaseHandler):
             user, None, approvers),
         'can_edit_all': permissions.can_edit_any_feature(user),
         'is_admin': permissions.can_admin_site(user),
-        'editable_features': permissions.feature_edit_list(user),
+        'editable_features': [],
         'email': user.email(),
         'dismissed_cues': json.dumps(user_pref.dismissed_cues),
       }
