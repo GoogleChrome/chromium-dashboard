@@ -155,6 +155,8 @@ def process_query_term(field_name, op_str, val_str):
     return process_access_me_query('owner')
   if query_term == 'editor:me':
     return process_access_me_query('editors')
+  if query_term == 'can_edit:me':
+    return process_access_me_query('can_edit')
   if query_term == 'is:recently-reviewed':
     return process_recent_reviews_query()
 

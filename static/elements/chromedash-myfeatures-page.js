@@ -105,14 +105,9 @@ export class ChromedashMyFeaturesPage extends LitElement {
       'Features I starred', 'starred-by:me', 'normal');
   }
 
-  renderIOwn() {
-    return this.renderBox(
-      'Features I own', 'owner:me', 'normal');
-  }
-
   renderICanEdit() {
     return this.renderBox(
-      'Features I can edit', 'editor:me', 'normal');
+      'Features I can edit', 'can_edit:me', 'normal');
   }
 
   render() {
@@ -121,7 +116,6 @@ export class ChromedashMyFeaturesPage extends LitElement {
         <h2>My features</h2>
       </div>
       ${this.user && this.user.can_approve ? this.renderPendingAndRecentApprovals() : nothing}
-      ${this.renderIOwn()}
       ${this.renderICanEdit()}
       ${this.renderIStarred()}
     `;

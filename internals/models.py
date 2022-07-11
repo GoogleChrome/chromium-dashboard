@@ -782,14 +782,14 @@ class Feature(DictModel):
       # TODO(ericbidelman): Support more than one filter.
       if filterby:
         filter_type, comparator = filterby
-        # can_edit will check if the user has any access to edit the feature.
-        # This includes being an owner, editor, or the original creator
-        # of the feature.
         if filter_type == 'can_edit':
+          # can_edit will check if the user has any access to edit the feature.
+          # This includes being an owner, editor, or the original creator
+          # of the feature.
           query = query.filter(
             ndb.OR(Feature.owner == comparator,
-              ndb.OR(Feature.editors == comparator,
-                     Feature.creator == comparator)))
+                   ndb.OR(Feature.editors == comparator,
+                          Feature.creator == comparator)))
         else:
           query = query.filter(getattr(Feature, filter_type) == comparator)
 
