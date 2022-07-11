@@ -94,7 +94,7 @@ gulp.task('rollup', () => {
       rollupBabel({
         plugins: ["@babel/plugin-syntax-dynamic-import"]
       }),
-      rollupMinify({mangle: false, comments: false}),
+      rollupMinify({comments: false}),
     ],
   }).then(bundle => {
     return bundle.write({

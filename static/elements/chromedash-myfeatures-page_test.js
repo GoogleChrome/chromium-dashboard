@@ -92,7 +92,6 @@ describe('chromedash-myfeatures-page', () => {
     assert.include(subheaderDiv.innerHTML, 'My features');
 
     const slDetails = component.shadowRoot.querySelectorAll('sl-details');
-    console.log(slDetails)
     slDetails.forEach((item) => {
       const itemHTML = item.outerHTML;
       if (itemHTML.includes('summary="Features I can edit')) featureICanEdit = item;
