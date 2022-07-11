@@ -889,9 +889,26 @@ class Feature(DictModel):
         ramcache.set(KEY, feature)
 
     return feature
+  
+  @classmethod
+  def filter_unlisted(self, feature_list):
+    user = users.get_current_user()
+    email = None
+    if user:
+      email = user.email()
+    listed_features = []
+    for f in feature_list:
+      # Owners and editors of a feature should still be able to see their features.
+      if (('unlisted' in f and not f['unlisted']) or
+          ('browsers' in f and email in f['browsers']['chrome']['owners']) or
+          ('editors' in f and email in f['editors']) or
+          (f.get('creator') is not None and email == f['creator'])):
+        listed_features.append(f)
+    
+    return listed_features
 
   @classmethod
-  def get_by_ids(self, feature_ids, update_cache=False):
+  def get_by_ids(self, feature_ids, show_unlisted=False, update_cache=False):
     result_dict = {}
     futures = []
 
@@ -918,6 +935,9 @@ class Feature(DictModel):
     result_list = [
         result_dict.get(feature_id) for feature_id in feature_ids
         if feature_id in result_dict]
+
+    if not show_unlisted:
+      result_list = self.filter_unlisted(result_list)
     return result_list
 
   @classmethod
@@ -1010,20 +1030,9 @@ class Feature(DictModel):
 
       ramcache.set(cache_key, feature_list)
 
-    user = users.get_current_user()
-    email = None
-    if user:
-      email = user.email()
-    allowed_feature_list = []
-    for f in feature_list:
-      # Owners and editors of a feature should still be able to see their features.
-      if (show_unlisted or not f['unlisted'] or
-          ('browsers' in f and email in f['browsers']['chrome']['owners']) or
-          ('editors' in f and email in f['editors']) or
-          (f.get('creator') is not None and email == f['creator'])):
-        allowed_feature_list.append(f)
-
-    return allowed_feature_list
+    if not show_unlisted:
+      feature_list = self.filter_unlisted(feature_list)
+    return feature_list
 
   @classmethod
   def get_in_milestone(
@@ -1162,21 +1171,17 @@ class Feature(DictModel):
       email = user.email()
 
     # Construct results as: {type: [json_feature, ...], ...}.
-    for shippingType in all_features:
-      all_features[shippingType].sort(key=lambda f: f.name)
-      all_features[shippingType] = [
-          f for f in all_features[shippingType] if not f.deleted]
-      features_by_type[shippingType] = [
-          f.format_for_template() for f in all_features[shippingType]]
+    for shipping_type in all_features:
+      all_features[shipping_type].sort(key=lambda f: f.name)
+      all_features[shipping_type] = [
+          f for f in all_features[shipping_type] if not f.deleted]
+      features_by_type[shipping_type] = [
+          f.format_for_template() for f in all_features[shipping_type]]
 
-      allowed_features_by_type[shippingType] = []
-      for f in features_by_type[shippingType]:
-        # Owners and editors of a feature should still be able to see their features.
-        if (show_unlisted or not f['unlisted'] or
-            ('browsers' in f and email in f['browsers']['chrome']['owners']) or
-            ('editors' in f and email in f['editors']) or
-            ('creator' in f and email == f['creator'])):
-          allowed_features_by_type[shippingType].append(f)
+      if not show_unlisted:
+        allowed_features_by_type[shipping_type] = self.filter_unlisted(features_by_type[shipping_type])
+      else:
+        allowed_features_by_type[shipping_type] = all_features[shipping_type].copy()
 
     ramcache.set(cache_key, allowed_features_by_type)
 

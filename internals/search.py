@@ -187,8 +187,6 @@ def process_query(
   terms = TERM_RE.findall(user_query + ' ')[:MAX_TERMS] or []
   if not show_deleted:
     terms.append(('deleted', '=', 'false', None))
-  if not show_unlisted:
-    terms.append(('unlisted', '=', 'false', None))
   # 1b. Parse the sort directive.
   sort_spec = sort_spec or '-created.when'
 
@@ -214,7 +212,13 @@ def process_query(
       logging.info('combining result so far with %r', feature_ids)
       result_id_set.intersection_update(feature_ids)
   result_id_list = list(result_id_set or [])
-  total_count = len(result_id_list)
+
+  # TODO(danielrsmith): Update this to more efficiently count the
+  # number of features when hiding unlisted features.
+  if show_unlisted:
+    total_count = len(result_id_list)
+  else:
+    total_count = len(models.Feature.get_by_ids(result_id_list))
   # 3b. Finish getting the total sort order.
   total_order_ids = _resolve_promise_to_id_list(total_order_promise)
 
@@ -228,7 +232,7 @@ def process_query(
   paginated_id_list = sorted_id_list[start : start + num]
 
   # 6. Fetch the actual issues that have those IDs in the sorted results.
-  features_on_page = models.Feature.get_by_ids(paginated_id_list)
+  features_on_page = models.Feature.get_by_ids(paginated_id_list, show_unlisted)
 
   logging.info('features_on_page is %r', features_on_page)
   return features_on_page, total_count

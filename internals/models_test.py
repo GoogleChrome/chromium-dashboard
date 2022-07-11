@@ -218,12 +218,17 @@ class FeatureTest(testing_config.CustomTestCase):
     ramcache.global_cache.clear()
     cache_key = '%s|%s' % (
         models.Feature.DEFAULT_CACHE_KEY, self.feature_1.key.integer_id())
-    ramcache.set(cache_key, 'fake cached feature')
+    cached_feature = {
+      'name': 'fake cached_feature',
+      'id': self.feature_1.key.integer_id(),
+      'unlisted': False
+    }
+    ramcache.set(cache_key, cached_feature)
 
     actual = models.Feature.get_by_ids([self.feature_1.key.integer_id()])
 
     self.assertEqual(1, len(actual))
-    self.assertEqual('fake cached feature', actual[0])
+    self.assertEqual(cached_feature, actual[0])
 
   def test_get_by_ids__batch_order(self):
     """Features are returned in the order of the given IDs."""
