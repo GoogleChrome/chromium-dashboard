@@ -173,7 +173,7 @@ BLINK_PROCESS_STAGES = [
       ],
       [Action('Draft Intent to Prototype email', INTENT_EMAIL_URL,
               [PI_INITIAL_PUBLIC_PROPOSAL.name, PI_MOTIVATION.name,
-               PI_EXPLAINER.name, PI_SPEC_LINK.name])],
+               PI_EXPLAINER.name])],
       [approval_defs.PrototypeApproval],
       models.INTENT_INCUBATE, models.INTENT_IMPLEMENT),
 
