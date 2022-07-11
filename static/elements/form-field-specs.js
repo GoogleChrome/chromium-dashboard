@@ -3,7 +3,7 @@ import {html} from 'lit';
 
 const SHIPPED_HELP_TXT = html`
   First milestone to ship with this status. Applies to: Enabled by
-  default, Browser Intervention, Deprecated and Removed.`;
+  default, Browser Intervention, Deprecated, and Removed.`;
 
 const
   SHIPPED_WEBVIEW_HELP_TXT = html`
@@ -18,40 +18,46 @@ export const ALL_FIELDS = {
   'name': {
     help_text: html`
         Capitalize only the first letter and the beginnings of proper nouns.
+        <br/><br>
         <a target="_blank"
             href="https://github.com/GoogleChrome/chromium-dashboard/wiki/EditingHelp#feature-name">
-          Learn more</a>
+          Learn more</a>.
         <a target="_blank"
             href="https://github.com/GoogleChrome/chromium-dashboard/wiki/EditingHelp#feature-name-example">
-          Example</a>
-      `},
+          Example</a>.
+      `,
+  },
 
   'summary': {
     help_text: html`
-        NOTE: Text in the beta release post, the enterprise release notes, 
-        and other external sources will be based on this text.
+       <p>Text in the beta release post, the enterprise release notes, 
+        and other external sources will be based on this text.</p>
   
-        Begin with one line explaining what the feature does. Add one or two 
-        lines explaining how this feature helps developers. Avoid language such 
-        as "a new feature". They all are or have been new features.
-  
-        Write it from a web developer's point of view.
-        Follow the example link below for more guidance.<br>
-        <a target="_blank" 
-            href="https://github.com/GoogleChrome/chromium-dashboard/wiki/EditingHelp#summary-example">
-          Guidelines and example</a>.`,
+        <p>Write from a web developer's point of view. Begin with one line
+        explaining what the feature does. Add one or two lines explaining
+        how this feature helps developers. Write in a matter-of-fact
+        manner and in the present tense. (This summary will be visible long after
+        your project is finished.) Avoid language such as "a new feature" and
+        "we propose".</p>
+        <a target="_blank"
+            href="https://github.com/GoogleChrome/chromium-dashboard/wiki/EditingHelp#summary">
+          Learn more</a>.
+        <a target="_blank"
+            href="https://github.com/GoogleChrome/chromium-dashboard/wiki/EditingHelp#example-1">
+          Example</a>.
+      `,
   },
 
   'owner': {
     help_text: html`
-        Comma separated list of full email addresses. Prefer @chromium.org.`,
+        Comma separated list of full email addresses. Accounts
+        from @chromium.org are preferred.`,
   },
 
   'unlisted': {
     help_text: html`
-        Check this box for draft features that should not appear
-        in the feature list. Anyone with the link will be able to
-        view the feature on the detail page.`,
+        Check this box to hide draft emails in list views. Anyone with
+        a link will be able to view the feature's detail page.`,
   },
 
   'blink_components': {
@@ -71,7 +77,9 @@ export const ALL_FIELDS = {
 
   'intent_stage': {
     help_text: html`
-        Select the appropriate process stage.`,
+        Select the appropriate spec process stage. If you select
+        Dev trials, Origin Trial, or Shipped, be sure to set the
+        equivalent Implementation status.`,
   },
 
   'search_tags': {
@@ -81,19 +89,26 @@ export const ALL_FIELDS = {
 
   'impl_status_chrome': {
     help_text: html`
-        Implementation status in Chromium.`,
+        Select the appropriate Chromium development stage. If you
+        select In developer trial, Origin trial, or Enabled by
+        default, be sure to set the equivalent Process stage.`,
   },
 
   'bug_url': {
     help_text: html`
         Tracking bug url (https://bugs.chromium.org/...). This bug
         should have "Type=Feature" set and be world readable.
-        Note: This field only accepts one URL.`,
+        Note: This field only accepts one URL.
+        <br/><br>
+        <a target="_blank"
+            href="https://bugs.chromium.org/p/chromium/issues/entry">
+          Create tracking bug</a>`,
   },
 
   'launch_bug_url': {
     help_text: html`
         Launch bug url (https://bugs.chromium.org/...) to track launch approvals.
+        <br/><br>
         <a target="_blank"
             href="https://bugs.chromium.org/p/chromium/issues/entry?template=Chrome+Launch+Feature">
           Create launch bug</a>.`,
@@ -104,17 +119,30 @@ export const ALL_FIELDS = {
         Explain why the web needs this change. It may be useful 
         to describe what web developers are forced to do without 
         it. When possible, add links to your explainer 
-        backing up your claims. 
+        backing up your claims.
+        <br/><br>
+        This text is sometimes included with the summary in the
+        beta post, enterprise release notes and other external
+        documents. Write in a matter-of-fact manner and in the
+        present tense.
+        <br/><br>
         <a target="_blank" 
             href="https://github.com/GoogleChrome/chromium-dashboard/wiki/EditingHelp#motivation-example">
-          Example</a>.`,
+          Example</a>`,
   },
 
   'deprecation_motivation': {
     help_text: html`
         Deprecations and removals must have strong reasons, backed up
-        by measurements.  There must be clear and actionable paths forward
-        for developers.  Please see
+        by measurements. There must be clear and actionable paths forward
+        for developers.
+        <br/><br>
+        This text is sometimes included with the summary in the
+        beta post, enterprise release notes and other external
+        documents. Write in a matter-of-fact manner and in the
+        present tense.
+        <br/><br>
+        Please see
         <a target="_blank" 
             href="https://docs.google.com/a/chromium.org/document/d/1LdqUfUILyzM5WEcOgeAWGupQILKrZHidEXrUxevyi_Y/edit?usp=sharing">
           Removal guidelines</a>.`,
@@ -137,9 +165,9 @@ export const ALL_FIELDS = {
 
   'spec_link': {
     help_text: html`
-        Link to spec, if and when available.  Please update the
-        chromestatus.com entry and the intent thread(s) with the
-        spec link when available.`,
+        Link to the spec, if and when available. When implementing
+        a spec update, please link to a heading in a published spec
+        rather than a pull request when possible.`,
   },
 
   'comments': {
@@ -295,7 +323,7 @@ export const ALL_FIELDS = {
 
   'web_dev_views_notes': {
     help_text: html`
-      Reference known representative examples of opinion, 
+      Reference known representative examples of opinions, 
       both positive and negative.`,
   },
 
@@ -328,7 +356,7 @@ export const ALL_FIELDS = {
 
   'webview_risks': {
     help_text: html`
-      Does this intent deprecate or change behavior of existing APIs, 
+      Does this feature deprecate or change behavior of existing APIs, 
       such that it has potentially high risk for Android WebView-based 
       applications? 
       (See <a target="_blank"
@@ -344,9 +372,9 @@ export const ALL_FIELDS = {
               href="https://source.chromium.org/chromium/chromium/src/+/main:third_party/blink/public/common/features.h"
               >examples here</a>) 
           that can be flipped off in case of compat issues</li>
-        <li>Consider reaching out to android-webview-dev@chromium.org for advice</li>
-        <li>If you are not sure, just put "not sure" as the answer here and 
-          the API owners can help during the review of your intent-to-ship</li>
+        <li>Consider contacting android-webview-dev@chromium.org for advice</li>
+        <li>If you are not sure, just put "not sure" as the answer and 
+          the API owners can help during the review of your Intent to Ship</li>
       </ul>`,
   },
 
@@ -357,12 +385,11 @@ export const ALL_FIELDS = {
       designs? Double check that your experiment makes sense given that 
       a large developer (e.g. a Google product or Facebook) likely 
       can't use it in production due to the limits enforced by origin 
-      trials.\n\nIf Intent to Extend Origin Trial, highlight new/different 
-      areas for experimentation. Should not be an exact copy of goals 
+      trials.\n\nIf you send an Intent to Extend Origin Trial, highlight 
+      areas for experimentation. They should not be an exact copy of the goals 
       from the first Intent to Experiment.`,
   },
 
-  // TODO(jrobbins): consider splitting this into start and end fields.
   'experiment_timeline': {
     help_text: html`
       When does the experiment start and expire? 
@@ -370,7 +397,6 @@ export const ALL_FIELDS = {
       Please use the numeric fields above instead.`,
   },
 
-  // TODO(jrobbins and jmedley): Refine help text.
   'ot_milestone_desktop_start': {
     help_text: html`
       First desktop milestone that will support an origin 
@@ -416,16 +442,16 @@ export const ALL_FIELDS = {
 
   'experiment_extension_reason': {
     help_text: html`
-      If this is a repeat experiment, explain why you want to extend this 
-      experiment.  Also, fill in discussion link fields below.`,
+      If this is a repeated or extended experiment, explain why it's
+      being repeated or extended.  Also, fill in discussion link fields below.`,
   },
 
   'ongoing_constraints': {
     help_text: html`
       Do you anticipate adding any ongoing technical constraints to 
       the codebase while implementing this feature? We prefer to avoid 
-      features which require or assume a specific architecture. 
-      For most features, the answer here is "None."`,
+      features that require or assume a specific architecture. 
+      For most features, the answer is "None."`,
   },
 
   'origin_trial_feedback_url': {
@@ -438,9 +464,9 @@ export const ALL_FIELDS = {
     help_text: html`
       Open questions about a feature may be a source of future web compat 
       or interop issues. Please list open issues (e.g. links to known 
-      github issues in the project for the feature specification) whose 
+      github issues in the repo for the feature specification) whose 
       resolution may introduce web compat/interop risk (e.g., changing 
-      to naming or structure of the API in a 
+      the naming or structure of the API in a 
       non-backward-compatible way).`,
   },
 
@@ -454,20 +480,24 @@ export const ALL_FIELDS = {
   'i2e_lgtms': {
     help_text: html`
       Full email address of API owner who LGTM\'d the 
-      Intent to Experiment email thread.`,
+      Intent to Experiment email thread. 
+      This field fills automatically
+      if you use the Chrome Status generated email text.`,
   },
 
   'i2s_lgtms': {
     help_text: html`
       Comma separated list of 
-      full email addresses of API owners who LGTM\'d 
-      the Intent to Ship email thread.`,
+      email addresses of API owners who LGTM'd 
+      the Intent to Ship email thread.  `,
   },
 
   'r4dt_lgtms': {
     help_text: html`
       Full email addresses of API owners who LGTM\'d 
-      the Request for Deprecation Trial email thread.`,
+      the Request for Deprecation Trial email thread.
+      This field fills automatically
+      if you use the Chrome Status generated email text.`,
   },
 
   'debuggability': {
@@ -476,7 +506,7 @@ export const ALL_FIELDS = {
       Please follow 
       <a target="_blank" 
           href="https://goo.gle/devtools-checklist">
-        the DevTools support checklist</a> for guidance.`,
+        DevTools support checklist</a> for guidance.`,
   },
 
   'all_platforms': {
@@ -500,7 +530,7 @@ export const ALL_FIELDS = {
     help_text: html`
       Please link to the <a href="https://wpt.fyi/results">results on 
       wpt.fyi</a>. If any part of the feature is not tested by 
-      web-platform-tests. Please include links to issues, e.g. a 
+      web-platform-tests, please include links to issues, e.g. a 
       web-platform-tests issue with the "infra" label explaining why a 
       certain thing cannot be tested 
       (<a href="https://github.com/w3c/web-platform-tests/issues/3867">example</a>), 
@@ -560,7 +590,8 @@ export const ALL_FIELDS = {
   'devtrial_instructions': {
     help_text: html`
         Link to a HOWTO or FAQ describing how developers can get started 
-        using this feature in a DevTrial.  
+        using this feature in a DevTrial. 
+        <br/><br>
         <a target="_blank" 
             href="https://github.com/samuelgoto/WebID/blob/master/HOWTO.md">
           Example 1</a>.  
@@ -571,31 +602,31 @@ export const ALL_FIELDS = {
 
   'dt_milestone_desktop_start': {
     help_text: html`
-      First milestone that allows developers to try 
+      First milestone that allows web developers to try 
       this feature on desktop platforms by setting a flag. 
       When flags are enabled by default in preparation for 
-      removal, please use the fields in the ship stage.`,
+      shipping or removal, please use the fields in the ship stage.`,
   },
 
   'dt_milestone_android_start': {
     help_text: html`
-      First milestone that allows developers to try 
+      First milestone that allows web developers to try 
       this feature on desktop platforms by setting a flag. 
       When flags are enabled by default in preparation for 
-      removal, please use the fields in the ship stage.`,
+      shipping or removal, please use the fields in the ship stage.`,
   },
 
   'dt_milestone_ios_start': {
     help_text: html`
-      First milestone that allows developers to try 
+      First milestone that allows web developers to try 
       this feature on desktop platforms by setting a flag. 
       When flags are enabled by default in preparation for 
-      removal, please use the fields in the ship stage.`,
+      shipping or removal, please use the fields in the ship stage.`,
   },
 
   'flag_name': {
     help_text: html`
-      Name of the flag that enables this feature.'`,
+      Name of the flag on chrome://flags that enables this feature.'`,
   },
 
 };
