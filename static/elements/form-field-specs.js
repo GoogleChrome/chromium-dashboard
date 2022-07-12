@@ -141,7 +141,7 @@ export const ALL_FIELDS = {
     help_text: html`
         Link to explainer(s) (one URL per line). You should have
         at least an explainer in hand and have shared it on a
-        public forum before sending an Intent to Prototype in
+        public forum before sending an intent to prototype in
         order to enable discussion with other browser vendors,
         standards bodies, or other interested parties.`,
   },
@@ -180,15 +180,15 @@ export const ALL_FIELDS = {
 
   'intent_to_implement_url': {
     help_text: html`
-        After you have started the "Intent to Prototype"
+        After you have started the intent to prototype
         discussion thread, link to it here.`,
   },
 
   'doc_links': {
     help_text: html`
         Links to design doc(s) (one URL per line), if and when
-        available. [This is not required to send out an Intent
-        to Prototype. Please update the intent thread with the
+        available. [This is not required to send out an intent
+        to prototype. Please update the intent thread with the
         design doc when ready]. An explainer and/or design doc
         is sufficient to start this process. [Note: Please
         include links and data, where possible, to support any

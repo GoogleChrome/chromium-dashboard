@@ -238,13 +238,13 @@ ALL_FIELDS = {
         help_text=('Status of the tag review.')),
 
     'intent_to_implement_url': forms.URLField(
-        required=False, label='Intent to Prototype link',
+        required=False, label='Intent to prototype link',
         widget=forms.URLInput(attrs=URL_FIELD_ATTRS)),
 
     'intent_to_ship_url': forms.URLField(
-        required=False, label='Intent to Ship link',
+        required=False, label='Intent to ship link',
         widget=forms.URLInput(attrs=URL_FIELD_ATTRS),
-        help_text=('After you have started the "Intent to Ship" discussion '
+        help_text=('After you have started the "Intent to ship" discussion '
                    'thread, link to it here.')),
 
     'ready_for_trial_url': forms.URLField(
@@ -254,15 +254,15 @@ ALL_FIELDS = {
                    'thread, link to it here.')),
 
     'intent_to_experiment_url': forms.URLField(
-        required=False, label='Intent to Experiment link',
+        required=False, label='Intent to experiment link',
         widget=forms.URLInput(attrs=URL_FIELD_ATTRS),
-        help_text=('After you have started the "Intent to Experiment" '
+        help_text=('After you have started the "Intent to experiment" '
                    ' discussion thread, link to it here.')),
 
     'intent_to_extend_experiment_url': forms.URLField(
-        required=False, label='Intent to Extend Experiment link',
+        required=False, label='Intent to extend experiment link',
         widget=forms.URLInput(attrs=URL_FIELD_ATTRS),
-        help_text=('If this feature has an "Intent to Extend Experiment" '
+        help_text=('If this feature has an "Intent to extend experiment" '
                    ' discussion thread, link to it here.')),
 
     'r4dt_url': forms.URLField(  # Sets intent_to_experiment_url in DB
@@ -415,9 +415,9 @@ ALL_FIELDS = {
          'designs? Double check that your experiment makes sense given that '
          'a large developer (e.g. a Google product or Facebook) likely '
          'can\'t use it in production due to the limits enforced by origin '
-         'trials.\n\nIf you send an Intent to Extend Origin Trial, highlight '
+         'trials.\n\nIf you send an Intent to extend origin trial, highlight '
          'new/different areas for experimentation. They should not be an exact '
-         'copy of the goals from the first Intent to Experiment.')),
+         'copy of the goals from the first Intent to experiment.')),
 
     'experiment_timeline': forms.CharField(
         label='Experiment Timeline', required=False,
@@ -516,18 +516,18 @@ ALL_FIELDS = {
          'link to it here.')),
 
     'i2e_lgtms': MultiEmailField(
-        required=False, label='Intent to Experiment LGTM by',
+        required=False, label='Intent to experiment LGTM by',
         widget=forms.EmailInput(attrs=MULTI_EMAIL_FIELD_ATTRS),
         help_text=('Full email address of API owner who LGTM\'d the '
-                   'Intent to Experiment email thread. This field fills '
+                   'Intent to experiment email thread. This field fills '
                    'automatically if you use the Chrome Status '
                    'generated email text.')),
 
     'i2s_lgtms': MultiEmailField(
-        required=False, label='Intent to Ship LGTMs by',
+        required=False, label='Intent to ship LGTMs by',
         widget=forms.EmailInput(attrs=MULTI_EMAIL_FIELD_ATTRS),
         help_text=('Comma separated list of the email addresses of API '
-                   'owners who LGTM\'d the Intent to Ship email thread. '
+                   'owners who LGTM\'d the Intent to ship email thread. '
                    'This field fills automatically if you use the Chrome '
                    'Status generated email text. ')),
 
