@@ -206,7 +206,6 @@ indexes:
   properties:
   - name: owner
   - name: editors
-  - name: creator
 - kind: "FeatureObserver"
   properties:
   - name: "bucket_id"
