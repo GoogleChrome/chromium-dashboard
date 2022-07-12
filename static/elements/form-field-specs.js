@@ -87,7 +87,7 @@ export const ALL_FIELDS = {
     help_text: html`
         Tracking bug url (https://bugs.chromium.org/...). This bug
         should have "Type=Feature" set and be world readable.
-        Note: This field only accepts one URL.\n\n
+        Note: This field only accepts one URL.<br/><br/>
         <a target="_blank"
             href="https://bugs.chromium.org/p/chromium/issues/entry">
           Create tracking bug</a>`,
@@ -106,11 +106,11 @@ export const ALL_FIELDS = {
         Explain why the web needs this change. It may be useful 
         to describe what web developers are forced to do without 
         it. When possible, add links to your explainer 
-        backing up your claims.\n\n
+        backing up your claims.<br/><br/>
         This text is sometimes included with the summary in the
         beta post, enterprise release notes and other external
         documents. Write in a matter-of-fact manner and in the
-        present tense.\n\n
+        present tense.<br/><br/>
         <a target="_blank" 
             href="https://github.com/GoogleChrome/chromium-dashboard/wiki/EditingHelp#motivation-example">
           Example</a>.`,
@@ -120,11 +120,11 @@ export const ALL_FIELDS = {
     help_text: html`
         Deprecations and removals must have strong reasons, backed up
         by measurements. There must be clear and actionable paths forward
-        for developers.\n\n
+        for developers.<br/><br/>
         This text is sometimes included with the summary in the
         beta post, enterprise release notes and other external
         documents. Write in a matter-of-fact manner and in the
-        present tense.\n\n
+        present tense.<br/><br/>
         Please see
         <a target="_blank" 
             href="https://docs.google.com/a/chromium.org/document/d/1LdqUfUILyzM5WEcOgeAWGupQILKrZHidEXrUxevyi_Y/edit?usp=sharing">

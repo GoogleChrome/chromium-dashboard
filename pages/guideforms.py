@@ -415,7 +415,7 @@ ALL_FIELDS = {
          'designs? Double check that your experiment makes sense given that '
          'a large developer (e.g. a Google product or Facebook) likely '
          'can\'t use it in production due to the limits enforced by origin '
-         'trials.\n\nIf you send an Intent to extend origin trial, highlight '
+         'trials.<br/><br/>If you send an Intent to extend origin trial, highlight '
          'new/different areas for experimentation. They should not be an exact '
          'copy of the goals from the first Intent to experiment.')),
 
