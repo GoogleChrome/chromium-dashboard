@@ -90,15 +90,6 @@ class ChromedashTextarea(forms.widgets.Textarea):
             default_attrs.update(attrs)
         super().__init__(default_attrs)
 
-
-SHIPPED_HELP_TXT = (
-    'First milestone to ship with this status. Applies to: Enabled by '
-    'default, Browser Intervention, Deprecated and Removed.')
-
-SHIPPED_WEBVIEW_HELP_TXT = ('First milestone to ship with this status. '
-                            'Applies to Enabled by default, Browser '
-                            'Intervention, Deprecated, and Removed.')
-
 # Patterns from https://www.oreilly.com/library/view/regular-expressions-cookbook/9781449327453/ch04s01.html
 # Removing single quote ('), backtick (`), and pipe (|) since they are risky unless properly escaped everywhere.
 # Also removing ! and % because they have special meaning for some older email routing systems.
@@ -192,9 +183,9 @@ ALL_FIELDS = {
         initial=models.PROPOSAL_STD),
 
     'unlisted': forms.BooleanField(
-      label="Unlisted",
-      widget=forms.CheckboxInput(attrs={'label': "Unlisted"}),
-      required=False, initial=False),
+        label="Unlisted",
+        widget=forms.CheckboxInput(attrs={'label': "Unlisted"}),
+        required=False, initial=False),
 
     'spec_link': forms.URLField(
         required=False, label='Spec link',
@@ -216,26 +207,21 @@ ALL_FIELDS = {
     'security_review_status': forms.ChoiceField(
         required=False,
         choices=list(models.REVIEW_STATUS_CHOICES.items()),
-        initial=models.REVIEW_PENDING,
-        help_text=('Status of the security review.')),
+        initial=models.REVIEW_PENDING),
 
     'privacy_review_status': forms.ChoiceField(
         required=False,
         choices=list(models.REVIEW_STATUS_CHOICES.items()),
-        initial=models.REVIEW_PENDING,
-        help_text=('Status of the privacy review.')),
+        initial=models.REVIEW_PENDING),
 
     'tag_review': forms.CharField(
         label='TAG Review', required=False,
-        widget=ChromedashTextarea(attrs={'rows': 2}),
-        help_text=('Link(s) to TAG review(s), or explanation why this is '
-                   'not needed.')),
+        widget=ChromedashTextarea(attrs={'rows': 2})),
 
     'tag_review_status': forms.ChoiceField(
         required=False,
         choices=list(models.REVIEW_STATUS_CHOICES.items()),
-        initial=models.REVIEW_PENDING,
-        help_text=('Status of the tag review.')),
+        initial=models.REVIEW_PENDING),
 
     'intent_to_implement_url': forms.URLField(
         required=False, label='Intent to Prototype link',
@@ -243,70 +229,36 @@ ALL_FIELDS = {
 
     'intent_to_ship_url': forms.URLField(
         required=False, label='Intent to Ship link',
-        widget=forms.URLInput(attrs=URL_FIELD_ATTRS),
-        help_text=('After you have started the "Intent to Ship" discussion '
-                   'thread, link to it here.')),
+        widget=forms.URLInput(attrs=URL_FIELD_ATTRS)),
 
     'ready_for_trial_url': forms.URLField(
         required=False, label='Ready for Trial link',
-        widget=forms.URLInput(attrs=URL_FIELD_ATTRS),
-        help_text=('After you have started the "Ready for Trial" discussion '
-                   'thread, link to it here.')),
+        widget=forms.URLInput(attrs=URL_FIELD_ATTRS)),
 
     'intent_to_experiment_url': forms.URLField(
         required=False, label='Intent to Experiment link',
-        widget=forms.URLInput(attrs=URL_FIELD_ATTRS),
-        help_text=('After you have started the "Intent to Experiment" '
-                   ' discussion thread, link to it here.')),
+        widget=forms.URLInput(attrs=URL_FIELD_ATTRS)),
 
     'intent_to_extend_experiment_url': forms.URLField(
         required=False, label='Intent to Extend Experiment link',
-        widget=forms.URLInput(attrs=URL_FIELD_ATTRS),
-        help_text=('If this feature has an "Intent to Extend Experiment" '
-                   ' discussion thread, link to it here.')),
+        widget=forms.URLInput(attrs=URL_FIELD_ATTRS)),
 
     'r4dt_url': forms.URLField(  # Sets intent_to_experiment_url in DB
         required=False, label='Request for Deprecation Trial link',
-        widget=forms.URLInput(attrs=URL_FIELD_ATTRS),
-        help_text=('After you have started the "Request for Deprecation Trial" '
-                   'discussion thread, link to it here.')),
+        widget=forms.URLInput(attrs=URL_FIELD_ATTRS)),
 
     'interop_compat_risks': forms.CharField(
         required=False, label='Interoperability and Compatibility Risks',
-        widget=ChromedashTextarea(),
-        help_text=
-        ('Describe the degree of <a target="_blank" '
-         'href="https://www.chromium.org/blink/guidelines/'
-         'web-platform-changes-guidelines#TOC-Finding-balance'
-         '">interoperability risk</a>. For a new feature, the main risk is '
-         'that it fails to become an interoperable part of the web platform '
-         'if other browsers do not implement it. For a removal, please review '
-         'our <a target="_blank" href="'
-         'https://docs.google.com/document/d/'
-         '1RC-pBBvsazYfCNNUSkPqAVpSpNJ96U8trhNkfV0v9fk/edit">'
-         'principles of web compatibility</a>.<br>'
-         '<br>'
-         'Please include citation links below where possible. Examples include '
-         'resolutions from relevant standards bodies (e.g. W3C working group), '
-         'tracking bugs, or links to online conversations. '
-         '<a target="_blank" href="'
-         'https://github.com/GoogleChrome/chromium-dashboard/wiki/'
-         'EditingHelp#interoperability-and-compatibility-risks-example">'
-         'Example</a>.'
-        )),
+        widget=ChromedashTextarea()),
 
     'safari_views': forms.ChoiceField(
         required=False, label='Safari views',
         choices=list(models.VENDOR_VIEWS_WEBKIT.items()),
-        initial=models.NO_PUBLIC_SIGNALS,
-        help_text=(
-            'See <a target="_blank" href="https://bit.ly/blink-signals">'
-            'https://bit.ly/blink-signals</a>')),
+        initial=models.NO_PUBLIC_SIGNALS),
 
     'safari_views_link': forms.URLField(
         required=False, label='',
-        widget=forms.URLInput(attrs=URL_FIELD_ATTRS),
-        help_text='Citation link.'),
+        widget=forms.URLInput(attrs=URL_FIELD_ATTRS)),
 
     'safari_views_notes': forms.CharField(
         required=False, label='',
@@ -316,15 +268,11 @@ ALL_FIELDS = {
     'ff_views': forms.ChoiceField(
         required=False, label='Firefox views',
         choices=list(models.VENDOR_VIEWS_GECKO.items()),
-        initial=models.NO_PUBLIC_SIGNALS,
-        help_text=(
-            'See <a target="_blank" href="https://bit.ly/blink-signals">'
-            'https://bit.ly/blink-signals</a>')),
+        initial=models.NO_PUBLIC_SIGNALS),
 
     'ff_views_link': forms.URLField(
         required=False, label='',
-        widget=forms.URLInput(attrs=URL_FIELD_ATTRS),
-        help_text='Citation link.'),
+        widget=forms.URLInput(attrs=URL_FIELD_ATTRS)),
 
     'ff_views_notes': forms.CharField(
         required=False, label='',
@@ -334,90 +282,41 @@ ALL_FIELDS = {
     'web_dev_views': forms.ChoiceField(
         required=False, label='Web / Framework developer views',
         choices=list(models.WEB_DEV_VIEWS.items()),
-        initial=models.DEV_NO_SIGNALS,
-        help_text=(
-            'If unsure, default to "No signals". '
-            'See <a target="_blank" href="https://goo.gle/developer-signals">'
-            'https://goo.gle/developer-signals</a>')),
+        initial=models.DEV_NO_SIGNALS),
 
     'web_dev_views_link': forms.URLField(
         required=False, label='',
-        widget=forms.URLInput(attrs=URL_FIELD_ATTRS),
-        help_text='Citation link.'),
+        widget=forms.URLInput(attrs=URL_FIELD_ATTRS)),
 
     'web_dev_views_notes': forms.CharField(
         required=False, label='',
         widget=ChromedashTextarea(
-            attrs={'rows': 2, 'placeholder': 'Notes'}),
-        help_text=('Reference known representative examples of opinion, '
-                   'both positive and negative.')),
+            attrs={'rows': 2, 'placeholder': 'Notes'})),
 
     'other_views_notes': forms.CharField(
         required=False, label='Other views',
         widget=ChromedashTextarea(
-            attrs={'rows': 4, 'placeholder': 'Notes'}),
-        help_text=('For example, other browsers.')),
+            attrs={'rows': 4, 'placeholder': 'Notes'})),
 
     'ergonomics_risks': forms.CharField(
         label='Ergonomics Risks', required=False,
-        widget=ChromedashTextarea(),
-        help_text=
-        ('Are there any other platform APIs this feature will frequently be '
-         'used in tandem with? Could the default usage of this API make it '
-         'hard for Chrome to maintain good performance (i.e. synchronous '
-         'return, must run on a certain thread, guaranteed return timing)?')),
+        widget=ChromedashTextarea()),
 
     'activation_risks': forms.CharField(
         label='Activation Risks', required=False,
-        widget=ChromedashTextarea(),
-        help_text=
-        ('Will it be challenging for developers to take advantage of this '
-         'feature immediately, as-is? Would this feature benefit from '
-         'having polyfills, significant documentation and outreach, and/or '
-         'libraries built on top of it to make it easier to use?')),
+        widget=ChromedashTextarea()),
 
     'security_risks': forms.CharField(
         label='Security Risks', required=False,
-        widget=ChromedashTextarea(),
-        help_text=
-        ('List any security considerations that were taken into account '
-         'when designing this feature.')),
+        widget=ChromedashTextarea()),
 
     'webview_risks': forms.CharField(
         label='WebView application risks', required=False,
-        widget=ChromedashTextarea(),
-        help_text=
-        ('Does this intent deprecate or change behavior of existing APIs, '
-         'such that it has potentially high risk for Android WebView-based '
-         'applications? (See <a href="'
-         'https://new.chromium.org/developers/webview-changes/'
-         '" target="_blank">here</a> for a definition of "potentially high '
-         'risk", information on why changes to this platform carry higher '
-         'risk, and general rules of thumb for which changes have higher or '
-         'lower risk) If so:'
-         '<ul>'
-         '<li>Please use a base::Feature killswitch (<a href="'
-         'https://source.chromium.org/chromium/chromium/src/+/main:third_party/blink/public/common/features.h'
-         '" target="_blank">examples here</a>) that can '
-         'be flipped off in case of compat issues</li>'
-         '<li>Consider reaching out to android-webview-dev@chromium.org for '
-         'advice</li>'
-         '<li>If you are not sure, just put "not sure" as the answer here and '
-         'the API owners can help during the review of your intent-to-ship</li>'
-         '</ul>')),
+        widget=ChromedashTextarea()),
 
     'experiment_goals': forms.CharField(
         label='Experiment Goals', required=False,
-        widget=ChromedashTextarea(),
-        help_text=
-        ('Which pieces of the API surface are you looking to gain insight on? '
-         'What metrics/measurement/feedback will you be using to validate '
-         'designs? Double check that your experiment makes sense given that '
-         'a large developer (e.g. a Google product or Facebook) likely '
-         'can\'t use it in production due to the limits enforced by origin '
-         'trials.\n\nIf Intent to Extend Origin Trial, highlight new/different '
-         'areas for experimentation. Should not be an exact copy of goals '
-         'from the first Intent to Experiment.')),
+        widget=ChromedashTextarea()),
 
     # TODO(jrobbins): consider splitting this into start and end fields.
     'experiment_timeline': forms.CharField(
@@ -425,180 +324,99 @@ ALL_FIELDS = {
         widget=ChromedashTextarea(attrs={
             'rows': 2,
             'placeholder': 'This field is deprecated',
-            'disabled': 'disabled'}),
-        help_text=('When does the experiment start and expire? '
-                   'Deprecated: '
-                   'Please use the numeric fields above instead.')),
+            'disabled': 'disabled'})),
 
     # TODO(jrobbins and jmedley): Refine help text.
     'ot_milestone_desktop_start': forms.IntegerField(
         required=False, label='OT desktop start',
-        widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'}),
-        help_text=('First desktop milestone that will support an origin '
-                   'trial of this feature.')),
+        widget=forms.NumberInput(attrs={'placeholder': 'Milestone number'})),
 
     'ot_milestone_desktop_end': forms.IntegerField(
         required=False, label='OT desktop end',
-        widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'}),
-        help_text=('Last desktop milestone that will support an origin '
-                   'trial of this feature.')),
+        widget=forms.NumberInput(attrs={'placeholder': 'Milestone number'})),
 
     'ot_milestone_android_start': forms.IntegerField(
         required=False, label='OT Android start',
-        widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'}),
-        help_text=('First android milestone that will support an origin '
-                   'trial of this feature.')),
+        widget=forms.NumberInput(attrs={'placeholder': 'Milestone number'})),
 
     'ot_milestone_android_end': forms.IntegerField(
         required=False, label='OT Android end',
-        widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'}),
-        help_text=('Last android milestone that will support an origin '
-                   'trial of this feature.')),
+        widget=forms.NumberInput(attrs={'placeholder': 'Milestone number'})),
 
     'ot_milestone_webview_start': forms.IntegerField(
         required=False, label='OT WebView start',
-        widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'}),
-        help_text=('First WebView milestone that will support an origin '
-                   'trial of this feature.')),
+        widget=forms.NumberInput(attrs={'placeholder': 'Milestone number'})),
 
     'ot_milestone_webview_end': forms.IntegerField(
         required=False, label='OT WebView end',
-        widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'}),
-        help_text=('Last WebView milestone that will support an origin '
-                   'trial of this feature.')),
+        widget=forms.NumberInput(attrs={'placeholder': 'Milestone number'})),
 
     'experiment_risks': forms.CharField(
         label='Experiment Risks', required=False,
-        widget=ChromedashTextarea(),
-        help_text=
-        ('When this experiment comes to an end are there any risks to the '
-         'sites that were using it, for example losing access to important '
-         'storage due to an experimental storage API?')),
+        widget=ChromedashTextarea()),
 
     'experiment_extension_reason': forms.CharField(
         label='Experiment Extension Reason', required=False,
-        widget=ChromedashTextarea(),
-        help_text=
-        ('If this is a repeat experiment, explain why you want to extend this '
-         'experiment.  Also, fill in discussion link fields below.')),
+        widget=ChromedashTextarea()),
 
     'ongoing_constraints': forms.CharField(
         label='Ongoing Constraints', required=False,
-        widget=ChromedashTextarea(),
-        help_text=
-        ('Do you anticipate adding any ongoing technical constraints to '
-         'the codebase while implementing this feature? We prefer to avoid '
-         'features which require or assume a specific architecture. '
-         'For most features, the answer here is "None."')),
+        widget=ChromedashTextarea()),
 
     'origin_trial_feedback_url': forms.URLField(
         required=False, label='Origin trial feedback summary',
-        widget=forms.URLInput(attrs=URL_FIELD_ATTRS),
-        help_text=
-        ('If your feature was available as an origin trial, link to a summary '
-         'of usage and developer feedback. If not, leave this empty.')),
+        widget=forms.URLInput(attrs=URL_FIELD_ATTRS)),
 
     'anticipated_spec_changes': MultiUrlField(
         required=False, label='Anticipated spec changes',
-        widget=ChromedashTextarea(attrs=MULTI_URL_FIELD_ATTRS),
-        help_text=
-        ('Open questions about a feature may be a source of future web compat '
-         'or interop issues. Please list open issues (e.g. links to known '
-         'github issues in the project for the feature specification) whose '
-         'resolution may introduce web compat/interop risk (e.g., changing '
-         'to naming or structure of the API in a '
-         'non-backward-compatible way).')),
+        widget=ChromedashTextarea(attrs=MULTI_URL_FIELD_ATTRS)),
 
     'finch_url': forms.URLField(
         required=False, label='Finch experiment',
-        widget=forms.URLInput(attrs=URL_FIELD_ATTRS),
-        help_text=
-        ('If your feature will roll out gradually via a '
-         '<a href="go/finch" targe="_blank">Finch experiment</a>, '
-         'link to it here.')),
+        widget=forms.URLInput(attrs=URL_FIELD_ATTRS)),
 
     'i2e_lgtms': MultiEmailField(
         required=False, label='Intent to Experiment LGTM by',
-        widget=forms.EmailInput(attrs=MULTI_EMAIL_FIELD_ATTRS),
-        help_text=('Full email address of API owner who LGTM\'d the '
-                   'Intent to Experiment email thread.')),
+        widget=forms.EmailInput(attrs=MULTI_EMAIL_FIELD_ATTRS)),
 
     'i2s_lgtms': MultiEmailField(
         required=False, label='Intent to Ship LGTMs by',
-        widget=forms.EmailInput(attrs=MULTI_EMAIL_FIELD_ATTRS),
-        help_text=('Comma separated list of '
-                   'full email addresses of API owners who LGTM\'d '
-                   'the Intent to Ship email thread.')),
+        widget=forms.EmailInput(attrs=MULTI_EMAIL_FIELD_ATTRS)),
 
     'r4dt_lgtms': MultiEmailField(  # Sets i2e_lgtms field.
         required=False, label='Request for Deprecation Trial LGTM by',
-        widget=forms.EmailInput(attrs=MULTI_EMAIL_FIELD_ATTRS),
-        help_text=('Full email addresses of API owners who LGTM\'d '
-                   'the Request for Deprecation Trial email thread.')),
+        widget=forms.EmailInput(attrs=MULTI_EMAIL_FIELD_ATTRS)),
 
     'debuggability': forms.CharField(
         label='Debuggability', required=True,
-        widget=ChromedashTextarea(),
-        help_text=
-        ('Description of the DevTools debugging support for your feature. '
-         'Please follow <a target="_blank" '
-         'href="https://goo.gle/devtools-checklist">the '
-         'DevTools support checklist</a> for guidance.')),
+        widget=ChromedashTextarea()),
 
     'all_platforms': forms.BooleanField(
         label='Supported on all platforms?',
         widget=forms.CheckboxInput(attrs={'label': "Supported on all platforms"}),
-        required=False, initial=False, 
-        help_text=
-        ('Will this feature be supported on all six Blink platforms '
-         '(Windows, Mac, Linux, Chrome OS, Android, and Android WebView)?')),
+        required=False, initial=False),
 
     'all_platforms_descr': forms.CharField(
         label='Platform Support Explanation', required=False,
         widget=ChromedashTextarea(
-            attrs={'rows': 2}),
-            help_text=(
-                'Explain why this feature is, or is not, '
-                'supported on all platforms.')),
+            attrs={'rows': 2})),
 
     'wpt': forms.BooleanField(
         label='Web Platform Tests',
         widget=forms.CheckboxInput(attrs={'label': "Web Platform Tests"}),
-        required=False, initial=False, 
-        help_text='Is this feature fully tested in Web Platform Tests?'),
+        required=False, initial=False),
 
     'wpt_descr': forms.CharField(
         label='Web Platform Tests Description', required=False,
-        widget=ChromedashTextarea(),
-        help_text=
-        ('Please link to the <a href="https://wpt.fyi/results">results on '
-         'wpt.fyi</a>. If any part of the feature is not tested by '
-         'web-platform-tests. Please include links to issues, e.g. a '
-         'web-platform-tests issue with the "infra" label explaining why a '
-         'certain thing cannot be tested (<a '
-         'href="https://github.com/w3c/web-platform-tests/issues/3867">'
-         'example</a>), a spec issue for some change that would make it '
-         'possible to test. (<a href="'
-         'https://github.com/whatwg/fullscreen/issues/70">example</a>), or '
-         'a Chromium issue to upstream some existing tests (<a href="'
-         'https://bugs.chromium.org/p/chromium/issues/detail?id=695486">'
-         'example</a>).')),
+        widget=ChromedashTextarea()),
 
     'sample_links': MultiUrlField(
         label='Samples links', required=False,
-        widget=ChromedashTextarea(attrs=MULTI_URL_FIELD_ATTRS),
-        help_text='Links to samples (one URL per line).'),
+        widget=ChromedashTextarea(attrs=MULTI_URL_FIELD_ATTRS)),
 
     'non_oss_deps': forms.CharField(
         label='Non-OSS dependencies', required=False,
-        widget=ChromedashTextarea(),
-        help_text=
-        ('Does the feature depend on any code or APIs outside the Chromium '
-         'open source repository and its open-source dependencies to '
-         'function? (e.g. server-side APIs, operating system APIs '
-         'tailored to this feature or closed-source code bundles) '
-         'Yes or no. If yes, explain why this is necessary.'
-         )),
+        widget=ChromedashTextarea()),
 
     'bug_url': forms.URLField(
         required=False, label='Tracking bug URL',
@@ -621,8 +439,7 @@ ALL_FIELDS = {
 
     'devrel': MultiEmailField(
         required=False, label='Developer relations emails',
-        widget=forms.EmailInput(attrs=MULTI_EMAIL_FIELD_ATTRS),
-        help_text='Comma separated list of full email addresses.'),
+        widget=forms.EmailInput(attrs=MULTI_EMAIL_FIELD_ATTRS)),
 
     'impl_status_chrome': forms.ChoiceField(
         required=False, label='Implementation status',
@@ -630,76 +447,43 @@ ALL_FIELDS = {
 
     'shipped_milestone': forms.IntegerField(
         required=False, label='Chrome for desktop',
-        widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'}),
-        help_text=SHIPPED_HELP_TXT),
+        widget=forms.NumberInput(attrs={'placeholder': 'Milestone number'})),
 
     'shipped_android_milestone': forms.IntegerField(
         required=False, label='Chrome for Android',
-        widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'}),
-        help_text=SHIPPED_HELP_TXT),
+        widget=forms.NumberInput(attrs={'placeholder': 'Milestone number'})),
 
     'shipped_ios_milestone': forms.IntegerField(
         required=False, label='Chrome for iOS (RARE)',
-        widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'}),
-        help_text=SHIPPED_HELP_TXT),
+        widget=forms.NumberInput(attrs={'placeholder': 'Milestone number'})),
 
     'shipped_webview_milestone': forms.IntegerField(
         required=False, label='Android Webview',
-        widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'}),
-        help_text=SHIPPED_WEBVIEW_HELP_TXT),
+        widget=forms.NumberInput(attrs={'placeholder': 'Milestone number'})),
 
     'requires_embedder_support': forms.BooleanField(
       label='Requires Embedder Support',
       widget=forms.CheckboxInput(attrs={'label': "Requires Embedder Support"}),
-      required=False, initial=False,
-      help_text=(
-          'Will this feature require support in //chrome?  '
-          'That includes any code in //chrome, even if that is for '
-          'functionality on top of the spec.  Other //content embedders '
-          'will need to be aware of that functionality. '
-          'Please add a row to this '
-          '<a href="https://docs.google.com/spreadsheets/d/'
-          '1QV4SW4JBG3IyLzaonohUhim7nzncwK4ioop2cgUYevw/edit#gid=0'
-          '" target="_blank">tracking spreadsheet</a>.')),
+      required=False, initial=False),
 
     'devtrial_instructions': forms.URLField(
         required=False, label='DevTrial instructions',
-        widget=forms.URLInput(attrs=URL_FIELD_ATTRS),
-        help_text=(
-            'Link to a HOWTO or FAQ describing how developers can get started '
-            'using this feature in a DevTrial.  <a target="_blank" href="'
-            'https://github.com/samuelgoto/WebID/blob/master/HOWTO.md'
-            '">Example 1</a>.  <a target="_blank" href="'
-            'https://github.com/WICG/idle-detection/blob/main/HOWTO.md'
-            '">Example 2</a>.')),
+        widget=forms.URLInput(attrs=URL_FIELD_ATTRS)),
 
     'dt_milestone_desktop_start': forms.IntegerField(
         required=False, label='DevTrial on desktop',
-        widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'}),
-        help_text=('First milestone that allows developers to try '
-                   'this feature on desktop platforms by setting a flag. '
-                   'When flags are enabled by default in preparation for '
-                   'removal, please use the fields in the ship stage.')),
+        widget=forms.NumberInput(attrs={'placeholder': 'Milestone number'})),
 
     'dt_milestone_android_start': forms.IntegerField(
         required=False, label='DevTrial on Android',
-        widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'}),
-        help_text=('First milestone that allows developers to try '
-                   'this feature on desktop platforms by setting a flag. '
-                   'When flags are enabled by default in preparation for '
-                   'removal, please use the fields in the ship stage.')),
+        widget=forms.NumberInput(attrs={'placeholder': 'Milestone number'})),
 
     'dt_milestone_ios_start': forms.IntegerField(
         required=False, label='DevTrial on iOS (RARE)',
-        widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'}),
-        help_text=('First milestone that allows developers to try '
-                   'this feature on desktop platforms by setting a flag. '
-                   'When flags are enabled by default in preparation for '
-                   'removal, please use the fields in the ship stage.')),
+        widget=forms.NumberInput(attrs={'placeholder': 'Milestone number'})),
 
     'flag_name': forms.CharField(
-        label='Flag name', required=False,
-        help_text='Name of the flag that enables this feature.'),
+        label='Flag name', required=False),
 
     'prefixed': forms.BooleanField(
         label='Prefixed?',
@@ -728,7 +512,7 @@ METADATA_FIELDS = [
 ]
 
 class ChromedashForm(forms.Form):
-    def simple_html_output(self, normal_row, help_text_html):
+    def simple_html_output(self, normal_row):
         """
         Output HTML. Used by override of as_table() to support chromedash uses only.
         Simplified to drop support for hidden form fields and errors at the top, 
@@ -754,17 +538,11 @@ class ChromedashForm(forms.Form):
             else:
                 label = ''
 
-            if field.help_text:
-                help_text = help_text_html % field.help_text
-            else:
-                help_text = ''
-
             output.append(normal_row % {
                 'name': name,
                 'errors': bf_errors,
                 'label': label,
                 'field': bf,
-                'help_text': help_text,
                 'html_class_attr': html_class_attr,
                 'css_classes': css_classes,
                 'field_name': bf.html_name,
@@ -777,12 +555,8 @@ class ChromedashForm(forms.Form):
         label = '<span slot="label">%(label)s</span>'
         field = '<span slot="field">%(field)s</span>'
         error = '<span slot="error">%(errors)s</span>'
-        help = '<span slot="help">%(help_text)s</span>'
-        html = '<chromedash-form-field name="%(name)s" %(html_class_attr)s>' + label + field + error + help + '%(label)s' + '</chromedash-form-field>'
-        return self.simple_html_output(
-            normal_row=html,
-            help_text_html='<span class="helptext">%s</span>'
-        )
+        html = '<chromedash-form-field name="%(name)s" %(html_class_attr)s>' + label + field + error + '%(label)s' + '</chromedash-form-field>'
+        return self.simple_html_output(normal_row=html)
 
 def define_form_class_using_shared_fields(class_name, field_spec_list):
   """Define a new subsblass of forms.Form with the given fields, in order."""
