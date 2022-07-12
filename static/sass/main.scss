@@ -95,105 +95,6 @@ app-header {
   padding: 0;
 }
 
-header {
-  display: flex;
-  align-items: baseline;
-  user-select: none;
-  background: var(--card-background);
-  border-bottom: var(--card-border);
-  box-shadow: var(--card-box-shadow);
-
-  a {
-    text-decoration: none !important;
-  }
-
-  nav {
-    display: flex;
-    flex: 1;
-    align-items: center;
-    margin: 0 var(--content-padding);
-    -webkit-font-smoothing: initial;
-
-    a {
-      cursor: pointer;
-      font-size: var(--nav-link-font-size);
-      text-align: center;
-      padding: var(--content-padding-half) var(--content-padding);
-      color: var(--nav-link-color);
-      white-space: nowrap;
-      border-bottom: var(--nav-link-border);
-
-      &:hover {
-        color: black;
-        background: var(--nav-link-hover-background);
-      }
-
-      &.disabled {
-        opacity: 0.5;
-        pointer-events: none;
-      }
-    }
-
-    .active {
-      color: var(--nav-link-active-color);
-      border-bottom: var(--nav-link-active-border);
-
-      a {
-        color: var(--nav-link-active-color);
-      }
-    }
-
-    .nav-dropdown-container {
-      position: relative;
-
-      ul {
-        display: none;
-        position: absolute;
-        top: 80%;
-        left: 0;
-        list-style: none;
-        z-index: 1;
-        background: var(--card-background);
-        border-bottom: var(--card-border);
-        box-shadow: var(--card-box-shadow);
-      }
-
-      a {
-        display: block;
-      }
-
-      .nav-dropdown-trigger:hover + ul,
-      ul:hover {
-        display: block;
-      }
-    }
-  }
-
-  aside {
-    $logoSize: 32px;
-
-    background: url(/static/img/chrome_logo.svg) no-repeat $content-padding 50%;
-    background-size: $logoSize;
-    padding: 0.75em 2em;
-    padding-left: $logoSize + $content-padding  + $content-padding / 2;
-
-    hgroup {
-      a {
-        color: var(--logo-color);
-      }
-    }
-
-    h1 {
-      line-height: 1;
-    }
-    img {
-      height: 45px;
-      width: 45px;
-      margin-right: 7px;
-    }
-  }
-}
-
 .description {
   line-height: 1.4;
 }
@@ -343,31 +244,6 @@ header {
     margin-right: 0;
   }
 
-  header {
-    $logoSize: 24px;
-
-    margin: 0;
-    display: block;
-    aside {
-      display: flex;
-      padding: var(--content-padding-half);
-      border-radius: 0;
-      background: inherit;  // no logo
-
-    }
-    nav {
-      margin: 0;
-      justify-content: center;
-      flex-wrap: wrap;
-      a {
-        padding: var(--content-padding-half) var(--content-padding);
-        margin: 0;
-        border-radius: 0;
-        flex: 1 0 auto;
-      }
-    }
-  }
-
   #panels {
     display: block;
     nav {
@@ -415,38 +291,3 @@ header {
 }
 
 @import 'fouc';
-
-.flex-container {
-  display: flex;
-  justify-content: space-between;
-}
-
-.flex-container-outer {
-	flex-wrap: wrap;
-  width: 100%;
-}
-
-@media only screen and (max-width: 700px) {
-	.flex-container-inner-first {
-  	justify-content: space-between;
-    width: 100%;
-  }
-
-  .flex-item {
-    padding-left: 0px;
-    padding-right: 0px;
-    flex: 1 0 auto;
-  }
-
-  .flex-item-inner {
-    padding-left: 0px;
-    padding-right: 0px;
-    text-align: center;
-    flex: 0 1 auto;
-  }
-
-  .flex-container-inner-second {
-    justify-content: center;
-    width: 100%;
-  }
-}
