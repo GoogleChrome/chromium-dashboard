@@ -192,9 +192,9 @@ ALL_FIELDS = {
         initial=models.PROPOSAL_STD),
 
     'unlisted': forms.BooleanField(
-      label="Unlisted",
-      widget=forms.CheckboxInput(attrs={'label': "Unlisted"}),
-      required=False, initial=False),
+        label="Unlisted",
+        widget=forms.CheckboxInput(attrs={'label': "Unlisted"}),
+        required=False, initial=False),
 
     'spec_link': forms.URLField(
         required=False, label='Spec link',

@@ -38,7 +38,7 @@ class DisplayFieldsTest(unittest.TestCase):
 
     i2p_spec = guideforms.make_display_spec('intent_to_implement_url')
     self.assertEqual('intent_to_implement_url', i2p_spec[0])
-    self.assertEqual('Intent to Prototype link', i2p_spec[1])
+    self.assertEqual('Intent to prototype link', i2p_spec[1])
     self.assertEqual('url', i2p_spec[2])
 
   def test_make_display_specs(self):
@@ -48,7 +48,7 @@ class DisplayFieldsTest(unittest.TestCase):
     summary_spec, unlisted_spec, i2p_spec = specs
     self.assertEqual('Summary', summary_spec[1])
     self.assertEqual('Unlisted', unlisted_spec[1])
-    self.assertEqual('Intent to Prototype link', i2p_spec[1])
+    self.assertEqual('Intent to prototype link', i2p_spec[1])
 
   def test_DISPLAY_FIELDS_IN_STAGES__no_duplicates(self):
     """Each field appears at most once."""
