@@ -18,7 +18,7 @@ export const ALL_FIELDS = {
   'name': {
     help_text: html`
         Capitalize only the first letter and the beginnings of proper nouns.
-        <br/><br>
+        <br/><br/>
         <a target="_blank"
             href="https://github.com/GoogleChrome/chromium-dashboard/wiki/EditingHelp#feature-name">
           Learn more</a>.
@@ -99,7 +99,7 @@ export const ALL_FIELDS = {
         Tracking bug url (https://bugs.chromium.org/...). This bug
         should have "Type=Feature" set and be world readable.
         Note: This field only accepts one URL.
-        <br/><br>
+        <br/><br/>
         <a target="_blank"
             href="https://bugs.chromium.org/p/chromium/issues/entry">
           Create tracking bug</a>`,
@@ -108,7 +108,7 @@ export const ALL_FIELDS = {
   'launch_bug_url': {
     help_text: html`
         Launch bug url (https://bugs.chromium.org/...) to track launch approvals.
-        <br/><br>
+        <br/><br/>
         <a target="_blank"
             href="https://bugs.chromium.org/p/chromium/issues/entry?template=Chrome+Launch+Feature">
           Create launch bug</a>.`,
@@ -120,12 +120,12 @@ export const ALL_FIELDS = {
         to describe what web developers are forced to do without 
         it. When possible, add links to your explainer 
         backing up your claims.
-        <br/><br>
+        <br/><br/>
         This text is sometimes included with the summary in the
         beta post, enterprise release notes and other external
         documents. Write in a matter-of-fact manner and in the
         present tense.
-        <br/><br>
+        <br/><br/>
         <a target="_blank" 
             href="https://github.com/GoogleChrome/chromium-dashboard/wiki/EditingHelp#motivation-example">
           Example</a>`,
@@ -136,12 +136,12 @@ export const ALL_FIELDS = {
         Deprecations and removals must have strong reasons, backed up
         by measurements. There must be clear and actionable paths forward
         for developers.
-        <br/><br>
+        <br/><br/>
         This text is sometimes included with the summary in the
         beta post, enterprise release notes and other external
         documents. Write in a matter-of-fact manner and in the
         present tense.
-        <br/><br>
+        <br/><br/>
         Please see
         <a target="_blank" 
             href="https://docs.google.com/a/chromium.org/document/d/1LdqUfUILyzM5WEcOgeAWGupQILKrZHidEXrUxevyi_Y/edit?usp=sharing">
@@ -385,7 +385,9 @@ export const ALL_FIELDS = {
       designs? Double check that your experiment makes sense given that 
       a large developer (e.g. a Google product or Facebook) likely 
       can't use it in production due to the limits enforced by origin 
-      trials.\n\nIf you send an Intent to Extend Origin Trial, highlight 
+      trials.
+      <br/><br/>
+      If you send an Intent to Extend Origin Trial, highlight 
       areas for experimentation. They should not be an exact copy of the goals 
       from the first Intent to Experiment.`,
   },
@@ -480,9 +482,7 @@ export const ALL_FIELDS = {
   'i2e_lgtms': {
     help_text: html`
       Full email address of API owner who LGTM\'d the 
-      Intent to Experiment email thread. 
-      This field fills automatically
-      if you use the Chrome Status generated email text.`,
+      Intent to Experiment email thread.`,
   },
 
   'i2s_lgtms': {
@@ -495,9 +495,7 @@ export const ALL_FIELDS = {
   'r4dt_lgtms': {
     help_text: html`
       Full email addresses of API owners who LGTM\'d 
-      the Request for Deprecation Trial email thread.
-      This field fills automatically
-      if you use the Chrome Status generated email text.`,
+      the Request for Deprecation Trial email thread.`,
   },
 
   'debuggability': {
@@ -591,7 +589,7 @@ export const ALL_FIELDS = {
     help_text: html`
         Link to a HOWTO or FAQ describing how developers can get started 
         using this feature in a DevTrial. 
-        <br/><br>
+        <br/><br/>
         <a target="_blank" 
             href="https://github.com/samuelgoto/WebID/blob/master/HOWTO.md">
           Example 1</a>.  
@@ -626,7 +624,7 @@ export const ALL_FIELDS = {
 
   'flag_name': {
     help_text: html`
-      Name of the flag on chrome://flags that enables this feature.'`,
+      Name of the flag on chrome://flags that enables this feature.`,
   },
 
 };
