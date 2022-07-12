@@ -909,7 +909,7 @@ class Feature(DictModel):
     return listed_features
 
   @classmethod
-  def get_by_ids(self, feature_ids, show_unlisted=False, update_cache=False):
+  def get_by_ids(self, feature_ids, update_cache=False):
     result_dict = {}
     futures = []
 
@@ -936,9 +936,6 @@ class Feature(DictModel):
     result_list = [
         result_dict.get(feature_id) for feature_id in feature_ids
         if feature_id in result_dict]
-
-    if not show_unlisted:
-      result_list = self.filter_unlisted(result_list)
     return result_list
 
   @classmethod

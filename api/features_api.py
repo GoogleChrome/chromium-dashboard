@@ -27,7 +27,7 @@ class FeaturesAPI(basehandlers.APIHandler):
   """Features are the the main records that we track."""
 
   def get_one_feature(self, feature_id):
-    features = models.Feature.get_by_ids([feature_id], True)
+    features = models.Feature.get_by_ids([feature_id])
     if not features:
       self.abort(404, msg='Feature %r not found' % feature_id)
     return features[0]
