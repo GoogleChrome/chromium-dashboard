@@ -329,27 +329,27 @@ ALL_FIELDS = {
     # TODO(jrobbins and jmedley): Refine help text.
     'ot_milestone_desktop_start': forms.IntegerField(
         required=False, label='OT desktop start',
-        widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'})),
+        widget=forms.NumberInput(attrs={'placeholder': 'Milestone number'})),
 
     'ot_milestone_desktop_end': forms.IntegerField(
         required=False, label='OT desktop end',
-        widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'})),
+        widget=forms.NumberInput(attrs={'placeholder': 'Milestone number'})),
 
     'ot_milestone_android_start': forms.IntegerField(
         required=False, label='OT Android start',
-        widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'})),
+        widget=forms.NumberInput(attrs={'placeholder': 'Milestone number'})),
 
     'ot_milestone_android_end': forms.IntegerField(
         required=False, label='OT Android end',
-        widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'})),
+        widget=forms.NumberInput(attrs={'placeholder': 'Milestone number'})),
 
     'ot_milestone_webview_start': forms.IntegerField(
         required=False, label='OT WebView start',
-        widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'})),
+        widget=forms.NumberInput(attrs={'placeholder': 'Milestone number'})),
 
     'ot_milestone_webview_end': forms.IntegerField(
         required=False, label='OT WebView end',
-        widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'})),
+        widget=forms.NumberInput(attrs={'placeholder': 'Milestone number'})),
 
     'experiment_risks': forms.CharField(
         label='Experiment Risks', required=False,
@@ -447,19 +447,19 @@ ALL_FIELDS = {
 
     'shipped_milestone': forms.IntegerField(
         required=False, label='Chrome for desktop',
-        widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'})),
+        widget=forms.NumberInput(attrs={'placeholder': 'Milestone number'})),
 
     'shipped_android_milestone': forms.IntegerField(
         required=False, label='Chrome for Android',
-        widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'})),
+        widget=forms.NumberInput(attrs={'placeholder': 'Milestone number'})),
 
     'shipped_ios_milestone': forms.IntegerField(
         required=False, label='Chrome for iOS (RARE)',
-        widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'})),
+        widget=forms.NumberInput(attrs={'placeholder': 'Milestone number'})),
 
     'shipped_webview_milestone': forms.IntegerField(
         required=False, label='Android Webview',
-        widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'})),
+        widget=forms.NumberInput(attrs={'placeholder': 'Milestone number'})),
 
     'requires_embedder_support': forms.BooleanField(
       label='Requires Embedder Support',
@@ -472,15 +472,15 @@ ALL_FIELDS = {
 
     'dt_milestone_desktop_start': forms.IntegerField(
         required=False, label='DevTrial on desktop',
-        widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'})),
+        widget=forms.NumberInput(attrs={'placeholder': 'Milestone number'})),
 
     'dt_milestone_android_start': forms.IntegerField(
         required=False, label='DevTrial on Android',
-        widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'})),
+        widget=forms.NumberInput(attrs={'placeholder': 'Milestone number'})),
 
     'dt_milestone_ios_start': forms.IntegerField(
         required=False, label='DevTrial on iOS (RARE)',
-        widget=forms.NumberInput(attrs={'placeholder': 'Milestone #'})),
+        widget=forms.NumberInput(attrs={'placeholder': 'Milestone number'})),
 
     'flag_name': forms.CharField(
         label='Flag name', required=False),
