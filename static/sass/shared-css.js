@@ -1,6 +1,6 @@
-import { css } from "lit";
-import {VARS} from "./_vars-css.js";
-import {RESET} from "./_reset-css.js";
+import {css} from 'lit';
+import {VARS} from './_vars-css.js';
+import {RESET} from './_reset-css.js';
 
 export const SHARED_STYLES = [
   VARS,
@@ -145,7 +145,6 @@ export const SHARED_STYLES = [
   sl-details::part(base) {
     margin: var(--content-padding-half) 0 0 0;
     color: var(--accordion-color);
-    width: var(--max-content-width);
     border: none;
     border-radius: 0;
     background-color: transparent;

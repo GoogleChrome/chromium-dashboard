@@ -101,14 +101,15 @@ limitations under the License.
       </div>
 
       <div id="content">
-        <div id="spinner"><img src="/static/img/ring.svg"></div>
-        <chromedash-banner 
+        <div id="spinner">
+          <img src="/static/img/ring.svg">
+        </div>
+        <chromedash-banner
           message="{{banner_message}}"
           timestamp="{{banner_time}}">
         </chromedash-banner>
-        <div id="column-container">
-          <div id="drawer-column">{% block drawer %}{% endblock %}</div>
-          <div id="content-column">
+        <div id="content-flex-wrapper">
+          <div id="content-component-wrapper">
             {% block subheader %}{% endblock %}
             {% block content %}{% endblock %}
           </div>
