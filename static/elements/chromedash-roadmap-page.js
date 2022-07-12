@@ -17,11 +17,6 @@ export class ChromedashRoadmapPage extends LitElement {
           transition: margin .4s ease;
         }
 
-        #subheader {
-          max-width: 100%;
-          justify-content: center;
-        }
-
         #releases-section {
           overflow: hidden;
         }
@@ -125,7 +120,7 @@ export class ChromedashRoadmapPage extends LitElement {
   render() {
     return html`
       <div id="subheader">
-        <div style="flex:1">
+        <div>
           <h3>Roadmap</h3>
         </div>
       </div>
