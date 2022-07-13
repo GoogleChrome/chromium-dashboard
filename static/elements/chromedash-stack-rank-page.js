@@ -1,11 +1,10 @@
 import {LitElement, css, html} from 'lit';
-import './chromedash-metrics';
-import './chromedash-timeline';
+import './chromedash-stack-rank';
 
 import {SHARED_STYLES} from '../sass/shared-css.js';
 
 
-export class ChromedashMetricsPage extends LitElement {
+export class ChromedashStackRankPage extends LitElement {
   static get styles() {
     return [
       ...SHARED_STYLES,
@@ -37,7 +36,6 @@ export class ChromedashMetricsPage extends LitElement {
         .data-panel {
           max-width: var(--max-content-width);
         }
-
         .data-panel .description {
           margin-bottom: 1em;
         }
@@ -45,11 +43,9 @@ export class ChromedashMetricsPage extends LitElement {
         .metric-nav {
           list-style-type: none;
         }
-
         .metric-nav h3:not(:first-of-type) {
           margin-top: calc(var(--content-padding) * 2);
         }
-
         .metric-nav li {
           padding: 0.5em;
           margin-bottom: 10px;
@@ -95,7 +91,6 @@ export class ChromedashMetricsPage extends LitElement {
     return {
       type: {type: String}, // "css" or "feature"
       view: {type: String}, // "popularity" or "animated"
-      mode: {type: String}, // "metrics" or "timeline"
       props: {attribute: false},
     };
   }
@@ -104,19 +99,13 @@ export class ChromedashMetricsPage extends LitElement {
     super();
     this.type = '';
     this.view = '';
-    this.mode = '';
     this.props = [];
   }
 
   connectedCallback() {
     super.connectedCallback();
 
-    let endpoint;
-    if (this.mode == 'metrics') {
-      endpoint = `/data/${this.type}${this.view}`;
-    } else {
-      endpoint = `/data/blink/${this.type}props`;
-    }
+    let endpoint = `/data/${this.type}${this.view}`;
 
     // [DEV] Change to true to use the staging server endpoint for development
     const devMode = false;
@@ -203,13 +192,12 @@ export class ChromedashMetricsPage extends LitElement {
     const typeText = this.type == 'css'? 'CSS': 'HTML & JavaScript';
     const viewText = this.view == 'animated' ? 'animated' : 'all';
     const propText = this.type == 'css' ? 'properties' : 'features';
-    const modeText = this.mode == 'timeline'? 'timeline': 'stack rank';
-    const subTitleText = `${typeText} usage metrics > ${viewText} ${propText} > ${modeText}`;
+    const subTitleText = `${typeText} usage metrics > ${viewText} ${propText} > stack rank`;
     return html`<h2>${subTitleText}</h2>`;
   }
 
   renderDataPanel() {
-    return this.mode == 'metrics' ? html`
+    return html`
       <h3>About this data</h3>
       <p class="description">
         We've been using Chrome's <a href="https://cs.chromium.org/chromium/src/tools/metrics/histograms/enums.xml"
@@ -223,24 +211,16 @@ export class ChromedashMetricsPage extends LitElement {
 
         Data is ~24 hrs old.
       </p>
-      <chromedash-metrics 
+      <chromedash-stack-rank 
         .type=${this.type}
         .view=${this.view}
         .props=${this.props}>
-      </chromedash-metrics>
-    ` : html`
-      <p class="description">To begin, select a feature in the dropdown below.</p>
-      <chromedash-timeline
-        .type=${this.type}
-        .view=${this.view}
-        .props=${this.props}>
-      </chromedash-timeline>
+      </chromedash-stack-rank>
     `;
   }
 
   render() {
-    // TODO: Create precomiled main, forms, and guide css files,
-    // and import them instead of inlining them here
+    // TODO: Create a precomiled main css file and import it instead of inlining it here
     return html`
       <link rel="stylesheet" href="/static/css/main.css">
       <div id="column-container">
@@ -260,4 +240,4 @@ export class ChromedashMetricsPage extends LitElement {
   }
 }
 
-customElements.define('chromedash-metrics-page', ChromedashMetricsPage);
+customElements.define('chromedash-stack-rank-page', ChromedashStackRankPage);

@@ -190,7 +190,7 @@ class ChromedashTimeline extends LitElement {
       },
       hAxis: {
         title: 'Date',
-        format: 'M/yy',
+        format: 'MMM d, YYYY',
       },
       width: '100%',
       height: '100%',
@@ -208,7 +208,7 @@ class ChromedashTimeline extends LitElement {
   }
 
   _updateTimeline() {
-    if (this.selectedBucketId === '1') return;
+    if (this.selectedBucketId === '1' || !this.props.length) return;
 
     let url = '/data/timeline/' + this.type + this.view +
               '?bucket_id=' + this.selectedBucketId;
@@ -237,8 +237,6 @@ class ChromedashTimeline extends LitElement {
   }
 
   _renderHTTPArchiveData() {
-    if (!this.props.length) return;
-
     const feature = this.props.find((el) => el[0] === parseInt(this.selectedBucketId));
     if (feature) {
       let featureName = feature[1];
@@ -254,12 +252,11 @@ class ChromedashTimeline extends LitElement {
       hadEl.src = dsEmbedUrl;
 
       const bigqueryEl = this.shadowRoot.querySelector('#bigquery');
-      bigqueryEl.textContent = `#standardSQL
-        SELECT yyyymmdd, client, pct_urls, sample_urls
-        FROM \`httparchive.blink_features.usage\`
-        WHERE feature = '${featureName}'
-        ORDER BY yyyymmdd DESC, client
-      `;
+      bigqueryEl.textContent =`#standardSQL
+SELECT yyyymmdd, client, pct_urls, sample_urls
+FROM \`httparchive.blink_features.usage\`
+WHERE feature = '${featureName}'
+ORDER BY yyyymmdd DESC, client`;
     }
   }
 

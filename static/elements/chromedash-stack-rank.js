@@ -5,7 +5,7 @@ import '@polymer/iron-icon';
 import './chromedash-x-meter';
 import {SHARED_STYLES} from '../sass/shared-css.js';
 
-class ChromedashMetrics extends LitElement {
+class ChromedashStackRank extends LitElement {
   static get properties() {
     return {
       type: {type: String},
@@ -168,7 +168,7 @@ class ChromedashMetrics extends LitElement {
   }
 }
 
-customElements.define('chromedash-metrics', ChromedashMetrics);
+customElements.define('chromedash-stack-rank', ChromedashStackRank);
 
 const sortBy_ = (propName, arr) => {
   const compareAsNumbers = propName === 'percentage' || false;
