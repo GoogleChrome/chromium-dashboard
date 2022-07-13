@@ -633,6 +633,7 @@ class Feature(DictModel):
         'docs': d.pop('doc_links', []),
       }
       d['tags'] = d.pop('search_tags', [])
+      d['editors'] = d.pop('editors', [])
       d['browsers'] = {
         'chrome': {
           'bug': d.pop('bug_url', None),
@@ -748,6 +749,7 @@ class Feature(DictModel):
     d = self.to_dict()
     #d['id'] = self.key().id
     d['owner'] = ', '.join(self.owner)
+    d['editors'] = ', '.join(self.editors)
     d['explainer_links'] = '\r\n'.join(self.explainer_links)
     d['spec_mentors'] = ', '.join(self.spec_mentors)
     d['standard_maturity'] = self.standard_maturity or UNKNOWN_STD
@@ -778,10 +780,15 @@ class Feature(DictModel):
 
       # TODO(ericbidelman): Support more than one filter.
       if filterby:
-        if filterby[0] == 'category':
-          query = query.filter(Feature.category == filterby[1])
-        elif filterby[0] == 'owner':
-          query = query.filter(Feature.owner == filterby[1])
+        filter_type, comparator = filterby
+        if filter_type == 'can_edit':
+          # can_edit will check if the user has any access to edit the feature.
+          # This includes being an owner, editor, or the original creator
+          # of the feature.
+          query = query.filter(
+            ndb.OR(Feature.owner == comparator, Feature.editors == comparator))
+        else:
+          query = query.filter(getattr(Feature, filter_type) == comparator)
 
       features = query.fetch(limit)
 
@@ -879,6 +886,23 @@ class Feature(DictModel):
         ramcache.set(KEY, feature)
 
     return feature
+  
+  @classmethod
+  def filter_unlisted(self, feature_list):
+    """Filters a feature list to display only features the user should see."""
+    user = users.get_current_user()
+    email = None
+    if user:
+      email = user.email()
+    listed_features = []
+    for f in feature_list:
+      # Owners and editors of a feature should still be able to see their features.
+      if ((not f.get('unlisted', False)) or
+          ('browsers' in f and email in f['browsers']['chrome']['owners']) or
+          (email in f.get('editors', []))):
+        listed_features.append(f)
+    
+    return listed_features
 
   @classmethod
   def get_by_ids(self, feature_ids, update_cache=False):
@@ -1000,11 +1024,9 @@ class Feature(DictModel):
 
       ramcache.set(cache_key, feature_list)
 
-    allowed_feature_list = [
-        f for f in feature_list
-        if show_unlisted or not f['unlisted']]
-
-    return allowed_feature_list
+    if not show_unlisted:
+      feature_list = self.filter_unlisted(feature_list)
+    return feature_list
 
   @classmethod
   def get_in_milestone(
@@ -1012,145 +1034,147 @@ class Feature(DictModel):
     if milestone == None:
       return None
 
-    cache_key = '%s|%s|%s|%s' % (
-        Feature.DEFAULT_CACHE_KEY, 'milestone', show_unlisted, milestone)
-    cached_allowed_features_by_type = ramcache.get(cache_key)
-    if cached_allowed_features_by_type:
-      return cached_allowed_features_by_type
-
-    all_features = {}
-    all_features[IMPLEMENTATION_STATUS[ENABLED_BY_DEFAULT]] = []
-    all_features[IMPLEMENTATION_STATUS[DEPRECATED]] = []
-    all_features[IMPLEMENTATION_STATUS[REMOVED]] = []
-    all_features[IMPLEMENTATION_STATUS[INTERVENTION]] = []
-    all_features[IMPLEMENTATION_STATUS[ORIGIN_TRIAL]] = []
-    all_features[IMPLEMENTATION_STATUS[BEHIND_A_FLAG]] = []
-
-    logging.info('Getting chronological feature list in milestone %d',
-                 milestone)
-    # Start each query asynchronously in parallel.
-    q = Feature.query()
-    q = q.order(Feature.name)
-    q = q.filter(Feature.shipped_milestone == milestone)
-    desktop_shipping_features_future = q.fetch_async(None)
-
-    # Features with an android shipping milestone but no desktop milestone.
-    q = Feature.query()
-    q = q.order(Feature.name)
-    q = q.filter(Feature.shipped_android_milestone == milestone)
-    q = q.filter(Feature.shipped_milestone == None)
-    android_only_shipping_features_future = q.fetch_async(None)
-
-    # Features that are in origin trial (Desktop) in this milestone
-    q = Feature.query()
-    q = q.order(Feature.name)
-    q = q.filter(Feature.ot_milestone_desktop_start == milestone)
-    desktop_origin_trial_features_future = q.fetch_async(None)
-
-    # Features that are in origin trial (Android) in this milestone
-    q = Feature.query()
-    q = q.order(Feature.name)
-    q = q.filter(Feature.ot_milestone_android_start == milestone)
-    q = q.filter(Feature.ot_milestone_desktop_start == None)
-    android_origin_trial_features_future = q.fetch_async(None)
-
-    # Features that are in origin trial (Webview) in this milestone
-    q = Feature.query()
-    q = q.order(Feature.name)
-    q = q.filter(Feature.ot_milestone_webview_start == milestone)
-    q = q.filter(Feature.ot_milestone_desktop_start == None)
-    webview_origin_trial_features_future = q.fetch_async(None)
-
-    # Features that are in dev trial (Desktop) in this milestone
-    q = Feature.query()
-    q = q.order(Feature.name)
-    q = q.filter(Feature.dt_milestone_desktop_start == milestone)
-    desktop_dev_trial_features_future = q.fetch_async(None)
-
-    # Features that are in dev trial (Android) in this milestone
-    q = Feature.query()
-    q = q.order(Feature.name)
-    q = q.filter(Feature.dt_milestone_android_start == milestone)
-    q = q.filter(Feature.dt_milestone_desktop_start == None)
-    android_dev_trial_features_future = q.fetch_async(None)
-
-    # Wait for all futures to complete.
-    desktop_shipping_features = desktop_shipping_features_future.result()
-    android_only_shipping_features = (
-        android_only_shipping_features_future.result())
-    desktop_origin_trial_features = (
-        desktop_origin_trial_features_future.result())
-    android_origin_trial_features = (
-        android_origin_trial_features_future.result())
-    webview_origin_trial_features = (
-        webview_origin_trial_features_future.result())
-    desktop_dev_trial_features = desktop_dev_trial_features_future.result()
-    android_dev_trial_features = android_dev_trial_features_future.result()
-
-    # Push feature to list corresponding to the implementation status of
-    # feature in queried milestone
-    for feature in desktop_shipping_features:
-      if feature.impl_status_chrome == ENABLED_BY_DEFAULT:
-        all_features[IMPLEMENTATION_STATUS[ENABLED_BY_DEFAULT]].append(feature)
-      elif feature.impl_status_chrome == DEPRECATED:
-        all_features[IMPLEMENTATION_STATUS[DEPRECATED]].append(feature)
-      elif feature.impl_status_chrome == REMOVED:
-        all_features[IMPLEMENTATION_STATUS[REMOVED]].append(feature)
-      elif feature.impl_status_chrome == INTERVENTION:
-        all_features[IMPLEMENTATION_STATUS[INTERVENTION]].append(feature)
-      elif (feature.feature_type == FEATURE_TYPE_DEPRECATION_ID and
-            Feature.dt_milestone_desktop_start != None):
-          all_features[IMPLEMENTATION_STATUS[DEPRECATED]].append(feature)
-      elif feature.feature_type == FEATURE_TYPE_INCUBATE_ID:
-          all_features[IMPLEMENTATION_STATUS[ENABLED_BY_DEFAULT]].append(feature)
-
-    # Push feature to list corresponding to the implementation status
-    # of feature in queried milestone
-    for feature in android_only_shipping_features:
-      if feature.impl_status_chrome == ENABLED_BY_DEFAULT:
-        all_features[IMPLEMENTATION_STATUS[ENABLED_BY_DEFAULT]].append(feature)
-      elif feature.impl_status_chrome == DEPRECATED:
-        all_features[IMPLEMENTATION_STATUS[DEPRECATED]].append(feature)
-      elif feature.impl_status_chrome == REMOVED:
-        all_features[IMPLEMENTATION_STATUS[REMOVED]].append(feature)
-      elif (feature.feature_type == FEATURE_TYPE_DEPRECATION_ID and
-            Feature.dt_milestone_android_start != None):
-          all_features[IMPLEMENTATION_STATUS[DEPRECATED]].append(feature)
-      elif feature.feature_type == FEATURE_TYPE_INCUBATE_ID:
-          all_features[IMPLEMENTATION_STATUS[ENABLED_BY_DEFAULT]].append(feature)
-
-    for feature in desktop_origin_trial_features:
-      all_features[IMPLEMENTATION_STATUS[ORIGIN_TRIAL]].append(feature)
-
-    for feature in android_origin_trial_features:
-      all_features[IMPLEMENTATION_STATUS[ORIGIN_TRIAL]].append(feature)
-
-    for feature in webview_origin_trial_features:
-      all_features[IMPLEMENTATION_STATUS[ORIGIN_TRIAL]].append(feature)
-
-    for feature in desktop_dev_trial_features:
-      all_features[IMPLEMENTATION_STATUS[BEHIND_A_FLAG]].append(feature)
-
-    for feature in android_dev_trial_features:
-      all_features[IMPLEMENTATION_STATUS[BEHIND_A_FLAG]].append(feature)
-
     features_by_type = {}
-    allowed_features_by_type = {}
+    cache_key = '%s|%s|%s' % (
+        Feature.DEFAULT_CACHE_KEY, 'milestone', milestone)
+    cached_features_by_type = ramcache.get(cache_key)
+    if cached_features_by_type:
+      features_by_type = cached_features_by_type
+    else:
+      all_features = {}
+      all_features[IMPLEMENTATION_STATUS[ENABLED_BY_DEFAULT]] = []
+      all_features[IMPLEMENTATION_STATUS[DEPRECATED]] = []
+      all_features[IMPLEMENTATION_STATUS[REMOVED]] = []
+      all_features[IMPLEMENTATION_STATUS[INTERVENTION]] = []
+      all_features[IMPLEMENTATION_STATUS[ORIGIN_TRIAL]] = []
+      all_features[IMPLEMENTATION_STATUS[BEHIND_A_FLAG]] = []
 
-    # Construct results as: {type: [json_feature, ...], ...}.
-    for shippingType in all_features:
-      all_features[shippingType].sort(key=lambda f: f.name)
-      all_features[shippingType] = [
-          f for f in all_features[shippingType] if not f.deleted]
-      features_by_type[shippingType] = [
-          f.format_for_template() for f in all_features[shippingType]]
-      allowed_features_by_type[shippingType] = [
-        f for f in features_by_type[shippingType]
-        if show_unlisted or not f['unlisted']]
+      logging.info('Getting chronological feature list in milestone %d',
+                  milestone)
+      # Start each query asynchronously in parallel.
+      q = Feature.query()
+      q = q.order(Feature.name)
+      q = q.filter(Feature.shipped_milestone == milestone)
+      desktop_shipping_features_future = q.fetch_async(None)
 
-    ramcache.set(cache_key, allowed_features_by_type)
+      # Features with an android shipping milestone but no desktop milestone.
+      q = Feature.query()
+      q = q.order(Feature.name)
+      q = q.filter(Feature.shipped_android_milestone == milestone)
+      q = q.filter(Feature.shipped_milestone == None)
+      android_only_shipping_features_future = q.fetch_async(None)
 
-    return allowed_features_by_type
+      # Features that are in origin trial (Desktop) in this milestone
+      q = Feature.query()
+      q = q.order(Feature.name)
+      q = q.filter(Feature.ot_milestone_desktop_start == milestone)
+      desktop_origin_trial_features_future = q.fetch_async(None)
+
+      # Features that are in origin trial (Android) in this milestone
+      q = Feature.query()
+      q = q.order(Feature.name)
+      q = q.filter(Feature.ot_milestone_android_start == milestone)
+      q = q.filter(Feature.ot_milestone_desktop_start == None)
+      android_origin_trial_features_future = q.fetch_async(None)
+
+      # Features that are in origin trial (Webview) in this milestone
+      q = Feature.query()
+      q = q.order(Feature.name)
+      q = q.filter(Feature.ot_milestone_webview_start == milestone)
+      q = q.filter(Feature.ot_milestone_desktop_start == None)
+      webview_origin_trial_features_future = q.fetch_async(None)
+
+      # Features that are in dev trial (Desktop) in this milestone
+      q = Feature.query()
+      q = q.order(Feature.name)
+      q = q.filter(Feature.dt_milestone_desktop_start == milestone)
+      desktop_dev_trial_features_future = q.fetch_async(None)
+
+      # Features that are in dev trial (Android) in this milestone
+      q = Feature.query()
+      q = q.order(Feature.name)
+      q = q.filter(Feature.dt_milestone_android_start == milestone)
+      q = q.filter(Feature.dt_milestone_desktop_start == None)
+      android_dev_trial_features_future = q.fetch_async(None)
+
+      # Wait for all futures to complete.
+      desktop_shipping_features = desktop_shipping_features_future.result()
+      android_only_shipping_features = (
+          android_only_shipping_features_future.result())
+      desktop_origin_trial_features = (
+          desktop_origin_trial_features_future.result())
+      android_origin_trial_features = (
+          android_origin_trial_features_future.result())
+      webview_origin_trial_features = (
+          webview_origin_trial_features_future.result())
+      desktop_dev_trial_features = desktop_dev_trial_features_future.result()
+      android_dev_trial_features = android_dev_trial_features_future.result()
+
+      # Push feature to list corresponding to the implementation status of
+      # feature in queried milestone
+      for feature in desktop_shipping_features:
+        if feature.impl_status_chrome == ENABLED_BY_DEFAULT:
+          all_features[IMPLEMENTATION_STATUS[ENABLED_BY_DEFAULT]].append(feature)
+        elif feature.impl_status_chrome == DEPRECATED:
+          all_features[IMPLEMENTATION_STATUS[DEPRECATED]].append(feature)
+        elif feature.impl_status_chrome == REMOVED:
+          all_features[IMPLEMENTATION_STATUS[REMOVED]].append(feature)
+        elif feature.impl_status_chrome == INTERVENTION:
+          all_features[IMPLEMENTATION_STATUS[INTERVENTION]].append(feature)
+        elif (feature.feature_type == FEATURE_TYPE_DEPRECATION_ID and
+              Feature.dt_milestone_desktop_start != None):
+            all_features[IMPLEMENTATION_STATUS[DEPRECATED]].append(feature)
+        elif feature.feature_type == FEATURE_TYPE_INCUBATE_ID:
+            all_features[IMPLEMENTATION_STATUS[ENABLED_BY_DEFAULT]].append(feature)
+
+      # Push feature to list corresponding to the implementation status
+      # of feature in queried milestone
+      for feature in android_only_shipping_features:
+        if feature.impl_status_chrome == ENABLED_BY_DEFAULT:
+          all_features[IMPLEMENTATION_STATUS[ENABLED_BY_DEFAULT]].append(feature)
+        elif feature.impl_status_chrome == DEPRECATED:
+          all_features[IMPLEMENTATION_STATUS[DEPRECATED]].append(feature)
+        elif feature.impl_status_chrome == REMOVED:
+          all_features[IMPLEMENTATION_STATUS[REMOVED]].append(feature)
+        elif (feature.feature_type == FEATURE_TYPE_DEPRECATION_ID and
+              Feature.dt_milestone_android_start != None):
+            all_features[IMPLEMENTATION_STATUS[DEPRECATED]].append(feature)
+        elif feature.feature_type == FEATURE_TYPE_INCUBATE_ID:
+            all_features[IMPLEMENTATION_STATUS[ENABLED_BY_DEFAULT]].append(feature)
+
+      for feature in desktop_origin_trial_features:
+        all_features[IMPLEMENTATION_STATUS[ORIGIN_TRIAL]].append(feature)
+
+      for feature in android_origin_trial_features:
+        all_features[IMPLEMENTATION_STATUS[ORIGIN_TRIAL]].append(feature)
+
+      for feature in webview_origin_trial_features:
+        all_features[IMPLEMENTATION_STATUS[ORIGIN_TRIAL]].append(feature)
+
+      for feature in desktop_dev_trial_features:
+        all_features[IMPLEMENTATION_STATUS[BEHIND_A_FLAG]].append(feature)
+
+      for feature in android_dev_trial_features:
+        all_features[IMPLEMENTATION_STATUS[BEHIND_A_FLAG]].append(feature)
+      
+      # Construct results as: {type: [json_feature, ...], ...}.
+      for shipping_type in all_features:
+        all_features[shipping_type].sort(key=lambda f: f.name)
+        all_features[shipping_type] = [
+            f for f in all_features[shipping_type] if not f.deleted]
+        features_by_type[shipping_type] = [
+            f.format_for_template() for f in all_features[shipping_type]]
+      
+      ramcache.set(cache_key, features_by_type)
+
+    for shipping_type in features_by_type:
+      if not show_unlisted:
+        features_by_type[shipping_type] = self.filter_unlisted(features_by_type[shipping_type])
+      else:
+        features_by_type[shipping_type] = all_features[shipping_type].copy()
+
+
+    return features_by_type
 
   def crbug_number(self):
     if not self.bug_url:
@@ -1249,6 +1273,7 @@ class Feature(DictModel):
   search_tags = ndb.StringProperty(repeated=True)
   comments = ndb.StringProperty()
   owner = ndb.StringProperty(repeated=True)
+  editors = ndb.StringProperty(repeated=True)
   footprint = ndb.IntegerProperty()  # Deprecated
 
   # Tracability to intent discussion threads
@@ -1380,6 +1405,7 @@ QUERIABLE_FIELDS = {
     'tags': Feature.search_tags,
     'owner': Feature.owner,
     'browsers.chrome.owners': Feature.owner,
+    'editors': Feature.editors,
     'intent_to_implement_url': Feature.intent_to_implement_url,
     'intent_to_ship_url': Feature.intent_to_ship_url,
     'ready_for_trial_url': Feature.ready_for_trial_url,
@@ -1656,6 +1682,7 @@ class AppUser(DictModel):
 
   email = ndb.StringProperty(required=True)
   is_admin = ndb.BooleanProperty(default=False)
+  is_site_editor = ndb.BooleanProperty(default=False)
   created = ndb.DateTimeProperty(auto_now_add=True)
   updated = ndb.DateTimeProperty(auto_now=True)
 

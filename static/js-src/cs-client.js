@@ -189,8 +189,8 @@ class ChromeStatusClient {
 
   // Accounts API
 
-  createAccount(email, isAdmin) {
-    return this.doPost('/accounts', {email, isAdmin});
+  createAccount(email, isAdmin, isSiteEditor) {
+    return this.doPost('/accounts', {email, isAdmin, isSiteEditor});
     // TODO: catch((error) => { display message }
   }
 

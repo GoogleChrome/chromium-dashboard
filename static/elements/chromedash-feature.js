@@ -295,7 +295,7 @@ class ChromedashFeature extends LitElement {
         <summary>
           ${this.feature.unlisted ?
              html`<p><b>This feature is only shown in the feature list
-                        to users with edit access.</b></p>
+                        to users with access to edit this feature.</b></p>
              `: nothing }
           <p class="${this.open ? 'preformatted' : ''}"
             ><span>${autolink(this.feature.summary)}</span

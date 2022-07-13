@@ -81,7 +81,7 @@ export class ChromedashMyFeaturesPage extends LitElement {
         <chromedash-feature-table
           query="${query}"
           ?signedIn=${Boolean(this.user)}
-          ?canEdit=${this.user && this.user.can_edit}
+          ?canEdit=${this.user && this.user.can_edit_all}
           ?canApprove=${this.user && this.user.can_approve}
           .starredFeatures=${this.starredFeatures}
           @star-toggle-event=${this.handleStarToggle}
@@ -105,9 +105,9 @@ export class ChromedashMyFeaturesPage extends LitElement {
       'Features I starred', 'starred-by:me', 'normal');
   }
 
-  renderIOwn() {
+  renderICanEdit() {
     return this.renderBox(
-      'Features I own', 'owner:me', 'normal');
+      'Features I can edit', 'can_edit:me', 'normal');
   }
 
   render() {
@@ -116,7 +116,7 @@ export class ChromedashMyFeaturesPage extends LitElement {
         <h2>My features</h2>
       </div>
       ${this.user && this.user.can_approve ? this.renderPendingAndRecentApprovals() : nothing}
-      ${this.renderIOwn()}
+      ${this.renderICanEdit()}
       ${this.renderIStarred()}
     `;
   }

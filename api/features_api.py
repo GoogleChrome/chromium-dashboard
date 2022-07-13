@@ -34,6 +34,7 @@ class FeaturesAPI(basehandlers.APIHandler):
 
   def do_search(self):
     user = users.get_current_user()
+    # Show unlisted features to site editors or admins.
     show_unlisted_features = permissions.can_edit_feature(user, None)
     features_on_page = None
 

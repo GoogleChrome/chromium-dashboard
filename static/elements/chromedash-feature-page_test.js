@@ -9,7 +9,7 @@ describe('chromedash-feature-page', () => {
   const permissionsPromise = Promise.resolve({
     can_approve: false,
     can_create_feature: true,
-    can_edit: true,
+    can_edit_all: true,
     is_admin: false,
     email: 'example@google.com',
   });

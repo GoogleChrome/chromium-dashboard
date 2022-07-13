@@ -54,6 +54,12 @@ export const ALL_FIELDS = {
         from @chromium.org are preferred.`,
   },
 
+  'editors': {
+    help_text: html`
+        Comma separated list of full email addresses. These users will be
+        allowed to edit this feature, but will not be listed as feature owners.`,
+  },
+
   'unlisted': {
     help_text: html`
         Check this box to hide draft emails in list views. Anyone with

@@ -22,7 +22,6 @@ from internals import approval_defs
 from internals import models
 from internals import notifier
 
-
 PENDING_STATES = [
     models.Approval.REVIEW_REQUESTED, models.Approval.REVIEW_STARTED,
     models.Approval.NEED_INFO]
@@ -69,12 +68,13 @@ def process_starred_me_query():
   return feature_ids
 
 
-def process_owner_me_query():
-  """Return features that the current user owns."""
+def process_access_me_query(field):
+  """Return features that the current user owns or can edit."""
   user = users.get_current_user()
   if not user:
     return []
-  features = models.Feature.get_all(filterby=('owner', user.email()))
+  # Checks if the user's email exists in the given field.
+  features = models.Feature.get_all(filterby=(field, user.email()))
   feature_ids = [f['id'] for f in features]
   return feature_ids
 
@@ -150,10 +150,17 @@ def process_query_term(field_name, op_str, val_str):
     return process_pending_approval_me_query()
   if query_term == 'starred-by:me':
     return process_starred_me_query()
-  if query_term == 'owner:me':
-    return process_owner_me_query()
   if query_term == 'is:recently-reviewed':
     return process_recent_reviews_query()
+
+  # These queries can display unlisted features if the users
+  # has edit access to them. Also return a flag to signal this.
+  if query_term == 'owner:me':
+    return process_access_me_query('owner')
+  if query_term == 'editor:me':
+    return process_access_me_query('editors')
+  if query_term == 'can_edit:me':
+    return process_access_me_query('can_edit')
 
   if val_str.startswith('"') and val_str.endswith('"'):
     val_str = val_str[1:-1]
@@ -184,6 +191,7 @@ def process_query(
   terms = TERM_RE.findall(user_query + ' ')[:MAX_TERMS] or []
   if not show_deleted:
     terms.append(('deleted', '=', 'false', None))
+  # TODO(jrobbins): include unlisted features that the user is allowed to view.
   if not show_unlisted:
     terms.append(('unlisted', '=', 'false', None))
   # 1b. Parse the sort directive.

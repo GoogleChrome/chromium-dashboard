@@ -83,23 +83,27 @@ class FeatureTest(testing_config.CustomTestCase):
   def setUp(self):
     ramcache.SharedInvalidate.check_for_distributed_invalidation()
     self.feature_2 = models.Feature(
-        name='feature b', summary='sum', category=1, visibility=1,
-        standardization=1, web_dev_views=1, impl_status_chrome=3)
+        name='feature b', summary='sum', owner=['feature_owner@example.com'],
+        category=1, visibility=1, standardization=1, web_dev_views=1,
+        impl_status_chrome=3)
     self.feature_2.put()
 
     self.feature_1 = models.Feature(
-        name='feature a', summary='sum', category=1, visibility=1,
-        standardization=1, web_dev_views=1, impl_status_chrome=3)
+        name='feature a', summary='sum', owner=['feature_owner@example.com'],
+        category=1, visibility=1, standardization=1, web_dev_views=1,
+        impl_status_chrome=3)
     self.feature_1.put()
 
     self.feature_4 = models.Feature(
-        name='feature d', summary='sum', category=1, visibility=1,
-        standardization=1, web_dev_views=1, impl_status_chrome=2)
+        name='feature d', summary='sum', owner=['feature_owner@example.com'],
+        category=1, visibility=1, standardization=1, web_dev_views=1,
+        impl_status_chrome=2)
     self.feature_4.put()
 
     self.feature_3 = models.Feature(
-        name='feature c', summary='sum', category=1, visibility=1,
-        standardization=1, web_dev_views=1, impl_status_chrome=2)
+        name='feature c', summary='sum', owner=['feature_owner@example.com'],
+        category=1, visibility=1, standardization=1, web_dev_views=1,
+        impl_status_chrome=2)
     self.feature_3.put()
 
   def tearDown(self):
@@ -160,6 +164,30 @@ class FeatureTest(testing_config.CustomTestCase):
     self.assertEqual(
         ['feature a'],
         names)
+  
+  def test_get_all__owner_unlisted(self):
+    """Unlisted features should still be visible to their owners."""
+    self.feature_2.unlisted = True
+    self.feature_2.owner = ['feature_owner@example.com']
+    self.feature_2.put()
+    testing_config.sign_in('feature_owner@example.com', 1234567890)
+    actual = models.Feature.get_all(update_cache=True)
+    names = [f['name'] for f in actual]
+    testing_config.sign_out()
+    self.assertEqual(
+      ['feature b', 'feature c', 'feature d', 'feature a'], names)
+
+  def test_get_all__editor_unlisted(self):
+    """Unlisted features should still be visible to feature editors."""
+    self.feature_2.unlisted = True
+    self.feature_2.editors = ['feature_editor@example.com']
+    self.feature_2.put()
+    testing_config.sign_in("feature_editor@example.com", 1234567890)
+    actual = models.Feature.get_all(update_cache=True)
+    names = [f['name'] for f in actual]
+    testing_config.sign_out()
+    self.assertEqual(
+      ['feature b', 'feature c', 'feature d', 'feature a'], names)
 
   def test_get_by_ids__empty(self):
     """A request to load zero features returns zero results."""
@@ -190,12 +218,17 @@ class FeatureTest(testing_config.CustomTestCase):
     ramcache.global_cache.clear()
     cache_key = '%s|%s' % (
         models.Feature.DEFAULT_CACHE_KEY, self.feature_1.key.integer_id())
-    ramcache.set(cache_key, 'fake cached feature')
+    cached_feature = {
+      'name': 'fake cached_feature',
+      'id': self.feature_1.key.integer_id(),
+      'unlisted': False
+    }
+    ramcache.set(cache_key, cached_feature)
 
     actual = models.Feature.get_by_ids([self.feature_1.key.integer_id()])
 
     self.assertEqual(1, len(actual))
-    self.assertEqual('fake cached feature', actual[0])
+    self.assertEqual(cached_feature, actual[0])
 
   def test_get_by_ids__batch_order(self):
     """Features are returned in the order of the given IDs."""
@@ -303,8 +336,8 @@ class FeatureTest(testing_config.CustomTestCase):
         enabled_by_default)
     self.assertEqual(6, len(actual))
 
-    cache_key = '%s|%s|%s|%s' % (
-        models.Feature.DEFAULT_CACHE_KEY, 'milestone', False, 1)
+    cache_key = '%s|%s|%s' % (
+        models.Feature.DEFAULT_CACHE_KEY, 'milestone', 1)
     cached_result = ramcache.get(cache_key)
     self.assertEqual(cached_result, actual)
 
@@ -359,13 +392,14 @@ class FeatureTest(testing_config.CustomTestCase):
 
   def test_get_in_milestone__cached(self):
     """If there is something in the cache, we use it."""
-    cache_key = '%s|%s|%s|%s' % (
-        models.Feature.DEFAULT_CACHE_KEY, 'milestone', False, 1)
-    ramcache.set(cache_key, 'fake feature dict')
+    cache_key = '%s|%s|%s' % (
+        models.Feature.DEFAULT_CACHE_KEY, 'milestone', 1)
+    cached_test_feature = {'test': [{'name': 'test_feature', 'unlisted': False}]}
+    ramcache.set(cache_key, cached_test_feature)
 
     actual = models.Feature.get_in_milestone(milestone=1)
     self.assertEqual(
-        'fake feature dict',
+        cached_test_feature,
         actual)
 
 
@@ -466,8 +500,9 @@ class CommentTest(testing_config.CustomTestCase):
 
   def setUp(self):
     self.feature_1 = models.Feature(
-        name='feature a', summary='sum', category=1, visibility=1,
-        standardization=1, web_dev_views=1, impl_status_chrome=3)
+        name='feature a', summary='sum',  owner=['feature_owner@example.com'],
+        category=1, visibility=1, standardization=1, web_dev_views=1,
+        impl_status_chrome=3)
     self.feature_1.put()
     self.feature_1_id = self.feature_1.key.integer_id()
     self.comment_1_1 = models.Comment(
@@ -482,8 +517,9 @@ class CommentTest(testing_config.CustomTestCase):
     self.comment_1_2.put()
 
     self.feature_2 = models.Feature(
-        name='feature b', summary='sum', category=1, visibility=1,
-        standardization=1, web_dev_views=1, impl_status_chrome=3)
+        name='feature b', summary='sum', owner=['feature_owner@example.com'],
+        category=1, visibility=1, standardization=1, web_dev_views=1,
+        impl_status_chrome=3)
     self.feature_2.put()
     self.feature_2_id = self.feature_2.key.integer_id()
 
