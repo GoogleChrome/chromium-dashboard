@@ -22,9 +22,6 @@ from internals import approval_defs
 from internals import models
 from internals import notifier
 
-SHOW_EDITABLE_FEATURES_QUERIES = [
-  'owner:me', 'editor:me', 'can_edit:me'
-]
 PENDING_STATES = [
     models.Approval.REVIEW_REQUESTED, models.Approval.REVIEW_STARTED,
     models.Approval.NEED_INFO]
@@ -194,13 +191,7 @@ def process_query(
   terms = TERM_RE.findall(user_query + ' ')[:MAX_TERMS] or []
   if not show_deleted:
     terms.append(('deleted', '=', 'false', None))
-
-  # If part of the query represents the user's feature ownership
-  # or the ability to edit, we should show unlisted features they own.
-  for ownership_query in SHOW_EDITABLE_FEATURES_QUERIES:
-    if ownership_query in user_query:
-      show_unlisted = True
-
+  # TODO(jrobbins): include unlisted features that the user is allowed to view.
   if not show_unlisted:
     terms.append(('unlisted', '=', 'false', None))
   # 1b. Parse the sort directive.
@@ -229,7 +220,6 @@ def process_query(
       result_id_set.intersection_update(feature_ids)
   result_id_list = list(result_id_set or [])
   total_count = len(result_id_list)
-
   # 3b. Finish getting the total sort order.
   total_order_ids = _resolve_promise_to_id_list(total_order_promise)
 

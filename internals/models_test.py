@@ -394,11 +394,12 @@ class FeatureTest(testing_config.CustomTestCase):
     """If there is something in the cache, we use it."""
     cache_key = '%s|%s|%s' % (
         models.Feature.DEFAULT_CACHE_KEY, 'milestone', 1)
-    ramcache.set(cache_key, 'fake feature dict')
+    cached_test_feature = {'test': [{'name': 'test_feature', 'unlisted': False}]}
+    ramcache.set(cache_key, cached_test_feature)
 
     actual = models.Feature.get_in_milestone(milestone=1)
     self.assertEqual(
-        'fake feature dict',
+        cached_test_feature,
         actual)
 
 

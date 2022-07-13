@@ -36,7 +36,6 @@ class IntentEmailPreviewHandler(basehandlers.FlaskHandler):
 
   @permissions.require_edit_feature
   def get_template_data(self, feature_id=None, stage_id=None):
-
     f = self.get_specified_feature(feature_id=feature_id)
     intent_stage = stage_id if stage_id is not None else f.intent_stage
 
