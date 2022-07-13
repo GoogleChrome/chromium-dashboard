@@ -2,6 +2,7 @@
 {% load inline_file %}
 
 {% block css %}
+  {# TODO(kevinshen56714): remove this after redesigning the nav bar #}
   <style>{% inline_file "/static/css/metrics.css" %}</style>
 {% endblock %}
 
@@ -10,38 +11,9 @@
 {% endblock %}
 
 {% block content %}
-<div id="column-container">
-  <div id="drawer-column">
-    {% include "metrics/css/_css_metric_nav.html" %}
-  </div>
-  <div id="content-column">
-    <div id="subheader">
-      <h2>CSS usage metrics &gt; all properties > timeline</h2>
-    </div>
-    <div class="data-panel">
-      <p class="description">Use of CSS properties over time.</p>
-      <chromedash-timeline
-        type="css"
-        view="popularity"
-        title="Percentage of Chrome page loads that use this property at least once">
-      </chromedash-timeline>
-      <p class="callout">
-        <b>Note</b>: on 2017-10-26 the underlying metrics were switched over to a newer collection system
-        which is <a href="https://groups.google.com/a/chromium.org/forum/#!msg/blink-api-owners-discuss/IpIkbz0qtrM/HUCfSMv2AQAJ" target="_blank" rel="noopener">more accurate</a>.
-        This is also the reason for the abrupt spike around 2017-10-26.
-      </p>
-    </div>
-  </div>
-</div>
-{% endblock %}
-
-{% block js %}
-<script nonce="{{nonce}}">
-  (function() {
-    'use strict';
-    // Get values from server. used in /static/js/metrics-timeline-page.js
-    const DATA = {{CSS_PROPERTY_BUCKETS|safe}};
-    {% inline_file "/static/js/metrics-timeline-page.min.js" %}
-  })();
-</script>
+  <chromedash-metrics-page 
+    type="css"
+    view="popularity"
+    mode="timeline">
+  </chromedash-metrics-page>
 {% endblock %}

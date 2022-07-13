@@ -2,6 +2,7 @@
 {% load inline_file %}
 
 {% block css %}
+  {# TODO(kevinshen56714): remove this after redesigning the nav bar #}
   <style>{% inline_file "/static/css/metrics.css" %}</style>
 {% endblock %}
 
@@ -10,33 +11,9 @@
 {% endblock %}
 
 {% block content %}
-  <div id="column-container">
-    <div id="drawer-column">
-      {% include "metrics/feature/_feature_metric_nav.html" %}
-    </div>
-    <div id="content-column">
-      <div id="subheader">
-        <h2>HTML &amp; JavaScript usage &gt; all features > timeline</h2>
-      </div>
-      <div class="data-panel">
-        <p class="description">To begin, select a feature in the dropdown below.</p>
-        <chromedash-timeline
-          type="feature"
-          view="popularity"
-          title="Percentage of page views that use this feature">
-        </chromedash-timeline>
-      </div>
-    </div>
-  </div>
-{% endblock %}
-
-{% block js %}
-<script nonce="{{nonce}}">
-  (function() {
-    'use strict';
-    // Get values from server. used in /static/js/metrics-timeline-page.js
-    const DATA = {{FEATUREOBSERVER_BUCKETS|safe}};
-    {% inline_file "/static/js/metrics-timeline-page.min.js" %}
-  })();
-</script>
+  <chromedash-metrics-page
+    type="feature"
+    view="popularity"
+    mode="timeline">
+  </chromedash-metrics-page>
 {% endblock %}

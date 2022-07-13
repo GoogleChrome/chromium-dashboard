@@ -10,6 +10,7 @@ class ChromedashMetrics extends LitElement {
     return {
       type: {type: String},
       view: {type: String},
+      props: {attribute: false},
       viewList: {attribute: false},
       propertyNameSortIcon: {attribute: false},
       percentSortIcon: {attribute: false},
@@ -19,8 +20,9 @@ class ChromedashMetrics extends LitElement {
 
   constructor() {
     super();
-    this.viewList = [];
     this.type = '';
+    this.props = [];
+    this.viewList = [];
     this.maxPercentage = 100;
     this.sortOrders = {
       property_name: {reverse: false, activated: false},
@@ -76,30 +78,14 @@ class ChromedashMetrics extends LitElement {
     `];
   }
 
-  _fireEvent(eventName, detail) {
-    const event = new CustomEvent(eventName, {detail});
-    this.dispatchEvent(event);
-  }
+  willUpdate(changedProperties) {
+    if (!changedProperties.has('props') || !this.props.length) return;
 
-  async firstUpdated() {
-    const endpoint = `/data/${this.type}${this.view}`;
-    const res = await fetch(endpoint);
-    const json = await res.json();
-    this._updateAfterData(json);
-  }
-
-  _updateAfterData(items) {
-    this._fireEvent('app-ready');
-
-    if (!items || !items.length) {
-      return;
-    }
-
-    for (let i = 0, item; item = items[i]; ++i) {
+    for (let i = 0, item; item = this.props[i]; ++i) {
       item.percentage = (item.day_percentage * 100).toFixed(6);
     }
 
-    this.viewList = items.filter((item) => {
+    this.viewList = this.props.filter((item) => {
       return !['ERROR', 'PageVisits', 'PageDestruction'].includes(item.property_name);
     });
 
