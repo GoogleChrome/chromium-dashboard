@@ -111,12 +111,12 @@ export class ChromedashStackRankPage extends LitElement {
     const devMode = false;
     if (devMode) endpoint = 'https://cr-status-staging.appspot.com' + endpoint;
 
+    // TODO(kevinshen56714): Remove this once SPA index page is set up.
+    // Has to include this for now to remove the spinner at _base.html.
+    document.body.classList.remove('loading');
+
     fetch(endpoint).then((res) => res.json()).then((props) => {
       this.props = props;
-
-      // TODO(kevinshen56714): Remove this once SPA index page is set up.
-      // Has to include this for now to remove the spinner at _base.html.
-      document.body.classList.remove('loading');
     }).catch(() => {
       showToastMessage('Some errors occurred. Please refresh the page or try again later.');
     });
