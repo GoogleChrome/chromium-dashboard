@@ -54,8 +54,7 @@ export class ChromedashFormField extends LitElement {
 
   render() {
     const fieldProps = ALL_FIELDS[this.name] || {};
-    const labelProp = fieldProps.label;
-    const label = labelProp ? `${labelProp}:` : '';
+    const label = fieldProps.label ? `${fieldProps.label}:` : '';
     const helpText = fieldProps.help_text || '';
     return html`
       <tr>
