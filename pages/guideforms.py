@@ -133,42 +133,42 @@ MULTI_URL_FIELD_ATTRS = {
 # stage-specific fields without repeating the details and help text.
 ALL_FIELDS = {
     'name': forms.CharField(
-        required=True, label='Feature name',
+        required=True, label='',
         widget=ChromedashTextInput()),
 
     'summary': forms.CharField(
-        required=True,
+        required=True, label='',
         widget=ChromedashTextarea()),
 
     'owner': MultiEmailField(
-        required=True, label='Feature owners',
+        required=True, label='',
         widget=forms.EmailInput(attrs=MULTI_EMAIL_FIELD_ATTRS)),
 
     'editors': MultiEmailField(
-        required=False, label='Feature editors',
+        required=False, label='',
         widget=forms.EmailInput(attrs=MULTI_EMAIL_FIELD_ATTRS)),
 
     'category': forms.ChoiceField(
-        required=False,
+        required=False, label='',
         initial=models.MISC,
         choices=sorted(models.FEATURE_CATEGORIES.items(), key=lambda x: x[1])),
 
     'feature_type': forms.ChoiceField(
-        required=False,
+        required=False, label='',
         initial=models.FEATURE_TYPE_INCUBATE_ID,
         choices=sorted(models.FEATURE_TYPES.items())),
 
     'intent_stage': forms.ChoiceField(
-        required=False, label='Process stage',
+        required=False, label='',
         initial=models.INTENT_IMPLEMENT,
         choices=list(models.INTENT_STAGES.items())),
 
     'motivation': forms.CharField(
-        label='Motivation', required=False,
+        label='', required=False,
         widget=ChromedashTextarea()),
 
     'deprecation_motivation': forms.CharField(  # Sets motivation DB field.
-        label='Motivation', required=False,
+        label='', required=False,
         widget=ChromedashTextarea()),
 
     'doc_links': MultiUrlField(
@@ -187,7 +187,7 @@ ALL_FIELDS = {
         initial=models.PROPOSAL_STD),
 
     'unlisted': forms.BooleanField(
-        label="Unlisted",
+        label="",
         widget=forms.CheckboxInput(attrs={'label': "Unlisted"}),
         required=False, initial=False),
 
@@ -423,13 +423,13 @@ ALL_FIELDS = {
         widget=ChromedashTextarea()),
 
     'bug_url': forms.URLField(
-        required=False, label='Tracking bug URL',
+        required=False, label='',
         widget=forms.URLInput(attrs=URL_FIELD_ATTRS)),
 
     # TODO(jrobbins): Consider a button to file the launch bug automatically,
     # or a deep link that has some feature details filled in.
     'launch_bug_url': forms.URLField(
-        required=False, label='Launch bug URL',
+        required=False, label='',
         widget=forms.URLInput(attrs=URL_FIELD_ATTRS)),
 
     'initial_public_proposal_url': forms.URLField(
@@ -437,7 +437,7 @@ ALL_FIELDS = {
         widget=forms.URLInput(attrs=URL_FIELD_ATTRS)),
 
     'blink_components': forms.ChoiceField(
-      required=False, label='Blink component',
+      required=False, label='',
       choices=[(x, x) for x in models.BlinkComponent.fetch_all_components()],
       initial=[models.BlinkComponent.DEFAULT_COMPONENT]),
 
@@ -446,7 +446,7 @@ ALL_FIELDS = {
         widget=forms.EmailInput(attrs=MULTI_EMAIL_FIELD_ATTRS)),
 
     'impl_status_chrome': forms.ChoiceField(
-        required=False, label='Implementation status',
+        required=False, label='',
         choices=list(models.IMPLEMENTATION_STATUS.items())),
 
     'shipped_milestone': forms.IntegerField(
@@ -495,7 +495,7 @@ ALL_FIELDS = {
         required=False, initial=False),
 
     'search_tags': forms.CharField(
-        label='Search tags', required=False),
+        label='', required=False),
 
     'comments': forms.CharField(
         label='Comments', required=False,
