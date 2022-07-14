@@ -122,8 +122,8 @@ export class ChromedashTimelinePage extends LitElement {
     });
   }
 
-  renderNavBar() {
-    return this.type == 'css' ? html`
+  renderCSSNavBar() {
+    return html`
       <ul class="metric-nav">
         <h3>All properties</h3>
         <li><a href="/metrics/css/popularity">Stack rank</a></li>
@@ -160,7 +160,11 @@ export class ChromedashTimelinePage extends LitElement {
           </table>
         </nav>
       </div>
-    `: html`
+    `;
+  }
+
+  renderJSNavBar() {
+    return html`
       <ul class="metric-nav">
         <h3>All features</h3>
         <li><a href="/metrics/feature/popularity">Stack rank</a></li>
@@ -213,7 +217,7 @@ export class ChromedashTimelinePage extends LitElement {
       <link rel="stylesheet" href="/static/css/main.css">
       <div id="column-container">
         <div id="drawer-column">
-          ${this.renderNavBar()}
+          ${this.type == 'css' ? this.renderCSSNavBar() : this.renderJSNavBar()}
         </div>
         <div id="content-column">
           <div id="subheader">
