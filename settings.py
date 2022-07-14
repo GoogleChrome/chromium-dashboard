@@ -98,10 +98,12 @@ elif APP_ID == 'cr-status':
       'apps.googleusercontent.com')
   INBOUND_EMAIL_ADDR = 'chromestatus@cr-status.appspotmail.com'
   REVIEW_COMMENT_MAILING_LIST = 'blink-dev@chromium.org'
+  BACKUP_BUCKET = 'cr-status-backups'
 elif APP_ID == 'cr-status-staging':
   STAGING = True
   SEND_EMAIL = True
   APP_TITLE = 'Chrome Platform Status Staging'
+  BACKUP_BUCKET = 'cr-staging-backups'
 else:
   logging.error('Unexpected app ID %r, please configure settings.py.', APP_ID)
 

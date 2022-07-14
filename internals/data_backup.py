@@ -15,6 +15,7 @@ import os
 
 from googleapiclient.discovery import build
 from googleapiclient.discovery_cache.base import Cache
+import settings
 
 from framework import basehandlers
 
@@ -32,11 +33,11 @@ class BackupExportHandler(basehandlers.FlaskHandler):
   """Triggers a new Datastore export."""
 
   def get_template_data(self):
-    bucket = os.environ.get("BACKUP_BUCKET")
+    bucket = settings.BACKUP_BUCKET
     # The default cache (file_cache) is unavailable when using oauth2client >= 4.0.0 or google-auth,
     # and it will log worrisome messages unless given another interface to use.
     datastore = build("datastore", "v1", cache=MemoryCache())
-    project_id = os.environ.get("GOOGLE_CLOUD_PROJECT")
+    project_id = settings.APP_ID
 
     # No entity filters are used to back up all entities.
     request_body = {"outputUrlPrefix": bucket, "entityFilter": {}}
