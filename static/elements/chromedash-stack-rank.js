@@ -252,9 +252,8 @@ class ChromedashStackRank extends LitElement {
     `)}`;
   }
 
-  render() {
+  renderStackRankList() {
     return html`
-      ${this.renderSubHeader()}
       <ol class="stack-rank-list">
         <li class="stack-rank-header">
           <p class="title-text">Property name</p>
@@ -268,6 +267,13 @@ class ChromedashStackRank extends LitElement {
         </li>
         ${this.viewList.length ? this.renderStackRank() : this.renderSkeletons()}
       </ol>
+    `;
+  }
+
+  render() {
+    return html`
+      ${this.renderSubHeader()}
+      ${this.renderStackRankList()}
     `;
   }
 }
