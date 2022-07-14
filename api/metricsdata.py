@@ -228,9 +228,6 @@ class FeatureObserverPopularityHandler(FeatureHandler):
     return super(FeatureObserverPopularityHandler, self).get_template_data()
 
 
-# TODO(jrobbins): Is this ever called?  I don't see what calls it.
-# And, I don't see recent requests for it in the server logs.
-# The CL that added it only added this class, no caller.
 class FeatureBucketsHandler(basehandlers.FlaskHandler):
   JSONIFY = True
 

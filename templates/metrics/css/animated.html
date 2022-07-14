@@ -2,37 +2,13 @@
 {% load inline_file %}
 
 {% block css %}
+  {# TODO(kevinshen56714): remove this after redesigning the nav bar #}
   <style>{% inline_file "/static/css/metrics.css" %}</style>
 {% endblock %}
 
 {% block content %}
-  <div id="column-container">
-    <div id="drawer-column">
-      {% include "metrics/css/_css_metric_nav.html" %}
-    </div>
-    <div id="content-column">
-      <div id="subheader">
-        <h2>CSS usage metrics &gt; animated properties > stack rank</h2>
-      </div>
-      <div class="data-panel">
-        <h3>About this data</h3>
-        <p class="description">
-          We've been using Chrome's <a href="https://cs.chromium.org/chromium/src/tools/metrics/histograms/enums.xml"
-            target="_blank" rel="noopener">anonymous usage statistics</a> to count the CSS properties which are animated.
-          <b>Percentages on this page indicate the fraction of Chrome page loads that animates the corresponding CSS property
-            (in a transition or animation) at least once</b>. Data is ~24 hrs old and reflects usage across all channels and
-          platforms.</p>
-        <chromedash-metrics type="css" view="animated"></chromedash-metrics>
-      </div>
-    </div>
-  </div>
-{% endblock %}
-
-{% block js %}
-<script nonce="{{nonce}}">
-  (function() {
-    'use strict';
-    {% inline_file "/static/js/metrics-page.min.js" %}
-  })();
-</script>
+  <chromedash-stack-rank-page 
+    type="css"
+    view="animated">
+  </chromedash-stack-rank-page>
 {% endblock %}
