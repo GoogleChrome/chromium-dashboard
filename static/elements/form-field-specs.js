@@ -16,6 +16,7 @@ const
 export const ALL_FIELDS = {
 
   'name': {
+    label: 'Feature name',
     help_text: html`
         Capitalize only the first letter and the beginnings of proper nouns.
         <br/><br/>
@@ -29,8 +30,9 @@ export const ALL_FIELDS = {
   },
 
   'summary': {
+    label: 'Summary',
     help_text: html`
-       <p>Text in the beta release post, the enterprise release notes, 
+       <p style="margin-top:0">Text in the beta release post, the enterprise release notes, 
         and other external sources will be based on this text.</p>
   
         <p>Write from a web developer's point of view. Begin with one line
@@ -49,39 +51,46 @@ export const ALL_FIELDS = {
   },
 
   'owner': {
+    label: 'Feature owners',
     help_text: html`
         Comma separated list of full email addresses. Accounts
         from @chromium.org are preferred.`,
   },
 
   'editors': {
+    label: 'Feature editors',
     help_text: html`
         Comma separated list of full email addresses. These users will be
         allowed to edit this feature, but will not be listed as feature owners.`,
   },
 
   'unlisted': {
+    label: 'Unlisted',
     help_text: html`
         Check this box to hide draft emails in list views. Anyone with
         a link will be able to view the feature's detail page.`,
   },
 
   'blink_components': {
+    label: 'Blink component',
     help_text: html`
         Select the most specific component. If unsure, leave as "Blink".`,
   },
 
   'category': {
+    label: 'Category',
     help_text: html`
         Select the most specific category. If unsure, leave as "Miscellaneous".`,
   },
 
   'feature_type': {
+    label: 'Feature type',
     help_text: html`
         Select the feature type.`,
   },
 
   'intent_stage': {
+    label: 'Process stage',
     help_text: html`
         Select the appropriate spec process stage. If you select
         Dev trials, Origin Trial, or Shipped, be sure to set the
@@ -89,11 +98,13 @@ export const ALL_FIELDS = {
   },
 
   'search_tags': {
+    label: 'Search tags',
     help_text: html`
         Comma separated keywords used only in search.`,
   },
 
   'impl_status_chrome': {
+    label: 'Implementation status',
     help_text: html`
         Select the appropriate Chromium development stage. If you
         select In developer trial, Origin trial, or Enabled by
@@ -101,6 +112,7 @@ export const ALL_FIELDS = {
   },
 
   'bug_url': {
+    label: 'Tracking bug URL',
     help_text: html`
         Tracking bug url (https://bugs.chromium.org/...). This bug
         should have "Type=Feature" set and be world readable.
@@ -112,6 +124,7 @@ export const ALL_FIELDS = {
   },
 
   'launch_bug_url': {
+    label: 'Launch bug URL',
     help_text: html`
         Launch bug url (https://bugs.chromium.org/...) to track launch approvals.
         <br/><br/>
@@ -121,6 +134,7 @@ export const ALL_FIELDS = {
   },
 
   'motivation': {
+    label: 'Motivation',
     help_text: html`
         Explain why the web needs this change. It may be useful 
         to describe what web developers are forced to do without 
@@ -138,6 +152,7 @@ export const ALL_FIELDS = {
   },
 
   'deprecation_motivation': {
+    label: 'Motivation',
     help_text: html`
         Deprecations and removals must have strong reasons, backed up
         by measurements. There must be clear and actionable paths forward
