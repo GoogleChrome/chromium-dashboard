@@ -14,7 +14,7 @@
 {% block content %}
 <chromedash-new-feature-list
   {% if user %} signedinuser="{{user.email}}" {% endif %}
-  {% if user.can_edit %} canedit {% endif %}
+  {% if user.can_edit_all %} canedit {% endif %}
   {% if user.can_approve %} canapprove {% endif %}
   >
 </chromedash-new-feature-list>

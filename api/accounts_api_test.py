@@ -31,6 +31,11 @@ class AccountsAPITest(testing_config.CustomTestCase):
     self.app_admin = models.AppUser(email='admin@example.com')
     self.app_admin.is_admin = True
     self.app_admin.put()
+
+    self.app_editor = models.AppUser(email='editor@example.com')
+    self.app_editor.is_site_editor = True
+    self.app_editor.put()
+
     self.appuser_1 = models.AppUser(email='user@example.com')
     self.appuser_1.put()
     self.appuser_id = self.appuser_1.key.integer_id()
@@ -41,30 +46,56 @@ class AccountsAPITest(testing_config.CustomTestCase):
   def tearDown(self):
     self.appuser_1.key.delete()
     self.app_admin.key.delete()
+    self.app_editor.key.delete()
 
   def test_create__normal_valid(self):
     """Admin wants to register a normal account."""
     testing_config.sign_in('admin@example.com', 123567890)
 
-    json_data = {'email': 'new@example.com', 'isAdmin': False}
+    json_data = {
+      'email': 'new_user@example.com',
+      'isAdmin': False, 'isSiteEditor': False}
     with test_app.test_request_context(self.request_path, json=json_data):
       actual_json = self.handler.do_post()
-    self.assertEqual('new@example.com', actual_json['email'])
+    self.assertEqual('new_user@example.com', actual_json['email'])
+    self.assertFalse(actual_json['is_site_editor'])
     self.assertFalse(actual_json['is_admin'])
 
     new_appuser = (models.AppUser.query(
-        models.AppUser.email == 'new@example.com').get())
-    self.assertEqual('new@example.com', new_appuser.email)
+        models.AppUser.email == 'new_user@example.com').get())
+    self.assertEqual('new_user@example.com', new_appuser.email)
+    self.assertFalse(new_appuser.is_admin)
+  
+  def test_create__site_editor_valid(self):
+    """Admin wants to register a new site editor account."""
+    testing_config.sign_in('admin@example.com', 123567890)
+
+    json_data = {
+      'email': 'new_site_editor@example.com',
+      'isAdmin': False, 'isSiteEditor': True}
+    with test_app.test_request_context(self.request_path, json=json_data):
+      actual_json = self.handler.do_post()
+    self.assertEqual('new_site_editor@example.com', actual_json['email'])
+    self.assertFalse(actual_json['is_admin'])
+    self.assertTrue(actual_json['is_site_editor'])
+
+    new_appuser = models.AppUser.query(
+        models.AppUser.email == 'new_site_editor@example.com').get()
+    self.assertEqual('new_site_editor@example.com', new_appuser.email)
+    self.assertTrue(new_appuser.is_site_editor)
     self.assertFalse(new_appuser.is_admin)
 
   def test_create__admin_valid(self):
     """Admin wants to register a new admin account."""
     testing_config.sign_in('admin@example.com', 123567890)
 
-    json_data = {'email': 'new_admin@example.com', 'isAdmin': True}
+    json_data = {
+      'email': 'new_admin@example.com',
+      'isAdmin': True, 'isSiteEditor': True}
     with test_app.test_request_context(self.request_path, json=json_data):
       actual_json = self.handler.do_post()
     self.assertEqual('new_admin@example.com', actual_json['email'])
+    self.assertTrue(actual_json['is_site_editor'])
     self.assertTrue(actual_json['is_admin'])
 
     new_appuser = models.AppUser.query(
@@ -80,6 +111,18 @@ class AccountsAPITest(testing_config.CustomTestCase):
       with self.assertRaises(werkzeug.exceptions.Forbidden):
         self.handler.do_post(self.appuser_id)
 
+    new_appuser = models.AppUser.query(
+        models.AppUser.email == 'new@example.com').get()
+    self.assertIsNone(new_appuser)
+
+  def test_create__site_editor_forbidden(self):
+    """Site editors cannot create an account."""
+    testing_config.sign_in('editor@example.com', 123567890)
+
+    with test_app.test_request_context(self.request_path):
+      with self.assertRaises(werkzeug.exceptions.Forbidden):
+        self.handler.do_post()
+    
     new_appuser = models.AppUser.query(
         models.AppUser.email == 'new@example.com').get()
     self.assertIsNone(new_appuser)

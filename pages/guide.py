@@ -107,7 +107,7 @@ class FeatureNew(basehandlers.FlaskHandler):
 
   TEMPLATE_PATH = 'guide/new.html'
 
-  @permissions.require_edit_feature
+  @permissions.require_create_feature
   def get_template_data(self):
     user = self.get_current_user()
 
@@ -118,9 +118,10 @@ class FeatureNew(basehandlers.FlaskHandler):
         }
     return template_data
 
-  @permissions.require_edit_feature
+  @permissions.require_create_feature
   def process_post_data(self):
     owners = self.split_emails('owner')
+    editors = self.split_emails('editors')
 
     blink_components = (
         self.split_input('blink_components', delim=',') or
@@ -139,6 +140,7 @@ class FeatureNew(basehandlers.FlaskHandler):
         intent_stage=models.INTENT_NONE,
         summary=self.form.get('summary'),
         owner=owners,
+        editors=editors,
         impl_status_chrome=models.NO_ACTIVE_DEV,
         standardization=models.EDITORS_DRAFT,
         unlisted=self.form.get('unlisted') == 'on',
@@ -170,6 +172,7 @@ class ProcessOverview(basehandlers.FlaskHandler):
 
   @permissions.require_edit_feature
   def get_template_data(self, feature_id):
+
     f = models.Feature.get_by_id(int(feature_id))
     if f is None:
       self.abort(404, msg='Feature not found')
@@ -246,6 +249,7 @@ class FeatureEditStage(basehandlers.FlaskHandler):
 
   @permissions.require_edit_feature
   def get_template_data(self, feature_id, stage_id):
+
     f, feature_process = self.get_feature_and_process(feature_id)
 
     stage_name = ''
@@ -289,6 +293,7 @@ class FeatureEditStage(basehandlers.FlaskHandler):
 
   @permissions.require_edit_feature
   def process_post_data(self, feature_id, stage_id=0):
+
     if feature_id:
       feature = models.Feature.get_by_id(feature_id)
       if feature is None:
@@ -438,6 +443,9 @@ class FeatureEditStage(basehandlers.FlaskHandler):
 
     if self.touched('owner'):
       feature.owner = self.split_emails('owner')
+    
+    if self.touched('editors'):
+      feature.editors = self.split_emails('editors')
 
     if self.touched('doc_links'):
       feature.doc_links = self.parse_links('doc_links')
@@ -579,6 +587,7 @@ class FeatureEditAllFields(FeatureEditStage):
 
   @permissions.require_edit_feature
   def get_template_data(self, feature_id):
+
     f, feature_process = self.get_feature_and_process(feature_id)
 
     feature_edit_dict = f.format_for_edit()

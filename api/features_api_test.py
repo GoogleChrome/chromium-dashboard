@@ -98,9 +98,10 @@ class FeaturesAPITestGet(testing_config.CustomTestCase):
 
   def setUp(self):
     self.feature_1 = models.Feature(
-        name='feature one', summary='sum', category=1, visibility=1,
-        standardization=1, web_dev_views=1, impl_status_chrome=5,
-        intent_stage=models.INTENT_IMPLEMENT, shipped_milestone=1)
+        name='feature one', summary='sum', owner=['feature_owner@example.com'],
+        category=1, visibility=1, standardization=1, web_dev_views=1,
+        impl_status_chrome=5, intent_stage=models.INTENT_IMPLEMENT,
+        shipped_milestone=1)
     self.feature_1.put()
     self.feature_id = self.feature_1.key.integer_id()
 
