@@ -248,5 +248,4 @@ describe('chromedash-feature-page', () => {
     // Edit icon is not offered because the visitor cannot edit.
     assert.notInclude(subheaderDiv.innerHTML, 'icon="chromestatus:create"');
   });
-
 });
