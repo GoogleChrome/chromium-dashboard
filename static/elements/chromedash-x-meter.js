@@ -14,6 +14,7 @@ class ChromedashXMeter extends LitElement {
     super();
     this.value = 0;
     this.max = 100;
+    this.href = '#';
   }
 
   static get styles() {
@@ -51,9 +52,11 @@ class ChromedashXMeter extends LitElement {
   render() {
     return html`
       <p id="percentage-number">${this.value < 0.0001 ? '<0.0001%' : this.value.toFixed(4) + '%'}</p>
-      <div id="track">
-        <div id="indicator" style="width: ${(this.value / this.max * 100)}%"></div>
-      </div>
+      <a href="${this.href}">
+        <div id="track">
+          <div id="indicator" style="width: ${(this.value / this.max * 100)}%"></div>
+        </div>
+      </a>
     `;
   }
 }

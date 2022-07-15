@@ -223,7 +223,7 @@ class ChromedashStackRank extends LitElement {
   renderStackRank() {
     return html`
       ${this.viewList.map((item) => html`
-        <li class="stack-rank-item" id="${item.property_name}" tabindex="0">
+        <li class="stack-rank-item" id="${item.property_name}">
           <div title="${item.property_name}. Click to deep link to this property.">
             <a class="stack-rank-item-name" href="#${item.property_name}" @click=${this.scrollToPosition}>
               <iron-icon class="hash-link" icon="chromestatus:link"></iron-icon>
@@ -231,8 +231,14 @@ class ChromedashStackRank extends LitElement {
             </a>
           </div>
           <div class="stack-rank-item-result">
-            <chromedash-x-meter value="${item.percentage}" max="${this.maxPercentage}"></chromedash-x-meter>
-            <a class="icon-wrapper" href="/metrics/${this.type}/timeline/${this.view}/${item.bucket_id}"
+            <chromedash-x-meter
+              value="${item.percentage}"
+              max="${this.maxPercentage}"
+              href="/metrics/${this.type}/timeline/${this.view}/${item.bucket_id}"
+              title="Click to see a timeline view of this property">
+            </chromedash-x-meter>
+            <a class="icon-wrapper" 
+              href="/metrics/${this.type}/timeline/${this.view}/${item.bucket_id}"
               title="Click to see a timeline view of this property">
               <iron-icon icon="chromestatus:timeline"></iron-icon>
               <p class="icon-text">Timeline</p>
