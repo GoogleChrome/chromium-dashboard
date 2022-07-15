@@ -11,3 +11,6 @@ cron:
 - description: sort metrics and load into memcache without request time limits
   url: /data/featurepopularity?refresh=1
   schedule: every 30 minutes synchronized
+- description: Trigger a DataStore export for backup.
+  url: /cron/export_backup
+  schedule: every day 03:00

@@ -37,6 +37,7 @@ from framework import sendemail
 from internals import detect_intent
 from internals import fetchmetrics
 from internals import notifier
+from internals import data_backup
 from pages import blink_handler
 from pages import featuredetail
 from pages import featurelist
@@ -188,6 +189,7 @@ internals_routes = [
   ('/cron/metrics', fetchmetrics.YesterdayHandler),
   ('/cron/histograms', fetchmetrics.HistogramsHandler),
   ('/cron/update_blink_components', fetchmetrics.BlinkComponentHandler),
+  ('/cron/export_backup', data_backup.BackupExportHandler),
 
   ('/tasks/email-subscribers', notifier.FeatureChangeHandler),
 
