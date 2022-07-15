@@ -48,6 +48,34 @@ export class ChromedashFormField extends LitElement {
         .errorlist {
           color: red;
         }
+
+        sl-details::part(base) {
+          border: 0;
+        }
+
+        sl-details::part(header) {
+          padding: 0;
+        }
+
+        sl-details::part(content) {
+          padding: 16px 0 0 0;
+        }
+
+        sl-details::part(summary-icon) {
+          align-self: flex-end;
+          font-size: 20px;
+          color: var(--link-color);
+        }
+
+        /* This works, but shortens the space for help text.
+        sl-details::part(summary-icon)::before {
+          content: 'more '
+        }
+
+        sl-details[open]::part(summary-icon)::before {
+          content: 'less '
+        } 
+        */
       `,
     ];
   }
@@ -55,6 +83,7 @@ export class ChromedashFormField extends LitElement {
   render() {
     const fieldProps = ALL_FIELDS[this.name] || {};
     const helpText = fieldProps.help_text || '';
+    const extraHelpText = fieldProps.extra_help || '';
     return html`
       <tr>
         <th colspan="2">
@@ -70,7 +99,16 @@ export class ChromedashFormField extends LitElement {
         </td>
         <td>
           <span class="helptext">
-            ${helpText}
+            ${!extraHelpText ? helpText :
+              html`
+              <sl-details>
+                <span slot="summary">
+                  ${helpText}
+                </span>
+                ${extraHelpText}
+              </sl-details>
+              `
+            }
           </span>
         </td>
       </tr>`;
