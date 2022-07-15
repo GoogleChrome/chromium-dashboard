@@ -63,8 +63,8 @@ def format_email_body(is_update, feature, changes):
 
   body_data = {
       'feature': feature,
-      'created_by_email': feature.created_by.email(),
-      'updated_by_email': feature.updated_by.email(),
+      'creator_email': feature.created_by.email(),
+      'updater_email': feature.updated_by.email(),
       'id': feature.key.integer_id(),
       'milestone': milestone_str,
       'status': models.IMPLEMENTATION_STATUS[feature.impl_status_chrome],

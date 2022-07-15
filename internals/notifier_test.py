@@ -36,9 +36,9 @@ class EmailFormattingTest(testing_config.CustomTestCase):
         name='feature one', summary='sum', category=1, visibility=1,
         standardization=1, web_dev_views=1, impl_status_chrome=1,
         created_by=ndb.User(
-            email='creator@example.com', _auth_domain='gmail.com'),
+            email='creator1@gmail.com', _auth_domain='gmail.com'),
         updated_by=ndb.User(
-            email='editor@example.com', _auth_domain='gmail.com'),
+            email='editor1@gmail.com', _auth_domain='gmail.com'),
         blink_components=['Blink'])
     self.feature_1.put()
     self.component_1 = models.BlinkComponent(name='Blink')
@@ -57,9 +57,9 @@ class EmailFormattingTest(testing_config.CustomTestCase):
         name='feature two', summary='sum', category=1, visibility=1,
         standardization=1, web_dev_views=1, impl_status_chrome=1,
         created_by=ndb.User(
-            email='creator@example.com', _auth_domain='gmail.com'),
+            email='creator2@example.com', _auth_domain='gmail.com'),
         updated_by=ndb.User(
-            email='editor@example.com', _auth_domain='gmail.com'),
+            email='editor2@example.com', _auth_domain='gmail.com'),
         blink_components=['Blink'])
     self.feature_2.put()
 
@@ -72,7 +72,7 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     body_html = notifier.format_email_body(
         False, self.feature_1, [])
     self.assertIn('Blink', body_html)
-    self.assertIn('creator@example.com added', body_html)
+    self.assertIn('creator1@gmail.com added', body_html)
     self.assertIn('chromestatus.com/feature/%d' %
                   self.feature_1.key.integer_id(),
                   body_html)
@@ -83,7 +83,7 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     body_html = notifier.format_email_body(
         True, self.feature_1, [])
     self.assertIn('Blink', body_html)
-    self.assertIn('editor@example.com updated', body_html)
+    self.assertIn('editor1@gmail.com updated', body_html)
     self.assertNotIn('watcher_1,', body_html)
 
   def test_format_email_body__update_with_changes(self):
