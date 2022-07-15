@@ -144,19 +144,34 @@ class EmailFormattingTest(testing_config.CustomTestCase):
 
   def test_convert_reasons_to_task__no_reasons(self):
     with self.assertRaises(AssertionError):
-      notifier.convert_reasons_to_task('addr', [], 'html', 'subject')
+      notifier.convert_reasons_to_task(
+          'addr', [], 'html', 'subject', 'triggerer')
 
   def test_convert_reasons_to_task__normal(self):
     actual = notifier.convert_reasons_to_task(
-        'addr', ['reason 1', 'reason 2'], 'html', 'subject')
+        'addr', ['reason 1', 'reason 2'], 'html', 'subject',
+        'triggerer@example.com')
     self.assertCountEqual(
-        ['to', 'subject', 'html'],
+        ['to', 'subject', 'html', 'reply_to'],
         list(actual.keys()))
     self.assertEqual('addr', actual['to'])
     self.assertEqual('subject', actual['subject'])
+    self.assertEqual(None, actual['reply_to'])  # Lacks perm to reply.
     self.assertIn('html', actual['html'])
     self.assertIn('reason 1', actual['html'])
     self.assertIn('reason 2', actual['html'])
+
+  def test_convert_reasons_to_task__can_reply(self):
+    """If the user is allowed to reply, set reply_to to the triggerer."""
+    actual = notifier.convert_reasons_to_task(
+        'user@chromium.org', ['reason 1', 'reason 2'], 'html', 'subject',
+        'triggerer@example.com')
+    self.assertCountEqual(
+        ['to', 'subject', 'html', 'reply_to'],
+        list(actual.keys()))
+    self.assertEqual('user@chromium.org', actual['to'])
+    self.assertEqual('subject', actual['subject'])
+    self.assertEqual('triggerer@example.com', actual['reply_to'])
 
   def test_apply_subscription_rules__relevant_match(self):
     """When a feature and change match a rule, a reason is returned."""
