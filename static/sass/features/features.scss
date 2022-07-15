@@ -64,11 +64,6 @@ chromedash-featurelist {
   .feature-count {
     min-width: 170px;
   }
-  .actionlinks {
-    .blue-button {
-      margin-left: 4px;
-    }
-  }
 }
 
 @media only screen and (max-width: 1100px) {
@@ -88,11 +83,5 @@ chromedash-featurelist {
   #subheader {
     width: initial;
 
-    div.actionlinks {
-      flex: 1 0 0;
-      span {
-        display: none;
-      }
-    }
   }
 }
