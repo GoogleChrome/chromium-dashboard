@@ -886,7 +886,7 @@ class Feature(DictModel):
         ramcache.set(KEY, feature)
 
     return feature
-  
+
   @classmethod
   def filter_unlisted(self, feature_list):
     """Filters a feature list to display only features the user should see."""
@@ -901,7 +901,7 @@ class Feature(DictModel):
           ('browsers' in f and email in f['browsers']['chrome']['owners']) or
           (email in f.get('editors', []))):
         listed_features.append(f)
-    
+
     return listed_features
 
   @classmethod
@@ -1156,7 +1156,7 @@ class Feature(DictModel):
 
       for feature in android_dev_trial_features:
         all_features[IMPLEMENTATION_STATUS[BEHIND_A_FLAG]].append(feature)
-      
+
       # Construct results as: {type: [json_feature, ...], ...}.
       for shipping_type in all_features:
         all_features[shipping_type].sort(key=lambda f: f.name)
@@ -1164,15 +1164,12 @@ class Feature(DictModel):
             f for f in all_features[shipping_type] if not f.deleted]
         features_by_type[shipping_type] = [
             f.format_for_template() for f in all_features[shipping_type]]
-      
+
       ramcache.set(cache_key, features_by_type)
 
     for shipping_type in features_by_type:
       if not show_unlisted:
         features_by_type[shipping_type] = self.filter_unlisted(features_by_type[shipping_type])
-      else:
-        features_by_type[shipping_type] = all_features[shipping_type].copy()
-
 
     return features_by_type
 
