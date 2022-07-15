@@ -69,7 +69,6 @@ export class ChromedashFeaturePage extends LitElement {
       user: {type: Object},
       featureId: {type: Number},
       feature: {type: Object},
-      editableFeatures: {type: Object},
       process: {type: Object},
       fieldDefs: {type: Object},
       dismissedCues: {type: Array},
@@ -83,7 +82,6 @@ export class ChromedashFeaturePage extends LitElement {
     super();
     this.user = {};
     this.featureId = 0;
-    this.editableFeatures = [];
     this.feature = {};
     this.process = {};
     this.fieldDefs = {};
@@ -196,7 +194,7 @@ export class ChromedashFeaturePage extends LitElement {
 
   renderSubHeader() {
     const canEdit = (this.user &&
-      (this.user.can_edit_all || this.user.editableFeatures.includes(this.featureId)));
+      (this.user.can_edit_all || this.user.editable_features.includes(this.featureId)));
 
     return html`
       <div id="subheader" style="display:block">
