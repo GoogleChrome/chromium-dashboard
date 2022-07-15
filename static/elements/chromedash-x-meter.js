@@ -22,43 +22,39 @@ class ChromedashXMeter extends LitElement {
       ...SHARED_STYLES,
       css`
       :host {
-        display: inline-block;
-        contain: content;
+        display: grid;
+        grid-template-columns: 65px 1fr;
+        grid-column-gap: 15px;
+        height: 1.6em;
+        font-size: 14px;
+      }
+
+      #percentage-number {
+        place-self: center;
+      }
+
+      #track {
         background: var(--barchart-background);
         border-radius: var(--border-radius);
         overflow: hidden;
-        height: 1.7em;
-        color: var(--barchart-color);
+        height: 100%;
       }
 
-      div {
+      #indicator {
         background: var(--barchart-foreground);
         height: 100%;
         white-space: nowrap;
         padding: 3px 0;
-        text-indent: 5px;
       }
-      
-      a {
-        text-decoration: none;
-        color: var(--barchart-color);
-      }
-
-      a:hover {
-        text-decoration: none;
-        color: var(--barchart-color);
-        cursor: pointer;
-      }
-
     `];
   }
 
   render() {
     return html`
+      <p id="percentage-number">${this.value < 0.0001 ? '<0.0001%' : this.value.toFixed(4) + '%'}</p>
       <a href="${this.href}">
-        <div style="width: ${(this.value / this.max * 100)}%">
-          <span>${this.value <= 0.000001 ? '<=0.000001%' : this.value + '%'}
-          </span>
+        <div id="track">
+          <div id="indicator" style="width: ${(this.value / this.max * 100)}%"></div>
         </div>
       </a>
     `;

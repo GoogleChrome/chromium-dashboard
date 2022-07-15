@@ -1,5 +1,4 @@
 import {LitElement, css, html} from 'lit';
-import {ifDefined} from 'lit/directives/if-defined.js';
 
 import '@polymer/iron-icon';
 import './chromedash-x-meter';
@@ -12,9 +11,9 @@ class ChromedashStackRank extends LitElement {
       view: {type: String},
       props: {attribute: false},
       viewList: {attribute: false},
-      propertyNameSortIcon: {attribute: false},
-      percentSortIcon: {attribute: false},
       maxPercentage: {attribute: false},
+      sortType: {type: String},
+      sortReverse: {type: Boolean},
     };
   }
 
@@ -24,10 +23,8 @@ class ChromedashStackRank extends LitElement {
     this.props = [];
     this.viewList = [];
     this.maxPercentage = 100;
-    this.sortOrders = {
-      property_name: {reverse: false, activated: false},
-      percentage: {reverse: true, activated: true},
-    };
+    this.sortType = 'percentage';
+    this.sortReverse = false;
   }
 
 
@@ -41,25 +38,34 @@ class ChromedashStackRank extends LitElement {
         padding: 1px;
       }
 
-      .stack-rank-list {
-        margin: 0;
-        padding: 0;
+      .title-text {
+        flex: 1;
+        font-weight: 500;
       }
 
       li {
-          margin: 0;
-          padding: 5px 0;
-          display: flex;
-          align-items: center;
+        padding: 5px 0;
+        display: flex;
+        align-items: center;
       }
 
-      .stack-rank-list label {
-        font-weight: 500;
+      #subheader {
+        font-size: 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      #dropdown-selection:hover {
+        background: var(--md-gray-100-alpha);
+      }
+
+      sl-button::part(base) {
+        color: #000;
       }
 
       li > :first-child {
         flex: 1;
-        margin-right: 10px;
         word-break: break-all;
       }
 
@@ -67,14 +73,72 @@ class ChromedashStackRank extends LitElement {
         flex: 2;
       }
 
-      li.header {
-        margin-bottom: 10px;
+      .stack-rank-header {
+        margin-bottom: 5px;
+        text-align: center;
+      }
+
+      .stack-rank-item {
+        border-top: var(--table-divider)
+      }
+
+      .stack-rank-item-name {
+        display: grid;
+        grid-template-columns: var(--icon-size) 1fr;
+        grid-column-gap: 15px;
+        position: relative;
+        left: -20px;
+      }
+      .stack-rank-item-name .hash-link {
+        place-self: center;
+        visibility: hidden;
+      }
+      .stack-rank-item-name:hover .hash-link {
+        visibility: visible;
+      }
+
+      .stack-rank-item-result {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-right: 15px;
       }
 
       chromedash-x-meter {
-        margin-left: 7px;
-        cursor: pointer;
+        flex: 1;
       }
+
+      a.icon-wrapper {
+        display: flex;
+        gap: 3px;
+        align-items: center;
+      }
+      a.icon-wrapper:hover {
+        text-decoration: none;
+      }
+
+      .spacer {
+        visibility: hidden;
+      }
+
+      sl-skeleton {
+        margin: 0;
+        padding: 5px 20px;
+      }
+
+      /* On small displays, only show timeline icons (no text). */
+      @media only screen and (max-width: 600px) {
+        .icon-text {
+          display: none;
+        }
+
+        .stack-rank-item-name {
+          grid-column-gap: 5px;
+        }
+
+        .stack-rank-item-result {
+          margin-right: 5px;
+        }
     `];
   }
 
@@ -93,94 +157,147 @@ class ChromedashStackRank extends LitElement {
       return Math.max(accum, currVal.percentage);
     }, 0);
     setTimeout(() => {
-      this._scrollToInitialPosition();
+      this.scrollToPosition();
     }, 300);
   }
 
-  _scrollToInitialPosition() {
-    if (location.hash) {
-      const hash = decodeURIComponent(location.hash);
-      if (hash) {
-        const el = this.shadowRoot.querySelector('.stack-rank-list ' + hash);
-        el.scrollIntoView(true, {behavior: 'smooth'});
-      }
+  scrollToPosition(e) {
+    let hash;
+    if (e) {
+      hash = e.currentTarget.getAttribute('href');
+    } else if (location.hash) {
+      hash = decodeURIComponent(location.hash);
+    }
+
+    if (hash) {
+      const el = this.shadowRoot.querySelector('.stack-rank-list ' + hash);
+      el.scrollIntoView(true, {behavior: 'smooth'});
     }
   }
 
   sort(e) {
     e.preventDefault();
 
-    const order = e.currentTarget.dataset.order;
-    sortBy_(order, this.viewList);
-    switch (order) {
-      case 'percentage':
-        this.sortOrders.percentage.activated = true;
-        this.sortOrders.percentage.reverse = !this.sortOrders.percentage.reverse;
-        break;
-      case 'property_name':
-        this.sortOrders.property_name.activated = true;
-        this.sortOrders.property_name.reverse = !this.sortOrders.property_name.reverse;
-        break;
-    }
+    const parts = e.target.dataset.order.split('-');
+    this.sortType = parts[0];
+    this.sortReverse = Boolean(parts[1]);
 
-    this._updateSortIcons();
-    if (this.sortOrders[order].reverse) {
-      this.viewList.reverse();
-    }
+    const newViewList = [...this.viewList];
+    this.viewList = sortBy_(this.sortType, this.sortReverse, newViewList);
   }
 
-  _updateSortIcons() {
-    this.propertyNameSortIcon = this._getOrderIcon('property_name');
-    this.percentSortIcon = this._getOrderIcon('percentage');
+  renderSubHeader() {
+    return html`
+      <div id="subheader">
+        <p class="title-text">Showing <span>${this.viewList.length}</span> properties</p>
+        <div id="dropdown-selection">
+          <sl-dropdown>
+            <sl-button slot="trigger" variant="text">
+              <iron-icon icon="chromestatus:sort"></iron-icon>
+              SORT BY
+            </sl-button>
+            <sl-menu @click="${this.sort}">
+              <sl-menu-item ?checked=${this.sortType == 'percentage' && !this.sortReverse}
+                data-order="percentage">
+                Most used
+              </sl-menu-item>
+              <sl-menu-item ?checked=${this.sortType == 'percentage' && this.sortReverse}
+                data-order="percentage-reverse">
+                Least used
+              </sl-menu-item>
+              <sl-menu-item ?checked=${this.sortType == 'property_name' && this.sortReverse}
+                data-order="property_name-reverse">
+                Name (A-Z)
+              </sl-menu-item>
+              <sl-menu-item ?checked=${this.sortType == 'property_name' && !this.sortReverse}
+                data-order="property_name">
+                Name (Z-A)
+              </sl-menu-item>
+            </sl-menu>
+          </sl-dropdown>
+        </div>
+      </div>
+    `;
   }
 
-  _getOrderIcon(key) {
-    if (!this.sortOrders[key].activated) {
-      return '';
-    }
-    return this.sortOrders[key].reverse ?
-      'chromestatus:arrow-drop-up' : 'chromestatus:arrow-drop-down';
+  renderStackRank() {
+    return html`
+      ${this.viewList.map((item) => html`
+        <li class="stack-rank-item" id="${item.property_name}">
+          <div title="${item.property_name}. Click to deep link to this property.">
+            <a class="stack-rank-item-name" href="#${item.property_name}" @click=${this.scrollToPosition}>
+              <iron-icon class="hash-link" icon="chromestatus:link"></iron-icon>
+              <p>${item.property_name}</p>
+            </a>
+          </div>
+          <div class="stack-rank-item-result">
+            <chromedash-x-meter
+              value="${item.percentage}"
+              max="${this.maxPercentage}"
+              href="/metrics/${this.type}/timeline/${this.view}/${item.bucket_id}"
+              title="Click to see a timeline view of this property">
+            </chromedash-x-meter>
+            <a class="icon-wrapper" 
+              href="/metrics/${this.type}/timeline/${this.view}/${item.bucket_id}"
+              title="Click to see a timeline view of this property">
+              <iron-icon icon="chromestatus:timeline"></iron-icon>
+              <p class="icon-text">Timeline</p>
+            </a>
+          </div>
+        </li>
+      `)}
+    `;
+  }
+
+  renderSkeletons() {
+    return html`${Array.from(Array(20)).map(() => html`
+      <li class="stack-rank-item">
+        <sl-skeleton effect="sheen"></sl-skeleton>
+        <sl-skeleton effect="sheen"></sl-skeleton>
+      </li>
+    `)}`;
+  }
+
+  renderStackRankList() {
+    return html`
+      <ol class="stack-rank-list">
+        <li class="stack-rank-header">
+          <p class="title-text">Property name</p>
+          <div class="stack-rank-item-result">
+            <p class="title-text">Percentage</p>
+            <a class="icon-wrapper spacer">
+              <iron-icon icon="chromestatus:timeline"></iron-icon>
+              <p class="icon-text">Timeline</p>
+            </a>
+          </div>
+        </li>
+        ${this.viewList.length ? this.renderStackRank() : this.renderSkeletons()}
+      </ol>
+    `;
   }
 
   render() {
     return html`
-      <b>Showing <span>${this.viewList.length}</span> properties</b>
-      <ol class="stack-rank-list">
-        <li class="header">
-          <span @click="${this.sort}" data-order="property_name">
-            Property name <iron-icon icon="${ifDefined(this.propertyNameSortIcon)}"></iron-icon>
-          </span>
-          <span @click="${this.sort}" data-order="percentage" class="percent_label">
-           Percentage <iron-icon icon="${ifDefined(this.percentSortIcon)}"></iron-icon>
-          </span>
-        </li>
-        ${this.viewList.map((item) => html`
-          <li id="${item.property_name}"
-              title="${item.property_name}. Click to deep link to this property." tabindex="0">
-            <a href="#${item.property_name}">${item.property_name}</a>
-            <chromedash-x-meter value="${item.percentage}" max="${this.maxPercentage}"
-                href="/metrics/${this.type}/timeline/${this.view}/${item.bucket_id}"
-                title="Click to see a timeline view of this property"></chromedash-x-meter>
-          </li>
-          `)}
-      </ol>
+      ${this.renderSubHeader()}
+      ${this.renderStackRankList()}
     `;
   }
 }
 
 customElements.define('chromedash-stack-rank', ChromedashStackRank);
 
-const sortBy_ = (propName, arr) => {
-  const compareAsNumbers = propName === 'percentage' || false;
+const sortBy_ = (propName, reverse, arr) => {
+  const compareAsNumbers = propName === 'percentage';
   arr.sort((a, b) => {
     const propA = compareAsNumbers ? Number(a[propName]) : a[propName];
     const propB = compareAsNumbers ? Number(b[propName]) : b[propName];
     if (propA > propB) {
-      return 1;
+      return reverse ? 1 : -1;
     }
     if (propA < propB) {
-      return -1;
+      return reverse ? -1 : 1;
     }
     return 0;
   });
+  return arr;
 };
