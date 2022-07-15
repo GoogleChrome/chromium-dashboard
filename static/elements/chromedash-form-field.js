@@ -99,19 +99,20 @@ export class ChromedashFormField extends LitElement {
         </td>
         <td>
           <span class="helptext">
-            ${!extraHelpText ? helpText :
-              html`
-              <sl-details>
-                <span slot="summary">
-                  ${helpText}
-                </span>
-                ${extraHelpText}
-              </sl-details>
-              `
-            }
+            ${helpText}
           </span>
         </td>
-      </tr>`;
+      </tr>
+                  
+      ${extraHelpText ? html`
+      <tr>
+        <td colspan="2">
+              <sl-details summary="">
+                ${extraHelpText}
+              </sl-details>
+        </td>
+      </tr>` : ''}
+    `;
   }
 }
 
