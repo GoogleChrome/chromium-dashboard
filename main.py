@@ -136,7 +136,7 @@ page_routes = [
     (r'/features_v2.json', featurelist.FeaturesJsonHandler),
 
     ('/', basehandlers.Redirector,
-     {'location': '/features'}),
+     {'location': '/roadmap'}),
 
     ('/newfeatures', newfeaturelist.NewFeatureListHandler),
     ('/features', featurelist.FeatureListHandler),
