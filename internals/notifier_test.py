@@ -162,7 +162,7 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     self.assertIn('reason 2', actual['html'])
 
   def test_convert_reasons_to_task__can_reply(self):
-    """Is the user is allowed to reply, set reply_to to the triggerer."""
+    """If the user is allowed to reply, set reply_to to the triggerer."""
     actual = notifier.convert_reasons_to_task(
         'user@chromium.org', ['reason 1', 'reason 2'], 'html', 'subject',
         'triggerer@example.com')
