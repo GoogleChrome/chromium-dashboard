@@ -6,26 +6,24 @@ const REMOVED_STATUS = ['Removed'];
 const DEPRECATED_STATUS = ['Deprecated', 'No longer pursuing'];
 const ORIGIN_TRIAL = ['Origin trial'];
 const BROWSER_INTERVENTION = ['Browser Intervention'];
+const NO_FEATURE_STRING = 'NO FEATURES ARE PLANNED FOR THIS MILESTONE YET';
 
 class ChromedashRoadmapMilestoneCard extends LitElement {
   static styles = ROADMAP_MILESTONE_CARD_CSS;
   static get properties() {
     return {
-      // Assigned in schedule-apge.js, value from Django
       starredFeatures: {type: Object},
       highlightFeature: {type: Number},
       templateContent: {type: Object},
       channel: {type: Object},
       showDates: {type: Boolean},
       signedIn: {type: Boolean},
-      noFeatureString: {type: String},
     };
   }
 
   constructor() {
     super();
     this.starredFeatures = new Set();
-    this.noFeatureString = 'NO FEATURES ARE PLANNED FOR THIS MILESTONE YET';
   }
 
   /**
@@ -210,7 +208,7 @@ class ChromedashRoadmapMilestoneCard extends LitElement {
           </ul>
           ` : nothing)}
           </div>` : html `
-          <div class="features_header no_feature_released">${this.noFeatureString}</div>
+          <div class="features_header no_feature_released">${NO_FEATURE_STRING}</div>
         `}
       </div>
     `;

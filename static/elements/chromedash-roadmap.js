@@ -84,6 +84,7 @@ class ChromedashRoadmap extends LitElement {
 
   constructor() {
     super();
+    this.channels = {};
     this.numColumns = 0;
     this.cardWidth = 0;
     this.starredFeatures = new Set();
@@ -123,10 +124,6 @@ class ChromedashRoadmap extends LitElement {
       this.fetchNextBatch(channels[DEFAULT_CHANNEL_TYPES[1]].version, true);
       this.fetchPreviousBatch(channels[DEFAULT_CHANNEL_TYPES[1]].version);
       this.lastMilestoneVisible = channels[DEFAULT_CHANNEL_TYPES[this.numColumns-1]].version;
-
-      // TODO(kevinshen56714): Remove this once SPA index page is set up.
-      // Has to include this for now to remove the spinner at _base.html.
-      document.body.classList.remove('loading');
     });
   }
 
@@ -220,10 +217,6 @@ class ChromedashRoadmap extends LitElement {
   }
 
   render() {
-    if (!this.channels) {
-      return html``;
-    }
-
     return html`
       ${this.pastMilestoneArray.map((milestone) => html`
         <chromedash-roadmap-milestone-card
