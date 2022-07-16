@@ -1,7 +1,8 @@
-import {LitElement, html} from 'lit';
+import {LitElement, html, css} from 'lit';
 import {showToastMessage} from './utils.js';
 import '@polymer/iron-icon';
-import {ROADMAP_CSS} from '../sass/elements/chromedash-roadmap-css.js';
+
+import {SHARED_STYLES} from '../sass/shared-css.js';
 
 const TEMPLATE_CONTENT = {
   stable_minus_one: {
@@ -50,7 +51,18 @@ const SHOW_DATES = true;
 const compareFeatures = (a, b) => a.name.localeCompare(b.name, 'fr', {ignorePunctuation: true}); // comparator for sorting milestone features
 
 class ChromedashRoadmap extends LitElement {
-  static styles = ROADMAP_CSS;
+  static get styles() {
+    return [
+      ...SHARED_STYLES,
+      css`
+        :host {
+          display: inline-flex;
+          padding: 0 0em var(--content-padding-huge);
+          margin-right: var(--content-padding-negative);
+          position: relative;
+        }
+    `];
+  }
 
   static get properties() {
     return {
@@ -118,15 +130,18 @@ class ChromedashRoadmap extends LitElement {
     });
   }
 
-  fetchNextBatch(nextVersion, isFetchedFirstTime=false) {
+  fetchNextBatch(nextVersion, firstTime=false) {
     const fetchInAdvance = 3; // number of milestones to fetch while fetching for the first time
-    const fetchStart = isFetchedFirstTime ? nextVersion + 2 : nextVersion + fetchInAdvance + 1;
+    const fetchStart = firstTime ? nextVersion + 2 : nextVersion + fetchInAdvance + 1;
     const fetchEnd = nextVersion + fetchInAdvance + 1;
     const versions = [...Array(fetchEnd - fetchStart + 1).keys()].map(x => x + fetchStart);
 
     // Promises to get the info and features of specified milestone versions
     const milestonePromise = window.csClient.getSpecifiedChannels(fetchStart, fetchEnd);
     const featurePromises = versions.map((ver) => window.csClient.getFeaturesInMilestone(ver));
+
+    this.futureMilestoneArray = [...this.futureMilestoneArray, ...versions];
+    this.lastFutureFetchedOn = nextVersion;
 
     // Fetch milestones object first
     milestonePromise.then((newMilestonesInfo) => {
@@ -143,8 +158,6 @@ class ChromedashRoadmap extends LitElement {
 
           // update the properties to render the latest milestone cards
           this.milestoneInfo = Object.assign({}, this.milestoneInfo, newMilestonesInfo);
-          this.futureMilestoneArray = [...this.futureMilestoneArray, ...versions];
-          this.lastFutureFetchedOn = nextVersion;
         });
       });
     }).catch(() => {
@@ -161,6 +174,14 @@ class ChromedashRoadmap extends LitElement {
     const milestonePromise = window.csClient.getSpecifiedChannels(versionToFetch, versionToFetch);
     const featurePromise = window.csClient.getFeaturesInMilestone(versionToFetch);
 
+    // add the newly fetched milestone to the starting of the list and shift the element horizontally
+    const margin = 16;
+    this.cardOffset -= 1;
+    this.style.left = this.cardOffset*(this.cardWidth + margin) + 'px';
+
+    this.pastMilestoneArray = [versionToFetch, ...this.pastMilestoneArray];
+    this.lastPastFetchedOn = version;
+
     Promise.all([milestonePromise, featurePromise]).then(([newMilestonesInfo, features])=> {
       // sort the feature lists
       Object.keys(features).forEach(status => {
@@ -172,15 +193,6 @@ class ChromedashRoadmap extends LitElement {
 
       // update the properties to render the newly fetched milestones
       this.milestoneInfo = Object.assign({}, this.milestoneInfo, newMilestonesInfo);
-      this.pastMilestoneArray = [versionToFetch, ...this.pastMilestoneArray];
-      this.lastPastFetchedOn = version;
-
-      // add the newly fetched milestone to the starting of the list and adjust the margin
-      // without animation so that user does not get disturbed
-      const margin = 16;
-      this.cardOffset -= 1;
-      this.classList.remove('animate');
-      this.style.marginLeft = this.cardOffset*(this.cardWidth + margin) + 'px';
     }).catch(() => {
       showToastMessage('Some errors occurred. Please refresh the page or try again later.');
     });
@@ -223,8 +235,7 @@ class ChromedashRoadmap extends LitElement {
           .highlightFeature=${this.highlightFeature}
           ?signedin=${this.signedIn}
           @star-toggle-event=${this.handleStarToggle}
-          @highlight-feature-event=${this.handleHighlightEvent}
-        >
+          @highlight-feature-event=${this.handleHighlightEvent}>
         </chromedash-roadmap-milestone-card>
       `)}
 
@@ -238,8 +249,7 @@ class ChromedashRoadmap extends LitElement {
           .highlightFeature=${this.highlightFeature}
           ?signedin=${this.signedIn}
           @star-toggle-event=${this.handleStarToggle}
-          @highlight-feature-event=${this.handleHighlightEvent}
-        >
+          @highlight-feature-event=${this.handleHighlightEvent}>
         </chromedash-roadmap-milestone-card>
       `)}
 
@@ -253,8 +263,7 @@ class ChromedashRoadmap extends LitElement {
           .highlightFeature=${this.highlightFeature}
           ?signedin=${this.signedIn}
           @star-toggle-event=${this.handleStarToggle}
-          @highlight-feature-event=${this.handleHighlightEvent}
-        >
+          @highlight-feature-event=${this.handleHighlightEvent}>
         </chromedash-roadmap-milestone-card>
       `)}
     `;

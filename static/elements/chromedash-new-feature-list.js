@@ -1,8 +1,8 @@
 import {LitElement, css, html} from 'lit';
 import {openApprovalsDialog} from './chromedash-approvals-dialog';
 import './chromedash-feature-table';
-import SHARED_STYLES from '../css/shared.css';
 
+import {SHARED_STYLES} from '../sass/shared-css.js';
 
 class ChromedashNewFeatureList extends LitElement {
   static get properties() {
