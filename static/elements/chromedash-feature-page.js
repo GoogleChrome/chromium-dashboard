@@ -3,13 +3,13 @@ import './chromedash-feature-detail';
 import './chromedash-gantt';
 import {openApprovalsDialog} from './chromedash-approvals-dialog';
 import {autolink, showToastMessage} from './utils.js';
-
 import {SHARED_STYLES} from '../sass/shared-css.js';
 
 const INACTIVE_STATES = [
   'No longer pursuing',
   'Deprecated',
   'Removed'];
+
 
 export class ChromedashFeaturePage extends LitElement {
   static get styles() {

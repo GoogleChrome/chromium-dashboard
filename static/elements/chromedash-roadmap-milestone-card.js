@@ -8,6 +8,7 @@ const ORIGIN_TRIAL = ['Origin trial'];
 const BROWSER_INTERVENTION = ['Browser Intervention'];
 const NO_FEATURE_STRING = 'NO FEATURES ARE PLANNED FOR THIS MILESTONE YET';
 
+
 class ChromedashRoadmapMilestoneCard extends LitElement {
   static styles = ROADMAP_MILESTONE_CARD_CSS;
   static get properties() {

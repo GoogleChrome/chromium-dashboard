@@ -1,7 +1,6 @@
 import {LitElement, html, css} from 'lit';
 import {showToastMessage} from './utils.js';
 import '@polymer/iron-icon';
-
 import {SHARED_STYLES} from '../sass/shared-css.js';
 
 const TEMPLATE_CONTENT = {
@@ -49,6 +48,7 @@ const TEMPLATE_CONTENT = {
 const DEFAULT_CHANNEL_TYPES = ['stable', 'beta', 'dev'];
 const SHOW_DATES = true;
 const compareFeatures = (a, b) => a.name.localeCompare(b.name, 'fr', {ignorePunctuation: true}); // comparator for sorting milestone features
+
 
 class ChromedashRoadmap extends LitElement {
   static get styles() {
