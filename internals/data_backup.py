@@ -11,6 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import logging
+
 from googleapiclient.discovery import build
 from googleapiclient.discovery_cache.base import Cache
 import settings
@@ -44,4 +46,5 @@ class BackupExportHandler(basehandlers.FlaskHandler):
       projectId=project_id, body=request_body
     )
     response = export_request.execute()
-    return response
+    logging.info(str(response))
+    return 'Success'
