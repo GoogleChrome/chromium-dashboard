@@ -41,5 +41,5 @@ export const VARS = css`
 
   --app-drawer-width: 200px;
   --header-height: 135px;
-  --max-content-width: 760px;
+  --max-content-width: 860px;
 }`;
