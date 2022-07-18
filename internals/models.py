@@ -787,9 +787,8 @@ class Feature(DictModel):
           # This includes being an owner, editor, or the original creator
           # of the feature.
           query = query.filter(
-            ndb.OR(Feature.owner == comparator,
-                   ndb.OR(Feature.editors == comparator,
-                          Feature.creator == comparator)))
+            ndb.OR(Feature.owner == comparator, Feature.editors == comparator,
+              Feature.creator == comparator))
         else:
           query = query.filter(getattr(Feature, filter_type) == comparator)
 
