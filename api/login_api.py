@@ -37,6 +37,7 @@ class LoginAPI(basehandlers.APIHandler):
           token, requests.Request(),
           settings.GOOGLE_SIGN_IN_CLIENT_ID)
       users.add_signed_user_info_to_session(idinfo['email'])
+      self._update_last_visit_field(idinfo['email'])
       message = "Done"
       # print(idinfo['email'], file=sys.stderr)
     except ValueError:

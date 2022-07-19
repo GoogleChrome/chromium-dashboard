@@ -1682,6 +1682,7 @@ class AppUser(DictModel):
   is_site_editor = ndb.BooleanProperty(default=False)
   created = ndb.DateTimeProperty(auto_now_add=True)
   updated = ndb.DateTimeProperty(auto_now=True)
+  last_visit = ndb.DateTimeProperty()
 
   def put(self, **kwargs):
     """when we update an AppUser, also invalidate ramcache."""
