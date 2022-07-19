@@ -68,7 +68,9 @@ def handle_outbound_mail_task():
         from_user, from_user, settings.APP_ID)
 
   message = mail.EmailMessage(
-      sender=sender, to=to, subject=subject, html=email_html, reply_to=reply_to)
+      sender=sender, to=to, subject=subject, html=email_html)
+  if reply_to:
+    message.reply_to = reply_to
   message.check_initialized()
 
   if references:
@@ -81,7 +83,8 @@ def handle_outbound_mail_task():
   logging.info('Sender: %s', message.sender)
   logging.info('To: %s', message.to)
   logging.info('Subject: %s', message.subject)
-  logging.info('Reply-To: %s', message.reply_to)
+  if reply_to:
+    logging.info('Reply-To: %s', message.reply_to)
   logging.info('References: %s', references or '(not included)')
   logging.info('In-Reply-To: %s', references or '(not included)')
   logging.info('Body:\n%s', message.html[:settings.MAX_LOG_LINE])
