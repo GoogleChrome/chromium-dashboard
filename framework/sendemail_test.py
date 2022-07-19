@@ -57,7 +57,7 @@ class OutboundEmailHandlerTest(testing_config.CustomTestCase):
 
     mock_emailmessage_constructor.assert_called_once_with(
         sender=self.sender, to=self.to, subject=self.subject,
-        reply_to=None, html=self.html)
+        html=self.html)
     mock_message = mock_emailmessage_constructor.return_value
     mock_message.check_initialized.assert_called_once_with()
     mock_message.send.assert_called_once_with()
@@ -80,7 +80,7 @@ class OutboundEmailHandlerTest(testing_config.CustomTestCase):
     expected_to = 'cr-status-staging-emails+user+example.com@google.com'
     mock_emailmessage_constructor.assert_called_once_with(
         sender=self.sender, to=expected_to, subject=self.subject,
-        reply_to=None, html=self.html)
+        html=self.html)
     mock_message = mock_emailmessage_constructor.return_value
     mock_message.check_initialized.assert_called_once_with()
     mock_message.send.assert_called_once_with()
@@ -101,7 +101,7 @@ class OutboundEmailHandlerTest(testing_config.CustomTestCase):
     expected_to = 'cr-status-staging-emails+user+example.com@google.com'
     mock_emailmessage_constructor.assert_called_once_with(
         sender=self.sender, to=expected_to, subject=self.subject,
-        reply_to=None, html=self.html)
+        html=self.html)
     mock_message = mock_emailmessage_constructor.return_value
     mock_message.check_initialized.assert_called_once_with()
     mock_message.send.assert_not_called()
