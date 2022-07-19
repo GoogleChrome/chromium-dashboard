@@ -2,8 +2,8 @@ import {LitElement, css, html} from 'lit';
 import {ref, createRef} from 'lit/directives/ref.js';
 import './chromedash-roadmap';
 import {showToastMessage} from './utils';
-
 import {SHARED_STYLES} from '../sass/shared-css.js';
+
 
 export class ChromedashRoadmapPage extends LitElement {
   sectionRef = createRef();
@@ -33,6 +33,7 @@ export class ChromedashRoadmapPage extends LitElement {
       user: {type: Object},
       cardWidth: {type: Number},
       numColumns: {type: Number},
+      viewOffset: {type: Number},
     };
   }
 
@@ -41,6 +42,7 @@ export class ChromedashRoadmapPage extends LitElement {
     this.user = {};
     this.cardWidth = 0;
     this.numColumns = 0;
+    this.viewOffset = 0;
   }
 
   connectedCallback() {
@@ -61,6 +63,10 @@ export class ChromedashRoadmapPage extends LitElement {
   fetchData() {
     window.csClient.getPermissions().then((user) => {
       this.user = user;
+
+      // TODO(kevinshen56714): Remove this once SPA index page is set up.
+      // Has to include this for now to remove the spinner at _base.html.
+      document.body.classList.remove('loading');
     }).catch(() => {
       showToastMessage('Some errors occurred. Please refresh the page or try again later.');
     });
@@ -87,11 +93,11 @@ export class ChromedashRoadmapPage extends LitElement {
     if (!roadmap.lastFutureFetchedOn) return;
 
     if (e.target.id == 'next-button') {
-      roadmap.cardOffset -= 1; // move to newer version
+      this.viewOffset -= 1; // move to newer version
       roadmap.lastMilestoneVisible += 1;
       this.updateRoadmapMargin(true);
-    } else if (roadmap.cardOffset < 0) {
-      roadmap.cardOffset += 1; // move to older version
+    } else {
+      this.viewOffset += 1; // move to older version
       roadmap.lastMilestoneVisible -= 1;
       this.updateRoadmapMargin(true);
     }
@@ -99,8 +105,7 @@ export class ChromedashRoadmapPage extends LitElement {
     // Fetch when second last card is displayed
     if (roadmap.lastMilestoneVisible - roadmap.lastFutureFetchedOn > 1) {
       roadmap.fetchNextBatch(roadmap.lastFutureFetchedOn + 1);
-    }
-    if (roadmap.lastPastFetchedOn - roadmap.lastMilestoneVisible == 0) {
+    } else if (roadmap.lastPastFetchedOn - roadmap.lastMilestoneVisible == 0) {
       roadmap.fetchPreviousBatch(roadmap.lastPastFetchedOn - 1);
     }
   }
@@ -113,7 +118,8 @@ export class ChromedashRoadmapPage extends LitElement {
       roadmap.classList.remove('animate');
     }
     const margin = 16;
-    roadmap.style.marginLeft = roadmap.cardOffset*(this.cardWidth + margin) + 'px';
+    roadmap.style.marginLeft = this.viewOffset*(this.cardWidth + margin) + 'px';
+    roadmap.style.left = roadmap.cardOffset*(this.cardWidth + margin) + 'px';
   }
 
 

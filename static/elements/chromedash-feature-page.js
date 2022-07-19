@@ -3,13 +3,13 @@ import './chromedash-feature-detail';
 import './chromedash-gantt';
 import {openApprovalsDialog} from './chromedash-approvals-dialog';
 import {autolink, showToastMessage} from './utils.js';
-
 import {SHARED_STYLES} from '../sass/shared-css.js';
 
 const INACTIVE_STATES = [
   'No longer pursuing',
   'Deprecated',
   'Removed'];
+
 
 export class ChromedashFeaturePage extends LitElement {
   static get styles() {
@@ -47,6 +47,20 @@ export class ChromedashFeaturePage extends LitElement {
         }
         #consensus li label {
           width: 125px;
+        }
+
+        sl-skeleton {
+          margin-bottom: 1em;
+          width: 60%;
+        }
+
+        sl-skeleton:nth-of-type(even) {
+          width: 50%;
+        }
+
+        h3 sl-skeleton {
+          width: 30%;
+          height: 1.5em;
         }
 
         @media only screen and (max-width: 700px) {
