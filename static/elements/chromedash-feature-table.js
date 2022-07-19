@@ -94,6 +94,9 @@ class ChromedashFeatureTable extends LitElement {
     return [
       ...SHARED_STYLES,
       css`
+      table {
+        width: 100%;
+      }
       tr {
         background: var(--table-row-background);
       }
