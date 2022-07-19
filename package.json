@@ -30,8 +30,10 @@
     "lint": "gulp lint-fix && lit-analyzer \"static/elements/chromedash-!(featurelist)*.js\"",
     "pylint": "pylint --output-format=parseable *py api/*py customtags/*py framework/*py internals/*py pages/*py",
 
-    "staging": "npm run build && ./scripts/deploy_site.sh `git describe --always --abbrev=7 --match 'NOT A TAG' --dirty='-tainted'` cr-status-staging && ./scripts/deploy_site.sh rc cr-status-staging",
-    "deploy": "npm run build && ./scripts/deploy_site.sh `git describe --always --abbrev=7 --match 'NOT A TAG' --dirty='-tainted'` && ./scripts/deploy_site.sh rc"
+    "staging": "./scripts/deploy_site.sh `git describe --always --abbrev=7 --match 'NOT A TAG' --dirty='-tainted'` cr-status-staging",
+    "staging-rc": "./scripts/deploy_site.sh rc cr-status-staging",
+    "deploy": "./scripts/deploy_site.sh `git describe --always --abbrev=7 --match 'NOT A TAG' --dirty='-tainted'`",
+    "deploy-rc": "./scripts/deploy_site.sh rc"
   },
   "repository": {
     "type": "git",
