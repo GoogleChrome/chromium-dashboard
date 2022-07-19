@@ -51,7 +51,7 @@ export class ChromedashTimelinePage extends LitElement {
           margin-bottom: 10px;
         }
 
-        @media only screen and (max-width: 1100px) {
+        @media only screen and (max-width: 1200px) {
           .metric-nav {
             display: none
           }
@@ -79,7 +79,7 @@ export class ChromedashTimelinePage extends LitElement {
           }
         }
 
-        @media only screen and (min-width: 1100px) {
+        @media only screen and (min-width: 1200px) {
           #horizontal-sub-nav {
             display: none
           }
