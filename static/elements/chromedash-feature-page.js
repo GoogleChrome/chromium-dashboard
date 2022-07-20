@@ -42,11 +42,20 @@ export class ChromedashFeaturePage extends LitElement {
           margin-right: 5px;
         }
 
+        li {
+          list-style: none;
+        }
+
         #consensus li {
           display: flex;
         }
         #consensus li label {
           width: 125px;
+        }
+
+        #breadcrumbs a {
+          text-decoration: none;
+          color: inherit;
         }
 
         sl-skeleton {
@@ -435,14 +444,11 @@ export class ChromedashFeaturePage extends LitElement {
   }
 
   render() {
-    // TODO: Create precomiled main, forms, and guide css files,
-    // and import them instead of inlining them here
+    // TODO: Create precomiled main css file and import it instead of inlining it here
     // TODO: create another element - chromedash-feature-highlights
     // for all the content of the <div id="feature"> part of the page
     return html`
       <link rel="stylesheet" href="/static/css/main.css">
-      <link rel="stylesheet" href="/static/css/forms.css">
-      <link rel="stylesheet" href="/static/css/guide.css">
       ${this.loading ?
         this.renderSkeletons() :
         html`

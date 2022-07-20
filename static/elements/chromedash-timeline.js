@@ -1,7 +1,7 @@
 import {LitElement, css, html} from 'lit';
 import {showToastMessage} from './utils.js';
-
 import {SHARED_STYLES} from '../sass/shared-css.js';
+
 
 class ChromedashTimeline extends LitElement {
   static get properties() {
@@ -41,7 +41,7 @@ class ChromedashTimeline extends LitElement {
       #chart {
         margin-top: 15px;
         width: 100%;
-        height: 400px;
+        height: 450px;
         background: var(--table-alternate-background);
         border-radius: var(--border-radius);
       }
@@ -54,6 +54,8 @@ class ChromedashTimeline extends LitElement {
 
       .header_title {
         margin: 32px 0 15px 0;
+        font-weight: 500;
+        color: #000;
       }
 
       .description {
@@ -83,6 +85,10 @@ class ChromedashTimeline extends LitElement {
 
       #datalist-input {
         width: 20em;
+        border-radius: 10px;
+        height: 25px;
+        padding-left: 10px;
+        font-size: 15px;
       }
 
       sl-progress-bar {
