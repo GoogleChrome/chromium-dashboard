@@ -1,15 +1,14 @@
 import {LitElement, css, html} from 'lit';
-
 import '@polymer/iron-icon';
 import './chromedash-x-meter';
 import {SHARED_STYLES} from '../sass/shared-css.js';
+
 
 class ChromedashStackRank extends LitElement {
   static get properties() {
     return {
       type: {type: String},
       view: {type: String},
-      props: {attribute: false},
       viewList: {attribute: false},
       maxPercentage: {attribute: false},
       sortType: {type: String},
@@ -20,7 +19,6 @@ class ChromedashStackRank extends LitElement {
   constructor() {
     super();
     this.type = '';
-    this.props = [];
     this.viewList = [];
     this.maxPercentage = 100;
     this.sortType = 'percentage';
@@ -143,15 +141,7 @@ class ChromedashStackRank extends LitElement {
   }
 
   willUpdate(changedProperties) {
-    if (!changedProperties.has('props') || !this.props.length) return;
-
-    for (let i = 0, item; item = this.props[i]; ++i) {
-      item.percentage = (item.day_percentage * 100).toFixed(6);
-    }
-
-    this.viewList = this.props.filter((item) => {
-      return !['ERROR', 'PageVisits', 'PageDestruction'].includes(item.property_name);
-    });
+    if (!changedProperties.has('viewList') || !this.viewList.length) return;
 
     this.maxPercentage = this.viewList.reduce((accum, currVal) => {
       return Math.max(accum, currVal.percentage);
@@ -192,7 +182,7 @@ class ChromedashStackRank extends LitElement {
         <p class="title-text">Showing <span>${this.viewList.length}</span> properties</p>
         <div id="dropdown-selection">
           <sl-dropdown>
-            <sl-button slot="trigger" variant="text">
+            <sl-button slot="trigger" variant="text" ?disabled=${!this.viewList.length}>
               <iron-icon icon="chromestatus:sort"></iron-icon>
               SORT BY
             </sl-button>
