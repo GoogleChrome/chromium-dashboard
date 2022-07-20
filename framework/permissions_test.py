@@ -77,6 +77,7 @@ class PermissionFunctionTests(testing_config.CustomTestCase):
     # Feature for checking permissions against
     self.feature_1 = models.Feature(
         name='feature one', summary='sum',
+        creator="feature_creator@example.com",
         owner=['feature_owner@example.com'],
         editors=['feature_editor@example.com'], category=1, visibility=1,
         standardization=1, web_dev_views=1, impl_status_chrome=1)
@@ -130,7 +131,7 @@ class PermissionFunctionTests(testing_config.CustomTestCase):
   def check_function_results_with_feature(
       self, func, additional_args, unregistered='missing',
       registered='missing', feature_owner='missing', feature_editor='missing',
-      site_editor='missing', admin='missing'):
+      creator='missing', site_editor='missing', admin='missing'):
     """Test func in the context of a specific feature id."""
     # Test unregistered users
     testing_config.sign_in('unregistered@example.com', 123)
@@ -151,6 +152,11 @@ class PermissionFunctionTests(testing_config.CustomTestCase):
     testing_config.sign_in('feature_editor@example.com', 123)
     user = users.get_current_user()
     self.assertEqual(feature_editor, func(user, *additional_args))
+
+    # Test feature editors
+    testing_config.sign_in('feature_creator@example.com', 123)
+    user = users.get_current_user()
+    self.assertEqual(creator, func(user, *additional_args))
 
     # Test site editor user
     testing_config.sign_in('editor@example.com', 123)
@@ -178,7 +184,7 @@ class PermissionFunctionTests(testing_config.CustomTestCase):
       permissions.can_view_feature, (self.feature_id,),
       unregistered=True, registered=True,
       feature_owner=True, feature_editor=True,
-      site_editor=True, admin=True
+      creator=True, site_editor=True, admin=True
     )
 
   def test_can_create_feature(self):
@@ -204,7 +210,7 @@ class PermissionFunctionTests(testing_config.CustomTestCase):
       permissions.can_edit_feature, (self.feature_id,),
       unregistered=False, registered=True,
       feature_owner=True, feature_editor=True,
-      site_editor=True, admin=True
+      creator=False, site_editor=True, admin=True
     )
 
   def test_can_approve_feature(self):

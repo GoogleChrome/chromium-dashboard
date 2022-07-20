@@ -634,6 +634,7 @@ class Feature(DictModel):
       }
       d['tags'] = d.pop('search_tags', [])
       d['editors'] = d.pop('editors', [])
+      d['creator'] = d.pop('creator', None)
       d['browsers'] = {
         'chrome': {
           'bug': d.pop('bug_url', None),
@@ -786,7 +787,8 @@ class Feature(DictModel):
           # This includes being an owner, editor, or the original creator
           # of the feature.
           query = query.filter(
-            ndb.OR(Feature.owner == comparator, Feature.editors == comparator))
+            ndb.OR(Feature.owner == comparator, Feature.editors == comparator,
+              Feature.creator == comparator))
         else:
           query = query.filter(getattr(Feature, filter_type) == comparator)
 
@@ -899,7 +901,8 @@ class Feature(DictModel):
       # Owners and editors of a feature should still be able to see their features.
       if ((not f.get('unlisted', False)) or
           ('browsers' in f and email in f['browsers']['chrome']['owners']) or
-          (email in f.get('editors', []))):
+          (email in f.get('editors', [])) or
+          (email is not None and f.get('creator') == email)):
         listed_features.append(f)
 
     return listed_features
@@ -1257,6 +1260,7 @@ class Feature(DictModel):
 
   # General info.
   category = ndb.IntegerProperty(required=True)
+  creator = ndb.StringProperty()
   name = ndb.StringProperty(required=True)
   feature_type = ndb.IntegerProperty(default=FEATURE_TYPE_INCUBATE_ID)
   intent_stage = ndb.IntegerProperty(default=0)
@@ -1401,6 +1405,7 @@ QUERIABLE_FIELDS = {
     'star_count': Feature.star_count,
     'tags': Feature.search_tags,
     'owner': Feature.owner,
+    'creator': Feature.creator,
     'browsers.chrome.owners': Feature.owner,
     'editors': Feature.editors,
     'intent_to_implement_url': Feature.intent_to_implement_url,
