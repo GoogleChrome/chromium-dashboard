@@ -20,13 +20,14 @@ import '@shoelace-style/shoelace/dist/components/progress-bar/progress-bar.js';
 import '@shoelace-style/shoelace/dist/components/skeleton/skeleton.js';
 import '@shoelace-style/shoelace/dist/components/select/select.js';
 import '@shoelace-style/shoelace/dist/components/textarea/textarea.js';
-import { setBasePath } from '@shoelace-style/shoelace/dist/utilities/base-path.js';
+import {setBasePath} from '@shoelace-style/shoelace/dist/utilities/base-path.js';
 
 // Set the base path to the folder you copied Shoelace's assets to
 setBasePath('/static/shoelace');
 
 // chromedash components
 import './elements/icons';
+import './elements/chromedash-all-features-page';
 import './elements/chromedash-approvals-dialog';
 import './elements/chromedash-banner';
 import './elements/chromedash-callout';
@@ -45,7 +46,6 @@ import './elements/chromedash-header';
 import './elements/chromedash-legend';
 import './elements/chromedash-metadata';
 import './elements/chromedash-myfeatures-page';
-import './elements/chromedash-new-feature-list';
 import './elements/chromedash-process-overview';
 import './elements/chromedash-settings-page';
 import './elements/chromedash-stack-rank';

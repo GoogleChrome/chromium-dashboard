@@ -1,7 +1,9 @@
 import {LitElement, css, html, nothing} from 'lit';
-import {SHARED_STYLES} from '../sass/shared-css.js';
 import {STATE_NAMES} from './chromedash-approvals-dialog.js';
+import {showToastMessage} from './utils.js';
 import './chromedash-feature-filter';
+import {SHARED_STYLES} from '../sass/shared-css.js';
+
 
 class ChromedashFeatureTable extends LitElement {
   static get properties() {
@@ -52,6 +54,8 @@ class ChromedashFeatureTable extends LitElement {
       if (this.columns == 'approvals') {
         this.loadApprovalData();
       }
+    }).catch(() => {
+      showToastMessage('Some errors occurred. Please refresh the page or try again later.');
     });
   }
 
