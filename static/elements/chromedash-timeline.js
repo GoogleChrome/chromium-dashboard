@@ -278,7 +278,7 @@ ORDER BY yyyymmdd DESC, client`;
         Show all historical data:
         <input type="checkbox" ?checked="${this.showAllHistoricalData}" @change="${this.toggleShowAllHistoricalData}">
       </label>
-      <h3 id="usage" class="header_title">Percentage of page loads that use this feature</h3>
+      <h3 id="usage" class="header_title">Percentage of page loads over time</h3>
       <p class="description">The chart below shows the percentage of page loads (in Chrome) that use
         this feature at least once. Data is across all channels and platforms.
         Newly added use counters that are not on Chrome stable yet
