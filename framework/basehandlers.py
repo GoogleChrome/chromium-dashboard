@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from datetime import datetime
 import json
 import logging
 import os
@@ -205,6 +206,15 @@ class APIHandler(BaseHandler):
     if self.do_delete.__code__ is not APIHandler.do_delete.__code__:
       valid_methods.append('DELETE')
     return valid_methods
+
+  def _update_last_visit_field(self, email):
+    """Updates the AppUser last_visit field to log the user's last visit"""
+    app_user = models.AppUser.get_app_user(email)
+    if not app_user:
+      return False
+    app_user.last_visit = datetime.now()
+    app_user.put()
+    return True
 
   def do_get(self, **kwargs):
     """Subclasses should implement this method to handle a GET request."""
