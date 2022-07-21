@@ -161,4 +161,9 @@ export const SHARED_STYLES = [
   sl-details::part(content) {
     padding: 0;
   }
+
+  sl-skeleton {
+    --color: #eee;
+    --sheen-color: #ccc;
+  }
 `];
