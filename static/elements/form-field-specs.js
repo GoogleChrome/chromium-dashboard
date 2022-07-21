@@ -56,8 +56,7 @@ export const ALL_FIELDS = {
 
   'editors': {
     help_text: html`
-        Comma separated list of full email addresses. These users will be
-        allowed to edit this feature, but will not be listed as feature owners.`,
+        Comma separated list of full email addresses. These users will be allowed to edit this feature, but will not be listed as feature owners.`,
   },
 
   'unlisted': {
@@ -79,7 +78,7 @@ export const ALL_FIELDS = {
   'feature_type': {
     help_text: html`
         Select the feature type.`,
-    possible_extra_help: html`
+    extra_help: html`
     <p>
     The first thing you will need to do is identify what type of feature you are building:
     </p>
