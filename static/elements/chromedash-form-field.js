@@ -99,13 +99,15 @@ export class ChromedashFormField extends LitElement {
 
   render() {
     const fieldProps = ALL_FIELDS[this.name] || {};
+    const label = fieldProps.label ? `${fieldProps.label}:` : '';
     const helpText = fieldProps.help_text || '';
     const extraHelpText = fieldProps.extra_help || '';
     return html`
       <tr>
         <th colspan="2">
           <b>
-          <slot name="label"></slot>
+            ${label}
+            <slot name="label"></slot>
           </b>
         </th>
       </tr>

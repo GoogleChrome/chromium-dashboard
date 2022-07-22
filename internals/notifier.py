@@ -22,6 +22,7 @@ import json
 import os
 import urllib
 
+from framework import permissions
 from framework import ramcache
 from google.cloud import ndb
 import requests
@@ -31,6 +32,7 @@ from django.utils.html import conditional_escape as escape
 
 from framework import basehandlers
 from framework import cloud_tasks_helpers
+from framework import users
 import settings
 from internals import approval_defs
 from internals import models
@@ -63,6 +65,8 @@ def format_email_body(is_update, feature, changes):
 
   body_data = {
       'feature': feature,
+      'creator_email': feature.created_by.email(),
+      'updater_email': feature.updated_by.email(),
       'id': feature.key.integer_id(),
       'milestone': milestone_str,
       'status': models.IMPLEMENTATION_STATUS[feature.impl_status_chrome],
@@ -84,7 +88,8 @@ def accumulate_reasons(addr_reasons, user_list, reason):
       addr_reasons[user.email].append(reason)
 
 
-def convert_reasons_to_task(addr, reasons, email_html, subject):
+def convert_reasons_to_task(
+    addr, reasons, email_html, subject, triggering_user_email):
   """Add a task dict to task_list for each user who has not already got one."""
   assert reasons, 'We are emailing someone without any reason'
   footer_lines = ['<p>You are receiving this email because:</p>', '<ul>']
@@ -94,9 +99,16 @@ def convert_reasons_to_task(addr, reasons, email_html, subject):
   footer_lines.append('<p><a href="%ssettings">Unsubscribe</a></p>' %
                       settings.SITE_URL)
   email_html_with_footer = email_html + '\n\n' + '\n'.join(footer_lines)
+
+  reply_to = None
+  recipient_user = users.User(email=addr)
+  if permissions.can_create_feature(recipient_user):
+    reply_to = triggering_user_email
+
   one_email_task = {
       'to': addr,
       'subject': subject,
+      'reply_to': reply_to,
       'html': email_html_with_footer
   }
   return one_email_task
@@ -132,8 +144,10 @@ def make_email_tasks(feature, is_update=False, changes=[]):
   email_html = format_email_body(is_update, feature, changes)
   if is_update:
     subject = 'updated feature: %s' % feature.name
+    triggering_user_email = feature.updated_by.email()
   else:
     subject = 'new feature: %s' % feature.name
+    triggering_user_email = feature.created_by.email()
 
   addr_reasons = collections.defaultdict(list)  # [{email_addr: [reason,...]}]
 
@@ -163,7 +177,8 @@ def make_email_tasks(feature, is_update=False, changes=[]):
   for reason, sub_addrs in rule_results.items():
     accumulate_reasons(addr_reasons, sub_addrs, reason)
 
-  all_tasks = [convert_reasons_to_task(addr, reasons, email_html, subject)
+  all_tasks = [convert_reasons_to_task(
+                   addr, reasons, email_html, subject, triggering_user_email)
                for addr, reasons in sorted(addr_reasons.items())]
   return all_tasks
 
@@ -262,8 +277,10 @@ class FeatureChangeHandler(basehandlers.FlaskHandler):
               'Would send the following email:\n'
               'To: %s\n'
               'Subject: %s\n'
+              'Reply-To: %s\n'
               'Body:\n%s',
               one_email_dict['to'], one_email_dict['subject'],
+              one_email_dict['reply_to'],
               one_email_dict['html'][:settings.MAX_LOG_LINE])
 
     return {'message': 'Done'}

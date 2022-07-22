@@ -6,26 +6,25 @@ const REMOVED_STATUS = ['Removed'];
 const DEPRECATED_STATUS = ['Deprecated', 'No longer pursuing'];
 const ORIGIN_TRIAL = ['Origin trial'];
 const BROWSER_INTERVENTION = ['Browser Intervention'];
+const NO_FEATURE_STRING = 'NO FEATURES ARE PLANNED FOR THIS MILESTONE YET';
+
 
 class ChromedashRoadmapMilestoneCard extends LitElement {
   static styles = ROADMAP_MILESTONE_CARD_CSS;
   static get properties() {
     return {
-      // Assigned in schedule-apge.js, value from Django
       starredFeatures: {type: Object},
       highlightFeature: {type: Number},
       templateContent: {type: Object},
       channel: {type: Object},
       showDates: {type: Boolean},
       signedIn: {type: Boolean},
-      noFeatureString: {type: String},
     };
   }
 
   constructor() {
     super();
     this.starredFeatures = new Set();
-    this.noFeatureString = 'NO FEATURES ARE PLANNED FOR THIS MILESTONE YET';
   }
 
   /**
@@ -123,7 +122,7 @@ class ChromedashRoadmapMilestoneCard extends LitElement {
     return Object.keys(obj).sort();
   }
 
-  _cardHeaderTemplate() {
+  renderCardHeader() {
     return html `
       <div class="layout vertical center">
         <h1 class="channel_label">${this.templateContent.channelLabel}</h1>
@@ -196,7 +195,7 @@ class ChromedashRoadmapMilestoneCard extends LitElement {
     `;
   }
 
-  _cardFeatureListTemplate() {
+  renderCardFeatureList() {
     return html `
       <div class="features_list">
         ${this._isAnyFeatureReleased() ? html `
@@ -210,8 +209,50 @@ class ChromedashRoadmapMilestoneCard extends LitElement {
           </ul>
           ` : nothing)}
           </div>` : html `
-          <div class="features_header no_feature_released">${this.noFeatureString}</div>
+          <div class="features_header no_feature_released">${NO_FEATURE_STRING}</div>
         `}
+      </div>
+    `;
+  }
+
+  renderSkeletons() {
+    return html`
+      <div class="layout vertical center">
+        <h1 class="channel_label">${this.templateContent.channelLabel}</h1>
+        <h1 class="chrome_version layout horizontal sl-skeleton-header-container ${this.templateContent.h1Class}">
+          <span class="chrome-logo"></span>
+          <sl-skeleton effect="sheen"></sl-skeleton>
+        </h1>
+      </div>
+      <div class="milestone_info layout horizontal center-center">
+        <h3 class="sl-skeleton-header-container">
+          <sl-skeleton effect="sheen"></sl-skeleton>
+        </h3>
+      </div>
+      <div class="milestone_info layout horizontal center-center">
+        <h3 class="sl-skeleton-header-container">
+          <sl-skeleton effect="sheen"></sl-skeleton>
+        </h3>
+      </div>
+      <div class="features_list">
+        <div class="sl-skeleton-title-container">
+          <sl-skeleton effect="sheen"></sl-skeleton>
+        </div>
+        <sl-skeleton effect="sheen"></sl-skeleton>
+        <sl-skeleton effect="sheen"></sl-skeleton>
+        <sl-skeleton effect="sheen"></sl-skeleton>
+        <sl-skeleton effect="sheen"></sl-skeleton>
+        </div>
+      </div>
+      <div class="features_list">
+        <div class="sl-skeleton-title-container">
+          <sl-skeleton effect="sheen"></sl-skeleton>
+        </div>
+        <sl-skeleton effect="sheen"></sl-skeleton>
+        <sl-skeleton effect="sheen"></sl-skeleton>
+        <sl-skeleton effect="sheen"></sl-skeleton>
+        <sl-skeleton effect="sheen"></sl-skeleton>
+        </div>
       </div>
     `;
   }
@@ -219,8 +260,12 @@ class ChromedashRoadmapMilestoneCard extends LitElement {
   render() {
     return html`
       <section class="release">
-        ${this._cardHeaderTemplate()}
-        ${this._cardFeatureListTemplate()}
+        ${this.channel ? html`
+          ${this.renderCardHeader()}
+          ${this.renderCardFeatureList()}
+        `: html`
+          ${this.renderSkeletons()}
+        `}
       </section>
     `;
   }

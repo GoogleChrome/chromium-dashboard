@@ -98,7 +98,7 @@ Open the [Google Developer
 Console for the staging site](https://console.cloud.google.com/appengine/versions?project=cr-status-staging)
 and flip to the new version by selecting from the list and clicking *MIGRATE TRAFFIC*. Make sure to do this for both the 'default' service as well as for the 'notifier' service.
 
-Each deployment also uploads the same code to a version named `rc` for "Release candidate".  This is the only version that you can test using Google Sign-In at `https://rc-dot-cr-status-staging.appspot.com`.
+Alternatively, run `npm run staging-rc` to  upload the same code to a version named `rc` for "Release candidate".  This is the only version that you can test using Google Sign-In at `https://rc-dot-cr-status-staging.appspot.com`.
 
 If manual testing on the staging server looks good, then repeat the same steps to deploy to prod:
 

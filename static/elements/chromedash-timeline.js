@@ -1,7 +1,7 @@
 import {LitElement, css, html} from 'lit';
 import {showToastMessage} from './utils.js';
-
 import {SHARED_STYLES} from '../sass/shared-css.js';
+
 
 class ChromedashTimeline extends LitElement {
   static get properties() {
@@ -41,7 +41,7 @@ class ChromedashTimeline extends LitElement {
       #chart {
         margin-top: 15px;
         width: 100%;
-        height: 400px;
+        height: 450px;
         background: var(--table-alternate-background);
         border-radius: var(--border-radius);
       }
@@ -54,6 +54,8 @@ class ChromedashTimeline extends LitElement {
 
       .header_title {
         margin: 32px 0 15px 0;
+        font-weight: 500;
+        color: #000;
       }
 
       .description {
@@ -83,6 +85,10 @@ class ChromedashTimeline extends LitElement {
 
       #datalist-input {
         width: 20em;
+        border-radius: 10px;
+        height: 25px;
+        padding-left: 10px;
+        font-size: 15px;
       }
 
       sl-progress-bar {
@@ -272,7 +278,7 @@ ORDER BY yyyymmdd DESC, client`;
         Show all historical data:
         <input type="checkbox" ?checked="${this.showAllHistoricalData}" @change="${this.toggleShowAllHistoricalData}">
       </label>
-      <h3 id="usage" class="header_title">Percentage of page loads that use this feature</h3>
+      <h3 id="usage" class="header_title">Percentage of page loads over time</h3>
       <p class="description">The chart below shows the percentage of page loads (in Chrome) that use
         this feature at least once. Data is across all channels and platforms.
         Newly added use counters that are not on Chrome stable yet
