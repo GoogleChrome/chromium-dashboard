@@ -415,7 +415,7 @@ ALL_FIELDS = {
         widget=ChromedashTextarea()),
 
     'sample_links': MultiUrlField(
-        label='Samples links', required=False,
+        label='Demo and sample links', required=False,
         widget=ChromedashTextarea(attrs=MULTI_URL_FIELD_ATTRS)),
 
     'non_oss_deps': forms.CharField(
@@ -519,7 +519,7 @@ class ChromedashForm(forms.Form):
     def simple_html_output(self, normal_row):
         """
         Output HTML. Used by override of as_table() to support chromedash uses only.
-        Simplified to drop support for hidden form fields and errors at the top, 
+        Simplified to drop support for hidden form fields and errors at the top,
         which we are not using.
         Added field 'name' property for use in the normal_row template.
         """

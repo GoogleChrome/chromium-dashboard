@@ -224,13 +224,8 @@ export const FEATURE_CSS = [
     section .comments html-echo {
       white-space: pre-wrap;
     }
-    section .doc_links,
-    section .sample_links,
     section .owner {
       flex-shrink: 1 !important;
-    }
-    section .sample_links {
-      margin-left: 8px;
     }
     .sidebyside {
       display: flex;
@@ -239,8 +234,8 @@ export const FEATURE_CSS = [
     .sidebyside .flex {
       flex: 0 0 calc(50% - 16px);
     }
-    .resources label {
-      margin-right: 8px;
+    .resources div {
+      margin-top: var(--content-padding-half);
     }
     @media only screen and (max-width: 700px) {
       :host {
@@ -272,11 +267,6 @@ export const FEATURE_CSS = [
         display: block;
       }
     }
-    @media only screen and (min-width: 701px) {
-      .resources {
-        display: flex;
-        align-items: center;
-      }
     }
   `,
 ];

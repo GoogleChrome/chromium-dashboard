@@ -298,7 +298,7 @@ export class ChromedashFeaturePage extends LitElement {
 
       ${this.feature.resources && this.feature.resources.samples ? html`
         <section id="demo">
-          <h3>${this.feature.resources.samples.length == 1 ? 'Demo' : 'Demos'}</h3>
+          <h3>Demos and samples</h3>
           <ul>
             ${this.feature.resources.samples.map((sampleLink) => html`
               <li><a href="${sampleLink}">${sampleLink}</a></li>
