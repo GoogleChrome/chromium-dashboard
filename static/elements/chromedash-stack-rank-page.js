@@ -1,6 +1,5 @@
 import {LitElement, css, html} from 'lit';
 import './chromedash-stack-rank';
-
 import {SHARED_STYLES} from '../sass/shared-css.js';
 
 
@@ -10,79 +9,25 @@ export class ChromedashStackRankPage extends LitElement {
       ...SHARED_STYLES,
       css`
         h3 {
-          margin-bottom: var(--content-padding);
+          margin: var(--content-padding) 0;
+          font-weight: 500;
+          color: #000;
         }
 
-        .drawer-content-wrapper {
-          max-width: var(--app-drawer-width);
-        }
-
-        #column-container {
-          display: flex;
-          align-items: stretch;
-          flex-direction: row;
-        }
-
-        #drawer-column {
-          padding: 1em 2em 1em 1em;
-          margin-left: 8px;
-        }
-
-        #content-column {
-          flex: 1;
-          padding-left: 2em;
-        }
-
-        .data-panel {
-          max-width: var(--max-content-width);
-        }
-        .data-panel .description {
+        .description {
           margin-bottom: 1em;
         }
-
-        .metric-nav {
-          list-style-type: none;
-        }
-        .metric-nav h3:not(:first-of-type) {
-          margin-top: calc(var(--content-padding) * 2);
-        }
-        .metric-nav li {
-          padding: 0.5em;
-          margin-bottom: 10px;
+        .description #highlighted-text {
+          font-weight: 500;
         }
 
-        @media only screen and (max-width: 1100px) {
-          .metric-nav {
-            display: none
-          }
-
-          #column-container {
-            flex-direction: column;
-          }
-
-          #content-column {
-            padding-left: var(--content-padding-half);
-            padding-right: var(--content-padding-half);
-          }
-
-          #drawer-column {
-            padding: 0;
-          }
-
-          #subheader {
-            margin: var(--content-padding) 0;
-            text-align: center;
-          }
-
-          .data-panel {
-            margin: 0 10px;
-          }
-        }
-
-        @media only screen and (min-width: 1100px) {
-          #horizontal-sub-nav {
-            display: none
-          }
+        #datalist-input {
+          width: 30em;
+          border-radius: 10px;
+          height: 25px;
+          margin-bottom: var(--content-padding);
+          padding-left: 10px;
+          font-size: 15px;
         }
       `];
   }
@@ -91,7 +36,7 @@ export class ChromedashStackRankPage extends LitElement {
     return {
       type: {type: String}, // "css" or "feature"
       view: {type: String}, // "popularity" or "animated"
-      props: {attribute: false},
+      viewList: {attribute: false},
     };
   }
 
@@ -99,7 +44,7 @@ export class ChromedashStackRankPage extends LitElement {
     super();
     this.type = '';
     this.view = '';
-    this.props = [];
+    this.viewList = [];
   }
 
   connectedCallback() {
@@ -111,85 +56,26 @@ export class ChromedashStackRankPage extends LitElement {
     const devMode = false;
     if (devMode) endpoint = 'https://cr-status-staging.appspot.com' + endpoint;
 
-    fetch(endpoint).then((res) => res.json()).then((props) => {
-      this.props = props;
+    // TODO(kevinshen56714): Remove this once SPA index page is set up.
+    // Has to include this for now to remove the spinner at _base.html.
+    document.body.classList.remove('loading');
 
-      // TODO(kevinshen56714): Remove this once SPA index page is set up.
-      // Has to include this for now to remove the spinner at _base.html.
-      document.body.classList.remove('loading');
+    fetch(endpoint).then((res) => res.json()).then((props) => {
+      for (let i = 0, item; item = props[i]; ++i) {
+        item.percentage = (item.day_percentage * 100).toFixed(6);
+      }
+      this.viewList = props.filter((item) => {
+        return !['ERROR', 'PageVisits', 'PageDestruction'].includes(item.property_name);
+      });
     }).catch(() => {
       showToastMessage('Some errors occurred. Please refresh the page or try again later.');
     });
   }
 
-  renderCSSNavBar() {
-    return html`
-      <ul class="metric-nav">
-        <h3>All properties</h3>
-        <li><a href="/metrics/css/popularity">Stack rank</a></li>
-        <li><a href="/metrics/css/timeline/popularity">Timeline</a></li>
-        <h3>Animated properties</h3>
-        <li><a href="/metrics/css/animated">Stack rank</a></li>
-        <li><a href="/metrics/css/timeline/animated">Timeline</a></li>
-      </ul>
-
-      <div id="horizontal-sub-nav">
-        <nav class="data-panel">
-          <table>
-            <tr>
-              <td>View All Properties As:</td>
-              <td>
-                <a href="/metrics/css/timeline/popularity" class="sub-nav-links">Timeline</a>
-                |
-                <a href="/metrics/css/popularity" class="sub-nav-links">Stack Rank</a>
-              </td>
-            </tr>
-          </table>
-        </nav>
-
-        <nav class="data-panel">
-          <table>
-            <tr>
-              <td>View Animated Properties As:</td>
-              <td>
-                <a href="/metrics/css/timeline/animated" class="sub-nav-links">Timeline</a>
-                |
-                <a href="/metrics/css/animated" class="sub-nav-links">Stack Rank</a>
-              </td>
-            </tr>
-          </table>
-        </nav>
-      </div>
-    `;
-  }
-
-  renderJSNavBar() {
-    return html`
-      <ul class="metric-nav">
-        <h3>All features</h3>
-        <li><a href="/metrics/feature/popularity">Stack rank</a></li>
-        <li><a href="/metrics/feature/timeline/popularity">Timeline</a></li>
-      </ul>
-
-      <div id="horizontal-sub-nav">
-        <nav class="data-panel">
-          <table>
-            <tr>
-              <td>View As:</td>
-              <td>
-                <a href="/metrics/feature/timeline/popularity" class="sub-nav-links"
-                  >Timeline</a
-                >
-                |
-                <a href="/metrics/feature/popularity" class="sub-nav-links"
-                  >Stack Rank</a
-                >
-              </td>
-            </tr>
-          </table>
-        </nav>
-      </div>
-    `;
+  handleSearchBarChange(e) {
+    const inputValue = e.currentTarget.value;
+    const property = this.viewList.find((item) => item.property_name === inputValue);
+    window.location.href = `/metrics/${this.type}/timeline/${this.view}/${property.bucket_id}`;
   }
 
   renderSubheader() {
@@ -200,25 +86,33 @@ export class ChromedashStackRankPage extends LitElement {
     return html`<h2>${subTitleText}</h2>`;
   }
 
+  renderSearchBar() {
+    return html`
+      <input id="datalist-input" type="search" list="features"
+        placeholder=${this.viewList.length ? 'Select or search a property for detailed stats' : 'loading...'} 
+        @change="${this.handleSearchBarChange}" />
+      <datalist id="features">
+        ${this.viewList.map((item) => html`
+          <option value="${item.property_name}" dataset-debug-bucket-id="${item.bucket_id}"></option>
+        `)}
+      </datalist>
+    `;
+  }
+
   renderDataPanel() {
     return html`
-      <h3>About this data</h3>
+      <h3>Data from last 24 hours</h3>
       <p class="description">
-        We've been using Chrome's <a href="https://cs.chromium.org/chromium/src/tools/metrics/histograms/enums.xml"
-        target="_blank" rel="noopener">anonymous usage statistics</a> to count the occurrences of certain
-        ${this.type == 'css'? 'CSS properties': 'HTML and JavaScript features'} in the wild. The numbers on
-        this page indicate the <b>percentages of Chrome page loads (across all channels and platforms) that use the
-        corresponding ${this.type == 'css'? 'property': 'feature'} at least once</b>.
-
-        Newly added use counters that are not on Chrome stable yet only have data from the Chrome channels they're
-        on, which makes them hard to compare to older use counters.
-
-        Data is ~24 hrs old.
+        The percentage numbers indicate the <span id="highlighted-text">percentage of Chrome page loads
+        (across all channels and platforms) that use the ${this.type == 'css'? 'property': 'feature'}
+        at least once</span>. Data is collected via Chrome's
+        <a href="https://cs.chromium.org/chromium/src/tools/metrics/histograms/enums.xml"
+        target="_blank" rel="noopener">anonymous usage statistics</a>.
       </p>
       <chromedash-stack-rank 
         .type=${this.type}
         .view=${this.view}
-        .props=${this.props}>
+        .viewList=${this.viewList}>
       </chromedash-stack-rank>
     `;
   }
@@ -227,19 +121,11 @@ export class ChromedashStackRankPage extends LitElement {
     // TODO: Create a precomiled main css file and import it instead of inlining it here
     return html`
       <link rel="stylesheet" href="/static/css/main.css">
-      <div id="column-container">
-        <div id="drawer-column">
-          ${this.type == 'css' ? this.renderCSSNavBar() : this.renderJSNavBar()}
-        </div>
-        <div id="content-column">
-          <div id="subheader">
-            ${this.renderSubheader()}
-          </div>
-          <div class="data-panel">
-            ${this.renderDataPanel()}
-          </div>
-        </div>
+      <div id="subheader">
+        ${this.renderSubheader()}
       </div>
+      ${this.renderSearchBar()}
+      ${this.renderDataPanel()}
     `;
   }
 }

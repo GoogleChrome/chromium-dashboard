@@ -56,6 +56,7 @@ def handle_outbound_mail_task():
   subject = get_param(flask.request, 'subject')
   email_html = get_param(flask.request, 'html')
   references = get_param(flask.request, 'references', required=False)
+  reply_to = get_param(flask.request, 'reply_to', required=False)
 
   if settings.SEND_ALL_EMAIL_TO and to != settings.REVIEW_COMMENT_MAILING_LIST:
     to_user, to_domain = to.split('@')
@@ -68,6 +69,8 @@ def handle_outbound_mail_task():
 
   message = mail.EmailMessage(
       sender=sender, to=to, subject=subject, html=email_html)
+  if reply_to:
+    message.reply_to = reply_to
   message.check_initialized()
 
   if references:
@@ -80,6 +83,8 @@ def handle_outbound_mail_task():
   logging.info('Sender: %s', message.sender)
   logging.info('To: %s', message.to)
   logging.info('Subject: %s', message.subject)
+  if reply_to:
+    logging.info('Reply-To: %s', message.reply_to)
   logging.info('References: %s', references or '(not included)')
   logging.info('In-Reply-To: %s', references or '(not included)')
   logging.info('Body:\n%s', message.html[:settings.MAX_LOG_LINE])

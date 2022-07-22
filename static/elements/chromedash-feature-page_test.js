@@ -13,6 +13,23 @@ describe('chromedash-feature-page', () => {
     is_admin: false,
     email: 'example@google.com',
   });
+  const editorPermissionsPromise = Promise.resolve({
+    can_approve: false,
+    can_create_feature: false,
+    can_edit_all: false,
+    editable_features: [123456],
+    is_admin: false,
+    email: 'editor@example.com',
+  });
+  const visitorPermissionsPromise = Promise.resolve({
+    can_approve: false,
+    can_create_feature: false,
+    can_edit_all: false,
+    editable_features: [],
+    is_admin: false,
+    email: 'example@example.com',
+  });
+  const anonPermissionsPromise = Promise.resolve(null);
   const processPromise = Promise.resolve({
     name: 'fake process',
     stages: [{name: 'fake stage name', outgoing_stage: 1}],
@@ -48,6 +65,31 @@ describe('chromedash-feature-page', () => {
       'earliest_beta': '2020-02-13T00:00:00',
       'mstone': 'fake milestone number',
     },
+  });
+  const validFeaturePromise = Promise.resolve({
+    id: 123456,
+    name: 'feature one',
+    summary: 'detailed sum',
+    new_crbug_url: 'fake crbug link',
+    browsers: {
+      chrome: {
+        blink_component: ['Blink'],
+        owners: ['fake chrome owner one', 'fake chrome owner two'],
+        status: {text: 'fake chrome status text'},
+      },
+      ff: {view: {text: 'fake ff view text'}},
+      safari: {view: {text: 'fake safari view text'}},
+      webdev: {view: {text: 'fake webdev view text'}},
+    },
+    resources: {
+      samples: ['fake sample link one', 'fake sample link two'],
+      docs: ['fake doc link one', 'fake doc link two'],
+    },
+    standards: {
+      spec: 'fake spec link',
+      maturity: {text: 'Unknown standards status - check spec link for status'},
+    },
+    tags: ['tag_one'],
   });
 
   /* window.csClient and <chromedash-toast> are initialized at _base.html
@@ -102,31 +144,6 @@ describe('chromedash-feature-page', () => {
   it('renders with fake data', async () => {
     const featureId = 123456;
     const contextLink = '/features';
-    const validFeaturePromise = Promise.resolve({
-      id: 123456,
-      name: 'feature one',
-      summary: 'detailed sum',
-      new_crbug_url: 'fake crbug link',
-      browsers: {
-        chrome: {
-          blink_component: ['Blink'],
-          owners: ['fake chrome owner one', 'fake chrome owner two'],
-          status: {text: 'fake chrome status text'},
-        },
-        ff: {view: {text: 'fake ff view text'}},
-        safari: {view: {text: 'fake safari view text'}},
-        webdev: {view: {text: 'fake webdev view text'}},
-      },
-      resources: {
-        samples: ['fake sample link one', 'fake sample link two'],
-        docs: ['fake doc link one', 'fake doc link two'],
-      },
-      standards: {
-        spec: 'fake spec link',
-        maturity: {text: 'Unknown standards status - check spec link for status'},
-      },
-      tags: ['tag_one'],
-    });
     window.csClient.getFeature.withArgs(featureId).returns(validFeaturePromise);
 
     const component = await fixture(
@@ -182,5 +199,53 @@ describe('chromedash-feature-page', () => {
     assert.exists(tagSection);
     // feature tag link is clickable
     assert.include(tagSection.innerHTML, 'href="/features#tags:tag_one"');
+  });
+
+  it('does offer editing to a listed editor', async () => {
+    const featureId = 123456;
+    const contextLink = '/features';
+    window.csClient.getFeature.withArgs(featureId).returns(validFeaturePromise);
+    window.csClient.getPermissions.returns(editorPermissionsPromise);
+
+    const component = await fixture(
+      html`<chromedash-feature-page
+              .featureId=${featureId}
+              .contextLink=${contextLink}
+             ></chromedash-feature-page>`);
+    const subheaderDiv = component.shadowRoot.querySelector('div#subheader');
+    // Edit icon is offered because user's editable_features has this one.
+    assert.include(subheaderDiv.innerHTML, 'icon="chromestatus:create"');
+  });
+
+  it('does not offer editing to anon users', async () => {
+    const featureId = 123456;
+    const contextLink = '/features';
+    window.csClient.getFeature.withArgs(featureId).returns(validFeaturePromise);
+    window.csClient.getPermissions.returns(anonPermissionsPromise);
+
+    const component = await fixture(
+      html`<chromedash-feature-page
+              .featureId=${featureId}
+              .contextLink=${contextLink}
+             ></chromedash-feature-page>`);
+    const subheaderDiv = component.shadowRoot.querySelector('div#subheader');
+    // Edit icon is not offered because anon cannot edit.
+    assert.notInclude(subheaderDiv.innerHTML, 'icon="chromestatus:create"');
+  });
+
+  it('does not offer editing to signed in visitors', async () => {
+    const featureId = 123456;
+    const contextLink = '/features';
+    window.csClient.getFeature.withArgs(featureId).returns(validFeaturePromise);
+    window.csClient.getPermissions.returns(visitorPermissionsPromise);
+
+    const component = await fixture(
+      html`<chromedash-feature-page
+              .featureId=${featureId}
+              .contextLink=${contextLink}
+             ></chromedash-feature-page>`);
+    const subheaderDiv = component.shadowRoot.querySelector('div#subheader');
+    // Edit icon is not offered because the visitor cannot edit.
+    assert.notInclude(subheaderDiv.innerHTML, 'icon="chromestatus:create"');
   });
 });

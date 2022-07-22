@@ -1,7 +1,7 @@
 import {LitElement, html, css, nothing} from 'lit';
 import {showToastMessage} from './utils';
-
 import {SHARED_STYLES} from '../sass/shared-css.js';
+
 
 export class ChromedashHeader extends LitElement {
   static get styles() {
@@ -172,6 +172,7 @@ export class ChromedashHeader extends LitElement {
       google_sign_in_client_id: {type: String},
       currentPage: {type: String},
       user: {type: Object},
+      loading: {type: Boolean},
     };
   }
 
@@ -179,16 +180,20 @@ export class ChromedashHeader extends LitElement {
     super();
     this.appTitle = '';
     this.google_sign_in_client_id = '',
-    this.user = null;
+    this.user = {};
+    this.loading = true;
   }
 
   connectedCallback() {
     super.connectedCallback();
+    this.loading = true;
     window.csClient.getPermissions().then((user) => {
       this.user = user;
       if (!this.user) this.initializeGoogleSignIn();
     }).catch(() => {
       showToastMessage('Some errors occurred. Please refresh the page or try again later.');
+    }).finally(() => {
+      this.loading = false;
     });
 
     // TODO(kevinshen56714): this can be passed in from SPA router
@@ -250,6 +255,7 @@ export class ChromedashHeader extends LitElement {
           </a>
           <ul>
             <li><a href="/metrics/css/popularity">CSS</a></li>
+            <li><a href="/metrics/css/animated">CSS Animation</a></li>
             <li><a href="/metrics/feature/popularity">JS/HTML</a></li>
           </ul>
         </div>
@@ -261,6 +267,11 @@ export class ChromedashHeader extends LitElement {
     return html`
       <div class="flex-container flex-container-inner-second">
       ${this.user ? html`
+        ${this.user.can_create_feature && !this.isCurrentPage('/guide/new') ? html`
+          <sl-button href="/guide/new" variant="primary" size="small">
+            Add feature
+          </sl-button>
+        `: nothing }
         <div class="nav-dropdown-container">
           <a class="nav-dropdown-trigger">
             ${this.user.email}
@@ -287,10 +298,12 @@ export class ChromedashHeader extends LitElement {
           </hgroup>
         </aside>
         <nav>
-          <div class="flex-container flex-container-outer">
-            ${this.renderTabs()}
-            ${this.renderAccountMenu()}
-          </div>
+          ${!this.loading ? html`
+            <div class="flex-container flex-container-outer">
+              ${this.renderTabs()}
+              ${this.renderAccountMenu()}
+            </div>
+          ` : nothing}
         </nav>
       </header>
     `;

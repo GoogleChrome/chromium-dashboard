@@ -451,19 +451,18 @@ class ChromedashFeature extends LitElement {
           <section>
             <h3>Developer resources</h3>
             <div class="resources">
-              <label>Documentation/samples:</label>
               ${this._hasDocLinks ? html`
                 <div class="doc_links">
+                  <label>Documentation:</label>
                   <chromedash-multi-links
                       .links="${this.feature.resources.docs}"
                       title="Doc"></chromedash-multi-links>
                 </div>
                 ` : nothing}
-              ${this._hasDocLinks && this._hasSampleLinks ?
-                html`<span>,</span>` : nothing}
               ${this._hasSampleLinks ? html`
                 <div class="sample_links">
-                  <chromedash-multi-links title="Sample"
+                  <label>Demos and samples:</label>
+                  <chromedash-multi-links title="Link"
                       .links="${this.feature.resources.samples}"
                       ></chromedash-multi-links>
                 </div>

@@ -634,6 +634,7 @@ class Feature(DictModel):
       }
       d['tags'] = d.pop('search_tags', [])
       d['editors'] = d.pop('editors', [])
+      d['creator'] = d.pop('creator', None)
       d['browsers'] = {
         'chrome': {
           'bug': d.pop('bug_url', None),
@@ -786,7 +787,8 @@ class Feature(DictModel):
           # This includes being an owner, editor, or the original creator
           # of the feature.
           query = query.filter(
-            ndb.OR(Feature.owner == comparator, Feature.editors == comparator))
+            ndb.OR(Feature.owner == comparator, Feature.editors == comparator,
+              Feature.creator == comparator))
         else:
           query = query.filter(getattr(Feature, filter_type) == comparator)
 
@@ -886,7 +888,7 @@ class Feature(DictModel):
         ramcache.set(KEY, feature)
 
     return feature
-  
+
   @classmethod
   def filter_unlisted(self, feature_list):
     """Filters a feature list to display only features the user should see."""
@@ -899,9 +901,10 @@ class Feature(DictModel):
       # Owners and editors of a feature should still be able to see their features.
       if ((not f.get('unlisted', False)) or
           ('browsers' in f and email in f['browsers']['chrome']['owners']) or
-          (email in f.get('editors', []))):
+          (email in f.get('editors', [])) or
+          (email is not None and f.get('creator') == email)):
         listed_features.append(f)
-    
+
     return listed_features
 
   @classmethod
@@ -1156,7 +1159,7 @@ class Feature(DictModel):
 
       for feature in android_dev_trial_features:
         all_features[IMPLEMENTATION_STATUS[BEHIND_A_FLAG]].append(feature)
-      
+
       # Construct results as: {type: [json_feature, ...], ...}.
       for shipping_type in all_features:
         all_features[shipping_type].sort(key=lambda f: f.name)
@@ -1164,15 +1167,12 @@ class Feature(DictModel):
             f for f in all_features[shipping_type] if not f.deleted]
         features_by_type[shipping_type] = [
             f.format_for_template() for f in all_features[shipping_type]]
-      
+
       ramcache.set(cache_key, features_by_type)
 
     for shipping_type in features_by_type:
       if not show_unlisted:
         features_by_type[shipping_type] = self.filter_unlisted(features_by_type[shipping_type])
-      else:
-        features_by_type[shipping_type] = all_features[shipping_type].copy()
-
 
     return features_by_type
 
@@ -1260,6 +1260,7 @@ class Feature(DictModel):
 
   # General info.
   category = ndb.IntegerProperty(required=True)
+  creator = ndb.StringProperty()
   name = ndb.StringProperty(required=True)
   feature_type = ndb.IntegerProperty(default=FEATURE_TYPE_INCUBATE_ID)
   intent_stage = ndb.IntegerProperty(default=0)
@@ -1404,6 +1405,7 @@ QUERIABLE_FIELDS = {
     'star_count': Feature.star_count,
     'tags': Feature.search_tags,
     'owner': Feature.owner,
+    'creator': Feature.creator,
     'browsers.chrome.owners': Feature.owner,
     'editors': Feature.editors,
     'intent_to_implement_url': Feature.intent_to_implement_url,
@@ -1685,6 +1687,7 @@ class AppUser(DictModel):
   is_site_editor = ndb.BooleanProperty(default=False)
   created = ndb.DateTimeProperty(auto_now_add=True)
   updated = ndb.DateTimeProperty(auto_now=True)
+  last_visit = ndb.DateTimeProperty()
 
   def put(self, **kwargs):
     """when we update an AppUser, also invalidate ramcache."""

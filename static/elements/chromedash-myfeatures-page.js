@@ -2,7 +2,6 @@ import {LitElement, css, html, nothing} from 'lit';
 import './chromedash-feature-table';
 import {openApprovalsDialog} from './chromedash-approvals-dialog';
 import {showToastMessage} from './utils.js';
-
 import {SHARED_STYLES} from '../sass/shared-css.js';
 
 

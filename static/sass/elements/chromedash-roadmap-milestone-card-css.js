@@ -1,10 +1,8 @@
 import {css} from 'lit';
 import {SHARED_STYLES} from '../shared-css.js';
-import {LAYOUT_CSS} from '../_layout-css.js';
 
 export const ROADMAP_MILESTONE_CARD_CSS = [
   SHARED_STYLES,
-  LAYOUT_CSS,
   css`
     .layout {
       display: flex;
@@ -162,6 +160,23 @@ export const ROADMAP_MILESTONE_CARD_CSS = [
     }
     #feature_link {
       width: 100%;
+    }
+    .sl-skeleton-header-container {
+      display: flex;
+      width: 100%;
+      gap: 10px;
+      justify-content: center;
+      margin-top: 10px;
+    }
+    .sl-skeleton-header-container sl-skeleton {
+      width: 60%;
+    }
+    .sl-skeleton-title-container {
+      width: 50%;
+    }
+    .features_list sl-skeleton {
+      height: 20px;
+      margin: 8px;
     }
   `,
 ];

@@ -55,7 +55,7 @@ export const SHARED_STYLES = [
     cursor: pointer;
   }
 
-  input:not([type="submit"]):not([type="search"]),
+  input:not([type="submit"]),
   textarea {
     border: 1px solid var(--bar-border-color);
   }
@@ -163,18 +163,7 @@ export const SHARED_STYLES = [
   }
 
   sl-skeleton {
-    margin-bottom: 1em;
-    width: 60%;
+    --color: #eee;
+    --sheen-color: #ccc;
   }
-
-  sl-skeleton:nth-of-type(even) {
-    width: 50%;
-  }
-
-  h3 sl-skeleton {
-    width: 30%;
-    height: 1.5em;
-  }
-
-
 `];
