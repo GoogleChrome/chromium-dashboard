@@ -50,26 +50,12 @@ export class ChromedashFormField extends LitElement {
         }
 
         sl-details::part(base) {
-          border: 0;
+          border-width: 0;
         }
 
         sl-details::part(header) {
           padding: 0;
           display: none;
-        }
-
-        sl-details::part(summary-icon) {
-          align-self: flex-start;
-          font-size: 20px;
-          color: var(--link-color);
-          margin-top: -14px;
-          margin-right: -14px;
-        }
-
-        sl-details::part(summary),
-        sl-details::part(summary-icon) {
-          max-height: 0px;
-          visibility: hidden;
         }
 
         sl-details::part(content) {
@@ -83,28 +69,25 @@ export class ChromedashFormField extends LitElement {
           margin: 4px;
         }
 
-        // Remove vertical padding for extra-help row cell. 
-        // Add it to sl-details, when open.
         td.extrahelp {
           padding: 0 10px;
         }
-        sl-details[open] {
-          padding: 6px 10px;
-        }
 
-         
-        // If first child of sl-details content has 
-        // margin-top, typically only block elements do, 
-        // then make it 0.
-        // Similarly for last-child and margin-bottom.
-        sl-details > :first-child {
+        sl-details > *:first-child {
           margin-top: 0;
         }
-        sl-details > :last-child {
+        sl-details > *:last-child {
           margin-bottom: 0;
         }
       `,
     ];
+    // Remove vertical padding for extra-help row cell.
+    // Add it to sl-details, when open.
+
+    // If first child of sl-details content has
+    // margin-top, typically only block elements do,
+    // then make it 0.
+    // Similarly for last-child and margin-bottom.
   }
 
   toggleExtraHelp() {
