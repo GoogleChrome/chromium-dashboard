@@ -32,7 +32,7 @@ export const ALL_FIELDS = {
   'summary': {
     label: 'Summary',
     help_text: html`
-       <p style="margin-top:0">Text in the beta release post, the enterprise release notes,
+       <p>Text in the beta release post, the enterprise release notes,
         and other external sources will be based on this text.</p>
 
         <p>Write from a web developer's point of view. Begin with one line
@@ -41,6 +41,7 @@ export const ALL_FIELDS = {
         manner and in the present tense. (This summary will be visible long after
         your project is finished.) Avoid language such as "a new feature" and
         "we propose".</p>
+
         <a target="_blank"
             href="https://github.com/GoogleChrome/chromium-dashboard/wiki/EditingHelp#summary">
           Learn more</a>.
@@ -60,8 +61,7 @@ export const ALL_FIELDS = {
   'editors': {
     label: 'Feature editors',
     help_text: html`
-        Comma separated list of full email addresses. These users will be
-        allowed to edit this feature, but will not be listed as feature owners.`,
+        Comma separated list of full email addresses. These users will be allowed to edit this feature, but will not be listed as feature owners.`,
   },
 
   'unlisted': {
@@ -114,8 +114,9 @@ export const ALL_FIELDS = {
   'bug_url': {
     label: 'Tracking bug URL',
     help_text: html`
-        Tracking bug url (https://bugs.chromium.org/...). This bug
-        should have "Type=Feature" set and be world readable.
+        Tracking bug url (https://bugs.chromium.org/...).
+        This bug should have "Type=Feature" set
+        and be world readable.
         Note: This field only accepts one URL.
         <br/><br/>
         <a target="_blank"
