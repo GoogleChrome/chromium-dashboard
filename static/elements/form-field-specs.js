@@ -32,7 +32,7 @@ export const ALL_FIELDS = {
   'summary': {
     label: 'Summary',
     help_text: html`
-       <p style="margin-top:0">Text in the beta release post, the enterprise release notes,
+       <p>Text in the beta release post, the enterprise release notes,
         and other external sources will be based on this text.</p>
 
         <p>Write from a web developer's point of view. Begin with one line
@@ -41,6 +41,7 @@ export const ALL_FIELDS = {
         manner and in the present tense. (This summary will be visible long after
         your project is finished.) Avoid language such as "a new feature" and
         "we propose".</p>
+
         <a target="_blank"
             href="https://github.com/GoogleChrome/chromium-dashboard/wiki/EditingHelp#summary">
           Learn more</a>.
@@ -86,31 +87,6 @@ export const ALL_FIELDS = {
     label: 'Feature type',
     help_text: html`
         Select the feature type.`,
-    extra_help: html`
-    <p>
-    The first thing you will need to do is identify what type of feature you are building:
-    </p>
-
-    <h3>New feature incubation</h3>
-    <p>
-    This is the normal path when we are incubating and defining new features from scratch - e.g., most Fugu features follow this pattern, and any feature where we start without an already-defined standard for the feature. This also covers changes that are extending existing features (e.g., defining a new value and behavior for an existing standard feature). This type of feature has the most associated process steps, as it is charting new territory.
-    </p>
-
-    <h3>Implementation of existing standard</h3>
-    <p>
-    This type of feature has a lighter-weight “fast track” process, but this process can only be used when the feature has already been defined in a consensus standards document - e.g. a W3C Working Group has already agreed on the design, it has already been merged into a WHATWG standard, or the feature has already been implemented in another engine.
-    </p>
-
-    <h3>Web developer facing change to existing code</h3>
-    <p>
-    This is generally a public service announcement- “This is a web-developer-facing change to existing code without API changes, but you may see side effects.” This may be due to large-scale code refactoring or rewriting, where the goal is to cause no behavioral changes (but due to scope of change, side effects are likely), or this may encompass changes to current code that fix a bug or implement new changes to the spec without changes to the API shape itself.
-    </p>
-
-    <h3>Deprecation</h3>
-    <p>
-    Removal of already-shipped features.
-    </p>
-    `,
   },
 
   'intent_stage': {
@@ -621,11 +597,11 @@ export const ALL_FIELDS = {
 
   'requires_embedder_support': {
     help_text: html`
-       Will this feature require support in //chrome?  
-       That includes any code in //chrome, even if that is for 
-       functionality on top of the spec.  Other //content embedders 
-       will need to be aware of that functionality. 
-       Please add a row to this 
+       Will this feature require support in //chrome?
+       That includes any code in //chrome, even if that is for
+       functionality on top of the spec.  Other //content embedders
+       will need to be aware of that functionality.
+       Please add a row to this
        <a target="_blank"
           href="https://docs.google.com/spreadsheets/d/1QV4SW4JBG3IyLzaonohUhim7nzncwK4ioop2cgUYevw/edit#gid=0">
         tracking spreadsheet</a>.`,

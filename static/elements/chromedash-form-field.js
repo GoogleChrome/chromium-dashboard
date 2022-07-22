@@ -9,6 +9,13 @@ export class ChromedashFormField extends LitElement {
   }
 
   static get styles() {
+    // Remove vertical padding for extrahelp row cell.
+    // Rely on padding of sl-details, when it's displayed.
+
+    // If first child of helptext and sl-details content has
+    // margin-top, typically only block elements do,
+    // then make it 0.
+    // Similarly for last-child and margin-bottom.
     return [
       css`
         :host {
@@ -38,11 +45,22 @@ export class ChromedashFormField extends LitElement {
           max-width: 35em;
         }
 
+        td.extrahelp {
+          padding: 0 10px;
+        }
+
         .helptext {
           display: block;
           font-size: small;
           max-width: 40em;
           margin-top: 2px;
+        }
+
+        .helptext > *:first-child {
+          margin-top: 0;
+        }
+        .helptext > *:last-child {
+          margin-bottom: 0;
         }
 
         .errorlist {
@@ -69,10 +87,6 @@ export class ChromedashFormField extends LitElement {
           margin: 4px;
         }
 
-        td.extrahelp {
-          padding: 0 10px;
-        }
-
         sl-details > *:first-child {
           margin-top: 0;
         }
@@ -81,13 +95,6 @@ export class ChromedashFormField extends LitElement {
         }
       `,
     ];
-    // Remove vertical padding for extra-help row cell.
-    // Add it to sl-details, when open.
-
-    // If first child of sl-details content has
-    // margin-top, typically only block elements do,
-    // then make it 0.
-    // Similarly for last-child and margin-bottom.
   }
 
   toggleExtraHelp() {
