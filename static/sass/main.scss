@@ -56,39 +56,6 @@ body {
   }
 }
 
-app-drawer {
-  font-size: 14px;
-
-  .drawer-content-wrapper {
-    height: 100%;
-    overflow: auto;
-    padding: $content-padding;
-    background: $page-background;
-  }
-
-  paper-listbox {
-    background-color: inherit !important; // more specific than shimmer
-
-    paper-item {
-      font-size: inherit !important; // more specific than shimmer
-    }
-  }
-
-  h3 {
-    margin-bottom: $content-padding;
-    font-weight: 500;
-    font-size: 14px;
-    color: inherit;
-  }
-}
-
-app-header {
-  right: 0;
-  top: 0;
-  left: 0;
-  z-index: 1;
-}
-
 .main-toolbar {
   display: flex;
   position: relative;
@@ -99,21 +66,12 @@ app-header {
   line-height: 1.4;
 }
 
-.sub-nav-links {
-  padding-left: var(--content-padding-quarter);
-  padding-right: var(--content-padding-quarter);
-}
-
 #subheader, .subheader {
   display: flex;
   align-items: center;
   margin: var(--content-padding) 0;
   max-width: var(--max-content-width);
   width: 100%;
-
-  .num-features {
-    font-weight: 400;
-  }
 
   div {
     &.search {
@@ -158,30 +116,11 @@ app-header {
   max-width: 95%;
 }
 
-#panels {
-  display: flex;
-  width: 100%;
-  overflow: hidden;
-}
-
-.alertbox {
-  margin: 2em;
-  padding: 1em;
-  background: var(--warning-background);
-  color: var(--warning-color);
-}
-
 @media only screen and (min-width: 701px) {
   .main-toolbar {
     .toolbar-content {
       width: 100%;
     }
-  }
-
-  // Overrides styles set by app-header-layout so there's no visual
-  // layout FOUC/jump as the drawer panel upgrades.
-  app-header {
-    left: 0 !important;
   }
 }
 
@@ -195,27 +134,10 @@ app-header {
   h3 {
     font-size: 15px;
   }
-  app-header {
-    .main-toolbar {
-      padding: 0;
-      display: block;
-    }
-  }
-
-  app-drawer {
-    z-index: 2;
-  }
 
   #content {
     margin-left: 0;
     margin-right: 0;
-  }
-
-  #panels {
-    display: block;
-    nav {
-      display: none;
-    }
   }
 
   .subheader {
