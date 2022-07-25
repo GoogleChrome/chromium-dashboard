@@ -52,7 +52,7 @@
     "@shoelace-style/shoelace": "^2.0.0-beta.78",
     "@web/test-runner": "^0.13.31",
     "@web/test-runner-playwright": "^0.8.9",
-    "acorn": ">=8.7.1",
+    "acorn": ">=8.8.0",
     "babel-eslint": "^10.0.3",
     "color-string": ">=1.9.0",
     "del": "^3.0.0",
