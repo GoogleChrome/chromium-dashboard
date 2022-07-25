@@ -39,66 +39,41 @@ class ChromedashApp extends LitElement {
     // SPA routing rules.  Note that rules are considered in order.
     // And :var can match any string (including a slash) if there is no slash after it.
     page('/spa', () => page.redirect('/roadmap'));
-    page('/roadmap', () => {
+    page('/roadmap', (ctx) => {
       this.pageComponent = document.createElement('chromedash-roadmap-page');
-      header.currentPage = '/roadmap';
+      header.currentPage = ctx.path;
     });
-    page('/myfeatures', () => {
+    page('/myfeatures', (ctx) => {
       this.pageComponent = document.createElement('chromedash-myfeatures-page');
       this.contextLink = '/myfeatures';
-      header.currentPage = '/myfeatures';
+      header.currentPage = ctx.path;
     });
-    page('/features', () => {
+    page('/features', (ctx) => {
       this.pageComponent = document.createElement('chromedash-all-features-page');
       this.contextLink = '/features';
-      header.currentPage = '/features';
+      header.currentPage = ctx.path;
     });
     page('/feature/:featureId', (ctx) => {
       this.pageComponent = document.createElement('chromedash-feature-page');
       this.pageComponent.featureId = ctx.params.featureId;
       this.pageComponent.contextLink = this.contextLink;
     });
-    page('/settings', () => {
+    page('/settings', (ctx) => {
       this.pageComponent = document.createElement('chromedash-settings-page');
+      header.currentPage = ctx.path;
     });
-    page('/metrics/feature/popularity', () => {
+    page('/metrics/:type/:view', (ctx) => {
       this.pageComponent = document.createElement('chromedash-stack-rank-page');
-      this.pageComponent.type = 'feature';
-      this.pageComponent.view = 'popularity';
-      header.currentPage = '/metrics';
+      this.pageComponent.type = ctx.params.type;
+      this.pageComponent.view = ctx.params.view;
+      header.currentPage = ctx.path;
     });
-    page('/metrics/css/popularity', () => {
-      this.pageComponent = document.createElement('chromedash-stack-rank-page');
-      this.pageComponent.type = 'css';
-      this.pageComponent.view = 'popularity';
-      header.currentPage = '/metrics';
-    });
-    page('/metrics/css/animated', () => {
-      this.pageComponent = document.createElement('chromedash-stack-rank-page');
-      this.pageComponent.type = 'css';
-      this.pageComponent.view = 'animated';
-      header.currentPage = '/metrics';
-    });
-    page('/metrics/feature/timeline/popularity/:bucketId', (ctx) => {
+    page('/metrics/:type/timeline/:view/:bucketId', (ctx) => {
       this.pageComponent = document.createElement('chromedash-timeline-page');
-      this.pageComponent.type = 'feature';
-      this.pageComponent.view = 'popularity';
+      this.pageComponent.type = ctx.params.type;
+      this.pageComponent.view = ctx.params.view;
       this.pageComponent.selectedBucketId = ctx.params.bucketId;
-      header.currentPage = '/metrics';
-    });
-    page('/metrics/css/timeline/popularity/:bucketId', (ctx) => {
-      this.pageComponent = document.createElement('chromedash-timeline-page');
-      this.pageComponent.type = 'css';
-      this.pageComponent.view = 'popularity';
-      this.pageComponent.selectedBucketId = ctx.params.bucketId;
-      header.currentPage = '/metrics';
-    });
-    page('/metrics/css/timeline/animated/:bucketId', (ctx) => {
-      this.pageComponent = document.createElement('chromedash-timeline-page');
-      this.pageComponent.type = 'css';
-      this.pageComponent.view = 'animated';
-      this.pageComponent.selectedBucketId = ctx.params.bucketId;
-      header.currentPage = '/metrics';
+      header.currentPage = ctx.path;
     });
 
     page.start();
