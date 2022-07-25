@@ -180,6 +180,7 @@ export class ChromedashHeader extends LitElement {
     super();
     this.appTitle = '';
     this.googleSignInClientId = '',
+    this.currentPage = '';
     this.user = {};
     this.loading = true;
   }
@@ -195,9 +196,6 @@ export class ChromedashHeader extends LitElement {
     }).finally(() => {
       this.loading = false;
     });
-
-    // TODO(kevinshen56714): this can be passed in from SPA router
-    this.currentPage = window.location.pathname;
   }
 
   initializeGoogleSignIn() {
