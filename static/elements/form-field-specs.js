@@ -171,12 +171,14 @@ export const ALL_FIELDS = {
   },
 
   'initial_public_proposal_url': {
+    label: 'Initial public proposal URL',
     help_text: html`
         Link to the first public proposal to create this feature, e.g.,
         a WICG discourse post.`,
   },
 
   'explainer_links': {
+    label: 'Explainer link(s)',
     help_text: html`
         Link to explainer(s) (one URL per line). You should have
         at least an explainer in hand and have shared it on a
@@ -186,6 +188,7 @@ export const ALL_FIELDS = {
   },
 
   'spec_link': {
+    label: 'Spec link',
     help_text: html`
         Link to the spec, if and when available. When implementing
         a spec update, please link to a heading in a published spec
@@ -193,22 +196,26 @@ export const ALL_FIELDS = {
   },
 
   'comments': {
+    label: 'Comments',
     help_text: html`
         Additional comments, caveats, info...`,
   },
 
   'standard_maturity': {
+    label: 'Standard maturity',
     help_text: html`
         How far along is the standard that this feature implements?`,
   },
 
   'api_spec': {
+    label: 'API spec',
     help_text: html`
         The spec document has details in a specification language
         such as Web IDL, or there is an existing MDN page.`,
   },
 
   'spec_mentors': {
+    label: 'Spec mentor',
     help_text: html`
         Experienced
         <a target="_blank"
@@ -218,12 +225,14 @@ export const ALL_FIELDS = {
   },
 
   'intent_to_implement_url': {
+    label: 'Intent to Prototype link',
     help_text: html`
         After you have started the "Intent to Prototype"
         discussion thread, link to it here.`,
   },
 
   'doc_links': {
+    label: 'Doc link(s)',
     help_text: html`
         Links to design doc(s) (one URL per line), if and when
         available. [This is not required to send out an Intent
@@ -235,6 +244,7 @@ export const ALL_FIELDS = {
   },
 
   'measurement': {
+    label: 'Measurement',
     help_text: html`
         It's important to measure the adoption and success of web-exposed
         features.  Note here what measurements you have added to track the
@@ -243,49 +253,60 @@ export const ALL_FIELDS = {
   },
 
   'security_review_status': {
+    label: 'Security review status',
     help_text: html`
         Status of the security review.`,
   },
 
   'privacy_review_status': {
+    label: 'Privacy review status',
     help_text: html`Status of the privacy review.`,
   },
 
   'tag_review': {
+    label: 'TAG Review',
     help_text: html`Link(s) to TAG review(s), or explanation why this is
                 not needed.`,
   },
 
   'tag_review_status': {
+    label: 'TAG review status',
     help_text: html`Status of the tag review.`,
   },
 
   'intent_to_ship_url': {
+    label: 'Intent to Ship link',
     help_text: html`After you have started the "Intent to Ship" discussion
                 thread, link to it here.`,
   },
 
   'ready_for_trial_url': {
+    label: 'Ready for Trial link',
     help_text: html`After you have started the "Ready for Trial" discussion
                 thread, link to it here.`,
   },
 
   'intent_to_experiment_url': {
+    label: 'Intent to Experiment link',
     help_text: html`After you have started the "Intent to Experiment"
                  discussion thread, link to it here.`,
   },
 
   'intent_to_extend_experiment_url': {
+    label: 'Intent to Extend Experiment link',
     help_text: html`If this feature has an "Intent to Extend Experiment"
                  discussion thread, link to it here.`,
   },
 
   'r4dt_url': {
+    // Sets intent_to_experiment_url in DB
+    label: 'Request for Deprecation Trial link',
     help_text: html`After you have started the "Request for Deprecation Trial"
                 discussion thread, link to it here.`,
   },
 
   'interop_compat_risks': {
+    label: 'Interoperability and Compatibility Risks',
     help_text: html`
       Describe the degree of
       <a target="_blank"
@@ -307,31 +328,42 @@ export const ALL_FIELDS = {
   },
 
   'safari_views': {
+    label: 'Safari views',
     help_text: html`
       See <a target="_blank" href="https://bit.ly/blink-signals">
       https://bit.ly/blink-signals</a>`,
   },
 
   'safari_views_link': {
+    label: '',
     help_text: html`Citation link.`,
   },
 
-  'safari_views_notes': {},
+  'safari_views_notes': {
+    label: '',
+    help_text: '',
+  },
 
   'ff_views': {
+    label: 'Firefox views',
     help_text: html`
       See <a target="_blank" href="https://bit.ly/blink-signals">
       https://bit.ly/blink-signals</a>`,
   },
 
   'ff_views_link': {
+    label: '',
     help_text: html`
     Citation link.`,
   },
 
-  'ff_views_notes': {},
+  'ff_views_notes': {
+    label: '',
+    help_text: '',
+  },
 
   'web_dev_views': {
+    label: 'Web / Framework developer views',
     help_text: html`
       If unsure, default to "No signals".
       See <a target="_blank" href="https://goo.gle/developer-signals">
@@ -339,22 +371,26 @@ export const ALL_FIELDS = {
   },
 
   'web_dev_views_link': {
+    label: '',
     help_text: html`
       Citation link.`,
   },
 
   'web_dev_views_notes': {
+    label: '',
     help_text: html`
       Reference known representative examples of opinions,
       both positive and negative.`,
   },
 
   'other_views_notes': {
+    label: 'Other views',
     help_text: html`
       For example, other browsers.`,
   },
 
   'ergonomics_risks': {
+    label: 'Ergonomics Risks', 
     help_text: html`
       Are there any other platform APIs this feature will frequently be
       used in tandem with? Could the default usage of this API make it
@@ -363,6 +399,7 @@ export const ALL_FIELDS = {
   },
 
   'activation_risks': {
+    label: 'Activation Risks',
     help_text: html`
       Will it be challenging for developers to take advantage of this
       feature immediately, as-is? Would this feature benefit from
@@ -371,12 +408,14 @@ export const ALL_FIELDS = {
   },
 
   'security_risks': {
+    label: 'Security Risks', 
     help_text: html`
       List any security considerations that were taken into account
       when designing this feature.`,
   },
 
   'webview_risks': {
+    label: 'WebView application risks', 
     help_text: html`
       Does this feature deprecate or change behavior of existing APIs,
       such that it has potentially high risk for Android WebView-based
@@ -401,6 +440,7 @@ export const ALL_FIELDS = {
   },
 
   'experiment_goals': {
+    label: 'Experiment Goals', 
     help_text: html`
       Which pieces of the API surface are you looking to gain insight on?
       What metrics/measurement/feedback will you be using to validate
@@ -415,6 +455,7 @@ export const ALL_FIELDS = {
   },
 
   'experiment_timeline': {
+    label: 'Experiment Timeline', 
     help_text: html`
       When does the experiment start and expire?
       Deprecated:
@@ -422,42 +463,49 @@ export const ALL_FIELDS = {
   },
 
   'ot_milestone_desktop_start': {
+    label: 'OT desktop start',
     help_text: html`
       First desktop milestone that will support an origin
       trial of this feature.`,
   },
 
   'ot_milestone_desktop_end': {
+    label: 'OT desktop end',
     help_text: html`
       Last desktop milestone that will support an origin
       trial of this feature.`,
   },
 
   'ot_milestone_android_start': {
+    label: 'OT Android start',
     help_text: html`
       First android milestone that will support an origin
       trial of this feature.`,
   },
 
   'ot_milestone_android_end': {
+    label: 'OT Android end',
     help_text: html`
       Last android milestone that will support an origin
       trial of this feature.`,
   },
 
   'ot_milestone_webview_start': {
+    label: 'OT WebView start',
     help_text: html`
       First WebView milestone that will support an origin
       trial of this feature.`,
   },
 
   'ot_milestone_webview_end': {
+    label: 'OT WebView end',
     help_text: html`
       Last WebView milestone that will support an origin
       trial of this feature.`,
   },
 
   'experiment_risks': {
+    label: 'Experiment Risks', 
     help_text: html`
       When this experiment comes to an end are there any risks to the
       sites that were using it, for example losing access to important
@@ -465,12 +513,14 @@ export const ALL_FIELDS = {
   },
 
   'experiment_extension_reason': {
+    label: 'Experiment Extension Reason',
     help_text: html`
       If this is a repeated or extended experiment, explain why it's
       being repeated or extended.  Also, fill in discussion link fields below.`,
   },
 
   'ongoing_constraints': {
+    label: 'Ongoing Constraints', 
     help_text: html`
       Do you anticipate adding any ongoing technical constraints to
       the codebase while implementing this feature? We prefer to avoid
@@ -479,12 +529,14 @@ export const ALL_FIELDS = {
   },
 
   'origin_trial_feedback_url': {
+    label: 'Origin trial feedback summary',
     help_text: html`
       If your feature was available as an origin trial, link to a summary
       of usage and developer feedback. If not, leave this empty.`,
   },
 
   'anticipated_spec_changes': {
+    label: 'Anticipated spec changes',
     help_text: html`
       Open questions about a feature may be a source of future web compat
       or interop issues. Please list open issues (e.g. links to known
@@ -495,6 +547,7 @@ export const ALL_FIELDS = {
   },
 
   'finch_url': {
+    label: 'Finch experiment',
     help_text: html`
       If your feature will roll out gradually via a
       <a href="go/finch" targe="_blank">Finch experiment</a>,
@@ -502,12 +555,14 @@ export const ALL_FIELDS = {
   },
 
   'i2e_lgtms': {
+    label: 'Intent to Experiment LGTM by',
     help_text: html`
       Full email address of API owner who LGTM\'d the
       Intent to Experiment email thread.`,
   },
 
   'i2s_lgtms': {
+    label: 'Intent to Ship LGTMs by',
     help_text: html`
       Comma separated list of
       email addresses of API owners who LGTM'd
@@ -515,12 +570,15 @@ export const ALL_FIELDS = {
   },
 
   'r4dt_lgtms': {
+    // Sets i2e_lgtms field.
+    label: 'Request for Deprecation Trial LGTM by',
     help_text: html`
       Full email addresses of API owners who LGTM\'d
       the Request for Deprecation Trial email thread.`,
   },
 
   'debuggability': {
+    label: 'Debuggability', 
     help_text: html`
       Description of the DevTools debugging support for your feature.
       Please follow
@@ -530,23 +588,27 @@ export const ALL_FIELDS = {
   },
 
   'all_platforms': {
+    label: 'Supported on all platforms?',
     help_text: html`
       Will this feature be supported on all six Blink platforms
       (Windows, Mac, Linux, Chrome OS, Android, and Android WebView)?`,
   },
 
   'all_platforms_descr': {
+    label: 'Platform Support Explanation', 
     help_text: html`
       Explain why this feature is, or is not,
       supported on all platforms.`,
   },
 
   'wpt': {
+    label: 'Web Platform Tests',
     help_text: html`
       Is this feature fully tested in Web Platform Tests?`,
   },
 
   'wpt_descr': {
+    label: 'Web Platform Tests Description',
     help_text: html`
       Please link to the <a href="https://wpt.fyi/results">results on
       wpt.fyi</a>. If any part of the feature is not tested by
@@ -561,11 +623,13 @@ export const ALL_FIELDS = {
   },
 
   'sample_links': {
+    label: 'Demo and sample links', 
     help_text: html`
       Links to demos and samples (one URL per line).`,
   },
 
   'non_oss_deps': {
+    label: 'Non-OSS dependencies', 
     help_text: html`
       Does the feature depend on any code or APIs outside the Chromium
       open source repository and its open-source dependencies to
@@ -575,27 +639,33 @@ export const ALL_FIELDS = {
   },
 
   'devrel': {
+    label: 'Developer relations emails',
     help_text: html`
       Comma separated list of full email addresses.`,
   },
 
   'shipped_milestone': {
+    label: 'Chrome for desktop',
     help_text: SHIPPED_HELP_TXT,
   },
 
   'shipped_android_milestone': {
+    label: 'Chrome for Android',
     help_text: SHIPPED_HELP_TXT,
   },
 
   'shipped_ios_milestone': {
+    label: 'Chrome for iOS (RARE)',
     help_text: SHIPPED_HELP_TXT,
   },
 
   'shipped_webview_milestone': {
+    label: 'Android Webview',
     help_text: SHIPPED_WEBVIEW_HELP_TXT,
   },
 
   'requires_embedder_support': {
+    label: 'Requires Embedder Support',
     help_text: html`
        Will this feature require support in //chrome?
        That includes any code in //chrome, even if that is for
@@ -608,6 +678,7 @@ export const ALL_FIELDS = {
   },
 
   'devtrial_instructions': {
+    label: 'DevTrial instructions',
     help_text: html`
         Link to a HOWTO or FAQ describing how developers can get started
         using this feature in a DevTrial.
@@ -621,6 +692,7 @@ export const ALL_FIELDS = {
   },
 
   'dt_milestone_desktop_start': {
+    label: 'DevTrial on desktop',
     help_text: html`
       First milestone that allows web developers to try
       this feature on desktop platforms by setting a flag.
@@ -629,6 +701,7 @@ export const ALL_FIELDS = {
   },
 
   'dt_milestone_android_start': {
+    label: 'DevTrial on Android',
     help_text: html`
       First milestone that allows web developers to try
       this feature on desktop platforms by setting a flag.
@@ -637,6 +710,7 @@ export const ALL_FIELDS = {
   },
 
   'dt_milestone_ios_start': {
+    label: 'DevTrial on iOS (RARE)',
     help_text: html`
       First milestone that allows web developers to try
       this feature on desktop platforms by setting a flag.
@@ -645,8 +719,14 @@ export const ALL_FIELDS = {
   },
 
   'flag_name': {
+    label: 'Flag name', 
     help_text: html`
       Name of the flag on chrome://flags that enables this feature.`,
+  },
+
+  'prefixed': {
+    label: 'Prefixed?',
+    help_text: '',
   },
 
 };

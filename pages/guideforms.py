@@ -172,91 +172,94 @@ ALL_FIELDS = {
         widget=ChromedashTextarea()),
 
     'doc_links': MultiUrlField(
-        label='Doc link(s)', required=False,
+        label='', required=False,
         widget=ChromedashTextarea(attrs=MULTI_URL_FIELD_ATTRS)),
 
     'measurement': forms.CharField(
-        label='Measurement', required=False,
+        label='', required=False,
         widget=ChromedashTextarea(attrs={'rows': 4})),
 
     # 'standardization' is deprecated
 
     'standard_maturity': forms.ChoiceField(
-        required=False, label='Standard maturity',
+        required=False, label='',
         choices=list(models.STANDARD_MATURITY_CHOICES.items()),
         initial=models.PROPOSAL_STD),
 
     'unlisted': forms.BooleanField(
-        label="",
+        label='',
         widget=forms.CheckboxInput(attrs={'label': "Unlisted"}),
         required=False, initial=False),
 
     'spec_link': forms.URLField(
-        required=False, label='Spec link',
+        required=False, label='',
         widget=forms.URLInput(attrs=URL_FIELD_ATTRS)),
 
     'api_spec': forms.BooleanField(
-        label='API spec',
+        label='',
         widget=forms.CheckboxInput(attrs={'label': "API spec"}),
         required=False, initial=False),
 
     'spec_mentors': MultiEmailField(
-        required=False, label='Spec mentor',
+        required=False, label='',
         widget=forms.EmailInput(attrs=MULTI_EMAIL_FIELD_ATTRS)),
 
     'explainer_links': MultiUrlField(
-        label='Explainer link(s)', required=False,
+        label='', required=False,
         widget=ChromedashTextarea(attrs=MULTI_URL_FIELD_ATTRS)),
 
     'security_review_status': forms.ChoiceField(
+        label='',
         required=False,
         choices=list(models.REVIEW_STATUS_CHOICES.items()),
         initial=models.REVIEW_PENDING),
 
     'privacy_review_status': forms.ChoiceField(
+        label='',
         required=False,
         choices=list(models.REVIEW_STATUS_CHOICES.items()),
         initial=models.REVIEW_PENDING),
 
     'tag_review': forms.CharField(
-        label='TAG Review', required=False,
+        label='', required=False,
         widget=ChromedashTextarea(attrs={'rows': 2})),
 
     'tag_review_status': forms.ChoiceField(
+        label='',
         required=False,
         choices=list(models.REVIEW_STATUS_CHOICES.items()),
         initial=models.REVIEW_PENDING),
 
     'intent_to_implement_url': forms.URLField(
-        required=False, label='Intent to Prototype link',
+        required=False, label='',
         widget=forms.URLInput(attrs=URL_FIELD_ATTRS)),
 
     'intent_to_ship_url': forms.URLField(
-        required=False, label='Intent to Ship link',
+        required=False, label='',
         widget=forms.URLInput(attrs=URL_FIELD_ATTRS)),
 
     'ready_for_trial_url': forms.URLField(
-        required=False, label='Ready for Trial link',
+        required=False, label='',
         widget=forms.URLInput(attrs=URL_FIELD_ATTRS)),
 
     'intent_to_experiment_url': forms.URLField(
-        required=False, label='Intent to Experiment link',
+        required=False, label='',
         widget=forms.URLInput(attrs=URL_FIELD_ATTRS)),
 
     'intent_to_extend_experiment_url': forms.URLField(
-        required=False, label='Intent to Extend Experiment link',
+        required=False, label='',
         widget=forms.URLInput(attrs=URL_FIELD_ATTRS)),
 
     'r4dt_url': forms.URLField(  # Sets intent_to_experiment_url in DB
-        required=False, label='Request for Deprecation Trial link',
+        required=False, label='',
         widget=forms.URLInput(attrs=URL_FIELD_ATTRS)),
 
     'interop_compat_risks': forms.CharField(
-        required=False, label='Interoperability and Compatibility Risks',
+        required=False, label='',
         widget=ChromedashTextarea()),
 
     'safari_views': forms.ChoiceField(
-        required=False, label='Safari views',
+        required=False, label='',
         choices=list(models.VENDOR_VIEWS_WEBKIT.items()),
         initial=models.NO_PUBLIC_SIGNALS),
 
@@ -270,7 +273,7 @@ ALL_FIELDS = {
             attrs={'rows': 2, 'placeholder': 'Notes'})),
 
     'ff_views': forms.ChoiceField(
-        required=False, label='Firefox views',
+        required=False, label='',
         choices=list(models.VENDOR_VIEWS_GECKO.items()),
         initial=models.NO_PUBLIC_SIGNALS),
 
@@ -284,7 +287,7 @@ ALL_FIELDS = {
             attrs={'rows': 2, 'placeholder': 'Notes'})),
 
     'web_dev_views': forms.ChoiceField(
-        required=False, label='Web / Framework developer views',
+        required=False, label='',
         choices=list(models.WEB_DEV_VIEWS.items()),
         initial=models.DEV_NO_SIGNALS),
 
@@ -298,33 +301,33 @@ ALL_FIELDS = {
             attrs={'rows': 2, 'placeholder': 'Notes'})),
 
     'other_views_notes': forms.CharField(
-        required=False, label='Other views',
+        required=False, label='',
         widget=ChromedashTextarea(
             attrs={'rows': 4, 'placeholder': 'Notes'})),
 
     'ergonomics_risks': forms.CharField(
-        label='Ergonomics Risks', required=False,
+        label='', required=False,
         widget=ChromedashTextarea()),
 
     'activation_risks': forms.CharField(
-        label='Activation Risks', required=False,
+        label='', required=False,
         widget=ChromedashTextarea()),
 
     'security_risks': forms.CharField(
-        label='Security Risks', required=False,
+        label='', required=False,
         widget=ChromedashTextarea()),
 
     'webview_risks': forms.CharField(
-        label='WebView application risks', required=False,
+        label='', required=False,
         widget=ChromedashTextarea()),
 
     'experiment_goals': forms.CharField(
-        label='Experiment Goals', required=False,
+        label='', required=False,
         widget=ChromedashTextarea()),
 
     # TODO(jrobbins): consider splitting this into start and end fields.
     'experiment_timeline': forms.CharField(
-        label='Experiment Timeline', required=False,
+        label='', required=False,
         widget=ChromedashTextarea(attrs={
             'rows': 2,
             'placeholder': 'This field is deprecated',
@@ -332,98 +335,99 @@ ALL_FIELDS = {
 
     # TODO(jrobbins and jmedley): Refine help text.
     'ot_milestone_desktop_start': forms.IntegerField(
-        required=False, label='OT desktop start',
+        required=False, label='',
         widget=forms.NumberInput(attrs={'placeholder': 'Milestone number'})),
 
     'ot_milestone_desktop_end': forms.IntegerField(
-        required=False, label='OT desktop end',
+        required=False, label='',
         widget=forms.NumberInput(attrs={'placeholder': 'Milestone number'})),
 
     'ot_milestone_android_start': forms.IntegerField(
-        required=False, label='OT Android start',
+        required=False, label='',
         widget=forms.NumberInput(attrs={'placeholder': 'Milestone number'})),
 
     'ot_milestone_android_end': forms.IntegerField(
-        required=False, label='OT Android end',
+        required=False, label='',
         widget=forms.NumberInput(attrs={'placeholder': 'Milestone number'})),
 
     'ot_milestone_webview_start': forms.IntegerField(
-        required=False, label='OT WebView start',
+        required=False, label='',
         widget=forms.NumberInput(attrs={'placeholder': 'Milestone number'})),
 
     'ot_milestone_webview_end': forms.IntegerField(
-        required=False, label='OT WebView end',
+        required=False, label='',
         widget=forms.NumberInput(attrs={'placeholder': 'Milestone number'})),
 
     'experiment_risks': forms.CharField(
-        label='Experiment Risks', required=False,
+        label='', required=False,
         widget=ChromedashTextarea()),
 
     'experiment_extension_reason': forms.CharField(
-        label='Experiment Extension Reason', required=False,
+        label='', required=False,
         widget=ChromedashTextarea()),
 
     'ongoing_constraints': forms.CharField(
-        label='Ongoing Constraints', required=False,
+        label='', required=False,
         widget=ChromedashTextarea()),
 
     'origin_trial_feedback_url': forms.URLField(
-        required=False, label='Origin trial feedback summary',
+        required=False, label='',
         widget=forms.URLInput(attrs=URL_FIELD_ATTRS)),
 
     'anticipated_spec_changes': MultiUrlField(
-        required=False, label='Anticipated spec changes',
+        required=False, label='',
         widget=ChromedashTextarea(attrs=MULTI_URL_FIELD_ATTRS)),
 
     'finch_url': forms.URLField(
-        required=False, label='Finch experiment',
+        required=False, label='',
         widget=forms.URLInput(attrs=URL_FIELD_ATTRS)),
 
     'i2e_lgtms': MultiEmailField(
-        required=False, label='Intent to Experiment LGTM by',
+        required=False, label='',
         widget=forms.EmailInput(attrs=MULTI_EMAIL_FIELD_ATTRS)),
 
     'i2s_lgtms': MultiEmailField(
-        required=False, label='Intent to Ship LGTMs by',
+        required=False, label='',
         widget=forms.EmailInput(attrs=MULTI_EMAIL_FIELD_ATTRS)),
 
     'r4dt_lgtms': MultiEmailField(  # Sets i2e_lgtms field.
-        required=False, label='Request for Deprecation Trial LGTM by',
+        required=False, label='',
         widget=forms.EmailInput(attrs=MULTI_EMAIL_FIELD_ATTRS)),
 
     'debuggability': forms.CharField(
-        label='Debuggability', required=True,
+        label='', required=True,
         widget=ChromedashTextarea()),
 
     'all_platforms': forms.BooleanField(
-        label='Supported on all platforms?',
+        label='',
         widget=forms.CheckboxInput(attrs={'label': "Supported on all platforms"}),
         required=False, initial=False),
 
     'all_platforms_descr': forms.CharField(
-        label='Platform Support Explanation', required=False,
+        label='', required=False,
         widget=ChromedashTextarea(
             attrs={'rows': 2})),
 
     'wpt': forms.BooleanField(
-        label='Web Platform Tests',
+        label='',
         widget=forms.CheckboxInput(attrs={'label': "Web Platform Tests"}),
         required=False, initial=False),
 
     'wpt_descr': forms.CharField(
-        label='Web Platform Tests Description', required=False,
+        label='', required=False,
         widget=ChromedashTextarea()),
 
     'sample_links': MultiUrlField(
-        label='Demo and sample links', required=False,
+        label='', required=False,
         widget=ChromedashTextarea(attrs=MULTI_URL_FIELD_ATTRS)),
 
     'non_oss_deps': forms.CharField(
-        label='Non-OSS dependencies', required=False,
+        label='', required=False,
         widget=ChromedashTextarea()),
 
     'bug_url': forms.URLField(
-        required=False, label='',
+        label='',
+        required=False,
         widget=forms.URLInput(attrs=URL_FIELD_ATTRS)),
 
     # TODO(jrobbins): Consider a button to file the launch bug automatically,
@@ -433,7 +437,7 @@ ALL_FIELDS = {
         widget=forms.URLInput(attrs=URL_FIELD_ATTRS)),
 
     'initial_public_proposal_url': forms.URLField(
-        required=False, label='Initial public proposal URL',
+        required=False, label='',
         widget=forms.URLInput(attrs=URL_FIELD_ATTRS)),
 
     'blink_components': forms.ChoiceField(
@@ -442,7 +446,7 @@ ALL_FIELDS = {
       initial=[models.BlinkComponent.DEFAULT_COMPONENT]),
 
     'devrel': MultiEmailField(
-        required=False, label='Developer relations emails',
+        required=False, label='',
         widget=forms.EmailInput(attrs=MULTI_EMAIL_FIELD_ATTRS)),
 
     'impl_status_chrome': forms.ChoiceField(
@@ -450,47 +454,47 @@ ALL_FIELDS = {
         choices=list(models.IMPLEMENTATION_STATUS.items())),
 
     'shipped_milestone': forms.IntegerField(
-        required=False, label='Chrome for desktop',
+        required=False, label='',
         widget=forms.NumberInput(attrs={'placeholder': 'Milestone number'})),
 
     'shipped_android_milestone': forms.IntegerField(
-        required=False, label='Chrome for Android',
+        required=False, label='',
         widget=forms.NumberInput(attrs={'placeholder': 'Milestone number'})),
 
     'shipped_ios_milestone': forms.IntegerField(
-        required=False, label='Chrome for iOS (RARE)',
+        required=False, label='',
         widget=forms.NumberInput(attrs={'placeholder': 'Milestone number'})),
 
     'shipped_webview_milestone': forms.IntegerField(
-        required=False, label='Android Webview',
+        required=False, label='',
         widget=forms.NumberInput(attrs={'placeholder': 'Milestone number'})),
 
     'requires_embedder_support': forms.BooleanField(
-      label='Requires Embedder Support',
+      label='',
       widget=forms.CheckboxInput(attrs={'label': "Requires Embedder Support"}),
       required=False, initial=False),
 
     'devtrial_instructions': forms.URLField(
-        required=False, label='DevTrial instructions',
+        required=False, label='',
         widget=forms.URLInput(attrs=URL_FIELD_ATTRS)),
 
     'dt_milestone_desktop_start': forms.IntegerField(
-        required=False, label='DevTrial on desktop',
+        required=False, label='',
         widget=forms.NumberInput(attrs={'placeholder': 'Milestone number'})),
 
     'dt_milestone_android_start': forms.IntegerField(
-        required=False, label='DevTrial on Android',
+        required=False, label='',
         widget=forms.NumberInput(attrs={'placeholder': 'Milestone number'})),
 
     'dt_milestone_ios_start': forms.IntegerField(
-        required=False, label='DevTrial on iOS (RARE)',
+        required=False, label='',
         widget=forms.NumberInput(attrs={'placeholder': 'Milestone number'})),
 
     'flag_name': forms.CharField(
-        label='Flag name', required=False),
+        label='', required=False),
 
     'prefixed': forms.BooleanField(
-        label='Prefixed?',
+        label='',
         widget=forms.CheckboxInput(attrs={'label': "Prefixed"}),
         required=False, initial=False),
 
@@ -498,7 +502,7 @@ ALL_FIELDS = {
         label='', required=False),
 
     'comments': forms.CharField(
-        label='Comments', required=False,
+        label='', required=False,
         widget=ChromedashTextarea(attrs={'rows': 4})),
 
     }
