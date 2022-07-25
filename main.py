@@ -13,9 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from flask import Flask
-import logging
-
 from api import accounts_api
 from api import approvals_api
 from api import channels_api
@@ -183,6 +180,8 @@ page_routes = [
 
     ('/settings', users.SettingsHandler),
     ('/admin/users/new', users.UserListHandler),
+
+    ('/spa', basehandlers.ConstHandler, {'template_path': 'spa.html'}),
 ]
 
 

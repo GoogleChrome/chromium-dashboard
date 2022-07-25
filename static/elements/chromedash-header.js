@@ -169,7 +169,7 @@ export class ChromedashHeader extends LitElement {
   static get properties() {
     return {
       appTitle: {type: String},
-      google_sign_in_client_id: {type: String},
+      googleSignInClientId: {type: String},
       currentPage: {type: String},
       user: {type: Object},
       loading: {type: Boolean},
@@ -179,7 +179,7 @@ export class ChromedashHeader extends LitElement {
   constructor() {
     super();
     this.appTitle = '';
-    this.google_sign_in_client_id = '',
+    this.googleSignInClientId = '',
     this.user = {};
     this.loading = true;
   }
@@ -202,7 +202,7 @@ export class ChromedashHeader extends LitElement {
 
   initializeGoogleSignIn() {
     google.accounts.id.initialize({
-      client_id: this.google_sign_in_client_id,
+      client_id: this.googleSignInClientId,
       callback: this.handleCredentialResponse,
     });
     google.accounts.id.prompt();

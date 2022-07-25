@@ -1,0 +1,95 @@
+{% load inline_file %}
+
+<!DOCTYPE html>
+<!--
+Copyright 2022 Google Inc. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <title>{% block page_title %}{% endblock %}{{ APP_TITLE }}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+
+  <meta name="theme-color" content="#366597">
+
+  <link rel="stylesheet" href="/static/css/base.css?v={{app_version}}" />
+
+  <link rel="icon" sizes="192x192" href="/static/img/crstatus_192.png">
+
+  <!-- iOS: run in full-screen mode and display upper status bar as translucent -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+  <link rel="apple-touch-icon" href="/static/img/crstatus_128.png">
+  <link rel="apple-touch-icon-precomposed" href="/static/img/crstatus_128.png">
+  <link rel="shortcut icon" href="/static/img/crstatus_128.png">
+
+  <link rel="preconnect" href="https://www.google-analytics.com" crossorigin>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&amp;display=swap" rel="stylesheet">
+
+  <style>{% inline_file "/static/css/main.css" %}</style>
+
+  {# Google Identity Services library for OAuth #}
+  <script src="https://accounts.google.com/gsi/client" async defer nonce="{{nonce}}"></script>
+
+  {# Google Charts library for timeline pages #}
+  <script src="https://www.gstatic.com/charts/loader.js"></script>
+
+  <script nonce="{{nonce}}">
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get("loginStatus") == 'False') {
+      alert('Please log in.');
+    }
+  </script>
+  {# Loaded immediately because it is used by JS code on the page. #}
+  <script nonce="{{nonce}}">
+    {% inline_file "/static/js/metric.min.js" %}
+    {% inline_file "/static/js/cs-client.min.js" %}
+
+    window.csClient = new ChromeStatusClient(
+      '{{xsrf_token}}', {{ xsrf_token_expires }});
+  </script>
+
+  <script type="module" nonce="{{nonce}}" defer src="/static/dist/components.js?v={{app_version}}"></script>
+</head>
+
+<body class="loading">
+  <chromedash-app>
+    <chromedash-header slot="header" appTitle="{{APP_TITLE}}" googleSignInClientId="{{google_sign_in_client_id}}"></chromedash-header>
+    <chromedash-banner slot="banner" message="{{banner_message}}" timestamp="{{banner_time}}"></chromedash-banner>
+  </chromedash-app>
+
+  <script src="https://www.googletagmanager.com/gtag/js?id=UA-179341418-1" async nonce="{{nonce}}"></script>
+
+  {% comment %}
+  Note that the following script tag must include type="module" so that the form field event listeners
+  attached by shared.min.js will not be attached until after Shoelace event listeners are attached.
+  See https://github.com/GoogleChrome/chromium-dashboard/issues/2014
+  {% endcomment %}
+  <script type="module" nonce="{{nonce}}">
+    (function () {
+      'use strict';
+
+      {% inline_file "/static/js/shared.min.js" %}
+    })();
+  </script>
+</body>
+
+</html>
