@@ -207,6 +207,11 @@ indexes:
   - name: editors
   - name: updated
     direction: desc
+- kind: Feature
+  properties:
+  - name: creator
+  - name: updated
+    direction: desc
 - kind: "FeatureObserver"
   properties:
   - name: "bucket_id"
