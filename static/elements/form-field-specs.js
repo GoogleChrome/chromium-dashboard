@@ -390,7 +390,7 @@ export const ALL_FIELDS = {
   },
 
   'ergonomics_risks': {
-    label: 'Ergonomics Risks', 
+    label: 'Ergonomics Risks',
     help_text: html`
       Are there any other platform APIs this feature will frequently be
       used in tandem with? Could the default usage of this API make it
@@ -408,14 +408,14 @@ export const ALL_FIELDS = {
   },
 
   'security_risks': {
-    label: 'Security Risks', 
+    label: 'Security Risks',
     help_text: html`
       List any security considerations that were taken into account
       when designing this feature.`,
   },
 
   'webview_risks': {
-    label: 'WebView application risks', 
+    label: 'WebView application risks',
     help_text: html`
       Does this feature deprecate or change behavior of existing APIs,
       such that it has potentially high risk for Android WebView-based
@@ -440,7 +440,7 @@ export const ALL_FIELDS = {
   },
 
   'experiment_goals': {
-    label: 'Experiment Goals', 
+    label: 'Experiment Goals',
     help_text: html`
       Which pieces of the API surface are you looking to gain insight on?
       What metrics/measurement/feedback will you be using to validate
@@ -455,7 +455,7 @@ export const ALL_FIELDS = {
   },
 
   'experiment_timeline': {
-    label: 'Experiment Timeline', 
+    label: 'Experiment Timeline',
     help_text: html`
       When does the experiment start and expire?
       Deprecated:
@@ -505,7 +505,7 @@ export const ALL_FIELDS = {
   },
 
   'experiment_risks': {
-    label: 'Experiment Risks', 
+    label: 'Experiment Risks',
     help_text: html`
       When this experiment comes to an end are there any risks to the
       sites that were using it, for example losing access to important
@@ -520,7 +520,7 @@ export const ALL_FIELDS = {
   },
 
   'ongoing_constraints': {
-    label: 'Ongoing Constraints', 
+    label: 'Ongoing Constraints',
     help_text: html`
       Do you anticipate adding any ongoing technical constraints to
       the codebase while implementing this feature? We prefer to avoid
@@ -578,7 +578,7 @@ export const ALL_FIELDS = {
   },
 
   'debuggability': {
-    label: 'Debuggability', 
+    label: 'Debuggability',
     help_text: html`
       Description of the DevTools debugging support for your feature.
       Please follow
@@ -595,7 +595,7 @@ export const ALL_FIELDS = {
   },
 
   'all_platforms_descr': {
-    label: 'Platform Support Explanation', 
+    label: 'Platform Support Explanation',
     help_text: html`
       Explain why this feature is, or is not,
       supported on all platforms.`,
@@ -623,13 +623,13 @@ export const ALL_FIELDS = {
   },
 
   'sample_links': {
-    label: 'Demo and sample links', 
+    label: 'Demo and sample links',
     help_text: html`
       Links to demos and samples (one URL per line).`,
   },
 
   'non_oss_deps': {
-    label: 'Non-OSS dependencies', 
+    label: 'Non-OSS dependencies',
     help_text: html`
       Does the feature depend on any code or APIs outside the Chromium
       open source repository and its open-source dependencies to
@@ -719,7 +719,7 @@ export const ALL_FIELDS = {
   },
 
   'flag_name': {
-    label: 'Flag name', 
+    label: 'Flag name',
     help_text: html`
       Name of the flag on chrome://flags that enables this feature.`,
   },
