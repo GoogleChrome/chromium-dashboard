@@ -40,7 +40,6 @@ class ChromedashApp extends LitElement {
     page('/spa', () => page.redirect('/roadmap'));
     page('/roadmap', () => {
       this.pageComponent = document.createElement('chromedash-roadmap-page');
-      console.log(this.pageComponent);
     });
     page('/myfeatures', () => {
       this.pageComponent = document.createElement('chromedash-myfeatures-page');
