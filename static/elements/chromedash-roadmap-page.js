@@ -105,7 +105,7 @@ export class ChromedashRoadmapPage extends LitElement {
     // Fetch when second last card is displayed
     if (roadmap.lastMilestoneVisible - roadmap.lastFutureFetchedOn > 1) {
       roadmap.fetchNextBatch(roadmap.lastFutureFetchedOn + 1);
-    } else if (roadmap.lastPastFetchedOn - roadmap.lastMilestoneVisible == 0) {
+    } else if (roadmap.lastMilestoneVisible - roadmap.lastPastFetchedOn <= 0) {
       roadmap.fetchPreviousBatch(roadmap.lastPastFetchedOn - 1);
     }
   }
