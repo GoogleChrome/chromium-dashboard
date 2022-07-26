@@ -16,6 +16,11 @@ class ChromedashApp extends LitElement {
 
   static get properties() {
     return {
+      appTitle: {type: String},
+      googleSignInClientId: {type: String},
+      currentPage: {type: String},
+      bannerMessage: {type: String},
+      bannerTime: {type: Number},
       pageComponent: {type: Element},
       contextLink: {type: String}, // used for the back button in the feature page
     };
@@ -23,6 +28,11 @@ class ChromedashApp extends LitElement {
 
   constructor() {
     super();
+    this.appTitle = '';
+    this.googleSignInClientId = '',
+    this.currentPage = '';
+    this.message = '';
+    this.timestamp = null;
     this.pageComponent = null;
     this.contextLink = '/features';
   }
@@ -34,24 +44,23 @@ class ChromedashApp extends LitElement {
 
   setUpRoutes() {
     page.strict(true); // Be precise about trailing slashes in routes.
-    const header = document.querySelector('chromedash-header');
 
     // SPA routing rules.  Note that rules are considered in order.
     // And :var can match any string (including a slash) if there is no slash after it.
     page('/spa', () => page.redirect('/roadmap'));
     page('/roadmap', (ctx) => {
       this.pageComponent = document.createElement('chromedash-roadmap-page');
-      header.currentPage = ctx.path;
+      this.currentPage = ctx.path;
     });
     page('/myfeatures', (ctx) => {
       this.pageComponent = document.createElement('chromedash-myfeatures-page');
       this.contextLink = '/myfeatures';
-      header.currentPage = ctx.path;
+      this.currentPage = ctx.path;
     });
     page('/features', (ctx) => {
       this.pageComponent = document.createElement('chromedash-all-features-page');
       this.contextLink = '/features';
-      header.currentPage = ctx.path;
+      this.currentPage = ctx.path;
     });
     page('/feature/:featureId', (ctx) => {
       this.pageComponent = document.createElement('chromedash-feature-page');
@@ -60,20 +69,20 @@ class ChromedashApp extends LitElement {
     });
     page('/settings', (ctx) => {
       this.pageComponent = document.createElement('chromedash-settings-page');
-      header.currentPage = ctx.path;
+      this.currentPage = ctx.path;
     });
     page('/metrics/:type/:view', (ctx) => {
       this.pageComponent = document.createElement('chromedash-stack-rank-page');
       this.pageComponent.type = ctx.params.type;
       this.pageComponent.view = ctx.params.view;
-      header.currentPage = ctx.path;
+      this.currentPage = ctx.path;
     });
     page('/metrics/:type/timeline/:view/:bucketId', (ctx) => {
       this.pageComponent = document.createElement('chromedash-timeline-page');
       this.pageComponent.type = ctx.params.type;
       this.pageComponent.view = ctx.params.view;
       this.pageComponent.selectedBucketId = ctx.params.bucketId;
-      header.currentPage = ctx.path;
+      this.currentPage = ctx.path;
     });
 
     page.start();
@@ -81,13 +90,21 @@ class ChromedashApp extends LitElement {
 
   render() {
     // TODO: Create precomiled main css file and import it instead of inlining it here
+    // The <slot> below is for the Google sign-in button, this is because
+    // Google Identity Services Library cannot find elements in a shadow DOM,
+    // so we create signInButton element at the document level and insert it
     return html`
       <link rel="stylesheet" href="/static/css/main.css">
       <div id="app-content-container">
         <div>
           <div class="main-toolbar">
             <div class="toolbar-content">
-              <slot name="header"></slot>
+              <chromedash-header 
+                .appTitle=${this.appTitle}
+                .googleSignInClientId=${this.googleSignInClientId}
+                .currentPage=${this.currentPage}>
+                <slot></slot>
+              </chromedash-header>
             </div>
           </div>
 
@@ -95,10 +112,13 @@ class ChromedashApp extends LitElement {
             <div id="spinner">
               <img src="/static/img/ring.svg">
             </div>
-            <slot name="banner"></slot>
+            <chromedash-banner
+              .message=${this.bannerMessage}
+              .timestamp=${this.bannerTime}>
+            </chromedash-banner>
             <div id="content-flex-wrapper">
               <div id="content-component-wrapper" 
-                ?wide=${this.pageComponent && this.pageComponent.tagName == 'CHROMEDASH-ROADMAP-PAGE'}>
+                ?wide=${this.currentPage=='/roadmap'}>
                 ${this.pageComponent}
               </div>
             </div>

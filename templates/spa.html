@@ -71,9 +71,11 @@ limitations under the License.
 </head>
 
 <body class="loading">
-  <chromedash-app>
-    <chromedash-header slot="header" appTitle="{{APP_TITLE}}" googleSignInClientId="{{google_sign_in_client_id}}"></chromedash-header>
-    <chromedash-banner slot="banner" message="{{banner_message}}" timestamp="{{banner_time}}"></chromedash-banner>
+  <chromedash-app
+    appTitle="{{APP_TITLE}}"
+    googleSignInClientId="{{google_sign_in_client_id}}"
+    bannerMessage="{{banner_message}}"
+    bannerTime="{{banner_time}}">
   </chromedash-app>
 
   <script src="https://www.googletagmanager.com/gtag/js?id=UA-179341418-1" async nonce="{{nonce}}"></script>

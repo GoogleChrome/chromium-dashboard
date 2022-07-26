@@ -210,7 +210,13 @@ export class ChromedashHeader extends LitElement {
     // in the light DOM of the header, which will be rendered in the <slot> below
     const signInButton = document.createElement('div');
     google.accounts.id.renderButton(signInButton, {type: 'standard'});
-    this.insertAdjacentElement('afterbegin', signInButton);
+    const appComponent = document.querySelector('chromedash-app');
+    if (appComponent) {
+      appComponent.insertAdjacentElement('afterbegin', signInButton); // for SPA
+    } else {
+      // TODO (kevinshen56714): remove this once SPA is set up
+      this.insertAdjacentElement('afterbegin', signInButton); // for MPA
+    }
   }
 
   handleCredentialResponse(credentialResponse) {
