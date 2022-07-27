@@ -65,6 +65,7 @@ export const ALL_FIELDS = {
   },
 
   'unlisted': {
+    type: 'checkbox',
     label: 'Unlisted',
     help_text: html`
         Check this box to hide draft emails in list views. Anyone with
@@ -208,6 +209,7 @@ export const ALL_FIELDS = {
   },
 
   'api_spec': {
+    type: 'checkbox',
     label: 'API spec',
     help_text: html`
         The spec document has details in a specification language
@@ -588,6 +590,7 @@ export const ALL_FIELDS = {
   },
 
   'all_platforms': {
+    type: 'checkbox',
     label: 'Supported on all platforms?',
     help_text: html`
       Will this feature be supported on all six Blink platforms
@@ -665,6 +668,7 @@ export const ALL_FIELDS = {
   },
 
   'requires_embedder_support': {
+    type: 'checkbox',
     label: 'Requires Embedder Support',
     help_text: html`
        Will this feature require support in //chrome?
@@ -725,6 +729,7 @@ export const ALL_FIELDS = {
   },
 
   'prefixed': {
+    type: 'checkbox',
     label: 'Prefixed?',
     help_text: '',
   },

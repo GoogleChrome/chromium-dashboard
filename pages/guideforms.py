@@ -533,6 +533,7 @@ class ChromedashForm(forms.Form):
             html_class_attr = ''
             bf = self[name]
             bf_errors = self.error_class(bf.errors)
+            value = '' # field.prepare_value
 
             # Create a 'class="..."' attribute if the row should have any
             # CSS classes applied.
@@ -551,6 +552,7 @@ class ChromedashForm(forms.Form):
                 'errors': bf_errors,
                 'label': label,
                 'field': bf,
+                'value': value,
                 'html_class_attr': html_class_attr,
                 'css_classes': css_classes,
                 'field_name': bf.html_name,
@@ -563,7 +565,9 @@ class ChromedashForm(forms.Form):
         label = '<span slot="label">%(label)s</span>'
         field = '<span slot="field">%(field)s</span>'
         error = '<span slot="error">%(errors)s</span>'
-        html = '<chromedash-form-field name="%(name)s" %(html_class_attr)s>' + label + field + error + '%(label)s' + '</chromedash-form-field>'
+        attrs = 'name="%(name)s" value="%(value)s" %(html_class_attr)s'
+        content = label + field + error + '%(label)s'
+        html = '<chromedash-form-field ' + attrs + '>' + content + '</chromedash-form-field>'
         return self.simple_html_output(normal_row=html)
 
 def define_form_class_using_shared_fields(class_name, field_spec_list):

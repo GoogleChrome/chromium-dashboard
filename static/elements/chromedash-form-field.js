@@ -5,6 +5,7 @@ export class ChromedashFormField extends LitElement {
   static get properties() {
     return {
       name: {type: String},
+      value: {type: String},
     };
   }
 
@@ -106,21 +107,38 @@ export class ChromedashFormField extends LitElement {
 
   render() {
     const fieldProps = ALL_FIELDS[this.name] || {};
-    const label = fieldProps.label ? `${fieldProps.label}:` : '';
+    const label = fieldProps.label;
     const helpText = fieldProps.help_text || '';
     const extraHelpText = fieldProps.extra_help || '';
+    const type = fieldProps.type;
+
+    let field = '';
+    // If type is checkbox, then generate locally.
+    if (type === 'checkbox') {
+      field = html`
+        <sl-checkbox
+            name="${this.name}"
+            size="small"
+            value="${ this.value }"
+            >
+            ${label}
+        </sl-checkbox>
+        `;
+    } else {
+      field = html`<slot name="field"></slot>`;
+    }
+
     return html`
       <tr>
         <th colspan="2">
           <b>
-            ${label}
-            <slot name="label"></slot>
+            ${label ? label + ':' : ''}
           </b>
         </th>
       </tr>
       <tr>
         <td>
-          <slot name="field"></slot>
+          ${field}
           <slot name="error" class="errorlist"></slot>
         </td>
         <td>
