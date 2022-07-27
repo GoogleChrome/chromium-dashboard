@@ -152,6 +152,14 @@ def make_email_tasks(feature, is_update=False, changes=[]):
   addr_reasons = collections.defaultdict(list)  # [{email_addr: [reason,...]}]
 
   accumulate_reasons(
+    addr_reasons, feature.owner,
+    'You are listed as an owner of this feature'
+  )
+  accumulate_reasons(
+    addr_reasons, feature.editors,
+    'You are listed as an editor of this feature'
+  )
+  accumulate_reasons(
       addr_reasons, feature_watchers,
       'You are watching all feature changes')
 

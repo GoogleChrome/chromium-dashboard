@@ -33,9 +33,10 @@ class EmailFormattingTest(testing_config.CustomTestCase):
 
   def setUp(self):
     self.feature_1 = models.Feature(
-        name='feature one', summary='sum', category=1, visibility=1,
-        standardization=1, web_dev_views=1, impl_status_chrome=1,
-        created_by=ndb.User(
+        name='feature one', summary='sum', owner=['feature_owner@example.com'],
+        editors=['feature_editor@example.com', 'owner_1@example.com'],
+        category=1, visibility=1, standardization=1, web_dev_views=1,
+        impl_status_chrome=1, created_by=ndb.User(
             email='creator1@gmail.com', _auth_domain='gmail.com'),
         updated_by=ndb.User(
             email='editor1@gmail.com', _auth_domain='gmail.com'),
@@ -43,10 +44,10 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     self.feature_1.put()
     self.component_1 = models.BlinkComponent(name='Blink')
     self.component_1.put()
-    self.owner_1 = models.FeatureOwner(
+    self.component_owner_1 = models.FeatureOwner(
         name='owner_1', email='owner_1@example.com',
         primary_blink_components=[self.component_1.key])
-    self.owner_1.put()
+    self.component_owner_1.put()
     self.watcher_1 = models.FeatureOwner(
         name='watcher_1', email='watcher_1@example.com',
         watching_all_features=True)
@@ -54,9 +55,10 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     self.changes = [dict(prop_name='test_prop', new_val='test new value',
                     old_val='test old value')]
     self.feature_2 = models.Feature(
-        name='feature two', summary='sum', category=1, visibility=1,
-        standardization=1, web_dev_views=1, impl_status_chrome=1,
-        created_by=ndb.User(
+        name='feature two', summary='sum', owner=['feature_owner@example.com'],
+        editors=['feature_editor@example.com', 'owner_1@example.com'],
+        category=1, visibility=1, standardization=1, web_dev_views=1,
+        impl_status_chrome=1, created_by=ndb.User(
             email='creator2@example.com', _auth_domain='gmail.com'),
         updated_by=ndb.User(
             email='editor2@example.com', _auth_domain='gmail.com'),
@@ -119,13 +121,14 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     self.assertEqual({}, addr_reasons)
 
     # Adding some users builds up a bigger reason dictionary.
-    notifier.accumulate_reasons(addr_reasons, [self.owner_1], 'a reason')
+    notifier.accumulate_reasons(addr_reasons, [self.component_owner_1],
+                                'a reason')
     self.assertEqual(
         {'owner_1@example.com': ['a reason']},
         addr_reasons)
 
     notifier.accumulate_reasons(
-        addr_reasons, [self.owner_1, self.watcher_1], 'another reason')
+        addr_reasons, [self.component_owner_1, self.watcher_1], 'another reason')
     self.assertEqual(
         {'owner_1@example.com': ['a reason', 'another reason'],
          'watcher_1@example.com': ['another reason'],
@@ -213,14 +216,40 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     mock_f_e_b.return_value = 'mock body html'
     actual_tasks = notifier.make_email_tasks(
         self.feature_1, is_update=False, changes=[])
-    self.assertEqual(2, len(actual_tasks))
-    owner_task, watcher_task = actual_tasks
-    self.assertEqual('new feature: feature one', owner_task['subject'])
-    self.assertIn('mock body html', owner_task['html'])
-    self.assertEqual('owner_1@example.com', owner_task['to'])
+    self.assertEqual(4, len(actual_tasks))
+    (feature_editor_task, feature_owner_task, component_owner_task,
+     watcher_task) = actual_tasks
+
+    # Notification to feature editor.
+    self.assertEqual('feature_owner@example.com', feature_owner_task['to'])
+    self.assertEqual('new feature: feature one', feature_owner_task['subject'])
+    self.assertIn('mock body html', feature_owner_task['html'])
+    self.assertIn('<li>You are listed as an owner of this feature</li>',
+      feature_owner_task['html'])
+
+    # Notification to feature editor.
+    self.assertEqual('new feature: feature one', feature_editor_task['subject'])
+    self.assertIn('mock body html', feature_editor_task['html'])
+    self.assertIn('<li>You are listed as an editor of this feature</li>',
+      feature_editor_task['html'])
+    self.assertEqual('feature_editor@example.com', feature_editor_task['to'])
+
+    # Notification to component owner.
+    self.assertEqual('new feature: feature one', component_owner_task['subject'])
+    self.assertIn('mock body html', component_owner_task['html'])
+    # Component owner is also a feature editor and should have both reasons.
+    self.assertIn('<li>You are an owner of this feature\'s component</li>\n'
+                  '<li>You are listed as an editor of this feature</li>',
+      component_owner_task['html'])
+    self.assertEqual('owner_1@example.com', component_owner_task['to'])
+
+    # Notification to feature change watcher.
     self.assertEqual('new feature: feature one', watcher_task['subject'])
     self.assertIn('mock body html', watcher_task['html'])
+    self.assertIn('<li>You are watching all feature changes</li>',
+      watcher_task['html'])
     self.assertEqual('watcher_1@example.com', watcher_task['to'])
+
     mock_f_e_b.assert_called_once_with(
         False, self.feature_1, [])
 
@@ -230,14 +259,43 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     mock_f_e_b.return_value = 'mock body html'
     actual_tasks = notifier.make_email_tasks(
         self.feature_1, True, self.changes)
-    self.assertEqual(2, len(actual_tasks))
-    owner_task, watcher_task = actual_tasks
-    self.assertEqual('updated feature: feature one', owner_task['subject'])
-    self.assertIn('mock body html', owner_task['html'])
-    self.assertEqual('owner_1@example.com', owner_task['to'])
+    self.assertEqual(4, len(actual_tasks))
+    (feature_editor_task, feature_owner_task, component_owner_task,
+     watcher_task) = actual_tasks
+
+    # Notification to feature editor.
+    self.assertEqual('feature_owner@example.com', feature_owner_task['to'])
+    self.assertEqual('updated feature: feature one',
+      feature_owner_task['subject'])
+    self.assertIn('mock body html', feature_owner_task['html'])
+    self.assertIn('<li>You are listed as an owner of this feature</li>',
+      feature_owner_task['html'])
+
+    # Notification to feature editor.
+    self.assertEqual('updated feature: feature one',
+      feature_editor_task['subject'])
+    self.assertIn('mock body html', feature_editor_task['html'])
+    self.assertIn('<li>You are listed as an editor of this feature</li>',
+      feature_editor_task['html'])
+    self.assertEqual('feature_editor@example.com', feature_editor_task['to'])
+
+    # Notification to component owner.
+    self.assertEqual('updated feature: feature one',
+      component_owner_task['subject'])
+    self.assertIn('mock body html', component_owner_task['html'])
+    # Component owner is also a feature editor and should have both reasons.
+    self.assertIn('<li>You are an owner of this feature\'s component</li>\n'
+                  '<li>You are listed as an editor of this feature</li>',
+      component_owner_task['html'])
+    self.assertEqual('owner_1@example.com', component_owner_task['to'])
+
+    # Notification to feature change watcher.
     self.assertEqual('updated feature: feature one', watcher_task['subject'])
     self.assertIn('mock body html', watcher_task['html'])
+    self.assertIn('<li>You are watching all feature changes</li>',
+      watcher_task['html'])
     self.assertEqual('watcher_1@example.com', watcher_task['to'])
+
     mock_f_e_b.assert_called_once_with(
         True, self.feature_1, self.changes)
 
@@ -249,15 +307,49 @@ class EmailFormattingTest(testing_config.CustomTestCase):
         'starrer_1@example.com', self.feature_1.key.integer_id())
     actual_tasks = notifier.make_email_tasks(
         self.feature_1, True, self.changes)
-    self.assertEqual(3, len(actual_tasks))
-    owner_task, starrer_task, watcher_task = actual_tasks
-    self.assertEqual('updated feature: feature one', owner_task['subject'])
-    self.assertIn('mock body html', owner_task['html'])
-    self.assertEqual('owner_1@example.com', owner_task['to'])
+    self.assertEqual(5, len(actual_tasks))
+    (feature_editor_task, feature_owner_task, component_owner_task,
+     starrer_task, watcher_task) = actual_tasks
+    # Notification to feature editor.
+    self.assertEqual('feature_owner@example.com', feature_owner_task['to'])
+    self.assertEqual('updated feature: feature one',
+      feature_owner_task['subject'])
+    self.assertIn('mock body html', feature_owner_task['html'])
+    self.assertIn('<li>You are listed as an owner of this feature</li>',
+      feature_owner_task['html'])
+
+    # Notification to feature editor.
+    self.assertEqual('updated feature: feature one',
+      feature_editor_task['subject'])
+    self.assertIn('mock body html', feature_editor_task['html'])
+    self.assertIn('<li>You are listed as an editor of this feature</li>',
+      feature_editor_task['html'])
+    self.assertEqual('feature_editor@example.com', feature_editor_task['to'])
+
+    # Notification to component owner.
+    self.assertEqual('updated feature: feature one',
+      component_owner_task['subject'])
+    self.assertIn('mock body html', component_owner_task['html'])
+    # Component owner is also a feature editor and should have both reasons.
+    self.assertIn('<li>You are an owner of this feature\'s component</li>\n'
+                  '<li>You are listed as an editor of this feature</li>',
+      component_owner_task['html'])
+    self.assertEqual('owner_1@example.com', component_owner_task['to'])
+
+    # Notification to feature starrer.
+    self.assertEqual('updated feature: feature one', starrer_task['subject'])
+    self.assertIn('mock body html', starrer_task['html'])
+    self.assertIn('<li>You starred this feature</li>',
+      starrer_task['html'])
     self.assertEqual('starrer_1@example.com', starrer_task['to'])
+
+    # Notification to feature change watcher.
     self.assertEqual('updated feature: feature one', watcher_task['subject'])
     self.assertIn('mock body html', watcher_task['html'])
+    self.assertIn('<li>You are watching all feature changes</li>',
+      watcher_task['html'])
     self.assertEqual('watcher_1@example.com', watcher_task['to'])
+
     mock_f_e_b.assert_called_once_with(
         True, self.feature_1, self.changes)
 
@@ -274,10 +366,13 @@ class EmailFormattingTest(testing_config.CustomTestCase):
         'starrer_2@example.com', self.feature_2.key.integer_id())
     actual_tasks = notifier.make_email_tasks(
         self.feature_2, True, self.changes)
-    self.assertEqual(2, len(actual_tasks))
+    self.assertEqual(4, len(actual_tasks))
     # Note: There is no starrer_task.
-    owner_task, watcher_task = actual_tasks
-    self.assertEqual('owner_1@example.com', owner_task['to'])
+    (feature_editor_task, feature_owner_task, component_owner_task,
+     watcher_task) = actual_tasks
+    self.assertEqual('feature_editor@example.com', feature_editor_task['to'])
+    self.assertEqual('feature_owner@example.com', feature_owner_task['to'])
+    self.assertEqual('owner_1@example.com', component_owner_task['to'])
     self.assertEqual('watcher_1@example.com', watcher_task['to'])
     mock_f_e_b.assert_called_once_with(
         True, self.feature_2, self.changes)
