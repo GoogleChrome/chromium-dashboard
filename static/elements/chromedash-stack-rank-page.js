@@ -23,6 +23,7 @@ export class ChromedashStackRankPage extends LitElement {
 
         #datalist-input {
           width: 30em;
+          max-width: 100%;
           border-radius: 10px;
           height: 25px;
           margin-bottom: var(--content-padding);
