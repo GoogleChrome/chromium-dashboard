@@ -220,7 +220,7 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     (feature_editor_task, feature_owner_task, component_owner_task,
      watcher_task) = actual_tasks
 
-    # Notification to feature editor.
+    # Notification to feature owner.
     self.assertEqual('feature_owner@example.com', feature_owner_task['to'])
     self.assertEqual('new feature: feature one', feature_owner_task['subject'])
     self.assertIn('mock body html', feature_owner_task['html'])
@@ -263,7 +263,7 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     (feature_editor_task, feature_owner_task, component_owner_task,
      watcher_task) = actual_tasks
 
-    # Notification to feature editor.
+    # Notification to feature owner.
     self.assertEqual('feature_owner@example.com', feature_owner_task['to'])
     self.assertEqual('updated feature: feature one',
       feature_owner_task['subject'])
@@ -310,7 +310,8 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     self.assertEqual(5, len(actual_tasks))
     (feature_editor_task, feature_owner_task, component_owner_task,
      starrer_task, watcher_task) = actual_tasks
-    # Notification to feature editor.
+
+    # Notification to feature owner.
     self.assertEqual('feature_owner@example.com', feature_owner_task['to'])
     self.assertEqual('updated feature: feature one',
       feature_owner_task['subject'])
