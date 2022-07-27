@@ -568,6 +568,13 @@ class FeatureEditStage(basehandlers.FlaskHandler):
           'experiment_extension_reason')
     if self.touched('ongoing_constraints'):
       feature.ongoing_constraints = self.form.get('ongoing_constraints')
+    
+    # Add user who updated to list of editors.
+    # TODO(danielrsmith): This should be removed when enabling new permissions.
+    email = self.get_current_user().email()
+    if (email not in feature.editors and email not in feature.owner and
+        email != feature.creator):
+      feature.editors.append(email)
 
     feature.updated_by = ndb.User(
         email=self.get_current_user().email(),
