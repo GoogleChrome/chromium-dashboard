@@ -31,8 +31,8 @@ class ChromedashApp extends LitElement {
     this.appTitle = '';
     this.googleSignInClientId = '',
     this.currentPage = '';
-    this.message = '';
-    this.timestamp = null;
+    this.bannerMessage = '';
+    this.bannerTime = null;
     this.pageComponent = null;
     this.contextLink = '/features';
   }
