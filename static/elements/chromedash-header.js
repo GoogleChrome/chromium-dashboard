@@ -169,7 +169,7 @@ export class ChromedashHeader extends LitElement {
   static get properties() {
     return {
       appTitle: {type: String},
-      google_sign_in_client_id: {type: String},
+      googleSignInClientId: {type: String},
       currentPage: {type: String},
       user: {type: Object},
       loading: {type: Boolean},
@@ -179,7 +179,8 @@ export class ChromedashHeader extends LitElement {
   constructor() {
     super();
     this.appTitle = '';
-    this.google_sign_in_client_id = '',
+    this.googleSignInClientId = '',
+    this.currentPage = '';
     this.user = {};
     this.loading = true;
   }
@@ -195,14 +196,11 @@ export class ChromedashHeader extends LitElement {
     }).finally(() => {
       this.loading = false;
     });
-
-    // TODO(kevinshen56714): this can be passed in from SPA router
-    this.currentPage = window.location.pathname;
   }
 
   initializeGoogleSignIn() {
     google.accounts.id.initialize({
-      client_id: this.google_sign_in_client_id,
+      client_id: this.googleSignInClientId,
       callback: this.handleCredentialResponse,
     });
     google.accounts.id.prompt();
@@ -212,7 +210,13 @@ export class ChromedashHeader extends LitElement {
     // in the light DOM of the header, which will be rendered in the <slot> below
     const signInButton = document.createElement('div');
     google.accounts.id.renderButton(signInButton, {type: 'standard'});
-    this.insertAdjacentElement('afterbegin', signInButton);
+    const appComponent = document.querySelector('chromedash-app');
+    if (appComponent) {
+      appComponent.insertAdjacentElement('afterbegin', signInButton); // for SPA
+    } else {
+      // TODO (kevinshen56714): remove this once SPA is set up
+      this.insertAdjacentElement('afterbegin', signInButton); // for MPA
+    }
   }
 
   handleCredentialResponse(credentialResponse) {

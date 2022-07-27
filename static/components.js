@@ -29,6 +29,7 @@ setBasePath('/static/shoelace');
 // chromedash components
 import './elements/icons';
 import './elements/chromedash-all-features-page';
+import './elements/chromedash-app';
 import './elements/chromedash-approvals-dialog';
 import './elements/chromedash-banner';
 import './elements/chromedash-callout';

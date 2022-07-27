@@ -28,6 +28,7 @@ export class ChromedashTimelinePage extends LitElement {
       type: {type: String}, // "css" or "feature"
       view: {type: String}, // "popularity" or "animated"
       props: {attribute: false},
+      selectedBucketId: {attribute: false},
     };
   }
 
@@ -36,6 +37,7 @@ export class ChromedashTimelinePage extends LitElement {
     this.type = '';
     this.view = '';
     this.props = [];
+    this.selectedBucketId = '1';
   }
 
   connectedCallback() {
@@ -77,7 +79,8 @@ export class ChromedashTimelinePage extends LitElement {
       <chromedash-timeline
         .type=${this.type}
         .view=${this.view}
-        .props=${this.props}>
+        .props=${this.props}
+        .selectedBucketId=${this.selectedBucketId}>
       </chromedash-timeline>
     `;
   }

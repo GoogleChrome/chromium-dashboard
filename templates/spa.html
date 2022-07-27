@@ -2,7 +2,7 @@
 
 <!DOCTYPE html>
 <!--
-Copyright 2016 Google Inc. All Rights Reserved.
+Copyright 2022 Google Inc. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,9 +17,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 <html lang="en">
+
 <head>
   <meta charset="utf-8">
-  <title>{% block page_title %}{% endblock %}{{ APP_TITLE }}</title>
+  <title>{{ APP_TITLE }}</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
 
   <meta name="theme-color" content="#366597">
@@ -43,16 +44,13 @@ limitations under the License.
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&amp;display=swap" rel="stylesheet">
 
-  {% block meta %}{% endblock %}
-
-  <style>
-    {% inline_file "/static/css/main.css" %}
-  </style>
-
-  {% block css %}{% endblock %}
+  <style>{% inline_file "/static/css/main.css" %}</style>
 
   {# Google Identity Services library for OAuth #}
   <script src="https://accounts.google.com/gsi/client" async defer nonce="{{nonce}}"></script>
+
+  {# Google Charts library for timeline pages #}
+  <script src="https://www.gstatic.com/charts/loader.js"></script>
 
   <script nonce="{{nonce}}">
     const urlParams = new URLSearchParams(window.location.search);
@@ -60,67 +58,27 @@ limitations under the License.
       alert('Please log in.');
     }
   </script>
-
   {# Loaded immediately because it is used by JS code on the page. #}
   <script nonce="{{nonce}}">
     {% inline_file "/static/js/metric.min.js" %}
     {% inline_file "/static/js/cs-client.min.js" %}
 
     window.csClient = new ChromeStatusClient(
-        '{{xsrf_token}}', {{xsrf_token_expires}});
+      '{{xsrf_token}}', {{ xsrf_token_expires }});
   </script>
 
-  <script type="module" nonce="{{nonce}}" defer
-          src="/static/dist/components.js?v={{app_version}}"></script>
-  {% block preload %}{% endblock %}
-
-  {% block rss %}{% endblock%}
+  <script type="module" nonce="{{nonce}}" defer src="/static/dist/components.js?v={{app_version}}"></script>
 </head>
 
-<body class="loading" data-path="{{current_path}}">
-  {% comment %}
-  {% endcomment %}
+<body class="loading">
+  <chromedash-app
+    appTitle="{{APP_TITLE}}"
+    googleSignInClientId="{{google_sign_in_client_id}}"
+    bannerMessage="{{banner_message}}"
+    bannerTime="{{banner_time}}">
+  </chromedash-app>
 
-  <div id="app-content-container">
-    <div>
-      <div class="main-toolbar">
-        <div class="toolbar-content">
-          <chromedash-header
-            appTitle="{{APP_TITLE}}"
-            currentPage="{{current_path}}"
-            googleSignInClientId="{{google_sign_in_client_id}}">
-          </chromedash-header>
-        </div>
-      </div>
-
-      <div id="content">
-        <div id="spinner">
-          <img src="/static/img/ring.svg">
-        </div>
-        <chromedash-banner
-          message="{{banner_message}}"
-          timestamp="{{banner_time}}">
-        </chromedash-banner>
-        <div id="content-flex-wrapper">
-          <div id="content-component-wrapper">
-            {% block subheader %}{% endblock %}
-            {% block content %}{% endblock %}
-          </div>
-        </div>
-      </div>
-
-    </div>
-    <chromedash-footer></chromedash-footer>
-  </div>
-
-  <chromedash-toast msg="Welcome to chromestatus.com!"></chromedash-toast>
-
-  {% block overlay %}{% endblock %}
-
-  {% block js %}{% endblock %}
-
-  <script src="https://www.googletagmanager.com/gtag/js?id=UA-179341418-1"
-          async nonce="{{nonce}}"></script>
+  <script src="https://www.googletagmanager.com/gtag/js?id=UA-179341418-1" async nonce="{{nonce}}"></script>
 
   {% comment %}
   Note that the following script tag must include type="module" so that the form field event listeners
@@ -128,11 +86,12 @@ limitations under the License.
   See https://github.com/GoogleChrome/chromium-dashboard/issues/2014
   {% endcomment %}
   <script type="module" nonce="{{nonce}}">
-    (function() {
+    (function () {
       'use strict';
 
       {% inline_file "/static/js/shared.min.js" %}
     })();
   </script>
 </body>
+
 </html>

@@ -121,6 +121,8 @@ class ChromedashTimeline extends LitElement {
     window.google.charts.load('current', {'packages': ['corechart']});
     window.google.charts.setOnLoadCallback(() => {
       // If there's an id in the URL, load the property it.
+      // TODO (kevinshen56714) - this can be removed once SPA is fully set up
+      // as the bucketId is passed in from the router.
       const lastSlash = location.pathname.lastIndexOf('/');
       if (lastSlash > 0) {
         const id = parseInt(location.pathname.substring(lastSlash + 1));
