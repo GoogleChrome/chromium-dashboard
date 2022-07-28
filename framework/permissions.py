@@ -74,6 +74,27 @@ def can_edit_feature(user, feature):
   return can_edit_any_feature(user)
 
 
+def strict_can_edit_feature(user, feature_id):
+  """Return True if the user is allowed to edit the given feature."""
+  if not feature_id or not user:
+    return False
+
+  # If the user is an admin or site editor, they can edit this feature.
+  app_user = models.AppUser.get_app_user(user.email())
+  if app_user is not None and (app_user.is_admin or app_user.is_admin):
+    return True
+
+  feature = models.Feature.get_by_id(feature_id)
+  if not feature:
+    return False
+  
+  email = user.email()
+  # Check if the user is an owner, editor, or creator for this feature.
+  # If yes, the feature can be edited.
+  return (email in feature.owner or
+          email in feature.editors or email == feature.creator)
+
+
 def can_approve_feature(user, feature, approvers):
   """Return True if the user is allowed to approve the given feature."""
   # TODO(jrobbins): make this per-feature
