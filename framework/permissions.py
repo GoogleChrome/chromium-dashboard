@@ -81,7 +81,7 @@ def strict_can_edit_feature(user, feature_id):
 
   # If the user is an admin or site editor, they can edit this feature.
   app_user = models.AppUser.get_app_user(user.email())
-  if app_user is not None and (app_user.is_admin or app_user.is_admin):
+  if app_user is not None and (app_user.is_admin or app_user.is_site_editor):
     return True
 
   feature = models.Feature.get_by_id(feature_id)
