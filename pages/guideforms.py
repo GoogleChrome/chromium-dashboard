@@ -533,11 +533,12 @@ class ChromedashForm(forms.Form):
         # Create the row template used for every field.
         field = '<span slot="field">%(field)s</span>'
         error = '<span slot="error">%(errors)s</span>'
-        attrs = 'name="%(name)s" value="%(value)s" checked="%(checked)s" %(html_class_attr)s'
+        attrs = 'name="%(name)s" value="%(value)s" %(html_class_attr)s'
+        checkbox_attrs = 'name="%(name)s" checked="%(checked)s" %(html_class_attr)s'
         content = field + error
         normal_row = '<chromedash-form-field ' + attrs + '>' + content + '</chromedash-form-field>'
 
-        checkbox_row = '<chromedash-form-field ' + attrs + '>' + error + '</chromedash-form-field>'
+        checkbox_row = '<chromedash-form-field ' + checkbox_attrs + '>' + error + '</chromedash-form-field>'
 
         for name, field in self.fields.items():
             html_class_attr = ''

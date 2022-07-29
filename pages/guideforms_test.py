@@ -46,7 +46,6 @@ class DisplayFieldsTest(unittest.TestCase):
     self.assertEqual(3, len(specs))
     summary_spec, unlisted_spec, i2p_spec = specs
     self.assertEqual('Summary', summary_spec[1])
-    self.assertEqual('Unlisted', unlisted_spec[1])
 
   def test_DISPLAY_FIELDS_IN_STAGES__no_duplicates(self):
     """Each field appears at most once."""
