@@ -116,13 +116,16 @@ export class ChromedashFormField extends LitElement {
     // If type is checkbox, then generate locally.
     if (type === 'checkbox') {
       field = html`
-        <sl-checkbox
+        <slot name="field">
+          <sl-checkbox
             name="${this.name}"
+            id="id_${this.name}"
             size="small"
-            value="${ this.value }"
+            ?checked=${ this.value === 'True' ? true : false }
             >
-            ${label}
+          ${label}
         </sl-checkbox>
+       </slot>
         `;
     } else {
       field = html`<slot name="field"></slot>`;

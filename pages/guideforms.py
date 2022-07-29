@@ -520,20 +520,42 @@ METADATA_FIELDS = [
 ]
 
 class ChromedashForm(forms.Form):
-    def simple_html_output(self, normal_row):
+    def simple_html_output(self):
         """
         Output HTML. Used by override of as_table() to support chromedash uses only.
         Simplified to drop support for hidden form fields and errors at the top,
         which we are not using.
         Added field 'name' property for use in the normal_row template.
+        Added 'value' and 'checked' properties.
         """
         output = []
+
+        # Create the row template used for every field.
+        field = '<span slot="field">%(field)s</span>'
+        error = '<span slot="error">%(errors)s</span>'
+        attrs = 'name="%(name)s" value="%(value)s" checked="%(checked)s" %(html_class_attr)s'
+        content = field + error
+        normal_row = '<chromedash-form-field ' + attrs + '>' + content + '</chromedash-form-field>'
+
+        checkbox_row = '<chromedash-form-field ' + attrs + '>' + error + '</chromedash-form-field>'
 
         for name, field in self.fields.items():
             html_class_attr = ''
             bf = self[name]
             bf_errors = self.error_class(bf.errors)
-            value = '' # field.prepare_value
+
+            # Get value and checked for the field
+            value = field.widget.value_from_datadict(self.data, self.files, self.add_prefix(name))
+
+            row_template = normal_row
+            checked = False
+            if hasattr(field.widget, 'check_test'):
+                # Must be a checkbox field.
+                row_template = checkbox_row
+                if field.widget.check_test(value) :
+                    checked = True
+            
+            print (name + ' = ' + str(value) + ' ' + str(checked))
 
             # Create a 'class="..."' attribute if the row should have any
             # CSS classes applied.
@@ -547,12 +569,12 @@ class ChromedashForm(forms.Form):
             else:
                 label = ''
 
-            output.append(normal_row % {
+            output.append(row_template % {
                 'name': name,
                 'errors': bf_errors,
-                'label': label,
                 'field': bf,
                 'value': value,
+                'checked': checked,
                 'html_class_attr': html_class_attr,
                 'css_classes': css_classes,
                 'field_name': bf.html_name,
@@ -562,13 +584,7 @@ class ChromedashForm(forms.Form):
 
     def as_table(self):
         "Return this form rendered as HTML <tr>s -- excluding the <table></table>."
-        label = '<span slot="label">%(label)s</span>'
-        field = '<span slot="field">%(field)s</span>'
-        error = '<span slot="error">%(errors)s</span>'
-        attrs = 'name="%(name)s" value="%(value)s" %(html_class_attr)s'
-        content = label + field + error + '%(label)s'
-        html = '<chromedash-form-field ' + attrs + '>' + content + '</chromedash-form-field>'
-        return self.simple_html_output(normal_row=html)
+        return self.simple_html_output()
 
 def define_form_class_using_shared_fields(class_name, field_spec_list):
   """Define a new subsblass of forms.Form with the given fields, in order."""
