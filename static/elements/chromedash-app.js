@@ -50,16 +50,17 @@ class ChromedashApp extends LitElement {
     page('/spa', () => page.redirect('/roadmap'));
     page('/roadmap', (ctx) => {
       this.pageComponent = document.createElement('chromedash-roadmap-page');
+      this.contextLink = ctx.path;
       this.currentPage = ctx.path;
     });
     page('/myfeatures', (ctx) => {
       this.pageComponent = document.createElement('chromedash-myfeatures-page');
-      this.contextLink = '/myfeatures';
+      this.contextLink = ctx.path;
       this.currentPage = ctx.path;
     });
     page('/features', (ctx) => {
       this.pageComponent = document.createElement('chromedash-all-features-page');
-      this.contextLink = '/features';
+      this.contextLink = ctx.path;
       this.currentPage = ctx.path;
     });
     page('/feature/:featureId', (ctx) => {
@@ -118,7 +119,7 @@ class ChromedashApp extends LitElement {
             </chromedash-banner>
             <div id="content-flex-wrapper">
               <div id="content-component-wrapper" 
-                ?wide=${this.currentPage=='/roadmap'}>
+                ?wide=${this.currentPage && this.currentPage.tagName == 'CHROMEDASH-ROADMAP'}>
                 ${this.pageComponent}
               </div>
             </div>
