@@ -8,8 +8,41 @@ class ChromedashApp extends LitElement {
     return [
       ...SHARED_STYLES,
       css`
+        .main-toolbar {
+          display: flex;
+          position: relative;
+          padding: 0;
+        }
+
+        #app-content-container {
+          display: flex;
+          flex-direction: column;
+          height: 100%;
+        }
+
+        #content {
+          margin: var(--content-padding);
+          position: relative;
+        }
+
+        #content-flex-wrapper {
+          display: flex;
+          justify-content: center;
+          width: 100%;
+        }
+
+        #content-component-wrapper {
+          width: var(--max-content-width);
+          max-width: 95%;
+        }
         #content-component-wrapper[wide] {
           width: 100%;
+        }
+
+        @media only screen and (min-width: 701px) {
+          .main-toolbar .toolbar-content {
+            width: 100%;
+          }
         }
     `];
   }
@@ -118,8 +151,9 @@ class ChromedashApp extends LitElement {
               .timestamp=${this.bannerTime}>
             </chromedash-banner>
             <div id="content-flex-wrapper">
-              <div id="content-component-wrapper" 
-                ?wide=${this.currentPage && this.currentPage.tagName == 'CHROMEDASH-ROADMAP'}>
+              <div id="content-component-wrapper"
+                ?wide=${this.pageComponent &&
+                  this.pageComponent.tagName == 'CHROMEDASH-ROADMAP-PAGE'}>
                 ${this.pageComponent}
               </div>
             </div>
@@ -128,8 +162,6 @@ class ChromedashApp extends LitElement {
         </div>
         <chromedash-footer></chromedash-footer>
       </div>
-
-      <chromedash-toast msg="Welcome to chromestatus.com!"></chromedash-toast>
     `;
   }
 }
