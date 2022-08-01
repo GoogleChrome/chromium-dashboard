@@ -610,6 +610,7 @@ class Feature(DictModel):
         'by': d.pop('updated_by', None),
         'when': d.pop('updated', None),
       }
+      d['accurate_as_of'] = d.pop('accurate_as_of', None)
       d['standards'] = {
         'spec': d.pop('spec_link', None),
         'status': {
@@ -1219,7 +1220,8 @@ class Feature(DictModel):
     # Diff values to see what properties have changed.
     changed_props = []
     for prop_name, prop in list(self._properties.items()):
-      if prop_name in ('created_by', 'updated_by', 'updated', 'created'):
+      if prop_name in (
+          'created_by', 'updated_by', 'updated','created', 'accurate_as_of'):
         continue
       new_val = getattr(self, prop_name, None)
       old_val = getattr(self, '_old_' + prop_name, None)
@@ -1255,6 +1257,7 @@ class Feature(DictModel):
   # Metadata.
   created = ndb.DateTimeProperty(auto_now_add=True)
   updated = ndb.DateTimeProperty(auto_now=True)
+  accurate_as_of = ndb.DateTimeProperty(auto_now=False)
   updated_by = ndb.UserProperty()
   created_by = ndb.UserProperty()
 
@@ -1388,6 +1391,7 @@ class Feature(DictModel):
 QUERIABLE_FIELDS = {
     'created.when': Feature.created,
     'updated.when': Feature.updated,
+    'accurate_as_of': Feature.accurate_as_of,
     'deleted': Feature.deleted,
 
     # TODO(jrobbins): We cannot query user fields because Cloud NDB does not

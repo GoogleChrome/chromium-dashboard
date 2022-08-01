@@ -15,9 +15,9 @@
 
 __author__ = 'ericbidelman@chromium.org (Eric Bidelman)'
 
+from datetime import datetime, timedelta
 import collections
 import logging
-import datetime
 import json
 import os
 import urllib
@@ -252,6 +252,113 @@ class FeatureStar(models.DictModel):
     user_prefs = [up for up in user_prefs
                   if up.notify_as_starrer and not up.bounced]
     return user_prefs
+
+
+class FeatureAccuracyHandler(basehandlers.FlaskHandler):
+  SEND_NOTIFICATIONS = False
+
+  CHROME_RELEASE_SCHEDULE_URL = (
+'https://chromiumdash.appspot.com/fetch_milestone_schedule')
+  ACCURACY_AS_OF_WEEKS = 4
+  MILESTONE_FIELDS = (
+    'dt_milestone_android_start',
+    'dt_milestone_desktop_start',
+    'dt_milestone_ios_start',
+    'dt_milestone_webview_start',
+    'ot_milestone_android_start',
+    'ot_milestone_desktop_start',
+    'ot_milestone_webview_start'
+  )
+  TEMPLATE_PATH = 'accuracy_notice_email.html'
+   
+  def get_template_data(self):
+    """Sends notifications to users requesting feature updates for accuracy."""
+
+    # Do not send notifications
+    # TODO(danielrsmith): This should be removed when the new page to
+    # verify data accuracy is implemented.
+    if not self.SEND_NOTIFICATIONS:
+      return {'message': '0 emails sent or logged.'}
+
+    features_to_notify = self._determine_features_to_notify()
+    email_tasks = self._build_email_tasks(features_to_notify)
+    return self._send_notifications(email_tasks)
+    
+  def _determine_features_to_notify(self):
+    # 'current' milestone is the next stable milestone that hasn't landed.
+    # If reminding 8 weeks in advance, we should only need to notify
+    # for current and (current + 1) milestones.
+    try:
+      resp = requests.get(f'{self.CHROME_RELEASE_SCHEDULE_URL}?mstone=current')
+    except requests.RequestException as e:
+      raise e
+    mstone_info = json.loads(resp.text)
+    mstone = int(mstone_info['mstones'][0]['mstone'])
+    
+    features = models.Feature.get_all()
+    features_to_notify = []
+    now = datetime.now()
+    accuracy_as_of_delta = timedelta(weeks=self.ACCURACY_AS_OF_WEEKS)
+    for feature in features:
+      accuracy_as_of_date = None
+      # Format accuracy date to compare dates.
+      if 'accurate_as_of' in feature and feature['accurate_as_of'] is not None:
+        accuracy_as_of_date = datetime.strptime(
+          feature['accurate_as_of'], '%y-%m-%d %H:%M:%S.%f')
+      # If the data has been recently verified as accurate, no need for email.
+      if (accuracy_as_of_date is not None and
+          accuracy_as_of_date + accuracy_as_of_delta < now):
+        continue
+      # Check each milestone field and see if it corresponds with
+      # the next 2 milestones.
+      for mstone_field in self.MILESTONE_FIELDS:
+        if mstone_field in feature and feature[mstone_field] == mstone:
+          feature['notify_mstone'] = str(mstone)  # milestone for email.
+          features_to_notify.append(feature)
+          break
+        if mstone_field in feature and feature[mstone_field] == mstone + 1:
+          feature['notify_mstone'] = str(mstone + 1)  # milestone for email.
+          features_to_notify.append(feature)
+          break
+    return features_to_notify
+
+  def _build_email_tasks(self, features_to_notify):
+    email_tasks = []
+    for feature in features_to_notify:
+      body_data = {
+        'feature_name': feature['name'],
+        'milestone': feature['notify_mstone'],
+        'id': feature['id']
+      }
+      html = render_to_string(self.TEMPLATE_PATH, body_data)
+      subject = f'[Action requested] Update {feature["name"]}'
+      if 'browsers' in feature:
+        for owner in feature['browsers']['chrome']['owners']:
+          email_tasks.append({
+            'to': owner,
+            'subject': subject,
+            'reply_to': None,
+            'html': html
+          })
+    return email_tasks
+
+  def _send_notifications(self, email_tasks):
+    for email_task in email_tasks:
+      if settings.prod and settings.SEND_EMAIL:
+        cloud_tasks_helpers.enqueue_task(
+          '/tasks/outbound-email', email_task)
+      else:
+        logging.info(
+          'Would send the following email:\n'
+          'To: %s\n'
+          'Subject: %s\n'
+          'Reply-To: %s\n'
+          'Body:\n%s',
+          email_task['to'], email_task['subject'],
+          email_task['reply_to'],
+          email_task['html'][:settings.MAX_LOG_LINE])
+
+    return {'message': f'{len(email_tasks)} emails sent or logged.'}
 
 
 class FeatureChangeHandler(basehandlers.FlaskHandler):

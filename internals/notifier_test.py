@@ -34,6 +34,7 @@ class EmailFormattingTest(testing_config.CustomTestCase):
   def setUp(self):
     self.feature_1 = models.Feature(
         name='feature one', summary='sum', owner=['feature_owner@example.com'],
+        ot_milestone_desktop_start=100,
         editors=['feature_editor@example.com', 'owner_1@example.com'],
         category=1, visibility=1, standardization=1, web_dev_views=1,
         impl_status_chrome=1, created_by=ndb.User(
@@ -470,6 +471,14 @@ class FeatureStarTest(testing_config.CustomTestCase):
     self.assertCountEqual(
         [app_user_1.email, app_user_2.email],
         [au.email for au in actual])
+
+  @mock.patch('requests.get')
+  def test_determine_features_to_notify(self, mock_get):
+    mock_get.return_value = '{"mstones":[{"mstone": "100"}]}'
+    accuracy_notifier = notifier.FeatureAccuracyHandler()
+    result = accuracy_notifier.get_template_data()
+    expected = {'message': '0 emails sent or logged.'}
+    self.assertEqual(result, expected)
 
 
 class FunctionsTest(testing_config.CustomTestCase):

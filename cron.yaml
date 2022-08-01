@@ -17,3 +17,6 @@ cron:
 - description: Writes string creator field from created_by user field.
   url: /cron/write_creator
   schedule: 1 of month 03:00
+- description: Send reminders to verify the accuracy of feature data.
+  url: /cron/send_accuracy_notifications
+  schedule: every monday 09:00
