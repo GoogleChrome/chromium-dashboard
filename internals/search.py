@@ -18,27 +18,17 @@ import logging
 import re
 
 from framework import users
+from framework import utils
 from internals import approval_defs
 from internals import models
 from internals import notifier
 
-PENDING_STATES = [
-    models.Approval.REVIEW_REQUESTED, models.Approval.REVIEW_STARTED,
-    models.Approval.NEED_INFO]
-FINAL_STATES = [
-    models.Approval.NA, models.Approval.APPROVED,
-    models.Approval.NOT_APPROVED]
 MAX_TERMS = 6
 
 def _get_referenced_feature_ids(approvals, reverse=False):
   """Retrieve the features being approved, withuot duplicates."""
   logging.info('approvals is %r', [(a.feature_id, a.state) for a in approvals])
-  feature_ids = []
-  seen = set()
-  for appr in approvals:
-    if appr.feature_id not in seen:
-      seen.add(appr.feature_id)
-      feature_ids.append(appr.feature_id)
+  feature_ids = utils.dedupe(a.feature_id for a in approvals)
 
   return feature_ids
 
@@ -50,7 +40,8 @@ def process_pending_approval_me_query():
     return []
 
   approvable_fields_ids = approval_defs.fields_approvable_by(user)
-  pending_approvals = models.Approval.get_approvals(states=PENDING_STATES)
+  pending_approvals = models.Approval.get_approvals(
+      states=models.Approval.PENDING_STATES)
   pending_approvals = [pa for pa in pending_approvals
                        if pa.field_id in approvable_fields_ids]
 
@@ -86,7 +77,7 @@ def process_recent_reviews_query():
     return []
 
   recent_approvals = models.Approval.get_approvals(
-      states=FINAL_STATES, order=-models.Approval.set_on, limit=40)
+      states=models.Approval.FINAL_STATES, limit=40)
 
   feature_ids = _get_referenced_feature_ids(recent_approvals, reverse=True)
   return feature_ids
@@ -117,7 +108,7 @@ def process_queriable_field(field_name, operator, val_str):
   """Return a list of feature IDs or a promise for keys."""
   val = parse_query_value(val_str)
   logging.info('trying %r %r %r', field_name, operator, val)
-  promise = models.Feature.single_field_query_async(field_name, operator, val)
+  promise = models.single_field_query_async(field_name, operator, val)
   return promise
 
 
@@ -205,7 +196,7 @@ def process_query(
     future = process_query_term(field_name, op_str, val_str)
     feature_id_futures.append(future)
   # 2b. Create a parallel query for total sort order.
-  total_order_promise = models.Feature.total_order_query_async(sort_spec)
+  total_order_promise = models.total_order_query_async(sort_spec)
 
   # 3a. Get the result of each future and combine them into a result ID set.
   logging.info('now waiting on futures')

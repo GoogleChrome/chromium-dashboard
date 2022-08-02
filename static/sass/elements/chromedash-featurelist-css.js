@@ -28,6 +28,7 @@ export const FEATURELIST_CSS = [
         font-weight: 500;
         margin: 8px;
       }
+/*
       [data-first-of-milestone]:after {
         font-size: 12px;
         font-weight: normal;
@@ -35,6 +36,7 @@ export const FEATURELIST_CSS = [
         opacity: 1;
         text-transform: uppercase;
       }
+*/
     }
   `,
 ];
