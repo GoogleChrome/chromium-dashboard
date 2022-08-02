@@ -128,8 +128,7 @@ class ChromedashRoadmapMilestoneCard extends LitElement {
         <h1 class="channel_label">${this.templateContent.channelLabel}</h1>
         <h1 class="chrome_version layout horizontal center ${this.templateContent.h1Class}">
         <span class="chrome-logo"></span>
-        <a href="${this.templateContent.downloadUrl}" title="${this.templateContent.downloadTitle}"
-          target="_blank">Chrome ${this.channel.version}</a>
+        Chrome ${this.channel.version}
         </h1>
       </div>
       ${this.showDates && this.channel.earliest_beta ? html`
