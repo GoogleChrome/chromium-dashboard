@@ -25,4 +25,17 @@ describe('chromedash-form-field', () => {
     assert.include(renderElement.innerHTML, 'Field');
     assert.include(renderElement.innerHTML, 'Error');
   });
+
+  it('renders a checkbox type of field', async () => {
+    const component = await fixture(
+      html`
+      <chromedash-form-field name="unlisted" value="True" checked="True">
+      </chromedash-form-field>`);
+    await component.updateComplete;
+
+    const renderElement = component.renderRoot;
+    assert.include(renderElement.innerHTML, 'Unlisted');
+    assert.include(renderElement.innerHTML, 'sl-checkbox');
+    assert.include(renderElement.innerHTML, 'checked');
+  })
 });
