@@ -37,5 +37,5 @@ describe('chromedash-form-field', () => {
     assert.include(renderElement.innerHTML, 'Unlisted');
     assert.include(renderElement.innerHTML, 'sl-checkbox');
     assert.include(renderElement.innerHTML, 'checked');
-  })
+  });
 });

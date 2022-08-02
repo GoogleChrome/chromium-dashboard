@@ -1,7 +1,6 @@
 import {LitElement, css, html} from 'lit';
 import {ALL_FIELDS} from './form-field-specs';
 import {unsafeHTML} from 'lit/directives/unsafe-html.js';
-// import {ChromedashFormSubmitController} from './chromedash-form-controller.js';
 
 export class ChromedashFormField extends LitElement {
   static get properties() {
@@ -16,6 +15,7 @@ export class ChromedashFormField extends LitElement {
   static get disabledStyles() {
     // Since we are using light DOM, for now, these styles are
     // not used.  See styles in forms.scss instead.
+    // TODO: Check whether we can still use these instead.
 
     // Remove vertical padding for extrahelp row cell.
     // Rely on padding of sl-details, when it's displayed.
