@@ -1,7 +1,6 @@
 import {html} from 'lit';
 import {assert, fixture} from '@open-wc/testing';
 import {ChromedashFormField} from './chromedash-form-field';
-import {slotAssignedElements} from './utils';
 
 describe('chromedash-form-field', () => {
   it('renders with no data', async () => {

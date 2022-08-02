@@ -527,15 +527,17 @@ class ChromedashForm(forms.Form):
         which we are not using.
         Added field 'name' property for use in the normal_row template.
         Added 'value' and 'checked' properties.
+        Added 'field' and 'errors' to avoid use of slots.
         """
         output = []
 
-        # Create the row template used for every field.
+        # Attributes for all fields except checkbox.
         attrs = 'name="%(name)s" value="%(value)s" field="%(field)s" errors="%(errors)s" %(html_class_attr)s'
-        checkbox_attrs = 'name="%(name)s" value="%(value)s" errors="%(errors)s" checked="%(checked)s" %(html_class_attr)s'
+        # Attributes for checkbox fields.
+        checkbox_attrs = 'name="%(name)s" value="%(value)s"  checked="%(checked)s" errors="%(errors)s" %(html_class_attr)s'
 
+        # Create the row template used for every field.
         normal_row = '<chromedash-form-field ' + attrs + '></chromedash-form-field>'
-
         checkbox_row = '<chromedash-form-field ' + checkbox_attrs + '></chromedash-form-field>'
 
         for name, field in self.fields.items():
@@ -554,8 +556,6 @@ class ChromedashForm(forms.Form):
                 if field.widget.check_test(value) :
                     checked = True
             
-            print (name + ' = ' + str(value) + ' ' + str(checked))
-
             # Create a 'class="..."' attribute if the row should have any
             # CSS classes applied.
             css_classes = bf.css_classes()
