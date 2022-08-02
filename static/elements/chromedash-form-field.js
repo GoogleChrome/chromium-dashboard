@@ -1,15 +1,22 @@
 import {LitElement, css, html} from 'lit';
 import {ALL_FIELDS} from './form-field-specs';
+import {unsafeHTML} from 'lit/directives/unsafe-html.js';
+// import {ChromedashFormSubmitController} from './chromedash-form-controller.js';
 
 export class ChromedashFormField extends LitElement {
   static get properties() {
     return {
       name: {type: String},
       value: {type: String},
+      field: {type: String},
+      errors: {type: String},
     };
   }
 
-  static get styles() {
+  static get disabledStyles() {
+    // Since we are using light DOM, for now, these styles are
+    // not used.  See styles in forms.scss instead.
+
     // Remove vertical padding for extrahelp row cell.
     // Rely on padding of sl-details, when it's displayed.
 
@@ -105,6 +112,11 @@ export class ChromedashFormField extends LitElement {
     button.name = details.open ? 'dash-square' : 'plus-square';
   }
 
+  // Must render to light DOM, so sl-form-fields work as intended.
+  createRenderRoot() {
+    return this;
+  }
+
   render() {
     const fieldProps = ALL_FIELDS[this.name] || {};
     const label = fieldProps.label;
@@ -112,11 +124,10 @@ export class ChromedashFormField extends LitElement {
     const extraHelpText = fieldProps.extra_help || '';
     const type = fieldProps.type;
 
-    let field = '';
     // If type is checkbox, then generate locally.
+    let fieldHTML = '';
     if (type === 'checkbox') {
-      field = html`
-        <slot name="field">
+      fieldHTML = html`
           <sl-checkbox
             name="${this.name}"
             id="id_${this.name}"
@@ -125,11 +136,20 @@ export class ChromedashFormField extends LitElement {
             >
           ${label}
         </sl-checkbox>
-       </slot>
         `;
+      this.generateFieldLocally = true;
     } else {
-      field = html`<slot name="field"></slot>`;
+      // Temporary workaround until we migrate the generation of
+      // all the form fields to be done here.
+      // We pass the escaped html for the low-level form field
+      // through the field attribute, so it must be unescaped,
+      // and then we use unsafeHTML so it isn't re-escaped.
+      fieldHTML = unsafeHTML(unescape(this.field || ''));
     }
+
+    // Similar to above, but maybe we can guarantee that the errors
+    // will never contain HTML.
+    const errorsHTML = unsafeHTML(unescape(this.errors || ''));
 
     return html`
       <tr>
@@ -141,8 +161,8 @@ export class ChromedashFormField extends LitElement {
       </tr>
       <tr>
         <td>
-          ${field}
-          <slot name="error" class="errorlist"></slot>
+          ${fieldHTML}
+          ${errorsHTML}
         </td>
         <td>
           <span class="helptext">

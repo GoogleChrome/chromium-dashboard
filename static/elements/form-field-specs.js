@@ -19,7 +19,6 @@ export const ALL_FIELDS = {
     label: 'Feature name',
     help_text: html`
         Capitalize only the first letter and the beginnings of proper nouns.
-        <br/><br/>
         <a target="_blank"
             href="https://github.com/GoogleChrome/chromium-dashboard/wiki/EditingHelp#feature-name">
           Learn more</a>.
@@ -34,7 +33,6 @@ export const ALL_FIELDS = {
     help_text: html`
        <p>Text in the beta release post, the enterprise release notes,
         and other external sources will be based on this text.</p>
-
         <p>Write from a web developer's point of view. Begin with one line
         explaining what the feature does. Add one or two lines explaining
         how this feature helps developers. Write in a matter-of-fact

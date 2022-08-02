@@ -21,7 +21,7 @@ from django.forms.widgets import Textarea, Input
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
 
-from django.utils.html import conditional_escape
+from django.utils.html import conditional_escape, escape
 from django.utils.safestring import mark_safe
 
 # from google.appengine.api import users
@@ -531,14 +531,12 @@ class ChromedashForm(forms.Form):
         output = []
 
         # Create the row template used for every field.
-        field = '<span slot="field">%(field)s</span>'
-        error = '<span slot="error">%(errors)s</span>'
-        attrs = 'name="%(name)s" value="%(value)s" %(html_class_attr)s'
-        checkbox_attrs = 'name="%(name)s" checked="%(checked)s" %(html_class_attr)s'
-        content = field + error
-        normal_row = '<chromedash-form-field ' + attrs + '>' + content + '</chromedash-form-field>'
+        attrs = 'name="%(name)s" value="%(value)s" field="%(field)s" errors="%(errors)s" %(html_class_attr)s'
+        checkbox_attrs = 'name="%(name)s" value="%(value)s" errors="%(errors)s" checked="%(checked)s" %(html_class_attr)s'
 
-        checkbox_row = '<chromedash-form-field ' + checkbox_attrs + '>' + error + '</chromedash-form-field>'
+        normal_row = '<chromedash-form-field ' + attrs + '></chromedash-form-field>'
+
+        checkbox_row = '<chromedash-form-field ' + checkbox_attrs + '></chromedash-form-field>'
 
         for name, field in self.fields.items():
             html_class_attr = ''
@@ -572,8 +570,8 @@ class ChromedashForm(forms.Form):
 
             output.append(row_template % {
                 'name': name,
-                'errors': bf_errors,
-                'field': bf,
+                'errors': escape(bf_errors),
+                'field': escape(bf),
                 'value': value,
                 'checked': checked,
                 'html_class_attr': html_class_attr,
