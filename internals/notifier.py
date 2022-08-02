@@ -344,7 +344,7 @@ class FeatureAccuracyHandler(basehandlers.FlaskHandler):
 
   def _send_notifications(self, email_tasks):
     for email_task in email_tasks:
-      if settings.prod and settings.SEND_EMAIL:
+      if settings.SEND_EMAIL:
         cloud_tasks_helpers.enqueue_task(
           '/tasks/outbound-email', email_task)
       else:
