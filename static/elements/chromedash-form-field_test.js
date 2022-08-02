@@ -9,31 +9,21 @@ describe('chromedash-form-field', () => {
       html`<chromedash-form-field></chromedash-form-field>`);
     assert.exists(component);
     assert.instanceOf(component, ChromedashFormField);
-    const fieldRow = component.shadowRoot.querySelector('tr');
+    const fieldRow = component.renderRoot.querySelector('tr');
     assert.exists(fieldRow);
   });
 
-  it('renders with slots for label, field, error, help', async () => {
+  it('renders with attributes for field and error', async () => {
     const component = await fixture(
       html`
-      <chromedash-form-field>
-        <span slot="label">Label</span>
-        <span slot="field">Field</span>
-        <span slot="error">Error</span>
+      <chromedash-form-field field="Field" errors="Error">
       </chromedash-form-field>`);
     assert.exists(component);
     await component.updateComplete;
 
-    const labelElements = slotAssignedElements(component, 'label');
-    assert.exists(labelElements);
-    assert.include(labelElements[0].innerHTML, 'Label');
+    const renderElement = component.renderRoot;
 
-    const fieldElements = slotAssignedElements(component, 'field');
-    assert.exists(fieldElements);
-    assert.include(fieldElements[0].innerHTML, 'Field');
-
-    const errorElements = slotAssignedElements(component, 'error');
-    assert.exists(errorElements);
-    assert.include(errorElements[0].innerHTML, 'Error');
+    assert.include(renderElement.innerHTML, 'Field');
+    assert.include(renderElement.innerHTML, 'Error');
   });
 });
