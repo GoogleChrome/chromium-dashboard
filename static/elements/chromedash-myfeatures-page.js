@@ -71,7 +71,7 @@ export class ChromedashMyFeaturesPage extends LitElement {
     openApprovalsDialog(this.user.email, e.detail.feature);
   }
 
-  renderBox(title, query, columns, opened=true) {
+  renderBox(title, query, columns, sortSpec='', opened=true) {
     return html`
       <sl-details
         summary="${title}"
@@ -79,6 +79,7 @@ export class ChromedashMyFeaturesPage extends LitElement {
 
         <chromedash-feature-table
           query="${query}"
+          sortSpec="${sortSpec}"
           ?signedIn=${Boolean(this.user)}
           ?canEdit=${this.user && this.user.can_edit_all}
           ?canApprove=${this.user && this.user.can_approve}
@@ -93,9 +94,11 @@ export class ChromedashMyFeaturesPage extends LitElement {
 
   renderPendingAndRecentApprovals() {
     const pendingBox = this.renderBox(
-      'Features pending my approval', 'pending-approval-by:me', 'approvals');
+      'Features pending my approval', 'pending-approval-by:me', 'approvals',
+      'approvals.requested_on');
     const recentBox = this.renderBox(
-      'Recently reviewed features', 'is:recently-reviewed', 'normal', false);
+      'Recently reviewed features', 'is:recently-reviewed', 'normal',
+      '-approvals.reviewed_on', false);
     return [pendingBox, recentBox];
   }
 

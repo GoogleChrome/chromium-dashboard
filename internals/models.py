@@ -1344,6 +1344,7 @@ def single_field_query_async(
   if field is None:
     logging.info('Ignoring field name %r', field_name)
     return []
+  # TODO(jrobbins): support sorting by any fields of other model classes.
   query = Feature.query()
   # Note: We don't exclude deleted features, that's done by process_query.
 
@@ -1438,9 +1439,10 @@ class Approval(DictModel):
     approvals = query.fetch(limit)
     return approvals
 
+  @classmethod
   def sorted_by_pending_request_date(cls, descending):
     """Return feature_ids of pending approvals sorted by request date."""
-    query = Approval.query(Approval.state == REVIEW_REQUESTED)
+    query = Approval.query(Approval.state == Approval.REVIEW_REQUESTED)
     if descending:
       query = query.order(-Approval.set_on)
     else:
@@ -1450,16 +1452,17 @@ class Approval(DictModel):
     feature_ids = utils.dedupe(pa.feature_id for pa in pending_approvals)
     return feature_ids
 
+  @classmethod
   def sorted_by_review_date(cls, descending):
     """Return feature_ids of reviewed approvals sorted by last review."""
-    query = Approval.query(Approval.state.IN(FINAL_STATES))
+    query = Approval.query(Approval.state.IN(Approval.FINAL_STATES))
     if descending:
       query = query.order(-Approval.set_on)
     else:
       query = query.order(Approval.set_on)
     recent_approvals = query.fetch(projection=['feature_id'])
 
-    feature_ids = utils.dedupe(pa.feature_id for pa in pending_approvals)
+    feature_ids = utils.dedupe(ra.feature_id for ra in recent_approvals)
     return feature_ids
 
   @classmethod
