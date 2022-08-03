@@ -1,4 +1,4 @@
-import {LitElement, css, html} from 'lit';
+import {LitElement, html} from 'lit';
 import {ALL_FIELDS} from './form-field-specs';
 import {unsafeHTML} from 'lit/directives/unsafe-html.js';
 
@@ -9,100 +9,9 @@ export class ChromedashFormField extends LitElement {
       value: {type: String},
       field: {type: String},
       errors: {type: String},
+      stage: {type: String},
+      disabled: {type: Boolean},
     };
-  }
-
-  static get disabledStyles() {
-    // Since we are using light DOM, for now, these styles are
-    // not used.  See styles in forms.scss instead.
-    // TODO: Check whether we can still use these instead.
-
-    // Remove vertical padding for extrahelp row cell.
-    // Rely on padding of sl-details, when it's displayed.
-
-    // If first child of helptext and sl-details content has
-    // margin-top, typically only block elements do,
-    // then make it 0.
-    // Similarly for last-child and margin-bottom.
-    return [
-      css`
-        :host {
-          display: table-row-group;
-        }
-
-        tr[hidden] th,
-        tr[hidden] td {
-          padding: 0;
-        }
-
-        th, td {
-          text-align: left;
-          vertical-align: top;
-        }
-
-        th {
-          padding: 12px 10px 5px 0;
-        }
-
-        td {
-          padding: 6px 10px;
-        }
-
-        td:first-of-type {
-          width: 60%;
-          max-width: 35em;
-        }
-
-        td.extrahelp {
-          padding: 0 10px;
-        }
-
-        .helptext {
-          display: block;
-          font-size: small;
-          max-width: 40em;
-          margin-top: 2px;
-        }
-
-        .helptext > *:first-child {
-          margin-top: 0;
-        }
-        .helptext > *:last-child {
-          margin-bottom: 0;
-        }
-
-        .errorlist {
-          color: red;
-        }
-
-        sl-details::part(base) {
-          border-width: 0;
-        }
-
-        sl-details::part(header) {
-          padding: 0;
-          display: none;
-        }
-
-        sl-details::part(content) {
-          padding-top: 0;
-        }
-
-        sl-icon-button::part(base) {
-          font-size: 16px;
-          color: var(--link-color);
-          padding: 0;
-          margin: 4px;
-        }
-
-        sl-details > *:first-child {
-          margin-top: 0;
-        }
-        sl-details > *:last-child {
-          margin-bottom: 0;
-        }
-      `,
-    ];
   }
 
   toggleExtraHelp() {
@@ -133,6 +42,7 @@ export class ChromedashFormField extends LitElement {
             id="id_${this.name}"
             size="small"
             ?checked=${ this.value === 'True' ? true : false }
+            ?disabled=${ this.disabled }
             >
           ${label}
         </sl-checkbox>

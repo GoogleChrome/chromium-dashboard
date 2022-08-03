@@ -88,6 +88,15 @@ export const ALL_FIELDS = {
         Select the feature type.`,
   },
 
+  'set_stage': {
+    type: 'checkbox',
+    label: 'Set to this stage',
+    help_text: html`
+      Check this box to move this feature to this
+      stage in the process. Leave it unchecked if you are adding
+      draft information or revising a previous stage.`,
+  },
+
   'intent_stage': {
     label: 'Process stage',
     help_text: html`
