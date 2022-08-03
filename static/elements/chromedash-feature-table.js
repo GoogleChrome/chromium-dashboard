@@ -117,6 +117,12 @@ class ChromedashFeatureTable extends LitElement {
         white-space: nowrap;
         vertical-align: top;
       }
+      td.icon_col a {
+        padding: 2px 4px;
+      }
+      td.icon_col a:hover {
+        text-decoration: none;
+      }
       .quick_actions {
         white-space: nowrap;
         float: right;
