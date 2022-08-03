@@ -56,9 +56,10 @@ table td label input[type=radio]:focus {
 
       {{ overview_form }}
 
-      <chromedash-form-field name="feature_type">
-        <span slot="field" class="choices">
-
+      <chromedash-form-field name="feature_type"
+        class="choices"
+        field="
+          {% filter force_escape %}
             <label for="id_feature_type_0">
               <input id="id_feature_type_0" name="feature_type" type="radio"
                      value="0" required>
@@ -95,8 +96,8 @@ table td label input[type=radio]:focus {
             </label>
 
             <p>Deprecate and remove an old feature.</p>
-
-        </span>
+          {% endfilter %}
+           ">
       </chromedash-form-field>
 
       <chromedash-form-field>

@@ -31,26 +31,13 @@
     <chromedash-form-table>
       {{ feature_form }}
 
-      <chromedash-form-field>
-        <span slot="label">Process stage:</span>
-        <span slot="field">
-          {% if already_on_this_stage %}
-          {% else %}
-            <input type="checkbox" name="set_stage" id="set_stage">
-            <label for="set_stage">
-              Set to: <b>{{ stage_name }}</b>
-            </label>
-          {% endif %}
-        </span>
-        <span slot="help">
-          {% if already_on_this_stage %}
-            This feature is already in stage <b>{{ stage_name }}</b>.
-          {% else %}
-            Check this box to move this feature to this
-            stage in the process. Leave it unchecked if you are adding
-            draft information or revising a previous stage.
-          {% endif %}
-        </span>
+      <chromedash-form-field name="set_stage" 
+        stage="{{ stage_name }}" 
+        value="{{ already_on_this_stage }}"
+        {% if already_on_this_stage %}
+          disabled
+        {% endif %}
+        >
       </chromedash-form-field>
 
     </chromedash-form-table>
