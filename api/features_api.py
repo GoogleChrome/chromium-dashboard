@@ -54,8 +54,9 @@ class FeaturesAPI(basehandlers.APIHandler):
         self.abort(400, msg='Invalid  Milestone')
 
     user_query = self.request.args.get('q', '')
+    sort_spec = self.request.args.get('sort')
     features_on_page, total_count = search.process_query(
-        user_query, show_unlisted=show_unlisted_features)
+        user_query, sort_spec=sort_spec, show_unlisted=show_unlisted_features)
 
     return {
         'total_count': total_count,

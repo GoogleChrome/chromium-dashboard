@@ -65,7 +65,6 @@ class ModelsFunctionsTest(testing_config.CustomTestCase):
         'impl_status_chrome', 99)
     self.assertEqual(99, actual)
 
-
   def test_del_none(self):
     d = {}
     self.assertEqual(
@@ -76,6 +75,110 @@ class ModelsFunctionsTest(testing_config.CustomTestCase):
     self.assertEqual(
         {1: 'one', 3: {}, 4: {44: 44}},
         models.del_none(d))
+
+
+class ModelSearchFeaturesTest(testing_config.CustomTestCase):
+
+  def setUp(self):
+    ramcache.SharedInvalidate.check_for_distributed_invalidation()
+
+    self.feature_1 = models.Feature(
+        name='feature a', summary='sum', owner=['owner@example.com'],
+        category=1, visibility=1, standardization=1, web_dev_views=1,
+        impl_status_chrome=3)
+    self.feature_1.put()
+    self.feature_1_id = self.feature_1.key.integer_id()
+
+    self.feature_2 = models.Feature(
+        name='feature b', summary='sum', owner=['owner@example.com'],
+        category=1, visibility=1, standardization=1, web_dev_views=1,
+        impl_status_chrome=3)
+    self.feature_2.put()
+    self.feature_2_id = self.feature_2.key.integer_id()
+
+    self.approval_1_1 = models.Approval(
+        feature_id=self.feature_1_id, field_id=1,
+        state=models.Approval.REVIEW_REQUESTED,
+        set_on=datetime.datetime(2022, 7, 1),
+        set_by='feature_owner@example.com')
+    self.approval_1_1.put()
+
+    self.approval_1_2 = models.Approval(
+        feature_id=self.feature_1_id, field_id=1,
+        state=models.Approval.APPROVED,
+        set_on=datetime.datetime(2022, 7, 2),
+        set_by='reviewer@example.com')
+    self.approval_1_2.put()
+
+    self.approval_2_1 = models.Approval(
+        feature_id=self.feature_2_id, field_id=1,
+        state=models.Approval.REVIEW_REQUESTED,
+        set_on=datetime.datetime(2022, 8, 1),
+        set_by='feature_owner@example.com')
+    self.approval_2_1.put()
+
+    self.approval_2_2 = models.Approval(
+        feature_id=self.feature_2_id, field_id=1,
+        state=models.Approval.APPROVED,
+        set_on=datetime.datetime(2022, 8, 2),
+        set_by='reviewer@example.com')
+    self.approval_2_2.put()
+
+  def tearDown(self):
+    self.feature_1.key.delete()
+    self.feature_2.key.delete()
+    for appr in models.Approval.query():
+      appr.key.delete()
+    ramcache.flush_all()
+
+  def test_single_field_query_async__normal(self):
+    """We get a promise to run the DB query, which produces results."""
+    actual_promise = models.single_field_query_async('summary', '=', 'sum')
+    actual = actual_promise.get_result()
+    self.assertCountEqual(
+        [self.feature_1_id, self.feature_2_id],
+        [key.integer_id() for key in actual])
+
+  def test_single_field_query_async__zero_results(self):
+    """When there are no matching results, we get back a promise for []."""
+    actual_promise = models.single_field_query_async('summary', '=', 'nope')
+    actual = actual_promise.get_result()
+    self.assertCountEqual([], actual)
+
+  def test_single_field_query_async__bad_field(self):
+    """An unknown field imediately gives zero results."""
+    actual = models.single_field_query_async('zodiac', '=', 'leo')
+    self.assertCountEqual([], actual)
+
+  def test_total_order_query_async__field_asc(self):
+    """We can get keys used to sort features in ascending order."""
+    actual_promise = models.total_order_query_async('name')
+    actual = actual_promise.get_result()
+    self.assertEqual(
+        [self.feature_1_id, self.feature_2_id],
+        [key.integer_id() for key in actual])
+
+  def test_total_order_query_async__field_desc(self):
+    """We can get keys used to sort features in descending order."""
+    actual_promise = models.total_order_query_async('-name')
+    actual = actual_promise.get_result()
+    self.assertEqual(
+        [self.feature_2_id, self.feature_1_id],
+        [key.integer_id() for key in actual])
+
+  def test_total_order_query_async__requested_on(self):
+    """We can get feature IDs sorted by approval review requests."""
+    actual = models.total_order_query_async('approvals.requested_on')
+    self.assertEqual(
+        [self.feature_1_id, self.feature_2_id],
+        actual)
+
+  def test_total_order_query_async__reviewed_on(self):
+    """We can get feature IDs sorted by approval granting times."""
+    actual = models.total_order_query_async('approvals.reviewed_on')
+    self.assertEqual(
+        [self.feature_1_id, self.feature_2_id],
+        actual)
 
 
 class FeatureTest(testing_config.CustomTestCase):
@@ -164,7 +267,7 @@ class FeatureTest(testing_config.CustomTestCase):
     self.assertEqual(
         ['feature a'],
         names)
-  
+
   def test_get_all__owner_unlisted(self):
     """Unlisted features should still be visible to their owners."""
     self.feature_2.unlisted = True
@@ -448,23 +551,6 @@ class ApprovalTest(testing_config.CustomTestCase):
     actual = models.Approval.get_approvals(set_by='one@example.com')
     self.assertEqual(1, len(actual))
     self.assertEqual(models.Approval.REVIEW_REQUESTED, actual[0].state)
-
-    actual = models.Approval.get_approvals(
-        order=-models.Approval.set_on, limit=10)
-    self.assertEqual(2, len(actual))
-    self.assertEqual(models.Approval.APPROVED, actual[0].state)
-    self.assertEqual(models.Approval.REVIEW_REQUESTED, actual[1].state)
-
-    actual = models.Approval.get_approvals(
-        order=-models.Approval.set_on, limit=1)
-    self.assertEqual(1, len(actual))
-    self.assertEqual(models.Approval.APPROVED, actual[0].state)
-
-    actual = models.Approval.get_approvals(
-        order=-models.Approval.set_on, states=[models.Approval.APPROVED],
-        limit=10)
-    self.assertEqual(1, len(actual))
-    self.assertEqual(models.Approval.APPROVED, actual[0].state)
 
   def test_is_valid_state(self):
     """We know what approval states are valid."""
