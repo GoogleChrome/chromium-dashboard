@@ -1,31 +1,31 @@
 <p>
-    [Why me?] You are receiving this notification because you are listed as an owner of the following ChromeStatus feature entry:
+  You are receiving this notification because you are listed as an owner of the following ChromeStatus feature entry:
 </p>
 </br>
 <p>
-    <strong>{{feature_name}}</strong>
+  <strong>{{feature.name}}</strong>
 </p> 
 </br>
 <p>
-    [Why now?] Your feature is slated to launch soon:
+  Your feature is slated to launch soon for m{{milestone}}:
 </p>
 </br>
 <p>
-    <strong>m{{milestone}}</strong>
+  {% include "estimated-milestones-table.html" %}
 </p>
 </br>
 <p>
-    [Background/motivation] Your feature entry is an important resource for
-    cross functional teams that help drive adoption of new features and
-    enterprise IT admins who might be affected by web platform changes.
+  Your feature entry is an important resource for
+  cross functional teams that help drive adoption of new features and
+  enterprise IT admins who might be affected by web platform changes.
 </p>
 </br>
 <p>
-    [Call to action] We need to know whether your plans are changing or staying
-    the same. <strong>Please click the link below to update and confirm the
-    milestone fields and implementation status of your feature entry.</strong>
+  We need to know whether your plans are changing or staying
+  the same. <strong>Please click the link below to update and confirm key
+  fields of your feature entry.</strong>
 </p>
 </br>
-<b><a href="https://chromestatus.com/guide/verify_accuracy/{{id}}">
-    https://chromestatus.com/guide/verify_accuracy/{{id}}
+<b><a href="{{site_url}}guide/verify_accuracy/{{feature.id}}">
+  {{site_url}}guide/verify_accuracy/{{feature.id}}
 </a></b>

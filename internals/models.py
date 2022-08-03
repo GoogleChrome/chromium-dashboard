@@ -1221,7 +1221,7 @@ class Feature(DictModel):
     changed_props = []
     for prop_name, prop in list(self._properties.items()):
       if prop_name in (
-          'created_by', 'updated_by', 'updated','created', 'accurate_as_of'):
+          'created_by', 'updated_by', 'updated', 'created'):
         continue
       new_val = getattr(self, prop_name, None)
       old_val = getattr(self, '_old_' + prop_name, None)
@@ -1230,6 +1230,11 @@ class Feature(DictModel):
           continue
         new_val = convert_enum_int_to_string(prop_name, new_val)
         old_val = convert_enum_int_to_string(prop_name, old_val)
+        # Convert any dateime props to string.
+        if isinstance(new_val, datetime.datetime):
+          new_val = str(new_val)
+          if old_val is not None:
+            old_val = str(old_val)
         changed_props.append({
             'prop_name': prop_name, 'old_val': old_val, 'new_val': new_val})
 
