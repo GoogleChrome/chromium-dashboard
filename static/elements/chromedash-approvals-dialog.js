@@ -217,7 +217,7 @@ class ChromedashApprovalsDialog extends LitElement {
       this.changedApprovalsByField.get(approvalValue.field_id) ||
           approvalValue.state);
     const placeholderOption = (approvalValue.state == -1) ?
-      html`<option value="-1" selected>No value</option>` :
+      html`<sl-menu-item value="-1" selected>No value</sl-menu-item>` :
       nothing;
 
     return html`
@@ -226,18 +226,17 @@ class ChromedashApprovalsDialog extends LitElement {
         <span class="set_on">${this.formatDate(approvalValue.set_on)}</span>
         <span class="appr_val">
           ${approvalValue.set_by == this.signedInUser ? html`
-          <select
-            selected=${selectedValue}
+        <sl-select name="${approvalValue.field_id}"
+            xxvalue="${selectedValue}"
             data-field="${approvalValue.field_id}"
             @change=${this.handleSelectChanged}
           >
               ${placeholderOption}
               ${STATE_NAMES.map((valName) => html`
-                <option value="${valName[0]}"
-                  ?selected=${valName[0] == selectedValue}
-                 >${valName[1]}</option>`,
+                <sl-menu-item value="${valName[0]}"
+                 >${valName[1]}</sl-menu-item>`,
                 )}
-            </select>` : html`
+            </sl-select>` : html`
            ${this.findStateName(approvalValue.state)}
             `}
         </span>
@@ -401,21 +400,21 @@ class ChromedashApprovalsDialog extends LitElement {
     let showAllCheckbox = nothing;
     if (this.subsetPending) {
       showAllCheckbox = html`
-         <label id="show_all_checkbox"><input
-           type="checkbox" ?checked=${this.showAllIntents}
+         <sl-checkbox
+           ?checked=${this.showAllIntents}
            @click=${this.toggleShowAllIntents}
-           >Show all intents</label>
+           >Show all intents</sl-checkbox>
       `;
     }
     const postToSelect = html`
-      <select style="margin-right:1em" id="post_to_approval_field">
-        <option value="0">Don't post to mailing list</option>
+      <sl-select style="width:40%" placement="top" value=0 id="post_to_approval_field">
+        <sl-menu-item value="0">Don't post to mailing list</sl-menu-item>
         ${APPROVAL_DEFS.map((apprDef) => html`
-          <option value="${apprDef.id}"
+          <sl-menu-item value="${apprDef.id}"
                   ?disabled=${!this.canPostTo(this.feature[apprDef.threadField])}
-          >Post to ${apprDef.name} thread</option>
+          >Post to ${apprDef.name} thread</sl-menu-item>
         `)}
-      </select>
+      </sl-select>
       `;
 
     return html`
@@ -429,13 +428,13 @@ class ChromedashApprovalsDialog extends LitElement {
      <div class="controls">
        ${showAllCheckbox}
        ${postToSelect}
-       <button class="primary"
+       <sl-button variant="primary"
          @click=${this.handleSave}
          ?disabled=${!this.needsSave}
-         >Save</button>
-       <button
+         >Save</sl-button>
+       <sl-button
          @click=${this.handleCancel}
-         >Cancel</button>
+         >Cancel</sl-button>
      </div>
     `;
   }
