@@ -1,5 +1,6 @@
 import {LitElement, css, html} from 'lit';
 
+
 export class ChromedashFormTable extends LitElement {
   static get properties() {
     return {

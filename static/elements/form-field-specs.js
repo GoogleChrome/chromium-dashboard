@@ -19,7 +19,6 @@ export const ALL_FIELDS = {
     label: 'Feature name',
     help_text: html`
         Capitalize only the first letter and the beginnings of proper nouns.
-        <br/><br/>
         <a target="_blank"
             href="https://github.com/GoogleChrome/chromium-dashboard/wiki/EditingHelp#feature-name">
           Learn more</a>.
@@ -34,7 +33,6 @@ export const ALL_FIELDS = {
     help_text: html`
        <p>Text in the beta release post, the enterprise release notes,
         and other external sources will be based on this text.</p>
-
         <p>Write from a web developer's point of view. Begin with one line
         explaining what the feature does. Add one or two lines explaining
         how this feature helps developers. Write in a matter-of-fact
@@ -65,6 +63,7 @@ export const ALL_FIELDS = {
   },
 
   'unlisted': {
+    type: 'checkbox',
     label: 'Unlisted',
     help_text: html`
         Check this box to hide draft emails in list views. Anyone with
@@ -87,6 +86,15 @@ export const ALL_FIELDS = {
     label: 'Feature type',
     help_text: html`
         Select the feature type.`,
+  },
+
+  'set_stage': {
+    type: 'checkbox',
+    label: 'Set to this stage',
+    help_text: html`
+      Check this box to move this feature to this
+      stage in the process. Leave it unchecked if you are adding
+      draft information or revising a previous stage.`,
   },
 
   'intent_stage': {
@@ -208,6 +216,7 @@ export const ALL_FIELDS = {
   },
 
   'api_spec': {
+    type: 'checkbox',
     label: 'API spec',
     help_text: html`
         The spec document has details in a specification language
@@ -588,6 +597,7 @@ export const ALL_FIELDS = {
   },
 
   'all_platforms': {
+    type: 'checkbox',
     label: 'Supported on all platforms?',
     help_text: html`
       Will this feature be supported on all six Blink platforms
@@ -665,6 +675,7 @@ export const ALL_FIELDS = {
   },
 
   'requires_embedder_support': {
+    type: 'checkbox',
     label: 'Requires Embedder Support',
     help_text: html`
        Will this feature require support in //chrome?
@@ -725,6 +736,7 @@ export const ALL_FIELDS = {
   },
 
   'prefixed': {
+    type: 'checkbox',
     label: 'Prefixed?',
     help_text: '',
   },
