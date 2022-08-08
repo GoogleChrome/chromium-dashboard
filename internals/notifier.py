@@ -308,8 +308,8 @@ class FeatureAccuracyHandler(basehandlers.FlaskHandler):
     accuracy_as_of_delta = timedelta(weeks=self.ACCURACY_AS_OF_WEEKS)
     for feature in features:
       # If the data has been recently verified as accurate, no need for email.
-      if (feature.accuracy_as_of is not None and
-          feature.accuracy_as_of + accuracy_as_of_delta < now):
+      if (feature.accurate_as_of is not None and
+          feature.accurate_as_of + accuracy_as_of_delta < now):
         continue
   
       # Check each milestone field and see if it corresponds with
