@@ -449,3 +449,33 @@ class FeatureEditAllFieldsTemplateTest(TestWithFeature):
         self.template_data, self.full_template_path)
     parser = html5lib.HTMLParser(strict=True)
     document = parser.parse(template_text)
+
+class FeatureEditAllFieldsTemplateTest(TestWithFeature):
+
+  HANDLER_CLASS = guide.FeatureVerifyAccuracy
+
+  def setUp(self):
+    super(FeatureEditAllFieldsTemplateTest, self).setUp()
+    self.feature_1 = models.Feature(
+        name='feature one', summary='sum', owner=['user1@google.com'],
+        category=1, visibility=1, standardization=1,
+        web_dev_views=models.DEV_NO_SIGNALS, impl_status_chrome=1)
+    self.feature_1.put()
+    self.stage = models.INTENT_INCUBATE  # Shows first form
+    testing_config.sign_in('user1@google.com', 1234567890)
+
+    with test_app.test_request_context(self.request_path):
+      self.template_data = self.handler.get_template_data(
+        self.feature_1.key.integer_id())
+      
+      self.template_data.update(self.handler.get_common_data())
+      self.template_data['nonce'] = 'fake nonce'
+      template_path = self.handler.get_template_path(self.template_data)
+      self.full_template_path = os.path.join(template_path)
+
+  def test_html_rendering(self):
+    """We can render the template with valid html."""
+    template_text = self.handler.render(
+        self.template_data, self.full_template_path)
+    parser = html5lib.HTMLParser(strict=True)
+    document = parser.parse(template_text)

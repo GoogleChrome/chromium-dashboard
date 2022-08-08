@@ -554,6 +554,8 @@ class FeatureEditStage(basehandlers.FlaskHandler):
 
     if self.touched('standardization'):
       feature.standardization = int(self.form.get('standardization'))
+    if self.form.get('accurate_as_of'):
+      feature.accurate_as_of = datetime.now()
     if self.touched('unlisted'):
       feature.unlisted = self.form.get('unlisted') == 'on'
     if self.touched('comments'):
@@ -609,5 +611,29 @@ class FeatureEditAllFields(FeatureEditStage):
         'feature': f,
         'feature_id': f.key.integer_id(),
         'flat_forms': flat_forms,
+    }
+    return template_data
+
+class FeatureVerifyAccuracy(FeatureEditStage):
+  TEMPLATE_PATH = 'guide/verify_accuracy.html'
+
+  @permissions.require_edit_feature
+  def get_template_data(self, feature_id):
+    f, _ = self.get_feature_and_process(feature_id)
+    feature_edit_dict = f.format_for_edit()
+
+    fields_title = "Accuracy last verified at time of creation."
+    if f.accurate_as_of is not None:
+      date = f.accurate_as_of.strftime("%Y-%m-%d")
+      fields_title = f"Accuracy last verified {date}."
+
+    form_section_list = (fields_title, guideforms.Verify_Accuracy),
+    forms = [
+        (section_name, form_class(feature_edit_dict))
+        for section_name, form_class in form_section_list]
+    template_data = {
+        'feature': f,
+        'feature_id': f.key.integer_id(),
+        'forms': forms,
     }
     return template_data

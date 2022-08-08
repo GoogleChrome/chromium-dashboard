@@ -70,6 +70,13 @@ export const ALL_FIELDS = {
         a link will be able to view the feature's detail page.`,
   },
 
+  'accurate_as_of': {
+    type: 'checkbox',
+    label: 'Confirm Accuracy',
+    help_text: html`
+        This data is accurate and up to date as of today.`,
+  },
+
   'blink_components': {
     label: 'Blink component',
     help_text: html`

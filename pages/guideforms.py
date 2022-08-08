@@ -148,6 +148,11 @@ ALL_FIELDS = {
         required=False, label='',
         widget=forms.EmailInput(attrs=MULTI_EMAIL_FIELD_ATTRS)),
 
+    'accurate_as_of': forms.BooleanField(
+        label='',
+        widget=forms.CheckboxInput(attrs={'label': "Confirm accuracy"}),
+        required=False, initial=True),
+
     'category': forms.ChoiceField(
         required=False, label='',
         initial=models.MISC,
@@ -553,8 +558,15 @@ class ChromedashForm(forms.Form):
             if hasattr(field.widget, 'check_test'):
                 # Must be a checkbox field.
                 row_template = checkbox_row
-                if field.widget.check_test(value) :
+                if field.widget.check_test(value):
                     checked = True
+                
+                # accurate_as_of field should always be checked, regardless of
+                # the current value. This is only necessary if the feature
+                # has been created before this field was added.
+                if name == 'accurate_as_of':
+                    checked = True
+                    value = True
             
             # Create a 'class="..."' attribute if the row should have any
             # CSS classes applied.
@@ -867,6 +879,17 @@ Flat_Ship = define_form_class_using_shared_fields(
      'shipped_milestone', 'shipped_android_milestone',
      'shipped_ios_milestone', 'shipped_webview_milestone'))
 
+Verify_Accuracy = define_form_class_using_shared_fields(
+    'Verify_Accuracy',
+    ('summary', 'owner', 'editors', 'impl_status_chrome', 'intent_stage',
+    'dt_milestone_android_start', 'dt_milestone_desktop_start',
+    'dt_milestone_ios_start', 'ot_milestone_android_start',
+    'ot_milestone_android_end', 'ot_milestone_desktop_start',
+    'ot_milestone_desktop_end', 'ot_milestone_webview_start',
+    'ot_milestone_webview_end', 'shipped_android_milestone',
+    'shipped_ios_milestone', 'shipped_milestone', 'shipped_webview_milestone',
+    'accurate_as_of')
+)
 
 FIELD_NAME_TO_DISPLAY_TYPE = {
     'doc_links': 'urllist',
@@ -915,6 +938,8 @@ DISPLAY_IN_FEATURE_HIGHLIGHTS = [
     'bug_url',
     'comments',
 ]
+
+DISPLAY_IN_ACCURACY_VERIFICATION = ['accurate_as_of']
 
 DISPLAY_FIELDS_IN_STAGES = {
     'Metadata': make_display_specs(
