@@ -278,12 +278,6 @@ class FeatureAccuracyHandler(basehandlers.FlaskHandler):
   def get_template_data(self):
     """Sends notifications to users requesting feature updates for accuracy."""
 
-    # Do not send notifications until client-side changes are made.
-    # TODO(danielrsmith): This check should be removed when the new page to
-    # verify data accuracy is implemented.
-    if not self.SEND_NOTIFICATIONS:
-      return {'message': '0 emails sent or logged.'}
-
     features_to_notify = self._determine_features_to_notify()
     email_tasks = self._build_email_tasks(features_to_notify)
     send_emails(email_tasks)

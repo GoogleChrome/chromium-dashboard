@@ -380,6 +380,13 @@ class EmailFormattingTest(testing_config.CustomTestCase):
         True, self.feature_2, self.changes)
 
 
+class MockResponse:
+  """Creates a fake response object for testing."""
+  def __init__(self, status_code=200, text='{}'):
+    self.status_code = status_code
+    self.text = text
+
+
 class FeatureStarTest(testing_config.CustomTestCase):
 
   def setUp(self):
@@ -473,8 +480,18 @@ class FeatureStarTest(testing_config.CustomTestCase):
         [au.email for au in actual])
 
   @mock.patch('requests.get')
-  def test_determine_features_to_notify(self, mock_get):
-    mock_get.return_value = '{"mstones":[{"mstone": "100"}]}'
+  def test_determine_features_to_notify__no_features(self, mock_get):
+    mock_return = MockResponse(text='{"mstones":[{"mstone": "40"}]}')
+    mock_get.return_value = mock_return
+    accuracy_notifier = notifier.FeatureAccuracyHandler()
+    result = accuracy_notifier.get_template_data()
+    expected = {'message': '0 emails sent or logged.'}
+    self.assertEqual(result, expected)
+  
+  @mock.patch('requests.get')
+  def test_determine_features_to_notify__valid_features(self, mock_get):
+    mock_return = MockResponse(text='{"mstones":[{"mstone": "100"}]}')
+    mock_get.return_value = mock_return
     accuracy_notifier = notifier.FeatureAccuracyHandler()
     result = accuracy_notifier.get_template_data()
     expected = {'message': '0 emails sent or logged.'}
