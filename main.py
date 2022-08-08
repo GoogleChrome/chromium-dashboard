@@ -191,6 +191,7 @@ internals_routes = [
   ('/cron/update_blink_components', fetchmetrics.BlinkComponentHandler),
   ('/cron/export_backup', data_backup.BackupExportHandler),
   ('/cron/write_creator', write_creator.UpdateCreatorHandler),
+  ('/cron/send_accuracy_notifications', notifier.FeatureAccuracyHandler),
 
   ('/tasks/email-subscribers', notifier.FeatureChangeHandler),
 

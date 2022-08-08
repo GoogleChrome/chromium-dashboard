@@ -611,6 +611,7 @@ class Feature(DictModel):
         'by': d.pop('updated_by', None),
         'when': d.pop('updated', None),
       }
+      d['accurate_as_of'] = d.pop('accurate_as_of', None)
       d['standards'] = {
         'spec': d.pop('spec_link', None),
         'status': {
@@ -1171,7 +1172,8 @@ class Feature(DictModel):
     # Diff values to see what properties have changed.
     changed_props = []
     for prop_name, prop in list(self._properties.items()):
-      if prop_name in ('created_by', 'updated_by', 'updated', 'created'):
+      if prop_name in (
+          'created_by', 'updated_by', 'updated', 'created'):
         continue
       new_val = getattr(self, prop_name, None)
       old_val = getattr(self, '_old_' + prop_name, None)
@@ -1180,6 +1182,11 @@ class Feature(DictModel):
           continue
         new_val = convert_enum_int_to_string(prop_name, new_val)
         old_val = convert_enum_int_to_string(prop_name, old_val)
+        # Convert any dateime props to string.
+        if isinstance(new_val, datetime.datetime):
+          new_val = str(new_val)
+          if old_val is not None:
+            old_val = str(old_val)
         changed_props.append({
             'prop_name': prop_name, 'old_val': old_val, 'new_val': new_val})
 
@@ -1207,6 +1214,7 @@ class Feature(DictModel):
   # Metadata.
   created = ndb.DateTimeProperty(auto_now_add=True)
   updated = ndb.DateTimeProperty(auto_now=True)
+  accurate_as_of = ndb.DateTimeProperty(auto_now=False)
   updated_by = ndb.UserProperty()
   created_by = ndb.UserProperty()
 

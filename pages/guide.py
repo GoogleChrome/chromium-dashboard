@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import datetime
+from datetime import datetime
 import flask
 import json
 import logging
@@ -142,6 +142,7 @@ class FeatureNew(basehandlers.FlaskHandler):
         owner=owners,
         editors=editors,
         creator=signed_in_user.email(),
+        accurate_as_of=datetime.now(),
         impl_status_chrome=models.NO_ACTIVE_DEV,
         standardization=models.EDITORS_DRAFT,
         unlisted=self.form.get('unlisted') == 'on',
