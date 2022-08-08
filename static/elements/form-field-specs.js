@@ -74,7 +74,8 @@ export const ALL_FIELDS = {
     type: 'checkbox',
     label: 'Confirm Accuracy',
     help_text: html`
-        This data is accurate and up to date as of today.`,
+        This information is accurate as of today. 
+        (Selecting this avoids reminder emails for four weeks.)`,
   },
 
   'blink_components': {
