@@ -736,3 +736,26 @@ class UserPrefTest(testing_config.CustomTestCase):
     user_prefs = models.UserPref.get_prefs_for_emails(emails)
     self.assertEqual(100, len(user_prefs))
     self.assertEqual('user_0@example.com', user_prefs[0].email)
+
+
+class APIOwnerTest(testing_config.CustomTestCase):
+
+  def setUp(self):
+    now = datetime.datetime.now()
+    self.api_owner_1 = models.APIOwner(url='abc', raw_content='foo', created_on=now)
+    self.api_owner_1.put()
+
+    expired = now - datetime.timedelta(hours=3)
+    self.api_owner_2 = models.APIOwner(url='def', raw_content='bar', created_on=expired)
+    self.api_owner_2.put()
+
+  def tearDown(self):
+    self.api_owner_1.key.delete()
+    self.api_owner_1.key.delete()
+
+  def test_get_raw_api_owners(self):
+    raw_content = models.APIOwner.get_raw_api_owners('abc')
+    self.assertEqual('foo', raw_content)
+
+    expired_content = models.APIOwner.get_raw_api_owners('def')
+    self.assertEqual(None, raw_content)
