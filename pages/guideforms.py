@@ -939,11 +939,9 @@ DISPLAY_IN_FEATURE_HIGHLIGHTS = [
     'comments',
 ]
 
-DISPLAY_IN_ACCURACY_VERIFICATION = ['accurate_as_of']
-
 DISPLAY_FIELDS_IN_STAGES = {
     'Metadata': make_display_specs(
-        'category', 'feature_type', 'intent_stage',
+        'category', 'feature_type', 'intent_stage', 'accurate_as_of'
         ),
     models.INTENT_INCUBATE: make_display_specs(
         'initial_public_proposal_url', 'explainer_links',

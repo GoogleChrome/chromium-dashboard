@@ -62,8 +62,7 @@ class DisplayFieldsTest(unittest.TestCase):
   def test_DISPLAY_FIELDS_IN_STAGES__complete_coverage(self):
     """Each field appears at least once."""
     fields_seen = set(guideforms.DISPLAY_IN_FEATURE_HIGHLIGHTS +
-                      guideforms.DEPRECATED_FIELDS +
-                      guideforms.DISPLAY_IN_ACCURACY_VERIFICATION)
+                      guideforms.DEPRECATED_FIELDS)
     for stage_id, field_spec_list in list(guideforms.DISPLAY_FIELDS_IN_STAGES.items()):
       for field_spec in field_spec_list:
         field_name = field_spec[0]

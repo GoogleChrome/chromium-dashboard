@@ -450,12 +450,12 @@ class FeatureEditAllFieldsTemplateTest(TestWithFeature):
     parser = html5lib.HTMLParser(strict=True)
     document = parser.parse(template_text)
 
-class FeatureEditAllFieldsTemplateTest(TestWithFeature):
+class FeatureVerifyAccuracyTemplateTest(TestWithFeature):
 
   HANDLER_CLASS = guide.FeatureVerifyAccuracy
 
   def setUp(self):
-    super(FeatureEditAllFieldsTemplateTest, self).setUp()
+    super(FeatureVerifyAccuracyTemplateTest, self).setUp()
     self.feature_1 = models.Feature(
         name='feature one', summary='sum', owner=['user1@google.com'],
         category=1, visibility=1, standardization=1,
@@ -467,7 +467,7 @@ class FeatureEditAllFieldsTemplateTest(TestWithFeature):
     with test_app.test_request_context(self.request_path):
       self.template_data = self.handler.get_template_data(
         self.feature_1.key.integer_id())
-      
+
       self.template_data.update(self.handler.get_common_data())
       self.template_data['nonce'] = 'fake nonce'
       template_path = self.handler.get_template_path(self.template_data)
