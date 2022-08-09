@@ -145,6 +145,7 @@ page_routes = [
     ('/guide/edit/<int:feature_id>', guide.ProcessOverview),
     ('/guide/stage/<int:feature_id>/<int:stage_id>', guide.FeatureEditStage),
     ('/guide/editall/<int:feature_id>', guide.FeatureEditAllFields),
+    ('/guide/verify_accuracy/<int:feature_id>', guide.FeatureVerifyAccuracy),
 
     ('/admin/features/launch/<int:feature_id>',
      intentpreview.IntentEmailPreviewHandler),

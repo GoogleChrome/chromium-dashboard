@@ -70,6 +70,14 @@ export const ALL_FIELDS = {
         a link will be able to view the feature's detail page.`,
   },
 
+  'accurate_as_of': {
+    type: 'checkbox',
+    label: 'Confirm Accuracy',
+    help_text: html`
+        This information is accurate as of today. 
+        (Selecting this avoids reminder emails for four weeks.)`,
+  },
+
   'blink_components': {
     label: 'Blink component',
     help_text: html`
