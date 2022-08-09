@@ -622,15 +622,11 @@ class FeatureVerifyAccuracy(FeatureEditStage):
     f, _ = self.get_feature_and_process(feature_id)
     feature_edit_dict = f.format_for_edit()
 
-    fields_title = "Accuracy last verified at time of creation."
+    forms_title = "Accuracy last verified at time of creation."
     if f.accurate_as_of is not None:
       date = f.accurate_as_of.strftime("%Y-%m-%d")
-      fields_title = f"Accuracy last verified {date}."
-
-    form_section_list = (fields_title, guideforms.Verify_Accuracy),
-    forms = [
-        (section_name, form_class(feature_edit_dict))
-        for section_name, form_class in form_section_list]
+      forms_title = f"Accuracy last verified {date}."
+    forms = [(forms_title, guideforms.Verify_Accuracy(feature_edit_dict))]
     template_data = {
         'feature': f,
         'feature_id': f.key.integer_id(),
