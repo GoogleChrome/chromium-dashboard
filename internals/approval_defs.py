@@ -69,7 +69,7 @@ APPROVAL_FIELDS_BY_ID = {
 
 def fetch_owners(url):
   """Load a list of email addresses from an OWNERS file."""
-  raw_content = models.APIOwner.get_raw_api_owners(url)
+  raw_content = models.OwnersFile.get_raw_api_owners(url)
   if raw_content:
     return decode_raw_owner_content(raw_content)
 
@@ -79,7 +79,7 @@ def fetch_owners(url):
     logging.error('Got response %s', repr(response)[:settings.MAX_LOG_LINE])
     raise ValueError('Could not get OWNERS file')
 
-  models.APIOwner(url=url, raw_content=response.content).put()
+  models.OwnersFile(url=url, raw_content=response.content).put()
   return decode_raw_owner_content(response.content)
 
 

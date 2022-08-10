@@ -1740,16 +1740,16 @@ class FeatureOwner(DictModel):
         component_name, remove_as_owner=True)
 
 
-class APIOwner(DictModel):
+class OwnersFile(DictModel):
   """Describes the properties to store raw API_OWNERS content."""
-  url = ndb.StringProperty()
-  raw_content = ndb.TextProperty()
+  url = ndb.StringProperty(required=True)
+  raw_content = ndb.TextProperty(required=True)
   created_on = ndb.DateTimeProperty(auto_now_add=True)
 
   def put(self):
     """Add API owner content in ndb and delete all other entities."""
     # Delete all other entities.
-    ndb.delete_multi(self.query().fetch(keys_only=True))
+    ndb.delete_multi(self.query(OwnersFile.url == self.url).fetch(keys_only=True))
     return self.put()
 
   @classmethod
