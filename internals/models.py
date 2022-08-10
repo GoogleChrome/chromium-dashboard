@@ -1492,12 +1492,14 @@ class Approval(DictModel):
       existing.set_on = now
       existing.state = new_state
       existing.put()
+      logging.info('existing approval is %r', existing.key.integer_id())
       return
 
     new_appr = Approval(
         feature_id=feature_id, field_id=field_id, state=new_state,
         set_on=now, set_by=set_by_email)
     new_appr.put()
+    logging.info('new_appr is %r', new_appr.key.integer_id())
 
   @classmethod
   def clear_request(cls, feature_id, field_id):
