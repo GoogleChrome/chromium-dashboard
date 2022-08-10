@@ -56,6 +56,9 @@ class ApprovalsAPI(basehandlers.APIHandler):
 
     all_approval_values = models.Approval.get_approvals(
         feature_id=feature_id, field_id=field_id)
+    logging.info(
+        'found approvals %r',
+        [appr.key.integer_id() for appr in all_approval_values])
     if approval_defs.is_resolved(all_approval_values, field_id):
       models.Approval.clear_request(feature_id, field_id)
 
