@@ -1444,7 +1444,10 @@ class Approval(DictModel):
       query = query.filter(Approval.state.IN(states))
     if set_by is not None:
       query = query.filter(Approval.set_by == set_by)
-    approvals = query.fetch(limit)
+    # Query with STRONG consistency because ndb defaults to
+    # EVENTUAL consistency and we run this query immediately after
+    # saving the user's change that we want included in the query.
+    approvals = query.fetch(limit, read_consistency=ndb.STRONG)
     return approvals
 
   @classmethod
