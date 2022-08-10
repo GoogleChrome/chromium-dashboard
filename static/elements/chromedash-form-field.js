@@ -1,8 +1,92 @@
-import {LitElement, html} from 'lit';
+import {LitElement, html, css} from 'lit';
 import {ALL_FIELDS} from './form-field-specs';
 import {unsafeHTML} from 'lit/directives/unsafe-html.js';
+import {SHARED_STYLES} from '../sass/shared-css.js';
+
 
 export class ChromedashFormField extends LitElement {
+  static get styles() {
+    return [
+      ...SHARED_STYLES,
+      css`
+        :host {
+          display: table-row-group;
+        }
+
+        tr[hidden] th,
+        tr[hidden] td {
+          padding: 0;
+        }
+
+        th, td {
+          text-align: left;
+          vertical-align: top;
+        }
+
+        th {
+          padding: 12px 10px 5px 0;
+        }
+
+        td {
+          padding: 6px 10px;
+        }
+
+        td:first-of-type {
+          width: 60%;
+          max-width: 35em;
+        }
+
+        td.extrahelp {
+          padding: 0 10px;
+        }
+
+        .helptext {
+          display: block;
+          font-size: small;
+          max-width: 40em;
+          margin-top: 2px;
+        }
+
+        .helptext > *:first-child {
+          margin-top: 0;
+        }
+        .helptext > *:last-child {
+          margin-bottom: 0;
+        }
+
+        .errorlist {
+          color: red;
+        }
+
+        sl-details::part(base) {
+          border-width: 0;
+        }
+
+        sl-details::part(header) {
+          padding: 0;
+          display: none;
+        }
+
+        sl-details::part(content) {
+          padding-top: 0;
+        }
+
+        sl-icon-button::part(base) {
+          font-size: 16px;
+          color: var(--link-color);
+          padding: 0;
+          margin: 4px;
+        }
+
+        sl-details > *:first-child {
+          margin-top: 0;
+        }
+        sl-details > *:last-child {
+          margin-bottom: 0;
+        }
+      `];
+  }
+
   static get properties() {
     return {
       name: {type: String},
