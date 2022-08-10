@@ -1747,14 +1747,14 @@ class OwnersFile(DictModel):
   created_on = ndb.DateTimeProperty(auto_now_add=True)
 
   def put(self):
-    """Add API owner content in ndb and delete all other entities."""
+    """Add the owner file's content in ndb and delete all other entities."""
     # Delete all other entities.
     ndb.delete_multi(self.query(OwnersFile.url == self.url).fetch(keys_only=True))
     return self.put()
 
   @classmethod
   def get_raw_api_owners(cls, url):
-    """Retrieve raw API owner content, if it is created with an hour."""
+    """Retrieve raw the owner file's content, if it is created with an hour."""
     q = cls.query()
     q = q.filter(cls.url == url)
     api_owner = q.fetch(1)
