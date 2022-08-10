@@ -121,4 +121,81 @@ export const FORM_STYLES = [
     sl-select sl-menu-item:not(:defined) {
       display: none 
     }
+
+    chromedash-form-field {
+      display: table-row-group;
+    }
+
+    chromedash-form-field tr[hidden] th,
+    chromedash-form-field tr[hidden] td {
+      padding: 0;
+    }
+
+    chromedash-form-field th,
+    chromedash-form-field td {
+      text-align: left;
+      vertical-align: top;
+    }
+
+    chromedash-form-field th {
+      padding: 12px 10px 5px 0;
+    }
+
+    chromedash-form-field td {
+      padding: 6px 10px;
+    }
+
+    chromedash-form-field td:first-of-type {
+      width: 60%;
+      max-width: 35em;
+    }
+
+    chromedash-form-field td.extrahelp {
+      padding: 0 10px;
+    }
+
+    chromedash-form-field .helptext {
+      display: block;
+      font-size: small;
+      max-width: 40em;
+      margin-top: 2px;
+    }
+
+    chromedash-form-field .helptext > *:first-child {
+      margin-top: 0;
+    }
+    chromedash-form-field .helptext > *:last-child {
+      margin-bottom: 0;
+    }
+
+    chromedash-form-field .errorlist {
+      color: red;
+    }
+
+    chromedash-form-field sl-details::part(base) {
+      border-width: 0;
+    }
+
+    chromedash-form-field sl-details::part(header) {
+      padding: 0;
+      display: none;
+    }
+
+    chromedash-form-field sl-details::part(content) {
+      padding-top: 0;
+    }
+
+    chromedash-form-field sl-icon-button::part(base) {
+      font-size: 16px;
+      color: var(--link-color);
+      padding: 0;
+      margin: 4px;
+    }
+
+    chromedash-form-field sl-details > *:first-child {
+      margin-top: 0;
+    }
+    chromedash-form-field sl-details > *:last-child {
+      margin-bottom: 0;
+    }
   `];

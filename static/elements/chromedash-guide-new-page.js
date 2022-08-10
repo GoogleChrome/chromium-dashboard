@@ -138,9 +138,7 @@ export class ChromedashGuideNewPage extends LitElement {
   }
 
   render() {
-    // TODO: Create precomiled forms css file and import it instead of inlining it here
     return html`
-      <link rel="stylesheet" href="/static/css/forms.css">
       ${this.renderSubHeader()}
       ${this.renderForm()}
     `;
