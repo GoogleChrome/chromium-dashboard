@@ -54,7 +54,7 @@ class ChromedashApp extends LitElement {
       currentPage: {type: String},
       bannerMessage: {type: String},
       bannerTime: {type: Number},
-      pageComponent: {type: Element},
+      pageComponent: {attribute: false},
       contextLink: {type: String}, // used for the back button in the feature page
     };
   }
@@ -133,7 +133,7 @@ class ChromedashApp extends LitElement {
         <div>
           <div class="main-toolbar">
             <div class="toolbar-content">
-              <chromedash-header 
+              <chromedash-header
                 .appTitle=${this.appTitle}
                 .googleSignInClientId=${this.googleSignInClientId}
                 .currentPage=${this.currentPage}>
@@ -167,4 +167,3 @@ class ChromedashApp extends LitElement {
 }
 
 customElements.define('chromedash-app', ChromedashApp);
-
