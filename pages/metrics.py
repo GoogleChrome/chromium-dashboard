@@ -13,18 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-
-
 import json
 import logging
 
 from framework import basehandlers
-from framework import utils
-from pages import guideforms
-from internals import models
-from framework import ramcache
-from framework import utils
+from internals import metrics_models
 from internals import fetchchannels
 
 
@@ -35,7 +28,8 @@ class CssPopularityHandler(basehandlers.FlaskHandler):
   def get_template_data(self, bucket_id=None):
     # Note: bucket_id is not used, but the JS looks in the URL to get it.
     properties = sorted(
-        list(models.CssPropertyHistogram.get_all().items()), key=lambda x:x[1])
+        list(metrics_models.CssPropertyHistogram.get_all().items()),
+        key=lambda x:x[1])
     template_data = {
         'CSS_PROPERTY_BUCKETS': json.dumps(
             properties, separators=(',',':')),
@@ -56,7 +50,8 @@ class FeaturePopularityHandler(basehandlers.FlaskHandler):
   def get_template_data(self, bucket_id=None):
     # Note: bucket_id is not used, but the JS looks in the URL to get it.
     properties = sorted(
-        models.FeatureObserverHistogram.get_all().items(), key=lambda x:x[1])
+        metrics_models.FeatureObserverHistogram.get_all().items(),
+        key=lambda x:x[1])
     template_data = {
         'FEATUREOBSERVER_BUCKETS': json.dumps(
             properties, separators=(',',':')),
