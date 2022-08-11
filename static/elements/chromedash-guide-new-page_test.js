@@ -5,6 +5,7 @@ import {ChromedashGuideNewPage} from './chromedash-guide-new-page';
 describe('chromedash-guide-new-page', () => {
   const xsrfToken = 'fake_xsrf_token';
   const currentPath = '/guide/new';
+
   it('renders with fake data', async () => {
     const component = await fixture(
       html`<chromedash-guide-new-page
