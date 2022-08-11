@@ -15,6 +15,10 @@ export class ChromedashGuideNewPage extends LitElement {
       // without sl-radio which does not yet do validation.
       // We do depend on sl-focus-ring being defined.
       css`
+        .helptext p {
+          margin: 1em 0;
+        }
+
         table td label input[type=radio]:focus {
           box-shadow: 0 0 0 var(--sl-focus-ring-width) var(--sl-input-focus-ring-color);
         }
@@ -72,14 +76,12 @@ export class ChromedashGuideNewPage extends LitElement {
           <input type="hidden" name="token" value=${this.xsrfToken}>
           <chromedash-form-table>
 
-            <chromedash-form-field>
-              <span slot="help">
-                Please see the
-                <a href="https://www.chromium.org/blink/launching-features"
-                  target="_blank" rel="noopener">Launching features</a>
-                page for process instructions.
-              </span>
-            </chromedash-form-field>
+            <span>
+              Please see the
+              <a href="https://www.chromium.org/blink/launching-features"
+                target="_blank" rel="noopener">Launching features</a>
+              page for process instructions.
+            </span>
 
             ${unsafeHTML(this.overviewForm)}
 
@@ -138,7 +140,9 @@ export class ChromedashGuideNewPage extends LitElement {
   }
 
   render() {
+    // TODO: Create precomiled main css file and import it instead of inlining it here
     return html`
+      <link rel="stylesheet" href="/static/css/main.css">
       ${this.renderSubHeader()}
       ${this.renderForm()}
     `;
