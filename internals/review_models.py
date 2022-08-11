@@ -15,7 +15,7 @@
 from google.cloud import ndb
 
 
-class ApprovalVote(ndb.Model):  # copy from Approval
+class Vote(ndb.Model):  # copy from Approval
   """One approver's vote on what the state of a gate should be."""
 
   # Not used: NEEDS_REVIEW = 0
@@ -125,7 +125,7 @@ class ApprovalVote(ndb.Model):  # copy from Approval
 
 class Amendment(ndb.Model):
   """Comments can log changes to other fields of the feature."""
-  field_name = ndb.StringProperty()  // from QUERIABLE_FIELDS
+  field_name = ndb.StringProperty()  # from QUERIABLE_FIELDS
   old_value = ndb.TextProperty()
   new_value = ndb.TextProperty()
 

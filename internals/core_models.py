@@ -80,7 +80,6 @@ class FeatureEntry(ndb.Model):  # Copy from Feature
   tag_review = ndb.StringProperty()
   tag_review_status = ndb.IntegerProperty(default=REVIEW_PENDING)
   non_oss_deps = ndb.TextProperty()
-  origin_trial_feedback_url = ndb.StringProperty()
   anticipated_spec_changes = ndb.TextProperty()
 
   ff_views = ndb.IntegerProperty(required=True, default=NO_PUBLIC_SIGNALS)
@@ -221,6 +220,7 @@ class Stage(ndb.Model):
   experiment_risks = ndb.StringProperty()
   experiment_extension_reason = ndb.StringProperty()
   intent_thread_url = ndb.StringProperty()
+  origin_trial_feedback_url = ndb.StringProperty()
 
 
 class Gate(ndb.Model):  # copy from ApprovalConfig
