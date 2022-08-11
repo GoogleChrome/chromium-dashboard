@@ -1,6 +1,6 @@
 import {LitElement, html, css} from 'lit';
-
 import {SHARED_STYLES} from '../sass/shared-css.js';
+
 
 export class ChromedashFooter extends LitElement {
   static get styles() {

@@ -18,7 +18,7 @@ export const ALL_FIELDS = {
   'name': {
     label: 'Feature name',
     help_text: html`
-        Capitalize only the first letter and the beginnings of proper nouns.
+        <p>Capitalize only the first letter and the beginnings of proper nouns.</p>
         <a target="_blank"
             href="https://github.com/GoogleChrome/chromium-dashboard/wiki/EditingHelp#feature-name">
           Learn more</a>.
