@@ -1745,6 +1745,38 @@ class FeatureOwner(DictModel):
         component_name, remove_as_owner=True)
 
 
+class OwnersFile(DictModel):
+  """Describes the properties to store raw API_OWNERS content."""
+  url = ndb.StringProperty(required=True)
+  raw_content = ndb.TextProperty(required=True)
+  created_on = ndb.DateTimeProperty(auto_now_add=True)
+
+  def put(self):
+    """Add the owner file's content in ndb and delete all other entities."""
+    # Delete all other entities.
+    ndb.delete_multi(OwnersFile.query(
+        OwnersFile.url == self.url).fetch(keys_only=True))
+    return super(OwnersFile, self).put()
+
+  @classmethod
+  def get_raw_api_owners(cls, url):
+    """Retrieve raw the owner file's content, if it is created with an hour."""
+    q = cls.query()
+    q = q.filter(cls.url == url)
+    owners_file_list = q.fetch(1)
+    if not owners_file_list:
+      logging.info('API_OWNERS content does not exist for URL %s.' % (url))
+      return None
+
+    owners_file = owners_file_list[0]
+    # Check if it is created within an hour.
+    an_hour_before = datetime.datetime.now() - datetime.timedelta(hours=1)
+    if owners_file.created_on < an_hour_before:
+      return None
+
+    return owners_file.raw_content
+
+
 class HistogramModel(ndb.Model):
   """Container for a histogram."""
 
