@@ -758,4 +758,4 @@ class OwnersFileTest(testing_config.CustomTestCase):
     self.assertEqual('foo', raw_content)
 
     expired_content = models.OwnersFile.get_raw_api_owners('def')
-    self.assertEqual(None, raw_content)
+    self.assertEqual(None, expired_content)

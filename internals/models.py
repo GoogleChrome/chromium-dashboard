@@ -1749,25 +1749,27 @@ class OwnersFile(DictModel):
   def put(self):
     """Add the owner file's content in ndb and delete all other entities."""
     # Delete all other entities.
-    ndb.delete_multi(self.query(OwnersFile.url == self.url).fetch(keys_only=True))
-    return self.put()
+    ndb.delete_multi(OwnersFile.query(
+        OwnersFile.url == self.url).fetch(keys_only=True))
+    return super(OwnersFile, self).put()
 
   @classmethod
   def get_raw_api_owners(cls, url):
     """Retrieve raw the owner file's content, if it is created with an hour."""
     q = cls.query()
     q = q.filter(cls.url == url)
-    api_owner = q.fetch(1)
-    if not api_owner:
+    owners_file_list = q.fetch(1)
+    if not owners_file_list:
       logging.info('API_OWNERS content does not exist for URL %s.' % (url))
       return None
 
+    owners_file = owners_file_list[0]
     # Check if it is created within an hour.
     an_hour_before = datetime.datetime.now() - datetime.timedelta(hours=1)
-    if api_owner.created_on < an_hour_before:
+    if owners_file.created_on < an_hour_before:
       return None
 
-    return api_owner[0].raw_content
+    return owners_file.raw_content
 
 
 class HistogramModel(ndb.Model):
