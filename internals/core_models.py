@@ -41,7 +41,7 @@ class FeatureEntry(ndb.Model):  # Copy from Feature
 
   # Descriptive info.
   name = ndb.StringProperty(required=True)
-  summary = ndbTtextProperty(required=True)
+  summary = ndb.TextProperty(required=True)
   category = ndb.IntegerProperty(required=True)
   blink_components = ndb.StringProperty(repeated=True)
   star_count = ndb.IntegerProperty(default=0)
