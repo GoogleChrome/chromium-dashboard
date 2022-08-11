@@ -74,32 +74,36 @@ def total_order_query_async(sort_spec):
   return keys_promise
 
 
+def _sorted_by_joined_model(
+    joinable_model_class, condition, descending, order_by):
+  """Return feature_ids sorted by a field in a joined entity kind."""
+  query = joinable_model_class.query()
+  if condition:
+    query = query.filter(condition)
+  if descending:
+    query = query.order(-order_by)
+  else:
+    query = query.order(order_by)
+
+  joined_models = query.fetch(projection=['feature_id'])
+  feature_ids = utils.dedupe(jm.feature_id for jm in joined_models)
+  return feature_ids
+
+
 def sorted_by_pending_request_date(descending):
   """Return feature_ids of pending approvals sorted by request date."""
-  query = models.Approval.query(
-      models.Approval.state == models.Approval.REVIEW_REQUESTED)
-  if descending:
-    query = query.order(-models.Approval.set_on)
-  else:
-    query = query.order(models.Approval.set_on)
-
-  pending_approvals = query.fetch(projection=['feature_id'])
-  feature_ids = utils.dedupe(pa.feature_id for pa in pending_approvals)
-  return feature_ids
+  return _sorted_by_joined_model(
+      models.Approval,
+      models.Approval.state == models.Approval.REVIEW_REQUESTED,
+      descending, models.Approval.set_on)
 
 
 def sorted_by_review_date(descending):
   """Return feature_ids of reviewed approvals sorted by last review."""
-  query = models.Approval.query(
-      models.Approval.state.IN(models.Approval.FINAL_STATES))
-  if descending:
-    query = query.order(-models.Approval.set_on)
-  else:
-    query = query.order(models.Approval.set_on)
-  recent_approvals = query.fetch(projection=['feature_id'])
-
-  feature_ids = utils.dedupe(ra.feature_id for ra in recent_approvals)
-  return feature_ids
+  return _sorted_by_joined_model(
+      models.Approval,
+      models.Approval.state.IN(models.Approval.FINAL_STATES),
+      descending, models.Approval.set_on)
 
 
 QUERIABLE_FIELDS = {
