@@ -23,14 +23,18 @@
 
 {% block content %}
 
-{% include "guide/metadata.html" with offer_editing="yes" %}
+<chromedash-guide-metadata
+  featureId="{{ feature_id }}"
+  xsrfToken="{{ xsrf_token }}"
+  overviewForm="{% filter force_escape %} {{ overview_form }} {% endfilter %}">
+</chromedash-guide-metadata>
 
 <section style="margin: 1em 0 1em 0; max-width: 67em">
   <chromedash-process-overview
-    feature='{{ feature_json }}'
-    process='{{ process_json }}'
-    progress='{{ progress_so_far }}'
-    dismissedcues='{{ user.dismissed_cues }}'>
+    feature="{{ feature_json }}"
+    process="{{ process_json }}"
+    progress="{{ progress_so_far }}"
+    dismissedcues="{{ user.dismissed_cues }}">
   </chromedash-process-overview>
 </section>
 
@@ -41,9 +45,4 @@
  page for process instructions.
 </section>
 
-{% endblock %}
-
-{% block js %}
-<script src="/static/js/admin/process_overview_form.min.js?v={{app_version}}"
-        nonce="{{nonce}}"></script>
 {% endblock %}

@@ -15,10 +15,6 @@ export class ChromedashGuideNewPage extends LitElement {
       // without sl-radio which does not yet do validation.
       // We do depend on sl-focus-ring being defined.
       css`
-        .helptext p {
-          margin: 1em 0;
-        }
-
         table td label input[type=radio]:focus {
           box-shadow: 0 0 0 var(--sl-focus-ring-width) var(--sl-input-focus-ring-color);
         }

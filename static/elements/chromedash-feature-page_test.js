@@ -73,7 +73,7 @@ describe('chromedash-feature-page', () => {
     new_crbug_url: 'fake crbug link',
     browsers: {
       chrome: {
-        blink_component: ['Blink'],
+        blink_components: ['Blink'],
         owners: ['fake chrome owner one', 'fake chrome owner two'],
         status: {text: 'fake chrome status text'},
       },
