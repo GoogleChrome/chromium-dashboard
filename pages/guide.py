@@ -31,6 +31,7 @@ from framework import basehandlers
 from framework import permissions
 from framework import utils
 from pages import guideforms
+from internals import core_enums
 from internals import models
 from internals import processes
 
@@ -38,56 +39,56 @@ from internals import processes
 # Forms to be used for each stage of each process.
 # { feature_type_id: { stage_id: stage_specific_form} }
 STAGE_FORMS = {
-    models.FEATURE_TYPE_INCUBATE_ID: {
-        models.INTENT_INCUBATE: guideforms.NewFeature_Incubate,
-        models.INTENT_IMPLEMENT: guideforms.NewFeature_Prototype,
-        models.INTENT_EXPERIMENT: guideforms.Any_DevTrial,
-        models.INTENT_IMPLEMENT_SHIP: guideforms.NewFeature_EvalReadinessToShip,
-        models.INTENT_EXTEND_TRIAL: guideforms.NewFeature_OriginTrial,
-        models.INTENT_SHIP: guideforms.Most_PrepareToShip,
-        models.INTENT_SHIPPED: guideforms.Any_Ship,
+    core_enums.FEATURE_TYPE_INCUBATE_ID: {
+        core_enums.INTENT_INCUBATE: guideforms.NewFeature_Incubate,
+        core_enums.INTENT_IMPLEMENT: guideforms.NewFeature_Prototype,
+        core_enums.INTENT_EXPERIMENT: guideforms.Any_DevTrial,
+        core_enums.INTENT_IMPLEMENT_SHIP: guideforms.NewFeature_EvalReadinessToShip,
+        core_enums.INTENT_EXTEND_TRIAL: guideforms.NewFeature_OriginTrial,
+        core_enums.INTENT_SHIP: guideforms.Most_PrepareToShip,
+        core_enums.INTENT_SHIPPED: guideforms.Any_Ship,
         },
 
-    models.FEATURE_TYPE_EXISTING_ID: {
-        models.INTENT_IMPLEMENT: guideforms.Existing_Prototype,
-        models.INTENT_EXPERIMENT: guideforms.Any_DevTrial,
-        models.INTENT_EXTEND_TRIAL: guideforms.Existing_OriginTrial,
-        models.INTENT_SHIP: guideforms.Most_PrepareToShip,
-        models.INTENT_SHIPPED: guideforms.Any_Ship,
+    core_enums.FEATURE_TYPE_EXISTING_ID: {
+        core_enums.INTENT_IMPLEMENT: guideforms.Existing_Prototype,
+        core_enums.INTENT_EXPERIMENT: guideforms.Any_DevTrial,
+        core_enums.INTENT_EXTEND_TRIAL: guideforms.Existing_OriginTrial,
+        core_enums.INTENT_SHIP: guideforms.Most_PrepareToShip,
+        core_enums.INTENT_SHIPPED: guideforms.Any_Ship,
         },
 
-    models.FEATURE_TYPE_CODE_CHANGE_ID: {
-        models.INTENT_IMPLEMENT: guideforms.PSA_Implement,
-        models.INTENT_EXPERIMENT: guideforms.Any_DevTrial,
-        models.INTENT_SHIP: guideforms.PSA_PrepareToShip,
-        models.INTENT_SHIPPED: guideforms.Any_Ship,
+    core_enums.FEATURE_TYPE_CODE_CHANGE_ID: {
+        core_enums.INTENT_IMPLEMENT: guideforms.PSA_Implement,
+        core_enums.INTENT_EXPERIMENT: guideforms.Any_DevTrial,
+        core_enums.INTENT_SHIP: guideforms.PSA_PrepareToShip,
+        core_enums.INTENT_SHIPPED: guideforms.Any_Ship,
         },
 
-    models.FEATURE_TYPE_DEPRECATION_ID: {
-        models.INTENT_IMPLEMENT: guideforms.Deprecation_Implement,
-        models.INTENT_EXPERIMENT: guideforms.Any_DevTrial,
-        models.INTENT_EXTEND_TRIAL: guideforms.Deprecation_DeprecationTrial,
-        models.INTENT_SHIP: guideforms.Deprecation_PrepareToShip,
-        models.INTENT_REMOVED: guideforms.Deprecation_Removed,
+    core_enums.FEATURE_TYPE_DEPRECATION_ID: {
+        core_enums.INTENT_IMPLEMENT: guideforms.Deprecation_Implement,
+        core_enums.INTENT_EXPERIMENT: guideforms.Any_DevTrial,
+        core_enums.INTENT_EXTEND_TRIAL: guideforms.Deprecation_DeprecationTrial,
+        core_enums.INTENT_SHIP: guideforms.Deprecation_PrepareToShip,
+        core_enums.INTENT_REMOVED: guideforms.Deprecation_Removed,
         },
 }
 
 
 IMPL_STATUS_FORMS = {
-    models.INTENT_INCUBATE:
+    core_enums.INTENT_INCUBATE:
         (None, guideforms.ImplStatus_Incubate),
-    models.INTENT_EXPERIMENT:
-        (models.BEHIND_A_FLAG, guideforms.ImplStatus_DevTrial),
-    models.INTENT_EXTEND_TRIAL:
-        (models.ORIGIN_TRIAL, guideforms.ImplStatus_OriginTrial),
-    models.INTENT_IMPLEMENT_SHIP:
+    core_enums.INTENT_EXPERIMENT:
+        (core_enums.BEHIND_A_FLAG, guideforms.ImplStatus_DevTrial),
+    core_enums.INTENT_EXTEND_TRIAL:
+        (core_enums.ORIGIN_TRIAL, guideforms.ImplStatus_OriginTrial),
+    core_enums.INTENT_IMPLEMENT_SHIP:
         (None, guideforms.ImplStatus_EvalReadinessToShip),
-    models.INTENT_SHIP:
-        (models.ENABLED_BY_DEFAULT, guideforms.ImplStatus_AllMilestones),
-    models.INTENT_SHIPPED:
-        (models.ENABLED_BY_DEFAULT, guideforms.ImplStatus_AllMilestones),
-    models.INTENT_REMOVED:
-        (models.REMOVED, guideforms.ImplStatus_AllMilestones),
+    core_enums.INTENT_SHIP:
+        (core_enums.ENABLED_BY_DEFAULT, guideforms.ImplStatus_AllMilestones),
+    core_enums.INTENT_SHIPPED:
+        (core_enums.ENABLED_BY_DEFAULT, guideforms.ImplStatus_AllMilestones),
+    core_enums.INTENT_REMOVED:
+        (core_enums.REMOVED, guideforms.ImplStatus_AllMilestones),
     }
 
 # Forms to be used on the "Edit all" page that shows a flat list of fields.
@@ -137,16 +138,16 @@ class FeatureNew(basehandlers.FlaskHandler):
         category=int(self.form.get('category')),
         name=self.form.get('name'),
         feature_type=feature_type,
-        intent_stage=models.INTENT_NONE,
+        intent_stage=core_enums.INTENT_NONE,
         summary=self.form.get('summary'),
         owner=owners,
         editors=editors,
         creator=signed_in_user.email(),
         accurate_as_of=datetime.now(),
-        impl_status_chrome=models.NO_ACTIVE_DEV,
-        standardization=models.EDITORS_DRAFT,
+        impl_status_chrome=core_enums.NO_ACTIVE_DEV,
+        standardization=core_enums.EDITORS_DRAFT,
         unlisted=self.form.get('unlisted') == 'on',
-        web_dev_views=models.DEV_NO_SIGNALS,
+        web_dev_views=core_enums.DEV_NO_SIGNALS,
         blink_components=blink_components,
         tag_review_status=processes.initial_tag_review_status(feature_type),
         created_by=signed_in_user,
@@ -287,7 +288,7 @@ class FeatureEditStage(basehandlers.FlaskHandler):
         'already_on_this_impl_status':
             impl_status_offered == f.impl_status_chrome,
         'impl_status_form': impl_status_form,
-        'impl_status_name': models.IMPLEMENTATION_STATUS.get(
+        'impl_status_name': core_enums.IMPLEMENTATION_STATUS.get(
             impl_status_offered, None),
         'impl_status_offered': impl_status_offered,
     })
@@ -445,7 +446,7 @@ class FeatureEditStage(basehandlers.FlaskHandler):
 
     if self.touched('owner'):
       feature.owner = self.split_emails('owner')
-    
+
     if self.touched('editors'):
       feature.editors = self.split_emails('editors')
 
@@ -571,7 +572,7 @@ class FeatureEditStage(basehandlers.FlaskHandler):
           'experiment_extension_reason')
     if self.touched('ongoing_constraints'):
       feature.ongoing_constraints = self.form.get('ongoing_constraints')
-    
+
     # Add user who updated to list of editors if not currently an editor.
     # TODO(danielrsmith): This should be removed when enabling new permissions.
     associated_with_feature = permissions.strict_can_edit_feature(

@@ -22,6 +22,7 @@ import werkzeug
 import html5lib
 
 from pages import intentpreview
+from internals import core_enums
 from internals import models
 
 test_app = flask.Flask(__name__)
@@ -33,11 +34,11 @@ class IntentEmailPreviewHandlerTest(testing_config.CustomTestCase):
     self.feature_1 = models.Feature(
         name='feature one', summary='sum', owner=['user1@google.com'],
         category=1, visibility=1, standardization=1, web_dev_views=1,
-        impl_status_chrome=1, intent_stage=models.INTENT_IMPLEMENT)
+        impl_status_chrome=1, intent_stage=core_enums.INTENT_IMPLEMENT)
     self.feature_1.put()
 
     self.request_path = '/admin/features/launch/%d/%d?intent' % (
-        models.INTENT_SHIP, self.feature_1.key.integer_id())
+        core_enums.INTENT_SHIP, self.feature_1.key.integer_id())
     self.handler = intentpreview.IntentEmailPreviewHandler()
 
   def tearDown(self):
@@ -84,7 +85,7 @@ class IntentEmailPreviewHandlerTest(testing_config.CustomTestCase):
     feature_id = self.feature_1.key.integer_id()
     with test_app.test_request_context(self.request_path):
       page_data = self.handler.get_page_data(
-          feature_id, self.feature_1, models.INTENT_IMPLEMENT)
+          feature_id, self.feature_1, core_enums.INTENT_IMPLEMENT)
     self.assertEqual(
         'http://localhost/feature/%d' % feature_id,
         page_data['default_url'])
@@ -100,7 +101,7 @@ class IntentEmailPreviewHandlerTest(testing_config.CustomTestCase):
     feature_id = self.feature_1.key.integer_id()
     with test_app.test_request_context(self.request_path):
       page_data = self.handler.get_page_data(
-          feature_id, self.feature_1, models.INTENT_SHIP)
+          feature_id, self.feature_1, core_enums.INTENT_SHIP)
     self.assertEqual(
         'http://localhost/feature/%d' % feature_id,
         page_data['default_url'])
@@ -114,70 +115,70 @@ class IntentEmailPreviewHandlerTest(testing_config.CustomTestCase):
     self.assertEqual(
         'Intent stage "None"',
         self.handler.compute_subject_prefix(
-            self.feature_1, models.INTENT_NONE))
+            self.feature_1, core_enums.INTENT_NONE))
 
     self.assertEqual(
         'Intent stage "Start incubating"',
         self.handler.compute_subject_prefix(
-            self.feature_1, models.INTENT_INCUBATE))
+            self.feature_1, core_enums.INTENT_INCUBATE))
 
     self.assertEqual(
         'Intent to Prototype',
         self.handler.compute_subject_prefix(
-            self.feature_1, models.INTENT_IMPLEMENT))
+            self.feature_1, core_enums.INTENT_IMPLEMENT))
 
     self.assertEqual(
         'Ready for Trial',
         self.handler.compute_subject_prefix(
-            self.feature_1, models.INTENT_EXPERIMENT))
+            self.feature_1, core_enums.INTENT_EXPERIMENT))
 
     self.assertEqual(
         'Intent stage "Evaluate readiness to ship"',
         self.handler.compute_subject_prefix(
-            self.feature_1, models.INTENT_IMPLEMENT_SHIP))
+            self.feature_1, core_enums.INTENT_IMPLEMENT_SHIP))
 
     self.assertEqual(
         'Intent to Experiment',
         self.handler.compute_subject_prefix(
-            self.feature_1, models.INTENT_EXTEND_TRIAL))
+            self.feature_1, core_enums.INTENT_EXTEND_TRIAL))
 
     self.assertEqual(
         'Intent to Ship',
         self.handler.compute_subject_prefix(
-            self.feature_1, models.INTENT_SHIP))
+            self.feature_1, core_enums.INTENT_SHIP))
 
     self.assertEqual(
         'Intent to Extend Deprecation Trial',
         self.handler.compute_subject_prefix(
-            self.feature_1, models.INTENT_REMOVED))
+            self.feature_1, core_enums.INTENT_REMOVED))
 
     self.assertEqual(
         'Intent stage "Shipped"',
         self.handler.compute_subject_prefix(
-            self.feature_1, models.INTENT_SHIPPED))
+            self.feature_1, core_enums.INTENT_SHIPPED))
 
     self.assertEqual(
         'Intent stage "Parked"',
         self.handler.compute_subject_prefix(
-            self.feature_1, models.INTENT_PARKED))
+            self.feature_1, core_enums.INTENT_PARKED))
 
   def test_compute_subject_prefix__deprecate_feature(self):
     """We offer users the correct subject line for each intent stage."""
-    self.feature_1.feature_type = models.FEATURE_TYPE_DEPRECATION_ID
+    self.feature_1.feature_type = core_enums.FEATURE_TYPE_DEPRECATION_ID
     self.assertEqual(
         'Intent stage "None"',
         self.handler.compute_subject_prefix(
-            self.feature_1, models.INTENT_NONE))
+            self.feature_1, core_enums.INTENT_NONE))
 
     self.assertEqual(
         'Intent to Deprecate and Remove',
         self.handler.compute_subject_prefix(
-            self.feature_1, models.INTENT_INCUBATE))
+            self.feature_1, core_enums.INTENT_INCUBATE))
 
     self.assertEqual(
         'Request for Deprecation Trial',
         self.handler.compute_subject_prefix(
-            self.feature_1, models.INTENT_EXTEND_TRIAL))
+            self.feature_1, core_enums.INTENT_EXTEND_TRIAL))
 
 
 class IntentEmailPreviewTemplateTest(testing_config.CustomTestCase):
@@ -189,11 +190,11 @@ class IntentEmailPreviewTemplateTest(testing_config.CustomTestCase):
     self.feature_1 = models.Feature(
         name='feature one', summary='sum', owner=['user1@google.com'],
         category=1, visibility=1, standardization=1, web_dev_views=1,
-        impl_status_chrome=1, intent_stage=models.INTENT_IMPLEMENT)
+        impl_status_chrome=1, intent_stage=core_enums.INTENT_IMPLEMENT)
     self.feature_1.put()
 
     self.request_path = '/admin/features/launch/%d/%d?intent' % (
-        models.INTENT_SHIP, self.feature_1.key.integer_id())
+        core_enums.INTENT_SHIP, self.feature_1.key.integer_id())
     self.handler = self.HANDLER_CLASS()
     self.feature_id = self.feature_1.key.integer_id()
 
@@ -201,7 +202,7 @@ class IntentEmailPreviewTemplateTest(testing_config.CustomTestCase):
       self.template_data = self.handler.get_template_data(
         self.feature_id)
       page_data = self.handler.get_page_data(
-          self.feature_id, self.feature_1, models.INTENT_IMPLEMENT)
+          self.feature_id, self.feature_1, core_enums.INTENT_IMPLEMENT)
 
     self.template_data.update(page_data)
     self.template_data['nonce'] = 'fake nonce'
