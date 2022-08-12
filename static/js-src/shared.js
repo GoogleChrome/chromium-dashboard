@@ -27,4 +27,10 @@ gtag('config', 'UA-179341418-1');
 // End Google Analytics
 
 
-window.csClient.addFormSubmitListner();
+// Make sure that our form handler for XSRF token updates gets
+// registered after all the Shoelace form listeners are registered
+// so that failed form validation cancels the submit event before
+// our listener tries to programatically submit the form.
+// Ten seconds should be enough time, and there is no rush since
+// XSRF tokens don't expire until much more time has passsed.
+window.setTimeout(window.csClient.addFormSubmitListner, 10 * 1000);
