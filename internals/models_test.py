@@ -742,20 +742,20 @@ class OwnersFileTest(testing_config.CustomTestCase):
 
   def setUp(self):
     now = datetime.datetime.now()
-    self.api_owner_1 = models.OwnersFile(url='abc', raw_content='foo', created_on=now)
-    self.api_owner_1.put()
+    self.owner_file_1 = models.OwnersFile(url='abc', raw_content='foo', created_on=now)
+    self.owner_file_1.add_owner_file()
 
     expired = now - datetime.timedelta(hours=3)
-    self.api_owner_2 = models.OwnersFile(url='def', raw_content='bar', created_on=expired)
-    self.api_owner_2.put()
+    self.owner_file_2 = models.OwnersFile(url='def', raw_content='bar', created_on=expired)
+    self.owner_file_2.add_owner_file()
 
   def tearDown(self):
-    self.api_owner_1.key.delete()
-    self.api_owner_1.key.delete()
+    self.owner_file_1.key.delete()
+    self.owner_file_2.key.delete()
 
-  def test_get_raw_api_owners(self):
-    raw_content = models.OwnersFile.get_raw_api_owners('abc')
+  def test_get_raw_owner_file(self):
+    raw_content = models.OwnersFile.get_raw_owner_file('abc')
     self.assertEqual('foo', raw_content)
 
-    expired_content = models.OwnersFile.get_raw_api_owners('def')
+    expired_content = models.OwnersFile.get_raw_owner_file('def')
     self.assertEqual(None, expired_content)
