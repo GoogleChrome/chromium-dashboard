@@ -16,6 +16,7 @@
 import collections
 
 from internals import approval_defs
+from internals import core_enums
 from internals import models
 
 
@@ -160,7 +161,7 @@ BLINK_PROCESS_STAGES = [
       ],
       [],
       [],
-      models.INTENT_NONE, models.INTENT_INCUBATE),
+      core_enums.INTENT_NONE, core_enums.INTENT_INCUBATE),
 
   ProcessStage(
       'Start prototyping',
@@ -175,7 +176,7 @@ BLINK_PROCESS_STAGES = [
               [PI_INITIAL_PUBLIC_PROPOSAL.name, PI_MOTIVATION.name,
                PI_EXPLAINER.name])],
       [approval_defs.PrototypeApproval],
-      models.INTENT_INCUBATE, models.INTENT_IMPLEMENT),
+      core_enums.INTENT_INCUBATE, core_enums.INTENT_IMPLEMENT),
 
   ProcessStage(
       'Dev trials and iterate on design',
@@ -194,7 +195,7 @@ BLINK_PROCESS_STAGES = [
               [PI_INITIAL_PUBLIC_PROPOSAL.name, PI_MOTIVATION.name,
                PI_EXPLAINER.name, PI_SPEC_LINK.name])],
       [],
-      models.INTENT_IMPLEMENT, models.INTENT_EXPERIMENT),
+      core_enums.INTENT_IMPLEMENT, core_enums.INTENT_EXPERIMENT),
 
   ProcessStage(
       'Evaluate readiness to ship',
@@ -208,7 +209,7 @@ BLINK_PROCESS_STAGES = [
       ],
       [],
       [],
-      models.INTENT_EXPERIMENT, models.INTENT_IMPLEMENT_SHIP),
+      core_enums.INTENT_EXPERIMENT, core_enums.INTENT_IMPLEMENT_SHIP),
 
   ProcessStage(
       'Origin Trial',
@@ -225,7 +226,7 @@ BLINK_PROCESS_STAGES = [
                PI_EXPLAINER.name, PI_SPEC_LINK.name,
                PI_EST_TARGET_MILESTONE.name])],
       [approval_defs.ExperimentApproval],
-      models.INTENT_IMPLEMENT_SHIP, models.INTENT_EXTEND_TRIAL),
+      core_enums.INTENT_IMPLEMENT_SHIP, core_enums.INTENT_EXTEND_TRIAL),
 
   ProcessStage(
       'Prepare to ship',
@@ -244,7 +245,7 @@ BLINK_PROCESS_STAGES = [
                PI_TAG_ADDRESSED.name, PI_UPDATED_VENDOR_SIGNALS.name,
                PI_UPDATED_TARGET_MILESTONE.name])],
       [approval_defs.ShipApproval],
-      models.INTENT_IMPLEMENT_SHIP, models.INTENT_SHIP),
+      core_enums.INTENT_IMPLEMENT_SHIP, core_enums.INTENT_SHIP),
 
   ProcessStage(
       'Ship',
@@ -255,7 +256,7 @@ BLINK_PROCESS_STAGES = [
       ],
       [],
       [],
-      models.INTENT_SHIP, models.INTENT_SHIPPED),
+      core_enums.INTENT_SHIP, core_enums.INTENT_SHIPPED),
   ]
 
 
@@ -277,7 +278,7 @@ BLINK_FAST_TRACK_STAGES = [
       [Action('Draft Intent to Prototype email', INTENT_EMAIL_URL,
               [PI_SPEC_LINK.name])],
       [approval_defs.PrototypeApproval],
-      models.INTENT_NONE, models.INTENT_IMPLEMENT),
+      core_enums.INTENT_NONE, core_enums.INTENT_IMPLEMENT),
 
   ProcessStage(
       'Dev trials and iterate on implementation',
@@ -293,7 +294,7 @@ BLINK_FAST_TRACK_STAGES = [
       [Action('Draft Ready for Trial email', INTENT_EMAIL_URL,
               [PI_SPEC_LINK.name, PI_EST_TARGET_MILESTONE.name])],
       [],
-      models.INTENT_IMPLEMENT, models.INTENT_EXPERIMENT),
+      core_enums.INTENT_IMPLEMENT, core_enums.INTENT_EXPERIMENT),
 
   ProcessStage(
       'Origin Trial',
@@ -308,7 +309,7 @@ BLINK_FAST_TRACK_STAGES = [
       [Action('Draft Intent to Experiment email', INTENT_EMAIL_URL,
               [PI_SPEC_LINK.name, PI_EST_TARGET_MILESTONE.name])],
       [approval_defs.ExperimentApproval],
-      models.INTENT_EXPERIMENT, models.INTENT_EXTEND_TRIAL),
+      core_enums.INTENT_EXPERIMENT, core_enums.INTENT_EXTEND_TRIAL),
 
   ProcessStage(
       'Prepare to ship',
@@ -322,7 +323,7 @@ BLINK_FAST_TRACK_STAGES = [
       [Action('Draft Intent to Ship email', INTENT_EMAIL_URL,
               [PI_SPEC_LINK.name, PI_UPDATED_TARGET_MILESTONE.name])],
       [approval_defs.ShipApproval],
-      models.INTENT_EXPERIMENT, models.INTENT_SHIP),
+      core_enums.INTENT_EXPERIMENT, core_enums.INTENT_SHIP),
 
   ProcessStage(
       'Ship',
@@ -333,7 +334,7 @@ BLINK_FAST_TRACK_STAGES = [
       ],
       [],
       [],
-      models.INTENT_SHIP, models.INTENT_SHIPPED),
+      core_enums.INTENT_SHIP, core_enums.INTENT_SHIPPED),
   ]
 
 
@@ -353,7 +354,7 @@ PSA_ONLY_STAGES = [
       ],
       [],
       [],
-      models.INTENT_NONE, models.INTENT_IMPLEMENT),
+      core_enums.INTENT_NONE, core_enums.INTENT_IMPLEMENT),
 
   ProcessStage(
       'Dev trials and iterate on implementation',
@@ -366,7 +367,7 @@ PSA_ONLY_STAGES = [
       [Action('Draft Ready for Trial email', INTENT_EMAIL_URL,
               [PI_SPEC_LINK.name, PI_EST_TARGET_MILESTONE.name])],
       [],
-      models.INTENT_IMPLEMENT, models.INTENT_EXPERIMENT),
+      core_enums.INTENT_IMPLEMENT, core_enums.INTENT_EXPERIMENT),
 
   ProcessStage(
       'Prepare to ship',
@@ -378,7 +379,7 @@ PSA_ONLY_STAGES = [
       [Action('Draft Intent to Ship email', INTENT_EMAIL_URL,
               [PI_SPEC_LINK.name, PI_UPDATED_TARGET_MILESTONE.name])],
       [approval_defs.ShipApproval],
-      models.INTENT_EXPERIMENT, models.INTENT_SHIP),
+      core_enums.INTENT_EXPERIMENT, core_enums.INTENT_SHIP),
 
   ProcessStage(
       'Ship',
@@ -389,7 +390,7 @@ PSA_ONLY_STAGES = [
       ],
       [],
       [],
-      models.INTENT_SHIP, models.INTENT_SHIPPED),
+      core_enums.INTENT_SHIP, core_enums.INTENT_SHIPPED),
   ]
 
 
@@ -412,7 +413,7 @@ DEPRECATION_STAGES = [
       [Action('Draft Intent to Deprecate and Remove email', INTENT_EMAIL_URL,
               [PI_MOTIVATION.name])],
       [approval_defs.PrototypeApproval],
-      models.INTENT_NONE, models.INTENT_IMPLEMENT),
+      core_enums.INTENT_NONE, core_enums.INTENT_IMPLEMENT),
 
   # TODO(cwilso): Work out additional steps for flag defaulting to disabled.
   ProcessStage(
@@ -426,7 +427,7 @@ DEPRECATION_STAGES = [
               [PI_MOTIVATION.name, PI_VENDOR_SIGNALS.name,
                PI_EST_TARGET_MILESTONE.name])],
       [],
-      models.INTENT_IMPLEMENT, models.INTENT_EXPERIMENT),
+      core_enums.INTENT_IMPLEMENT, core_enums.INTENT_EXPERIMENT),
 
   ProcessStage(
       'Prepare for Deprecation Trial',
@@ -442,7 +443,7 @@ DEPRECATION_STAGES = [
                PI_EST_TARGET_MILESTONE.name])],
       # TODO(jrobbins): Intent to extend deprecation.
       [approval_defs.ExperimentApproval],
-      models.INTENT_EXPERIMENT, models.INTENT_EXTEND_TRIAL),
+      core_enums.INTENT_EXPERIMENT, core_enums.INTENT_EXTEND_TRIAL),
 
   ProcessStage(
       'Prepare to ship',
@@ -456,7 +457,7 @@ DEPRECATION_STAGES = [
               [PI_MOTIVATION.name, PI_VENDOR_SIGNALS.name,
                PI_UPDATED_TARGET_MILESTONE.name])],
       [approval_defs.ShipApproval],
-      models.INTENT_EXPERIMENT, models.INTENT_SHIP),
+      core_enums.INTENT_EXPERIMENT, core_enums.INTENT_SHIP),
 
   ProcessStage(
       'Remove code',
@@ -469,7 +470,7 @@ DEPRECATION_STAGES = [
                PI_UPDATED_TARGET_MILESTONE.name]),
        ],
       [],
-      models.INTENT_SHIP, models.INTENT_REMOVED),
+      core_enums.INTENT_SHIP, core_enums.INTENT_REMOVED),
   ]
 
 
@@ -481,40 +482,40 @@ DEPRECATION_PROCESS = Process(
 
 
 ALL_PROCESSES = {
-    models.FEATURE_TYPE_INCUBATE_ID: BLINK_LAUNCH_PROCESS,
-    models.FEATURE_TYPE_EXISTING_ID: BLINK_FAST_TRACK_PROCESS,
-    models.FEATURE_TYPE_CODE_CHANGE_ID: PSA_ONLY_PROCESS,
-    models.FEATURE_TYPE_DEPRECATION_ID: DEPRECATION_PROCESS,
+    core_enums.FEATURE_TYPE_INCUBATE_ID: BLINK_LAUNCH_PROCESS,
+    core_enums.FEATURE_TYPE_EXISTING_ID: BLINK_FAST_TRACK_PROCESS,
+    core_enums.FEATURE_TYPE_CODE_CHANGE_ID: PSA_ONLY_PROCESS,
+    core_enums.FEATURE_TYPE_DEPRECATION_ID: DEPRECATION_PROCESS,
     }
 
 
 INTENT_EMAIL_SECTIONS = {
-    models.INTENT_NONE: [],
-    models.INTENT_INCUBATE: [],
-    models.INTENT_IMPLEMENT: ['motivation'],
-    models.INTENT_EXPERIMENT: ['i2p_thread', 'experiment'],
-    models.INTENT_IMPLEMENT_SHIP: [
+    core_enums.INTENT_NONE: [],
+    core_enums.INTENT_INCUBATE: [],
+    core_enums.INTENT_IMPLEMENT: ['motivation'],
+    core_enums.INTENT_EXPERIMENT: ['i2p_thread', 'experiment'],
+    core_enums.INTENT_IMPLEMENT_SHIP: [
         'need_api_owners_lgtms', 'motivation', 'tracking_bug', 'sample_links'],
-    models.INTENT_EXTEND_TRIAL: [
+    core_enums.INTENT_EXTEND_TRIAL: [
         'i2p_thread', 'experiment', 'extension_reason'],
-    models.INTENT_SHIP: [
+    core_enums.INTENT_SHIP: [
         'need_api_owners_lgtms', 'i2p_thread', 'tracking_bug', 'sample_links',
         'anticipated_spec_changes', 'ship'],
-    models.INTENT_REMOVED: [],
-    models.INTENT_SHIPPED: [],
-    models.INTENT_PARKED: [],
+    core_enums.INTENT_REMOVED: [],
+    core_enums.INTENT_SHIPPED: [],
+    core_enums.INTENT_PARKED: [],
     }
 
 
 def initial_tag_review_status(feature_type):
   """Incubating a new feature requires a TAG review, other types do not."""
-  if feature_type == models.FEATURE_TYPE_INCUBATE_ID:
-    return models.REVIEW_PENDING
-  return models.REVIEW_NA
+  if feature_type == core_enums.FEATURE_TYPE_INCUBATE_ID:
+    return core_enums.REVIEW_PENDING
+  return core_enums.REVIEW_NA
 
 
 def review_is_done(status):
-  return status in (models.REVIEW_ISSUES_ADDRESSED, models.REVIEW_NA)
+  return status in (core_enums.REVIEW_ISSUES_ADDRESSED, core_enums.REVIEW_NA)
 
 
 # These functions return a true value when the checkmark should be shown.
@@ -580,25 +581,25 @@ PROGRESS_DETECTORS = {
 
     'Web developer signals':
     lambda f: bool(f.web_dev_views and
-                   f.web_dev_views != models.DEV_NO_SIGNALS),
+                   f.web_dev_views != core_enums.DEV_NO_SIGNALS),
 
     'Vendor signals':
     lambda f: bool(
-        f.ff_views != models.NO_PUBLIC_SIGNALS or
-        f.safari_views != models.NO_PUBLIC_SIGNALS or
-        f.ie_views != models.NO_PUBLIC_SIGNALS),  # IE Deprecated
+        f.ff_views != core_enums.NO_PUBLIC_SIGNALS or
+        f.safari_views != core_enums.NO_PUBLIC_SIGNALS or
+        f.ie_views != core_enums.NO_PUBLIC_SIGNALS),  # IE Deprecated
 
     'Updated vendor signals':
     lambda f: bool(
-        f.ff_views != models.NO_PUBLIC_SIGNALS or
-        f.safari_views != models.NO_PUBLIC_SIGNALS or
-        f.ie_views != models.NO_PUBLIC_SIGNALS),  # IE Deprecated
+        f.ff_views != core_enums.NO_PUBLIC_SIGNALS or
+        f.safari_views != core_enums.NO_PUBLIC_SIGNALS or
+        f.ie_views != core_enums.NO_PUBLIC_SIGNALS),  # IE Deprecated
 
     'Final vendor signals':
     lambda f: bool(
-        f.ff_views != models.NO_PUBLIC_SIGNALS or
-        f.safari_views != models.NO_PUBLIC_SIGNALS or
-        f.ie_views != models.NO_PUBLIC_SIGNALS),  # IE Deprecated
+        f.ff_views != core_enums.NO_PUBLIC_SIGNALS or
+        f.safari_views != core_enums.NO_PUBLIC_SIGNALS or
+        f.ie_views != core_enums.NO_PUBLIC_SIGNALS),  # IE Deprecated
 
     'Estimated target milestone':
     lambda f: bool(f.shipped_milestone),
@@ -608,12 +609,13 @@ PROGRESS_DETECTORS = {
 
     'Code in Chromium':
     lambda f: f.impl_status_chrome in (
-        models.IN_DEVELOPMENT, models.BEHIND_A_FLAG, models.ENABLED_BY_DEFAULT,
-        models.ORIGIN_TRIAL, models.INTERVENTION),
+        core_enums.IN_DEVELOPMENT, core_enums.BEHIND_A_FLAG,
+        core_enums.ENABLED_BY_DEFAULT,
+        core_enums.ORIGIN_TRIAL, core_enums.INTERVENTION),
 
     'Motivation':
     lambda f: bool(f.motivation),
 
     'Code removed':
-    lambda f: f.impl_status_chrome == models.REMOVED,
+    lambda f: f.impl_status_chrome == core_enums.REMOVED,
 }

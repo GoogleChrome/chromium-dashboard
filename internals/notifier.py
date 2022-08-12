@@ -35,6 +35,7 @@ from framework import cloud_tasks_helpers
 from framework import users
 import settings
 from internals import approval_defs
+from internals import core_enums
 from internals import models
 
 
@@ -69,7 +70,7 @@ def format_email_body(is_update, feature, changes):
       'updater_email': feature.updated_by.email(),
       'id': feature.key.integer_id(),
       'milestone': milestone_str,
-      'status': models.IMPLEMENTATION_STATUS[feature.impl_status_chrome],
+      'status': core_enums.IMPLEMENTATION_STATUS[feature.impl_status_chrome],
       'formatted_changes': formatted_changes,
       'moz_link_urls': moz_link_urls,
   }
@@ -393,7 +394,7 @@ def get_existing_thread_subject(feature, approval_field):
 def generate_thread_subject(feature, approval_field):
   """Use the expected subject based on the feature type and approval type."""
   intent_phrase = approval_field.name
-  if feature.feature_type == models.FEATURE_TYPE_DEPRECATION_ID:
+  if feature.feature_type == core_enums.FEATURE_TYPE_DEPRECATION_ID:
     if approval_field == approval_defs.PrototypeApproval:
       intent_phrase = 'Intent to Deprecate and Remove'
     if approval_field == approval_defs.ExperimentApproval:

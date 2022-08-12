@@ -27,6 +27,7 @@ from django.utils.safestring import mark_safe
 # from google.appengine.api import users
 from framework import users
 
+from internals import core_enums
 from internals import models
 from internals import processes
 
@@ -155,18 +156,18 @@ ALL_FIELDS = {
 
     'category': forms.ChoiceField(
         required=False, label='',
-        initial=models.MISC,
-        choices=sorted(models.FEATURE_CATEGORIES.items(), key=lambda x: x[1])),
+        initial=core_enums.MISC,
+        choices=sorted(core_enums.FEATURE_CATEGORIES.items(), key=lambda x: x[1])),
 
     'feature_type': forms.ChoiceField(
         required=False, label='',
-        initial=models.FEATURE_TYPE_INCUBATE_ID,
-        choices=sorted(models.FEATURE_TYPES.items())),
+        initial=core_enums.FEATURE_TYPE_INCUBATE_ID,
+        choices=sorted(core_enums.FEATURE_TYPES.items())),
 
     'intent_stage': forms.ChoiceField(
         required=False, label='',
-        initial=models.INTENT_IMPLEMENT,
-        choices=list(models.INTENT_STAGES.items())),
+        initial=core_enums.INTENT_IMPLEMENT,
+        choices=list(core_enums.INTENT_STAGES.items())),
 
     'motivation': forms.CharField(
         label='', required=False,
@@ -188,8 +189,8 @@ ALL_FIELDS = {
 
     'standard_maturity': forms.ChoiceField(
         required=False, label='',
-        choices=list(models.STANDARD_MATURITY_CHOICES.items()),
-        initial=models.PROPOSAL_STD),
+        choices=list(core_enums.STANDARD_MATURITY_CHOICES.items()),
+        initial=core_enums.PROPOSAL_STD),
 
     'unlisted': forms.BooleanField(
         label='',
@@ -216,14 +217,14 @@ ALL_FIELDS = {
     'security_review_status': forms.ChoiceField(
         label='',
         required=False,
-        choices=list(models.REVIEW_STATUS_CHOICES.items()),
-        initial=models.REVIEW_PENDING),
+        choices=list(core_enums.REVIEW_STATUS_CHOICES.items()),
+        initial=core_enums.REVIEW_PENDING),
 
     'privacy_review_status': forms.ChoiceField(
         label='',
         required=False,
-        choices=list(models.REVIEW_STATUS_CHOICES.items()),
-        initial=models.REVIEW_PENDING),
+        choices=list(core_enums.REVIEW_STATUS_CHOICES.items()),
+        initial=core_enums.REVIEW_PENDING),
 
     'tag_review': forms.CharField(
         label='', required=False,
@@ -232,8 +233,8 @@ ALL_FIELDS = {
     'tag_review_status': forms.ChoiceField(
         label='',
         required=False,
-        choices=list(models.REVIEW_STATUS_CHOICES.items()),
-        initial=models.REVIEW_PENDING),
+        choices=list(core_enums.REVIEW_STATUS_CHOICES.items()),
+        initial=core_enums.REVIEW_PENDING),
 
     'intent_to_implement_url': forms.URLField(
         required=False, label='',
@@ -265,8 +266,8 @@ ALL_FIELDS = {
 
     'safari_views': forms.ChoiceField(
         required=False, label='',
-        choices=list(models.VENDOR_VIEWS_WEBKIT.items()),
-        initial=models.NO_PUBLIC_SIGNALS),
+        choices=list(core_enums.VENDOR_VIEWS_WEBKIT.items()),
+        initial=core_enums.NO_PUBLIC_SIGNALS),
 
     'safari_views_link': forms.URLField(
         required=False, label='',
@@ -279,8 +280,8 @@ ALL_FIELDS = {
 
     'ff_views': forms.ChoiceField(
         required=False, label='',
-        choices=list(models.VENDOR_VIEWS_GECKO.items()),
-        initial=models.NO_PUBLIC_SIGNALS),
+        choices=list(core_enums.VENDOR_VIEWS_GECKO.items()),
+        initial=core_enums.NO_PUBLIC_SIGNALS),
 
     'ff_views_link': forms.URLField(
         required=False, label='',
@@ -293,8 +294,8 @@ ALL_FIELDS = {
 
     'web_dev_views': forms.ChoiceField(
         required=False, label='',
-        choices=list(models.WEB_DEV_VIEWS.items()),
-        initial=models.DEV_NO_SIGNALS),
+        choices=list(core_enums.WEB_DEV_VIEWS.items()),
+        initial=core_enums.DEV_NO_SIGNALS),
 
     'web_dev_views_link': forms.URLField(
         required=False, label='',
@@ -456,7 +457,7 @@ ALL_FIELDS = {
 
     'impl_status_chrome': forms.ChoiceField(
         required=False, label='',
-        choices=list(models.IMPLEMENTATION_STATUS.items())),
+        choices=list(core_enums.IMPLEMENTATION_STATUS.items())),
 
     'shipped_milestone': forms.IntegerField(
         required=False, label='',
@@ -943,13 +944,13 @@ DISPLAY_FIELDS_IN_STAGES = {
     'Metadata': make_display_specs(
         'category', 'feature_type', 'intent_stage', 'accurate_as_of'
         ),
-    models.INTENT_INCUBATE: make_display_specs(
+    core_enums.INTENT_INCUBATE: make_display_specs(
         'initial_public_proposal_url', 'explainer_links',
         'requires_embedder_support'),
-    models.INTENT_IMPLEMENT: make_display_specs(
+    core_enums.INTENT_IMPLEMENT: make_display_specs(
         'spec_link', 'standard_maturity', 'api_spec', 'spec_mentors',
         'intent_to_implement_url'),
-    models.INTENT_EXPERIMENT: make_display_specs(
+    core_enums.INTENT_EXPERIMENT: make_display_specs(
         'devtrial_instructions', 'doc_links',
         'interop_compat_risks',
         'safari_views', 'safari_views_link', 'safari_views_notes',
@@ -964,13 +965,13 @@ DISPLAY_FIELDS_IN_STAGES = {
         'dt_milestone_desktop_start', 'dt_milestone_android_start',
         'dt_milestone_ios_start',
         'flag_name'),
-    models.INTENT_IMPLEMENT_SHIP: make_display_specs(
+    core_enums.INTENT_IMPLEMENT_SHIP: make_display_specs(
         'launch_bug_url',
         'tag_review', 'tag_review_status',
         'webview_risks',
         'measurement', 'prefixed', 'non_oss_deps',
         ),
-    models.INTENT_EXTEND_TRIAL: make_display_specs(
+    core_enums.INTENT_EXTEND_TRIAL: make_display_specs(
         'experiment_goals', 'experiment_risks',
         'experiment_extension_reason', 'ongoing_constraints',
         'origin_trial_feedback_url', 'intent_to_experiment_url',
@@ -982,12 +983,12 @@ DISPLAY_FIELDS_IN_STAGES = {
         'ot_milestone_webview_start', 'ot_milestone_webview_end',
         'experiment_timeline',  # Deprecated
         ),
-    models.INTENT_SHIP: make_display_specs(
+    core_enums.INTENT_SHIP: make_display_specs(
         'finch_url', 'anticipated_spec_changes',
         'shipped_milestone', 'shipped_android_milestone',
         'shipped_ios_milestone', 'shipped_webview_milestone',
         'intent_to_ship_url', 'i2s_lgtms'),
-    models.INTENT_SHIPPED: make_display_specs(
+    core_enums.INTENT_SHIPPED: make_display_specs(
         ),
     'Misc': make_display_specs(
         ),
