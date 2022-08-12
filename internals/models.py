@@ -456,26 +456,6 @@ class BlinkComponent(DictModel):
     return component[0]
 
 
-# UMA metrics.
-class StableInstance(DictModel):
-  created = ndb.DateTimeProperty(auto_now_add=True)
-  updated = ndb.DateTimeProperty(auto_now=True)
-
-  property_name = ndb.StringProperty(required=True)
-  bucket_id = ndb.IntegerProperty(required=True)
-  date = ndb.DateProperty(verbose_name='When the data was fetched',
-                         required=True)
-  day_percentage = ndb.FloatProperty()
-  rolling_percentage = ndb.FloatProperty()
-
-
-class AnimatedProperty(StableInstance):
-  pass
-
-
-class FeatureObserver(StableInstance):
-  pass
-
 
 # Feature dashboard.
 class Feature(DictModel):
@@ -1693,24 +1673,3 @@ class OwnersFile(DictModel):
       return None
 
     return owners_file.raw_content
-
-
-class HistogramModel(ndb.Model):
-  """Container for a histogram."""
-
-  bucket_id = ndb.IntegerProperty(required=True)
-  property_name = ndb.StringProperty(required=True)
-
-  @classmethod
-  def get_all(self):
-    output = {}
-    buckets = self.query().fetch(None)
-    for bucket in buckets:
-      output[bucket.bucket_id] = bucket.property_name
-    return output
-
-class CssPropertyHistogram(HistogramModel):
-  pass
-
-class FeatureObserverHistogram(HistogramModel):
-  pass

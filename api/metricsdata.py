@@ -21,7 +21,7 @@ import logging
 
 from framework import users
 from framework import basehandlers
-from internals import models
+from internals import metrics_models
 from framework import ramcache
 import settings
 
@@ -72,7 +72,7 @@ class TimelineHandler(basehandlers.FlaskHandler):
     # properties. Since showing the historical data alongside the new data
     # does not make sense, filter out everything before the 2017-10-26 switch.
     # See https://github.com/GoogleChrome/chromium-dashboard/issues/414
-    if self.MODEL_CLASS == models.AnimatedProperty:
+    if self.MODEL_CLASS == metrics_models.AnimatedProperty:
       query = query.filter(
           self.MODEL_CLASS.date >= datetime.datetime(2017, 10, 26))
     return query
@@ -104,7 +104,7 @@ class TimelineHandler(basehandlers.FlaskHandler):
 class PopularityTimelineHandler(TimelineHandler):
 
   CACHE_KEY = 'css_pop_timeline'
-  MODEL_CLASS = models.StableInstance
+  MODEL_CLASS = metrics_models.StableInstance
 
   def get_template_data(self):
     return super(PopularityTimelineHandler, self).get_template_data()
@@ -113,7 +113,7 @@ class PopularityTimelineHandler(TimelineHandler):
 class AnimatedTimelineHandler(TimelineHandler):
 
   CACHE_KEY = 'css_animated_timeline'
-  MODEL_CLASS = models.AnimatedProperty
+  MODEL_CLASS = metrics_models.AnimatedProperty
 
   def get_template_data(self):
     return super(AnimatedTimelineHandler, self).get_template_data()
@@ -122,7 +122,7 @@ class AnimatedTimelineHandler(TimelineHandler):
 class FeatureObserverTimelineHandler(TimelineHandler):
 
   CACHE_KEY = 'featureob_timeline'
-  MODEL_CLASS = models.FeatureObserver
+  MODEL_CLASS = metrics_models.FeatureObserver
 
   def get_template_data(self):
     return super(FeatureObserverTimelineHandler, self).get_template_data()
@@ -176,7 +176,7 @@ class FeatureHandler(basehandlers.FlaskHandler):
     return datapoints
 
   def get_template_data(self):
-    if self.MODEL_CLASS == models.FeatureObserver:
+    if self.MODEL_CLASS == metrics_models.FeatureObserver:
       properties = ramcache.get(self.CACHE_KEY)
 
       if not properties or self.request.args.get('refresh'):
@@ -201,8 +201,8 @@ class FeatureHandler(basehandlers.FlaskHandler):
 class CSSPopularityHandler(FeatureHandler):
 
   CACHE_KEY = 'css_popularity'
-  MODEL_CLASS = models.StableInstance
-  PROPERTY_CLASS = models.CssPropertyHistogram
+  MODEL_CLASS = metrics_models.StableInstance
+  PROPERTY_CLASS = metrics_models.CssPropertyHistogram
 
   def get_template_data(self):
     return super(CSSPopularityHandler, self).get_template_data()
@@ -211,8 +211,8 @@ class CSSPopularityHandler(FeatureHandler):
 class CSSAnimatedHandler(FeatureHandler):
 
   CACHE_KEY = 'css_animated'
-  MODEL_CLASS = models.AnimatedProperty
-  PROPERTY_CLASS = models.CssPropertyHistogram
+  MODEL_CLASS = metrics_models.AnimatedProperty
+  PROPERTY_CLASS = metrics_models.CssPropertyHistogram
 
   def get_template_data(self):
     return super(CSSAnimatedHandler, self).get_template_data()
@@ -221,8 +221,8 @@ class CSSAnimatedHandler(FeatureHandler):
 class FeatureObserverPopularityHandler(FeatureHandler):
 
   CACHE_KEY = 'featureob_popularity'
-  MODEL_CLASS = models.FeatureObserver
-  PROPERTY_CLASS = models.FeatureObserverHistogram
+  MODEL_CLASS = metrics_models.FeatureObserver
+  PROPERTY_CLASS = metrics_models.FeatureObserverHistogram
 
   def get_template_data(self):
     return super(FeatureObserverPopularityHandler, self).get_template_data()
@@ -234,9 +234,11 @@ class FeatureBucketsHandler(basehandlers.FlaskHandler):
   def get_template_data(self, prop_type):
     if prop_type == 'cssprops':
       properties = sorted(
-          models.CssPropertyHistogram.get_all().items(), key=lambda x:x[1])
+          metrics_models.CssPropertyHistogram.get_all().items(),
+          key=lambda x:x[1])
     else:
       properties = sorted(
-          models.FeatureObserverHistogram.get_all().items(), key=lambda x:x[1])
+          metrics_models.FeatureObserverHistogram.get_all().items(),
+          key=lambda x:x[1])
 
     return properties
