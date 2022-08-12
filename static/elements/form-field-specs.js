@@ -18,7 +18,7 @@ export const ALL_FIELDS = {
   'name': {
     label: 'Feature name',
     help_text: html`
-        Capitalize only the first letter and the beginnings of proper nouns.
+        <p>Capitalize only the first letter and the beginnings of proper nouns.</p>
         <a target="_blank"
             href="https://github.com/GoogleChrome/chromium-dashboard/wiki/EditingHelp#feature-name">
           Learn more</a>.
@@ -72,9 +72,10 @@ export const ALL_FIELDS = {
 
   'accurate_as_of': {
     type: 'checkbox',
-    label: 'Confirm Accuracy',
+    label: 'Confirm accuracy',
     help_text: html`
-        This information is accurate as of today. 
+        Check this box to indicate that feature information is accurate
+        as of today.
         (Selecting this avoids reminder emails for four weeks.)`,
   },
 

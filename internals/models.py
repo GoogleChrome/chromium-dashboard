@@ -1325,62 +1325,6 @@ class Feature(DictModel):
   finch_url = ndb.StringProperty()
 
 
-def single_field_query_async(
-    field_name, operator, val, limit=None):
-  """Create a query for one Feature field and run it, returning a promise."""
-  field = QUERIABLE_FIELDS.get(field_name.lower())
-  if field is None:
-    logging.info('Ignoring field name %r', field_name)
-    return []
-  # TODO(jrobbins): support sorting by any fields of other model classes.
-  query = Feature.query()
-  # Note: We don't exclude deleted features, that's done by process_query.
-
-  # TODO(jrobbins): Handle ":" operator as substrings for text fields.
-  if (operator == '='):
-    query = query.filter(field == val)
-  elif (operator == '<='):
-    query = query.filter(field <= val)
-  elif (operator == '<'):
-    query = query.filter(field < val)
-  elif (operator == '>='):
-    query = query.filter(field >= val)
-  elif (operator == '>'):
-    query = query.filter(field > val)
-  elif (operator == '!='):
-    query = query.filter(field != val)
-  else:
-    raise ValueError('Unexpected query operator: %r' % operator)
-
-  keys_promise = query.fetch_async(keys_only=True, limit=limit)
-  return keys_promise
-
-
-def total_order_query_async(sort_spec):
-  """Create a query promise for all Feature IDs sorted by sort_spec."""
-  # TODO(jrobbins): Support multi-column sort.
-  descending = False
-  if sort_spec.startswith('-'):
-    descending = True
-    sort_spec = sort_spec[1:]
-  field = SORTABLE_FIELDS.get(sort_spec.lower())
-  if field is None:
-    logging.info('Ignoring sort field name %r', sort_spec)
-    return []
-
-  # Some special cases are implemented as python functions.
-  if callable(field):
-    return field(descending)
-
-  if descending:
-    field = -field
-  # TODO(jrobbins): support sorting by any fields of other model classes.
-  query = Feature.query().order(field)
-
-  keys_promise = query.fetch_async(keys_only=True)
-  return keys_promise
-
-
 class Approval(DictModel):
   """Describes the current state of one approval on a feature."""
 
@@ -1429,32 +1373,6 @@ class Approval(DictModel):
     # saving the user's change that we want included in the query.
     approvals = query.fetch(limit, read_consistency=ndb.STRONG)
     return approvals
-
-  @classmethod
-  def sorted_by_pending_request_date(cls, descending):
-    """Return feature_ids of pending approvals sorted by request date."""
-    query = Approval.query(Approval.state == Approval.REVIEW_REQUESTED)
-    if descending:
-      query = query.order(-Approval.set_on)
-    else:
-      query = query.order(Approval.set_on)
-
-    pending_approvals = query.fetch(projection=['feature_id'])
-    feature_ids = utils.dedupe(pa.feature_id for pa in pending_approvals)
-    return feature_ids
-
-  @classmethod
-  def sorted_by_review_date(cls, descending):
-    """Return feature_ids of reviewed approvals sorted by last review."""
-    query = Approval.query(Approval.state.IN(Approval.FINAL_STATES))
-    if descending:
-      query = query.order(-Approval.set_on)
-    else:
-      query = query.order(Approval.set_on)
-    recent_approvals = query.fetch(projection=['feature_id'])
-
-    feature_ids = utils.dedupe(ra.feature_id for ra in recent_approvals)
-    return feature_ids
 
   @classmethod
   def is_valid_state(cls, new_state):
@@ -1725,93 +1643,33 @@ class FeatureOwner(DictModel):
         component_name, remove_as_owner=True)
 
 
+class OwnersFile(DictModel):
+  """Describes the properties to store raw API_OWNERS content."""
+  url = ndb.StringProperty(required=True)
+  raw_content = ndb.TextProperty(required=True)
+  created_on = ndb.DateTimeProperty(auto_now_add=True)
 
-QUERIABLE_FIELDS = {
-    'created.when': Feature.created,
-    'updated.when': Feature.updated,
-    'deleted': Feature.deleted,
+  def add_owner_file(self):
+    """Add the owner file's content in ndb and delete all other entities."""
+    # Delete all other entities.
+    ndb.delete_multi(OwnersFile.query(
+        OwnersFile.url == self.url).fetch(keys_only=True))
+    return self.put()
 
-    # TODO(jrobbins): We cannot query user fields because Cloud NDB does not
-    # seem to support it.  We should migrate these to string fields.
-    #'created.by': Feature.created_by,
-    #'updated.by': Feature.updated_by,
+  @classmethod
+  def get_raw_owner_file(cls, url):
+    """Retrieve raw the owner file's content, if it is created with an hour."""
+    q = cls.query()
+    q = q.filter(cls.url == url)
+    owners_file_list = q.fetch(1)
+    if not owners_file_list:
+      logging.info('API_OWNERS content does not exist for URL %s.' % (url))
+      return None
 
-    'category': Feature.category,
-    'name': Feature.name,
-    'feature_type': Feature.feature_type,
-    'intent_stage': Feature.intent_stage,
-    'summary': Feature.summary,
-    'unlisted': Feature.unlisted,
-    'motivation': Feature.motivation,
-    'star_count': Feature.star_count,
-    'tags': Feature.search_tags,
-    'owner': Feature.owner,
-    'creator': Feature.creator,
-    'browsers.chrome.owners': Feature.owner,
-    'editors': Feature.editors,
-    'intent_to_implement_url': Feature.intent_to_implement_url,
-    'intent_to_ship_url': Feature.intent_to_ship_url,
-    'ready_for_trial_url': Feature.ready_for_trial_url,
-    'intent_to_experiment_url': Feature.intent_to_experiment_url,
-    'intent_to_extend_experiment_url': Feature.intent_to_extend_experiment_url,
-    'i2e_lgtms': Feature.i2e_lgtms,
-    'i2s_lgtms': Feature.i2s_lgtms,
-    'browsers.chrome.bug': Feature.bug_url,
-    'launch_bug_url': Feature.launch_bug_url,
-    'initial_public_proposal_url': Feature.initial_public_proposal_url,
-    'browsers.chrome.blink_components': Feature.blink_components,
-    'browsers.chrome.devrel': Feature.devrel,
-    'browsers.chrome.prefixed': Feature.prefixed,
+    owners_file = owners_file_list[0]
+    # Check if it is created within an hour.
+    an_hour_before = datetime.datetime.now() - datetime.timedelta(hours=1)
+    if owners_file.created_on < an_hour_before:
+      return None
 
-    'browsers.chrome.status': Feature.impl_status_chrome,
-    'browsers.chrome.desktop': Feature.shipped_milestone,
-    'browsers.chrome.android': Feature.shipped_android_milestone,
-    'browsers.chrome.ios': Feature.shipped_ios_milestone,
-    'browsers.chrome.webview': Feature.shipped_webview_milestone,
-    'requires_embedder_support': Feature.requires_embedder_support,
-
-    'browsers.chrome.flag_name': Feature.flag_name,
-    'all_platforms': Feature.all_platforms,
-    'all_platforms_descr': Feature.all_platforms_descr,
-    'wpt': Feature.wpt,
-    'browsers.chrome.devtrial.desktop.start': Feature.dt_milestone_desktop_start,
-    'browsers.chrome.devtrial.android.start': Feature.dt_milestone_android_start,
-    'browsers.chrome.devtrial.ios.start': Feature.dt_milestone_ios_start,
-    'browsers.chrome.devtrial.webview.start': Feature.dt_milestone_webview_start,
-
-    'standards.maturity': Feature.standard_maturity,
-    'standards.spec': Feature.spec_link,
-    'standards.anticipated_spec_changes': Feature.anticipated_spec_changes,
-    'api_spec': Feature.api_spec,
-    'spec_mentors': Feature.spec_mentors,
-    'security_review_status': Feature.security_review_status,
-    'privacy_review_status': Feature.privacy_review_status,
-    'tag_review.url': Feature.tag_review,
-    'tag_review.status': Feature.tag_review_status,
-    'explainer': Feature.explainer_links,
-
-    'browsers.ff.view': Feature.ff_views,
-    'browsers.safari.view': Feature.safari_views,
-    'browsers.webdev.view': Feature.web_dev_views,
-    'browsers.ff.view.url': Feature.ff_views_link,
-    'browsers.safari.view.url': Feature.safari_views_link,
-    'browsers.webdev.url.url': Feature.web_dev_views_link,
-
-    'resources.docs': Feature.doc_links,
-    'non_oss_deps': Feature.non_oss_deps,
-
-    'browsers.chrome.ot.desktop.start': Feature.ot_milestone_desktop_start,
-    'browsers.chrome.ot.desktop.end': Feature.ot_milestone_desktop_end,
-    'browsers.chrome.ot.android.start': Feature.ot_milestone_android_start,
-    'browsers.chrome.ot.android.end': Feature.ot_milestone_android_end,
-    'browsers.chrome.ot.webview.start': Feature.ot_milestone_webview_start,
-    'browsers.chrome.ot.webview.end': Feature.ot_milestone_webview_end,
-    'browsers.chrome.ot.feedback_url': Feature.origin_trial_feedback_url,
-    'finch_url': Feature.finch_url,
-    }
-
-SORTABLE_FIELDS = QUERIABLE_FIELDS.copy()
-SORTABLE_FIELDS.update({
-    'approvals.requested_on': Approval.sorted_by_pending_request_date,
-    'approvals.reviewed_on': Approval.sorted_by_review_date,
-    })
+    return owners_file.raw_content
