@@ -255,7 +255,7 @@ class FeatureStar(models.DictModel):
 
 
 class FeatureAccuracyHandler(basehandlers.FlaskHandler):
-  SEND_NOTIFICATIONS = False
+  JSONIFY = True
 
   CHROME_RELEASE_SCHEDULE_URL = (
 'https://chromiumdash.appspot.com/fetch_milestone_schedule')
@@ -273,8 +273,8 @@ class FeatureAccuracyHandler(basehandlers.FlaskHandler):
     'shipped_milestone',
     'shipped_webview_milestone'
   )
-  TEMPLATE_PATH = 'accuracy_notice_email.html'
-   
+  EMAIL_TEMPLATE_PATH = 'accuracy_notice_email.html'
+
   def get_template_data(self):
     """Sends notifications to users requesting feature updates for accuracy."""
 
@@ -282,7 +282,7 @@ class FeatureAccuracyHandler(basehandlers.FlaskHandler):
     email_tasks = self._build_email_tasks(features_to_notify)
     send_emails(email_tasks)
     return {'message': f'{len(email_tasks)} email(s) sent or logged.'}
-    
+
   def _determine_features_to_notify(self):
     # 'current' milestone is the next stable milestone that hasn't landed.
     # We send notifications to any feature planned for beta or stable launch
@@ -295,7 +295,7 @@ class FeatureAccuracyHandler(basehandlers.FlaskHandler):
       raise e
     mstone_info = json.loads(resp.text)
     mstone = int(mstone_info['mstones'][0]['mstone'])
-    
+
     features = models.Feature.query(models.Feature.deleted == False).fetch(None)
     features_to_notify = []
     now = datetime.now()
@@ -305,7 +305,7 @@ class FeatureAccuracyHandler(basehandlers.FlaskHandler):
       if (feature.accurate_as_of is not None and
           feature.accurate_as_of + accuracy_as_of_delta < now):
         continue
-  
+
       # Check each milestone field and see if it corresponds with
       # the next 3 milestones. Use the closest milestone for the email.
       closest_mstone = None
@@ -329,7 +329,7 @@ class FeatureAccuracyHandler(basehandlers.FlaskHandler):
         'site_url': settings.SITE_URL,
         'milestone': mstone,
       }
-      html = render_to_string(self.TEMPLATE_PATH, body_data)
+      html = render_to_string(self.EMAIL_TEMPLATE_PATH, body_data)
       subject = f'[Action requested] Update {feature.name}'
       for owner in feature.owner:
         email_tasks.append({

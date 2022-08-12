@@ -72,9 +72,10 @@ export const ALL_FIELDS = {
 
   'accurate_as_of': {
     type: 'checkbox',
-    label: 'Confirm Accuracy',
+    label: 'Confirm accuracy',
     help_text: html`
-        This information is accurate as of today. 
+        Check this box to indicate that feature information is accurate
+        as of today.
         (Selecting this avoids reminder emails for four weeks.)`,
   },
 
