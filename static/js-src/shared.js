@@ -33,4 +33,7 @@ gtag('config', 'UA-179341418-1');
 // our listener tries to programatically submit the form.
 // Ten seconds should be enough time, and there is no rush since
 // XSRF tokens don't expire until much more time has passsed.
-window.setTimeout(window.csClient.addFormSubmitListner, 10 * 1000);
+// TODO(jrobbins): Make this event-driven rather than a timeout.
+window.setTimeout(
+    window.csClient.addFormSubmitListner.bind(window.csClient),
+    10 * 1000);
