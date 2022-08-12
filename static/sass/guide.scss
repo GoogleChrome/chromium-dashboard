@@ -1,38 +1,5 @@
-/* TODO(jrobbins): Convert metadata.html to a web component and put these
-   style rules inside that component. */
-
-#metadata-buttons {
-  margin-left: var(--content-padding);
-}
-
-#metadata-buttons div {
-  margin-top: var(--content-padding);
-}
-
-.flex-cols {
-  display: flex;
-  flex-flow: row wrap;
-  align-items: flex-start;
-  align-content: space-between;
-}
-
-table.property-sheet {
-  margin-right: var(--content-padding);
-  margin-bottom: var(--content-padding);
-}
-
-table.property-sheet tr:nth-of-type(odd) {
-  background: var(--table-alternate-background);
-}
-
-
-table.property-sheet th, #metadata-readonly td {
-  padding: var(--content-padding-half) 30px var(--content-padding-half) var(--content-padding-half);
-}
-
-table.property-sheet th {
-  white-space: nowrap;
-}
+/* TODO(kevinshen56714): Remove this file once edit.html, editall.html,
+   stage.html, and verify.html files are converted into components*/
 
 #breadcrumbs a {
   text-decoration: none;

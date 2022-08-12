@@ -198,4 +198,8 @@ export const FORM_STYLES = [
     chromedash-form-field sl-details > *:last-child {
       margin-bottom: 0;
     }
+
+    chromedash-form-field .helptext p {
+      margin: 1em 0;
+    }
   `];
