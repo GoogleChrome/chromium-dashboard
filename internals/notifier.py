@@ -256,7 +256,7 @@ class FeatureStar(models.DictModel):
 
 
 class FeatureAccuracyHandler(basehandlers.FlaskHandler):
-  SEND_NOTIFICATIONS = False
+  JSONIFY = True
 
   CHROME_RELEASE_SCHEDULE_URL = (
 'https://chromiumdash.appspot.com/fetch_milestone_schedule')
@@ -274,7 +274,7 @@ class FeatureAccuracyHandler(basehandlers.FlaskHandler):
     'shipped_milestone',
     'shipped_webview_milestone'
   )
-  TEMPLATE_PATH = 'accuracy_notice_email.html'
+  EMAIL_TEMPLATE_PATH = 'accuracy_notice_email.html'
 
   def get_template_data(self):
     """Sends notifications to users requesting feature updates for accuracy."""
@@ -330,7 +330,7 @@ class FeatureAccuracyHandler(basehandlers.FlaskHandler):
         'site_url': settings.SITE_URL,
         'milestone': mstone,
       }
-      html = render_to_string(self.TEMPLATE_PATH, body_data)
+      html = render_to_string(self.EMAIL_TEMPLATE_PATH, body_data)
       subject = f'[Action requested] Update {feature.name}'
       for owner in feature.owner:
         email_tasks.append({
