@@ -560,14 +560,14 @@ class ChromedashForm(forms.Form):
                 row_template = checkbox_row
                 if field.widget.check_test(value):
                     checked = True
-                
+
                 # accurate_as_of field should always be checked, regardless of
                 # the current value. This is only necessary if the feature
                 # has been created before this field was added.
                 if name == 'accurate_as_of':
                     checked = True
                     value = True
-            
+
             # Create a 'class="..."' attribute if the row should have any
             # CSS classes applied.
             css_classes = bf.css_classes()
@@ -584,7 +584,7 @@ class ChromedashForm(forms.Form):
                 'name': name,
                 'errors': escape(bf_errors),
                 'field': escape(bf),
-                'value': value,
+                'value': escape(value),
                 'checked': checked,
                 'html_class_attr': html_class_attr,
                 'css_classes': css_classes,
