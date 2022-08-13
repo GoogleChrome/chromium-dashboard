@@ -15,9 +15,14 @@
 import testing_config  # Must be imported before the module under test.
 
 from unittest import mock
+import flask
 from flask import testing
+import html5lib
 
+from framework import basehandlers
 import main
+
+test_app = flask.Flask(__name__)
 
 
 
@@ -44,3 +49,25 @@ class MainTest(testing_config.CustomTestCase):
     response = test_client.get('/metrics/css')
     self.assertEqual(302, response.status_code)
     self.assertEqual('/metrics/css/popularity', response.location)
+
+
+class ConstTemplateTest(testing_config.CustomTestCase):
+
+  def check_template(self, route):
+    request_path, handler_class, defaults = route
+    handler = handler_class()
+
+    with test_app.test_request_context(request_path):
+      template_data = handler.get_template_data(**defaults)
+    full_template_path = handler.get_template_path(template_data)
+
+    template_text = handler.render(template_data, full_template_path)
+    parser = html5lib.HTMLParser(strict=True)
+    document = parser.parse(template_text)
+
+  def test_const_templates(self):
+    """All the ConstHandler instances render valid HTML."""
+    for route in main.page_routes:
+      if route[1] == basehandlers.ConstHandler:
+        with self.subTest(path=route[0]):
+          self.check_template(route)
