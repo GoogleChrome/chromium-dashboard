@@ -6,7 +6,6 @@ import '../js-src/cs-client';
 import sinon from 'sinon';
 
 describe('chromedash-guide-metadata', () => {
-  const xsrfToken = 'fake_xsrf_token';
   const permissionsPromise = Promise.resolve({
     can_approve: false,
     can_create_feature: true,
@@ -89,7 +88,6 @@ describe('chromedash-guide-metadata', () => {
 
     const component = await fixture(
       html`<chromedash-guide-metadata
-             .xsrfToken=${xsrfToken}
              .featureId=${featureId}>
            </chromedash-guide-metadata>`);
     assert.exists(component);
@@ -125,7 +123,6 @@ describe('chromedash-guide-metadata', () => {
 
     const component = await fixture(
       html`<chromedash-guide-metadata
-             .xsrfToken=${xsrfToken}
              .featureId=${featureId}>
            </chromedash-guide-metadata>`);
     assert.exists(component);

@@ -33,16 +33,12 @@ export class ChromedashGuideNewPage extends LitElement {
 
   static get properties() {
     return {
-      currentPath: {type: String},
-      xsrfToken: {type: String},
       overviewForm: {type: String},
     };
   }
 
   constructor() {
     super();
-    this.currentPath = '';
-    this.xsrfToken = '';
     this.overviewForm = '';
   }
 
@@ -52,6 +48,30 @@ export class ChromedashGuideNewPage extends LitElement {
     // TODO(kevinshen56714): Remove this once SPA index page is set up.
     // Has to include this for now to remove the spinner at _base.html.
     document.body.classList.remove('loading');
+  }
+
+  /* Add the form's event listener after Shoelace event listeners are attached
+   * see more at https://github.com/GoogleChrome/chromium-dashboard/issues/2014 */
+  firstUpdated() {
+    /* TODO(kevinshen56714): remove the timeout once the form fields are all
+     * migrated to frontend, we need it now because the unsafeHTML(this.overviewForm)
+     * delays the Shoelace event listener attachment */
+    setTimeout(() => {
+      const hiddenTokenField = this.shadowRoot.querySelector('input[name=token]');
+      hiddenTokenField.form.addEventListener('submit', (event) => {
+        this.handleFormSubmission(event, hiddenTokenField);
+      });
+    }, 1000);
+  }
+
+  handleFormSubmission(event, hiddenTokenField) {
+    event.preventDefault();
+
+    // get the XSRF token and update it if it's expired before submission
+    window.csClient.ensureTokenIsValid().then(() => {
+      hiddenTokenField.value = window.csClient.token;
+      event.target.submit();
+    });
   }
 
   renderSubHeader() {
@@ -68,8 +88,8 @@ export class ChromedashGuideNewPage extends LitElement {
   renderForm() {
     return html`
       <section id="stage_form">
-        <form name="overview_form" method="POST" action=${this.currentPath}>
-          <input type="hidden" name="token" value=${this.xsrfToken}>
+        <form name="overview_form" method="POST" action='/guide/new'>
+          <input type="hidden" name="token">
           <chromedash-form-table>
 
             <span>
