@@ -185,7 +185,8 @@ page_routes = [
     ('/roadmap', basehandlers.ConstHandler,
      {'template_path': 'roadmap.html'}),
 
-    ('/settings', users.SettingsHandler),
+    ('/settings', basehandlers.ConstHandler,
+     {'template_path': 'settings.html', 'require_signin': True}),
     ('/admin/users/new', users.UserListHandler),
 
     ('/spa', basehandlers.ConstHandler, {'template_path': 'spa.html'}),
