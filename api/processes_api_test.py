@@ -21,6 +21,7 @@ from api import processes_api
 from framework import ramcache
 from internals import models
 from internals import processes
+from internals import core_enums
 
 test_app = flask.Flask(__name__)
 
@@ -80,3 +81,44 @@ class ProcessesAPITest(testing_config.CustomTestCase):
       actual = self.handler.do_get(self.feature_id)
     expected = processes.process_to_dict(processes.DEPRECATION_PROCESS)
     self.assertEqual(expected, actual)
+
+
+class ProgressAPITest(testing_config.CustomTestCase):
+
+  def setUp(self):
+    self.feature_1 = models.Feature(
+        name='feature one', summary='sum Z',
+        owner=['feature_owner@example.com'],
+        ready_for_trial_url='fake ready for trial url',
+        intent_to_experiment_url='fake intent to experiment url',
+        spec_link='fake spec link',
+        category=1, visibility=1, standardization=1, web_dev_views=1,
+        impl_status_chrome=5, intent_stage=core_enums.INTENT_IMPLEMENT,
+        shipped_milestone=1)
+    self.feature_1.put()
+    self.feature_id = self.feature_1.key.integer_id()
+    
+    self.handler = processes_api.ProgressAPI()
+    self.request_path = f'/api/v0/features/{self.feature_id}/progress'
+
+  def tearDown(self):
+    self.feature_1.key.delete()
+    ramcache.flush_all()
+    ramcache.check_for_distributed_invalidation()
+
+  def test_get___feature_progress(self):
+    """We can get progress of a feature."""
+    with test_app.test_request_context(self.request_path):
+      actual = self.handler.do_get(self.feature_id)
+
+    self.maxDiff = None
+    self.assertEqual({
+      'Code in Chromium': 'True',
+      'Draft API spec': 'fake spec link',
+      'Estimated target milestone': 'True',
+      'Final target milestone': 'True',
+      'Intent to Experiment email': 'fake intent to experiment url',
+      'Ready for Trial email': 'fake ready for trial url',
+      'Spec link': 'fake spec link',
+      'Web developer signals': 'True',
+    }, actual)

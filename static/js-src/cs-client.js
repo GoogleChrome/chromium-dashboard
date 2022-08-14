@@ -269,6 +269,11 @@ class ChromeStatusClient {
     return this.doGet(`/features/${featureId}/process`);
   }
 
+  // Progress API
+  getFeatureProgress(featureId) {
+    return this.doGet(`/features/${featureId}/progress`);
+  }
+
   // Fielddefs API
   getFieldDefs() {
     return this.doGet(`/fielddefs`);

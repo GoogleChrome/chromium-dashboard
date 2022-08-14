@@ -6,18 +6,18 @@ export class ChromedashProcessOverview extends LitElement {
   static get properties() {
     return {
       feature: {type: Object},
-      process: {type: Array},
+      process: {type: Object},
       progress: {type: Object},
-      dismissedCues: {type: Object},
+      dismissedCues: {type: Array},
     };
   }
 
   constructor() {
     super();
     this.feature = {};
-    this.process = [];
+    this.process = {};
     this.progress = {};
-    this.dismissedCues = {};
+    this.dismissedCues = [];
     this.item_stage_map = null; // null means uninitialized.
   }
 

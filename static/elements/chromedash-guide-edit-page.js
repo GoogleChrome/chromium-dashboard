@@ -1,4 +1,4 @@
-import {LitElement, css, html} from 'lit';
+import {LitElement, css, html, nothing} from 'lit';
 import './chromedash-guide-metadata';
 import './chromedash-process-overview';
 import {SHARED_STYLES} from '../sass/shared-css.js';
@@ -11,6 +11,18 @@ export class ChromedashGuideEditPage extends LitElement {
       ...SHARED_STYLES,
       ...FORM_STYLES,
       css`
+        section {
+          margin: 1em 0;
+        }
+
+        #subheader {
+          justify-content: space-between
+        }
+
+        #links {
+          display: flex;
+          gap: 2em;
+        }
       `];
   }
 
@@ -19,6 +31,10 @@ export class ChromedashGuideEditPage extends LitElement {
       user: {type: Object},
       featureId: {type: Number},
       feature: {type: Object},
+      overviewForm: {type: String},
+      process: {type: Object},
+      progress: {type: Object},
+      dismissedCues: {type: Array},
     };
   }
 
@@ -27,6 +43,10 @@ export class ChromedashGuideEditPage extends LitElement {
     this.user = {};
     this.featureId = 0;
     this.feature = {};
+    this.overviewForm = '';
+    this.process = {};
+    this.progress = {};
+    this.dismissedCues = [];
   }
 
   connectedCallback() {
@@ -39,9 +59,15 @@ export class ChromedashGuideEditPage extends LitElement {
     Promise.all([
       window.csClient.getPermissions(),
       window.csClient.getFeature(this.featureId),
-    ]).then(([user, feature]) => {
+      window.csClient.getFeatureProcess(this.featureId),
+      window.csClient.getFeatureProgress(this.featureId),
+      window.csClient.getDismissedCues(),
+    ]).then(([user, feature, process, progress, dismissedCues]) => {
       this.user = user;
       this.feature = feature;
+      this.process = process;
+      this.progress = progress;
+      this.dismissedCues = dismissedCues;
       this.loading = false;
 
       // TODO(kevinshen56714): Remove this once SPA index page is set up.
@@ -55,38 +81,66 @@ export class ChromedashGuideEditPage extends LitElement {
   renderSubHeader() {
     return html`
       <div id="subheader">
-        <a style="float:right"
-          href="/guide/editall/${this.featureId}">Edit all fields</a>
-        <span style="float:right; margin-right: 2em">
-        <a href="https://github.com/GoogleChrome/chromium-dashboard/issues/new?labels=Feedback&amp;template=process-and-guide-ux-feedback.md"
-          target="_blank" rel="noopener">Process and UI feedback</a></span>
         <h2 id="breadcrumbs">
           <a href="/feature/${this.featureId}">
             <iron-icon icon="chromestatus:arrow-back"></iron-icon>
             Edit feature: ${this.feature.name}
           </a>
         </h2>
+        <div id="links">
+          <a href="/guide/editall/${this.featureId}">Edit all fields</a>
+          <a href="https://github.com/GoogleChrome/chromium-dashboard/issues/new?labels=Feedback&amp;template=process-and-guide-ux-feedback.md"
+            target="_blank" rel="noopener">Process and UI feedback</a></span>
+        </div>
       </div>
     `;
   }
 
   renderMetadata() {
     return html`
+      <chromedash-guide-metadata
+        .feature=${this.feature}
+        .isAdmin=${this.user && this.user.is_admin}
+        .overviewForm=${this.overviewForm}>
+      </chromedash-guide-metadata>
     `;
   }
 
   renderProcessOverview() {
     return html`
+      <section>
+        <chromedash-process-overview
+          .feature=${this.feature}
+          .process=${this.process}
+          .progress=${this.progress}
+          .dismissedcues=${this.dismissedCues}>
+        </chromedash-process-overview>
+      </section>
+    `;
+  }
+
+  renderFootnote() {
+    return html`
+      <section>
+        Please see the
+        <a href="https://www.chromium.org/blink/launching-features"
+          target="_blank" rel="noopener">
+          Launching features
+        </a>
+        page for process instructions.
+      </section>
     `;
   }
 
   render() {
+    if (this.loading) return nothing;
     // TODO: Create precomiled main css file and import it instead of inlining it here
     return html`
       <link rel="stylesheet" href="/static/css/main.css">
       ${this.renderSubHeader()}
       ${this.renderMetadata()}
       ${this.renderProcessOverview()}
+      ${this.renderFootnote()}
     `;
   }
 }

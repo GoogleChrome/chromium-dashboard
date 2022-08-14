@@ -1,23 +1,16 @@
 import {html} from 'lit';
 import {assert, fixture} from '@open-wc/testing';
-import {ChromedashGuideMetadata} from './chromedash-guide-metadata';
+import {ChromedashGuideEditPage} from './chromedash-guide-edit-page';
 import './chromedash-toast';
 import '../js-src/cs-client';
 import sinon from 'sinon';
 
-describe('chromedash-guide-metadata', () => {
+describe('chromedash-guide-edit-page', () => {
   const permissionsPromise = Promise.resolve({
     can_approve: false,
     can_create_feature: true,
     can_edit_all: true,
     is_admin: false,
-    email: 'example@google.com',
-  });
-  const adminPermissionsPromise = Promise.resolve({
-    can_approve: false,
-    can_create_feature: true,
-    can_edit_all: true,
-    is_admin: true,
     email: 'example@google.com',
   });
   const validFeaturePromise = Promise.resolve({
@@ -70,9 +63,9 @@ describe('chromedash-guide-metadata', () => {
     window.csClient.getFeature.withArgs(0).returns(invalidFeaturePromise);
 
     const component = await fixture(
-      html`<chromedash-guide-metadata></chromedash-guide-metadata>`);
+      html`<chromedash-guide-edit-page></chromedash-guide-edit-page>`);
     assert.exists(component);
-    assert.instanceOf(component, ChromedashGuideMetadata);
+    assert.instanceOf(component, ChromedashGuideEditPage);
 
     // invalid feature requests would trigger the toast to show message
     const toastEl = document.querySelector('chromedash-toast');
@@ -87,11 +80,11 @@ describe('chromedash-guide-metadata', () => {
     window.csClient.getFeature.withArgs(featureId).returns(validFeaturePromise);
 
     const component = await fixture(
-      html`<chromedash-guide-metadata
+      html`<chromedash-guide-edit-page
              .featureId=${featureId}>
-           </chromedash-guide-metadata>`);
+           </chromedash-guide-edit-page>`);
     assert.exists(component);
-    assert.instanceOf(component, ChromedashGuideMetadata);
+    assert.instanceOf(component, ChromedashGuideEditPage);
 
     const metadataDiv = component.shadowRoot.querySelector('div#metadata-readonly');
     assert.exists(metadataDiv);
@@ -114,24 +107,5 @@ describe('chromedash-guide-metadata', () => {
     assert.include(metadataDiv.innerHTML, 'fake chrome status text');
     // feature blink component is listed
     assert.include(metadataDiv.innerHTML, 'Blink');
-  });
-
-  it('user is an admin', async () => {
-    const featureId = 123456;
-    window.csClient.getPermissions.returns(adminPermissionsPromise);
-    window.csClient.getFeature.withArgs(featureId).returns(validFeaturePromise);
-
-    const component = await fixture(
-      html`<chromedash-guide-metadata
-             .featureId=${featureId}
-             .isAdmin=${true}>
-           </chromedash-guide-metadata>`);
-    assert.exists(component);
-    assert.instanceOf(component, ChromedashGuideMetadata);
-
-    const metadataDiv = component.shadowRoot.querySelector('div#metadata-readonly');
-    assert.exists(metadataDiv);
-    // delete button exists
-    assert.include(metadataDiv.innerHTML, 'class="delete-button"');
   });
 });
