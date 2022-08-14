@@ -53,11 +53,6 @@ export class ChromedashFeaturePage extends LitElement {
           width: 125px;
         }
 
-        #breadcrumbs a {
-          text-decoration: none;
-          color: inherit;
-        }
-
         sl-skeleton {
           margin-bottom: 1em;
           width: 60%;

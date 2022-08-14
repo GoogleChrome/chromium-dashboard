@@ -46,11 +46,6 @@ export class ChromedashGuideMetadata extends LitElement {
           white-space: nowrap;
         }
 
-        #breadcrumbs a {
-          text-decoration: none;
-          color: inherit;
-        }
-
         sl-skeleton {
           margin-bottom: 1em;
           width: 60%;

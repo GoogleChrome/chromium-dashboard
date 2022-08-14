@@ -15,11 +15,6 @@ export class ChromedashTimelinePage extends LitElement {
         .description {
           margin-bottom: 1em;
         }
-
-        #breadcrumbs a {
-          text-decoration: none;
-          color: inherit;
-        }
       `];
   }
 
