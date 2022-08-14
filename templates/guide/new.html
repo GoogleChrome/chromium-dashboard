@@ -1,9 +1,7 @@
 {% extends "_base.html" %}
 
 {% block content %}
-  <chromedash-guide-new-page 
-    xsrfToken="{{ xsrf_token }}"
-    currentPath="{{ current_path }}"
+  <chromedash-guide-new-page
     overviewForm="{% filter force_escape %} {{ overview_form }} {% endfilter %}">
   </chromedash-guide-new-page>
 {% endblock %}
