@@ -39,12 +39,9 @@ from internals import write_creator
 from pages import blink_handler
 from pages import featuredetail
 from pages import featurelist
-from pages import newfeaturelist
 from pages import guide
 from pages import intentpreview
 from pages import metrics
-from pages import myfeatures
-from pages import roadmap
 from pages import users
 import settings
 
@@ -136,7 +133,8 @@ page_routes = [
     ('/', basehandlers.Redirector,
      {'location': '/roadmap'}),
 
-    ('/newfeatures', newfeaturelist.NewFeatureListHandler),
+    ('/newfeatures', basehandlers.ConstHandler,
+     {'template_path': 'new-feature-list.html'}),
     ('/features', featurelist.FeatureListHandler),
     ('/features/<int:feature_id>', featurelist.FeatureListHandler),
     ('/features.xml', featurelist.FeatureListXMLHandler),
@@ -181,11 +179,14 @@ page_routes = [
      {'template_path': 'metrics/feature/timeline/popularity.html'}),
     ('/omaha_data', metrics.OmahaDataHandler),
 
-    ('/myfeatures', myfeatures.MyFeaturesHandler),
+    ('/myfeatures', basehandlers.ConstHandler,
+     {'template_path': 'myfeatures.html', 'require_signin': True}),
 
-    ('/roadmap', roadmap.RoadmapHandler),
+    ('/roadmap', basehandlers.ConstHandler,
+     {'template_path': 'roadmap.html'}),
 
-    ('/settings', users.SettingsHandler),
+    ('/settings', basehandlers.ConstHandler,
+     {'template_path': 'settings.html', 'require_signin': True}),
     ('/admin/users/new', users.UserListHandler),
 
     ('/spa', basehandlers.ConstHandler, {'template_path': 'spa.html'}),

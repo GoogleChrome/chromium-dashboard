@@ -14,10 +14,6 @@
 
 import testing_config  # Must be imported first
 
-from unittest import mock
-import unittest
-
-import os
 import flask
 import html5lib
 
@@ -37,54 +33,6 @@ class UsersListTemplateTest(testing_config.CustomTestCase):
     self.app_admin.put()
     testing_config.sign_in('admin@example.com', 123567890)
 
-    with test_app.test_request_context('/request_path'):
-      self.template_data = self.handler.get_template_data()
-    self.full_template_path = self.handler.get_template_path(self.template_data)
-
-  def test_html_rendering(self):
-    """We can render the template with valid html."""
-    template_text = self.handler.render(
-        self.template_data, self.full_template_path)
-    parser = html5lib.HTMLParser(strict=True)
-    document = parser.parse(template_text)
-
-
-class SettingsHandlerTests(unittest.TestCase):
-
-  def setUp(self):
-    self.handler = users.SettingsHandler()
-
-  @mock.patch('flask.redirect')
-  @mock.patch('internals.models.UserPref.get_signed_in_user_pref')
-  def test_get__anon(self, mock_gsiup, mock_redirect):
-    mock_gsiup.return_value = None
-    mock_redirect.return_value = 'mock redirect response'
-
-    with test_app.test_request_context('/request_path'):
-      actual = self.handler.get_template_data()
-
-    mock_redirect.assert_called_once()
-    self.assertEqual('mock redirect response', actual)
-
-  @mock.patch('internals.models.UserPref.get_signed_in_user_pref')
-  def test_get__signed_in(self, mock_gsiup):
-    mock_gsiup.return_value = models.UserPref(
-        email='user@example.com')
-
-    with test_app.test_request_context('/request_path'):
-      actual = self.handler.get_template_data()
-
-    self.assertIsInstance(actual, dict)
-    self.assertIn('user_pref', actual)
-    self.assertIn('user_pref_form', actual)
-
-
-class SettingsTemplateTest(testing_config.CustomTestCase):
-
-  def setUp(self):
-    self.handler = users.SettingsHandler()
-
-    testing_config.sign_in('user1@google.com', 123567890)
     with test_app.test_request_context('/request_path'):
       self.template_data = self.handler.get_template_data()
     self.full_template_path = self.handler.get_template_path(self.template_data)
