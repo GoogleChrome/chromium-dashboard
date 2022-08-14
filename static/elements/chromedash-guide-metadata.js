@@ -67,7 +67,6 @@ export class ChromedashGuideMetadata extends LitElement {
       user: {type: Object},
       featureId: {type: Number},
       feature: {type: Object},
-      xsrfToken: {type: String},
       overviewForm: {type: String},
       editing: {type: Boolean},
       loading: {type: Boolean},
@@ -79,7 +78,6 @@ export class ChromedashGuideMetadata extends LitElement {
     this.user = {};
     this.featureId = 0;
     this.feature = {};
-    this.xsrfToken = '';
     this.overviewForm = '';
     this.editing = false;
     this.loading = true;
@@ -88,6 +86,31 @@ export class ChromedashGuideMetadata extends LitElement {
   connectedCallback() {
     super.connectedCallback();
     this.fetchData();
+  }
+
+  /* Add the form's event listener after Shoelace event listeners are attached
+   * see more at https://github.com/GoogleChrome/chromium-dashboard/issues/2014 */
+  updated() {
+    if (!this.editing) return;
+    /* TODO(kevinshen56714): remove the timeout once the form fields are all
+     * migrated to frontend, we need it now because the unsafeHTML(this.overviewForm)
+     * delays the Shoelace event listener attachment */
+    setTimeout(() => {
+      const hiddenTokenField = this.shadowRoot.querySelector('input[name=token]');
+      hiddenTokenField.form.addEventListener('submit', (event) => {
+        this.handleFormSubmission(event, hiddenTokenField);
+      });
+    }, 1000);
+  }
+
+  handleFormSubmission(event, hiddenTokenField) {
+    event.preventDefault();
+
+    // get the XSRF token and update it if it's expired before submission
+    window.csClient.ensureTokenIsValid().then(() => {
+      hiddenTokenField.value = window.csClient.token;
+      event.target.submit();
+    });
   }
 
   fetchData() {
@@ -237,7 +260,7 @@ export class ChromedashGuideMetadata extends LitElement {
     return html`
       <div id="metadata-editing">
         <form name="overview_form" method="POST" action="/guide/stage/${this.featureId}/0">
-          <input type="hidden" name="token" value=${this.xsrfToken}>
+          <input type="hidden" name="token">
 
           <chromedash-form-table>
             ${unsafeHTML(this.overviewForm)}
