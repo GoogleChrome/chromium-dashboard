@@ -34,6 +34,7 @@ HACK_BLINK_COMPONENTS = [
   "Blink>Editing>Spellcheck",
   "Blink>EnumerateDevices",
   "Blink>FeaturePolicy",
+  "Blink>FencedFrames",
   "Blink>FoldableAPIs",
   "Blink>Fonts",
   "Blink>Fonts>Emoji",
