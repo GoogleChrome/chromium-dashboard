@@ -84,6 +84,7 @@ describe('chromedash-guide-editall-page', () => {
     assert.include(subheaderDiv.innerHTML, 'href="/guide/edit/123456"');
     assert.include(subheaderDiv.innerHTML, 'Edit feature:');
 
+    // feature form, hidden token field, and submit/cancel buttons exist
     const featureForm = component.shadowRoot.querySelector('form[name="feature_form"]');
     assert.exists(featureForm);
     assert.include(featureForm.innerHTML, '<input type="hidden" name="token">');
