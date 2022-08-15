@@ -41,6 +41,26 @@ describe('chromedash-guide-edit-page', () => {
     },
     tags: ['tag_one'],
   });
+  const processPromise = Promise.resolve({
+    stages: [{
+      name: 'stage one',
+      description: 'a description',
+      progress_items: [],
+      outgoing_stage: 1,
+      actions: [],
+    }],
+  });
+  const progressPromise = Promise.resolve({
+    'Code in Chromium': 'True',
+    'Draft API spec': 'fake spec link',
+    'Estimated target milestone': 'True',
+    'Final target milestone': 'True',
+    'Intent to Experiment email': 'fake intent to experiment url',
+    'Ready for Trial email': 'fake ready for trial url',
+    'Spec link': 'fake spec link',
+    'Web developer signals': 'True',
+  });
+  const dismissedCuesPromise = Promise.resolve(['progress-checkmarks']);
 
   /* window.csClient and <chromedash-toast> are initialized at _base.html
    * which are not available here, so we initialize them before each test.
@@ -50,15 +70,24 @@ describe('chromedash-guide-edit-page', () => {
     window.csClient = new ChromeStatusClient('fake_token', 1);
     sinon.stub(window.csClient, 'getPermissions');
     sinon.stub(window.csClient, 'getFeature');
+    sinon.stub(window.csClient, 'getFeatureProcess');
+    sinon.stub(window.csClient, 'getFeatureProgress');
+    sinon.stub(window.csClient, 'getDismissedCues');
+    window.csClient.getPermissions.returns(permissionsPromise);
+    window.csClient.getFeatureProcess.returns(processPromise);
+    window.csClient.getFeatureProgress.returns(progressPromise);
+    window.csClient.getDismissedCues.returns(dismissedCuesPromise);
   });
 
   afterEach(() => {
     window.csClient.getPermissions.restore();
     window.csClient.getFeature.restore();
+    window.csClient.getFeatureProcess.restore();
+    window.csClient.getFeatureProgress.restore();
+    window.csClient.getDismissedCues.restore();
   });
 
   it('renders with no data', async () => {
-    window.csClient.getPermissions.returns(permissionsPromise);
     const invalidFeaturePromise = Promise.reject(new Error('Got error response from server'));
     window.csClient.getFeature.withArgs(0).returns(invalidFeaturePromise);
 
@@ -86,26 +115,26 @@ describe('chromedash-guide-edit-page', () => {
     assert.exists(component);
     assert.instanceOf(component, ChromedashGuideEditPage);
 
-    const metadataDiv = component.shadowRoot.querySelector('div#metadata-readonly');
-    assert.exists(metadataDiv);
-    // edit button exists
-    assert.include(metadataDiv.innerHTML, 'id="open-metadata"');
-    // feature summary is listed
-    assert.include(metadataDiv.innerHTML, 'fake detailed summary');
-    // feature owners are listed
-    assert.include(metadataDiv.innerHTML, 'href="mailto:fake chrome owner one"');
-    assert.include(metadataDiv.innerHTML, 'href="mailto:fake chrome owner two"');
-    // feature category is listed
-    assert.include(metadataDiv.innerHTML, 'fake category');
-    // feature feature type is listed
-    assert.include(metadataDiv.innerHTML, 'fake feature type');
-    // feature intent stage is listed
-    assert.include(metadataDiv.innerHTML, 'fake intent stage');
-    // feature tag is listed
-    assert.include(metadataDiv.innerHTML, 'tag_one');
-    // feature status is listed
-    assert.include(metadataDiv.innerHTML, 'fake chrome status text');
-    // feature blink component is listed
-    assert.include(metadataDiv.innerHTML, 'Blink');
+    const subheaderDiv = component.shadowRoot.querySelector('div#subheader');
+    assert.exists(subheaderDiv);
+    // subheader title is correct and clickable
+    assert.include(subheaderDiv.innerHTML, 'href="/feature/123456"');
+    assert.include(subheaderDiv.innerHTML, 'feature one');
+    // "Edit all fields" link exists and clickable
+    assert.include(subheaderDiv.innerHTML, 'href="/guide/editall/123456');
+    assert.include(subheaderDiv.innerHTML, 'Edit all fields');
+
+    // chromedash-guide-metadata is rendered
+    const metadata = component.shadowRoot.querySelector('chromedash-guide-metadata');
+    assert.exists(metadata);
+
+    // chromedash-process-overview is rendered
+    const processOverview = component.shadowRoot.querySelector('chromedash-process-overview');
+    assert.exists(processOverview);
+
+    // footnote section is rendered and with the correct link
+    const footnoteSection = component.shadowRoot.querySelector('section#footnote');
+    assert.exists(footnoteSection);
+    assert.include(footnoteSection.innerHTML, 'href="https://www.chromium.org/blink/launching-features"');
   });
 });

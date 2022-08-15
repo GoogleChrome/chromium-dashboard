@@ -45,20 +45,6 @@ export class ChromedashGuideMetadata extends LitElement {
         table.property-sheet th {
           white-space: nowrap;
         }
-
-        sl-skeleton {
-          margin-bottom: 1em;
-          width: 60%;
-        }
-
-        sl-skeleton:nth-of-type(even) {
-          width: 50%;
-        }
-
-        h3 sl-skeleton {
-          width: 30%;
-          height: 1.5em;
-        }
     `];
   }
 
@@ -68,7 +54,6 @@ export class ChromedashGuideMetadata extends LitElement {
       isAdmin: {type: Boolean},
       overviewForm: {type: String},
       editing: {type: Boolean},
-      loading: {type: Boolean},
     };
   }
 
@@ -78,7 +63,6 @@ export class ChromedashGuideMetadata extends LitElement {
     this.isAdmin = false;
     this.overviewForm = '';
     this.editing = false;
-    this.loading = true;
   }
 
   /* Add the form's event listener after Shoelace event listeners are attached
@@ -114,20 +98,6 @@ export class ChromedashGuideMetadata extends LitElement {
         location.href = '/features';
       }
     });
-  }
-
-  renderSkeletons() {
-    return html`
-      <section id="metadata">
-        <h3><sl-skeleton effect="sheen"></sl-skeleton></h3>
-        <p>
-          <sl-skeleton effect="sheen"></sl-skeleton>
-          <sl-skeleton effect="sheen"></sl-skeleton>
-          <sl-skeleton effect="sheen"></sl-skeleton>
-          <sl-skeleton effect="sheen"></sl-skeleton>
-        </p>
-      </section>
-    `;
   }
 
   renderReadOnlyTable() {
@@ -254,13 +224,9 @@ export class ChromedashGuideMetadata extends LitElement {
 
   render() {
     return html`
-      ${this.loading ?
-        this.renderSkeletons() :
-        html`
-          <section id="metadata">
-            ${this.editing ? this.renderEditForm() : this.renderReadOnlyTable()}
-          </section>
-        `}
+      <section id="metadata">
+        ${this.editing ? this.renderEditForm() : this.renderReadOnlyTable()}
+      </section>
     `;
   }
 }

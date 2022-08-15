@@ -1,6 +1,7 @@
-import {LitElement, css, html, nothing} from 'lit';
+import {LitElement, css, html} from 'lit';
 import './chromedash-guide-metadata';
 import './chromedash-process-overview';
+import {showToastMessage} from './utils.js';
 import {SHARED_STYLES} from '../sass/shared-css.js';
 import {FORM_STYLES} from '../sass/forms-css.js';
 
@@ -16,12 +17,25 @@ export class ChromedashGuideEditPage extends LitElement {
         }
 
         #subheader {
-          justify-content: space-between
+          justify-content: space-between;
         }
 
-        #links {
+        .actionlinks {
           display: flex;
-          gap: 2em;
+          gap: 1.5em;
+        }
+
+        sl-skeleton {
+          margin-bottom: 1em;
+          width: 60%;
+        }
+        sl-skeleton:nth-of-type(even) {
+          width: 50%;
+        }
+
+        h3 sl-skeleton {
+          width: 30%;
+          height: 1.5em;
         }
       `];
   }
@@ -35,6 +49,7 @@ export class ChromedashGuideEditPage extends LitElement {
       process: {type: Object},
       progress: {type: Object},
       dismissedCues: {type: Array},
+      loading: {type: Boolean},
     };
   }
 
@@ -47,6 +62,7 @@ export class ChromedashGuideEditPage extends LitElement {
     this.process = {};
     this.progress = {};
     this.dismissedCues = [];
+    this.loading = true;
   }
 
   connectedCallback() {
@@ -87,7 +103,7 @@ export class ChromedashGuideEditPage extends LitElement {
             Edit feature: ${this.feature.name}
           </a>
         </h2>
-        <div id="links">
+        <div class="actionlinks">
           <a href="/guide/editall/${this.featureId}">Edit all fields</a>
           <a href="https://github.com/GoogleChrome/chromium-dashboard/issues/new?labels=Feedback&amp;template=process-and-guide-ux-feedback.md"
             target="_blank" rel="noopener">Process and UI feedback</a></span>
@@ -113,7 +129,7 @@ export class ChromedashGuideEditPage extends LitElement {
           .feature=${this.feature}
           .process=${this.process}
           .progress=${this.progress}
-          .dismissedcues=${this.dismissedCues}>
+          .dismissedCues=${this.dismissedCues}>
         </chromedash-process-overview>
       </section>
     `;
@@ -121,7 +137,7 @@ export class ChromedashGuideEditPage extends LitElement {
 
   renderFootnote() {
     return html`
-      <section>
+      <section id="footnote">
         Please see the
         <a href="https://www.chromium.org/blink/launching-features"
           target="_blank" rel="noopener">
@@ -132,15 +148,35 @@ export class ChromedashGuideEditPage extends LitElement {
     `;
   }
 
+  renderSkeletons() {
+    return html`
+      <section id="metadata">
+        <h3><sl-skeleton effect="sheen"></sl-skeleton></h3>
+        <p>
+          <sl-skeleton effect="sheen"></sl-skeleton>
+          <sl-skeleton effect="sheen"></sl-skeleton>
+          <sl-skeleton effect="sheen"></sl-skeleton>
+          <sl-skeleton effect="sheen"></sl-skeleton>
+          <sl-skeleton effect="sheen"></sl-skeleton>
+          <sl-skeleton effect="sheen"></sl-skeleton>
+        </p>
+      </section>
+    `;
+  }
+
   render() {
-    if (this.loading) return nothing;
     // TODO: Create precomiled main css file and import it instead of inlining it here
     return html`
       <link rel="stylesheet" href="/static/css/main.css">
       ${this.renderSubHeader()}
-      ${this.renderMetadata()}
-      ${this.renderProcessOverview()}
-      ${this.renderFootnote()}
+
+      ${this.loading ?
+        this.renderSkeletons() :
+        html`
+          ${this.renderMetadata()}
+          ${this.renderProcessOverview()}
+          ${this.renderFootnote()}
+      `}
     `;
   }
 }

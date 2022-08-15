@@ -31,8 +31,13 @@ describe('chromedash-feature-page', () => {
   });
   const anonPermissionsPromise = Promise.resolve(null);
   const processPromise = Promise.resolve({
-    name: 'fake process',
-    stages: [{name: 'fake stage name', outgoing_stage: 1}],
+    stages: [{
+      name: 'stage one',
+      description: 'a description',
+      progress_items: [],
+      outgoing_stage: 1,
+      actions: [],
+    }],
   });
   const fieldDefsPromise = Promise.resolve({
     1: ['fake field one', 'fake field two', 'fake field three'],

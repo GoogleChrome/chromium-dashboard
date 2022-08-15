@@ -1,26 +1,9 @@
 import {html} from 'lit';
 import {assert, fixture} from '@open-wc/testing';
 import {ChromedashGuideMetadata} from './chromedash-guide-metadata';
-import './chromedash-toast';
-import '../js-src/cs-client';
-import sinon from 'sinon';
 
 describe('chromedash-guide-metadata', () => {
-  const permissionsPromise = Promise.resolve({
-    can_approve: false,
-    can_create_feature: true,
-    can_edit_all: true,
-    is_admin: false,
-    email: 'example@google.com',
-  });
-  const adminPermissionsPromise = Promise.resolve({
-    can_approve: false,
-    can_create_feature: true,
-    can_edit_all: true,
-    is_admin: true,
-    email: 'example@google.com',
-  });
-  const validFeaturePromise = Promise.resolve({
+  const feature = {
     id: 123456,
     name: 'feature one',
     summary: 'fake detailed summary',
@@ -47,48 +30,13 @@ describe('chromedash-guide-metadata', () => {
       maturity: {text: 'Unknown standards status - check spec link for status'},
     },
     tags: ['tag_one'],
-  });
+  };
 
-  /* window.csClient and <chromedash-toast> are initialized at _base.html
-   * which are not available here, so we initialize them before each test.
-   * We also stub out the API calls here so that they return test data. */
-  beforeEach(async () => {
-    await fixture(html`<chromedash-toast></chromedash-toast>`);
-    window.csClient = new ChromeStatusClient('fake_token', 1);
-    sinon.stub(window.csClient, 'getPermissions');
-    sinon.stub(window.csClient, 'getFeature');
-  });
-
-  afterEach(() => {
-    window.csClient.getPermissions.restore();
-    window.csClient.getFeature.restore();
-  });
-
-  it('renders with no data', async () => {
-    window.csClient.getPermissions.returns(permissionsPromise);
-    const invalidFeaturePromise = Promise.reject(new Error('Got error response from server'));
-    window.csClient.getFeature.withArgs(0).returns(invalidFeaturePromise);
-
-    const component = await fixture(
-      html`<chromedash-guide-metadata></chromedash-guide-metadata>`);
-    assert.exists(component);
-    assert.instanceOf(component, ChromedashGuideMetadata);
-
-    // invalid feature requests would trigger the toast to show message
-    const toastEl = document.querySelector('chromedash-toast');
-    const toastMsgSpan = toastEl.shadowRoot.querySelector('span#msg');
-    assert.include(toastMsgSpan.innerHTML,
-      'Some errors occurred. Please refresh the page or try again later.');
-  });
-
-  it('renders with fake data', async () => {
-    const featureId = 123456;
-    window.csClient.getPermissions.returns(permissionsPromise);
-    window.csClient.getFeature.withArgs(featureId).returns(validFeaturePromise);
-
+  it('renders with fake data (user is not admin)', async () => {
     const component = await fixture(
       html`<chromedash-guide-metadata
-             .featureId=${featureId}>
+             .feature=${feature}
+             .isAdmin=${false}>
            </chromedash-guide-metadata>`);
     assert.exists(component);
     assert.instanceOf(component, ChromedashGuideMetadata);
@@ -114,16 +62,14 @@ describe('chromedash-guide-metadata', () => {
     assert.include(metadataDiv.innerHTML, 'fake chrome status text');
     // feature blink component is listed
     assert.include(metadataDiv.innerHTML, 'Blink');
+    // delete button does not exists
+    assert.notInclude(metadataDiv.innerHTML, 'class="delete-button"');
   });
 
   it('user is an admin', async () => {
-    const featureId = 123456;
-    window.csClient.getPermissions.returns(adminPermissionsPromise);
-    window.csClient.getFeature.withArgs(featureId).returns(validFeaturePromise);
-
     const component = await fixture(
       html`<chromedash-guide-metadata
-             .featureId=${featureId}
+             .feature=${feature}
              .isAdmin=${true}>
            </chromedash-guide-metadata>`);
     assert.exists(component);
