@@ -34,10 +34,6 @@ class MetricsFunctionTests(testing_config.CustomTestCase):
         day_percentage=0.0123456789, date=datetime.date.today(),
         bucket_id=1, property_name='prop')
 
-  def test_truncate_day_percentage(self):
-    updated_datapoint = metricsdata._truncate_day_percentage(self.datapoint)
-    self.assertEqual(0.01234568, updated_datapoint.day_percentage)
-
   def test_is_googler__anon(self):
     testing_config.sign_out()
     user = users.get_current_user()
@@ -53,17 +49,29 @@ class MetricsFunctionTests(testing_config.CustomTestCase):
     user = users.get_current_user()
     self.assertTrue(metricsdata._is_googler(user))
 
-  def test_clean_data__no_op(self):
+  def test_datapoints_to_json_dicts__googler(self):
     testing_config.sign_in('test@google.com', 111)
     datapoints = [self.datapoint]
-    updated_datapoints = metricsdata._clean_data(datapoints)
-    self.assertEqual(0.0123456789, list(updated_datapoints)[0].day_percentage)
+    actual = metricsdata._datapoints_to_json_dicts(datapoints)
+    expected = [{
+        'bucket_id': 1,
+        'date': str(datetime.date.today()),
+        'day_percentage': 0.0123456789,
+        'property_name': 'prop',
+        }]
+    self.assertEqual(expected, actual)
 
-  def test_clean_data__clean_datapoints(self):
-    testing_config.sign_out()
+  def test_datapoints_to_json_dicts__nongoogler(self):
+    testing_config.sign_in('test@example.com', 222)
     datapoints = [self.datapoint]
-    updated_datapoints = metricsdata._clean_data(datapoints)
-    self.assertEqual(0.01234568, list(updated_datapoints)[0].day_percentage)
+    actual = metricsdata._datapoints_to_json_dicts(datapoints)
+    expected = [{
+        'bucket_id': 1,
+        'date': str(datetime.date.today()),
+        'day_percentage': 0.01234568,  # rounded
+        'property_name': 'prop',
+        }]
+    self.assertEqual(expected, actual)
 
 
 class PopularityTimelineHandlerTests(testing_config.CustomTestCase):
