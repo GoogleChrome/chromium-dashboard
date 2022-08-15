@@ -128,6 +128,11 @@ export const SHARED_STYLES = [
     padding: var(--content-padding-quarter) var(--content-padding) 0 0;
   }
 
+  #breadcrumbs a {
+    text-decoration: none;
+    color: inherit;
+  }
+
   sl-dialog::part(title) {
     padding-top: calc(var(--header-spacing) / 2);
     padding-bottom: calc(var(--header-spacing) / 2);

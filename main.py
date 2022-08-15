@@ -95,6 +95,7 @@ api_routes = [
     (API_BASE + '/features/<int:feature_id>/approvals/<int:field_id>/comments',
      comments_api.CommentsAPI),
     (API_BASE + '/features/<int:feature_id>/process', processes_api.ProcessesAPI),
+    (API_BASE + '/features/<int:feature_id>/progress', processes_api.ProgressAPI),
 
     (API_BASE + '/fielddefs', fielddefs_api.FieldDefsAPI),
 

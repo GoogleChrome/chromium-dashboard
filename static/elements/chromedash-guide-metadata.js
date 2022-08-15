@@ -1,6 +1,6 @@
 import {LitElement, css, html, nothing} from 'lit';
 import {unsafeHTML} from 'lit/directives/unsafe-html.js';
-import {autolink, showToastMessage} from './utils.js';
+import {autolink} from './utils.js';
 import './chromedash-form-table';
 import './chromedash-form-field';
 import {SHARED_STYLES} from '../sass/shared-css.js';
@@ -45,52 +45,24 @@ export class ChromedashGuideMetadata extends LitElement {
         table.property-sheet th {
           white-space: nowrap;
         }
-
-        #breadcrumbs a {
-          text-decoration: none;
-          color: inherit;
-        }
-
-        sl-skeleton {
-          margin-bottom: 1em;
-          width: 60%;
-        }
-
-        sl-skeleton:nth-of-type(even) {
-          width: 50%;
-        }
-
-        h3 sl-skeleton {
-          width: 30%;
-          height: 1.5em;
-        }
     `];
   }
 
   static get properties() {
     return {
-      user: {type: Object},
-      featureId: {type: Number},
       feature: {type: Object},
+      isAdmin: {type: Boolean},
       overviewForm: {type: String},
       editing: {type: Boolean},
-      loading: {type: Boolean},
     };
   }
 
   constructor() {
     super();
-    this.user = {};
-    this.featureId = 0;
     this.feature = {};
+    this.isAdmin = false;
     this.overviewForm = '';
     this.editing = false;
-    this.loading = true;
-  }
-
-  connectedCallback() {
-    super.connectedCallback();
-    this.fetchData();
   }
 
   /* Add the form's event listener after Shoelace event listeners are attached
@@ -118,46 +90,14 @@ export class ChromedashGuideMetadata extends LitElement {
     });
   }
 
-  fetchData() {
-    this.loading = true;
-    Promise.all([
-      window.csClient.getPermissions(),
-      window.csClient.getFeature(this.featureId),
-    ]).then(([user, feature]) => {
-      this.user = user;
-      this.feature = feature;
-      this.loading = false;
-
-      // TODO(kevinshen56714): Remove this once SPA index page is set up.
-      // Has to include this for now to remove the spinner at _base.html.
-      document.body.classList.remove('loading');
-    }).catch(() => {
-      showToastMessage('Some errors occurred. Please refresh the page or try again later.');
-    });
-  }
-
   handleDeleteFeature() {
     if (!confirm('Delete feature?')) return;
 
-    window.csClient.doDelete(`/features/${this.featureId}`).then((resp) => {
+    window.csClient.doDelete(`/features/${this.feature.id}`).then((resp) => {
       if (resp.message === 'Done') {
         location.href = '/features';
       }
     });
-  }
-
-  renderSkeletons() {
-    return html`
-      <section id="metadata">
-        <h3><sl-skeleton effect="sheen"></sl-skeleton></h3>
-        <p>
-          <sl-skeleton effect="sheen"></sl-skeleton>
-          <sl-skeleton effect="sheen"></sl-skeleton>
-          <sl-skeleton effect="sheen"></sl-skeleton>
-          <sl-skeleton effect="sheen"></sl-skeleton>
-        </p>
-      </section>
-    `;
   }
 
   renderReadOnlyTable() {
@@ -166,7 +106,7 @@ export class ChromedashGuideMetadata extends LitElement {
         <div style="margin-bottom: 1em">
           <div id="metadata-buttons">
             <a id="open-metadata" @click=${() => this.editing = true}>Edit</a>
-            ${this.user.is_admin ? html`
+            ${this.isAdmin ? html`
               <div>
                 <a id="delete-feature" class="delete-button" 
                   @click=${this.handleDeleteFeature}>Delete</a>
@@ -264,7 +204,7 @@ export class ChromedashGuideMetadata extends LitElement {
   renderEditForm() {
     return html`
       <div id="metadata-editing">
-        <form name="overview_form" method="POST" action="/guide/stage/${this.featureId}/0">
+        <form name="overview_form" method="POST" action="/guide/stage/${this.feature.id}/0">
           <input type="hidden" name="token">
 
           <chromedash-form-table>
@@ -284,13 +224,9 @@ export class ChromedashGuideMetadata extends LitElement {
 
   render() {
     return html`
-      ${this.loading ?
-        this.renderSkeletons() :
-        html`
-          <section id="metadata">
-            ${this.editing ? this.renderEditForm() : this.renderReadOnlyTable()}
-          </section>
-        `}
+      <section id="metadata">
+        ${this.editing ? this.renderEditForm() : this.renderReadOnlyTable()}
+      </section>
     `;
   }
 }

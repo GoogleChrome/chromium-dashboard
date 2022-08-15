@@ -32,3 +32,22 @@ class ProcessesAPI(basehandlers.APIHandler):
       f.feature_type, processes.BLINK_LAUNCH_PROCESS)
 
     return processes.process_to_dict(feature_process)
+
+
+class ProgressAPI(basehandlers.APIHandler):
+  """Progress is either a boolean value when the checkmark should be shown,
+  or a string that starts with "http:" or "https:" that contain details about
+  the progress of a feature so far"""
+
+  def do_get(self, feature_id):
+    """Return the progress of the feature."""
+    f = models.Feature.get_by_id(feature_id)
+    if f is None:
+      self.abort(404, msg=f'Feature {feature_id} not found')
+
+    progress_so_far = {}
+    for progress_item, detector in list(processes.PROGRESS_DETECTORS.items()):
+      detected = detector(f)
+      if detected:
+        progress_so_far[progress_item] = str(detected)
+    return progress_so_far

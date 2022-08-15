@@ -12,7 +12,7 @@ class ChromedashCallout extends LitElement {
       top: {type: Number},
       left: {type: Number},
       cue: {type: String}, // String to send to the server when dismissed.
-      dismissedCues: {attribute: false, type: Object},
+      dismissedCues: {attribute: false, type: Array},
     };
   }
 
@@ -23,7 +23,7 @@ class ChromedashCallout extends LitElement {
     this.top = 0;
     this.left = 0;
     this.signedIn = false;
-    this.dismissedCues = {};
+    this.dismissedCues = [];
   }
 
   connectedCallback() {
