@@ -606,12 +606,12 @@ class FeatureEditAllFields(FeatureEditStage):
     # TODO(jrobbins): make flat forms process specific?
     flat_form_section_list = FLAT_FORMS
     flat_forms = [
-        (section_name, form_class(feature_edit_dict))
+        (section_name, str(form_class(feature_edit_dict)))
         for section_name, form_class in flat_form_section_list]
     template_data = {
         'feature': f,
         'feature_id': f.key.integer_id(),
-        'flat_forms': flat_forms,
+        'flat_forms': json.dumps(flat_forms),
     }
     return template_data
 
