@@ -1,4 +1,14 @@
 import {html} from 'lit';
+import {
+  FEATURE_CATEGORIES,
+  FEATURE_TYPES,
+  INTENT_STAGES,
+  STANDARD_MATURITY_CHOICES,
+  REVIEW_STATUS_CHOICES,
+  VENDOR_VIEWS_COMMON,
+  VENDOR_VIEWS_GECKO,
+  WEB_DEV_VIEWS,
+} from './form-field-enums';
 
 
 const SHIPPED_HELP_TXT = html`
@@ -86,12 +96,16 @@ export const ALL_FIELDS = {
   },
 
   'category': {
+    type: 'select',
+    choices: FEATURE_CATEGORIES,
     label: 'Category',
     help_text: html`
         Select the most specific category. If unsure, leave as "Miscellaneous".`,
   },
 
   'feature_type': {
+    type: 'select',
+    choices: FEATURE_TYPES,
     label: 'Feature type',
     help_text: html`
         Select the feature type.`,
@@ -107,6 +121,8 @@ export const ALL_FIELDS = {
   },
 
   'intent_stage': {
+    type: 'select',
+    choices: INTENT_STAGES,
     label: 'Process stage',
     help_text: html`
         Select the appropriate spec process stage. If you select
@@ -219,6 +235,8 @@ export const ALL_FIELDS = {
   },
 
   'standard_maturity': {
+    type: 'select',
+    choices: STANDARD_MATURITY_CHOICES,
     label: 'Standard maturity',
     help_text: html`
         How far along is the standard that this feature implements?`,
@@ -271,12 +289,16 @@ export const ALL_FIELDS = {
   },
 
   'security_review_status': {
+    type: 'select',
+    choices: REVIEW_STATUS_CHOICES,
     label: 'Security review status',
     help_text: html`
         Status of the security review.`,
   },
 
   'privacy_review_status': {
+    type: 'select',
+    choices: REVIEW_STATUS_CHOICES,
     label: 'Privacy review status',
     help_text: html`Status of the privacy review.`,
   },
@@ -288,6 +310,8 @@ export const ALL_FIELDS = {
   },
 
   'tag_review_status': {
+    type: 'select',
+    choices: REVIEW_STATUS_CHOICES,
     label: 'TAG review status',
     help_text: html`Status of the tag review.`,
   },
@@ -346,6 +370,8 @@ export const ALL_FIELDS = {
   },
 
   'safari_views': {
+    type: 'select',
+    choices: VENDOR_VIEWS_GECKO,
     label: 'Safari views',
     help_text: html`
       See <a target="_blank" href="https://bit.ly/blink-signals">
@@ -363,6 +389,8 @@ export const ALL_FIELDS = {
   },
 
   'ff_views': {
+    type: 'select',
+    choices: VENDOR_VIEWS_COMMON,
     label: 'Firefox views',
     help_text: html`
       See <a target="_blank" href="https://bit.ly/blink-signals">
@@ -381,6 +409,8 @@ export const ALL_FIELDS = {
   },
 
   'web_dev_views': {
+    type: 'select',
+    choices: WEB_DEV_VIEWS,
     label: 'Web / Framework developer views',
     help_text: html`
       If unsure, default to "No signals".
