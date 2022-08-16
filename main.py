@@ -35,7 +35,6 @@ from internals import detect_intent
 from internals import fetchmetrics
 from internals import notifier
 from internals import data_backup
-from internals import write_creator
 from pages import blink_handler
 from pages import featuredetail
 from pages import featurelist
@@ -199,7 +198,6 @@ internals_routes = [
   ('/cron/histograms', fetchmetrics.HistogramsHandler),
   ('/cron/update_blink_components', fetchmetrics.BlinkComponentHandler),
   ('/cron/export_backup', data_backup.BackupExportHandler),
-  ('/cron/write_creator', write_creator.UpdateCreatorHandler),
   ('/cron/send_accuracy_notifications', notifier.FeatureAccuracyHandler),
 
   ('/tasks/email-subscribers', notifier.FeatureChangeHandler),
