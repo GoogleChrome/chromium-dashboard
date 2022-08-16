@@ -26,38 +26,28 @@ from framework import ramcache
 import settings
 
 CACHE_AGE = 86400 # 24hrs
+ROUNDING = 8  # 8 decimal places because all percents are < 1.0.
 
-
-def _truncate_day_percentage(datapoint):
-  # Need 8 decimals b/c num will by multiplied by 100 to get a percentage and
-  # we want 6 decimals.
-  datapoint.day_percentage = float("%.*f" % (8, datapoint.day_percentage))
-  return datapoint
 
 def _is_googler(user):
   return user and user.email().endswith('@google.com')
 
-def _clean_data(data):
+
+def _datapoints_to_json_dicts(datapoints):
   user = users.get_current_user()
   # Don't show raw percentages if user is not a googler.
-  if not _is_googler(user):
-    data = list(map(_truncate_day_percentage, data))
-  return data
+  full_precision = _is_googler(user)
 
-def _filter_metric_data(data, formatted=False):
-  """Filter out unneeded metric data befor sending."""
-  data = _clean_data(data)
-  if not formatted:
-    data = [entity.to_dict() for entity in data]
-
-  # Remove keys that the frontend doesn't render.
-  for item in data:
-    item.pop('rolling_percentage', None)
-    item.pop('updated', None)
-    item.pop('created', None)
-
-  return data
-
+  json_dicts = [
+      {'bucket_id': dp.bucket_id,
+       'date': str(dp.date),  # YYYY-MM-DD
+       'day_percentage':
+         (dp.day_percentage if full_precision else
+          round(dp.day_percentage, ROUNDING)),
+       'property_name': dp.property_name,
+      }
+      for dp in datapoints]
+  return json_dicts
 
 
 class TimelineHandler(basehandlers.FlaskHandler):
@@ -98,7 +88,7 @@ class TimelineHandler(basehandlers.FlaskHandler):
 
       ramcache.set(cache_key, datapoints, time=CACHE_AGE)
 
-    return _filter_metric_data(datapoints)
+    return _datapoints_to_json_dicts(datapoints)
 
 
 class PopularityTimelineHandler(TimelineHandler):
@@ -195,7 +185,7 @@ class FeatureHandler(basehandlers.FlaskHandler):
 
     logging.info('before filtering: %s',
                  repr(properties)[:settings.MAX_LOG_LINE])
-    return _filter_metric_data(properties)
+    return _datapoints_to_json_dicts(properties)
 
 
 class CSSPopularityHandler(FeatureHandler):
