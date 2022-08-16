@@ -32,22 +32,39 @@ export class ChromedashFormField extends LitElement {
     const helpText = fieldProps.help_text || '';
     const extraHelpText = fieldProps.extra_help || '';
     const type = fieldProps.type;
+    const choices = fieldProps.choices;
 
     // If type is checkbox, then generate locally.
     let fieldHTML = '';
     if (type === 'checkbox') {
       fieldHTML = html`
-          <sl-checkbox
-            name="${this.name}"
-            id="id_${this.name}"
-            size="small"
-            ?checked=${ this.value === 'True' ? true : false }
-            ?disabled=${ this.disabled }
-            >
+        <sl-checkbox
+          name="${this.name}"
+          id="id_${this.name}"
+          size="small"
+          ?checked=${this.value === 'True' ? true : false}
+          ?disabled=${this.disabled}
+        >
           ${label}
         </sl-checkbox>
-        `;
+      `;
       this.generateFieldLocally = true;
+    } else if (type === 'select') {
+      fieldHTML = html`
+        <sl-select
+          name="${this.name}"
+          id="id_${this.name}"
+          value="${this.value}"
+          size="small"
+          ?disabled=${this.disabled}
+        >
+          ${Object.values(choices).map(
+            ([intValue, label]) => html`
+              <sl-menu-item value="${intValue}"> ${label} </sl-menu-item>
+            `,
+          )}
+        </sl-select>
+      `;
     } else {
       // Temporary workaround until we migrate the generation of
       // all the form fields to be done here.
@@ -64,36 +81,33 @@ export class ChromedashFormField extends LitElement {
     return html`
       <tr>
         <th colspan="2">
-          <b>
-            ${label ? label + ':' : ''}
-          </b>
+          <b> ${label ? label + ':' : ''} </b>
         </th>
       </tr>
       <tr>
+        <td>${fieldHTML} ${errorsHTML}</td>
         <td>
-          ${fieldHTML}
-          ${errorsHTML}
-        </td>
-        <td>
-          <span class="helptext">
-            ${helpText}
-          </span>
-          ${extraHelpText ? html`
-          <sl-icon-button name="plus-square"
-            label="Toggle extra help"
-            @click="${this.toggleExtraHelp}">+</sl-icon-button>
-          ` : ''}
+          <span class="helptext"> ${helpText} </span>
+          ${extraHelpText ?
+            html`
+                <sl-icon-button
+                  name="plus-square"
+                  label="Toggle extra help"
+                  @click="${this.toggleExtraHelp}"
+                  >+</sl-icon-button
+                >
+              ` :
+            ''}
         </td>
       </tr>
-                  
-      ${extraHelpText ? html`
-      <tr>
-        <td colspan="2" class="extrahelp">
-          <sl-details summary="">
-            ${extraHelpText}
-          </sl-details>
-        </td>
-      </tr>` : ''}
+
+      ${extraHelpText ?
+        html` <tr>
+            <td colspan="2" class="extrahelp">
+              <sl-details summary=""> ${extraHelpText} </sl-details>
+            </td>
+          </tr>` :
+        ''}
     `;
   }
 }

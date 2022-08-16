@@ -35,6 +35,7 @@ from framework import cloud_tasks_helpers
 from framework import users
 import settings
 from internals import approval_defs
+from internals import core_enums
 from internals import models
 
 
@@ -69,7 +70,7 @@ def format_email_body(is_update, feature, changes):
       'updater_email': feature.updated_by.email(),
       'id': feature.key.integer_id(),
       'milestone': milestone_str,
-      'status': models.IMPLEMENTATION_STATUS[feature.impl_status_chrome],
+      'status': core_enums.IMPLEMENTATION_STATUS[feature.impl_status_chrome],
       'formatted_changes': formatted_changes,
       'moz_link_urls': moz_link_urls,
   }
@@ -255,7 +256,7 @@ class FeatureStar(models.DictModel):
 
 
 class FeatureAccuracyHandler(basehandlers.FlaskHandler):
-  SEND_NOTIFICATIONS = False
+  JSONIFY = True
 
   CHROME_RELEASE_SCHEDULE_URL = (
 'https://chromiumdash.appspot.com/fetch_milestone_schedule')
@@ -273,8 +274,8 @@ class FeatureAccuracyHandler(basehandlers.FlaskHandler):
     'shipped_milestone',
     'shipped_webview_milestone'
   )
-  TEMPLATE_PATH = 'accuracy_notice_email.html'
-   
+  EMAIL_TEMPLATE_PATH = 'accuracy_notice_email.html'
+
   def get_template_data(self):
     """Sends notifications to users requesting feature updates for accuracy."""
 
@@ -282,7 +283,7 @@ class FeatureAccuracyHandler(basehandlers.FlaskHandler):
     email_tasks = self._build_email_tasks(features_to_notify)
     send_emails(email_tasks)
     return {'message': f'{len(email_tasks)} email(s) sent or logged.'}
-    
+
   def _determine_features_to_notify(self):
     # 'current' milestone is the next stable milestone that hasn't landed.
     # We send notifications to any feature planned for beta or stable launch
@@ -295,7 +296,7 @@ class FeatureAccuracyHandler(basehandlers.FlaskHandler):
       raise e
     mstone_info = json.loads(resp.text)
     mstone = int(mstone_info['mstones'][0]['mstone'])
-    
+
     features = models.Feature.query(models.Feature.deleted == False).fetch(None)
     features_to_notify = []
     now = datetime.now()
@@ -305,7 +306,7 @@ class FeatureAccuracyHandler(basehandlers.FlaskHandler):
       if (feature.accurate_as_of is not None and
           feature.accurate_as_of + accuracy_as_of_delta < now):
         continue
-  
+
       # Check each milestone field and see if it corresponds with
       # the next 3 milestones. Use the closest milestone for the email.
       closest_mstone = None
@@ -329,7 +330,7 @@ class FeatureAccuracyHandler(basehandlers.FlaskHandler):
         'site_url': settings.SITE_URL,
         'milestone': mstone,
       }
-      html = render_to_string(self.TEMPLATE_PATH, body_data)
+      html = render_to_string(self.EMAIL_TEMPLATE_PATH, body_data)
       subject = f'[Action requested] Update {feature.name}'
       for owner in feature.owner:
         email_tasks.append({
@@ -393,7 +394,7 @@ def get_existing_thread_subject(feature, approval_field):
 def generate_thread_subject(feature, approval_field):
   """Use the expected subject based on the feature type and approval type."""
   intent_phrase = approval_field.name
-  if feature.feature_type == models.FEATURE_TYPE_DEPRECATION_ID:
+  if feature.feature_type == core_enums.FEATURE_TYPE_DEPRECATION_ID:
     if approval_field == approval_defs.PrototypeApproval:
       intent_phrase = 'Intent to Deprecate and Remove'
     if approval_field == approval_defs.ExperimentApproval:

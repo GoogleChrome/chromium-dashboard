@@ -13,9 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-
-
 import json
 import logging
 
@@ -24,6 +21,7 @@ from framework import basehandlers
 from framework import permissions
 from framework import utils
 from internals import models
+from internals import core_enums
 from framework import ramcache
 
 # from google.appengine.api import users
@@ -56,19 +54,19 @@ class FeatureListHandler(basehandlers.FlaskHandler):
     template_data = {}
     template_data['categories'] = [
       (v, utils.normalized_name(v)) for k,v in
-      list(models.FEATURE_CATEGORIES.items())]
+      list(core_enums.FEATURE_CATEGORIES.items())]
     template_data['IMPLEMENTATION_STATUSES'] = json.dumps([
       {'key': k, 'val': v} for k,v in
-      list(models.IMPLEMENTATION_STATUS.items())])
+      list(core_enums.IMPLEMENTATION_STATUS.items())])
     template_data['VENDOR_VIEWS'] = json.dumps([
       {'key': k, 'val': v} for k,v in
-      list(models.VENDOR_VIEWS.items())])
+      list(core_enums.VENDOR_VIEWS.items())])
     template_data['WEB_DEV_VIEWS'] = json.dumps([
       {'key': k, 'val': v} for k,v in
-      list(models.WEB_DEV_VIEWS.items())])
+      list(core_enums.WEB_DEV_VIEWS.items())])
     template_data['STANDARDS_VALS'] = json.dumps([
       {'key': k, 'val': v} for k,v in
-      list(models.STANDARDIZATION.items())])
+      list(core_enums.STANDARDIZATION.items())])
 
     return template_data
 
@@ -92,7 +90,7 @@ class FeatureListXMLHandler(basehandlers.FlaskHandler):
         max_items = settings.RSS_FEED_LIMIT
 
       if category is not None:
-        for k,v in list(models.FEATURE_CATEGORIES.items()):
+        for k,v in list(core_enums.FEATURE_CATEGORIES.items()):
           normalized = utils.normalized_name(v)
           if category == normalized:
             filterby = ('category', k)

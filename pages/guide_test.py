@@ -21,6 +21,7 @@ import werkzeug
 import html5lib
 
 from framework import ramcache
+from internals import core_enums
 from internals import models
 from pages import guide
 
@@ -139,7 +140,7 @@ class ProcessOverviewTest(testing_config.CustomTestCase):
     self.feature_1 = models.Feature(
         name='feature one', summary='sum', owner=['user1@google.com'],
         category=1, visibility=1, standardization=1,
-        web_dev_views=models.DEV_NO_SIGNALS, impl_status_chrome=1)
+        web_dev_views=core_enums.DEV_NO_SIGNALS, impl_status_chrome=1)
     self.feature_1.put()
 
     self.request_path = '/guide/edit/%d' % self.feature_1.key.integer_id()
@@ -211,7 +212,7 @@ class ProcessOverviewTemplateTest(TestWithFeature):
     self.feature_1 = models.Feature(
         name='feature one', summary='sum', owner=['user1@google.com'],
         category=1, visibility=1, standardization=1,
-        web_dev_views=models.DEV_NO_SIGNALS, impl_status_chrome=1)
+        web_dev_views=core_enums.DEV_NO_SIGNALS, impl_status_chrome=1)
     self.feature_1.put()
     self.request_path = '/guide/edit/%d' % self.feature_1.key.integer_id()
 
@@ -247,7 +248,7 @@ class FeatureEditStageTest(testing_config.CustomTestCase):
         category=1, visibility=1, standardization=1, web_dev_views=1,
         impl_status_chrome=1)
     self.feature_1.put()
-    self.stage = models.INTENT_INCUBATE  # Shows first form
+    self.stage = core_enums.INTENT_INCUBATE  # Shows first form
 
     self.request_path = ('/guide/stage/%d/%d' % (
         self.feature_1.key.integer_id(), self.stage))
@@ -397,9 +398,9 @@ class FeatureEditStageTemplateTest(TestWithFeature):
     self.feature_1 = models.Feature(
         name='feature one', summary='sum', owner=['user1@google.com'],
         category=1, visibility=1, standardization=1,
-        web_dev_views=models.DEV_NO_SIGNALS, impl_status_chrome=1)
+        web_dev_views=core_enums.DEV_NO_SIGNALS, impl_status_chrome=1)
     self.feature_1.put()
-    self.stage = models.INTENT_INCUBATE  # Shows first form
+    self.stage = core_enums.INTENT_INCUBATE  # Shows first form
     testing_config.sign_in('user1@google.com', 1234567890)
 
     with test_app.test_request_context(self.request_path):
@@ -429,9 +430,9 @@ class FeatureEditAllFieldsTemplateTest(TestWithFeature):
     self.feature_1 = models.Feature(
         name='feature one', summary='sum', owner=['user1@google.com'],
         category=1, visibility=1, standardization=1,
-        web_dev_views=models.DEV_NO_SIGNALS, impl_status_chrome=1)
+        web_dev_views=core_enums.DEV_NO_SIGNALS, impl_status_chrome=1)
     self.feature_1.put()
-    self.stage = models.INTENT_INCUBATE  # Shows first form
+    self.stage = core_enums.INTENT_INCUBATE  # Shows first form
     testing_config.sign_in('user1@google.com', 1234567890)
 
     with test_app.test_request_context(self.request_path):
@@ -459,9 +460,9 @@ class FeatureVerifyAccuracyTemplateTest(TestWithFeature):
     self.feature_1 = models.Feature(
         name='feature one', summary='sum', owner=['user1@google.com'],
         category=1, visibility=1, standardization=1,
-        web_dev_views=models.DEV_NO_SIGNALS, impl_status_chrome=1)
+        web_dev_views=core_enums.DEV_NO_SIGNALS, impl_status_chrome=1)
     self.feature_1.put()
-    self.stage = models.INTENT_INCUBATE  # Shows first form
+    self.stage = core_enums.INTENT_INCUBATE  # Shows first form
     testing_config.sign_in('user1@google.com', 1234567890)
 
     with test_app.test_request_context(self.request_path):

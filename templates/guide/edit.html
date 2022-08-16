@@ -1,49 +1,9 @@
 {% extends "_base.html" %}
 {% block page_title %}{{ feature.name }} - {% endblock %}
-{% block css %}
-<link rel="stylesheet" href="/static/css/forms.css?v={{app_version}}">
-<link rel="stylesheet" href="/static/css/guide.css?v={{app_version}}">
-{% endblock %}
-
-{% block subheader %}
-<div id="subheader" style="display:block">
-  <a style="float:right"
-     href="/guide/editall/{{ feature_id }}">Edit all fields</a>
-  <span style="float:right; margin-right: 2em">
-  <a href="https://github.com/GoogleChrome/chromium-dashboard/issues/new?labels=Feedback&amp;template=process-and-guide-ux-feedback.md"
-     target="_blank" rel="noopener">Process and UI feedback</a></span>
-  <h2 id="breadcrumbs">
-    <a href="/feature/{{ feature_id }}">
-      <iron-icon icon="chromestatus:arrow-back"></iron-icon>
-      Edit feature: {{ feature.name }}
-    </a>
-  </h2>
-</div>
-{% endblock %}
 
 {% block content %}
-
-{% include "guide/metadata.html" with offer_editing="yes" %}
-
-<section style="margin: 1em 0 1em 0; max-width: 67em">
-  <chromedash-process-overview
-    feature='{{ feature_json }}'
-    process='{{ process_json }}'
-    progress='{{ progress_so_far }}'
-    dismissedcues='{{ user.dismissed_cues }}'>
-  </chromedash-process-overview>
-</section>
-
-<section style="margin: 1em 0 1em 0">
-  Please see the
- <a href="https://www.chromium.org/blink/launching-features"
-    target="_blank" rel="noopener">Launching features</a>
- page for process instructions.
-</section>
-
-{% endblock %}
-
-{% block js %}
-<script src="/static/js/admin/process_overview_form.min.js?v={{app_version}}"
-        nonce="{{nonce}}"></script>
+  <chromedash-guide-edit-page
+    featureId="{{ feature_id }}"
+    overviewForm="{% filter force_escape %} {{ overview_form }} {% endfilter %}">
+  </chromedash-guide-edit-page>
 {% endblock %}

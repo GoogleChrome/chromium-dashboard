@@ -62,6 +62,9 @@ test_app = basehandlers.FlaskApplication(
      ('/just_a_template', basehandlers.ConstHandler,
       {'template_path': 'test_template.html',
        'name': 'Guest'}),
+     ('/must_be_signed_in', basehandlers.ConstHandler,
+      {'template_path': 'test_template.html',
+       'require_signin': True}),
      ('/messed_up_template', basehandlers.ConstHandler,
       {'template_path': 'not_a_template'}),
      ('/ui/density.json', basehandlers.ConstHandler,
@@ -299,6 +302,26 @@ class ConstHandlerTests(testing_config.CustomTestCase):
         {'UI density': ['default', 'comfortable', 'compact']},
         actual_response.json)
 
+  def test_require_signin__normal(self):
+    """A const page renders when the user is signed in.."""
+    testing_config.sign_in('user@example.com', 111)
+    with test_app.test_request_context('/must_be_signed_in'):
+      actual_tuple = test_app.dispatch_request()
+
+    actual_text, actual_status, actual_headers = actual_tuple
+    self.assertIn('This is used by unit tests', actual_text)
+    self.assertEqual(200, actual_status)
+
+  def test_require_signin__anon(self):
+    """If sign-in is required and user is anon, we redirect."""
+    testing_config.sign_out()
+    with test_app.test_request_context('/must_be_signed_in'):
+      actual_redirect, actual_headers = test_app.dispatch_request()
+
+    self.assertEqual(302, actual_redirect.status_code)
+    self.assertEqual(
+        settings.LOGIN_PAGE_URL, actual_redirect.headers['location'])
+
 
 class APIHandlerTests(testing_config.CustomTestCase):
 
@@ -307,7 +330,7 @@ class APIHandlerTests(testing_config.CustomTestCase):
 
     self.appuser = models.AppUser(email='user@example.com')
     self.appuser.put()
-  
+
   def tearDown(self):
     self.appuser.key.delete()
 

@@ -13,12 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-
-
 # from google.appengine.api import users
 from framework import users
 
+from internals import core_enums
 from internals import models
 from framework import basehandlers
 from framework import permissions
@@ -65,21 +63,21 @@ class IntentEmailPreviewHandler(basehandlers.FlaskHandler):
   def compute_subject_prefix(self, feature, intent_stage):
     """Return part of the subject line for an intent email."""
 
-    if intent_stage == models.INTENT_INCUBATE:
-      if feature.feature_type == models.FEATURE_TYPE_DEPRECATION_ID:
+    if intent_stage == core_enums.INTENT_INCUBATE:
+      if feature.feature_type == core_enums.FEATURE_TYPE_DEPRECATION_ID:
         return 'Intent to Deprecate and Remove'
-    elif intent_stage == models.INTENT_IMPLEMENT:
+    elif intent_stage == core_enums.INTENT_IMPLEMENT:
       return 'Intent to Prototype'
-    elif intent_stage == models.INTENT_EXPERIMENT:
+    elif intent_stage == core_enums.INTENT_EXPERIMENT:
       return 'Ready for Trial'
-    elif intent_stage == models.INTENT_EXTEND_TRIAL:
-      if feature.feature_type == models.FEATURE_TYPE_DEPRECATION_ID:
+    elif intent_stage == core_enums.INTENT_EXTEND_TRIAL:
+      if feature.feature_type == core_enums.FEATURE_TYPE_DEPRECATION_ID:
         return 'Request for Deprecation Trial'
       else:
         return 'Intent to Experiment'
-    elif intent_stage == models.INTENT_SHIP:
+    elif intent_stage == core_enums.INTENT_SHIP:
       return 'Intent to Ship'
-    elif intent_stage == models.INTENT_REMOVED:
+    elif intent_stage == core_enums.INTENT_REMOVED:
       return 'Intent to Extend Deprecation Trial'
 
-    return 'Intent stage "%s"' % models.INTENT_STAGES[intent_stage]
+    return 'Intent stage "%s"' % core_enums.INTENT_STAGES[intent_stage]

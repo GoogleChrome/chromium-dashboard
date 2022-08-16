@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
 import collections
 
 
@@ -59,7 +60,7 @@ FEATURE_CATEGORIES = {
   LAYERED: 'Layered APIs',
   WEBASSEMBLY: 'WebAssembly',
   CAPABILITIES: 'Capabilities (Fugu)'
-}
+  }
 
 FEATURE_TYPE_INCUBATE_ID = 0
 FEATURE_TYPE_EXISTING_ID = 1
@@ -67,10 +68,10 @@ FEATURE_TYPE_CODE_CHANGE_ID = 2
 FEATURE_TYPE_DEPRECATION_ID = 3
 
 FEATURE_TYPES = {
-  FEATURE_TYPE_INCUBATE_ID: 'New feature incubation',
-  FEATURE_TYPE_EXISTING_ID: 'Existing feature implementation',
-  FEATURE_TYPE_CODE_CHANGE_ID: 'Web developer facing change to existing code',
-  FEATURE_TYPE_DEPRECATION_ID: 'Feature deprecation',
+    FEATURE_TYPE_INCUBATE_ID: 'New feature incubation',
+    FEATURE_TYPE_EXISTING_ID: 'Existing feature implementation',
+    FEATURE_TYPE_CODE_CHANGE_ID: 'Web developer facing change to existing code',
+    FEATURE_TYPE_DEPRECATION_ID: 'Feature deprecation',
 }
 
 
@@ -113,8 +114,8 @@ ON_HOLD = 10
 NO_LONGER_PURSUING = 1000 # insure bottom of list
 
 RELEASE_IMPL_STATES = {
-  BEHIND_A_FLAG, ENABLED_BY_DEFAULT,
-  DEPRECATED, REMOVED, ORIGIN_TRIAL, INTERVENTION,
+    BEHIND_A_FLAG, ENABLED_BY_DEFAULT,
+    DEPRECATED, REMOVED, ORIGIN_TRIAL, INTERVENTION,
 }
 
 # Ordered dictionary, make sure the order of this dictionary matches that of
@@ -145,14 +146,14 @@ REVIEW_ISSUES_ADDRESSED = 3
 REVIEW_NA = 4
 
 REVIEW_STATUS_CHOICES = {
-  REVIEW_PENDING: 'Pending',
-  REVIEW_ISSUES_OPEN: 'Issues open',
-  REVIEW_ISSUES_ADDRESSED: 'Issues addressed',
-  REVIEW_NA: 'Not applicable',
+    REVIEW_PENDING: 'Pending',
+    REVIEW_ISSUES_OPEN: 'Issues open',
+    REVIEW_ISSUES_ADDRESSED: 'Issues addressed',
+    REVIEW_NA: 'Not applicable',
 }
 
-
 # Note: FOOTPRINT_CHOICES was deleted.
+
 
 MAINSTREAM_NEWS = 1
 WARRANTS_ARTICLE = 2
@@ -186,7 +187,7 @@ VENDOR_VIEWS_COMMON = {
   OPPOSED: 'Negative',
   NEUTRAL: 'Neutral',
   SIGNALS_NA: 'N/A',
-}
+  }
 
 VENDOR_VIEWS_GECKO = VENDOR_VIEWS_COMMON.copy()
 VENDOR_VIEWS_GECKO.update({
@@ -196,7 +197,7 @@ VENDOR_VIEWS_GECKO.update({
   GECKO_NONHARMFUL: 'Non-harmful',
   GECKO_DEFER: 'Defer',
   GECKO_HARMFUL: 'Harmful',
-})
+  })
 
 # These vendors have no "custom" views values yet.
 VENDOR_VIEWS_EDGE = VENDOR_VIEWS_COMMON
@@ -221,7 +222,7 @@ STANDARDIZATION = {
   EDITORS_DRAFT: "Editor's draft",
   PUBLIC_DISCUSSION: 'Public discussion',
   NO_STD_OR_DISCUSSION: 'No public standards discussion',
-}
+  }
 
 UNSET_STD = 0
 UNKNOWN_STD = 1
@@ -250,6 +251,16 @@ STANDARD_MATURITY_SHORT = {
   STANDARD_STD: 'Published standard',
 }
 
+# For features that don't have a standard_maturity value set, but do have
+# the old standardization field, infer a maturity.
+STANDARD_MATURITY_BACKFILL = {
+    DEFACTO_STD: STANDARD_STD,
+    ESTABLISHED_STD: STANDARD_STD,
+    WORKING_DRAFT: WORKINGDRAFT_STD,
+    EDITORS_DRAFT: INCUBATION_STD,
+    PUBLIC_DISCUSSION: INCUBATION_STD,
+    NO_STD_OR_DISCUSSION: PROPOSAL_STD,
+}
 
 DEV_STRONG_POSITIVE = 1
 DEV_POSITIVE = 2
@@ -265,19 +276,28 @@ WEB_DEV_VIEWS = {
   DEV_NO_SIGNALS: 'No signals',
   DEV_NEGATIVE: 'Negative',
   DEV_STRONG_NEGATIVE: 'Strongly negative',
-}
+  }
 
 
 PROPERTY_NAMES_TO_ENUM_DICTS = {
-  'category': FEATURE_CATEGORIES,
-  'intent_stage': INTENT_STAGES,
-  'impl_status_chrome': IMPLEMENTATION_STATUS,
-  'security_review_status': REVIEW_STATUS_CHOICES,
-  'privacy_review_status': REVIEW_STATUS_CHOICES,
-  'standard_maturity': STANDARD_MATURITY_CHOICES,
-  'standardization': STANDARDIZATION,
-  'ff_views': VENDOR_VIEWS,
-  'ie_views': VENDOR_VIEWS,
-  'safari_views': VENDOR_VIEWS,
-  'web_dev_views': WEB_DEV_VIEWS,
-}
+    'category': FEATURE_CATEGORIES,
+    'intent_stage': INTENT_STAGES,
+    'impl_status_chrome': IMPLEMENTATION_STATUS,
+    'security_review_status': REVIEW_STATUS_CHOICES,
+    'privacy_review_status': REVIEW_STATUS_CHOICES,
+    'standard_maturity': STANDARD_MATURITY_CHOICES,
+    'standardization': STANDARDIZATION,
+    'ff_views': VENDOR_VIEWS,
+    'ie_views': VENDOR_VIEWS,
+    'safari_views': VENDOR_VIEWS,
+    'web_dev_views': WEB_DEV_VIEWS,
+  }
+
+
+def convert_enum_int_to_string(property_name, value):
+  """If the property is an enum, return human-readable string, else value."""
+  if type(value) != int:
+    return value
+  enum_dict = PROPERTY_NAMES_TO_ENUM_DICTS.get(property_name, {})
+  converted_value = enum_dict.get(value, value)
+  return converted_value

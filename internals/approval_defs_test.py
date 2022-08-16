@@ -27,7 +27,7 @@ from internals import approval_defs
 from internals import models
 
 
-class FetchOwnersTest(unittest.TestCase):
+class FetchOwnersTest(testing_config.CustomTestCase):
 
   @mock.patch('requests.get')
   def test__normal(self, mock_get):
@@ -81,7 +81,7 @@ MOCK_APPROVALS_BY_ID = {
 }
 
 
-class GetApproversTest(unittest.TestCase):
+class GetApproversTest(testing_config.CustomTestCase):
 
   @mock.patch('internals.approval_defs.APPROVAL_FIELDS_BY_ID',
               MOCK_APPROVALS_BY_ID)
@@ -103,7 +103,7 @@ class GetApproversTest(unittest.TestCase):
     self.assertEqual(actual, ['owner@example.com'])
 
 
-class IsValidFieldIdTest(unittest.TestCase):
+class IsValidFieldIdTest(testing_config.CustomTestCase):
 
   @mock.patch('internals.approval_defs.APPROVAL_FIELDS_BY_ID',
               MOCK_APPROVALS_BY_ID)
@@ -114,7 +114,7 @@ class IsValidFieldIdTest(unittest.TestCase):
     self.assertFalse(approval_defs.is_valid_field_id(3))
 
 
-class IsApprovedTest(unittest.TestCase):
+class IsApprovedTest(testing_config.CustomTestCase):
 
   def setUp(self):
     feature_1_id = 123456

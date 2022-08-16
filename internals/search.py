@@ -22,8 +22,10 @@ from framework import utils
 from internals import approval_defs
 from internals import models
 from internals import notifier
+from internals import search_queries
 
 MAX_TERMS = 6
+
 
 def _get_referenced_feature_ids(approvals, reverse=False):
   """Retrieve the features being approved, withuot duplicates."""
@@ -108,7 +110,7 @@ def process_queriable_field(field_name, operator, val_str):
   """Return a list of feature IDs or a promise for keys."""
   val = parse_query_value(val_str)
   logging.info('trying %r %r %r', field_name, operator, val)
-  promise = models.single_field_query_async(field_name, operator, val)
+  promise = search_queries.single_field_query_async(field_name, operator, val)
   return promise
 
 
@@ -196,7 +198,7 @@ def process_query(
     future = process_query_term(field_name, op_str, val_str)
     feature_id_futures.append(future)
   # 2b. Create a parallel query for total sort order.
-  total_order_promise = models.total_order_query_async(sort_spec)
+  total_order_promise = search_queries.total_order_query_async(sort_spec)
 
   # 3a. Get the result of each future and combine them into a result ID set.
   logging.info('now waiting on futures')
