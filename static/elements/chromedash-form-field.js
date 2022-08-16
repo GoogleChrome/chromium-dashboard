@@ -59,8 +59,8 @@ export class ChromedashFormField extends LitElement {
           ?disabled=${this.disabled}
         >
           ${Object.values(choices).map(
-            ([index, label]) => html`
-              <sl-menu-item value="${index}"> ${label} </sl-menu-item>
+            ([intValue, label]) => html`
+              <sl-menu-item value="${intValue}"> ${label} </sl-menu-item>
             `,
           )}
         </sl-select>

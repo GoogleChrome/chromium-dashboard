@@ -8,7 +8,7 @@ import {
   VENDOR_VIEWS_COMMON,
   VENDOR_VIEWS_GECKO,
   WEB_DEV_VIEWS,
-} from './form-field-models';
+} from './form-field-enums';
 
 
 const SHIPPED_HELP_TXT = html`
