@@ -1,5 +1,8 @@
-
-// The order of appearance of properties is the order displayed.
+// The following objects define the list of options for select fields.
+// Since the order of appearance of object properties is preserved, 
+// we can use this same order as the order of the select options.
+// The value of each property, [intValue, stringLabel], is used
+// for the option value and label.
 
 export const FEATURE_CATEGORIES = {
     WEBCOMPONENTS: [1, 'Web Components'],
