@@ -56,6 +56,17 @@ indexes:
   - name: "state"
   - name: "set_on"
     direction: desc
+- kind: "Approval"
+  properties:
+  - name: "state"
+  - name: "set_on"
+    direction: desc
+  - name: "feature_id"
+- kind: "Approval"
+  properties:
+  - name: "state"
+  - name: "set_on"
+  - name: "feature_id"
 - kind: "Feature"
   properties:
   - name: "deleted"

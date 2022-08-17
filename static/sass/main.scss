@@ -19,6 +19,9 @@ body {
   }
 }
 
+/* The following ones can be removed once switch to SPA 
+ * because these styles are included in <chromedash-app> */
+
 #spinner {
   display: none;
   align-items: center;
@@ -34,29 +37,8 @@ body {
   position: relative;
   padding: 0;
 }
-
-.description {
-  line-height: 1.4;
-}
-
-#subheader, .subheader {
-  display: flex;
-  align-items: center;
-  margin: var(--content-padding) 0;
-  max-width: var(--max-content-width);
+.main-toolbar .toolbar-content {
   width: 100%;
-
-  div {
-    &.search {
-      min-width: 350px;
-
-      input {
-        width: 280px;
-        padding: 10px 7px;
-      }
-    }
-
-  }
 }
 
 #app-content-container {
@@ -81,52 +63,10 @@ body {
   max-width: 95%;
 }
 
-@media only screen and (min-width: 701px) {
-  .main-toolbar {
-    .toolbar-content {
-      width: 100%;
-    }
-  }
-}
-
 @media only screen and (max-width: 700px) {
-  h1 {
-    font-size: 24px;
-  }
-  h2 {
-    font-size: 20px;
-  }
-  h3 {
-    font-size: 15px;
-  }
-
   #content {
     margin-left: 0;
     margin-right: 0;
-  }
-
-  .subheader {
-    .description {
-      margin: 0 var(--content-padding);
-    }
-  }
-
-  #subheader {
-    div {
-      &:not(.search):not(.actionlinks):not(.tooltips) {
-        display: none;
-      }
-
-      &.search {
-        text-align: center;
-        min-width: 0;
-        margin: 0;
-
-        input {
-          width: auto;
-        }
-      }
-    }
   }
 
   // Make toast a bar that fills entire bottom of mobile screen.

@@ -16,11 +16,68 @@ import testing_config  # Must be imported first
 import unittest
 
 from unittest import mock
+import html5lib
 
 from django.core.exceptions import ValidationError
+from django.template import engines
 
 from pages import guideforms
 from internals import models
+
+
+TestForm = guideforms.define_form_class_using_shared_fields(
+    'TestForm', ('name', 'summary'))
+
+TEST_TEMPLATE = '''
+<!DOCTYPE html>
+
+{{form}}
+'''
+
+class ChromedashFormTest(unittest.TestCase):
+
+  def render_form(self, feature_dict):
+    form = TestForm(feature_dict)
+    django_engine = engines['django']
+    template = django_engine.from_string(TEST_TEMPLATE)
+    rendered_html = template.render({'form': form})
+    return rendered_html
+
+  def validate_html(self, rendered_html):
+    parser = html5lib.HTMLParser(strict=True)
+    document = parser.parse(rendered_html)
+
+  def test__normal(self):
+    """Our forms can render some widgets with values."""
+    feature_dict = {
+        'name': 'this is a feature name',
+        'summary': 'this is a summary',
+        }
+    actual = self.render_form(feature_dict)
+    self.validate_html(actual)
+    self.assertIn('name="name"', actual)
+    self.assertIn('value="this is a feature name"', actual)
+    self.assertIn('name="summary"', actual)
+    self.assertIn('value="this is a summary"', actual)
+
+  def test__escaping(self):
+    """Our forms render properly even with tricky input."""
+    feature_dict = {
+        'name': 'name single\' doulble\" angle> amper& comment<!--',
+        'summary': 'summary single\' doulble\" angle> amper& comment<!--',
+        }
+    actual = self.render_form(feature_dict)
+    self.validate_html(actual)
+    self.assertIn('name="name"', actual)
+    self.assertIn(
+        'value="name single&#x27; doulble&quot; '
+        'angle&gt; amper&amp; comment&lt;!--"',
+        actual)
+    self.assertIn('name="summary"', actual)
+    self.assertIn(
+        'value="summary single&#x27; doulble&quot; '
+        'angle&gt; amper&amp; comment&lt;!--"',
+        actual)
 
 
 class DisplayFieldsTest(unittest.TestCase):
@@ -46,7 +103,6 @@ class DisplayFieldsTest(unittest.TestCase):
     self.assertEqual(3, len(specs))
     summary_spec, unlisted_spec, i2p_spec = specs
     self.assertEqual('Summary', summary_spec[1])
-    self.assertEqual('Unlisted', unlisted_spec[1])
 
   def test_DISPLAY_FIELDS_IN_STAGES__no_duplicates(self):
     """Each field appears at most once."""
@@ -71,7 +127,7 @@ class DisplayFieldsTest(unittest.TestCase):
     for field_name in list(guideforms.ALL_FIELDS.keys()):
       self.assertIn(
           field_name, fields_seen,
-          msg='Field %r is missing in DISPLAY_FIELDS_IN_STAGES' % field_name)  
+          msg='Field %r is missing in DISPLAY_FIELDS_IN_STAGES' % field_name)
 
   def test_validate_url(self):
     guideforms.validate_url('http://www.google.com')

@@ -31,8 +31,13 @@ describe('chromedash-feature-page', () => {
   });
   const anonPermissionsPromise = Promise.resolve(null);
   const processPromise = Promise.resolve({
-    name: 'fake process',
-    stages: [{name: 'fake stage name', outgoing_stage: 1}],
+    stages: [{
+      name: 'stage one',
+      description: 'a description',
+      progress_items: [],
+      outgoing_stage: 1,
+      actions: [],
+    }],
   });
   const fieldDefsPromise = Promise.resolve({
     1: ['fake field one', 'fake field two', 'fake field three'],
@@ -73,7 +78,7 @@ describe('chromedash-feature-page', () => {
     new_crbug_url: 'fake crbug link',
     browsers: {
       chrome: {
-        blink_component: ['Blink'],
+        blink_components: ['Blink'],
         owners: ['fake chrome owner one', 'fake chrome owner two'],
         status: {text: 'fake chrome status text'},
       },

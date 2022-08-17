@@ -23,7 +23,7 @@ import flask
 import werkzeug
 
 from internals import fetchmetrics
-from internals import models
+from internals import metrics_models
 
 test_app = flask.Flask(__name__)
 
@@ -75,8 +75,8 @@ class UmaQueryTest(testing_config.CustomTestCase):
   def setUp(self):
     self.uma_query = fetchmetrics.UmaQuery(
         query_name='usecounter.features',
-        model_class=models.FeatureObserver,
-        property_map_class=models.FeatureObserverHistogram)
+        model_class=metrics_models.FeatureObserver,
+        property_map_class=metrics_models.FeatureObserverHistogram)
 
   def testHasCapstone__not_found(self):
     """If there is no capstone entry, we get False."""

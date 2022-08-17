@@ -26,6 +26,7 @@ from google.oauth2 import id_token
 from framework import basehandlers
 from framework import ramcache
 from framework import utils
+from internals import metrics_models
 from internals import models
 import settings
 
@@ -164,14 +165,14 @@ class UmaQuery(object):
 
 UMA_QUERIES = [
   UmaQuery(query_name='usecounter.features',
-           model_class=models.FeatureObserver,
-           property_map_class=models.FeatureObserverHistogram),
+           model_class=metrics_models.FeatureObserver,
+           property_map_class=metrics_models.FeatureObserverHistogram),
   UmaQuery(query_name='usecounter.cssproperties',
-           model_class=models.StableInstance,
-           property_map_class=models.CssPropertyHistogram),
+           model_class=metrics_models.StableInstance,
+           property_map_class=metrics_models.CssPropertyHistogram),
   UmaQuery(query_name='usecounter.animatedcssproperties',
-           model_class=models.AnimatedProperty,
-           property_map_class=models.CssPropertyHistogram),
+           model_class=metrics_models.AnimatedProperty,
+           property_map_class=metrics_models.CssPropertyHistogram),
 ]
 
 
@@ -218,8 +219,8 @@ class YesterdayHandler(basehandlers.FlaskHandler):
 class HistogramsHandler(basehandlers.FlaskHandler):
 
   MODEL_CLASS = {
-    'FeatureObserver': models.FeatureObserverHistogram,
-    'MappedCSSProperties': models.CssPropertyHistogram,
+    'FeatureObserver': metrics_models.FeatureObserverHistogram,
+    'MappedCSSProperties': metrics_models.CssPropertyHistogram,
   }
 
   def _SaveData(self, data, histogram_id):
@@ -234,7 +235,7 @@ class HistogramsHandler(basehandlers.FlaskHandler):
     key_name = '%s_%s' % (bucket_id, property_name)
 
     # Bucket ID 1 is reserved for number of CSS Pages Visited. So don't add it.
-    if (model_class == models.CssPropertyHistogram and bucket_id == 1):
+    if (model_class == metrics_models.CssPropertyHistogram and bucket_id == 1):
       return
 
     model_class.get_or_insert(key_name,

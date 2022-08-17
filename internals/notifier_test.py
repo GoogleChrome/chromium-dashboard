@@ -34,6 +34,7 @@ class EmailFormattingTest(testing_config.CustomTestCase):
   def setUp(self):
     self.feature_1 = models.Feature(
         name='feature one', summary='sum', owner=['feature_owner@example.com'],
+        ot_milestone_desktop_start=100,
         editors=['feature_editor@example.com', 'owner_1@example.com'],
         category=1, visibility=1, standardization=1, web_dev_views=1,
         impl_status_chrome=1, created_by=ndb.User(
@@ -470,6 +471,66 @@ class FeatureStarTest(testing_config.CustomTestCase):
     self.assertCountEqual(
         [app_user_1.email, app_user_2.email],
         [au.email for au in actual])
+
+
+class MockResponse:
+  """Creates a fake response object for testing."""
+  def __init__(self, status_code=200, text='{}'):
+    self.status_code = status_code
+    self.text = text
+
+
+class FeatureAccuracyHandlerTest(testing_config.CustomTestCase):
+
+  def setUp(self):
+    self.feature_1 = models.Feature(
+        name='feature one', summary='sum', owner=['feature_owner@example.com'],
+        category=1, visibility=1,
+        standardization=1, web_dev_views=1, impl_status_chrome=1,
+        ot_milestone_desktop_start=100)
+    self.feature_1.put()
+    self.feature_2 = models.Feature(
+        name='feature two', summary='sum',
+        owner=['owner_1@example.com', 'owner_2@example.com'],
+        category=1, visibility=1, standardization=1,
+        web_dev_views=1, impl_status_chrome=1, shipped_milestone=150)
+    self.feature_2.put()
+    self.feature_3 = models.Feature(
+        name='feature three', summary='sum', category=1, visibility=1,
+        standardization=1, web_dev_views=1, impl_status_chrome=1)
+    self.feature_3.put()
+  
+  def tearDown(self):
+    self.feature_1.key.delete()
+    self.feature_2.key.delete()
+    self.feature_3.key.delete()
+
+  @mock.patch('requests.get')
+  def test_determine_features_to_notify__no_features(self, mock_get):
+    mock_return = MockResponse(text='{"mstones":[{"mstone": "40"}]}')
+    mock_get.return_value = mock_return
+    accuracy_notifier = notifier.FeatureAccuracyHandler()
+    result = accuracy_notifier.get_template_data()
+    expected = {'message': '0 email(s) sent or logged.'}
+    self.assertEqual(result, expected)
+  
+  @mock.patch('requests.get')
+  def test_determine_features_to_notify__valid_features(self, mock_get):
+    mock_return = MockResponse(text='{"mstones":[{"mstone": "100"}]}')
+    mock_get.return_value = mock_return
+    accuracy_notifier = notifier.FeatureAccuracyHandler()
+    result = accuracy_notifier.get_template_data()
+    expected = {'message': '1 email(s) sent or logged.'}
+    self.assertEqual(result, expected)
+
+  @mock.patch('requests.get')
+  def test_determine_features_to_notify__multiple_owners(self, mock_get):
+    mock_return = MockResponse(text='{"mstones":[{"mstone": "148"}]}')
+    mock_get.return_value = mock_return
+    accuracy_notifier = notifier.FeatureAccuracyHandler()
+    result = accuracy_notifier.get_template_data()
+    expected = {'message': '2 email(s) sent or logged.'}
+    self.assertEqual(result, expected)
 
 
 class FunctionsTest(testing_config.CustomTestCase):

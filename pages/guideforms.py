@@ -21,12 +21,13 @@ from django.forms.widgets import Textarea, Input
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
 
-from django.utils.html import conditional_escape
+from django.utils.html import conditional_escape, escape
 from django.utils.safestring import mark_safe
 
 # from google.appengine.api import users
 from framework import users
 
+from internals import core_enums
 from internals import models
 from internals import processes
 
@@ -148,20 +149,25 @@ ALL_FIELDS = {
         required=False, label='',
         widget=forms.EmailInput(attrs=MULTI_EMAIL_FIELD_ATTRS)),
 
+    'accurate_as_of': forms.BooleanField(
+        label='',
+        widget=forms.CheckboxInput(attrs={'label': "Confirm accuracy"}),
+        required=False, initial=True),
+
     'category': forms.ChoiceField(
         required=False, label='',
-        initial=models.MISC,
-        choices=sorted(models.FEATURE_CATEGORIES.items(), key=lambda x: x[1])),
+        initial=core_enums.MISC,
+        choices=sorted(core_enums.FEATURE_CATEGORIES.items(), key=lambda x: x[1])),
 
     'feature_type': forms.ChoiceField(
         required=False, label='',
-        initial=models.FEATURE_TYPE_INCUBATE_ID,
-        choices=sorted(models.FEATURE_TYPES.items())),
+        initial=core_enums.FEATURE_TYPE_INCUBATE_ID,
+        choices=sorted(core_enums.FEATURE_TYPES.items())),
 
     'intent_stage': forms.ChoiceField(
         required=False, label='',
-        initial=models.INTENT_IMPLEMENT,
-        choices=list(models.INTENT_STAGES.items())),
+        initial=core_enums.INTENT_IMPLEMENT,
+        choices=list(core_enums.INTENT_STAGES.items())),
 
     'motivation': forms.CharField(
         label='', required=False,
@@ -183,8 +189,8 @@ ALL_FIELDS = {
 
     'standard_maturity': forms.ChoiceField(
         required=False, label='',
-        choices=list(models.STANDARD_MATURITY_CHOICES.items()),
-        initial=models.PROPOSAL_STD),
+        choices=list(core_enums.STANDARD_MATURITY_CHOICES.items()),
+        initial=core_enums.PROPOSAL_STD),
 
     'unlisted': forms.BooleanField(
         label='',
@@ -211,14 +217,14 @@ ALL_FIELDS = {
     'security_review_status': forms.ChoiceField(
         label='',
         required=False,
-        choices=list(models.REVIEW_STATUS_CHOICES.items()),
-        initial=models.REVIEW_PENDING),
+        choices=list(core_enums.REVIEW_STATUS_CHOICES.items()),
+        initial=core_enums.REVIEW_PENDING),
 
     'privacy_review_status': forms.ChoiceField(
         label='',
         required=False,
-        choices=list(models.REVIEW_STATUS_CHOICES.items()),
-        initial=models.REVIEW_PENDING),
+        choices=list(core_enums.REVIEW_STATUS_CHOICES.items()),
+        initial=core_enums.REVIEW_PENDING),
 
     'tag_review': forms.CharField(
         label='', required=False,
@@ -227,8 +233,8 @@ ALL_FIELDS = {
     'tag_review_status': forms.ChoiceField(
         label='',
         required=False,
-        choices=list(models.REVIEW_STATUS_CHOICES.items()),
-        initial=models.REVIEW_PENDING),
+        choices=list(core_enums.REVIEW_STATUS_CHOICES.items()),
+        initial=core_enums.REVIEW_PENDING),
 
     'intent_to_implement_url': forms.URLField(
         required=False, label='',
@@ -260,8 +266,8 @@ ALL_FIELDS = {
 
     'safari_views': forms.ChoiceField(
         required=False, label='',
-        choices=list(models.VENDOR_VIEWS_WEBKIT.items()),
-        initial=models.NO_PUBLIC_SIGNALS),
+        choices=list(core_enums.VENDOR_VIEWS_WEBKIT.items()),
+        initial=core_enums.NO_PUBLIC_SIGNALS),
 
     'safari_views_link': forms.URLField(
         required=False, label='',
@@ -274,8 +280,8 @@ ALL_FIELDS = {
 
     'ff_views': forms.ChoiceField(
         required=False, label='',
-        choices=list(models.VENDOR_VIEWS_GECKO.items()),
-        initial=models.NO_PUBLIC_SIGNALS),
+        choices=list(core_enums.VENDOR_VIEWS_GECKO.items()),
+        initial=core_enums.NO_PUBLIC_SIGNALS),
 
     'ff_views_link': forms.URLField(
         required=False, label='',
@@ -288,8 +294,8 @@ ALL_FIELDS = {
 
     'web_dev_views': forms.ChoiceField(
         required=False, label='',
-        choices=list(models.WEB_DEV_VIEWS.items()),
-        initial=models.DEV_NO_SIGNALS),
+        choices=list(core_enums.WEB_DEV_VIEWS.items()),
+        initial=core_enums.DEV_NO_SIGNALS),
 
     'web_dev_views_link': forms.URLField(
         required=False, label='',
@@ -451,7 +457,7 @@ ALL_FIELDS = {
 
     'impl_status_chrome': forms.ChoiceField(
         required=False, label='',
-        choices=list(models.IMPLEMENTATION_STATUS.items())),
+        choices=list(core_enums.IMPLEMENTATION_STATUS.items())),
 
     'shipped_milestone': forms.IntegerField(
         required=False, label='',
@@ -520,19 +526,48 @@ METADATA_FIELDS = [
 ]
 
 class ChromedashForm(forms.Form):
-    def simple_html_output(self, normal_row):
+    def simple_html_output(self):
         """
         Output HTML. Used by override of as_table() to support chromedash uses only.
         Simplified to drop support for hidden form fields and errors at the top,
         which we are not using.
         Added field 'name' property for use in the normal_row template.
+        Added 'value' and 'checked' properties.
+        Added 'field' and 'errors' to avoid use of slots.
         """
         output = []
+
+        # Attributes for all fields except checkbox.
+        attrs = 'name="%(name)s" value="%(value)s" field="%(field)s" errors="%(errors)s" %(html_class_attr)s'
+        # Attributes for checkbox fields.
+        checkbox_attrs = 'name="%(name)s" value="%(value)s"  checked="%(checked)s" errors="%(errors)s" %(html_class_attr)s'
+
+        # Create the row template used for every field.
+        normal_row = '<chromedash-form-field ' + attrs + '></chromedash-form-field>'
+        checkbox_row = '<chromedash-form-field ' + checkbox_attrs + '></chromedash-form-field>'
 
         for name, field in self.fields.items():
             html_class_attr = ''
             bf = self[name]
             bf_errors = self.error_class(bf.errors)
+
+            # Get value and checked for the field
+            value = field.widget.value_from_datadict(self.data, self.files, self.add_prefix(name))
+
+            row_template = normal_row
+            checked = False
+            if hasattr(field.widget, 'check_test'):
+                # Must be a checkbox field.
+                row_template = checkbox_row
+                if field.widget.check_test(value):
+                    checked = True
+
+                # accurate_as_of field should always be checked, regardless of
+                # the current value. This is only necessary if the feature
+                # has been created before this field was added.
+                if name == 'accurate_as_of':
+                    checked = True
+                    value = True
 
             # Create a 'class="..."' attribute if the row should have any
             # CSS classes applied.
@@ -546,11 +581,12 @@ class ChromedashForm(forms.Form):
             else:
                 label = ''
 
-            output.append(normal_row % {
+            output.append(row_template % {
                 'name': name,
-                'errors': bf_errors,
-                'label': label,
-                'field': bf,
+                'errors': escape(bf_errors),
+                'field': escape(bf),
+                'value': escape(value),
+                'checked': checked,
                 'html_class_attr': html_class_attr,
                 'css_classes': css_classes,
                 'field_name': bf.html_name,
@@ -560,11 +596,7 @@ class ChromedashForm(forms.Form):
 
     def as_table(self):
         "Return this form rendered as HTML <tr>s -- excluding the <table></table>."
-        label = '<span slot="label">%(label)s</span>'
-        field = '<span slot="field">%(field)s</span>'
-        error = '<span slot="error">%(errors)s</span>'
-        html = '<chromedash-form-field name="%(name)s" %(html_class_attr)s>' + label + field + error + '%(label)s' + '</chromedash-form-field>'
-        return self.simple_html_output(normal_row=html)
+        return self.simple_html_output()
 
 def define_form_class_using_shared_fields(class_name, field_spec_list):
   """Define a new subsblass of forms.Form with the given fields, in order."""
@@ -848,6 +880,17 @@ Flat_Ship = define_form_class_using_shared_fields(
      'shipped_milestone', 'shipped_android_milestone',
      'shipped_ios_milestone', 'shipped_webview_milestone'))
 
+Verify_Accuracy = define_form_class_using_shared_fields(
+    'Verify_Accuracy',
+    ('summary', 'owner', 'editors', 'impl_status_chrome', 'intent_stage',
+    'dt_milestone_android_start', 'dt_milestone_desktop_start',
+    'dt_milestone_ios_start', 'ot_milestone_android_start',
+    'ot_milestone_android_end', 'ot_milestone_desktop_start',
+    'ot_milestone_desktop_end', 'ot_milestone_webview_start',
+    'ot_milestone_webview_end', 'shipped_android_milestone',
+    'shipped_ios_milestone', 'shipped_milestone', 'shipped_webview_milestone',
+    'accurate_as_of')
+)
 
 FIELD_NAME_TO_DISPLAY_TYPE = {
     'doc_links': 'urllist',
@@ -899,15 +942,15 @@ DISPLAY_IN_FEATURE_HIGHLIGHTS = [
 
 DISPLAY_FIELDS_IN_STAGES = {
     'Metadata': make_display_specs(
-        'category', 'feature_type', 'intent_stage',
+        'category', 'feature_type', 'intent_stage', 'accurate_as_of'
         ),
-    models.INTENT_INCUBATE: make_display_specs(
+    core_enums.INTENT_INCUBATE: make_display_specs(
         'initial_public_proposal_url', 'explainer_links',
         'requires_embedder_support'),
-    models.INTENT_IMPLEMENT: make_display_specs(
+    core_enums.INTENT_IMPLEMENT: make_display_specs(
         'spec_link', 'standard_maturity', 'api_spec', 'spec_mentors',
         'intent_to_implement_url'),
-    models.INTENT_EXPERIMENT: make_display_specs(
+    core_enums.INTENT_EXPERIMENT: make_display_specs(
         'devtrial_instructions', 'doc_links',
         'interop_compat_risks',
         'safari_views', 'safari_views_link', 'safari_views_notes',
@@ -922,13 +965,13 @@ DISPLAY_FIELDS_IN_STAGES = {
         'dt_milestone_desktop_start', 'dt_milestone_android_start',
         'dt_milestone_ios_start',
         'flag_name'),
-    models.INTENT_IMPLEMENT_SHIP: make_display_specs(
+    core_enums.INTENT_IMPLEMENT_SHIP: make_display_specs(
         'launch_bug_url',
         'tag_review', 'tag_review_status',
         'webview_risks',
         'measurement', 'prefixed', 'non_oss_deps',
         ),
-    models.INTENT_EXTEND_TRIAL: make_display_specs(
+    core_enums.INTENT_EXTEND_TRIAL: make_display_specs(
         'experiment_goals', 'experiment_risks',
         'experiment_extension_reason', 'ongoing_constraints',
         'origin_trial_feedback_url', 'intent_to_experiment_url',
@@ -940,12 +983,12 @@ DISPLAY_FIELDS_IN_STAGES = {
         'ot_milestone_webview_start', 'ot_milestone_webview_end',
         'experiment_timeline',  # Deprecated
         ),
-    models.INTENT_SHIP: make_display_specs(
+    core_enums.INTENT_SHIP: make_display_specs(
         'finch_url', 'anticipated_spec_changes',
         'shipped_milestone', 'shipped_android_milestone',
         'shipped_ios_milestone', 'shipped_webview_milestone',
         'intent_to_ship_url', 'i2s_lgtms'),
-    models.INTENT_SHIPPED: make_display_specs(
+    core_enums.INTENT_SHIPPED: make_display_specs(
         ),
     'Misc': make_display_specs(
         ),

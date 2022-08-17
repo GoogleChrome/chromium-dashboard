@@ -65,7 +65,6 @@ class ModelsFunctionsTest(testing_config.CustomTestCase):
         'impl_status_chrome', 99)
     self.assertEqual(99, actual)
 
-
   def test_del_none(self):
     d = {}
     self.assertEqual(
@@ -164,7 +163,7 @@ class FeatureTest(testing_config.CustomTestCase):
     self.assertEqual(
         ['feature a'],
         names)
-  
+
   def test_get_all__owner_unlisted(self):
     """Unlisted features should still be visible to their owners."""
     self.feature_2.unlisted = True
@@ -423,6 +422,12 @@ class ApprovalTest(testing_config.CustomTestCase):
         set_on=datetime.datetime.now(),
         set_by='two@example.com')
     self.appr_2.put()
+    self.appr_3 = models.Approval(
+        feature_id=self.feature_1_id, field_id=1,
+        state=models.Approval.APPROVED,
+        set_on=datetime.datetime.now() + datetime.timedelta(1),
+        set_by='three@example.com')
+    self.appr_3.put()
 
   def tearDown(self):
     self.feature_1.key.delete()
@@ -432,9 +437,12 @@ class ApprovalTest(testing_config.CustomTestCase):
   def test_get_approvals(self):
     """We can retrieve Approval entities."""
     actual = models.Approval.get_approvals(feature_id=self.feature_1_id)
-    self.assertEqual(2, len(actual))
+    self.assertEqual(3, len(actual))
     self.assertEqual(models.Approval.REVIEW_REQUESTED, actual[0].state)
     self.assertEqual(models.Approval.APPROVED, actual[1].state)
+    self.assertEqual(
+        sorted(actual, key=lambda appr: appr.set_on),
+        actual)
 
     actual = models.Approval.get_approvals(field_id=1)
     self.assertEqual(models.Approval.REVIEW_REQUESTED, actual[0].state)
@@ -448,23 +456,6 @@ class ApprovalTest(testing_config.CustomTestCase):
     actual = models.Approval.get_approvals(set_by='one@example.com')
     self.assertEqual(1, len(actual))
     self.assertEqual(models.Approval.REVIEW_REQUESTED, actual[0].state)
-
-    actual = models.Approval.get_approvals(
-        order=-models.Approval.set_on, limit=10)
-    self.assertEqual(2, len(actual))
-    self.assertEqual(models.Approval.APPROVED, actual[0].state)
-    self.assertEqual(models.Approval.REVIEW_REQUESTED, actual[1].state)
-
-    actual = models.Approval.get_approvals(
-        order=-models.Approval.set_on, limit=1)
-    self.assertEqual(1, len(actual))
-    self.assertEqual(models.Approval.APPROVED, actual[0].state)
-
-    actual = models.Approval.get_approvals(
-        order=-models.Approval.set_on, states=[models.Approval.APPROVED],
-        limit=10)
-    self.assertEqual(1, len(actual))
-    self.assertEqual(models.Approval.APPROVED, actual[0].state)
 
   def test_is_valid_state(self):
     """We know what approval states are valid."""
@@ -480,7 +471,7 @@ class ApprovalTest(testing_config.CustomTestCase):
         self.feature_1_id, 2, models.Approval.REVIEW_REQUESTED,
         'owner@example.com')
     self.assertEqual(
-        3,
+        4,
         len(models.Approval.query().fetch(None)))
 
   def test_clear_request(self):
@@ -650,3 +641,26 @@ class UserPrefTest(testing_config.CustomTestCase):
     user_prefs = models.UserPref.get_prefs_for_emails(emails)
     self.assertEqual(100, len(user_prefs))
     self.assertEqual('user_0@example.com', user_prefs[0].email)
+
+
+class OwnersFileTest(testing_config.CustomTestCase):
+
+  def setUp(self):
+    now = datetime.datetime.now()
+    self.owner_file_1 = models.OwnersFile(url='abc', raw_content='foo', created_on=now)
+    self.owner_file_1.add_owner_file()
+
+    expired = now - datetime.timedelta(hours=3)
+    self.owner_file_2 = models.OwnersFile(url='def', raw_content='bar', created_on=expired)
+    self.owner_file_2.add_owner_file()
+
+  def tearDown(self):
+    self.owner_file_1.key.delete()
+    self.owner_file_2.key.delete()
+
+  def test_get_raw_owner_file(self):
+    raw_content = models.OwnersFile.get_raw_owner_file('abc')
+    self.assertEqual('foo', raw_content)
+
+    expired_content = models.OwnersFile.get_raw_owner_file('def')
+    self.assertEqual(None, expired_content)

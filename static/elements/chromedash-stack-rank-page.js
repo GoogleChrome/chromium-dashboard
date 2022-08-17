@@ -119,9 +119,7 @@ export class ChromedashStackRankPage extends LitElement {
   }
 
   render() {
-    // TODO: Create a precomiled main css file and import it instead of inlining it here
     return html`
-      <link rel="stylesheet" href="/static/css/main.css">
       <div id="subheader">
         ${this.renderSubheader()}
       </div>

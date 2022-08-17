@@ -256,13 +256,22 @@ class ChromeStatusClient {
       (resp) => resp['features_by_type']);
   }
 
-  searchFeatures(userQuery) {
-    return this.doGet(`/features?q=${userQuery}`);
+  searchFeatures(userQuery, sortSpec) {
+    let url = `/features?q=${userQuery}`;
+    if (sortSpec) {
+      url += '&sort=' + sortSpec;
+    }
+    return this.doGet(url);
   }
 
   // Processes API
   getFeatureProcess(featureId) {
     return this.doGet(`/features/${featureId}/process`);
+  }
+
+  // Progress API
+  getFeatureProgress(featureId) {
+    return this.doGet(`/features/${featureId}/progress`);
   }
 
   // Fielddefs API

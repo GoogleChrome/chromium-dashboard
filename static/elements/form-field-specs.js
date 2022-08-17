@@ -1,4 +1,14 @@
 import {html} from 'lit';
+import {
+  FEATURE_CATEGORIES,
+  FEATURE_TYPES,
+  INTENT_STAGES,
+  STANDARD_MATURITY_CHOICES,
+  REVIEW_STATUS_CHOICES,
+  VENDOR_VIEWS_COMMON,
+  VENDOR_VIEWS_GECKO,
+  WEB_DEV_VIEWS,
+} from './form-field-enums';
 
 
 const SHIPPED_HELP_TXT = html`
@@ -18,8 +28,7 @@ export const ALL_FIELDS = {
   'name': {
     label: 'Feature name',
     help_text: html`
-        Capitalize only the first letter and the beginnings of proper nouns.
-        <br/><br/>
+        <p>Capitalize only the first letter and the beginnings of proper nouns.</p>
         <a target="_blank"
             href="https://github.com/GoogleChrome/chromium-dashboard/wiki/EditingHelp#feature-name">
           Learn more</a>.
@@ -34,7 +43,6 @@ export const ALL_FIELDS = {
     help_text: html`
        <p>Text in the beta release post, the enterprise release notes,
         and other external sources will be based on this text.</p>
-
         <p>Write from a web developer's point of view. Begin with one line
         explaining what the feature does. Add one or two lines explaining
         how this feature helps developers. Write in a matter-of-fact
@@ -65,10 +73,20 @@ export const ALL_FIELDS = {
   },
 
   'unlisted': {
+    type: 'checkbox',
     label: 'Unlisted',
     help_text: html`
         Check this box to hide draft emails in list views. Anyone with
         a link will be able to view the feature's detail page.`,
+  },
+
+  'accurate_as_of': {
+    type: 'checkbox',
+    label: 'Confirm accuracy',
+    help_text: html`
+        Check this box to indicate that feature information is accurate
+        as of today.
+        (Selecting this avoids reminder emails for four weeks.)`,
   },
 
   'blink_components': {
@@ -78,18 +96,33 @@ export const ALL_FIELDS = {
   },
 
   'category': {
+    type: 'select',
+    choices: FEATURE_CATEGORIES,
     label: 'Category',
     help_text: html`
         Select the most specific category. If unsure, leave as "Miscellaneous".`,
   },
 
   'feature_type': {
+    type: 'select',
+    choices: FEATURE_TYPES,
     label: 'Feature type',
     help_text: html`
         Select the feature type.`,
   },
 
+  'set_stage': {
+    type: 'checkbox',
+    label: 'Set to this stage',
+    help_text: html`
+      Check this box to move this feature to this
+      stage in the process. Leave it unchecked if you are adding
+      draft information or revising a previous stage.`,
+  },
+
   'intent_stage': {
+    type: 'select',
+    choices: INTENT_STAGES,
     label: 'Process stage',
     help_text: html`
         Select the appropriate spec process stage. If you select
@@ -202,12 +235,15 @@ export const ALL_FIELDS = {
   },
 
   'standard_maturity': {
+    type: 'select',
+    choices: STANDARD_MATURITY_CHOICES,
     label: 'Standard maturity',
     help_text: html`
         How far along is the standard that this feature implements?`,
   },
 
   'api_spec': {
+    type: 'checkbox',
     label: 'API spec',
     help_text: html`
         The spec document has details in a specification language
@@ -253,12 +289,16 @@ export const ALL_FIELDS = {
   },
 
   'security_review_status': {
+    type: 'select',
+    choices: REVIEW_STATUS_CHOICES,
     label: 'Security review status',
     help_text: html`
         Status of the security review.`,
   },
 
   'privacy_review_status': {
+    type: 'select',
+    choices: REVIEW_STATUS_CHOICES,
     label: 'Privacy review status',
     help_text: html`Status of the privacy review.`,
   },
@@ -270,6 +310,8 @@ export const ALL_FIELDS = {
   },
 
   'tag_review_status': {
+    type: 'select',
+    choices: REVIEW_STATUS_CHOICES,
     label: 'TAG review status',
     help_text: html`Status of the tag review.`,
   },
@@ -328,6 +370,8 @@ export const ALL_FIELDS = {
   },
 
   'safari_views': {
+    type: 'select',
+    choices: VENDOR_VIEWS_GECKO,
     label: 'Safari views',
     help_text: html`
       See <a target="_blank" href="https://bit.ly/blink-signals">
@@ -345,6 +389,8 @@ export const ALL_FIELDS = {
   },
 
   'ff_views': {
+    type: 'select',
+    choices: VENDOR_VIEWS_COMMON,
     label: 'Firefox views',
     help_text: html`
       See <a target="_blank" href="https://bit.ly/blink-signals">
@@ -363,6 +409,8 @@ export const ALL_FIELDS = {
   },
 
   'web_dev_views': {
+    type: 'select',
+    choices: WEB_DEV_VIEWS,
     label: 'Web / Framework developer views',
     help_text: html`
       If unsure, default to "No signals".
@@ -588,6 +636,7 @@ export const ALL_FIELDS = {
   },
 
   'all_platforms': {
+    type: 'checkbox',
     label: 'Supported on all platforms?',
     help_text: html`
       Will this feature be supported on all six Blink platforms
@@ -665,6 +714,7 @@ export const ALL_FIELDS = {
   },
 
   'requires_embedder_support': {
+    type: 'checkbox',
     label: 'Requires Embedder Support',
     help_text: html`
        Will this feature require support in //chrome?
@@ -725,6 +775,7 @@ export const ALL_FIELDS = {
   },
 
   'prefixed': {
+    type: 'checkbox',
     label: 'Prefixed?',
     help_text: '',
   },

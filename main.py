@@ -35,16 +35,12 @@ from internals import detect_intent
 from internals import fetchmetrics
 from internals import notifier
 from internals import data_backup
-from internals import write_creator
 from pages import blink_handler
 from pages import featuredetail
 from pages import featurelist
-from pages import newfeaturelist
 from pages import guide
 from pages import intentpreview
 from pages import metrics
-from pages import myfeatures
-from pages import roadmap
 from pages import users
 import settings
 
@@ -98,6 +94,7 @@ api_routes = [
     (API_BASE + '/features/<int:feature_id>/approvals/<int:field_id>/comments',
      comments_api.CommentsAPI),
     (API_BASE + '/features/<int:feature_id>/process', processes_api.ProcessesAPI),
+    (API_BASE + '/features/<int:feature_id>/progress', processes_api.ProgressAPI),
 
     (API_BASE + '/fielddefs', fielddefs_api.FieldDefsAPI),
 
@@ -136,7 +133,8 @@ page_routes = [
     ('/', basehandlers.Redirector,
      {'location': '/roadmap'}),
 
-    ('/newfeatures', newfeaturelist.NewFeatureListHandler),
+    ('/newfeatures', basehandlers.ConstHandler,
+     {'template_path': 'new-feature-list.html'}),
     ('/features', featurelist.FeatureListHandler),
     ('/features/<int:feature_id>', featurelist.FeatureListHandler),
     ('/features.xml', featurelist.FeatureListXMLHandler),
@@ -145,6 +143,7 @@ page_routes = [
     ('/guide/edit/<int:feature_id>', guide.ProcessOverview),
     ('/guide/stage/<int:feature_id>/<int:stage_id>', guide.FeatureEditStage),
     ('/guide/editall/<int:feature_id>', guide.FeatureEditAllFields),
+    ('/guide/verify_accuracy/<int:feature_id>', guide.FeatureVerifyAccuracy),
 
     ('/admin/features/launch/<int:feature_id>',
      intentpreview.IntentEmailPreviewHandler),
@@ -161,24 +160,33 @@ page_routes = [
      {'template_path': 'metrics/css/popularity.html'}),
     ('/metrics/css/animated', basehandlers.ConstHandler,
      {'template_path': 'metrics/css/animated.html'}),
-    ('/metrics/css/timeline/popularity', metrics.CssPopularityHandler),
+    ('/metrics/css/timeline/popularity', basehandlers.ConstHandler,
+     {'template_path': 'metrics/css/timeline/popularity.html'}),
     ('/metrics/css/timeline/popularity/<int:bucket_id>',
-     metrics.CssPopularityHandler),
-    ('/metrics/css/timeline/animated', metrics.CssAnimatedHandler),
+     basehandlers.ConstHandler,
+     {'template_path': 'metrics/css/timeline/popularity.html'}),
+    ('/metrics/css/timeline/animated', basehandlers.ConstHandler,
+     {'template_path': 'metrics/css/timeline/animated.html'}),
     ('/metrics/css/timeline/animated/<int:bucket_id>',
-     metrics.CssAnimatedHandler),
+     basehandlers.ConstHandler,
+     {'template_path': 'metrics/css/timeline/animated.html'}),
     ('/metrics/feature/popularity', basehandlers.ConstHandler,
      {'template_path': 'metrics/feature/popularity.html'}),
-    ('/metrics/feature/timeline/popularity', metrics.FeaturePopularityHandler),
+    ('/metrics/feature/timeline/popularity', basehandlers.ConstHandler,
+     {'template_path': 'metrics/feature/timeline/popularity.html'}),
     ('/metrics/feature/timeline/popularity/<int:bucket_id>',
-     metrics.FeaturePopularityHandler),
+     basehandlers.ConstHandler,
+     {'template_path': 'metrics/feature/timeline/popularity.html'}),
     ('/omaha_data', metrics.OmahaDataHandler),
 
-    ('/myfeatures', myfeatures.MyFeaturesHandler),
+    ('/myfeatures', basehandlers.ConstHandler,
+     {'template_path': 'myfeatures.html', 'require_signin': True}),
 
-    ('/roadmap', roadmap.RoadmapHandler),
+    ('/roadmap', basehandlers.ConstHandler,
+     {'template_path': 'roadmap.html'}),
 
-    ('/settings', users.SettingsHandler),
+    ('/settings', basehandlers.ConstHandler,
+     {'template_path': 'settings.html', 'require_signin': True}),
     ('/admin/users/new', users.UserListHandler),
 
     ('/spa', basehandlers.ConstHandler, {'template_path': 'spa.html'}),
@@ -190,7 +198,7 @@ internals_routes = [
   ('/cron/histograms', fetchmetrics.HistogramsHandler),
   ('/cron/update_blink_components', fetchmetrics.BlinkComponentHandler),
   ('/cron/export_backup', data_backup.BackupExportHandler),
-  ('/cron/write_creator', write_creator.UpdateCreatorHandler),
+  ('/cron/send_accuracy_notifications', notifier.FeatureAccuracyHandler),
 
   ('/tasks/email-subscribers', notifier.FeatureChangeHandler),
 

@@ -69,18 +69,23 @@ APPROVAL_FIELDS_BY_ID = {
 
 def fetch_owners(url):
   """Load a list of email addresses from an OWNERS file."""
-  cached_owners = ramcache.get(url)
-  if cached_owners:
-    return cached_owners
+  raw_content = models.OwnersFile.get_raw_owner_file(url)
+  if raw_content:
+    return decode_raw_owner_content(raw_content)
 
-  owners = []
   response = requests.get(url)
   if response.status_code != 200:
     logging.error('Could not fetch %r', url)
     logging.error('Got response %s', repr(response)[:settings.MAX_LOG_LINE])
     raise ValueError('Could not get OWNERS file')
 
-  decoded = base64.b64decode(response.content).decode()
+  models.OwnersFile(url=url, raw_content=response.content).add_owner_file()
+  return decode_raw_owner_content(response.content)
+
+
+def decode_raw_owner_content(raw_content):
+  owners = []
+  decoded = base64.b64decode(raw_content).decode()
   for line in decoded.split('\n'):
     logging.info('got line: '  + line[:settings.MAX_LOG_LINE])
     if '#' in line:
@@ -89,7 +94,6 @@ def fetch_owners(url):
     if '@' in line and '.' in line:
       owners.append(line)
 
-  ramcache.set(url, owners, time=CACHE_EXPIRATION)
   return owners
 
 

@@ -480,6 +480,8 @@ class ConstHandler(FlaskHandler):
 
   def get_template_data(self, **defaults):
     """Render a template, or return a JSON constant."""
+    if defaults.get('require_signin') and not self.get_current_user():
+      return flask.redirect(settings.LOGIN_PAGE_URL), self.get_headers()
     if 'template_path' in defaults:
       template_path = defaults['template_path']
       if '.html' not in template_path:

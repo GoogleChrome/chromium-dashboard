@@ -148,3 +148,8 @@ def get_banner_time(timestamp):
     return None
   ts = datetime.datetime(*timestamp, tzinfo=_UTC)
   return calendar.timegm(ts.timetuple())
+
+
+def dedupe(list_with_duplicates):
+  """Return a list without duplicates, in the original order."""
+  return list(dict.fromkeys(list_with_duplicates))

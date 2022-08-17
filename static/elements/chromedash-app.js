@@ -13,6 +13,9 @@ class ChromedashApp extends LitElement {
           position: relative;
           padding: 0;
         }
+        .main-toolbar .toolbar-content {
+          width: 100%;
+        }
 
         #app-content-container {
           display: flex;
@@ -39,9 +42,10 @@ class ChromedashApp extends LitElement {
           width: 100%;
         }
 
-        @media only screen and (min-width: 701px) {
-          .main-toolbar .toolbar-content {
-            width: 100%;
+        @media only screen and (max-width: 700px) {
+          #content {
+            margin-left: 0;
+            margin-right: 0;
           }
         }
     `];
@@ -54,7 +58,7 @@ class ChromedashApp extends LitElement {
       currentPage: {type: String},
       bannerMessage: {type: String},
       bannerTime: {type: Number},
-      pageComponent: {type: Element},
+      pageComponent: {attribute: false},
       contextLink: {type: String}, // used for the back button in the feature page
     };
   }
@@ -123,17 +127,15 @@ class ChromedashApp extends LitElement {
   }
 
   render() {
-    // TODO: Create precomiled main css file and import it instead of inlining it here
     // The <slot> below is for the Google sign-in button, this is because
     // Google Identity Services Library cannot find elements in a shadow DOM,
     // so we create signInButton element at the document level and insert it
     return html`
-      <link rel="stylesheet" href="/static/css/main.css">
       <div id="app-content-container">
         <div>
           <div class="main-toolbar">
             <div class="toolbar-content">
-              <chromedash-header 
+              <chromedash-header
                 .appTitle=${this.appTitle}
                 .googleSignInClientId=${this.googleSignInClientId}
                 .currentPage=${this.currentPage}>
@@ -143,9 +145,6 @@ class ChromedashApp extends LitElement {
           </div>
 
           <div id="content">
-            <div id="spinner">
-              <img src="/static/img/ring.svg">
-            </div>
             <chromedash-banner
               .message=${this.bannerMessage}
               .timestamp=${this.bannerTime}>
@@ -167,4 +166,3 @@ class ChromedashApp extends LitElement {
 }
 
 customElements.define('chromedash-app', ChromedashApp);
-

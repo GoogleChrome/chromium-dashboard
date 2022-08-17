@@ -53,11 +53,6 @@ export class ChromedashFeaturePage extends LitElement {
           width: 125px;
         }
 
-        #breadcrumbs a {
-          text-decoration: none;
-          color: inherit;
-        }
-
         sl-skeleton {
           margin-bottom: 1em;
           width: 60%;
@@ -444,11 +439,9 @@ export class ChromedashFeaturePage extends LitElement {
   }
 
   render() {
-    // TODO: Create precomiled main css file and import it instead of inlining it here
     // TODO: create another element - chromedash-feature-highlights
     // for all the content of the <div id="feature"> part of the page
     return html`
-      <link rel="stylesheet" href="/static/css/main.css">
       ${this.loading ?
         this.renderSkeletons() :
         html`

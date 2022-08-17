@@ -80,6 +80,27 @@ button:not(:disabled):hover {
   border-color: $gray-4;
 }
 
+#subheader {
+  display: flex;
+  align-items: center;
+  margin: var(--content-padding) 0;
+  max-width: var(--max-content-width);
+  width: 100%;
+}
+
+#subheader div.search {
+  min-width: 350px;
+}
+
+#subheader div input {
+  width: 280px;
+  padding: 10px 7px;
+}
+
+.description {
+  line-height: 1.4;
+}
+
 .comma::after {
   content: ',';
   margin-right: .2em;
@@ -110,6 +131,11 @@ iron-icon {
   color: var(--unimportant-text-color);
   border-top: var(--default-border);
   padding: var(--content-padding-quarter) var(--content-padding) 0 0;
+}
+
+#breadcrumbs a {
+  text-decoration: none;
+  color: inherit;
 }
 
 sl-dialog::part(title) {
@@ -149,4 +175,32 @@ sl-details::part(content) {
 sl-skeleton {
   --color: #eee;
   --sheen-color: #ccc;
+}
+
+@media only screen and (max-width: 700px) {
+  h1 {
+    font-size: 24px;
+  }
+
+  h2 {
+    font-size: 20px;
+  }
+
+  h3 {
+    font-size: 15px;
+  }
+
+  #subheader div:not(.search):not(.actionlinks):not(.tooltips) {
+    display: none;
+  }
+
+  #subheader div.search {
+    text-align: center;
+    min-width: 0;
+    margin: 0;
+  }
+
+  #subheader div.search input {
+    width: auto;
+  }
 }

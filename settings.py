@@ -59,7 +59,7 @@ if DEV_MODE or UNIT_TEST_MODE:
 else:
   APP_ID = os.environ['GOOGLE_CLOUD_PROJECT']
 
-SITE_URL = 'http://%s.appspot.com/' % APP_ID
+SITE_URL = 'https://%s.appspot.com/' % APP_ID
 CLOUD_TASKS_REGION = 'us-central1'
 
 GOOGLE_SIGN_IN_CLIENT_ID = (
@@ -92,7 +92,7 @@ elif APP_ID == 'cr-status':
   APP_TITLE = 'Chrome Platform Status'
   SEND_EMAIL = True
   SEND_ALL_EMAIL_TO = None  # Deliver it to the intended users
-  SITE_URL = 'http://chromestatus.com/'
+  SITE_URL = 'https://chromestatus.com/'
   GOOGLE_SIGN_IN_CLIENT_ID = (
       '999517574127-7ueh2a17bv1ave9thlgtap19pt5qjp4g.'
       'apps.googleusercontent.com')
