@@ -16,17 +16,13 @@
 __author__ = 'ericbidelman@chromium.org (Eric Bidelman)'
 
 
-#import datetime
 import json
 import logging
-import os
 
-import flask
-
+from api import accounts_api
 from framework import basehandlers
 from framework import permissions
-from internals import models
-import settings
+from internals import user_models
 
 
 class UserListHandler(basehandlers.FlaskHandler):
@@ -35,8 +31,8 @@ class UserListHandler(basehandlers.FlaskHandler):
 
   @permissions.require_admin_site
   def get_template_data(self):
-    users = models.AppUser.query().fetch(None)
-    user_list = [user.format_for_template() for user in users]
+    users = user_models.AppUser.query().fetch(None)
+    user_list = [accounts_api.user_to_json_dict(user) for user in users]
 
     logging.info('user_list is %r', user_list)
     template_data = {

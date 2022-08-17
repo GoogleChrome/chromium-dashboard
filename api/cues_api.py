@@ -13,13 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-
-
 import logging
 
 from framework import basehandlers
-from internals import models
+from internals import user_models
 
 # We only accept known cue name strings.
 ALLOWED_CUES = ['progress-checkmarks']
@@ -39,13 +36,13 @@ class CuesAPI(basehandlers.APIHandler):
     cue = self.get_param('cue', allowed=ALLOWED_CUES)
     unused_user = self.get_current_user(required=True)
 
-    models.UserPref.dismiss_cue(cue)
+    user_models.UserPref.dismiss_cue(cue)
     # Callers don't use the JSON response for this API call.
     return {'message': 'Done'}
 
   def do_get(self):
     """Return a list of the dismissed cue cards"""
-    user_pref = models.UserPref.get_signed_in_user_pref()
+    user_pref = user_models.UserPref.get_signed_in_user_pref()
 
     dismissed_cues = []
     if user_pref:

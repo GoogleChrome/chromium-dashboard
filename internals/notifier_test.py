@@ -26,6 +26,7 @@ from framework import users
 from internals import approval_defs
 from internals import models
 from internals import notifier
+from internals import user_models
 import settings
 
 
@@ -43,13 +44,13 @@ class EmailFormattingTest(testing_config.CustomTestCase):
             email='editor1@gmail.com', _auth_domain='gmail.com'),
         blink_components=['Blink'])
     self.feature_1.put()
-    self.component_1 = models.BlinkComponent(name='Blink')
+    self.component_1 = user_models.BlinkComponent(name='Blink')
     self.component_1.put()
-    self.component_owner_1 = models.FeatureOwner(
+    self.component_owner_1 = user_models.FeatureOwner(
         name='owner_1', email='owner_1@example.com',
         primary_blink_components=[self.component_1.key])
     self.component_owner_1.put()
-    self.watcher_1 = models.FeatureOwner(
+    self.watcher_1 = user_models.FeatureOwner(
         name='watcher_1', email='watcher_1@example.com',
         watching_all_features=True)
     self.watcher_1.put()
@@ -360,7 +361,7 @@ class EmailFormattingTest(testing_config.CustomTestCase):
   def test_make_email_tasks__starrer_unsubscribed(self, mock_f_e_b):
     """We don't email users who starred the feature but opted out."""
     mock_f_e_b.return_value = 'mock body html'
-    starrer_2_pref = models.UserPref(
+    starrer_2_pref = user_models.UserPref(
         email='starrer_2@example.com',
         notify_as_starrer=False)
     starrer_2_pref.put()
@@ -459,9 +460,9 @@ class FeatureStarTest(testing_config.CustomTestCase):
 
   def test_get_feature_starrers__some_starrers(self):
     """Two users have starred the given feature."""
-    app_user_1 = models.AppUser(email='user16@example.com')
+    app_user_1 = user_models.AppUser(email='user16@example.com')
     app_user_1.put()
-    app_user_2 = models.AppUser(email='user17@example.com')
+    app_user_2 = user_models.AppUser(email='user17@example.com')
     app_user_2.put()
     feature_1_id = self.feature_1.key.integer_id()
     notifier.FeatureStar.set_star(app_user_1.email, feature_1_id)
@@ -499,7 +500,7 @@ class FeatureAccuracyHandlerTest(testing_config.CustomTestCase):
         name='feature three', summary='sum', category=1, visibility=1,
         standardization=1, web_dev_views=1, impl_status_chrome=1)
     self.feature_3.put()
-  
+
   def tearDown(self):
     self.feature_1.key.delete()
     self.feature_2.key.delete()
@@ -513,7 +514,7 @@ class FeatureAccuracyHandlerTest(testing_config.CustomTestCase):
     result = accuracy_notifier.get_template_data()
     expected = {'message': '0 email(s) sent or logged.'}
     self.assertEqual(result, expected)
-  
+
   @mock.patch('requests.get')
   def test_determine_features_to_notify__valid_features(self, mock_get):
     mock_return = MockResponse(text='{"mstones":[{"mstone": "100"}]}')

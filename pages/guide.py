@@ -34,6 +34,7 @@ from pages import guideforms
 from internals import core_enums
 from internals import models
 from internals import processes
+import settings
 
 
 # Forms to be used for each stage of each process.
@@ -126,7 +127,7 @@ class FeatureNew(basehandlers.FlaskHandler):
 
     blink_components = (
         self.split_input('blink_components', delim=',') or
-        [models.BlinkComponent.DEFAULT_COMPONENT])
+        [settings.DEFAULT_COMPONENT])
 
     # TODO(jrobbins): Validate input, even though it is done on client.
 
@@ -465,7 +466,7 @@ class FeatureEditStage(basehandlers.FlaskHandler):
     if self.touched('blink_components'):
       feature.blink_components = (
           self.split_input('blink_components', delim=',') or
-          [models.BlinkComponent.DEFAULT_COMPONENT])
+          [settings.DEFAULT_COMPONENT])
 
     if self.touched('devrel'):
       feature.devrel = self.split_emails('devrel')

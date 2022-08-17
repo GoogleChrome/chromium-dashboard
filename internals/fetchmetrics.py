@@ -27,7 +27,7 @@ from framework import basehandlers
 from framework import ramcache
 from framework import utils
 from internals import metrics_models
-from internals import models
+from internals import user_models
 import settings
 
 
@@ -278,5 +278,5 @@ class HistogramsHandler(basehandlers.FlaskHandler):
 class BlinkComponentHandler(basehandlers.FlaskHandler):
   """Updates the list of Blink components in the db."""
   def get_template_data(self):
-    models.BlinkComponent.update_db()
+    user_models.BlinkComponent.update_db()
     return 'Blink components updated'

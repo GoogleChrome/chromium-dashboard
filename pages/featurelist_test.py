@@ -13,8 +13,6 @@
 # limitations under the License.
 
 
-
-
 import testing_config  # Must be imported first
 
 import os
@@ -24,6 +22,7 @@ import html5lib
 
 from framework import ramcache
 from internals import models
+from internals import user_models
 from pages import featurelist
 
 test_app = flask.Flask(__name__)
@@ -35,10 +34,10 @@ class TestWithFeature(testing_config.CustomTestCase):
   HANDLER_CLASS = 'subclasses fill this in'
 
   def setUp(self):
-    self.app_user = models.AppUser(email='registered@example.com')
+    self.app_user = user_models.AppUser(email='registered@example.com')
     self.app_user.put()
 
-    self.app_admin = models.AppUser(email='admin@example.com')
+    self.app_admin = user_models.AppUser(email='admin@example.com')
     self.app_admin.is_admin = True
     self.app_admin.put()
 
@@ -131,7 +130,7 @@ class FeatureListTemplateTest(TestWithFeature):
       self.template_data['nonce'] = 'fake nonce'
       template_path = self.handler.get_template_path(self.template_data)
       self.full_template_path = os.path.join(template_path)
-    
+
   def test_html_rendering(self):
     """We can render the template with valid html."""
     template_text = self.handler.render(
