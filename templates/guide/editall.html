@@ -1,54 +1,9 @@
 {% extends "_base.html" %}
 {% block page_title %}{{ feature.name }} - {% endblock %}
 
-{% block css %}
-<link rel="stylesheet" href="/static/css/forms.css?v={{app_version}}">
-{% endblock %}
-
-{% block subheader %}
-<div id="subheader">
-  <h2 id="breadcrumbs">
-    <a href="/guide/edit/{{ feature_id }}">
-      <iron-icon icon="chromestatus:arrow-back"></iron-icon>
-      Edit feature: {{ feature.name }}
-    </a>
-  </h2>
-</div>
-{% endblock %}
-
 {% block content %}
-<form name="feature_form" method="POST" action="{{current_path}}">
-  <input type="hidden" name="token" value="{{xsrf_token}}">
-  {% for section_name, flat_form in flat_forms %}
-    <h3>{{ section_name }}</h3>
-    <section class="flat_form">
-      <chromedash-form-table>
-        {{ flat_form }}
-      </chromedash-form-table>
-    </section>
-  {% endfor %}
-
-  <section class="final_buttons">
-    <chromedash-form-table>
-      <chromedash-form-field>
-        <span slot="field">
-            <input class="button" type="submit" value="Submit">
-            <button id="cancel-button" data-id="{{ feature_id }}"
-                    type="reset">Cancel</button>
-        </span>
-      </chromedash-form-field>
-    </chromedash-form-table>
-  </section>
-</form>
-
-{% endblock %}
-
-{% block js %}
-<script nonce="{{nonce}}">
-  document.querySelector('#cancel-button').addEventListener('click', (e) => {
-    window.location.href = `/guide/edit/${e.currentTarget.dataset.id}`;
-  });
-
-  document.body.classList.remove('loading');
-</script>
+  <chromedash-guide-editall-page 
+    featureId="{{ feature_id }}"
+    flatForms="{{ flat_forms }}">
+  </chromedash-guide-editall-page>
 {% endblock %}
