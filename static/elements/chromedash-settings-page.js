@@ -1,9 +1,14 @@
 import {LitElement, css, html, nothing} from 'lit';
 import {showToastMessage} from './utils';
+import {SHARED_STYLES} from '../sass/shared-css.js';
+import {FORM_STYLES} from '../sass/forms-css.js';
+
 
 export class ChromedashSettingsPage extends LitElement {
   static get styles() {
     return [
+      ...SHARED_STYLES,
+      ...FORM_STYLES,
       css`
         th,
         td {
@@ -81,11 +86,7 @@ export class ChromedashSettingsPage extends LitElement {
   }
 
   render() {
-    // TODO: Create precomiled main and forms css files,
-    // and import them instead of inlining them here
     return html`
-      <link rel="stylesheet" href="/static/css/main.css">
-      <link rel="stylesheet" href="/static/css/forms.css">
       <div id="subheader">
         <h2>User preferences</h2>
       </div>

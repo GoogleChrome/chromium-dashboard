@@ -160,9 +160,7 @@ export class ChromedashGuideEditallPage extends LitElement {
   }
 
   render() {
-    // TODO: Create precomiled main css file and import it instead of inlining it here
     return html`
-      <link rel="stylesheet" href="/static/css/main.css">
       ${this.renderSubheader()}
       ${this.loading ? this.renderSkeletons() : this.renderForm()}
     `;
