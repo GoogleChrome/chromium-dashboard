@@ -101,8 +101,8 @@ export class ChromedashGuideNewPage extends LitElement {
 
             ${unsafeHTML(this.overviewForm)}
 
-            <chromedash-form-field 
-              name="feature_type"
+            <chromedash-form-field
+              name="feature_type_radio_group"
               class="choices"
               field=${`
                 <label for="id_feature_type_0">
