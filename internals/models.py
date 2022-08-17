@@ -1061,7 +1061,7 @@ class Approval(DictModel):
       cls, feature_id=None, field_id=None, states=None, set_by=None,
       limit=None):
     """Return the requested approvals."""
-    query = Approval.query()
+    query = Approval.query().order(Approval.set_on)
     if feature_id is not None:
       query = query.filter(Approval.feature_id == feature_id)
     if field_id is not None:
