@@ -163,7 +163,7 @@ class ChromedashApprovalsDialog extends LitElement {
   openWithFeature(feature) {
     this.loading = true;
     this.feature = feature;
-    this.shadowRoot.querySelector('sl-dialog').show();
+    this.shadowRoot.querySelector('sl-drawer').show();
     const featureId = this.feature.id;
     Promise.all([
       window.csClient.getApprovals(featureId),
@@ -442,7 +442,7 @@ class ChromedashApprovalsDialog extends LitElement {
   render() {
     const heading = !this.loading && this.feature.name || '';
     return html`
-      <sl-dialog label="${heading}" style="--width:fit-content">
+      <sl-drawer label="${heading}" style="--size:fit-content">
         ${this.loading ?
           html`
            <div class="loading">
@@ -453,7 +453,7 @@ class ChromedashApprovalsDialog extends LitElement {
             ${this.renderAllComments()}
             ${this.renderControls()}
           `}
-      </sl-dialog>
+      </sl-drawer>
     `;
   }
 
@@ -523,12 +523,12 @@ class ChromedashApprovalsDialog extends LitElement {
           Number(postToApprovalFieldId)));
     }
     Promise.all(promises).then(() => {
-      this.shadowRoot.querySelector('sl-dialog').hide();
+      this.shadowRoot.querySelector('sl-drawer').hide();
     });
   }
 
   handleCancel() {
-    this.shadowRoot.querySelector('sl-dialog').hide();
+    this.shadowRoot.querySelector('sl-drawer').hide();
   }
 
   toggleConfig(approvalDef) {
