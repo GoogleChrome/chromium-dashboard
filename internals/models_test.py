@@ -422,6 +422,12 @@ class ApprovalTest(testing_config.CustomTestCase):
         set_on=datetime.datetime.now(),
         set_by='two@example.com')
     self.appr_2.put()
+    self.appr_3 = models.Approval(
+        feature_id=self.feature_1_id, field_id=1,
+        state=models.Approval.APPROVED,
+        set_on=datetime.datetime.now() + datetime.timedelta(1),
+        set_by='three@example.com')
+    self.appr_3.put()
 
   def tearDown(self):
     self.feature_1.key.delete()
@@ -431,9 +437,12 @@ class ApprovalTest(testing_config.CustomTestCase):
   def test_get_approvals(self):
     """We can retrieve Approval entities."""
     actual = models.Approval.get_approvals(feature_id=self.feature_1_id)
-    self.assertEqual(2, len(actual))
+    self.assertEqual(3, len(actual))
     self.assertEqual(models.Approval.REVIEW_REQUESTED, actual[0].state)
     self.assertEqual(models.Approval.APPROVED, actual[1].state)
+    self.assertEqual(
+        sorted(actual, key=lambda appr: appr.set_on),
+        actual)
 
     actual = models.Approval.get_approvals(field_id=1)
     self.assertEqual(models.Approval.REVIEW_REQUESTED, actual[0].state)
@@ -462,7 +471,7 @@ class ApprovalTest(testing_config.CustomTestCase):
         self.feature_1_id, 2, models.Approval.REVIEW_REQUESTED,
         'owner@example.com')
     self.assertEqual(
-        3,
+        4,
         len(models.Approval.query().fetch(None)))
 
   def test_clear_request(self):
