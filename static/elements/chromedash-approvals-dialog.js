@@ -114,6 +114,8 @@ class ChromedashApprovalsDialog extends LitElement {
         .approval_row {
           width: 650px;
           margin-bottom: var(--content-padding-half);
+          display: flex;
+          align-items: center;
         }
 
         .set_by,
@@ -144,13 +146,23 @@ class ChromedashApprovalsDialog extends LitElement {
           background: var(--table-alternate-background);
         }
 
-        .controls {
-          padding: var(--content-padding);
-          text-align: right;
+        #comment_area {
+          margin: 0 var(--content-padding);
         }
 
-        #show_all_checkbox {
-         float: left;
+        #controls {
+          padding: var(--content-padding);
+          text-align: right;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+        #controls * + * {
+          padding-left: var(--content-padding);
+        }
+
+        #post_to_approval_field {
+          flex: 1;
         }
 
         textarea {
@@ -163,7 +175,7 @@ class ChromedashApprovalsDialog extends LitElement {
   openWithFeature(feature) {
     this.loading = true;
     this.feature = feature;
-    this.shadowRoot.querySelector('sl-drawer').show();
+    this.shadowRoot.querySelector('sl-dialog').show();
     const featureId = this.feature.id;
     Promise.all([
       window.csClient.getApprovals(featureId),
@@ -227,16 +239,17 @@ class ChromedashApprovalsDialog extends LitElement {
         <span class="appr_val">
           ${approvalValue.set_by == this.signedInUser ? html`
         <sl-select name="${approvalValue.field_id}"
-            xxvalue="${selectedValue}"
+            value="${selectedValue}"
             data-field="${approvalValue.field_id}"
-            @change=${this.handleSelectChanged}
+            @sl-change=${this.handleSelectChanged}
+            hoist size="small"
           >
               ${placeholderOption}
               ${STATE_NAMES.map((valName) => html`
                 <sl-menu-item value="${valName[0]}"
                  >${valName[1]}</sl-menu-item>`,
                 )}
-            </sl-select>` : html`
+        </sl-select>` : html`
            ${this.findStateName(approvalValue.state)}
             `}
         </span>
@@ -401,13 +414,15 @@ class ChromedashApprovalsDialog extends LitElement {
     if (this.subsetPending) {
       showAllCheckbox = html`
          <sl-checkbox
+           id="show_all_checkbox"
            ?checked=${this.showAllIntents}
-           @click=${this.toggleShowAllIntents}
+           @sl-change=${this.toggleShowAllIntents}
+           size="small"
            >Show all intents</sl-checkbox>
       `;
     }
     const postToSelect = html`
-      <sl-select style="width:40%" placement="top" value=0 id="post_to_approval_field">
+      <sl-select placement="top" value=0 id="post_to_approval_field" size="small">
         <sl-menu-item value="0">Don't post to mailing list</sl-menu-item>
         ${APPROVAL_DEFS.map((apprDef) => html`
           <sl-menu-item value="${apprDef.id}"
@@ -418,22 +433,22 @@ class ChromedashApprovalsDialog extends LitElement {
       `;
 
     return html`
-     <div>
-      <textarea id="comment_area" rows=4 cols=80
-        @change=${this.checkNeedsSave}
-        @keypress=${this.checkNeedsSave}
-        placeholder="Add a comment"
-        ></textarea>
-     </div>
-     <div class="controls">
+    <sl-textarea id="comment_area" rows=4 cols=80
+      @sl-change=${this.checkNeedsSave}
+      @keypress=${this.checkNeedsSave}
+      placeholder="Add a comment"
+      ></sl-textarea>
+     <div id="controls">
        ${showAllCheckbox}
        ${postToSelect}
        <sl-button variant="primary"
          @click=${this.handleSave}
          ?disabled=${!this.needsSave}
+         size="small"
          >Save</sl-button>
        <sl-button
          @click=${this.handleCancel}
+         size="small"
          >Cancel</sl-button>
      </div>
     `;
@@ -442,7 +457,7 @@ class ChromedashApprovalsDialog extends LitElement {
   render() {
     const heading = !this.loading && this.feature.name || '';
     return html`
-      <sl-drawer label="${heading}" style="--size:fit-content">
+      <sl-dialog label="${heading}" style="--width:fit-content">
         ${this.loading ?
           html`
            <div class="loading">
@@ -453,7 +468,7 @@ class ChromedashApprovalsDialog extends LitElement {
             ${this.renderAllComments()}
             ${this.renderControls()}
           `}
-      </sl-drawer>
+      </sl-dialog>
     `;
   }
 
@@ -523,12 +538,12 @@ class ChromedashApprovalsDialog extends LitElement {
           Number(postToApprovalFieldId)));
     }
     Promise.all(promises).then(() => {
-      this.shadowRoot.querySelector('sl-drawer').hide();
+      this.shadowRoot.querySelector('sl-dialog').hide();
     });
   }
 
   handleCancel() {
-    this.shadowRoot.querySelector('sl-drawer').hide();
+    this.shadowRoot.querySelector('sl-dialog').hide();
   }
 
   toggleConfig(approvalDef) {
