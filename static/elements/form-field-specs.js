@@ -111,6 +111,14 @@ export const ALL_FIELDS = {
         Select the feature type.`,
   },
 
+  'feature_type_radio_group': {
+    type: 'radios',
+    choices: FEATURE_TYPES,
+    label: 'Feature type',
+    help_text: html`
+        Select the feature type.`,
+  },
+
   'set_stage': {
     type: 'checkbox',
     label: 'Set to this stage',

@@ -31,7 +31,7 @@ export const FEATURE_CATEGORIES = {
 export const FEATURE_TYPES = {
   FEATURE_TYPE_INCUBATE_ID: [0, 'New feature incubation'],
   FEATURE_TYPE_EXISTING_ID: [1, 'Existing feature implementation'],
-  FEATURE_TYPE_CODE_CHANGE_ID: [2, 'Web developer facing change to exi[sting code'],
+  FEATURE_TYPE_CODE_CHANGE_ID: [2, 'Web developer facing change to existing code'],
   FEATURE_TYPE_DEPRECATION_ID: [3, 'Feature deprecation'],
 };
 
