@@ -233,6 +233,7 @@ class ChromedashApprovalsDialog extends LitElement {
       html`<sl-menu-item value="-1" selected>No value</sl-menu-item>` :
       nothing;
 
+    // hoist is needed when <sl-select> is in overflow:hidden context.
     return html`
       <div class="approval_row">
         <span class="set_by">${approvalValue.set_by}</span>
