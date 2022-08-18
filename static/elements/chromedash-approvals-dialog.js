@@ -95,6 +95,7 @@ class ChromedashApprovalsDialog extends LitElement {
 
         h3 {
           margin: var(--content-padding-half);
+          margin-top: var(--content-padding);
         }
 
         .approval_section {
@@ -446,10 +447,6 @@ class ChromedashApprovalsDialog extends LitElement {
          ?disabled=${!this.needsSave}
          size="small"
          >Save</sl-button>
-       <sl-button
-         @click=${this.handleCancel}
-         size="small"
-         >Cancel</sl-button>
      </div>
     `;
   }
