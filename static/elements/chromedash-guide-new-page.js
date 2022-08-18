@@ -101,8 +101,8 @@ export class ChromedashGuideNewPage extends LitElement {
 
             ${unsafeHTML(this.overviewForm)}
 
-            <chromedash-form-field 
-              name="feature_type"
+            <chromedash-form-field
+              name="feature_type_radio_group"
               class="choices"
               field=${`
                 <label for="id_feature_type_0">
@@ -156,9 +156,7 @@ export class ChromedashGuideNewPage extends LitElement {
   }
 
   render() {
-    // TODO: Create precomiled main css file and import it instead of inlining it here
     return html`
-      <link rel="stylesheet" href="/static/css/main.css">
       ${this.renderSubHeader()}
       ${this.renderForm()}
     `;

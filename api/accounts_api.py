@@ -13,9 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-
-
 import logging
 
 from google.cloud import ndb
@@ -23,7 +20,17 @@ from google.cloud import ndb
 from framework import basehandlers
 from framework import permissions
 from framework import ramcache
-from internals import models
+from internals import user_models
+
+
+def user_to_json_dict(user):
+  return {
+      'is_admin': user.is_admin,
+      'is_site_editor': user.is_site_editor,
+      'email': user.email,
+      'id': user.key.integer_id(),
+  }
+
 
 class AccountsAPI(basehandlers.APIHandler):
   """User accounts store info on registered users."""
@@ -37,16 +44,16 @@ class AccountsAPI(basehandlers.APIHandler):
     is_admin = self.get_bool_param('isAdmin')
     is_site_editor = self.get_bool_param('isSiteEditor')
     user = self.create_account(email, is_admin, is_site_editor)
-    response_json = user.format_for_template()
+    response_json = user_to_json_dict(user)
     return response_json
 
   def create_account(self, email, is_admin, is_site_editor):
     """Create and store a new account entity."""
     # Don't add a duplicate email address.
-    user = models.AppUser.query(
-        models.AppUser.email == email).get(keys_only=True)
+    user = user_models.AppUser.query(
+        user_models.AppUser.email == email).get(keys_only=True)
     if not user:
-      user = models.AppUser(email=str(email))
+      user = user_models.AppUser(email=str(email))
       user.is_admin = is_admin
       user.is_site_editor = is_site_editor
       user.put()
@@ -68,7 +75,7 @@ class AccountsAPI(basehandlers.APIHandler):
   def delete_account(self, account_id):
     """Delete the specified account."""
     if account_id:
-      found_user = models.AppUser.get_by_id(int(account_id))
+      found_user = user_models.AppUser.get_by_id(int(account_id))
       if found_user:
         found_user.key.delete()
         ramcache.flush_all()

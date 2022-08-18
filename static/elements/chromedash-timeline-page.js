@@ -7,15 +7,7 @@ export class ChromedashTimelinePage extends LitElement {
   static get styles() {
     return [
       ...SHARED_STYLES,
-      css`
-        h3 {
-          margin-bottom: var(--content-padding);
-        }
-        
-        .description {
-          margin-bottom: 1em;
-        }
-      `];
+      css``];
   }
 
   static get properties() {
@@ -61,11 +53,13 @@ export class ChromedashTimelinePage extends LitElement {
     const propText = this.type == 'css' ? 'properties' : 'features';
     const subTitleText = `${typeText} usage metrics > ${viewText} ${propText} > timeline`;
     return html`
-      <h2 id="breadcrumbs">
-        <a href="/metrics/${this.type}/${this.view}">
-          <iron-icon icon="chromestatus:arrow-back"></iron-icon>
-        </a>${subTitleText}
-      </h2>
+      <div id="subheader">
+        <h2 id="breadcrumbs">
+          <a href="/metrics/${this.type}/${this.view}">
+            <iron-icon icon="chromestatus:arrow-back"></iron-icon>
+          </a>${subTitleText}
+        </h2>
+      </div>
     `;
   }
 
@@ -81,12 +75,8 @@ export class ChromedashTimelinePage extends LitElement {
   }
 
   render() {
-    // TODO: Create a precomiled main css file and import it instead of inlining it here
     return html`
-      <link rel="stylesheet" href="/static/css/main.css">
-      <div id="subheader">
-        ${this.renderSubheader()}
-      </div>
+      ${this.renderSubheader()}
       ${this.renderDataPanel()}
     `;
   }

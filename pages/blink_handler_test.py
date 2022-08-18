@@ -22,7 +22,7 @@ import werkzeug
 import html5lib
 
 from pages import blink_handler
-from internals import models
+from internals import user_models
 
 test_app = flask.Flask(__name__)
 
@@ -31,12 +31,12 @@ class BlinkTemplateTest(testing_config.CustomTestCase):
 
   HANDLER_CLASS = blink_handler.BlinkHandler
 
-  def setUp(self):        
+  def setUp(self):
 
     self.request_path = self.HANDLER_CLASS.TEMPLATE_PATH
     self.handler = self.HANDLER_CLASS()
 
-    self.app_admin = models.AppUser(email='admin@example.com')
+    self.app_admin = user_models.AppUser(email='admin@example.com')
     self.app_admin.is_admin = True
     self.app_admin.put()
     testing_config.sign_in('admin@example.com', 123567890)
@@ -57,16 +57,16 @@ class SubscribersTemplateTest(testing_config.CustomTestCase):
 
   HANDLER_CLASS = blink_handler.SubscribersHandler
 
-  def setUp(self):        
+  def setUp(self):
 
     self.request_path = self.HANDLER_CLASS.TEMPLATE_PATH
     self.handler = self.HANDLER_CLASS()
 
-    self.app_admin = models.AppUser(email='admin@example.com')
+    self.app_admin = user_models.AppUser(email='admin@example.com')
     self.app_admin.is_admin = True
     self.app_admin.put()
 
-    testing_config.sign_in('admin@example.com', 123567890) 
+    testing_config.sign_in('admin@example.com', 123567890)
 
     with test_app.test_request_context(self.request_path):
       self.template_data = self.handler.get_template_data()
@@ -78,4 +78,3 @@ class SubscribersTemplateTest(testing_config.CustomTestCase):
         self.template_data, self.full_template_path)
     parser = html5lib.HTMLParser(strict=True)
     document = parser.parse(template_text)
-

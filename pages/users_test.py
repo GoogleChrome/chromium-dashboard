@@ -17,7 +17,7 @@ import testing_config  # Must be imported first
 import flask
 import html5lib
 
-from internals import models
+from internals import user_models
 from pages import users
 
 test_app = flask.Flask(__name__)
@@ -28,7 +28,7 @@ class UsersListTemplateTest(testing_config.CustomTestCase):
   def setUp(self):
     self.handler = users.UserListHandler()
 
-    self.app_admin = models.AppUser(email='admin@example.com')
+    self.app_admin = user_models.AppUser(email='admin@example.com')
     self.app_admin.is_admin = True
     self.app_admin.put()
     testing_config.sign_in('admin@example.com', 123567890)

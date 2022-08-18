@@ -19,7 +19,7 @@ from unittest import mock
 import werkzeug.exceptions  # Flask HTTP stuff.
 
 from api import cues_api
-from internals import models
+from internals import user_models
 
 test_app = flask.Flask(__name__)
 
@@ -27,12 +27,12 @@ test_app = flask.Flask(__name__)
 class CuesAPITest(testing_config.CustomTestCase):
 
   def setUp(self):
-    self.user_pref_1 = models.UserPref(
+    self.user_pref_1 = user_models.UserPref(
         email='one@example.com',
         notify_as_starrer=False)
     self.user_pref_1.put()
 
-    self.user_pref_2 = models.UserPref(
+    self.user_pref_2 = user_models.UserPref(
         email='two@example.com',
         notify_as_starrer=False,
         dismissed_cues=['progress-checkmarks'])
@@ -55,7 +55,7 @@ class CuesAPITest(testing_config.CustomTestCase):
       actual_json = self.handler.do_post()
     self.assertEqual({'message': 'Done'}, actual_json)
 
-    revised_user_pref = models.UserPref.get_signed_in_user_pref()
+    revised_user_pref = user_models.UserPref.get_signed_in_user_pref()
     self.assertEqual(['progress-checkmarks'], revised_user_pref.dismissed_cues)
 
   def test_post__invalid(self):
@@ -68,7 +68,7 @@ class CuesAPITest(testing_config.CustomTestCase):
         self.handler.do_post()
 
     # The invalid string should not be added.
-    revised_user_pref = models.UserPref.get_signed_in_user_pref()
+    revised_user_pref = user_models.UserPref.get_signed_in_user_pref()
     self.assertEqual([], revised_user_pref.dismissed_cues)
 
   def test_get__anon(self):

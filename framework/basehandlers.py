@@ -36,6 +36,7 @@ from framework import utils
 from framework import xsrf
 from internals import approval_defs
 from internals import models
+from internals import user_models
 
 from django.template.loader import render_to_string
 import django
@@ -209,7 +210,7 @@ class APIHandler(BaseHandler):
 
   def _update_last_visit_field(self, email):
     """Updates the AppUser last_visit field to log the user's last visit"""
-    app_user = models.AppUser.get_app_user(email)
+    app_user = user_models.AppUser.get_app_user(email)
     if not app_user:
       return False
     app_user.last_visit = datetime.now()
@@ -323,7 +324,7 @@ class FlaskHandler(BaseHandler):
     if user:
       field_id = approval_defs.ShipApproval.field_id
       approvers = approval_defs.get_approvers(field_id)
-      user_pref = models.UserPref.get_signed_in_user_pref()
+      user_pref = user_models.UserPref.get_signed_in_user_pref()
       common_data['user'] = {
         'can_create_feature': permissions.can_create_feature(user),
         'can_approve': permissions.can_approve_feature(

@@ -38,6 +38,10 @@ BANNER_MESSAGE = ''
 # e.g. (2009, 3, 20, 21, 45) represents March 20 2009 9:45PM UTC.
 BANNER_TIME = None
 
+# If a feature entry does not specify a component, use this one.
+DEFAULT_COMPONENT = 'Blink'
+
+
 ################################################################################
 
 PROD = False

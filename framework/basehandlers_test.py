@@ -26,7 +26,7 @@ from framework import users
 from framework import basehandlers
 from framework import users
 from framework import xsrf
-from internals import models
+from internals import user_models
 import settings
 
 
@@ -328,7 +328,7 @@ class APIHandlerTests(testing_config.CustomTestCase):
   def setUp(self):
     self.handler = basehandlers.APIHandler()
 
-    self.appuser = models.AppUser(email='user@example.com')
+    self.appuser = user_models.AppUser(email='user@example.com')
     self.appuser.put()
 
   def tearDown(self):
@@ -455,7 +455,7 @@ class APIHandlerTests(testing_config.CustomTestCase):
 class FlaskHandlerTests(testing_config.CustomTestCase):
 
   def setUp(self):
-    self.user_1 = models.AppUser(email='registered@example.com')
+    self.user_1 = user_models.AppUser(email='registered@example.com')
     self.user_1.put()
     self.handler = TestableFlaskHandler()
 

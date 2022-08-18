@@ -26,7 +26,7 @@ from internals import models
 
 
 TestForm = guideforms.define_form_class_using_shared_fields(
-    'TestForm', ('name', 'summary'))
+    'TestForm', ('name', 'summary', 'category'))
 
 TEST_TEMPLATE = '''
 <!DOCTYPE html>
@@ -59,6 +59,8 @@ class ChromedashFormTest(unittest.TestCase):
     self.assertIn('value="this is a feature name"', actual)
     self.assertIn('name="summary"', actual)
     self.assertIn('value="this is a summary"', actual)
+    # Initial value MISC (2) is used because feature_dict has no category.
+    self.assertIn('name="category" value="2"', actual)
 
   def test__escaping(self):
     """Our forms render properly even with tricky input."""

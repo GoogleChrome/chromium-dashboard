@@ -21,6 +21,7 @@ import werkzeug.exceptions  # Flask HTTP stuff.
 from api import features_api
 from internals import core_enums
 from internals import models
+from internals import user_models
 from framework import ramcache
 
 test_app = flask.Flask(__name__)
@@ -39,7 +40,7 @@ class FeaturesAPITestDelete(testing_config.CustomTestCase):
     self.request_path = '/api/v0/features/%d' % self.feature_id
     self.handler = features_api.FeaturesAPI()
 
-    self.app_admin = models.AppUser(email='admin@example.com')
+    self.app_admin = user_models.AppUser(email='admin@example.com')
     self.app_admin.is_admin = True
     self.app_admin.put()
 
@@ -128,7 +129,7 @@ class FeaturesAPITestGet(testing_config.CustomTestCase):
     self.request_path = '/api/v0/features'
     self.handler = features_api.FeaturesAPI()
 
-    self.app_admin = models.AppUser(email='admin@example.com')
+    self.app_admin = user_models.AppUser(email='admin@example.com')
     self.app_admin.is_admin = True
     self.app_admin.put()
 

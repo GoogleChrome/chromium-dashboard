@@ -24,12 +24,11 @@ from django.core.exceptions import ValidationError
 from django.utils.html import conditional_escape, escape
 from django.utils.safestring import mark_safe
 
-# from google.appengine.api import users
 from framework import users
-
 from internals import core_enums
-from internals import models
 from internals import processes
+from internals import user_models
+import settings
 
 
 # This is the longest string that a cloud ndb StringProperty seems to accept.
@@ -443,8 +442,9 @@ ALL_FIELDS = {
 
     'blink_components': forms.ChoiceField(
       required=False, label='',
-      choices=[(x, x) for x in models.BlinkComponent.fetch_all_components()],
-      initial=[models.BlinkComponent.DEFAULT_COMPONENT]),
+      choices=[(x, x) for x in
+               user_models.BlinkComponent.fetch_all_components()],
+      initial=[settings.DEFAULT_COMPONENT]),
 
     'devrel': MultiEmailField(
         required=False, label='',
@@ -548,6 +548,8 @@ class ChromedashForm(forms.Form):
 
             # Get value and checked for the field
             value = field.widget.value_from_datadict(self.data, self.files, self.add_prefix(name))
+            if value is None:
+              value = field.initial
 
             row_template = normal_row
             checked = False
