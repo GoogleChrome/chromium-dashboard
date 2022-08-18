@@ -20,7 +20,7 @@ describe('chromedash-guide-new-page', () => {
 
     // feature type chromedash-form-field exists and is with four options
     const featureTypeFormField = component.shadowRoot.querySelector(
-      'chromedash-form-field[name="feature_type"]');
+      'chromedash-form-field[name="feature_type_radio_group"]');
     assert.include(featureTypeFormField.outerHTML, 'New feature incubation');
     assert.include(featureTypeFormField.outerHTML, 'Existing feature implementation');
     assert.include(featureTypeFormField.outerHTML, 'Web developer-facing change to existing code');
