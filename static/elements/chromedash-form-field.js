@@ -2,6 +2,14 @@ import {LitElement, html} from 'lit';
 import {ALL_FIELDS} from './form-field-specs';
 import {unsafeHTML} from 'lit/directives/unsafe-html.js';
 
+const DOMAIN_REGEX = String.raw`(([A-Za-z0-9-]+\.)+[A-Za-z]{2,6})`;
+
+// Simple http URLs
+const PORTNUM_REGEX = '(:[0-9]+)?';
+const URL_REGEX = '(https?)://' + DOMAIN_REGEX + PORTNUM_REGEX + String.raw`(/[^\s]*)?`;
+const URL_PADDED_REGEX = String.raw`\s*` + URL_REGEX + String.raw`\s*`;
+
+
 export class ChromedashFormField extends LitElement {
   static get properties() {
     return {
@@ -64,6 +72,33 @@ export class ChromedashFormField extends LitElement {
             `,
           )}
         </sl-select>
+      `;
+    } else if (type === 'text_input') {
+      fieldHTML = html`
+        <sl-input 
+          type="text"
+          name="${this.name}"
+          id="id_${this.name}"
+          size="small"
+          autocomplete="off"
+          value="${this.value === 'None' ? '' : this.value}"
+          ?required=${fieldProps.required}>
+        </sl-input>
+      `;
+    } else if (type === 'url_input') {
+      fieldHTML = html`
+        <sl-input 
+          type="url"
+          name="${this.name}"
+          id="id_${this.name}"
+          size="small"
+          autocomplete="off"
+          value="${this.value === 'None' ? '' : this.value}"
+          title="Enter a full URL https://..."
+          placeholder="https://..."
+          pattern=${URL_PADDED_REGEX}
+          ?required=${fieldProps.required}>
+        </sl-input>
       `;
     } else {
       // Temporary workaround until we migrate the generation of

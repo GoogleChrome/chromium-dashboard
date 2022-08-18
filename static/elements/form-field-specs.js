@@ -26,6 +26,8 @@ const
 export const ALL_FIELDS = {
 
   'name': {
+    type: 'text_input',
+    required: true,
     label: 'Feature name',
     help_text: html`
         <p>Capitalize only the first letter and the beginnings of proper nouns.</p>
@@ -131,6 +133,8 @@ export const ALL_FIELDS = {
   },
 
   'search_tags': {
+    type: 'text_input',
+    required: false,
     label: 'Search tags',
     help_text: html`
         Comma separated keywords used only in search.`,
@@ -145,6 +149,8 @@ export const ALL_FIELDS = {
   },
 
   'bug_url': {
+    type: 'url_input',
+    required: false,
     label: 'Tracking bug URL',
     help_text: html`
         Tracking bug url (https://bugs.chromium.org/...).
@@ -158,6 +164,8 @@ export const ALL_FIELDS = {
   },
 
   'launch_bug_url': {
+    type: 'url_input',
+    required: false,
     label: 'Launch bug URL',
     help_text: html`
         Launch bug url (https://bugs.chromium.org/...) to track launch approvals.
@@ -204,6 +212,8 @@ export const ALL_FIELDS = {
   },
 
   'initial_public_proposal_url': {
+    type: 'url_input',
+    required: false,
     label: 'Initial public proposal URL',
     help_text: html`
         Link to the first public proposal to create this feature, e.g.,
@@ -221,6 +231,8 @@ export const ALL_FIELDS = {
   },
 
   'spec_link': {
+    type: 'url_input',
+    required: false,
     label: 'Spec link',
     help_text: html`
         Link to the spec, if and when available. When implementing
@@ -261,6 +273,8 @@ export const ALL_FIELDS = {
   },
 
   'intent_to_implement_url': {
+    type: 'url_input',
+    required: false,
     label: 'Intent to Prototype link',
     help_text: html`
         After you have started the "Intent to Prototype"
@@ -317,24 +331,32 @@ export const ALL_FIELDS = {
   },
 
   'intent_to_ship_url': {
+    type: 'url_input',
+    required: false,
     label: 'Intent to Ship link',
     help_text: html`After you have started the "Intent to Ship" discussion
                 thread, link to it here.`,
   },
 
   'ready_for_trial_url': {
+    type: 'url_input',
+    required: false,
     label: 'Ready for Trial link',
     help_text: html`After you have started the "Ready for Trial" discussion
                 thread, link to it here.`,
   },
 
   'intent_to_experiment_url': {
+    type: 'url_input',
+    required: false,
     label: 'Intent to Experiment link',
     help_text: html`After you have started the "Intent to Experiment"
                  discussion thread, link to it here.`,
   },
 
   'intent_to_extend_experiment_url': {
+    type: 'url_input',
+    required: false,
     label: 'Intent to Extend Experiment link',
     help_text: html`If this feature has an "Intent to Extend Experiment"
                  discussion thread, link to it here.`,
@@ -342,6 +364,8 @@ export const ALL_FIELDS = {
 
   'r4dt_url': {
     // Sets intent_to_experiment_url in DB
+    type: 'url_input',
+    required: false,
     label: 'Request for Deprecation Trial link',
     help_text: html`After you have started the "Request for Deprecation Trial"
                 discussion thread, link to it here.`,
@@ -379,6 +403,8 @@ export const ALL_FIELDS = {
   },
 
   'safari_views_link': {
+    type: 'url_input',
+    required: false,
     label: '',
     help_text: html`Citation link.`,
   },
@@ -398,6 +424,8 @@ export const ALL_FIELDS = {
   },
 
   'ff_views_link': {
+    type: 'url_input',
+    required: false,
     label: '',
     help_text: html`
     Citation link.`,
@@ -419,6 +447,8 @@ export const ALL_FIELDS = {
   },
 
   'web_dev_views_link': {
+    type: 'url_input',
+    required: false,
     label: '',
     help_text: html`
       Citation link.`,
@@ -577,6 +607,8 @@ export const ALL_FIELDS = {
   },
 
   'origin_trial_feedback_url': {
+    type: 'url_input',
+    required: false,
     label: 'Origin trial feedback summary',
     help_text: html`
       If your feature was available as an origin trial, link to a summary
@@ -595,6 +627,8 @@ export const ALL_FIELDS = {
   },
 
   'finch_url': {
+    type: 'url_input',
+    required: false,
     label: 'Finch experiment',
     help_text: html`
       If your feature will roll out gradually via a
@@ -728,6 +762,8 @@ export const ALL_FIELDS = {
   },
 
   'devtrial_instructions': {
+    type: 'url_input',
+    required: false,
     label: 'DevTrial instructions',
     help_text: html`
         Link to a HOWTO or FAQ describing how developers can get started
