@@ -119,7 +119,7 @@ def receive(bounce_message):
 
   # TODO(jrobbins): Re-implement this without depending on models.
   # Instead create a task and then have that processed in py3.
-  # pref_list = models.UserPref.get_prefs_for_emails([email_addr])
+  # pref_list = user_models.UserPref.get_prefs_for_emails([email_addr])
   # user_pref = pref_list[0]
   # user_pref.bounced = True
   # user_pref.put()

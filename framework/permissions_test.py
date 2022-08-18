@@ -23,6 +23,7 @@ from framework import users
 from framework import basehandlers
 from framework import permissions
 from internals import models
+from internals import user_models
 
 
 class MockHandler(basehandlers.BaseHandler):
@@ -52,28 +53,28 @@ class PermissionFunctionTests(testing_config.CustomTestCase):
 
   def setUp(self):
     self.users = []
-    self.app_user = models.AppUser(email='registered@example.com')
+    self.app_user = user_models.AppUser(email='registered@example.com')
     self.app_user.put()
     self.users.append(self.app_user)
 
-    self.app_admin = models.AppUser(email='admin@example.com')
+    self.app_admin = user_models.AppUser(email='admin@example.com')
     self.app_admin.is_admin = True
     self.app_admin.put()
     self.users.append(self.app_admin)
 
-    self.app_editor = models.AppUser(email='editor@example.com')
+    self.app_editor = user_models.AppUser(email='editor@example.com')
     self.app_editor.is_site_editor = True
     self.app_editor.put()
     self.users.append(self.app_editor)
 
-    self.feature_owner = models.AppUser(email='feature_owner@example.com')
+    self.feature_owner = user_models.AppUser(email='feature_owner@example.com')
     self.feature_owner.put()
     self.users.append(self.feature_owner)
 
-    self.feature_editor = models.AppUser(email='feature_editor@example.com')
+    self.feature_editor = user_models.AppUser(email='feature_editor@example.com')
     self.feature_editor.put()
     self.users.append(self.feature_editor)
-    
+
     # Feature for checking permissions against
     self.feature_1 = models.Feature(
         name='feature one', summary='sum',
@@ -204,7 +205,7 @@ class PermissionFunctionTests(testing_config.CustomTestCase):
         permissions.can_edit_feature, (None,),
         unregistered=False, registered=True,
         special=True, site_editor=True, admin=True, anon=False)
-    
+
     # Check in context of specific feature.
     self.check_function_results_with_feature(
       permissions.can_edit_feature, (self.feature_id,),
@@ -230,14 +231,14 @@ class PermissionFunctionTests(testing_config.CustomTestCase):
 class RequireAdminSiteTests(testing_config.CustomTestCase):
 
   def setUp(self):
-    self.app_user = models.AppUser(email='registered@example.com')
+    self.app_user = user_models.AppUser(email='registered@example.com')
     self.app_user.put()
 
-    self.app_editor = models.AppUser(email='editor@example.com')
+    self.app_editor = user_models.AppUser(email='editor@example.com')
     self.app_editor.is_site_editor = True
     self.app_editor.put()
 
-    self.app_admin = models.AppUser(email='admin@example.com')
+    self.app_admin = user_models.AppUser(email='admin@example.com')
     self.app_admin.is_admin = True
     self.app_admin.put()
 

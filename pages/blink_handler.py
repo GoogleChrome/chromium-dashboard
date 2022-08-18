@@ -23,6 +23,7 @@ import os
 from framework import basehandlers
 from framework import permissions
 from internals import models
+from internals import user_models
 import settings
 from api.channels_api import construct_chrome_channels_details
 
@@ -36,7 +37,7 @@ class BlinkHandler(basehandlers.FlaskHandler):
     if not user_id or not blink_component:
       return False
 
-    user = models.FeatureOwner.get_by_id(int(user_id))
+    user = user_models.FeatureOwner.get_by_id(int(user_id))
     if not user:
       return True
 
@@ -55,14 +56,15 @@ class BlinkHandler(basehandlers.FlaskHandler):
 
   @permissions.require_admin_site
   def get_template_data(self):
-    components = models.BlinkComponent.query().order(
-        models.BlinkComponent.name).fetch(None)
-    possible_subscribers = models.FeatureOwner.query().order(
-        models.FeatureOwner.name).fetch(None)
+    components = user_models.BlinkComponent.query().order(
+        user_models.BlinkComponent.name).fetch(None)
+    possible_subscribers = user_models.FeatureOwner.query().order(
+        user_models.FeatureOwner.name).fetch(None)
 
     # Format for django template
     possible_subscriber_dicts = [
-        x.format_for_template() for x in possible_subscribers]
+        {'id': fo.key.integer_id(), 'email': fo.email}
+        for fo in possible_subscribers]
 
     component_to_subscribers = {c.key: [] for c in components}
     component_to_owners = {c.key: [] for c in components}
@@ -107,8 +109,8 @@ class SubscribersHandler(basehandlers.FlaskHandler):
 
   @permissions.require_admin_site
   def get_template_data(self):
-    users = models.FeatureOwner.query().order(
-        models.FeatureOwner.name).fetch(None)
+    users = user_models.FeatureOwner.query().order(
+        user_models.FeatureOwner.name).fetch(None)
     feature_list = models.Feature.get_chronological()
 
     milestone = self.request.args.get('milestone') or None

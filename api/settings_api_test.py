@@ -18,7 +18,7 @@ import flask
 import werkzeug.exceptions
 
 from api import settings_api
-from internals import models
+from internals import user_models
 
 test_app = flask.Flask(__name__)
 
@@ -26,7 +26,7 @@ test_app = flask.Flask(__name__)
 class SettingsAPITest(testing_config.CustomTestCase):
 
   def setUp(self):
-    self.user_pref_1 = models.UserPref(
+    self.user_pref_1 = user_models.UserPref(
         email='one@example.com',
         notify_as_starrer=False,
         dismissed_cues=['progress-checkmarks'])
@@ -48,7 +48,7 @@ class SettingsAPITest(testing_config.CustomTestCase):
       actual_json = self.handler.do_post()
     self.assertEqual({'message': 'Done'}, actual_json)
 
-    revised_user_pref = models.UserPref.get_signed_in_user_pref()
+    revised_user_pref = user_models.UserPref.get_signed_in_user_pref()
     self.assertEqual(True, revised_user_pref.notify_as_starrer)
 
   def test_post__invalid(self):
@@ -61,7 +61,7 @@ class SettingsAPITest(testing_config.CustomTestCase):
         self.handler.do_post()
 
     # The invalid string should not be added.
-    revised_user_pref = models.UserPref.get_signed_in_user_pref()
+    revised_user_pref = user_models.UserPref.get_signed_in_user_pref()
     self.assertEqual(False, revised_user_pref.notify_as_starrer)
 
   def test_get__anon(self):

@@ -35,7 +35,6 @@ import hack_components
 
 
 from collections import OrderedDict
-from django import forms
 
 
 SIMPLE_TYPES = (int, float, bool, dict, str, list)
@@ -98,68 +97,7 @@ class DictModel(ndb.Model):
     return output
 
 
-class BlinkComponent(DictModel):
 
-  DEFAULT_COMPONENT = 'Blink'
-
-  name = ndb.StringProperty(required=True, default=DEFAULT_COMPONENT)
-  created = ndb.DateTimeProperty(auto_now_add=True)
-  updated = ndb.DateTimeProperty(auto_now=True)
-
-  @property
-  def subscribers(self):
-    q = FeatureOwner.query(FeatureOwner.blink_components == self.key)
-    q = q.order(FeatureOwner.name)
-    return q.fetch(None)
-
-  @property
-  def owners(self):
-    q = FeatureOwner.query(FeatureOwner.primary_blink_components == self.key)
-    q = q.order(FeatureOwner.name)
-    return q.fetch(None)
-
-  @classmethod
-  def fetch_all_components(self, update_cache=False):
-    """Returns the list of blink components."""
-    key = 'blinkcomponents'
-
-    components = ramcache.get(key)
-    if components is None or update_cache:
-      # TODO(jrobbins): Re-implement fetching the list of blink components
-      # by getting it via the monorail API.
-      pass
-
-    if not components:
-      components = sorted(hack_components.HACK_BLINK_COMPONENTS)
-      logging.info('using hard-coded blink components')
-
-    return components
-
-  @classmethod
-  def update_db(self):
-    """Updates the db with new Blink components from the json endpoint"""
-    new_components = self.fetch_all_components(update_cache=True)
-    existing_comps = self.query().fetch(None)
-    for name in new_components:
-      if not len([x.name for x in existing_comps if x.name == name]):
-        logging.info('Adding new BlinkComponent: ' + name)
-        c = BlinkComponent(name=name)
-        c.put()
-
-  @classmethod
-  def get_by_name(self, component_name):
-    """Fetch blink component with given name."""
-    q = self.query()
-    q = q.filter(self.name == component_name)
-    component = q.fetch(1)
-    if not component:
-      logging.error('%s is an unknown BlinkComponent.' % (component_name))
-      return None
-    return component[0]
-
-
-
-# Feature dashboard.
 class Feature(DictModel):
   """Container for a feature."""
 
@@ -172,7 +110,7 @@ class Feature(DictModel):
     # an existing feature.
     if 'name' in kwargs:
       if 'blink_components' not in kwargs:
-        kwargs['blink_components'] = [BlinkComponent.DEFAULT_COMPONENT]
+        kwargs['blink_components'] = [settings.DEFAULT_COMPONENT]
 
     super(Feature, self).__init__(*args, **kwargs)
 
@@ -823,7 +761,7 @@ class Feature(DictModel):
     if len(self.blink_components) > 0:
       params = ['components=' + self.blink_components[0]]
     else:
-      params = ['components=' + BlinkComponent.DEFAULT_COMPONENT]
+      params = ['components=' + settings.DEFAULT_COMPONENT]
     crbug_number = self.crbug_number()
     if crbug_number and self.impl_status_chrome in (
         NO_ACTIVE_DEV,
@@ -1167,182 +1105,6 @@ class Comment(DictModel):
       query = query.filter(Comment.field_id == field_id)
     comments = query.fetch(None)
     return comments
-
-
-class UserPref(DictModel):
-  """Describes a user's application preferences."""
-
-  email = ndb.StringProperty(required=True)
-
-  # True means that user should be sent a notification email after each change
-  # to each feature that the user starred.
-  notify_as_starrer = ndb.BooleanProperty(default=True)
-
-  # True means that we sent an email message to this user in the past
-  # and it bounced.  We will not send to that address again.
-  bounced = ndb.BooleanProperty(default=False)
-
-  # A list of strings identifying on-page help cue cards that the user
-  # has dismissed (clicked "X" or "GOT IT").
-  dismissed_cues = ndb.StringProperty(repeated=True)
-
-  @classmethod
-  def get_signed_in_user_pref(cls):
-    """Return a UserPref for the signed in user or None if anon."""
-    signed_in_user = users.get_current_user()
-    if not signed_in_user:
-      return None
-
-    user_pref_list = UserPref.query().filter(
-        UserPref.email == signed_in_user.email()).fetch(1)
-    if user_pref_list:
-      user_pref = user_pref_list[0]
-    else:
-      user_pref = UserPref(email=signed_in_user.email())
-    return user_pref
-
-  @classmethod
-  def dismiss_cue(cls, cue):
-    """Add cue to the signed in user's dismissed_cues."""
-    user_pref = cls.get_signed_in_user_pref()
-    if not user_pref:
-      return  # Anon users cannot store dismissed cue names.
-
-    if cue not in user_pref.dismissed_cues:
-      user_pref.dismissed_cues.append(cue)
-      user_pref.put()
-
-  @classmethod
-  def get_prefs_for_emails(cls, emails):
-    """Return a list of UserPrefs for each of the given emails."""
-    result = []
-    CHUNK_SIZE = 25  # Query 25 at a time because IN operator is limited to 30.
-    chunks = [emails[i : i + CHUNK_SIZE]
-              for i in range(0, len(emails), CHUNK_SIZE)]
-    for chunk_emails in chunks:
-      q = UserPref.query()
-      q = q.filter(UserPref.email.IN(chunk_emails))
-      chunk_prefs = q.fetch(None)
-      result.extend(chunk_prefs)
-      found_set = set(up.email for up in chunk_prefs)
-
-      # Make default prefs for any user that does not already have an entity.
-      new_prefs = [UserPref(email=e) for e in chunk_emails
-                   if e not in found_set]
-      for np in new_prefs:
-        np.put()
-        result.append(np)
-
-    return result
-
-
-class UserPrefForm(forms.Form):
-  notify_as_starrer = forms.BooleanField(
-      required=False,
-      label='Notify as starrer',
-      help_text='Send you notification emails for features that you starred?')
-
-
-class AppUser(DictModel):
-  """Describes a user for permission checking."""
-
-  email = ndb.StringProperty(required=True)
-  is_admin = ndb.BooleanProperty(default=False)
-  is_site_editor = ndb.BooleanProperty(default=False)
-  created = ndb.DateTimeProperty(auto_now_add=True)
-  updated = ndb.DateTimeProperty(auto_now=True)
-  last_visit = ndb.DateTimeProperty()
-
-  def put(self, **kwargs):
-    """when we update an AppUser, also invalidate ramcache."""
-    key = super(DictModel, self).put(**kwargs)
-    cache_key = 'user|%s' % self.email
-    ramcache.delete(cache_key)
-
-  def delete(self, **kwargs):
-    """when we delete an AppUser, also invalidate ramcache."""
-    key = super(DictModel, self).key.delete(**kwargs)
-    cache_key = 'user|%s' % self.email
-    ramcache.delete(cache_key)
-
-  @classmethod
-  def get_app_user(cls, email):
-    """Return the AppUser for the specified user, or None."""
-    cache_key = 'user|%s' % email
-    cached_app_user = ramcache.get(cache_key)
-    if cached_app_user:
-      return cached_app_user
-
-    query = cls.query()
-    query = query.filter(cls.email == email)
-    found_app_user_or_none = query.get()
-    ramcache.set(cache_key, found_app_user_or_none)
-    return found_app_user_or_none
-
-
-def list_with_component(l, component):
-  return [x for x in l if x.id() == component.key.integer_id()]
-
-def list_without_component(l, component):
-  return [x for x in l if x.id() != component.key.integer_id()]
-
-
-class FeatureOwner(DictModel):
-  """Describes subscribers of a web platform feature."""
-  created = ndb.DateTimeProperty(auto_now_add=True)
-  updated = ndb.DateTimeProperty(auto_now=True)
-  name = ndb.StringProperty(required=True)
-  email = ndb.StringProperty(required=True)
-  twitter = ndb.StringProperty()
-  blink_components = ndb.KeyProperty(repeated=True)
-  primary_blink_components = ndb.KeyProperty(repeated=True)
-  watching_all_features = ndb.BooleanProperty(default=False)
-
-  # def __eq__(self, other):
-  #   return self.key().id() == other.key().id()
-
-  def add_to_component_subscribers(self, component_name):
-    """Adds the user to the list of Blink component subscribers."""
-    c = BlinkComponent.get_by_name(component_name)
-    if c:
-      # Add the user if they're not already in the list.
-      if not len(list_with_component(self.blink_components, c)):
-        self.blink_components.append(c.key)
-        return self.put()
-    return None
-
-  def remove_from_component_subscribers(
-      self, component_name, remove_as_owner=False):
-    """Removes the user from the list of Blink component subscribers or as
-       the owner of the component.
-    """
-    c = BlinkComponent.get_by_name(component_name)
-    if c:
-      if remove_as_owner:
-        self.primary_blink_components = (
-            list_without_component(self.primary_blink_components, c))
-      else:
-        self.blink_components = list_without_component(self.blink_components, c)
-        self.primary_blink_components = (
-            list_without_component(self.primary_blink_components, c))
-      return self.put()
-    return None
-
-  def add_as_component_owner(self, component_name):
-    """Adds the user as the Blink component owner."""
-    c = BlinkComponent.get_by_name(component_name)
-    if c:
-      # Update both the primary list and blink components subscribers if the
-      # user is not already in them.
-      self.add_to_component_subscribers(component_name)
-      if not len(list_with_component(self.primary_blink_components, c)):
-        self.primary_blink_components.append(c.key)
-      return self.put()
-    return None
-
-  def remove_as_component_owner(self, component_name):
-    return self.remove_from_component_subscribers(
-        component_name, remove_as_owner=True)
 
 
 class OwnersFile(DictModel):

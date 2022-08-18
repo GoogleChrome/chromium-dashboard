@@ -15,16 +15,16 @@
 
 
 from framework import basehandlers
-from internals import models
+from internals import user_models
 
 
 class SettingsAPI(basehandlers.APIHandler):
-  """Users can store their settings preferences such as whether to get 
+  """Users can store their settings preferences such as whether to get
   notification from the features they starred."""
 
   def do_post(self):
     """Set the user settings (currently only the notify_as_starrer)"""
-    user_pref = models.UserPref.get_signed_in_user_pref()
+    user_pref = user_models.UserPref.get_signed_in_user_pref()
     if not user_pref:
       self.abort(403, msg='User must be signed in')
     new_notify = self.get_bool_param('notify')
@@ -35,7 +35,7 @@ class SettingsAPI(basehandlers.APIHandler):
 
   def do_get(self):
     """Return the user settings (currently only the notify_as_starrer)"""
-    user_pref = models.UserPref.get_signed_in_user_pref()
+    user_pref = user_models.UserPref.get_signed_in_user_pref()
     if not user_pref:
       self.abort(404, msg='User preference not found')
 

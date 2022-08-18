@@ -20,7 +20,7 @@ from unittest import mock
 import werkzeug.exceptions  # Flask HTTP stuff.
 
 from api import accounts_api
-from internals import models
+from internals import user_models
 
 test_app = flask.Flask(__name__)
 
@@ -28,15 +28,15 @@ test_app = flask.Flask(__name__)
 class AccountsAPITest(testing_config.CustomTestCase):
 
   def setUp(self):
-    self.app_admin = models.AppUser(email='admin@example.com')
+    self.app_admin = user_models.AppUser(email='admin@example.com')
     self.app_admin.is_admin = True
     self.app_admin.put()
 
-    self.app_editor = models.AppUser(email='editor@example.com')
+    self.app_editor = user_models.AppUser(email='editor@example.com')
     self.app_editor.is_site_editor = True
     self.app_editor.put()
 
-    self.appuser_1 = models.AppUser(email='user@example.com')
+    self.appuser_1 = user_models.AppUser(email='user@example.com')
     self.appuser_1.put()
     self.appuser_id = self.appuser_1.key.integer_id()
 
@@ -61,11 +61,11 @@ class AccountsAPITest(testing_config.CustomTestCase):
     self.assertFalse(actual_json['is_site_editor'])
     self.assertFalse(actual_json['is_admin'])
 
-    new_appuser = (models.AppUser.query(
-        models.AppUser.email == 'new_user@example.com').get())
+    new_appuser = (user_models.AppUser.query(
+        user_models.AppUser.email == 'new_user@example.com').get())
     self.assertEqual('new_user@example.com', new_appuser.email)
     self.assertFalse(new_appuser.is_admin)
-  
+
   def test_create__site_editor_valid(self):
     """Admin wants to register a new site editor account."""
     testing_config.sign_in('admin@example.com', 123567890)
@@ -79,8 +79,8 @@ class AccountsAPITest(testing_config.CustomTestCase):
     self.assertFalse(actual_json['is_admin'])
     self.assertTrue(actual_json['is_site_editor'])
 
-    new_appuser = models.AppUser.query(
-        models.AppUser.email == 'new_site_editor@example.com').get()
+    new_appuser = user_models.AppUser.query(
+        user_models.AppUser.email == 'new_site_editor@example.com').get()
     self.assertEqual('new_site_editor@example.com', new_appuser.email)
     self.assertTrue(new_appuser.is_site_editor)
     self.assertFalse(new_appuser.is_admin)
@@ -98,8 +98,8 @@ class AccountsAPITest(testing_config.CustomTestCase):
     self.assertTrue(actual_json['is_site_editor'])
     self.assertTrue(actual_json['is_admin'])
 
-    new_appuser = models.AppUser.query(
-        models.AppUser.email == 'new_admin@example.com').get()
+    new_appuser = user_models.AppUser.query(
+        user_models.AppUser.email == 'new_admin@example.com').get()
     self.assertEqual('new_admin@example.com', new_appuser.email)
     self.assertTrue(new_appuser.is_admin)
 
@@ -111,8 +111,8 @@ class AccountsAPITest(testing_config.CustomTestCase):
       with self.assertRaises(werkzeug.exceptions.Forbidden):
         self.handler.do_post(self.appuser_id)
 
-    new_appuser = models.AppUser.query(
-        models.AppUser.email == 'new@example.com').get()
+    new_appuser = user_models.AppUser.query(
+        user_models.AppUser.email == 'new@example.com').get()
     self.assertIsNone(new_appuser)
 
   def test_create__site_editor_forbidden(self):
@@ -122,9 +122,9 @@ class AccountsAPITest(testing_config.CustomTestCase):
     with test_app.test_request_context(self.request_path):
       with self.assertRaises(werkzeug.exceptions.Forbidden):
         self.handler.do_post()
-    
-    new_appuser = models.AppUser.query(
-        models.AppUser.email == 'new@example.com').get()
+
+    new_appuser = user_models.AppUser.query(
+        user_models.AppUser.email == 'new@example.com').get()
     self.assertIsNone(new_appuser)
 
   def test_create__invalid(self):
@@ -136,8 +136,8 @@ class AccountsAPITest(testing_config.CustomTestCase):
       with self.assertRaises(werkzeug.exceptions.BadRequest):
         self.handler.do_post()
 
-    new_appuser = models.AppUser.query(
-        models.AppUser.email == 'new@example.com').get()
+    new_appuser = user_models.AppUser.query(
+        user_models.AppUser.email == 'new@example.com').get()
     self.assertIsNone(new_appuser)
 
   def test_create__duplicate(self):
@@ -149,7 +149,7 @@ class AccountsAPITest(testing_config.CustomTestCase):
       with self.assertRaises(werkzeug.exceptions.BadRequest):
         self.handler.do_post()
 
-    unrevised_appuser = models.AppUser.get_by_id(self.appuser_id)
+    unrevised_appuser = user_models.AppUser.get_by_id(self.appuser_id)
     self.assertEqual('user@example.com', unrevised_appuser.email)
 
   def test_delete__valid(self):
@@ -160,7 +160,7 @@ class AccountsAPITest(testing_config.CustomTestCase):
       actual_json = self.handler.do_delete(self.appuser_id)
     self.assertEqual({'message': 'Done'}, actual_json)
 
-    revised_appuser = models.AppUser.get_by_id(self.appuser_id)
+    revised_appuser = user_models.AppUser.get_by_id(self.appuser_id)
     self.assertIsNone(revised_appuser)
 
   def test_delete__forbidden(self):
@@ -171,7 +171,7 @@ class AccountsAPITest(testing_config.CustomTestCase):
       with self.assertRaises(werkzeug.exceptions.Forbidden):
         self.handler.do_delete(self.appuser_id)
 
-    unrevised_appuser = models.AppUser.get_by_id(self.appuser_id)
+    unrevised_appuser = user_models.AppUser.get_by_id(self.appuser_id)
     self.assertEqual('user@example.com', unrevised_appuser.email)
 
   def test_delete__invalid(self):
@@ -182,7 +182,7 @@ class AccountsAPITest(testing_config.CustomTestCase):
       with self.assertRaises(werkzeug.exceptions.BadRequest):
         self.handler.do_delete(None)
 
-    unrevised_appuser = models.AppUser.get_by_id(self.appuser_id)
+    unrevised_appuser = user_models.AppUser.get_by_id(self.appuser_id)
     self.assertEqual('user@example.com', unrevised_appuser.email)
 
 
@@ -194,5 +194,5 @@ class AccountsAPITest(testing_config.CustomTestCase):
       with self.assertRaises(werkzeug.exceptions.NotFound):
         self.handler.do_delete(self.appuser_id + 1)
 
-    unrevised_appuser = models.AppUser.get_by_id(self.appuser_id)
+    unrevised_appuser = user_models.AppUser.get_by_id(self.appuser_id)
     self.assertEqual('user@example.com', unrevised_appuser.email)

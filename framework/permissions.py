@@ -14,21 +14,20 @@
 # limitations under the License.
 
 
-
-
 import logging
 import flask
 
 import settings
 from framework import users
 from internals import models
+from internals import user_models
 
 
 def can_admin_site(user):
   """Return True if the current user is allowed to administer the site."""
   # A user is an admin if they have an AppUser entity that has is_admin set.
   if user:
-    app_user = models.AppUser.get_app_user(user.email())
+    app_user = user_models.AppUser.get_app_user(user.email())
     if app_user is not None:
       return app_user.is_admin
 
@@ -53,7 +52,7 @@ def can_create_feature(user):
   if user.email().endswith(('@chromium.org', '@google.com')):
     return True
 
-  query = models.AppUser.query(models.AppUser.email == user.email())
+  query = user_models.AppUser.query(user_models.AppUser.email == user.email())
   found_user = query.get(keys_only=True)
   if found_user is not None:
     return True
@@ -80,14 +79,14 @@ def strict_can_edit_feature(user, feature_id):
     return False
 
   # If the user is an admin or site editor, they can edit this feature.
-  app_user = models.AppUser.get_app_user(user.email())
+  app_user = user_models.AppUser.get_app_user(user.email())
   if app_user is not None and (app_user.is_admin or app_user.is_site_editor):
     return True
 
   feature = models.Feature.get_by_id(feature_id)
   if not feature:
     return False
-  
+
   email = user.email()
   # Check if the user is an owner, editor, or creator for this feature.
   # If yes, the feature can be edited.

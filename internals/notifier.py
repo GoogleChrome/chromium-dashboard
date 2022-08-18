@@ -37,6 +37,7 @@ import settings
 from internals import approval_defs
 from internals import core_enums
 from internals import models
+from internals import user_models
 
 
 def format_email_body(is_update, feature, changes):
@@ -139,8 +140,8 @@ def apply_subscription_rules(feature, changes):
 
 def make_email_tasks(feature, is_update=False, changes=[]):
   """Return a list of task dicts to notify users of feature changes."""
-  feature_watchers = models.FeatureOwner.query(
-      models.FeatureOwner.watching_all_features == True).fetch(None)
+  feature_watchers = user_models.FeatureOwner.query(
+      user_models.FeatureOwner.watching_all_features == True).fetch(None)
 
   email_html = format_email_body(is_update, feature, changes)
   if is_update:
@@ -166,7 +167,7 @@ def make_email_tasks(feature, is_update=False, changes=[]):
 
   # There will always be at least one component.
   for component_name in feature.blink_components:
-    component = models.BlinkComponent.get_by_name(component_name)
+    component = user_models.BlinkComponent.get_by_name(component_name)
     if not component:
       logging.warning('Blink component "%s" not found.'
                       'Not sending email to subscribers' % component_name)
@@ -249,7 +250,7 @@ class FeatureStar(models.DictModel):
     logging.info('found %d stars for %r', len(feature_stars), feature_id)
     emails = [fs.email for fs in feature_stars]
     logging.info('looking up %r', repr(emails)[:settings.MAX_LOG_LINE])
-    user_prefs = models.UserPref.get_prefs_for_emails(emails)
+    user_prefs = user_models.UserPref.get_prefs_for_emails(emails)
     user_prefs = [up for up in user_prefs
                   if up.notify_as_starrer and not up.bounced]
     return user_prefs
