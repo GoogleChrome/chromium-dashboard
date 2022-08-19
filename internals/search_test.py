@@ -45,55 +45,53 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
         starred=False)
     self.feature_1.key.delete()
     self.feature_2.key.delete()
+    for appr in models.Approval.query():
+      appr.key.delete()
 
-  @mock.patch('internals.models.Approval.get_approvals')
   @mock.patch('internals.approval_defs.fields_approvable_by')
   def test_process_pending_approval_me_query__none(
-      self, mock_approvable_by, mock_get_approvals):
+      self, mock_approvable_by):
     """Nothing is pending."""
     testing_config.sign_in('oner@example.com', 111)
     now = datetime.datetime.now()
     mock_approvable_by.return_value = set()
-    mock_get_approvals.return_value = []
 
     feature_ids = search.process_pending_approval_me_query()
 
     self.assertEqual(0, len(feature_ids))
 
-  @mock.patch('internals.models.Approval.get_approvals')
   @mock.patch('internals.approval_defs.fields_approvable_by')
   def test_process_pending_approval_me_query__some__nonapprover(
-      self, mock_approvable_by, mock_get_approvals):
+      self, mock_approvable_by):
     """It's not a pending approval for you."""
     testing_config.sign_in('visitor@example.com', 111)
     now = datetime.datetime.now()
     mock_approvable_by.return_value = set()
-    mock_get_approvals.return_value = [
-        models.Approval(
-            feature_id=self.feature_1.key.integer_id(),
-            field_id=1, state=0, set_on=now)]
+    models.Approval(
+        feature_id=self.feature_1.key.integer_id(),
+        field_id=1, state=models.Approval.REVIEW_REQUESTED,
+        set_by='feature_owner@example.com', set_on=now).put()
 
     feature_ids = search.process_pending_approval_me_query()
 
     self.assertEqual(0, len(feature_ids))
 
-  @mock.patch('internals.models.Approval.get_approvals')
   @mock.patch('internals.approval_defs.fields_approvable_by')
   def test_process_pending_approval_me_query__some__approver(
-      self, mock_approvable_by, mock_get_approvals):
+      self, mock_approvable_by):
     """We can return a list of features pending approval."""
     testing_config.sign_in('owner@example.com', 111)
     time_1 = datetime.datetime.now() - datetime.timedelta(days=4)
     time_2 = datetime.datetime.now()
     mock_approvable_by.return_value = set([1, 2, 3])
-    mock_get_approvals.return_value = [
-        models.Approval(
-            feature_id=self.feature_2.key.integer_id(),
-            field_id=1, state=0, set_on=time_1),
-        models.Approval(
-            feature_id=self.feature_1.key.integer_id(),
-            field_id=1, state=0, set_on=time_2),
-    ]
+    models.Approval(
+        feature_id=self.feature_2.key.integer_id(),
+        field_id=1, state=models.Approval.REVIEW_REQUESTED,
+        set_by='feature_owner@example', set_on=time_1).put()
+    models.Approval(
+        feature_id=self.feature_1.key.integer_id(),
+        field_id=1, state=models.Approval.REVIEW_REQUESTED,
+        set_by='feature_owner@example.com', set_on=time_2).put()
 
     feature_ids = search.process_pending_approval_me_query()
     self.assertEqual(2, len(feature_ids))
@@ -101,6 +99,30 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
     self.assertEqual(
         [self.feature_2.key.integer_id(),
          self.feature_1.key.integer_id()],
+        feature_ids)
+
+  @mock.patch('internals.approval_defs.fields_approvable_by')
+  def test_process_pending_approval_me_query__mixed__approver(
+      self, mock_approvable_by):
+    """Only REVIEW_REQUESTED is considered a pending approval."""
+    testing_config.sign_in('owner@example.com', 111)
+    time_1 = datetime.datetime.now() - datetime.timedelta(days=4)
+    time_2 = datetime.datetime.now()
+    mock_approvable_by.return_value = set([1, 2, 3])
+    models.Approval(
+        feature_id=self.feature_2.key.integer_id(),
+        field_id=1, state=models.Approval.REVIEW_REQUESTED,
+        set_by='feature_owner@example', set_on=time_1).put()
+    models.Approval(
+        feature_id=self.feature_1.key.integer_id(),
+        field_id=1, state=models.Approval.NEED_INFO,
+        set_by='feature_owner@example.com', set_on=time_2).put()
+
+    feature_ids = search.process_pending_approval_me_query()
+    self.assertEqual(1, len(feature_ids))
+    # Results are sorted by set_on timestamp, but there is only one.
+    self.assertEqual(
+        [self.feature_2.key.integer_id()],
         feature_ids)
 
   def test_process_starred_me_query__anon(self):
