@@ -82,11 +82,15 @@ export class ChromedashFormField extends LitElement {
         </sl-select>
       `;
     } else if (type === 'input') {
-      let inputType = 'text';
+      let inputType = '';
       let title = '';
       let placeholder;
       let pattern;
       switch (fieldProps.input_type) {
+        case 'text':
+          inputType = 'text';
+          break;
+
         case 'url':
           inputType = 'url';
           title = 'Enter a full URL https://...';
@@ -107,6 +111,9 @@ export class ChromedashFormField extends LitElement {
           inputType = 'number';
           placeholder = 'Milestone number';
           break;
+
+        default:
+          console.error(`Invalid input type: ${fieldProps.input_type}`);
       }
       fieldHTML = html`
         <sl-input 

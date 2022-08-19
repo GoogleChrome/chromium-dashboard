@@ -27,6 +27,7 @@ export const ALL_FIELDS = {
 
   'name': {
     type: 'input',
+    input_type: 'text',
     required: true,
     label: 'Feature name',
     help_text: html`
@@ -148,6 +149,7 @@ export const ALL_FIELDS = {
 
   'search_tags': {
     type: 'input',
+    input_type: 'text',
     required: false,
     label: 'Search tags',
     help_text: html`
@@ -890,6 +892,8 @@ export const ALL_FIELDS = {
 
   'flag_name': {
     type: 'input',
+    input_type: 'text',
+    required: false,
     label: 'Flag name',
     help_text: html`
       Name of the flag on chrome://flags that enables this feature.`,

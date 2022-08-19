@@ -549,7 +549,7 @@ class ChromedashForm(forms.Form):
             # Get value and checked for the field
             value = field.widget.value_from_datadict(self.data, self.files, self.add_prefix(name))
             if value is None:
-              value = field.initial
+              value = bf.initial
 
             row_template = normal_row
             checked = False
