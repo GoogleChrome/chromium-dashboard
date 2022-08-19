@@ -22,7 +22,7 @@ from api import features_api
 from internals import core_enums
 from internals import models
 from internals import user_models
-from framework import ramcache
+from framework import rediscache
 
 test_app = flask.Flask(__name__)
 
@@ -45,11 +45,11 @@ class FeaturesAPITestDelete(testing_config.CustomTestCase):
     self.app_admin.put()
 
   def tearDown(self):
+    cache_key = '%s|%s' % (models.Feature.DEFAULT_CACHE_KEY, self.feature_1.key.integer_id())
     self.feature_1.key.delete()
     self.app_admin.key.delete()
     testing_config.sign_out()
-    ramcache.flush_all()
-    ramcache.check_for_distributed_invalidation()
+    rediscache.delete(cache_key)
 
   def test_delete__valid(self):
     """Admin wants to soft-delete a feature."""
@@ -139,8 +139,7 @@ class FeaturesAPITestGet(testing_config.CustomTestCase):
     self.feature_3.key.delete()
     self.app_admin.key.delete()
     testing_config.sign_out()
-    ramcache.flush_all()
-    ramcache.check_for_distributed_invalidation()
+    rediscache.flushall()
 
   def test_get__all_listed(self):
     """Get all features that are listed."""

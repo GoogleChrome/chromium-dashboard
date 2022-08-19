@@ -20,7 +20,6 @@ import flask
 import werkzeug
 import html5lib
 
-from framework import ramcache
 from internals import core_enums
 from internals import models
 from pages import guide
@@ -37,10 +36,6 @@ class TestWithFeature(testing_config.CustomTestCase):
   def setUp(self):
     self.request_path = self.REQUEST_PATH_FORMAT
     self.handler = self.HANDLER_CLASS()
-
-  def tearDown(self):
-    ramcache.flush_all()
-    ramcache.check_for_distributed_invalidation()
 
 
 class FeatureNewTest(testing_config.CustomTestCase):

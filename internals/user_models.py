@@ -16,8 +16,9 @@ import logging
 
 from google.cloud import ndb
 
-from framework import ramcache
+from framework import rediscache
 from framework import users
+from internals import models
 import hack_components
 import settings
 
@@ -89,7 +90,7 @@ class UserPref(ndb.Model):
     return result
 
 
-class AppUser(ndb.Model):
+class AppUser(models.DictModel):
   """Describes a user for permission checking."""
 
   email = ndb.StringProperty(required=True)
@@ -97,32 +98,36 @@ class AppUser(ndb.Model):
   is_site_editor = ndb.BooleanProperty(default=False)
   created = ndb.DateTimeProperty(auto_now_add=True)
   updated = ndb.DateTimeProperty(auto_now=True)
-  last_visit = ndb.DateTimeProperty()
 
   def put(self, **kwargs):
-    """when we update an AppUser, also invalidate ramcache."""
+    """when we update an AppUser."""
     key = super(AppUser, self).put(**kwargs)
     cache_key = 'user|%s' % self.email
-    ramcache.delete(cache_key)
+    rediscache.delete(cache_key)
 
   def delete(self, **kwargs):
-    """when we delete an AppUser, also invalidate ramcache."""
+    """when we delete an AppUser."""
     key = super(AppUser, self).key.delete(**kwargs)
     cache_key = 'user|%s' % self.email
-    ramcache.delete(cache_key)
+    rediscache.delete(cache_key)
 
   @classmethod
   def get_app_user(cls, email):
     """Return the AppUser for the specified user, or None."""
     cache_key = 'user|%s' % email
-    cached_app_user = ramcache.get(cache_key)
+    cached_app_user = rediscache.deserialize_non_str(rediscache.get(cache_key))
     if cached_app_user:
-      return cached_app_user
+      return cls(
+          email=cached_app_user['email'],
+          is_admin=cached_app_user['is_admin'],
+          is_site_editor=cached_app_user['is_site_editor'])
 
     query = cls.query()
     query = query.filter(cls.email == email)
     found_app_user_or_none = query.get()
-    ramcache.set(cache_key, found_app_user_or_none)
+    if found_app_user_or_none is None:
+      return None
+    rediscache.set(cache_key, rediscache.serialize_non_str(found_app_user_or_none.to_dict()))
     return found_app_user_or_none
 
 
@@ -211,7 +216,7 @@ class BlinkComponent(ndb.Model):
     """Returns the list of blink components."""
     key = 'blinkcomponents'
 
-    components = ramcache.get(key)
+    components = rediscache.deserialize_non_str(rediscache.get(key))
     if components is None or update_cache:
       # TODO(jrobbins): Re-implement fetching the list of blink components
       # by getting it via the monorail API.

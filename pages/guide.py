@@ -24,7 +24,6 @@ from django import forms
 from google.cloud import ndb
 
 # Appengine imports.
-from framework import ramcache
 from framework import users
 
 from framework import basehandlers
@@ -154,9 +153,6 @@ class FeatureNew(basehandlers.FlaskHandler):
         created_by=signed_in_user,
         updated_by=signed_in_user)
     key = feature.put()
-
-    # TODO(jrobbins): enumerate and remove only the relevant keys.
-    ramcache.flush_all()
 
     redirect_url = '/guide/edit/' + str(key.integer_id())
     return self.redirect(redirect_url)
@@ -585,9 +581,6 @@ class FeatureEditStage(basehandlers.FlaskHandler):
         email=self.get_current_user().email(),
         _auth_domain='gmail.com')
     key = feature.put()
-
-    # TODO(jrobbins): enumerate and remove only the relevant keys.
-    ramcache.flush_all()
 
     redirect_url = '/guide/edit/' + str(key.integer_id())
     return self.redirect(redirect_url)

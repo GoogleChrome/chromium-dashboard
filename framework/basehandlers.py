@@ -29,7 +29,6 @@ from google.cloud import ndb
 import settings
 from framework import csp
 from framework import permissions
-from framework import ramcache
 from framework import secrets
 from framework import users
 from framework import utils
@@ -162,7 +161,6 @@ class APIHandler(BaseHandler):
   def get(self, *args, **kwargs):
     """Handle an incoming HTTP GET request."""
     headers = self.get_headers()
-    ramcache.check_for_distributed_invalidation()
     handler_data = self.do_get(*args, **kwargs)
     return self.defensive_jsonify(handler_data), headers
 
@@ -177,7 +175,6 @@ class APIHandler(BaseHandler):
     if not is_login_request:
       self.require_signed_in_and_xsrf_token()
     headers = self.get_headers()
-    ramcache.check_for_distributed_invalidation()
     handler_data = self.do_post(*args, **kwargs)
     return self.defensive_jsonify(handler_data), headers
 
@@ -185,7 +182,6 @@ class APIHandler(BaseHandler):
     """Handle an incoming HTTP PATCH request."""
     self.require_signed_in_and_xsrf_token()
     headers = self.get_headers()
-    ramcache.check_for_distributed_invalidation()
     handler_data = self.do_patch(*args, **kwargs)
     return self.defensive_jsonify(handler_data), headers
 
@@ -193,7 +189,6 @@ class APIHandler(BaseHandler):
     """Handle an incoming HTTP DELETE request."""
     self.require_signed_in_and_xsrf_token()
     headers = self.get_headers()
-    ramcache.check_for_distributed_invalidation()
     handler_data = self.do_delete(*args, **kwargs)
     return self.defensive_jsonify(handler_data), headers
 
@@ -207,15 +202,6 @@ class APIHandler(BaseHandler):
     if self.do_delete.__code__ is not APIHandler.do_delete.__code__:
       valid_methods.append('DELETE')
     return valid_methods
-
-  def _update_last_visit_field(self, email):
-    """Updates the AppUser last_visit field to log the user's last visit"""
-    app_user = user_models.AppUser.get_app_user(email)
-    if not app_user:
-      return False
-    app_user.last_visit = datetime.now()
-    app_user.put()
-    return True
 
   def do_get(self, **kwargs):
     """Subclasses should implement this method to handle a GET request."""
@@ -353,7 +339,6 @@ class FlaskHandler(BaseHandler):
       logging.info('Striping www and redirecting to %r', location)
       return self.redirect(location)
 
-    ramcache.check_for_distributed_invalidation()
     handler_data = self.get_template_data(*args, **kwargs)
     users.refresh_user_session()
 
@@ -378,7 +363,6 @@ class FlaskHandler(BaseHandler):
 
   def post(self, *args, **kwargs):
     """POST handlers return a string, JSON, or a redirect."""
-    ramcache.check_for_distributed_invalidation()
     self.require_xsrf_token()
     handler_data = self.process_post_data(*args, **kwargs)
     headers = self.get_headers()

@@ -18,7 +18,6 @@ import testing_config  # Must be imported before the module under test.
 import flask
 
 from api import permissions_api
-from framework import ramcache
 
 test_app = flask.Flask(__name__)
 
@@ -31,8 +30,6 @@ class PermissionsAPITest(testing_config.CustomTestCase):
 
   def tearDown(self):
     testing_config.sign_out()
-    ramcache.flush_all()
-    ramcache.check_for_distributed_invalidation()
 
   def test_get__anon(self):
     """Returns no user object if not signed in"""

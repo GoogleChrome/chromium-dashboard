@@ -23,7 +23,6 @@ import os
 import urllib
 
 from framework import permissions
-from framework import ramcache
 from google.cloud import ndb
 import requests
 

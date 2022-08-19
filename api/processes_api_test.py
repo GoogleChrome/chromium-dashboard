@@ -18,7 +18,6 @@ import testing_config  # Must be imported before the module under test.
 import flask
 
 from api import processes_api
-from framework import ramcache
 from internals import models
 from internals import processes
 from internals import core_enums
@@ -40,8 +39,6 @@ class ProcessesAPITest(testing_config.CustomTestCase):
 
   def tearDown(self):
     self.feature_1.key.delete()
-    ramcache.flush_all()
-    ramcache.check_for_distributed_invalidation()
 
   def test_get__default_feature_type(self):
     """We can get process for features with the default feature type (New feature incubation)."""
@@ -103,8 +100,6 @@ class ProgressAPITest(testing_config.CustomTestCase):
 
   def tearDown(self):
     self.feature_1.key.delete()
-    ramcache.flush_all()
-    ramcache.check_for_distributed_invalidation()
 
   def test_get___feature_progress(self):
     """We can get progress of a feature."""

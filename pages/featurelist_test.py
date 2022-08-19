@@ -13,6 +13,7 @@
 # limitations under the License.
 
 
+from framework import rediscache
 import testing_config  # Must be imported first
 
 import os
@@ -20,7 +21,6 @@ import flask
 import werkzeug
 import html5lib
 
-from framework import ramcache
 from internals import models
 from internals import user_models
 from pages import featurelist
@@ -57,9 +57,7 @@ class TestWithFeature(testing_config.CustomTestCase):
     self.feature_1.key.delete()
     self.app_user.delete()
     self.app_admin.delete()
-
-    ramcache.flush_all()
-    ramcache.check_for_distributed_invalidation()
+    rediscache.flushall()
 
 
 class FeaturesJsonHandlerTest(TestWithFeature):

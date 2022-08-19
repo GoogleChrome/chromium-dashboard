@@ -48,7 +48,7 @@ class FetchOwnersTest(testing_config.CustomTestCase):
     actual = approval_defs.fetch_owners('https://example.com')
     again = approval_defs.fetch_owners('https://example.com')
 
-    # Only called once because second call will be a ramcache hit.
+    # Only called once because second call will be a redis hit.
     mock_get.assert_called_once_with('https://example.com')
     self.assertEqual(
         actual,

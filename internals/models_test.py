@@ -16,7 +16,7 @@ import testing_config  # Must be imported before the module under test.
 
 import datetime
 from unittest import mock
-from framework import ramcache
+from framework import rediscache
 from framework import users
 
 from internals import models
@@ -80,7 +80,6 @@ class ModelsFunctionsTest(testing_config.CustomTestCase):
 class FeatureTest(testing_config.CustomTestCase):
 
   def setUp(self):
-    ramcache.SharedInvalidate.check_for_distributed_invalidation()
     self.feature_2 = models.Feature(
         name='feature b', summary='sum', owner=['feature_owner@example.com'],
         category=1, visibility=1, standardization=1, web_dev_views=1,
@@ -110,7 +109,7 @@ class FeatureTest(testing_config.CustomTestCase):
     self.feature_2.key.delete()
     self.feature_3.key.delete()
     self.feature_4.key.delete()
-    ramcache.flush_all()
+    rediscache.flushall()
 
   def test_get_all__normal(self):
     """We can retrieve a list of all features with no filter."""
@@ -195,8 +194,6 @@ class FeatureTest(testing_config.CustomTestCase):
 
   def test_get_by_ids__cache_miss(self):
     """We can load features from datastore, and cache them for later."""
-    ramcache.global_cache.clear()
-
     actual = models.Feature.get_by_ids([
         self.feature_1.key.integer_id(),
         self.feature_2.key.integer_id()])
@@ -209,12 +206,11 @@ class FeatureTest(testing_config.CustomTestCase):
                               self.feature_1.key.integer_id())
     lookup_key_2 = '%s|%s' % (models.Feature.DEFAULT_CACHE_KEY,
                               self.feature_2.key.integer_id())
-    self.assertEqual('feature a', ramcache.get(lookup_key_1)['name'])
-    self.assertEqual('feature b', ramcache.get(lookup_key_2)['name'])
+    self.assertEqual('feature a', rediscache.deserialize_non_str(rediscache.get(lookup_key_1))['name'])
+    self.assertEqual('feature b', rediscache.deserialize_non_str(rediscache.get(lookup_key_2))['name'])
 
   def test_get_by_ids__cache_hit(self):
-    """We can load features from ramcache."""
-    ramcache.global_cache.clear()
+    """We can load features from redis."""
     cache_key = '%s|%s' % (
         models.Feature.DEFAULT_CACHE_KEY, self.feature_1.key.integer_id())
     cached_feature = {
@@ -222,7 +218,7 @@ class FeatureTest(testing_config.CustomTestCase):
       'id': self.feature_1.key.integer_id(),
       'unlisted': False
     }
-    ramcache.set(cache_key, cached_feature)
+    rediscache.set(cache_key, rediscache.serialize_non_str(cached_feature))
 
     actual = models.Feature.get_by_ids([self.feature_1.key.integer_id()])
 
@@ -247,7 +243,6 @@ class FeatureTest(testing_config.CustomTestCase):
   def test_get_by_ids__cached_correctly(self):
     """We should no longer be able to trigger bug #1647."""
     # Cache one to try to trigger the bug.
-    ramcache.global_cache.clear()
     models.Feature.get_by_ids([
         self.feature_2.key.integer_id(),
         ])
@@ -337,7 +332,7 @@ class FeatureTest(testing_config.CustomTestCase):
 
     cache_key = '%s|%s|%s' % (
         models.Feature.DEFAULT_CACHE_KEY, 'milestone', 1)
-    cached_result = ramcache.get(cache_key)
+    cached_result = rediscache.deserialize_non_str(rediscache.get(cache_key))
     self.assertEqual(cached_result, actual)
 
 
@@ -394,7 +389,7 @@ class FeatureTest(testing_config.CustomTestCase):
     cache_key = '%s|%s|%s' % (
         models.Feature.DEFAULT_CACHE_KEY, 'milestone', 1)
     cached_test_feature = {'test': [{'name': 'test_feature', 'unlisted': False}]}
-    ramcache.set(cache_key, cached_test_feature)
+    rediscache.set(cache_key, rediscache.serialize_non_str(cached_test_feature))
 
     actual = models.Feature.get_in_milestone(milestone=1)
     self.assertEqual(

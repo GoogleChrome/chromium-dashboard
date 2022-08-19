@@ -45,5 +45,4 @@ class TokenRefreshAPI(basehandlers.APIHandler):
         'token': xsrf.generate_token(user.email()),
         'token_expires_sec': xsrf.token_expires_sec(),
         }
-    self._update_last_visit_field(user.email())
     return result

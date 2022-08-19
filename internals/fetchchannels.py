@@ -19,15 +19,15 @@
 import json
 import requests
 
-from framework import ramcache
+from framework import rediscache
 # Note: this file cannot import models because it would be circular.
 
 
 def get_omaha_data():
-  omaha_data = ramcache.get('omaha_data')
+  omaha_data = rediscache.get('omaha_data')
   if omaha_data is None:
     result = requests.get('https://omahaproxy.appspot.com/all.json')
     if result.status_code == 200:
       omaha_data = json.loads(result.content)
-      ramcache.set('omaha_data', omaha_data, time=86400) # cache for 24hrs.
+      rediscache.set('omaha_data', omaha_data, time=86400) # cache for 24hrs.
   return omaha_data

@@ -440,17 +440,6 @@ class APIHandlerTests(testing_config.CustomTestCase):
         self.handler.require_signed_in_and_xsrf_token()
     mock_validate_token.assert_not_called()
 
-  def test_update_last_visit_field__valid_user(self):
-    """Update the last_visit field of a valid user."""
-    updated_user = self.handler._update_last_visit_field("user@example.com")
-    self.assertNotEqual(self.appuser.last_visit, None)
-    self.assertTrue(updated_user)
-
-  def test_update_last_field__no_user(self):
-    """Don't update last_visit field if the user is unknown."""
-    updated_invalid_user = self.handler._update_last_visit_field("invaliduser@example.com")
-    self.assertFalse(updated_invalid_user)
-
 
 class FlaskHandlerTests(testing_config.CustomTestCase):
 

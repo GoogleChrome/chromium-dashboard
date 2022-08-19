@@ -22,7 +22,6 @@ from framework import permissions
 from framework import utils
 from internals import models
 from internals import core_enums
-from framework import ramcache
 
 # from google.appengine.api import users
 from framework import users
