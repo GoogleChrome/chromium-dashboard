@@ -71,6 +71,7 @@ class FeatureListHandler(basehandlers.FlaskHandler):
     return template_data
 
 
+# TODO(jrobbins): Delete this some time after Oct 2022.
 class FeatureListXMLHandler(basehandlers.FlaskHandler):
 
   def get_template_data(self):

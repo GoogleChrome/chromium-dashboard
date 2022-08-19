@@ -137,7 +137,8 @@ page_routes = [
      {'template_path': 'new-feature-list.html'}),
     ('/features', featurelist.FeatureListHandler),
     ('/features/<int:feature_id>', featurelist.FeatureListHandler),
-    ('/features.xml', featurelist.FeatureListXMLHandler),
+    ('/features.xml', basehandlers.ConstHandler,
+     {'template_path': 'farewell-rss.xml'}),
 
     ('/guide/new', guide.FeatureNew),
     ('/guide/edit/<int:feature_id>', guide.ProcessOverview),

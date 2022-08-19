@@ -68,6 +68,7 @@ class ConstTemplateTest(testing_config.CustomTestCase):
   def test_const_templates(self):
     """All the ConstHandler instances render valid HTML."""
     for route in main.page_routes:
-      if route[1] == basehandlers.ConstHandler:
+      if (route[1] == basehandlers.ConstHandler and
+          not route[0].endswith('.xml')):
         with self.subTest(path=route[0]):
           self.check_template(route)
