@@ -985,7 +985,6 @@ class Approval(DictModel):
       NOT_APPROVED: 'not_approved',
   }
 
-  PENDING_STATES = [REVIEW_REQUESTED, REVIEW_STARTED, NEED_INFO]
   FINAL_STATES = [NA, APPROVED, NOT_APPROVED]
 
   feature_id = ndb.IntegerProperty(required=True)

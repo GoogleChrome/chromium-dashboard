@@ -43,7 +43,7 @@ def process_pending_approval_me_query():
 
   approvable_fields_ids = approval_defs.fields_approvable_by(user)
   pending_approvals = models.Approval.get_approvals(
-      states=models.Approval.PENDING_STATES)
+      states=[models.Approval.REVIEW_REQUESTED])
   pending_approvals = [pa for pa in pending_approvals
                        if pa.field_id in approvable_fields_ids]
 
