@@ -95,6 +95,7 @@ class ChromedashApprovalsDialog extends LitElement {
 
         h3 {
           margin: var(--content-padding-half);
+          margin-top: var(--content-padding);
         }
 
         .approval_section {
@@ -114,6 +115,8 @@ class ChromedashApprovalsDialog extends LitElement {
         .approval_row {
           width: 650px;
           margin-bottom: var(--content-padding-half);
+          display: flex;
+          align-items: center;
         }
 
         .set_by,
@@ -144,13 +147,23 @@ class ChromedashApprovalsDialog extends LitElement {
           background: var(--table-alternate-background);
         }
 
-        .controls {
-          padding: var(--content-padding);
-          text-align: right;
+        #comment_area {
+          margin: 0 var(--content-padding);
         }
 
-        #show_all_checkbox {
-         float: left;
+        #controls {
+          padding: var(--content-padding);
+          text-align: right;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+        #controls * + * {
+          padding-left: var(--content-padding);
+        }
+
+        #post_to_approval_field {
+          flex: 1;
         }
 
         textarea {
@@ -217,27 +230,28 @@ class ChromedashApprovalsDialog extends LitElement {
       this.changedApprovalsByField.get(approvalValue.field_id) ||
           approvalValue.state);
     const placeholderOption = (approvalValue.state == -1) ?
-      html`<option value="-1" selected>No value</option>` :
+      html`<sl-menu-item value="-1" selected>No value</sl-menu-item>` :
       nothing;
 
+    // hoist is needed when <sl-select> is in overflow:hidden context.
     return html`
       <div class="approval_row">
         <span class="set_by">${approvalValue.set_by}</span>
         <span class="set_on">${this.formatDate(approvalValue.set_on)}</span>
         <span class="appr_val">
           ${approvalValue.set_by == this.signedInUser ? html`
-          <select
-            selected=${selectedValue}
+        <sl-select name="${approvalValue.field_id}"
+            value="${selectedValue}"
             data-field="${approvalValue.field_id}"
-            @change=${this.handleSelectChanged}
+            @sl-change=${this.handleSelectChanged}
+            hoist size="small"
           >
               ${placeholderOption}
               ${STATE_NAMES.map((valName) => html`
-                <option value="${valName[0]}"
-                  ?selected=${valName[0] == selectedValue}
-                 >${valName[1]}</option>`,
+                <sl-menu-item value="${valName[0]}"
+                 >${valName[1]}</sl-menu-item>`,
                 )}
-            </select>` : html`
+        </sl-select>` : html`
            ${this.findStateName(approvalValue.state)}
             `}
         </span>
@@ -401,41 +415,39 @@ class ChromedashApprovalsDialog extends LitElement {
     let showAllCheckbox = nothing;
     if (this.subsetPending) {
       showAllCheckbox = html`
-         <label id="show_all_checkbox"><input
-           type="checkbox" ?checked=${this.showAllIntents}
-           @click=${this.toggleShowAllIntents}
-           >Show all intents</label>
+         <sl-checkbox
+           id="show_all_checkbox"
+           ?checked=${this.showAllIntents}
+           @sl-change=${this.toggleShowAllIntents}
+           size="small"
+           >Show all intents</sl-checkbox>
       `;
     }
     const postToSelect = html`
-      <select style="margin-right:1em" id="post_to_approval_field">
-        <option value="0">Don't post to mailing list</option>
+      <sl-select placement="top" value=0 id="post_to_approval_field" size="small">
+        <sl-menu-item value="0">Don't post to mailing list</sl-menu-item>
         ${APPROVAL_DEFS.map((apprDef) => html`
-          <option value="${apprDef.id}"
+          <sl-menu-item value="${apprDef.id}"
                   ?disabled=${!this.canPostTo(this.feature[apprDef.threadField])}
-          >Post to ${apprDef.name} thread</option>
+          >Post to ${apprDef.name} thread</sl-menu-item>
         `)}
-      </select>
+      </sl-select>
       `;
 
     return html`
-     <div>
-      <textarea id="comment_area" rows=4 cols=80
-        @change=${this.checkNeedsSave}
-        @keypress=${this.checkNeedsSave}
-        placeholder="Add a comment"
-        ></textarea>
-     </div>
-     <div class="controls">
+    <sl-textarea id="comment_area" rows=4 cols=80
+      @sl-change=${this.checkNeedsSave}
+      @keypress=${this.checkNeedsSave}
+      placeholder="Add a comment"
+      ></sl-textarea>
+     <div id="controls">
        ${showAllCheckbox}
        ${postToSelect}
-       <button class="primary"
+       <sl-button variant="primary"
          @click=${this.handleSave}
          ?disabled=${!this.needsSave}
-         >Save</button>
-       <button
-         @click=${this.handleCancel}
-         >Cancel</button>
+         size="small"
+         >Save</sl-button>
      </div>
     `;
   }
