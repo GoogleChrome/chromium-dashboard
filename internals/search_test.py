@@ -206,6 +206,32 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
     self.assertEqual(actual[0], self.feature_1.key.integer_id())  # Most recent
     self.assertEqual(actual[1], self.feature_2.key.integer_id())
 
+  def test_sort_by_total_order__empty(self):
+    """Sorting an empty list works."""
+    feature_ids = []
+    total_order_ids = []
+    actual = search._sort_by_total_order(feature_ids, total_order_ids)
+    self.assertEqual([], actual)
+
+    total_order_ids = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
+    actual = search._sort_by_total_order(feature_ids, total_order_ids)
+    self.assertEqual([], actual)
+
+  def test_sort_by_total_order__normal(self):
+    """We can sort the results according to the total order."""
+    feature_ids = [10, 1, 9, 4]
+    total_order_ids = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
+    actual = search._sort_by_total_order(feature_ids, total_order_ids)
+    self.assertEqual([10, 9, 4, 1], actual)
+
+  def test_sort_by_total_order__unordered_at_end(self):
+    """If the results include features not present in the total order,
+    they are put at the end of the list in ID order."""
+    feature_ids = [999, 10, 998, 1, 9, 997, 4]
+    total_order_ids = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
+    actual = search._sort_by_total_order(feature_ids, total_order_ids)
+    self.assertEqual([10, 9, 4, 1, 997, 998, 999], actual)
+
   @mock.patch('internals.search.process_pending_approval_me_query')
   @mock.patch('internals.search.process_starred_me_query')
   @mock.patch('internals.search.process_access_me_query')
@@ -254,7 +280,6 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
     self.assertCountEqual(
         [f['name'] for f in actual],
         ['feature 1', 'feature 2'])
-
 
   @mock.patch('logging.warning')
   def test_process_query__bad(self, mock_warn):

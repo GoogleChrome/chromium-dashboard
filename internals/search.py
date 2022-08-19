@@ -175,6 +175,20 @@ def _resolve_promise_to_id_list(promise):
     return id_list
 
 
+def _sort_by_total_order(result_id_list, total_order_ids):
+  """Sort the result_ids according to their position in the total order.
+
+  If some result ID is not present in the total order, use the feature ID
+  value itself as the sorting value, which will effectively put those
+  features at the end of the list in order of creation.
+  """
+  total_order_dict = {f_id: idx for idx, f_id in enumerate(total_order_ids)}
+  sorted_id_list = sorted(
+      result_id_list,
+      key=lambda f_id: total_order_dict.get(f_id, f_id))
+  return sorted_id_list
+
+
 def process_query(
     user_query, sort_spec=None, show_unlisted=False, show_deleted=False,
     start=0, num=100):
@@ -217,10 +231,7 @@ def process_query(
   total_order_ids = _resolve_promise_to_id_list(total_order_promise)
 
   # 4. Sort the IDs according to their position in the complete sorted list.
-  total_order_dict = {f_id: idx for idx, f_id in enumerate(total_order_ids)}
-  sorted_id_list = sorted(
-      result_id_list,
-      key=lambda f_id: total_order_dict[f_id])
+  sorted_id_list = _sort_by_total_order(result_id_list, total_order_ids)
 
   # 5. Paginate
   paginated_id_list = sorted_id_list[start : start + num]
