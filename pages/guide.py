@@ -628,10 +628,10 @@ class FeatureVerifyAccuracy(FeatureEditStage):
     if f.accurate_as_of is not None:
       date = f.accurate_as_of.strftime("%Y-%m-%d")
       forms_title = f"Accuracy last verified {date}."
-    forms = [(forms_title, guideforms.Verify_Accuracy(feature_edit_dict))]
+    forms = [(forms_title, str(guideforms.Verify_Accuracy(feature_edit_dict)))]
     template_data = {
         'feature': f,
         'feature_id': f.key.integer_id(),
-        'forms': forms,
+        'forms': json.dumps(forms),
     }
     return template_data
