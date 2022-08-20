@@ -19,6 +19,7 @@ from unittest import mock
 
 from internals import models
 from internals import notifier
+from internals import review_models
 from internals import search
 
 
@@ -45,7 +46,7 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
         starred=False)
     self.feature_1.key.delete()
     self.feature_2.key.delete()
-    for appr in models.Approval.query():
+    for appr in review_models.Approval.query():
       appr.key.delete()
 
   @mock.patch('internals.approval_defs.fields_approvable_by')
@@ -67,9 +68,9 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
     testing_config.sign_in('visitor@example.com', 111)
     now = datetime.datetime.now()
     mock_approvable_by.return_value = set()
-    models.Approval(
+    review_models.Approval(
         feature_id=self.feature_1.key.integer_id(),
-        field_id=1, state=models.Approval.REVIEW_REQUESTED,
+        field_id=1, state=review_models.Approval.REVIEW_REQUESTED,
         set_by='feature_owner@example.com', set_on=now).put()
 
     feature_ids = search.process_pending_approval_me_query()
@@ -84,13 +85,13 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
     time_1 = datetime.datetime.now() - datetime.timedelta(days=4)
     time_2 = datetime.datetime.now()
     mock_approvable_by.return_value = set([1, 2, 3])
-    models.Approval(
+    review_models.Approval(
         feature_id=self.feature_2.key.integer_id(),
-        field_id=1, state=models.Approval.REVIEW_REQUESTED,
+        field_id=1, state=review_models.Approval.REVIEW_REQUESTED,
         set_by='feature_owner@example', set_on=time_1).put()
-    models.Approval(
+    review_models.Approval(
         feature_id=self.feature_1.key.integer_id(),
-        field_id=1, state=models.Approval.REVIEW_REQUESTED,
+        field_id=1, state=review_models.Approval.REVIEW_REQUESTED,
         set_by='feature_owner@example.com', set_on=time_2).put()
 
     feature_ids = search.process_pending_approval_me_query()
@@ -109,13 +110,13 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
     time_1 = datetime.datetime.now() - datetime.timedelta(days=4)
     time_2 = datetime.datetime.now()
     mock_approvable_by.return_value = set([1, 2, 3])
-    models.Approval(
+    review_models.Approval(
         feature_id=self.feature_2.key.integer_id(),
-        field_id=1, state=models.Approval.REVIEW_REQUESTED,
+        field_id=1, state=review_models.Approval.REVIEW_REQUESTED,
         set_by='feature_owner@example', set_on=time_1).put()
-    models.Approval(
+    review_models.Approval(
         feature_id=self.feature_1.key.integer_id(),
-        field_id=1, state=models.Approval.NEED_INFO,
+        field_id=1, state=review_models.Approval.NEED_INFO,
         set_by='feature_owner@example.com', set_on=time_2).put()
 
     feature_ids = search.process_pending_approval_me_query()
@@ -171,7 +172,7 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
     self.assertEqual(len(actual), 1)
     self.assertEqual(actual[0], self.feature_1.key.integer_id())
 
-  @mock.patch('internals.models.Approval.get_approvals')
+  @mock.patch('internals.review_models.Approval.get_approvals')
   @mock.patch('internals.approval_defs.fields_approvable_by')
   def test_process_recent_reviews_query__none(
       self, mock_approvable_by, mock_get_approvals):
@@ -183,7 +184,7 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
 
     self.assertEqual(0, len(actual))
 
-  @mock.patch('internals.models.Approval.get_approvals')
+  @mock.patch('internals.review_models.Approval.get_approvals')
   @mock.patch('internals.approval_defs.fields_approvable_by')
   def test_process_recent_reviews_query__some(
       self, mock_approvable_by, mock_get_approvals):
@@ -192,12 +193,12 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
     time_1 = datetime.datetime.now() - datetime.timedelta(days=4)
     time_2 = datetime.datetime.now()
     mock_get_approvals.return_value = [
-        models.Approval(
+        review_models.Approval(
             feature_id=self.feature_1.key.integer_id(),
-            field_id=1, state=models.Approval.NA, set_on=time_2),
-        models.Approval(
+            field_id=1, state=review_models.Approval.NA, set_on=time_2),
+        review_models.Approval(
             feature_id=self.feature_2.key.integer_id(),
-            field_id=1, state=models.Approval.APPROVED, set_on=time_1),
+            field_id=1, state=review_models.Approval.APPROVED, set_on=time_1),
     ]
 
     actual = search.process_recent_reviews_query()

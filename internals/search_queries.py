@@ -16,6 +16,7 @@ import logging
 
 from framework import utils
 from internals import models
+from internals import review_models
 
 
 def single_field_query_async(
@@ -93,17 +94,17 @@ def _sorted_by_joined_model(
 def sorted_by_pending_request_date(descending):
   """Return feature_ids of pending approvals sorted by request date."""
   return _sorted_by_joined_model(
-      models.Approval,
-      models.Approval.state == models.Approval.REVIEW_REQUESTED,
-      descending, models.Approval.set_on)
+      review_models.Approval,
+      review_models.Approval.state == review_models.Approval.REVIEW_REQUESTED,
+      descending, review_models.Approval.set_on)
 
 
 def sorted_by_review_date(descending):
   """Return feature_ids of reviewed approvals sorted by last review."""
   return _sorted_by_joined_model(
-      models.Approval,
-      models.Approval.state.IN(models.Approval.FINAL_STATES),
-      descending, models.Approval.set_on)
+      review_models.Approval,
+      review_models.Approval.state.IN(review_models.Approval.FINAL_STATES),
+      descending, review_models.Approval.set_on)
 
 
 QUERIABLE_FIELDS = {

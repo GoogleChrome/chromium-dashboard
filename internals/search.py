@@ -22,6 +22,7 @@ from framework import utils
 from internals import approval_defs
 from internals import models
 from internals import notifier
+from internals import review_models
 from internals import search_queries
 
 MAX_TERMS = 6
@@ -42,8 +43,8 @@ def process_pending_approval_me_query():
     return []
 
   approvable_fields_ids = approval_defs.fields_approvable_by(user)
-  pending_approvals = models.Approval.get_approvals(
-      states=[models.Approval.REVIEW_REQUESTED])
+  pending_approvals = review_models.Approval.get_approvals(
+      states=[review_models.Approval.REVIEW_REQUESTED])
   pending_approvals = [pa for pa in pending_approvals
                        if pa.field_id in approvable_fields_ids]
 
@@ -78,8 +79,8 @@ def process_recent_reviews_query():
   if not user:
     return []
 
-  recent_approvals = models.Approval.get_approvals(
-      states=models.Approval.FINAL_STATES, limit=40)
+  recent_approvals = review_models.Approval.get_approvals(
+      states=review_models.Approval.FINAL_STATES, limit=40)
 
   feature_ids = _get_referenced_feature_ids(recent_approvals, reverse=True)
   return feature_ids
