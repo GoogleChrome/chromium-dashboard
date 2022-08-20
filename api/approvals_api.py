@@ -78,7 +78,7 @@ class ApprovalsAPI(basehandlers.APIHandler):
 
 def approval_config_to_json_dict(appr_cfg):
   if appr_cfg.next_action:
-    next_action = stt(appr_cfg.next_action)
+    next_action = str(appr_cfg.next_action)
   else:
     next_action = None
   return {
