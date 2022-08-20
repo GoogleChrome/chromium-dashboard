@@ -36,14 +36,14 @@ export const ALL_FIELDS = {
     <ul>
       <li>Capitalize only the first letter and the beginnings of proper nouns.</li>
       <li>Avoid using verbs such as "add", "enhance", "deprecate", or "delete". Instead, simply name the feature itself and use the feature type and stage fields to indicate the intent of change.</li>
-      <li>Do not include markup or markdown.</li>
+      <li>Do not include markup or markdown because they will not be rendered..</li>
       <li>Write keywords and identifiers as they would appear to a web developer, not as they are in source code. For example, a method implemented as NewInterface#dostuff would be written as in JavaScript: NewInterface.doStuff().</li>
     </ul>
 
     <h4>Examples</h4>
     <ul>
       <li>Conversion Measurement API</li>
-      <li>CSS Flexbox: New intrinsic size algorithm</li>
+      <li>CSS Flexbox: intrinsic size algorithm</li>
       <li>Permissions-Policy header</li>
     </ul>`,
   },
@@ -66,13 +66,13 @@ export const ALL_FIELDS = {
     </p>
 
     <p>
-    Note: This text communicates with more than just the rest of Chromium development. It's the part most visible to external readers and is used as the basis for the text in the beta release posts.
+    Note: This text communicates with more than just the rest of Chromium development. It's the part most visible to external readers and is used in the beta release announcement, enterprise release notes, and other commuinications.
     </p>
 
     <ul>
       <li>Write from a web developer's point of view, not a browser developer's</li>
-      <li>Do not use markup or markdown.</li>
-      <li>Do not use hard or soft returns.</li>
+      <li>Do not use markup or markdown because they will not be rendered.</li>
+      <li>Do not use hard or soft returns because they will not be rendered.</li>
       <li>Avoid phrases such as "a new feature". Every feature on the site was new when it was created. You don't need to repeat that information.</li>
 
       <li>The first line should be a sentence fragment beginning with a verb. (See below.) This is the rare exception to the requirement to always use complete sentences.</li>
