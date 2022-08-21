@@ -129,6 +129,7 @@ export class ChromedashGuideVerifyAccuracyPage extends LitElement {
     return html`
       <form name="feature_form" method="POST" action="/guide/verify_accuracy/${this.featureId}">
         <input type="hidden" name="token">
+        <input type="hidden" name="form_fields" value="accurate_as_of">
 
         ${JSON.parse(this.forms).map(([sectionName, form]) => html`
           <h3>${sectionName}</h3>

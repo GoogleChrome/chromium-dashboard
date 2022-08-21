@@ -135,6 +135,7 @@ export class ChromedashGuideEditallPage extends LitElement {
     return html`
       <form name="feature_form" method="POST" action="/guide/editall/${this.featureId}">
         <input type="hidden" name="token">
+        <input type="hidden" name"form_fields" value="edit_all">
         ${JSON.parse(this.flatForms).map(([sectionName, flatForm]) => html`
           <h3>${sectionName}</h3>
           <section class="flat_form">
