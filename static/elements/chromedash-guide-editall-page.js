@@ -95,11 +95,11 @@ export class ChromedashGuideEditallPage extends LitElement {
 
   // get a comma-spearated list of field names
   getFormFields() {
-    let fields = '';
+    let fields = [];
     JSON.parse(this.flatForms).map((form) => {
-      fields += form[2].join();
+      fields = [...fields, ...form[2]];
     });
-    return fields;
+    return fields.join();
   }
 
   renderSkeletons() {
