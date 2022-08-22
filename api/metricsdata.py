@@ -21,43 +21,33 @@ import logging
 
 from framework import users
 from framework import basehandlers
-from internals import models
+from internals import metrics_models
 from framework import ramcache
 import settings
 
 CACHE_AGE = 86400 # 24hrs
+ROUNDING = 8  # 8 decimal places because all percents are < 1.0.
 
-
-def _truncate_day_percentage(datapoint):
-  # Need 8 decimals b/c num will by multiplied by 100 to get a percentage and
-  # we want 6 decimals.
-  datapoint.day_percentage = float("%.*f" % (8, datapoint.day_percentage))
-  return datapoint
 
 def _is_googler(user):
   return user and user.email().endswith('@google.com')
 
-def _clean_data(data):
+
+def _datapoints_to_json_dicts(datapoints):
   user = users.get_current_user()
   # Don't show raw percentages if user is not a googler.
-  if not _is_googler(user):
-    data = list(map(_truncate_day_percentage, data))
-  return data
+  full_precision = _is_googler(user)
 
-def _filter_metric_data(data, formatted=False):
-  """Filter out unneeded metric data befor sending."""
-  data = _clean_data(data)
-  if not formatted:
-    data = [entity.to_dict() for entity in data]
-
-  # Remove keys that the frontend doesn't render.
-  for item in data:
-    item.pop('rolling_percentage', None)
-    item.pop('updated', None)
-    item.pop('created', None)
-
-  return data
-
+  json_dicts = [
+      {'bucket_id': dp.bucket_id,
+       'date': str(dp.date),  # YYYY-MM-DD
+       'day_percentage':
+         (dp.day_percentage if full_precision else
+          round(dp.day_percentage, ROUNDING)),
+       'property_name': dp.property_name,
+      }
+      for dp in datapoints]
+  return json_dicts
 
 
 class TimelineHandler(basehandlers.FlaskHandler):
@@ -72,7 +62,7 @@ class TimelineHandler(basehandlers.FlaskHandler):
     # properties. Since showing the historical data alongside the new data
     # does not make sense, filter out everything before the 2017-10-26 switch.
     # See https://github.com/GoogleChrome/chromium-dashboard/issues/414
-    if self.MODEL_CLASS == models.AnimatedProperty:
+    if self.MODEL_CLASS == metrics_models.AnimatedProperty:
       query = query.filter(
           self.MODEL_CLASS.date >= datetime.datetime(2017, 10, 26))
     return query
@@ -98,13 +88,13 @@ class TimelineHandler(basehandlers.FlaskHandler):
 
       ramcache.set(cache_key, datapoints, time=CACHE_AGE)
 
-    return _filter_metric_data(datapoints)
+    return _datapoints_to_json_dicts(datapoints)
 
 
 class PopularityTimelineHandler(TimelineHandler):
 
   CACHE_KEY = 'css_pop_timeline'
-  MODEL_CLASS = models.StableInstance
+  MODEL_CLASS = metrics_models.StableInstance
 
   def get_template_data(self):
     return super(PopularityTimelineHandler, self).get_template_data()
@@ -113,7 +103,7 @@ class PopularityTimelineHandler(TimelineHandler):
 class AnimatedTimelineHandler(TimelineHandler):
 
   CACHE_KEY = 'css_animated_timeline'
-  MODEL_CLASS = models.AnimatedProperty
+  MODEL_CLASS = metrics_models.AnimatedProperty
 
   def get_template_data(self):
     return super(AnimatedTimelineHandler, self).get_template_data()
@@ -122,7 +112,7 @@ class AnimatedTimelineHandler(TimelineHandler):
 class FeatureObserverTimelineHandler(TimelineHandler):
 
   CACHE_KEY = 'featureob_timeline'
-  MODEL_CLASS = models.FeatureObserver
+  MODEL_CLASS = metrics_models.FeatureObserver
 
   def get_template_data(self):
     return super(FeatureObserverTimelineHandler, self).get_template_data()
@@ -176,7 +166,7 @@ class FeatureHandler(basehandlers.FlaskHandler):
     return datapoints
 
   def get_template_data(self):
-    if self.MODEL_CLASS == models.FeatureObserver:
+    if self.MODEL_CLASS == metrics_models.FeatureObserver:
       properties = ramcache.get(self.CACHE_KEY)
 
       if not properties or self.request.args.get('refresh'):
@@ -195,14 +185,14 @@ class FeatureHandler(basehandlers.FlaskHandler):
 
     logging.info('before filtering: %s',
                  repr(properties)[:settings.MAX_LOG_LINE])
-    return _filter_metric_data(properties)
+    return _datapoints_to_json_dicts(properties)
 
 
 class CSSPopularityHandler(FeatureHandler):
 
   CACHE_KEY = 'css_popularity'
-  MODEL_CLASS = models.StableInstance
-  PROPERTY_CLASS = models.CssPropertyHistogram
+  MODEL_CLASS = metrics_models.StableInstance
+  PROPERTY_CLASS = metrics_models.CssPropertyHistogram
 
   def get_template_data(self):
     return super(CSSPopularityHandler, self).get_template_data()
@@ -211,8 +201,8 @@ class CSSPopularityHandler(FeatureHandler):
 class CSSAnimatedHandler(FeatureHandler):
 
   CACHE_KEY = 'css_animated'
-  MODEL_CLASS = models.AnimatedProperty
-  PROPERTY_CLASS = models.CssPropertyHistogram
+  MODEL_CLASS = metrics_models.AnimatedProperty
+  PROPERTY_CLASS = metrics_models.CssPropertyHistogram
 
   def get_template_data(self):
     return super(CSSAnimatedHandler, self).get_template_data()
@@ -221,25 +211,24 @@ class CSSAnimatedHandler(FeatureHandler):
 class FeatureObserverPopularityHandler(FeatureHandler):
 
   CACHE_KEY = 'featureob_popularity'
-  MODEL_CLASS = models.FeatureObserver
-  PROPERTY_CLASS = models.FeatureObserverHistogram
+  MODEL_CLASS = metrics_models.FeatureObserver
+  PROPERTY_CLASS = metrics_models.FeatureObserverHistogram
 
   def get_template_data(self):
     return super(FeatureObserverPopularityHandler, self).get_template_data()
 
 
-# TODO(jrobbins): Is this ever called?  I don't see what calls it.
-# And, I don't see recent requests for it in the server logs.
-# The CL that added it only added this class, no caller.
 class FeatureBucketsHandler(basehandlers.FlaskHandler):
   JSONIFY = True
 
   def get_template_data(self, prop_type):
     if prop_type == 'cssprops':
       properties = sorted(
-          models.CssPropertyHistogram.get_all().items(), key=lambda x:x[1])
+          metrics_models.CssPropertyHistogram.get_all().items(),
+          key=lambda x:x[1])
     else:
       properties = sorted(
-          models.FeatureObserverHistogram.get_all().items(), key=lambda x:x[1])
+          metrics_models.FeatureObserverHistogram.get_all().items(),
+          key=lambda x:x[1])
 
     return properties

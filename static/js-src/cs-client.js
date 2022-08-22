@@ -31,7 +31,7 @@ class ChromeStatusClient {
       const refreshResponse = await this.doFetch(
         '/currentuser/token', 'POST', null);
       this.token = refreshResponse.token;
-      this.tokenExpiresSec = refreshResponse.tokenExpiresSec;
+      this.tokenExpiresSec = refreshResponse.token_expires_sec;
     }
   }
 
@@ -72,14 +72,14 @@ class ChromeStatusClient {
    * Then strip off the defensive prefix from the response. */
   async doFetch(resource, httpMethod, body, includeToken=true) {
     const url = this.baseUrl + resource;
-    let headers = {
+    const headers = {
       'accept': 'application/json',
       'content-type': 'application/json',
     };
     if (includeToken) {
       headers['X-Xsrf-Token'] = this.token;
     }
-    let options = {
+    const options = {
       method: httpMethod,
       credentials: 'same-origin',
       headers: headers,
@@ -133,26 +133,42 @@ class ChromeStatusClient {
 
   // Signing in and out
 
-  signIn(googleUser) {
-    // TODO(jrobbins): Consider using profile pic.
-    // let profile = googleUser.getBasicProfile();
-    let idToken = googleUser.getAuthResponse().id_token;
+  signIn(credentialResponse) {
+    const credential = credentialResponse.credential;
     // We don't use doPost because we don't already have a XSRF token.
-    return this.doFetch('/login', 'POST', {'id_token': idToken}, false);
+    return this.doFetch('/login', 'POST', {'credential': credential}, false);
   }
 
-  signOut(auth2) {
-    return auth2.signOut().then(() => {
-      return this.doPost('/logout');
-    });
+  signOut() {
+    return this.doPost('/logout');
   }
 
   // Cues API
+
+  getDismissedCues() {
+    return this.doGet(`/currentuser/cues`);
+  }
 
   dismissCue(cue) {
     return this.doPost('/currentuser/cues', {cue: cue})
       .then((res) => res);
     // TODO: catch((error) => { display message }
+  }
+
+  // Permissions API
+  getPermissions() {
+    return this.doGet('/currentuser/permissions')
+      .then((res) => res.user);
+  }
+
+  // Settings API
+
+  getSettings() {
+    return this.doGet('/currentuser/settings');
+  }
+
+  setSettings(notify) {
+    return this.doPost('/currentuser/settings', {notify: notify});
   }
 
   // Star API
@@ -173,8 +189,8 @@ class ChromeStatusClient {
 
   // Accounts API
 
-  createAccount(email, isAdmin) {
-    return this.doPost('/accounts', {email, isAdmin});
+  createAccount(email, isAdmin, isSiteEditor) {
+    return this.doPost('/accounts', {email, isAdmin, isSiteEditor});
     // TODO: catch((error) => { display message }
   }
 
@@ -183,25 +199,84 @@ class ChromeStatusClient {
     // TODO: catch((error) => { display message }
   }
 
-  // Review comments
+  // Approvals, configs, and review comments
 
-  getComments(featureId, fieldId) {
-    return this.doGet(`/features/${featureId}/approvals/${fieldId}/comments`);
+  getApprovals(featureId) {
+    return this.doGet(`/features/${featureId}/approvals`);
   }
 
-  postComment(featureId, fieldId, state, comment) {
+  setApproval(featureId, fieldId, state) {
     return this.doPost(
-        `/features/${featureId}/approvals/${fieldId}/comments`,
-        {state, comment});
+        `/features/${featureId}/approvals`,
+        {fieldId: Number(fieldId),
+          state: Number(state)});
+  }
+
+  getApprovalConfigs(featureId) {
+    return this.doGet(`/features/${featureId}/configs`);
+  }
+
+  setApprovalConfig(featureId, fieldId, owners, nextAction, additionalReview) {
+    return this.doPost(
+        `/features/${featureId}/configs`,
+        {fieldId: Number(fieldId),
+          owners: owners || '',
+          nextAction: nextAction || '',
+          additionalReview: additionalReview || false,
+        });
+  }
+
+  getComments(featureId, fieldId) {
+    if (fieldId) {
+      return this.doGet(`/features/${featureId}/approvals/${fieldId}/comments`);
+    } else {
+      return this.doGet(`/features/${featureId}/approvals/comments`);
+    }
+  }
+
+  postComment(featureId, fieldId, state, comment, postToApprovalFieldId) {
+    if (fieldId) {
+      return this.doPost(
+          `/features/${featureId}/approvals/${fieldId}/comments`,
+          {state, comment, postToApprovalFieldId});
+    } else {
+      return this.doPost(
+          `/features/${featureId}/approvals/comments`,
+          {comment, postToApprovalFieldId});
+    }
   }
 
   // Features API
-  getFeaturesInMilestone(milestone) {
-    return this.doGet(`/features?milestone=${milestone}`);
+  getFeature(featureId) {
+    return this.doGet(`/features/${featureId}`);
   }
 
-  searchFeatures(userQuery) {
-    return this.doGet(`/features?q=${userQuery}`);
+  getFeaturesInMilestone(milestone) {
+    return this.doGet(`/features?milestone=${milestone}`).then(
+      (resp) => resp['features_by_type']);
+  }
+
+  searchFeatures(userQuery, sortSpec) {
+    let url = `/features?q=${userQuery}`;
+    if (sortSpec) {
+      url += '&sort=' + sortSpec;
+    }
+    return this.doGet(url);
+  }
+
+  // Processes API
+  getFeatureProcess(featureId) {
+    return this.doGet(`/features/${featureId}/process`);
+  }
+
+  // Progress API
+  getFeatureProgress(featureId) {
+    return this.doGet(`/features/${featureId}/progress`);
+  }
+
+  // Fielddefs API
+  getFieldDefs() {
+    return this.doGet(`/fielddefs`);
   }
 
   // Channels API

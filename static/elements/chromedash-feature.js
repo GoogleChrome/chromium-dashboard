@@ -1,24 +1,24 @@
-import {LitElement, html} from 'lit-element';
-import {nothing} from 'lit-html';
-import {ifDefined} from 'lit-html/directives/if-defined.js';
+import {LitElement, html, nothing} from 'lit';
+import {ifDefined} from 'lit/directives/if-defined.js';
 import {autolink} from './utils.js';
 import '@polymer/iron-icon';
 import './chromedash-color-status';
 
-import style from '../css/elements/chromedash-feature.css';
-import sharedStyle from '../css/shared.css';
+import {FEATURE_CSS} from '../sass/elements/chromedash-feature-css.js';
+import {SHARED_STYLES} from '../sass/shared-css.js';
 
 const MAX_STANDARDS_VAL = 5;
 const MAX_VENDOR_VIEW = 7;
 const MAX_WEBDEV_VIEW = 6;
 
 class ChromedashFeature extends LitElement {
-  static styles = style;
+  static styles = FEATURE_CSS;
 
   static get properties() {
     return {
       feature: {type: Object},
       canEdit: {type: Boolean},
+      canApprove: {type: Boolean},
       signedin: {type: Boolean},
       open: {type: Boolean, reflect: true}, // Attribute used in the parent for styling
       starred: {type: Boolean},
@@ -118,7 +118,7 @@ class ChromedashFeature extends LitElement {
   }
 
   _fireEvent(eventName, detail) {
-    let event = new CustomEvent(eventName, {
+    const event = new CustomEvent(eventName, {
       bubbles: true,
       composed: true,
       detail,
@@ -197,10 +197,25 @@ class ChromedashFeature extends LitElement {
       });
   }
 
+  openApprovalsDialog(feature) {
+    // handled in chromedash-myfeatures-page.js
+    this._fireEvent('open-approvals-event', {
+      feature: feature,
+    });
+  }
+
   render() {
     return html`
       <hgroup @click="${this._togglePanelExpansion}">
-        <h2>${this.feature.name}
+        <h2><a href="/feature/${this.feature.id}">${this.feature.name}</a>
+          ${this.canApprove ? html`
+            <span class="tooltip" title="Review approvals">
+              <a id="approvals-icon" data-tooltip
+                 @click="${() => this.openApprovalsDialog(this.feature)}">
+                <iron-icon icon="chromestatus:approval"></iron-icon>
+              </a>
+            </span>
+            `: nothing}
           ${this.canEdit ? html`
             <span class="tooltip" title="Edit this feature">
               <a href="/guide/edit/${this.feature.id}" data-tooltip>
@@ -258,15 +273,7 @@ class ChromedashFeature extends LitElement {
                              class="pushicon"></iron-icon>
                 </a>
               </span>
-             ` : html`
-                <span class="tooltip"
-                    title="Sign in to get email notifications for updates">
-                <a href="#" @click="${window.promptSignIn}" data-tooltip>
-                  <iron-icon icon="chromestatus:star-border"
-                             class="pushicon"></iron-icon>
-                </a>
-              </span>
-             `}
+             ` : nothing}
             <span class="tooltip" title="File a bug against this feature">
               <a href="${ifDefined(this._newBugUrl)}" data-tooltip>
                 <iron-icon icon="chromestatus:bug-report"></iron-icon>
@@ -288,7 +295,7 @@ class ChromedashFeature extends LitElement {
         <summary>
           ${this.feature.unlisted ?
              html`<p><b>This feature is only shown in the feature list
-                        to users with edit access.</b></p>
+                        to users with access to edit this feature.</b></p>
              `: nothing }
           <p class="${this.open ? 'preformatted' : ''}"
             ><span>${autolink(this.feature.summary)}</span
@@ -298,8 +305,8 @@ class ChromedashFeature extends LitElement {
           html`<p><h3>Motivation</h3></p>
         <p class="${this.open ? 'preformatted' : ''}"
           ><span>${autolink(this.feature.motivation)}</span
-        ></p>`
-          : nothing }
+        ></p>` :
+          nothing }
       </section>
       ${this.open ? html`
         <section class="sidebyside">
@@ -402,18 +409,6 @@ class ChromedashFeature extends LitElement {
                   </a>
                   ` : html`<span class="vendor-view ff-view"></span>`}
               </span>
-              <span title="${this.feature.browsers.edge.view.text}"
-                    class="view tooltip">
-                <chromedash-color-status class="bottom"
-                    .value="${this.feature.browsers.edge.view.val}"
-                    .max="${MAX_VENDOR_VIEW}"></chromedash-color-status>
-                ${this.feature.browsers.edge.view.url ? html`
-                  <a href="${this.feature.browsers.edge.view.url}"
-                     target="_blank">
-                    <span class="vendor-view edge-view"></span>
-                  </a>
-                  ` : html`<span class="vendor-view edge-view"></span>`}
-              </span>
               <span title="${this.feature.browsers.safari.view.text}"
                     class="view tooltip">
                 <chromedash-color-status class="bottom"
@@ -456,19 +451,18 @@ class ChromedashFeature extends LitElement {
           <section>
             <h3>Developer resources</h3>
             <div class="resources">
-              <label>Documentation/samples:</label>
               ${this._hasDocLinks ? html`
                 <div class="doc_links">
+                  <label>Documentation:</label>
                   <chromedash-multi-links
                       .links="${this.feature.resources.docs}"
                       title="Doc"></chromedash-multi-links>
                 </div>
                 ` : nothing}
-              ${this._hasDocLinks && this._hasSampleLinks ?
-                html`<span>,</span>` : nothing}
               ${this._hasSampleLinks ? html`
                 <div class="sample_links">
-                  <chromedash-multi-links title="Sample"
+                  <label>Demos and samples:</label>
+                  <chromedash-multi-links title="Link"
                       .links="${this.feature.resources.samples}"
                       ></chromedash-multi-links>
                 </div>
@@ -502,7 +496,7 @@ customElements.define('chromedash-feature', ChromedashFeature);
 
 
 class ChromedashMultiLinks extends LitElement {
-  static styles = sharedStyle;
+  static styles = SHARED_STYLES;
 
   static get properties() {
     return {

@@ -1,31 +1,30 @@
-import {LitElement, html} from 'lit-element';
-import {nothing} from 'lit-html';
-import style from '../css/elements/chromedash-roadmap-milestone-card.css';
+import {LitElement, html, nothing} from 'lit';
+import {ROADMAP_MILESTONE_CARD_CSS} from
+  '../sass/elements/chromedash-roadmap-milestone-card-css.js';
+
+const REMOVED_STATUS = ['Removed'];
+const DEPRECATED_STATUS = ['Deprecated', 'No longer pursuing'];
+const ORIGIN_TRIAL = ['Origin trial'];
+const BROWSER_INTERVENTION = ['Browser Intervention'];
+const NO_FEATURE_STRING = 'NO FEATURES ARE PLANNED FOR THIS MILESTONE YET';
+
 
 class ChromedashRoadmapMilestoneCard extends LitElement {
-  static styles = style;
+  static styles = ROADMAP_MILESTONE_CARD_CSS;
   static get properties() {
     return {
-      // Assigned in schedule-apge.js, value from Django
       starredFeatures: {type: Object},
       highlightFeature: {type: Number},
       templateContent: {type: Object},
       channel: {type: Object},
       showDates: {type: Boolean},
-      removedStatus: {type: Array},
-      originTrialStatus: {type: Array},
-      browserInterventionStatus: {type: Array},
-      deprecatedStatus: {type: Array},
       signedIn: {type: Boolean},
-      cardWidth: {type: Number},
-      noFeatureString: {type: String},
     };
   }
 
   constructor() {
     super();
     this.starredFeatures = new Set();
-    this.noFeatureString = 'NO FEATURES ARE PLANNED FOR THIS MILESTONE YET';
   }
 
   /**
@@ -51,7 +50,7 @@ class ChromedashRoadmapMilestoneCard extends LitElement {
   }
 
   _fireEvent(eventName, detail) {
-    let event = new CustomEvent(eventName, {
+    const event = new CustomEvent(eventName, {
       bubbles: true,
       composed: true,
       detail,
@@ -95,6 +94,15 @@ class ChromedashRoadmapMilestoneCard extends LitElement {
     });
   }
 
+  removeHighlight(e) {
+    e.preventDefault();
+    e.stopPropagation();
+
+    this._fireEvent('highlight-feature-event', {
+      feature: null,
+    });
+  }
+
   _computeDaysUntil(dateStr) {
     const today = new Date();
     const diff = this._dateDiffInDays(new Date(dateStr), today);
@@ -114,14 +122,13 @@ class ChromedashRoadmapMilestoneCard extends LitElement {
     return Object.keys(obj).sort();
   }
 
-  _cardHeaderTemplate() {
+  renderCardHeader() {
     return html `
       <div class="layout vertical center">
         <h1 class="channel_label">${this.templateContent.channelLabel}</h1>
         <h1 class="chrome_version layout horizontal center ${this.templateContent.h1Class}">
         <span class="chrome-logo"></span>
-        <a href="${this.templateContent.downloadUrl}" title="${this.templateContent.downloadTitle}"
-          target="_blank">Chrome ${this.channel.version}</a>
+        Chrome ${this.channel.version}
         </h1>
       </div>
       ${this.showDates && this.channel.earliest_beta ? html`
@@ -143,26 +150,27 @@ class ChromedashRoadmapMilestoneCard extends LitElement {
 
   _cardFeatureItemTemplate(f, shippingType) {
     return html `
-    <li data-feature-id="${f.id}"
-        class="${f.id == this.highlightFeature ? 'highlight' : ''}">
-      <a href="/feature/${f.id}" @mouseenter="${this.highlight}">${f.name}</a>
+    <li data-feature-id="${f.id}" class="${f.id == this.highlightFeature ? 'highlight' : ''}">
+      <a id="feature_link" href="/feature/${f.id}" @mouseenter="${this.highlight}" @mouseleave="${this.removeHighlight}">
+        ${f.name}
+      </a>
       <span class="icon_row">
-        ${this.originTrialStatus.includes(shippingType) ? html`
+        ${ORIGIN_TRIAL.includes(shippingType) ? html`
         <span class="tooltip" title="Origin Trial">
           <iron-icon icon="chromestatus:extension" class="experimental" data-tooltip></iron-icon>
         </span>
         ` : nothing}
-        ${this.browserInterventionStatus.includes(shippingType) ? html`
+        ${BROWSER_INTERVENTION.includes(shippingType) ? html`
         <span class="tooltip" title="Browser intervention">
           <iron-icon icon="chromestatus:pan-tool" class="intervention" data-tooltip></iron-icon>
         </span>
         ` : nothing}
-        ${this.removedStatus.includes(shippingType) ? html`
+        ${REMOVED_STATUS.includes(shippingType) ? html`
         <span class="tooltip" title="Removed">
           <iron-icon icon="chromestatus:cancel" class="remove" data-tooltip></iron-icon>
         </span>
         ` : nothing}
-        ${this.deprecatedStatus.includes(shippingType) ? html`
+        ${DEPRECATED_STATUS.includes(shippingType) ? html`
         <span class="tooltip" title="Deprecated">
           <iron-icon icon="chromestatus:warning" class="deprecated" data-tooltip></iron-icon>
         </span>
@@ -179,27 +187,18 @@ class ChromedashRoadmapMilestoneCard extends LitElement {
             @click="${this.toggleStar}">
           </iron-icon>
         </span>
-        ` : html`
-        <span class="tooltip"
-          title="Sign in to get email notifications for updates">
-          <a href="#"  @click="${window.promptSignIn}" data-tooltip>
-            <iron-icon icon="chromestatus:star-border"
-              class="pushicon">
-            </iron-icon>
-          </a>
-        </span>
-        `}
+        ` : nothing}
       </span>
     </li>
 
     `;
   }
 
-  _cardFeatureListTemplate() {
+  renderCardFeatureList() {
     return html `
       <div class="features_list">
-      ${this._isAnyFeatureReleased() ? html `
-      <div class="features_header">${this.templateContent.featureHeader}:</div>
+        ${this._isAnyFeatureReleased() ? html `
+        <div class="features_header">${this.templateContent.featureHeader}:</div>
           ${this._objKeys(this.channel.features).map((shippingType) => this.channel.features[shippingType] != 0 ? html`
           <h3 class="feature_shipping_type">${shippingType}</h3>
           <ul>
@@ -209,28 +208,63 @@ class ChromedashRoadmapMilestoneCard extends LitElement {
           </ul>
           ` : nothing)}
           </div>` : html `
-          <div class="features_header no_feature_released">${this.noFeatureString}</div>
-          `}
+          <div class="features_header no_feature_released">${NO_FEATURE_STRING}</div>
+        `}
+      </div>
     `;
   }
 
-
-  _widthStyle() {
+  renderSkeletons() {
     return html`
-      <style>
-        :host {
-          width: ${this.cardWidth}px;
-        }
-      </style>
+      <div class="layout vertical center">
+        <h1 class="channel_label">${this.templateContent.channelLabel}</h1>
+        <h1 class="chrome_version layout horizontal sl-skeleton-header-container ${this.templateContent.h1Class}">
+          <span class="chrome-logo"></span>
+          <sl-skeleton effect="sheen"></sl-skeleton>
+        </h1>
+      </div>
+      <div class="milestone_info layout horizontal center-center">
+        <h3 class="sl-skeleton-header-container">
+          <sl-skeleton effect="sheen"></sl-skeleton>
+        </h3>
+      </div>
+      <div class="milestone_info layout horizontal center-center">
+        <h3 class="sl-skeleton-header-container">
+          <sl-skeleton effect="sheen"></sl-skeleton>
+        </h3>
+      </div>
+      <div class="features_list">
+        <div class="sl-skeleton-title-container">
+          <sl-skeleton effect="sheen"></sl-skeleton>
+        </div>
+        <sl-skeleton effect="sheen"></sl-skeleton>
+        <sl-skeleton effect="sheen"></sl-skeleton>
+        <sl-skeleton effect="sheen"></sl-skeleton>
+        <sl-skeleton effect="sheen"></sl-skeleton>
+        </div>
+      </div>
+      <div class="features_list">
+        <div class="sl-skeleton-title-container">
+          <sl-skeleton effect="sheen"></sl-skeleton>
+        </div>
+        <sl-skeleton effect="sheen"></sl-skeleton>
+        <sl-skeleton effect="sheen"></sl-skeleton>
+        <sl-skeleton effect="sheen"></sl-skeleton>
+        <sl-skeleton effect="sheen"></sl-skeleton>
+        </div>
+      </div>
     `;
   }
 
   render() {
     return html`
-      ${this._widthStyle()}
       <section class="release">
-        ${this._cardHeaderTemplate()}
-        ${this._cardFeatureListTemplate()}
+        ${this.channel ? html`
+          ${this.renderCardHeader()}
+          ${this.renderCardFeatureList()}
+        `: html`
+          ${this.renderSkeletons()}
+        `}
       </section>
     `;
   }

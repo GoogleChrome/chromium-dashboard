@@ -1,17 +1,20 @@
-import {LitElement, html} from 'lit-element';
+import {LitElement, html} from 'lit';
+import {openApprovalsDialog} from './chromedash-approvals-dialog';
 // eslint-disable-next-line no-unused-vars
 import './chromedash-feature';
-import style from '../css/elements/chromedash-featurelist.css';
+import {FEATURELIST_CSS} from '../sass/elements/chromedash-featurelist-css.js';
 
 const MAX_FEATURES_SHOWN = 500;
 
 class ChromedashFeaturelist extends LitElement {
-  static styles = style;
+  static styles = FEATURELIST_CSS;
 
   static get properties() {
     return {
-      canEdit: {type: Boolean},
-      signedin: {type: Boolean},
+      isSiteEditor: {type: Boolean},
+      canApprove: {type: Boolean},
+      signedInUser: {type: String},
+      editableFeatures: {type: Object},
       features: {attribute: false}, // Directly edited and accessed in template/features.html
       metadataEl: {attribute: false}, // The metadata component element. Directly edited in template/features.html
       searchEl: {attribute: false}, // The search input element. Directly edited in template/features.html
@@ -24,11 +27,13 @@ class ChromedashFeaturelist extends LitElement {
   constructor() {
     super();
     this.features = [];
+    this.editableFeatures = [];
     this.filtered = [];
     this.metadataEl = document.querySelector('chromedash-metadata');
     this.searchEl = document.querySelector('.search input');
-    this.canEdit = false;
-    this.signedin = false;
+    this.isSiteEditor = false;
+    this.canApprove = false;
+    this.signedInUser = '';
     this._hasInitialized = false; // Used to check initialization code.
     this._hasScrolledByUser = false; // Used to set the app header state.
     /* When scrollTo(), we also expand the feature. This is the id of the feature. */
@@ -45,6 +50,7 @@ class ChromedashFeaturelist extends LitElement {
      * to be bound to `this`. */
     this._onFeatureToggledBound = this._onFeatureToggled.bind(this);
     this._onStarToggledBound = this._onStarToggled.bind(this);
+    this._onOpenApprovalsBound = this._onOpenApprovals.bind(this);
 
     this._loadData();
   }
@@ -79,7 +85,7 @@ class ChromedashFeaturelist extends LitElement {
   }
 
   _fireEvent(eventName, detail) {
-    let event = new CustomEvent(eventName, {detail});
+    const event = new CustomEvent(eventName, {detail});
     this.dispatchEvent(event);
   }
 
@@ -155,15 +161,6 @@ class ChromedashFeaturelist extends LitElement {
     const feature = e.detail.feature;
     const open = e.detail.open;
     this._setOpenFeatures(feature.id, open);
-
-    if (history && history.replaceState) {
-      if (open) {
-        history.pushState({id: feature.id}, feature.name, '/features/' + feature.id);
-      } else {
-        const hash = this.searchEl.value ? '#' + this.searchEl.value : '';
-        history.replaceState({id: null}, feature.name, '/features' + hash);
-      }
-    }
   }
 
   _onStarToggled(e) {
@@ -177,6 +174,10 @@ class ChromedashFeaturelist extends LitElement {
       newStarredFeatures.delete(feature.id);
     }
     this.starredFeatures = newStarredFeatures;
+  }
+
+  _onOpenApprovals(e) {
+    openApprovalsDialog(this.signedInUser, e.detail.feature);
   }
 
   _filterProperty(propPath, regExp, feature) {
@@ -347,23 +348,10 @@ class ChromedashFeaturelist extends LitElement {
     }
   }
 
-  /** Scroll to the item in the URL. Otherwise the first 'In development' item */
-  _scrollToInitialPosition() {
-    const lastSlash = location.pathname.lastIndexOf('/');
-    let id;
-    if (lastSlash > 0) {
-      id = parseInt(location.pathname.substring(lastSlash + 1));
-      this.scrollToId(id);
-    }
-  }
-
   _initialize() {
     this._featuresUnveilMetric.end().log().sendToAnalytics('features', 'unveil');
     this._fireEvent('app-ready');
     this._hasInitialized = true;
-    setTimeout(() => {
-      this._scrollToInitialPosition();
-    }, 300);
   }
 
   _computeMilestoneHidden(feature, features, filtered) {
@@ -377,10 +365,13 @@ class ChromedashFeaturelist extends LitElement {
   render() {
     // TODO: Avoid computing values in render().
     let filteredWithState = this.filtered.map((feature) => {
+      const editable = this.isSiteEditor ||
+        (this.editableFeatures && this.editableFeatures.includes(feature.id));
       return {
         feature: feature,
         open: this.openFeatures.has(feature.id),
         starred: this.starredFeatures.has(feature.id),
+        canEditFeature: editable,
       };
     });
     let numOverLimit = 0;
@@ -403,9 +394,11 @@ class ChromedashFeaturelist extends LitElement {
                  ?starred="${item.starred}"
                  @feature-toggled="${this._onFeatureToggledBound}"
                  @star-toggled="${this._onStarToggledBound}"
+                 @open-approvals-event="${this._onOpenApprovalsBound}"
                  .feature="${item.feature}"
-                 ?canedit="${this.canEdit}"
-                 ?signedin="${this.signedin}"
+                 ?canEdit="${item.canEditFeature}"
+                 ?canApprove="${this.canApprove}"
+                 ?signedIn="${this.signedInUser != ''}"
           ></chromedash-feature>
           </div>
         `)}

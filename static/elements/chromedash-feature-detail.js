@@ -1,30 +1,33 @@
-import {LitElement, css, html} from 'lit-element';
-import {nothing} from 'lit-html';
+import {LitElement, css, html, nothing} from 'lit';
 import '@polymer/iron-icon';
 import './chromedash-callout';
-import SHARED_STYLES from '../css/shared.css';
+import {autolink} from './utils.js';
+import {SHARED_STYLES} from '../sass/shared-css.js';
+
+const LONG_TEXT = 60;
+
 
 class ChromedashFeatureDetail extends LitElement {
   static get properties() {
     return {
       feature: {type: Object},
-      process: {type: Array},
+      process: {type: Object},
       fieldDefs: {type: Object},
-      dismissedCues: {type: Object},
+      dismissedCues: {type: Array},
     };
   }
 
   constructor() {
     super();
     this.feature = {};
-    this.process = [];
-    this.fieldDefs = [];
-    this.dismissedCues = {};
+    this.process = {};
+    this.fieldDefs = {};
+    this.dismissedCues = [];
   }
 
   static get styles() {
     return [
-      SHARED_STYLES,
+      ...SHARED_STYLES,
       css`
       :host {
         display: block;
@@ -83,6 +86,11 @@ class ChromedashFeatureDetail extends LitElement {
         padding: var(--content-padding-half);
       }
 
+      .longurl {
+        display: block;
+        padding: var(--content-padding-half);
+      }
+
       .active {
         border: var(--spot-card-border);
         box-shadow: var(--spot-card-box-shadow);
@@ -118,16 +126,17 @@ class ChromedashFeatureDetail extends LitElement {
       shipped_android_milestone: 'browsers.chrome.android',
       shipped_webview_milestone: 'browsers.chrome.webview',
       shipped_ios_milestone: 'browsers.chrome.ios',
-      ff_views: 'browsers.ff.views.text',
-      ff_views_link: 'browsers.ff.views.url',
-      safari_views: 'browsers.safari.views.text',
-      safari_views_link: 'browsers.safari.views.url',
-      webdev_views: 'browsers.webdev.views.text',
-      webdev_views_link: 'browsers.webdev.views.url',
+      ff_views: 'browsers.ff.view.text',
+      ff_views_link: 'browsers.ff.view.url',
+      safari_views: 'browsers.safari.view.text',
+      safari_views_link: 'browsers.safari.view.url',
+      webdev_views: 'browsers.webdev.view.text',
+      webdev_views_link: 'browsers.webdev.view.url',
+      other_views_notes: 'browsers.other.view.notes',
     };
     if (fieldIdMapping[fieldId]) {
       value = this.feature;
-      for (let step of fieldIdMapping[fieldId].split('.')) {
+      for (const step of fieldIdMapping[fieldId].split('.')) {
         if (value) {
           value = value[step];
         }
@@ -143,16 +152,18 @@ class ChromedashFeatureDetail extends LitElement {
 
   renderText(value) {
     value = String(value);
-    if (value.length > 30 || value.includes('\n')) {
-      return html`<span class="longtext">${value}</span>`;
+    const markup = autolink(value);
+    if (value.length > LONG_TEXT || value.includes('\n')) {
+      return html`<span class="longtext">${markup}</span>`;
     }
-    return html`<span class="text">${value}</span>`;
+    return html`<span class="text">${markup}</span>`;
   }
 
   renderUrl(value) {
     if (value.startsWith('http')) {
       return html`
-        <a href=${value} target="_blank" class="url"
+        <a href=${value} target="_blank"
+           class="url ${value.length > LONG_TEXT ? 'longurl' : ''}"
            >${value}</a>
       `;
     }
@@ -222,11 +233,11 @@ class ChromedashFeatureDetail extends LitElement {
 
   render() {
     return html`
-       ${this.renderStage('Metadata')}
-       ${this.process.stages.map(stage => html`
-            ${this.renderStage(stage)}
-       `)}
-       ${this.renderStage('Misc')}
+      ${this.renderStage('Metadata')}
+      ${this.process.stages.map(stage => html`
+          ${this.renderStage(stage)}
+      `)}
+      ${this.renderStage('Misc')}
     `;
   }
 }

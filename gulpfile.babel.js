@@ -3,6 +3,7 @@
 const path = require('path');
 const gulp = require('gulp');
 const babel = require("gulp-babel");
+const concat = require('gulp-concat');
 const del = require('del');
 const uglifyEs = require('gulp-uglify-es');
 const uglify = uglifyEs.default;
@@ -76,6 +77,14 @@ gulp.task('styles', () => {
     .pipe(gulp.dest('static/css'));
 });
 
+gulp.task('css', function() {
+  return gulp.src([
+    'node_modules/@shoelace-style/shoelace/dist/themes/light.css',
+   ])
+  .pipe(concat('base.css'))
+  .pipe(gulp.dest('static/css'));
+});
+
 gulp.task('rollup', () => {
   return rollup.rollup({
     input: 'static/components.js',
@@ -85,7 +94,7 @@ gulp.task('rollup', () => {
       rollupBabel({
         plugins: ["@babel/plugin-syntax-dynamic-import"]
       }),
-      rollupMinify({comments: false}),
+      rollupMinify({mangle: false, comments: false}),
     ],
   }).then(bundle => {
     return bundle.write({
@@ -123,6 +132,7 @@ gulp.task('clean', () => {
 gulp.task('default', gulp.series(
   'clean',
   'styles',
+  'css',
   'js',
   'lint-fix',
   'rollup',

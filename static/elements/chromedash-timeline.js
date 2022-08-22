@@ -1,19 +1,16 @@
-// TODO(yangguang): This component is not tested. Data is not available in devserver, so cannot be tested locally.
-import {LitElement, css, html} from 'lit-element';
-import SHARED_STYLES from '../css/shared.css';
+import {LitElement, css, html} from 'lit';
+import {showToastMessage} from './utils.js';
+import {SHARED_STYLES} from '../sass/shared-css.js';
+
 
 class ChromedashTimeline extends LitElement {
   static get properties() {
     return {
       type: {type: String},
       view: {type: String},
-      title: {type: String},
+      props: {attribute: false},
       selectedBucketId: {attribute: false},
       showAllHistoricalData: {attribute: false},
-      props: {attribute: false}, // Directly edited from metrics/css/timeline/popularity and metrics/feature/timeline/popularity
-
-      // Listed in the old code, but seems not used in the component:
-      timeline: {attribute: false},
     };
   }
 
@@ -21,7 +18,6 @@ class ChromedashTimeline extends LitElement {
     super();
     this.selectedBucketId = '1';
     this.showAllHistoricalData = false;
-    this.title = '';
     this.type = '';
     this.view = '';
     this.props = [];
@@ -29,7 +25,7 @@ class ChromedashTimeline extends LitElement {
 
   static get styles() {
     return [
-      SHARED_STYLES,
+      ...SHARED_STYLES,
       css`
       :host {
         display: block;
@@ -45,12 +41,12 @@ class ChromedashTimeline extends LitElement {
       #chart {
         margin-top: 15px;
         width: 100%;
-        height: 400px;
+        height: 450px;
         background: var(--table-alternate-background);
         border-radius: var(--border-radius);
       }
 
-      #httparchivedata {
+      #http-archive-data {
         border: 0;
         width: 100%;
         height: 775px;
@@ -58,6 +54,8 @@ class ChromedashTimeline extends LitElement {
 
       .header_title {
         margin: 32px 0 15px 0;
+        font-weight: 500;
+        color: #000;
       }
 
       .description {
@@ -84,23 +82,35 @@ class ChromedashTimeline extends LitElement {
         background: var(--table-alternate-background);
         display: inline-block;
       }
+
+      #datalist-input {
+        width: 20em;
+        border-radius: 10px;
+        height: 25px;
+        padding-left: 10px;
+        font-size: 15px;
+      }
+
+      sl-progress-bar {
+        --height: 4px;
+        --track-color: var(--barchart-foreground);
+        --indicator-color: var(--barchart-background);
+      }
     `];
   }
 
-  updated(changedProperties) {
-    const TRACKING_PROPERTIES = [
-      'selectedBucketId',
-      'type',
-      'view',
-      'showAllHistoricalData',
-    ];
-    if (TRACKING_PROPERTIES.some((property) => changedProperties.has(property))) {
-      this._updateTimeline();
-    }
+  updated() {
+    this._updateTimeline();
   }
 
   updateSelectedBucketId(e) {
-    this.selectedBucketId = e.currentTarget.value;
+    const inputValue = e.currentTarget.value;
+    const feature = this.props.find((el) => el[1] === inputValue);
+    if (feature) {
+      this.selectedBucketId = feature[0];
+    } else if (inputValue) {
+      showToastMessage('No matching features. Please try again!');
+    }
   }
 
   toggleShowAllHistoricalData() {
@@ -111,6 +121,8 @@ class ChromedashTimeline extends LitElement {
     window.google.charts.load('current', {'packages': ['corechart']});
     window.google.charts.setOnLoadCallback(() => {
       // If there's an id in the URL, load the property it.
+      // TODO (kevinshen56714) - this can be removed once SPA is fully set up
+      // as the bucketId is passed in from the router.
       const lastSlash = location.pathname.lastIndexOf('/');
       if (lastSlash > 0) {
         const id = parseInt(location.pathname.substring(lastSlash + 1));
@@ -146,8 +158,8 @@ class ChromedashTimeline extends LitElement {
     datatable.addRows(rowArray);
 
     function aggregateByMonth(date) {
-      let month = date.getMonth();
-      let year = date.getFullYear();
+      const month = date.getMonth();
+      const year = date.getFullYear();
       return new Date(year, month);
     }
 
@@ -159,7 +171,7 @@ class ChromedashTimeline extends LitElement {
         type: 'number',
         label: 'Monthly Average',
       }],
-      [{column: 2, type: 'string'}]
+      [{column: 2, type: 'string'}],
     );
 
     const formatter = new window.google.visualization.NumberFormat({fractionDigits: 6});
@@ -173,11 +185,9 @@ class ChromedashTimeline extends LitElement {
       view.setRows(view.getFilteredRows([{column: 0, minValue: new Date(startYear, 0, 1)}]));
     }
 
-    const chartEl = this.shadowRoot.getElementById('chart');
+    const chartEl = this.shadowRoot.querySelector('#chart');
     const chart = new window.google.visualization.LineChart(chartEl);
     chart.draw(view, {
-      // title: this.title,
-      // subtitle: 'all channels and platforms',
       backgroundColor: 'white',
       legend: {position: 'none'},
       curveType: 'function',
@@ -188,7 +198,7 @@ class ChromedashTimeline extends LitElement {
       },
       hAxis: {
         title: 'Date',
-        format: 'M/yy',
+        format: 'MMM d, YYYY',
       },
       width: '100%',
       height: '100%',
@@ -206,14 +216,22 @@ class ChromedashTimeline extends LitElement {
   }
 
   _updateTimeline() {
-    if (this.selectedBucketId === '1') {
-      return;
-    }
+    if (this.selectedBucketId === '1' || !this.props.length) return;
 
-    const url = '/data/timeline/' + this.type + this.view +
+    let url = '/data/timeline/' + this.type + this.view +
               '?bucket_id=' + this.selectedBucketId;
 
+    // [DEV] Change to true to use the staging server endpoint for development
+    const devMode = false;
+    if (devMode) url = 'https://cr-status-staging.appspot.com' + url;
+
     this._renderHTTPArchiveData();
+
+    // the chartEl's innerHTML will get overwritten once the chart is loaded
+    const chartEl = this.shadowRoot.querySelector('#chart');
+    if (!chartEl.innerHTML.includes('sl-progress-bar')) {
+      chartEl.insertAdjacentHTML('afterbegin', '<sl-progress-bar indeterminate></sl-progress-bar>');
+    }
 
     fetch(url).then((res) => res.json()).then((response) => {
       this.drawVisualization(response, this.selectedBucketId, this.showAllHistoricalData);
@@ -227,23 +245,22 @@ class ChromedashTimeline extends LitElement {
   }
 
   _renderHTTPArchiveData() {
-    if (!this.props.length) {
-      return;
-    }
-
     const feature = this.props.find((el) => el[0] === parseInt(this.selectedBucketId));
     if (feature) {
       let featureName = feature[1];
+      const inputEl = this.shadowRoot.querySelector('#datalist-input');
+      inputEl.value = featureName;
+
       if (this.type == 'css') {
         featureName = convertToCamelCaseFeatureName(featureName);
       }
       const REPORT_ID = '1M8kXOqPkwYNKjJhtag_nvDNJCpvmw_ri';
-      const dsEmbedUrl = `https://datastudio.google.com/embed/reporting/${REPORT_ID}/page/tc5b?config=%7B"df3":"include%25EE%2580%25800%25EE%2580%2580IN%25EE%2580%2580${featureName}"%7D`;
-      const hadEl = this.shadowRoot.getElementById('httparchivedata');
+      const dsEmbedUrl = `https://datastudio.google.com/embed/reporting/${REPORT_ID}/page/tc5b?params=%7B"df3":"include%25EE%2580%25800%25EE%2580%2580IN%25EE%2580%2580${featureName}"%7D`;
+      const hadEl = this.shadowRoot.querySelector('#http-archive-data');
       hadEl.src = dsEmbedUrl;
 
-      const bigqueryEl = this.shadowRoot.getElementById('bigquery');
-      bigqueryEl.textContent = `#standardSQL
+      const bigqueryEl = this.shadowRoot.querySelector('#bigquery');
+      bigqueryEl.textContent =`#standardSQL
 SELECT yyyymmdd, client, pct_urls, sample_urls
 FROM \`httparchive.blink_features.usage\`
 WHERE feature = '${featureName}'
@@ -253,14 +270,17 @@ ORDER BY yyyymmdd DESC, client`;
 
   render() {
     return html`
-      <select .value="${this.selectedBucketId}" @change="${this.updateSelectedBucketId}">
-        <option disabled value="1">Select a property</option>
+      <input id="datalist-input" type="search" list="features" placeholder="Select or search a property" @change="${this.updateSelectedBucketId}" />
+      <datalist id="features">
         ${this.props.map((prop) => html`
-          <option value="${prop[0]}">${prop[1]}</option>
-          `)}
-      </select>
-      <label>Show all historical data: <input type="checkbox" ?checked="${this.showAllHistoricalData}" @change="${this.toggleShowAllHistoricalData}"></label>
-      <h3 id="usage" class="header_title">Percentage of page loads that use this feature</h3>
+          <option value="${prop[1]}" dataset-debug-bucket-id="${prop[0]}"></option>
+        `)}
+      </datalist>
+      <label>
+        Show all historical data:
+        <input type="checkbox" ?checked="${this.showAllHistoricalData}" @change="${this.toggleShowAllHistoricalData}">
+      </label>
+      <h3 id="usage" class="header_title">Percentage of page loads over time</h3>
       <p class="description">The chart below shows the percentage of page loads (in Chrome) that use
         this feature at least once. Data is across all channels and platforms.
         Newly added use counters that are not on Chrome stable yet
@@ -274,7 +294,7 @@ ORDER BY yyyymmdd DESC, client`;
       </p>
       <h3 id="httparchive" class="header_title">Adoption of the feature on top sites</h3>
       <p class="description">The chart below shows the adoption of the feature by the top URLs on the internet. Data from <a href="https://httparchive.org/" target="_blank">HTTP Archive</a>.</p>
-      <iframe id="httparchivedata"></iframe>
+      <iframe id="http-archive-data"></iframe>
       <p class="callout">
         <b>Note</b>: The jump around July and December 2018 are because the corpus of URLs crawled by HTTP Archive increased. These jumps have no correlation with the jump in the top graph.
         See the <a href="https://discuss.httparchive.org/t/changes-to-the-http-archive-corpus/1539" target="_blank">announcement</a> for more details.
@@ -288,7 +308,7 @@ ORDER BY yyyymmdd DESC, client`;
 
 // Capitalizes the first letter of a word.
 function capitalize(word) {
-  let letters = word.split('');
+  const letters = word.split('');
   letters[0] = letters[0].toUpperCase();
   return letters.join('');
 }

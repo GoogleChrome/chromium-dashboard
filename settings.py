@@ -6,6 +6,7 @@ import os
 INSTALLED_APPS = (
   #'nothing',
   'customtags',
+  'django.forms'
 )
 
 ROOT_DIR = os.path.abspath(os.path.dirname(__file__))
@@ -17,6 +18,9 @@ TEMPLATES = [
     'APP_DIRS': True,
   },
 ]
+
+# This is necessary to override django templates.
+FORM_RENDERER = 'django.forms.renderers.TemplatesSetting'
 
 # By default, send all email to an archive for debugging.
 # For the live cr-status server, this setting is None.
@@ -33,6 +37,10 @@ BANNER_MESSAGE = ''
 # expressed as a tuple of ints: (year, month, day[, hour[, minute[, second]]])
 # e.g. (2009, 3, 20, 21, 45) represents March 20 2009 9:45PM UTC.
 BANNER_TIME = None
+
+# If a feature entry does not specify a component, use this one.
+DEFAULT_COMPONENT = 'Blink'
+
 
 ################################################################################
 
@@ -55,7 +63,7 @@ if DEV_MODE or UNIT_TEST_MODE:
 else:
   APP_ID = os.environ['GOOGLE_CLOUD_PROJECT']
 
-SITE_URL = 'http://%s.appspot.com/' % APP_ID
+SITE_URL = 'https://%s.appspot.com/' % APP_ID
 CLOUD_TASKS_REGION = 'us-central1'
 
 GOOGLE_SIGN_IN_CLIENT_ID = (
@@ -67,6 +75,9 @@ GOOGLE_SIGN_IN_CLIENT_ID = (
 LOGIN_PAGE_URL = '/features?loginStatus=False'
 
 INBOUND_EMAIL_ADDR = 'chromestatus@cr-status-staging.appspotmail.com'
+
+# This is where review comment emails are sent:
+REVIEW_COMMENT_MAILING_LIST = 'jrobbins-test@googlegroups.com'
 
 # Truncate some log lines to stay under limits of Google Cloud Logging.
 MAX_LOG_LINE = 200 * 1000
@@ -85,15 +96,18 @@ elif APP_ID == 'cr-status':
   APP_TITLE = 'Chrome Platform Status'
   SEND_EMAIL = True
   SEND_ALL_EMAIL_TO = None  # Deliver it to the intended users
-  SITE_URL = 'http://chromestatus.com/'
+  SITE_URL = 'https://chromestatus.com/'
   GOOGLE_SIGN_IN_CLIENT_ID = (
       '999517574127-7ueh2a17bv1ave9thlgtap19pt5qjp4g.'
       'apps.googleusercontent.com')
   INBOUND_EMAIL_ADDR = 'chromestatus@cr-status.appspotmail.com'
+  REVIEW_COMMENT_MAILING_LIST = 'blink-dev@chromium.org'
+  BACKUP_BUCKET = 'cr-status-backups'
 elif APP_ID == 'cr-status-staging':
   STAGING = True
   SEND_EMAIL = True
   APP_TITLE = 'Chrome Platform Status Staging'
+  BACKUP_BUCKET = 'cr-staging-backups'
 else:
   logging.error('Unexpected app ID %r, please configure settings.py.', APP_ID)
 

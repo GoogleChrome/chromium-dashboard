@@ -4,7 +4,6 @@
   flex-direction: column;
   counter-reset: h3;
   height: auto;
-  margin-bottom: 86px;
 
   section {
     max-width: 600px;
@@ -47,4 +46,11 @@
   h4 {
     font-weight: 600;
   }
+}
+
+.alertbox {
+  margin: 2em;
+  padding: 1em;
+  background: var(--warning-background);
+  color: var(--warning-color);
 }

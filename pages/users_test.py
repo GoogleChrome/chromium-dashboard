@@ -1,6 +1,3 @@
-
-
-
 # Copyright 2020 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
@@ -16,41 +13,33 @@
 # limitations under the License.
 
 import testing_config  # Must be imported first
-import mock
-import unittest
 
 import flask
+import html5lib
 
-from internals import models
+from internals import user_models
 from pages import users
 
 test_app = flask.Flask(__name__)
 
 
-class SettingsHandlerTests(unittest.TestCase):
+class UsersListTemplateTest(testing_config.CustomTestCase):
 
   def setUp(self):
-    self.handler = users.SettingsHandler()
+    self.handler = users.UserListHandler()
 
-  @mock.patch('flask.redirect')
-  @mock.patch('internals.models.UserPref.get_signed_in_user_pref')
-  def test_get__anon(self, mock_gsiup, mock_redirect):
-    mock_gsiup.return_value = None
-    mock_redirect.return_value = 'mock redirect response'
+    self.app_admin = user_models.AppUser(email='admin@example.com')
+    self.app_admin.is_admin = True
+    self.app_admin.put()
+    testing_config.sign_in('admin@example.com', 123567890)
 
-    with test_app.test_request_context('/settings'):
-      actual = self.handler.get_template_data()
+    with test_app.test_request_context('/request_path'):
+      self.template_data = self.handler.get_template_data()
+    self.full_template_path = self.handler.get_template_path(self.template_data)
 
-    mock_redirect.assert_called_once()
-    self.assertEqual('mock redirect response', actual)
-
-  @mock.patch('internals.models.UserPref.get_signed_in_user_pref')
-  def test_get__signed_in(self, mock_gsiup):
-    mock_gsiup.return_value = models.UserPref(
-        email='user@example.com')
-
-    actual = self.handler.get_template_data()
-
-    self.assertIsInstance(actual, dict)
-    self.assertIn('user_pref', actual)
-    self.assertIn('user_pref_form', actual)
+  def test_html_rendering(self):
+    """We can render the template with valid html."""
+    template_text = self.handler.render(
+        self.template_data, self.full_template_path)
+    parser = html5lib.HTMLParser(strict=True)
+    document = parser.parse(template_text)

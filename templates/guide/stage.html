@@ -2,8 +2,7 @@
 {% block page_title %}{{ feature.name }} - {% endblock %}
 
 {% block css %}
-<link rel="stylesheet" href="/static/css/forms.css">
-<link rel="stylesheet" href="/static/css/guide.css">
+<link rel="stylesheet" href="/static/css/forms.css?v={{app_version}}">
 {% endblock %}
 
 {% block subheader %}
@@ -28,66 +27,58 @@
                  {% endif %}" >
 
   <section class="stage_form">
-    <table>
+    <chromedash-form-table>
       {{ feature_form }}
 
-      <tr>
-        <th>Process stage:</th>
-        <td>
-          {% if already_on_this_stage %}
-            This feature is already in stage <b>{{ stage_name }}</b>.
-          {% else %}
-            <input type="checkbox" name="set_stage"
-                   id="set_stage">
-            <label for="set_stage">
-              Set to: <b>{{ stage_name }}</b>
-              <br>
-              <span class="helptext">
-                Check this box to move this feature to this
-                stage in the process. Leave it unchecked if you are adding
-                draft information or revising a previous stage.
-              </span>
-            </label>
-          {% endif %}
-        </td>
-      </tr>
-    </table>
+      <chromedash-form-field name="set_stage" 
+        stage="{{ stage_name }}" 
+        value="{{ already_on_this_stage }}"
+        {% if already_on_this_stage %}
+          disabled
+        {% endif %}
+        >
+      </chromedash-form-field>
+
+    </chromedash-form-table>
   </section>
 
 
   {% if impl_status_name or impl_status_form %}
     <h3>Implementation in Chromium</h3>
     <section class="stage_form">
-      <table>
+      <chromedash-form-table>
         {% if impl_status_name %}
-          <tr>
-            <th>Implementation status:</th>
-            <td>
-              {% if already_on_this_impl_status %}
+        <chromedash-form-field>
+          <span slot="label">Implementation status:</span>
+
+          {% if already_on_this_impl_status %}
+            <span slot="help">
                 This feature already has implementation status:
                 <b>{{ impl_status_name }}</b>.
-              {% else %}
-                <input type="hidden" name="impl_status_offered"
-                       value="{{impl_status_offered}}">
-                <input type="checkbox" name="set_impl_status"
-                       id="set_impl_status">
-                <!-- TODO(jrobbins): When checked, make some milestone fields required. -->
-                <label for="set_impl_status">
-                  Set implementation status to: <b>{{ impl_status_name }}</b>
-                  <br>
-                  <span class="helptext">
-                    Check this box to update the implementation
-                    status of this feature in Chromium.
-                  </span>
-                </label>
-              {% endif %}
-            </td>
-          </tr>
+              </td>
+            </span>
+          {% else %}
+            <span slot="field">
+              <input type="hidden" name="impl_status_offered"
+                      value="{{impl_status_offered}}">
+              <input type="checkbox" name="set_impl_status"
+                      id="set_impl_status">
+              <!-- TODO(jrobbins): When checked, make some milestone fields required. -->
+              <label for="set_impl_status">
+                Set implementation status to: <b>{{ impl_status_name }}</b>
+              </label>
+            </span>
+            <span slot="help">
+                Check this box to update the implementation
+                status of this feature in Chromium.
+            </span>
+          {% endif %}
+        </chromedash-form-field>
         {% endif %}
 
         {{ impl_status_form }}
 
-      </table>
+      </chromedash-form-table>
     </section>
   {% endif %}
 
@@ -103,6 +94,6 @@
 {% endblock %}
 
 {% block js %}
-<script src="/static/js/admin/feature_form.min.js"
+<script src="/static/js/admin/feature_form.min.js?v={{app_version}}"
         nonce="{{nonce}}"></script>
 {% endblock %}

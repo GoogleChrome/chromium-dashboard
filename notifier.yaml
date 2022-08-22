@@ -10,5 +10,8 @@ handlers:
   script: auto
   # Header checks prevent raw access to this handler.  Tasks have headers.
 
-includes:
-- env_vars.yaml
+app_engine_apis: true
+
+env_variables:
+  DJANGO_SETTINGS_MODULE: 'settings'
+  DJANGO_SECRET: 'this-is-a-secret'

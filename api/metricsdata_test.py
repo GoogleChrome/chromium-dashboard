@@ -1,6 +1,3 @@
-
-
-
 # Copyright 2020 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
@@ -18,14 +15,14 @@
 import testing_config  # Must be imported first
 
 import datetime
-import mock
+from unittest import mock
 import flask
 
 # from google.appengine.api import users
 from framework import users
 
 from api import metricsdata
-from internals import models
+from internals import metrics_models
 
 test_app = flask.Flask(__name__)
 
@@ -33,13 +30,9 @@ test_app = flask.Flask(__name__)
 class MetricsFunctionTests(testing_config.CustomTestCase):
 
   def setUp(self):
-    self.datapoint = models.StableInstance(
+    self.datapoint = metrics_models.StableInstance(
         day_percentage=0.0123456789, date=datetime.date.today(),
         bucket_id=1, property_name='prop')
-
-  def test_truncate_day_percentage(self):
-    updated_datapoint = metricsdata._truncate_day_percentage(self.datapoint)
-    self.assertEqual(0.01234568, updated_datapoint.day_percentage)
 
   def test_is_googler__anon(self):
     testing_config.sign_out()
@@ -56,24 +49,36 @@ class MetricsFunctionTests(testing_config.CustomTestCase):
     user = users.get_current_user()
     self.assertTrue(metricsdata._is_googler(user))
 
-  def test_clean_data__no_op(self):
+  def test_datapoints_to_json_dicts__googler(self):
     testing_config.sign_in('test@google.com', 111)
     datapoints = [self.datapoint]
-    updated_datapoints = metricsdata._clean_data(datapoints)
-    self.assertEqual(0.0123456789, list(updated_datapoints)[0].day_percentage)
+    actual = metricsdata._datapoints_to_json_dicts(datapoints)
+    expected = [{
+        'bucket_id': 1,
+        'date': str(datetime.date.today()),
+        'day_percentage': 0.0123456789,
+        'property_name': 'prop',
+        }]
+    self.assertEqual(expected, actual)
 
-  def test_clean_data__clean_datapoints(self):
-    testing_config.sign_out()
+  def test_datapoints_to_json_dicts__nongoogler(self):
+    testing_config.sign_in('test@example.com', 222)
     datapoints = [self.datapoint]
-    updated_datapoints = metricsdata._clean_data(datapoints)
-    self.assertEqual(0.01234568, list(updated_datapoints)[0].day_percentage)
+    actual = metricsdata._datapoints_to_json_dicts(datapoints)
+    expected = [{
+        'bucket_id': 1,
+        'date': str(datetime.date.today()),
+        'day_percentage': 0.01234568,  # rounded
+        'property_name': 'prop',
+        }]
+    self.assertEqual(expected, actual)
 
 
 class PopularityTimelineHandlerTests(testing_config.CustomTestCase):
 
   def setUp(self):
     self.handler = metricsdata.PopularityTimelineHandler()
-    self.datapoint = models.StableInstance(
+    self.datapoint = metrics_models.StableInstance(
         day_percentage=0.0123456789, date=datetime.date.today(),
         bucket_id=1, property_name='prop')
     self.datapoint.put()
@@ -83,7 +88,7 @@ class PopularityTimelineHandlerTests(testing_config.CustomTestCase):
 
   def test_make_query(self):
     actual_query = self.handler.make_query(1)
-    self.assertEqual(actual_query.kind, models.StableInstance._get_kind())
+    self.assertEqual(actual_query.kind, metrics_models.StableInstance._get_kind())
 
   def test_get_template_data__bad_bucket(self):
     url = '/data/timeline/csspopularity?bucket_id=not-a-number'
@@ -107,16 +112,16 @@ class FeatureBucketsHandlerTest(testing_config.CustomTestCase):
 
   def setUp(self):
     self.handler = metricsdata.FeatureBucketsHandler()
-    self.prop_1 = models.CssPropertyHistogram(
+    self.prop_1 = metrics_models.CssPropertyHistogram(
         bucket_id=1, property_name='b prop')
     self.prop_1.put()
-    self.prop_2 = models.CssPropertyHistogram(
+    self.prop_2 = metrics_models.CssPropertyHistogram(
         bucket_id=2, property_name='a prop')
     self.prop_2.put()
-    self.prop_3 = models.FeatureObserverHistogram(
+    self.prop_3 = metrics_models.FeatureObserverHistogram(
         bucket_id=3, property_name='b feat')
     self.prop_3.put()
-    self.prop_4 = models.FeatureObserverHistogram(
+    self.prop_4 = metrics_models.FeatureObserverHistogram(
         bucket_id=4, property_name='a feat')
     self.prop_4.put()
 

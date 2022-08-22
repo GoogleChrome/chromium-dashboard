@@ -1,5 +1,5 @@
-import {LitElement, css, html} from 'lit-element';
-import SHARED_STYLES from '../css/shared.css';
+import {LitElement, css, html} from 'lit';
+import {SHARED_STYLES} from '../sass/shared-css.js';
 
 class ChromedashXMeter extends LitElement {
   static get properties() {
@@ -19,38 +19,44 @@ class ChromedashXMeter extends LitElement {
 
   static get styles() {
     return [
-      SHARED_STYLES,
+      ...SHARED_STYLES,
       css`
       :host {
-        display: inline-block;
-        contain: content;
+        display: grid;
+        grid-template-columns: 65px 1fr;
+        grid-column-gap: 15px;
+        height: 1.6em;
+        font-size: 14px;
+      }
+
+      #percentage-number {
+        place-self: center;
+      }
+
+      #track {
         background: var(--barchart-background);
         border-radius: var(--border-radius);
         overflow: hidden;
-        height: 1.7em;
-        color: var(--barchart-color);
+        height: 100%;
       }
 
-      div {
+      #indicator {
         background: var(--barchart-foreground);
         height: 100%;
         white-space: nowrap;
         padding: 3px 0;
-        text-indent: 5px;
       }
     `];
   }
 
-  showTimeline() {
-    window.location.href = this.href;
-  }
-
   render() {
-    return html`  
-      <div @click="${this.showTimeline}" style="width: ${(this.value / this.max * 100)}%">  
-        <span>${this.value <= 0.000001 ? '<=0.000001%' : this.value + '%'}
-        </span> 
-      </div>  
+    return html`
+      <p id="percentage-number">${this.value < 0.0001 ? '<0.0001%' : this.value.toFixed(4) + '%'}</p>
+      <a href="${this.href}">
+        <div id="track">
+          <div id="indicator" style="width: ${(this.value / this.max * 100)}%"></div>
+        </div>
+      </a>
     `;
   }
 }

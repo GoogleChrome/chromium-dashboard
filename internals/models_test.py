@@ -15,9 +15,8 @@
 import testing_config  # Must be imported before the module under test.
 
 import datetime
-import mock
+from unittest import mock
 from framework import ramcache
-# from google.appengine.api import users
 from framework import users
 
 from internals import models
@@ -66,7 +65,6 @@ class ModelsFunctionsTest(testing_config.CustomTestCase):
         'impl_status_chrome', 99)
     self.assertEqual(99, actual)
 
-
   def test_del_none(self):
     d = {}
     self.assertEqual(
@@ -84,23 +82,27 @@ class FeatureTest(testing_config.CustomTestCase):
   def setUp(self):
     ramcache.SharedInvalidate.check_for_distributed_invalidation()
     self.feature_2 = models.Feature(
-        name='feature b', summary='sum', category=1, visibility=1,
-        standardization=1, web_dev_views=1, impl_status_chrome=3)
+        name='feature b', summary='sum', owner=['feature_owner@example.com'],
+        category=1, visibility=1, standardization=1, web_dev_views=1,
+        impl_status_chrome=3)
     self.feature_2.put()
 
     self.feature_1 = models.Feature(
-        name='feature a', summary='sum', category=1, visibility=1,
-        standardization=1, web_dev_views=1, impl_status_chrome=3)
+        name='feature a', summary='sum', owner=['feature_owner@example.com'],
+        category=1, visibility=1, standardization=1, web_dev_views=1,
+        impl_status_chrome=3)
     self.feature_1.put()
 
     self.feature_4 = models.Feature(
-        name='feature d', summary='sum', category=1, visibility=1,
-        standardization=1, web_dev_views=1, impl_status_chrome=2)
+        name='feature d', summary='sum', owner=['feature_owner@example.com'],
+        category=1, visibility=1, standardization=1, web_dev_views=1,
+        impl_status_chrome=2)
     self.feature_4.put()
 
     self.feature_3 = models.Feature(
-        name='feature c', summary='sum', category=1, visibility=1,
-        standardization=1, web_dev_views=1, impl_status_chrome=2)
+        name='feature c', summary='sum', owner=['feature_owner@example.com'],
+        category=1, visibility=1, standardization=1, web_dev_views=1,
+        impl_status_chrome=2)
     self.feature_3.put()
 
   def tearDown(self):
@@ -161,6 +163,116 @@ class FeatureTest(testing_config.CustomTestCase):
     self.assertEqual(
         ['feature a'],
         names)
+
+  def test_get_all__owner_unlisted(self):
+    """Unlisted features should still be visible to their owners."""
+    self.feature_2.unlisted = True
+    self.feature_2.owner = ['feature_owner@example.com']
+    self.feature_2.put()
+    testing_config.sign_in('feature_owner@example.com', 1234567890)
+    actual = models.Feature.get_all(update_cache=True)
+    names = [f['name'] for f in actual]
+    testing_config.sign_out()
+    self.assertEqual(
+      ['feature b', 'feature c', 'feature d', 'feature a'], names)
+
+  def test_get_all__editor_unlisted(self):
+    """Unlisted features should still be visible to feature editors."""
+    self.feature_2.unlisted = True
+    self.feature_2.editors = ['feature_editor@example.com']
+    self.feature_2.put()
+    testing_config.sign_in("feature_editor@example.com", 1234567890)
+    actual = models.Feature.get_all(update_cache=True)
+    names = [f['name'] for f in actual]
+    testing_config.sign_out()
+    self.assertEqual(
+      ['feature b', 'feature c', 'feature d', 'feature a'], names)
+
+  def test_get_by_ids__empty(self):
+    """A request to load zero features returns zero results."""
+    actual = models.Feature.get_by_ids([])
+    self.assertEqual([], actual)
+
+  def test_get_by_ids__cache_miss(self):
+    """We can load features from datastore, and cache them for later."""
+    ramcache.global_cache.clear()
+
+    actual = models.Feature.get_by_ids([
+        self.feature_1.key.integer_id(),
+        self.feature_2.key.integer_id()])
+
+    self.assertEqual(2, len(actual))
+    self.assertEqual('feature a', actual[0]['name'])
+    self.assertEqual('feature b', actual[1]['name'])
+
+    lookup_key_1 = '%s|%s' % (models.Feature.DEFAULT_CACHE_KEY,
+                              self.feature_1.key.integer_id())
+    lookup_key_2 = '%s|%s' % (models.Feature.DEFAULT_CACHE_KEY,
+                              self.feature_2.key.integer_id())
+    self.assertEqual('feature a', ramcache.get(lookup_key_1)['name'])
+    self.assertEqual('feature b', ramcache.get(lookup_key_2)['name'])
+
+  def test_get_by_ids__cache_hit(self):
+    """We can load features from ramcache."""
+    ramcache.global_cache.clear()
+    cache_key = '%s|%s' % (
+        models.Feature.DEFAULT_CACHE_KEY, self.feature_1.key.integer_id())
+    cached_feature = {
+      'name': 'fake cached_feature',
+      'id': self.feature_1.key.integer_id(),
+      'unlisted': False
+    }
+    ramcache.set(cache_key, cached_feature)
+
+    actual = models.Feature.get_by_ids([self.feature_1.key.integer_id()])
+
+    self.assertEqual(1, len(actual))
+    self.assertEqual(cached_feature, actual[0])
+
+  def test_get_by_ids__batch_order(self):
+    """Features are returned in the order of the given IDs."""
+    actual = models.Feature.get_by_ids([
+        self.feature_4.key.integer_id(),
+        self.feature_1.key.integer_id(),
+        self.feature_3.key.integer_id(),
+        self.feature_2.key.integer_id(),
+    ])
+
+    self.assertEqual(4, len(actual))
+    self.assertEqual('feature d', actual[0]['name'])
+    self.assertEqual('feature a', actual[1]['name'])
+    self.assertEqual('feature c', actual[2]['name'])
+    self.assertEqual('feature b', actual[3]['name'])
+
+  def test_get_by_ids__cached_correctly(self):
+    """We should no longer be able to trigger bug #1647."""
+    # Cache one to try to trigger the bug.
+    ramcache.global_cache.clear()
+    models.Feature.get_by_ids([
+        self.feature_2.key.integer_id(),
+        ])
+
+    # Now do the lookup, but it would cache feature_2 at the key for feature_3.
+    models.Feature.get_by_ids([
+        self.feature_4.key.integer_id(),
+        self.feature_1.key.integer_id(),
+        self.feature_3.key.integer_id(),
+        self.feature_2.key.integer_id(),
+    ])
+
+    # This would read the incorrect cache entry and use it.
+    actual = models.Feature.get_by_ids([
+        self.feature_4.key.integer_id(),
+        self.feature_1.key.integer_id(),
+        self.feature_3.key.integer_id(),
+        self.feature_2.key.integer_id(),
+    ])
+
+    self.assertEqual(4, len(actual))
+    self.assertEqual('feature d', actual[0]['name'])
+    self.assertEqual('feature a', actual[1]['name'])
+    self.assertEqual('feature c', actual[2]['name'])
+    self.assertEqual('feature b', actual[3]['name'])
 
   def test_get_chronological__normal(self):
     """We can retrieve a list of features."""
@@ -223,8 +335,8 @@ class FeatureTest(testing_config.CustomTestCase):
         enabled_by_default)
     self.assertEqual(6, len(actual))
 
-    cache_key = '%s|%s|%s|%s' % (
-        models.Feature.DEFAULT_CACHE_KEY, 'milestone', False, 1)
+    cache_key = '%s|%s|%s' % (
+        models.Feature.DEFAULT_CACHE_KEY, 'milestone', 1)
     cached_result = ramcache.get(cache_key)
     self.assertEqual(cached_result, actual)
 
@@ -279,13 +391,14 @@ class FeatureTest(testing_config.CustomTestCase):
 
   def test_get_in_milestone__cached(self):
     """If there is something in the cache, we use it."""
-    cache_key = '%s|%s|%s|%s' % (
-        models.Feature.DEFAULT_CACHE_KEY, 'milestone', False, 1)
-    ramcache.set(cache_key, 'fake feature dict')
+    cache_key = '%s|%s|%s' % (
+        models.Feature.DEFAULT_CACHE_KEY, 'milestone', 1)
+    cached_test_feature = {'test': [{'name': 'test_feature', 'unlisted': False}]}
+    ramcache.set(cache_key, cached_test_feature)
 
     actual = models.Feature.get_in_milestone(milestone=1)
     self.assertEqual(
-        'fake feature dict',
+        cached_test_feature,
         actual)
 
 
@@ -298,10 +411,23 @@ class ApprovalTest(testing_config.CustomTestCase):
     self.feature_1.put()
     self.feature_1_id = self.feature_1.key.integer_id()
     self.appr_1 = models.Approval(
-        feature_id=self.feature_1_id, field_id=1, state=2,
-        set_on=datetime.datetime.now(),
+        feature_id=self.feature_1_id, field_id=1,
+        state=models.Approval.REVIEW_REQUESTED,
+        set_on=datetime.datetime.now() - datetime.timedelta(1),
         set_by='one@example.com')
     self.appr_1.put()
+    self.appr_2 = models.Approval(
+        feature_id=self.feature_1_id, field_id=1,
+        state=models.Approval.APPROVED,
+        set_on=datetime.datetime.now(),
+        set_by='two@example.com')
+    self.appr_2.put()
+    self.appr_3 = models.Approval(
+        feature_id=self.feature_1_id, field_id=1,
+        state=models.Approval.APPROVED,
+        set_on=datetime.datetime.now() + datetime.timedelta(1),
+        set_by='three@example.com')
+    self.appr_3.put()
 
   def tearDown(self):
     self.feature_1.key.delete()
@@ -311,22 +437,30 @@ class ApprovalTest(testing_config.CustomTestCase):
   def test_get_approvals(self):
     """We can retrieve Approval entities."""
     actual = models.Approval.get_approvals(feature_id=self.feature_1_id)
-    self.assertEqual(1, len(actual))
-    self.assertEqual(self.feature_1_id, actual[0].feature_id)
+    self.assertEqual(3, len(actual))
+    self.assertEqual(models.Approval.REVIEW_REQUESTED, actual[0].state)
+    self.assertEqual(models.Approval.APPROVED, actual[1].state)
+    self.assertEqual(
+        sorted(actual, key=lambda appr: appr.set_on),
+        actual)
 
     actual = models.Approval.get_approvals(field_id=1)
-    self.assertEqual(1, len(actual))
+    self.assertEqual(models.Approval.REVIEW_REQUESTED, actual[0].state)
+    self.assertEqual(models.Approval.APPROVED, actual[1].state)
 
-    actual = models.Approval.get_approvals(states={2, 3})
+    actual = models.Approval.get_approvals(
+        states={models.Approval.REVIEW_REQUESTED,
+                models.Approval.REVIEW_STARTED})
     self.assertEqual(1, len(actual))
 
     actual = models.Approval.get_approvals(set_by='one@example.com')
     self.assertEqual(1, len(actual))
+    self.assertEqual(models.Approval.REVIEW_REQUESTED, actual[0].state)
 
   def test_is_valid_state(self):
     """We know what approval states are valid."""
     self.assertTrue(
-        models.Approval.is_valid_state(models.Approval.NEEDS_REVIEW))
+        models.Approval.is_valid_state(models.Approval.REVIEW_REQUESTED))
     self.assertFalse(models.Approval.is_valid_state(None))
     self.assertFalse(models.Approval.is_valid_state('not an int'))
     self.assertFalse(models.Approval.is_valid_state(999))
@@ -334,103 +468,103 @@ class ApprovalTest(testing_config.CustomTestCase):
   def test_set_approval(self):
     """We can set an Approval entity."""
     models.Approval.set_approval(
-        self.feature_1_id, 2, 0, 'owner@example.com')
+        self.feature_1_id, 2, models.Approval.REVIEW_REQUESTED,
+        'owner@example.com')
     self.assertEqual(
-        2,
+        4,
         len(models.Approval.query().fetch(None)))
 
+  def test_clear_request(self):
+    """We can clear a review request so that it is no longer pending."""
+    self.appr_1.state = models.Approval.REVIEW_REQUESTED
+    self.appr_1.put()
 
-class UserPrefTest(testing_config.CustomTestCase):
+    models.Approval.clear_request(self.feature_1_id, 1)
+
+    remaining_apprs = models.Approval.get_approvals(
+        feature_id=self.feature_1_id, field_id=1,
+        states=[models.Approval.REVIEW_REQUESTED])
+    self.assertEqual([], remaining_apprs)
+
+
+class CommentTest(testing_config.CustomTestCase):
 
   def setUp(self):
-    self.user_pref_1 = models.UserPref(email='one@example.com')
-    self.user_pref_1.notify_as_starrer = False
-    self.user_pref_1.put()
+    self.feature_1 = models.Feature(
+        name='feature a', summary='sum',  owner=['feature_owner@example.com'],
+        category=1, visibility=1, standardization=1, web_dev_views=1,
+        impl_status_chrome=3)
+    self.feature_1.put()
+    self.feature_1_id = self.feature_1.key.integer_id()
+    self.comment_1_1 = models.Comment(
+        feature_id=self.feature_1_id, field_id=1,
+        author='one@example.com',
+        content='some text')
+    self.comment_1_1.put()
+    self.comment_1_2 = models.Comment(
+        feature_id=self.feature_1_id, field_id=2,
+        author='one@example.com',
+        content='some other text')
+    self.comment_1_2.put()
 
-    self.user_pref_2 = models.UserPref(email='two@example.com')
-    self.user_pref_2.put()
+    self.feature_2 = models.Feature(
+        name='feature b', summary='sum', owner=['feature_owner@example.com'],
+        category=1, visibility=1, standardization=1, web_dev_views=1,
+        impl_status_chrome=3)
+    self.feature_2.put()
+    self.feature_2_id = self.feature_2.key.integer_id()
 
   def tearDown(self):
-    self.user_pref_1.key.delete()
-    self.user_pref_2.key.delete()
+    self.feature_1.key.delete()
+    self.feature_2.key.delete()
+    for comm in models.Comment.query().fetch(None):
+      comm.key.delete()
 
-  # @mock.patch('google.appengine.api.users.get_current_user')
-  @mock.patch('framework.users.get_current_user')
-  def test_get_signed_in_user_pref__anon(self, mock_get_current_user):
-    mock_get_current_user.return_value = None
-    actual = models.UserPref.get_signed_in_user_pref()
-    self.assertIsNone(actual)
+  def test_get_comments__none(self):
+    """We get [] if feature has no review comments."""
+    actual = models.Comment.get_comments(self.feature_2_id)
+    self.assertEqual([], actual)
 
-  # @mock.patch('google.appengine.api.users.get_current_user')
-  @mock.patch('framework.users.get_current_user')
-  def test_get_signed_in_user_pref__first_time(self, mock_get_current_user):
-    mock_get_current_user.return_value = testing_config.Blank(
-        email=lambda: 'user1@example.com')
+  def test_get_comments__some(self):
+    """We get review comments if the feature has some."""
+    actual = models.Comment.get_comments(self.feature_1_id)
+    self.assertEqual(2, len(actual))
+    self.assertEqual(
+        ['some text', 'some other text'],
+        [c.content for c in actual])
 
-    actual = models.UserPref.get_signed_in_user_pref()
+  def test_get_comments__specific_fields(self):
+    """We get review comments for specific approval fields if requested."""
+    actual_1 = models.Comment.get_comments(self.feature_1_id, 1)
+    self.assertEqual(1, len(actual_1))
+    self.assertEqual('some text', actual_1[0].content)
 
-    self.assertEqual('user1@example.com', actual.email)
-    self.assertEqual(True, actual.notify_as_starrer)
-    self.assertEqual(False, actual.bounced)
+    actual_2 = models.Comment.get_comments(self.feature_1_id, 2)
+    self.assertEqual(1, len(actual_2))
+    self.assertEqual('some other text', actual_2[0].content)
 
-  # @mock.patch('google.appengine.api.users.get_current_user')
-  @mock.patch('framework.users.get_current_user')
-  def test_get_signed_in_user_pref__had_pref(self, mock_get_current_user):
-    mock_get_current_user.return_value = testing_config.Blank(
-        email=lambda: 'user2@example.com')
-    user_pref = models.UserPref(
-        email='user2@example.com', notify_as_starrer=False, bounced=True)
-    user_pref.put()
+    actual_3 = models.Comment.get_comments(self.feature_1_id, 3)
+    self.assertEqual([], actual_3)
 
-    actual = models.UserPref.get_signed_in_user_pref()
 
-    self.assertEqual('user2@example.com', actual.email)
-    self.assertEqual(False, actual.notify_as_starrer)
-    self.assertEqual(True, actual.bounced)
+class OwnersFileTest(testing_config.CustomTestCase):
 
-  # @mock.patch('google.appengine.api.users.get_current_user')
-  @mock.patch('framework.users.get_current_user')
-  def test_dismiss_cue(self, mock_get_current_user):
-    """We store the fact that a user has dismissed a cue card."""
-    mock_get_current_user.return_value = testing_config.Blank(
-        email=lambda: 'one@example.com')
+  def setUp(self):
+    now = datetime.datetime.now()
+    self.owner_file_1 = models.OwnersFile(url='abc', raw_content='foo', created_on=now)
+    self.owner_file_1.add_owner_file()
 
-    models.UserPref.dismiss_cue('welcome-message')
+    expired = now - datetime.timedelta(hours=3)
+    self.owner_file_2 = models.OwnersFile(url='def', raw_content='bar', created_on=expired)
+    self.owner_file_2.add_owner_file()
 
-    revised_user_pref = models.UserPref.get_signed_in_user_pref()
-    self.assertEqual('one@example.com', revised_user_pref.email)
-    self.assertEqual(['welcome-message'], revised_user_pref.dismissed_cues)
+  def tearDown(self):
+    self.owner_file_1.key.delete()
+    self.owner_file_2.key.delete()
 
-  # @mock.patch('google.appengine.api.users.get_current_user')
-  @mock.patch('framework.users.get_current_user')
-  def test_dismiss_cue__double(self, mock_get_current_user):
-    """We ignore the same user dismissing the same cue multiple times."""
-    mock_get_current_user.return_value = testing_config.Blank(
-        email=lambda: 'one@example.com')
+  def test_get_raw_owner_file(self):
+    raw_content = models.OwnersFile.get_raw_owner_file('abc')
+    self.assertEqual('foo', raw_content)
 
-    models.UserPref.dismiss_cue('welcome-message')
-    models.UserPref.dismiss_cue('welcome-message')
-
-    revised_user_pref = models.UserPref.get_signed_in_user_pref()
-    self.assertEqual('one@example.com', revised_user_pref.email)
-    self.assertEqual(['welcome-message'], revised_user_pref.dismissed_cues)
-
-  def test_get_prefs_for_emails__some_found(self):
-    emails = ['one@example.com', 'two@example.com', 'huh@example.com']
-    user_prefs = models.UserPref.get_prefs_for_emails(emails)
-    self.assertEqual(3, len(user_prefs))
-    one, two, huh = user_prefs
-    self.assertEqual('one@example.com', one.email)
-    self.assertFalse(one.notify_as_starrer)
-    self.assertEqual('two@example.com', two.email)
-    self.assertTrue(two.notify_as_starrer)
-    # This one is automatically created:
-    self.assertEqual('huh@example.com', huh.email)
-    self.assertTrue(huh.notify_as_starrer)
-
-  def test_get_prefs_for_emails__long_list(self):
-    emails = ['user_%d@example.com' % i
-              for i in range(100)]
-    user_prefs = models.UserPref.get_prefs_for_emails(emails)
-    self.assertEqual(100, len(user_prefs))
-    self.assertEqual('user_0@example.com', user_prefs[0].email)
+    expired_content = models.OwnersFile.get_raw_owner_file('def')
+    self.assertEqual(None, expired_content)

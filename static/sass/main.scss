@@ -19,285 +19,27 @@ body {
   }
 }
 
+/* The following ones can be removed once switch to SPA 
+ * because these styles are included in <chromedash-app> */
+
 #spinner {
   display: none;
   align-items: center;
   justify-content: center;
   position: fixed;
   height: 60%; // Centered, half that.
-  max-width: var(--max-content-width);
+  // max-width: var(--max-content-width);
   width: 100%;
 }
-
-#site-banner {
-  display: none;
-  background: $chromium-color-center;
-  color: #fff;
-  position: fixed;
-  z-index: 1;
-  -webkit-tap-highlight-color: transparent;
-  user-select: none;
-  cursor: pointer;
-  text-transform: capitalize;
-  text-align: center;
-  transform: rotate(35deg);
-  right: -40px;
-  top: 20px;
-  padding: 10px 40px 8px 60px;
-  box-shadow: inset 0px 5px 6px -3px rgba(0, 0, 0, 0.4);
-
-  iron-icon {
-    margin-right: var(--content-padding-half);
-  }
-
-  a {
-    color: currentcolor;
-    text-decoration: none;
-  }
-}
-
-app-drawer {
-  font-size: 14px;
-
-  .drawer-content-wrapper {
-    height: 100%;
-    overflow: auto;
-    padding: $content-padding;
-    background: $page-background;
-  }
-
-  paper-listbox {
-    background-color: inherit !important; // more specific than shimmer
-
-    paper-item {
-      font-size: inherit !important; // more specific than shimmer
-    }
-  }
-
-  h3 {
-    margin-bottom: $content-padding;
-    font-weight: 500;
-    font-size: 14px;
-    color: inherit;
-  }
-}
-
-app-header {
-  right: 0;
-  top: 0;
-  left: 0;
-  z-index: 1;
-}
-
-app-header-layout {
-  flex: 1;
-}
-
 
 .main-toolbar {
   display: flex;
   position: relative;
   padding: 0;
 }
-
-header {
-  display: flex;
-  align-items: baseline;
-}
-
-footer {
-  display: flex;
-  align-items: center;
-}
-
-header {
-  user-select: none;
-  background: var(--card-background);
-  border-bottom: var(--card-border);
-  box-shadow: var(--card-box-shadow);
-
-  a {
-    text-decoration: none !important;
-  }
-
-  nav {
-    display: flex;
-    flex: 1;
-    align-items: center;
-    margin: 0 var(--content-padding);
-    -webkit-font-smoothing: initial;
-
-    a {
-      cursor: pointer;
-      font-size: var(--nav-link-font-size);
-      text-align: center;
-      padding: var(--content-padding-half) var(--content-padding);
-      color: var(--nav-link-color);
-      white-space: nowrap;
-      border-bottom: var(--nav-link-border);
-
-      &:hover {
-        color: black;
-        background: var(--nav-link-hover-background);
-      }
-
-      &.disabled {
-        opacity: 0.5;
-        pointer-events: none;
-      }
-    }
-
-    .active {
-      color: var(--nav-link-active-color);
-      border-bottom: var(--nav-link-active-border);
-
-      a {
-        color: var(--nav-link-active-color);
-      }
-    }
-
-    .nav-dropdown-container {
-      position: relative;
-
-      ul {
-        display: none;
-        position: absolute;
-        top: 80%;
-        left: 0;
-        list-style: none;
-        z-index: 1;
-        background: var(--card-background);
-        border-bottom: var(--card-border);
-        box-shadow: var(--card-box-shadow);
-      }
-
-      a {
-        display: block;
-      }
-
-      .nav-dropdown-trigger:hover + ul,
-      ul:hover {
-        display: block;
-      }
-    }
-  }
-
-  aside {
-    $logoSize: 32px;
-
-    background: url(/static/img/chrome_logo.svg) no-repeat $content-padding 50%;
-    background-size: $logoSize;
-    padding: 0.75em 2em;
-    padding-left: $logoSize + $content-padding  + $content-padding / 2;
-
-    hgroup {
-      a {
-        color: var(--logo-color);
-      }
-    }
-
-    h1 {
-      line-height: 1;
-    }
-    img {
-      height: 45px;
-      width: 45px;
-      margin-right: 7px;
-    }
-  }
-}
-
-footer {
-  background: var(--footer-background);
-  box-shadow: 0 -2px 5px var(--shadow-color);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  text-align: center;
-  margin-top: 2em;
-  padding: var(--content-padding-half);
-
-  div {
-    > * + * {
-      margin-left: var(--content-padding);
-      padding-left: var(--content-padding);
-    }
-  }
-}
-
-.description {
-  line-height: 1.4;
-}
-
-.sub-nav-links {
-  padding-left: var(--content-padding-quarter);
-  padding-right: var(--content-padding-quarter);
-}
-
-#subheader, .subheader {
-  display: flex;
-  align-items: center;
-  margin: var(--content-padding) 0;
-  max-width: var(--max-content-width);
-  width: 100%;
-
-  .num-features {
-    font-weight: 400;
-  }
-
-  div {
-    &.search {
-      min-width: 350px;
-
-      input {
-        width: 280px;
-        padding: 10px 7px;
-      }
-    }
-
-    &.actionlinks {
-      display: flex;
-      justify-content: flex-end;
-      flex: 1 0 auto;
-
-      .blue-button {
-        background: var(--primary-button-background);
-        color: var(--primary-button-color);
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        max-height: 35px;
-        min-width: 5.14em;
-        -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
-        -webkit-tap-highlight-color: transparent;
-        text-decoration: none;
-        border: var(--button-border);
-        border-radius: var(--button-border-radius);
-        user-select: none;
-        cursor: pointer;
-        padding: 0.7em 0.57em;
-
-        iron-icon {
-          margin-right: $content-padding / 4;
-        }
-      }
-
-      .legend {
-        font-size: 18px;
-        cursor: pointer;
-        text-decoration: none;
-      }
-    }
-  }
-}
-
-#container {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
+.main-toolbar .toolbar-content {
   width: 100%;
 }
-
 
 #app-content-container {
   display: flex;
@@ -310,138 +52,21 @@ footer {
   position: relative;
 }
 
-#column-container {
-   display: flex;
-   align-items: stretch;
-   flex-direction: row;
- }
-
-#drawer-column {
-  padding: 1em 2em 1em 1em;
-  margin-left: 8px;
-}
-
-#content-column {
-  flex: 1;
-  padding-left: 2em;
-}
-
-#panels {
+#content-flex-wrapper {
   display: flex;
+  justify-content: center;
   width: 100%;
-  overflow: hidden;
 }
 
-
-.alertbox {
-  margin: 2em;
-  padding: 1em;
-  background: var(--warning-background);
-  color: var(--warning-color);
-}
-
-@media only screen and (min-width: 701px) {
-  .main-toolbar {
-    .toolbar-content {
-      width: 100%;
-    }
-  }
-  // Overrides styles set by app-header-layout so there's no visual
-  // layout FOUC/jump as the drawer panel upgrades.
-  app-header {
-    left: 0 !important;
-  }
+#content-component-wrapper {
+  width: var(--max-content-width);
+  max-width: 95%;
 }
 
 @media only screen and (max-width: 700px) {
-  h1 {
-    font-size: 24px;
-  }
-  h2 {
-    font-size: 20px;
-  }
-  h3 {
-    font-size: 15px;
-  }
-  app-header {
-    .main-toolbar {
-      padding: 0;
-      display: block;
-    }
-  }
-
-  app-drawer {
-    z-index: 2;
-  }
-
   #content {
     margin-left: 0;
     margin-right: 0;
-  }
-
-
-  #column-container {
-    flex-direction: column;
-  }
-  #content-column {
-    padding-left: var(--content-padding-half);
-    padding-right: var(--content-padding-half);
-  }
-
-  header {
-    $logoSize: 24px;
-
-    margin: 0;
-    display: block;
-    aside {
-      display: flex;
-      padding: var(--content-padding-half);
-      border-radius: 0;
-      background: inherit;  // no logo
-
-    }
-    nav {
-      margin: 0;
-      justify-content: center;
-      flex-wrap: wrap;
-      a {
-        padding: var(--content-padding-half) var(--content-padding);
-        margin: 0;
-        border-radius: 0;
-        flex: 1 0 auto;
-      }
-    }
-  }
-
-  #panels {
-    display: block;
-    nav {
-      display: none;
-    }
-  }
-
-  .subheader {
-    .description {
-      margin: 0 var(--content-padding);
-    }
-  }
-
-  #subheader {
-    div {
-      &:not(.search):not(.actionlinks) {
-        display: none;
-      }
-
-      &.search {
-        text-align: center;
-        min-width: 0;
-        margin: 0;
-
-        input {
-          width: auto;
-        }
-      }
-    }
   }
 
   // Make toast a bar that fills entire bottom of mobile screen.
@@ -450,61 +75,6 @@ footer {
     left: 0;
     margin: 0;
   }
-
-  //Vertical Sub-Nav should not be visible in narrow view ports
-  .metric-nav{display: none}
-  #drawer-column{padding: 0em;}
-
-}
-
-//Horizontal Sub-Nav should not be visible in wider view ports
-@media only screen and (min-width: 700px){
-  #horizontal-sub-nav{display: none}
-
-}
-
-
-
-// When banner doesn't block navigation buttons.
-@media only screen and (min-width: 1100px) {
-  #site-banner {
-    display: block;
-  }
 }
 
 @import 'fouc';
-
-.flex-container {
-  display: flex;
-  justify-content: space-between;
-}
-
-.flex-container-outer {
-	flex-wrap: wrap;
-  width: 100%;
-}
-
-@media only screen and (max-width: 700px) {
-	.flex-container-inner-first {
-  	justify-content: space-between;
-    width: 100%;
-  }
-
-  .flex-item {
-    padding-left: 0px;
-    padding-right: 0px;
-    flex: 1 0 auto;
-  }
-
-  .flex-item-inner {
-    padding-left: 0px;
-    padding-right: 0px;
-    text-align: center;
-    flex: 0 1 auto;
-  }
-
-  .flex-container-inner-second {
-    justify-content: center;
-    width: 100%;
-  }
-}

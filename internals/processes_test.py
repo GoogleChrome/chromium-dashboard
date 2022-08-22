@@ -1,6 +1,3 @@
-
-
-
 # Copyright 2020 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
@@ -18,9 +15,10 @@
 import collections
 import testing_config  # Must be imported before the module under test.
 
-import mock
+from unittest import mock
 
 from internals import approval_defs
+from internals import core_enums
 from internals import models
 from internals import processes
 
@@ -38,6 +36,11 @@ BAKE_APPROVAL_DEF_DICT = collections.OrderedDict([
     ('approvers', ['chef@example.com']),
     ])
 
+PI_COLD_DOUGH = processes.ProgressItem('Cold dough', 'dough')
+PI_LOAF = processes.ProgressItem('A loaf', None)
+PI_DIRTY_PAN = processes.ProgressItem('A dirty pan', None)
+
+
 class HelperFunctionsTest(testing_config.CustomTestCase):
 
   def test_process_to_dict(self):
@@ -48,14 +51,15 @@ class HelperFunctionsTest(testing_config.CustomTestCase):
         [processes.ProcessStage(
             'Make dough',
             'Mix it and kneed',
-            ['Cold dough'],
-            [('Share kneeding video', 'https://example.com')],
+            [PI_COLD_DOUGH],
+            [processes.Action(
+                'Share kneeding video', 'https://example.com', [])],
             [],
             0, 1),
          processes.ProcessStage(
              'Bake it',
              'Heat at 375 for 40 minutes',
-             ['A loaf', 'A dirty pan'],
+             [PI_LOAF, PI_DIRTY_PAN],
              [],
              [BakeApproval],
              1, 2),
@@ -67,14 +71,19 @@ class HelperFunctionsTest(testing_config.CustomTestCase):
         'stages': [
             {'name': 'Make dough',
              'description': 'Mix it and kneed',
-             'progress_items': ['Cold dough'],
-             'actions': [('Share kneeding video', 'https://example.com')],
+             'progress_items': [{'name': 'Cold dough', 'field': 'dough'}],
+             'actions': [{
+                 'name': 'Share kneeding video',
+                 'url': 'https://example.com',
+                 'prerequisites': []}],
              'approvals': [],
              'incoming_stage': 0,
              'outgoing_stage': 1},
             {'name': 'Bake it',
              'description': 'Heat at 375 for 40 minutes',
-             'progress_items': ['A loaf', 'A dirty pan'],
+             'progress_items': [
+                 {'name': 'A loaf', 'field': None},
+                 {'name': 'A dirty pan', 'field': None}],
              'actions': [],
              'approvals': [BAKE_APPROVAL_DEF_DICT],
              'incoming_stage': 1,
@@ -91,10 +100,41 @@ class HelperFunctionsTest(testing_config.CustomTestCase):
     """A review step is done if the review has completed or was N/a."""
     self.assertFalse(processes.review_is_done(None))
     self.assertFalse(processes.review_is_done(0))
-    self.assertFalse(processes.review_is_done(models.REVIEW_PENDING))
-    self.assertFalse(processes.review_is_done(models.REVIEW_ISSUES_OPEN))
-    self.assertTrue(processes.review_is_done(models.REVIEW_ISSUES_ADDRESSED))
-    self.assertTrue(processes.review_is_done(models.REVIEW_NA))
+    self.assertFalse(processes.review_is_done(core_enums.REVIEW_PENDING))
+    self.assertFalse(processes.review_is_done(core_enums.REVIEW_ISSUES_OPEN))
+    self.assertTrue(processes.review_is_done(core_enums.REVIEW_ISSUES_ADDRESSED))
+    self.assertTrue(processes.review_is_done(core_enums.REVIEW_NA))
+
+
+class ProcessesWellFormedTest(testing_config.CustomTestCase):
+  """Verify that our processes have no undefined references."""
+
+  def verify_references_to_prerequisites(self, process):
+    progress_items_so_far = {}
+    for stage in process.stages:
+      progress_items_so_far.update({
+          pi.name: pi
+          for pi in stage.progress_items})
+      for action in stage.actions:
+        for prereq_name in action.prerequisites:
+          self.assertIn(prereq_name, progress_items_so_far)
+          self.assertTrue(progress_items_so_far[prereq_name].field)
+
+  def test_BLINK_LAUNCH_PROCESS(self):
+    """Prerequisites in BLINK_LAUNCH_PROCESS are defined and actionable."""
+    self.verify_references_to_prerequisites(processes.BLINK_LAUNCH_PROCESS)
+
+  def test_BLINK_FAST_TRACK_PROCESS(self):
+    """Prerequisites in BLINK_FAST_TRACK_PROCESS are defined and actionable."""
+    self.verify_references_to_prerequisites(processes.BLINK_FAST_TRACK_PROCESS)
+
+  def test_PSA_ONLY_PROCESS(self):
+    """Prerequisites in PSA_ONLY_PROCESS are defined and actionable."""
+    self.verify_references_to_prerequisites(processes.PSA_ONLY_PROCESS)
+
+  def test_DEPRECATION_PROCESS(self):
+    """Prerequisites in DEPRECATION_PROCESS are defined and actionable."""
+    self.verify_references_to_prerequisites(processes.DEPRECATION_PROCESS)
 
 
 class ProgressDetectorsTest(testing_config.CustomTestCase):
@@ -102,9 +142,9 @@ class ProgressDetectorsTest(testing_config.CustomTestCase):
   def setUp(self):
     self.feature_1 = models.Feature(
         name='feature one', summary='sum', category=1, visibility=1,
-        standardization=1, web_dev_views=models.DEV_NO_SIGNALS,
+        standardization=1, web_dev_views=core_enums.DEV_NO_SIGNALS,
         impl_status_chrome=1,
-        intent_stage=models.INTENT_IMPLEMENT)
+        intent_stage=core_enums.INTENT_IMPLEMENT)
     self.feature_1.put()
 
   def tearDown(self):
@@ -125,13 +165,13 @@ class ProgressDetectorsTest(testing_config.CustomTestCase):
   def test_security_review_completed(self):
     detector = processes.PROGRESS_DETECTORS['Security review issues addressed']
     self.assertFalse(detector(self.feature_1))
-    self.feature_1.security_review_status = models.REVIEW_ISSUES_ADDRESSED
+    self.feature_1.security_review_status = core_enums.REVIEW_ISSUES_ADDRESSED
     self.assertTrue(detector(self.feature_1))
 
   def test_privacy_review_completed(self):
     detector = processes.PROGRESS_DETECTORS['Privacy review issues addressed']
     self.assertFalse(detector(self.feature_1))
-    self.feature_1.privacy_review_status = models.REVIEW_ISSUES_ADDRESSED
+    self.feature_1.privacy_review_status = core_enums.REVIEW_ISSUES_ADDRESSED
     self.assertTrue(detector(self.feature_1))
 
   def test_intent_to_prototype_email(self):
@@ -201,19 +241,19 @@ class ProgressDetectorsTest(testing_config.CustomTestCase):
   def test_tag_review_completed(self):
     detector = processes.PROGRESS_DETECTORS['TAG review issues addressed']
     self.assertFalse(detector(self.feature_1))
-    self.feature_1.tag_review_status = models.REVIEW_ISSUES_ADDRESSED
+    self.feature_1.tag_review_status = core_enums.REVIEW_ISSUES_ADDRESSED
     self.assertTrue(detector(self.feature_1))
 
   def test_web_dav_signals(self):
     detector = processes.PROGRESS_DETECTORS['Web developer signals']
     self.assertFalse(detector(self.feature_1))
-    self.feature_1.web_dev_views = models.PUBLIC_SUPPORT
+    self.feature_1.web_dev_views = core_enums.PUBLIC_SUPPORT
     self.assertTrue(detector(self.feature_1))
 
   def test_vendor_signals(self):
     detector = processes.PROGRESS_DETECTORS['Vendor signals']
     self.assertFalse(detector(self.feature_1))
-    self.feature_1.ff_views = models.PUBLIC_SUPPORT
+    self.feature_1.ff_views = core_enums.PUBLIC_SUPPORT
     self.assertTrue(detector(self.feature_1))
 
   def test_estimated_target_milestone(self):
@@ -225,7 +265,7 @@ class ProgressDetectorsTest(testing_config.CustomTestCase):
   def test_code_in_chromium(self):
     detector = processes.PROGRESS_DETECTORS['Code in Chromium']
     self.assertFalse(detector(self.feature_1))
-    self.feature_1.impl_status_chrome = models.ENABLED_BY_DEFAULT
+    self.feature_1.impl_status_chrome = core_enums.ENABLED_BY_DEFAULT
     self.assertTrue(detector(self.feature_1))
 
   def test_motivation(self):
@@ -237,5 +277,5 @@ class ProgressDetectorsTest(testing_config.CustomTestCase):
   def test_code_removed(self):
     detector = processes.PROGRESS_DETECTORS['Code removed']
     self.assertFalse(detector(self.feature_1))
-    self.feature_1.impl_status_chrome = models.REMOVED
+    self.feature_1.impl_status_chrome = core_enums.REMOVED
     self.assertTrue(detector(self.feature_1))

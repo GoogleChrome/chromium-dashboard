@@ -1,3 +1,13 @@
+/** If the user followed a link with an ID, redirect there. */
+const lastSlash = window.location.pathname.lastIndexOf('/');
+if (lastSlash > 0) {
+  const id = parseInt(window.location.pathname.substring(lastSlash + 1));
+  if (id) {
+    window.location.replace(`/feature/${id}`);
+  }
+}
+
+
 const featureListEl = document.querySelector('chromedash-featurelist');
 const chromeMetadataEl = document.querySelector('chromedash-metadata');
 const searchEl = document.querySelector('.search input');
@@ -16,8 +26,8 @@ const legendEl = document.querySelector('chromedash-legend');
 function debounce(func, threshold_ms = 300) {
   let timeout;
   return function(...args) {
-    let context = this; // eslint-disable-line no-invalid-this
-    let later = () => {
+    const context = this; // eslint-disable-line no-invalid-this
+    const later = () => {
       func.apply(context, args);
     };
     clearTimeout(timeout);
@@ -54,11 +64,6 @@ searchEl.addEventListener('input', debounce((e) => {
 
 featureListEl.addEventListener('filtered', (e) => {
   document.querySelector('.num-features').textContent = e.detail.count;
-});
-
-featureListEl.addEventListener('has-scroll-list', () => {
-  const headerEl = document.querySelector('app-header-layout app-header');
-  headerEl.fixed = false;
 });
 
 featureListEl.addEventListener('filter-category', (e) => {

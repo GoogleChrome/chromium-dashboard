@@ -1,6 +1,3 @@
-
-
-
 # Copyright 2020 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
@@ -18,14 +15,32 @@
 import testing_config  # Must be imported before the module under test.
 import urllib.request, urllib.parse, urllib.error
 
+import os
 import flask
 import werkzeug
+import html5lib
 
+from framework import ramcache
+from internals import core_enums
 from internals import models
 from pages import guide
 
 
 test_app = flask.Flask(__name__)
+
+
+class TestWithFeature(testing_config.CustomTestCase):
+
+  REQUEST_PATH_FORMAT = 'subclasses fill this in'
+  HANDLER_CLASS = 'subclasses fill this in'
+
+  def setUp(self):
+    self.request_path = self.REQUEST_PATH_FORMAT
+    self.handler = self.HANDLER_CLASS()
+
+  def tearDown(self):
+    ramcache.flush_all()
+    ramcache.check_for_distributed_invalidation()
 
 
 class FeatureNewTest(testing_config.CustomTestCase):
@@ -96,13 +111,36 @@ class FeatureNewTest(testing_config.CustomTestCase):
     feature.key.delete()
 
 
+class FeatureNewTemplateTest(TestWithFeature):
+
+  HANDLER_CLASS = guide.FeatureNew
+
+  def setUp(self):
+    super(FeatureNewTemplateTest, self).setUp()
+    with test_app.test_request_context(self.request_path):
+      self.template_data = self.handler.get_template_data()
+
+      self.template_data.update(self.handler.get_common_data())
+      self.template_data['nonce'] = 'fake nonce'
+      template_path = self.handler.get_template_path(self.template_data)
+      self.full_template_path = os.path.join(template_path)
+
+  def test_html_rendering(self):
+    """We can render the template with valid html."""
+    testing_config.sign_in('user1@google.com', 1234567890)
+    template_text = self.handler.render(
+        self.template_data, self.full_template_path)
+    parser = html5lib.HTMLParser(strict=True)
+    document = parser.parse(template_text)
+
+
 class ProcessOverviewTest(testing_config.CustomTestCase):
 
   def setUp(self):
     self.feature_1 = models.Feature(
-        name='feature one', summary='sum', category=1, visibility=1,
-        standardization=1, web_dev_views=models.DEV_NO_SIGNALS,
-        impl_status_chrome=1)
+        name='feature one', summary='sum', owner=['user1@google.com'],
+        category=1, visibility=1, standardization=1,
+        web_dev_views=core_enums.DEV_NO_SIGNALS, impl_status_chrome=1)
     self.feature_1.put()
 
     self.request_path = '/guide/edit/%d' % self.feature_1.key.integer_id()
@@ -164,14 +202,53 @@ class ProcessOverviewTest(testing_config.CustomTestCase):
     self.assertTrue('progress_so_far' in template_data)
 
 
+class ProcessOverviewTemplateTest(TestWithFeature):
+
+  HANDLER_CLASS = guide.ProcessOverview
+
+  def setUp(self):
+    super(ProcessOverviewTemplateTest, self).setUp()
+
+    self.feature_1 = models.Feature(
+        name='feature one', summary='sum', owner=['user1@google.com'],
+        category=1, visibility=1, standardization=1,
+        web_dev_views=core_enums.DEV_NO_SIGNALS, impl_status_chrome=1)
+    self.feature_1.put()
+    self.request_path = '/guide/edit/%d' % self.feature_1.key.integer_id()
+
+    with test_app.test_request_context(self.request_path):
+      self.template_data = self.handler.get_template_data(
+        self.feature_1.key.integer_id()
+      )
+
+      self.template_data.update(self.handler.get_common_data())
+      self.template_data['nonce'] = 'fake nonce'
+      template_path = self.handler.get_template_path(self.template_data)
+      self.full_template_path = os.path.join(template_path)
+
+  def test_html_rendering(self):
+    """We can render the template with valid html."""
+    testing_config.sign_in('user1@google.com', 1234567890)
+
+    with test_app.test_request_context(self.request_path):
+      template_data = self.handler.get_template_data(
+          self.feature_1.key.integer_id())
+
+    template_text = self.handler.render(
+        template_data, self.full_template_path)
+    parser = html5lib.HTMLParser(strict=True)
+    document = parser.parse(template_text)
+
+
 class FeatureEditStageTest(testing_config.CustomTestCase):
 
   def setUp(self):
     self.feature_1 = models.Feature(
-        name='feature one', summary='sum', category=1, visibility=1,
-        standardization=1, web_dev_views=1, impl_status_chrome=1)
+        name='feature one', summary='sum', owner=['user1@google.com'],
+        category=1, visibility=1, standardization=1, web_dev_views=1,
+        impl_status_chrome=1)
     self.feature_1.put()
-    self.stage = models.INTENT_INCUBATE  # Shows first form
+    self.stage = core_enums.INTENT_INCUBATE  # Shows first form
 
     self.request_path = ('/guide/stage/%d/%d' % (
         self.feature_1.key.integer_id(), self.stage))
@@ -187,22 +264,31 @@ class FeatureEditStageTest(testing_config.CustomTestCase):
       self.assertTrue(self.handler.touched('name'))
       self.assertFalse(self.handler.touched('summary'))
 
-  def test_split_input(self):
-    """We can parse items from multi-item text fields"""
+  def test_touched__checkboxes(self):
+    """For now, any checkbox listed in form_fields is considered touched."""
     with test_app.test_request_context(
-        'path', data={
-            'empty': '',
-            'colors': 'yellow\nblue',
-            'names': 'alice, bob',
-        }):
-      self.assertEqual([], self.handler.split_input('missing'))
-      self.assertEqual([], self.handler.split_input('empty'))
-      self.assertEqual(
-          ['yellow', 'blue'],
-          self.handler.split_input('colors'))
-      self.assertEqual(
-          ['alice', 'bob'],
-          self.handler.split_input('names', delim=','))
+        'path', data={'form_fields': 'unlisted, api_spec',
+                      'unlisted': 'yes',
+                      'wpt': 'yes'}):
+      # unlisted is in this form and the user checked the box.
+      self.assertTrue(self.handler.touched('unlisted'))
+      # api_spec is this form and the user did not check the box.
+      self.assertTrue(self.handler.touched('api_spec'))
+      # wpt is not part of this form, regardless if a value was given.
+      self.assertFalse(self.handler.touched('wpt'))
+
+  def test_touched__selects(self):
+    """For now, any select in the form data considered touched if not ''."""
+    with test_app.test_request_context(
+        'path', data={'form_fields': 'not used for this case',
+                      'category': '',
+                      'feature_type': '4'}):
+      # The user did not choose any value for category.
+      self.assertFalse(self.handler.touched('category'))
+      # The user did select a value, or one was already set.
+      self.assertTrue(self.handler.touched('feature_type'))
+      # intent_state is a select, but it was not present in this POST.
+      self.assertFalse(self.handler.touched('select'))
 
   def test_get__anon(self):
     """Anon cannot edit features, gets a redirect to viewing page."""
@@ -283,6 +369,7 @@ class FeatureEditStageTest(testing_config.CustomTestCase):
     testing_config.sign_in('user1@google.com', 1234567890)
     with test_app.test_request_context(
         self.request_path, data={
+            'form_fields': 'category, name, summary, shipped_milestone',
             'category': '2',
             'name': 'Revised feature name',
             'summary': 'Revised feature summary',
@@ -300,3 +387,96 @@ class FeatureEditStageTest(testing_config.CustomTestCase):
     self.assertEqual('Revised feature name', revised_feature.name)
     self.assertEqual('Revised feature summary', revised_feature.summary)
     self.assertEqual(84, revised_feature.shipped_milestone)
+
+
+class FeatureEditStageTemplateTest(TestWithFeature):
+
+  HANDLER_CLASS = guide.FeatureEditStage
+
+  def setUp(self):
+    super(FeatureEditStageTemplateTest, self).setUp()
+    self.feature_1 = models.Feature(
+        name='feature one', summary='sum', owner=['user1@google.com'],
+        category=1, visibility=1, standardization=1,
+        web_dev_views=core_enums.DEV_NO_SIGNALS, impl_status_chrome=1)
+    self.feature_1.put()
+    self.stage = core_enums.INTENT_INCUBATE  # Shows first form
+    testing_config.sign_in('user1@google.com', 1234567890)
+
+    with test_app.test_request_context(self.request_path):
+      self.template_data = self.handler.get_template_data(
+        self.feature_1.key.integer_id(), self.stage)
+
+      self.template_data.update(self.handler.get_common_data())
+      self.template_data['nonce'] = 'fake nonce'
+      template_path = self.handler.get_template_path(self.template_data)
+      self.full_template_path = os.path.join(template_path)
+
+  def test_html_rendering(self):
+    """We can render the template with valid html."""
+    template_text = self.handler.render(
+        self.template_data, self.full_template_path)
+    parser = html5lib.HTMLParser(strict=True)
+    document = parser.parse(template_text)
+
+
+
+class FeatureEditAllFieldsTemplateTest(TestWithFeature):
+
+  HANDLER_CLASS = guide.FeatureEditAllFields
+
+  def setUp(self):
+    super(FeatureEditAllFieldsTemplateTest, self).setUp()
+    self.feature_1 = models.Feature(
+        name='feature one', summary='sum', owner=['user1@google.com'],
+        category=1, visibility=1, standardization=1,
+        web_dev_views=core_enums.DEV_NO_SIGNALS, impl_status_chrome=1)
+    self.feature_1.put()
+    self.stage = core_enums.INTENT_INCUBATE  # Shows first form
+    testing_config.sign_in('user1@google.com', 1234567890)
+
+    with test_app.test_request_context(self.request_path):
+      self.template_data = self.handler.get_template_data(
+        self.feature_1.key.integer_id())
+
+      self.template_data.update(self.handler.get_common_data())
+      self.template_data['nonce'] = 'fake nonce'
+      template_path = self.handler.get_template_path(self.template_data)
+      self.full_template_path = os.path.join(template_path)
+
+  def test_html_rendering(self):
+    """We can render the template with valid html."""
+    template_text = self.handler.render(
+        self.template_data, self.full_template_path)
+    parser = html5lib.HTMLParser(strict=True)
+    document = parser.parse(template_text)
+
+class FeatureVerifyAccuracyTemplateTest(TestWithFeature):
+
+  HANDLER_CLASS = guide.FeatureVerifyAccuracy
+
+  def setUp(self):
+    super(FeatureVerifyAccuracyTemplateTest, self).setUp()
+    self.feature_1 = models.Feature(
+        name='feature one', summary='sum', owner=['user1@google.com'],
+        category=1, visibility=1, standardization=1,
+        web_dev_views=core_enums.DEV_NO_SIGNALS, impl_status_chrome=1)
+    self.feature_1.put()
+    self.stage = core_enums.INTENT_INCUBATE  # Shows first form
+    testing_config.sign_in('user1@google.com', 1234567890)
+
+    with test_app.test_request_context(self.request_path):
+      self.template_data = self.handler.get_template_data(
+        self.feature_1.key.integer_id())
+
+      self.template_data.update(self.handler.get_common_data())
+      self.template_data['nonce'] = 'fake nonce'
+      template_path = self.handler.get_template_path(self.template_data)
+      self.full_template_path = os.path.join(template_path)
+
+  def test_html_rendering(self):
+    """We can render the template with valid html."""
+    template_text = self.handler.render(
+        self.template_data, self.full_template_path)
+    parser = html5lib.HTMLParser(strict=True)
+    document = parser.parse(template_text)

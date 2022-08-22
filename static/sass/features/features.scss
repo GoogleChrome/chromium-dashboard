@@ -13,10 +13,24 @@
   }
 }
 
-app-drawer {
-  h3 {
-    margin-left: $content-padding / 2;
-  }
+#content-component-wrapper {
+  width: auto;
+}
+
+#column-container {
+  display: flex;
+  align-items: stretch;
+  flex-direction: row;
+}
+
+#drawer-column {
+  padding: 1em 2em 1em 1em;
+  margin-left: 8px;
+}
+
+#content-column {
+  flex: 1;
+  padding-left: 2em;
 }
 
 button {
@@ -38,37 +52,33 @@ chromedash-legend {
 
 chromedash-featurelist {
   max-width: $max-content-width;
-  margin-bottom: 54px + $content-padding * 2; // bottom bar + some.
 }
 
 #subheader {
   .feature-count {
     min-width: 170px;
   }
-  .actionlinks {
-    .blue-button {
-      margin-left: 4px;
-    }
+
+  .num-features {
+    font-weight: 400;
   }
 }
 
-@media only screen and (min-width: 701px) {
-  #content {
-    &::after {
-      width: $max-content-width;
-    }
+@media only screen and (max-width: 1200px) {
+  #column-container {
+    flex-direction: column;
   }
-}
 
-@media only screen and (max-width: 700px) {
+  #content-column {
+    padding-left: var(--content-padding-half);
+    padding-right: var(--content-padding-half);
+  }
+
+  #drawer-column {
+    padding: 0;
+  }
+
   #subheader {
     width: initial;
-
-    div.actionlinks {
-      flex: 1 0 0;
-      span {
-        display: none;
-      }
-    }
   }
 }

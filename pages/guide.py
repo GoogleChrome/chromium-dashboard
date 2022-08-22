@@ -1,6 +1,3 @@
-
-
-
 # -*- coding: utf-8 -*-
 # Copyright 2020 Google Inc.
 #
@@ -16,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import datetime
+from datetime import datetime
 import flask
 import json
 import logging
@@ -34,63 +31,65 @@ from framework import basehandlers
 from framework import permissions
 from framework import utils
 from pages import guideforms
+from internals import core_enums
 from internals import models
 from internals import processes
+import settings
 
 
 # Forms to be used for each stage of each process.
 # { feature_type_id: { stage_id: stage_specific_form} }
 STAGE_FORMS = {
-    models.FEATURE_TYPE_INCUBATE_ID: {
-        models.INTENT_INCUBATE: guideforms.NewFeature_Incubate,
-        models.INTENT_IMPLEMENT: guideforms.NewFeature_Prototype,
-        models.INTENT_EXPERIMENT: guideforms.Any_DevTrial,
-        models.INTENT_IMPLEMENT_SHIP: guideforms.NewFeature_EvalReadinessToShip,
-        models.INTENT_EXTEND_TRIAL: guideforms.NewFeature_OriginTrial,
-        models.INTENT_SHIP: guideforms.Most_PrepareToShip,
-        models.INTENT_SHIPPED: guideforms.Any_Ship,
+    core_enums.FEATURE_TYPE_INCUBATE_ID: {
+        core_enums.INTENT_INCUBATE: guideforms.NewFeature_Incubate,
+        core_enums.INTENT_IMPLEMENT: guideforms.NewFeature_Prototype,
+        core_enums.INTENT_EXPERIMENT: guideforms.Any_DevTrial,
+        core_enums.INTENT_IMPLEMENT_SHIP: guideforms.NewFeature_EvalReadinessToShip,
+        core_enums.INTENT_EXTEND_TRIAL: guideforms.NewFeature_OriginTrial,
+        core_enums.INTENT_SHIP: guideforms.Most_PrepareToShip,
+        core_enums.INTENT_SHIPPED: guideforms.Any_Ship,
         },
 
-    models.FEATURE_TYPE_EXISTING_ID: {
-        models.INTENT_IMPLEMENT: guideforms.Existing_Prototype,
-        models.INTENT_EXPERIMENT: guideforms.Any_DevTrial,
-        models.INTENT_EXTEND_TRIAL: guideforms.Existing_OriginTrial,
-        models.INTENT_SHIP: guideforms.Most_PrepareToShip,
-        models.INTENT_SHIPPED: guideforms.Any_Ship,
+    core_enums.FEATURE_TYPE_EXISTING_ID: {
+        core_enums.INTENT_IMPLEMENT: guideforms.Existing_Prototype,
+        core_enums.INTENT_EXPERIMENT: guideforms.Any_DevTrial,
+        core_enums.INTENT_EXTEND_TRIAL: guideforms.Existing_OriginTrial,
+        core_enums.INTENT_SHIP: guideforms.Most_PrepareToShip,
+        core_enums.INTENT_SHIPPED: guideforms.Any_Ship,
         },
 
-    models.FEATURE_TYPE_CODE_CHANGE_ID: {
-        models.INTENT_IMPLEMENT: guideforms.PSA_Implement,
-        models.INTENT_EXPERIMENT: guideforms.Any_DevTrial,
-        models.INTENT_SHIP: guideforms.PSA_PrepareToShip,
-        models.INTENT_SHIPPED: guideforms.Any_Ship,
+    core_enums.FEATURE_TYPE_CODE_CHANGE_ID: {
+        core_enums.INTENT_IMPLEMENT: guideforms.PSA_Implement,
+        core_enums.INTENT_EXPERIMENT: guideforms.Any_DevTrial,
+        core_enums.INTENT_SHIP: guideforms.PSA_PrepareToShip,
+        core_enums.INTENT_SHIPPED: guideforms.Any_Ship,
         },
 
-    models.FEATURE_TYPE_DEPRECATION_ID: {
-        models.INTENT_IMPLEMENT: guideforms.Deprecation_Implement,
-        models.INTENT_EXPERIMENT: guideforms.Any_DevTrial,
-        models.INTENT_EXTEND_TRIAL: guideforms.Deprecation_DeprecationTrial,
-        models.INTENT_SHIP: guideforms.Deprecation_PrepareToShip,
-        models.INTENT_REMOVED: guideforms.Deprecation_Removed,
+    core_enums.FEATURE_TYPE_DEPRECATION_ID: {
+        core_enums.INTENT_IMPLEMENT: guideforms.Deprecation_Implement,
+        core_enums.INTENT_EXPERIMENT: guideforms.Any_DevTrial,
+        core_enums.INTENT_EXTEND_TRIAL: guideforms.Deprecation_DeprecationTrial,
+        core_enums.INTENT_SHIP: guideforms.Deprecation_PrepareToShip,
+        core_enums.INTENT_REMOVED: guideforms.Deprecation_Removed,
         },
 }
 
 
 IMPL_STATUS_FORMS = {
-    models.INTENT_INCUBATE:
+    core_enums.INTENT_INCUBATE:
         (None, guideforms.ImplStatus_Incubate),
-    models.INTENT_EXPERIMENT:
-        (models.BEHIND_A_FLAG, guideforms.ImplStatus_DevTrial),
-    models.INTENT_EXTEND_TRIAL:
-        (models.ORIGIN_TRIAL, guideforms.ImplStatus_OriginTrial),
-    models.INTENT_IMPLEMENT_SHIP:
+    core_enums.INTENT_EXPERIMENT:
+        (core_enums.BEHIND_A_FLAG, guideforms.ImplStatus_DevTrial),
+    core_enums.INTENT_EXTEND_TRIAL:
+        (core_enums.ORIGIN_TRIAL, guideforms.ImplStatus_OriginTrial),
+    core_enums.INTENT_IMPLEMENT_SHIP:
         (None, guideforms.ImplStatus_EvalReadinessToShip),
-    models.INTENT_SHIP:
-        (models.ENABLED_BY_DEFAULT, guideforms.ImplStatus_AllMilestones),
-    models.INTENT_SHIPPED:
-        (models.ENABLED_BY_DEFAULT, guideforms.ImplStatus_AllMilestones),
-    models.INTENT_REMOVED:
-        (models.REMOVED, guideforms.ImplStatus_AllMilestones),
+    core_enums.INTENT_SHIP:
+        (core_enums.ENABLED_BY_DEFAULT, guideforms.ImplStatus_AllMilestones),
+    core_enums.INTENT_SHIPPED:
+        (core_enums.ENABLED_BY_DEFAULT, guideforms.ImplStatus_AllMilestones),
+    core_enums.INTENT_REMOVED:
+        (core_enums.REMOVED, guideforms.ImplStatus_AllMilestones),
     }
 
 # Forms to be used on the "Edit all" page that shows a flat list of fields.
@@ -110,7 +109,7 @@ class FeatureNew(basehandlers.FlaskHandler):
 
   TEMPLATE_PATH = 'guide/new.html'
 
-  @permissions.require_edit_feature
+  @permissions.require_create_feature
   def get_template_data(self):
     user = self.get_current_user()
 
@@ -121,13 +120,14 @@ class FeatureNew(basehandlers.FlaskHandler):
         }
     return template_data
 
-  @permissions.require_edit_feature
+  @permissions.require_create_feature
   def process_post_data(self):
     owners = self.split_emails('owner')
+    editors = self.split_emails('editors')
 
     blink_components = (
         self.split_input('blink_components', delim=',') or
-        [models.BlinkComponent.DEFAULT_COMPONENT])
+        [settings.DEFAULT_COMPONENT])
 
     # TODO(jrobbins): Validate input, even though it is done on client.
 
@@ -139,13 +139,16 @@ class FeatureNew(basehandlers.FlaskHandler):
         category=int(self.form.get('category')),
         name=self.form.get('name'),
         feature_type=feature_type,
-        intent_stage=models.INTENT_NONE,
+        intent_stage=core_enums.INTENT_NONE,
         summary=self.form.get('summary'),
         owner=owners,
-        impl_status_chrome=models.NO_ACTIVE_DEV,
-        standardization=models.EDITORS_DRAFT,
+        editors=editors,
+        creator=signed_in_user.email(),
+        accurate_as_of=datetime.now(),
+        impl_status_chrome=core_enums.NO_ACTIVE_DEV,
+        standardization=core_enums.EDITORS_DRAFT,
         unlisted=self.form.get('unlisted') == 'on',
-        web_dev_views=models.DEV_NO_SIGNALS,
+        web_dev_views=core_enums.DEV_NO_SIGNALS,
         blink_components=blink_components,
         tag_review_status=processes.initial_tag_review_status(feature_type),
         created_by=signed_in_user,
@@ -173,6 +176,7 @@ class ProcessOverview(basehandlers.FlaskHandler):
 
   @permissions.require_edit_feature
   def get_template_data(self, feature_id):
+
     f = models.Feature.get_by_id(int(feature_id))
     if f is None:
       self.abort(404, msg='Feature not found')
@@ -200,6 +204,10 @@ class FeatureEditStage(basehandlers.FlaskHandler):
 
   TEMPLATE_PATH = 'guide/stage.html'
 
+  def find_fields_of_class(self, fieldClass):
+    return [field_name for field_name in guideforms.ALL_FIELDS
+            if isinstance(guideforms.ALL_FIELDS[field_name], fieldClass)]
+
   def touched(self, param_name):
     """Return True if the user edited the specified field."""
     # TODO(jrobbins): for now we just consider everything on the current form
@@ -209,9 +217,7 @@ class FeatureEditStage(basehandlers.FlaskHandler):
 
     # For now, checkboxes are always considered "touched", if they are
     # present on the form.
-    # TODO(jrobbins): Simplify this after next deployment.
-    checkboxes = ('unlisted', 'all_platforms', 'wpt', 'prefixed', 'api_spec',
-                  'requires_embedder_support')
+    checkboxes = self.find_fields_of_class(forms.BooleanField)
     if param_name in checkboxes:
       form_fields_str = self.form.get('form_fields')
       if form_fields_str:
@@ -220,6 +226,14 @@ class FeatureEditStage(basehandlers.FlaskHandler):
         return param_name in form_fields
       else:
         return True
+
+    # For now, selects are considered "touched", if they are
+    # present on the form and are not empty strings.
+    selects = self.find_fields_of_class(forms.ChoiceField)
+    if param_name in selects:
+      return self.form.get(param_name)
+
+    # See TODO at top of this method.
     return param_name in self.form
 
   def get_blink_component_from_bug(self, blink_components, bug_url):
@@ -239,6 +253,7 @@ class FeatureEditStage(basehandlers.FlaskHandler):
 
   @permissions.require_edit_feature
   def get_template_data(self, feature_id, stage_id):
+
     f, feature_process = self.get_feature_and_process(feature_id)
 
     stage_name = ''
@@ -274,7 +289,7 @@ class FeatureEditStage(basehandlers.FlaskHandler):
         'already_on_this_impl_status':
             impl_status_offered == f.impl_status_chrome,
         'impl_status_form': impl_status_form,
-        'impl_status_name': models.IMPLEMENTATION_STATUS.get(
+        'impl_status_name': core_enums.IMPLEMENTATION_STATUS.get(
             impl_status_offered, None),
         'impl_status_offered': impl_status_offered,
     })
@@ -282,6 +297,7 @@ class FeatureEditStage(basehandlers.FlaskHandler):
 
   @permissions.require_edit_feature
   def process_post_data(self, feature_id, stage_id=0):
+
     if feature_id:
       feature = models.Feature.get_by_id(feature_id)
       if feature is None:
@@ -314,7 +330,7 @@ class FeatureEditStage(basehandlers.FlaskHandler):
           'initial_public_proposal_url')
 
     if self.touched('explainer_links'):
-      feature.explainer_links = self.split_input('explainer_links')
+      feature.explainer_links = self.parse_links('explainer_links')
 
     if self.touched('bug_url'):
       feature.bug_url = self.parse_link('bug_url')
@@ -337,9 +353,17 @@ class FeatureEditStage(basehandlers.FlaskHandler):
       feature.intent_to_experiment_url = self.parse_link(
           'intent_to_experiment_url')
 
+    if self.touched('intent_to_extend_experiment_url'):
+      feature.intent_to_extend_experiment_url = self.parse_link(
+          'intent_to_extend_experiment_url')
+
     if self.touched('origin_trial_feedback_url'):
       feature.origin_trial_feedback_url = self.parse_link(
           'origin_trial_feedback_url')
+
+    if self.touched('anticipated_spec_changes'):
+      feature.anticipated_spec_changes = self.form.get(
+          'anticipated_spec_changes')
 
     if self.touched('finch_url'):
       feature.finch_url = self.parse_link('finch_url')
@@ -388,6 +412,13 @@ class FeatureEditStage(basehandlers.FlaskHandler):
       feature.ot_milestone_android_end = self.parse_int(
           'ot_milestone_android_end')
 
+    if self.touched('ot_milestone_webview_start'):
+      feature.ot_milestone_webview_start = self.parse_int(
+          'ot_milestone_webview_start')
+    if self.touched('ot_milestone_webview_end'):
+      feature.ot_milestone_webview_end = self.parse_int(
+          'ot_milestone_webview_end')
+
     if self.touched('requires_embedder_support'):
       feature.requires_embedder_support = (
           self.form.get('requires_embedder_support') == 'on')
@@ -417,14 +448,17 @@ class FeatureEditStage(basehandlers.FlaskHandler):
     if self.touched('owner'):
       feature.owner = self.split_emails('owner')
 
+    if self.touched('editors'):
+      feature.editors = self.split_emails('editors')
+
     if self.touched('doc_links'):
-      feature.doc_links = self.split_input('doc_links')
+      feature.doc_links = self.parse_links('doc_links')
 
     if self.touched('measurement'):
       feature.measurement = self.form.get('measurement')
 
     if self.touched('sample_links'):
-      feature.sample_links = self.split_input('sample_links')
+      feature.sample_links = self.parse_links('sample_links')
 
     if self.touched('search_tags'):
       feature.search_tags = self.split_input('search_tags', delim=',')
@@ -432,7 +466,7 @@ class FeatureEditStage(basehandlers.FlaskHandler):
     if self.touched('blink_components'):
       feature.blink_components = (
           self.split_input('blink_components', delim=',') or
-          [models.BlinkComponent.DEFAULT_COMPONENT])
+          [settings.DEFAULT_COMPONENT])
 
     if self.touched('devrel'):
       feature.devrel = self.split_emails('devrel')
@@ -485,12 +519,15 @@ class FeatureEditStage(basehandlers.FlaskHandler):
       feature.ff_views_link = self.parse_link('ff_views_link')
     if self.touched('ff_views_notes'):
       feature.ff_views_notes = self.form.get('ff_views_notes')
+
+    # TODO(jrobbins): Delete after the next deployment
     if self.touched('ie_views'):
       feature.ie_views = int(self.form.get('ie_views'))
     if self.touched('ie_views_link'):
       feature.ie_views_link = self.parse_link('ie_views_link')
     if self.touched('ie_views_notes'):
       feature.ie_views_notes = self.form.get('ie_views_notes')
+
     if self.touched('safari_views'):
       feature.safari_views = int(self.form.get('safari_views'))
     if self.touched('safari_views_link'):
@@ -503,16 +540,24 @@ class FeatureEditStage(basehandlers.FlaskHandler):
       feature.web_dev_views_link = self.parse_link('web_dev_views_link')
     if self.touched('web_dev_views_notes'):
       feature.web_dev_views_notes = self.form.get('web_dev_views_notes')
+    if self.touched('other_views_notes'):
+      feature.other_views_notes = self.form.get('other_views_notes')
     if self.touched('prefixed'):
       feature.prefixed = self.form.get('prefixed') == 'on'
+    if self.touched('non_oss_deps'):
+      feature.non_oss_deps = self.form.get('non_oss_deps')
 
     if self.touched('tag_review'):
       feature.tag_review = self.form.get('tag_review')
     if self.touched('tag_review_status'):
       feature.tag_review_status = self.parse_int('tag_review_status')
+    if self.touched('webview_risks'):
+      feature.webview_risks = self.form.get('webview_risks')
 
     if self.touched('standardization'):
       feature.standardization = int(self.form.get('standardization'))
+    if self.form.get('accurate_as_of'):
+      feature.accurate_as_of = datetime.now()
     if self.touched('unlisted'):
       feature.unlisted = self.form.get('unlisted') == 'on'
     if self.touched('comments'):
@@ -528,6 +573,13 @@ class FeatureEditStage(basehandlers.FlaskHandler):
           'experiment_extension_reason')
     if self.touched('ongoing_constraints'):
       feature.ongoing_constraints = self.form.get('ongoing_constraints')
+
+    # Add user who updated to list of editors if not currently an editor.
+    # TODO(danielrsmith): This should be removed when enabling new permissions.
+    associated_with_feature = permissions.strict_can_edit_feature(
+      self.get_current_user(), feature_id)
+    if not associated_with_feature:
+      feature.editors.append(self.get_current_user().email())
 
     feature.updated_by = ndb.User(
         email=self.get_current_user().email(),
@@ -548,17 +600,38 @@ class FeatureEditAllFields(FeatureEditStage):
 
   @permissions.require_edit_feature
   def get_template_data(self, feature_id):
+
     f, feature_process = self.get_feature_and_process(feature_id)
 
     feature_edit_dict = f.format_for_edit()
     # TODO(jrobbins): make flat forms process specific?
     flat_form_section_list = FLAT_FORMS
     flat_forms = [
-        (section_name, form_class(feature_edit_dict))
+        (section_name, str(form_class(feature_edit_dict)))
         for section_name, form_class in flat_form_section_list]
     template_data = {
         'feature': f,
         'feature_id': f.key.integer_id(),
-        'flat_forms': flat_forms,
+        'flat_forms': json.dumps(flat_forms),
+    }
+    return template_data
+
+class FeatureVerifyAccuracy(FeatureEditStage):
+  TEMPLATE_PATH = 'guide/verify_accuracy.html'
+
+  @permissions.require_edit_feature
+  def get_template_data(self, feature_id):
+    f, _ = self.get_feature_and_process(feature_id)
+    feature_edit_dict = f.format_for_edit()
+
+    forms_title = "Accuracy last verified at time of creation."
+    if f.accurate_as_of is not None:
+      date = f.accurate_as_of.strftime("%Y-%m-%d")
+      forms_title = f"Accuracy last verified {date}."
+    forms = [(forms_title, guideforms.Verify_Accuracy(feature_edit_dict))]
+    template_data = {
+        'feature': f,
+        'feature_id': f.key.integer_id(),
+        'forms': forms,
     }
     return template_data

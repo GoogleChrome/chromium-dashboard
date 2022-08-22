@@ -14,20 +14,73 @@ indexes:
 - kind: "Feature"
   properties:
   - name: "shipped_milestone"
+  - name: "shipped_android_milestone"
     direction: desc
   - name: "name"
 - kind: "Feature"
   properties:
   - name: "shipped_milestone"
-  - name: "shipped_android_milestone"
     direction: desc
   - name: "name"
+- kind: "Approval"
+  properties:
+  - name: "feature_id"
+  - name: "field_id"
+  - name: "set_by"
+  - name: "set_on"
+- kind: "Approval"
+  properties:
+  - name: "feature_id"
+  - name: "field_id"
+  - name: "set_on"
+- kind: "Approval"
+  properties:
+  - name: "feature_id"
+  - name: "field_id"
+  - name: "state"
+  - name: "set_on"
+- kind: "Approval"
+  properties:
+  - name: "set_by"
+  - name: "set_on"
+- kind: "Approval"
+  properties:
+  - name: "field_id"
+  - name: "set_on"
+- kind: "Approval"
+  properties:
+  - name: "state"
+  - name: "set_on"
+- kind: "Approval"
+  properties:
+  - name: "state"
+  - name: "set_on"
+    direction: desc
+- kind: "Approval"
+  properties:
+  - name: "state"
+  - name: "set_on"
+    direction: desc
+  - name: "feature_id"
+- kind: "Approval"
+  properties:
+  - name: "state"
+  - name: "set_on"
+  - name: "feature_id"
 - kind: "Feature"
   properties:
   - name: "deleted"
   - name: "owner"
   - name: "updated"
     direction: desc
+- kind: "Approval"
+  properties:
+  - name: "feature_id"
+  - name: "set_on"
+- kind: "Comment"
+  properties:
+  - name: "feature_id"
+  - name: "created"
 - kind: "Feature"
   properties:
   - name: "impl_status_chrome"
@@ -65,6 +118,11 @@ indexes:
 - kind: "Feature"
   properties:
   - name: "ot_milestone_android_start"
+  - name: "ot_milestone_desktop_start"
+  - name: "name"
+- kind: "Feature"
+  properties:
+  - name: "ot_milestone_webview_start"
   - name: "ot_milestone_desktop_start"
   - name: "name"
 - kind: "Feature"
@@ -155,6 +213,16 @@ indexes:
   - name: "updated"
     direction: desc
   - name: "name"
+- kind: Feature
+  properties:
+  - name: editors
+  - name: updated
+    direction: desc
+- kind: Feature
+  properties:
+  - name: creator
+  - name: updated
+    direction: desc
 - kind: "FeatureObserver"
   properties:
   - name: "bucket_id"

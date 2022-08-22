@@ -1,0 +1,71 @@
+
+import SlTextarea from '@shoelace-style/shoelace/dist/components/textarea/textarea.js';
+
+export class ChromedashTextarea extends SlTextarea {
+  static get properties() {
+    return {
+      ...super.properties,
+      multiple: {type: Boolean},
+      pattern: {type: String},
+      chromedash_single_pattern: {type: String},
+      chromedash_split_pattern: {type: String},
+    };
+  }
+
+  constructor() {
+    super();
+  }
+
+  /**
+   * Checks whether the value conforms to custom validation constraints.
+   * @param {string} value
+   * @return {boolean}
+   */
+  customCheckValidity(value) {
+    if (this.multiple) {
+      if (this.chromedash_split_pattern &&
+          this.chromedash_single_pattern) {
+        const items = value.split(new RegExp(this.chromedash_split_pattern));
+        const singleItemRegex =
+            new RegExp('^' + this.chromedash_single_pattern + '$', '');
+        const valid = items.every((item) => {
+          if (!item) {
+            // ignore empty items
+            return true;
+          }
+          const itemValid = singleItemRegex.test(item);
+          return itemValid;
+        });
+        if (!valid) {
+          return false;
+        }
+      }
+    }
+    // If there is a pattern, and the value doesn't match the pattern, then fail.
+    // This applies regardless whether this.multiple is true.
+    if (this.pattern) {
+      const valueRegex = new RegExp('^' + this.pattern + '$', '');
+      return valueRegex.test(value);
+    }
+    // Otherwise, assume it is valid.
+    return true;
+  }
+
+  checkValidity() {
+    const invalidMsg = this.customCheckValidity(this.input.value) ? '' : 'invalid';
+    this.setCustomValidity(invalidMsg);
+  }
+
+  firstUpdated() {
+    this.invalid = !this.checkValidity();
+  }
+
+  updated() {
+    if (!this.input) {
+      return;
+    }
+    this.checkValidity();
+  }
+}
+
+customElements.define('chromedash-textarea', ChromedashTextarea);

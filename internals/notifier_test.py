@@ -1,6 +1,3 @@
-
-
-
 # Copyright 2020 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License")
@@ -20,14 +17,16 @@ import json
 import testing_config  # Must be imported before the module under test.
 
 import flask
-import mock
+from unittest import mock
 import werkzeug.exceptions  # Flask HTTP stuff.
 from google.cloud import ndb
 
 from framework import users
 
+from internals import approval_defs
 from internals import models
 from internals import notifier
+from internals import user_models
 import settings
 
 
@@ -35,33 +34,36 @@ class EmailFormattingTest(testing_config.CustomTestCase):
 
   def setUp(self):
     self.feature_1 = models.Feature(
-        name='feature one', summary='sum', category=1, visibility=1,
-        standardization=1, web_dev_views=1, impl_status_chrome=1,
-        created_by=ndb.User(
-            email='creator@example.com', _auth_domain='gmail.com'),
+        name='feature one', summary='sum', owner=['feature_owner@example.com'],
+        ot_milestone_desktop_start=100,
+        editors=['feature_editor@example.com', 'owner_1@example.com'],
+        category=1, visibility=1, standardization=1, web_dev_views=1,
+        impl_status_chrome=1, created_by=ndb.User(
+            email='creator1@gmail.com', _auth_domain='gmail.com'),
         updated_by=ndb.User(
-            email='editor@example.com', _auth_domain='gmail.com'),
+            email='editor1@gmail.com', _auth_domain='gmail.com'),
         blink_components=['Blink'])
     self.feature_1.put()
-    self.component_1 = models.BlinkComponent(name='Blink')
+    self.component_1 = user_models.BlinkComponent(name='Blink')
     self.component_1.put()
-    self.owner_1 = models.FeatureOwner(
+    self.component_owner_1 = user_models.FeatureOwner(
         name='owner_1', email='owner_1@example.com',
         primary_blink_components=[self.component_1.key])
-    self.owner_1.put()
-    self.watcher_1 = models.FeatureOwner(
+    self.component_owner_1.put()
+    self.watcher_1 = user_models.FeatureOwner(
         name='watcher_1', email='watcher_1@example.com',
         watching_all_features=True)
     self.watcher_1.put()
     self.changes = [dict(prop_name='test_prop', new_val='test new value',
                     old_val='test old value')]
     self.feature_2 = models.Feature(
-        name='feature two', summary='sum', category=1, visibility=1,
-        standardization=1, web_dev_views=1, impl_status_chrome=1,
-        created_by=ndb.User(
-            email='creator@example.com', _auth_domain='gmail.com'),
+        name='feature two', summary='sum', owner=['feature_owner@example.com'],
+        editors=['feature_editor@example.com', 'owner_1@example.com'],
+        category=1, visibility=1, standardization=1, web_dev_views=1,
+        impl_status_chrome=1, created_by=ndb.User(
+            email='creator2@example.com', _auth_domain='gmail.com'),
         updated_by=ndb.User(
-            email='editor@example.com', _auth_domain='gmail.com'),
+            email='editor2@example.com', _auth_domain='gmail.com'),
         blink_components=['Blink'])
     self.feature_2.put()
 
@@ -74,8 +76,8 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     body_html = notifier.format_email_body(
         False, self.feature_1, [])
     self.assertIn('Blink', body_html)
-    self.assertIn('creator@example.com added', body_html)
-    self.assertIn('www.chromestatus.com/feature/%d' %
+    self.assertIn('creator1@gmail.com added', body_html)
+    self.assertIn('chromestatus.com/feature/%d' %
                   self.feature_1.key.integer_id(),
                   body_html)
     self.assertNotIn('watcher_1,', body_html)
@@ -85,7 +87,7 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     body_html = notifier.format_email_body(
         True, self.feature_1, [])
     self.assertIn('Blink', body_html)
-    self.assertIn('editor@example.com updated', body_html)
+    self.assertIn('editor1@gmail.com updated', body_html)
     self.assertNotIn('watcher_1,', body_html)
 
   def test_format_email_body__update_with_changes(self):
@@ -93,11 +95,24 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     body_html = notifier.format_email_body(
         True, self.feature_1, self.changes)
     self.assertIn('test_prop', body_html)
-    self.assertIn('www.chromestatus.com/feature/%d' %
+    self.assertIn('chromestatus.com/feature/%d' %
                   self.feature_1.key.integer_id(),
                   body_html)
     self.assertIn('test old value', body_html)
     self.assertIn('test new value', body_html)
+
+  def test_format_email_body__mozdev_links(self):
+    """We generate an email body with links to developer.mozilla.org."""
+    self.feature_1.doc_links = ['https://developer.mozilla.org/look-here']
+    body_html = notifier.format_email_body(
+        True, self.feature_1, self.changes)
+    self.assertIn('look-here', body_html)
+
+    self.feature_1.doc_links = [
+        'https://hacker-site.org/developer.mozilla.org/look-here']
+    body_html = notifier.format_email_body(
+        True, self.feature_1, self.changes)
+    self.assertNotIn('look-here', body_html)
 
   def test_accumulate_reasons(self):
     """We can accumulate lists of reasons why we sent a message to a user."""
@@ -108,13 +123,14 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     self.assertEqual({}, addr_reasons)
 
     # Adding some users builds up a bigger reason dictionary.
-    notifier.accumulate_reasons(addr_reasons, [self.owner_1], 'a reason')
+    notifier.accumulate_reasons(addr_reasons, [self.component_owner_1],
+                                'a reason')
     self.assertEqual(
         {'owner_1@example.com': ['a reason']},
         addr_reasons)
 
     notifier.accumulate_reasons(
-        addr_reasons, [self.owner_1, self.watcher_1], 'another reason')
+        addr_reasons, [self.component_owner_1, self.watcher_1], 'another reason')
     self.assertEqual(
         {'owner_1@example.com': ['a reason', 'another reason'],
          'watcher_1@example.com': ['another reason'],
@@ -133,19 +149,34 @@ class EmailFormattingTest(testing_config.CustomTestCase):
 
   def test_convert_reasons_to_task__no_reasons(self):
     with self.assertRaises(AssertionError):
-      notifier.convert_reasons_to_task('addr', [], 'html', 'subject')
+      notifier.convert_reasons_to_task(
+          'addr', [], 'html', 'subject', 'triggerer')
 
   def test_convert_reasons_to_task__normal(self):
     actual = notifier.convert_reasons_to_task(
-        'addr', ['reason 1', 'reason 2'], 'html', 'subject')
+        'addr', ['reason 1', 'reason 2'], 'html', 'subject',
+        'triggerer@example.com')
     self.assertCountEqual(
-        ['to', 'subject', 'html'],
+        ['to', 'subject', 'html', 'reply_to'],
         list(actual.keys()))
     self.assertEqual('addr', actual['to'])
     self.assertEqual('subject', actual['subject'])
+    self.assertEqual(None, actual['reply_to'])  # Lacks perm to reply.
     self.assertIn('html', actual['html'])
     self.assertIn('reason 1', actual['html'])
     self.assertIn('reason 2', actual['html'])
+
+  def test_convert_reasons_to_task__can_reply(self):
+    """If the user is allowed to reply, set reply_to to the triggerer."""
+    actual = notifier.convert_reasons_to_task(
+        'user@chromium.org', ['reason 1', 'reason 2'], 'html', 'subject',
+        'triggerer@example.com')
+    self.assertCountEqual(
+        ['to', 'subject', 'html', 'reply_to'],
+        list(actual.keys()))
+    self.assertEqual('user@chromium.org', actual['to'])
+    self.assertEqual('subject', actual['subject'])
+    self.assertEqual('triggerer@example.com', actual['reply_to'])
 
   def test_apply_subscription_rules__relevant_match(self):
     """When a feature and change match a rule, a reason is returned."""
@@ -187,14 +218,40 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     mock_f_e_b.return_value = 'mock body html'
     actual_tasks = notifier.make_email_tasks(
         self.feature_1, is_update=False, changes=[])
-    self.assertEqual(2, len(actual_tasks))
-    owner_task, watcher_task = actual_tasks
-    self.assertEqual('new feature: feature one', owner_task['subject'])
-    self.assertIn('mock body html', owner_task['html'])
-    self.assertEqual('owner_1@example.com', owner_task['to'])
+    self.assertEqual(4, len(actual_tasks))
+    (feature_editor_task, feature_owner_task, component_owner_task,
+     watcher_task) = actual_tasks
+
+    # Notification to feature owner.
+    self.assertEqual('feature_owner@example.com', feature_owner_task['to'])
+    self.assertEqual('new feature: feature one', feature_owner_task['subject'])
+    self.assertIn('mock body html', feature_owner_task['html'])
+    self.assertIn('<li>You are listed as an owner of this feature</li>',
+      feature_owner_task['html'])
+
+    # Notification to feature editor.
+    self.assertEqual('new feature: feature one', feature_editor_task['subject'])
+    self.assertIn('mock body html', feature_editor_task['html'])
+    self.assertIn('<li>You are listed as an editor of this feature</li>',
+      feature_editor_task['html'])
+    self.assertEqual('feature_editor@example.com', feature_editor_task['to'])
+
+    # Notification to component owner.
+    self.assertEqual('new feature: feature one', component_owner_task['subject'])
+    self.assertIn('mock body html', component_owner_task['html'])
+    # Component owner is also a feature editor and should have both reasons.
+    self.assertIn('<li>You are an owner of this feature\'s component</li>\n'
+                  '<li>You are listed as an editor of this feature</li>',
+      component_owner_task['html'])
+    self.assertEqual('owner_1@example.com', component_owner_task['to'])
+
+    # Notification to feature change watcher.
     self.assertEqual('new feature: feature one', watcher_task['subject'])
     self.assertIn('mock body html', watcher_task['html'])
+    self.assertIn('<li>You are watching all feature changes</li>',
+      watcher_task['html'])
     self.assertEqual('watcher_1@example.com', watcher_task['to'])
+
     mock_f_e_b.assert_called_once_with(
         False, self.feature_1, [])
 
@@ -204,14 +261,43 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     mock_f_e_b.return_value = 'mock body html'
     actual_tasks = notifier.make_email_tasks(
         self.feature_1, True, self.changes)
-    self.assertEqual(2, len(actual_tasks))
-    owner_task, watcher_task = actual_tasks
-    self.assertEqual('updated feature: feature one', owner_task['subject'])
-    self.assertIn('mock body html', owner_task['html'])
-    self.assertEqual('owner_1@example.com', owner_task['to'])
+    self.assertEqual(4, len(actual_tasks))
+    (feature_editor_task, feature_owner_task, component_owner_task,
+     watcher_task) = actual_tasks
+
+    # Notification to feature owner.
+    self.assertEqual('feature_owner@example.com', feature_owner_task['to'])
+    self.assertEqual('updated feature: feature one',
+      feature_owner_task['subject'])
+    self.assertIn('mock body html', feature_owner_task['html'])
+    self.assertIn('<li>You are listed as an owner of this feature</li>',
+      feature_owner_task['html'])
+
+    # Notification to feature editor.
+    self.assertEqual('updated feature: feature one',
+      feature_editor_task['subject'])
+    self.assertIn('mock body html', feature_editor_task['html'])
+    self.assertIn('<li>You are listed as an editor of this feature</li>',
+      feature_editor_task['html'])
+    self.assertEqual('feature_editor@example.com', feature_editor_task['to'])
+
+    # Notification to component owner.
+    self.assertEqual('updated feature: feature one',
+      component_owner_task['subject'])
+    self.assertIn('mock body html', component_owner_task['html'])
+    # Component owner is also a feature editor and should have both reasons.
+    self.assertIn('<li>You are an owner of this feature\'s component</li>\n'
+                  '<li>You are listed as an editor of this feature</li>',
+      component_owner_task['html'])
+    self.assertEqual('owner_1@example.com', component_owner_task['to'])
+
+    # Notification to feature change watcher.
     self.assertEqual('updated feature: feature one', watcher_task['subject'])
     self.assertIn('mock body html', watcher_task['html'])
+    self.assertIn('<li>You are watching all feature changes</li>',
+      watcher_task['html'])
     self.assertEqual('watcher_1@example.com', watcher_task['to'])
+
     mock_f_e_b.assert_called_once_with(
         True, self.feature_1, self.changes)
 
@@ -223,15 +309,50 @@ class EmailFormattingTest(testing_config.CustomTestCase):
         'starrer_1@example.com', self.feature_1.key.integer_id())
     actual_tasks = notifier.make_email_tasks(
         self.feature_1, True, self.changes)
-    self.assertEqual(3, len(actual_tasks))
-    owner_task, starrer_task, watcher_task = actual_tasks
-    self.assertEqual('updated feature: feature one', owner_task['subject'])
-    self.assertIn('mock body html', owner_task['html'])
-    self.assertEqual('owner_1@example.com', owner_task['to'])
+    self.assertEqual(5, len(actual_tasks))
+    (feature_editor_task, feature_owner_task, component_owner_task,
+     starrer_task, watcher_task) = actual_tasks
+
+    # Notification to feature owner.
+    self.assertEqual('feature_owner@example.com', feature_owner_task['to'])
+    self.assertEqual('updated feature: feature one',
+      feature_owner_task['subject'])
+    self.assertIn('mock body html', feature_owner_task['html'])
+    self.assertIn('<li>You are listed as an owner of this feature</li>',
+      feature_owner_task['html'])
+
+    # Notification to feature editor.
+    self.assertEqual('updated feature: feature one',
+      feature_editor_task['subject'])
+    self.assertIn('mock body html', feature_editor_task['html'])
+    self.assertIn('<li>You are listed as an editor of this feature</li>',
+      feature_editor_task['html'])
+    self.assertEqual('feature_editor@example.com', feature_editor_task['to'])
+
+    # Notification to component owner.
+    self.assertEqual('updated feature: feature one',
+      component_owner_task['subject'])
+    self.assertIn('mock body html', component_owner_task['html'])
+    # Component owner is also a feature editor and should have both reasons.
+    self.assertIn('<li>You are an owner of this feature\'s component</li>\n'
+                  '<li>You are listed as an editor of this feature</li>',
+      component_owner_task['html'])
+    self.assertEqual('owner_1@example.com', component_owner_task['to'])
+
+    # Notification to feature starrer.
+    self.assertEqual('updated feature: feature one', starrer_task['subject'])
+    self.assertIn('mock body html', starrer_task['html'])
+    self.assertIn('<li>You starred this feature</li>',
+      starrer_task['html'])
     self.assertEqual('starrer_1@example.com', starrer_task['to'])
+
+    # Notification to feature change watcher.
     self.assertEqual('updated feature: feature one', watcher_task['subject'])
     self.assertIn('mock body html', watcher_task['html'])
+    self.assertIn('<li>You are watching all feature changes</li>',
+      watcher_task['html'])
     self.assertEqual('watcher_1@example.com', watcher_task['to'])
+
     mock_f_e_b.assert_called_once_with(
         True, self.feature_1, self.changes)
 
@@ -240,7 +361,7 @@ class EmailFormattingTest(testing_config.CustomTestCase):
   def test_make_email_tasks__starrer_unsubscribed(self, mock_f_e_b):
     """We don't email users who starred the feature but opted out."""
     mock_f_e_b.return_value = 'mock body html'
-    starrer_2_pref = models.UserPref(
+    starrer_2_pref = user_models.UserPref(
         email='starrer_2@example.com',
         notify_as_starrer=False)
     starrer_2_pref.put()
@@ -248,10 +369,13 @@ class EmailFormattingTest(testing_config.CustomTestCase):
         'starrer_2@example.com', self.feature_2.key.integer_id())
     actual_tasks = notifier.make_email_tasks(
         self.feature_2, True, self.changes)
-    self.assertEqual(2, len(actual_tasks))
+    self.assertEqual(4, len(actual_tasks))
     # Note: There is no starrer_task.
-    owner_task, watcher_task = actual_tasks
-    self.assertEqual('owner_1@example.com', owner_task['to'])
+    (feature_editor_task, feature_owner_task, component_owner_task,
+     watcher_task) = actual_tasks
+    self.assertEqual('feature_editor@example.com', feature_editor_task['to'])
+    self.assertEqual('feature_owner@example.com', feature_owner_task['to'])
+    self.assertEqual('owner_1@example.com', component_owner_task['to'])
     self.assertEqual('watcher_1@example.com', watcher_task['to'])
     mock_f_e_b.assert_called_once_with(
         True, self.feature_2, self.changes)
@@ -336,9 +460,9 @@ class FeatureStarTest(testing_config.CustomTestCase):
 
   def test_get_feature_starrers__some_starrers(self):
     """Two users have starred the given feature."""
-    app_user_1 = models.AppUser(email='user16@example.com')
+    app_user_1 = user_models.AppUser(email='user16@example.com')
     app_user_1.put()
-    app_user_2 = models.AppUser(email='user17@example.com')
+    app_user_2 = user_models.AppUser(email='user17@example.com')
     app_user_2.put()
     feature_1_id = self.feature_1.key.integer_id()
     notifier.FeatureStar.set_star(app_user_1.email, feature_1_id)
@@ -348,3 +472,163 @@ class FeatureStarTest(testing_config.CustomTestCase):
     self.assertCountEqual(
         [app_user_1.email, app_user_2.email],
         [au.email for au in actual])
+
+
+class MockResponse:
+  """Creates a fake response object for testing."""
+  def __init__(self, status_code=200, text='{}'):
+    self.status_code = status_code
+    self.text = text
+
+
+class FeatureAccuracyHandlerTest(testing_config.CustomTestCase):
+
+  def setUp(self):
+    self.feature_1 = models.Feature(
+        name='feature one', summary='sum', owner=['feature_owner@example.com'],
+        category=1, visibility=1,
+        standardization=1, web_dev_views=1, impl_status_chrome=1,
+        ot_milestone_desktop_start=100)
+    self.feature_1.put()
+    self.feature_2 = models.Feature(
+        name='feature two', summary='sum',
+        owner=['owner_1@example.com', 'owner_2@example.com'],
+        category=1, visibility=1, standardization=1,
+        web_dev_views=1, impl_status_chrome=1, shipped_milestone=150)
+    self.feature_2.put()
+    self.feature_3 = models.Feature(
+        name='feature three', summary='sum', category=1, visibility=1,
+        standardization=1, web_dev_views=1, impl_status_chrome=1)
+    self.feature_3.put()
+
+  def tearDown(self):
+    self.feature_1.key.delete()
+    self.feature_2.key.delete()
+    self.feature_3.key.delete()
+
+  @mock.patch('requests.get')
+  def test_determine_features_to_notify__no_features(self, mock_get):
+    mock_return = MockResponse(text='{"mstones":[{"mstone": "40"}]}')
+    mock_get.return_value = mock_return
+    accuracy_notifier = notifier.FeatureAccuracyHandler()
+    result = accuracy_notifier.get_template_data()
+    expected = {'message': '0 email(s) sent or logged.'}
+    self.assertEqual(result, expected)
+
+  @mock.patch('requests.get')
+  def test_determine_features_to_notify__valid_features(self, mock_get):
+    mock_return = MockResponse(text='{"mstones":[{"mstone": "100"}]}')
+    mock_get.return_value = mock_return
+    accuracy_notifier = notifier.FeatureAccuracyHandler()
+    result = accuracy_notifier.get_template_data()
+    expected = {'message': '1 email(s) sent or logged.'}
+    self.assertEqual(result, expected)
+
+  @mock.patch('requests.get')
+  def test_determine_features_to_notify__multiple_owners(self, mock_get):
+    mock_return = MockResponse(text='{"mstones":[{"mstone": "148"}]}')
+    mock_get.return_value = mock_return
+    accuracy_notifier = notifier.FeatureAccuracyHandler()
+    result = accuracy_notifier.get_template_data()
+    expected = {'message': '2 email(s) sent or logged.'}
+    self.assertEqual(result, expected)
+
+
+class FunctionsTest(testing_config.CustomTestCase):
+
+  def setUp(self):
+    quoted_msg_id = 'xxx%3Dyyy%40mail.gmail.com'
+    impl_url = notifier.BLINK_DEV_ARCHIVE_URL_PREFIX + '123' + quoted_msg_id
+    expr_url = notifier.TEST_ARCHIVE_URL_PREFIX + '456' + quoted_msg_id
+    self.feature_1 = models.Feature(
+        name='feature one', summary='sum', category=1, visibility=1,
+        standardization=1, web_dev_views=1, impl_status_chrome=1,
+        intent_to_implement_url=impl_url,
+        intent_to_experiment_url=expr_url)
+    # Note: There is no need to put() it in the datastore.
+
+  def test_get_thread_id__normal(self):
+    """We can select the correct approval thread field of a feature."""
+    self.assertEqual(
+        '123xxx=yyy@mail.gmail.com',
+        notifier.get_thread_id(
+            self.feature_1, approval_defs.PrototypeApproval))
+    self.assertEqual(
+        '456xxx=yyy@mail.gmail.com',
+        notifier.get_thread_id(
+            self.feature_1, approval_defs.ExperimentApproval))
+    self.assertEqual(
+        None,
+        notifier.get_thread_id(
+            self.feature_1, approval_defs.ShipApproval))
+
+  def test_get_existing_thread_subject__none(self):
+    """If a feature does not store an existing thread subject, use None."""
+    self.assertIsNone(notifier.get_existing_thread_subject(
+        self.feature_1, approval_defs.PrototypeApproval))
+
+  def test_get_existing_thread_subject__found(self):
+    """If a feature does not store an existing thread subject, use it."""
+    self.feature_1.intent_to_ship_subject_line = (
+        'Intent to really ship: feature one')
+    actual = notifier.get_existing_thread_subject(
+        self.feature_1, approval_defs.ShipApproval)
+    self.assertEqual('Intent to really ship: feature one', actual)
+
+  def test_get_existing_thread_subject__unknown(self):
+    """Raise ValueError if called with an unknown approval field."""
+    PivotApproval = approval_defs.ApprovalFieldDef(
+        'Intent to Pivot',
+        'One API Owner must approve your intent',
+        99, approval_defs.ONE_LGTM, [])
+    with self.assertRaises(ValueError):
+      notifier.get_existing_thread_subject(
+          self.feature_1, PivotApproval)
+
+  def test_generate_thread_subject__normal(self):
+    """Most intents just use the name of the intent."""
+    self.assertEqual(
+        'Intent to Prototype: feature one',
+        notifier.generate_thread_subject(
+            self.feature_1, approval_defs.PrototypeApproval))
+    self.assertEqual(
+        'Intent to Experiment: feature one',
+        notifier.generate_thread_subject(
+            self.feature_1, approval_defs.ExperimentApproval))
+    self.assertEqual(
+        'Intent to Extend Experiment: feature one',
+        notifier.generate_thread_subject(
+            self.feature_1, approval_defs.ExtendExperimentApproval))
+    self.assertEqual(
+        'Intent to Ship: feature one',
+        notifier.generate_thread_subject(
+            self.feature_1, approval_defs.ShipApproval))
+
+  def test_generate_thread_subject__deprecation(self):
+    """Deprecation intents use different subjects for most intents."""
+    self.feature_1.feature_type = models.FEATURE_TYPE_DEPRECATION_ID
+    self.assertEqual(
+        'Intent to Deprecate and Remove: feature one',
+        notifier.generate_thread_subject(
+            self.feature_1, approval_defs.PrototypeApproval))
+    self.assertEqual(
+        'Request for Deprecation Trial: feature one',
+        notifier.generate_thread_subject(
+            self.feature_1, approval_defs.ExperimentApproval))
+    self.assertEqual(
+        'Intent to Extend Deprecation Trial: feature one',
+        notifier.generate_thread_subject(
+            self.feature_1, approval_defs.ExtendExperimentApproval))
+    self.assertEqual(
+        'Intent to Ship: feature one',
+        notifier.generate_thread_subject(
+            self.feature_1, approval_defs.ShipApproval))
+
+
+  def test_get_thread_id__trailing_junk(self):
+    """We can select the correct approval thread field of a feature."""
+    self.feature_1.intent_to_implement_url += '?param=val#anchor'
+    self.assertEqual(
+        '123xxx=yyy@mail.gmail.com',
+        notifier.get_thread_id(
+            self.feature_1, approval_defs.PrototypeApproval))

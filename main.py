@@ -13,35 +13,34 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from flask import Flask
-import logging
-
 from api import accounts_api
 from api import approvals_api
 from api import channels_api
 from api import comments_api
 from api import cues_api
 from api import features_api
+from api import fielddefs_api
 from api import login_api
 from api import logout_api
 from api import metricsdata
+from api import permissions_api
+from api import processes_api
+from api import settings_api
 from api import stars_api
 from api import token_refresh_api
 from framework import basehandlers
 from framework import csp
+from framework import sendemail
 from internals import detect_intent
 from internals import fetchmetrics
 from internals import notifier
+from internals import data_backup
 from pages import blink_handler
 from pages import featuredetail
 from pages import featurelist
 from pages import guide
 from pages import intentpreview
 from pages import metrics
-from pages import myfeatures
-from pages import roadmap
-from pages import samples
-from pages import schedule
 from pages import users
 import settings
 
@@ -61,6 +60,13 @@ if not settings.UNIT_TEST_MODE and not settings.DEV_MODE:
     pass
 
 
+# Note: In the URLs below, parameters like <int:feature_id> are
+# required for the URL to match the route, but we still accecpt
+# those parameters as keywords in those handlers where the same
+# handler might be used for multiple routes that have the field
+# or not.
+
+
 metrics_chart_routes = [
     ('/data/timeline/cssanimated', metricsdata.AnimatedTimelineHandler),
     ('/data/timeline/csspopularity', metricsdata.PopularityTimelineHandler),
@@ -77,18 +83,29 @@ API_BASE = '/api/v0'
 api_routes = [
     (API_BASE + '/features', features_api.FeaturesAPI),
     (API_BASE + '/features/<int:feature_id>', features_api.FeaturesAPI),
+    (API_BASE + '/features/<int:feature_id>/approvals',
+     approvals_api.ApprovalsAPI),
     (API_BASE + '/features/<int:feature_id>/approvals/<int:field_id>',
      approvals_api.ApprovalsAPI),
+    (API_BASE + '/features/<int:feature_id>/configs',
+     approvals_api.ApprovalConfigsAPI),
+    (API_BASE + '/features/<int:feature_id>/approvals/comments',
+     comments_api.CommentsAPI),
     (API_BASE + '/features/<int:feature_id>/approvals/<int:field_id>/comments',
      comments_api.CommentsAPI),
+    (API_BASE + '/features/<int:feature_id>/process', processes_api.ProcessesAPI),
+    (API_BASE + '/features/<int:feature_id>/progress', processes_api.ProgressAPI),
+
+    (API_BASE + '/fielddefs', fielddefs_api.FieldDefsAPI),
 
     (API_BASE + '/login', login_api.LoginAPI),
     (API_BASE + '/logout', logout_api.LogoutAPI),
+    (API_BASE + '/currentuser/permissions', permissions_api.PermissionsAPI),
+    (API_BASE + '/currentuser/settings', settings_api.SettingsAPI),
     (API_BASE + '/currentuser/stars', stars_api.StarsAPI),
     (API_BASE + '/currentuser/cues', cues_api.CuesAPI),
     (API_BASE + '/currentuser/token', token_refresh_api.TokenRefreshAPI),
     # (API_BASE + '/currentuser/autosaves', TODO),
-    # (API_BASE + '/currentuser/settings', TODO),
 
     # Admin operations for user accounts
     (API_BASE + '/accounts', accounts_api.AccountsAPI),
@@ -114,8 +131,10 @@ page_routes = [
     (r'/features_v2.json', featurelist.FeaturesJsonHandler),
 
     ('/', basehandlers.Redirector,
-     {'location': '/features'}),
+     {'location': '/roadmap'}),
 
+    ('/newfeatures', basehandlers.ConstHandler,
+     {'template_path': 'new-feature-list.html'}),
     ('/features', featurelist.FeatureListHandler),
     ('/features/<int:feature_id>', featurelist.FeatureListHandler),
     ('/features.xml', featurelist.FeatureListXMLHandler),
@@ -124,6 +143,7 @@ page_routes = [
     ('/guide/edit/<int:feature_id>', guide.ProcessOverview),
     ('/guide/stage/<int:feature_id>/<int:stage_id>', guide.FeatureEditStage),
     ('/guide/editall/<int:feature_id>', guide.FeatureEditAllFields),
+    ('/guide/verify_accuracy/<int:feature_id>', guide.FeatureVerifyAccuracy),
 
     ('/admin/features/launch/<int:feature_id>',
      intentpreview.IntentEmailPreviewHandler),
@@ -140,31 +160,36 @@ page_routes = [
      {'template_path': 'metrics/css/popularity.html'}),
     ('/metrics/css/animated', basehandlers.ConstHandler,
      {'template_path': 'metrics/css/animated.html'}),
-    ('/metrics/css/timeline/popularity', metrics.CssPopularityHandler),
+    ('/metrics/css/timeline/popularity', basehandlers.ConstHandler,
+     {'template_path': 'metrics/css/timeline/popularity.html'}),
     ('/metrics/css/timeline/popularity/<int:bucket_id>',
-     metrics.CssPopularityHandler),
-    ('/metrics/css/timeline/animated', metrics.CssAnimatedHandler),
+     basehandlers.ConstHandler,
+     {'template_path': 'metrics/css/timeline/popularity.html'}),
+    ('/metrics/css/timeline/animated', basehandlers.ConstHandler,
+     {'template_path': 'metrics/css/timeline/animated.html'}),
     ('/metrics/css/timeline/animated/<int:bucket_id>',
-     metrics.CssAnimatedHandler),
+     basehandlers.ConstHandler,
+     {'template_path': 'metrics/css/timeline/animated.html'}),
     ('/metrics/feature/popularity', basehandlers.ConstHandler,
      {'template_path': 'metrics/feature/popularity.html'}),
-    ('/metrics/feature/timeline/popularity', metrics.FeaturePopularityHandler),
+    ('/metrics/feature/timeline/popularity', basehandlers.ConstHandler,
+     {'template_path': 'metrics/feature/timeline/popularity.html'}),
     ('/metrics/feature/timeline/popularity/<int:bucket_id>',
-     metrics.FeaturePopularityHandler),
+     basehandlers.ConstHandler,
+     {'template_path': 'metrics/feature/timeline/popularity.html'}),
     ('/omaha_data', metrics.OmahaDataHandler),
 
-    ('/myfeatures', myfeatures.MyFeaturesHandler),
+    ('/myfeatures', basehandlers.ConstHandler,
+     {'template_path': 'myfeatures.html', 'require_signin': True}),
 
-    ('/roadmap', roadmap.RoadmapHandler),
+    ('/roadmap', basehandlers.ConstHandler,
+     {'template_path': 'roadmap.html'}),
 
-    ('/samples', samples.SamplesHandler),
-    ('/samples.json', samples.SamplesJSONHandler),
-    ('/samples.xml', samples.SamplesXMLHandler),
-
-    ('/features/schedule', schedule.ScheduleHandler),
-
-    ('/settings', users.SettingsHandler),
+    ('/settings', basehandlers.ConstHandler,
+     {'template_path': 'settings.html', 'require_signin': True}),
     ('/admin/users/new', users.UserListHandler),
+
+    ('/spa', basehandlers.ConstHandler, {'template_path': 'spa.html'}),
 ]
 
 
@@ -172,6 +197,8 @@ internals_routes = [
   ('/cron/metrics', fetchmetrics.YesterdayHandler),
   ('/cron/histograms', fetchmetrics.HistogramsHandler),
   ('/cron/update_blink_components', fetchmetrics.BlinkComponentHandler),
+  ('/cron/export_backup', data_backup.BackupExportHandler),
+  ('/cron/send_accuracy_notifications', notifier.FeatureAccuracyHandler),
 
   ('/tasks/email-subscribers', notifier.FeatureChangeHandler),
 
@@ -181,18 +208,19 @@ internals_routes = [
 
 # All requests to the app-py3 GAE service are handled by this Flask app.
 app = basehandlers.FlaskApplication(
+    __name__,
     (metrics_chart_routes + api_routes + page_routes +
-     internals_routes),
-    debug=settings.DEBUG)
+     internals_routes))
 
 # TODO(jrobbins): Make the CSP handler be a class like our others.
 app.add_url_rule(
     '/csp', view_func=csp.report_handler,
      methods=['POST'])
 
+sendemail.add_routes(app)
 
 if __name__ == '__main__':
     # This is used when running locally only. When deploying to Google App
     # Engine, a webserver process such as Gunicorn will serve the app. This
     # can be configured by adding an `entrypoint` to app.yaml.
-    app.run(host='127.0.0.1', port=8080, debug=True)
+    app.run(host='127.0.0.1', port=8080)

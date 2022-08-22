@@ -12,19 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-
-
 import testing_config  # Must be imported before the module under test.
 
 import flask
-import mock
+from flask import session
+from unittest import mock
 import werkzeug.exceptions  # Flask HTTP stuff.
 
 from api import token_refresh_api
 from framework import xsrf
 
 test_app = flask.Flask(__name__)
+test_app.secret_key = 'testing secret'
 
 
 class TokenRefreshAPITest(testing_config.CustomTestCase):
@@ -76,9 +75,12 @@ class TokenRefreshAPITest(testing_config.CustomTestCase):
 
   def test_do_post__OK(self):
     """If the request is accepted, we return a new token."""
-    testing_config.sign_in('user@example.com', 111)
     params = {'token': 'checked in base class'}
     with test_app.test_request_context(self.request_path, json=params):
+      session.clear()
+      testing_config.sign_in('user@example.com', 111)
       actual = self.handler.do_post()
-    self.assertIn('token', actual)
-    self.assertIn('token_expires_sec', actual)
+
+      self.assertIn('signed_user_info', session)
+      self.assertIn('token', actual)
+      self.assertIn('token_expires_sec', actual)

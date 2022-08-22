@@ -1,5 +1,5 @@
-import {LitElement, css, html} from 'lit-element';
-import SHARED_STYLES from '../css/shared.css';
+import {LitElement, css, html} from 'lit';
+import {SHARED_STYLES} from '../sass/shared-css.js';
 
 class ChromedashCallout extends LitElement {
   static get properties() {
@@ -12,7 +12,7 @@ class ChromedashCallout extends LitElement {
       top: {type: Number},
       left: {type: Number},
       cue: {type: String}, // String to send to the server when dismissed.
-      dismissedCues: {attribute: false, type: Object},
+      dismissedCues: {attribute: false, type: Array},
     };
   }
 
@@ -23,7 +23,7 @@ class ChromedashCallout extends LitElement {
     this.top = 0;
     this.left = 0;
     this.signedIn = false;
-    this.dismissedCues = {};
+    this.dismissedCues = [];
   }
 
   connectedCallback() {
@@ -41,7 +41,7 @@ class ChromedashCallout extends LitElement {
 
   static get styles() {
     return [
-      SHARED_STYLES,
+      ...SHARED_STYLES,
       css`
       #bubble {
         position: absolute;
@@ -104,7 +104,7 @@ class ChromedashCallout extends LitElement {
 
   attachToTarget(el) {
     if (this.side == 'south') {
-      let targetBottom = this.contentOffsetTop(el) + el.offsetHeight;
+      const targetBottom = this.contentOffsetTop(el) + el.offsetHeight;
       this.top = targetBottom + 20;
       this.left = Math.max(this.contentOffsetLeft(el) - 20, 0);
     }

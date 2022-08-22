@@ -20,6 +20,7 @@ import requests
 
 from framework import permissions
 from framework import ramcache
+from internals import models
 import settings
 
 CACHE_EXPIRATION = 60 * 60  # One hour
@@ -35,46 +36,56 @@ ApprovalFieldDef = collections.namedtuple(
     'ApprovalField',
     'name, description, field_id, rule, approvers')
 
+# Note: This can be requested manually through the UI, but it is not
+# triggered by a blink-dev thread because i2p intents are only FYIs to
+# bilnk-dev and don't actually need approval by the API Owners.
 PrototypeApproval = ApprovalFieldDef(
-    'Intent to prototype',
-    'One API Owner must approve your intent',
+    'Intent to Prototype',
+    'Not normally used.  If a review is requested, API Owners can approve.',
     1, ONE_LGTM, API_OWNERS_URL)
 
 ExperimentApproval = ApprovalFieldDef(
-    'Intent to experiment',
+    'Intent to Experiment',
     'One API Owner must approve your intent',
     2, ONE_LGTM, API_OWNERS_URL)
 
 ExtendExperimentApproval = ApprovalFieldDef(
-    'Intent to extend experiment',
+    'Intent to Extend Experiment',
     'One API Owner must approve your intent',
     3, ONE_LGTM, API_OWNERS_URL)
 
 ShipApproval = ApprovalFieldDef(
-    'Intent to ship',
+    'Intent to Ship',
     'Three API Owners must approve your intent',
     4, THREE_LGTM, API_OWNERS_URL)
 
 APPROVAL_FIELDS_BY_ID = {
     afd.field_id: afd
-    for afd in [PrototypeApproval, ExperimentApproval, ShipApproval]
+    for afd in [
+        PrototypeApproval, ExperimentApproval, ExtendExperimentApproval,
+        ShipApproval]
     }
 
 
 def fetch_owners(url):
   """Load a list of email addresses from an OWNERS file."""
-  cached_owners = ramcache.get(url)
-  if cached_owners:
-    return cached_owners
+  raw_content = models.OwnersFile.get_raw_owner_file(url)
+  if raw_content:
+    return decode_raw_owner_content(raw_content)
 
-  owners = []
   response = requests.get(url)
   if response.status_code != 200:
     logging.error('Could not fetch %r', url)
     logging.error('Got response %s', repr(response)[:settings.MAX_LOG_LINE])
     raise ValueError('Could not get OWNERS file')
 
-  decoded = base64.b64decode(response.content).decode()
+  models.OwnersFile(url=url, raw_content=response.content).add_owner_file()
+  return decode_raw_owner_content(response.content)
+
+
+def decode_raw_owner_content(raw_content):
+  owners = []
+  decoded = base64.b64decode(raw_content).decode()
   for line in decoded.split('\n'):
     logging.info('got line: '  + line[:settings.MAX_LOG_LINE])
     if '#' in line:
@@ -83,7 +94,6 @@ def fetch_owners(url):
     if '@' in line and '.' in line:
       owners.append(line)
 
-  ramcache.set(url, owners, time=CACHE_EXPIRATION)
   return owners
 
 
@@ -116,3 +126,35 @@ def fields_approvable_by(user):
 def is_valid_field_id(field_id):
   """Return true if field_id is a known field."""
   return field_id in APPROVAL_FIELDS_BY_ID
+
+
+def is_approved(approval_values, field_id):
+  """Return true if we have all needed APPROVED values and no NOT_APPROVED."""
+  count = 0
+  for av in approval_values:
+    if av.state in (models.Approval.APPROVED, models.Approval.NA):
+      count += 1
+    elif av.state == models.Approval.NOT_APPROVED:
+      return False
+  afd = APPROVAL_FIELDS_BY_ID[field_id]
+
+  if afd.rule == ONE_LGTM:
+    return count >= 1
+  elif afd.rule == THREE_LGTM:
+    return count >= 3
+  else:
+    logging.error('Unexpected approval rule')
+    return False
+
+
+def is_resolved(approval_values, field_id):
+  """Return true if the review is done (approved or not approved)."""
+  if is_approved(approval_values, field_id):
+    return True
+
+  # Any NOT_APPROVED value means that the review is no longer pending.
+  for av in approval_values:
+    if av.state == models.Approval.NOT_APPROVED:
+      return True
+
+  return False

@@ -13,15 +13,16 @@
 # limitations under the License.
 
 
-
-
 import testing_config  # Must be imported first
 
+import os
 import flask
 import werkzeug
+import html5lib
 
 from framework import ramcache
 from internals import models
+from internals import user_models
 from pages import featurelist
 
 test_app = flask.Flask(__name__)
@@ -33,10 +34,17 @@ class TestWithFeature(testing_config.CustomTestCase):
   HANDLER_CLASS = 'subclasses fill this in'
 
   def setUp(self):
+    self.app_user = user_models.AppUser(email='registered@example.com')
+    self.app_user.put()
+
+    self.app_admin = user_models.AppUser(email='admin@example.com')
+    self.app_admin.is_admin = True
+    self.app_admin.put()
+
     self.feature_1 = models.Feature(
-        name='feature one', summary='detailed sum', category=1, visibility=1,
-        standardization=1, web_dev_views=1, impl_status_chrome=1,
-        intent_stage=models.INTENT_IMPLEMENT)
+        name='feature one', summary='detailed sum', owner=['owner@example.com'],
+        category=1, visibility=1, standardization=1, web_dev_views=1,
+        impl_status_chrome=1, intent_stage=models.INTENT_IMPLEMENT)
     self.feature_1.put()
     self.feature_id = self.feature_1.key.integer_id()
 
@@ -47,6 +55,9 @@ class TestWithFeature(testing_config.CustomTestCase):
 
   def tearDown(self):
     self.feature_1.key.delete()
+    self.app_user.delete()
+    self.app_admin.delete()
+
     ramcache.flush_all()
     ramcache.check_for_distributed_invalidation()
 
@@ -81,11 +92,11 @@ class FeaturesJsonHandlerTest(TestWithFeature):
     self.assertEqual(0, len(json_data))
 
   def test_get_template_data__unlisted_can_edit(self):
-    """JSON feed includes unlisted features for users who may edit."""
+    """JSON feed includes unlisted features for site editors and admins."""
     self.feature_1.unlisted = True
     self.feature_1.put()
 
-    testing_config.sign_in('user@google.com', 111)
+    testing_config.sign_in('admin@example.com', 111)
     with test_app.test_request_context(self.request_path):
       json_data = self.handler.get_template_data()
     self.assertEqual(1, len(json_data))
@@ -103,6 +114,29 @@ class FeatureListHandlerTest(TestWithFeature):
       template_data = self.handler.get_template_data()
 
     self.assertIn('IMPLEMENTATION_STATUSES', template_data)
+
+
+class FeatureListTemplateTest(TestWithFeature):
+
+  HANDLER_CLASS = featurelist.FeatureListHandler
+
+  def setUp(self):
+    super(FeatureListTemplateTest, self).setUp()
+    with test_app.test_request_context(self.request_path):
+      self.template_data = self.handler.get_template_data(
+          feature_id=self.feature_id)
+
+      self.template_data.update(self.handler.get_common_data())
+      self.template_data['nonce'] = 'fake nonce'
+      template_path = self.handler.get_template_path(self.template_data)
+      self.full_template_path = os.path.join(template_path)
+
+  def test_html_rendering(self):
+    """We can render the template with valid html."""
+    template_text = self.handler.render(
+        self.template_data, self.full_template_path)
+    parser = html5lib.HTMLParser(strict=True)
+    document = parser.parse(template_text)
 
 
 class FeatureListXMLHandlerTest(TestWithFeature):

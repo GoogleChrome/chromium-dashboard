@@ -13,22 +13,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-
-
 import logging
 
 from framework import basehandlers
 from framework import permissions
 from internals import approval_defs
 from internals import models
+from internals import notifier
 
 
 class CommentsAPI(basehandlers.APIHandler):
   """Users may see the list of comments on one of the approvals of a feature,
    and add their own, if allowed."""
 
-  def do_get(self, feature_id, field_id):
+  def do_get(self, feature_id, field_id=None):
     """Return a list of all review comments on the given feature."""
     # Note: We assume that anyone may view approval comments.
     comments = models.Comment.get_comments(feature_id, field_id)
@@ -38,23 +36,25 @@ class CommentsAPI(basehandlers.APIHandler):
         }
     return data
 
-  def do_post(self, feature_id, field_id):
+  def do_post(self, feature_id, field_id=None):
     """Add a review comment and possibly set a approval value."""
     new_state = self.get_int_param(
         'state', required=False,
         validator=models.Approval.is_valid_state)
     feature = self.get_specified_feature(feature_id=feature_id)
     user = self.get_current_user(required=True)
+    post_to_approval_field_id = self.get_param(
+        'postToApprovalFieldId', required=False)
 
     old_state = None
-    old_approvals = models.Approval.get_approvals(
-        feature_id=feature_id, field_id=field_id,
-        set_by=user.email())
-    if old_approvals:
-      old_state = old_approvals[0].state
+    if field_id is not None and new_state is not None:
+      old_approvals = models.Approval.get_approvals(
+          feature_id=feature_id, field_id=field_id,
+          set_by=user.email())
+      if old_approvals:
+        old_state = old_approvals[0].state
 
-    approvers = approval_defs.get_approvers(field_id)
-    if new_state is not None:
+      approvers = approval_defs.get_approvers(field_id)
       if not permissions.can_approve_feature(user, feature, approvers):
         self.abort(403, msg='User is not an approver')
       models.Approval.set_approval(
@@ -70,7 +70,9 @@ class CommentsAPI(basehandlers.APIHandler):
           new_approval_state=new_state)
       comment.put()
 
-    # TODO(jrobbins): Trigger notificaton emails (or not).
+    if post_to_approval_field_id:
+      notifier.post_comment_to_mailing_list(
+          feature, post_to_approval_field_id, user.email(), comment_content)
 
     # Callers don't use the JSON response for this API call.
     return {'message': 'Done'}

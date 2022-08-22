@@ -4,11 +4,11 @@
 {% load cache %}
 
 {% block rss %}
-  <link rel="alternate" type="application/rss+xml" href="https://www.chromestatus.com/features.xml" title="All features" />
+  <link rel="alternate" type="application/rss+xml" href="https://chromestatus.com/features.xml" title="All features" />
   {% cache TEMPLATE_CACHE_TIME rssfeed %}
     {% for k,v in categories %}
     <link rel="alternate" type="application/rss+xml"
-          href="https://www.chromestatus.com/features.xml?category={{v}}" title='"{{k}}" features'>
+          href="https://chromestatus.com/features.xml?category={{v}}" title='"{{k}}" features'>
     {% endfor %}
   {% endcache %}
 {% endblock %}
@@ -19,40 +19,39 @@
   {% endcache %}
 {% endblock %}
 
-{% block subheader %}
-  <div id="subheader">
-    <div class="feature-count">
-      <h2>Features: <span class="num-features"></span></h2>
+{% block content %}
+  <div id="column-container">
+    <div id="drawer-column">
+      <h3>Filter By</h3>
+      {% cache TEMPLATE_CACHE_TIME chromedashmetadata %}
+        <!-- Use single quote here. The value is a json string with double quote. -->
+        <chromedash-metadata implstatuses='{{IMPLEMENTATION_STATUSES|safe}}'></chromedash-metadata>
+      {% endcache %}
     </div>
-    <div class="search">
-      <input type="search" placeholder="Filter" disabled>
-      <button class="legend-button"><iron-icon icon="chromestatus:help"></iron-icon></button>
-    </div>
-    <div class="actionlinks">
-      {% if user.can_edit %}
-        <a href="/guide/new" class="blue-button" title="Adds a new feature to the site"><iron-icon icon="chromestatus:add-circle-outline"></iron-icon><span>Add new feature</span></a>
-      {% endif %}
+    <div id="content-column">
+      <div id="subheader">
+        <div class="feature-count">
+          <h2>Features: <span class="num-features"></span></h2>
+        </div>
+        <div class="search">
+          <input type="search" placeholder="Filter" disabled>
+          <button class="legend-button">
+            <iron-icon icon="chromestatus:help"></iron-icon>
+          </button>
+        </div>
+      </div>
+      <chromedash-featurelist
+        {% if user %} signedInUser="{{user.email}}" {% endif %}
+        {% if user.can_edit_all %}isSiteEditor{% endif %}
+        {% if user %} editableFeatures="{{user.editable_features}}" {% endif %}
+        {% if user.can_approve %}canApprove{% endif %}>
+      </chromedash-featurelist>
     </div>
   </div>
 {% endblock %}
 
-{% block drawer %}
-  <h3>Filter By</h3>
-  {% cache TEMPLATE_CACHE_TIME chromedashmetadata %}
-    <!-- Use single quote here. The value is a json string with double quote. -->
-    <chromedash-metadata implstatuses='{{IMPLEMENTATION_STATUSES|safe}}'></chromedash-metadata>
-  {% endcache %}
-{% endblock %}
-
 {% block overlay %}
   <chromedash-legend></chromedash-legend>
-{% endblock %}
-
-{% block content %}
-  <chromedash-featurelist
-    {% if user %}signedin{% endif %}
-    {% if user.can_edit %}canedit{% endif %}
-    ></chromedash-featurelist>
 {% endblock %}
 
 {% block js %}

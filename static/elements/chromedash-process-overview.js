@@ -1,36 +1,38 @@
-import {LitElement, css, html} from 'lit-element';
-import {nothing} from 'lit-html';
-import '@polymer/iron-icon';
+import {LitElement, css, html, nothing} from 'lit';
 import './chromedash-callout';
-import SHARED_STYLES from '../css/shared.css';
+import {SHARED_STYLES} from '../sass/shared-css.js';
 
-class ChromedashProcessOverview extends LitElement {
+export class ChromedashProcessOverview extends LitElement {
   static get properties() {
     return {
       feature: {type: Object},
-      process: {type: Array},
+      process: {type: Object},
       progress: {type: Object},
-      dismissedCues: {type: Object},
+      dismissedCues: {type: Array},
     };
   }
 
   constructor() {
     super();
     this.feature = {};
-    this.process = [];
+    this.process = {};
     this.progress = {};
-    this.dismissedCues = {};
+    this.dismissedCues = [];
+    this.item_stage_map = null; // null means uninitialized.
   }
+
+  static prereqsId = 0;
 
   static get styles() {
     return [
-      SHARED_STYLES,
+      ...SHARED_STYLES,
       css`
       :host {
         display: block;
         position: relative;
         box-sizing: border-box;
-        contain: content;
+        /* Don't do this, since it interferes with dialog placement. 
+        contain: content;  */
         overflow: hidden;
         background: inherit;
       }
@@ -82,6 +84,27 @@ class ChromedashProcessOverview extends LitElement {
       ol li {
         margin-top: .5em;
       }
+
+      .missing-prereqs-list {
+        padding-bottom: 1em;
+      }
+
+      .missing-prereqs-list li {
+        list-style: circle;
+        margin-left: 2em;
+      }
+
+      .edit-progress-item {
+        visibility: hidden;
+        margin-left: var(--content-padding-half);
+      }
+
+      .active .edit-progress-item,
+      .missing-prereqs .edit-progress-item,
+      .pending:hover .edit-progress-item,
+      .done:hover .edit-progress-item {
+        visibility: visible;
+      }
     `];
   }
 
@@ -97,9 +120,9 @@ class ChromedashProcessOverview extends LitElement {
     // if (this.inFinalStage(stage)) {
     //   return true;
     // }
-    let stageOrder = this.process.stages.map(s => s.outgoing_stage);
-    let viewedOutgoingStageIndex = stageOrder.indexOf(stage.outgoing_stage);
-    let featureStageIndex = stageOrder.indexOf(this.feature.intent_stage_int);
+    const stageOrder = this.process.stages.map(s => s.outgoing_stage);
+    const viewedOutgoingStageIndex = stageOrder.indexOf(stage.outgoing_stage);
+    const featureStageIndex = stageOrder.indexOf(this.feature.intent_stage_int);
     return (viewedOutgoingStageIndex < featureStageIndex);
   }
 
@@ -110,10 +133,10 @@ class ChromedashProcessOverview extends LitElement {
     if (this.inFinalStage(stage)) {
       return false;
     }
-    let stageOrder = this.process.stages.map(s => s.outgoing_stage);
-    let viewedIncomingStageIndex = stageOrder.indexOf(stage.incoming_stage);
-    let viewedOutgoingStageIndex = stageOrder.indexOf(stage.outgoing_stage);
-    let featureStageIndex = stageOrder.indexOf(this.feature.intent_stage_int);
+    const stageOrder = this.process.stages.map(s => s.outgoing_stage);
+    const viewedIncomingStageIndex = stageOrder.indexOf(stage.incoming_stage);
+    const viewedOutgoingStageIndex = stageOrder.indexOf(stage.outgoing_stage);
+    const featureStageIndex = stageOrder.indexOf(this.feature.intent_stage_int);
     return (viewedIncomingStageIndex <= featureStageIndex &&
             viewedOutgoingStageIndex > featureStageIndex);
   }
@@ -123,19 +146,62 @@ class ChromedashProcessOverview extends LitElement {
     if (this.inFinalStage(stage)) {
       return false;
     }
-    let stageOrder = this.process.stages.map(s => s.outgoing_stage);
-    let viewedIncomingStageIndex = stageOrder.indexOf(stage.incoming_stage);
-    let featureStageIndex = stageOrder.indexOf(this.feature.intent_stage_int);
+    const stageOrder = this.process.stages.map(s => s.outgoing_stage);
+    const viewedIncomingStageIndex = stageOrder.indexOf(stage.incoming_stage);
+    const featureStageIndex = stageOrder.indexOf(this.feature.intent_stage_int);
     return (viewedIncomingStageIndex > featureStageIndex);
   }
 
   renderAction(action, stage) {
-    const label = action[0];
-    const url = (action[1].replace('{feature_id}', this.feature.id)
-      .replace('{outgoing_stage}', stage.outgoing_stage));
+    const label = action.name;
+    const url = action.url
+      .replace('{feature_id}', this.feature.id)
+      .replace('{outgoing_stage}', stage.outgoing_stage);
+    const prereqItemsNames = action.prerequisites.filter(
+      itemName => {
+        return !this.progress.hasOwnProperty(itemName);
+      });
+    const prereqItems = prereqItemsNames.map(name => {
+      // return {name, field, stage} for the named item.
+      return this.item_stage_map[name];
+    });
+    const prereqsId = ChromedashProcessOverview.prereqsId++;
+    const prereqsClass = `prereqs-${prereqsId}`;
+
+    const checkCompletion = () => {
+      if (prereqItems.length > 0) {
+        // Open the dialog.
+        this.shadowRoot.querySelector(`.${prereqsClass}`).show();
+        return;
+      } else {
+        // Act like user clicked left button to go to the draft email window.
+        const draftWindow = window.open(url, '_blank');
+        draftWindow.focus();
+      }
+    };
+    const dialog = html`
+      <sl-dialog class="missing-prereqs ${prereqsClass}"
+        label="Missing Prerequisites"
+        style="--width:fit-content"
+        @cancel=${this._cancelHandler}>
+        Before you ${label}, you should first do the following:
+        <ol class="missing-prereqs-list">
+          ${prereqItems.map((item) => html`
+          <li class="pending">
+            ${item.stage.name}:
+            ${item.name} ${this.renderEditLink(item.stage, item)}
+          </li>`)}
+        </ol>
+        <sl-button href="${url}" target="_blank" variant="primary" size="small">
+          Proceed to Draft Email
+        </sl-button>
+      </sl-dialog>
+    `;
+
     return html`
       <li>
-        <a href=${url} target="_blank">${label}</a>
+        <a @click=${checkCompletion}>${label}</a>
+        ${dialog}
       </li>`;
   }
 
@@ -150,24 +216,72 @@ class ChromedashProcessOverview extends LitElement {
     }
   }
 
-  renderProgressItem(item) {
-    if (!this.progress.hasOwnProperty(item)) {
-      return html`<div class="pending">${item}</div>`;
+  renderEditLink(stage, item) {
+    const featureId = this.feature.id;
+    let editEl = nothing;
+    if (item.field) {
+      editEl = html`
+        <a class="edit-progress-item"
+           href="/guide/stage/${featureId}/${stage.outgoing_stage}#id_${item.field}">
+          Edit
+        </a>
+      `;
     }
-
-    if (this.progress[item].startsWith('http://') ||
-        this.progress[item].startsWith('https://')) {
-      return html`<div class="done"><a target="_blank"
-        href="${this.progress[item]}"
-        >${item}</a></div>`;
-    }
-
-    return html`<div class="done">${item}</div>`;
+    return editEl;
   }
 
+  renderProgressItem(stage, item) {
+    const editEl = this.renderEditLink(stage, item);
+
+    if (!this.progress.hasOwnProperty(item.name)) {
+      return html`
+        <div class="pending">
+          ${item.name}
+          ${editEl}
+        </div>`;
+    }
+
+    const progressValue = this.progress[item.name];
+    if (progressValue.startsWith('http://') ||
+        progressValue.startsWith('https://')) {
+      return html`
+        <div class="done">
+          <a target="_blank" href="${progressValue}">
+            ${item.name}
+          </a>
+          ${editEl}
+        </div>`;
+    }
+
+    return html`
+      <div class="done">
+        ${item.name}
+        ${editEl}
+      </div>`;
+  }
+
+  willUpdate() {
+    if (this.process && this.item_stage_map == null) {
+      // Make sure this.process.stages is an array.
+      if (!this.process.stages) {
+        this.process.stages = [];
+      }
+
+      // We will need to find the stages of prerequisites for actions of each stage.
+      // So we will loop over all progress items of all stages one time
+      // to rebuild this map at the start of each full page render.
+      this.item_stage_map = {};
+      this.process.stages.forEach(
+        stage => stage.progress_items.forEach(
+          item => {
+            this.item_stage_map[item.name] = {...item, stage: stage};
+          },
+        ));
+    }
+  }
 
   render() {
-    let featureId = this.feature.id;
+    const featureId = this.feature.id;
     return html`
      <div style="position: relative">
      <table>
@@ -185,7 +299,8 @@ class ChromedashProcessOverview extends LitElement {
              <div>${stage.description}</div>
            </td>
            <td>
-             ${stage.progress_items.map(item => this.renderProgressItem(item))}
+             ${stage.progress_items.map(item =>
+                        this.renderProgressItem(stage, item))}
            </td>
            <td>
             ${this.feature.intent_stage_int == stage.outgoing_stage ?

@@ -1,0 +1,8 @@
+<chromedash-textarea 
+    name="{{ widget.name }}" 
+    size="small"
+    {% if widget.value %}
+      value="{{ widget.value|stringformat:'s' }}"
+    {% endif %}
+    {% include "django/forms/widgets/attrs.html" %}>
+</chromedash-textarea>

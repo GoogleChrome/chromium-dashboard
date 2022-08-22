@@ -1,7 +1,5 @@
-import {LitElement, css, html} from 'lit-element';
-import SHARED_STYLES from '../css/shared.css';
-import {nothing} from 'lit-html';
-
+import {LitElement, css, html, nothing} from 'lit';
+import {SHARED_STYLES} from '../sass/shared-css.js';
 
 class ChromedashUserlist extends LitElement {
   static get properties() {
@@ -17,7 +15,7 @@ class ChromedashUserlist extends LitElement {
 
   static get styles() {
     return [
-      SHARED_STYLES,
+      ...SHARED_STYLES,
       css`
       form {
         padding: var(--content-padding);
@@ -57,6 +55,32 @@ class ChromedashUserlist extends LitElement {
     this.users = this.users.slice(0); // Refresh the list
   }
 
+  sortUsers() {
+    this.users.sort((a, b) => {
+      if ((a.is_admin && !b.is_admin) || (a.is_site_editor && (!b.is_site_editor && !b.is_admin))) {
+        return -1;
+      }
+      if ((b.is_admin && !a.is_admin) || (b.is_site_editor && (!a.is_site_editor && !a.is_admin))) {
+        return 1;
+      }
+      return a.email.localeCompare(b.email);
+    });
+  }
+
+  _onAdminToggle() {
+    const formEl = this.shadowRoot.querySelector('form');
+    const adminCheckbox = formEl.querySelector('input[name="is_admin"]');
+    const siteEditorCheckbox = formEl.querySelector('input[name="is_site_editor"]');
+    // Admins will always be site editors, so if the admin box is checked,
+    // the site editor box is also checked and disabled.
+    if (adminCheckbox.checked) {
+      siteEditorCheckbox.checked = true;
+      siteEditorCheckbox.disabled = true;
+    } else {
+      siteEditorCheckbox.disabled = false;
+    }
+  }
+
   // TODO(jrobbins): Change this to be a JSON API call via csClient.
   async ajaxSubmit(e) {
     e.preventDefault();
@@ -65,12 +89,14 @@ class ChromedashUserlist extends LitElement {
     if (formEl.checkValidity()) {
       const email = formEl.querySelector('input[name="email"]').value;
       const isAdmin = formEl.querySelector('input[name="is_admin"]').checked;
-      window.csClient.createAccount(email, isAdmin).then((json) => {
+      const isSiteEditor = formEl.querySelector('input[name="is_site_editor"]').checked;
+      window.csClient.createAccount(email, isAdmin, isSiteEditor).then((json) => {
         if (json.error_message) {
           alert(json.error_message);
         } else {
           this.addUser(json);
           formEl.reset();
+          formEl.querySelector('input[name="is_site_editor"]').disabled = false;
         }
       });
     }
@@ -89,6 +115,7 @@ class ChromedashUserlist extends LitElement {
   }
 
   render() {
+    this.sortUsers();
     return html`
       <form id="form" name="user_form" method="POST">
         <div>
@@ -96,7 +123,10 @@ class ChromedashUserlist extends LitElement {
                  required>
         </div>
         <div>
-          <label><input type="checkbox" name="is_admin"> User is admin</label>
+          <label><input type="checkbox" name="is_admin" @click="${this._onAdminToggle}"> User is admin</label>
+        </div>
+        <div>
+          <label><input type="checkbox" name="is_site_editor"> User is site editor</label>
         </div>
         <div>
           <input type="submit" @click="${this.ajaxSubmit}" value="Add user">
@@ -110,8 +140,9 @@ class ChromedashUserlist extends LitElement {
                data-index="${index}"
                data-account="${user.id}"
                @click="${this.ajaxDelete}">delete</a>
-            <span>${user.email}</span>
             ${user.is_admin ? html`(admin)` : nothing}
+            ${!user.is_admin && user.is_site_editor ? html`(site editor)` : nothing}
+            <span>${user.email}</span>
           </li>
           `)}
       </ul>

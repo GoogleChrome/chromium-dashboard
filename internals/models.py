@@ -26,317 +26,19 @@ from framework import ramcache
 from framework import users
 
 from framework import cloud_tasks_helpers
+from framework import utils
 import settings
+from internals.core_enums import *
 from internals import fetchchannels
 
 import hack_components
 
 
 from collections import OrderedDict
-from django import forms
 
 
 SIMPLE_TYPES = (int, float, bool, dict, str, list)
 
-WEBCOMPONENTS = 1
-MISC = 2
-SECURITY = 3
-MULTIMEDIA = 4
-DOM = 5
-FILE = 6
-OFFLINE = 7
-DEVICE = 8
-COMMUNICATION = 9
-JAVASCRIPT = 10
-NETWORKING = 11
-INPUT = 12
-PERFORMANCE = 13
-GRAPHICS = 14
-CSS = 15
-HOUDINI = 16
-SERVICEWORKER = 17
-WEBRTC = 18
-LAYERED = 19
-WEBASSEMBLY = 20
-CAPABILITIES = 21
-
-FEATURE_CATEGORIES = {
-  CSS: 'CSS',
-  WEBCOMPONENTS: 'Web Components',
-  MISC: 'Miscellaneous',
-  SECURITY: 'Security',
-  MULTIMEDIA: 'Multimedia',
-  DOM: 'DOM',
-  FILE: 'File APIs',
-  OFFLINE: 'Offline / Storage',
-  DEVICE: 'Device',
-  COMMUNICATION: 'Realtime / Communication',
-  JAVASCRIPT: 'JavaScript',
-  NETWORKING: 'Network / Connectivity',
-  INPUT: 'User input',
-  PERFORMANCE: 'Performance',
-  GRAPHICS: 'Graphics',
-  HOUDINI: 'Houdini',
-  SERVICEWORKER: 'Service Worker',
-  WEBRTC: 'Web RTC',
-  LAYERED: 'Layered APIs',
-  WEBASSEMBLY: 'WebAssembly',
-  CAPABILITIES: 'Capabilities (Fugu)'
-  }
-
-FEATURE_TYPE_INCUBATE_ID = 0
-FEATURE_TYPE_EXISTING_ID = 1
-FEATURE_TYPE_CODE_CHANGE_ID = 2
-FEATURE_TYPE_DEPRECATION_ID = 3
-
-FEATURE_TYPES = {
-    FEATURE_TYPE_INCUBATE_ID: 'New feature incubation',
-    FEATURE_TYPE_EXISTING_ID: 'Existing feature implementation',
-    FEATURE_TYPE_CODE_CHANGE_ID: 'Web developer facing change to existing code',
-    FEATURE_TYPE_DEPRECATION_ID: 'Feature deprecation',
-}
-
-
-# Intent stages and mapping from stage to stage name.
-INTENT_NONE = 0
-INTENT_INCUBATE = 7  # Start incubating
-INTENT_IMPLEMENT = 1  # Start prototyping
-INTENT_EXPERIMENT = 2  # Dev trials
-INTENT_IMPLEMENT_SHIP = 4  # Eval readiness to ship
-INTENT_EXTEND_TRIAL = 3  # Origin trials
-INTENT_SHIP = 5  # Prepare to ship
-INTENT_REMOVED = 6
-INTENT_SHIPPED = 8
-INTENT_PARKED = 9
-
-INTENT_STAGES = collections.OrderedDict([
-  (INTENT_NONE, 'None'),
-  (INTENT_INCUBATE, 'Start incubating'),
-  (INTENT_IMPLEMENT, 'Start prototyping'),
-  (INTENT_EXPERIMENT, 'Dev trials'),
-  (INTENT_IMPLEMENT_SHIP, 'Evaluate readiness to ship'),
-  (INTENT_EXTEND_TRIAL, 'Origin Trial'),
-  (INTENT_SHIP, 'Prepare to ship'),
-  (INTENT_REMOVED, 'Removed'),
-  (INTENT_SHIPPED, 'Shipped'),
-  (INTENT_PARKED, 'Parked'),
-])
-
-
-NO_ACTIVE_DEV = 1
-PROPOSED = 2
-IN_DEVELOPMENT = 3
-BEHIND_A_FLAG = 4
-ENABLED_BY_DEFAULT = 5
-DEPRECATED = 6
-REMOVED = 7
-ORIGIN_TRIAL = 8
-INTERVENTION = 9
-ON_HOLD = 10
-NO_LONGER_PURSUING = 1000 # insure bottom of list
-
-RELEASE_IMPL_STATES = {
-    BEHIND_A_FLAG, ENABLED_BY_DEFAULT,
-    DEPRECATED, REMOVED, ORIGIN_TRIAL, INTERVENTION,
-}
-
-# Ordered dictionary, make sure the order of this dictionary matches that of
-# the sorted list above!
-IMPLEMENTATION_STATUS = OrderedDict()
-IMPLEMENTATION_STATUS[NO_ACTIVE_DEV] = 'No active development'
-IMPLEMENTATION_STATUS[PROPOSED] = 'Proposed'
-IMPLEMENTATION_STATUS[IN_DEVELOPMENT] = 'In development'
-IMPLEMENTATION_STATUS[BEHIND_A_FLAG] = 'In developer trial (Behind a flag)'
-IMPLEMENTATION_STATUS[ENABLED_BY_DEFAULT] = 'Enabled by default'
-IMPLEMENTATION_STATUS[DEPRECATED] = 'Deprecated'
-IMPLEMENTATION_STATUS[REMOVED] = 'Removed'
-IMPLEMENTATION_STATUS[ORIGIN_TRIAL] = 'Origin trial'
-IMPLEMENTATION_STATUS[INTERVENTION] = 'Browser Intervention'
-IMPLEMENTATION_STATUS[ON_HOLD] = 'On hold'
-IMPLEMENTATION_STATUS[NO_LONGER_PURSUING] = 'No longer pursuing'
-
-MAJOR_NEW_API = 1
-MAJOR_MINOR_NEW_API = 2
-SUBSTANTIVE_CHANGES = 3
-MINOR_EXISTING_CHANGES = 4
-EXTREMELY_SMALL_CHANGE = 5
-
-# Status for security and privacy reviews.
-REVIEW_PENDING = 1
-REVIEW_ISSUES_OPEN = 2
-REVIEW_ISSUES_ADDRESSED = 3
-REVIEW_NA = 4
-
-REVIEW_STATUS_CHOICES = {
-    REVIEW_PENDING: 'Pending',
-    REVIEW_ISSUES_OPEN: 'Issues open',
-    REVIEW_ISSUES_ADDRESSED: 'Issues addressed',
-    REVIEW_NA: 'Not applicable',
-    }
-
-
-FOOTPRINT_CHOICES = {
-  MAJOR_NEW_API: ('A major new independent API (e.g. adding many '
-                  'independent concepts with many methods/properties/objects)'),
-  MAJOR_MINOR_NEW_API: ('Major changes to an existing API OR a minor new '
-                        'independent API (e.g. adding many new '
-                        'methods/properties or introducing new concepts to '
-                        'augment an existing API)'),
-  SUBSTANTIVE_CHANGES: ('Substantive changes to an existing API (e.g. small '
-                        'number of new methods/properties)'),
-  MINOR_EXISTING_CHANGES: (
-      'Minor changes to an existing API (e.g. adding a new keyword/allowed '
-      'argument to a property/method)'),
-  EXTREMELY_SMALL_CHANGE: ('Extremely small tweaks to an existing API (e.g. '
-                           'how existing keywords/arguments are interpreted)'),
-  }
-
-MAINSTREAM_NEWS = 1
-WARRANTS_ARTICLE = 2
-IN_LARGER_ARTICLE = 3
-SMALL_NUM_DEVS = 4
-SUPER_SMALL = 5
-
-# Signals from other implementations in an intent-to-ship
-SHIPPED = 1
-IN_DEV = 2
-PUBLIC_SUPPORT = 3
-MIXED_SIGNALS = 4  # Deprecated
-NO_PUBLIC_SIGNALS = 5
-PUBLIC_SKEPTICISM = 6  # Deprecated
-OPPOSED = 7
-NEUTRAL = 8
-SIGNALS_NA = 9
-GECKO_UNDER_CONSIDERATION = 10
-GECKO_IMPORTANT = 11
-GECKO_WORTH_PROTOTYPING = 12
-GECKO_NONHARMFUL = 13
-GECKO_DEFER = 14
-GECKO_HARMFUL = 15
-
-
-VENDOR_VIEWS_COMMON = {
-  SHIPPED: 'Shipped/Shipping',
-  IN_DEV: 'In development',
-  PUBLIC_SUPPORT: 'Positive',
-  NO_PUBLIC_SIGNALS: 'No signal',
-  OPPOSED: 'Negative',
-  NEUTRAL: 'Neutral',
-  SIGNALS_NA: 'N/A',
-  }
-
-VENDOR_VIEWS_GECKO = VENDOR_VIEWS_COMMON.copy()
-VENDOR_VIEWS_GECKO.update({
-  GECKO_UNDER_CONSIDERATION: 'Under consideration',
-  GECKO_IMPORTANT: 'Important',
-  GECKO_WORTH_PROTOTYPING: 'Worth prototyping',
-  GECKO_NONHARMFUL: 'Non-harmful',
-  GECKO_DEFER: 'Defer',
-  GECKO_HARMFUL: 'Harmful',
-  })
-
-# These vendors have no "custom" views values yet.
-VENDOR_VIEWS_EDGE = VENDOR_VIEWS_COMMON
-VENDOR_VIEWS_WEBKIT = VENDOR_VIEWS_COMMON
-
-VENDOR_VIEWS = {}
-VENDOR_VIEWS.update(VENDOR_VIEWS_GECKO)
-VENDOR_VIEWS.update(VENDOR_VIEWS_EDGE)
-VENDOR_VIEWS.update(VENDOR_VIEWS_WEBKIT)
-
-DEFACTO_STD = 1
-ESTABLISHED_STD = 2
-WORKING_DRAFT = 3
-EDITORS_DRAFT = 4
-PUBLIC_DISCUSSION = 5
-NO_STD_OR_DISCUSSION = 6
-
-STANDARDIZATION = {
-  DEFACTO_STD: 'De-facto standard',
-  ESTABLISHED_STD: 'Established standard',
-  WORKING_DRAFT: 'Working draft or equivalent',
-  EDITORS_DRAFT: "Editor's draft",
-  PUBLIC_DISCUSSION: 'Public discussion',
-  NO_STD_OR_DISCUSSION: 'No public standards discussion',
-  }
-
-UNSET_STD = 0
-UNKNOWN_STD = 1
-PROPOSAL_STD = 2
-INCUBATION_STD = 3
-WORKINGDRAFT_STD = 4
-STANDARD_STD = 5
-
-STANDARD_MATURITY_CHOICES = {
-  # No text for UNSET_STD.  One of the values below will be set on first edit.
-  UNKNOWN_STD: 'Unknown standards status - check spec link for status',
-  PROPOSAL_STD: 'Proposal in a personal repository, no adoption from community',
-  INCUBATION_STD: 'Specification being incubated in a Community Group',
-  WORKINGDRAFT_STD: ('Specification currently under development in a '
-                     'Working Group'),
-  STANDARD_STD: ('Final published standard: Recommendation, Living Standard, '
-                 'Candidate Recommendation, or similar final form'),
-}
-
-STANDARD_MATURITY_SHORT = {
-  UNSET_STD: 'Unknown status',
-  UNKNOWN_STD: 'Unknown status',
-  PROPOSAL_STD: 'Pre-incubation',
-  INCUBATION_STD: 'Incubation',
-  WORKINGDRAFT_STD: 'Working draft',
-  STANDARD_STD: 'Published standard',
-}
-
-# For features that don't have a standard_maturity value set, but do have
-# the old standardization field, infer a maturity.
-STANDARD_MATURITY_BACKFILL = {
-    DEFACTO_STD: STANDARD_STD,
-    ESTABLISHED_STD: STANDARD_STD,
-    WORKING_DRAFT: WORKINGDRAFT_STD,
-    EDITORS_DRAFT: INCUBATION_STD,
-    PUBLIC_DISCUSSION: INCUBATION_STD,
-    NO_STD_OR_DISCUSSION: PROPOSAL_STD,
-}
-
-DEV_STRONG_POSITIVE = 1
-DEV_POSITIVE = 2
-DEV_MIXED_SIGNALS = 3
-DEV_NO_SIGNALS = 4
-DEV_NEGATIVE = 5
-DEV_STRONG_NEGATIVE = 6
-
-WEB_DEV_VIEWS = {
-  DEV_STRONG_POSITIVE: 'Strongly positive',
-  DEV_POSITIVE: 'Positive',
-  DEV_MIXED_SIGNALS: 'Mixed signals',
-  DEV_NO_SIGNALS: 'No signals',
-  DEV_NEGATIVE: 'Negative',
-  DEV_STRONG_NEGATIVE: 'Strongly negative',
-  }
-
-
-PROPERTY_NAMES_TO_ENUM_DICTS = {
-    'category': FEATURE_CATEGORIES,
-    'intent_stage': INTENT_STAGES,
-    'impl_status_chrome': IMPLEMENTATION_STATUS,
-    'security_review_status': REVIEW_STATUS_CHOICES,
-    'privacy_review_status': REVIEW_STATUS_CHOICES,
-    'standard_maturity': STANDARD_MATURITY_CHOICES,
-    'standardization': STANDARDIZATION,
-    'ff_views': VENDOR_VIEWS,
-    'ie_views': VENDOR_VIEWS,
-    'safari_views': VENDOR_VIEWS,
-    'web_dev_views': WEB_DEV_VIEWS,
-  }
-
-
-def convert_enum_int_to_string(property_name, value):
-  """If the property is an enum, return human-readable string, else value."""
-  if type(value) != int:
-    return value
-  enum_dict = PROPERTY_NAMES_TO_ENUM_DICTS.get(property_name, {})
-  converted_value = enum_dict.get(value, value)
-  return converted_value
 
 
 def del_none(d):
@@ -395,88 +97,7 @@ class DictModel(ndb.Model):
     return output
 
 
-class BlinkComponent(DictModel):
 
-  DEFAULT_COMPONENT = 'Blink'
-
-  name = ndb.StringProperty(required=True, default=DEFAULT_COMPONENT)
-  created = ndb.DateTimeProperty(auto_now_add=True)
-  updated = ndb.DateTimeProperty(auto_now=True)
-
-  @property
-  def subscribers(self):
-    q = FeatureOwner.query(FeatureOwner.blink_components == self.key)
-    q = q.order(FeatureOwner.name)
-    return q.fetch(None)
-
-  @property
-  def owners(self):
-    q = FeatureOwner.query(FeatureOwner.primary_blink_components == self.key)
-    q = q.order(FeatureOwner.name)
-    return q.fetch(None)
-
-  @classmethod
-  def fetch_all_components(self, update_cache=False):
-    """Returns the list of blink components."""
-    key = 'blinkcomponents'
-
-    components = ramcache.get(key)
-    if components is None or update_cache:
-      # TODO(jrobbins): Re-implement fetching the list of blink components
-      # by getting it via the monorail API.
-      pass
-
-    if not components:
-      components = sorted(hack_components.HACK_BLINK_COMPONENTS)
-      logging.info('using hard-coded blink components')
-
-    return components
-
-  @classmethod
-  def update_db(self):
-    """Updates the db with new Blink components from the json endpoint"""
-    new_components = self.fetch_all_components(update_cache=True)
-    existing_comps = self.query().fetch(None)
-    for name in new_components:
-      if not len([x.name for x in existing_comps if x.name == name]):
-        logging.info('Adding new BlinkComponent: ' + name)
-        c = BlinkComponent(name=name)
-        c.put()
-
-  @classmethod
-  def get_by_name(self, component_name):
-    """Fetch blink component with given name."""
-    q = self.query()
-    q = q.filter(self.name == component_name)
-    component = q.fetch(1)
-    if not component:
-      logging.error('%s is an unknown BlinkComponent.' % (component_name))
-      return None
-    return component[0]
-
-
-# UMA metrics.
-class StableInstance(DictModel):
-  created = ndb.DateTimeProperty(auto_now_add=True)
-  updated = ndb.DateTimeProperty(auto_now=True)
-
-  property_name = ndb.StringProperty(required=True)
-  bucket_id = ndb.IntegerProperty(required=True)
-  date = ndb.DateProperty(verbose_name='When the data was fetched',
-                         required=True)
-  day_percentage = ndb.FloatProperty()
-  rolling_percentage = ndb.FloatProperty()
-
-
-class AnimatedProperty(StableInstance):
-  pass
-
-
-class FeatureObserver(StableInstance):
-  pass
-
-
-# Feature dashboard.
 class Feature(DictModel):
   """Container for a feature."""
 
@@ -489,7 +110,7 @@ class Feature(DictModel):
     # an existing feature.
     if 'name' in kwargs:
       if 'blink_components' not in kwargs:
-        kwargs['blink_components'] = [BlinkComponent.DEFAULT_COMPONENT]
+        kwargs['blink_components'] = [settings.DEFAULT_COMPONENT]
 
     super(Feature, self).__init__(*args, **kwargs)
 
@@ -610,6 +231,7 @@ class Feature(DictModel):
         'by': d.pop('updated_by', None),
         'when': d.pop('updated', None),
       }
+      d['accurate_as_of'] = d.pop('accurate_as_of', None)
       d['standards'] = {
         'spec': d.pop('spec_link', None),
         'status': {
@@ -633,6 +255,8 @@ class Feature(DictModel):
         'docs': d.pop('doc_links', []),
       }
       d['tags'] = d.pop('search_tags', [])
+      d['editors'] = d.pop('editors', [])
+      d['creator'] = d.pop('creator', None)
       d['browsers'] = {
         'chrome': {
           'bug': d.pop('bug_url', None),
@@ -660,7 +284,7 @@ class Feature(DictModel):
             'notes': d.pop('ff_views_notes', None),
           }
         },
-        'edge': {
+        'edge': {  # Deprecated
           'view': {
             'text': VENDOR_VIEWS[self.ie_views],
             'val': d.pop('ie_views', None),
@@ -683,7 +307,12 @@ class Feature(DictModel):
             'url': d.pop('web_dev_views_link', None),
             'notes': d.pop('web_dev_views_notes', None),
           }
-        }
+        },
+        'other': {
+          'view': {
+            'notes': d.pop('other_views_notes', None),
+          }
+        },
       }
 
       if is_released and self.shipped_milestone:
@@ -692,8 +321,6 @@ class Feature(DictModel):
         d['browsers']['chrome']['status']['milestone_str'] = self.shipped_android_milestone
       else:
         d['browsers']['chrome']['status']['milestone_str'] = d['browsers']['chrome']['status']['text']
-
-      del d['created']
 
       del_none(d) # Further prune response by removing null/[] values.
 
@@ -728,6 +355,7 @@ class Feature(DictModel):
         d['meta']['milestone_str'] = d['impl_status_chrome']
       d['ff_views'] = {'value': self.ff_views,
                        'text': VENDOR_VIEWS[self.ff_views]}
+      # Deprecated
       d['ie_views'] = {'value': self.ie_views,
                        'text': VENDOR_VIEWS[self.ie_views]}
       d['safari_views'] = {'value': self.safari_views,
@@ -744,6 +372,7 @@ class Feature(DictModel):
     d = self.to_dict()
     #d['id'] = self.key().id
     d['owner'] = ', '.join(self.owner)
+    d['editors'] = ', '.join(self.editors)
     d['explainer_links'] = '\r\n'.join(self.explainer_links)
     d['spec_mentors'] = ', '.join(self.spec_mentors)
     d['standard_maturity'] = self.standard_maturity or UNKNOWN_STD
@@ -774,10 +403,16 @@ class Feature(DictModel):
 
       # TODO(ericbidelman): Support more than one filter.
       if filterby:
-        if filterby[0] == 'category':
-          query = query.filter(Feature.category == filterby[1])
-        elif filterby[0] == 'owner':
-          query = query.filter(Feature.owner == filterby[1])
+        filter_type, comparator = filterby
+        if filter_type == 'can_edit':
+          # can_edit will check if the user has any access to edit the feature.
+          # This includes being an owner, editor, or the original creator
+          # of the feature.
+          query = query.filter(
+            ndb.OR(Feature.owner == comparator, Feature.editors == comparator,
+              Feature.creator == comparator))
+        else:
+          query = query.filter(getattr(Feature, filter_type) == comparator)
 
       features = query.fetch(limit)
 
@@ -828,16 +463,35 @@ class Feature(DictModel):
     return feature
 
   @classmethod
+  def filter_unlisted(self, feature_list):
+    """Filters a feature list to display only features the user should see."""
+    user = users.get_current_user()
+    email = None
+    if user:
+      email = user.email()
+    listed_features = []
+    for f in feature_list:
+      # Owners and editors of a feature should still be able to see their features.
+      if ((not f.get('unlisted', False)) or
+          ('browsers' in f and email in f['browsers']['chrome']['owners']) or
+          (email in f.get('editors', [])) or
+          (email is not None and f.get('creator') == email)):
+        listed_features.append(f)
+
+    return listed_features
+
+  @classmethod
   def get_by_ids(self, feature_ids, update_cache=False):
     result_dict = {}
     futures = []
 
     for feature_id in feature_ids:
-      KEY = '%s|%s' % (Feature.DEFAULT_CACHE_KEY, feature_id)
-      feature = ramcache.get(KEY)
-
+      lookup_key = '%s|%s' % (Feature.DEFAULT_CACHE_KEY, feature_id)
+      feature = ramcache.get(lookup_key)
       if feature is None or update_cache:
         futures.append(Feature.get_by_id_async(feature_id))
+      else:
+        result_dict[feature_id] = feature
 
     for future in futures:
       unformatted_feature = future.get_result()
@@ -846,7 +500,9 @@ class Feature(DictModel):
         feature['updated_display'] = (
             unformatted_feature.updated.strftime("%Y-%m-%d"))
         feature['new_crbug_url'] = unformatted_feature.new_crbug_url()
-        ramcache.set(KEY, feature)
+        store_key = '%s|%s' % (Feature.DEFAULT_CACHE_KEY,
+                               unformatted_feature.key.integer_id())
+        ramcache.set(store_key, feature)
         result_dict[unformatted_feature.key.integer_id()] = feature
 
     result_list = [
@@ -944,11 +600,9 @@ class Feature(DictModel):
 
       ramcache.set(cache_key, feature_list)
 
-    allowed_feature_list = [
-        f for f in feature_list
-        if show_unlisted or not f['unlisted']]
-
-    return allowed_feature_list
+    if not show_unlisted:
+      feature_list = self.filter_unlisted(feature_list)
+    return feature_list
 
   @classmethod
   def get_in_milestone(
@@ -956,167 +610,144 @@ class Feature(DictModel):
     if milestone == None:
       return None
 
-    cache_key = '%s|%s|%s|%s' % (
-        Feature.DEFAULT_CACHE_KEY, 'milestone', show_unlisted, milestone)
-    cached_allowed_features_by_type = ramcache.get(cache_key)
-    if cached_allowed_features_by_type:
-      return cached_allowed_features_by_type
-
-    all_features = {}
-    all_features[IMPLEMENTATION_STATUS[ENABLED_BY_DEFAULT]] = []
-    all_features[IMPLEMENTATION_STATUS[DEPRECATED]] = []
-    all_features[IMPLEMENTATION_STATUS[REMOVED]] = []
-    all_features[IMPLEMENTATION_STATUS[INTERVENTION]] = []
-    all_features[IMPLEMENTATION_STATUS[ORIGIN_TRIAL]] = []
-    all_features[IMPLEMENTATION_STATUS[BEHIND_A_FLAG]] = []
-
-    logging.info('Getting chronological feature list in milestone %d',
-                 milestone)
-    # Start each query asynchronously in parallel.
-    q = Feature.query()
-    q = q.order(Feature.name)
-    q = q.filter(Feature.shipped_milestone == milestone)
-    desktop_shipping_features_future = q.fetch_async(None)
-
-    # Features with an android shipping milestone but no desktop milestone.
-    q = Feature.query()
-    q = q.order(Feature.name)
-    q = q.filter(Feature.shipped_android_milestone == milestone)
-    q = q.filter(Feature.shipped_milestone == None)
-    android_only_shipping_features_future = q.fetch_async(None)
-
-    # Features that are in origin trial (Desktop) in this milestone
-    q = Feature.query()
-    q = q.order(Feature.name)
-    q = q.filter(Feature.ot_milestone_desktop_start == milestone)
-    desktop_origin_trial_features_future = q.fetch_async(None)
-
-    # Features that are in origin trial (Android) in this milestone
-    q = Feature.query()
-    q = q.order(Feature.name)
-    q = q.filter(Feature.ot_milestone_android_start == milestone)
-    q = q.filter(Feature.ot_milestone_desktop_start == None)
-    android_origin_trial_features_future = q.fetch_async(None)
-
-    # Features that are in dev trial (Desktop) in this milestone
-    q = Feature.query()
-    q = q.order(Feature.name)
-    q = q.filter(Feature.dt_milestone_desktop_start == milestone)
-    desktop_dev_trial_features_future = q.fetch_async(None)
-
-    # Features that are in dev trial (Android) in this milestone
-    q = Feature.query()
-    q = q.order(Feature.name)
-    q = q.filter(Feature.dt_milestone_android_start == milestone)
-    q = q.filter(Feature.dt_milestone_desktop_start == None)
-    android_dev_trial_features_future = q.fetch_async(None)
-
-    # Wait for all futures to complete.
-    desktop_shipping_features = desktop_shipping_features_future.result()
-    android_only_shipping_features = (
-        android_only_shipping_features_future.result())
-    desktop_origin_trial_features = (
-        desktop_origin_trial_features_future.result())
-    android_origin_trial_features = (
-        android_origin_trial_features_future.result())
-    desktop_dev_trial_features = desktop_dev_trial_features_future.result()
-    android_dev_trial_features = android_dev_trial_features_future.result()
-
-    # Push feature to list corresponding to the implementation status of
-    # feature in queried milestone
-    for feature in desktop_shipping_features:
-      if feature.impl_status_chrome == ENABLED_BY_DEFAULT:
-        all_features[IMPLEMENTATION_STATUS[ENABLED_BY_DEFAULT]].append(feature)
-      elif feature.impl_status_chrome == DEPRECATED:
-        all_features[IMPLEMENTATION_STATUS[DEPRECATED]].append(feature)
-      elif feature.impl_status_chrome == REMOVED:
-        all_features[IMPLEMENTATION_STATUS[REMOVED]].append(feature)
-      elif feature.impl_status_chrome == INTERVENTION:
-        all_features[IMPLEMENTATION_STATUS[INTERVENTION]].append(feature)
-      elif (feature.feature_type == FEATURE_TYPE_DEPRECATION_ID and
-            Feature.dt_milestone_desktop_start != None):
-          all_features[IMPLEMENTATION_STATUS[DEPRECATED]].append(feature)
-      elif feature.feature_type == FEATURE_TYPE_INCUBATE_ID:
-          all_features[IMPLEMENTATION_STATUS[ENABLED_BY_DEFAULT]].append(feature)
-
-    # Push feature to list corresponding to the implementation status
-    # of feature in queried milestone
-    for feature in android_only_shipping_features:
-      if feature.impl_status_chrome == ENABLED_BY_DEFAULT:
-        all_features[IMPLEMENTATION_STATUS[ENABLED_BY_DEFAULT]].append(feature)
-      elif feature.impl_status_chrome == DEPRECATED:
-        all_features[IMPLEMENTATION_STATUS[DEPRECATED]].append(feature)
-      elif feature.impl_status_chrome == REMOVED:
-        all_features[IMPLEMENTATION_STATUS[REMOVED]].append(feature)
-      elif (feature.feature_type == FEATURE_TYPE_DEPRECATION_ID and
-            Feature.dt_milestone_android_start != None):
-          all_features[IMPLEMENTATION_STATUS[DEPRECATED]].append(feature)
-      elif feature.feature_type == FEATURE_TYPE_INCUBATE_ID:
-          all_features[IMPLEMENTATION_STATUS[ENABLED_BY_DEFAULT]].append(feature)
-
-    for feature in desktop_origin_trial_features:
-      all_features[IMPLEMENTATION_STATUS[ORIGIN_TRIAL]].append(feature)
-
-    for feature in android_origin_trial_features:
-      all_features[IMPLEMENTATION_STATUS[ORIGIN_TRIAL]].append(feature)
-
-    for feature in desktop_dev_trial_features:
-      all_features[IMPLEMENTATION_STATUS[BEHIND_A_FLAG]].append(feature)
-
-    for feature in android_dev_trial_features:
-      all_features[IMPLEMENTATION_STATUS[BEHIND_A_FLAG]].append(feature)
-
     features_by_type = {}
-    allowed_features_by_type = {}
+    cache_key = '%s|%s|%s' % (
+        Feature.DEFAULT_CACHE_KEY, 'milestone', milestone)
+    cached_features_by_type = ramcache.get(cache_key)
+    if cached_features_by_type:
+      features_by_type = cached_features_by_type
+    else:
+      all_features = {}
+      all_features[IMPLEMENTATION_STATUS[ENABLED_BY_DEFAULT]] = []
+      all_features[IMPLEMENTATION_STATUS[DEPRECATED]] = []
+      all_features[IMPLEMENTATION_STATUS[REMOVED]] = []
+      all_features[IMPLEMENTATION_STATUS[INTERVENTION]] = []
+      all_features[IMPLEMENTATION_STATUS[ORIGIN_TRIAL]] = []
+      all_features[IMPLEMENTATION_STATUS[BEHIND_A_FLAG]] = []
 
-    # Construct results as: {type: [json_feature, ...], ...}.
-    for shippingType in all_features:
-      all_features[shippingType].sort(key=lambda f: f.name)
-      all_features[shippingType] = [
-          f for f in all_features[shippingType] if not f.deleted]
-      features_by_type[shippingType] = [
-          f.format_for_template() for f in all_features[shippingType]]
-      allowed_features_by_type[shippingType] = [
-        f for f in features_by_type[shippingType]
-        if show_unlisted or not f['unlisted']]
-
-    ramcache.set(cache_key, allowed_features_by_type)
-
-    return allowed_features_by_type
-
-  @classmethod
-  def get_shipping_samples(self, limit=None, update_cache=False):
-    cache_key = '%s|%s|%s' % (Feature.DEFAULT_CACHE_KEY, 'samples', limit)
-
-    feature_list = ramcache.get(cache_key)
-
-    if feature_list is None or update_cache:
-      # Get all shipping features. Ordered by shipping milestone (latest first).
+      logging.info('Getting chronological feature list in milestone %d',
+                  milestone)
+      # Start each query asynchronously in parallel.
       q = Feature.query()
-      q = q.filter(Feature.impl_status_chrome.IN([
-          ENABLED_BY_DEFAULT, ORIGIN_TRIAL, INTERVENTION]))
-      q = q.order(-Feature.impl_status_chrome)
-      q = q.order(-Feature.shipped_milestone)
       q = q.order(Feature.name)
-      features = q.fetch(None)
+      q = q.filter(Feature.shipped_milestone == milestone)
+      desktop_shipping_features_future = q.fetch_async(None)
 
-      # Get non-shipping features (sans removed or deprecated ones) and
-      # append to bottom of list.
+      # Features with an android shipping milestone but no desktop milestone.
       q = Feature.query()
-      q = q.filter(Feature.impl_status_chrome < ENABLED_BY_DEFAULT)
-      q = q.order(-Feature.impl_status_chrome)
-      q = q.order(-Feature.shipped_milestone)
       q = q.order(Feature.name)
-      others = q.fetch(None)
-      features.extend(others)
+      q = q.filter(Feature.shipped_android_milestone == milestone)
+      q = q.filter(Feature.shipped_milestone == None)
+      android_only_shipping_features_future = q.fetch_async(None)
 
-      # Filter out features without sample links.
-      feature_list = [f.format_for_template() for f in features
-                      if len(f.sample_links) and not f.deleted]
+      # Features that are in origin trial (Desktop) in this milestone
+      q = Feature.query()
+      q = q.order(Feature.name)
+      q = q.filter(Feature.ot_milestone_desktop_start == milestone)
+      desktop_origin_trial_features_future = q.fetch_async(None)
 
-      ramcache.set(cache_key, feature_list)
+      # Features that are in origin trial (Android) in this milestone
+      q = Feature.query()
+      q = q.order(Feature.name)
+      q = q.filter(Feature.ot_milestone_android_start == milestone)
+      q = q.filter(Feature.ot_milestone_desktop_start == None)
+      android_origin_trial_features_future = q.fetch_async(None)
 
-    return feature_list
+      # Features that are in origin trial (Webview) in this milestone
+      q = Feature.query()
+      q = q.order(Feature.name)
+      q = q.filter(Feature.ot_milestone_webview_start == milestone)
+      q = q.filter(Feature.ot_milestone_desktop_start == None)
+      webview_origin_trial_features_future = q.fetch_async(None)
+
+      # Features that are in dev trial (Desktop) in this milestone
+      q = Feature.query()
+      q = q.order(Feature.name)
+      q = q.filter(Feature.dt_milestone_desktop_start == milestone)
+      desktop_dev_trial_features_future = q.fetch_async(None)
+
+      # Features that are in dev trial (Android) in this milestone
+      q = Feature.query()
+      q = q.order(Feature.name)
+      q = q.filter(Feature.dt_milestone_android_start == milestone)
+      q = q.filter(Feature.dt_milestone_desktop_start == None)
+      android_dev_trial_features_future = q.fetch_async(None)
+
+      # Wait for all futures to complete.
+      desktop_shipping_features = desktop_shipping_features_future.result()
+      android_only_shipping_features = (
+          android_only_shipping_features_future.result())
+      desktop_origin_trial_features = (
+          desktop_origin_trial_features_future.result())
+      android_origin_trial_features = (
+          android_origin_trial_features_future.result())
+      webview_origin_trial_features = (
+          webview_origin_trial_features_future.result())
+      desktop_dev_trial_features = desktop_dev_trial_features_future.result()
+      android_dev_trial_features = android_dev_trial_features_future.result()
+
+      # Push feature to list corresponding to the implementation status of
+      # feature in queried milestone
+      for feature in desktop_shipping_features:
+        if feature.impl_status_chrome == ENABLED_BY_DEFAULT:
+          all_features[IMPLEMENTATION_STATUS[ENABLED_BY_DEFAULT]].append(feature)
+        elif feature.impl_status_chrome == DEPRECATED:
+          all_features[IMPLEMENTATION_STATUS[DEPRECATED]].append(feature)
+        elif feature.impl_status_chrome == REMOVED:
+          all_features[IMPLEMENTATION_STATUS[REMOVED]].append(feature)
+        elif feature.impl_status_chrome == INTERVENTION:
+          all_features[IMPLEMENTATION_STATUS[INTERVENTION]].append(feature)
+        elif (feature.feature_type == FEATURE_TYPE_DEPRECATION_ID and
+              Feature.dt_milestone_desktop_start != None):
+            all_features[IMPLEMENTATION_STATUS[DEPRECATED]].append(feature)
+        elif feature.feature_type == FEATURE_TYPE_INCUBATE_ID:
+            all_features[IMPLEMENTATION_STATUS[ENABLED_BY_DEFAULT]].append(feature)
+
+      # Push feature to list corresponding to the implementation status
+      # of feature in queried milestone
+      for feature in android_only_shipping_features:
+        if feature.impl_status_chrome == ENABLED_BY_DEFAULT:
+          all_features[IMPLEMENTATION_STATUS[ENABLED_BY_DEFAULT]].append(feature)
+        elif feature.impl_status_chrome == DEPRECATED:
+          all_features[IMPLEMENTATION_STATUS[DEPRECATED]].append(feature)
+        elif feature.impl_status_chrome == REMOVED:
+          all_features[IMPLEMENTATION_STATUS[REMOVED]].append(feature)
+        elif (feature.feature_type == FEATURE_TYPE_DEPRECATION_ID and
+              Feature.dt_milestone_android_start != None):
+            all_features[IMPLEMENTATION_STATUS[DEPRECATED]].append(feature)
+        elif feature.feature_type == FEATURE_TYPE_INCUBATE_ID:
+            all_features[IMPLEMENTATION_STATUS[ENABLED_BY_DEFAULT]].append(feature)
+
+      for feature in desktop_origin_trial_features:
+        all_features[IMPLEMENTATION_STATUS[ORIGIN_TRIAL]].append(feature)
+
+      for feature in android_origin_trial_features:
+        all_features[IMPLEMENTATION_STATUS[ORIGIN_TRIAL]].append(feature)
+
+      for feature in webview_origin_trial_features:
+        all_features[IMPLEMENTATION_STATUS[ORIGIN_TRIAL]].append(feature)
+
+      for feature in desktop_dev_trial_features:
+        all_features[IMPLEMENTATION_STATUS[BEHIND_A_FLAG]].append(feature)
+
+      for feature in android_dev_trial_features:
+        all_features[IMPLEMENTATION_STATUS[BEHIND_A_FLAG]].append(feature)
+
+      # Construct results as: {type: [json_feature, ...], ...}.
+      for shipping_type in all_features:
+        all_features[shipping_type].sort(key=lambda f: f.name)
+        all_features[shipping_type] = [
+            f for f in all_features[shipping_type] if not f.deleted]
+        features_by_type[shipping_type] = [
+            f.format_for_template() for f in all_features[shipping_type]]
+
+      ramcache.set(cache_key, features_by_type)
+
+    for shipping_type in features_by_type:
+      if not show_unlisted:
+        features_by_type[shipping_type] = self.filter_unlisted(features_by_type[shipping_type])
+
+    return features_by_type
 
   def crbug_number(self):
     if not self.bug_url:
@@ -1130,7 +761,7 @@ class Feature(DictModel):
     if len(self.blink_components) > 0:
       params = ['components=' + self.blink_components[0]]
     else:
-      params = ['components=' + BlinkComponent.DEFAULT_COMPONENT]
+      params = ['components=' + settings.DEFAULT_COMPONENT]
     crbug_number = self.crbug_number()
     if crbug_number and self.impl_status_chrome in (
         NO_ACTIVE_DEV,
@@ -1161,7 +792,8 @@ class Feature(DictModel):
     # Diff values to see what properties have changed.
     changed_props = []
     for prop_name, prop in list(self._properties.items()):
-      if prop_name in ('created_by', 'updated_by', 'updated', 'created'):
+      if prop_name in (
+          'created_by', 'updated_by', 'updated', 'created'):
         continue
       new_val = getattr(self, prop_name, None)
       old_val = getattr(self, '_old_' + prop_name, None)
@@ -1170,6 +802,11 @@ class Feature(DictModel):
           continue
         new_val = convert_enum_int_to_string(prop_name, new_val)
         old_val = convert_enum_int_to_string(prop_name, old_val)
+        # Convert any dateime props to string.
+        if isinstance(new_val, datetime.datetime):
+          new_val = str(new_val)
+          if old_val is not None:
+            old_val = str(old_val)
         changed_props.append({
             'prop_name': prop_name, 'old_val': old_val, 'new_val': new_val})
 
@@ -1197,11 +834,13 @@ class Feature(DictModel):
   # Metadata.
   created = ndb.DateTimeProperty(auto_now_add=True)
   updated = ndb.DateTimeProperty(auto_now=True)
+  accurate_as_of = ndb.DateTimeProperty(auto_now=False)
   updated_by = ndb.UserProperty()
   created_by = ndb.UserProperty()
 
   # General info.
   category = ndb.IntegerProperty(required=True)
+  creator = ndb.StringProperty()
   name = ndb.StringProperty(required=True)
   feature_type = ndb.IntegerProperty(default=FEATURE_TYPE_INCUBATE_ID)
   intent_stage = ndb.IntegerProperty(default=0)
@@ -1215,13 +854,19 @@ class Feature(DictModel):
   search_tags = ndb.StringProperty(repeated=True)
   comments = ndb.StringProperty()
   owner = ndb.StringProperty(repeated=True)
+  editors = ndb.StringProperty(repeated=True)
   footprint = ndb.IntegerProperty()  # Deprecated
 
   # Tracability to intent discussion threads
   intent_to_implement_url = ndb.StringProperty()
+  intent_to_implement_subject_line = ndb.StringProperty()
   intent_to_ship_url = ndb.StringProperty()
+  intent_to_ship_subject_line = ndb.StringProperty()
   ready_for_trial_url = ndb.StringProperty()
   intent_to_experiment_url = ndb.StringProperty()
+  intent_to_experiment_subject_line = ndb.StringProperty()
+  intent_to_extend_experiment_url = ndb.StringProperty()
+  intent_to_extend_experiment_subject_line = ndb.StringProperty()
   # Currently, only one is needed.
   i2e_lgtms = ndb.StringProperty(repeated=True)
   i2s_lgtms = ndb.StringProperty(repeated=True)
@@ -1247,6 +892,7 @@ class Feature(DictModel):
   ergonomics_risks = ndb.StringProperty()
   activation_risks = ndb.StringProperty()
   security_risks = ndb.StringProperty()
+  webview_risks = ndb.StringProperty()
   debuggability = ndb.StringProperty()
   all_platforms = ndb.BooleanProperty()
   all_platforms_descr = ndb.StringProperty()
@@ -1255,6 +901,8 @@ class Feature(DictModel):
   dt_milestone_desktop_start = ndb.IntegerProperty()
   dt_milestone_android_start = ndb.IntegerProperty()
   dt_milestone_ios_start = ndb.IntegerProperty()
+  # Webview DT is currently not offered in the UI because there is no way
+  # to set flags.
   dt_milestone_webview_start = ndb.IntegerProperty()
   # Note: There are no dt end milestones because a dev trail implicitly
   # ends when the feature ships or is abandoned.
@@ -1279,23 +927,26 @@ class Feature(DictModel):
   explainer_links = ndb.StringProperty(repeated=True)
 
   ff_views = ndb.IntegerProperty(required=True, default=NO_PUBLIC_SIGNALS)
+  # Deprecated
   ie_views = ndb.IntegerProperty(required=True, default=NO_PUBLIC_SIGNALS)
   safari_views = ndb.IntegerProperty(required=True, default=NO_PUBLIC_SIGNALS)
   web_dev_views = ndb.IntegerProperty(required=True)
 
   ff_views_link = ndb.StringProperty()
-  ie_views_link = ndb.StringProperty()
+  ie_views_link = ndb.StringProperty()  # Deprecated
   safari_views_link = ndb.StringProperty()
   web_dev_views_link = ndb.StringProperty()
 
   ff_views_notes = ndb.StringProperty()
-  ie_views_notes = ndb.StringProperty()
+  ie_views_notes = ndb.StringProperty()  # Deprecated
   safari_views_notes = ndb.StringProperty()
   web_dev_views_notes = ndb.StringProperty()
+  other_views_notes = ndb.StringProperty()
 
   doc_links = ndb.StringProperty(repeated=True)
   measurement = ndb.StringProperty()
   sample_links = ndb.StringProperty(repeated=True)
+  non_oss_deps = ndb.StringProperty()
 
   experiment_goals = ndb.StringProperty()
   experiment_timeline = ndb.StringProperty()
@@ -1303,10 +954,13 @@ class Feature(DictModel):
   ot_milestone_desktop_end = ndb.IntegerProperty()
   ot_milestone_android_start = ndb.IntegerProperty()
   ot_milestone_android_end = ndb.IntegerProperty()
+  ot_milestone_webview_start = ndb.IntegerProperty()
+  ot_milestone_webview_end = ndb.IntegerProperty()
   experiment_risks = ndb.StringProperty()
   experiment_extension_reason = ndb.StringProperty()
   ongoing_constraints = ndb.StringProperty()
   origin_trial_feedback_url = ndb.StringProperty()
+  anticipated_spec_changes = ndb.StringProperty()
 
   finch_url = ndb.StringProperty()
 
@@ -1314,22 +968,24 @@ class Feature(DictModel):
 class Approval(DictModel):
   """Describes the current state of one approval on a feature."""
 
-  NEEDS_REVIEW = 0
+  # Not used: NEEDS_REVIEW = 0
   NA = 1
-  # REVIEW_REQUESTED = 2  Reserved for FLT
+  REVIEW_REQUESTED = 2
   REVIEW_STARTED = 3
   NEED_INFO = 4
   APPROVED = 5
   NOT_APPROVED = 6
   APPROVAL_VALUES = {
-      NEEDS_REVIEW: 'needs_review',
+      # Not used: NEEDS_REVIEW: 'needs_review',
       NA: 'na',
-      # REVIEW_REQUESTED: 'review_requested',
+      REVIEW_REQUESTED: 'review_requested',
       REVIEW_STARTED: 'review_started',
       NEED_INFO: 'need_info',
       APPROVED: 'approved',
       NOT_APPROVED: 'not_approved',
   }
+
+  FINAL_STATES = [NA, APPROVED, NOT_APPROVED]
 
   feature_id = ndb.IntegerProperty(required=True)
   field_id = ndb.IntegerProperty(required=True)
@@ -1339,9 +995,10 @@ class Approval(DictModel):
 
   @classmethod
   def get_approvals(
-      cls, feature_id=None, field_id=None, states=None, set_by=None):
+      cls, feature_id=None, field_id=None, states=None, set_by=None,
+      limit=None):
     """Return the requested approvals."""
-    query = Approval.query()
+    query = Approval.query().order(Approval.set_on)
     if feature_id is not None:
       query = query.filter(Approval.feature_id == feature_id)
     if field_id is not None:
@@ -1350,7 +1007,10 @@ class Approval(DictModel):
       query = query.filter(Approval.state.IN(states))
     if set_by is not None:
       query = query.filter(Approval.set_by == set_by)
-    approvals = query.fetch(None)
+    # Query with STRONG consistency because ndb defaults to
+    # EVENTUAL consistency and we run this query immediately after
+    # saving the user's change that we want included in the query.
+    approvals = query.fetch(limit, read_consistency=ndb.STRONG)
     return approvals
 
   @classmethod
@@ -1372,13 +1032,53 @@ class Approval(DictModel):
       existing.set_on = now
       existing.state = new_state
       existing.put()
+      logging.info('existing approval is %r', existing.key.integer_id())
       return
 
     new_appr = Approval(
         feature_id=feature_id, field_id=field_id, state=new_state,
         set_on=now, set_by=set_by_email)
     new_appr.put()
+    logging.info('new_appr is %r', new_appr.key.integer_id())
 
+  @classmethod
+  def clear_request(cls, feature_id, field_id):
+    """After the review requirement has been satisfied, remove the request."""
+    review_requests = cls.get_approvals(
+        feature_id=feature_id, field_id=field_id, states=[cls.REVIEW_REQUESTED])
+    for rr in review_requests:
+      rr.key.delete()
+
+
+class ApprovalConfig(DictModel):
+  """Allows customization of an approval field for one feature."""
+
+  feature_id = ndb.IntegerProperty(required=True)
+  field_id = ndb.IntegerProperty(required=True)
+  owners = ndb.StringProperty(repeated=True)
+  next_action = ndb.DateProperty()
+  additional_review = ndb.BooleanProperty(default=False)
+
+  @classmethod
+  def get_configs(cls, feature_id):
+    """Return approval configs for all approval fields."""
+    query = ApprovalConfig.query(ApprovalConfig.feature_id == feature_id)
+    configs = query.fetch(None)
+    return configs
+
+  @classmethod
+  def set_config(
+      cls, feature_id, field_id, owners, next_action, additional_review):
+    """Add or update an approval config object."""
+    config = ApprovalConfig(feature_id=feature_id, field_id=field_id)
+    for existing in cls.get_configs(feature_id):
+      if existing.field_id == field_id:
+        config = existing
+
+    config.owners = owners or []
+    config.next_action = next_action
+    config.additional_review = additional_review
+    config.put()
 
 
 class Comment(DictModel):
@@ -1396,205 +1096,43 @@ class Comment(DictModel):
   new_approval_state = ndb.IntegerProperty()
 
   @classmethod
-  def get_comments(cls, feature_id, field_id):
+  def get_comments(cls, feature_id, field_id=None):
     """Return review comments for an approval."""
     query = Comment.query().order(Comment.created)
     query = query.filter(Comment.feature_id == feature_id)
-    query = query.filter(Comment.field_id == field_id)
+    if field_id:
+      query = query.filter(Comment.field_id == field_id)
     comments = query.fetch(None)
     return comments
 
 
-class UserPref(DictModel):
-  """Describes a user's application preferences."""
+class OwnersFile(DictModel):
+  """Describes the properties to store raw API_OWNERS content."""
+  url = ndb.StringProperty(required=True)
+  raw_content = ndb.TextProperty(required=True)
+  created_on = ndb.DateTimeProperty(auto_now_add=True)
 
-  email = ndb.StringProperty(required=True)
-
-  # True means that user should be sent a notification email after each change
-  # to each feature that the user starred.
-  notify_as_starrer = ndb.BooleanProperty(default=True)
-
-  # True means that we sent an email message to this user in the past
-  # and it bounced.  We will not send to that address again.
-  bounced = ndb.BooleanProperty(default=False)
-
-  # A list of strings identifying on-page help cue cards that the user
-  # has dismissed (clicked "X" or "GOT IT").
-  dismissed_cues = ndb.StringProperty(repeated=True)
+  def add_owner_file(self):
+    """Add the owner file's content in ndb and delete all other entities."""
+    # Delete all other entities.
+    ndb.delete_multi(OwnersFile.query(
+        OwnersFile.url == self.url).fetch(keys_only=True))
+    return self.put()
 
   @classmethod
-  def get_signed_in_user_pref(cls):
-    """Return a UserPref for the signed in user or None if anon."""
-    signed_in_user = users.get_current_user()
-    if not signed_in_user:
+  def get_raw_owner_file(cls, url):
+    """Retrieve raw the owner file's content, if it is created with an hour."""
+    q = cls.query()
+    q = q.filter(cls.url == url)
+    owners_file_list = q.fetch(1)
+    if not owners_file_list:
+      logging.info('API_OWNERS content does not exist for URL %s.' % (url))
       return None
 
-    user_pref_list = UserPref.query().filter(
-        UserPref.email == signed_in_user.email()).fetch(1)
-    if user_pref_list:
-      user_pref = user_pref_list[0]
-    else:
-      user_pref = UserPref(email=signed_in_user.email())
-    return user_pref
+    owners_file = owners_file_list[0]
+    # Check if it is created within an hour.
+    an_hour_before = datetime.datetime.now() - datetime.timedelta(hours=1)
+    if owners_file.created_on < an_hour_before:
+      return None
 
-  @classmethod
-  def dismiss_cue(cls, cue):
-    """Add cue to the signed in user's dismissed_cues."""
-    user_pref = cls.get_signed_in_user_pref()
-    if not user_pref:
-      return  # Anon users cannot store dismissed cue names.
-
-    if cue not in user_pref.dismissed_cues:
-      user_pref.dismissed_cues.append(cue)
-      user_pref.put()
-
-  @classmethod
-  def get_prefs_for_emails(cls, emails):
-    """Return a list of UserPrefs for each of the given emails."""
-    result = []
-    CHUNK_SIZE = 25  # Query 25 at a time because IN operator is limited to 30.
-    chunks = [emails[i : i + CHUNK_SIZE]
-              for i in range(0, len(emails), CHUNK_SIZE)]
-    for chunk_emails in chunks:
-      q = UserPref.query()
-      q = q.filter(UserPref.email.IN(chunk_emails))
-      chunk_prefs = q.fetch(None)
-      result.extend(chunk_prefs)
-      found_set = set(up.email for up in chunk_prefs)
-
-      # Make default prefs for any user that does not already have an entity.
-      new_prefs = [UserPref(email=e) for e in chunk_emails
-                   if e not in found_set]
-      for np in new_prefs:
-        np.put()
-        result.append(np)
-
-    return result
-
-
-class UserPrefForm(forms.Form):
-  notify_as_starrer = forms.BooleanField(
-      required=False,
-      label='Notify as starrer',
-      help_text='Send you notification emails for features that you starred?')
-
-
-class AppUser(DictModel):
-  """Describes a user for permission checking."""
-
-  email = ndb.StringProperty(required=True)
-  is_admin = ndb.BooleanProperty(default=False)
-  created = ndb.DateTimeProperty(auto_now_add=True)
-  updated = ndb.DateTimeProperty(auto_now=True)
-
-  def put(self, **kwargs):
-    """when we update an AppUser, also invalidate ramcache."""
-    key = super(DictModel, self).put(**kwargs)
-    cache_key = 'user|%s' % self.email
-    ramcache.delete(cache_key)
-
-  def delete(self, **kwargs):
-    """when we delete an AppUser, also invalidate ramcache."""
-    key = super(DictModel, self).key.delete(**kwargs)
-    cache_key = 'user|%s' % self.email
-    ramcache.delete(cache_key)
-
-  @classmethod
-  def get_app_user(cls, email):
-    """Return the AppUser for the specified user, or None."""
-    cache_key = 'user|%s' % email
-    cached_app_user = ramcache.get(cache_key)
-    if cached_app_user:
-      return cached_app_user
-
-    query = cls.query()
-    query = query.filter(cls.email == email)
-    found_app_user_or_none = query.get()
-    ramcache.set(cache_key, found_app_user_or_none)
-    return found_app_user_or_none
-
-
-def list_with_component(l, component):
-  return [x for x in l if x.id() == component.key.integer_id()]
-
-def list_without_component(l, component):
-  return [x for x in l if x.id() != component.key.integer_id()]
-
-
-class FeatureOwner(DictModel):
-  """Describes subscribers of a web platform feature."""
-  created = ndb.DateTimeProperty(auto_now_add=True)
-  updated = ndb.DateTimeProperty(auto_now=True)
-  name = ndb.StringProperty(required=True)
-  email = ndb.StringProperty(required=True)
-  twitter = ndb.StringProperty()
-  blink_components = ndb.KeyProperty(repeated=True)
-  primary_blink_components = ndb.KeyProperty(repeated=True)
-  watching_all_features = ndb.BooleanProperty(default=False)
-
-  # def __eq__(self, other):
-  #   return self.key().id() == other.key().id()
-
-  def add_to_component_subscribers(self, component_name):
-    """Adds the user to the list of Blink component subscribers."""
-    c = BlinkComponent.get_by_name(component_name)
-    if c:
-      # Add the user if they're not already in the list.
-      if not len(list_with_component(self.blink_components, c)):
-        self.blink_components.append(c.key)
-        return self.put()
-    return None
-
-  def remove_from_component_subscribers(
-      self, component_name, remove_as_owner=False):
-    """Removes the user from the list of Blink component subscribers or as
-       the owner of the component.
-    """
-    c = BlinkComponent.get_by_name(component_name)
-    if c:
-      if remove_as_owner:
-        self.primary_blink_components = (
-            list_without_component(self.primary_blink_components, c))
-      else:
-        self.blink_components = list_without_component(self.blink_components, c)
-        self.primary_blink_components = (
-            list_without_component(self.primary_blink_components, c))
-      return self.put()
-    return None
-
-  def add_as_component_owner(self, component_name):
-    """Adds the user as the Blink component owner."""
-    c = BlinkComponent.get_by_name(component_name)
-    if c:
-      # Update both the primary list and blink components subscribers if the
-      # user is not already in them.
-      self.add_to_component_subscribers(component_name)
-      if not len(list_with_component(self.primary_blink_components, c)):
-        self.primary_blink_components.append(c.key)
-      return self.put()
-    return None
-
-  def remove_as_component_owner(self, component_name):
-    return self.remove_from_component_subscribers(
-        component_name, remove_as_owner=True)
-
-
-class HistogramModel(ndb.Model):
-  """Container for a histogram."""
-
-  bucket_id = ndb.IntegerProperty(required=True)
-  property_name = ndb.StringProperty(required=True)
-
-  @classmethod
-  def get_all(self):
-    output = {}
-    buckets = self.query().fetch(None)
-    for bucket in buckets:
-      output[bucket.bucket_id] = bucket.property_name
-    return output
-
-class CssPropertyHistogram(HistogramModel):
-  pass
-
-class FeatureObserverHistogram(HistogramModel):
-  pass
+    return owners_file.raw_content

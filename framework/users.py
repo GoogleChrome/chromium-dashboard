@@ -1,7 +1,11 @@
+import logging
 import os
+
 from flask import session
 from google.oauth2 import id_token
 from google.auth.transport import requests
+
+from framework import xsrf
 import settings
 
 
@@ -177,37 +181,52 @@ class User(object):
         """
 
         # This env variable was set by GAE based on a GAE session cookie.
-        # With Google Sign-In, it will probably never be present.
-        # Hence, currently is always False
-        # TODO (jrobbins): Implement this method
+        # Using Sign-In With Google, it will probably never be present.
+        # Hence, currently is always False.
+        # We don't use this.  We check a boolean in the AppUser model.
         return (os.environ.get('USER_IS_ADMIN', '0')) == '1'
 
 
 def get_current_user():
     if settings.UNIT_TEST_MODE:
+      user_via_env = None
       if os.environ['USER_EMAIL']!= '':
-        current_user = User(
-            email=os.environ['USER_EMAIL'],
-            _user_id=os.environ['USER_ID'])
-      else:
-        current_user = None
-      return current_user
+        user_via_env = User(email=os.environ['USER_EMAIL'])
+      return user_via_env
 
-    token = session.get('id_token')
-    current_user = None
-    if token:
+    user_info, signature = session.get('signed_user_info', (None, None))
+    if user_info:
       try:
-        idinfo = id_token.verify_oauth2_token(
-            token, requests.Request(), settings.GOOGLE_SIGN_IN_CLIENT_ID)
-        current_user = User(email=idinfo['email'], _user_id=idinfo['sub'])
+        xsrf.validate_token(
+            signature,
+            str(user_info),
+            timeout=xsrf.REFRESH_TOKEN_TIMEOUT_SEC)
+        user_via_signed_user_info = User(email=user_info['email'])
+        return user_via_signed_user_info
 
-      except ValueError:
-          # Remove the id_token from session if it is invalid or expired
-          session.clear()
-          current_user = None
+      except xsrf.TokenIncorrect:
+        # If anything is not right, give the user a fresh session.
+        session.clear()
+        pass
 
-    return current_user
+    return None  # User is not signed in.
 
 
 def is_current_user_admin():
     return False
+
+
+def add_signed_user_info_to_session(email):
+  """Create and sign the user info in the Flask session."""
+  user_info = {
+      'email': email,
+  }
+  signature = xsrf.generate_token(str(user_info))
+  session['signed_user_info'] = user_info, signature
+
+
+def refresh_user_session():
+  """If the user is signed in, update the signed user info with a new date."""
+  user = get_current_user()
+  if user:
+    add_signed_user_info_to_session(user.email())

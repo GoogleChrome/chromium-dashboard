@@ -23,6 +23,9 @@ limitations under the License.
   <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
 
   <meta name="theme-color" content="#366597">
+
+  <link rel="stylesheet" href="/static/css/base.css?v={{app_version}}" />
+
   <link rel="icon" sizes="192x192" href="/static/img/crstatus_192.png">
 
   <!-- iOS: run in full-screen mode and display upper status bar as translucent -->
@@ -36,138 +39,26 @@ limitations under the License.
 
   <link rel="preconnect" href="https://www.google-analytics.com" crossorigin>
 
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&amp;display=swap" rel="stylesheet">
+
   {% block meta %}{% endblock %}
 
   <style>
     {% inline_file "/static/css/main.css" %}
-    :root {
-      --app-drawer-width: 210px; /* Used by the component. */
-    }
-
-    /* Set the left sidebar the same background color as the page. */
-    .drawer-content-wrapper {
-      background: #eee;
-    }
-
-    /* Manually hide the toggle button
-     * https://github.com/PolymerElements/app-layout/tree/master/app-drawer-layout */
-    app-drawer-layout:not([narrow]) [drawer-toggle] {
-      display: none;
-    }
-
-    /* CSS For Google Sign In Button */
-    #gSignInCustomBtn {
-      display: inline-block;
-      background: white;
-      color: #444;
-      width: 190px;
-      box-shadow: 1px 0px 5px grey;
-      white-space: nowrap;
-    }
-
-    #gSignInCustomBtn:hover {
-      cursor: pointer;
-      box-shadow: 0px 0px 5px 1px #84a3d8;
-    }
-
-    #gSignInCustomBtn:active .gSignInIcon {
-      background: url('/static/img/google_sign_in/btn_google_signin_light_pressed_web@2x.png');
-      background-size: contain;
-      display: inline-block;
-      vertical-align: middle;
-      width: 191px;
-      height: 41px;
-    }
-
-    .gSignInIcon {
-      background: url('/static/img/google_sign_in/btn_google_signin_light_normal_web@2x.png');
-      background-size: contain;
-      display: inline-block;
-      vertical-align: middle;
-      width: 191px;
-      height: 41px;
-    }
-
   </style>
 
   {% block css %}{% endblock %}
 
-  {# Google Platform Library for OAuth #}
-  <script src="https://apis.google.com/js/platform.js?onload=onLoad"
-          async defer nonce="{{nonce}}"></script>
+  {# Google Identity Services library for OAuth #}
+  <script src="https://accounts.google.com/gsi/client" async defer nonce="{{nonce}}"></script>
 
   <script nonce="{{nonce}}">
-    function onSignIn(googleUser) {
-        csClient.signIn(googleUser)
-            .then(responseJson => {
-                console.log('Signed in:');
-                console.log(responseJson);
-                window.location.replace(window.location.href.split("?")[0]);
-            })
-            .catch(() => {
-                console.error('Sign in failed, so signing out to allow retry');
-                signOut();
-            });
-    }
-
-    function signOut() {
-        let auth2 = gapi.auth2.getAuthInstance();
-        csClient.signOut(auth2).then(responseJson => {
-            console.log('Signed out:');
-            console.log(responseJson);
-            window.location.reload();
-        });
-    }
-    
-    var googleUser = {};
-    var startApp = function() {
-        gapi.load('auth2', function(){
-          auth2 = gapi.auth2.init({
-              client_id: '{{google_sign_in_client_id}}',
-              cookiepolicy: 'single_host_origin',
-              scope: 'profile email'
-          });
-          
-          if (document.getElementById('gSignInCustomBtn')) {
-            attachSignin(document.getElementById('gSignInCustomBtn'));
-          }
-        });
-    };
-
-    function attachSignin(element) {
-      auth2.attachClickHandler(element, {},
-          function(googleUser) {
-            onSignIn(googleUser);
-          }, function(error) {
-              console.log(error);
-          });
-    }
-    
-    function onLoad() {
-      startApp();
-    }
-
-    function getQueryStringValue (key) {
-      return decodeURIComponent(window.location.search.replace(new RegExp("^(?:.*[&\\?]" + encodeURIComponent(key).replace(/[\.\+\*]/g, "\\$&") + "(?:\\=([^&]*))?)?.*$", "i"), "$1"));
-    }
-
-    function promptSignIn(e) {
-      e.preventDefault();
-      e.stopPropagation();
-      let auth2 = gapi.auth2.getAuthInstance();
-      auth2.signIn().then(onSignIn);
-    }
-
-
-    // This happens when an anon visitor tries to view a page that
-    // requires being signed in.  We cannot promptSignIn(), because
-    // lacking a user-initiated event, the popup will be blocked.
-    if (getQueryStringValue("loginStatus") == 'False') {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get("loginStatus") == 'False') {
       alert('Please log in.');
     }
-
-
-
   </script>
 
   {# Loaded immediately because it is used by JS code on the page. #}
@@ -179,61 +70,64 @@ limitations under the License.
         '{{xsrf_token}}', {{xsrf_token_expires}});
   </script>
 
-  <script src="https://unpkg.com/@webcomponents/webcomponentsjs/webcomponents-loader.js"
-          nonce="{{nonce}}"></script>
   <script type="module" nonce="{{nonce}}" defer
-          src="/static/dist/components.js"></script>
+          src="/static/dist/components.js?v={{app_version}}"></script>
   {% block preload %}{% endblock %}
 
   {% block rss %}{% endblock%}
 </head>
 
-<body class="loading" data-path={{current_path}}>
+<body class="loading" data-path="{{current_path}}">
   {% comment %}
   {% endcomment %}
 
   <div id="app-content-container">
-    <app-header-layout>
-      <app-header slot="header">
-        <div class="main-toolbar">
-          <div class="toolbar-content">
-            {% include "header.html" %}
-          </div>
+    <div>
+      <div class="main-toolbar">
+        <div class="toolbar-content">
+          <chromedash-header
+            appTitle="{{APP_TITLE}}"
+            currentPage="{{current_path}}"
+            googleSignInClientId="{{google_sign_in_client_id}}">
+          </chromedash-header>
         </div>
-      </app-header>
+      </div>
 
       <div id="content">
-        <div id="spinner"><img src="/static/img/ring.svg"></div>
-        <chromedash-banner message="{{banner_message}}"
-                               timestamp="{{banner_time}}"></chromedash-banner>
-        <div id="column-container">
-          <div id="drawer-column">{% block drawer %}{% endblock %}</div>
-          <div id="content-column">
+        <div id="spinner">
+          <img src="/static/img/ring.svg">
+        </div>
+        <chromedash-banner
+          message="{{banner_message}}"
+          timestamp="{{banner_time}}">
+        </chromedash-banner>
+        <div id="content-flex-wrapper">
+          <div id="content-component-wrapper">
             {% block subheader %}{% endblock %}
             {% block content %}{% endblock %}
           </div>
         </div>
       </div>
 
-    </app-header-layout>
-
-    {% include "footer.html" %}
+    </div>
+    <chromedash-footer></chromedash-footer>
   </div>
 
   <chromedash-toast msg="Welcome to chromestatus.com!"></chromedash-toast>
 
   {% block overlay %}{% endblock %}
 
-  <!-- https://github.com/ljosa/urlize.js.git. This package does not have ES module support. It sets window.urlize in browsers. -->
-  <script src="https://unpkg.com/urlize.js/urlize.js"
-          nonce="{{nonce}}"></script>
-
   {% block js %}{% endblock %}
 
   <script src="https://www.googletagmanager.com/gtag/js?id=UA-179341418-1"
           async nonce="{{nonce}}"></script>
 
-  <script nonce="{{nonce}}">
+  {% comment %}
+  Note that the following script tag must include type="module" so that the form field event listeners
+  attached by shared.min.js will not be attached until after Shoelace event listeners are attached.
+  See https://github.com/GoogleChrome/chromium-dashboard/issues/2014
+  {% endcomment %}
+  <script type="module" nonce="{{nonce}}">
     (function() {
       'use strict';
 

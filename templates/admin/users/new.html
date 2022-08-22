@@ -1,7 +1,7 @@
 {% extends "_base.html" %}
 
 {% block css %}
-  <link rel="stylesheet" href="/static/css/forms.css">
+  <link rel="stylesheet" href="/static/css/forms.css?v={{app_version}}">
 {% endblock %}
 
 {% block subheader %}
@@ -13,7 +13,7 @@
 {% block content %}
 <section>
 
-  <chromedash-userlist></chromedeash-userlist>
+  <chromedash-userlist></chromedash-userlist>
 
 </section>
 {% endblock %}

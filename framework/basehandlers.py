@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from datetime import datetime
 import json
 import logging
 import os
@@ -22,6 +23,7 @@ import flask
 import flask.views
 import werkzeug.exceptions
 
+import google.appengine.api
 from google.cloud import ndb
 
 import settings
@@ -29,19 +31,20 @@ from framework import csp
 from framework import permissions
 from framework import ramcache
 from framework import secrets
+from framework import users
 from framework import utils
 from framework import xsrf
 from internals import approval_defs
 from internals import models
+from internals import user_models
 
 from django.template.loader import render_to_string
 import django
 
-from google.oauth2 import id_token
 from google.auth.transport import requests
 from flask import session
+from flask_cors import CORS
 import sys
-from framework import users
 
 # Initialize django so that it'll function when run as a standalone script.
 # https://django.readthedocs.io/en/latest/releases/1.7.html#standalone-scripts
@@ -51,6 +54,16 @@ django.setup()
 # Our API responses are prefixed with this ro prevent attacks that
 # exploit <script src="...">.  See go/xssi.
 XSSI_PREFIX = ')]}\'\n';
+
+
+# See https://www.regextester.com/93901 for url regex
+SCHEME_PATTERN = r'((?P<scheme>[a-z]+):(\/\/)?)?'
+DOMAIN_PATTERN = r'([\w-]+(\.[\w-]+)+)'
+PATH_PARAMS_ANCHOR_PATTERN = r'([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])?'
+URL_RE = re.compile(r'\b%s%s%s\b' % (
+    SCHEME_PATTERN, DOMAIN_PATTERN, PATH_PARAMS_ANCHOR_PATTERN))
+ALLOWED_SCHEMES = [None, 'http', 'https']
+
 
 class BaseHandler(flask.views.MethodView):
 
@@ -86,7 +99,7 @@ class BaseHandler(flask.views.MethodView):
     """Get the specified JSON parameter."""
     json_body = self.request.get_json(force=True, silent=True) or {}
     val = json_body.get(name, default)
-    if required and not val:
+    if required and val is None:
       self.abort(400, msg='Missing parameter %r' % name)
     if val and validator and not validator(val):
       self.abort(400, msg='Invalid value for parameter %r' % name)
@@ -130,11 +143,12 @@ class APIHandler(BaseHandler):
 
   def get_headers(self):
     """Add CORS and Chrome Frame to all responses."""
+    session.permanent = True
     headers = {
         'Strict-Transport-Security':
             'max-age=63072000; includeSubDomains; preload',
-        'Access-Control-Allow-Origin': '*',
         'X-UA-Compatible': 'IE=Edge,chrome=1',
+        'X-Frame-Options': 'DENY',
         }
     return headers
 
@@ -193,6 +207,15 @@ class APIHandler(BaseHandler):
     if self.do_delete.__code__ is not APIHandler.do_delete.__code__:
       valid_methods.append('DELETE')
     return valid_methods
+
+  def _update_last_visit_field(self, email):
+    """Updates the AppUser last_visit field to log the user's last visit"""
+    app_user = user_models.AppUser.get_app_user(email)
+    if not app_user:
+      return False
+    app_user.last_visit = datetime.now()
+    app_user.put()
+    return True
 
   def do_get(self, **kwargs):
     """Subclasses should implement this method to handle a GET request."""
@@ -253,11 +276,12 @@ class FlaskHandler(BaseHandler):
 
   def get_headers(self):
     """Add CORS and Chrome Frame to all responses."""
+    session.permanent = True
     headers = {
         'Strict-Transport-Security':
             'max-age=63072000; includeSubDomains; preload',
-        'Access-Control-Allow-Origin': '*',
         'X-UA-Compatible': 'IE=Edge,chrome=1',
+        'X-Frame-Options': 'DENY',
         }
     headers.update(self.get_cache_headers())
     return headers
@@ -283,6 +307,8 @@ class FlaskHandler(BaseHandler):
   def get_common_data(self, path=None):
     """Return template data used on all pages, e.g., sign-in info."""
     current_path = path or flask.request.full_path
+    # Used to make browser load new JS and CSS for each GAE version.
+    app_version = os.environ.get('GAE_VERSION', 'Undeployed')
     common_data = {
       'prod': settings.PROD,
       'APP_TITLE': settings.APP_TITLE,
@@ -291,19 +317,21 @@ class FlaskHandler(BaseHandler):
       'TEMPLATE_CACHE_TIME': settings.TEMPLATE_CACHE_TIME,
       'banner_message': settings.BANNER_MESSAGE,
       'banner_time': utils.get_banner_time(settings.BANNER_TIME),
+      'app_version': app_version,
     }
 
     user = self.get_current_user()
     if user:
       field_id = approval_defs.ShipApproval.field_id
       approvers = approval_defs.get_approvers(field_id)
-      user_pref = models.UserPref.get_signed_in_user_pref()
+      user_pref = user_models.UserPref.get_signed_in_user_pref()
       common_data['user'] = {
         'can_create_feature': permissions.can_create_feature(user),
         'can_approve': permissions.can_approve_feature(
             user, None, approvers),
-        'can_edit': permissions.can_edit_any_feature(user),
+        'can_edit_all': permissions.can_edit_any_feature(user),
         'is_admin': permissions.can_admin_site(user),
+        'editable_features': [],
         'email': user.email(),
         'dismissed_cues': json.dumps(user_pref.dismissed_cues),
       }
@@ -320,8 +348,14 @@ class FlaskHandler(BaseHandler):
 
   def get(self, *args, **kwargs):
     """GET handlers can render templates, return JSON, or do redirects."""
+    if self.request.host.startswith('www.'):
+      location = self.request.url.replace('www.', '', 1)
+      logging.info('Striping www and redirecting to %r', location)
+      return self.redirect(location)
+
     ramcache.check_for_distributed_invalidation()
     handler_data = self.get_template_data(*args, **kwargs)
+    users.refresh_user_session()
 
     if self.JSONIFY and type(handler_data) in (dict, list):
       headers = self.get_headers()
@@ -395,7 +429,7 @@ class FlaskHandler(BaseHandler):
     """Split the input lines, strip whitespace, and skip blank lines."""
     input_text = flask.request.form.get(field_name) or ''
     return [x.strip() for x in re.split(delim, input_text)
-            if x]
+            if x.strip()]
 
   def split_emails(self, param_name):
     """Split one input field and construct objects for ndb.StringProperty()."""
@@ -403,14 +437,26 @@ class FlaskHandler(BaseHandler):
     emails = [str(addr) for addr in addr_strs]
     return emails
 
+  def _extract_link(self, s):
+    if s:
+      match_obj = URL_RE.search(str(s))
+      if match_obj and match_obj.group('scheme') in ALLOWED_SCHEMES:
+        link = match_obj.group()
+        if not link.startswith(('http://', 'https://')):
+          link = 'http://' + link
+        return link
+
+    return None
+
   def parse_link(self, param_name):
-    link = flask.request.form.get(param_name) or None
-    if link:
-      if not link.startswith('http'):
-        link = str('http://' + link)
-      else:
-        link = str(link)
-    return link
+    s = flask.request.form.get(param_name) or None
+    return self._extract_link(s)
+
+  def parse_links(self, param_name):
+    strings = self.split_input(param_name)
+    links = [self._extract_link(s) for s in strings]
+    links = [link for link in links if link]  # Drop any bad ones.
+    return links
 
   def parse_int(self, param_name):
     param = flask.request.form.get(param_name) or None
@@ -435,6 +481,8 @@ class ConstHandler(FlaskHandler):
 
   def get_template_data(self, **defaults):
     """Render a template, or return a JSON constant."""
+    if defaults.get('require_signin') and not self.get_current_user():
+      return flask.redirect(settings.LOGIN_PAGE_URL), self.get_headers()
     if 'template_path' in defaults:
       template_path = defaults['template_path']
       if '.html' not in template_path:
@@ -455,16 +503,18 @@ def ndb_wsgi_middleware(wsgi_app):
   return middleware
 
 
-def FlaskApplication(routes, pattern_base='', debug=False):
+def FlaskApplication(import_name, routes, pattern_base='', debug=False):
   """Make a Flask app and add routes and handlers that work like webapp2."""
 
-  app = flask.Flask(__name__)
+  app = flask.Flask(import_name)
+  app.original_wsgi_app = app.wsgi_app  # Only for unit tests.
   app.wsgi_app = ndb_wsgi_middleware(app.wsgi_app) # For Cloud NDB Context
+  # For GAE legacy libraries
+  app.wsgi_app = google.appengine.api.wrap_wsgi_app(app.wsgi_app)
   client = ndb.Client()
   with client.context():
     app.secret_key = secrets.get_session_secret()  # For flask.session
-
-
+    app.permanent_session_lifetime = xsrf.REFRESH_TOKEN_TIMEOUT_SEC
 
   for i, rule in enumerate(routes):
     pattern = rule[0]
@@ -483,5 +533,16 @@ def FlaskApplication(routes, pattern_base='', debug=False):
   app.config["TRAP_BAD_REQUEST_ERRORS"] = settings.DEV_MODE
   # Flask apps also have a debug setting that can be used to auto-reload
   # template source code, but we use django for that.
+
+  # Set the CORS HEADERS.
+  CORS(app, resources={r'/data/*': {'origins': '*'}})
+
+  # Set cookie headers in Flask; see
+  # https://flask.palletsprojects.com/en/2.0.x/config/
+  # for more details.
+  if not settings.DEV_MODE:
+    app.config["SESSION_COOKIE_SECURE"] = True
+    app.config["SESSION_COOKIE_HTTPONLY"] = True
+    app.config["SESSION_COOKIE_SAMESITE"] = 'Lax'
 
   return app

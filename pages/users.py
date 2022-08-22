@@ -1,6 +1,3 @@
-
-
-
 # -*- coding: utf-8 -*-
 # Copyright 2013 Google Inc.
 #
@@ -19,17 +16,13 @@
 __author__ = 'ericbidelman@chromium.org (Eric Bidelman)'
 
 
-#import datetime
 import json
 import logging
-import os
 
-import flask
-
+from api import accounts_api
 from framework import basehandlers
 from framework import permissions
-from internals import models
-import settings
+from internals import user_models
 
 
 class UserListHandler(basehandlers.FlaskHandler):
@@ -38,39 +31,11 @@ class UserListHandler(basehandlers.FlaskHandler):
 
   @permissions.require_admin_site
   def get_template_data(self):
-    users = models.AppUser.query().fetch(None)
-    user_list = [user.format_for_template() for user in users]
+    users = user_models.AppUser.query().fetch(None)
+    user_list = [accounts_api.user_to_json_dict(user) for user in users]
 
     logging.info('user_list is %r', user_list)
     template_data = {
       'users': json.dumps(user_list)
     }
     return template_data
-
-
-class SettingsHandler(basehandlers.FlaskHandler):
-
-  TEMPLATE_PATH = 'settings.html'
-
-  def get_template_data(self):
-    user_pref = models.UserPref.get_signed_in_user_pref()
-    if not user_pref:
-      return flask.redirect(settings.LOGIN_PAGE_URL)
-
-    template_data = {
-        'user_pref': user_pref,
-        'user_pref_form': models.UserPrefForm(user_pref.to_dict()),
-    }
-    return template_data
-
-  def process_post_data(self):
-    user_pref = models.UserPref.get_signed_in_user_pref()
-    if not user_pref:
-      self.abort(403, msg='User must be signed in')
-
-    new_notify = flask.request.form.get('notify_as_starrer')
-    logging.info('setting notify_as_starrer for %r to %r',
-                 user_pref.email, new_notify)
-    user_pref.notify_as_starrer = bool(new_notify)
-    user_pref.put()
-    return flask.redirect(flask.request.path)
