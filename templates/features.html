@@ -4,13 +4,7 @@
 {% load cache %}
 
 {% block rss %}
-  <link rel="alternate" type="application/rss+xml" href="https://chromestatus.com/features.xml" title="All features" />
-  {% cache TEMPLATE_CACHE_TIME rssfeed %}
-    {% for k,v in categories %}
-    <link rel="alternate" type="application/rss+xml"
-          href="https://chromestatus.com/features.xml?category={{v}}" title='"{{k}}" features'>
-    {% endfor %}
-  {% endcache %}
+  <link rel="alternate" type="application/rss+xml" href="/features.xml" title="All features" />
 {% endblock %}
 
 {% block css %}
