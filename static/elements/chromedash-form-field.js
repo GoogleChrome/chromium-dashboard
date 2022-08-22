@@ -157,6 +157,7 @@ export class ChromedashFormField extends LitElement {
                 <sl-icon-button
                   name="plus-square"
                   label="Toggle extra help"
+                  style="position:absolute"
                   @click="${this.toggleExtraHelp}"
                   >+</sl-icon-button
                 >
@@ -168,7 +169,11 @@ export class ChromedashFormField extends LitElement {
       ${extraHelpText ?
         html` <tr>
             <td colspan="2" class="extrahelp">
-              <sl-details summary=""> ${extraHelpText} </sl-details>
+              <sl-details summary="">
+                <span class="helptext">
+                  ${extraHelpText}
+                </span>
+              </sl-details>
             </td>
           </tr>` :
         ''}

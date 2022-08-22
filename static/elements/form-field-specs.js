@@ -31,14 +31,24 @@ export const ALL_FIELDS = {
     required: true,
     label: 'Feature name',
     help_text: html`
-        <p>Capitalize only the first letter and the beginnings of proper nouns.</p>
-        <a target="_blank"
-            href="https://github.com/GoogleChrome/chromium-dashboard/wiki/EditingHelp#feature-name">
-          Learn more</a>.
-        <a target="_blank"
-            href="https://github.com/GoogleChrome/chromium-dashboard/wiki/EditingHelp#feature-name-example">
-          Example</a>.
-      `,
+        <p>Capitalize only the first letter and the beginnings of proper nouns.</p>`,
+    extra_help: html`
+    <p>
+    Each feature should have a unique name that is written as a noun phrase.
+    </p>
+    <ul>
+      <li>Capitalize only the first letter and the beginnings of proper nouns.</li>
+      <li>Avoid using verbs such as "add", "enhance", "deprecate", or "delete". Instead, simply name the feature itself and use the feature type and stage fields to indicate the intent of change.</li>
+      <li>Do not include markup or markdown because they will not be rendered..</li>
+      <li>Write keywords and identifiers as they would appear to a web developer, not as they are in source code. For example, a method implemented as NewInterface#dostuff would be written as in JavaScript: NewInterface.doStuff().</li>
+    </ul>
+
+    <h4>Examples</h4>
+    <ul>
+      <li>Conversion Measurement API</li>
+      <li>CSS Flexbox: intrinsic size algorithm</li>
+      <li>Permissions-Policy header</li>
+    </ul>`,
   },
 
   'summary': {
@@ -52,14 +62,32 @@ export const ALL_FIELDS = {
         manner and in the present tense. (This summary will be visible long after
         your project is finished.) Avoid language such as "a new feature" and
         "we propose".</p>
-
-        <a target="_blank"
-            href="https://github.com/GoogleChrome/chromium-dashboard/wiki/EditingHelp#summary">
-          Learn more</a>.
-        <a target="_blank"
-            href="https://github.com/GoogleChrome/chromium-dashboard/wiki/EditingHelp#example-1">
-          Example</a>.
       `,
+    extra_help: html`
+    <p>
+    Provide a one sentence description followed by one or two lines explaining how this feature works and how it helps web developers.
+    </p>
+
+    <p>
+    Note: This text communicates with more than just the rest of Chromium development. It's the part most visible to external readers and is used in the beta release announcement, enterprise release notes, and other commuinications.
+    </p>
+
+    <ul>
+      <li>Write from a web developer's point of view, not a browser developer's</li>
+      <li>Do not use markup or markdown because they will not be rendered.</li>
+      <li>Do not use hard or soft returns because they will not be rendered.</li>
+      <li>Avoid phrases such as "a new feature". Every feature on the site was new when it was created. You don't need to repeat that information.</li>
+
+      <li>The first line should be a sentence fragment beginning with a verb. (See below.) This is the rare exception to the requirement to always use complete sentences.</li>
+
+      <li>"Conformance with spec" is not adequate. Most if not all features are in conformance to spec.</li>
+    </ul>
+
+    <h4>Example</h4>
+    <blockquote>
+    Splits the HTTP cache using the top frame origin (and possibly subframe origin) to prevent documents from one origin from knowing whether a resource from another origin was cached. The HTTP cache is currently one per profile, with a single namespace for all resources and subresources regardless of origin or renderer process. Splitting the cache on top frame origins helps the browser deflect side-channel attacks where one site can detect resources in another site's cache.
+    </blockquote>
+    `,
   },
 
   'owner': {
