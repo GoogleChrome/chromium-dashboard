@@ -387,11 +387,10 @@ class ChromedashApprovalsDialog extends LitElement {
       return '';
     }
     const diff = now - commentDate;
-    console.log(diff);
     const minutes = Math.floor(diff / (1000 * 60));
     const hours = Math.floor(minutes / 60);
     const days = Math.floor(days / 24);
-    console.log(`${minutes} ${hours} ${days}`);
+
     if (days > 6) {
       return '';
     }
