@@ -71,7 +71,7 @@
     "gulp-uglify-es": "^3.0.0",
     "gulp-util": "^3.0.7",
     "http2-push-manifest": "^1.0.0",
-    "ini": ">=3.0.0",
+    "ini": ">=3.0.1",
     "kind-of": ">=6.0.3",
     "lit-analyzer": "^1.1.9",
     "lodash": ">=4.17.21",
