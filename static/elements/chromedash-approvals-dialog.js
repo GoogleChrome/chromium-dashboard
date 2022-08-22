@@ -379,6 +379,37 @@ class ChromedashApprovalsDialog extends LitElement {
       this.renderApproval(apprDef));
   }
 
+  formatRelativeDate(timestamp) {
+    const now = new Date();
+    // Timestamp uses UTC.
+    const commentDate = new Date(`${timestamp} UTC`);
+    if (isNaN(commentDate)) {
+      return '';
+    }
+    const diff = now - commentDate;
+    console.log(diff);
+    const minutes = Math.floor(diff / (1000 * 60));
+    const hours = Math.floor(minutes / 60);
+    const days = Math.floor(days / 24);
+    console.log(`${minutes} ${hours} ${days}`);
+    if (days > 6) {
+      return '';
+    }
+    if (days > 1) {
+      return `${days} days ago`;
+    }
+    if (hours > 1) {
+      return `${hours} hours ago`;
+    }
+    if (minutes > 1) {
+      return `${minutes} minutes ago`;
+    }
+    if (minutes > 0) {
+      return `1 minute ago`;
+    }
+    return 'moments ago';
+  }
+
   renderComment(comment) {
     return html`
       <div class="comment">
@@ -386,7 +417,7 @@ class ChromedashApprovalsDialog extends LitElement {
            <span class="author">${comment.author}</span>
            on
            <span class="date">${this.formatDate(comment.created)}</span>
-           wrote:
+           <span class="relative_date"> (${this.formatRelativeDate(comment.created)})</span>
         </div>
         <div class="comment_body">${comment.content}</div>
       </div>
