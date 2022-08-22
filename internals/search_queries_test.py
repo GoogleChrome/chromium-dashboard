@@ -19,6 +19,7 @@ from unittest import mock
 from framework import ramcache
 
 from internals import models
+from internals import review_models
 from internals import search_queries
 
 
@@ -41,30 +42,30 @@ class SearchFeaturesTest(testing_config.CustomTestCase):
     self.feature_2.put()
     self.feature_2_id = self.feature_2.key.integer_id()
 
-    self.approval_1_1 = models.Approval(
+    self.approval_1_1 = review_models.Approval(
         feature_id=self.feature_1_id, field_id=1,
-        state=models.Approval.REVIEW_REQUESTED,
+        state=review_models.Approval.REVIEW_REQUESTED,
         set_on=datetime.datetime(2022, 7, 1),
         set_by='feature_owner@example.com')
     self.approval_1_1.put()
 
-    self.approval_1_2 = models.Approval(
+    self.approval_1_2 = review_models.Approval(
         feature_id=self.feature_1_id, field_id=1,
-        state=models.Approval.APPROVED,
+        state=review_models.Approval.APPROVED,
         set_on=datetime.datetime(2022, 7, 2),
         set_by='reviewer@example.com')
     self.approval_1_2.put()
 
-    self.approval_2_1 = models.Approval(
+    self.approval_2_1 = review_models.Approval(
         feature_id=self.feature_2_id, field_id=1,
-        state=models.Approval.REVIEW_REQUESTED,
+        state=review_models.Approval.REVIEW_REQUESTED,
         set_on=datetime.datetime(2022, 8, 1),
         set_by='feature_owner@example.com')
     self.approval_2_1.put()
 
-    self.approval_2_2 = models.Approval(
+    self.approval_2_2 = review_models.Approval(
         feature_id=self.feature_2_id, field_id=1,
-        state=models.Approval.APPROVED,
+        state=review_models.Approval.APPROVED,
         set_on=datetime.datetime(2022, 8, 2),
         set_by='reviewer@example.com')
     self.approval_2_2.put()
@@ -72,7 +73,7 @@ class SearchFeaturesTest(testing_config.CustomTestCase):
   def tearDown(self):
     self.feature_1.key.delete()
     self.feature_2.key.delete()
-    for appr in models.Approval.query():
+    for appr in review_models.Approval.query():
       appr.key.delete()
     ramcache.flush_all()
 

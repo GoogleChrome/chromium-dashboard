@@ -18,8 +18,21 @@ import logging
 from framework import basehandlers
 from framework import permissions
 from internals import approval_defs
-from internals import models
+from internals import review_models
 from internals import notifier
+
+
+def comment_to_json_dict(comment):
+  return {
+      'feature_id': comment.feature_id,
+      'field_id': comment.field_id,
+      'created': str(comment.created),  # YYYY-MM-DD HH:MM:SS.SSS
+      'author': comment.author,
+      'content': comment.content,
+      'deleted_by': comment.deleted_by,
+      'old_approval_state': comment.old_approval_state,
+      'new_approval_state': comment.new_approval_state,
+      }
 
 
 class CommentsAPI(basehandlers.APIHandler):
@@ -29,8 +42,8 @@ class CommentsAPI(basehandlers.APIHandler):
   def do_get(self, feature_id, field_id=None):
     """Return a list of all review comments on the given feature."""
     # Note: We assume that anyone may view approval comments.
-    comments = models.Comment.get_comments(feature_id, field_id)
-    dicts = [ac.format_for_template(add_id=False) for ac in comments]
+    comments = review_models.Comment.get_comments(feature_id, field_id)
+    dicts = [comment_to_json_dict(c) for c in comments]
     data = {
         'comments': dicts,
         }
@@ -40,7 +53,7 @@ class CommentsAPI(basehandlers.APIHandler):
     """Add a review comment and possibly set a approval value."""
     new_state = self.get_int_param(
         'state', required=False,
-        validator=models.Approval.is_valid_state)
+        validator=review_models.Approval.is_valid_state)
     feature = self.get_specified_feature(feature_id=feature_id)
     user = self.get_current_user(required=True)
     post_to_approval_field_id = self.get_param(
@@ -48,7 +61,7 @@ class CommentsAPI(basehandlers.APIHandler):
 
     old_state = None
     if field_id is not None and new_state is not None:
-      old_approvals = models.Approval.get_approvals(
+      old_approvals = review_models.Approval.get_approvals(
           feature_id=feature_id, field_id=field_id,
           set_by=user.email())
       if old_approvals:
@@ -57,13 +70,13 @@ class CommentsAPI(basehandlers.APIHandler):
       approvers = approval_defs.get_approvers(field_id)
       if not permissions.can_approve_feature(user, feature, approvers):
         self.abort(403, msg='User is not an approver')
-      models.Approval.set_approval(
+      review_models.Approval.set_approval(
           feature.key.integer_id(), field_id, new_state, user.email())
 
     comment_content = self.get_param('comment', required=False)
 
     if comment_content or new_state is not None:
-      comment = models.Comment(
+      comment = review_models.Comment(
           feature_id=feature_id, field_id=field_id,
           author=user.email(), content=comment_content,
           old_approval_state=old_state,
