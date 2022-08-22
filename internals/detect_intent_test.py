@@ -21,7 +21,7 @@ import werkzeug
 from internals import approval_defs
 from internals import core_enums
 from internals import detect_intent
-from internals import models
+from internals import core_models
 from internals import review_models
 
 test_app = flask.Flask(__name__)
@@ -30,7 +30,7 @@ test_app = flask.Flask(__name__)
 class FunctionTest(testing_config.CustomTestCase):
 
   def setUp(self):
-    self.feature_1 = models.Feature(
+    self.feature_1 = core_models.Feature(
         name='feature one', summary='detailed sum', category=1, visibility=1,
         standardization=1, web_dev_views=1, impl_status_chrome=1,
         intent_stage=core_enums.INTENT_IMPLEMENT)
@@ -323,7 +323,7 @@ class FunctionTest(testing_config.CustomTestCase):
 class IntentEmailHandlerTest(testing_config.CustomTestCase):
 
   def setUp(self):
-    self.feature_1 = models.Feature(
+    self.feature_1 = core_models.Feature(
         name='feature one', summary='detailed sum', category=1, visibility=1,
         standardization=1, web_dev_views=1, impl_status_chrome=1,
         intent_stage=core_enums.INTENT_IMPLEMENT)

@@ -42,6 +42,7 @@ def del_none(d):
       del_none(value)
   return d
 
+
 class DictModel(ndb.Model):
   # def to_dict(self):
   #   return dict([(p, str(getattr(self, p))) for p in self.properties()])

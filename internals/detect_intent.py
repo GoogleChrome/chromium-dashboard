@@ -21,7 +21,7 @@ from framework import basehandlers
 from framework import permissions
 from framework import users
 from internals import approval_defs
-from internals import models
+from internals import core_models
 from internals import review_models
 
 
@@ -204,7 +204,7 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
     """
     # If the message had a link to a chromestatus entry, use its ID.
     if feature_id:
-      return models.Feature.get_by_id(feature_id), None
+      return core_models.Feature.get_by_id(feature_id), None
 
     # If there is also no thread_url, then give up.
     if not thread_url:
@@ -213,21 +213,21 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
     # Find the feature by querying for the previously saved discussion link.
     matching_features = []
     if approval_field == approval_defs.PrototypeApproval:
-      query = models.Feature.query(
-          models.Feature.intent_to_implement_url == thread_url)
+      query = core_models.Feature.query(
+          core_models.Feature.intent_to_implement_url == thread_url)
       matching_features = query.fetch()
     # TODO(jrobbins): Ready-for-trial threads
     elif approval_field == approval_defs.ExperimentApproval:
-      query = models.Feature.query(
-          models.Feature.intent_to_experiment_url == thread_url)
+      query = core_models.Feature.query(
+          core_models.Feature.intent_to_experiment_url == thread_url)
       matching_features = query.fetch()
     elif approval_field == approval_defs.ExtendExperimentApproval:
-      query = models.Feature.query(
-          models.Feature.intent_to_extend_experiment_url == thread_url)
+      query = core_models.Feature.query(
+          core_models.Feature.intent_to_extend_experiment_url == thread_url)
       matching_features = query.fetch()
     elif approval_field == approval_defs.ShipApproval:
-      query = models.Feature.query(
-          models.Feature.intent_to_ship_url == thread_url)
+      query = core_models.Feature.query(
+          core_models.Feature.intent_to_ship_url == thread_url)
       matching_features = query.fetch()
     else:
       return None, 'Unsupported approval field'

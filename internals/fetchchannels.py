@@ -13,14 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-
-
 import json
 import requests
 
 from framework import ramcache
-# Note: this file cannot import models because it would be circular.
+# Note: this file cannot import core_models because it would be circular.
 
 
 def get_omaha_data():

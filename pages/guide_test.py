@@ -22,7 +22,7 @@ import html5lib
 
 from framework import ramcache
 from internals import core_enums
-from internals import models
+from internals import core_models
 from pages import guide
 
 
@@ -104,7 +104,7 @@ class FeatureNewTest(testing_config.CustomTestCase):
     location = actual_response.headers['location']
     self.assertTrue(location.startswith('/guide/edit/'))
     new_feature_id = int(location.split('/')[-1])
-    feature = models.Feature.get_by_id(new_feature_id)
+    feature = core_models.Feature.get_by_id(new_feature_id)
     self.assertEqual(1, feature.category)
     self.assertEqual('Feature name', feature.name)
     self.assertEqual('Feature summary', feature.summary)
@@ -137,7 +137,7 @@ class FeatureNewTemplateTest(TestWithFeature):
 class ProcessOverviewTest(testing_config.CustomTestCase):
 
   def setUp(self):
-    self.feature_1 = models.Feature(
+    self.feature_1 = core_models.Feature(
         name='feature one', summary='sum', owner=['user1@google.com'],
         category=1, visibility=1, standardization=1,
         web_dev_views=core_enums.DEV_NO_SIGNALS, impl_status_chrome=1)
@@ -209,7 +209,7 @@ class ProcessOverviewTemplateTest(TestWithFeature):
   def setUp(self):
     super(ProcessOverviewTemplateTest, self).setUp()
 
-    self.feature_1 = models.Feature(
+    self.feature_1 = core_models.Feature(
         name='feature one', summary='sum', owner=['user1@google.com'],
         category=1, visibility=1, standardization=1,
         web_dev_views=core_enums.DEV_NO_SIGNALS, impl_status_chrome=1)
@@ -243,7 +243,7 @@ class ProcessOverviewTemplateTest(TestWithFeature):
 class FeatureEditStageTest(testing_config.CustomTestCase):
 
   def setUp(self):
-    self.feature_1 = models.Feature(
+    self.feature_1 = core_models.Feature(
         name='feature one', summary='sum', owner=['user1@google.com'],
         category=1, visibility=1, standardization=1, web_dev_views=1,
         impl_status_chrome=1)
@@ -382,7 +382,8 @@ class FeatureEditStageTest(testing_config.CustomTestCase):
     location = actual_response.headers['location']
     self.assertEqual('/guide/edit/%d' % self.feature_1.key.integer_id(),
                      location)
-    revised_feature = models.Feature.get_by_id(self.feature_1.key.integer_id())
+    revised_feature = core_models.Feature.get_by_id(
+        self.feature_1.key.integer_id())
     self.assertEqual(2, revised_feature.category)
     self.assertEqual('Revised feature name', revised_feature.name)
     self.assertEqual('Revised feature summary', revised_feature.summary)
@@ -395,7 +396,7 @@ class FeatureEditStageTemplateTest(TestWithFeature):
 
   def setUp(self):
     super(FeatureEditStageTemplateTest, self).setUp()
-    self.feature_1 = models.Feature(
+    self.feature_1 = core_models.Feature(
         name='feature one', summary='sum', owner=['user1@google.com'],
         category=1, visibility=1, standardization=1,
         web_dev_views=core_enums.DEV_NO_SIGNALS, impl_status_chrome=1)
@@ -427,7 +428,7 @@ class FeatureEditAllFieldsTemplateTest(TestWithFeature):
 
   def setUp(self):
     super(FeatureEditAllFieldsTemplateTest, self).setUp()
-    self.feature_1 = models.Feature(
+    self.feature_1 = core_models.Feature(
         name='feature one', summary='sum', owner=['user1@google.com'],
         category=1, visibility=1, standardization=1,
         web_dev_views=core_enums.DEV_NO_SIGNALS, impl_status_chrome=1)
@@ -457,7 +458,7 @@ class FeatureVerifyAccuracyTemplateTest(TestWithFeature):
 
   def setUp(self):
     super(FeatureVerifyAccuracyTemplateTest, self).setUp()
-    self.feature_1 = models.Feature(
+    self.feature_1 = core_models.Feature(
         name='feature one', summary='sum', owner=['user1@google.com'],
         category=1, visibility=1, standardization=1,
         web_dev_views=core_enums.DEV_NO_SIGNALS, impl_status_chrome=1)

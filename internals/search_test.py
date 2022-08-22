@@ -17,7 +17,7 @@ import testing_config  # Must be imported before the module under test.
 import datetime
 from unittest import mock
 
-from internals import models
+from internals import core_models
 from internals import notifier
 from internals import review_models
 from internals import search
@@ -26,13 +26,13 @@ from internals import search
 class SearchFunctionsTest(testing_config.CustomTestCase):
 
   def setUp(self):
-    self.feature_1 = models.Feature(
+    self.feature_1 = core_models.Feature(
         name='feature 1', summary='sum', category=1, visibility=1,
         standardization=1, web_dev_views=1, impl_status_chrome=3)
     self.feature_1.owner = ['owner@example.com']
     self.feature_1.editors = ['editor@example.com']
     self.feature_1.put()
-    self.feature_2 = models.Feature(
+    self.feature_2 = core_models.Feature(
         name='feature 2', summary='sum', category=2, visibility=1,
         standardization=1, web_dev_views=1, impl_status_chrome=3)
     self.feature_2.owner = ['owner@example.com']

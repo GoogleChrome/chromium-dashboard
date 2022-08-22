@@ -19,14 +19,14 @@ from unittest import mock
 from framework import ramcache
 from framework import users
 
-from internals import models
+from internals import core_models
 from internals import review_models
 
 
 class ApprovalTest(testing_config.CustomTestCase):
 
   def setUp(self):
-    self.feature_1 = models.Feature(
+    self.feature_1 = core_models.Feature(
         name='feature a', summary='sum', category=1, visibility=1,
         standardization=1, web_dev_views=1, impl_status_chrome=3)
     self.feature_1.put()
@@ -111,7 +111,7 @@ class ApprovalTest(testing_config.CustomTestCase):
 class CommentTest(testing_config.CustomTestCase):
 
   def setUp(self):
-    self.feature_1 = models.Feature(
+    self.feature_1 = core_models.Feature(
         name='feature a', summary='sum',  owner=['feature_owner@example.com'],
         category=1, visibility=1, standardization=1, web_dev_views=1,
         impl_status_chrome=3)
@@ -128,7 +128,7 @@ class CommentTest(testing_config.CustomTestCase):
         content='some other text')
     self.comment_1_2.put()
 
-    self.feature_2 = models.Feature(
+    self.feature_2 = core_models.Feature(
         name='feature b', summary='sum', owner=['feature_owner@example.com'],
         category=1, visibility=1, standardization=1, web_dev_views=1,
         impl_status_chrome=3)

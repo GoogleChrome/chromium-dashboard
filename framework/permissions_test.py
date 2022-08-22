@@ -22,7 +22,7 @@ from framework import users
 
 from framework import basehandlers
 from framework import permissions
-from internals import models
+from internals import core_models
 from internals import user_models
 
 
@@ -76,7 +76,7 @@ class PermissionFunctionTests(testing_config.CustomTestCase):
     self.users.append(self.feature_editor)
 
     # Feature for checking permissions against
-    self.feature_1 = models.Feature(
+    self.feature_1 = core_models.Feature(
         name='feature one', summary='sum',
         creator="feature_creator@example.com",
         owner=['feature_owner@example.com'],
