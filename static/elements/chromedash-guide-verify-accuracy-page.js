@@ -93,6 +93,15 @@ export class ChromedashGuideVerifyAccuracyPage extends LitElement {
     window.location.href = `/guide/edit/${this.featureId}`;
   }
 
+  // get a comma-spearated list of field names
+  getFormFields() {
+    let fields = '';
+    JSON.parse(this.forms).map((form) => {
+      fields += form[2].join();
+    });
+    return fields;
+  }
+
   renderSkeletons() {
     return html`
       <h3><sl-skeleton effect="sheen"></sl-skeleton></h3>
@@ -129,7 +138,7 @@ export class ChromedashGuideVerifyAccuracyPage extends LitElement {
     return html`
       <form name="feature_form" method="POST" action="/guide/verify_accuracy/${this.featureId}">
         <input type="hidden" name="token">
-        <input type="hidden" name="form_fields" value="accurate_as_of">
+        <input type="hidden" name="form_fields" value=${this.getFormFields()}>
 
         ${JSON.parse(this.forms).map(([sectionName, form]) => html`
           <h3>${sectionName}</h3>

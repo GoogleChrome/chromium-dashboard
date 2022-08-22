@@ -93,6 +93,15 @@ export class ChromedashGuideEditallPage extends LitElement {
     window.location.href = `/guide/edit/${this.featureId}`;
   }
 
+  // get a comma-spearated list of field names
+  getFormFields() {
+    let fields = '';
+    JSON.parse(this.flatForms).map((form) => {
+      fields += form[2].join();
+    });
+    return fields;
+  }
+
   renderSkeletons() {
     return html`
       <h3><sl-skeleton effect="sheen"></sl-skeleton></h3>
@@ -135,7 +144,7 @@ export class ChromedashGuideEditallPage extends LitElement {
     return html`
       <form name="feature_form" method="POST" action="/guide/editall/${this.featureId}">
         <input type="hidden" name="token">
-        <input type="hidden" name"form_fields" value="edit_all">
+        <input type="hidden" name="form_fields" value=${this.getFormFields()}>
         ${JSON.parse(this.flatForms).map(([sectionName, flatForm]) => html`
           <h3>${sectionName}</h3>
           <section class="flat_form">

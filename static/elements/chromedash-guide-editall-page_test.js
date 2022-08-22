@@ -35,7 +35,7 @@ describe('chromedash-guide-editall-page', () => {
     tags: ['tag_one'],
   });
   /* TODO: create a proper fake data once the form generation is migrated to frontend */
-  const flatForms = '[["fake section name", ""]]';
+  const flatForms = '[["fake section name", "", ["fake field 1", "fake field 2"]]]';
 
   /* window.csClient and <chromedash-toast> are initialized at _base.html
    * which are not available here, so we initialize them before each test.
@@ -88,6 +88,8 @@ describe('chromedash-guide-editall-page', () => {
     const featureForm = component.shadowRoot.querySelector('form[name="feature_form"]');
     assert.exists(featureForm);
     assert.include(featureForm.innerHTML, '<input type="hidden" name="token">');
+    assert.include(featureForm.innerHTML,
+      '<input type="hidden" name="form_fields" value="fake field 1,fake field 2">');
     assert.include(featureForm.innerHTML, '<section class="final_buttons">');
   });
 });

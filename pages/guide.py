@@ -607,7 +607,9 @@ class FeatureEditAllFields(FeatureEditStage):
     # TODO(jrobbins): make flat forms process specific?
     flat_form_section_list = FLAT_FORMS
     flat_forms = [
-        (section_name, str(form_class(feature_edit_dict)))
+        (section_name,
+        str(form_class(feature_edit_dict)),
+        list(form_class(feature_edit_dict).fields))
         for section_name, form_class in flat_form_section_list]
     template_data = {
         'feature': f,
@@ -628,7 +630,8 @@ class FeatureVerifyAccuracy(FeatureEditStage):
     if f.accurate_as_of is not None:
       date = f.accurate_as_of.strftime("%Y-%m-%d")
       forms_title = f"Accuracy last verified {date}."
-    forms = [(forms_title, str(guideforms.Verify_Accuracy(feature_edit_dict)))]
+    form = guideforms.Verify_Accuracy(feature_edit_dict)
+    forms = [(forms_title, str(form), list(form.fields))]
     template_data = {
         'feature': f,
         'feature_id': f.key.integer_id(),
