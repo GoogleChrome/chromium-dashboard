@@ -50,15 +50,16 @@ export class ChromedashFormField extends LitElement {
     const type = fieldProps.type;
     const choices = fieldProps.choices;
 
-    // If type is checkbox, then generate locally.
+    // If type is checkbox, select, or input, then generate locally.
     let fieldHTML = '';
     if (type === 'checkbox') {
+      // value can be a js or python boolean value converted to a string
       fieldHTML = html`
         <sl-checkbox
           name="${this.name}"
           id="id_${this.name}"
           size="small"
-          ?checked=${this.value === 'True' ? true : false}
+          ?checked=${this.value === 'true' || this.value === 'True'}
           ?disabled=${this.disabled}
         >
           ${label}

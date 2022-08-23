@@ -13,19 +13,6 @@ export class ChromedashGuideVerifyAccuracyPage extends LitElement {
       ...SHARED_STYLES,
       ...FORM_STYLES,
       css`
-        sl-skeleton {
-          margin-bottom: 1em;
-          width: 60%;
-        }
-        sl-skeleton:nth-of-type(even) {
-          width: 50%;
-        }
-
-        h3 sl-skeleton {
-          margin-top: 1em;
-          width: 30%;
-          height: 1.25em;
-        }
       `];
   }
 

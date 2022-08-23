@@ -24,19 +24,6 @@ export class ChromedashGuideEditPage extends LitElement {
           display: flex;
           gap: 1.5em;
         }
-
-        sl-skeleton {
-          margin-bottom: 1em;
-          width: 60%;
-        }
-        sl-skeleton:nth-of-type(even) {
-          width: 50%;
-        }
-
-        h3 sl-skeleton {
-          width: 30%;
-          height: 1.5em;
-        }
       `];
   }
 
