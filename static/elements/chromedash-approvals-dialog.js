@@ -379,40 +379,15 @@ class ChromedashApprovalsDialog extends LitElement {
       this.renderApproval(apprDef));
   }
 
-  formatRelativeDate(timestamp, now=new Date()) {
-    // Timestamp uses UTC.
-    const commentDate = new Date(`${timestamp} UTC`);
-    if (isNaN(commentDate)) {
-      return '';
-    }
-    const diff = now - commentDate;
-    const minutes = Math.floor(diff / (1000 * 60));
-    const hours = Math.floor(minutes / 60);
-    const days = Math.floor(days / 24);
-
-    if (days > 6) {
-      return '';
-    }
-    if (days > 1) {
-      return `${days} days ago`;
-    }
-    if (hours > 1) {
-      return `${hours} hours ago`;
-    }
-    if (minutes > 1) {
-      return `${minutes} minutes ago`;
-    }
-    if (minutes > 0) {
-      return `1 minute ago`;
-    }
-    return 'moments ago';
-  }
-
   renderComment(comment) {
-    const relativeDate = this.formatRelativeDate(comment.created);
+    const commentDate = new Date(`${comment.created} UTC`);
     let relativeDateHTML = nothing;
-    if (relativeDate) {
-      relativeDateHTML = `<span class="relative_date"> (${relativeDate})</span>`;
+    if (!isNaN(commentDate)) {
+      relativeDateHTML = html`
+      <span class="relative_date">
+        (<sl-relative-time date="${commentDate.toISOString()}">
+        </sl-relative-time>)
+      </span>`;
     }
 
     return html`
