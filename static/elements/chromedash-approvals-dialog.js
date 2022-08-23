@@ -380,13 +380,23 @@ class ChromedashApprovalsDialog extends LitElement {
   }
 
   renderComment(comment) {
+    const commentDate = new Date(`${comment.created} UTC`);
+    let relativeDateHTML = nothing;
+    if (!isNaN(commentDate)) {
+      relativeDateHTML = html`
+      <span class="relative_date">
+        (<sl-relative-time date="${commentDate.toISOString()}">
+        </sl-relative-time>)
+      </span>`;
+    }
+
     return html`
       <div class="comment">
         <div class="comment_header">
            <span class="author">${comment.author}</span>
            on
            <span class="date">${this.formatDate(comment.created)}</span>
-           wrote:
+           ${relativeDateHTML}
         </div>
         <div class="comment_body">${comment.content}</div>
       </div>
