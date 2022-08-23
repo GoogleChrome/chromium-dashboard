@@ -379,8 +379,7 @@ class ChromedashApprovalsDialog extends LitElement {
       this.renderApproval(apprDef));
   }
 
-  formatRelativeDate(timestamp) {
-    const now = new Date();
+  formatRelativeDate(timestamp, now=new Date()) {
     // Timestamp uses UTC.
     const commentDate = new Date(`${timestamp} UTC`);
     if (isNaN(commentDate)) {
@@ -410,13 +409,19 @@ class ChromedashApprovalsDialog extends LitElement {
   }
 
   renderComment(comment) {
+    const relativeDate = this.formatRelativeDate(comment.created);
+    let relativeDateHTML = nothing;
+    if (relativeDate) {
+      relativeDateHTML = `<span class="relative_date"> (${relativeDate})</span>`;
+    }
+
     return html`
       <div class="comment">
         <div class="comment_header">
            <span class="author">${comment.author}</span>
            on
            <span class="date">${this.formatDate(comment.created)}</span>
-           <span class="relative_date"> (${this.formatRelativeDate(comment.created)})</span>
+           ${relativeDateHTML}
         </div>
         <div class="comment_body">${comment.content}</div>
       </div>
