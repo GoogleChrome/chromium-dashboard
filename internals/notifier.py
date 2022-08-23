@@ -193,7 +193,7 @@ def make_email_tasks(feature, is_update=False, changes=[]):
   return all_tasks
 
 
-class FeatureStar(core_models.DictModel):
+class FeatureStar(ndb.Model):
   """A FeatureStar represent one user's interest in one feature."""
   email = ndb.StringProperty(required=True)
   feature_id = ndb.IntegerProperty(required=True)
