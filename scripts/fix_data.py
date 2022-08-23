@@ -19,10 +19,10 @@ deadline errors, run it a few times until there's no more.
 
 """
 
-from internals import models
+from internals import metrics_models
 
-allCssPropertyHistograms = models.CssPropertyHistogram.get_all()
-allFeatureObserverHistograms = models.FeatureObserverHistogram.get_all()
+allCssPropertyHistograms = metrics_models.CssPropertyHistogram.get_all()
+allFeatureObserverHistograms = metrics_models.FeatureObserverHistogram.get_all()
 
 def CorrectCSSPropertyName(bucket_id):
   if bucket_id in allCssPropertyHistograms:
@@ -36,10 +36,10 @@ def CorrectFeaturePropertyName(bucket_id):
 
 
 def FetchAllCSSPropertiesWithError(bucket_id=None):
-  q = models.StableInstance.query()
+  q = metrics_models.StableInstance.query()
   if bucket_id:
-    q = q.filter(models.StableInstance.bucket_id == bucket_id)
-  q = q.filter(models.StableInstance.property_name == 'ERROR')
+    q = q.filter(metrics_models.StableInstance.bucket_id == bucket_id)
+  q = q.filter(metrics_models.StableInstance.property_name == 'ERROR')
 
   props = q.fetch(None)
 
@@ -49,10 +49,10 @@ def FetchAllCSSPropertiesWithError(bucket_id=None):
   return props
 
 def FetchAllFeaturesWithError(bucket_id=None):
-  q = models.FeatureObserver.query()
+  q = metrics_models.FeatureObserver.query()
   if bucket_id:
-    q = q.filter(models.FeatureObserver.bucket_id == bucket_id)
-  q = q.filter(models.FeatureObserver.property_name == 'ERROR')
+    q = q.filter(metrics_models.FeatureObserver.bucket_id == bucket_id)
+  q = q.filter(metrics_models.FeatureObserver.property_name == 'ERROR')
   return q.fetch(None)
 
 def fix_up(props, corrector_func):

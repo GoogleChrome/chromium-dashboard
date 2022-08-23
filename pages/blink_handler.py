@@ -22,7 +22,7 @@ import os
 
 from framework import basehandlers
 from framework import permissions
-from internals import models
+from internals import core_models
 from internals import user_models
 import settings
 from api.channels_api import construct_chrome_channels_details
@@ -111,7 +111,7 @@ class SubscribersHandler(basehandlers.FlaskHandler):
   def get_template_data(self):
     users = user_models.FeatureOwner.query().order(
         user_models.FeatureOwner.name).fetch(None)
-    feature_list = models.Feature.get_chronological()
+    feature_list = core_models.Feature.get_chronological()
 
     milestone = self.request.args.get('milestone') or None
     if milestone:

@@ -18,7 +18,7 @@ import datetime
 from unittest import mock
 from framework import ramcache
 
-from internals import models
+from internals import core_models
 from internals import review_models
 from internals import search_queries
 
@@ -28,14 +28,14 @@ class SearchFeaturesTest(testing_config.CustomTestCase):
   def setUp(self):
     ramcache.SharedInvalidate.check_for_distributed_invalidation()
 
-    self.feature_1 = models.Feature(
+    self.feature_1 = core_models.Feature(
         name='feature a', summary='sum', owner=['owner@example.com'],
         category=1, visibility=1, standardization=1, web_dev_views=1,
         impl_status_chrome=3)
     self.feature_1.put()
     self.feature_1_id = self.feature_1.key.integer_id()
 
-    self.feature_2 = models.Feature(
+    self.feature_2 = core_models.Feature(
         name='feature b', summary='sum', owner=['owner@example.com'],
         category=1, visibility=1, standardization=1, web_dev_views=1,
         impl_status_chrome=3)

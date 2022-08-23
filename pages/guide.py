@@ -32,7 +32,7 @@ from framework import permissions
 from framework import utils
 from pages import guideforms
 from internals import core_enums
-from internals import models
+from internals import core_models
 from internals import processes
 import settings
 
@@ -135,7 +135,7 @@ class FeatureNew(basehandlers.FlaskHandler):
     signed_in_user = ndb.User(
         email=self.get_current_user().email(),
         _auth_domain='gmail.com')
-    feature = models.Feature(
+    feature = core_models.Feature(
         category=int(self.form.get('category')),
         name=self.form.get('name'),
         feature_type=feature_type,
@@ -177,7 +177,7 @@ class ProcessOverview(basehandlers.FlaskHandler):
   @permissions.require_edit_feature
   def get_template_data(self, feature_id):
 
-    f = models.Feature.get_by_id(int(feature_id))
+    f = core_models.Feature.get_by_id(int(feature_id))
     if f is None:
       self.abort(404, msg='Feature not found')
 
@@ -242,7 +242,7 @@ class FeatureEditStage(basehandlers.FlaskHandler):
 
   def get_feature_and_process(self, feature_id):
     """Look up the feature that the user wants to edit, and its process."""
-    f = models.Feature.get_by_id(feature_id)
+    f = core_models.Feature.get_by_id(feature_id)
     if f is None:
       self.abort(404, msg='Feature not found')
 
@@ -299,7 +299,7 @@ class FeatureEditStage(basehandlers.FlaskHandler):
   def process_post_data(self, feature_id, stage_id=0):
 
     if feature_id:
-      feature = models.Feature.get_by_id(feature_id)
+      feature = core_models.Feature.get_by_id(feature_id)
       if feature is None:
         self.abort(404, msg='Feature not found')
       else:
