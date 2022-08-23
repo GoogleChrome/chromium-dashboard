@@ -48,6 +48,7 @@ import './elements/chromedash-guide-edit-page';
 import './elements/chromedash-guide-editall-page';
 import './elements/chromedash-guide-metadata';
 import './elements/chromedash-guide-new-page';
+import './elements/chromedash-guide-verify-accuracy-page';
 import './elements/chromedash-header';
 import './elements/chromedash-legend';
 import './elements/chromedash-metadata';
