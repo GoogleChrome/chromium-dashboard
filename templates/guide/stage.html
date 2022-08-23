@@ -1,99 +1,13 @@
 {% extends "_base.html" %}
 {% block page_title %}{{ feature.name }} - {% endblock %}
 
-{% block css %}
-<link rel="stylesheet" href="/static/css/forms.css?v={{app_version}}">
-{% endblock %}
-
-{% block subheader %}
-<div id="subheader">
-  <h2 id="breadcrumbs">
-    <a href="/guide/edit/{{ feature_id }}">
-      <iron-icon icon="chromestatus:arrow-back"></iron-icon>
-      Edit feature: {{ feature.name }}
-    </a>
-  </h2>
-</div>
-<h3>{{ stage_name }}</h3>
-{% endblock %}
-
 {% block content %}
-<form name="feature_form" method="POST" action="{{current_path}}">
-  <input type="hidden" name="token" value="{{xsrf_token}}">
-  <input type="hidden" name="form_fields"
-         value="{{ feature_form.fields.keys | join:',' }},
-                {% if impl_status_form %}
-                   {{ impl_status_form.fields.keys | join:',' }}
-                 {% endif %}" >
-
-  <section class="stage_form">
-    <chromedash-form-table>
-      {{ feature_form }}
-
-      <chromedash-form-field name="set_stage" 
-        stage="{{ stage_name }}" 
-        value="{{ already_on_this_stage }}"
-        {% if already_on_this_stage %}
-          disabled
-        {% endif %}
-        >
-      </chromedash-form-field>
-
-    </chromedash-form-table>
-  </section>
-
-
-  {% if impl_status_name or impl_status_form %}
-    <h3>Implementation in Chromium</h3>
-    <section class="stage_form">
-      <chromedash-form-table>
-        {% if impl_status_name %}
-        <chromedash-form-field>
-          <span slot="label">Implementation status:</span>
-
-          {% if already_on_this_impl_status %}
-            <span slot="help">
-                This feature already has implementation status:
-                <b>{{ impl_status_name }}</b>.
-              </td>
-            </span>
-          {% else %}
-            <span slot="field">
-              <input type="hidden" name="impl_status_offered"
-                      value="{{impl_status_offered}}">
-              <input type="checkbox" name="set_impl_status"
-                      id="set_impl_status">
-              <!-- TODO(jrobbins): When checked, make some milestone fields required. -->
-              <label for="set_impl_status">
-                Set implementation status to: <b>{{ impl_status_name }}</b>
-              </label>
-            </span>
-            <span slot="help">
-                Check this box to update the implementation
-                status of this feature in Chromium.
-            </span>
-          {% endif %}
-        </chromedash-form-field>
-        {% endif %}
-
-        {{ impl_status_form }}
-
-      </chromedash-form-table>
-    </section>
-  {% endif %}
-
-
-  <div style="padding-left: 220px" class="final_buttons">
-    <input class="button" type="submit" value="Submit">
-    <button id="cancel-button" data-id="{{ feature_id }}"
-            type="reset">Cancel</button>
-  </div>
-
-</form>
-
-{% endblock %}
-
-{% block js %}
-<script src="/static/js/admin/feature_form.min.js?v={{app_version}}"
-        nonce="{{nonce}}"></script>
+  <chromedash-guide-stage-page
+    stageId="{{ stage_id }}"
+    featureId="{{ feature_id }}"
+    featureForm="{{ feature_form }}"
+    implStatusForm="{{ impl_status_form }}"
+    implStatusName="{{ impl_status_name }}"
+    implStatusOffered="{{ impl_status_offered }}">
+  </chromedash-guide-stage-page>
 {% endblock %}

@@ -320,33 +320,8 @@ class FeatureEditStageTest(testing_config.CustomTestCase):
     with test_app.test_request_context(self.request_path):
       template_data = self.handler.get_template_data(
           self.feature_1.key.integer_id(), self.stage)
-
-    self.assertTrue('feature' in template_data)
     self.assertTrue('feature_id' in template_data)
     self.assertTrue('feature_form' in template_data)
-    self.assertTrue('already_on_this_stage' in template_data)
-
-  def test_get__not_on_this_stage(self):
-    """When feature is not on the stage for the current form, offer checkbox."""
-    testing_config.sign_in('user1@google.com', 1234567890)
-
-    with test_app.test_request_context(self.request_path):
-      template_data = self.handler.get_template_data(
-          self.feature_1.key.integer_id(), self.stage)
-
-    self.assertFalse(template_data['already_on_this_stage'])
-
-  def test_get__already_on_this_stage(self):
-    """When feature is already on the stage for the current form, say that."""
-    self.feature_1.intent_stage = self.stage
-    self.feature_1.put()
-    testing_config.sign_in('user1@google.com', 1234567890)
-
-    with test_app.test_request_context(self.request_path):
-      template_data = self.handler.get_template_data(
-          self.feature_1.key.integer_id(), self.stage)
-
-    self.assertTrue(template_data['already_on_this_stage'])
 
   def test_post__anon(self):
     """Anon cannot edit features, gets a 403."""

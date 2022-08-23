@@ -77,13 +77,13 @@ STAGE_FORMS = {
 
 IMPL_STATUS_FORMS = {
     core_enums.INTENT_INCUBATE:
-        (None, guideforms.ImplStatus_Incubate),
+        ('', guideforms.ImplStatus_Incubate),
     core_enums.INTENT_EXPERIMENT:
         (core_enums.BEHIND_A_FLAG, guideforms.ImplStatus_DevTrial),
     core_enums.INTENT_EXTEND_TRIAL:
         (core_enums.ORIGIN_TRIAL, guideforms.ImplStatus_OriginTrial),
     core_enums.INTENT_IMPLEMENT_SHIP:
-        (None, guideforms.ImplStatus_EvalReadinessToShip),
+        ('', guideforms.ImplStatus_EvalReadinessToShip),
     core_enums.INTENT_SHIP:
         (core_enums.ENABLED_BY_DEFAULT, guideforms.ImplStatus_AllMilestones),
     core_enums.INTENT_SHIPPED:
@@ -256,43 +256,32 @@ class FeatureEditStage(basehandlers.FlaskHandler):
 
     f, feature_process = self.get_feature_and_process(feature_id)
 
-    stage_name = ''
-    for stage in feature_process.stages:
-      if stage.outgoing_stage == stage_id:
-        stage_name = stage.name
-
-    template_data = {
-        'stage_name': stage_name,
-        'stage_id': stage_id,
-        }
-
     # TODO(jrobbins): show useful error if stage not found.
     detail_form_class = STAGE_FORMS[f.feature_type][stage_id]
 
     impl_status_offered, impl_status_form_class = IMPL_STATUS_FORMS.get(
-        stage_id, (None, None))
+        stage_id, ('', ''))
 
     feature_edit_dict = f.format_for_edit()
-    detail_form = None
+    detail_form = ''
     if detail_form_class:
-      detail_form = detail_form_class(feature_edit_dict)
-    impl_status_form = None
+      form = detail_form_class(feature_edit_dict)
+      detail_form = json.dumps((str(form), list(form.fields)))
+    impl_status_form = ''
     if impl_status_form_class:
-      impl_status_form = impl_status_form_class(feature_edit_dict)
+      form = impl_status_form_class(feature_edit_dict)
+      impl_status_form = json.dumps((str(form), list(form.fields)))
 
     # Provide new or populated form to template.
-    template_data.update({
-        'feature': f,
+    template_data = {
+        'stage_id': stage_id,
         'feature_id': f.key.integer_id(),
         'feature_form': detail_form,
-        'already_on_this_stage': stage_id == f.intent_stage,
-        'already_on_this_impl_status':
-            impl_status_offered == f.impl_status_chrome,
         'impl_status_form': impl_status_form,
         'impl_status_name': core_enums.IMPLEMENTATION_STATUS.get(
-            impl_status_offered, None),
+            impl_status_offered, ''),
         'impl_status_offered': impl_status_offered,
-    })
+    }
     return template_data
 
   @permissions.require_edit_feature
