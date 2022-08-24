@@ -23,7 +23,9 @@ from internals import notifier
 
 
 def comment_to_json_dict(comment):
+
   return {
+      'comment_id': comment.key.id(),
       'feature_id': comment.feature_id,
       'field_id': comment.field_id,
       'created': str(comment.created),  # YYYY-MM-DD HH:MM:SS.SSS
@@ -39,10 +41,21 @@ class CommentsAPI(basehandlers.APIHandler):
   """Users may see the list of comments on one of the approvals of a feature,
    and add their own, if allowed."""
 
+  def _should_show_comment(self, comment, email, is_admin):
+    """Check whether a comment should be visible to the user."""
+    return comment.deleted_by is None or email == comment.deleted_by or is_admin
+
   def do_get(self, feature_id, field_id=None):
     """Return a list of all review comments on the given feature."""
     # Note: We assume that anyone may view approval comments.
     comments = review_models.Comment.get_comments(feature_id, field_id)
+    user = self.get_current_user(required=True)
+    is_admin = permissions.can_admin_site(user)
+    
+    # Filter deleted comments the user can't see.
+    comments = filter(
+      lambda c: self._should_show_comment(c, user.email(), is_admin), comments)
+
     dicts = [comment_to_json_dict(c) for c in comments]
     data = {
         'comments': dicts,
@@ -90,4 +103,19 @@ class CommentsAPI(basehandlers.APIHandler):
     # Callers don't use the JSON response for this API call.
     return {'message': 'Done'}
 
-  # TODO(jrobbins): do_patch to soft-delete comments
+  def do_patch(self, feature_id):
+    comment_id = self.get_param('commentId', required=True)
+    comment = review_models.Comment.get_by_id(comment_id)
+
+    user = self.get_current_user(required=True)
+    if not permissions.can_admin_site(user) and user.email() != comment.author:
+      self.abort(403, msg='User does not have comment edit permissions')
+
+    is_undelete = self.get_param('isUndelete', required=True)
+    if is_undelete:
+      comment.deleted_by = None
+    else:
+      comment.deleted_by = user.email()
+    comment.put()
+
+    return {'message': 'Done'}

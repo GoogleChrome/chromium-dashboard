@@ -75,23 +75,53 @@ class CommentsAPITest(testing_config.CustomTestCase):
   def test_get__empty(self):
     """We can get comments for a given approval, even if there none."""
     testing_config.sign_out()
+    testing_config.sign_in('user7@example.com', 123567890)
     with test_app.test_request_context(self.request_path):
       actual_response = self.handler.do_get(self.feature_id, self.field_id)
+    testing_config.sign_out()
     self.assertEqual({'comments': []}, actual_response)
 
   def test_get__all_some(self):
     """We can get all comments for a given approval."""
     testing_config.sign_out()
+    testing_config.sign_in('user7@example.com', 123567890)
     self.cmnt_1_1.put()
 
     with test_app.test_request_context(self.request_path):
       actual_response = self.handler.do_get(self.feature_id, self.field_id)
-
+    testing_config.sign_out()
     actual_comment = actual_response['comments'][0]
     del actual_comment['created']
+    del actual_comment['comment_id']
     self.assertEqual(
         self.expected_1,
         actual_comment)
+
+  def test_get__deleted_comment(self):
+    """A deleted comment should not show the original content."""
+    testing_config.sign_out()
+    testing_config.sign_in('user7@example.com', 123567890)
+    self.cmnt_1_1.deleted_by = 'other_user@example.com'
+    self.cmnt_1_1.put()
+
+    with test_app.test_request_context(self.request_path):
+      resp = self.handler.do_get(self.feature_id, self.field_id)
+    testing_config.sign_out()
+    self.assertEqual(resp['comments'], [])
+
+
+  def test_get__comment_deleted_by_user(self):
+    """The user who deleted a comment can see the original content."""
+    testing_config.sign_out()
+    testing_config.sign_in('user7@example.com', 123567890)
+    self.cmnt_1_1.deleted_by = 'user7@example.com'
+    self.cmnt_1_1.put()
+
+    with test_app.test_request_context(self.request_path):
+      resp = self.handler.do_get(self.feature_id, self.field_id)
+    testing_config.sign_out()
+    comment = resp['comments'][0]
+    self.assertNotEqual(comment['content'], '[Deleted]')
 
   def test_post__bad_state(self):
     """Handler rejects requests that don't specify a state correctly."""
@@ -133,6 +163,47 @@ class CommentsAPITest(testing_config.CustomTestCase):
     with test_app.test_request_context(self.request_path, json=params):
       with self.assertRaises(werkzeug.exceptions.Forbidden):
         self.handler.do_post(self.feature_id, self.field_id)
+
+  def test_patch__forbidden(self):
+    """Handler rejects requests from users who can't edit the given comment."""
+    self.cmnt_1_1.put()
+    params = {'commentId': self.cmnt_1_1.key.id(), 'isUndelete': False}
+
+    testing_config.sign_out()
+    with test_app.test_request_context(self.request_path, json=params):
+      with self.assertRaises(werkzeug.exceptions.Forbidden):
+        self.handler.do_patch(self.feature_id)
+
+    testing_config.sign_in('user7@example.com', 123567890)
+    with test_app.test_request_context(self.request_path, json=params):
+      with self.assertRaises(werkzeug.exceptions.Forbidden):
+        self.handler.do_patch(self.feature_id)
+
+  def test_patch__delete_comment(self):
+    """Handler marks a comment as deleted as requested by authorized user."""
+    self.cmnt_1_1.put()
+    params = {'commentId': self.cmnt_1_1.key.id(), 'isUndelete': False}
+
+    testing_config.sign_in('owner1@example.com', 123567890)
+    with test_app.test_request_context(self.request_path, json=params):
+      resp = self.handler.do_patch(self.feature_id)
+      get_resp = self.handler.do_get(self.feature_id, self.field_id)
+    testing_config.sign_out()
+    self.assertEqual(get_resp['comments'][0]['deleted_by'], 'owner1@example.com')
+    self.assertEqual(resp, {'message': 'Done'})
+
+  def test_patch__undelete_comment(self):
+    """Handler unmarks a comment as deleted as requested by authorized user."""
+    self.cmnt_1_1.deleted_by = 'owner1@example.com'
+    self.cmnt_1_1.put()
+    params = {'commentId': self.cmnt_1_1.key.id(), 'isUndelete': True}
+    testing_config.sign_in('owner1@example.com', 123567890)
+    with test_app.test_request_context(self.request_path, json=params):
+      resp = self.handler.do_patch(self.feature_id)
+      get_resp = self.handler.do_get(self.feature_id, self.field_id)
+    testing_config.sign_out()
+    self.assertEqual(get_resp['comments'][0]['deleted_by'], None)
+    self.assertEqual(resp, {'message': 'Done'})
 
   @mock.patch('internals.approval_defs.get_approvers')
   def test_post__update(self, mock_get_approvers):
