@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from datetime import datetime, timezone
 import logging
 
 from framework import basehandlers
@@ -43,8 +42,7 @@ class CommentsAPI(basehandlers.APIHandler):
    and add their own, if allowed."""
 
   def _should_show_comment(self, comment, email, is_admin):
-    # If the comment is deleted and the current user can't view it,
-    # don't send the comment to the client.
+    """Check whether a comment should be visible to the user."""
     return comment.deleted_by is None or email == comment.deleted_by or is_admin
 
   def do_get(self, feature_id, field_id=None):
