@@ -985,8 +985,8 @@ class FeatureEntry(ndb.Model):  # Copy from Feature
   # Metadata: Process information
   feature_type = ndb.IntegerProperty(default=FEATURE_TYPE_INCUBATE_ID)
   intent_stage = ndb.IntegerProperty(default=0)
-  bug_url = ndb.StringProperty()
-  launch_bug_url = ndb.StringProperty()
+  bug_url = ndb.StringProperty()  # Tracking bug
+  launch_bug_url = ndb.StringProperty()  # FLT or go/launch
 
   # Implementation in Chrome
   impl_status_chrome = ndb.IntegerProperty(required=True)
