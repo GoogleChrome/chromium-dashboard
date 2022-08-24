@@ -404,7 +404,7 @@ class ChromedashApprovalsDialog extends LitElement {
   }
 
   // Format a message to show on a deleted comment the user can edit.
-  formatCommentDeletedPreface(comment) {
+  renderCommentDeletedPreface(comment) {
     if (!this.commentIsEditable(comment) || !comment.deleted_by) {
       return nothing;
     }
@@ -467,7 +467,7 @@ class ChromedashApprovalsDialog extends LitElement {
   }
 
   renderComment(comment) {
-    const preface = this.formatCommentDeletedPreface(comment);
+    const preface = this.renderCommentDeletedPreface(comment);
     return html`
       <div class="comment">
         <div class="comment_header">

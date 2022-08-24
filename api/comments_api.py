@@ -23,13 +23,7 @@ from internals import review_models
 from internals import notifier
 
 
-def comment_to_json_dict(comment, user_email=None, show_deleted=False):
-  content = comment.content
-  # If the comment is deleted and the current user can't view it,
-  # don't send the comment content to the client.
-  if (comment.deleted_by is not None and
-      user_email != comment.deleted_by and not show_deleted):
-    content = "[Deleted]"
+def comment_to_json_dict(comment):
 
   return {
       'comment_id': comment.key.id(),
@@ -37,7 +31,7 @@ def comment_to_json_dict(comment, user_email=None, show_deleted=False):
       'field_id': comment.field_id,
       'created': str(comment.created),  # YYYY-MM-DD HH:MM:SS.SSS
       'author': comment.author,
-      'content': content,
+      'content': comment.content,
       'deleted_by': comment.deleted_by,
       'old_approval_state': comment.old_approval_state,
       'new_approval_state': comment.new_approval_state,
@@ -48,13 +42,23 @@ class CommentsAPI(basehandlers.APIHandler):
   """Users may see the list of comments on one of the approvals of a feature,
    and add their own, if allowed."""
 
+  def _should_show_comment(self, comment, email, is_admin):
+    # If the comment is deleted and the current user can't view it,
+    # don't send the comment to the client.
+    return comment.deleted_by is None or email == comment.deleted_by or is_admin
+
   def do_get(self, feature_id, field_id=None):
     """Return a list of all review comments on the given feature."""
     # Note: We assume that anyone may view approval comments.
     comments = review_models.Comment.get_comments(feature_id, field_id)
     user = self.get_current_user(required=True)
     is_admin = permissions.can_admin_site(user)
-    dicts = [comment_to_json_dict(c, user.email(), is_admin) for c in comments]
+    
+    # Filter deleted comments the user can't see.
+    comments = filter(
+      lambda c: self._should_show_comment(c, user.email(), is_admin), comments)
+
+    dicts = [comment_to_json_dict(c) for c in comments]
     data = {
         'comments': dicts,
         }
@@ -85,11 +89,10 @@ class CommentsAPI(basehandlers.APIHandler):
           feature.key.integer_id(), field_id, new_state, user.email())
 
     comment_content = self.get_param('comment', required=False)
-    created = datetime.utcnow()
 
     if comment_content or new_state is not None:
       comment = review_models.Comment(
-          feature_id=feature_id, field_id=field_id, created=created,
+          feature_id=feature_id, field_id=field_id,
           author=user.email(), content=comment_content,
           old_approval_state=old_state,
           new_approval_state=new_state)
@@ -114,7 +117,7 @@ class CommentsAPI(basehandlers.APIHandler):
     if is_undelete:
       comment.deleted_by = None
     else:
-      comment.deleted_by = self.get_current_user().email()
+      comment.deleted_by = user.email()
     comment.put()
 
     return {'message': 'Done'}

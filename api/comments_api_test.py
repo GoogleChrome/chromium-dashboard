@@ -107,8 +107,7 @@ class CommentsAPITest(testing_config.CustomTestCase):
     with test_app.test_request_context(self.request_path):
       resp = self.handler.do_get(self.feature_id, self.field_id)
     testing_config.sign_out()
-    comment = resp['comments'][0]
-    self.assertEqual(comment['content'], '[Deleted]')
+    self.assertEqual(resp['comments'], [])
 
 
   def test_get__comment_deleted_by_user(self):
