@@ -36,10 +36,10 @@ const APPROVAL_DEFS = [
 
 let approvalDialogEl;
 
-export async function openApprovalsDialog(signedInUser, feature) {
+export async function openApprovalsDialog(user, feature) {
   if (!approvalDialogEl) {
     approvalDialogEl = document.createElement('chromedash-approvals-dialog');
-    approvalDialogEl.signedInUser = signedInUser;
+    approvalDialogEl.user = user;
     document.body.appendChild(approvalDialogEl);
     await approvalDialogEl.updateComplete;
   }
@@ -50,8 +50,7 @@ export async function openApprovalsDialog(signedInUser, feature) {
 class ChromedashApprovalsDialog extends LitElement {
   static get properties() {
     return {
-      signedInUser: {type: String},
-      canApprove: {type: Boolean},
+      user: {type: Object},
       feature: {type: Object},
       approvals: {type: Array},
       comments: {type: Array},
@@ -68,8 +67,7 @@ class ChromedashApprovalsDialog extends LitElement {
 
   constructor() {
     super();
-    this.signedInUser = ''; // email address
-    this.canApprove = false;
+    this.user = {};
     this.feature = {};
     this.approvals = [];
     this.comments = [];
@@ -132,6 +130,21 @@ class ChromedashApprovalsDialog extends LitElement {
 
         select {
           margin: 0;
+        }
+
+        .comment_header {
+          height: 24px;
+        }
+
+        .comment-menu-icon {
+          float: right;
+          margin-right: 8px;
+          cursor: pointer;
+        }
+
+        .edit-menu {
+          display: inline-block;
+          float: right;
         }
 
         .comment_body {
@@ -379,26 +392,92 @@ class ChromedashApprovalsDialog extends LitElement {
       this.renderApproval(apprDef));
   }
 
-  renderComment(comment) {
+  // Returns a boolean representing whether the given comment can be edited.
+  commentIsEditable(comment) {
+    // If the comment has been deleted, it should only be editable
+    // by site admins or the user who deleted it.
+    if (comment.deleted_by) {
+      return this.user.is_admin || comment.deleted_by === this.user.email;
+    }
+    // If the comment is not deleted, site admins or the author can edit.
+    return this.user.email === comment.author || this.user.is_admin;
+  }
+
+  // Format a message to show on a deleted comment the user can edit.
+  formatCommentDeletedPreface(comment) {
+    if (!this.commentIsEditable(comment) || !comment.deleted_by) {
+      return nothing;
+    }
+    return html`<div style="color: darkred">[Deleted] (comment hidden for other users)
+    </div>`;
+  }
+
+  toggleCommentMenu(commentId) {
+    const menuEl = this.shadowRoot.querySelector(`#comment-menu-${commentId}`);
+    // Change the menu icon to represent open/closing on click.
+    const iconEl = this.shadowRoot.querySelector(`#icon-${commentId}`);
+    const isVisible = menuEl.style.display !== 'none';
+    if (isVisible) {
+      menuEl.style.display = 'none';
+      iconEl.icon = 'chromestatus:more-vert';
+    } else {
+      menuEl.style.display = 'inline-block';
+      iconEl.icon = 'chromestatus:close';
+    }
+  }
+
+  // Add a dropdown menu to the comment header if the user can edit the comment.
+  formatCommentEditMenu(comment) {
+    // If the comment is not editable, don't show a comment menu.
+    if (!this.commentIsEditable(comment)) {
+      return nothing;
+    }
+    // Show delete option if not deleted, else show undelete.
+    let menuItem = html`
+    <sl-menu-item @click="${() => this.handleDeleteToggle(comment, false)}"
+    >Delete Comment</div>`;
+    if (comment.deleted_by) {
+      menuItem = html`
+      <sl-menu-item @click="${() => this.handleDeleteToggle(comment, true)}"
+      >Undelete Comment</div>`;
+    }
+
+    return html`
+      <iron-icon class="comment-menu-icon" id="icon-${comment.comment_id}"
+      icon="chromestatus:more-vert"
+      @click=${() => this.toggleCommentMenu(comment.comment_id)}></iron-icon>
+      <div class="edit-menu">
+        <div id="comment-menu-${comment.comment_id}" style="display: none;">
+          <sl-menu>${menuItem}</sl-menu>
+        </div>
+      </div>`;
+  }
+
+  // Display how long ago the comment was created compared to now.
+  formatCommentRelativeDate(comment) {
     const commentDate = new Date(`${comment.created} UTC`);
-    let relativeDateHTML = nothing;
-    if (!isNaN(commentDate)) {
-      relativeDateHTML = html`
+    if (isNaN(commentDate)) {
+      return nothing;
+    }
+    return html`
       <span class="relative_date">
         (<sl-relative-time date="${commentDate.toISOString()}">
         </sl-relative-time>)
       </span>`;
-    }
+  }
 
+  renderComment(comment) {
+    const preface = this.formatCommentDeletedPreface(comment);
     return html`
       <div class="comment">
         <div class="comment_header">
            <span class="author">${comment.author}</span>
            on
            <span class="date">${this.formatDate(comment.created)}</span>
-           ${relativeDateHTML}
+           ${this.formatCommentRelativeDate(comment)}
+           ${this.formatCommentEditMenu(comment)}
         </div>
-        <div class="comment_body">${comment.content}</div>
+        <div class="comment_body">${preface}${comment.content}</div>
       </div>
     `;
   }
@@ -548,6 +627,23 @@ class ChromedashApprovalsDialog extends LitElement {
     Promise.all(promises).then(() => {
       this.shadowRoot.querySelector('sl-dialog').hide();
     });
+  }
+
+  // Handle deleting or undeleting a comment.
+  async handleDeleteToggle(comment, isUndelete) {
+    let resp;
+    if (isUndelete) {
+      resp = await window.csClient.undeleteComment(
+        this.feature.id, comment.comment_id);
+    } else {
+      resp = await window.csClient.deleteComment(
+        this.feature.id, comment.comment_id);
+    }
+    if (resp && resp.message === 'Done') {
+      comment.deleted_by = (isUndelete) ? null : this.user.email;
+      this.toggleCommentMenu(comment.comment_id);
+      this.requestUpdate();
+    }
   }
 
   handleCancel() {

@@ -137,7 +137,7 @@ class Comment(ndb.Model):
   """A review comment on a feature."""
   feature_id = ndb.IntegerProperty(required=True)
   field_id = ndb.IntegerProperty()  # The approval field_id, or general comment.
-  created = ndb.DateTimeProperty(auto_now=True)
+  created = ndb.DateTimeProperty()
   author = ndb.StringProperty()
   content = ndb.StringProperty()
   deleted_by = ndb.StringProperty()
