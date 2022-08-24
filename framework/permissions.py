@@ -19,7 +19,7 @@ import flask
 
 import settings
 from framework import users
-from internals import models
+from internals import core_models
 from internals import user_models
 
 
@@ -83,7 +83,7 @@ def strict_can_edit_feature(user, feature_id):
   if app_user is not None and (app_user.is_admin or app_user.is_site_editor):
     return True
 
-  feature = models.Feature.get_by_id(feature_id)
+  feature = core_models.Feature.get_by_id(feature_id)
   if not feature:
     return False
 

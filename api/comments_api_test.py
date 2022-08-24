@@ -21,7 +21,7 @@ from unittest import mock
 import werkzeug.exceptions  # Flask HTTP stuff.
 
 from api import comments_api
-from internals import models
+from internals import core_models
 from internals import review_models
 
 test_app = flask.Flask(__name__)
@@ -32,7 +32,7 @@ NOW = datetime.datetime.now()
 class CommentsAPITest(testing_config.CustomTestCase):
 
   def setUp(self):
-    self.feature_1 = models.Feature(
+    self.feature_1 = core_models.Feature(
         name='feature one', summary='sum', category=1, visibility=1,
         standardization=1, web_dev_views=1, impl_status_chrome=1)
     self.feature_1.put()

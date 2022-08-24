@@ -15,7 +15,7 @@
 
 
 from framework import basehandlers
-from internals import models
+from internals import core_models
 from internals import processes
 
 
@@ -24,7 +24,7 @@ class ProcessesAPI(basehandlers.APIHandler):
 
   def do_get(self, feature_id):
     """Return the process of the feature."""
-    f = models.Feature.get_by_id(feature_id)
+    f = core_models.Feature.get_by_id(feature_id)
     if f is None:
       self.abort(404, msg=f'Feature {feature_id} not found')
 
@@ -41,7 +41,7 @@ class ProgressAPI(basehandlers.APIHandler):
 
   def do_get(self, feature_id):
     """Return the progress of the feature."""
-    f = models.Feature.get_by_id(feature_id)
+    f = core_models.Feature.get_by_id(feature_id)
     if f is None:
       self.abort(404, msg=f'Feature {feature_id} not found')
 

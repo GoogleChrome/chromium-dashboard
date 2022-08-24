@@ -20,7 +20,7 @@ import werkzeug.exceptions  # Flask HTTP stuff.
 
 from api import features_api
 from internals import core_enums
-from internals import models
+from internals import core_models
 from internals import user_models
 from framework import ramcache
 
@@ -30,7 +30,7 @@ test_app = flask.Flask(__name__)
 class FeaturesAPITestDelete(testing_config.CustomTestCase):
 
   def setUp(self):
-    self.feature_1 = models.Feature(
+    self.feature_1 = core_models.Feature(
         name='feature one', summary='sum', category=1, visibility=1,
         standardization=1, web_dev_views=1, impl_status_chrome=1,
         intent_stage=core_enums.INTENT_IMPLEMENT)
@@ -59,7 +59,7 @@ class FeaturesAPITestDelete(testing_config.CustomTestCase):
       actual_json = self.handler.do_delete(self.feature_id)
     self.assertEqual({'message': 'Done'}, actual_json)
 
-    revised_feature = models.Feature.get_by_id(self.feature_id)
+    revised_feature = core_models.Feature.get_by_id(self.feature_id)
     self.assertTrue(revised_feature.deleted)
 
   def test_delete__forbidden(self):
@@ -70,7 +70,7 @@ class FeaturesAPITestDelete(testing_config.CustomTestCase):
       with self.assertRaises(werkzeug.exceptions.Forbidden):
         self.handler.do_delete(self.feature_id)
 
-    revised_feature = models.Feature.get_by_id(self.feature_id)
+    revised_feature = core_models.Feature.get_by_id(self.feature_id)
     self.assertFalse(revised_feature.deleted)
 
   def test_delete__invalid(self):
@@ -81,7 +81,7 @@ class FeaturesAPITestDelete(testing_config.CustomTestCase):
       with self.assertRaises(werkzeug.exceptions.BadRequest):
         self.handler.do_delete(None)
 
-    revised_feature = models.Feature.get_by_id(self.feature_id)
+    revised_feature = core_models.Feature.get_by_id(self.feature_id)
     self.assertFalse(revised_feature.deleted)
 
   def test_delete__not_found(self):
@@ -92,14 +92,14 @@ class FeaturesAPITestDelete(testing_config.CustomTestCase):
       with self.assertRaises(werkzeug.exceptions.NotFound):
         self.handler.do_delete(self.feature_id + 1)
 
-    revised_feature = models.Feature.get_by_id(self.feature_id)
+    revised_feature = core_models.Feature.get_by_id(self.feature_id)
     self.assertFalse(revised_feature.deleted)
 
 
 class FeaturesAPITestGet(testing_config.CustomTestCase):
 
   def setUp(self):
-    self.feature_1 = models.Feature(
+    self.feature_1 = core_models.Feature(
         name='feature one', summary='sum Z',
         owner=['feature_owner@example.com'],
         category=1, visibility=1, standardization=1, web_dev_views=1,
@@ -108,7 +108,7 @@ class FeaturesAPITestGet(testing_config.CustomTestCase):
     self.feature_1.put()
     self.feature_1_id = self.feature_1.key.integer_id()
 
-    self.feature_2 = models.Feature(
+    self.feature_2 = core_models.Feature(
         name='feature two', summary='sum K',
         owner=['other_owner@example.com'],
         category=1, visibility=1, standardization=1, web_dev_views=1,
@@ -117,7 +117,7 @@ class FeaturesAPITestGet(testing_config.CustomTestCase):
     self.feature_2.put()
     self.feature_2_id = self.feature_2.key.integer_id()
 
-    self.feature_3 = models.Feature(
+    self.feature_3 = core_models.Feature(
         name='feature three', summary='sum A',
         owner=['other_owner@example.com'],
         category=1, visibility=1, standardization=1, web_dev_views=1,

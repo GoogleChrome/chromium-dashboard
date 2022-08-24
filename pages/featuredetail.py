@@ -21,7 +21,7 @@ import logging
 
 from framework import basehandlers
 from pages import guideforms
-from internals import models
+from internals import core_models
 from internals import processes
 
 
@@ -30,7 +30,7 @@ class FeatureDetailHandler(basehandlers.FlaskHandler):
   TEMPLATE_PATH = 'feature.html'
 
   def get_template_data(self, feature_id):
-    f = models.Feature.get_by_id(feature_id)
+    f = core_models.Feature.get_by_id(feature_id)
     if f is None:
       self.abort(404, msg='Feature not found')
 

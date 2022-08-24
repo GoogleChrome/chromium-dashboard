@@ -20,7 +20,7 @@ from unittest import mock
 import werkzeug.exceptions  # Flask HTTP stuff.
 
 from api import approvals_api
-from internals import models
+from internals import core_models
 from internals import review_models
 
 test_app = flask.Flask(__name__)
@@ -31,7 +31,7 @@ NOW = datetime.datetime.now()
 class ApprovalsAPITest(testing_config.CustomTestCase):
 
   def setUp(self):
-    self.feature_1 = models.Feature(
+    self.feature_1 = core_models.Feature(
         name='feature one', summary='sum', category=1, visibility=1,
         standardization=1, web_dev_views=1, impl_status_chrome=1)
     self.feature_1.put()
@@ -211,7 +211,7 @@ class ApprovalsAPITest(testing_config.CustomTestCase):
 class ApprovalConfigsAPITest(testing_config.CustomTestCase):
 
   def setUp(self):
-    self.feature_1 = models.Feature(
+    self.feature_1 = core_models.Feature(
         name='feature one', summary='sum', category=1, visibility=1,
         standardization=1, web_dev_views=1, impl_status_chrome=1)
     self.feature_1.put()
@@ -221,7 +221,7 @@ class ApprovalConfigsAPITest(testing_config.CustomTestCase):
         owners=['one_a@example.com', 'one_b@example.com'])
     self.config_1.put()
 
-    self.feature_2 = models.Feature(
+    self.feature_2 = core_models.Feature(
         name='feature two', summary='sum', category=1, visibility=1,
         standardization=1, web_dev_views=1, impl_status_chrome=1)
     self.feature_2.put()
@@ -231,7 +231,7 @@ class ApprovalConfigsAPITest(testing_config.CustomTestCase):
         owners=['two_a@example.com', 'two_b@example.com'])
     self.config_2.put()
 
-    self.feature_3 = models.Feature(
+    self.feature_3 = core_models.Feature(
         name='feature three', summary='sum', category=1, visibility=1,
         standardization=1, web_dev_views=1, impl_status_chrome=1)
     self.feature_3.put()
