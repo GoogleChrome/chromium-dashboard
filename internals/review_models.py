@@ -188,3 +188,131 @@ class OwnersFile(ndb.Model):
       return None
 
     return owners_file.raw_content
+
+
+# Note: This class is not used yet.
+class Gate(ndb.Model):  # copy from ApprovalConfig
+  """Gates regulate the completion of a stage."""
+  feature_id = ndb.IntegerProperty(required=True)
+  stage_id = ndb.IntegerProperty(required=True)
+  gate_type = ndb.IntegerProperty(required=True)  # copy from field_id
+
+  # Can be REVIEW_REQUESTED or one of ApprovalValue states
+  state = ndb.IntegerProperty(required=True)  # calc from Approval
+
+  owners = ndb.StringProperty(repeated=True)
+  next_action = ndb.DateProperty()
+  additional_review = ndb.BooleanProperty(default=False)
+
+  # TODO(jrobbins): implement request_review() and clear_request()
+
+
+# Note: This class is not used yet.
+class Vote(ndb.Model):  # copy from Approval
+  """One approver's vote on what the state of a gate should be."""
+
+  # Not used: NEEDS_REVIEW = 0
+  NA = 1
+  REVIEW_REQUESTED = 2
+  REVIEW_STARTED = 3
+  NEED_INFO = 4
+  APPROVED = 5
+  NOT_APPROVED = 6
+  VOTE_VALUES = {
+      # Not used: NEEDS_REVIEW: 'needs_review',
+      NA: 'na',
+      REVIEW_REQUESTED: 'review_requested',
+      REVIEW_STARTED: 'review_started',
+      NEED_INFO: 'need_info',
+      APPROVED: 'approved',
+      NOT_APPROVED: 'not_approved',
+  }
+
+  FINAL_STATES = [NA, APPROVED, NOT_APPROVED]
+
+  feature_id = ndb.IntegerProperty(required=True)
+  gate_id = ndb.IntegerProperty(required=True)
+  state = ndb.IntegerProperty(required=True)
+  set_on = ndb.DateTimeProperty(required=True)
+  set_by = ndb.StringProperty(required=True)
+
+  @classmethod
+  def get_votes(
+      cls, feature_id=None, gate_id=None, states=None, set_by=None,
+      limit=None):
+    """Return the requested approvals."""
+    query = Vote.query().order(Approval.set_on)
+    if feature_id is not None:
+      query = query.filter(Vote.feature_id == feature_id)
+    if gate_id is not None:
+      query = query.filter(Vote.gate_id == gate_id)
+    if states is not None:
+      query = query.filter(Vote.state.IN(states))
+    if set_by is not None:
+      query = query.filter(Vote.set_by == set_by)
+    # Query with STRONG consistency because ndb defaults to
+    # EVENTUAL consistency and we run this query immediately after
+    # saving the user's change that we want included in the query.
+    votes = query.fetch(limit, read_consistency=ndb.STRONG)
+    return votes
+
+  @classmethod
+  def is_valid_state(cls, new_state):
+    """Return true if new_state is valid."""
+    return new_state in cls.VOTE_VALUES
+
+  @classmethod
+  def set_vote(cls, feature_id, gate_id, new_state, set_by_email):
+    """Add or update an approval value."""
+    if not cls.is_valid_state(new_state):
+      raise ValueError('Invalid approval state')
+
+    now = datetime.datetime.now()
+    existing_list = cls.get_votes(
+        feature_id=feature_id, gate_id=gate_id, set_by=set_by_email)
+    if existing_list:
+      existing = existing_list[0]
+      existing.set_on = now
+      existing.state = new_state
+      existing.put()
+      return
+
+    new_vote = Vote(
+        feature_id=feature_id, gate_id=gate_id, state=new_state,
+        set_on=now, set_by=set_by_email)
+    new_vote.put()
+
+  # Note: clear_request() moved to Gate
+
+
+# Note: This class is not used yet.
+class Amendment(ndb.Model):
+  """ReviewComments can log changes to other fields of the feature."""
+  field_name = ndb.StringProperty()  # from QUERIABLE_FIELDS
+  old_value = ndb.TextProperty()
+  new_value = ndb.TextProperty()
+
+
+# Note: This class is not used yet.
+# TODO(jrobbins): Decide on either copying to this new class or adding
+# and removing fields from the existing Comment class.
+class ReviewComment(ndb.Model):  # copy from Comment
+  """A review comment on a gate or a general comment on a feature."""
+  feature_id = ndb.IntegerProperty(required=True)
+  gate_id = ndb.IntegerProperty()  # The gate commented on, or general comment.
+  created = ndb.DateTimeProperty(auto_now=True)
+  author = ndb.StringProperty()
+  content = ndb.TextProperty()
+  deleted_by = ndb.StringProperty()
+
+  amendments = ndb.StructuredProperty(Amendment, repeated=True)
+
+  @classmethod
+  def get_comments(cls, feature_id, gate_id=None):
+    """Return review comments for an approval."""
+    query = ReviewComment.query().order(Comment.created)
+    query = query.filter(ReviewComment.feature_id == feature_id)
+    if gate_id:
+      query = query.filter(ReviewComment.gate_id == gate_id)
+    comments = query.fetch(None)
+    return comments
