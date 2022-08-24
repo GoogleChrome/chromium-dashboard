@@ -5,7 +5,6 @@ import {unsafeHTML} from 'lit/directives/unsafe-html.js';
 
 let toastEl;
 
-/* eslint-disable max-len */
 // When crbug links don't specify a project, the default project is Chromium.
 const CRBUG_DEFAULT_PROJECT = 'chromium';
 const CRBUG_URL = 'https://bugs.chromium.org';
@@ -18,7 +17,6 @@ const PROJECT_LOCALID_RE = /((\b(issue|bug)[ \t]*(:|=)?[ \t]*|\bfixed[ \t]*:[ \t
 const PROJECT_COMMENT_BUG_RE = /(((\b(issue|bug)[ \t]*(:|=)?[ \t]*)(\#?)(\d+)[ \t*])?((\b((comment)[ \t]*(:|=)?[ \t]*(\#?))|(\B((\#))(c)))(\d+)))/gi;
 const PROJECT_LOCALID_RE_PROJECT_GROUP = 6;
 const PROJECT_LOCALID_RE_ID_GROUP = 8;
-const IMPLIED_EMAIL_RE = /\b[a-z]((-|\.)?[a-z0-9])+@[a-z]((-|\.)?[a-z0-9])+\.(com|net|org|edu|dev)\b/gi;
 const SHORT_LINK_RE = /(^|[^-\/._])\b(https?:\/\/|ftp:\/\/|mailto:)?(go|g|shortn|who|teams)\/([^\s<]+)/gi;
 const NUMERIC_SHORT_LINK_RE = /(^|[^-\/._])\b(https?:\/\/|ftp:\/\/)?(b|t|o|omg|cl|cr|fxr|fxrev|fxb|tqr)\/([0-9]+)/gi;
 const IMPLIED_LINK_RE = /(^|[^-\/._])\b[a-z]((-|\.)?[a-z0-9])+\.(com|net|org|edu|dev)\b(\/[^\s<]*)?/gi;
@@ -40,7 +38,6 @@ const LINK_TRAILING_CHARS = [
   ['"', '"'],
 ];
 const GOOG_SHORT_LINK_RE = /^(b|t|o|omg|cl|cr|go|g|shortn|who|teams|fxr|fxrev|fxb|tqr)\/.*/gi;
-/* eslint-enable max-len */
 
 const Components = new Map();
 Components.set(
@@ -67,16 +64,6 @@ Components.set(
     },
     refRegs: [IS_LINK_RE],
     replacer: ReplaceLinkRef,
-  },
-);
-Components.set(
-  '03-user-emails',
-  {
-    extractRefs: (match) => {
-      return [match[0]];
-    },
-    refRegs: [IMPLIED_EMAIL_RE],
-    replacer: ReplaceUserRef,
   },
 );
 Components.set(
@@ -111,6 +98,7 @@ Components.set(
     replacer: ReplaceRevisionRef,
   },
 );
+
 // Extract referenced artifacts info functions.
 function ExtractCrbugProjectAndIssueIds(match) {
   // When crbug links don't specify a project, the default project is Chromium.
@@ -134,11 +122,13 @@ function ExtractTrackerProjectAndIssueIds(match, currentProjectName) {
   }
   return refs;
 }
+
 // Replace plain text references with links functions.
 function replaceIssueRef(stringMatch, projectName, localId, components,
   commentId) {
   return createIssueRefRun(projectName, localId, stringMatch, commentId);
 }
+
 function ReplaceCrbugIssueRef(match, components) {
   components = components || {};
   // When crbug links don't specify a project, the default project is Chromium.
@@ -152,6 +142,7 @@ function ReplaceCrbugIssueRef(match, components) {
   return [replaceIssueRef(match[0], projectName, localId, components,
     commentId)];
 }
+
 function ReplaceTrackerIssueRef(match, components, currentProjectName=CRBUG_DEFAULT_PROJECT) {
   components = components || {};
   const issueRefRE = PROJECT_LOCALID_RE;
@@ -177,27 +168,14 @@ function ReplaceTrackerIssueRef(match, components, currentProjectName=CRBUG_DEFA
   }
   return textRuns;
 }
-function ReplaceUserRef(match, components) {
-  components = components || {};
-  const textRun = {content: match[0], tag: 'a'};
-  if (components.users && components.users.length) {
-    const existingUser = components.users.find((user) => {
-      return user.displayName.toLowerCase() === match[0].toLowerCase();
-    });
-    if (existingUser) {
-      textRun.href = `/u/${match[0]}`;
-      return [textRun];
-    }
-  }
-  textRun.href = `mailto:${match[0]}`;
-  return [textRun];
-}
+
 function ReplaceCommentBugRef(match) {
   let textRun;
   const issueNum = match[7];
   const commentNum = match[18];
   if (issueNum && commentNum) {
-    const href = `${CRBUG_URL}/p/${CRBUG_DEFAULT_PROJECT}/issues/detail?id=${issueNum}#c${commentNum}`;
+    const href = (
+      `${CRBUG_URL}/p/${CRBUG_DEFAULT_PROJECT}/issues/detail?id=${issueNum}#c${commentNum}`);
     textRun = {content: match[0], tag: 'a', href};
   } else if (commentNum) {
     const href = `${CRBUG_URL}/p/${CRBUG_DEFAULT_PROJECT}/issues/detail#c${commentNum}`;
@@ -207,6 +185,7 @@ function ReplaceCommentBugRef(match) {
   }
   return [textRun];
 }
+
 function ReplaceLinkRef(match) {
   const textRuns = [];
   let content = match[0];
@@ -244,10 +223,12 @@ function ReplaceLinkRef(match) {
   }
   return textRuns;
 }
+
 function ReplaceRevisionRef(match) {
   // TODO(danielrsmith): update to link to git hashes.
   return [{content: match[0]}];
 }
+
 // Create custom textrun functions.
 function createIssueRefRun(projectName, localId, content, commentId) {
   return {
@@ -256,6 +237,7 @@ function createIssueRefRun(projectName, localId, content, commentId) {
     href: `${CRBUG_URL}/p/${projectName}/issues/detail?id=${localId}${commentId}`,
   };
 }
+
 function markupAutolinks(plainString) {
   plainString = plainString || '';
   const chunks = [plainString.trim()];
@@ -272,6 +254,7 @@ function markupAutolinks(plainString) {
   }).join('');
   return result;
 }
+
 function autolinkChunk(chunk) {
   let textRuns = [{content: chunk}];
   Components.forEach(({refRegs, replacer}) => {
@@ -282,6 +265,7 @@ function autolinkChunk(chunk) {
   });
   return textRuns;
 }
+
 function applyLinks(
   textRuns, replacer, re) {
   const resultRuns = [];
