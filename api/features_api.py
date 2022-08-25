@@ -19,7 +19,7 @@ from framework import basehandlers
 from framework import permissions
 from framework import ramcache
 from framework import users
-from internals import models
+from internals import core_models
 from internals import search
 
 
@@ -27,7 +27,7 @@ class FeaturesAPI(basehandlers.APIHandler):
   """Features are the the main records that we track."""
 
   def get_one_feature(self, feature_id):
-    features = models.Feature.get_by_ids([feature_id])
+    features = core_models.Feature.get_by_ids([feature_id])
     if not features:
       self.abort(404, msg='Feature %r not found' % feature_id)
     return features[0]
@@ -42,7 +42,7 @@ class FeaturesAPI(basehandlers.APIHandler):
     if self.request.args.get('milestone') is not None:
       try:
         milestone = int(self.request.args.get('milestone'))
-        features_by_type = models.Feature.get_in_milestone(
+        features_by_type = core_models.Feature.get_in_milestone(
           show_unlisted=show_unlisted_features,
           milestone=milestone)
         total_count = sum(len(features_by_type[t]) for t in features_by_type)

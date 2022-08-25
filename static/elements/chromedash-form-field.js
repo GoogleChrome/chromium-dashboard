@@ -50,15 +50,16 @@ export class ChromedashFormField extends LitElement {
     const type = fieldProps.type;
     const choices = fieldProps.choices;
 
-    // If type is checkbox, then generate locally.
+    // If type is checkbox, select, or input, then generate locally.
     let fieldHTML = '';
     if (type === 'checkbox') {
+      // value can be a js or python boolean value converted to a string
       fieldHTML = html`
         <sl-checkbox
           name="${this.name}"
           id="id_${this.name}"
           size="small"
-          ?checked=${this.value === 'True' ? true : false}
+          ?checked=${this.value === 'true' || this.value === 'True'}
           ?disabled=${this.disabled}
         >
           ${label}
@@ -157,6 +158,7 @@ export class ChromedashFormField extends LitElement {
                 <sl-icon-button
                   name="plus-square"
                   label="Toggle extra help"
+                  style="position:absolute"
                   @click="${this.toggleExtraHelp}"
                   >+</sl-icon-button
                 >
@@ -168,7 +170,11 @@ export class ChromedashFormField extends LitElement {
       ${extraHelpText ?
         html` <tr>
             <td colspan="2" class="extrahelp">
-              <sl-details summary=""> ${extraHelpText} </sl-details>
+              <sl-details summary="">
+                <span class="helptext">
+                  ${extraHelpText}
+                </span>
+              </sl-details>
             </td>
           </tr>` :
         ''}

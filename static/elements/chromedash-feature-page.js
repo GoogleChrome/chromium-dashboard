@@ -179,7 +179,7 @@ export class ChromedashFeaturePage extends LitElement {
 
   handleApprovalClick(e) {
     e.preventDefault();
-    openApprovalsDialog(this.user.email, this.feature);
+    openApprovalsDialog(this.user, this.feature);
   }
 
   renderSkeletonSection() {

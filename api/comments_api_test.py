@@ -21,7 +21,7 @@ from unittest import mock
 import werkzeug.exceptions  # Flask HTTP stuff.
 
 from api import comments_api
-from internals import models
+from internals import core_models
 from internals import review_models
 
 test_app = flask.Flask(__name__)
@@ -32,7 +32,7 @@ NOW = datetime.datetime.now()
 class CommentsAPITest(testing_config.CustomTestCase):
 
   def setUp(self):
-    self.feature_1 = models.Feature(
+    self.feature_1 = core_models.Feature(
         name='feature one', summary='sum', category=1, visibility=1,
         standardization=1, web_dev_views=1, impl_status_chrome=1)
     self.feature_1.put()
@@ -75,23 +75,53 @@ class CommentsAPITest(testing_config.CustomTestCase):
   def test_get__empty(self):
     """We can get comments for a given approval, even if there none."""
     testing_config.sign_out()
+    testing_config.sign_in('user7@example.com', 123567890)
     with test_app.test_request_context(self.request_path):
       actual_response = self.handler.do_get(self.feature_id, self.field_id)
+    testing_config.sign_out()
     self.assertEqual({'comments': []}, actual_response)
 
   def test_get__all_some(self):
     """We can get all comments for a given approval."""
     testing_config.sign_out()
+    testing_config.sign_in('user7@example.com', 123567890)
     self.cmnt_1_1.put()
 
     with test_app.test_request_context(self.request_path):
       actual_response = self.handler.do_get(self.feature_id, self.field_id)
-
+    testing_config.sign_out()
     actual_comment = actual_response['comments'][0]
     del actual_comment['created']
+    del actual_comment['comment_id']
     self.assertEqual(
         self.expected_1,
         actual_comment)
+
+  def test_get__deleted_comment(self):
+    """A deleted comment should not show the original content."""
+    testing_config.sign_out()
+    testing_config.sign_in('user7@example.com', 123567890)
+    self.cmnt_1_1.deleted_by = 'other_user@example.com'
+    self.cmnt_1_1.put()
+
+    with test_app.test_request_context(self.request_path):
+      resp = self.handler.do_get(self.feature_id, self.field_id)
+    testing_config.sign_out()
+    self.assertEqual(resp['comments'], [])
+
+
+  def test_get__comment_deleted_by_user(self):
+    """The user who deleted a comment can see the original content."""
+    testing_config.sign_out()
+    testing_config.sign_in('user7@example.com', 123567890)
+    self.cmnt_1_1.deleted_by = 'user7@example.com'
+    self.cmnt_1_1.put()
+
+    with test_app.test_request_context(self.request_path):
+      resp = self.handler.do_get(self.feature_id, self.field_id)
+    testing_config.sign_out()
+    comment = resp['comments'][0]
+    self.assertNotEqual(comment['content'], '[Deleted]')
 
   def test_post__bad_state(self):
     """Handler rejects requests that don't specify a state correctly."""
@@ -108,7 +138,7 @@ class CommentsAPITest(testing_config.CustomTestCase):
   def test_post__feature_not_found(self):
     """Handler rejects requests that don't match an existing feature."""
     bad_path = '/api/v0/features/12345/approvals/1/comments'
-    params = {'state': review_models.Approval.NEED_INFO }
+    params = {'state': review_models.Approval.NEEDS_WORK }
     with test_app.test_request_context(bad_path, json=params):
       with self.assertRaises(werkzeug.exceptions.NotFound):
         self.handler.do_post(12345, self.field_id)
@@ -117,7 +147,7 @@ class CommentsAPITest(testing_config.CustomTestCase):
   def test_post__forbidden(self, mock_get_approvers):
     """Handler rejects requests from anon users and non-approvers."""
     mock_get_approvers.return_value = ['owner1@example.com']
-    params = {'state': review_models.Approval.NEED_INFO}
+    params = {'state': review_models.Approval.NEEDS_WORK}
 
     testing_config.sign_out()
     with test_app.test_request_context(self.request_path, json=params):
@@ -134,12 +164,53 @@ class CommentsAPITest(testing_config.CustomTestCase):
       with self.assertRaises(werkzeug.exceptions.Forbidden):
         self.handler.do_post(self.feature_id, self.field_id)
 
+  def test_patch__forbidden(self):
+    """Handler rejects requests from users who can't edit the given comment."""
+    self.cmnt_1_1.put()
+    params = {'commentId': self.cmnt_1_1.key.id(), 'isUndelete': False}
+
+    testing_config.sign_out()
+    with test_app.test_request_context(self.request_path, json=params):
+      with self.assertRaises(werkzeug.exceptions.Forbidden):
+        self.handler.do_patch(self.feature_id)
+
+    testing_config.sign_in('user7@example.com', 123567890)
+    with test_app.test_request_context(self.request_path, json=params):
+      with self.assertRaises(werkzeug.exceptions.Forbidden):
+        self.handler.do_patch(self.feature_id)
+
+  def test_patch__delete_comment(self):
+    """Handler marks a comment as deleted as requested by authorized user."""
+    self.cmnt_1_1.put()
+    params = {'commentId': self.cmnt_1_1.key.id(), 'isUndelete': False}
+
+    testing_config.sign_in('owner1@example.com', 123567890)
+    with test_app.test_request_context(self.request_path, json=params):
+      resp = self.handler.do_patch(self.feature_id)
+      get_resp = self.handler.do_get(self.feature_id, self.field_id)
+    testing_config.sign_out()
+    self.assertEqual(get_resp['comments'][0]['deleted_by'], 'owner1@example.com')
+    self.assertEqual(resp, {'message': 'Done'})
+
+  def test_patch__undelete_comment(self):
+    """Handler unmarks a comment as deleted as requested by authorized user."""
+    self.cmnt_1_1.deleted_by = 'owner1@example.com'
+    self.cmnt_1_1.put()
+    params = {'commentId': self.cmnt_1_1.key.id(), 'isUndelete': True}
+    testing_config.sign_in('owner1@example.com', 123567890)
+    with test_app.test_request_context(self.request_path, json=params):
+      resp = self.handler.do_patch(self.feature_id)
+      get_resp = self.handler.do_get(self.feature_id, self.field_id)
+    testing_config.sign_out()
+    self.assertEqual(get_resp['comments'][0]['deleted_by'], None)
+    self.assertEqual(resp, {'message': 'Done'})
+
   @mock.patch('internals.approval_defs.get_approvers')
   def test_post__update(self, mock_get_approvers):
     """Handler adds comment and updates approval value."""
     mock_get_approvers.return_value = ['owner1@example.com']
     testing_config.sign_in('owner1@example.com', 123567890)
-    params = {'state': review_models.Approval.NEED_INFO}
+    params = {'state': review_models.Approval.NEEDS_WORK}
     with test_app.test_request_context(self.request_path, json=params):
       actual = self.handler.do_post(self.feature_id, self.field_id)
 
@@ -151,13 +222,13 @@ class CommentsAPITest(testing_config.CustomTestCase):
     self.assertEqual(appr.feature_id, self.feature_id)
     self.assertEqual(appr.field_id, 1)
     self.assertEqual(appr.set_by, 'owner1@example.com')
-    self.assertEqual(appr.state, review_models.Approval.NEED_INFO)
+    self.assertEqual(appr.state, review_models.Approval.NEEDS_WORK)
     updated_comments = review_models.Comment.get_comments(
         self.feature_id, self.field_id)
     cmnt = updated_comments[0]
     self.assertEqual(None, cmnt.content)
     self.assertEqual(review_models.Approval.APPROVED, cmnt.old_approval_state)
-    self.assertEqual(review_models.Approval.NEED_INFO, cmnt.new_approval_state)
+    self.assertEqual(review_models.Approval.NEEDS_WORK, cmnt.new_approval_state)
 
   @mock.patch('internals.approval_defs.get_approvers')
   def test_post__comment_only(self, mock_get_approvers):

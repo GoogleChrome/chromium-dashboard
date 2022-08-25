@@ -20,7 +20,7 @@ import settings
 from framework import basehandlers
 from framework import permissions
 from framework import utils
-from internals import models
+from internals import core_models
 from internals import core_enums
 from framework import ramcache
 
@@ -35,7 +35,7 @@ class FeaturesJsonHandler(basehandlers.FlaskHandler):
 
   def get_template_data(self, version=2):
     user = users.get_current_user()
-    feature_list = models.Feature.get_chronological(
+    feature_list = core_models.Feature.get_chronological(
         version=version,
         show_unlisted=permissions.can_edit_feature(user, None))
     return feature_list
@@ -77,7 +77,7 @@ class FeatureListXMLHandler(basehandlers.FlaskHandler):
   def get_template_data(self):
     status = self.request.args.get('status', None)
     if status:
-      feature_list = models.Feature.get_all_with_statuses(status.split(','))
+      feature_list = core_models.Feature.get_all_with_statuses(status.split(','))
     else:
       filterby = None
       category = self.request.args.get('category', None)
@@ -97,7 +97,7 @@ class FeatureListXMLHandler(basehandlers.FlaskHandler):
             filterby = ('category', k)
             break
 
-      feature_list = models.Feature.get_all( # cached
+      feature_list = core_models.Feature.get_all( # cached
           limit=max_items,
           filterby=filterby,
           order='-updated',

@@ -65,7 +65,7 @@ export class ChromedashAllFeaturesPage extends LitElement {
   }
 
   handleOpenApprovals(e) {
-    openApprovalsDialog(this.signedInUser, e.detail.feature);
+    openApprovalsDialog(this.user, e.detail.feature);
   }
 
   renderBox(query) {

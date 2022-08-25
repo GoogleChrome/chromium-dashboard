@@ -7,20 +7,20 @@ import {SHARED_STYLES} from '../sass/shared-css.js';
 import {FORM_STYLES} from '../sass/forms-css.js';
 
 
-export class ChromedashGuideEditallPage extends LitElement {
+export class ChromedashGuideVerifyAccuracyPage extends LitElement {
   static get styles() {
     return [
       ...SHARED_STYLES,
       ...FORM_STYLES,
       css`
-    `];
+      `];
   }
 
   static get properties() {
     return {
       featureId: {type: Number},
       feature: {type: Object},
-      flatForms: {type: String},
+      forms: {type: String},
       loading: {type: Boolean},
     };
   }
@@ -29,7 +29,7 @@ export class ChromedashGuideEditallPage extends LitElement {
     super();
     this.featureId = 0;
     this.feature = {};
-    this.flatForms = '';
+    this.forms = '';
     this.loading = true;
   }
 
@@ -83,7 +83,7 @@ export class ChromedashGuideEditallPage extends LitElement {
   // get a comma-spearated list of field names
   getFormFields() {
     let fields = [];
-    JSON.parse(this.flatForms).map((form) => {
+    JSON.parse(this.forms).map((form) => {
       fields = [...fields, ...form[2]];
     });
     return fields.join();
@@ -99,12 +99,6 @@ export class ChromedashGuideEditallPage extends LitElement {
           <sl-skeleton effect="sheen"></sl-skeleton>
           <sl-skeleton effect="sheen"></sl-skeleton>
           <sl-skeleton effect="sheen"></sl-skeleton>
-        </p>
-      </section>
-      <h3><sl-skeleton effect="sheen"></sl-skeleton></h3>
-      <section id="metadata">
-        <h3><sl-skeleton effect="sheen"></sl-skeleton></h3>
-        <p>
           <sl-skeleton effect="sheen"></sl-skeleton>
           <sl-skeleton effect="sheen"></sl-skeleton>
           <sl-skeleton effect="sheen"></sl-skeleton>
@@ -120,7 +114,7 @@ export class ChromedashGuideEditallPage extends LitElement {
         <h2 id="breadcrumbs">
           <a href="/guide/edit/${this.featureId}">
             <iron-icon icon="chromestatus:arrow-back"></iron-icon>
-            Edit feature: ${this.loading ? 'loading...' : this.feature.name}
+            Verify feature data for ${this.feature.name}
           </a>
         </h2>
       </div>
@@ -129,14 +123,15 @@ export class ChromedashGuideEditallPage extends LitElement {
 
   renderForm() {
     return html`
-      <form name="feature_form" method="POST" action="/guide/editall/${this.featureId}">
+      <form name="feature_form" method="POST" action="/guide/verify_accuracy/${this.featureId}">
         <input type="hidden" name="token">
         <input type="hidden" name="form_fields" value=${this.getFormFields()}>
-        ${JSON.parse(this.flatForms).map(([sectionName, flatForm]) => html`
+
+        ${JSON.parse(this.forms).map(([sectionName, form]) => html`
           <h3>${sectionName}</h3>
           <section class="flat_form">
             <chromedash-form-table>
-              ${unsafeHTML(flatForm)}
+              ${unsafeHTML(form)}
             </chromedash-form-table>
           </section>
         `)}
@@ -145,9 +140,9 @@ export class ChromedashGuideEditallPage extends LitElement {
           <chromedash-form-table>
             <chromedash-form-field>
               <span slot="field">
-                <input class="button" type="submit" value="Submit">
-                <button id="cancel-button" type="reset"
-                  @click=${this.handleCancelClick}>Cancel</button>
+                  <input class="button" type="submit" value="Submit">
+                  <button id="cancel-button" type="reset"
+                    @click=${this.handleCancelClick}>Cancel</button>
               </span>
             </chromedash-form-field>
           </chromedash-form-table>
@@ -164,4 +159,4 @@ export class ChromedashGuideEditallPage extends LitElement {
   }
 }
 
-customElements.define('chromedash-guide-editall-page', ChromedashGuideEditallPage);
+customElements.define('chromedash-guide-verify-accuracy-page', ChromedashGuideVerifyAccuracyPage);

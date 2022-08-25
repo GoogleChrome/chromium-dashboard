@@ -35,7 +35,7 @@ from framework import users
 from framework import utils
 from framework import xsrf
 from internals import approval_defs
-from internals import models
+from internals import core_models
 from internals import user_models
 
 from django.template.loader import render_to_string
@@ -130,7 +130,7 @@ class BaseHandler(flask.views.MethodView):
                   self.get_int_param('featureId', required=required))
     if not required and not feature_id:
       return None
-    feature = models.Feature.get_by_id(feature_id)
+    feature = core_models.Feature.get_by_id(feature_id)
     if required and not feature:
       self.abort(404, msg='Feature not found')
     user = self.get_current_user()

@@ -22,7 +22,7 @@ from django.core.exceptions import ValidationError
 from django.template import engines
 
 from pages import guideforms
-from internals import models
+from internals import core_models
 
 
 TestForm = guideforms.define_form_class_using_shared_fields(

@@ -17,7 +17,7 @@
 from framework import users
 
 from internals import core_enums
-from internals import models
+from internals import core_models
 from framework import basehandlers
 from framework import permissions
 from internals import processes
