@@ -19,7 +19,7 @@ from internals import core_models
 from internals import html_templates
 
 
-class EmailFormattingTest(testing_config.CustomTestCase):
+class HtmlTemplateTest(testing_config.CustomTestCase):
 
   def setUp(self):
     self.feature_1 = core_models.Feature(
