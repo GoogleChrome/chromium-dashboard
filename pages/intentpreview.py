@@ -18,6 +18,7 @@ from framework import users
 
 from internals import core_enums
 from internals import core_models
+from internals import html_templates
 from framework import basehandlers
 from framework import permissions
 from internals import processes
@@ -51,6 +52,7 @@ class IntentEmailPreviewHandler(basehandlers.FlaskHandler):
         'default_url': '%s://%s%s/%s' % (
             self.request.scheme, self.request.host,
             VIEW_FEATURE_URL, feature_id),
+        'estimated_milestone_tables': html_templates.estimated_milestone_tables_html(f),
     }
 
     if LAUNCH_PARAM in self.request.args:

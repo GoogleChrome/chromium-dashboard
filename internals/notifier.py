@@ -37,6 +37,7 @@ import settings
 from internals import approval_defs
 from internals import core_enums
 from internals import core_models
+from internals import html_templates
 from internals import user_models
 
 
@@ -74,6 +75,7 @@ def format_email_body(is_update, feature, changes):
       'status': core_enums.IMPLEMENTATION_STATUS[feature.impl_status_chrome],
       'formatted_changes': formatted_changes,
       'moz_link_urls': moz_link_urls,
+      'estimated_milestone_tables': html_templates.estimated_milestone_tables_html(feature),
   }
   template_path = ('update-feature-email.html' if is_update
                    else 'new-feature-email.html')
@@ -331,6 +333,7 @@ class FeatureAccuracyHandler(basehandlers.FlaskHandler):
         'feature': feature.format_for_template(),
         'site_url': settings.SITE_URL,
         'milestone': mstone,
+        'estimated_milestone_tables': html_templates.estimated_milestone_tables_html(feature),
       }
       html = render_to_string(self.EMAIL_TEMPLATE_PATH, body_data)
       subject = f'[Action requested] Update {feature.name}'

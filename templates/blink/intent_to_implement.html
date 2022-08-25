@@ -232,7 +232,7 @@
 
 
 <br><br><h4>Estimated milestones</h4>
-{% include "../estimated-milestones-table.html" %}
+{{ estimated_milestone_tables | safe  }}
 
 
 {% if 'anticipated_spec_changes' in sections_to_show or feature.anticipated_spec_changes %}

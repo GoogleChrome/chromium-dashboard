@@ -8,7 +8,7 @@
 <p><b>Components</b>: {{feature.blink_components|join:", "}}</p>
 <p><b>Implementation status</b>: {{status}}</p>
 <p><b>Estimated milestones</b>:
-  {% include "estimated-milestones-table.html" %}
+  {{ estimated_milestone_tables | safe }}
 </p>
 
 <hr>
