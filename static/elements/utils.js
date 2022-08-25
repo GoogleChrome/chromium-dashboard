@@ -1,8 +1,8 @@
 // This file contains helper functions for our elements.
 
 import {html} from 'lit';
-import {markupAutolinks} from 'autolink.js';
 import {unsafeHTML} from 'lit/directives/unsafe-html.js';
+import {markupAutolinks} from './autolink.js';
 
 let toastEl;
 
