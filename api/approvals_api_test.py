@@ -47,7 +47,7 @@ class ApprovalsAPITest(testing_config.CustomTestCase):
     self.appr_1_2 = review_models.Approval(
         feature_id=self.feature_id, field_id=2,
         set_by='owner2@example.com', set_on=NOW,
-        state=review_models.Approval.NEED_INFO)
+        state=review_models.Approval.NEEDS_WORK)
 
     self.expected1 = {
         'feature_id': self.feature_id,
@@ -61,7 +61,7 @@ class ApprovalsAPITest(testing_config.CustomTestCase):
         'field_id': 2,
         'set_by': 'owner2@example.com',
         'set_on': str(NOW),
-        'state': review_models.Approval.NEED_INFO,
+        'state': review_models.Approval.NEEDS_WORK,
         }
 
   def tearDown(self):
@@ -160,7 +160,7 @@ class ApprovalsAPITest(testing_config.CustomTestCase):
   def test_post__feature_not_found(self):
     """Handler rejects requests that don't match an existing feature."""
     params = {'featureId': 12345, 'fieldId': 1,
-              'state': review_models.Approval.NEED_INFO }
+              'state': review_models.Approval.NEEDS_WORK }
     with test_app.test_request_context(self.request_path, json=params):
       with self.assertRaises(werkzeug.exceptions.NotFound):
         self.handler.do_post()
@@ -170,7 +170,7 @@ class ApprovalsAPITest(testing_config.CustomTestCase):
     """Handler rejects requests from anon users and non-approvers."""
     mock_get_approvers.return_value = ['owner1@example.com']
     params = {'featureId': self.feature_id, 'fieldId': 1,
-              'state': review_models.Approval.NEED_INFO}
+              'state': review_models.Approval.NEEDS_WORK}
 
     testing_config.sign_out()
     with test_app.test_request_context(self.request_path, json=params):
@@ -193,7 +193,7 @@ class ApprovalsAPITest(testing_config.CustomTestCase):
     mock_get_approvers.return_value = ['owner1@example.com']
     testing_config.sign_in('owner1@example.com', 123567890)
     params = {'featureId': self.feature_id, 'fieldId': 1,
-              'state': review_models.Approval.NEED_INFO}
+              'state': review_models.Approval.NEEDS_WORK}
     with test_app.test_request_context(self.request_path, json=params):
       actual = self.handler.do_post()
 
@@ -205,7 +205,7 @@ class ApprovalsAPITest(testing_config.CustomTestCase):
     self.assertEqual(appr.feature_id, self.feature_id)
     self.assertEqual(appr.field_id, 1)
     self.assertEqual(appr.set_by, 'owner1@example.com')
-    self.assertEqual(appr.state, review_models.Approval.NEED_INFO)
+    self.assertEqual(appr.state, review_models.Approval.NEEDS_WORK)
 
 
 class ApprovalConfigsAPITest(testing_config.CustomTestCase):

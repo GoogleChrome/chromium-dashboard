@@ -24,7 +24,7 @@ class Approval(ndb.Model):
   NA = 1
   REVIEW_REQUESTED = 2
   REVIEW_STARTED = 3
-  NEED_INFO = 4
+  NEEDS_WORK = 4
   APPROVED = 5
   NOT_APPROVED = 6
   APPROVAL_VALUES = {
@@ -32,7 +32,7 @@ class Approval(ndb.Model):
       NA: 'na',
       REVIEW_REQUESTED: 'review_requested',
       REVIEW_STARTED: 'review_started',
-      NEED_INFO: 'need_info',
+      NEEDS_WORK: 'needs_work',
       APPROVED: 'approved',
       NOT_APPROVED: 'not_approved',
   }
@@ -215,7 +215,7 @@ class Vote(ndb.Model):  # copy from Approval
   NA = 1
   REVIEW_REQUESTED = 2
   REVIEW_STARTED = 3
-  NEED_INFO = 4
+  NEEDS_WORK = 4
   APPROVED = 5
   NOT_APPROVED = 6
   VOTE_VALUES = {
@@ -223,7 +223,7 @@ class Vote(ndb.Model):  # copy from Approval
       NA: 'na',
       REVIEW_REQUESTED: 'review_requested',
       REVIEW_STARTED: 'review_started',
-      NEED_INFO: 'need_info',
+      NEEDS_WORK: 'needs_work',
       APPROVED: 'approved',
       NOT_APPROVED: 'not_approved',
   }
