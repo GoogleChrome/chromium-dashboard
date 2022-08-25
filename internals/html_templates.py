@@ -16,6 +16,7 @@
 
 def estimated_milestone_tables_html(feature):
   """Return an HTML string for the milestone tables."""
+  
   def filtered_table_items(table_item_tuple):
     """Given a table tuple consists of milestone titles and values,
     filter out entries with a None value."""
