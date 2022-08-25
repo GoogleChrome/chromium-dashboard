@@ -9,7 +9,7 @@ export const STATE_NAMES = [
   [1, 'N/a or Ack'],
   [2, 'Review requested'],
   [3, 'Review started'],
-  [4, 'Need info'],
+  [4, 'Needs work'],
   [5, 'Approved'],
   [6, 'Not approved'],
 ];

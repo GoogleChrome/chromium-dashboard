@@ -116,7 +116,7 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
         set_by='feature_owner@example', set_on=time_1).put()
     review_models.Approval(
         feature_id=self.feature_1.key.integer_id(),
-        field_id=1, state=review_models.Approval.NEED_INFO,
+        field_id=1, state=review_models.Approval.NEEDS_WORK,
         set_by='feature_owner@example.com', set_on=time_2).put()
 
     feature_ids = search.process_pending_approval_me_query()

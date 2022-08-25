@@ -138,7 +138,7 @@ class CommentsAPITest(testing_config.CustomTestCase):
   def test_post__feature_not_found(self):
     """Handler rejects requests that don't match an existing feature."""
     bad_path = '/api/v0/features/12345/approvals/1/comments'
-    params = {'state': review_models.Approval.NEED_INFO }
+    params = {'state': review_models.Approval.NEEDS_WORK }
     with test_app.test_request_context(bad_path, json=params):
       with self.assertRaises(werkzeug.exceptions.NotFound):
         self.handler.do_post(12345, self.field_id)
@@ -147,7 +147,7 @@ class CommentsAPITest(testing_config.CustomTestCase):
   def test_post__forbidden(self, mock_get_approvers):
     """Handler rejects requests from anon users and non-approvers."""
     mock_get_approvers.return_value = ['owner1@example.com']
-    params = {'state': review_models.Approval.NEED_INFO}
+    params = {'state': review_models.Approval.NEEDS_WORK}
 
     testing_config.sign_out()
     with test_app.test_request_context(self.request_path, json=params):
@@ -210,7 +210,7 @@ class CommentsAPITest(testing_config.CustomTestCase):
     """Handler adds comment and updates approval value."""
     mock_get_approvers.return_value = ['owner1@example.com']
     testing_config.sign_in('owner1@example.com', 123567890)
-    params = {'state': review_models.Approval.NEED_INFO}
+    params = {'state': review_models.Approval.NEEDS_WORK}
     with test_app.test_request_context(self.request_path, json=params):
       actual = self.handler.do_post(self.feature_id, self.field_id)
 
@@ -222,13 +222,13 @@ class CommentsAPITest(testing_config.CustomTestCase):
     self.assertEqual(appr.feature_id, self.feature_id)
     self.assertEqual(appr.field_id, 1)
     self.assertEqual(appr.set_by, 'owner1@example.com')
-    self.assertEqual(appr.state, review_models.Approval.NEED_INFO)
+    self.assertEqual(appr.state, review_models.Approval.NEEDS_WORK)
     updated_comments = review_models.Comment.get_comments(
         self.feature_id, self.field_id)
     cmnt = updated_comments[0]
     self.assertEqual(None, cmnt.content)
     self.assertEqual(review_models.Approval.APPROVED, cmnt.old_approval_state)
-    self.assertEqual(review_models.Approval.NEED_INFO, cmnt.new_approval_state)
+    self.assertEqual(review_models.Approval.NEEDS_WORK, cmnt.new_approval_state)
 
   @mock.patch('internals.approval_defs.get_approvers')
   def test_post__comment_only(self, mock_get_approvers):
