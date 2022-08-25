@@ -13,6 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import urllib
+from django.utils.html import conditional_escape as escape
+
+from internals import core_enums
+
 
 def estimated_milestone_tables_html(feature):
   """Return an HTML string for the milestone tables."""
@@ -62,3 +67,95 @@ def estimated_milestone_tables_html(feature):
 
   return table_html(desktop_table_items) + table_html(andriod_table_items) \
        + table_html(webview_table_items) + table_html(ios_table_items)
+
+def email_header_html(feature):
+  """Return an HTML string for the email header."""
+  blink_components = ', '.join(feature.blink_components)
+  status = core_enums.IMPLEMENTATION_STATUS[feature.impl_status_chrome]
+  estimated_milestone_tables = estimated_milestone_tables_html(feature)
+
+  return (
+    f'<p><b><a href="https://chromestatus.com/feature/{feature.key.integer_id()}">'
+    f'{feature.name}</a></b></p>\n'
+    f'<p><b>Components</b>: {blink_components}</p>\n'
+    f'<p><b>Implementation status</b>: {status}</p>\n'
+    f'<p><b>Estimated milestones</b>:{estimated_milestone_tables}</p>\n'
+  )
+
+def new_feature_email_html(feature):
+  """Return an HTML string for new feature emails."""
+
+  return (
+    f'<p>{feature.created_by.email()} added a new feature:</p>\n'
+    f'{email_header_html(feature)}\n'
+    '<hr>\n'
+    '<p>Next steps:</p>\n'
+    '<ul>\n'
+    '  <li>Try the API, write a sample, provide early feedback to eng.</li>\n'
+    '  <li>Consider authoring a new article/update for /web.</li>\n'
+    '  <li>Write a\n'
+    '    <a href="https://github.com/GoogleChrome/lighthouse/tree/master/docs/recipes/custom-audit">\n'
+    '    new Lighthouse audit</a>. This can help drive adoption of an API over time.\n'
+    '  </li>\n'
+    '  <li>Add a sample to https://github.com/GoogleChrome/samples (see\n'
+    '    <a href="https://github.com/GoogleChrome/samples#contributing-samples">\n'
+    '    contributing</a>).\n'
+    '  </li>\n'
+    '  <li>Add demo links and other details to the\n'
+    f'    <a href="https://chromestatus.com/guide/edit/{feature.key.integer_id()}">\n'
+    '    ChromeStatus feature entry</a>.\n'
+    '  </li>\n'
+    '</ul>\n'
+  )
+
+def update_feature_email_html(feature, changes):
+  """Return an HTML string for update feature emails."""
+
+  def formatted_changes_html(changes):
+    """Return an HTML string showing the feature changes."""
+    formatted_changes = ''
+    for prop in changes:
+      prop_name = prop['prop_name']
+      new_val = prop['new_val']
+      old_val = prop['old_val']
+
+      formatted_changes += (
+        f'<li><b>{prop_name}:</b> <br/>'
+        f'<b>old:</b> {escape(old_val)} <br/>'
+        f'<b>new:</b> {escape(new_val)} <br/></li><br/>'
+      )
+    return formatted_changes if formatted_changes else '<li>None</li>'
+
+  def moz_links_html():
+    """Return an HTML string for the Mozilla links."""
+    moz_link_urls = [link for link in feature.doc_links
+      if urllib.parse.urlparse(link).hostname == 'developer.mozilla.org']
+    if moz_link_urls:
+      links = ''
+      for url in moz_link_urls:
+        links += f'<li>{url}</li>\n'
+      return (
+        '<li>Review the following MDN pages and\n'
+        '<a href="https://docs.google.com/document/d/10jDTZeW914ahqWfxwm9_WXJWvyAKT6EcDIlbI3w0BKY'
+        '/edit#heading=h.frumfipthu7">subscribe to updates</a> for them.\n'
+        '  <ul>\n'
+        f'    {links}\n'
+        '  </ul>\n'
+        '</li>\n'
+      )
+    return ''
+
+  return (
+    f'<p>{feature.updated_by.email()} updated this feature:</p>\n'
+    f'{email_header_html(feature)}\n'
+    '<p><b>Changes:</b></p>\n'
+    f'<ul>{formatted_changes_html(changes)}</ul>\n'
+    '<hr>\n'
+    '<p>Next steps:</p>\n'
+    '<ul>\n'
+    '  <li>Check existing\n'
+    '    <a href="https://github.com/GoogleChrome/lighthouse/tree/master/lighthouse-core/audits">'
+    '    Lighthouse audits</a> for correctness.</li>\n'
+    f'{moz_links_html()}\n'
+    '</ul>\n'
+  )

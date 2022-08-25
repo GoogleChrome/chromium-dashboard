@@ -19,16 +19,13 @@ from datetime import datetime, timedelta
 import collections
 import logging
 import json
-import os
 import urllib
 
 from framework import permissions
-from framework import ramcache
 from google.cloud import ndb
 import requests
 
 from django.template.loader import render_to_string
-from django.utils.html import conditional_escape as escape
 
 from framework import basehandlers
 from framework import cloud_tasks_helpers
@@ -39,48 +36,6 @@ from internals import core_enums
 from internals import core_models
 from internals import html_templates
 from internals import user_models
-
-
-def format_email_body(is_update, feature, changes):
-  """Return an HTML string for a notification email body."""
-  if feature.shipped_milestone:
-    milestone_str = feature.shipped_milestone
-  elif feature.shipped_milestone is None and feature.shipped_android_milestone:
-    milestone_str = '%s (android)' % feature.shipped_android_milestone
-  else:
-    milestone_str = 'not yet assigned'
-
-  moz_link_urls = [
-      link for link in feature.doc_links
-      if urllib.parse.urlparse(link).hostname == 'developer.mozilla.org']
-
-  formatted_changes = ''
-  for prop in changes:
-    prop_name = prop['prop_name']
-    new_val = prop['new_val']
-    old_val = prop['old_val']
-
-    formatted_changes += ('<li><b>%s:</b> <br/><b>old:</b> %s <br/>'
-                          '<b>new:</b> %s<br/></li><br/>' %
-                          (prop_name, escape(old_val), escape(new_val)))
-  if not formatted_changes:
-    formatted_changes = '<li>None</li>'
-
-  body_data = {
-      'feature': feature,
-      'creator_email': feature.created_by.email(),
-      'updater_email': feature.updated_by.email(),
-      'id': feature.key.integer_id(),
-      'milestone': milestone_str,
-      'status': core_enums.IMPLEMENTATION_STATUS[feature.impl_status_chrome],
-      'formatted_changes': formatted_changes,
-      'moz_link_urls': moz_link_urls,
-      'estimated_milestone_tables': html_templates.estimated_milestone_tables_html(feature),
-  }
-  template_path = ('update-feature-email.html' if is_update
-                   else 'new-feature-email.html')
-  body = render_to_string(template_path, body_data)
-  return body
 
 
 def accumulate_reasons(addr_reasons, user_list, reason):
@@ -145,11 +100,12 @@ def make_email_tasks(feature, is_update=False, changes=[]):
   feature_watchers = user_models.FeatureOwner.query(
       user_models.FeatureOwner.watching_all_features == True).fetch(None)
 
-  email_html = format_email_body(is_update, feature, changes)
   if is_update:
+    email_html = html_templates.update_feature_email_html(feature, changes)
     subject = 'updated feature: %s' % feature.name
     triggering_user_email = feature.updated_by.email()
   else:
+    email_html = html_templates.new_feature_email_html(feature)
     subject = 'new feature: %s' % feature.name
     triggering_user_email = feature.created_by.email()
 

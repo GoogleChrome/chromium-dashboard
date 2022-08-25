@@ -13,22 +13,17 @@
 # limitations under the License.
 
 import collections
-import json
 import testing_config  # Must be imported before the module under test.
 
-import flask
 from unittest import mock
-import werkzeug.exceptions  # Flask HTTP stuff.
 from google.cloud import ndb
-
-from framework import users
 
 from internals import approval_defs
 from internals import core_enums
 from internals import core_models
+from internals import html_templates
 from internals import notifier
 from internals import user_models
-import settings
 
 
 class EmailFormattingTest(testing_config.CustomTestCase):
@@ -71,49 +66,6 @@ class EmailFormattingTest(testing_config.CustomTestCase):
   def tearDown(self):
     self.feature_1.key.delete()
     self.feature_2.key.delete()
-
-  def test_format_email_body__new(self):
-    """We generate an email body for new features."""
-    body_html = notifier.format_email_body(
-        False, self.feature_1, [])
-    self.assertIn('Blink', body_html)
-    self.assertIn('creator1@gmail.com added', body_html)
-    self.assertIn('chromestatus.com/feature/%d' %
-                  self.feature_1.key.integer_id(),
-                  body_html)
-    self.assertNotIn('watcher_1,', body_html)
-
-  def test_format_email_body__update_no_changes(self):
-    """We don't crash if the change list is emtpy."""
-    body_html = notifier.format_email_body(
-        True, self.feature_1, [])
-    self.assertIn('Blink', body_html)
-    self.assertIn('editor1@gmail.com updated', body_html)
-    self.assertNotIn('watcher_1,', body_html)
-
-  def test_format_email_body__update_with_changes(self):
-    """We generate an email body for an updated feature."""
-    body_html = notifier.format_email_body(
-        True, self.feature_1, self.changes)
-    self.assertIn('test_prop', body_html)
-    self.assertIn('chromestatus.com/feature/%d' %
-                  self.feature_1.key.integer_id(),
-                  body_html)
-    self.assertIn('test old value', body_html)
-    self.assertIn('test new value', body_html)
-
-  def test_format_email_body__mozdev_links(self):
-    """We generate an email body with links to developer.mozilla.org."""
-    self.feature_1.doc_links = ['https://developer.mozilla.org/look-here']
-    body_html = notifier.format_email_body(
-        True, self.feature_1, self.changes)
-    self.assertIn('look-here', body_html)
-
-    self.feature_1.doc_links = [
-        'https://hacker-site.org/developer.mozilla.org/look-here']
-    body_html = notifier.format_email_body(
-        True, self.feature_1, self.changes)
-    self.assertNotIn('look-here', body_html)
 
   def test_accumulate_reasons(self):
     """We can accumulate lists of reasons why we sent a message to a user."""
@@ -213,33 +165,33 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     actual = notifier.apply_subscription_rules(self.feature_1, changes)
     self.assertEqual({}, actual)
 
-  @mock.patch('internals.notifier.format_email_body')
-  def test_make_email_tasks__new(self, mock_f_e_b):
+  def test_make_email_tasks__new(self):
     """We send email to component owners and subscribers for new features."""
-    mock_f_e_b.return_value = 'mock body html'
     actual_tasks = notifier.make_email_tasks(
         self.feature_1, is_update=False, changes=[])
     self.assertEqual(4, len(actual_tasks))
     (feature_editor_task, feature_owner_task, component_owner_task,
      watcher_task) = actual_tasks
 
+    email_body_html = html_templates.new_feature_email_html(self.feature_1)
+
     # Notification to feature owner.
     self.assertEqual('feature_owner@example.com', feature_owner_task['to'])
     self.assertEqual('new feature: feature one', feature_owner_task['subject'])
-    self.assertIn('mock body html', feature_owner_task['html'])
+    self.assertIn(email_body_html, feature_owner_task['html'])
     self.assertIn('<li>You are listed as an owner of this feature</li>',
       feature_owner_task['html'])
 
     # Notification to feature editor.
     self.assertEqual('new feature: feature one', feature_editor_task['subject'])
-    self.assertIn('mock body html', feature_editor_task['html'])
+    self.assertIn(email_body_html, feature_editor_task['html'])
     self.assertIn('<li>You are listed as an editor of this feature</li>',
       feature_editor_task['html'])
     self.assertEqual('feature_editor@example.com', feature_editor_task['to'])
 
     # Notification to component owner.
     self.assertEqual('new feature: feature one', component_owner_task['subject'])
-    self.assertIn('mock body html', component_owner_task['html'])
+    self.assertIn(email_body_html, component_owner_task['html'])
     # Component owner is also a feature editor and should have both reasons.
     self.assertIn('<li>You are an owner of this feature\'s component</li>\n'
                   '<li>You are listed as an editor of this feature</li>',
@@ -248,36 +200,33 @@ class EmailFormattingTest(testing_config.CustomTestCase):
 
     # Notification to feature change watcher.
     self.assertEqual('new feature: feature one', watcher_task['subject'])
-    self.assertIn('mock body html', watcher_task['html'])
+    self.assertIn(email_body_html, watcher_task['html'])
     self.assertIn('<li>You are watching all feature changes</li>',
       watcher_task['html'])
     self.assertEqual('watcher_1@example.com', watcher_task['to'])
 
-    mock_f_e_b.assert_called_once_with(
-        False, self.feature_1, [])
-
-  @mock.patch('internals.notifier.format_email_body')
-  def test_make_email_tasks__update(self, mock_f_e_b):
+  def test_make_email_tasks__update(self):
     """We send email to component owners and subscribers for edits."""
-    mock_f_e_b.return_value = 'mock body html'
     actual_tasks = notifier.make_email_tasks(
         self.feature_1, True, self.changes)
     self.assertEqual(4, len(actual_tasks))
     (feature_editor_task, feature_owner_task, component_owner_task,
      watcher_task) = actual_tasks
 
+    email_body_html = html_templates.update_feature_email_html(self.feature_1, self.changes)
+
     # Notification to feature owner.
     self.assertEqual('feature_owner@example.com', feature_owner_task['to'])
     self.assertEqual('updated feature: feature one',
       feature_owner_task['subject'])
-    self.assertIn('mock body html', feature_owner_task['html'])
+    self.assertIn(email_body_html, feature_owner_task['html'])
     self.assertIn('<li>You are listed as an owner of this feature</li>',
       feature_owner_task['html'])
 
     # Notification to feature editor.
     self.assertEqual('updated feature: feature one',
       feature_editor_task['subject'])
-    self.assertIn('mock body html', feature_editor_task['html'])
+    self.assertIn(email_body_html, feature_editor_task['html'])
     self.assertIn('<li>You are listed as an editor of this feature</li>',
       feature_editor_task['html'])
     self.assertEqual('feature_editor@example.com', feature_editor_task['to'])
@@ -285,7 +234,7 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     # Notification to component owner.
     self.assertEqual('updated feature: feature one',
       component_owner_task['subject'])
-    self.assertIn('mock body html', component_owner_task['html'])
+    self.assertIn(email_body_html, component_owner_task['html'])
     # Component owner is also a feature editor and should have both reasons.
     self.assertIn('<li>You are an owner of this feature\'s component</li>\n'
                   '<li>You are listed as an editor of this feature</li>',
@@ -294,18 +243,13 @@ class EmailFormattingTest(testing_config.CustomTestCase):
 
     # Notification to feature change watcher.
     self.assertEqual('updated feature: feature one', watcher_task['subject'])
-    self.assertIn('mock body html', watcher_task['html'])
+    self.assertIn(email_body_html, watcher_task['html'])
     self.assertIn('<li>You are watching all feature changes</li>',
       watcher_task['html'])
     self.assertEqual('watcher_1@example.com', watcher_task['to'])
 
-    mock_f_e_b.assert_called_once_with(
-        True, self.feature_1, self.changes)
-
-  @mock.patch('internals.notifier.format_email_body')
-  def test_make_email_tasks__starrer(self, mock_f_e_b):
+  def test_make_email_tasks__starrer(self):
     """We send email to users who starred the feature."""
-    mock_f_e_b.return_value = 'mock body html'
     notifier.FeatureStar.set_star(
         'starrer_1@example.com', self.feature_1.key.integer_id())
     actual_tasks = notifier.make_email_tasks(
@@ -314,18 +258,20 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     (feature_editor_task, feature_owner_task, component_owner_task,
      starrer_task, watcher_task) = actual_tasks
 
+    email_body_html = html_templates.update_feature_email_html(self.feature_1, self.changes)
+
     # Notification to feature owner.
     self.assertEqual('feature_owner@example.com', feature_owner_task['to'])
     self.assertEqual('updated feature: feature one',
       feature_owner_task['subject'])
-    self.assertIn('mock body html', feature_owner_task['html'])
+    self.assertIn(email_body_html, feature_owner_task['html'])
     self.assertIn('<li>You are listed as an owner of this feature</li>',
       feature_owner_task['html'])
 
     # Notification to feature editor.
     self.assertEqual('updated feature: feature one',
       feature_editor_task['subject'])
-    self.assertIn('mock body html', feature_editor_task['html'])
+    self.assertIn(email_body_html, feature_editor_task['html'])
     self.assertIn('<li>You are listed as an editor of this feature</li>',
       feature_editor_task['html'])
     self.assertEqual('feature_editor@example.com', feature_editor_task['to'])
@@ -333,7 +279,7 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     # Notification to component owner.
     self.assertEqual('updated feature: feature one',
       component_owner_task['subject'])
-    self.assertIn('mock body html', component_owner_task['html'])
+    self.assertIn(email_body_html, component_owner_task['html'])
     # Component owner is also a feature editor and should have both reasons.
     self.assertIn('<li>You are an owner of this feature\'s component</li>\n'
                   '<li>You are listed as an editor of this feature</li>',
@@ -342,26 +288,20 @@ class EmailFormattingTest(testing_config.CustomTestCase):
 
     # Notification to feature starrer.
     self.assertEqual('updated feature: feature one', starrer_task['subject'])
-    self.assertIn('mock body html', starrer_task['html'])
+    self.assertIn(email_body_html, starrer_task['html'])
     self.assertIn('<li>You starred this feature</li>',
       starrer_task['html'])
     self.assertEqual('starrer_1@example.com', starrer_task['to'])
 
     # Notification to feature change watcher.
     self.assertEqual('updated feature: feature one', watcher_task['subject'])
-    self.assertIn('mock body html', watcher_task['html'])
+    self.assertIn(email_body_html, watcher_task['html'])
     self.assertIn('<li>You are watching all feature changes</li>',
       watcher_task['html'])
     self.assertEqual('watcher_1@example.com', watcher_task['to'])
 
-    mock_f_e_b.assert_called_once_with(
-        True, self.feature_1, self.changes)
-
-
-  @mock.patch('internals.notifier.format_email_body')
-  def test_make_email_tasks__starrer_unsubscribed(self, mock_f_e_b):
+  def test_make_email_tasks__starrer_unsubscribed(self):
     """We don't email users who starred the feature but opted out."""
-    mock_f_e_b.return_value = 'mock body html'
     starrer_2_pref = user_models.UserPref(
         email='starrer_2@example.com',
         notify_as_starrer=False)
@@ -378,8 +318,6 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     self.assertEqual('feature_owner@example.com', feature_owner_task['to'])
     self.assertEqual('owner_1@example.com', component_owner_task['to'])
     self.assertEqual('watcher_1@example.com', watcher_task['to'])
-    mock_f_e_b.assert_called_once_with(
-        True, self.feature_2, self.changes)
 
 
 class FeatureStarTest(testing_config.CustomTestCase):

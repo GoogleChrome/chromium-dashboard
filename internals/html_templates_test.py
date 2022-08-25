@@ -15,11 +15,14 @@
 
 import testing_config  # Must be imported before the module under test.
 
+from google.cloud import ndb
+
 from internals import core_models
 from internals import html_templates
+from internals import user_models
 
 
-class HtmlTemplateTest(testing_config.CustomTestCase):
+class EstimatedMilestoneTablesTemplateTest(testing_config.CustomTestCase):
 
   def setUp(self):
     self.feature_1 = core_models.Feature(
@@ -106,3 +109,73 @@ class HtmlTemplateTest(testing_config.CustomTestCase):
     fields."""
     body_html = html_templates.estimated_milestone_tables_html(self.feature_4)
     self.assertIn('<p>No milestones specified</p>\n', body_html)
+
+
+class NewAndUpdatedFeatureTemplateTest(testing_config.CustomTestCase):
+
+  def setUp(self):
+    self.feature_1 = core_models.Feature(
+        name='feature one', summary='sum', owner=['feature_owner@example.com'],
+        ot_milestone_desktop_start=100,
+        editors=['feature_editor@example.com', 'owner_1@example.com'],
+        category=1, visibility=1, standardization=1, web_dev_views=1,
+        impl_status_chrome=1, created_by=ndb.User(
+            email='creator1@gmail.com', _auth_domain='gmail.com'),
+        updated_by=ndb.User(
+            email='editor1@gmail.com', _auth_domain='gmail.com'),
+        blink_components=['Blink'])
+    self.feature_1.put()
+    self.component_1 = user_models.BlinkComponent(name='Blink')
+    self.component_1.put()
+    self.component_owner_1 = user_models.FeatureOwner(
+        name='owner_1', email='owner_1@example.com',
+        primary_blink_components=[self.component_1.key])
+    self.component_owner_1.put()
+    self.watcher_1 = user_models.FeatureOwner(
+        name='watcher_1', email='watcher_1@example.com',
+        watching_all_features=True)
+    self.watcher_1.put()
+    self.changes = [dict(prop_name='test_prop', new_val='test new value',
+                    old_val='test old value')]
+
+  def tearDown(self):
+    self.feature_1.key.delete()
+
+  def test_format_email_body__new(self):
+    """We generate an email body for new features."""
+    body_html = html_templates.new_feature_email_html(self.feature_1)
+    self.assertIn('Blink', body_html)
+    self.assertIn('creator1@gmail.com added', body_html)
+    self.assertIn('chromestatus.com/feature/'
+      f'{self.feature_1.key.integer_id()}', body_html)
+    self.assertNotIn('watcher_1,', body_html)
+
+  def test_format_email_body__update_no_changes(self):
+    """We don't crash if the change list is emtpy."""
+    body_html = html_templates.update_feature_email_html(self.feature_1, [])
+    self.assertIn('Blink', body_html)
+    self.assertIn('editor1@gmail.com updated', body_html)
+    self.assertNotIn('watcher_1,', body_html)
+
+  def test_format_email_body__update_with_changes(self):
+    """We generate an email body for an updated feature."""
+    body_html = html_templates.update_feature_email_html(
+      self.feature_1, self.changes)
+    self.assertIn('test_prop', body_html)
+    self.assertIn('chromestatus.com/feature/'
+      f'{self.feature_1.key.integer_id()}', body_html)
+    self.assertIn('test old value', body_html)
+    self.assertIn('test new value', body_html)
+
+  def test_format_email_body__mozdev_links(self):
+    """We generate an email body with links to developer.mozilla.org."""
+    self.feature_1.doc_links = ['https://developer.mozilla.org/look-here']
+    body_html = html_templates.update_feature_email_html(
+      self.feature_1, self.changes)
+    self.assertIn('look-here', body_html)
+
+    self.feature_1.doc_links = [
+        'https://hacker-site.org/developer.mozilla.org/look-here']
+    body_html = html_templates.update_feature_email_html(
+      self.feature_1, self.changes)
+    self.assertNotIn('look-here', body_html)
