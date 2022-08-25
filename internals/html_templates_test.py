@@ -59,10 +59,10 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     body_html = html_templates.estimated_milestone_tables_html(self.feature_1)
     self.assertIn(
       '<table>\n'
-      '<tr><td>Shipping on desktop</td>\n'
-      '<td>100</td></tr>\n'
-      '<tr><td>OriginTrial desktop first</td>\n'
-      '<td>100</td></tr>\n'
+      '  <tr><td>Shipping on desktop</td>\n'
+      '  <td>100</td></tr>\n'
+      '  <tr><td>OriginTrial desktop first</td>\n'
+      '  <td>100</td></tr>\n'
       '</table>\n', body_html)
 
   def test_estimated_milestone_tables_html__desktop_and_android(self):
@@ -71,16 +71,16 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     body_html = html_templates.estimated_milestone_tables_html(self.feature_2)
     self.assertIn(
       '<table>\n'
-      '<tr><td>Shipping on desktop</td>\n'
-      '<td>100</td></tr>\n'
-      '<tr><td>OriginTrial desktop first</td>\n'
-      '<td>100</td></tr>\n'
+      '  <tr><td>Shipping on desktop</td>\n'
+      '  <td>100</td></tr>\n'
+      '  <tr><td>OriginTrial desktop first</td>\n'
+      '  <td>100</td></tr>\n'
       '</table>\n'
       '<table>\n'
-      '<tr><td>OriginTrial Android last</td>\n'
-      '<td>105</td></tr>\n'
-      '<tr><td>OriginTrial Android first</td>\n'
-      '<td>101</td></tr>\n'
+      '  <tr><td>OriginTrial Android last</td>\n'
+      '  <td>105</td></tr>\n'
+      '  <tr><td>OriginTrial Android first</td>\n'
+      '  <td>101</td></tr>\n'
       '</table>\n', body_html)
 
   def test_estimated_milestone_tables_html__webview_and_ios(self):
@@ -89,16 +89,16 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     body_html = html_templates.estimated_milestone_tables_html(self.feature_3)
     self.assertIn(
       '<table>\n'
-      '<tr><td>OriginTrial webView last</td>\n'
-      '<td>99</td></tr>\n'
-      '<tr><td>OriginTrial webView first</td>\n'
-      '<td>97</td></tr>\n'
+      '  <tr><td>OriginTrial webView last</td>\n'
+      '  <td>99</td></tr>\n'
+      '  <tr><td>OriginTrial webView first</td>\n'
+      '  <td>97</td></tr>\n'
       '</table>\n'
       '<table>\n'
-      '<tr><td>Shipping on iOS</td>\n'
-      '<td>106</td></tr>\n'
-      '<tr><td>DevTrial on iOS</td>\n'
-      '<td>106</td></tr>\n'
+      '  <tr><td>Shipping on iOS</td>\n'
+      '  <td>106</td></tr>\n'
+      '  <tr><td>DevTrial on iOS</td>\n'
+      '  <td>106</td></tr>\n'
       '</table>\n', body_html)
 
   def test_estimated_milestone_tables_html__no_milestones(self):

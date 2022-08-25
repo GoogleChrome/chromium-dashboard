@@ -23,8 +23,8 @@ def estimated_milestone_tables_html(feature):
     for item in table_item_tuple:
       title, value = item
       table_html += (
-        f'<tr><td>{title}</td>\n'
-        f'<td>{value}</td></tr>\n'
+        f'  <tr><td>{title}</td>\n'
+        f'  <td>{value}</td></tr>\n'
       )
     return f'<table>\n{table_html}</table>\n'
   
