@@ -252,7 +252,7 @@ class ChromedashApprovalsDialog extends LitElement {
         <span class="set_by">${approvalValue.set_by}</span>
         <span class="set_on">${this.formatDate(approvalValue.set_on)}</span>
         <span class="appr_val">
-          ${approvalValue.set_by == this.signedInUser ? html`
+          ${approvalValue.set_by == this.user.email ? html`
         <sl-select name="${approvalValue.field_id}"
             value="${selectedValue}"
             data-field="${approvalValue.field_id}"
@@ -274,12 +274,12 @@ class ChromedashApprovalsDialog extends LitElement {
 
   renderAddApproval(fieldId) {
     const existingApprovalByMe = this.approvals.some((a) =>
-      a.field_id == fieldId && a.set_by == this.signedInUser);
+      a.field_id == fieldId && a.set_by == this.user.email);
     if (existingApprovalByMe) {
       return nothing;
     } else {
       return this.renderApprovalValue(
-        {set_by: this.signedInUser,
+        {set_by: this.user.email,
           set_on: '',
           state: -1,
           field_id: fieldId});
