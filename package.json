@@ -4,7 +4,7 @@
   "homepage": "https://www.chromestatus.com",
   "private": true,
   "engines": {
-    "node": ">=6.0.0"
+    "node": ">=12.0.0"
   },
   "scripts": {
     "setup": "npm ci; python3.9 -m venv cs-env; npm run deps",
