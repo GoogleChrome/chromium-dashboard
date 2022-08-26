@@ -75,7 +75,7 @@ def can_edit_any_feature(user):
 def feature_edit_list(user):
   """Return a list of features the current user can edit"""
   if not user:
-    return False
+    return []
 
   # If the user can edit any feature, we don't need the full list.
   # We can just assume they will have edit access to all features.
@@ -167,7 +167,6 @@ def require_create_feature(handler):
 
 def validate_feature_edit_permission(handler_obj, feature_id):
   """Check if user has permission to edit feature and abort if not."""
-  """Redirect, abort(403), or call handler_method."""
   user = handler_obj.get_current_user()
   req = handler_obj.request
 
