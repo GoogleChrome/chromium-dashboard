@@ -13,7 +13,7 @@ jobs:
       - name: set up Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: '8.x'
+          node-version: '12.x'
 
       - name: set up Python
         uses: actions/setup-python@v2
