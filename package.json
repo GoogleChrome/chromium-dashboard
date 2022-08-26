@@ -4,7 +4,7 @@
   "homepage": "https://www.chromestatus.com",
   "private": true,
   "engines": {
-    "node": ">=6.0.0"
+    "node": ">=12.0.0"
   },
   "scripts": {
     "setup": "npm ci; python3.9 -m venv cs-env; npm run deps",
@@ -94,7 +94,6 @@
     "@polymer/iron-collapse": "^3.0.1",
     "@polymer/iron-icon": "^3.0.1",
     "@polymer/iron-iconset-svg": "^3.0.1",
-    "autolinker": "^3.16.0",
     "lit": "^2",
     "node-fetch": ">=3.2.10",
     "node-sass": ">=4.13.1",
