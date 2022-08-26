@@ -62,6 +62,8 @@ test_app = basehandlers.FlaskApplication(
      ('/just_a_template', basehandlers.ConstHandler,
       {'template_path': 'test_template.html',
        'name': 'Guest'}),
+     ('/just_an_xml_template', basehandlers.ConstHandler,
+      {'template_path': 'farewell-rss.xml'}),
      ('/must_be_signed_in', basehandlers.ConstHandler,
       {'template_path': 'test_template.html',
        'require_signin': True}),
@@ -282,6 +284,16 @@ class ConstHandlerTests(testing_config.CustomTestCase):
 
     actual_text, actual_status, actual_headers = actual_tuple
     self.assertIn('Hi Guest,', actual_text)
+    self.assertEqual(200, actual_status)
+    self.assertNotIn('Access-Control-Allow-Origin', actual_headers)
+
+  def test_xml_template_found(self):
+    """We can run an XML template that requires no handler logic."""
+    with test_app.test_request_context('/just_an_xml_template'):
+      actual_tuple = test_app.dispatch_request()
+
+    actual_text, actual_status, actual_headers = actual_tuple
+    self.assertIn('RSS feed', actual_text)
     self.assertEqual(200, actual_status)
     self.assertNotIn('Access-Control-Allow-Origin', actual_headers)
 
