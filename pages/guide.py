@@ -174,8 +174,12 @@ class ProcessOverview(basehandlers.FlaskHandler):
         progress_so_far[progress_item] = str(detected)
     return progress_so_far
 
-  @permissions.require_edit_feature
   def get_template_data(self, feature_id):
+    # Validate the user has edit permissions and redirect if needed.
+    redirect_resp = permissions.validate_feature_edit_permission(
+        self, feature_id)
+    if redirect_resp:
+      return redirect_resp
 
     f = core_models.Feature.get_by_id(int(feature_id))
     if f is None:
@@ -251,8 +255,12 @@ class FeatureEditStage(basehandlers.FlaskHandler):
 
     return f, feature_process
 
-  @permissions.require_edit_feature
   def get_template_data(self, feature_id, stage_id):
+    # Validate the user has edit permissions and redirect if needed.
+    redirect_resp = permissions.validate_feature_edit_permission(
+        self, feature_id)
+    if redirect_resp:
+      return redirect_resp
 
     f, feature_process = self.get_feature_and_process(feature_id)
 
@@ -284,8 +292,12 @@ class FeatureEditStage(basehandlers.FlaskHandler):
     }
     return template_data
 
-  @permissions.require_edit_feature
   def process_post_data(self, feature_id, stage_id=0):
+    # Validate the user has edit permissions and redirect if needed.
+    redirect_resp = permissions.validate_feature_edit_permission(
+        self, feature_id)
+    if redirect_resp:
+      return redirect_resp
 
     if feature_id:
       feature = core_models.Feature.get_by_id(feature_id)
@@ -563,13 +575,6 @@ class FeatureEditStage(basehandlers.FlaskHandler):
     if self.touched('ongoing_constraints'):
       feature.ongoing_constraints = self.form.get('ongoing_constraints')
 
-    # Add user who updated to list of editors if not currently an editor.
-    # TODO(danielrsmith): This should be removed when enabling new permissions.
-    associated_with_feature = permissions.strict_can_edit_feature(
-      self.get_current_user(), feature_id)
-    if not associated_with_feature:
-      feature.editors.append(self.get_current_user().email())
-
     feature.updated_by = ndb.User(
         email=self.get_current_user().email(),
         _auth_domain='gmail.com')
@@ -587,8 +592,12 @@ class FeatureEditAllFields(FeatureEditStage):
 
   TEMPLATE_PATH = 'guide/editall.html'
 
-  @permissions.require_edit_feature
   def get_template_data(self, feature_id):
+    # Validate the user has edit permissions and redirect if needed.
+    redirect_resp = permissions.validate_feature_edit_permission(
+        self, feature_id)
+    if redirect_resp:
+      return redirect_resp
 
     f, feature_process = self.get_feature_and_process(feature_id)
 
@@ -610,8 +619,13 @@ class FeatureEditAllFields(FeatureEditStage):
 class FeatureVerifyAccuracy(FeatureEditStage):
   TEMPLATE_PATH = 'guide/verify_accuracy.html'
 
-  @permissions.require_edit_feature
   def get_template_data(self, feature_id):
+    # Validate the user has edit permissions and redirect if needed.
+    redirect_resp = permissions.validate_feature_edit_permission(
+        self, feature_id)
+    if redirect_resp:
+      return redirect_resp
+
     f, _ = self.get_feature_and_process(feature_id)
     feature_edit_dict = f.format_for_edit()
 

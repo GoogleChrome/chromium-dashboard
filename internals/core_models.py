@@ -378,8 +378,8 @@ class Feature(DictModel):
 
   @classmethod
   def get_all(self, limit=None, order='-updated', filterby=None,
-              update_cache=False, version=2):
-    KEY = '%s|%s|%s' % (Feature.DEFAULT_CACHE_KEY, order, limit)
+              update_cache=False, version=2, keys_only=False):
+    KEY = '%s|%s|%s|%s' % (Feature.DEFAULT_CACHE_KEY, order, limit, keys_only)
 
     # TODO(ericbidelman): Support more than one filter.
     if filterby is not None:
@@ -405,10 +405,10 @@ class Feature(DictModel):
         else:
           query = query.filter(getattr(Feature, filter_type) == comparator)
 
-      features = query.fetch(limit)
-
-      feature_list = [
-          f.format_for_template(version=version) for f in features]
+      feature_list = query.fetch(limit, keys_only=keys_only)
+      if not keys_only:
+        feature_list = [
+            f.format_for_template(version=version) for f in feature_list]
 
       ramcache.set(KEY, feature_list)
 
