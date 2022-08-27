@@ -382,11 +382,6 @@ class ChromedashFeaturelist extends LitElement {
       filteredWithState = filteredWithState.slice(0, MAX_FEATURES_SHOWN);
     }
     return html`
-      <link rel="stylesheet" href="/static/css/elements/chromedash-featurelist.css">
-      <style>
-        .item {width: 100%}
-      </style>
-
       ${filteredWithState.map((item) => html`
           <div class="item">
             <div ?hidden="${this._computeMilestoneHidden(item.feature, this.features, this.filtered)}"
