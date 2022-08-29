@@ -485,9 +485,9 @@ class ConstHandler(FlaskHandler):
       return flask.redirect(settings.LOGIN_PAGE_URL), self.get_headers()
     if 'template_path' in defaults:
       template_path = defaults['template_path']
-      if '.html' not in template_path:
+      if not template_path.endswith(('.html', '.xml')):
         self.abort(
-            500, msg='template_path %r does not end with .html' % template_path)
+            500, msg=f'${template_path =} does not end with .html or .xml')
       return defaults
 
     return flask.jsonify(defaults)
