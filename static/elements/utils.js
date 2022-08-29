@@ -1,17 +1,15 @@
 // This file contains helper functions for our elements.
 
-import {html} from 'lit';
-import {unsafeHTML} from 'lit/directives/unsafe-html.js';
 import {markupAutolinks} from './autolink.js';
 
 let toastEl;
 
 /* Convert user-entered text into safe HTML with clickable links
- * where appropriate.  Returns a lit-html TemplateResult.
+ * where appropriate.  Returns an array with text and anchor tags.
  */
 export function autolink(s) {
-  const markup = markupAutolinks(s);
-  return html`${unsafeHTML(markup)}`;
+  const withLinks = markupAutolinks(s);
+  return withLinks;
 }
 
 export function showToastMessage(msg) {
