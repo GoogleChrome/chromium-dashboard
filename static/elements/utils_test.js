@@ -16,12 +16,13 @@ const compareAutolinkResult = (result, expected) => {
 describe('utils', () => {
   describe('autolink', () => {
     it('creates anchor tags for links', () => {
-      const before = `This is a test of the autolinking.
+      const before = `This is a test & result of the autolinking.
 go/this-is-a-test.
 A bug cr/1234 exists and also cl/1234. Info at issue 1234 comment 3.
-AKA issue 1234 #c3. https://example.com/ --- testing. bug 1234 also.`;
+AKA issue 1234 #c3. https://example.com/ --- testing. bug 1234 also.
+https://example.com#testing https://example.com/test?querystring=here&q=1234 ??.`;
       const expected = [
-        'This is a test of the autolinking.',
+        'This is a test & result of the autolinking.',
         '\n',
         html`<a href="${'http://go/this-is-a-test'}" target="_blank" rel="noopener noreferrer">${'go/this-is-a-test'}</a>`,
         '.',
@@ -40,7 +41,11 @@ AKA issue 1234 #c3. https://example.com/ --- testing. bug 1234 also.`;
         ' --- testing. ',
         html`<a href="${'https://bugs.chromium.org/p/chromium/issues/detail?id=1234'}" target="_blank" rel="noopener noreferrer">${'bug 1234'}</a>`,
         ' ',
-        'also.',
+        'also.\n',
+        html`<a href="https://example.com#testing" target="_blank" rel="noopener noreferrer">https://example.com#testing</a>`,
+        ' ',
+        html`<a href="https://example.com/test?querystring=here&q=1234" target="_blank" rel="noopener noreferrer">https://example.com/test?querystring=here&q=1234</a>`,
+        ' ??.',
       ];
 
       const result = autolink(before);
