@@ -49,10 +49,10 @@ go this-is-a-test.
 A bug cr /1234 exists and also /1234. This is an example sentence.
 AKA issue here 1234. example com --- testing.`;
       const expected = [
-        'This is a test of the autolinking.\n',
-        'go this-is-a-test.\n',
-        'A bug cr /1234 exists and also /1234. This is an example sentence.\n',
-        'AKA issue here 1234. example com --- testing.',
+        'This is a test of the autolinking.\n' +
+          'go this-is-a-test.\n' +
+          'A bug cr /1234 exists and also /1234. This is an example sentence.\n' +
+          'AKA issue here 1234. example com --- testing.',
       ];
 
       const result = autolink(before);
