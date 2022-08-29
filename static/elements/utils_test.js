@@ -19,22 +19,22 @@ AKA issue 1234 #c3. https://example.com/ --- testing. bug 1234 also.`;
       const expected = [
         'This is a test of the autolinking.',
         '\n',
-        html`<a href="http://go/this-is-a-test" target="_blank" rel="noopener noreferrer">go/this-is-a-test</a>`,
+        html`<a href="${'http://go/this-is-a-test'}" target="_blank" rel="noopener noreferrer">${'go/this-is-a-test'}</a>`,
         '.',
         '\nA bug',
         ' ',
-        html`<a href="http://cr/1234" target="_blank" rel="noopener noreferrer">cr/1234</a>`,
+        html`<a href="${'http://cr/1234'}" target="_blank" rel="noopener noreferrer">${'cr/1234'}</a>`,
         ' exists and also',
         ' ',
-        html`<a href="http://cl/1234" target="_blank" rel="noopener noreferrer">cl/1234</a>`,
+        html`<a href="${'http://cl/1234'}" target="_blank" rel="noopener noreferrer">${'cl/1234'}</a>`,
         '. Info at ',
-        html`<a href="https://bugs.chromium.org/p/chromium/issues/detail?id=1234#c3" target="_blank" rel="noopener noreferrer">issue 1234 comment 3</a>`,
+        html`<a href="${'https://bugs.chromium.org/p/chromium/issues/detail?id=1234#c3'}" target="_blank" rel="noopener noreferrer">${'issue 1234 comment 3'}</a>`,
         '.\nAKA ',
-        html`<a href="https://bugs.chromium.org/p/chromium/issues/detail?id=1234#c3" target="_blank" rel="noopener noreferrer">issue 1234 #c3</a>`,
+        html`<a href="${'https://bugs.chromium.org/p/chromium/issues/detail?id=1234#c3'}" target="_blank" rel="noopener noreferrer">${'issue 1234 #c3'}</a>`,
         '. ',
-        html`<a href="https://example.com/" target="_blank" rel="noopener noreferrer">https://example.com/</a>`,
+        html`<a href="${'https://example.com/'}" target="_blank" rel="noopener noreferrer">${'https://example.com/'}</a>`,
         ' --- testing. ',
-        html`<a href="https://bugs.chromium.org/p/chromium/issues/detail?id=1234" target="_blank" rel="noopener noreferrer">bug 1234</a>`,
+        html`<a href="${'https://bugs.chromium.org/p/chromium/issues/detail?id=1234'}" target="_blank" rel="noopener noreferrer">${'bug 1234'}</a>`,
         ' ',
         'also.',
       ];
@@ -67,7 +67,7 @@ go/this-is-a-test
       const expected = [
         '<b>Test</b>',
         '\n',
-        html`<a href="http://go/this-is-a-test" target="_blank" rel="noopener noreferrer">go/this-is-a-test</a>`,
+        html`<a href="${'http://go/this-is-a-test'}" target="_blank" rel="noopener noreferrer">${'go/this-is-a-test'}</a>`,
         '\n<p>Do not convert this</p>\n<script>Dangerous stuff</script>',
       ];
 
