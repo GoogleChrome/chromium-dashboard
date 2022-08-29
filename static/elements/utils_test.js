@@ -42,9 +42,9 @@ https://example.com#testing https://example.com/test?querystring=here&q=1234 ??.
         html`<a href="${'https://bugs.chromium.org/p/chromium/issues/detail?id=1234'}" target="_blank" rel="noopener noreferrer">${'bug 1234'}</a>`,
         ' ',
         'also.\n',
-        html`<a href="https://example.com#testing" target="_blank" rel="noopener noreferrer">https://example.com#testing</a>`,
+        html`<a href="${'https://example.com#testing'}" target="_blank" rel="noopener noreferrer">${'https://example.com#testing'}</a>`,
         ' ',
-        html`<a href="https://example.com/test?querystring=here&q=1234" target="_blank" rel="noopener noreferrer">https://example.com/test?querystring=here&q=1234</a>`,
+        html`<a href="${'https://example.com/test?querystring=here&q=1234'}" target="_blank" rel="noopener noreferrer">${'https://example.com/test?querystring=here&q=1234'}</a>`,
         ' ??.',
       ];
 
