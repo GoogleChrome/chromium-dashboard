@@ -335,10 +335,12 @@ class FlaskHandler(BaseHandler):
         'email': user.email(),
         'dismissed_cues': json.dumps(user_pref.dismissed_cues),
       }
+      common_data['user_json'] = json.dumps(common_data['user'])
       common_data['xsrf_token'] = xsrf.generate_token(user.email())
       common_data['xsrf_token_expires'] = xsrf.token_expires_sec()
     else:
       common_data['user'] = None
+      common_data['user_json'] = None
       common_data['xsrf_token'] = xsrf.generate_token(None)
       common_data['xsrf_token_expires'] = 0
     return common_data
