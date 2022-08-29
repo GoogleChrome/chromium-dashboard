@@ -35,7 +35,7 @@
         </div>
       </div>
       <chromedash-featurelist
-        {% if user %} user="{{user}}" {% endif %}
+        {% if user %} user="{{user_json}}" {% endif %}
         {% if user %} signedInUser="{{user.email}}" {% endif %}
         {% if user.can_edit_all %}isSiteEditor{% endif %}
         {% if user %} editableFeatures="{{user.editable_features}}" {% endif %}
