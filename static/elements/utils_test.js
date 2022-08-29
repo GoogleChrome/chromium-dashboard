@@ -5,7 +5,11 @@ import {assert} from '@open-wc/testing';
 const compareAutolinkResult = (result, expected) => {
   assert.equal(result.length, expected.length);
   for (let i = 0; i < result.length; i++) {
-    assert.equal(result[i], expected[i]);
+    if (typeof result[i] === 'string') {
+      assert.equal(result[i], expected[i]);
+    } else {
+      assert.deepEqual(result[i], expected[i]);
+    }
   }
 };
 
