@@ -2,6 +2,8 @@
 // for use with text entries in WebStatus. Use this directly via './utils.js'
 // See: https://chromium.googlesource.com/infra/infra/+/refs/heads/main/appengine/monorail/static_src/autolink.js
 
+import {html} from 'lit';
+
 const CRBUG_DEFAULT_PROJECT = 'chromium';
 const CRBUG_URL = 'https://bugs.chromium.org';
 const CRBUG_LINK_RE = /(\b(https?:\/\/)?crbug\.com\/)((\b[-a-z0-9]+)(\/))?(\d+)\b(\#c[0-9]+)?/gi;
@@ -190,10 +192,10 @@ export function markupAutolinks(plainString) {
   });
   const result = textRuns.map(part => {
     if (part.tag === 'a') {
-      return `<a href="${part.href}" target="_blank" rel="noopener noreferrer">${part.content}</a>`;
+      return html`<a href="${part.href}" target="_blank" rel="noopener noreferrer">${part.content}</a>`;
     }
     return part.content;
-  }).join('');
+  });
   return result;
 }
 
