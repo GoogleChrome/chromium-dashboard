@@ -33,6 +33,15 @@ class ChromedashActivityLog extends LitElement {
           height: 24px;
         }
 
+        .comment {
+          margin-left: var(--content-padding);
+        }
+
+        .edit-menu {
+          display: inline-block;
+          float: right;
+        }
+
         .comment-menu-icon {
           float: right;
           margin-right: 8px;

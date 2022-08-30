@@ -100,8 +100,7 @@ class ChromedashApprovalsDialog extends LitElement {
           margin-top: var(--content-padding);
         }
 
-        .approval_section div,
-        .comment {
+        .approval_section div {
           margin-left: var(--content-padding);
         }
 
@@ -125,11 +124,6 @@ class ChromedashApprovalsDialog extends LitElement {
 
         select {
           margin: 0;
-        }
-
-        .edit-menu {
-          display: inline-block;
-          float: right;
         }
 
         .config-area {
