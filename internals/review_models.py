@@ -297,7 +297,7 @@ class Amendment(ndb.Model):
 # TODO(jrobbins): Decide on either copying to this new class or adding
 # and removing fields from the existing Comment class.
 class Activity(ndb.Model):  # copy from Comment
-  """An activity log entry (comment + amentments) on a gate or feature."""
+  """An activity log entry (comment + amendments) on a gate or feature."""
   feature_id = ndb.IntegerProperty(required=True)
   gate_id = ndb.IntegerProperty()  # The gate commented on, or general comment.
   created = ndb.DateTimeProperty(auto_now=True)
