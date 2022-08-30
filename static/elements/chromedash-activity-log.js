@@ -4,7 +4,7 @@ import '@polymer/iron-icon';
 import {SHARED_STYLES} from '../sass/shared-css.js';
 
 
-class ChromedashActivityLog extends LitElement {
+export class ChromedashActivityLog extends LitElement {
   static get properties() {
     return {
       user: {type: Object},
@@ -15,7 +15,7 @@ class ChromedashActivityLog extends LitElement {
 
   constructor() {
     super();
-    this.user = {};
+    this.user = null;
     this.feature = {};
     this.comments = [];
   }
@@ -64,6 +64,9 @@ class ChromedashActivityLog extends LitElement {
 
   // Returns a boolean representing whether the given comment can be edited.
   commentIsEditable(comment) {
+    if (!this.user) {
+      return false;
+    }
     // If the comment has been deleted, it should only be editable
     // by site admins or the user who deleted it.
     if (comment.deleted_by) {
