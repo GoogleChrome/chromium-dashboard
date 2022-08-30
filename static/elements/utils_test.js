@@ -20,7 +20,8 @@ describe('utils', () => {
 go/this-is-a-test.
 A bug cr/1234 exists and also cl/1234. Info at issue 1234 comment 3.
 AKA issue 1234 #c3. https://example.com/ --- testing. bug 1234 also.
-https://example.com#testing https://example.com/test?querystring=here&q=1234 ??.`;
+https://example.com#testing https://example.com/test?querystring=here&q=1234 ??.
+send requests to user@example.com or just check out request.net`;
       const expected = [
         'This is a test & result of the autolinking.',
         '\n',
@@ -45,7 +46,9 @@ https://example.com#testing https://example.com/test?querystring=here&q=1234 ??.
         html`<a href="${'https://example.com#testing'}" target="_blank" rel="noopener noreferrer">${'https://example.com#testing'}</a>`,
         ' ',
         html`<a href="${'https://example.com/test?querystring=here&q=1234'}" target="_blank" rel="noopener noreferrer">${'https://example.com/test?querystring=here&q=1234'}</a>`,
-        ' ??.',
+        ' ??.\nsend requests to user@example.com or just check out',
+        ' ',
+        html`<a href="${'https://request.net'}" target="_blank" rel="noopener noreferrer">${'request.net'}</a>`,
       ];
 
       const result = autolink(before);

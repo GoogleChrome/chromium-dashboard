@@ -17,7 +17,7 @@ const PROJECT_LOCALID_RE_PROJECT_GROUP = 6;
 const PROJECT_LOCALID_RE_ID_GROUP = 8;
 const SHORT_LINK_RE = /(^|[^-\/._])\b(https?:\/\/|ftp:\/\/|mailto:)?(go|g|shortn|who|teams)\/([^\s<]+)/gi;
 const NUMERIC_SHORT_LINK_RE = /(^|[^-\/._])\b(https?:\/\/|ftp:\/\/)?(b|t|o|omg|cl|cr|fxr|fxrev|fxb|tqr)\/([0-9]+)/gi;
-const IMPLIED_LINK_RE = /(^|[^-\/._])\b[a-z]((-|\.)?[a-z0-9])+\.(com|net|org|edu|dev)\b(\/[^\s<]*)?/gi;
+const IMPLIED_LINK_RE = /(?!@)(^|[^-\/._])\b[a-z]((-|\.)?[a-z0-9])+\.(com|net|org|edu|dev)\b(\/[^\s<]*)?/gi;
 const IS_LINK_RE = /()\b(https?:\/\/|ftp:\/\/|mailto:)([^\s<]+)/gi;
 const LINK_TRAILING_CHARS = [
   [null, ':'],
