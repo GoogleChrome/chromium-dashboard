@@ -88,7 +88,7 @@
     "sw-precache": "^5.2.1",
     "sw-toolbox": "^3.6.0",
     "tar": ">=3.2.3",
-    "trim-newlines": ">=3.0.1"
+    "trim-newlines": ">=4.0.2"
   },
   "dependencies": {
     "@polymer/iron-collapse": "^3.0.1",
