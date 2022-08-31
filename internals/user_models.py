@@ -18,7 +18,7 @@ from google.cloud import ndb
 
 from framework import rediscache
 from framework import users
-from internals import models
+from internals import core_models
 import hack_components
 import settings
 
@@ -90,7 +90,7 @@ class UserPref(ndb.Model):
     return result
 
 
-class AppUser(models.DictModel):
+class AppUser(core_models.DictModel):
   """Describes a user for permission checking."""
 
   email = ndb.StringProperty(required=True)

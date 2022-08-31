@@ -45,7 +45,7 @@ class FeaturesAPITestDelete(testing_config.CustomTestCase):
     self.app_admin.put()
 
   def tearDown(self):
-    cache_key = '%s|%s' % (models.Feature.DEFAULT_CACHE_KEY, self.feature_1.key.integer_id())
+    cache_key = '%s|%s' % (core_models.Feature.DEFAULT_CACHE_KEY, self.feature_1.key.integer_id())
     self.feature_1.key.delete()
     self.app_admin.key.delete()
     testing_config.sign_out()

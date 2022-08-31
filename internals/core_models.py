@@ -1061,15 +1061,15 @@ class FeatureEntry(ndb.Model):  # Copy from Feature
 
   @classmethod
   def get_feature_entry(self, feature_id, update_cache=False):
-    KEY = '%s|%s' % (Feature.DEFAULT_CACHE_KEY, feature_id)
-    feature = ramcache.get(KEY)
-
+    # KEY = '%s|%s' % (Feature.DEFAULT_CACHE_KEY, feature_id)
+    # feature = ramcache.get(KEY)
+    feature = None
     if feature is None or update_cache:
       entry = FeatureEntry.get_by_id(feature_id)
       if entry:
         if entry.deleted:
           return None
-        ramcache.set(KEY, entry)
+        # ramcache.set(KEY, entry)
 
     return entry
 
@@ -1097,8 +1097,8 @@ class FeatureEntry(ndb.Model):  # Copy from Feature
     futures = []
 
     for fe_id in entry_ids:
-      lookup_key = '%s|%s' % (FeatureEntry.DEFAULT_CACHE_KEY, fe_id)
-      entry = ramcache.get(lookup_key)
+      # lookup_key = '%s|%s' % (FeatureEntry.DEFAULT_CACHE_KEY, fe_id)
+      # entry = ramcache.get(lookup_key)
       if entry is None or update_cache:
         futures.append(FeatureEntry.get_by_id_async(fe_id))
       else:
@@ -1107,9 +1107,9 @@ class FeatureEntry(ndb.Model):  # Copy from Feature
     for future in futures:
       entry = future.get_result()
       if entry and not entry.deleted:
-        store_key = '%s|%s' % (
-            FeatureEntry.DEFAULT_CACHE_KEY, entry.key.integer_id())
-        ramcache.set(store_key, entry)
+       # store_key = '%s|%s' % (
+            #FeatureEntry.DEFAULT_CACHE_KEY, entry.key.integer_id())
+        #ramcache.set(store_key, entry)
         result_dict[entry.key.integer_id()] = entry
 
     result_list = [
