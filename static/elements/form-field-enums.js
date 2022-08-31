@@ -48,6 +48,20 @@ export const INTENT_STAGES = {
   INTENT_PARKED: [9, 'Parked'],
 };
 
+export const IMPLEMENTATION_STATUS = {
+  NO_ACTIVE_DEV: [1, 'No active development'],
+  PROPOSED: [2, 'Proposed'],
+  IN_DEVELOPMENT: [3, 'In development'],
+  BEHIND_A_FLAG: [4, 'In developer trial (Behind a flag)'],
+  ENABLED_BY_DEFAULT: [5, 'Enabled by default'],
+  DEPRECATED: [6, 'Deprecated'],
+  REMOVED: [7, 'Removed'],
+  ORIGIN_TRIAL: [8, 'Origin trial'],
+  INTERVENTION: [9, 'Browser Intervention'],
+  ON_HOLD: [10, 'On hold'],
+  NO_LONGER_PURSUING: [1000, 'No longer pursuing'],
+};
+
 export const STANDARD_MATURITY_CHOICES = {
   // No text for UNSET_STD==0. One of the values below will be set on first edit.
   UNKNOWN_STD: [1, 'Unknown standards status - check spec link for status'],

@@ -2,6 +2,7 @@ import {html} from 'lit';
 import {
   FEATURE_CATEGORIES,
   FEATURE_TYPES,
+  IMPLEMENTATION_STATUS,
   INTENT_STAGES,
   STANDARD_MATURITY_CHOICES,
   REVIEW_STATUS_CHOICES,
@@ -187,6 +188,8 @@ export const ALL_FIELDS = {
   },
 
   'impl_status_chrome': {
+    type: 'select',
+    choices: IMPLEMENTATION_STATUS,
     label: 'Implementation status',
     help_text: html`
         Select the appropriate Chromium development stage. If you
@@ -776,6 +779,7 @@ export const ALL_FIELDS = {
   },
 
   'wpt': {
+    type: 'checkbox',
     label: 'Web Platform Tests',
     help_text: html`
       Is this feature fully tested in Web Platform Tests?`,
