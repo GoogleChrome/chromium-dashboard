@@ -777,7 +777,7 @@ class Feature(DictModel):
       old_val = getattr(self, prop_name, None)
       setattr(self, '_old_' + prop_name, old_val)
 
-  def __get_changes_as_amendments(self):
+  def _get_changes_as_amendments(self):
     """Get all feature changes as Amendment entities."""
     # Diff values to see what properties have changed.
     amendments = []
@@ -819,7 +819,7 @@ class Feature(DictModel):
 
   def put(self, notify=True, **kwargs):
     is_update = self.is_saved()
-    amendments = self.__get_changes_as_amendments()
+    amendments = self._get_changes_as_amendments()
 
     # Document changes as new Activity entity with amendments.
     if is_update:
