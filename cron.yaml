@@ -17,3 +17,6 @@ cron:
 - description: Send reminders to verify the accuracy of feature data.
   url: /cron/send_accuracy_notifications
   schedule: every monday 09:00
+- description: Copy over deprecated standardization field
+  url: /cron/write_standard_maturity
+  schedule: every day 09:00
