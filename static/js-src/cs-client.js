@@ -288,6 +288,11 @@ class ChromeStatusClient {
     return this.doGet(`/features/${featureId}/progress`);
   }
 
+  // Blinkcomponents API
+  getBlinkComponents() {
+    return this.doGet(`/blinkcomponents`);
+  }
+
   // Fielddefs API
   getFieldDefs() {
     return this.doGet(`/fielddefs`);
