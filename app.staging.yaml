@@ -17,10 +17,6 @@ default_expiration: "10d"
 vpc_access_connector:
   name: projects/cr-status-staging/locations/us-central1/connectors/redis-connector
 
-env_variables:
-    REDISHOST: '10.231.56.251'
-    REDISPORT: '6379'
-
 handlers:
 # Static handlers ---------------------------------------------------------------
 - url: /favicon\.ico
@@ -47,6 +43,9 @@ env_variables:
   GAE_USE_SOCKETS_HTTPLIB : ''
   DJANGO_SETTINGS_MODULE: 'settings'
   DJANGO_SECRET: 'this-is-a-secret'
+  # Redis envs 
+  REDISHOST: '10.231.56.251'
+  REDISPORT: '6379'
 
 inbound_services:
 - mail
