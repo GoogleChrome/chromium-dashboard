@@ -7,7 +7,7 @@ from internals.core_models import Feature
 class WriteStandardMaturityHandler(FlaskHandler):
 
   def get_template_data(self):
-    """Writes standard_maturity field from standardization user field."""
+    """Writes standard_maturity field from the old standardization field."""
     q = Feature.query()
     features = q.fetch()
     update_count = 0
