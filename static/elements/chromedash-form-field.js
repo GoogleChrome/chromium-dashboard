@@ -48,7 +48,6 @@ export class ChromedashFormField extends LitElement {
     super.connectedCallback();
     if (this.name !== 'blink_components') return;
 
-    console.log(this.value);
     // get the choice values from API when the field is blink component select field
     this.loading =true;
     window.csClient.getBlinkComponents().then((componentChoices) => {
