@@ -128,7 +128,7 @@ export class ChromedashActivityLog extends LitElement {
 
   // Display how long ago the comment was created compared to now.
   formatCommentRelativeDate(comment) {
-    const commentDate = new Date(`${comment.created} UTC`);
+    const commentDate = new Date(`${comment.created}Z`);
     if (isNaN(commentDate)) {
       return nothing;
     }
