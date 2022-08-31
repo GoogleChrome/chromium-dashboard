@@ -287,7 +287,7 @@ class Vote(ndb.Model):  # copy from Approval
 
 # Note: This class is not used yet.
 class Amendment(ndb.Model):
-  """ReviewComments can log changes to other fields of the feature."""
+  """Activity log entries can record changes to fields."""
   field_name = ndb.StringProperty()  # from QUERIABLE_FIELDS
   old_value = ndb.TextProperty()
   new_value = ndb.TextProperty()
@@ -296,8 +296,8 @@ class Amendment(ndb.Model):
 # Note: This class is not used yet.
 # TODO(jrobbins): Decide on either copying to this new class or adding
 # and removing fields from the existing Comment class.
-class ReviewComment(ndb.Model):  # copy from Comment
-  """A review comment on a gate or a general comment on a feature."""
+class Activity(ndb.Model):  # copy from Comment
+  """An activity log entry (comment + amendments) on a gate or feature."""
   feature_id = ndb.IntegerProperty(required=True)
   gate_id = ndb.IntegerProperty()  # The gate commented on, or general comment.
   created = ndb.DateTimeProperty(auto_now=True)
@@ -308,11 +308,11 @@ class ReviewComment(ndb.Model):  # copy from Comment
   amendments = ndb.StructuredProperty(Amendment, repeated=True)
 
   @classmethod
-  def get_comments(cls, feature_id, gate_id=None):
-    """Return review comments for an approval."""
-    query = ReviewComment.query().order(Comment.created)
-    query = query.filter(ReviewComment.feature_id == feature_id)
+  def get_activities(cls, feature_id, gate_id=None):
+    """Return actitivies for an approval."""
+    query = Activity.query().order(Activity.created)
+    query = query.filter(Activity.feature_id == feature_id)
     if gate_id:
-      query = query.filter(ReviewComment.gate_id == gate_id)
-    comments = query.fetch(None)
-    return comments
+      query = query.filter(Activity.gate_id == gate_id)
+    acts = query.fetch(None)
+    return acts
