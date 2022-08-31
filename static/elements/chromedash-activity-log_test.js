@@ -12,16 +12,16 @@ describe('chromedash-activity-log', () => {
     is_admin: false,
     email: 'non-admin@google.com',
   };
-  const feature_1 = {
+  const featureOne = {
     id: 123456,
   };
-  const comment_1 = {
+  const commentOne = {
     comment_id: 1,
     author: 'non-admin@google.com',
     created: '2022-08-30 12:34:45.567',
     content: 'hey, nice feature',
   };
-  const comment_2 = {
+  const commentTwo = {
     comment_id: 2,
     author: 'troll@example.com',
     created: '2022-08-30 12:34:45.567',
@@ -41,14 +41,14 @@ describe('chromedash-activity-log', () => {
     const component = await fixture(
         html`<chromedash-activity-log
               .user=${null}
-              .feature=${feature_1}
-              .comments=${[comment_1, comment_2]}>
+              .feature=${featureOne}
+              .comments=${[commentOne, commentTwo]}>
              </chromedash-activity-log>`);
     const commentSection = component.shadowRoot.querySelector('.comment_section');
-    assert.include(commentSection.innerHTML, comment_1.author);
+    assert.include(commentSection.innerHTML, commentOne.author);
     assert.include(commentSection.innerHTML, '2022-08-30 12:34:45');
     assert.include(commentSection.innerHTML, 'hey, nice feature');
-    assert.include(commentSection.innerHTML, comment_2.author);
+    assert.include(commentSection.innerHTML, commentTwo.author);
     assert.include(commentSection.innerHTML, '2022-08-30 12:34:45');
     assert.include(commentSection.innerHTML, 'mean stuff');
     // TODO: Fails on firefox.  See issue #2186.
@@ -61,8 +61,8 @@ describe('chromedash-activity-log', () => {
     const component = await fixture(
         html`<chromedash-activity-log
               .user=${nonAdminUser}
-              .feature=${feature_1}
-              .comments=${[comment_1, comment_2]}>
+              .feature=${featureOne}
+              .comments=${[commentOne, commentTwo]}>
              </chromedash-activity-log>`);
     const commentSection = component.shadowRoot.querySelector('.comment_section');
     assert.include(commentSection.innerHTML, 'hey, nice feature');
@@ -85,7 +85,7 @@ describe('chromedash-activity-log', () => {
     const component = await fixture(
         html`<chromedash-activity-log
               .user=${nonAdminUser}
-              .feature=${feature_1}
+              .feature=${featureOne}
               .comments=${[deletedComment]}>
              </chromedash-activity-log>`);
     const commentSection = component.shadowRoot.querySelector('.comment_section');
@@ -109,7 +109,7 @@ describe('chromedash-activity-log', () => {
     const component = await fixture(
         html`<chromedash-activity-log
               .user=${nonAdminUser}
-              .feature=${feature_1}
+              .feature=${featureOne}
               .comments=${[doomedComment]}>
              </chromedash-activity-log>`);
     const before = component.shadowRoot.querySelector('.comment_section');
@@ -138,7 +138,7 @@ describe('chromedash-activity-log', () => {
     const component = await fixture(
         html`<chromedash-activity-log
               .user=${nonAdminUser}
-              .feature=${feature_1}
+              .feature=${featureOne}
               .comments=${[blessedComment]}>
              </chromedash-activity-log>`);
     const before = component.shadowRoot.querySelector('.comment_section');
