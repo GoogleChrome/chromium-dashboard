@@ -18,20 +18,21 @@
 import os
 import json
 import logging
+import settings
 
 from google.cloud import ndb
 import redis
 import fakeredis
 
+redis_client = None
 
-UNIT_TEST_MODE = os.environ['SERVER_SOFTWARE'].startswith('test')
-if not UNIT_TEST_MODE:
+if settings.UNIT_TEST_MODE:
+  redis_client = fakeredis.FakeStrictRedis(decode_responses=True)
+elif settings.STAGING or settings.PROD:
   # Create a Redis client.
   redis_host = os.environ.get('REDISHOST', 'localhost')
   redis_port = int(os.environ.get('REDISPORT', 6379))
   redis_client = redis.Redis(host=redis_host, port=redis_port, decode_responses=True)
-else:
-  redis_client = fakeredis.FakeStrictRedis(decode_responses=True)
 
 
 def set(key, value, time=None):
@@ -41,6 +42,9 @@ def set(key, value, time=None):
 
   ``time`` sets the expire time for this key, in seconds.
   """
+  if redis_client is None:
+    return
+
   if not isinstance(value, str):
     logging.info(
         'value %s is not an instance of str, abort set caching', value)
@@ -57,11 +61,17 @@ def get(key):
   Redis GET gets the value of key. Return nil if ``key`` does not
   exist; return an error if the value returned is not a str.
   """
+  if redis_client is None:
+    return None
+
   return redis_client.get(key)
 
 
 def get_multi(keys):
   """Return the values of all given keys."""
+  if redis_client is None:
+    return None
+
   vals = redis_client.mget(keys)
   return dict(zip(keys, vals))
 
@@ -72,6 +82,9 @@ def set_multi(entries, time=None):
 
   ``time`` sets the expire time for this key, in seconds.
   """
+  if redis_client is None:
+    return
+
   data_entries = {}
   for key in entries:
     if not isinstance(entries[key], str):
@@ -91,11 +104,17 @@ def set_multi(entries, time=None):
 
 def delete(key):
   """Redis DEL removes the value to the key, https://redis.io/commands/del/."""
+  if redis_client is None:
+    return
+
   redis_client.delete(key)
 
 
 def flushall():
   """Delete all the keys in Redis, https://redis.io/commands/flushall/."""
+  if redis_client is None:
+    return
+
   redis_client.flushall()
 
 def serialize_non_str(data):
