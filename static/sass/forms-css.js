@@ -221,6 +221,7 @@ export const FORM_STYLES = [
     }
 
     h3 sl-skeleton {
+      margin-top: 1em;
       width: 30%;
       height: 1.5em;
     }

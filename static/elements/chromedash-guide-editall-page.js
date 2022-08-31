@@ -92,7 +92,7 @@ export class ChromedashGuideEditallPage extends LitElement {
   renderSkeletons() {
     return html`
       <h3><sl-skeleton effect="sheen"></sl-skeleton></h3>
-      <section id="metadata">
+      <section class="flat_form">
         <h3><sl-skeleton effect="sheen"></sl-skeleton></h3>
         <p>
           <sl-skeleton effect="sheen"></sl-skeleton>
@@ -102,7 +102,7 @@ export class ChromedashGuideEditallPage extends LitElement {
         </p>
       </section>
       <h3><sl-skeleton effect="sheen"></sl-skeleton></h3>
-      <section id="metadata">
+      <section class="flat_form">
         <h3><sl-skeleton effect="sheen"></sl-skeleton></h3>
         <p>
           <sl-skeleton effect="sheen"></sl-skeleton>
