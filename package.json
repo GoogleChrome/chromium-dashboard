@@ -4,7 +4,7 @@
   "homepage": "https://www.chromestatus.com",
   "private": true,
   "engines": {
-    "node": ">=6.0.0"
+    "node": ">=12.0.0"
   },
   "scripts": {
     "setup": "npm ci; python3.9 -m venv cs-env; npm run deps",
@@ -46,7 +46,7 @@
     "@babel/preset-env": "^7.6.2",
     "@babel/register": "^7.18.9",
     "@open-wc/testing": "^3.1.6",
-    "@shoelace-style/shoelace": "^2.0.0-beta.80",
+    "@shoelace-style/shoelace": "^2.0.0-beta.81",
     "@web/test-runner": "^0.14.0",
     "@web/test-runner-playwright": "^0.8.10",
     "acorn": ">=8.8.0",
@@ -64,14 +64,14 @@
     "gulp-eslint": "^6.0.0",
     "gulp-eslint-if-fixed": "^1.0.0",
     "gulp-license": "^1.1.0",
-    "gulp-load-plugins": "^2.0.7",
+    "gulp-load-plugins": "^2.0.8",
     "gulp-minify-html": "^1.0.6",
     "gulp-rename": "^2.0.0",
     "gulp-sass": "^4.0.1",
     "gulp-uglify-es": "^3.0.0",
     "gulp-util": "^3.0.7",
     "http2-push-manifest": "^1.0.0",
-    "ini": ">=3.0.0",
+    "ini": ">=3.0.1",
     "kind-of": ">=6.0.3",
     "lit-analyzer": "^1.1.9",
     "lodash": ">=4.17.21",
@@ -88,13 +88,12 @@
     "sw-precache": "^5.2.1",
     "sw-toolbox": "^3.6.0",
     "tar": ">=3.2.3",
-    "trim-newlines": ">=3.0.1"
+    "trim-newlines": ">=4.0.2"
   },
   "dependencies": {
     "@polymer/iron-collapse": "^3.0.1",
     "@polymer/iron-icon": "^3.0.1",
     "@polymer/iron-iconset-svg": "^3.0.1",
-    "autolinker": "^3.15.0",
     "lit": "^2",
     "node-fetch": ">=3.2.10",
     "node-sass": ">=4.13.1",

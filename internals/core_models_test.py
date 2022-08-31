@@ -19,7 +19,8 @@ from unittest import mock
 from framework import rediscache
 from framework import users
 
-from internals import models
+from internals import core_enums
+from internals import core_models
 
 
 class MockQuery(object):
@@ -33,72 +34,40 @@ class MockQuery(object):
 
 class ModelsFunctionsTest(testing_config.CustomTestCase):
 
-  def test_convert_enum_int_to_string__not_an_enum(self):
-    """If the property is not an enum, just use the property value."""
-    actual = models.convert_enum_int_to_string(
-        'name', 'not an int')
-    self.assertEqual('not an int', actual)
-
-    actual = models.convert_enum_int_to_string(
-        'unknown property', 'something')
-    self.assertEqual('something', actual)
-
-  def test_convert_enum_int_to_string__not_an_int(self):
-    """We don't crash or convert when given non-numeric values."""
-    actual = models.convert_enum_int_to_string(
-        'impl_status_chrome', {'something': 'non-numeric'})
-    self.assertEqual(
-        {'something': 'non-numeric'},
-        actual)
-
-  def test_convert_enum_int_to_string__enum_found(self):
-    """We use the human-reable string if it is defined."""
-    actual = models.convert_enum_int_to_string(
-        'impl_status_chrome', models.NO_ACTIVE_DEV)
-    self.assertEqual(
-        models.IMPLEMENTATION_STATUS[models.NO_ACTIVE_DEV],
-        actual)
-
-  def test_convert_enum_int_to_string__enum_not_found(self):
-    """If we somehow don't have an emum string, use the ordinal."""
-    actual = models.convert_enum_int_to_string(
-        'impl_status_chrome', 99)
-    self.assertEqual(99, actual)
-
   def test_del_none(self):
     d = {}
     self.assertEqual(
         {},
-        models.del_none(d))
+        core_models.del_none(d))
 
     d = {1: 'one', 2: None, 3: {33: None}, 4:{44: 44, 45: None}}
     self.assertEqual(
         {1: 'one', 3: {}, 4: {44: 44}},
-        models.del_none(d))
+        core_models.del_none(d))
 
 
 class FeatureTest(testing_config.CustomTestCase):
 
   def setUp(self):
-    self.feature_2 = models.Feature(
+    self.feature_2 = core_models.Feature(
         name='feature b', summary='sum', owner=['feature_owner@example.com'],
         category=1, visibility=1, standardization=1, web_dev_views=1,
         impl_status_chrome=3)
     self.feature_2.put()
 
-    self.feature_1 = models.Feature(
+    self.feature_1 = core_models.Feature(
         name='feature a', summary='sum', owner=['feature_owner@example.com'],
         category=1, visibility=1, standardization=1, web_dev_views=1,
         impl_status_chrome=3)
     self.feature_1.put()
 
-    self.feature_4 = models.Feature(
+    self.feature_4 = core_models.Feature(
         name='feature d', summary='sum', owner=['feature_owner@example.com'],
         category=1, visibility=1, standardization=1, web_dev_views=1,
         impl_status_chrome=2)
     self.feature_4.put()
 
-    self.feature_3 = models.Feature(
+    self.feature_3 = core_models.Feature(
         name='feature c', summary='sum', owner=['feature_owner@example.com'],
         category=1, visibility=1, standardization=1, web_dev_views=1,
         impl_status_chrome=2)
@@ -113,7 +82,7 @@ class FeatureTest(testing_config.CustomTestCase):
 
   def test_get_all__normal(self):
     """We can retrieve a list of all features with no filter."""
-    actual = models.Feature.get_all(update_cache=True)
+    actual = core_models.Feature.get_all(update_cache=True)
     names = [f['name'] for f in actual]
     self.assertEqual(
         ['feature c', 'feature d', 'feature a', 'feature b'],
@@ -121,7 +90,7 @@ class FeatureTest(testing_config.CustomTestCase):
 
     self.feature_1.summary = 'revised summary'
     self.feature_1.put()  # Changes updated field.
-    actual = models.Feature.get_all(update_cache=True)
+    actual = core_models.Feature.get_all(update_cache=True)
     names = [f['name'] for f in actual]
     self.assertEqual(
         ['feature a', 'feature c', 'feature d', 'feature b'],
@@ -129,17 +98,17 @@ class FeatureTest(testing_config.CustomTestCase):
 
   def test_get_all__category(self):
     """We can retrieve a list of all features of a given category."""
-    actual = models.Feature.get_all(
-        filterby=('category', models.CSS), update_cache=True)
+    actual = core_models.Feature.get_all(
+        filterby=('category', core_enums.CSS), update_cache=True)
     names = [f['name'] for f in actual]
     self.assertEqual(
         [],
         names)
 
-    self.feature_1.category = models.CSS
+    self.feature_1.category = core_enums.CSS
     self.feature_1.put()  # Changes updated field.
-    actual = models.Feature.get_all(
-        filterby=('category', models.CSS), update_cache=True)
+    actual = core_models.Feature.get_all(
+        filterby=('category', core_enums.CSS), update_cache=True)
     names = [f['name'] for f in actual]
     self.assertEqual(
         ['feature a'],
@@ -147,7 +116,7 @@ class FeatureTest(testing_config.CustomTestCase):
 
   def test_get_all__owner(self):
     """We can retrieve a list of all features with a given owner."""
-    actual = models.Feature.get_all(
+    actual = core_models.Feature.get_all(
         filterby=('owner', 'owner@example.com'), update_cache=True)
     names = [f['name'] for f in actual]
     self.assertEqual(
@@ -156,7 +125,7 @@ class FeatureTest(testing_config.CustomTestCase):
 
     self.feature_1.owner = ['owner@example.com']
     self.feature_1.put()  # Changes updated field.
-    actual = models.Feature.get_all(
+    actual = core_models.Feature.get_all(
         filterby=('owner', 'owner@example.com'), update_cache=True)
     names = [f['name'] for f in actual]
     self.assertEqual(
@@ -169,7 +138,7 @@ class FeatureTest(testing_config.CustomTestCase):
     self.feature_2.owner = ['feature_owner@example.com']
     self.feature_2.put()
     testing_config.sign_in('feature_owner@example.com', 1234567890)
-    actual = models.Feature.get_all(update_cache=True)
+    actual = core_models.Feature.get_all(update_cache=True)
     names = [f['name'] for f in actual]
     testing_config.sign_out()
     self.assertEqual(
@@ -181,7 +150,7 @@ class FeatureTest(testing_config.CustomTestCase):
     self.feature_2.editors = ['feature_editor@example.com']
     self.feature_2.put()
     testing_config.sign_in("feature_editor@example.com", 1234567890)
-    actual = models.Feature.get_all(update_cache=True)
+    actual = core_models.Feature.get_all(update_cache=True)
     names = [f['name'] for f in actual]
     testing_config.sign_out()
     self.assertEqual(
@@ -189,12 +158,12 @@ class FeatureTest(testing_config.CustomTestCase):
 
   def test_get_by_ids__empty(self):
     """A request to load zero features returns zero results."""
-    actual = models.Feature.get_by_ids([])
+    actual = core_models.Feature.get_by_ids([])
     self.assertEqual([], actual)
 
   def test_get_by_ids__cache_miss(self):
     """We can load features from datastore, and cache them for later."""
-    actual = models.Feature.get_by_ids([
+    actual = core_models.Feature.get_by_ids([
         self.feature_1.key.integer_id(),
         self.feature_2.key.integer_id()])
 
@@ -202,9 +171,9 @@ class FeatureTest(testing_config.CustomTestCase):
     self.assertEqual('feature a', actual[0]['name'])
     self.assertEqual('feature b', actual[1]['name'])
 
-    lookup_key_1 = '%s|%s' % (models.Feature.DEFAULT_CACHE_KEY,
+    lookup_key_1 = '%s|%s' % (core_models.Feature.DEFAULT_CACHE_KEY,
                               self.feature_1.key.integer_id())
-    lookup_key_2 = '%s|%s' % (models.Feature.DEFAULT_CACHE_KEY,
+    lookup_key_2 = '%s|%s' % (core_models.Feature.DEFAULT_CACHE_KEY,
                               self.feature_2.key.integer_id())
     self.assertEqual('feature a', rediscache.deserialize_non_str(rediscache.get(lookup_key_1))['name'])
     self.assertEqual('feature b', rediscache.deserialize_non_str(rediscache.get(lookup_key_2))['name'])
@@ -212,7 +181,7 @@ class FeatureTest(testing_config.CustomTestCase):
   def test_get_by_ids__cache_hit(self):
     """We can load features from redis."""
     cache_key = '%s|%s' % (
-        models.Feature.DEFAULT_CACHE_KEY, self.feature_1.key.integer_id())
+        core_models.Feature.DEFAULT_CACHE_KEY, self.feature_1.key.integer_id())
     cached_feature = {
       'name': 'fake cached_feature',
       'id': self.feature_1.key.integer_id(),
@@ -220,14 +189,14 @@ class FeatureTest(testing_config.CustomTestCase):
     }
     rediscache.set(cache_key, rediscache.serialize_non_str(cached_feature))
 
-    actual = models.Feature.get_by_ids([self.feature_1.key.integer_id()])
+    actual = core_models.Feature.get_by_ids([self.feature_1.key.integer_id()])
 
     self.assertEqual(1, len(actual))
     self.assertEqual(cached_feature, actual[0])
 
   def test_get_by_ids__batch_order(self):
     """Features are returned in the order of the given IDs."""
-    actual = models.Feature.get_by_ids([
+    actual = core_models.Feature.get_by_ids([
         self.feature_4.key.integer_id(),
         self.feature_1.key.integer_id(),
         self.feature_3.key.integer_id(),
@@ -243,12 +212,12 @@ class FeatureTest(testing_config.CustomTestCase):
   def test_get_by_ids__cached_correctly(self):
     """We should no longer be able to trigger bug #1647."""
     # Cache one to try to trigger the bug.
-    models.Feature.get_by_ids([
+    core_models.Feature.get_by_ids([
         self.feature_2.key.integer_id(),
         ])
 
     # Now do the lookup, but it would cache feature_2 at the key for feature_3.
-    models.Feature.get_by_ids([
+    core_models.Feature.get_by_ids([
         self.feature_4.key.integer_id(),
         self.feature_1.key.integer_id(),
         self.feature_3.key.integer_id(),
@@ -256,7 +225,7 @@ class FeatureTest(testing_config.CustomTestCase):
     ])
 
     # This would read the incorrect cache entry and use it.
-    actual = models.Feature.get_by_ids([
+    actual = core_models.Feature.get_by_ids([
         self.feature_4.key.integer_id(),
         self.feature_1.key.integer_id(),
         self.feature_3.key.integer_id(),
@@ -271,7 +240,7 @@ class FeatureTest(testing_config.CustomTestCase):
 
   def test_get_chronological__normal(self):
     """We can retrieve a list of features."""
-    actual = models.Feature.get_chronological()
+    actual = core_models.Feature.get_chronological()
     names = [f['name'] for f in actual]
     self.assertEqual(
         ['feature c', 'feature d', 'feature a', 'feature b'],
@@ -285,7 +254,7 @@ class FeatureTest(testing_config.CustomTestCase):
     """Unlisted features are not included in the list."""
     self.feature_2.unlisted = True
     self.feature_2.put()
-    actual = models.Feature.get_chronological()
+    actual = core_models.Feature.get_chronological()
     names = [f['name'] for f in actual]
     self.assertEqual(
         ['feature c', 'feature d', 'feature a'],
@@ -295,7 +264,7 @@ class FeatureTest(testing_config.CustomTestCase):
     """Unlisted features are included for users with edit access."""
     self.feature_2.unlisted = True
     self.feature_2.put()
-    actual = models.Feature.get_chronological(show_unlisted=True)
+    actual = core_models.Feature.get_chronological(show_unlisted=True)
     names = [f['name'] for f in actual]
     self.assertEqual(
         ['feature c', 'feature d', 'feature a', 'feature b'],
@@ -319,7 +288,7 @@ class FeatureTest(testing_config.CustomTestCase):
     self.feature_4.shipped_milestone = 2
     self.feature_4.put()
 
-    actual = models.Feature.get_in_milestone(milestone=1)
+    actual = core_models.Feature.get_in_milestone(milestone=1)
     removed = [f['name'] for f in actual['Removed']]
     enabled_by_default = [f['name'] for f in actual['Enabled by default']]
     self.assertEqual(
@@ -331,7 +300,7 @@ class FeatureTest(testing_config.CustomTestCase):
     self.assertEqual(6, len(actual))
 
     cache_key = '%s|%s|%s' % (
-        models.Feature.DEFAULT_CACHE_KEY, 'milestone', 1)
+        core_models.Feature.DEFAULT_CACHE_KEY, 'milestone', 1)
     cached_result = rediscache.deserialize_non_str(rediscache.get(cache_key))
     self.assertEqual(cached_result, actual)
 
@@ -355,7 +324,7 @@ class FeatureTest(testing_config.CustomTestCase):
     self.feature_4.shipped_milestone = 2
     self.feature_4.put()
 
-    actual = models.Feature.get_in_milestone(milestone=1)
+    actual = core_models.Feature.get_in_milestone(milestone=1)
     self.assertEqual(
         0,
         len(actual['Removed']))
@@ -379,7 +348,8 @@ class FeatureTest(testing_config.CustomTestCase):
     self.feature_4.shipped_milestone = 2
     self.feature_4.put()
 
-    actual = models.Feature.get_in_milestone(milestone=1, show_unlisted=True)
+    actual = core_models.Feature.get_in_milestone(
+        milestone=1, show_unlisted=True)
     self.assertEqual(
         1,
         len(actual['Removed']))
@@ -387,179 +357,11 @@ class FeatureTest(testing_config.CustomTestCase):
   def test_get_in_milestone__cached(self):
     """If there is something in the cache, we use it."""
     cache_key = '%s|%s|%s' % (
-        models.Feature.DEFAULT_CACHE_KEY, 'milestone', 1)
+        core_models.Feature.DEFAULT_CACHE_KEY, 'milestone', 1)
     cached_test_feature = {'test': [{'name': 'test_feature', 'unlisted': False}]}
     rediscache.set(cache_key, rediscache.serialize_non_str(cached_test_feature))
 
-    actual = models.Feature.get_in_milestone(milestone=1)
+    actual = core_models.Feature.get_in_milestone(milestone=1)
     self.assertEqual(
         cached_test_feature,
         actual)
-
-
-class ApprovalTest(testing_config.CustomTestCase):
-
-  def setUp(self):
-    self.feature_1 = models.Feature(
-        name='feature a', summary='sum', category=1, visibility=1,
-        standardization=1, web_dev_views=1, impl_status_chrome=3)
-    self.feature_1.put()
-    self.feature_1_id = self.feature_1.key.integer_id()
-    self.appr_1 = models.Approval(
-        feature_id=self.feature_1_id, field_id=1,
-        state=models.Approval.REVIEW_REQUESTED,
-        set_on=datetime.datetime.now() - datetime.timedelta(1),
-        set_by='one@example.com')
-    self.appr_1.put()
-    self.appr_2 = models.Approval(
-        feature_id=self.feature_1_id, field_id=1,
-        state=models.Approval.APPROVED,
-        set_on=datetime.datetime.now(),
-        set_by='two@example.com')
-    self.appr_2.put()
-    self.appr_3 = models.Approval(
-        feature_id=self.feature_1_id, field_id=1,
-        state=models.Approval.APPROVED,
-        set_on=datetime.datetime.now() + datetime.timedelta(1),
-        set_by='three@example.com')
-    self.appr_3.put()
-
-  def tearDown(self):
-    self.feature_1.key.delete()
-    for appr in models.Approval.query().fetch(None):
-      appr.key.delete()
-
-  def test_get_approvals(self):
-    """We can retrieve Approval entities."""
-    actual = models.Approval.get_approvals(feature_id=self.feature_1_id)
-    self.assertEqual(3, len(actual))
-    self.assertEqual(models.Approval.REVIEW_REQUESTED, actual[0].state)
-    self.assertEqual(models.Approval.APPROVED, actual[1].state)
-    self.assertEqual(
-        sorted(actual, key=lambda appr: appr.set_on),
-        actual)
-
-    actual = models.Approval.get_approvals(field_id=1)
-    self.assertEqual(models.Approval.REVIEW_REQUESTED, actual[0].state)
-    self.assertEqual(models.Approval.APPROVED, actual[1].state)
-
-    actual = models.Approval.get_approvals(
-        states={models.Approval.REVIEW_REQUESTED,
-                models.Approval.REVIEW_STARTED})
-    self.assertEqual(1, len(actual))
-
-    actual = models.Approval.get_approvals(set_by='one@example.com')
-    self.assertEqual(1, len(actual))
-    self.assertEqual(models.Approval.REVIEW_REQUESTED, actual[0].state)
-
-  def test_is_valid_state(self):
-    """We know what approval states are valid."""
-    self.assertTrue(
-        models.Approval.is_valid_state(models.Approval.REVIEW_REQUESTED))
-    self.assertFalse(models.Approval.is_valid_state(None))
-    self.assertFalse(models.Approval.is_valid_state('not an int'))
-    self.assertFalse(models.Approval.is_valid_state(999))
-
-  def test_set_approval(self):
-    """We can set an Approval entity."""
-    models.Approval.set_approval(
-        self.feature_1_id, 2, models.Approval.REVIEW_REQUESTED,
-        'owner@example.com')
-    self.assertEqual(
-        4,
-        len(models.Approval.query().fetch(None)))
-
-  def test_clear_request(self):
-    """We can clear a review request so that it is no longer pending."""
-    self.appr_1.state = models.Approval.REVIEW_REQUESTED
-    self.appr_1.put()
-
-    models.Approval.clear_request(self.feature_1_id, 1)
-
-    remaining_apprs = models.Approval.get_approvals(
-        feature_id=self.feature_1_id, field_id=1,
-        states=[models.Approval.REVIEW_REQUESTED])
-    self.assertEqual([], remaining_apprs)
-
-
-class CommentTest(testing_config.CustomTestCase):
-
-  def setUp(self):
-    self.feature_1 = models.Feature(
-        name='feature a', summary='sum',  owner=['feature_owner@example.com'],
-        category=1, visibility=1, standardization=1, web_dev_views=1,
-        impl_status_chrome=3)
-    self.feature_1.put()
-    self.feature_1_id = self.feature_1.key.integer_id()
-    self.comment_1_1 = models.Comment(
-        feature_id=self.feature_1_id, field_id=1,
-        author='one@example.com',
-        content='some text')
-    self.comment_1_1.put()
-    self.comment_1_2 = models.Comment(
-        feature_id=self.feature_1_id, field_id=2,
-        author='one@example.com',
-        content='some other text')
-    self.comment_1_2.put()
-
-    self.feature_2 = models.Feature(
-        name='feature b', summary='sum', owner=['feature_owner@example.com'],
-        category=1, visibility=1, standardization=1, web_dev_views=1,
-        impl_status_chrome=3)
-    self.feature_2.put()
-    self.feature_2_id = self.feature_2.key.integer_id()
-
-  def tearDown(self):
-    self.feature_1.key.delete()
-    self.feature_2.key.delete()
-    for comm in models.Comment.query().fetch(None):
-      comm.key.delete()
-
-  def test_get_comments__none(self):
-    """We get [] if feature has no review comments."""
-    actual = models.Comment.get_comments(self.feature_2_id)
-    self.assertEqual([], actual)
-
-  def test_get_comments__some(self):
-    """We get review comments if the feature has some."""
-    actual = models.Comment.get_comments(self.feature_1_id)
-    self.assertEqual(2, len(actual))
-    self.assertEqual(
-        ['some text', 'some other text'],
-        [c.content for c in actual])
-
-  def test_get_comments__specific_fields(self):
-    """We get review comments for specific approval fields if requested."""
-    actual_1 = models.Comment.get_comments(self.feature_1_id, 1)
-    self.assertEqual(1, len(actual_1))
-    self.assertEqual('some text', actual_1[0].content)
-
-    actual_2 = models.Comment.get_comments(self.feature_1_id, 2)
-    self.assertEqual(1, len(actual_2))
-    self.assertEqual('some other text', actual_2[0].content)
-
-    actual_3 = models.Comment.get_comments(self.feature_1_id, 3)
-    self.assertEqual([], actual_3)
-
-
-class OwnersFileTest(testing_config.CustomTestCase):
-
-  def setUp(self):
-    now = datetime.datetime.now()
-    self.owner_file_1 = models.OwnersFile(url='abc', raw_content='foo', created_on=now)
-    self.owner_file_1.add_owner_file()
-
-    expired = now - datetime.timedelta(hours=3)
-    self.owner_file_2 = models.OwnersFile(url='def', raw_content='bar', created_on=expired)
-    self.owner_file_2.add_owner_file()
-
-  def tearDown(self):
-    self.owner_file_1.key.delete()
-    self.owner_file_2.key.delete()
-
-  def test_get_raw_owner_file(self):
-    raw_content = models.OwnersFile.get_raw_owner_file('abc')
-    self.assertEqual('foo', raw_content)
-
-    expired_content = models.OwnersFile.get_raw_owner_file('def')
-    self.assertEqual(None, expired_content)

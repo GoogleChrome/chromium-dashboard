@@ -26,16 +26,29 @@ const
 export const ALL_FIELDS = {
 
   'name': {
+    type: 'input',
+    input_type: 'text',
+    required: true,
     label: 'Feature name',
     help_text: html`
-        <p>Capitalize only the first letter and the beginnings of proper nouns.</p>
-        <a target="_blank"
-            href="https://github.com/GoogleChrome/chromium-dashboard/wiki/EditingHelp#feature-name">
-          Learn more</a>.
-        <a target="_blank"
-            href="https://github.com/GoogleChrome/chromium-dashboard/wiki/EditingHelp#feature-name-example">
-          Example</a>.
-      `,
+        <p>Capitalize only the first letter and the beginnings of proper nouns.</p>`,
+    extra_help: html`
+    <p>
+    Each feature should have a unique name that is written as a noun phrase.
+    </p>
+    <ul>
+      <li>Capitalize only the first letter and the beginnings of proper nouns.</li>
+      <li>Avoid using verbs such as "add", "enhance", "deprecate", or "delete". Instead, simply name the feature itself and use the feature type and stage fields to indicate the intent of change.</li>
+      <li>Do not include markup or markdown because they will not be rendered..</li>
+      <li>Write keywords and identifiers as they would appear to a web developer, not as they are in source code. For example, a method implemented as NewInterface#dostuff would be written as in JavaScript: NewInterface.doStuff().</li>
+    </ul>
+
+    <h4>Examples</h4>
+    <ul>
+      <li>Conversion Measurement API</li>
+      <li>CSS Flexbox: intrinsic size algorithm</li>
+      <li>Permissions-Policy header</li>
+    </ul>`,
   },
 
   'summary': {
@@ -49,17 +62,38 @@ export const ALL_FIELDS = {
         manner and in the present tense. (This summary will be visible long after
         your project is finished.) Avoid language such as "a new feature" and
         "we propose".</p>
-
-        <a target="_blank"
-            href="https://github.com/GoogleChrome/chromium-dashboard/wiki/EditingHelp#summary">
-          Learn more</a>.
-        <a target="_blank"
-            href="https://github.com/GoogleChrome/chromium-dashboard/wiki/EditingHelp#example-1">
-          Example</a>.
       `,
+    extra_help: html`
+    <p>
+    Provide a one sentence description followed by one or two lines explaining how this feature works and how it helps web developers.
+    </p>
+
+    <p>
+    Note: This text communicates with more than just the rest of Chromium development. It's the part most visible to external readers and is used in the beta release announcement, enterprise release notes, and other commuinications.
+    </p>
+
+    <ul>
+      <li>Write from a web developer's point of view, not a browser developer's</li>
+      <li>Do not use markup or markdown because they will not be rendered.</li>
+      <li>Do not use hard or soft returns because they will not be rendered.</li>
+      <li>Avoid phrases such as "a new feature". Every feature on the site was new when it was created. You don't need to repeat that information.</li>
+
+      <li>The first line should be a sentence fragment beginning with a verb. (See below.) This is the rare exception to the requirement to always use complete sentences.</li>
+
+      <li>"Conformance with spec" is not adequate. Most if not all features are in conformance to spec.</li>
+    </ul>
+
+    <h4>Example</h4>
+    <blockquote>
+    Splits the HTTP cache using the top frame origin (and possibly subframe origin) to prevent documents from one origin from knowing whether a resource from another origin was cached. The HTTP cache is currently one per profile, with a single namespace for all resources and subresources regardless of origin or renderer process. Splitting the cache on top frame origins helps the browser deflect side-channel attacks where one site can detect resources in another site's cache.
+    </blockquote>
+    `,
   },
 
   'owner': {
+    type: 'input',
+    input_type: 'multi-email',
+    required: true,
     label: 'Feature owners',
     help_text: html`
         Comma separated list of full email addresses. Accounts
@@ -67,6 +101,9 @@ export const ALL_FIELDS = {
   },
 
   'editors': {
+    type: 'input',
+    input_type: 'multi-email',
+    required: false,
     label: 'Feature editors',
     help_text: html`
         Comma separated list of full email addresses. These users will be allowed to edit this feature, but will not be listed as feature owners.`,
@@ -139,6 +176,9 @@ export const ALL_FIELDS = {
   },
 
   'search_tags': {
+    type: 'input',
+    input_type: 'text',
+    required: false,
     label: 'Search tags',
     help_text: html`
         Comma separated keywords used only in search.`,
@@ -153,6 +193,9 @@ export const ALL_FIELDS = {
   },
 
   'bug_url': {
+    type: 'input',
+    input_type: 'url',
+    required: false,
     label: 'Tracking bug URL',
     help_text: html`
         Tracking bug url (https://bugs.chromium.org/...).
@@ -166,6 +209,9 @@ export const ALL_FIELDS = {
   },
 
   'launch_bug_url': {
+    type: 'input',
+    input_type: 'url',
+    required: false,
     label: 'Launch bug URL',
     help_text: html`
         Launch bug url (https://bugs.chromium.org/...) to track launch approvals.
@@ -212,6 +258,9 @@ export const ALL_FIELDS = {
   },
 
   'initial_public_proposal_url': {
+    type: 'input',
+    input_type: 'url',
+    required: false,
     label: 'Initial public proposal URL',
     help_text: html`
         Link to the first public proposal to create this feature, e.g.,
@@ -229,6 +278,9 @@ export const ALL_FIELDS = {
   },
 
   'spec_link': {
+    type: 'input',
+    input_type: 'url',
+    required: false,
     label: 'Spec link',
     help_text: html`
         Link to the spec, if and when available. When implementing
@@ -259,6 +311,9 @@ export const ALL_FIELDS = {
   },
 
   'spec_mentors': {
+    type: 'input',
+    input_type: 'multi-email',
+    required: false,
     label: 'Spec mentor',
     help_text: html`
         Experienced
@@ -269,6 +324,9 @@ export const ALL_FIELDS = {
   },
 
   'intent_to_implement_url': {
+    type: 'input',
+    input_type: 'url',
+    required: false,
     label: 'Intent to Prototype link',
     help_text: html`
         After you have started the "Intent to Prototype"
@@ -325,24 +383,36 @@ export const ALL_FIELDS = {
   },
 
   'intent_to_ship_url': {
+    type: 'input',
+    input_type: 'url',
+    required: false,
     label: 'Intent to Ship link',
     help_text: html`After you have started the "Intent to Ship" discussion
                 thread, link to it here.`,
   },
 
   'ready_for_trial_url': {
+    type: 'input',
+    input_type: 'url',
+    required: false,
     label: 'Ready for Trial link',
     help_text: html`After you have started the "Ready for Trial" discussion
                 thread, link to it here.`,
   },
 
   'intent_to_experiment_url': {
+    type: 'input',
+    input_type: 'url',
+    required: false,
     label: 'Intent to Experiment link',
     help_text: html`After you have started the "Intent to Experiment"
                  discussion thread, link to it here.`,
   },
 
   'intent_to_extend_experiment_url': {
+    type: 'input',
+    input_type: 'url',
+    required: false,
     label: 'Intent to Extend Experiment link',
     help_text: html`If this feature has an "Intent to Extend Experiment"
                  discussion thread, link to it here.`,
@@ -350,6 +420,9 @@ export const ALL_FIELDS = {
 
   'r4dt_url': {
     // Sets intent_to_experiment_url in DB
+    type: 'input',
+    input_type: 'url',
+    required: false,
     label: 'Request for Deprecation Trial link',
     help_text: html`After you have started the "Request for Deprecation Trial"
                 discussion thread, link to it here.`,
@@ -387,6 +460,9 @@ export const ALL_FIELDS = {
   },
 
   'safari_views_link': {
+    type: 'input',
+    input_type: 'url',
+    required: false,
     label: '',
     help_text: html`Citation link.`,
   },
@@ -406,6 +482,9 @@ export const ALL_FIELDS = {
   },
 
   'ff_views_link': {
+    type: 'input',
+    input_type: 'url',
+    required: false,
     label: '',
     help_text: html`
     Citation link.`,
@@ -427,6 +506,9 @@ export const ALL_FIELDS = {
   },
 
   'web_dev_views_link': {
+    type: 'input',
+    input_type: 'url',
+    required: false,
     label: '',
     help_text: html`
       Citation link.`,
@@ -519,6 +601,9 @@ export const ALL_FIELDS = {
   },
 
   'ot_milestone_desktop_start': {
+    type: 'input',
+    input_type: 'milestone-number',
+    required: false,
     label: 'OT desktop start',
     help_text: html`
       First desktop milestone that will support an origin
@@ -526,6 +611,9 @@ export const ALL_FIELDS = {
   },
 
   'ot_milestone_desktop_end': {
+    type: 'input',
+    input_type: 'milestone-number',
+    required: false,
     label: 'OT desktop end',
     help_text: html`
       Last desktop milestone that will support an origin
@@ -533,6 +621,9 @@ export const ALL_FIELDS = {
   },
 
   'ot_milestone_android_start': {
+    type: 'input',
+    input_type: 'milestone-number',
+    required: false,
     label: 'OT Android start',
     help_text: html`
       First android milestone that will support an origin
@@ -540,6 +631,9 @@ export const ALL_FIELDS = {
   },
 
   'ot_milestone_android_end': {
+    type: 'input',
+    input_type: 'milestone-number',
+    required: false,
     label: 'OT Android end',
     help_text: html`
       Last android milestone that will support an origin
@@ -547,6 +641,9 @@ export const ALL_FIELDS = {
   },
 
   'ot_milestone_webview_start': {
+    type: 'input',
+    input_type: 'milestone-number',
+    required: false,
     label: 'OT WebView start',
     help_text: html`
       First WebView milestone that will support an origin
@@ -554,6 +651,9 @@ export const ALL_FIELDS = {
   },
 
   'ot_milestone_webview_end': {
+    type: 'input',
+    input_type: 'milestone-number',
+    required: false,
     label: 'OT WebView end',
     help_text: html`
       Last WebView milestone that will support an origin
@@ -585,6 +685,9 @@ export const ALL_FIELDS = {
   },
 
   'origin_trial_feedback_url': {
+    type: 'input',
+    input_type: 'url',
+    required: false,
     label: 'Origin trial feedback summary',
     help_text: html`
       If your feature was available as an origin trial, link to a summary
@@ -603,6 +706,9 @@ export const ALL_FIELDS = {
   },
 
   'finch_url': {
+    type: 'input',
+    input_type: 'url',
+    required: false,
     label: 'Finch experiment',
     help_text: html`
       If your feature will roll out gradually via a
@@ -611,6 +717,9 @@ export const ALL_FIELDS = {
   },
 
   'i2e_lgtms': {
+    type: 'input',
+    input_type: 'multi-email',
+    required: false,
     label: 'Intent to Experiment LGTM by',
     help_text: html`
       Full email address of API owner who LGTM\'d the
@@ -618,6 +727,9 @@ export const ALL_FIELDS = {
   },
 
   'i2s_lgtms': {
+    type: 'input',
+    input_type: 'multi-email',
+    required: false,
     label: 'Intent to Ship LGTMs by',
     help_text: html`
       Comma separated list of
@@ -627,6 +739,9 @@ export const ALL_FIELDS = {
 
   'r4dt_lgtms': {
     // Sets i2e_lgtms field.
+    type: 'input',
+    input_type: 'multi-email',
+    required: false,
     label: 'Request for Deprecation Trial LGTM by',
     help_text: html`
       Full email addresses of API owners who LGTM\'d
@@ -696,27 +811,42 @@ export const ALL_FIELDS = {
   },
 
   'devrel': {
+    type: 'input',
+    input_type: 'multi-email',
+    required: false,
     label: 'Developer relations emails',
     help_text: html`
       Comma separated list of full email addresses.`,
   },
 
   'shipped_milestone': {
+    type: 'input',
+    input_type: 'milestone-number',
+    required: false,
     label: 'Chrome for desktop',
     help_text: SHIPPED_HELP_TXT,
   },
 
   'shipped_android_milestone': {
+    type: 'input',
+    input_type: 'milestone-number',
+    required: false,
     label: 'Chrome for Android',
     help_text: SHIPPED_HELP_TXT,
   },
 
   'shipped_ios_milestone': {
+    type: 'input',
+    input_type: 'milestone-number',
+    required: false,
     label: 'Chrome for iOS (RARE)',
     help_text: SHIPPED_HELP_TXT,
   },
 
   'shipped_webview_milestone': {
+    type: 'input',
+    input_type: 'milestone-number',
+    required: false,
     label: 'Android Webview',
     help_text: SHIPPED_WEBVIEW_HELP_TXT,
   },
@@ -736,6 +866,9 @@ export const ALL_FIELDS = {
   },
 
   'devtrial_instructions': {
+    type: 'input',
+    input_type: 'url',
+    required: false,
     label: 'DevTrial instructions',
     help_text: html`
         Link to a HOWTO or FAQ describing how developers can get started
@@ -750,6 +883,9 @@ export const ALL_FIELDS = {
   },
 
   'dt_milestone_desktop_start': {
+    type: 'input',
+    input_type: 'milestone-number',
+    required: false,
     label: 'DevTrial on desktop',
     help_text: html`
       First milestone that allows web developers to try
@@ -759,6 +895,9 @@ export const ALL_FIELDS = {
   },
 
   'dt_milestone_android_start': {
+    type: 'input',
+    input_type: 'milestone-number',
+    required: false,
     label: 'DevTrial on Android',
     help_text: html`
       First milestone that allows web developers to try
@@ -768,6 +907,9 @@ export const ALL_FIELDS = {
   },
 
   'dt_milestone_ios_start': {
+    type: 'input',
+    input_type: 'milestone-number',
+    required: false,
     label: 'DevTrial on iOS (RARE)',
     help_text: html`
       First milestone that allows web developers to try
@@ -777,6 +919,9 @@ export const ALL_FIELDS = {
   },
 
   'flag_name': {
+    type: 'input',
+    input_type: 'text',
+    required: false,
     label: 'Flag name',
     help_text: html`
       Name of the flag on chrome://flags that enables this feature.`,

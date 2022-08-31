@@ -11,6 +11,7 @@ class ChromedashFeaturelist extends LitElement {
 
   static get properties() {
     return {
+      user: {type: Object},
       isSiteEditor: {type: Boolean},
       canApprove: {type: Boolean},
       signedInUser: {type: String},
@@ -26,6 +27,7 @@ class ChromedashFeaturelist extends LitElement {
 
   constructor() {
     super();
+    this.user = {};
     this.features = [];
     this.editableFeatures = [];
     this.filtered = [];
@@ -177,7 +179,7 @@ class ChromedashFeaturelist extends LitElement {
   }
 
   _onOpenApprovals(e) {
-    openApprovalsDialog(this.signedInUser, e.detail.feature);
+    openApprovalsDialog(this.user, e.detail.feature);
   }
 
   _filterProperty(propPath, regExp, feature) {
@@ -380,11 +382,6 @@ class ChromedashFeaturelist extends LitElement {
       filteredWithState = filteredWithState.slice(0, MAX_FEATURES_SHOWN);
     }
     return html`
-      <link rel="stylesheet" href="/static/css/elements/chromedash-featurelist.css">
-      <style>
-        .item {width: 100%}
-      </style>
-
       ${filteredWithState.map((item) => html`
           <div class="item">
             <div ?hidden="${this._computeMilestoneHidden(item.feature, this.features, this.filtered)}"

@@ -24,7 +24,8 @@ from google.cloud import ndb
 from framework import users
 
 from internals import approval_defs
-from internals import models
+from internals import core_enums
+from internals import core_models
 from internals import notifier
 from internals import user_models
 import settings
@@ -33,7 +34,7 @@ import settings
 class EmailFormattingTest(testing_config.CustomTestCase):
 
   def setUp(self):
-    self.feature_1 = models.Feature(
+    self.feature_1 = core_models.Feature(
         name='feature one', summary='sum', owner=['feature_owner@example.com'],
         ot_milestone_desktop_start=100,
         editors=['feature_editor@example.com', 'owner_1@example.com'],
@@ -56,7 +57,7 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     self.watcher_1.put()
     self.changes = [dict(prop_name='test_prop', new_val='test new value',
                     old_val='test old value')]
-    self.feature_2 = models.Feature(
+    self.feature_2 = core_models.Feature(
         name='feature two', summary='sum', owner=['feature_owner@example.com'],
         editors=['feature_editor@example.com', 'owner_1@example.com'],
         category=1, visibility=1, standardization=1, web_dev_views=1,
@@ -384,15 +385,15 @@ class EmailFormattingTest(testing_config.CustomTestCase):
 class FeatureStarTest(testing_config.CustomTestCase):
 
   def setUp(self):
-    self.feature_1 = models.Feature(
+    self.feature_1 = core_models.Feature(
         name='feature one', summary='sum', category=1, visibility=1,
         standardization=1, web_dev_views=1, impl_status_chrome=1)
     self.feature_1.put()
-    self.feature_2 = models.Feature(
+    self.feature_2 = core_models.Feature(
         name='feature two', summary='sum', category=1, visibility=1,
         standardization=1, web_dev_views=1, impl_status_chrome=1)
     self.feature_2.put()
-    self.feature_3 = models.Feature(
+    self.feature_3 = core_models.Feature(
         name='feature three', summary='sum', category=1, visibility=1,
         standardization=1, web_dev_views=1, impl_status_chrome=1)
     self.feature_3.put()
@@ -418,7 +419,7 @@ class FeatureStarTest(testing_config.CustomTestCase):
     self.assertEqual(email, actual.email)
     self.assertEqual(feature_id, actual.feature_id)
     self.assertTrue(actual.starred)
-    updated_feature = models.Feature.get_by_id(feature_id)
+    updated_feature = core_models.Feature.get_by_id(feature_id)
     self.assertEqual(1, updated_feature.star_count)
 
     notifier.FeatureStar.set_star(email, feature_id, starred=False)
@@ -426,7 +427,7 @@ class FeatureStarTest(testing_config.CustomTestCase):
     self.assertEqual(email, actual.email)
     self.assertEqual(feature_id, actual.feature_id)
     self.assertFalse(actual.starred)
-    updated_feature = models.Feature.get_by_id(feature_id)
+    updated_feature = core_models.Feature.get_by_id(feature_id)
     self.assertEqual(0, updated_feature.star_count)
 
   def test_get_user_stars__no_stars(self):
@@ -484,19 +485,19 @@ class MockResponse:
 class FeatureAccuracyHandlerTest(testing_config.CustomTestCase):
 
   def setUp(self):
-    self.feature_1 = models.Feature(
+    self.feature_1 = core_models.Feature(
         name='feature one', summary='sum', owner=['feature_owner@example.com'],
         category=1, visibility=1,
         standardization=1, web_dev_views=1, impl_status_chrome=1,
         ot_milestone_desktop_start=100)
     self.feature_1.put()
-    self.feature_2 = models.Feature(
+    self.feature_2 = core_models.Feature(
         name='feature two', summary='sum',
         owner=['owner_1@example.com', 'owner_2@example.com'],
         category=1, visibility=1, standardization=1,
         web_dev_views=1, impl_status_chrome=1, shipped_milestone=150)
     self.feature_2.put()
-    self.feature_3 = models.Feature(
+    self.feature_3 = core_models.Feature(
         name='feature three', summary='sum', category=1, visibility=1,
         standardization=1, web_dev_views=1, impl_status_chrome=1)
     self.feature_3.put()
@@ -540,7 +541,7 @@ class FunctionsTest(testing_config.CustomTestCase):
     quoted_msg_id = 'xxx%3Dyyy%40mail.gmail.com'
     impl_url = notifier.BLINK_DEV_ARCHIVE_URL_PREFIX + '123' + quoted_msg_id
     expr_url = notifier.TEST_ARCHIVE_URL_PREFIX + '456' + quoted_msg_id
-    self.feature_1 = models.Feature(
+    self.feature_1 = core_models.Feature(
         name='feature one', summary='sum', category=1, visibility=1,
         standardization=1, web_dev_views=1, impl_status_chrome=1,
         intent_to_implement_url=impl_url,
@@ -606,7 +607,7 @@ class FunctionsTest(testing_config.CustomTestCase):
 
   def test_generate_thread_subject__deprecation(self):
     """Deprecation intents use different subjects for most intents."""
-    self.feature_1.feature_type = models.FEATURE_TYPE_DEPRECATION_ID
+    self.feature_1.feature_type = core_enums.FEATURE_TYPE_DEPRECATION_ID
     self.assertEqual(
         'Intent to Deprecate and Remove: feature one',
         notifier.generate_thread_subject(

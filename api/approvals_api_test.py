@@ -20,7 +20,8 @@ from unittest import mock
 import werkzeug.exceptions  # Flask HTTP stuff.
 
 from api import approvals_api
-from internals import models
+from internals import core_models
+from internals import review_models
 
 test_app = flask.Flask(__name__)
 
@@ -30,7 +31,7 @@ NOW = datetime.datetime.now()
 class ApprovalsAPITest(testing_config.CustomTestCase):
 
   def setUp(self):
-    self.feature_1 = models.Feature(
+    self.feature_1 = core_models.Feature(
         name='feature one', summary='sum', category=1, visibility=1,
         standardization=1, web_dev_views=1, impl_status_chrome=1)
     self.feature_1.put()
@@ -39,33 +40,33 @@ class ApprovalsAPITest(testing_config.CustomTestCase):
     self.request_path = '/api/v0/features/%d/approvals' % self.feature_id
 
     # These are not in the datastore unless a specific test calls put().
-    self.appr_1_1 = models.Approval(
+    self.appr_1_1 = review_models.Approval(
         feature_id=self.feature_id, field_id=1,
         set_by='owner1@example.com', set_on=NOW,
-        state=models.Approval.APPROVED)
-    self.appr_1_2 = models.Approval(
+        state=review_models.Approval.APPROVED)
+    self.appr_1_2 = review_models.Approval(
         feature_id=self.feature_id, field_id=2,
         set_by='owner2@example.com', set_on=NOW,
-        state=models.Approval.NEED_INFO)
+        state=review_models.Approval.NEEDS_WORK)
 
     self.expected1 = {
         'feature_id': self.feature_id,
         'field_id': 1,
         'set_by': 'owner1@example.com',
         'set_on': str(NOW),
-        'state': models.Approval.APPROVED,
+        'state': review_models.Approval.APPROVED,
         }
     self.expected2 = {
         'feature_id': self.feature_id,
         'field_id': 2,
         'set_by': 'owner2@example.com',
         'set_on': str(NOW),
-        'state': models.Approval.NEED_INFO,
+        'state': review_models.Approval.NEEDS_WORK,
         }
 
   def tearDown(self):
     self.feature_1.key.delete()
-    for appr in models.Approval.query():
+    for appr in review_models.Approval.query():
       appr.key.delete()
 
   def test_get__all_empty(self):
@@ -159,7 +160,7 @@ class ApprovalsAPITest(testing_config.CustomTestCase):
   def test_post__feature_not_found(self):
     """Handler rejects requests that don't match an existing feature."""
     params = {'featureId': 12345, 'fieldId': 1,
-              'state': models.Approval.NEED_INFO }
+              'state': review_models.Approval.NEEDS_WORK }
     with test_app.test_request_context(self.request_path, json=params):
       with self.assertRaises(werkzeug.exceptions.NotFound):
         self.handler.do_post()
@@ -169,7 +170,7 @@ class ApprovalsAPITest(testing_config.CustomTestCase):
     """Handler rejects requests from anon users and non-approvers."""
     mock_get_approvers.return_value = ['owner1@example.com']
     params = {'featureId': self.feature_id, 'fieldId': 1,
-              'state': models.Approval.NEED_INFO}
+              'state': review_models.Approval.NEEDS_WORK}
 
     testing_config.sign_out()
     with test_app.test_request_context(self.request_path, json=params):
@@ -192,45 +193,45 @@ class ApprovalsAPITest(testing_config.CustomTestCase):
     mock_get_approvers.return_value = ['owner1@example.com']
     testing_config.sign_in('owner1@example.com', 123567890)
     params = {'featureId': self.feature_id, 'fieldId': 1,
-              'state': models.Approval.NEED_INFO}
+              'state': review_models.Approval.NEEDS_WORK}
     with test_app.test_request_context(self.request_path, json=params):
       actual = self.handler.do_post()
 
     self.assertEqual(actual, {'message': 'Done'})
-    updated_approvals = models.Approval.get_approvals(
+    updated_approvals = review_models.Approval.get_approvals(
         feature_id=self.feature_id)
     self.assertEqual(1, len(updated_approvals))
     appr = updated_approvals[0]
     self.assertEqual(appr.feature_id, self.feature_id)
     self.assertEqual(appr.field_id, 1)
     self.assertEqual(appr.set_by, 'owner1@example.com')
-    self.assertEqual(appr.state, models.Approval.NEED_INFO)
+    self.assertEqual(appr.state, review_models.Approval.NEEDS_WORK)
 
 
 class ApprovalConfigsAPITest(testing_config.CustomTestCase):
 
   def setUp(self):
-    self.feature_1 = models.Feature(
+    self.feature_1 = core_models.Feature(
         name='feature one', summary='sum', category=1, visibility=1,
         standardization=1, web_dev_views=1, impl_status_chrome=1)
     self.feature_1.put()
     self.feature_1_id = self.feature_1.key.integer_id()
-    self.config_1 = models.ApprovalConfig(
+    self.config_1 = review_models.ApprovalConfig(
         feature_id=self.feature_1_id, field_id=1,
         owners=['one_a@example.com', 'one_b@example.com'])
     self.config_1.put()
 
-    self.feature_2 = models.Feature(
+    self.feature_2 = core_models.Feature(
         name='feature two', summary='sum', category=1, visibility=1,
         standardization=1, web_dev_views=1, impl_status_chrome=1)
     self.feature_2.put()
     self.feature_2_id = self.feature_2.key.integer_id()
-    self.config_2 = models.ApprovalConfig(
+    self.config_2 = review_models.ApprovalConfig(
         feature_id=self.feature_2_id, field_id=2,
         owners=['two_a@example.com', 'two_b@example.com'])
     self.config_2.put()
 
-    self.feature_3 = models.Feature(
+    self.feature_3 = core_models.Feature(
         name='feature three', summary='sum', category=1, visibility=1,
         standardization=1, web_dev_views=1, impl_status_chrome=1)
     self.feature_3.put()
@@ -244,7 +245,7 @@ class ApprovalConfigsAPITest(testing_config.CustomTestCase):
     self.feature_1.key.delete()
     self.feature_2.key.delete()
     self.feature_3.key.delete()
-    for config in models.ApprovalConfig.query():
+    for config in review_models.ApprovalConfig.query():
       config.key.delete()
 
   @mock.patch('internals.approval_defs.get_approvers')
@@ -323,9 +324,9 @@ class ApprovalConfigsAPITest(testing_config.CustomTestCase):
       actual = self.handler.do_post(self.feature_1_id)
 
     self.assertEqual({'message': 'Done'}, actual)
-    revised_configs = models.ApprovalConfig.query(
-        models.ApprovalConfig.feature_id == self.feature_1_id).order(
-            models.ApprovalConfig.field_id).fetch(None)
+    revised_configs = review_models.ApprovalConfig.query(
+        review_models.ApprovalConfig.feature_id == self.feature_1_id).order(
+            review_models.ApprovalConfig.field_id).fetch(None)
     self.assertEqual(2, len(revised_configs))
     revised_config_3 = revised_configs[1]
     self.assertEqual(3, revised_config_3.field_id)
@@ -346,8 +347,8 @@ class ApprovalConfigsAPITest(testing_config.CustomTestCase):
       actual = self.handler.do_post(self.feature_1_id)
 
     self.assertEqual({'message': 'Done'}, actual)
-    revised_config = models.ApprovalConfig.query(
-        models.ApprovalConfig.feature_id == self.feature_1_id).fetch(None)[0]
+    revised_config = review_models.ApprovalConfig.query(
+        review_models.ApprovalConfig.feature_id == self.feature_1_id).fetch(None)[0]
     self.assertEqual(self.feature_1_id, revised_config.feature_id)
     self.assertEqual(1, revised_config.field_id)
     self.assertEqual(datetime.date.fromisoformat('2021-11-30'),
@@ -370,8 +371,8 @@ class ApprovalConfigsAPITest(testing_config.CustomTestCase):
       actual = self.handler.do_post(self.feature_1_id)
 
     self.assertEqual({'message': 'Done'}, actual)
-    revised_config = models.ApprovalConfig.query(
-        models.ApprovalConfig.feature_id == self.feature_1_id).fetch(None)[0]
+    revised_config = review_models.ApprovalConfig.query(
+        review_models.ApprovalConfig.feature_id == self.feature_1_id).fetch(None)[0]
     self.assertEqual(self.feature_1_id, revised_config.feature_id)
     self.assertEqual(1, revised_config.field_id)
     self.assertEqual(None, revised_config.next_action)
@@ -392,8 +393,8 @@ class ApprovalConfigsAPITest(testing_config.CustomTestCase):
       actual = self.handler.do_post(self.feature_3_id)
 
     self.assertEqual({'message': 'Done'}, actual)
-    new_config = models.ApprovalConfig.query(
-        models.ApprovalConfig.feature_id == self.feature_3_id).fetch(None)[0]
+    new_config = review_models.ApprovalConfig.query(
+        review_models.ApprovalConfig.feature_id == self.feature_3_id).fetch(None)[0]
     self.assertEqual(self.feature_3_id, new_config.feature_id)
     self.assertEqual(3, new_config.field_id)
     self.assertEqual(datetime.date.fromisoformat('2021-11-30'),

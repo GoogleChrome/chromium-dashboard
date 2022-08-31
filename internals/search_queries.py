@@ -15,7 +15,8 @@
 import logging
 
 from framework import utils
-from internals import models
+from internals import core_models
+from internals import review_models
 
 
 def single_field_query_async(
@@ -26,7 +27,7 @@ def single_field_query_async(
     logging.info('Ignoring field name %r', field_name)
     return []
   # TODO(jrobbins): support sorting by any fields of other model classes.
-  query = models.Feature.query()
+  query = core_models.Feature.query()
   # Note: We don't exclude deleted features, that's done by process_query.
 
   # TODO(jrobbins): Handle ":" operator as substrings for text fields.
@@ -68,7 +69,7 @@ def total_order_query_async(sort_spec):
   if descending:
     field = -field
   # TODO(jrobbins): support sorting by any fields of other model classes.
-  query = models.Feature.query().order(field)
+  query = core_models.Feature.query().order(field)
 
   keys_promise = query.fetch_async(keys_only=True)
   return keys_promise
@@ -93,106 +94,115 @@ def _sorted_by_joined_model(
 def sorted_by_pending_request_date(descending):
   """Return feature_ids of pending approvals sorted by request date."""
   return _sorted_by_joined_model(
-      models.Approval,
-      models.Approval.state == models.Approval.REVIEW_REQUESTED,
-      descending, models.Approval.set_on)
+      review_models.Approval,
+      review_models.Approval.state == review_models.Approval.REVIEW_REQUESTED,
+      descending, review_models.Approval.set_on)
 
 
 def sorted_by_review_date(descending):
   """Return feature_ids of reviewed approvals sorted by last review."""
   return _sorted_by_joined_model(
-      models.Approval,
-      models.Approval.state.IN(models.Approval.FINAL_STATES),
-      descending, models.Approval.set_on)
+      review_models.Approval,
+      review_models.Approval.state.IN(review_models.Approval.FINAL_STATES),
+      descending, review_models.Approval.set_on)
 
 
 QUERIABLE_FIELDS = {
-    'created.when': models.Feature.created,
-    'updated.when': models.Feature.updated,
-    'deleted': models.Feature.deleted,
+    'created.when': core_models.Feature.created,
+    'updated.when': core_models.Feature.updated,
+    'deleted': core_models.Feature.deleted,
 
     # TODO(jrobbins): We cannot query user fields because Cloud NDB does not
     # seem to support it.  We should migrate these to string fields.
     #'created.by': Feature.created_by,
     #'updated.by': Feature.updated_by,
 
-    'category': models.Feature.category,
-    'name': models.Feature.name,
-    'feature_type': models.Feature.feature_type,
-    'intent_stage': models.Feature.intent_stage,
-    'summary': models.Feature.summary,
-    'unlisted': models.Feature.unlisted,
-    'motivation': models.Feature.motivation,
-    'star_count': models.Feature.star_count,
-    'tags': models.Feature.search_tags,
-    'owner': models.Feature.owner,
-    'creator': models.Feature.creator,
-    'browsers.chrome.owners': models.Feature.owner,
-    'editors': models.Feature.editors,
-    'intent_to_implement_url': models.Feature.intent_to_implement_url,
-    'intent_to_ship_url': models.Feature.intent_to_ship_url,
-    'ready_for_trial_url': models.Feature.ready_for_trial_url,
-    'intent_to_experiment_url': models.Feature.intent_to_experiment_url,
+    'category': core_models.Feature.category,
+    'name': core_models.Feature.name,
+    'feature_type': core_models.Feature.feature_type,
+    'intent_stage': core_models.Feature.intent_stage,
+    'summary': core_models.Feature.summary,
+    'unlisted': core_models.Feature.unlisted,
+    'motivation': core_models.Feature.motivation,
+    'star_count': core_models.Feature.star_count,
+    'tags': core_models.Feature.search_tags,
+    'owner': core_models.Feature.owner,
+    'creator': core_models.Feature.creator,
+    'browsers.chrome.owners': core_models.Feature.owner,
+    'editors': core_models.Feature.editors,
+    'intent_to_implement_url': core_models.Feature.intent_to_implement_url,
+    'intent_to_ship_url': core_models.Feature.intent_to_ship_url,
+    'ready_for_trial_url': core_models.Feature.ready_for_trial_url,
+    'intent_to_experiment_url': core_models.Feature.intent_to_experiment_url,
     'intent_to_extend_experiment_url':
-        models.Feature.intent_to_extend_experiment_url,
-    'i2e_lgtms': models.Feature.i2e_lgtms,
-    'i2s_lgtms': models.Feature.i2s_lgtms,
-    'browsers.chrome.bug': models.Feature.bug_url,
-    'launch_bug_url': models.Feature.launch_bug_url,
-    'initial_public_proposal_url': models.Feature.initial_public_proposal_url,
-    'browsers.chrome.blink_components': models.Feature.blink_components,
-    'browsers.chrome.devrel': models.Feature.devrel,
-    'browsers.chrome.prefixed': models.Feature.prefixed,
+        core_models.Feature.intent_to_extend_experiment_url,
+    'i2e_lgtms': core_models.Feature.i2e_lgtms,
+    'i2s_lgtms': core_models.Feature.i2s_lgtms,
+    'browsers.chrome.bug': core_models.Feature.bug_url,
+    'launch_bug_url': core_models.Feature.launch_bug_url,
+    'initial_public_proposal_url':
+        core_models.Feature.initial_public_proposal_url,
+    'browsers.chrome.blink_components': core_models.Feature.blink_components,
+    'browsers.chrome.devrel': core_models.Feature.devrel,
+    'browsers.chrome.prefixed': core_models.Feature.prefixed,
 
-    'browsers.chrome.status': models.Feature.impl_status_chrome,
-    'browsers.chrome.desktop': models.Feature.shipped_milestone,
-    'browsers.chrome.android': models.Feature.shipped_android_milestone,
-    'browsers.chrome.ios': models.Feature.shipped_ios_milestone,
-    'browsers.chrome.webview': models.Feature.shipped_webview_milestone,
-    'requires_embedder_support': models.Feature.requires_embedder_support,
+    'browsers.chrome.status': core_models.Feature.impl_status_chrome,
+    'browsers.chrome.desktop': core_models.Feature.shipped_milestone,
+    'browsers.chrome.android': core_models.Feature.shipped_android_milestone,
+    'browsers.chrome.ios': core_models.Feature.shipped_ios_milestone,
+    'browsers.chrome.webview': core_models.Feature.shipped_webview_milestone,
+    'requires_embedder_support': core_models.Feature.requires_embedder_support,
 
-    'browsers.chrome.flag_name': models.Feature.flag_name,
-    'all_platforms': models.Feature.all_platforms,
-    'all_platforms_descr': models.Feature.all_platforms_descr,
-    'wpt': models.Feature.wpt,
+    'browsers.chrome.flag_name': core_models.Feature.flag_name,
+    'all_platforms': core_models.Feature.all_platforms,
+    'all_platforms_descr': core_models.Feature.all_platforms_descr,
+    'wpt': core_models.Feature.wpt,
     'browsers.chrome.devtrial.desktop.start':
-        models.Feature.dt_milestone_desktop_start,
+        core_models.Feature.dt_milestone_desktop_start,
     'browsers.chrome.devtrial.android.start':
-        models.Feature.dt_milestone_android_start,
+        core_models.Feature.dt_milestone_android_start,
     'browsers.chrome.devtrial.ios.start':
-        models.Feature.dt_milestone_ios_start,
+        core_models.Feature.dt_milestone_ios_start,
     'browsers.chrome.devtrial.webview.start':
-        models.Feature.dt_milestone_webview_start,
+        core_models.Feature.dt_milestone_webview_start,
 
-    'standards.maturity': models.Feature.standard_maturity,
-    'standards.spec': models.Feature.spec_link,
-    'standards.anticipated_spec_changes': models.Feature.anticipated_spec_changes,
-    'api_spec': models.Feature.api_spec,
-    'spec_mentors': models.Feature.spec_mentors,
-    'security_review_status': models.Feature.security_review_status,
-    'privacy_review_status': models.Feature.privacy_review_status,
-    'tag_review.url': models.Feature.tag_review,
-    'tag_review.status': models.Feature.tag_review_status,
-    'explainer': models.Feature.explainer_links,
+    'standards.maturity': core_models.Feature.standard_maturity,
+    'standards.spec': core_models.Feature.spec_link,
+    'standards.anticipated_spec_changes':
+        core_models.Feature.anticipated_spec_changes,
+    'api_spec': core_models.Feature.api_spec,
+    'spec_mentors': core_models.Feature.spec_mentors,
+    'security_review_status': core_models.Feature.security_review_status,
+    'privacy_review_status': core_models.Feature.privacy_review_status,
+    'tag_review.url': core_models.Feature.tag_review,
+    'tag_review.status': core_models.Feature.tag_review_status,
+    'explainer': core_models.Feature.explainer_links,
 
-    'browsers.ff.view': models.Feature.ff_views,
-    'browsers.safari.view': models.Feature.safari_views,
-    'browsers.webdev.view': models.Feature.web_dev_views,
-    'browsers.ff.view.url': models.Feature.ff_views_link,
-    'browsers.safari.view.url': models.Feature.safari_views_link,
-    'browsers.webdev.url.url': models.Feature.web_dev_views_link,
+    'browsers.ff.view': core_models.Feature.ff_views,
+    'browsers.safari.view': core_models.Feature.safari_views,
+    'browsers.webdev.view': core_models.Feature.web_dev_views,
+    'browsers.ff.view.url': core_models.Feature.ff_views_link,
+    'browsers.safari.view.url': core_models.Feature.safari_views_link,
+    'browsers.webdev.url.url': core_models.Feature.web_dev_views_link,
 
-    'resources.docs': models.Feature.doc_links,
-    'non_oss_deps': models.Feature.non_oss_deps,
+    'resources.docs': core_models.Feature.doc_links,
+    'non_oss_deps': core_models.Feature.non_oss_deps,
 
-    'browsers.chrome.ot.desktop.start': models.Feature.ot_milestone_desktop_start,
-    'browsers.chrome.ot.desktop.end': models.Feature.ot_milestone_desktop_end,
-    'browsers.chrome.ot.android.start': models.Feature.ot_milestone_android_start,
-    'browsers.chrome.ot.android.end': models.Feature.ot_milestone_android_end,
-    'browsers.chrome.ot.webview.start': models.Feature.ot_milestone_webview_start,
-    'browsers.chrome.ot.webview.end': models.Feature.ot_milestone_webview_end,
-    'browsers.chrome.ot.feedback_url': models.Feature.origin_trial_feedback_url,
-    'finch_url': models.Feature.finch_url,
+    'browsers.chrome.ot.desktop.start':
+        core_models.Feature.ot_milestone_desktop_start,
+    'browsers.chrome.ot.desktop.end':
+        core_models.Feature.ot_milestone_desktop_end,
+    'browsers.chrome.ot.android.start':
+        core_models.Feature.ot_milestone_android_start,
+    'browsers.chrome.ot.android.end':
+        core_models.Feature.ot_milestone_android_end,
+    'browsers.chrome.ot.webview.start':
+        core_models.Feature.ot_milestone_webview_start,
+    'browsers.chrome.ot.webview.end':
+        core_models.Feature.ot_milestone_webview_end,
+    'browsers.chrome.ot.feedback_url':
+        core_models.Feature.origin_trial_feedback_url,
+    'finch_url': core_models.Feature.finch_url,
     }
 
 SORTABLE_FIELDS = QUERIABLE_FIELDS.copy()

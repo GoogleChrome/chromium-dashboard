@@ -24,7 +24,7 @@ import flask
 import werkzeug
 
 from internals import approval_defs
-from internals import models
+from internals import review_models
 
 
 class FetchOwnersTest(testing_config.CustomTestCase):
@@ -118,24 +118,24 @@ class IsApprovedTest(testing_config.CustomTestCase):
 
   def setUp(self):
     feature_1_id = 123456
-    self.appr_nr = models.Approval(
+    self.appr_nr = review_models.Approval(
         feature_id=feature_1_id, field_id=1,
-        state=models.Approval.REVIEW_REQUESTED,
+        state=review_models.Approval.REVIEW_REQUESTED,
         set_on=datetime.datetime.now(),
         set_by='one@example.com')
-    self.appr_na = models.Approval(
+    self.appr_na = review_models.Approval(
         feature_id=feature_1_id, field_id=1,
-        state=models.Approval.NA,
+        state=review_models.Approval.NA,
         set_on=datetime.datetime.now(),
         set_by='one@example.com')
-    self.appr_no = models.Approval(
+    self.appr_no = review_models.Approval(
         feature_id=feature_1_id, field_id=1,
-        state=models.Approval.NOT_APPROVED,
+        state=review_models.Approval.NOT_APPROVED,
         set_on=datetime.datetime.now(),
         set_by='two@example.com')
-    self.appr_yes = models.Approval(
+    self.appr_yes = review_models.Approval(
         feature_id=feature_1_id, field_id=1,
-        state=models.Approval.APPROVED,
+        state=review_models.Approval.APPROVED,
         set_on=datetime.datetime.now(),
         set_by='three@example.com')
 

@@ -21,7 +21,7 @@ import werkzeug
 import html5lib
 
 from internals import core_enums
-from internals import models
+from internals import core_models
 from pages import featuredetail
 
 test_app = flask.Flask(__name__)
@@ -33,7 +33,7 @@ class TestWithFeature(testing_config.CustomTestCase):
   HANDLER_CLASS = 'subclasses fill this in'
 
   def setUp(self):
-    self.feature_1 = models.Feature(
+    self.feature_1 = core_models.Feature(
         name='feature one', summary='detailed sum', category=1, visibility=1,
         standardization=1, web_dev_views=1, impl_status_chrome=1,
         intent_stage=core_enums.INTENT_IMPLEMENT)

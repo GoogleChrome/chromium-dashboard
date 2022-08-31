@@ -17,51 +17,52 @@ import testing_config  # Must be imported before the module under test.
 import datetime
 from unittest import mock
 
-from internals import models
+from internals import core_models
+from internals import review_models
 from internals import search_queries
 
 
 class SearchFeaturesTest(testing_config.CustomTestCase):
 
   def setUp(self):
-    self.feature_1 = models.Feature(
+    self.feature_1 = core_models.Feature(
         name='feature a', summary='sum', owner=['owner@example.com'],
         category=1, visibility=1, standardization=1, web_dev_views=1,
         impl_status_chrome=3)
     self.feature_1.put()
     self.feature_1_id = self.feature_1.key.integer_id()
 
-    self.feature_2 = models.Feature(
+    self.feature_2 = core_models.Feature(
         name='feature b', summary='sum', owner=['owner@example.com'],
         category=1, visibility=1, standardization=1, web_dev_views=1,
         impl_status_chrome=3)
     self.feature_2.put()
     self.feature_2_id = self.feature_2.key.integer_id()
 
-    self.approval_1_1 = models.Approval(
+    self.approval_1_1 = review_models.Approval(
         feature_id=self.feature_1_id, field_id=1,
-        state=models.Approval.REVIEW_REQUESTED,
+        state=review_models.Approval.REVIEW_REQUESTED,
         set_on=datetime.datetime(2022, 7, 1),
         set_by='feature_owner@example.com')
     self.approval_1_1.put()
 
-    self.approval_1_2 = models.Approval(
+    self.approval_1_2 = review_models.Approval(
         feature_id=self.feature_1_id, field_id=1,
-        state=models.Approval.APPROVED,
+        state=review_models.Approval.APPROVED,
         set_on=datetime.datetime(2022, 7, 2),
         set_by='reviewer@example.com')
     self.approval_1_2.put()
 
-    self.approval_2_1 = models.Approval(
+    self.approval_2_1 = review_models.Approval(
         feature_id=self.feature_2_id, field_id=1,
-        state=models.Approval.REVIEW_REQUESTED,
+        state=review_models.Approval.REVIEW_REQUESTED,
         set_on=datetime.datetime(2022, 8, 1),
         set_by='feature_owner@example.com')
     self.approval_2_1.put()
 
-    self.approval_2_2 = models.Approval(
+    self.approval_2_2 = review_models.Approval(
         feature_id=self.feature_2_id, field_id=1,
-        state=models.Approval.APPROVED,
+        state=review_models.Approval.APPROVED,
         set_on=datetime.datetime(2022, 8, 2),
         set_by='reviewer@example.com')
     self.approval_2_2.put()
@@ -69,7 +70,7 @@ class SearchFeaturesTest(testing_config.CustomTestCase):
   def tearDown(self):
     self.feature_1.key.delete()
     self.feature_2.key.delete()
-    for appr in models.Approval.query():
+    for appr in review_models.Approval.query():
       appr.key.delete()
 
   def test_single_field_query_async__normal(self):

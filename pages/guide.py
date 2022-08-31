@@ -31,7 +31,7 @@ from framework import permissions
 from framework import utils
 from pages import guideforms
 from internals import core_enums
-from internals import models
+from internals import core_models
 from internals import processes
 import settings
 
@@ -76,13 +76,13 @@ STAGE_FORMS = {
 
 IMPL_STATUS_FORMS = {
     core_enums.INTENT_INCUBATE:
-        (None, guideforms.ImplStatus_Incubate),
+        ('', guideforms.ImplStatus_Incubate),
     core_enums.INTENT_EXPERIMENT:
         (core_enums.BEHIND_A_FLAG, guideforms.ImplStatus_DevTrial),
     core_enums.INTENT_EXTEND_TRIAL:
         (core_enums.ORIGIN_TRIAL, guideforms.ImplStatus_OriginTrial),
     core_enums.INTENT_IMPLEMENT_SHIP:
-        (None, guideforms.ImplStatus_EvalReadinessToShip),
+        ('', guideforms.ImplStatus_EvalReadinessToShip),
     core_enums.INTENT_SHIP:
         (core_enums.ENABLED_BY_DEFAULT, guideforms.ImplStatus_AllMilestones),
     core_enums.INTENT_SHIPPED:
@@ -134,7 +134,7 @@ class FeatureNew(basehandlers.FlaskHandler):
     signed_in_user = ndb.User(
         email=self.get_current_user().email(),
         _auth_domain='gmail.com')
-    feature = models.Feature(
+    feature = core_models.Feature(
         category=int(self.form.get('category')),
         name=self.form.get('name'),
         feature_type=feature_type,
@@ -170,10 +170,14 @@ class ProcessOverview(basehandlers.FlaskHandler):
         progress_so_far[progress_item] = str(detected)
     return progress_so_far
 
-  @permissions.require_edit_feature
   def get_template_data(self, feature_id):
+    # Validate the user has edit permissions and redirect if needed.
+    redirect_resp = permissions.validate_feature_edit_permission(
+        self, feature_id)
+    if redirect_resp:
+      return redirect_resp
 
-    f = models.Feature.get_by_id(int(feature_id))
+    f = core_models.Feature.get_by_id(int(feature_id))
     if f is None:
       self.abort(404, msg='Feature not found')
 
@@ -238,7 +242,7 @@ class FeatureEditStage(basehandlers.FlaskHandler):
 
   def get_feature_and_process(self, feature_id):
     """Look up the feature that the user wants to edit, and its process."""
-    f = models.Feature.get_by_id(feature_id)
+    f = core_models.Feature.get_by_id(feature_id)
     if f is None:
       self.abort(404, msg='Feature not found')
 
@@ -247,55 +251,52 @@ class FeatureEditStage(basehandlers.FlaskHandler):
 
     return f, feature_process
 
-  @permissions.require_edit_feature
   def get_template_data(self, feature_id, stage_id):
+    # Validate the user has edit permissions and redirect if needed.
+    redirect_resp = permissions.validate_feature_edit_permission(
+        self, feature_id)
+    if redirect_resp:
+      return redirect_resp
 
     f, feature_process = self.get_feature_and_process(feature_id)
-
-    stage_name = ''
-    for stage in feature_process.stages:
-      if stage.outgoing_stage == stage_id:
-        stage_name = stage.name
-
-    template_data = {
-        'stage_name': stage_name,
-        'stage_id': stage_id,
-        }
 
     # TODO(jrobbins): show useful error if stage not found.
     detail_form_class = STAGE_FORMS[f.feature_type][stage_id]
 
     impl_status_offered, impl_status_form_class = IMPL_STATUS_FORMS.get(
-        stage_id, (None, None))
+        stage_id, ('', ''))
 
     feature_edit_dict = f.format_for_edit()
-    detail_form = None
+    detail_form = ''
     if detail_form_class:
-      detail_form = detail_form_class(feature_edit_dict)
-    impl_status_form = None
+      form = detail_form_class(feature_edit_dict)
+      detail_form = json.dumps((str(form), list(form.fields)))
+    impl_status_form = ''
     if impl_status_form_class:
-      impl_status_form = impl_status_form_class(feature_edit_dict)
+      form = impl_status_form_class(feature_edit_dict)
+      impl_status_form = json.dumps((str(form), list(form.fields)))
 
     # Provide new or populated form to template.
-    template_data.update({
-        'feature': f,
+    template_data = {
+        'stage_id': stage_id,
         'feature_id': f.key.integer_id(),
         'feature_form': detail_form,
-        'already_on_this_stage': stage_id == f.intent_stage,
-        'already_on_this_impl_status':
-            impl_status_offered == f.impl_status_chrome,
         'impl_status_form': impl_status_form,
         'impl_status_name': core_enums.IMPLEMENTATION_STATUS.get(
-            impl_status_offered, None),
+            impl_status_offered, ''),
         'impl_status_offered': impl_status_offered,
-    })
+    }
     return template_data
 
-  @permissions.require_edit_feature
   def process_post_data(self, feature_id, stage_id=0):
+    # Validate the user has edit permissions and redirect if needed.
+    redirect_resp = permissions.validate_feature_edit_permission(
+        self, feature_id)
+    if redirect_resp:
+      return redirect_resp
 
     if feature_id:
-      feature = models.Feature.get_by_id(feature_id)
+      feature = core_models.Feature.get_by_id(feature_id)
       if feature is None:
         self.abort(404, msg='Feature not found')
       else:
@@ -570,13 +571,6 @@ class FeatureEditStage(basehandlers.FlaskHandler):
     if self.touched('ongoing_constraints'):
       feature.ongoing_constraints = self.form.get('ongoing_constraints')
 
-    # Add user who updated to list of editors if not currently an editor.
-    # TODO(danielrsmith): This should be removed when enabling new permissions.
-    associated_with_feature = permissions.strict_can_edit_feature(
-      self.get_current_user(), feature_id)
-    if not associated_with_feature:
-      feature.editors.append(self.get_current_user().email())
-
     feature.updated_by = ndb.User(
         email=self.get_current_user().email(),
         _auth_domain='gmail.com')
@@ -591,8 +585,12 @@ class FeatureEditAllFields(FeatureEditStage):
 
   TEMPLATE_PATH = 'guide/editall.html'
 
-  @permissions.require_edit_feature
   def get_template_data(self, feature_id):
+    # Validate the user has edit permissions and redirect if needed.
+    redirect_resp = permissions.validate_feature_edit_permission(
+        self, feature_id)
+    if redirect_resp:
+      return redirect_resp
 
     f, feature_process = self.get_feature_and_process(feature_id)
 
@@ -600,7 +598,9 @@ class FeatureEditAllFields(FeatureEditStage):
     # TODO(jrobbins): make flat forms process specific?
     flat_form_section_list = FLAT_FORMS
     flat_forms = [
-        (section_name, str(form_class(feature_edit_dict)))
+        (section_name,
+        str(form_class(feature_edit_dict)),
+        list(form_class(feature_edit_dict).fields))
         for section_name, form_class in flat_form_section_list]
     template_data = {
         'feature': f,
@@ -612,8 +612,13 @@ class FeatureEditAllFields(FeatureEditStage):
 class FeatureVerifyAccuracy(FeatureEditStage):
   TEMPLATE_PATH = 'guide/verify_accuracy.html'
 
-  @permissions.require_edit_feature
   def get_template_data(self, feature_id):
+    # Validate the user has edit permissions and redirect if needed.
+    redirect_resp = permissions.validate_feature_edit_permission(
+        self, feature_id)
+    if redirect_resp:
+      return redirect_resp
+
     f, _ = self.get_feature_and_process(feature_id)
     feature_edit_dict = f.format_for_edit()
 
@@ -621,10 +626,11 @@ class FeatureVerifyAccuracy(FeatureEditStage):
     if f.accurate_as_of is not None:
       date = f.accurate_as_of.strftime("%Y-%m-%d")
       forms_title = f"Accuracy last verified {date}."
-    forms = [(forms_title, guideforms.Verify_Accuracy(feature_edit_dict))]
+    form = guideforms.Verify_Accuracy(feature_edit_dict)
+    forms = [(forms_title, str(form), list(form.fields))]
     template_data = {
         'feature': f,
         'feature_id': f.key.integer_id(),
-        'forms': forms,
+        'forms': json.dumps(forms),
     }
     return template_data

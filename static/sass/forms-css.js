@@ -25,7 +25,6 @@ export const FORM_STYLES = [
     table .helptext {
       display: block;
       font-size: small;
-      max-width: 40em;
       margin-top: 2px;
     }
 
@@ -150,14 +149,9 @@ export const FORM_STYLES = [
       max-width: 35em;
     }
 
-    chromedash-form-field td.extrahelp {
-      padding: 0 10px;
-    }
-
     chromedash-form-field .helptext {
       display: block;
       font-size: small;
-      max-width: 40em;
       margin-top: 2px;
     }
 
@@ -166,6 +160,25 @@ export const FORM_STYLES = [
     }
     chromedash-form-field .helptext > *:last-child {
       margin-bottom: 0;
+    }
+
+    chromedash-form-field .helptext p {
+      margin: 1em 0;
+    }
+
+    chromedash-form-field .helptext ul {
+      margin: 1em 0;
+    }
+
+    chromedash-form-field .helptext li {
+      list-style: circle;
+      margin-left: 2em;
+    }
+
+    chromedash-form-field .helptext blockquote {
+      margin: 1em;
+      border: 1px solid lightgrey;
+      padding: 0.5em;
     }
 
     chromedash-form-field .errorlist {
@@ -192,14 +205,23 @@ export const FORM_STYLES = [
       margin: 4px;
     }
 
-    chromedash-form-field sl-details > *:first-child {
-      margin-top: 0;
+    chromedash-form-field td.extrahelp {
+      padding-left: 2em;
     }
-    chromedash-form-field sl-details > *:last-child {
-      margin-bottom: 0;
+    chromedash-form-field .extrahelp > span {
+      margin: 0;
     }
 
-    chromedash-form-field .helptext p {
-      margin: 1em 0;
+    sl-skeleton {
+      margin-bottom: 1em;
+      width: 60%;
+    }
+    sl-skeleton:nth-of-type(even) {
+      width: 50%;
+    }
+
+    h3 sl-skeleton {
+      width: 30%;
+      height: 1.5em;
     }
   `];

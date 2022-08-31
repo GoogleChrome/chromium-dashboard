@@ -20,7 +20,17 @@ import re
 from framework import basehandlers
 from framework import permissions
 from internals import approval_defs
-from internals import models
+from internals import review_models
+
+
+def approval_value_to_json_dict(appr):
+  return {
+      'feature_id': appr.feature_id,
+      'field_id': appr.field_id,
+      'state': appr.state,
+      'set_on': str(appr.set_on),  # YYYY-MM-DD HH:MM:SS.SSS
+      'set_by': appr.set_by,
+      }
 
 
 class ApprovalsAPI(basehandlers.APIHandler):
@@ -30,9 +40,9 @@ class ApprovalsAPI(basehandlers.APIHandler):
   def do_get(self, feature_id, field_id=None):
     """Return a list of all approval values on the given feature."""
     # Note: We assume that anyone may view approvals.
-    approvals = models.Approval.get_approvals(
+    approvals = review_models.Approval.get_approvals(
         feature_id=feature_id, field_id=field_id)
-    dicts = [av.format_for_template(add_id=False) for av in approvals]
+    dicts = [approval_value_to_json_dict(av) for av in approvals]
     data = {
         'approvals': dicts,
         }
@@ -42,7 +52,7 @@ class ApprovalsAPI(basehandlers.APIHandler):
     """Set an approval value for the specified feature."""
     field_id = self.get_int_param('fieldId')
     new_state = self.get_int_param(
-        'state', validator=models.Approval.is_valid_state)
+        'state', validator=review_models.Approval.is_valid_state)
     feature = self.get_specified_feature(feature_id=feature_id)
     feature_id = feature.key.integer_id()
     user = self.get_current_user(required=True)
@@ -51,19 +61,33 @@ class ApprovalsAPI(basehandlers.APIHandler):
     if not permissions.can_approve_feature(user, feature, approvers):
       self.abort(403, msg='User is not an approver')
 
-    models.Approval.set_approval(
+    review_models.Approval.set_approval(
         feature_id, field_id, new_state, user.email())
 
-    all_approval_values = models.Approval.get_approvals(
+    all_approval_values = review_models.Approval.get_approvals(
         feature_id=feature_id, field_id=field_id)
     logging.info(
         'found approvals %r',
         [appr.key.integer_id() for appr in all_approval_values])
     if approval_defs.is_resolved(all_approval_values, field_id):
-      models.Approval.clear_request(feature_id, field_id)
+      review_models.Approval.clear_request(feature_id, field_id)
 
     # Callers don't use the JSON response for this API call.
     return {'message': 'Done'}
+
+
+def approval_config_to_json_dict(appr_cfg):
+  if appr_cfg.next_action:
+    next_action = str(appr_cfg.next_action)
+  else:
+    next_action = None
+  return {
+      'feature_id': appr_cfg.feature_id,
+      'field_id': appr_cfg.field_id,
+      'owners': appr_cfg.owners,
+      'next_action': next_action,  # YYYY-MM-DD or None
+      'additional_review': appr_cfg.additional_review,
+      }
 
 
 class ApprovalConfigsAPI(basehandlers.APIHandler):
@@ -72,8 +96,8 @@ class ApprovalConfigsAPI(basehandlers.APIHandler):
   def do_get(self, feature_id):
     """Return a list of all approval configs on the given feature."""
     # Note: We assume that anyone may view approval configs.
-    configs = models.ApprovalConfig.get_configs(feature_id)
-    dicts = [ac.format_for_template(add_id=False) for ac in configs]
+    configs = review_models.ApprovalConfig.get_configs(feature_id)
+    dicts = [approval_config_to_json_dict(ac) for ac in configs]
     possible_owners_by_field = {
         field_id: approval_defs.get_approvers(field_id)
         for field_id in approval_defs.APPROVAL_FIELDS_BY_ID
@@ -110,7 +134,7 @@ class ApprovalConfigsAPI(basehandlers.APIHandler):
       except ValueError:
         self.abort(400, msg='Invalid date formate or value')
 
-    models.ApprovalConfig.set_config(
+    review_models.ApprovalConfig.set_config(
         feature_id, field_id, owners, next_action, additional_review)
 
     # Callers don't use the JSON response for this API call.

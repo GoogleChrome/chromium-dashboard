@@ -76,10 +76,6 @@ class MultiUrlField(forms.Field):
         for url in value:
             validate_url(url.strip())
 
-class ChromedashTextInput(forms.widgets.Input):
-    template_name = 'django/forms/widgets/text.html'
-
-
 class ChromedashTextarea(forms.widgets.Textarea):
     template_name = 'django/forms/widgets/chromedash-textarea.html'
 
@@ -133,8 +129,7 @@ MULTI_URL_FIELD_ATTRS = {
 # stage-specific fields without repeating the details and help text.
 ALL_FIELDS = {
     'name': forms.CharField(
-        required=True, label='',
-        widget=ChromedashTextInput()),
+        required=True, label=''),
 
     'summary': forms.CharField(
         required=True, label='',
@@ -554,7 +549,7 @@ class ChromedashForm(forms.Form):
             # Get value and checked for the field
             value = field.widget.value_from_datadict(self.data, self.files, self.add_prefix(name))
             if value is None:
-              value = field.initial
+              value = bf.initial
 
             row_template = normal_row
             checked = False

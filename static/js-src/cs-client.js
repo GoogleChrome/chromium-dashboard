@@ -246,6 +246,20 @@ class ChromeStatusClient {
     }
   }
 
+  deleteComment(featureId, commentId) {
+    return this.doPatch(
+      `/features/${featureId}/approvals/comments`,
+      {commentId, isUndelete: false},
+    );
+  }
+
+  undeleteComment(featureId, commentId) {
+    return this.doPatch(
+      `/features/${featureId}/approvals/comments`,
+      {commentId, isUndelete: true},
+    );
+  }
+
   // Features API
   getFeature(featureId) {
     return this.doGet(`/features/${featureId}`);

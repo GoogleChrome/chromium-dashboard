@@ -17,7 +17,7 @@
 from framework import users
 
 from internals import core_enums
-from internals import models
+from internals import core_models
 from framework import basehandlers
 from framework import permissions
 from internals import processes
@@ -32,8 +32,13 @@ class IntentEmailPreviewHandler(basehandlers.FlaskHandler):
 
   TEMPLATE_PATH = 'admin/features/launch.html'
 
-  @permissions.require_edit_feature
   def get_template_data(self, feature_id=None, stage_id=None):
+    # Validate the user has edit permissions and redirect if needed.
+    redirect_resp = permissions.validate_feature_edit_permission(
+        self, feature_id)
+    if redirect_resp:
+      return redirect_resp
+
     f = self.get_specified_feature(feature_id=feature_id)
     intent_stage = stage_id if stage_id is not None else f.intent_stage
 

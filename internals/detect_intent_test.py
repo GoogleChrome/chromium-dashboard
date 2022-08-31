@@ -18,10 +18,11 @@ import flask
 from unittest import mock
 import werkzeug
 
-from internals import core_enums
-from internals import models
 from internals import approval_defs
+from internals import core_enums
 from internals import detect_intent
+from internals import core_models
+from internals import review_models
 
 test_app = flask.Flask(__name__)
 
@@ -29,7 +30,7 @@ test_app = flask.Flask(__name__)
 class FunctionTest(testing_config.CustomTestCase):
 
   def setUp(self):
-    self.feature_1 = models.Feature(
+    self.feature_1 = core_models.Feature(
         name='feature one', summary='detailed sum', category=1, visibility=1,
         standardization=1, web_dev_views=1, impl_status_chrome=1,
         intent_stage=core_enums.INTENT_IMPLEMENT)
@@ -307,7 +308,7 @@ class FunctionTest(testing_config.CustomTestCase):
     self.assertFalse(detect_intent.is_lgtm_allowed(
         'other@example.com', self.feature_1, approval_defs.ShipApproval))
 
-  @mock.patch('internals.models.Approval.get_approvals')
+  @mock.patch('internals.review_models.Approval.get_approvals')
   def test_detect_new_thread(self, mock_get_approvals):
     """A thread is new if there are no previous approval values."""
     mock_get_approvals.return_value = []
@@ -322,7 +323,7 @@ class FunctionTest(testing_config.CustomTestCase):
 class IntentEmailHandlerTest(testing_config.CustomTestCase):
 
   def setUp(self):
-    self.feature_1 = models.Feature(
+    self.feature_1 = core_models.Feature(
         name='feature one', summary='detailed sum', category=1, visibility=1,
         standardization=1, web_dev_views=1, impl_status_chrome=1,
         intent_stage=core_enums.INTENT_IMPLEMENT)
@@ -356,7 +357,7 @@ class IntentEmailHandlerTest(testing_config.CustomTestCase):
 
   def tearDown(self):
     self.feature_1.key.delete()
-    for appr in models.Approval.query().fetch(None):
+    for appr in review_models.Approval.query().fetch(None):
       appr.key.delete()
 
   def test_process_post_data__new_thread(self):
@@ -367,12 +368,12 @@ class IntentEmailHandlerTest(testing_config.CustomTestCase):
 
     self.assertEqual(actual, {'message': 'Done'})
 
-    created_approvals = list(models.Approval.query().fetch(None))
+    created_approvals = list(review_models.Approval.query().fetch(None))
     self.assertEqual(1, len(created_approvals))
     appr = created_approvals[0]
     self.assertEqual(self.feature_id, appr.feature_id)
     self.assertEqual(approval_defs.ShipApproval.field_id, appr.field_id)
-    self.assertEqual(models.Approval.REVIEW_REQUESTED, appr.state)
+    self.assertEqual(review_models.Approval.REVIEW_REQUESTED, appr.state)
     self.assertEqual('user@example.com', appr.set_by)
     self.assertEqual(self.feature_1.intent_to_ship_url, self.thread_url)
     self.assertEqual(self.feature_1.intent_to_ship_subject_line,
@@ -387,7 +388,7 @@ class IntentEmailHandlerTest(testing_config.CustomTestCase):
 
     self.assertEqual(actual, {'message': 'Done'})
 
-    created_approvals = list(models.Approval.query().fetch(None))
+    created_approvals = list(review_models.Approval.query().fetch(None))
     self.assertEqual(0, len(created_approvals))
     self.assertEqual(self.feature_1.intent_to_implement_url, self.thread_url)
     self.assertEqual(self.feature_1.intent_to_implement_subject_line,
@@ -407,12 +408,12 @@ class IntentEmailHandlerTest(testing_config.CustomTestCase):
 
     self.assertEqual(actual, {'message': 'Done'})
 
-    created_approvals = list(models.Approval.query().fetch(None))
+    created_approvals = list(review_models.Approval.query().fetch(None))
     self.assertEqual(1, len(created_approvals))
     appr = created_approvals[0]
     self.assertEqual(self.feature_id, appr.feature_id)
     self.assertEqual(approval_defs.ShipApproval.field_id, appr.field_id)
-    self.assertEqual(models.Approval.APPROVED, appr.state)
+    self.assertEqual(review_models.Approval.APPROVED, appr.state)
     self.assertEqual('user@example.com', appr.set_by)
     self.assertEqual(self.feature_1.intent_to_ship_url, self.thread_url)
     self.assertEqual(

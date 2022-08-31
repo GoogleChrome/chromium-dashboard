@@ -35,7 +35,7 @@ from framework import users
 import settings
 from internals import approval_defs
 from internals import core_enums
-from internals import models
+from internals import core_models
 from internals import user_models
 
 
@@ -192,7 +192,7 @@ def make_email_tasks(feature, is_update=False, changes=[]):
   return all_tasks
 
 
-class FeatureStar(models.DictModel):
+class FeatureStar(ndb.Model):
   """A FeatureStar represent one user's interest in one feature."""
   email = ndb.StringProperty(required=True)
   feature_id = ndb.IntegerProperty(required=True)
@@ -220,7 +220,7 @@ class FeatureStar(models.DictModel):
     else:
       return  # No need to update anything in datastore
 
-    feature = models.Feature.get_by_id(feature_id)
+    feature = core_models.Feature.get_by_id(feature_id)
     feature.star_count += 1 if starred else -1
     if feature.star_count < 0:
       logging.error('count would be < 0: %r', (email, feature_id, starred))
@@ -297,7 +297,8 @@ class FeatureAccuracyHandler(basehandlers.FlaskHandler):
     mstone_info = json.loads(resp.text)
     mstone = int(mstone_info['mstones'][0]['mstone'])
 
-    features = models.Feature.query(models.Feature.deleted == False).fetch(None)
+    features = core_models.Feature.query(
+        core_models.Feature.deleted == False).fetch(None)
     features_to_notify = []
     now = datetime.now()
     accuracy_as_of_delta = timedelta(weeks=self.ACCURACY_AS_OF_WEEKS)
@@ -359,7 +360,7 @@ class FeatureChangeHandler(basehandlers.FlaskHandler):
 
     # Email feature subscribers if the feature exists and there were
     # actually changes to it.
-    feature = models.Feature.get_by_id(feature['id'])
+    feature = core_models.Feature.get_by_id(feature['id'])
     if feature and (is_update and len(changes) or not is_update):
       email_tasks = make_email_tasks(
           feature, is_update=is_update, changes=changes)

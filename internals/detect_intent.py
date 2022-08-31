@@ -21,7 +21,8 @@ from framework import basehandlers
 from framework import permissions
 from framework import users
 from internals import approval_defs
-from internals import models
+from internals import core_models
+from internals import review_models
 
 
 FIELDS_REQUIRING_LGTMS = [
@@ -144,7 +145,7 @@ def is_lgtm_allowed(from_addr, feature, approval_field):
 
 def detect_new_thread(feature_id, approval_field):
   """Return True if there are no previous approval values for this intent."""
-  existing_approvals = models.Approval.get_approvals(
+  existing_approvals = review_models.Approval.get_approvals(
       feature_id=feature_id, field_id=approval_field.field_id)
   return not existing_approvals
 
@@ -203,7 +204,7 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
     """
     # If the message had a link to a chromestatus entry, use its ID.
     if feature_id:
-      return models.Feature.get_by_id(feature_id), None
+      return core_models.Feature.get_by_id(feature_id), None
 
     # If there is also no thread_url, then give up.
     if not thread_url:
@@ -212,21 +213,21 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
     # Find the feature by querying for the previously saved discussion link.
     matching_features = []
     if approval_field == approval_defs.PrototypeApproval:
-      query = models.Feature.query(
-          models.Feature.intent_to_implement_url == thread_url)
+      query = core_models.Feature.query(
+          core_models.Feature.intent_to_implement_url == thread_url)
       matching_features = query.fetch()
     # TODO(jrobbins): Ready-for-trial threads
     elif approval_field == approval_defs.ExperimentApproval:
-      query = models.Feature.query(
-          models.Feature.intent_to_experiment_url == thread_url)
+      query = core_models.Feature.query(
+          core_models.Feature.intent_to_experiment_url == thread_url)
       matching_features = query.fetch()
     elif approval_field == approval_defs.ExtendExperimentApproval:
-      query = models.Feature.query(
-          models.Feature.intent_to_extend_experiment_url == thread_url)
+      query = core_models.Feature.query(
+          core_models.Feature.intent_to_extend_experiment_url == thread_url)
       matching_features = query.fetch()
     elif approval_field == approval_defs.ShipApproval:
-      query = models.Feature.query(
-          models.Feature.intent_to_ship_url == thread_url)
+      query = core_models.Feature.query(
+          core_models.Feature.intent_to_ship_url == thread_url)
       matching_features = query.fetch()
     else:
       return None, 'Unsupported approval field'
@@ -281,9 +282,9 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
     if (detect_lgtm(body) and
         is_lgtm_allowed(from_addr, feature, approval_field)):
       logging.info('found LGTM')
-      models.Approval.set_approval(
+      review_models.Approval.set_approval(
           feature_id, approval_field.field_id,
-          models.Approval.APPROVED, from_addr)
+          review_models.Approval.APPROVED, from_addr)
       self.record_lgtm(feature, approval_field, from_addr)
 
     # Case 2: Create a review request for any discussion that does not already
@@ -292,9 +293,9 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
       logging.info('found new thread')
       if approval_field in FIELDS_REQUIRING_LGTMS:
         logging.info('requesting a review')
-        models.Approval.set_approval(
+        review_models.Approval.set_approval(
             feature_id, approval_field.field_id,
-            models.Approval.REVIEW_REQUESTED, from_addr)
+            review_models.Approval.REVIEW_REQUESTED, from_addr)
 
   def record_lgtm(self, feature, approval_field, from_addr):
     """Add from_addr to the old way or recording LGTMs."""

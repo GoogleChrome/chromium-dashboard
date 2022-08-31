@@ -2,6 +2,22 @@ import {LitElement, html} from 'lit';
 import {ALL_FIELDS} from './form-field-specs';
 import {unsafeHTML} from 'lit/directives/unsafe-html.js';
 
+
+/* Patterns from https://www.oreilly.com/library/view/regular-expressions-cookbook/9781449327453/ch04s01.html
+ * Removing single quote ('), backtick (`), and pipe (|) since they are risky unless properly escaped everywhere.
+ * Also removing ! and % because they have special meaning for some older email routing systems. */
+const USER_REGEX = '[A-Za-z0-9_#$&*+/=?{}~^.-]+';
+const DOMAIN_REGEX = String.raw`(([A-Za-z0-9-]+\.)+[A-Za-z]{2,6})`;
+
+const EMAIL_ADDRESS_REGEX = USER_REGEX + '@' + DOMAIN_REGEX;
+const EMAIL_ADDRESSES_REGEX = EMAIL_ADDRESS_REGEX + '([ ]*,[ ]*' + EMAIL_ADDRESS_REGEX + ')*';
+
+// Simple http URLs
+const PORTNUM_REGEX = '(:[0-9]+)?';
+const URL_REGEX = '(https?)://' + DOMAIN_REGEX + PORTNUM_REGEX + String.raw`(/[^\s]*)?`;
+const URL_PADDED_REGEX = String.raw`\s*` + URL_REGEX + String.raw`\s*`;
+
+
 export class ChromedashFormField extends LitElement {
   static get properties() {
     return {
@@ -34,15 +50,16 @@ export class ChromedashFormField extends LitElement {
     const type = fieldProps.type;
     const choices = fieldProps.choices;
 
-    // If type is checkbox, then generate locally.
+    // If type is checkbox, select, or input, then generate locally.
     let fieldHTML = '';
     if (type === 'checkbox') {
+      // value can be a js or python boolean value converted to a string
       fieldHTML = html`
         <sl-checkbox
           name="${this.name}"
           id="id_${this.name}"
           size="small"
-          ?checked=${this.value === 'True' ? true : false}
+          ?checked=${this.value === 'true' || this.value === 'True'}
           ?disabled=${this.disabled}
         >
           ${label}
@@ -64,6 +81,54 @@ export class ChromedashFormField extends LitElement {
             `,
           )}
         </sl-select>
+      `;
+    } else if (type === 'input') {
+      let inputType = '';
+      let title = '';
+      let placeholder;
+      let pattern;
+      switch (fieldProps.input_type) {
+        case 'text':
+          inputType = 'text';
+          break;
+
+        case 'url':
+          inputType = 'url';
+          title = 'Enter a full URL https://...';
+          placeholder = 'https://...';
+          pattern = URL_PADDED_REGEX;
+          break;
+
+        case 'multi-email':
+          /* Don't specify type="email" because browsers consider multiple emails
+          * invalid, regardles of the multiple attribute. */
+          inputType = 'text';
+          title = 'Enter one or more comma-separated complete email addresses.';
+          placeholder = 'user1@domain.com, user2@chromium.org';
+          pattern = EMAIL_ADDRESSES_REGEX;
+          break;
+
+        case 'milestone-number':
+          inputType = 'number';
+          placeholder = 'Milestone number';
+          break;
+
+        default:
+          console.error(`Invalid input type: ${fieldProps.input_type}`);
+      }
+      fieldHTML = html`
+        <sl-input 
+          type="${inputType}"
+          name="${this.name}"
+          id="id_${this.name}"
+          size="small"
+          autocomplete="off"
+          .title=${title}
+          .placeholder=${placeholder}
+          .pattern=${pattern}
+          .value=${this.value === 'None' ? '' : this.value}
+          ?required=${fieldProps.required}>
+        </sl-input>
       `;
     } else {
       // Temporary workaround until we migrate the generation of
@@ -93,6 +158,7 @@ export class ChromedashFormField extends LitElement {
                 <sl-icon-button
                   name="plus-square"
                   label="Toggle extra help"
+                  style="position:absolute"
                   @click="${this.toggleExtraHelp}"
                   >+</sl-icon-button
                 >
@@ -104,7 +170,11 @@ export class ChromedashFormField extends LitElement {
       ${extraHelpText ?
         html` <tr>
             <td colspan="2" class="extrahelp">
-              <sl-details summary=""> ${extraHelpText} </sl-details>
+              <sl-details summary="">
+                <span class="helptext">
+                  ${extraHelpText}
+                </span>
+              </sl-details>
             </td>
           </tr>` :
         ''}

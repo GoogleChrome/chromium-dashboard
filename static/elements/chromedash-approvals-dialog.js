@@ -9,7 +9,7 @@ export const STATE_NAMES = [
   [1, 'N/a or Ack'],
   [2, 'Review requested'],
   [3, 'Review started'],
-  [4, 'Need info'],
+  [4, 'Needs work'],
   [5, 'Approved'],
   [6, 'Not approved'],
 ];
@@ -36,10 +36,10 @@ const APPROVAL_DEFS = [
 
 let approvalDialogEl;
 
-export async function openApprovalsDialog(signedInUser, feature) {
+export async function openApprovalsDialog(user, feature) {
   if (!approvalDialogEl) {
     approvalDialogEl = document.createElement('chromedash-approvals-dialog');
-    approvalDialogEl.signedInUser = signedInUser;
+    approvalDialogEl.user = user;
     document.body.appendChild(approvalDialogEl);
     await approvalDialogEl.updateComplete;
   }
@@ -50,8 +50,7 @@ export async function openApprovalsDialog(signedInUser, feature) {
 class ChromedashApprovalsDialog extends LitElement {
   static get properties() {
     return {
-      signedInUser: {type: String},
-      canApprove: {type: Boolean},
+      user: {type: Object},
       feature: {type: Object},
       approvals: {type: Array},
       comments: {type: Array},
@@ -68,8 +67,7 @@ class ChromedashApprovalsDialog extends LitElement {
 
   constructor() {
     super();
-    this.signedInUser = ''; // email address
-    this.canApprove = false;
+    this.user = {};
     this.feature = {};
     this.approvals = [];
     this.comments = [];
@@ -95,6 +93,7 @@ class ChromedashApprovalsDialog extends LitElement {
 
         h3 {
           margin: var(--content-padding-half);
+          margin-top: var(--content-padding);
         }
 
         .approval_section {
@@ -114,6 +113,8 @@ class ChromedashApprovalsDialog extends LitElement {
         .approval_row {
           width: 650px;
           margin-bottom: var(--content-padding-half);
+          display: flex;
+          align-items: center;
         }
 
         .set_by,
@@ -131,6 +132,21 @@ class ChromedashApprovalsDialog extends LitElement {
           margin: 0;
         }
 
+        .comment_header {
+          height: 24px;
+        }
+
+        .comment-menu-icon {
+          float: right;
+          margin-right: 8px;
+          cursor: pointer;
+        }
+
+        .edit-menu {
+          display: inline-block;
+          float: right;
+        }
+
         .comment_body {
           background: var(--table-alternate-background);
           padding: var(--content-padding-half);
@@ -144,13 +160,23 @@ class ChromedashApprovalsDialog extends LitElement {
           background: var(--table-alternate-background);
         }
 
-        .controls {
-          padding: var(--content-padding);
-          text-align: right;
+        #comment_area {
+          margin: 0 var(--content-padding);
         }
 
-        #show_all_checkbox {
-         float: left;
+        #controls {
+          padding: var(--content-padding);
+          text-align: right;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+        #controls * + * {
+          padding-left: var(--content-padding);
+        }
+
+        #post_to_approval_field {
+          flex: 1;
         }
 
         textarea {
@@ -217,27 +243,28 @@ class ChromedashApprovalsDialog extends LitElement {
       this.changedApprovalsByField.get(approvalValue.field_id) ||
           approvalValue.state);
     const placeholderOption = (approvalValue.state == -1) ?
-      html`<option value="-1" selected>No value</option>` :
+      html`<sl-menu-item value="-1" selected>No value</sl-menu-item>` :
       nothing;
 
+    // hoist is needed when <sl-select> is in overflow:hidden context.
     return html`
       <div class="approval_row">
         <span class="set_by">${approvalValue.set_by}</span>
         <span class="set_on">${this.formatDate(approvalValue.set_on)}</span>
         <span class="appr_val">
-          ${approvalValue.set_by == this.signedInUser ? html`
-          <select
-            selected=${selectedValue}
+          ${approvalValue.set_by == this.user.email ? html`
+        <sl-select name="${approvalValue.field_id}"
+            value="${selectedValue}"
             data-field="${approvalValue.field_id}"
-            @change=${this.handleSelectChanged}
+            @sl-change=${this.handleSelectChanged}
+            hoist size="small"
           >
               ${placeholderOption}
               ${STATE_NAMES.map((valName) => html`
-                <option value="${valName[0]}"
-                  ?selected=${valName[0] == selectedValue}
-                 >${valName[1]}</option>`,
+                <sl-menu-item value="${valName[0]}"
+                 >${valName[1]}</sl-menu-item>`,
                 )}
-            </select>` : html`
+        </sl-select>` : html`
            ${this.findStateName(approvalValue.state)}
             `}
         </span>
@@ -247,12 +274,12 @@ class ChromedashApprovalsDialog extends LitElement {
 
   renderAddApproval(fieldId) {
     const existingApprovalByMe = this.approvals.some((a) =>
-      a.field_id == fieldId && a.set_by == this.signedInUser);
+      a.field_id == fieldId && a.set_by == this.user.email);
     if (existingApprovalByMe) {
       return nothing;
     } else {
       return this.renderApprovalValue(
-        {set_by: this.signedInUser,
+        {set_by: this.user.email,
           set_on: '',
           state: -1,
           field_id: fieldId});
@@ -365,16 +392,92 @@ class ChromedashApprovalsDialog extends LitElement {
       this.renderApproval(apprDef));
   }
 
+  // Returns a boolean representing whether the given comment can be edited.
+  commentIsEditable(comment) {
+    // If the comment has been deleted, it should only be editable
+    // by site admins or the user who deleted it.
+    if (comment.deleted_by) {
+      return this.user.is_admin || comment.deleted_by === this.user.email;
+    }
+    // If the comment is not deleted, site admins or the author can edit.
+    return this.user.email === comment.author || this.user.is_admin;
+  }
+
+  // Format a message to show on a deleted comment the user can edit.
+  renderCommentDeletedPreface(comment) {
+    if (!this.commentIsEditable(comment) || !comment.deleted_by) {
+      return nothing;
+    }
+    return html`<div style="color: darkred">[Deleted] (comment hidden for other users)
+    </div>`;
+  }
+
+  toggleCommentMenu(commentId) {
+    const menuEl = this.shadowRoot.querySelector(`#comment-menu-${commentId}`);
+    // Change the menu icon to represent open/closing on click.
+    const iconEl = this.shadowRoot.querySelector(`#icon-${commentId}`);
+    const isVisible = menuEl.style.display !== 'none';
+    if (isVisible) {
+      menuEl.style.display = 'none';
+      iconEl.icon = 'chromestatus:more-vert';
+    } else {
+      menuEl.style.display = 'inline-block';
+      iconEl.icon = 'chromestatus:close';
+    }
+  }
+
+  // Add a dropdown menu to the comment header if the user can edit the comment.
+  formatCommentEditMenu(comment) {
+    // If the comment is not editable, don't show a comment menu.
+    if (!this.commentIsEditable(comment)) {
+      return nothing;
+    }
+    // Show delete option if not deleted, else show undelete.
+    let menuItem = html`
+    <sl-menu-item @click="${() => this.handleDeleteToggle(comment, false)}"
+    >Delete Comment</div>`;
+    if (comment.deleted_by) {
+      menuItem = html`
+      <sl-menu-item @click="${() => this.handleDeleteToggle(comment, true)}"
+      >Undelete Comment</div>`;
+    }
+
+    return html`
+      <iron-icon class="comment-menu-icon" id="icon-${comment.comment_id}"
+      icon="chromestatus:more-vert"
+      @click=${() => this.toggleCommentMenu(comment.comment_id)}></iron-icon>
+      <div class="edit-menu">
+        <div id="comment-menu-${comment.comment_id}" style="display: none;">
+          <sl-menu>${menuItem}</sl-menu>
+        </div>
+      </div>`;
+  }
+
+  // Display how long ago the comment was created compared to now.
+  formatCommentRelativeDate(comment) {
+    const commentDate = new Date(`${comment.created} UTC`);
+    if (isNaN(commentDate)) {
+      return nothing;
+    }
+    return html`
+      <span class="relative_date">
+        (<sl-relative-time date="${commentDate.toISOString()}">
+        </sl-relative-time>)
+      </span>`;
+  }
+
   renderComment(comment) {
+    const preface = this.renderCommentDeletedPreface(comment);
     return html`
       <div class="comment">
         <div class="comment_header">
            <span class="author">${comment.author}</span>
            on
            <span class="date">${this.formatDate(comment.created)}</span>
-           wrote:
+           ${this.formatCommentRelativeDate(comment)}
+           ${this.formatCommentEditMenu(comment)}
         </div>
-        <div class="comment_body">${comment.content}</div>
+        <div class="comment_body">${preface}${comment.content}</div>
       </div>
     `;
   }
@@ -401,41 +504,39 @@ class ChromedashApprovalsDialog extends LitElement {
     let showAllCheckbox = nothing;
     if (this.subsetPending) {
       showAllCheckbox = html`
-         <label id="show_all_checkbox"><input
-           type="checkbox" ?checked=${this.showAllIntents}
-           @click=${this.toggleShowAllIntents}
-           >Show all intents</label>
+         <sl-checkbox
+           id="show_all_checkbox"
+           ?checked=${this.showAllIntents}
+           @sl-change=${this.toggleShowAllIntents}
+           size="small"
+           >Show all intents</sl-checkbox>
       `;
     }
     const postToSelect = html`
-      <select style="margin-right:1em" id="post_to_approval_field">
-        <option value="0">Don't post to mailing list</option>
+      <sl-select placement="top" value=0 id="post_to_approval_field" size="small">
+        <sl-menu-item value="0">Don't post to mailing list</sl-menu-item>
         ${APPROVAL_DEFS.map((apprDef) => html`
-          <option value="${apprDef.id}"
+          <sl-menu-item value="${apprDef.id}"
                   ?disabled=${!this.canPostTo(this.feature[apprDef.threadField])}
-          >Post to ${apprDef.name} thread</option>
+          >Post to ${apprDef.name} thread</sl-menu-item>
         `)}
-      </select>
+      </sl-select>
       `;
 
     return html`
-     <div>
-      <textarea id="comment_area" rows=4 cols=80
-        @change=${this.checkNeedsSave}
-        @keypress=${this.checkNeedsSave}
-        placeholder="Add a comment"
-        ></textarea>
-     </div>
-     <div class="controls">
+    <sl-textarea id="comment_area" rows=4 cols=80
+      @sl-change=${this.checkNeedsSave}
+      @keypress=${this.checkNeedsSave}
+      placeholder="Add a comment"
+      ></sl-textarea>
+     <div id="controls">
        ${showAllCheckbox}
        ${postToSelect}
-       <button class="primary"
+       <sl-button variant="primary"
          @click=${this.handleSave}
          ?disabled=${!this.needsSave}
-         >Save</button>
-       <button
-         @click=${this.handleCancel}
-         >Cancel</button>
+         size="small"
+         >Save</sl-button>
      </div>
     `;
   }
@@ -526,6 +627,23 @@ class ChromedashApprovalsDialog extends LitElement {
     Promise.all(promises).then(() => {
       this.shadowRoot.querySelector('sl-dialog').hide();
     });
+  }
+
+  // Handle deleting or undeleting a comment.
+  async handleDeleteToggle(comment, isUndelete) {
+    let resp;
+    if (isUndelete) {
+      resp = await window.csClient.undeleteComment(
+        this.feature.id, comment.comment_id);
+    } else {
+      resp = await window.csClient.deleteComment(
+        this.feature.id, comment.comment_id);
+    }
+    if (resp && resp.message === 'Done') {
+      comment.deleted_by = (isUndelete) ? null : this.user.email;
+      this.toggleCommentMenu(comment.comment_id);
+      this.requestUpdate();
+    }
   }
 
   handleCancel() {

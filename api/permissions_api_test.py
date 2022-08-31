@@ -55,7 +55,7 @@ class PermissionsAPITest(testing_config.CustomTestCase):
     self.assertEqual(expected, actual)
 
   def test_get__googler(self):
-    """Googlers have default permissions to create and edit features."""
+    """Googlers have default permissions to create features."""
     testing_config.sign_in('one@google.com', 67890)
     with test_app.test_request_context(self.request_path):
       actual = self.handler.do_get()
@@ -63,7 +63,7 @@ class PermissionsAPITest(testing_config.CustomTestCase):
       'user': {
         'can_create_feature': True,
         'can_approve': False,
-        'can_edit_all': True,
+        'can_edit_all': False,
         'is_admin': False,
         'email': 'one@google.com',
         'editable_features': []

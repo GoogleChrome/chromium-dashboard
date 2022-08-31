@@ -1,11 +1,11 @@
 import {html} from 'lit';
 import {assert, fixture} from '@open-wc/testing';
-import {ChromedashGuideEditallPage} from './chromedash-guide-editall-page';
+import {ChromedashGuideVerifyAccuracyPage} from './chromedash-guide-verify-accuracy-page';
 import './chromedash-toast';
 import '../js-src/cs-client';
 import sinon from 'sinon';
 
-describe('chromedash-guide-editall-page', () => {
+describe('chromedash-guide-verify-accuracy-page', () => {
   const validFeaturePromise = Promise.resolve({
     id: 123456,
     name: 'feature one',
@@ -35,7 +35,7 @@ describe('chromedash-guide-editall-page', () => {
     tags: ['tag_one'],
   });
   /* TODO: create a proper fake data once the form generation is migrated to frontend */
-  const flatForms = '[["fake section name", "", ["fake field 1", "fake field 2"]]]';
+  const forms = '[["fake section name", "", ["fake field 1", "fake field 2"]]]';
 
   /* window.csClient and <chromedash-toast> are initialized at _base.html
    * which are not available here, so we initialize them before each test.
@@ -55,9 +55,9 @@ describe('chromedash-guide-editall-page', () => {
     window.csClient.getFeature.withArgs(0).returns(invalidFeaturePromise);
 
     const component = await fixture(
-      html`<chromedash-guide-editall-page></chromedash-guide-editall-page>`);
+      html`<chromedash-guide-verify-accuracy-page></chromedash-guide-verify-accuracy-page>`);
     assert.exists(component);
-    assert.instanceOf(component, ChromedashGuideEditallPage);
+    assert.instanceOf(component, ChromedashGuideVerifyAccuracyPage);
 
     // invalid feature requests would trigger the toast to show message
     const toastEl = document.querySelector('chromedash-toast');
@@ -71,18 +71,18 @@ describe('chromedash-guide-editall-page', () => {
     window.csClient.getFeature.withArgs(featureId).returns(validFeaturePromise);
 
     const component = await fixture(
-      html`<chromedash-guide-editall-page
+      html`<chromedash-guide-verify-accuracy-page
              .featureId=${featureId}
-             .flatForms=${flatForms}>
-           </chromedash-guide-editall-page>`);
+             .forms=${forms}>
+           </chromedash-guide-verify-accuracy-page>`);
     assert.exists(component);
-    assert.instanceOf(component, ChromedashGuideEditallPage);
+    assert.instanceOf(component, ChromedashGuideVerifyAccuracyPage);
 
     const subheaderDiv = component.shadowRoot.querySelector('div#subheader');
     assert.exists(subheaderDiv);
     // subheader title is correct and clickable
     assert.include(subheaderDiv.innerHTML, 'href="/guide/edit/123456"');
-    assert.include(subheaderDiv.innerHTML, 'Edit feature:');
+    assert.include(subheaderDiv.innerHTML, 'Verify feature data for');
 
     // feature form, hidden token field, and submit/cancel buttons exist
     const featureForm = component.shadowRoot.querySelector('form[name="feature_form"]');

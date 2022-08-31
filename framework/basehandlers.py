@@ -34,7 +34,7 @@ from framework import users
 from framework import utils
 from framework import xsrf
 from internals import approval_defs
-from internals import models
+from internals import core_models
 from internals import user_models
 
 from django.template.loader import render_to_string
@@ -129,7 +129,7 @@ class BaseHandler(flask.views.MethodView):
                   self.get_int_param('featureId', required=required))
     if not required and not feature_id:
       return None
-    feature = models.Feature.get_by_id(feature_id)
+    feature = core_models.Feature.get_by_id(feature_id)
     if required and not feature:
       self.abort(404, msg='Feature not found')
     user = self.get_current_user()
@@ -321,10 +321,12 @@ class FlaskHandler(BaseHandler):
         'email': user.email(),
         'dismissed_cues': json.dumps(user_pref.dismissed_cues),
       }
+      common_data['user_json'] = json.dumps(common_data['user'])
       common_data['xsrf_token'] = xsrf.generate_token(user.email())
       common_data['xsrf_token_expires'] = xsrf.token_expires_sec()
     else:
       common_data['user'] = None
+      common_data['user_json'] = None
       common_data['xsrf_token'] = xsrf.generate_token(None)
       common_data['xsrf_token_expires'] = 0
     return common_data
@@ -469,9 +471,9 @@ class ConstHandler(FlaskHandler):
       return flask.redirect(settings.LOGIN_PAGE_URL), self.get_headers()
     if 'template_path' in defaults:
       template_path = defaults['template_path']
-      if '.html' not in template_path:
+      if not template_path.endswith(('.html', '.xml')):
         self.abort(
-            500, msg='template_path %r does not end with .html' % template_path)
+            500, msg=f'${template_path =} does not end with .html or .xml')
       return defaults
 
     return flask.jsonify(defaults)

@@ -18,7 +18,7 @@ import testing_config  # Must be imported before the module under test.
 import flask
 
 from api import processes_api
-from internals import models
+from internals import core_models
 from internals import processes
 from internals import core_enums
 
@@ -28,12 +28,12 @@ test_app = flask.Flask(__name__)
 class ProcessesAPITest(testing_config.CustomTestCase):
 
   def setUp(self):
-    self.feature_1 = models.Feature(
+    self.feature_1 = core_models.Feature(
         name='feature one', summary='sum', category=1, visibility=1,
         standardization=1, web_dev_views=1, impl_status_chrome=1)
     self.feature_1.put()
     self.feature_id = self.feature_1.key.integer_id()
-    
+
     self.handler = processes_api.ProcessesAPI()
     self.request_path = f'/api/v0/features/{self.feature_id}/process'
 
@@ -83,7 +83,7 @@ class ProcessesAPITest(testing_config.CustomTestCase):
 class ProgressAPITest(testing_config.CustomTestCase):
 
   def setUp(self):
-    self.feature_1 = models.Feature(
+    self.feature_1 = core_models.Feature(
         name='feature one', summary='sum Z',
         owner=['feature_owner@example.com'],
         ready_for_trial_url='fake ready for trial url',
@@ -94,7 +94,7 @@ class ProgressAPITest(testing_config.CustomTestCase):
         shipped_milestone=1)
     self.feature_1.put()
     self.feature_id = self.feature_1.key.integer_id()
-    
+
     self.handler = processes_api.ProgressAPI()
     self.request_path = f'/api/v0/features/{self.feature_id}/progress'
 

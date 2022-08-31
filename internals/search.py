@@ -20,8 +20,9 @@ import re
 from framework import users
 from framework import utils
 from internals import approval_defs
-from internals import models
+from internals import core_models
 from internals import notifier
+from internals import review_models
 from internals import search_queries
 
 MAX_TERMS = 6
@@ -42,8 +43,8 @@ def process_pending_approval_me_query():
     return []
 
   approvable_fields_ids = approval_defs.fields_approvable_by(user)
-  pending_approvals = models.Approval.get_approvals(
-      states=models.Approval.PENDING_STATES)
+  pending_approvals = review_models.Approval.get_approvals(
+      states=[review_models.Approval.REVIEW_REQUESTED])
   pending_approvals = [pa for pa in pending_approvals
                        if pa.field_id in approvable_fields_ids]
 
@@ -67,7 +68,7 @@ def process_access_me_query(field):
   if not user:
     return []
   # Checks if the user's email exists in the given field.
-  features = models.Feature.get_all(filterby=(field, user.email()))
+  features = core_models.Feature.get_all(filterby=(field, user.email()))
   feature_ids = [f['id'] for f in features]
   return feature_ids
 
@@ -78,8 +79,8 @@ def process_recent_reviews_query():
   if not user:
     return []
 
-  recent_approvals = models.Approval.get_approvals(
-      states=models.Approval.FINAL_STATES, limit=40)
+  recent_approvals = review_models.Approval.get_approvals(
+      states=review_models.Approval.FINAL_STATES, limit=40)
 
   feature_ids = _get_referenced_feature_ids(recent_approvals, reverse=True)
   return feature_ids
@@ -175,6 +176,20 @@ def _resolve_promise_to_id_list(promise):
     return id_list
 
 
+def _sort_by_total_order(result_id_list, total_order_ids):
+  """Sort the result_ids according to their position in the total order.
+
+  If some result ID is not present in the total order, use the feature ID
+  value itself as the sorting value, which will effectively put those
+  features at the end of the list in order of creation.
+  """
+  total_order_dict = {f_id: idx for idx, f_id in enumerate(total_order_ids)}
+  sorted_id_list = sorted(
+      result_id_list,
+      key=lambda f_id: total_order_dict.get(f_id, f_id))
+  return sorted_id_list
+
+
 def process_query(
     user_query, sort_spec=None, show_unlisted=False, show_deleted=False,
     start=0, num=100):
@@ -217,16 +232,13 @@ def process_query(
   total_order_ids = _resolve_promise_to_id_list(total_order_promise)
 
   # 4. Sort the IDs according to their position in the complete sorted list.
-  total_order_dict = {f_id: idx for idx, f_id in enumerate(total_order_ids)}
-  sorted_id_list = sorted(
-      result_id_list,
-      key=lambda f_id: total_order_dict[f_id])
+  sorted_id_list = _sort_by_total_order(result_id_list, total_order_ids)
 
   # 5. Paginate
   paginated_id_list = sorted_id_list[start : start + num]
 
   # 6. Fetch the actual issues that have those IDs in the sorted results.
-  features_on_page = models.Feature.get_by_ids(paginated_id_list)
+  features_on_page = core_models.Feature.get_by_ids(paginated_id_list)
 
   logging.info('features_on_page is %r', features_on_page)
   return features_on_page, total_count

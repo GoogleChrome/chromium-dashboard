@@ -19,7 +19,7 @@ import flask
 
 import settings
 from framework import users
-from internals import models
+from internals import core_models
 from internals import user_models
 
 
@@ -61,29 +61,44 @@ def can_create_feature(user):
 
 
 def can_edit_any_feature(user):
-  """Return True if the user is allowed to edit features."""
-  return can_create_feature(user)
-
-
-def can_edit_feature(user, feature):
-  """Return True if the user is allowed to edit the given feature."""
-  # TODO(jrobbins): make this per-feature
-  if not can_view_feature(user, feature):
+  """Return True if the user is allowed to edit all features."""
+  if not user:
     return False
-  return can_edit_any_feature(user)
+  app_user = user_models.AppUser.get_app_user(user.email())  
+  if not app_user:
+    return False
+
+  # Site editors or admins should be able to edit any feature.
+  return app_user.is_admin or app_user.is_site_editor
 
 
-def strict_can_edit_feature(user, feature_id):
+def feature_edit_list(user):
+  """Return a list of features the current user can edit"""
+  if not user:
+    return []
+
+  # If the user can edit any feature, we don't need the full list.
+  # We can just assume they will have edit access to all features.
+  if can_edit_any_feature(user):
+    return []
+
+  # Query features to find which can be edited.
+  features_editable = core_models.Feature.get_all(
+    filterby=('can_edit', user.email()))
+  # Return a list of unique ids of features that can be edited.
+  return list(set([f['id'] for f in features_editable]))
+
+
+def can_edit_feature(user, feature_id):
   """Return True if the user is allowed to edit the given feature."""
+# If the user can edit any feature, they can edit this feature.
+  if can_edit_any_feature(user):
+    return True
+
   if not feature_id or not user:
     return False
 
-  # If the user is an admin or site editor, they can edit this feature.
-  app_user = user_models.AppUser.get_app_user(user.email())
-  if app_user is not None and (app_user.is_admin or app_user.is_site_editor):
-    return True
-
-  feature = models.Feature.get_by_id(feature_id)
+  feature = core_models.Feature.get_by_id(feature_id)
   if not feature:
     return False
 
@@ -150,11 +165,19 @@ def require_create_feature(handler):
   return check_login
 
 
-def require_edit_feature(handler):
-  """Handler decorator to require the user can edit the current feature."""
-  # TODO(jrobbins): make this per-feature
-  def check_login(self, *args, **kwargs):
-    return _reject_or_proceed(
-        self, handler, args, kwargs, can_edit_any_feature)
+def validate_feature_edit_permission(handler_obj, feature_id):
+  """Check if user has permission to edit feature and abort if not."""
+  user = handler_obj.get_current_user()
+  req = handler_obj.request
 
-  return check_login
+  # Give the user a chance to sign in
+  if not user and req.method == 'GET':
+    return handler_obj.redirect(settings.LOGIN_PAGE_URL)
+
+  # Redirect to 404 if feature is not found.
+  if core_models.Feature.get_by_id(int(feature_id)) is None:
+    handler_obj.abort(404, msg='Feature not found')
+
+  # Redirect to 403 if user does not have edit permission for feature.
+  if not can_edit_feature(user, feature_id):
+    handler_obj.abort(403)

@@ -22,7 +22,7 @@ from framework import users
 
 from framework import basehandlers
 from framework import permissions
-from internals import models
+from internals import core_models
 from internals import user_models
 
 
@@ -76,7 +76,7 @@ class PermissionFunctionTests(testing_config.CustomTestCase):
     self.users.append(self.feature_editor)
 
     # Feature for checking permissions against
-    self.feature_1 = models.Feature(
+    self.feature_1 = core_models.Feature(
         name='feature one', summary='sum',
         creator="feature_creator@example.com",
         owner=['feature_owner@example.com'],
@@ -197,21 +197,21 @@ class PermissionFunctionTests(testing_config.CustomTestCase):
   def test_can_edit_any_feature(self):
     self.check_function_results(
         permissions.can_edit_any_feature, tuple(),
-        unregistered=False, registered=True,
-        special=True, site_editor=True, admin=True, anon=False)
+        unregistered=False, registered=False,
+        special=False, site_editor=True, admin=True, anon=False)
 
   def test_can_edit_feature(self):
     self.check_function_results(
         permissions.can_edit_feature, (None,),
-        unregistered=False, registered=True,
-        special=True, site_editor=True, admin=True, anon=False)
+        unregistered=False, registered=False,
+        special=False, site_editor=True, admin=True, anon=False)
 
     # Check in context of specific feature.
     self.check_function_results_with_feature(
       permissions.can_edit_feature, (self.feature_id,),
-      unregistered=False, registered=True,
+      unregistered=False, registered=False,
       feature_owner=True, feature_editor=True,
-      creator=False, site_editor=True, admin=True
+      creator=True, site_editor=True, admin=True
     )
 
   def test_can_approve_feature(self):

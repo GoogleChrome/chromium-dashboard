@@ -17,7 +17,7 @@ import collections
 
 from internals import approval_defs
 from internals import core_enums
-from internals import models
+from internals import core_models
 
 
 Process = collections.namedtuple(

@@ -18,19 +18,45 @@ import logging
 from framework import basehandlers
 from framework import permissions
 from internals import approval_defs
-from internals import models
+from internals import review_models
 from internals import notifier
+
+
+def comment_to_json_dict(comment):
+
+  return {
+      'comment_id': comment.key.id(),
+      'feature_id': comment.feature_id,
+      'field_id': comment.field_id,
+      'created': str(comment.created),  # YYYY-MM-DD HH:MM:SS.SSS
+      'author': comment.author,
+      'content': comment.content,
+      'deleted_by': comment.deleted_by,
+      'old_approval_state': comment.old_approval_state,
+      'new_approval_state': comment.new_approval_state,
+      }
 
 
 class CommentsAPI(basehandlers.APIHandler):
   """Users may see the list of comments on one of the approvals of a feature,
    and add their own, if allowed."""
 
+  def _should_show_comment(self, comment, email, is_admin):
+    """Check whether a comment should be visible to the user."""
+    return comment.deleted_by is None or email == comment.deleted_by or is_admin
+
   def do_get(self, feature_id, field_id=None):
     """Return a list of all review comments on the given feature."""
     # Note: We assume that anyone may view approval comments.
-    comments = models.Comment.get_comments(feature_id, field_id)
-    dicts = [ac.format_for_template(add_id=False) for ac in comments]
+    comments = review_models.Comment.get_comments(feature_id, field_id)
+    user = self.get_current_user(required=True)
+    is_admin = permissions.can_admin_site(user)
+    
+    # Filter deleted comments the user can't see.
+    comments = filter(
+      lambda c: self._should_show_comment(c, user.email(), is_admin), comments)
+
+    dicts = [comment_to_json_dict(c) for c in comments]
     data = {
         'comments': dicts,
         }
@@ -40,7 +66,7 @@ class CommentsAPI(basehandlers.APIHandler):
     """Add a review comment and possibly set a approval value."""
     new_state = self.get_int_param(
         'state', required=False,
-        validator=models.Approval.is_valid_state)
+        validator=review_models.Approval.is_valid_state)
     feature = self.get_specified_feature(feature_id=feature_id)
     user = self.get_current_user(required=True)
     post_to_approval_field_id = self.get_param(
@@ -48,7 +74,7 @@ class CommentsAPI(basehandlers.APIHandler):
 
     old_state = None
     if field_id is not None and new_state is not None:
-      old_approvals = models.Approval.get_approvals(
+      old_approvals = review_models.Approval.get_approvals(
           feature_id=feature_id, field_id=field_id,
           set_by=user.email())
       if old_approvals:
@@ -57,13 +83,13 @@ class CommentsAPI(basehandlers.APIHandler):
       approvers = approval_defs.get_approvers(field_id)
       if not permissions.can_approve_feature(user, feature, approvers):
         self.abort(403, msg='User is not an approver')
-      models.Approval.set_approval(
+      review_models.Approval.set_approval(
           feature.key.integer_id(), field_id, new_state, user.email())
 
     comment_content = self.get_param('comment', required=False)
 
     if comment_content or new_state is not None:
-      comment = models.Comment(
+      comment = review_models.Comment(
           feature_id=feature_id, field_id=field_id,
           author=user.email(), content=comment_content,
           old_approval_state=old_state,
@@ -77,4 +103,19 @@ class CommentsAPI(basehandlers.APIHandler):
     # Callers don't use the JSON response for this API call.
     return {'message': 'Done'}
 
-  # TODO(jrobbins): do_patch to soft-delete comments
+  def do_patch(self, feature_id):
+    comment_id = self.get_param('commentId', required=True)
+    comment = review_models.Comment.get_by_id(comment_id)
+
+    user = self.get_current_user(required=True)
+    if not permissions.can_admin_site(user) and user.email() != comment.author:
+      self.abort(403, msg='User does not have comment edit permissions')
+
+    is_undelete = self.get_param('isUndelete', required=True)
+    if is_undelete:
+      comment.deleted_by = None
+    else:
+      comment.deleted_by = user.email()
+    comment.put()
+
+    return {'message': 'Done'}

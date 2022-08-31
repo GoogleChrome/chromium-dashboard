@@ -19,7 +19,7 @@ import logging
 import requests
 
 from framework import permissions
-from internals import models
+from internals import review_models
 import settings
 
 CACHE_EXPIRATION = 60 * 60  # One hour
@@ -68,7 +68,7 @@ APPROVAL_FIELDS_BY_ID = {
 
 def fetch_owners(url):
   """Load a list of email addresses from an OWNERS file."""
-  raw_content = models.OwnersFile.get_raw_owner_file(url)
+  raw_content = review_models.OwnersFile.get_raw_owner_file(url)
   if raw_content:
     return decode_raw_owner_content(raw_content)
 
@@ -78,7 +78,7 @@ def fetch_owners(url):
     logging.error('Got response %s', repr(response)[:settings.MAX_LOG_LINE])
     raise ValueError('Could not get OWNERS file')
 
-  models.OwnersFile(url=url, raw_content=response.content).add_owner_file()
+  review_models.OwnersFile(url=url, raw_content=response.content).add_owner_file()
   return decode_raw_owner_content(response.content)
 
 
@@ -131,9 +131,9 @@ def is_approved(approval_values, field_id):
   """Return true if we have all needed APPROVED values and no NOT_APPROVED."""
   count = 0
   for av in approval_values:
-    if av.state in (models.Approval.APPROVED, models.Approval.NA):
+    if av.state in (review_models.Approval.APPROVED, review_models.Approval.NA):
       count += 1
-    elif av.state == models.Approval.NOT_APPROVED:
+    elif av.state == review_models.Approval.NOT_APPROVED:
       return False
   afd = APPROVAL_FIELDS_BY_ID[field_id]
 
@@ -153,7 +153,7 @@ def is_resolved(approval_values, field_id):
 
   # Any NOT_APPROVED value means that the review is no longer pending.
   for av in approval_values:
-    if av.state == models.Approval.NOT_APPROVED:
+    if av.state == review_models.Approval.NOT_APPROVED:
       return True
 
   return False
