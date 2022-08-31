@@ -127,6 +127,8 @@ export const ALL_FIELDS = {
   },
 
   'blink_components': {
+    type: 'select',
+    choices: undefined, // this gets replaced in chromedash-form-field via the blink component api
     label: 'Blink component',
     help_text: html`
         Select the most specific component. If unsure, leave as "Blink".`,

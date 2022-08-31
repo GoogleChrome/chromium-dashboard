@@ -27,7 +27,36 @@ export class ChromedashFormField extends LitElement {
       errors: {type: String},
       stage: {type: String},
       disabled: {type: Boolean},
+      loading: {type: Boolean},
+      componentChoices: {type: Object}, // just for the blink component select field
     };
+  }
+
+  constructor() {
+    super();
+    this.name = '';
+    this.value = '';
+    this.field = '';
+    this.errors = '';
+    this.stage = '';
+    this.disabled = false;
+    this.loading = false;
+    this.componentChoices = {};
+  }
+
+  connectedCallback() {
+    super.connectedCallback();
+    if (this.name !== 'blink_components') return;
+
+    console.log(this.value);
+    // get the choice values from API when the field is blink component select field
+    this.loading =true;
+    window.csClient.getBlinkComponents().then((componentChoices) => {
+      this.componentChoices = componentChoices;
+      this.loading =false;
+    }).catch(() => {
+      showToastMessage('Some errors occurred. Please refresh the page or try again later.');
+    });
   }
 
   toggleExtraHelp() {
@@ -48,7 +77,7 @@ export class ChromedashFormField extends LitElement {
     const helpText = fieldProps.help_text || '';
     const extraHelpText = fieldProps.extra_help || '';
     const type = fieldProps.type;
-    const choices = fieldProps.choices;
+    const choices = fieldProps.choices || this.componentChoices;
 
     // If type is checkbox, select, or input, then generate locally.
     let fieldHTML = '';
@@ -73,11 +102,11 @@ export class ChromedashFormField extends LitElement {
           id="id_${this.name}"
           value="${this.value}"
           size="small"
-          ?disabled=${this.disabled}
+          ?disabled=${this.disabled || this.loading}
         >
           ${Object.values(choices).map(
-            ([intValue, label]) => html`
-              <sl-menu-item value="${intValue}"> ${label} </sl-menu-item>
+            ([value, label]) => html`
+              <sl-menu-item value="${value}"> ${label} </sl-menu-item>
             `,
           )}
         </sl-select>
