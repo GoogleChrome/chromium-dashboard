@@ -49,10 +49,10 @@ export class ChromedashFormField extends LitElement {
     if (this.name !== 'blink_components') return;
 
     // get the choice values from API when the field is blink component select field
-    this.loading =true;
+    this.loading = true;
     window.csClient.getBlinkComponents().then((componentChoices) => {
       this.componentChoices = componentChoices;
-      this.loading =false;
+      this.loading = false;
     }).catch(() => {
       showToastMessage('Some errors occurred. Please refresh the page or try again later.');
     });
