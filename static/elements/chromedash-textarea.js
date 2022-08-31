@@ -5,6 +5,7 @@ export class ChromedashTextarea extends SlTextarea {
   static get properties() {
     return {
       ...super.properties,
+      attrs: {type: Object},
       multiple: {type: Boolean},
       pattern: {type: String},
       chromedash_single_pattern: {type: String},
@@ -14,6 +15,23 @@ export class ChromedashTextarea extends SlTextarea {
 
   constructor() {
     super();
+    this.attrs = {};
+    this.cols = 50;
+    this.rows = 10;
+
+    // This is the longest string that a cloud ndb StringProperty seems to accept.
+    // Fields that accept a URL list can be longer, provided that each individual
+    // URL is no more than this length.
+    this.maxlength = 1400;
+  }
+
+  connectedCallback() {
+    super.connectedCallback();
+
+    // Update attributes if provided
+    Object.keys(this.attrs).map((attr) => {
+      this.setAttribute(attr, this.attrs[attr]);
+    });
   }
 
   /**

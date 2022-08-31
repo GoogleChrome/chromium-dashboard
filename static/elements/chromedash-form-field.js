@@ -76,6 +76,7 @@ export class ChromedashFormField extends LitElement {
     const helpText = fieldProps.help_text || '';
     const extraHelpText = fieldProps.extra_help || '';
     const type = fieldProps.type;
+    const attrs = fieldProps.attrs || {};
     const choices = fieldProps.choices || this.componentChoices;
 
     // If type is checkbox, select, or input, then generate locally.
@@ -157,6 +158,16 @@ export class ChromedashFormField extends LitElement {
           .value=${this.value === 'None' ? '' : this.value}
           ?required=${fieldProps.required}>
         </sl-input>
+      `;
+    } else if (type === 'textarea') {
+      fieldHTML = html`
+        <chromedash-textarea
+          name="${this.name}"
+          size="small"
+          .value=${this.value === 'None' ? '' : this.value}
+          .attrs=${attrs}
+          ?required=${fieldProps.required}>
+        </chromedash-textarea>
       `;
     } else {
       // Temporary workaround until we migrate the generation of
