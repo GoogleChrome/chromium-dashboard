@@ -317,7 +317,7 @@ export const ALL_FIELDS = {
 
   'comments': {
     type: 'textarea',
-    attrs: {row: 4},
+    attrs: {rows: 4},
     required: false,
     label: 'Comments',
     help_text: html`
@@ -509,7 +509,7 @@ export const ALL_FIELDS = {
 
   'safari_views_notes': {
     type: 'textarea',
-    attrs: {row: 2, placeholder: 'Notes'},
+    attrs: {rows: 2, placeholder: 'Notes'},
     required: false,
     label: '',
     help_text: '',
@@ -535,7 +535,7 @@ export const ALL_FIELDS = {
 
   'ff_views_notes': {
     type: 'textarea',
-    attrs: {row: 2, placeholder: 'Notes'},
+    attrs: {rows: 2, placeholder: 'Notes'},
     required: false,
     label: '',
     help_text: '',
@@ -562,7 +562,7 @@ export const ALL_FIELDS = {
 
   'web_dev_views_notes': {
     type: 'textarea',
-    attrs: {row: 2, placeholder: 'Notes'},
+    attrs: {rows: 2, placeholder: 'Notes'},
     required: false,
     label: '',
     help_text: html`
@@ -572,7 +572,7 @@ export const ALL_FIELDS = {
 
   'other_views_notes': {
     type: 'textarea',
-    attrs: {row: 4, placeholder: 'Notes'},
+    attrs: {rows: 4, placeholder: 'Notes'},
     required: false,
     label: 'Other views',
     help_text: html`
@@ -656,7 +656,7 @@ export const ALL_FIELDS = {
 
   'experiment_timeline': {
     type: 'textarea',
-    attrs: {row: 2, placeholder: 'This field is deprecated', disabled: 'disabled'},
+    attrs: {rows: 2, placeholder: 'This field is deprecated', disabled: true},
     required: false,
     label: 'Experiment Timeline',
     help_text: html`
