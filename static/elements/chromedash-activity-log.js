@@ -38,7 +38,7 @@ export class ChromedashActivityLog extends LitElement {
         }
 
         .edit-menu {
-          display: inline-block;
+          display: block;
           float: right;
         }
 
@@ -108,11 +108,11 @@ export class ChromedashActivityLog extends LitElement {
     // Show delete option if not deleted, else show undelete.
     let menuItem = html`
     <sl-menu-item @click="${() => this.handleDeleteToggle(comment, false)}"
-    >Delete Comment</div>`;
+    >Delete Comment</sl-menu-item>`;
     if (comment.deleted_by) {
       menuItem = html`
       <sl-menu-item @click="${() => this.handleDeleteToggle(comment, true)}"
-      >Undelete Comment</div>`;
+      >Undelete Comment</sl-menu-item>`;
     }
 
     return html`

@@ -30,7 +30,7 @@ describe('chromedash-activity-log', () => {
 
   it('renders with no data', async () => {
     const component = await fixture(
-        html`<chromedash-activity-log></chromedash-activity-log>`);
+      html`<chromedash-activity-log></chromedash-activity-log>`);
     assert.exists(component);
     assert.instanceOf(component, ChromedashActivityLog);
     assert.notExists(component.shadowRoot.querySelector('sl-relative-time'));
@@ -38,9 +38,10 @@ describe('chromedash-activity-log', () => {
   });
 
   it('renders a list of comments when signed out', async () => {
+    const anonUser = null;
     const component = await fixture(
-        html`<chromedash-activity-log
-              .user=${null}
+      html`<chromedash-activity-log
+              .user=${anonUser}
               .feature=${featureOne}
               .comments=${[commentOne, commentTwo]}>
              </chromedash-activity-log>`);
@@ -59,7 +60,7 @@ describe('chromedash-activity-log', () => {
 
   it('renders a list of comments when signed in', async () => {
     const component = await fixture(
-        html`<chromedash-activity-log
+      html`<chromedash-activity-log
               .user=${nonAdminUser}
               .feature=${featureOne}
               .comments=${[commentOne, commentTwo]}>
@@ -83,7 +84,7 @@ describe('chromedash-activity-log', () => {
       deleted_by: 'non-admin@google.com',
     };
     const component = await fixture(
-        html`<chromedash-activity-log
+      html`<chromedash-activity-log
               .user=${nonAdminUser}
               .feature=${featureOne}
               .comments=${[deletedComment]}>
@@ -107,7 +108,7 @@ describe('chromedash-activity-log', () => {
       content: 'something off the cuff',
     };
     const component = await fixture(
-        html`<chromedash-activity-log
+      html`<chromedash-activity-log
               .user=${nonAdminUser}
               .feature=${featureOne}
               .comments=${[doomedComment]}>
@@ -136,7 +137,7 @@ describe('chromedash-activity-log', () => {
       deleted_by: 'non-admin@google.com',
     };
     const component = await fixture(
-        html`<chromedash-activity-log
+      html`<chromedash-activity-log
               .user=${nonAdminUser}
               .feature=${featureOne}
               .comments=${[blessedComment]}>
@@ -151,5 +152,4 @@ describe('chromedash-activity-log', () => {
     assert.notInclude(after.innerHTML, '[Deleted]');
     assert.include(after.innerHTML, 'lucky guess');
   });
-
 });
