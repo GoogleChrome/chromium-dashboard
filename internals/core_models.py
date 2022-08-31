@@ -1053,7 +1053,7 @@ class FeatureEntry(ndb.Model):  # Copy from Feature
     # an existing feature.
     if 'name' in kwargs:
       if 'blink_components' not in kwargs:
-        kwargs['blink_components'] = [BlinkComponent.DEFAULT_COMPONENT]
+        kwargs['blink_components'] = [settings.DEFAULT_COMPONENT]
 
     super(FeatureEntry, self).__init__(*args, **kwargs)
 
