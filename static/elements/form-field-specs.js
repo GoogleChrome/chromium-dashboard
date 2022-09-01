@@ -12,9 +12,45 @@ import {
 } from './form-field-enums';
 
 
+/* Patterns from https://www.oreilly.com/library/view/regular-expressions-cookbook/9781449327453/ch04s01.html
+ * Removing single quote ('), backtick (`), and pipe (|) since they are risky unless properly escaped everywhere.
+ * Also removing ! and % because they have special meaning for some older email routing systems. */
+const USER_REGEX = '[A-Za-z0-9_#$&*+/=?{}~^.-]+';
 const DOMAIN_REGEX = String.raw`(([A-Za-z0-9-]+\.)+[A-Za-z]{2,6})`;
+
+const EMAIL_ADDRESS_REGEX = USER_REGEX + '@' + DOMAIN_REGEX;
+const EMAIL_ADDRESSES_REGEX = EMAIL_ADDRESS_REGEX + '([ ]*,[ ]*' + EMAIL_ADDRESS_REGEX + ')*';
+
+// Simple http URLs
 const PORTNUM_REGEX = '(:[0-9]+)?';
 const URL_REGEX = '(https?)://' + DOMAIN_REGEX + PORTNUM_REGEX + String.raw`(/[^\s]*)?`;
+const URL_PADDED_REGEX = String.raw`\s*` + URL_REGEX + String.raw`\s*`;
+
+const URL_FIELD_ATTRS = {
+  title: 'Enter a full URL https://...',
+  type: 'url',
+  placeholder: 'https://...',
+  pattern: URL_PADDED_REGEX,
+};
+
+const MULTI_EMAIL_FIELD_ATTRS = {
+  title: 'Enter one or more comma-separated complete email addresses.',
+  // Don't specify type="email" because browsers consider multiple emails
+  // invalid, regardles of the multiple attribute.
+  type: 'text',
+  multiple: true,
+  placeholder: 'user1@domain.com, user2@chromium.org',
+  pattern: EMAIL_ADDRESSES_REGEX,
+};
+
+const TEXT_FIELD_ATTRS = {
+  type: 'text',
+};
+
+const MILESTONE_NUMBER_FILED_ATTRS = {
+  type: 'number',
+  placeholder: 'Milestone number',
+};
 
 const MULTI_URL_FIELD_ATTRS = {
   title: 'Enter one or more full URLs, one per line:\nhttps://...\nhttps://...',
@@ -41,7 +77,7 @@ export const ALL_FIELDS = {
 
   'name': {
     type: 'input',
-    input_type: 'text',
+    attrs: TEXT_FIELD_ATTRS,
     required: true,
     label: 'Feature name',
     help_text: html`
@@ -108,7 +144,7 @@ export const ALL_FIELDS = {
 
   'owner': {
     type: 'input',
-    input_type: 'multi-email',
+    attrs: MULTI_EMAIL_FIELD_ATTRS,
     required: true,
     label: 'Feature owners',
     help_text: html`
@@ -118,7 +154,7 @@ export const ALL_FIELDS = {
 
   'editors': {
     type: 'input',
-    input_type: 'multi-email',
+    attrs: MULTI_EMAIL_FIELD_ATTRS,
     required: false,
     label: 'Feature editors',
     help_text: html`
@@ -195,7 +231,7 @@ export const ALL_FIELDS = {
 
   'search_tags': {
     type: 'input',
-    input_type: 'text',
+    attrs: TEXT_FIELD_ATTRS,
     required: false,
     label: 'Search tags',
     help_text: html`
@@ -214,7 +250,7 @@ export const ALL_FIELDS = {
 
   'bug_url': {
     type: 'input',
-    input_type: 'url',
+    attrs: URL_FIELD_ATTRS,
     required: false,
     label: 'Tracking bug URL',
     help_text: html`
@@ -230,7 +266,7 @@ export const ALL_FIELDS = {
 
   'launch_bug_url': {
     type: 'input',
-    input_type: 'url',
+    attrs: URL_FIELD_ATTRS,
     required: false,
     label: 'Launch bug URL',
     help_text: html`
@@ -283,7 +319,7 @@ export const ALL_FIELDS = {
 
   'initial_public_proposal_url': {
     type: 'input',
-    input_type: 'url',
+    attrs: URL_FIELD_ATTRS,
     required: false,
     label: 'Initial public proposal URL',
     help_text: html`
@@ -306,7 +342,7 @@ export const ALL_FIELDS = {
 
   'spec_link': {
     type: 'input',
-    input_type: 'url',
+    attrs: URL_FIELD_ATTRS,
     required: false,
     label: 'Spec link',
     help_text: html`
@@ -342,7 +378,7 @@ export const ALL_FIELDS = {
 
   'spec_mentors': {
     type: 'input',
-    input_type: 'multi-email',
+    attrs: MULTI_EMAIL_FIELD_ATTRS,
     required: false,
     label: 'Spec mentor',
     help_text: html`
@@ -355,7 +391,7 @@ export const ALL_FIELDS = {
 
   'intent_to_implement_url': {
     type: 'input',
-    input_type: 'url',
+    attrs: URL_FIELD_ATTRS,
     required: false,
     label: 'Intent to Prototype link',
     help_text: html`
@@ -422,7 +458,7 @@ export const ALL_FIELDS = {
 
   'intent_to_ship_url': {
     type: 'input',
-    input_type: 'url',
+    attrs: URL_FIELD_ATTRS,
     required: false,
     label: 'Intent to Ship link',
     help_text: html`After you have started the "Intent to Ship" discussion
@@ -431,7 +467,7 @@ export const ALL_FIELDS = {
 
   'ready_for_trial_url': {
     type: 'input',
-    input_type: 'url',
+    attrs: URL_FIELD_ATTRS,
     required: false,
     label: 'Ready for Trial link',
     help_text: html`After you have started the "Ready for Trial" discussion
@@ -440,7 +476,7 @@ export const ALL_FIELDS = {
 
   'intent_to_experiment_url': {
     type: 'input',
-    input_type: 'url',
+    attrs: URL_FIELD_ATTRS,
     required: false,
     label: 'Intent to Experiment link',
     help_text: html`After you have started the "Intent to Experiment"
@@ -449,7 +485,7 @@ export const ALL_FIELDS = {
 
   'intent_to_extend_experiment_url': {
     type: 'input',
-    input_type: 'url',
+    attrs: URL_FIELD_ATTRS,
     required: false,
     label: 'Intent to Extend Experiment link',
     help_text: html`If this feature has an "Intent to Extend Experiment"
@@ -459,7 +495,7 @@ export const ALL_FIELDS = {
   'r4dt_url': {
     // Sets intent_to_experiment_url in DB
     type: 'input',
-    input_type: 'url',
+    attrs: URL_FIELD_ATTRS,
     required: false,
     label: 'Request for Deprecation Trial link',
     help_text: html`After you have started the "Request for Deprecation Trial"
@@ -501,7 +537,7 @@ export const ALL_FIELDS = {
 
   'safari_views_link': {
     type: 'input',
-    input_type: 'url',
+    attrs: URL_FIELD_ATTRS,
     required: false,
     label: '',
     help_text: html`Citation link.`,
@@ -526,7 +562,7 @@ export const ALL_FIELDS = {
 
   'ff_views_link': {
     type: 'input',
-    input_type: 'url',
+    attrs: URL_FIELD_ATTRS,
     required: false,
     label: '',
     help_text: html`
@@ -553,7 +589,7 @@ export const ALL_FIELDS = {
 
   'web_dev_views_link': {
     type: 'input',
-    input_type: 'url',
+    attrs: URL_FIELD_ATTRS,
     required: false,
     label: '',
     help_text: html`
@@ -667,7 +703,7 @@ export const ALL_FIELDS = {
 
   'ot_milestone_desktop_start': {
     type: 'input',
-    input_type: 'milestone-number',
+    attrs: MILESTONE_NUMBER_FILED_ATTRS,
     required: false,
     label: 'OT desktop start',
     help_text: html`
@@ -677,7 +713,7 @@ export const ALL_FIELDS = {
 
   'ot_milestone_desktop_end': {
     type: 'input',
-    input_type: 'milestone-number',
+    attrs: MILESTONE_NUMBER_FILED_ATTRS,
     required: false,
     label: 'OT desktop end',
     help_text: html`
@@ -687,7 +723,7 @@ export const ALL_FIELDS = {
 
   'ot_milestone_android_start': {
     type: 'input',
-    input_type: 'milestone-number',
+    attrs: MILESTONE_NUMBER_FILED_ATTRS,
     required: false,
     label: 'OT Android start',
     help_text: html`
@@ -697,7 +733,7 @@ export const ALL_FIELDS = {
 
   'ot_milestone_android_end': {
     type: 'input',
-    input_type: 'milestone-number',
+    attrs: MILESTONE_NUMBER_FILED_ATTRS,
     required: false,
     label: 'OT Android end',
     help_text: html`
@@ -707,7 +743,7 @@ export const ALL_FIELDS = {
 
   'ot_milestone_webview_start': {
     type: 'input',
-    input_type: 'milestone-number',
+    attrs: MILESTONE_NUMBER_FILED_ATTRS,
     required: false,
     label: 'OT WebView start',
     help_text: html`
@@ -717,7 +753,7 @@ export const ALL_FIELDS = {
 
   'ot_milestone_webview_end': {
     type: 'input',
-    input_type: 'milestone-number',
+    attrs: MILESTONE_NUMBER_FILED_ATTRS,
     required: false,
     label: 'OT WebView end',
     help_text: html`
@@ -757,7 +793,7 @@ export const ALL_FIELDS = {
 
   'origin_trial_feedback_url': {
     type: 'input',
-    input_type: 'url',
+    attrs: URL_FIELD_ATTRS,
     required: false,
     label: 'Origin trial feedback summary',
     help_text: html`
@@ -781,7 +817,7 @@ export const ALL_FIELDS = {
 
   'finch_url': {
     type: 'input',
-    input_type: 'url',
+    attrs: URL_FIELD_ATTRS,
     required: false,
     label: 'Finch experiment',
     help_text: html`
@@ -792,7 +828,7 @@ export const ALL_FIELDS = {
 
   'i2e_lgtms': {
     type: 'input',
-    input_type: 'multi-email',
+    attrs: MULTI_EMAIL_FIELD_ATTRS,
     required: false,
     label: 'Intent to Experiment LGTM by',
     help_text: html`
@@ -802,7 +838,7 @@ export const ALL_FIELDS = {
 
   'i2s_lgtms': {
     type: 'input',
-    input_type: 'multi-email',
+    attrs: MULTI_EMAIL_FIELD_ATTRS,
     required: false,
     label: 'Intent to Ship LGTMs by',
     help_text: html`
@@ -814,7 +850,7 @@ export const ALL_FIELDS = {
   'r4dt_lgtms': {
     // Sets i2e_lgtms field.
     type: 'input',
-    input_type: 'multi-email',
+    attrs: MULTI_EMAIL_FIELD_ATTRS,
     required: false,
     label: 'Request for Deprecation Trial LGTM by',
     help_text: html`
@@ -899,7 +935,7 @@ export const ALL_FIELDS = {
 
   'devrel': {
     type: 'input',
-    input_type: 'multi-email',
+    attrs: MULTI_EMAIL_FIELD_ATTRS,
     required: false,
     label: 'Developer relations emails',
     help_text: html`
@@ -908,7 +944,7 @@ export const ALL_FIELDS = {
 
   'shipped_milestone': {
     type: 'input',
-    input_type: 'milestone-number',
+    attrs: MILESTONE_NUMBER_FILED_ATTRS,
     required: false,
     label: 'Chrome for desktop',
     help_text: SHIPPED_HELP_TXT,
@@ -916,7 +952,7 @@ export const ALL_FIELDS = {
 
   'shipped_android_milestone': {
     type: 'input',
-    input_type: 'milestone-number',
+    attrs: MILESTONE_NUMBER_FILED_ATTRS,
     required: false,
     label: 'Chrome for Android',
     help_text: SHIPPED_HELP_TXT,
@@ -924,7 +960,7 @@ export const ALL_FIELDS = {
 
   'shipped_ios_milestone': {
     type: 'input',
-    input_type: 'milestone-number',
+    attrs: MILESTONE_NUMBER_FILED_ATTRS,
     required: false,
     label: 'Chrome for iOS (RARE)',
     help_text: SHIPPED_HELP_TXT,
@@ -932,7 +968,7 @@ export const ALL_FIELDS = {
 
   'shipped_webview_milestone': {
     type: 'input',
-    input_type: 'milestone-number',
+    attrs: MILESTONE_NUMBER_FILED_ATTRS,
     required: false,
     label: 'Android Webview',
     help_text: SHIPPED_WEBVIEW_HELP_TXT,
@@ -954,7 +990,7 @@ export const ALL_FIELDS = {
 
   'devtrial_instructions': {
     type: 'input',
-    input_type: 'url',
+    attrs: URL_FIELD_ATTRS,
     required: false,
     label: 'DevTrial instructions',
     help_text: html`
@@ -971,7 +1007,7 @@ export const ALL_FIELDS = {
 
   'dt_milestone_desktop_start': {
     type: 'input',
-    input_type: 'milestone-number',
+    attrs: MILESTONE_NUMBER_FILED_ATTRS,
     required: false,
     label: 'DevTrial on desktop',
     help_text: html`
@@ -983,7 +1019,7 @@ export const ALL_FIELDS = {
 
   'dt_milestone_android_start': {
     type: 'input',
-    input_type: 'milestone-number',
+    attrs: MILESTONE_NUMBER_FILED_ATTRS,
     required: false,
     label: 'DevTrial on Android',
     help_text: html`
@@ -995,7 +1031,7 @@ export const ALL_FIELDS = {
 
   'dt_milestone_ios_start': {
     type: 'input',
-    input_type: 'milestone-number',
+    attrs: MILESTONE_NUMBER_FILED_ATTRS,
     required: false,
     label: 'DevTrial on iOS (RARE)',
     help_text: html`
@@ -1007,7 +1043,7 @@ export const ALL_FIELDS = {
 
   'flag_name': {
     type: 'input',
-    input_type: 'text',
+    attrs: TEXT_FIELD_ATTRS,
     required: false,
     label: 'Flag name',
     help_text: html`
