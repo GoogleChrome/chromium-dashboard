@@ -1,21 +1,7 @@
 import {LitElement, html} from 'lit';
 import {ALL_FIELDS} from './form-field-specs';
 import {unsafeHTML} from 'lit/directives/unsafe-html.js';
-
-
-/* Patterns from https://www.oreilly.com/library/view/regular-expressions-cookbook/9781449327453/ch04s01.html
- * Removing single quote ('), backtick (`), and pipe (|) since they are risky unless properly escaped everywhere.
- * Also removing ! and % because they have special meaning for some older email routing systems. */
-const USER_REGEX = '[A-Za-z0-9_#$&*+/=?{}~^.-]+';
-const DOMAIN_REGEX = String.raw`(([A-Za-z0-9-]+\.)+[A-Za-z]{2,6})`;
-
-const EMAIL_ADDRESS_REGEX = USER_REGEX + '@' + DOMAIN_REGEX;
-const EMAIL_ADDRESSES_REGEX = EMAIL_ADDRESS_REGEX + '([ ]*,[ ]*' + EMAIL_ADDRESS_REGEX + ')*';
-
-// Simple http URLs
-const PORTNUM_REGEX = '(:[0-9]+)?';
-const URL_REGEX = '(https?)://' + DOMAIN_REGEX + PORTNUM_REGEX + String.raw`(/[^\s]*)?`;
-const URL_PADDED_REGEX = String.raw`\s*` + URL_REGEX + String.raw`\s*`;
+import {ref} from 'lit/directives/ref.js';
 
 
 export class ChromedashFormField extends LitElement {
@@ -28,6 +14,7 @@ export class ChromedashFormField extends LitElement {
       stage: {type: String},
       disabled: {type: Boolean},
       loading: {type: Boolean},
+      fieldProps: {type: Object},
       componentChoices: {type: Object}, // just for the blink component select field
     };
   }
@@ -46,6 +33,8 @@ export class ChromedashFormField extends LitElement {
 
   connectedCallback() {
     super.connectedCallback();
+    this.fieldProps = ALL_FIELDS[this.name] || {};
+
     if (this.name !== 'blink_components') return;
 
     // get the choice values from API when the field is blink component select field
@@ -55,6 +44,15 @@ export class ChromedashFormField extends LitElement {
       this.loading = false;
     }).catch(() => {
       showToastMessage('Some errors occurred. Please refresh the page or try again later.');
+    });
+  }
+
+  updateAttributes(el) {
+    if (!el) return;
+
+    const attrs = this.fieldProps.attrs || {};
+    Object.keys(attrs).map((attr) => {
+      el.setAttribute(attr, attrs[attr]);
     });
   }
 
@@ -71,13 +69,11 @@ export class ChromedashFormField extends LitElement {
   }
 
   render() {
-    const fieldProps = ALL_FIELDS[this.name] || {};
-    const label = fieldProps.label;
-    const helpText = fieldProps.help_text || '';
-    const extraHelpText = fieldProps.extra_help || '';
-    const type = fieldProps.type;
-    const attrs = fieldProps.attrs || {};
-    const choices = fieldProps.choices || this.componentChoices;
+    const label = this.fieldProps.label;
+    const helpText = this.fieldProps.help_text || '';
+    const extraHelpText = this.fieldProps.extra_help || '';
+    const type = this.fieldProps.type;
+    const choices = this.fieldProps.choices || this.componentChoices;
 
     // If type is checkbox, select, or input, then generate locally.
     let fieldHTML = '';
@@ -112,61 +108,25 @@ export class ChromedashFormField extends LitElement {
         </sl-select>
       `;
     } else if (type === 'input') {
-      let inputType = '';
-      let title = '';
-      let placeholder;
-      let pattern;
-      switch (fieldProps.input_type) {
-        case 'text':
-          inputType = 'text';
-          break;
-
-        case 'url':
-          inputType = 'url';
-          title = 'Enter a full URL https://...';
-          placeholder = 'https://...';
-          pattern = URL_PADDED_REGEX;
-          break;
-
-        case 'multi-email':
-          /* Don't specify type="email" because browsers consider multiple emails
-          * invalid, regardles of the multiple attribute. */
-          inputType = 'text';
-          title = 'Enter one or more comma-separated complete email addresses.';
-          placeholder = 'user1@domain.com, user2@chromium.org';
-          pattern = EMAIL_ADDRESSES_REGEX;
-          break;
-
-        case 'milestone-number':
-          inputType = 'number';
-          placeholder = 'Milestone number';
-          break;
-
-        default:
-          console.error(`Invalid input type: ${fieldProps.input_type}`);
-      }
       fieldHTML = html`
-        <sl-input 
-          type="${inputType}"
+        <sl-input
+          ${ref(this.updateAttributes)}
           name="${this.name}"
           id="id_${this.name}"
           size="small"
           autocomplete="off"
-          .title=${title}
-          .placeholder=${placeholder}
-          .pattern=${pattern}
           .value=${this.value === 'None' ? '' : this.value}
-          ?required=${fieldProps.required}>
+          ?required=${this.fieldProps.required}>
         </sl-input>
       `;
     } else if (type === 'textarea') {
       fieldHTML = html`
         <chromedash-textarea
+          ${ref(this.updateAttributes)}
           name="${this.name}"
           size="small"
           .value=${this.value === 'None' ? '' : this.value}
-          .attrs=${attrs}
-          ?required=${fieldProps.required}>
+          ?required=${this.fieldProps.required}>
         </chromedash-textarea>
       `;
     } else {
