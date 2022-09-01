@@ -1,6 +1,7 @@
 import {LitElement, html, nothing} from 'lit';
 import {ALL_FIELDS} from './form-field-specs';
 import {ref} from 'lit/directives/ref.js';
+import './chromedash-textarea';
 
 
 export class ChromedashFormField extends LitElement {
@@ -8,9 +9,6 @@ export class ChromedashFormField extends LitElement {
     return {
       name: {type: String},
       value: {type: String},
-      field: {type: String},
-      errors: {type: String},
-      stage: {type: String},
       disabled: {type: Boolean},
       loading: {type: Boolean},
       fieldProps: {type: Object},
@@ -22,9 +20,6 @@ export class ChromedashFormField extends LitElement {
     super();
     this.name = '';
     this.value = '';
-    this.field = '';
-    this.errors = '';
-    this.stage = '';
     this.disabled = false;
     this.loading = false;
     this.componentChoices = {};
