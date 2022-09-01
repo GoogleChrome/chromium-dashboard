@@ -165,7 +165,7 @@ describe('chromedash-activity-log', () => {
 
   it('renders with some data', async () => {
     const component = await fixture(
-        html`<chromedash-activity-log
+      html`<chromedash-activity-log
             .user=${nonAdminUser}
             .feature=${featureOne}
             .comments=${[actOne, actTwo]}>
@@ -173,8 +173,7 @@ describe('chromedash-activity-log', () => {
     assert.exists(component);
     assert.instanceOf(component, ChromedashActivityLog);
     assert.lengthOf(
-        component.shadowRoot.querySelectorAll('chromedash-activity'),
-        2);
+      component.shadowRoot.querySelectorAll('chromedash-activity'),
+      2);
   });
-
 });
