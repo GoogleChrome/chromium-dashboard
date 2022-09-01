@@ -28,11 +28,20 @@ export const FEATURE_CATEGORIES = {
   CAPABILITIES: [21, 'Capabilities (Fugu)'],
 };
 
+// FEATURE_TYPES object is organized as [intValue, stringLabel, description],
+// the descriptions are used only for the descriptions of feature_type_radio_group
 export const FEATURE_TYPES = {
-  FEATURE_TYPE_INCUBATE_ID: [0, 'New feature incubation'],
-  FEATURE_TYPE_EXISTING_ID: [1, 'Existing feature implementation'],
-  FEATURE_TYPE_CODE_CHANGE_ID: [2, 'Web developer facing change to existing code'],
-  FEATURE_TYPE_DEPRECATION_ID: [3, 'Feature deprecation'],
+  FEATURE_TYPE_INCUBATE_ID: [0, 'New feature incubation',
+    'When building new features, we follow a process that emphasizes engagement ' +
+    'with the WICG and other stakeholders early.'],
+  FEATURE_TYPE_EXISTING_ID: [1, 'Existing feature implementation',
+    'If there is already an agreed specification, work may quickly start on ' +
+    'implementation and origin trials.'],
+  FEATURE_TYPE_CODE_CHANGE_ID: [2, 'Web developer-facing change to existing code',
+    'Sometimes a change to a shipped feature requires an additional feature entry. ' +
+    'This type of feature entry can be referenced from a PSA immediately.'],
+  FEATURE_TYPE_DEPRECATION_ID: [3, 'Feature deprecation',
+    'Deprecate and remove an old feature.'],
 };
 
 export const INTENT_STAGES = {

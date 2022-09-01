@@ -2,7 +2,6 @@ import {LitElement, css, html, nothing} from 'lit';
 import {unsafeHTML} from 'lit/directives/unsafe-html.js';
 import {autolink} from './utils.js';
 import './chromedash-form-table';
-import './chromedash-form-field';
 import {SHARED_STYLES} from '../sass/shared-css.js';
 import {FORM_STYLES} from '../sass/forms-css.js';
 
@@ -209,14 +208,13 @@ export class ChromedashGuideMetadata extends LitElement {
 
           <chromedash-form-table>
             ${unsafeHTML(this.overviewForm)}
-
-            <chromedash-form-field>
-              <span slot="field">
-                <input class="button" type="submit" value="Submit">
-                <button id="close-metadata" @click=${() => this.editing = false} type="reset">Cancel</button>
-              </span>
-            </chromedash-form-field>
           </chromedash-form-table>
+
+          <section class="final_buttons">
+            <input class="button" type="submit" value="Submit">
+            <button id="close-metadata" type="reset"
+              @click=${() => this.editing = false}>Cancel</button>
+          </section>
         </form>
       </div>
     `;

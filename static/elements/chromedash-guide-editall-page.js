@@ -2,7 +2,6 @@ import {LitElement, css, html} from 'lit';
 import {unsafeHTML} from 'lit/directives/unsafe-html.js';
 import {showToastMessage} from './utils.js';
 import './chromedash-form-table';
-import './chromedash-form-field';
 import {SHARED_STYLES} from '../sass/shared-css.js';
 import {FORM_STYLES} from '../sass/forms-css.js';
 
@@ -142,15 +141,9 @@ export class ChromedashGuideEditallPage extends LitElement {
         `)}
 
         <section class="final_buttons">
-          <chromedash-form-table>
-            <chromedash-form-field>
-              <span slot="field">
-                <input class="button" type="submit" value="Submit">
-                <button id="cancel-button" type="reset"
-                  @click=${this.handleCancelClick}>Cancel</button>
-              </span>
-            </chromedash-form-field>
-          </chromedash-form-table>
+          <input class="button" type="submit" value="Submit">
+          <button id="cancel-button" type="reset"
+            @click=${this.handleCancelClick}>Cancel</button>
         </section>
       </form>
     `;
