@@ -152,4 +152,23 @@ describe('chromedash-activity-log', () => {
     assert.notInclude(after.innerHTML, '[Deleted]');
     assert.include(after.innerHTML, 'lucky guess');
   });
+
+  it('formats comment date relative to the current date', async () => {
+    window.csClient = new ChromeStatusClient('fake_token', 1);
+    sinon.stub(window.csClient, 'undeleteComment');
+
+    const component = await fixture(
+      html`<chromedash-activity-log
+              .user=${nonAdminUser}
+              .feature=${featureOne}
+              .comments=${[commentOne]}>
+             </chromedash-activity-log>`);
+
+    const relativeDate = component.shadowRoot.querySelector('sl-relative-time');
+    assert.exists(relativeDate);
+    const dateStr = relativeDate.getAttribute('date');
+    assert.equal(dateStr, '2022-08-30T12:34:45.567Z');
+    const dateObj = new Date(dateStr);
+    assert.isFalse(isNaN(dateObj));
+  });
 });
