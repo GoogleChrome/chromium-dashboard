@@ -216,40 +216,44 @@ export class ChromedashGuideStagePage extends LitElement {
   }
 
   renderImplStatusFormSection() {
-    const alreadyOnThisImplStatus = this.implStatusOffered === this.feature.impl_status_chrome;
+    const alreadyOnThisImplStatus = (
+      this.implStatusOffered == this.feature.browsers.chrome.status.val);
     return html`
       <h3>Implementation in Chromium</h3>
       <section class="stage_form">
         <chromedash-form-table>
           ${this.implStatusName ? html`
-            <chromedash-form-field>
-              <span slot="label">Implementation status:</span>
-
+            <tr>
+              <td colspan="2"><b>Implementation status:</b></span>
+            </tr>
+            <tr>
               ${alreadyOnThisImplStatus ?
                 html`
-                  <span slot="help">
+                  <td style="padding: 6px 10px;">
                       This feature already has implementation status:
                       <b>${this.implStatusName}</b>.
-                    </td>
-                  </span>
+                  </td>
                 ` :
                 // TODO(jrobbins): When checked, make some milestone fields required.
                 html`
-                  <span slot="field">
+                  <td style="padding: 6px 10px;">
                     <input type="hidden" name="impl_status_offered"
                             value=${this.implStatusOffered}>
-                    <input type="checkbox" name="set_impl_status"
-                            id="set_impl_status">
-                    <label for="set_impl_status">
+                    <sl-checkbox name="set_impl_status"
+                            id="set_impl_status"
+                            size="small">
                       Set implementation status to: <b>${this.implStatusName}</b>
-                    </label>
-                  </span>
-                  <span slot="help">
+                    </sl-checkbox>
+                  </td>
+                  <td style="padding: 6px 10px;">
+                    <span class="helptext"
+                          style="display: block; font-size: small; margin-top: 2px;">
                       Check this box to update the implementation
                       status of this feature in Chromium.
-                  </span>
+                    </span>
+                  </td>
                 `}
-            </chromedash-form-field>
+            </tr>
           `: nothing}
 
           ${unsafeHTML(JSON.parse(this.implStatusForm)[0])}

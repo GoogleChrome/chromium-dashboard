@@ -1,4 +1,5 @@
 import {LitElement, css, html, nothing} from 'lit';
+import {autolink} from './utils.js';
 import '@polymer/iron-icon';
 
 import {SHARED_STYLES} from '../sass/shared-css.js';
@@ -148,7 +149,7 @@ export class ChromedashActivity extends LitElement {
            ${this.formatRelativeDate()}
            ${this.formatEditMenu()}
         </div>
-        <div class="comment_body">${preface}${this.activity.content}</div>
+        <div class="comment_body">${preface}${autolink(this.activity.content)}</div>
       </div>
     `;
   }
