@@ -117,12 +117,13 @@ export class ChromedashFormField extends LitElement {
         </chromedash-textarea>
       `;
     } else if (type === 'radios') {
+      const fieldName = this.fieldProps.name || this.name;
       fieldHTML = html`
         ${Object.values(choices).map(
           ([value, label, description]) => html`
-            <input id="id_feature_type_${value}" name="feature_type"
+            <input id="id_${fieldName}_${value}" name="${fieldName}"
               value="${value}" type="radio" required>
-            <label for="id_feature_type_${value}">${label}</label>
+            <label for="id_${fieldName}_${value}">${label}</label>
             <p>${description}</p>
           `)}
       `;
