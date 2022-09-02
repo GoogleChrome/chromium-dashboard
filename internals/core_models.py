@@ -25,6 +25,7 @@ from framework import users
 from framework import cloud_tasks_helpers
 import settings
 from internals.core_enums import *
+from internals import review_models
 from internals import fetchchannels
 
 
@@ -795,12 +796,10 @@ class Feature(DictModel):
       old_val = getattr(self, prop_name, None)
       setattr(self, '_old_' + prop_name, old_val)
 
-  def __notify_feature_subscribers_of_changes(self, is_update):
-    """Async notifies subscribers of new features and property changes to
-       features by posting to a task queue.
-    """
+  def _get_changes_as_amendments(self):
+    """Get all feature changes as Amendment entities."""
     # Diff values to see what properties have changed.
-    changed_props = []
+    amendments = []
     for prop_name, prop in list(self._properties.items()):
       if prop_name in (
           'created_by', 'updated_by', 'updated', 'created'):
@@ -812,13 +811,21 @@ class Feature(DictModel):
           continue
         new_val = convert_enum_int_to_string(prop_name, new_val)
         old_val = convert_enum_int_to_string(prop_name, old_val)
-        # Convert any dateime props to string.
-        if isinstance(new_val, datetime.datetime):
-          new_val = str(new_val)
-          if old_val is not None:
-            old_val = str(old_val)
-        changed_props.append({
-            'prop_name': prop_name, 'old_val': old_val, 'new_val': new_val})
+        amendments.append(
+            review_models.Amendment(field_name=prop_name,
+            old_value=str(old_val), new_value=str(new_val)))
+
+    return amendments
+
+  def __notify_feature_subscribers_of_changes(self, amendments, is_update):
+    """Async notifies subscribers of new features and property changes to
+       features by posting to a task queue.
+    """
+    changed_props = [{
+        'prop_name': a.field_name,
+        'old_val': a.old_value,
+        'new_val': a.new_value
+      } for a in amendments]
 
     params = {
       'changes': changed_props,
@@ -831,9 +838,20 @@ class Feature(DictModel):
 
   def put(self, notify=True, **kwargs):
     is_update = self.is_saved()
+    amendments = self._get_changes_as_amendments()
+
+    # Document changes as new Activity entity with amendments.
+    if is_update:
+      user = users.get_current_user()
+      email = user.email() if user else None
+      activity = review_models.Activity(feature_id=self.key.integer_id(),
+          author=email, content='')
+      activity.amendments = amendments
+      activity.put()
+
     key = super(Feature, self).put(**kwargs)
     if notify:
-      self.__notify_feature_subscribers_of_changes(is_update)
+      self.__notify_feature_subscribers_of_changes(amendments, is_update)
 
     # Invalidate ramcache for the individual feature view.
     cache_key = '%s|%s' % (Feature.DEFAULT_CACHE_KEY, self.key.integer_id())
