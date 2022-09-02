@@ -205,7 +205,6 @@ export class ChromedashGuideStagePage extends LitElement {
 
           <chromedash-form-field
             name="set_stage"
-            stage=${this.stageName}
             value=${alreadyOnThisStage}
             ?disabled=${alreadyOnThisStage}>
           </chromedash-form-field>
