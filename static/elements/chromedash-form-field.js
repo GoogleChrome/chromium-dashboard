@@ -62,7 +62,7 @@ export class ChromedashFormField extends LitElement {
     return this;
   }
 
-  renderField() {
+  renderWidgets() {
     const type = this.fieldProps.type;
     const choices = this.fieldProps.choices || this.componentChoices;
 
@@ -146,7 +146,7 @@ export class ChromedashFormField extends LitElement {
         </tr>
       `:nothing}
       <tr>
-        <td>${this.renderField()}</td>
+        <td>${this.renderWidgets()}</td>
         <td>
           ${helpText ? html`<span class="helptext"> ${helpText} </span>`: nothing}
           ${extraHelpText ? html`
