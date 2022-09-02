@@ -260,7 +260,7 @@ class Feature(DictModel):
           'flag': self.impl_status_chrome == BEHIND_A_FLAG,
           'status': {
             'text': IMPLEMENTATION_STATUS[self.impl_status_chrome],
-            'val': d.pop('impl_status_chrome', None)
+            'val': self.impl_status_chrome or None
           },
           'desktop': d.pop('shipped_milestone', None),
           'android': d.pop('shipped_android_milestone', None),
@@ -312,6 +312,25 @@ class Feature(DictModel):
         d['browsers']['chrome']['status']['milestone_str'] = self.shipped_android_milestone
       else:
         d['browsers']['chrome']['status']['milestone_str'] = d['browsers']['chrome']['status']['text']
+
+      # The followings are for the guide forms
+      d['format_for_edit'] = {
+        'category': self.category,
+        'feature_type': self.feature_type,
+        'intent_stage': self.intent_stage,
+        'owner': ', '.join(self.owner),
+        'editors': ', '.join(self.editors),
+        'explainer_links': '\r\n'.join(self.explainer_links),
+        'spec_mentors': ', '.join(self.spec_mentors),
+        'standard_maturity': self.standard_maturity or UNKNOWN_STD,
+        'doc_links': '\r\n'.join(self.doc_links),
+        'sample_links': '\r\n'.join(self.sample_links),
+        'search_tags': ', '.join(self.search_tags),
+        'blink_components': self.blink_components[0],
+        'devrel': ', '.join(self.devrel),
+        'i2e_lgtms': ', '.join(self.i2e_lgtms),
+        'i2s_lgtms': ', '.join(self.i2s_lgtms),
+      }
 
       del_none(d) # Further prune response by removing null/[] values.
 
