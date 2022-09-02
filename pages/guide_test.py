@@ -149,23 +149,6 @@ class ProcessOverviewTest(testing_config.CustomTestCase):
   def tearDown(self):
     self.feature_1.key.delete()
 
-  def test_detect_progress__no_progress(self):
-    """A new feature has earned no progress items."""
-    actual = self.handler.detect_progress(self.feature_1)
-    self.assertEqual({}, actual)
-
-  def test_detect_progress__some_progress(self):
-    """We can detect some progress."""
-    self.feature_1.motivation = 'something'
-    actual = self.handler.detect_progress(self.feature_1)
-    self.assertEqual({'Motivation': 'True'}, actual)
-
-  def test_detect_progress__progress_item_links(self):
-    """Fields with multiple URLs use the first URL in progress item."""
-    self.feature_1.doc_links = ['http://one', 'http://two']
-    actual = self.handler.detect_progress(self.feature_1)
-    self.assertEqual({'Doc links': 'http://one'}, actual)
-
   def test_get__anon(self):
     """Anon cannot edit features, gets a redirect to viewing page."""
     testing_config.sign_out()
@@ -197,9 +180,7 @@ class ProcessOverviewTest(testing_config.CustomTestCase):
       template_data = self.handler.get_template_data(
           self.feature_1.key.integer_id())
 
-    self.assertTrue('overview_form' in template_data)
-    self.assertTrue('process_json' in template_data)
-    self.assertTrue('progress_so_far' in template_data)
+    self.assertTrue('feature_id' in template_data)
 
 
 class ProcessOverviewTemplateTest(TestWithFeature):
