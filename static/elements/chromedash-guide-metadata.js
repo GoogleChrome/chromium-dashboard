@@ -1,4 +1,5 @@
 import {LitElement, css, html, nothing} from 'lit';
+import {ref} from 'lit/directives/ref';
 import {autolink} from './utils.js';
 import './chromedash-form-table';
 import './chromedash-form-field';
@@ -65,15 +66,17 @@ export class ChromedashGuideMetadata extends LitElement {
 
   /* Add the form's event listener after Shoelace event listeners are attached
    * see more at https://github.com/GoogleChrome/chromium-dashboard/issues/2014 */
-  updated() {
-    if (!this.editing) return;
+  async registerFormSubmitHandler(el) {
+    if (!el) return;
+
+    await el.updateComplete;
     const hiddenTokenField = this.shadowRoot.querySelector('input[name=token]');
     hiddenTokenField.form.addEventListener('submit', (event) => {
-      this.handleFormSubmission(event, hiddenTokenField);
+      this.handleFormSubmit(event, hiddenTokenField);
     });
   }
 
-  handleFormSubmission(event, hiddenTokenField) {
+  handleFormSubmit(event, hiddenTokenField) {
     event.preventDefault();
 
     // get the XSRF token and update it if it's expired before submission
@@ -200,7 +203,7 @@ export class ChromedashGuideMetadata extends LitElement {
         <form name="overview_form" method="POST" action="/guide/stage/${this.feature.id}/0">
           <input type="hidden" name="token">
 
-          <chromedash-form-table>
+          <chromedash-form-table ${ref(this.registerFormSubmitHandler)}>
             ${METADATA_FORM_FIELDS.map((field) => html`
               <chromedash-form-field
                 name=${field}
