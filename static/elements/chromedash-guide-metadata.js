@@ -1,5 +1,5 @@
 import {LitElement, css, html, nothing} from 'lit';
-import {ref} from 'lit/directives/ref';
+import {ref} from 'lit/directives/ref.js';
 import {autolink} from './utils.js';
 import './chromedash-form-table';
 import './chromedash-form-field';
