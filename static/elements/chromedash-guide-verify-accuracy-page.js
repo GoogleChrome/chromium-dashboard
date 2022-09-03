@@ -1,5 +1,5 @@
 import {LitElement, css, html} from 'lit';
-import {ref} from 'lit/directives/ref';
+import {ref} from 'lit/directives/ref.js';
 import {showToastMessage} from './utils.js';
 import './chromedash-form-field';
 import './chromedash-form-table';
