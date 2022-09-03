@@ -209,6 +209,7 @@ class Feature(DictModel):
       else:
         d['id'] = None
       d['category'] = FEATURE_CATEGORIES[self.category]
+      d['category_int'] = self.category
       if self.feature_type is not None:
         d['feature_type'] = FEATURE_TYPES[self.feature_type]
         d['feature_type_int'] = self.feature_type
@@ -236,25 +237,24 @@ class Feature(DictModel):
           'val': standard_maturity_val,
         },
       }
-      del d['standard_maturity']
       d['tag_review_status'] = REVIEW_STATUS_CHOICES[self.tag_review_status]
       d['security_review_status'] = REVIEW_STATUS_CHOICES[
           self.security_review_status]
       d['privacy_review_status'] = REVIEW_STATUS_CHOICES[
           self.privacy_review_status]
       d['resources'] = {
-        'samples': d.pop('sample_links', []),
-        'docs': d.pop('doc_links', []),
+        'samples': self.sample_links or [],
+        'docs': self.doc_links or [],
       }
-      d['tags'] = d.pop('search_tags', [])
+      d['tags'] = self.search_tags or []
       d['editors'] = d.pop('editors', [])
       d['creator'] = d.pop('creator', None)
       d['browsers'] = {
         'chrome': {
-          'bug': d.pop('bug_url', None),
-          'blink_components': d.pop('blink_components', []),
-          'devrel': d.pop('devrel', []),
-          'owners': d.pop('owner', []),
+          'bug': self.bug_url or None,
+          'blink_components': self.blink_components or [],
+          'devrel': self.devrel or [],
+          'owners': self.owner or [],
           'origintrial': self.impl_status_chrome == ORIGIN_TRIAL,
           'intervention': self.impl_status_chrome == INTERVENTION,
           'prefixed': d.pop('prefixed', False),
@@ -313,25 +313,6 @@ class Feature(DictModel):
         d['browsers']['chrome']['status']['milestone_str'] = self.shipped_android_milestone
       else:
         d['browsers']['chrome']['status']['milestone_str'] = d['browsers']['chrome']['status']['text']
-
-      # The followings are for the guide forms
-      d['format_for_edit'] = {
-        'category': self.category,
-        'feature_type': self.feature_type,
-        'intent_stage': self.intent_stage,
-        'owner': ', '.join(self.owner),
-        'editors': ', '.join(self.editors),
-        'explainer_links': '\r\n'.join(self.explainer_links),
-        'spec_mentors': ', '.join(self.spec_mentors),
-        'standard_maturity': self.standard_maturity or UNKNOWN_STD,
-        'doc_links': '\r\n'.join(self.doc_links),
-        'sample_links': '\r\n'.join(self.sample_links),
-        'search_tags': ', '.join(self.search_tags),
-        'blink_components': self.blink_components[0],
-        'devrel': ', '.join(self.devrel),
-        'i2e_lgtms': ', '.join(self.i2e_lgtms),
-        'i2s_lgtms': ', '.join(self.i2s_lgtms),
-      }
 
       del_none(d) # Further prune response by removing null/[] values.
 
