@@ -50,6 +50,15 @@ export class ChromedashFormField extends LitElement {
     });
   }
 
+  // _fireEvent(eventName, detail) {
+  //   const event = new CustomEvent(eventName, {
+  //     bubbles: true,
+  //     composed: true,
+  //     detail,
+  //   });
+  //   this.dispatchEvent(event);
+  // }
+
   toggleExtraHelp() {
     const details = this.renderRoot.querySelector('sl-details');
     details.open = !details.open;

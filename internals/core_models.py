@@ -263,10 +263,10 @@ class Feature(DictModel):
             'text': IMPLEMENTATION_STATUS[self.impl_status_chrome],
             'val': self.impl_status_chrome or None
           },
-          'desktop': d.pop('shipped_milestone', None),
-          'android': d.pop('shipped_android_milestone', None),
-          'webview': d.pop('shipped_webview_milestone', None),
-          'ios': d.pop('shipped_ios_milestone', None),
+          'desktop': self.shipped_milestone or None,
+          'android': self.shipped_android_milestone or None,
+          'webview': self.shipped_webview_milestone or None,
+          'ios': self.shipped_ios_milestone or None,
         },
         'ff': {
           'view': {

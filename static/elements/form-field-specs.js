@@ -172,6 +172,7 @@ export const ALL_FIELDS = {
   'accurate_as_of': {
     type: 'checkbox',
     label: 'Confirm accuracy',
+    initial: true,
     help_text: html`
         Check this box to indicate that feature information is accurate
         as of today.
