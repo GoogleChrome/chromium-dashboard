@@ -124,7 +124,10 @@ export class ChromedashActivity extends LitElement {
 
   // Display how long ago the comment was created compared to now.
   formatRelativeDate() {
-    const activityDate = new Date(`${this.activity.created} UTC`);
+    // Format date to "YYYY-MM-DDTHH:mm:ss.sssZ" to represent UTC.
+    let dateStr = this.activity.created || '';
+    dateStr = this.activity.created.replace(' ', 'T');
+    const activityDate = new Date(`${dateStr}Z`);
     if (isNaN(activityDate)) {
       return nothing;
     }
