@@ -5,12 +5,12 @@ import '@polymer/iron-icon';
 import {SHARED_STYLES} from '../sass/shared-css.js';
 
 
-export class ChromedashActivityLog extends LitElement {
+export class ChromedashActivity extends LitElement {
   static get properties() {
     return {
       user: {type: Object},
       feature: {type: Object},
-      comments: {type: Array},
+      activity: {type: Object},
     };
   }
 
@@ -18,18 +18,13 @@ export class ChromedashActivityLog extends LitElement {
     super();
     this.user = null;
     this.feature = {};
-    this.comments = [];
+    this.activity = null;
   }
 
   static get styles() {
     return [
       ...SHARED_STYLES,
       css`
-        .comment_section {
-          max-height: 250px;
-          overflow-y: scroll;
-        }
-
         .comment_header {
           height: 24px;
         }
@@ -63,33 +58,33 @@ export class ChromedashActivityLog extends LitElement {
     return dateStr.split('.')[0]; // Ignore microseconds.
   }
 
-  // Returns a boolean representing whether the given comment can be edited.
-  commentIsEditable(comment) {
+  // Returns a boolean representing whether the given activity can be edited.
+  isEditable() {
     if (!this.user) {
       return false;
     }
     // If the comment has been deleted, it should only be editable
     // by site admins or the user who deleted it.
-    if (comment.deleted_by) {
-      return this.user.is_admin || comment.deleted_by === this.user.email;
+    if (this.activity.deleted_by) {
+      return this.user.is_admin || this.activity.deleted_by === this.user.email;
     }
     // If the comment is not deleted, site admins or the author can edit.
-    return this.user.email === comment.author || this.user.is_admin;
+    return this.user.email === this.activity.author || this.user.is_admin;
   }
 
   // Format a message to show on a deleted comment the user can edit.
-  renderCommentDeletedPreface(comment) {
-    if (!this.commentIsEditable(comment) || !comment.deleted_by) {
+  renderDeletedPreface() {
+    if (!this.isEditable() || !this.activity.deleted_by) {
       return nothing;
     }
     return html`<div style="color: darkred">[Deleted] (comment hidden for other users)
     </div>`;
   }
 
-  toggleCommentMenu(commentId) {
-    const menuEl = this.shadowRoot.querySelector(`#comment-menu-${commentId}`);
+  toggleMenu() {
+    const menuEl = this.shadowRoot.querySelector(`#comment-menu`);
     // Change the menu icon to represent open/closing on click.
-    const iconEl = this.shadowRoot.querySelector(`#icon-${commentId}`);
+    const iconEl = this.shadowRoot.querySelector(`iron-icon`);
     const isVisible = menuEl.style.display !== 'none';
     if (isVisible) {
       menuEl.style.display = 'none';
@@ -100,88 +95,128 @@ export class ChromedashActivityLog extends LitElement {
     }
   }
 
-  // Add a dropdown menu to the comment header if the user can edit the comment.
-  formatCommentEditMenu(comment) {
-    // If the comment is not editable, don't show a comment menu.
-    if (!this.commentIsEditable(comment)) {
+  // Add a dropdown menu to the activity header if the user can edit the activity.
+  formatEditMenu() {
+    // If the activity is not editable, don't show a menu.
+    if (!this.isEditable()) {
       return nothing;
     }
     // Show delete option if not deleted, else show undelete.
     let menuItem = html`
-    <sl-menu-item @click="${() => this.handleDeleteToggle(comment, false)}"
+    <sl-menu-item @click="${() => this.handleDeleteToggle(false)}"
     >Delete Comment</sl-menu-item>`;
-    if (comment.deleted_by) {
+    if (this.activity.deleted_by) {
       menuItem = html`
-      <sl-menu-item @click="${() => this.handleDeleteToggle(comment, true)}"
+      <sl-menu-item @click="${() => this.handleDeleteToggle(true)}"
       >Undelete Comment</sl-menu-item>`;
     }
 
     return html`
-      <iron-icon class="comment-menu-icon" id="icon-${comment.comment_id}"
+      <iron-icon class="comment-menu-icon"
       icon="chromestatus:more-vert"
-      @click=${() => this.toggleCommentMenu(comment.comment_id)}></iron-icon>
+      @click=${() => this.toggleMenu()}></iron-icon>
       <div class="edit-menu">
-        <div id="comment-menu-${comment.comment_id}" style="display: none;">
+        <div id="comment-menu" style="display: none;">
           <sl-menu>${menuItem}</sl-menu>
         </div>
       </div>`;
   }
 
   // Display how long ago the comment was created compared to now.
-  formatCommentRelativeDate(comment) {
-    // format date to "YYYY-MM-DDTHH:mm:ss.sssZ" to represent UTC.
-    let dateStr = comment.created || '';
-    dateStr = comment.created.replace(' ', 'T');
-    const commentDate = new Date(`${dateStr}Z`);
-    if (isNaN(commentDate)) {
+  formatRelativeDate() {
+    // Format date to "YYYY-MM-DDTHH:mm:ss.sssZ" to represent UTC.
+    let dateStr = this.activity.created || '';
+    dateStr = this.activity.created.replace(' ', 'T');
+    const activityDate = new Date(`${dateStr}Z`);
+    if (isNaN(activityDate)) {
       return nothing;
     }
     return html`
       <span class="relative_date">
-        (<sl-relative-time date="${commentDate.toISOString()}">
+        (<sl-relative-time date="${activityDate.toISOString()}">
         </sl-relative-time>)
       </span>`;
   }
 
-  renderComment(comment) {
-    const preface = this.renderCommentDeletedPreface(comment);
+  render() {
+    if (!this.activity) {
+      return nothing;
+    }
+    const preface = this.renderDeletedPreface();
     return html`
       <div class="comment">
         <div class="comment_header">
-           <span class="author">${comment.author}</span>
+           <span class="author">${this.activity.author}</span>
            on
-           <span class="date">${this.formatDate(comment.created)}</span>
-           ${this.formatCommentRelativeDate(comment)}
-           ${this.formatCommentEditMenu(comment)}
+           <span class="date">${this.formatDate(this.activity.created)}</span>
+           ${this.formatRelativeDate()}
+           ${this.formatEditMenu()}
         </div>
-        <div class="comment_body">${preface}${autolink(comment.content)}</div>
+        <div class="comment_body">${preface}${autolink(this.activity.content)}</div>
       </div>
     `;
   }
 
-  render() {
-    return html`
-        <div class="comment_section">
-          ${this.comments.map(this.renderComment.bind(this))}
-        </div>
-    `;
-  }
-
   // Handle deleting or undeleting a comment.
-  async handleDeleteToggle(comment, isUndelete) {
+  async handleDeleteToggle(isUndelete) {
     let resp;
     if (isUndelete) {
       resp = await window.csClient.undeleteComment(
-        this.feature.id, comment.comment_id);
+        this.feature.id, this.activity.comment_id);
     } else {
       resp = await window.csClient.deleteComment(
-        this.feature.id, comment.comment_id);
+        this.feature.id, this.activity.comment_id);
     }
     if (resp && resp.message === 'Done') {
-      comment.deleted_by = (isUndelete) ? null : this.user.email;
-      this.toggleCommentMenu(comment.comment_id);
+      this.activity.deleted_by = (isUndelete) ? null : this.user.email;
+      this.toggleMenu();
       this.requestUpdate();
     }
+  }
+};
+customElements.define('chromedash-activity', ChromedashActivity);
+
+
+export class ChromedashActivityLog extends LitElement {
+  static get properties() {
+    return {
+      user: {type: Object},
+      feature: {type: Object},
+      comments: {type: Array},
+    };
+  }
+
+  constructor() {
+    super();
+    this.user = null;
+    this.feature = {};
+    this.comments = [];
+  }
+
+  static get styles() {
+    return [
+      ...SHARED_STYLES,
+      css`
+        .comment_section {
+          max-height: 250px;
+          overflow-y: scroll;
+        }
+      `];
+  }
+
+
+  render() {
+    return html`
+        <div class="comment_section">
+          ${this.comments.map((activity) => html`
+        <chromedash-activity
+        .user=${this.user}
+        .feature=${this.feature}
+        .activity=${activity}>
+        </chromedash-activity>
+          `)}
+        </div>
+    `;
   }
 }
 

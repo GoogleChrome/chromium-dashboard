@@ -203,6 +203,7 @@ export const ALL_FIELDS = {
   },
 
   'feature_type_radio_group': {
+    name: 'feature_type', // actual field name
     type: 'radios',
     choices: FEATURE_TYPES,
     label: 'Feature type',

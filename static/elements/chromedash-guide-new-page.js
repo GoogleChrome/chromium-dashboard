@@ -103,53 +103,10 @@ export class ChromedashGuideNewPage extends LitElement {
 
             <chromedash-form-field
               name="feature_type_radio_group"
-              class="choices"
-              field=${`
-                <label for="id_feature_type_0">
-                  <input id="id_feature_type_0" name="feature_type" type="radio"
-                        value="0" required>
-                  New feature incubation
-                </label>
-
-                <p>When building new features, we follow a
-                  process that emphasizes engagement with the WICG and other
-                  stakeholders early.</p>
-
-                <label for="id_feature_type_1">
-                  <input id="id_feature_type_1" name="feature_type" type="radio"
-                        value="1" required>
-                  Existing feature implementation
-                </label>
-
-                <p>If there is already an agreed specification, work may
-                  quickly start on implementation and origin trials.</p>
-
-                <label for="id_feature_type_2">
-                  <input id="id_feature_type_2" name="feature_type" type="radio"
-                        value="2" required>
-                  Web developer-facing change to existing code
-                </label>
-
-                <p>Sometimes a change to a shipped feature requires an additional
-                  feature entry.  This type of feature entry can be referenced
-                  from a PSA immediately.</p>
-
-                <label for="id_feature_type_3">
-                  <input id="id_feature_type_3" name="feature_type" type="radio"
-                        value="3" required>
-                  Feature deprecation
-                </label>
-
-                <p>Deprecate and remove an old feature.</p>`}>
+              class="choices">
             </chromedash-form-field>
-
-            <chromedash-form-field>
-              <span slot="field">
-                <input type="submit" class="primary" value="Submit">
-              </span>
-            </chromedash-form-field>
-
           </chromedash-form-table>
+          <input type="submit" class="primary" value="Submit">
         </form>
       </section>
     `;

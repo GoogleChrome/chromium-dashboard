@@ -1,7 +1,7 @@
-import {LitElement, html} from 'lit';
+import {LitElement, html, nothing} from 'lit';
 import {ALL_FIELDS} from './form-field-specs';
-import {unsafeHTML} from 'lit/directives/unsafe-html.js';
 import {ref} from 'lit/directives/ref.js';
+import './chromedash-textarea';
 
 
 export class ChromedashFormField extends LitElement {
@@ -9,9 +9,6 @@ export class ChromedashFormField extends LitElement {
     return {
       name: {type: String},
       value: {type: String},
-      field: {type: String},
-      errors: {type: String},
-      stage: {type: String},
       disabled: {type: Boolean},
       loading: {type: Boolean},
       fieldProps: {type: Object},
@@ -23,9 +20,6 @@ export class ChromedashFormField extends LitElement {
     super();
     this.name = '';
     this.value = '';
-    this.field = '';
-    this.errors = '';
-    this.stage = '';
     this.disabled = false;
     this.loading = false;
     this.componentChoices = {};
@@ -68,14 +62,10 @@ export class ChromedashFormField extends LitElement {
     return this;
   }
 
-  render() {
-    const label = this.fieldProps.label;
-    const helpText = this.fieldProps.help_text || '';
-    const extraHelpText = this.fieldProps.extra_help || '';
+  renderWidgets() {
     const type = this.fieldProps.type;
     const choices = this.fieldProps.choices || this.componentChoices;
 
-    // If type is checkbox, select, or input, then generate locally.
     let fieldHTML = '';
     if (type === 'checkbox') {
       // value can be a js or python boolean value converted to a string
@@ -85,12 +75,10 @@ export class ChromedashFormField extends LitElement {
           id="id_${this.name}"
           size="small"
           ?checked=${this.value === 'true' || this.value === 'True'}
-          ?disabled=${this.disabled}
-        >
-          ${label}
+          ?disabled=${this.disabled}>
+          ${this.fieldProps.label}
         </sl-checkbox>
       `;
-      this.generateFieldLocally = true;
     } else if (type === 'select') {
       fieldHTML = html`
         <sl-select
@@ -98,8 +86,7 @@ export class ChromedashFormField extends LitElement {
           id="id_${this.name}"
           value="${this.value}"
           size="small"
-          ?disabled=${this.disabled || this.loading}
-        >
+          ?disabled=${this.disabled || this.loading}>
           ${Object.values(choices).map(
             ([value, label]) => html`
               <sl-menu-item value="${value}"> ${label} </sl-menu-item>
@@ -129,54 +116,62 @@ export class ChromedashFormField extends LitElement {
           ?required=${this.fieldProps.required}>
         </chromedash-textarea>
       `;
+    } else if (type === 'radios') {
+      const fieldName = this.fieldProps.name || this.name;
+      fieldHTML = html`
+        ${Object.values(choices).map(
+          ([value, label, description]) => html`
+            <input id="id_${fieldName}_${value}" name="${fieldName}"
+              value="${value}" type="radio" required>
+            <label for="id_${fieldName}_${value}">${label}</label>
+            <p>${description}</p>
+          `)}
+      `;
     } else {
-      // Temporary workaround until we migrate the generation of
-      // all the form fields to be done here.
-      // We pass the escaped html for the low-level form field
-      // through the field attribute, so it must be unescaped,
-      // and then we use unsafeHTML so it isn't re-escaped.
-      fieldHTML = unsafeHTML(unescape(this.field || ''));
+      console.error(`unknown form field type: ${type}`);
     }
+    return fieldHTML;
+  }
 
-    // Similar to above, but maybe we can guarantee that the errors
-    // will never contain HTML.
-    const errorsHTML = unsafeHTML(unescape(this.errors || ''));
+  render() {
+    const helpText = this.fieldProps.help_text;
+    const extraHelpText = this.fieldProps.extra_help;
 
     return html`
+      ${this.fieldProps.label ? html`
+        <tr>
+          <th colspan="2">
+            <b>${this.fieldProps.label}:</b>
+          </th>
+        </tr>
+      `:nothing}
       <tr>
-        <th colspan="2">
-          <b> ${label ? label + ':' : ''} </b>
-        </th>
-      </tr>
-      <tr>
-        <td>${fieldHTML} ${errorsHTML}</td>
+        <td>${this.renderWidgets()}</td>
         <td>
-          <span class="helptext"> ${helpText} </span>
-          ${extraHelpText ?
-            html`
-                <sl-icon-button
-                  name="plus-square"
-                  label="Toggle extra help"
-                  style="position:absolute"
-                  @click="${this.toggleExtraHelp}"
-                  >+</sl-icon-button
-                >
-              ` :
-            ''}
+          ${helpText ? html`<span class="helptext"> ${helpText} </span>`: nothing}
+          ${extraHelpText ? html`
+            <sl-icon-button
+              name="plus-square"
+              label="Toggle extra help"
+              style="position:absolute"
+              @click="${this.toggleExtraHelp}">
+              +
+            </sl-icon-button>
+          `: nothing}
         </td>
       </tr>
 
-      ${extraHelpText ?
-        html` <tr>
-            <td colspan="2" class="extrahelp">
-              <sl-details summary="">
-                <span class="helptext">
-                  ${extraHelpText}
-                </span>
-              </sl-details>
-            </td>
-          </tr>` :
-        ''}
+      ${extraHelpText ? html`
+        <tr>
+          <td colspan="2" class="extrahelp">
+            <sl-details summary="">
+              <span class="helptext">
+                ${extraHelpText}
+              </span>
+            </sl-details>
+          </td>
+        </tr>`:
+      nothing}
     `;
   }
 }
