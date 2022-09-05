@@ -157,11 +157,11 @@ describe('chromedash-activity', () => {
     sinon.stub(window.csClient, 'undeleteComment');
 
     const component = await fixture(
-      html`<chromedash-activity-log
+      html`<chromedash-activity
               .user=${nonAdminUser}
               .feature=${featureOne}
-              .comments=${[commentOne]}>
-             </chromedash-activity-log>`);
+              .activity=${actOne}>
+            </chromedash-activity>`);
 
     const relativeDate = component.shadowRoot.querySelector('sl-relative-time');
     assert.exists(relativeDate);
