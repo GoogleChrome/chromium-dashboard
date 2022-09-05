@@ -14,6 +14,13 @@ export class ChromedashTextarea extends SlTextarea {
 
   constructor() {
     super();
+    this.cols = 50;
+    this.rows = 10;
+
+    // This is the longest string that a cloud ndb StringProperty seems to accept.
+    // Fields that accept a URL list can be longer, provided that each individual
+    // URL is no more than this length.
+    this.maxlength = 1400;
   }
 
   /**
