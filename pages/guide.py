@@ -166,14 +166,6 @@ class ProcessOverview(basehandlers.FlaskHandler):
 
   TEMPLATE_PATH = 'guide/edit.html'
 
-  def detect_progress(self, f):
-    progress_so_far = {}
-    for progress_item, detector in list(processes.PROGRESS_DETECTORS.items()):
-      detected = detector(f)
-      if detected:
-        progress_so_far[progress_item] = str(detected)
-    return progress_so_far
-
   def get_template_data(self, feature_id):
     # Validate the user has edit permissions and redirect if needed.
     redirect_resp = permissions.validate_feature_edit_permission(
@@ -181,26 +173,7 @@ class ProcessOverview(basehandlers.FlaskHandler):
     if redirect_resp:
       return redirect_resp
 
-    f = core_models.Feature.get_by_id(int(feature_id))
-    if f is None:
-      self.abort(404, msg='Feature not found')
-
-    feature_process = processes.ALL_PROCESSES.get(
-        f.feature_type, processes.BLINK_LAUNCH_PROCESS)
-    template_data = {
-        'overview_form': guideforms.MetadataForm(f.format_for_edit()),
-        'process_json': json.dumps(processes.process_to_dict(feature_process)),
-        }
-
-    progress_so_far = self.detect_progress(f)
-
-    # Provide new or populated form to template.
-    template_data.update({
-        'feature': f.format_for_template(),
-        'feature_id': f.key.integer_id(),
-        'feature_json': json.dumps(f.format_for_template()),
-        'progress_so_far': json.dumps(progress_so_far),
-    })
+    template_data = {'feature_id': feature_id}
     return template_data
 
 

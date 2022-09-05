@@ -508,18 +508,6 @@ ALL_FIELDS = {
 
     }
 
-# These are shown in a top card for all processes.
-METADATA_FIELDS = [
-     'name', 'summary', 'unlisted', 'owner',
-     'editors', 'category',
-     'feature_type', 'intent_stage',
-     'search_tags',
-     # Implemention
-     'impl_status_chrome',
-     'blink_components',
-     'bug_url', 'launch_bug_url',
-]
-
 class ChromedashForm(forms.Form):
     def simple_html_output(self):
         """
@@ -616,10 +604,6 @@ NewFeatureForm = define_form_class_using_shared_fields(
      'unlisted', 'owner', 'editors',
      'blink_components', 'category'))
     # Note: feature_type is done with custom HTML
-
-
-MetadataForm = define_form_class_using_shared_fields(
-    'MetadataForm', METADATA_FIELDS)
 
 
 NewFeature_Incubate = define_form_class_using_shared_fields(

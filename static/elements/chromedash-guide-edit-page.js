@@ -32,7 +32,6 @@ export class ChromedashGuideEditPage extends LitElement {
       user: {type: Object},
       featureId: {type: Number},
       feature: {type: Object},
-      overviewForm: {type: String},
       process: {type: Object},
       progress: {type: Object},
       dismissedCues: {type: Array},
@@ -45,7 +44,6 @@ export class ChromedashGuideEditPage extends LitElement {
     this.user = {};
     this.featureId = 0;
     this.feature = {};
-    this.overviewForm = '';
     this.process = {};
     this.progress = {};
     this.dismissedCues = [];
@@ -103,8 +101,7 @@ export class ChromedashGuideEditPage extends LitElement {
     return html`
       <chromedash-guide-metadata
         .feature=${this.feature}
-        .isAdmin=${this.user && this.user.is_admin}
-        .overviewForm=${this.overviewForm}>
+        .isAdmin=${this.user && this.user.is_admin}>
       </chromedash-guide-metadata>
     `;
   }
