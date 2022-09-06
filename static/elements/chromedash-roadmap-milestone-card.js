@@ -43,8 +43,11 @@ class ChromedashRoadmapMilestoneCard extends LitElement {
     return {days: Math.abs(daysDiff), future: daysDiff < 1};
   }
 
-  _computeDate(dateStr) {
-    const opts = {/* weekday: 'short', */month: 'short', day: 'numeric'};
+  _computeDate(dateStr, addYear=false) {
+    const opts = {month: 'short', day: 'numeric'};
+    if (addYear) {
+      opts.year = 'numeric';
+    }
     const date = new Date(dateStr);
     return new Intl.DateTimeFormat('en-US', opts).format(date);
   }
@@ -104,15 +107,20 @@ class ChromedashRoadmapMilestoneCard extends LitElement {
   }
 
   _computeDaysUntil(dateStr) {
+    const date = new Date(dateStr);
+    if (isNaN(date)) {
+      return nothing;
+    }
     const today = new Date();
     const diff = this._dateDiffInDays(new Date(dateStr), today);
-    const dayWord = diff.days == 1 ? 'day' : 'days';
-
-    if (diff.future) {
-      return `in ${diff.days} ${dayWord}`;
-    } else {
-      return `${diff.days} ${dayWord} ago`;
+    // If stable is (or was) very recent, we don't want to display relative time
+    // in small increments (e.g. "in 39 minutes"), so we show "coming soon".
+    if (diff.days < 1) {
+      return 'coming soon';
     }
+    return html`
+        <sl-relative-time date="${date.toISOString()}">
+        </sl-relative-time>`;
   }
 
   _objKeys(obj) {
@@ -141,7 +149,7 @@ class ChromedashRoadmapMilestoneCard extends LitElement {
       <div class="milestone_info layout horizontal center-center">
         <h3>
           <span class="channel_label">Stable</span> ${this._computeDaysUntil(this.channel.stable_date)}
-          <span class="release-stable">(${this._computeDate(this.channel.stable_date)})</span>
+          <span class="release-stable">(${this._computeDate(this.channel.stable_date, true)})</span>
         </h3>
       </div>
       ` : nothing}
