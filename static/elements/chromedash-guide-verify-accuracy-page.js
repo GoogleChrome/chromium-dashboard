@@ -3,7 +3,7 @@ import {ref} from 'lit/directives/ref.js';
 import {showToastMessage} from './utils.js';
 import './chromedash-form-field';
 import './chromedash-form-table';
-import {VERIFY_ACCURACY_FORM_FIELDS} from './form-definition';
+import {formatFeatureForEdit, VERIFY_ACCURACY_FORM_FIELDS} from './form-definition';
 import {SHARED_STYLES} from '../sass/shared-css.js';
 import {FORM_STYLES} from '../sass/forms-css.js';
 
@@ -54,8 +54,9 @@ export class ChromedashGuideVerifyAccuracyPage extends LitElement {
   /* Add the form's event listener after Shoelace event listeners are attached
    * see more at https://github.com/GoogleChrome/chromium-dashboard/issues/2014 */
   async registerFormSubmitHandler(el) {
-    await el.updateComplete;
+    if (!el) return;
 
+    await el.updateComplete;
     const hiddenTokenField = this.shadowRoot.querySelector('input[name=token]');
     hiddenTokenField.form.addEventListener('submit', (event) => {
       this.handleFormSubmit(event, hiddenTokenField);
@@ -74,16 +75,6 @@ export class ChromedashGuideVerifyAccuracyPage extends LitElement {
 
   handleCancelClick() {
     window.location.href = `/guide/edit/${this.featureId}`;
-  }
-
-  getFieldValue(field) {
-    // accurate_as_of field should always be checked, regardless of
-    // the current value. This is only necessary if the feature
-    // has been created before this field was added.
-    if (field === 'accurate_as_of') return true;
-
-    return field in this.feature.format_for_edit ?
-      this.feature.format_for_edit[field] : this.feature[field];
   }
 
   renderSkeletons() {
@@ -122,6 +113,8 @@ export class ChromedashGuideVerifyAccuracyPage extends LitElement {
     const title = this.feature.accurate_as_of ?
       `Accuracy last verified ${this.feature.accurate_as_of.split(' ')[0]}.` :
       'Accuracy last verified at time of creation.';
+    const formattedFeature = formatFeatureForEdit(this.feature);
+
     return html`
       <form name="feature_form" method="POST" action="/guide/verify_accuracy/${this.featureId}">
         <input type="hidden" name="token">
@@ -133,7 +126,7 @@ export class ChromedashGuideVerifyAccuracyPage extends LitElement {
           ${VERIFY_ACCURACY_FORM_FIELDS.map((field) => html`
             <chromedash-form-field
               name=${field}
-              value=${this.getFieldValue(field)}>
+              value=${formattedFeature[field]}>
             </chromedash-form-field>
           `)}
           </chromedash-form-table>
