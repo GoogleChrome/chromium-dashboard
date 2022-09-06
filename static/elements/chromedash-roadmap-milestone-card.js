@@ -112,7 +112,7 @@ class ChromedashRoadmapMilestoneCard extends LitElement {
       return nothing;
     }
     const today = new Date();
-    const diff = this._dateDiffInDays(new Date(dateStr), today);
+    const diff = this._dateDiffInDays(date, today);
     // If stable is (or was) very recent, we don't want to display relative time
     // in small increments (e.g. "in 39 minutes"), so we show "coming soon".
     if (diff.days < 1) {
