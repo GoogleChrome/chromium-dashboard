@@ -1,7 +1,9 @@
 import {LitElement, css, html} from 'lit';
-import {unsafeHTML} from 'lit/directives/unsafe-html.js';
+import {ref} from 'lit/directives/ref.js';
 import {showToastMessage} from './utils.js';
+import './chromedash-form-field';
 import './chromedash-form-table';
+import {formatFeatureForEdit, VERIFY_ACCURACY_FORM_FIELDS} from './form-definition';
 import {SHARED_STYLES} from '../sass/shared-css.js';
 import {FORM_STYLES} from '../sass/forms-css.js';
 
@@ -19,7 +21,6 @@ export class ChromedashGuideVerifyAccuracyPage extends LitElement {
     return {
       featureId: {type: Number},
       feature: {type: Object},
-      forms: {type: String},
       loading: {type: Boolean},
     };
   }
@@ -28,7 +29,6 @@ export class ChromedashGuideVerifyAccuracyPage extends LitElement {
     super();
     this.featureId = 0;
     this.feature = {};
-    this.forms = '';
     this.loading = true;
   }
 
@@ -53,19 +53,17 @@ export class ChromedashGuideVerifyAccuracyPage extends LitElement {
 
   /* Add the form's event listener after Shoelace event listeners are attached
    * see more at https://github.com/GoogleChrome/chromium-dashboard/issues/2014 */
-  firstUpdated() {
-    /* TODO(kevinshen56714): remove the timeout once the form fields are all
-     * migrated to frontend, we need it now because the unsafeHTML(this.overviewForm)
-     * delays the Shoelace event listener attachment */
-    setTimeout(() => {
-      const hiddenTokenField = this.shadowRoot.querySelector('input[name=token]');
-      hiddenTokenField.form.addEventListener('submit', (event) => {
-        this.handleFormSubmission(event, hiddenTokenField);
-      });
-    }, 1000);
+  async registerFormSubmitHandler(el) {
+    if (!el) return;
+
+    await el.updateComplete;
+    const hiddenTokenField = this.shadowRoot.querySelector('input[name=token]');
+    hiddenTokenField.form.addEventListener('submit', (event) => {
+      this.handleFormSubmit(event, hiddenTokenField);
+    });
   }
 
-  handleFormSubmission(event, hiddenTokenField) {
+  handleFormSubmit(event, hiddenTokenField) {
     event.preventDefault();
 
     // get the XSRF token and update it if it's expired before submission
@@ -77,15 +75,6 @@ export class ChromedashGuideVerifyAccuracyPage extends LitElement {
 
   handleCancelClick() {
     window.location.href = `/guide/edit/${this.featureId}`;
-  }
-
-  // get a comma-spearated list of field names
-  getFormFields() {
-    let fields = [];
-    JSON.parse(this.forms).map((form) => {
-      fields = [...fields, ...form[2]];
-    });
-    return fields.join();
   }
 
   renderSkeletons() {
@@ -121,19 +110,27 @@ export class ChromedashGuideVerifyAccuracyPage extends LitElement {
   }
 
   renderForm() {
+    const title = this.feature.accurate_as_of ?
+      `Accuracy last verified ${this.feature.accurate_as_of.split(' ')[0]}.` :
+      'Accuracy last verified at time of creation.';
+    const formattedFeature = formatFeatureForEdit(this.feature);
+
     return html`
       <form name="feature_form" method="POST" action="/guide/verify_accuracy/${this.featureId}">
         <input type="hidden" name="token">
-        <input type="hidden" name="form_fields" value=${this.getFormFields()}>
+        <input type="hidden" name="form_fields" value=${VERIFY_ACCURACY_FORM_FIELDS.join()}>
 
-        ${JSON.parse(this.forms).map(([sectionName, form]) => html`
-          <h3>${sectionName}</h3>
-          <section class="flat_form">
-            <chromedash-form-table>
-              ${unsafeHTML(form)}
-            </chromedash-form-table>
-          </section>
-        `)}
+        <h3>${title}</h3>
+        <section class="flat_form">
+          <chromedash-form-table ${ref(this.registerFormSubmitHandler)}>
+          ${VERIFY_ACCURACY_FORM_FIELDS.map((field) => html`
+            <chromedash-form-field
+              name=${field}
+              value=${formattedFeature[field]}>
+            </chromedash-form-field>
+          `)}
+          </chromedash-form-table>
+        </section>
 
         <section class="final_buttons">
           <input class="button" type="submit" value="Submit">
