@@ -1,0 +1,52 @@
+# This GAE service contains most of the app, including all UI pages.
+
+runtime: python39
+service: default
+instance_class: F4_1G
+
+automatic_scaling:
+  min_idle_instances: 1
+  max_pending_latency: 0.2s
+
+# Use a long HTTP cache expiration time for css and JS, but also
+# include the GAE version number as a query string parameter so that on
+# each deployment, users get new static files to match the new app version.
+default_expiration: "10d"
+
+# Set up VPC Access Connector for Redis.
+vpc_access_connector:
+  name: projects/cr-status-staging/locations/us-central1/connectors/redis-connector
+
+handlers:
+# Static handlers ---------------------------------------------------------------
+- url: /favicon\.ico
+  static_files: static/img/chromium-128.png
+  upload: static/img/chromium-128\.png
+  secure: always
+
+- url: /robots\.txt
+  static_files: static/robots.txt
+  upload: static/robots\.txt
+  secure: always
+
+- url: /static
+  static_dir: static
+  secure: always
+
+- url: /.*
+  script: auto
+  secure: always
+
+app_engine_apis: true
+
+env_variables:
+  GAE_USE_SOCKETS_HTTPLIB : ''
+  DJANGO_SETTINGS_MODULE: 'settings'
+  DJANGO_SECRET: 'this-is-a-secret'
+  # Redis envs 
+  REDISHOST: '10.231.56.251'
+  REDISPORT: '6379'
+
+inbound_services:
+- mail
+- mail_bounce

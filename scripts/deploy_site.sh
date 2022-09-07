@@ -29,6 +29,6 @@ gcloud beta app deploy \
   --version $deployVersion \
   --no-promote \
   $BASEDIR/../notifier.yaml \
-  $BASEDIR/../app.yaml  \
+  $BASEDIR/../app.staging.yaml  \
   $BASEDIR/../dispatch.yaml \
   $BASEDIR/../cron.yaml
