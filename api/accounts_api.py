@@ -76,6 +76,6 @@ class AccountsAPI(basehandlers.APIHandler):
     if account_id:
       found_user = user_models.AppUser.get_by_id(int(account_id))
       if found_user:
-        found_user.key.delete()
+        found_user.delete()
       else:
         self.abort(404, msg='Specified account ID not found')
