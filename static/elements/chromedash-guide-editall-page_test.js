@@ -18,24 +18,30 @@ describe('chromedash-guide-editall-page', () => {
       chrome: {
         blink_components: ['Blink'],
         owners: ['fake chrome owner one', 'fake chrome owner two'],
-        status: {text: 'fake chrome status text'},
+        status: {
+          milestone_str: 'No active development',
+          text: 'No active development',
+          val: 1},
       },
-      ff: {view: {text: 'fake ff view text'}},
-      safari: {view: {text: 'fake safari view text'}},
-      webdev: {view: {text: 'fake webdev view text'}},
+      ff: {view: {text: 'No signal', val: 5}},
+      safari: {view: {text: 'No signal', val: 5}},
+      webdev: {view: {text: 'No signal', val: 4}},
+      other: {view: {}},
     },
     resources: {
       samples: ['fake sample link one', 'fake sample link two'],
       docs: ['fake doc link one', 'fake doc link two'],
     },
     standards: {
-      spec: 'fake spec link',
-      maturity: {text: 'Unknown standards status - check spec link for status'},
+      maturity: {
+        short_text: 'Incubation',
+        text: 'Specification being incubated in a Community Group',
+        val: 3,
+      },
+      status: {text: 'Editor\'s Draft', val: 4},
     },
     tags: ['tag_one'],
   });
-  /* TODO: create a proper fake data once the form generation is migrated to frontend */
-  const flatForms = '[["fake section name", "", ["fake field 1", "fake field 2"]]]';
 
   /* window.csClient and <chromedash-toast> are initialized at _base.html
    * which are not available here, so we initialize them before each test.
@@ -44,10 +50,13 @@ describe('chromedash-guide-editall-page', () => {
     await fixture(html`<chromedash-toast></chromedash-toast>`);
     window.csClient = new ChromeStatusClient('fake_token', 1);
     sinon.stub(window.csClient, 'getFeature');
+    sinon.stub(window.csClient, 'getBlinkComponents');
+    window.csClient.getBlinkComponents.returns(Promise.resolve({}));
   });
 
   afterEach(() => {
     window.csClient.getFeature.restore();
+    window.csClient.getBlinkComponents.restore();
   });
 
   it('renders with no data', async () => {
@@ -72,8 +81,7 @@ describe('chromedash-guide-editall-page', () => {
 
     const component = await fixture(
       html`<chromedash-guide-editall-page
-             .featureId=${featureId}
-             .flatForms=${flatForms}>
+             .featureId=${featureId}>
            </chromedash-guide-editall-page>`);
     assert.exists(component);
     assert.instanceOf(component, ChromedashGuideEditallPage);
@@ -89,7 +97,7 @@ describe('chromedash-guide-editall-page', () => {
     assert.exists(featureForm);
     assert.include(featureForm.innerHTML, '<input type="hidden" name="token">');
     assert.include(featureForm.innerHTML,
-      '<input type="hidden" name="form_fields" value="fake field 1,fake field 2">');
+      '<input type="hidden" name="form_fields" value="name,summary,unlisted,');
     assert.include(featureForm.innerHTML, '<section class="final_buttons">');
   });
 });

@@ -239,10 +239,13 @@ class Feature(DictModel):
       }
       del d['standard_maturity']
       d['tag_review_status'] = REVIEW_STATUS_CHOICES[self.tag_review_status]
+      d['tag_review_status_int'] = self.tag_review_status
       d['security_review_status'] = REVIEW_STATUS_CHOICES[
           self.security_review_status]
+      d['security_review_status_int'] = self.security_review_status
       d['privacy_review_status'] = REVIEW_STATUS_CHOICES[
           self.privacy_review_status]
+      d['privacy_review_status_int'] = self.privacy_review_status
       d['resources'] = {
         'samples': d.pop('sample_links', []),
         'docs': d.pop('doc_links', []),
