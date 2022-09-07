@@ -444,7 +444,7 @@ ALL_FIELDS = {
       required=False, label='',
       choices=[(x, x) for x in
                user_models.BlinkComponent.fetch_all_components()],
-      initial=settings.DEFAULT_COMPONENT),
+      initial=''),
 
     'devrel': MultiEmailField(
         required=False, label='',

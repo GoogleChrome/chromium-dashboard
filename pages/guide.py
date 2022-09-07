@@ -125,7 +125,9 @@ class FeatureNew(basehandlers.FlaskHandler):
     owners = self.split_emails('owner')
     editors = self.split_emails('editors')
 
-    blink_components = (self.split_input('blink_components', delim=',') or [])
+    blink_components = (
+        self.split_input('blink_components', delim=',') or
+        [settings.DEFAULT_COMPONENT])
 
     # TODO(jrobbins): Validate input, even though it is done on client.
 
@@ -597,5 +599,18 @@ class FeatureVerifyAccuracy(FeatureEditStage):
     if redirect_resp:
       return redirect_resp
 
-    template_data = {'feature_id': feature_id}
+    f, _ = self.get_feature_and_process(feature_id)
+    feature_edit_dict = f.format_for_edit()
+
+    forms_title = "Accuracy last verified at time of creation."
+    if f.accurate_as_of is not None:
+      date = f.accurate_as_of.strftime("%Y-%m-%d")
+      forms_title = f"Accuracy last verified {date}."
+    form = guideforms.Verify_Accuracy(feature_edit_dict)
+    forms = [(forms_title, str(form), list(form.fields))]
+    template_data = {
+        'feature': f,
+        'feature_id': f.key.integer_id(),
+        'forms': json.dumps(forms),
+    }
     return template_data
