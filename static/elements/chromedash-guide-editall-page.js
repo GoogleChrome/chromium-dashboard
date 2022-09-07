@@ -1,7 +1,9 @@
 import {LitElement, css, html} from 'lit';
-import {unsafeHTML} from 'lit/directives/unsafe-html.js';
+import {ref} from 'lit/directives/ref.js';
 import {showToastMessage} from './utils.js';
 import './chromedash-form-table';
+import './chromedash-form-field';
+import {formatFeatureForEdit, FLAT_FORMS} from './form-definition';
 import {SHARED_STYLES} from '../sass/shared-css.js';
 import {FORM_STYLES} from '../sass/forms-css.js';
 
@@ -19,7 +21,6 @@ export class ChromedashGuideEditallPage extends LitElement {
     return {
       featureId: {type: Number},
       feature: {type: Object},
-      flatForms: {type: String},
       loading: {type: Boolean},
     };
   }
@@ -28,7 +29,6 @@ export class ChromedashGuideEditallPage extends LitElement {
     super();
     this.featureId = 0;
     this.feature = {};
-    this.flatForms = '';
     this.loading = true;
   }
 
@@ -53,19 +53,17 @@ export class ChromedashGuideEditallPage extends LitElement {
 
   /* Add the form's event listener after Shoelace event listeners are attached
    * see more at https://github.com/GoogleChrome/chromium-dashboard/issues/2014 */
-  firstUpdated() {
-    /* TODO(kevinshen56714): remove the timeout once the form fields are all
-     * migrated to frontend, we need it now because the unsafeHTML(this.overviewForm)
-     * delays the Shoelace event listener attachment */
-    setTimeout(() => {
-      const hiddenTokenField = this.shadowRoot.querySelector('input[name=token]');
-      hiddenTokenField.form.addEventListener('submit', (event) => {
-        this.handleFormSubmission(event, hiddenTokenField);
-      });
-    }, 1000);
+  async registerFormSubmitHandler(el) {
+    if (!el) return;
+
+    await el.updateComplete;
+    const hiddenTokenField = this.shadowRoot.querySelector('input[name=token]');
+    hiddenTokenField.form.addEventListener('submit', (event) => {
+      this.handleFormSubmit(event, hiddenTokenField);
+    });
   }
 
-  handleFormSubmission(event, hiddenTokenField) {
+  handleFormSubmit(event, hiddenTokenField) {
     event.preventDefault();
 
     // get the XSRF token and update it if it's expired before submission
@@ -82,8 +80,8 @@ export class ChromedashGuideEditallPage extends LitElement {
   // get a comma-spearated list of field names
   getFormFields() {
     let fields = [];
-    JSON.parse(this.flatForms).map((form) => {
-      fields = [...fields, ...form[2]];
+    FLAT_FORMS.map((form) => {
+      fields = [...fields, ...form[1]];
     });
     return fields.join();
   }
@@ -127,18 +125,24 @@ export class ChromedashGuideEditallPage extends LitElement {
   }
 
   renderForm() {
+    const formattedFeature = formatFeatureForEdit(this.feature);
     return html`
       <form name="feature_form" method="POST" action="/guide/editall/${this.featureId}">
         <input type="hidden" name="token">
         <input type="hidden" name="form_fields" value=${this.getFormFields()}>
-        ${JSON.parse(this.flatForms).map(([sectionName, flatForm]) => html`
-          <h3>${sectionName}</h3>
-          <section class="flat_form">
-            <chromedash-form-table>
-              ${unsafeHTML(flatForm)}
-            </chromedash-form-table>
-          </section>
-        `)}
+        <chromedash-form-table ${ref(this.registerFormSubmitHandler)}>
+          ${FLAT_FORMS.map(([sectionName, flatFormFields]) => html`
+            <h3>${sectionName}</h3>
+            <section class="flat_form">
+              ${flatFormFields.map((field) => html`
+                <chromedash-form-field
+                  name=${field}
+                  value=${formattedFeature[field]}>
+                </chromedash-form-field>
+              `)}
+            </section>
+          `)}
+        </chromedash-form-table>
 
         <section class="final_buttons">
           <input class="button" type="submit" value="Submit">

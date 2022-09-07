@@ -92,18 +92,6 @@ IMPL_STATUS_FORMS = {
         (core_enums.REMOVED, guideforms.ImplStatus_AllMilestones),
     }
 
-# Forms to be used on the "Edit all" page that shows a flat list of fields.
-# [('Section name': form_class)].
-FLAT_FORMS = [
-    ('Feature metadata', guideforms.Flat_Metadata),
-    ('Identify the need', guideforms.Flat_Identify),
-    ('Prototype a solution', guideforms.Flat_Implement),
-    ('Dev trial', guideforms.Flat_DevTrial),
-    ('Origin trial', guideforms.Flat_OriginTrial),
-    ('Prepare to ship', guideforms.Flat_PrepareToShip),
-    ('Ship', guideforms.Flat_Ship),
-]
-
 
 class FeatureNew(basehandlers.FlaskHandler):
 
@@ -572,21 +560,7 @@ class FeatureEditAllFields(FeatureEditStage):
     if redirect_resp:
       return redirect_resp
 
-    f, feature_process = self.get_feature_and_process(feature_id)
-
-    feature_edit_dict = f.format_for_edit()
-    # TODO(jrobbins): make flat forms process specific?
-    flat_form_section_list = FLAT_FORMS
-    flat_forms = [
-        (section_name,
-        str(form_class(feature_edit_dict)),
-        list(form_class(feature_edit_dict).fields))
-        for section_name, form_class in flat_form_section_list]
-    template_data = {
-        'feature': f,
-        'feature_id': f.key.integer_id(),
-        'flat_forms': json.dumps(flat_forms),
-    }
+    template_data = {'feature_id': feature_id}
     return template_data
 
 class FeatureVerifyAccuracy(FeatureEditStage):
