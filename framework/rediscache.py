@@ -42,7 +42,7 @@ elif settings.STAGING or settings.PROD:
   gae_version = os.environ.get('GAE_VERSION', 'Undeployed')
 
 
-def set(key, value, time=None):
+def set(key, value, time=86400):
   """
   Redis SET sets the str key, value pair, https://redis.io/commands/set/; if
   ``key`` already holds a value, it is overwritten.
@@ -86,7 +86,7 @@ def get_multi(keys):
   return dict(zip(keys, vals))
 
 
-def set_multi(entries, time=None):
+def set_multi(entries, time=86400):
   """
   Set the given keys to their respective values.
 
