@@ -19,7 +19,6 @@ from google.cloud import ndb
 
 from framework import basehandlers
 from framework import permissions
-from framework import ramcache
 from internals import user_models
 
 
@@ -77,7 +76,6 @@ class AccountsAPI(basehandlers.APIHandler):
     if account_id:
       found_user = user_models.AppUser.get_by_id(int(account_id))
       if found_user:
-        found_user.key.delete()
-        ramcache.flush_all()
+        found_user.delete()
       else:
         self.abort(404, msg='Specified account ID not found')

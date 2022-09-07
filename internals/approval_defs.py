@@ -19,7 +19,6 @@ import logging
 import requests
 
 from framework import permissions
-from framework import ramcache
 from internals import review_models
 import settings
 

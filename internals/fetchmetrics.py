@@ -24,7 +24,6 @@ from google.auth.transport import requests as reqs
 from google.oauth2 import id_token
 
 from framework import basehandlers
-from framework import ramcache
 from framework import utils
 from internals import metrics_models
 from internals import user_models
@@ -212,7 +211,6 @@ class YesterdayHandler(basehandlers.FlaskHandler):
                 'WebStatusAlert-1: Failed to get metrics even after 2 days')
           return error_message, 500
 
-    ramcache.flush_all()
     return 'Success'
 
 

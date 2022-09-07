@@ -52,6 +52,9 @@ def set(key, value, time=86400):
   if redis_client is None:
     return
 
+  if value is None:
+    return
+
   cache_key = add_gae_prefix(key)
   if time:
     redis_client.set(cache_key, pickle.dumps(value), ex=time)
@@ -101,6 +104,9 @@ def set_multi(entries, time=86400):
 
   data_entries = {}
   for key in entries:
+    if entries[key] is None:
+      continue
+
     # gae prefix is needed for mset.
     cache_key = add_gae_prefix(key)
     data_entries[cache_key] = pickle.dumps(entries[key])
