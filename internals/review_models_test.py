@@ -188,3 +188,48 @@ class OwnersFileTest(testing_config.CustomTestCase):
 
     expired_content = review_models.OwnersFile.get_raw_owner_file('def')
     self.assertEqual(None, expired_content)
+
+
+class ActivityTest(testing_config.CustomTestCase):
+
+  def setUp(self):
+    self.feature_1 = core_models.Feature(
+        name='feature a', summary='sum', owner=['feature_owner@example.com'],
+        category=1, visibility=1, standardization=1, web_dev_views=1,
+        impl_status_chrome=3)
+    self.feature_1.put()
+
+  def tearDown(self):
+    feature_id = self.feature_1.key.integer_id()
+    activities = review_models.Activity.get_activities(feature_id)
+    for activity in activities:
+      activity.key.delete()
+    self.feature_1.key.delete()
+
+  def test_activities_created(self):
+    # stash_values is used to note what the original values of a feature are.
+    self.feature_1.stash_values()
+    self.feature_1.owner = ["other@example.com"]
+    self.feature_1.summary = "new summary"
+    self.feature_1.put()
+
+    self.feature_1.stash_values()
+    self.feature_1.name = 'Changed name'
+    self.feature_1.put()
+
+    feature_id = self.feature_1.key.integer_id()
+    activities = review_models.Activity.get_activities(feature_id)
+    self.assertEqual(len(activities), 2)
+    self.assertEqual(len(activities[0].amendments), 2)
+    self.assertEqual(len(activities[1].amendments), 1)
+
+    expected = [
+        ('owner', '[\'feature_owner@example.com\']', '[\'other@example.com\']'),
+        ('summary', 'sum', 'new summary'),
+        ('name', 'feature a', 'Changed name')]
+    result = activities[0].amendments + activities[1].amendments
+
+    for i, (field, before, expected) in enumerate(expected):
+      self.assertEqual(field, result[i].field_name)
+      self.assertEqual(before, result[i].old_value)
+      self.assertEqual(expected, result[i].new_value)
