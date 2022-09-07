@@ -90,7 +90,7 @@ export class ChromedashFormField extends LitElement {
           ${Object.values(choices).map(
             ([value, label]) => html`
               <sl-menu-item value="${value}"> ${label} </sl-menu-item>
-            `
+            `,
           )}
         </sl-select>
       `;
@@ -127,28 +127,27 @@ export class ChromedashFormField extends LitElement {
             <p>${description}</p>
           `)}
       `;
-    } else if (type === 'blink-component-dialog') {
+    } else if (type === 'datalist') {
       fieldHTML = html`
-      <input name=${this.name} type="hidden" value=${this.value}>
-      <p style="font-size: 16px">${this.value}
-        <sl-button size="small" style="margin-left: 10px;"
-          @click=${() => this.renderRoot.querySelector('sl-dialog').show()}>
-          <iron-icon slot="prefix" icon="chromestatus:create"></iron-icon>
-          Choose component
-        </sl-button>
-      </p>
-      <sl-dialog label="Select a Blink component:" style="--width:fit-content">
-        <div style="display: flex; flex-direction: column; gap: 5px">
+        <div class="datalist-input-wrapper">
+          <input 
+            ${ref(this.updateAttributes)}
+            name="${this.name}"
+            id="id_${this.name}"
+            value="${this.value}"
+            class="datalist-input"
+            type="search"
+            list="${this.name}_list"
+            ?required=${this.fieldProps.required} />
+        </div>
+        <datalist id="${this.name}_list">
           ${Object.values(choices).map(
             ([value]) => html`
-            <a @click=${()=> {
-              this.value = value;
-              this.renderRoot.querySelector('sl-dialog').hide();
-            }}> ${value} </a>
+              <option value="${value}"></option>
             `,
           )}
-        </div>
-      </sl-dialog>`;
+        </datalist>
+      `;
     } else {
       console.error(`unknown form field type: ${type}`);
     }

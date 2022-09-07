@@ -212,6 +212,30 @@ export const FORM_STYLES = [
       margin: 0;
     }
 
+    chromedash-form-field .datalist-input {
+      width: 100%;
+      height: 30px;
+      border-radius: 4px;
+      padding-left: 12px;
+      font-family: inherit;
+      font-size: inherit;
+      color: #27272a;
+    }
+    chromedash-form-field .datalist-input:hover {
+      border-color: #aaa;
+    }
+    chromedash-form-field .datalist-input:focus {
+      outline: none;
+      border-color: #0ea5e9;
+    }
+
+    chromedash-form-field .datalist-input-wrapper {
+      border-radius: 4px;
+    }
+    chromedash-form-field .datalist-input-wrapper:focus-within {
+      box-shadow: 0 0 0 3px #0ea5e966;
+    }
+
     sl-skeleton {
       margin-bottom: 1em;
       width: 60%;

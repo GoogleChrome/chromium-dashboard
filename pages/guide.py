@@ -125,9 +125,7 @@ class FeatureNew(basehandlers.FlaskHandler):
     owners = self.split_emails('owner')
     editors = self.split_emails('editors')
 
-    blink_components = (
-        self.split_input('blink_components', delim=',') or
-        [settings.DEFAULT_COMPONENT])
+    blink_components = (self.split_input('blink_components', delim=',') or [])
 
     # TODO(jrobbins): Validate input, even though it is done on client.
 
