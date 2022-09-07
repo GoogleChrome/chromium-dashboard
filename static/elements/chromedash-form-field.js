@@ -127,6 +127,27 @@ export class ChromedashFormField extends LitElement {
             <p>${description}</p>
           `)}
       `;
+    } else if (type === 'datalist') {
+      fieldHTML = html`
+        <div class="datalist-input-wrapper">
+          <input 
+            ${ref(this.updateAttributes)}
+            name="${this.name}"
+            id="id_${this.name}"
+            value="${this.value}"
+            class="datalist-input"
+            type="search"
+            list="${this.name}_list"
+            ?required=${this.fieldProps.required} />
+        </div>
+        <datalist id="${this.name}_list">
+          ${Object.values(choices).map(
+            ([value]) => html`
+              <option value="${value}"></option>
+            `,
+          )}
+        </datalist>
+      `;
     } else {
       console.error(`unknown form field type: ${type}`);
     }
