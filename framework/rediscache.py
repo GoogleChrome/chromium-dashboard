@@ -34,6 +34,13 @@ elif settings.STAGING or settings.PROD:
   redis_port = int(os.environ.get('REDISPORT', 6379))
   redis_client = redis.Redis(host=redis_host, port=redis_port, decode_responses=True)
 
+gae_version = None
+if settings.UNIT_TEST_MODE:
+  # gae_version prefix for testing.
+  gae_version = 'testing'
+elif settings.STAGING or settings.PROD:
+  gae_version = os.environ.get('GAE_VERSION', 'Undeployed')
+
 
 def set(key, value, time=None):
   """
@@ -50,10 +57,11 @@ def set(key, value, time=None):
         'value %s is not an instance of str, abort set caching', value)
     return
 
+  cache_key = add_gae_prefix(key)
   if time:
-    redis_client.set(key, value, ex=time)
+    redis_client.set(cache_key, value, ex=time)
   else:
-    redis_client.set(key, value)
+    redis_client.set(cache_key, value)
 
 
 def get(key):
@@ -64,7 +72,8 @@ def get(key):
   if redis_client is None:
     return None
 
-  return redis_client.get(key)
+  cache_key = add_gae_prefix(key)
+  return redis_client.get(cache_key)
 
 
 def get_multi(keys):
@@ -72,7 +81,8 @@ def get_multi(keys):
   if redis_client is None:
     return None
 
-  vals = redis_client.mget(keys)
+  cache_keys = [add_gae_prefix(k) for k in keys]
+  vals = redis_client.mget(cache_keys)
   return dict(zip(keys, vals))
 
 
@@ -91,7 +101,13 @@ def set_multi(entries, time=None):
       logging.info(
           'value %s is not an instance of str, skipping this cache', entries[key])
       continue
-    data_entries[key] = entries[key]
+
+    if time:
+      data_entries[key] = entries[key]
+    else:
+      # gae prefix is needed for mset.
+      cache_key = add_gae_prefix(key)
+      data_entries[cache_key] = entries[key]
 
   if not time:
     # https://redis.io/commands/mset/.
@@ -107,7 +123,8 @@ def delete(key):
   if redis_client is None:
     return
 
-  redis_client.delete(key)
+  cache_key = add_gae_prefix(key)
+  redis_client.delete(cache_key)
 
 
 def flushall():
@@ -116,6 +133,13 @@ def flushall():
     return
 
   redis_client.flushall()
+
+
+def add_gae_prefix(key):
+  if gae_version is None:
+    return key
+
+  return gae_version + '-' + key
 
 def serialize_non_str(data):
   if data is None:
