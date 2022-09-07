@@ -1,8 +1,10 @@
 import {LitElement, css, html, nothing} from 'lit';
-import {unsafeHTML} from 'lit/directives/unsafe-html.js';
+import {ref} from 'lit/directives/ref.js';
 import {showToastMessage} from './utils.js';
 import './chromedash-form-table';
 import './chromedash-form-field';
+import {formatFeatureForEdit, STAGE_FORMS, IMPL_STATUS_FORMS} from './form-definition';
+import {IMPLEMENTATION_STATUS} from './form-field-enums';
 import {SHARED_STYLES} from '../sass/shared-css.js';
 import {FORM_STYLES} from '../sass/forms-css.js';
 
@@ -22,9 +24,8 @@ export class ChromedashGuideStagePage extends LitElement {
       stageName: {type: String},
       featureId: {type: Number},
       feature: {type: Object},
-      featureForm: {type: String},
-      implStatusForm: {type: String},
-      implStatusName: {type: String},
+      featureFormFields: {type: Array},
+      implStatusFormFields: {type: Array},
       implStatusOffered: {type: String},
       loading: {type: Boolean},
     };
@@ -36,9 +37,8 @@ export class ChromedashGuideStagePage extends LitElement {
     this.stageName = '';
     this.featureId = 0;
     this.feature = {};
-    this.featureForm = '';
-    this.implStatusForm = '';
-    this.implStatusName = '';
+    this.featureFormFields = [];
+    this.implStatusFormFields = [];
     this.implStatusOffered = '';
     this.loading = true;
   }
@@ -60,6 +60,10 @@ export class ChromedashGuideStagePage extends LitElement {
           this.stageName = stage.name;
         }
       });
+      this.featureFormFields = STAGE_FORMS[this.feature.feature_type_int][this.stageId];
+      [this.implStatusOffered, this.implStatusFormFields] =
+        IMPL_STATUS_FORMS[this.stageId] || [null, null];
+
       this.loading = false;
 
       // TODO(kevinshen56714): Remove this once SPA index page is set up.
@@ -70,23 +74,22 @@ export class ChromedashGuideStagePage extends LitElement {
     });
   }
 
-  /* Add the form's event listener after Shoelace event listeners are attached
-   * see more at https://github.com/GoogleChrome/chromium-dashboard/issues/2014 */
-  firstUpdated() {
-    /* TODO(kevinshen56714): remove the timeout once the form fields are all
-     * migrated to frontend, we need it now because the unsafeHTML(this.overviewForm)
-     * delays the Shoelace event listener attachment */
-    setTimeout(() => {
-      const hiddenTokenField = this.shadowRoot.querySelector('input[name=token]');
-      hiddenTokenField.form.addEventListener('submit', (event) => {
-        this.handleFormSubmission(event, hiddenTokenField);
-      });
-      this.addMiscEventListeners();
-      this.scrollToPosition();
-    }, 1000);
+  async registerHandlers(el) {
+    if (!el) return;
+
+    /* Add the form's event listener after Shoelace event listeners are attached
+    * see more at https://github.com/GoogleChrome/chromium-dashboard/issues/2014 */
+    await el.updateComplete;
+    const hiddenTokenField = this.shadowRoot.querySelector('input[name=token]');
+    hiddenTokenField.form.addEventListener('submit', (event) => {
+      this.handleFormSubmit(event, hiddenTokenField);
+    });
+
+    this.addMiscEventListeners();
+    this.scrollToPosition();
   }
 
-  handleFormSubmission(event, hiddenTokenField) {
+  handleFormSubmit(event, hiddenTokenField) {
     event.preventDefault();
 
     // get the XSRF token and update it if it's expired before submission
@@ -143,7 +146,6 @@ export class ChromedashGuideStagePage extends LitElement {
       if (hash) {
         const el = this.shadowRoot.querySelector(hash);
         el.scrollIntoView(true, {behavior: 'smooth'});
-        el.focus();
       }
     }
   }
@@ -154,12 +156,8 @@ export class ChromedashGuideStagePage extends LitElement {
 
   // get a comma-spearated list of field names
   getFormFields() {
-    let fields = JSON.parse(this.featureForm)[1];
-
-    // if there is a implStatusForm. add its field names to the list
-    if (this.implStatusForm) {
-      fields = [...fields, ...JSON.parse(this.implStatusForm)[1]];
-    }
+    const fields = this.implStatusFormFields ?
+      [...this.featureFormFields, ...this.implStatusFormFields] : this.featureFormFields;
     return fields.join();
   }
 
@@ -196,83 +194,93 @@ export class ChromedashGuideStagePage extends LitElement {
     `;
   }
 
-  renderFeatureFormSection() {
+  renderFeatureFormSection(formattedFeature) {
     const alreadyOnThisStage = this.stageId === this.feature.intent_stage_int;
     return html`
       <section class="stage_form">
-        <chromedash-form-table>
-          ${unsafeHTML(JSON.parse(this.featureForm)[0])}
-
+        ${this.featureFormFields.map((field) => html`
           <chromedash-form-field
-            name="set_stage"
-            value=${alreadyOnThisStage}
-            ?disabled=${alreadyOnThisStage}>
+            name=${field}
+            value=${formattedFeature[field]}>
           </chromedash-form-field>
-
-        </chromedash-form-table>
+        `)}
+        <chromedash-form-field
+          name="set_stage"
+          value=${alreadyOnThisStage}
+          ?disabled=${alreadyOnThisStage}>
+        </chromedash-form-field>
       </section>
     `;
   }
 
-  renderImplStatusFormSection() {
+  renderImplStatusFormSection(formattedFeature) {
     const alreadyOnThisImplStatus = (
       this.implStatusOffered == this.feature.browsers.chrome.status.val);
+    const implStatusKey = Object.keys(IMPLEMENTATION_STATUS).find(
+      key => IMPLEMENTATION_STATUS[key][0] === this.implStatusOffered);
+    const implStatusName = implStatusKey ? IMPLEMENTATION_STATUS[implStatusKey][1]: null;
+
+    if (!implStatusName && !this.implStatusFormFields) return nothing;
+
     return html`
       <h3>Implementation in Chromium</h3>
       <section class="stage_form">
-        <chromedash-form-table>
-          ${this.implStatusName ? html`
-            <tr>
-              <td colspan="2"><b>Implementation status:</b></span>
-            </tr>
-            <tr>
-              ${alreadyOnThisImplStatus ?
-                html`
-                  <td style="padding: 6px 10px;">
-                      This feature already has implementation status:
-                      <b>${this.implStatusName}</b>.
-                  </td>
-                ` :
-                // TODO(jrobbins): When checked, make some milestone fields required.
-                html`
-                  <td style="padding: 6px 10px;">
-                    <input type="hidden" name="impl_status_offered"
-                            value=${this.implStatusOffered}>
-                    <sl-checkbox name="set_impl_status"
-                            id="set_impl_status"
-                            size="small">
-                      Set implementation status to: <b>${this.implStatusName}</b>
-                    </sl-checkbox>
-                  </td>
-                  <td style="padding: 6px 10px;">
-                    <span class="helptext"
-                          style="display: block; font-size: small; margin-top: 2px;">
-                      Check this box to update the implementation
-                      status of this feature in Chromium.
-                    </span>
-                  </td>
-                `}
-            </tr>
-          `: nothing}
+        ${implStatusName ? html`
+          <tr>
+            <td colspan="2"><b>Implementation status:</b></span>
+          </tr>
+          <tr>
+            ${alreadyOnThisImplStatus ?
+              html`
+                <td style="padding: 6px 10px;">
+                    This feature already has implementation status:
+                    <b>${implStatusName}</b>.
+                </td>
+              ` :
+              // TODO(jrobbins): When checked, make some milestone fields required.
+              html`
+                <td style="padding: 6px 10px;">
+                  <input type="hidden" name="impl_status_offered"
+                          value=${this.implStatusOffered}>
+                  <sl-checkbox name="set_impl_status"
+                          id="set_impl_status"
+                          size="small">
+                    Set implementation status to: <b>${implStatusName}</b>
+                  </sl-checkbox>
+                </td>
+                <td style="padding: 6px 10px;">
+                  <span class="helptext"
+                        style="display: block; font-size: small; margin-top: 2px;">
+                    Check this box to update the implementation
+                    status of this feature in Chromium.
+                  </span>
+                </td>
+              `}
+          </tr>
+        `: nothing}
 
-          ${unsafeHTML(JSON.parse(this.implStatusForm)[0])}
-
-        </chromedash-form-table>
+        ${this.implStatusFormFields.map((field) => html`
+          <chromedash-form-field
+            name=${field}
+            value=${formattedFeature[field]}>
+          </chromedash-form-field>
+        `)}
       </section>
     `;
   }
 
   renderForm() {
+    const formattedFeature = formatFeatureForEdit(this.feature);
     return html`
       <form name="feature_form" method="POST"
         action="/guide/stage/${this.featureId}/${this.stageId}">
         <input type="hidden" name="token">
         <input type="hidden" name="form_fields" value=${this.getFormFields()} >
 
-        ${this.renderFeatureFormSection()}
-
-        ${this.implStatusName || this.implStatusForm ?
-          this.renderImplStatusFormSection() : nothing}
+        <chromedash-form-table ${ref(this.registerHandlers)}>
+          ${this.renderFeatureFormSection(formattedFeature)}
+          ${this.renderImplStatusFormSection(formattedFeature)}
+        </chromedash-form-table>
 
         <div class="final_buttons">
           <input class="button" type="submit" value="Submit">

@@ -205,7 +205,8 @@ export const ALL_FIELDS = {
   },
 
   'feature_type_radio_group': {
-    name: 'feature_type', // actual field name
+    // form field name matches underlying DB field (sets "feature_type" in DB).
+    name: 'feature_type',
     type: 'radios',
     choices: FEATURE_TYPES,
     label: 'Feature type',
@@ -301,6 +302,8 @@ export const ALL_FIELDS = {
   },
 
   'deprecation_motivation': {
+    // form field name matches underlying DB field (sets "motivation" field in DB).
+    name: 'motivation',
     type: 'textarea',
     required: false,
     label: 'Motivation',
@@ -496,7 +499,8 @@ export const ALL_FIELDS = {
   },
 
   'r4dt_url': {
-    // Sets intent_to_experiment_url in DB
+    // form field name matches underlying DB field (sets "intent_to_experiment_url" field in DB).
+    name: 'intent_to_experiment_url',
     type: 'input',
     attrs: URL_FIELD_ATTRS,
     required: false,
@@ -851,7 +855,8 @@ export const ALL_FIELDS = {
   },
 
   'r4dt_lgtms': {
-    // Sets i2e_lgtms field.
+    // form field name matches underlying DB field (sets "i2e_lgtms" field in DB).
+    name: 'i2e_lgtms',
     type: 'input',
     attrs: MULTI_EMAIL_FIELD_ATTRS,
     required: false,

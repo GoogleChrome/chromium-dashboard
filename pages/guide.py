@@ -37,62 +37,6 @@ from internals import processes
 import settings
 
 
-# Forms to be used for each stage of each process.
-# { feature_type_id: { stage_id: stage_specific_form} }
-STAGE_FORMS = {
-    core_enums.FEATURE_TYPE_INCUBATE_ID: {
-        core_enums.INTENT_INCUBATE: guideforms.NewFeature_Incubate,
-        core_enums.INTENT_IMPLEMENT: guideforms.NewFeature_Prototype,
-        core_enums.INTENT_EXPERIMENT: guideforms.Any_DevTrial,
-        core_enums.INTENT_IMPLEMENT_SHIP: guideforms.NewFeature_EvalReadinessToShip,
-        core_enums.INTENT_EXTEND_TRIAL: guideforms.NewFeature_OriginTrial,
-        core_enums.INTENT_SHIP: guideforms.Most_PrepareToShip,
-        core_enums.INTENT_SHIPPED: guideforms.Any_Ship,
-        },
-
-    core_enums.FEATURE_TYPE_EXISTING_ID: {
-        core_enums.INTENT_IMPLEMENT: guideforms.Existing_Prototype,
-        core_enums.INTENT_EXPERIMENT: guideforms.Any_DevTrial,
-        core_enums.INTENT_EXTEND_TRIAL: guideforms.Existing_OriginTrial,
-        core_enums.INTENT_SHIP: guideforms.Most_PrepareToShip,
-        core_enums.INTENT_SHIPPED: guideforms.Any_Ship,
-        },
-
-    core_enums.FEATURE_TYPE_CODE_CHANGE_ID: {
-        core_enums.INTENT_IMPLEMENT: guideforms.PSA_Implement,
-        core_enums.INTENT_EXPERIMENT: guideforms.Any_DevTrial,
-        core_enums.INTENT_SHIP: guideforms.PSA_PrepareToShip,
-        core_enums.INTENT_SHIPPED: guideforms.Any_Ship,
-        },
-
-    core_enums.FEATURE_TYPE_DEPRECATION_ID: {
-        core_enums.INTENT_IMPLEMENT: guideforms.Deprecation_Implement,
-        core_enums.INTENT_EXPERIMENT: guideforms.Any_DevTrial,
-        core_enums.INTENT_EXTEND_TRIAL: guideforms.Deprecation_DeprecationTrial,
-        core_enums.INTENT_SHIP: guideforms.Deprecation_PrepareToShip,
-        core_enums.INTENT_REMOVED: guideforms.Deprecation_Removed,
-        },
-}
-
-
-IMPL_STATUS_FORMS = {
-    core_enums.INTENT_INCUBATE:
-        ('', guideforms.ImplStatus_Incubate),
-    core_enums.INTENT_EXPERIMENT:
-        (core_enums.BEHIND_A_FLAG, guideforms.ImplStatus_DevTrial),
-    core_enums.INTENT_EXTEND_TRIAL:
-        (core_enums.ORIGIN_TRIAL, guideforms.ImplStatus_OriginTrial),
-    core_enums.INTENT_IMPLEMENT_SHIP:
-        ('', guideforms.ImplStatus_EvalReadinessToShip),
-    core_enums.INTENT_SHIP:
-        (core_enums.ENABLED_BY_DEFAULT, guideforms.ImplStatus_AllMilestones),
-    core_enums.INTENT_SHIPPED:
-        (core_enums.ENABLED_BY_DEFAULT, guideforms.ImplStatus_AllMilestones),
-    core_enums.INTENT_REMOVED:
-        (core_enums.REMOVED, guideforms.ImplStatus_AllMilestones),
-    }
-
-
 class FeatureNew(basehandlers.FlaskHandler):
 
   TEMPLATE_PATH = 'guide/new.html'
@@ -223,33 +167,9 @@ class FeatureEditStage(basehandlers.FlaskHandler):
     if redirect_resp:
       return redirect_resp
 
-    f, feature_process = self.get_feature_and_process(feature_id)
-
-    # TODO(jrobbins): show useful error if stage not found.
-    detail_form_class = STAGE_FORMS[f.feature_type][stage_id]
-
-    impl_status_offered, impl_status_form_class = IMPL_STATUS_FORMS.get(
-        stage_id, ('', ''))
-
-    feature_edit_dict = f.format_for_edit()
-    detail_form = ''
-    if detail_form_class:
-      form = detail_form_class(feature_edit_dict)
-      detail_form = json.dumps((str(form), list(form.fields)))
-    impl_status_form = ''
-    if impl_status_form_class:
-      form = impl_status_form_class(feature_edit_dict)
-      impl_status_form = json.dumps((str(form), list(form.fields)))
-
-    # Provide new or populated form to template.
     template_data = {
-        'stage_id': stage_id,
-        'feature_id': f.key.integer_id(),
-        'feature_form': detail_form,
-        'impl_status_form': impl_status_form,
-        'impl_status_name': core_enums.IMPLEMENTATION_STATUS.get(
-            impl_status_offered, ''),
-        'impl_status_offered': impl_status_offered,
+      'stage_id': stage_id,
+      'feature_id': feature_id,
     }
     return template_data
 

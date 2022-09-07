@@ -1,4 +1,9 @@
-import {STANDARD_MATURITY_CHOICES} from './form-field-enums';
+import {
+  FEATURE_TYPES,
+  INTENT_STAGES,
+  IMPLEMENTATION_STATUS,
+  STANDARD_MATURITY_CHOICES,
+} from './form-field-enums';
 
 
 const COMMA_SEPARATED_FIELDS = ['owner', 'editors', 'spec_mentors',
@@ -202,3 +207,191 @@ export const FLAT_FORMS = [
   ['Prepare to ship', FLAT_PREPARE_TO_SHIP_FIELDS],
   ['Ship', FLAT_SHIP_FIELDS],
 ];
+
+
+const NEWFEATURE_INCUBATE = [
+  'motivation', 'initial_public_proposal_url', 'explainer_links',
+  'bug_url', 'launch_bug_url', 'comments',
+];
+
+const IMPLSTATUS_INCUBATE = ['requires_embedder_support'];
+
+const NEWFEATURE_PROTOTYPE = [
+  'spec_link', 'standard_maturity', 'api_spec', 'spec_mentors',
+  'intent_to_implement_url', 'comments',
+];
+// TODO(jrobbins): advise user to request a tag review
+
+const ANY_DEVTRIAL = [
+  'bug_url', 'devtrial_instructions', 'doc_links',
+  'interop_compat_risks',
+  'safari_views', 'safari_views_link', 'safari_views_notes',
+  'ff_views', 'ff_views_link', 'ff_views_notes',
+  'web_dev_views', 'web_dev_views_link', 'web_dev_views_notes',
+  'other_views_notes',
+  'security_review_status', 'privacy_review_status',
+  'ergonomics_risks', 'activation_risks', 'security_risks', 'debuggability',
+  'all_platforms', 'all_platforms_descr', 'wpt', 'wpt_descr',
+  'sample_links', 'devrel', 'ready_for_trial_url', 'comments',
+];
+// TODO(jrobbins): api overview link
+
+const IMPLSTATUS_DEVTRIAL = [
+  'dt_milestone_desktop_start', 'dt_milestone_android_start',
+  'dt_milestone_ios_start',
+  'flag_name',
+];
+
+const NEWFEATURE_EVALREADINESSTOSHIP = [
+  'doc_links', 'tag_review', 'spec_link',
+  'standard_maturity', 'interop_compat_risks',
+  'safari_views', 'safari_views_link', 'safari_views_notes',
+  'ff_views', 'ff_views_link', 'ff_views_notes',
+  'web_dev_views', 'web_dev_views_link', 'web_dev_views_notes',
+  'other_views_notes',
+  'prefixed', 'non_oss_deps', 'comments',
+];
+
+const IMPLSTATUS_ALLMILESTONES = [
+  'shipped_milestone', 'shipped_android_milestone',
+  'shipped_ios_milestone', 'shipped_webview_milestone',
+];
+
+const IMPLSTATUS_EVALREADINESSTOSHIP = [
+  'shipped_milestone', 'shipped_android_milestone',
+  'shipped_ios_milestone', 'shipped_webview_milestone',
+  'measurement',
+];
+
+const NEWFEATURE_ORIGINTRIAL = [
+  'experiment_goals', 'experiment_risks',
+  'experiment_extension_reason', 'ongoing_constraints',
+  'origin_trial_feedback_url', 'intent_to_experiment_url',
+  'intent_to_extend_experiment_url',
+  'i2e_lgtms', 'comments',
+];
+
+const IMPLSTATUS_ORIGINTRIAL = [
+  'ot_milestone_desktop_start', 'ot_milestone_desktop_end',
+  'ot_milestone_android_start', 'ot_milestone_android_end',
+  'ot_milestone_webview_start', 'ot_milestone_webview_end',
+  'experiment_timeline', // deprecated
+];
+
+const MOST_PREPARETOSHIP = [
+  'tag_review', 'tag_review_status', 'non_oss_deps',
+  'webview_risks', 'anticipated_spec_changes', 'origin_trial_feedback_url',
+  'launch_bug_url', 'intent_to_ship_url', 'i2s_lgtms', 'comments',
+];
+
+const ANY_SHIP = ['launch_bug_url', 'finch_url', 'comments'];
+
+const EXISTING_PROTOTYPE = [
+  'owner', 'editors', 'blink_components', 'motivation', 'explainer_links',
+  'spec_link', 'standard_maturity', 'api_spec', 'bug_url', 'launch_bug_url',
+  'intent_to_implement_url', 'comments',
+];
+
+const EXISTING_ORIGINTRIAL = [
+  'experiment_goals', 'experiment_risks',
+  'experiment_extension_reason', 'ongoing_constraints',
+  'intent_to_experiment_url', 'intent_to_extend_experiment_url',
+  'i2e_lgtms', 'origin_trial_feedback_url', 'comments',
+];
+
+const PSA_IMPLEMENT = ['motivation', 'spec_link', 'standard_maturity', 'comments'];
+// TODO(jrobbins): advise user to request a tag review
+
+const PAS_PREPARETOSHIP = [
+  'tag_review', 'intent_to_implement_url', 'origin_trial_feedback_url',
+  'launch_bug_url', 'intent_to_ship_url', 'comments',
+];
+
+const DEPRECATION_IMPLEMENT = [
+  'deprecation_motivation', // map to name="motivation" field upon form submission
+  'spec_link', 'comments',
+];
+
+// Note: Even though this is similar to another form, it is likely to change.
+// const DEPRECATION_PREPARETOSHIP = [
+//   'impl_status_chrome', 'tag_review',
+//   'webview_risks',
+//   'intent_to_implement_url', 'origin_trial_feedback_url',
+//   'launch_bug_url', 'comments'
+// ];
+
+// Note: Even though this is similar to another form, it is likely to change.
+const DEPRECATION_DEPRECATIONTRIAL = [
+  'experiment_goals', 'experiment_risks',
+  'ot_milestone_desktop_start', 'ot_milestone_desktop_end',
+  'ot_milestone_android_start', 'ot_milestone_android_end',
+  'ot_milestone_webview_start', 'ot_milestone_webview_end',
+  'experiment_timeline', // deprecated
+  'experiment_extension_reason', 'ongoing_constraints',
+  'r4dt_url', // map to name="intent_to_experiment_url" field upon form submission
+  'intent_to_extend_experiment_url',
+  'r4dt_lgtms', // map to name="i2e_lgtms" field upon form submission
+  'origin_trial_feedback_url', 'comments',
+];
+
+// Note: Even though this is similar to another form, it is likely to change.
+const DEPRECATION_PREPARETOSHIP = [
+  'impl_status_chrome', 'intent_to_ship_url', 'i2s_lgtms',
+  'launch_bug_url', 'comments',
+];
+
+const DEPRECATION_REMOVED = ['comments'];
+
+// Forms to be used for each stage of each process.
+// { feature_type_id: { stage_id: stage_specific_form} }
+export const STAGE_FORMS = {
+  [FEATURE_TYPES.FEATURE_TYPE_INCUBATE_ID[0]]: {
+    [INTENT_STAGES.INTENT_INCUBATE[0]]: NEWFEATURE_INCUBATE,
+    [INTENT_STAGES.INTENT_IMPLEMENT[0]]: NEWFEATURE_PROTOTYPE,
+    [INTENT_STAGES.INTENT_EXPERIMENT[0]]: ANY_DEVTRIAL,
+    [INTENT_STAGES.INTENT_IMPLEMENT_SHIP[0]]: NEWFEATURE_EVALREADINESSTOSHIP,
+    [INTENT_STAGES.INTENT_EXTEND_TRIAL[0]]: NEWFEATURE_ORIGINTRIAL,
+    [INTENT_STAGES.INTENT_SHIP[0]]: MOST_PREPARETOSHIP,
+    [INTENT_STAGES.INTENT_SHIPPED[0]]: ANY_SHIP,
+  },
+
+  [FEATURE_TYPES.FEATURE_TYPE_EXISTING_ID[0]]: {
+    [INTENT_STAGES.INTENT_IMPLEMENT[0]]: EXISTING_PROTOTYPE,
+    [INTENT_STAGES.INTENT_EXPERIMENT[0]]: ANY_DEVTRIAL,
+    [INTENT_STAGES.INTENT_EXTEND_TRIAL[0]]: EXISTING_ORIGINTRIAL,
+    [INTENT_STAGES.INTENT_SHIP[0]]: MOST_PREPARETOSHIP,
+    [INTENT_STAGES.INTENT_SHIPPED[0]]: ANY_SHIP,
+  },
+
+  [FEATURE_TYPES.FEATURE_TYPE_CODE_CHANGE_ID[0]]: {
+    [INTENT_STAGES.INTENT_IMPLEMENT[0]]: PSA_IMPLEMENT,
+    [INTENT_STAGES.INTENT_EXPERIMENT[0]]: ANY_DEVTRIAL,
+    [INTENT_STAGES.INTENT_SHIP[0]]: PAS_PREPARETOSHIP,
+    [INTENT_STAGES.INTENT_SHIPPED[0]]: ANY_SHIP,
+  },
+
+  [FEATURE_TYPES.FEATURE_TYPE_DEPRECATION_ID[0]]: {
+    [INTENT_STAGES.INTENT_IMPLEMENT[0]]: DEPRECATION_IMPLEMENT,
+    [INTENT_STAGES.INTENT_EXPERIMENT[0]]: ANY_DEVTRIAL,
+    [INTENT_STAGES.INTENT_EXTEND_TRIAL[0]]: DEPRECATION_DEPRECATIONTRIAL,
+    [INTENT_STAGES.INTENT_SHIP[0]]: DEPRECATION_PREPARETOSHIP,
+    [INTENT_STAGES.INTENT_REMOVED[0]]: DEPRECATION_REMOVED,
+  },
+};
+
+export const IMPL_STATUS_FORMS = {
+  [INTENT_STAGES.INTENT_INCUBATE[0]]:
+    ['', IMPLSTATUS_INCUBATE],
+  [INTENT_STAGES.INTENT_EXPERIMENT[0]]:
+    [IMPLEMENTATION_STATUS.BEHIND_A_FLAG[0], IMPLSTATUS_DEVTRIAL],
+  [INTENT_STAGES.INTENT_EXTEND_TRIAL[0]]:
+    [IMPLEMENTATION_STATUS.ORIGIN_TRIAL[0], IMPLSTATUS_ORIGINTRIAL],
+  [INTENT_STAGES.INTENT_IMPLEMENT_SHIP[0]]:
+    ['', IMPLSTATUS_EVALREADINESSTOSHIP],
+  [INTENT_STAGES.INTENT_SHIP[0]]:
+    [IMPLEMENTATION_STATUS.ENABLED_BY_DEFAULT[0], IMPLSTATUS_ALLMILESTONES],
+  [INTENT_STAGES.INTENT_SHIPPED[0]]:
+    [IMPLEMENTATION_STATUS.ENABLED_BY_DEFAULT[0], IMPLSTATUS_ALLMILESTONES],
+  [INTENT_STAGES.INTENT_REMOVED[0]]:
+    [IMPLEMENTATION_STATUS.REMOVED[0], IMPLSTATUS_ALLMILESTONES],
+};

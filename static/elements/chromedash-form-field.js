@@ -2,6 +2,7 @@ import {LitElement, html, nothing} from 'lit';
 import {ALL_FIELDS} from './form-field-specs';
 import {ref} from 'lit/directives/ref.js';
 import './chromedash-textarea';
+import {showToastMessage} from './utils.js';
 
 
 export class ChromedashFormField extends LitElement {
@@ -64,6 +65,11 @@ export class ChromedashFormField extends LitElement {
 
   renderWidgets() {
     const type = this.fieldProps.type;
+
+    // form field name can be specified in form-field-spec to match DB field name
+    const fieldName = this.fieldProps.name || this.name;
+
+    // choices can be specified in form-field-spec or fetched from API
     const choices = this.fieldProps.choices || this.componentChoices;
 
     let fieldHTML = '';
@@ -71,7 +77,7 @@ export class ChromedashFormField extends LitElement {
       // value can be a js or python boolean value converted to a string
       fieldHTML = html`
         <sl-checkbox
-          name="${this.name}"
+          name="${fieldName}"
           id="id_${this.name}"
           size="small"
           ?checked=${this.value === 'true' || this.value === 'True'}
@@ -82,7 +88,7 @@ export class ChromedashFormField extends LitElement {
     } else if (type === 'select') {
       fieldHTML = html`
         <sl-select
-          name="${this.name}"
+          name="${fieldName}"
           id="id_${this.name}"
           value="${this.value}"
           size="small"
@@ -98,7 +104,7 @@ export class ChromedashFormField extends LitElement {
       fieldHTML = html`
         <sl-input
           ${ref(this.updateAttributes)}
-          name="${this.name}"
+          name="${fieldName}"
           id="id_${this.name}"
           size="small"
           autocomplete="off"
@@ -110,20 +116,20 @@ export class ChromedashFormField extends LitElement {
       fieldHTML = html`
         <chromedash-textarea
           ${ref(this.updateAttributes)}
-          name="${this.name}"
+          name="${fieldName}"
+          id="id_${this.name}"
           size="small"
           .value=${this.value === 'None' ? '' : this.value}
           ?required=${this.fieldProps.required}>
         </chromedash-textarea>
       `;
     } else if (type === 'radios') {
-      const fieldName = this.fieldProps.name || this.name;
       fieldHTML = html`
         ${Object.values(choices).map(
           ([value, label, description]) => html`
-            <input id="id_${fieldName}_${value}" name="${fieldName}"
+            <input id="id_${this.name}_${value}" name="${fieldName}"
               value="${value}" type="radio" required>
-            <label for="id_${fieldName}_${value}">${label}</label>
+            <label for="id_${this.name}_${value}">${label}</label>
             <p>${description}</p>
           `)}
       `;
@@ -132,7 +138,7 @@ export class ChromedashFormField extends LitElement {
         <div class="datalist-input-wrapper">
           <input 
             ${ref(this.updateAttributes)}
-            name="${this.name}"
+            name="${fieldName}"
             id="id_${this.name}"
             value="${this.value}"
             class="datalist-input"

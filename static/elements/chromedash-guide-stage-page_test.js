@@ -1,6 +1,7 @@
 import {html} from 'lit';
 import {assert, fixture} from '@open-wc/testing';
 import {ChromedashGuideStagePage} from './chromedash-guide-stage-page';
+import {STAGE_FORMS, IMPL_STATUS_FORMS} from './form-definition';
 import './chromedash-toast';
 import '../js-src/cs-client';
 import sinon from 'sinon';
@@ -12,25 +13,34 @@ describe('chromedash-guide-stage-page', () => {
     summary: 'fake detailed summary',
     category: 'fake category',
     feature_type: 'fake feature type',
+    feature_type_int: 1,
     intent_stage: 'fake intent stage',
     new_crbug_url: 'fake crbug link',
     browsers: {
       chrome: {
         blink_components: ['Blink'],
         owners: ['fake chrome owner one', 'fake chrome owner two'],
-        status: {text: 'fake chrome status text'},
+        status: {
+          milestone_str: 'No active development',
+          text: 'No active development',
+          val: 1},
       },
-      ff: {view: {text: 'fake ff view text'}},
-      safari: {view: {text: 'fake safari view text'}},
-      webdev: {view: {text: 'fake webdev view text'}},
+      ff: {view: {text: 'No signal', val: 5}},
+      safari: {view: {text: 'No signal', val: 5}},
+      webdev: {view: {text: 'No signal', val: 4}},
+      other: {view: {}},
     },
     resources: {
       samples: ['fake sample link one', 'fake sample link two'],
       docs: ['fake doc link one', 'fake doc link two'],
     },
     standards: {
-      spec: 'fake spec link',
-      maturity: {text: 'Unknown standards status - check spec link for status'},
+      maturity: {
+        short_text: 'Incubation',
+        text: 'Specification being incubated in a Community Group',
+        val: 3,
+      },
+      status: {text: 'Editor\'s Draft', val: 4},
     },
     tags: ['tag_one'],
   });
@@ -43,10 +53,6 @@ describe('chromedash-guide-stage-page', () => {
       actions: [],
     }],
   });
-  const implStatusName = 'fake implStatusName';
-  /* TODO: create a proper fake data once the form generation is migrated to frontend */
-  const featureForm = '["", ["fake feature field 1", "fake feature field 2"]]';
-  const implStatusForm = '["", ["fake implStatus field 1", "fake implStatus field 2"]]';
 
   /* window.csClient and <chromedash-toast> are initialized at _base.html
    * which are not available here, so we initialize them before each test.
@@ -56,12 +62,15 @@ describe('chromedash-guide-stage-page', () => {
     window.csClient = new ChromeStatusClient('fake_token', 1);
     sinon.stub(window.csClient, 'getFeature');
     sinon.stub(window.csClient, 'getFeatureProcess');
+    sinon.stub(window.csClient, 'getBlinkComponents');
     window.csClient.getFeatureProcess.returns(processPromise);
+    window.csClient.getBlinkComponents.returns(Promise.resolve({}));
   });
 
   afterEach(() => {
     window.csClient.getFeature.restore();
     window.csClient.getFeatureProcess.restore();
+    window.csClient.getBlinkComponents.restore();
   });
 
   it('renders with no data', async () => {
@@ -81,17 +90,14 @@ describe('chromedash-guide-stage-page', () => {
   });
 
   it('renders with fake data (with implStatusForm and implStatusName)', async () => {
-    const stageId = 1;
+    const stageId = 2;
     const featureId = 123456;
     window.csClient.getFeature.withArgs(featureId).returns(validFeaturePromise);
 
     const component = await fixture(
       html`<chromedash-guide-stage-page
              .stageId=${stageId}
-             .featureId=${featureId}
-             .featureForm=${featureForm}
-             .implStatusForm=${implStatusForm}
-             .implStatusName=${implStatusName}>
+             .featureId=${featureId}>
            </chromedash-guide-stage-page>`);
     assert.exists(component);
     assert.instanceOf(component, ChromedashGuideStagePage);
@@ -106,14 +112,14 @@ describe('chromedash-guide-stage-page', () => {
     const form = component.shadowRoot.querySelector('form[name="feature_form"]');
     assert.exists(form);
     assert.include(form.innerHTML, '<input type="hidden" name="token">');
-    assert.include(form.innerHTML,
-      '<input type="hidden" name="form_fields" value="fake feature field 1,'+
-      'fake feature field 2,fake implStatus field 1,fake implStatus field 2">');
+    assert.include(form.innerHTML, '<input type="hidden" name="form_fields"');
+    assert.include(form.innerHTML, `${STAGE_FORMS[1][stageId].join()}`);
+    assert.include(form.innerHTML, `${IMPL_STATUS_FORMS[stageId][1].join()}`);
     assert.include(form.innerHTML, '<div class="final_buttons">');
 
     // Implementation section renders correct title and fields
     assert.include(form.innerHTML, 'Implementation in Chromium');
-    assert.include(form.innerHTML, 'fake implStatusName');
+    assert.include(form.innerHTML, '4');
     assert.include(form.innerHTML, 'type="hidden" name="impl_status_offered"');
     assert.include(form.innerHTML, 'sl-checkbox name="set_impl_status"');
     assert.notInclude(form.innerHTML, 'This feature already has implementation status');
@@ -127,8 +133,7 @@ describe('chromedash-guide-stage-page', () => {
     const component = await fixture(
       html`<chromedash-guide-stage-page
              .stageId=${stageId}
-             .featureId=${featureId}
-             .featureForm=${featureForm}>
+             .featureId=${featureId}>
            </chromedash-guide-stage-page>`);
     assert.exists(component);
     assert.instanceOf(component, ChromedashGuideStagePage);
