@@ -80,7 +80,7 @@ class DictModel(ndb.Model):
       elif isinstance(value, ndb.GeoPt):
         output[key] = {'lat': value.lat, 'lon': value.lon}
       elif isinstance(value, ndb.Model):
-        output[key] = to_dict(value)
+        output[key] = value.to_dict()
       elif isinstance(value, ndb.model.User):
         output[key] = value.email()
       else:
