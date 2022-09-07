@@ -35,9 +35,8 @@ class RedisCacheFunctionTests(testing_config.CustomTestCase):
     rediscache.set(KEY_1, '101')
     self.assertEqual('101', rediscache.get(KEY_1))
 
-    # Ignore non-str types.
     rediscache.set(KEY_4, 123)
-    self.assertEqual(None, rediscache.get(KEY_4))
+    self.assertEqual(123, rediscache.get(KEY_4))
 
     rediscache.set(KEY_4, '123', 3600)
     self.assertEqual('123', rediscache.get(KEY_4))
@@ -57,7 +56,7 @@ class RedisCacheFunctionTests(testing_config.CustomTestCase):
     # Ignore non-str types.
     rediscache.set_multi({KEY_2: '202', KEY_3: '303', KEY_5: 111})
     self.assertEqual(
-        {KEY_2: '202', KEY_3: '303', KEY_5: None},
+        {KEY_2: '202', KEY_3: '303', KEY_5: 111},
         rediscache.get_multi([KEY_2, KEY_3, KEY_5]))
 
     rediscache.set_multi({KEY_5: '222'}, 3600)

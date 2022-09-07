@@ -25,6 +25,6 @@ def get_omaha_data():
   if omaha_data is None:
     result = requests.get('https://omahaproxy.appspot.com/all.json')
     if result.status_code == 200:
-      omaha_data = json.loads(result.content)
+      omaha_data = result.content
       rediscache.set('omaha_data', omaha_data, time=86400) # cache for 24hrs.
-  return omaha_data
+  return json.loads(omaha_data)

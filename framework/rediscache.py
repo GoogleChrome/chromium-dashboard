@@ -16,7 +16,7 @@
 # limitations under the License.
 
 import os
-import json
+import pickle
 import logging
 import settings
 
@@ -27,12 +27,12 @@ import fakeredis
 redis_client = None
 
 if settings.UNIT_TEST_MODE:
-  redis_client = fakeredis.FakeStrictRedis(decode_responses=True)
+  redis_client = fakeredis.FakeStrictRedis()
 elif settings.STAGING or settings.PROD:
   # Create a Redis client.
   redis_host = os.environ.get('REDISHOST', 'localhost')
   redis_port = int(os.environ.get('REDISPORT', 6379))
-  redis_client = redis.Redis(host=redis_host, port=redis_port, decode_responses=True)
+  redis_client = redis.Redis(host=redis_host, port=redis_port)
 
 gae_version = None
 if settings.UNIT_TEST_MODE:
@@ -44,7 +44,7 @@ elif settings.STAGING or settings.PROD:
 
 def set(key, value, time=86400):
   """
-  Redis SET sets the str key, value pair, https://redis.io/commands/set/; if
+  Redis SET sets the str/binary key, value pair, https://redis.io/commands/set/; if
   ``key`` already holds a value, it is overwritten.
 
   ``time`` sets the expire time for this key, in seconds.
@@ -52,28 +52,26 @@ def set(key, value, time=86400):
   if redis_client is None:
     return
 
-  if not isinstance(value, str):
-    logging.info(
-        'value %s is not an instance of str, abort set caching', value)
-    return
-
   cache_key = add_gae_prefix(key)
   if time:
-    redis_client.set(cache_key, value, ex=time)
+    redis_client.set(cache_key, pickle.dumps(value), ex=time)
   else:
-    redis_client.set(cache_key, value)
+    redis_client.set(cache_key, pickle.dumps(value))
 
 
 def get(key):
   """
   Redis GET gets the value of key. Return nil if ``key`` does not
-  exist; return an error if the value returned is not a str.
+  exist; return an error if the value returned is not a str/binary.
   """
   if redis_client is None:
     return None
 
   cache_key = add_gae_prefix(key)
-  return redis_client.get(cache_key)
+  raw_value = redis_client.get(cache_key)
+  if raw_value is None:
+    return None
+  return pickle.loads(raw_value)
 
 
 def get_multi(keys):
@@ -82,7 +80,8 @@ def get_multi(keys):
     return None
 
   cache_keys = [add_gae_prefix(k) for k in keys]
-  vals = redis_client.mget(cache_keys)
+  raw_vals = redis_client.mget(cache_keys)
+  vals = [pickle.loads(v) if v is not None else None for v in raw_vals]
   return dict(zip(keys, vals))
 
 
@@ -95,27 +94,19 @@ def set_multi(entries, time=86400):
   if redis_client is None:
     return
 
-  data_entries = {}
-  for key in entries:
-    if not isinstance(entries[key], str):
-      logging.info(
-          'value %s is not an instance of str, skipping this cache', entries[key])
-      continue
-
-    if time:
-      data_entries[key] = entries[key]
-    else:
-      # gae prefix is needed for mset.
-      cache_key = add_gae_prefix(key)
-      data_entries[cache_key] = entries[key]
-
-  if not time:
-    # https://redis.io/commands/mset/.
-    redis_client.mset(data_entries)
+  if time:
+    for key in entries:
+      set(key, entries[key], time)
     return
 
-  for key in data_entries:
-    set(key, data_entries[key], time)
+  data_entries = {}
+  for key in entries:
+    # gae prefix is needed for mset.
+    cache_key = add_gae_prefix(key)
+    data_entries[cache_key] = entries[key]
+
+  # https://redis.io/commands/mset/.
+  redis_client.mset(data_entries)
 
 
 def delete(key):
@@ -141,12 +132,10 @@ def add_gae_prefix(key):
 
   return gae_version + '-' + key
 
+
 def serialize_non_str(data):
-  if data is None:
-    return None
-  return json.dumps(data)
+  return data
+
 
 def deserialize_non_str(raw_data):
-  if raw_data is None:
-    return None
-  return json.loads(raw_data)
+  return raw_data
