@@ -237,31 +237,32 @@ class Feature(DictModel):
           'val': standard_maturity_val,
         },
       }
+      del d['standard_maturity']
       d['tag_review_status'] = REVIEW_STATUS_CHOICES[self.tag_review_status]
       d['security_review_status'] = REVIEW_STATUS_CHOICES[
           self.security_review_status]
       d['privacy_review_status'] = REVIEW_STATUS_CHOICES[
           self.privacy_review_status]
       d['resources'] = {
-        'samples': self.sample_links or [],
-        'docs': self.doc_links or [],
+        'samples': d.pop('sample_links', []),
+        'docs': d.pop('doc_links', []),
       }
-      d['tags'] = self.search_tags or []
+      d['tags'] = d.pop('search_tags', [])
       d['editors'] = d.pop('editors', [])
       d['creator'] = d.pop('creator', None)
       d['browsers'] = {
         'chrome': {
-          'bug': self.bug_url or None,
-          'blink_components': self.blink_components or [],
-          'devrel': self.devrel or [],
-          'owners': self.owner or [],
+          'bug': d.pop('bug_url', None),
+          'blink_components': d.pop('blink_components', []),
+          'devrel': d.pop('devrel', []),
+          'owners': d.pop('owner', []),
           'origintrial': self.impl_status_chrome == ORIGIN_TRIAL,
           'intervention': self.impl_status_chrome == INTERVENTION,
           'prefixed': d.pop('prefixed', False),
           'flag': self.impl_status_chrome == BEHIND_A_FLAG,
           'status': {
             'text': IMPLEMENTATION_STATUS[self.impl_status_chrome],
-            'val': self.impl_status_chrome or None
+            'val': d.pop('impl_status_chrome', None)
           },
           'desktop': d.pop('shipped_milestone', None),
           'android': d.pop('shipped_android_milestone', None),

@@ -861,18 +861,6 @@ Flat_Ship = define_form_class_using_shared_fields(
      'shipped_milestone', 'shipped_android_milestone',
      'shipped_ios_milestone', 'shipped_webview_milestone'))
 
-Verify_Accuracy = define_form_class_using_shared_fields(
-    'Verify_Accuracy',
-    ('summary', 'owner', 'editors', 'impl_status_chrome', 'intent_stage',
-    'dt_milestone_android_start', 'dt_milestone_desktop_start',
-    'dt_milestone_ios_start', 'ot_milestone_android_start',
-    'ot_milestone_android_end', 'ot_milestone_desktop_start',
-    'ot_milestone_desktop_end', 'ot_milestone_webview_start',
-    'ot_milestone_webview_end', 'shipped_android_milestone',
-    'shipped_ios_milestone', 'shipped_milestone', 'shipped_webview_milestone',
-    'accurate_as_of')
-)
-
 FIELD_NAME_TO_DISPLAY_TYPE = {
     'doc_links': 'urllist',
     'explainer_links': 'urllist',

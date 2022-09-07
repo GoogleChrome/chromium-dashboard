@@ -1,6 +1,7 @@
 import {html} from 'lit';
 import {assert, fixture} from '@open-wc/testing';
 import {ChromedashGuideVerifyAccuracyPage} from './chromedash-guide-verify-accuracy-page';
+import {VERIFY_ACCURACY_FORM_FIELDS} from './form-definition';
 import './chromedash-toast';
 import '../js-src/cs-client';
 import sinon from 'sinon';
@@ -18,24 +19,30 @@ describe('chromedash-guide-verify-accuracy-page', () => {
       chrome: {
         blink_components: ['Blink'],
         owners: ['fake chrome owner one', 'fake chrome owner two'],
-        status: {text: 'fake chrome status text'},
+        status: {
+          milestone_str: 'No active development',
+          text: 'No active development',
+          val: 1},
       },
-      ff: {view: {text: 'fake ff view text'}},
-      safari: {view: {text: 'fake safari view text'}},
-      webdev: {view: {text: 'fake webdev view text'}},
+      ff: {view: {text: 'No signal', val: 5}},
+      safari: {view: {text: 'No signal', val: 5}},
+      webdev: {view: {text: 'No signal', val: 4}},
+      other: {view: {}},
     },
     resources: {
       samples: ['fake sample link one', 'fake sample link two'],
       docs: ['fake doc link one', 'fake doc link two'],
     },
     standards: {
-      spec: 'fake spec link',
-      maturity: {text: 'Unknown standards status - check spec link for status'},
+      maturity: {
+        short_text: 'Incubation',
+        text: 'Specification being incubated in a Community Group',
+        val: 3,
+      },
+      status: {text: 'Editor\'s Draft', val: 4},
     },
     tags: ['tag_one'],
   });
-  /* TODO: create a proper fake data once the form generation is migrated to frontend */
-  const forms = '[["fake section name", "", ["fake field 1", "fake field 2"]]]';
 
   /* window.csClient and <chromedash-toast> are initialized at _base.html
    * which are not available here, so we initialize them before each test.
@@ -72,8 +79,7 @@ describe('chromedash-guide-verify-accuracy-page', () => {
 
     const component = await fixture(
       html`<chromedash-guide-verify-accuracy-page
-             .featureId=${featureId}
-             .forms=${forms}>
+             .featureId=${featureId}>
            </chromedash-guide-verify-accuracy-page>`);
     assert.exists(component);
     assert.instanceOf(component, ChromedashGuideVerifyAccuracyPage);
@@ -89,7 +95,7 @@ describe('chromedash-guide-verify-accuracy-page', () => {
     assert.exists(featureForm);
     assert.include(featureForm.innerHTML, '<input type="hidden" name="token">');
     assert.include(featureForm.innerHTML,
-      '<input type="hidden" name="form_fields" value="fake field 1,fake field 2">');
+      `<input type="hidden" name="form_fields" value="${VERIFY_ACCURACY_FORM_FIELDS.join()}">`);
     assert.include(featureForm.innerHTML, '<section class="final_buttons">');
   });
 });
