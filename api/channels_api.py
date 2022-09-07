@@ -43,6 +43,7 @@ def construct_chrome_channels_details():
     new_beta_version = channels['stable']['version'] + 1
     channels['beta'] = fetch_chrome_release_info(new_beta_version)
     channels['beta']['version'] = new_beta_version
+  if channels['beta']['version'] == channels['dev']['version']:
     new_dev_version = channels['beta']['version'] + 1
     channels['dev'] = fetch_chrome_release_info(new_dev_version)
     channels['dev']['version'] = new_dev_version
