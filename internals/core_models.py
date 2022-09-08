@@ -34,11 +34,10 @@ SIMPLE_TYPES = (int, float, bool, dict, str, list)
 
 def del_none(d):
   """
-  Delete dict keys with None values, empty lists, and 
-  lists with only an empty string item, recursively.
+  Delete dict keys with None values, and empty lists, recursively.
   """
   for key, value in list(d.items()):
-    if value is None or (isinstance(value, list) and len(value) == 0) or value == ['']:
+    if value is None or (isinstance(value, list) and len(value) == 0):
       del d[key]
     elif isinstance(value, dict):
       del_none(value)
@@ -974,7 +973,7 @@ class Feature(DictModel):
   experiment_extension_reason = ndb.StringProperty()
   ongoing_constraints = ndb.StringProperty()
   origin_trial_feedback_url = ndb.StringProperty()
-  anticipated_spec_changes = ndb.StringProperty(repeated=True)
+  anticipated_spec_changes = ndb.StringProperty()
 
   finch_url = ndb.StringProperty()
 
@@ -1037,7 +1036,7 @@ class FeatureEntry(ndb.Model):  # Copy from Feature
   tag_review = ndb.StringProperty()
   tag_review_status = ndb.IntegerProperty(default=REVIEW_PENDING)
   non_oss_deps = ndb.TextProperty()
-  anticipated_spec_changes = ndb.StringProperty(repeated=True)
+  anticipated_spec_changes = ndb.TextProperty()
 
   ff_views = ndb.IntegerProperty(required=True, default=NO_PUBLIC_SIGNALS)
   safari_views = ndb.IntegerProperty(required=True, default=NO_PUBLIC_SIGNALS)

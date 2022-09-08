@@ -824,7 +824,7 @@ export const ALL_FIELDS = {
 
   'anticipated_spec_changes': {
     type: 'textarea',
-    attrs: MULTI_URL_FIELD_ATTRS,
+    attrs: {rows: 4},
     required: false,
     label: 'Anticipated spec changes',
     help_text: html`
