@@ -173,7 +173,7 @@ class ChromedashFeatureDetail extends LitElement {
       return this.renderText(value ? 'True' : 'False');
     } else if (fieldType == 'url') {
       return this.renderUrl(value);
-    } else if (fieldType == 'multi-url' && Array.isArray(value)) {
+    } else if (fieldType == 'multi-url') {
       return html`
         <ul class='inline-list'>
           ${value.map(url => html`<li>${this.renderUrl(url)}</li>`)}
