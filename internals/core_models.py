@@ -35,11 +35,10 @@ SIMPLE_TYPES = (int, float, bool, dict, str, list)
 def del_none(d):
   """
   Delete dict keys with None values, empty lists, and 
-  lists with only a empty string item, recursively.
+  lists with only an empty string item, recursively.
   """
   for key, value in list(d.items()):
-    if value is None or (isinstance(value, list) and len(value) == 0) or \
-      (isinstance(value, list) and len(value) == 1 and value[0] == ''):
+    if value is None or (isinstance(value, list) and len(value) == 0) or value == ['']:
       del d[key]
     elif isinstance(value, dict):
       del_none(value)
