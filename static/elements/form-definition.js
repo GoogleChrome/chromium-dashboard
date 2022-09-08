@@ -8,7 +8,8 @@ import {
 const COMMA_SEPARATED_FIELDS = ['owner', 'editors', 'spec_mentors',
   'search_tags', 'devrel', 'i2e_lgtms', 'i2s_lgtms'];
 
-const LINE_SEPARATED_FIELDS = ['explainer_links', 'doc_links', 'sample_links'];
+const LINE_SEPARATED_FIELDS = ['anticipated_spec_changes', 'explainer_links',
+  'doc_links', 'sample_links'];
 
 /* Convert the format of feature object fetched from API into those for edit.
  * The feature object from API is formatted by the format_for_template method of
@@ -73,11 +74,11 @@ export function formatFeatureForEdit(feature) {
   };
 
   COMMA_SEPARATED_FIELDS.map((field) => {
-    if (feature[field]) formattedFeature[field] = feature[field].join(', ');
+    if (formattedFeature[field]) formattedFeature[field] = formattedFeature[field].join(', ');
   });
 
   LINE_SEPARATED_FIELDS.map((field) => {
-    if (feature[field]) formattedFeature[field] = feature[field].join('\r\n');
+    if (formattedFeature[field]) formattedFeature[field] = formattedFeature[field].join('\r\n');
   });
 
   return formattedFeature;
