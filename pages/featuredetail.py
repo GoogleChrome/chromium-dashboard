@@ -13,16 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-
-
-import json
-import logging
-
 from framework import basehandlers
-from pages import guideforms
 from internals import core_models
-from internals import processes
 
 
 class FeatureDetailHandler(basehandlers.FlaskHandler):
