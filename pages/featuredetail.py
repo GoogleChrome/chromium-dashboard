@@ -38,21 +38,13 @@ class FeatureDetailHandler(basehandlers.FlaskHandler):
       # TODO(jrobbins): Check permissions and offer option to undelete.
       self.abort(404, msg='Feature has been deleted')
 
-    feature_process = processes.ALL_PROCESSES.get(
-        f.feature_type, processes.BLINK_LAUNCH_PROCESS)
-    field_defs = guideforms.DISPLAY_FIELDS_IN_STAGES
     context_link = '/features'
     if self.request.args.get('context') == 'myfeatures':
       context_link = '/myfeatures'
 
     template_data = {
-        'process_json': json.dumps(processes.process_to_dict(feature_process)),
-        'field_defs_json': json.dumps(field_defs),
         'feature': f.format_for_template(),
-        'feature_id': f.key.integer_id(),
-        'feature_json': json.dumps(f.format_for_template()),
-        'updated_display': f.updated.strftime("%Y-%m-%d"),
-        'new_crbug_url': f.new_crbug_url(),
+        'feature_id': feature_id,
         'context_link': context_link,
     }
     return template_data

@@ -73,11 +73,11 @@ export function formatFeatureForEdit(feature) {
   };
 
   COMMA_SEPARATED_FIELDS.map((field) => {
-    if (feature[field]) formattedFeature[field] = feature[field].join(', ');
+    if (formattedFeature[field]) formattedFeature[field] = formattedFeature[field].join(', ');
   });
 
   LINE_SEPARATED_FIELDS.map((field) => {
-    if (feature[field]) formattedFeature[field] = feature[field].join('\r\n');
+    if (formattedFeature[field]) formattedFeature[field] = formattedFeature[field].join('\r\n');
   });
 
   return formattedFeature;
