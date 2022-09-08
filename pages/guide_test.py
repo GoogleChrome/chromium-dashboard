@@ -302,7 +302,6 @@ class FeatureEditStageTest(testing_config.CustomTestCase):
       template_data = self.handler.get_template_data(
           self.feature_1.key.integer_id(), self.stage)
     self.assertTrue('feature_id' in template_data)
-    self.assertTrue('feature_form' in template_data)
 
   def test_post__anon(self):
     """Anon cannot edit features, gets a 403."""
