@@ -164,6 +164,7 @@ export const ALL_FIELDS = {
   'unlisted': {
     type: 'checkbox',
     label: 'Unlisted',
+    initial: false,
     help_text: html`
         Check this box to hide draft emails in list views. Anyone with
         a link will be able to view the feature's detail page.`,
@@ -172,6 +173,7 @@ export const ALL_FIELDS = {
   'accurate_as_of': {
     type: 'checkbox',
     label: 'Confirm accuracy',
+    initial: true,
     help_text: html`
         Check this box to indicate that feature information is accurate
         as of today.
@@ -191,6 +193,7 @@ export const ALL_FIELDS = {
   'category': {
     type: 'select',
     choices: FEATURE_CATEGORIES,
+    initial: FEATURE_CATEGORIES.MISC[0],
     label: 'Category',
     help_text: html`
         Select the most specific category. If unsure, leave as "Miscellaneous".`,
@@ -199,6 +202,7 @@ export const ALL_FIELDS = {
   'feature_type': {
     type: 'select',
     choices: FEATURE_TYPES,
+    initial: FEATURE_TYPES.FEATURE_TYPE_INCUBATE_ID[0],
     label: 'Feature type',
     help_text: html`
         Select the feature type.`,
@@ -226,6 +230,7 @@ export const ALL_FIELDS = {
   'intent_stage': {
     type: 'select',
     choices: INTENT_STAGES,
+    initial: INTENT_STAGES.INTENT_IMPLEMENT[0],
     label: 'Process stage',
     help_text: html`
         Select the appropriate spec process stage. If you select
@@ -369,6 +374,7 @@ export const ALL_FIELDS = {
   'standard_maturity': {
     type: 'select',
     choices: STANDARD_MATURITY_CHOICES,
+    initial: STANDARD_MATURITY_CHOICES.PROPOSAL_STD[0],
     label: 'Standard maturity',
     help_text: html`
         How far along is the standard that this feature implements?`,
@@ -376,6 +382,7 @@ export const ALL_FIELDS = {
 
   'api_spec': {
     type: 'checkbox',
+    initial: false,
     label: 'API spec',
     help_text: html`
         The spec document has details in a specification language
@@ -434,6 +441,7 @@ export const ALL_FIELDS = {
   'security_review_status': {
     type: 'select',
     choices: REVIEW_STATUS_CHOICES,
+    initial: REVIEW_STATUS_CHOICES.REVIEW_PENDING[0],
     label: 'Security review status',
     help_text: html`
         Status of the security review.`,
@@ -442,6 +450,7 @@ export const ALL_FIELDS = {
   'privacy_review_status': {
     type: 'select',
     choices: REVIEW_STATUS_CHOICES,
+    initial: REVIEW_STATUS_CHOICES.REVIEW_PENDING[0],
     label: 'Privacy review status',
     help_text: html`Status of the privacy review.`,
   },
@@ -458,6 +467,7 @@ export const ALL_FIELDS = {
   'tag_review_status': {
     type: 'select',
     choices: REVIEW_STATUS_CHOICES,
+    initial: REVIEW_STATUS_CHOICES.REVIEW_PENDING[0],
     label: 'TAG review status',
     help_text: html`Status of the tag review.`,
   },
@@ -535,7 +545,8 @@ export const ALL_FIELDS = {
 
   'safari_views': {
     type: 'select',
-    choices: VENDOR_VIEWS_GECKO,
+    choices: VENDOR_VIEWS_COMMON,
+    initial: VENDOR_VIEWS_COMMON.NO_PUBLIC_SIGNALS[0],
     label: 'Safari views',
     help_text: html`
       See <a target="_blank" href="https://bit.ly/blink-signals">
@@ -560,7 +571,8 @@ export const ALL_FIELDS = {
 
   'ff_views': {
     type: 'select',
-    choices: VENDOR_VIEWS_COMMON,
+    choices: VENDOR_VIEWS_GECKO,
+    initial: VENDOR_VIEWS_GECKO.NO_PUBLIC_SIGNALS[0],
     label: 'Firefox views',
     help_text: html`
       See <a target="_blank" href="https://bit.ly/blink-signals">
@@ -587,6 +599,7 @@ export const ALL_FIELDS = {
   'web_dev_views': {
     type: 'select',
     choices: WEB_DEV_VIEWS,
+    initial: WEB_DEV_VIEWS.DEV_NO_SIGNALS[0],
     label: 'Web / Framework developer views',
     help_text: html`
       If unsure, default to "No signals".
@@ -880,6 +893,7 @@ export const ALL_FIELDS = {
 
   'all_platforms': {
     type: 'checkbox',
+    inital: false,
     label: 'Supported on all platforms?',
     help_text: html`
       Will this feature be supported on all six Blink platforms
@@ -898,6 +912,7 @@ export const ALL_FIELDS = {
 
   'wpt': {
     type: 'checkbox',
+    initial: false,
     label: 'Web Platform Tests',
     help_text: html`
       Is this feature fully tested in Web Platform Tests?`,
@@ -984,6 +999,7 @@ export const ALL_FIELDS = {
 
   'requires_embedder_support': {
     type: 'checkbox',
+    initial: false,
     label: 'Requires Embedder Support',
     help_text: html`
        Will this feature require support in //chrome?
@@ -1061,6 +1077,7 @@ export const ALL_FIELDS = {
   'prefixed': {
     type: 'checkbox',
     label: 'Prefixed?',
+    initial: false,
     help_text: '',
   },
 

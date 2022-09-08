@@ -2,7 +2,6 @@ import {
   FEATURE_TYPES,
   INTENT_STAGES,
   IMPLEMENTATION_STATUS,
-  STANDARD_MATURITY_CHOICES,
 } from './form-field-enums';
 
 
@@ -30,7 +29,7 @@ export function formatFeatureForEdit(feature) {
     // from feature.standards
     spec_link: feature.standards.spec,
     standardization: feature.standards.status.val,
-    standard_maturity: feature.standards.maturity.val || STANDARD_MATURITY_CHOICES.UNKNOWN_STD,
+    standard_maturity: feature.standards.maturity.val,
 
     tag_review_status: feature.tag_review_status_int,
     security_review_status: feature.security_review_status_int,
@@ -85,6 +84,12 @@ export function formatFeatureForEdit(feature) {
 }
 
 // The following arrays define the list of fields for each guide form.
+
+export const NEW_FEATURE_FORM_FIELDS = [
+  'name', 'summary', 'unlisted', 'owner',
+  'editors', 'blink_components', 'category',
+];
+// Note: feature_type is done with custom HTML in chromedash-guide-new-page
 
 export const METADATA_FORM_FIELDS = [
   'name', 'summary', 'unlisted', 'owner',
