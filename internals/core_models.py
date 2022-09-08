@@ -973,7 +973,7 @@ class Feature(DictModel):
   experiment_extension_reason = ndb.StringProperty()
   ongoing_constraints = ndb.StringProperty()
   origin_trial_feedback_url = ndb.StringProperty()
-  anticipated_spec_changes = ndb.StringProperty()
+  anticipated_spec_changes = ndb.StringProperty(repeated=True)
 
   finch_url = ndb.StringProperty()
 

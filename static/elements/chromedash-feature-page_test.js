@@ -39,9 +39,6 @@ describe('chromedash-feature-page', () => {
       actions: [],
     }],
   });
-  const fieldDefsPromise = Promise.resolve({
-    1: ['fake field one', 'fake field two', 'fake field three'],
-  });
   const dismissedCuesPromise = Promise.resolve(['progress-checkmarks']);
   const starsPromise = Promise.resolve([123456]);
   const channelsPromise = Promise.resolve({
@@ -106,12 +103,10 @@ describe('chromedash-feature-page', () => {
     sinon.stub(window.csClient, 'getPermissions');
     sinon.stub(window.csClient, 'getFeature');
     sinon.stub(window.csClient, 'getFeatureProcess');
-    sinon.stub(window.csClient, 'getFieldDefs');
     sinon.stub(window.csClient, 'getDismissedCues');
     sinon.stub(window.csClient, 'getStars');
     window.csClient.getPermissions.returns(permissionsPromise);
     window.csClient.getFeatureProcess.returns(processPromise);
-    window.csClient.getFieldDefs.returns(fieldDefsPromise);
     window.csClient.getDismissedCues.returns(dismissedCuesPromise);
     window.csClient.getStars.returns(starsPromise);
 
@@ -124,7 +119,6 @@ describe('chromedash-feature-page', () => {
     window.csClient.getPermissions.restore();
     window.csClient.getFeature.restore();
     window.csClient.getFeatureProcess.restore();
-    window.csClient.getFieldDefs.restore();
     window.csClient.getDismissedCues.restore();
     window.csClient.getStars.restore();
     window.csClient.getChannels.restore();

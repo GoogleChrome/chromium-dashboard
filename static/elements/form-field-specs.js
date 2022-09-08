@@ -414,6 +414,7 @@ export const ALL_FIELDS = {
 
   'doc_links': {
     type: 'textarea',
+    attrs: MULTI_URL_FIELD_ATTRS,
     required: false,
     label: 'Doc link(s)',
     help_text: html`
@@ -1081,4 +1082,92 @@ export const ALL_FIELDS = {
     help_text: '',
   },
 
+};
+
+// Return a simplified field type to help differentiate the
+// render behavior of each field in chromedash-feature-detail
+function categorizeFieldType(field) {
+  if (field.attrs === MULTI_URL_FIELD_ATTRS) {
+    return 'multi-url';
+  } else if (field.attrs === URL_FIELD_ATTRS) {
+    return 'url';
+  } else if (field.type === 'checkbox') {
+    return 'checkbox';
+  }
+  return 'text'; // select, input, textarea can all render as plain text.
+}
+
+// Return a field name with underscored replaced and first character capitalized
+function makeHumanReadable(fieldName) {
+  fieldName = fieldName.replace('_', ' ');
+  return fieldName.charAt(0).toUpperCase() + fieldName.slice(1);
+}
+
+// Return an array of field info
+function makeDisplaySpec(fieldName) {
+  const field = ALL_FIELDS[fieldName];
+  const displayName = field.label || makeHumanReadable(fieldName);
+  const fieldType = categorizeFieldType(field);
+  return [fieldName, displayName, fieldType];
+};
+
+// Return a list of field specs for each of the fields named in the args.
+function makeDisplaySpecs(fields) {
+  return fields.map(field => makeDisplaySpec(field));
+};
+
+export const DISPLAY_FIELDS_IN_STAGES = {
+  'Metadata': makeDisplaySpecs([
+    'category', 'feature_type', 'intent_stage', 'accurate_as_of',
+  ]),
+  [INTENT_STAGES.INTENT_INCUBATE[0]]: makeDisplaySpecs([
+    'initial_public_proposal_url', 'explainer_links',
+    'requires_embedder_support',
+  ]),
+  [INTENT_STAGES.INTENT_IMPLEMENT[0]]: makeDisplaySpecs([
+    'spec_link', 'standard_maturity', 'api_spec', 'spec_mentors',
+    'intent_to_implement_url',
+  ]),
+  [INTENT_STAGES.INTENT_EXPERIMENT[0]]: makeDisplaySpecs([
+    'devtrial_instructions', 'doc_links',
+    'interop_compat_risks',
+    'safari_views', 'safari_views_link', 'safari_views_notes',
+    'ff_views', 'ff_views_link', 'ff_views_notes',
+    'web_dev_views', 'web_dev_views_link', 'web_dev_views_notes',
+    'other_views_notes',
+    'security_review_status', 'privacy_review_status',
+    'ergonomics_risks', 'activation_risks', 'security_risks',
+    'debuggability',
+    'all_platforms', 'all_platforms_descr', 'wpt', 'wpt_descr',
+    'sample_links', 'devrel', 'ready_for_trial_url',
+    'dt_milestone_desktop_start', 'dt_milestone_android_start',
+    'dt_milestone_ios_start',
+    'flag_name',
+  ]),
+  [INTENT_STAGES.INTENT_IMPLEMENT_SHIP[0]]: makeDisplaySpecs([
+    'launch_bug_url',
+    'tag_review', 'tag_review_status',
+    'webview_risks',
+    'measurement', 'prefixed', 'non_oss_deps',
+  ]),
+  [INTENT_STAGES.INTENT_EXTEND_TRIAL[0]]: makeDisplaySpecs([
+    'experiment_goals', 'experiment_risks',
+    'experiment_extension_reason', 'ongoing_constraints',
+    'origin_trial_feedback_url', 'intent_to_experiment_url',
+    'r4dt_url',
+    'intent_to_extend_experiment_url',
+    'i2e_lgtms', 'r4dt_lgtms',
+    'ot_milestone_desktop_start', 'ot_milestone_desktop_end',
+    'ot_milestone_android_start', 'ot_milestone_android_end',
+    'ot_milestone_webview_start', 'ot_milestone_webview_end',
+    'experiment_timeline', // Deprecated
+  ]),
+  [INTENT_STAGES.INTENT_SHIP[0]]: makeDisplaySpecs([
+    'finch_url', 'anticipated_spec_changes',
+    'shipped_milestone', 'shipped_android_milestone',
+    'shipped_ios_milestone', 'shipped_webview_milestone',
+    'intent_to_ship_url', 'i2s_lgtms',
+  ]),
+  [INTENT_STAGES.INTENT_SHIPPED[0]]: makeDisplaySpecs([]),
+  'Misc': makeDisplaySpecs([]),
 };

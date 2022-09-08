@@ -1,4 +1,5 @@
 import {LitElement, css, html, nothing} from 'lit';
+import {DISPLAY_FIELDS_IN_STAGES} from './form-field-specs';
 import '@polymer/iron-icon';
 import './chromedash-callout';
 import {autolink} from './utils.js';
@@ -12,7 +13,6 @@ class ChromedashFeatureDetail extends LitElement {
     return {
       feature: {type: Object},
       process: {type: Object},
-      fieldDefs: {type: Object},
       dismissedCues: {type: Array},
     };
   }
@@ -21,7 +21,6 @@ class ChromedashFeatureDetail extends LitElement {
     super();
     this.feature = {};
     this.process = {};
-    this.fieldDefs = {};
     this.dismissedCues = [];
   }
 
@@ -109,8 +108,7 @@ class ChromedashFeatureDetail extends LitElement {
     return !(value === undefined || value === null || value.length == 0);
   }
 
-  getFieldValue(fieldDef) {
-    const fieldId = fieldDef[0];
+  getFieldValue(fieldId) {
     let value = this.feature[fieldId];
     const fieldIdMapping = {
       spec_link: 'standards.spec',
@@ -145,8 +143,8 @@ class ChromedashFeatureDetail extends LitElement {
     return value;
   }
 
-  hasFieldValue(fieldDef) {
-    const value = this.getFieldValue(fieldDef);
+  hasFieldValue(fieldId) {
+    const value = this.getFieldValue(fieldId);
     return this.isDefinedValue(value);
   }
 
@@ -171,11 +169,11 @@ class ChromedashFeatureDetail extends LitElement {
   }
 
   renderValue(fieldType, value) {
-    if (fieldType == 'bool') {
+    if (fieldType == 'checkbox') {
       return this.renderText(value ? 'True' : 'False');
     } else if (fieldType == 'url') {
       return this.renderUrl(value);
-    } else if (fieldType == 'urllist') {
+    } else if (fieldType == 'multi-url' && Array.isArray(value)) {
       return html`
         <ul class='inline-list'>
           ${value.map(url => html`<li>${this.renderUrl(url)}</li>`)}
@@ -186,10 +184,8 @@ class ChromedashFeatureDetail extends LitElement {
   }
 
   renderField(fieldDef) {
-    const fieldId = fieldDef[0];
-    const fieldDisplayName = fieldDef[1];
-    const fieldType = fieldDef[2];
-    const value = this.getFieldValue(fieldDef);
+    const [fieldId, fieldDisplayName, fieldType] = fieldDef;
+    const value = this.getFieldValue(fieldId);
     if (this.isDefinedValue(value)) {
       return html`
      <div class="value-item">
@@ -207,10 +203,10 @@ class ChromedashFeatureDetail extends LitElement {
     let stageName = undefined;
     let activeClass = '';
     if (typeof stage == 'string') {
-      fields = this.fieldDefs[stage];
+      fields = DISPLAY_FIELDS_IN_STAGES[stage];
       stageName = stage;
     } else {
-      fields = this.fieldDefs[stage.outgoing_stage];
+      fields = DISPLAY_FIELDS_IN_STAGES[stage.outgoing_stage];
       stageName = stage.name;
       if (this.feature.intent_stage_int == stage.outgoing_stage) {
         activeClass = 'active';
@@ -220,7 +216,7 @@ class ChromedashFeatureDetail extends LitElement {
       return nothing;
     }
     let valuesPart = html`<p>No relevant fields have been filled in.</p>`;
-    if (fields.some(fieldDef => this.hasFieldValue(fieldDef))) {
+    if (fields.some(fieldDef => this.hasFieldValue(fieldDef[0]))) {
       valuesPart = fields.map(fieldDef => this.renderField(fieldDef));
     }
     return html`

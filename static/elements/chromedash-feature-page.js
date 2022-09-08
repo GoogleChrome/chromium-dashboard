@@ -88,7 +88,6 @@ export class ChromedashFeaturePage extends LitElement {
       featureId: {type: Number},
       feature: {type: Object},
       process: {type: Object},
-      fieldDefs: {type: Object},
       dismissedCues: {type: Array},
       contextLink: {type: String},
       starred: {type: Boolean},
@@ -102,7 +101,6 @@ export class ChromedashFeaturePage extends LitElement {
     this.featureId = 0;
     this.feature = {};
     this.process = {};
-    this.fieldDefs = {};
     this.dismissedCues = [];
     this.contextLink = '';
     this.starred = false;
@@ -120,14 +118,12 @@ export class ChromedashFeaturePage extends LitElement {
       window.csClient.getPermissions(),
       window.csClient.getFeature(this.featureId),
       window.csClient.getFeatureProcess(this.featureId),
-      window.csClient.getFieldDefs(),
       window.csClient.getDismissedCues(),
       window.csClient.getStars(),
-    ]).then(([user, feature, process, fieldDefs, dismissedCues, starredFeatures]) => {
+    ]).then(([user, feature, process, dismissedCues, starredFeatures]) => {
       this.user = user;
       this.feature = feature;
       this.process = process;
-      this.fieldDefs = fieldDefs;
       this.dismissedCues = dismissedCues;
 
       if (starredFeatures.includes(this.featureId)) {
@@ -431,7 +427,6 @@ export class ChromedashFeaturePage extends LitElement {
         <chromedash-feature-detail
           .feature=${this.feature}
           .process=${this.process}
-          .fieldDefs=${this.fieldDefs}
           .dismissedCues=${this.dismissedCues}>
         </chromedash-feature-detail>
       </sl-details>

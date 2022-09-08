@@ -293,11 +293,6 @@ class ChromeStatusClient {
     return this.doGet(`/blinkcomponents`);
   }
 
-  // Fielddefs API
-  getFieldDefs() {
-    return this.doGet(`/fielddefs`);
-  }
-
   // Channels API
   getChannels() {
     return this.doGet('/channels');

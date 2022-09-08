@@ -20,7 +20,6 @@ from api import channels_api
 from api import comments_api
 from api import cues_api
 from api import features_api
-from api import fielddefs_api
 from api import login_api
 from api import logout_api
 from api import metricsdata
@@ -99,7 +98,6 @@ api_routes = [
     (API_BASE + '/features/<int:feature_id>/progress', processes_api.ProgressAPI),
 
     (API_BASE + '/blinkcomponents', blink_components_api.BlinkComponentsAPI),
-    (API_BASE + '/fielddefs', fielddefs_api.FieldDefsAPI),
 
     (API_BASE + '/login', login_api.LoginAPI),
     (API_BASE + '/logout', logout_api.LogoutAPI),
