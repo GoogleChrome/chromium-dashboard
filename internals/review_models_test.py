@@ -236,7 +236,7 @@ class ActivityTest(testing_config.CustomTestCase):
       self.assertEqual(expected, result[i].new_value)
   
   def test_activities_created__no_stash(self):
-    """stash_values() is not called, so no activity should be logged."""
+    """If stash_values() is not called, no activity should be logged."""
     self.feature_1.owner = ["other@example.com"]
     self.feature_1.summary = "new summary"
     self.feature_1.put()
