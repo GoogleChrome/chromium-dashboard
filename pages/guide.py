@@ -44,12 +44,7 @@ class FeatureNew(basehandlers.FlaskHandler):
   @permissions.require_create_feature
   def get_template_data(self):
     user = self.get_current_user()
-
-    new_feature_form = guideforms.NewFeatureForm(
-        initial={'owner': user.email()})
-    template_data = {
-        'overview_form': new_feature_form,
-        }
+    template_data = {'user_email': user.email()}
     return template_data
 
   @permissions.require_create_feature

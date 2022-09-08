@@ -15,71 +15,9 @@
 import testing_config  # Must be imported first
 import unittest
 
-from unittest import mock
-import html5lib
-
 from django.core.exceptions import ValidationError
-from django.template import engines
 
 from pages import guideforms
-from internals import core_models
-
-
-TestForm = guideforms.define_form_class_using_shared_fields(
-    'TestForm', ('name', 'summary', 'category'))
-
-TEST_TEMPLATE = '''
-<!DOCTYPE html>
-
-{{form}}
-'''
-
-class ChromedashFormTest(unittest.TestCase):
-
-  def render_form(self, feature_dict):
-    form = TestForm(feature_dict)
-    django_engine = engines['django']
-    template = django_engine.from_string(TEST_TEMPLATE)
-    rendered_html = template.render({'form': form})
-    return rendered_html
-
-  def validate_html(self, rendered_html):
-    parser = html5lib.HTMLParser(strict=True)
-    document = parser.parse(rendered_html)
-
-  def test__normal(self):
-    """Our forms can render some widgets with values."""
-    feature_dict = {
-        'name': 'this is a feature name',
-        'summary': 'this is a summary',
-        }
-    actual = self.render_form(feature_dict)
-    self.validate_html(actual)
-    self.assertIn('name="name"', actual)
-    self.assertIn('value="this is a feature name"', actual)
-    self.assertIn('name="summary"', actual)
-    self.assertIn('value="this is a summary"', actual)
-    # Initial value MISC (2) is used because feature_dict has no category.
-    self.assertIn('name="category" value="2"', actual)
-
-  def test__escaping(self):
-    """Our forms render properly even with tricky input."""
-    feature_dict = {
-        'name': 'name single\' doulble\" angle> amper& comment<!--',
-        'summary': 'summary single\' doulble\" angle> amper& comment<!--',
-        }
-    actual = self.render_form(feature_dict)
-    self.validate_html(actual)
-    self.assertIn('name="name"', actual)
-    self.assertIn(
-        'value="name single&#x27; doulble&quot; '
-        'angle&gt; amper&amp; comment&lt;!--"',
-        actual)
-    self.assertIn('name="summary"', actual)
-    self.assertIn(
-        'value="summary single&#x27; doulble&quot; '
-        'angle&gt; amper&amp; comment&lt;!--"',
-        actual)
 
 
 class DisplayFieldsTest(unittest.TestCase):

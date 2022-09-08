@@ -62,19 +62,6 @@ class FeatureNewTest(testing_config.CustomTestCase):
       with self.assertRaises(werkzeug.exceptions.Forbidden):
         actual_response = self.handler.get_template_data()
 
-  def test_get__normal(self):
-    """Allowed users render a page with a django form."""
-    testing_config.sign_in('user1@google.com', 1234567890)
-    with test_app.test_request_context('/guide/new'):
-      template_data = self.handler.get_template_data()
-
-    self.assertTrue('overview_form' in template_data)
-    form = template_data['overview_form']
-    field = form.fields['owner']
-    self.assertEqual(
-        'user1@google.com',
-        form.get_initial_for_field(field, 'owner'))
-
   def test_post__anon(self):
     """Anon cannot create features, gets a 403."""
     testing_config.sign_out()
