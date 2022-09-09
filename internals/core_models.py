@@ -777,6 +777,7 @@ class Feature(DictModel):
     # values later in put() to know what's changed.
     # https://stackoverflow.com/a/41344898
 
+    setattr(self, '_values_stashed', True)
     for prop_name, prop in list(self._properties.items()):
       old_val = getattr(self, prop_name, None)
       setattr(self, '_old_' + prop_name, old_val)
@@ -825,8 +826,14 @@ class Feature(DictModel):
     is_update = self.is_saved()
     amendments = self._get_changes_as_amendments()
 
-    # Document changes as new Activity entity with amendments.
-    if is_update:
+    # Document changes as new Activity entity with amendments only if all true:
+    # 1. This is an update to an existing feature.
+    # 2. We used stash_values() to document what fields changed.
+    # 3. One or more fields were changed.
+    should_write_activity = (is_update and hasattr(self, '_values_stashed')
+        and len(amendments) > 0)
+
+    if should_write_activity:
       user = users.get_current_user()
       email = user.email() if user else None
       activity = review_models.Activity(feature_id=self.key.integer_id(),

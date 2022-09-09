@@ -234,3 +234,25 @@ class ActivityTest(testing_config.CustomTestCase):
       self.assertEqual(field, result[i].field_name)
       self.assertEqual(before, result[i].old_value)
       self.assertEqual(expected, result[i].new_value)
+  
+  def test_activities_created__no_stash(self):
+    """If stash_values() is not called, no activity should be logged."""
+    self.feature_1.owner = ["other@example.com"]
+    self.feature_1.summary = "new summary"
+    self.feature_1.put()
+
+    self.feature_1.name = 'Changed name'
+    self.feature_1.put()
+
+    feature_id = self.feature_1.key.integer_id()
+    activities = review_models.Activity.get_activities(feature_id)
+    self.assertEqual(len(activities), 0)
+
+  def test_activities_created__no_changes(self):
+    """No Activity should be logged if submitted with no changes."""
+    self.feature_1.stash_values()
+    self.feature_1.put()
+
+    feature_id = self.feature_1.key.integer_id()
+    activities = review_models.Activity.get_activities(feature_id)
+    self.assertEqual(len(activities), 0)
