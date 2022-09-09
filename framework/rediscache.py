@@ -61,7 +61,7 @@ def set(key, value, time=86400):
 
 def get(key):
   """
-  Redis GET gets the value of key. Return nil if ``key`` does not
+  Redis GET gets the value of key. Return None if ``key`` does not
   exist; return an error if the value returned is not a str/binary.
   """
   if redis_client is None:
