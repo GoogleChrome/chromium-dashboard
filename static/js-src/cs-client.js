@@ -41,33 +41,6 @@ class ChromeStatusClient {
     return tokenExpiresDate < new Date();
   }
 
-  /* Return all hidden form fields for XSRF tokens. */
-  allTokenFields() {
-    return document.querySelectorAll('input[name=token]');
-  }
-
-  /* Add updateFormToken() as a listener on all forms use XSRF. */
-  addFormSubmitListner() {
-    this.allTokenFields().forEach((field) => {
-      field.form.addEventListener('submit', (event) => {
-        this.updateFormToken(event);
-      });
-    });
-  }
-
-  /* If too much time has passed since the page loaded, get a new XSRF
-   * token from the server and stuff it into the XSRF token form field
-   * before submitting. */
-  updateFormToken(event) {
-    event.preventDefault();
-    this.ensureTokenIsValid().then(() => {
-      this.allTokenFields().forEach((field) => {
-        field.value = this.token;
-      });
-      event.target.submit();
-    });
-  }
-
   /* Make a JSON API call to the server, including an XSRF header.
    * Then strip off the defensive prefix from the response. */
   async doFetch(resource, httpMethod, body, includeToken=true) {
