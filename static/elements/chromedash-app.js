@@ -1,4 +1,5 @@
-import {LitElement, css, html} from 'lit';
+import {LitElement, css, html, nothing} from 'lit';
+import {showToastMessage} from './utils';
 import page from 'page';
 import {SHARED_STYLES} from '../sass/shared-css.js';
 
@@ -53,6 +54,8 @@ class ChromedashApp extends LitElement {
 
   static get properties() {
     return {
+      user: {type: Object},
+      loading: {type: Boolean},
       appTitle: {type: String},
       googleSignInClientId: {type: String},
       currentPage: {type: String},
@@ -65,6 +68,8 @@ class ChromedashApp extends LitElement {
 
   constructor() {
     super();
+    this.user = {};
+    this.loading = true;
     this.appTitle = '';
     this.googleSignInClientId = '',
     this.currentPage = '';
@@ -76,7 +81,15 @@ class ChromedashApp extends LitElement {
 
   connectedCallback() {
     super.connectedCallback();
-    this.setUpRoutes();
+    this.loading = true;
+    window.csClient.getPermissions().then((user) => {
+      this.user = user;
+    }).catch(() => {
+      showToastMessage('Some errors occurred. Please refresh the page or try again later.');
+    }).finally(() => {
+      this.setUpRoutes();
+      this.loading = false;
+    });
   }
 
   setUpRoutes() {
@@ -84,7 +97,7 @@ class ChromedashApp extends LitElement {
 
     // SPA routing rules.  Note that rules are considered in order.
     // And :var can match any string (including a slash) if there is no slash after it.
-    page('/spa', () => page.redirect('/roadmap'));
+    page('/', () => page.redirect('/roadmap'));
     page('/roadmap', (ctx) => {
       this.pageComponent = document.createElement('chromedash-roadmap-page');
       this.contextLink = ctx.path;
@@ -95,7 +108,7 @@ class ChromedashApp extends LitElement {
       this.contextLink = ctx.path;
       this.currentPage = ctx.path;
     });
-    page('/features', (ctx) => {
+    page('/newfeatures', (ctx) => {
       this.pageComponent = document.createElement('chromedash-all-features-page');
       this.contextLink = ctx.path;
       this.currentPage = ctx.path;
@@ -104,6 +117,27 @@ class ChromedashApp extends LitElement {
       this.pageComponent = document.createElement('chromedash-feature-page');
       this.pageComponent.featureId = ctx.params.featureId;
       this.pageComponent.contextLink = this.contextLink;
+    });
+    page('/guide/new', () => {
+      this.pageComponent = document.createElement('chromedash-guide-new-page');
+      this.pageComponent.userEmail = this.user.email;
+    });
+    page('/guide/edit/:featureId', (ctx) => {
+      this.pageComponent = document.createElement('chromedash-guide-edit-page');
+      this.pageComponent.featureId = ctx.params.featureId;
+    });
+    page('/guide/editall/:featureId', (ctx) => {
+      this.pageComponent = document.createElement('chromedash-guide-editall-page');
+      this.pageComponent.featureId = ctx.params.featureId;
+    });
+    page('/guide/verify_accuracy/:featureId', (ctx) => {
+      this.pageComponent = document.createElement('chromedash-guide-verify-accuracy-page');
+      this.pageComponent.featureId = ctx.params.featureId;
+    });
+    page('/guide/stage/:featureId/:stageId', (ctx) => {
+      this.pageComponent = document.createElement('chromedash-guide-stage-page');
+      this.pageComponent.featureId = ctx.params.featureId;
+      this.pageComponent.stageId = ctx.params.stageId;
     });
     page('/settings', (ctx) => {
       this.pageComponent = document.createElement('chromedash-settings-page');
@@ -122,7 +156,12 @@ class ChromedashApp extends LitElement {
       this.pageComponent.selectedBucketId = ctx.params.bucketId;
       this.currentPage = ctx.path;
     });
-
+    page('/metrics', () => page.redirect('/metrics/css/popularity'));
+    page('/metrics/css', () => page.redirect('/metrics/css/popularity'));
+    page('/metrics/css/timeline/popularity', () => page.redirect('/metrics/css/popularity'));
+    page('/metrics/css/timeline/animated', () => page.redirect('/metrics/css/animated'));
+    page('/metrics/feature/timeline/popularity', () =>
+      page.redirect('/metrics/feature/popularity'));
     page.start();
   }
 
@@ -130,12 +169,13 @@ class ChromedashApp extends LitElement {
     // The <slot> below is for the Google sign-in button, this is because
     // Google Identity Services Library cannot find elements in a shadow DOM,
     // so we create signInButton element at the document level and insert it
-    return html`
+    return this.loading ? nothing : html`
       <div id="app-content-container">
         <div>
           <div class="main-toolbar">
             <div class="toolbar-content">
               <chromedash-header
+                .user=${this.user}
                 .appTitle=${this.appTitle}
                 .googleSignInClientId=${this.googleSignInClientId}
                 .currentPage=${this.currentPage}>

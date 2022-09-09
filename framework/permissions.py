@@ -165,6 +165,20 @@ def require_create_feature(handler):
   return check_login
 
 
+def validate_feature_create_permission(handler_obj):
+  """Check if user has permission to create feature and abort if not."""
+  user = handler_obj.get_current_user()
+  req = handler_obj.request
+
+  # Give the user a chance to sign in
+  if not user and req.method == 'GET':
+    return handler_obj.redirect(settings.LOGIN_PAGE_URL)
+
+  # Redirect to 403 if user does not have create permission for feature.
+  if not can_create_feature(user):
+    handler_obj.abort(403)
+
+
 def validate_feature_edit_permission(handler_obj, feature_id):
   """Check if user has permission to edit feature and abort if not."""
   user = handler_obj.get_current_user()
