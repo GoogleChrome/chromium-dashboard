@@ -14,23 +14,14 @@
 # limitations under the License.
 
 from datetime import datetime
-import flask
-import json
 import logging
-import os
-import re
-import sys
-from django import forms
 from google.cloud import ndb
 
 # Appengine imports.
 from framework import ramcache
-from framework import users
 
 from framework import basehandlers
 from framework import permissions
-from framework import utils
-from pages import guideforms
 from internals import core_enums
 from internals import core_models
 from internals import processes
@@ -108,10 +99,6 @@ class FeatureEditStage(basehandlers.FlaskHandler):
 
   TEMPLATE_PATH = 'guide/stage.html'
 
-  def find_fields_of_class(self, fieldClass):
-    return [field_name for field_name in guideforms.ALL_FIELDS
-            if isinstance(guideforms.ALL_FIELDS[field_name], fieldClass)]
-
   def touched(self, param_name):
     """Return True if the user edited the specified field."""
     # TODO(jrobbins): for now we just consider everything on the current form
@@ -121,7 +108,8 @@ class FeatureEditStage(basehandlers.FlaskHandler):
 
     # For now, checkboxes are always considered "touched", if they are
     # present on the form.
-    checkboxes = self.find_fields_of_class(forms.BooleanField)
+    checkboxes = ['accurate_as_of', 'unlisted', 'api_spec',
+      'all_platforms', 'wpt', 'requires_embedder_support', 'prefixed']
     if param_name in checkboxes:
       form_fields_str = self.form.get('form_fields')
       if form_fields_str:
@@ -133,7 +121,11 @@ class FeatureEditStage(basehandlers.FlaskHandler):
 
     # For now, selects are considered "touched", if they are
     # present on the form and are not empty strings.
-    selects = self.find_fields_of_class(forms.ChoiceField)
+    selects = ['category', 'feature_type', 'intent_stage',
+      'standard_maturity', 'security_review_status',
+      'privacy_review_status', 'tag_review_status',
+      'safari_views', 'ff_views', 'web_dev_views',
+      'blink_components', 'impl_status_chrome']
     if param_name in selects:
       return self.form.get(param_name)
 
