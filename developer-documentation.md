@@ -9,12 +9,14 @@ It uses [Sign in with Google](https://developers.google.com/identity/gsi/web) fo
 ## Back end
 
 In the Backend,
-* **Django** is used just for HTML templates and forms (see `FlaskHandler.render()` in `Framework/basehandlers.py` and `pages/guideforms.py`).
-* **Flask** is being used for all the request handlers (see `basehandlers.py` and all the code under `api/` and `pages/`).
+
+- **Django** is used just for HTML templates (see `FlaskHandler.render()` in `Framework/basehandlers.py`).
+- **Flask** is being used for all the request handlers (see `basehandlers.py` and all the code under `api/` and `pages/`).
 
 HISTORY:-
-* The app used to use a combination of Django plus Webapp2. However, now it uses Django plus Flask as mentioned above.
-* The app used to use *DB Client Library* for interacting with Google Cloud DataStore. It was later replaced by *NDB Client Library*. Now, it uses the *Cloud NDB Library*
+
+- The app used to use a combination of Django plus Webapp2. However, now it uses Django plus Flask as mentioned above.
+- The app used to use _DB Client Library_ for interacting with Google Cloud DataStore. It was later replaced by _NDB Client Library_. Now, it uses the _Cloud NDB Library_
 
 ## Front end
 
@@ -26,13 +28,12 @@ All the pages are rendered in a combination of Django template (`/templates`) an
 
 1. `/templates/base.html` and `/templates/base_embed.html` are the html skeleton.
 1. Templates in `/templates` (extend the `_base.html` or `_embed_base.html`) are the Django templates for each page.
-    - The folder organization and template file names matches the router. (See `template_path=os.path.join(path + '.html')` in `server.py`)
-    - lit-element components, css, js files are all imported/included in those templates.
-    - We pass backend variables to js like this: `const variableInJs = {{variable_in_template|safe}}`.
+   - The folder organization and template file names matches the router. (See `template_path=os.path.join(path + '.html')` in `server.py`)
+   - lit-element components, css, js files are all imported/included in those templates.
+   - We pass backend variables to js like this: `const variableInJs = {{variable_in_template|safe}}`.
 1. All Lit components are in `/static/elements`.
 1. All JavaScript files are in `/static/js-src/` and processed by gulp, then output to '/static/js/' and get included in templates.
 1. All CSS files are in `/static/sass/` and processed by gulp, then output to `/static/css/` and get included in templates.
-
 
 ## Creating a user with admin privileges
 
@@ -45,10 +46,10 @@ To avoid needing to make this temporary change more than once, you can sign in
 and visit `/admin/users/new` to create a new registered account using the email
 address of any Google account that you own, such as an `@gmail.com` account.
 
-
 ## Generating Diffs for sending emails to subscribers of a feature
-* When someone edits a feature, everyone who have subscribed to that feature will receive a email stating what fields were edited, the old values and the new values.
-* The body of this email (diffs) can be seen in the console logs. To see the logs, follow these steps:-
+
+- When someone edits a feature, everyone who have subscribed to that feature will receive a email stating what fields were edited, the old values and the new values.
+- The body of this email (diffs) can be seen in the console logs. To see the logs, follow these steps:-
   1. Create a feature using one account.
   1. Now, signout and login with another account.
   1. Click on the star present in the feature box in the all features page.
@@ -56,5 +57,6 @@ address of any Google account that you own, such as an `@gmail.com` account.
   1. On pressing submit after editing the feature, you will be able to see the diff in the console logs.
 
 ## Local Development
-* When run locally, Datastore Emulator is used for storing all the entries.
-* Executing `npm start` or `npm test` automatically starts the Datastore Emulator and shuts it down afterwards.
+
+- When run locally, Datastore Emulator is used for storing all the entries. To reset local database, remove the local directory for storing data/config for the emulator. The default directory is `<USER_CONFIG_DIR>/emulators/datastore`. The value of `<USER_CONFIG_DIR>` can be found by running: `$ gcloud info --format='get(config.paths.global_config_dir)'` in the terminal. To learn more about using the Datastore Emulator CLI, execute `$ gcloud beta emulators datastore --help`.
+- Executing `npm start` or `npm test` automatically starts the Datastore Emulator and shuts it down afterwards.
