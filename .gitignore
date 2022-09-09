@@ -29,5 +29,8 @@ static/js/
 .coverage
 htmlcov
 
+# Web test runner coverage report
+coverage
+
 # venv directory
 cs-env

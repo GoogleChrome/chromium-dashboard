@@ -3,6 +3,8 @@ include =
     ./*.py
 omit =
     ./lib/*
+    ./cs-env/*
+    ./*_test.py
 [report]
 exclude_lines =
     # Have to re-enable the standard pragma
