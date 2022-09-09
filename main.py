@@ -37,7 +37,6 @@ from internals import notifier
 from internals import data_backup
 from internals import deprecate_field
 from pages import blink_handler
-from pages import featuredetail
 from pages import featurelist
 from pages import guide
 from pages import intentpreview
