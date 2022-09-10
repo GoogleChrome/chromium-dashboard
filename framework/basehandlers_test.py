@@ -666,6 +666,50 @@ class FlaskHandlerTests(testing_config.CustomTestCase):
       with self.assertRaises(werkzeug.exceptions.Forbidden):
         self.handler.require_task_header()
 
+  def test_require_cron_header__while_testing(self):
+    """During unit testing of cron handlers, we allow it."""
+    with test_app.test_request_context('/test'):
+      self.handler.require_cron_header()
+
+  @mock.patch('settings.UNIT_TEST_MODE', False)
+  def test_require_cron_header__normal(self):
+    """If the incoming request is from GCT, we allow it."""
+    headers = {'X-AppEngine-Cron': 'true'}
+    with test_app.test_request_context('/test', headers=headers):
+      self.handler.require_cron_header()
+
+  @mock.patch('settings.UNIT_TEST_MODE', False)
+  @mock.patch('framework.basehandlers.BaseHandler.get_current_user')
+  @mock.patch('framework.permissions.can_admin_site')
+  def test_require_cron_header__admin(
+      self, mock_can_admin_site, mock_get_current_user):
+    """If the incoming request is from an admin, we allow it."""
+    mock_can_admin_site.return_value = True
+    # Also mock get_current_user because it will not use the usual
+    # unit test configuration if we have UNIT_TEST_MODE == False.
+    mock_get_current_user.return_value = users.User('admin@example.com', 111)
+    with test_app.test_request_context('/test'):
+      self.handler.require_cron_header()
+
+  @mock.patch('settings.UNIT_TEST_MODE', False)
+  @mock.patch('framework.basehandlers.BaseHandler.get_current_user')
+  def test_require_cron_header__missing_nonadmin(self, mock_get_current_user):
+    """If the incoming request is not from GAE, abort."""
+    # Also mock get_current_user because it will not use the usual
+    # unit test configuration if we have UNIT_TEST_MODE == False.
+    mock_get_current_user.return_value = users.User('user1@example.com', 111)
+    with test_app.test_request_context('/test'):
+      with self.assertRaises(werkzeug.exceptions.Forbidden):
+        self.handler.require_cron_header()
+
+  @mock.patch('settings.UNIT_TEST_MODE', False)
+  def test_require_cron_header__missing_anon(self):
+    """If the incoming request is not from GAE, abort."""
+    testing_config.sign_out()
+    with test_app.test_request_context('/test'):
+      with self.assertRaises(werkzeug.exceptions.Forbidden):
+        self.handler.require_cron_header()
+
   @mock.patch('settings.UNIT_TEST_MODE', False)
   @mock.patch('framework.users.get_current_user')
   def test_require_xsrf_token__normal(self, mock_get_user):

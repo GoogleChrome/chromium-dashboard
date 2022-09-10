@@ -186,6 +186,7 @@ class YesterdayHandler(basehandlers.FlaskHandler):
       filename: The filename for the data file to be loaded.
       today: date passed in for testing, defaults to today.
     """
+    self.require_cron_header()
     days = []
     date_str = self.request.args.get('date')
     if date_str:
@@ -244,6 +245,7 @@ class HistogramsHandler(basehandlers.FlaskHandler):
     )
 
   def get_template_data(self):
+    self.require_cron_header()
     # Attempt to fetch enums mapping file.
     response = requests.get(HISTOGRAMS_URL, timeout=60)
 
@@ -278,5 +280,6 @@ class HistogramsHandler(basehandlers.FlaskHandler):
 class BlinkComponentHandler(basehandlers.FlaskHandler):
   """Updates the list of Blink components in the db."""
   def get_template_data(self):
+    self.require_cron_header()
     user_models.BlinkComponent.update_db()
     return 'Blink components updated'

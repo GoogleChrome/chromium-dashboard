@@ -427,6 +427,22 @@ class FlaskHandler(BaseHandler):
     self.abort(403, msg=('Lacking X-AppEngine-QueueName or '
                          'incorrect X-Appengine-Inbound-Appid headers'))
 
+  def require_cron_header(self):
+    """Abort if this is not a GAE cron request or from a site admin."""
+    if settings.UNIT_TEST_MODE or settings.DEV_MODE:
+      return
+    if 'X-AppEngine-Cron' in self.request.headers:
+      return
+    user = self.get_current_user(required=True)
+    if permissions.can_admin_site(user):
+      return
+
+    logging.info('non-admin and headers lack X-AppEngine-Cron:')
+    for k, v in self.request.headers:
+      logging.info('%r: %r', k, v)
+
+    self.abort(403, msg='Lacking X-AppEngine-Cron or admin account')
+
   def split_input(self, field_name, delim='\\r?\\n'):
     """Split the input lines, strip whitespace, and skip blank lines."""
     input_text = flask.request.form.get(field_name) or ''

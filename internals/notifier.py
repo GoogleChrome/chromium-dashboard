@@ -279,7 +279,7 @@ class FeatureAccuracyHandler(basehandlers.FlaskHandler):
 
   def get_template_data(self):
     """Sends notifications to users requesting feature updates for accuracy."""
-
+    self.require_cron_header()
     features_to_notify = self._determine_features_to_notify()
     email_tasks = self._build_email_tasks(features_to_notify)
     send_emails(email_tasks)
