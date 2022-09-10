@@ -97,6 +97,7 @@ export class ChromedashFormField extends LitElement {
           id="id_${this.name}"
           value="${fieldValue}"
           size="small"
+          hoist
           ?disabled=${this.disabled || this.loading}>
           ${Object.values(choices).map(
             ([value, label]) => html`
@@ -141,7 +142,7 @@ export class ChromedashFormField extends LitElement {
     } else if (type === 'datalist') {
       fieldHTML = html`
         <div class="datalist-input-wrapper">
-          <input 
+          <input
             ${ref(this.updateAttributes)}
             name="${fieldName}"
             id="id_${this.name}"
