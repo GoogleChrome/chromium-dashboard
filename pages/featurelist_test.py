@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-from framework import ramcache
 import testing_config  # Must be imported first
 
 import os
@@ -25,6 +23,7 @@ from internals import core_enums
 from internals import core_models
 from internals import user_models
 from pages import featurelist
+from framework import ramcache
 
 test_app = flask.Flask(__name__)
 

@@ -24,6 +24,7 @@ from google.auth.transport import requests as reqs
 from google.oauth2 import id_token
 
 from framework import basehandlers
+from framework import rediscache
 from framework import utils
 from internals import metrics_models
 from internals import user_models
@@ -211,6 +212,13 @@ class YesterdayHandler(basehandlers.FlaskHandler):
                 'WebStatusAlert-1: Failed to get metrics even after 2 days')
           return error_message, 500
 
+    # The code above calls FetchAndSaveData() which calls _SaveData(),
+    # which calls put() a bunch of times to add a new entity for each metrics datapoint.
+    # Separately, when a request comes in get get metrics data, the file api/metricsdata.py
+    # does a query on those datapoints and caches the result. If we don't invalidate when
+    # we add datapoints, the cached query result will be lacking the new datapoints.
+    # This is run once every 6 hours.
+    rediscache.flushall()
     return 'Success'
 
 
