@@ -27,8 +27,10 @@ KEY_7 = 'cache_key|7'
 
 
 class RedisCacheFunctionTests(testing_config.CustomTestCase):
+  def tearDown(self):
+    rediscache.flushall()
 
-  def testSetAndGet(self):
+  def test_set_and_get(self):
     """We can cache a value and retrieve it from the cache."""
     self.assertEqual(None, rediscache.get(KEY_1))
 
@@ -41,7 +43,7 @@ class RedisCacheFunctionTests(testing_config.CustomTestCase):
     rediscache.set(KEY_4, '123', 3600)
     self.assertEqual('123', rediscache.get(KEY_4))
 
-  def testSetAndGetMulti(self):
+  def test_set_and_get_multi(self):
     """We can cache values and retrieve them from the cache."""
     self.assertEqual({}, rediscache.get_multi([]))
 
@@ -62,8 +64,20 @@ class RedisCacheFunctionTests(testing_config.CustomTestCase):
     rediscache.set_multi({KEY_5: '222'}, 3600)
     self.assertEqual({KEY_5: '222'}, rediscache.get_multi([KEY_5]))
 
-  def testDelete(self):
+  def test_delete(self):
     rediscache.set(KEY_6, '606')
     self.assertEqual('606', rediscache.get(KEY_6))
     rediscache.delete(KEY_6)
     self.assertEqual(None, rediscache.get(KEY_6))
+
+  def test_delete_keys_with_prefix(self):
+    rediscache.set(KEY_1, '101')
+    rediscache.set(KEY_2, '202')
+    rediscache.set('random_key', '303')
+    self.assertEqual('101', rediscache.get(KEY_1))
+
+    rediscache.delete_keys_with_prefix('cache_key*')
+
+    self.assertEqual(None, rediscache.get(KEY_1))
+    self.assertEqual(None, rediscache.get(KEY_2))
+    self.assertEqual('303', rediscache.get('random_key'))
