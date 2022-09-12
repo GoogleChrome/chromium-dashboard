@@ -22,7 +22,6 @@ import html5lib
 
 from internals import core_enums
 from internals import core_models
-from framework import ramcache
 from pages import featuredetail
 
 test_app = flask.Flask(__name__)
@@ -48,8 +47,6 @@ class TestWithFeature(testing_config.CustomTestCase):
 
   def tearDown(self):
     self.feature_1.key.delete()
-    ramcache.flush_all()
-    ramcache.check_for_distributed_invalidation()
 
 
 class FeatureDetailHandlerTest(TestWithFeature):

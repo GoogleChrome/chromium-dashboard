@@ -16,7 +16,6 @@ import testing_config  # Must be imported before the module under test.
 
 import datetime
 from unittest import mock
-from framework import ramcache
 from framework import users
 
 from internals import core_models
