@@ -17,7 +17,7 @@ import logging
 
 from framework import basehandlers
 from framework import permissions
-from framework import ramcache
+from framework import rediscache
 from framework import users
 from internals import core_models
 from internals import search
@@ -81,6 +81,6 @@ class FeaturesAPI(basehandlers.APIHandler):
     feature = self.get_specified_feature(feature_id=feature_id)
     feature.deleted = True
     feature.put()
-    ramcache.flush_all()
+    rediscache.delete_keys_with_prefix(core_models.Feature.feature_cache_prefix())
 
     return {'message': 'Done'}
