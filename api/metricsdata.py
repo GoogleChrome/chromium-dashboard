@@ -22,7 +22,7 @@ import logging
 from framework import users
 from framework import basehandlers
 from internals import metrics_models
-from framework import ramcache
+from framework import rediscache
 import settings
 
 CACHE_AGE = 86400 # 24hrs
@@ -76,7 +76,7 @@ class TimelineHandler(basehandlers.FlaskHandler):
 
     cache_key = '%s|%s' % (self.CACHE_KEY, bucket_id)
 
-    datapoints = ramcache.get(cache_key)
+    datapoints = rediscache.get(cache_key)
 
     if not datapoints:
       query = self.make_query(bucket_id)
@@ -85,8 +85,7 @@ class TimelineHandler(basehandlers.FlaskHandler):
 
       # Remove outliers if percentage is not between 0-1.
       #datapoints = filter(lambda x: 0 <= x.day_percentage <= 1, datapoints)
-
-      ramcache.set(cache_key, datapoints, time=CACHE_AGE)
+      rediscache.set(cache_key, datapoints, time=CACHE_AGE)
 
     return _datapoints_to_json_dicts(datapoints)
 
@@ -167,21 +166,21 @@ class FeatureHandler(basehandlers.FlaskHandler):
 
   def get_template_data(self):
     if self.MODEL_CLASS == metrics_models.FeatureObserver:
-      properties = ramcache.get(self.CACHE_KEY)
+      properties = rediscache.get(self.CACHE_KEY)
 
       if not properties or self.request.args.get('refresh'):
         properties = self.__query_metrics_for_properties()
-        ramcache.set(self.CACHE_KEY, properties, time=CACHE_AGE)
+        rediscache.set(self.CACHE_KEY, properties, time=CACHE_AGE)
 
     else:
-      properties = ramcache.get(self.CACHE_KEY)
+      properties = rediscache.get(self.CACHE_KEY)
       logging.info(
           'looked at cache %r and found %s', self.CACHE_KEY,
           repr(properties)[:settings.MAX_LOG_LINE])
       if properties is None:
         logging.info('Loading properties from datastore')
         properties = self.__query_metrics_for_properties()
-        ramcache.set(self.CACHE_KEY, properties, time=CACHE_AGE)
+        rediscache.set(self.CACHE_KEY, properties, time=CACHE_AGE)
 
     logging.info('before filtering: %s',
                  repr(properties)[:settings.MAX_LOG_LINE])

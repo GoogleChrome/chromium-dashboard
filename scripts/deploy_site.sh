@@ -10,6 +10,12 @@
 
 deployVersion=$1
 appName=${2:-cr-status}
+
+deployYaml="app.staging.yaml"
+if [[ "${appName}"  == "cr-status" ]]; then
+  deployYaml="app.yaml"
+fi
+
 usage="Usage: deploy.sh `date +%Y-%m-%d`"
 
 if [ -z "$deployVersion" ]
@@ -29,6 +35,6 @@ gcloud beta app deploy \
   --version $deployVersion \
   --no-promote \
   $BASEDIR/../notifier.yaml \
-  $BASEDIR/../app.yaml  \
+  $BASEDIR/../$deployYaml  \
   $BASEDIR/../dispatch.yaml \
   $BASEDIR/../cron.yaml

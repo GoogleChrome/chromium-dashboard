@@ -18,7 +18,7 @@ import json
 import requests
 
 from framework import basehandlers
-from framework import ramcache
+from framework import rediscache
 from internals import fetchchannels
 import settings
 
@@ -54,7 +54,7 @@ def construct_chrome_channels_details():
 def fetch_chrome_release_info(version):
   key = 'chromerelease|%s' % version
 
-  data = ramcache.get(key)
+  data = rediscache.get(key)
   if data is None:
     url = ('https://chromiumdash.appspot.com/fetch_milestone_schedule?'
            'mstone=%s' % version)
@@ -69,7 +69,7 @@ def fetch_chrome_release_info(version):
           del data['owners']
           del data['feature_freeze']
           del data['ldaps']
-          ramcache.set(key, data, time=SCHEDULE_CACHE_TIME)
+          rediscache.set(key, data, time=SCHEDULE_CACHE_TIME)
       except ValueError:
         pass  # Handled by next statement
 
@@ -81,7 +81,7 @@ def fetch_chrome_release_info(version):
           'mstone': version,
           'version': version,
       }
-      # Note: we don't put placeholder data into ramcache.
+      # Note: we don't put placeholder data into redis.
 
   return data
 
