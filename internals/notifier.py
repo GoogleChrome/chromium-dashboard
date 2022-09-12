@@ -328,7 +328,7 @@ class FeatureAccuracyHandler(basehandlers.FlaskHandler):
     email_tasks = []
     for feature, mstone in features_to_notify:
       body_data = {
-        'feature': feature.format_for_template(),
+        'feature': feature,
         'site_url': settings.SITE_URL,
         'milestone': mstone,
       }
