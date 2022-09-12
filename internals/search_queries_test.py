@@ -16,7 +16,6 @@ import testing_config  # Must be imported before the module under test.
 
 import datetime
 from unittest import mock
-from framework import ramcache
 
 from internals import core_models
 from internals import review_models
@@ -26,8 +25,6 @@ from internals import search_queries
 class SearchFeaturesTest(testing_config.CustomTestCase):
 
   def setUp(self):
-    ramcache.SharedInvalidate.check_for_distributed_invalidation()
-
     self.feature_1 = core_models.Feature(
         name='feature a', summary='sum', owner=['owner@example.com'],
         category=1, visibility=1, standardization=1, web_dev_views=1,
@@ -75,7 +72,6 @@ class SearchFeaturesTest(testing_config.CustomTestCase):
     self.feature_2.key.delete()
     for appr in review_models.Approval.query():
       appr.key.delete()
-    ramcache.flush_all()
 
   def test_single_field_query_async__normal(self):
     """We get a promise to run the DB query, which produces results."""
