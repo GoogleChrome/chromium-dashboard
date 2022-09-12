@@ -8,6 +8,7 @@ class WriteStandardMaturityHandler(FlaskHandler):
 
   def get_template_data(self):
     """Writes standard_maturity field from the old standardization field."""
+    self.require_cron_header()
     q = Feature.query()
     features = q.fetch()
     update_count = 0
@@ -17,7 +18,7 @@ class WriteStandardMaturityHandler(FlaskHandler):
         update_count += 1
         feature.standard_maturity = STANDARD_MATURITY_BACKFILL[feature.standardization]
         feature.put(notify=False)
-    
+
     logging.info(
         f'{update_count} features updated with standard_maturity field.')
     return 'Success'
