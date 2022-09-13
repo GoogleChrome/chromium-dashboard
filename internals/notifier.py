@@ -220,6 +220,7 @@ class FeatureStar(ndb.Model):
     else:
       return  # No need to update anything in datastore
 
+    # Load feature directly from NDB so as to never get a stale cached copy.
     feature = core_models.Feature.get_by_id(feature_id)
     feature.star_count += 1 if starred else -1
     if feature.star_count < 0:
@@ -360,6 +361,7 @@ class FeatureChangeHandler(basehandlers.FlaskHandler):
 
     # Email feature subscribers if the feature exists and there were
     # actually changes to it.
+    # Load feature directly from NDB so as to never get a stale cached copy.
     feature = core_models.Feature.get_by_id(feature['id'])
     if feature and (is_update and len(changes) or not is_update):
       email_tasks = make_email_tasks(
