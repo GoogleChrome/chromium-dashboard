@@ -32,11 +32,7 @@ export class ChromedashAllFeaturesPage extends LitElement {
   }
 
   fetchData() {
-    Promise.all([
-      window.csClient.getPermissions(),
-      window.csClient.getStars(),
-    ]).then(([user, starredFeatures]) => {
-      this.user = user;
+    window.csClient.getStars().then((starredFeatures) => {
       this.starredFeatures = new Set(starredFeatures);
     }).catch(() => {
       showToastMessage('Some errors occurred. Please refresh the page or try again later.');

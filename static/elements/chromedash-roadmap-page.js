@@ -1,7 +1,6 @@
 import {LitElement, css, html} from 'lit';
 import {ref, createRef} from 'lit/directives/ref.js';
 import './chromedash-roadmap';
-import {showToastMessage} from './utils';
 import {SHARED_STYLES} from '../sass/shared-css.js';
 
 
@@ -47,7 +46,6 @@ export class ChromedashRoadmapPage extends LitElement {
 
   connectedCallback() {
     super.connectedCallback();
-    this.fetchData();
     window.addEventListener('resize', () => this.handleResize());
   }
 
@@ -58,14 +56,6 @@ export class ChromedashRoadmapPage extends LitElement {
 
   firstUpdated() {
     this.handleResize();
-  }
-
-  fetchData() {
-    window.csClient.getPermissions().then((user) => {
-      this.user = user;
-    }).catch(() => {
-      showToastMessage('Some errors occurred. Please refresh the page or try again later.');
-    });
   }
 
   handleResize() {

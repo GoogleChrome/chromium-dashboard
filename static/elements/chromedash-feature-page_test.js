@@ -6,30 +6,30 @@ import '../js-src/cs-client';
 import sinon from 'sinon';
 
 describe('chromedash-feature-page', () => {
-  const permissionsPromise = Promise.resolve({
+  const user = {
     can_approve: false,
     can_create_feature: true,
     can_edit_all: true,
     is_admin: false,
     email: 'example@google.com',
-  });
-  const editorPermissionsPromise = Promise.resolve({
+  };
+  const editor = {
     can_approve: false,
     can_create_feature: false,
     can_edit_all: false,
     editable_features: [123456],
     is_admin: false,
     email: 'editor@example.com',
-  });
-  const visitorPermissionsPromise = Promise.resolve({
+  };
+  const visitor = {
     can_approve: false,
     can_create_feature: false,
     can_edit_all: false,
     editable_features: [],
     is_admin: false,
     email: 'example@example.com',
-  });
-  const anonPermissionsPromise = Promise.resolve(null);
+  };
+  const anon = null;
   const processPromise = Promise.resolve({
     stages: [{
       name: 'stage one',
@@ -94,18 +94,16 @@ describe('chromedash-feature-page', () => {
     tags: ['tag_one'],
   });
 
-  /* window.csClient and <chromedash-toast> are initialized at _base.html
+  /* window.csClient and <chromedash-toast> are initialized at spa.html
    * which are not available here, so we initialize them before each test.
    * We also stub out the API calls here so that they return test data. */
   beforeEach(async () => {
     await fixture(html`<chromedash-toast></chromedash-toast>`);
     window.csClient = new ChromeStatusClient('fake_token', 1);
-    sinon.stub(window.csClient, 'getPermissions');
     sinon.stub(window.csClient, 'getFeature');
     sinon.stub(window.csClient, 'getFeatureProcess');
     sinon.stub(window.csClient, 'getDismissedCues');
     sinon.stub(window.csClient, 'getStars');
-    window.csClient.getPermissions.returns(permissionsPromise);
     window.csClient.getFeatureProcess.returns(processPromise);
     window.csClient.getDismissedCues.returns(dismissedCuesPromise);
     window.csClient.getStars.returns(starsPromise);
@@ -116,7 +114,6 @@ describe('chromedash-feature-page', () => {
   });
 
   afterEach(() => {
-    window.csClient.getPermissions.restore();
     window.csClient.getFeature.restore();
     window.csClient.getFeatureProcess.restore();
     window.csClient.getDismissedCues.restore();
@@ -147,9 +144,10 @@ describe('chromedash-feature-page', () => {
 
     const component = await fixture(
       html`<chromedash-feature-page
-              .featureId=${featureId}
-              .contextLink=${contextLink}
-             ></chromedash-feature-page>`);
+            .user=${user}
+            .featureId=${featureId}
+            .contextLink=${contextLink}>
+           </chromedash-feature-page>`);
     assert.exists(component);
 
     const subheaderDiv = component.shadowRoot.querySelector('div#subheader');
@@ -204,13 +202,13 @@ describe('chromedash-feature-page', () => {
     const featureId = 123456;
     const contextLink = '/features';
     window.csClient.getFeature.withArgs(featureId).returns(validFeaturePromise);
-    window.csClient.getPermissions.returns(editorPermissionsPromise);
 
     const component = await fixture(
       html`<chromedash-feature-page
-              .featureId=${featureId}
-              .contextLink=${contextLink}
-             ></chromedash-feature-page>`);
+            .user=${editor}
+            .featureId=${featureId}
+            .contextLink=${contextLink}>
+           </chromedash-feature-page>`);
     const subheaderDiv = component.shadowRoot.querySelector('div#subheader');
     // Edit icon is offered because user's editable_features has this one.
     assert.include(subheaderDiv.innerHTML, 'icon="chromestatus:create"');
@@ -220,13 +218,13 @@ describe('chromedash-feature-page', () => {
     const featureId = 123456;
     const contextLink = '/features';
     window.csClient.getFeature.withArgs(featureId).returns(validFeaturePromise);
-    window.csClient.getPermissions.returns(anonPermissionsPromise);
 
     const component = await fixture(
       html`<chromedash-feature-page
-              .featureId=${featureId}
-              .contextLink=${contextLink}
-             ></chromedash-feature-page>`);
+            .user=${anon}
+            .featureId=${featureId}
+            .contextLink=${contextLink}>
+           </chromedash-feature-page>`);
     const subheaderDiv = component.shadowRoot.querySelector('div#subheader');
     // Edit icon is not offered because anon cannot edit.
     assert.notInclude(subheaderDiv.innerHTML, 'icon="chromestatus:create"');
@@ -236,13 +234,13 @@ describe('chromedash-feature-page', () => {
     const featureId = 123456;
     const contextLink = '/features';
     window.csClient.getFeature.withArgs(featureId).returns(validFeaturePromise);
-    window.csClient.getPermissions.returns(visitorPermissionsPromise);
 
     const component = await fixture(
       html`<chromedash-feature-page
-              .featureId=${featureId}
-              .contextLink=${contextLink}
-             ></chromedash-feature-page>`);
+            .user=${visitor}
+            .featureId=${featureId}
+            .contextLink=${contextLink}>
+           </chromedash-feature-page>`);
     const subheaderDiv = component.shadowRoot.querySelector('div#subheader');
     // Edit icon is not offered because the visitor cannot edit.
     assert.notInclude(subheaderDiv.innerHTML, 'icon="chromestatus:create"');
