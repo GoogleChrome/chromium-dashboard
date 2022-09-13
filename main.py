@@ -144,7 +144,7 @@ spa_pages = [
 
 spa_page_routes = []
 for route in spa_pages:
-  page_defaults ={}
+  page_defaults = {}
   if isinstance(route, tuple):
     route, additional_defaults = route
     page_defaults.update(additional_defaults)

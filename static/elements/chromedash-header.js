@@ -198,6 +198,7 @@ export class ChromedashHeader extends LitElement {
     };
 
     // user is not passed in from anywhere, i.e. this.user is still {}
+    // this is for MPA pages where this component is initialized in _base.html
     this.loading = true;
     window.csClient.getPermissions().then((user) => {
       this.user = user;

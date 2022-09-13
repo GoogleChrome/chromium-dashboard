@@ -115,7 +115,7 @@ class ChromedashApp extends LitElement {
     });
     page('/feature/:featureId', (ctx) => {
       this.pageComponent = document.createElement('chromedash-feature-page');
-      this.pageComponent.featureId = ctx.params.featureId;
+      this.pageComponent.featureId = parseInt(ctx.params.featureId);
       this.pageComponent.contextLink = this.contextLink;
     });
     page('/guide/new', () => {
