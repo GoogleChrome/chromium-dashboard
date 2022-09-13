@@ -130,7 +130,6 @@ class ChromedashApp extends LitElement {
     page('/guide/edit/:featureId', (ctx) => {
       this.pageComponent = document.createElement('chromedash-guide-edit-page');
       this.pageComponent.featureId = ctx.params.featureId;
-      this.pageComponent.user = this.user;
       this.pageComponent.appTitle = this.appTitle;
     });
     page('/guide/editall/:featureId', (ctx) => {

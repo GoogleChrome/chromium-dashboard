@@ -6,6 +6,13 @@ import '../js-src/cs-client';
 import sinon from 'sinon';
 
 describe('chromedash-guide-edit-page', () => {
+  const permissionsPromise = Promise.resolve({
+    can_approve: false,
+    can_create_feature: true,
+    can_edit_all: true,
+    is_admin: false,
+    email: 'example@google.com',
+  });
   const validFeaturePromise = Promise.resolve({
     id: 123456,
     name: 'feature one',
@@ -61,16 +68,19 @@ describe('chromedash-guide-edit-page', () => {
   beforeEach(async () => {
     await fixture(html`<chromedash-toast></chromedash-toast>`);
     window.csClient = new ChromeStatusClient('fake_token', 1);
+    sinon.stub(window.csClient, 'getPermissions');
     sinon.stub(window.csClient, 'getFeature');
     sinon.stub(window.csClient, 'getFeatureProcess');
     sinon.stub(window.csClient, 'getFeatureProgress');
     sinon.stub(window.csClient, 'getDismissedCues');
+    window.csClient.getPermissions.returns(permissionsPromise);
     window.csClient.getFeatureProcess.returns(processPromise);
     window.csClient.getFeatureProgress.returns(progressPromise);
     window.csClient.getDismissedCues.returns(dismissedCuesPromise);
   });
 
   afterEach(() => {
+    window.csClient.getPermissions.restore();
     window.csClient.getFeature.restore();
     window.csClient.getFeatureProcess.restore();
     window.csClient.getFeatureProgress.restore();
@@ -95,18 +105,11 @@ describe('chromedash-guide-edit-page', () => {
 
   it('renders with fake data', async () => {
     const featureId = 123456;
-    const user = {
-      can_approve: false,
-      can_create_feature: true,
-      can_edit_all: true,
-      is_admin: false,
-      email: 'example@google.com',
-    };
+    window.csClient.getPermissions.returns(permissionsPromise);
     window.csClient.getFeature.withArgs(featureId).returns(validFeaturePromise);
 
     const component = await fixture(
       html`<chromedash-guide-edit-page
-             .user=${user}
              .featureId=${featureId}>
            </chromedash-guide-edit-page>`);
     assert.exists(component);

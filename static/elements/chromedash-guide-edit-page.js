@@ -60,11 +60,13 @@ export class ChromedashGuideEditPage extends LitElement {
   fetchData() {
     this.loading = true;
     Promise.all([
+      window.csClient.getPermissions(),
       window.csClient.getFeature(this.featureId),
       window.csClient.getFeatureProcess(this.featureId),
       window.csClient.getFeatureProgress(this.featureId),
       window.csClient.getDismissedCues(),
-    ]).then(([feature, process, progress, dismissedCues]) => {
+    ]).then(([user, feature, process, progress, dismissedCues]) => {
+      this.user = user;
       this.feature = feature;
       this.process = process;
       this.progress = progress;
