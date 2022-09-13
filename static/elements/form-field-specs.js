@@ -72,7 +72,6 @@ const
   Intervention, Deprecated, and Removed.`;
 
 // Map of specifications for all form fields.
-// TODO: Migrate other properties.
 export const ALL_FIELDS = {
 
   'name': {
