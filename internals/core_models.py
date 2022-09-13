@@ -43,10 +43,10 @@ def del_none(d):
       del_none(value)
   return d
 
-def feature_cache_key(cls, feature_id):
+def feature_cache_key(feature_id):
   return '%s|%s' % (Feature.DEFAULT_CACHE_KEY, feature_id)
 
-def feature_cache_prefix(cls):
+def feature_cache_prefix():
   return '%s|*' % (Feature.DEFAULT_CACHE_KEY)
 
 
