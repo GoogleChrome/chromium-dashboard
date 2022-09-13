@@ -5,14 +5,14 @@ import './chromedash-toast';
 import sinon from 'sinon';
 
 describe('chromedash-timeline-page', () => {
-  /* <chromedash-toast> are initialized at _base.html
+  /* <chromedash-toast> are initialized at spa.html
    * which are not available here, so we initialize them before each test.
    * We also stub out the API calls here so that they return test data. */
   beforeEach(async () => {
     await fixture(html`<chromedash-toast></chromedash-toast>`);
     sinon.stub(window, 'fetch');
-    // hacky way to stub out google chart methods
-    window.google = {charts: {load: () => {}, setOnLoadCallback: () => {}}};
+    // hacky way to stub out google chart load method
+    window.google = {charts: {load: () => {}}};
   });
 
   afterEach(() => {
