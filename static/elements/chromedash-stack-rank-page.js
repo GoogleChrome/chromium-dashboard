@@ -58,10 +58,6 @@ export class ChromedashStackRankPage extends LitElement {
     const devMode = false;
     if (devMode) endpoint = 'https://cr-status-staging.appspot.com' + endpoint;
 
-    // TODO(kevinshen56714): Remove this once SPA index page is set up.
-    // Has to include this for now to remove the spinner at _base.html.
-    document.body.classList.remove('loading');
-
     fetch(endpoint).then((res) => res.json()).then((props) => {
       for (let i = 0, item; item = props[i]; ++i) {
         item.percentage = (item.day_percentage * 100).toFixed(6);
