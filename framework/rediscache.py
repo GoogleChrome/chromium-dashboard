@@ -128,7 +128,7 @@ def delete_keys_with_prefix(pattern):
   target = keys
   while pos != 0:
     pos, keys = redis_client.scan(cursor=pos, match=prefix)
-    target.append(keys)
+    target.extend(keys)
 
   for key in target:
     redis_client.delete(key)

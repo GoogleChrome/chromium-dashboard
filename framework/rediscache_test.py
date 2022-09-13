@@ -17,6 +17,7 @@ import testing_config  # Must be imported before the module under test.
 from framework import rediscache
 
 
+PREFIX = 'cache_key|'
 KEY_1 = 'cache_key|1'
 KEY_2 = 'cache_key|2'
 KEY_3 = 'cache_key|3'
@@ -71,13 +72,16 @@ class RedisCacheFunctionTests(testing_config.CustomTestCase):
     self.assertEqual(None, rediscache.get(KEY_6))
 
   def test_delete_keys_with_prefix(self):
-    rediscache.set(KEY_1, '101')
-    rediscache.set(KEY_2, '202')
+    for x in range(17):
+      key = PREFIX + str(x)
+      rediscache.set(key, str(x))
     rediscache.set('random_key', '303')
-    self.assertEqual('101', rediscache.get(KEY_1))
+    rediscache.set('random_key1', '404')
+    self.assertEqual('1', rediscache.get(KEY_1))
 
     rediscache.delete_keys_with_prefix('cache_key|*')
 
     self.assertEqual(None, rediscache.get(KEY_1))
     self.assertEqual(None, rediscache.get(KEY_2))
     self.assertEqual('303', rediscache.get('random_key'))
+    self.assertEqual('404', rediscache.get('random_key1'))
