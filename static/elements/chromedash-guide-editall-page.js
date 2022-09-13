@@ -47,10 +47,6 @@ export class ChromedashGuideEditallPage extends LitElement {
         document.title = `${this.feature.name} - ${this.appTitle}`;
       }
       this.loading = false;
-
-      // TODO(kevinshen56714): Remove this once SPA index page is set up.
-      // Has to include this for now to remove the spinner at _base.html.
-      document.body.classList.remove('loading');
     }).catch(() => {
       showToastMessage('Some errors occurred. Please refresh the page or try again later.');
     });
