@@ -115,6 +115,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
       return redirect_resp
 
     if feature_id:
+      # Load feature directly from NDB so as to never get a stale cached copy.
       feature = core_models.Feature.get_by_id(feature_id)
       if feature is None:
         self.abort(404, msg='Feature not found')

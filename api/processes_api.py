@@ -24,6 +24,7 @@ class ProcessesAPI(basehandlers.APIHandler):
 
   def do_get(self, feature_id):
     """Return the process of the feature."""
+    # Load feature directly from NDB so as to never get a stale cached copy.
     f = core_models.Feature.get_by_id(feature_id)
     if f is None:
       self.abort(404, msg=f'Feature {feature_id} not found')

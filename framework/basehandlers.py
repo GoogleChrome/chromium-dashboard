@@ -130,6 +130,7 @@ class BaseHandler(flask.views.MethodView):
                   self.get_int_param('featureId', required=required))
     if not required and not feature_id:
       return None
+    # Load feature directly from NDB so as to never get a stale cached copy.
     feature = core_models.Feature.get_by_id(feature_id)
     if required and not feature:
       self.abort(404, msg='Feature not found')
@@ -530,13 +531,13 @@ class SPAHandler(FlaskHandler):
     # Check if the page requires user to sign in
     if defaults.get('require_signin') and not self.get_current_user():
       return flask.redirect(settings.LOGIN_PAGE_URL), self.get_headers()
-    
+
     # Check if the page requires create feature permission
     if defaults.get('require_create_feature'):
       redirect_resp = permissions.validate_feature_create_permission(self)
       if redirect_resp:
         return redirect_resp
-    
+
     # Validate the user has edit permissions and redirect if needed.
     if defaults.get('require_edit_feature'):
       feature_id = defaults.get('feature_id')
