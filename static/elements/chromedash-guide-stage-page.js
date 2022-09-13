@@ -28,6 +28,7 @@ export class ChromedashGuideStagePage extends LitElement {
       implStatusFormFields: {type: Array},
       implStatusOffered: {type: String},
       loading: {type: Boolean},
+      appTitle: {type: String},
     };
   }
 
@@ -41,6 +42,7 @@ export class ChromedashGuideStagePage extends LitElement {
     this.implStatusFormFields = [];
     this.implStatusOffered = '';
     this.loading = true;
+    this.appTitle = '';
   }
 
   connectedCallback() {
@@ -55,6 +57,9 @@ export class ChromedashGuideStagePage extends LitElement {
       window.csClient.getFeatureProcess(this.featureId),
     ]).then(([feature, process]) => {
       this.feature = feature;
+      if (this.feature.name) {
+        document.title = `${this.feature.name} - ${this.appTitle}`;
+      }
       process.stages.map(stage => {
         if (stage.outgoing_stage === this.stageId) {
           this.stageName = stage.name;
@@ -72,6 +77,11 @@ export class ChromedashGuideStagePage extends LitElement {
     }).catch(() => {
       showToastMessage('Some errors occurred. Please refresh the page or try again later.');
     });
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    document.title = this.appTitle;
   }
 
   async registerHandlers(el) {

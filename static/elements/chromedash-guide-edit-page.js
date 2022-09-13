@@ -36,6 +36,7 @@ export class ChromedashGuideEditPage extends LitElement {
       progress: {type: Object},
       dismissedCues: {type: Array},
       loading: {type: Boolean},
+      appTitle: {type: String},
     };
   }
 
@@ -48,6 +49,7 @@ export class ChromedashGuideEditPage extends LitElement {
     this.progress = {};
     this.dismissedCues = [];
     this.loading = true;
+    this.appTitle = '';
   }
 
   connectedCallback() {
@@ -71,12 +73,21 @@ export class ChromedashGuideEditPage extends LitElement {
       this.dismissedCues = dismissedCues;
       this.loading = false;
 
+      if (this.feature.name) {
+        document.title = `${this.feature.name} - ${this.appTitle}`;
+      }
+
       // TODO(kevinshen56714): Remove this once SPA index page is set up.
       // Has to include this for now to remove the spinner at _base.html.
       document.body.classList.remove('loading');
     }).catch(() => {
       showToastMessage('Some errors occurred. Please refresh the page or try again later.');
     });
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    document.title = this.appTitle;
   }
 
   renderSubHeader() {
