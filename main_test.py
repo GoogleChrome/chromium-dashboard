@@ -33,23 +33,6 @@ class MainTest(testing_config.CustomTestCase):
     """Just test that this file parses and creates an app object."""
     self.assertIsNotNone(main.app)
 
-  def test_redirects(self):
-    """Redirect are working."""
-    main.app.wsgi_app = main.app.original_wsgi_app
-    test_client = testing.FlaskClient(main.app)
-
-    response = test_client.get('/')
-    self.assertEqual(302, response.status_code)
-    self.assertEqual('/roadmap', response.location)
-
-    response = test_client.get('/metrics')
-    self.assertEqual(302, response.status_code)
-    self.assertEqual('/metrics/css/popularity', response.location)
-
-    response = test_client.get('/metrics/css')
-    self.assertEqual(302, response.status_code)
-    self.assertEqual('/metrics/css/popularity', response.location)
-
 
 class ConstTemplateTest(testing_config.CustomTestCase):
 
@@ -67,7 +50,7 @@ class ConstTemplateTest(testing_config.CustomTestCase):
 
   def test_const_templates(self):
     """All the ConstHandler instances render valid HTML."""
-    for route in main.page_routes:
+    for route in main.mpa_page_routes:
       if (route[1] == basehandlers.ConstHandler and
           not route[0].endswith('.xml')):
         with self.subTest(path=route[0]):

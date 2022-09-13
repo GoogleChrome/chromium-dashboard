@@ -119,18 +119,6 @@ class ChromedashTimeline extends LitElement {
 
   firstUpdated() {
     window.google.charts.load('current', {'packages': ['corechart']});
-    window.google.charts.setOnLoadCallback(() => {
-      // If there's an id in the URL, load the property it.
-      // TODO (kevinshen56714) - this can be removed once SPA is fully set up
-      // as the bucketId is passed in from the router.
-      const lastSlash = location.pathname.lastIndexOf('/');
-      if (lastSlash > 0) {
-        const id = parseInt(location.pathname.substring(lastSlash + 1));
-        if (String(id) != 'NaN') {
-          this.selectedBucketId = id;
-        }
-      }
-    });
   }
 
   drawVisualization(data, bucketId, showAllHistoricalData) {
@@ -237,10 +225,10 @@ class ChromedashTimeline extends LitElement {
       this.drawVisualization(response, this.selectedBucketId, this.showAllHistoricalData);
     });
 
-    if (history.pushState) {
-      const url = '/metrics/' + this.type + '/timeline/' + this.view + '/' +
-                this.selectedBucketId;
-      history.pushState({id: this.selectedBucketId}, '', url);
+    const currentUrl = '/metrics/' + this.type + '/timeline/' + this.view + '/' +
+              this.selectedBucketId;
+    if (history.pushState && location.pathname != currentUrl) {
+      history.pushState({id: this.selectedBucketId}, '', currentUrl);
     }
   }
 

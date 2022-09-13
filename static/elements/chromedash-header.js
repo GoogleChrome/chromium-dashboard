@@ -182,11 +182,23 @@ export class ChromedashHeader extends LitElement {
     this.googleSignInClientId = '',
     this.currentPage = '';
     this.user = {};
-    this.loading = true;
+    this.loading = false;
   }
 
   connectedCallback() {
     super.connectedCallback();
+
+    // user is passed in from chromedash-app
+    if (this.user && this.user.email) return;
+
+    // user is passed in from chromedash-app, but the user is not logged in
+    if (!this.user) {
+      this.initializeGoogleSignIn();
+      return;
+    };
+
+    // user is not passed in from anywhere, i.e. this.user is still {}
+    // this is for MPA pages where this component is initialized in _base.html
     this.loading = true;
     window.csClient.getPermissions().then((user) => {
       this.user = user;
