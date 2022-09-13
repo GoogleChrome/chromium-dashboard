@@ -92,7 +92,7 @@ class TimelineHandler(basehandlers.FlaskHandler):
 
 class PopularityTimelineHandler(TimelineHandler):
 
-  CACHE_KEY = 'css_pop_timeline'
+  CACHE_KEY = 'metrics|css_pop_timeline'
   MODEL_CLASS = metrics_models.StableInstance
 
   def get_template_data(self):
@@ -101,7 +101,7 @@ class PopularityTimelineHandler(TimelineHandler):
 
 class AnimatedTimelineHandler(TimelineHandler):
 
-  CACHE_KEY = 'css_animated_timeline'
+  CACHE_KEY = 'metrics|css_animated_timeline'
   MODEL_CLASS = metrics_models.AnimatedProperty
 
   def get_template_data(self):
@@ -110,7 +110,7 @@ class AnimatedTimelineHandler(TimelineHandler):
 
 class FeatureObserverTimelineHandler(TimelineHandler):
 
-  CACHE_KEY = 'featureob_timeline'
+  CACHE_KEY = 'metrics|featureob_timeline'
   MODEL_CLASS = metrics_models.FeatureObserver
 
   def get_template_data(self):
@@ -189,7 +189,7 @@ class FeatureHandler(basehandlers.FlaskHandler):
 
 class CSSPopularityHandler(FeatureHandler):
 
-  CACHE_KEY = 'css_popularity'
+  CACHE_KEY = 'metrics|css_popularity'
   MODEL_CLASS = metrics_models.StableInstance
   PROPERTY_CLASS = metrics_models.CssPropertyHistogram
 
@@ -199,7 +199,7 @@ class CSSPopularityHandler(FeatureHandler):
 
 class CSSAnimatedHandler(FeatureHandler):
 
-  CACHE_KEY = 'css_animated'
+  CACHE_KEY = 'metrics|css_animated'
   MODEL_CLASS = metrics_models.AnimatedProperty
   PROPERTY_CLASS = metrics_models.CssPropertyHistogram
 
@@ -209,7 +209,7 @@ class CSSAnimatedHandler(FeatureHandler):
 
 class FeatureObserverPopularityHandler(FeatureHandler):
 
-  CACHE_KEY = 'featureob_popularity'
+  CACHE_KEY = 'metrics|featureob_popularity'
   MODEL_CLASS = metrics_models.FeatureObserver
   PROPERTY_CLASS = metrics_models.FeatureObserverHistogram
 
