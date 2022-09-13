@@ -90,6 +90,7 @@ export class ChromedashFeaturePage extends LitElement {
       process: {type: Object},
       dismissedCues: {type: Array},
       contextLink: {type: String},
+      appTitle: {type: String},
       starred: {type: Boolean},
       loading: {attribute: false},
     };
@@ -103,6 +104,7 @@ export class ChromedashFeaturePage extends LitElement {
     this.process = {};
     this.dismissedCues = [];
     this.contextLink = '';
+    this.appTitle = '';
     this.starred = false;
     this.loading = true;
   }
@@ -129,6 +131,9 @@ export class ChromedashFeaturePage extends LitElement {
       if (starredFeatures.includes(this.featureId)) {
         this.starred = true;
       }
+      if (this.feature.name) {
+        document.title = `${this.feature.name} - ${this.appTitle}`;
+      }
       this.loading = false;
 
       // TODO(kevinshen56714): Remove this once SPA index page is set up.
@@ -137,6 +142,11 @@ export class ChromedashFeaturePage extends LitElement {
     }).catch(() => {
       showToastMessage('Some errors occurred. Please refresh the page or try again later.');
     });
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    document.title = this.appTitle;
   }
 
   handleStarClick(e) {
