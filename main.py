@@ -37,7 +37,6 @@ from internals import notifier
 from internals import data_backup
 from internals import deprecate_field
 from pages import blink_handler
-from pages import featuredetail
 from pages import featurelist
 from pages import guide
 from pages import intentpreview
@@ -118,12 +117,56 @@ api_routes = [
     # (API_BASE + '/metrics/<str:kind>/<int:bucket_id>', TODO),
 ]
 
+spa_pages = [
+  '/',
+  '/roadmap',
+  ('/myfeatures', {'require_signin': True}),
+  '/newfeatures',
+  '/feature/<int:feature_id>',
+  ('/guide/new', {'require_create_feature': True}),
+  ('/guide/edit/<int:feature_id>', {'require_edit_feature': True}),
+  ('/guide/stage/<int:feature_id>/<int:stage_id>', {'require_edit_feature': True}),
+  ('/guide/editall/<int:feature_id>', {'require_edit_feature': True}),
+  ('/guide/verify_accuracy/<int:feature_id>', {'require_edit_feature': True}),
+  '/metrics',
+  '/metrics/css',
+  '/metrics/css/popularity',
+  '/metrics/css/animated',
+  '/metrics/css/timeline/popularity',
+  '/metrics/css/timeline/popularity/<int:bucket_id>',
+  '/metrics/css/timeline/animated',
+  '/metrics/css/timeline/animated/<int:bucket_id>',
+  '/metrics/feature/popularity',
+  '/metrics/feature/timeline/popularity',
+  '/metrics/feature/timeline/popularity/<int:bucket_id>',
+  ('/settings', {'require_signin': True}),
+]
 
-page_routes = [
+spa_page_routes = []
+for route in spa_pages:
+  page_defaults = {}
+  if isinstance(route, tuple):
+    route, additional_defaults = route
+    page_defaults.update(additional_defaults)
+  spa_page_routes.append((route, basehandlers.SPAHandler, page_defaults))
+
+spa_page_post_routes = [
+  ('/guide/new', guide.FeatureCreateHandler),
+  ('/guide/edit/<int:feature_id>', guide.FeatureEditHandler),
+  ('/guide/stage/<int:feature_id>/<int:stage_id>', guide.FeatureEditHandler),
+  ('/guide/editall/<int:feature_id>', guide.FeatureEditHandler),
+  ('/guide/verify_accuracy/<int:feature_id>', guide.FeatureEditHandler),
+]
+
+mpa_page_routes = [
     ('/admin/subscribers', blink_handler.SubscribersHandler),
     ('/admin/blink', blink_handler.BlinkHandler),
+    ('/admin/users/new', users.UserListHandler),
 
-    ('/feature/<int:feature_id>', featuredetail.FeatureDetailHandler),
+    ('/admin/features/launch/<int:feature_id>',
+     intentpreview.IntentEmailPreviewHandler),
+    ('/admin/features/launch/<int:feature_id>/<int:stage_id>',
+     intentpreview.IntentEmailPreviewHandler),
 
     # Note: The only requests being made now hit /features.json and
     # /features_v2.json, but both of those cause version == 2.
@@ -131,69 +174,13 @@ page_routes = [
     (r'/features.json', featurelist.FeaturesJsonHandler),
     (r'/features_v2.json', featurelist.FeaturesJsonHandler),
 
-    ('/', basehandlers.Redirector,
-     {'location': '/roadmap'}),
-
-    ('/newfeatures', basehandlers.ConstHandler,
-     {'template_path': 'new-feature-list.html'}),
     ('/features', featurelist.FeatureListHandler),
     ('/features/<int:feature_id>', featurelist.FeatureListHandler),
     ('/features.xml', basehandlers.ConstHandler,
      {'template_path': 'farewell-rss.xml'}),
 
-    ('/guide/new', guide.FeatureNew),
-    ('/guide/edit/<int:feature_id>', guide.ProcessOverview),
-    ('/guide/stage/<int:feature_id>/<int:stage_id>', guide.FeatureEditStage),
-    ('/guide/editall/<int:feature_id>', guide.FeatureEditAllFields),
-    ('/guide/verify_accuracy/<int:feature_id>', guide.FeatureVerifyAccuracy),
-
-    ('/admin/features/launch/<int:feature_id>',
-     intentpreview.IntentEmailPreviewHandler),
-    ('/admin/features/launch/<int:feature_id>/<int:stage_id>',
-     intentpreview.IntentEmailPreviewHandler),
-
-    ('/metrics', basehandlers.Redirector,
-     {'location': '/metrics/css/popularity'}),
-    ('/metrics/css', basehandlers.Redirector,
-     {'location': '/metrics/css/popularity'}),
-
-    # TODO(jrobbins): These seem like they belong in metrics.py.
-    ('/metrics/css/popularity', basehandlers.ConstHandler,
-     {'template_path': 'metrics/css/popularity.html'}),
-    ('/metrics/css/animated', basehandlers.ConstHandler,
-     {'template_path': 'metrics/css/animated.html'}),
-    ('/metrics/css/timeline/popularity', basehandlers.ConstHandler,
-     {'template_path': 'metrics/css/timeline/popularity.html'}),
-    ('/metrics/css/timeline/popularity/<int:bucket_id>',
-     basehandlers.ConstHandler,
-     {'template_path': 'metrics/css/timeline/popularity.html'}),
-    ('/metrics/css/timeline/animated', basehandlers.ConstHandler,
-     {'template_path': 'metrics/css/timeline/animated.html'}),
-    ('/metrics/css/timeline/animated/<int:bucket_id>',
-     basehandlers.ConstHandler,
-     {'template_path': 'metrics/css/timeline/animated.html'}),
-    ('/metrics/feature/popularity', basehandlers.ConstHandler,
-     {'template_path': 'metrics/feature/popularity.html'}),
-    ('/metrics/feature/timeline/popularity', basehandlers.ConstHandler,
-     {'template_path': 'metrics/feature/timeline/popularity.html'}),
-    ('/metrics/feature/timeline/popularity/<int:bucket_id>',
-     basehandlers.ConstHandler,
-     {'template_path': 'metrics/feature/timeline/popularity.html'}),
     ('/omaha_data', metrics.OmahaDataHandler),
-
-    ('/myfeatures', basehandlers.ConstHandler,
-     {'template_path': 'myfeatures.html', 'require_signin': True}),
-
-    ('/roadmap', basehandlers.ConstHandler,
-     {'template_path': 'roadmap.html'}),
-
-    ('/settings', basehandlers.ConstHandler,
-     {'template_path': 'settings.html', 'require_signin': True}),
-    ('/admin/users/new', users.UserListHandler),
-
-    ('/spa', basehandlers.ConstHandler, {'template_path': 'spa.html'}),
 ]
-
 
 internals_routes = [
   ('/cron/metrics', fetchmetrics.YesterdayHandler),
@@ -212,8 +199,8 @@ internals_routes = [
 # All requests to the app-py3 GAE service are handled by this Flask app.
 app = basehandlers.FlaskApplication(
     __name__,
-    (metrics_chart_routes + api_routes + page_routes +
-     internals_routes))
+    (metrics_chart_routes + api_routes + mpa_page_routes + spa_page_routes +
+     internals_routes), spa_page_post_routes)
 
 # TODO(jrobbins): Make the CSP handler be a class like our others.
 app.add_url_rule(

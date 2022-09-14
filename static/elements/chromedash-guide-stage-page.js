@@ -28,6 +28,7 @@ export class ChromedashGuideStagePage extends LitElement {
       implStatusFormFields: {type: Array},
       implStatusOffered: {type: String},
       loading: {type: Boolean},
+      appTitle: {type: String},
     };
   }
 
@@ -41,6 +42,7 @@ export class ChromedashGuideStagePage extends LitElement {
     this.implStatusFormFields = [];
     this.implStatusOffered = '';
     this.loading = true;
+    this.appTitle = '';
   }
 
   connectedCallback() {
@@ -55,6 +57,9 @@ export class ChromedashGuideStagePage extends LitElement {
       window.csClient.getFeatureProcess(this.featureId),
     ]).then(([feature, process]) => {
       this.feature = feature;
+      if (this.feature.name) {
+        document.title = `${this.feature.name} - ${this.appTitle}`;
+      }
       process.stages.map(stage => {
         if (stage.outgoing_stage === this.stageId) {
           this.stageName = stage.name;
@@ -65,13 +70,14 @@ export class ChromedashGuideStagePage extends LitElement {
         IMPL_STATUS_FORMS[this.stageId] || [null, null];
 
       this.loading = false;
-
-      // TODO(kevinshen56714): Remove this once SPA index page is set up.
-      // Has to include this for now to remove the spinner at _base.html.
-      document.body.classList.remove('loading');
     }).catch(() => {
       showToastMessage('Some errors occurred. Please refresh the page or try again later.');
     });
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    document.title = this.appTitle;
   }
 
   async registerHandlers(el) {

@@ -182,11 +182,23 @@ export class ChromedashHeader extends LitElement {
     this.googleSignInClientId = '',
     this.currentPage = '';
     this.user = {};
-    this.loading = true;
+    this.loading = false;
   }
 
   connectedCallback() {
     super.connectedCallback();
+
+    // user is passed in from chromedash-app
+    if (this.user && this.user.email) return;
+
+    // user is passed in from chromedash-app, but the user is not logged in
+    if (!this.user) {
+      this.initializeGoogleSignIn();
+      return;
+    };
+
+    // user is not passed in from anywhere, i.e. this.user is still {}
+    // this is for MPA pages where this component is initialized in _base.html
     this.loading = true;
     window.csClient.getPermissions().then((user) => {
       this.user = user;
@@ -214,7 +226,6 @@ export class ChromedashHeader extends LitElement {
     if (appComponent) {
       appComponent.insertAdjacentElement('afterbegin', signInButton); // for SPA
     } else {
-      // TODO (kevinshen56714): remove this once SPA is set up
       this.insertAdjacentElement('afterbegin', signInButton); // for MPA
     }
   }

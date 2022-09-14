@@ -390,6 +390,13 @@ class Feature(DictModel):
   @classmethod
   def get_all(self, limit=None, order='-updated', filterby=None,
               update_cache=False, version=2, keys_only=False):
+    """Return JSON dicts for entities that fit the filterby criteria.
+
+    Because the cache may rarely have stale data, this should only be
+    used for displaying data read-only, not for populating forms or
+    procesing a POST to edit data.  For editing use case, load the
+    data from NDB directly.
+    """
     KEY = '%s|%s|%s|%s' % (Feature.DEFAULT_CACHE_KEY, order, limit, keys_only)
 
     # TODO(ericbidelman): Support more than one filter.
@@ -427,6 +434,13 @@ class Feature(DictModel):
 
   @classmethod
   def get_all_with_statuses(self, statuses, update_cache=False):
+    """Return JSON dicts for entities with the given statuses.
+
+    Because the cache may rarely have stale data, this should only be
+    used for displaying data read-only, not for populating forms or
+    procesing a POST to edit data.  For editing use case, load the
+    data from NDB directly.
+    """
     if not statuses:
       return []
 
@@ -448,6 +462,13 @@ class Feature(DictModel):
 
   @classmethod
   def get_feature(self, feature_id, update_cache=False):
+    """Return a JSON dict for a feature.
+
+    Because the cache may rarely have stale data, this should only be
+    used for displaying data read-only, not for populating forms or
+    procesing a POST to edit data.  For editing use case, load the
+    data from NDB directly.
+    """
     KEY = feature_cache_key(Feature.DEFAULT_CACHE_KEY, feature_id)
     feature = rediscache.get(KEY)
 
@@ -484,6 +505,13 @@ class Feature(DictModel):
 
   @classmethod
   def get_by_ids(self, feature_ids, update_cache=False):
+    """Return a list of JSON dicts for the specified features.
+
+    Because the cache may rarely have stale data, this should only be
+    used for displaying data read-only, not for populating forms or
+    procesing a POST to edit data.  For editing use case, load the
+    data from NDB directly.
+    """
     result_dict = {}
     futures = []
 
@@ -514,6 +542,13 @@ class Feature(DictModel):
   @classmethod
   def get_chronological(
       self, limit=None, update_cache=False, version=None, show_unlisted=False):
+    """Return a list of JSON dicts for features, ordered by milestone.
+
+    Because the cache may rarely have stale data, this should only be
+    used for displaying data read-only, not for populating forms or
+    procesing a POST to edit data.  For editing use case, load the
+    data from NDB directly.
+    """
     cache_key = '%s|%s|%s|%s' % (Feature.DEFAULT_CACHE_KEY,
                                  'cronorder', limit, version)
 
@@ -608,6 +643,14 @@ class Feature(DictModel):
   @classmethod
   def get_in_milestone(
       self, show_unlisted=False, milestone=None):
+    """Return {reason: [feaure_dict]} with all the reasons a feature can
+    be part of a milestone.
+
+    Because the cache may rarely have stale data, this should only be
+    used for displaying data read-only, not for populating forms or
+    procesing a POST to edit data.  For editing use case, load the
+    data from NDB directly.
+    """
     if milestone == None:
       return None
 
@@ -1126,6 +1169,13 @@ class FeatureEntry(ndb.Model):  # Copy from Feature
 
   @classmethod
   def get_by_ids(self, entry_ids, update_cache=False):
+    """Return a list of FeatureEntry instances for the specified features.
+
+    Because the cache may rarely have stale data, this should only be
+    used for displaying data read-only, not for populating forms or
+    procesing a POST to edit data.  For editing use case, load the
+    data from NDB directly.
+    """
     result_dict = {}
     futures = []
 

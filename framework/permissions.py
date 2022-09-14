@@ -64,7 +64,7 @@ def can_edit_any_feature(user):
   """Return True if the user is allowed to edit all features."""
   if not user:
     return False
-  app_user = user_models.AppUser.get_app_user(user.email())  
+  app_user = user_models.AppUser.get_app_user(user.email())
   if not app_user:
     return False
 
@@ -98,6 +98,7 @@ def can_edit_feature(user, feature_id):
   if not feature_id or not user:
     return False
 
+  # Load feature directly from NDB so as to never get a stale cached copy.
   feature = core_models.Feature.get_by_id(feature_id)
   if not feature:
     return False
@@ -165,6 +166,20 @@ def require_create_feature(handler):
   return check_login
 
 
+def validate_feature_create_permission(handler_obj):
+  """Check if user has permission to create feature and abort if not."""
+  user = handler_obj.get_current_user()
+  req = handler_obj.request
+
+  # Give the user a chance to sign in
+  if not user and req.method == 'GET':
+    return handler_obj.redirect(settings.LOGIN_PAGE_URL)
+
+  # Redirect to 403 if user does not have create permission for feature.
+  if not can_create_feature(user):
+    handler_obj.abort(403)
+
+
 def validate_feature_edit_permission(handler_obj, feature_id):
   """Check if user has permission to edit feature and abort if not."""
   user = handler_obj.get_current_user()
@@ -175,6 +190,7 @@ def validate_feature_edit_permission(handler_obj, feature_id):
     return handler_obj.redirect(settings.LOGIN_PAGE_URL)
 
   # Redirect to 404 if feature is not found.
+  # Load feature directly from NDB so as to never get a stale cached copy.
   if core_models.Feature.get_by_id(int(feature_id)) is None:
     handler_obj.abort(404, msg='Feature not found')
 
