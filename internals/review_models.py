@@ -141,6 +141,7 @@ class Comment(ndb.Model):
   author = ndb.StringProperty()
   content = ndb.StringProperty()
   deleted_by = ndb.StringProperty()
+  migrated = ndb.BooleanProperty()
   # If the user set an approval value, we capture that here so that we can
   # display a change log.  This could be generalized to a list of separate
   # Amendment entities, but that complexity is not needed yet.
@@ -300,7 +301,7 @@ class Activity(ndb.Model):  # copy from Comment
   """An activity log entry (comment + amendments) on a gate or feature."""
   feature_id = ndb.IntegerProperty(required=True)
   gate_id = ndb.IntegerProperty()  # The gate commented on, or general comment.
-  created = ndb.DateTimeProperty(auto_now=True)
+  created = ndb.DateTimeProperty(auto_now_add=True)
   author = ndb.StringProperty()
   content = ndb.TextProperty()
   deleted_by = ndb.StringProperty()
