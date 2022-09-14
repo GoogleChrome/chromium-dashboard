@@ -100,22 +100,26 @@ class ChromedashApp extends LitElement {
     page('/', () => page.redirect('/roadmap'));
     page('/roadmap', (ctx) => {
       this.pageComponent = document.createElement('chromedash-roadmap-page');
+      this.pageComponent.user = this.user;
       this.contextLink = ctx.path;
       this.currentPage = ctx.path;
     });
     page('/myfeatures', (ctx) => {
       this.pageComponent = document.createElement('chromedash-myfeatures-page');
+      this.pageComponent.user = this.user;
       this.contextLink = ctx.path;
       this.currentPage = ctx.path;
     });
     page('/newfeatures', (ctx) => {
       this.pageComponent = document.createElement('chromedash-all-features-page');
+      this.pageComponent.user = this.user;
       this.contextLink = ctx.path;
       this.currentPage = ctx.path;
     });
     page('/feature/:featureId', (ctx) => {
       this.pageComponent = document.createElement('chromedash-feature-page');
       this.pageComponent.featureId = parseInt(ctx.params.featureId);
+      this.pageComponent.user = this.user;
       this.pageComponent.contextLink = this.contextLink;
       this.pageComponent.appTitle = this.appTitle;
     });

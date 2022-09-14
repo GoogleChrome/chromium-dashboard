@@ -1,7 +1,6 @@
 import {html} from 'lit';
 import {assert, fixture} from '@open-wc/testing';
 import {ChromedashRoadmapPage} from './chromedash-roadmap-page';
-import './chromedash-toast';
 import '../js-src/cs-client';
 import sinon from 'sinon';
 
@@ -62,13 +61,12 @@ describe('chromedash-roadmap-page', () => {
     'Removed': [{name: 'fake feature five'}],
   });
 
-  /* window.csClient and <chromedash-toast> are initialized at _base.html
+  /* window.csClient and <chromedash-toast> are initialized at spa.html
    * which are not available here, so we initialize them before each test.
    * We also stub out the API calls here so that they return test data. */
   beforeEach(async () => {
     await fixture(html`<chromedash-toast></chromedash-toast>`);
     window.csClient = new ChromeStatusClient('fake_token', 1);
-    sinon.stub(window.csClient, 'getPermissions');
 
     // For the child component - chromedash-roadmap
     sinon.stub(window.csClient, 'getChannels');
@@ -82,39 +80,24 @@ describe('chromedash-roadmap-page', () => {
   });
 
   afterEach(() => {
-    window.csClient.getPermissions.restore();
     window.csClient.getChannels.restore();
     window.csClient.getStars.restore();
     window.csClient.getFeaturesInMilestone.restore();
     window.csClient.getSpecifiedChannels.restore();
   });
 
-  it('fetch returns error', async () => {
-    const invalidPermissionPromise = Promise.reject(new Error('Got error response from server'));
-    window.csClient.getPermissions.returns(invalidPermissionPromise);
-    const component = await fixture(
-      html`<chromedash-roadmap-page></chromedash-roadmap-page>`);
-    assert.exists(component);
-    assert.instanceOf(component, ChromedashRoadmapPage);
-
-    // fetching error would trigger the toast to show message
-    const toastEl = document.querySelector('chromedash-toast');
-    const toastMsgSpan = toastEl.shadowRoot.querySelector('span#msg');
-    assert.include(toastMsgSpan.innerHTML,
-      'Some errors occurred. Please refresh the page or try again later.');
-  });
-
   it('renders with fake data', async () => {
-    const validPermissionsPromise = Promise.resolve({
+    const user = {
       can_approve: false,
       can_create_feature: true,
       can_edit: true,
       is_admin: false,
       email: 'example@google.com',
-    });
-    window.csClient.getPermissions.returns(validPermissionsPromise);
+    };
     const component = await fixture(
-      html`<chromedash-roadmap-page></chromedash-roadmap-page>`);
+      html`<chromedash-roadmap-page
+            .user=${user}>
+           </chromedash-roadmap-page>`);
     assert.exists(component);
     assert.instanceOf(component, ChromedashRoadmapPage);
 

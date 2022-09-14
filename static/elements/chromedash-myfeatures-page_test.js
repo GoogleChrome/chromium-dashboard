@@ -8,13 +8,12 @@ import sinon from 'sinon';
 describe('chromedash-myfeatures-page', () => {
   let recentReview; let pendingReview; let featureICanEdit; let featureIStarred;
 
-  /* window.csClient and <chromedash-toast> are initialized at _base.html
+  /* window.csClient and <chromedash-toast> are initialized at spa.html
    * which are not available here, so we initialize them before each test.
    * We also stub out the API calls here so that they return test data. */
   beforeEach(async () => {
     await fixture(html`<chromedash-toast></chromedash-toast>`);
     window.csClient = new ChromeStatusClient('fake_token', 1);
-    sinon.stub(window.csClient, 'getPermissions');
     sinon.stub(window.csClient, 'getStars');
     window.csClient.getStars.returns(Promise.resolve([123456]));
 
@@ -29,21 +28,22 @@ describe('chromedash-myfeatures-page', () => {
   });
 
   afterEach(() => {
-    window.csClient.getPermissions.restore();
     window.csClient.getStars.restore();
   });
 
   it('user has no approval permission', async () => {
-    window.csClient.getPermissions.returns(Promise.resolve({
+    const user = {
       can_approve: false,
       can_create_feature: true,
       can_edit_all: true,
       is_admin: false,
       email: 'example@gmail.com',
       editable_features: [],
-    }));
+    };
     const component = await fixture(
-      html`<chromedash-myfeatures-page></chromedash-myfeatures-page>`);
+      html`<chromedash-myfeatures-page
+            .user=${user}>
+           </chromedash-myfeatures-page>`);
     assert.exists(component);
     assert.instanceOf(component, ChromedashMyFeaturesPage);
 
@@ -74,16 +74,18 @@ describe('chromedash-myfeatures-page', () => {
   });
 
   it('user has approval permission', async () => {
-    window.csClient.getPermissions.returns(Promise.resolve({
+    const user = {
       can_approve: true,
       can_create_feature: true,
       can_edit_all: true,
       is_admin: false,
       email: 'example@gmail.com',
       editable_features: [],
-    }));
+    };
     const component = await fixture(
-      html`<chromedash-myfeatures-page></chromedash-myfeatures-page>`);
+      html`<chromedash-myfeatures-page
+            .user=${user}>
+           </chromedash-myfeatures-page>`);
     assert.exists(component);
     assert.instanceOf(component, ChromedashMyFeaturesPage);
 

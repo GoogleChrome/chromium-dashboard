@@ -226,7 +226,6 @@ export class ChromedashHeader extends LitElement {
     if (appComponent) {
       appComponent.insertAdjacentElement('afterbegin', signInButton); // for SPA
     } else {
-      // TODO (kevinshen56714): remove this once SPA is set up
       this.insertAdjacentElement('afterbegin', signInButton); // for MPA
     }
   }
