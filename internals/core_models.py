@@ -43,6 +43,12 @@ def del_none(d):
       del_none(value)
   return d
 
+def feature_cache_key(cache_key, feature_id):
+  return '%s|%s' % (cache_key, feature_id)
+
+def feature_cache_prefix():
+  return '%s|*' % (Feature.DEFAULT_CACHE_KEY)
+
 
 class DictModel(ndb.Model):
   # def to_dict(self):
@@ -442,7 +448,7 @@ class Feature(DictModel):
 
   @classmethod
   def get_feature(self, feature_id, update_cache=False):
-    KEY = Feature.feature_cache_key(feature_id)
+    KEY = feature_cache_key(Feature.DEFAULT_CACHE_KEY, feature_id)
     feature = rediscache.get(KEY)
 
     if feature is None or update_cache:
@@ -482,7 +488,7 @@ class Feature(DictModel):
     futures = []
 
     for feature_id in feature_ids:
-      lookup_key = Feature.feature_cache_key(feature_id)
+      lookup_key = feature_cache_key(Feature.DEFAULT_CACHE_KEY, feature_id)
       feature = rediscache.get(lookup_key)
       if feature is None or update_cache:
         futures.append(Feature.get_by_id_async(feature_id))
@@ -496,7 +502,7 @@ class Feature(DictModel):
         feature['updated_display'] = (
             unformatted_feature.updated.strftime("%Y-%m-%d"))
         feature['new_crbug_url'] = unformatted_feature.new_crbug_url()
-        store_key = Feature.feature_cache_key(unformatted_feature.key.integer_id())
+        store_key = feature_cache_key(Feature.DEFAULT_CACHE_KEY,  unformatted_feature.key.integer_id())
         rediscache.set(store_key, feature)
         result_dict[unformatted_feature.key.integer_id()] = feature
 
@@ -845,18 +851,10 @@ class Feature(DictModel):
       self.__notify_feature_subscribers_of_changes(amendments, is_update)
 
     # Invalidate rediscache for the individual feature view.
-    cache_key = Feature.feature_cache_key(self.key.integer_id())
+    cache_key = feature_cache_key(Feature.DEFAULT_CACHE_KEY, self.key.integer_id())
     rediscache.delete(cache_key)
 
     return key
-
-  @classmethod
-  def feature_cache_key(cls, feature_id):
-    return '%s|%s' % (Feature.DEFAULT_CACHE_KEY, feature_id)
-
-  @classmethod
-  def feature_cache_prefix(cls):
-    return '%s|*' % (Feature.DEFAULT_CACHE_KEY)
 
   # Metadata.
   created = ndb.DateTimeProperty(auto_now_add=True)
@@ -1096,7 +1094,7 @@ class FeatureEntry(ndb.Model):  # Copy from Feature
 
   @classmethod
   def get_feature_entry(self, feature_id, update_cache=False):
-    KEY = '%s|%s' % (Feature.DEFAULT_CACHE_KEY, feature_id)
+    KEY = feature_cache_key(FeatureEntry.DEFAULT_CACHE_KEY, feature_id)
     feature = rediscache.get(KEY)
 
     if feature is None or update_cache:
@@ -1132,7 +1130,7 @@ class FeatureEntry(ndb.Model):  # Copy from Feature
     futures = []
 
     for fe_id in entry_ids:
-      lookup_key = '%s|%s' % (FeatureEntry.DEFAULT_CACHE_KEY, fe_id)
+      lookup_key = feature_cache_key(FeatureEntry.DEFAULT_CACHE_KEY, fe_id)
       entry = rediscache.get(lookup_key)
       if entry is None or update_cache:
         futures.append(FeatureEntry.get_by_id_async(fe_id))
@@ -1142,8 +1140,7 @@ class FeatureEntry(ndb.Model):  # Copy from Feature
     for future in futures:
       entry = future.get_result()
       if entry and not entry.deleted:
-        store_key = '%s|%s' % (
-            FeatureEntry.DEFAULT_CACHE_KEY, entry.key.integer_id())
+        store_key = feature_cache_key(FeatureEntry.DEFAULT_CACHE_KEY, entry.key.integer_id())
         rediscache.set(store_key, entry)
         result_dict[entry.key.integer_id()] = entry
 

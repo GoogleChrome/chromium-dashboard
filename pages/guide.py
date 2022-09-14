@@ -73,7 +73,7 @@ class FeatureNew(basehandlers.FlaskHandler):
         updated_by=signed_in_user)
     key = feature.put()
     # Remove all feature-related cache.
-    rediscache.delete_keys_with_prefix(core_models.Feature.feature_cache_prefix())
+    rediscache.delete_keys_with_prefix(core_models.feature_cache_prefix())
 
     redirect_url = '/guide/edit/' + str(key.integer_id())
     return self.redirect(redirect_url)
@@ -448,7 +448,7 @@ class FeatureEditStage(basehandlers.FlaskHandler):
     key = feature.put()
 
     # Remove all feature-related cache.
-    rediscache.delete_keys_with_prefix(core_models.Feature.feature_cache_prefix())
+    rediscache.delete_keys_with_prefix(core_models.feature_cache_prefix())
 
     redirect_url = '/guide/edit/' + str(key.integer_id())
     return self.redirect(redirect_url)
