@@ -257,7 +257,7 @@ class FeatureStar(ndb.Model):
 
 
 class NotifyInactiveUsersHandler(basehandlers.FlaskHandler):
-  DEFAULT_LAST_VISIT = (2022, 8, 1)  # 2022-08-01
+  DEFAULT_LAST_VISIT = datetime(2022, 8, 1)  # 2022-08-01
   INACTIVE_WARN_DAYS = 180
   EMAIL_TEMPLATE_PATH = 'inactive_user_email.html'
 
@@ -286,20 +286,19 @@ class NotifyInactiveUsersHandler(basehandlers.FlaskHandler):
 
     for user in users:
       # Site admins and editors aren't warned due to inactivity.
-      if user.is_admin or user.is_site_editor:
+      # Also, users that have been previously notified are not notified again.
+      if user.is_admin or user.is_site_editor or user.notified_inactive:
         continue
 
-      last_visit = user.last_visit
       # If the user does not have a last visit, it is assumed the last visit
       # is roughly the date the last_visit field was added.
-      if last_visit is None:
-        y, m, d = self.DEFAULT_LAST_VISIT
-        last_visit = datetime(y, m, d)
+      last_visit = user.last_visit or self.DEFAULT_LAST_VISIT
       # Notify if the user has recently fallen inactive in the last 30 days
       # (we only notify at the 6 month mark, and take action at 9 months)
-      if (last_visit < inactive_cutoff and
-          inactive_cutoff - last_visit <= timedelta(days=30)):
+      if (last_visit < inactive_cutoff):
         inactive_users.append(user.email)
+        user.notified_inactive = True
+        user.put()
     return inactive_users
 
   def _build_email_tasks(self, users_to_notify):

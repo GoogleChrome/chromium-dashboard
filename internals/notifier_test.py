@@ -470,9 +470,14 @@ class FeatureStarTest(testing_config.CustomTestCase):
     notifier.FeatureStar.set_star(app_user_1.email, feature_1_id)
     notifier.FeatureStar.set_star(app_user_2.email, feature_1_id)
 
+
+    user_1_email = app_user_1.email
+    user_2_email = app_user_2.email
+    app_user_1.key.delete()
+    app_user_2.key.delete()
     actual = notifier.FeatureStar.get_feature_starrers(feature_1_id)
     self.assertCountEqual(
-        [app_user_1.email, app_user_2.email],
+        [user_1_email, user_2_email],
         [au.email for au in actual])
 
 
@@ -546,15 +551,16 @@ class NotifyInactiveUsersHandlerTest(testing_config.CustomTestCase):
     active_user.put()
     self.users.append(active_user)
 
-    inactive_user = user_models.AppUser(
+    self.inactive_user = user_models.AppUser(
       email="inactive_user@example.com", is_admin=False, is_site_editor=False,
       last_visit=datetime(2023, 2, 20))
-    inactive_user.put()
-    self.users.append(inactive_user)
+    self.inactive_user.put()
+    self.users.append(self.inactive_user)
 
     really_inactive_user = user_models.AppUser(
       email="really_inactive_user@example.com", is_admin=False,
-      is_site_editor=False, last_visit=datetime(2022, 10, 1))
+      is_site_editor=False, last_visit=datetime(2022, 10, 1),
+      notified_inactive=True)
     really_inactive_user.put()
     self.users.append(really_inactive_user)
 
@@ -592,6 +598,8 @@ class NotifyInactiveUsersHandlerTest(testing_config.CustomTestCase):
     expected = ('1 users notified of inactivity.\n'
         'Notified users:\ninactive_user@example.com')
     self.assertEqual(result.get('message', None), expected)
+    # The inactive user who was notified should be flagged as notified.
+    self.assertTrue(self.inactive_user.notified_inactive)
 
 
 class FunctionsTest(testing_config.CustomTestCase):
