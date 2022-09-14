@@ -63,8 +63,11 @@ class AccountsAPITest(testing_config.CustomTestCase):
 
     new_appuser = (user_models.AppUser.query(
         user_models.AppUser.email == 'new_user@example.com').get())
-    self.assertEqual('new_user@example.com', new_appuser.email)
-    self.assertFalse(new_appuser.is_admin)
+    result_email = new_appuser.email
+    result_is_admin = new_appuser.is_admin
+    new_appuser.key.delete()
+    self.assertEqual('new_user@example.com', result_email)
+    self.assertFalse(result_is_admin)
 
   def test_create__site_editor_valid(self):
     """Admin wants to register a new site editor account."""

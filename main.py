@@ -35,6 +35,7 @@ from internals import detect_intent
 from internals import fetchmetrics
 from internals import notifier
 from internals import data_backup
+from internals import inactive_users
 from internals import deprecate_field
 from pages import blink_handler
 from pages import featurelist
@@ -188,6 +189,8 @@ internals_routes = [
   ('/cron/update_blink_components', fetchmetrics.BlinkComponentHandler),
   ('/cron/export_backup', data_backup.BackupExportHandler),
   ('/cron/send_accuracy_notifications', notifier.FeatureAccuracyHandler),
+  ('/cron/warn_inactive_users', notifier.NotifyInactiveUsersHandler),
+  ('/cron/remove_inactive_users', inactive_users.RemoveInactiveUsersHandler),
   ('/cron/write_standard_maturity', deprecate_field.WriteStandardMaturityHandler),
 
   ('/tasks/email-subscribers', notifier.FeatureChangeHandler),
