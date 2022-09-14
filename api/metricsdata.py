@@ -54,6 +54,7 @@ class TimelineHandler(basehandlers.FlaskHandler):
 
   HTTP_CACHE_TYPE = 'private'
   JSONIFY = True
+  CACHE_PREFIX = 'metrics|'
 
   def make_query(self, bucket_id):
     query = self.MODEL_CLASS.query()
@@ -92,7 +93,7 @@ class TimelineHandler(basehandlers.FlaskHandler):
 
 class PopularityTimelineHandler(TimelineHandler):
 
-  CACHE_KEY = 'css_pop_timeline'
+  CACHE_KEY = TimelineHandler.CACHE_PREFIX + 'css_pop_timeline'
   MODEL_CLASS = metrics_models.StableInstance
 
   def get_template_data(self):
@@ -101,7 +102,7 @@ class PopularityTimelineHandler(TimelineHandler):
 
 class AnimatedTimelineHandler(TimelineHandler):
 
-  CACHE_KEY = 'css_animated_timeline'
+  CACHE_KEY = TimelineHandler.CACHE_PREFIX + 'css_animated_timeline'
   MODEL_CLASS = metrics_models.AnimatedProperty
 
   def get_template_data(self):
@@ -110,7 +111,7 @@ class AnimatedTimelineHandler(TimelineHandler):
 
 class FeatureObserverTimelineHandler(TimelineHandler):
 
-  CACHE_KEY = 'featureob_timeline'
+  CACHE_KEY = TimelineHandler.CACHE_PREFIX + 'featureob_timeline'
   MODEL_CLASS = metrics_models.FeatureObserver
 
   def get_template_data(self):
@@ -121,6 +122,7 @@ class FeatureHandler(basehandlers.FlaskHandler):
 
   HTTP_CACHE_TYPE = 'private'
   JSONIFY = True
+  CACHE_PREFIX = 'metrics|'
 
   def __query_metrics_for_properties(self):
     datapoints = []
@@ -189,7 +191,7 @@ class FeatureHandler(basehandlers.FlaskHandler):
 
 class CSSPopularityHandler(FeatureHandler):
 
-  CACHE_KEY = 'css_popularity'
+  CACHE_KEY = FeatureHandler.CACHE_PREFIX + 'css_popularity'
   MODEL_CLASS = metrics_models.StableInstance
   PROPERTY_CLASS = metrics_models.CssPropertyHistogram
 
@@ -199,7 +201,7 @@ class CSSPopularityHandler(FeatureHandler):
 
 class CSSAnimatedHandler(FeatureHandler):
 
-  CACHE_KEY = 'css_animated'
+  CACHE_KEY = FeatureHandler.CACHE_PREFIX + 'css_animated'
   MODEL_CLASS = metrics_models.AnimatedProperty
   PROPERTY_CLASS = metrics_models.CssPropertyHistogram
 
@@ -209,7 +211,7 @@ class CSSAnimatedHandler(FeatureHandler):
 
 class FeatureObserverPopularityHandler(FeatureHandler):
 
-  CACHE_KEY = 'featureob_popularity'
+  CACHE_KEY = FeatureHandler.CACHE_PREFIX + 'featureob_popularity'
   MODEL_CLASS = metrics_models.FeatureObserver
   PROPERTY_CLASS = metrics_models.FeatureObserverHistogram
 
