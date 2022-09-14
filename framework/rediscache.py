@@ -20,7 +20,6 @@ import pickle
 import logging
 import settings
 
-from google.cloud import ndb
 import redis
 import fakeredis
 
@@ -116,6 +115,23 @@ def delete(key):
 
   cache_key = add_gae_prefix(key)
   redis_client.delete(cache_key)
+
+
+def delete_keys_with_prefix(pattern):
+  """Delete all keys matching a prefix pattern."""
+  if redis_client is None:
+    return
+
+  prefix = add_gae_prefix(pattern)
+  # https://redis.io/commands/scan/
+  pos, keys = redis_client.scan(cursor=0, match=prefix)
+  target = keys
+  while pos != 0:
+    pos, keys = redis_client.scan(cursor=pos, match=prefix)
+    target.extend(keys)
+
+  for key in target:
+    redis_client.delete(key)
 
 
 def flushall():

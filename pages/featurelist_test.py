@@ -23,7 +23,7 @@ from internals import core_enums
 from internals import core_models
 from internals import user_models
 from pages import featurelist
-from framework import ramcache
+from framework import rediscache
 
 test_app = flask.Flask(__name__)
 
@@ -57,8 +57,7 @@ class TestWithFeature(testing_config.CustomTestCase):
     self.feature_1.key.delete()
     self.app_user.delete()
     self.app_admin.delete()
-    ramcache.flush_all()
-    ramcache.check_for_distributed_invalidation()
+    rediscache.flushall()
 
 
 class FeaturesJsonHandlerTest(TestWithFeature):

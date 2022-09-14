@@ -18,7 +18,7 @@ import logging
 from google.cloud import ndb
 
 # Appengine imports.
-from framework import ramcache
+from framework import rediscache
 
 from framework import basehandlers
 from framework import permissions
@@ -64,9 +64,8 @@ class FeatureCreateHandler(basehandlers.FlaskHandler):
         created_by=signed_in_user,
         updated_by=signed_in_user)
     key = feature.put()
-
-    # TODO(jrobbins): enumerate and remove only the relevant keys.
-    ramcache.flush_all()
+    # Remove all feature-related cache.
+    rediscache.delete_keys_with_prefix(core_models.feature_cache_prefix())
 
     redirect_url = '/guide/edit/' + str(key.integer_id())
     return self.redirect(redirect_url)
@@ -396,8 +395,8 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
         _auth_domain='gmail.com')
     key = feature.put()
 
-    # TODO(jrobbins): enumerate and remove only the relevant keys.
-    ramcache.flush_all()
+    # Remove all feature-related cache.
+    rediscache.delete_keys_with_prefix(core_models.feature_cache_prefix())
 
     redirect_url = '/guide/edit/' + str(key.integer_id())
     return self.redirect(redirect_url)

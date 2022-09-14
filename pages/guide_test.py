@@ -20,7 +20,7 @@ import flask
 import werkzeug
 import html5lib
 
-from framework import ramcache
+from framework import rediscache
 from internals import core_enums
 from internals import core_models
 from pages import guide
@@ -39,8 +39,7 @@ class TestWithFeature(testing_config.CustomTestCase):
     self.handler = self.HANDLER_CLASS()
 
   def tearDown(self):
-    ramcache.flush_all()
-    ramcache.check_for_distributed_invalidation()
+    rediscache.flushall()
 
 
 class FeatureCreateTest(testing_config.CustomTestCase):

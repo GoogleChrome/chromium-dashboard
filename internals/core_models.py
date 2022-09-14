@@ -19,7 +19,7 @@ import re
 
 from google.cloud import ndb
 
-from framework import ramcache
+from framework import rediscache
 from framework import users
 
 from framework import cloud_tasks_helpers
@@ -42,6 +42,12 @@ def del_none(d):
     elif isinstance(value, dict):
       del_none(value)
   return d
+
+def feature_cache_key(cache_key, feature_id):
+  return '%s|%s' % (cache_key, feature_id)
+
+def feature_cache_prefix():
+  return '%s|*' % (Feature.DEFAULT_CACHE_KEY)
 
 
 class DictModel(ndb.Model):
@@ -398,7 +404,7 @@ class Feature(DictModel):
       s = ('%s%s' % (filterby[0], filterby[1])).replace(' ', '')
       KEY += '|%s' % s
 
-    feature_list = ramcache.get(KEY)
+    feature_list = rediscache.get(KEY)
 
     if feature_list is None or update_cache:
       query = Feature.query().order(-Feature.updated) #.order('name')
@@ -422,7 +428,7 @@ class Feature(DictModel):
         feature_list = [
             f.format_for_template(version=version) for f in feature_list]
 
-      ramcache.set(KEY, feature_list)
+      rediscache.set(KEY, feature_list)
 
     return feature_list
 
@@ -440,17 +446,17 @@ class Feature(DictModel):
 
     KEY = '%s|%s' % (Feature.DEFAULT_CACHE_KEY, sorted(statuses))
 
-    feature_list = ramcache.get(KEY)
+    feature_list = rediscache.get(KEY)
 
     if feature_list is None or update_cache:
       # There's no way to do an OR in a single datastore query, and there's a
       # very good chance that the self.get_all() results will already be in
-      # ramcache, so use an array comprehension to grab the features we
+      # rediscache, so use an array comprehension to grab the features we
       # want from the array of everything.
       feature_list = [
           feature for feature in self.get_all(update_cache=update_cache)
           if feature['browsers']['chrome']['status']['text'] in statuses]
-      ramcache.set(KEY, feature_list)
+      rediscache.set(KEY, feature_list)
 
     return feature_list
 
@@ -463,8 +469,8 @@ class Feature(DictModel):
     procesing a POST to edit data.  For editing use case, load the
     data from NDB directly.
     """
-    KEY = '%s|%s' % (Feature.DEFAULT_CACHE_KEY, feature_id)
-    feature = ramcache.get(KEY)
+    KEY = feature_cache_key(Feature.DEFAULT_CACHE_KEY, feature_id)
+    feature = rediscache.get(KEY)
 
     if feature is None or update_cache:
       unformatted_feature = Feature.get_by_id(feature_id)
@@ -475,7 +481,7 @@ class Feature(DictModel):
         feature['updated_display'] = (
             unformatted_feature.updated.strftime("%Y-%m-%d"))
         feature['new_crbug_url'] = unformatted_feature.new_crbug_url()
-        ramcache.set(KEY, feature)
+        rediscache.set(KEY, feature)
 
     return feature
 
@@ -510,8 +516,8 @@ class Feature(DictModel):
     futures = []
 
     for feature_id in feature_ids:
-      lookup_key = '%s|%s' % (Feature.DEFAULT_CACHE_KEY, feature_id)
-      feature = ramcache.get(lookup_key)
+      lookup_key = feature_cache_key(Feature.DEFAULT_CACHE_KEY, feature_id)
+      feature = rediscache.get(lookup_key)
       if feature is None or update_cache:
         futures.append(Feature.get_by_id_async(feature_id))
       else:
@@ -524,9 +530,8 @@ class Feature(DictModel):
         feature['updated_display'] = (
             unformatted_feature.updated.strftime("%Y-%m-%d"))
         feature['new_crbug_url'] = unformatted_feature.new_crbug_url()
-        store_key = '%s|%s' % (Feature.DEFAULT_CACHE_KEY,
-                               unformatted_feature.key.integer_id())
-        ramcache.set(store_key, feature)
+        store_key = feature_cache_key(Feature.DEFAULT_CACHE_KEY,  unformatted_feature.key.integer_id())
+        rediscache.set(store_key, feature)
         result_dict[unformatted_feature.key.integer_id()] = feature
 
     result_list = [
@@ -547,7 +552,7 @@ class Feature(DictModel):
     cache_key = '%s|%s|%s|%s' % (Feature.DEFAULT_CACHE_KEY,
                                  'cronorder', limit, version)
 
-    feature_list = ramcache.get(cache_key)
+    feature_list = rediscache.get(cache_key)
     logging.info('getting chronological feature list')
 
     # On cache miss, do a db query.
@@ -629,7 +634,7 @@ class Feature(DictModel):
 
       self._annotate_first_of_milestones(feature_list, version=version)
 
-      ramcache.set(cache_key, feature_list)
+      rediscache.set(cache_key, feature_list)
 
     if not show_unlisted:
       feature_list = self.filter_unlisted(feature_list)
@@ -652,7 +657,7 @@ class Feature(DictModel):
     features_by_type = {}
     cache_key = '%s|%s|%s' % (
         Feature.DEFAULT_CACHE_KEY, 'milestone', milestone)
-    cached_features_by_type = ramcache.get(cache_key)
+    cached_features_by_type = rediscache.get(cache_key)
     if cached_features_by_type:
       features_by_type = cached_features_by_type
     else:
@@ -780,7 +785,7 @@ class Feature(DictModel):
         features_by_type[shipping_type] = [
             f.format_for_template() for f in all_features[shipping_type]]
 
-      ramcache.set(cache_key, features_by_type)
+      rediscache.set(cache_key, features_by_type)
 
     for shipping_type in features_by_type:
       if not show_unlisted:
@@ -888,9 +893,9 @@ class Feature(DictModel):
     if notify:
       self.__notify_feature_subscribers_of_changes(amendments, is_update)
 
-    # Invalidate ramcache for the individual feature view.
-    cache_key = '%s|%s' % (Feature.DEFAULT_CACHE_KEY, self.key.integer_id())
-    ramcache.delete(cache_key)
+    # Invalidate rediscache for the individual feature view.
+    cache_key = feature_cache_key(Feature.DEFAULT_CACHE_KEY, self.key.integer_id())
+    rediscache.delete(cache_key)
 
     return key
 
@@ -1132,15 +1137,15 @@ class FeatureEntry(ndb.Model):  # Copy from Feature
 
   @classmethod
   def get_feature_entry(self, feature_id, update_cache=False):
-    KEY = '%s|%s' % (Feature.DEFAULT_CACHE_KEY, feature_id)
-    feature = ramcache.get(KEY)
+    KEY = feature_cache_key(FeatureEntry.DEFAULT_CACHE_KEY, feature_id)
+    feature = rediscache.get(KEY)
 
     if feature is None or update_cache:
       entry = FeatureEntry.get_by_id(feature_id)
       if entry:
         if entry.deleted:
           return None
-        ramcache.set(KEY, entry)
+        rediscache.set(KEY, entry)
 
     return entry
 
@@ -1175,8 +1180,8 @@ class FeatureEntry(ndb.Model):  # Copy from Feature
     futures = []
 
     for fe_id in entry_ids:
-      lookup_key = '%s|%s' % (FeatureEntry.DEFAULT_CACHE_KEY, fe_id)
-      entry = ramcache.get(lookup_key)
+      lookup_key = feature_cache_key(FeatureEntry.DEFAULT_CACHE_KEY, fe_id)
+      entry = rediscache.get(lookup_key)
       if entry is None or update_cache:
         futures.append(FeatureEntry.get_by_id_async(fe_id))
       else:
@@ -1185,9 +1190,8 @@ class FeatureEntry(ndb.Model):  # Copy from Feature
     for future in futures:
       entry = future.get_result()
       if entry and not entry.deleted:
-        store_key = '%s|%s' % (
-            FeatureEntry.DEFAULT_CACHE_KEY, entry.key.integer_id())
-        ramcache.set(store_key, entry)
+        store_key = feature_cache_key(FeatureEntry.DEFAULT_CACHE_KEY, entry.key.integer_id())
+        rediscache.set(store_key, entry)
         result_dict[entry.key.integer_id()] = entry
 
     result_list = [
