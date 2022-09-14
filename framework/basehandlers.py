@@ -129,6 +129,7 @@ class BaseHandler(flask.views.MethodView):
                   self.get_int_param('featureId', required=required))
     if not required and not feature_id:
       return None
+    # Load feature directly from NDB so as to never get a stale cached copy.
     feature = core_models.Feature.get_by_id(feature_id)
     if required and not feature:
       self.abort(404, msg='Feature not found')
@@ -514,7 +515,36 @@ def ndb_wsgi_middleware(wsgi_app):
   return middleware
 
 
-def FlaskApplication(import_name, routes, pattern_base='', debug=False):
+class SPAHandler(FlaskHandler):
+  """Single-page app handler"""
+
+  TEMPLATE_PATH = 'spa.html'
+
+  def get_template_data(self, **defaults):
+    # Check if the page requires user to sign in
+    if defaults.get('require_signin') and not self.get_current_user():
+      return flask.redirect(settings.LOGIN_PAGE_URL), self.get_headers()
+
+    # Check if the page requires create feature permission
+    if defaults.get('require_create_feature'):
+      redirect_resp = permissions.validate_feature_create_permission(self)
+      if redirect_resp:
+        return redirect_resp
+
+    # Validate the user has edit permissions and redirect if needed.
+    if defaults.get('require_edit_feature'):
+      feature_id = defaults.get('feature_id')
+      if not feature_id:
+        self.abort(500, msg='Cannot get feature ID from the URL')
+      redirect_resp = permissions.validate_feature_edit_permission(
+          self, feature_id)
+      if redirect_resp:
+        return redirect_resp
+
+    return {} # no handler_data needed to be returned
+
+
+def FlaskApplication(import_name, routes, post_routes, pattern_base='', debug=False):
   """Make a Flask app and add routes and handlers that work like webapp2."""
 
   app = flask.Flask(import_name)
@@ -527,6 +557,16 @@ def FlaskApplication(import_name, routes, pattern_base='', debug=False):
     app.secret_key = secrets.get_session_secret()  # For flask.session
     app.permanent_session_lifetime = xsrf.REFRESH_TOKEN_TIMEOUT_SEC
 
+  for i, rule in enumerate(post_routes):
+    pattern = rule[0]
+    handler_class = rule[1]
+    classname = handler_class.__name__
+    app.add_url_rule(
+        pattern_base + pattern,
+        endpoint=classname + str(i),  # We don't use it, but it must be unique.
+        view_func=handler_class.as_view(classname),
+        methods=["POST"])
+
   for i, rule in enumerate(routes):
     pattern = rule[0]
     handler_class = rule[1]
@@ -534,7 +574,7 @@ def FlaskApplication(import_name, routes, pattern_base='', debug=False):
     classname = handler_class.__name__
     app.add_url_rule(
         pattern_base + pattern,
-        endpoint=classname + str(i),  # We don't use it, but it must be unique.
+        endpoint=classname + str(i + len(post_routes)),  # We don't use it, but it must be unique.
         view_func=handler_class.as_view(classname),
         defaults=defaults)
 

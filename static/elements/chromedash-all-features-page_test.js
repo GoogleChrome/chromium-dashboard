@@ -6,28 +6,18 @@ import '../js-src/cs-client';
 import sinon from 'sinon';
 
 describe('chromedash-all-features-page', () => {
-  /* window.csClient and <chromedash-toast> are initialized at _base.html
+  /* window.csClient and <chromedash-toast> are initialized at spa.html
    * which are not available here, so we initialize them before each test.
    * We also stub out the API calls here so that they return test data. */
   beforeEach(async () => {
     await fixture(html`<chromedash-toast></chromedash-toast>`);
     window.csClient = new ChromeStatusClient('fake_token', 1);
-    sinon.stub(window.csClient, 'getPermissions');
     sinon.stub(window.csClient, 'getStars');
     sinon.stub(window.csClient, 'searchFeatures');
-    window.csClient.getPermissions.returns(Promise.resolve({
-      can_approve: false,
-      can_create_feature: true,
-      can_edit_all: true,
-      is_admin: false,
-      email: 'example@gmail.com',
-      editable_features: [],
-    }));
     window.csClient.getStars.returns(Promise.resolve([123456]));
   });
 
   afterEach(() => {
-    window.csClient.getPermissions.restore();
     window.csClient.getStars.restore();
     window.csClient.searchFeatures.restore();
   });
@@ -76,9 +66,19 @@ describe('chromedash-all-features-page', () => {
         tags: ['tag_one'],
       }],
     });
+    const user = {
+      can_approve: false,
+      can_create_feature: true,
+      can_edit_all: true,
+      is_admin: false,
+      email: 'example@gmail.com',
+      editable_features: [],
+    };
     window.csClient.searchFeatures.returns(validFeaturePromise);
     const component = await fixture(
-      html`<chromedash-all-features-page></chromedash-all-features-page>`);
+      html`<chromedash-all-features-page
+            .user=${user}>
+           </chromedash-all-features-page>`);
     assert.exists(component);
     assert.instanceOf(component, ChromedashAllFeaturesPage);
 

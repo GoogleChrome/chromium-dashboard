@@ -43,14 +43,6 @@ export class ChromedashGuideNewPage extends LitElement {
     this.userEmail = '';
   }
 
-  connectedCallback() {
-    super.connectedCallback();
-
-    // TODO(kevinshen56714): Remove this once SPA index page is set up.
-    // Has to include this for now to remove the spinner at _base.html.
-    document.body.classList.remove('loading');
-  }
-
   /* Add the form's event listener after Shoelace event listeners are attached
    * see more at https://github.com/GoogleChrome/chromium-dashboard/issues/2014 */
   async registerFormSubmitHandler(el) {

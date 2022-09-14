@@ -42,24 +42,10 @@ class TestWithFeature(testing_config.CustomTestCase):
     rediscache.flushall()
 
 
-class FeatureNewTest(testing_config.CustomTestCase):
+class FeatureCreateTest(testing_config.CustomTestCase):
 
   def setUp(self):
-    self.handler = guide.FeatureNew()
-
-  def test_get__anon(self):
-    """Anon cannot create features, gets a redirect to sign in page."""
-    testing_config.sign_out()
-    with test_app.test_request_context('/guide/new'):
-      actual_response = self.handler.get_template_data()
-    self.assertEqual('302 FOUND', actual_response.status)
-
-  def test_get__non_allowed(self):
-    """Non-allowed cannot create features, gets a 403."""
-    testing_config.sign_in('user1@example.com', 1234567890)
-    with test_app.test_request_context('/guide/new'):
-      with self.assertRaises(werkzeug.exceptions.Forbidden):
-        actual_response = self.handler.get_template_data()
+    self.handler = guide.FeatureCreateHandler()
 
   def test_post__anon(self):
     """Anon cannot create features, gets a 403."""
@@ -97,117 +83,7 @@ class FeatureNewTest(testing_config.CustomTestCase):
     feature.key.delete()
 
 
-class FeatureNewTemplateTest(TestWithFeature):
-
-  HANDLER_CLASS = guide.FeatureNew
-
-  def setUp(self):
-    super(FeatureNewTemplateTest, self).setUp()
-    with test_app.test_request_context(self.request_path):
-      self.template_data = self.handler.get_template_data()
-
-      self.template_data.update(self.handler.get_common_data())
-      self.template_data['nonce'] = 'fake nonce'
-      template_path = self.handler.get_template_path(self.template_data)
-      self.full_template_path = os.path.join(template_path)
-
-  def test_html_rendering(self):
-    """We can render the template with valid html."""
-    testing_config.sign_in('user1@google.com', 1234567890)
-    template_text = self.handler.render(
-        self.template_data, self.full_template_path)
-    parser = html5lib.HTMLParser(strict=True)
-    document = parser.parse(template_text)
-
-
-class ProcessOverviewTest(testing_config.CustomTestCase):
-
-  def setUp(self):
-    self.feature_1 = core_models.Feature(
-        name='feature one', summary='sum', owner=['user1@google.com'],
-        category=1, visibility=1, standardization=1,
-        web_dev_views=core_enums.DEV_NO_SIGNALS, impl_status_chrome=1)
-    self.feature_1.put()
-
-    self.request_path = '/guide/edit/%d' % self.feature_1.key.integer_id()
-    self.handler = guide.ProcessOverview()
-
-  def tearDown(self):
-    self.feature_1.key.delete()
-
-  def test_get__anon(self):
-    """Anon cannot edit features, gets a redirect to viewing page."""
-    testing_config.sign_out()
-    with test_app.test_request_context(self.request_path):
-      actual_response = self.handler.get_template_data(
-          self.feature_1.key.integer_id())
-    self.assertEqual('302 FOUND', actual_response.status)
-
-  def test_get__non_allowed(self):
-    """Non-allowed cannot create features, gets a 403."""
-    testing_config.sign_in('user1@example.com', 1234567890)
-    with test_app.test_request_context(self.request_path):
-      with self.assertRaises(werkzeug.exceptions.Forbidden):
-        self.handler.get_template_data(self.feature_1.key.integer_id())
-
-
-  def test_get__not_found(self):
-    """Allowed users get a 404 if there is no such feature."""
-    testing_config.sign_in('user1@google.com', 1234567890)
-    with test_app.test_request_context(self.request_path):
-      with self.assertRaises(werkzeug.exceptions.NotFound):
-        self.handler.get_template_data(999)
-
-  def test_get__normal(self):
-    """Allowed users render a page with a process overview."""
-    testing_config.sign_in('user1@google.com', 1234567890)
-
-    with test_app.test_request_context(self.request_path):
-      template_data = self.handler.get_template_data(
-          self.feature_1.key.integer_id())
-
-    self.assertTrue('feature_id' in template_data)
-
-
-class ProcessOverviewTemplateTest(TestWithFeature):
-
-  HANDLER_CLASS = guide.ProcessOverview
-
-  def setUp(self):
-    super(ProcessOverviewTemplateTest, self).setUp()
-
-    self.feature_1 = core_models.Feature(
-        name='feature one', summary='sum', owner=['user1@google.com'],
-        category=1, visibility=1, standardization=1,
-        web_dev_views=core_enums.DEV_NO_SIGNALS, impl_status_chrome=1)
-    self.feature_1.put()
-    self.request_path = '/guide/edit/%d' % self.feature_1.key.integer_id()
-
-    with test_app.test_request_context(self.request_path):
-      self.template_data = self.handler.get_template_data(
-        self.feature_1.key.integer_id()
-      )
-
-      self.template_data.update(self.handler.get_common_data())
-      self.template_data['nonce'] = 'fake nonce'
-      template_path = self.handler.get_template_path(self.template_data)
-      self.full_template_path = os.path.join(template_path)
-
-  def test_html_rendering(self):
-    """We can render the template with valid html."""
-    testing_config.sign_in('user1@google.com', 1234567890)
-
-    with test_app.test_request_context(self.request_path):
-      template_data = self.handler.get_template_data(
-          self.feature_1.key.integer_id())
-
-    template_text = self.handler.render(
-        template_data, self.full_template_path)
-    parser = html5lib.HTMLParser(strict=True)
-    document = parser.parse(template_text)
-
-
-class FeatureEditStageTest(testing_config.CustomTestCase):
+class FeatureEditHandlerTest(testing_config.CustomTestCase):
 
   def setUp(self):
     self.feature_1 = core_models.Feature(
@@ -219,7 +95,7 @@ class FeatureEditStageTest(testing_config.CustomTestCase):
 
     self.request_path = ('/guide/stage/%d/%d' % (
         self.feature_1.key.integer_id(), self.stage))
-    self.handler = guide.FeatureEditStage()
+    self.handler = guide.FeatureEditHandler()
 
   def tearDown(self):
     self.feature_1.key.delete()
@@ -256,38 +132,6 @@ class FeatureEditStageTest(testing_config.CustomTestCase):
       self.assertTrue(self.handler.touched('feature_type'))
       # intent_state is a select, but it was not present in this POST.
       self.assertFalse(self.handler.touched('select'))
-
-  def test_get__anon(self):
-    """Anon cannot edit features, gets a redirect to viewing page."""
-    testing_config.sign_out()
-    with test_app.test_request_context(self.request_path):
-      actual_response = self.handler.get_template_data(
-          self.feature_1.key.integer_id(), self.stage)
-    self.assertEqual('302 FOUND', actual_response.status)
-
-  def test_get__non_allowed(self):
-    """Non-allowed cannot edit features, gets a 403."""
-    testing_config.sign_in('user1@example.com', 1234567890)
-    with test_app.test_request_context(self.request_path):
-      with self.assertRaises(werkzeug.exceptions.Forbidden):
-        self.handler.get_template_data(
-            self.feature_1.key.integer_id(), self.stage)
-
-  def test_get__not_found(self):
-    """Allowed users get a 404 if there is no such feature."""
-    testing_config.sign_in('user1@google.com', 1234567890)
-    with test_app.test_request_context(self.request_path):
-      with self.assertRaises(werkzeug.exceptions.NotFound):
-        self.handler.get_template_data(999, self.stage)
-
-  def test_get__normal(self):
-    """Allowed users render a page with a django form."""
-    testing_config.sign_in('user1@google.com', 1234567890)
-
-    with test_app.test_request_context(self.request_path):
-      template_data = self.handler.get_template_data(
-          self.feature_1.key.integer_id(), self.stage)
-    self.assertTrue('feature_id' in template_data)
 
   def test_post__anon(self):
     """Anon cannot edit features, gets a 403."""
@@ -329,96 +173,3 @@ class FeatureEditStageTest(testing_config.CustomTestCase):
     self.assertEqual('Revised feature name', revised_feature.name)
     self.assertEqual('Revised feature summary', revised_feature.summary)
     self.assertEqual(84, revised_feature.shipped_milestone)
-
-
-class FeatureEditStageTemplateTest(TestWithFeature):
-
-  HANDLER_CLASS = guide.FeatureEditStage
-
-  def setUp(self):
-    super(FeatureEditStageTemplateTest, self).setUp()
-    self.feature_1 = core_models.Feature(
-        name='feature one', summary='sum', owner=['user1@google.com'],
-        category=1, visibility=1, standardization=1,
-        web_dev_views=core_enums.DEV_NO_SIGNALS, impl_status_chrome=1)
-    self.feature_1.put()
-    self.stage = core_enums.INTENT_INCUBATE  # Shows first form
-    testing_config.sign_in('user1@google.com', 1234567890)
-
-    with test_app.test_request_context(self.request_path):
-      self.template_data = self.handler.get_template_data(
-        self.feature_1.key.integer_id(), self.stage)
-
-      self.template_data.update(self.handler.get_common_data())
-      self.template_data['nonce'] = 'fake nonce'
-      template_path = self.handler.get_template_path(self.template_data)
-      self.full_template_path = os.path.join(template_path)
-
-  def test_html_rendering(self):
-    """We can render the template with valid html."""
-    template_text = self.handler.render(
-        self.template_data, self.full_template_path)
-    parser = html5lib.HTMLParser(strict=True)
-    document = parser.parse(template_text)
-
-
-
-class FeatureEditAllFieldsTemplateTest(TestWithFeature):
-
-  HANDLER_CLASS = guide.FeatureEditAllFields
-
-  def setUp(self):
-    super(FeatureEditAllFieldsTemplateTest, self).setUp()
-    self.feature_1 = core_models.Feature(
-        name='feature one', summary='sum', owner=['user1@google.com'],
-        category=1, visibility=1, standardization=1,
-        web_dev_views=core_enums.DEV_NO_SIGNALS, impl_status_chrome=1)
-    self.feature_1.put()
-    self.stage = core_enums.INTENT_INCUBATE  # Shows first form
-    testing_config.sign_in('user1@google.com', 1234567890)
-
-    with test_app.test_request_context(self.request_path):
-      self.template_data = self.handler.get_template_data(
-        self.feature_1.key.integer_id())
-
-      self.template_data.update(self.handler.get_common_data())
-      self.template_data['nonce'] = 'fake nonce'
-      template_path = self.handler.get_template_path(self.template_data)
-      self.full_template_path = os.path.join(template_path)
-
-  def test_html_rendering(self):
-    """We can render the template with valid html."""
-    template_text = self.handler.render(
-        self.template_data, self.full_template_path)
-    parser = html5lib.HTMLParser(strict=True)
-    document = parser.parse(template_text)
-
-class FeatureVerifyAccuracyTemplateTest(TestWithFeature):
-
-  HANDLER_CLASS = guide.FeatureVerifyAccuracy
-
-  def setUp(self):
-    super(FeatureVerifyAccuracyTemplateTest, self).setUp()
-    self.feature_1 = core_models.Feature(
-        name='feature one', summary='sum', owner=['user1@google.com'],
-        category=1, visibility=1, standardization=1,
-        web_dev_views=core_enums.DEV_NO_SIGNALS, impl_status_chrome=1)
-    self.feature_1.put()
-    self.stage = core_enums.INTENT_INCUBATE  # Shows first form
-    testing_config.sign_in('user1@google.com', 1234567890)
-
-    with test_app.test_request_context(self.request_path):
-      self.template_data = self.handler.get_template_data(
-        self.feature_1.key.integer_id())
-
-      self.template_data.update(self.handler.get_common_data())
-      self.template_data['nonce'] = 'fake nonce'
-      template_path = self.handler.get_template_path(self.template_data)
-      self.full_template_path = os.path.join(template_path)
-
-  def test_html_rendering(self):
-    """We can render the template with valid html."""
-    template_text = self.handler.render(
-        self.template_data, self.full_template_path)
-    parser = html5lib.HTMLParser(strict=True)
-    document = parser.parse(template_text)

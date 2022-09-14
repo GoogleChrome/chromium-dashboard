@@ -28,15 +28,7 @@ from internals import processes
 import settings
 
 
-class FeatureNew(basehandlers.FlaskHandler):
-
-  TEMPLATE_PATH = 'guide/new.html'
-
-  @permissions.require_create_feature
-  def get_template_data(self):
-    user = self.get_current_user()
-    template_data = {'user_email': user.email()}
-    return template_data
+class FeatureCreateHandler(basehandlers.FlaskHandler):
 
   @permissions.require_create_feature
   def process_post_data(self):
@@ -79,24 +71,7 @@ class FeatureNew(basehandlers.FlaskHandler):
     return self.redirect(redirect_url)
 
 
-class ProcessOverview(basehandlers.FlaskHandler):
-
-  TEMPLATE_PATH = 'guide/edit.html'
-
-  def get_template_data(self, feature_id):
-    # Validate the user has edit permissions and redirect if needed.
-    redirect_resp = permissions.validate_feature_edit_permission(
-        self, feature_id)
-    if redirect_resp:
-      return redirect_resp
-
-    template_data = {'feature_id': feature_id}
-    return template_data
-
-
-class FeatureEditStage(basehandlers.FlaskHandler):
-
-  TEMPLATE_PATH = 'guide/stage.html'
+class FeatureEditHandler(basehandlers.FlaskHandler):
 
   def touched(self, param_name):
     """Return True if the user edited the specified field."""
@@ -131,34 +106,6 @@ class FeatureEditStage(basehandlers.FlaskHandler):
     # See TODO at top of this method.
     return param_name in self.form
 
-  def get_blink_component_from_bug(self, blink_components, bug_url):
-    # TODO(jrobbins): Use monorail API instead of scrapping.
-    return []
-
-  def get_feature_and_process(self, feature_id):
-    """Look up the feature that the user wants to edit, and its process."""
-    f = core_models.Feature.get_by_id(feature_id)
-    if f is None:
-      self.abort(404, msg='Feature not found')
-
-    feature_process = processes.ALL_PROCESSES.get(
-        f.feature_type, processes.BLINK_LAUNCH_PROCESS)
-
-    return f, feature_process
-
-  def get_template_data(self, feature_id, stage_id):
-    # Validate the user has edit permissions and redirect if needed.
-    redirect_resp = permissions.validate_feature_edit_permission(
-        self, feature_id)
-    if redirect_resp:
-      return redirect_resp
-
-    template_data = {
-      'stage_id': stage_id,
-      'feature_id': feature_id,
-    }
-    return template_data
-
   def process_post_data(self, feature_id, stage_id=0):
     # Validate the user has edit permissions and redirect if needed.
     redirect_resp = permissions.validate_feature_edit_permission(
@@ -167,6 +114,7 @@ class FeatureEditStage(basehandlers.FlaskHandler):
       return redirect_resp
 
     if feature_id:
+      # Load feature directly from NDB so as to never get a stale cached copy.
       feature = core_models.Feature.get_by_id(feature_id)
       if feature is None:
         self.abort(404, msg='Feature not found')
@@ -452,32 +400,3 @@ class FeatureEditStage(basehandlers.FlaskHandler):
 
     redirect_url = '/guide/edit/' + str(key.integer_id())
     return self.redirect(redirect_url)
-
-
-class FeatureEditAllFields(FeatureEditStage):
-  """Flat form page that lists all fields in seprate sections."""
-
-  TEMPLATE_PATH = 'guide/editall.html'
-
-  def get_template_data(self, feature_id):
-    # Validate the user has edit permissions and redirect if needed.
-    redirect_resp = permissions.validate_feature_edit_permission(
-        self, feature_id)
-    if redirect_resp:
-      return redirect_resp
-
-    template_data = {'feature_id': feature_id}
-    return template_data
-
-class FeatureVerifyAccuracy(FeatureEditStage):
-  TEMPLATE_PATH = 'guide/verify_accuracy.html'
-
-  def get_template_data(self, feature_id):
-    # Validate the user has edit permissions and redirect if needed.
-    redirect_resp = permissions.validate_feature_edit_permission(
-        self, feature_id)
-    if redirect_resp:
-      return redirect_resp
-
-    template_data = {'feature_id': feature_id}
-    return template_data

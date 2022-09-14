@@ -6,7 +6,7 @@ import '../js-src/cs-client';
 import sinon from 'sinon';
 
 describe('chromedash-settings-page', () => {
-  /* window.csClient and <chromedash-toast> are initialized at _base.html
+  /* window.csClient and <chromedash-toast> are initialized at spa.html
    * which are not available here, so we initialize them before each test.
    * We also stub out the API calls here so that they return test data. */
   beforeEach(async () => {

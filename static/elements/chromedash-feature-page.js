@@ -90,6 +90,7 @@ export class ChromedashFeaturePage extends LitElement {
       process: {type: Object},
       dismissedCues: {type: Array},
       contextLink: {type: String},
+      appTitle: {type: String},
       starred: {type: Boolean},
       loading: {attribute: false},
     };
@@ -103,6 +104,7 @@ export class ChromedashFeaturePage extends LitElement {
     this.process = {};
     this.dismissedCues = [];
     this.contextLink = '';
+    this.appTitle = '';
     this.starred = false;
     this.loading = true;
   }
@@ -115,13 +117,11 @@ export class ChromedashFeaturePage extends LitElement {
   fetchData() {
     this.loading = true;
     Promise.all([
-      window.csClient.getPermissions(),
       window.csClient.getFeature(this.featureId),
       window.csClient.getFeatureProcess(this.featureId),
       window.csClient.getDismissedCues(),
       window.csClient.getStars(),
-    ]).then(([user, feature, process, dismissedCues, starredFeatures]) => {
-      this.user = user;
+    ]).then(([feature, process, dismissedCues, starredFeatures]) => {
       this.feature = feature;
       this.process = process;
       this.dismissedCues = dismissedCues;
@@ -129,14 +129,18 @@ export class ChromedashFeaturePage extends LitElement {
       if (starredFeatures.includes(this.featureId)) {
         this.starred = true;
       }
+      if (this.feature.name) {
+        document.title = `${this.feature.name} - ${this.appTitle}`;
+      }
       this.loading = false;
-
-      // TODO(kevinshen56714): Remove this once SPA index page is set up.
-      // Has to include this for now to remove the spinner at _base.html.
-      document.body.classList.remove('loading');
     }).catch(() => {
       showToastMessage('Some errors occurred. Please refresh the page or try again later.');
     });
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    document.title = this.appTitle;
   }
 
   handleStarClick(e) {

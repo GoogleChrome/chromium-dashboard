@@ -22,6 +22,7 @@ export class ChromedashGuideEditallPage extends LitElement {
       featureId: {type: Number},
       feature: {type: Object},
       loading: {type: Boolean},
+      appTitle: {type: String},
     };
   }
 
@@ -30,6 +31,7 @@ export class ChromedashGuideEditallPage extends LitElement {
     this.featureId = 0;
     this.feature = {};
     this.loading = true;
+    this.appTitle = '';
   }
 
   connectedCallback() {
@@ -41,14 +43,18 @@ export class ChromedashGuideEditallPage extends LitElement {
     this.loading = true;
     window.csClient.getFeature(this.featureId).then((feature) => {
       this.feature = feature;
+      if (this.feature.name) {
+        document.title = `${this.feature.name} - ${this.appTitle}`;
+      }
       this.loading = false;
-
-      // TODO(kevinshen56714): Remove this once SPA index page is set up.
-      // Has to include this for now to remove the spinner at _base.html.
-      document.body.classList.remove('loading');
     }).catch(() => {
       showToastMessage('Some errors occurred. Please refresh the page or try again later.');
     });
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    document.title = this.appTitle;
   }
 
   /* Add the form's event listener after Shoelace event listeners are attached
