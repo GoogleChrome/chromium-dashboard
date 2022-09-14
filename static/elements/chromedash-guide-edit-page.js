@@ -73,6 +73,11 @@ export class ChromedashGuideEditPage extends LitElement {
       this.dismissedCues = dismissedCues;
       this.loading = false;
 
+      // re-check permission every time users visit the edit page
+      const canEdit = (this.user &&
+      (this.user.can_edit_all || this.user.editable_features.includes(this.featureId)));
+      if (!canEdit) location.reload();
+
       if (this.feature.name) {
         document.title = `${this.feature.name} - ${this.appTitle}`;
       }
