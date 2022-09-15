@@ -153,6 +153,8 @@ class ChromedashApp extends LitElement {
       this.currentPage = ctx.path;
     });
     page('/metrics/:type/:view', (ctx) => {
+      // if already on this page and only the hash changes, don't create a new element
+      if (this.currentPage == ctx.path && ctx.hash) return;
       this.pageComponent = document.createElement('chromedash-stack-rank-page');
       this.pageComponent.type = ctx.params.type;
       this.pageComponent.view = ctx.params.view;
