@@ -293,8 +293,7 @@ class NotifyInactiveUsersHandler(basehandlers.FlaskHandler):
       # If the user does not have a last visit, it is assumed the last visit
       # is roughly the date the last_visit field was added.
       last_visit = user.last_visit or self.DEFAULT_LAST_VISIT
-      # Notify if the user has recently fallen inactive in the last 30 days
-      # (we only notify at the 6 month mark, and take action at 9 months)
+      # Notify the user of inactivity if they haven't already been notified.
       if (last_visit < inactive_cutoff):
         inactive_users.append(user.email)
         user.notified_inactive = True
