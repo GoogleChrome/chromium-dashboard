@@ -256,6 +256,65 @@ class FeatureStar(ndb.Model):
     return user_prefs
 
 
+class NotifyInactiveUsersHandler(basehandlers.FlaskHandler):
+  DEFAULT_LAST_VISIT = datetime(2022, 8, 1)  # 2022-08-01
+  INACTIVE_WARN_DAYS = 180
+  EMAIL_TEMPLATE_PATH = 'inactive_user_email.html'
+
+  def get_template_data(self, now=None):
+    """Notify any users that have been inactive for 6 months."""
+    self.require_cron_header()
+    users_to_notify = self._determine_users_to_notify(now)
+    email_tasks = self._build_email_tasks(users_to_notify)
+    send_emails(email_tasks)
+
+    message = [f'{len(email_tasks)} users notified of inactivity.',
+        'Notified users:']
+    for task in email_tasks:
+      message.append(task['to'])
+    return {'message': '\n'.join(message)}
+
+  def _determine_users_to_notify(self, now=None):
+    # date var can be passed in for testing purposes.
+    if now is None:
+      now = datetime.now()
+
+    q = user_models.AppUser.query()
+    users = q.fetch()
+    inactive_users = []
+    inactive_cutoff = now - timedelta(days=self.INACTIVE_WARN_DAYS)
+
+    for user in users:
+      # Site admins and editors aren't warned due to inactivity.
+      # Also, users that have been previously notified are not notified again.
+      if user.is_admin or user.is_site_editor or user.notified_inactive:
+        continue
+
+      # If the user does not have a last visit, it is assumed the last visit
+      # is roughly the date the last_visit field was added.
+      last_visit = user.last_visit or self.DEFAULT_LAST_VISIT
+      # Notify the user of inactivity if they haven't already been notified.
+      if (last_visit < inactive_cutoff):
+        inactive_users.append(user.email)
+        user.notified_inactive = True
+        user.put()
+    return inactive_users
+
+  def _build_email_tasks(self, users_to_notify):
+    email_tasks = []
+    for email in users_to_notify:
+      body_data = {'site_url': settings.SITE_URL}
+      html = render_to_string(self.EMAIL_TEMPLATE_PATH, body_data)
+      subject = f'Notice of WebStatus user inactivity for {email}'
+      email_tasks.append({
+        'to': email,
+        'subject': subject,
+        'reply_to': None,
+        'html': html
+      })
+    return email_tasks
+
+
 class FeatureAccuracyHandler(basehandlers.FlaskHandler):
   JSONIFY = True
 

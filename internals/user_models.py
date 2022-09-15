@@ -98,6 +98,7 @@ class AppUser(ndb.Model):
   created = ndb.DateTimeProperty(auto_now_add=True)
   updated = ndb.DateTimeProperty(auto_now=True)
   last_visit = ndb.DateTimeProperty()
+  notified_inactive = ndb.BooleanProperty()
 
   def put(self, **kwargs):
     """when we update an AppUser, also delete in rediscache."""

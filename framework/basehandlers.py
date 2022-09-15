@@ -210,6 +210,10 @@ class APIHandler(BaseHandler):
     if not app_user:
       return False
     app_user.last_visit = datetime.now()
+    # Reset the flag that states determines if the user has been notified
+    # of inactivity if it has been set.
+    if app_user.notified_inactive is not None:
+      app_user.notified_inactive = False
     app_user.put()
     return True
 

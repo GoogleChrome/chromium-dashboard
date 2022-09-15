@@ -17,6 +17,12 @@ cron:
 - description: Send reminders to verify the accuracy of feature data.
   url: /cron/send_accuracy_notifications
   schedule: every monday 09:00
+- description: Notify any users that have been inactive for 6 months.
+  url: /cron/warn_inactive_users
+  schedule: 1st monday of month 9:00
+- description: Removes any users that have been inactive for 9 months.
+  url: /cron/remove_inactive_users
+  schedule: 1st monday of month 9:00
 - description: Copy over comment entities to new activity entities
   url: /cron/schema_migration_comment_activity
   schedule: 1 of jan 00:00
