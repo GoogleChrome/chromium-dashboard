@@ -120,7 +120,7 @@ export const ALL_FIELDS = {
     </p>
 
     <p>
-    Note: This text communicates with more than just the rest of Chromium development. It's the part most visible to external readers and is used in the beta release announcement, enterprise release notes, and other commuinications.
+    Note: This text communicates with more than just the rest of Chromium development. It's the part most visible to external readers and is used in the beta release announcement, enterprise release notes, and other communications.
     </p>
 
     <ul>
