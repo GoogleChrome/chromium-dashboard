@@ -5,8 +5,8 @@ import {
 } from './form-field-enums';
 
 
-const COMMA_SEPARATED_FIELDS = ['owner', 'editors', 'spec_mentors',
-  'search_tags', 'devrel', 'i2e_lgtms', 'i2s_lgtms'];
+const COMMA_SEPARATED_FIELDS = ['owner', 'editors', 'cc_recipients',
+  'spec_mentors', 'search_tags', 'devrel', 'i2e_lgtms', 'i2s_lgtms'];
 
 const LINE_SEPARATED_FIELDS = ['explainer_links', 'doc_links', 'sample_links'];
 
@@ -87,13 +87,13 @@ export function formatFeatureForEdit(feature) {
 
 export const NEW_FEATURE_FORM_FIELDS = [
   'name', 'summary', 'unlisted', 'owner',
-  'editors', 'blink_components', 'category',
+  'editors', 'cc_recipients', 'blink_components', 'category',
 ];
 // Note: feature_type is done with custom HTML in chromedash-guide-new-page
 
 export const METADATA_FORM_FIELDS = [
   'name', 'summary', 'unlisted', 'owner',
-  'editors', 'category',
+  'editors', 'cc_recipients', 'category',
   'feature_type', 'intent_stage',
   'search_tags',
   // Implemention
@@ -103,7 +103,7 @@ export const METADATA_FORM_FIELDS = [
 ];
 
 export const VERIFY_ACCURACY_FORM_FIELDS = [
-  'summary', 'owner', 'editors', 'impl_status_chrome', 'intent_stage',
+  'summary', 'owner', 'editors', 'cc_recipients', 'impl_status_chrome', 'intent_stage',
   'dt_milestone_android_start', 'dt_milestone_desktop_start',
   'dt_milestone_ios_start', 'ot_milestone_android_start',
   'ot_milestone_android_end', 'ot_milestone_desktop_start',
@@ -116,7 +116,7 @@ export const VERIFY_ACCURACY_FORM_FIELDS = [
 const FLAT_METADATA_FIELDS = [
   // Standardizaton
   'name', 'summary', 'unlisted', 'owner',
-  'editors', 'category',
+  'editors', 'cc_recipients', 'category',
   'feature_type', 'intent_stage',
   'search_tags',
   // Implementtion
@@ -292,9 +292,9 @@ const MOST_PREPARETOSHIP = [
 const ANY_SHIP = ['launch_bug_url', 'finch_url', 'comments'];
 
 const EXISTING_PROTOTYPE = [
-  'owner', 'editors', 'blink_components', 'motivation', 'explainer_links',
-  'spec_link', 'standard_maturity', 'api_spec', 'bug_url', 'launch_bug_url',
-  'intent_to_implement_url', 'comments',
+  'owner', 'editors', 'cc_recipients', 'blink_components', 'motivation',
+  'explainer_links', 'spec_link', 'standard_maturity', 'api_spec', 'bug_url',
+  'launch_bug_url', 'intent_to_implement_url', 'comments',
 ];
 
 const EXISTING_ORIGINTRIAL = [

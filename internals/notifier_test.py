@@ -39,6 +39,7 @@ class EmailFormattingTest(testing_config.CustomTestCase):
         name='feature one', summary='sum', owner=['feature_owner@example.com'],
         ot_milestone_desktop_start=100,
         editors=['feature_editor@example.com', 'owner_1@example.com'],
+        cc_recipients=['cc@example.com'],
         category=1, visibility=1, standardization=1, web_dev_views=1,
         impl_status_chrome=1, created_by=ndb.User(
             email='creator1@gmail.com', _auth_domain='gmail.com'),
@@ -220,9 +221,9 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     mock_f_e_b.return_value = 'mock body html'
     actual_tasks = notifier.make_email_tasks(
         self.feature_1, is_update=False, changes=[])
-    self.assertEqual(4, len(actual_tasks))
-    (feature_editor_task, feature_owner_task, component_owner_task,
-     watcher_task) = actual_tasks
+    self.assertEqual(5, len(actual_tasks))
+    (feature_cc_task, feature_editor_task, feature_owner_task,
+     component_owner_task, watcher_task) = actual_tasks
 
     # Notification to feature owner.
     self.assertEqual('feature_owner@example.com', feature_owner_task['to'])
@@ -237,6 +238,13 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     self.assertIn('<li>You are listed as an editor of this feature</li>',
       feature_editor_task['html'])
     self.assertEqual('feature_editor@example.com', feature_editor_task['to'])
+
+    # Notification to user carbon copied to feature changes.
+    self.assertEqual('new feature: feature one', feature_cc_task['subject'])
+    self.assertIn('mock body html', feature_cc_task['html'])
+    self.assertIn('<li>You are listed as a contatct to be carbon copied on all feature change notifications</li>',
+      feature_cc_task['html'])
+    self.assertEqual('cc@example.com', feature_cc_task['to'])
 
     # Notification to component owner.
     self.assertEqual('new feature: feature one', component_owner_task['subject'])
@@ -263,9 +271,9 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     mock_f_e_b.return_value = 'mock body html'
     actual_tasks = notifier.make_email_tasks(
         self.feature_1, True, self.changes)
-    self.assertEqual(4, len(actual_tasks))
-    (feature_editor_task, feature_owner_task, component_owner_task,
-     watcher_task) = actual_tasks
+    self.assertEqual(5, len(actual_tasks))
+    (feature_cc_task, feature_editor_task, feature_owner_task,
+     component_owner_task, watcher_task) = actual_tasks
 
     # Notification to feature owner.
     self.assertEqual('feature_owner@example.com', feature_owner_task['to'])
@@ -282,6 +290,14 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     self.assertIn('<li>You are listed as an editor of this feature</li>',
       feature_editor_task['html'])
     self.assertEqual('feature_editor@example.com', feature_editor_task['to'])
+
+    # Notification to user carbon copied to feature changes.
+    self.assertEqual('updated feature: feature one',
+      feature_cc_task['subject'])
+    self.assertIn('mock body html', feature_cc_task['html'])
+    self.assertIn('<li>You are listed as a contatct to be carbon copied on all feature change notifications</li>',
+      feature_cc_task['html'])
+    self.assertEqual('cc@example.com', feature_cc_task['to'])
 
     # Notification to component owner.
     self.assertEqual('updated feature: feature one',
@@ -311,9 +327,9 @@ class EmailFormattingTest(testing_config.CustomTestCase):
         'starrer_1@example.com', self.feature_1.key.integer_id())
     actual_tasks = notifier.make_email_tasks(
         self.feature_1, True, self.changes)
-    self.assertEqual(5, len(actual_tasks))
-    (feature_editor_task, feature_owner_task, component_owner_task,
-     starrer_task, watcher_task) = actual_tasks
+    self.assertEqual(6, len(actual_tasks))
+    (feature_cc_task, feature_editor_task, feature_owner_task,
+     component_owner_task, starrer_task, watcher_task) = actual_tasks
 
     # Notification to feature owner.
     self.assertEqual('feature_owner@example.com', feature_owner_task['to'])
@@ -330,6 +346,14 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     self.assertIn('<li>You are listed as an editor of this feature</li>',
       feature_editor_task['html'])
     self.assertEqual('feature_editor@example.com', feature_editor_task['to'])
+
+    # Notification to user carbon copied to feature changes.
+    self.assertEqual('updated feature: feature one',
+      feature_cc_task['subject'])
+    self.assertIn('mock body html', feature_cc_task['html'])
+    self.assertIn('<li>You are listed as a contatct to be carbon copied on all feature change notifications</li>',
+      feature_cc_task['html'])
+    self.assertEqual('cc@example.com', feature_cc_task['to'])
 
     # Notification to component owner.
     self.assertEqual('updated feature: feature one',
