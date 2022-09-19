@@ -42,15 +42,16 @@ export class ChromedashRoadmapPage extends LitElement {
     this.cardWidth = 0;
     this.numColumns = 0;
     this.viewOffset = 0;
+    this.boundHandleResize = this.handleResize.bind(this);
   }
 
   connectedCallback() {
     super.connectedCallback();
-    window.addEventListener('resize', () => this.handleResize());
+    window.addEventListener('resize', this.boundHandleResize);
   }
 
   disconnectedCallback() {
-    window.removeEventListener('resize', () => this.handleResize());
+    window.removeEventListener('resize', this.boundHandleResize);
     super.disconnectedCallback();
   }
 
