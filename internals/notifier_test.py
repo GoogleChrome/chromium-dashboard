@@ -540,6 +540,17 @@ class FeatureAccuracyHandlerTest(testing_config.CustomTestCase):
     expected = {'message': '2 email(s) sent or logged.'}
     self.assertEqual(result, expected)
 
+  def test_build_email_tasks(self):
+    accuracy_notifier = notifier.FeatureAccuracyHandler()
+    actual = accuracy_notifier._build_email_tasks([(self.feature_1, 100)])
+    self.assertEqual(1, len(actual))
+    task = actual[0]
+    self.assertEqual('feature_owner@example.com', task['to'])
+    self.assertEqual('[Action requested] Update feature one', task['subject'])
+    self.assertEqual(None, task['reply_to'])
+    self.assertIn('/guide/verify_accuracy/%d' % self.feature_1.key.integer_id(),
+                  task['html'])
+
 
 class NotifyInactiveUsersHandlerTest(testing_config.CustomTestCase):
 
