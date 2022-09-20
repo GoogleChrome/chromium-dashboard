@@ -257,6 +257,7 @@ class FeatureStar(ndb.Model):
 
 
 class NotifyInactiveUsersHandler(basehandlers.FlaskHandler):
+  JSONIFY = True
   DEFAULT_LAST_VISIT = datetime(2022, 8, 1)  # 2022-08-01
   INACTIVE_WARN_DAYS = 180
   EMAIL_TEMPLATE_PATH = 'inactive_user_email.html'
