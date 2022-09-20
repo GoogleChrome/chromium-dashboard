@@ -116,7 +116,7 @@ class ChromedashApp extends LitElement {
       this.contextLink = ctx.path;
       this.currentPage = ctx.path;
     });
-    page('/feature/:featureId', (ctx) => {
+    page('/feature/:featureId(\\d+)', (ctx) => {
       this.pageComponent = document.createElement('chromedash-feature-page');
       this.pageComponent.featureId = parseInt(ctx.params.featureId);
       this.pageComponent.user = this.user;
@@ -127,25 +127,25 @@ class ChromedashApp extends LitElement {
       this.pageComponent = document.createElement('chromedash-guide-new-page');
       this.pageComponent.userEmail = this.user.email;
     });
-    page('/guide/edit/:featureId', (ctx) => {
+    page('/guide/edit/:featureId(\\d+)', (ctx) => {
       this.pageComponent = document.createElement('chromedash-guide-edit-page');
-      this.pageComponent.featureId = ctx.params.featureId;
+      this.pageComponent.featureId = parseInt(ctx.params.featureId);
       this.pageComponent.appTitle = this.appTitle;
     });
-    page('/guide/editall/:featureId', (ctx) => {
+    page('/guide/editall/:featureId(\\d+)', (ctx) => {
       this.pageComponent = document.createElement('chromedash-guide-editall-page');
-      this.pageComponent.featureId = ctx.params.featureId;
+      this.pageComponent.featureId = parseInt(ctx.params.featureId);
       this.pageComponent.appTitle = this.appTitle;
     });
-    page('/guide/verify_accuracy/:featureId', (ctx) => {
+    page('/guide/verify_accuracy/:featureId(\\d+)', (ctx) => {
       this.pageComponent = document.createElement('chromedash-guide-verify-accuracy-page');
-      this.pageComponent.featureId = ctx.params.featureId;
+      this.pageComponent.featureId = parseInt(ctx.params.featureId);
       this.pageComponent.appTitle = this.appTitle;
     });
-    page('/guide/stage/:featureId/:stageId', (ctx) => {
+    page('/guide/stage/:featureId(\\d+)/:stageId(\\d+)', (ctx) => {
       this.pageComponent = document.createElement('chromedash-guide-stage-page');
-      this.pageComponent.featureId = ctx.params.featureId;
-      this.pageComponent.stageId = ctx.params.stageId;
+      this.pageComponent.featureId = parseInt(ctx.params.featureId);
+      this.pageComponent.stageId = parseInt(ctx.params.stageId);
       this.pageComponent.appTitle = this.appTitle;
     });
     page('/settings', (ctx) => {
