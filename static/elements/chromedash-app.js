@@ -129,23 +129,23 @@ class ChromedashApp extends LitElement {
     });
     page('/guide/edit/:featureId', (ctx) => {
       this.pageComponent = document.createElement('chromedash-guide-edit-page');
-      this.pageComponent.featureId = ctx.params.featureId;
+      this.pageComponent.featureId = parseInt(ctx.params.featureId);
       this.pageComponent.appTitle = this.appTitle;
     });
     page('/guide/editall/:featureId', (ctx) => {
       this.pageComponent = document.createElement('chromedash-guide-editall-page');
-      this.pageComponent.featureId = ctx.params.featureId;
+      this.pageComponent.featureId = parseInt(ctx.params.featureId);
       this.pageComponent.appTitle = this.appTitle;
     });
     page('/guide/verify_accuracy/:featureId', (ctx) => {
       this.pageComponent = document.createElement('chromedash-guide-verify-accuracy-page');
-      this.pageComponent.featureId = ctx.params.featureId;
+      this.pageComponent.featureId = parseInt(ctx.params.featureId);
       this.pageComponent.appTitle = this.appTitle;
     });
     page('/guide/stage/:featureId/:stageId', (ctx) => {
       this.pageComponent = document.createElement('chromedash-guide-stage-page');
-      this.pageComponent.featureId = ctx.params.featureId;
-      this.pageComponent.stageId = ctx.params.stageId;
+      this.pageComponent.featureId = parseInt(ctx.params.featureId);
+      this.pageComponent.stageId = parseInt(ctx.params.stageId);
       this.pageComponent.appTitle = this.appTitle;
     });
     page('/settings', (ctx) => {
