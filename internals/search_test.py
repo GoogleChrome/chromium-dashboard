@@ -174,13 +174,13 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
     self.assertEqual(actual[0], self.feature_1.key.integer_id())
 
   def test_process_access_me_query__cc_recipients_none(self):
-    """We can return a list of features the user is cc'd on."""
+    """We can return a list of features the user is CC'd on."""
     testing_config.sign_in('visitor@example.com', 111)
     actual = search.process_access_me_query('cc_recipients')
     self.assertEqual(actual, [])
 
   def test_process_access_me_query__cc_recipients_some(self):
-    """We can return a list of features the user is cc'd on."""
+    """We can return a list of features the user is CC'd on."""
     testing_config.sign_in('cc@example.com', 111)
     actual = search.process_access_me_query('cc_recipients')
     self.assertEqual(len(actual), 1)

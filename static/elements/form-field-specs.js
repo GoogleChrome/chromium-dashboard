@@ -167,8 +167,8 @@ export const ALL_FIELDS = {
     label: 'CC',
     help_text: html`
         Comma separated list of full email addresses. These users will be
-        carbon copied on any notification whenever a field of the feature is
-        edited.`,
+        notified of any changes to the feature, but do not gain permission to
+        edit.`,
   },
 
   'unlisted': {

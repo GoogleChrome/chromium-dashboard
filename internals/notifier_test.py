@@ -239,10 +239,10 @@ class EmailFormattingTest(testing_config.CustomTestCase):
       feature_editor_task['html'])
     self.assertEqual('feature_editor@example.com', feature_editor_task['to'])
 
-    # Notification to user carbon copied to feature changes.
+    # Notification to user CC'd to feature changes.
     self.assertEqual('new feature: feature one', feature_cc_task['subject'])
     self.assertIn('mock body html', feature_cc_task['html'])
-    self.assertIn('<li>You are listed as a contatct to be carbon copied on all feature change notifications</li>',
+    self.assertIn('<li>You are CC\'d on this feature</li>',
       feature_cc_task['html'])
     self.assertEqual('cc@example.com', feature_cc_task['to'])
 
@@ -291,11 +291,11 @@ class EmailFormattingTest(testing_config.CustomTestCase):
       feature_editor_task['html'])
     self.assertEqual('feature_editor@example.com', feature_editor_task['to'])
 
-    # Notification to user carbon copied to feature changes.
+    # Notification to user CC'd on feature changes.
     self.assertEqual('updated feature: feature one',
       feature_cc_task['subject'])
     self.assertIn('mock body html', feature_cc_task['html'])
-    self.assertIn('<li>You are listed as a contatct to be carbon copied on all feature change notifications</li>',
+    self.assertIn('<li>You are CC\'d on this feature</li>',
       feature_cc_task['html'])
     self.assertEqual('cc@example.com', feature_cc_task['to'])
 
@@ -347,11 +347,11 @@ class EmailFormattingTest(testing_config.CustomTestCase):
       feature_editor_task['html'])
     self.assertEqual('feature_editor@example.com', feature_editor_task['to'])
 
-    # Notification to user carbon copied to feature changes.
+    # Notification to user CC'd on feature changes.
     self.assertEqual('updated feature: feature one',
       feature_cc_task['subject'])
     self.assertIn('mock body html', feature_cc_task['html'])
-    self.assertIn('<li>You are listed as a contatct to be carbon copied on all feature change notifications</li>',
+    self.assertIn('<li>You are CC\'d on this feature</li>',
       feature_cc_task['html'])
     self.assertEqual('cc@example.com', feature_cc_task['to'])
 

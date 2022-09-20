@@ -162,7 +162,7 @@ def make_email_tasks(feature, is_update=False, changes=[]):
   )
   accumulate_reasons(
     addr_reasons, feature.cc_recipients,
-    'You are listed as a contatct to be carbon copied on all feature change notifications'
+    'You are CC\'d on this feature'
   )
   accumulate_reasons(
       addr_reasons, feature_watchers,
