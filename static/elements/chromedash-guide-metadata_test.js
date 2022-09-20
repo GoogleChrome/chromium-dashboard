@@ -11,11 +11,11 @@ describe('chromedash-guide-metadata', () => {
     feature_type: 'fake feature type',
     intent_stage: 'fake intent stage',
     new_crbug_url: 'fake crbug link',
+    cc_recipients: ['fake chrome cc one', 'fake chrome cc two'],
     browsers: {
       chrome: {
         blink_components: ['Blink'],
         owners: ['fake chrome owner one', 'fake chrome owner two'],
-        cc_recipients: ['fake chrome cc one', 'fake chrome cc two'],
         status: {text: 'fake chrome status text'},
       },
       ff: {view: {text: 'fake ff view text'}},

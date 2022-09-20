@@ -133,9 +133,12 @@ export class ChromedashGuideMetadata extends LitElement {
             <tr>
               <th>CC</th>
               <td>
-                ${this.feature.browsers.chrome.cc_recipients.map((ccRecipient) => html`
+                ${this.feature.cc_recipients ?
+                  this.feature.cc_recipients.map((ccRecipient)=> html`
                   <a href="mailto:${ccRecipient}">${ccRecipient}</a>
-                `)}
+                  `): html`
+                  None
+                `}
               </td>
             </tr>
 
