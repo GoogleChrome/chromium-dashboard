@@ -13,13 +13,10 @@ body {
     #spinner {
       display: flex;
     }
-    chromedash-toast {
-      visibility: hidden;
-    }
   }
 }
 
-/* The following ones can be removed once switch to SPA 
+/* The following ones can be removed once switch to SPA
  * because these styles are included in <chromedash-app> */
 
 #spinner {
