@@ -155,6 +155,8 @@ def process_query_term(field_name, op_str, val_str):
     return process_access_me_query('editors')
   if query_term == 'can_edit:me':
     return process_access_me_query('can_edit')
+  if query_term == 'cc:me':
+    return process_access_me_query('cc_recipients')
 
   if val_str.startswith('"') and val_str.endswith('"'):
     val_str = val_str[1:-1]

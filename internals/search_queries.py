@@ -130,6 +130,7 @@ QUERIABLE_FIELDS = {
     'creator': core_models.Feature.creator,
     'browsers.chrome.owners': core_models.Feature.owner,
     'editors': core_models.Feature.editors,
+    'cc_recipients': core_models.Feature.cc_recipients,
     'intent_to_implement_url': core_models.Feature.intent_to_implement_url,
     'intent_to_ship_url': core_models.Feature.intent_to_ship_url,
     'ready_for_trial_url': core_models.Feature.ready_for_trial_url,

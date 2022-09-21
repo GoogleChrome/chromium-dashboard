@@ -160,6 +160,17 @@ export const ALL_FIELDS = {
         Comma separated list of full email addresses. These users will be allowed to edit this feature, but will not be listed as feature owners.`,
   },
 
+  'cc_recipients': {
+    type: 'input',
+    attrs: MULTI_EMAIL_FIELD_ATTRS,
+    required: false,
+    label: 'CC',
+    help_text: html`
+        Comma separated list of full email addresses. These users will be
+        notified of any changes to the feature, but do not gain permission to
+        edit.`,
+  },
+
   'unlisted': {
     type: 'checkbox',
     label: 'Unlisted',

@@ -161,6 +161,10 @@ def make_email_tasks(feature, is_update=False, changes=[]):
     'You are listed as an editor of this feature'
   )
   accumulate_reasons(
+    addr_reasons, feature.cc_recipients,
+    'You are CC\'d on this feature'
+  )
+  accumulate_reasons(
       addr_reasons, feature_watchers,
       'You are watching all feature changes')
 

@@ -31,6 +31,7 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
         standardization=1, web_dev_views=1, impl_status_chrome=3)
     self.feature_1.owner = ['owner@example.com']
     self.feature_1.editors = ['editor@example.com']
+    self.feature_1.cc_recipients = ['cc@example.com']
     self.feature_1.put()
     self.feature_2 = core_models.Feature(
         name='feature 2', summary='sum', category=2, visibility=1,
@@ -169,6 +170,19 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
     """We can return a list of features the user can edit."""
     testing_config.sign_in('editor@example.com', 111)
     actual = search.process_access_me_query('editors')
+    self.assertEqual(len(actual), 1)
+    self.assertEqual(actual[0], self.feature_1.key.integer_id())
+
+  def test_process_access_me_query__cc_recipients_none(self):
+    """We can return a list of features the user is CC'd on."""
+    testing_config.sign_in('visitor@example.com', 111)
+    actual = search.process_access_me_query('cc_recipients')
+    self.assertEqual(actual, [])
+
+  def test_process_access_me_query__cc_recipients_some(self):
+    """We can return a list of features the user is CC'd on."""
+    testing_config.sign_in('cc@example.com', 111)
+    actual = search.process_access_me_query('cc_recipients')
     self.assertEqual(len(actual), 1)
     self.assertEqual(actual[0], self.feature_1.key.integer_id())
 

@@ -34,6 +34,7 @@ class FeatureCreateHandler(basehandlers.FlaskHandler):
   def process_post_data(self):
     owners = self.split_emails('owner')
     editors = self.split_emails('editors')
+    cc_recipients = self.split_emails('cc_recipients')
 
     blink_components = (
         self.split_input('blink_components', delim=',') or
@@ -53,6 +54,7 @@ class FeatureCreateHandler(basehandlers.FlaskHandler):
         summary=self.form.get('summary'),
         owner=owners,
         editors=editors,
+        cc_recipients=cc_recipients,
         creator=signed_in_user.email(),
         accurate_as_of=datetime.now(),
         impl_status_chrome=core_enums.NO_ACTIVE_DEV,
@@ -266,6 +268,9 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
 
     if self.touched('editors'):
       feature.editors = self.split_emails('editors')
+
+    if self.touched('cc_recipients'):
+      feature.cc_recipients = self.split_emails('cc_recipients')
 
     if self.touched('doc_links'):
       feature.doc_links = self.parse_links('doc_links')

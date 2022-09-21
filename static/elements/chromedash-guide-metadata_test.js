@@ -11,6 +11,7 @@ describe('chromedash-guide-metadata', () => {
     feature_type: 'fake feature type',
     intent_stage: 'fake intent stage',
     new_crbug_url: 'fake crbug link',
+    cc_recipients: ['fake chrome cc one', 'fake chrome cc two'],
     browsers: {
       chrome: {
         blink_components: ['Blink'],
@@ -50,6 +51,9 @@ describe('chromedash-guide-metadata', () => {
     // feature owners are listed
     assert.include(metadataDiv.innerHTML, 'href="mailto:fake chrome owner one"');
     assert.include(metadataDiv.innerHTML, 'href="mailto:fake chrome owner two"');
+    // cc recipients are listed
+    assert.include(metadataDiv.innerHTML, 'href="mailto:fake chrome cc one"');
+    assert.include(metadataDiv.innerHTML, 'href="mailto:fake chrome cc two"');
     // feature category is listed
     assert.include(metadataDiv.innerHTML, 'fake category');
     // feature feature type is listed

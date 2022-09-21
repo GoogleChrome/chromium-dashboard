@@ -258,6 +258,7 @@ class Feature(DictModel):
       }
       d['tags'] = d.pop('search_tags', [])
       d['editors'] = d.pop('editors', [])
+      d['cc_recipients'] = d.pop('cc_recipients', [])
       d['creator'] = d.pop('creator', None)
       d['browsers'] = {
         'chrome': {
@@ -375,6 +376,7 @@ class Feature(DictModel):
     #d['id'] = self.key().id
     d['owner'] = ', '.join(self.owner)
     d['editors'] = ', '.join(self.editors)
+    d['cc_recipients'] = ', '.join(self.cc_recipients)
     d['explainer_links'] = '\r\n'.join(self.explainer_links)
     d['spec_mentors'] = ', '.join(self.spec_mentors)
     d['standard_maturity'] = self.standard_maturity or UNKNOWN_STD
@@ -923,6 +925,7 @@ class Feature(DictModel):
   comments = ndb.StringProperty()
   owner = ndb.StringProperty(repeated=True)
   editors = ndb.StringProperty(repeated=True)
+  cc_recipients = ndb.StringProperty(repeated=True)
   footprint = ndb.IntegerProperty()  # Deprecated
 
   # Tracability to intent discussion threads
