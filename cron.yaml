@@ -17,6 +17,9 @@ cron:
 - description: Send reminders to verify the accuracy of feature data.
   url: /cron/send_accuracy_notifications
   schedule: every monday 09:00
+- description: Send reminder to check summary before publication.
+  url: /cron/send_prepublication
+  schedule: every tuesday 09:00
 - description: Notify any users that have been inactive for 6 months.
   url: /cron/warn_inactive_users
   schedule: 1st monday of month 9:00
