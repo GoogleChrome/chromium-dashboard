@@ -266,9 +266,12 @@ class NotifyInactiveUsersHandler(basehandlers.FlaskHandler):
   INACTIVE_WARN_DAYS = 180
   EMAIL_TEMPLATE_PATH = 'inactive_user_email.html'
 
-  def get_template_data(self, now=None):
+  def get_template_data(self):
     """Notify any users that have been inactive for 6 months."""
     self.require_cron_header()
+    return self._handle_cron_task()
+
+  def _handle_cron_task(self, now=None):
     users_to_notify = self._determine_users_to_notify(now)
     email_tasks = self._build_email_tasks(users_to_notify)
     send_emails(email_tasks)

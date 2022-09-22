@@ -70,6 +70,6 @@ class RemoveInactiveUsersHandlerTest(testing_config.CustomTestCase):
 
   def test_remove_inactive_users(self):
     inactive_remover = RemoveInactiveUsersHandler()
-    result = inactive_remover.get_template_data(now=datetime(2023, 9, 1))
+    result = inactive_remover._handle_cron_task(now=datetime(2023, 9, 1))
     expected = 'Success\nRemoved users:\nreally_inactive_user@example.com'
     self.assertEqual(result, expected)

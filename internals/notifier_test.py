@@ -629,7 +629,7 @@ class NotifyInactiveUsersHandlerTest(testing_config.CustomTestCase):
 
   def test_determine_users_to_notify(self):
     inactive_notifier = notifier.NotifyInactiveUsersHandler()
-    result = inactive_notifier.get_template_data(now=datetime(2023, 9, 1))
+    result = inactive_notifier._handle_cron_task(now=datetime(2023, 9, 1))
     expected = ('1 users notified of inactivity.\n'
         'Notified users:\ninactive_user@example.com')
     self.assertEqual(result.get('message', None), expected)

@@ -22,9 +22,12 @@ class RemoveInactiveUsersHandler(FlaskHandler):
   DEFAULT_LAST_VISIT = datetime(2022, 8, 1)  # 2022-08-01
   INACTIVE_REMOVE_DAYS = 270
 
-  def get_template_data(self, now=None):
+  def get_template_data(self):
     """Removes any users that have been inactive for 9 months."""
     self.require_cron_header()
+    return self._handle_cron_task()
+  
+  def _handle_cron_task(self, now=None):
     if now is None:
       now = datetime.now()
 
