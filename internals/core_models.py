@@ -1238,8 +1238,8 @@ class Stage(ndb.Model):
 
   # Gate-related fields that need separate values for repeated stages.
   # copy from Feature.
-  experiment_goals = ndb.StringProperty()
-  experiment_risks = ndb.StringProperty()
-  experiment_extension_reason = ndb.StringProperty()
+  experiment_goals = ndb.TextProperty()
+  experiment_risks = ndb.TextProperty()
+  experiment_extension_reason = ndb.TextProperty()
   intent_thread_url = ndb.StringProperty()
   origin_trial_feedback_url = ndb.StringProperty()
