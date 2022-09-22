@@ -125,8 +125,23 @@ class PrepublicationHandlerTest(testing_config.CustomTestCase):
     self.handler = reminders.PrepublicationHandler()
 
   def test_prefilter_features__off_week(self):
-    mock_now = datetime(2022, 9, 1)
+    """No reminders sent because the next beta is far future or past."""
     features = ['mock feature']
+
+    mock_now = datetime(2022, 9, 1)  # Way before beta.
     actual = self.handler.prefilter_features(
         self.current_milestone_info, features, now=mock_now)
-    self.assertEqual(0, len(actual))
+    self.assertEqual([], actual)
+
+    mock_now = datetime(2022, 9, 18)  # After DevRel cut-off.
+    actual = self.handler.prefilter_features(
+        self.current_milestone_info, features, now=mock_now)
+    self.assertEqual([], actual)
+
+  def test_prefilter_features__on_week(self):
+    """Reminders are sent because the next beta is coming up."""
+    features = ['mock feature']
+    mock_now = datetime(2022, 9, 12)
+    actual = self.handler.prefilter_features(
+        self.current_milestone_info, features, now=mock_now)
+    self.assertEqual(['mock feature'], actual)
