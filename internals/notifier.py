@@ -18,13 +18,11 @@ __author__ = 'ericbidelman@chromium.org (Eric Bidelman)'
 from datetime import datetime, timedelta
 import collections
 import logging
-import json
 import os
 import urllib
 
 from framework import permissions
 from google.cloud import ndb
-import requests
 
 from django.template.loader import render_to_string
 from django.utils.html import conditional_escape as escape
@@ -317,95 +315,6 @@ class NotifyInactiveUsersHandler(basehandlers.FlaskHandler):
         'reply_to': None,
         'html': html
       })
-    return email_tasks
-
-
-class FeatureAccuracyHandler(basehandlers.FlaskHandler):
-  JSONIFY = True
-
-  CHROME_RELEASE_SCHEDULE_URL = (
-'https://chromiumdash.appspot.com/fetch_milestone_schedule')
-  ACCURACY_AS_OF_WEEKS = 4
-  MILESTONE_FIELDS = (
-    'dt_milestone_android_start',
-    'dt_milestone_desktop_start',
-    'dt_milestone_ios_start',
-    'dt_milestone_webview_start',
-    'ot_milestone_android_start',
-    'ot_milestone_desktop_start',
-    'ot_milestone_webview_start',
-    'shipped_android_milestone',
-    'shipped_ios_milestone',
-    'shipped_milestone',
-    'shipped_webview_milestone'
-  )
-  EMAIL_TEMPLATE_PATH = 'accuracy_notice_email.html'
-
-  def get_template_data(self):
-    """Sends notifications to users requesting feature updates for accuracy."""
-    self.require_cron_header()
-    features_to_notify = self._determine_features_to_notify()
-    email_tasks = self._build_email_tasks(features_to_notify)
-    send_emails(email_tasks)
-    return {'message': f'{len(email_tasks)} email(s) sent or logged.'}
-
-  def _determine_features_to_notify(self):
-    # 'current' milestone is the next stable milestone that hasn't landed.
-    # We send notifications to any feature planned for beta or stable launch
-    # in the next 8 weeks. Beta for (current + 2) starts in roughly 8 weeks.
-    # So we check if any features have launches in these 3 milestones
-    # (current, current + 1, and current + 2).
-    try:
-      resp = requests.get(f'{self.CHROME_RELEASE_SCHEDULE_URL}?mstone=current')
-    except requests.RequestException as e:
-      raise e
-    mstone_info = json.loads(resp.text)
-    mstone = int(mstone_info['mstones'][0]['mstone'])
-
-    features = core_models.Feature.query(
-        core_models.Feature.deleted == False).fetch(None)
-    features_to_notify = []
-    now = datetime.now()
-    accuracy_as_of_delta = timedelta(weeks=self.ACCURACY_AS_OF_WEEKS)
-    for feature in features:
-      # If the data has been recently verified as accurate, no need for email.
-      if (feature.accurate_as_of is not None and
-          feature.accurate_as_of + accuracy_as_of_delta < now):
-        continue
-
-      # Check each milestone field and see if it corresponds with
-      # the next 3 milestones. Use the closest milestone for the email.
-      closest_mstone = None
-      for field in self.MILESTONE_FIELDS:
-        launch_mstone = getattr(feature, field)
-        if (launch_mstone is not None and
-            launch_mstone >= mstone and launch_mstone <= mstone + 2):
-          if closest_mstone is None:
-            closest_mstone = launch_mstone
-          else:
-            closest_mstone = min(closest_mstone, launch_mstone)
-      if closest_mstone is not None:
-        features_to_notify.append((feature, closest_mstone))
-    return features_to_notify
-
-  def _build_email_tasks(self, features_to_notify):
-    email_tasks = []
-    for feature, mstone in features_to_notify:
-      body_data = {
-        'id': feature.key.integer_id(),
-        'feature': feature,
-        'site_url': settings.SITE_URL,
-        'milestone': mstone,
-      }
-      html = render_to_string(self.EMAIL_TEMPLATE_PATH, body_data)
-      subject = f'[Action requested] Update {feature.name}'
-      for owner in feature.owner:
-        email_tasks.append({
-          'to': owner,
-          'subject': subject,
-          'reply_to': None,
-          'html': html
-        })
     return email_tasks
 
 

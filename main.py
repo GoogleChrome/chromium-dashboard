@@ -38,6 +38,7 @@ from internals import data_backup
 from internals import inactive_users
 from internals import schema_migration
 from internals import deprecate_field
+from internals import reminders
 from pages import blink_handler
 from pages import featurelist
 from pages import guide
@@ -189,7 +190,8 @@ internals_routes = [
   ('/cron/histograms', fetchmetrics.HistogramsHandler),
   ('/cron/update_blink_components', fetchmetrics.BlinkComponentHandler),
   ('/cron/export_backup', data_backup.BackupExportHandler),
-  ('/cron/send_accuracy_notifications', notifier.FeatureAccuracyHandler),
+  ('/cron/send_accuracy_notifications', reminders.FeatureAccuracyHandler),
+  ('/cron/send_prepublication', reminders.PrepublicationHandler),
   ('/cron/warn_inactive_users', notifier.NotifyInactiveUsersHandler),
   ('/cron/remove_inactive_users', inactive_users.RemoveInactiveUsersHandler),
   ('/cron/schema_migration_comment_activity', schema_migration.MigrateCommentsToActivities),
