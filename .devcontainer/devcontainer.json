@@ -40,16 +40,21 @@
 			// Add the IDs of extensions you want installed when the container is created.
 			"extensions": [
 				"ms-python.python"
-				// "ms-python.vscode-pylance"
 			]
 		}
 	},
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
-	"forwardPorts": [15606],
+	"forwardPorts": [
+		// datastore emulator
+		15606,
+		// datastore emulator viewer
+		8888
+	],
 
 	// Use 'postCreateCommand' to run commands after the container is created.
 	// pip version https://github.com/microsoft/vscode-python/issues/18802
+	// Need to install pylint inside the virutalenv because the global one does not honor it.
 	"postCreateCommand": "python3.9 -m venv cs-env; . cs-env/bin/activate; python -m pip install pylint==2.13.4; npm run setup",
 
 	// Comment out to connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
