@@ -91,9 +91,7 @@ class AbstractReminderHandler(basehandlers.FlaskHandler):
     """Return [(feature, milestone)] for features with a milestone in range."""
     # 'current' milestone is the next stable milestone that hasn't landed.
     # We send notifications to any feature planned for beta or stable launch
-    # in the next N weeks. E.g., beta for (current + 2) starts in roughly 8
-    # weeks.  So we check if any features have launches in these 3 milestones
-    # (current, current + 1, and current + 2).
+    # in the next 4 * FUTURE_MILESTONES_TO_CONSIDER weeks.
     min_mstone = int(current_milestone_info['mstone'])
     max_mstone = min_mstone + self.FUTURE_MILESTONES_TO_CONSIDER
 
