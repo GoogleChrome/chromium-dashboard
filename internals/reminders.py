@@ -67,9 +67,9 @@ def build_email_tasks(
 class AbstractReminderHandler(basehandlers.FlaskHandler):
   JSONIFY = True
   SUBJECT_FORMAT = '%s'
-  EMAIL_TEMPLATE_PATH = None  # Subsclasses must override
+  EMAIL_TEMPLATE_PATH = None  # Subclasses must override
   FUTURE_MILESTONES_TO_CONSIDER = 0
-  MILESTONE_FIELDS = None  # Subsclasses must override
+  MILESTONE_FIELDS = None  # Subclasses must override
 
   def get_template_data(self):
     """Sends notifications to users requesting feature updates for accuracy."""
