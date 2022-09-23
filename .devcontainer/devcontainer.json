@@ -1,0 +1,57 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the README at:
+// https://github.com/microsoft/vscode-dev-containers/tree/v0.245.2/containers/python-3
+{
+	"name": "Chromium Dashboard",
+	"dockerComposeFile": "docker-compose.yml",
+	"service": "app",
+	"workspaceFolder": "/workspace",
+
+	// Configure tool-specific properties.
+	"customizations": {
+		// Configure properties specific to VS Code.
+		"vscode": {
+			// Set *default* container specific settings.json values on container create.
+			"settings": { 
+				"python.defaultInterpreterPath": "/workspace/cs-env/bin/python",
+				"python.editor.tabSize": 2,
+				"python.linting.enabled": true,
+				"python.linting.pylintArgs": [
+					"--indent-string=\"  \""
+				],
+				"python.linting.banditEnabled": true,
+				"python.linting.mypyEnabled": true,
+				"python.linting.pylintEnabled": true,
+				"python.formatting.yapfPath": "/usr/local/py-utils/bin/yapf",
+				"python.linting.banditPath": "/usr/local/py-utils/bin/bandit",
+				"python.linting.mypyPath": "/usr/local/py-utils/bin/mypy",
+				"python.linting.pylintPath": "/workspace/cs-env/bin/pylint",
+				"python.testing.pytestEnabled": false,
+				"python.testing.unittestArgs": [
+					"-v",
+					"-s",
+					".",
+					"-p",
+					"*_test.py"
+				],
+				"python.languageServer": "Jedi",
+				"python.testing.unittestEnabled": true
+			},
+			
+			// Add the IDs of extensions you want installed when the container is created.
+			"extensions": [
+				"ms-python.python"
+				// "ms-python.vscode-pylance"
+			]
+		}
+	},
+
+	// Use 'forwardPorts' to make a list of ports inside the container available locally.
+	"forwardPorts": [15606],
+
+	// Use 'postCreateCommand' to run commands after the container is created.
+	// pip version https://github.com/microsoft/vscode-python/issues/18802
+	"postCreateCommand": "python3.9 -m venv cs-env; . cs-env/bin/activate; python -m pip install pylint==2.13.4; npm run setup",
+
+	// Comment out to connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
+	"remoteUser": "vscode"
+}
