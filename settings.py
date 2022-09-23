@@ -115,7 +115,7 @@ SECRET_KEY = os.environ['DJANGO_SECRET']
 
 RSS_FEED_LIMIT = 15
 
-DEFAULT_CACHE_TIME = 60 # seconds
+DEFAULT_CACHE_TIME = 3600 # seconds
 
 USE_I18N = False
 
