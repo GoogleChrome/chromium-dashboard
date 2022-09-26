@@ -23,6 +23,9 @@ import settings
 import redis
 import fakeredis
 
+from redis.retry import Retry
+from redis.backoff import ExponentialBackoff
+
 redis_client = None
 
 if settings.UNIT_TEST_MODE:
@@ -31,7 +34,8 @@ elif settings.STAGING or settings.PROD:
   # Create a Redis client.
   redis_host = os.environ.get('REDISHOST', 'localhost')
   redis_port = int(os.environ.get('REDISPORT', 6379))
-  redis_client = redis.Redis(host=redis_host, port=redis_port, health_check_interval=30)
+  redis_client = redis.Redis(host=redis_host, port=redis_port, health_check_interval=30,
+                             socket_keepalive=True, retry_on_timeout=True, retry=Retry(ExponentialBackoff(cap=5, base=1), 5))
 
 gae_version = None
 if settings.UNIT_TEST_MODE:
