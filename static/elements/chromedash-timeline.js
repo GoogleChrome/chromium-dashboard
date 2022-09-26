@@ -221,7 +221,8 @@ class ChromedashTimeline extends LitElement {
       chartEl.insertAdjacentHTML('afterbegin', '<sl-progress-bar indeterminate></sl-progress-bar>');
     }
 
-    fetch(url).then((res) => res.json()).then((response) => {
+    const options = {credentials: 'omit'};
+    fetch(url, options).then((res) => res.json()).then((response) => {
       this.drawVisualization(response, this.selectedBucketId, this.showAllHistoricalData);
     });
 

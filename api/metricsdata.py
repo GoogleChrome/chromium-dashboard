@@ -220,6 +220,7 @@ class FeatureObserverPopularityHandler(FeatureHandler):
 
 
 class FeatureBucketsHandler(basehandlers.FlaskHandler):
+  HTTP_CACHE_TYPE = 'private'
   JSONIFY = True
 
   def get_template_data(self, prop_type):

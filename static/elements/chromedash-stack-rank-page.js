@@ -57,8 +57,9 @@ export class ChromedashStackRankPage extends LitElement {
     // [DEV] Change to true to use the staging server endpoint for development
     const devMode = false;
     if (devMode) endpoint = 'https://cr-status-staging.appspot.com' + endpoint;
+    const options = {credentials: 'omit'};
 
-    fetch(endpoint).then((res) => res.json()).then((props) => {
+    fetch(endpoint, options).then((res) => res.json()).then((props) => {
       for (let i = 0, item; item = props[i]; ++i) {
         item.percentage = (item.day_percentage * 100).toFixed(6);
       }
@@ -87,7 +88,7 @@ export class ChromedashStackRankPage extends LitElement {
   renderSearchBar() {
     return html`
       <input id="datalist-input" type="search" list="features"
-        placeholder=${this.viewList.length ? 'Select or search a property for detailed stats' : 'loading...'} 
+        placeholder=${this.viewList.length ? 'Select or search a property for detailed stats' : 'loading...'}
         @change="${this.handleSearchBarChange}" />
       <datalist id="features">
         ${this.viewList.map((item) => html`
@@ -107,7 +108,7 @@ export class ChromedashStackRankPage extends LitElement {
         <a href="https://cs.chromium.org/chromium/src/tools/metrics/histograms/enums.xml"
         target="_blank" rel="noopener">anonymous usage statistics</a>.
       </p>
-      <chromedash-stack-rank 
+      <chromedash-stack-rank
         .type=${this.type}
         .view=${this.view}
         .viewList=${this.viewList}>

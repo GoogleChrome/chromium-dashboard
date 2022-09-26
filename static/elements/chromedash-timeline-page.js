@@ -36,8 +36,9 @@ export class ChromedashTimelinePage extends LitElement {
     // [DEV] Change to true to use the staging server endpoint for development
     const devMode = false;
     if (devMode) endpoint = 'https://cr-status-staging.appspot.com' + endpoint;
+    const options = {credentials: 'omit'};
 
-    fetch(endpoint).then((res) => res.json()).then((props) => {
+    fetch(endpoint, options).then((res) => res.json()).then((props) => {
       this.props = props;
     }).catch(() => {
       showToastMessage('Some errors occurred. Please refresh the page or try again later.');
