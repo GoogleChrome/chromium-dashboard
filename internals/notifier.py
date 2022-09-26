@@ -275,7 +275,10 @@ class NotifyInactiveUsersHandler(basehandlers.FlaskHandler):
         'Notified users:']
     for task in email_tasks:
       message.append(task['to'])
-    return {'message': '\n'.join(message)}
+
+    message_str = '\n'.join(message)
+    logging.info(message_str)
+    return {'message': message_str}
 
   def _determine_users_to_notify(self, now=None):
     # date var can be passed in for testing purposes.
