@@ -7,6 +7,9 @@ Chrome Platform Status
 
 ### Get the code
 
+For a one-click setup that leverages devcontainers, check out the devcontainer
+[README](.devcontainer/README.md). Otherwise, to continue setting up locally:
+
     git clone https://github.com/GoogleChrome/chromium-dashboard
 
 ### Installation
