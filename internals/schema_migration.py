@@ -56,7 +56,7 @@ class MigrateCommentsToActivities(FlaskHandler):
     return message
   
   def _remove_bad_id_activities(self):
-    """Deletes old Activity entities that have a matching comment ID."""
+    """Deletes old Activity entities that do not have a matching comment ID."""
     q = Activity.query()
     activities = q.fetch()
 
