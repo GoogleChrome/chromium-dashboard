@@ -96,6 +96,12 @@ class CommentsAPI(basehandlers.APIHandler):
           new_approval_state=new_state)
       comment.put()
 
+      # Schema migration double-write.
+      comment_activity = review_models.Activity(
+        id=comment.key.integer_id(), feature_id=feature_id, gate_id=field_id,
+        author=user.email(), content=comment_content)
+      comment_activity.put()
+
     if post_to_approval_field_id:
       notifier.post_comment_to_mailing_list(
           feature, post_to_approval_field_id, user.email(), comment_content)
@@ -106,6 +112,7 @@ class CommentsAPI(basehandlers.APIHandler):
   def do_patch(self, feature_id):
     comment_id = self.get_param('commentId', required=True)
     comment = review_models.Comment.get_by_id(comment_id)
+    comment_activity = review_models.Activity.get_by_id(comment_id)
 
     user = self.get_current_user(required=True)
     if not permissions.can_admin_site(user) and user.email() != comment.author:
@@ -114,8 +121,14 @@ class CommentsAPI(basehandlers.APIHandler):
     is_undelete = self.get_param('isUndelete', required=True)
     if is_undelete:
       comment.deleted_by = None
+      if comment_activity is not None:
+        comment_activity.deleted_by = None
+        comment_activity.put()
     else:
       comment.deleted_by = user.email()
+      if comment_activity is not None:
+        comment_activity.deleted_by = user.email()
+        comment_activity.put()
     comment.put()
 
     return {'message': 'Done'}

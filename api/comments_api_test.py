@@ -71,6 +71,8 @@ class CommentsAPITest(testing_config.CustomTestCase):
       appr.key.delete()
     for cmnt in review_models.Comment.query():
       cmnt.key.delete()
+    for activity in review_models.Activity.query():
+      activity.key.delete()
 
   def test_get__empty(self):
     """We can get comments for a given approval, even if there none."""
@@ -182,28 +184,55 @@ class CommentsAPITest(testing_config.CustomTestCase):
   def test_patch__delete_comment(self):
     """Handler marks a comment as deleted as requested by authorized user."""
     self.cmnt_1_1.put()
-    params = {'commentId': self.cmnt_1_1.key.id(), 'isUndelete': False}
 
-    testing_config.sign_in('owner1@example.com', 123567890)
+    # Add Activity equivalent (happens in do_post)
+    self.activity_1 = review_models.Activity(
+        id=self.cmnt_1_1.key.integer_id(), feature_id=self.feature_id,
+        gate_id=self.cmnt_1_1.field_id, author=self.cmnt_1_1.author,
+        content=self.cmnt_1_1.content)
+    self.activity_1.put()
+
+    user_email = 'owner1@example.com'
+    params = {'commentId': self.cmnt_1_1.key.id(), 'isUndelete': False}
+    testing_config.sign_in(user_email, 123567890)
     with test_app.test_request_context(self.request_path, json=params):
       resp = self.handler.do_patch(self.feature_id)
       get_resp = self.handler.do_get(self.feature_id, self.field_id)
     testing_config.sign_out()
-    self.assertEqual(get_resp['comments'][0]['deleted_by'], 'owner1@example.com')
+    self.assertEqual(get_resp['comments'][0]['deleted_by'], user_email)
     self.assertEqual(resp, {'message': 'Done'})
+
+    # Check activity is also deleted.
+    activity = review_models.Activity.get_by_id(self.cmnt_1_1.key.integer_id())
+    self.assertIsNotNone(activity)
+    self.assertEqual(activity.deleted_by, user_email)
 
   def test_patch__undelete_comment(self):
     """Handler unmarks a comment as deleted as requested by authorized user."""
-    self.cmnt_1_1.deleted_by = 'owner1@example.com'
+    user_email = 'owner1@example.com'
+    self.cmnt_1_1.deleted_by = user_email
     self.cmnt_1_1.put()
+
+    # Add Activity equivalent (happens in do_post)
+    self.activity_1 = review_models.Activity(
+        id=self.cmnt_1_1.key.integer_id(), feature_id=self.feature_id,
+        gate_id=self.cmnt_1_1.field_id, author=self.cmnt_1_1.author,
+        deleted_by=self.cmnt_1_1.deleted_by, content=self.cmnt_1_1.content)
+    self.activity_1.put()
+
     params = {'commentId': self.cmnt_1_1.key.id(), 'isUndelete': True}
-    testing_config.sign_in('owner1@example.com', 123567890)
+    testing_config.sign_in(user_email, 123567890)
     with test_app.test_request_context(self.request_path, json=params):
       resp = self.handler.do_patch(self.feature_id)
       get_resp = self.handler.do_get(self.feature_id, self.field_id)
     testing_config.sign_out()
     self.assertEqual(get_resp['comments'][0]['deleted_by'], None)
     self.assertEqual(resp, {'message': 'Done'})
+
+    # Check activity is also undeleted.
+    activity = review_models.Activity.get_by_id(self.cmnt_1_1.key.integer_id())
+    self.assertIsNotNone(activity)
+    self.assertIsNone(activity.deleted_by)
 
   @mock.patch('internals.approval_defs.get_approvers')
   def test_post__update(self, mock_get_approvers):
@@ -254,3 +283,7 @@ class CommentsAPITest(testing_config.CustomTestCase):
     self.assertEqual('Congratulations', cmnt.content)
     self.assertIsNone(cmnt.old_approval_state)
     self.assertIsNone(cmnt.new_approval_state)
+
+    # Check activity is also created.
+    activity = review_models.Activity.get_by_id(cmnt.key.integer_id())
+    self.assertIsNotNone(activity)
