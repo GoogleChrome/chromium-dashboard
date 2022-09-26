@@ -14,6 +14,7 @@
 
 from datetime import datetime, timedelta
 import json
+import logging
 import requests
 
 from django.template.loader import render_to_string
@@ -81,7 +82,10 @@ class AbstractReminderHandler(basehandlers.FlaskHandler):
         features_to_notify, self.SUBJECT_FORMAT, self.EMAIL_TEMPLATE_PATH,
         current_milestone_info)
     notifier.send_emails(email_tasks)
-    return {'message': f'{len(email_tasks)} email(s) sent or logged.'}
+
+    message =  f'{len(email_tasks)} email(s) sent or logged.'
+    logging.info(message)
+    return {'message': message}
 
   def prefilter_features(self, current_milestone_info, features):
     """Return a list of features that fit class-specific criteria."""
