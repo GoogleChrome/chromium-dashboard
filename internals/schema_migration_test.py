@@ -21,35 +21,50 @@ from internals import schema_migration
 class MigrateCommentsToActivitiesTest(testing_config.CustomTestCase):
 
   def setUp(self):
-    self.comment_1 = review_models.Comment(feature_id=1, field_id=1,
+    comment_1 = review_models.Comment(id=1, feature_id=1, field_id=1,
         author='user@example.com', content='some text',
         created=datetime(2020, 1, 1))
-    self.comment_1.put()
-    self.comment_2 = review_models.Comment(feature_id=1, field_id=2,
+    comment_1.put()
+    comment_2 = review_models.Comment(id=2, feature_id=1, field_id=2,
         author='other_user@example.com', content='some other text',
         created=datetime(2020, 1, 1))
-    self.comment_2.put()
-    self.comment_3 = review_models.Comment(feature_id=2, field_id=1,
-        author='user@example.com', content='migrated text',
-        migrated=True)
-    self.comment_3.put()
+    comment_2.put()
+
+    # Comment 3 is already migrated.
+    comment_3 = review_models.Comment(id=3, feature_id=2, field_id=1,
+        author='user@example.com', content='migrated text')
+    comment_3.put()
+    activity_3 = review_models.Activity(id=3, feature_id=2, gate_id=1,
+        author='user@example.com', content='migrated text')
+    activity_3.put()
 
   def tearDown(self):
-    for comm in review_models.Comment.query().fetch(None):
+    for comm in review_models.Comment.query().fetch():
       comm.key.delete()
+    for activity in review_models.Activity.query():
+      activity.key.delete()
+
+  def test_migration__remove_bad_activities(self):
+    migration_handler = schema_migration.MigrateCommentsToActivities()
+    bad_activity = review_models.Activity(id=9, feature_id=1, gate_id=1,
+        author='user@example.com', content='some text')
+    bad_activity.put()
+    result = migration_handler._remove_bad_id_activities()
+    # One Activity is from an older version of the migration. Should be removed.
+    expected = '1 Activities deleted from previous migration.'
+    self.assertEqual(result, expected)
+    # One other Activity should still exist.
+    activities = review_models.Activity.query().fetch()
+    self.assertTrue(len(activities) == 1)
 
   def test_migration(self):
     migration_handler = schema_migration.MigrateCommentsToActivities()
     result = migration_handler.get_template_data()
-    # One comment is marked as migrated, so only 2 need migration.
+    # One comment is already migrated, so only 2 need migration.
     expected = '2 comments migrated to activity entities.'
     self.assertEqual(result, expected)
-    # All comments should now be marked as migrated.
-    for comm in review_models.Comment.query().fetch(None):
-        self.assertTrue(comm.migrated)
-
-    activities = review_models.Activity.query().fetch(None)
-    self.assertEqual(len(activities), 2)
+    activities = review_models.Activity.query().fetch()
+    self.assertEqual(len(activities), 3)
     self.assertEqual(2020, activities[0].created.year)
 
     # The migration should be idempotent, so nothing should be migrated twice.
