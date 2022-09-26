@@ -16,6 +16,7 @@ import logging
 from google.cloud import ndb
 
 from framework.basehandlers import FlaskHandler
+from internals.core_models import Feature, FeatureEntry
 from internals.review_models import Activity, Comment
 
 def handle_migration(original_cls, new_cls, kwarg_mapping,
@@ -85,3 +86,93 @@ class MigrateCommentsToActivities(FlaskHandler):
     
     return (f'{old_migrations_deleted} Activities deleted '
         'from previous migration.')
+
+class MigrateFeaturesToFeatureEntries(FlaskHandler):
+
+  def get_template_data(self):
+    """Writes a FeatureEntry entity for each unmigrated Feature entity"""
+    self.require_cron_header()
+    q = Feature.query()
+    features = q.fetch()
+    migration_count = 0
+    for feature in features:
+      # If a FeatureEntry exists with the same ID, it has already been migrated.
+      q = FeatureEntry.query().filter(
+          FeatureEntry.key == ndb.Key(FeatureEntry, feature.key.integer_id()))
+      feature_entries = q.fetch()
+      if len(feature_entries) > 0:
+        continue
+
+      updater = feature.updated_by.email() if feature.updated_by else None
+      kwargs = {
+          'id': feature.key.integer_id(),
+          'created': feature.created,
+          'updated': feature.updated,
+          'accurate_as_of': feature.accurate_as_of,
+          'creator': feature.creator,
+          'updater': updater,
+          'owners': feature.owner,
+          'editors': feature.editors,
+          'unlisted': feature.unlisted,
+          'deleted': feature.deleted,
+          'name': feature.name,
+          'summary': feature.summary,
+          'category': feature.category,
+          'blink_components': feature.blink_components,
+          'star_count': feature.star_count,
+          'search_tags': feature.search_tags,
+          'feature_type': feature.feature_type,
+          'intent_stage': feature.intent_stage,
+          'bug_url': feature.bug_url,
+          'launch_bug_url': feature.launch_bug_url,
+          'impl_status_chrome': feature.impl_status_chrome,
+          'flag_name': feature.flag_name,
+          'ongoing_constraints': feature.ongoing_constraints,
+          'motivation': feature.motivation,
+          'devtrial_instructions': feature.devtrial_instructions,
+          'activation_risks': feature.activation_risks,
+          'measurement': feature.measurement,
+          'initial_public_proposal_url': feature.initial_public_proposal_url,
+          'explainer_links': feature.explainer_links,
+          'requires_embedder_support': feature.requires_embedder_support,
+          'standard_maturity': feature.standard_maturity,
+          'spec_link': feature.spec_link,
+          'api_spec': feature.api_spec,
+          'spec_mentors': feature.spec_mentors,
+          'interop_compat_risks': feature.interop_compat_risks,
+          'prefixed': feature.prefixed,
+          'all_platforms': feature.all_platforms,
+          'all_platforms_descr': feature.all_platforms_descr,
+          'tag_review': feature.tag_review,
+          'tag_review_status': feature.tag_review_status,
+          'non_oss_deps': feature.non_oss_deps,
+          'anticipated_spec_changes': feature.anticipated_spec_changes,
+          'ff_views': feature.ff_views,
+          'safari_views': feature.safari_views,
+          'web_dev_views': feature.web_dev_views,
+          'ff_views_link': feature.ff_views_link,
+          'safari_views_link': feature.safari_views_link,
+          'web_dev_views_link': feature.web_dev_views_link,
+          'ff_views_notes': feature.ff_views_notes,
+          'safari_views_notes': feature.safari_views_notes,
+          'web_dev_views_notes': feature.web_dev_views_notes,
+          'other_views_notes': feature.other_views_notes,
+          'security_risks': feature.security_risks,
+          'security_review_status': feature.security_review_status,
+          'privacy_review_status': feature.privacy_review_status,
+          'ergonomics_risks': feature.ergonomics_risks,
+          'wpt': feature.wpt,
+          'wpt_descr': feature.wpt_descr,
+          'webview_risks': feature.webview_risks,
+          'devrel': feature.devrel,
+          'debuggability': feature.debuggability,
+          'doc_links': feature.doc_links,
+          'sample_links': feature.sample_links}
+      
+      feature_entry = FeatureEntry(**kwargs)
+      feature_entry.put()
+      migration_count += 1
+  
+    message = f'{migration_count} features migrated to FeatureEntry entities.'
+    logging.info(message)
+    return message
