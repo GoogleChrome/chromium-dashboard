@@ -66,6 +66,29 @@ class FeatureCreateHandler(basehandlers.FlaskHandler):
         created_by=signed_in_user,
         updated_by=signed_in_user)
     key = feature.put()
+
+    # Write for new FeatureEntry entity.
+    feature_entry = core_models.Feature(
+        id=feature.key.integer_id(),
+        category=int(self.form.get('category')),
+        name=self.form.get('name'),
+        feature_type=feature_type,
+        intent_stage=core_enums.INTENT_NONE,
+        summary=self.form.get('summary'),
+        owners=owners,
+        editors=editors,
+        cc_recipients=cc_recipients,
+        creator=signed_in_user.email(),
+        updater=signed_in_user.email(),
+        accurate_as_of=datetime.now(),
+        impl_status_chrome=core_enums.NO_ACTIVE_DEV,
+        standardization=core_enums.EDITORS_DRAFT,
+        unlisted=self.form.get('unlisted') == 'on',
+        web_dev_views=core_enums.DEV_NO_SIGNALS,
+        blink_components=blink_components,
+        tag_review_status=processes.initial_tag_review_status(feature_type))
+    feature_entry.put()
+
     # Remove all feature-related cache.
     rediscache.delete_keys_with_prefix(core_models.feature_cache_prefix())
 
@@ -118,6 +141,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
     if feature_id:
       # Load feature directly from NDB so as to never get a stale cached copy.
       feature = core_models.Feature.get_by_id(feature_id)
+      feature_entry = core_models.FeatureEntry.get_by_id(feature_id)
       if feature is None:
         self.abort(404, msg='Feature not found')
       else:
@@ -125,35 +149,51 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
 
     logging.info('POST is %r', self.form)
 
+    update_items = []
     if self.touched('spec_link'):
       feature.spec_link = self.parse_link('spec_link')
+      update_items.append(('spec_link', self.parse_link('spec_link')))
 
     if self.touched('standard_maturity'):
       feature.standard_maturity = self.parse_int('standard_maturity')
+      update_items.append(('standard_maturity',
+          self.parse_int('standard_maturity')))
 
     if self.touched('api_spec'):
       feature.api_spec = self.form.get('api_spec') == 'on'
+      update_items.append(('api_spec', self.form.get('api_spec') == 'on'))
 
     if self.touched('spec_mentors'):
       feature.spec_mentors = self.split_emails('spec_mentors')
+      update_items.append(('spec_mentors', self.split_emails('spec_mentors')))
 
     if self.touched('security_review_status'):
       feature.security_review_status = self.parse_int('security_review_status')
+      update_items.append('security_review_status',
+          self.split_emails('security_review_status'))
 
     if self.touched('privacy_review_status'):
       feature.privacy_review_status = self.parse_int('privacy_review_status')
+      update_items.append(('privacy_review_status',
+          self.parse_int('privacy_review_status')))
 
     if self.touched('initial_public_proposal_url'):
       feature.initial_public_proposal_url = self.parse_link(
           'initial_public_proposal_url')
+      update_items.append(('initial_public_proposal_url',
+          self.parse_link('initial_public_proposal_url')))
 
     if self.touched('explainer_links'):
       feature.explainer_links = self.parse_links('explainer_links')
+      update_items.append(('explainer_links',
+          self.parse_links('explainer_links')))
 
     if self.touched('bug_url'):
       feature.bug_url = self.parse_link('bug_url')
+      update_items.append(('bug_url', self.parse_link('bug_url')))
     if self.touched('launch_bug_url'):
       feature.launch_bug_url = self.parse_link('launch_bug_url')
+      update_items.append(('launch_bug_url', self.parse_link('launch_bug_url')))
 
     if self.touched('intent_to_implement_url'):
       feature.intent_to_implement_url = self.parse_link(
@@ -182,6 +222,8 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
     if self.touched('anticipated_spec_changes'):
       feature.anticipated_spec_changes = self.form.get(
           'anticipated_spec_changes')
+      update_items.append(('anticipated_spec_changes',
+          self.form.get('anticipated_spec_changes')))
 
     if self.touched('finch_url'):
       feature.finch_url = self.parse_link('finch_url')
@@ -240,9 +282,13 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
     if self.touched('requires_embedder_support'):
       feature.requires_embedder_support = (
           self.form.get('requires_embedder_support') == 'on')
+      update_items.append(('requires_embedder_support',
+          self.form.get('requires_embedder_support') == 'on'))
 
     if self.touched('devtrial_instructions'):
       feature.devtrial_instructions = self.parse_link('devtrial_instructions')
+      update_items.append(('devtrial_instructions',
+          self.parse_link('devtrial_instructions')))
 
     if self.touched('dt_milestone_desktop_start'):
       feature.dt_milestone_desktop_start = self.parse_int(
@@ -262,84 +308,125 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
 
     if self.touched('flag_name'):
       feature.flag_name = self.form.get('flag_name')
+      update_items.append(('flag_name', self.form.get('flag_name')))
 
     if self.touched('owner'):
       feature.owner = self.split_emails('owner')
+      update_items.append(('owners', self.split_emails('owner')))
 
     if self.touched('editors'):
       feature.editors = self.split_emails('editors')
+      update_items.append(('editors', self.split_emails('editors')))
 
     if self.touched('cc_recipients'):
       feature.cc_recipients = self.split_emails('cc_recipients')
+      update_items.append(('cc_recipients', self.split_emails('cc_recipients')))
 
     if self.touched('doc_links'):
       feature.doc_links = self.parse_links('doc_links')
+      update_items.append(('doc_links', self.parse_links('doc_links')))
 
     if self.touched('measurement'):
       feature.measurement = self.form.get('measurement')
+      update_items.append(('measurement', self.form.get('measurement')))
 
     if self.touched('sample_links'):
       feature.sample_links = self.parse_links('sample_links')
+      update_items.append(('sample_links', self.parse_links('sample_links')))
 
     if self.touched('search_tags'):
       feature.search_tags = self.split_input('search_tags', delim=',')
+      update_items.append(('search_tags',
+          self.split_input('search_tags', delim=',')))
 
     if self.touched('blink_components'):
       feature.blink_components = (
           self.split_input('blink_components', delim=',') or
           [settings.DEFAULT_COMPONENT])
+      update_items.append('blink_components', (
+          self.split_input('blink_components', delim=',') or
+          [settings.DEFAULT_COMPONENT]))
 
     if self.touched('devrel'):
       feature.devrel = self.split_emails('devrel')
+      update_items.append(('devrel', self.split_emails('devrel')))
 
     if self.touched('feature_type'):
       feature.feature_type = int(self.form.get('feature_type'))
+      update_items.append(('feature_type', int(self.form.get('feature_type'))))
 
     # intent_stage can be be set either by <select> or a checkbox
     if self.touched('intent_stage'):
       feature.intent_stage = int(self.form.get('intent_stage'))
+      update_items.append(('intent_stage', int(self.form.get('intent_stage'))))
     elif self.form.get('set_stage') == 'on':
       feature.intent_stage = stage_id
+      update_items.append(('intent_stage', stage_id))
 
     if self.touched('category'):
       feature.category = int(self.form.get('category'))
+      update_items.append(('category', int(self.form.get('category'))))
     if self.touched('name'):
       feature.name = self.form.get('name')
+      update_items.append(('name', self.form.get('name')))
     if self.touched('summary'):
       feature.summary = self.form.get('summary')
+      update_items.append(('summary', self.form.get('summary')))
     if self.touched('motivation'):
       feature.motivation = self.form.get('motivation')
+      update_items.append(('motivation', self.form.get('motivation')))
 
     # impl_status_chrome can be be set either by <select> or a checkbox
     if self.touched('impl_status_chrome'):
       feature.impl_status_chrome = int(self.form.get('impl_status_chrome'))
+      update_items.append(('impl_status_chrome',
+          int(self.form.get('impl_status_chrome'))))
     elif self.form.get('set_impl_status') == 'on':
       feature.impl_status_chrome = self.parse_int('impl_status_offered')
+      update_items.append(('impl_status_chrome',
+          self.parse_int('impl_status_offered')))
 
     if self.touched('interop_compat_risks'):
       feature.interop_compat_risks = self.form.get('interop_compat_risks')
+      update_items.append(('interop_compat_risks',
+          self.form.get('interop_compat_risks')))
     if self.touched('ergonomics_risks'):
       feature.ergonomics_risks = self.form.get('ergonomics_risks')
+      update_items.append(('ergonomics_risks',
+          self.form.get('ergonomics_risks')))
     if self.touched('activation_risks'):
       feature.activation_risks = self.form.get('activation_risks')
+      update_items.append(('activation_risks',
+          self.form.get('activation_risks')))
     if self.touched('security_risks'):
       feature.security_risks = self.form.get('security_risks')
+      update_items.append(('security_risks', self.form.get('security_risks')))
     if self.touched('debuggability'):
       feature.debuggability = self.form.get('debuggability')
+      update_items.append(('debuggability', self.form.get('debuggability')))
     if self.touched('all_platforms'):
       feature.all_platforms = self.form.get('all_platforms') == 'on'
+      update_items.append(('all_platforms',
+          self.form.get('all_platforms') == 'on'))
     if self.touched('all_platforms_descr'):
       feature.all_platforms_descr = self.form.get('all_platforms_descr')
+      update_items.append(('all_platforms_descr',
+          self.form.get('all_platforms_descr')))
     if self.touched('wpt'):
       feature.wpt = self.form.get('wpt') == 'on'
+      update_items.append(('wpt', self.form.get('wpt') == 'on'))
     if self.touched('wpt_descr'):
       feature.wpt_descr = self.form.get('wpt_descr')
+      update_items.append(('wpt_descr', self.form.get('wpt_descr')))
     if self.touched('ff_views'):
       feature.ff_views = int(self.form.get('ff_views'))
+      update_items.append(('ff_views', int(self.form.get('ff_views'))))
     if self.touched('ff_views_link'):
       feature.ff_views_link = self.parse_link('ff_views_link')
+      update_items.append(('ff_views_link', self.parse_link('ff_views_link')))
     if self.touched('ff_views_notes'):
       feature.ff_views_notes = self.form.get('ff_views_notes')
+      update_items.append(('ff_views_notes', self.form.get('ff_views_notes')))
 
     # TODO(jrobbins): Delete after the next deployment
     if self.touched('ie_views'):
@@ -351,38 +438,60 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
 
     if self.touched('safari_views'):
       feature.safari_views = int(self.form.get('safari_views'))
+      update_items.append(('safari_views', int(self.form.get('safari_views'))))
     if self.touched('safari_views_link'):
       feature.safari_views_link = self.parse_link('safari_views_link')
+      update_items.append(('safari_views_link',
+          self.parse_link('safari_views_link')))
     if self.touched('safari_views_notes'):
       feature.safari_views_notes = self.form.get('safari_views_notes')
+      update_items.append(('safari_views_notes',
+          self.form.get('safari_views_notes')))
     if self.touched('web_dev_views'):
       feature.web_dev_views = int(self.form.get('web_dev_views'))
+      update_items.append(('web_dev_views',
+          int(self.form.get('web_dev_views'))))
     if self.touched('web_dev_views'):
       feature.web_dev_views_link = self.parse_link('web_dev_views_link')
+      update_items.append(('web_dev_views',
+          self.parse_link('web_dev_views_link')))
     if self.touched('web_dev_views_notes'):
       feature.web_dev_views_notes = self.form.get('web_dev_views_notes')
+      update_items.append(('web_dev_views_notes',
+          self.form.get('web_dev_views_notes')))
     if self.touched('other_views_notes'):
       feature.other_views_notes = self.form.get('other_views_notes')
+      update_items.append(('other_views_notes',
+          self.form.get('other_views_notes')))
     if self.touched('prefixed'):
       feature.prefixed = self.form.get('prefixed') == 'on'
+      update_items.append(('prefixed', self.form.get('prefixed') == 'on'))
     if self.touched('non_oss_deps'):
       feature.non_oss_deps = self.form.get('non_oss_deps')
+      update_items.append(('non_oss_deps', self.form.get('non_oss_deps')))
 
     if self.touched('tag_review'):
       feature.tag_review = self.form.get('tag_review')
+      update_items.append(('tag_review', self.form.get('tag_review')))
     if self.touched('tag_review_status'):
       feature.tag_review_status = self.parse_int('tag_review_status')
+      update_items.append(('tag_review_status',
+          self.parse_int('tag_review_status')))
     if self.touched('webview_risks'):
       feature.webview_risks = self.form.get('webview_risks')
+      update_items.append(('webview_risks', self.form.get('webview_risks')))
 
     if self.touched('standardization'):
       feature.standardization = int(self.form.get('standardization'))
     if self.form.get('accurate_as_of'):
       feature.accurate_as_of = datetime.now()
+      update_items.append(('accurate_as_of', datetime.now()))
     if self.touched('unlisted'):
       feature.unlisted = self.form.get('unlisted') == 'on'
+      update_items.append(('unlisted', self.form.get('unlisted') == 'on'))
     if self.touched('comments'):
       feature.comments = self.form.get('comments')
+      update_items.append(('feature_notes', self.form.get('comments')))
     if self.touched('experiment_goals'):
       feature.experiment_goals = self.form.get('experiment_goals')
     if self.touched('experiment_timeline'):
@@ -394,11 +503,20 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
           'experiment_extension_reason')
     if self.touched('ongoing_constraints'):
       feature.ongoing_constraints = self.form.get('ongoing_constraints')
+      update_items.append(('ongoing_constraints',
+          self.form.get('ongoing_constraints')))
 
     feature.updated_by = ndb.User(
         email=self.get_current_user().email(),
         _auth_domain='gmail.com')
+    update_items.append('updater', self.get_current_user().email())
     key = feature.put()
+
+    # Write for new FeatureEntry entity.
+    if feature_entry:
+      for field, value in update_items:
+        setattr(feature_entry, field, value)
+      feature_entry.put()
 
     # Remove all feature-related cache.
     rediscache.delete_keys_with_prefix(core_models.feature_cache_prefix())
