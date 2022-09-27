@@ -26,16 +26,14 @@ class MigrateCommentsToActivities(FlaskHandler):
 
     logging.info(self._remove_bad_id_activities())
 
-    q = Comment.query()
-    comments = q.fetch()
+    comments = Comment.query().fetch()
+    activity_keys = Activity.query().fetch(keys_only=True)
+    activity_ids = set([key.integer_id() for key in activity_keys])
     migration_count = 0
     for comment in comments:
       # Check if an Activity with the same ID has already been created.
       # If so, do not create this activity again.
-      q = Activity.query().filter(
-          Activity.key == ndb.Key(Activity, comment.key.integer_id()))
-      activities = q.fetch()
-      if len(activities) > 0:
+      if comment.key.integer_id() in activity_ids:
         continue
 
       kwargs = {
