@@ -77,7 +77,7 @@ class MigrateCommentsToActivitiesTest(testing_config.CustomTestCase):
 
 class MigrateFeaturesToFeatureEntriesTest(testing_config.CustomTestCase):
 
-  FEATURE_FIELDS = ['created', 'updated', 'accurate_as_of', 'editors',
+  FEATURE_FIELDS = ['created', 'updated', 'accurate_as_of', 'editors', 'creator',
       'unlisted', 'deleted', 'name', 'summary', 'category', 'blink_components',
       'star_count', 'search_tags', 'feature_type', 'intent_stage',
       'bug_url', 'launch_bug_url', 'impl_status_chrome', 'flag_name',
@@ -105,6 +105,7 @@ class MigrateFeaturesToFeatureEntriesTest(testing_config.CustomTestCase):
         updated_by=ndb.User(
             _auth_domain='example.com', email='editor@example.com'),
         owner=['owner@example.com'],
+        creator='creator@example.com',
         editors=['editor@example.com'],
         unlisted=False,
         deleted=False,
@@ -247,11 +248,11 @@ class MigrateFeaturesToFeatureEntriesTest(testing_config.CustomTestCase):
     q = core_models.FeatureEntry.query().filter(
         core_models.FeatureEntry.key == ndb.Key(core_models.FeatureEntry, 1))
     feature_entry_1 = q.fetch()[0]
-    feature_entry_1.owners = self.feature_1.owner
-    feature_entry_1.creator = self.feature_1.created_by.email()
-    feature_entry_1.updater = self.feature_1.updated_by.email()
+    self.assertEqual(feature_entry_1.owners, self.feature_1.owner)
+    self.assertEqual(feature_entry_1.updater, self.feature_1.updated_by.email())
     for field in self.FEATURE_FIELDS:
-      getattr(feature_entry_1, field) == getattr(self.feature_1, field)
+      self.assertEqual(
+          getattr(feature_entry_1, field), getattr(self.feature_1, field))
 
     # The migration should be idempotent, so nothing should be migrated twice.
     result_2 = migration_handler.get_template_data()
