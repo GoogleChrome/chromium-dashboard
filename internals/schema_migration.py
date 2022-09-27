@@ -92,15 +92,13 @@ class MigrateFeaturesToFeatureEntries(FlaskHandler):
   def get_template_data(self):
     """Writes a FeatureEntry entity for each unmigrated Feature entity"""
     self.require_cron_header()
-    q = Feature.query()
-    features = q.fetch()
+    features = Feature.query().fetch()
+    feature_entry_keys = FeatureEntry.query().fetch(keys_only=True)
+    feature_entry_ids = set([key.integer_id() for key in feature_entry_keys])
     migration_count = 0
     for feature in features:
       # If a FeatureEntry exists with the same ID, it has already been migrated.
-      q = FeatureEntry.query().filter(
-          FeatureEntry.key == ndb.Key(FeatureEntry, feature.key.integer_id()))
-      feature_entries = q.fetch()
-      if len(feature_entries) > 0:
+      if feature.integer_id() in feature_entry_ids:
         continue
 
       updater = feature.updated_by.email() if feature.updated_by else None
