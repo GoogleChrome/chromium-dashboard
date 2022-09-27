@@ -62,9 +62,9 @@ class MigrateCommentsToActivities(FlaskHandler):
 
     old_migrations_deleted = 0
     for activity in activities:
-      # Non-null content means this is an Activity entity
+      # Non-empty content field means this is an Activity entity
       # that represents a comment.
-      if activity.content is not None:
+      if activity.content:
         # Check if there is a Comment entity with a matching ID.
         q = Comment.query().filter(
             Comment.key == ndb.Key(Comment, activity.key.integer_id()))
