@@ -114,6 +114,8 @@ class MigrateFeaturesToFeatureEntries(FlaskHandler):
           'owners': feature.owner,
           'editors': feature.editors,
           'unlisted': feature.unlisted,
+          'cc_recipients': feature.cc_recipients,
+          'feature_notes': feature.comments,
           'deleted': feature.deleted,
           'name': feature.name,
           'summary': feature.summary,

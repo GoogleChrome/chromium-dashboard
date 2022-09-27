@@ -77,11 +77,12 @@ class MigrateCommentsToActivitiesTest(testing_config.CustomTestCase):
 
 class MigrateFeaturesToFeatureEntriesTest(testing_config.CustomTestCase):
 
+  # Fields that do not require name change or revisions during migration.
   FEATURE_FIELDS = ['created', 'updated', 'accurate_as_of', 'editors', 'creator',
       'unlisted', 'deleted', 'name', 'summary', 'category', 'blink_components',
-      'star_count', 'search_tags', 'feature_type', 'intent_stage',
-      'bug_url', 'launch_bug_url', 'impl_status_chrome', 'flag_name',
-      'ongoing_constraints', 'motivation', 'devtrial_instructions',
+      'cc_recipients', 'star_count', 'search_tags', 'feature_type',
+      'intent_stage', 'bug_url', 'launch_bug_url', 'impl_status_chrome',
+      'flag_name', 'ongoing_constraints', 'motivation', 'devtrial_instructions',
       'activation_risks', 'measurement', 'initial_public_proposal_url',
       'explainer_links', 'requires_embedder_support', 'standard_maturity',
       'spec_link', 'api_spec', 'spec_mentors', 'interop_compat_risks',
@@ -107,10 +108,12 @@ class MigrateFeaturesToFeatureEntriesTest(testing_config.CustomTestCase):
         owner=['owner@example.com'],
         creator='creator@example.com',
         editors=['editor@example.com'],
+        cc_recipients=['cc_user@example.com'],
         unlisted=False,
         deleted=False,
         name='feature_one',
         summary='newly migrated summary',
+        comments='Some comments.',
         category=1,
         blink_components=['Blink'],
         star_count=3,
@@ -250,6 +253,7 @@ class MigrateFeaturesToFeatureEntriesTest(testing_config.CustomTestCase):
     feature_entry_1 = q.fetch()[0]
     self.assertEqual(feature_entry_1.owners, self.feature_1.owner)
     self.assertEqual(feature_entry_1.updater, self.feature_1.updated_by.email())
+    self.assertEqual(feature_entry_1.feature_notes, self.feature_1.comments)
     for field in self.FEATURE_FIELDS:
       self.assertEqual(
           getattr(feature_entry_1, field), getattr(self.feature_1, field))
