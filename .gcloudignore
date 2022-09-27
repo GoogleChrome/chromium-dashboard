@@ -48,3 +48,6 @@ htmlcov
 # Python venv directory
 cs-env
 tutorial-env
+
+# Testdata for Python tests
+testdata
