@@ -31,6 +31,8 @@ from internals import notifier
 from internals import user_models
 import settings
 
+test_app = flask.Flask(__name__,
+  template_folder=settings.flask_compat_get_template_path())
 
 class EmailFormattingTest(testing_config.CustomTestCase):
 
@@ -76,8 +78,9 @@ class EmailFormattingTest(testing_config.CustomTestCase):
 
   def test_format_email_body__new(self):
     """We generate an email body for new features."""
-    body_html = notifier.format_email_body(
-        False, self.feature_1, [])
+    with test_app.app_context():
+      body_html = notifier.format_email_body(
+          False, self.feature_1, [])
     self.assertIn('Blink', body_html)
     self.assertIn('creator1@gmail.com added', body_html)
     self.assertIn('chromestatus.com/feature/%d' %
@@ -87,16 +90,18 @@ class EmailFormattingTest(testing_config.CustomTestCase):
 
   def test_format_email_body__update_no_changes(self):
     """We don't crash if the change list is emtpy."""
-    body_html = notifier.format_email_body(
-        True, self.feature_1, [])
+    with test_app.app_context():
+      body_html = notifier.format_email_body(
+          True, self.feature_1, [])
     self.assertIn('Blink', body_html)
     self.assertIn('editor1@gmail.com updated', body_html)
     self.assertNotIn('watcher_1,', body_html)
 
   def test_format_email_body__update_with_changes(self):
     """We generate an email body for an updated feature."""
-    body_html = notifier.format_email_body(
-        True, self.feature_1, self.changes)
+    with test_app.app_context():
+      body_html = notifier.format_email_body(
+          True, self.feature_1, self.changes)
     self.assertIn('test_prop', body_html)
     self.assertIn('chromestatus.com/feature/%d' %
                   self.feature_1.key.integer_id(),
@@ -107,14 +112,16 @@ class EmailFormattingTest(testing_config.CustomTestCase):
   def test_format_email_body__mozdev_links(self):
     """We generate an email body with links to developer.mozilla.org."""
     self.feature_1.doc_links = ['https://developer.mozilla.org/look-here']
-    body_html = notifier.format_email_body(
-        True, self.feature_1, self.changes)
+    with test_app.app_context():
+      body_html = notifier.format_email_body(
+          True, self.feature_1, self.changes)
     self.assertIn('look-here', body_html)
 
     self.feature_1.doc_links = [
         'https://hacker-site.org/developer.mozilla.org/look-here']
-    body_html = notifier.format_email_body(
-        True, self.feature_1, self.changes)
+    with test_app.app_context():
+      body_html = notifier.format_email_body(
+          True, self.feature_1, self.changes)
     self.assertNotIn('look-here', body_html)
 
   def test_accumulate_reasons(self):
@@ -458,7 +465,8 @@ class FeatureStarTest(testing_config.CustomTestCase):
   def test_get_user_stars__no_stars(self):
     """User has never starred any features."""
     email = 'user4@example.com'
-    actual = notifier.FeatureStar.get_user_stars(email)
+    with test_app.app_context():
+      actual = notifier.FeatureStar.get_user_stars(email)
     self.assertEqual([], actual)
 
   def test_get_user_stars__some_stars(self):
@@ -557,8 +565,9 @@ class NotifyInactiveUsersHandlerTest(testing_config.CustomTestCase):
       user.key.delete()
 
   def test_determine_users_to_notify(self):
-    inactive_notifier = notifier.NotifyInactiveUsersHandler()
-    result = inactive_notifier.get_template_data(now=datetime(2023, 9, 1))
+    with test_app.app_context():
+      inactive_notifier = notifier.NotifyInactiveUsersHandler()
+      result = inactive_notifier.get_template_data(now=datetime(2023, 9, 1))
     expected = ('1 users notified of inactivity.\n'
         'Notified users:\ninactive_user@example.com')
     self.assertEqual(result.get('message', None), expected)

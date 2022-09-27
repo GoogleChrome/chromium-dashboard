@@ -551,7 +551,8 @@ class SPAHandler(FlaskHandler):
 def FlaskApplication(import_name, routes, post_routes, pattern_base='', debug=False):
   """Make a Flask app and add routes and handlers that work like webapp2."""
 
-  app = flask.Flask(import_name)
+  app = flask.Flask(import_name,
+    template_folder=settings.flask_compat_get_template_path())
   app.original_wsgi_app = app.wsgi_app  # Only for unit tests.
   app.wsgi_app = ndb_wsgi_middleware(app.wsgi_app) # For Cloud NDB Context
   # For GAE legacy libraries

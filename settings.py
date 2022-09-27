@@ -19,6 +19,19 @@ TEMPLATES = [
   },
 ]
 
+def flask_compat_get_template_path() -> str:
+  """Returns a path to the templates.
+  Leverages the existing TEMPLATES variable used for Django templates and
+  returns a path usable by Flask/Jinja2.
+
+  This is useful because by default flask.render_template will look for a
+  template folder relative to the module.
+
+  Once all Django templates are completely converted to Jinja2, a simpler
+  variable TEMPLATES could be used to hold information about the templates.
+  """
+  return TEMPLATES[0]['DIRS'][0]
+
 # This is necessary to override django templates.
 FORM_RENDERER = 'django.forms.renderers.TemplatesSetting'
 
