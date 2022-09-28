@@ -29,6 +29,9 @@ cron:
 - description: Copy over comment entities to new activity entities
   url: /cron/schema_migration_comment_activity
   schedule: 1 of jan 00:00
+- description: Copy over Approval entities to new Vote entities
+  url: /cron/schema_migration_approval_vote
+  schedule: 1 of jan 00:00
 - description: Copy over deprecated standardization field
   url: /cron/write_standard_maturity
   schedule: 1 of jan 00:00
