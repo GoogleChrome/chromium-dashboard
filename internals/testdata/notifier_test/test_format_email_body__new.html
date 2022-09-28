@@ -1,14 +1,18 @@
 <p>
-  {{creator_email}} added a new feature:
+  creator_template@example.com added a new feature:
 </p>
 
-<p><b><a href="https://chromestatus.com/feature/{{id}}"
-         >{{feature.name}}</a></b>
+<p><b><a href="https://chromestatus.com/feature/123"
+         >feature template</a></b>
 </p>
-<p><b>Components</b>: {{feature.blink_components|join(", ")}}</p>
-<p><b>Implementation status</b>: {{status}}</p>
+<p><b>Components</b>: Blink</p>
+<p><b>Implementation status</b>: No active development</p>
 <p><b>Estimated milestones</b>:
-  {% include "estimated-milestones-table.html" %}
+  
+
+  <p>No milestones specified</p>
+
+
 </p>
 
 <hr>
@@ -26,7 +30,7 @@
        >contributing</a>).
   </li>
   <li>Add demo links and other details to the
-    <a href="https://chromestatus.com/guide/edit/{{id}}"
+    <a href="https://chromestatus.com/guide/edit/123"
        >ChromeStatus feature entry</a>.
   </li>
 </ul>

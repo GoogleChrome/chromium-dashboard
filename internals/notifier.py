@@ -24,8 +24,9 @@ import urllib
 from framework import permissions
 from google.cloud import ndb
 
-from django.template.loader import render_to_string
 from django.utils.html import conditional_escape as escape
+
+from flask import render_template
 
 from framework import basehandlers
 from framework import cloud_tasks_helpers
@@ -74,7 +75,8 @@ def format_email_body(is_update, feature, changes):
   }
   template_path = ('update-feature-email.html' if is_update
                    else 'new-feature-email.html')
-  body = render_to_string(template_path, body_data)
+  # final_full_path = os.path.join(settings.TEMPLATES[0]['DIRS'][0], template_path)
+  body = render_template(template_path, **body_data)
   return body
 
 
@@ -310,7 +312,7 @@ class NotifyInactiveUsersHandler(basehandlers.FlaskHandler):
     email_tasks = []
     for email in users_to_notify:
       body_data = {'site_url': settings.SITE_URL}
-      html = render_to_string(self.EMAIL_TEMPLATE_PATH, body_data)
+      html = render_template(self.EMAIL_TEMPLATE_PATH, **body_data)
       subject = f'Notice of WebStatus user inactivity for {email}'
       email_tasks.append({
         'to': email,
@@ -451,8 +453,8 @@ def post_comment_to_mailing_list(
   references = None
   if thread_id:
     references = '<%s>' % thread_id
-  html = render_to_string(
-      'review-comment-email.html', {'comment_content': comment_content})
+  html = render_template(
+      'review-comment-email.html', comment_content=comment_content)
 
   email_task = {
       'to': to_addr,
