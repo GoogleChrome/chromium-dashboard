@@ -168,11 +168,11 @@ class MigrateFeaturesToFeatureEntries(FlaskHandler):
           'debuggability': feature.debuggability,
           'doc_links': feature.doc_links,
           'sample_links': feature.sample_links}
-      
+
       feature_entry = FeatureEntry(**kwargs)
       feature_entry.put()
       migration_count += 1
-  
+
     message = f'{migration_count} features migrated to FeatureEntry entities.'
     logging.info(message)
     return message
