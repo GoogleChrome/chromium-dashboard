@@ -62,6 +62,8 @@ class ApprovalTest(testing_config.CustomTestCase):
     self.feature_1.key.delete()
     for appr in review_models.Approval.query().fetch(None):
       appr.key.delete()
+    for vote in review_models.Vote.query().fetch():
+      vote.key.delete()
 
   def test_get_approvals(self):
     """We can retrieve Approval entities."""
@@ -103,8 +105,8 @@ class ApprovalTest(testing_config.CustomTestCase):
         4,
         len(review_models.Approval.query().fetch(None)))
     
-    # Check that the Vote entity was also changed.
-    self.assertEqual(review_models.Approval.REVIEW_REQUESTED, self.vote_1.state)
+    # Check that the Vote entity was also created.
+    self.assertEqual(2, len(review_models.Vote.query().fetch()))
 
   def test_clear_request(self):
     """We can clear a review request so that it is no longer pending."""
