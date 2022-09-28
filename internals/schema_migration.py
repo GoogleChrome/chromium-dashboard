@@ -28,7 +28,7 @@ class MigrateCommentsToActivities(FlaskHandler):
 
     comments = Comment.query().fetch()
     activity_keys = Activity.query().fetch(keys_only=True)
-    activity_ids = set([key.integer_id() for key in activity_keys])
+    activity_ids = set(key.integer_id() for key in activity_keys)
     migration_count = 0
     for comment in comments:
       # Check if an Activity with the same ID has already been created.
