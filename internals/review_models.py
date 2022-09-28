@@ -85,6 +85,16 @@ class Approval(ndb.Model):
       existing.state = new_state
       existing.put()
       logging.info('existing approval is %r', existing.key.integer_id())
+
+      # Write for existing Vote entity.
+      existing_votes = Vote.get_votes(
+          feature_id=feature_id, gate_id=field_id, set_by=set_by_email)
+      if existing_votes:
+        vote = existing_votes[0]
+        vote.set_on = now
+        vote.state = new_state
+        vote.put()
+        logging.info('existing vote is %r', existing.key.integer_id())
       return
 
     new_appr = Approval(
@@ -93,6 +103,13 @@ class Approval(ndb.Model):
     new_appr.put()
     logging.info('new_appr is %r', new_appr.key.integer_id())
 
+    # Write for new Vote entity.
+    new_vote = Vote(
+        id=new_appr.key.integer_id(), feature_id=feature_id, gate_id=field_id,
+        state=new_state, set_on=now, set_by=set_by_email)
+    new_vote.put()
+    logging.info('new_appr is %r', new_vote.key.integer_id())
+
   @classmethod
   def clear_request(cls, feature_id, field_id):
     """After the review requirement has been satisfied, remove the request."""
@@ -100,6 +117,12 @@ class Approval(ndb.Model):
         feature_id=feature_id, field_id=field_id, states=[cls.REVIEW_REQUESTED])
     for rr in review_requests:
       rr.key.delete()
+    
+    # Delete associated Vote entities as well.
+    requested_votes = Vote.get_votes(feature_id=feature_id,
+        gate_id=field_id, states=[Vote.REVIEW_REQUESTED])
+    for vote in requested_votes:
+      vote.key.delete()
 
 
 class ApprovalConfig(ndb.Model):
