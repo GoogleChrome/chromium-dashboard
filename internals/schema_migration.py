@@ -101,7 +101,9 @@ class MigrateFeaturesToFeatureEntries(FlaskHandler):
       if feature.key.integer_id() in feature_entry_ids:
         continue
 
+      # updater will use the email from the updated_by field
       updater = feature.updated_by.email() if feature.updated_by else None
+
       kwargs = {
           'id': feature.key.integer_id(),
           'created': feature.created,
@@ -109,11 +111,11 @@ class MigrateFeaturesToFeatureEntries(FlaskHandler):
           'accurate_as_of': feature.accurate_as_of,
           'creator': feature.creator,
           'updater': updater,
-          'owners': feature.owner,
+          'owners': feature.owner,  # Renamed
           'editors': feature.editors,
           'unlisted': feature.unlisted,
           'cc_recipients': feature.cc_recipients,
-          'feature_notes': feature.comments,
+          'feature_notes': feature.comments,  # Renamed
           'deleted': feature.deleted,
           'name': feature.name,
           'summary': feature.summary,
