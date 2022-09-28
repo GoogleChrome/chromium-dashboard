@@ -168,8 +168,8 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
 
     if self.touched('security_review_status'):
       feature.security_review_status = self.parse_int('security_review_status')
-      update_items.append('security_review_status',
-          self.split_emails('security_review_status'))
+      update_items.append(('security_review_status',
+          self.parse_int('security_review_status')))
 
     if self.touched('privacy_review_status'):
       feature.privacy_review_status = self.parse_int('privacy_review_status')
@@ -342,9 +342,9 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
       feature.blink_components = (
           self.split_input('blink_components', delim=',') or
           [settings.DEFAULT_COMPONENT])
-      update_items.append('blink_components', (
+      update_items.append(('blink_components', (
           self.split_input('blink_components', delim=',') or
-          [settings.DEFAULT_COMPONENT]))
+          [settings.DEFAULT_COMPONENT])))
 
     if self.touched('devrel'):
       feature.devrel = self.split_emails('devrel')
