@@ -41,7 +41,7 @@ class MigrateCommentsToActivitiesTest(testing_config.CustomTestCase):
   def tearDown(self):
     for comm in review_models.Comment.query().fetch():
       comm.key.delete()
-    for activity in review_models.Activity.query():
+    for activity in review_models.Activity.query().fetch():
       activity.key.delete()
 
   def test_migration__remove_bad_activities(self):
@@ -61,7 +61,7 @@ class MigrateCommentsToActivitiesTest(testing_config.CustomTestCase):
     migration_handler = schema_migration.MigrateCommentsToActivities()
     result = migration_handler.get_template_data()
     # One comment is already migrated, so only 2 need migration.
-    expected = '2 comments migrated to activity entities.'
+    expected = '2 Comment entities migrated to Activity entities.'
     self.assertEqual(result, expected)
     activities = review_models.Activity.query().fetch()
     self.assertEqual(len(activities), 3)
@@ -69,5 +69,5 @@ class MigrateCommentsToActivitiesTest(testing_config.CustomTestCase):
 
     # The migration should be idempotent, so nothing should be migrated twice.
     result_2 = migration_handler.get_template_data()
-    expected = '0 comments migrated to activity entities.'
+    expected = '0 Comment entities migrated to Activity entities.'
     self.assertEqual(result_2, expected)
