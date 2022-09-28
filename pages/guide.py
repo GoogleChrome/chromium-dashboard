@@ -68,7 +68,7 @@ class FeatureCreateHandler(basehandlers.FlaskHandler):
     key = feature.put()
 
     # Write for new FeatureEntry entity.
-    feature_entry = core_models.Feature(
+    feature_entry = core_models.FeatureEntry(
         id=feature.key.integer_id(),
         category=int(self.form.get('category')),
         name=self.form.get('name'),
@@ -82,7 +82,6 @@ class FeatureCreateHandler(basehandlers.FlaskHandler):
         updater=signed_in_user.email(),
         accurate_as_of=datetime.now(),
         impl_status_chrome=core_enums.NO_ACTIVE_DEV,
-        standardization=core_enums.EDITORS_DRAFT,
         unlisted=self.form.get('unlisted') == 'on',
         web_dev_views=core_enums.DEV_NO_SIGNALS,
         blink_components=blink_components,
@@ -509,7 +508,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
     feature.updated_by = ndb.User(
         email=self.get_current_user().email(),
         _auth_domain='gmail.com')
-    update_items.append('updater', self.get_current_user().email())
+    update_items.append(('updater', self.get_current_user().email()))
     key = feature.put()
 
     # Write for new FeatureEntry entity.

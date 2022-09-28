@@ -1050,6 +1050,7 @@ class FeatureEntry(ndb.Model):  # Copy from Feature
   # Metadata: Access controls
   owners = ndb.StringProperty(repeated=True)  # copy from owner
   editors = ndb.StringProperty(repeated=True)
+  cc_recipients = ndb.StringProperty(repeated=True)
   unlisted = ndb.BooleanProperty(default=False)
   deleted = ndb.BooleanProperty(default=False)
 
