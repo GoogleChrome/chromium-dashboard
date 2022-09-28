@@ -613,6 +613,7 @@ HACK_BLINK_COMPONENTS = [
   "Privacy",
   "Privacy>Fingerprinting",
   "Privacy>Incognito",
+  "Privacy>NavTracking",
   "Security",
   "Services",
   "Services>ChromeToMobile",
