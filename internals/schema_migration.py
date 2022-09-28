@@ -94,7 +94,7 @@ class MigrateFeaturesToFeatureEntries(FlaskHandler):
     self.require_cron_header()
     features = Feature.query().fetch()
     feature_entry_keys = FeatureEntry.query().fetch(keys_only=True)
-    feature_entry_ids = set([key.integer_id() for key in feature_entry_keys])
+    feature_entry_ids = set(key.integer_id() for key in feature_entry_keys)
     migration_count = 0
     for feature in features:
       # If a FeatureEntry exists with the same ID, it has already been migrated.
