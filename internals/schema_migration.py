@@ -16,7 +16,7 @@ import logging
 from google.cloud import ndb
 
 from framework.basehandlers import FlaskHandler
-from internals.review_models import Activity, Comment
+from internals.review_models import Activity, Approval, Comment, Vote
 
 def handle_migration(original_cls, new_cls, kwarg_mapping,
     special_handler=None):
@@ -85,3 +85,36 @@ class MigrateCommentsToActivities(FlaskHandler):
     
     return (f'{old_migrations_deleted} Activities deleted '
         'from previous migration.')
+
+class MigrateApprovalsToVotes(FlaskHandler):
+
+  def get_template_data(self):
+    """Writes a Vote entity for each unmigrated Approval entity."""
+    self.require_cron_header()
+
+    approvals = Approval.query().fetch()
+    vote_keys = Vote.query().fetch(keys_only=True)
+    vote_ids = set(key.integer_id() for key in vote_keys)
+    migration_count = 0
+    for approval in approvals:
+      # Check if a Vote with the same ID has already been created.
+      # If so, do not create this Vote again.
+      if approval.key.integer_id() in vote_ids:
+        continue
+
+      kwargs = {
+        'id': approval.key.integer_id(),
+        'feature_id': approval.feature_id,
+        'gate_id': approval.field_id,
+        'state': approval.state,
+        'set_on': approval.set_on,
+        'set_by': approval.set_by
+      }
+
+      vote = Vote(**kwargs)
+      vote.put()
+      migration_count += 1
+
+    message = f'{migration_count} approvals migrated to vote entities.'
+    logging.info(message)
+    return message
