@@ -180,7 +180,7 @@ BLINK_PROCESS_STAGES = [
 
   ProcessStage(
       'Dev trials and iterate on design',
-      'Publicize availablity for developers to try. '
+      'Publicize availability for developers to try. '
       'Provide sample code. '
       'Request feedback from browser vendors.',
       [PI_SAMPLES,
@@ -282,7 +282,7 @@ BLINK_FAST_TRACK_STAGES = [
 
   ProcessStage(
       'Dev trials and iterate on implementation',
-      'Publicize availablity for developers to try. '
+      'Publicize availability for developers to try. '
       'Provide sample code. '
       'Act on feedback from partners and web developers.',
       [PI_SAMPLES,
@@ -358,7 +358,7 @@ PSA_ONLY_STAGES = [
 
   ProcessStage(
       'Dev trials and iterate on implementation',
-      '(Optional) Publicize availablity for developers to try. '
+      '(Optional) Publicize availability for developers to try. '
       'Act on feedback from partners and web developers.',
       [PI_R4DT_EMAIL,
        PI_VENDOR_SIGNALS,
