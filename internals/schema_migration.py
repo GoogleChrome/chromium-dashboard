@@ -26,7 +26,6 @@ def handle_migration(original_cls, new_cls, migration_cls, kwarg_mapping):
   for original in originals:
     # Check if a new entity with the same ID has already been created.
     # If so, do not create the entity again.
-    print(f'id={original.key.integer_id()}')
     if original.key.integer_id() in new_ids:
       continue
 
