@@ -123,14 +123,29 @@ class ApprovalConfig(ndb.Model):
       cls, feature_id, field_id, owners, next_action, additional_review):
     """Add or update an approval config object."""
     config = ApprovalConfig(feature_id=feature_id, field_id=field_id)
+    gate = None
     for existing in cls.get_configs(feature_id):
       if existing.field_id == field_id:
         config = existing
+        # Check if a Gate entity also exists with the same ID.
+        existing_gate = Gate.get_by_id(existing.key.integer_id())
+        if existing_gate:
+          gate = existing_gate
 
     config.owners = owners or []
     config.next_action = next_action
     config.additional_review = additional_review
     config.put()
+
+    # Write matching Gate entity if it does not already exist.
+    if not gate:
+      # stage_id and state are placeholder values and will be migrated later.
+      gate = Gate(id=config.key.integer_id(), stage_id=0, state=0,
+          feature_id=feature_id, gate_type=field_id)
+    gate.owners = config.owners
+    gate.next_action = config.next_action
+    gate.additional_review = config.additional_review
+    gate.put()
 
 
 class Comment(ndb.Model):
