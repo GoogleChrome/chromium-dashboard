@@ -35,6 +35,9 @@ cron:
 - description: Copy over Feature entities to new FeatureEntry entities
   url: /cron/schema_migration_feature_featureentry
   schedule: 1 of jan 00:00
+- description: Copy over ApprovalConfig entities to new Gate entities
+  url: /cron/schema_migration_approvalconfig_gate
+  schedule: 1 of jan 00:00
 - description: Copy over deprecated standardization field
   url: /cron/write_standard_maturity
   schedule: 1 of jan 00:00

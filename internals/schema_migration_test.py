@@ -301,3 +301,43 @@ class MigrateFeaturesToFeatureEntriesTest(testing_config.CustomTestCase):
     result_2 = migration_handler.get_template_data()
     expected = '0 Feature entities migrated to FeatureEntry entities.'
     self.assertEqual(result_2, expected)
+class MigrateApprovalConfigsToGatesTest(testing_config.CustomTestCase):
+
+  def setUp(self):
+    config_1 = review_models.ApprovalConfig(id=1, feature_id=1, field_id=1,
+        owners=['owner1@example.com'], next_action=datetime(2020, 1, 1))
+    config_1.put()
+
+    config_2 = review_models.ApprovalConfig(id=2, feature_id=1, field_id=2,
+        owners=['owner1@example.com'], next_action=datetime(2020, 3, 1))
+    config_2.put()
+
+    # Gate 3 is already migrated.
+    config_3 = review_models.ApprovalConfig(id=3, feature_id=2, field_id=2,
+        owners=['owner2@example.com'], next_action=datetime(2022, 7, 1))
+    config_3.put()
+    gate_3 = review_models.Gate(id=3, feature_id=2, stage_id=0,
+        gate_type=2, state=0, owners=['owner2@example.com'],
+        next_action=datetime(2022, 7, 1))
+    gate_3.put()
+  
+  def tearDown(self):
+    for original in review_models.ApprovalConfig.query().fetch():
+      original.key.delete()
+    for new_entity in review_models.Gate.query().fetch():
+      new_entity.key.delete()
+
+  def test_migration(self):
+    migration_handler = schema_migration.MigrateApprovalConfigsToGates()
+    result = migration_handler.get_template_data()
+    # One is already migrated, so only 2 need migration.
+    expected = '2 ApprovalConfig entities migrated to Gate entities.'
+    self.assertEqual(result, expected)
+    originals = review_models.ApprovalConfig.query().fetch()
+    self.assertEqual(len(originals), 3)
+    self.assertEqual(2020, originals[0].next_action.year)
+
+    # The migration should be idempotent, so nothing should be migrated twice.
+    result_2 = migration_handler.get_template_data()
+    expected = '0 ApprovalConfig entities migrated to Gate entities.'
+    self.assertEqual(result_2, expected)

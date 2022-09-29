@@ -196,6 +196,7 @@ internals_routes = [
   ('/cron/remove_inactive_users', inactive_users.RemoveInactiveUsersHandler),
   ('/cron/schema_migration_comment_activity', schema_migration.MigrateCommentsToActivities),
   ('/cron/schema_migration_approval_vote', schema_migration.MigrateApprovalsToVotes),
+  ('/cron/schema_migration_approvalconfig_gate', schema_migration.MigrateApprovalConfigsToGates),
   ('/cron/schema_migration_feature_featureentry', schema_migration.MigrateFeaturesToFeatureEntries),
   ('/cron/write_standard_maturity', deprecate_field.WriteStandardMaturityHandler),
 
