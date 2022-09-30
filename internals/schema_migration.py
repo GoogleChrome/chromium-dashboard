@@ -113,8 +113,7 @@ class MigrateApprovalConfigsToGates(FlaskHandler):
         ('gate_type', 'field_id'),
         ('owners', 'owners'),
         ('next_action', 'next_action'),
-        ('additional_review', 'additional_review')
-    ]
+        ('additional_review', 'additional_review')]
     return handle_migration(ApprovalConfig, Gate, kwarg_mapping,
         self.special_handler)
   
