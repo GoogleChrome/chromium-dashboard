@@ -18,7 +18,8 @@ from google.cloud import ndb
 from framework.basehandlers import FlaskHandler
 from internals.review_models import Activity, Comment
 
-def handle_migration(original_cls, new_cls, migration_cls, kwarg_mapping):
+def handle_migration(original_cls, new_cls, kwarg_mapping,
+    special_handler=None):
   originals = original_cls.query().fetch()
   new_keys = new_cls.query().fetch(keys_only=True)
   new_ids = set(key.integer_id() for key in new_keys)
@@ -29,12 +30,13 @@ def handle_migration(original_cls, new_cls, migration_cls, kwarg_mapping):
     if original.key.integer_id() in new_ids:
       continue
 
-    kwargs = {k : getattr(original, v) for (k, v) in kwarg_mapping}
+    kwargs = {new_field : getattr(original, old_field)
+        for (new_field, old_field) in kwarg_mapping}
     kwargs['id'] = original.key.integer_id()
 
-    # If any fields need special mapping, handle them in the class method.
-    if hasattr(migration_cls, 'handle_special_fields'):
-      migration_cls.handle_special_fields(original, kwargs)
+    # If any fields need special mapping, handle them in the given method.
+    if callable(special_handler):
+      special_handler(original, kwargs)
 
     new_entity = new_cls(**kwargs)
     new_entity.put()
@@ -60,7 +62,7 @@ class MigrateCommentsToActivities(FlaskHandler):
         ('content', 'content'),
         ('deleted_by', 'deleted_by'),
         ('created', 'created')]
-    return handle_migration(Comment, Activity, self, kwarg_mapping)
+    return handle_migration(Comment, Activity, kwarg_mapping)
 
   def _remove_bad_id_activities(self):
     """Deletes old Activity entities that do not have a matching comment ID."""
