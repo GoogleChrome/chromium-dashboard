@@ -241,16 +241,16 @@ class MigrateFeaturesToFeatureEntriesTest(testing_config.CustomTestCase):
   def test_migration(self):
     migration_handler = schema_migration.MigrateFeaturesToFeatureEntries()
     result = migration_handler.get_template_data()
-    # One feature is already migrated, so only 2 other features to migrate.
-    expected = '2 features migrated to FeatureEntry entities.'
+    # One is already migrated, so only 2 others to migrate.
+    expected = '2 Feature entities migrated to FeatureEntry entities.'
     self.assertEqual(result, expected)
     feature_entries = core_models.FeatureEntry.query().fetch()
     self.assertEqual(len(feature_entries), 3)
     
     # Check if all fields have been copied over.
-    q = core_models.FeatureEntry.query().filter(
-        core_models.FeatureEntry.key == ndb.Key(core_models.FeatureEntry, 1))
-    feature_entry_1 = q.fetch()[0]
+    feature_entry_1 = core_models.FeatureEntry.get_by_id(
+        self.feature_1.key.integer_id())
+    self.assertIsNotNone(feature_entry_1)
     self.assertEqual(feature_entry_1.owners, self.feature_1.owner)
     self.assertEqual(feature_entry_1.updater, self.feature_1.updated_by.email())
     self.assertEqual(feature_entry_1.feature_notes, self.feature_1.comments)
@@ -260,5 +260,5 @@ class MigrateFeaturesToFeatureEntriesTest(testing_config.CustomTestCase):
 
     # The migration should be idempotent, so nothing should be migrated twice.
     result_2 = migration_handler.get_template_data()
-    expected = '0 features migrated to FeatureEntry entities.'
+    expected = '0 Feature entities migrated to FeatureEntry entities.'
     self.assertEqual(result_2, expected)

@@ -92,89 +92,76 @@ class MigrateFeaturesToFeatureEntries(FlaskHandler):
   def get_template_data(self):
     """Writes a FeatureEntry entity for each unmigrated Feature entity"""
     self.require_cron_header()
-    features = Feature.query().fetch()
-    feature_entry_keys = FeatureEntry.query().fetch(keys_only=True)
-    feature_entry_ids = set(key.integer_id() for key in feature_entry_keys)
-    migration_count = 0
-    for feature in features:
-      # If a FeatureEntry exists with the same ID, it has already been migrated.
-      if feature.key.integer_id() in feature_entry_ids:
-        continue
 
-      # updater will use the email from the updated_by field
-      updater = feature.updated_by.email() if feature.updated_by else None
+    kwarg_mapping = [
+        ('created', 'created'),
+        ('updated', 'updated'),
+        ('accurate_as_of', 'accurate_as_of'),
+        ('creator', 'creator'),
+        ('owners', 'owner'),
+        ('editors', 'editors'),
+        ('unlisted', 'unlisted'),
+        ('cc_recipients', 'cc_recipients'),
+        ('feature_notes', 'comments'),  # Renamed
+        ('deleted', 'deleted'),
+        ('name', 'name'),
+        ('summary', 'summary'),
+        ('category', 'category'),
+        ('blink_components', 'blink_components'),
+        ('star_count', 'star_count'),
+        ('search_tags', 'search_tags'),
+        ('feature_type', 'feature_type'),
+        ('intent_stage', 'intent_stage'),
+        ('bug_url', 'bug_url'),
+        ('launch_bug_url', 'launch_bug_url'),
+        ('impl_status_chrome', 'impl_status_chrome'),
+        ('flag_name', 'flag_name'),
+        ('ongoing_constraints', 'ongoing_constraints'),
+        ('motivation', 'motivation'),
+        ('devtrial_instructions', 'devtrial_instructions'),
+        ('activation_risks', 'activation_risks'),
+        ('measurement', 'measurement'),
+        ('initial_public_proposal_url', 'initial_public_proposal_url'),
+        ('explainer_links', 'explainer_links'),
+        ('requires_embedder_support', 'requires_embedder_support'),
+        ('standard_maturity', 'standard_maturity'),
+        ('spec_link', 'spec_link'),
+        ('api_spec', 'api_spec'),
+        ('spec_mentors', 'spec_mentors'),
+        ('interop_compat_risks', 'interop_compat_risks'),
+        ('prefixed', 'prefixed'),
+        ('all_platforms', 'all_platforms'),
+        ('all_platforms_descr', 'all_platforms_descr'),
+        ('tag_review', 'tag_review'),
+        ('tag_review_status', 'tag_review_status'),
+        ('non_oss_deps', 'non_oss_deps'),
+        ('anticipated_spec_changes', 'anticipated_spec_changes'),
+        ('ff_views', 'ff_views'),
+        ('safari_views', 'safari_views'),
+        ('web_dev_views', 'web_dev_views'),
+        ('ff_views_link', 'ff_views_link'),
+        ('safari_views_link', 'safari_views_link'),
+        ('web_dev_views_link', 'web_dev_views_link'),
+        ('ff_views_notes', 'ff_views_notes'),
+        ('safari_views_notes', 'safari_views_notes'),
+        ('web_dev_views_notes', 'web_dev_views_notes'),
+        ('other_views_notes', 'other_views_notes'),
+        ('security_risks', 'security_risks'),
+        ('security_review_status', 'security_review_status'),
+        ('privacy_review_status', 'privacy_review_status'),
+        ('ergonomics_risks', 'ergonomics_risks'),
+        ('wpt', 'wpt'),
+        ('wpt_descr', 'wpt_descr'),
+        ('webview_risks', 'webview_risks'),
+        ('devrel', 'devrel'),
+        ('debuggability', 'debuggability'),
+        ('doc_links', 'doc_links'),
+        ('sample_links', 'sample_links')]
+    return handle_migration(Feature, FeatureEntry,kwarg_mapping,
+        self.special_handler)
 
-      kwargs = {
-          'id': feature.key.integer_id(),
-          'created': feature.created,
-          'updated': feature.updated,
-          'accurate_as_of': feature.accurate_as_of,
-          'creator': feature.creator,
-          'updater': updater,
-          'owners': feature.owner,  # Renamed
-          'editors': feature.editors,
-          'unlisted': feature.unlisted,
-          'cc_recipients': feature.cc_recipients,
-          'feature_notes': feature.comments,  # Renamed
-          'deleted': feature.deleted,
-          'name': feature.name,
-          'summary': feature.summary,
-          'category': feature.category,
-          'blink_components': feature.blink_components,
-          'star_count': feature.star_count,
-          'search_tags': feature.search_tags,
-          'feature_type': feature.feature_type,
-          'intent_stage': feature.intent_stage,
-          'bug_url': feature.bug_url,
-          'launch_bug_url': feature.launch_bug_url,
-          'impl_status_chrome': feature.impl_status_chrome,
-          'flag_name': feature.flag_name,
-          'ongoing_constraints': feature.ongoing_constraints,
-          'motivation': feature.motivation,
-          'devtrial_instructions': feature.devtrial_instructions,
-          'activation_risks': feature.activation_risks,
-          'measurement': feature.measurement,
-          'initial_public_proposal_url': feature.initial_public_proposal_url,
-          'explainer_links': feature.explainer_links,
-          'requires_embedder_support': feature.requires_embedder_support,
-          'standard_maturity': feature.standard_maturity,
-          'spec_link': feature.spec_link,
-          'api_spec': feature.api_spec,
-          'spec_mentors': feature.spec_mentors,
-          'interop_compat_risks': feature.interop_compat_risks,
-          'prefixed': feature.prefixed,
-          'all_platforms': feature.all_platforms,
-          'all_platforms_descr': feature.all_platforms_descr,
-          'tag_review': feature.tag_review,
-          'tag_review_status': feature.tag_review_status,
-          'non_oss_deps': feature.non_oss_deps,
-          'anticipated_spec_changes': feature.anticipated_spec_changes,
-          'ff_views': feature.ff_views,
-          'safari_views': feature.safari_views,
-          'web_dev_views': feature.web_dev_views,
-          'ff_views_link': feature.ff_views_link,
-          'safari_views_link': feature.safari_views_link,
-          'web_dev_views_link': feature.web_dev_views_link,
-          'ff_views_notes': feature.ff_views_notes,
-          'safari_views_notes': feature.safari_views_notes,
-          'web_dev_views_notes': feature.web_dev_views_notes,
-          'other_views_notes': feature.other_views_notes,
-          'security_risks': feature.security_risks,
-          'security_review_status': feature.security_review_status,
-          'privacy_review_status': feature.privacy_review_status,
-          'ergonomics_risks': feature.ergonomics_risks,
-          'wpt': feature.wpt,
-          'wpt_descr': feature.wpt_descr,
-          'webview_risks': feature.webview_risks,
-          'devrel': feature.devrel,
-          'debuggability': feature.debuggability,
-          'doc_links': feature.doc_links,
-          'sample_links': feature.sample_links}
-
-      feature_entry = FeatureEntry(**kwargs)
-      feature_entry.put()
-      migration_count += 1
-
-    message = f'{migration_count} features migrated to FeatureEntry entities.'
-    logging.info(message)
-    return message
+  @classmethod
+  def special_handler(cls, original_entity, kwargs):
+    # updater will use the email from the updated_by field
+    kwargs['updater'] = (original_entity.updated_by.email()
+        if original_entity.updated_by else None)
