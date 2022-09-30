@@ -92,29 +92,10 @@ class MigrateApprovalsToVotes(FlaskHandler):
     """Writes a Vote entity for each unmigrated Approval entity."""
     self.require_cron_header()
 
-    approvals = Approval.query().fetch()
-    vote_keys = Vote.query().fetch(keys_only=True)
-    vote_ids = set(key.integer_id() for key in vote_keys)
-    migration_count = 0
-    for approval in approvals:
-      # Check if a Vote with the same ID has already been created.
-      # If so, do not create this Vote again.
-      if approval.key.integer_id() in vote_ids:
-        continue
-
-      kwargs = {
-        'id': approval.key.integer_id(),
-        'feature_id': approval.feature_id,
-        'gate_id': approval.field_id,
-        'state': approval.state,
-        'set_on': approval.set_on,
-        'set_by': approval.set_by
-      }
-
-      vote = Vote(**kwargs)
-      vote.put()
-      migration_count += 1
-
-    message = f'{migration_count} approvals migrated to vote entities.'
-    logging.info(message)
-    return message
+    kwarg_mapping = [
+        ('feature_id', 'feature_id'),
+        ('gate_id', 'field_id'),
+        ('state', 'state'),
+        ('set_on', 'set_on'),
+        ('set_by', 'set_by')]
+    return handle_migration(Approval, Vote, kwarg_mapping)

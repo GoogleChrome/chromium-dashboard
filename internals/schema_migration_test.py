@@ -101,7 +101,7 @@ class MigrateApprovalsToVotesTest(testing_config.CustomTestCase):
     migration_handler = schema_migration.MigrateApprovalsToVotes()
     result = migration_handler.get_template_data()
     # One approval is already migrated, so only 2 need migration.
-    expected = '2 approvals migrated to vote entities.'
+    expected = '2 Approval entities migrated to Vote entities.'
     self.assertEqual(result, expected)
     approvals = review_models.Approval.query().fetch()
     self.assertEqual(len(approvals), 3)
@@ -109,5 +109,5 @@ class MigrateApprovalsToVotesTest(testing_config.CustomTestCase):
 
     # The migration should be idempotent, so nothing should be migrated twice.
     result_2 = migration_handler.get_template_data()
-    expected = '0 approvals migrated to vote entities.'
+    expected = '0 Approval entities migrated to Vote entities.'
     self.assertEqual(result_2, expected)
