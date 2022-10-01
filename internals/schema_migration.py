@@ -18,6 +18,35 @@ from google.cloud import ndb
 from framework.basehandlers import FlaskHandler
 from internals.review_models import Activity, Comment
 
+def handle_migration(original_cls, new_cls, kwarg_mapping,
+    special_handler=None):
+  originals = original_cls.query().fetch()
+  new_keys = new_cls.query().fetch(keys_only=True)
+  new_ids = set(key.integer_id() for key in new_keys)
+  migration_count = 0
+  for original in originals:
+    # Check if a new entity with the same ID has already been created.
+    # If so, do not create the entity again.
+    if original.key.integer_id() in new_ids:
+      continue
+
+    kwargs = {new_field : getattr(original, old_field)
+        for (new_field, old_field) in kwarg_mapping}
+    kwargs['id'] = original.key.integer_id()
+
+    # If any fields need special mapping, handle them in the given method.
+    if callable(special_handler):
+      special_handler(original, kwargs)
+
+    new_entity = new_cls(**kwargs)
+    new_entity.put()
+    migration_count += 1
+
+  message = (f'{migration_count} {original_cls.__name__} entities migrated '
+      f'to {new_cls.__name__} entities.')
+  logging.info(message)
+  return message
+
 class MigrateCommentsToActivities(FlaskHandler):
 
   def get_template_data(self):
@@ -26,33 +55,15 @@ class MigrateCommentsToActivities(FlaskHandler):
 
     logging.info(self._remove_bad_id_activities())
 
-    comments = Comment.query().fetch()
-    activity_keys = Activity.query().fetch(keys_only=True)
-    activity_ids = set(key.integer_id() for key in activity_keys)
-    migration_count = 0
-    for comment in comments:
-      # Check if an Activity with the same ID has already been created.
-      # If so, do not create this activity again.
-      if comment.key.integer_id() in activity_ids:
-        continue
+    kwarg_mapping = [
+        ('feature_id', 'feature_id'),
+        ('gate_id', 'field_id'),
+        ('author', 'author'),
+        ('content', 'content'),
+        ('deleted_by', 'deleted_by'),
+        ('created', 'created')]
+    return handle_migration(Comment, Activity, kwarg_mapping)
 
-      kwargs = {
-        'id': comment.key.integer_id(),
-        'feature_id': comment.feature_id,
-        'gate_id': comment.field_id,
-        'author': comment.author,
-        'content': comment.content,
-        'deleted_by': comment.deleted_by,
-        'created': comment.created
-      }
-      activity = Activity(**kwargs)
-      activity.put()
-      migration_count += 1
-
-    message = f'{migration_count} comments migrated to activity entities.'
-    logging.info(message)
-    return message
-  
   def _remove_bad_id_activities(self):
     """Deletes old Activity entities that do not have a matching comment ID."""
     q = Activity.query()
