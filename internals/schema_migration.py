@@ -17,7 +17,7 @@ from google.cloud import ndb
 
 from framework.basehandlers import FlaskHandler
 from internals.core_models import Feature, FeatureEntry
-from internals.review_models import Activity, Comment
+from internals.review_models import Activity, Approval, Comment, Vote
 
 def handle_migration(original_cls, new_cls, kwarg_mapping,
     special_handler=None):
@@ -86,6 +86,20 @@ class MigrateCommentsToActivities(FlaskHandler):
     
     return (f'{old_migrations_deleted} Activities deleted '
         'from previous migration.')
+
+class MigrateApprovalsToVotes(FlaskHandler):
+
+  def get_template_data(self):
+    """Writes a Vote entity for each unmigrated Approval entity."""
+    self.require_cron_header()
+
+    kwarg_mapping = [
+        ('feature_id', 'feature_id'),
+        ('gate_id', 'field_id'),
+        ('state', 'state'),
+        ('set_on', 'set_on'),
+        ('set_by', 'set_by')]
+    return handle_migration(Approval, Vote, kwarg_mapping)
 
 class MigrateFeaturesToFeatureEntries(FlaskHandler):
 
