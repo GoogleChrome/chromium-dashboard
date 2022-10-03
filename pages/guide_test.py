@@ -80,7 +80,16 @@ class FeatureCreateTest(testing_config.CustomTestCase):
     self.assertEqual(1, feature.category)
     self.assertEqual('Feature name', feature.name)
     self.assertEqual('Feature summary', feature.summary)
+    
+    # Ensure FeatureEntry entity was also created.
+    feature_entry = core_models.FeatureEntry.get_by_id(new_feature_id)
+    self.assertEqual(1, feature_entry.category)
+    self.assertEqual('Feature name', feature_entry.name)
+    self.assertEqual('Feature summary', feature_entry.summary)
+    self.assertEqual('user1@google.com', feature_entry.creator)
+
     feature.key.delete()
+    feature_entry.key.delete()
 
 
 class FeatureEditHandlerTest(testing_config.CustomTestCase):
@@ -92,6 +101,12 @@ class FeatureEditHandlerTest(testing_config.CustomTestCase):
         impl_status_chrome=1)
     self.feature_1.put()
     self.stage = core_enums.INTENT_INCUBATE  # Shows first form
+
+    self.feature_entry_1 = core_models.FeatureEntry(
+        id=self.feature_1.key.integer_id(), name='feature one',
+        summary='sum', owners=['user1@google.com'], category=1,
+        standard_maturity=1, web_dev_views=1, impl_status_chrome=1)
+    self.feature_entry_1.put()
 
     self.request_path = ('/guide/stage/%d/%d' % (
         self.feature_1.key.integer_id(), self.stage))
@@ -173,3 +188,10 @@ class FeatureEditHandlerTest(testing_config.CustomTestCase):
     self.assertEqual('Revised feature name', revised_feature.name)
     self.assertEqual('Revised feature summary', revised_feature.summary)
     self.assertEqual(84, revised_feature.shipped_milestone)
+
+    # Ensure changes were also made to FeatureEntry entity
+    revised_entry = core_models.FeatureEntry.get_by_id(
+        self.feature_1.key.integer_id())
+    self.assertEqual(2, revised_entry.category)
+    self.assertEqual('Revised feature name', revised_entry.name)
+    self.assertEqual('Revised feature summary', revised_entry.summary)
