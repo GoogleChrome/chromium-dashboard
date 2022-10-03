@@ -108,7 +108,7 @@ class Approval(ndb.Model):
         id=new_appr.key.integer_id(), feature_id=feature_id, gate_id=field_id,
         state=new_state, set_on=now, set_by=set_by_email)
     new_vote.put()
-    logging.info('new_appr is %r', new_vote.key.integer_id())
+    logging.info('new_vote is %r', new_vote.key.integer_id())
 
   @classmethod
   def clear_request(cls, feature_id, field_id):
