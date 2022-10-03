@@ -26,8 +26,11 @@ cron:
 - description: Removes any users that have been inactive for 9 months.
   url: /cron/remove_inactive_users
   schedule: 1st monday of month 9:00
-- description: Copy over comment entities to new activity entities
+- description: Copy over Comment entities to new Activity entities
   url: /cron/schema_migration_comment_activity
+  schedule: 1 of jan 00:00
+- description: Copy over Feature entities to new FeatureEntry entities
+  url: /cron/schema_migration_feature_featureentry
   schedule: 1 of jan 00:00
 - description: Copy over deprecated standardization field
   url: /cron/write_standard_maturity

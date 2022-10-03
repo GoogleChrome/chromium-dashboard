@@ -12,10 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from google.cloud import ndb
+
 import testing_config  # Must be imported before the module under test.
 from datetime import datetime
 
-from internals import review_models
+from internals import core_models, review_models
 from internals import schema_migration
 
 class MigrateCommentsToActivitiesTest(testing_config.CustomTestCase):
@@ -70,4 +72,193 @@ class MigrateCommentsToActivitiesTest(testing_config.CustomTestCase):
     # The migration should be idempotent, so nothing should be migrated twice.
     result_2 = migration_handler.get_template_data()
     expected = '0 Comment entities migrated to Activity entities.'
+    self.assertEqual(result_2, expected)
+
+
+class MigrateFeaturesToFeatureEntriesTest(testing_config.CustomTestCase):
+
+  # Fields that do not require name change or revisions during migration.
+  FEATURE_FIELDS = ['created', 'updated', 'accurate_as_of', 'editors', 'creator',
+      'unlisted', 'deleted', 'name', 'summary', 'category', 'blink_components',
+      'cc_recipients', 'star_count', 'search_tags', 'feature_type',
+      'intent_stage', 'bug_url', 'launch_bug_url', 'impl_status_chrome',
+      'flag_name', 'ongoing_constraints', 'motivation', 'devtrial_instructions',
+      'activation_risks', 'measurement', 'initial_public_proposal_url',
+      'explainer_links', 'requires_embedder_support', 'standard_maturity',
+      'spec_link', 'api_spec', 'spec_mentors', 'interop_compat_risks',
+      'prefixed', 'all_platforms', 'all_platforms_descr', 'tag_review',
+      'tag_review_status', 'non_oss_deps', 'anticipated_spec_changes',
+      'ff_views', 'safari_views', 'web_dev_views', 'ff_views_link',
+      'safari_views_link', 'web_dev_views_link', 'ff_views_notes',
+      'safari_views_notes', 'web_dev_views_notes', 'other_views_notes',
+      'security_risks', 'security_review_status', 'privacy_review_status',
+      'ergonomics_risks', 'wpt', 'wpt_descr', 'webview_risks', 'devrel',
+      'debuggability', 'doc_links', 'sample_links']
+
+  def setUp(self):
+    self.feature_1 = core_models.Feature(
+        id=1,
+        created=datetime(2020, 1, 1),
+        updated=datetime(2020, 7, 1),
+        accurate_as_of=datetime(2020, 3, 1),
+        created_by=ndb.User(
+            _auth_domain='example.com', email='user@example.com'),
+        updated_by=ndb.User(
+            _auth_domain='example.com', email='editor@example.com'),
+        owner=['owner@example.com'],
+        creator='creator@example.com',
+        editors=['editor@example.com'],
+        cc_recipients=['cc_user@example.com'],
+        unlisted=False,
+        deleted=False,
+        name='feature_one',
+        summary='newly migrated summary',
+        comments='Some comments.',
+        category=1,
+        blink_components=['Blink'],
+        star_count=3,
+        search_tags=['tag1', 'tag2'],
+        feature_type=1,
+        intent_stage=1,
+        bug_url='https://bug.example.com',
+        launch_bug_url='https://bug.example.com',
+        impl_status_chrome=1,
+        flag_name='flagname',
+        ongoing_constraints='constraints',
+        motivation='motivation',
+        devtrial_instructions='instructions',
+        activation_risks='risks',
+        measurement=None,
+        initial_public_proposal_url='proposal.example.com',
+        explainer_links=['explainer.example.com'],
+        requires_embedder_support=False,
+        standard_maturity=1,
+        standardization=1,
+        spec_link='spec.example.com',
+        api_spec=False,
+        spec_mentors=['mentor1', 'mentor2'],
+        interop_compat_risks='risks',
+        prefixed=True,
+        all_platforms=True,
+        all_platforms_descr='All platforms',
+        tag_review='tag_review',
+        tag_review_status=1,
+        non_oss_deps='oss_deps',
+        anticipated_spec_changes='spec_changes',
+        ff_views=1,
+        safari_views=1,
+        web_dev_views=1,
+        ff_views_link='view.example.com',
+        safari_views_link='view.example.com',
+        web_dev_views_link='view.example.com',
+        ff_views_notes='notes',
+        safari_views_notes='notes',
+        web_dev_views_notes='notes',
+        other_views_notes='notes',
+        security_risks='risks',
+        security_review_status=1,
+        privacy_review_status=1,
+        ergonomics_risks='risks',
+        wpt=True,
+        wpt_descr='description',
+        webview_risks='risks',
+        devrel=['devrel'],
+        debuggability='debuggability',
+        doc_links=['link1.example.com', 'link2.example.com'],
+        sample_links=[])
+    self.feature_1.put()
+
+    self.feature_2 = core_models.Feature(
+        id=2,
+        created=datetime(2020, 4, 1),
+        updated=datetime(2020, 7, 1),
+        accurate_as_of=datetime(2020, 6, 1),
+        created_by=ndb.User(
+            _auth_domain='example.com', email='user@example.com'),
+        updated_by=ndb.User(
+            _auth_domain='example.com', email='editor@example.com'),
+        owner=['owner@example.com'],
+        editors=['editor@example.com'],
+        unlisted=False,
+        deleted=False,
+        name='feature_one',
+        summary='newly migrated summary',
+        standardization=1,
+        category=1,
+        impl_status_chrome=1,
+        web_dev_views=1)
+    self.feature_2.put()
+
+    self.feature_3 = core_models.Feature(
+        id=3,
+        created=datetime(2020, 4, 1),
+        updated=datetime(2020, 7, 1),
+        accurate_as_of=datetime(2020, 6, 1),
+        created_by=ndb.User(
+            _auth_domain='example.com', email='user@example.com'),
+        updated_by=ndb.User(
+            _auth_domain='example.com', email='editor@example.com'),
+        owner=['owner@example.com'],
+        editors=['editor@example.com'],
+        unlisted=False,
+        deleted=False,
+        name='feature_three',
+        summary='migrated summary',
+        standardization=1,
+        category=1,
+        impl_status_chrome=1,
+        web_dev_views=1)
+    self.feature_3.put()
+
+    # Feature 3 is already migrated.
+    self.feature_entry_3 = core_models.FeatureEntry(
+        id=3,
+        created=datetime(2020, 4, 1),
+        updated=datetime(2020, 7, 1),
+        accurate_as_of=datetime(2020, 6, 1),
+        creator='user@example.com',
+        updater='editor@example.com',
+        owners=['owner@example.com'],
+        editors=['editor@example.com'],
+        unlisted=False,
+        deleted=False,
+        name='feature_three',
+        summary='migrated summary',
+        standard_maturity=1,
+        impl_status_chrome=1,
+        category=1,
+        ff_views=1,
+        safari_views=1,
+        web_dev_views=1)
+    self.feature_entry_3.put()
+
+  def tearDown(self):
+    for feature in core_models.Feature.query().fetch():
+      feature.key.delete()
+    for feature_entry in core_models.FeatureEntry.query().fetch():
+      feature_entry.key.delete()
+
+  def test_migration(self):
+    migration_handler = schema_migration.MigrateFeaturesToFeatureEntries()
+    result = migration_handler.get_template_data()
+    # One is already migrated, so only 2 others to migrate.
+    expected = '2 Feature entities migrated to FeatureEntry entities.'
+    self.assertEqual(result, expected)
+    feature_entries = core_models.FeatureEntry.query().fetch()
+    self.assertEqual(len(feature_entries), 3)
+    
+    # Check if all fields have been copied over.
+    feature_entry_1 = core_models.FeatureEntry.get_by_id(
+        self.feature_1.key.integer_id())
+    self.assertIsNotNone(feature_entry_1)
+    self.assertEqual(feature_entry_1.owners, self.feature_1.owner)
+    self.assertEqual(feature_entry_1.updater, self.feature_1.updated_by.email())
+    self.assertEqual(feature_entry_1.feature_notes, self.feature_1.comments)
+    for field in self.FEATURE_FIELDS:
+      self.assertEqual(
+          getattr(feature_entry_1, field), getattr(self.feature_1, field))
+
+    # The migration should be idempotent, so nothing should be migrated twice.
+    result_2 = migration_handler.get_template_data()
+    expected = '0 Feature entities migrated to FeatureEntry entities.'
     self.assertEqual(result_2, expected)
