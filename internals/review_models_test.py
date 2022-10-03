@@ -36,15 +36,6 @@ class ApprovalTest(testing_config.CustomTestCase):
         set_on=datetime.datetime.now() - datetime.timedelta(1),
         set_by='one@example.com')
     self.appr_1.put()
-
-    # Approval 1 has already been migrated to a Vote entity.
-    self.vote_1 = review_models.Vote(id=self.appr_1.key.integer_id(),
-        feature_id=self.feature_1_id, gate_id=1,
-        state=review_models.Vote.REVIEW_REQUESTED,
-        set_on=datetime.datetime.now() - datetime.timedelta(1),
-        set_by='one@example.com')
-    self.vote_1.put()
-
     self.appr_2 = review_models.Approval(
         feature_id=self.feature_1_id, field_id=1,
         state=review_models.Approval.APPROVED,
@@ -62,8 +53,6 @@ class ApprovalTest(testing_config.CustomTestCase):
     self.feature_1.key.delete()
     for appr in review_models.Approval.query().fetch(None):
       appr.key.delete()
-    for vote in review_models.Vote.query().fetch():
-      vote.key.delete()
 
   def test_get_approvals(self):
     """We can retrieve Approval entities."""
@@ -104,9 +93,6 @@ class ApprovalTest(testing_config.CustomTestCase):
     self.assertEqual(
         4,
         len(review_models.Approval.query().fetch(None)))
-    
-    # Check that the Vote entity was also created.
-    self.assertEqual(2, len(review_models.Vote.query().fetch()))
 
   def test_clear_request(self):
     """We can clear a review request so that it is no longer pending."""
@@ -119,12 +105,6 @@ class ApprovalTest(testing_config.CustomTestCase):
         feature_id=self.feature_1_id, field_id=1,
         states=[review_models.Approval.REVIEW_REQUESTED])
     self.assertEqual([], remaining_apprs)
-
-    # Ensure that Vote entities are also deleted.
-    remaining_votes = review_models.Vote.get_votes(
-        feature_id=self.feature_1_id, gate_id=1,
-        states=[review_models.Approval.REVIEW_REQUESTED])
-    self.assertEqual([], remaining_votes)
 
 
 class CommentTest(testing_config.CustomTestCase):
