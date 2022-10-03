@@ -16,6 +16,7 @@ import logging
 from google.cloud import ndb
 
 from framework.basehandlers import FlaskHandler
+from internals.core_models import Feature, FeatureEntry
 from internals.review_models import Activity, Approval, Comment, Vote
 
 def handle_migration(original_cls, new_cls, kwarg_mapping,
@@ -99,3 +100,82 @@ class MigrateApprovalsToVotes(FlaskHandler):
         ('set_on', 'set_on'),
         ('set_by', 'set_by')]
     return handle_migration(Approval, Vote, kwarg_mapping)
+
+class MigrateFeaturesToFeatureEntries(FlaskHandler):
+
+  def get_template_data(self):
+    """Writes a FeatureEntry entity for each unmigrated Feature entity"""
+    self.require_cron_header()
+
+    kwarg_mapping = [
+        ('created', 'created'),
+        ('updated', 'updated'),
+        ('accurate_as_of', 'accurate_as_of'),
+        ('creator', 'creator'),
+        ('owners', 'owner'),
+        ('editors', 'editors'),
+        ('unlisted', 'unlisted'),
+        ('cc_recipients', 'cc_recipients'),
+        ('feature_notes', 'comments'),  # Renamed
+        ('deleted', 'deleted'),
+        ('name', 'name'),
+        ('summary', 'summary'),
+        ('category', 'category'),
+        ('blink_components', 'blink_components'),
+        ('star_count', 'star_count'),
+        ('search_tags', 'search_tags'),
+        ('feature_type', 'feature_type'),
+        ('intent_stage', 'intent_stage'),
+        ('bug_url', 'bug_url'),
+        ('launch_bug_url', 'launch_bug_url'),
+        ('impl_status_chrome', 'impl_status_chrome'),
+        ('flag_name', 'flag_name'),
+        ('ongoing_constraints', 'ongoing_constraints'),
+        ('motivation', 'motivation'),
+        ('devtrial_instructions', 'devtrial_instructions'),
+        ('activation_risks', 'activation_risks'),
+        ('measurement', 'measurement'),
+        ('initial_public_proposal_url', 'initial_public_proposal_url'),
+        ('explainer_links', 'explainer_links'),
+        ('requires_embedder_support', 'requires_embedder_support'),
+        ('standard_maturity', 'standard_maturity'),
+        ('spec_link', 'spec_link'),
+        ('api_spec', 'api_spec'),
+        ('spec_mentors', 'spec_mentors'),
+        ('interop_compat_risks', 'interop_compat_risks'),
+        ('prefixed', 'prefixed'),
+        ('all_platforms', 'all_platforms'),
+        ('all_platforms_descr', 'all_platforms_descr'),
+        ('tag_review', 'tag_review'),
+        ('tag_review_status', 'tag_review_status'),
+        ('non_oss_deps', 'non_oss_deps'),
+        ('anticipated_spec_changes', 'anticipated_spec_changes'),
+        ('ff_views', 'ff_views'),
+        ('safari_views', 'safari_views'),
+        ('web_dev_views', 'web_dev_views'),
+        ('ff_views_link', 'ff_views_link'),
+        ('safari_views_link', 'safari_views_link'),
+        ('web_dev_views_link', 'web_dev_views_link'),
+        ('ff_views_notes', 'ff_views_notes'),
+        ('safari_views_notes', 'safari_views_notes'),
+        ('web_dev_views_notes', 'web_dev_views_notes'),
+        ('other_views_notes', 'other_views_notes'),
+        ('security_risks', 'security_risks'),
+        ('security_review_status', 'security_review_status'),
+        ('privacy_review_status', 'privacy_review_status'),
+        ('ergonomics_risks', 'ergonomics_risks'),
+        ('wpt', 'wpt'),
+        ('wpt_descr', 'wpt_descr'),
+        ('webview_risks', 'webview_risks'),
+        ('devrel', 'devrel'),
+        ('debuggability', 'debuggability'),
+        ('doc_links', 'doc_links'),
+        ('sample_links', 'sample_links')]
+    return handle_migration(Feature, FeatureEntry,kwarg_mapping,
+        self.special_handler)
+
+  @classmethod
+  def special_handler(cls, original_entity, kwargs):
+    # updater will use the email from the updated_by field
+    kwargs['updater'] = (original_entity.updated_by.email()
+        if original_entity.updated_by else None)

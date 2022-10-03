@@ -83,4 +83,10 @@ class FeaturesAPI(basehandlers.APIHandler):
     feature.put()
     rediscache.delete_keys_with_prefix(core_models.feature_cache_prefix())
 
+    # Write for new FeatureEntry entity.
+    feature_entry = core_models.FeatureEntry.get_by_id(feature_id)
+    if feature_entry:
+      feature_entry.deleted = True
+      feature_entry.put()
+
     return {'message': 'Done'}
