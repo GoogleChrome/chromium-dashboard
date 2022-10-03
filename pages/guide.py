@@ -452,7 +452,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
           int(self.form.get('web_dev_views'))))
     if self.touched('web_dev_views'):
       feature.web_dev_views_link = self.parse_link('web_dev_views_link')
-      update_items.append(('web_dev_views',
+      update_items.append(('web_dev_views_link',
           self.parse_link('web_dev_views_link')))
     if self.touched('web_dev_views_notes'):
       feature.web_dev_views_notes = self.form.get('web_dev_views_notes')
