@@ -278,7 +278,7 @@ indexes:
 - kind: FeatureEntry
   properties:
   - name: deleted
-  - name: owner
+  - name: owner_emails
   - name: updated
     direction: desc
 - kind: FeatureEntry
@@ -323,12 +323,12 @@ indexes:
   - name: name
 - kind: FeatureEntry
   properties:
-  - name: editors
+  - name: editor_emails
   - name: updated
     direction: desc
 - kind: FeatureEntry
   properties:
-  - name: creator
+  - name: creator_email
   - name: updated
     direction: desc
 - kind: Vote
