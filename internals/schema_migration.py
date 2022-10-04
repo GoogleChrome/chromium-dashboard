@@ -111,7 +111,7 @@ class MigrateFeaturesToFeatureEntries(FlaskHandler):
         ('created', 'created'),
         ('updated', 'updated'),
         ('accurate_as_of', 'accurate_as_of'),
-        ('creator_email', 'creator'),
+        ('creator_email', 'creator'),  # Renamed
         ('owner_emails', 'owner'),  # Renamed
         ('editor_emails', 'editors'),  # Renamed
         ('unlisted', 'unlisted'),
