@@ -34,7 +34,7 @@ class FeatureCreateHandler(basehandlers.FlaskHandler):
   def process_post_data(self):
     owners = self.split_emails('owner')
     editors = self.split_emails('editors')
-    cc_recipients = self.split_emails('cc_recipients')
+    cc_emails = self.split_emails('cc_recipients')
 
     blink_components = (
         self.split_input('blink_components', delim=',') or
@@ -54,7 +54,7 @@ class FeatureCreateHandler(basehandlers.FlaskHandler):
         summary=self.form.get('summary'),
         owner=owners,
         editors=editors,
-        cc_recipients=cc_recipients,
+        cc_recipients=cc_emails,
         creator=signed_in_user.email(),
         accurate_as_of=datetime.now(),
         impl_status_chrome=core_enums.NO_ACTIVE_DEV,
@@ -75,11 +75,11 @@ class FeatureCreateHandler(basehandlers.FlaskHandler):
         feature_type=feature_type,
         intent_stage=core_enums.INTENT_NONE,
         summary=self.form.get('summary'),
-        owners=owners,
-        editors=editors,
-        cc_recipients=cc_recipients,
-        creator=signed_in_user.email(),
-        updater=signed_in_user.email(),
+        owner_emails=owners,
+        editor_emails=editors,
+        cc_emails=cc_emails,
+        creator_email=signed_in_user.email(),
+        updater_email=signed_in_user.email(),
         accurate_as_of=datetime.now(),
         impl_status_chrome=core_enums.NO_ACTIVE_DEV,
         unlisted=self.form.get('unlisted') == 'on',
@@ -164,7 +164,8 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
 
     if self.touched('spec_mentors'):
       feature.spec_mentors = self.split_emails('spec_mentors')
-      update_items.append(('spec_mentors', self.split_emails('spec_mentors')))
+      update_items.append(('spec_mentor_emails',
+          self.split_emails('spec_mentors')))
 
     if self.touched('security_review_status'):
       feature.security_review_status = self.parse_int('security_review_status')
@@ -311,15 +312,15 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
 
     if self.touched('owner'):
       feature.owner = self.split_emails('owner')
-      update_items.append(('owners', self.split_emails('owner')))
+      update_items.append(('owner_emails', self.split_emails('owner')))
 
     if self.touched('editors'):
       feature.editors = self.split_emails('editors')
-      update_items.append(('editors', self.split_emails('editors')))
+      update_items.append(('editor_emails', self.split_emails('editors')))
 
     if self.touched('cc_recipients'):
       feature.cc_recipients = self.split_emails('cc_recipients')
-      update_items.append(('cc_recipients', self.split_emails('cc_recipients')))
+      update_items.append(('cc_emails', self.split_emails('cc_recipients')))
 
     if self.touched('doc_links'):
       feature.doc_links = self.parse_links('doc_links')
@@ -348,7 +349,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
 
     if self.touched('devrel'):
       feature.devrel = self.split_emails('devrel')
-      update_items.append(('devrel', self.split_emails('devrel')))
+      update_items.append(('devrel_emails', self.split_emails('devrel')))
 
     if self.touched('feature_type'):
       feature.feature_type = int(self.form.get('feature_type'))
@@ -508,7 +509,8 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
     feature.updated_by = ndb.User(
         email=self.get_current_user().email(),
         _auth_domain='gmail.com')
-    update_items.append(('updater', self.get_current_user().email()))
+    update_items.append(('updater_email', self.get_current_user().email()))
+    update_items.append(('updated', datetime.now()))
     key = feature.put()
 
     # Write for new FeatureEntry entity.

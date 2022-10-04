@@ -1044,13 +1044,13 @@ class FeatureEntry(ndb.Model):  # Copy from Feature
   created = ndb.DateTimeProperty(auto_now_add=True)
   updated = ndb.DateTimeProperty()
   accurate_as_of = ndb.DateTimeProperty()
-  creator = ndb.StringProperty()
-  updater = ndb.StringProperty()
+  creator_email = ndb.StringProperty()
+  updater_email = ndb.StringProperty()
 
   # Metadata: Access controls
-  owners = ndb.StringProperty(repeated=True)  # copy from owner
-  editors = ndb.StringProperty(repeated=True)
-  cc_recipients = ndb.StringProperty(repeated=True)
+  owner_emails = ndb.StringProperty(repeated=True)  # copy from owner
+  editor_emails = ndb.StringProperty(repeated=True)
+  cc_emails = ndb.StringProperty(repeated=True)
   unlisted = ndb.BooleanProperty(default=False)
   deleted = ndb.BooleanProperty(default=False)
 
@@ -1087,7 +1087,7 @@ class FeatureEntry(ndb.Model):  # Copy from Feature
   standard_maturity = ndb.IntegerProperty(required=True, default=UNSET_STD)
   spec_link = ndb.StringProperty()
   api_spec = ndb.BooleanProperty(default=False)
-  spec_mentors = ndb.StringProperty(repeated=True)
+  spec_mentor_emails = ndb.StringProperty(repeated=True)
   interop_compat_risks = ndb.TextProperty()
   prefixed = ndb.BooleanProperty()
   all_platforms = ndb.BooleanProperty()
@@ -1120,7 +1120,7 @@ class FeatureEntry(ndb.Model):  # Copy from Feature
   webview_risks = ndb.TextProperty()
 
   # Gate: Devrel & Docs
-  devrel = ndb.StringProperty(repeated=True)
+  devrel_emails = ndb.StringProperty(repeated=True)
   debuggability = ndb.TextProperty()
   doc_links = ndb.StringProperty(repeated=True)
   sample_links = ndb.StringProperty(repeated=True)

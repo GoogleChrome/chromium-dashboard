@@ -86,7 +86,7 @@ class FeatureCreateTest(testing_config.CustomTestCase):
     self.assertEqual(1, feature_entry.category)
     self.assertEqual('Feature name', feature_entry.name)
     self.assertEqual('Feature summary', feature_entry.summary)
-    self.assertEqual('user1@google.com', feature_entry.creator)
+    self.assertEqual('user1@google.com', feature_entry.creator_email)
 
     feature.key.delete()
     feature_entry.key.delete()
@@ -104,7 +104,7 @@ class FeatureEditHandlerTest(testing_config.CustomTestCase):
 
     self.feature_entry_1 = core_models.FeatureEntry(
         id=self.feature_1.key.integer_id(), name='feature one',
-        summary='sum', owners=['user1@google.com'], category=1,
+        summary='sum', owner_emails=['user1@google.com'], category=1,
         standard_maturity=1, web_dev_views=1, impl_status_chrome=1)
     self.feature_entry_1.put()
 
