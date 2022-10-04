@@ -261,3 +261,122 @@ indexes:
   - name: "date"
   - name: "hits"
     direction: desc
+
+- kind: Activity
+  properties:
+  - name: feature_id
+  - name: created
+- kind: Activity
+  properties:
+  - name: feature_id
+  - name: gate_id
+  - name: created
+- kind: FeatureEntry
+  properties:
+  - name: impl_status_chrome
+  - name: name
+- kind: FeatureEntry
+  properties:
+  - name: deleted
+  - name: owner
+  - name: updated
+    direction: desc
+- kind: FeatureEntry
+  properties:
+  - name: category
+  - name: updated
+    direction: desc
+- kind: FeatureEntry
+  properties:
+  - name: category
+  - name: updated
+    direction: desc
+  - name: name
+- kind: FeatureEntry
+  properties:
+  - name: deleted
+  - name: updated
+    direction: desc
+- kind: FeatureEntry
+  properties:
+  - name: impl_status_chrome
+  - name: name
+    direction: desc
+- kind: FeatureEntry
+  properties:
+  - name: name
+  - name: updated
+- kind: FeatureEntry
+  properties:
+  - name: name
+  - name: updated
+    direction: desc
+- kind: FeatureEntry
+  properties:
+  - name: sample_links
+  - name: updated
+    direction: desc
+- kind: FeatureEntry
+  properties:
+  - name: updated
+    direction: desc
+  - name: name
+- kind: FeatureEntry
+  properties:
+  - name: editors
+  - name: updated
+    direction: desc
+- kind: FeatureEntry
+  properties:
+  - name: creator
+  - name: updated
+    direction: desc
+- kind: Vote
+  properties:
+  - name: feature_id
+  - name: gate_id
+  - name: set_by
+  - name: set_on
+- kind: Vote
+  properties:
+  - name: feature_id
+  - name: gate_id
+  - name: set_on
+- kind: Vote
+  properties:
+  - name: feature_id
+  - name: gate_id
+  - name: state
+  - name: set_on
+- kind: Vote
+  properties:
+  - name: set_by
+  - name: set_on
+- kind: Vote
+  properties:
+  - name: gate_id
+  - name: set_on
+- kind: Vote
+  properties:
+  - name: state
+  - name: set_on
+- kind: Vote
+  properties:
+  - name: state
+  - name: set_on
+    direction: desc
+- kind: Vote
+  properties:
+  - name: state
+  - name: set_on
+    direction: desc
+  - name: feature_id
+- kind: Vote
+  properties:
+  - name: state
+  - name: set_on
+  - name: feature_id
+- kind: Vote
+  properties:
+  - name: feature_id
+  - name: set_on
