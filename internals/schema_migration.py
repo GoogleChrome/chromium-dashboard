@@ -176,6 +176,6 @@ class MigrateFeaturesToFeatureEntries(FlaskHandler):
 
   @classmethod
   def special_handler(cls, original_entity, kwargs):
-    # udpater_email will use the email from the updated_by field
+    # updater_email will use the email from the updated_by field
     kwargs['updater_email'] = (original_entity.updated_by.email()
         if original_entity.updated_by else None)
