@@ -111,11 +111,11 @@ class MigrateFeaturesToFeatureEntries(FlaskHandler):
         ('created', 'created'),
         ('updated', 'updated'),
         ('accurate_as_of', 'accurate_as_of'),
-        ('creator', 'creator'),
-        ('owners', 'owner'),
-        ('editors', 'editors'),
+        ('creator_email', 'creator'),  # Renamed
+        ('owner_emails', 'owner'),  # Renamed
+        ('editor_emails', 'editors'),  # Renamed
         ('unlisted', 'unlisted'),
-        ('cc_recipients', 'cc_recipients'),
+        ('cc_emails', 'cc_recipients'),  # Renamed
         ('feature_notes', 'comments'),  # Renamed
         ('deleted', 'deleted'),
         ('name', 'name'),
@@ -141,7 +141,7 @@ class MigrateFeaturesToFeatureEntries(FlaskHandler):
         ('standard_maturity', 'standard_maturity'),
         ('spec_link', 'spec_link'),
         ('api_spec', 'api_spec'),
-        ('spec_mentors', 'spec_mentors'),
+        ('spec_mentor_emails', 'spec_mentors'),  # Renamed
         ('interop_compat_risks', 'interop_compat_risks'),
         ('prefixed', 'prefixed'),
         ('all_platforms', 'all_platforms'),
@@ -167,7 +167,7 @@ class MigrateFeaturesToFeatureEntries(FlaskHandler):
         ('wpt', 'wpt'),
         ('wpt_descr', 'wpt_descr'),
         ('webview_risks', 'webview_risks'),
-        ('devrel', 'devrel'),
+        ('devrel_emails', 'devrel'),  # Renamed
         ('debuggability', 'debuggability'),
         ('doc_links', 'doc_links'),
         ('sample_links', 'sample_links')]
@@ -176,6 +176,6 @@ class MigrateFeaturesToFeatureEntries(FlaskHandler):
 
   @classmethod
   def special_handler(cls, original_entity, kwargs):
-    # updater will use the email from the updated_by field
-    kwargs['updater'] = (original_entity.updated_by.email()
+    # updater_email will use the email from the updated_by field
+    kwargs['updater_email'] = (original_entity.updated_by.email()
         if original_entity.updated_by else None)

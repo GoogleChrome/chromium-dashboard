@@ -117,22 +117,32 @@ class MigrateApprovalsToVotesTest(testing_config.CustomTestCase):
 class MigrateFeaturesToFeatureEntriesTest(testing_config.CustomTestCase):
 
   # Fields that do not require name change or revisions during migration.
-  FEATURE_FIELDS = ['created', 'updated', 'accurate_as_of', 'editors', 'creator',
-      'unlisted', 'deleted', 'name', 'summary', 'category', 'blink_components',
-      'cc_recipients', 'star_count', 'search_tags', 'feature_type',
-      'intent_stage', 'bug_url', 'launch_bug_url', 'impl_status_chrome',
-      'flag_name', 'ongoing_constraints', 'motivation', 'devtrial_instructions',
-      'activation_risks', 'measurement', 'initial_public_proposal_url',
-      'explainer_links', 'requires_embedder_support', 'standard_maturity',
-      'spec_link', 'api_spec', 'spec_mentors', 'interop_compat_risks',
+  FEATURE_FIELDS = ['created', 'updated', 'accurate_as_of',
+      'unlisted', 'deleted', 'name', 'summary', 'category',
+      'blink_components', 'star_count', 'search_tags',
+      'feature_type', 'intent_stage', 'bug_url', 'launch_bug_url',
+      'impl_status_chrome', 'flag_name', 'ongoing_constraints', 'motivation',
+      'devtrial_instructions', 'activation_risks', 'measurement',
+      'initial_public_proposal_url', 'explainer_links',
+      'requires_embedder_support', 'standard_maturity', 'spec_link',
+      'api_spec', 'interop_compat_risks',
       'prefixed', 'all_platforms', 'all_platforms_descr', 'tag_review',
       'tag_review_status', 'non_oss_deps', 'anticipated_spec_changes',
       'ff_views', 'safari_views', 'web_dev_views', 'ff_views_link',
       'safari_views_link', 'web_dev_views_link', 'ff_views_notes',
       'safari_views_notes', 'web_dev_views_notes', 'other_views_notes',
       'security_risks', 'security_review_status', 'privacy_review_status',
-      'ergonomics_risks', 'wpt', 'wpt_descr', 'webview_risks', 'devrel',
+      'ergonomics_risks', 'wpt', 'wpt_descr', 'webview_risks',
       'debuggability', 'doc_links', 'sample_links']
+  
+  # (Feature field, FeatureEntry field)
+  RENAMED_FIELDS = [('creator', 'creator_email'),
+    ('owner', 'owner_emails'),
+    ('editors', 'editor_emails'),
+    ('cc_recipients', 'cc_emails'),
+    ('spec_mentors', 'spec_mentor_emails'),
+    ('devrel', 'devrel_emails'),
+    ('comments', 'feature_notes')]
 
   def setUp(self):
     self.feature_1 = core_models.Feature(
@@ -255,10 +265,10 @@ class MigrateFeaturesToFeatureEntriesTest(testing_config.CustomTestCase):
         created=datetime(2020, 4, 1),
         updated=datetime(2020, 7, 1),
         accurate_as_of=datetime(2020, 6, 1),
-        creator='user@example.com',
-        updater='editor@example.com',
-        owners=['owner@example.com'],
-        editors=['editor@example.com'],
+        creator_email='user@example.com',
+        updater_email='editor@example.com',
+        owner_emails=['owner@example.com'],
+        editor_emails=['editor@example.com'],
         unlisted=False,
         deleted=False,
         name='feature_three',
@@ -290,12 +300,14 @@ class MigrateFeaturesToFeatureEntriesTest(testing_config.CustomTestCase):
     feature_entry_1 = core_models.FeatureEntry.get_by_id(
         self.feature_1.key.integer_id())
     self.assertIsNotNone(feature_entry_1)
-    self.assertEqual(feature_entry_1.owners, self.feature_1.owner)
-    self.assertEqual(feature_entry_1.updater, self.feature_1.updated_by.email())
-    self.assertEqual(feature_entry_1.feature_notes, self.feature_1.comments)
+    # Check that all fields are copied over as expected.
     for field in self.FEATURE_FIELDS:
       self.assertEqual(
           getattr(feature_entry_1, field), getattr(self.feature_1, field))
+    for old_field, new_field in self.RENAMED_FIELDS:
+      self.assertEqual(
+          getattr(feature_entry_1, new_field), getattr(self.feature_1, old_field))
+    self.assertEqual(feature_entry_1.updater_email, self.feature_1.updated_by.email())
 
     # The migration should be idempotent, so nothing should be migrated twice.
     result_2 = migration_handler.get_template_data()
