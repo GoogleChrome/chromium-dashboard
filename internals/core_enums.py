@@ -310,8 +310,11 @@ PROPERTY_NAMES_TO_ENUM_DICTS = {
 
 def convert_enum_int_to_string(property_name, value):
   """If the property is an enum, return human-readable string, else value."""
-  if type(value) != int:
+  # Check if the value is an int or can be converted to an int.
+  try:
+    int_val = int(value)
+  except Exception:
     return value
   enum_dict = PROPERTY_NAMES_TO_ENUM_DICTS.get(property_name, {})
-  converted_value = enum_dict.get(value, value)
+  converted_value = enum_dict.get(int_val, value)
   return converted_value
