@@ -827,16 +827,16 @@ class Feature(DictModel):
     # values later in put() to know what's changed.
     # https://stackoverflow.com/a/41344898
 
-    setattr(self, '_values_stashed', True)
-    for prop_name, prop in list(self._properties.items()):
+    for prop_name in self._properties.keys():
       old_val = getattr(self, prop_name, None)
       setattr(self, '_old_' + prop_name, old_val)
+    setattr(self, '_values_stashed', True)
 
   def _get_changes_as_amendments(self):
     """Get all feature changes as Amendment entities."""
     # Diff values to see what properties have changed.
     amendments = []
-    for prop_name, prop in list(self._properties.items()):
+    for prop_name in self._properties.keys():
       if prop_name in (
           'created_by', 'updated_by', 'updated', 'created'):
         continue
@@ -845,8 +845,6 @@ class Feature(DictModel):
       if new_val != old_val:
         if (new_val == '' or new_val == False) and old_val is None:
           continue
-        new_val = convert_enum_int_to_string(prop_name, new_val)
-        old_val = convert_enum_int_to_string(prop_name, old_val)
         amendments.append(
             review_models.Amendment(field_name=prop_name,
             old_value=str(old_val), new_value=str(new_val)))
@@ -859,8 +857,8 @@ class Feature(DictModel):
     """
     changed_props = [{
         'prop_name': a.field_name,
-        'old_val': a.old_value,
-        'new_val': a.new_value
+        'old_val': convert_enum_int_to_string(a.field_name, a.old_value),
+        'new_val': convert_enum_int_to_string(a.field_name, a.new_value)
       } for a in amendments]
 
     params = {
