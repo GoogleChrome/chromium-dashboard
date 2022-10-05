@@ -101,6 +101,48 @@ INTENT_STAGES = collections.OrderedDict([
 ])
 
 
+# Stage_type values for each process.  Even though some of the stages
+# in these processes are similar to each other, they have distinct enum
+# values so that they can have different gates.
+
+# For incubating new standard features: the "blink" process.
+STAGE_BLINK_INCUBATE = 110
+STAGE_BLINK_PROTOTYPE = 120
+STAGE_BLINK_DEV_TRIAL = 130
+STAGE_BLINK_EVAL_READINESS = 140
+STAGE_BLINK_ORIGIN_TRIAL = 150
+STAGE_BLINK_EXTEND_ORIGIN_TRIAL = 151
+STAGE_BLINK_SHIPPING = 160
+# Note: We might define post-ship support stage(s) later.
+
+# For implementing existing standards: the "fast track" process.
+STAGE_FAST_PROTOTYPE = 220
+STAGE_FAST_DEV_TRIAL = 230
+STAGE_FAST_ORIGIN_TRIAL = 250
+STAGE_FAST_EXTEND_ORIGIN_TRIAL = 251
+STAGE_FAST_SHIPPING = 260
+
+# For developer-facing code changes not impacting a standard: the "PSA" process.
+STAGE_PSA_IMPLEMENT = 320
+STAGE_PSA_DEV_TRIAL = 330
+STAGE_PSA_SHIPPING = 360
+
+# For deprecating a feature: the "DEP" process.
+STAGE_DEP_PLAN = 410
+STAGE_DEP_DEV_TRIAL = 430
+STAGE_DEP_DEPRECATION_TRIAL = 450
+STAGE_DEP_EXTEND_DEPRECATION_TRIAL = 451
+STAGE_DEP_SHIPPING = 460
+STAGE_DEP_REMOVE_CODE = 470
+# TODO(jrobbins): reverse origin trial stage?
+
+# Note STAGE_* enum values 500-9999 are reseverd for future WP processes.
+
+# Define enterprise feature processes.
+# Note: This stage can ge added to any feature that is following any process.
+STAGE_ENT_ROLLOUT = 1061
+
+
 NO_ACTIVE_DEV = 1
 PROPOSED = 2
 IN_DEVELOPMENT = 3
