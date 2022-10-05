@@ -256,7 +256,8 @@ class MigrateStages(FlaskHandler):
         origin_trial_feedback_url=feature.origin_trial_feedback_url)
     stage.put()
     stage = Stage(stage_type=STAGE_BLINK_SHIPPING, milestones=ship_mstones,
-        intent_thread_url=feature.intent_to_ship_url, **kwargs)
+        intent_thread_url=feature.intent_to_ship_url,
+        finch_url=feature.finch_url, **kwargs)
     stage.put()
     # Return number of Stage entities created.
     return 6
@@ -277,7 +278,8 @@ class MigrateStages(FlaskHandler):
         origin_trial_feedback_url=feature.origin_trial_feedback_url, **kwargs)
     stage.put()
     stage = Stage(stage_type=STAGE_FAST_SHIPPING,  milestones=ship_mstones,
-        intent_thread_url=feature.intent_to_ship_url, **kwargs)
+        intent_thread_url=feature.intent_to_ship_url,
+        finch_url=feature.finch_url, **kwargs)
     stage.put()
     # Return number of Stage entities created.
     return 4
@@ -290,7 +292,8 @@ class MigrateStages(FlaskHandler):
         **kwargs)
     stage.put()
     stage = Stage(stage_type=STAGE_PSA_SHIPPING,  milestones=ship_mstones,
-        intent_thread_url=feature.intent_to_ship_url, **kwargs)
+        intent_thread_url=feature.intent_to_ship_url,
+        finch_url=feature.finch_url, **kwargs)
     stage.put()
     # Return number of Stage entities created.
     return 3
@@ -310,7 +313,8 @@ class MigrateStages(FlaskHandler):
         origin_trial_feedback_url=feature.origin_trial_feedback_url)
     stage.put()
     stage = Stage(stage_type=STAGE_DEP_SHIPPING,  milestones=ship_mstones,
-        intent_thread_url=feature.intent_to_ship_url, **kwargs)
+        intent_thread_url=feature.intent_to_ship_url,
+        finch_url=feature.finch_url, **kwargs)
     stage.put()
     stage = Stage(stage_type=STAGE_DEP_REMOVE_CODE, **kwargs)
     stage.put()

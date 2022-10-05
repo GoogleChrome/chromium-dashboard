@@ -357,6 +357,7 @@ class MigrateStagesTest(testing_config.CustomTestCase):
         ot_milestone_android_start = 102,
         ot_milestone_android_end=104,
         intent_to_experiment_url='https://example.com/intentexperiment',
+        finch_url='https://example.com/finch',
         initial_public_proposal_url='proposal.example.com',
         explainer_links=['explainer.example.com'],
         requires_embedder_support=False,
@@ -471,6 +472,8 @@ class MigrateStagesTest(testing_config.CustomTestCase):
     self.assertEqual(shipping_stage_list[0].milestones.desktop_first, 105)
     self.assertEqual(shipping_stage_list[0].intent_thread_url,
         'https://example.com/intentship')
+    self.assertEqual(shipping_stage_list[0].finch_url,
+        'https://example.com/finch')
     self.assertEqual(len(ot_stage_list), 1)
     self.assertEqual(ot_stage_list[0].milestones.desktop_first, 101)
     self.assertEqual(ot_stage_list[0].milestones.desktop_last, 104)
