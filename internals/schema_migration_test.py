@@ -442,6 +442,50 @@ class MigrateStagesTest(testing_config.CustomTestCase):
         stages_migrated=True)
     self.feature_3.put()
 
+    self.feature_4 = core_models.Feature(
+        id=4,
+        created=datetime(2020, 4, 1),
+        updated=datetime(2020, 7, 1),
+        accurate_as_of=datetime(2020, 6, 1),
+        created_by=ndb.User(
+            _auth_domain='example.com', email='user@example.com'),
+        updated_by=ndb.User(
+            _auth_domain='example.com', email='editor@example.com'),
+        owner=['owner@example.com'],
+        editors=['editor@example.com'],
+        feature_type=1,
+        unlisted=False,
+        deleted=False,
+        name='feature_three',
+        summary='migrated summary',
+        standardization=1,
+        category=1,
+        impl_status_chrome=1,
+        web_dev_views=1)
+    self.feature_4.put()
+
+    self.feature_5 = core_models.Feature(
+        id=5,
+        created=datetime(2020, 4, 1),
+        updated=datetime(2020, 7, 1),
+        accurate_as_of=datetime(2020, 6, 1),
+        created_by=ndb.User(
+            _auth_domain='example.com', email='user@example.com'),
+        updated_by=ndb.User(
+            _auth_domain='example.com', email='editor@example.com'),
+        owner=['owner@example.com'],
+        editors=['editor@example.com'],
+        feature_type=2,
+        unlisted=False,
+        deleted=False,
+        name='feature_three',
+        summary='migrated summary',
+        standardization=1,
+        category=1,
+        impl_status_chrome=1,
+        web_dev_views=1)
+    self.feature_5.put()
+
   def tearDown(self):
     for feature in core_models.Feature.query().fetch():
       feature.key.delete()
@@ -452,10 +496,10 @@ class MigrateStagesTest(testing_config.CustomTestCase):
     migration_handler = schema_migration.MigrateStages()
     result = migration_handler.get_template_data()
     # One is already migrated, so only 2 others to migrate.
-    expected = '11 Stage entities created for 2 Feature entities.'
+    expected = '18 Stage entities created for 4 Feature entities.'
     self.assertEqual(result, expected)
     feature_entries = core_models.Stage.query().fetch()
-    self.assertEqual(len(feature_entries), 11)
+    self.assertEqual(len(feature_entries), 18)
     
     # Check if certain fields were copied over correctly.
     stages = core_models.Stage.query(
