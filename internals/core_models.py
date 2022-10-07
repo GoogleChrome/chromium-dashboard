@@ -1033,6 +1033,9 @@ class Feature(DictModel):
 
   finch_url = ndb.StringProperty()
 
+  # Flag set to avoid migrating data that has already been migrated.
+  stages_migrated = ndb.BooleanProperty(default=False)
+
 
 # Note: This class is not used yet.
 class FeatureEntry(ndb.Model):  # Copy from Feature

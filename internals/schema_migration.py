@@ -16,8 +16,9 @@ import logging
 from google.cloud import ndb
 
 from framework.basehandlers import FlaskHandler
-from internals.core_models import Feature, FeatureEntry
+from internals.core_models import Feature, FeatureEntry, MilestoneSet, Stage
 from internals.review_models import Activity, Approval, Comment, Vote
+from internals.core_enums import *
 
 def handle_migration(original_cls, new_cls, kwarg_mapping,
     special_handler=None):
@@ -179,3 +180,143 @@ class MigrateFeaturesToFeatureEntries(FlaskHandler):
     # updater_email will use the email from the updated_by field
     kwargs['updater_email'] = (original_entity.updated_by.email()
         if original_entity.updated_by else None)
+
+class MigrateStages(FlaskHandler):
+
+  def get_template_data(self):
+    """Creates new Stage entities MilestoneSet entities based on Feature data"""
+    self.require_cron_header()
+
+    features = Feature.query().fetch()
+    num_stages_created = 0
+    num_features_migrated = 0
+    for feature in features:
+      # Do not create more stages if the data in this feature has been migrated.
+      if feature.stages_migrated:
+        continue
+      # Create MilestoneSets for each major paradigm.
+      devtrial_mstones = MilestoneSet(
+          desktop_first=feature.dt_milestone_desktop_start,
+          android_first=feature.dt_milestone_android_start,
+          ios_first=feature.dt_milestone_ios_start,
+          webview_first=feature.dt_milestone_webview_start)
+      ot_mstones = MilestoneSet(
+          desktop_first=feature.ot_milestone_desktop_start,
+          desktop_last=feature.ot_milestone_desktop_end,
+          android_first=feature.ot_milestone_android_start,
+          android_last=feature.ot_milestone_android_end,
+          webview_first=feature.ot_milestone_webview_start,
+          webview_last=feature.ot_milestone_webview_end)
+      ship_mstones = MilestoneSet(
+          desktop_first=feature.shipped_milestone,
+          android_first=feature.shipped_android_milestone,
+          ios_first=feature.shipped_ios_milestone,
+          webview_first=feature.shipped_webview_milestone)
+      # Depending on the feature type,
+      # create a different group of Stage entities.
+      if feature.feature_type == FEATURE_TYPE_INCUBATE_ID:
+        num_stages_created += self.write_incubate_stages(
+            feature, devtrial_mstones, ot_mstones, ship_mstones)
+      if feature.feature_type == FEATURE_TYPE_EXISTING_ID:
+        num_stages_created += self.write_existing_stages(
+            feature, devtrial_mstones, ot_mstones, ship_mstones)
+      if feature.feature_type == FEATURE_TYPE_CODE_CHANGE_ID:
+        num_stages_created += self.write_code_change_stages(
+            feature, devtrial_mstones, ship_mstones)
+      if feature.feature_type == FEATURE_TYPE_DEPRECATION_ID:
+        num_stages_created += self.write_deprecation_stages(
+            feature, devtrial_mstones, ot_mstones, ship_mstones)
+      feature.stages_migrated = True
+      feature.put()
+      num_features_migrated += 1
+    
+    message = (f'{num_stages_created} Stage entities created '
+        f'for {num_features_migrated} Feature entities.')
+    logging.info(message)
+    return message
+    
+  
+  def write_incubate_stages(self, feature, devtrial_mstones, ot_mstones,
+      ship_mstones):
+    kwargs = {'feature_id': feature.key.integer_id(), 'browser': 'Chrome'}
+    stage = Stage(stage_type=STAGE_BLINK_INCUBATE, **kwargs)
+    stage.put()
+    stage = Stage(stage_type=STAGE_BLINK_PROTOTYPE,
+        intent_thread_url=feature.intent_to_implement_url, **kwargs)
+    stage.put()
+    stage = Stage(stage_type=STAGE_BLINK_DEV_TRIAL,
+        milestones=devtrial_mstones, **kwargs)
+    stage.put()
+    stage = Stage(stage_type=STAGE_BLINK_EVAL_READINESS, **kwargs)
+    stage.put()
+    stage = Stage(stage_type=STAGE_BLINK_ORIGIN_TRIAL, milestones=ot_mstones,
+        **kwargs, intent_thread_url=feature.intent_to_experiment_url,
+        experiment_goals=feature.experiment_goals,
+        experiment_extension_reason=feature.experiment_extension_reason,
+        origin_trial_feedback_url=feature.origin_trial_feedback_url)
+    stage.put()
+    stage = Stage(stage_type=STAGE_BLINK_SHIPPING, milestones=ship_mstones,
+        intent_thread_url=feature.intent_to_ship_url,
+        finch_url=feature.finch_url, **kwargs)
+    stage.put()
+    # Return number of Stage entities created.
+    return 6
+  
+  def write_existing_stages(self, feature, devtrial_mstones, ot_mstones,
+      ship_mstones):
+    kwargs = {'feature_id': feature.key.integer_id(), 'browser': 'Chrome'}
+    stage = Stage(stage_type=STAGE_FAST_PROTOTYPE,
+        intent_thread_url=feature.intent_to_implement_url, **kwargs)
+    stage.put()
+    stage = Stage(stage_type=STAGE_FAST_DEV_TRIAL, milestones=devtrial_mstones,
+        **kwargs)
+    stage.put()
+    stage = Stage(stage_type=STAGE_FAST_ORIGIN_TRIAL, milestones=ot_mstones,
+        intent_thread_url=feature.intent_to_experiment_url,
+        experiment_goals=feature.experiment_goals,
+        experiment_extension_reason=feature.experiment_extension_reason,
+        origin_trial_feedback_url=feature.origin_trial_feedback_url, **kwargs)
+    stage.put()
+    stage = Stage(stage_type=STAGE_FAST_SHIPPING,  milestones=ship_mstones,
+        intent_thread_url=feature.intent_to_ship_url,
+        finch_url=feature.finch_url, **kwargs)
+    stage.put()
+    # Return number of Stage entities created.
+    return 4
+
+  def write_code_change_stages(self, feature, devtrial_mstones, ship_mstones):
+    kwargs = {'feature_id': feature.key.integer_id(), 'browser': 'Chrome'}
+    stage = Stage(stage_type=STAGE_PSA_IMPLEMENT, **kwargs)
+    stage.put()
+    stage = Stage(stage_type=STAGE_PSA_DEV_TRIAL, milestones=devtrial_mstones,
+        **kwargs)
+    stage.put()
+    stage = Stage(stage_type=STAGE_PSA_SHIPPING,  milestones=ship_mstones,
+        intent_thread_url=feature.intent_to_ship_url,
+        finch_url=feature.finch_url, **kwargs)
+    stage.put()
+    # Return number of Stage entities created.
+    return 3
+  
+  def write_deprecation_stages(self, feature, devtrial_mstones, ot_mstones,
+      ship_mstones):
+    kwargs = {'feature_id': feature.key.integer_id(), 'browser': 'Chrome'}
+    stage = Stage(stage_type=STAGE_DEP_PLAN, **kwargs)
+    stage.put()
+    stage = Stage(stage_type=STAGE_DEP_DEV_TRIAL, milestones=devtrial_mstones,
+        **kwargs)
+    stage.put()
+    stage = Stage(stage_type=STAGE_DEP_DEPRECATION_TRIAL, milestones=ot_mstones,
+        **kwargs, intent_thread_url=feature.intent_to_experiment_url,
+        experiment_goals=feature.experiment_goals,
+        experiment_extension_reason=feature.experiment_extension_reason,
+        origin_trial_feedback_url=feature.origin_trial_feedback_url)
+    stage.put()
+    stage = Stage(stage_type=STAGE_DEP_SHIPPING,  milestones=ship_mstones,
+        intent_thread_url=feature.intent_to_ship_url,
+        finch_url=feature.finch_url, **kwargs)
+    stage.put()
+    stage = Stage(stage_type=STAGE_DEP_REMOVE_CODE, **kwargs)
+    stage.put()
+    # Return number of Stage entities created.
+    return 5

@@ -313,3 +313,220 @@ class MigrateFeaturesToFeatureEntriesTest(testing_config.CustomTestCase):
     result_2 = migration_handler.get_template_data()
     expected = '0 Feature entities migrated to FeatureEntry entities.'
     self.assertEqual(result_2, expected)
+
+class MigrateStagesTest(testing_config.CustomTestCase):
+
+  def setUp(self):
+    self.feature_1 = core_models.Feature(
+        id=1,
+        created=datetime(2020, 1, 1),
+        updated=datetime(2020, 7, 1),
+        accurate_as_of=datetime(2020, 3, 1),
+        created_by=ndb.User(
+            _auth_domain='example.com', email='user@example.com'),
+        updated_by=ndb.User(
+            _auth_domain='example.com', email='editor@example.com'),
+        owner=['owner@example.com'],
+        creator='creator@example.com',
+        editors=['editor@example.com'],
+        cc_recipients=['cc_user@example.com'],
+        unlisted=False,
+        deleted=False,
+        name='feature_one',
+        summary='newly migrated summary',
+        comments='Some comments.',
+        category=1,
+        blink_components=['Blink'],
+        star_count=3,
+        search_tags=['tag1', 'tag2'],
+        feature_type=3,
+        intent_stage=1,
+        bug_url='https://bug.example.com',
+        launch_bug_url='https://bug.example.com',
+        impl_status_chrome=1,
+        flag_name='flagname',
+        ongoing_constraints='constraints',
+        motivation='motivation',
+        devtrial_instructions='instructions',
+        activation_risks='risks',
+        measurement=None,
+        shipped_milestone=105,
+        intent_to_ship_url='https://example.com/intentship',
+        ot_milestone_desktop_start=101,
+        ot_milestone_desktop_end=104,
+        ot_milestone_android_start = 102,
+        ot_milestone_android_end=104,
+        intent_to_experiment_url='https://example.com/intentexperiment',
+        finch_url='https://example.com/finch',
+        initial_public_proposal_url='proposal.example.com',
+        explainer_links=['explainer.example.com'],
+        requires_embedder_support=False,
+        standard_maturity=1,
+        standardization=1,
+        spec_link='spec.example.com',
+        api_spec=False,
+        spec_mentors=['mentor1', 'mentor2'],
+        interop_compat_risks='risks',
+        prefixed=True,
+        all_platforms=True,
+        all_platforms_descr='All platforms',
+        tag_review='tag_review',
+        tag_review_status=1,
+        non_oss_deps='oss_deps',
+        anticipated_spec_changes='spec_changes',
+        ff_views=1,
+        safari_views=1,
+        web_dev_views=1,
+        ff_views_link='view.example.com',
+        safari_views_link='view.example.com',
+        web_dev_views_link='view.example.com',
+        ff_views_notes='notes',
+        safari_views_notes='notes',
+        web_dev_views_notes='notes',
+        other_views_notes='notes',
+        security_risks='risks',
+        security_review_status=1,
+        privacy_review_status=1,
+        ergonomics_risks='risks',
+        wpt=True,
+        wpt_descr='description',
+        webview_risks='risks',
+        devrel=['devrel'],
+        debuggability='debuggability',
+        doc_links=['link1.example.com', 'link2.example.com'],
+        sample_links=[])
+    self.feature_1.put()
+
+    self.feature_2 = core_models.Feature(
+        id=2,
+        created=datetime(2020, 4, 1),
+        updated=datetime(2020, 7, 1),
+        accurate_as_of=datetime(2020, 6, 1),
+        created_by=ndb.User(
+            _auth_domain='example.com', email='user@example.com'),
+        updated_by=ndb.User(
+            _auth_domain='example.com', email='editor@example.com'),
+        feature_type=0,
+        owner=['owner@example.com'],
+        editors=['editor@example.com'],
+        unlisted=False,
+        deleted=False,
+        name='feature_one',
+        summary='newly migrated summary',
+        standardization=1,
+        category=1,
+        impl_status_chrome=1,
+        web_dev_views=1)
+    self.feature_2.put()
+
+    # Feature 3 stages are already migrated.
+    self.feature_3 = core_models.Feature(
+        id=3,
+        created=datetime(2020, 4, 1),
+        updated=datetime(2020, 7, 1),
+        accurate_as_of=datetime(2020, 6, 1),
+        created_by=ndb.User(
+            _auth_domain='example.com', email='user@example.com'),
+        updated_by=ndb.User(
+            _auth_domain='example.com', email='editor@example.com'),
+        owner=['owner@example.com'],
+        editors=['editor@example.com'],
+        unlisted=False,
+        deleted=False,
+        name='feature_three',
+        summary='migrated summary',
+        standardization=1,
+        category=1,
+        impl_status_chrome=1,
+        web_dev_views=1,
+        stages_migrated=True)
+    self.feature_3.put()
+
+    self.feature_4 = core_models.Feature(
+        id=4,
+        created=datetime(2020, 4, 1),
+        updated=datetime(2020, 7, 1),
+        accurate_as_of=datetime(2020, 6, 1),
+        created_by=ndb.User(
+            _auth_domain='example.com', email='user@example.com'),
+        updated_by=ndb.User(
+            _auth_domain='example.com', email='editor@example.com'),
+        owner=['owner@example.com'],
+        editors=['editor@example.com'],
+        feature_type=1,
+        unlisted=False,
+        deleted=False,
+        name='feature_three',
+        summary='migrated summary',
+        standardization=1,
+        category=1,
+        impl_status_chrome=1,
+        web_dev_views=1)
+    self.feature_4.put()
+
+    self.feature_5 = core_models.Feature(
+        id=5,
+        created=datetime(2020, 4, 1),
+        updated=datetime(2020, 7, 1),
+        accurate_as_of=datetime(2020, 6, 1),
+        created_by=ndb.User(
+            _auth_domain='example.com', email='user@example.com'),
+        updated_by=ndb.User(
+            _auth_domain='example.com', email='editor@example.com'),
+        owner=['owner@example.com'],
+        editors=['editor@example.com'],
+        feature_type=2,
+        unlisted=False,
+        deleted=False,
+        name='feature_three',
+        summary='migrated summary',
+        standardization=1,
+        category=1,
+        impl_status_chrome=1,
+        web_dev_views=1)
+    self.feature_5.put()
+
+  def tearDown(self):
+    for feature in core_models.Feature.query().fetch():
+      feature.key.delete()
+    for stage in core_models.Stage.query().fetch():
+      stage.key.delete()
+
+  def test_migration(self):
+    migration_handler = schema_migration.MigrateStages()
+    result = migration_handler.get_template_data()
+    # One is already migrated, so only 2 others to migrate.
+    expected = '18 Stage entities created for 4 Feature entities.'
+    self.assertEqual(result, expected)
+    feature_entries = core_models.Stage.query().fetch()
+    self.assertEqual(len(feature_entries), 18)
+    
+    # Check if certain fields were copied over correctly.
+    stages = core_models.Stage.query(
+        core_models.Stage.feature_id == self.feature_1.key.integer_id()).fetch()
+    self.assertEqual(len(stages), 5)
+
+    # Filter for STAGE_DEP_SHIPPING enum
+    shipping_stage_list = [
+      stage for stage in stages if stage.stage_type == 460]
+    ot_stage_list = [
+        stage for stage in stages if stage.stage_type == 450]
+    # Check that 1 Stage exists and the milestone value is correct.
+    self.assertEqual(len(shipping_stage_list), 1)
+    self.assertEqual(shipping_stage_list[0].milestones.desktop_first, 105)
+    self.assertEqual(shipping_stage_list[0].intent_thread_url,
+        'https://example.com/intentship')
+    self.assertEqual(shipping_stage_list[0].finch_url,
+        'https://example.com/finch')
+    self.assertEqual(len(ot_stage_list), 1)
+    self.assertEqual(ot_stage_list[0].milestones.desktop_first, 101)
+    self.assertEqual(ot_stage_list[0].milestones.desktop_last, 104)
+    self.assertEqual(ot_stage_list[0].milestones.android_first, 102)
+    self.assertEqual(ot_stage_list[0].milestones.android_last, 104)
+    self.assertEqual(ot_stage_list[0].intent_thread_url,
+        'https://example.com/intentexperiment')
+
+    # The migration should be idempotent, so nothing should be migrated twice.
+    result_2 = migration_handler.get_template_data()
+    expected = '0 Stage entities created for 0 Feature entities.'
+    self.assertEqual(result_2, expected)
