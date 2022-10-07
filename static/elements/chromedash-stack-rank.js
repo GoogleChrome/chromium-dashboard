@@ -80,30 +80,11 @@ class ChromedashStackRank extends LitElement {
         border-top: var(--table-divider)
       }
 
-      .stack-rank-item-name {
-        display: grid;
-        grid-template-columns: var(--icon-size) 1fr;
-        grid-column-gap: 15px;
-        position: relative;
-        left: -20px;
-      }
-      .stack-rank-item-name .hash-link {
-        place-self: center;
-        visibility: hidden;
-      }
-      .stack-rank-item-name:hover .hash-link {
-        visibility: visible;
-      }
-
       .stack-rank-item-result {
         display: flex;
         align-items: center;
         gap: 15px;
         margin-right: 15px;
-      }
-
-      chromedash-x-meter {
-        flex: 1;
       }
 
       a.icon-wrapper {
@@ -129,14 +110,6 @@ class ChromedashStackRank extends LitElement {
         .icon-text {
           display: none;
         }
-
-        .stack-rank-item-name {
-          grid-column-gap: 5px;
-        }
-
-        .stack-rank-item-result {
-          margin-right: 5px;
-        }
     `];
   }
 
@@ -147,22 +120,8 @@ class ChromedashStackRank extends LitElement {
       return Math.max(accum, currVal.percentage);
     }, 0);
     setTimeout(() => {
-      this.scrollToPosition();
+      this.shadowRoot.getElementById('meters').scrollToPosition();
     }, 300);
-  }
-
-  scrollToPosition(e) {
-    let hash;
-    if (e) {
-      hash = e.currentTarget.getAttribute('href');
-    } else if (location.hash) {
-      hash = decodeURIComponent(location.hash);
-    }
-
-    if (hash) {
-      const el = this.shadowRoot.querySelector('.stack-rank-list ' + hash);
-      el.scrollIntoView(true, {behavior: 'smooth'});
-    }
   }
 
   sort(e) {
@@ -213,28 +172,14 @@ class ChromedashStackRank extends LitElement {
   renderStackRank() {
     return html`
       ${this.viewList.map((item) => html`
-        <li class="stack-rank-item" id="${item.property_name}">
-          <div title="${item.property_name}. Click to deep link to this property.">
-            <a class="stack-rank-item-name" href="#${item.property_name}" @click=${this.scrollToPosition}>
-              <iron-icon class="hash-link" icon="chromestatus:link"></iron-icon>
-              <p>${item.property_name}</p>
-            </a>
-          </div>
-          <div class="stack-rank-item-result">
-            <chromedash-x-meter
-              value="${item.percentage}"
-              max="${this.maxPercentage}"
-              href="/metrics/${this.type}/timeline/${this.view}/${item.bucket_id}"
-              title="Click to see a timeline view of this property">
-            </chromedash-x-meter>
-            <a class="icon-wrapper" 
-              href="/metrics/${this.type}/timeline/${this.view}/${item.bucket_id}"
-              title="Click to see a timeline view of this property">
-              <iron-icon icon="chromestatus:timeline"></iron-icon>
-              <p class="icon-text">Timeline</p>
-            </a>
-          </div>
-        </li>
+        <chromedash-x-meter
+          id="meters"
+          name="${item.property_name}"
+          value="${item.percentage}"
+          max="${this.maxPercentage}"
+          href="/metrics/${this.type}/timeline/${this.view}/${item.bucket_id}"
+          title="Click to see a timeline view of this property">
+        </chromedash-x-meter>
       `)}
     `;
   }
