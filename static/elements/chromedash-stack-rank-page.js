@@ -39,6 +39,7 @@ export class ChromedashStackRankPage extends LitElement {
       type: {type: String}, // "css" or "feature"
       view: {type: String}, // "popularity" or "animated"
       viewList: {attribute: false},
+      topList: {attribute: false},
     };
   }
 
@@ -47,11 +48,15 @@ export class ChromedashStackRankPage extends LitElement {
     this.type = '';
     this.view = '';
     this.viewList = [];
+    this.topList = [];
   }
 
   connectedCallback() {
     super.connectedCallback();
+    this.loadAll();
+  }
 
+  loadAll() {
     let endpoint = `/data/${this.type}${this.view}`;
 
     // [DEV] Change to true to use the staging server endpoint for development
@@ -66,9 +71,16 @@ export class ChromedashStackRankPage extends LitElement {
       this.viewList = props.filter((item) => {
         return !['ERROR', 'PageVisits', 'PageDestruction'].includes(item.property_name);
       });
+      this.topList = this.viewList.slice(0, 30);
+      this.shadowRoot.querySelector('#show_all').disabled = false;
     }).catch(() => {
       showToastMessage('Some errors occurred. Please refresh the page or try again later.');
     });
+  }
+
+  showAll() {
+    this.shadowRoot.querySelector('#show_all').disabled = true;
+    this.topList = this.viewList;
   }
 
   handleSearchBarChange(e) {
@@ -111,8 +123,9 @@ export class ChromedashStackRankPage extends LitElement {
       <chromedash-stack-rank
         .type=${this.type}
         .view=${this.view}
-        .viewList=${this.viewList}>
+        .viewList=${this.topList}>
       </chromedash-stack-rank>
+      <sl-button id="show_all" disabled variant="primary" @click=${this.showAll}>Show All</sl-button>
     `;
   }
 
