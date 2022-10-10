@@ -230,15 +230,13 @@ class FeatureEditHandlerTest(testing_config.CustomTestCase):
     self.assertEqual('Revised feature summary', revised_entry.summary)
 
     # Ensure changes were also made to Stage entities
-    stages = core_models.Stage.query().fetch()
-    self.assertEqual(len(stages), 7)
-    origin_trial_stage = next(
-        (stage for stage in stages if stage.stage_type == 150), None)
-    ot_extension_stage = next(
-        (stage for stage in stages if stage.stage_type == 151), None)
+    stages = core_models.Stage.get_feature_stages(
+        self.feature_1.key.integer_id())
+    self.assertEqual(len(stages.keys()), 7)
+    origin_trial_stage = stages.get(150)
+    ot_extension_stage = stages.get(151)
     # Stage for shipping should have been created.
-    shipping_stage = next(
-        (stage for stage in stages if stage.stage_type == 160), None)
+    shipping_stage = stages.get(160)
     self.assertIsNotNone(origin_trial_stage)
     self.assertIsNotNone(shipping_stage)
     self.assertIsNotNone(ot_extension_stage)
