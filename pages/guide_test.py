@@ -115,9 +115,15 @@ class FeatureEditHandlerTest(testing_config.CustomTestCase):
         core_models.STAGE_BLINK_EVAL_READINESS,
         core_models.STAGE_BLINK_ORIGIN_TRIAL,
         core_models.STAGE_BLINK_EXTEND_ORIGIN_TRIAL]
+    stages = []
     for stage_type in stage_types:
       stage = core_models.Stage(feature_id=feature_id, stage_type=stage_type)
       stage.put()
+      stages.append(stage)
+
+    stages[4].milestones = core_models.MilestoneSet(desktop_first=100)
+    stages[4].experiment_goals = 'To be the very best.'
+    stages[4].put()
 
     self.request_path = ('/guide/stage/%d/%d' % (
         self.feature_1.key.integer_id(), self.stage))
@@ -252,3 +258,65 @@ class FeatureEditHandlerTest(testing_config.CustomTestCase):
         int(new_shipped_milestone))
     self.assertEqual(shipping_stage.intent_thread_url,
         new_intent_to_ship_url)
+
+  def test_post__change_feature_type(self):
+    testing_config.sign_in('user1@google.com', 1234567890)
+
+    # Fields changed.
+    form_fields = ('category, name, summary, shipped_milestone, '
+        'intent_to_experiment_url, experiment_risks, experiment_reason, '
+        'origin_trial_feedback_url, intent_to_ship_url, feature_type')
+    # Expected stage change items.
+    new_shipped_milestone = '84'
+    new_intent_to_experiment_url = 'https://example.com/intent'
+    new_experiment_risks = 'Some pretty risky business'
+    new_experiment_extension_reason = 'It would be fun'
+    new_origin_trial_feedback_url = 'https://example.com/ot_intent'
+    new_intent_to_ship_url = 'https://example.com/shipping'
+    feature_type = '3'
+    with test_app.test_request_context(
+        self.request_path, data={
+            'form_fields': form_fields,
+            'category': '2',
+            'name': 'Revised feature name',
+            'summary': 'Revised feature summary',
+            'shipped_milestone': new_shipped_milestone,
+            'intent_to_experiment_url': new_intent_to_experiment_url,
+            'experiment_risks': new_experiment_risks,
+            'experiment_extension_reason': new_experiment_extension_reason,
+            'origin_trial_feedback_url': new_origin_trial_feedback_url,
+            'intent_to_ship_url': new_intent_to_ship_url,
+            'feature_type': feature_type
+        }):
+      self.handler.process_post_data(
+          self.feature_1.key.integer_id(), self.stage)
+
+    # Ensure changes were also made to Stage entities
+    stages = core_models.Stage.get_feature_stages(
+        self.feature_1.key.integer_id())
+    self.assertEqual(len(stages.keys()), 10)
+    origin_trial_stage = stages[450]
+    ot_extension_stage = stages[451]
+    shipping_stage = stages[460]
+    self.assertIsNotNone(origin_trial_stage)
+    self.assertIsNotNone(ot_extension_stage)
+    self.assertIsNotNone(shipping_stage)
+
+    # Check that correct stage fields were changed.
+    self.assertEqual(origin_trial_stage.experiment_risks,
+        new_experiment_risks)
+    self.assertEqual(origin_trial_stage.intent_thread_url,
+        new_intent_to_experiment_url)
+    self.assertEqual(origin_trial_stage.origin_trial_feedback_url,
+        new_origin_trial_feedback_url)
+    self.assertEqual(ot_extension_stage.experiment_extension_reason,
+        new_experiment_extension_reason)
+    self.assertEqual(shipping_stage.milestones.desktop_first,
+        int(new_shipped_milestone))
+    self.assertEqual(shipping_stage.intent_thread_url,
+        new_intent_to_ship_url)
+
+    # Check that the previous values were copied over.
+    self.assertEqual(origin_trial_stage.experiment_goals,
+        'To be the very best.')
+    self.assertEqual(origin_trial_stage.milestones.desktop_first, 100)

@@ -208,6 +208,41 @@ STAGE_TYPES_BY_FIELD_MAPPING = {
     'dt_milestone_webview_start': STAGE_TYPES_DEV_TRIAL
   }
 
+# Mapping of original field names to the new stage types the fields live on.
+STAGE_TYPES_BY_FIELD_MAPPING = {
+    'finch_url': STAGE_TYPES_SHIPPING,
+    'experiment_goals': STAGE_TYPES_ORIGIN_TRIAL,
+    'experiment_risks': STAGE_TYPES_ORIGIN_TRIAL,
+    'experiment_extension_reason': STAGE_TYPES_EXTEND_ORIGIN_TRIAL,
+    'origin_trial_feedback_url': STAGE_TYPES_ORIGIN_TRIAL,
+    'intent_to_implement_url': STAGE_TYPES_PROTOTYPE,
+    'intent_to_ship_url': STAGE_TYPES_SHIPPING,
+    'intent_to_experiment_url': STAGE_TYPES_ORIGIN_TRIAL,
+    'intent_to_extend_experiment_url': STAGE_TYPES_EXTEND_ORIGIN_TRIAL,
+  }
+
+MILESTONE_STAGE_TYPES_MAPPING = {
+    'shipped_milestone': STAGE_TYPES_SHIPPING,
+    'shipped_android_milestone': STAGE_TYPES_SHIPPING,
+    'shipped_ios_milestone': STAGE_TYPES_SHIPPING,
+    'shipped_webview_milestone': STAGE_TYPES_SHIPPING,
+    'ot_milestone_desktop_start': STAGE_TYPES_ORIGIN_TRIAL,
+    'ot_milestone_desktop_end': STAGE_TYPES_ORIGIN_TRIAL,
+    'ot_milestone_android_start': STAGE_TYPES_ORIGIN_TRIAL,
+    'ot_milestone_android_end': STAGE_TYPES_ORIGIN_TRIAL,
+    'ot_milestone_ios_start': STAGE_TYPES_ORIGIN_TRIAL,
+    'ot_milestone_ios_end': STAGE_TYPES_ORIGIN_TRIAL,
+    'ot_milestone_webview_start': STAGE_TYPES_ORIGIN_TRIAL,
+    'ot_milestone_webview_end': STAGE_TYPES_ORIGIN_TRIAL,
+    'dt_milestone_desktop_start': STAGE_TYPES_DEV_TRIAL,
+    'dt_milestone_android_start': STAGE_TYPES_DEV_TRIAL,
+    'dt_milestone_ios_start': STAGE_TYPES_DEV_TRIAL,
+    'dt_milestone_webview_start': STAGE_TYPES_DEV_TRIAL
+  }
+
+STAGES_WITH_MILESTONES = [STAGE_TYPES_SHIPPING, STAGE_TYPES_ORIGIN_TRIAL,
+    STAGE_TYPES_DEV_TRIAL]
+
 NO_ACTIVE_DEV = 1
 PROPOSED = 2
 IN_DEVELOPMENT = 3

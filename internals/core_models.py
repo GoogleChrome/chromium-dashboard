@@ -1208,6 +1208,62 @@ class FeatureEntry(ndb.Model):  # Copy from Feature
         if fe_id in result_dict]
     return result_list
 
+  def handle_feature_type_change(self, new_feature_type):
+    """Change stage types to match this feature's new type."""
+    if self.feature_type == new_feature_type:
+      return
+    
+    old_feature_type = self.feature_type
+    feature_id = self.key.integer_id()
+    stages = Stage.get_feature_stages(feature_id)
+    types_updated = set()
+
+    # Migrate all fields to the fields in the new stages.
+    for field_name, mapping in STAGE_TYPES_BY_FIELD_MAPPING.items():
+      old_stage_type = mapping.get(old_feature_type)
+      new_stage_type = mapping.get(new_feature_type)
+      needs_update = self.__prepare_stage_update(stages, old_stage_type,
+          new_stage_type)
+      if not needs_update:
+        continue
+      if field_name.startswith('intent_'):
+        value = getattr(stages[old_stage_type], 'intent_thread_url')
+        setattr(stages[new_stage_type], 'intent_thread_url', value)
+      else:
+        value = getattr(stages[old_stage_type], field_name)
+        setattr(stages[new_stage_type], field_name, value)
+      types_updated.add(new_stage_type)
+    
+    # Migrate milestone fields to new stage entities.
+    for mapping in STAGES_WITH_MILESTONES:
+      old_stage_type= mapping.get(old_feature_type)
+      new_stage_type = mapping.get(new_feature_type)
+      needs_update = self.__prepare_stage_update(stages, old_stage_type,
+          new_stage_type)
+      if not needs_update:
+        continue
+      stages[new_stage_type].milestones = stages[old_stage_type].milestones
+      types_updated.add(new_stage_type)
+
+    for stage_type in types_updated:
+      stages[stage_type].put()
+  
+  def __prepare_stage_update(self, stages, old_type, new_type) -> bool:
+    """Create stage entity for the new stage type and return if
+    updating the field in the new stage is needed.
+    """
+    # We don't need to transfer this field value if:
+    # 1. The field didn't exist in the old stage types.
+    # 2. The field doesn't exist in the new stage types.
+    # 3. The old stage type was never created.
+    if old_type is None or new_type is None or old_type not in stages:
+      return False
+    # Create the stage entity to for the new stage type if it doesn't exist.
+    if new_type not in stages:
+      stages[new_type] = Stage(feature_id=self.key.integer_id(),
+          stage_type=new_type)
+    return True
+
   # Note: get_in_milestone will be in a new file legacy_queries.py.
 
 

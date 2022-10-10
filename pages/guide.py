@@ -549,6 +549,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
 
     # Write for new FeatureEntry entity.
     if feature_entry:
+      feature_entry.handle_feature_type_change(feature_type)
       for field, value in update_items:
         setattr(feature_entry, field, value)
       feature_entry.put()
@@ -569,7 +570,9 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
 
     for field, value in update_items:
       # Determine the stage type that the field should change on.
-      stage_type = core_enums.STAGE_TYPES_BY_FIELD_MAPPING[field][feature_type]
+      stage_type = (core_enums.STAGE_TYPES_BY_FIELD_MAPPING[field][feature_type]
+          if field in core_enums.STAGE_TYPES_BY_FIELD_MAPPING
+          else core_enums.MILESTONE_STAGE_TYPES_MAPPING[field][feature_type])
       # If this feature type does not have this field, skip it
       # (e.g. developer-facing code changes cannot have origin trial fields).
       if stage_type is None:
