@@ -250,14 +250,6 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
       feature.shipped_webview_milestone = self.parse_int(
           'shipped_webview_milestone')
 
-    if self.touched('shipped_opera_milestone'):
-      feature.shipped_opera_milestone = (
-          self.parse_int('shipped_opera_milestone'))
-
-    if self.touched('shipped_opera_android'):
-      feature.shipped_opera_android_milestone = self.parse_int(
-          'shipped_opera_android_milestone')
-
     if self.touched('ot_milestone_desktop_start'):
       feature.ot_milestone_desktop_start = self.parse_int(
           'ot_milestone_desktop_start')
