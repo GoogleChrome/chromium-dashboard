@@ -1270,6 +1270,7 @@ class Stage(ndb.Model):
 
   @classmethod
   def get_feature_stages(cls, feature_id: int) -> dict:
+    """Return a dictionary of stages associated with a given feature."""
     stages = cls.query(cls.feature_id == feature_id).fetch()
     stage_dict = {}
     for stage in stages:
