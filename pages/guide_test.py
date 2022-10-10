@@ -97,8 +97,7 @@ class FeatureEditHandlerTest(testing_config.CustomTestCase):
   def setUp(self):
     self.feature_1 = core_models.Feature(
         name='feature one', summary='sum', owner=['user1@google.com'],
-        category=1, visibility=1, standardization=1, web_dev_views=1,
-        impl_status_chrome=1)
+        category=1)
     self.feature_1.put()
     self.stage = core_enums.INTENT_INCUBATE  # Shows first form
 

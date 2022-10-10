@@ -26,8 +26,7 @@ class ApprovalTest(testing_config.CustomTestCase):
 
   def setUp(self):
     self.feature_1 = core_models.Feature(
-        name='feature a', summary='sum', category=1, visibility=1,
-        standardization=1, web_dev_views=1, impl_status_chrome=3)
+        name='feature a', summary='sum', category=1, impl_status_chrome=3)
     self.feature_1.put()
     self.feature_1_id = self.feature_1.key.integer_id()
     self.appr_1 = review_models.Approval(
@@ -132,8 +131,7 @@ class CommentTest(testing_config.CustomTestCase):
   def setUp(self):
     self.feature_1 = core_models.Feature(
         name='feature a', summary='sum',  owner=['feature_owner@example.com'],
-        category=1, visibility=1, standardization=1, web_dev_views=1,
-        impl_status_chrome=3)
+        category=1, impl_status_chrome=3)
     self.feature_1.put()
     self.feature_1_id = self.feature_1.key.integer_id()
     self.comment_1_1 = review_models.Comment(
@@ -149,8 +147,7 @@ class CommentTest(testing_config.CustomTestCase):
 
     self.feature_2 = core_models.Feature(
         name='feature b', summary='sum', owner=['feature_owner@example.com'],
-        category=1, visibility=1, standardization=1, web_dev_views=1,
-        impl_status_chrome=3)
+        category=1, impl_status_chrome=3)
     self.feature_2.put()
     self.feature_2_id = self.feature_2.key.integer_id()
 
@@ -215,8 +212,7 @@ class ActivityTest(testing_config.CustomTestCase):
   def setUp(self):
     self.feature_1 = core_models.Feature(
         name='feature a', summary='sum', owner=['feature_owner@example.com'],
-        category=1, visibility=1, standardization=1, web_dev_views=1,
-        impl_status_chrome=3)
+        category=1)
     self.feature_1.put()
 
   def tearDown(self):

@@ -54,9 +54,8 @@ class EmailFormattingTest(testing_config.CustomTestCase):
         name='feature one', summary='sum', owner=['feature_owner@example.com'],
         ot_milestone_desktop_start=100,
         editors=['feature_editor@example.com', 'owner_1@example.com'],
-        cc_recipients=['cc@example.com'],
-        category=1, visibility=1, standardization=1, web_dev_views=1,
-        impl_status_chrome=1, created_by=ndb.User(
+        cc_recipients=['cc@example.com'], category=1,
+        created_by=ndb.User(
             email='creator1@gmail.com', _auth_domain='gmail.com'),
         updated_by=ndb.User(
             email='editor1@gmail.com', _auth_domain='gmail.com'),
@@ -77,8 +76,7 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     self.feature_2 = core_models.Feature(
         name='feature two', summary='sum', owner=['feature_owner@example.com'],
         editors=['feature_editor@example.com', 'owner_1@example.com'],
-        category=1, visibility=1, standardization=1, web_dev_views=1,
-        impl_status_chrome=1, created_by=ndb.User(
+        category=1, created_by=ndb.User(
             email='creator2@example.com', _auth_domain='gmail.com'),
         updated_by=ndb.User(
             email='editor2@example.com', _auth_domain='gmail.com'),
@@ -90,8 +88,7 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     self.template_feature = core_models.Feature(
         name='feature template', summary='sum', owner=['feature_owner@example.com'],
         editors=['feature_editor@example.com', 'owner_1@example.com'],
-        category=1, visibility=1, standardization=1, web_dev_views=1,
-        impl_status_chrome=1, created_by=ndb.User(
+        category=1, created_by=ndb.User(
             email='creator_template@example.com', _auth_domain='gmail.com'),
         updated_by=ndb.User(
             email='editor_template@example.com', _auth_domain='gmail.com'),
@@ -439,16 +436,13 @@ class FeatureStarTest(testing_config.CustomTestCase):
 
   def setUp(self):
     self.feature_1 = core_models.Feature(
-        name='feature one', summary='sum', category=1, visibility=1,
-        standardization=1, web_dev_views=1, impl_status_chrome=1)
+        name='feature one', summary='sum', category=1)
     self.feature_1.put()
     self.feature_2 = core_models.Feature(
-        name='feature two', summary='sum', category=1, visibility=1,
-        standardization=1, web_dev_views=1, impl_status_chrome=1)
+        name='feature two', summary='sum', category=1)
     self.feature_2.put()
     self.feature_3 = core_models.Feature(
-        name='feature three', summary='sum', category=1, visibility=1,
-        standardization=1, web_dev_views=1, impl_status_chrome=1)
+        name='feature three', summary='sum', category=1)
     self.feature_3.put()
 
   def tearDown(self):
@@ -603,10 +597,8 @@ class FunctionsTest(testing_config.CustomTestCase):
     impl_url = notifier.BLINK_DEV_ARCHIVE_URL_PREFIX + '123' + quoted_msg_id
     expr_url = notifier.TEST_ARCHIVE_URL_PREFIX + '456' + quoted_msg_id
     self.feature_1 = core_models.Feature(
-        name='feature one', summary='sum', category=1, visibility=1,
-        standardization=1, web_dev_views=1, impl_status_chrome=1,
-        intent_to_implement_url=impl_url,
-        intent_to_experiment_url=expr_url)
+        name='feature one', summary='sum', category=1,
+        intent_to_implement_url=impl_url, intent_to_experiment_url=expr_url)
     # Note: There is no need to put() it in the datastore.
 
   def test_get_thread_id__normal(self):

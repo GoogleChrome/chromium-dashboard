@@ -141,9 +141,7 @@ class ProgressDetectorsTest(testing_config.CustomTestCase):
 
   def setUp(self):
     self.feature_1 = core_models.Feature(
-        name='feature one', summary='sum', category=1, visibility=1,
-        standardization=1, web_dev_views=core_enums.DEV_NO_SIGNALS,
-        impl_status_chrome=1,
+        name='feature one', summary='sum', category=1,
         intent_stage=core_enums.INTENT_IMPLEMENT)
     self.feature_1.put()
 

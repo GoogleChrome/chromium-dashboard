@@ -31,8 +31,7 @@ class FunctionTest(testing_config.CustomTestCase):
 
   def setUp(self):
     self.feature_1 = core_models.Feature(
-        name='feature one', summary='detailed sum', category=1, visibility=1,
-        standardization=1, web_dev_views=1, impl_status_chrome=1,
+        name='feature one', summary='detailed sum', category=1,
         intent_stage=core_enums.INTENT_IMPLEMENT)
     self.feature_1.put()
 
@@ -324,8 +323,7 @@ class IntentEmailHandlerTest(testing_config.CustomTestCase):
 
   def setUp(self):
     self.feature_1 = core_models.Feature(
-        name='feature one', summary='detailed sum', category=1, visibility=1,
-        standardization=1, web_dev_views=1, impl_status_chrome=1,
+        name='feature one', summary='detailed sum', category=1,
         intent_stage=core_enums.INTENT_IMPLEMENT)
     self.feature_1.put()
     self.feature_id = self.feature_1.key.integer_id()

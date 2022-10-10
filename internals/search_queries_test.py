@@ -27,15 +27,13 @@ class SearchFeaturesTest(testing_config.CustomTestCase):
   def setUp(self):
     self.feature_1 = core_models.Feature(
         name='feature a', summary='sum', owner=['owner@example.com'],
-        category=1, visibility=1, standardization=1, web_dev_views=1,
-        impl_status_chrome=3)
+        category=1, impl_status_chrome=3)
     self.feature_1.put()
     self.feature_1_id = self.feature_1.key.integer_id()
 
     self.feature_2 = core_models.Feature(
         name='feature b', summary='sum', owner=['owner@example.com'],
-        category=1, visibility=1, standardization=1, web_dev_views=1,
-        impl_status_chrome=3)
+        category=1, impl_status_chrome=3)
     self.feature_2.put()
     self.feature_2_id = self.feature_2.key.integer_id()
 

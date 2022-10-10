@@ -81,8 +81,7 @@ class PermissionFunctionTests(testing_config.CustomTestCase):
         name='feature one', summary='sum',
         creator="feature_creator@example.com",
         owner=['feature_owner@example.com'],
-        editors=['feature_editor@example.com'], category=1, visibility=1,
-        standardization=1, web_dev_views=1, impl_status_chrome=1)
+        editors=['feature_editor@example.com'], category=1)
     self.feature_1.put()
     self.feature_id = self.feature_1.key.integer_id()
 

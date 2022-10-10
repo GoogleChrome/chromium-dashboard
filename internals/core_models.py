@@ -911,7 +911,7 @@ class Feature(DictModel):
   creator = ndb.StringProperty()
   name = ndb.StringProperty(required=True)
   feature_type = ndb.IntegerProperty(default=FEATURE_TYPE_INCUBATE_ID)
-  intent_stage = ndb.IntegerProperty(default=0)
+  intent_stage = ndb.IntegerProperty(default=INTENT_NONE)
   summary = ndb.StringProperty(required=True)
   unlisted = ndb.BooleanProperty(default=False)
   # TODO(jrobbins): Add an entry_state enum to track app-specific lifecycle
@@ -947,7 +947,7 @@ class Feature(DictModel):
   blink_components = ndb.StringProperty(repeated=True)
   devrel = ndb.StringProperty(repeated=True)
 
-  impl_status_chrome = ndb.IntegerProperty(required=True)
+  impl_status_chrome = ndb.IntegerProperty(required=True, default=NO_ACTIVE_DEV)
   shipped_milestone = ndb.IntegerProperty()
   shipped_android_milestone = ndb.IntegerProperty()
   shipped_ios_milestone = ndb.IntegerProperty()
@@ -976,10 +976,11 @@ class Feature(DictModel):
   # Note: There are no dt end milestones because a dev trail implicitly
   # ends when the feature ships or is abandoned.
 
-  visibility = ndb.IntegerProperty(required=False)  # Deprecated
+  visibility = ndb.IntegerProperty(required=False, default=1)  # Deprecated
 
   # Standards details.
-  standardization = ndb.IntegerProperty(required=True)  # Deprecated
+  standardization = ndb.IntegerProperty(required=True,
+      default=EDITORS_DRAFT)  # Deprecated
   standard_maturity = ndb.IntegerProperty(required=True, default=UNSET_STD)
   spec_link = ndb.StringProperty()
   api_spec = ndb.BooleanProperty(default=False)
@@ -999,7 +1000,7 @@ class Feature(DictModel):
   # Deprecated
   ie_views = ndb.IntegerProperty(required=True, default=NO_PUBLIC_SIGNALS)
   safari_views = ndb.IntegerProperty(required=True, default=NO_PUBLIC_SIGNALS)
-  web_dev_views = ndb.IntegerProperty(required=True)
+  web_dev_views = ndb.IntegerProperty(required=True, default=DEV_NO_SIGNALS)
 
   ff_views_link = ndb.StringProperty()
   ie_views_link = ndb.StringProperty()  # Deprecated
@@ -1066,12 +1067,12 @@ class FeatureEntry(ndb.Model):  # Copy from Feature
 
   # Metadata: Process information
   feature_type = ndb.IntegerProperty(default=FEATURE_TYPE_INCUBATE_ID)
-  intent_stage = ndb.IntegerProperty(default=0)
+  intent_stage = ndb.IntegerProperty(default=INTENT_NONE)
   bug_url = ndb.StringProperty()  # Tracking bug
   launch_bug_url = ndb.StringProperty()  # FLT or go/launch
 
   # Implementation in Chrome
-  impl_status_chrome = ndb.IntegerProperty(required=True)
+  impl_status_chrome = ndb.IntegerProperty(required=True, default=NO_ACTIVE_DEV)
   flag_name = ndb.StringProperty()
   ongoing_constraints = ndb.TextProperty()
 
@@ -1100,7 +1101,7 @@ class FeatureEntry(ndb.Model):  # Copy from Feature
 
   ff_views = ndb.IntegerProperty(required=True, default=NO_PUBLIC_SIGNALS)
   safari_views = ndb.IntegerProperty(required=True, default=NO_PUBLIC_SIGNALS)
-  web_dev_views = ndb.IntegerProperty(required=True)
+  web_dev_views = ndb.IntegerProperty(required=True, default=DEV_NO_SIGNALS)
   ff_views_link = ndb.StringProperty()
   safari_views_link = ndb.StringProperty()
   web_dev_views_link = ndb.StringProperty()

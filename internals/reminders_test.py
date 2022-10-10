@@ -30,19 +30,15 @@ class MockResponse:
 def make_test_features():
   feature_1 = core_models.Feature(
       name='feature one', summary='sum', owner=['feature_owner@example.com'],
-      category=1, visibility=1,
-      standardization=1, web_dev_views=1, impl_status_chrome=1,
-      ot_milestone_desktop_start=100)
+      category=1, ot_milestone_desktop_start=100)
   feature_1.put()
   feature_2 = core_models.Feature(
       name='feature two', summary='sum',
       owner=['owner_1@example.com', 'owner_2@example.com'],
-      category=1, visibility=1, standardization=1,
-      web_dev_views=1, impl_status_chrome=1, shipped_milestone=150)
+      category=1, shipped_milestone=150)
   feature_2.put()
   feature_3 = core_models.Feature(
-      name='feature three', summary='sum', category=1, visibility=1,
-      standardization=1, web_dev_views=1, impl_status_chrome=1)
+      name='feature three', summary='sum', category=1)
   feature_3.put()
   return feature_1, feature_2, feature_3
 
