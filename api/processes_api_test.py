@@ -29,8 +29,7 @@ class ProcessesAPITest(testing_config.CustomTestCase):
 
   def setUp(self):
     self.feature_1 = core_models.Feature(
-        name='feature one', summary='sum', category=1, visibility=1,
-        standardization=1, web_dev_views=1, impl_status_chrome=1)
+        name='feature one', summary='sum', category=1)
     self.feature_1.put()
     self.feature_id = self.feature_1.key.integer_id()
 
@@ -88,8 +87,7 @@ class ProgressAPITest(testing_config.CustomTestCase):
         owner=['feature_owner@example.com'],
         ready_for_trial_url='fake ready for trial url',
         intent_to_experiment_url='fake intent to experiment url',
-        spec_link='fake spec link',
-        category=1, visibility=1, standardization=1, web_dev_views=1,
+        spec_link='fake spec link', category=1, web_dev_views=1,
         impl_status_chrome=5, intent_stage=core_enums.INTENT_IMPLEMENT,
         shipped_milestone=1)
     self.feature_1.put()

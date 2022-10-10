@@ -51,26 +51,22 @@ class FeatureTest(testing_config.CustomTestCase):
   def setUp(self):
     self.feature_2 = core_models.Feature(
         name='feature b', summary='sum', owner=['feature_owner@example.com'],
-        category=1, visibility=1, standardization=1, web_dev_views=1,
-        impl_status_chrome=3)
+        category=1)
     self.feature_2.put()
 
     self.feature_1 = core_models.Feature(
         name='feature a', summary='sum', owner=['feature_owner@example.com'],
-        category=1, visibility=1, standardization=1, web_dev_views=1,
-        impl_status_chrome=3)
+        category=1, impl_status_chrome=3)
     self.feature_1.put()
 
     self.feature_4 = core_models.Feature(
         name='feature d', summary='sum', owner=['feature_owner@example.com'],
-        category=1, visibility=1, standardization=1, web_dev_views=1,
-        impl_status_chrome=2)
+        category=1, impl_status_chrome=2)
     self.feature_4.put()
 
     self.feature_3 = core_models.Feature(
         name='feature c', summary='sum', owner=['feature_owner@example.com'],
-        category=1, visibility=1, standardization=1, web_dev_views=1,
-        impl_status_chrome=2)
+        category=1, impl_status_chrome=2)
     self.feature_3.put()
 
   def tearDown(self):

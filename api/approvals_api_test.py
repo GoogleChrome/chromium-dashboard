@@ -32,8 +32,7 @@ class ApprovalsAPITest(testing_config.CustomTestCase):
 
   def setUp(self):
     self.feature_1 = core_models.Feature(
-        name='feature one', summary='sum', category=1, visibility=1,
-        standardization=1, web_dev_views=1, impl_status_chrome=1)
+        name='feature one', summary='sum', category=1)
     self.feature_1.put()
     self.feature_id = self.feature_1.key.integer_id()
     self.handler = approvals_api.ApprovalsAPI()
@@ -212,8 +211,7 @@ class ApprovalConfigsAPITest(testing_config.CustomTestCase):
 
   def setUp(self):
     self.feature_1 = core_models.Feature(
-        name='feature one', summary='sum', category=1, visibility=1,
-        standardization=1, web_dev_views=1, impl_status_chrome=1)
+        name='feature one', summary='sum', category=1)
     self.feature_1.put()
     self.feature_1_id = self.feature_1.key.integer_id()
     self.config_1 = review_models.ApprovalConfig(
@@ -222,8 +220,7 @@ class ApprovalConfigsAPITest(testing_config.CustomTestCase):
     self.config_1.put()
 
     self.feature_2 = core_models.Feature(
-        name='feature two', summary='sum', category=1, visibility=1,
-        standardization=1, web_dev_views=1, impl_status_chrome=1)
+        name='feature two', summary='sum', category=1)
     self.feature_2.put()
     self.feature_2_id = self.feature_2.key.integer_id()
     self.config_2 = review_models.ApprovalConfig(
@@ -232,8 +229,7 @@ class ApprovalConfigsAPITest(testing_config.CustomTestCase):
     self.config_2.put()
 
     self.feature_3 = core_models.Feature(
-        name='feature three', summary='sum', category=1, visibility=1,
-        standardization=1, web_dev_views=1, impl_status_chrome=1)
+        name='feature three', summary='sum', category=1)
     self.feature_3.put()
     self.feature_3_id = self.feature_3.key.integer_id()
     # Feature 3 has no configs

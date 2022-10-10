@@ -33,8 +33,7 @@ class IntentEmailPreviewHandlerTest(testing_config.CustomTestCase):
   def setUp(self):
     self.feature_1 = core_models.Feature(
         name='feature one', summary='sum', owner=['user1@google.com'],
-        category=1, visibility=1, standardization=1, web_dev_views=1,
-        impl_status_chrome=1, intent_stage=core_enums.INTENT_IMPLEMENT)
+        category=1, intent_stage=core_enums.INTENT_IMPLEMENT)
     self.feature_1.put()
 
     self.request_path = '/admin/features/launch/%d/%d?intent' % (
@@ -189,8 +188,7 @@ class IntentEmailPreviewTemplateTest(testing_config.CustomTestCase):
     super(IntentEmailPreviewTemplateTest, self).setUp()
     self.feature_1 = core_models.Feature(
         name='feature one', summary='sum', owner=['user1@google.com'],
-        category=1, visibility=1, standardization=1, web_dev_views=1,
-        impl_status_chrome=1, intent_stage=core_enums.INTENT_IMPLEMENT)
+        category=1, intent_stage=core_enums.INTENT_IMPLEMENT)
     self.feature_1.put()
 
     self.request_path = '/admin/features/launch/%d/%d?intent' % (

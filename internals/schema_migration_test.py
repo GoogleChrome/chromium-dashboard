@@ -182,7 +182,6 @@ class MigrateFeaturesToFeatureEntriesTest(testing_config.CustomTestCase):
         explainer_links=['explainer.example.com'],
         requires_embedder_support=False,
         standard_maturity=1,
-        standardization=1,
         spec_link='spec.example.com',
         api_spec=False,
         spec_mentors=['mentor1', 'mentor2'],
@@ -232,10 +231,7 @@ class MigrateFeaturesToFeatureEntriesTest(testing_config.CustomTestCase):
         deleted=False,
         name='feature_one',
         summary='newly migrated summary',
-        standardization=1,
-        category=1,
-        impl_status_chrome=1,
-        web_dev_views=1)
+        category=1)
     self.feature_2.put()
 
     self.feature_3 = core_models.Feature(
@@ -253,10 +249,7 @@ class MigrateFeaturesToFeatureEntriesTest(testing_config.CustomTestCase):
         deleted=False,
         name='feature_three',
         summary='migrated summary',
-        standardization=1,
-        category=1,
-        impl_status_chrome=1,
-        web_dev_views=1)
+        category=1)
     self.feature_3.put()
 
     # Feature 3 is already migrated.
@@ -274,11 +267,7 @@ class MigrateFeaturesToFeatureEntriesTest(testing_config.CustomTestCase):
         name='feature_three',
         summary='migrated summary',
         standard_maturity=1,
-        impl_status_chrome=1,
-        category=1,
-        ff_views=1,
-        safari_views=1,
-        web_dev_views=1)
+        category=1)
     self.feature_entry_3.put()
 
   def tearDown(self):
@@ -362,7 +351,6 @@ class MigrateStagesTest(testing_config.CustomTestCase):
         explainer_links=['explainer.example.com'],
         requires_embedder_support=False,
         standard_maturity=1,
-        standardization=1,
         spec_link='spec.example.com',
         api_spec=False,
         spec_mentors=['mentor1', 'mentor2'],
@@ -413,10 +401,7 @@ class MigrateStagesTest(testing_config.CustomTestCase):
         deleted=False,
         name='feature_one',
         summary='newly migrated summary',
-        standardization=1,
-        category=1,
-        impl_status_chrome=1,
-        web_dev_views=1)
+        category=1,)
     self.feature_2.put()
 
     # Feature 3 stages are already migrated.
@@ -435,10 +420,7 @@ class MigrateStagesTest(testing_config.CustomTestCase):
         deleted=False,
         name='feature_three',
         summary='migrated summary',
-        standardization=1,
         category=1,
-        impl_status_chrome=1,
-        web_dev_views=1,
         stages_migrated=True)
     self.feature_3.put()
 
@@ -458,10 +440,7 @@ class MigrateStagesTest(testing_config.CustomTestCase):
         deleted=False,
         name='feature_three',
         summary='migrated summary',
-        standardization=1,
-        category=1,
-        impl_status_chrome=1,
-        web_dev_views=1)
+        category=1,)
     self.feature_4.put()
 
     self.feature_5 = core_models.Feature(
@@ -480,10 +459,7 @@ class MigrateStagesTest(testing_config.CustomTestCase):
         deleted=False,
         name='feature_three',
         summary='migrated summary',
-        standardization=1,
-        category=1,
-        impl_status_chrome=1,
-        web_dev_views=1)
+        category=1)
     self.feature_5.put()
 
   def tearDown(self):
