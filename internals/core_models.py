@@ -1210,6 +1210,28 @@ class FeatureEntry(ndb.Model):  # Copy from Feature
 # Note: This class is not used yet.
 class MilestoneSet(ndb.Model):  # copy from milestone fields of Feature
   """Range of milestones during which a feature will be in a certain stage."""
+
+  # Mapping of old milestone fields to the new fields they should use
+  # in the MilestoneSet kind.
+  MILESTONE_FIELD_MAPPING = {
+      'shipped_milestone': 'desktop_first',
+      'shipped_android_milestone': 'android_first',
+      'shipped_ios_milestone': 'ios_first',
+      'shipped_webview_milestone': 'webview_first',
+      'ot_milestone_desktop_start': 'desktop_first',
+      'ot_milestone_desktop_end': 'desktop_last',
+      'ot_milestone_android_start': 'android_first',
+      'ot_milestone_android_end': 'android_last',
+      'ot_milestone_ios_start': 'ios_first',
+      'ot_milestone_ios_end': 'ios_last',
+      'ot_milestone_webview_start': 'webview_first',
+      'ot_milestone_webview_end': 'webview_last',
+      'dt_milestone_desktop_start': 'desktop_first',
+      'dt_milestone_android_start': 'android_first',
+      'dt_milestone_ios_start': 'ios_first',
+      'dt_milestone_webview_start': 'webview_first'
+    }
+
   desktop_first = ndb.IntegerProperty()
   desktop_last = ndb.IntegerProperty()
   android_first = ndb.IntegerProperty()
@@ -1245,3 +1267,11 @@ class Stage(ndb.Model):
   experiment_extension_reason = ndb.TextProperty()
   intent_thread_url = ndb.StringProperty()
   origin_trial_feedback_url = ndb.StringProperty()
+
+  @classmethod
+  def get_feature_stages(cls, feature_id: int) -> dict:
+    stages = cls.query(cls.feature_id == feature_id).fetch()
+    stage_dict = {}
+    for stage in stages:
+      stage_dict[stage.stage_type] = stage
+    return stage_dict

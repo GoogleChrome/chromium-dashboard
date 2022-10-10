@@ -108,12 +108,27 @@ class FeatureEditHandlerTest(testing_config.CustomTestCase):
         standard_maturity=1, web_dev_views=1, impl_status_chrome=1)
     self.feature_entry_1.put()
 
+    feature_id = self.feature_1.key.integer_id()
+    # Shipping stage is not created, and should be created on edit.
+    stage_types = [core_models.STAGE_BLINK_INCUBATE,
+        core_models.STAGE_BLINK_PROTOTYPE,
+        core_models.STAGE_BLINK_DEV_TRIAL,
+        core_models.STAGE_BLINK_EVAL_READINESS,
+        core_models.STAGE_BLINK_ORIGIN_TRIAL,
+        core_models.STAGE_BLINK_EXTEND_ORIGIN_TRIAL]
+    for stage_type in stage_types:
+      stage = core_models.Stage(feature_id=feature_id, stage_type=stage_type)
+      stage.put()
+
     self.request_path = ('/guide/stage/%d/%d' % (
         self.feature_1.key.integer_id(), self.stage))
     self.handler = guide.FeatureEditHandler()
 
   def tearDown(self):
     self.feature_1.key.delete()
+    self.feature_entry_1.key.delete()
+    for stage in core_models.Stage.query().fetch():
+      stage.key.delete()
 
   def test_touched(self):
     """We can tell if the user meant to edit a field."""
@@ -167,13 +182,31 @@ class FeatureEditHandlerTest(testing_config.CustomTestCase):
   def test_post__normal_valid(self):
     """Allowed user can edit a feature."""
     testing_config.sign_in('user1@google.com', 1234567890)
+
+    # Fields changed.
+    form_fields = ('category, name, summary, shipped_milestone, '
+        'intent_to_experiment_url, experiment_risks, experiment_reason, '
+        'origin_trial_feedback_url, intent_to_ship_url')
+    # Expected stage change items.
+    new_shipped_milestone = '84'
+    new_intent_to_experiment_url = 'https://example.com/intent'
+    new_experiment_risks = 'Some pretty risky business'
+    new_experiment_extension_reason = 'It would be fun'
+    new_origin_trial_feedback_url = 'https://example.com/ot_intent'
+    new_intent_to_ship_url = 'https://example.com/shipping'
+
     with test_app.test_request_context(
         self.request_path, data={
-            'form_fields': 'category, name, summary, shipped_milestone',
+            'form_fields': form_fields,
             'category': '2',
             'name': 'Revised feature name',
             'summary': 'Revised feature summary',
-            'shipped_milestone': '84',
+            'shipped_milestone': new_shipped_milestone,
+            'intent_to_experiment_url': new_intent_to_experiment_url,
+            'experiment_risks': new_experiment_risks,
+            'experiment_extension_reason': new_experiment_extension_reason,
+            'origin_trial_feedback_url': new_origin_trial_feedback_url,
+            'intent_to_ship_url': new_intent_to_ship_url
         }):
       actual_response = self.handler.process_post_data(
           self.feature_1.key.integer_id(), self.stage)
@@ -195,3 +228,30 @@ class FeatureEditHandlerTest(testing_config.CustomTestCase):
     self.assertEqual(2, revised_entry.category)
     self.assertEqual('Revised feature name', revised_entry.name)
     self.assertEqual('Revised feature summary', revised_entry.summary)
+
+    # Ensure changes were also made to Stage entities
+    stages = core_models.Stage.query().fetch()
+    self.assertEqual(len(stages), 7)
+    origin_trial_stage = next(
+        (stage for stage in stages if stage.stage_type == 150), None)
+    ot_extension_stage = next(
+        (stage for stage in stages if stage.stage_type == 151), None)
+    # Stage for shipping should have been created.
+    shipping_stage = next(
+        (stage for stage in stages if stage.stage_type == 160), None)
+    self.assertIsNotNone(origin_trial_stage)
+    self.assertIsNotNone(shipping_stage)
+    self.assertIsNotNone(ot_extension_stage)
+    # Check that correct stage fields were changed.
+    self.assertEqual(origin_trial_stage.experiment_risks,
+        new_experiment_risks)
+    self.assertEqual(origin_trial_stage.intent_thread_url,
+        new_intent_to_experiment_url)
+    self.assertEqual(origin_trial_stage.origin_trial_feedback_url,
+        new_origin_trial_feedback_url)
+    self.assertEqual(ot_extension_stage.experiment_extension_reason,
+        new_experiment_extension_reason)
+    self.assertEqual(shipping_stage.milestones.desktop_first,
+        int(new_shipped_milestone))
+    self.assertEqual(shipping_stage.intent_thread_url,
+        new_intent_to_ship_url)

@@ -365,3 +365,36 @@ class FeatureTest(testing_config.CustomTestCase):
     self.assertEqual(
         cached_test_feature,
         actual)
+
+class StageTest(testing_config.CustomTestCase):
+
+  def setUp(self):
+    self.feature_entry_1 = core_models.FeatureEntry(id=1, name='fe one',
+        summary='summary', category=1, impl_status_chrome=1,
+        standard_maturity=1, web_dev_views=1)
+    self.feature_entry_1.put()
+    stage_types = [core_enums.STAGE_DEP_PLAN, core_enums.STAGE_DEP_DEV_TRIAL,
+        core_enums.STAGE_DEP_DEPRECATION_TRIAL, core_enums.STAGE_DEP_SHIPPING,
+        core_enums.STAGE_DEP_REMOVE_CODE]
+    self.feature_id = self.feature_entry_1.key.integer_id()
+    for stage_type in stage_types:
+      stage = core_models.Stage(feature_id=self.feature_id, stage_type=stage_type)
+      stage.put()
+
+  def tearDown(self):
+    self.feature_entry_1.key.delete()
+    for stage in core_models.Stage.query().fetch():
+      stage.key.delete()
+  
+  def test_get_feature_stages(self):
+    """A dictionary with stages relevant to the feature should be present."""
+    stage_dict = core_models.Stage.get_feature_stages(self.feature_id)
+    list_stages = stage_dict.items()
+    expected_stage_types = {410, 430, 450, 460, 470}
+    # Extension stage type was not created, so it should not appear.
+    self.assertIsNone(stage_dict.get(451, None))
+    self.assertEqual(len(list_stages), 5)
+    for stage_type, stage in stage_dict.items():
+      self.assertTrue(stage_type in expected_stage_types)
+      self.assertEqual(stage.stage_type, stage_type)
+      expected_stage_types.remove(stage_type)
