@@ -1126,6 +1126,9 @@ class FeatureEntry(ndb.Model):  # Copy from Feature
   doc_links = ndb.StringProperty(repeated=True)
   sample_links = ndb.StringProperty(repeated=True)
 
+  # Legacy fields that we display on old entries, but don't allow editing.
+  experiment_timeline = ndb.TextProperty()  # Display-only
+
   DEFAULT_CACHE_KEY = 'FeatureEntries'
 
   def __init__(self, *args, **kwargs):
