@@ -112,11 +112,10 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
 
     # For now, selects are considered "touched", if they are
     # present on the form and are not empty strings.
-    selects = ['category', 'feature_type', 'intent_stage',
-      'standard_maturity', 'security_review_status',
-      'privacy_review_status', 'tag_review_status',
-      'safari_views', 'ff_views', 'web_dev_views',
-      'blink_components', 'impl_status_chrome']
+    selects = ['category', 'intent_stage', 'standard_maturity',
+        'security_review_status', 'privacy_review_status', 'tag_review_status',
+        'safari_views', 'ff_views', 'web_dev_views', 'blink_components',
+        'impl_status_chrome']
     if param_name in selects:
       return self.form.get(param_name)
 
@@ -143,7 +142,6 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
 
     update_items = []
     stage_update_items = []
-    feature_type = feature.feature_type
 
     if self.touched('spec_link'):
       feature.spec_link = self.parse_link('spec_link')
@@ -378,11 +376,6 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
       feature.devrel = self.split_emails('devrel')
       update_items.append(('devrel_emails', self.split_emails('devrel')))
 
-    if self.touched('feature_type'):
-      feature.feature_type = int(self.form.get('feature_type'))
-      update_items.append(('feature_type', int(self.form.get('feature_type'))))
-      feature_type = int(self.form.get('feature_type'))
-
     # intent_stage can be be set either by <select> or a checkbox
     if self.touched('intent_stage'):
       feature.intent_stage = int(self.form.get('intent_stage'))
@@ -555,7 +548,8 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
     
     # Write changes made to the corresponding stage type.
     if stage_update_items:
-      self.update_stage_fields(feature_id, feature_type, stage_update_items)
+      self.update_stage_fields(feature_id, feature.feature_type,
+          stage_update_items)
 
     # Remove all feature-related cache.
     rediscache.delete_keys_with_prefix(core_models.feature_cache_prefix())
