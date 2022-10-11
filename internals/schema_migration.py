@@ -171,7 +171,8 @@ class MigrateFeaturesToFeatureEntries(FlaskHandler):
         ('devrel_emails', 'devrel'),  # Renamed
         ('debuggability', 'debuggability'),
         ('doc_links', 'doc_links'),
-        ('sample_links', 'sample_links')]
+        ('sample_links', 'sample_links'),
+        ('experiment_timeline', 'experiment_timeline')]
     return handle_migration(Feature, FeatureEntry,kwarg_mapping,
         self.special_handler)
 
@@ -244,8 +245,8 @@ class MigrateStages(FlaskHandler):
     stage = Stage(stage_type=STAGE_BLINK_PROTOTYPE,
         intent_thread_url=feature.intent_to_implement_url, **kwargs)
     stage.put()
-    stage = Stage(stage_type=STAGE_BLINK_DEV_TRIAL,
-        milestones=devtrial_mstones, **kwargs)
+    stage = Stage(stage_type=STAGE_BLINK_DEV_TRIAL, milestones=devtrial_mstones,
+        announcement_url=feature.ready_for_trial_url, **kwargs)
     stage.put()
     stage = Stage(stage_type=STAGE_BLINK_EVAL_READINESS, **kwargs)
     stage.put()
@@ -269,7 +270,7 @@ class MigrateStages(FlaskHandler):
         intent_thread_url=feature.intent_to_implement_url, **kwargs)
     stage.put()
     stage = Stage(stage_type=STAGE_FAST_DEV_TRIAL, milestones=devtrial_mstones,
-        **kwargs)
+        announcement_url=feature.ready_for_trial_url, **kwargs)
     stage.put()
     stage = Stage(stage_type=STAGE_FAST_ORIGIN_TRIAL, milestones=ot_mstones,
         intent_thread_url=feature.intent_to_experiment_url,
@@ -289,7 +290,7 @@ class MigrateStages(FlaskHandler):
     stage = Stage(stage_type=STAGE_PSA_IMPLEMENT, **kwargs)
     stage.put()
     stage = Stage(stage_type=STAGE_PSA_DEV_TRIAL, milestones=devtrial_mstones,
-        **kwargs)
+        announcement_url=feature.ready_for_trial_url,  **kwargs)
     stage.put()
     stage = Stage(stage_type=STAGE_PSA_SHIPPING,  milestones=ship_mstones,
         intent_thread_url=feature.intent_to_ship_url,
@@ -304,7 +305,7 @@ class MigrateStages(FlaskHandler):
     stage = Stage(stage_type=STAGE_DEP_PLAN, **kwargs)
     stage.put()
     stage = Stage(stage_type=STAGE_DEP_DEV_TRIAL, milestones=devtrial_mstones,
-        **kwargs)
+        announcement_url=feature.ready_for_trial_url, **kwargs)
     stage.put()
     stage = Stage(stage_type=STAGE_DEP_DEPRECATION_TRIAL, milestones=ot_mstones,
         **kwargs, intent_thread_url=feature.intent_to_experiment_url,
