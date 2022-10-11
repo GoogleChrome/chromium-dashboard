@@ -52,6 +52,7 @@ class BlinkTemplateTest(testing_config.CustomTestCase):
 
   def test_html_rendering(self):
     """We can render the template with valid html."""
+    self.maxDiff = None
     template_text = self.handler.render(
         self.template_data, self.full_template_path)
     parser = html5lib.HTMLParser(strict=True)
@@ -82,6 +83,7 @@ class SubscribersTemplateTest(testing_config.CustomTestCase):
 
   def test_html_rendering(self):
     """We can render the template with valid html."""
+    self.maxDiff = None
     template_text = self.handler.render(
         self.template_data, self.full_template_path)
     parser = html5lib.HTMLParser(strict=True)
