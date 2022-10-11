@@ -206,6 +206,8 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
     if self.touched('ready_for_trial_url'):
       feature.ready_for_trial_url = self.parse_link(
           'ready_for_trial_url')
+      update_items.append(('ready_for_trial_url',
+          self.parse_link('ready_for_trial_url')))
 
     if self.touched('intent_to_experiment_url'):
       feature.intent_to_experiment_url = self.parse_link(
@@ -455,14 +457,6 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
     if self.touched('ff_views_notes'):
       feature.ff_views_notes = self.form.get('ff_views_notes')
       update_items.append(('ff_views_notes', self.form.get('ff_views_notes')))
-
-    # TODO(jrobbins): Delete after the next deployment
-    if self.touched('ie_views'):
-      feature.ie_views = int(self.form.get('ie_views'))
-    if self.touched('ie_views_link'):
-      feature.ie_views_link = self.parse_link('ie_views_link')
-    if self.touched('ie_views_notes'):
-      feature.ie_views_notes = self.form.get('ie_views_notes')
 
     if self.touched('safari_views'):
       feature.safari_views = int(self.form.get('safari_views'))

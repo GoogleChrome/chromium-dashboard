@@ -1271,6 +1271,7 @@ class Stage(ndb.Model):
   experiment_extension_reason = ndb.TextProperty()
   intent_thread_url = ndb.StringProperty()
   origin_trial_feedback_url = ndb.StringProperty()
+  announcement_url = ndb.StringProperty()
 
   @classmethod
   def get_feature_stages(cls, feature_id: int) -> dict:

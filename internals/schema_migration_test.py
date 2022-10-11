@@ -133,7 +133,7 @@ class MigrateFeaturesToFeatureEntriesTest(testing_config.CustomTestCase):
       'safari_views_notes', 'web_dev_views_notes', 'other_views_notes',
       'security_risks', 'security_review_status', 'privacy_review_status',
       'ergonomics_risks', 'wpt', 'wpt_descr', 'webview_risks',
-      'debuggability', 'doc_links', 'sample_links']
+      'debuggability', 'doc_links', 'sample_links', 'experiment_timeline']
   
   # (Feature field, FeatureEntry field)
   RENAMED_FIELDS = [('creator', 'creator_email'),
