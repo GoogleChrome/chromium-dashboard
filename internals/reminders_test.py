@@ -63,6 +63,8 @@ class FunctionTest(testing_config.CustomTestCase):
       category=1, ot_milestone_desktop_start=100)
     self.feature_template.key = ndb.Key('Feature', 123)
 
+    self.maxDiff = None
+
   def tearDown(self):
     pass
 

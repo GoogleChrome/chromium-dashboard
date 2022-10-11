@@ -132,6 +132,7 @@ class UtilsFunctionTests(unittest.TestCase):
                 'max-age=63072000; includeSubDomains; preload',
             'Content-Type': 'application/atom+xml;charset=utf-8',
         })
+    self.maxDiff = None
     # TESTDATA.make_golden(actual_text, 'test_render_atom_feed__empty.html')
     self.assertMultiLineEqual(TESTDATA['test_render_atom_feed__empty.html'], actual_text)
 
@@ -157,6 +158,7 @@ class UtilsFunctionTests(unittest.TestCase):
 
     actual_text, actual_headers = utils.render_atom_feed(
         request, 'test feed', data)
+    self.maxDiff = None
     # TESTDATA.make_golden(actual_text, 'test_render_atom_feed__some.html')
     self.assertMultiLineEqual(TESTDATA['test_render_atom_feed__some.html'], actual_text)
 

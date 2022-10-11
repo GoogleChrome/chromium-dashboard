@@ -90,6 +90,8 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     self.template_feature.key = ndb.Key('Feature', 123)
     self.template_feature.put()
 
+    self.maxDiff = None
+
   def tearDown(self):
     self.feature_1.key.delete()
     self.feature_2.key.delete()
