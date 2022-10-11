@@ -113,7 +113,7 @@ class AppUser(ndb.Model):
     rediscache.delete(cache_key)
 
   @classmethod
-  def get_app_user(cls, email) -> users.User:
+  def get_app_user(cls, email: str) -> users.User:
     """Return the AppUser for the specified user, or None."""
     cache_key = 'user|%s' % email
     cached_app_user = rediscache.get(cache_key)
