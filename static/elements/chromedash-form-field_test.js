@@ -22,7 +22,7 @@ describe('chromedash-form-field', () => {
   it('renders a select type of field', async () => {
     const component = await fixture(
       html`
-      <chromedash-form-field name="feature_type" value="0">
+      <chromedash-form-field name="category" value="0">
       </chromedash-form-field>`);
     assert.exists(component);
     assert.instanceOf(component, ChromedashFormField);
@@ -30,7 +30,7 @@ describe('chromedash-form-field', () => {
     assert.exists(fieldRow);
 
     const renderElement = component.renderRoot;
-    assert.include(renderElement.innerHTML, 'Feature type');
+    assert.include(renderElement.innerHTML, 'category');
     assert.include(renderElement.innerHTML, 'sl-select');
     assert.include(renderElement.innerHTML, 'sl-menu-item');
   });
