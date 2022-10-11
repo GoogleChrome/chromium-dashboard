@@ -143,6 +143,71 @@ STAGE_DEP_REMOVE_CODE = 470
 STAGE_ENT_ROLLOUT = 1061
 
 
+# Prototype stage types for every feature type.
+STAGE_TYPES_PROTOTYPE = {
+    FEATURE_TYPE_INCUBATE_ID: STAGE_BLINK_PROTOTYPE,
+    FEATURE_TYPE_EXISTING_ID: STAGE_FAST_PROTOTYPE,
+    FEATURE_TYPE_CODE_CHANGE_ID: None,
+    FEATURE_TYPE_DEPRECATION_ID: None
+  }
+# Dev trial stage types for every feature type.
+STAGE_TYPES_DEV_TRIAL = {
+    FEATURE_TYPE_INCUBATE_ID: STAGE_BLINK_DEV_TRIAL,
+    FEATURE_TYPE_EXISTING_ID: STAGE_FAST_DEV_TRIAL,
+    FEATURE_TYPE_CODE_CHANGE_ID: STAGE_PSA_DEV_TRIAL,
+    FEATURE_TYPE_DEPRECATION_ID: STAGE_DEP_DEV_TRIAL
+  }
+# Origin trial stage types for every feature type.
+STAGE_TYPES_ORIGIN_TRIAL = {
+    FEATURE_TYPE_INCUBATE_ID: STAGE_BLINK_ORIGIN_TRIAL,
+    FEATURE_TYPE_EXISTING_ID: STAGE_FAST_ORIGIN_TRIAL,
+    FEATURE_TYPE_CODE_CHANGE_ID: None,
+    FEATURE_TYPE_DEPRECATION_ID: STAGE_DEP_DEPRECATION_TRIAL
+  }
+# Origin trial extension stage types for every feature type.
+STAGE_TYPES_EXTEND_ORIGIN_TRIAL = {
+    FEATURE_TYPE_INCUBATE_ID: STAGE_BLINK_EXTEND_ORIGIN_TRIAL,
+    FEATURE_TYPE_EXISTING_ID: STAGE_FAST_EXTEND_ORIGIN_TRIAL,
+    FEATURE_TYPE_CODE_CHANGE_ID: None,
+    FEATURE_TYPE_DEPRECATION_ID: STAGE_DEP_EXTEND_DEPRECATION_TRIAL
+  }
+# Shipping stage types for every feature type.
+STAGE_TYPES_SHIPPING = {
+    FEATURE_TYPE_INCUBATE_ID: STAGE_BLINK_SHIPPING,
+    FEATURE_TYPE_EXISTING_ID: STAGE_FAST_SHIPPING,
+    FEATURE_TYPE_CODE_CHANGE_ID: STAGE_PSA_SHIPPING,
+    FEATURE_TYPE_DEPRECATION_ID: STAGE_DEP_SHIPPING
+  }
+
+# Mapping of original field names to the new stage types the fields live on.
+STAGE_TYPES_BY_FIELD_MAPPING = {
+    'finch_url': STAGE_TYPES_SHIPPING,
+    'experiment_goals': STAGE_TYPES_ORIGIN_TRIAL,
+    'experiment_risks': STAGE_TYPES_ORIGIN_TRIAL,
+    'experiment_extension_reason': STAGE_TYPES_EXTEND_ORIGIN_TRIAL,
+    'origin_trial_feedback_url': STAGE_TYPES_ORIGIN_TRIAL,
+    'intent_to_implement_url': STAGE_TYPES_PROTOTYPE,
+    'intent_to_ship_url': STAGE_TYPES_SHIPPING,
+    'intent_to_experiment_url': STAGE_TYPES_ORIGIN_TRIAL,
+    'intent_to_extend_experiment_url': STAGE_TYPES_EXTEND_ORIGIN_TRIAL,
+    'shipped_milestone': STAGE_TYPES_SHIPPING,
+    'shipped_android_milestone': STAGE_TYPES_SHIPPING,
+    'shipped_ios_milestone': STAGE_TYPES_SHIPPING,
+    'shipped_webview_milestone': STAGE_TYPES_SHIPPING,
+    'ot_milestone_desktop_start': STAGE_TYPES_ORIGIN_TRIAL,
+    'ot_milestone_desktop_end': STAGE_TYPES_ORIGIN_TRIAL,
+    'ot_milestone_android_start': STAGE_TYPES_ORIGIN_TRIAL,
+    'ot_milestone_android_end': STAGE_TYPES_ORIGIN_TRIAL,
+    'ot_milestone_ios_start': STAGE_TYPES_ORIGIN_TRIAL,
+    'ot_milestone_ios_end': STAGE_TYPES_ORIGIN_TRIAL,
+    'ot_milestone_webview_start': STAGE_TYPES_ORIGIN_TRIAL,
+    'ot_milestone_webview_end': STAGE_TYPES_ORIGIN_TRIAL,
+    'dt_milestone_desktop_start': STAGE_TYPES_DEV_TRIAL,
+    'dt_milestone_android_start': STAGE_TYPES_DEV_TRIAL,
+    'dt_milestone_ios_start': STAGE_TYPES_DEV_TRIAL,
+    'dt_milestone_webview_start': STAGE_TYPES_DEV_TRIAL
+  }
+
 NO_ACTIVE_DEV = 1
 PROPOSED = 2
 IN_DEVELOPMENT = 3

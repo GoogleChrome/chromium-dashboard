@@ -142,6 +142,9 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
     logging.info('POST is %r', self.form)
 
     update_items = []
+    stage_update_items = []
+    feature_type = feature.feature_type
+
     if self.touched('spec_link'):
       feature.spec_link = self.parse_link('spec_link')
       update_items.append(('spec_link', self.parse_link('spec_link')))
@@ -191,10 +194,14 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
     if self.touched('intent_to_implement_url'):
       feature.intent_to_implement_url = self.parse_link(
           'intent_to_implement_url')
+      stage_update_items.append(('intent_to_implement_url', self.parse_link(
+          'intent_to_implement_url')))
 
     if self.touched('intent_to_ship_url'):
       feature.intent_to_ship_url = self.parse_link(
           'intent_to_ship_url')
+      stage_update_items.append(('intent_to_ship_url',
+          self.parse_link('intent_to_ship_url')))
 
     if self.touched('ready_for_trial_url'):
       feature.ready_for_trial_url = self.parse_link(
@@ -203,14 +210,20 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
     if self.touched('intent_to_experiment_url'):
       feature.intent_to_experiment_url = self.parse_link(
           'intent_to_experiment_url')
+      stage_update_items.append(('intent_to_experiment_url',
+          self.parse_link('intent_to_experiment_url')))
 
     if self.touched('intent_to_extend_experiment_url'):
       feature.intent_to_extend_experiment_url = self.parse_link(
           'intent_to_extend_experiment_url')
+      stage_update_items.append(('intent_to_extend_experiment_url',
+          self.parse_link('intent_to_extend_experiment_url')))
 
     if self.touched('origin_trial_feedback_url'):
       feature.origin_trial_feedback_url = self.parse_link(
           'origin_trial_feedback_url')
+      stage_update_items.append(('origin_trial_feedback_url',
+          self.parse_link('origin_trial_feedback_url')))
 
     if self.touched('anticipated_spec_changes'):
       feature.anticipated_spec_changes = self.form.get(
@@ -220,6 +233,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
 
     if self.touched('finch_url'):
       feature.finch_url = self.parse_link('finch_url')
+      stage_update_items.append(('finch_url', self.parse_link('finch_url')))
 
     if self.touched('i2e_lgtms'):
       feature.i2e_lgtms = self.split_emails('i2e_lgtms')
@@ -231,38 +245,58 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
     # TODO(jrobbins): Consider supporting milestones that are not ints.
     if self.touched('shipped_milestone'):
       feature.shipped_milestone = self.parse_int('shipped_milestone')
+      stage_update_items.append(('shipped_milestone',
+          self.parse_int('shipped_milestone')))
 
     if self.touched('shipped_android_milestone'):
       feature.shipped_android_milestone = self.parse_int(
           'shipped_android_milestone')
+      stage_update_items.append(('shipped_android_milestone',
+          self.parse_int('shipped_android_milestone')))
 
     if self.touched('shipped_ios_milestone'):
       feature.shipped_ios_milestone = self.parse_int('shipped_ios_milestone')
+      stage_update_items.append(('shipped_ios_milestone',
+          self.parse_int('shipped_ios_milestone')))
 
     if self.touched('shipped_webview_milestone'):
       feature.shipped_webview_milestone = self.parse_int(
           'shipped_webview_milestone')
+      stage_update_items.append(('shipped_webview_milestone',
+          self.parse_int('shipped_webview_milestone')))
 
     if self.touched('ot_milestone_desktop_start'):
       feature.ot_milestone_desktop_start = self.parse_int(
           'ot_milestone_desktop_start')
+      stage_update_items.append(('ot_milestone_desktop_start',
+          self.parse_int('ot_milestone_desktop_start')))
     if self.touched('ot_milestone_desktop_end'):
       feature.ot_milestone_desktop_end = self.parse_int(
           'ot_milestone_desktop_end')
+      stage_update_items.append(('ot_milestone_desktop_end',
+          self.parse_int('ot_milestone_desktop_end')))
 
     if self.touched('ot_milestone_android_start'):
       feature.ot_milestone_android_start = self.parse_int(
           'ot_milestone_android_start')
+      stage_update_items.append(('ot_milestone_android_start',
+          self.parse_int('ot_milestone_android_start')))
     if self.touched('ot_milestone_android_end'):
       feature.ot_milestone_android_end = self.parse_int(
           'ot_milestone_android_end')
+      stage_update_items.append(('ot_milestone_android_end',
+          self.parse_int('ot_milestone_android_end')))
 
     if self.touched('ot_milestone_webview_start'):
       feature.ot_milestone_webview_start = self.parse_int(
           'ot_milestone_webview_start')
+      stage_update_items.append(('ot_milestone_webview_start',
+          self.parse_int('ot_milestone_webview_start')))
     if self.touched('ot_milestone_webview_end'):
       feature.ot_milestone_webview_end = self.parse_int(
           'ot_milestone_webview_end')
+      stage_update_items.append(('ot_milestone_webview_end',
+          self.parse_int('ot_milestone_webview_end')))
 
     if self.touched('requires_embedder_support'):
       feature.requires_embedder_support = (
@@ -278,18 +312,26 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
     if self.touched('dt_milestone_desktop_start'):
       feature.dt_milestone_desktop_start = self.parse_int(
           'dt_milestone_desktop_start')
+      stage_update_items.append(('dt_milestone_desktop_start',
+          self.parse_int('dt_milestone_desktop_start')))
 
     if self.touched('dt_milestone_android_start'):
       feature.dt_milestone_android_start = self.parse_int(
           'dt_milestone_android_start')
+      stage_update_items.append(('dt_milestone_android_start',
+          self.parse_int('dt_milestone_android_start')))
 
     if self.touched('dt_milestone_ios_start'):
       feature.dt_milestone_ios_start = self.parse_int(
           'dt_milestone_ios_start')
+      stage_update_items.append(('dt_milestone_ios_start',
+          self.parse_int('dt_milestone_ios_start')))
 
     if self.touched('dt_milestone_webview_start'):
       feature.dt_milestone_webview_start = self.parse_int(
           'dt_milestone_webview_start')
+      stage_update_items.append(('dt_milestone_webview_start',
+          self.parse_int('dt_milestone_webview_start')))
 
     if self.touched('flag_name'):
       feature.flag_name = self.form.get('flag_name')
@@ -339,6 +381,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
     if self.touched('feature_type'):
       feature.feature_type = int(self.form.get('feature_type'))
       update_items.append(('feature_type', int(self.form.get('feature_type'))))
+      feature_type = int(self.form.get('feature_type'))
 
     # intent_stage can be be set either by <select> or a checkbox
     if self.touched('intent_stage'):
@@ -479,13 +522,19 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
       update_items.append(('feature_notes', self.form.get('comments')))
     if self.touched('experiment_goals'):
       feature.experiment_goals = self.form.get('experiment_goals')
+      stage_update_items.append(('experiment_goals',
+          self.form.get('experiment_goals')))
     if self.touched('experiment_timeline'):
       feature.experiment_timeline = self.form.get('experiment_timeline')
     if self.touched('experiment_risks'):
       feature.experiment_risks = self.form.get('experiment_risks')
+      stage_update_items.append(('experiment_risks',
+          self.form.get('experiment_risks')))
     if self.touched('experiment_extension_reason'):
       feature.experiment_extension_reason = self.form.get(
           'experiment_extension_reason')
+      stage_update_items.append(('experiment_extension_reason',
+          self.form.get('experiment_extension_reason')))
     if self.touched('ongoing_constraints'):
       feature.ongoing_constraints = self.form.get('ongoing_constraints')
       update_items.append(('ongoing_constraints',
@@ -503,9 +552,55 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
       for field, value in update_items:
         setattr(feature_entry, field, value)
       feature_entry.put()
+    
+    # Write changes made to the corresponding stage type.
+    if stage_update_items:
+      self.update_stage_fields(feature_id, feature_type, stage_update_items)
 
     # Remove all feature-related cache.
     rediscache.delete_keys_with_prefix(core_models.feature_cache_prefix())
 
     redirect_url = '/guide/edit/' + str(key.integer_id())
     return self.redirect(redirect_url)
+
+  def update_stage_fields(self, feature_id, feature_type, update_items) -> None:
+    # Get all existing stages associated with the feature.
+    stages = core_models.Stage.get_feature_stages(feature_id)
+
+    for field, value in update_items:
+      # Determine the stage type that the field should change on.
+      stage_type = core_enums.STAGE_TYPES_BY_FIELD_MAPPING[field][feature_type]
+      # If this feature type does not have this field, skip it
+      # (e.g. developer-facing code changes cannot have origin trial fields).
+      if stage_type is None:
+        continue
+      stage = stages.get(stage_type, None)
+      # If a stage of this type does not exist for this feature, create it.
+      if stage is None:
+        stage = core_models.Stage(feature_id=feature_id, stage_type=stage_type)
+        stage.put()
+        stages[stage_type] = stage
+      
+      # Change the field based on the field type.
+      # If this field changing is a milestone, change it in the
+      # MilestoneSet entity.
+      if field in core_models.MilestoneSet.MILESTONE_FIELD_MAPPING:
+        milestone_field = (
+            core_models.MilestoneSet.MILESTONE_FIELD_MAPPING[field])
+        milestoneset_entity = getattr(stage, 'milestones')
+        # If the MilestoneSet entity has not been initiated, create it.
+        if milestoneset_entity is None:
+          milestoneset_entity = core_models.MilestoneSet()
+        setattr(milestoneset_entity, milestone_field, value)
+        stage.milestones = milestoneset_entity
+      # If the field starts with "intent_", it should modify the
+      # more general "intent_thread_url" field.
+      elif field.startswith('intent_'):
+        setattr(stage, 'intent_thread_url', value)
+      # Otherwise, replace field value with attribute of the same field name.
+      else:
+        setattr(stage, field, value)
+    
+    # Write to all the stages.
+    for stage in stages.values():
+      stage.put()
