@@ -12,8 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# Import needed to reference a class within its own class method.
+# https://stackoverflow.com/a/33533514
+from __future__ import annotations
+
 import datetime
 import logging
+from typing import Optional
 from google.cloud import ndb
 
 
@@ -48,7 +53,7 @@ class Approval(ndb.Model):
   @classmethod
   def get_approvals(
       cls, feature_id=None, field_id=None, states=None, set_by=None,
-      limit=None):
+      limit=None) -> list[Approval]:
     """Return the requested approvals."""
     query = Approval.query().order(Approval.set_on)
     if feature_id is not None:
@@ -332,11 +337,14 @@ class Activity(ndb.Model):  # copy from Comment
   amendments = ndb.StructuredProperty(Amendment, repeated=True)
 
   @classmethod
-  def get_activities(cls, feature_id, gate_id=None):
+  def get_activities(cls, feature_id: int, gate_id: Optional[int]=None,
+      comments_only: bool=False) -> list[Activity]:
     """Return actitivies for an approval."""
     query = Activity.query().order(Activity.created)
     query = query.filter(Activity.feature_id == feature_id)
     if gate_id:
       query = query.filter(Activity.gate_id == gate_id)
     acts = query.fetch(None)
+    if comments_only:
+      return [act for act in acts if act.content]
     return acts
