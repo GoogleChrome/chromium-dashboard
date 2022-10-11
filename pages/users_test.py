@@ -57,6 +57,6 @@ class UsersListTemplateTest(testing_config.CustomTestCase):
         self.template_data, self.full_template_path)
     parser = html5lib.HTMLParser(strict=True)
     document = parser.parse(template_text)
-    TESTDATA.make_golden(template_text, 'test_html_rendering.html')
+    # TESTDATA.make_golden(template_text, 'test_html_rendering.html')
     self.assertMultiLineEqual(
       TESTDATA['test_html_rendering.html'], template_text)
