@@ -12,6 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# Import needed to reference a class within its own class method.
+# https://stackoverflow.com/a/33533514
+from __future__ import annotations
+import collections
+
 import datetime
 import logging
 from google.cloud import ndb
@@ -217,6 +222,45 @@ class OwnersFile(ndb.Model):
 # Note: This class is not used yet.
 class Gate(ndb.Model):  # copy from ApprovalConfig
   """Gates regulate the completion of a stage."""
+
+  ONE_LGTM = 'One LGTM'
+  THREE_LGTM = 'Three LGTMs'
+  API_OWNERS_URL = (
+      'https://chromium.googlesource.com/chromium/src/+/'
+      'main/third_party/blink/API_OWNERS?format=TEXT')
+
+  GateFieldDef = collections.namedtuple(
+      'ApprovalField',
+      'name, description, field_id, rule, approvers')
+
+  # Note: This can be requested manually through the UI, but it is not
+  # triggered by a blink-dev thread because i2p intents are only FYIs to
+  # bilnk-dev and don't actually need approval by the API Owners.
+  PROTOTYPE_REQUIREMENTS = GateFieldDef(
+      'Intent to Prototype',
+      'Not normally used.  If a review is requested, API Owners can approve.',
+      1, ONE_LGTM, API_OWNERS_URL)
+
+  EXPERIMENT_REQUIREMENTS = GateFieldDef(
+      'Intent to Experiment',
+      'One API Owner must approve your intent',
+      2, ONE_LGTM, API_OWNERS_URL)
+
+  EXTENSION_REQUIREMENTS = GateFieldDef(
+      'Intent to Extend Experiment',
+      'One API Owner must approve your intent',
+      3, ONE_LGTM, API_OWNERS_URL)
+
+  SHIP_REQUIREMENTS = GateFieldDef(
+      'Intent to Ship',
+      'Three API Owners must approve your intent',
+      4, THREE_LGTM, API_OWNERS_URL)
+
+  APPROVAL_FIELDS_BY_ID = {afd.field_id: afd for afd in [
+      PROTOTYPE_REQUIREMENTS, EXPERIMENT_REQUIREMENTS,
+      EXTENSION_REQUIREMENTS,SHIP_REQUIREMENTS]
+    }
+
   feature_id = ndb.IntegerProperty(required=True)
   stage_id = ndb.IntegerProperty(required=True)
   gate_type = ndb.IntegerProperty(required=True)  # copy from field_id
@@ -228,7 +272,47 @@ class Gate(ndb.Model):  # copy from ApprovalConfig
   next_action = ndb.DateProperty()
   additional_review = ndb.BooleanProperty(default=False)
 
-  # TODO(jrobbins): implement request_review() and clear_request()
+  # TODO(jrobbins): implement request_review()
+  def clear_request(self) -> None:
+    """After the review requirement has been satisfied, remove the request."""
+    requested_votes = Vote.get_votes(feature_id=self.feature_id,
+        gate_id=self.key.integer_id(), states=[Vote.REVIEW_REQUESTED])
+    for vote in requested_votes:
+      vote.key.delete()
+
+  def is_resolved(self) -> bool:
+    """Return whether an outcome has been determined for this gate."""
+    return self.state == Vote.APPROVED or self.state == Vote.NOT_APPROVED
+  
+  def is_approved(self) -> bool:
+    """Return whether the gate requirements have been satisfied."""
+    return self.state == Vote.APPROVED
+
+  def update_approval_state(self) -> None:
+    """Update state to match the current state of approvals."""
+    votes: list[Vote] = Vote.query(Vote.gate_id == self.key.integer_id()).fetch()
+    approvals = 0
+    for vote in votes:
+      if vote.state in (Vote.APPROVED, Vote.NA):
+        approvals += 1
+      # One disapproval means the gate is not approved.
+      elif vote.state == Vote.NOT_APPROVED:
+        self.state = Vote.NOT_APPROVED
+        self.put()
+        return
+    afd = self.APPROVAL_FIELDS_BY_ID[self.gate_type]
+
+    if afd.rule != self.ONE_LGTM and afd.rule != self.THREE_LGTM:
+      logging.error('Unexpected approval rule')
+      self.state = Vote.NA
+    if ((afd.rule == self.ONE_LGTM and approvals >= 1) or
+        (afd.rule == self.THREE_LGTM and approvals >= 3)):
+      self.state = Vote.APPROVED
+    elif approvals > 0:
+      self.state = Vote.REVIEW_STARTED
+    else:
+      self.state = Vote.NA
+    self.put()
 
 
 # Note: This class is not used yet.
