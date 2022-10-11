@@ -20,12 +20,17 @@ import os
 import flask
 import werkzeug
 import html5lib
+from pathlib import Path
 
 from pages import blink_handler
 from internals import user_models
 
 test_app = flask.Flask(__name__)
 
+# Load testdata to be used across all of the CustomTestCases
+TESTDATA = testing_config.Testdata(
+  os.path.abspath(os.path.dirname(__file__)),
+  Path(__file__).stem)
 
 class BlinkTemplateTest(testing_config.CustomTestCase):
 
@@ -51,6 +56,9 @@ class BlinkTemplateTest(testing_config.CustomTestCase):
         self.template_data, self.full_template_path)
     parser = html5lib.HTMLParser(strict=True)
     document = parser.parse(template_text)
+    # TESTDATA.make_golden(template_text, 'BlinkTemplateTest_test_html_rendering.html')
+    self.assertMultiLineEqual(
+      TESTDATA['BlinkTemplateTest_test_html_rendering.html'], template_text)
 
 
 class SubscribersTemplateTest(testing_config.CustomTestCase):
@@ -78,3 +86,6 @@ class SubscribersTemplateTest(testing_config.CustomTestCase):
         self.template_data, self.full_template_path)
     parser = html5lib.HTMLParser(strict=True)
     document = parser.parse(template_text)
+    # TESTDATA.make_golden(template_text, 'SubscribersTemplateTest_test_html_rendering.html')
+    self.assertMultiLineEqual(
+      TESTDATA['SubscribersTemplateTest_test_html_rendering.html'], template_text)

@@ -12,13 +12,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
 import testing_config  # Must be imported before the module under test.
 from datetime import datetime
 from unittest import mock
+from pathlib import Path
 
 from internals import core_models
 from internals import reminders
 
+from google.cloud import ndb
+
+
+# Load testdata to be used across all of the CustomTestCases
+TESTDATA = testing_config.Testdata(
+  os.path.abspath(os.path.dirname(__file__)),
+  Path(__file__).stem)
 
 class MockResponse:
   """Creates a fake response object for testing."""
@@ -46,19 +55,20 @@ def make_test_features():
 class FunctionTest(testing_config.CustomTestCase):
 
   def setUp(self):
-    self.feature_1, self.feature_2, self.feature_3 = make_test_features()
     self.current_milestone_info = {
         'earliest_beta': '2022-09-21T12:34:56',
     }
+    self.feature_template = core_models.Feature(
+      name='feature one', summary='sum', owner=['feature_owner@example.com'],
+      category=1, ot_milestone_desktop_start=100)
+    self.feature_template.key = ndb.Key('Feature', 123)
 
   def tearDown(self):
-    self.feature_1.key.delete()
-    self.feature_2.key.delete()
-    self.feature_3.key.delete()
+    pass
 
-  def test_build_email_tasks(self):
+  def test_build_email_tasks_feature_accuracy(self):
     actual = reminders.build_email_tasks(
-        [(self.feature_1, 100)], '[Action requested] Update %s',
+        [(self.feature_template, 100)], '[Action requested] Update %s',
         reminders.FeatureAccuracyHandler.EMAIL_TEMPLATE_PATH,
         self.current_milestone_info)
     self.assertEqual(1, len(actual))
@@ -66,9 +76,23 @@ class FunctionTest(testing_config.CustomTestCase):
     self.assertEqual('feature_owner@example.com', task['to'])
     self.assertEqual('[Action requested] Update feature one', task['subject'])
     self.assertEqual(None, task['reply_to'])
-    self.assertIn('/guide/verify_accuracy/%d' % self.feature_1.key.integer_id(),
-                  task['html'])
+    # TESTDATA.make_golden(task['html'], 'test_build_email_tasks_feature_accuracy.html')
+    self.assertMultiLineEqual(
+      TESTDATA['test_build_email_tasks_feature_accuracy.html'], task['html'])
 
+  def test_build_email_tasks_prepublication(self):
+    actual = reminders.build_email_tasks(
+        [(self.feature_template, 100)], '[Action requested] Update %s',
+        reminders.PrepublicationHandler.EMAIL_TEMPLATE_PATH,
+        self.current_milestone_info)
+    self.assertEqual(1, len(actual))
+    task = actual[0]
+    self.assertEqual('feature_owner@example.com', task['to'])
+    self.assertEqual('[Action requested] Update feature one', task['subject'])
+    self.assertEqual(None, task['reply_to'])
+    # TESTDATA.make_golden(task['html'], 'test_build_email_tasks_prepublication.html')
+    self.assertMultiLineEqual(
+      TESTDATA['test_build_email_tasks_prepublication.html'], task['html'])
 
 class FeatureAccuracyHandlerTest(testing_config.CustomTestCase):
 

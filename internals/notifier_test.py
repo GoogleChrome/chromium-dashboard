@@ -37,15 +37,9 @@ test_app = flask.Flask(__name__,
   template_folder=settings.flask_compat_get_template_path())
 
 # Load testdata to be used across all of the CustomTestCases
-TESTDATA = {}
-testdata_dir = os.path.join(
+TESTDATA = testing_config.Testdata(
   os.path.abspath(os.path.dirname(__file__)),
-  'testdata',
-  Path(__file__).stem
-  )
-for filename in os.listdir(testdata_dir):
-  with open(os.path.join(testdata_dir, filename), 'r') as f:
-    TESTDATA[filename] = f.read()
+  Path(__file__).stem)
 
 class EmailFormattingTest(testing_config.CustomTestCase):
 
@@ -106,6 +100,7 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     with test_app.app_context():
       body_html = notifier.format_email_body(
           False, self.template_feature, [])
+    # TESTDATA.make_golden(body_html, 'test_format_email_body__new.html')
     self.assertEqual(body_html,
       TESTDATA['test_format_email_body__new.html'])
 
@@ -114,6 +109,7 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     with test_app.app_context():
       body_html = notifier.format_email_body(
           True, self.template_feature, [])
+    # TESTDATA.make_golden(body_html, 'test_format_email_body__update_no_changes.html')
     self.assertEqual(body_html,
       TESTDATA['test_format_email_body__update_no_changes.html'])
 
@@ -122,6 +118,7 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     with test_app.app_context():
       body_html = notifier.format_email_body(
           True, self.template_feature, self.changes)
+    # TESTDATA.make_golden(body_html, 'test_format_email_body__update_with_changes.html')
     self.assertEqual(body_html,
       TESTDATA['test_format_email_body__update_with_changes.html'])
 
@@ -131,6 +128,7 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     with test_app.app_context():
       body_html = notifier.format_email_body(
           True, self.template_feature, self.changes)
+    # TESTDATA.make_golden(body_html, 'test_format_email_body__mozdev_links_mozilla.html')
     self.assertEqual(body_html,
       TESTDATA['test_format_email_body__mozdev_links_mozilla.html'])
 
@@ -139,6 +137,7 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     with test_app.app_context():
       body_html = notifier.format_email_body(
           True, self.template_feature, self.changes)
+    # TESTDATA.make_golden(body_html, 'test_format_email_body__mozdev_links_non_mozilla.html')
     self.assertEqual(body_html,
       TESTDATA['test_format_email_body__mozdev_links_non_mozilla.html'])
 

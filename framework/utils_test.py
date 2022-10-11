@@ -12,14 +12,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import datetime
+import os
 import unittest
 import testing_config  # Must be imported before the module under test.
+from pathlib import Path
 
 from unittest import mock
 import werkzeug.exceptions  # Flask HTTP stuff.
 
 from framework import utils
 
+# Load testdata to be used across all of the test cases
+TESTDATA = testing_config.Testdata(
+  os.path.abspath(os.path.dirname(__file__)),
+  Path(__file__).stem)
 
 class MockHandler(object):
 
@@ -105,8 +112,11 @@ class UtilsFunctionTests(unittest.TestCase):
     self.assertIsNone(handlerInstance.handler_called_with)
     self.assertEqual('/request/path', handlerInstance.redirected_to)
 
-  def test_render_atom_feed__empty(self):
+  # For empty feeds, django sets the updated date to utcnow().
+  @mock.patch('django.utils.feedgenerator.SyndicationFeed.latest_post_date')
+  def test_render_atom_feed__empty(self, mock_latest_post_date):
     """It can render a feed with zero items."""
+    mock_latest_post_date.return_value = datetime.datetime(2017, 10, 7)
     request = testing_config.Blank(
         scheme='https', host='host',
         path='/samples.xml')
@@ -122,9 +132,8 @@ class UtilsFunctionTests(unittest.TestCase):
                 'max-age=63072000; includeSubDomains; preload',
             'Content-Type': 'application/atom+xml;charset=utf-8',
         })
-    self.assertIn('http://www.w3.org/2005/Atom', actual_text)
-    self.assertIn('<title>Local testing - test feed</title>', actual_text)
-    self.assertIn('<id>https://host/samples</id>', actual_text)
+    # TESTDATA.make_golden(actual_text, 'test_render_atom_feed__empty.html')
+    self.assertMultiLineEqual(TESTDATA['test_render_atom_feed__empty.html'], actual_text)
 
   def test_render_atom_feed__some(self):
     """It can render a feed with some items."""
@@ -148,16 +157,8 @@ class UtilsFunctionTests(unittest.TestCase):
 
     actual_text, actual_headers = utils.render_atom_feed(
         request, 'test feed', data)
-
-    self.assertIn('<title>feature one</title>', actual_text)
-    self.assertIn('one for testing</summary>', actual_text)
-    self.assertIn('/feature/12345678/</id>', actual_text)
-    self.assertIn('<category term="CSS"></category>', actual_text)
-
-    self.assertIn('<title>feature two</title>', actual_text)
-    self.assertIn('two for testing</summary>', actual_text)
-    self.assertIn('/feature/23456789/</id>', actual_text)
-    self.assertIn('<category term="Device"></category>', actual_text)
+    # TESTDATA.make_golden(actual_text, 'test_render_atom_feed__some.html')
+    self.assertMultiLineEqual(TESTDATA['test_render_atom_feed__some.html'], actual_text)
 
   def test_get_banner_time__None(self):
     """If no time specified, it returns None."""
