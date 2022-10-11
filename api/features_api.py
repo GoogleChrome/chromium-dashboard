@@ -14,6 +14,7 @@
 # limitations under the License.
 
 import logging
+from typing import Any, Optional
 
 from framework import basehandlers
 from framework import permissions
@@ -26,31 +27,30 @@ from internals import search
 class FeaturesAPI(basehandlers.APIHandler):
   """Features are the the main records that we track."""
 
-  def get_one_feature(self, feature_id):
+  def get_one_feature(self, feature_id: int) -> dict:
     features = core_models.Feature.get_by_ids([feature_id])
     if not features:
       self.abort(404, msg='Feature %r not found' % feature_id)
     return features[0]
 
-  def do_search(self):
+  def do_search(self) -> dict[str, Any]:
     user = users.get_current_user()
     # Show unlisted features to site editors or admins.
     show_unlisted_features = permissions.can_edit_any_feature(user)
     features_on_page = None
 
     # Query-string parameter 'milestone' is provided
-    if self.request.args.get('milestone') is not None:
-      try:
-        milestone = int(self.request.args.get('milestone'))
+    milestone = self.request.args.get('milestone')
+    if milestone:
+      if milestone.isdigit():
         features_by_type = core_models.Feature.get_in_milestone(
-          show_unlisted=show_unlisted_features,
-          milestone=milestone)
+          show_unlisted=show_unlisted_features, milestone=int(milestone))
         total_count = sum(len(features_by_type[t]) for t in features_by_type)
         return {
             'features_by_type': features_by_type,
             'total_count': total_count,
             }
-      except ValueError:
+      else:
         self.abort(400, msg='Invalid  Milestone')
 
     user_query = self.request.args.get('q', '')
@@ -63,19 +63,18 @@ class FeaturesAPI(basehandlers.APIHandler):
         'features': features_on_page,
         }
 
-  def do_get(self, feature_id=None):
+  def do_get(self, feature_id: Optional[int]=None) -> dict:
     """Handle GET requests for a single feature or a search."""
     if feature_id:
       return self.get_one_feature(feature_id)
-    else:
-      return self.do_search()
+    return self.do_search()
 
   # TODO(jrobbins): do_post
 
   # TODO(jrobbins): do_patch
 
   @permissions.require_admin_site
-  def do_delete(self, feature_id):
+  def do_delete(self, feature_id: int) -> dict[str, str]:
     """Delete the specified feature."""
     # TODO(jrobbins): implement undelete UI.  For now, use cloud console.
     feature = self.get_specified_feature(feature_id=feature_id)
@@ -84,7 +83,8 @@ class FeaturesAPI(basehandlers.APIHandler):
     rediscache.delete_keys_with_prefix(core_models.feature_cache_prefix())
 
     # Write for new FeatureEntry entity.
-    feature_entry = core_models.FeatureEntry.get_by_id(feature_id)
+    feature_entry: Optional[core_models.FeatureEntry] = (
+        core_models.FeatureEntry.get_by_id(feature_id))
     if feature_entry:
       feature_entry.deleted = True
       feature_entry.put()

@@ -18,29 +18,29 @@ import logging
 import flask
 
 import settings
-from framework import users
-from internals import core_models
-from internals import user_models
+from framework.users import User
+from internals.core_models import Feature
+from internals.user_models import AppUser
 
 
-def can_admin_site(user):
+def can_admin_site(user: User) -> bool:
   """Return True if the current user is allowed to administer the site."""
   # A user is an admin if they have an AppUser entity that has is_admin set.
   if user:
-    app_user = user_models.AppUser.get_app_user(user.email())
+    app_user = AppUser.get_app_user(user.email())
     if app_user is not None:
       return app_user.is_admin
 
   return False
 
 
-def can_view_feature(unused_user, unused_feature):
+def can_view_feature(unused_user, unused_feature) -> bool:
   """Return True if the user is allowed to view the given feature."""
   # Note, for now there are no private features, only unlisted ones.
   return True
 
 
-def can_create_feature(user):
+def can_create_feature(user: User) -> bool:
   """Return True if the user is allowed to create features."""
   if not user:
     return False
@@ -52,7 +52,7 @@ def can_create_feature(user):
   if user.email().endswith(('@chromium.org', '@google.com')):
     return True
 
-  query = user_models.AppUser.query(user_models.AppUser.email == user.email())
+  query = AppUser.query(AppUser.email == user.email())
   found_user = query.get(keys_only=True)
   if found_user is not None:
     return True
@@ -60,11 +60,11 @@ def can_create_feature(user):
   return False
 
 
-def can_edit_any_feature(user):
+def can_edit_any_feature(user: User) -> bool:
   """Return True if the user is allowed to edit all features."""
   if not user:
     return False
-  app_user = user_models.AppUser.get_app_user(user.email())
+  app_user = AppUser.get_app_user(user.email())
   if not app_user:
     return False
 
@@ -72,7 +72,7 @@ def can_edit_any_feature(user):
   return app_user.is_admin or app_user.is_site_editor
 
 
-def feature_edit_list(user):
+def feature_edit_list(user: User) -> list[Feature]:
   """Return a list of features the current user can edit"""
   if not user:
     return []
@@ -83,13 +83,13 @@ def feature_edit_list(user):
     return []
 
   # Query features to find which can be edited.
-  features_editable = core_models.Feature.get_all(
+  features_editable = Feature.get_all(
     filterby=('can_edit', user.email()))
   # Return a list of unique ids of features that can be edited.
   return list(set([f['id'] for f in features_editable]))
 
 
-def can_edit_feature(user, feature_id):
+def can_edit_feature(user: User, feature_id: int) -> bool:
   """Return True if the user is allowed to edit the given feature."""
 # If the user can edit any feature, they can edit this feature.
   if can_edit_any_feature(user):
@@ -99,7 +99,7 @@ def can_edit_feature(user, feature_id):
     return False
 
   # Load feature directly from NDB so as to never get a stale cached copy.
-  feature = core_models.Feature.get_by_id(feature_id)
+  feature = Feature.get_by_id(feature_id)
   if not feature:
     return False
 
@@ -110,7 +110,7 @@ def can_edit_feature(user, feature_id):
           email in feature.editors or email == feature.creator)
 
 
-def can_approve_feature(user, feature, approvers):
+def can_approve_feature(user: User, feature: Feature, approvers) -> bool:
   """Return True if the user is allowed to approve the given feature."""
   # TODO(jrobbins): make this per-feature
   if not can_view_feature(user, feature):
@@ -180,7 +180,7 @@ def validate_feature_create_permission(handler_obj):
     handler_obj.abort(403)
 
 
-def validate_feature_edit_permission(handler_obj, feature_id):
+def validate_feature_edit_permission(handler_obj, feature_id: int):
   """Check if user has permission to edit feature and abort if not."""
   user = handler_obj.get_current_user()
   req = handler_obj.request
@@ -191,7 +191,7 @@ def validate_feature_edit_permission(handler_obj, feature_id):
 
   # Redirect to 404 if feature is not found.
   # Load feature directly from NDB so as to never get a stale cached copy.
-  if core_models.Feature.get_by_id(int(feature_id)) is None:
+  if Feature.get_by_id(int(feature_id)) is None:
     handler_obj.abort(404, msg='Feature not found')
 
   # Redirect to 403 if user does not have edit permission for feature.
