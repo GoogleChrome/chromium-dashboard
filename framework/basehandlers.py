@@ -18,6 +18,7 @@ import json
 import logging
 import os
 import re
+from typing import Optional
 
 import flask
 import flask.views
@@ -260,7 +261,7 @@ class APIHandler(BaseHandler):
 
 class FlaskHandler(BaseHandler):
 
-  TEMPLATE_PATH = None  # Subclasses should define this.
+  TEMPLATE_PATH: Optional[str] = None  # Subclasses should define this.
   HTTP_CACHE_TYPE = None  # Subclasses can use 'public' or 'private'
   JSONIFY = False  # Set to True for JSON feeds.
   IS_INTERNAL_HANDLER = False  # Subclasses can skip XSRF check.

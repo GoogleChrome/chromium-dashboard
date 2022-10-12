@@ -12,7 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# Import needed to reference a class within its own class method.
+# https://stackoverflow.com/a/33533514
+from __future__ import annotations
+
 import logging
+from typing import Optional
 
 from google.cloud import ndb
 
@@ -113,7 +118,7 @@ class AppUser(ndb.Model):
     rediscache.delete(cache_key)
 
   @classmethod
-  def get_app_user(cls, email: str) -> users.User:
+  def get_app_user(cls, email: str) -> Optional[AppUser]:
     """Return the AppUser for the specified user, or None."""
     cache_key = 'user|%s' % email
     cached_app_user = rediscache.get(cache_key)
@@ -122,11 +127,11 @@ class AppUser(ndb.Model):
 
     query = cls.query()
     query = query.filter(cls.email == email)
-    found_app_user_or_none = query.get()
-    if found_app_user_or_none is None:
+    found_app_user: Optional[AppUser] = query.get()
+    if found_app_user is None:
       return None
-    rediscache.set(cache_key, found_app_user_or_none)
-    return found_app_user_or_none
+    rediscache.set(cache_key, found_app_user)
+    return found_app_user
 
 
 def list_with_component(l, component):

@@ -1,5 +1,6 @@
 import logging
 import os
+from typing import Any, Optional
 
 
 #Hack to get custom tags working django 1.3 + python27.
@@ -11,7 +12,7 @@ INSTALLED_APPS = (
 
 ROOT_DIR = os.path.abspath(os.path.dirname(__file__))
 
-TEMPLATES = [
+TEMPLATES: list[dict[str, Any]] = [
   {
     'BACKEND': 'django.template.backends.django.DjangoTemplates',
     'DIRS': [os.path.join(ROOT_DIR, 'templates')],
@@ -37,7 +38,8 @@ FORM_RENDERER = 'django.forms.renderers.TemplatesSetting'
 
 # By default, send all email to an archive for debugging.
 # For the live cr-status server, this setting is None.
-SEND_ALL_EMAIL_TO = 'cr-status-staging-emails+%(user)s+%(domain)s@google.com'
+SEND_ALL_EMAIL_TO: Optional[str] = (
+    'cr-status-staging-emails+%(user)s+%(domain)s@google.com')
 
 BOUNCE_ESCALATION_ADDR = 'cr-status-bounces@google.com'
 

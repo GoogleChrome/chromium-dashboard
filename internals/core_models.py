@@ -513,7 +513,8 @@ class Feature(DictModel):
 
   @classmethod
   def get_by_ids(
-      self, feature_ids: list[int], update_cache: bool=False) -> list[dict]:
+      self, feature_ids: list[int],
+      update_cache: bool=False) -> list[Optional[dict]]:
     """Return a list of JSON dicts for the specified features.
 
     Because the cache may rarely have stale data, this should only be
@@ -651,7 +652,7 @@ class Feature(DictModel):
 
   @classmethod
   def get_in_milestone(self, milestone: int,
-      show_unlisted: bool=False) -> dict[int, list[dict[str, Any]]]:
+      show_unlisted: bool=False) -> dict[str, list[dict[str, Any]]]:
     """Return {reason: [feaure_dict]} with all the reasons a feature can
     be part of a milestone.
 
@@ -667,7 +668,7 @@ class Feature(DictModel):
     if cached_features_by_type:
       features_by_type = cached_features_by_type
     else:
-      all_features: dict[int, list[Feature]] = {}
+      all_features: dict[str, list[Feature]] = {}
       all_features[IMPLEMENTATION_STATUS[ENABLED_BY_DEFAULT]] = []
       all_features[IMPLEMENTATION_STATUS[DEPRECATED]] = []
       all_features[IMPLEMENTATION_STATUS[REMOVED]] = []
@@ -801,10 +802,11 @@ class Feature(DictModel):
 
   def crbug_number(self) -> Optional[str]:
     if not self.bug_url:
-      return
+      return None
     m = re.search(r'[\/|?id=]([0-9]+)$', self.bug_url)
     if m:
       return m.group(1)
+    return None
 
   def new_crbug_url(self) -> str:
     url = 'https://bugs.chromium.org/p/chromium/issues/entry'
@@ -1151,7 +1153,7 @@ class FeatureEntry(ndb.Model):  # Copy from Feature
 
   @classmethod
   def get_feature_entry(self, feature_id: int, update_cache: bool=False
-      ) -> FeatureEntry:
+      ) -> Optional[FeatureEntry]:
     KEY = feature_cache_key(FeatureEntry.DEFAULT_CACHE_KEY, feature_id)
     feature = rediscache.get(KEY)
 
@@ -1193,7 +1195,7 @@ class FeatureEntry(ndb.Model):  # Copy from Feature
     procesing a POST to edit data.  For editing use case, load the
     data from NDB directly.
     """
-    result_dict = {}
+    result_dict: dict[int, int] = {}
     futures = []
 
     for fe_id in entry_ids:
@@ -1211,9 +1213,8 @@ class FeatureEntry(ndb.Model):  # Copy from Feature
         rediscache.set(store_key, entry)
         result_dict[entry.key.integer_id()] = entry
 
-    result_list = [
-        result_dict.get(fe_id) for fe_id in entry_ids
-        if fe_id in result_dict]
+    result_list = [result_dict[fe_id] for fe_id in entry_ids
+                   if fe_id in result_dict]
     return result_list
 
   # Note: get_in_milestone will be in a new file legacy_queries.py.

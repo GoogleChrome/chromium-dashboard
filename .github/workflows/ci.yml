@@ -41,6 +41,9 @@ jobs:
       - name: lint
         run: npm run lint
 
+      - name: mypy
+        run: mypy --ignore-missing-imports framework/ internals/ scripts/
+
       - name: test
         run: npm test
 

@@ -52,15 +52,15 @@ class CspTest(unittest.TestCase):
     """We can get the regular strict policy."""
     policy = csp.get_default_policy(nonce='12345')
     self.assertCountEqual(list(csp.DEFAULT_POLICY.keys()), list(policy.keys()))
-    self.assertIn('strict-dynamic', policy['script-src'])
+    self.assertIn('\'strict-dynamic\'', policy['script-src'])
     self.assertIn("'nonce-12345'", policy['script-src'])
 
   @mock.patch('framework.csp.USE_NONCE_ONLY_POLICY', True)
-  def test_get_default_policy__strict(self):
+  def test_get_default_policy__strict_two(self):
     """We can get the even stricter nonce-only policy."""
     policy = csp.get_default_policy(nonce='12345')
     self.assertCountEqual(list(csp.NONCE_ONLY_POLICY.keys()), list(policy.keys()))
-    self.assertNotIn('strict-dynamic', policy['script-src'])
+    self.assertNotIn('\'strict-dynamic\'', policy['script-src'])
     self.assertIn("'nonce-12345'", policy['script-src'])
 
   @mock.patch('framework.csp.REPORT_ONLY', False)
@@ -71,7 +71,7 @@ class CspTest(unittest.TestCase):
         csp.get_csp_header_key())
 
   @mock.patch('framework.csp.REPORT_ONLY', True)
-  def test_get_csp_header_key__enforced(self):
+  def test_get_csp_header_key__enforced_two(self):
     """We can get the header used when only reporting violations."""
     self.assertEqual(
         csp.HEADER_KEY_REPORT_ONLY,
