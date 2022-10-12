@@ -13,9 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# Import needed to reference a class within its own class method.
+# https://stackoverflow.com/a/33533514
+from __future__ import annotations
+
 import datetime
 import logging
 import re
+from typing import Any, Optional
 
 from google.cloud import ndb
 
@@ -196,7 +201,7 @@ class Feature(DictModel):
       self.safari_views = OPPOSED
 
   # TODO(jrobbins): Eliminate format version 1.
-  def format_for_template(self, version=2):
+  def format_for_template(self, version=2) -> dict[str, Any]:
     self.migrate_views()
     logging.info('In format_for_template for %s',
                  repr(self)[:settings.MAX_LOG_LINE])
@@ -463,7 +468,8 @@ class Feature(DictModel):
     return feature_list
 
   @classmethod
-  def get_feature(self, feature_id, update_cache=False):
+  def get_feature(
+      self, feature_id: int, update_cache: bool=False) -> Optional[Feature]:
     """Return a JSON dict for a feature.
 
     Because the cache may rarely have stale data, this should only be
@@ -488,7 +494,7 @@ class Feature(DictModel):
     return feature
 
   @classmethod
-  def filter_unlisted(self, feature_list):
+  def filter_unlisted(self, feature_list: list[dict]) -> list[dict]:
     """Filters a feature list to display only features the user should see."""
     user = users.get_current_user()
     email = None
@@ -506,7 +512,8 @@ class Feature(DictModel):
     return listed_features
 
   @classmethod
-  def get_by_ids(self, feature_ids, update_cache=False):
+  def get_by_ids(
+      self, feature_ids: list[int], update_cache: bool=False) -> list[dict]:
     """Return a list of JSON dicts for the specified features.
 
     Because the cache may rarely have stale data, this should only be
@@ -542,8 +549,8 @@ class Feature(DictModel):
     return result_list
 
   @classmethod
-  def get_chronological(
-      self, limit=None, update_cache=False, version=None, show_unlisted=False):
+  def get_chronological(self, limit=None, update_cache: bool=False,
+      version=None, show_unlisted: bool=False) -> list[dict]:
     """Return a list of JSON dicts for features, ordered by milestone.
 
     Because the cache may rarely have stale data, this should only be
@@ -643,8 +650,8 @@ class Feature(DictModel):
     return feature_list
 
   @classmethod
-  def get_in_milestone(
-      self, show_unlisted=False, milestone=None):
+  def get_in_milestone(self, milestone: int,
+      show_unlisted: bool=False) -> dict[int, list[dict[str, Any]]]:
     """Return {reason: [feaure_dict]} with all the reasons a feature can
     be part of a milestone.
 
@@ -653,9 +660,6 @@ class Feature(DictModel):
     procesing a POST to edit data.  For editing use case, load the
     data from NDB directly.
     """
-    if milestone == None:
-      return None
-
     features_by_type = {}
     cache_key = '%s|%s|%s' % (
         Feature.DEFAULT_CACHE_KEY, 'milestone', milestone)
@@ -663,7 +667,7 @@ class Feature(DictModel):
     if cached_features_by_type:
       features_by_type = cached_features_by_type
     else:
-      all_features = {}
+      all_features: dict[int, list[Feature]] = {}
       all_features[IMPLEMENTATION_STATUS[ENABLED_BY_DEFAULT]] = []
       all_features[IMPLEMENTATION_STATUS[DEPRECATED]] = []
       all_features[IMPLEMENTATION_STATUS[REMOVED]] = []
@@ -795,14 +799,14 @@ class Feature(DictModel):
 
     return features_by_type
 
-  def crbug_number(self):
+  def crbug_number(self) -> Optional[str]:
     if not self.bug_url:
       return
     m = re.search(r'[\/|?id=]([0-9]+)$', self.bug_url)
     if m:
       return m.group(1)
 
-  def new_crbug_url(self):
+  def new_crbug_url(self) -> str:
     url = 'https://bugs.chromium.org/p/chromium/issues/entry'
     if len(self.blink_components) > 0:
       params = ['components=' + self.blink_components[0]]
@@ -821,7 +825,7 @@ class Feature(DictModel):
       params.append('cc=' + ','.join(self.owner))
     return url + '?' + '&'.join(params)
 
-  def stash_values(self):
+  def stash_values(self) -> None:
 
     # Stash existing values when entity is created so we can diff property
     # values later in put() to know what's changed.
@@ -832,7 +836,7 @@ class Feature(DictModel):
       setattr(self, '_old_' + prop_name, old_val)
     setattr(self, '_values_stashed', True)
 
-  def _get_changes_as_amendments(self):
+  def _get_changes_as_amendments(self) -> list[review_models.Amendment]:
     """Get all feature changes as Amendment entities."""
     # Diff values to see what properties have changed.
     amendments = []
@@ -851,7 +855,8 @@ class Feature(DictModel):
 
     return amendments
 
-  def __notify_feature_subscribers_of_changes(self, amendments, is_update):
+  def __notify_feature_subscribers_of_changes(
+      self, amendments: list[review_models.Amendment], is_update: bool) -> None:
     """Async notifies subscribers of new features and property changes to
        features by posting to a task queue.
     """
@@ -870,7 +875,7 @@ class Feature(DictModel):
     # Create task to email subscribers.
     cloud_tasks_helpers.enqueue_task('/tasks/email-subscribers', params)
 
-  def put(self, notify=True, **kwargs):
+  def put(self, notify: bool=True, **kwargs) -> Any:
     is_update = self.is_saved()
     amendments = self._get_changes_as_amendments()
 
@@ -1145,7 +1150,8 @@ class FeatureEntry(ndb.Model):  # Copy from Feature
 
 
   @classmethod
-  def get_feature_entry(self, feature_id, update_cache=False):
+  def get_feature_entry(self, feature_id: int, update_cache: bool=False
+      ) -> FeatureEntry:
     KEY = feature_cache_key(FeatureEntry.DEFAULT_CACHE_KEY, feature_id)
     feature = rediscache.get(KEY)
 
@@ -1159,7 +1165,8 @@ class FeatureEntry(ndb.Model):  # Copy from Feature
     return entry
 
   @classmethod
-  def filter_unlisted(self, entry_list):
+  def filter_unlisted(self, entry_list: list[FeatureEntry]
+      ) -> list[FeatureEntry]:
     """Filters feature entries to display only features the user should see."""
     user = users.get_current_user()
     email = None
@@ -1177,7 +1184,8 @@ class FeatureEntry(ndb.Model):  # Copy from Feature
     return allowed_entries
 
   @classmethod
-  def get_by_ids(self, entry_ids, update_cache=False):
+  def get_by_ids(self, entry_ids: list[int], update_cache: bool=False
+      ) -> list[int]:
     """Return a list of FeatureEntry instances for the specified features.
 
     Because the cache may rarely have stale data, this should only be
@@ -1274,7 +1282,7 @@ class Stage(ndb.Model):
   announcement_url = ndb.StringProperty()
 
   @classmethod
-  def get_feature_stages(cls, feature_id: int) -> dict:
+  def get_feature_stages(cls, feature_id: int) -> dict[int, Stage]:
     """Return a dictionary of stages associated with a given feature."""
     stages = cls.query(cls.feature_id == feature_id).fetch()
     return {stage.stage_type: stage for stage in stages}

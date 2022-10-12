@@ -15,6 +15,7 @@
 
 from datetime import datetime
 import logging
+from typing import Any
 from google.cloud import ndb
 
 # Appengine imports.
@@ -90,7 +91,7 @@ class FeatureCreateHandler(basehandlers.FlaskHandler):
 
 class FeatureEditHandler(basehandlers.FlaskHandler):
 
-  def touched(self, param_name):
+  def touched(self, param_name: str) -> bool:
     """Return True if the user edited the specified field."""
     # TODO(jrobbins): for now we just consider everything on the current form
     # to have been touched.  Later we will add javascript to populate a
@@ -123,7 +124,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
     # See TODO at top of this method.
     return param_name in self.form
 
-  def process_post_data(self, feature_id, stage_id=0):
+  def process_post_data(self, feature_id: int, stage_id: int=0):
     # Validate the user has edit permissions and redirect if needed.
     redirect_resp = permissions.validate_feature_edit_permission(
         self, feature_id)
@@ -557,7 +558,8 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
     redirect_url = '/guide/edit/' + str(key.integer_id())
     return self.redirect(redirect_url)
 
-  def update_stage_fields(self, feature_id, feature_type, update_items) -> None:
+  def update_stage_fields(self, feature_id: int, feature_type: int,
+      update_items: list[tuple[str, Any]]) -> None:
     # Get all existing stages associated with the feature.
     stages = core_models.Stage.get_feature_stages(feature_id)
 
