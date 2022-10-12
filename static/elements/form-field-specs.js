@@ -211,11 +211,15 @@ export const ALL_FIELDS = {
 
   'feature_type': {
     type: 'select',
+    disabled: true,
     choices: FEATURE_TYPES,
-    initial: FEATURE_TYPES.FEATURE_TYPE_INCUBATE_ID[0],
     label: 'Feature type',
     help_text: html`
-        Select the feature type.`,
+    Feature type chosen at time of creation.
+        <br/>
+        <p style="color: red"><strong>Note:</strong> The feature type field
+        cannot be changed. If this field needs to be modified, a new feature
+        would need to be created.</p>`,
   },
 
   'feature_type_radio_group': {
@@ -225,7 +229,11 @@ export const ALL_FIELDS = {
     choices: FEATURE_TYPES,
     label: 'Feature type',
     help_text: html`
-        Select the feature type.`,
+        Select the feature type.
+        <br/>
+        <p style="color: red"><strong>Note:</strong> The feature type field
+        cannot be changed. If this field needs to be modified, a new feature
+        would need to be created.</p>`,
   },
 
   'set_stage': {
