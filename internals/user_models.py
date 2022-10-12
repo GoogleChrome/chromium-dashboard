@@ -71,16 +71,16 @@ class UserPref(ndb.Model):
       user_pref.put()
 
   @classmethod
-  def get_prefs_for_emails(cls, emails):
+  def get_prefs_for_emails(cls, emails: list[str]) -> list[UserPref]:
     """Return a list of UserPrefs for each of the given emails."""
-    result = []
+    result: list[UserPref] = []
     CHUNK_SIZE = 25  # Query 25 at a time because IN operator is limited to 30.
     chunks = [emails[i : i + CHUNK_SIZE]
               for i in range(0, len(emails), CHUNK_SIZE)]
     for chunk_emails in chunks:
       q = UserPref.query()
       q = q.filter(UserPref.email.IN(chunk_emails))
-      chunk_prefs = q.fetch(None)
+      chunk_prefs: list[UserPref] = q.fetch(None)
       result.extend(chunk_prefs)
       found_set = set(up.email for up in chunk_prefs)
 
@@ -243,7 +243,7 @@ class BlinkComponent(ndb.Model):
         c.put()
 
   @classmethod
-  def get_by_name(self, component_name):
+  def get_by_name(self, component_name: str) -> Optional[BlinkComponent]:
     """Fetch blink component with given name."""
     q = self.query()
     q = q.filter(self.name == component_name)
