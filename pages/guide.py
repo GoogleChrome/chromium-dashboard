@@ -16,7 +16,7 @@
 from datetime import datetime
 import logging
 from typing import Any
-from google.cloud import ndb
+from google.cloud import ndb as ndb
 
 # Appengine imports.
 from framework import rediscache

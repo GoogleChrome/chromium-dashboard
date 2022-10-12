@@ -16,7 +16,7 @@ import logging
 import os
 import unittest
 
-from google.cloud import ndb
+from google.cloud import ndb as ndb
 
 os.environ['DJANGO_SECRET'] = 'test secret'
 os.environ['SERVER_SOFTWARE'] = 'test ' + os.environ.get('SERVER_SOFTWARE', '')

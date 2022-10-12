@@ -22,7 +22,7 @@ from pathlib import Path
 import flask
 from unittest import mock
 import werkzeug.exceptions  # Flask HTTP stuff.
-from google.cloud import ndb
+from google.cloud import ndb as ndb
 
 from framework import users
 

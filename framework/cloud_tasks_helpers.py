@@ -26,7 +26,7 @@ import settings
 if not settings.UNIT_TEST_MODE:
   import grpc  # See requirements.dev.txt.
   from google.api_core import retry
-  from google.cloud import tasks
+  from google.cloud import tasks as tasks
 
 
 
