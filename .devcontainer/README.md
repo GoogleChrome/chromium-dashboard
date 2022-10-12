@@ -12,6 +12,14 @@ containers:
 2. [Datastore Emulator](https://cloud.google.com/datastore/docs/tools/datastore-emulator)
 3. [Datastore Emulator viewer](https://github.com/remko/dsadmin)
 
+## Using the Devcontainer on macOS
+
+An extra step is required for Devcontainer on Mac:
+- Click on the Docker icon, go to `Preferences`
+- Go to the Resources tab and select FILE SHARING
+- Add `/workspaces` to the mountable directories
+- Click on Apply & Restart
+
 ## Using the Devcontainer
 
 You can click on the appropriate badge to get the environment setup:
@@ -55,11 +63,3 @@ There are other ports needed for the IDE itself but mainly, you only need to wat
 In the docker-compose.yml file:
 - For Python: Change the `VARIANT` argument to the appropirate [variant](https://github.com/microsoft/vscode-dev-containers/tree/main/containers/python-3)
 - For Node: Change the `NODE_VERSION` to the appropriate version used by [nvm](https://github.com/nvm-sh/nvm)
-
-## Using the Devcontainer on macOS
-
-An extra step is required for Devcontainer on Mac:
-- Click on the Docker icon, go to `Preferences`
-- Go to the Resources tab and select FILE SHARING
-- Add `/workspaces` to the mountable directories
-- Click on Apply & Restart
