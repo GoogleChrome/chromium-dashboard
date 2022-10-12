@@ -33,7 +33,7 @@ test_app = flask.Flask(__name__)
 class TestWithFeature(testing_config.CustomTestCase):
 
   REQUEST_PATH_FORMAT: Optional[str] = None
-  HANDLER_CLASS: Optional[FlaskHandler] = None
+  HANDLER_CLASS: Optional[object] = None
 
   def setUp(self):
     self.app_user = user_models.AppUser(email='registered@example.com')
