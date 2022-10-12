@@ -219,18 +219,6 @@ class APIHandler(BaseHandler):
     app_user.put()
     return True
 
-  def do_post(self, **kwargs):
-    """Subclasses should implement this method to handle a POST request."""
-    self.abort(405, valid_methods=self._get_valid_methods())
-
-  def do_patch(self, **kwargs):
-    """Subclasses should implement this method to handle a PATCH request."""
-    self.abort(405, valid_methods=self._get_valid_methods())
-
-  def do_delete(self, **kwargs):
-    """Subclasses should implement this method to handle a DELETE request."""
-    self.abort(405, valid_methods=self._get_valid_methods())
-
   def validate_token(self, token, email):
     """If the token is not valid, raise an exception."""
     # This is a separate method so that the refresh handler can override it.

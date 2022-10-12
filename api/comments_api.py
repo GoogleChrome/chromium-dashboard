@@ -14,7 +14,7 @@
 # limitations under the License.
 
 import logging
-from typing import Any, Optional
+from typing import Any
 
 from framework import basehandlers
 from framework import permissions
@@ -23,12 +23,11 @@ from internals.review_models import Activity, Approval
 from internals import notifier
 
 
-def comment_to_json_dict(comment: Activity) -> dict[str, Any]:
-
+def comment_to_json_dict(comment: Activity) -> dict[str, str]:
   return {
-      'comment_id': comment.key.id(),
-      'feature_id': comment.feature_id,
-      'gate_id': comment.gate_id,
+      'comment_id': str(comment.key.id()),
+      'feature_id': str(comment.feature_id),
+      'gate_id': str(comment.gate_id),
       'created': str(comment.created),  # YYYY-MM-DD HH:MM:SS.SSS
       'author': comment.author,
       'content': comment.content,
@@ -56,8 +55,8 @@ class CommentsAPI(basehandlers.APIHandler):
     is_admin = permissions.can_admin_site(user)
     
     # Filter deleted comments the user can't see.
-    comments = filter(
-      lambda c: self._should_show_comment(c, user.email(), is_admin), comments)
+    comments = list(filter(
+      lambda c: self._should_show_comment(c, user.email(), is_admin), comments))
 
     dicts = [comment_to_json_dict(c) for c in comments]
     return {'comments': dicts}
@@ -104,7 +103,7 @@ class CommentsAPI(basehandlers.APIHandler):
 
   def do_patch(self, **kwargs) -> dict[str, str]:
     comment_id = self.get_param('commentId', required=True)
-    comment: Optional[Activity] = Activity.get_by_id(comment_id)
+    comment: Activity = Activity.get_by_id(comment_id)
 
     user = self.get_current_user(required=True)
     if not permissions.can_admin_site(user) and (
