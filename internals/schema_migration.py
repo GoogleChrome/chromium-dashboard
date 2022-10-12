@@ -47,11 +47,6 @@ def handle_migration(original_cls, new_cls, kwarg_mapping,
     if callable(special_handler):
       special_handler(original, kwargs)
 
-    # If Feature is being migrated, stages, Gates, and Votes will need to
-    # also be migrated.
-    if original_cls == Feature:
-      MigrateEntities.write_stages_for_feature(original)
-
     new_entity = new_cls(**kwargs)
     new_entity.put()
     migration_count += 1
@@ -180,6 +175,10 @@ class MigrateEntities(FlaskHandler):
     # updater_email will use the email from the updated_by field
     kwargs['updater_email'] = (original_entity.updated_by.email()
         if original_entity.updated_by else None)
+    
+    # If Feature is being migrated, then Stages, Gates, and Votes will need to
+    # also be migrated.
+    cls.write_stages_for_feature(original_entity)
 
   @classmethod
   def write_stages_for_feature(cls, feature):
