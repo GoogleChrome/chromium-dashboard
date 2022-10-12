@@ -65,6 +65,7 @@ export class ChromedashFormField extends LitElement {
 
   renderWidgets() {
     const type = this.fieldProps.type;
+    const fieldDisabled = this.fieldProps.disabled;
 
     // if no value is provided, use the initial value specified in form-field-spec
     const fieldValue = !this.value && this.fieldProps.initial ?
@@ -86,7 +87,7 @@ export class ChromedashFormField extends LitElement {
           id="id_${this.name}"
           size="small"
           ?checked=${fieldValue === 'true' || fieldValue === 'True'}
-          ?disabled=${this.disabled}>
+          ?disabled=${this.disabled || fieldDisabled}>
           ${this.fieldProps.label}
         </sl-checkbox>
       `;
@@ -98,7 +99,7 @@ export class ChromedashFormField extends LitElement {
           value="${fieldValue}"
           size="small"
           hoist
-          ?disabled=${this.disabled || this.loading}>
+          ?disabled=${fieldDisabled || this.disabled || this.loading}>
           ${Object.values(choices).map(
             ([value, label]) => html`
               <sl-menu-item value="${value}"> ${label} </sl-menu-item>

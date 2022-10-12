@@ -209,6 +209,19 @@ export const ALL_FIELDS = {
         Select the most specific category. If unsure, leave as "Miscellaneous".`,
   },
 
+  'feature_type': {
+    type: 'select',
+    disabled: true,
+    choices: FEATURE_TYPES,
+    label: 'Feature type',
+    help_text: html`
+    Feature type chosen at time of creation.
+        <br/>
+        <p style="color: red"><strong>Note:</strong> The feature type field
+        cannot be changed. If this field needs to be modified, a new feature
+        would need to be created.</p>`,
+  },
+
   'feature_type_radio_group': {
     // form field name matches underlying DB field (sets "feature_type" in DB).
     name: 'feature_type',
@@ -1122,7 +1135,9 @@ function makeDisplaySpecs(fields) {
 };
 
 export const DISPLAY_FIELDS_IN_STAGES = {
-  'Metadata': makeDisplaySpecs(['category', 'intent_stage', 'accurate_as_of']),
+  'Metadata': makeDisplaySpecs([
+    'category', 'feature_type', 'intent_stage', 'accurate_as_of',
+  ]),
   [INTENT_STAGES.INTENT_INCUBATE[0]]: makeDisplaySpecs([
     'initial_public_proposal_url', 'explainer_links',
     'requires_embedder_support',
