@@ -19,7 +19,7 @@ from typing import Any, Optional
 from framework import basehandlers
 from framework import permissions
 from internals import approval_defs
-from internals.review_models import Activity, Approval, Comment
+from internals.review_models import Activity, Approval
 from internals import notifier
 
 
@@ -59,7 +59,7 @@ class CommentsAPI(basehandlers.APIHandler):
       lambda c: self._should_show_comment(c, user.email(), is_admin), comments)
 
     dicts = [comment_to_json_dict(c) for c in comments]
-    return{'comments': dicts}
+    return {'comments': dicts}
 
   def do_post(
       self, feature_id: int, gate_id: Optional[int]=None) -> dict[str, str]:
@@ -101,7 +101,7 @@ class CommentsAPI(basehandlers.APIHandler):
 
   def do_patch(self, feature_id: int) -> dict[str, str]:
     comment_id = self.get_param('commentId', required=True)
-    comment: Optional[Comment] = Activity.get_by_id(comment_id)
+    comment: Optional[Activity] = Activity.get_by_id(comment_id)
 
     user = self.get_current_user(required=True)
     if not permissions.can_admin_site(user) and (
