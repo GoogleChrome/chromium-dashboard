@@ -374,29 +374,20 @@ class APIHandlerTests(testing_config.CustomTestCase):
     """If a subclass does not implement do_get(), raise NotImplementedError."""
     self.assertFalse(hasattr(self.handler, 'do_get'))
 
-  @mock.patch('flask.abort')
-  def check_bad_HTTP_method(self, handler_method, mock_abort):
-    mock_abort.side_effect = werkzeug.exceptions.MethodNotAllowed
-
-    with self.assertRaises(mock_abort.side_effect):
-      handler_method()
-    mock_abort.assert_called_once_with(405, valid_methods=['GET'])
-
-    # Extra URL parameters do not crash the app.
-    with self.assertRaises(mock_abort.side_effect):
-      handler_method(feature_id=1234)
+  def check_bad_HTTP_method(self, handler_method):
+    self.assertFalse(hasattr(self.handler, handler_method))
 
   def test_do_post(self):
     """If a subclass does not implement do_post(), return a 405."""
-    self.check_bad_HTTP_method(self.handler.do_post)
+    self.check_bad_HTTP_method('do_post')
 
   def test_do_patch(self):
     """If a subclass does not implement do_patch(), return a 405."""
-    self.check_bad_HTTP_method(self.handler.do_patch)
+    self.check_bad_HTTP_method('do_patch')
 
   def test_do_delete(self):
     """If a subclass does not implement do_delete(), return a 405."""
-    self.check_bad_HTTP_method(self.handler.do_delete)
+    self.check_bad_HTTP_method('do_delete')
 
   @mock.patch('framework.basehandlers.APIHandler.validate_token')
   def test_require_signed_in_and_xsrf_token__OK_body(self, mock_validate_token):

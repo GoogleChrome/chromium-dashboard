@@ -51,8 +51,8 @@ class CommentsAPITest(testing_config.CustomTestCase):
         author='owner1@example.com', created=NOW, content='Good job')
 
     self.expected_1 = {
-        'feature_id': self.feature_id,
-        'gate_id': self.gate_id,
+        'feature_id': str(self.feature_id),
+        'gate_id': str(self.gate_id),
         'author': 'owner1@example.com',
         'deleted_by': None,
         'content': 'Good job'

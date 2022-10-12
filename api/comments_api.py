@@ -23,7 +23,7 @@ from internals.review_models import Activity, Approval
 from internals import notifier
 
 
-def comment_to_json_dict(comment: Activity) -> dict[str, str]:
+def comment_to_json_dict(comment: Activity) -> dict[str, Optional[str]]:
   return {
       'comment_id': str(comment.key.id()),
       'feature_id': str(comment.feature_id),
