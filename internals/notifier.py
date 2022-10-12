@@ -178,13 +178,12 @@ def make_email_tasks(feature: Feature, is_update: bool=False,
   # There will always be at least one component.
   for component_name in feature.blink_components:
     component = BlinkComponent.get_by_name(component_name)
-    owner_emails: list[str] = [owner.email for owner in component.owners]
-    subscriber_emails: list[str] = [sub.email for sub in component.subscribers]
     if not component:
       logging.warning('Blink component "%s" not found.'
                       'Not sending email to subscribers' % component_name)
       continue
-
+    owner_emails: list[str] = [owner.email for owner in component.owners]
+    subscriber_emails: list[str] = [sub.email for sub in component.subscribers]
     accumulate_reasons(
         addr_reasons, owner_emails,
         'You are an owner of this feature\'s component')
