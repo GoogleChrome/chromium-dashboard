@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from abc import abstractmethod
 from datetime import datetime
 import json
 import logging
@@ -218,11 +219,6 @@ class APIHandler(BaseHandler):
     app_user.put()
     return True
 
-  def do_get(self, **kwargs):
-    """Subclasses should implement this method to handle a GET request."""
-    # Every API handler must handle GET.
-    raise NotImplementedError()
-
   def do_post(self, **kwargs):
     """Subclasses should implement this method to handle a POST request."""
     self.abort(405, valid_methods=self._get_valid_methods())
@@ -262,7 +258,7 @@ class APIHandler(BaseHandler):
 class FlaskHandler(BaseHandler):
 
   TEMPLATE_PATH: Optional[str] = None  # Subclasses should define this.
-  HTTP_CACHE_TYPE = None  # Subclasses can use 'public' or 'private'
+  HTTP_CACHE_TYPE: Optional[str] = None  # Subclasses can use 'public' or 'private'
   JSONIFY = False  # Set to True for JSON feeds.
   IS_INTERNAL_HANDLER = False  # Subclasses can skip XSRF check.
 

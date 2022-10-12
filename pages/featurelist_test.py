@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from typing import Optional
+from framework.basehandlers import FlaskHandler
 import testing_config  # Must be imported first
 
 import os
@@ -30,8 +32,8 @@ test_app = flask.Flask(__name__)
 
 class TestWithFeature(testing_config.CustomTestCase):
 
-  REQUEST_PATH_FORMAT = 'subclasses fill this in'
-  HANDLER_CLASS = 'subclasses fill this in'
+  REQUEST_PATH_FORMAT: Optional[str] = None
+  HANDLER_CLASS: Optional[object] = None
 
   def setUp(self):
     self.app_user = user_models.AppUser(email='registered@example.com')

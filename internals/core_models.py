@@ -514,7 +514,7 @@ class Feature(DictModel):
   @classmethod
   def get_by_ids(
       self, feature_ids: list[int],
-      update_cache: bool=False) -> list[Optional[dict]]:
+      update_cache: bool=False) -> list[dict[str, Any]]:
     """Return a list of JSON dicts for the specified features.
 
     Because the cache may rarely have stale data, this should only be
@@ -534,7 +534,7 @@ class Feature(DictModel):
         result_dict[feature_id] = feature
 
     for future in futures:
-      unformatted_feature = future.get_result()
+      unformatted_feature: Optional[Feature] = future.get_result()
       if unformatted_feature and not unformatted_feature.deleted:
         feature = unformatted_feature.format_for_template()
         feature['updated_display'] = (
@@ -545,7 +545,7 @@ class Feature(DictModel):
         result_dict[unformatted_feature.key.integer_id()] = feature
 
     result_list = [
-        result_dict.get(feature_id) for feature_id in feature_ids
+        result_dict[feature_id] for feature_id in feature_ids
         if feature_id in result_dict]
     return result_list
 
