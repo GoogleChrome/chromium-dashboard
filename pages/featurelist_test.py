@@ -33,7 +33,7 @@ test_app = flask.Flask(__name__)
 class TestWithFeature(testing_config.CustomTestCase):
 
   REQUEST_PATH_FORMAT: Optional[str] = None
-  HANDLER_CLASS: Optional[object] = None
+  HANDLER_CLASS: Optional[FlaskHandler] = None
 
   def setUp(self):
     self.app_user = user_models.AppUser(email='registered@example.com')
@@ -49,10 +49,10 @@ class TestWithFeature(testing_config.CustomTestCase):
     self.feature_1.put()
     self.feature_id = self.feature_1.key.integer_id()
 
-    self.request_path = self.REQUEST_PATH_FORMAT % {
-        'feature_id': self.feature_id,
-    }
-    self.handler = self.HANDLER_CLASS()
+    self.request_path = (self.REQUEST_PATH_FORMAT %
+        {'feature_id': self.feature_id} if self.REQUEST_PATH_FORMAT else '')
+    if self.HANDLER_CLASS:
+      self.handler = self.HANDLER_CLASS()
 
   def tearDown(self):
     self.feature_1.key.delete()
@@ -117,6 +117,7 @@ class FeatureListHandlerTest(TestWithFeature):
 
 class FeatureListTemplateTest(TestWithFeature):
 
+  REQUEST_PATH_FORMAT = None
   HANDLER_CLASS = featurelist.FeatureListHandler
 
   def setUp(self):

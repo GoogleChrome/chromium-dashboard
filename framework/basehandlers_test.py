@@ -372,11 +372,7 @@ class APIHandlerTests(testing_config.CustomTestCase):
 
   def test_do_get(self):
     """If a subclass does not implement do_get(), raise NotImplementedError."""
-    with self.assertRaises(NotImplementedError):
-      self.handler.do_get()
-
-    with self.assertRaises(NotImplementedError):
-      self.handler.do_get(feature_id=1234)
+    self.assertFalse(hasattr(self.handler, 'do_get'))
 
   @mock.patch('flask.abort')
   def check_bad_HTTP_method(self, handler_method, mock_abort):
@@ -531,12 +527,6 @@ class FlaskHandlerTests(testing_config.CustomTestCase):
     actual = self.handler.get_template_path(
         {'template_path': 'special.html'})
     self.assertEqual('special.html', actual)
-
-  def test_process_post_data__missing(self):
-    """Subsclasses that don't override process_post_data() give a 405."""
-    self.handler = basehandlers.FlaskHandler()
-    with self.assertRaises(werkzeug.exceptions.MethodNotAllowed):
-      self.handler.process_post_data()
 
   def test_get_common_data__signed_out(self):
     """When user is signed out, offer sign in link."""
