@@ -20,7 +20,7 @@ import random
 import string
 import time
 
-from google.cloud import ndb
+from google.cloud import ndb  # type: ignore
 
 
 # For random key generation

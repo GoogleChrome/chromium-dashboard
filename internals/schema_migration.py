@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import logging
-from google.cloud import ndb
+from google.cloud import ndb  # type: ignore
 
 from framework.basehandlers import FlaskHandler
 from internals import approval_defs

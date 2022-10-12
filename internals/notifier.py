@@ -22,7 +22,7 @@ import os
 import urllib
 
 from framework import permissions
-from google.cloud import ndb
+from google.cloud import ndb  # type: ignore
 
 from django.utils.html import conditional_escape as escape
 
