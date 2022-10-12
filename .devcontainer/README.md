@@ -12,6 +12,14 @@ containers:
 2. [Datastore Emulator](https://cloud.google.com/datastore/docs/tools/datastore-emulator)
 3. [Datastore Emulator viewer](https://github.com/remko/dsadmin)
 
+## Using the Devcontainer on macOS
+
+An extra step is required for Devcontainer on Mac:
+- Click on the Docker icon, go to `Preferences`
+- Go to the Resources tab and select FILE SHARING
+- Add `/workspaces` to the mountable directories
+- Click on Apply & Restart
+
 ## Using the Devcontainer
 
 You can click on the appropriate badge to get the environment setup:
