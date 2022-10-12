@@ -293,7 +293,7 @@ class MigrateEntities(FlaskHandler):
         milestones=extension_mstones,
         intent_thread_url=feature.intent_to_extend_experiment_url,
         experiment_extension_reason=feature.experiment_extension_reason,
-        ot_stage_id=stage.key.integer_id() **kwargs)
+        ot_stage_id=stage.key.integer_id(), **kwargs)
     stage.put()
     totals = cls.write_gate(feature_id, stage, EXTEND_ENUM)
     num_gates += totals[0]
@@ -336,7 +336,7 @@ class MigrateEntities(FlaskHandler):
         milestones=extension_mstones,
         intent_thread_url=feature.intent_to_extend_experiment_url,
         experiment_extension_reason=feature.experiment_extension_reason,
-        ot_stage_id=stage.key.integer_id() **kwargs)
+        ot_stage_id=stage.key.integer_id(), **kwargs)
     stage.put()
     totals = cls.write_gate(feature_id, stage, EXTEND_ENUM)
     num_gates += totals[0]
@@ -396,7 +396,7 @@ class MigrateEntities(FlaskHandler):
         milestones=extension_mstones,
         intent_thread_url=feature.intent_to_extend_experiment_url,
         experiment_extension_reason=feature.experiment_extension_reason,
-        ot_stage_id=stage.key.integer_id() **kwargs)
+        ot_stage_id=stage.key.integer_id(), **kwargs)
     stage.put()
     totals = cls.write_gate(feature_id, stage, EXTEND_ENUM)
     num_gates += totals[0]
