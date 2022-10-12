@@ -13,7 +13,7 @@
 # limitations under the License.
 
 
-from google.cloud import ndb as ndb
+from google.cloud import ndb
 
 
 # UMA metrics.

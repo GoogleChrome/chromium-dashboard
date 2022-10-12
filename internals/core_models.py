@@ -22,7 +22,7 @@ import logging
 import re
 from typing import Any, Optional
 
-from google.cloud import ndb as ndb
+from google.cloud import ndb
 
 from framework import rediscache
 from framework import users

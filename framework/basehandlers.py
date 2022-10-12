@@ -26,7 +26,7 @@ import flask.views
 import werkzeug.exceptions
 
 import google.appengine.api
-from google.cloud import ndb as ndb
+from google.cloud import ndb
 
 import settings
 from framework import csp

@@ -15,7 +15,7 @@
 
 import logging
 
-from google.cloud import ndb as ndb
+from google.cloud import ndb
 
 from framework import basehandlers
 from framework import permissions
