@@ -83,10 +83,10 @@ def format_email_body(is_update, feature, changes):
 
 
 def accumulate_reasons(
-      addr_reasons: dict[str, list], user_list: list[str], reason: str) -> None:
+      addr_reasons: dict[str, list], addr_list: list[str], reason: str) -> None:
   """Add a reason string for each user."""
-  for user in user_list:
-    addr_reasons[user].append(reason)
+  for email in addr_list:
+    addr_reasons[email].append(reason)
 
 
 def convert_reasons_to_task(
@@ -156,8 +156,7 @@ def make_email_tasks(feature: Feature, is_update: bool=False,
     subject = 'new feature: %s' % feature.name
     triggering_user_email = feature.created_by.email()
 
-  # [{email_addr: [reason,...]}]
-  addr_reasons: dict[str, list] = collections.defaultdict(list)
+  addr_reasons: dict[str, list[str]] = collections.defaultdict(list)
 
   accumulate_reasons(
     addr_reasons, feature.owner,

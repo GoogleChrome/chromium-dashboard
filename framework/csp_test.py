@@ -60,7 +60,7 @@ class CspTest(unittest.TestCase):
     """We can get the even stricter nonce-only policy."""
     policy = csp.get_default_policy(nonce='12345')
     self.assertCountEqual(list(csp.NONCE_ONLY_POLICY.keys()), list(policy.keys()))
-    self.assertNotIn('\'strict-dynamic\'', policy['script-src'])
+    self.assertNotIn('strict-dynamic', policy['script-src'])
     self.assertIn("'nonce-12345'", policy['script-src'])
 
   @mock.patch('framework.csp.REPORT_ONLY', False)
