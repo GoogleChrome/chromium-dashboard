@@ -29,10 +29,10 @@ CHROME_RELEASE_SCHEDULE_URL = (
     'https://chromiumdash.appspot.com/fetch_milestone_schedule')
 
 
-def get_current_milestone_info():
-  """Return a dict of info about the next milestone reaching beta."""
+def get_current_milestone_info(anchor_channel: str):
+  """Return a dict of info about the next milestone reaching anchor_channel."""
   try:
-    resp = requests.get(f'{CHROME_RELEASE_SCHEDULE_URL}?mstone=current')
+    resp = requests.get(f'{CHROME_RELEASE_SCHEDULE_URL}?mstone={anchor_channel}')
   except requests.RequestException as e:
     raise e
   mstone_info = json.loads(resp.text)
@@ -69,13 +69,14 @@ class AbstractReminderHandler(basehandlers.FlaskHandler):
   JSONIFY = True
   SUBJECT_FORMAT = '%s'
   EMAIL_TEMPLATE_PATH = None  # Subclasses must override
+  ANCHOR_CHANNEL = 'current'  # the stable channel
   FUTURE_MILESTONES_TO_CONSIDER = 0
   MILESTONE_FIELDS = None  # Subclasses must override
 
   def get_template_data(self):
     """Sends notifications to users requesting feature updates for accuracy."""
     self.require_cron_header()
-    current_milestone_info = get_current_milestone_info()
+    current_milestone_info = get_current_milestone_info(self.ANCHOR_CHANNEL)
     features_to_notify = self.determine_features_to_notify(
         current_milestone_info)
     email_tasks = build_email_tasks(
@@ -165,6 +166,7 @@ class PrepublicationHandler(AbstractReminderHandler):
   PUBLICATION_LEAD_TIME = timedelta(weeks=1)
   # We remind owners 1 week before that.
   REMINDER_WINDOW = timedelta(weeks=1)
+  ANCHOR_CHANNEL = 'beta'
 
   def prefilter_features(self, current_milestone_info, features, now=None):
     earliest_beta = datetime.fromisoformat(
@@ -173,9 +175,12 @@ class PrepublicationHandler(AbstractReminderHandler):
     now = now or datetime.now()
     window_end = earliest_beta - self.PUBLICATION_LEAD_TIME
     window_start = window_end - self.REMINDER_WINDOW
-    if now >= window_start and now <= window_end:
+    logging.info('%r <= %r <= %r ?', window_start, now, window_end)
+    if window_start <= now <= window_end:
       # If we are in the reminder window, process all releveant features.
+      logging.info('On week')
       return features
     else:
       # If this cron is running on an off week, do nothing.
+      logging.info('Off week')
       return []
