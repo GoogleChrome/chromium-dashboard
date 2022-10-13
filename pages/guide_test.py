@@ -22,7 +22,8 @@ import html5lib
 
 from framework import rediscache
 from internals import core_enums
-from internals import core_models
+from internals.core_models import Feature, FeatureEntry, Stage
+from internals.review_models import Gate
 from pages import guide
 
 
@@ -46,6 +47,13 @@ class FeatureCreateTest(testing_config.CustomTestCase):
 
   def setUp(self):
     self.handler = guide.FeatureCreateHandler()
+  
+  def tearDown(self) -> None:
+    kinds = [Feature, FeatureEntry, Stage, Gate]
+    for kind in kinds:
+      entities = kind.query().fetch()
+      for entity in entities:
+        entity.key.delete()
 
   def test_post__anon(self):
     """Anon cannot create features, gets a 403."""
@@ -69,6 +77,7 @@ class FeatureCreateTest(testing_config.CustomTestCase):
             'category': '1',
             'name': 'Feature name',
             'summary': 'Feature summary',
+            'feature_type': '0'
         }, method='POST'):
       actual_response = self.handler.process_post_data()
 
@@ -76,32 +85,35 @@ class FeatureCreateTest(testing_config.CustomTestCase):
     location = actual_response.headers['location']
     self.assertTrue(location.startswith('/guide/edit/'))
     new_feature_id = int(location.split('/')[-1])
-    feature = core_models.Feature.get_by_id(new_feature_id)
+    feature = Feature.get_by_id(new_feature_id)
     self.assertEqual(1, feature.category)
     self.assertEqual('Feature name', feature.name)
     self.assertEqual('Feature summary', feature.summary)
     
     # Ensure FeatureEntry entity was also created.
-    feature_entry = core_models.FeatureEntry.get_by_id(new_feature_id)
+    feature_entry = FeatureEntry.get_by_id(new_feature_id)
     self.assertEqual(1, feature_entry.category)
     self.assertEqual('Feature name', feature_entry.name)
     self.assertEqual('Feature summary', feature_entry.summary)
     self.assertEqual('user1@google.com', feature_entry.creator_email)
 
-    feature.key.delete()
-    feature_entry.key.delete()
+    # Ensure Stage and Gate entities were also created.
+    stages = Stage.query().fetch()
+    gates = Gate.query().fetch()
+    self.assertEqual(len(stages), 7)
+    self.assertEqual(len(gates), 4)
 
 
 class FeatureEditHandlerTest(testing_config.CustomTestCase):
 
   def setUp(self):
-    self.feature_1 = core_models.Feature(
+    self.feature_1 = Feature(
         name='feature one', summary='sum', owner=['user1@google.com'],
         category=1)
     self.feature_1.put()
     self.stage = core_enums.INTENT_INCUBATE  # Shows first form
 
-    self.feature_entry_1 = core_models.FeatureEntry(
+    self.feature_entry_1 = FeatureEntry(
         id=self.feature_1.key.integer_id(), name='feature one',
         summary='sum', owner_emails=['user1@google.com'], category=1,
         standard_maturity=1, web_dev_views=1, impl_status_chrome=1)
@@ -109,14 +121,14 @@ class FeatureEditHandlerTest(testing_config.CustomTestCase):
 
     feature_id = self.feature_1.key.integer_id()
     # Shipping stage is not created, and should be created on edit.
-    stage_types = [core_models.STAGE_BLINK_INCUBATE,
-        core_models.STAGE_BLINK_PROTOTYPE,
-        core_models.STAGE_BLINK_DEV_TRIAL,
-        core_models.STAGE_BLINK_EVAL_READINESS,
-        core_models.STAGE_BLINK_ORIGIN_TRIAL,
-        core_models.STAGE_BLINK_EXTEND_ORIGIN_TRIAL]
+    stage_types = [core_enums.STAGE_BLINK_INCUBATE,
+        core_enums.STAGE_BLINK_PROTOTYPE,
+        core_enums.STAGE_BLINK_DEV_TRIAL,
+        core_enums.STAGE_BLINK_EVAL_READINESS,
+        core_enums.STAGE_BLINK_ORIGIN_TRIAL,
+        core_enums.STAGE_BLINK_EXTEND_ORIGIN_TRIAL]
     for stage_type in stage_types:
-      stage = core_models.Stage(feature_id=feature_id, stage_type=stage_type)
+      stage = Stage(feature_id=feature_id, stage_type=stage_type)
       stage.put()
 
     self.request_path = ('/guide/stage/%d/%d' % (
@@ -126,7 +138,7 @@ class FeatureEditHandlerTest(testing_config.CustomTestCase):
   def tearDown(self):
     self.feature_1.key.delete()
     self.feature_entry_1.key.delete()
-    for stage in core_models.Stage.query().fetch():
+    for stage in Stage.query().fetch():
       stage.key.delete()
 
   def test_touched(self):
@@ -205,7 +217,8 @@ class FeatureEditHandlerTest(testing_config.CustomTestCase):
             'experiment_risks': new_experiment_risks,
             'experiment_extension_reason': new_experiment_extension_reason,
             'origin_trial_feedback_url': new_origin_trial_feedback_url,
-            'intent_to_ship_url': new_intent_to_ship_url
+            'intent_to_ship_url': new_intent_to_ship_url,
+            'feature_type': '1'
         }):
       actual_response = self.handler.process_post_data(
           feature_id=self.feature_1.key.integer_id(), stage_id=self.stage)
@@ -214,7 +227,7 @@ class FeatureEditHandlerTest(testing_config.CustomTestCase):
     location = actual_response.headers['location']
     self.assertEqual('/guide/edit/%d' % self.feature_1.key.integer_id(),
                      location)
-    revised_feature = core_models.Feature.get_by_id(
+    revised_feature = Feature.get_by_id(
         self.feature_1.key.integer_id())
     self.assertEqual(2, revised_feature.category)
     self.assertEqual('Revised feature name', revised_feature.name)
@@ -222,14 +235,14 @@ class FeatureEditHandlerTest(testing_config.CustomTestCase):
     self.assertEqual(84, revised_feature.shipped_milestone)
 
     # Ensure changes were also made to FeatureEntry entity
-    revised_entry = core_models.FeatureEntry.get_by_id(
+    revised_entry = FeatureEntry.get_by_id(
         self.feature_1.key.integer_id())
     self.assertEqual(2, revised_entry.category)
     self.assertEqual('Revised feature name', revised_entry.name)
     self.assertEqual('Revised feature summary', revised_entry.summary)
 
     # Ensure changes were also made to Stage entities
-    stages = core_models.Stage.get_feature_stages(
+    stages = Stage.get_feature_stages(
         self.feature_1.key.integer_id())
     self.assertEqual(len(stages.keys()), 7)
     origin_trial_stage = stages.get(150)
