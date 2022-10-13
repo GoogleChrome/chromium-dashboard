@@ -14,56 +14,15 @@
 # limitations under the License.
 
 import base64
-import collections
 import logging
 import requests
 
 from framework import permissions
+from internals.core_enums import *
 from internals import review_models
 import settings
 
 CACHE_EXPIRATION = 60 * 60  # One hour
-
-
-ONE_LGTM = 'One LGTM'
-THREE_LGTM = 'Three LGTMs'
-API_OWNERS_URL = (
-    'https://chromium.googlesource.com/chromium/src/+/'
-    'main/third_party/blink/API_OWNERS?format=TEXT')
-
-ApprovalFieldDef = collections.namedtuple(
-    'ApprovalField',
-    'name, description, field_id, rule, approvers')
-
-# Note: This can be requested manually through the UI, but it is not
-# triggered by a blink-dev thread because i2p intents are only FYIs to
-# bilnk-dev and don't actually need approval by the API Owners.
-PrototypeApproval = ApprovalFieldDef(
-    'Intent to Prototype',
-    'Not normally used.  If a review is requested, API Owners can approve.',
-    1, ONE_LGTM, API_OWNERS_URL)
-
-ExperimentApproval = ApprovalFieldDef(
-    'Intent to Experiment',
-    'One API Owner must approve your intent',
-    2, ONE_LGTM, API_OWNERS_URL)
-
-ExtendExperimentApproval = ApprovalFieldDef(
-    'Intent to Extend Experiment',
-    'One API Owner must approve your intent',
-    3, ONE_LGTM, API_OWNERS_URL)
-
-ShipApproval = ApprovalFieldDef(
-    'Intent to Ship',
-    'Three API Owners must approve your intent',
-    4, THREE_LGTM, API_OWNERS_URL)
-
-APPROVAL_FIELDS_BY_ID = {
-    afd.field_id: afd
-    for afd in [
-        PrototypeApproval, ExperimentApproval, ExtendExperimentApproval,
-        ShipApproval]
-    }
 
 
 def fetch_owners(url):

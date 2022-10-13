@@ -175,7 +175,7 @@ BLINK_PROCESS_STAGES = [
       [Action('Draft Intent to Prototype email', INTENT_EMAIL_URL,
               [PI_INITIAL_PUBLIC_PROPOSAL.name, PI_MOTIVATION.name,
                PI_EXPLAINER.name])],
-      [approval_defs.PrototypeApproval],
+      [core_enums.PROTOTYPE_APPROVAL],
       core_enums.INTENT_INCUBATE, core_enums.INTENT_IMPLEMENT),
 
   ProcessStage(
@@ -225,7 +225,7 @@ BLINK_PROCESS_STAGES = [
               [PI_INITIAL_PUBLIC_PROPOSAL.name, PI_MOTIVATION.name,
                PI_EXPLAINER.name, PI_SPEC_LINK.name,
                PI_EST_TARGET_MILESTONE.name])],
-      [approval_defs.ExperimentApproval],
+      [core_enums.EXPERIMENT_APPROVAL],
       core_enums.INTENT_IMPLEMENT_SHIP, core_enums.INTENT_EXTEND_TRIAL),
 
   ProcessStage(
@@ -244,7 +244,7 @@ BLINK_PROCESS_STAGES = [
                PI_EXPLAINER.name, PI_SPEC_LINK.name,
                PI_TAG_ADDRESSED.name, PI_UPDATED_VENDOR_SIGNALS.name,
                PI_UPDATED_TARGET_MILESTONE.name])],
-      [approval_defs.ShipApproval],
+      [core_enums.SHIP_APPROVAL],
       core_enums.INTENT_IMPLEMENT_SHIP, core_enums.INTENT_SHIP),
 
   ProcessStage(
@@ -277,7 +277,7 @@ BLINK_FAST_TRACK_STAGES = [
        ],
       [Action('Draft Intent to Prototype email', INTENT_EMAIL_URL,
               [PI_SPEC_LINK.name])],
-      [approval_defs.PrototypeApproval],
+      [core_enums.PROTOTYPE_APPROVAL],
       core_enums.INTENT_NONE, core_enums.INTENT_IMPLEMENT),
 
   ProcessStage(
@@ -308,7 +308,7 @@ BLINK_FAST_TRACK_STAGES = [
       ],
       [Action('Draft Intent to Experiment email', INTENT_EMAIL_URL,
               [PI_SPEC_LINK.name, PI_EST_TARGET_MILESTONE.name])],
-      [approval_defs.ExperimentApproval],
+      [core_enums.EXPERIMENT_APPROVAL],
       core_enums.INTENT_EXPERIMENT, core_enums.INTENT_EXTEND_TRIAL),
 
   ProcessStage(
@@ -322,7 +322,7 @@ BLINK_FAST_TRACK_STAGES = [
       ],
       [Action('Draft Intent to Ship email', INTENT_EMAIL_URL,
               [PI_SPEC_LINK.name, PI_UPDATED_TARGET_MILESTONE.name])],
-      [approval_defs.ShipApproval],
+      [core_enums.SHIP_APPROVAL],
       core_enums.INTENT_EXPERIMENT, core_enums.INTENT_SHIP),
 
   ProcessStage(
@@ -378,7 +378,7 @@ PSA_ONLY_STAGES = [
       ],
       [Action('Draft Intent to Ship email', INTENT_EMAIL_URL,
               [PI_SPEC_LINK.name, PI_UPDATED_TARGET_MILESTONE.name])],
-      [approval_defs.ShipApproval],
+      [core_enums.SHIP_APPROVAL],
       core_enums.INTENT_EXPERIMENT, core_enums.INTENT_SHIP),
 
   ProcessStage(
@@ -412,7 +412,7 @@ DEPRECATION_STAGES = [
       ],
       [Action('Draft Intent to Deprecate and Remove email', INTENT_EMAIL_URL,
               [PI_MOTIVATION.name])],
-      [approval_defs.PrototypeApproval],
+      [core_enums.PROTOTYPE_APPROVAL],
       core_enums.INTENT_NONE, core_enums.INTENT_IMPLEMENT),
 
   # TODO(cwilso): Work out additional steps for flag defaulting to disabled.
@@ -442,7 +442,7 @@ DEPRECATION_STAGES = [
               [PI_MOTIVATION.name, PI_VENDOR_SIGNALS.name,
                PI_EST_TARGET_MILESTONE.name])],
       # TODO(jrobbins): Intent to extend deprecation.
-      [approval_defs.ExperimentApproval],
+      [core_enums.EXPERIMENT_APPROVAL],
       core_enums.INTENT_EXPERIMENT, core_enums.INTENT_EXTEND_TRIAL),
 
   ProcessStage(
@@ -456,7 +456,7 @@ DEPRECATION_STAGES = [
       [Action('Draft Intent to Ship email', INTENT_EMAIL_URL,
               [PI_MOTIVATION.name, PI_VENDOR_SIGNALS.name,
                PI_UPDATED_TARGET_MILESTONE.name])],
-      [approval_defs.ShipApproval],
+      [core_enums.SHIP_APPROVAL],
       core_enums.INTENT_EXPERIMENT, core_enums.INTENT_SHIP),
 
   ProcessStage(

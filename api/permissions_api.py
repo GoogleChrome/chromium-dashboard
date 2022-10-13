@@ -17,6 +17,7 @@
 from framework import basehandlers
 from framework import permissions
 from internals import approval_defs
+from internals import core_enums
 
 
 class PermissionsAPI(basehandlers.APIHandler):
@@ -32,7 +33,7 @@ class PermissionsAPI(basehandlers.APIHandler):
     # get user permission data if signed in
     user = self.get_current_user()
     if user:
-      field_id = approval_defs.ShipApproval.field_id
+      field_id = core_enums.SHIP_APPROVAL.field_id
       approvers = approval_defs.get_approvers(field_id)
       user_data = {
         'can_create_feature': permissions.can_create_feature(user),
