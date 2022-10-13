@@ -235,7 +235,7 @@ class APIHandler(BaseHandler):
     except xsrf.TokenIncorrect:
       self.abort(400, msg='Invalid XSRF token')
 
-  def _get_valid_methods(self):
+  def _get_valid_methods(self) -> list[str]:
     """For 405 responses, list methods the concrete handler implements."""
     valid_methods = ['GET']
     if hasattr(self, 'do_post'):
