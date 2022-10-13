@@ -19,7 +19,7 @@ from unittest import mock
 from framework import users
 
 from internals import core_models
-from internals.review_models import Activity, Approval, OwnersFile, Vote
+from internals.review_models import Activity, Approval, Gate, OwnersFile, Vote
 
 
 class ApprovalTest(testing_config.CustomTestCase):
@@ -36,7 +36,10 @@ class ApprovalTest(testing_config.CustomTestCase):
         set_by='one@example.com')
     self.appr_1.put()
 
-    # Approval 1 has already been migrated to a Vote entity.
+    # Approval 1 has already been migrated to a Vote entity with Gate.
+    self.gate_1 = Gate(feature_id=self.feature_1_id, stage_id=1,
+        gate_type=2, state=Vote.NA)
+    self.gate_1.put()
     self.vote_1 = Vote(id=self.appr_1.key.integer_id(),
         feature_id=self.feature_1_id, gate_id=1,
         state=Vote.REVIEW_REQUESTED,
@@ -61,7 +64,9 @@ class ApprovalTest(testing_config.CustomTestCase):
     self.feature_1.key.delete()
     for appr in Approval.query().fetch(None):
       appr.key.delete()
-    for vote in Vote.query().fetch():
+    for gate in Gate.query():
+      gate.key.delete()
+    for vote in Vote.query():
       vote.key.delete()
 
   def test_get_approvals(self):

@@ -86,7 +86,7 @@ class FeaturesAPI(basehandlers.APIHandler):
     feature = self.get_specified_feature(feature_id=feature_id)
     feature.deleted = True
     feature.put()
-    rediscache.delete_keys_with_prefix(core_models.feature_cache_prefix())
+    rediscache.delete_keys_with_prefix(core_models.Feature.cache_prefix())
 
     # Write for new FeatureEntry entity.
     feature_entry: Optional[core_models.FeatureEntry] = (
