@@ -1280,6 +1280,8 @@ class Stage(ndb.Model):
   intent_thread_url = ndb.StringProperty()
   origin_trial_feedback_url = ndb.StringProperty()
   announcement_url = ndb.StringProperty()
+  # Origin trial stage id that this stage extends, if trial extension stage.
+  ot_stage_id = ndb.IntegerProperty()
 
   @classmethod
   def get_feature_stages(cls, feature_id: int) -> dict[int, Stage]:
