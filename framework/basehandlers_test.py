@@ -370,24 +370,30 @@ class APIHandlerTests(testing_config.CustomTestCase):
     self.assertTrue(actual_sent_text.startswith(basehandlers.XSSI_PREFIX))
     self.assertIn(json.dumps(handler_data), actual_sent_text)
 
+  @mock.patch('flask.abort')
+  def check_bad_HTTP_method(self, request_type, mock_abort):
+    mock_abort.side_effect = werkzeug.exceptions.MethodNotAllowed
+
+    with self.assertRaises(mock_abort.side_effect):
+      self.handler.validate_request_type(request_type)
+    mock_abort.assert_called_once_with(405, valid_methods=['GET'])
+
   def test_do_get(self):
     """If a subclass does not implement do_get(), raise NotImplementedError."""
-    self.assertFalse(hasattr(self.handler, 'do_get'))
-
-  def check_bad_HTTP_method(self, handler_method):
-    self.assertFalse(hasattr(self.handler, handler_method))
+    with self.assertRaises(NotImplementedError):
+      self.handler.validate_request_type('get')
 
   def test_do_post(self):
     """If a subclass does not implement do_post(), return a 405."""
-    self.check_bad_HTTP_method('do_post')
+    self.check_bad_HTTP_method('post')
 
   def test_do_patch(self):
     """If a subclass does not implement do_patch(), return a 405."""
-    self.check_bad_HTTP_method('do_patch')
+    self.check_bad_HTTP_method('patch')
 
   def test_do_delete(self):
     """If a subclass does not implement do_delete(), return a 405."""
-    self.check_bad_HTTP_method('do_delete')
+    self.check_bad_HTTP_method('delete')
 
   @mock.patch('framework.basehandlers.APIHandler.validate_token')
   def test_require_signed_in_and_xsrf_token__OK_body(self, mock_validate_token):
@@ -500,7 +506,7 @@ class FlaskHandlerTests(testing_config.CustomTestCase):
     """Every subsclass should overide get_template_data()."""
     self.handler = basehandlers.FlaskHandler()
     with self.assertRaises(NotImplementedError):
-      self.handler.get_template_data()
+      self.handler.validate_request_type('get')
 
   def test_get_template_path__missing(self):
     """Subsclasses that don't define TEMPLATE_PATH trigger error."""
@@ -518,6 +524,12 @@ class FlaskHandlerTests(testing_config.CustomTestCase):
     actual = self.handler.get_template_path(
         {'template_path': 'special.html'})
     self.assertEqual('special.html', actual)
+
+  def test_process_post_data__missing(self):
+    """Subsclasses that don't override process_post_data() give a 405."""
+    self.handler = basehandlers.FlaskHandler()
+    with self.assertRaises(werkzeug.exceptions.MethodNotAllowed):
+      self.handler.validate_request_type('post')
 
   def test_get_common_data__signed_out(self):
     """When user is signed out, offer sign in link."""
