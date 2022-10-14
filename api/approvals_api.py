@@ -63,6 +63,7 @@ class ApprovalsAPI(basehandlers.APIHandler):
 
     review_models.Approval.set_approval(
         feature_id, field_id, new_state, user.email())
+    approval_defs.set_vote(feature_id, field_id, new_state, user.email())
 
     all_approval_values = review_models.Approval.get_approvals(
         feature_id=feature_id, field_id=field_id)

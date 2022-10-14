@@ -83,6 +83,7 @@ class CommentsAPI(basehandlers.APIHandler):
         self.abort(403, msg='User is not an approver')
       Approval.set_approval(
           feature.key.integer_id(), gate_id, new_state, user.email())
+      approval_defs.set_vote(feature_id, gate_id, new_state, user.email())
 
     comment_content = self.get_param('comment', required=False)
 

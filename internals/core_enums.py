@@ -142,6 +142,11 @@ STAGE_DEP_REMOVE_CODE = 470
 # Note: This stage can ge added to any feature that is following any process.
 STAGE_ENT_ROLLOUT = 1061
 
+# Gate types
+GATE_PROTOTYPE = 1
+GATE_ORIGIN_TRIAL = 2
+GATE_EXTEND_ORIGIN_TRIAL = 3
+GATE_SHIP = 4
 
 # Prototype stage types for every feature type.
 STAGE_TYPES_PROTOTYPE = {
