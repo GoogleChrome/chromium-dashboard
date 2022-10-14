@@ -23,7 +23,7 @@ class PermissionsAPI(basehandlers.APIHandler):
   """Permissions determine whether a user can create, approve, 
   or edit any feature, or admin the site"""
 
-  def do_get(self):
+  def do_get(self, **kwargs):
     """Return the permissions and the email of the user."""
 
     # No user data if not signed in

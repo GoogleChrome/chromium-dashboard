@@ -266,9 +266,11 @@ class NotifyInactiveUsersHandler(basehandlers.FlaskHandler):
   INACTIVE_WARN_DAYS = 180
   EMAIL_TEMPLATE_PATH = 'inactive_user_email.html'
 
-  def get_template_data(self, now=None):
+  def get_template_data(self, **kwargs):
     """Notify any users that have been inactive for 6 months."""
     self.require_cron_header()
+    now = kwargs.get('now', datetime.now())
+
     users_to_notify = self._determine_users_to_notify(now)
     email_tasks = self._build_email_tasks(users_to_notify)
     send_emails(email_tasks)
@@ -328,7 +330,7 @@ class FeatureChangeHandler(basehandlers.FlaskHandler):
 
   IS_INTERNAL_HANDLER = True
 
-  def process_post_data(self):
+  def process_post_data(self, **kwargs):
     self.require_task_header()
 
     feature = self.get_param('feature')

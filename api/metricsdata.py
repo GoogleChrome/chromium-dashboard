@@ -68,7 +68,7 @@ class TimelineHandler(basehandlers.FlaskHandler):
           self.MODEL_CLASS.date >= datetime.datetime(2017, 10, 26))
     return query
 
-  def get_template_data(self):
+  def get_template_data(self, **kwargs):
     try:
       bucket_id = int(self.request.args.get('bucket_id'))
     except:
@@ -96,7 +96,7 @@ class PopularityTimelineHandler(TimelineHandler):
   CACHE_KEY = TimelineHandler.CACHE_PREFIX + 'css_pop_timeline'
   MODEL_CLASS = metrics_models.StableInstance
 
-  def get_template_data(self):
+  def get_template_data(self, **kwargs):
     return super(PopularityTimelineHandler, self).get_template_data()
 
 
@@ -105,7 +105,7 @@ class AnimatedTimelineHandler(TimelineHandler):
   CACHE_KEY = TimelineHandler.CACHE_PREFIX + 'css_animated_timeline'
   MODEL_CLASS = metrics_models.AnimatedProperty
 
-  def get_template_data(self):
+  def get_template_data(self, **kwargs):
     return super(AnimatedTimelineHandler, self).get_template_data()
 
 
@@ -114,7 +114,7 @@ class FeatureObserverTimelineHandler(TimelineHandler):
   CACHE_KEY = TimelineHandler.CACHE_PREFIX + 'featureob_timeline'
   MODEL_CLASS = metrics_models.FeatureObserver
 
-  def get_template_data(self):
+  def get_template_data(self, **kwargs):
     return super(FeatureObserverTimelineHandler, self).get_template_data()
 
 
@@ -166,7 +166,7 @@ class FeatureHandler(basehandlers.FlaskHandler):
     datapoints.sort(key=lambda x: x.day_percentage, reverse=True)
     return datapoints
 
-  def get_template_data(self):
+  def get_template_data(self, **kwargs):
     if self.MODEL_CLASS == metrics_models.FeatureObserver:
       properties = rediscache.get(self.CACHE_KEY)
 
@@ -195,7 +195,7 @@ class CSSPopularityHandler(FeatureHandler):
   MODEL_CLASS = metrics_models.StableInstance
   PROPERTY_CLASS = metrics_models.CssPropertyHistogram
 
-  def get_template_data(self):
+  def get_template_data(self, **kwargs):
     return super(CSSPopularityHandler, self).get_template_data()
 
 
@@ -205,7 +205,7 @@ class CSSAnimatedHandler(FeatureHandler):
   MODEL_CLASS = metrics_models.AnimatedProperty
   PROPERTY_CLASS = metrics_models.CssPropertyHistogram
 
-  def get_template_data(self):
+  def get_template_data(self, **kwargs):
     return super(CSSAnimatedHandler, self).get_template_data()
 
 
@@ -215,7 +215,7 @@ class FeatureObserverPopularityHandler(FeatureHandler):
   MODEL_CLASS = metrics_models.FeatureObserver
   PROPERTY_CLASS = metrics_models.FeatureObserverHistogram
 
-  def get_template_data(self):
+  def get_template_data(self, **kwargs):
     return super(FeatureObserverPopularityHandler, self).get_template_data()
 
 
@@ -223,7 +223,8 @@ class FeatureBucketsHandler(basehandlers.FlaskHandler):
   HTTP_CACHE_TYPE = 'private'
   JSONIFY = True
 
-  def get_template_data(self, prop_type):
+  def get_template_data(self, **kwargs):
+    prop_type = kwargs.get('prop_type', None)
     if prop_type == 'cssprops':
       properties = sorted(
           metrics_models.CssPropertyHistogram.get_all().items(),

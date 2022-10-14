@@ -22,7 +22,7 @@ class SettingsAPI(basehandlers.APIHandler):
   """Users can store their settings preferences such as whether to get
   notification from the features they starred."""
 
-  def do_post(self):
+  def do_post(self, **kwargs):
     """Set the user settings (currently only the notify_as_starrer)"""
     user_pref = user_models.UserPref.get_signed_in_user_pref()
     if not user_pref:
@@ -33,7 +33,7 @@ class SettingsAPI(basehandlers.APIHandler):
     # Callers don't use the JSON response for this API call.
     return {'message': 'Done'}
 
-  def do_get(self):
+  def do_get(self, **kwargs):
     """Return the user settings (currently only the notify_as_starrer)"""
     user_pref = user_models.UserPref.get_signed_in_user_pref()
     if not user_pref:

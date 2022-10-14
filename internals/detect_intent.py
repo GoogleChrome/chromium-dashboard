@@ -160,7 +160,7 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
 
   IS_INTERNAL_HANDLER = True
 
-  def process_post_data(self):
+  def process_post_data(self, **kwargs):
     self.require_task_header()
 
     from_addr = self.get_param('from_addr')

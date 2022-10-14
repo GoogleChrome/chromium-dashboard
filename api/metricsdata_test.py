@@ -133,14 +133,14 @@ class FeatureBucketsHandlerTest(testing_config.CustomTestCase):
 
   def test_get_template_data__css(self):
     with test_app.test_request_context('/data/blink/cssprops'):
-      actual_buckets = self.handler.get_template_data('cssprops')
+      actual_buckets = self.handler.get_template_data(prop_type='cssprops')
     self.assertEqual(
         [(2, 'a prop'), (1, 'b prop')],
         actual_buckets)
 
   def test_get_template_data__js(self):
     with test_app.test_request_context('/data/blink/features'):
-      actual_buckets = self.handler.get_template_data('features')
+      actual_buckets = self.handler.get_template_data(prop_type='features')
     self.assertEqual(
         [(4, 'a feat'), (3, 'b feat')],
         actual_buckets)

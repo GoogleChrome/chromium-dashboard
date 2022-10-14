@@ -32,7 +32,7 @@ import settings
 class FeatureCreateHandler(basehandlers.FlaskHandler):
 
   @permissions.require_create_feature
-  def process_post_data(self):
+  def process_post_data(self, **kwargs):
     owners = self.split_emails('owner')
     editors = self.split_emails('editors')
     cc_emails = self.split_emails('cc_recipients')
@@ -123,7 +123,9 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
     # See TODO at top of this method.
     return param_name in self.form
 
-  def process_post_data(self, feature_id: int, stage_id: int=0):
+  def process_post_data(self, **kwargs):
+    feature_id = kwargs.get('feature_id', None)
+    stage_id = kwargs.get('stage_id', 0)
     # Validate the user has edit permissions and redirect if needed.
     redirect_resp = permissions.validate_feature_edit_permission(
         self, feature_id)

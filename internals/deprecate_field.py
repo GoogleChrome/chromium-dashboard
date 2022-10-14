@@ -6,7 +6,7 @@ from internals.core_models import Feature
 
 class WriteStandardMaturityHandler(FlaskHandler):
 
-  def get_template_data(self):
+  def get_template_data(self, **kwargs):
     """Writes standard_maturity field from the old standardization field."""
     self.require_cron_header()
     q = Feature.query()

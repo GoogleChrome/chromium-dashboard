@@ -32,8 +32,11 @@ class IntentEmailPreviewHandler(basehandlers.FlaskHandler):
 
   TEMPLATE_PATH = 'admin/features/launch.html'
 
-  def get_template_data(self, feature_id=None, stage_id=None):
+  def get_template_data(self, **kwargs):
     # Validate the user has edit permissions and redirect if needed.
+    feature_id = kwargs.get('feature_id', None)
+    stage_id = kwargs.get('stage_id', None)
+
     redirect_resp = permissions.validate_feature_edit_permission(
         self, feature_id)
     if redirect_resp:

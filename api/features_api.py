@@ -63,8 +63,9 @@ class FeaturesAPI(basehandlers.APIHandler):
         'features': features_on_page,
         }
 
-  def do_get(self, feature_id: Optional[int]=None) -> dict:
+  def do_get(self, **kwargs) -> dict:
     """Handle GET requests for a single feature or a search."""
+    feature_id = kwargs.get('feature_id', None)
     if feature_id:
       return self.get_one_feature(feature_id)
     return self.do_search()
@@ -74,9 +75,10 @@ class FeaturesAPI(basehandlers.APIHandler):
   # TODO(jrobbins): do_patch
 
   @permissions.require_admin_site
-  def do_delete(self, feature_id: int) -> dict[str, str]:
+  def do_delete(self, **kwargs) -> dict[str, str]:
     """Delete the specified feature."""
     # TODO(jrobbins): implement undelete UI.  For now, use cloud console.
+    feature_id = kwargs.get('feature_id', None)
     feature = self.get_specified_feature(feature_id=feature_id)
     feature.deleted = True
     feature.put()

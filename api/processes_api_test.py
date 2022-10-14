@@ -42,7 +42,7 @@ class ProcessesAPITest(testing_config.CustomTestCase):
   def test_get__default_feature_type(self):
     """We can get process for features with the default feature type (New feature incubation)."""
     with test_app.test_request_context(self.request_path):
-      actual = self.handler.do_get(self.feature_id)
+      actual = self.handler.do_get(feature_id=self.feature_id)
     expected = processes.process_to_dict(processes.BLINK_LAUNCH_PROCESS)
     self.assertEqual(expected, actual)
 
@@ -50,7 +50,7 @@ class ProcessesAPITest(testing_config.CustomTestCase):
     """We can get process for features with feature type 0 (New feature incubation)."""
     self.feature_1.feature_type = 0
     with test_app.test_request_context(self.request_path):
-      actual = self.handler.do_get(self.feature_id)
+      actual = self.handler.do_get(feature_id=self.feature_id)
     expected = processes.process_to_dict(processes.BLINK_LAUNCH_PROCESS)
     self.assertEqual(expected, actual)
 
@@ -58,7 +58,7 @@ class ProcessesAPITest(testing_config.CustomTestCase):
     """We can get process for features with feature type 1 (Existing feature implementation)."""
     self.feature_1.feature_type = 1
     with test_app.test_request_context(self.request_path):
-      actual = self.handler.do_get(self.feature_id)
+      actual = self.handler.do_get(feature_id=self.feature_id)
     expected = processes.process_to_dict(processes.BLINK_FAST_TRACK_PROCESS)
     self.assertEqual(expected, actual)
 
@@ -66,7 +66,7 @@ class ProcessesAPITest(testing_config.CustomTestCase):
     """We can get process for features with feature type 2 (Web developer facing change to existing code)."""
     self.feature_1.feature_type = 2
     with test_app.test_request_context(self.request_path):
-      actual = self.handler.do_get(self.feature_id)
+      actual = self.handler.do_get(feature_id=self.feature_id)
     expected = processes.process_to_dict(processes.PSA_ONLY_PROCESS)
     self.assertEqual(expected, actual)
 
@@ -74,7 +74,7 @@ class ProcessesAPITest(testing_config.CustomTestCase):
     """We can get process for features with feature type 3 (Feature deprecation)."""
     self.feature_1.feature_type = 3
     with test_app.test_request_context(self.request_path):
-      actual = self.handler.do_get(self.feature_id)
+      actual = self.handler.do_get(feature_id=self.feature_id)
     expected = processes.process_to_dict(processes.DEPRECATION_PROCESS)
     self.assertEqual(expected, actual)
 
@@ -102,7 +102,7 @@ class ProgressAPITest(testing_config.CustomTestCase):
   def test_get___feature_progress(self):
     """We can get progress of a feature."""
     with test_app.test_request_context(self.request_path):
-      actual = self.handler.do_get(self.feature_id)
+      actual = self.handler.do_get(feature_id=self.feature_id)
 
     self.maxDiff = None
     self.assertEqual({

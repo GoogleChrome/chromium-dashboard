@@ -22,6 +22,6 @@ class BlinkComponentsAPI(basehandlers.APIHandler):
   """The list of blink components populates the "Blink component" select field
   in the guide form"""
 
-  def do_get(self):
+  def do_get(self, **kwargs):
     """Returns a dict with blink components as both keys and values."""
     return {x: [x, x] for x in user_models.BlinkComponent.fetch_all_components()}
