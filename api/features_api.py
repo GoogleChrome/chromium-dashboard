@@ -63,7 +63,7 @@ class FeaturesAPI(basehandlers.APIHandler):
         'features': features_on_page,
         }
 
-  def do_get(self, **kwargs) -> dict:
+  def do_get(self, **kwargs) -> dict[str, Any]:
     """Handle GET requests for a single feature or a search."""
     feature_id = kwargs.get('feature_id', None)
     if feature_id:
