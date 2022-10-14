@@ -80,11 +80,11 @@ limitations under the License.
 
   <script src="https://www.googletagmanager.com/gtag/js?id=UA-179341418-1" async nonce="{{nonce}}"></script>
 
-  {% comment %}
+  {#
   Note that the following script tag must include type="module" so that the form field event listeners
   attached by shared.min.js will not be attached until after Shoelace event listeners are attached.
   See https://github.com/GoogleChrome/chromium-dashboard/issues/2014
-  {% endcomment %}
+  #}
   <script type="module" nonce="{{nonce}}" src="/static/js/shared.min.js?v={{app_version}}"></script>
 </body>
 

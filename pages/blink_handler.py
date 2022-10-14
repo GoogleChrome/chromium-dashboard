@@ -61,7 +61,7 @@ class BlinkHandler(basehandlers.FlaskHandler):
     possible_subscribers = user_models.FeatureOwner.query().order(
         user_models.FeatureOwner.name).fetch(None)
 
-    # Format for django template
+    # Format for template
     possible_subscriber_dicts = [
         {'id': fo.key.integer_id(), 'email': fo.email}
         for fo in possible_subscribers]

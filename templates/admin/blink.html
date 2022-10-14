@@ -28,7 +28,7 @@
 
 <section>
 
-{% comment %}
+{#
 <!--<p>Start typing a component name:</p>
 <input list="components" name="components" placeholder="{{components.0}}>Animation"></label>
 <datalist id="components">
@@ -44,7 +44,7 @@
     {% endfor %}
   </select>
 </template>-->
-{% endcomment %}
+#}
 
 <ul id="components_list">
   {% for c in components %}
@@ -59,7 +59,7 @@
       <div class="owners_list layout horizontal center">
         <div>
           <div class="column_header">Receives email updates:</div>
-          <select multiple disabled id="owner_list_{{forloop.counter}}" size="{{c.computed_subscribers|length}}">
+          <select multiple disabled id="owner_list_{{loop.index}}" size="{{c.computed_subscribers|length}}">
             {% for s in c.computed_subscribers %}
               <option class="owner_name {% if s.name in c.computed_owners %}component_owner{% endif %}"
                       value="{{s.id}}">{{s.name}}: {{s.email}}</option>
@@ -76,9 +76,9 @@
             </select><br>
             <label title="Toggles the user as an owner. If you click 'Remove' ans this is not checked, the user is removed from the component.">Owner? <input type="checkbox" class="is_primary_checkbox"></label>
           </div>
-          <button class="add_owner_button" data-index="{{forloop.counter}}"
+          <button class="add_owner_button" data-index="{{loop.index}}"
                   data-component-name="{{c.name}}">Add</button>
-          <button class="remove_owner_button" data-index="{{forloop.counter}}"
+          <button class="remove_owner_button" data-index="{{loop.index}}"
                   data-component-name="{{c.name}}">Remove</button>
         </div>
       </div>

@@ -9,10 +9,10 @@
   {{feature.name}}
 </div>
 
-{% comment %}
+{#
   Insted of vertical margins, <br> elements are used to create line breaks
   that can be copied and pasted into a text editor.
-{% endcomment %}
+#}
 
 <p>Body
   <span class="tooltip copy-text" style="float:right"
@@ -29,14 +29,14 @@
   <h4>Contact emails</h4>
   {% if not feature.browsers.chrome.owners %}None{% endif %}
   {% for owner in feature.browsers.chrome.owners %}
-    <a href="mailto:{{owner}}">{% if forloop.last %}{{owner}}</a>{% else %}{{owner}}</a>,{% endif %}
+    <a href="mailto:{{owner}}">{% if loop.last %}{{owner}}</a>{% else %}{{owner}}</a>,{% endif %}
   {% endfor %}
 
   {% if feature.explainer_links or feature.feature_type_int != 2 %}
     <br><br><h4>Explainer</h4>
     {% if not feature.explainer_links %}None{% endif %}
     {% for link in feature.explainer_links %}
-      {% if forloop.counter0 %}<br>{% endif %}<a href="{{link}}">{{link}}</a>
+      {% if loop.index0 %}<br>{% endif %}<a href="{{link}}">{{link}}</a>
     {% endfor %}
   {% endif %}
 
@@ -69,7 +69,7 @@
   {% if feature.tags %}
     <br><br><h4>Search tags</h4>
     {% for tag in feature.tags %}
-      <a href="/features#tags:{{tag}}">{{tag}}</a>{% if not forloop.last %}, {% endif %}
+      <a href="/features#tags:{{tag}}">{{tag}}</a>{% if not loop.last %}, {% endif %}
     {% endfor %}
 
   {% endif %}
@@ -232,7 +232,7 @@
 
 
 <br><br><h4>Estimated milestones</h4>
-{% include "../estimated-milestones-table.html" %}
+{% include "estimated-milestones-table.html" %}
 
 
 {% if 'anticipated_spec_changes' in sections_to_show or feature.anticipated_spec_changes %}

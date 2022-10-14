@@ -1,6 +1,5 @@
 {% extends "_base.html" %}
 
-{% load cache %}
 
 {% block rss %}
   <link rel="alternate" type="application/rss+xml" href="/features.xml" title="All features" />
@@ -14,10 +13,8 @@
   <div id="column-container">
     <div id="drawer-column">
       <h3>Filter By</h3>
-      {% cache TEMPLATE_CACHE_TIME chromedashmetadata %}
         <!-- Use single quote here. The value is a json string with double quote. -->
         <chromedash-metadata implstatuses='{{IMPLEMENTATION_STATUSES|safe}}'></chromedash-metadata>
-      {% endcache %}
     </div>
     <div id="content-column">
       <div id="subheader">

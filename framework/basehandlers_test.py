@@ -30,6 +30,9 @@ from internals import user_models
 import settings
 
 
+test_app = flask.Flask(__name__,
+  template_folder=settings.get_flask_template_path())
+
 class TestableFlaskHandler(basehandlers.FlaskHandler):
 
   TEMPLATE_PATH = 'test_template.html'
@@ -577,7 +580,8 @@ class FlaskHandlerTests(testing_config.CustomTestCase):
 
   def test_render(self):
     """We can render a simple template to a string."""
-    actual = self.handler.render({'name': 'literal'}, 'test_template.html')
+    with test_app.app_context():
+      actual = self.handler.render({'name': 'literal'}, 'test_template.html')
     self.assertIn('Hi literal', actual)
 
   def test_get__remove_www(self):

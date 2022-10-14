@@ -23,7 +23,7 @@ import traceback
 from framework import users
 import settings
 
-from django.utils import feedgenerator
+from feedgenerator.django.utils import feedgenerator
 
 
 def normalized_name(val):
