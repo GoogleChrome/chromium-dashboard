@@ -160,7 +160,8 @@ def is_resolved(approval_values, field_id):
 
   return False
 
-def set_vote(feature_id, gate_id, new_state, set_by_email):
+def set_vote(
+    feature_id: int, gate_id: int, new_state: int, set_by_email: str) -> None:
   """Add or update an approval value."""
   if not Vote.is_valid_state(new_state):
     raise ValueError('Invalid approval state')
