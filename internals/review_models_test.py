@@ -18,7 +18,7 @@ import datetime
 from unittest import mock
 from framework import users
 
-from internals import core_models
+from internals import approval_defs, core_models
 from internals.review_models import Activity, Approval, Gate, OwnersFile, Vote
 
 
@@ -35,17 +35,6 @@ class ApprovalTest(testing_config.CustomTestCase):
         set_on=datetime.datetime.now() - datetime.timedelta(1),
         set_by='one@example.com')
     self.appr_1.put()
-
-    # Approval 1 has already been migrated to a Vote entity with Gate.
-    self.gate_1 = Gate(feature_id=self.feature_1_id, stage_id=1,
-        gate_type=2, state=Vote.NA)
-    self.gate_1.put()
-    self.vote_1 = Vote(id=self.appr_1.key.integer_id(),
-        feature_id=self.feature_1_id, gate_id=1,
-        state=Vote.REVIEW_REQUESTED,
-        set_on=datetime.datetime.now() - datetime.timedelta(1),
-        set_by='one@example.com')
-    self.vote_1.put()
 
     self.appr_2 = Approval(
         feature_id=self.feature_1_id, field_id=1,
@@ -108,9 +97,6 @@ class ApprovalTest(testing_config.CustomTestCase):
     self.assertEqual(
         4,
         len(Approval.query().fetch(None)))
-    
-    # Check that the Vote entity was also created.
-    self.assertEqual(2, len(Vote.query().fetch()))
 
   def test_clear_request(self):
     """We can clear a review request so that it is no longer pending."""
@@ -123,13 +109,6 @@ class ApprovalTest(testing_config.CustomTestCase):
         feature_id=self.feature_1_id, field_id=1,
         states=[Approval.REVIEW_REQUESTED])
     self.assertEqual([], remaining_apprs)
-
-    # Ensure that Vote entities are also deleted.
-    remaining_votes = Vote.get_votes(
-        feature_id=self.feature_1_id, gate_id=1,
-        states=[Approval.REVIEW_REQUESTED])
-    self.assertEqual([], remaining_votes)
-
 
 class CommentTest(testing_config.CustomTestCase):
 
@@ -265,13 +244,13 @@ class GateTest(testing_config.CustomTestCase):
   def test_update_approval_stage__needs_update(self):
     """Gate's approval state will updated based on votes."""
     # Gate 1 should evaluate to not approved after updating.
-    self.assertEqual(self.gate_1.update_approval_state(), 6)
+    self.assertEqual(approval_defs.update_gate_approval_state(self.gate_1), 6)
     self.assertEqual(self.gate_1.state, 6)
 
   def test_update_approval_state__no_change(self):
     """Gate's approval state does not change unless it needs to."""
     # Gate 2 is already marked as approved and should not change.
-    self.assertEqual(self.gate_2.update_approval_state(), 5)
+    self.assertEqual(approval_defs.update_gate_approval_state(self.gate_2), 5)
     self.assertEqual(self.gate_2.state, 5)
 
 

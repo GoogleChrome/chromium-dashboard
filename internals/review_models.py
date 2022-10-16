@@ -21,8 +21,6 @@ import logging
 from typing import Optional
 from google.cloud import ndb
 
-from internals import core_enums
-
 
 class Approval(ndb.Model):
   """Describes the current state of one approval on a feature."""
@@ -99,17 +97,6 @@ class Approval(ndb.Model):
         set_on=now, set_by=set_by_email)
     new_appr.put()
     logging.info('new_appr is %r', new_appr.key.integer_id())
-
-    # Also write Vote entity.
-    # TODO(danielrsmith): As of today, there is only 1 gate per
-    # gate type and feature. Passing the gate ID will be required when adding
-    # UI functionality for multiple versions of the same stage/gate.
-    gates: list[Gate] = Gate.query(
-        Gate.feature_id == feature_id, Gate.gate_type == field_id).fetch()
-    print(gates)
-    if len(gates) > 0:
-      Vote.set_vote(
-          feature_id, gates[0].key.integer_id(), new_state, set_by_email)
 
   @classmethod
   def clear_request(cls, feature_id, field_id):
