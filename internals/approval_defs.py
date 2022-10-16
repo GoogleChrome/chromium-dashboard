@@ -174,12 +174,10 @@ def set_vote(
     existing.set_on = now
     existing.state = new_state
     existing.put()
-    return
-
-  new_vote = Vote(
-      feature_id=feature_id, gate_id=gate_id, state=new_state,
-      set_on=now, set_by=set_by_email)
-  new_vote.put()
+  else:
+    new_vote = Vote(feature_id=feature_id, gate_id=gate_id, state=new_state,
+        set_on=now, set_by=set_by_email)
+    new_vote.put()
 
   # TODO(danielrsmith): As of today, there is only 1 gate per
   # gate type and feature. Passing the gate ID will be required when adding
@@ -203,7 +201,7 @@ def _calc_gate_status(gate: Gate) -> int:
   if ((afd.rule == ONE_LGTM and approvals >= 1) or
       (afd.rule == THREE_LGTM and approvals >= 3)):
     return Vote.APPROVED
-  return Vote.NA
+  return gate.state
 
 def update_gate_approval_state(gate: Gate) -> int:
   """Change the Gate state if it has changed."""
