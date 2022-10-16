@@ -21,7 +21,6 @@ from framework import basehandlers
 from framework import permissions
 from framework import users
 from internals import approval_defs
-from internals import core_enums
 from internals import core_models
 from internals import review_models
 

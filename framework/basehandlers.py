@@ -34,7 +34,6 @@ from framework import users
 from framework import utils
 from framework import xsrf
 from internals import approval_defs
-from internals import core_enums
 from internals import core_models
 from internals import user_models
 

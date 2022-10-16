@@ -17,7 +17,6 @@
 from framework import basehandlers
 from framework import permissions
 from internals import approval_defs
-from internals import core_enums
 
 
 class PermissionsAPI(basehandlers.APIHandler):
