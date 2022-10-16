@@ -45,7 +45,7 @@ class CommentsAPI(basehandlers.APIHandler):
     """Check whether a comment should be visible to the user."""
     return comment.deleted_by is None or email == comment.deleted_by or is_admin
 
-  def do_get(self, **kwargs) -> dict[str, dict[str, Any]]:
+  def do_get(self, **kwargs) -> dict[str, list[str, Any]]:
     feature_id = kwargs['feature_id']
     field_id = kwargs.get('field_id', None)
     """Return a list of all review comments on the given feature."""
