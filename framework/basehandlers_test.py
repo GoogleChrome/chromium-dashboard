@@ -371,29 +371,28 @@ class APIHandlerTests(testing_config.CustomTestCase):
     self.assertIn(json.dumps(handler_data), actual_sent_text)
 
   @mock.patch('flask.abort')
-  def check_bad_HTTP_method(self, request_type, mock_abort):
+  def check_bad_HTTP_method(self, handler_method, mock_abort):
     mock_abort.side_effect = werkzeug.exceptions.MethodNotAllowed
 
     with self.assertRaises(mock_abort.side_effect):
-      self.handler.validate_request_type(request_type)
+      handler_method()
     mock_abort.assert_called_once_with(405, valid_methods=['GET'])
 
-  def test_do_get(self):
-    """If a subclass does not implement do_get(), raise NotImplementedError."""
-    with self.assertRaises(NotImplementedError):
-      self.handler.validate_request_type('get')
+    # Extra URL parameters do not crash the app.
+    with self.assertRaises(mock_abort.side_effect):
+      handler_method(feature_id=1234)
 
   def test_do_post(self):
     """If a subclass does not implement do_post(), return a 405."""
-    self.check_bad_HTTP_method('post')
+    self.check_bad_HTTP_method(self.handler.do_post)
 
   def test_do_patch(self):
     """If a subclass does not implement do_patch(), return a 405."""
-    self.check_bad_HTTP_method('patch')
+    self.check_bad_HTTP_method(self.handler.do_patch)
 
   def test_do_delete(self):
     """If a subclass does not implement do_delete(), return a 405."""
-    self.check_bad_HTTP_method('delete')
+    self.check_bad_HTTP_method(self.handler.do_delete)
 
   @mock.patch('framework.basehandlers.APIHandler.validate_token')
   def test_require_signed_in_and_xsrf_token__OK_body(self, mock_validate_token):
@@ -503,19 +502,19 @@ class FlaskHandlerTests(testing_config.CustomTestCase):
         actual)
 
   def test_get_template_data__missing(self):
-    """Every subsclass should overide get_template_data()."""
+    """Every subclass should overide get_template_data()."""
     self.handler = basehandlers.FlaskHandler()
     with self.assertRaises(NotImplementedError):
-      self.handler.validate_request_type('get')
+      self.handler.get_template_data()
 
   def test_get_template_path__missing(self):
-    """Subsclasses that don't define TEMPLATE_PATH trigger error."""
+    """Subclasses that don't define TEMPLATE_PATH trigger error."""
     self.handler = basehandlers.FlaskHandler()
     with self.assertRaises(ValueError):
       self.handler.get_template_path({})
 
   def test_get_template_path__specified_in_class(self):
-    """Subsclasses can define TEMPLATE_PATH."""
+    """Subclasses can define TEMPLATE_PATH."""
     actual = self.handler.get_template_path({})
     self.assertEqual('test_template.html', actual)
 
@@ -526,10 +525,10 @@ class FlaskHandlerTests(testing_config.CustomTestCase):
     self.assertEqual('special.html', actual)
 
   def test_process_post_data__missing(self):
-    """Subsclasses that don't override process_post_data() give a 405."""
+    """Subclasses that don't override process_post_data() give a 405."""
     self.handler = basehandlers.FlaskHandler()
     with self.assertRaises(werkzeug.exceptions.MethodNotAllowed):
-      self.handler.validate_request_type('post')
+      self.handler.process_post_data()
 
   def test_get_common_data__signed_out(self):
     """When user is signed out, offer sign in link."""

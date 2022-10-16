@@ -235,26 +235,22 @@ class APIHandler(BaseHandler):
     except xsrf.TokenIncorrect:
       self.abort(400, msg='Invalid XSRF token')
 
-  def _get_valid_methods(self) -> list[str]:
-    """For 405 responses, list methods the concrete handler implements."""
-    valid_methods = ['GET']
-    if hasattr(self, 'do_post'):
-      valid_methods.append('POST')
-    if hasattr(self, 'do_patch'):
-      valid_methods.append('PATCH')
-    if hasattr(self, 'do_delete'):
-      valid_methods.append('DELETE')
-    return valid_methods
+  def do_get(self, **kwargs):
+    """Subclasses should implement this method to handle a GET request."""
+    # Every API handler must handle GET.
+    raise NotImplementedError()
 
-  def validate_request_type(self, request_type: str) -> None:
-    """Check that the request type is valid."""
-    # Subclasses should implement do_{type} to handle that request type.
-    if not hasattr(self, f'do_{request_type}'):
-      if request_type == 'get':
-        raise NotImplementedError()
-      else:
-        self.abort(405, valid_methods=self._get_valid_methods())
+  def do_post(self, **kwargs):
+    """Subclasses should implement this method to handle a POST request."""
+    self.abort(405, valid_methods=self._get_valid_methods())
 
+  def do_patch(self, **kwargs):
+    """Subclasses should implement this method to handle a PATCH request."""
+    self.abort(405, valid_methods=self._get_valid_methods())
+
+  def do_delete(self, **kwargs):
+    """Subclasses should implement this method to handle a DELETE request."""
+    self.abort(405, valid_methods=self._get_valid_methods())
 class FlaskHandler(BaseHandler):
 
   TEMPLATE_PATH: Optional[str] = None  # Subclasses should define this.
