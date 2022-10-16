@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from abc import abstractmethod
 from datetime import datetime
 import json
 import logging
@@ -188,6 +187,13 @@ class APIHandler(BaseHandler):
     handler_data = self.do_patch(*args, **kwargs)
     return self.defensive_jsonify(handler_data), headers
 
+  def delete(self, *args, **kwargs):
+    """Handle an incoming HTTP DELETE request."""
+    self.require_signed_in_and_xsrf_token()
+    headers = self.get_headers()
+    handler_data = self.do_delete(*args, **kwargs)
+    return self.defensive_jsonify(handler_data), headers
+
   def _get_valid_methods(self):
     """For 405 responses, list methods the concrete handler implements."""
     valid_methods = ['GET']
@@ -198,13 +204,6 @@ class APIHandler(BaseHandler):
     if self.do_delete.__code__ is not APIHandler.do_delete.__code__:
       valid_methods.append('DELETE')
     return valid_methods
-
-  def delete(self, *args, **kwargs):
-    """Handle an incoming HTTP DELETE request."""
-    self.require_signed_in_and_xsrf_token()
-    headers = self.get_headers()
-    handler_data = self.do_delete(*args, **kwargs)
-    return self.defensive_jsonify(handler_data), headers
 
   def _update_last_visit_field(self, email):
     """Updates the AppUser last_visit field to log the user's last visit"""
@@ -218,6 +217,23 @@ class APIHandler(BaseHandler):
       app_user.notified_inactive = False
     app_user.put()
     return True
+
+  def do_get(self, **kwargs):
+    """Subclasses should implement this method to handle a GET request."""
+    # Every API handler must handle GET.
+    raise NotImplementedError()
+
+  def do_post(self, **kwargs):
+    """Subclasses should implement this method to handle a POST request."""
+    self.abort(405, valid_methods=self._get_valid_methods())
+
+  def do_patch(self, **kwargs):
+    """Subclasses should implement this method to handle a PATCH request."""
+    self.abort(405, valid_methods=self._get_valid_methods())
+
+  def do_delete(self, **kwargs):
+    """Subclasses should implement this method to handle a DELETE request."""
+    self.abort(405, valid_methods=self._get_valid_methods())
 
   def validate_token(self, token, email):
     """If the token is not valid, raise an exception."""
@@ -242,22 +258,7 @@ class APIHandler(BaseHandler):
     except xsrf.TokenIncorrect:
       self.abort(400, msg='Invalid XSRF token')
 
-  def do_get(self, **kwargs):
-    """Subclasses should implement this method to handle a GET request."""
-    # Every API handler must handle GET.
-    raise NotImplementedError()
 
-  def do_post(self, **kwargs):
-    """Subclasses should implement this method to handle a POST request."""
-    self.abort(405, valid_methods=self._get_valid_methods())
-
-  def do_patch(self, **kwargs):
-    """Subclasses should implement this method to handle a PATCH request."""
-    self.abort(405, valid_methods=self._get_valid_methods())
-
-  def do_delete(self, **kwargs):
-    """Subclasses should implement this method to handle a DELETE request."""
-    self.abort(405, valid_methods=self._get_valid_methods())
 class FlaskHandler(BaseHandler):
 
   TEMPLATE_PATH: Optional[str] = None  # Subclasses should define this.
