@@ -163,14 +163,12 @@ class APIHandler(BaseHandler):
 
   def get(self, *args, **kwargs):
     """Handle an incoming HTTP GET request."""
-    self.validate_request_type('get')
     headers = self.get_headers()
     handler_data = self.do_get(*args, **kwargs)
     return self.defensive_jsonify(handler_data), headers
 
   def post(self, *args, **kwargs):
     """Handle an incoming HTTP POST request."""
-    self.validate_request_type('post')
     json_body = self.request.get_json(force=True, silent=True) or {}
     logging.info('POST data is:')
     for k, v in json_body.items():
@@ -186,15 +184,24 @@ class APIHandler(BaseHandler):
   def patch(self, *args, **kwargs):
     """Handle an incoming HTTP PATCH request."""
     self.require_signed_in_and_xsrf_token()
-    self.validate_request_type('patch')
     headers = self.get_headers()
     handler_data = self.do_patch(*args, **kwargs)
     return self.defensive_jsonify(handler_data), headers
 
+  def _get_valid_methods(self):
+    """For 405 responses, list methods the concrete handler implements."""
+    valid_methods = ['GET']
+    if self.do_post.__code__ is not APIHandler.do_post.__code__:
+      valid_methods.append('POST')
+    if self.do_patch.__code__ is not APIHandler.do_patch.__code__:
+      valid_methods.append('PATCH')
+    if self.do_delete.__code__ is not APIHandler.do_delete.__code__:
+      valid_methods.append('DELETE')
+    return valid_methods
+
   def delete(self, *args, **kwargs):
     """Handle an incoming HTTP DELETE request."""
     self.require_signed_in_and_xsrf_token()
-    self.validate_request_type('delete')
     headers = self.get_headers()
     handler_data = self.do_delete(*args, **kwargs)
     return self.defensive_jsonify(handler_data), headers
@@ -347,7 +354,6 @@ class FlaskHandler(BaseHandler):
       location = self.request.url.replace('www.', '', 1)
       logging.info('Striping www and redirecting to %r', location)
       return self.redirect(location)
-    self.validate_request_type('get')
     handler_data = self.get_template_data(*args, **kwargs)
     users.refresh_user_session()
 
@@ -373,7 +379,6 @@ class FlaskHandler(BaseHandler):
   def post(self, *args, **kwargs):
     """POST handlers return a string, JSON, or a redirect."""
     self.require_xsrf_token()
-    self.validate_request_type('post')
     handler_data = self.process_post_data(*args, **kwargs)
     headers = self.get_headers()
 
@@ -474,16 +479,6 @@ class FlaskHandler(BaseHandler):
       param = int(param)
     return param
 
-  def validate_request_type(self, request_type: str) -> None:
-    """Validate that the request type can be handled."""
-    # Subclasses should always implement get_template_data
-    # to handle GET requests.
-    if request_type == 'get' and not hasattr(self, 'get_template_data'):
-      raise NotImplementedError()
-    # Subclasses should implement process_post_data
-    # to handle POST requests if it is needed.
-    if request_type == 'post' and not hasattr(self, 'process_post_data'):
-      self.abort(405, msg='Unexpected HTTP method', valid_methods=['GET'])
 
 class Redirector(FlaskHandler):
   """Reusable handler that always redirects.

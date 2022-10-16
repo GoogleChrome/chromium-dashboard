@@ -45,9 +45,9 @@ class CommentsAPI(basehandlers.APIHandler):
     return comment.deleted_by is None or email == comment.deleted_by or is_admin
 
   def do_get(self, **kwargs) -> dict[str, list[dict[str, Any]]]:
+    """Return a list of all review comments on the given feature."""
     feature_id = kwargs['feature_id']
     field_id = kwargs.get('field_id', None)
-    """Return a list of all review comments on the given feature."""
     # Note: We assume that anyone may view approval comments.
     comments = Activity.get_activities(
         feature_id, field_id, comments_only=True)
