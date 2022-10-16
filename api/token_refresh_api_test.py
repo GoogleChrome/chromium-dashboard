@@ -42,7 +42,9 @@ class TokenRefreshAPITest(testing_config.CustomTestCase):
 
   def test_do_get(self):
     """This handler does not respond to GET requests."""
-    self.assertFalse(hasattr(self.handler, 'do_get'))
+    with test_app.test_request_context(self.request_path):
+      with self.assertRaises(NotImplementedError):
+        self.handler.do_get()
 
   def test_post__anon(self):
     """We reject token requests from signed out users."""
