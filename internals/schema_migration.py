@@ -58,7 +58,7 @@ def handle_migration(original_cls, new_cls, kwarg_mapping,
 
 class MigrateCommentsToActivities(FlaskHandler):
 
-  def get_template_data(self):
+  def get_template_data(self, **kwargs):
     """Writes an Activity entity for each unmigrated Comment entity."""
     self.require_cron_header()
 
@@ -97,7 +97,7 @@ class MigrateCommentsToActivities(FlaskHandler):
 
 class MigrateEntities(FlaskHandler):
 
-  def get_template_data(self):
+  def get_template_data(self, **kwargs):
     """Write FeatureEntry, Stage, Gate, and Vote entities"""
     self.require_cron_header()
 

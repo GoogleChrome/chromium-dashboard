@@ -73,7 +73,7 @@ class AbstractReminderHandler(basehandlers.FlaskHandler):
   FUTURE_MILESTONES_TO_CONSIDER = 0
   MILESTONE_FIELDS = None  # Subclasses must override
 
-  def get_template_data(self):
+  def get_template_data(self, **kwargs):
     """Sends notifications to users requesting feature updates for accuracy."""
     self.require_cron_header()
     current_milestone_info = get_current_milestone_info(self.ANCHOR_CHANNEL)

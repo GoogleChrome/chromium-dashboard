@@ -55,7 +55,7 @@ class BlinkHandler(basehandlers.FlaskHandler):
     return True
 
   @permissions.require_admin_site
-  def get_template_data(self):
+  def get_template_data(self, **kwargs):
     components = user_models.BlinkComponent.query().order(
         user_models.BlinkComponent.name).fetch(None)
     possible_subscribers = user_models.FeatureOwner.query().order(
@@ -95,7 +95,7 @@ class BlinkHandler(basehandlers.FlaskHandler):
 
   # Add user to component subscribers.
   @permissions.require_admin_site
-  def process_post_data(self):
+  def process_post_data(self, **kwargs):
     params = self.request.get_json(force=True)
     self.__update_subscribers_list(True, user_id=params.get('userId'),
                                    blink_component=params.get('componentName'),
@@ -108,7 +108,7 @@ class SubscribersHandler(basehandlers.FlaskHandler):
   TEMPLATE_PATH = 'admin/subscribers.html'
 
   @permissions.require_admin_site
-  def get_template_data(self):
+  def get_template_data(self, **kwargs):
     users = user_models.FeatureOwner.query().order(
         user_models.FeatureOwner.name).fetch(None)
     feature_list = core_models.Feature.get_chronological()

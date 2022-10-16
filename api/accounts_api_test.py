@@ -160,7 +160,7 @@ class AccountsAPITest(testing_config.CustomTestCase):
     testing_config.sign_in('admin@example.com', 123567890)
 
     with test_app.test_request_context(self.request_path):
-      actual_json = self.handler.do_delete(self.appuser_id)
+      actual_json = self.handler.do_delete(account_id=self.appuser_id)
     self.assertEqual({'message': 'Done'}, actual_json)
 
     revised_appuser = user_models.AppUser.get_by_id(self.appuser_id)
@@ -172,7 +172,7 @@ class AccountsAPITest(testing_config.CustomTestCase):
 
     with test_app.test_request_context(self.request_path):
       with self.assertRaises(werkzeug.exceptions.Forbidden):
-        self.handler.do_delete(self.appuser_id)
+        self.handler.do_delete(account_id=self.appuser_id)
 
     unrevised_appuser = user_models.AppUser.get_by_id(self.appuser_id)
     self.assertEqual('user@example.com', unrevised_appuser.email)
@@ -183,7 +183,7 @@ class AccountsAPITest(testing_config.CustomTestCase):
 
     with test_app.test_request_context(self.request_path):
       with self.assertRaises(werkzeug.exceptions.BadRequest):
-        self.handler.do_delete(None)
+        self.handler.do_delete()
 
     unrevised_appuser = user_models.AppUser.get_by_id(self.appuser_id)
     self.assertEqual('user@example.com', unrevised_appuser.email)
@@ -195,7 +195,7 @@ class AccountsAPITest(testing_config.CustomTestCase):
 
     with test_app.test_request_context(self.request_path):
       with self.assertRaises(werkzeug.exceptions.NotFound):
-        self.handler.do_delete(self.appuser_id + 1)
+        self.handler.do_delete(account_id=self.appuser_id + 1)
 
     unrevised_appuser = user_models.AppUser.get_by_id(self.appuser_id)
     self.assertEqual('user@example.com', unrevised_appuser.email)

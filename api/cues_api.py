@@ -31,7 +31,7 @@ class CuesAPI(basehandlers.APIHandler):
   # Note: there is no do_get yet because we decide to show cues
   # based on data that is include in the HTML page.
 
-  def do_post(self):
+  def do_post(self, **kwargs):
     """Dismisses a cue card for the signed in user."""
     cue = self.get_param('cue', allowed=ALLOWED_CUES)
     unused_user = self.get_current_user(required=True)
@@ -40,7 +40,7 @@ class CuesAPI(basehandlers.APIHandler):
     # Callers don't use the JSON response for this API call.
     return {'message': 'Done'}
 
-  def do_get(self):
+  def do_get(self, **kwargs):
     """Return a list of the dismissed cue cards"""
     user_pref = user_models.UserPref.get_signed_in_user_pref()
 

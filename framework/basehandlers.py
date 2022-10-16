@@ -286,7 +286,7 @@ class FlaskHandler(BaseHandler):
     headers.update(self.get_cache_headers())
     return headers
 
-  def get_template_data(self):
+  def get_template_data(self, **kwargs):
     """Subclasses should implement this method to handle a GET request."""
     raise NotImplementedError()
 
@@ -300,7 +300,7 @@ class FlaskHandler(BaseHandler):
         'No TEMPLATE_PATH was defined in %r or returned in template_data.' %
         self.__class__.__name__)
 
-  def process_post_data(self):
+  def process_post_data(self, **kwargs):
     """Subclasses should implement this method to handle a POST request."""
     self.abort(405, msg='Unexpected HTTP method', valid_methods=['GET'])
 
@@ -486,7 +486,8 @@ class Redirector(FlaskHandler):
      Specify the location in the third part of a routing rule using:
      {'location': '/path/to/page'}."""
 
-  def get_template_data(self, location='/'):
+  def get_template_data(self, **kwargs):
+    location = kwargs['location'] if 'location' in kwargs else '/'
     return flask.redirect(location), self.get_headers()
 
 

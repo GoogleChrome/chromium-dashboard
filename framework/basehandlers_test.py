@@ -46,7 +46,8 @@ class TestableFlaskHandler(basehandlers.FlaskHandler):
       template_data['status'] = special_status
     return template_data
 
-  def process_post_data(self, redirect_to=None):
+  def process_post_data(self, **kwargs):
+    redirect_to = kwargs.get('redirect_to', None)
     if redirect_to:
       return flask.redirect(redirect_to)
 

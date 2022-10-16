@@ -22,9 +22,10 @@ from internals import processes
 class ProcessesAPI(basehandlers.APIHandler):
   """Processes contain details about the feature status"""
 
-  def do_get(self, feature_id):
+  def do_get(self, **kwargs):
     """Return the process of the feature."""
     # Load feature directly from NDB so as to never get a stale cached copy.
+    feature_id = kwargs['feature_id']
     f = core_models.Feature.get_by_id(feature_id)
     if f is None:
       self.abort(404, msg=f'Feature {feature_id} not found')
@@ -40,8 +41,9 @@ class ProgressAPI(basehandlers.APIHandler):
   or a string that starts with "http:" or "https:" that contain details about
   the progress of a feature so far"""
 
-  def do_get(self, feature_id):
+  def do_get(self, **kwargs):
     """Return the progress of the feature."""
+    feature_id = kwargs['feature_id']
     f = core_models.Feature.get_by_id(feature_id)
     if f is None:
       self.abort(404, msg=f'Feature {feature_id} not found')

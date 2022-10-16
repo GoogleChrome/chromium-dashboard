@@ -32,7 +32,8 @@ class FeaturesJsonHandler(basehandlers.FlaskHandler):
   HTTP_CACHE_TYPE = 'private'
   JSONIFY = True
 
-  def get_template_data(self, version=2):
+  def get_template_data(self, **kwargs):
+    version = kwargs.get('version', 2)
     user = users.get_current_user()
     feature_list = core_models.Feature.get_chronological(
         version=version,
@@ -44,7 +45,7 @@ class FeatureListHandler(basehandlers.FlaskHandler):
 
   TEMPLATE_PATH = 'features.html'
 
-  def get_template_data(self, feature_id=None):
+  def get_template_data(self, **kwargs):
     # Note: feature_id is not used here but JS gets it from the URL.
 
     # This template data is all for filtering.  The actual features
@@ -73,7 +74,7 @@ class FeatureListHandler(basehandlers.FlaskHandler):
 # TODO(jrobbins): Delete this some time after Oct 2022.
 class FeatureListXMLHandler(basehandlers.FlaskHandler):
 
-  def get_template_data(self):
+  def get_template_data(self, **kwargs):
     status = self.request.args.get('status', None)
     if status:
       feature_list = core_models.Feature.get_all_with_statuses(status.split(','))

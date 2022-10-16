@@ -23,6 +23,6 @@ from framework import basehandlers
 class LogoutAPI(basehandlers.APIHandler):
   """Clear the session when the user signs out."""
 
-  def do_post(self):
+  def do_post(self, **kwargs):
     session.clear()
     return {'message': 'Done'}

@@ -198,7 +198,7 @@ class IntentEmailPreviewTemplateTest(testing_config.CustomTestCase):
 
     with test_app.test_request_context(self.request_path):
       self.template_data = self.handler.get_template_data(
-        self.feature_id)
+        feature_id=self.feature_id)
       page_data = self.handler.get_page_data(
           self.feature_id, self.feature_1, core_enums.INTENT_IMPLEMENT)
 

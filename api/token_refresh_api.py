@@ -37,7 +37,7 @@ class TokenRefreshAPI(basehandlers.APIHandler):
     xsrf.validate_token(token, email, timeout=xsrf.REFRESH_TOKEN_TIMEOUT_SEC)
 
   # Note: we use only POST instead of GET to avoid attacks that use GETs.
-  def do_post(self):
+  def do_post(self, **kwargs):
     """Refresh the session and return a new XSRF token for the current user."""
     user = self.get_current_user()
     users.refresh_user_session()

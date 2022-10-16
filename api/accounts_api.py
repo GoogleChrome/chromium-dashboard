@@ -37,7 +37,7 @@ class AccountsAPI(basehandlers.APIHandler):
   # TODO(jrobbins): do_get
 
   @permissions.require_admin_site
-  def do_post(self):
+  def do_post(self, **kwargs):
     """Process a request to create an account."""
     email = self.get_param('email', required=True)
     is_admin = self.get_bool_param('isAdmin')
@@ -63,8 +63,9 @@ class AccountsAPI(basehandlers.APIHandler):
   # TODO(jrobbins): do_patch
 
   @permissions.require_admin_site
-  def do_delete(self, account_id):
+  def do_delete(self, **kwargs):
     """Process a request to delete the specified account."""
+    account_id = kwargs.get('account_id', None)
     if account_id:
       self.delete_account(account_id)
       return {'message': 'Done'}

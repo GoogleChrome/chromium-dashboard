@@ -168,7 +168,7 @@ class FeatureEditHandlerTest(testing_config.CustomTestCase):
     with test_app.test_request_context(self.request_path, method='POST'):
       with self.assertRaises(werkzeug.exceptions.Forbidden):
         self.handler.process_post_data(
-            self.feature_1.key.integer_id(), self.stage)
+            feature_id=self.feature_1.key.integer_id(), stage_id=self.stage)
 
   def test_post__non_allowed(self):
     """Non-allowed cannot edit features, gets a 403."""
@@ -176,7 +176,7 @@ class FeatureEditHandlerTest(testing_config.CustomTestCase):
     with test_app.test_request_context(self.request_path, method='POST'):
       with self.assertRaises(werkzeug.exceptions.Forbidden):
         self.handler.process_post_data(
-            self.feature_1.key.integer_id(), self.stage)
+            feature_id=self.feature_1.key.integer_id(), stage_id=self.stage)
 
   def test_post__normal_valid(self):
     """Allowed user can edit a feature."""
@@ -208,7 +208,7 @@ class FeatureEditHandlerTest(testing_config.CustomTestCase):
             'intent_to_ship_url': new_intent_to_ship_url
         }):
       actual_response = self.handler.process_post_data(
-          self.feature_1.key.integer_id(), self.stage)
+          feature_id=self.feature_1.key.integer_id(), stage_id=self.stage)
 
     self.assertEqual('302 FOUND', actual_response.status)
     location = actual_response.headers['location']
