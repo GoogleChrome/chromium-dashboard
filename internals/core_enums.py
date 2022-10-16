@@ -449,47 +449,6 @@ PROPERTY_NAMES_TO_ENUM_DICTS = {
   }
 
 
-# Review and approval enums.
-ONE_LGTM = 'One LGTM'
-THREE_LGTM = 'Three LGTMs'
-API_OWNERS_URL = (
-    'https://chromium.googlesource.com/chromium/src/+/'
-    'main/third_party/blink/API_OWNERS?format=TEXT')
-
-ApprovalFieldDef = collections.namedtuple(
-    'ApprovalFieldDef',
-    'name, description, field_id, rule, approvers')
-
-# Note: This can be requested manually through the UI, but it is not
-# triggered by a blink-dev thread because i2p intents are only FYIs to
-# bilnk-dev and don't actually need approval by the API Owners.
-PROTOTYPE_APPROVAL = ApprovalFieldDef(
-    'Intent to Prototype',
-    'Not normally used.  If a review is requested, API Owners can approve.',
-    GATE_PROTOTYPE, ONE_LGTM, API_OWNERS_URL)
-
-EXPERIMENT_APPROVAL = ApprovalFieldDef(
-    'Intent to Experiment',
-    'One API Owner must approve your intent',
-    GATE_ORIGIN_TRIAL, ONE_LGTM, API_OWNERS_URL)
-
-EXTEND_EXPERIMENT_APPROVAL = ApprovalFieldDef(
-    'Intent to Extend Experiment',
-    'One API Owner must approve your intent',
-    GATE_EXTEND_ORIGIN_TRIAL, ONE_LGTM, API_OWNERS_URL)
-
-SHIP_APPROVAL = ApprovalFieldDef(
-    'Intent to Ship',
-    'Three API Owners must approve your intent',
-    GATE_SHIP, THREE_LGTM, API_OWNERS_URL)
-
-APPROVAL_FIELDS_BY_ID = {
-    afd.field_id: afd
-    for afd in [
-        PROTOTYPE_APPROVAL, EXPERIMENT_APPROVAL, EXTEND_EXPERIMENT_APPROVAL,
-        SHIP_APPROVAL]
-    }
-
 def convert_enum_int_to_string(property_name, value):
   """If the property is an enum, return human-readable string, else value."""
   # Check if the value is an int or can be converted to an int.

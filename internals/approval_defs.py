@@ -34,7 +34,7 @@ API_OWNERS_URL = (
     'main/third_party/blink/API_OWNERS?format=TEXT')
 
 ApprovalFieldDef = collections.namedtuple(
-    'ApprovalField',
+    'ApprovalFieldDef',
     'name, description, field_id, rule, approvers')
 
 # Note: This can be requested manually through the UI, but it is not

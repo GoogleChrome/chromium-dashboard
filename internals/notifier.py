@@ -362,14 +362,14 @@ def get_existing_thread_subject(feature, approval_field):
   """If we have the subject line of the Google Groups thread, use it."""
   # This improves message threading in gmail.
 
-  if approval_field == core_enums.PROTOTYPE_APPROVAL:
+  if approval_field == approval_defs.PrototypeApproval:
     return feature.intent_to_implement_subject_line
   # TODO(jrobbins): Ready-for-trial threads
-  elif approval_field == core_enums.EXPERIMENT_APPROVAL:
+  elif approval_field == approval_defs.ExperimentApproval:
     return feature.intent_to_experiment_subject_line
-  elif approval_field == core_enums.EXTEND_EXPERIMENT_APPROVAL:
+  elif approval_field == approval_defs.ExtendExperimentApproval:
     return feature.intent_to_extend_experiment_subject_line
-  elif approval_field == core_enums.SHIP_APPROVAL:
+  elif approval_field == approval_defs.ShipApproval:
     return feature.intent_to_ship_subject_line
   else:
     raise ValueError('Unexpected approval type')
@@ -379,11 +379,11 @@ def generate_thread_subject(feature, approval_field):
   """Use the expected subject based on the feature type and approval type."""
   intent_phrase = approval_field.name
   if feature.feature_type == core_enums.FEATURE_TYPE_DEPRECATION_ID:
-    if approval_field == core_enums.PROTOTYPE_APPROVAL:
+    if approval_field == approval_defs.PrototypeApproval:
       intent_phrase = 'Intent to Deprecate and Remove'
-    if approval_field == core_enums.EXPERIMENT_APPROVAL:
+    if approval_field == approval_defs.ExperimentApproval:
       intent_phrase = 'Request for Deprecation Trial'
-    if approval_field == core_enums.EXTEND_EXPERIMENT_APPROVAL:
+    if approval_field == approval_defs.ExtendExperimentApproval:
       intent_phrase = 'Intent to Extend Deprecation Trial'
 
   return '%s: %s' % (intent_phrase, feature.name)
@@ -391,14 +391,14 @@ def generate_thread_subject(feature, approval_field):
 
 def get_thread_id(feature, approval_field):
   """If we have the URL of the Google Groups thread, we can get its ID."""
-  if approval_field == core_enums.PROTOTYPE_APPROVAL:
+  if approval_field == approval_defs.PrototypeApproval:
     thread_url = feature.intent_to_implement_url
   # TODO(jrobbins): Ready-for-trial threads
-  if approval_field == core_enums.EXPERIMENT_APPROVAL:
+  if approval_field == approval_defs.ExperimentApproval:
     thread_url = feature.intent_to_experiment_url
-  if approval_field == core_enums.EXTEND_EXPERIMENT_APPROVAL:
+  if approval_field == approval_defs.ExtendExperimentApproval:
     thread_url = feature.intent_to_extend_experiment_url
-  if approval_field == core_enums.SHIP_APPROVAL:
+  if approval_field == approval_defs.ShipApproval:
     thread_url = feature.intent_to_ship_url
 
   if not thread_url:

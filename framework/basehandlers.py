@@ -338,7 +338,7 @@ class FlaskHandler(BaseHandler):
 
     user = self.get_current_user()
     if user:
-      field_id = core_enums.SHIP_APPROVAL.field_id
+      field_id = approval_defs.ShipApproval.field_id
       approvers = approval_defs.get_approvers(field_id)
       user_pref = user_models.UserPref.get_signed_in_user_pref()
       common_data['user'] = {

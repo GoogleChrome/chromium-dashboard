@@ -27,8 +27,8 @@ from internals import review_models
 
 
 FIELDS_REQUIRING_LGTMS = [
-    core_enums.SHIP_APPROVAL, core_enums.EXPERIMENT_APPROVAL,
-    core_enums.EXTEND_EXPERIMENT_APPROVAL,
+    approval_defs.ShipApproval, approval_defs.ExperimentApproval,
+    approval_defs.ExtendExperimentApproval,
     ]
 
 
@@ -62,16 +62,16 @@ def detect_field(subject):
   subject = ' '.join(subject.split())  # collapse multiple spaces
 
   if SHIP_RE.match(subject):
-    return core_enums.SHIP_APPROVAL
+    return approval_defs.ShipApproval
 
   if PROTO_RE.match(subject):
-    return core_enums.PROTOTYPE_APPROVAL
+    return approval_defs.PrototypeApproval
 
   if EXPERIMENT_RE.match(subject):
-    return core_enums.EXPERIMENT_APPROVAL
+    return approval_defs.ExperimentApproval
 
   if EXTEND_RE.match(subject):
-    return core_enums.EXTEND_EXPERIMENT_APPROVAL
+    return approval_defs.ExtendExperimentApproval
 
   return None
 
@@ -213,20 +213,20 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
 
     # Find the feature by querying for the previously saved discussion link.
     matching_features = []
-    if approval_field == core_enums.PROTOTYPE_APPROVAL:
+    if approval_field == approval_defs.PrototypeApproval:
       query = core_models.Feature.query(
           core_models.Feature.intent_to_implement_url == thread_url)
       matching_features = query.fetch()
     # TODO(jrobbins): Ready-for-trial threads
-    elif approval_field == core_enums.EXPERIMENT_APPROVAL:
+    elif approval_field == approval_defs.ExperimentApproval:
       query = core_models.Feature.query(
           core_models.Feature.intent_to_experiment_url == thread_url)
       matching_features = query.fetch()
-    elif approval_field == core_enums.EXTEND_EXPERIMENT_APPROVAL:
+    elif approval_field == approval_defs.ExtendExperimentApproval:
       query = core_models.Feature.query(
           core_models.Feature.intent_to_extend_experiment_url == thread_url)
       matching_features = query.fetch()
-    elif approval_field == core_enums.SHIP_APPROVAL:
+    elif approval_field == approval_defs.ShipApproval:
       query = core_models.Feature.query(
           core_models.Feature.intent_to_ship_url == thread_url)
       matching_features = query.fetch()
@@ -247,7 +247,7 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
     if not thread_url:
       return
 
-    if (approval_field == core_enums.PROTOTYPE_APPROVAL and
+    if (approval_field == approval_defs.PrototypeApproval and
         not feature.intent_to_implement_url):
       feature.intent_to_implement_url = thread_url
       feature.intent_to_implement_subject_line = subject
@@ -255,19 +255,19 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
 
     # TODO(jrobbins): Ready-for-trial threads
 
-    if (approval_field == core_enums.EXPERIMENT_APPROVAL and
+    if (approval_field == approval_defs.ExperimentApproval and
         not feature.intent_to_experiment_url):
       feature.intent_to_experiment_url = thread_url
       feature.intent_to_experiment_subject_line = subject
       feature.put()
 
-    if (approval_field == core_enums.EXTEND_EXPERIMENT_APPROVAL and
+    if (approval_field == approval_defs.ExtendExperimentApproval and
         not feature.intent_to_extend_experiment_url):
       feature.intent_to_extend_experiment_url = thread_url
       feature.intent_to_extend_experiment_subject_line = subject
       feature.put()
 
-    if (approval_field == core_enums.SHIP_APPROVAL and
+    if (approval_field == approval_defs.ShipApproval and
         not feature.intent_to_ship_url):
       feature.intent_to_ship_url = thread_url
       feature.intent_to_ship_subject_line = subject
@@ -307,12 +307,12 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
     # Note: Intent-to-prototype and Intent-to-extend are not checked
     # here because there are no old fields for them.
 
-    if (approval_field == core_enums.EXPERIMENT_APPROVAL and
+    if (approval_field == approval_defs.ExperimentApproval and
         from_addr not in feature.i2e_lgtms):
       feature.i2e_lgtms += [from_addr]
       feature.put()
 
-    if (approval_field == core_enums.SHIP_APPROVAL and
+    if (approval_field == approval_defs.ShipApproval and
         from_addr not in feature.i2s_lgtms):
       feature.i2s_lgtms += [from_addr]
       feature.put()

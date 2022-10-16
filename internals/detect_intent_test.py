@@ -41,7 +41,7 @@ class FunctionTest(testing_config.CustomTestCase):
   def test_detect_field(self):
     """We can detect intent thread type by subject line."""
     test_data = {
-      core_enums.PROTOTYPE_APPROVAL: [
+      approval_defs.PrototypeApproval: [
           'Intent to Prototype: Something cool',
           'Re: Re:Intent to Prototype: Something cool',
           'intent to prototype: something cool',
@@ -54,7 +54,7 @@ class FunctionTest(testing_config.CustomTestCase):
           'Request for prototyping Something cool',
           'Requesting to prototyping Something cool',
         ],
-      core_enums.EXPERIMENT_APPROVAL: [
+      approval_defs.ExperimentApproval: [
           'Fwd: Intent to Experiment: Something cool',
           'Fwd: Re: Intent to Experiment: Something cool',
           'Fwd: [blink-dev] Intent to Experiment: Something cool',
@@ -66,7 +66,7 @@ class FunctionTest(testing_config.CustomTestCase):
           'intend to  experiment: something cool',
           'intending to  experiment: something cool',
       ],
-      core_enums.EXTEND_EXPERIMENT_APPROVAL: [
+      approval_defs.ExtendExperimentApproval: [
           'Intent to Continue Experiment: Something cool',
           'Intent to Extend Experiment: Something cool',
           'Intent to Continue Experiment: Something cool',
@@ -77,7 +77,7 @@ class FunctionTest(testing_config.CustomTestCase):
           'Request to Continuing Experiment: Something cool',
           'Requesting to Continuing Experiment: Something cool',
       ],
-      core_enums.SHIP_APPROVAL: [
+      approval_defs.ShipApproval: [
           'Intent to Ship: Something cool',
           'intent to ship: something cool',
           'intend to ship: something cool',
@@ -286,9 +286,9 @@ class FunctionTest(testing_config.CustomTestCase):
     """A user who is in the list of approvers can LGTM."""
     mock_get_approvers.return_value = ['owner@example.com']
     self.assertTrue(detect_intent.is_lgtm_allowed(
-        'owner@example.com', self.feature_1, core_enums.SHIP_APPROVAL))
+        'owner@example.com', self.feature_1, approval_defs.ShipApproval))
     mock_get_approvers.assert_called_once_with(
-        core_enums.SHIP_APPROVAL.field_id)
+        approval_defs.ShipApproval.field_id)
 
   @mock.patch('framework.permissions.can_admin_site')
   @mock.patch('internals.approval_defs.get_approvers')
@@ -298,25 +298,25 @@ class FunctionTest(testing_config.CustomTestCase):
     mock_get_approvers.return_value = ['owner@example.com']
     mock_can_admin_site.return_value = True
     self.assertTrue(detect_intent.is_lgtm_allowed(
-        'admin@example.com', self.feature_1, core_enums.SHIP_APPROVAL))
+        'admin@example.com', self.feature_1, approval_defs.ShipApproval))
 
   @mock.patch('internals.approval_defs.get_approvers')
   def test_is_lgtm_allowed__other(self, mock_get_approvers):
     """An average user cannot LGTM."""
     mock_get_approvers.return_value = ['owner@example.com']
     self.assertFalse(detect_intent.is_lgtm_allowed(
-        'other@example.com', self.feature_1, core_enums.SHIP_APPROVAL))
+        'other@example.com', self.feature_1, approval_defs.ShipApproval))
 
   @mock.patch('internals.review_models.Approval.get_approvals')
   def test_detect_new_thread(self, mock_get_approvals):
     """A thread is new if there are no previous approval values."""
     mock_get_approvals.return_value = []
     self.assertTrue(detect_intent.detect_new_thread(
-        self.feature_1.key.integer_id(), core_enums.SHIP_APPROVAL))
+        self.feature_1.key.integer_id(), approval_defs.ShipApproval))
 
     mock_get_approvals.return_value = ['fake approval value']
     self.assertFalse(detect_intent.detect_new_thread(
-        self.feature_1.key.integer_id(), core_enums.SHIP_APPROVAL))
+        self.feature_1.key.integer_id(), approval_defs.ShipApproval))
 
 
 class IntentEmailHandlerTest(testing_config.CustomTestCase):
@@ -370,7 +370,7 @@ class IntentEmailHandlerTest(testing_config.CustomTestCase):
     self.assertEqual(1, len(created_approvals))
     appr = created_approvals[0]
     self.assertEqual(self.feature_id, appr.feature_id)
-    self.assertEqual(core_enums.SHIP_APPROVAL.field_id, appr.field_id)
+    self.assertEqual(approval_defs.ShipApproval.field_id, appr.field_id)
     self.assertEqual(review_models.Approval.REVIEW_REQUESTED, appr.state)
     self.assertEqual('user@example.com', appr.set_by)
     self.assertEqual(self.feature_1.intent_to_ship_url, self.thread_url)
@@ -410,7 +410,7 @@ class IntentEmailHandlerTest(testing_config.CustomTestCase):
     self.assertEqual(1, len(created_approvals))
     appr = created_approvals[0]
     self.assertEqual(self.feature_id, appr.feature_id)
-    self.assertEqual(core_enums.SHIP_APPROVAL.field_id, appr.field_id)
+    self.assertEqual(approval_defs.ShipApproval.field_id, appr.field_id)
     self.assertEqual(review_models.Approval.APPROVED, appr.state)
     self.assertEqual('user@example.com', appr.set_by)
     self.assertEqual(self.feature_1.intent_to_ship_url, self.thread_url)
