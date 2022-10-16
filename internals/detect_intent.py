@@ -285,6 +285,8 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
       review_models.Approval.set_approval(
           feature_id, approval_field.field_id,
           review_models.Approval.APPROVED, from_addr)
+      approval_defs.set_vote(feature_id,approval_field.field_id,
+          review_models.Vote.APPROVED, from_addr)
       self.record_lgtm(feature, approval_field, from_addr)
 
     # Case 2: Create a review request for any discussion that does not already
@@ -296,6 +298,8 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
         review_models.Approval.set_approval(
             feature_id, approval_field.field_id,
             review_models.Approval.REVIEW_REQUESTED, from_addr)
+        approval_defs.set_vote(feature_id,approval_field.field_id,
+            review_models.Vote.APPROVED, from_addr)
 
   def record_lgtm(self, feature, approval_field, from_addr):
     """Add from_addr to the old way or recording LGTMs."""
