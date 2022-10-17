@@ -7,7 +7,7 @@
 {% endblock %}
 
 {% block css %}
-<link rel="stylesheet" href="/static/css/features/features.css">
+<link rel="stylesheet" href="/static/css/features/features.css?v={{app_version}}">
 {% endblock %}
 
 {% block content %}
@@ -47,7 +47,7 @@
 {% endblock %}
 
 {% block js %}
-  <script nonce="{{nonce}}" src="/static/js/features-page.min.js"></script>
+  <script nonce="{{nonce}}" src="/static/js/features-page.min.js?v={{app_version}}"></script>
   <script nonce="{{nonce}}">
     (function() {
       'use strict';
