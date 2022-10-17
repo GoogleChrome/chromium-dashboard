@@ -243,10 +243,16 @@ class ChromeStatusClient {
       (resp) => resp['features_by_type']);
   }
 
-  searchFeatures(userQuery, sortSpec) {
+  searchFeatures(userQuery, sortSpec, start, num) {
     let url = `/features?q=${userQuery}`;
     if (sortSpec) {
       url += '&sort=' + sortSpec;
+    }
+    if (start) {
+      url += '&start=' + start;
+    }
+    if (num) {
+      url += '&num=' + num;
     }
     return this.doGet(url);
   }
