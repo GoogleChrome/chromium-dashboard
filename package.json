@@ -79,7 +79,7 @@
     "lit-analyzer": "^1.1.9",
     "lodash": ">=4.17.21",
     "lodash.template": ">=4.5.0",
-    "minimist": ">=1.2.6",
+    "minimist": ">=1.2.7",
     "path-parse": ">=1.0.7",
     "regenerator-runtime": "^0.13.10",
     "rollup": "^1.32.1",
