@@ -39,8 +39,8 @@ function license() {
 
 gulp.task('lint', () => {
   return gulp.src([
-    'static/js-src/*.js',
-    'static/elements/*.js',
+    'client-src/js-src/*.js',
+    'client-src/elements/*.js',
   ])
     .pipe($.eslint())
     .pipe($.eslint.format())
@@ -49,8 +49,8 @@ gulp.task('lint', () => {
 
 gulp.task('lint-fix', () => {
   return gulp.src([
-    'static/js-src/*.js',
-    'static/elements/*.js',
+    'client-src/js-src/*.js',
+    'client-src/elements/*.js',
   ], {base: './'})
     .pipe($.eslint({fix:true}))
     .pipe($.eslint.format())
@@ -67,7 +67,7 @@ gulp.task('styles', () => {
 
   // For best performance, don't add Sass partials to `gulp.src`
   return gulp.src([
-    'static/sass/**/*.scss'
+    'client-src/sass/**/*.scss'
   ])
     .pipe($.sass({
       outputStyle: 'compressed',
@@ -87,7 +87,7 @@ gulp.task('css', function() {
 
 gulp.task('rollup', () => {
   return rollup.rollup({
-    input: 'static/components.js',
+    input: 'client-src/components.js',
     plugins: [
       rollupLitCss({include: []}),
       rollupResolve(),
@@ -109,7 +109,7 @@ gulp.task('rollup', () => {
 // Run scripts through babel.
 gulp.task('js', () => {
   return gulp.src([
-    'static/js-src/**/*.js',
+    'client-src/js-src/**/*.js',
   ])
     .pipe(babel()) // Defaults are in .babelrc
     .pipe(uglifyJS())
@@ -142,8 +142,8 @@ gulp.task('default', gulp.series(
 gulp.task('watch', gulp.series(
   'default',
   function watch() {
-    gulp.watch(['static/sass/**/*.scss'], gulp.series('styles'));
-    gulp.watch(['static/js-src/**/*.js', 'static/elements/*.js'], gulp.series(['lint', 'js']));
-    gulp.watch(['static/components.js', 'static/elements/*.js'], gulp.series(['rollup']));
+    gulp.watch(['client-src/sass/**/*.scss'], gulp.series('styles'));
+    gulp.watch(['client-src/js-src/**/*.js', 'client-src/elements/*.js'], gulp.series(['lint', 'js']));
+    gulp.watch(['client-src/components.js', 'client-src/elements/*.js'], gulp.series(['rollup']));
   }
 ));
