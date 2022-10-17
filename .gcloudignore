@@ -34,9 +34,7 @@ cookie
 node_modules
 
 # Source for generated files
-static/elements/
-static/sass/
-static/js-src/
+client-src
 
 # OS files
 *.DS_Store
