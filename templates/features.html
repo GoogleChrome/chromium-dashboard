@@ -1,6 +1,5 @@
 {% extends "_base.html" %}
 
-{% load inline_file %}
 {% load cache %}
 
 {% block rss %}
@@ -8,9 +7,7 @@
 {% endblock %}
 
 {% block css %}
-  {% cache TEMPLATE_CACHE_TIME featurescss %}
-    <style>{% inline_file "/static/css/features/features.css" %}</style>
-  {% endcache %}
+<link rel="stylesheet" href="/static/css/features/features.css">
 {% endblock %}
 
 {% block content %}
@@ -54,12 +51,12 @@
     (function() {
       'use strict';
       // Get values from server. used in /static/js/features-page.js
-      const VIEWS = {
+      window.VIEWS = {
         vendors: {{VENDOR_VIEWS|safe}},
         webdevs: {{WEB_DEV_VIEWS|safe}},
         standards: {{STANDARDS_VALS|safe}}
       };
-      {% inline_file "/static/js/features-page.min.js" %}
     })();
   </script>
+  <script nonce="{{nonce}}" src="/static/js/features-page.min.js"></script>
 {% endblock %}

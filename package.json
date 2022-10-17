@@ -29,7 +29,7 @@
     "mypy": "mypy --ignore-missing-imports --exclude cs-env/ --exclude appengine_config.py .",
     "lint": "gulp lint-fix && lit-analyzer \"static/elements/chromedash-!(featurelist)*.js\"",
     "presubmit": "npm test && npm run webtest && npm run lint && npm run mypy",
-    "pylint": "pylint --output-format=parseable *py api/*py customtags/*py framework/*py internals/*py pages/*py",
+    "pylint": "pylint --output-format=parseable *py api/*py framework/*py internals/*py pages/*py",
     "staging": "./scripts/deploy_site.sh `git describe --always --abbrev=7 --match 'NOT A TAG' --dirty='-tainted'` cr-status-staging",
     "staging-rc": "./scripts/deploy_site.sh rc cr-status-staging",
     "deploy": "./scripts/deploy_site.sh `git describe --always --abbrev=7 --match 'NOT A TAG' --dirty='-tainted'`",

@@ -100,7 +100,7 @@ featureListEl.addEventListener('app-ready', () => {
   });
 });
 
-legendEl.views = VIEWS;
+legendEl.views = window.VIEWS;
 
 document.querySelector('.legend-button').addEventListener('click', (e) => {
   e.preventDefault();

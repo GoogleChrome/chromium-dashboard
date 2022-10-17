@@ -3,11 +3,10 @@ import os
 
 
 #Hack to get custom tags working django 1.3 + python27.
-INSTALLED_APPS = (
+INSTALLED_APPS = [
   #'nothing',
-  'customtags',
   'django.forms'
-)
+]
 
 ROOT_DIR = os.path.abspath(os.path.dirname(__file__))
 
@@ -31,6 +30,9 @@ def flask_compat_get_template_path() -> str:
   variable TEMPLATES could be used to hold information about the templates.
   """
   return TEMPLATES[0]['DIRS'][0]
+
+def get_static_path() -> str:
+  return os.path.join(ROOT_DIR, 'static')
 
 # This is necessary to override django templates.
 FORM_RENDERER = 'django.forms.renderers.TemplatesSetting'
