@@ -31,9 +31,6 @@ def flask_compat_get_template_path() -> str:
   """
   return TEMPLATES[0]['DIRS'][0]
 
-def get_static_path() -> str:
-  return os.path.join(ROOT_DIR, 'static')
-
 # This is necessary to override django templates.
 FORM_RENDERER = 'django.forms.renderers.TemplatesSetting'
 
