@@ -138,6 +138,21 @@ class BaseHandler(flask.views.MethodView):
       self.abort(403, msg='Cannot view that feature')
     return feature
 
+  def get_int_arg(self, name, default=None):
+    """Get the specified integer from args."""
+    val = self.request.args.get(name, default)
+    if val is None:
+      return None
+
+    try:
+      num = int(val)
+    except ValueError:
+      self.abort(400, msg='Request parameter %r was not an int' % name)
+
+    if num < 0:
+      self.abort(400, msg='Request parameter %r out of range: %r' % (name, val))
+    return num
+
 
 class APIHandler(BaseHandler):
 
