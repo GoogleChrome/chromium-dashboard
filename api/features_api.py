@@ -55,16 +55,8 @@ class FeaturesAPI(basehandlers.APIHandler):
 
     user_query = self.request.args.get('q', '')
     sort_spec = self.request.args.get('sort')
-    try:
-      start = int(self.request.args.get('start', 0))
-      num = int(self.request.args.get(
-          'num', search.DEFAULT_RESULTS_PER_PAGE))
-    except ValueError:
-      self.abort(400, msg='Invalid start or num')
-    if start < 0:
-      self.abort(400, msg='Parameter out of range: start')
-    if num < 0:
-      self.abort(400, msg='Parameter out of range: num')
+    num = self.get_int_arg('num', search.DEFAULT_RESULTS_PER_PAGE)
+    start = self.get_int_arg('start', 0)
 
     features_on_page, total_count = search.process_query(
         user_query, sort_spec=sort_spec, show_unlisted=show_unlisted_features,
