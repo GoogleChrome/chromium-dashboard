@@ -93,6 +93,9 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     self.maxDiff = None
 
   def tearDown(self):
+    self.watcher_1.key.delete()
+    self.component_owner_1.key.delete()
+    self.component_1.key.delete()
     self.feature_1.key.delete()
     self.feature_2.key.delete()
     self.template_feature.key.delete()
@@ -497,10 +500,14 @@ class FeatureStarTest(testing_config.CustomTestCase):
     notifier.FeatureStar.set_star(email, feature_2_id)
 
     actual = notifier.FeatureStar.get_user_stars(email)
+    expected_ids = [feature_1_id, feature_2_id, feature_3_id]
     self.assertEqual(
-        sorted([feature_1_id, feature_2_id, feature_3_id],
+        sorted(expected_ids,
                       reverse=True),
         actual)
+    # Cleanup
+    for feature_id in expected_ids:
+      notifier.FeatureStar.get_star(email, feature_id).key.delete()
 
   def test_get_feature_starrers__no_stars(self):
     """No user has starred the given feature."""

@@ -1,5 +1,4 @@
 
-
 <!DOCTYPE html>
 <!--
 Copyright 2016 Google Inc. All Rights Reserved.
@@ -19,12 +18,12 @@ limitations under the License.
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title></title>
+  <title>Local testing</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
 
   <meta name="theme-color" content="#366597">
 
-  <link rel="stylesheet" href="/static/css/base.css?v=" />
+  <link rel="stylesheet" href="/static/css/base.css?v=Undeployed" />
 
   <link rel="icon" sizes="192x192" href="/static/img/crstatus_192.png">
 
@@ -45,43 +44,38 @@ limitations under the License.
 
   
 
-  <style>
-    
-  </style>
+  <link rel="stylesheet" href="/static/css/main.css?v=Undeployed">
 
   
-  <style>
-    
-  </style>
+<link rel="stylesheet" href="/static/css/subscribers.css?v=Undeployed">
 
 
   
-  <script src="https://accounts.google.com/gsi/client" async defer nonce=""></script>
+  <script src="https://accounts.google.com/gsi/client" async defer nonce="fake nonce"></script>
 
-  <script nonce="">
+  <script nonce="fake nonce">
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get("loginStatus") == 'False') {
       alert('Please log in.');
     }
   </script>
+  <script nonce="fake nonce" src="/static/js/metric.min.js?v=Undeployed"></script>
+  <script nonce="fake nonce" src="/static/js/cs-client.min.js?v=Undeployed"></script>
 
   
-  <script nonce="">
-    
-    
-
+  <script nonce="fake nonce">
     window.csClient = new ChromeStatusClient(
-        '', );
+        '', 0);
   </script>
 
-  <script type="module" nonce="" defer
-          src="/static/dist/components.js?v="></script>
+  <script type="module" nonce="fake nonce" defer
+          src="/static/dist/components.js?v=Undeployed"></script>
   
 
   
 </head>
 
-<body class="loading" data-path="">
+<body class="loading" data-path="/admin/subscribers.html?">
   
 
   <div id="app-content-container">
@@ -89,9 +83,9 @@ limitations under the License.
       <div class="main-toolbar">
         <div class="toolbar-content">
           <chromedash-header
-            appTitle=""
-            currentPage=""
-            googleSignInClientId="">
+            appTitle="Local testing"
+            currentPage="/admin/subscribers.html?"
+            googleSignInClientId="914217904764-enfcea61q4hqe7ak8kkuteglrbhk8el1.apps.googleusercontent.com">
           </chromedash-header>
         </div>
       </div>
@@ -102,7 +96,7 @@ limitations under the License.
         </div>
         <chromedash-banner
           message=""
-          timestamp="">
+          timestamp="None">
         </chromedash-banner>
         <div id="content-flex-wrapper">
           <div id="content-component-wrapper">
@@ -123,34 +117,34 @@ limitations under the License.
   </div>
   
     <div class="chrome_version layout horizontal center chrome_version--stable " title="Show only features for the current stable">
-      <a href="?showFeatures&amp;milestone=106" class="layout horizontal center">
+      <a href="?showFeatures&amp;milestone=1" class="layout horizontal center">
         <div class="chrome-logo"></div>
         <!-- <span>stable</span> -->
-        <span class="milestone_number">106</span>
+        <span class="milestone_number">1</span>
       </a>
     </div>
   
     <div class="chrome_version layout horizontal center chrome_version--beta " title="Show only features for the current beta">
-      <a href="?showFeatures&amp;milestone=107" class="layout horizontal center">
+      <a href="?showFeatures&amp;milestone=2" class="layout horizontal center">
         <div class="chrome-logo"></div>
         <!-- <span>beta</span> -->
-        <span class="milestone_number">107</span>
+        <span class="milestone_number">2</span>
       </a>
     </div>
   
     <div class="chrome_version layout horizontal center chrome_version--dev " title="Show only features for the current dev">
-      <a href="?showFeatures&amp;milestone=108" class="layout horizontal center">
+      <a href="?showFeatures&amp;milestone=3" class="layout horizontal center">
         <div class="chrome-logo"></div>
         <!-- <span>dev</span> -->
-        <span class="milestone_number">108</span>
+        <span class="milestone_number">3</span>
       </a>
     </div>
   
     <div class="chrome_version layout horizontal center chrome_version--canary " title="Show only features for the current canary">
-      <a href="?showFeatures&amp;milestone=108" class="layout horizontal center">
+      <a href="?showFeatures&amp;milestone=4" class="layout horizontal center">
         <div class="chrome-logo"></div>
         <!-- <span>canary</span> -->
-        <span class="milestone_number">108</span>
+        <span class="milestone_number">4</span>
       </a>
     </div>
   
@@ -174,355 +168,10 @@ limitations under the License.
             
           </div>
         
-      </div>
-    </li>
-  
-    <li>
-      <div>
-        <h3 class="user_name">owner_1</h3>
-        <h4><a href="mailto:owner_1@example.com">owner_1@example.com</a></h4>
-      </div>
-      <div class="component_list">
-        
           <div class="component">
-            <h4><a href="/admin/blink#Blink" class="component_name">Blink</a></h4>
+            <h4><a href="/admin/blink#Blink&gt;Accessibility" class="component_name">Blink&gt;Accessibility</a></h4>
             
           </div>
-        
-      </div>
-    </li>
-  
-    <li>
-      <div>
-        <h3 class="user_name">owner_1</h3>
-        <h4><a href="mailto:owner_1@example.com">owner_1@example.com</a></h4>
-      </div>
-      <div class="component_list">
-        
-          <div class="component">
-            <h4><a href="/admin/blink#Blink" class="component_name">Blink</a></h4>
-            
-          </div>
-        
-      </div>
-    </li>
-  
-    <li>
-      <div>
-        <h3 class="user_name">owner_1</h3>
-        <h4><a href="mailto:owner_1@example.com">owner_1@example.com</a></h4>
-      </div>
-      <div class="component_list">
-        
-          <div class="component">
-            <h4><a href="/admin/blink#Blink" class="component_name">Blink</a></h4>
-            
-          </div>
-        
-      </div>
-    </li>
-  
-    <li>
-      <div>
-        <h3 class="user_name">owner_1</h3>
-        <h4><a href="mailto:owner_1@example.com">owner_1@example.com</a></h4>
-      </div>
-      <div class="component_list">
-        
-          <div class="component">
-            <h4><a href="/admin/blink#Blink" class="component_name">Blink</a></h4>
-            
-          </div>
-        
-      </div>
-    </li>
-  
-    <li>
-      <div>
-        <h3 class="user_name">owner_1</h3>
-        <h4><a href="mailto:owner_1@example.com">owner_1@example.com</a></h4>
-      </div>
-      <div class="component_list">
-        
-          <div class="component">
-            <h4><a href="/admin/blink#Blink" class="component_name">Blink</a></h4>
-            
-          </div>
-        
-      </div>
-    </li>
-  
-    <li>
-      <div>
-        <h3 class="user_name">owner_1</h3>
-        <h4><a href="mailto:owner_1@example.com">owner_1@example.com</a></h4>
-      </div>
-      <div class="component_list">
-        
-          <div class="component">
-            <h4><a href="/admin/blink#Blink" class="component_name">Blink</a></h4>
-            
-          </div>
-        
-      </div>
-    </li>
-  
-    <li>
-      <div>
-        <h3 class="user_name">owner_1</h3>
-        <h4><a href="mailto:owner_1@example.com">owner_1@example.com</a></h4>
-      </div>
-      <div class="component_list">
-        
-          <div class="component">
-            <h4><a href="/admin/blink#Blink" class="component_name">Blink</a></h4>
-            
-          </div>
-        
-      </div>
-    </li>
-  
-    <li>
-      <div>
-        <h3 class="user_name">owner_1</h3>
-        <h4><a href="mailto:owner_1@example.com">owner_1@example.com</a></h4>
-      </div>
-      <div class="component_list">
-        
-          <div class="component">
-            <h4><a href="/admin/blink#Blink" class="component_name">Blink</a></h4>
-            
-          </div>
-        
-      </div>
-    </li>
-  
-    <li>
-      <div>
-        <h3 class="user_name">owner_1</h3>
-        <h4><a href="mailto:owner_1@example.com">owner_1@example.com</a></h4>
-      </div>
-      <div class="component_list">
-        
-          <div class="component">
-            <h4><a href="/admin/blink#Blink" class="component_name">Blink</a></h4>
-            
-          </div>
-        
-      </div>
-    </li>
-  
-    <li>
-      <div>
-        <h3 class="user_name">owner_1</h3>
-        <h4><a href="mailto:owner_1@example.com">owner_1@example.com</a></h4>
-      </div>
-      <div class="component_list">
-        
-          <div class="component">
-            <h4><a href="/admin/blink#Blink" class="component_name">Blink</a></h4>
-            
-          </div>
-        
-      </div>
-    </li>
-  
-    <li>
-      <div>
-        <h3 class="user_name">owner_1</h3>
-        <h4><a href="mailto:owner_1@example.com">owner_1@example.com</a></h4>
-      </div>
-      <div class="component_list">
-        
-          <div class="component">
-            <h4><a href="/admin/blink#Blink" class="component_name">Blink</a></h4>
-            
-          </div>
-        
-      </div>
-    </li>
-  
-    <li>
-      <div>
-        <h3 class="user_name">owner_1</h3>
-        <h4><a href="mailto:owner_1@example.com">owner_1@example.com</a></h4>
-      </div>
-      <div class="component_list">
-        
-          <div class="component">
-            <h4><a href="/admin/blink#Blink" class="component_name">Blink</a></h4>
-            
-          </div>
-        
-      </div>
-    </li>
-  
-    <li>
-      <div>
-        <h3 class="user_name">owner_1</h3>
-        <h4><a href="mailto:owner_1@example.com">owner_1@example.com</a></h4>
-      </div>
-      <div class="component_list">
-        
-          <div class="component">
-            <h4><a href="/admin/blink#Blink" class="component_name">Blink</a></h4>
-            
-          </div>
-        
-      </div>
-    </li>
-  
-    <li>
-      <div>
-        <h3 class="user_name">owner_1</h3>
-        <h4><a href="mailto:owner_1@example.com">owner_1@example.com</a></h4>
-      </div>
-      <div class="component_list">
-        
-          <div class="component">
-            <h4><a href="/admin/blink#Blink" class="component_name">Blink</a></h4>
-            
-          </div>
-        
-      </div>
-    </li>
-  
-    <li>
-      <div>
-        <h3 class="user_name">watcher_1</h3>
-        <h4><a href="mailto:watcher_1@example.com">watcher_1@example.com</a></h4>
-      </div>
-      <div class="component_list">
-        
-      </div>
-    </li>
-  
-    <li>
-      <div>
-        <h3 class="user_name">watcher_1</h3>
-        <h4><a href="mailto:watcher_1@example.com">watcher_1@example.com</a></h4>
-      </div>
-      <div class="component_list">
-        
-      </div>
-    </li>
-  
-    <li>
-      <div>
-        <h3 class="user_name">watcher_1</h3>
-        <h4><a href="mailto:watcher_1@example.com">watcher_1@example.com</a></h4>
-      </div>
-      <div class="component_list">
-        
-      </div>
-    </li>
-  
-    <li>
-      <div>
-        <h3 class="user_name">watcher_1</h3>
-        <h4><a href="mailto:watcher_1@example.com">watcher_1@example.com</a></h4>
-      </div>
-      <div class="component_list">
-        
-      </div>
-    </li>
-  
-    <li>
-      <div>
-        <h3 class="user_name">watcher_1</h3>
-        <h4><a href="mailto:watcher_1@example.com">watcher_1@example.com</a></h4>
-      </div>
-      <div class="component_list">
-        
-      </div>
-    </li>
-  
-    <li>
-      <div>
-        <h3 class="user_name">watcher_1</h3>
-        <h4><a href="mailto:watcher_1@example.com">watcher_1@example.com</a></h4>
-      </div>
-      <div class="component_list">
-        
-      </div>
-    </li>
-  
-    <li>
-      <div>
-        <h3 class="user_name">watcher_1</h3>
-        <h4><a href="mailto:watcher_1@example.com">watcher_1@example.com</a></h4>
-      </div>
-      <div class="component_list">
-        
-      </div>
-    </li>
-  
-    <li>
-      <div>
-        <h3 class="user_name">watcher_1</h3>
-        <h4><a href="mailto:watcher_1@example.com">watcher_1@example.com</a></h4>
-      </div>
-      <div class="component_list">
-        
-      </div>
-    </li>
-  
-    <li>
-      <div>
-        <h3 class="user_name">watcher_1</h3>
-        <h4><a href="mailto:watcher_1@example.com">watcher_1@example.com</a></h4>
-      </div>
-      <div class="component_list">
-        
-      </div>
-    </li>
-  
-    <li>
-      <div>
-        <h3 class="user_name">watcher_1</h3>
-        <h4><a href="mailto:watcher_1@example.com">watcher_1@example.com</a></h4>
-      </div>
-      <div class="component_list">
-        
-      </div>
-    </li>
-  
-    <li>
-      <div>
-        <h3 class="user_name">watcher_1</h3>
-        <h4><a href="mailto:watcher_1@example.com">watcher_1@example.com</a></h4>
-      </div>
-      <div class="component_list">
-        
-      </div>
-    </li>
-  
-    <li>
-      <div>
-        <h3 class="user_name">watcher_1</h3>
-        <h4><a href="mailto:watcher_1@example.com">watcher_1@example.com</a></h4>
-      </div>
-      <div class="component_list">
-        
-      </div>
-    </li>
-  
-    <li>
-      <div>
-        <h3 class="user_name">watcher_1</h3>
-        <h4><a href="mailto:watcher_1@example.com">watcher_1@example.com</a></h4>
-      </div>
-      <div class="component_list">
-        
-      </div>
-    </li>
-  
-    <li>
-      <div>
-        <h3 class="user_name">watcher_1</h3>
-        <h4><a href="mailto:watcher_1@example.com">watcher_1@example.com</a></h4>
-      </div>
-      <div class="component_list">
         
       </div>
     </li>
@@ -555,7 +204,7 @@ limitations under the License.
   
 
   
-<script nonce="">
+<script nonce="fake nonce">
 (function() {
 'use strict';
 
@@ -566,15 +215,9 @@ document.body.classList.remove('loading');
 
 
   <script src="https://www.googletagmanager.com/gtag/js?id=UA-179341418-1"
-          async nonce=""></script>
+          async nonce="fake nonce"></script>
 
   
-  <script type="module" nonce="">
-    (function() {
-      'use strict';
-
-      
-    })();
-  </script>
+  <script type="module" nonce="fake nonce" src="/static/js/shared.min.js?v=Undeployed"></script>
 </body>
 </html>

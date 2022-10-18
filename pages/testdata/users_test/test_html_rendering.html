@@ -1,5 +1,4 @@
 
-
 <!DOCTYPE html>
 <!--
 Copyright 2016 Google Inc. All Rights Reserved.
@@ -45,9 +44,7 @@ limitations under the License.
 
   
 
-  <style>
-    
-  </style>
+  <link rel="stylesheet" href="/static/css/main.css?v=">
 
   
   <link rel="stylesheet" href="/static/css/forms.css?v=">
@@ -62,12 +59,11 @@ limitations under the License.
       alert('Please log in.');
     }
   </script>
+  <script nonce="" src="/static/js/metric.min.js?v="></script>
+  <script nonce="" src="/static/js/cs-client.min.js?v="></script>
 
   
   <script nonce="">
-    
-    
-
     window.csClient = new ChromeStatusClient(
         '', );
   </script>
@@ -131,7 +127,7 @@ limitations under the License.
   
 <script nonce="">
   const el = document.querySelector('chromedash-userlist');
-  el.users = [{"is_admin": true, "is_site_editor": false, "email": "admin@example.com", "id": 1}, {"is_admin": true, "is_site_editor": true, "email": "new_admin@example.com", "id": 5}, {"is_admin": false, "is_site_editor": true, "email": "new_site_editor@example.com", "id": 25}, {"is_admin": true, "is_site_editor": false, "email": "admin@example.com", "id": 860}, {"is_admin": true, "is_site_editor": false, "email": "admin@example.com", "id": 861}];
+  el.users = [{"is_admin": true, "is_site_editor": false, "email": "admin@example.com", "id": 1}];
 
   document.body.classList.remove('loading');
 </script>
@@ -141,12 +137,6 @@ limitations under the License.
           async nonce=""></script>
 
   
-  <script type="module" nonce="">
-    (function() {
-      'use strict';
-
-      
-    })();
-  </script>
+  <script type="module" nonce="" src="/static/js/shared.min.js?v="></script>
 </body>
 </html>
