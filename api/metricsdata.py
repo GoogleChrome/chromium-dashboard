@@ -167,26 +167,43 @@ class FeatureHandler(basehandlers.FlaskHandler):
     return datapoints
 
   def get_template_data(self):
-    if self.MODEL_CLASS == metrics_models.FeatureObserver:
-      properties = rediscache.get(self.CACHE_KEY)
+    num = self.request.args.get('num')
+    if num:
+      feature_observer_key = self.get_top_num_cache_key(num)
+      properties = rediscache.get(feature_observer_key)
+      if properties is not None:
+        return _datapoints_to_json_dicts(properties)
 
-      if not properties or self.request.args.get('refresh'):
-        properties = self.__query_metrics_for_properties()
-        rediscache.set(self.CACHE_KEY, properties, time=CACHE_AGE)
+    # Get all datapoints in sorted order.
+    properties = self.fetch_all_datapoints()
 
-    else:
-      properties = rediscache.get(self.CACHE_KEY)
-      logging.info(
-          'looked at cache %r and found %s', self.CACHE_KEY,
-          repr(properties)[:settings.MAX_LOG_LINE])
-      if properties is None:
-        logging.info('Loading properties from datastore')
-        properties = self.__query_metrics_for_properties()
-        rediscache.set(self.CACHE_KEY, properties, time=CACHE_AGE)
+    if num and not self.should_refresh():
+      feature_observer_key = self.get_top_num_cache_key(num)
+      # Cache top `num` properties.
+      properties = properties[0: min(int(num), len(properties))]
+      rediscache.set(feature_observer_key, properties, time=CACHE_AGE)
+    return _datapoints_to_json_dicts(properties)
+
+  def get_top_num_cache_key(self, num):
+    return self.CACHE_KEY + '_' + num
+
+  def fetch_all_datapoints(self):
+    properties = rediscache.get(self.CACHE_KEY)
+    logging.info(
+        'looked at cache %r and found %s', self.CACHE_KEY,
+        repr(properties)[:settings.MAX_LOG_LINE])
+
+    if (properties is None) or self.should_refresh():
+      logging.info('Loading properties from datastore')
+      properties = self.__query_metrics_for_properties()
+      rediscache.set(self.CACHE_KEY, properties, time=CACHE_AGE)
 
     logging.info('before filtering: %s',
                  repr(properties)[:settings.MAX_LOG_LINE])
-    return _datapoints_to_json_dicts(properties)
+    return properties
+
+  def should_refresh(self):
+    return (self.MODEL_CLASS == metrics_models.FeatureObserver) and self.request.args.get('refresh')
 
 
 class CSSPopularityHandler(FeatureHandler):
