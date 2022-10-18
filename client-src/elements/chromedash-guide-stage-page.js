@@ -233,7 +233,7 @@ export class ChromedashGuideStagePage extends LitElement {
       <section class="stage_form">
         ${implStatusName ? html`
           <tr>
-            <td colspan="2"><b>Implementation status:</b></span>
+            <td colspan="2"><b>Implementation status:</b></span></td>
           </tr>
           <tr>
             ${alreadyOnThisImplStatus ?
