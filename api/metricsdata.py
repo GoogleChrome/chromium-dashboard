@@ -168,7 +168,7 @@ class FeatureHandler(basehandlers.FlaskHandler):
 
   def get_template_data(self, **kwargs):
     num = self.request.args.get('num')
-    if num:
+    if num and not self.should_refresh():
       feature_observer_key = self.get_top_num_cache_key(num)
       properties = rediscache.get(feature_observer_key)
       if properties is not None:
@@ -177,7 +177,7 @@ class FeatureHandler(basehandlers.FlaskHandler):
     # Get all datapoints in sorted order.
     properties = self.fetch_all_datapoints()
 
-    if num and not self.should_refresh():
+    if num:
       feature_observer_key = self.get_top_num_cache_key(num)
       # Cache top `num` properties.
       properties = properties[0: min(int(num), len(properties))]
