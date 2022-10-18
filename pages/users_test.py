@@ -46,10 +46,15 @@ class UsersListTemplateTest(testing_config.CustomTestCase):
 
     with test_app.test_request_context('/request_path'):
       self.template_data = self.handler.get_template_data()
+      self.template_data.update(self.handler.get_common_data())
+      self.template_data['nonce'] = 'fake nonce'
+      self.template_data['xsrf_token'] = ''
+      self.template_data['xsrf_token_expires'] = 0
     self.full_template_path = self.handler.get_template_path(self.template_data)
     self.maxDiff = None
   def tearDown(self):
     self.app_admin.key.delete()
+    testing_config.sign_out()
 
   def test_html_rendering(self):
     """We can render the template with valid html."""

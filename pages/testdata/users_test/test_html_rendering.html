@@ -18,12 +18,12 @@ limitations under the License.
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title></title>
+  <title>Local testing</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
 
   <meta name="theme-color" content="#366597">
 
-  <link rel="stylesheet" href="/static/css/base.css?v=" />
+  <link rel="stylesheet" href="/static/css/base.css?v=Undeployed" />
 
   <link rel="icon" sizes="192x192" href="/static/img/crstatus_192.png">
 
@@ -44,38 +44,38 @@ limitations under the License.
 
   
 
-  <link rel="stylesheet" href="/static/css/main.css?v=">
+  <link rel="stylesheet" href="/static/css/main.css?v=Undeployed">
 
   
-  <link rel="stylesheet" href="/static/css/forms.css?v=">
+  <link rel="stylesheet" href="/static/css/forms.css?v=Undeployed">
 
 
   
-  <script src="https://accounts.google.com/gsi/client" async defer nonce=""></script>
+  <script src="https://accounts.google.com/gsi/client" async defer nonce="fake nonce"></script>
 
-  <script nonce="">
+  <script nonce="fake nonce">
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get("loginStatus") == 'False') {
       alert('Please log in.');
     }
   </script>
-  <script nonce="" src="/static/js/metric.min.js?v="></script>
-  <script nonce="" src="/static/js/cs-client.min.js?v="></script>
+  <script nonce="fake nonce" src="/static/js/metric.min.js?v=Undeployed"></script>
+  <script nonce="fake nonce" src="/static/js/cs-client.min.js?v=Undeployed"></script>
 
   
-  <script nonce="">
+  <script nonce="fake nonce">
     window.csClient = new ChromeStatusClient(
-        '', );
+        '', 0);
   </script>
 
-  <script type="module" nonce="" defer
-          src="/static/dist/components.js?v="></script>
+  <script type="module" nonce="fake nonce" defer
+          src="/static/dist/components.js?v=Undeployed"></script>
   
 
   
 </head>
 
-<body class="loading" data-path="">
+<body class="loading" data-path="/request_path?">
   
 
   <div id="app-content-container">
@@ -83,9 +83,9 @@ limitations under the License.
       <div class="main-toolbar">
         <div class="toolbar-content">
           <chromedash-header
-            appTitle=""
-            currentPage=""
-            googleSignInClientId="">
+            appTitle="Local testing"
+            currentPage="/request_path?"
+            googleSignInClientId="914217904764-enfcea61q4hqe7ak8kkuteglrbhk8el1.apps.googleusercontent.com">
           </chromedash-header>
         </div>
       </div>
@@ -96,7 +96,7 @@ limitations under the License.
         </div>
         <chromedash-banner
           message=""
-          timestamp="">
+          timestamp="None">
         </chromedash-banner>
         <div id="content-flex-wrapper">
           <div id="content-component-wrapper">
@@ -125,7 +125,7 @@ limitations under the License.
   
 
   
-<script nonce="">
+<script nonce="fake nonce">
   const el = document.querySelector('chromedash-userlist');
   el.users = [{"is_admin": true, "is_site_editor": false, "email": "admin@example.com", "id": 1}];
 
@@ -134,9 +134,9 @@ limitations under the License.
 
 
   <script src="https://www.googletagmanager.com/gtag/js?id=UA-179341418-1"
-          async nonce=""></script>
+          async nonce="fake nonce"></script>
 
   
-  <script type="module" nonce="" src="/static/js/shared.min.js?v="></script>
+  <script type="module" nonce="fake nonce" src="/static/js/shared.min.js?v=Undeployed"></script>
 </body>
 </html>
