@@ -37,8 +37,10 @@ class ApprovalsAPI(basehandlers.APIHandler):
   """Users may see the set of approvals on a feature, and add their own,
   if allowed."""
 
-  def do_get(self, feature_id, field_id=None):
+  def do_get(self, **kwargs):
     """Return a list of all approval values on the given feature."""
+    feature_id = kwargs.get('feature_id', None)
+    field_id = kwargs.get('field_id', None)
     # Note: We assume that anyone may view approvals.
     approvals = review_models.Approval.get_approvals(
         feature_id=feature_id, field_id=field_id)
@@ -48,8 +50,9 @@ class ApprovalsAPI(basehandlers.APIHandler):
         }
     return data
 
-  def do_post(self, feature_id=None):
+  def do_post(self, **kwargs):
     """Set an approval value for the specified feature."""
+    feature_id = kwargs.get('feature_id', None)
     field_id = self.get_int_param('fieldId')
     new_state = self.get_int_param(
         'state', validator=review_models.Approval.is_valid_state)
@@ -63,6 +66,7 @@ class ApprovalsAPI(basehandlers.APIHandler):
 
     review_models.Approval.set_approval(
         feature_id, field_id, new_state, user.email())
+    approval_defs.set_vote(feature_id, field_id, new_state, user.email())
 
     all_approval_values = review_models.Approval.get_approvals(
         feature_id=feature_id, field_id=field_id)
@@ -93,8 +97,9 @@ def approval_config_to_json_dict(appr_cfg):
 class ApprovalConfigsAPI(basehandlers.APIHandler):
   """Get and set the approval configs for a feature."""
 
-  def do_get(self, feature_id):
+  def do_get(self, **kwargs):
     """Return a list of all approval configs on the given feature."""
+    feature_id = kwargs.get('feature_id', None)
     # Note: We assume that anyone may view approval configs.
     configs = review_models.ApprovalConfig.get_configs(feature_id)
     dicts = [approval_config_to_json_dict(ac) for ac in configs]
@@ -108,8 +113,9 @@ class ApprovalConfigsAPI(basehandlers.APIHandler):
         }
     return data
 
-  def do_post(self, feature_id):
+  def do_post(self, **kwargs):
     """Set an approval config for the specified feature."""
+    feature_id = kwargs['feature_id']
     field_id = self.get_int_param('fieldId')
     owners_str = self.get_param('owners')
     next_action_str = self.get_param('nextAction')

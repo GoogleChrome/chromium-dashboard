@@ -15,11 +15,13 @@
 
 import base64
 import collections
+import datetime
 import logging
 import requests
 
 from framework import permissions
-from internals import review_models
+from internals import core_enums
+from internals.review_models import Approval, Gate, OwnersFile, Vote
 import settings
 
 CACHE_EXPIRATION = 60 * 60  # One hour
@@ -41,22 +43,22 @@ ApprovalFieldDef = collections.namedtuple(
 PrototypeApproval = ApprovalFieldDef(
     'Intent to Prototype',
     'Not normally used.  If a review is requested, API Owners can approve.',
-    1, ONE_LGTM, API_OWNERS_URL)
+    core_enums.GATE_PROTOTYPE, ONE_LGTM, API_OWNERS_URL)
 
 ExperimentApproval = ApprovalFieldDef(
     'Intent to Experiment',
     'One API Owner must approve your intent',
-    2, ONE_LGTM, API_OWNERS_URL)
+    core_enums.GATE_ORIGIN_TRIAL, ONE_LGTM, API_OWNERS_URL)
 
 ExtendExperimentApproval = ApprovalFieldDef(
     'Intent to Extend Experiment',
     'One API Owner must approve your intent',
-    3, ONE_LGTM, API_OWNERS_URL)
+    core_enums.GATE_EXTEND_ORIGIN_TRIAL, ONE_LGTM, API_OWNERS_URL)
 
 ShipApproval = ApprovalFieldDef(
     'Intent to Ship',
     'Three API Owners must approve your intent',
-    4, THREE_LGTM, API_OWNERS_URL)
+    core_enums.GATE_SHIP, THREE_LGTM, API_OWNERS_URL)
 
 APPROVAL_FIELDS_BY_ID = {
     afd.field_id: afd
@@ -68,7 +70,7 @@ APPROVAL_FIELDS_BY_ID = {
 
 def fetch_owners(url):
   """Load a list of email addresses from an OWNERS file."""
-  raw_content = review_models.OwnersFile.get_raw_owner_file(url)
+  raw_content = OwnersFile.get_raw_owner_file(url)
   if raw_content:
     return decode_raw_owner_content(raw_content)
 
@@ -78,7 +80,7 @@ def fetch_owners(url):
     logging.error('Got response %s', repr(response)[:settings.MAX_LOG_LINE])
     raise ValueError('Could not get OWNERS file')
 
-  review_models.OwnersFile(url=url, raw_content=response.content).add_owner_file()
+  OwnersFile(url=url, raw_content=response.content).add_owner_file()
   return decode_raw_owner_content(response.content)
 
 
@@ -131,9 +133,9 @@ def is_approved(approval_values, field_id):
   """Return true if we have all needed APPROVED values and no NOT_APPROVED."""
   count = 0
   for av in approval_values:
-    if av.state in (review_models.Approval.APPROVED, review_models.Approval.NA):
+    if av.state in (Approval.APPROVED, Approval.NA):
       count += 1
-    elif av.state == review_models.Approval.NOT_APPROVED:
+    elif av.state == Approval.NOT_APPROVED:
       return False
   afd = APPROVAL_FIELDS_BY_ID[field_id]
 
@@ -153,7 +155,59 @@ def is_resolved(approval_values, field_id):
 
   # Any NOT_APPROVED value means that the review is no longer pending.
   for av in approval_values:
-    if av.state == review_models.Approval.NOT_APPROVED:
+    if av.state == Approval.NOT_APPROVED:
       return True
 
   return False
+
+def set_vote(
+    feature_id: int, gate_id: int, new_state: int, set_by_email: str) -> None:
+  """Add or update an approval value."""
+  if not Vote.is_valid_state(new_state):
+    raise ValueError('Invalid approval state')
+
+  now = datetime.datetime.now()
+  existing_list: list[Vote] = Vote.get_votes(
+      feature_id=feature_id, gate_id=gate_id, set_by=set_by_email)
+  if existing_list:
+    existing = existing_list[0]
+    existing.set_on = now
+    existing.state = new_state
+    existing.put()
+  else:
+    new_vote = Vote(feature_id=feature_id, gate_id=gate_id, state=new_state,
+        set_on=now, set_by=set_by_email)
+    new_vote.put()
+
+  # TODO(danielrsmith): As of today, there is only 1 gate per
+  # gate type and feature. Passing the gate ID will be required when adding
+  # UI functionality for multiple versions of the same stage/gate.
+  gates: list[Gate] = Gate.query(
+      Gate.feature_id == feature_id, Gate.gate_type == gate_id).fetch()
+  if len(gates) > 0:
+    update_gate_approval_state(gates[0])
+
+def _calc_gate_status(gate: Gate) -> int:
+  """Evaluates the current state that this gate should have."""
+  votes = Vote.get_votes(gate_id=gate.key.integer_id())
+  approvals = 0
+  for vote in votes:
+    if vote.state in (Vote.APPROVED, Vote.NA):
+      approvals += 1
+    elif vote.state == Vote.NOT_APPROVED:
+      return Vote.NOT_APPROVED
+  afd = APPROVAL_FIELDS_BY_ID[gate.gate_type]
+
+  if ((afd.rule == ONE_LGTM and approvals >= 1) or
+      (afd.rule == THREE_LGTM and approvals >= 3)):
+    return Vote.APPROVED
+  return gate.state
+
+def update_gate_approval_state(gate: Gate) -> int:
+  """Change the Gate state if it has changed."""
+  was_not_resolved = not gate.is_resolved()
+  gate.state = _calc_gate_status(gate)
+  gate.put()
+  if was_not_resolved and gate.is_resolved():
+    gate.clear_request()
+  return gate.state

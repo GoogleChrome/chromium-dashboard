@@ -72,7 +72,7 @@ class ApprovalsAPITest(testing_config.CustomTestCase):
     """We can get all approvals for a given feature, even if there none."""
     testing_config.sign_out()
     with test_app.test_request_context(self.request_path):
-      actual_response = self.handler.do_get(self.feature_id)
+      actual_response = self.handler.do_get(feature_id=self.feature_id)
     self.assertEqual({"approvals": []}, actual_response)
 
   def test_get__all_some(self):
@@ -82,7 +82,7 @@ class ApprovalsAPITest(testing_config.CustomTestCase):
     self.appr_1_2.put()
 
     with test_app.test_request_context(self.request_path):
-      actual_response = self.handler.do_get(self.feature_id)
+      actual_response = self.handler.do_get(feature_id=self.feature_id)
 
     self.assertEqual(
         {"approvals": [self.expected1, self.expected2]},
@@ -92,7 +92,8 @@ class ApprovalsAPITest(testing_config.CustomTestCase):
     """We can get approvals for given feature and field, even if there none."""
     testing_config.sign_out()
     with test_app.test_request_context(self.request_path + '/1'):
-      actual_response = self.handler.do_get(self.feature_id, field_id=1)
+      actual_response = self.handler.do_get(
+          feature_id=self.feature_id, field_id=1)
     self.assertEqual({"approvals": []}, actual_response)
 
   def test_get__field_some(self):
@@ -102,7 +103,8 @@ class ApprovalsAPITest(testing_config.CustomTestCase):
     self.appr_1_2.put()
 
     with test_app.test_request_context(self.request_path + '/1'):
-      actual_response = self.handler.do_get(self.feature_id, field_id=1)
+      actual_response = self.handler.do_get(
+          feature_id=self.feature_id, field_id=1)
 
     self.assertEqual(
         {"approvals": [self.expected1]},
@@ -250,7 +252,7 @@ class ApprovalConfigsAPITest(testing_config.CustomTestCase):
     mock_get_approvers.return_value = ['owner@example.com']
     testing_config.sign_in('other@example.com', 123567890)
     with test_app.test_request_context(self.request_path):
-      actual = self.handler.do_get(self.feature_1_id)
+      actual = self.handler.do_get(feature_id=self.feature_1_id)
     self.assertEqual(
         {'configs': [{
             'feature_id': self.feature_1_id,
@@ -270,7 +272,7 @@ class ApprovalConfigsAPITest(testing_config.CustomTestCase):
 
     testing_config.sign_out()
     with test_app.test_request_context(self.request_path):
-      actual = self.handler.do_get(self.feature_2_id)
+      actual = self.handler.do_get(feature_id=self.feature_2_id)
     self.assertEqual(
         {'configs': [{
             'feature_id': self.feature_2_id,
@@ -293,7 +295,7 @@ class ApprovalConfigsAPITest(testing_config.CustomTestCase):
     """If there are no configs, we return an empty list."""
     mock_get_approvers.return_value = ['owner@example.com']
     with test_app.test_request_context(self.request_path):
-      actual = self.handler.do_get(self.feature_3_id)
+      actual = self.handler.do_get(feature_id=self.feature_3_id)
 
     self.assertEqual(
         {'configs': [],
@@ -317,7 +319,7 @@ class ApprovalConfigsAPITest(testing_config.CustomTestCase):
               'nextAction': '2021-11-30',
               'additionalReview': False}
     with test_app.test_request_context(self.request_path, json=params):
-      actual = self.handler.do_post(self.feature_1_id)
+      actual = self.handler.do_post(feature_id=self.feature_1_id)
 
     self.assertEqual({'message': 'Done'}, actual)
     revised_configs = review_models.ApprovalConfig.query(
@@ -340,7 +342,7 @@ class ApprovalConfigsAPITest(testing_config.CustomTestCase):
               'nextAction': '2021-11-30',
               'additionalReview': False}
     with test_app.test_request_context(self.request_path, json=params):
-      actual = self.handler.do_post(self.feature_1_id)
+      actual = self.handler.do_post(feature_id=self.feature_1_id)
 
     self.assertEqual({'message': 'Done'}, actual)
     revised_config = review_models.ApprovalConfig.query(
@@ -364,7 +366,7 @@ class ApprovalConfigsAPITest(testing_config.CustomTestCase):
               'nextAction': '',
               'additionalReview': False}
     with test_app.test_request_context(self.request_path, json=params):
-      actual = self.handler.do_post(self.feature_1_id)
+      actual = self.handler.do_post(feature_id=self.feature_1_id)
 
     self.assertEqual({'message': 'Done'}, actual)
     revised_config = review_models.ApprovalConfig.query(
@@ -386,7 +388,7 @@ class ApprovalConfigsAPITest(testing_config.CustomTestCase):
               'nextAction': '2021-11-30',
               'additionalReview': False}
     with test_app.test_request_context(self.request_path, json=params):
-      actual = self.handler.do_post(self.feature_3_id)
+      actual = self.handler.do_post(feature_id=self.feature_3_id)
 
     self.assertEqual({'message': 'Done'}, actual)
     new_config = review_models.ApprovalConfig.query(
@@ -410,7 +412,7 @@ class ApprovalConfigsAPITest(testing_config.CustomTestCase):
               'additionalReview': False}
     with test_app.test_request_context(self.request_path, json=params):
       with self.assertRaises(werkzeug.exceptions.BadRequest):
-        self.handler.do_post(self.feature_3_id)
+        self.handler.do_post(feature_id=self.feature_3_id)
 
     params = {'fieldId': 3,
               'owners': '',
@@ -418,4 +420,4 @@ class ApprovalConfigsAPITest(testing_config.CustomTestCase):
               'additionalReview': False}
     with test_app.test_request_context(self.request_path, json=params):
       with self.assertRaises(werkzeug.exceptions.BadRequest):
-        self.handler.do_post(self.feature_3_id)
+        self.handler.do_post(feature_id=self.feature_3_id)

@@ -179,7 +179,7 @@ UMA_QUERIES = [
 class YesterdayHandler(basehandlers.FlaskHandler):
   """Loads yesterday's UMA data."""
 
-  def get_template_data(self, today=None):
+  def get_template_data(self, **kwargs):
     """Loads the data file located at |filename|.
 
     Args:
@@ -198,7 +198,7 @@ class YesterdayHandler(basehandlers.FlaskHandler):
         self.abort(400, msg='Failed to parse date string.')
 
     else:
-      today = today or datetime.date.today()
+      today = kwargs.get('today', datetime.date.today())
       days = [today - datetime.timedelta(days_ago)
               for days_ago in [1, 2, 3, 4, 5]]
 
@@ -250,7 +250,7 @@ class HistogramsHandler(basehandlers.FlaskHandler):
       property_name=property_name
     )
 
-  def get_template_data(self):
+  def get_template_data(self, **kwargs):
     self.require_cron_header()
     # Attempt to fetch enums mapping file.
     response = requests.get(HISTOGRAMS_URL, timeout=60)
@@ -285,7 +285,7 @@ class HistogramsHandler(basehandlers.FlaskHandler):
 
 class BlinkComponentHandler(basehandlers.FlaskHandler):
   """Updates the list of Blink components in the db."""
-  def get_template_data(self):
+  def get_template_data(self, **kwargs):
     self.require_cron_header()
     user_models.BlinkComponent.update_db()
     return 'Blink components updated'

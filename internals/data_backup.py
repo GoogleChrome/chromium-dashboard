@@ -32,7 +32,7 @@ class MemoryCache(Cache):
 class BackupExportHandler(basehandlers.FlaskHandler):
   """Triggers a new Datastore export."""
 
-  def get_template_data(self):
+  def get_template_data(self, **kwargs):
     self.require_cron_header()
     bucket = f'gs://{settings.BACKUP_BUCKET}'
     # The default cache (file_cache) is unavailable when using oauth2client >= 4.0.0 or google-auth,

@@ -45,8 +45,9 @@ class CommentsAPI(basehandlers.APIHandler):
     """Check whether a comment should be visible to the user."""
     return comment.deleted_by is None or email == comment.deleted_by or is_admin
 
-  def do_get(self, feature_id: int,
-      field_id: Optional[int]=None) -> dict[str, dict[str, Any]]:
+  def do_get(self, **kwargs) -> dict[str, list[dict[str, Any]]]:
+    feature_id = kwargs['feature_id']
+    field_id = kwargs.get('field_id', None)
     """Return a list of all review comments on the given feature."""
     # Note: We assume that anyone may view approval comments.
     comments = Activity.get_activities(
@@ -61,9 +62,10 @@ class CommentsAPI(basehandlers.APIHandler):
     dicts = [comment_to_json_dict(c) for c in comments]
     return {'comments': dicts}
 
-  def do_post(
-      self, feature_id: int, gate_id: Optional[int]=None) -> dict[str, str]:
+  def do_post(self, **kwargs) -> dict[str, str]:
     """Add a review comment and possibly set a approval value."""
+    feature_id = kwargs['feature_id']
+    gate_id = kwargs.get('gate_id', None)
     new_state = self.get_int_param(
         'state', required=False,
         validator=Approval.is_valid_state)
@@ -83,6 +85,7 @@ class CommentsAPI(basehandlers.APIHandler):
         self.abort(403, msg='User is not an approver')
       Approval.set_approval(
           feature.key.integer_id(), gate_id, new_state, user.email())
+      approval_defs.set_vote(feature_id, gate_id, new_state, user.email())
 
     comment_content = self.get_param('comment', required=False)
 
@@ -99,7 +102,7 @@ class CommentsAPI(basehandlers.APIHandler):
     # Callers don't use the JSON response for this API call.
     return {'message': 'Done'}
 
-  def do_patch(self, feature_id: int) -> dict[str, str]:
+  def do_patch(self, **kwargs) -> dict[str, str]:
     comment_id = self.get_param('commentId', required=True)
     comment: Optional[Activity] = Activity.get_by_id(comment_id)
 

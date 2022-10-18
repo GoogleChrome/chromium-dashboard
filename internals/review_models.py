@@ -233,7 +233,22 @@ class Gate(ndb.Model):  # copy from ApprovalConfig
   next_action = ndb.DateProperty()
   additional_review = ndb.BooleanProperty(default=False)
 
-  # TODO(jrobbins): implement request_review() and clear_request()
+  # TODO(jrobbins): implement request_review()
+
+  def clear_request(self) -> None:
+    """After the review requirement has been satisfied, remove the request."""
+    votes_requested = Vote.get_votes(feature_id=self.feature_id,
+        gate_id=self.key.integer_id(), states=[Vote.REVIEW_REQUESTED])
+    for vote in votes_requested:
+      vote.key.delete()
+
+  def is_resolved(self) -> bool:
+    """Return if the Gate's outcome has been decided."""
+    return self.state == Vote.APPROVED or self.state == Vote.NOT_APPROVED
+
+  def is_approved(self) -> bool:
+    """Return if the Gate approval requirements have been met."""
+    return self.state == Vote.APPROVED
 
 
 # Note: This class is not used yet.
@@ -290,26 +305,7 @@ class Vote(ndb.Model):  # copy from Approval
     """Return true if new_state is valid."""
     return new_state in cls.VOTE_VALUES
 
-  @classmethod
-  def set_vote(cls, feature_id, gate_id, new_state, set_by_email):
-    """Add or update an approval value."""
-    if not cls.is_valid_state(new_state):
-      raise ValueError('Invalid approval state')
-
-    now = datetime.datetime.now()
-    existing_list = cls.get_votes(
-        feature_id=feature_id, gate_id=gate_id, set_by=set_by_email)
-    if existing_list:
-      existing = existing_list[0]
-      existing.set_on = now
-      existing.state = new_state
-      existing.put()
-      return
-
-    new_vote = Vote(
-        feature_id=feature_id, gate_id=gate_id, state=new_state,
-        set_on=now, set_by=set_by_email)
-    new_vote.put()
+  # Note: set_vote() moved to approval_defs.py
 
   # Note: clear_request() moved to Gate
 

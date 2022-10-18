@@ -1,6 +1,5 @@
 {% extends "_base.html" %}
 
-{% load inline_file %}
 {% load cache %}
 
 {% block rss %}
@@ -8,9 +7,7 @@
 {% endblock %}
 
 {% block css %}
-  {% cache TEMPLATE_CACHE_TIME featurescss %}
-    <style>{% inline_file "/static/css/features/features.css" %}</style>
-  {% endcache %}
+<link rel="stylesheet" href="/static/css/features/features.css?v={{app_version}}">
 {% endblock %}
 
 {% block content %}
@@ -50,6 +47,7 @@
 {% endblock %}
 
 {% block js %}
+  <script nonce="{{nonce}}" src="/static/js/features-page.min.js?v={{app_version}}"></script>
   <script nonce="{{nonce}}">
     (function() {
       'use strict';
@@ -59,7 +57,7 @@
         webdevs: {{WEB_DEV_VIEWS|safe}},
         standards: {{STANDARDS_VALS|safe}}
       };
-      {% inline_file "/static/js/features-page.min.js" %}
+      loadFeatureLegendViews(VIEWS);
     })();
   </script>
 {% endblock %}

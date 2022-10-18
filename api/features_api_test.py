@@ -56,7 +56,7 @@ class FeaturesAPITestDelete(testing_config.CustomTestCase):
     testing_config.sign_in('admin@example.com', 123567890)
 
     with test_app.test_request_context(self.request_path):
-      actual_json = self.handler.do_delete(self.feature_id)
+      actual_json = self.handler.do_delete(feature_id=self.feature_id)
     self.assertEqual({'message': 'Done'}, actual_json)
 
     revised_feature = core_models.Feature.get_by_id(self.feature_id)
@@ -68,7 +68,7 @@ class FeaturesAPITestDelete(testing_config.CustomTestCase):
 
     with test_app.test_request_context(self.request_path):
       with self.assertRaises(werkzeug.exceptions.Forbidden):
-        self.handler.do_delete(self.feature_id)
+        self.handler.do_delete(feature_id=self.feature_id)
 
     revised_feature = core_models.Feature.get_by_id(self.feature_id)
     self.assertFalse(revised_feature.deleted)
@@ -79,7 +79,7 @@ class FeaturesAPITestDelete(testing_config.CustomTestCase):
 
     with test_app.test_request_context(self.request_path):
       with self.assertRaises(werkzeug.exceptions.BadRequest):
-        self.handler.do_delete(None)
+        self.handler.do_delete()
 
     revised_feature = core_models.Feature.get_by_id(self.feature_id)
     self.assertFalse(revised_feature.deleted)
@@ -90,7 +90,7 @@ class FeaturesAPITestDelete(testing_config.CustomTestCase):
 
     with test_app.test_request_context(self.request_path):
       with self.assertRaises(werkzeug.exceptions.NotFound):
-        self.handler.do_delete(self.feature_id + 1)
+        self.handler.do_delete(feature_id=self.feature_id + 1)
 
     revised_feature = core_models.Feature.get_by_id(self.feature_id)
     self.assertFalse(revised_feature.deleted)

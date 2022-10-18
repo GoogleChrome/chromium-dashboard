@@ -100,7 +100,12 @@ featureListEl.addEventListener('app-ready', () => {
   });
 });
 
-legendEl.views = VIEWS;
+// Helper function used by features.html
+/* eslint-disable no-unused-vars */
+const loadFeatureLegendViews = function(views) {
+  legendEl.views = views;
+};
+
 
 document.querySelector('.legend-button').addEventListener('click', (e) => {
   e.preventDefault();
