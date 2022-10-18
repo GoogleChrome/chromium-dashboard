@@ -17,6 +17,7 @@ import testing_config  # Must be imported first
 import datetime
 from unittest import mock
 import flask
+import werkzeug.exceptions
 
 # from google.appengine.api import users
 from framework import users
@@ -91,11 +92,16 @@ class PopularityTimelineHandlerTests(testing_config.CustomTestCase):
     actual_query = self.handler.make_query(1)
     self.assertEqual(actual_query.kind, metrics_models.StableInstance._get_kind())
 
-  def test_get_template_data__bad_bucket(self):
+  @mock.patch('flask.abort')
+  def test_get_template_data__bad_bucket(self, mock_abort):
     url = '/data/timeline/csspopularity?bucket_id=not-a-number'
+    mock_abort.side_effect = werkzeug.exceptions.BadRequest
+
     with test_app.test_request_context(url):
-      actual = self.handler.get_template_data()
-    self.assertEqual([], actual)
+      with self.assertRaises(werkzeug.exceptions.BadRequest):
+        actual = self.handler.get_template_data()
+      mock_abort.assert_called_once_with(
+          400, description="Request parameter 'bucket_id' was not an int")
 
   def test_get_template_data__normal(self):
     testing_config.sign_out()

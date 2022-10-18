@@ -69,9 +69,8 @@ class TimelineHandler(basehandlers.FlaskHandler):
     return query
 
   def get_template_data(self, **kwargs):
-    try:
-      bucket_id = int(self.request.args.get('bucket_id'))
-    except:
+    bucket_id = self.get_int_arg('bucket_id')
+    if bucket_id is None:
       # TODO(jrobbins): Why return [] instead of 400?
       return []
 
@@ -167,9 +166,9 @@ class FeatureHandler(basehandlers.FlaskHandler):
     return datapoints
 
   def get_template_data(self, **kwargs):
-    num = self.request.args.get('num')
+    num = self.get_int_arg('num')
     if num and not self.should_refresh():
-      feature_observer_key = self.get_top_num_cache_key(num)
+      feature_observer_key = self.get_top_num_cache_key(str(num))
       properties = rediscache.get(feature_observer_key)
       if properties is not None:
         return _datapoints_to_json_dicts(properties)
@@ -178,9 +177,9 @@ class FeatureHandler(basehandlers.FlaskHandler):
     properties = self.fetch_all_datapoints()
 
     if num:
-      feature_observer_key = self.get_top_num_cache_key(num)
+      feature_observer_key = self.get_top_num_cache_key(str(num))
       # Cache top `num` properties.
-      properties = properties[:int(num)]
+      properties = properties[:num]
       rediscache.set(feature_observer_key, properties, time=CACHE_AGE)
     return _datapoints_to_json_dicts(properties)
 

@@ -84,11 +84,7 @@ class FeatureListXMLHandler(basehandlers.FlaskHandler):
 
       # Support setting larger-than-default Atom feed sizes so that web
       # crawlers can use this as a full site feed.
-      try:
-        max_items = int(self.request.args.get(
-            'max-items', settings.RSS_FEED_LIMIT))
-      except TypeError:
-        max_items = settings.RSS_FEED_LIMIT
+      max_items = self.get_int_arg('max-items', settings.RSS_FEED_LIMIT)
 
       if category is not None:
         for k,v in list(core_enums.FEATURE_CATEGORIES.items()):

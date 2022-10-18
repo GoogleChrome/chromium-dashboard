@@ -40,18 +40,15 @@ class FeaturesAPI(basehandlers.APIHandler):
     features_on_page = None
 
     # Query-string parameter 'milestone' is provided
-    milestone = self.request.args.get('milestone')
+    milestone = self.get_int_arg('milestone')
     if milestone:
-      if milestone.isdigit():
-        features_by_type = core_models.Feature.get_in_milestone(
-          show_unlisted=show_unlisted_features, milestone=int(milestone))
-        total_count = sum(len(features_by_type[t]) for t in features_by_type)
-        return {
-            'features_by_type': features_by_type,
-            'total_count': total_count,
-            }
-      else:
-        self.abort(400, msg='Invalid  Milestone')
+      features_by_type = core_models.Feature.get_in_milestone(
+        show_unlisted=show_unlisted_features, milestone=int(milestone))
+      total_count = sum(len(features_by_type[t]) for t in features_by_type)
+      return {
+          'features_by_type': features_by_type,
+          'total_count': total_count,
+          }
 
     user_query = self.request.args.get('q', '')
     sort_spec = self.request.args.get('sort')
