@@ -180,7 +180,7 @@ class FeatureHandler(basehandlers.FlaskHandler):
     if num:
       feature_observer_key = self.get_top_num_cache_key(num)
       # Cache top `num` properties.
-      properties = properties[0: min(int(num), len(properties))]
+      properties = properties[:int(num)]
       rediscache.set(feature_observer_key, properties, time=CACHE_AGE)
     return _datapoints_to_json_dicts(properties)
 
@@ -203,7 +203,8 @@ class FeatureHandler(basehandlers.FlaskHandler):
     return properties
 
   def should_refresh(self):
-    return (self.MODEL_CLASS == metrics_models.FeatureObserver) and self.request.args.get('refresh')
+    return (self.MODEL_CLASS == metrics_models.FeatureObserver and
+        self.request.args.get('refresh'))
 
 
 class CSSPopularityHandler(FeatureHandler):
