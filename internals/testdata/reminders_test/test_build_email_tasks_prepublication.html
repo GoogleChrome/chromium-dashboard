@@ -1,0 +1,62 @@
+<p>Your feature is slated to ship in M100 which will reach the
+beta channel on 2022-09-21.</p>
+
+<p>About one week before that date, the summary field of your feature
+entry will be used verbatim (in blog posts and enterprise release
+notes) to announce this new milestone.  These posts are widely read by
+web developers and IT admins, and they are sometimes used as the basis
+for popular press articles.</p>
+
+<p>Please take a look at
+  <a href="https://developer.chrome.com/tags/beta/"
+     >past blog posts</a> and
+  <a href="https://support.google.com/chrome/a/answer/7679408"
+     >enterprise release notes</a>,
+and then revise your feature summary to prepare it for
+publication.</p>
+
+<p>Here's what we have now for publication:</p>
+<h3>feature one<h3>
+<p>sum</p>
+
+<p><a href="http://127.0.0.1:8888//guide/edit/123">Edit your feature</a></p>
+
+
+
+<p>Guidelines for writing the summary:</p>
+<ul>
+
+  <li>Provide a one sentence description followed by one or two lines
+  explaining how this feature works and how it helps web
+  developers.</li>
+
+  <li>Write from a web developer's point of view, not a browser developer's.</li>
+
+  <li>Do not use markup or markdown because they will not be rendered.</li>
+
+  <li>Do not use hard or soft returns because they will not be rendered.</li>
+
+  <li>Avoid phrases such as "a new feature". Every feature on the site
+  was new when it was created. You don't need to repeat that
+  information.</li>
+
+  <li>The first line should be a sentence fragment beginning with a
+  verb. (See below.) This is the rare exception to the requirement to
+  always use complete sentences.</li>
+
+  <li>"Conformance with spec" is not adequate. Most if not all
+  features are in conformance to spec.</li>
+</ul>
+
+<p>Example:</p>
+
+<p style="border: 1px solid #444; padding: 1em; margin: 1em">
+  Splits the HTTP cache using the top frame origin (and possibly
+  subframe origin) to prevent documents from one origin from knowing
+  whether a resource from another origin was cached. The HTTP cache is
+  currently one per profile, with a single namespace for all resources
+  and subresources regardless of origin or renderer process. Splitting
+  the cache on top frame origins helps the browser deflect
+  side-channel attacks where one site can detect resources in another
+  site's cache.
+</p>

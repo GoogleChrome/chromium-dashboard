@@ -1,0 +1,337 @@
+
+<!DOCTYPE html>
+<!--
+Copyright 2016 Google Inc. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>feature one - Local testing</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+
+  <meta name="theme-color" content="#366597">
+
+  <link rel="stylesheet" href="/static/css/base.css?v=Undeployed" />
+
+  <link rel="icon" sizes="192x192" href="/static/img/crstatus_192.png">
+
+  <!-- iOS: run in full-screen mode and display upper status bar as translucent -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+  <link rel="apple-touch-icon" href="/static/img/crstatus_128.png">
+  <link rel="apple-touch-icon-precomposed" href="/static/img/crstatus_128.png">
+  <link rel="shortcut icon" href="/static/img/crstatus_128.png">
+
+  <link rel="preconnect" href="https://www.google-analytics.com" crossorigin>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&amp;display=swap" rel="stylesheet">
+
+  
+
+  <link rel="stylesheet" href="/static/css/main.css?v=Undeployed">
+
+  
+<link rel="stylesheet" href="/static/css/forms.css?v=Undeployed">
+<link rel="stylesheet" href="/static/css/features/launch.css?v=Undeployed">
+
+
+  
+  <script src="https://accounts.google.com/gsi/client" async defer nonce="fake nonce"></script>
+
+  <script nonce="fake nonce">
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get("loginStatus") == 'False') {
+      alert('Please log in.');
+    }
+  </script>
+  <script nonce="fake nonce" src="/static/js/metric.min.js?v=Undeployed"></script>
+  <script nonce="fake nonce" src="/static/js/cs-client.min.js?v=Undeployed"></script>
+
+  
+  <script nonce="fake nonce">
+    window.csClient = new ChromeStatusClient(
+        '', 0);
+  </script>
+
+  <script type="module" nonce="fake nonce" defer
+          src="/static/dist/components.js?v=Undeployed"></script>
+  
+
+  
+</head>
+
+<body class="loading" data-path="/admin/features/launch/5/234?intent">
+  
+
+  <div id="app-content-container">
+    <div>
+      <div class="main-toolbar">
+        <div class="toolbar-content">
+          <chromedash-header
+            appTitle="Local testing"
+            currentPage="/admin/features/launch/5/234?intent"
+            googleSignInClientId="914217904764-enfcea61q4hqe7ak8kkuteglrbhk8el1.apps.googleusercontent.com">
+          </chromedash-header>
+        </div>
+      </div>
+
+      <div id="content">
+        <div id="spinner">
+          <img src="/static/img/ring.svg">
+        </div>
+        <chromedash-banner
+          message=""
+          timestamp="None">
+        </chromedash-banner>
+        <div id="content-flex-wrapper">
+          <div id="content-component-wrapper">
+            
+<div id="subheader">
+  <div>
+    <h2>Next steps for the Blink launch process</h2>
+  </div>
+</div>
+
+            
+
+
+
+
+
+
+<section>
+<h3>Reach out to a spec mentor</h3>
+<p style="margin-left: 1em">
+  Consider showing your draft intent email to your spec mentor or
+  sending it to spec-mentors@chromium.org.  They can help make sure
+  that your intent email is ready for review.</p>
+</section>
+
+
+
+<section>
+<h3>Copy and send this text for your "Intent to ..." email</h3>
+<p>Email to</p>
+<div class="subject">
+  blink-dev@chromium.org
+</div>
+
+<p>Subject</p>
+<div class="subject">
+  Intent to Prototype:
+  feature one
+</div>
+
+
+
+<p>Body
+  <span class="tooltip copy-text" style="float:right"
+        title="Copy text to clipboard">
+      <a href="#" data-tooltip>
+        <iron-icon icon="chromestatus:content_copy"
+                   id="copy-email-body"></iron-icon>
+      </a>
+  </span>
+</p>
+
+<div class="email">
+
+  <h4>Contact emails</h4>
+  
+  
+    <a href="mailto:user1@google.com">user1@google.com</a>
+  
+
+  
+    <br><br><h4>Explainer</h4>
+    None
+    
+  
+
+  <br><br><h4>Specification</h4>
+  
+
+  
+
+  <br><br><h4>Summary</h4>
+  <p class="preformatted">sum</p>
+
+  <br><br><h4>Blink component</h4>
+  
+    <a href="https://bugs.chromium.org/p/chromium/issues/list?q=component:Blink" target="_blank" rel="noopener">Blink</a>
+  
+
+  
+    <br><br><h4>Motivation</h4>
+    <p class="preformatted"></p>
+
+    <br><br><h4>Initial public proposal</h4>
+    
+  
+
+  
+
+  <br><br><h4>TAG review</h4>
+  
+
+  
+    <br><br><h4>TAG review status</h4>
+    Pending
+  
+
+  
+
+  <br><br><h4>Risks</h4>
+  <div style="margin-left: 4em;">
+    <br><br><h4>Interoperability and Compatibility</h4>
+    <p class="preformatted"></p>
+
+    <br><br><i>Gecko</i>: No signal
+    
+    
+
+    <br><br><i>WebKit</i>: No signal
+    
+    
+
+    <br><br><i>Web developers</i>: No signals
+    
+    
+
+    <br><br><i>Other signals</i>:
+    
+
+    
+
+    
+
+    
+
+    <br><br><h4>WebView application risks</h4>
+    <p style="font-style: italic">
+      Does this intent deprecate or change behavior of existing APIs,
+      such that it has potentially high risk for Android WebView-based
+      applications?</p>
+    <p class="preformatted"></p>
+
+  </div> <!-- end risks -->
+
+
+
+<br><br><h4>Debuggability</h4>
+<p class="preformatted"></p>
+
+
+
+<br><br><h4>Is this feature fully tested by <a href="https://chromium.googlesource.com/chromium/src/+/main/docs/testing/web_platform_tests.md">web-platform-tests</a>?</h4>
+No
+
+
+
+
+<br><br><h4>Flag name</h4>
+
+
+<br><br><h4>Requires code in //chrome?</h4>
+False
+
+
+
+
+
+
+
+
+
+
+
+
+
+<br><br><h4>Estimated milestones</h4>
+
+
+  <p>No milestones specified</p>
+
+
+
+
+
+
+
+<br><br><h4>Link to entry on the Local testing</h4>
+<a href="http://localhost/feature/234">http://localhost/feature/234</a>
+
+
+
+
+
+
+<br><br><div><small>
+  This intent message was generated by
+  <a href="https://chromestatus.com">Chrome Platform Status</a>.
+</small></div>
+
+</div> <!-- end email body div -->
+
+</section>
+
+
+
+
+
+          </div>
+        </div>
+      </div>
+
+    </div>
+    <chromedash-footer></chromedash-footer>
+  </div>
+
+  <chromedash-toast msg="Welcome to chromestatus.com!"></chromedash-toast>
+
+  
+
+  
+<script nonce="fake nonce">
+// Remove loading spinner at page load.
+  document.body.classList.remove('loading');
+
+  const copyEmailBodyEl = document.querySelector('#copy-email-body');
+  const emailBodyEl = document.querySelector('.email');
+  const toastEl = document.querySelector('chromedash-toast');
+  if (copyEmailBodyEl && emailBodyEl) {
+      copyEmailBodyEl.addEventListener('click', () => {
+          window.getSelection().removeAllRanges();
+          const range = document.createRange();
+          range.selectNode(emailBodyEl);
+          window.getSelection().addRange(range);
+          document.execCommand('copy');
+          toastEl.showMessage('Email body copied');
+      });
+  }
+</script>
+
+
+  <script src="https://www.googletagmanager.com/gtag/js?id=UA-179341418-1"
+          async nonce="fake nonce"></script>
+
+  
+  <script type="module" nonce="fake nonce" src="/static/js/shared.min.js?v=Undeployed"></script>
+</body>
+</html>

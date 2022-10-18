@@ -1,0 +1,142 @@
+
+<!DOCTYPE html>
+<!--
+Copyright 2016 Google Inc. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Local testing</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+
+  <meta name="theme-color" content="#366597">
+
+  <link rel="stylesheet" href="/static/css/base.css?v=Undeployed" />
+
+  <link rel="icon" sizes="192x192" href="/static/img/crstatus_192.png">
+
+  <!-- iOS: run in full-screen mode and display upper status bar as translucent -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+  <link rel="apple-touch-icon" href="/static/img/crstatus_128.png">
+  <link rel="apple-touch-icon-precomposed" href="/static/img/crstatus_128.png">
+  <link rel="shortcut icon" href="/static/img/crstatus_128.png">
+
+  <link rel="preconnect" href="https://www.google-analytics.com" crossorigin>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&amp;display=swap" rel="stylesheet">
+
+  
+
+  <link rel="stylesheet" href="/static/css/main.css?v=Undeployed">
+
+  
+  <link rel="stylesheet" href="/static/css/forms.css?v=Undeployed">
+
+
+  
+  <script src="https://accounts.google.com/gsi/client" async defer nonce="fake nonce"></script>
+
+  <script nonce="fake nonce">
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get("loginStatus") == 'False') {
+      alert('Please log in.');
+    }
+  </script>
+  <script nonce="fake nonce" src="/static/js/metric.min.js?v=Undeployed"></script>
+  <script nonce="fake nonce" src="/static/js/cs-client.min.js?v=Undeployed"></script>
+
+  
+  <script nonce="fake nonce">
+    window.csClient = new ChromeStatusClient(
+        '', 0);
+  </script>
+
+  <script type="module" nonce="fake nonce" defer
+          src="/static/dist/components.js?v=Undeployed"></script>
+  
+
+  
+</head>
+
+<body class="loading" data-path="/request_path?">
+  
+
+  <div id="app-content-container">
+    <div>
+      <div class="main-toolbar">
+        <div class="toolbar-content">
+          <chromedash-header
+            appTitle="Local testing"
+            currentPage="/request_path?"
+            googleSignInClientId="914217904764-enfcea61q4hqe7ak8kkuteglrbhk8el1.apps.googleusercontent.com">
+          </chromedash-header>
+        </div>
+      </div>
+
+      <div id="content">
+        <div id="spinner">
+          <img src="/static/img/ring.svg">
+        </div>
+        <chromedash-banner
+          message=""
+          timestamp="None">
+        </chromedash-banner>
+        <div id="content-flex-wrapper">
+          <div id="content-component-wrapper">
+            
+<div id="subheader">
+  <h2>Application users</h2>
+</div>
+
+            
+<section>
+
+  <chromedash-userlist></chromedash-userlist>
+
+</section>
+
+          </div>
+        </div>
+      </div>
+
+    </div>
+    <chromedash-footer></chromedash-footer>
+  </div>
+
+  <chromedash-toast msg="Welcome to chromestatus.com!"></chromedash-toast>
+
+  
+
+  
+<script nonce="fake nonce">
+  const el = document.querySelector('chromedash-userlist');
+  el.users = [{"is_admin": true, "is_site_editor": false, "email": "admin@example.com", "id": 1}];
+
+  document.body.classList.remove('loading');
+</script>
+
+
+  <script src="https://www.googletagmanager.com/gtag/js?id=UA-179341418-1"
+          async nonce="fake nonce"></script>
+
+  
+  <script type="module" nonce="fake nonce" src="/static/js/shared.min.js?v=Undeployed"></script>
+</body>
+</html>
