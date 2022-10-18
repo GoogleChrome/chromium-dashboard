@@ -20,6 +20,7 @@ import flask
 
 # from google.appengine.api import users
 from framework import users
+from framework import rediscache
 
 from api import metricsdata
 from internals import metrics_models
@@ -105,7 +106,71 @@ class PopularityTimelineHandlerTests(testing_config.CustomTestCase):
     self.assertEqual(0.01234568, actual_datapoints[0]['day_percentage'])
 
 
-# TODO(jrobbins): Test for metricsdata.FeatureHandler.
+class CSSPopularityHandlerTests(testing_config.CustomTestCase):
+
+  def setUp(self):
+    self.handler = metricsdata.CSSPopularityHandler()
+    # Set up StableInstance data.
+    self.datapoint = metrics_models.StableInstance(
+        day_percentage=0.0123456789, date=datetime.date.today(),
+        bucket_id=1, property_name='b prop')
+    self.datapoint.put()
+    # Set up CssPropertyHistogram data.
+    self.prop_1 = metrics_models.CssPropertyHistogram(
+        bucket_id=1, property_name='b prop')
+    self.prop_1.put()
+    self.prop_2 = metrics_models.CssPropertyHistogram(
+        bucket_id=2, property_name='a prop')
+    self.prop_2.put()
+    self.prop_3 = metrics_models.FeatureObserverHistogram(
+        bucket_id=3, property_name='b feat')
+    self.prop_3.put()
+    self.prop_4 = metrics_models.FeatureObserverHistogram(
+        bucket_id=4, property_name='a feat')
+    self.prop_4.put()
+
+  def tearDown(self):
+    self.datapoint.key.delete()
+    self.prop_1.key.delete()
+    self.prop_2.key.delete()
+    self.prop_3.key.delete()
+    self.prop_4.key.delete()
+    rediscache.flushall()
+
+  def test_get_top_num_cache_key(self):
+    actual = self.handler.get_top_num_cache_key('30')
+    self.assertEqual('metrics|css_popularity_30', actual)
+
+  def test_get_template_data(self):
+    url = '/data/csspopularity'
+    with test_app.test_request_context(url):
+      actual_datapoints = self.handler.get_template_data()
+    self.assertEqual(1, len(actual_datapoints))
+    self.assertEqual(0.01234568, actual_datapoints[0]['day_percentage'])
+
+  def test_get_template_data_from_cache(self):
+    url = '/data/csspopularity'
+    with test_app.test_request_context(url):
+      self.handler.get_template_data()
+
+    actual_datapoints = rediscache.get('metrics|css_popularity')
+    self.assertEqual(1, len(actual_datapoints))
+    self.assertEqual(0.0123456789, actual_datapoints[0].day_percentage)
+
+  def test_should_refresh(self):
+    url = '/data/csspopularity?'
+    with test_app.test_request_context(url):
+      self.assertEqual(False, self.handler.should_refresh())
+
+  def test_get_template_data_with_num(self):
+    self.assertEqual(None, rediscache.get('metrics|css_popularity_30'))
+    url = '/data/csspopularity?num=30'
+    with test_app.test_request_context(url):
+      self.handler.get_template_data()
+
+    actual_datapoints = rediscache.get('metrics|css_popularity_30')
+    self.assertEqual(1, len(actual_datapoints))
+    self.assertEqual(0.0123456789, actual_datapoints[0].day_percentage)
 
 
 class FeatureBucketsHandlerTest(testing_config.CustomTestCase):
