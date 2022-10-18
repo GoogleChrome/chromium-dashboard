@@ -89,3 +89,31 @@ class CustomTestCase(unittest.TestCase):
     client = ndb.Client()
     with client.context():
       super(CustomTestCase, self).run(result=result)
+
+
+class Testdata(object):
+  def __init__(self, test_file_abs_directory, test_file_name):
+    """Helper class to load testdata
+    Common pattern to place the testdata in the following format:
+
+    Given a test file, atest_test.py, and it is located at
+    /some/module/atest_test.py.
+
+    The testdata should be located at /some/module/testdata/atest_test/
+    """
+    self.testdata = {}
+    self.testdata_dir = os.path.join(
+    test_file_abs_directory, 'testdata', test_file_name)
+    for filename in os.listdir(self.testdata_dir):
+      with open(os.path.join(self.testdata_dir, filename), 'r') as f:
+        self.testdata[filename] = f.read()
+
+  def make_golden(self, raw_data, test_data_file_name):
+    """Helper function to make golden file
+    """
+    test_data_file_path = os.path.join(self.testdata_dir, test_data_file_name)
+    with open(os.path.join(test_data_file_path), 'w') as f:
+      f.write(raw_data)
+
+  def __getitem__(self, key):
+      return self.testdata[key]

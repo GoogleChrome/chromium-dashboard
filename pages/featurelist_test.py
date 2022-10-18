@@ -14,6 +14,8 @@
 
 import testing_config  # Must be imported first
 
+from pathlib import Path
+
 import os
 import flask
 import werkzeug
@@ -27,6 +29,10 @@ from framework import rediscache
 
 test_app = flask.Flask(__name__)
 
+# Load testdata to be used across all of the CustomTestCases
+TESTDATA = testing_config.Testdata(
+  os.path.abspath(os.path.dirname(__file__)),
+  Path(__file__).stem)
 
 class TestWithFeature(testing_config.CustomTestCase):
 
@@ -123,10 +129,18 @@ class FeatureListTemplateTest(TestWithFeature):
       self.template_data = self.handler.get_template_data(
           feature_id=self.feature_id)
 
+      testing_config.sign_in('admin@example.com', 111)
+
       self.template_data.update(self.handler.get_common_data())
       self.template_data['nonce'] = 'fake nonce'
+      self.template_data['xsrf_token'] = ''
+      self.template_data['xsrf_token_expires'] = 0
       template_path = self.handler.get_template_path(self.template_data)
       self.full_template_path = os.path.join(template_path)
+      self.maxDiff = None
+
+    def tearDown(self):
+      testing_config.sign_out()
 
   def test_html_rendering(self):
     """We can render the template with valid html."""
@@ -134,6 +148,9 @@ class FeatureListTemplateTest(TestWithFeature):
         self.template_data, self.full_template_path)
     parser = html5lib.HTMLParser(strict=True)
     document = parser.parse(template_text)
+    # TESTDATA.make_golden(template_text, 'test_html_rendering.html')
+    self.assertMultiLineEqual(
+      TESTDATA['test_html_rendering.html'], template_text)
 
 
 class FeatureListXMLHandlerTest(TestWithFeature):
