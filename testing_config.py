@@ -17,6 +17,7 @@ import os
 import unittest
 
 from google.cloud import ndb
+from pathlib import Path
 
 os.environ['DJANGO_SECRET'] = 'test secret'
 os.environ['SERVER_SOFTWARE'] = 'test ' + os.environ.get('SERVER_SOFTWARE', '')
@@ -92,7 +93,7 @@ class CustomTestCase(unittest.TestCase):
 
 
 class Testdata(object):
-  def __init__(self, test_file_abs_directory, test_file_name):
+  def __init__(self, test_file_path: str):
     """Helper class to load testdata
     Common pattern to place the testdata in the following format:
 
@@ -102,17 +103,21 @@ class Testdata(object):
     The testdata should be located at /some/module/testdata/atest_test/
     """
     self.testdata = {}
+    test_file_name = Path(test_file_path).stem
     self.testdata_dir = os.path.join(
-    test_file_abs_directory, 'testdata', test_file_name)
+        os.path.abspath(os.path.dirname(test_file_path)),
+        'testdata',
+        test_file_name)
     for filename in os.listdir(self.testdata_dir):
-      with open(os.path.join(self.testdata_dir, filename), 'r') as f:
+      test_data_file_path = os.path.join(self.testdata_dir, filename)
+      with open(test_data_file_path, 'r', encoding='UTF-8') as f:
         self.testdata[filename] = f.read()
 
   def make_golden(self, raw_data, test_data_file_name):
     """Helper function to make golden file
     """
     test_data_file_path = os.path.join(self.testdata_dir, test_data_file_name)
-    with open(os.path.join(test_data_file_path), 'w') as f:
+    with open(test_data_file_path, 'w', encoding='UTF-8') as f:
       f.write(raw_data)
 
   def __getitem__(self, key):

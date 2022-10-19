@@ -12,11 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
 import testing_config  # Must be imported before the module under test.
 from datetime import datetime
 from unittest import mock
-from pathlib import Path
 
 from internals import core_models
 from internals import reminders
@@ -25,9 +23,7 @@ from google.cloud import ndb
 
 
 # Load testdata to be used across all of the CustomTestCases
-TESTDATA = testing_config.Testdata(
-  os.path.abspath(os.path.dirname(__file__)),
-  Path(__file__).stem)
+TESTDATA = testing_config.Testdata(__file__)
 
 class MockResponse:
   """Creates a fake response object for testing."""
@@ -65,9 +61,6 @@ class FunctionTest(testing_config.CustomTestCase):
     # This test does not require saving to the database.
 
     self.maxDiff = None
-
-  def tearDown(self):
-    pass
 
   def test_build_email_tasks_feature_accuracy(self):
     actual = reminders.build_email_tasks(

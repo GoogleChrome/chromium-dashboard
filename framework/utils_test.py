@@ -13,10 +13,8 @@
 # limitations under the License.
 
 import datetime
-import os
 import unittest
 import testing_config  # Must be imported before the module under test.
-from pathlib import Path
 
 from unittest import mock
 import werkzeug.exceptions  # Flask HTTP stuff.
@@ -24,9 +22,7 @@ import werkzeug.exceptions  # Flask HTTP stuff.
 from framework import utils
 
 # Load testdata to be used across all of the test cases
-TESTDATA = testing_config.Testdata(
-  os.path.abspath(os.path.dirname(__file__)),
-  Path(__file__).stem)
+TESTDATA = testing_config.Testdata(__file__)
 
 class MockHandler(object):
 

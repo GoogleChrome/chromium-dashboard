@@ -14,7 +14,6 @@
 
 import testing_config  # Must be imported first
 
-from pathlib import Path
 
 import os
 import flask
@@ -30,9 +29,7 @@ from framework import rediscache
 test_app = flask.Flask(__name__)
 
 # Load testdata to be used across all of the CustomTestCases
-TESTDATA = testing_config.Testdata(
-  os.path.abspath(os.path.dirname(__file__)),
-  Path(__file__).stem)
+TESTDATA = testing_config.Testdata(__file__)
 
 class TestWithFeature(testing_config.CustomTestCase):
 

@@ -15,7 +15,6 @@
 import testing_config  # Must be imported before the module under test.
 
 from unittest import mock
-from pathlib import Path
 
 import os
 import flask
@@ -30,9 +29,7 @@ from internals import core_models
 test_app = flask.Flask(__name__)
 
 # Load testdata to be used across all of the CustomTestCases
-TESTDATA = testing_config.Testdata(
-  os.path.abspath(os.path.dirname(__file__)),
-  Path(__file__).stem)
+TESTDATA = testing_config.Testdata(__file__)
 
 class IntentEmailPreviewHandlerTest(testing_config.CustomTestCase):
 

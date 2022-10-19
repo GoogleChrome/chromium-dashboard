@@ -14,10 +14,8 @@
 
 import collections
 import json
-import os
 import testing_config  # Must be imported before the module under test.
 from datetime import datetime
-from pathlib import Path
 
 import flask
 from unittest import mock
@@ -37,9 +35,7 @@ test_app = flask.Flask(__name__,
   template_folder=settings.flask_compat_get_template_path())
 
 # Load testdata to be used across all of the CustomTestCases
-TESTDATA = testing_config.Testdata(
-  os.path.abspath(os.path.dirname(__file__)),
-  Path(__file__).stem)
+TESTDATA = testing_config.Testdata(__file__)
 
 class EmailFormattingTest(testing_config.CustomTestCase):
 
@@ -501,10 +497,7 @@ class FeatureStarTest(testing_config.CustomTestCase):
 
     actual = notifier.FeatureStar.get_user_stars(email)
     expected_ids = [feature_1_id, feature_2_id, feature_3_id]
-    self.assertEqual(
-        sorted(expected_ids,
-                      reverse=True),
-        actual)
+    self.assertEqual(sorted(expected_ids, reverse=True), actual)
     # Cleanup
     for feature_id in expected_ids:
       notifier.FeatureStar.get_star(email, feature_id).key.delete()

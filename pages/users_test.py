@@ -29,9 +29,7 @@ test_app = flask.Flask(__name__)
 
 
 # Load testdata to be used across all of the CustomTestCases
-TESTDATA = testing_config.Testdata(
-  os.path.abspath(os.path.dirname(__file__)),
-  Path(__file__).stem)
+TESTDATA = testing_config.Testdata(__file__)
 
 class UsersListTemplateTest(testing_config.CustomTestCase):
 
@@ -52,6 +50,7 @@ class UsersListTemplateTest(testing_config.CustomTestCase):
       self.template_data['xsrf_token_expires'] = 0
     self.full_template_path = self.handler.get_template_path(self.template_data)
     self.maxDiff = None
+
   def tearDown(self):
     self.app_admin.key.delete()
     testing_config.sign_out()
