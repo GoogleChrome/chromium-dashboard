@@ -104,7 +104,6 @@ class SubscribersTemplateTest(testing_config.CustomTestCase):
       "canary": {"mstone": 4},
     }
 
-
     self.request_path = self.HANDLER_CLASS.TEMPLATE_PATH
     self.handler = self.HANDLER_CLASS()
 

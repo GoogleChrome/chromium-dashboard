@@ -14,7 +14,6 @@
 
 import testing_config  # Must be imported first
 
-
 import os
 import flask
 import werkzeug

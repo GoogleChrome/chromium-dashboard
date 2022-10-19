@@ -16,10 +16,8 @@ import testing_config  # Must be imported first
 
 import flask
 import html5lib
-import os
 
 from google.cloud import ndb
-from pathlib import Path
 from unittest import mock
 
 from internals import user_models
