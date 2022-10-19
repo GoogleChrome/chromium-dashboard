@@ -370,6 +370,14 @@ class APIHandlerTests(testing_config.CustomTestCase):
     self.assertTrue(actual_sent_text.startswith(basehandlers.XSSI_PREFIX))
     self.assertIn(json.dumps(handler_data), actual_sent_text)
 
+  def test_do_get(self):
+    """If a subclass does not implement do_get(), raise NotImplementedError."""
+    with self.assertRaises(NotImplementedError):
+      self.handler.do_get()
+
+    with self.assertRaises(NotImplementedError):
+      self.handler.do_get(feature_id=1234)
+
   @mock.patch('flask.abort')
   def check_bad_HTTP_method(self, handler_method, mock_abort):
     mock_abort.side_effect = werkzeug.exceptions.MethodNotAllowed

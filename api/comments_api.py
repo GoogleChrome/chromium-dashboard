@@ -25,9 +25,9 @@ from internals import notifier
 
 def comment_to_json_dict(comment: Activity) -> dict[str, Any]:
   return {
-      'comment_id': str(comment.key.id()),
-      'feature_id': str(comment.feature_id),
-      'gate_id': str(comment.gate_id),
+      'comment_id': comment.key.id(),
+      'feature_id': comment.feature_id,
+      'gate_id': comment.gate_id,
       'created': str(comment.created),  # YYYY-MM-DD HH:MM:SS.SSS
       'author': comment.author,
       'content': comment.content,
