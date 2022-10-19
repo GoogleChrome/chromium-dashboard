@@ -133,7 +133,7 @@ class BaseHandler(flask.views.MethodView):
 
   def get_int_arg(self, name, default=None):
     """Get the specified integer from args."""
-    val = self.request.args.get(name, default)
+    val = self.request.args.get(name, default) or default
     if val is None:
       return None
 

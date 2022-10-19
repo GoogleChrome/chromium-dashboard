@@ -113,9 +113,8 @@ class SubscribersHandler(basehandlers.FlaskHandler):
         user_models.FeatureOwner.name).fetch(None)
     feature_list = core_models.Feature.get_chronological()
 
-    milestone = self.request.args.get('milestone') or None
-    if milestone:
-      milestone = int(milestone)
+    milestone = self.get_int_arg('milestone')
+    if milestone is not None:
       feature_list = [
           f for f in feature_list
           if (f['shipped_milestone'] or
@@ -143,6 +142,6 @@ class SubscribersHandler(basehandlers.FlaskHandler):
         ('dev', details['dev']),
         ('canary', details['canary']),
       ]),
-      'selected_milestone': int(milestone) if milestone else None
+      'selected_milestone': milestone
     }
     return template_data

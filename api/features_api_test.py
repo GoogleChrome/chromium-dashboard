@@ -352,12 +352,15 @@ class FeaturesAPITestGet(testing_config.CustomTestCase):
   @mock.patch('flask.abort')
   def test_get__in_milestone_invalid_query(self, mock_abort):
     """Invalid value of milestone should not be processed."""
+    mock_abort.side_effect = werkzeug.exceptions.BadRequest
 
     # Feature is present in milestone
     with test_app.test_request_context(
         self.request_path+'?milestone=chromium'):
-      actual = self.handler.do_get()
-    mock_abort.assert_called_once_with(400, description='Invalid  Milestone')
+      with self.assertRaises(werkzeug.exceptions.BadRequest):
+        actual = self.handler.do_get()
+        mock_abort.assert_called_once_with(
+            400, msg="Request parameter 'milestone' was not an int")
 
   def test_get__specific_id__found(self):
     """JSON feed has just the feature requested."""
