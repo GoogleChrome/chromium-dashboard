@@ -364,6 +364,8 @@ class IntentEmailHandlerTest(testing_config.CustomTestCase):
     self.feature_1.key.delete()
     for appr in review_models.Approval.query().fetch(None):
       appr.key.delete()
+    for vote in review_models.Vote.query().fetch(None):
+      vote.key.delete()
     for gate in review_models.Gate.query().fetch():
       gate.key.delete()
 
@@ -382,6 +384,15 @@ class IntentEmailHandlerTest(testing_config.CustomTestCase):
     self.assertEqual(approval_defs.ShipApproval.field_id, appr.field_id)
     self.assertEqual(review_models.Approval.REVIEW_REQUESTED, appr.state)
     self.assertEqual('user@example.com', appr.set_by)
+
+    created_votes = list(review_models.Vote.query().fetch(None))
+    self.assertEqual(1, len(created_votes))
+    vote = created_votes[0]
+    self.assertEqual(self.feature_id, vote.feature_id)
+    # TODO(jrobbins): check gate_id
+    self.assertEqual(review_models.Approval.REVIEW_REQUESTED, vote.state)
+    self.assertEqual('user@example.com', vote.set_by)
+
     self.assertEqual(self.feature_1.intent_to_ship_url, self.thread_url)
     self.assertEqual(self.feature_1.intent_to_ship_subject_line,
                      self.review_json_data['subject'])
@@ -397,6 +408,10 @@ class IntentEmailHandlerTest(testing_config.CustomTestCase):
 
     created_approvals = list(review_models.Approval.query().fetch(None))
     self.assertEqual(0, len(created_approvals))
+
+    created_votes = list(review_models.Vote.query().fetch(None))
+    self.assertEqual(0, len(created_votes))
+
     self.assertEqual(self.feature_1.intent_to_implement_url, self.thread_url)
     self.assertEqual(self.feature_1.intent_to_implement_subject_line,
                      self.review_json_data['subject'])
