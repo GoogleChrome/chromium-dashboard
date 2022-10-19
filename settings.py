@@ -9,11 +9,6 @@ def get_flask_template_path() -> str:
   """
   return os.path.join(ROOT_DIR, 'templates')
 
-def get_flask_static_path() -> str:
-  """Returns a path to the templates.
-  """
-  return os.path.join(ROOT_DIR, 'static')
-
 # By default, send all email to an archive for debugging.
 # For the live cr-status server, this setting is None.
 SEND_ALL_EMAIL_TO = 'cr-status-staging-emails+%(user)s+%(domain)s@google.com'
