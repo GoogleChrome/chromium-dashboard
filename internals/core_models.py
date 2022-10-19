@@ -51,6 +51,9 @@ def del_none(d):
 def feature_cache_key(cache_key, feature_id):
   return '%s|%s' % (cache_key, feature_id)
 
+def feature_cache_prefix():	
+  return '%s|*' % (Feature.DEFAULT_CACHE_KEY)
+
 
 class DictModel(ndb.Model):
   # def to_dict(self):
@@ -795,10 +798,6 @@ class Feature(DictModel):
         features_by_type[shipping_type] = self.filter_unlisted(features_by_type[shipping_type])
 
     return features_by_type
-
-  @classmethod
-  def cache_prefix(cls):
-    return '%s|*' % (cls.DEFAULT_CACHE_KEY)
 
   def crbug_number(self) -> Optional[str]:
     if not self.bug_url:
