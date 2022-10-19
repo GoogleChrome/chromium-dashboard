@@ -144,7 +144,7 @@ class CSSPopularityHandlerTests(testing_config.CustomTestCase):
     rediscache.flushall()
 
   def test_get_top_num_cache_key(self):
-    actual = self.handler.get_top_num_cache_key('30')
+    actual = self.handler.get_top_num_cache_key(30)
     self.assertEqual('metrics|css_popularity_30', actual)
 
   def test_get_template_data(self):

@@ -43,7 +43,7 @@ class FeaturesAPI(basehandlers.APIHandler):
     milestone = self.get_int_arg('milestone')
     if milestone:
       features_by_type = core_models.Feature.get_in_milestone(
-        show_unlisted=show_unlisted_features, milestone=int(milestone))
+        show_unlisted=show_unlisted_features, milestone=milestone)
       total_count = sum(len(features_by_type[t]) for t in features_by_type)
       return {
           'features_by_type': features_by_type,

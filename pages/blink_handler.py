@@ -142,6 +142,6 @@ class SubscribersHandler(basehandlers.FlaskHandler):
         ('dev', details['dev']),
         ('canary', details['canary']),
       ]),
-      'selected_milestone': milestone if milestone else None
+      'selected_milestone': milestone
     }
     return template_data

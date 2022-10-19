@@ -140,7 +140,7 @@ class BaseHandler(flask.views.MethodView):
 
   def get_int_arg(self, name, default=None):
     """Get the specified integer from args."""
-    val = self.request.args.get(name, default)
+    val = self.request.args.get(name, default) or default
     if val is None:
       return None
 
@@ -149,7 +149,7 @@ class BaseHandler(flask.views.MethodView):
     except ValueError:
       self.abort(400, msg='Request parameter %r was not an int' % name)
 
-    if int(val) < 0:
+    if num < 0:
       self.abort(400, msg='Request parameter %r out of range: %r' % (name, val))
     return num
 

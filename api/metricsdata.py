@@ -168,7 +168,7 @@ class FeatureHandler(basehandlers.FlaskHandler):
   def get_template_data(self, **kwargs):
     num = self.get_int_arg('num')
     if num and not self.should_refresh():
-      feature_observer_key = self.get_top_num_cache_key(str(num))
+      feature_observer_key = self.get_top_num_cache_key(num)
       properties = rediscache.get(feature_observer_key)
       if properties is not None:
         return _datapoints_to_json_dicts(properties)
@@ -177,14 +177,14 @@ class FeatureHandler(basehandlers.FlaskHandler):
     properties = self.fetch_all_datapoints()
 
     if num:
-      feature_observer_key = self.get_top_num_cache_key(str(num))
+      feature_observer_key = self.get_top_num_cache_key(num)
       # Cache top `num` properties.
       properties = properties[:num]
       rediscache.set(feature_observer_key, properties, time=CACHE_AGE)
     return _datapoints_to_json_dicts(properties)
 
   def get_top_num_cache_key(self, num):
-    return self.CACHE_KEY + '_' + num
+    return self.CACHE_KEY + '_' + str(num)
 
   def fetch_all_datapoints(self):
     properties = rediscache.get(self.CACHE_KEY)
