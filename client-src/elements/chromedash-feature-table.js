@@ -133,9 +133,6 @@ class ChromedashFeatureTable extends LitElement {
       .highlights div {
         color: var(--unimportant-text-color);
         padding: var(--content-padding-quarter);
-        white-space: nowrap;
-        text-overflow: ellipsis;
-        overflow: hidden;
       }
       iron-icon {
         --iron-icon-height: 18px;
@@ -210,7 +207,7 @@ class ChromedashFeatureTable extends LitElement {
 
   renderApprovalsIcon(feature) {
     return html`
-      <a class="tooltip"
+      <a href="#" class="tooltip"
         @click="${() => this.openApprovalsDialog(feature)}"
         title="Review approvals">
         <iron-icon icon="chromestatus:approval"></iron-icon>
