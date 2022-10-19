@@ -17,6 +17,7 @@ import base64
 import collections
 import datetime
 import logging
+from typing import Optional
 import requests
 
 from framework import permissions
@@ -161,8 +162,21 @@ def is_resolved(approval_values, field_id):
   return False
 
 def set_vote(
-    feature_id: int, gate_id: int, new_state: int, set_by_email: str) -> None:
+    feature_id: int,  gate_type: int, new_state: int, set_by_email: str,
+    gate_id: Optional[int]=None) -> None:
   """Add or update an approval value."""
+  gate: Optional[Gate] = None
+  if not gate_id:
+    gate = get_gate_by_type(feature_id, gate_type)
+    # If a vote is being set, a corresponding gate should already exist.
+    if not gate:
+      logging.warning('Gate entity not found for the given feature. '
+          'Cannot set vote.')
+      return
+    gate_id = gate.key.integer_id()
+  else:
+    gate = Gate.get_by_id(gate_id)
+
   if not Vote.is_valid_state(new_state):
     raise ValueError('Invalid approval state')
 
@@ -179,13 +193,18 @@ def set_vote(
         set_on=now, set_by=set_by_email)
     new_vote.put()
 
+  update_gate_approval_state(gate)
+
+def get_gate_by_type(feature_id: int, gate_type: int):
+  """Return a single gate based on the feature and gate type."""
   # TODO(danielrsmith): As of today, there is only 1 gate per
   # gate type and feature. Passing the gate ID will be required when adding
   # UI functionality for multiple versions of the same stage/gate.
   gates: list[Gate] = Gate.query(
-      Gate.feature_id == feature_id, Gate.gate_type == gate_id).fetch()
-  if len(gates) > 0:
-    update_gate_approval_state(gates[0])
+    Gate.feature_id == feature_id, Gate.gate_type == gate_type).fetch()
+  if len(gates) == 0:
+    return None
+  return gates[0]
 
 def _calc_gate_status(gate: Gate) -> int:
   """Evaluates the current state that this gate should have."""

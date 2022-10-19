@@ -328,6 +328,13 @@ class IntentEmailHandlerTest(testing_config.CustomTestCase):
     self.feature_1.put()
     self.feature_id = self.feature_1.key.integer_id()
 
+    self.gate_1 = review_models.Gate(feature_id=self.feature_id, stage_id=1,
+        gate_type=1, state=review_models.Approval.NA)
+    self.gate_1.put()
+    self.gate_2 = review_models.Gate(feature_id=self.feature_id, stage_id=2,
+        gate_type=4, state=review_models.Approval.NA)
+    self.gate_2.put()
+
     self.request_path = '/tasks/detect-intent'
 
     self.thread_url = (
@@ -357,6 +364,8 @@ class IntentEmailHandlerTest(testing_config.CustomTestCase):
     self.feature_1.key.delete()
     for appr in review_models.Approval.query().fetch(None):
       appr.key.delete()
+    for gate in review_models.Gate.query().fetch():
+      gate.key.delete()
 
   def test_process_post_data__new_thread(self):
     """When we detect a new thread, we record it as the intent thread."""
