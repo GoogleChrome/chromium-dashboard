@@ -166,7 +166,7 @@ def set_vote(
     gate_id: Optional[int]=None) -> None:
   """Add or update an approval value."""
   gate: Optional[Gate] = None
-  if not gate_id:
+  if gate_id is None:
     gate = get_gate_by_type(feature_id, gate_type)
     # If a vote is being set, a corresponding gate should already exist.
     if not gate:
