@@ -6,7 +6,7 @@ class ChromedashLegend extends LitElement {
   static get properties() {
     return {
       opened: {type: Boolean, reflect: true},
-      views: {attribute: false}, // Assigned in features-page.js, value from Django
+      views: {attribute: false}, // Assigned in features-page.js, value from Flask
     };
   }
 

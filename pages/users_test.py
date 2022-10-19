@@ -16,6 +16,7 @@ import testing_config  # Must be imported first
 
 import flask
 import html5lib
+import settings
 
 from google.cloud import ndb
 from unittest import mock
@@ -23,7 +24,8 @@ from unittest import mock
 from internals import user_models
 from pages import users
 
-test_app = flask.Flask(__name__)
+test_app = flask.Flask(__name__,
+  template_folder=settings.get_flask_template_path())
 
 
 # Load testdata to be used across all of the CustomTestCases
@@ -55,8 +57,9 @@ class UsersListTemplateTest(testing_config.CustomTestCase):
 
   def test_html_rendering(self):
     """We can render the template with valid html."""
-    template_text = self.handler.render(
-        self.template_data, self.full_template_path)
+    with test_app.app_context():
+      template_text = self.handler.render(
+          self.template_data, self.full_template_path)
     parser = html5lib.HTMLParser(strict=True)
     document = parser.parse(template_text)
     # TESTDATA.make_golden(template_text, 'test_html_rendering.html')

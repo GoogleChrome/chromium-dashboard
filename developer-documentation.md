@@ -2,7 +2,7 @@
 
 This doc covers some basic overview of the codebase to help developers navigate.
 
-In summary, this web app is using a combination of Django & Flask as the backend and uses Lit webcomponents in the front end.
+In summary, this web app is using Flask as the backend and uses Lit webcomponents in the front end.
 It uses [Sign in with Google](https://developers.google.com/identity/gsi/web) for authentication.
 **Google Cloud Datastore** is used as database.
 
@@ -10,12 +10,13 @@ It uses [Sign in with Google](https://developers.google.com/identity/gsi/web) fo
 
 In the Backend,
 
-- **Django** is used just for HTML templates (see `FlaskHandler.render()` in `Framework/basehandlers.py`).
-- **Flask** is being used for all the request handlers (see `basehandlers.py` and all the code under `api/` and `pages/`).
+- **Flask** is being used for:
+  - All the request handlers (see `basehandlers.py` and all the code under `api/` and `pages/`).
+  - HTML templates (see `FlaskHandler.render()` in `framework/basehandlers.py`).
 
 HISTORY:-
 
-- The app used to use a combination of Django plus Webapp2. However, now it uses Django plus Flask as mentioned above.
+- The app used to use a combination of Django plus Webapp2. However, now it uses Flask as mentioned above.
 - The app used to use _DB Client Library_ for interacting with Google Cloud DataStore. It was later replaced by _NDB Client Library_. Now, it uses the _Cloud NDB Library_
 
 ## Front end
@@ -24,10 +25,10 @@ Front end codes exist in two parts: main site (including admin) and http2push.
 
 ### Main site page renderring
 
-All the pages are rendered in a combination of Django template (`/templates`) and front-end components (`/client-src/elements`).
+All the pages are rendered in a combination of Jinja2 template (`/templates`) and front-end components (`/client-src/elements`).
 
 1. `/templates/base.html` and `/templates/base_embed.html` are the html skeleton.
-1. Templates in `/templates` (extend the `_base.html` or `_embed_base.html`) are the Django templates for each page.
+1. Templates in `/templates` (extend the `_base.html` or `_embed_base.html`) are the Jinja2 templates for each page.
    - The folder organization and template file names matches the router. (See `template_path=os.path.join(path + '.html')` in `server.py`)
    - lit-element components, css, js files are all imported/included in those templates.
    - We pass backend variables to js like this: `const variableInJs = {{variable_in_template|safe}}`.

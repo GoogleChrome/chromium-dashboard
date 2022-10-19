@@ -109,7 +109,7 @@ class UtilsFunctionTests(unittest.TestCase):
     self.assertEqual('/request/path', handlerInstance.redirected_to)
 
   # For empty feeds, django sets the updated date to utcnow().
-  @mock.patch('django.utils.feedgenerator.SyndicationFeed.latest_post_date')
+  @mock.patch('feedgenerator.django.utils.feedgenerator.SyndicationFeed.latest_post_date')
   def test_render_atom_feed__empty(self, mock_latest_post_date):
     """It can render a feed with zero items."""
     mock_latest_post_date.return_value = datetime.datetime(2017, 10, 7)

@@ -17,7 +17,7 @@ import json
 import logging
 import requests
 
-from django.template.loader import render_to_string
+from flask import render_template
 
 from framework import basehandlers
 from internals import core_models
@@ -53,7 +53,7 @@ def build_email_tasks(
       'milestone': mstone,
       'beta_date_str': beta_date_str,
     }
-    html = render_to_string(body_template_path, body_data)
+    html = render_template(body_template_path, **body_data)
     subject = subject_format % feature.name
     for owner in feature.owner:
       email_tasks.append({

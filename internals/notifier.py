@@ -24,8 +24,7 @@ import urllib
 from framework import permissions
 from google.cloud import ndb
 
-from django.utils.html import conditional_escape as escape
-
+from flask import escape
 from flask import render_template
 
 from framework import basehandlers
@@ -75,7 +74,6 @@ def format_email_body(is_update, feature, changes):
   }
   template_path = ('update-feature-email.html' if is_update
                    else 'new-feature-email.html')
-  # final_full_path = os.path.join(settings.TEMPLATES[0]['DIRS'][0], template_path)
   body = render_template(template_path, **body_data)
   return body
 
