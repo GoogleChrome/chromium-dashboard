@@ -30,9 +30,6 @@ from internals import user_models
 import settings
 
 
-test_app = flask.Flask(__name__,
-  template_folder=settings.get_flask_template_path())
-
 class TestableFlaskHandler(basehandlers.FlaskHandler):
 
   TEMPLATE_PATH = 'test_template.html'
