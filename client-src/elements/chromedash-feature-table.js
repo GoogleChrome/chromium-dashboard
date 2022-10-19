@@ -134,13 +134,11 @@ class ChromedashFeatureTable extends LitElement {
         color: var(--unimportant-text-color);
         padding: var(--content-padding-quarter);
       }
-      iron-icon {
-        --iron-icon-height: 18px;
-        --iron-icon-width: 18px;
-        color: var(--link-color);
+      sl-icon-button {
+        font-size: 1.1rem;
       }
-      iron-icon:hover {
-        color: var(--link-hover-color);
+      sl-icon-button::part(base) {
+        color: var(--link-color);
       }
       button {
         border: var(--default-border);
@@ -207,34 +205,32 @@ class ChromedashFeatureTable extends LitElement {
 
   renderApprovalsIcon(feature) {
     return html`
-      <a class="tooltip"
+      <sl-icon-button
         @click="${() => this.openApprovalsDialog(feature)}"
-        title="Review approvals">
-        <iron-icon icon="chromestatus:approval"></iron-icon>
+        title="Review approvals"
+        name="approval" ></sl-icon-button>
       </a>
     `;
   }
 
   renderEditIcon(feature) {
     return html`
-      <a href="/guide/edit/${feature.id}" class="tooltip"
-        title="Edit feature">
-        <iron-icon icon="chromestatus:create"></iron-icon>
+      <sl-icon-button href="/guide/edit/${feature.id}"
+        title="Edit feature"
+        name="pencil-fill"></sl-icon-button>
       </a>
     `;
   }
 
   renderStarIcon(feature) {
     return html`
-      <a href="#" class="tooltip" data-tooltip @click=${this.toggleStar}
-        title="Receive an email notification when there are updates">
-        <iron-icon
-          icon="${this.starredFeatures.has(Number(feature.id)) ?
-          'chromestatus:star' :
-          'chromestatus:star-border'}"
-          class="pushicon"
-          data-feature-id="${feature.id}">
-        </iron-icon>
+      <sl-icon-button
+        @click=${this.toggleStar}
+        title="Receive an email notification when there are updates"
+        name="${this.starredFeatures.has(Number(feature.id)) ?
+                'star-fill' : 'star'}"
+        data-feature-id="${feature.id}">
+        </sl-icon-button>
       </a>
     `;
   }
