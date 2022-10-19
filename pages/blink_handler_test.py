@@ -20,7 +20,7 @@ import flask
 import werkzeug
 import html5lib
 
-from google.cloud import ndb
+from google.cloud import ndb  # type: ignore
 from pages import blink_handler
 from internals import user_models
 

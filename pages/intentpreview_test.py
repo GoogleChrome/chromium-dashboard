@@ -21,7 +21,7 @@ import flask
 import werkzeug
 import html5lib
 
-from google.cloud import ndb
+from google.cloud import ndb  # type: ignore
 from pages import intentpreview
 from internals import core_enums
 from internals import core_models

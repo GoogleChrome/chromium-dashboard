@@ -17,7 +17,7 @@ import testing_config  # Must be imported first
 import flask
 import html5lib
 
-from google.cloud import ndb
+from google.cloud import ndb  # type: ignore
 from unittest import mock
 
 from internals import user_models

@@ -19,7 +19,7 @@ from unittest import mock
 from internals import core_models
 from internals import reminders
 
-from google.cloud import ndb
+from google.cloud import ndb  # type: ignore
 
 
 # Load testdata to be used across all of the CustomTestCases
