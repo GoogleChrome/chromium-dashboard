@@ -430,13 +430,15 @@ class ChromedashFeatureFilter extends LitElement {
 
   addFilterCondition(event) {
     const fieldName = event.target.value;
+    if (fieldName === null) return;
     const newCond = {
       fieldName: fieldName,
       op: this.findAvailableOps(fieldName)[0],
     };
     const newFilterConditions = [...this.filterConditions, newCond];
     this.filterConditions = newFilterConditions;
-    this.shadowRoot.querySelector('#choose_field').value = 'choose';
+    // Reset the choose_field menu so user can add another.
+    this.shadowRoot.querySelector('#choose_field').value = null;
   }
 
 
