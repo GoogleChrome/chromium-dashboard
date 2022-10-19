@@ -17,6 +17,7 @@ import os
 import unittest
 
 from google.cloud import ndb
+from pathlib import Path
 
 os.environ['DJANGO_SECRET'] = 'test secret'
 os.environ['SERVER_SOFTWARE'] = 'test ' + os.environ.get('SERVER_SOFTWARE', '')
@@ -89,3 +90,35 @@ class CustomTestCase(unittest.TestCase):
     client = ndb.Client()
     with client.context():
       super(CustomTestCase, self).run(result=result)
+
+
+class Testdata(object):
+  def __init__(self, test_file_path: str):
+    """Helper class to load testdata
+    Common pattern to place the testdata in the following format:
+
+    Given a test file, atest_test.py, and it is located at
+    /some/module/atest_test.py.
+
+    The testdata should be located at /some/module/testdata/atest_test/
+    """
+    self.testdata = {}
+    test_file_name = Path(test_file_path).stem
+    self.testdata_dir = os.path.join(
+        os.path.abspath(os.path.dirname(test_file_path)),
+        'testdata',
+        test_file_name)
+    for filename in os.listdir(self.testdata_dir):
+      test_data_file_path = os.path.join(self.testdata_dir, filename)
+      with open(test_data_file_path, 'r', encoding='UTF-8') as f:
+        self.testdata[filename] = f.read()
+
+  def make_golden(self, raw_data, test_data_file_name):
+    """Helper function to make golden file
+    """
+    test_data_file_path = os.path.join(self.testdata_dir, test_data_file_name)
+    with open(test_data_file_path, 'w', encoding='UTF-8') as f:
+      f.write(raw_data)
+
+  def __getitem__(self, key):
+      return self.testdata[key]
