@@ -1,0 +1,173 @@
+
+<!DOCTYPE html>
+<!--
+Copyright 2016 Google Inc. All Rights Reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Local testing</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+
+  <meta name="theme-color" content="#366597">
+
+  <link rel="stylesheet" href="/static/css/base.css?v=Undeployed" />
+
+  <link rel="icon" sizes="192x192" href="/static/img/crstatus_192.png">
+
+  <!-- iOS: run in full-screen mode and display upper status bar as translucent -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+  <link rel="apple-touch-icon" href="/static/img/crstatus_128.png">
+  <link rel="apple-touch-icon-precomposed" href="/static/img/crstatus_128.png">
+  <link rel="shortcut icon" href="/static/img/crstatus_128.png">
+
+  <link rel="preconnect" href="https://www.google-analytics.com" crossorigin>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&amp;display=swap" rel="stylesheet">
+
+  
+
+  <link rel="stylesheet" href="/static/css/main.css?v=Undeployed">
+
+  
+<link rel="stylesheet" href="/static/css/features/features.css?v=Undeployed">
+
+
+  
+  <script src="https://accounts.google.com/gsi/client" async defer nonce="fake nonce"></script>
+
+  <script nonce="fake nonce">
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get("loginStatus") == 'False') {
+      alert('Please log in.');
+    }
+  </script>
+  <script nonce="fake nonce" src="/static/js/metric.min.js?v=Undeployed"></script>
+  <script nonce="fake nonce" src="/static/js/cs-client.min.js?v=Undeployed"></script>
+
+  
+  <script nonce="fake nonce">
+    window.csClient = new ChromeStatusClient(
+        '', 0);
+  </script>
+
+  <script type="module" nonce="fake nonce" defer
+          src="/static/dist/components.js?v=Undeployed"></script>
+  
+
+  
+  <link rel="alternate" type="application/rss+xml" href="/features.xml" title="All features" />
+
+</head>
+
+<body class="loading" data-path="/subclasses fill this in?">
+  
+
+  <div id="app-content-container">
+    <div>
+      <div class="main-toolbar">
+        <div class="toolbar-content">
+          <chromedash-header
+            appTitle="Local testing"
+            currentPage="/subclasses fill this in?"
+            googleSignInClientId="914217904764-enfcea61q4hqe7ak8kkuteglrbhk8el1.apps.googleusercontent.com">
+          </chromedash-header>
+        </div>
+      </div>
+
+      <div id="content">
+        <div id="spinner">
+          <img src="/static/img/ring.svg">
+        </div>
+        <chromedash-banner
+          message=""
+          timestamp="None">
+        </chromedash-banner>
+        <div id="content-flex-wrapper">
+          <div id="content-component-wrapper">
+            
+            
+  <div id="column-container">
+    <div id="drawer-column">
+      <h3>Filter By</h3>
+      
+        <!-- Use single quote here. The value is a json string with double quote. -->
+        <chromedash-metadata implstatuses='[{"key": 1, "val": "No active development"}, {"key": 2, "val": "Proposed"}, {"key": 3, "val": "In development"}, {"key": 4, "val": "In developer trial (Behind a flag)"}, {"key": 5, "val": "Enabled by default"}, {"key": 6, "val": "Deprecated"}, {"key": 7, "val": "Removed"}, {"key": 8, "val": "Origin trial"}, {"key": 9, "val": "Browser Intervention"}, {"key": 10, "val": "On hold"}, {"key": 1000, "val": "No longer pursuing"}]'></chromedash-metadata>
+      
+    </div>
+    <div id="content-column">
+      <div id="subheader">
+        <div class="feature-count">
+          <h2>Features: <span class="num-features"></span></h2>
+        </div>
+        <div class="search">
+          <input type="search" placeholder="Filter" disabled>
+          <button class="legend-button">
+            <iron-icon icon="chromestatus:help"></iron-icon>
+          </button>
+        </div>
+      </div>
+      <chromedash-featurelist
+         user="{&quot;can_create_feature&quot;: true, &quot;can_approve&quot;: true, &quot;can_edit_all&quot;: true, &quot;is_admin&quot;: true, &quot;editable_features&quot;: [], &quot;email&quot;: &quot;admin@example.com&quot;, &quot;dismissed_cues&quot;: &quot;[]&quot;}" 
+         signedInUser="admin@example.com" 
+        isSiteEditor
+         editableFeatures="[]" 
+        canApprove>
+      </chromedash-featurelist>
+    </div>
+  </div>
+
+          </div>
+        </div>
+      </div>
+
+    </div>
+    <chromedash-footer></chromedash-footer>
+  </div>
+
+  <chromedash-toast msg="Welcome to chromestatus.com!"></chromedash-toast>
+
+  
+  <chromedash-legend></chromedash-legend>
+
+
+  
+  <script nonce="fake nonce" src="/static/js/features-page.min.js?v=Undeployed"></script>
+  <script nonce="fake nonce">
+    (function() {
+      'use strict';
+      // Get values from server. used in /static/js/features-page.js
+      const VIEWS = {
+        vendors: [{"key": 1, "val": "Shipped/Shipping"}, {"key": 2, "val": "In development"}, {"key": 3, "val": "Positive"}, {"key": 5, "val": "No signal"}, {"key": 7, "val": "Negative"}, {"key": 8, "val": "Neutral"}, {"key": 9, "val": "N/A"}, {"key": 10, "val": "Under consideration"}, {"key": 11, "val": "Important"}, {"key": 12, "val": "Worth prototyping"}, {"key": 13, "val": "Non-harmful"}, {"key": 14, "val": "Defer"}, {"key": 15, "val": "Harmful"}],
+        webdevs: [{"key": 1, "val": "Strongly positive"}, {"key": 2, "val": "Positive"}, {"key": 3, "val": "Mixed signals"}, {"key": 4, "val": "No signals"}, {"key": 5, "val": "Negative"}, {"key": 6, "val": "Strongly negative"}],
+        standards: [{"key": 1, "val": "De-facto standard"}, {"key": 2, "val": "Established standard"}, {"key": 3, "val": "Working draft or equivalent"}, {"key": 4, "val": "Editor's draft"}, {"key": 5, "val": "Public discussion"}, {"key": 6, "val": "No public standards discussion"}]
+      };
+      loadFeatureLegendViews(VIEWS);
+    })();
+  </script>
+
+
+  <script src="https://www.googletagmanager.com/gtag/js?id=UA-179341418-1"
+          async nonce="fake nonce"></script>
+
+  
+  <script type="module" nonce="fake nonce" src="/static/js/shared.min.js?v=Undeployed"></script>
+</body>
+</html>

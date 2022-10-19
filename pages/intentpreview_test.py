@@ -21,12 +21,15 @@ import flask
 import werkzeug
 import html5lib
 
+from google.cloud import ndb
 from pages import intentpreview
 from internals import core_enums
 from internals import core_models
 
 test_app = flask.Flask(__name__)
 
+# Load testdata to be used across all of the CustomTestCases
+TESTDATA = testing_config.Testdata(__file__)
 
 class IntentEmailPreviewHandlerTest(testing_config.CustomTestCase):
 
@@ -189,6 +192,8 @@ class IntentEmailPreviewTemplateTest(testing_config.CustomTestCase):
     self.feature_1 = core_models.Feature(
         name='feature one', summary='sum', owner=['user1@google.com'],
         category=1, intent_stage=core_enums.INTENT_IMPLEMENT)
+    # Hardcode the key for the template test
+    self.feature_1.key = ndb.Key('Feature', 234)
     self.feature_1.put()
 
     self.request_path = '/admin/features/launch/%d/%d?intent' % (
@@ -196,6 +201,7 @@ class IntentEmailPreviewTemplateTest(testing_config.CustomTestCase):
     self.handler = self.HANDLER_CLASS()
     self.feature_id = self.feature_1.key.integer_id()
 
+    testing_config.sign_in('user1@google.com', 123567890)
     with test_app.test_request_context(self.request_path):
       self.template_data = self.handler.get_template_data(
         feature_id=self.feature_id)
@@ -207,13 +213,26 @@ class IntentEmailPreviewTemplateTest(testing_config.CustomTestCase):
     template_path = self.handler.get_template_path(self.template_data)
     self.full_template_path = os.path.join(template_path)
 
+    self.maxDiff = None
+
+  def tearDown(self):
+    self.feature_1.key.delete()
+    testing_config.sign_out()
+
   def test_html_rendering(self):
     """We can render the template with valid html."""
-    testing_config.sign_in('user1@google.com', 123567890)
     with test_app.test_request_context(self.request_path):
       actual_data = self.handler.get_template_data(feature_id=self.feature_id)
+      actual_data.update(self.handler.get_common_data())
+      actual_data['nonce'] = 'fake nonce'
+      actual_data['xsrf_token'] = ''
+      actual_data['xsrf_token_expires'] = 0
 
     template_text = self.handler.render(
         actual_data, self.full_template_path)
+    testing_config.sign_out()
     parser = html5lib.HTMLParser(strict=True)
     document = parser.parse(template_text)
+    # TESTDATA.make_golden(template_text, 'test_html_rendering.html')
+    self.assertMultiLineEqual(
+      TESTDATA['test_html_rendering.html'], template_text)

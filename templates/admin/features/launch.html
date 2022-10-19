@@ -1,13 +1,10 @@
 {% extends "_base.html" %}
-{% load inline_file %}
 
 {% block page_title %}{{ feature.name }} - {% endblock %}
 
 {% block css %}
-<!-- <link rel="stylesheet" href="/static/css/forms.css"> -->
-<!-- <link rel="stylesheet" href="/static/css/features/launch.css"> -->
-<style>{% inline_file "/static/css/forms.css" %}</style>
-<style>{% inline_file "/static/css/features/launch.css" %}</style>
+<link rel="stylesheet" href="/static/css/forms.css?v={{app_version}}">
+<link rel="stylesheet" href="/static/css/features/launch.css?v={{app_version}}">
 {% endblock %}
 
 {% block subheader %}

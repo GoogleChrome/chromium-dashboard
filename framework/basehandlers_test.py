@@ -265,6 +265,24 @@ class BaseHandlerTests(testing_config.CustomTestCase):
       mock_abort.assert_called_once_with(
           400, msg="Parameter 'featureId' was not an int")
 
+  @mock.patch('framework.basehandlers.BaseHandler.abort')
+  def test_get_int_arg__bad(self, mock_abort):
+    mock_abort.side_effect = werkzeug.exceptions.BadRequest
+
+    with test_app.test_request_context('/test?num=abc'):
+      with self.assertRaises(werkzeug.exceptions.BadRequest):
+        self.handler.get_int_arg('num')
+      mock_abort.assert_called_once_with(
+          400, msg="Request parameter 'num' was not an int")
+
+  def test_get_int_arg(self):
+    with test_app.test_request_context('/test?num=1'):
+      actual = self.handler.get_int_arg('num')
+      self.assertEqual(1, actual)
+
+      actual = self.handler.get_int_arg('random')
+      self.assertEqual(None, actual)
+
 
 class RedirectorTests(testing_config.CustomTestCase):
 

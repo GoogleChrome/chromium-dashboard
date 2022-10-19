@@ -1,8 +1,6 @@
 {% extends "_base.html" %}
-{% load inline_file %}
-
 {% block css %}
-  <style>{% inline_file "/static/css/blink.css" %}</style>
+<link rel="stylesheet" href="/static/css/blink.css?v={{app_version}}">
 {% endblock %}
 
 {% block drawer %}

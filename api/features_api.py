@@ -55,8 +55,12 @@ class FeaturesAPI(basehandlers.APIHandler):
 
     user_query = self.request.args.get('q', '')
     sort_spec = self.request.args.get('sort')
+    num = self.get_int_arg('num', search.DEFAULT_RESULTS_PER_PAGE)
+    start = self.get_int_arg('start', 0)
+
     features_on_page, total_count = search.process_query(
-        user_query, sort_spec=sort_spec, show_unlisted=show_unlisted_features)
+        user_query, sort_spec=sort_spec, show_unlisted=show_unlisted_features,
+        start=start, num=num)
 
     return {
         'total_count': total_count,

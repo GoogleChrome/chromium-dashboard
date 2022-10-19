@@ -26,6 +26,7 @@ from internals import review_models
 from internals import search_queries
 
 MAX_TERMS = 6
+DEFAULT_RESULTS_PER_PAGE = 100
 
 
 def _get_referenced_feature_ids(approvals, reverse=False):
@@ -194,7 +195,7 @@ def _sort_by_total_order(result_id_list, total_order_ids):
 
 def process_query(
     user_query, sort_spec=None, show_unlisted=False, show_deleted=False,
-    start=0, num=100):
+    start=0, num=DEFAULT_RESULTS_PER_PAGE):
   """Parse the user's query, run it, and return a list of features."""
   # 1a. Parse the user query into terms.  And, add permission terms.
   feature_id_futures = []

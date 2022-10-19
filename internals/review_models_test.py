@@ -217,6 +217,7 @@ class ActivityTest(testing_config.CustomTestCase):
         name='feature a', summary='sum', owner=['feature_owner@example.com'],
         category=1)
     self.feature_1.put()
+    testing_config.sign_in('one@example.com', 123567890)
 
   def tearDown(self):
     feature_id = self.feature_1.key.integer_id()
@@ -224,6 +225,7 @@ class ActivityTest(testing_config.CustomTestCase):
     for activity in activities:
       activity.key.delete()
     self.feature_1.key.delete()
+    testing_config.sign_out()
 
   def test_activities_created(self):
     # stash_values is used to note what the original values of a feature are.

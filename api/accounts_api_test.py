@@ -88,6 +88,9 @@ class AccountsAPITest(testing_config.CustomTestCase):
     self.assertTrue(new_appuser.is_site_editor)
     self.assertFalse(new_appuser.is_admin)
 
+    # Clean up
+    new_appuser.key.delete()
+
   def test_create__admin_valid(self):
     """Admin wants to register a new admin account."""
     testing_config.sign_in('admin@example.com', 123567890)
@@ -105,6 +108,9 @@ class AccountsAPITest(testing_config.CustomTestCase):
         user_models.AppUser.email == 'new_admin@example.com').get()
     self.assertEqual('new_admin@example.com', new_appuser.email)
     self.assertTrue(new_appuser.is_admin)
+
+    # Clean up
+    new_appuser.key.delete()
 
   def test_create__forbidden(self):
     """Regular user cannot create an account."""

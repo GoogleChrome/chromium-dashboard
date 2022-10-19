@@ -24,16 +24,16 @@ Front end codes exist in two parts: main site (including admin) and http2push.
 
 ### Main site page renderring
 
-All the pages are rendered in a combination of Django template (`/templates`) and front-end components (`/static/elements`).
+All the pages are rendered in a combination of Django template (`/templates`) and front-end components (`/client-src/elements`).
 
 1. `/templates/base.html` and `/templates/base_embed.html` are the html skeleton.
 1. Templates in `/templates` (extend the `_base.html` or `_embed_base.html`) are the Django templates for each page.
    - The folder organization and template file names matches the router. (See `template_path=os.path.join(path + '.html')` in `server.py`)
    - lit-element components, css, js files are all imported/included in those templates.
    - We pass backend variables to js like this: `const variableInJs = {{variable_in_template|safe}}`.
-1. All Lit components are in `/static/elements`.
-1. All JavaScript files are in `/static/js-src/` and processed by gulp, then output to '/static/js/' and get included in templates.
-1. All CSS files are in `/static/sass/` and processed by gulp, then output to `/static/css/` and get included in templates.
+1. All Lit components are in `/client-src/elements`.
+1. All JavaScript files are in `/client-src/js-src/` and processed by gulp, then output to `/static/js/` and get included in templates.
+1. All CSS files are in `/client-src/sass/` and processed by gulp, then output to `/static/css/` and get included in templates.
 
 ## Creating a user with admin privileges
 

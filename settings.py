@@ -4,11 +4,10 @@ from typing import Any, Optional
 
 
 #Hack to get custom tags working django 1.3 + python27.
-INSTALLED_APPS = (
+INSTALLED_APPS = [
   #'nothing',
-  'customtags',
   'django.forms'
-)
+]
 
 ROOT_DIR = os.path.abspath(os.path.dirname(__file__))
 

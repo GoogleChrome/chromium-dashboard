@@ -148,6 +148,73 @@ class FeaturesAPITestGet(testing_config.CustomTestCase):
     self.assertEqual('feature two', actual['features'][0]['name'])
     self.assertEqual('feature one', actual['features'][1]['name'])
 
+  def test_get__all_listed__pagination(self):
+    """Get a pagination page features that are listed."""
+    # User wants only 1 result, starting at index 0
+    url = self.request_path + '?num=1'
+    with test_app.test_request_context(url):
+      actual = self.handler.do_get()
+    self.assertEqual(1, len(actual['features']))
+    self.assertEqual(2, actual['total_count'])
+    self.assertEqual('feature two', actual['features'][0]['name'])
+
+    # User wants only 1 result, starting at index 1
+    url = self.request_path + '?num=1&start=1'
+    with test_app.test_request_context(url):
+      actual = self.handler.do_get()
+    self.assertEqual(1, len(actual['features']))
+    self.assertEqual(2, actual['total_count'])
+    self.assertEqual('feature one', actual['features'][0]['name'])
+
+    # User wants only 1 result, starting at index 2, but there are no more.
+    url = self.request_path + '?num=1&start=2'
+    with test_app.test_request_context(url):
+      actual = self.handler.do_get()
+    self.assertEqual(0, len(actual['features']))
+    self.assertEqual(2, actual['total_count'])
+
+    # User wants only more results that we have
+    url = self.request_path + '?num=999'
+    with test_app.test_request_context(url):
+      actual = self.handler.do_get()
+    self.assertEqual(2, len(actual['features']))
+    self.assertEqual(2, actual['total_count'])
+    self.assertEqual('feature two', actual['features'][0]['name'])
+    self.assertEqual('feature one', actual['features'][1]['name'])
+
+    # User wants only the result count, zero actual results.
+    url = self.request_path + '?num=0'
+    with test_app.test_request_context(url):
+      actual = self.handler.do_get()
+    self.assertEqual(0, len(actual['features']))
+    self.assertEqual(2, actual['total_count'])
+
+  def test_get__all_listed__bad_pagination(self):
+    """Reject requests that have bad pagination params."""
+    # Malformed start parameter
+    url = self.request_path + '?start=bad'
+    with test_app.test_request_context(url):
+      with self.assertRaises(werkzeug.exceptions.BadRequest):
+        actual = self.handler.do_get()
+
+    # Malformed num parameter
+    url = self.request_path + '?num=bad'
+    with test_app.test_request_context(url):
+      with self.assertRaises(werkzeug.exceptions.BadRequest):
+        actual = self.handler.do_get()
+
+    # User wants a negative number of results
+    url = self.request_path + '?num=-1'
+    with test_app.test_request_context(url):
+      with self.assertRaises(werkzeug.exceptions.BadRequest):
+        actual = self.handler.do_get()
+
+    # User wants a negative offset
+    url = self.request_path + '?start=-1'
+    with test_app.test_request_context(url):
+      with self.assertRaises(werkzeug.exceptions.BadRequest):
+        actual = self.handler.do_get()
+
   def test_get__all_unlisted_no_perms(self):
     """JSON feed does not include unlisted features for users who can't edit."""
     self.feature_1.unlisted = True

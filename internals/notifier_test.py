@@ -14,10 +14,8 @@
 
 import collections
 import json
-import os
 import testing_config  # Must be imported before the module under test.
 from datetime import datetime
-from pathlib import Path
 
 import flask
 from unittest import mock
@@ -37,15 +35,7 @@ test_app = flask.Flask(__name__,
   template_folder=settings.flask_compat_get_template_path())
 
 # Load testdata to be used across all of the CustomTestCases
-TESTDATA = {}
-testdata_dir = os.path.join(
-  os.path.abspath(os.path.dirname(__file__)),
-  'testdata',
-  Path(__file__).stem
-  )
-for filename in os.listdir(testdata_dir):
-  with open(os.path.join(testdata_dir, filename), 'r') as f:
-    TESTDATA[filename] = f.read()
+TESTDATA = testing_config.Testdata(__file__)
 
 class EmailFormattingTest(testing_config.CustomTestCase):
 
@@ -96,7 +86,12 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     self.template_feature.key = ndb.Key('Feature', 123)
     self.template_feature.put()
 
+    self.maxDiff = None
+
   def tearDown(self):
+    self.watcher_1.key.delete()
+    self.component_owner_1.key.delete()
+    self.component_1.key.delete()
     self.feature_1.key.delete()
     self.feature_2.key.delete()
     self.template_feature.key.delete()
@@ -106,6 +101,7 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     with test_app.app_context():
       body_html = notifier.format_email_body(
           False, self.template_feature, [])
+    # TESTDATA.make_golden(body_html, 'test_format_email_body__new.html')
     self.assertEqual(body_html,
       TESTDATA['test_format_email_body__new.html'])
 
@@ -114,6 +110,7 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     with test_app.app_context():
       body_html = notifier.format_email_body(
           True, self.template_feature, [])
+    # TESTDATA.make_golden(body_html, 'test_format_email_body__update_no_changes.html')
     self.assertEqual(body_html,
       TESTDATA['test_format_email_body__update_no_changes.html'])
 
@@ -122,6 +119,7 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     with test_app.app_context():
       body_html = notifier.format_email_body(
           True, self.template_feature, self.changes)
+    # TESTDATA.make_golden(body_html, 'test_format_email_body__update_with_changes.html')
     self.assertEqual(body_html,
       TESTDATA['test_format_email_body__update_with_changes.html'])
 
@@ -131,6 +129,7 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     with test_app.app_context():
       body_html = notifier.format_email_body(
           True, self.template_feature, self.changes)
+    # TESTDATA.make_golden(body_html, 'test_format_email_body__mozdev_links_mozilla.html')
     self.assertEqual(body_html,
       TESTDATA['test_format_email_body__mozdev_links_mozilla.html'])
 
@@ -139,6 +138,7 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     with test_app.app_context():
       body_html = notifier.format_email_body(
           True, self.template_feature, self.changes)
+    # TESTDATA.make_golden(body_html, 'test_format_email_body__mozdev_links_non_mozilla.html')
     self.assertEqual(body_html,
       TESTDATA['test_format_email_body__mozdev_links_non_mozilla.html'])
 
@@ -497,10 +497,11 @@ class FeatureStarTest(testing_config.CustomTestCase):
     notifier.FeatureStar.set_star(email, feature_2_id)
 
     actual = notifier.FeatureStar.get_user_stars(email)
-    self.assertEqual(
-        sorted([feature_1_id, feature_2_id, feature_3_id],
-                      reverse=True),
-        actual)
+    expected_ids = [feature_1_id, feature_2_id, feature_3_id]
+    self.assertEqual(sorted(expected_ids, reverse=True), actual)
+    # Cleanup
+    for feature_id in expected_ids:
+      notifier.FeatureStar.get_star(email, feature_id).key.delete()
 
   def test_get_feature_starrers__no_stars(self):
     """No user has starred the given feature."""
