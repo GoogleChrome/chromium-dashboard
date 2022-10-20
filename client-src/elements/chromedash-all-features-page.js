@@ -71,7 +71,7 @@ export class ChromedashAllFeaturesPage extends LitElement {
         .starredFeatures=${this.starredFeatures}
         @star-toggle-event=${this.handleStarToggle}
         @open-approvals-event=${this.handleOpenApprovals}
-        rows=100 columns="normal">
+        num=100 alwaysOfferPagination columns="normal">
       </chromedash-feature-table>
     `;
   }

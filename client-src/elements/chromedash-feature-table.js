@@ -1,6 +1,6 @@
 import {LitElement, css, html, nothing} from 'lit';
 import {STATE_NAMES} from './chromedash-approvals-dialog.js';
-import {showToastMessage} from './utils.js';
+import {showToastMessage, clamp} from './utils.js';
 import './chromedash-feature-filter';
 import {SHARED_STYLES} from '../sass/shared-css.js';
 
@@ -12,9 +12,11 @@ class ChromedashFeatureTable extends LitElement {
       sortSpec: {type: String},
       showQuery: {type: Boolean},
       features: {type: Array},
-      total_count: {type: Number},
+      totalCount: {type: Number},
       loading: {type: Boolean},
-      rows: {type: Number},
+      start: {type: Number},
+      num: {type: Number},
+      alwaysOfferPagination: {type: Boolean},
       columns: {type: String},
       signedIn: {type: Boolean},
       canEdit: {type: Boolean},
@@ -35,6 +37,10 @@ class ChromedashFeatureTable extends LitElement {
     this.loading = true;
     this.starredFeatures = new Set();
     this.features = [];
+    this.totalCount = 0;
+    this.start = 0;
+    this.num = 100;
+    this.alwaysOfferPagination = false;
     this.noResultsMessage = 'No results';
     this.canEdit = false;
     this.canApprove = false;
@@ -49,9 +55,11 @@ class ChromedashFeatureTable extends LitElement {
   }
 
   fetchFeatures() {
-    window.csClient.searchFeatures(this.query, this.sortSpec).then((resp) => {
+    this.loading = true;
+    window.csClient.searchFeatures(
+      this.query, this.sortSpec, this.start, this.num).then((resp) => {
       this.features = resp.features;
-      this.total_count = resp.total_count;
+      this.totalCount = resp.total_count;
       this.loading = false;
       if (this.columns == 'approvals') {
         this.loadApprovalData();
@@ -100,6 +108,15 @@ class ChromedashFeatureTable extends LitElement {
     return [
       ...SHARED_STYLES,
       css`
+      .pagination {
+        padding: var(--content-padding-half) 0;
+        text-align: right;
+        min-height: 50px;
+      }
+      .pagination span {
+        color: var(--unimportant-text-color);
+        margin-right: var(--content-padding);
+      }
       table {
         width: 100%;
       }
@@ -338,6 +355,45 @@ class ChromedashFeatureTable extends LitElement {
     return nothing;
   }
 
+  shiftStartBy(delta) {
+    const proposedStart = this.start + delta;
+    this.start = clamp(proposedStart, 0, this.totalCount - 1);
+    this.fetchFeatures();
+  }
+
+  renderPagination() {
+    const first = this.start + 1;
+    const last = this.start + this.features.length;
+    const offerLeft = first > 1;
+    const offerRight = last < this.totalCount;
+
+    if (this.alwaysOfferPagination) {
+      if (this.loading) { // reserve vertical space to use when loaded.
+        return html`<div class="pagination"></div>`;
+      }
+    } else {
+      // On MyFeatures page, don't always show pagination.  Omit it if
+      // results fit in each box (the most common case).
+      if (this.loading || (first == 1 && last == this.totalCount)) {
+        return nothing;
+      }
+    }
+
+    return html`
+      <div class="pagination">
+        <span>${first} - ${last} of ${this.totalCount}</span>
+        <sl-icon-button name="chevron-left" title="Previous page"
+         @click=${() => this.shiftStartBy(-this.num)}
+         ?disabled=${!offerLeft}
+         ></sl-icon-button>
+        <sl-icon-button name="chevron-right" title="Next page"
+         @click=${() => this.shiftStartBy(this.num)}
+         ?disabled=${!offerRight}
+         ></sl-icon-button>
+      </div>
+    `;
+  }
+
   renderHighlights(feature) {
     if (this.columns == 'approvals') {
       const nextReviewDate = this.getEarliestReviewDate(feature);
@@ -397,6 +453,7 @@ class ChromedashFeatureTable extends LitElement {
   render() {
     return html`
       ${this.renderSearch()}
+      ${this.renderPagination()}
        <table>
         ${this.renderMessages() ||
           this.features.map((feature) => this.renderFeature(feature))}
