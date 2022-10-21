@@ -1,29 +1,23 @@
 'use strict';
 
-const path = require('path');
-const gulp = require('gulp');
-const babel = require("gulp-babel");
-const sass = require('gulp-sass')(require('node-sass'));
-const concat = require('gulp-concat');
-const del = require('del');
-const uglifyEs = require('gulp-uglify-es');
+import gulp from 'gulp';
+import babel from 'gulp-babel';
+import nodeSass from 'node-sass';
+import gulpSass from 'gulp-sass';
+const sass = gulpSass( nodeSass );
+import concat from 'gulp-concat';
+import { deleteAsync } from 'del';
+import uglifyEs from 'gulp-uglify-es';
 const uglify = uglifyEs.default;
-const gulpLoadPlugins = require('gulp-load-plugins');
-const eslintIfFixed = require('gulp-eslint-if-fixed');
-const $ = gulpLoadPlugins();
-const rollup = require('rollup');
-const rollupResolve = require('rollup-plugin-node-resolve');
-const rollupLitCss = require('rollup-plugin-lit-css');
-const rollupBabel = require('rollup-plugin-babel');
-const rollupMinify = require('rollup-plugin-babel-minify');
-
-function minifyHtml() {
-  return $.minifyHtml({
-    quotes: true,
-    empty: true,
-    spare: true
-  }).on('error', console.log.bind(console));
-}
+import rename from 'gulp-rename';
+import license from 'gulp-license';
+import eslint from 'gulp-eslint';
+import eslintIfFixed from 'gulp-eslint-if-fixed';
+import autoPrefixer from 'gulp-autoprefixer';
+import { rollup } from 'rollup';
+import rollupResolve from '@rollup/plugin-node-resolve';
+import rollupBabel from '@rollup/plugin-node-resolve';
+import rollupMinify from 'rollup-plugin-babel-minify';
 
 function uglifyJS() {
   return uglify({
@@ -31,8 +25,8 @@ function uglifyJS() {
   });
 }
 
-function license() {
-  return $.license('Apache2', {
+function addLicense() {
+  return license('Apache2', {
     organization: 'Copyright (c) 2016 The Google Inc. All rights reserved.',
     tiny: true
   });
@@ -43,9 +37,9 @@ gulp.task('lint', () => {
     'client-src/js-src/*.js',
     'client-src/elements/*.js',
   ])
-    .pipe($.eslint())
-    .pipe($.eslint.format())
-    .pipe($.eslint.failAfterError());
+    .pipe(eslint())
+    .pipe(eslint.format())
+    .pipe(eslint.failAfterError());
 });
 
 gulp.task('lint-fix', () => {
@@ -53,10 +47,10 @@ gulp.task('lint-fix', () => {
     'client-src/js-src/*.js',
     'client-src/elements/*.js',
   ], {base: './'})
-    .pipe($.eslint({fix:true}))
-    .pipe($.eslint.format())
+    .pipe(eslint({fix:true}))
+    .pipe(eslint.format())
     .pipe(eslintIfFixed('./'))
-    .pipe($.eslint.failAfterError());
+    .pipe(eslint.failAfterError());
 });
 
 // Compile and automatically prefix stylesheets
@@ -74,7 +68,7 @@ gulp.task('styles', () => {
       outputStyle: 'compressed',
       precision: 10
     }).on('error', sass.logError))
-    .pipe($.autoprefixer(AUTOPREFIXER_BROWSERS))
+    .pipe(autoPrefixer(AUTOPREFIXER_BROWSERS))
     .pipe(gulp.dest('static/css'));
 });
 
@@ -87,10 +81,9 @@ gulp.task('css', function() {
 });
 
 gulp.task('rollup', () => {
-  return rollup.rollup({
+  return rollup({
     input: 'client-src/components.js',
     plugins: [
-      rollupLitCss({include: []}),
       rollupResolve(),
       rollupBabel({
         plugins: ["@babel/plugin-syntax-dynamic-import"]
@@ -114,14 +107,14 @@ gulp.task('js', () => {
   ])
     .pipe(babel()) // Defaults are in .babelrc
     .pipe(uglifyJS())
-    .pipe(license()) // Add license to top.
-    .pipe($.rename({suffix: '.min'}))
+    .pipe(addLicense()) // Add license to top.
+    .pipe(rename({suffix: '.min'}))
     .pipe(gulp.dest('static/js'));
 });
 
 // Clean generated files
 gulp.task('clean', () => {
-  return del([
+  return deleteAsync([
     'static/css/',
     'static/dist',
     'static/js/',
