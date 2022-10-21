@@ -79,7 +79,6 @@
     "gulp-sass": "^5.1.0",
     "gulp-uglify-es": "^3.0.0",
     "gulp-util": "^1.0.0",
-    "http2-push-manifest": "^1.0.0",
     "ini": ">=3.0.1",
     "kind-of": ">=6.0.3",
     "lit-analyzer": "^0.0.6",
@@ -106,5 +105,8 @@
     "page": "^1.11.6",
     "urijs": ">=1.19.11",
     "yargs-parser": ">=21.1.1"
+  },
+  "overrides": {
+    "glob-parent@<5.1.2": ">=5.1.2"
   }
 }
