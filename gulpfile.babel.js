@@ -2,9 +2,9 @@
 
 import gulp from 'gulp';
 import babel from 'gulp-babel';
-import nodeSass from 'node-sass';
+import dartSass from 'sass';
 import gulpSass from 'gulp-sass';
-const sass = gulpSass( nodeSass );
+const sass = gulpSass( dartSass );
 import concat from 'gulp-concat';
 import { deleteAsync } from 'del';
 import uglifyEs from 'gulp-uglify-es';
