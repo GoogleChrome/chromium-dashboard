@@ -46,12 +46,12 @@ Shoelace comes bundled with [Bootstrap Icons](https://icons.getbootstrap.com), b
 
 To add a new Bootstrap icon:
 1. Copy it from node_modules/@shoelace-style/shoelace/dist/assets/icons to static/shoelace/assets/icons.
-1. Reference it like `<sl-icon name="icon-name">.
+1. Reference it like `<sl-icon name="icon-name">`.
 
 To add a new Material icon:
 1. Download the 24pt SVG file from https://fonts.google.com/icons?icon.set=Material+Icons
 1. Rename it to the icon name with underscores, and place it in static/shoelace/assets/material-icons.
-1. Reference it like `<sl-icon library="material" name="icon_name">.
+1. Reference it like `<sl-icon library="material" name="icon_name">`.
 
 
 ## Creating a user with admin privileges
