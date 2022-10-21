@@ -3,6 +3,7 @@
 const path = require('path');
 const gulp = require('gulp');
 const babel = require("gulp-babel");
+const sass = require('gulp-sass')(require('node-sass'));
 const concat = require('gulp-concat');
 const del = require('del');
 const uglifyEs = require('gulp-uglify-es');
@@ -69,10 +70,10 @@ gulp.task('styles', () => {
   return gulp.src([
     'client-src/sass/**/*.scss'
   ])
-    .pipe($.sass({
+    .pipe(sass({
       outputStyle: 'compressed',
       precision: 10
-    }).on('error', $.sass.logError))
+    }).on('error', sass.logError))
     .pipe($.autoprefixer(AUTOPREFIXER_BROWSERS))
     .pipe(gulp.dest('static/css'));
 });
