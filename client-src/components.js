@@ -27,6 +27,15 @@ import {setBasePath} from '@shoelace-style/shoelace/dist/utilities/base-path.js'
 // Set the base path to the folder you copied Shoelace's assets to
 setBasePath('/static/shoelace');
 
+// Configure shoelace to also find material design 24pt outline icons
+// like: <sl-icon-button library="material" name="unfold-more">
+import { registerIconLibrary } from '@shoelace-style/shoelace/dist/utilities/icon-library.js';
+registerIconLibrary('material', {
+  resolver: name =>  `/static/shoelace/assets/material-icons/${name}.svg`,
+  mutator: svg => svg.setAttribute('fill', 'currentColor')
+});
+
+
 // chromedash components
 import './elements/icons';
 import './elements/chromedash-all-features-page';

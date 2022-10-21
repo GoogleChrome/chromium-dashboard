@@ -14,6 +14,7 @@ class ChromedashFeatureDetail extends LitElement {
       feature: {type: Object},
       process: {type: Object},
       dismissedCues: {type: Array},
+      anyCollapsed: {type: Boolean},
     };
   }
 
@@ -22,6 +23,7 @@ class ChromedashFeatureDetail extends LitElement {
     this.feature = {};
     this.process = {};
     this.dismissedCues = [];
+    this.anyCollapsed = true;
   }
 
   static get styles() {
@@ -35,6 +37,11 @@ class ChromedashFeatureDetail extends LitElement {
         contain: content;
         overflow: hidden;
         background: inherit;
+      }
+
+      #controls {
+        text-align: right;
+        font-size: 1.6rem;
       }
 
       .card {
@@ -102,6 +109,35 @@ class ChromedashFeatureDetail extends LitElement {
       }
 
     `];
+  }
+
+  isAnyCollapsed() {
+    const sections = this.shadowRoot.querySelectorAll('sl-details');
+    const open = this.shadowRoot.querySelectorAll('sl-details[open]');
+    return open.length < sections.length;
+  }
+
+  updateCollapsed() {
+    this.anyCollapsed = this.isAnyCollapsed();
+  }
+
+  toggleAll() {
+    const shouldOpen = this.anyCollapsed;
+    this.shadowRoot.querySelectorAll('sl-details').forEach((el) => {
+      el.open = shouldOpen;
+    });
+  }
+
+  renderControls() {
+    const iconName = this.anyCollapsed ? 'unfold_more' : 'unfold_less';
+    return html`
+      <div id="controls">
+        <sl-icon-button library="material" name=${iconName}
+          title="Expand or collapse all sections"
+          @click=${this.toggleAll}>
+        </sl-icon-button>
+      </div>
+    `;
   }
 
   isDefinedValue(value) {
@@ -201,7 +237,7 @@ class ChromedashFeatureDetail extends LitElement {
   renderStage(stage) {
     let fields = [];
     let stageName = undefined;
-    let activeClass = '';
+    let isActive = false;
     if (typeof stage == 'string') {
       fields = DISPLAY_FIELDS_IN_STAGES[stage];
       stageName = stage;
@@ -209,7 +245,7 @@ class ChromedashFeatureDetail extends LitElement {
       fields = DISPLAY_FIELDS_IN_STAGES[stage.outgoing_stage];
       stageName = stage.name;
       if (this.feature.intent_stage_int == stage.outgoing_stage) {
-        activeClass = 'active';
+        isActive = true;
       }
     }
     if (fields === undefined || fields.length == 0) {
@@ -220,15 +256,21 @@ class ChromedashFeatureDetail extends LitElement {
       valuesPart = fields.map(fieldDef => this.renderField(fieldDef));
     }
     return html`
-      <section class="card ${activeClass}">
-       <h3>${stageName}</h3>
-       ${valuesPart}
-      </section>
+      <sl-details summary=${stageName + (isActive ? ' - Active' : '')}
+        @sl-after-show=${this.updateCollapsed}
+        @sl-after-hide=${this.updateCollapsed}
+        ?open=${isActive}
+      >
+        <section class="card ${isActive ? 'active' : ''}">
+          ${valuesPart}
+        </section>
+      </sl-details>
     `;
   }
 
   render() {
     return html`
+      ${this.renderControls()}
       ${this.renderStage('Metadata')}
       ${this.process.stages.map(stage => html`
           ${this.renderStage(stage)}
