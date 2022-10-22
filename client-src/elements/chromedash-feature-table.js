@@ -208,7 +208,7 @@ class ChromedashFeatureTable extends LitElement {
       <sl-icon-button
         @click="${() => this.openApprovalsDialog(feature)}"
         title="Review approvals"
-        name="approval" ></sl-icon-button>
+        name="approval"></sl-icon-button>
       </a>
     `;
   }
