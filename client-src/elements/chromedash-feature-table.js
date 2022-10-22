@@ -135,7 +135,7 @@ class ChromedashFeatureTable extends LitElement {
         padding: var(--content-padding-quarter);
       }
       sl-icon-button {
-        font-size: 1.1rem;
+        font-size: 1.3rem;
       }
       sl-icon-button::part(base) {
         color: var(--link-color);
@@ -208,8 +208,7 @@ class ChromedashFeatureTable extends LitElement {
       <sl-icon-button
         @click="${() => this.openApprovalsDialog(feature)}"
         title="Review approvals"
-        name="approval"></sl-icon-button>
-      </a>
+        library="material" name="approval"></sl-icon-button>
     `;
   }
 
@@ -218,7 +217,6 @@ class ChromedashFeatureTable extends LitElement {
       <sl-icon-button href="/guide/edit/${feature.id}"
         title="Edit feature"
         name="pencil-fill"></sl-icon-button>
-      </a>
     `;
   }
 
@@ -227,11 +225,10 @@ class ChromedashFeatureTable extends LitElement {
       <sl-icon-button
         @click=${this.toggleStar}
         title="Receive an email notification when there are updates"
+        library="material"
         name="${this.starredFeatures.has(Number(feature.id)) ?
-                'star-fill' : 'star'}"
-        data-feature-id="${feature.id}">
-        </sl-icon-button>
-      </a>
+                'star' : 'star_border'}"
+        data-feature-id="${feature.id}"></sl-icon-button>
     `;
   }
 
