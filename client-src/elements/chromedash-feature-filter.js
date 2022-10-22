@@ -5,7 +5,7 @@ const ENTER_KEY_CODE = 13;
 
 const EQ_OP = 'Equals';
 const BETWEEN_OP = 'Between';
-const CONTAINS_OP = 'Contains';
+const CONTAINS_OP = 'Contains words';
 
 const TEXT_TYPE = 'text';
 const NUM_TYPE = 'number';
@@ -171,8 +171,8 @@ class ChromedashFeatureFilter extends LitElement {
   }
 
   computeQuery() {
-    const searchBoxEl = this.shadowRoot.querySelector('#searchbox');
-    const queryTerms = [searchBoxEl.value.trim()];
+    const searchBarEl = this.shadowRoot.querySelector('#searchbar');
+    const queryTerms = [searchBarEl.value.trim()];
     for (const cond of this.filterConditions) {
       if (cond.op == EQ_OP && cond.value && cond.value.trim()) {
         queryTerms.push(cond.fieldName + '="' + cond.value + '"');
@@ -215,35 +215,21 @@ class ChromedashFeatureFilter extends LitElement {
     return [
       ...SHARED_STYLES,
       css`
-      iron-icon {
-        --iron-icon-height: 18px;
-        --iron-icon-width: 18px;
+      sl-icon-button {
+        font-size: 1.6rem;
+        margin: 0 !important;
       }
-      button.searchbutton {
-        padding: 2px 8px;
-        font-size: inherit;
+      sl-input sl-icon-button {
+        font-size: 1.4rem;
       }
-      .primary iron-icon {
-        color: white;
-      }
-      #searchbar, #filterwidgets {
-       padding: 4px;
-       margin: 4px;
+      #searchbar::part(base), #filterwidgets {
        background: #eee;
+       border: none;
        border-radius: 8px;
       }
-      #searchbar {
-       display: flex;
-      }
-      #searchbar button, #searchbar button iron-icon {
-       background: transparent;
-       color: #444;
-       border: none;
-      }
-      #searchbar input {
-       flex: 1;
-       border: none;
-       background: transparent;
+      #filterwidgets {
+       padding: 4px;
+       margin: 4px 0;
       }
       .filterrow {
         display: flex;
@@ -252,16 +238,16 @@ class ChromedashFeatureFilter extends LitElement {
         margin: 6px 3px;
       }
       .cond-field-menu {
-        width: 160px;
+        width: 180px;
       }
       .cond-op-menu {
-        width: 80px;
+        width: 150px;
       }
       .filterrow label {
         padding-right: 4px;
         align-self: center;
       }
-      .filterrow input {
+      .filterrow sl-input {
         flex: 1;
       }
       .cond-delete {
@@ -277,18 +263,18 @@ class ChromedashFeatureFilter extends LitElement {
     `];
   }
 
-  renderSearchBox() {
+  renderSearchBar() {
     return html`
-      <div id="searchbar">
-       <button class="searchbutton primary"
+      <div>
+        <sl-input id="searchbar" placeholder="Search"
+            @keyup="${this.handleSearchKey}">
+          <sl-icon-button name="search" slot="prefix"
                @click="${this.handleSearchClick}">
-        <iron-icon icon="chromestatus:search"></iron-icon>
-       </button>
-       <input id="searchbox" type="search" placeholder="Search"
-              @keyup="${this.handleSearchKey}">
-       <button id="showfilters" @click="${this.toggleFilters}">
-        <iron-icon icon="chromestatus:filter-list-from-gmail"></iron-icon>
-       </button>
+          </sl-icon-button>
+          <sl-icon-button name="sliders2" slot="suffix"
+               @click="${this.toggleFilters}">
+          </sl-icon-button>
+        </sl-input>
       </div>
     `;
   }
@@ -304,14 +290,15 @@ class ChromedashFeatureFilter extends LitElement {
 
   renderFilterFieldMenu(fieldName, index) {
     return html`
-      <select class="cond-field-menu"
-              @change="${(e) => this.handleChangeField(e.target.value, index)}">
+      <sl-select class="cond-field-menu" size="small"
+              value=${fieldName}
+              @sl-change="${(e) => this.handleChangeField(e.target.value, index)}">
        ${QUERIABLE_FIELDS.map((item) => html`
-        <option value="${item.name}"
-          ?selected=${fieldName == item.name}
-        >${item.display}</option>
-         `)}
-      </select>
+         <sl-menu-item value="${item.name}">
+           ${item.display}
+         </sl-menu-item>
+        `)}
+      </sl-select>
     `;
   }
 
@@ -329,15 +316,15 @@ class ChromedashFeatureFilter extends LitElement {
   renderFilterOpMenu(cond, index) {
     const operatorOptions = this.findAvailableOps(cond.fieldName);
     return html`
-      <select class="cond-op-menu"
-              @change="${(e) => this.handleChangeOp(e.target.value, index)}">
+      <sl-select class="cond-op-menu" size="small"
+              value=${cond.op}
+              @sl-change="${(e) => this.handleChangeOp(e.target.value, index)}">
        ${operatorOptions.map(opOption => html`
-          <option
-            value="${opOption}"
-            ?selected=${cond.op == opOption}
-          >${opOption}</option>
+         <sl-menu-item value="${opOption}">
+           ${opOption}
+         </sl-menu-item>
         `)}
-      </select>
+      </sl-select>
     `;
   }
 
@@ -365,26 +352,30 @@ class ChromedashFeatureFilter extends LitElement {
 
     if (cond.op == EQ_OP) {
       return html`
-        <input type="${inputType}" value="${cond.value || ''}"
-               @change="${(e) => this.handleChangeValue(e.target.value, index)}">
+        <sl-input type="${inputType}" value="${cond.value || ''}" size="small"
+               @sl-change="${(e) => this.handleChangeValue(e.target.value, index)}">
+        </sl-input>
         `;
     }
 
     if (cond.op == BETWEEN_OP) {
       return html`
         <label>Min:</label>
-        <input type="${inputType}" value="${cond.low}"
-               @change="${(e) => this.handleChangeLow(e.target.value, index)}">
+        <sl-input type="${inputType}" value="${cond.low}" size="small"
+               @sl-change="${(e) => this.handleChangeLow(e.target.value, index)}">
+        </sl-input>
         <label>Max:</label>
-        <input type="${inputType}" value="${cond.high}"
-               @change="${(e) => this.handleChangeHigh(e.target.value, index)}">
+        <sl-input type="${inputType}" value="${cond.high}" size="small"
+               @sl-change="${(e) => this.handleChangeHigh(e.target.value, index)}">
+        </sl-input>
         `;
     }
 
     if (cond.op == CONTAINS_OP) {
       return html`
-        <input value="${cond.value}"
-               @change="${(e) => this.handleChangeValue(e.target.value, index)}">
+        <sl-input value="${cond.value}" size="small"
+               @sl-change="${(e) => this.handleChangeValue(e.target.value, index)}">
+        </sl-input>
         `;
     }
 
@@ -415,9 +406,8 @@ class ChromedashFeatureFilter extends LitElement {
       ${this.renderFilterFieldMenu(cond.fieldName, index)}
       ${this.renderFilterOpMenu(cond, index)}
       ${this.renderFilterValues(cond, index)}
-      <button class="cond-delete"
-              @click="${() => this.handleDeleteCond(index)}"
-      ><iron-icon icon="chromestatus:close"></iron-icon></button>
+      <sl-icon-button name="x" @click="${() => this.handleDeleteCond(index)}">
+      </sl-icon-button>
      </div>
     `;
   }
@@ -425,27 +415,30 @@ class ChromedashFeatureFilter extends LitElement {
   renderBlankCondition() {
     return html`
      <div class="filterrow">
-      <select id="choose_field" class="cond-field-menu"
-              @change="${this.addFilterCondition}">
-       <option disabled selected value="choose"
-         >Select field name</option>
+      <sl-select id="choose_field" class="cond-field-menu" size="small"
+          placeholder="Select field name"
+              @sl-change="${this.addFilterCondition}">
        ${QUERIABLE_FIELDS.map((item) => html`
-        <option value="${item.name}">${item.display}</option>
-         `)}
-      </select>
+         <sl-menu-item value="${item.name}">
+           ${item.display}
+         </sl-menu-item>
+        `)}
+      </sl-select>
      </div>
     `;
   }
 
   addFilterCondition(event) {
     const fieldName = event.target.value;
+    if (fieldName === null) return;
     const newCond = {
       fieldName: fieldName,
       op: this.findAvailableOps(fieldName)[0],
     };
     const newFilterConditions = [...this.filterConditions, newCond];
     this.filterConditions = newFilterConditions;
-    this.shadowRoot.querySelector('#choose_field').value = 'choose';
+    // Reset the choose_field menu so user can add another.
+    this.shadowRoot.querySelector('#choose_field').value = null;
   }
 
 
@@ -456,10 +449,11 @@ class ChromedashFeatureFilter extends LitElement {
       this.renderFilterRow(cond, index))}
        ${this.renderBlankCondition()}
 
-       <div>
-        <button class="searchbutton primary" @click="${this.handleFilterClick}">
+       <div class="filterrow">
+        <sl-button class="searchbutton" variant="primary" size="small"
+          @click="${this.handleFilterClick}">
           Search
-        </button>
+        </sl-button>
        </div>
       </div>
     `;
@@ -467,7 +461,7 @@ class ChromedashFeatureFilter extends LitElement {
 
   render() {
     return html`
-      ${this.renderSearchBox()}
+      ${this.renderSearchBar()}
       ${this.showFilters ? this.renderFilterWidgets() : nothing}
     `;
   }
