@@ -295,13 +295,14 @@ export const ALL_FIELDS = {
     type: 'input',
     attrs: URL_FIELD_ATTRS,
     required: false,
-    label: 'Launch bug URL',
+    label: 'Launch URL',
     help_text: html`
-        Launch bug url (https://bugs.chromium.org/...) to track launch approvals.
+        Launch URL (https://launch.corp.google.com/...) to track internal
+        approvals, if any.
         <br/><br/>
         <a target="_blank"
-            href="https://bugs.chromium.org/p/chromium/issues/entry?template=Chrome+Launch+Feature">
-          Create launch bug</a>.`,
+            href="https://launch.corp.google.com/">
+          Create a launch</a>.`,
   },
 
   'motivation': {
