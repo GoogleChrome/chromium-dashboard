@@ -279,15 +279,6 @@ class ChromedashFeatureFilter extends LitElement {
     `;
   }
 
-  handleChangeField(fieldName, index) {
-    // Reset values and operator
-    const newCond = {
-      fieldName: fieldName,
-      op: this.findAvailableOps(fieldName)[0],
-    };
-    this.replaceCond(newCond, index);
-  }
-
   renderFilterFieldMenu(fieldName, index) {
     return html`
       <sl-select class="cond-field-menu" size="small"
@@ -326,6 +317,17 @@ class ChromedashFeatureFilter extends LitElement {
         `)}
       </sl-select>
     `;
+  }
+
+  handleChangeField(fieldName, index) {
+    // Reset field and operator, but keep value, low, and high.
+    const oldCond = this.filterConditions[index];
+    const newCond = {
+      ...oldCond,
+      fieldName: fieldName,
+      op: this.findAvailableOps(fieldName)[0],
+    };
+    this.replaceCond(newCond, index);
   }
 
   handleChangeValue(value, index) {
