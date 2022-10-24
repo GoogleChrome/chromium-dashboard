@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from typing import Any
 from api import accounts_api
 from api import approvals_api
 from api import blink_components_api
@@ -70,7 +71,7 @@ if not settings.UNIT_TEST_MODE and not settings.DEV_MODE:
 # or not.
 
 
-metrics_chart_routes = [
+metrics_chart_routes: list[tuple] = [
     ('/data/timeline/cssanimated', metricsdata.AnimatedTimelineHandler),
     ('/data/timeline/csspopularity', metricsdata.PopularityTimelineHandler),
     ('/data/timeline/featurepopularity',
@@ -83,7 +84,7 @@ metrics_chart_routes = [
 
 # TODO(jrobbins): Advance this to v1 once we have it fleshed out
 API_BASE = '/api/v0'
-api_routes = [
+api_routes: list[tuple] = [
     (API_BASE + '/features', features_api.FeaturesAPI),
     (API_BASE + '/features/<int:feature_id>', features_api.FeaturesAPI),
     (API_BASE + '/features/<int:feature_id>/approvals',
@@ -145,7 +146,7 @@ spa_pages = [
   ('/settings', {'require_signin': True}),
 ]
 
-spa_page_routes = []
+spa_page_routes: list[tuple] = []
 for route in spa_pages:
   page_defaults = {}
   if isinstance(route, tuple):
@@ -153,7 +154,7 @@ for route in spa_pages:
     page_defaults.update(additional_defaults)
   spa_page_routes.append((route, basehandlers.SPAHandler, page_defaults))
 
-spa_page_post_routes = [
+spa_page_post_routes: list[Any] = [
   ('/guide/new', guide.FeatureCreateHandler),
   ('/guide/edit/<int:feature_id>', guide.FeatureEditHandler),
   ('/guide/stage/<int:feature_id>/<int:stage_id>', guide.FeatureEditHandler),
@@ -161,7 +162,7 @@ spa_page_post_routes = [
   ('/guide/verify_accuracy/<int:feature_id>', guide.FeatureEditHandler),
 ]
 
-mpa_page_routes = [
+mpa_page_routes: list[tuple] = [
     ('/admin/subscribers', blink_handler.SubscribersHandler),
     ('/admin/blink', blink_handler.BlinkHandler),
     ('/admin/users/new', users.UserListHandler),
@@ -185,7 +186,7 @@ mpa_page_routes = [
     ('/omaha_data', metrics.OmahaDataHandler),
 ]
 
-internals_routes = [
+internals_routes: list[tuple] = [
   ('/cron/metrics', fetchmetrics.YesterdayHandler),
   ('/cron/histograms', fetchmetrics.HistogramsHandler),
   ('/cron/update_blink_components', fetchmetrics.BlinkComponentHandler),

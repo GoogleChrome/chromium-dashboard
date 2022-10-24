@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import logging
-from google.cloud import ndb
+from google.cloud import ndb  # type: ignore
 
 from framework.basehandlers import FlaskHandler
 from internals import approval_defs
@@ -305,7 +305,7 @@ class MigrateEntities(FlaskHandler):
     num_gates += totals[0]
     num_votes += totals[1]
     # Return number of Stage entities created.
-    return 6, num_gates, num_votes
+    return 7, num_gates, num_votes
 
   @classmethod
   def write_existing_stages(cls, feature, devtrial_mstones, ot_mstones,
@@ -348,7 +348,7 @@ class MigrateEntities(FlaskHandler):
     num_gates += totals[0]
     num_votes += totals[1]
     # Return number of Stage entities created.
-    return 4, num_gates, num_votes
+    return 5, num_gates, num_votes
 
   @classmethod
   def write_code_change_stages(cls, feature, devtrial_mstones, ship_mstones):
@@ -410,4 +410,4 @@ class MigrateEntities(FlaskHandler):
     stage = Stage(stage_type=STAGE_DEP_REMOVE_CODE, **kwargs)
     stage.put()
     # Return number of Stage entities created.
-    return 5, num_gates, num_votes
+    return 6, num_gates, num_votes

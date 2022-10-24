@@ -41,6 +41,9 @@ jobs:
       - name: lint
         run: npm run lint
 
+      - name: mypy
+        run: mypy --ignore-missing-imports --exclude cs-env/ --exclude appengine_config.py .
+
       - name: test
         run: npm test
 

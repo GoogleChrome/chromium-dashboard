@@ -528,19 +528,19 @@ class FlaskHandlerTests(testing_config.CustomTestCase):
         actual)
 
   def test_get_template_data__missing(self):
-    """Every subsclass should overide get_template_data()."""
+    """Every subclass should overide get_template_data()."""
     self.handler = basehandlers.FlaskHandler()
     with self.assertRaises(NotImplementedError):
       self.handler.get_template_data()
 
   def test_get_template_path__missing(self):
-    """Subsclasses that don't define TEMPLATE_PATH trigger error."""
+    """Subclasses that don't define TEMPLATE_PATH trigger error."""
     self.handler = basehandlers.FlaskHandler()
     with self.assertRaises(ValueError):
       self.handler.get_template_path({})
 
   def test_get_template_path__specified_in_class(self):
-    """Subsclasses can define TEMPLATE_PATH."""
+    """Subclasses can define TEMPLATE_PATH."""
     actual = self.handler.get_template_path({})
     self.assertEqual('test_template.html', actual)
 
@@ -551,7 +551,7 @@ class FlaskHandlerTests(testing_config.CustomTestCase):
     self.assertEqual('special.html', actual)
 
   def test_process_post_data__missing(self):
-    """Subsclasses that don't override process_post_data() give a 405."""
+    """Subclasses that don't override process_post_data() give a 405."""
     self.handler = basehandlers.FlaskHandler()
     with self.assertRaises(werkzeug.exceptions.MethodNotAllowed):
       self.handler.process_post_data()
@@ -577,7 +577,8 @@ class FlaskHandlerTests(testing_config.CustomTestCase):
 
   def test_render(self):
     """We can render a simple template to a string."""
-    actual = self.handler.render({'name': 'literal'}, 'test_template.html')
+    with test_app.app_context():
+      actual = self.handler.render({'name': 'literal'}, 'test_template.html')
     self.assertIn('Hi literal', actual)
 
   def test_get__remove_www(self):

@@ -27,7 +27,7 @@ from internals import search
 class FeaturesAPI(basehandlers.APIHandler):
   """Features are the the main records that we track."""
 
-  def get_one_feature(self, feature_id: int) -> dict:
+  def get_one_feature(self, feature_id: int) -> dict[str, Any]:
     features = core_models.Feature.get_by_ids([feature_id])
     if not features:
       self.abort(404, msg='Feature %r not found' % feature_id)
@@ -40,18 +40,15 @@ class FeaturesAPI(basehandlers.APIHandler):
     features_on_page = None
 
     # Query-string parameter 'milestone' is provided
-    milestone = self.request.args.get('milestone')
+    milestone = self.get_int_arg('milestone')
     if milestone:
-      if milestone.isdigit():
-        features_by_type = core_models.Feature.get_in_milestone(
-          show_unlisted=show_unlisted_features, milestone=int(milestone))
-        total_count = sum(len(features_by_type[t]) for t in features_by_type)
-        return {
-            'features_by_type': features_by_type,
-            'total_count': total_count,
-            }
-      else:
-        self.abort(400, msg='Invalid  Milestone')
+      features_by_type = core_models.Feature.get_in_milestone(
+        show_unlisted=show_unlisted_features, milestone=milestone)
+      total_count = sum(len(features_by_type[t]) for t in features_by_type)
+      return {
+          'features_by_type': features_by_type,
+          'total_count': total_count,
+          }
 
     user_query = self.request.args.get('q', '')
     sort_spec = self.request.args.get('sort')
@@ -67,7 +64,7 @@ class FeaturesAPI(basehandlers.APIHandler):
         'features': features_on_page,
         }
 
-  def do_get(self, **kwargs) -> dict:
+  def do_get(self, **kwargs) -> dict[str, Any]:
     """Handle GET requests for a single feature or a search."""
     feature_id = kwargs.get('feature_id', None)
     if feature_id:

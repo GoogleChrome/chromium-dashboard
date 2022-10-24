@@ -12,12 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from typing import Optional
+from framework.basehandlers import FlaskHandler
 import testing_config  # Must be imported first
 
 import os
 import flask
 import werkzeug
 import html5lib
+import settings
 
 from internals import core_enums
 from internals import core_models
@@ -25,13 +28,16 @@ from internals import user_models
 from pages import featurelist
 from framework import rediscache
 
-test_app = flask.Flask(__name__)
+test_app = flask.Flask(__name__,
+  template_folder=settings.get_flask_template_path())
 
+# Load testdata to be used across all of the CustomTestCases
+TESTDATA = testing_config.Testdata(__file__)
 
 class TestWithFeature(testing_config.CustomTestCase):
 
-  REQUEST_PATH_FORMAT = 'subclasses fill this in'
-  HANDLER_CLASS = 'subclasses fill this in'
+  REQUEST_PATH_FORMAT: Optional[str] = None
+  HANDLER_CLASS: Optional[object] = None
 
   def setUp(self):
     self.app_user = user_models.AppUser(email='registered@example.com')
@@ -47,10 +53,10 @@ class TestWithFeature(testing_config.CustomTestCase):
     self.feature_1.put()
     self.feature_id = self.feature_1.key.integer_id()
 
-    self.request_path = self.REQUEST_PATH_FORMAT % {
-        'feature_id': self.feature_id,
-    }
-    self.handler = self.HANDLER_CLASS()
+    self.request_path = (self.REQUEST_PATH_FORMAT %
+        {'feature_id': self.feature_id} if self.REQUEST_PATH_FORMAT else '')
+    if self.HANDLER_CLASS:
+      self.handler = self.HANDLER_CLASS()
 
   def tearDown(self):
     self.feature_1.key.delete()
@@ -115,6 +121,7 @@ class FeatureListHandlerTest(TestWithFeature):
 
 class FeatureListTemplateTest(TestWithFeature):
 
+  REQUEST_PATH_FORMAT = None
   HANDLER_CLASS = featurelist.FeatureListHandler
 
   def setUp(self):
@@ -123,17 +130,29 @@ class FeatureListTemplateTest(TestWithFeature):
       self.template_data = self.handler.get_template_data(
           feature_id=self.feature_id)
 
+      testing_config.sign_in('admin@example.com', 111)
+
       self.template_data.update(self.handler.get_common_data())
       self.template_data['nonce'] = 'fake nonce'
+      self.template_data['xsrf_token'] = ''
+      self.template_data['xsrf_token_expires'] = 0
       template_path = self.handler.get_template_path(self.template_data)
       self.full_template_path = os.path.join(template_path)
+      self.maxDiff = None
+
+    def tearDown(self):
+      testing_config.sign_out()
 
   def test_html_rendering(self):
     """We can render the template with valid html."""
-    template_text = self.handler.render(
-        self.template_data, self.full_template_path)
+    with test_app.app_context():
+      template_text = self.handler.render(
+          self.template_data, self.full_template_path)
     parser = html5lib.HTMLParser(strict=True)
     document = parser.parse(template_text)
+    # TESTDATA.make_golden(template_text, 'test_html_rendering.html')
+    self.assertMultiLineEqual(
+      TESTDATA['test_html_rendering.html'], template_text)
 
 
 class FeatureListXMLHandlerTest(TestWithFeature):

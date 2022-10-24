@@ -133,9 +133,6 @@ class ChromedashFeatureTable extends LitElement {
       .highlights div {
         color: var(--unimportant-text-color);
         padding: var(--content-padding-quarter);
-        white-space: nowrap;
-        text-overflow: ellipsis;
-        overflow: hidden;
       }
       iron-icon {
         --iron-icon-height: 18px;

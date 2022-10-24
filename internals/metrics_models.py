@@ -13,7 +13,7 @@
 # limitations under the License.
 
 
-from google.cloud import ndb
+from google.cloud import ndb  # type: ignore
 
 
 # UMA metrics.

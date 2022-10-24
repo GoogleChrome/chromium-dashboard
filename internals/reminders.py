@@ -15,9 +15,10 @@
 from datetime import datetime, timedelta
 import json
 import logging
+from typing import Optional
 import requests
 
-from django.template.loader import render_to_string
+from flask import render_template
 
 from framework import basehandlers
 from internals import core_models
@@ -53,7 +54,7 @@ def build_email_tasks(
       'milestone': mstone,
       'beta_date_str': beta_date_str,
     }
-    html = render_to_string(body_template_path, body_data)
+    html = render_template(body_template_path, **body_data)
     subject = subject_format % feature.name
     for owner in feature.owner:
       email_tasks.append({
@@ -67,11 +68,11 @@ def build_email_tasks(
 
 class AbstractReminderHandler(basehandlers.FlaskHandler):
   JSONIFY = True
-  SUBJECT_FORMAT = '%s'
-  EMAIL_TEMPLATE_PATH = None  # Subclasses must override
+  SUBJECT_FORMAT: Optional[str] = '%s'
+  EMAIL_TEMPLATE_PATH: Optional[str] = None  # Subclasses must override
   ANCHOR_CHANNEL = 'current'  # the stable channel
   FUTURE_MILESTONES_TO_CONSIDER = 0
-  MILESTONE_FIELDS = None  # Subclasses must override
+  MILESTONE_FIELDS: Optional[tuple] = None  # Subclasses must override
 
   def get_template_data(self, **kwargs):
     """Sends notifications to users requesting feature updates for accuracy."""
