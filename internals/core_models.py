@@ -118,19 +118,6 @@ class Feature(DictModel):
     super(Feature, self).__init__(*args, **kwargs)
 
   @classmethod
-  def _first_of_milestone(self, feature_list, milestone, start=0):
-    for i in range(start, len(feature_list)):
-      f = feature_list[i]
-      if (str(f['shipped_milestone']) == str(milestone) or
-          f['impl_status_chrome'] == str(milestone)):
-        return i
-      elif (f['shipped_milestone'] == None and
-            str(f['shipped_android_milestone']) == str(milestone)):
-        return i
-
-    return -1
-
-  @classmethod
   def _first_of_milestone_v2(self, feature_list, milestone, start=0):
     for i in range(start, len(feature_list)):
       f = feature_list[i]
@@ -147,7 +134,7 @@ class Feature(DictModel):
     return -1
 
   @classmethod
-  def _annotate_first_of_milestones(self, feature_list, version=None):
+  def _annotate_first_of_milestones(self, feature_list):
     try:
       omaha_data = fetchchannels.get_omaha_data()
 
@@ -170,13 +157,10 @@ class Feature(DictModel):
       versions.append(IMPLEMENTATION_STATUS[NO_ACTIVE_DEV])
       versions.append(IMPLEMENTATION_STATUS[NO_LONGER_PURSUING])
 
-      first_of_milestone_func = Feature._first_of_milestone
-      if version == 2:
-        first_of_milestone_func = Feature._first_of_milestone_v2
-
       last_good_idx = 0
       for i, ver in enumerate(versions):
-        idx = first_of_milestone_func(feature_list, ver, start=last_good_idx)
+        idx = Feature._first_of_milestone_v2(
+            feature_list, ver, start=last_good_idx)
         if idx != -1:
           feature_list[idx]['first_of_milestone'] = True
           last_good_idx = idx
@@ -200,8 +184,7 @@ class Feature(DictModel):
     if self.safari_views == PUBLIC_SKEPTICISM:
       self.safari_views = OPPOSED
 
-  # TODO(jrobbins): Eliminate format version 1.
-  def format_for_template(self, version=2) -> dict[str, Any]:
+  def format_for_template(self) -> dict[str, Any]:
     self.migrate_views()
     logging.info('In format_for_template for %s',
                  repr(self)[:settings.MAX_LOG_LINE])
@@ -214,170 +197,129 @@ class Feature(DictModel):
         self.standardization > 0):
       standard_maturity_val = STANDARD_MATURITY_BACKFILL[self.standardization]
 
-    if version == 2:
-      if self.is_saved():
-        d['id'] = self.key.integer_id()
-      else:
-        d['id'] = None
-      d['category'] = FEATURE_CATEGORIES[self.category]
-      d['category_int'] = self.category
-      if self.feature_type is not None:
-        d['feature_type'] = FEATURE_TYPES[self.feature_type]
-        d['feature_type_int'] = self.feature_type
-      if self.intent_stage is not None:
-        d['intent_stage'] = INTENT_STAGES[self.intent_stage]
-        d['intent_stage_int'] = self.intent_stage
-      d['created'] = {
-        'by': d.pop('created_by', None),
-        'when': d.pop('created', None),
-      }
-      d['updated'] = {
-        'by': d.pop('updated_by', None),
-        'when': d.pop('updated', None),
-      }
-      d['accurate_as_of'] = d.pop('accurate_as_of', None)
-      d['standards'] = {
-        'spec': d.pop('spec_link', None),
-        'status': {
-          'text': STANDARDIZATION[self.standardization],
-          'val': d.pop('standardization', None),
-        },
-        'maturity': {
-          'text': STANDARD_MATURITY_CHOICES.get(standard_maturity_val),
-          'short_text': STANDARD_MATURITY_SHORT.get(standard_maturity_val),
-          'val': standard_maturity_val,
-        },
-      }
-      del d['standard_maturity']
-      d['tag_review_status'] = REVIEW_STATUS_CHOICES[self.tag_review_status]
-      d['tag_review_status_int'] = self.tag_review_status
-      d['security_review_status'] = REVIEW_STATUS_CHOICES[
-          self.security_review_status]
-      d['security_review_status_int'] = self.security_review_status
-      d['privacy_review_status'] = REVIEW_STATUS_CHOICES[
-          self.privacy_review_status]
-      d['privacy_review_status_int'] = self.privacy_review_status
-      d['resources'] = {
-        'samples': d.pop('sample_links', []),
-        'docs': d.pop('doc_links', []),
-      }
-      d['tags'] = d.pop('search_tags', [])
-      d['editors'] = d.pop('editors', [])
-      d['cc_recipients'] = d.pop('cc_recipients', [])
-      d['creator'] = d.pop('creator', None)
-      d['browsers'] = {
-        'chrome': {
-          'bug': d.pop('bug_url', None),
-          'blink_components': d.pop('blink_components', []),
-          'devrel': d.pop('devrel', []),
-          'owners': d.pop('owner', []),
-          'origintrial': self.impl_status_chrome == ORIGIN_TRIAL,
-          'intervention': self.impl_status_chrome == INTERVENTION,
-          'prefixed': d.pop('prefixed', False),
-          'flag': self.impl_status_chrome == BEHIND_A_FLAG,
-          'status': {
-            'text': IMPLEMENTATION_STATUS[self.impl_status_chrome],
-            'val': d.pop('impl_status_chrome', None)
-          },
-          'desktop': d.pop('shipped_milestone', None),
-          'android': d.pop('shipped_android_milestone', None),
-          'webview': d.pop('shipped_webview_milestone', None),
-          'ios': d.pop('shipped_ios_milestone', None),
-        },
-        'ff': {
-          'view': {
-            'text': VENDOR_VIEWS[self.ff_views],
-            'val': d.pop('ff_views', None),
-            'url': d.pop('ff_views_link', None),
-            'notes': d.pop('ff_views_notes', None),
-          }
-        },
-        'edge': {  # Deprecated
-          'view': {
-            'text': VENDOR_VIEWS[self.ie_views],
-            'val': d.pop('ie_views', None),
-            'url': d.pop('ie_views_link', None),
-            'notes': d.pop('ie_views_notes', None),
-          }
-        },
-        'safari': {
-          'view': {
-            'text': VENDOR_VIEWS[self.safari_views],
-            'val': d.pop('safari_views', None),
-            'url': d.pop('safari_views_link', None),
-            'notes': d.pop('safari_views_notes', None),
-          }
-        },
-        'webdev': {
-          'view': {
-            'text': WEB_DEV_VIEWS[self.web_dev_views],
-            'val': d.pop('web_dev_views', None),
-            'url': d.pop('web_dev_views_link', None),
-            'notes': d.pop('web_dev_views_notes', None),
-          }
-        },
-        'other': {
-          'view': {
-            'notes': d.pop('other_views_notes', None),
-          }
-        },
-      }
-
-      if is_released and self.shipped_milestone:
-        d['browsers']['chrome']['status']['milestone_str'] = self.shipped_milestone
-      elif is_released and self.shipped_android_milestone:
-        d['browsers']['chrome']['status']['milestone_str'] = self.shipped_android_milestone
-      else:
-        d['browsers']['chrome']['status']['milestone_str'] = d['browsers']['chrome']['status']['text']
-
-      del_none(d) # Further prune response by removing null/[] values.
-
+    if self.is_saved():
+      d['id'] = self.key.integer_id()
     else:
-      if self.is_saved():
-        d['id'] = self.key.integer_id()
-      else:
-        d['id'] = None
-      d['category'] = FEATURE_CATEGORIES[self.category]
-      if self.feature_type is not None:
-        d['feature_type'] = FEATURE_TYPES[self.feature_type]
-        d['feature_type_int'] = self.feature_type
-      if self.intent_stage is not None:
-        d['intent_stage'] = INTENT_STAGES[self.intent_stage]
-        d['intent_stage_int'] = self.intent_stage
-      d['impl_status_chrome'] = IMPLEMENTATION_STATUS[self.impl_status_chrome]
-      d['tag_review_status'] = REVIEW_STATUS_CHOICES[self.tag_review_status]
-      d['security_review_status'] = REVIEW_STATUS_CHOICES[
-          self.security_review_status]
-      d['privacy_review_status'] = REVIEW_STATUS_CHOICES[
-          self.privacy_review_status]
-      d['meta'] = {
+      d['id'] = None
+    d['category'] = FEATURE_CATEGORIES[self.category]
+    d['category_int'] = self.category
+    if self.feature_type is not None:
+      d['feature_type'] = FEATURE_TYPES[self.feature_type]
+      d['feature_type_int'] = self.feature_type
+    if self.intent_stage is not None:
+      d['intent_stage'] = INTENT_STAGES[self.intent_stage]
+      d['intent_stage_int'] = self.intent_stage
+    d['created'] = {
+      'by': d.pop('created_by', None),
+      'when': d.pop('created', None),
+    }
+    d['updated'] = {
+      'by': d.pop('updated_by', None),
+      'when': d.pop('updated', None),
+    }
+    d['accurate_as_of'] = d.pop('accurate_as_of', None)
+    d['standards'] = {
+      'spec': d.pop('spec_link', None),
+      'status': {
+        'text': STANDARDIZATION[self.standardization],
+        'val': d.pop('standardization', None),
+      },
+      'maturity': {
+        'text': STANDARD_MATURITY_CHOICES.get(standard_maturity_val),
+        'short_text': STANDARD_MATURITY_SHORT.get(standard_maturity_val),
+        'val': standard_maturity_val,
+      },
+    }
+    del d['standard_maturity']
+    d['tag_review_status'] = REVIEW_STATUS_CHOICES[self.tag_review_status]
+    d['tag_review_status_int'] = self.tag_review_status
+    d['security_review_status'] = REVIEW_STATUS_CHOICES[
+        self.security_review_status]
+    d['security_review_status_int'] = self.security_review_status
+    d['privacy_review_status'] = REVIEW_STATUS_CHOICES[
+        self.privacy_review_status]
+    d['privacy_review_status_int'] = self.privacy_review_status
+    d['resources'] = {
+      'samples': d.pop('sample_links', []),
+      'docs': d.pop('doc_links', []),
+    }
+    d['tags'] = d.pop('search_tags', [])
+    d['editors'] = d.pop('editors', [])
+    d['cc_recipients'] = d.pop('cc_recipients', [])
+    d['creator'] = d.pop('creator', None)
+    d['browsers'] = {
+      'chrome': {
+        'bug': d.pop('bug_url', None),
+        'blink_components': d.pop('blink_components', []),
+        'devrel': d.pop('devrel', []),
+        'owners': d.pop('owner', []),
         'origintrial': self.impl_status_chrome == ORIGIN_TRIAL,
         'intervention': self.impl_status_chrome == INTERVENTION,
-        'needsflag': self.impl_status_chrome == BEHIND_A_FLAG,
+        'prefixed': d.pop('prefixed', False),
+        'flag': self.impl_status_chrome == BEHIND_A_FLAG,
+        'status': {
+          'text': IMPLEMENTATION_STATUS[self.impl_status_chrome],
+          'val': d.pop('impl_status_chrome', None)
+        },
+        'desktop': d.pop('shipped_milestone', None),
+        'android': d.pop('shipped_android_milestone', None),
+        'webview': d.pop('shipped_webview_milestone', None),
+        'ios': d.pop('shipped_ios_milestone', None),
+      },
+      'ff': {
+        'view': {
+          'text': VENDOR_VIEWS[self.ff_views],
+          'val': d.pop('ff_views', None),
+          'url': d.pop('ff_views_link', None),
+          'notes': d.pop('ff_views_notes', None),
         }
-      if is_released and self.shipped_milestone:
-        d['meta']['milestone_str'] = self.shipped_milestone
-      elif is_released and self.shipped_android_milestone:
-        d['meta']['milestone_str'] = self.shipped_android_milestone
-      else:
-        d['meta']['milestone_str'] = d['impl_status_chrome']
-      d['ff_views'] = {'value': self.ff_views,
-                       'text': VENDOR_VIEWS[self.ff_views]}
-      # Deprecated
-      d['ie_views'] = {'value': self.ie_views,
-                       'text': VENDOR_VIEWS[self.ie_views]}
-      d['safari_views'] = {'value': self.safari_views,
-                           'text': VENDOR_VIEWS[self.safari_views]}
-      d['standardization'] = {'value': self.standardization,
-                              'text': STANDARDIZATION[self.standardization]}
-      d['web_dev_views'] = {'value': self.web_dev_views,
-                            'text': WEB_DEV_VIEWS[self.web_dev_views]}
+      },
+      'edge': {  # Deprecated
+        'view': {
+          'text': VENDOR_VIEWS[self.ie_views],
+          'val': d.pop('ie_views', None),
+          'url': d.pop('ie_views_link', None),
+          'notes': d.pop('ie_views_notes', None),
+        }
+      },
+      'safari': {
+        'view': {
+          'text': VENDOR_VIEWS[self.safari_views],
+          'val': d.pop('safari_views', None),
+          'url': d.pop('safari_views_link', None),
+          'notes': d.pop('safari_views_notes', None),
+        }
+      },
+      'webdev': {
+        'view': {
+          'text': WEB_DEV_VIEWS[self.web_dev_views],
+          'val': d.pop('web_dev_views', None),
+          'url': d.pop('web_dev_views_link', None),
+          'notes': d.pop('web_dev_views_notes', None),
+        }
+      },
+      'other': {
+        'view': {
+          'notes': d.pop('other_views_notes', None),
+        }
+      },
+    }
+
+    if is_released and self.shipped_milestone:
+      d['browsers']['chrome']['status']['milestone_str'] = self.shipped_milestone
+    elif is_released and self.shipped_android_milestone:
+      d['browsers']['chrome']['status']['milestone_str'] = self.shipped_android_milestone
+    else:
+      d['browsers']['chrome']['status']['milestone_str'] = d['browsers']['chrome']['status']['text']
+
+    del_none(d) # Further prune response by removing null/[] values.
+
 
     return d
 
   @classmethod
   def get_all(self, limit=None, order='-updated', filterby=None,
-              update_cache=False, version=2, keys_only=False):
+              update_cache=False, keys_only=False):
     """Return JSON dicts for entities that fit the filterby criteria.
 
     Because the cache may rarely have stale data, this should only be
@@ -414,7 +356,7 @@ class Feature(DictModel):
       feature_list = query.fetch(limit, keys_only=keys_only)
       if not keys_only:
         feature_list = [
-            f.format_for_template(version=version) for f in feature_list]
+            f.format_for_template() for f in feature_list]
 
       rediscache.set(KEY, feature_list)
 
@@ -531,7 +473,7 @@ class Feature(DictModel):
 
   @classmethod
   def get_chronological(self, limit=None, update_cache: bool=False,
-      version=None, show_unlisted: bool=False) -> list[dict]:
+      show_unlisted: bool=False) -> list[dict]:
     """Return a list of JSON dicts for features, ordered by milestone.
 
     Because the cache may rarely have stale data, this should only be
@@ -539,8 +481,8 @@ class Feature(DictModel):
     procesing a POST to edit data.  For editing use case, load the
     data from NDB directly.
     """
-    cache_key = '%s|%s|%s|%s' % (Feature.DEFAULT_CACHE_KEY,
-                                 'cronorder', limit, version)
+    cache_key = '%s|%s|%s' % (Feature.DEFAULT_CACHE_KEY,
+                                 'cronorder', limit)
 
     feature_list = rediscache.get(cache_key)
     logging.info('getting chronological feature list')
@@ -620,9 +562,9 @@ class Feature(DictModel):
       all_features.extend(no_longer_pursuing_features)
       all_features = [f for f in all_features if not f.deleted]
 
-      feature_list = [f.format_for_template(version) for f in all_features]
+      feature_list = [f.format_for_template() for f in all_features]
 
-      self._annotate_first_of_milestones(feature_list, version=version)
+      self._annotate_first_of_milestones(feature_list)
 
       rediscache.set(cache_key, feature_list)
 
@@ -850,7 +792,7 @@ class Feature(DictModel):
     params = {
       'changes': changed_props,
       'is_update': is_update,
-      'feature': self.format_for_template(version=2)
+      'feature': self.format_for_template()
     }
 
     # Create task to email subscribers.

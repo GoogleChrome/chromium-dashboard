@@ -33,10 +33,8 @@ class FeaturesJsonHandler(basehandlers.FlaskHandler):
   JSONIFY = True
 
   def get_template_data(self, **kwargs):
-    version = kwargs.get('version', 2)
     user = users.get_current_user()
     feature_list = core_models.Feature.get_chronological(
-        version=version,
         show_unlisted=permissions.can_edit_any_feature(user))
     return feature_list
 
@@ -96,7 +94,6 @@ class FeatureListXMLHandler(basehandlers.FlaskHandler):
       feature_list = core_models.Feature.get_all( # cached
           limit=max_items,
           filterby=filterby,
-          order='-updated',
-          version=2)
+          order='-updated')
 
     return utils.render_atom_feed(self.request, 'Features', feature_list)
