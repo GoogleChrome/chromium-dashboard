@@ -90,16 +90,6 @@ class Approval(ndb.Model):
       existing.state = new_state
       existing.put()
       logging.info('existing approval is %r', existing.key.integer_id())
-
-      # Write for existing Vote entity.
-      existing_votes = Vote.get_votes(
-          feature_id=feature_id, gate_id=field_id, set_by=set_by_email)
-      if existing_votes:
-        vote = existing_votes[0]
-        vote.set_on = now
-        vote.state = new_state
-        vote.put()
-        logging.info('existing vote is %r', existing.key.integer_id())
       return
 
     new_appr = Approval(
@@ -275,10 +265,11 @@ class Vote(ndb.Model):  # copy from Approval
 
   @classmethod
   def get_votes(
-      cls, feature_id=None, gate_id=None, states=None, set_by=None,
-      limit=None):
+      cls, feature_id: Optional[int]=None, gate_id: Optional[int]=None,
+      states: Optional[list[int]]=None, set_by: Optional[str]=None,
+      limit=None) -> list[Vote]:
     """Return the requested approvals."""
-    query = Vote.query().order(Approval.set_on)
+    query: ndb.Query = Vote.query().order(Approval.set_on)
     if feature_id is not None:
       query = query.filter(Vote.feature_id == feature_id)
     if gate_id is not None:
@@ -290,11 +281,11 @@ class Vote(ndb.Model):  # copy from Approval
     # Query with STRONG consistency because ndb defaults to
     # EVENTUAL consistency and we run this query immediately after
     # saving the user's change that we want included in the query.
-    votes = query.fetch(limit, read_consistency=ndb.STRONG)
+    votes: list[Vote] = query.fetch(limit, read_consistency=ndb.STRONG)
     return votes
 
   @classmethod
-  def is_valid_state(cls, new_state):
+  def is_valid_state(cls, new_state: int) -> bool:
     """Return true if new_state is valid."""
     return new_state in cls.VOTE_VALUES
 

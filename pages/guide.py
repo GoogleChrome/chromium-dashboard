@@ -15,7 +15,7 @@
 
 from datetime import datetime
 import logging
-from typing import Any
+from typing import Any, Optional
 from google.cloud import ndb  # type: ignore
 
 # Appengine imports.
@@ -24,7 +24,9 @@ from framework import rediscache
 from framework import basehandlers
 from framework import permissions
 from internals import core_enums
-from internals import core_models
+from internals.core_models import (Feature, FeatureEntry, MilestoneSet, Stage,
+    feature_cache_prefix)
+from internals.review_models import Gate, Vote
 from internals import processes
 import settings
 
@@ -47,7 +49,7 @@ class FeatureCreateHandler(basehandlers.FlaskHandler):
     signed_in_user = ndb.User(
         email=self.get_current_user().email(),
         _auth_domain='gmail.com')
-    feature = core_models.Feature(
+    feature = Feature(
         category=int(self.form.get('category')),
         name=self.form.get('name'),
         feature_type=feature_type,
@@ -65,7 +67,7 @@ class FeatureCreateHandler(basehandlers.FlaskHandler):
     key = feature.put()
 
     # Write for new FeatureEntry entity.
-    feature_entry = core_models.FeatureEntry(
+    feature_entry = FeatureEntry(
         id=feature.key.integer_id(),
         category=int(self.form.get('category')),
         name=self.form.get('name'),
@@ -82,11 +84,42 @@ class FeatureCreateHandler(basehandlers.FlaskHandler):
         tag_review_status=processes.initial_tag_review_status(feature_type))
     feature_entry.put()
 
+    # Write each Stage and Gate entity for the given feature.
+    self.write_gates_and_stages_for_feature(
+        feature_entry.key.integer_id(), feature_type)
+
     # Remove all feature-related cache.
-    rediscache.delete_keys_with_prefix(core_models.feature_cache_prefix())
+    rediscache.delete_keys_with_prefix(feature_cache_prefix())
 
     redirect_url = '/guide/edit/' + str(key.integer_id())
     return self.redirect(redirect_url)
+
+  def write_gates_and_stages_for_feature(
+      self, feature_id: int, feature_type: int) -> None:
+    """Write each Stage and Gate entity for the given feature."""
+    # Obtain a list of stages and gates for the given feature type.
+    stages_gates = core_enums.STAGES_AND_GATES_BY_FEATURE_TYPE[feature_type]
+
+    ot_stage_id: Optional[int] = None
+    for stage_type, gate_type in stages_gates:
+      stage = Stage(feature_id=feature_id, stage_type=stage_type)
+      stage.put()
+      # Not all stages have gates. If a gate is specified, create it.
+      if gate_type:
+        # Keep track of the ID of the origin trial Stage entity
+        # to use for the trial extension Stage entity.
+        if gate_type == core_enums.GATE_ORIGIN_TRIAL:
+          ot_stage_id = stage.key.integer_id()
+        gate = Gate(feature_id=feature_id, stage_id=stage.key.integer_id(),
+            gate_type=gate_type, state=Vote.NA)
+
+        # If we are creating a trial extension gate,
+        # then the trial extension stage was just created.
+        # Associate the origin trial stage id with the extension stage.
+        if gate_type == core_enums.GATE_EXTEND_ORIGIN_TRIAL:
+          stage.ot_stage_id = ot_stage_id
+        gate.put()
+    
 
 
 class FeatureEditHandler(basehandlers.FlaskHandler):
@@ -134,8 +167,8 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
 
     if feature_id:
       # Load feature directly from NDB so as to never get a stale cached copy.
-      feature = core_models.Feature.get_by_id(feature_id)
-      feature_entry = core_models.FeatureEntry.get_by_id(feature_id)
+      feature = Feature.get_by_id(feature_id)
+      feature_entry = FeatureEntry.get_by_id(feature_id)
       if feature is None:
         self.abort(404, msg='Feature not found')
       else:
@@ -514,8 +547,6 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
       feature.experiment_goals = self.form.get('experiment_goals')
       stage_update_items.append(('experiment_goals',
           self.form.get('experiment_goals')))
-    if self.touched('experiment_timeline'):
-      feature.experiment_timeline = self.form.get('experiment_timeline')
     if self.touched('experiment_risks'):
       feature.experiment_risks = self.form.get('experiment_risks')
       stage_update_items.append(('experiment_risks',
@@ -549,7 +580,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
           stage_update_items)
 
     # Remove all feature-related cache.
-    rediscache.delete_keys_with_prefix(core_models.feature_cache_prefix())
+    rediscache.delete_keys_with_prefix(feature_cache_prefix())
 
     redirect_url = '/guide/edit/' + str(key.integer_id())
     return self.redirect(redirect_url)
@@ -557,7 +588,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
   def update_stage_fields(self, feature_id: int, feature_type: int,
       update_items: list[tuple[str, Any]]) -> None:
     # Get all existing stages associated with the feature.
-    stages = core_models.Stage.get_feature_stages(feature_id)
+    stages = Stage.get_feature_stages(feature_id)
 
     for field, value in update_items:
       # Determine the stage type that the field should change on.
@@ -569,20 +600,20 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
       stage = stages.get(stage_type, None)
       # If a stage of this type does not exist for this feature, create it.
       if stage is None:
-        stage = core_models.Stage(feature_id=feature_id, stage_type=stage_type)
+        stage = Stage(feature_id=feature_id, stage_type=stage_type)
         stage.put()
         stages[stage_type] = stage
       
       # Change the field based on the field type.
       # If this field changing is a milestone, change it in the
       # MilestoneSet entity.
-      if field in core_models.MilestoneSet.MILESTONE_FIELD_MAPPING:
+      if field in MilestoneSet.MILESTONE_FIELD_MAPPING:
         milestone_field = (
-            core_models.MilestoneSet.MILESTONE_FIELD_MAPPING[field])
+            MilestoneSet.MILESTONE_FIELD_MAPPING[field])
         milestoneset_entity = getattr(stage, 'milestones')
         # If the MilestoneSet entity has not been initiated, create it.
         if milestoneset_entity is None:
-          milestoneset_entity = core_models.MilestoneSet()
+          milestoneset_entity = MilestoneSet()
         setattr(milestoneset_entity, milestone_field, value)
         stage.milestones = milestoneset_entity
       # If the field starts with "intent_", it should modify the
