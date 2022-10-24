@@ -19,7 +19,7 @@ from __future__ import annotations
 import datetime
 import logging
 from typing import Optional
-from google.cloud import ndb
+from google.cloud import ndb  # type: ignore
 
 
 class Approval(ndb.Model):

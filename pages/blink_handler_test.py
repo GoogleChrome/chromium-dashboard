@@ -21,7 +21,7 @@ import werkzeug
 import html5lib
 import settings
 
-from google.cloud import ndb
+from google.cloud import ndb  # type: ignore
 from pages import blink_handler
 from internals import user_models
 

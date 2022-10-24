@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from typing import Optional
+from framework.basehandlers import FlaskHandler
 import testing_config  # Must be imported first
 
 import os
@@ -34,8 +36,8 @@ TESTDATA = testing_config.Testdata(__file__)
 
 class TestWithFeature(testing_config.CustomTestCase):
 
-  REQUEST_PATH_FORMAT = 'subclasses fill this in'
-  HANDLER_CLASS = 'subclasses fill this in'
+  REQUEST_PATH_FORMAT: Optional[str] = None
+  HANDLER_CLASS: Optional[object] = None
 
   def setUp(self):
     self.app_user = user_models.AppUser(email='registered@example.com')
@@ -51,10 +53,10 @@ class TestWithFeature(testing_config.CustomTestCase):
     self.feature_1.put()
     self.feature_id = self.feature_1.key.integer_id()
 
-    self.request_path = self.REQUEST_PATH_FORMAT % {
-        'feature_id': self.feature_id,
-    }
-    self.handler = self.HANDLER_CLASS()
+    self.request_path = (self.REQUEST_PATH_FORMAT %
+        {'feature_id': self.feature_id} if self.REQUEST_PATH_FORMAT else '')
+    if self.HANDLER_CLASS:
+      self.handler = self.HANDLER_CLASS()
 
   def tearDown(self):
     self.feature_1.key.delete()
@@ -119,6 +121,7 @@ class FeatureListHandlerTest(TestWithFeature):
 
 class FeatureListTemplateTest(TestWithFeature):
 
+  REQUEST_PATH_FORMAT = None
   HANDLER_CLASS = featurelist.FeatureListHandler
 
   def setUp(self):

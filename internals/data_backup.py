@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import logging
+from typing import Any
 
 from googleapiclient.discovery import build
 from googleapiclient.discovery_cache.base import Cache
@@ -20,7 +21,7 @@ import settings
 from framework import basehandlers
 
 class MemoryCache(Cache):
-    _CACHE = {}
+    _CACHE: dict[Any, Any] = {}
 
     def get(self, url):
         return MemoryCache._CACHE.get(url)

@@ -15,6 +15,7 @@
 from datetime import datetime, timedelta
 import json
 import logging
+from typing import Optional
 import requests
 
 from flask import render_template
@@ -67,11 +68,11 @@ def build_email_tasks(
 
 class AbstractReminderHandler(basehandlers.FlaskHandler):
   JSONIFY = True
-  SUBJECT_FORMAT = '%s'
-  EMAIL_TEMPLATE_PATH = None  # Subclasses must override
+  SUBJECT_FORMAT: Optional[str] = '%s'
+  EMAIL_TEMPLATE_PATH: Optional[str] = None  # Subclasses must override
   ANCHOR_CHANNEL = 'current'  # the stable channel
   FUTURE_MILESTONES_TO_CONSIDER = 0
-  MILESTONE_FIELDS = None  # Subclasses must override
+  MILESTONE_FIELDS: Optional[tuple] = None  # Subclasses must override
 
   def get_template_data(self, **kwargs):
     """Sends notifications to users requesting feature updates for accuracy."""
