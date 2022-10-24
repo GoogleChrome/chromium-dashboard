@@ -29,8 +29,14 @@ cron:
 - description: Copy over Comment entities to new Activity entities.
   url: /cron/schema_migration_comment_activity
   schedule: 1 of jan 00:00
-- description: Migrate over most major entities to new schema.
+- description: Create FeatureEntry, Stage, and Gate entities for features.
   url: /cron/schema_migration_entities
+  schedule: 1 of jan 00:00
+- description: Copy over Approval entities to new Vote entities.
+  url: /cron/schema_migration_approval_vote
+  schedule: 1 of jan 00:00
+- description: Reevaluate all Gate entity states.
+  url: /cron/schema_migration_gate_status
   schedule: 1 of jan 00:00
 - description: Copy over deprecated standardization field
   url: /cron/write_standard_maturity
