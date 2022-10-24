@@ -19,12 +19,14 @@ from unittest import mock
 import flask
 import werkzeug
 import html5lib
+import settings
 
 from google.cloud import ndb  # type: ignore
 from pages import blink_handler
 from internals import user_models
 
-test_app = flask.Flask(__name__)
+test_app = flask.Flask(__name__,
+  template_folder=settings.get_flask_template_path())
 
 # Load testdata to be used across all of the CustomTestCases
 TESTDATA = testing_config.Testdata(__file__)
@@ -78,8 +80,9 @@ class BlinkTemplateTest(testing_config.CustomTestCase):
 
   def test_html_rendering(self):
     """We can render the template with valid html."""
-    template_text = self.handler.render(
-        self.template_data, self.full_template_path)
+    with test_app.app_context():
+      template_text = self.handler.render(
+          self.template_data, self.full_template_path)
     parser = html5lib.HTMLParser(strict=True)
     document = parser.parse(template_text)
     # TESTDATA.make_golden(template_text, 'BlinkTemplateTest_test_html_rendering.html')
@@ -149,8 +152,9 @@ class SubscribersTemplateTest(testing_config.CustomTestCase):
 
   def test_html_rendering(self):
     """We can render the template with valid html."""
-    template_text = self.handler.render(
-        self.template_data, self.full_template_path)
+    with test_app.app_context():
+      template_text = self.handler.render(
+          self.template_data, self.full_template_path)
     parser = html5lib.HTMLParser(strict=True)
     document = parser.parse(template_text)
     # TESTDATA.make_golden(template_text, 'SubscribersTemplateTest_test_html_rendering.html')

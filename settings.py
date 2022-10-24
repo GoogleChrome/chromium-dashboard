@@ -3,12 +3,6 @@ import os
 from typing import Any, Optional
 
 
-#Hack to get custom tags working django 1.3 + python27.
-INSTALLED_APPS = [
-  #'nothing',
-  'django.forms'
-]
-
 ROOT_DIR = os.path.abspath(os.path.dirname(__file__))
 
 TEMPLATES: list[dict[str, Any]] = [
@@ -19,21 +13,11 @@ TEMPLATES: list[dict[str, Any]] = [
   },
 ]
 
-def flask_compat_get_template_path() -> str:
+
+def get_flask_template_path() -> str:
   """Returns a path to the templates.
-  Leverages the existing TEMPLATES variable used for Django templates and
-  returns a path usable by Flask/Jinja2.
-
-  This is useful because by default flask.render_template will look for a
-  template folder relative to the module.
-
-  Once all Django templates are completely converted to Jinja2, a simpler
-  variable TEMPLATES could be used to hold information about the templates.
   """
-  return TEMPLATES[0]['DIRS'][0]
-
-# This is necessary to override django templates.
-FORM_RENDERER = 'django.forms.renderers.TemplatesSetting'
+  return os.path.join(ROOT_DIR, 'templates')
 
 # By default, send all email to an archive for debugging.
 # For the live cr-status server, this setting is None.
@@ -124,8 +108,6 @@ elif APP_ID == 'cr-status-staging':
   BACKUP_BUCKET = 'cr-staging-backups'
 else:
   logging.error('Unexpected app ID %r, please configure settings.py.', APP_ID)
-
-SECRET_KEY = os.environ['DJANGO_SECRET']
 
 RSS_FEED_LIMIT = 15
 

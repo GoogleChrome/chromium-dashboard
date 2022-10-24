@@ -38,18 +38,11 @@ from internals import approval_defs
 from internals import core_models
 from internals import user_models
 
-from django.template.loader import render_to_string
-import django
-
 from google.auth.transport import requests
 from flask import session
+from flask import render_template
 from flask_cors import CORS
 import sys
-
-# Initialize django so that it'll function when run as a standalone script.
-# https://django.readthedocs.io/en/latest/releases/1.7.html#standalone-scripts
-django.setup()
-
 
 # Our API responses are prefixed with this ro prevent attacks that
 # exploit <script src="...">.  See go/xssi.
@@ -141,7 +134,7 @@ class BaseHandler(flask.views.MethodView):
 
   def get_int_arg(self, name, default=None):
     """Get the specified integer from args."""
-    val = self.request.args.get(name, default)
+    val = self.request.args.get(name, default) or default
     if val is None:
       return None
 
@@ -362,7 +355,7 @@ class FlaskHandler(BaseHandler):
     return common_data
 
   def render(self, template_data, template_path):
-    return render_to_string(template_path, template_data)
+    return render_template(template_path, **template_data)
 
   def get(self, *args, **kwargs):
     """GET handlers can render templates, return JSON, or do redirects."""
@@ -568,7 +561,7 @@ def FlaskApplication(import_name, routes, post_routes, pattern_base='', debug=Fa
   """Make a Flask app and add routes and handlers that work like webapp2."""
 
   app = flask.Flask(import_name,
-    template_folder=settings.flask_compat_get_template_path())
+    template_folder=settings.get_flask_template_path())
   app.original_wsgi_app = app.wsgi_app  # Only for unit tests.
   app.wsgi_app = ndb_wsgi_middleware(app.wsgi_app) # For Cloud NDB Context
   # For GAE legacy libraries
@@ -604,7 +597,7 @@ def FlaskApplication(import_name, routes, post_routes, pattern_base='', debug=Fa
   # In production, it will return a status 400.
   app.config["TRAP_BAD_REQUEST_ERRORS"] = settings.DEV_MODE
   # Flask apps also have a debug setting that can be used to auto-reload
-  # template source code, but we use django for that.
+  # template source code. TODO: investigate using the setting.
 
   # Set the CORS HEADERS.
   CORS(app, resources={r'/data/*': {'origins': '*'}})

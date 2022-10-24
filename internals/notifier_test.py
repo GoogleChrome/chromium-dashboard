@@ -32,7 +32,7 @@ from internals import user_models
 import settings
 
 test_app = flask.Flask(__name__,
-  template_folder=settings.flask_compat_get_template_path())
+  template_folder=settings.get_flask_template_path())
 
 # Load testdata to be used across all of the CustomTestCases
 TESTDATA = testing_config.Testdata(__file__)

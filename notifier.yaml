@@ -17,8 +17,6 @@ vpc_access_connector:
   name: projects/cr-status/locations/us-central1/connectors/redis-connector
 
 env_variables:
-  DJANGO_SETTINGS_MODULE: 'settings'
-  DJANGO_SECRET: 'this-is-a-secret'
   # Redis envs for prod
   REDISHOST: '10.250.3.187'
   REDISPORT: '6379'

@@ -8,8 +8,6 @@ export PYTHONPATH=cs-env/lib/python3.9/site-packages:$PYTHONPATH
 export GOOGLE_CLOUD_PROJECT='cr-status-staging'
 export SERVER_SOFTWARE='gunicorn'
 export GAE_ENV='localdev'
-export DJANGO_SETTINGS_MODULE='settings'
-export DJANGO_SECRET='this-is-a-secret'
 export DATASTORE_EMULATOR_HOST='localhost:15606'
 
 

@@ -101,20 +101,15 @@ class ChannelsAPI(basehandlers.APIHandler):
 
   def do_get(self, **kwargs):
     # Query-string parameters 'start' and 'end' are provided
-    if (self.request.args.get('start') is not None and
-        self.request.args.get('end') is not None):
-      try:
-        start = int(self.request.args.get('start'))
-        end = int(self.request.args.get('end'))
-        if (start > end):
-          raise ValueError
-        channels = construct_specified_milestones_details(start, end)
-      except ValueError:
-        self.abort(400, msg='Invalid  Start and End Values provided')
-    else:
-      channels = construct_chrome_channels_details()
+    start = self.get_int_arg('start')
+    end = self.get_int_arg('end')
+    if start is None or end is None:
+      return construct_chrome_channels_details()
 
-    return channels
+    if start > end:
+      raise ValueError
+
+    return construct_specified_milestones_details(start, end)
 
   # TODO(jrobbins): do_post
 

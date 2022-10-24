@@ -375,25 +375,6 @@ class Feature(DictModel):
 
     return d
 
-  def format_for_edit(self):
-    self.migrate_views()
-    d = self.to_dict()
-    #d['id'] = self.key().id
-    d['owner'] = ', '.join(self.owner)
-    d['editors'] = ', '.join(self.editors)
-    d['cc_recipients'] = ', '.join(self.cc_recipients)
-    d['explainer_links'] = '\r\n'.join(self.explainer_links)
-    d['spec_mentors'] = ', '.join(self.spec_mentors)
-    d['standard_maturity'] = self.standard_maturity or UNKNOWN_STD
-    d['doc_links'] = '\r\n'.join(self.doc_links)
-    d['sample_links'] = '\r\n'.join(self.sample_links)
-    d['search_tags'] = ', '.join(self.search_tags)
-    d['blink_components'] = self.blink_components[0]
-    d['devrel'] = ', '.join(self.devrel)
-    d['i2e_lgtms'] = ', '.join(self.i2e_lgtms)
-    d['i2s_lgtms'] = ', '.join(self.i2s_lgtms)
-    return d
-
   @classmethod
   def get_all(self, limit=None, order='-updated', filterby=None,
               update_cache=False, version=2, keys_only=False):

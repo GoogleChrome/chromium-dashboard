@@ -36,10 +36,14 @@ class CommentsAPITest(testing_config.CustomTestCase):
         name='feature one', summary='sum', category=1)
     self.feature_1.put()
     self.feature_id = self.feature_1.key.integer_id()
-    self.gate_id = 1
+
+    self.gate_1 = review_models.Gate(feature_id=self.feature_id,
+        stage_id=1, gate_type=2, state=review_models.Vote.NA)
+    self.gate_1.put()
+
     self.handler = comments_api.CommentsAPI()
     self.request_path = ('/api/v0/features/%d/approvals/%d/comments' %
-                         (self.feature_id, self.gate_id))
+                         (self.feature_id, self.gate_1.gate_type))
 
     self.appr_1_1 = review_models.Approval(
         feature_id=self.feature_id, field_id=1,
@@ -47,12 +51,12 @@ class CommentsAPITest(testing_config.CustomTestCase):
         state=review_models.Approval.APPROVED)
     self.appr_1_1.put()
     
-    self.act_1_1 = review_models.Activity(feature_id=self.feature_id, gate_id=1,
+    self.act_1_1 = review_models.Activity(feature_id=self.feature_id, gate_id=2,
         author='owner1@example.com', created=NOW, content='Good job')
 
     self.expected_1 = {
         'feature_id': self.feature_id,
-        'gate_id': self.gate_id,
+        'gate_id': self.gate_1.gate_type,
         'author': 'owner1@example.com',
         'deleted_by': None,
         'content': 'Good job'
@@ -71,7 +75,7 @@ class CommentsAPITest(testing_config.CustomTestCase):
     testing_config.sign_in('user7@example.com', 123567890)
     with test_app.test_request_context(self.request_path):
       actual_response = self.handler.do_get(
-          feature_id=self.feature_id, field_id=self.gate_id)
+          feature_id=self.feature_id, field_id=self.gate_1.gate_type)
     testing_config.sign_out()
     self.assertEqual({'comments': []}, actual_response)
 
@@ -83,7 +87,7 @@ class CommentsAPITest(testing_config.CustomTestCase):
 
     with test_app.test_request_context(self.request_path):
       actual_response = self.handler.do_get(
-          feature_id=self.feature_id, field_id=self.gate_id)
+          feature_id=self.feature_id, field_id=self.gate_1.gate_type)
     testing_config.sign_out()
     actual_comment = actual_response['comments'][0]
     del actual_comment['created']
@@ -101,7 +105,7 @@ class CommentsAPITest(testing_config.CustomTestCase):
 
     with test_app.test_request_context(self.request_path):
       resp = self.handler.do_get(
-        feature_id=self.feature_id, field_id=self.gate_id)
+        feature_id=self.feature_id, field_id=self.gate_1.gate_type)
     testing_config.sign_out()
     self.assertEqual(resp['comments'], [])
 
@@ -115,7 +119,7 @@ class CommentsAPITest(testing_config.CustomTestCase):
 
     with test_app.test_request_context(self.request_path):
       resp = self.handler.do_get(
-          feature_id=self.feature_id, field_id=self.gate_id)
+          feature_id=self.feature_id, field_id=self.gate_1.gate_type)
     testing_config.sign_out()
     comment = resp['comments'][0]
     self.assertNotEqual(comment['content'], '[Deleted]')
@@ -125,12 +129,14 @@ class CommentsAPITest(testing_config.CustomTestCase):
     params = {'state': 'not an int'}
     with test_app.test_request_context(self.request_path, json=params):
       with self.assertRaises(werkzeug.exceptions.BadRequest):
-        self.handler.do_post(feature_id=self.feature_id, gate_id=self.gate_id)
+        self.handler.do_post(
+            feature_id=self.feature_id, gate_type=self.gate_1.gate_type)
 
     params = {'state': 999}
     with test_app.test_request_context(self.request_path, json=params):
       with self.assertRaises(werkzeug.exceptions.BadRequest):
-        self.handler.do_post(feature_id=self.feature_id, gate_id=self.gate_id)
+        self.handler.do_post(
+            feature_id=self.feature_id, gate_type=self.gate_1.gate_type)
 
   def test_post__feature_not_found(self):
     """Handler rejects requests that don't match an existing feature."""
@@ -138,7 +144,7 @@ class CommentsAPITest(testing_config.CustomTestCase):
     params = {'state': review_models.Approval.NEEDS_WORK }
     with test_app.test_request_context(bad_path, json=params):
       with self.assertRaises(werkzeug.exceptions.NotFound):
-        self.handler.do_post(feature_id=12345, gate_id=self.gate_id)
+        self.handler.do_post(feature_id=12345, gate_type=self.gate_1.gate_type)
 
   @mock.patch('internals.approval_defs.get_approvers')
   def test_post__forbidden(self, mock_get_approvers):
@@ -149,17 +155,20 @@ class CommentsAPITest(testing_config.CustomTestCase):
     testing_config.sign_out()
     with test_app.test_request_context(self.request_path, json=params):
       with self.assertRaises(werkzeug.exceptions.Forbidden):
-        self.handler.do_post(feature_id=self.feature_id, gate_id=self.gate_id)
+        self.handler.do_post(
+            feature_id=self.feature_id, gate_type=self.gate_1.gate_type)
 
     testing_config.sign_in('user7@example.com', 123567890)
     with test_app.test_request_context(self.request_path, json=params):
       with self.assertRaises(werkzeug.exceptions.Forbidden):
-        self.handler.do_post(feature_id=self.feature_id, gate_id=self.gate_id)
+        self.handler.do_post(
+            feature_id=self.feature_id, gate_type=self.gate_1.gate_type)
 
     testing_config.sign_in('user@google.com', 123567890)
     with test_app.test_request_context(self.request_path, json=params):
       with self.assertRaises(werkzeug.exceptions.Forbidden):
-        self.handler.do_post(feature_id=self.feature_id, gate_id=self.gate_id)
+        self.handler.do_post(
+            feature_id=self.feature_id, gate_type=self.gate_1.gate_type)
 
   def test_patch__forbidden(self):
     """Handler rejects requests from users who can't edit the given comment."""
@@ -186,7 +195,7 @@ class CommentsAPITest(testing_config.CustomTestCase):
     with test_app.test_request_context(self.request_path, json=params):
       resp = self.handler.do_patch(feature_id=self.feature_id)
       get_resp = self.handler.do_get(
-          feature_id=self.feature_id, field_id=self.gate_id)
+          feature_id=self.feature_id, field_id=self.gate_1.gate_type)
     testing_config.sign_out()
     self.assertEqual(get_resp['comments'][0]['deleted_by'], user_email)
     self.assertEqual(resp, {'message': 'Done'})
@@ -207,7 +216,7 @@ class CommentsAPITest(testing_config.CustomTestCase):
     with test_app.test_request_context(self.request_path, json=params):
       resp = self.handler.do_patch(feature_id=self.feature_id)
       get_resp = self.handler.do_get(
-          feature_id=self.feature_id, field_id=self.gate_id)
+          feature_id=self.feature_id, field_id=self.gate_1.gate_type)
     testing_config.sign_out()
     self.assertEqual(get_resp['comments'][0]['deleted_by'], None)
     self.assertEqual(resp, {'message': 'Done'})
@@ -224,7 +233,8 @@ class CommentsAPITest(testing_config.CustomTestCase):
     testing_config.sign_in('owner2@example.com', 123567890)
     params = {'comment': 'Congratulations'}
     with test_app.test_request_context(self.request_path, json=params):
-      actual = self.handler.do_post(feature_id=self.feature_id, gate_id=self.gate_id)
+      actual = self.handler.do_post(feature_id=self.feature_id,
+          gate_type=self.gate_1.gate_type)
 
     self.assertEqual(actual, {'message': 'Done'})
     updated_approvals = review_models.Approval.get_approvals(
@@ -236,7 +246,7 @@ class CommentsAPITest(testing_config.CustomTestCase):
     self.assertEqual(appr.set_by, 'owner1@example.com')  # Unchanged
     self.assertEqual(appr.state, review_models.Approval.APPROVED)  # Unchanged
     updated_comments = review_models.Activity.get_activities(
-        self.feature_id, self.gate_id, comments_only=True)
+        self.feature_id, self.gate_1.key.integer_id(), comments_only=True)
     cmnt = updated_comments[0]
     self.assertEqual('Congratulations', cmnt.content)
 

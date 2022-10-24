@@ -19,10 +19,8 @@ import unittest
 from google.cloud import ndb  # type: ignore
 from pathlib import Path
 
-os.environ['DJANGO_SECRET'] = 'test secret'
 os.environ['SERVER_SOFTWARE'] = 'test ' + os.environ.get('SERVER_SOFTWARE', '')
 os.environ['CURRENT_VERSION_ID'] = 'test.123'
-os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
 os.environ['APPLICATION_ID'] = 'testing'
 # Envs for datastore-emulator, same as running `gcloud beta emulators datastore env-init`.
 os.environ['DATASTORE_DATASET'] = 'cr-status-staging'

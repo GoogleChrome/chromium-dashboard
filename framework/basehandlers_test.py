@@ -577,7 +577,8 @@ class FlaskHandlerTests(testing_config.CustomTestCase):
 
   def test_render(self):
     """We can render a simple template to a string."""
-    actual = self.handler.render({'name': 'literal'}, 'test_template.html')
+    with test_app.app_context():
+      actual = self.handler.render({'name': 'literal'}, 'test_template.html')
     self.assertIn('Hi literal', actual)
 
   def test_get__remove_www(self):

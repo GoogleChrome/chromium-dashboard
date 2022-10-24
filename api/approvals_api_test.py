@@ -35,6 +35,14 @@ class ApprovalsAPITest(testing_config.CustomTestCase):
         name='feature one', summary='sum', category=1)
     self.feature_1.put()
     self.feature_id = self.feature_1.key.integer_id()
+
+    self.gate_1 = review_models.Gate(feature_id=self.feature_id, stage_id=1,
+        gate_type=1, state=review_models.Approval.NA)
+    self.gate_1.put()
+    self.gate_2 = review_models.Gate(feature_id=self.feature_id, stage_id=2,
+        gate_type=2, state=review_models.Approval.NA)
+    self.gate_2.put()
+
     self.handler = approvals_api.ApprovalsAPI()
     self.request_path = '/api/v0/features/%d/approvals' % self.feature_id
 
@@ -67,6 +75,8 @@ class ApprovalsAPITest(testing_config.CustomTestCase):
     self.feature_1.key.delete()
     for appr in review_models.Approval.query():
       appr.key.delete()
+    for gate in review_models.Gate.query().fetch():
+      gate.key.delete()
 
   def test_get__all_empty(self):
     """We can get all approvals for a given feature, even if there none."""

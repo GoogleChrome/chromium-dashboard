@@ -13,6 +13,8 @@
 # limitations under the License.
 
 import testing_config  # Must be imported before the module under test.
+import flask
+import settings
 from datetime import datetime
 from unittest import mock
 
@@ -21,6 +23,8 @@ from internals import reminders
 
 from google.cloud import ndb  # type: ignore
 
+test_app = flask.Flask(__name__,
+  template_folder=settings.get_flask_template_path())
 
 # Load testdata to be used across all of the CustomTestCases
 TESTDATA = testing_config.Testdata(__file__)
@@ -63,10 +67,11 @@ class FunctionTest(testing_config.CustomTestCase):
     self.maxDiff = None
 
   def test_build_email_tasks_feature_accuracy(self):
-    actual = reminders.build_email_tasks(
-        [(self.feature_template, 100)], '[Action requested] Update %s',
-        reminders.FeatureAccuracyHandler.EMAIL_TEMPLATE_PATH,
-        self.current_milestone_info)
+    with test_app.app_context():
+      actual = reminders.build_email_tasks(
+          [(self.feature_template, 100)], '[Action requested] Update %s',
+          reminders.FeatureAccuracyHandler.EMAIL_TEMPLATE_PATH,
+          self.current_milestone_info)
     self.assertEqual(1, len(actual))
     task = actual[0]
     self.assertEqual('feature_owner@example.com', task['to'])
@@ -77,10 +82,11 @@ class FunctionTest(testing_config.CustomTestCase):
       TESTDATA['test_build_email_tasks_feature_accuracy.html'], task['html'])
 
   def test_build_email_tasks_prepublication(self):
-    actual = reminders.build_email_tasks(
-        [(self.feature_template, 100)], '[Action requested] Update %s',
-        reminders.PrepublicationHandler.EMAIL_TEMPLATE_PATH,
-        self.current_milestone_info)
+    with test_app.app_context():
+      actual = reminders.build_email_tasks(
+          [(self.feature_template, 100)], '[Action requested] Update %s',
+          reminders.PrepublicationHandler.EMAIL_TEMPLATE_PATH,
+          self.current_milestone_info)
     self.assertEqual(1, len(actual))
     task = actual[0]
     self.assertEqual('feature_owner@example.com', task['to'])
@@ -117,7 +123,8 @@ class FeatureAccuracyHandlerTest(testing_config.CustomTestCase):
         text=('{"mstones":[{"mstone": "100", '
               '"earliest_beta": "2022-08-01T01:23:45"}]}'))
     mock_get.return_value = mock_return
-    result = self.handler.get_template_data()
+    with test_app.app_context():
+      result = self.handler.get_template_data()
     expected = {'message': '1 email(s) sent or logged.'}
     self.assertEqual(result, expected)
 
@@ -127,7 +134,8 @@ class FeatureAccuracyHandlerTest(testing_config.CustomTestCase):
         text=('{"mstones":[{"mstone": "148", '
               '"earliest_beta": "2024-02-03T01:23:45"}]}'))
     mock_get.return_value = mock_return
-    result = self.handler.get_template_data()
+    with test_app.app_context():
+      result = self.handler.get_template_data()
     expected = {'message': '2 email(s) sent or logged.'}
     self.assertEqual(result, expected)
 

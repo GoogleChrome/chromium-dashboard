@@ -285,7 +285,7 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
       review_models.Approval.set_approval(
           feature_id, approval_field.field_id,
           review_models.Approval.APPROVED, from_addr)
-      approval_defs.set_vote(feature_id,approval_field.field_id,
+      approval_defs.set_vote(feature_id, approval_field.field_id,
           review_models.Vote.APPROVED, from_addr)
       self.record_lgtm(feature, approval_field, from_addr)
 
@@ -298,8 +298,10 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
         review_models.Approval.set_approval(
             feature_id, approval_field.field_id,
             review_models.Approval.REVIEW_REQUESTED, from_addr)
-        approval_defs.set_vote(feature_id,approval_field.field_id,
-            review_models.Vote.APPROVED, from_addr)
+        # TODO(jrobbins): set gate state rather than creating
+        # REVIEW_REQUESTED votes.
+        approval_defs.set_vote(feature_id, approval_field.field_id,
+            review_models.Vote.REVIEW_REQUESTED, from_addr)
 
   def record_lgtm(self, feature, approval_field, from_addr):
     """Add from_addr to the old way or recording LGTMs."""

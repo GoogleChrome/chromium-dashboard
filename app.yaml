@@ -41,8 +41,6 @@ app_engine_apis: true
 
 env_variables:
   GAE_USE_SOCKETS_HTTPLIB : ''
-  DJANGO_SETTINGS_MODULE: 'settings'
-  DJANGO_SECRET: 'this-is-a-secret'
   # Redis envs
   REDISHOST: '10.250.3.187'
   REDISPORT: '6379'

@@ -20,13 +20,15 @@ import os
 import flask
 import werkzeug
 import html5lib
+import settings
 
 from google.cloud import ndb  # type: ignore
 from pages import intentpreview
 from internals import core_enums
 from internals import core_models
 
-test_app = flask.Flask(__name__)
+test_app = flask.Flask(__name__,
+  template_folder=settings.get_flask_template_path())
 
 # Load testdata to be used across all of the CustomTestCases
 TESTDATA = testing_config.Testdata(__file__)
@@ -228,9 +230,9 @@ class IntentEmailPreviewTemplateTest(testing_config.CustomTestCase):
       actual_data['xsrf_token'] = ''
       actual_data['xsrf_token_expires'] = 0
 
-    template_text = self.handler.render(
-        actual_data, self.full_template_path)
-    testing_config.sign_out()
+      template_text = self.handler.render(
+          actual_data, self.full_template_path)
+      testing_config.sign_out()
     parser = html5lib.HTMLParser(strict=True)
     document = parser.parse(template_text)
     # TESTDATA.make_golden(template_text, 'test_html_rendering.html')

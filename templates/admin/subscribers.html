@@ -24,7 +24,7 @@
     <h3 class="channels-title" title="Select a version to only show features for that milestone">Show features in:</h3>
     <!-- <a href="?showFeatures">show all</a> | <a href="/admin/subscribers">hide all</a> -->
   </div>
-  {% for key,channel in channels.items %}
+  {% for key,channel in channels.items() %}
     <div class="chrome_version layout horizontal center chrome_version--{{key}} {% if selected_milestone == channel.mstone %}highlight{% endif %}" title="Show only features for the current {{key}}">
       <a href="?showFeatures&amp;milestone={{channel.mstone}}" class="layout horizontal center">
         <div class="chrome-logo"></div>
