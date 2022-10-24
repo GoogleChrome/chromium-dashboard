@@ -193,7 +193,8 @@ def set_vote(
         set_on=now, set_by=set_by_email)
     new_vote.put()
 
-  update_gate_approval_state(gate)
+  if gate:
+    update_gate_approval_state(gate)
 
 def get_gate_by_type(feature_id: int, gate_type: int):
   """Return a single gate based on the feature and gate type."""
