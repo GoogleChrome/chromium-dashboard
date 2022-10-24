@@ -19,6 +19,7 @@ import os
 import flask
 import werkzeug
 import html5lib
+from google.cloud import ndb
 
 from framework import rediscache
 from internals import core_enums
@@ -49,7 +50,7 @@ class FeatureCreateTest(testing_config.CustomTestCase):
     self.handler = guide.FeatureCreateHandler()
   
   def tearDown(self) -> None:
-    kinds = [Feature, FeatureEntry, Stage, Gate]
+    kinds: list[ndb.Model] = [Feature, FeatureEntry, Stage, Gate]
     for kind in kinds:
       entities = kind.query().fetch()
       for entity in entities:
