@@ -24,6 +24,7 @@ from internals import core_models
 from internals import notifier
 from internals import review_models
 from internals import search_queries
+from internals import search_fulltext
 
 MAX_TERMS = 6
 DEFAULT_RESULTS_PER_PAGE = 100
@@ -212,8 +213,9 @@ def process_query(
   logging.info('creating parallel queries for %r', terms)
   for field_name, op_str, val_str, textterm in terms:
     if textterm:
-      logging.warning('Full-text term %r not supported yet', textterm)
-    future = process_query_term(field_name, op_str, val_str)
+      future = search_fulltext.search_fulltext(textterm)
+    else:
+      future = process_query_term(field_name, op_str, val_str)
     feature_id_futures.append(future)
   # 2b. Create a parallel query for total sort order.
   total_order_promise = search_queries.total_order_query_async(sort_spec)

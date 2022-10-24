@@ -302,4 +302,9 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
     self.assertEqual(
         search.process_query('anything else'),
         ([], 0))
+    self.assertEqual(0, len(mock_warn.mock_calls))
+
+    self.assertEqual(
+        search.process_query('and bug'),
+        ([], 0))
     self.assertEqual(2, len(mock_warn.mock_calls))
