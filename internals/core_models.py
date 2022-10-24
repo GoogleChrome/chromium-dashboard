@@ -51,7 +51,7 @@ def del_none(d):
 def feature_cache_key(cache_key, feature_id):
   return '%s|%s' % (cache_key, feature_id)
 
-def feature_cache_prefix():	
+def feature_cache_prefix():
   return '%s|*' % (Feature.DEFAULT_CACHE_KEY)
 
 
