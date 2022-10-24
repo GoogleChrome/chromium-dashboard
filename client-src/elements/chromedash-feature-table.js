@@ -355,17 +355,19 @@ class ChromedashFeatureTable extends LitElement {
     return nothing;
   }
 
-  shiftStartBy(delta) {
+  loadNewPaginationPage(delta) {
     const proposedStart = this.start + delta;
     this.start = clamp(proposedStart, 0, this.totalCount - 1);
     this.fetchFeatures();
   }
 
   renderPagination() {
-    const first = this.start + 1;
-    const last = this.start + this.features.length;
-    const offerLeft = first > 1;
-    const offerRight = last < this.totalCount;
+    // Indexes of first and last items shown in one-based counting.
+    const firstShown = this.start + 1;
+    const lastShown = this.start + this.features.length;
+
+    const hasPrevPage = firstShown > 1;
+    const hasNextPage = lastShown < this.totalCount;
 
     if (this.alwaysOfferPagination) {
       if (this.loading) { // reserve vertical space to use when loaded.
@@ -374,21 +376,21 @@ class ChromedashFeatureTable extends LitElement {
     } else {
       // On MyFeatures page, don't always show pagination.  Omit it if
       // results fit in each box (the most common case).
-      if (this.loading || (first == 1 && last == this.totalCount)) {
+      if (this.loading || (firstShown == 1 && lastShown == this.totalCount)) {
         return nothing;
       }
     }
 
     return html`
       <div class="pagination">
-        <span>${first} - ${last} of ${this.totalCount}</span>
+        <span>${firstShown} - ${lastShown} of ${this.totalCount}</span>
         <sl-icon-button name="chevron-left" title="Previous page"
-         @click=${() => this.shiftStartBy(-this.num)}
-         ?disabled=${!offerLeft}
+         @click=${() => this.loadNewPaginationPage(-this.num)}
+         ?disabled=${!hasPrevPage}
          ></sl-icon-button>
         <sl-icon-button name="chevron-right" title="Next page"
-         @click=${() => this.shiftStartBy(this.num)}
-         ?disabled=${!offerRight}
+         @click=${() => this.loadNewPaginationPage(this.num)}
+         ?disabled=${!hasNextPage}
          ></sl-icon-button>
       </div>
     `;
