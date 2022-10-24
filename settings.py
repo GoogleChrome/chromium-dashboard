@@ -5,15 +5,6 @@ from typing import Any, Optional
 
 ROOT_DIR = os.path.abspath(os.path.dirname(__file__))
 
-TEMPLATES: list[dict[str, Any]] = [
-  {
-    'BACKEND': 'django.template.backends.django.DjangoTemplates',
-    'DIRS': [os.path.join(ROOT_DIR, 'templates')],
-    'APP_DIRS': True,
-  },
-]
-
-
 def get_flask_template_path() -> str:
   """Returns a path to the templates.
   """
