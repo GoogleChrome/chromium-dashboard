@@ -182,6 +182,8 @@ mpa_page_routes: list[tuple] = [
     ('/features/<int:feature_id>', featurelist.FeatureListHandler),
     ('/features.xml', basehandlers.ConstHandler,
      {'template_path': 'farewell-rss.xml'}),
+    ('/samples', basehandlers.ConstHandler,
+     {'template_path': 'farewell-samples.html'}),
 
     ('/omaha_data', metrics.OmahaDataHandler),
 ]
