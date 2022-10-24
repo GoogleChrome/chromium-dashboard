@@ -19,7 +19,7 @@ import os
 import flask
 import werkzeug
 import html5lib
-from google.cloud import ndb
+from google.cloud import ndb  # type: ignore
 
 from framework import rediscache
 from internals import core_enums
