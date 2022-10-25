@@ -28,6 +28,7 @@ from internals.core_models import (Feature, FeatureEntry, MilestoneSet, Stage,
     feature_cache_prefix)
 from internals.review_models import Gate, Vote
 from internals import processes
+from internals import search_fulltext
 import settings
 
 
@@ -83,6 +84,7 @@ class FeatureCreateHandler(basehandlers.FlaskHandler):
         blink_components=blink_components,
         tag_review_status=processes.initial_tag_review_status(feature_type))
     feature_entry.put()
+    search_fulltext.index_feature(feature_entry)
 
     # Write each Stage and Gate entity for the given feature.
     self.write_gates_and_stages_for_feature(
@@ -119,7 +121,7 @@ class FeatureCreateHandler(basehandlers.FlaskHandler):
         if gate_type == core_enums.GATE_EXTEND_ORIGIN_TRIAL:
           stage.ot_stage_id = ot_stage_id
         gate.put()
-    
+
 
 
 class FeatureEditHandler(basehandlers.FlaskHandler):
@@ -573,7 +575,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
       for field, value in update_items:
         setattr(feature_entry, field, value)
       feature_entry.put()
-    
+
     # Write changes made to the corresponding stage type.
     if stage_update_items:
       self.update_stage_fields(feature_id, feature.feature_type,
@@ -581,6 +583,10 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
 
     # Remove all feature-related cache.
     rediscache.delete_keys_with_prefix(feature_cache_prefix())
+
+    # Update full-text index.
+    if feature_entry:
+      search_fulltext.index_feature(feature_entry)
 
     redirect_url = '/guide/edit/' + str(key.integer_id())
     return self.redirect(redirect_url)
@@ -603,7 +609,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
         stage = Stage(feature_id=feature_id, stage_type=stage_type)
         stage.put()
         stages[stage_type] = stage
-      
+
       # Change the field based on the field type.
       # If this field changing is a milestone, change it in the
       # MilestoneSet entity.
@@ -623,7 +629,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
       # Otherwise, replace field value with attribute of the same field name.
       else:
         setattr(stage, field, value)
-    
+
     # Write to all the stages.
     for stage in stages.values():
       stage.put()
