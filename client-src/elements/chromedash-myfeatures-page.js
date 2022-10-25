@@ -78,7 +78,7 @@ export class ChromedashMyFeaturesPage extends LitElement {
           .starredFeatures=${this.starredFeatures}
           @star-toggle-event=${this.handleStarToggle}
           @open-approvals-event=${this.handleOpenApprovals}
-          rows=10 columns=${columns}>
+          num=25 columns=${columns}>
         </chromedash-feature-table>
       </sl-details>
     `;
