@@ -479,7 +479,7 @@ export const ALL_FIELDS = {
     type: 'textarea',
     attrs: {rows: 2},
     required: false,
-    label: 'TAG Review',
+    label: 'TAG Specification Review',
     help_text: html`Link(s) to TAG review(s), or explanation why this is
                 not needed.`,
     extra_help: html`
@@ -500,18 +500,19 @@ export const ALL_FIELDS = {
     <p>
       It's recommended that you file a TAG <a target="_blank" href=
         "https://github.com/w3ctag/design-reviews/issues/new?template=010-specification-review.md"
-      >Specification Review</a> at the I2E stage (right after is also fine). 
-      A large number of Intents to Ship are delayed because a TAG review was only recently filed 
-      and engagement from the TAG can take multiple weeks to multiple months.
-    </p>
-    <p>  
-      Note that only the request for TAG review is strictly required by the process. 
-      We don't block shipping on a response from the TAG, but a reasonable effort must be made 
-      to obtain their review with enough time for them to give feedback. 
+      >Specification Review</a> as soon as your specification is written, during your Origin Trial. 
+
       There may be some work involved in preparing your feature for review (see the 
         <a target="_blank" href=
           "https://github.com/w3ctag/design-reviews/blob/main/.github/ISSUE_TEMPLATE/010-specification-review.md"
         >submission template fields</a>).
+      A large number of Intents to Ship are delayed because a TAG review was only recently filed 
+      and engagement from the TAG can take multiple weeks to multiple months.
+    </p>
+    <p>  
+      Note that the API owners can approve shipping even if the TAG hasn't replied to your review request,
+      as long as you've made a reasonable effort
+      to obtain their review with enough time for them to give feedback.
     </p>`,
   },
 
