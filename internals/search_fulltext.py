@@ -157,11 +157,13 @@ def search_fulltext(textterm):
   """Return IDs of features that have some word(s) from phrase."""
   search_words = parse_words([textterm])
   if not search_words:
-    logging.warn('Cannot process fulltext term: %r', textterm)
-    return []  # user is searching for stop words.
+    logging.warning('Cannot process fulltext term: %r', textterm)
+    return None  # user is searching for stop words.
 
   logging.info('looking for words: %r', search_words)
-  query = FeatureWords.query(FeatureWords.words.IN(search_words))
+  query = FeatureWords.query()
+  for sw in search_words:
+    query = query.filter(FeatureWords.words == sw)
   feature_projections = query.fetch(projection=['feature_id'])
   feature_ids = [proj.feature_id for proj in feature_projections]
   return feature_ids
@@ -196,6 +198,8 @@ class ReindexAllFeatures(FlaskHandler):
 
 class FindStopWords(FlaskHandler):
 
+  JSONIFY = True
+
   def get_template_data(self, **kwargs):
     """Count occurances of all words and return the 100 most common."""
     self.require_cron_header()
@@ -210,8 +214,9 @@ class FindStopWords(FlaskHandler):
     for fw in updated_fw_list:
       counts.update(fw.words)
 
+    top_words = counts.most_common(100)
     logging.info('100 most common words')
-    for word, count in counts.most_common(100):
+    for word, count in top_words:
       logging.info('%6d: %s', count, word)
 
-    return 'OK'
+    return top_words

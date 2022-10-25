@@ -120,7 +120,7 @@ def process_queriable_field(field_name, operator, val_str):
 # A full-text query term consisting of a single word or quoted string.
 # The single word case cannot contain an operator.
 # We do not support any kind of escaped quotes in quoted strings.
-TEXT_PATTERN = r'[^":=><! ]+|"[^S]+"'
+TEXT_PATTERN = r'[^":=><! ]+|"[^"]+"'
 # The JSON field name of a feature field.
 FIELD_NAME_PATTERN = r'[-.a-z_0-9]+'
 # Comparison operators.
@@ -163,9 +163,6 @@ def process_query_term(field_name, op_str, val_str):
   if val_str.startswith('"') and val_str.endswith('"'):
     val_str = val_str[1:-1]
   return process_queriable_field(field_name, op_str, val_str)
-
-  logging.warning('Unexpected query: %r', query_term)
-  return []
 
 
 def _resolve_promise_to_id_list(promise):
@@ -216,7 +213,8 @@ def process_query(
       future = search_fulltext.search_fulltext(textterm)
     else:
       future = process_query_term(field_name, op_str, val_str)
-    feature_id_futures.append(future)
+    if future is not None:
+      feature_id_futures.append(future)
   # 2b. Create a parallel query for total sort order.
   total_order_promise = search_queries.total_order_query_async(sort_spec)
 

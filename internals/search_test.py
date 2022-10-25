@@ -23,6 +23,54 @@ from internals import review_models
 from internals import search
 
 
+class SearchRETest(testing_config.CustomTestCase):
+  # Note: User queries will always have a space appended before parsing.
+
+  def test_empty_query(self):
+    """An empty user query string should yield zero serach terms."""
+    self.assertEqual([], search.TERM_RE.findall(''))
+    self.assertEqual([], search.TERM_RE.findall('   '))
+
+  def test_operator_terms(self):
+    """We can parse operator terms."""
+    self.assertEqual(
+        [('field', '=', 'value', '')],
+        search.TERM_RE.findall('field=value '))
+    self.assertEqual(
+        [('field', '>', 'value', '')],
+        search.TERM_RE.findall('field>value '))
+    self.assertEqual(
+        [('flag_name', '=', 'version', '')],
+        search.TERM_RE.findall('flag_name=version '))
+    self.assertEqual(
+        [('flag_name', '=', 'enable-super-stuff', '')],
+        search.TERM_RE.findall('flag_name=enable-super-stuff '))
+    self.assertEqual(
+        [('flag_name', '=', '"enable super stuff"', '')],
+        search.TERM_RE.findall('flag_name="enable super stuff" '))
+
+  def test_text_terms(self):
+    """We can parse text terms."""
+    self.assertEqual(
+        [('', '', '', 'hello')],
+        search.TERM_RE.findall('hello '))
+    self.assertEqual(
+        [('', '', '', '"hello there people"')],
+        search.TERM_RE.findall('"hello there people" '))
+    self.assertEqual(
+        [('', '', '', '"memory location $0x25"')],
+        search.TERM_RE.findall('"memory location $0x25" '))
+
+  def test_malformed(self):
+    """Malformed queries are treated like full text, junk ignored."""
+    self.assertEqual(
+        [],
+        search.TERM_RE.findall(':: = == := > >> >>> '))
+    self.assertEqual(
+        [('', '', '', 'word')],
+        search.TERM_RE.findall('=word '))
+
+
 class SearchFunctionsTest(testing_config.CustomTestCase):
 
   def setUp(self):
@@ -298,13 +346,8 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
 
   @mock.patch('logging.warning')
   def test_process_query__bad(self, mock_warn):
-    """Query terms that are not predefined or field-op-value, give warnings."""
+    """Query terms that are not valid, give warnings."""
     self.assertEqual(
-        search.process_query('anything else'),
-        ([], 0))
-    self.assertEqual(0, len(mock_warn.mock_calls))
-
-    self.assertEqual(
-        search.process_query('and bug'),
+        search.process_query('any:thing e=lse'),
         ([], 0))
     self.assertEqual(2, len(mock_warn.mock_calls))
