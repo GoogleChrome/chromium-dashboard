@@ -21,7 +21,11 @@ HISTORY:-
 
 ## Front end
 
-Front end codes exist in two parts: main site (including admin) and http2push.
+- Our client side is implemented in [Lit](https://lit.dev).
+- It is largely a SPA (single-page application) with routing done via `page.js`.
+- It communicates with the server via code in `cs-client.js`.
+- We use [Shoelace widgets](https://shoelace.style).
+
 
 ### Main site page renderring
 
@@ -35,6 +39,20 @@ All the pages are rendered in a combination of Jinja2 template (`/templates`) an
 1. All Lit components are in `/client-src/elements`.
 1. All JavaScript files are in `/client-src/js-src/` and processed by gulp, then output to `/static/js/` and get included in templates.
 1. All CSS files are in `/client-src/sass/` and processed by gulp, then output to `/static/css/` and get included in templates.
+
+### Adding an icon
+
+Shoelace comes bundled with [Bootstrap Icons](https://icons.getbootstrap.com), but we prefer to use [Material Icons](https://fonts.google.com/icons?icon.set=Material+Icons) in most cases.
+
+To add a new Bootstrap icon:
+1. Copy it from node_modules/@shoelace-style/shoelace/dist/assets/icons to static/shoelace/assets/icons.
+1. Reference it like `<sl-icon name="icon-name">`.
+
+To add a new Material icon:
+1. Download the 24pt SVG file from https://fonts.google.com/icons?icon.set=Material+Icons
+1. Rename it to the icon name with underscores, and place it in static/shoelace/assets/material-icons.
+1. Reference it like `<sl-icon library="material" name="icon_name">`.
+
 
 ## Creating a user with admin privileges
 
