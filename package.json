@@ -27,7 +27,7 @@
     "do-coverage": "coverage3 erase && coverage3 run -m unittest discover -p '*_test.py' -b && coverage3 html",
     "coverage": "source cs-env/bin/activate; (npm run start-emulator > /dev/null 2>&1 &); sleep 3; curl --retry 4 http://localhost:15606/ --retry-connrefused; npm run do-coverage;  npm run stop-emulator",
     "view-coverage": "pushd htmlcov/; python3 -m http.server 8080; popd",
-    "mypy": "mypy --ignore-missing-imports --exclude cs-env/ --exclude appengine_config.py .",
+    "mypy": "source cs-env/bin/activate; mypy --ignore-missing-imports --exclude cs-env/ --exclude appengine_config.py .",
     "lint": "gulp lint-fix && lit-analyzer \"client-src/elements/chromedash-!(featurelist)*.js\"",
     "presubmit": "npm test && npm run webtest && npm run lint && npm run mypy",
     "pylint": "pylint --output-format=parseable *py api/*py framework/*py internals/*py pages/*py",
