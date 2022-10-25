@@ -17,6 +17,7 @@
 # https://stackoverflow.com/a/33533514
 from __future__ import annotations
 
+import collections
 import datetime
 import logging
 import re
@@ -217,13 +218,27 @@ class Feature(DictModel):
     if version == 2:
       if self.is_saved():
         d['id'] = self.key.integer_id()
+
+        # Write a collection of stages and gates associated with the feature,
+        # sorted by type.
+        stages: list[Stage] = Stage.query(
+            Stage.feature_id == d['id']).fetch()
+        gates: list[review_models.Gate] = review_models.Gate.query(
+            review_models.Gate.feature_id == d['id']).fetch()
+        d['stages'] = collections.defaultdict(list)
+        d['gates'] = collections.defaultdict(list)
+        for s in stages:
+          d['stages'][s.stage_type].append(s.key.integer_id())
+        for g in gates:
+          d['gates'][g.gate_type].append(g.key.integer_id())
       else:
         d['id'] = None
+        d['stages'] = {}
+        d['gates'] = {}
       d['category'] = FEATURE_CATEGORIES[self.category]
       d['category_int'] = self.category
-      if self.feature_type is not None:
-        d['feature_type'] = FEATURE_TYPES[self.feature_type]
-        d['feature_type_int'] = self.feature_type
+      d['feature_type'] = FEATURE_TYPES[self.feature_type]
+      d['feature_type_int'] = self.feature_type
       if self.intent_stage is not None:
         d['intent_stage'] = INTENT_STAGES[self.intent_stage]
         d['intent_stage_int'] = self.intent_stage

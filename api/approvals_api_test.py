@@ -206,7 +206,7 @@ class ApprovalsAPITest(testing_config.CustomTestCase):
     params = {'featureId': self.feature_id, 'fieldId': 1,
               'state': review_models.Approval.NEEDS_WORK}
     with test_app.test_request_context(self.request_path, json=params):
-      actual = self.handler.do_post()
+      actual = self.handler.do_post(feature_id=self.feature_id)
 
     self.assertEqual(actual, {'message': 'Done'})
     updated_approvals = review_models.Approval.get_approvals(

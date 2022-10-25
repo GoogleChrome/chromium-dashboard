@@ -16,12 +16,12 @@
 import datetime
 import logging
 import re
-from typing import Any
+from typing import Any, Optional
 
 from framework import basehandlers
 from framework import permissions
 from internals import approval_defs
-from internals.review_models import Approval, ApprovalConfig, Vote
+from internals.review_models import Approval, ApprovalConfig, Gate, Vote
 
 
 def approval_value_to_json_dict(appr: Approval) -> dict[str, Any]:
@@ -33,10 +33,22 @@ def approval_value_to_json_dict(appr: Approval) -> dict[str, Any]:
       'set_by': appr.set_by,
       }
 
-def vote_value_to_json_dict(vote: Vote) -> dict[str, Any]:
+def vote_value_to_json_dict(
+    vote: Vote, type_memo: Optional[dict[int, int]]=None) -> dict[str, Any]:
+  # A memo is kept of gate types for each gate ID
+  # to avoid querying for the same Gate entity multiple times.
+  if type_memo and vote.gate_id in type_memo:
+    gate_type = type_memo[vote.gate_id]
+  else:
+    gate: Gate = Gate.get_by_id(vote.gate_id)
+    if type_memo:
+      type_memo[vote.gate_id] = gate.gate_type
+    gate_type = gate.gate_type
+
   return {
       'feature_id': vote.feature_id,
       'gate_id': vote.gate_id,
+      'gate_type': gate_type,
       'state': vote.state,
       'set_on': str(vote.set_on),  # YYYY-MM-DD HH:MM:SS.SSS
       'set_by': vote.set_by,
@@ -47,26 +59,23 @@ class ApprovalsAPI(basehandlers.APIHandler):
   if allowed."""
 
   def do_get(self, **kwargs):
-    """Return a list of all approval values on the given feature."""
-    feature_id = kwargs.get('feature_id', None)
-    field_id = kwargs.get('field_id', None)
+    """Return a list of all vote values for a given feature."""
+    feature_id = kwargs['feature_id']
+
     # Note: We assume that anyone may view approvals.
-    approvals = Approval.get_approvals(
-        feature_id=feature_id, field_id=field_id)
-    dicts = [approval_value_to_json_dict(av) for av in approvals]
-    data = {
-        'approvals': dicts,
-        }
-    return data
+    type_memo: dict[int, int] = {}
+    votes = Vote.get_votes(feature_id=feature_id)
+    dicts = [vote_value_to_json_dict(v, type_memo) for v in votes]
+    return {'approvals': dicts}
 
   def do_post(self, **kwargs):
     """Set an approval value for the specified feature."""
+    ## Handle writing old Approval entity. ##
     feature_id = kwargs.get('feature_id', None)
     field_id = self.get_int_param('fieldId')
     new_state = self.get_int_param(
         'state', validator=Approval.is_valid_state)
     feature = self.get_specified_feature(feature_id=feature_id)
-    feature_id = feature.key.integer_id()
     user = self.get_current_user(required=True)
 
     approvers = approval_defs.get_approvers(field_id)
@@ -84,6 +93,14 @@ class ApprovalsAPI(basehandlers.APIHandler):
         [appr.key.integer_id() for appr in all_approval_values])
     if approval_defs.is_resolved(all_approval_values, field_id):
       Approval.clear_request(feature_id, field_id)
+
+    ## Write to new Vote and Gate entities. ##
+    gate_id = self.get_int_param('gateId')
+    gate_type = field_id  # field_id is now called gate_type.
+    new_state = self.get_int_param(
+        'state', validator=Vote.is_valid_state)
+    approval_defs.set_vote(
+        feature_id, gate_type, new_state, user.email(), gate_id)
 
     # Callers don't use the JSON response for this API call.
     return {'message': 'Done'}
@@ -154,3 +171,41 @@ class ApprovalConfigsAPI(basehandlers.APIHandler):
 
     # Callers don't use the JSON response for this API call.
     return {'message': 'Done'}
+
+
+def gate_value_to_json_dict(gate: Gate) -> dict[str, Any]:
+  next_action = str(gate.next_action) if gate.next_action else None
+  return {
+      'feature_id': gate.feature_id,
+      'gate_type': gate.gate_type,
+      'owners': gate.owners,
+      'next_action': next_action,  # YYYY-MM-DD or None
+      'additional_review': gate.additional_review
+      }
+
+
+class GatesAPI(basehandlers.APIHandler):
+  """Get gates for a feature."""
+
+  def do_get(self, **kwargs) -> dict[str, Any]:
+    """Return a list of all gates associated with the given feature."""
+    feature_id = kwargs.get('feature_id', None)
+    gates: list[Gate] = Gate.query(Gate.feature_id == feature_id).fetch()
+
+    # No gates associated with this feature.
+    if len(gates) == 0:
+      return {
+          'gates': [],
+          'possible_owners': {}
+          }
+
+    dicts = [gate_value_to_json_dict(g) for g in gates]
+    possible_owners_by_gate_type: dict[int, list[str]] = {
+        gate_type: approval_defs.get_approvers(gate_type)
+        for gate_type in approval_defs.APPROVAL_FIELDS_BY_ID
+        }
+
+    return {
+        'gates': dicts,
+        'possible_owners': possible_owners_by_gate_type
+        }
