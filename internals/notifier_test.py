@@ -20,7 +20,7 @@ from datetime import datetime
 import flask
 from unittest import mock
 import werkzeug.exceptions  # Flask HTTP stuff.
-from google.cloud import ndb
+from google.cloud import ndb  # type: ignore
 
 from framework import users
 
@@ -151,14 +151,15 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     self.assertEqual({}, addr_reasons)
 
     # Adding some users builds up a bigger reason dictionary.
-    notifier.accumulate_reasons(addr_reasons, [self.component_owner_1],
-                                'a reason')
+    notifier.accumulate_reasons(
+        addr_reasons, [self.component_owner_1.email], 'a reason')
     self.assertEqual(
         {'owner_1@example.com': ['a reason']},
         addr_reasons)
 
     notifier.accumulate_reasons(
-        addr_reasons, [self.component_owner_1, self.watcher_1], 'another reason')
+        addr_reasons, [self.component_owner_1.email, self.watcher_1.email],
+        'another reason')
     self.assertEqual(
         {'owner_1@example.com': ['a reason', 'another reason'],
          'watcher_1@example.com': ['another reason'],

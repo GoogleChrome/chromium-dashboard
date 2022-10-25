@@ -17,7 +17,6 @@ import base64
 import copy
 import logging
 import os
-import six
 
 import flask
 
@@ -101,7 +100,7 @@ def get_csp_header_key():
 def build_policy(policy):
   """Builds the CSP policy string from the internal representation."""
   csp_directives = [
-      k + ' ' + ' '.join(v) for k, v in six.iteritems(policy) if v is not None
+      k + ' ' + ' '.join(v) for k, v in policy.items() if v is not None
   ]
   if REPORT_URI:
     csp_directives.append('report-uri %s' % REPORT_URI)

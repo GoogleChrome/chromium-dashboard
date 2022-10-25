@@ -425,15 +425,11 @@ export class ChromedashFeaturePage extends LitElement {
 
   renderFeatureDetails() {
     return html`
-      <sl-details
-        id="details"
-        summary="Additional fields by process phase">
-        <chromedash-feature-detail
-          .feature=${this.feature}
-          .process=${this.process}
-          .dismissedCues=${this.dismissedCues}>
-        </chromedash-feature-detail>
-      </sl-details>
+      <chromedash-feature-detail
+        .feature=${this.feature}
+        .process=${this.process}
+        .dismissedCues=${this.dismissedCues}>
+      </chromedash-feature-detail>
     `;
   }
 

@@ -13,7 +13,7 @@ jobs:
       - name: set up Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: '12.x'
+          node-version: '18.x'
 
       - name: set up Python
         uses: actions/setup-python@v2
@@ -40,6 +40,9 @@ jobs:
 
       - name: lint
         run: npm run lint
+
+      - name: mypy
+        run: mypy --ignore-missing-imports --exclude cs-env/ --exclude appengine_config.py .
 
       - name: test
         run: npm test

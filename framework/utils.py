@@ -23,8 +23,6 @@ import traceback
 from framework import users
 import settings
 
-from feedgenerator.django.utils import feedgenerator
-
 
 def normalized_name(val):
   return val.lower().replace(' ', '').replace('/', '')
@@ -85,40 +83,6 @@ def strip_trailing_slash(handler):
 
     return handler(self, *args, **kwargs) # Call the handler method
   return remove_slash
-
-
-def render_atom_feed(request, title, data):
-  features_url = '%s://%s%s' % (request.scheme,
-                                request.host,
-                                request.path.replace('.xml', ''))
-  feature_url_prefix = '%s://%s%s' % (request.scheme,
-                                      request.host,
-                                      '/feature')
-
-  feed = feedgenerator.Atom1Feed(
-      title=str('%s - %s' % (settings.APP_TITLE, title)),
-      link=features_url,
-      description='New features exposed to web developers',
-      language='en'
-  )
-  for f in data:
-    updated = f['updated']['when']
-    pubdate = datetime.datetime.strptime(str(updated[:19]),
-                                         '%Y-%m-%d  %H:%M:%S')
-    feed.add_item(
-        title=str(f['name']),
-        link='%s/%s' % (feature_url_prefix, f.get('id')),
-        description=f.get('summary', ''),
-        pubdate=pubdate,
-        author_name=str(settings.APP_TITLE),
-        categories=[f['category']]
-    )
-  headers = {
-      'Strict-Transport-Security':
-          'max-age=63072000; includeSubDomains; preload',
-      'Content-Type': 'application/atom+xml;charset=utf-8'}
-  text = feed.writeString('utf-8')
-  return text, headers
 
 
 _ZERO = datetime.timedelta(0)

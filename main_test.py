@@ -42,9 +42,9 @@ class ConstTemplateTest(testing_config.CustomTestCase):
 
     with test_app.test_request_context(request_path):
       template_data = handler.get_template_data(**defaults)
-    full_template_path = handler.get_template_path(template_data)
+      full_template_path = handler.get_template_path(template_data)
+      template_text = handler.render(template_data, full_template_path)
 
-    template_text = handler.render(template_data, full_template_path)
     parser = html5lib.HTMLParser(strict=True)
     document = parser.parse(template_text)
 

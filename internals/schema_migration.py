@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import logging
-from google.cloud import ndb
+from google.cloud import ndb  # type: ignore
 
 from framework.basehandlers import FlaskHandler
 from internals import approval_defs
@@ -94,6 +94,7 @@ class MigrateCommentsToActivities(FlaskHandler):
     
     return (f'{old_migrations_deleted} Activities deleted '
         'from previous migration.')
+
 
 class MigrateEntities(FlaskHandler):
 
@@ -183,7 +184,6 @@ class MigrateEntities(FlaskHandler):
   @classmethod
   def write_stages_for_feature(cls, feature):
     """Creates new Stage entities MilestoneSet entities based on Feature data"""
-    stages, gates, votes = 0, 0, 0
     # Create MilestoneSets for each major paradigm.
     devtrial_mstones = MilestoneSet(
         desktop_first=feature.dt_milestone_desktop_start,
@@ -210,204 +210,201 @@ class MigrateEntities(FlaskHandler):
     # create a different group of Stage entities.
     f_type = feature.feature_type
     if f_type == FEATURE_TYPE_INCUBATE_ID:
-      stages, gates, votes = cls.write_incubate_stages(
+      cls.write_incubate_stages(
           feature, devtrial_mstones, ot_mstones, extension_mstones, ship_mstones)
     elif f_type == FEATURE_TYPE_EXISTING_ID:
-      stages, gates, votes = cls.write_existing_stages(
+      cls.write_existing_stages(
           feature, devtrial_mstones, ot_mstones, extension_mstones, ship_mstones)
     elif f_type == FEATURE_TYPE_CODE_CHANGE_ID:
-      stages, gates, votes = cls.write_code_change_stages(
+      cls.write_code_change_stages(
           feature, devtrial_mstones, ship_mstones)
     elif f_type == FEATURE_TYPE_DEPRECATION_ID:
-      stages, gates, votes = cls.write_deprecation_stages(
+      cls.write_deprecation_stages(
           feature, devtrial_mstones, ot_mstones, extension_mstones, ship_mstones)
     else:
       logging.error(f'Invalid feature type {f_type} for {feature.name}')
-    
-    message = (f'Created {stages} stages, {gates} gates, and {votes} votes '
-               f'for feature {feature.key.integer_id()}')
-    logging.info(message)
 
   @classmethod
-  def write_gate(cls, feature_id, stage, gate_type):
+  def write_gate(cls, feature_id, stage_id, gate_type):
     """Writes a Gate entity to match the stage created."""
-    gate = Gate(feature_id=feature_id, stage_id=stage.key.integer_id(),
+    gate = Gate(feature_id=feature_id, stage_id=stage_id,
         gate_type=gate_type, state=Vote.NA)
-    # Determine the state the Gate should have.
-    approvals: list = Approval.query().filter(Approval.feature_id == feature_id)
-    if approval_defs.is_approved(approvals, gate_type):
-      gate.state = Vote.APPROVED
-    elif approval_defs.is_resolved(approvals, gate_type):
-      gate.state = Vote.NOT_APPROVED
     gate.put()
-
-    # Filter Approval entities by the gate type and write Vote entities.
-    approvals = [
-        appr for appr in approvals if appr.field_id == gate_type]
-    num_votes = cls.write_votes(feature_id, gate.key.integer_id(), approvals)
-
-    return 1, num_votes
-
-  @classmethod
-  def write_votes(cls, feature_id, gate_id, approvals):
-    """Migrate Vote entities for given feature and gate IDs."""
-    count = 0
-    for appr in approvals:
-      vote = Vote(feature_id=feature_id, gate_id=gate_id, state=appr.state,
-          set_on=appr.set_on, set_by=appr.set_by)
-      vote.put()
-      count += 1
-    
-    return count
 
   @classmethod
   def write_incubate_stages(cls, feature, devtrial_mstones, ot_mstones,
       extension_mstones, ship_mstones):
     feature_id = feature.key.integer_id()
     kwargs = {'feature_id': feature_id, 'browser': 'Chrome'}
-    num_gates, num_votes = 0, 0
 
     stage = Stage(stage_type=STAGE_BLINK_INCUBATE, **kwargs)
     stage.put()
+
     stage = Stage(stage_type=STAGE_BLINK_PROTOTYPE,
         intent_thread_url=feature.intent_to_implement_url, **kwargs)
     stage.put()
-    totals = cls.write_gate(feature_id, stage, PROTOTYPE_ENUM)
-    num_gates += totals[0]
-    num_votes += totals[1]
+    cls.write_gate(feature_id, stage.key.integer_id(), PROTOTYPE_ENUM)
+
     stage = Stage(stage_type=STAGE_BLINK_DEV_TRIAL, milestones=devtrial_mstones,
         announcement_url=feature.ready_for_trial_url, **kwargs)
     stage.put()
+
     stage = Stage(stage_type=STAGE_BLINK_EVAL_READINESS, **kwargs)
     stage.put()
+
     stage = Stage(stage_type=STAGE_BLINK_ORIGIN_TRIAL, milestones=ot_mstones,
         intent_thread_url=feature.intent_to_experiment_url,
         experiment_goals=feature.experiment_goals,
         origin_trial_feedback_url=feature.origin_trial_feedback_url, **kwargs)
     stage.put()
-    totals = cls.write_gate(feature_id, stage, OT_ENUM)
-    num_gates += totals[0]
-    num_votes += totals[1]
+    cls.write_gate(feature_id, stage.key.integer_id(), OT_ENUM)
+
     stage = Stage(stage_type=STAGE_BLINK_EXTEND_ORIGIN_TRIAL,
         milestones=extension_mstones,
         intent_thread_url=feature.intent_to_extend_experiment_url,
         experiment_extension_reason=feature.experiment_extension_reason,
         ot_stage_id=stage.key.integer_id(), **kwargs)
     stage.put()
-    totals = cls.write_gate(feature_id, stage, EXTEND_ENUM)
-    num_gates += totals[0]
-    num_votes += totals[1]
+    cls.write_gate(feature_id, stage.key.integer_id(), EXTEND_ENUM)
     stage = Stage(stage_type=STAGE_BLINK_SHIPPING, milestones=ship_mstones,
         intent_thread_url=feature.intent_to_ship_url,
         finch_url=feature.finch_url, **kwargs)
+
     stage.put()
-    totals = cls.write_gate(feature_id, stage, SHIP_ENUM)
-    num_gates += totals[0]
-    num_votes += totals[1]
-    # Return number of Stage entities created.
-    return 7, num_gates, num_votes
+    cls.write_gate(feature_id, stage.key.integer_id(), SHIP_ENUM)
 
   @classmethod
   def write_existing_stages(cls, feature, devtrial_mstones, ot_mstones,
       extension_mstones, ship_mstones):
     feature_id = feature.key.integer_id()
     kwargs = {'feature_id': feature_id, 'browser': 'Chrome'}
-    num_gates, num_votes = 0, 0
 
     stage = Stage(stage_type=STAGE_FAST_PROTOTYPE,
         intent_thread_url=feature.intent_to_implement_url, **kwargs)
     stage.put()
-    totals = cls.write_gate(feature_id, stage, PROTOTYPE_ENUM)
-    num_gates += totals[0]
-    num_votes += totals[1]
+    cls.write_gate(feature_id, stage.key.integer_id(), PROTOTYPE_ENUM)
+
     stage = Stage(stage_type=STAGE_FAST_DEV_TRIAL, milestones=devtrial_mstones,
         announcement_url=feature.ready_for_trial_url, **kwargs)
     stage.put()
+
     stage = Stage(stage_type=STAGE_FAST_ORIGIN_TRIAL, milestones=ot_mstones,
         intent_thread_url=feature.intent_to_experiment_url,
         experiment_goals=feature.experiment_goals,
         origin_trial_feedback_url=feature.origin_trial_feedback_url, **kwargs)
     stage.put()
-    totals = cls.write_gate(feature_id, stage, OT_ENUM)
-    num_gates += totals[0]
-    num_votes += totals[1]
+    cls.write_gate(feature_id, stage.key.integer_id(), OT_ENUM)
+
     stage = Stage(stage_type=STAGE_FAST_EXTEND_ORIGIN_TRIAL,
         milestones=extension_mstones,
         intent_thread_url=feature.intent_to_extend_experiment_url,
         experiment_extension_reason=feature.experiment_extension_reason,
         ot_stage_id=stage.key.integer_id(), **kwargs)
     stage.put()
-    totals = cls.write_gate(feature_id, stage, EXTEND_ENUM)
-    num_gates += totals[0]
-    num_votes += totals[1]
+    cls.write_gate(feature_id, stage.key.integer_id(), EXTEND_ENUM)
+
     stage = Stage(stage_type=STAGE_FAST_SHIPPING,  milestones=ship_mstones,
         intent_thread_url=feature.intent_to_ship_url,
         finch_url=feature.finch_url, **kwargs)
     stage.put()
-    totals = cls.write_gate(feature_id, stage, SHIP_ENUM)
-    num_gates += totals[0]
-    num_votes += totals[1]
-    # Return number of Stage entities created.
-    return 5, num_gates, num_votes
+    cls.write_gate(feature_id, stage.key.integer_id(), SHIP_ENUM)
 
   @classmethod
   def write_code_change_stages(cls, feature, devtrial_mstones, ship_mstones):
     feature_id = feature.key.integer_id()
     kwargs = {'feature_id': feature_id, 'browser': 'Chrome'}
-    num_gates, num_votes = 0, 0
 
     stage = Stage(stage_type=STAGE_PSA_IMPLEMENT, **kwargs)
     stage.put()
+
     stage = Stage(stage_type=STAGE_PSA_DEV_TRIAL, milestones=devtrial_mstones,
         announcement_url=feature.ready_for_trial_url,  **kwargs)
     stage.put()
+
     stage = Stage(stage_type=STAGE_PSA_SHIPPING,  milestones=ship_mstones,
         intent_thread_url=feature.intent_to_ship_url,
         finch_url=feature.finch_url, **kwargs)
     stage.put()
-    totals = cls.write_gate(feature_id, stage, SHIP_ENUM)
-    num_gates += totals[0]
-    num_votes += totals[1]
-    # Return number of Stage entities created.
-    return 3, num_gates, num_votes
+    cls.write_gate(feature_id, stage.key.integer_id(), SHIP_ENUM)
 
   @classmethod
   def write_deprecation_stages(cls, feature, devtrial_mstones, ot_mstones,
       extension_mstones, ship_mstones):
     feature_id = feature.key.integer_id()
     kwargs = {'feature_id': feature_id, 'browser': 'Chrome'}
-    num_gates, num_votes = 0, 0
 
     stage = Stage(stage_type=STAGE_DEP_PLAN, **kwargs)
     stage.put()
+
     stage = Stage(stage_type=STAGE_DEP_DEV_TRIAL, milestones=devtrial_mstones,
         announcement_url=feature.ready_for_trial_url, **kwargs)
     stage.put()
+
     stage = Stage(stage_type=STAGE_DEP_DEPRECATION_TRIAL, milestones=ot_mstones,
         intent_thread_url=feature.intent_to_experiment_url,
         experiment_goals=feature.experiment_goals,
         origin_trial_feedback_url=feature.origin_trial_feedback_url, **kwargs)
     stage.put()
-    totals = cls.write_gate(feature_id, stage, OT_ENUM)
-    num_gates += totals[0]
-    num_votes += totals[1]
+
+    cls.write_gate(feature_id, stage.key.integer_id(), OT_ENUM)
+
     stage = Stage(stage_type=STAGE_DEP_EXTEND_DEPRECATION_TRIAL,
         milestones=extension_mstones,
         intent_thread_url=feature.intent_to_extend_experiment_url,
         experiment_extension_reason=feature.experiment_extension_reason,
         ot_stage_id=stage.key.integer_id(), **kwargs)
     stage.put()
-    totals = cls.write_gate(feature_id, stage, EXTEND_ENUM)
-    num_gates += totals[0]
-    num_votes += totals[1]
+    cls.write_gate(feature_id, stage.key.integer_id(), EXTEND_ENUM)
+
     stage = Stage(stage_type=STAGE_DEP_SHIPPING,  milestones=ship_mstones,
         intent_thread_url=feature.intent_to_ship_url,
         finch_url=feature.finch_url, **kwargs)
     stage.put()
-    totals = cls.write_gate(feature_id, stage, SHIP_ENUM)
-    num_gates += totals[0]
-    num_votes += totals[1]
+    cls.write_gate(feature_id, stage.key.integer_id(), SHIP_ENUM)
+
     stage = Stage(stage_type=STAGE_DEP_REMOVE_CODE, **kwargs)
     stage.put()
-    # Return number of Stage entities created.
-    return 6, num_gates, num_votes
+
+
+class MigrateApprovalsToVotes(FlaskHandler):
+
+  def get_template_data(self, **kwargs):
+    """Migrate all Approval entities to Vote entities."""
+    self.require_cron_header()
+
+    approvals: ndb.Query = Approval.query()
+    count = 0
+    for approval in approvals:
+      vote = Vote.get_by_id(approval.key.integer_id())
+      if vote:
+        continue
+
+      gates = Gate.query(
+          Gate.feature_id == approval.feature_id,
+          Gate.gate_type == approval.field_id).fetch()
+      # Skip if no gate is found for the given approval.
+      if len(gates) == 0:
+        continue
+      gate_id = gates[0].key.integer_id()
+      vote = Vote(id=approval.key.integer_id(), feature_id=approval.feature_id,
+          gate_id=gate_id, state=approval.state, set_on=approval.set_on,
+          set_by=approval.set_by)
+      vote.put()
+      count += 1
+    
+    return f'{count} Approval entities migrated to Vote entities.'
+
+
+class EvaluateGateStatus(FlaskHandler):
+
+  def get_template_data(self, **kwargs):
+    """Evaluate all existing Gate entities and set correct state."""
+    self.require_cron_header()
+
+    gates: ndb.Query = Gate.query()
+    count = 0
+    for gate in gates:
+      approval_defs.update_gate_approval_state(gate)
+      count += 1
+    
+    return f'{count} Gate entities reevaluated.'

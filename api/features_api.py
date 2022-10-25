@@ -27,7 +27,7 @@ from internals import search
 class FeaturesAPI(basehandlers.APIHandler):
   """Features are the the main records that we track."""
 
-  def get_one_feature(self, feature_id: int) -> dict:
+  def get_one_feature(self, feature_id: int) -> dict[str, Any]:
     features = core_models.Feature.get_by_ids([feature_id])
     if not features:
       self.abort(404, msg='Feature %r not found' % feature_id)
@@ -64,7 +64,7 @@ class FeaturesAPI(basehandlers.APIHandler):
         'features': features_on_page,
         }
 
-  def do_get(self, **kwargs) -> dict:
+  def do_get(self, **kwargs) -> dict[str, Any]:
     """Handle GET requests for a single feature or a search."""
     feature_id = kwargs.get('feature_id', None)
     if feature_id:

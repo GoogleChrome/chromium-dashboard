@@ -16,7 +16,7 @@ import logging
 import os
 import unittest
 
-from google.cloud import ndb
+from google.cloud import ndb  # type: ignore
 from pathlib import Path
 
 os.environ['SERVER_SOFTWARE'] = 'test ' + os.environ.get('SERVER_SOFTWARE', '')
