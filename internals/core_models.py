@@ -64,12 +64,6 @@ class DictModel(ndb.Model):
       return True
     return False
 
-  def format_for_template(self, add_id=True):
-    d = self.to_dict()
-    if add_id:
-      d['id'] = self.key.integer_id()
-    return d
-
   def to_dict(self):
     output = {}
 
