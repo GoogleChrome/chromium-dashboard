@@ -107,15 +107,16 @@ def get_strings(fe):
   strings.extend(fe.doc_links)
   strings.extend(fe.sample_links)
 
-  return strings
+  # Skip missing fields.
+  non_empty_strings = [s for s in strings if s]
+  return non_empty_strings
 
 
 def parse_words(strings):
-  """Return a list of all searchable words in the given feature entry."""
+  """Return a set of all searchable words in the given feature entry."""
   words = set()
   for s in strings:
-    # skip missing fields and eliminate apostrophes
-    if not s: continue
+    # eliminate apostrophes
     s = s.lower().replace("'", "")
     words.update(WORD_RE.findall(s))
 
@@ -124,7 +125,7 @@ def parse_words(strings):
 
 
 def batch_index_features(fe_list, existing_fw_list):
-  """XXX."""
+  """Process FeatureEntries to make word bags, but don't save to NDB."""
   existing_fw_dict = {
       fw.feature_id: fw
       for fw in existing_fw_list}
@@ -135,7 +136,7 @@ def batch_index_features(fe_list, existing_fw_list):
     feature_words = (existing_fw_dict.get(feature_id) or
                      FeatureWords(feature_id=feature_id))
 
-    words = parse_words(get_strings(fe))
+    words = sorted(parse_words(get_strings(fe)))
     logging.info('feature %r has words %r', feature_id, words)
     feature_words.words = words
     updated_fw_list.append(feature_words)
