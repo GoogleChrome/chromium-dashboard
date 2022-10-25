@@ -219,9 +219,6 @@ class ChromedashFeatureFilter extends LitElement {
         font-size: 1.6rem;
         margin: 0 !important;
       }
-      sl-input sl-icon-button {
-        font-size: 1.4rem;
-      }
       #searchbar::part(base), #filterwidgets {
        background: #eee;
        border: none;
@@ -268,10 +265,10 @@ class ChromedashFeatureFilter extends LitElement {
       <div>
         <sl-input id="searchbar" placeholder="Search"
             @keyup="${this.handleSearchKey}">
-          <sl-icon-button name="search" slot="prefix"
+          <sl-icon-button library="material" name="search" slot="prefix"
                @click="${this.handleSearchClick}">
           </sl-icon-button>
-          <sl-icon-button name="sliders2" slot="suffix"
+          <sl-icon-button library="material" name="tune" slot="suffix"
                @click="${this.toggleFilters}">
           </sl-icon-button>
         </sl-input>
