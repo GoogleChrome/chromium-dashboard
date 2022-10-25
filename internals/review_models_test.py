@@ -18,8 +18,8 @@ import datetime
 from unittest import mock
 from framework import users
 
-from internals import core_models
-from internals.review_models import Activity, Approval, OwnersFile, Vote
+from internals import approval_defs, core_models
+from internals.review_models import Activity, Approval, Gate, OwnersFile, Vote
 
 
 class ApprovalTest(testing_config.CustomTestCase):
@@ -53,7 +53,9 @@ class ApprovalTest(testing_config.CustomTestCase):
     self.feature_1.key.delete()
     for appr in Approval.query().fetch(None):
       appr.key.delete()
-    for vote in Vote.query().fetch():
+    for gate in Gate.query():
+      gate.key.delete()
+    for vote in Vote.query():
       vote.key.delete()
 
   def test_get_approvals(self):
@@ -107,13 +109,6 @@ class ApprovalTest(testing_config.CustomTestCase):
         feature_id=self.feature_1_id, field_id=1,
         states=[Approval.REVIEW_REQUESTED])
     self.assertEqual([], remaining_apprs)
-
-    # Ensure that Vote entities are also deleted.
-    remaining_votes = Vote.get_votes(
-        feature_id=self.feature_1_id, gate_id=1,
-        states=[Approval.REVIEW_REQUESTED])
-    self.assertEqual([], remaining_votes)
-
 
 class CommentTest(testing_config.CustomTestCase):
 
@@ -174,6 +169,89 @@ class CommentTest(testing_config.CustomTestCase):
     actual_3 = Activity.get_activities(
         self.feature_1_id, 3, comments_only=True)
     self.assertEqual([], actual_3)
+
+
+class GateTest(testing_config.CustomTestCase):
+
+  def setUp(self):
+    self.gate_1 = Gate(feature_id=1, stage_id=1, gate_type=2, state=Vote.NA)
+    self.gate_1.put()
+    gate_id = self.gate_1.key.integer_id()
+    self.votes = []
+    # Votes that reference gate_1.
+    self.votes.append(Vote(feature_id=1, gate_id=gate_id, state=Vote.APPROVED,
+        set_on=datetime.datetime(2020, 1, 1), set_by='user1@example.com'))
+    self.votes.append(Vote(feature_id=1, gate_id=gate_id,
+        state=Vote.NOT_APPROVED, set_on=datetime.datetime(2020, 1, 1),
+        set_by='use21@example.com'))
+    self.votes.append(Vote(feature_id=1, gate_id=gate_id,
+        state=Vote.REVIEW_REQUESTED, set_on=datetime.datetime(2020, 2, 1),
+        set_by='use31@example.com'))
+    self.votes.append(Vote(feature_id=1, gate_id=gate_id,
+        state=Vote.REVIEW_REQUESTED, set_on=datetime.datetime(2020, 3, 1),
+        set_by='user4@example.com'))
+    self.votes.append(Vote(feature_id=1, gate_id=gate_id,
+        state=Vote.REVIEW_REQUESTED, set_on=datetime.datetime(2020, 1, 2),
+        set_by='user5@example.com'))
+
+    self.gate_2 = Gate(feature_id=2, stage_id=2, gate_type=2,
+        state=Vote.APPROVED)
+    self.gate_2.put()
+    gate_id = self.gate_2.key.integer_id()
+    self.votes.append(Vote(feature_id=1, gate_id=gate_id,
+        state=Vote.REVIEW_REQUESTED, set_on=datetime.datetime(2020, 7, 1),
+        set_by='user6@example.com'))
+    # Votes that reference gate_2.
+    self.votes.append(Vote(feature_id=1, gate_id=gate_id, state=Vote.APPROVED,
+        set_on=datetime.datetime(2020, 2, 1), set_by='user7@example.com'))
+    self.votes.append(Vote(feature_id=1, gate_id=gate_id, state=Vote.APPROVED,
+        set_on=datetime.datetime(2020, 4, 10), set_by='user8@example.com'))
+    self.votes.append(Vote(feature_id=1, gate_id=gate_id, state=Vote.NA,
+        set_on=datetime.datetime(2020, 1, 15), set_by='user9@example.com'))
+    self.votes.append(Vote(feature_id=1, gate_id=gate_id, state=Vote.NA,
+        set_on=datetime.datetime(2020, 8, 23), set_by='user10@example.com'))
+    self.votes.append(Vote(feature_id=1, gate_id=gate_id, state=Vote.APPROVED,
+        set_on=datetime.datetime(2021, 1, 1), set_by='user11@example.com'))
+
+    # Some additional votes that should have no bearing on the gates.
+    self.votes.append(Vote(feature_id=2, gate_id=5, state=Vote.NOT_APPROVED,
+        set_on=datetime.datetime(2021, 1, 1), set_by='user11@example.com'))
+    self.votes.append(Vote(feature_id=3, gate_id=3, state=Vote.REVIEW_REQUESTED,
+        set_on=datetime.datetime(2021, 1, 1), set_by='user11@example.com'))
+    self.votes.append(Vote(feature_id=2, gate_id=1, state=Vote.REVIEW_REQUESTED,
+        set_on=datetime.datetime(2021, 1, 1), set_by='user11@example.com'))
+    self.votes.append(Vote(feature_id=2, gate_id=1, state=Vote.NA,
+        set_on=datetime.datetime(2021, 1, 1), set_by='user11@example.com'))
+    self.votes.append(Vote(feature_id=1, gate_id=2, state=Vote.APPROVED,
+        set_on=datetime.datetime(2021, 1, 1), set_by='user11@example.com'))
+    
+    for vote in self.votes:
+      vote.put()
+
+  def tearDown(self):
+    self.gate_1.key.delete()
+    self.gate_2.key.delete()
+    for vote in self.votes:
+      vote.key.delete()
+
+  def test_clear_request(self):
+    """Once a Gate's outcome is determined, review requests are removed."""
+    self.gate_1.clear_request()
+    votes = Vote.query(Vote.gate_id == self.gate_1.key.integer_id()).fetch()
+    # 5 total votes, 3 with state REVIEW_REQUESTED. Removing them leaves 2.
+    self.assertEqual(len(votes), 2)
+
+  def test_update_approval_stage__needs_update(self):
+    """Gate's approval state will updated based on votes."""
+    # Gate 1 should evaluate to not approved after updating.
+    self.assertEqual(approval_defs.update_gate_approval_state(self.gate_1), 6)
+    self.assertEqual(self.gate_1.state, 6)
+
+  def test_update_approval_state__no_change(self):
+    """Gate's approval state does not change unless it needs to."""
+    # Gate 2 is already marked as approved and should not change.
+    self.assertEqual(approval_defs.update_gate_approval_state(self.gate_2), 5)
+    self.assertEqual(self.gate_2.state, 5)
 
 
 class OwnersFileTest(testing_config.CustomTestCase):

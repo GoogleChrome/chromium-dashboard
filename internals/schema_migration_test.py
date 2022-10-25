@@ -12,14 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from google.cloud import ndb
+from google.cloud import ndb  # type: ignore
 
 import testing_config  # Must be imported before the module under test.
 from datetime import datetime
 
 from internals.core_models import Feature, FeatureEntry, Stage
 from internals.review_models import Activity, Approval, Comment, Gate, Vote
-from internals import review_models, schema_migration
+from internals import schema_migration
 
 class MigrateCommentsToActivitiesTest(testing_config.CustomTestCase):
 
@@ -279,22 +279,42 @@ class MigrateEntitiesTest(testing_config.CustomTestCase):
       for entity in kind.query().fetch():
         entity.key.delete()
 
-  def test_migration(self):
-    migration_handler = schema_migration.MigrateEntities()
-    result = migration_handler.get_template_data()
-    # One is already migrated, so only 2 others to migrate.
+  def run_handler(self, handler):
+    return handler.get_template_data()
+
+  def test_migrations(self):
+    ## Test FeatureEntry migration. ##
+    handler_message = self.run_handler(
+        schema_migration.MigrateEntities())
     expected = '5 Feature entities migrated to FeatureEntry entities.'
-    self.assertEqual(result, expected)
+    self.assertEqual(handler_message, expected)
     feature_entries = FeatureEntry.query().fetch()
+    self.assertEqual(len(feature_entries), 5)
+
+    # Check if all fields have been copied over.
+    feature_entry_1 = FeatureEntry.get_by_id(
+        self.feature_1.key.integer_id())
+    self.assertIsNotNone(feature_entry_1)
+    # Check that all fields are copied over as expected.
+    for field in self.FEATURE_FIELDS:
+      self.assertEqual(
+          getattr(feature_entry_1, field), getattr(self.feature_1, field))
+    for old_field, new_field in self.RENAMED_FIELDS:
+      self.assertEqual(
+          getattr(feature_entry_1, new_field), getattr(self.feature_1, old_field))
+    self.assertEqual(feature_entry_1.updater_email, self.feature_1.updated_by.email())
+
+    # The migration should be idempotent, so nothing should be migrated twice.
+    handler_message = self.run_handler(
+        schema_migration.MigrateEntities())
+    expected = '0 Feature entities migrated to FeatureEntry entities.'
+    self.assertEqual(handler_message, expected)
+
+    self.assertEqual(handler_message, expected)
     stages = Stage.query().fetch()
     gates = Gate.query().fetch()
-    approvals = Vote.query().fetch()
-
-    self.assertEqual(len(feature_entries), 5)
     self.assertEqual(len(stages), 28)
     self.assertEqual(len(gates), 16)
-    self.assertEqual(len(approvals), 16)
-
     # Check if certain fields were copied over correctly.
     stages = Stage.query(
         Stage.feature_id == self.feature_1.key.integer_id()).fetch()
@@ -320,20 +340,16 @@ class MigrateEntitiesTest(testing_config.CustomTestCase):
     self.assertEqual(ot_stage_list[0].intent_thread_url,
         'https://example.com/intentexperiment')
 
-    # Check if all fields have been copied over.
-    feature_entry_1 = FeatureEntry.get_by_id(
-        self.feature_1.key.integer_id())
-    self.assertIsNotNone(feature_entry_1)
-    # Check that all fields are copied over as expected.
-    for field in self.FEATURE_FIELDS:
-      self.assertEqual(
-          getattr(feature_entry_1, field), getattr(self.feature_1, field))
-    for old_field, new_field in self.RENAMED_FIELDS:
-      self.assertEqual(
-          getattr(feature_entry_1, new_field), getattr(self.feature_1, old_field))
-    self.assertEqual(feature_entry_1.updater_email, self.feature_1.updated_by.email())
+    ## Test Vote migration. ##
+    handler_message = self.run_handler(
+        schema_migration.MigrateApprovalsToVotes())
+    expected = "16 Approval entities migrated to Vote entities."
+    self.assertEqual(handler_message, expected)
+    votes = Vote.query().fetch()
+    self.assertEqual(len(votes), 16)
 
     # The migration should be idempotent, so nothing should be migrated twice.
-    result_2 = migration_handler.get_template_data()
-    expected = '0 Feature entities migrated to FeatureEntry entities.'
-    self.assertEqual(result_2, expected)
+    handler_message = self.run_handler(
+        schema_migration.MigrateApprovalsToVotes())
+    expected = "0 Approval entities migrated to Vote entities."
+    self.assertEqual(handler_message, expected)

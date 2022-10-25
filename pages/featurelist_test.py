@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from typing import Optional
+from framework.basehandlers import FlaskHandler
 import testing_config  # Must be imported first
 
 import os
@@ -34,8 +36,8 @@ TESTDATA = testing_config.Testdata(__file__)
 
 class TestWithFeature(testing_config.CustomTestCase):
 
-  REQUEST_PATH_FORMAT = 'subclasses fill this in'
-  HANDLER_CLASS = 'subclasses fill this in'
+  REQUEST_PATH_FORMAT: Optional[str] = None
+  HANDLER_CLASS: Optional[object] = None
 
   def setUp(self):
     self.app_user = user_models.AppUser(email='registered@example.com')
@@ -51,10 +53,10 @@ class TestWithFeature(testing_config.CustomTestCase):
     self.feature_1.put()
     self.feature_id = self.feature_1.key.integer_id()
 
-    self.request_path = self.REQUEST_PATH_FORMAT % {
-        'feature_id': self.feature_id,
-    }
-    self.handler = self.HANDLER_CLASS()
+    self.request_path = (self.REQUEST_PATH_FORMAT %
+        {'feature_id': self.feature_id} if self.REQUEST_PATH_FORMAT else '')
+    if self.HANDLER_CLASS:
+      self.handler = self.HANDLER_CLASS()
 
   def tearDown(self):
     self.feature_1.key.delete()
@@ -119,6 +121,7 @@ class FeatureListHandlerTest(TestWithFeature):
 
 class FeatureListTemplateTest(TestWithFeature):
 
+  REQUEST_PATH_FORMAT = None
   HANDLER_CLASS = featurelist.FeatureListHandler
 
   def setUp(self):
@@ -150,45 +153,3 @@ class FeatureListTemplateTest(TestWithFeature):
     # TESTDATA.make_golden(template_text, 'test_html_rendering.html')
     self.assertMultiLineEqual(
       TESTDATA['test_html_rendering.html'], template_text)
-
-
-class FeatureListXMLHandlerTest(TestWithFeature):
-
-  REQUEST_PATH_FORMAT = '/features.xml'
-  HANDLER_CLASS = featurelist.FeatureListXMLHandler
-
-  def test_get_template_data__no_filters(self):
-    """User can get an XML feed of all features."""
-    with test_app.test_request_context(self.request_path):
-      actual_text, actual_headers = self.handler.get_template_data()
-
-    self.assertTrue(actual_text.startswith('<?xml'))
-    self.assertIn('feature one', actual_text)
-    self.assertIn('detailed sum', actual_text)
-    self.assertIn(str(self.feature_id), actual_text)
-
-    self.assertIn('atom+xml', actual_headers['Content-Type'])
-
-  def test_get_template_data__category(self):
-    """User can get an XML feed of features by category."""
-    request_path = self.request_path + '?category=web components'
-    with test_app.test_request_context(request_path):
-      actual_text, actual_headers = self.handler.get_template_data()
-
-    # It is an XML feed
-    self.assertTrue(actual_text.startswith('<?xml'))
-    self.assertIn('atom+xml', actual_headers['Content-Type'])
-    self.assertIn('Features', actual_text)
-
-    # feature_1 is in the list
-    self.assertIn('feature one', actual_text)
-    self.assertIn('detailed sum', actual_text)
-    self.assertIn(str(self.feature_id), actual_text)
-
-
-    request_path = self.request_path + '?category=css'
-    with test_app.test_request_context(request_path):
-      actual_text, actual_headers = self.handler.get_template_data()
-
-    self.assertTrue(actual_text.startswith('<?xml'))
-    self.assertNotIn('feature one', actual_text)

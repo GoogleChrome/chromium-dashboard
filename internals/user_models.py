@@ -12,9 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import logging
+# Import needed to reference a class within its own class method.
+# https://stackoverflow.com/a/33533514
+from __future__ import annotations
 
-from google.cloud import ndb
+import logging
+from typing import Optional
+
+from google.cloud import ndb  # type: ignore
 
 from framework import rediscache
 from framework import users
@@ -66,16 +71,16 @@ class UserPref(ndb.Model):
       user_pref.put()
 
   @classmethod
-  def get_prefs_for_emails(cls, emails):
+  def get_prefs_for_emails(cls, emails: list[str]) -> list[UserPref]:
     """Return a list of UserPrefs for each of the given emails."""
-    result = []
+    result: list[UserPref] = []
     CHUNK_SIZE = 25  # Query 25 at a time because IN operator is limited to 30.
     chunks = [emails[i : i + CHUNK_SIZE]
               for i in range(0, len(emails), CHUNK_SIZE)]
     for chunk_emails in chunks:
       q = UserPref.query()
       q = q.filter(UserPref.email.IN(chunk_emails))
-      chunk_prefs = q.fetch(None)
+      chunk_prefs: list[UserPref] = q.fetch(None)
       result.extend(chunk_prefs)
       found_set = set(up.email for up in chunk_prefs)
 
@@ -113,7 +118,7 @@ class AppUser(ndb.Model):
     rediscache.delete(cache_key)
 
   @classmethod
-  def get_app_user(cls, email: str) -> users.User:
+  def get_app_user(cls, email: str) -> Optional[AppUser]:
     """Return the AppUser for the specified user, or None."""
     cache_key = 'user|%s' % email
     cached_app_user = rediscache.get(cache_key)
@@ -122,11 +127,11 @@ class AppUser(ndb.Model):
 
     query = cls.query()
     query = query.filter(cls.email == email)
-    found_app_user_or_none = query.get()
-    if found_app_user_or_none is None:
+    found_app_user: Optional[AppUser] = query.get()
+    if found_app_user is None:
       return None
-    rediscache.set(cache_key, found_app_user_or_none)
-    return found_app_user_or_none
+    rediscache.set(cache_key, found_app_user)
+    return found_app_user
 
 
 def list_with_component(l, component):
@@ -238,7 +243,7 @@ class BlinkComponent(ndb.Model):
         c.put()
 
   @classmethod
-  def get_by_name(self, component_name):
+  def get_by_name(self, component_name: str) -> Optional[BlinkComponent]:
     """Fetch blink component with given name."""
     q = self.query()
     q = q.filter(self.name == component_name)

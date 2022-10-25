@@ -67,33 +67,3 @@ class FeatureListHandler(basehandlers.FlaskHandler):
       list(core_enums.STANDARDIZATION.items())])
 
     return template_data
-
-
-# TODO(jrobbins): Delete this some time after Oct 2022.
-class FeatureListXMLHandler(basehandlers.FlaskHandler):
-
-  def get_template_data(self, **kwargs):
-    status = self.request.args.get('status', None)
-    if status:
-      feature_list = core_models.Feature.get_all_with_statuses(status.split(','))
-    else:
-      filterby = None
-      category = self.request.args.get('category', None)
-
-      # Support setting larger-than-default Atom feed sizes so that web
-      # crawlers can use this as a full site feed.
-      max_items = self.get_int_arg('max-items', settings.RSS_FEED_LIMIT)
-
-      if category is not None:
-        for k,v in list(core_enums.FEATURE_CATEGORIES.items()):
-          normalized = utils.normalized_name(v)
-          if category == normalized:
-            filterby = ('category', k)
-            break
-
-      feature_list = core_models.Feature.get_all( # cached
-          limit=max_items,
-          filterby=filterby,
-          order='-updated')
-
-    return utils.render_atom_feed(self.request, 'Features', feature_list)

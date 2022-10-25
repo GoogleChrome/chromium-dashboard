@@ -1,5 +1,6 @@
 import logging
 import os
+from typing import Any, Optional
 
 
 ROOT_DIR = os.path.abspath(os.path.dirname(__file__))
@@ -11,7 +12,8 @@ def get_flask_template_path() -> str:
 
 # By default, send all email to an archive for debugging.
 # For the live cr-status server, this setting is None.
-SEND_ALL_EMAIL_TO = 'cr-status-staging-emails+%(user)s+%(domain)s@google.com'
+SEND_ALL_EMAIL_TO: Optional[str] = (
+    'cr-status-staging-emails+%(user)s+%(domain)s@google.com')
 
 BOUNCE_ESCALATION_ADDR = 'cr-status-bounces@google.com'
 

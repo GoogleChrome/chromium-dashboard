@@ -21,7 +21,7 @@ from unittest import mock
 from internals import core_models
 from internals import reminders
 
-from google.cloud import ndb
+from google.cloud import ndb  # type: ignore
 
 test_app = flask.Flask(__name__,
   template_folder=settings.get_flask_template_path())

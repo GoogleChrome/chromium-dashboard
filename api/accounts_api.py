@@ -15,7 +15,7 @@
 
 import logging
 
-from google.cloud import ndb
+from google.cloud import ndb  # type: ignore
 
 from framework import basehandlers
 from framework import permissions

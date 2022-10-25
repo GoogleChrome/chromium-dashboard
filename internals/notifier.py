@@ -19,10 +19,11 @@ from datetime import datetime, timedelta
 import collections
 import logging
 import os
+from typing import Optional
 import urllib
 
 from framework import permissions
-from google.cloud import ndb
+from google.cloud import ndb  # type: ignore
 
 from flask import escape
 from flask import render_template
@@ -33,8 +34,9 @@ from framework import users
 import settings
 from internals import approval_defs
 from internals import core_enums
-from internals import core_models
-from internals import user_models
+from internals.core_models import Feature
+from internals.user_models import (
+    AppUser, BlinkComponent, FeatureOwner, UserPref)
 
 
 def format_email_body(is_update, feature, changes):
@@ -78,13 +80,11 @@ def format_email_body(is_update, feature, changes):
   return body
 
 
-def accumulate_reasons(addr_reasons, user_list, reason):
+def accumulate_reasons(
+      addr_reasons: dict[str, list], addr_list: list[str], reason: str) -> None:
   """Add a reason string for each user."""
-  for user in user_list:
-    if type(user) == str:
-      addr_reasons[user].append(reason)
-    else:
-      addr_reasons[user.email].append(reason)
+  for email in addr_list:
+    addr_reasons[email].append(reason)
 
 
 def convert_reasons_to_task(
@@ -118,12 +118,13 @@ WEBVIEW_RULE_REASON = (
 WEBVIEW_RULE_ADDRS = ['webview-leads-external@google.com']
 
 
-def apply_subscription_rules(feature, changes):
+def apply_subscription_rules(
+    feature: Feature, changes: list) -> dict[str, list[str]]:
   """Return {"reason": [addrs]} for users who set up rules."""
   # Note: for now this is hard-coded, but it will eventually be
   # configurable through some kind of user preference.
   changed_field_names = {c['prop_name'] for c in changes}
-  results = {}
+  results: dict[str, list[str]] = {}
 
   # Check if feature has some other milestone set, but not webview.
   if (feature.shipped_android_milestone and
@@ -135,10 +136,15 @@ def apply_subscription_rules(feature, changes):
   return results
 
 
-def make_email_tasks(feature, is_update=False, changes=[]):
+def make_email_tasks(feature: Feature, is_update: bool=False,
+    changes: Optional[list]=None):
   """Return a list of task dicts to notify users of feature changes."""
-  feature_watchers = user_models.FeatureOwner.query(
-      user_models.FeatureOwner.watching_all_features == True).fetch(None)
+  if changes is None:
+    changes = []
+
+  watchers: list[FeatureOwner] = FeatureOwner.query(
+      FeatureOwner.watching_all_features == True).fetch(None)
+  watcher_emails: list[str] = [watcher.email for watcher in watchers]
 
   email_html = format_email_body(is_update, feature, changes)
   if is_update:
@@ -148,7 +154,7 @@ def make_email_tasks(feature, is_update=False, changes=[]):
     subject = 'new feature: %s' % feature.name
     triggering_user_email = feature.created_by.email()
 
-  addr_reasons = collections.defaultdict(list)  # [{email_addr: [reason,...]}]
+  addr_reasons: dict[str, list[str]] = collections.defaultdict(list)
 
   accumulate_reasons(
     addr_reasons, feature.owner,
@@ -163,26 +169,27 @@ def make_email_tasks(feature, is_update=False, changes=[]):
     'You are CC\'d on this feature'
   )
   accumulate_reasons(
-      addr_reasons, feature_watchers,
+      addr_reasons, watcher_emails,
       'You are watching all feature changes')
 
   # There will always be at least one component.
   for component_name in feature.blink_components:
-    component = user_models.BlinkComponent.get_by_name(component_name)
+    component = BlinkComponent.get_by_name(component_name)
     if not component:
       logging.warning('Blink component "%s" not found.'
                       'Not sending email to subscribers' % component_name)
       continue
-
+    owner_emails: list[str] = [owner.email for owner in component.owners]
+    subscriber_emails: list[str] = [sub.email for sub in component.subscribers]
     accumulate_reasons(
-        addr_reasons, component.owners,
+        addr_reasons, owner_emails,
         'You are an owner of this feature\'s component')
     accumulate_reasons(
-        addr_reasons, component.subscribers,
+        addr_reasons, subscriber_emails,
         'You subscribe to this feature\'s component')
-
   starrers = FeatureStar.get_feature_starrers(feature.key.integer_id())
-  accumulate_reasons(addr_reasons, starrers, 'You starred this feature')
+  starrer_emails: list[str] = [user.email for user in starrers]
+  accumulate_reasons(addr_reasons, starrer_emails, 'You starred this feature')
 
   rule_results = apply_subscription_rules(feature, changes)
   for reason, sub_addrs in rule_results.items():
@@ -223,7 +230,7 @@ class FeatureStar(ndb.Model):
       return  # No need to update anything in datastore
 
     # Load feature directly from NDB so as to never get a stale cached copy.
-    feature = core_models.Feature.get_by_id(feature_id)
+    feature = Feature.get_by_id(feature_id)
     feature.star_count += 1 if starred else -1
     if feature.star_count < 0:
       logging.error('count would be < 0: %r', (email, feature_id, starred))
@@ -243,16 +250,16 @@ class FeatureStar(ndb.Model):
     return sorted(feature_ids, reverse=True)
 
   @classmethod
-  def get_feature_starrers(self, feature_id):
+  def get_feature_starrers(self, feature_id: int) -> list[UserPref]:
     """Return list of UserPref objects for starrers that want notifications."""
     q = FeatureStar.query()
     q = q.filter(FeatureStar.feature_id == feature_id)
     q = q.filter(FeatureStar.starred == True)
-    feature_stars = q.fetch(None)
+    feature_stars: list[FeatureStar] = q.fetch(None)
     logging.info('found %d stars for %r', len(feature_stars), feature_id)
-    emails = [fs.email for fs in feature_stars]
+    emails: list[str] = [fs.email for fs in feature_stars]
     logging.info('looking up %r', repr(emails)[:settings.MAX_LOG_LINE])
-    user_prefs = user_models.UserPref.get_prefs_for_emails(emails)
+    user_prefs = UserPref.get_prefs_for_emails(emails)
     user_prefs = [up for up in user_prefs
                   if up.notify_as_starrer and not up.bounced]
     return user_prefs
@@ -287,7 +294,7 @@ class NotifyInactiveUsersHandler(basehandlers.FlaskHandler):
     if now is None:
       now = datetime.now()
 
-    q = user_models.AppUser.query()
+    q = AppUser.query()
     users = q.fetch()
     inactive_users = []
     inactive_cutoff = now - timedelta(days=self.INACTIVE_WARN_DAYS)
@@ -341,7 +348,7 @@ class FeatureChangeHandler(basehandlers.FlaskHandler):
     # Email feature subscribers if the feature exists and there were
     # actually changes to it.
     # Load feature directly from NDB so as to never get a stale cached copy.
-    feature = core_models.Feature.get_by_id(feature['id'])
+    feature = Feature.get_by_id(feature['id'])
     if feature and (is_update and len(changes) or not is_update):
       email_tasks = make_email_tasks(
           feature, is_update=is_update, changes=changes)

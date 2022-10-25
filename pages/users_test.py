@@ -18,7 +18,7 @@ import flask
 import html5lib
 import settings
 
-from google.cloud import ndb
+from google.cloud import ndb  # type: ignore
 from unittest import mock
 
 from internals import user_models

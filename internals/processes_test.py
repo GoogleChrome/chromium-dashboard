@@ -202,7 +202,7 @@ class ProgressDetectorsTest(testing_config.CustomTestCase):
     self.feature_1.i2e_lgtms = ['api_owner@chromium.org']
     self.assertTrue(detector(self.feature_1))
 
-  def test_one_i2e_lgtm(self):
+  def test_two_i2e_lgtm(self):
     detector = processes.PROGRESS_DETECTORS[
         'One LGTM on Request for Deprecation Trial']
     self.assertFalse(detector(self.feature_1))
