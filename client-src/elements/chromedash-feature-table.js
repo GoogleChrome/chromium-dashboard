@@ -377,14 +377,18 @@ class ChromedashFeatureTable extends LitElement {
     return html`
       <div class="pagination">
         <span>${firstShown} - ${lastShown} of ${this.totalCount}</span>
-        <sl-icon-button name="chevron-left" title="Previous page"
-         @click=${() => this.loadNewPaginationPage(-this.num)}
-         ?disabled=${!hasPrevPage}
-         ></sl-icon-button>
-        <sl-icon-button name="chevron-right" title="Next page"
-         @click=${() => this.loadNewPaginationPage(this.num)}
-         ?disabled=${!hasNextPage}
-         ></sl-icon-button>
+        <sl-icon-button
+          library="material" name="navigate_before"
+          title="Previous page"
+          @click=${() => this.loadNewPaginationPage(-this.num)}
+          ?disabled=${!hasPrevPage}
+          ></sl-icon-button>
+        <sl-icon-button
+          library="material" name="navigate_next"
+          title="Next page"
+          @click=${() => this.loadNewPaginationPage(this.num)}
+          ?disabled=${!hasNextPage}
+          ></sl-icon-button>
       </div>
     `;
   }
