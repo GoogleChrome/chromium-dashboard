@@ -162,6 +162,17 @@ class FunctionTest(testing_config.CustomTestCase):
         5144822362931200,
         detect_intent.detect_feature_id(body))
 
+  def test_detect_feature_id__alternative(self):
+    """We can parse the feature ID from another common link."""
+    body = (
+        'blah blah blah\n'
+        'Entry on the feature dashboard\n'
+        'https://www.chromestatus.com/feature/5144822362931200\n'
+        'blah blah blah')
+    self.assertEqual(
+        5144822362931200,
+        detect_intent.detect_feature_id(body))
+
   def test_detect_feature_id__alternative_edit(self):
     """We can parse the feature ID from another common link."""
     body = (
@@ -190,6 +201,50 @@ class FunctionTest(testing_config.CustomTestCase):
         'blah blah blah\n'
         'Entry on the feature dashboard: <http://www.chromestatus.com/>\n'
         'https://chromestatus.com/feature/5144822362931200\n'
+        'blah blah blah')
+    self.assertEqual(
+        5144822362931200,
+        detect_intent.detect_feature_id(body))
+
+  def test_detect_feature_id__ad_hoc_1(self):
+    """We can parse, even if the user made up their own variation."""
+    body = (
+        'blah blah blah\n'
+        'Chrome Platform Status page:\n'
+        'https://www.chromestatus.com/feature/5144822362931200\n'
+        'blah blah blah')
+    self.assertEqual(
+        5144822362931200,
+        detect_intent.detect_feature_id(body))
+
+  def test_detect_feature_id__ad_hoc_2(self):
+    """We can parse, even if the user made up their own variation."""
+    body = (
+        'blah blah blah\n'
+        'Chrome Status Entry:\n'
+        'https://www.chromestatus.com/feature/5144822362931200\n'
+        'blah blah blah')
+    self.assertEqual(
+        5144822362931200,
+        detect_intent.detect_feature_id(body))
+
+  def test_detect_feature_id__ad_hoc_3(self):
+    """We can parse, even if the user made up their own variation."""
+    body = (
+        'blah blah blah\n'
+        'ChromeStatus.com launch:\n'
+        'https://www.chromestatus.com/feature/5144822362931200\n'
+        'blah blah blah')
+    self.assertEqual(
+        5144822362931200,
+        detect_intent.detect_feature_id(body))
+
+  def test_detect_feature_id__ad_hoc_4(self):
+    """We can parse, even if the user made up their own variation."""
+    body = (
+        'blah blah blah\n'
+        'ChromeStatus detail page:\n'
+        'https://www.chromestatus.com/feature/5144822362931200\n'
         'blah blah blah')
     self.assertEqual(
         5144822362931200,

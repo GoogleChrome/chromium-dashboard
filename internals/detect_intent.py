@@ -76,7 +76,7 @@ def detect_field(subject):
 
 
 CHROMESTATUS_LINK_GENERATED_RE = re.compile(
-    r'entry on the Chrome Platform Status:?\s+'
+    r'Chrome( Platform)? ?Status(.com)?[ \w]*:?\s+'
     r'[> ]*https?://(www\.)?chromestatus\.com/'
     r'(feature|guide/edit)/(?P<id>\d+)', re.I)
 CHROMESTATUS_LINK_ALTERNATE_RE = re.compile(
