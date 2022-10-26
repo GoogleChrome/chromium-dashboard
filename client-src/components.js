@@ -51,6 +51,7 @@ import './elements/chromedash-feature-detail';
 import './elements/chromedash-feature-filter';
 import './elements/chromedash-feature-page';
 import './elements/chromedash-feature-table';
+import './elements/chromedash-feature-row';
 import './elements/chromedash-featurelist';
 import './elements/chromedash-footer';
 import './elements/chromedash-form-field';
