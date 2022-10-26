@@ -72,7 +72,7 @@ body {
   }
 }
 .column_header {
-  margin-bottom: $content-padding / 2;
+  margin-bottom: calc($content-padding / 2);
 }
 .owners_list {
   flex: 1 0 auto;
@@ -81,7 +81,7 @@ body {
   font-weight: 600;
 }
 .owners_list_add_remove {
-  margin-left: $content-padding / 2;
+  margin-left: calc($content-padding / 2);
   opacity: 0;
   transition: 200ms opacity cubic-bezier(0,0,0.2,1);
   pointer-events: none;

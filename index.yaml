@@ -331,6 +331,10 @@ indexes:
   - name: creator_email
   - name: updated
     direction: desc
+- kind: FeatureWords
+  properties:
+  - name: words
+  - name: feature_id
 - kind: Vote
   properties:
   - name: feature_id

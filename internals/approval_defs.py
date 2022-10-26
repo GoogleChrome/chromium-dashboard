@@ -131,12 +131,12 @@ def is_valid_field_id(field_id):
 
 
 def is_approved(approval_values, field_id):
-  """Return true if we have all needed APPROVED values and no NOT_APPROVED."""
+  """Return true if we have all needed APPROVED values and no DENIED."""
   count = 0
   for av in approval_values:
     if av.state in (Approval.APPROVED, Approval.NA):
       count += 1
-    elif av.state == Approval.NOT_APPROVED:
+    elif av.state == Approval.DENIED:
       return False
   afd = APPROVAL_FIELDS_BY_ID[field_id]
 
@@ -154,9 +154,9 @@ def is_resolved(approval_values, field_id):
   if is_approved(approval_values, field_id):
     return True
 
-  # Any NOT_APPROVED value means that the review is no longer pending.
+  # Any DENIED value means that the review is no longer pending.
   for av in approval_values:
-    if av.state == Approval.NOT_APPROVED:
+    if av.state == Approval.DENIED:
       return True
 
   return False
@@ -213,8 +213,8 @@ def _calc_gate_status(gate: Gate) -> int:
   for vote in votes:
     if vote.state in (Vote.APPROVED, Vote.NA):
       approvals += 1
-    elif vote.state == Vote.NOT_APPROVED:
-      return Vote.NOT_APPROVED
+    elif vote.state == Vote.DENIED:
+      return Vote.DENIED
   afd = APPROVAL_FIELDS_BY_ID[gate.gate_type]
 
   if ((afd.rule == ONE_LGTM and approvals >= 1) or

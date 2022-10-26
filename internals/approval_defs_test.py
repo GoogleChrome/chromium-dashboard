@@ -130,7 +130,7 @@ class IsApprovedTest(testing_config.CustomTestCase):
         set_by='one@example.com')
     self.appr_no = review_models.Approval(
         feature_id=feature_1_id, field_id=1,
-        state=review_models.Approval.NOT_APPROVED,
+        state=review_models.Approval.DENIED,
         set_on=datetime.datetime.now(),
         set_by='two@example.com')
     self.appr_yes = review_models.Approval(

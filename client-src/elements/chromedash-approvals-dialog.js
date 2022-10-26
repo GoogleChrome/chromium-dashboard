@@ -11,7 +11,7 @@ export const STATE_NAMES = [
   [3, 'Review started'],
   [4, 'Needs work'],
   [5, 'Approved'],
-  [6, 'Not approved'],
+  [6, 'Denied'],
 ];
 const PENDING_STATES = [2, 3, 4];
 

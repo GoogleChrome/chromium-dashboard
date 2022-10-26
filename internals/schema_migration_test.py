@@ -95,7 +95,7 @@ class MigrateEntitiesTest(testing_config.CustomTestCase):
       'security_risks', 'security_review_status', 'privacy_review_status',
       'ergonomics_risks', 'wpt', 'wpt_descr', 'webview_risks',
       'debuggability', 'doc_links', 'sample_links', 'experiment_timeline']
-  
+
   # (Feature field, FeatureEntry field)
   RENAMED_FIELDS = [('creator', 'creator_email'),
     ('owner', 'owner_emails'),
@@ -262,7 +262,7 @@ class MigrateEntitiesTest(testing_config.CustomTestCase):
     self.feature_5.put()
 
     # Create a "random" number of Approval entities.
-    appr_states = [Approval.NA, Approval.NOT_APPROVED, Approval.APPROVED]
+    appr_states = [Approval.NA, Approval.DENIED, Approval.APPROVED]
     for i in range(20):
       id = i % 5 + 1
       gate_type = i % 4 + 1
