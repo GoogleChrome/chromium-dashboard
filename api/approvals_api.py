@@ -61,10 +61,10 @@ class ApprovalsAPI(basehandlers.APIHandler):
   def do_get(self, **kwargs):
     """Return a list of all vote values for a given feature."""
     feature_id = kwargs['feature_id']
-
+    gate_id = kwargs.get('gate_id', None)
     # Note: We assume that anyone may view approvals.
     type_memo: dict[int, int] = {}
-    votes = Vote.get_votes(feature_id=feature_id)
+    votes = Vote.get_votes(feature_id=feature_id, gate_id=gate_id)
     dicts = [vote_value_to_json_dict(v, type_memo) for v in votes]
     return {'approvals': dicts}
 
