@@ -19,6 +19,7 @@ import flask
 
 import settings
 from framework.users import User
+from internals import feature_helpers
 from internals.core_models import Feature
 from internals.user_models import AppUser
 
@@ -83,7 +84,7 @@ def feature_edit_list(user: User) -> list[Feature]:
     return []
 
   # Query features to find which can be edited.
-  features_editable = Feature.get_all(
+  features_editable = feature_helpers.get_all(
     filterby=('can_edit', user.email()))
   # Return a list of unique ids of features that can be edited.
   return list(set([f['id'] for f in features_editable]))

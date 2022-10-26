@@ -16,6 +16,7 @@
 import datetime
 import logging
 import re
+from typing import Any
 
 from framework import basehandlers
 from framework import permissions
@@ -53,6 +54,8 @@ class ApprovalsAPI(basehandlers.APIHandler):
   def do_post(self, **kwargs):
     """Set an approval value for the specified feature."""
     feature_id = kwargs.get('feature_id', None)
+    if not feature_id:
+      self.get_int_param('featureId')
     field_id = self.get_int_param('fieldId')
     new_state = self.get_int_param(
         'state', validator=review_models.Approval.is_valid_state)

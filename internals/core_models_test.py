@@ -14,11 +14,9 @@
 
 import testing_config  # Must be imported before the module under test.
 
-import datetime
-from unittest import mock
+from api import converters
 from framework import rediscache
-from framework import users
-
+from internals import feature_helpers
 from internals import core_enums
 from internals import core_models
 
@@ -38,12 +36,12 @@ class ModelsFunctionsTest(testing_config.CustomTestCase):
     d = {}
     self.assertEqual(
         {},
-        core_models.del_none(d))
+        converters.del_none(d))
 
     d = {1: 'one', 2: None, 3: {33: None}, 4:{44: 44, 45: None}}
     self.assertEqual(
         {1: 'one', 3: {}, 4: {44: 44}},
-        core_models.del_none(d))
+        converters.del_none(d))
 
 
 class FeatureTest(testing_config.CustomTestCase):
@@ -78,7 +76,7 @@ class FeatureTest(testing_config.CustomTestCase):
 
   def test_get_all__normal(self):
     """We can retrieve a list of all features with no filter."""
-    actual = core_models.Feature.get_all(update_cache=True)
+    actual = feature_helpers.get_all(update_cache=True)
     names = [f['name'] for f in actual]
     self.assertEqual(
         ['feature c', 'feature d', 'feature a', 'feature b'],
@@ -86,7 +84,7 @@ class FeatureTest(testing_config.CustomTestCase):
 
     self.feature_1.summary = 'revised summary'
     self.feature_1.put()  # Changes updated field.
-    actual = core_models.Feature.get_all(update_cache=True)
+    actual = feature_helpers.get_all(update_cache=True)
     names = [f['name'] for f in actual]
     self.assertEqual(
         ['feature a', 'feature c', 'feature d', 'feature b'],
@@ -94,7 +92,7 @@ class FeatureTest(testing_config.CustomTestCase):
 
   def test_get_all__category(self):
     """We can retrieve a list of all features of a given category."""
-    actual = core_models.Feature.get_all(
+    actual = feature_helpers.get_all(
         filterby=('category', core_enums.CSS), update_cache=True)
     names = [f['name'] for f in actual]
     self.assertEqual(
@@ -103,7 +101,7 @@ class FeatureTest(testing_config.CustomTestCase):
 
     self.feature_1.category = core_enums.CSS
     self.feature_1.put()  # Changes updated field.
-    actual = core_models.Feature.get_all(
+    actual = feature_helpers.get_all(
         filterby=('category', core_enums.CSS), update_cache=True)
     names = [f['name'] for f in actual]
     self.assertEqual(
@@ -112,7 +110,7 @@ class FeatureTest(testing_config.CustomTestCase):
 
   def test_get_all__owner(self):
     """We can retrieve a list of all features with a given owner."""
-    actual = core_models.Feature.get_all(
+    actual = feature_helpers.get_all(
         filterby=('owner', 'owner@example.com'), update_cache=True)
     names = [f['name'] for f in actual]
     self.assertEqual(
@@ -121,7 +119,7 @@ class FeatureTest(testing_config.CustomTestCase):
 
     self.feature_1.owner = ['owner@example.com']
     self.feature_1.put()  # Changes updated field.
-    actual = core_models.Feature.get_all(
+    actual = feature_helpers.get_all(
         filterby=('owner', 'owner@example.com'), update_cache=True)
     names = [f['name'] for f in actual]
     self.assertEqual(
@@ -134,7 +132,7 @@ class FeatureTest(testing_config.CustomTestCase):
     self.feature_2.owner = ['feature_owner@example.com']
     self.feature_2.put()
     testing_config.sign_in('feature_owner@example.com', 1234567890)
-    actual = core_models.Feature.get_all(update_cache=True)
+    actual = feature_helpers.get_all(update_cache=True)
     names = [f['name'] for f in actual]
     testing_config.sign_out()
     self.assertEqual(
@@ -146,7 +144,7 @@ class FeatureTest(testing_config.CustomTestCase):
     self.feature_2.editors = ['feature_editor@example.com']
     self.feature_2.put()
     testing_config.sign_in("feature_editor@example.com", 1234567890)
-    actual = core_models.Feature.get_all(update_cache=True)
+    actual = feature_helpers.get_all(update_cache=True)
     names = [f['name'] for f in actual]
     testing_config.sign_out()
     self.assertEqual(
@@ -154,12 +152,12 @@ class FeatureTest(testing_config.CustomTestCase):
 
   def test_get_by_ids__empty(self):
     """A request to load zero features returns zero results."""
-    actual = core_models.Feature.get_by_ids([])
+    actual = feature_helpers.get_by_ids([])
     self.assertEqual([], actual)
 
   def test_get_by_ids__cache_miss(self):
     """We can load features from datastore, and cache them for later."""
-    actual = core_models.Feature.get_by_ids([
+    actual = feature_helpers.get_by_ids([
         self.feature_1.key.integer_id(),
         self.feature_2.key.integer_id()])
 
@@ -185,14 +183,14 @@ class FeatureTest(testing_config.CustomTestCase):
     }
     rediscache.set(cache_key, cached_feature)
 
-    actual = core_models.Feature.get_by_ids([self.feature_1.key.integer_id()])
+    actual = feature_helpers.get_by_ids([self.feature_1.key.integer_id()])
 
     self.assertEqual(1, len(actual))
     self.assertEqual(cached_feature, actual[0])
 
   def test_get_by_ids__batch_order(self):
     """Features are returned in the order of the given IDs."""
-    actual = core_models.Feature.get_by_ids([
+    actual = feature_helpers.get_by_ids([
         self.feature_4.key.integer_id(),
         self.feature_1.key.integer_id(),
         self.feature_3.key.integer_id(),
@@ -208,12 +206,12 @@ class FeatureTest(testing_config.CustomTestCase):
   def test_get_by_ids__cached_correctly(self):
     """We should no longer be able to trigger bug #1647."""
     # Cache one to try to trigger the bug.
-    core_models.Feature.get_by_ids([
+    feature_helpers.get_by_ids([
         self.feature_2.key.integer_id(),
         ])
 
     # Now do the lookup, but it would cache feature_2 at the key for feature_3.
-    core_models.Feature.get_by_ids([
+    feature_helpers.get_by_ids([
         self.feature_4.key.integer_id(),
         self.feature_1.key.integer_id(),
         self.feature_3.key.integer_id(),
@@ -221,7 +219,7 @@ class FeatureTest(testing_config.CustomTestCase):
     ])
 
     # This would read the incorrect cache entry and use it.
-    actual = core_models.Feature.get_by_ids([
+    actual = feature_helpers.get_by_ids([
         self.feature_4.key.integer_id(),
         self.feature_1.key.integer_id(),
         self.feature_3.key.integer_id(),
@@ -236,7 +234,7 @@ class FeatureTest(testing_config.CustomTestCase):
 
   def test_get_chronological__normal(self):
     """We can retrieve a list of features."""
-    actual = core_models.Feature.get_chronological()
+    actual = feature_helpers.get_chronological()
     names = [f['name'] for f in actual]
     self.assertEqual(
         ['feature c', 'feature d', 'feature a', 'feature b'],
@@ -250,7 +248,7 @@ class FeatureTest(testing_config.CustomTestCase):
     """Unlisted features are not included in the list."""
     self.feature_2.unlisted = True
     self.feature_2.put()
-    actual = core_models.Feature.get_chronological()
+    actual = feature_helpers.get_chronological()
     names = [f['name'] for f in actual]
     self.assertEqual(
         ['feature c', 'feature d', 'feature a'],
@@ -260,7 +258,7 @@ class FeatureTest(testing_config.CustomTestCase):
     """Unlisted features are included for users with edit access."""
     self.feature_2.unlisted = True
     self.feature_2.put()
-    actual = core_models.Feature.get_chronological(show_unlisted=True)
+    actual = feature_helpers.get_chronological(show_unlisted=True)
     names = [f['name'] for f in actual]
     self.assertEqual(
         ['feature c', 'feature d', 'feature a', 'feature b'],
@@ -284,7 +282,7 @@ class FeatureTest(testing_config.CustomTestCase):
     self.feature_4.shipped_milestone = 2
     self.feature_4.put()
 
-    actual = core_models.Feature.get_in_milestone(milestone=1)
+    actual = feature_helpers.get_in_milestone(milestone=1)
     removed = [f['name'] for f in actual['Removed']]
     enabled_by_default = [f['name'] for f in actual['Enabled by default']]
     self.assertEqual(
@@ -320,7 +318,7 @@ class FeatureTest(testing_config.CustomTestCase):
     self.feature_4.shipped_milestone = 2
     self.feature_4.put()
 
-    actual = core_models.Feature.get_in_milestone(milestone=1)
+    actual = feature_helpers.get_in_milestone(milestone=1)
     self.assertEqual(
         0,
         len(actual['Removed']))
@@ -344,7 +342,7 @@ class FeatureTest(testing_config.CustomTestCase):
     self.feature_4.shipped_milestone = 2
     self.feature_4.put()
 
-    actual = core_models.Feature.get_in_milestone(
+    actual = feature_helpers.get_in_milestone(
         milestone=1, show_unlisted=True)
     self.assertEqual(
         1,
@@ -357,7 +355,7 @@ class FeatureTest(testing_config.CustomTestCase):
     cached_test_feature = {'test': [{'name': 'test_feature', 'unlisted': False}]}
     rediscache.set(cache_key, cached_test_feature)
 
-    actual = core_models.Feature.get_in_milestone(milestone=1)
+    actual = feature_helpers.get_in_milestone(milestone=1)
     self.assertEqual(
         cached_test_feature,
         actual)

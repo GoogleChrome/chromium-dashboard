@@ -24,6 +24,7 @@ from framework import users
 from framework import utils
 from internals import approval_defs
 from internals import core_models
+from internals import feature_helpers
 from internals import notifier
 from internals import review_models
 from internals import search_queries
@@ -74,7 +75,7 @@ def process_access_me_query(field) -> list[int]:
   if not user:
     return []
   # Checks if the user's email exists in the given field.
-  features = core_models.Feature.get_all(filterby=(field, user.email()))
+  features = feature_helpers.get_all(filterby=(field, user.email()))
   feature_ids = [f['id'] for f in features]
   return feature_ids
 
@@ -252,7 +253,7 @@ def process_query(
   paginated_id_list = sorted_id_list[start : start + num]
 
   # 6. Fetch the actual issues that have those IDs in the sorted results.
-  features_on_page = core_models.Feature.get_by_ids(paginated_id_list)
+  features_on_page = feature_helpers.get_by_ids(paginated_id_list)
 
   logging.info('features_on_page is %r', features_on_page)
   return features_on_page, total_count
