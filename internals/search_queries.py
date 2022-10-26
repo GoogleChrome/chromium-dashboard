@@ -24,7 +24,7 @@ def single_field_query_async(
   """Create a query for one Feature field and run it, returning a promise."""
   field = QUERIABLE_FIELDS.get(field_name.lower())
   if field is None:
-    logging.info('Ignoring field name %r', field_name)
+    logging.warning('Ignoring field name %r', field_name)
     return []
   # TODO(jrobbins): support sorting by any fields of other model classes.
   query = core_models.Feature.query()

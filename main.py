@@ -37,6 +37,7 @@ from internals import fetchmetrics
 from internals import notifier
 from internals import data_backup
 from internals import inactive_users
+from internals import search_fulltext
 from internals import schema_migration
 from internals import deprecate_field
 from internals import reminders
@@ -202,9 +203,11 @@ internals_routes: list[tuple] = [
   ('/cron/schema_migration_approval_vote', schema_migration.MigrateApprovalsToVotes),
   ('/cron/schema_migration_gate_status', schema_migration.EvaluateGateStatus),
   ('/cron/write_standard_maturity', deprecate_field.WriteStandardMaturityHandler),
+  ('/cron/reindex_all', search_fulltext.ReindexAllFeatures),
+
+  ('/admin/find_stop_words', search_fulltext.FindStopWords),
 
   ('/tasks/email-subscribers', notifier.FeatureChangeHandler),
-
   ('/tasks/detect-intent', detect_intent.IntentEmailHandler),
 ]
 

@@ -87,7 +87,8 @@ class SearchFeaturesTest(testing_config.CustomTestCase):
     actual = actual_promise.get_result()
     self.assertCountEqual([], actual)
 
-  def test_single_field_query_async__bad_field(self):
+  @mock.patch('logging.warning')
+  def test_single_field_query_async__bad_field(self, mock_warn):
     """An unknown field imediately gives zero results."""
     actual = search_queries.single_field_query_async('zodiac', '=', 'leo')
     self.assertCountEqual([], actual)
