@@ -31,7 +31,7 @@ class Approval(ndb.Model):
   REVIEW_STARTED = 3
   NEEDS_WORK = 4
   APPROVED = 5
-  NOT_APPROVED = 6
+  DENIED = 6
   APPROVAL_VALUES = {
       # Not used: NEEDS_REVIEW: 'needs_review',
       NA: 'na',
@@ -39,10 +39,10 @@ class Approval(ndb.Model):
       REVIEW_STARTED: 'review_started',
       NEEDS_WORK: 'needs_work',
       APPROVED: 'approved',
-      NOT_APPROVED: 'not_approved',
+      DENIED: 'denied',
   }
 
-  FINAL_STATES = [NA, APPROVED, NOT_APPROVED]
+  FINAL_STATES = [NA, APPROVED, DENIED]
 
   feature_id = ndb.IntegerProperty(required=True)
   field_id = ndb.IntegerProperty(required=True)
@@ -105,7 +105,7 @@ class Approval(ndb.Model):
         feature_id=feature_id, field_id=field_id, states=[cls.REVIEW_REQUESTED])
     for rr in review_requests:
       rr.key.delete()
-    
+
     # Delete associated Vote entities as well.
     requested_votes = Vote.get_votes(feature_id=feature_id,
         gate_id=field_id, states=[Vote.REVIEW_REQUESTED])
@@ -227,7 +227,7 @@ class Gate(ndb.Model):  # copy from ApprovalConfig
 
   def is_resolved(self) -> bool:
     """Return if the Gate's outcome has been decided."""
-    return self.state == Vote.APPROVED or self.state == Vote.NOT_APPROVED
+    return self.state == Vote.APPROVED or self.state == Vote.DENIED
 
   def is_approved(self) -> bool:
     """Return if the Gate approval requirements have been met."""
@@ -244,7 +244,7 @@ class Vote(ndb.Model):  # copy from Approval
   REVIEW_STARTED = 3
   NEEDS_WORK = 4
   APPROVED = 5
-  NOT_APPROVED = 6
+  DENIED = 6
   VOTE_VALUES = {
       # Not used: NEEDS_REVIEW: 'needs_review',
       NA: 'na',
@@ -252,10 +252,10 @@ class Vote(ndb.Model):  # copy from Approval
       REVIEW_STARTED: 'review_started',
       NEEDS_WORK: 'needs_work',
       APPROVED: 'approved',
-      NOT_APPROVED: 'not_approved',
+      DENIED: 'denied',
   }
 
-  FINAL_STATES = [NA, APPROVED, NOT_APPROVED]
+  FINAL_STATES = [NA, APPROVED, DENIED]
 
   feature_id = ndb.IntegerProperty(required=True)
   gate_id = ndb.IntegerProperty(required=True)
