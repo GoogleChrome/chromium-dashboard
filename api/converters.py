@@ -14,30 +14,13 @@
 # limitations under the License.
 
 import datetime
-from typing import Any, Optional
+from typing import Any
 from google.cloud import ndb  # type: ignore
 
 from internals.core_enums import *
-from internals import review_models
-from internals.core_models import Feature, FeatureEntry, Stage
+from internals.core_models import Feature
 
 SIMPLE_TYPES = (int, float, bool, dict, str, list)
-
-def date_to_str(val: Optional[Any]) -> Optional[str]:
-  if val is None:
-    return None
-  return str(val)
-
-def val_to_list(val: Optional[list]) -> Optional[list]:
-  return val if val is not None else []
-
-def val_or_none(
-    stage: Optional[Stage], field: str, is_mstone: bool=False) -> Optional[Any]:
-  if stage is None:
-    return None
-  if is_mstone:
-    return getattr(stage.milestones, field)
-  return getattr(stage, field)
 
 def to_dict(entity: ndb.Model) -> dict[str, Any]:
   output = {}
