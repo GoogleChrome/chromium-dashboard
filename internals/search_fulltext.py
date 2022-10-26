@@ -29,11 +29,10 @@ WORD_RE = re.compile(r'\w\w\w+')
 
 # We ignore stop words because they return too many results to be useful.
 STOP_WORDS = frozenset((
-    'the and has was but was will are were with can this that have than then '
-    'for not now some '
-    'new add adds '
-    'http https www monorail com net org web bug bugs blink '
-    'gmail google chromium chrome github ').split())
+    'the and has have was will are were with but can this that than then '
+    'for not now '
+    'http https www com net org web bugs blink '
+    'gmail google chromium github ').split())
 
 
 class FeatureWords(ndb.Model):
