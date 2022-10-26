@@ -26,7 +26,6 @@ from internals.user_models import AppUser
 def can_admin_site(user: User) -> bool:
   """Return True if the current user is allowed to administer the site."""
   # A user is an admin if they have an AppUser entity that has is_admin set.
-  return True
   if user:
     app_user = AppUser.get_app_user(user.email())
     if app_user is not None:
