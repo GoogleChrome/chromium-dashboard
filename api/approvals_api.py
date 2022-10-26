@@ -24,15 +24,6 @@ from internals import approval_defs
 from internals.review_models import Approval, ApprovalConfig, Gate, Vote
 
 
-def approval_value_to_json_dict(appr: Approval) -> dict[str, Any]:
-  return {
-      'feature_id': appr.feature_id,
-      'field_id': appr.field_id,
-      'state': appr.state,
-      'set_on': str(appr.set_on),  # YYYY-MM-DD HH:MM:SS.SSS
-      'set_by': appr.set_by,
-      }
-
 def vote_value_to_json_dict(
     vote: Vote, type_memo: Optional[dict[int, int]]=None) -> dict[str, Any]:
   # A memo is kept of gate types for each gate ID
