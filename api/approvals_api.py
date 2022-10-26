@@ -49,7 +49,7 @@ class ApprovalsAPI(basehandlers.APIHandler):
   """Users may see the set of approvals on a feature, and add their own,
   if allowed."""
 
-  def do_get(self, **kwargs):
+  def do_get(self, **kwargs) -> dict[str, list[dict[str, Any]]]:
     """Return a list of all vote values for a given feature."""
     feature_id = kwargs['feature_id']
     gate_id = kwargs.get('gate_id', None)
@@ -59,7 +59,7 @@ class ApprovalsAPI(basehandlers.APIHandler):
     dicts = [vote_value_to_json_dict(v, type_memo) for v in votes]
     return {'approvals': dicts}
 
-  def do_post(self, **kwargs):
+  def do_post(self, **kwargs) -> dict[str, str]:
     """Set an approval value for the specified feature."""
     ## Handle writing old Approval entity. ##
     feature_id = kwargs.get('feature_id', None)
