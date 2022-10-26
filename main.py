@@ -198,10 +198,6 @@ internals_routes: list[tuple] = [
   ('/cron/send_prepublication', reminders.PrepublicationHandler),
   ('/cron/warn_inactive_users', notifier.NotifyInactiveUsersHandler),
   ('/cron/remove_inactive_users', inactive_users.RemoveInactiveUsersHandler),
-  ('/cron/schema_migration_comment_activity', schema_migration.MigrateCommentsToActivities),
-  ('/cron/schema_migration_entities', schema_migration.MigrateEntities),
-  ('/cron/schema_migration_approval_vote', schema_migration.MigrateApprovalsToVotes),
-  ('/cron/schema_migration_gate_status', schema_migration.EvaluateGateStatus),
   ('/cron/write_standard_maturity', deprecate_field.WriteStandardMaturityHandler),
   ('/cron/reindex_all', search_fulltext.ReindexAllFeatures),
 
@@ -209,6 +205,12 @@ internals_routes: list[tuple] = [
 
   ('/tasks/email-subscribers', notifier.FeatureChangeHandler),
   ('/tasks/detect-intent', detect_intent.IntentEmailHandler),
+
+  ('/admin/schema_migration_delete_entities', schema_migration.DeleteNewEntities),
+  ('/admin/schema_migration_comment_activity', schema_migration.MigrateCommentsToActivities),
+  ('/admin/schema_migration_write_entities', schema_migration.MigrateEntities),
+  ('/admin/schema_migration_approval_vote', schema_migration.MigrateApprovalsToVotes),
+  ('/admin/schema_migration_gate_status', schema_migration.EvaluateGateStatus)
 ]
 
 

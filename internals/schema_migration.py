@@ -408,3 +408,19 @@ class EvaluateGateStatus(FlaskHandler):
       count += 1
     
     return f'{count} Gate entities reevaluated.'
+
+
+class DeleteNewEntities(FlaskHandler):
+
+  def get_template_data(self, **kwargs) -> str:
+    """Deletes every entity for each kind in the new schema."""
+    self.require_cron_header()
+
+    kinds: list[ndb.Model] = [FeatureEntry, Gate, Stage, Vote]
+    count = 0
+    for kind in kinds:
+      for entity in kind.query():
+        entity.key.delete()
+        count += 1
+    
+    return f'{count} entities deleted.'
