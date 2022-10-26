@@ -27,3 +27,8 @@ export function slotAssignedElements(component, slotName) {
   const slotSelector = slotName ? `slot[name=${slotName}]` : 'slot';
   return component.shadowRoot.querySelector(slotSelector).assignedElements({flatten: true});
 }
+
+/* Return val, or one of the bounds if val is out of the bounds. */
+export function clamp(val, lowerBound, upperBound) {
+  return Math.max(lowerBound, Math.min(upperBound, val));
+}

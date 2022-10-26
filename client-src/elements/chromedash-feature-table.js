@@ -1,7 +1,7 @@
 import {LitElement, css, html, nothing} from 'lit';
-import {STATE_NAMES} from './chromedash-approvals-dialog.js';
-import {showToastMessage} from './utils.js';
+import {showToastMessage, clamp} from './utils.js';
 import './chromedash-feature-filter';
+import './chromedash-feature-row';
 import {SHARED_STYLES} from '../sass/shared-css.js';
 
 
@@ -12,9 +12,11 @@ class ChromedashFeatureTable extends LitElement {
       sortSpec: {type: String},
       showQuery: {type: Boolean},
       features: {type: Array},
-      total_count: {type: Number},
+      totalCount: {type: Number},
       loading: {type: Boolean},
-      rows: {type: Number},
+      start: {type: Number},
+      num: {type: Number},
+      alwaysOfferPagination: {type: Boolean},
       columns: {type: String},
       signedIn: {type: Boolean},
       canEdit: {type: Boolean},
@@ -22,7 +24,6 @@ class ChromedashFeatureTable extends LitElement {
       starredFeatures: {type: Object},
       noResultsMessage: {type: String},
       approvals: {type: Object},
-      comments: {type: Object},
       configs: {type: Object},
     };
   }
@@ -35,11 +36,14 @@ class ChromedashFeatureTable extends LitElement {
     this.loading = true;
     this.starredFeatures = new Set();
     this.features = [];
+    this.totalCount = 0;
+    this.start = 0;
+    this.num = 100;
+    this.alwaysOfferPagination = false;
     this.noResultsMessage = 'No results';
     this.canEdit = false;
     this.canApprove = false;
     this.approvals = {};
-    this.comments = {};
     this.configs = {};
   }
 
@@ -49,9 +53,11 @@ class ChromedashFeatureTable extends LitElement {
   }
 
   fetchFeatures() {
-    window.csClient.searchFeatures(this.query, this.sortSpec).then((resp) => {
+    this.loading = true;
+    window.csClient.searchFeatures(
+      this.query, this.sortSpec, this.start, this.num).then((resp) => {
       this.features = resp.features;
-      this.total_count = resp.total_count;
+      this.totalCount = resp.total_count;
       this.loading = false;
       if (this.columns == 'approvals') {
         this.loadApprovalData();
@@ -67,11 +73,6 @@ class ChromedashFeatureTable extends LitElement {
         const newApprovals = {...this.approvals};
         newApprovals[feature.id] = res.approvals;
         this.approvals = newApprovals;
-      });
-      window.csClient.getComments(feature.id).then(res => {
-        const newComments = {...this.comments};
-        newComments[feature.id] = res.comments;
-        this.comments = newComments;
       });
       window.csClient.getApprovalConfigs(feature.id).then(res => {
         const newConfigs = {...this.configs};
@@ -100,78 +101,19 @@ class ChromedashFeatureTable extends LitElement {
     return [
       ...SHARED_STYLES,
       css`
+      .pagination {
+        padding: var(--content-padding-half) 0;
+        text-align: right;
+        min-height: 50px;
+      }
+      .pagination span {
+        color: var(--unimportant-text-color);
+        margin-right: var(--content-padding);
+      }
       table {
         width: 100%;
       }
-      tr {
-        background: var(--table-row-background);
-      }
-      td {
-        padding: var(--content-padding-half);
-        border-bottom: var(--table-divider);
-      }
-      td.name_col {
-        width: 100%;
-      }
-      td.icon_col {
-        white-space: nowrap;
-        vertical-align: top;
-      }
-      td.icon_col a {
-        padding: 2px 4px;
-      }
-      td.icon_col a:hover {
-        text-decoration: none;
-      }
-      .quick_actions {
-        white-space: nowrap;
-        float: right;
-      }
-      .highlights {
-        padding-left: var(--content-padding);
-      }
-      .highlights div {
-        color: var(--unimportant-text-color);
-        padding: var(--content-padding-quarter);
-      }
-      iron-icon {
-        --iron-icon-height: 18px;
-        --iron-icon-width: 18px;
-        color: var(--link-color);
-      }
-      iron-icon:hover {
-        color: var(--link-hover-color);
-      }
-      button {
-        border: var(--default-border);
-        padding: 0 6px;
-        font-size: var(--button-small-font-size);
-      }
     `];
-  }
-
-  _fireEvent(eventName, detail) {
-    const event = new CustomEvent(eventName, {
-      bubbles: true,
-      composed: true,
-      detail,
-    });
-    this.dispatchEvent(event);
-  }
-
-  toggleStar(e) {
-    e.preventDefault();
-    e.stopPropagation();
-
-    const iconEl = e.target;
-    const featureId = Number(iconEl.dataset.featureId);
-    const newStarred = !this.starredFeatures.has(featureId);
-
-    // handled in chromedash-myfeatures-page.js
-    this._fireEvent('star-toggle-event', {
-      featureId: featureId,
-      doStar: newStarred,
-    });
   }
 
   renderMessages() {
@@ -188,145 +130,6 @@ class ChromedashFeatureTable extends LitElement {
     return false; // Causes features to render instead.
   }
 
-  openApprovalsDialog(feature) {
-    // handled in chromedash-myfeatures-page.js
-    this._fireEvent('open-approvals-event', {
-      feature: feature,
-    });
-  }
-
-  doLGTM(feature) {
-    // TODO(jrobbins): Make it pre-select Approved and add comment.
-    this.openApprovalsDialog(feature);
-  }
-
-  doSnooze(feature) {
-    // TODO(jrobbins): Make it pre-set a new next-review-date value.
-    this.openApprovalsDialog(feature);
-  }
-
-  renderApprovalsIcon(feature) {
-    return html`
-      <a class="tooltip"
-        @click="${() => this.openApprovalsDialog(feature)}"
-        title="Review approvals">
-        <iron-icon icon="chromestatus:approval"></iron-icon>
-      </a>
-    `;
-  }
-
-  renderEditIcon(feature) {
-    return html`
-      <a href="/guide/edit/${feature.id}" class="tooltip"
-        title="Edit feature">
-        <iron-icon icon="chromestatus:create"></iron-icon>
-      </a>
-    `;
-  }
-
-  renderStarIcon(feature) {
-    return html`
-      <a href="#" class="tooltip" data-tooltip @click=${this.toggleStar}
-        title="Receive an email notification when there are updates">
-        <iron-icon
-          icon="${this.starredFeatures.has(Number(feature.id)) ?
-          'chromestatus:star' :
-          'chromestatus:star-border'}"
-          class="pushicon"
-          data-feature-id="${feature.id}">
-        </iron-icon>
-      </a>
-    `;
-  }
-
-  renderIcons(feature) {
-    if (this.signedIn) {
-      return html`
-        ${this.canApprove ? this.renderApprovalsIcon(feature) : nothing}
-        ${this.canEdit ? this.renderEditIcon(feature) : nothing}
-        ${this.renderStarIcon(feature)}
-      `;
-    } else {
-      return nothing;
-    }
-  }
-
-  renderQuickActions(feature) {
-    if (this.columns == 'approvals') {
-      // TODO(jrobbins): Show only thread link for active intent.
-      // Blocked on merge of PR that adds fetching that info.
-      // Work around unused function parameter lint error.
-      const threadLinks = feature ? [] : [];
-
-      // TODO(jrobbins): Show these buttons when they work.
-      // let lgtmButton = html`
-      //  <button data-feature-id="${feature.id}"
-      //          @click="${() => this.doLGTM(feature)}">
-      //    Add LGTM
-      //  </button>
-      // `;
-      // let snoozeButton = html`
-      //  <button data-feature-id="${feature.id}"
-      //          @click="${() => this.doSnooze(feature)}">
-      //    Snooze
-      //  </button>
-      // `;
-
-      return html`
-        <span class="quick_actions">
-          ${threadLinks}
-        </span>
-      `;
-    }
-    return nothing;
-  }
-
-  getEarliestReviewDate(feature) {
-    const featureConfigs = this.configs[feature.id] || [];
-    const allDates = featureConfigs.map(c => c.next_action).filter(d => d);
-    if (allDates.length > 0) {
-      allDates.sort();
-      return allDates[0];
-    }
-    return null;
-  }
-
-  getActiveOwners(feature) {
-    const featureConfigs = this.configs[feature.id] || [];
-    const allOwners = featureConfigs.map(c => c.owners).flat();
-    // TODO(jrobbins): Limit to only owners of active intents
-    let activeOwners = allOwners;
-    activeOwners = [...new Set(activeOwners)]; // de-dup.
-    activeOwners.sort();
-    return activeOwners;
-  }
-
-  getActiveApprovals(feature) {
-    const featureApprovals = this.approvals[feature.id];
-    // TODO(jrobbins): Limit to only owners of active intents
-    const activeApprovals = featureApprovals;
-    return activeApprovals;
-  }
-
-  getRecentComment(feature) {
-    // TODO(jrobbins): implement this.
-    return feature ? null : null;
-  }
-
-  renderApprovalsSoFar(approvals) {
-    const result = [];
-    for (const stateItem of STATE_NAMES) {
-      const state = stateItem[0];
-      const stateName = stateItem[1];
-      const approvalsWithThatState = approvals.filter(a => a.state == state);
-      const setters = approvalsWithThatState.map(a => a.set_by.split('@')[0]);
-      if (setters.length > 0) {
-        result.push(html`<span>${stateName}: ${setters.join(', ')}. </span>`);
-      }
-    }
-    return result;
-  }
-
   renderSearch() {
     if (this.showQuery) {
       return html`
@@ -338,65 +141,70 @@ class ChromedashFeatureTable extends LitElement {
     return nothing;
   }
 
-  renderHighlights(feature) {
-    if (this.columns == 'approvals') {
-      const nextReviewDate = this.getEarliestReviewDate(feature);
-      const owners = this.getActiveOwners(feature);
-      const activeApprovals = this.getActiveApprovals(feature);
-      const recentComment = this.getRecentComment(feature);
-      // TODO(jrobbins): show additional_review.
+  loadNewPaginationPage(delta) {
+    const proposedStart = this.start + delta;
+    this.start = clamp(proposedStart, 0, this.totalCount - 1);
+    this.fetchFeatures();
+  }
 
-      return html`
-        <div class="highlights">
-          ${nextReviewDate ? html`
-            <div>
-              Next review date: ${nextReviewDate}
-            </div>
-            ` : nothing}
-          ${owners.length == 1 ? html`
-            <div>
-              Owner: ${owners[0]}
-            </div>
-            ` : nothing}
-          ${owners.length > 1 ? html`
-            <div>
-              Owners: ${owners.join(', ')}
-            </div>
-            ` : nothing}
-          ${activeApprovals && activeApprovals.length > 0 ? html`
-            <div>
-              ${this.renderApprovalsSoFar(activeApprovals)}
-            </div>
-            ` : nothing}
-          ${recentComment ? html`
-            <div>
-              Comment: ${recentComment.content}
-            </div>
-            ` : nothing}
-        </div>
-      `;
+  renderPagination() {
+    // Indexes of first and last items shown in one-based counting.
+    const firstShown = this.start + 1;
+    const lastShown = this.start + this.features.length;
+
+    const hasPrevPage = firstShown > 1;
+    const hasNextPage = lastShown < this.totalCount;
+
+    if (this.alwaysOfferPagination) {
+      if (this.loading) { // reserve vertical space to use when loaded.
+        return html`<div class="pagination"></div>`;
+      }
+    } else {
+      // On MyFeatures page, don't always show pagination.  Omit it if
+      // results fit in each box (the most common case).
+      if (this.loading || (firstShown == 1 && lastShown == this.totalCount)) {
+        return nothing;
+      }
     }
-    return nothing;
+
+    return html`
+      <div class="pagination">
+        <span>${firstShown} - ${lastShown} of ${this.totalCount}</span>
+        <sl-icon-button
+          library="material" name="navigate_before"
+          title="Previous page"
+          @click=${() => this.loadNewPaginationPage(-this.num)}
+          ?disabled=${!hasPrevPage}
+          ></sl-icon-button>
+        <sl-icon-button
+          library="material" name="navigate_next"
+          title="Next page"
+          @click=${() => this.loadNewPaginationPage(this.num)}
+          ?disabled=${!hasNextPage}
+          ></sl-icon-button>
+      </div>
+    `;
   }
 
   renderFeature(feature) {
     return html`
-      <tr>
-        <td class="name_col">
-          ${this.renderQuickActions(feature)}
-          <a href="/feature/${feature.id}?context=myfeatures">${feature.name}</a>
-          ${this.renderHighlights(feature)}
-        </td>
-        <td class="icon_col">
-          ${this.renderIcons(feature)}
-        </td>
-      </tr>
+      <chromedash-feature-row
+         .feature=${feature}
+         columns=${this.columns}
+         ?signedIn=${this.signedIn}
+         ?canEdit=${this.canApprove}
+         ?canApprove=${this.canApprove}
+         .starredFeatures=${this.starredFeatures}
+         .approvals=${this.approvals}
+         .configs=${this.configs}
+         ></chromedash-feature-row>
     `;
   }
 
   render() {
     return html`
       ${this.renderSearch()}
+      ${this.renderPagination()}
        <table>
         ${this.renderMessages() ||
           this.features.map((feature) => this.renderFeature(feature))}
