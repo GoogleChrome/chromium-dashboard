@@ -182,7 +182,7 @@ class GateTest(testing_config.CustomTestCase):
     self.votes.append(Vote(feature_id=1, gate_id=gate_id, state=Vote.APPROVED,
         set_on=datetime.datetime(2020, 1, 1), set_by='user1@example.com'))
     self.votes.append(Vote(feature_id=1, gate_id=gate_id,
-        state=Vote.NOT_APPROVED, set_on=datetime.datetime(2020, 1, 1),
+        state=Vote.DENIED, set_on=datetime.datetime(2020, 1, 1),
         set_by='use21@example.com'))
     self.votes.append(Vote(feature_id=1, gate_id=gate_id,
         state=Vote.REVIEW_REQUESTED, set_on=datetime.datetime(2020, 2, 1),
@@ -214,7 +214,7 @@ class GateTest(testing_config.CustomTestCase):
         set_on=datetime.datetime(2021, 1, 1), set_by='user11@example.com'))
 
     # Some additional votes that should have no bearing on the gates.
-    self.votes.append(Vote(feature_id=2, gate_id=5, state=Vote.NOT_APPROVED,
+    self.votes.append(Vote(feature_id=2, gate_id=5, state=Vote.DENIED,
         set_on=datetime.datetime(2021, 1, 1), set_by='user11@example.com'))
     self.votes.append(Vote(feature_id=3, gate_id=3, state=Vote.REVIEW_REQUESTED,
         set_on=datetime.datetime(2021, 1, 1), set_by='user11@example.com'))
@@ -224,7 +224,7 @@ class GateTest(testing_config.CustomTestCase):
         set_on=datetime.datetime(2021, 1, 1), set_by='user11@example.com'))
     self.votes.append(Vote(feature_id=1, gate_id=2, state=Vote.APPROVED,
         set_on=datetime.datetime(2021, 1, 1), set_by='user11@example.com'))
-    
+
     for vote in self.votes:
       vote.put()
 
@@ -321,7 +321,7 @@ class ActivityTest(testing_config.CustomTestCase):
       self.assertEqual(field, result[i].field_name)
       self.assertEqual(before, result[i].old_value)
       self.assertEqual(expected, result[i].new_value)
-  
+
   def test_activities_created__no_stash(self):
     """If stash_values() is not called, no activity should be logged."""
     self.feature_1.owner = ["other@example.com"]
