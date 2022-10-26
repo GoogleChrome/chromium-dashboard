@@ -16,7 +16,6 @@
 import datetime
 import logging
 import re
-from typing import Any
 
 from framework import basehandlers
 from framework import permissions
