@@ -65,7 +65,7 @@ li {
 
 form[name="feature_form"] {
   h3 {
-    margin: $content-padding / 2 0;
+    margin: calc($content-padding / 2) 0;
   }
   input[type="submit"] {
     margin-top: $content-padding;
