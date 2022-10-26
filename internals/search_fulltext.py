@@ -16,6 +16,7 @@
 import collections
 import logging
 import re
+from typing import Any, Optional
 
 from google.cloud import ndb  # type: ignore
 
@@ -43,9 +44,9 @@ class FeatureWords(ndb.Model):
   words = ndb.StringProperty(repeated=True)
 
 
-def get_strings(fe):
+def get_strings(fe : FeatureEntry) -> list[str]:
   """Return a list of separate string values in the given feature entry."""
-  strings = []
+  strings : list[Optional[str]] = []
   strings.append(fe.creator_email)
   strings.append(fe.updater_email)
   strings.extend(fe.owner_emails)
@@ -112,7 +113,7 @@ def get_strings(fe):
   return non_empty_strings
 
 
-def parse_words(strings):
+def parse_words(strings : list[str]) -> set[str]:
   """Return a set of all searchable words in the given feature entry."""
   words = set()
   for s in strings:
@@ -124,7 +125,9 @@ def parse_words(strings):
   return words
 
 
-def batch_index_features(fe_list, existing_fw_list):
+def batch_index_features(
+    fe_list: list[FeatureEntry], existing_fw_list: list[FeatureWords]
+    ) -> list[FeatureWords]:
   """Process FeatureEntries to make word bags, but don't save to NDB."""
   existing_fw_dict = {
       fw.feature_id: fw
@@ -144,7 +147,7 @@ def batch_index_features(fe_list, existing_fw_list):
   return updated_fw_list
 
 
-def index_feature(fe):
+def index_feature(fe: FeatureEntry) -> None:
   """Create or update a word bag for the given feature entry."""
   feature_id = fe.key.integer_id()
   query = FeatureWords.query(FeatureWords.feature_id == feature_id)
@@ -153,7 +156,7 @@ def index_feature(fe):
   updated_fw_list[0].put()
 
 
-def search_fulltext(textterm):
+def search_fulltext(textterm: str) -> Optional[list[int]]:
   """Return IDs of features that have some word(s) from phrase."""
   search_words = parse_words([textterm])
   if not search_words:
@@ -182,7 +185,7 @@ def search_fulltext(textterm):
 
 class ReindexAllFeatures(FlaskHandler):
 
-  def get_template_data(self, **kwargs):
+  def get_template_data(self, **kwargs) -> str:
     """Updates the fulltext index for all features."""
     self.require_cron_header()
 
@@ -200,17 +203,17 @@ class FindStopWords(FlaskHandler):
 
   JSONIFY = True
 
-  def get_template_data(self, **kwargs):
+  def get_template_data(self, **kwargs) -> list[tuple[str, int]]:
     """Count occurances of all words and return the 100 most common."""
     self.require_cron_header()
 
     all_feature_entries = FeatureEntry.query().fetch()
-    all_feature_words = []
+    all_feature_words: list[FeatureWords] = []
     updated_fw_list = batch_index_features(
         all_feature_entries, all_feature_words)
     # Don't actually store them, we just want to report stats.
 
-    counts = collections.Counter()
+    counts: collections.Counter = collections.Counter()
     for fw in updated_fw_list:
       counts.update(fw.words)
 
