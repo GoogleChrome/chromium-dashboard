@@ -386,9 +386,10 @@ class MigrateApprovalsToVotes(FlaskHandler):
       if len(gates) == 0:
         continue
       gate_id = gates[0].key.integer_id()
+      gate_type = gates[0].gate_type
       vote = Vote(id=approval.key.integer_id(), feature_id=approval.feature_id,
-          gate_id=gate_id, state=approval.state, set_on=approval.set_on,
-          set_by=approval.set_by)
+          gate_id=gate_id, gate_type=gate_type, state=approval.state,
+          set_on=approval.set_on, set_by=approval.set_by)
       vote.put()
       count += 1
     

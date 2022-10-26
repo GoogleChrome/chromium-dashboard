@@ -24,22 +24,12 @@ from internals import approval_defs
 from internals.review_models import Approval, ApprovalConfig, Gate, Vote
 
 
-def vote_value_to_json_dict(
-    vote: Vote, type_memo: Optional[dict[int, int]]=None) -> dict[str, Any]:
-  # A memo is kept of gate types for each gate ID
-  # to avoid querying for the same Gate entity multiple times.
-  if type_memo and vote.gate_id in type_memo:
-    gate_type = type_memo[vote.gate_id]
-  else:
-    gate: Gate = Gate.get_by_id(vote.gate_id)
-    if type_memo:
-      type_memo[vote.gate_id] = gate.gate_type
-    gate_type = gate.gate_type
+def vote_value_to_json_dict(vote: Vote) -> dict[str, Any]:
 
   return {
       'feature_id': vote.feature_id,
       'gate_id': vote.gate_id,
-      'gate_type': gate_type,
+      'gate_type': vote.gate_type,
       'state': vote.state,
       'set_on': str(vote.set_on),  # YYYY-MM-DD HH:MM:SS.SSS
       'set_by': vote.set_by,
@@ -52,11 +42,10 @@ class ApprovalsAPI(basehandlers.APIHandler):
   def do_get(self, **kwargs) -> dict[str, list[dict[str, Any]]]:
     """Return a list of all vote values for a given feature."""
     feature_id = kwargs['feature_id']
-    gate_id = kwargs.get('gate_id', None)
+    gate_type = kwargs.get('gate_type', None)
     # Note: We assume that anyone may view approvals.
-    type_memo: dict[int, int] = {}
-    votes = Vote.get_votes(feature_id=feature_id, gate_id=gate_id)
-    dicts = [vote_value_to_json_dict(v, type_memo) for v in votes]
+    votes = Vote.get_votes(feature_id=feature_id, gate_type=gate_type)
+    dicts = [vote_value_to_json_dict(v) for v in votes]
     return {'approvals': dicts}
 
   def do_post(self, **kwargs) -> dict[str, str]:
@@ -88,8 +77,7 @@ class ApprovalsAPI(basehandlers.APIHandler):
     ## Write to new Vote and Gate entities. ##
     gate_id = self.get_int_param('gateId')
     gate_type = field_id  # field_id is now called gate_type.
-    new_state = self.get_int_param(
-        'state', validator=Vote.is_valid_state)
+    new_state = self.get_int_param('state', validator=Vote.is_valid_state)
     approval_defs.set_vote(
         feature_id, gate_type, new_state, user.email(), gate_id)
 

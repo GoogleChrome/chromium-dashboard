@@ -212,6 +212,7 @@ class ChromedashFeatureRow extends LitElement {
   }
 
   renderApprovalsSoFar(approvals) {
+    console.log(approvals);
     const result = [];
     for (const stateItem of STATE_NAMES) {
       const state = stateItem[0];

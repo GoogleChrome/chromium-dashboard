@@ -58,9 +58,10 @@ class ApprovalsAPITest(testing_config.CustomTestCase):
         state=Approval.NEEDS_WORK)
 
     # Vote entity equivalents.
-    self.vote_1_1 = Vote(feature_id=self.feature_id, gate_id=1,
-        set_on=NOW, set_by='owner1@example.com', state=Vote.APPROVED)
-    self.vote_1_2 = Vote(feature_id=self.feature_id, gate_id=2,
+    self.vote_1_1 = Vote(feature_id=self.feature_id, gate_id=10,
+        gate_type=1, set_on=NOW,
+        set_by='owner1@example.com', state=Vote.APPROVED)
+    self.vote_1_2 = Vote(feature_id=self.feature_id, gate_id=11, gate_type=2,
         set_by='owner2@example.com', set_on=NOW, state=Vote.NEEDS_WORK)
 
     self.expected1 = {
@@ -80,7 +81,7 @@ class ApprovalsAPITest(testing_config.CustomTestCase):
     
     self.vote_expected1 = {
         'feature_id': self.feature_id,
-        'gate_id': 1,
+        'gate_id': 10,
         'gate_type': 1,
         'set_by': 'owner1@example.com',
         'set_on': str(NOW),
@@ -88,7 +89,7 @@ class ApprovalsAPITest(testing_config.CustomTestCase):
         }
     self.vote_expected2 = {
         'feature_id': self.feature_id,
-        'gate_id': 2,
+        'gate_id': 11,
         'gate_type': 2,
         'set_by': 'owner2@example.com',
         'set_on': str(NOW),
@@ -127,7 +128,7 @@ class ApprovalsAPITest(testing_config.CustomTestCase):
     testing_config.sign_out()
     with test_app.test_request_context(self.request_path + '/1'):
       actual_response = self.handler.do_get(
-          feature_id=self.feature_id, gate_id=1)
+          feature_id=self.feature_id, gate_type=1)
     self.assertEqual({"approvals": []}, actual_response)
 
   def test_get__field_some(self):
@@ -138,11 +139,9 @@ class ApprovalsAPITest(testing_config.CustomTestCase):
 
     with test_app.test_request_context(self.request_path + '/1'):
       actual_response = self.handler.do_get(
-          feature_id=self.feature_id, gate_id=1)
+          feature_id=self.feature_id, gate_type=1)
 
-    self.assertEqual(
-        {"approvals": [self.vote_expected1]},
-        actual_response)
+    self.assertEqual({"approvals": [self.vote_expected1]}, actual_response)
 
   def test_post__bad_feature_id(self):
     """Handler rejects requests that don't specify a feature ID correctly."""

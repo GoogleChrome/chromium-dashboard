@@ -259,6 +259,7 @@ class Vote(ndb.Model):  # copy from Approval
 
   feature_id = ndb.IntegerProperty(required=True)
   gate_id = ndb.IntegerProperty(required=True)
+  gate_type = ndb.IntegerProperty()
   state = ndb.IntegerProperty(required=True)
   set_on = ndb.DateTimeProperty(required=True)
   set_by = ndb.StringProperty(required=True)
@@ -266,14 +267,16 @@ class Vote(ndb.Model):  # copy from Approval
   @classmethod
   def get_votes(
       cls, feature_id: Optional[int]=None, gate_id: Optional[int]=None,
-      states: Optional[list[int]]=None, set_by: Optional[str]=None,
-      limit=None) -> list[Vote]:
+      gate_type: Optional[int]=None, states: Optional[list[int]]=None,
+      set_by: Optional[str]=None, limit=None) -> list[Vote]:
     """Return the requested approvals."""
     query: ndb.Query = Vote.query().order(Approval.set_on)
     if feature_id is not None:
       query = query.filter(Vote.feature_id == feature_id)
     if gate_id is not None:
       query = query.filter(Vote.gate_id == gate_id)
+    if gate_type is not None:
+      query = query.filter(Vote.gate_type == gate_type)
     if states is not None:
       query = query.filter(Vote.state.IN(states))
     if set_by is not None:
