@@ -480,35 +480,35 @@ export const ALL_FIELDS = {
     attrs: {rows: 2},
     required: false,
     label: 'TAG Specification Review',
-    help_text: html`Link(s) to TAG review(s), or explanation why this is
-                not needed.`,
+    help_text: html`
+      Link(s) to TAG specification review(s), or explanation why this is not needed.`,
     extra_help: html`
     <p>
-      The <a target="_blank" href="https://www.w3.org/2001/tag/">W3C Technical Architecture Group</a> (TAG) 
-      is a special working group of the W3C that consists of a few appointed and elected members, 
-      all of whom are experienced members of the web standards community. 
-      The Blink launch process has a formal requirement for requesting a 
-      <a target="_blank" href="https://github.com/w3ctag/design-reviews">TAG review</a> for all features. 
-      The review happens publicly on a GitHub issue.
+      The <a target="_blank" href="https://www.w3.org/2001/tag/">W3C Technical Architecture Group</a> (TAG)
+      is a special working group of the W3C that consists of a few appointed and elected members,
+      all of whom are experienced members of the web standards community.
+      The Blink launch process has a formal requirement for requesting a
+      <a target="_blank" href="https://github.com/w3ctag/design-reviews">TAG specification review</a>
+      for all features. The review happens publicly on a GitHub issue.
     </p>
     <p>
       You will likely have asked for an "<a target="_blank" href=
         "https://github.com/w3ctag/design-reviews/issues/new?template=005-early-design-review.md"
-      >Early Design Review</a>" earlier in the process to get the TAG familiar with your feature. 
+      >Early Design Review</a>" earlier in the process to get the TAG familiar with your feature.
       This isn't that.
     </p>
     <p>
       It's recommended that you file a TAG <a target="_blank" href=
         "https://github.com/w3ctag/design-reviews/issues/new?template=010-specification-review.md"
-      >Specification Review</a> as soon as your specification is written, during your Origin Trial. 
-      There may be some work involved in preparing your feature for review (see the 
+      >Specification Review</a> as soon as your specification is written, during your Origin Trial.
+      There may be some work involved in preparing your feature for review (see the
       <a target="_blank" href=
         "https://github.com/w3ctag/design-reviews/blob/main/.github/ISSUE_TEMPLATE/010-specification-review.md"
       >submission template fields</a>).
     </p>
-    <p>  
-      A large number of Intents to Ship are delayed because a TAG review was only recently filed 
-      and engagement from the TAG can take multiple weeks to multiple months.
+    <p>
+      A large number of Intents to Ship are delayed because a TAG specification review was only
+      recently filed and engagement from the TAG can take multiple weeks to multiple months.
       Note that the API owners can approve shipping even if the TAG hasn't replied to your review request,
       as long as you've made a reasonable effort
       to obtain their review with enough time for them to give feedback.
@@ -519,8 +519,8 @@ export const ALL_FIELDS = {
     type: 'select',
     choices: REVIEW_STATUS_CHOICES,
     initial: REVIEW_STATUS_CHOICES.REVIEW_PENDING[0],
-    label: 'TAG review status',
-    help_text: html`Status of the tag review.`,
+    label: 'TAG Specification Review Status',
+    help_text: html`Status of the TAG specification review.`,
   },
 
   'intent_to_ship_url': {
