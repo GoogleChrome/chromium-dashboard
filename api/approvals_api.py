@@ -50,7 +50,7 @@ class ApprovalsAPI(basehandlers.APIHandler):
         }
     return data
 
-  def do_post(self, **kwargs):
+  def do_post(self, **kwargs) -> dict[str, str]:
     """Set an approval value for the specified feature."""
     feature_id = kwargs.get('feature_id', None)
     field_id = self.get_int_param('fieldId')
