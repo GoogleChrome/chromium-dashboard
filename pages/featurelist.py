@@ -20,8 +20,8 @@ import settings
 from framework import basehandlers
 from framework import permissions
 from framework import utils
-from internals import core_models
 from internals import core_enums
+from internals import feature_helpers
 
 # from google.appengine.api import users
 from framework import users
@@ -34,7 +34,7 @@ class FeaturesJsonHandler(basehandlers.FlaskHandler):
 
   def get_template_data(self, **kwargs):
     user = users.get_current_user()
-    feature_list = core_models.Feature.get_chronological(
+    feature_list = feature_helpers.get_chronological(
         show_unlisted=permissions.can_edit_any_feature(user))
     return feature_list
 

@@ -54,6 +54,8 @@ class ApprovalsAPI(basehandlers.APIHandler):
     feature_id = kwargs.get('feature_id', None)
     # field_id is now called gate_type.
     gate_type = self.get_int_param('gateType')
+    if not feature_id:
+      self.get_int_param('featureId')
     new_state = self.get_int_param(
         'state', validator=Approval.is_valid_state)
     feature = self.get_specified_feature(feature_id=feature_id)

@@ -15,6 +15,7 @@
 # Import needed to reference a class within its own class method.
 # https://stackoverflow.com/a/33533514
 from __future__ import annotations
+import collections
 
 import datetime
 import logging
@@ -232,6 +233,15 @@ class Gate(ndb.Model):  # copy from ApprovalConfig
   def is_approved(self) -> bool:
     """Return if the Gate approval requirements have been met."""
     return self.state == Vote.APPROVED
+
+  @classmethod
+  def get_feature_gates(cls, feature_id: int) -> dict[int, list[Gate]]:
+    """Return a dictionary of stages associated with a given feature."""
+    gates: list[Gate] = Gate.query(Gate.feature_id == feature_id).fetch()
+    gates_dict = collections.defaultdict(list)
+    for gate in gates:
+      gates_dict[gate.gate_type].append(gate)
+    return gates_dict
 
 
 # Note: This class is not used yet.

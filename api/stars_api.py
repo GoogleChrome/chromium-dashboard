@@ -19,7 +19,6 @@
 import logging
 
 from framework import basehandlers
-from internals import core_models
 from internals import notifier
 
 

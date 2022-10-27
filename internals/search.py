@@ -16,11 +16,15 @@
 import datetime
 import logging
 import re
+from typing import Any, Union
+
+from google.cloud.ndb.tasklets import Future  # for type checking only
 
 from framework import users
 from framework import utils
 from internals import approval_defs
 from internals import core_models
+from internals import feature_helpers
 from internals import notifier
 from internals import review_models
 from internals import search_queries
@@ -30,7 +34,8 @@ MAX_TERMS = 6
 DEFAULT_RESULTS_PER_PAGE = 100
 
 
-def _get_referenced_feature_ids(approvals, reverse=False):
+def _get_referenced_feature_ids(
+    approvals: list[review_models.Approval], reverse=False) -> list[int]:
   """Retrieve the features being approved, withuot duplicates."""
   logging.info('approvals is %r', [(a.feature_id, a.state) for a in approvals])
   feature_ids = utils.dedupe(a.feature_id for a in approvals)
@@ -38,7 +43,7 @@ def _get_referenced_feature_ids(approvals, reverse=False):
   return feature_ids
 
 
-def process_pending_approval_me_query():
+def process_pending_approval_me_query() -> list[int]:
   """Return a list of features needing approval by current user."""
   user = users.get_current_user()
   if not user:
@@ -54,7 +59,7 @@ def process_pending_approval_me_query():
   return feature_ids
 
 
-def process_starred_me_query():
+def process_starred_me_query() -> list[int]:
   """Return a list of features starred by the current user."""
   user = users.get_current_user()
   if not user:
@@ -64,18 +69,18 @@ def process_starred_me_query():
   return feature_ids
 
 
-def process_access_me_query(field):
+def process_access_me_query(field) -> list[int]:
   """Return features that the current user owns or can edit."""
   user = users.get_current_user()
   if not user:
     return []
   # Checks if the user's email exists in the given field.
-  features = core_models.Feature.get_all(filterby=(field, user.email()))
+  features = feature_helpers.get_all(filterby=(field, user.email()))
   feature_ids = [f['id'] for f in features]
   return feature_ids
 
 
-def process_recent_reviews_query():
+def process_recent_reviews_query() -> list[int]:
   """Return features that were reviewed recently."""
   user = users.get_current_user()
   if not user:
@@ -88,7 +93,7 @@ def process_recent_reviews_query():
   return feature_ids
 
 
-def parse_query_value(val_str):
+def parse_query_value(val_str: str) -> Union[bool, datetime.datetime, int, str]:
   """Return a python object that can be used as a value in an NDB query."""
   if val_str == 'true':
     return True
@@ -109,12 +114,14 @@ def parse_query_value(val_str):
   return val_str
 
 
-def process_queriable_field(field_name, operator, val_str):
+def process_queriable_field(
+    field_name: str, operator: str, val_str: str
+    ) -> Future:
   """Return a list of feature IDs or a promise for keys."""
   val = parse_query_value(val_str)
   logging.info('trying %r %r %r', field_name, operator, val)
-  promise = search_queries.single_field_query_async(field_name, operator, val)
-  return promise
+  future = search_queries.single_field_query_async(field_name, operator, val)
+  return future
 
 
 # A full-text query term consisting of a single word or quoted string.
@@ -139,7 +146,8 @@ TERM_RE = re.compile(
     re.I)
 
 
-def process_query_term(field_name, op_str, val_str):
+def process_query_term(
+    field_name: str, op_str: str, val_str: str) -> Future:
   """Parse and run a user-supplied query, if we can handle it."""
   query_term = field_name + op_str + val_str
   if query_term == 'pending-approval-by:me':
@@ -165,19 +173,22 @@ def process_query_term(field_name, op_str, val_str):
   return process_queriable_field(field_name, op_str, val_str)
 
 
-def _resolve_promise_to_id_list(promise):
-  """Given an object that might be a promise or an ID list, return IDs."""
-  if type(promise) == list:
-    logging.info('got list %r', promise)
-    return promise  # Which is actually an ID list.
+def _resolve_promise_to_id_list(
+    list_or_future: Union[list, Future]) -> list[int]:
+  """Given an object that might be a future or an ID list, return IDs."""
+  if type(list_or_future) == list:
+    logging.info('got list %r', list_or_future)
+    return list_or_future  # Which is actually an ID list.
   else:
-    key_list = promise.get_result()
+    future: Future = list_or_future
+    key_list = future.get_result()
     id_list = [k.integer_id() for k in key_list]
-    logging.info('got promise that yielded %r', id_list)
+    logging.info('got future that yielded %r', id_list)
     return id_list
 
 
-def _sort_by_total_order(result_id_list, total_order_ids):
+def _sort_by_total_order(
+    result_id_list: list[int], total_order_ids: list[int]) -> list[int]:
   """Sort the result_ids according to their position in the total order.
 
   If some result ID is not present in the total order, use the feature ID
@@ -192,8 +203,9 @@ def _sort_by_total_order(result_id_list, total_order_ids):
 
 
 def process_query(
-    user_query, sort_spec=None, show_unlisted=False, show_deleted=False,
-    start=0, num=DEFAULT_RESULTS_PER_PAGE):
+    user_query: str, sort_spec: str = None,
+    show_unlisted=False, show_deleted=False,
+    start=0, num=DEFAULT_RESULTS_PER_PAGE) -> tuple[list[dict[str, Any]], int]:
   """Parse the user's query, run it, and return a list of features."""
   # 1a. Parse the user query into terms.  And, add permission terms.
   feature_id_futures = []
@@ -241,7 +253,7 @@ def process_query(
   paginated_id_list = sorted_id_list[start : start + num]
 
   # 6. Fetch the actual issues that have those IDs in the sorted results.
-  features_on_page = core_models.Feature.get_by_ids(paginated_id_list)
+  features_on_page = feature_helpers.get_by_ids(paginated_id_list)
 
   logging.info('features_on_page is %r', features_on_page)
   return features_on_page, total_count

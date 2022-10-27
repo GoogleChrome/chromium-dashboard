@@ -13,6 +13,12 @@
 # limitations under the License.
 
 import logging
+import datetime
+from typing import Union, Callable
+
+from google.cloud.ndb.model import Model, Property  # for type checking only
+from google.cloud.ndb.tasklets import Future  # for type checking only
+from google.cloud.ndb.query import FilterNode  # for type checking only
 
 from framework import utils
 from internals import core_models
@@ -20,7 +26,8 @@ from internals import review_models
 
 
 def single_field_query_async(
-    field_name, operator, val, limit=None):
+    field_name: str, operator: str, val: Union[str, int, datetime.datetime],
+    limit: int = None) -> Union[list[int], Future]:
   """Create a query for one Feature field and run it, returning a promise."""
   field = QUERIABLE_FIELDS.get(field_name.lower())
   if field is None:
@@ -50,7 +57,7 @@ def single_field_query_async(
   return keys_promise
 
 
-def total_order_query_async(sort_spec):
+def total_order_query_async(sort_spec: str) -> Union[list[int], Future]:
   """Create a query promise for all Feature IDs sorted by sort_spec."""
   # TODO(jrobbins): Support multi-column sort.
   descending = False
@@ -76,7 +83,8 @@ def total_order_query_async(sort_spec):
 
 
 def _sorted_by_joined_model(
-    joinable_model_class, condition, descending, order_by):
+    joinable_model_class: Model, condition: FilterNode, descending: bool,
+    order_by: Property) -> list[int]:
   """Return feature_ids sorted by a field in a joined entity kind."""
   query = joinable_model_class.query()
   if condition:
@@ -91,7 +99,7 @@ def _sorted_by_joined_model(
   return feature_ids
 
 
-def sorted_by_pending_request_date(descending):
+def sorted_by_pending_request_date(descending: bool) -> list[int]:
   """Return feature_ids of pending approvals sorted by request date."""
   return _sorted_by_joined_model(
       review_models.Approval,
@@ -99,7 +107,7 @@ def sorted_by_pending_request_date(descending):
       descending, review_models.Approval.set_on)
 
 
-def sorted_by_review_date(descending):
+def sorted_by_review_date(descending: bool) -> list[int]:
   """Return feature_ids of reviewed approvals sorted by last review."""
   return _sorted_by_joined_model(
       review_models.Approval,
@@ -107,7 +115,7 @@ def sorted_by_review_date(descending):
       descending, review_models.Approval.set_on)
 
 
-QUERIABLE_FIELDS = {
+QUERIABLE_FIELDS: dict[str, Property] = {
     'created.when': core_models.Feature.created,
     'updated.when': core_models.Feature.updated,
     'deleted': core_models.Feature.deleted,
@@ -206,7 +214,7 @@ QUERIABLE_FIELDS = {
     'finch_url': core_models.Feature.finch_url,
     }
 
-SORTABLE_FIELDS = QUERIABLE_FIELDS.copy()
+SORTABLE_FIELDS: dict[str, Union[Property, Callable]] = QUERIABLE_FIELDS.copy()
 SORTABLE_FIELDS.update({
     'approvals.requested_on': sorted_by_pending_request_date,
     'approvals.reviewed_on': sorted_by_review_date,
