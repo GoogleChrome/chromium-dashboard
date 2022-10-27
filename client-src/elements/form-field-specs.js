@@ -147,8 +147,7 @@ export const ALL_FIELDS = {
     required: true,
     label: 'Feature owners',
     help_text: html`
-        Comma separated list of full email addresses. Accounts
-        from @chromium.org are preferred.`,
+        Comma separated list of full email addresses.`,
   },
 
   'editors': {
@@ -176,7 +175,7 @@ export const ALL_FIELDS = {
     label: 'Unlisted',
     initial: false,
     help_text: html`
-        Check this box to hide draft emails in list views. Anyone with
+        Check this box to hide draft features in list views. Anyone with
         a link will be able to view the feature's detail page.`,
   },
 
@@ -905,7 +904,7 @@ export const ALL_FIELDS = {
     label: 'Debuggability',
     help_text: html`
       Description of the DevTools debugging support for your feature.
-      Please follow
+      Please follow the
       <a target="_blank"
           href="https://goo.gle/devtools-checklist">
         DevTools support checklist</a> for guidance.`,
@@ -1068,7 +1067,7 @@ export const ALL_FIELDS = {
     label: 'DevTrial on Android',
     help_text: html`
       First milestone that allows web developers to try
-      this feature on desktop platforms by setting a flag.
+      this feature on Android by setting a flag.
       When flags are enabled by default in preparation for
       shipping or removal, please use the fields in the ship stage.`,
   },
@@ -1080,7 +1079,7 @@ export const ALL_FIELDS = {
     label: 'DevTrial on iOS (RARE)',
     help_text: html`
       First milestone that allows web developers to try
-      this feature on desktop platforms by setting a flag.
+      this feature on iOS by setting a flag.
       When flags are enabled by default in preparation for
       shipping or removal, please use the fields in the ship stage.`,
   },
