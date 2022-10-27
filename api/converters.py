@@ -60,6 +60,8 @@ def del_none(d):
       del_none(value)
   return d
 
+# TODO(danielrsmith): These views should be migrated properly
+# for each entity to avoid invoking this function each time.
 def migrate_views(f: Feature) -> None:
   """Migrate obsolete values for views on first edit."""
   if f.ff_views == MIXED_SIGNALS:
@@ -82,11 +84,6 @@ def feature_to_legacy_json(f: Feature) -> dict[str, Any]:
   d: dict[str, Any] = to_dict(f)
   is_released = f.impl_status_chrome in RELEASE_IMPL_STATES
   d['is_released'] = is_released
-
-  standard_maturity_val = f.standard_maturity
-  if (standard_maturity_val == UNSET_STD and
-      f.standardization > 0):
-    standard_maturity_val = STANDARD_MATURITY_BACKFILL[f.standardization]
 
   if f.is_saved():
     d['id'] = f.key.integer_id()
@@ -116,9 +113,9 @@ def feature_to_legacy_json(f: Feature) -> dict[str, Any]:
       'val': d.pop('standardization', None),
     },
     'maturity': {
-      'text': STANDARD_MATURITY_CHOICES.get(standard_maturity_val),
-      'short_text': STANDARD_MATURITY_SHORT.get(standard_maturity_val),
-      'val': standard_maturity_val,
+      'text': STANDARD_MATURITY_CHOICES.get(f.standard_maturity),
+      'short_text': STANDARD_MATURITY_SHORT.get(f.standard_maturity),
+      'val': f.standard_maturity,
     },
   }
   del d['standard_maturity']
