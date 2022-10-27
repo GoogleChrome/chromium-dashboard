@@ -194,25 +194,8 @@ class Feature(DictModel):
 
     if self.is_saved():
       d['id'] = self.key.integer_id()
-
-      # Write a collection of stages and gates associated with the feature,
-      # sorted by type.
-      stages: list[Stage] = Stage.query(
-          Stage.feature_id == d['id']).fetch()
-      gates: list[review_models.Gate] = review_models.Gate.query(
-          review_models.Gate.feature_id == d['id']).fetch()
-      d['stages'] = collections.defaultdict(list)
-      d['gates'] = collections.defaultdict(list)
-      # Stages and gates are given as a dictionary, with the type as the key,
-      # and a list of entity IDs as the value.
-      for s in stages:
-        d['stages'][s.stage_type].append(s.key.integer_id())
-      for g in gates:
-        d['gates'][g.gate_type].append(g.key.integer_id())
     else:
       d['id'] = None
-      d['stages'] = {}
-      d['gates'] = {}
     d['category'] = FEATURE_CATEGORIES[self.category]
     d['category_int'] = self.category
     if self.feature_type is not None:

@@ -493,13 +493,9 @@ class ChromedashApprovalsDialog extends LitElement {
     const promises = [];
     for (const fieldId of this.changedApprovalsByField.keys()) {
       if (this.changedApprovalsByField.get(fieldId) != -1) {
-        let gateId = 0;
-        if (fieldId in this.feature.gates) {
-          gateId = this.feature.gates[fieldId][0];
-        }
         promises.push(
           window.csClient.setApproval(
-            this.feature.id, fieldId, gateId,
+            this.feature.id, fieldId,
             this.changedApprovalsByField.get(fieldId)));
       }
     }

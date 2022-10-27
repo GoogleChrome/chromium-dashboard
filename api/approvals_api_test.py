@@ -174,18 +174,18 @@ class ApprovalsAPITest(testing_config.CustomTestCase):
 
   def test_post__bad_state(self):
     """Handler rejects requests that don't specify a state correctly."""
-    params = {'featureId': self.feature_id, 'fieldId': 1}
+    params = {'featureId': self.feature_id, 'gateType': 1}
     with test_app.test_request_context(self.request_path, json=params):
       with self.assertRaises(werkzeug.exceptions.BadRequest):
         self.handler.do_post()
 
-    params = {'featureId': self.feature_id, 'fieldId': 1,
+    params = {'featureId': self.feature_id, 'gateType': 1,
               'state': 'not an int'}
     with test_app.test_request_context(self.request_path, json=params):
       with self.assertRaises(werkzeug.exceptions.BadRequest):
         self.handler.do_post()
 
-    params = {'featureId': self.feature_id, 'fieldId': 1,
+    params = {'featureId': self.feature_id, 'gateType': 1,
               'state': 999}
     with test_app.test_request_context(self.request_path, json=params):
       with self.assertRaises(werkzeug.exceptions.BadRequest):
@@ -193,7 +193,7 @@ class ApprovalsAPITest(testing_config.CustomTestCase):
 
   def test_post__feature_not_found(self):
     """Handler rejects requests that don't match an existing feature."""
-    params = {'featureId': 12345, 'fieldId': 1,
+    params = {'featureId': 12345, 'gateType': 1,
               'state': Approval.NEEDS_WORK }
     with test_app.test_request_context(self.request_path, json=params):
       with self.assertRaises(werkzeug.exceptions.NotFound):
@@ -203,7 +203,7 @@ class ApprovalsAPITest(testing_config.CustomTestCase):
   def test_post__forbidden(self, mock_get_approvers):
     """Handler rejects requests from anon users and non-approvers."""
     mock_get_approvers.return_value = ['owner1@example.com']
-    params = {'featureId': self.feature_id, 'fieldId': 1,
+    params = {'featureId': self.feature_id, 'gateType': 1,
               'state': Approval.NEEDS_WORK}
 
     testing_config.sign_out()
@@ -226,7 +226,7 @@ class ApprovalsAPITest(testing_config.CustomTestCase):
     """Handler adds approval when one did not exist before."""
     mock_get_approvers.return_value = ['owner1@example.com']
     testing_config.sign_in('owner1@example.com', 123567890)
-    params = {'featureId': self.feature_id, 'fieldId': 1, 'gateId': 1,
+    params = {'featureId': self.feature_id, 'gateType': 1,
               'state': Vote.NEEDS_WORK}
     with test_app.test_request_context(self.request_path, json=params):
       actual = self.handler.do_post(feature_id=self.feature_id)

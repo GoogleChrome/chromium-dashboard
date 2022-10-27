@@ -52,34 +52,39 @@ class ApprovalsAPI(basehandlers.APIHandler):
     """Set an approval value for the specified feature."""
     ## Handle writing old Approval entity. ##
     feature_id = kwargs.get('feature_id', None)
-    field_id = self.get_int_param('fieldId')
+    # field_id is now called gate_type.
+    gate_type = self.get_int_param('gateType')
     new_state = self.get_int_param(
         'state', validator=Approval.is_valid_state)
     feature = self.get_specified_feature(feature_id=feature_id)
     user = self.get_current_user(required=True)
 
-    approvers = approval_defs.get_approvers(field_id)
+    approvers = approval_defs.get_approvers(gate_type)
     if not permissions.can_approve_feature(user, feature, approvers):
       self.abort(403, msg='User is not an approver')
 
     Approval.set_approval(
-        feature_id, field_id, new_state, user.email())
-    approval_defs.set_vote(feature_id, field_id, new_state, user.email())
+        feature_id, gate_type, new_state, user.email())
+    approval_defs.set_vote(feature_id, gate_type, new_state, user.email())
 
     all_approval_values = Approval.get_approvals(
-        feature_id=feature_id, field_id=field_id)
+        feature_id=feature_id, field_id=gate_type)
     logging.info(
         'found approvals %r',
         [appr.key.integer_id() for appr in all_approval_values])
-    if approval_defs.is_resolved(all_approval_values, field_id):
-      Approval.clear_request(feature_id, field_id)
+    if approval_defs.is_resolved(all_approval_values, gate_type):
+      Approval.clear_request(feature_id, gate_type)
 
     ## Write to new Vote and Gate entities. ##
-    gate_id = self.get_int_param('gateId')
-    gate_type = field_id  # field_id is now called gate_type.
+    # TODO(danielrsmith): Gate ID should be passed as a POST request param,
+    # rather than trying to discern it from the gate type.
+    gates: list[Gate] = Gate.query(
+        Gate.feature_id == feature_id, Gate.gate_type == gate_type).fetch()
+    if len(gates) == 0:
+      return {'message': 'No gate found for given feature ID and gate type.'}
     new_state = self.get_int_param('state', validator=Vote.is_valid_state)
-    approval_defs.set_vote(
-        feature_id, gate_type, new_state, user.email(), gate_id)
+    approval_defs.set_vote(feature_id, gate_type, new_state,
+        user.email(), gates[0].key.integer_id())
 
     # Callers don't use the JSON response for this API call.
     return {'message': 'Done'}

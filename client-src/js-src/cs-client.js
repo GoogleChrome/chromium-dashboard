@@ -178,11 +178,10 @@ class ChromeStatusClient {
     return this.doGet(`/features/${featureId}/approvals`);
   }
 
-  setApproval(featureId, fieldId, gateId, state) {
+  setApproval(featureId, gateType, state) {
     return this.doPost(
         `/features/${featureId}/approvals`,
-        {fieldId: Number(fieldId), gateId: Number(gateId),
-          state: Number(state)});
+        {gateType: Number(gateType), state: Number(state)});
   }
 
   getApprovalConfigs(featureId) {
