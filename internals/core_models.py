@@ -17,6 +17,7 @@
 # https://stackoverflow.com/a/33533514
 from __future__ import annotations
 
+import collections
 import datetime
 import logging
 import re
