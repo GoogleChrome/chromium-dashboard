@@ -11,8 +11,8 @@ const COMMA_SEPARATED_FIELDS = ['owner', 'editors', 'cc_recipients',
 const LINE_SEPARATED_FIELDS = ['explainer_links', 'doc_links', 'sample_links'];
 
 /* Convert the format of feature object fetched from API into those for edit.
- * The feature object from API is formatted by the format_for_template method of
- * the Feature class in internals/core_models.py
+ * The feature object from API is formatted by the feature_to_legacy_json
+ * function in internals/feature_helpers.py
  */
 export function formatFeatureForEdit(feature) {
   const formattedFeature = {

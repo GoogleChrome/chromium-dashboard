@@ -13,22 +13,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import logging
 from typing import Any, Optional
 
 from framework import basehandlers
 from framework import permissions
 from framework import rediscache
 from framework import users
-from internals import core_models
+from internals.core_enums import *
+from internals.core_models import Feature, FeatureEntry
+from internals import feature_helpers
 from internals import search
-
 
 class FeaturesAPI(basehandlers.APIHandler):
   """Features are the the main records that we track."""
 
   def get_one_feature(self, feature_id: int) -> dict[str, Any]:
-    features = core_models.Feature.get_by_ids([feature_id])
+    features = feature_helpers.get_by_ids([feature_id])
     if not features:
       self.abort(404, msg='Feature %r not found' % feature_id)
     return features[0]
@@ -42,7 +42,7 @@ class FeaturesAPI(basehandlers.APIHandler):
     # Query-string parameter 'milestone' is provided
     milestone = self.get_int_arg('milestone')
     if milestone:
-      features_by_type = core_models.Feature.get_in_milestone(
+      features_by_type = feature_helpers.get_in_milestone(
         show_unlisted=show_unlisted_features, milestone=milestone)
       total_count = sum(len(features_by_type[t]) for t in features_by_type)
       return {
@@ -81,13 +81,15 @@ class FeaturesAPI(basehandlers.APIHandler):
     # TODO(jrobbins): implement undelete UI.  For now, use cloud console.
     feature_id = kwargs.get('feature_id', None)
     feature = self.get_specified_feature(feature_id=feature_id)
+    if feature is None:
+      return {'message': 'ID does not match any feature.'}
     feature.deleted = True
     feature.put()
-    rediscache.delete_keys_with_prefix(core_models.feature_cache_prefix())
+    rediscache.delete_keys_with_prefix(Feature.feature_cache_prefix())
 
     # Write for new FeatureEntry entity.
-    feature_entry: Optional[core_models.FeatureEntry] = (
-        core_models.FeatureEntry.get_by_id(feature_id))
+    feature_entry: Optional[FeatureEntry] = (
+        FeatureEntry.get_by_id(feature_id))
     if feature_entry:
       feature_entry.deleted = True
       feature_entry.put()

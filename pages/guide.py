@@ -24,8 +24,7 @@ from framework import rediscache
 from framework import basehandlers
 from framework import permissions
 from internals import core_enums
-from internals.core_models import (Feature, FeatureEntry, MilestoneSet, Stage,
-    feature_cache_prefix)
+from internals.core_models import Feature, FeatureEntry, MilestoneSet, Stage
 from internals.review_models import Gate, Vote
 from internals import processes
 from internals import search_fulltext
@@ -91,7 +90,7 @@ class FeatureCreateHandler(basehandlers.FlaskHandler):
         feature_entry.key.integer_id(), feature_type)
 
     # Remove all feature-related cache.
-    rediscache.delete_keys_with_prefix(feature_cache_prefix())
+    rediscache.delete_keys_with_prefix(Feature.feature_cache_prefix())
 
     redirect_url = '/guide/edit/' + str(key.integer_id())
     return self.redirect(redirect_url)
@@ -582,7 +581,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
           stage_update_items)
 
     # Remove all feature-related cache.
-    rediscache.delete_keys_with_prefix(feature_cache_prefix())
+    rediscache.delete_keys_with_prefix(Feature.feature_cache_prefix())
 
     # Update full-text index.
     if feature_entry:
