@@ -1,4 +1,4 @@
-import {LitElement, css, html} from 'lit';
+import {LitElement, css, html, nothing} from 'lit';
 import '@polymer/iron-icon';
 import './chromedash-x-meter';
 import {SHARED_STYLES} from '../sass/shared-css.js';
@@ -13,6 +13,7 @@ class ChromedashStackRank extends LitElement {
       maxPercentage: {attribute: false},
       sortType: {type: String},
       sortReverse: {type: Boolean},
+      tempList: {attribute: false},
     };
   }
 
@@ -20,6 +21,7 @@ class ChromedashStackRank extends LitElement {
     super();
     this.type = '';
     this.viewList = [];
+    this.tempList = [];
     this.maxPercentage = 100;
     this.sortType = 'percentage';
     this.sortReverse = false;
@@ -210,9 +212,9 @@ class ChromedashStackRank extends LitElement {
     `;
   }
 
-  renderStackRank() {
+  renderStackRank(displayedList) {
     return html`
-      ${this.viewList.map((item) => html`
+      ${displayedList.map((item) => html`
         <li class="stack-rank-item" id="${item.property_name}">
           <div title="${item.property_name}. Click to deep link to this property.">
             <a class="stack-rank-item-name" href="#${item.property_name}" @click=${this.scrollToPosition}>
@@ -248,6 +250,13 @@ class ChromedashStackRank extends LitElement {
     `)}`;
   }
 
+  renderTemporaryRank() {
+    return html`
+      ${this.tempList.length ? this.renderStackRank(this.tempList) : nothing}
+      ${this.renderSkeletons()}
+    `;
+  }
+
   renderStackRankList() {
     return html`
       <ol class="stack-rank-list">
@@ -261,7 +270,7 @@ class ChromedashStackRank extends LitElement {
             </a>
           </div>
         </li>
-        ${this.viewList.length ? this.renderStackRank() : this.renderSkeletons()}
+        ${this.viewList.length ? this.renderStackRank(this.viewList) : this.renderTemporaryRank()}
       </ol>
     `;
   }
