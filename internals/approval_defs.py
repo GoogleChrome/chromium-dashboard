@@ -161,9 +161,8 @@ def is_resolved(approval_values, field_id):
 
   return False
 
-def set_vote(
-    feature_id: int,  gate_type: int, new_state: int, set_by_email: str,
-    gate_id: Optional[int]=None) -> None:
+def set_vote(feature_id: int,  gate_type: int, new_state: int,
+    set_by_email: str, gate_id: Optional[int]=None) -> None:
   """Add or update an approval value."""
   gate: Optional[Gate] = None
   if gate_id is None:
@@ -181,16 +180,16 @@ def set_vote(
     raise ValueError('Invalid approval state')
 
   now = datetime.datetime.now()
-  existing_list: list[Vote] = Vote.get_votes(
-      feature_id=feature_id, gate_id=gate_id, set_by=set_by_email)
+  existing_list: list[Vote] = Vote.get_votes(feature_id=feature_id,
+      gate_id=gate_id, gate_type=gate_type, set_by=set_by_email)
   if existing_list:
     existing = existing_list[0]
     existing.set_on = now
     existing.state = new_state
     existing.put()
   else:
-    new_vote = Vote(feature_id=feature_id, gate_id=gate_id, state=new_state,
-        set_on=now, set_by=set_by_email)
+    new_vote = Vote(feature_id=feature_id, gate_id=gate_id,
+        gate_type=gate_type, state=new_state, set_on=now, set_by=set_by_email)
     new_vote.put()
 
   if gate:

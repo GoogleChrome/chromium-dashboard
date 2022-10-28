@@ -39,7 +39,7 @@ export class ChromedashStackRankPage extends LitElement {
       type: {type: String}, // "css" or "feature"
       view: {type: String}, // "popularity" or "animated"
       viewList: {attribute: false},
-      topList: {attribute: false},
+      tempList: {attribute: false},
     };
   }
 
@@ -48,7 +48,7 @@ export class ChromedashStackRankPage extends LitElement {
     this.type = '';
     this.view = '';
     this.viewList = [];
-    this.topList = [];
+    this.tempList = [];
   }
 
   connectedCallback() {
@@ -68,19 +68,17 @@ export class ChromedashStackRankPage extends LitElement {
       for (let i = 0, item; item = props[i]; ++i) {
         item.percentage = (item.day_percentage * 100).toFixed(6);
       }
-      this.viewList = props.filter((item) => {
+      const viewList = props.filter((item) => {
         return !['ERROR', 'PageVisits', 'PageDestruction'].includes(item.property_name);
       });
-      this.topList = this.viewList.slice(0, 30);
-      this.shadowRoot.querySelector('#show_all').disabled = false;
+      this.tempList = viewList.slice(0, 30);
+      // Set a timeout to avoid batch updates for tempList and viewList.
+      setTimeout(() => {
+        this.viewList = viewList;
+      }, 300);
     }).catch(() => {
       showToastMessage('Some errors occurred. Please refresh the page or try again later.');
     });
-  }
-
-  showAll() {
-    this.shadowRoot.querySelector('#show_all').disabled = true;
-    this.topList = this.viewList;
   }
 
   handleSearchBarChange(e) {
@@ -123,9 +121,9 @@ export class ChromedashStackRankPage extends LitElement {
       <chromedash-stack-rank
         .type=${this.type}
         .view=${this.view}
-        .viewList=${this.topList}>
+        .tempList=${this.tempList}
+        .viewList=${this.viewList}>
       </chromedash-stack-rank>
-      <sl-button id="show_all" disabled variant="primary" @click=${this.showAll}>Show All</sl-button>
     `;
   }
 
