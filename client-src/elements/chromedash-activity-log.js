@@ -271,7 +271,7 @@ export class ChromedashActivityLog extends LitElement {
       return 'loading...';
     }
 
-    if (this.comments && this.comments.length === 0) {
+    if (this.comments === undefined || this.comments.length === 0) {
       return html`<p>No comments yet.</p>`;
     }
 
