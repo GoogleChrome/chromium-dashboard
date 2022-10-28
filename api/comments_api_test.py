@@ -50,7 +50,7 @@ class CommentsAPITest(testing_config.CustomTestCase):
         set_by='owner1@example.com', set_on=NOW,
         state=review_models.Approval.APPROVED)
     self.appr_1_1.put()
-    
+
     self.act_1_1 = review_models.Activity(feature_id=self.feature_id, gate_id=2,
         author='owner1@example.com', created=NOW, content='Good job')
 
@@ -59,7 +59,8 @@ class CommentsAPITest(testing_config.CustomTestCase):
         'gate_id': self.gate_1.gate_type,
         'author': 'owner1@example.com',
         'deleted_by': None,
-        'content': 'Good job'
+        'content': 'Good job',
+        'amendments': [],
         }
 
   def tearDown(self):

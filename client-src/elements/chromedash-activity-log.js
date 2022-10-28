@@ -27,6 +27,7 @@ export class ChromedashAmendment extends LitElement {
         }
 
         summary {
+          list-style: revert;  /* Show small triangle */
           white-space: nowrap;
           box-sizing: border-box;
           contain: content;
