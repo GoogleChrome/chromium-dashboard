@@ -19,11 +19,16 @@ from typing import Any
 from framework import basehandlers
 from framework import permissions
 from internals import approval_defs
-from internals.review_models import Activity, Approval, Gate, Vote
+from internals.review_models import Activity, Amendment, Approval, Gate, Vote
 from internals import notifier
 
 
+def amendment_to_json_dict(amendment: Amendment) -> dict[str, Any]:
+  return amendment._to_dict()
+
+
 def comment_to_json_dict(comment: Activity) -> dict[str, Any]:
+  amendments_json = [amendment_to_json_dict(a) for a in comment.amendments]
   return {
       'comment_id': comment.key.id(),
       'feature_id': comment.feature_id,
@@ -31,7 +36,8 @@ def comment_to_json_dict(comment: Activity) -> dict[str, Any]:
       'created': str(comment.created),  # YYYY-MM-DD HH:MM:SS.SSS
       'author': comment.author,
       'content': comment.content,
-      'deleted_by': comment.deleted_by
+      'deleted_by': comment.deleted_by,
+      'amendments': amendments_json,
       }
 
 
@@ -48,15 +54,17 @@ class CommentsAPI(basehandlers.APIHandler):
     """Return a list of all review comments on the given feature."""
     feature_id = kwargs['feature_id']
     field_id = kwargs.get('field_id', None)
+    comments_only = self.get_bool_arg('comments_only')
     # Note: We assume that anyone may view approval comments.
     comments = Activity.get_activities(
-        feature_id, field_id, comments_only=True)
-    user = self.get_current_user(required=True)
+        feature_id, field_id, comments_only=comments_only)
+    user = self.get_current_user()
     is_admin = permissions.can_admin_site(user)
-    
+
     # Filter deleted comments the user can't see.
+    user_email = user.email() if user else None
     comments = list(filter(
-      lambda c: self._should_show_comment(c, user.email(), is_admin), comments))
+      lambda c: self._should_show_comment(c, user_email, is_admin), comments))
 
     dicts = [comment_to_json_dict(c) for c in comments]
     return {'comments': dicts}

@@ -199,12 +199,15 @@ class ChromeStatusClient {
         });
   }
 
-  getComments(featureId, gateId) {
+  getComments(featureId, gateId, commentsOnly=true) {
+    let url = `/features/${featureId}/approvals/comments`;
     if (gateId) {
-      return this.doGet(`/features/${featureId}/approvals/${gateId}/comments`);
-    } else {
-      return this.doGet(`/features/${featureId}/approvals/comments`);
+      url = `/features/${featureId}/approvals/${gateId}/comments`;
     }
+    if (commentsOnly) {
+      url += '?comments_only';
+    }
+    return this.doGet(url);
   }
 
   postComment(featureId, gateId, state, comment, postToApprovalFieldId) {

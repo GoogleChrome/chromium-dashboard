@@ -87,6 +87,7 @@ export class ChromedashFeaturePage extends LitElement {
       user: {type: Object},
       featureId: {type: Number},
       feature: {type: Object},
+      comments: {type: Array},
       process: {type: Object},
       dismissedCues: {type: Array},
       contextLink: {type: String},
@@ -101,6 +102,7 @@ export class ChromedashFeaturePage extends LitElement {
     this.user = {};
     this.featureId = 0;
     this.feature = {};
+    this.comments = {};
     this.process = {};
     this.dismissedCues = [];
     this.contextLink = '';
@@ -118,11 +120,13 @@ export class ChromedashFeaturePage extends LitElement {
     this.loading = true;
     Promise.all([
       window.csClient.getFeature(this.featureId),
+      window.csClient.getComments(this.featureId, null, false),
       window.csClient.getFeatureProcess(this.featureId),
       window.csClient.getDismissedCues(),
       window.csClient.getStars(),
-    ]).then(([feature, process, dismissedCues, starredFeatures]) => {
+    ]).then(([feature, commentRes, process, dismissedCues, starredFeatures]) => {
       this.feature = feature;
+      this.comments = commentRes.comments;
       this.process = process;
       this.dismissedCues = dismissedCues;
 
@@ -426,7 +430,10 @@ export class ChromedashFeaturePage extends LitElement {
   renderFeatureDetails() {
     return html`
       <chromedash-feature-detail
+        .loading=${this.loading}
+        .user=${this.user}
         .feature=${this.feature}
+        .comments=${this.comments}
         .process=${this.process}
         .dismissedCues=${this.dismissedCues}>
       </chromedash-feature-detail>

@@ -1,5 +1,6 @@
 import {LitElement, css, html, nothing} from 'lit';
 import '@polymer/iron-icon';
+import './chromedash-activity-log';
 import {showToastMessage} from './utils.js';
 
 import {SHARED_STYLES} from '../sass/shared-css.js';
@@ -153,6 +154,11 @@ class ChromedashApprovalsDialog extends LitElement {
         textarea {
           padding: 4px;
           resize: both;
+        }
+
+        .comment_section {
+          max-height: 250px;
+          overflow-y: scroll;
         }
       `];
   }
@@ -365,12 +371,14 @@ class ChromedashApprovalsDialog extends LitElement {
 
   renderAllComments() {
     return html`
-        <h3>Comments</h3>
+      <h3>Comments</h3>
+      <div class="comment_section">
         <chromedash-activity-log
           .user=${this.user}
           .feature=${this.feature}
           .comments=${this.comments}>
         </chromedash-activity-log>
+      </div>
     `;
   }
 
