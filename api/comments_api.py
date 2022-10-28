@@ -24,11 +24,17 @@ from internals import notifier
 
 
 def amendment_to_json_dict(amendment: Amendment) -> dict[str, Any]:
-  return amendment._to_dict()
+  return {
+      'field_name': amendment.field_name,
+      'old_value': amendment.old_value.strip('[]'),
+      'new_value': amendment.new_value.strip('[]'),
+      }
 
 
-def comment_to_json_dict(comment: Activity) -> dict[str, Any]:
-  amendments_json = [amendment_to_json_dict(a) for a in comment.amendments]
+def activity_to_json_dict(comment: Activity) -> dict[str, Any]:
+  amendments_json = [
+      amendment_to_json_dict(amnd) for amnd in comment.amendments
+      if amnd.old_value != 'None' or amnd.new_value != '[]']
   return {
       'comment_id': comment.key.id(),
       'feature_id': comment.feature_id,
@@ -66,7 +72,7 @@ class CommentsAPI(basehandlers.APIHandler):
     comments = list(filter(
       lambda c: self._should_show_comment(c, user_email, is_admin), comments))
 
-    dicts = [comment_to_json_dict(c) for c in comments]
+    dicts = [activity_to_json_dict(c) for c in comments]
     return {'comments': dicts}
 
   def do_post(self, **kwargs) -> dict[str, str]:
