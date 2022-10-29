@@ -39,9 +39,11 @@ class ChromedashFeatureDetail extends LitElement {
         background: inherit;
       }
 
-      #controls {
-        text-align: right;
-        font-size: 1.6rem;
+      h2 {
+        display: flex;
+      }
+      h2 span {
+        flex: 1;
       }
 
       .card {
@@ -129,14 +131,13 @@ class ChromedashFeatureDetail extends LitElement {
   }
 
   renderControls() {
-    const iconName = this.anyCollapsed ? 'unfold_more' : 'unfold_less';
+    const text = this.anyCollapsed ? 'Expand all' : 'Collapse all';
     return html`
-      <div id="controls">
-        <sl-icon-button library="material" name=${iconName}
-          title="Expand or collapse all sections"
-          @click=${this.toggleAll}>
-        </sl-icon-button>
-      </div>
+      <sl-button variant="text"
+        title="Expand or collapse all sections"
+        @click=${this.toggleAll}>
+        ${text}
+      </sl-button>
     `;
   }
 
@@ -270,7 +271,10 @@ class ChromedashFeatureDetail extends LitElement {
 
   render() {
     return html`
-      ${this.renderControls()}
+      <h2>
+        <span>Development stages</span>
+        ${this.renderControls()}
+      </h2>
       ${this.renderStage('Metadata')}
       ${this.process.stages.map(stage => html`
           ${this.renderStage(stage)}
