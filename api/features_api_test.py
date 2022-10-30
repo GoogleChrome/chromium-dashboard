@@ -96,30 +96,49 @@ class FeaturesAPITestDelete(testing_config.CustomTestCase):
     self.assertFalse(revised_feature.deleted)
 
 
-class FeaturesAPITestGet(testing_config.CustomTestCase):
+class FeaturesAPITestGet_NewSchema(testing_config.CustomTestCase):
 
   def setUp(self):
     self.feature_1 = core_models.Feature(
         name='feature one', summary='sum Z',
         owner=['feature_owner@example.com'], category=1,
-        intent_stage=core_enums.INTENT_IMPLEMENT, shipped_milestone=1)
+        intent_stage=core_enums.INTENT_IMPLEMENT)
     self.feature_1.put()
     self.feature_1_id = self.feature_1.key.integer_id()
+    self.fe_1 = core_models.FeatureEntry(
+        id=self.feature_1_id,
+        name='feature one', summary='sum Z',
+        owner_emails=['feature_owner@example.com'], category=1,
+        intent_stage=core_enums.INTENT_IMPLEMENT)
+    self.fe_1.put()
 
     self.feature_2 = core_models.Feature(
         name='feature two', summary='sum K',
         owner=['other_owner@example.com'], category=1,
-        intent_stage=core_enums.INTENT_IMPLEMENT, shipped_milestone=2)
+        intent_stage=core_enums.INTENT_IMPLEMENT)
     self.feature_2.put()
     self.feature_2_id = self.feature_2.key.integer_id()
+    self.fe_2 = core_models.FeatureEntry(
+        id=self.feature_2_id,
+        name='feature two', summary='sum K',
+        owner_emails=['other_owner@example.com'], category=1,
+        intent_stage=core_enums.INTENT_IMPLEMENT)
+    self.fe_2.put()
 
     self.feature_3 = core_models.Feature(
         name='feature three', summary='sum A',
         owner=['other_owner@example.com'], category=1,
-        intent_stage=core_enums.INTENT_IMPLEMENT, shipped_milestone=2,
+        intent_stage=core_enums.INTENT_IMPLEMENT,
         unlisted=True)
     self.feature_3.put()
     self.feature_3_id = self.feature_3.key.integer_id()
+    self.fe_3 = core_models.FeatureEntry(
+        id=self.feature_3_id,
+        name='feature three', summary='sum A',
+        owner_emails=['other_owner@example.com'], category=1,
+        intent_stage=core_enums.INTENT_IMPLEMENT,
+        unlisted=True)
+    self.fe_3.put()
 
     self.request_path = '/api/v0/features'
     self.handler = features_api.FeaturesAPI()
@@ -132,6 +151,9 @@ class FeaturesAPITestGet(testing_config.CustomTestCase):
     self.feature_1.key.delete()
     self.feature_2.key.delete()
     self.feature_3.key.delete()
+    self.fe_1.key.delete()
+    self.fe_2.key.delete()
+    self.fe_3.key.delete()
     self.app_admin.key.delete()
     testing_config.sign_out()
     rediscache.delete_keys_with_prefix('features|*')
@@ -217,8 +239,8 @@ class FeaturesAPITestGet(testing_config.CustomTestCase):
 
   def test_get__all_unlisted_no_perms(self):
     """JSON feed does not include unlisted features for users who can't edit."""
-    self.feature_1.unlisted = True
-    self.feature_1.put()
+    self.fe_1.unlisted = True
+    self.fe_1.put()
 
     # No signed-in user
     with test_app.test_request_context(self.request_path):
@@ -237,8 +259,8 @@ class FeaturesAPITestGet(testing_config.CustomTestCase):
 
   def test_get__all_unlisted_can_edit(self):
     """JSON feed includes unlisted features for users who may edit."""
-    self.feature_1.unlisted = True
-    self.feature_1.put()
+    self.fe_1.unlisted = True
+    self.fe_1.put()
 
     # Signed-in user with permissions
     testing_config.sign_in('admin@example.com', 123567890)
@@ -290,6 +312,48 @@ class FeaturesAPITestGet(testing_config.CustomTestCase):
     self.assertEqual('sum Z', actual['features'][0]['summary'])
     self.assertEqual('sum K', actual['features'][1]['summary'])
     self.assertEqual('sum A', actual['features'][2]['summary'])
+
+
+# TODO(jrobbins): Merge with class above when everything uses FeatureEntries.
+class FeaturesAPITestGet_OldSchema(testing_config.CustomTestCase):
+
+  def setUp(self):
+    self.feature_1 = core_models.Feature(
+        name='feature one', summary='sum Z',
+        owner=['feature_owner@example.com'], category=1,
+        intent_stage=core_enums.INTENT_IMPLEMENT, shipped_milestone=1)
+    self.feature_1.put()
+    self.feature_1_id = self.feature_1.key.integer_id()
+
+    self.feature_2 = core_models.Feature(
+        name='feature two', summary='sum K',
+        owner=['other_owner@example.com'], category=1,
+        intent_stage=core_enums.INTENT_IMPLEMENT, shipped_milestone=2)
+    self.feature_2.put()
+    self.feature_2_id = self.feature_2.key.integer_id()
+
+    self.feature_3 = core_models.Feature(
+        name='feature three', summary='sum A',
+        owner=['other_owner@example.com'], category=1,
+        intent_stage=core_enums.INTENT_IMPLEMENT, shipped_milestone=2,
+        unlisted=True)
+    self.feature_3.put()
+    self.feature_3_id = self.feature_3.key.integer_id()
+
+    self.request_path = '/api/v0/features'
+    self.handler = features_api.FeaturesAPI()
+
+    self.app_admin = user_models.AppUser(email='admin@example.com')
+    self.app_admin.is_admin = True
+    self.app_admin.put()
+
+  def tearDown(self):
+    self.feature_1.key.delete()
+    self.feature_2.key.delete()
+    self.feature_3.key.delete()
+    self.app_admin.key.delete()
+    testing_config.sign_out()
+    rediscache.delete_keys_with_prefix('features|*')
 
   def test_get__in_milestone_listed(self):
     """Get all features in a specific milestone that are listed."""

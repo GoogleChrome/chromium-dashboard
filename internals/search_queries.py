@@ -16,10 +16,12 @@ import logging
 import datetime
 from typing import Union, Callable
 
+from google.cloud import ndb
 from google.cloud.ndb.model import Model, Property  # for type checking only
 from google.cloud.ndb.tasklets import Future  # for type checking only
 from google.cloud.ndb.query import FilterNode  # for type checking only
 
+from framework import users
 from framework import utils
 from internals.core_models import FeatureEntry
 from internals import review_models
@@ -58,6 +60,28 @@ def single_field_query_async(
     raise ValueError('Unexpected query operator: %r' % operator)
 
   keys_promise = query.fetch_async(keys_only=True, limit=limit)
+  return keys_promise
+
+
+def handle_me_query_async(field_name: str) -> Future:
+  """Return a future for feature IDs that reference the current user."""
+  user = users.get_current_user()
+  if not user:
+    return []
+  return single_field_query_async(field_name, '=', user.email())
+
+
+def handle_can_edit_me_query_async() -> Future:
+  """Return a future for features that the current user can edit."""
+  user = users.get_current_user()
+  if not user:
+    return []
+  email = user.email()
+  query = FeatureEntry.query(
+      ndb.OR(FeatureEntry.owner_emails == email,
+             FeatureEntry.editor_emails == email,
+             FeatureEntry.creator_email == email))
+  keys_promise = query.fetch_async(keys_only=True)
   return keys_promise
 
 
@@ -136,9 +160,9 @@ QUERIABLE_FIELDS: dict[str, Property] = {
     'summary': FeatureEntry.summary,
     'category': FeatureEntry.category,
 
-    'browsers.chrome.blink_components': FeatureEntry.blink_components,
+    'browsers.chrome.blink_component': FeatureEntry.blink_components,
     'star_count': FeatureEntry.star_count,
-    'tags': FeatureEntry.search_tags,
+    'tag': FeatureEntry.search_tags,
     'feature_notes': FeatureEntry.feature_notes,
 
     'feature_type': FeatureEntry.feature_type,
@@ -191,8 +215,8 @@ QUERIABLE_FIELDS: dict[str, Property] = {
 
     'browsers.chrome.devrel': FeatureEntry.devrel_emails,
     'debuggability': FeatureEntry.debuggability,
-    'resources.docs': FeatureEntry.doc_links,
-    'resources.samples': FeatureEntry.sample_links,
+    'resources.doc': FeatureEntry.doc_links,
+    'resources.sample': FeatureEntry.sample_links,
 
     # TODO(jrobbins): These are in stages
     # 'intent_to_implement_url': FeatureEntry.intent_to_implement_url,

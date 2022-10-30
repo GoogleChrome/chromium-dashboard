@@ -19,20 +19,24 @@ from unittest import mock
 
 from internals import core_models
 from internals import review_models
+from internals import search
 from internals import search_queries
 
 
 class SearchFeaturesTest(testing_config.CustomTestCase):
 
   def setUp(self):
-    self.feature_1 = core_models.Feature(
-        name='feature a', summary='sum', owner=['owner@example.com'],
+    self.feature_1 = core_models.FeatureEntry(
+        name='feature a', summary='sum',
         category=1, impl_status_chrome=3)
+    self.feature_1.owner_emails = ['owner@example.com']
+    self.feature_1.editor_emails = ['editor@example.com']
+    self.feature_1.cc_emails = ['cc@example.com']
     self.feature_1.put()
     self.feature_1_id = self.feature_1.key.integer_id()
 
-    self.feature_2 = core_models.Feature(
-        name='feature b', summary='sum', owner=['owner@example.com'],
+    self.feature_2 = core_models.FeatureEntry(
+        name='feature b', summary='sum', owner_emails=['owner@example.com'],
         category=1, impl_status_chrome=3)
     self.feature_2.put()
     self.feature_2_id = self.feature_2.key.integer_id()
@@ -93,21 +97,91 @@ class SearchFeaturesTest(testing_config.CustomTestCase):
     actual = search_queries.single_field_query_async('zodiac', '=', 'leo')
     self.assertCountEqual([], actual)
 
+  def test_handle_me_query_async__owner_anon(self):
+    """We can return a list of features owned by the user."""
+    testing_config.sign_in('visitor@example.com', 111)
+    future = search_queries.handle_me_query_async('owner')
+    actual = search._resolve_promise_to_id_list(future)
+    self.assertEqual(actual, [])
+
+  def test_handle_me_query__owner_some(self):
+    """We can return a list of features owned by the user."""
+    testing_config.sign_in('owner@example.com', 111)
+    future = search_queries.handle_me_query_async('owner')
+    actual = search._resolve_promise_to_id_list(future)
+    self.assertEqual(
+        [self.feature_1_id, self.feature_2_id], actual)
+
+  def test_handle_me_query__editor_none(self):
+    """We can return a list of features the user can edit."""
+    testing_config.sign_in('visitor@example.com', 111)
+    future = search_queries.handle_me_query_async('editor')
+    actual = search._resolve_promise_to_id_list(future)
+    self.assertEqual([], actual)
+
+  def test_handle_me_query__editor_some(self):
+    """We can return a list of features the user can edit."""
+    testing_config.sign_in('editor@example.com', 111)
+    future = search_queries.handle_me_query_async('editor')
+    actual = search._resolve_promise_to_id_list(future)
+    self.assertEqual([self.feature_1_id], actual)
+
+  def test_handle_me_query__cc_none(self):
+    """We can return a list of features the user is CC'd on."""
+    testing_config.sign_in('visitor@example.com', 111)
+    future = search_queries.handle_me_query_async('cc')
+    actual = search._resolve_promise_to_id_list(future)
+    self.assertEqual(actual, [])
+
+  def test_handle_me_query__cc_some(self):
+    """We can return a list of features the user is CC'd on."""
+    testing_config.sign_in('cc@example.com', 111)
+    future = search_queries.handle_me_query_async('cc')
+    actual = search._resolve_promise_to_id_list(future)
+    self.assertEqual([self.feature_1_id], actual)
+
+  def test_handle_can_edit_me_query_async__anon(self):
+    """Anon cannot edit any features."""
+    testing_config.sign_out()
+    future = search_queries.handle_can_edit_me_query_async()
+    actual = search._resolve_promise_to_id_list(future)
+    self.assertEqual([], actual)
+
+  def test_handle_can_edit_me_query_async__visitor(self):
+    """Visitor cannot edit any features."""
+    testing_config.sign_in('visitor@example.com', 111)
+    future = search_queries.handle_can_edit_me_query_async()
+    actual = search._resolve_promise_to_id_list(future)
+    self.assertEqual([], actual)
+
+  def test_handle_can_edit_me_query_async__owner(self):
+    """A feature owner can edit those features."""
+    testing_config.sign_in('owner@example.com', 111)
+    future = search_queries.handle_can_edit_me_query_async()
+    actual = search._resolve_promise_to_id_list(future)
+    self.assertEqual(
+        [self.feature_1_id, self.feature_2_id], actual)
+
+  def test_handle_can_edit_me_query_async__editor(self):
+    """A feature editor can edit those features."""
+    testing_config.sign_in('editor@example.com', 111)
+    future = search_queries.handle_can_edit_me_query_async()
+    actual = search._resolve_promise_to_id_list(future)
+    self.assertEqual([self.feature_1_id], actual)
+
   def test_total_order_query_async__field_asc(self):
     """We can get keys used to sort features in ascending order."""
-    actual_promise = search_queries.total_order_query_async('name')
-    actual = actual_promise.get_result()
+    future = search_queries.total_order_query_async('name')
+    actual = search._resolve_promise_to_id_list(future)
     self.assertEqual(
-        [self.feature_1_id, self.feature_2_id],
-        [key.integer_id() for key in actual])
+        [self.feature_1_id, self.feature_2_id], actual)
 
   def test_total_order_query_async__field_desc(self):
     """We can get keys used to sort features in descending order."""
-    actual_promise = search_queries.total_order_query_async('-name')
-    actual = actual_promise.get_result()
+    future = search_queries.total_order_query_async('-name')
+    actual = search._resolve_promise_to_id_list(future)
     self.assertEqual(
-        [self.feature_2_id, self.feature_1_id],
-        [key.integer_id() for key in actual])
+        [self.feature_2_id, self.feature_1_id], actual)
 
   def test_total_order_query_async__requested_on(self):
     """We can get feature IDs sorted by approval review requests."""

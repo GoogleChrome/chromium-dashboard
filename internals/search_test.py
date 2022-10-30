@@ -206,46 +206,6 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
     self.assertEqual(len(actual), 1)
     self.assertEqual(actual[0], self.feature_1.key.integer_id())
 
-  def test_process_access_me_query__owner_none(self):
-    """We can return a list of features owned by the user."""
-    testing_config.sign_in('visitor@example.com', 111)
-    actual = search.process_access_me_query('owner')
-    self.assertEqual(actual, [])
-
-  def test_process_access_me_query__owner_some(self):
-    """We can return a list of features owned by the user."""
-    testing_config.sign_in('owner@example.com', 111)
-    actual = search.process_access_me_query('owner')
-    self.assertEqual(len(actual), 2)
-    self.assertEqual(actual[0], self.feature_1.key.integer_id())
-    self.assertEqual(actual[1], self.feature_2.key.integer_id())
-
-  def test_process_access_me_query__editors_none(self):
-    """We can return a list of features the user can edit."""
-    testing_config.sign_in('visitor@example.com', 111)
-    actual = search.process_access_me_query('editors')
-    self.assertEqual(actual, [])
-
-  def test_process_access_me_query__editors_some(self):
-    """We can return a list of features the user can edit."""
-    testing_config.sign_in('editor@example.com', 111)
-    actual = search.process_access_me_query('editors')
-    self.assertEqual(len(actual), 1)
-    self.assertEqual(actual[0], self.feature_1.key.integer_id())
-
-  def test_process_access_me_query__cc_recipients_none(self):
-    """We can return a list of features the user is CC'd on."""
-    testing_config.sign_in('visitor@example.com', 111)
-    actual = search.process_access_me_query('cc_recipients')
-    self.assertEqual(actual, [])
-
-  def test_process_access_me_query__cc_recipients_some(self):
-    """We can return a list of features the user is CC'd on."""
-    testing_config.sign_in('cc@example.com', 111)
-    actual = search.process_access_me_query('cc_recipients')
-    self.assertEqual(len(actual), 1)
-    self.assertEqual(actual[0], self.feature_1.key.integer_id())
-
   @mock.patch('internals.review_models.Approval.get_approvals')
   @mock.patch('internals.approval_defs.fields_approvable_by')
   def test_process_recent_reviews_query__none(
@@ -309,7 +269,7 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
 
   @mock.patch('internals.search.process_pending_approval_me_query')
   @mock.patch('internals.search.process_starred_me_query')
-  @mock.patch('internals.search.process_access_me_query')
+  @mock.patch('internals.search_queries.handle_me_query_async')
   @mock.patch('internals.search.process_recent_reviews_query')
   def test_process_query__predefined(
       self, mock_recent, mock_own_me, mock_star_me, mock_pend_me):
