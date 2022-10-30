@@ -74,7 +74,7 @@ class SearchFeaturesTest(testing_config.CustomTestCase):
   def test_single_field_query_async__normal(self):
     """We get a promise to run the DB query, which produces results."""
     actual_promise = search_queries.single_field_query_async(
-        'summary', '=', 'sum')
+        'owner', '=', 'owner@example.com')
     actual = actual_promise.get_result()
     self.assertCountEqual(
         [self.feature_1_id, self.feature_2_id],
@@ -83,7 +83,7 @@ class SearchFeaturesTest(testing_config.CustomTestCase):
   def test_single_field_query_async__zero_results(self):
     """When there are no matching results, we get back a promise for []."""
     actual_promise = search_queries.single_field_query_async(
-        'summary', '=', 'nope')
+        'owner', '=', 'nope')
     actual = actual_promise.get_result()
     self.assertCountEqual([], actual)
 

@@ -77,15 +77,25 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
     self.feature_1 = core_models.Feature(
         name='feature 1', summary='sum', category=1, web_dev_views=1,
         impl_status_chrome=3)
-    self.feature_1.owner = ['owner@example.com']
-    self.feature_1.editors = ['editor@example.com']
-    self.feature_1.cc_recipients = ['cc@example.com']
     self.feature_1.put()
+    self.featureentry_1 = core_models.FeatureEntry(
+        id=self.feature_1.key.integer_id(),
+        name='feature 1', summary='sum', category=1, web_dev_views=1,
+        impl_status_chrome=3)
+    self.featureentry_1.owner_emails = ['owner@example.com']
+    self.featureentry_1.editor_emails = ['editor@example.com']
+    self.featureentry_1.cc_emailss = ['cc@example.com']
+    self.featureentry_1.put()
     self.feature_2 = core_models.Feature(
         name='feature 2', summary='sum', category=2, web_dev_views=1,
         impl_status_chrome=3)
-    self.feature_2.owner = ['owner@example.com']
     self.feature_2.put()
+    self.featureentry_2 = core_models.FeatureEntry(
+        id=self.feature_2.key.integer_id(),
+        name='feature 2', summary='sum', category=2, web_dev_views=1,
+        impl_status_chrome=3)
+    self.featureentry_2.owner_emails = ['owner@example.com']
+    self.featureentry_2.put()
     notifier.FeatureStar.set_star(
         'starrer@example.com', self.feature_1.key.integer_id())
 
@@ -95,6 +105,8 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
         starred=False)
     self.feature_1.key.delete()
     self.feature_2.key.delete()
+    self.featureentry_1.key.delete()
+    self.featureentry_2.key.delete()
     for appr in review_models.Approval.query():
       appr.key.delete()
 

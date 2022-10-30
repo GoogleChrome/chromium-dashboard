@@ -21,20 +21,24 @@ from google.cloud.ndb.tasklets import Future  # for type checking only
 from google.cloud.ndb.query import FilterNode  # for type checking only
 
 from framework import utils
-from internals import core_models
+from internals.core_models import FeatureEntry
 from internals import review_models
 
 
 def single_field_query_async(
     field_name: str, operator: str, val: Union[str, int, datetime.datetime],
     limit: int = None) -> Union[list[int], Future]:
-  """Create a query for one Feature field and run it, returning a promise."""
+  """Create a query for one FeatureEntry field and run it, returning a promise."""
   field = QUERIABLE_FIELDS.get(field_name.lower())
   if field is None:
     logging.warning('Ignoring field name %r', field_name)
     return []
-  # TODO(jrobbins): support sorting by any fields of other model classes.
-  query = core_models.Feature.query()
+  if not field._indexed:
+    logging.warning('Field is not indexed in NDB %r', field_name)
+    # TODO(jrobbins): Implement a text_eq operator w/ post-processing
+    return []
+
+  query = FeatureEntry.query()
   # Note: We don't exclude deleted features, that's done by process_query.
 
   # TODO(jrobbins): Handle ":" operator as substrings for text fields.
@@ -58,7 +62,7 @@ def single_field_query_async(
 
 
 def total_order_query_async(sort_spec: str) -> Union[list[int], Future]:
-  """Create a query promise for all Feature IDs sorted by sort_spec."""
+  """Create a query promise for all FeatureEntry IDs sorted by sort_spec."""
   # TODO(jrobbins): Support multi-column sort.
   descending = False
   if sort_spec.startswith('-'):
@@ -76,7 +80,7 @@ def total_order_query_async(sort_spec: str) -> Union[list[int], Future]:
   if descending:
     field = -field
   # TODO(jrobbins): support sorting by any fields of other model classes.
-  query = core_models.Feature.query().order(field)
+  query = FeatureEntry.query().order(field)
 
   keys_promise = query.fetch_async(keys_only=True)
   return keys_promise
@@ -116,102 +120,119 @@ def sorted_by_review_date(descending: bool) -> list[int]:
 
 
 QUERIABLE_FIELDS: dict[str, Property] = {
-    'created.when': core_models.Feature.created,
-    'updated.when': core_models.Feature.updated,
-    'deleted': core_models.Feature.deleted,
+    'created.when': FeatureEntry.created,
+    'updated.when': FeatureEntry.updated,
+    # accurate_as_of
+    'creator': FeatureEntry.creator_email,
+    'updater': FeatureEntry.updater_email,
+    'owner': FeatureEntry.owner_emails,
+    'browsers.chrome.owners': FeatureEntry.owner_emails,
+    'editor': FeatureEntry.editor_emails,
+    'cc': FeatureEntry.cc_emails,
+    'unlisted': FeatureEntry.unlisted,
+    'deleted': FeatureEntry.deleted,
 
-    # TODO(jrobbins): We cannot query user fields because Cloud NDB does not
-    # seem to support it.  We should migrate these to string fields.
-    #'created.by': Feature.created_by,
-    #'updated.by': Feature.updated_by,
+    'name': FeatureEntry.name,
+    'summary': FeatureEntry.summary,
+    'category': FeatureEntry.category,
 
-    'category': core_models.Feature.category,
-    'name': core_models.Feature.name,
-    'feature_type': core_models.Feature.feature_type,
-    'intent_stage': core_models.Feature.intent_stage,
-    'summary': core_models.Feature.summary,
-    'unlisted': core_models.Feature.unlisted,
-    'motivation': core_models.Feature.motivation,
-    'star_count': core_models.Feature.star_count,
-    'tags': core_models.Feature.search_tags,
-    'owner': core_models.Feature.owner,
-    'creator': core_models.Feature.creator,
-    'browsers.chrome.owners': core_models.Feature.owner,
-    'editors': core_models.Feature.editors,
-    'cc_recipients': core_models.Feature.cc_recipients,
-    'intent_to_implement_url': core_models.Feature.intent_to_implement_url,
-    'intent_to_ship_url': core_models.Feature.intent_to_ship_url,
-    'ready_for_trial_url': core_models.Feature.ready_for_trial_url,
-    'intent_to_experiment_url': core_models.Feature.intent_to_experiment_url,
-    'intent_to_extend_experiment_url':
-        core_models.Feature.intent_to_extend_experiment_url,
-    'i2e_lgtms': core_models.Feature.i2e_lgtms,
-    'i2s_lgtms': core_models.Feature.i2s_lgtms,
-    'browsers.chrome.bug': core_models.Feature.bug_url,
-    'launch_bug_url': core_models.Feature.launch_bug_url,
+    'browsers.chrome.blink_components': FeatureEntry.blink_components,
+    'star_count': FeatureEntry.star_count,
+    'tags': FeatureEntry.search_tags,
+    'feature_notes': FeatureEntry.feature_notes,
+
+    'feature_type': FeatureEntry.feature_type,
+    'intent_stage': FeatureEntry.intent_stage,
+    'browsers.chrome.bug': FeatureEntry.bug_url,
+    'launch_bug_url': FeatureEntry.launch_bug_url,
+
+    'browsers.chrome.status': FeatureEntry.impl_status_chrome,
+    'browsers.chrome.flag_name': FeatureEntry.flag_name,
+    'ongoing_constraints': FeatureEntry.ongoing_constraints,
+
+    'motivation': FeatureEntry.motivation,
+    'devtrial_instructions': FeatureEntry.devtrial_instructions,
+    'activation_risks': FeatureEntry.activation_risks,
+    'measurement': FeatureEntry.measurement,
+
     'initial_public_proposal_url':
-        core_models.Feature.initial_public_proposal_url,
-    'browsers.chrome.blink_components': core_models.Feature.blink_components,
-    'browsers.chrome.devrel': core_models.Feature.devrel,
-    'browsers.chrome.prefixed': core_models.Feature.prefixed,
-
-    'browsers.chrome.status': core_models.Feature.impl_status_chrome,
-    'browsers.chrome.desktop': core_models.Feature.shipped_milestone,
-    'browsers.chrome.android': core_models.Feature.shipped_android_milestone,
-    'browsers.chrome.ios': core_models.Feature.shipped_ios_milestone,
-    'browsers.chrome.webview': core_models.Feature.shipped_webview_milestone,
-    'requires_embedder_support': core_models.Feature.requires_embedder_support,
-
-    'browsers.chrome.flag_name': core_models.Feature.flag_name,
-    'all_platforms': core_models.Feature.all_platforms,
-    'all_platforms_descr': core_models.Feature.all_platforms_descr,
-    'wpt': core_models.Feature.wpt,
-    'browsers.chrome.devtrial.desktop.start':
-        core_models.Feature.dt_milestone_desktop_start,
-    'browsers.chrome.devtrial.android.start':
-        core_models.Feature.dt_milestone_android_start,
-    'browsers.chrome.devtrial.ios.start':
-        core_models.Feature.dt_milestone_ios_start,
-    'browsers.chrome.devtrial.webview.start':
-        core_models.Feature.dt_milestone_webview_start,
-
-    'standards.maturity': core_models.Feature.standard_maturity,
-    'standards.spec': core_models.Feature.spec_link,
+        FeatureEntry.initial_public_proposal_url,
+    'explainer': FeatureEntry.explainer_links,
+    'requires_embedder_support': FeatureEntry.requires_embedder_support,
+    'standards.maturity': FeatureEntry.standard_maturity,
+    'standards.spec': FeatureEntry.spec_link,
+    'api_spec': FeatureEntry.api_spec,
+    'spec_mentors': FeatureEntry.spec_mentor_emails,
+    'interop_compat_risks': FeatureEntry.interop_compat_risks,
+    'browsers.chrome.prefixed': FeatureEntry.prefixed,
+    'all_platforms': FeatureEntry.all_platforms,
+    'all_platforms_descr': FeatureEntry.all_platforms_descr,
+    'tag_review.url': FeatureEntry.tag_review,
+    'tag_review.status': FeatureEntry.tag_review_status,
+    'non_oss_deps': FeatureEntry.non_oss_deps,
     'standards.anticipated_spec_changes':
-        core_models.Feature.anticipated_spec_changes,
-    'api_spec': core_models.Feature.api_spec,
-    'spec_mentors': core_models.Feature.spec_mentors,
-    'security_review_status': core_models.Feature.security_review_status,
-    'privacy_review_status': core_models.Feature.privacy_review_status,
-    'tag_review.url': core_models.Feature.tag_review,
-    'tag_review.status': core_models.Feature.tag_review_status,
-    'explainer': core_models.Feature.explainer_links,
+        FeatureEntry.anticipated_spec_changes,
 
-    'browsers.ff.view': core_models.Feature.ff_views,
-    'browsers.safari.view': core_models.Feature.safari_views,
-    'browsers.webdev.view': core_models.Feature.web_dev_views,
-    'browsers.ff.view.url': core_models.Feature.ff_views_link,
-    'browsers.safari.view.url': core_models.Feature.safari_views_link,
-    'browsers.webdev.url.url': core_models.Feature.web_dev_views_link,
+    'browsers.ff.view': FeatureEntry.ff_views,
+    'browsers.safari.view': FeatureEntry.safari_views,
+    'browsers.webdev.view': FeatureEntry.web_dev_views,
+    'browsers.ff.view.url': FeatureEntry.ff_views_link,
+    'browsers.safari.view.url': FeatureEntry.safari_views_link,
+    'browsers.webdev.view.url': FeatureEntry.web_dev_views_link,
 
-    'resources.docs': core_models.Feature.doc_links,
-    'non_oss_deps': core_models.Feature.non_oss_deps,
+    'security_risks': FeatureEntry.security_risks,
+    'security_review_status': FeatureEntry.security_review_status,
+    'privacy_review_status': FeatureEntry.privacy_review_status,
 
-    'browsers.chrome.ot.desktop.start':
-        core_models.Feature.ot_milestone_desktop_start,
-    'browsers.chrome.ot.desktop.end':
-        core_models.Feature.ot_milestone_desktop_end,
-    'browsers.chrome.ot.android.start':
-        core_models.Feature.ot_milestone_android_start,
-    'browsers.chrome.ot.android.end':
-        core_models.Feature.ot_milestone_android_end,
-    'browsers.chrome.ot.webview.start':
-        core_models.Feature.ot_milestone_webview_start,
-    'browsers.chrome.ot.webview.end':
-        core_models.Feature.ot_milestone_webview_end,
-    'browsers.chrome.ot.feedback_url':
-        core_models.Feature.origin_trial_feedback_url,
-    'finch_url': core_models.Feature.finch_url,
+    'ergonomics_risks': FeatureEntry.ergonomics_risks,
+    'wpt': FeatureEntry.wpt,
+    'wpt_descr': FeatureEntry.wpt_descr,
+    'webview_risks': FeatureEntry.webview_risks,
+
+    'browsers.chrome.devrel': FeatureEntry.devrel_emails,
+    'debuggability': FeatureEntry.debuggability,
+    'resources.docs': FeatureEntry.doc_links,
+    'resources.samples': FeatureEntry.sample_links,
+
+    # TODO(jrobbins): These are in stages
+    # 'intent_to_implement_url': FeatureEntry.intent_to_implement_url,
+    # 'intent_to_ship_url': FeatureEntry.intent_to_ship_url,
+    # 'ready_for_trial_url': FeatureEntry.ready_for_trial_url,
+    # 'intent_to_experiment_url': FeatureEntry.intent_to_experiment_url,
+    # 'intent_to_extend_experiment_url':
+    #     FeatureEntry.intent_to_extend_experiment_url,
+    # 'i2e_lgtms': FeatureEntry.i2e_lgtms,
+    # 'i2s_lgtms': FeatureEntry.i2s_lgtms,
+
+    # 'browsers.chrome.desktop': FeatureEntry.shipped_milestone,
+    # 'browsers.chrome.android': FeatureEntry.shipped_android_milestone,
+    # 'browsers.chrome.ios': FeatureEntry.shipped_ios_milestone,
+    # 'browsers.chrome.webview': FeatureEntry.shipped_webview_milestone,
+
+    # 'browsers.chrome.devtrial.desktop.start':
+    #     FeatureEntry.dt_milestone_desktop_start,
+    # 'browsers.chrome.devtrial.android.start':
+    #     FeatureEntry.dt_milestone_android_start,
+    # 'browsers.chrome.devtrial.ios.start':
+    #     FeatureEntry.dt_milestone_ios_start,
+    # 'browsers.chrome.devtrial.webview.start':
+    #     FeatureEntry.dt_milestone_webview_start,
+
+    # 'browsers.chrome.ot.desktop.start':
+    #     FeatureEntry.ot_milestone_desktop_start,
+    # 'browsers.chrome.ot.desktop.end':
+    #     FeatureEntry.ot_milestone_desktop_end,
+    # 'browsers.chrome.ot.android.start':
+    #     FeatureEntry.ot_milestone_android_start,
+    # 'browsers.chrome.ot.android.end':
+    #     FeatureEntry.ot_milestone_android_end,
+    # 'browsers.chrome.ot.webview.start':
+    #     FeatureEntry.ot_milestone_webview_start,
+    # 'browsers.chrome.ot.webview.end':
+    #     FeatureEntry.ot_milestone_webview_end,
+    # 'browsers.chrome.ot.feedback_url':
+    #     FeatureEntry.origin_trial_feedback_url,
+    # 'finch_url': FeatureEntry.finch_url,
     }
 
 SORTABLE_FIELDS: dict[str, Union[Property, Callable]] = QUERIABLE_FIELDS.copy()
