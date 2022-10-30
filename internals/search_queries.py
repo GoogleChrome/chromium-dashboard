@@ -16,7 +16,7 @@ import logging
 import datetime
 from typing import Union, Callable
 
-from google.cloud import ndb
+from google.cloud import ndb  # type: ignore
 from google.cloud.ndb.model import Model, Property  # for type checking only
 from google.cloud.ndb.tasklets import Future  # for type checking only
 from google.cloud.ndb.query import FilterNode  # for type checking only
