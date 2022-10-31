@@ -24,12 +24,13 @@ from internals import processes
 
 
 BakeApproval = approval_defs.ApprovalFieldDef(
-    'Approval for baking',
+    'Approval for baking', 'Chef',
     'The head chef must approve of you using the oven',
     9, approval_defs.ONE_LGTM, ['chef@example.com'])
 
 BAKE_APPROVAL_DEF_DICT = collections.OrderedDict([
     ('name', 'Approval for baking'),
+    ('team_name', 'Chef'),
     ('description', 'The head chef must approve of you using the oven'),
     ('field_id', 9),
     ('rule', approval_defs.ONE_LGTM),

@@ -56,6 +56,7 @@ import './elements/chromedash-featurelist';
 import './elements/chromedash-footer';
 import './elements/chromedash-form-field';
 import './elements/chromedash-form-table';
+import './elements/chromedash-gate-chip';
 import './elements/chromedash-gantt';
 import './elements/chromedash-guide-edit-page';
 import './elements/chromedash-guide-editall-page';

@@ -71,11 +71,11 @@ class FetchOwnersTest(testing_config.CustomTestCase):
 
 MOCK_APPROVALS_BY_ID = {
     1: approval_defs.ApprovalFieldDef(
-        'Intent to test',
+        'Intent to test', 'API Owners',
         'You need permission to test',
         1, approval_defs.ONE_LGTM, ['approver@example.com']),
     2: approval_defs.ApprovalFieldDef(
-        'Intent to optimize',
+        'Intent to optimize', 'API Owners',
         'You need permission to optimize',
         2, approval_defs.THREE_LGTM, 'https://example.com'),
 }
