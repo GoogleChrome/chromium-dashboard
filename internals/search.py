@@ -69,17 +69,6 @@ def process_starred_me_query() -> list[int]:
   return feature_ids
 
 
-def process_access_me_query(field) -> list[int]:
-  """Return features that the current user owns or can edit."""
-  user = users.get_current_user()
-  if not user:
-    return []
-  # Checks if the user's email exists in the given field.
-  features = feature_helpers.get_all(filterby=(field, user.email()))
-  feature_ids = [f['id'] for f in features]
-  return feature_ids
-
-
 def process_recent_reviews_query() -> list[int]:
   """Return features that were reviewed recently."""
   user = users.get_current_user()
@@ -157,16 +146,14 @@ def process_query_term(
   if query_term == 'is:recently-reviewed':
     return process_recent_reviews_query()
 
-  # These queries can display unlisted features if the users
-  # has edit access to them. Also return a flag to signal this.
   if query_term == 'owner:me':
-    return process_access_me_query('owner')
+    return search_queries.handle_me_query_async('owner')
   if query_term == 'editor:me':
-    return process_access_me_query('editors')
+    return search_queries.handle_me_query_async('editor')
   if query_term == 'can_edit:me':
-    return process_access_me_query('can_edit')
+    return search_queries.handle_can_edit_me_query_async()
   if query_term == 'cc:me':
-    return process_access_me_query('cc_recipients')
+    return search_queries.handle_me_query_async('cc')
 
   if val_str.startswith('"') and val_str.endswith('"'):
     val_str = val_str[1:-1]
@@ -253,6 +240,7 @@ def process_query(
   paginated_id_list = sorted_id_list[start : start + num]
 
   # 6. Fetch the actual issues that have those IDs in the sorted results.
+  # TODO(jrobbins): This still returns Feature objects.
   features_on_page = feature_helpers.get_by_ids(paginated_id_list)
 
   logging.info('features_on_page is %r', features_on_page)
