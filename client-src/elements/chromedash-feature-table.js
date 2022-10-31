@@ -113,13 +113,32 @@ class ChromedashFeatureTable extends LitElement {
       table {
         width: 100%;
       }
+      .skel td {
+        background: white;
+        padding: 14px;
+        border-bottom: var(--table-divider);
+      }
+      sl-skeleton {
+        height: 24px;
+      }
     `];
   }
 
   renderMessages() {
     if (this.loading) {
       return html`
-        <tr><td>Loading...</td></tr>
+        <tr class="skel"><td>
+          <sl-skeleton effect="sheen" style="width: 50%"></sl-skeleton>
+        </td></tr>
+        <tr class="skel"><td>
+          <sl-skeleton effect="sheen" style="width: 65%"></sl-skeleton>
+        </td></tr>
+        <tr class="skel"><td>
+          <sl-skeleton effect="sheen" style="width: 40%"></sl-skeleton>
+        </td></tr>
+        <tr class="skel"><td>
+          <sl-skeleton effect="sheen" style="width: 50%"></sl-skeleton>
+        </td></tr>
       `;
     }
     if (this.features.length == 0) {
@@ -157,7 +176,11 @@ class ChromedashFeatureTable extends LitElement {
 
     if (this.alwaysOfferPagination) {
       if (this.loading) { // reserve vertical space to use when loaded.
-        return html`<div class="pagination"></div>`;
+        return html`
+          <div class="pagination">
+            <sl-skeleton effect="sheen" style="float: right; width: 12em">
+            </sl-skeleton>
+          </div>`;
       }
     } else {
       // On MyFeatures page, don't always show pagination.  Omit it if
