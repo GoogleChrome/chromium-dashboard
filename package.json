@@ -76,7 +76,7 @@
     "gulp-uglify-es": "^3.0.0",
     "ini": ">=3.0.1",
     "kind-of": ">=6.0.3",
-    "lit-analyzer": "^0.0.6",
+    "lit-analyzer": "^1.2.1",
     "lodash": ">=4.17.21",
     "lodash.template": ">=4.5.0",
     "minimist": ">=1.2.7",
