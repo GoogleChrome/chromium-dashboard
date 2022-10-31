@@ -113,7 +113,7 @@ class ChromedashFeatureTable extends LitElement {
         margin-right: var(--content-padding);
       }
       .pagination sl-icon-button {
-        font-size: 1.4rem;
+        font-size: 1.6rem;
       }
       .pagination sl-icon-button::part(base) {
         padding: 0;
