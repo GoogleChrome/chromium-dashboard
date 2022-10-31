@@ -103,12 +103,20 @@ class ChromedashFeatureTable extends LitElement {
       css`
       .pagination {
         padding: var(--content-padding-half) 0;
-        text-align: right;
         min-height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: end;
       }
       .pagination span {
         color: var(--unimportant-text-color);
         margin-right: var(--content-padding);
+      }
+      .pagination sl-icon-button {
+        font-size: 1.4rem;
+      }
+      .pagination sl-icon-button::part(base) {
+        padding: 0;
       }
       table {
         width: 100%;
