@@ -223,35 +223,6 @@ def _stage_attr(
     return getattr(stage.milestones, field)
   return getattr(stage, field)
 
-# These FeatureEntry fields should be copied over as basic properties
-# without additional work when converting to JSON.
-BASIC_FE_FIELDS = [
-    "activation_risks",
-    "all_platforms",
-    "all_platforms_descr",
-    "anticipated_spec_changes",
-    "api_spec",
-    "debuggability",
-    "deleted",
-    "ergonomics_risks",
-    "feature_notes",
-    "flag_name",
-    "interop_compat_risks",
-    "measurement",
-    "motivation",
-    "name",
-    "non_oss_deps",
-    "ongoing_constraints",
-    "requires_embedder_support",
-    "security_risks",
-    "star_count",
-    "summary",
-    "tag_review",
-    "unlisted",
-    "webview_risks",
-    "wpt",
-    "wpt_descr"]
-
 def _prep_stage_gate_info(
     fe: FeatureEntry, d: dict) -> dict[str, Optional[Stage]]:
   """Adds stage and gate info to the dict and returns major stage info."""
@@ -300,9 +271,7 @@ def feature_entry_to_json_verbose(fe: FeatureEntry) -> dict[str, Any]:
   if not fe.key:
     return {}
 
-  d: dict[str, Any] = {}
-  for field in BASIC_FE_FIELDS:
-    d[field] = str(getattr(fe, field))
+  d: dict[str, Any] = fe.to_dict()
 
   d['id'] = fe.key.integer_id()
 
@@ -352,6 +321,8 @@ def feature_entry_to_json_verbose(fe: FeatureEntry) -> dict[str, Any]:
   # Ship stage fields.
   d['intent_to_ship_url'] = _stage_attr(stages['ship'], 'intent_thread_url')
 
+  impl_status_chrome = d.pop('impl_status_chrome', None)
+  standard_maturity = d.pop('standard_maturity', None)
   d['is_released'] = fe.impl_status_chrome in RELEASE_IMPL_STATES
   d['category'] = FEATURE_CATEGORIES[fe.category]
   d['category_int'] = fe.category
@@ -362,20 +333,20 @@ def feature_entry_to_json_verbose(fe: FeatureEntry) -> dict[str, Any]:
     d['intent_stage'] = INTENT_STAGES[fe.intent_stage]
     d['intent_stage_int'] = fe.intent_stage
   d['created'] = {
-    'by': fe.creator_email,
+    'by': d.pop('creator_email', None),
     'when': _date_to_str(fe.created),
   }
   d['updated'] = {
-    'by': fe.updater_email,
+    'by': d.pop('updater_email', None),
     'when': _date_to_str(fe.updated),
   }
   d['accurate_as_of'] = _date_to_str(fe.accurate_as_of)
   d['standards'] = {
     'spec': fe.spec_link,
     'maturity': {
-      'text': STANDARD_MATURITY_CHOICES.get(fe.standard_maturity),
-      'short_text': STANDARD_MATURITY_SHORT.get(fe.standard_maturity),
-      'val': fe.standard_maturity,
+      'text': STANDARD_MATURITY_CHOICES.get(standard_maturity),
+      'short_text': STANDARD_MATURITY_SHORT.get(standard_maturity),
+      'val': standard_maturity,
     },
   }
   d['tag_review_status'] = REVIEW_STATUS_CHOICES[fe.tag_review_status]
@@ -389,24 +360,24 @@ def feature_entry_to_json_verbose(fe: FeatureEntry) -> dict[str, Any]:
     'samples': _val_to_list(fe.sample_links),
     'docs': _val_to_list(fe.doc_links),
   }
-  d['tags'] = _val_to_list(fe.search_tags)
-  d['editors'] =  _val_to_list(fe.editor_emails)
-  d['cc_emails'] = _val_to_list(fe.cc_emails)
+  d['tags'] = d.pop('search_tags', None)
+  d['editors'] =  d.pop('editor_emails', [])
+  d['cc_emails'] = d.pop('cc_emails', [])
   d['creator'] = fe.creator_email
 
   d['browsers'] = {
     'chrome': {
       'bug': fe.bug_url,
-      'blink_components': _val_to_list(fe.blink_components),
+      'blink_components': d.pop('blink_components', []),
       'devrel': _val_to_list(fe.devrel_emails),
-      'owners': _val_to_list(fe.owner_emails),
+      'owners': d.pop('owner_emails', []),
       'origintrial': fe.impl_status_chrome == ORIGIN_TRIAL,
       'intervention': fe.impl_status_chrome == INTERVENTION,
       'prefixed': fe.prefixed,
       'flag': fe.impl_status_chrome == BEHIND_A_FLAG,
       'status': {
-        'text': IMPLEMENTATION_STATUS[fe.impl_status_chrome],
-        'val': fe.impl_status_chrome
+        'text': IMPLEMENTATION_STATUS[impl_status_chrome],
+        'val': impl_status_chrome
       },
       'desktop': _stage_attr(stages['ship'], 'desktop_first', True),
       'android': _stage_attr(stages['ship'], 'android_first', True),
@@ -416,30 +387,30 @@ def feature_entry_to_json_verbose(fe: FeatureEntry) -> dict[str, Any]:
     'ff': {
       'view': {
         'text': VENDOR_VIEWS[fe.ff_views],
-        'val': fe.ff_views,
-        'url': fe.ff_views_link,
-        'notes': fe.ff_views_notes,
+        'val': d.pop('ff_views', None),
+        'url': d.pop('ff_views_link', None),
+        'notes': d.pop('ff_views_notes'),
       }
     },
     'safari': {
       'view': {
         'text': VENDOR_VIEWS[fe.safari_views],
-        'val': fe.safari_views,
-        'url': fe.safari_views_link,
-        'notes': fe.safari_views_notes,
+        'val': d.pop('safari_views', None),
+        'url': d.pop('safari_views_link', None),
+        'notes': d.pop('safari_views_notes', None),
       }
     },
     'webdev': {
       'view': {
         'text': WEB_DEV_VIEWS[fe.web_dev_views],
-        'val': fe.web_dev_views,
-        'url': fe.web_dev_views_link,
-        'notes': fe.web_dev_views_notes,
+        'val': d.pop('web_dev_views', None),
+        'url': d.pop('web_dev_views_link', None),
+        'notes': d.pop('web_dev_views_notes', None),
       }
     },
     'other': {
       'view': {
-        'notes': fe.other_views_notes,
+        'notes': d.pop('other_views_notes', None),
       }
     },
   }
