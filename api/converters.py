@@ -252,7 +252,7 @@ BASIC_FE_FIELDS = [
     "wpt",
     "wpt_descr"]
 
-def prep_stage_gate_info(
+def _prep_stage_gate_info(
     fe: FeatureEntry, d: dict) -> dict[str, Optional[Stage]]:
   """Adds stage and gate info to the dict and returns major stage info."""
   proto_type = STAGE_TYPES_PROTOTYPE[fe.feature_type]
@@ -267,7 +267,8 @@ def prep_stage_gate_info(
       'proto': None,
       'dev_trial': None,
       'ot': None,
-      'extend': None}
+      'extend': None,
+      'ship': None}
 
   # Write a collection of stages and gates associated with the feature,
   # sorted by type.
@@ -276,6 +277,7 @@ def prep_stage_gate_info(
   # Stages and gates are given as a dictionary, with the type as the key,
   # and a list of entity IDs as the value.
   for s in stages:
+    # Keep major stages for referencing additional fields.
     if s.stage_type == proto_type:
       major_stages['proto'] = s
     elif s.stage_type == dev_trial_type:
@@ -294,15 +296,18 @@ def prep_stage_gate_info(
 
 def feature_entry_to_json_verbose(fe: FeatureEntry) -> dict[str, Any]:
   """Returns a verbose dictionary with all info about a feature."""
+  # Do not convert to JSON if the entity has not been saved.
+  if not fe.key:
+    return {}
+
   d: dict[str, Any] = {}
   for field in BASIC_FE_FIELDS:
     d[field] = str(getattr(fe, field))
 
-  if not fe.key:
-    return {}
-
   d['id'] = fe.key.integer_id()
-  stages = prep_stage_gate_info(fe, d)
+
+  # Get stage and gate info, returning stage info to be more explicitly added.
+  stages = _prep_stage_gate_info(fe, d)
   # Prototype stage fields.
   d['intent_to_implement_url'] = _stage_attr(
       stages['proto'], 'intent_thread_url')
