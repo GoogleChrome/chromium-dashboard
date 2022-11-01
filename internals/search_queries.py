@@ -23,7 +23,7 @@ from google.cloud.ndb.query import FilterNode  # for type checking only
 
 from framework import users
 from framework import utils
-from internals.core_models import FeatureEntry
+from internals.core_models import FeatureEntry, Stage
 from internals import review_models
 
 
@@ -31,17 +31,26 @@ def single_field_query_async(
     field_name: str, operator: str, val: Union[str, int, datetime.datetime],
     limit: int = None) -> Union[list[int], Future]:
   """Create a query for one FeatureEntry field and run it, returning a promise."""
-  field = QUERIABLE_FIELDS.get(field_name.lower())
-  if field is None:
+  # Note: We don't exclude deleted features, that's done by process_query.
+  field_name = field_name.lower()
+  if field_name in QUERIABLE_FIELDS:
+    # It is a query on fields of FeatureEntry.
+    query = FeatureEntry.query()
+    field = QUERIABLE_FIELDS.get(field_name)
+  elif field_name in STAGE_QUERIABLE_FIELDS:
+    query = Stage.query()
+    stage_type_dict = STAGE_TYPES_BY_FIELD_MAPPING[field_name]
+    stage_types = [st for st in stage_type_dict.values() if st is not None]
+    query = query.filter(Stage.stage_type.IN(stage_types))
+    field = STAGE_QUERIABLE_FIELDS.get(field_name)
+  else:
     logging.warning('Ignoring field name %r', field_name)
     return []
+
   if not field._indexed:
     logging.warning('Field is not indexed in NDB %r', field_name)
     # TODO(jrobbins): Implement a text_eq operator w/ post-processing
     return []
-
-  query = FeatureEntry.query()
-  # Note: We don't exclude deleted features, that's done by process_query.
 
   # TODO(jrobbins): Handle ":" operator as substrings for text fields.
   if (operator == '='):
@@ -59,8 +68,12 @@ def single_field_query_async(
   else:
     raise ValueError('Unexpected query operator: %r' % operator)
 
-  keys_promise = query.fetch_async(keys_only=True, limit=limit)
-  return keys_promise
+  if field_name in QUERIABLE_FIELDS:
+    future = query.fetch_async(keys_only=True, limit=limit)
+  else:
+    future = query.fetch_async(projection=['feature_id'], limit=limit)
+
+  return future
 
 
 def handle_me_query_async(field_name: str) -> Future:
@@ -217,21 +230,21 @@ QUERIABLE_FIELDS: dict[str, Property] = {
     'debuggability': FeatureEntry.debuggability,
     'resources.doc': FeatureEntry.doc_links,
     'resources.sample': FeatureEntry.sample_links,
+}
 
-    # TODO(jrobbins): These are in stages
-    # 'intent_to_implement_url': FeatureEntry.intent_to_implement_url,
-    # 'intent_to_ship_url': FeatureEntry.intent_to_ship_url,
-    # 'ready_for_trial_url': FeatureEntry.ready_for_trial_url,
-    # 'intent_to_experiment_url': FeatureEntry.intent_to_experiment_url,
-    # 'intent_to_extend_experiment_url':
-    #     FeatureEntry.intent_to_extend_experiment_url,
-    # 'i2e_lgtms': FeatureEntry.i2e_lgtms,
-    # 'i2s_lgtms': FeatureEntry.i2s_lgtms,
 
-    # 'browsers.chrome.desktop': FeatureEntry.shipped_milestone,
-    # 'browsers.chrome.android': FeatureEntry.shipped_android_milestone,
-    # 'browsers.chrome.ios': FeatureEntry.shipped_ios_milestone,
-    # 'browsers.chrome.webview': FeatureEntry.shipped_webview_milestone,
+STAGE_QUERIABLE_FIELDS: dict[str, Property] = {
+    # The stage_type condition is added in single_field_query_async().
+    'intent_to_implement_url': Stage.intent_thread_url,
+    'intent_to_ship_url': Stage.intent_thread_url,
+    'ready_for_trial_url': Stage.intent_thread_url,
+    'intent_to_experiment_url': Stage.intent_thread_url,
+    'intent_to_extend_experiment_url': Stage.intent_thread_url,
+
+    'browsers.chrome.desktop': Stage.milestones.desktop_first,
+    'browsers.chrome.android': Stage.milestones.android_first,
+    'browsers.chrome.ios': Stage.milestones.ios_first,
+    'browsers.chrome.webview': Stage.milestones.webview_first,
 
     # 'browsers.chrome.devtrial.desktop.start':
     #     FeatureEntry.dt_milestone_desktop_start,
@@ -254,9 +267,14 @@ QUERIABLE_FIELDS: dict[str, Property] = {
     #     FeatureEntry.ot_milestone_webview_start,
     # 'browsers.chrome.ot.webview.end':
     #     FeatureEntry.ot_milestone_webview_end,
-    # 'browsers.chrome.ot.feedback_url':
-    #     FeatureEntry.origin_trial_feedback_url,
-    # 'finch_url': FeatureEntry.finch_url,
+
+    'browsers.chrome.ot.feedback_url':
+         Stage.origin_trial_feedback_url,
+    'finch_url': Stage.finch_url,
+
+    # Obsolete fields
+    # 'i2e_lgtms': Feature.i2e_lgtms,
+    # 'i2s_lgtms': Feature.i2s_lgtms,
     }
 
 SORTABLE_FIELDS: dict[str, Union[Property, Callable]] = QUERIABLE_FIELDS.copy()
