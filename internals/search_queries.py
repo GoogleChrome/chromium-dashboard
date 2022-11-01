@@ -14,7 +14,7 @@
 
 import logging
 import datetime
-from typing import Union, Callable
+from typing import Union, Callable, Optional
 
 from google.cloud import ndb  # type: ignore
 from google.cloud.ndb.model import Model, Property  # for type checking only
@@ -23,6 +23,7 @@ from google.cloud.ndb.query import FilterNode  # for type checking only
 
 from framework import users
 from framework import utils
+from internals import core_enums
 from internals.core_models import FeatureEntry, Stage
 from internals import review_models
 
@@ -34,12 +35,14 @@ def single_field_query_async(
   # Note: We don't exclude deleted features, that's done by process_query.
   field_name = field_name.lower()
   if field_name in QUERIABLE_FIELDS:
-    # It is a query on fields of FeatureEntry.
+    # It is a query on a field in FeatureEntry.
     query = FeatureEntry.query()
     field = QUERIABLE_FIELDS.get(field_name)
   elif field_name in STAGE_QUERIABLE_FIELDS:
+    # It is a query on a field in Stage.
     query = Stage.query()
-    stage_type_dict = STAGE_TYPES_BY_FIELD_MAPPING[field_name]
+    stage_type_dict = STAGE_TYPES_BY_QUERY_FIELD[field_name]
+    # Only consider the appropriate stage type(s).
     stage_types = [st for st in stage_type_dict.values() if st is not None]
     query = query.filter(Stage.stage_type.IN(stage_types))
     field = STAGE_QUERIABLE_FIELDS.get(field_name)
@@ -69,8 +72,10 @@ def single_field_query_async(
     raise ValueError('Unexpected query operator: %r' % operator)
 
   if field_name in QUERIABLE_FIELDS:
+    # It was a query directly on FeatureEntry, use keys to get feature IDs.
     future = query.fetch_async(keys_only=True, limit=limit)
   else:
+    # It was on a Stage, so get Stage.feature_id values.
     future = query.fetch_async(projection=['feature_id'], limit=limit)
 
   return future
@@ -246,36 +251,58 @@ STAGE_QUERIABLE_FIELDS: dict[str, Property] = {
     'browsers.chrome.ios': Stage.milestones.ios_first,
     'browsers.chrome.webview': Stage.milestones.webview_first,
 
-    # 'browsers.chrome.devtrial.desktop.start':
-    #     FeatureEntry.dt_milestone_desktop_start,
-    # 'browsers.chrome.devtrial.android.start':
-    #     FeatureEntry.dt_milestone_android_start,
-    # 'browsers.chrome.devtrial.ios.start':
-    #     FeatureEntry.dt_milestone_ios_start,
-    # 'browsers.chrome.devtrial.webview.start':
-    #     FeatureEntry.dt_milestone_webview_start,
+    'browsers.chrome.ot.desktop.start': Stage.milestones.desktop_first,
+    'browsers.chrome.ot.desktop.end': Stage.milestones.desktop_last,
+    'browsers.chrome.ot.android.start': Stage.milestones.android_first,
+    'browsers.chrome.ot.android.end': Stage.milestones.android_last,
+    'browsers.chrome.ot.ios.start': Stage.milestones.ios_first,
+    'browsers.chrome.ot.ios.end': Stage.milestones.ios_last,
+    'browsers.chrome.ot.webview.start': Stage.milestones.webview_first,
+    'browsers.chrome.ot.webview.end': Stage.milestones.webview_last,
+    'browsers.chrome.ot.feedback_url': Stage.origin_trial_feedback_url,
 
-    # 'browsers.chrome.ot.desktop.start':
-    #     FeatureEntry.ot_milestone_desktop_start,
-    # 'browsers.chrome.ot.desktop.end':
-    #     FeatureEntry.ot_milestone_desktop_end,
-    # 'browsers.chrome.ot.android.start':
-    #     FeatureEntry.ot_milestone_android_start,
-    # 'browsers.chrome.ot.android.end':
-    #     FeatureEntry.ot_milestone_android_end,
-    # 'browsers.chrome.ot.webview.start':
-    #     FeatureEntry.ot_milestone_webview_start,
-    # 'browsers.chrome.ot.webview.end':
-    #     FeatureEntry.ot_milestone_webview_end,
+    'browsers.chrome.devtrial.desktop.start': Stage.milestones.desktop_first,
+    'browsers.chrome.devtrial.android.start': Stage.milestones.android_first,
+    'browsers.chrome.devtrial.ios.start': Stage.milestones.ios_first,
+    'browsers.chrome.devtrial.webview.start': Stage.milestones.webview_first,
 
-    'browsers.chrome.ot.feedback_url':
-         Stage.origin_trial_feedback_url,
     'finch_url': Stage.finch_url,
 
     # Obsolete fields
     # 'i2e_lgtms': Feature.i2e_lgtms,
     # 'i2s_lgtms': Feature.i2s_lgtms,
     }
+
+# Mapping of user query fields to the new stage types the fields live on.
+STAGE_TYPES_BY_QUERY_FIELD: dict[str, dict[int, Optional[int]]] = {
+    'finch_url': core_enums.STAGE_TYPES_SHIPPING,
+    'experiment_goals': core_enums.STAGE_TYPES_ORIGIN_TRIAL,
+    'experiment_risks': core_enums.STAGE_TYPES_ORIGIN_TRIAL,
+    'experiment_extension_reason': core_enums.STAGE_TYPES_EXTEND_ORIGIN_TRIAL,
+    'origin_trial_feedback_url': core_enums.STAGE_TYPES_ORIGIN_TRIAL,
+    'intent_to_implement_url': core_enums.STAGE_TYPES_PROTOTYPE,
+    'intent_to_ship_url': core_enums.STAGE_TYPES_SHIPPING,
+    'intent_to_experiment_url': core_enums.STAGE_TYPES_ORIGIN_TRIAL,
+    'intent_to_extend_experiment_url': core_enums.STAGE_TYPES_EXTEND_ORIGIN_TRIAL,
+    'browsers.chrome.desktop': core_enums.STAGE_TYPES_SHIPPING,
+    'browsers.chrome.android': core_enums.STAGE_TYPES_SHIPPING,
+    'browsers.chrome.ios': core_enums.STAGE_TYPES_SHIPPING,
+    'browsers.chrome.webview': core_enums.STAGE_TYPES_SHIPPING,
+    'browsers.chrome.ot.desktop.start': core_enums.STAGE_TYPES_ORIGIN_TRIAL,
+    'browsers.chrome.ot.desktop.end': core_enums.STAGE_TYPES_ORIGIN_TRIAL,
+    'browsers.chrome.ot.android.start': core_enums.STAGE_TYPES_ORIGIN_TRIAL,
+    'browsers.chrome.ot.android.end': core_enums.STAGE_TYPES_ORIGIN_TRIAL,
+    'browsers.chrome.ot.ios.start': core_enums.STAGE_TYPES_ORIGIN_TRIAL,
+    'browsers.chrome.ot.ios.end': core_enums.STAGE_TYPES_ORIGIN_TRIAL,
+    'browsers.chrome.ot.webview.start': core_enums.STAGE_TYPES_ORIGIN_TRIAL,
+    'browsers.chrome.ot.webview.end': core_enums.STAGE_TYPES_ORIGIN_TRIAL,
+    'browsers.chrome.devtrial.desktop.start': core_enums.STAGE_TYPES_DEV_TRIAL,
+    'browsers.chrome.devtrial.android.start': core_enums.STAGE_TYPES_DEV_TRIAL,
+    'browsers.chrome.devtrial.ios.start': core_enums.STAGE_TYPES_DEV_TRIAL,
+    'browsers.chrome.devtrial.webview.start': core_enums.STAGE_TYPES_DEV_TRIAL
+  }
+
+
 
 SORTABLE_FIELDS: dict[str, Union[Property, Callable]] = QUERIABLE_FIELDS.copy()
 SORTABLE_FIELDS.update({
