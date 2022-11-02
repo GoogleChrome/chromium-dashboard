@@ -161,9 +161,14 @@ class ApprovalConfigsAPI(basehandlers.APIHandler):
 
 def gate_value_to_json_dict(gate: Gate) -> dict[str, Any]:
   next_action = str(gate.next_action) if gate.next_action else None
+  appr_def = approval_defs.APPROVAL_FIELDS_BY_ID[gate.gate_type]
   return {
       'feature_id': gate.feature_id,
+      'stage_id': gate.stage_id,
       'gate_type': gate.gate_type,
+      'team_name': appr_def.team_name,
+      'gate_name': appr_def.name,
+      'state': gate.state,
       'owners': gate.owners,
       'next_action': next_action,  # YYYY-MM-DD or None
       'additional_review': gate.additional_review

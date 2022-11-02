@@ -103,15 +103,31 @@ class ChromedashFeatureTable extends LitElement {
       css`
       .pagination {
         padding: var(--content-padding-half) 0;
-        text-align: right;
         min-height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: end;
       }
       .pagination span {
         color: var(--unimportant-text-color);
         margin-right: var(--content-padding);
       }
+      .pagination sl-icon-button {
+        font-size: 1.6rem;
+      }
+      .pagination sl-icon-button::part(base) {
+        padding: 0;
+      }
       table {
         width: 100%;
+      }
+      .skel td {
+        background: white;
+        padding: 14px;
+        border-bottom: var(--table-divider);
+      }
+      sl-skeleton {
+        height: 24px;
       }
     `];
   }
@@ -119,7 +135,18 @@ class ChromedashFeatureTable extends LitElement {
   renderMessages() {
     if (this.loading) {
       return html`
-        <tr><td>Loading...</td></tr>
+        <tr class="skel"><td>
+          <sl-skeleton effect="sheen" style="width: 50%"></sl-skeleton>
+        </td></tr>
+        <tr class="skel"><td>
+          <sl-skeleton effect="sheen" style="width: 65%"></sl-skeleton>
+        </td></tr>
+        <tr class="skel"><td>
+          <sl-skeleton effect="sheen" style="width: 40%"></sl-skeleton>
+        </td></tr>
+        <tr class="skel"><td>
+          <sl-skeleton effect="sheen" style="width: 50%"></sl-skeleton>
+        </td></tr>
       `;
     }
     if (this.features.length == 0) {
@@ -157,7 +184,11 @@ class ChromedashFeatureTable extends LitElement {
 
     if (this.alwaysOfferPagination) {
       if (this.loading) { // reserve vertical space to use when loaded.
-        return html`<div class="pagination"></div>`;
+        return html`
+          <div class="pagination">
+            <sl-skeleton effect="sheen" style="float: right; width: 12em">
+            </sl-skeleton>
+          </div>`;
       }
     } else {
       // On MyFeatures page, don't always show pagination.  Omit it if

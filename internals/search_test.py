@@ -77,15 +77,25 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
     self.feature_1 = core_models.Feature(
         name='feature 1', summary='sum', category=1, web_dev_views=1,
         impl_status_chrome=3)
-    self.feature_1.owner = ['owner@example.com']
-    self.feature_1.editors = ['editor@example.com']
-    self.feature_1.cc_recipients = ['cc@example.com']
     self.feature_1.put()
+    self.featureentry_1 = core_models.FeatureEntry(
+        id=self.feature_1.key.integer_id(),
+        name='feature 1', summary='sum', category=1, web_dev_views=1,
+        impl_status_chrome=3)
+    self.featureentry_1.owner_emails = ['owner@example.com']
+    self.featureentry_1.editor_emails = ['editor@example.com']
+    self.featureentry_1.cc_emailss = ['cc@example.com']
+    self.featureentry_1.put()
     self.feature_2 = core_models.Feature(
         name='feature 2', summary='sum', category=2, web_dev_views=1,
         impl_status_chrome=3)
-    self.feature_2.owner = ['owner@example.com']
     self.feature_2.put()
+    self.featureentry_2 = core_models.FeatureEntry(
+        id=self.feature_2.key.integer_id(),
+        name='feature 2', summary='sum', category=2, web_dev_views=1,
+        impl_status_chrome=3)
+    self.featureentry_2.owner_emails = ['owner@example.com']
+    self.featureentry_2.put()
     notifier.FeatureStar.set_star(
         'starrer@example.com', self.feature_1.key.integer_id())
 
@@ -95,6 +105,8 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
         starred=False)
     self.feature_1.key.delete()
     self.feature_2.key.delete()
+    self.featureentry_1.key.delete()
+    self.featureentry_2.key.delete()
     for appr in review_models.Approval.query():
       appr.key.delete()
 
@@ -194,46 +206,6 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
     self.assertEqual(len(actual), 1)
     self.assertEqual(actual[0], self.feature_1.key.integer_id())
 
-  def test_process_access_me_query__owner_none(self):
-    """We can return a list of features owned by the user."""
-    testing_config.sign_in('visitor@example.com', 111)
-    actual = search.process_access_me_query('owner')
-    self.assertEqual(actual, [])
-
-  def test_process_access_me_query__owner_some(self):
-    """We can return a list of features owned by the user."""
-    testing_config.sign_in('owner@example.com', 111)
-    actual = search.process_access_me_query('owner')
-    self.assertEqual(len(actual), 2)
-    self.assertEqual(actual[0], self.feature_1.key.integer_id())
-    self.assertEqual(actual[1], self.feature_2.key.integer_id())
-
-  def test_process_access_me_query__editors_none(self):
-    """We can return a list of features the user can edit."""
-    testing_config.sign_in('visitor@example.com', 111)
-    actual = search.process_access_me_query('editors')
-    self.assertEqual(actual, [])
-
-  def test_process_access_me_query__editors_some(self):
-    """We can return a list of features the user can edit."""
-    testing_config.sign_in('editor@example.com', 111)
-    actual = search.process_access_me_query('editors')
-    self.assertEqual(len(actual), 1)
-    self.assertEqual(actual[0], self.feature_1.key.integer_id())
-
-  def test_process_access_me_query__cc_recipients_none(self):
-    """We can return a list of features the user is CC'd on."""
-    testing_config.sign_in('visitor@example.com', 111)
-    actual = search.process_access_me_query('cc_recipients')
-    self.assertEqual(actual, [])
-
-  def test_process_access_me_query__cc_recipients_some(self):
-    """We can return a list of features the user is CC'd on."""
-    testing_config.sign_in('cc@example.com', 111)
-    actual = search.process_access_me_query('cc_recipients')
-    self.assertEqual(len(actual), 1)
-    self.assertEqual(actual[0], self.feature_1.key.integer_id())
-
   @mock.patch('internals.review_models.Approval.get_approvals')
   @mock.patch('internals.approval_defs.fields_approvable_by')
   def test_process_recent_reviews_query__none(
@@ -297,7 +269,7 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
 
   @mock.patch('internals.search.process_pending_approval_me_query')
   @mock.patch('internals.search.process_starred_me_query')
-  @mock.patch('internals.search.process_access_me_query')
+  @mock.patch('internals.search_queries.handle_me_query_async')
   @mock.patch('internals.search.process_recent_reviews_query')
   def test_process_query__predefined(
       self, mock_recent, mock_own_me, mock_star_me, mock_pend_me):
