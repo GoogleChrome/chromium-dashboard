@@ -29,6 +29,51 @@ test_app = flask.Flask(__name__)
 NOW = datetime.datetime.now()
 
 
+class CommentsConvertersTest(testing_config.CustomTestCase):
+
+  def test_amendment_to_json_dict(self):
+    amnd = review_models.Amendment(
+        field_name='summary', old_value='foo', new_value='bar')
+    expected = dict(field_name='summary', old_value='foo', new_value='bar')
+    actual = comments_api.amendment_to_json_dict(amnd)
+    self.assertEqual(expected, actual)
+
+  def test_amendment_to_json_dict__arrays(self):
+    """Arrays are shown without the brackets."""
+    amnd = review_models.Amendment(
+        field_name='summary', old_value='[1, 2]', new_value='[1, 2, 3]')
+    expected = dict(field_name='summary', old_value='1, 2', new_value='1, 2, 3')
+    actual = comments_api.amendment_to_json_dict(amnd)
+    self.assertEqual(expected, actual)
+
+  def test_activity_to_json_dict(self):
+    amnd_1 = review_models.Amendment(
+        field_name='summary', old_value='foo', new_value='bar')
+    amnd_2 = review_models.Amendment(
+        field_name='owner_emails', old_value='None', new_value='[]')
+    created = datetime.datetime(2022, 10, 28, 0, 0, 0)
+    act = review_models.Activity(
+        id=1, feature_id=123, gate_id=456, created=created,
+        author='author@example.com', content='hello',
+        amendments=[amnd_1, amnd_2])
+    actual = comments_api.activity_to_json_dict(act)
+    expected = {
+      'comment_id': 1,
+      'feature_id': 123,
+      'gate_id': 456,
+      'created': '2022-10-28 00:00:00',
+      'author': 'author@example.com',
+      'content': 'hello',
+      'deleted_by': None,
+      'amendments': [{
+          'field_name': 'summary',
+          'old_value': 'foo',
+          'new_value': 'bar',
+      }],
+    }
+    self.assertEqual(expected, actual)
+
+
 class CommentsAPITest(testing_config.CustomTestCase):
 
   def setUp(self):
@@ -50,7 +95,7 @@ class CommentsAPITest(testing_config.CustomTestCase):
         set_by='owner1@example.com', set_on=NOW,
         state=review_models.Approval.APPROVED)
     self.appr_1_1.put()
-    
+
     self.act_1_1 = review_models.Activity(feature_id=self.feature_id, gate_id=2,
         author='owner1@example.com', created=NOW, content='Good job')
 
@@ -59,7 +104,8 @@ class CommentsAPITest(testing_config.CustomTestCase):
         'gate_id': self.gate_1.gate_type,
         'author': 'owner1@example.com',
         'deleted_by': None,
-        'content': 'Good job'
+        'content': 'Good job',
+        'amendments': [],
         }
 
   def tearDown(self):

@@ -265,6 +265,29 @@ class BaseHandlerTests(testing_config.CustomTestCase):
       mock_abort.assert_called_once_with(
           400, msg="Parameter 'featureId' was not an int")
 
+  def test_get_bool_arg__explicitly_true(self):
+    """A bool query string arg that is "true" or "1" is true."""
+    with test_app.test_request_context('/test?maybe=true'):
+      self.assertTrue(self.handler.get_bool_arg('maybe'))
+
+    with test_app.test_request_context('/test?maybe=1'):
+      self.assertTrue(self.handler.get_bool_arg('maybe'))
+
+  def test_get_bool_arg__implicitly_true(self):
+    """A query string param is present but empty is considered true."""
+    with test_app.test_request_context('/test?maybe'):
+      self.assertTrue(self.handler.get_bool_arg('maybe'))
+
+  def test_get_bool_arg__explicitly_false(self):
+    """A bool query string arg that is anything funny is false."""
+    with test_app.test_request_context('/test?maybe=abc'):
+      self.assertFalse(self.handler.get_bool_arg('maybe'))
+
+  def test_get_bool_arg__implicitly_false(self):
+    """A missing query string param is considered false."""
+    with test_app.test_request_context('/test'):
+      self.assertFalse(self.handler.get_bool_arg('maybe'))
+
   @mock.patch('framework.basehandlers.BaseHandler.abort')
   def test_get_int_arg__bad(self, mock_abort):
     mock_abort.side_effect = werkzeug.exceptions.BadRequest

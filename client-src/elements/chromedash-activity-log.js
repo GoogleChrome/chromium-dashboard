@@ -5,6 +5,70 @@ import '@polymer/iron-icon';
 import {SHARED_STYLES} from '../sass/shared-css.js';
 
 
+export class ChromedashAmendment extends LitElement {
+  static get properties() {
+    return {
+      amendment: {type: Object},
+    };
+  }
+
+  constructor() {
+    super();
+    this.amendment = {};
+  }
+
+  static get styles() {
+    return [
+      ...SHARED_STYLES,
+      css`
+        details {
+          color: var(--unimportant-text-color);
+          padding: var(--content-padding-quarter);
+        }
+
+        summary {
+          list-style: revert;  /* Show small triangle */
+          white-space: nowrap;
+          box-sizing: border-box;
+          contain: content;
+          overflow: hidden;
+        }
+
+        details[open] #preview {
+          display: none;
+        }
+        details > div {
+          padding: var(--content-padding-quarter);
+          padding-left: var(--content-padding);
+        }
+      `];
+  }
+
+
+  render() {
+    return html`
+      <details>
+        <summary>
+          <b>${this.amendment.field_name}</b>:
+          <span id="preview">${this.amendment.new_value}</span>
+        </summary>
+
+       <div>
+        <b>Old</b>:
+        <div>${this.amendment.old_value}</div>
+       </div>
+
+       <div>
+        <b>New</b>:
+        <div>${this.amendment.new_value}</div>
+       </div>
+     </details>
+    `;
+  }
+};
+customElements.define('chromedash-amendment', ChromedashAmendment);
+
+
 export class ChromedashActivity extends LitElement {
   static get properties() {
     return {
@@ -30,7 +94,11 @@ export class ChromedashActivity extends LitElement {
         }
 
         .comment {
-          margin-left: var(--content-padding);
+          background: var(--table-alternate-background);
+          border-radius: var(--large-border-radius);
+          padding: var(--content-padding-half);
+          margin-bottom: var(--content-padding);
+          margin-right: var(--content-padding);
         }
 
         .edit-menu {
@@ -45,11 +113,12 @@ export class ChromedashActivity extends LitElement {
         }
 
         .comment_body {
-          background: var(--table-alternate-background);
           padding: var(--content-padding-half);
           white-space: pre-wrap;
-          width: 46em;
-          margin-bottom: var(--content-padding);
+        }
+
+        p {
+          padding: 1em;
         }
       `];
   }
@@ -152,6 +221,11 @@ export class ChromedashActivity extends LitElement {
            ${this.formatRelativeDate()}
            ${this.formatEditMenu()}
         </div>
+        <div id="amendments">
+          ${this.activity.amendments.map((a) => html`
+            <chromedash-amendment .amendment=${a}></chromedash-amendment>
+          `)}
+        </div>
         <div class="comment_body">${preface}${autolink(this.activity.content)}</div>
       </div>
     `;
@@ -193,29 +267,23 @@ export class ChromedashActivityLog extends LitElement {
     this.comments = [];
   }
 
-  static get styles() {
-    return [
-      ...SHARED_STYLES,
-      css`
-        .comment_section {
-          max-height: 250px;
-          overflow-y: scroll;
-        }
-      `];
-  }
-
-
   render() {
+    if (this.loading) {
+      return html`<p>Loading...</p>`;
+    }
+
+    if (this.comments === undefined || this.comments.length === 0) {
+      return html`<p>No comments yet.</p>`;
+    }
+
     return html`
-        <div class="comment_section">
-          ${this.comments.map((activity) => html`
+      ${this.comments.map((activity) => html`
         <chromedash-activity
-        .user=${this.user}
-        .feature=${this.feature}
-        .activity=${activity}>
+          .user=${this.user}
+          .feature=${this.feature}
+          .activity=${activity}>
         </chromedash-activity>
-          `)}
-        </div>
+      `)}
     `;
   }
 }

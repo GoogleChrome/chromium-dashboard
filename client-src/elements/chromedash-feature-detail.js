@@ -1,6 +1,7 @@
 import {LitElement, css, html, nothing} from 'lit';
 import {DISPLAY_FIELDS_IN_STAGES} from './form-field-specs';
 import '@polymer/iron-icon';
+import './chromedash-activity-log';
 import './chromedash-callout';
 import {autolink} from './utils.js';
 import {SHARED_STYLES} from '../sass/shared-css.js';
@@ -11,6 +12,7 @@ const LONG_TEXT = 60;
 class ChromedashFeatureDetail extends LitElement {
   static get properties() {
     return {
+      user: {type: Object},
       feature: {type: Object},
       process: {type: Object},
       dismissedCues: {type: Array},
@@ -20,6 +22,7 @@ class ChromedashFeatureDetail extends LitElement {
 
   constructor() {
     super();
+    this.user = {};
     this.feature = {};
     this.process = {};
     this.dismissedCues = [];
@@ -109,7 +112,6 @@ class ChromedashFeatureDetail extends LitElement {
         float: right;
         color: var(--dark-spot-color);
       }
-
     `];
   }
 
@@ -269,6 +271,23 @@ class ChromedashFeatureDetail extends LitElement {
     `;
   }
 
+  renderActivitySection() {
+    return html`
+      <sl-details summary="Comments &amp; activity"}
+        @sl-after-show=${this.updateCollapsed}
+        @sl-after-hide=${this.updateCollapsed}
+      >
+        <div style="padding-top: var(--content-padding)">
+          <chromedash-activity-log
+          .user=${this.user}
+          .feature=${this.feature}
+          .comments=${this.comments}
+            ></chromedash-activity-log>
+        </div>
+      </sl-details>
+    `;
+  }
+
   render() {
     return html`
       <h2>
@@ -280,6 +299,7 @@ class ChromedashFeatureDetail extends LitElement {
           ${this.renderStage(stage)}
       `)}
       ${this.renderStage('Misc')}
+      ${this.renderActivitySection()}
     `;
   }
 }
