@@ -48,7 +48,7 @@ class FeatureCreateTest(testing_config.CustomTestCase):
 
   def setUp(self):
     self.handler = guide.FeatureCreateHandler()
-  
+
   def tearDown(self) -> None:
     kinds: list[ndb.Model] = [Feature, FeatureEntry, Stage, Gate]
     for kind in kinds:
@@ -90,7 +90,7 @@ class FeatureCreateTest(testing_config.CustomTestCase):
     self.assertEqual(1, feature.category)
     self.assertEqual('Feature name', feature.name)
     self.assertEqual('Feature summary', feature.summary)
-    
+
     # Ensure FeatureEntry entity was also created.
     feature_entry = FeatureEntry.get_by_id(new_feature_id)
     self.assertEqual(1, feature_entry.category)
@@ -201,6 +201,7 @@ class FeatureEditHandlerTest(testing_config.CustomTestCase):
         'origin_trial_feedback_url, intent_to_ship_url')
     # Expected stage change items.
     new_shipped_milestone = '84'
+    new_ready_for_trial_url = 'https://example.com/trial'
     new_intent_to_experiment_url = 'https://example.com/intent'
     new_experiment_risks = 'Some pretty risky business'
     new_experiment_extension_reason = 'It would be fun'
@@ -214,6 +215,7 @@ class FeatureEditHandlerTest(testing_config.CustomTestCase):
             'name': 'Revised feature name',
             'summary': 'Revised feature summary',
             'shipped_milestone': new_shipped_milestone,
+            'ready_for_trial_url': new_ready_for_trial_url,
             'intent_to_experiment_url': new_intent_to_experiment_url,
             'experiment_risks': new_experiment_risks,
             'experiment_extension_reason': new_experiment_extension_reason,
@@ -246,6 +248,7 @@ class FeatureEditHandlerTest(testing_config.CustomTestCase):
     stages = Stage.get_feature_stages(
         self.feature_1.key.integer_id())
     self.assertEqual(len(stages.keys()), 7)
+    dev_trial_stage = stages.get(130)
     origin_trial_stage = stages.get(150)
     ot_extension_stage = stages.get(151)
     # Stage for shipping should have been created.
@@ -254,6 +257,8 @@ class FeatureEditHandlerTest(testing_config.CustomTestCase):
     self.assertIsNotNone(shipping_stage)
     self.assertIsNotNone(ot_extension_stage)
     # Check that correct stage fields were changed.
+    self.assertEqual(dev_trial_stage.intent_thread_url,
+                     new_ready_for_trial_url)
     self.assertEqual(origin_trial_stage.experiment_risks,
         new_experiment_risks)
     self.assertEqual(origin_trial_stage.intent_thread_url,

@@ -222,6 +222,7 @@ STAGE_TYPES_BY_FIELD_MAPPING: dict[str, dict[int, Optional[int]]] = {
     'experiment_extension_reason': STAGE_TYPES_EXTEND_ORIGIN_TRIAL,
     'origin_trial_feedback_url': STAGE_TYPES_ORIGIN_TRIAL,
     'intent_to_implement_url': STAGE_TYPES_PROTOTYPE,
+    'ready_for_trial_url': STAGE_TYPES_DEV_TRIAL,
     'intent_to_ship_url': STAGE_TYPES_SHIPPING,
     'intent_to_experiment_url': STAGE_TYPES_ORIGIN_TRIAL,
     'intent_to_extend_experiment_url': STAGE_TYPES_EXTEND_ORIGIN_TRIAL,

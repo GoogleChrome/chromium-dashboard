@@ -241,7 +241,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
     if self.touched('ready_for_trial_url'):
       feature.ready_for_trial_url = self.parse_link(
           'ready_for_trial_url')
-      update_items.append(('ready_for_trial_url',
+      stage_update_items.append(('ready_for_trial_url',
           self.parse_link('ready_for_trial_url')))
 
     if self.touched('intent_to_experiment_url'):
@@ -623,7 +623,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
         stage.milestones = milestoneset_entity
       # If the field starts with "intent_", it should modify the
       # more general "intent_thread_url" field.
-      elif field.startswith('intent_'):
+      elif field.startswith(('intent_', 'ready_for_trial_url')):
         setattr(stage, 'intent_thread_url', value)
       # Otherwise, replace field value with attribute of the same field name.
       else:
