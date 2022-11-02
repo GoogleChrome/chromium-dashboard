@@ -31,34 +31,52 @@ class SearchRETest(testing_config.CustomTestCase):
     self.assertEqual([], search.TERM_RE.findall(''))
     self.assertEqual([], search.TERM_RE.findall('   '))
 
-  def test_operator_terms(self):
+  def test_structured_query_terms(self):
     """We can parse operator terms."""
     self.assertEqual(
-        [('field', '=', 'value', '')],
+        [('', 'field', '=', 'value', '')],
         search.TERM_RE.findall('field=value '))
     self.assertEqual(
-        [('field', '>', 'value', '')],
+        [('', 'field', '>', 'value', '')],
         search.TERM_RE.findall('field>value '))
     self.assertEqual(
-        [('flag_name', '=', 'version', '')],
+        [('', 'flag_name', '=', 'version', '')],
         search.TERM_RE.findall('flag_name=version '))
     self.assertEqual(
-        [('flag_name', '=', 'enable-super-stuff', '')],
+        [('', 'flag_name', '=', 'enable-super-stuff', '')],
         search.TERM_RE.findall('flag_name=enable-super-stuff '))
     self.assertEqual(
-        [('flag_name', '=', '"enable super stuff"', '')],
+        [('', 'flag_name', '=', '"enable super stuff"', '')],
         search.TERM_RE.findall('flag_name="enable super stuff" '))
+
+  def test_structured_query_terms__complex(self):
+    """We can parse complex operator terms."""
+    self.assertEqual(
+        [('NOT', 'field', '=', 'value', '')],
+        search.TERM_RE.findall('NOT field=value '))
+    self.assertEqual(
+        [('AND', 'field', '>', 'value', '')],
+        search.TERM_RE.findall('AND field>value '))
+    self.assertEqual(
+        [('OR', 'flag_name', '=', 'version', '')],
+        search.TERM_RE.findall('OR flag_name=version '))
+    self.assertEqual(
+        [('NOT', 'flag_name', '=', 'enable-super-stuff', '')],
+        search.TERM_RE.findall('NOT flag_name=enable-super-stuff '))
+    self.assertEqual(
+        [('AND', 'flag_name', '=', '"enable super stuff"', '')],
+        search.TERM_RE.findall('AND flag_name="enable super stuff" '))
 
   def test_text_terms(self):
     """We can parse text terms."""
     self.assertEqual(
-        [('', '', '', 'hello')],
+        [('', '', '', '', 'hello')],
         search.TERM_RE.findall('hello '))
     self.assertEqual(
-        [('', '', '', '"hello there people"')],
+        [('', '', '', '', '"hello there people"')],
         search.TERM_RE.findall('"hello there people" '))
     self.assertEqual(
-        [('', '', '', '"memory location $0x25"')],
+        [('', '', '', '', '"memory location $0x25"')],
         search.TERM_RE.findall('"memory location $0x25" '))
 
   def test_malformed(self):
@@ -67,7 +85,7 @@ class SearchRETest(testing_config.CustomTestCase):
         [],
         search.TERM_RE.findall(':: = == := > >> >>> '))
     self.assertEqual(
-        [('', '', '', 'word')],
+        [('', '', '', '', 'word')],
         search.TERM_RE.findall('=word '))
 
 

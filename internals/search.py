@@ -124,14 +124,16 @@ OPERATORS_PATTERN = r':|=|<=|<|>=|>|!='
 # A value that a feature field can be compared against.  It can be
 # a single word or a quoted string.
 VALUE_PATTERN = r'[^" ]+|"[^"]+"'
+# Logical operators.
+LOGICAL_OPERATORS_PATTERN = r'AND|OR|NOT'
 
 # Overall, a query term can be either a structured term or a full-text term.
 # Structured terms look like: FIELD OPERATOR VALUE.
 # Full-text terms look like: SINGLE_WORD, or like: "QUOTED STRING".
 TERM_RE = re.compile(
-    '(?P<field>%s)(?P<op>%s)(?P<val>%s)\s+|(?P<textterm>%s)\s+' % (
-        FIELD_NAME_PATTERN, OPERATORS_PATTERN, VALUE_PATTERN,
-        TEXT_PATTERN),
+    '(?P<logical>%s)?\s*(?P<field>%s)(?P<op>%s)(?P<val>%s)\s+|(?P<textterm>%s)\s+' % (
+        LOGICAL_OPERATORS_PATTERN, FIELD_NAME_PATTERN, OPERATORS_PATTERN,
+        VALUE_PATTERN, TEXT_PATTERN),
     re.I)
 
 
@@ -198,16 +200,16 @@ def process_query(
   feature_id_futures = []
   terms = TERM_RE.findall(user_query + ' ')[:MAX_TERMS] or []
   if not show_deleted:
-    terms.append(('deleted', '=', 'false', None))
+    terms.append(('', 'deleted', '=', 'false', None))
   # TODO(jrobbins): include unlisted features that the user is allowed to view.
   if not show_unlisted:
-    terms.append(('unlisted', '=', 'false', None))
+    terms.append(('', 'unlisted', '=', 'false', None))
   # 1b. Parse the sort directive.
   sort_spec = sort_spec or '-created.when'
 
   # 2a. Create parallel queries for each term.  Each yields a future.
   logging.info('creating parallel queries for %r', terms)
-  for field_name, op_str, val_str, textterm in terms:
+  for logical_op, field_name, op_str, val_str, textterm in terms:
     if textterm:
       future = search_fulltext.search_fulltext(textterm)
     else:
