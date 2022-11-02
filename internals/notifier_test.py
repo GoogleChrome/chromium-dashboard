@@ -51,6 +51,18 @@ class EmailFormattingTest(testing_config.CustomTestCase):
             email='editor1@gmail.com', _auth_domain='gmail.com'),
         blink_components=['Blink'])
     self.feature_1.put()
+    self.fe_1 = core_models.FeatureEntry(
+        id=self.feature_1.key.integer_id(),
+        name='feature one', summary='sum',
+        owner_emails=['feature_owner@example.com'],
+        #ot_milestone_desktop_start=100,
+        editor_emails=['feature_editor@example.com', 'owner_1@example.com'],
+        cc_emails=['cc@example.com'], category=1,
+        creator_email='creator1@gmail.com',
+        updater_email='editor1@gmail.com',
+        blink_components=['Blink'])
+    self.fe_1.put()
+
     self.component_1 = user_models.BlinkComponent(name='Blink')
     self.component_1.put()
     self.component_owner_1 = user_models.FeatureOwner(
@@ -72,6 +84,16 @@ class EmailFormattingTest(testing_config.CustomTestCase):
             email='editor2@example.com', _auth_domain='gmail.com'),
         blink_components=['Blink'])
     self.feature_2.put()
+    self.fe_2 = core_models.FeatureEntry(
+        id=self.feature_2.key.integer_id(),
+        name='feature two', summary='sum',
+        owner_emails=['feature_owner@example.com'],
+        editor_emails=['feature_editor@example.com', 'owner_1@example.com'],
+        category=1,
+        creator_email='creator2@example.com',
+        updater_email='editor2@example.com',
+        blink_components=['Blink'])
+    self.fe_2.put()
     # This feature will only be used for the template tests.
     # Hardcode the Feature Key ID so that the ID is deterministic in the
     # template tests.
@@ -94,6 +116,8 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     self.component_1.key.delete()
     self.feature_1.key.delete()
     self.feature_2.key.delete()
+    self.fe_1.key.delete()
+    self.fe_2.key.delete()
     self.template_feature.key.delete()
 
   def test_format_email_body__new(self):
@@ -446,10 +470,26 @@ class FeatureStarTest(testing_config.CustomTestCase):
         name='feature three', summary='sum', category=1)
     self.feature_3.put()
 
+    self.fe_1 = core_models.FeatureEntry(
+        id=self.feature_1.key.integer_id(),
+        name='feature one', summary='sum', category=1)
+    self.fe_1.put()
+    self.fe_2 = core_models.FeatureEntry(
+        id=self.feature_2.key.integer_id(),
+        name='feature two', summary='sum', category=1)
+    self.fe_2.put()
+    self.fe_3 = core_models.FeatureEntry(
+        id=self.feature_3.key.integer_id(),
+        name='feature three', summary='sum', category=1)
+    self.fe_3.put()
+
   def tearDown(self):
     self.feature_1.key.delete()
     self.feature_2.key.delete()
     self.feature_3.key.delete()
+    self.fe_1.key.delete()
+    self.fe_2.key.delete()
+    self.fe_3.key.delete()
 
   def test_get_star__no_existing(self):
     """User has never starred the given feature."""
@@ -469,6 +509,8 @@ class FeatureStarTest(testing_config.CustomTestCase):
     self.assertTrue(actual.starred)
     updated_feature = core_models.Feature.get_by_id(feature_id)
     self.assertEqual(1, updated_feature.star_count)
+    updated_fe = core_models.FeatureEntry.get_by_id(feature_id)
+    self.assertEqual(1, updated_fe.star_count)
 
     notifier.FeatureStar.set_star(email, feature_id, starred=False)
     actual = notifier.FeatureStar.get_star(email, feature_id)
@@ -477,6 +519,8 @@ class FeatureStarTest(testing_config.CustomTestCase):
     self.assertFalse(actual.starred)
     updated_feature = core_models.Feature.get_by_id(feature_id)
     self.assertEqual(0, updated_feature.star_count)
+    updated_fe = core_models.FeatureEntry.get_by_id(feature_id)
+    self.assertEqual(0, updated_fe.star_count)
 
   def test_get_user_stars__no_stars(self):
     """User has never starred any features."""
