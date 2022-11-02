@@ -39,6 +39,7 @@ export class ChromedashAmendment extends LitElement {
         }
         details > div {
           padding: var(--content-padding-quarter);
+          padding-left: var(--content-padding);
         }
       `];
   }
