@@ -34,7 +34,7 @@ from framework import users
 import settings
 from internals import approval_defs
 from internals import core_enums
-from internals.core_models import Feature
+from internals.core_models import Feature, FeatureEntry
 from internals.user_models import (
     AppUser, BlinkComponent, FeatureOwner, UserPref)
 
@@ -236,6 +236,13 @@ class FeatureStar(ndb.Model):
       logging.error('count would be < 0: %r', (email, feature_id, starred))
       return
     feature.put(notify=False)
+
+    feature_entry = FeatureEntry.get_by_id(feature_id)
+    feature_entry.star_count += 1 if starred else -1
+    if feature_entry.star_count < 0:
+      logging.error('count would be < 0: %r', (email, feature_id, starred))
+      return
+    feature_entry.put()  # And, do not call notifiy.
 
   @classmethod
   def get_user_stars(self, email):
