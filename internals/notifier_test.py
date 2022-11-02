@@ -678,7 +678,7 @@ class FunctionsTest(testing_config.CustomTestCase):
   def test_get_existing_thread_subject__unknown(self):
     """Raise ValueError if called with an unknown approval field."""
     PivotApproval = approval_defs.ApprovalFieldDef(
-        'Intent to Pivot',
+        'Intent to Pivot', 'API Owners',
         'One API Owner must approve your intent',
         99, approval_defs.ONE_LGTM, [])
     with self.assertRaises(ValueError):
