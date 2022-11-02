@@ -41,6 +41,12 @@ class SearchFeaturesTest(testing_config.CustomTestCase):
     self.feature_2.put()
     self.feature_2_id = self.feature_2.key.integer_id()
 
+    self.feature_3 = core_models.FeatureEntry(
+        name='feature c', summary='sum', owner_emails=['random@example.com'],
+        category=1, impl_status_chrome=4)
+    self.feature_3.put()
+    self.feature_3_id = self.feature_3.key.integer_id()
+
     self.approval_1_1 = review_models.Approval(
         feature_id=self.feature_1_id, field_id=1,
         state=review_models.Approval.REVIEW_REQUESTED,
@@ -72,16 +78,26 @@ class SearchFeaturesTest(testing_config.CustomTestCase):
   def tearDown(self):
     self.feature_1.key.delete()
     self.feature_2.key.delete()
+    self.feature_3.key.delete()
     for appr in review_models.Approval.query():
       appr.key.delete()
 
   def test_single_field_query_async__normal(self):
     """We get a promise to run the DB query, which produces results."""
     actual_promise = search_queries.single_field_query_async(
-        'owner', '=', 'owner@example.com')
+        'owner', '=', 'owner@example.com', 'AND')
     actual = actual_promise.get_result()
     self.assertCountEqual(
         [self.feature_1_id, self.feature_2_id],
+        [key.integer_id() for key in actual])
+
+  def test_single_field_query_async__negation(self):
+    """We get a promise to run the DB query with a `NOT` logical operator."""
+    actual_promise = search_queries.single_field_query_async(
+        'owner', '=', 'owner@example.com', 'NOT')
+    actual = actual_promise.get_result()
+    self.assertCountEqual(
+        [self.feature_3_id],
         [key.integer_id() for key in actual])
 
   def test_single_field_query_async__zero_results(self):
@@ -90,6 +106,15 @@ class SearchFeaturesTest(testing_config.CustomTestCase):
         'owner', '=', 'nope')
     actual = actual_promise.get_result()
     self.assertCountEqual([], actual)
+
+  def test_single_field_query_async__all_results(self):
+    """When conduct a query that returns all the results."""
+    actual_promise = search_queries.single_field_query_async(
+        'owner', '=', 'nope', 'NOT')
+    actual = actual_promise.get_result()
+    self.assertCountEqual(
+        [self.feature_1_id, self.feature_2_id, self.feature_3_id],
+        [key.integer_id() for key in actual])
 
   @mock.patch('logging.warning')
   def test_single_field_query_async__bad_field(self, mock_warn):
@@ -174,14 +199,14 @@ class SearchFeaturesTest(testing_config.CustomTestCase):
     future = search_queries.total_order_query_async('name')
     actual = search._resolve_promise_to_id_list(future)
     self.assertEqual(
-        [self.feature_1_id, self.feature_2_id], actual)
+        [self.feature_1_id, self.feature_2_id, self.feature_3_id], actual)
 
   def test_total_order_query_async__field_desc(self):
     """We can get keys used to sort features in descending order."""
     future = search_queries.total_order_query_async('-name')
     actual = search._resolve_promise_to_id_list(future)
     self.assertEqual(
-        [self.feature_2_id, self.feature_1_id], actual)
+        [self.feature_3_id, self.feature_2_id, self.feature_1_id], actual)
 
   def test_total_order_query_async__requested_on(self):
     """We can get feature IDs sorted by approval review requests."""
@@ -196,3 +221,23 @@ class SearchFeaturesTest(testing_config.CustomTestCase):
     self.assertEqual(
         [self.feature_1_id, self.feature_2_id],
         actual)
+
+  def test_negate_operator(self):
+    """We can get correct negated operators"""
+    actual = search_queries.negate_operator('=')
+    self.assertEqual('!=', actual)
+
+    actual = search_queries.negate_operator('!=')
+    self.assertEqual('=', actual)
+
+    actual = search_queries.negate_operator('<')
+    self.assertEqual('>=', actual)
+
+    actual = search_queries.negate_operator('<=')
+    self.assertEqual('>', actual)
+
+    actual = search_queries.negate_operator('>')
+    self.assertEqual('<=', actual)
+
+    actual = search_queries.negate_operator('>=')
+    self.assertEqual('<', actual)

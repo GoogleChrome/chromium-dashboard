@@ -29,7 +29,7 @@ from internals import review_models
 
 def single_field_query_async(
     field_name: str, operator: str, val: Union[str, int, datetime.datetime],
-    limit: int = None) -> Union[list[int], Future]:
+    logical_op: str = '', limit: int = None) -> Union[list[int], Future]:
   """Create a query for one FeatureEntry field and run it, returning a promise."""
   field = QUERIABLE_FIELDS.get(field_name.lower())
   if field is None:
@@ -44,6 +44,9 @@ def single_field_query_async(
   # Note: We don't exclude deleted features, that's done by process_query.
 
   # TODO(jrobbins): Handle ":" operator as substrings for text fields.
+  if logical_op == 'NOT':
+    operator = negate_operator(operator)
+
   if (operator == '='):
     query = query.filter(field == val)
   elif (operator == '<='):
@@ -62,6 +65,23 @@ def single_field_query_async(
   keys_promise = query.fetch_async(keys_only=True, limit=limit)
   return keys_promise
 
+
+def negate_operator(operator: str) -> str:
+  """Negate field operators."""
+  if operator == '=':
+    return '!='
+  if operator == '<=':
+    return '>'
+  if operator == '<':
+    return '>='
+  if operator == '>=':
+    return '<'
+  if operator == '>':
+    return '<='
+  if operator == '!=':
+    return '='
+
+  return operator
 
 def handle_me_query_async(field_name: str) -> Future:
   """Return a future for feature IDs that reference the current user."""

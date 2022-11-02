@@ -104,12 +104,13 @@ def parse_query_value(val_str: str) -> Union[bool, datetime.datetime, int, str]:
 
 
 def process_queriable_field(
-    field_name: str, operator: str, val_str: str
+    logical_op: str, field_name: str, operator: str, val_str: str
     ) -> Future:
   """Return a list of feature IDs or a promise for keys."""
   val = parse_query_value(val_str)
-  logging.info('trying %r %r %r', field_name, operator, val)
-  future = search_queries.single_field_query_async(field_name, operator, val)
+  logging.info('trying  %r %r %r %r', logical_op, field_name, operator, val)
+  future = search_queries.single_field_query_async(
+      field_name, operator, val, logical_op)
   return future
 
 
@@ -125,6 +126,7 @@ OPERATORS_PATTERN = r':|=|<=|<|>=|>|!='
 # a single word or a quoted string.
 VALUE_PATTERN = r'[^" ]+|"[^"]+"'
 # Logical operators.
+# TODO(kyleju): support 'OR' logic
 LOGICAL_OPERATORS_PATTERN = r'AND|OR|NOT'
 
 # Overall, a query term can be either a structured term or a full-text term.
@@ -138,28 +140,31 @@ TERM_RE = re.compile(
 
 
 def process_query_term(
-    field_name: str, op_str: str, val_str: str) -> Future:
+    logical_op: str, field_name: str, op_str: str, val_str: str) -> Future:
   """Parse and run a user-supplied query, if we can handle it."""
-  query_term = field_name + op_str + val_str
-  if query_term == 'pending-approval-by:me':
-    return process_pending_approval_me_query()
-  if query_term == 'starred-by:me':
-    return process_starred_me_query()
-  if query_term == 'is:recently-reviewed':
-    return process_recent_reviews_query()
 
-  if query_term == 'owner:me':
-    return search_queries.handle_me_query_async('owner')
-  if query_term == 'editor:me':
-    return search_queries.handle_me_query_async('editor')
-  if query_term == 'can_edit:me':
-    return search_queries.handle_can_edit_me_query_async()
-  if query_term == 'cc:me':
-    return search_queries.handle_me_query_async('cc')
+  if logical_op != 'NOT':
+    # TODO(kyleju): support negation for the following queries.
+    query_term = field_name + op_str + val_str
+    if query_term == 'pending-approval-by:me':
+      return process_pending_approval_me_query()
+    if query_term == 'starred-by:me':
+      return process_starred_me_query()
+    if query_term == 'is:recently-reviewed':
+      return process_recent_reviews_query()
+
+    if query_term == 'owner:me':
+      return search_queries.handle_me_query_async('owner')
+    if query_term == 'editor:me':
+      return search_queries.handle_me_query_async('editor')
+    if query_term == 'can_edit:me':
+      return search_queries.handle_can_edit_me_query_async()
+    if query_term == 'cc:me':
+      return search_queries.handle_me_query_async('cc')
 
   if val_str.startswith('"') and val_str.endswith('"'):
     val_str = val_str[1:-1]
-  return process_queriable_field(field_name, op_str, val_str)
+  return process_queriable_field(logical_op, field_name, op_str, val_str)
 
 
 def _resolve_promise_to_id_list(
@@ -213,7 +218,7 @@ def process_query(
     if textterm:
       future = search_fulltext.search_fulltext(textterm)
     else:
-      future = process_query_term(field_name, op_str, val_str)
+      future = process_query_term(logical_op, field_name, op_str, val_str)
     if future is not None:
       feature_id_futures.append(future)
   # 2b. Create a parallel query for total sort order.
