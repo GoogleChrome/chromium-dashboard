@@ -241,7 +241,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
     if self.touched('ready_for_trial_url'):
       feature.ready_for_trial_url = self.parse_link(
           'ready_for_trial_url')
-      update_items.append(('ready_for_trial_url',
+      stage_update_items.append(('announcement_url',
           self.parse_link('ready_for_trial_url')))
 
     if self.touched('intent_to_experiment_url'):
