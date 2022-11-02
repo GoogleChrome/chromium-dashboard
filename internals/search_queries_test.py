@@ -17,6 +17,7 @@ import testing_config  # Must be imported before the module under test.
 import datetime
 from unittest import mock
 
+from internals import core_enums
 from internals import core_models
 from internals import review_models
 from internals import search
@@ -34,6 +35,12 @@ class SearchFeaturesTest(testing_config.CustomTestCase):
     self.feature_1.cc_emails = ['cc@example.com']
     self.feature_1.put()
     self.feature_1_id = self.feature_1.key.integer_id()
+
+    self.stage_1_ship = core_models.Stage(
+        feature_id=self.feature_1_id,
+        stage_type=core_enums.STAGE_BLINK_SHIPPING,
+        milestones=core_models.MilestoneSet(desktop_first=99))
+    self.stage_1_ship.put()
 
     self.feature_2 = core_models.FeatureEntry(
         name='feature b', summary='sum', owner_emails=['owner@example.com'],
@@ -79,6 +86,7 @@ class SearchFeaturesTest(testing_config.CustomTestCase):
     self.feature_1.key.delete()
     self.feature_2.key.delete()
     self.feature_3.key.delete()
+    self.stage_1_ship.key.delete()
     for appr in review_models.Approval.query():
       appr.key.delete()
 
@@ -99,6 +107,22 @@ class SearchFeaturesTest(testing_config.CustomTestCase):
     self.assertCountEqual(
         [self.feature_3_id],
         [key.integer_id() for key in actual])
+
+  def test_single_field_query_async__normal_stage_field(self):
+    """We can find a FeatureEntry based on values in an associated Stage."""
+    actual_promise = search_queries.single_field_query_async(
+        'browsers.chrome.desktop', '=', 99)
+    actual = actual_promise.get_result()
+    self.assertCountEqual(
+        [self.feature_1_id],
+        [projection.feature_id for projection in actual])
+
+  def test_single_field_query_async__other_stage_field(self):
+    """We only consider the appropriate Stage."""
+    actual_promise = search_queries.single_field_query_async(
+        'browsers.chrome.ot.desktop.start', '=', 99)
+    actual = actual_promise.get_result()
+    self.assertCountEqual([], actual)
 
   def test_single_field_query_async__zero_results(self):
     """When there are no matching results, we get back a promise for []."""
@@ -222,7 +246,13 @@ class SearchFeaturesTest(testing_config.CustomTestCase):
         [self.feature_1_id, self.feature_2_id],
         actual)
 
-  def test_negate_operator(self):
+  def test_stage_fields_have_join_conditions(self):
+    """Every STAGE_QUERIABLE_FIELDS has a STAGE_TYPES_BY_QUERY_FIELD entry."""
+    self.assertCountEqual(
+        search_queries.STAGE_QUERIABLE_FIELDS.keys(),
+        search_queries.STAGE_TYPES_BY_QUERY_FIELD.keys())
+  
+    def test_negate_operator(self):
     """We can get correct negated operators"""
     actual = search_queries.negate_operator('=')
     self.assertEqual('!=', actual)

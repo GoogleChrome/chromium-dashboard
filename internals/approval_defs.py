@@ -36,28 +36,28 @@ API_OWNERS_URL = (
 
 ApprovalFieldDef = collections.namedtuple(
     'ApprovalFieldDef',
-    'name, description, field_id, rule, approvers')
+    'name, team_name, description, field_id, rule, approvers')
 
 # Note: This can be requested manually through the UI, but it is not
 # triggered by a blink-dev thread because i2p intents are only FYIs to
 # bilnk-dev and don't actually need approval by the API Owners.
 PrototypeApproval = ApprovalFieldDef(
-    'Intent to Prototype',
+    'Intent to Prototype', 'API Owners',
     'Not normally used.  If a review is requested, API Owners can approve.',
     core_enums.GATE_PROTOTYPE, ONE_LGTM, API_OWNERS_URL)
 
 ExperimentApproval = ApprovalFieldDef(
-    'Intent to Experiment',
+    'Intent to Experiment', 'API Owners',
     'One API Owner must approve your intent',
     core_enums.GATE_ORIGIN_TRIAL, ONE_LGTM, API_OWNERS_URL)
 
 ExtendExperimentApproval = ApprovalFieldDef(
-    'Intent to Extend Experiment',
+    'Intent to Extend Experiment', 'API Owners',
     'One API Owner must approve your intent',
     core_enums.GATE_EXTEND_ORIGIN_TRIAL, ONE_LGTM, API_OWNERS_URL)
 
 ShipApproval = ApprovalFieldDef(
-    'Intent to Ship',
+    'Intent to Ship', 'API Owners',
     'Three API Owners must approve your intent',
     core_enums.GATE_SHIP, THREE_LGTM, API_OWNERS_URL)
 

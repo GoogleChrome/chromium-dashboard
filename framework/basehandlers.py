@@ -130,8 +130,14 @@ class BaseHandler(flask.views.MethodView):
       self.abort(403, msg='Cannot view that feature')
     return feature
 
+  def get_bool_arg(self, name, default=False):
+    """Get the specified boolean from the query string."""
+    if name not in self.request.args:
+      return default
+    return self.request.args[name].lower() in ('true', '1', '')
+
   def get_int_arg(self, name, default=None):
-    """Get the specified integer from args."""
+    """Get the specified integer from the query string."""
     val = self.request.args.get(name, default) or default
     if val is None:
       return None

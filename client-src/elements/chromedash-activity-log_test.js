@@ -21,6 +21,7 @@ const actOne = {
   author: 'non-admin@google.com',
   created: '2022-08-30 12:34:45.567',
   content: 'hey, nice feature',
+  amendments: [],
 };
 
 const actTwo = {
@@ -28,6 +29,7 @@ const actTwo = {
   author: 'troll@example.com',
   created: '2022-08-30 12:34:45.567',
   content: 'mean stuff',
+  amendments: [],
 };
 
 
@@ -81,6 +83,7 @@ describe('chromedash-activity', () => {
       created: '2022-08-30 12:34:45.567',
       content: 'better left unsaid',
       deleted_by: 'non-admin@google.com',
+      amendments: [],
     };
     const component = await fixture(
       html`<chromedash-activity
@@ -105,6 +108,7 @@ describe('chromedash-activity', () => {
       author: 'non-admin@google.com',
       created: '2022-08-30 12:34:45.567',
       content: 'something off the cuff',
+      amendments: [],
     };
     const component = await fixture(
       html`<chromedash-activity
@@ -134,6 +138,7 @@ describe('chromedash-activity', () => {
       created: '2022-08-30 12:34:45.567',
       content: 'lucky guess',
       deleted_by: 'non-admin@google.com',
+      amendments: [],
     };
     const component = await fixture(
       html`<chromedash-activity

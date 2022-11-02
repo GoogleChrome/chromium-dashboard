@@ -18,6 +18,7 @@ import logging
 import re
 from typing import Any, Union
 
+from google.cloud.ndb import Key
 from google.cloud.ndb.tasklets import Future  # for type checking only
 
 from framework import users
@@ -175,9 +176,14 @@ def _resolve_promise_to_id_list(
     return list_or_future  # Which is actually an ID list.
   else:
     future: Future = list_or_future
-    key_list = future.get_result()
-    id_list = [k.integer_id() for k in key_list]
-    logging.info('got future that yielded %r', id_list)
+    key_or_projection_list = future.get_result()
+    if key_or_projection_list and isinstance(key_or_projection_list[0], Key):
+      id_list = [k.integer_id() for k in key_or_projection_list]
+      logging.info('got key future that yielded %r', id_list)
+    else:
+      id_list = [proj.feature_id for proj in key_or_projection_list]
+      logging.info('got projection future that yielded %r', id_list)
+
     return id_list
 
 

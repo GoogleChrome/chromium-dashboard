@@ -14,7 +14,7 @@
 
 import logging
 import datetime
-from typing import Union, Callable
+from typing import Union, Callable, Optional
 
 from google.cloud import ndb  # type: ignore
 from google.cloud.ndb.model import Model, Property  # for type checking only
@@ -23,7 +23,8 @@ from google.cloud.ndb.query import FilterNode  # for type checking only
 
 from framework import users
 from framework import utils
-from internals.core_models import FeatureEntry
+from internals import core_enums
+from internals.core_models import FeatureEntry, Stage
 from internals import review_models
 
 
@@ -31,17 +32,28 @@ def single_field_query_async(
     field_name: str, operator: str, val: Union[str, int, datetime.datetime],
     logical_op: str = '', limit: int = None) -> Union[list[int], Future]:
   """Create a query for one FeatureEntry field and run it, returning a promise."""
-  field = QUERIABLE_FIELDS.get(field_name.lower())
-  if field is None:
+  # Note: We don't exclude deleted features, that's done by process_query.
+  field_name = field_name.lower()
+  if field_name in QUERIABLE_FIELDS:
+    # It is a query on a field in FeatureEntry.
+    query = FeatureEntry.query()
+    field = QUERIABLE_FIELDS[field_name]
+  elif field_name in STAGE_QUERIABLE_FIELDS:
+    # It is a query on a field in Stage.
+    query = Stage.query()
+    stage_type_dict = STAGE_TYPES_BY_QUERY_FIELD[field_name]
+    # Only consider the appropriate stage type(s).
+    stage_types = [st for st in stage_type_dict.values() if st is not None]
+    query = query.filter(Stage.stage_type.IN(stage_types))
+    field = STAGE_QUERIABLE_FIELDS[field_name]
+  else:
     logging.warning('Ignoring field name %r', field_name)
     return []
+
   if not field._indexed:
     logging.warning('Field is not indexed in NDB %r', field_name)
     # TODO(jrobbins): Implement a text_eq operator w/ post-processing
     return []
-
-  query = FeatureEntry.query()
-  # Note: We don't exclude deleted features, that's done by process_query.
 
   # TODO(jrobbins): Handle ":" operator as substrings for text fields.
   if logical_op == 'NOT':
@@ -62,8 +74,14 @@ def single_field_query_async(
   else:
     raise ValueError('Unexpected query operator: %r' % operator)
 
-  keys_promise = query.fetch_async(keys_only=True, limit=limit)
-  return keys_promise
+  if field_name in QUERIABLE_FIELDS:
+    # It was a query directly on FeatureEntry, use keys to get feature IDs.
+    future = query.fetch_async(keys_only=True, limit=limit)
+  else:
+    # It was on a Stage, so get Stage.feature_id values.
+    future = query.fetch_async(projection=['feature_id'], limit=limit)
+
+  return future
 
 
 def negate_operator(operator: str) -> str:
@@ -237,47 +255,74 @@ QUERIABLE_FIELDS: dict[str, Property] = {
     'debuggability': FeatureEntry.debuggability,
     'resources.doc': FeatureEntry.doc_links,
     'resources.sample': FeatureEntry.sample_links,
+}
 
-    # TODO(jrobbins): These are in stages
-    # 'intent_to_implement_url': FeatureEntry.intent_to_implement_url,
-    # 'intent_to_ship_url': FeatureEntry.intent_to_ship_url,
-    # 'ready_for_trial_url': FeatureEntry.ready_for_trial_url,
-    # 'intent_to_experiment_url': FeatureEntry.intent_to_experiment_url,
-    # 'intent_to_extend_experiment_url':
-    #     FeatureEntry.intent_to_extend_experiment_url,
-    # 'i2e_lgtms': FeatureEntry.i2e_lgtms,
-    # 'i2s_lgtms': FeatureEntry.i2s_lgtms,
 
-    # 'browsers.chrome.desktop': FeatureEntry.shipped_milestone,
-    # 'browsers.chrome.android': FeatureEntry.shipped_android_milestone,
-    # 'browsers.chrome.ios': FeatureEntry.shipped_ios_milestone,
-    # 'browsers.chrome.webview': FeatureEntry.shipped_webview_milestone,
+STAGE_QUERIABLE_FIELDS: dict[str, Property] = {
+    # The stage_type condition is added in single_field_query_async().
+    'browsers.chrome.android': Stage.milestones.android_first,
+    'browsers.chrome.desktop': Stage.milestones.desktop_first,
+    'browsers.chrome.devtrial.android.start': Stage.milestones.android_first,
+    'browsers.chrome.devtrial.desktop.start': Stage.milestones.desktop_first,
+    'browsers.chrome.devtrial.ios.start': Stage.milestones.ios_first,
+    'browsers.chrome.devtrial.webview.start': Stage.milestones.webview_first,
+    'browsers.chrome.ios': Stage.milestones.ios_first,
+    'browsers.chrome.ot.android.end': Stage.milestones.android_last,
+    'browsers.chrome.ot.android.start': Stage.milestones.android_first,
+    'browsers.chrome.ot.desktop.end': Stage.milestones.desktop_last,
+    'browsers.chrome.ot.desktop.start': Stage.milestones.desktop_first,
+    'browsers.chrome.ot.feedback_url': Stage.origin_trial_feedback_url,
+    'browsers.chrome.ot.ios.end': Stage.milestones.ios_last,
+    'browsers.chrome.ot.ios.start': Stage.milestones.ios_first,
+    'browsers.chrome.ot.webview.end': Stage.milestones.webview_last,
+    'browsers.chrome.ot.webview.start': Stage.milestones.webview_first,
+    'browsers.chrome.webview': Stage.milestones.webview_first,
+    'experiment_extension_reason': Stage.experiment_extension_reason,
+    'experiment_goals': Stage.experiment_goals,
+    'experiment_risks': Stage.experiment_risks,
+    'finch_url': Stage.finch_url,
+    'intent_to_experiment_url': Stage.intent_thread_url,
+    'intent_to_extend_experiment_url': Stage.intent_thread_url,
+    'intent_to_implement_url': Stage.intent_thread_url,
+    'intent_to_ship_url': Stage.intent_thread_url,
+    'ready_for_trial_url': Stage.announcement_url,
 
-    # 'browsers.chrome.devtrial.desktop.start':
-    #     FeatureEntry.dt_milestone_desktop_start,
-    # 'browsers.chrome.devtrial.android.start':
-    #     FeatureEntry.dt_milestone_android_start,
-    # 'browsers.chrome.devtrial.ios.start':
-    #     FeatureEntry.dt_milestone_ios_start,
-    # 'browsers.chrome.devtrial.webview.start':
-    #     FeatureEntry.dt_milestone_webview_start,
-
-    # 'browsers.chrome.ot.desktop.start':
-    #     FeatureEntry.ot_milestone_desktop_start,
-    # 'browsers.chrome.ot.desktop.end':
-    #     FeatureEntry.ot_milestone_desktop_end,
-    # 'browsers.chrome.ot.android.start':
-    #     FeatureEntry.ot_milestone_android_start,
-    # 'browsers.chrome.ot.android.end':
-    #     FeatureEntry.ot_milestone_android_end,
-    # 'browsers.chrome.ot.webview.start':
-    #     FeatureEntry.ot_milestone_webview_start,
-    # 'browsers.chrome.ot.webview.end':
-    #     FeatureEntry.ot_milestone_webview_end,
-    # 'browsers.chrome.ot.feedback_url':
-    #     FeatureEntry.origin_trial_feedback_url,
-    # 'finch_url': FeatureEntry.finch_url,
+    # Obsolete fields
+    # 'i2e_lgtms': Feature.i2e_lgtms,
+    # 'i2s_lgtms': Feature.i2s_lgtms,
     }
+
+# Mapping of user query fields to the new stage types the fields live on.
+STAGE_TYPES_BY_QUERY_FIELD: dict[str, dict[int, Optional[int]]] = {
+    'browsers.chrome.android': core_enums.STAGE_TYPES_SHIPPING,
+    'browsers.chrome.desktop': core_enums.STAGE_TYPES_SHIPPING,
+    'browsers.chrome.devtrial.android.start': core_enums.STAGE_TYPES_DEV_TRIAL,
+    'browsers.chrome.devtrial.desktop.start': core_enums.STAGE_TYPES_DEV_TRIAL,
+    'browsers.chrome.devtrial.ios.start': core_enums.STAGE_TYPES_DEV_TRIAL,
+    'browsers.chrome.devtrial.webview.start': core_enums.STAGE_TYPES_DEV_TRIAL,
+    'browsers.chrome.ios': core_enums.STAGE_TYPES_SHIPPING,
+    'browsers.chrome.ot.android.end': core_enums.STAGE_TYPES_ORIGIN_TRIAL,
+    'browsers.chrome.ot.android.start': core_enums.STAGE_TYPES_ORIGIN_TRIAL,
+    'browsers.chrome.ot.desktop.end': core_enums.STAGE_TYPES_ORIGIN_TRIAL,
+    'browsers.chrome.ot.desktop.start': core_enums.STAGE_TYPES_ORIGIN_TRIAL,
+    'browsers.chrome.ot.feedback_url': core_enums.STAGE_TYPES_ORIGIN_TRIAL,
+    'browsers.chrome.ot.ios.end': core_enums.STAGE_TYPES_ORIGIN_TRIAL,
+    'browsers.chrome.ot.ios.start': core_enums.STAGE_TYPES_ORIGIN_TRIAL,
+    'browsers.chrome.ot.webview.end': core_enums.STAGE_TYPES_ORIGIN_TRIAL,
+    'browsers.chrome.ot.webview.start': core_enums.STAGE_TYPES_ORIGIN_TRIAL,
+    'browsers.chrome.webview': core_enums.STAGE_TYPES_SHIPPING,
+    'experiment_extension_reason': core_enums.STAGE_TYPES_EXTEND_ORIGIN_TRIAL,
+    'experiment_goals': core_enums.STAGE_TYPES_ORIGIN_TRIAL,
+    'experiment_risks': core_enums.STAGE_TYPES_ORIGIN_TRIAL,
+    'finch_url': core_enums.STAGE_TYPES_SHIPPING,
+    'intent_to_experiment_url': core_enums.STAGE_TYPES_ORIGIN_TRIAL,
+    'intent_to_extend_experiment_url': core_enums.STAGE_TYPES_EXTEND_ORIGIN_TRIAL,
+    'intent_to_implement_url': core_enums.STAGE_TYPES_PROTOTYPE,
+    'intent_to_ship_url': core_enums.STAGE_TYPES_SHIPPING,
+    'ready_for_trial_url': core_enums.STAGE_TYPES_PROTOTYPE,
+  }
+
+
 
 SORTABLE_FIELDS: dict[str, Union[Property, Callable]] = QUERIABLE_FIELDS.copy()
 SORTABLE_FIELDS.update({

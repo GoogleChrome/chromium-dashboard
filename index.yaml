@@ -391,3 +391,43 @@ indexes:
   properties:
   - name: feature_id
   - name: set_on
+- kind: Stage
+  properties:
+  - name: stage_type
+  - name: milestones.desktop_first
+  - name: feature_id
+- kind: Stage
+  properties:
+  - name: stage_type
+  - name: milestones.desktop_last
+  - name: feature_id
+- kind: Stage
+  properties:
+  - name: stage_type
+  - name: milestones.android_first
+  - name: feature_id
+- kind: Stage
+  properties:
+  - name: stage_type
+  - name: milestones.android_last
+  - name: feature_id
+- kind: Stage
+  properties:
+  - name: stage_type
+  - name: milestones.ios_first
+  - name: feature_id
+- kind: Stage
+  properties:
+  - name: stage_type
+  - name: milestones.ios_last
+  - name: feature_id
+- kind: Stage
+  properties:
+  - name: stage_type
+  - name: milestones.webview_first
+  - name: feature_id
+- kind: Stage
+  properties:
+  - name: stage_type
+  - name: milestones.webview_last
+  - name: feature_id
