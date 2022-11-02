@@ -37,7 +37,7 @@ def single_field_query_async(
   if field_name in QUERIABLE_FIELDS:
     # It is a query on a field in FeatureEntry.
     query = FeatureEntry.query()
-    field = QUERIABLE_FIELDS.get(field_name)
+    field = QUERIABLE_FIELDS[field_name]
   elif field_name in STAGE_QUERIABLE_FIELDS:
     # It is a query on a field in Stage.
     query = Stage.query()
@@ -45,7 +45,7 @@ def single_field_query_async(
     # Only consider the appropriate stage type(s).
     stage_types = [st for st in stage_type_dict.values() if st is not None]
     query = query.filter(Stage.stage_type.IN(stage_types))
-    field = STAGE_QUERIABLE_FIELDS.get(field_name)
+    field = STAGE_QUERIABLE_FIELDS[field_name]
   else:
     logging.warning('Ignoring field name %r', field_name)
     return []
