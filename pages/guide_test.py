@@ -257,7 +257,7 @@ class FeatureEditHandlerTest(testing_config.CustomTestCase):
     self.assertIsNotNone(shipping_stage)
     self.assertIsNotNone(ot_extension_stage)
     # Check that correct stage fields were changed.
-    self.assertEqual(dev_trial_stage.intent_thread_url,
+    self.assertEqual(dev_trial_stage.announcement_url,
                      new_ready_for_trial_url)
     self.assertEqual(origin_trial_stage.experiment_risks,
         new_experiment_risks)
