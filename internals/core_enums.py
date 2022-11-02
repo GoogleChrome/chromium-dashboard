@@ -222,7 +222,7 @@ STAGE_TYPES_BY_FIELD_MAPPING: dict[str, dict[int, Optional[int]]] = {
     'experiment_extension_reason': STAGE_TYPES_EXTEND_ORIGIN_TRIAL,
     'origin_trial_feedback_url': STAGE_TYPES_ORIGIN_TRIAL,
     'intent_to_implement_url': STAGE_TYPES_PROTOTYPE,
-    'ready_for_trial_url': STAGE_TYPES_DEV_TRIAL,
+    'announcement_url': STAGE_TYPES_DEV_TRIAL,
     'intent_to_ship_url': STAGE_TYPES_SHIPPING,
     'intent_to_experiment_url': STAGE_TYPES_ORIGIN_TRIAL,
     'intent_to_extend_experiment_url': STAGE_TYPES_EXTEND_ORIGIN_TRIAL,
@@ -254,7 +254,7 @@ REMOVED = 7
 ORIGIN_TRIAL = 8
 INTERVENTION = 9
 ON_HOLD = 10
-NO_LONGER_PURSUING = 1000 # insure bottom of list
+NO_LONGER_PURSUING = 1000 # ensure it is at the bottom of the list
 
 RELEASE_IMPL_STATES = {
     BEHIND_A_FLAG, ENABLED_BY_DEFAULT,
