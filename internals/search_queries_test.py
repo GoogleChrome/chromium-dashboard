@@ -220,3 +220,9 @@ class SearchFeaturesTest(testing_config.CustomTestCase):
     self.assertEqual(
         [self.feature_1_id, self.feature_2_id],
         actual)
+
+  def test_stage_fields_have_join_conditions(self):
+    """Every STAGE_QUERIABLE_FIELDS has a STAGE_TYPES_BY_QUERY_FIELD entry."""
+    self.assertCountEqual(
+        search_queries.STAGE_QUERIABLE_FIELDS.keys(),
+        search_queries.STAGE_TYPES_BY_QUERY_FIELD.keys())
