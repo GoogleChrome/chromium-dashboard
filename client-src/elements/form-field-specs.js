@@ -156,7 +156,9 @@ export const ALL_FIELDS = {
     required: false,
     label: 'Feature editors',
     help_text: html`
-        Comma separated list of full email addresses. These users will be allowed to edit this feature, but will not be listed as feature owners.`,
+        Comma separated list of full email addresses. These users will be
+        allowed to edit this feature, but will not be listed as feature owners.
+        User groups are not supported.`,
   },
 
   'cc_recipients': {
@@ -167,7 +169,8 @@ export const ALL_FIELDS = {
     help_text: html`
         Comma separated list of full email addresses. These users will be
         notified of any changes to the feature, but do not gain permission to
-        edit.`,
+        edit.  User groups must allow posting from
+        admin@cr-status.appspotmail.com.`,
   },
 
   'unlisted': {
