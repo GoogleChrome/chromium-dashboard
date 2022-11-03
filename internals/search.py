@@ -219,7 +219,7 @@ def process_query(
     start=0, num=DEFAULT_RESULTS_PER_PAGE) -> tuple[list[dict[str, Any]], int]:
   """Parse the user's query, run it, and return a list of features."""
   # 1a. Parse the user query into terms.  And, add permission terms.
-  feature_id_futures = []
+  feature_id_future_ops = []
   terms = TERM_RE.findall(user_query + ' ')[:MAX_TERMS] or []
   if not show_deleted:
     terms.append(('', 'deleted', '=', 'false', None))
@@ -242,26 +242,36 @@ def process_query(
       future = process_query_term(is_negation, field_name, op_str, val_str)
       is_normal_query = True
 
-    if is_negation and is_normal_query:
+    if is_negation and not is_normal_query:
       # TODO: Use set different from all FeatureEntry IDs.
       pass
 
     if future is not None:
-      feature_id_futures.append(future)
+      if logical_op == 'OR':
+        feature_id_future_ops.append((True, future))
+      else:
+        feature_id_future_ops.append((False, future))
+
+
   # 2b. Create a parallel query for total sort order.
   total_order_promise = search_queries.total_order_query_async(sort_spec)
 
   # 3a. Get the result of each future and combine them into a result ID set.
   logging.info('now waiting on futures')
   result_id_set = None
-  for future in feature_id_futures:
+  for is_or, future in feature_id_future_ops:
     feature_ids = _resolve_promise_to_id_list(future)
     if result_id_set is None:
       logging.info('first term yields %r', feature_ids)
       result_id_set = set(feature_ids)
+      continue
+
+    logging.info('combining result so far with %r', feature_ids)
+    if is_or:
+      result_id_set.union(feature_ids)
     else:
-      logging.info('combining result so far with %r', feature_ids)
       result_id_set.intersection_update(feature_ids)
+
   result_id_list = list(result_id_set or [])
   total_count = len(result_id_list)
   # 3b. Finish getting the total sort order.
