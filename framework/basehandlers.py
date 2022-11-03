@@ -35,7 +35,7 @@ from framework import users
 from framework import utils
 from framework import xsrf
 from internals import approval_defs
-from internals.core_models import Feature
+from internals.core_models import FeatureEntry
 from internals import user_models
 
 from google.auth.transport import requests
@@ -117,12 +117,13 @@ class BaseHandler(flask.views.MethodView):
       self.abort(400, msg='Parameter %r was not a bool' % name)
     return val
 
-  def get_specified_feature(self, feature_id: Optional[int]=None) -> Feature:
+  def get_specified_feature(
+      self, feature_id: Optional[int]=None) -> FeatureEntry:
     """Get the feature specified in the featureId parameter."""
     feature_id = (feature_id or
                   self.get_int_param('featureId', required=True))
     # Load feature directly from NDB so as to never get a stale cached copy.
-    feature = Feature.get_by_id(feature_id)
+    feature = FeatureEntry.get_by_id(feature_id)
     if not feature:
       self.abort(404, msg='Feature not found')
     user = self.get_current_user()

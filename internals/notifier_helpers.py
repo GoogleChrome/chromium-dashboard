@@ -13,10 +13,29 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from framework import cloud_tasks_helpers
+from typing import Any, Optional
+from api import converters
+from framework import cloud_tasks_helpers, rediscache, users
 from internals import core_enums
-from internals import feature_helpers
 from internals import review_models
+
+def _get_changes_as_amendments(fe) -> list[review_models.Amendment]:
+  """Get all feature changes as Amendment entities."""
+  # Diff values to see what properties have changed.
+  amendments = []
+  for prop_name in fe._properties.keys():
+    if prop_name in (
+        'created_by', 'updated_by', 'updated', 'created'):
+      continue
+    new_val = getattr(fe, prop_name, None)
+    old_val = getattr(fe, '_old_' + prop_name, None)
+    if new_val != old_val:
+      if (new_val == '' or new_val == False) and old_val is None:
+        continue
+      amendments.append(
+          review_models.Amendment(field_name=prop_name,
+          old_value=str(old_val), new_value=str(new_val)))
+  return amendments
 
 def notify_feature_subscribers_of_changes(feature,
     amendments: list[review_models.Amendment], is_update: bool) -> None:
@@ -34,8 +53,30 @@ def notify_feature_subscribers_of_changes(feature,
   params = {
     'changes': changed_props,
     'is_update': is_update,
-    'feature': feature_helpers.feature_to_legacy_json(feature)
+    'feature': converters.feature_entry_to_json_verbose(feature)
   }
 
   # Create task to email subscribers.
   cloud_tasks_helpers.enqueue_task('/tasks/email-subscribers', params)
+
+def notify_subscribers_and_save_amendments(fe, notify: bool=True) -> None:
+  is_update = (fe.key is not None)
+  amendments = _get_changes_as_amendments(fe)
+
+  # Document changes as new Activity entity with amendments only if all true:
+  # 1. This is an update to an existing feature.
+  # 2. We used stash_values() to document what fields changed.
+  # 3. One or more fields were changed.
+  should_write_activity = (is_update and hasattr(fe, '_values_stashed')
+      and len(amendments) > 0)
+
+  if should_write_activity:
+    user = users.get_current_user()
+    email = user.email() if user else None
+    activity = review_models.Activity(feature_id=fe.key.integer_id(),
+        author=email, content='')
+    activity.amendments = amendments
+    activity.put()
+
+  if notify:
+    notify_feature_subscribers_of_changes(fe, amendments, is_update)

@@ -36,8 +36,8 @@ TESTDATA = testing_config.Testdata(__file__)
 class IntentEmailPreviewHandlerTest(testing_config.CustomTestCase):
 
   def setUp(self):
-    self.feature_1 = core_models.Feature(
-        name='feature one', summary='sum', owner=['user1@google.com'],
+    self.feature_1 = core_models.FeatureEntry(
+        name='feature one', summary='sum', owner_emails=['user1@google.com'],
         category=1, intent_stage=core_enums.INTENT_IMPLEMENT)
     self.feature_1.put()
 
@@ -191,11 +191,11 @@ class IntentEmailPreviewTemplateTest(testing_config.CustomTestCase):
 
   def setUp(self):
     super(IntentEmailPreviewTemplateTest, self).setUp()
-    self.feature_1 = core_models.Feature(
-        name='feature one', summary='sum', owner=['user1@google.com'],
+    self.feature_1 = core_models.FeatureEntry(
+        name='feature one', summary='sum', owner_emails=['user1@google.com'],
         category=1, intent_stage=core_enums.INTENT_IMPLEMENT)
     # Hardcode the key for the template test
-    self.feature_1.key = ndb.Key('Feature', 234)
+    self.feature_1.key = ndb.Key('FeatureEntry', 234)
     self.feature_1.put()
 
     self.request_path = '/admin/features/launch/%d/%d?intent' % (

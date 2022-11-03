@@ -168,12 +168,12 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
 
     if feature_id:
       # Load feature directly from NDB so as to never get a stale cached copy.
-      feature = Feature.get_by_id(feature_id)
-      feature_entry = FeatureEntry.get_by_id(feature_id)
-      if feature is None:
+      feature: Feature = Feature.get_by_id(feature_id)
+      feature_entry: FeatureEntry = FeatureEntry.get_by_id(feature_id)
+      if feature_entry is None:
         self.abort(404, msg='Feature not found')
       else:
-        feature.stash_values()
+        feature_entry.stash_values()
 
     logging.info('POST is %r', self.form)
 
@@ -581,7 +581,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
           stage_update_items)
 
     # Remove all feature-related cache.
-    rediscache.delete_keys_with_prefix(Feature.feature_cache_prefix())
+    rediscache.delete_keys_with_prefix(FeatureEntry.feature_cache_prefix())
 
     # Update full-text index.
     if feature_entry:

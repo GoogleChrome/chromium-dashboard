@@ -235,14 +235,14 @@ class FeatureStar(ndb.Model):
     if feature.star_count < 0:
       logging.error('count would be < 0: %r', (email, feature_id, starred))
       return
-    feature.put(notify=False)
+    feature.put()  # And, do not call notify.
 
     feature_entry = FeatureEntry.get_by_id(feature_id)
     feature_entry.star_count += 1 if starred else -1
     if feature_entry.star_count < 0:
       logging.error('count would be < 0: %r', (email, feature_id, starred))
       return
-    feature_entry.put()  # And, do not call notifiy.
+    feature_entry.put(notify=False)
 
   @classmethod
   def get_user_stars(self, email):

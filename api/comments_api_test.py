@@ -77,7 +77,7 @@ class CommentsConvertersTest(testing_config.CustomTestCase):
 class CommentsAPITest(testing_config.CustomTestCase):
 
   def setUp(self):
-    self.feature_1 = core_models.Feature(
+    self.feature_1 = core_models.FeatureEntry(
         name='feature one', summary='sum', category=1)
     self.feature_1.put()
     self.feature_id = self.feature_1.key.integer_id()

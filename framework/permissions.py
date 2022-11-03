@@ -15,12 +15,13 @@
 
 
 import logging
+from typing import Optional
 import flask
 
 import settings
 from framework.users import User
 from internals import feature_helpers
-from internals.core_models import Feature
+from internals.core_models import FeatureEntry
 from internals.user_models import AppUser
 
 
@@ -73,7 +74,7 @@ def can_edit_any_feature(user: User) -> bool:
   return app_user.is_admin or app_user.is_site_editor
 
 
-def feature_edit_list(user: User) -> list[Feature]:
+def feature_edit_list(user: User) -> list[int]:
   """Return a list of features the current user can edit"""
   if not user:
     return []
@@ -100,18 +101,19 @@ def can_edit_feature(user: User, feature_id: int) -> bool:
     return False
 
   # Load feature directly from NDB so as to never get a stale cached copy.
-  feature = Feature.get_by_id(feature_id)
+  feature: Optional[FeatureEntry] = FeatureEntry.get_by_id(feature_id)
   if not feature:
     return False
 
   email = user.email()
   # Check if the user is an owner, editor, or creator for this feature.
   # If yes, the feature can be edited.
-  return (email in feature.owner or
-          email in feature.editors or email == feature.creator)
+  return (email in feature.owner_emails or
+          email in feature.editor_emails or
+          email == feature.creator_email)
 
 
-def can_approve_feature(user: User, feature: Feature, approvers) -> bool:
+def can_approve_feature(user: User, feature: FeatureEntry, approvers) -> bool:
   """Return True if the user is allowed to approve the given feature."""
   # TODO(jrobbins): make this per-feature
   if not can_view_feature(user, feature):
@@ -192,7 +194,7 @@ def validate_feature_edit_permission(handler_obj, feature_id: int):
 
   # Redirect to 404 if feature is not found.
   # Load feature directly from NDB so as to never get a stale cached copy.
-  if Feature.get_by_id(int(feature_id)) is None:
+  if FeatureEntry.get_by_id(int(feature_id)) is None:
     handler_obj.abort(404, msg='Feature not found')
 
   # Redirect to 403 if user does not have edit permission for feature.

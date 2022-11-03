@@ -280,9 +280,9 @@ class OwnersFileTest(testing_config.CustomTestCase):
 class ActivityTest(testing_config.CustomTestCase):
 
   def setUp(self):
-    self.feature_1 = core_models.Feature(
-        name='feature a', summary='sum', owner=['feature_owner@example.com'],
-        category=1)
+    self.feature_1 = core_models.FeatureEntry(
+        name='feature a', summary='sum', category=1,
+        owner_emails=['feature_owner@example.com'])
     self.feature_1.put()
     testing_config.sign_in('one@example.com', 123567890)
 
@@ -297,7 +297,7 @@ class ActivityTest(testing_config.CustomTestCase):
   def test_activities_created(self):
     # stash_values is used to note what the original values of a feature are.
     self.feature_1.stash_values()
-    self.feature_1.owner = ["other@example.com"]
+    self.feature_1.owner_emails = ["other@example.com"]
     self.feature_1.summary = "new summary"
     self.feature_1.put()
 
@@ -312,7 +312,8 @@ class ActivityTest(testing_config.CustomTestCase):
     self.assertEqual(len(activities[1].amendments), 1)
 
     expected = [
-        ('owner', '[\'feature_owner@example.com\']', '[\'other@example.com\']'),
+        ('owner_emails', '[\'feature_owner@example.com\']',
+            '[\'other@example.com\']'),
         ('summary', 'sum', 'new summary'),
         ('name', 'feature a', 'Changed name')]
     result = activities[0].amendments + activities[1].amendments
@@ -324,7 +325,7 @@ class ActivityTest(testing_config.CustomTestCase):
 
   def test_activities_created__no_stash(self):
     """If stash_values() is not called, no activity should be logged."""
-    self.feature_1.owner = ["other@example.com"]
+    self.feature_1.owner_emails = ["other@example.com"]
     self.feature_1.summary = "new summary"
     self.feature_1.put()
 
