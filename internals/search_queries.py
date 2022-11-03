@@ -98,6 +98,7 @@ def negate_operator(operator: str) -> str:
 
   return operator
 
+
 def handle_me_query_async(field_name: str) -> Future:
   """Return a future for feature IDs that reference the current user."""
   user = users.get_current_user()
