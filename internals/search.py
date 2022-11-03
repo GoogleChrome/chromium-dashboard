@@ -268,7 +268,7 @@ def process_query(
 
     logging.info('combining result so far with %r', feature_ids)
     if is_or:
-      result_id_set.union(feature_ids)
+      result_id_set.update(feature_ids)
     else:
       result_id_set.intersection_update(feature_ids)
 
