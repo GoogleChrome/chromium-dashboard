@@ -85,7 +85,7 @@ class FeaturesAPI(basehandlers.APIHandler):
       return {'message': 'ID does not match any feature.'}
     feature.deleted = True
     feature.put()
-    rediscache.delete_keys_with_prefix(Feature.feature_cache_prefix())
+    rediscache.delete_keys_with_prefix(FeatureEntry.feature_cache_prefix())
 
     # Write for new FeatureEntry entity.
     feature_entry: Optional[FeatureEntry] = (

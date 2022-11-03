@@ -91,6 +91,7 @@ class FeatureCreateHandler(basehandlers.FlaskHandler):
 
     # Remove all feature-related cache.
     rediscache.delete_keys_with_prefix(Feature.feature_cache_prefix())
+    rediscache.delete_keys_with_prefix(FeatureEntry.feature_cache_prefix())
 
     redirect_url = '/guide/edit/' + str(key.integer_id())
     return self.redirect(redirect_url)
