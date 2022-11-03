@@ -19,16 +19,16 @@ from framework import cloud_tasks_helpers, rediscache, users
 from internals import core_enums
 from internals import review_models
 
-def _get_changes_as_amendments(fe) -> list[review_models.Amendment]:
+def _get_changes_as_amendments(f) -> list[review_models.Amendment]:
   """Get all feature changes as Amendment entities."""
   # Diff values to see what properties have changed.
   amendments = []
-  for prop_name in fe._properties.keys():
+  for prop_name in f._properties.keys():
     if prop_name in (
         'created_by', 'updated_by', 'updated', 'created'):
       continue
-    new_val = getattr(fe, prop_name, None)
-    old_val = getattr(fe, '_old_' + prop_name, None)
+    new_val = getattr(f, prop_name, None)
+    old_val = getattr(f, '_old_' + prop_name, None)
     if new_val != old_val:
       if (new_val == '' or new_val == False) and old_val is None:
         continue
@@ -53,13 +53,16 @@ def notify_feature_subscribers_of_changes(feature,
   params = {
     'changes': changed_props,
     'is_update': is_update,
-    'feature': converters.feature_entry_to_json_verbose(feature)
+    # TODO(danielrsmith): Change converter function
+    # after switch to using FeatureEntry here.
+    'feature': converters.feature_to_legacy_json(feature)
   }
 
   # Create task to email subscribers.
   cloud_tasks_helpers.enqueue_task('/tasks/email-subscribers', params)
 
 def notify_subscribers_and_save_amendments(fe, notify: bool=True) -> None:
+  """Notify subscribers of changes to FeatureEntry and save amendments."""
   is_update = (fe.key is not None)
   amendments = _get_changes_as_amendments(fe)
 

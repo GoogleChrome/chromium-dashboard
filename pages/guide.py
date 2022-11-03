@@ -159,7 +159,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
 
   def process_post_data(self, **kwargs):
     feature_id = kwargs.get('feature_id', None)
-    stage_id = kwargs.get('stage_id', 0)
+    intent_stage_id = kwargs.get('stage_id', 0)
     # Validate the user has edit permissions and redirect if needed.
     redirect_resp = permissions.validate_feature_edit_permission(
         self, feature_id)
@@ -173,7 +173,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
       if feature_entry is None:
         self.abort(404, msg='Feature not found')
       else:
-        feature_entry.stash_values()
+        feature.stash_values()
 
     logging.info('POST is %r', self.form)
 
@@ -420,8 +420,8 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
       feature.intent_stage = int(self.form.get('intent_stage'))
       update_items.append(('intent_stage', int(self.form.get('intent_stage'))))
     elif self.form.get('set_stage') == 'on':
-      feature.intent_stage = stage_id
-      update_items.append(('intent_stage', stage_id))
+      feature.intent_stage = intent_stage_id
+      update_items.append(('intent_stage', intent_stage_id))
 
     if self.touched('category'):
       feature.category = int(self.form.get('category'))
@@ -581,6 +581,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
           stage_update_items)
 
     # Remove all feature-related cache.
+    rediscache.delete_keys_with_prefix(Feature.feature_cache_prefix())
     rediscache.delete_keys_with_prefix(FeatureEntry.feature_cache_prefix())
 
     # Update full-text index.
