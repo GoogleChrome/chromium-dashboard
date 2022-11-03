@@ -57,9 +57,6 @@ class ChromedashFeatureDetail extends LitElement {
         margin-top: 1em;
         padding: 16px;
       }
-      .card h3 {
-        margin-top: 4px;
-      }
 
       ol {
         list-style: none;
@@ -102,16 +99,11 @@ class ChromedashFeatureDetail extends LitElement {
         padding: var(--content-padding-half);
       }
 
-      .active {
+      .active .card {
         border: var(--spot-card-border);
         box-shadow: var(--spot-card-box-shadow);
       }
 
-      .active h3::after {
-        content: "Active stage";
-        float: right;
-        color: var(--dark-spot-color);
-      }
     `];
   }
 
@@ -237,55 +229,69 @@ class ChromedashFeatureDetail extends LitElement {
     }
   }
 
-  renderStage(stage) {
-    let fields = [];
-    let stageName = undefined;
-    let isActive = false;
-    if (typeof stage == 'string') {
-      fields = DISPLAY_FIELDS_IN_STAGES[stage];
-      stageName = stage;
-    } else {
-      fields = DISPLAY_FIELDS_IN_STAGES[stage.outgoing_stage];
-      stageName = stage.name;
-      if (this.feature.intent_stage_int == stage.outgoing_stage) {
-        isActive = true;
-      }
-    }
-    if (fields === undefined || fields.length == 0) {
-      return nothing;
-    }
-    let valuesPart = html`<p>No relevant fields have been filled in.</p>`;
+  renderSectionFields(fields) {
     if (fields.some(fieldDef => this.hasFieldValue(fieldDef[0]))) {
-      valuesPart = fields.map(fieldDef => this.renderField(fieldDef));
+      return fields.map(fieldDef => this.renderField(fieldDef));
+    } else {
+      return html`<p>No relevant fields have been filled in.</p>`;
+    }
+  }
+
+  renderSection(summary, content, isActive=false) {
+    if (isActive) {
+      summary += ' - Active';
     }
     return html`
-      <sl-details summary=${stageName + (isActive ? ' - Active' : '')}
+      <sl-details summary=${summary}
         @sl-after-show=${this.updateCollapsed}
         @sl-after-hide=${this.updateCollapsed}
         ?open=${isActive}
+        class=${isActive ? 'active' : ''}
       >
-        <section class="card ${isActive ? 'active' : ''}">
-          ${valuesPart}
-        </section>
+        ${content}
       </sl-details>
     `;
   }
 
+  renderMetadataSection() {
+    const fields = DISPLAY_FIELDS_IN_STAGES['Metadata'];
+    if (fields === undefined || fields.length == 0) {
+      return nothing;
+    }
+    const content = html`
+      <section class="card">
+        ${this.renderSectionFields(fields)}
+      </section>
+    `;
+    return this.renderSection('Metadata', content);
+  }
+
+  renderStage(stage) {
+    const fields = DISPLAY_FIELDS_IN_STAGES[stage.outgoing_stage];
+    const isActive = (this.feature.intent_stage_int == stage.outgoing_stage);
+    if (fields === undefined || fields.length == 0) {
+      return nothing;
+    }
+    const content = html`
+      <section class="card">
+        ${this.renderSectionFields(fields)}
+      </section>
+    `;
+    return this.renderSection(stage.name, content, isActive);
+  }
+
   renderActivitySection() {
-    return html`
-      <sl-details summary="Comments &amp; activity"}
-        @sl-after-show=${this.updateCollapsed}
-        @sl-after-hide=${this.updateCollapsed}
-      >
+    const summary = 'Comments & activity';
+    const content = html`
         <div style="padding-top: var(--content-padding)">
           <chromedash-activity-log
-          .user=${this.user}
-          .feature=${this.feature}
-          .comments=${this.comments}
-            ></chromedash-activity-log>
+            .user=${this.user}
+            .feature=${this.feature}
+            .comments=${this.comments}
+          ></chromedash-activity-log>
         </div>
-      </sl-details>
     `;
+    return this.renderSection(summary, content);
   }
 
   render() {
@@ -294,11 +300,8 @@ class ChromedashFeatureDetail extends LitElement {
         <span>Development stages</span>
         ${this.renderControls()}
       </h2>
-      ${this.renderStage('Metadata')}
-      ${this.process.stages.map(stage => html`
-          ${this.renderStage(stage)}
-      `)}
-      ${this.renderStage('Misc')}
+      ${this.renderMetadataSection()}
+      ${this.process.stages.map(stage => this.renderStage(stage))}
       ${this.renderActivitySection()}
     `;
   }

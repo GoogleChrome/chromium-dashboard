@@ -1190,5 +1190,4 @@ export const DISPLAY_FIELDS_IN_STAGES = {
     'intent_to_ship_url', 'i2s_lgtms',
   ]),
   [INTENT_STAGES.INTENT_SHIPPED[0]]: makeDisplaySpecs([]),
-  'Misc': makeDisplaySpecs([]),
 };
