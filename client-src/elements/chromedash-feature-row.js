@@ -145,8 +145,6 @@ class ChromedashFeatureRow extends LitElement {
   renderIcons(feature) {
     if (this.signedIn) {
       return html`
-        ${this.canApprove ? this.renderApprovalsIcon(feature) : nothing}
-        ${this.canEdit ? this.renderEditIcon(feature) : nothing}
         ${this.renderStarIcon(feature)}
       `;
     } else {
@@ -254,6 +252,7 @@ class ChromedashFeatureRow extends LitElement {
               ${this.renderApprovalsSoFar(activeApprovals)}
             </div>
             ` : nothing}
+          ${this.renderQuickActions(feature)}
         </div>
       `;
     }
@@ -263,13 +262,12 @@ class ChromedashFeatureRow extends LitElement {
   render() {
     const feature = this.feature;
     return html`
-      <td class="name_col">
-        ${this.renderQuickActions(feature)}
-        <a href="/feature/${feature.id}?context=myfeatures">${feature.name}</a>
-        ${this.renderHighlights(feature)}
-      </td>
       <td class="icon_col">
         ${this.renderIcons(feature)}
+      </td>
+      <td class="name_col">
+        <a href="/feature/${feature.id}?context=myfeatures">${feature.name}</a>
+        ${this.renderHighlights(feature)}
       </td>
     `;
   }
