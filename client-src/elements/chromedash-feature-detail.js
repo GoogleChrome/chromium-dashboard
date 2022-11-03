@@ -266,7 +266,7 @@ class ChromedashFeatureDetail extends LitElement {
     return this.renderSection('Metadata', content);
   }
 
-  renderStage(stage) {
+  renderStageSection(stage) {
     const fields = DISPLAY_FIELDS_IN_STAGES[stage.outgoing_stage];
     const isActive = (this.feature.intent_stage_int == stage.outgoing_stage);
     if (fields === undefined || fields.length == 0) {
@@ -301,7 +301,7 @@ class ChromedashFeatureDetail extends LitElement {
         ${this.renderControls()}
       </h2>
       ${this.renderMetadataSection()}
-      ${this.process.stages.map(stage => this.renderStage(stage))}
+      ${this.process.stages.map(stage => this.renderStageSection(stage))}
       ${this.renderActivitySection()}
     `;
   }
