@@ -17,7 +17,6 @@ import collections
 
 from internals import approval_defs
 from internals import core_enums
-from internals import core_models
 
 
 Process = collections.namedtuple(
@@ -523,99 +522,94 @@ def review_is_done(status):
 # be used as a link URL.
 PROGRESS_DETECTORS = {
     'Initial public proposal':
-    lambda f: f.initial_public_proposal_url,
+    lambda f, _: f.initial_public_proposal_url,
 
     'Explainer':
-    lambda f: f.explainer_links and f.explainer_links[0],
+    lambda f, _: f.explainer_links and f.explainer_links[0],
 
     'Security review issues addressed':
-    lambda f: review_is_done(f.security_review_status),
+    lambda f, _: review_is_done(f.security_review_status),
 
     'Privacy review issues addressed':
-    lambda f: review_is_done(f.privacy_review_status),
+    lambda f, _: review_is_done(f.privacy_review_status),
 
     'Intent to Prototype email':
-    lambda f: f.intent_to_implement_url,
+    lambda f, stages: (
+        core_enums.STAGE_TYPES_PROTOTYPE[f.feature_type] and
+        stages[core_enums.STAGE_TYPES_PROTOTYPE[f.feature_type]].intent_thread_url),
 
     'Intent to Ship email':
-    lambda f: f.intent_to_ship_url,
+    lambda f, stages: (core_enums.STAGE_TYPES_SHIPPING[f.feature_type] and
+        stages[core_enums.STAGE_TYPES_SHIPPING[f.feature_type]].intent_thread_url),
 
     'Ready for Trial email':
-    lambda f: f.ready_for_trial_url,
+    lambda f, stages: (core_enums.STAGE_TYPES_DEV_TRIAL[f.feature_type] and
+        stages[core_enums.STAGE_TYPES_DEV_TRIAL[f.feature_type]].announcement_url),
 
     'Intent to Experiment email':
-    lambda f: f.intent_to_experiment_url,
-
-    'One LGTM on Intent to Experiment':
-    lambda f: f.i2e_lgtms,
-
-    'One LGTM on Request for Deprecation Trial':
-    lambda f: f.i2e_lgtms,
-
-    'Three LGTMs on Intent to Ship':
-    lambda f: f.i2s_lgtms and len(f.i2s_lgtms) >= 3,
+    lambda f, stages: (core_enums.STAGE_TYPES_ORIGIN_TRIAL[f.feature_type] and
+        stages[core_enums.STAGE_TYPES_ORIGIN_TRIAL[f.feature_type]].intent_thread_url),
 
     'Samples':
-    lambda f: f.sample_links and f.sample_links[0],
+    lambda f, _: f.sample_links and f.sample_links[0],
 
     'Doc links':
-    lambda f: f.doc_links and f.doc_links[0],
+    lambda f, _: f.doc_links and f.doc_links[0],
 
     'Spec link':
-    lambda f: f.spec_link,
+    lambda f, _: f.spec_link,
 
     'Draft API spec':
-    lambda f: f.spec_link,
+    lambda f, _: f.spec_link,
 
     'API spec':
-    lambda f: f.api_spec,
+    lambda f, _: f.api_spec,
 
     'Spec mentor':
-    lambda f: f.spec_mentors,
+    lambda f, _: f.spec_mentor_emails,
 
     'TAG review requested':
-    lambda f: f.tag_review,
+    lambda f, _: f.tag_review,
 
     'TAG review issues addressed':
-    lambda f: review_is_done(f.tag_review_status),
+    lambda f, _: review_is_done(f.tag_review_status),
 
     'Web developer signals':
-    lambda f: bool(f.web_dev_views and
-                   f.web_dev_views != core_enums.DEV_NO_SIGNALS),
+    lambda f, _: bool(f.web_dev_views and
+        f.web_dev_views != core_enums.DEV_NO_SIGNALS),
 
     'Vendor signals':
-    lambda f: bool(
+    lambda f, _: bool(
         f.ff_views != core_enums.NO_PUBLIC_SIGNALS or
-        f.safari_views != core_enums.NO_PUBLIC_SIGNALS or
-        f.ie_views != core_enums.NO_PUBLIC_SIGNALS),  # IE Deprecated
+        f.safari_views != core_enums.NO_PUBLIC_SIGNALS),
 
     'Updated vendor signals':
-    lambda f: bool(
+    lambda f, _: bool(
         f.ff_views != core_enums.NO_PUBLIC_SIGNALS or
-        f.safari_views != core_enums.NO_PUBLIC_SIGNALS or
-        f.ie_views != core_enums.NO_PUBLIC_SIGNALS),  # IE Deprecated
+        f.safari_views != core_enums.NO_PUBLIC_SIGNALS),
 
     'Final vendor signals':
-    lambda f: bool(
+    lambda f, _: bool(
         f.ff_views != core_enums.NO_PUBLIC_SIGNALS or
-        f.safari_views != core_enums.NO_PUBLIC_SIGNALS or
-        f.ie_views != core_enums.NO_PUBLIC_SIGNALS),  # IE Deprecated
+        f.safari_views != core_enums.NO_PUBLIC_SIGNALS),
 
     'Estimated target milestone':
-    lambda f: bool(f.shipped_milestone),
+    lambda f, stages: bool(core_enums.STAGE_TYPES_SHIPPING[f.feature_type] and
+        stages[core_enums.STAGE_TYPES_SHIPPING[f.feature_type]].milestones.desktop_first),
 
     'Final target milestone':
-    lambda f: bool(f.shipped_milestone),
+    lambda f, stages: bool(core_enums.STAGE_TYPES_SHIPPING[f.feature_type] and
+        stages[core_enums.STAGE_TYPES_SHIPPING[f.feature_type]].milestones.desktop_first),
 
     'Code in Chromium':
-    lambda f: f.impl_status_chrome in (
+    lambda f, _: f.impl_status_chrome in (
         core_enums.IN_DEVELOPMENT, core_enums.BEHIND_A_FLAG,
         core_enums.ENABLED_BY_DEFAULT,
         core_enums.ORIGIN_TRIAL, core_enums.INTERVENTION),
 
     'Motivation':
-    lambda f: bool(f.motivation),
+    lambda f, _: bool(f.motivation),
 
     'Code removed':
-    lambda f: f.impl_status_chrome == core_enums.REMOVED,
+    lambda f, _: f.impl_status_chrome == core_enums.REMOVED,
 }
