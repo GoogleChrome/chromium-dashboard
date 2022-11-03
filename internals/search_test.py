@@ -52,20 +52,17 @@ class SearchRETest(testing_config.CustomTestCase):
   def test_structured_query_terms__complex(self):
     """We can parse complex operator terms."""
     self.assertEqual(
-        [('NOT', 'field', '=', 'value', '')],
-        search.TERM_RE.findall('NOT field=value '))
+        [('-', 'field', '=', 'value', '')],
+        search.TERM_RE.findall('-field=value '))
     self.assertEqual(
-        [('AND', 'field', '>', 'value', '')],
-        search.TERM_RE.findall('AND field>value '))
+        [('-', 'field', '>', 'value', '')],
+        search.TERM_RE.findall('-field>value '))
     self.assertEqual(
         [('OR', 'flag_name', '=', 'version', '')],
         search.TERM_RE.findall('OR flag_name=version '))
     self.assertEqual(
-        [('NOT', 'flag_name', '=', 'enable-super-stuff', '')],
-        search.TERM_RE.findall('NOT flag_name=enable-super-stuff '))
-    self.assertEqual(
-        [('AND', 'flag_name', '=', '"enable super stuff"', '')],
-        search.TERM_RE.findall('AND flag_name="enable super stuff" '))
+        [('-', 'flag_name', '=', 'enable-super-stuff', '')],
+        search.TERM_RE.findall('-flag_name=enable-super-stuff '))
 
   def test_text_terms(self):
     """We can parse text terms."""
@@ -333,6 +330,28 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
     self.assertCountEqual(
         [f['name'] for f in actual],
         ['feature 1', 'feature 2'])
+
+  def test_process_query__negated_single_field(self):
+    """We can can run single-field queries."""
+
+    actual, tc = search.process_query('-category=1')
+    self.assertEqual(1, len(actual))
+    self.assertEqual(actual[0]['name'], 'feature 2')
+
+    actual, tc = search.process_query('-category=2')
+    self.assertEqual(1, len(actual))
+    self.assertEqual(actual[0]['name'], 'feature 1')
+
+    actual, tc = search.process_query('-category="2"')
+    self.assertEqual(1, len(actual))
+    self.assertEqual(actual[0]['name'], 'feature 1')
+
+    actual, tc = search.process_query('-name="feature 2"')
+    self.assertEqual(1, len(actual))
+    self.assertEqual(actual[0]['name'], 'feature 1')
+
+    actual, tc = search.process_query('-browsers.webdev.view=1')
+    self.assertEqual(0, len(actual))
 
   @mock.patch('logging.warning')
   def test_process_query__bad(self, mock_warn):
