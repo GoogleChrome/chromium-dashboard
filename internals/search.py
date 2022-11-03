@@ -242,15 +242,13 @@ def process_query(
       future = process_query_term(is_negation, field_name, op_str, val_str)
       is_normal_query = True
 
-    if is_negation and not is_normal_query:
-      # TODO: Use set different from all FeatureEntry IDs.
-      pass
+    if future is None:
+      continue
 
-    if future is not None:
-      if logical_op == 'OR':
-        feature_id_future_ops.append((True, future))
-      else:
-        feature_id_future_ops.append((False, future))
+    if is_negation and is_normal_query:
+      feature_id_future_ops.append(('', future))
+    else:
+      feature_id_future_ops.append((logical_op, future))
 
 
   # 2b. Create a parallel query for total sort order.
@@ -259,16 +257,25 @@ def process_query(
   # 3a. Get the result of each future and combine them into a result ID set.
   logging.info('now waiting on futures')
   result_id_set = None
-  for is_or, future in feature_id_future_ops:
+  for logical_op, future in feature_id_future_ops:
     feature_ids = _resolve_promise_to_id_list(future)
     if result_id_set is None:
       logging.info('first term yields %r', feature_ids)
-      result_id_set = set(feature_ids)
-      continue
+      if logical_op == '-':
+        # If a negation is the first term, interpret it as
+        # all feature ids - the negated feature ids. Thus adding
+        # all feature ids here initially.
+        all_feature_entries = core_models.FeatureEntry.query().fetch()
+        result_id_set = set([fe.key.integer_id() for fe in all_feature_entries])
+      else:
+        result_id_set = set(feature_ids)
+        continue
 
     logging.info('combining result so far with %r', feature_ids)
-    if is_or:
+    if logical_op == 'OR':
       result_id_set.update(feature_ids)
+    elif logical_op == '-':
+      result_id_set.difference(feature_ids)
     else:
       result_id_set.intersection_update(feature_ids)
 
