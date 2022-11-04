@@ -81,6 +81,24 @@ def single_field_query_async(
   return future
 
 
+def negate_operator(operator: str) -> str:
+  """Negate field operators."""
+  if operator == '=':
+    return '!='
+  if operator == '<=':
+    return '>'
+  if operator == '<':
+    return '>='
+  if operator == '>=':
+    return '<'
+  if operator == '>':
+    return '<='
+  if operator == '!=':
+    return '='
+
+  return operator
+
+
 def handle_me_query_async(field_name: str) -> Future:
   """Return a future for feature IDs that reference the current user."""
   user = users.get_current_user()

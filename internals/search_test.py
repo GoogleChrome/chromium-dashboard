@@ -31,34 +31,49 @@ class SearchRETest(testing_config.CustomTestCase):
     self.assertEqual([], search.TERM_RE.findall(''))
     self.assertEqual([], search.TERM_RE.findall('   '))
 
-  def test_operator_terms(self):
+  def test_structured_query_terms(self):
     """We can parse operator terms."""
     self.assertEqual(
-        [('field', '=', 'value', '')],
+        [('', 'field', '=', 'value', '')],
         search.TERM_RE.findall('field=value '))
     self.assertEqual(
-        [('field', '>', 'value', '')],
+        [('', 'field', '>', 'value', '')],
         search.TERM_RE.findall('field>value '))
     self.assertEqual(
-        [('flag_name', '=', 'version', '')],
+        [('', 'flag_name', '=', 'version', '')],
         search.TERM_RE.findall('flag_name=version '))
     self.assertEqual(
-        [('flag_name', '=', 'enable-super-stuff', '')],
+        [('', 'flag_name', '=', 'enable-super-stuff', '')],
         search.TERM_RE.findall('flag_name=enable-super-stuff '))
     self.assertEqual(
-        [('flag_name', '=', '"enable super stuff"', '')],
+        [('', 'flag_name', '=', '"enable super stuff"', '')],
         search.TERM_RE.findall('flag_name="enable super stuff" '))
+
+  def test_structured_query_terms__complex(self):
+    """We can parse complex operator terms."""
+    self.assertEqual(
+        [('-', 'field', '=', 'value', '')],
+        search.TERM_RE.findall('-field=value '))
+    self.assertEqual(
+        [('-', 'field', '>', 'value', '')],
+        search.TERM_RE.findall('-field>value '))
+    self.assertEqual(
+        [('-', 'flag_name', '=', 'version', '')],
+        search.TERM_RE.findall('-flag_name=version '))
+    self.assertEqual(
+        [('-', 'flag_name', '=', 'enable-super-stuff', '')],
+        search.TERM_RE.findall('-flag_name=enable-super-stuff '))
 
   def test_text_terms(self):
     """We can parse text terms."""
     self.assertEqual(
-        [('', '', '', 'hello')],
+        [('', '', '', '', 'hello')],
         search.TERM_RE.findall('hello '))
     self.assertEqual(
-        [('', '', '', '"hello there people"')],
+        [('', '', '', '', '"hello there people"')],
         search.TERM_RE.findall('"hello there people" '))
     self.assertEqual(
-        [('', '', '', '"memory location $0x25"')],
+        [('', '', '', '', '"memory location $0x25"')],
         search.TERM_RE.findall('"memory location $0x25" '))
 
   def test_malformed(self):
@@ -67,7 +82,7 @@ class SearchRETest(testing_config.CustomTestCase):
         [],
         search.TERM_RE.findall(':: = == := > >> >>> '))
     self.assertEqual(
-        [('', '', '', 'word')],
+        [('', '', '', '', 'word')],
         search.TERM_RE.findall('=word '))
 
 
@@ -315,6 +330,28 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
     self.assertCountEqual(
         [f['name'] for f in actual],
         ['feature 1', 'feature 2'])
+
+  def test_process_query__negated_single_field(self):
+    """We can can run single-field queries."""
+
+    actual, tc = search.process_query('-category=1')
+    self.assertEqual(1, len(actual))
+    self.assertEqual(actual[0]['name'], 'feature 2')
+
+    actual, tc = search.process_query('-category=2')
+    self.assertEqual(1, len(actual))
+    self.assertEqual(actual[0]['name'], 'feature 1')
+
+    actual, tc = search.process_query('-category="2"')
+    self.assertEqual(1, len(actual))
+    self.assertEqual(actual[0]['name'], 'feature 1')
+
+    actual, tc = search.process_query('-name="feature 2"')
+    self.assertEqual(1, len(actual))
+    self.assertEqual(actual[0]['name'], 'feature 1')
+
+    actual, tc = search.process_query('-browsers.webdev.view=1')
+    self.assertEqual(0, len(actual))
 
   @mock.patch('logging.warning')
   def test_process_query__bad(self, mock_warn):

@@ -226,3 +226,23 @@ class SearchFeaturesTest(testing_config.CustomTestCase):
     self.assertCountEqual(
         search_queries.STAGE_QUERIABLE_FIELDS.keys(),
         search_queries.STAGE_TYPES_BY_QUERY_FIELD.keys())
+  
+  def test_negate_operator(self):
+    """We can get correct negated operators"""
+    actual = search_queries.negate_operator('=')
+    self.assertEqual('!=', actual)
+
+    actual = search_queries.negate_operator('!=')
+    self.assertEqual('=', actual)
+
+    actual = search_queries.negate_operator('<')
+    self.assertEqual('>=', actual)
+
+    actual = search_queries.negate_operator('<=')
+    self.assertEqual('>', actual)
+
+    actual = search_queries.negate_operator('>')
+    self.assertEqual('<=', actual)
+
+    actual = search_queries.negate_operator('>=')
+    self.assertEqual('<', actual)
