@@ -11,7 +11,7 @@
 		// Configure properties specific to VS Code.
 		"vscode": {
 			// Set *default* container specific settings.json values on container create.
-			"settings": { 
+			"settings": {
 				"python.defaultInterpreterPath": "/workspace/cs-env/bin/python",
 				"python.editor.tabSize": 2,
 				"python.linting.enabled": true,
@@ -36,7 +36,7 @@
 				"python.languageServer": "Jedi",
 				"python.testing.unittestEnabled": true
 			},
-			
+
 			// Add the IDs of extensions you want installed when the container is created.
 			"extensions": [
 				"ms-python.python"
@@ -55,7 +55,7 @@
 	// Use 'postCreateCommand' to run commands after the container is created.
 	// pip version https://github.com/microsoft/vscode-python/issues/18802
 	// Need to install pylint inside the virutalenv because the global one does not honor it.
-	"postCreateCommand": "python3.9 -m venv cs-env; . cs-env/bin/activate; python -m pip install pylint==2.13.4; npm run setup",
+	"postCreateCommand": "python3.10 -m venv cs-env; . cs-env/bin/activate; python -m pip install pylint==2.13.4; npm run setup",
 
 	// Comment out to connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
 	"remoteUser": "vscode"
