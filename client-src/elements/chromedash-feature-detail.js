@@ -281,7 +281,7 @@ class ChromedashFeatureDetail extends LitElement {
   }
 
   renderActivitySection() {
-    const summary = 'Comments & activity';
+    const summary = 'Comments & Activity';
     const content = html`
         <div style="padding-top: var(--content-padding)">
           <chromedash-activity-log
