@@ -58,8 +58,8 @@ class SearchRETest(testing_config.CustomTestCase):
         [('-', 'field', '>', 'value', '')],
         search.TERM_RE.findall('-field>value '))
     self.assertEqual(
-        [('OR', 'flag_name', '=', 'version', '')],
-        search.TERM_RE.findall('OR flag_name=version '))
+        [('-', 'flag_name', '=', 'version', '')],
+        search.TERM_RE.findall('-flag_name=version '))
     self.assertEqual(
         [('-', 'flag_name', '=', 'enable-super-stuff', '')],
         search.TERM_RE.findall('-flag_name=enable-super-stuff '))
