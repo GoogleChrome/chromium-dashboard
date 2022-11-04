@@ -6,7 +6,11 @@ appengine-python-standard>=1.0.0
 html5lib==1.1
 funcsigs==1.0.2
 google-api-python-client==2.47.0
-# Only suppoted for py3.9: google-python-cloud-debugger==2.18
+
+# TODO(jrobbins): Add this back or replace it when python 3.10 is supported.
+# google-python-cloud-debugger==2.18
+# See https://github.com/GoogleCloudPlatform/cloud-debug-python/issues/33
+
 google-cloud-tasks==2.7.0
 google-cloud-ndb==1.11.1
 google-cloud-logging==3.0.0
