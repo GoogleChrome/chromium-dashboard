@@ -1,4 +1,4 @@
-runtime: python39
+runtime: python310
 service: notifier
 
 handlers:
