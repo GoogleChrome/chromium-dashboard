@@ -107,11 +107,7 @@ class Approval(ndb.Model):
     for rr in review_requests:
       rr.key.delete()
 
-    # Delete associated Vote entities as well.
-    requested_votes = Vote.get_votes(feature_id=feature_id,
-        gate_id=field_id, states=[Vote.REVIEW_REQUESTED])
-    for vote in requested_votes:
-      vote.key.delete()
+    # Note: We keep REVIEW_REQUEST Vote entities.
 
 
 class ApprovalConfig(ndb.Model):
@@ -203,14 +199,16 @@ class OwnersFile(ndb.Model):
     return owners_file.raw_content
 
 
-# Note: This class is not used yet.
 class Gate(ndb.Model):  # copy from ApprovalConfig
   """Gates regulate the completion of a stage."""
+
+  PREPARING = 0
+
   feature_id = ndb.IntegerProperty(required=True)
   stage_id = ndb.IntegerProperty(required=True)
   gate_type = ndb.IntegerProperty(required=True)  # copy from field_id
 
-  # Can be REVIEW_REQUESTED or one of ApprovalValue states
+  # Can one of Vote states or PREPARING.
   state = ndb.IntegerProperty(required=True)  # calc from Approval
 
   owners = ndb.StringProperty(repeated=True)
@@ -218,13 +216,6 @@ class Gate(ndb.Model):  # copy from ApprovalConfig
   additional_review = ndb.BooleanProperty(default=False)
 
   # TODO(jrobbins): implement request_review()
-
-  def clear_request(self) -> None:
-    """After the review requirement has been satisfied, remove the request."""
-    votes_requested = Vote.get_votes(feature_id=self.feature_id,
-        gate_id=self.key.integer_id(), states=[Vote.REVIEW_REQUESTED])
-    for vote in votes_requested:
-      vote.key.delete()
 
   def is_resolved(self) -> bool:
     """Return if the Gate's outcome has been decided."""
@@ -244,7 +235,6 @@ class Gate(ndb.Model):  # copy from ApprovalConfig
     return gates_dict
 
 
-# Note: This class is not used yet.
 class Vote(ndb.Model):  # copy from Approval
   """One approver's vote on what the state of a gate should be."""
 
@@ -256,7 +246,7 @@ class Vote(ndb.Model):  # copy from Approval
   APPROVED = 5
   DENIED = 6
   VOTE_VALUES = {
-      # Not used: NEEDS_REVIEW: 'needs_review',
+      # Not used: PREPARING: 'preparing',
       NA: 'na',
       REVIEW_REQUESTED: 'review_requested',
       REVIEW_STARTED: 'review_started',
@@ -280,7 +270,7 @@ class Vote(ndb.Model):  # copy from Approval
       gate_type: Optional[int]=None, states: Optional[list[int]]=None,
       set_by: Optional[str]=None, limit=None) -> list[Vote]:
     """Return the requested approvals."""
-    query: ndb.Query = Vote.query().order(Approval.set_on)
+    query: ndb.Query = Vote.query().order(Vote.set_on)
     if feature_id is not None:
       query = query.filter(Vote.feature_id == feature_id)
     if gate_id is not None:
@@ -304,7 +294,6 @@ class Vote(ndb.Model):  # copy from Approval
 
   # Note: set_vote() moved to approval_defs.py
 
-  # Note: clear_request() moved to Gate
 
 
 # Note: This class is not used yet.
