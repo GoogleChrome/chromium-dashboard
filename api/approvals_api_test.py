@@ -32,16 +32,16 @@ NOW = datetime.datetime.now()
 class ApprovalsAPITest(testing_config.CustomTestCase):
 
   def setUp(self):
-    self.feature_1 = core_models.Feature(
+    self.feature_1 = core_models.FeatureEntry(
         name='feature one', summary='sum', category=1)
     self.feature_1.put()
     self.feature_id = self.feature_1.key.integer_id()
 
     self.gate_1 = Gate(id=1, feature_id=self.feature_id, stage_id=1,
-        gate_type=1, state=Approval.NA)
+        gate_type=1, state=Vote.NA)
     self.gate_1.put()
     self.gate_2 = Gate(id=2, feature_id=self.feature_id, stage_id=2,
-        gate_type=2, state=Approval.NA)
+        gate_type=2, state=Vote.NA)
     self.gate_2.put()
 
     self.handler = approvals_api.ApprovalsAPI()
@@ -244,7 +244,7 @@ class ApprovalsAPITest(testing_config.CustomTestCase):
 class ApprovalConfigsAPITest(testing_config.CustomTestCase):
 
   def setUp(self):
-    self.feature_1 = core_models.Feature(
+    self.feature_1 = core_models.FeatureEntry(
         name='feature one', summary='sum', category=1)
     self.feature_1.put()
     self.feature_1_id = self.feature_1.key.integer_id()
@@ -253,7 +253,7 @@ class ApprovalConfigsAPITest(testing_config.CustomTestCase):
         owners=['one_a@example.com', 'one_b@example.com'])
     self.config_1.put()
 
-    self.feature_2 = core_models.Feature(
+    self.feature_2 = core_models.FeatureEntry(
         name='feature two', summary='sum', category=1)
     self.feature_2.put()
     self.feature_2_id = self.feature_2.key.integer_id()
@@ -262,7 +262,7 @@ class ApprovalConfigsAPITest(testing_config.CustomTestCase):
         owners=['two_a@example.com', 'two_b@example.com'])
     self.config_2.put()
 
-    self.feature_3 = core_models.Feature(
+    self.feature_3 = core_models.FeatureEntry(
         name='feature three', summary='sum', category=1)
     self.feature_3.put()
     self.feature_3_id = self.feature_3.key.integer_id()

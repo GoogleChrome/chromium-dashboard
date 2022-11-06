@@ -28,7 +28,6 @@ export function formatFeatureForEdit(feature) {
 
     // from feature.standards
     spec_link: feature.standards.spec,
-    standardization: feature.standards.status.val,
     standard_maturity: feature.standards.maturity.val,
 
     tag_review_status: feature.tag_review_status_int,

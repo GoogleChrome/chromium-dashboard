@@ -23,7 +23,7 @@ from google.cloud import ndb  # type: ignore
 
 from framework import rediscache
 from internals import core_enums
-from internals.core_models import Feature, FeatureEntry, Stage
+from internals.core_models import Feature, FeatureEntry, MilestoneSet, Stage
 from internals.review_models import Gate
 from pages import guide
 
@@ -129,7 +129,8 @@ class FeatureEditHandlerTest(testing_config.CustomTestCase):
         core_enums.STAGE_BLINK_ORIGIN_TRIAL,
         core_enums.STAGE_BLINK_EXTEND_ORIGIN_TRIAL]
     for stage_type in stage_types:
-      stage = Stage(feature_id=feature_id, stage_type=stage_type)
+      stage = Stage(feature_id=feature_id, stage_type=stage_type,
+          milestones=MilestoneSet())
       stage.put()
 
     self.request_path = ('/guide/stage/%d/%d' % (

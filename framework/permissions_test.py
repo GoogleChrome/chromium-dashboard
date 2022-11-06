@@ -77,11 +77,11 @@ class PermissionFunctionTests(testing_config.CustomTestCase):
     self.users.append(self.feature_editor)
 
     # Feature for checking permissions against
-    self.feature_1 = core_models.Feature(
+    self.feature_1 = core_models.FeatureEntry(
         name='feature one', summary='sum',
-        creator="feature_creator@example.com",
-        owner=['feature_owner@example.com'],
-        editors=['feature_editor@example.com'], category=1)
+        creator_email="feature_creator@example.com",
+        owner_emails=['feature_owner@example.com'],
+        editor_emails=['feature_editor@example.com'], category=1)
     self.feature_1.put()
     self.feature_id = self.feature_1.key.integer_id()
 

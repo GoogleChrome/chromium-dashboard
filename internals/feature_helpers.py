@@ -14,16 +14,48 @@
 # limitations under the License.
 
 import logging
+import re
 from typing import Any, Optional
 from google.cloud import ndb  # type: ignore
 
-from api.converters import feature_to_legacy_json
+from api import converters
 from framework import rediscache
 from framework import users
 from internals.core_enums import *
-from internals.core_models import Feature
+from internals.core_models import Feature, FeatureEntry
+import settings
 
-def get_by_ids(feature_ids: list[int],
+
+def _crbug_number(bug_url: Optional[str]) -> Optional[str]:
+  if bug_url is None:
+    return None
+  m = re.search(r'[\/|?id=]([0-9]+)$', bug_url)
+  if m:
+    return m.group(1)
+  return None
+
+def _new_crbug_url(blink_components: Optional[list[str]],
+    bug_url: Optional[str], impl_status_chrome: int,
+    owner_emails: list[str]=list()) -> str:
+  url = 'https://bugs.chromium.org/p/chromium/issues/entry'
+  if blink_components and len(blink_components) > 0:
+    params = ['components=' + blink_components[0]]
+  else:
+    params = ['components=' + settings.DEFAULT_COMPONENT]
+  crbug_number = _crbug_number(bug_url)
+  if crbug_number and impl_status_chrome in (
+      NO_ACTIVE_DEV,
+      PROPOSED,
+      IN_DEVELOPMENT,
+      BEHIND_A_FLAG,
+      ORIGIN_TRIAL,
+      INTERVENTION):
+    params.append('blocking=' + crbug_number)
+  if owner_emails:
+    params.append('cc=' + ','.join(owner_emails))
+  return url + '?' + '&'.join(params)
+
+def get_by_ids_legacy(feature_ids: list[int],
     update_cache: bool=False) -> list[dict[str, Any]]:
   """Return a list of JSON dicts for the specified features.
 
@@ -47,10 +79,12 @@ def get_by_ids(feature_ids: list[int],
   for future in futures:
     unformatted_feature: Optional[Feature] = future.get_result()
     if unformatted_feature and not unformatted_feature.deleted:
-      feature = feature_to_legacy_json(unformatted_feature)
+      feature = converters.feature_to_legacy_json(unformatted_feature)
       feature['updated_display'] = (
           unformatted_feature.updated.strftime("%Y-%m-%d"))
-      feature['new_crbug_url'] = unformatted_feature.new_crbug_url()
+      feature['new_crbug_url'] = _new_crbug_url(
+          unformatted_feature.blink_components, unformatted_feature.bug_url,
+          unformatted_feature.impl_status_chrome, unformatted_feature.owner)
       store_key = Feature.feature_cache_key(
           Feature.DEFAULT_CACHE_KEY,  unformatted_feature.key.integer_id())
       rediscache.set(store_key, feature)
@@ -61,7 +95,7 @@ def get_by_ids(feature_ids: list[int],
       if feature_id in result_dict]
   return result_list
 
-def get_all(limit=None, order='-updated', filterby=None,
+def get_all_legacy(limit=None, order='-updated', filterby=None,
             update_cache=False, keys_only=False):
   """Return JSON dicts for entities that fit the filterby criteria.
 
@@ -99,13 +133,13 @@ def get_all(limit=None, order='-updated', filterby=None,
     feature_list = query.fetch(limit, keys_only=keys_only)
     if not keys_only:
       feature_list = [
-          feature_to_legacy_json(f) for f in feature_list]
+          converters.feature_to_legacy_json(f) for f in feature_list]
 
     rediscache.set(KEY, feature_list)
 
   return feature_list
 
-def get_feature(feature_id: int, update_cache: bool=False) -> Optional[Feature]:
+def get_feature_legacy(feature_id: int, update_cache: bool=False) -> Optional[Feature]:
   """Return a JSON dict for a feature.
 
   Because the cache may rarely have stale data, this should only be
@@ -117,14 +151,16 @@ def get_feature(feature_id: int, update_cache: bool=False) -> Optional[Feature]:
   feature = rediscache.get(KEY)
 
   if feature is None or update_cache:
-    unformatted_feature = Feature.get_by_id(feature_id)
+    unformatted_feature: Optional[Feature] = Feature.get_by_id(feature_id)
     if unformatted_feature:
       if unformatted_feature.deleted:
         return None
-      feature = feature_to_legacy_json(unformatted_feature)
+      feature = converters.feature_to_legacy_json(unformatted_feature)
       feature['updated_display'] = (
           unformatted_feature.updated.strftime("%Y-%m-%d"))
-      feature['new_crbug_url'] = unformatted_feature.new_crbug_url()
+      feature['new_crbug_url'] = _new_crbug_url(
+          unformatted_feature.blink_components, unformatted_feature.bug_url,
+          unformatted_feature.impl_status_chrome, unformatted_feature.owner)
       rediscache.set(KEY, feature)
 
   return feature
@@ -238,7 +274,7 @@ def get_chronological(limit=None, update_cache: bool=False,
     all_features.extend(no_longer_pursuing_features)
     all_features = [f for f in all_features if not f.deleted]
 
-    feature_list = [feature_to_legacy_json(f) for f in all_features]
+    feature_list = [converters.feature_to_legacy_json(f) for f in all_features]
 
     Feature._annotate_first_of_milestones(feature_list)
 
@@ -250,7 +286,7 @@ def get_chronological(limit=None, update_cache: bool=False,
 
 def get_in_milestone(milestone: int,
     show_unlisted: bool=False) -> dict[str, list[dict[str, Any]]]:
-  """Return {reason: [feaure_dict]} with all the reasons a feature can
+  """Return {reason: [feature_dict]} with all the reasons a feature can
   be part of a milestone.
 
   Because the cache may rarely have stale data, this should only be
@@ -386,14 +422,15 @@ def get_in_milestone(milestone: int,
       all_features[shipping_type].sort(key=lambda f: f.name)
       all_features[shipping_type] = [
           f for f in all_features[shipping_type] if not f.deleted]
-      features_by_type[shipping_type] = [
-          feature_to_legacy_json(f) for f in all_features[shipping_type]]
+      features_by_type[shipping_type] = [converters.feature_to_legacy_json(f)
+          for f in all_features[shipping_type]]
 
     rediscache.set(cache_key, features_by_type)
 
   for shipping_type in features_by_type:
     if not show_unlisted:
-      features_by_type[shipping_type] = filter_unlisted(features_by_type[shipping_type])
+      features_by_type[shipping_type] = filter_unlisted(
+          features_by_type[shipping_type])
 
   return features_by_type
 
@@ -423,3 +460,123 @@ def get_all_with_statuses(statuses, update_cache=False):
     rediscache.set(KEY, feature_list)
 
   return feature_list
+
+def get_all(limit: Optional[int]=None,
+    order: str='-updated', filterby: Optional[tuple[str, Any]]=None,
+    update_cache: bool=False, keys_only: bool=False) -> list[dict]:
+  """Return JSON dicts for entities that fit the filterby criteria.
+
+  Because the cache may rarely have stale data, this should only be
+  used for displaying data read-only, not for populating forms or
+  procesing a POST to edit data.  For editing use case, load the
+  data from NDB directly.
+  """
+  KEY = '%s|%s|%s|%s' % (
+      FeatureEntry.DEFAULT_CACHE_KEY, order, limit, keys_only)
+
+  # TODO(ericbidelman): Support more than one filter.
+  if filterby is not None:
+    s = ('%s%s' % (filterby[0], filterby[1])).replace(' ', '')
+    KEY += '|%s' % s
+
+  feature_list = rediscache.get(KEY)
+
+  if feature_list is None or update_cache:
+    query = FeatureEntry.query().order(-FeatureEntry.updated) #.order('name')
+    query = query.filter(FeatureEntry.deleted == False)
+
+    # TODO(ericbidelman): Support more than one filter.
+    if filterby:
+      filter_type, comparator = filterby
+      if filter_type == 'can_edit':
+        # can_edit will check if the user has any access to edit the feature.
+        # This includes being an owner, editor, or the original creator
+        # of the feature.
+        query = query.filter(
+          ndb.OR(FeatureEntry.owner_emails == comparator,
+              FeatureEntry.editor_emails == comparator,
+              FeatureEntry.creator_email == comparator))
+      else:
+        query = query.filter(getattr(FeatureEntry, filter_type) == comparator)
+
+    feature_list = query.fetch(limit, keys_only=keys_only)
+    if not keys_only:
+      feature_list = [
+          converters.feature_entry_to_json_basic(f) for f in feature_list]
+
+    rediscache.set(KEY, feature_list)
+
+  return feature_list
+
+def get_feature(
+      feature_id: int, update_cache: bool=False) -> Optional[FeatureEntry]:
+  """Return a JSON dict for a feature.
+
+  Because the cache may rarely have stale data, this should only be
+  used for displaying data read-only, not for populating forms or
+  procesing a POST to edit data.  For editing use case, load the
+  data from NDB directly.
+  """
+  KEY = Feature.feature_cache_key(FeatureEntry.DEFAULT_CACHE_KEY, feature_id)
+  feature = rediscache.get(KEY)
+
+  if feature is None or update_cache:
+    unformatted_feature: Optional[FeatureEntry] = (
+        FeatureEntry.get_by_id(feature_id))
+    if unformatted_feature:
+      if unformatted_feature.deleted:
+        return None
+      feature = converters.feature_entry_to_json_verbose(unformatted_feature)
+      feature['updated_display'] = (
+          unformatted_feature.updated.strftime("%Y-%m-%d"))
+      feature['new_crbug_url'] = _new_crbug_url(
+          unformatted_feature.blink_components, unformatted_feature.bug_url,
+          unformatted_feature.impl_status_chrome,
+          unformatted_feature.owner_emails)
+      rediscache.set(KEY, feature)
+
+  return feature
+
+def get_by_ids(feature_ids: list[int],
+    update_cache: bool=False) -> list[dict[str, Any]]:
+  """Return a list of JSON dicts for the specified features.
+
+  Because the cache may rarely have stale data, this should only be
+  used for displaying data read-only, not for populating forms or
+  procesing a POST to edit data.  For editing use case, load the
+  data from NDB directly.
+  """
+  result_dict = {}
+  futures = []
+
+  for feature_id in feature_ids:
+    lookup_key = FeatureEntry.feature_cache_key(
+        FeatureEntry.DEFAULT_CACHE_KEY, feature_id)
+    feature = rediscache.get(lookup_key)
+    if feature is None or update_cache:
+      futures.append(FeatureEntry.get_by_id_async(feature_id))
+    else:
+      result_dict[feature_id] = feature
+
+  for future in futures:
+    unformatted_feature: Optional[FeatureEntry] = future.get_result()
+    if unformatted_feature and not unformatted_feature.deleted:
+      feature = converters.feature_entry_to_json_verbose(unformatted_feature)
+      if unformatted_feature.updated is not None:
+        feature['updated_display'] = (
+            unformatted_feature.updated.strftime("%Y-%m-%d"))
+      else:
+        feature['updated_display'] = ''
+      feature['new_crbug_url'] = _new_crbug_url(
+          unformatted_feature.blink_components, unformatted_feature.bug_url,
+          unformatted_feature.impl_status_chrome,
+          unformatted_feature.owner_emails)
+      store_key = FeatureEntry.feature_cache_key(
+          FeatureEntry.DEFAULT_CACHE_KEY,  unformatted_feature.key.integer_id())
+      rediscache.set(store_key, feature)
+      result_dict[unformatted_feature.key.integer_id()] = feature
+
+  result_list = [
+      result_dict[feature_id] for feature_id in feature_ids
+      if feature_id in result_dict]
+  return result_list

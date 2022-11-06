@@ -150,33 +150,6 @@ class Feature(DictModel):
     except Exception as e:
       logging.error(e)
 
-  def crbug_number(self) -> Optional[str]:
-    if not self.bug_url:
-      return None
-    m = re.search(r'[\/|?id=]([0-9]+)$', self.bug_url)
-    if m:
-      return m.group(1)
-    return None
-
-  def new_crbug_url(self) -> str:
-    url = 'https://bugs.chromium.org/p/chromium/issues/entry'
-    if len(self.blink_components) > 0:
-      params = ['components=' + self.blink_components[0]]
-    else:
-      params = ['components=' + settings.DEFAULT_COMPONENT]
-    crbug_number = self.crbug_number()
-    if crbug_number and self.impl_status_chrome in (
-        NO_ACTIVE_DEV,
-        PROPOSED,
-        IN_DEVELOPMENT,
-        BEHIND_A_FLAG,
-        ORIGIN_TRIAL,
-        INTERVENTION):
-      params.append('blocking=' + crbug_number)
-    if self.owner:
-      params.append('cc=' + ','.join(self.owner))
-    return url + '?' + '&'.join(params)
-
   def stash_values(self) -> None:
 
     # Stash existing values when entity is created so we can diff property
@@ -490,74 +463,30 @@ class FeatureEntry(ndb.Model):  # Copy from Feature
   def feature_cache_prefix(cls):
     return '%s|*' % (cls.DEFAULT_CACHE_KEY)
 
-  @classmethod
-  def get_feature_entry(self, feature_id: int, update_cache: bool=False
-      ) -> Optional[FeatureEntry]:
-    KEY = self.feature_cache_key(
-        FeatureEntry.DEFAULT_CACHE_KEY, feature_id)
-    feature = rediscache.get(KEY)
+  def stash_values(self) -> None:
+    # Stash existing values when entity is created so we can diff property
+    # values later in put() to know what's changed.
+    # https://stackoverflow.com/a/41344898
 
-    if feature is None or update_cache:
-      entry = FeatureEntry.get_by_id(feature_id)
-      if entry:
-        if entry.deleted:
-          return None
-        rediscache.set(KEY, entry)
+    for prop_name in self._properties.keys():
+      old_val = getattr(self, prop_name, None)
+      setattr(self, '_old_' + prop_name, old_val)
+    setattr(self, '_values_stashed', True)
 
-    return entry
+  def put(self, notify: bool=False, **kwargs) -> Any:
+    key = super(FeatureEntry, self).put(**kwargs)
+    # TODO(danielrsmith): Notifying subscribers will not fully function
+    # until stage fields are also stashed and marked as changed.
+    # Notifying and saving amendments is handled by Feature until then.
+    #
+    # notifier_helpers.notify_subscribers_and_save_amendments(self, notify)
 
-  @classmethod
-  def filter_unlisted(self, entry_list: list[FeatureEntry]
-      ) -> list[FeatureEntry]:
-    """Filters feature entries to display only features the user should see."""
-    user = users.get_current_user()
-    email = None
-    if user:
-      email = user.email()
-    allowed_entries = []
-    for fe in entry_list:
-      # Owners and editors of a feature can see their unlisted features.
-      if (not fe.unlisted or
-          email in fe.owners or
-          email in fe.editors or
-          (email is not None and fe.creator == email)):
-        allowed_entries.append(fe)
+    # Invalidate rediscache for the individual feature view.
+    cache_key = FeatureEntry.feature_cache_key(
+        FeatureEntry.DEFAULT_CACHE_KEY, self.key.integer_id())
+    rediscache.delete(cache_key)
 
-    return allowed_entries
-
-  @classmethod
-  def get_by_ids(self, entry_ids: list[int], update_cache: bool=False
-      ) -> list[int]:
-    """Return a list of FeatureEntry instances for the specified features.
-
-    Because the cache may rarely have stale data, this should only be
-    used for displaying data read-only, not for populating forms or
-    procesing a POST to edit data.  For editing use case, load the
-    data from NDB directly.
-    """
-    result_dict: dict[int, int] = {}
-    futures = []
-
-    for fe_id in entry_ids:
-      lookup_key = self.feature_cache_key(
-          FeatureEntry.DEFAULT_CACHE_KEY, fe_id)
-      entry = rediscache.get(lookup_key)
-      if entry is None or update_cache:
-        futures.append(FeatureEntry.get_by_id_async(fe_id))
-      else:
-        result_dict[fe_id] = entry
-
-    for future in futures:
-      entry = future.get_result()
-      if entry and not entry.deleted:
-        store_key = self.feature_cache_key(
-            FeatureEntry.DEFAULT_CACHE_KEY, entry.key.integer_id())
-        rediscache.set(store_key, entry)
-        result_dict[entry.key.integer_id()] = entry
-
-    result_list = [result_dict[fe_id] for fe_id in entry_ids
-                   if fe_id in result_dict]
-    return result_list
+    return key
 
   # Note: get_in_milestone will be in a new file legacy_queries.py.
 

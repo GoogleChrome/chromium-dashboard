@@ -281,8 +281,8 @@ class ActivityTest(testing_config.CustomTestCase):
 
   def setUp(self):
     self.feature_1 = core_models.Feature(
-        name='feature a', summary='sum', owner=['feature_owner@example.com'],
-        category=1)
+        name='feature a', summary='sum', category=1,
+        owner=['feature_owner@example.com'])
     self.feature_1.put()
     testing_config.sign_in('one@example.com', 123567890)
 
