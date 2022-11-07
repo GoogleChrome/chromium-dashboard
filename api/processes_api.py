@@ -26,7 +26,7 @@ class ProcessesAPI(basehandlers.APIHandler):
     """Return the process of the feature."""
     # Load feature directly from NDB so as to never get a stale cached copy.
     feature_id = kwargs['feature_id']
-    f = core_models.Feature.get_by_id(feature_id)
+    f = core_models.FeatureEntry.get_by_id(feature_id)
     if f is None:
       self.abort(404, msg=f'Feature {feature_id} not found')
 
@@ -44,13 +44,13 @@ class ProgressAPI(basehandlers.APIHandler):
   def do_get(self, **kwargs):
     """Return the progress of the feature."""
     feature_id = kwargs['feature_id']
-    f = core_models.Feature.get_by_id(feature_id)
-    if f is None:
+    fe = core_models.FeatureEntry.get_by_id(feature_id)
+    if fe is None:
       self.abort(404, msg=f'Feature {feature_id} not found')
-
+    stages = core_models.Stage.get_feature_stages(fe.key.integer_id())
     progress_so_far = {}
     for progress_item, detector in list(processes.PROGRESS_DETECTORS.items()):
-      detected = detector(f)
+      detected = detector(fe, stages)
       if detected:
         progress_so_far[progress_item] = str(detected)
     return progress_so_far

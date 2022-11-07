@@ -290,6 +290,8 @@ def feature_entry_to_json_verbose(fe: FeatureEntry) -> dict[str, Any]:
       stages['dev_trial'], 'ios_first', True)
   d['dt_milestone_webview_start'] = _stage_attr(
       stages['dev_trial'], 'webview_first', True)
+  d['ready_for_trial_url'] = _stage_attr(
+      stages['dev_trial'], 'announcement_url')
 
   # Origin trial stage fields.
   d['ot_milestone_desktop_start'] = _stage_attr(
@@ -320,6 +322,7 @@ def feature_entry_to_json_verbose(fe: FeatureEntry) -> dict[str, Any]:
 
   # Ship stage fields.
   d['intent_to_ship_url'] = _stage_attr(stages['ship'], 'intent_thread_url')
+  d['finch_url'] = _stage_attr(stages['ship'], 'finch_url')
 
   impl_status_chrome = d.pop('impl_status_chrome', None)
   standard_maturity = d.pop('standard_maturity', None)
@@ -427,3 +430,62 @@ def feature_entry_to_json_verbose(fe: FeatureEntry) -> dict[str, Any]:
 
   del_none(d) # Further prune response by removing null/[] values.
   return d
+
+def feature_entry_to_json_basic(fe: FeatureEntry) -> dict[str, Any]:
+  """Returns a dictionary with basic info about a feature."""
+  # Return an empty dictionary if the entity has not been saved to datastore.
+  if not fe.key:
+    return {}
+
+  return {
+    'id': fe.key.integer_id(),
+    'name': fe.name,
+    'summary': fe.summary,
+    'unlisted': fe.unlisted,
+    'blink_components': fe.blink_components or [],
+    'browsers': {
+      'chrome': {
+        'bug': fe.bug_url,
+        'blink_components': fe.blink_components or [],
+        'devrel': fe.devrel_emails or [],
+        'owners': fe.owner_emails or [],
+        'origintrial': fe.impl_status_chrome == ORIGIN_TRIAL,
+        'intervention': fe.impl_status_chrome == INTERVENTION,
+        'prefixed': fe.prefixed,
+        'flag': fe.impl_status_chrome == BEHIND_A_FLAG,
+        'status': {
+          'text': IMPLEMENTATION_STATUS[fe.impl_status_chrome],
+          'val': fe.impl_status_chrome
+        }
+      },
+      'ff': {
+        'view': {
+          'text': VENDOR_VIEWS[fe.ff_views],
+          'val': fe.ff_views,
+          'url': fe.ff_views_link,
+          'notes': fe.ff_views_notes,
+        }
+      },
+      'safari': {
+        'view': {
+          'text': VENDOR_VIEWS[fe.safari_views],
+          'val': fe.safari_views,
+          'url': fe.safari_views_link,
+          'notes': fe.safari_views_notes,
+        }
+      },
+      'webdev': {
+        'view': {
+          'text': WEB_DEV_VIEWS[fe.web_dev_views],
+          'val': fe.web_dev_views,
+          'url': fe.web_dev_views_link,
+          'notes': fe.web_dev_views_notes,
+        }
+      },
+      'other': {
+        'view': {
+          'notes': fe.other_views_notes,
+        }
+      },
+    }
+  }

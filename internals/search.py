@@ -117,7 +117,7 @@ OPERATORS_PATTERN = r':|=|<=|<|>=|>|!='
 VALUE_PATTERN = r'[^" ]+|"[^"]+"'
 # Logical operators.
 # TODO(kyleju): support 'OR' logic
-LOGICAL_OPERATORS_PATTERN = r'OR|-'
+LOGICAL_OPERATORS_PATTERN = r'-'
 
 # Overall, a query term can be either a structured term or a full-text term.
 # Structured terms look like: FIELD OPERATOR VALUE.

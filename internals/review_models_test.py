@@ -172,86 +172,8 @@ class CommentTest(testing_config.CustomTestCase):
 
 
 class GateTest(testing_config.CustomTestCase):
-
-  def setUp(self):
-    self.gate_1 = Gate(feature_id=1, stage_id=1, gate_type=2, state=Vote.NA)
-    self.gate_1.put()
-    gate_id = self.gate_1.key.integer_id()
-    self.votes = []
-    # Votes that reference gate_1.
-    self.votes.append(Vote(feature_id=1, gate_id=gate_id, state=Vote.APPROVED,
-        set_on=datetime.datetime(2020, 1, 1), set_by='user1@example.com'))
-    self.votes.append(Vote(feature_id=1, gate_id=gate_id,
-        state=Vote.DENIED, set_on=datetime.datetime(2020, 1, 1),
-        set_by='use21@example.com'))
-    self.votes.append(Vote(feature_id=1, gate_id=gate_id,
-        state=Vote.REVIEW_REQUESTED, set_on=datetime.datetime(2020, 2, 1),
-        set_by='use31@example.com'))
-    self.votes.append(Vote(feature_id=1, gate_id=gate_id,
-        state=Vote.REVIEW_REQUESTED, set_on=datetime.datetime(2020, 3, 1),
-        set_by='user4@example.com'))
-    self.votes.append(Vote(feature_id=1, gate_id=gate_id,
-        state=Vote.REVIEW_REQUESTED, set_on=datetime.datetime(2020, 1, 2),
-        set_by='user5@example.com'))
-
-    self.gate_2 = Gate(feature_id=2, stage_id=2, gate_type=2,
-        state=Vote.APPROVED)
-    self.gate_2.put()
-    gate_id = self.gate_2.key.integer_id()
-    self.votes.append(Vote(feature_id=1, gate_id=gate_id,
-        state=Vote.REVIEW_REQUESTED, set_on=datetime.datetime(2020, 7, 1),
-        set_by='user6@example.com'))
-    # Votes that reference gate_2.
-    self.votes.append(Vote(feature_id=1, gate_id=gate_id, state=Vote.APPROVED,
-        set_on=datetime.datetime(2020, 2, 1), set_by='user7@example.com'))
-    self.votes.append(Vote(feature_id=1, gate_id=gate_id, state=Vote.APPROVED,
-        set_on=datetime.datetime(2020, 4, 10), set_by='user8@example.com'))
-    self.votes.append(Vote(feature_id=1, gate_id=gate_id, state=Vote.NA,
-        set_on=datetime.datetime(2020, 1, 15), set_by='user9@example.com'))
-    self.votes.append(Vote(feature_id=1, gate_id=gate_id, state=Vote.NA,
-        set_on=datetime.datetime(2020, 8, 23), set_by='user10@example.com'))
-    self.votes.append(Vote(feature_id=1, gate_id=gate_id, state=Vote.APPROVED,
-        set_on=datetime.datetime(2021, 1, 1), set_by='user11@example.com'))
-
-    # Some additional votes that should have no bearing on the gates.
-    self.votes.append(Vote(feature_id=2, gate_id=5, state=Vote.DENIED,
-        set_on=datetime.datetime(2021, 1, 1), set_by='user11@example.com'))
-    self.votes.append(Vote(feature_id=3, gate_id=3, state=Vote.REVIEW_REQUESTED,
-        set_on=datetime.datetime(2021, 1, 1), set_by='user11@example.com'))
-    self.votes.append(Vote(feature_id=2, gate_id=1, state=Vote.REVIEW_REQUESTED,
-        set_on=datetime.datetime(2021, 1, 1), set_by='user11@example.com'))
-    self.votes.append(Vote(feature_id=2, gate_id=1, state=Vote.NA,
-        set_on=datetime.datetime(2021, 1, 1), set_by='user11@example.com'))
-    self.votes.append(Vote(feature_id=1, gate_id=2, state=Vote.APPROVED,
-        set_on=datetime.datetime(2021, 1, 1), set_by='user11@example.com'))
-
-    for vote in self.votes:
-      vote.put()
-
-  def tearDown(self):
-    self.gate_1.key.delete()
-    self.gate_2.key.delete()
-    for vote in self.votes:
-      vote.key.delete()
-
-  def test_clear_request(self):
-    """Once a Gate's outcome is determined, review requests are removed."""
-    self.gate_1.clear_request()
-    votes = Vote.query(Vote.gate_id == self.gate_1.key.integer_id()).fetch()
-    # 5 total votes, 3 with state REVIEW_REQUESTED. Removing them leaves 2.
-    self.assertEqual(len(votes), 2)
-
-  def test_update_approval_stage__needs_update(self):
-    """Gate's approval state will updated based on votes."""
-    # Gate 1 should evaluate to not approved after updating.
-    self.assertEqual(approval_defs.update_gate_approval_state(self.gate_1), 6)
-    self.assertEqual(self.gate_1.state, 6)
-
-  def test_update_approval_state__no_change(self):
-    """Gate's approval state does not change unless it needs to."""
-    # Gate 2 is already marked as approved and should not change.
-    self.assertEqual(approval_defs.update_gate_approval_state(self.gate_2), 5)
-    self.assertEqual(self.gate_2.state, 5)
+  # TODO(jrobbins): Add tests for is_resolved, is_approved, get_feature_gates.
+  pass
 
 
 class OwnersFileTest(testing_config.CustomTestCase):
@@ -281,8 +203,8 @@ class ActivityTest(testing_config.CustomTestCase):
 
   def setUp(self):
     self.feature_1 = core_models.Feature(
-        name='feature a', summary='sum', owner=['feature_owner@example.com'],
-        category=1)
+        name='feature a', summary='sum', category=1,
+        owner=['feature_owner@example.com'])
     self.feature_1.put()
     testing_config.sign_in('one@example.com', 123567890)
 

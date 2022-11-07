@@ -91,6 +91,7 @@ class FeatureCreateHandler(basehandlers.FlaskHandler):
 
     # Remove all feature-related cache.
     rediscache.delete_keys_with_prefix(Feature.feature_cache_prefix())
+    rediscache.delete_keys_with_prefix(FeatureEntry.feature_cache_prefix())
 
     redirect_url = '/guide/edit/' + str(key.integer_id())
     return self.redirect(redirect_url)
@@ -159,7 +160,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
 
   def process_post_data(self, **kwargs):
     feature_id = kwargs.get('feature_id', None)
-    stage_id = kwargs.get('stage_id', 0)
+    intent_stage_id = kwargs.get('stage_id', 0)
     # Validate the user has edit permissions and redirect if needed.
     redirect_resp = permissions.validate_feature_edit_permission(
         self, feature_id)
@@ -168,9 +169,9 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
 
     if feature_id:
       # Load feature directly from NDB so as to never get a stale cached copy.
-      feature = Feature.get_by_id(feature_id)
-      feature_entry = FeatureEntry.get_by_id(feature_id)
-      if feature is None:
+      feature: Feature = Feature.get_by_id(feature_id)
+      feature_entry: FeatureEntry = FeatureEntry.get_by_id(feature_id)
+      if feature_entry is None:
         self.abort(404, msg='Feature not found')
       else:
         feature.stash_values()
@@ -241,7 +242,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
     if self.touched('ready_for_trial_url'):
       feature.ready_for_trial_url = self.parse_link(
           'ready_for_trial_url')
-      update_items.append(('ready_for_trial_url',
+      stage_update_items.append(('announcement_url',
           self.parse_link('ready_for_trial_url')))
 
     if self.touched('intent_to_experiment_url'):
@@ -420,8 +421,8 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
       feature.intent_stage = int(self.form.get('intent_stage'))
       update_items.append(('intent_stage', int(self.form.get('intent_stage'))))
     elif self.form.get('set_stage') == 'on':
-      feature.intent_stage = stage_id
-      update_items.append(('intent_stage', stage_id))
+      feature.intent_stage = intent_stage_id
+      update_items.append(('intent_stage', intent_stage_id))
 
     if self.touched('category'):
       feature.category = int(self.form.get('category'))
@@ -582,6 +583,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
 
     # Remove all feature-related cache.
     rediscache.delete_keys_with_prefix(Feature.feature_cache_prefix())
+    rediscache.delete_keys_with_prefix(FeatureEntry.feature_cache_prefix())
 
     # Update full-text index.
     if feature_entry:

@@ -161,6 +161,7 @@ def is_resolved(approval_values, field_id):
 
   return False
 
+
 def set_vote(feature_id: int,  gate_type: int, new_state: int,
     set_by_email: str, gate_id: Optional[int]=None) -> None:
   """Add or update an approval value."""
@@ -195,6 +196,7 @@ def set_vote(feature_id: int,  gate_type: int, new_state: int,
   if gate:
     update_gate_approval_state(gate)
 
+
 def get_gate_by_type(feature_id: int, gate_type: int):
   """Return a single gate based on the feature and gate type."""
   # TODO(danielrsmith): As of today, there is only 1 gate per
@@ -206,27 +208,39 @@ def get_gate_by_type(feature_id: int, gate_type: int):
     return None
   return gates[0]
 
-def _calc_gate_status(gate: Gate) -> int:
-  """Evaluates the current state that this gate should have."""
-  votes = Vote.get_votes(gate_id=gate.key.integer_id())
-  approvals = 0
-  for vote in votes:
-    if vote.state in (Vote.APPROVED, Vote.NA):
-      approvals += 1
-    elif vote.state == Vote.DENIED:
-      return Vote.DENIED
-  afd = APPROVAL_FIELDS_BY_ID[gate.gate_type]
 
-  if ((afd.rule == ONE_LGTM and approvals >= 1) or
-      (afd.rule == THREE_LGTM and approvals >= 3)):
-    return Vote.APPROVED
-  return gate.state
+def _calc_gate_state(votes: list[Vote], rule: str) -> int:
+  """Returns the state that a gate should have based on its votes."""
+  # If enough reviewed APPROVED or said it is NA, then that is used.
+  num_lgtms = sum((1 if v.state in (Vote.APPROVED, Vote.NA) else 0)
+                  for v in votes)
+  if ((rule == ONE_LGTM and num_lgtms >= 1) or
+      (rule == THREE_LGTM and num_lgtms >= 3)):
+    if any(v.state == Vote.NA for v in votes):
+      return Vote.NA  # Any NA vote counts, but makes the result NA.
+    else:
+      return Vote.APPROVED
+
+  # Return the most recent of any REVIEW_REQUESTED, NEEDS_WORK,
+  # REVIEW_STARTED, or DENIED.  This could allow a feature owner to
+  # re-request a review after addressing feedback and have the gate
+  # show up as REVIEW_STARTED again.  However, we will not offer
+  # "re-review" in the UI yet.
+  for vote in sorted(votes, reverse=True, key=lambda v: v.set_on):
+    if vote.state in (
+        Vote.NEEDS_WORK, Vote.REVIEW_STARTED, Vote.REVIEW_REQUESTED,
+        Vote.DENIED):
+      return vote.state
+
+  # The feature owner has not requested review yet, or the request was
+  # withdrawn.
+  return Gate.PREPARING
+
 
 def update_gate_approval_state(gate: Gate) -> int:
-  """Change the Gate state if it has changed."""
-  was_not_resolved = not gate.is_resolved()
-  gate.state = _calc_gate_status(gate)
+  """Change the Gate state based on its votes."""
+  votes = Vote.get_votes(gate_id=gate.key.integer_id())
+  afd = APPROVAL_FIELDS_BY_ID[gate.gate_type]
+  gate.state = _calc_gate_state(votes, afd.rule)
   gate.put()
-  if was_not_resolved and gate.is_resolved():
-    gate.clear_request()
   return gate.state
