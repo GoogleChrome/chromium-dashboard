@@ -595,10 +595,12 @@ PROGRESS_DETECTORS = {
 
     'Estimated target milestone':
     lambda f, stages: bool(core_enums.STAGE_TYPES_SHIPPING[f.feature_type] and
+        stages[core_enums.STAGE_TYPES_SHIPPING[f.feature_type]].milestones and
         stages[core_enums.STAGE_TYPES_SHIPPING[f.feature_type]].milestones.desktop_first),
 
     'Final target milestone':
     lambda f, stages: bool(core_enums.STAGE_TYPES_SHIPPING[f.feature_type] and
+        stages[core_enums.STAGE_TYPES_SHIPPING[f.feature_type]].milestones and
         stages[core_enums.STAGE_TYPES_SHIPPING[f.feature_type]].milestones.desktop_first),
 
     'Code in Chromium':
