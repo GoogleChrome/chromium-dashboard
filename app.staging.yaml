@@ -1,6 +1,6 @@
 # This GAE service contains most of the app, including all UI pages.
 
-runtime: python39
+runtime: python310
 service: default
 instance_class: F4_1G
 
@@ -41,7 +41,7 @@ app_engine_apis: true
 
 env_variables:
   GAE_USE_SOCKETS_HTTPLIB : ''
-  # Redis envs 
+  # Redis envs
   REDISHOST: '10.231.56.251'
   REDISPORT: '6379'
 
