@@ -425,3 +425,23 @@ class DeleteNewEntities(FlaskHandler):
         count += 1
     
     return f'{count} entities deleted.'
+
+class AddStageMilestoneSets(FlaskHandler):
+
+  def get_template_data(self, **kwargs) -> str:
+    """Creates a MilestoneSet entity for a stage if needed"""
+    self.require_cron_header()
+
+    count = 0
+    for stage in Stage.query():
+      stage_type = stage.stage_type
+      # If this stage requires milestone info, create a default
+      # MilestoneSet entity.
+      if (stage_type in STAGE_TYPES_DEV_TRIAL or
+          stage_type in STAGE_TYPES_ORIGIN_TRIAL or
+          stage_type in STAGE_TYPES_EXTEND_ORIGIN_TRIAL or
+          stage_type in STAGE_TYPES_SHIPPING):
+        stage.milestones = MilestoneSet()
+        stage.put()
+        count += 1
+    return f'{count} MilestoneSet entities created for relevant stages.'

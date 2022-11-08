@@ -608,6 +608,13 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
       # If a stage of this type does not exist for this feature, create it.
       if stage is None:
         stage = Stage(feature_id=feature_id, stage_type=stage_type)
+        # If this stage requires milestone info, create a default
+        # MilestoneSet entity.
+        if (stage_type in core_enums.STAGE_TYPES_DEV_TRIAL or
+            stage_type in core_enums.STAGE_TYPES_ORIGIN_TRIAL or
+            stage_type in core_enums.STAGE_TYPES_EXTEND_ORIGIN_TRIAL or
+            stage_type in core_enums.STAGE_TYPES_SHIPPING):
+          stage.milestones = MilestoneSet()
         stage.put()
         stages[stage_type] = stage
 
