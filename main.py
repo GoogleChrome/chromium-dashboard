@@ -211,7 +211,7 @@ internals_routes: list[tuple] = [
   ('/admin/schema_migration_write_entities', schema_migration.MigrateEntities),
   ('/admin/schema_migration_approval_vote', schema_migration.MigrateApprovalsToVotes),
   ('/admin/schema_migration_gate_status', schema_migration.EvaluateGateStatus)
-  ('/admin/schema_migration_updated_field', schema_migration.AddUpdatedField)
+  ('/admin/schema_migration_updated_field', schema_migration.WriteUpdatedField)
 ]
 
 
