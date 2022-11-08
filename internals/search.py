@@ -117,13 +117,13 @@ OPERATORS_PATTERN = r':|=|<=|<|>=|>|!='
 VALUE_PATTERN = r'[^" ]+|"[^"]+"'
 # Logical operators.
 # TODO(kyleju): support 'OR' logic
-LOGICAL_OPERATORS_PATTERN = r'-'
+LOGICAL_OPERATORS_PATTERN = r'OR\s+|-'
 
 # Overall, a query term can be either a structured term or a full-text term.
 # Structured terms look like: FIELD OPERATOR VALUE.
 # Full-text terms look like: SINGLE_WORD, or like: "QUOTED STRING".
 TERM_RE = re.compile(
-    '(?P<logical>%s)?\s*(?P<field>%s)(?P<op>%s)(?P<val>%s)\s+|(?P<textterm>%s)\s+' % (
+    '(?P<logical>%s)?(?:(?P<field>%s)(?P<op>%s)(?P<val>%s)|(?P<textterm>%s))\s+' % (
         LOGICAL_OPERATORS_PATTERN, FIELD_NAME_PATTERN, OPERATORS_PATTERN,
         VALUE_PATTERN, TEXT_PATTERN),
     re.I)
@@ -219,7 +219,7 @@ def process_query(
     start=0, num=DEFAULT_RESULTS_PER_PAGE) -> tuple[list[dict[str, Any]], int]:
   """Parse the user's query, run it, and return a list of features."""
   # 1a. Parse the user query into terms.  And, add permission terms.
-  feature_id_futures = []
+  feature_id_future_ops = []
   terms = TERM_RE.findall(user_query + ' ')[:MAX_TERMS] or []
   if not show_deleted:
     terms.append(('', 'deleted', '=', 'false', None))
@@ -232,7 +232,7 @@ def process_query(
   # 2a. Create parallel queries for each term.  Each yields a future.
   logging.info('creating parallel queries for %r', terms)
   for logical_op, field_name, op_str, val_str, textterm in terms:
-    is_negation = (logical_op == '-')
+    is_negation = (logical_op.strip() == '-')
     is_normal_query = False
     if textterm:
       future = search_fulltext.search_fulltext(textterm)
@@ -242,26 +242,34 @@ def process_query(
       future = process_query_term(is_negation, field_name, op_str, val_str)
       is_normal_query = True
 
-    if is_negation and is_normal_query:
-      # TODO: Use set difference from all FeatureEntry IDs.
-      pass
+    if future is None:
+      continue
 
-    if future is not None:
-      feature_id_futures.append(future)
+    if is_negation and is_normal_query:
+      feature_id_future_ops.append(('', future))
+    else:
+      feature_id_future_ops.append((logical_op.strip(), future))
+
   # 2b. Create a parallel query for total sort order.
   total_order_promise = search_queries.total_order_query_async(sort_spec)
 
-  # 3a. Get the result of each future and combine them into a result ID set.
+  # 3. Get the result of each future and combine them into a result ID set.
   logging.info('now waiting on futures')
+
+  # 3a. Process all negation operaotrs.
+  feature_id_future_ops = process_negation_operations(feature_id_future_ops)
+
+  # 3b. Process the rest of operations.
   result_id_set = None
-  for future in feature_id_futures:
+  for logical_op, future in feature_id_future_ops:
     feature_ids = _resolve_promise_to_id_list(future)
     if result_id_set is None:
       logging.info('first term yields %r', feature_ids)
       result_id_set = set(feature_ids)
-    else:
-      logging.info('combining result so far with %r', feature_ids)
-      result_id_set.intersection_update(feature_ids)
+      continue
+
+    logging.info('combining result so far with %r', feature_ids)
+    result_id_set.intersection_update(feature_ids)
   result_id_list = list(result_id_set or [])
   total_count = len(result_id_list)
   # 3b. Finish getting the total sort order.
@@ -279,3 +287,34 @@ def process_query(
 
   logging.info('features_on_page is %r', features_on_page)
   return features_on_page, total_count
+
+
+def process_negation_operations(feature_id_future_ops):
+  """ Turn all negation operations into one AND operation. E.g.
+  A - B - C -> A AND (ALL - B) AND (ALL - C) -> A AND (ALL - B - C).
+  """
+  new_future_ops = []
+  negated_id_set = None
+  for logical_op, future in feature_id_future_ops:
+    if logical_op != '-':
+      # Skip all non-negation operations.
+      new_future_ops.append((logical_op, future))
+      continue
+
+    if negated_id_set is None:
+        negated_id_set = fetch_all_feature_ids_set()
+
+    feature_ids = _resolve_promise_to_id_list(future)
+    negated_id_set.difference_update(feature_ids)
+
+  # Append the result of negation operations to the end.
+  if negated_id_set is not None:
+    new_future_ops.append(('', list(negated_id_set)))
+  return new_future_ops
+
+
+def fetch_all_feature_ids_set():
+  """Fetch all FeatureEntry ids. """
+  all_feature_keys = core_models.FeatureEntry.query().fetch(keys_only=True)
+  feature_ids_set = set(key.integer_id() for key in all_feature_keys)
+  return feature_ids_set

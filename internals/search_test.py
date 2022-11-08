@@ -55,14 +55,14 @@ class SearchRETest(testing_config.CustomTestCase):
         [('-', 'field', '=', 'value', '')],
         search.TERM_RE.findall('-field=value '))
     self.assertEqual(
-        [('-', 'field', '>', 'value', '')],
-        search.TERM_RE.findall('-field>value '))
+        [('OR ', 'field', '>', 'value', '')],
+        search.TERM_RE.findall('OR field>value '))
     self.assertEqual(
         [('-', 'flag_name', '=', 'version', '')],
         search.TERM_RE.findall('-flag_name=version '))
     self.assertEqual(
-        [('-', 'flag_name', '=', 'enable-super-stuff', '')],
-        search.TERM_RE.findall('-flag_name=enable-super-stuff '))
+        [('OR ', 'flag_name', '=', 'enable-super-stuff', '')],
+        search.TERM_RE.findall('OR flag_name=enable-super-stuff '))
 
   def test_text_terms(self):
     """We can parse text terms."""
@@ -75,6 +75,18 @@ class SearchRETest(testing_config.CustomTestCase):
     self.assertEqual(
         [('', '', '', '', '"memory location $0x25"')],
         search.TERM_RE.findall('"memory location $0x25" '))
+
+  def test_text_terms__complex(self):
+    """We can parse complex text terms."""
+    self.assertEqual(
+        [('-', '', '', '', 'hello')],
+        search.TERM_RE.findall('-hello '))
+    self.assertEqual(
+        [('-', '', '', '', '"hello there people"')],
+        search.TERM_RE.findall('-"hello there people" '))
+    self.assertEqual(
+        [('OR ', '', '', '', '"memory location $0x25"')],
+        search.TERM_RE.findall('OR "memory location $0x25" '))
 
   def test_malformed(self):
     """Malformed queries are treated like full text, junk ignored."""
@@ -305,6 +317,30 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
 
     actual_recent, tc = search.process_query('is:recently-reviewed')
     self.assertEqual(actual_recent[0]['name'],'feature 1')
+
+  @mock.patch('internals.search.process_pending_approval_me_query')
+  @mock.patch('internals.search.process_starred_me_query')
+  @mock.patch('internals.search_queries.handle_me_query_async')
+  @mock.patch('internals.search.process_recent_reviews_query')
+  def test_process_query__negated_predefined(
+      self, mock_recent, mock_own_me, mock_star_me, mock_pend_me):
+    """We can match predefined queries."""
+    mock_recent.return_value = [self.feature_1.key.integer_id()]
+    mock_own_me.return_value = [self.feature_2.key.integer_id()]
+    mock_star_me.return_value = [self.feature_1.key.integer_id()]
+    mock_pend_me.return_value = [self.feature_2.key.integer_id()]
+
+    actual_pending, tc = search.process_query('-pending-approval-by:me')
+    self.assertEqual(actual_pending[0]['name'], 'feature 1')
+
+    actual_star_me, tc = search.process_query('-starred-by:me')
+    self.assertEqual(actual_star_me[0]['name'], 'feature 2')
+
+    actual_own_me, tc = search.process_query('-owner:me')
+    self.assertEqual(actual_own_me[0]['name'], 'feature 1')
+
+    actual_recent, tc = search.process_query('-is:recently-reviewed')
+    self.assertEqual(actual_recent[0]['name'],'feature 2')
 
   def test_process_query__single_field(self):
     """We can can run single-field queries."""
