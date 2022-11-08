@@ -125,9 +125,10 @@ class FeatureCreateHandler(basehandlers.FlaskHandler):
 
 
 class FeatureEditHandler(basehandlers.FlaskHandler):
-  # impl_status_chrome
 
+  # Field name, data type
   EXISTING_FIELDS = [
+      # impl_status_chrome and intent_stage handled separately.
       ('spec_link', 'link'),
       ('standard_maturity', 'int'),
       ('api_spec', 'bool'),
@@ -182,6 +183,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
       ('comments', 'str'),
       ('ongoing_constraints', 'str')]
 
+  # Old field name, new field name
   RENAMED_FIELD_MAPPING = {
       'owner': 'owner_emails',
       'editors': 'editor_emails',
@@ -191,6 +193,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
       'comments': 'feature_notes',
       'ready_for_trial_url': 'announcement_url'}
 
+  # Field name, data type
   STAGE_FIELDS = [
       ('intent_to_implement_url', 'link'),
       ('intent_to_ship_url', 'link'),
@@ -239,6 +242,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
     return param_name in self.form
 
   def _get_field_val(self, field: str, field_type: str) -> Any:
+    """Get the form value of a given field name."""
     if field_type == 'int':
       return self.parse_int(field)
     elif field_type == 'link':
@@ -260,13 +264,13 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
 
   def _add_changed_field(self, fe: FeatureEntry, field: str, new_val: Any,
       changed_fields: list[tuple[str, Any, Any]]) -> None:
+    """Add values to the list of changed fields if the values differ."""
     old_val = getattr(fe, field)
     if new_val != old_val:
       changed_fields.append((field, old_val, new_val))
 
   def process_post_data(self, **kwargs) -> requests.Response:
     feature_id = kwargs.get('feature_id', None)
-    intent_stage_id = kwargs.get('stage_id', 0)
     # Validate the user has edit permissions and redirect if needed.
     redirect_resp = permissions.validate_feature_edit_permission(
         self, feature_id)
@@ -293,6 +297,8 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
         setattr(fe,
             self.RENAMED_FIELD_MAPPING.get(field, field), field_val)
 
+    # impl_status_chrome and intent_stage
+    # can be be set either by <select> or a checkbox.
     impl_status_val: Optional[int] = None
     if self.touched('impl_status_chrome'):
       impl_status_val = self._get_field_val('impl_status_chrome', 'int')
@@ -303,6 +309,17 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
           fe, 'impl_status_chrome', impl_status_val, changed_fields)
       setattr(feature, 'impl_status_chrome', impl_status_val)
       setattr(fe, 'impl_status_chrome', impl_status_val)
+
+    intent_stage_val: Optional[int] = None
+    if self.touched('intent_stage'):
+      intent_stage_val = self._get_field_val('intent_stage', 'int')
+    elif self.form.get('set_stage') == 'on':
+      intent_stage_val = kwargs.get('stage_id', 0)
+    if intent_stage_val is not None:
+      self._add_changed_field(
+          fe, 'intent_stage', intent_stage_val, changed_fields)
+      setattr(feature, 'intent_stage', impl_status_val)
+      setattr(fe, 'intent_stage', impl_status_val)
 
     for field, field_type in self.STAGE_FIELDS:
       if self.touched(field):
