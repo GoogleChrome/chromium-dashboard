@@ -23,6 +23,7 @@ from internals.review_models import Gate
 
 SIMPLE_TYPES = frozenset((int, float, bool, dict, str, list))
 
+
 def to_dict(entity: ndb.Model) -> dict[str, Any]:
   output = {}
   for key, prop in entity._properties.items():
@@ -50,6 +51,7 @@ def to_dict(entity: ndb.Model) -> dict[str, Any]:
       raise ValueError('cannot encode ' + repr(prop))
   return output
 
+
 def del_none(d):
   """
   Delete dict keys with None values, and empty lists, recursively.
@@ -60,6 +62,7 @@ def del_none(d):
     elif isinstance(value, dict):
       del_none(value)
   return d
+
 
 # TODO(danielrsmith): These views should be migrated properly
 # for each entity to avoid invoking this function each time.
@@ -79,6 +82,7 @@ def migrate_views(f: Feature) -> None:
     f.safari_views = NO_PUBLIC_SIGNALS
   if f.safari_views == PUBLIC_SKEPTICISM:
     f.safari_views = OPPOSED
+
 
 def feature_to_legacy_json(f: Feature) -> dict[str, Any]:
   migrate_views(f)
@@ -210,18 +214,24 @@ def _date_to_str(date: Optional[datetime.datetime]) -> Optional[str]:
   """Returns a string interpretation of a datetime object, or None."""
   return str(date) if date is not None else None
 
+
 def _val_to_list(items: Optional[list]) -> list:
   """Returns the given list, or returns an empty list if null."""
   return items if items is not None else []
+
 
 def _stage_attr(
     stage: Optional[Stage], field: str, is_mstone: bool=False) -> Optional[Any]:
   """Returns a specified field of a Stage entity."""
   if stage is None:
     return None
-  if is_mstone:
-    return getattr(stage.milestones, field)
-  return getattr(stage, field)
+  if not is_mstone:
+    return getattr(stage, field)
+
+  if stage.milestones is None:
+    return None
+  return getattr(stage.milestones, field)
+
 
 def _prep_stage_gate_info(
     fe: FeatureEntry, d: dict) -> dict[str, Optional[Stage]]:
@@ -262,8 +272,9 @@ def _prep_stage_gate_info(
     d['stages'][s.stage_type] = s.key.integer_id()
   for g in gates:
     d['gates'][g.gate_type].append(g.key.integer_id())
-  
+
   return major_stages
+
 
 def feature_entry_to_json_verbose(fe: FeatureEntry) -> dict[str, Any]:
   """Returns a verbose dictionary with all info about a feature."""
@@ -430,6 +441,7 @@ def feature_entry_to_json_verbose(fe: FeatureEntry) -> dict[str, Any]:
 
   del_none(d) # Further prune response by removing null/[] values.
   return d
+
 
 def feature_entry_to_json_basic(fe: FeatureEntry) -> dict[str, Any]:
   """Returns a dictionary with basic info about a feature."""
