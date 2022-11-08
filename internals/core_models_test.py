@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from datetime import datetime
 import testing_config  # Must be imported before the module under test.
 
 from api import converters
@@ -49,22 +50,26 @@ class FeatureTest(testing_config.CustomTestCase):
   def setUp(self):
     self.feature_2 = core_models.FeatureEntry(
         name='feature b', summary='sum',
-        owner_emails=['feature_owner@example.com'], category=1)
+        owner_emails=['feature_owner@example.com'], category=1,
+        updated=datetime(2020, 4, 1))
     self.feature_2.put()
 
     self.feature_1 = core_models.FeatureEntry(
         name='feature a', summary='sum', impl_status_chrome=3,
-        owner_emails=['feature_owner@example.com'], category=1)
+        owner_emails=['feature_owner@example.com'], category=1,
+        updated=datetime(2020, 3, 1))
     self.feature_1.put()
 
     self.feature_4 = core_models.FeatureEntry(
         name='feature d', summary='sum', category=1, impl_status_chrome=2,
-        owner_emails=['feature_owner@example.com'])
+        owner_emails=['feature_owner@example.com'],
+        updated=datetime(2020, 2, 1))
     self.feature_4.put()
 
     self.feature_3 = core_models.FeatureEntry(
         name='feature c', summary='sum', category=1, impl_status_chrome=2,
-        owner_emails=['feature_owner@example.com'])
+        owner_emails=['feature_owner@example.com'],
+        updated=datetime(2020, 1, 1))
     self.feature_3.put()
 
     # Legacy entities for testing legacy functions.
