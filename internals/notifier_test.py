@@ -26,9 +26,9 @@ from framework import users
 
 from internals import approval_defs
 from internals import core_enums
-from internals import core_models
 from internals import notifier
 from internals import user_models
+from internals.core_models import Feature, FeatureEntry, MilestoneSet, Stage
 import settings
 
 test_app = flask.Flask(__name__,
@@ -40,7 +40,7 @@ TESTDATA = testing_config.Testdata(__file__)
 class EmailFormattingTest(testing_config.CustomTestCase):
 
   def setUp(self):
-    self.feature_1 = core_models.Feature(
+    self.feature_1 = Feature(
         name='feature one', summary='sum', owner=['feature_owner@example.com'],
         ot_milestone_desktop_start=100,
         editors=['feature_editor@example.com', 'owner_1@example.com'],
@@ -51,7 +51,7 @@ class EmailFormattingTest(testing_config.CustomTestCase):
             email='editor1@gmail.com', _auth_domain='gmail.com'),
         blink_components=['Blink'])
     self.feature_1.put()
-    self.fe_1 = core_models.FeatureEntry(
+    self.fe_1 = FeatureEntry(
         id=self.feature_1.key.integer_id(),
         name='feature one', summary='sum',
         owner_emails=['feature_owner@example.com'],
@@ -60,8 +60,19 @@ class EmailFormattingTest(testing_config.CustomTestCase):
         cc_emails=['cc@example.com'], category=1,
         creator_email='creator1@gmail.com',
         updater_email='editor1@gmail.com',
-        blink_components=['Blink'])
+        blink_components=['Blink'],
+        ff_views=1, safari_views=1,
+        web_dev_views=1, standard_maturity=1)
     self.fe_1.put()
+
+    self.ot_stage = Stage(feature_id=self.fe_1.key.integer_id(),
+        stage_type=150, milestones=MilestoneSet(desktop_first=100))
+    self.ship_stage = Stage(feature_id=self.fe_1.key.integer_id(),
+        stage_type=160, milestones=MilestoneSet())
+    self.ot_stage.put()
+    self.ship_stage.put()
+    self.fe_1_stages = Stage.get_feature_stages(
+        self.fe_1.key.integer_id())
 
     self.component_1 = user_models.BlinkComponent(name='Blink')
     self.component_1.put()
@@ -75,16 +86,16 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     self.watcher_1.put()
     self.changes = [dict(prop_name='test_prop', new_val='test new value',
                     old_val='test old value')]
-    self.feature_2 = core_models.Feature(
+    self.feature_2 = Feature(
         name='feature two', summary='sum', owner=['feature_owner@example.com'],
         editors=['feature_editor@example.com', 'owner_1@example.com'],
         category=1, created_by=ndb.User(
             email='creator2@example.com', _auth_domain='gmail.com'),
         updated_by=ndb.User(
             email='editor2@example.com', _auth_domain='gmail.com'),
-        blink_components=['Blink'])
+        blink_components=['Blink'], feature_type=1)
     self.feature_2.put()
-    self.fe_2 = core_models.FeatureEntry(
+    self.fe_2 = FeatureEntry(
         id=self.feature_2.key.integer_id(),
         name='feature two', summary='sum',
         owner_emails=['feature_owner@example.com'],
@@ -92,12 +103,18 @@ class EmailFormattingTest(testing_config.CustomTestCase):
         category=1,
         creator_email='creator2@example.com',
         updater_email='editor2@example.com',
-        blink_components=['Blink'])
+        blink_components=['Blink'], feature_type=1, ff_views=1, safari_views=1,
+        web_dev_views=1, standard_maturity=1)
     self.fe_2.put()
+
+    self.fe_2_ship_stage = Stage(feature_id=self.fe_2.key.integer_id(),
+        stage_type=260, milestones=MilestoneSet())
+    self.fe_2_ship_stage.put()
+    self.fe_2_stages = Stage.get_feature_stages(self.fe_2.key.integer_id())
     # This feature will only be used for the template tests.
     # Hardcode the Feature Key ID so that the ID is deterministic in the
     # template tests.
-    self.template_feature = core_models.Feature(
+    self.template_fe = Feature(
         name='feature template', summary='sum', owner=['feature_owner@example.com'],
         editors=['feature_editor@example.com', 'owner_1@example.com'],
         category=1, created_by=ndb.User(
@@ -105,26 +122,35 @@ class EmailFormattingTest(testing_config.CustomTestCase):
         updated_by=ndb.User(
             email='editor_template@example.com', _auth_domain='gmail.com'),
         blink_components=['Blink'])
-    self.template_feature.key = ndb.Key('Feature', 123)
-    self.template_feature.put()
+    self.template_fe = FeatureEntry(
+        id=123, name='feature template', summary='sum',
+        owner_emails=['feature_owner@example.com'],
+        editor_emails=['feature_editor@example.com', 'owner_1@example.com'],
+        category=1, creator_email='creator_template@example.com',
+        updater_email='editor_template@example.com',
+        blink_components=['Blink'])
+    self.template_ship_stage = Stage(feature_id=123, stage_type=160,
+        milestones=MilestoneSet(desktop_first=100))
+    self.template_fe.put()
+    self.template_ship_stage.put()
+    self.template_stages = Stage.get_feature_stages(123)
+    self.template_fe.key = ndb.Key('FeatureEntry', 123)
+    self.template_fe.put()
 
     self.maxDiff = None
 
   def tearDown(self):
-    self.watcher_1.key.delete()
-    self.component_owner_1.key.delete()
-    self.component_1.key.delete()
-    self.feature_1.key.delete()
-    self.feature_2.key.delete()
-    self.fe_1.key.delete()
-    self.fe_2.key.delete()
-    self.template_feature.key.delete()
+    kinds = [Feature, FeatureEntry, Stage,
+        user_models.FeatureOwner, user_models.BlinkComponent]
+    for kind in kinds:
+      for entity in kind.query():
+        entity.key.delete()
 
   def test_format_email_body__new(self):
     """We generate an email body for new features."""
     with test_app.app_context():
       body_html = notifier.format_email_body(
-          False, self.template_feature, [])
+          False, self.template_fe, self.template_stages, [])
     # TESTDATA.make_golden(body_html, 'test_format_email_body__new.html')
     self.assertEqual(body_html,
       TESTDATA['test_format_email_body__new.html'])
@@ -133,7 +159,7 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     """We don't crash if the change list is emtpy."""
     with test_app.app_context():
       body_html = notifier.format_email_body(
-          True, self.template_feature, [])
+          True, self.template_fe, self.template_stages, [])
     # TESTDATA.make_golden(body_html, 'test_format_email_body__update_no_changes.html')
     self.assertEqual(body_html,
       TESTDATA['test_format_email_body__update_no_changes.html'])
@@ -142,7 +168,7 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     """We generate an email body for an updated feature."""
     with test_app.app_context():
       body_html = notifier.format_email_body(
-          True, self.template_feature, self.changes)
+          True, self.template_fe, self.template_stages, self.changes)
     # TESTDATA.make_golden(body_html, 'test_format_email_body__update_with_changes.html')
     self.assertEqual(body_html,
       TESTDATA['test_format_email_body__update_with_changes.html'])
@@ -152,7 +178,7 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     self.feature_1.doc_links = ['https://developer.mozilla.org/look-here']
     with test_app.app_context():
       body_html = notifier.format_email_body(
-          True, self.template_feature, self.changes)
+          True, self.template_fe, self.template_stages, self.changes)
     # TESTDATA.make_golden(body_html, 'test_format_email_body__mozdev_links_mozilla.html')
     self.assertEqual(body_html,
       TESTDATA['test_format_email_body__mozdev_links_mozilla.html'])
@@ -161,7 +187,7 @@ class EmailFormattingTest(testing_config.CustomTestCase):
         'https://hacker-site.org/developer.mozilla.org/look-here']
     with test_app.app_context():
       body_html = notifier.format_email_body(
-          True, self.template_feature, self.changes)
+          True, self.template_fe, self.template_stages, self.changes)
     # TESTDATA.make_golden(body_html, 'test_format_email_body__mozdev_links_non_mozilla.html')
     self.assertEqual(body_html,
       TESTDATA['test_format_email_body__mozdev_links_non_mozilla.html'])
@@ -233,10 +259,11 @@ class EmailFormattingTest(testing_config.CustomTestCase):
 
   def test_apply_subscription_rules__relevant_match(self):
     """When a feature and change match a rule, a reason is returned."""
-    self.feature_1.shipped_android_milestone = 88
+    self.ship_stage.milestones.android_first = 88
     changes = [{'prop_name': 'shipped_android_milestone'}]
 
-    actual = notifier.apply_subscription_rules(self.feature_1, changes)
+    actual = notifier.apply_subscription_rules(
+        self.fe_1, self.fe_1_stages, changes)
 
     self.assertEqual(
         {notifier.WEBVIEW_RULE_REASON: notifier.WEBVIEW_RULE_ADDRS},
@@ -244,10 +271,11 @@ class EmailFormattingTest(testing_config.CustomTestCase):
 
   def test_apply_subscription_rules__irrelevant_match(self):
     """When a feature matches, but the change is not relevant => skip."""
-    self.feature_1.shipped_android_milestone = 88
+    self.ship_stage.milestones.android_first = 88
     changes = [{'prop_name': 'some_other_field'}]  # irrelevant changesa
 
-    actual = notifier.apply_subscription_rules(self.feature_1, changes)
+    actual = notifier.apply_subscription_rules(
+        self.fe_1, self.fe_1_stages, changes)
 
     self.assertEqual({}, actual)
 
@@ -256,13 +284,15 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     changes = [{'prop_name': 'shipped_android_milestone'}]
 
     # No milestones of any kind set.
-    actual = notifier.apply_subscription_rules(self.feature_1, changes)
+    actual = notifier.apply_subscription_rules(
+        self.fe_1, self.fe_1_stages, changes)
     self.assertEqual({}, actual)
 
     # Webview is also set
-    self.feature_1.shipped_android_milestone = 88
-    self.feature_1.shipped_webview_milestone = 89
-    actual = notifier.apply_subscription_rules(self.feature_1, changes)
+    self.ship_stage.milestones.android_first = 88
+    self.ship_stage.milestones.webview_first = 89
+    actual = notifier.apply_subscription_rules(
+        self.fe_1, self.fe_1_stages, changes)
     self.assertEqual({}, actual)
 
   @mock.patch('internals.notifier.format_email_body')
@@ -270,7 +300,7 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     """We send email to component owners and subscribers for new features."""
     mock_f_e_b.return_value = 'mock body html'
     actual_tasks = notifier.make_email_tasks(
-        self.feature_1, is_update=False, changes=[])
+        self.fe_1, is_update=False, changes=[])
     self.assertEqual(5, len(actual_tasks))
     (feature_cc_task, feature_editor_task, feature_owner_task,
      component_owner_task, watcher_task) = actual_tasks
@@ -313,14 +343,14 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     self.assertEqual('watcher_1@example.com', watcher_task['to'])
 
     mock_f_e_b.assert_called_once_with(
-        False, self.feature_1, [])
+        False, self.fe_1, self.fe_1_stages, [])
 
   @mock.patch('internals.notifier.format_email_body')
   def test_make_email_tasks__update(self, mock_f_e_b):
     """We send email to component owners and subscribers for edits."""
     mock_f_e_b.return_value = 'mock body html'
     actual_tasks = notifier.make_email_tasks(
-        self.feature_1, True, self.changes)
+        self.fe_1, True, self.changes)
     self.assertEqual(5, len(actual_tasks))
     (feature_cc_task, feature_editor_task, feature_owner_task,
      component_owner_task, watcher_task) = actual_tasks
@@ -367,16 +397,16 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     self.assertEqual('watcher_1@example.com', watcher_task['to'])
 
     mock_f_e_b.assert_called_once_with(
-        True, self.feature_1, self.changes)
+        True, self.fe_1, self.fe_1_stages, self.changes)
 
   @mock.patch('internals.notifier.format_email_body')
   def test_make_email_tasks__starrer(self, mock_f_e_b):
     """We send email to users who starred the feature."""
     mock_f_e_b.return_value = 'mock body html'
     notifier.FeatureStar.set_star(
-        'starrer_1@example.com', self.feature_1.key.integer_id())
+        'starrer_1@example.com', self.fe_1.key.integer_id())
     actual_tasks = notifier.make_email_tasks(
-        self.feature_1, True, self.changes)
+        self.fe_1, True, self.changes)
     self.assertEqual(6, len(actual_tasks))
     (feature_cc_task, feature_editor_task, feature_owner_task,
      component_owner_task, starrer_task, watcher_task) = actual_tasks
@@ -430,7 +460,7 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     self.assertEqual('watcher_1@example.com', watcher_task['to'])
 
     mock_f_e_b.assert_called_once_with(
-        True, self.feature_1, self.changes)
+        True, self.fe_1, self.fe_1_stages, self.changes)
 
 
   @mock.patch('internals.notifier.format_email_body')
@@ -444,7 +474,7 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     notifier.FeatureStar.set_star(
         'starrer_2@example.com', self.feature_2.key.integer_id())
     actual_tasks = notifier.make_email_tasks(
-        self.feature_2, True, self.changes)
+        self.fe_2, True, self.changes)
     self.assertEqual(4, len(actual_tasks))
     # Note: There is no starrer_task.
     (feature_editor_task, feature_owner_task, component_owner_task,
@@ -454,31 +484,31 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     self.assertEqual('owner_1@example.com', component_owner_task['to'])
     self.assertEqual('watcher_1@example.com', watcher_task['to'])
     mock_f_e_b.assert_called_once_with(
-        True, self.feature_2, self.changes)
+        True, self.fe_2, self.fe_2_stages, self.changes)
 
 
 class FeatureStarTest(testing_config.CustomTestCase):
 
   def setUp(self):
-    self.feature_1 = core_models.Feature(
+    self.feature_1 = Feature(
         name='feature one', summary='sum', category=1)
     self.feature_1.put()
-    self.feature_2 = core_models.Feature(
+    self.feature_2 = Feature(
         name='feature two', summary='sum', category=1)
     self.feature_2.put()
-    self.feature_3 = core_models.Feature(
+    self.feature_3 = Feature(
         name='feature three', summary='sum', category=1)
     self.feature_3.put()
 
-    self.fe_1 = core_models.FeatureEntry(
+    self.fe_1 = FeatureEntry(
         id=self.feature_1.key.integer_id(),
         name='feature one', summary='sum', category=1)
     self.fe_1.put()
-    self.fe_2 = core_models.FeatureEntry(
+    self.fe_2 = FeatureEntry(
         id=self.feature_2.key.integer_id(),
         name='feature two', summary='sum', category=1)
     self.fe_2.put()
-    self.fe_3 = core_models.FeatureEntry(
+    self.fe_3 = FeatureEntry(
         id=self.feature_3.key.integer_id(),
         name='feature three', summary='sum', category=1)
     self.fe_3.put()
@@ -507,9 +537,9 @@ class FeatureStarTest(testing_config.CustomTestCase):
     self.assertEqual(email, actual.email)
     self.assertEqual(feature_id, actual.feature_id)
     self.assertTrue(actual.starred)
-    updated_feature = core_models.Feature.get_by_id(feature_id)
+    updated_feature = Feature.get_by_id(feature_id)
     self.assertEqual(1, updated_feature.star_count)
-    updated_fe = core_models.FeatureEntry.get_by_id(feature_id)
+    updated_fe = FeatureEntry.get_by_id(feature_id)
     self.assertEqual(1, updated_fe.star_count)
 
     notifier.FeatureStar.set_star(email, feature_id, starred=False)
@@ -517,9 +547,9 @@ class FeatureStarTest(testing_config.CustomTestCase):
     self.assertEqual(email, actual.email)
     self.assertEqual(feature_id, actual.feature_id)
     self.assertFalse(actual.starred)
-    updated_feature = core_models.Feature.get_by_id(feature_id)
+    updated_feature = Feature.get_by_id(feature_id)
     self.assertEqual(0, updated_feature.star_count)
-    updated_fe = core_models.FeatureEntry.get_by_id(feature_id)
+    updated_fe = FeatureEntry.get_by_id(feature_id)
     self.assertEqual(0, updated_fe.star_count)
 
   def test_get_user_stars__no_stars(self):
@@ -642,7 +672,7 @@ class FunctionsTest(testing_config.CustomTestCase):
     quoted_msg_id = 'xxx%3Dyyy%40mail.gmail.com'
     impl_url = notifier.BLINK_DEV_ARCHIVE_URL_PREFIX + '123' + quoted_msg_id
     expr_url = notifier.TEST_ARCHIVE_URL_PREFIX + '456' + quoted_msg_id
-    self.feature_1 = core_models.Feature(
+    self.feature_1 = Feature(
         name='feature one', summary='sum', category=1,
         intent_to_implement_url=impl_url, intent_to_experiment_url=expr_url)
     # Note: There is no need to put() it in the datastore.
