@@ -315,6 +315,6 @@ def process_negation_operations(feature_id_future_ops):
 
 def fetch_all_feature_ids_set():
   """Fetch all FeatureEntry ids. """
-  all_feature_entries = core_models.FeatureEntry.query().fetch(keys_only=True)
-  feature_ids_set = set(fe.key.integer_id() for fe in all_feature_entries)
+  all_feature_keys = core_models.FeatureEntry.query().fetch(keys_only=True)
+  feature_ids_set = set(key.integer_id() for key in all_feature_keys)
   return feature_ids_set
