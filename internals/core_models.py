@@ -356,7 +356,7 @@ class FeatureEntry(ndb.Model):  # Copy from Feature
 
   # Metadata: Creation and updates.
   created = ndb.DateTimeProperty(auto_now_add=True)
-  updated = ndb.DateTimeProperty()
+  updated = ndb.DateTimeProperty(auto_now_add=True)
   accurate_as_of = ndb.DateTimeProperty()
   creator_email = ndb.StringProperty()
   updater_email = ndb.StringProperty()
