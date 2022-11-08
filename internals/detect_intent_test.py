@@ -21,8 +21,8 @@ import werkzeug
 from internals import approval_defs
 from internals import core_enums
 from internals import detect_intent
-from internals import core_models
-from internals import review_models
+from internals.core_models import FeatureEntry, MilestoneSet, Stage
+from internals.review_models import Approval, Gate, Vote
 
 test_app = flask.Flask(__name__)
 
@@ -30,7 +30,7 @@ test_app = flask.Flask(__name__)
 class FunctionTest(testing_config.CustomTestCase):
 
   def setUp(self):
-    self.feature_1 = core_models.Feature(
+    self.feature_1 = FeatureEntry(
         name='feature one', summary='detailed sum', category=1,
         intent_stage=core_enums.INTENT_IMPLEMENT)
     self.feature_1.put()
@@ -366,17 +366,25 @@ class FunctionTest(testing_config.CustomTestCase):
 class IntentEmailHandlerTest(testing_config.CustomTestCase):
 
   def setUp(self):
-    self.feature_1 = core_models.Feature(
+    self.feature_1 = FeatureEntry(
         name='feature one', summary='detailed sum', category=1,
-        intent_stage=core_enums.INTENT_IMPLEMENT)
+        intent_stage=core_enums.INTENT_IMPLEMENT, feature_type=0)
     self.feature_1.put()
     self.feature_id = self.feature_1.key.integer_id()
 
-    self.gate_1 = review_models.Gate(feature_id=self.feature_id, stage_id=1,
-        gate_type=1, state=review_models.Approval.NA)
+    stage_types = [110, 120, 130, 140, 150, 151, 160]
+    self.stages: list[Stage] = []
+    for s_type in stage_types:
+      stage = Stage(feature_id=self.feature_id, stage_type=s_type)
+      stage.put()
+      self.stages.append(stage)
+    self.stages_dict = Stage.get_feature_stages(self.feature_id)
+
+    self.gate_1 = Gate(feature_id=self.feature_id, stage_id=1,
+        gate_type=1, state=Vote.NA)
     self.gate_1.put()
-    self.gate_2 = review_models.Gate(feature_id=self.feature_id, stage_id=2,
-        gate_type=4, state=review_models.Approval.NA)
+    self.gate_2 = Gate(feature_id=self.feature_id, stage_id=2,
+        gate_type=4, state=Vote.NA)
     self.gate_2.put()
 
     self.request_path = '/tasks/detect-intent'
@@ -405,13 +413,9 @@ class IntentEmailHandlerTest(testing_config.CustomTestCase):
     self.handler = detect_intent.IntentEmailHandler()
 
   def tearDown(self):
-    self.feature_1.key.delete()
-    for appr in review_models.Approval.query().fetch(None):
-      appr.key.delete()
-    for vote in review_models.Vote.query().fetch(None):
-      vote.key.delete()
-    for gate in review_models.Gate.query().fetch():
-      gate.key.delete()
+    for kind in [Approval, FeatureEntry, Gate, Stage, Vote]:
+      for entity in kind.query():
+        entity.key.delete()
 
   def test_process_post_data__new_thread(self):
     """When we detect a new thread, we record it as the intent thread."""
@@ -421,25 +425,23 @@ class IntentEmailHandlerTest(testing_config.CustomTestCase):
 
     self.assertEqual(actual, {'message': 'Done'})
 
-    created_approvals = list(review_models.Approval.query().fetch(None))
+    created_approvals = list(Approval.query().fetch(None))
     self.assertEqual(1, len(created_approvals))
     appr = created_approvals[0]
     self.assertEqual(self.feature_id, appr.feature_id)
     self.assertEqual(approval_defs.ShipApproval.field_id, appr.field_id)
-    self.assertEqual(review_models.Approval.REVIEW_REQUESTED, appr.state)
+    self.assertEqual(Approval.REVIEW_REQUESTED, appr.state)
     self.assertEqual('user@example.com', appr.set_by)
 
-    created_votes = list(review_models.Vote.query().fetch(None))
+    created_votes = list(Vote.query().fetch(None))
     self.assertEqual(1, len(created_votes))
     vote = created_votes[0]
     self.assertEqual(self.feature_id, vote.feature_id)
     # TODO(jrobbins): check gate_id
-    self.assertEqual(review_models.Approval.REVIEW_REQUESTED, vote.state)
+    self.assertEqual(Approval.REVIEW_REQUESTED, vote.state)
     self.assertEqual('user@example.com', vote.set_by)
 
-    self.assertEqual(self.feature_1.intent_to_ship_url, self.thread_url)
-    self.assertEqual(self.feature_1.intent_to_ship_subject_line,
-                     self.review_json_data['subject'])
+    self.assertEqual(self.stages_dict[160].intent_thread_url, self.thread_url)
 
   def test_process_post_data__new_thread_just_FYI(self):
     """When we detect a new thread, it might not require a review."""
@@ -450,23 +452,20 @@ class IntentEmailHandlerTest(testing_config.CustomTestCase):
 
     self.assertEqual(actual, {'message': 'Done'})
 
-    created_approvals = list(review_models.Approval.query().fetch(None))
+    created_approvals = list(Approval.query().fetch(None))
     self.assertEqual(0, len(created_approvals))
 
-    created_votes = list(review_models.Vote.query().fetch(None))
+    created_votes = list(Vote.query().fetch(None))
     self.assertEqual(0, len(created_votes))
 
-    self.assertEqual(self.feature_1.intent_to_implement_url, self.thread_url)
-    self.assertEqual(self.feature_1.intent_to_implement_subject_line,
-                     self.review_json_data['subject'])
+    self.assertEqual(self.stages_dict[120].intent_thread_url, self.thread_url)
 
   @mock.patch('internals.detect_intent.is_lgtm_allowed')
   def test_process_post_data__lgtm(self, mock_is_lgtm_allowed):
     """If we get an LGTM, we store the approval value and update the feature."""
     mock_is_lgtm_allowed.return_value = True
-    self.feature_1.intent_to_ship_url = self.thread_url
-    self.feature_1.intent_to_ship_subject_line = 'orig subject'
-    self.feature_1.put()
+    self.stages_dict[160].intent_thread_url = self.thread_url
+    self.stages_dict[160].put()
 
     with test_app.test_request_context(
         self.request_path, json=self.lgtm_json_data):
@@ -474,14 +473,11 @@ class IntentEmailHandlerTest(testing_config.CustomTestCase):
 
     self.assertEqual(actual, {'message': 'Done'})
 
-    created_approvals = list(review_models.Approval.query().fetch(None))
+    created_approvals = list(Approval.query().fetch(None))
     self.assertEqual(1, len(created_approvals))
     appr = created_approvals[0]
     self.assertEqual(self.feature_id, appr.feature_id)
     self.assertEqual(approval_defs.ShipApproval.field_id, appr.field_id)
-    self.assertEqual(review_models.Approval.APPROVED, appr.state)
+    self.assertEqual(Approval.APPROVED, appr.state)
     self.assertEqual('user@example.com', appr.set_by)
-    self.assertEqual(self.feature_1.intent_to_ship_url, self.thread_url)
-    self.assertEqual(
-        self.feature_1.intent_to_ship_subject_line, 'orig subject')
-    self.assertEqual(self.feature_1.i2s_lgtms, ['user@example.com'])
+    self.assertEqual(self.stages_dict[160].intent_thread_url, self.thread_url)
