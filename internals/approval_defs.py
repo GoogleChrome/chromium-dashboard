@@ -15,6 +15,7 @@
 
 import base64
 import collections
+from dataclasses import dataclass
 import datetime
 import logging
 from typing import Optional
@@ -34,32 +35,37 @@ API_OWNERS_URL = (
     'https://chromium.googlesource.com/chromium/src/+/'
     'main/third_party/blink/API_OWNERS?format=TEXT')
 
-ApprovalFieldDef = collections.namedtuple(
-    'ApprovalFieldDef',
-    'name, team_name, description, field_id, rule, approvers')
+@dataclass(eq=True, frozen=True)
+class ApprovalFieldDef:
+  name: str
+  description: str
+  field_id: int
+  rule: str
+  approvers: str | list[str] = API_OWNERS_URL
+  team_name: str = 'API Owners'
 
 # Note: This can be requested manually through the UI, but it is not
 # triggered by a blink-dev thread because i2p intents are only FYIs to
 # bilnk-dev and don't actually need approval by the API Owners.
 PrototypeApproval = ApprovalFieldDef(
-    'Intent to Prototype', 'API Owners',
+    'Intent to Prototype',
     'Not normally used.  If a review is requested, API Owners can approve.',
-    core_enums.GATE_PROTOTYPE, ONE_LGTM, API_OWNERS_URL)
+    core_enums.GATE_PROTOTYPE, ONE_LGTM)
 
 ExperimentApproval = ApprovalFieldDef(
-    'Intent to Experiment', 'API Owners',
+    'Intent to Experiment',
     'One API Owner must approve your intent',
-    core_enums.GATE_ORIGIN_TRIAL, ONE_LGTM, API_OWNERS_URL)
+    core_enums.GATE_ORIGIN_TRIAL, ONE_LGTM)
 
 ExtendExperimentApproval = ApprovalFieldDef(
-    'Intent to Extend Experiment', 'API Owners',
+    'Intent to Extend Experiment',
     'One API Owner must approve your intent',
-    core_enums.GATE_EXTEND_ORIGIN_TRIAL, ONE_LGTM, API_OWNERS_URL)
+    core_enums.GATE_EXTEND_ORIGIN_TRIAL, ONE_LGTM)
 
 ShipApproval = ApprovalFieldDef(
-    'Intent to Ship', 'API Owners',
+    'Intent to Ship',
     'Three API Owners must approve your intent',
-    core_enums.GATE_SHIP, THREE_LGTM, API_OWNERS_URL)
+    core_enums.GATE_SHIP, THREE_LGTM)
 
 APPROVAL_FIELDS_BY_ID = {
     afd.field_id: afd
