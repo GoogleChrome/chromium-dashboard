@@ -437,7 +437,8 @@ class AddStageMilestoneSets(FlaskHandler):
       stage_type = stage.stage_type
       # If this stage requires milestone info, create a default
       # MilestoneSet entity.
-      if (stage_type in STAGE_TYPES_DEV_TRIAL or
+      if (stage.milestones is None and
+          stage_type in STAGE_TYPES_DEV_TRIAL or
           stage_type in STAGE_TYPES_ORIGIN_TRIAL or
           stage_type in STAGE_TYPES_EXTEND_ORIGIN_TRIAL or
           stage_type in STAGE_TYPES_SHIPPING):
