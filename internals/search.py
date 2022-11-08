@@ -117,13 +117,13 @@ OPERATORS_PATTERN = r':|=|<=|<|>=|>|!='
 VALUE_PATTERN = r'[^" ]+|"[^"]+"'
 # Logical operators.
 # TODO(kyleju): support 'OR' logic
-LOGICAL_OPERATORS_PATTERN = r'-'
+LOGICAL_OPERATORS_PATTERN = r'OR\s+|-'
 
 # Overall, a query term can be either a structured term or a full-text term.
 # Structured terms look like: FIELD OPERATOR VALUE.
 # Full-text terms look like: SINGLE_WORD, or like: "QUOTED STRING".
 TERM_RE = re.compile(
-    '(?P<logical>%s)?\s*(?P<field>%s)(?P<op>%s)(?P<val>%s)\s+|(?P<textterm>%s)\s+' % (
+    '(?P<logical>%s)?(?:(?P<field>%s)(?P<op>%s)(?P<val>%s)|(?P<textterm>%s))\s+' % (
         LOGICAL_OPERATORS_PATTERN, FIELD_NAME_PATTERN, OPERATORS_PATTERN,
         VALUE_PATTERN, TEXT_PATTERN),
     re.I)
@@ -232,7 +232,7 @@ def process_query(
   # 2a. Create parallel queries for each term.  Each yields a future.
   logging.info('creating parallel queries for %r', terms)
   for logical_op, field_name, op_str, val_str, textterm in terms:
-    is_negation = (logical_op == '-')
+    is_negation = (logical_op.strip() == '-')
     is_normal_query = False
     if textterm:
       future = search_fulltext.search_fulltext(textterm)

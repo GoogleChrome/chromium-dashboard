@@ -55,14 +55,14 @@ class SearchRETest(testing_config.CustomTestCase):
         [('-', 'field', '=', 'value', '')],
         search.TERM_RE.findall('-field=value '))
     self.assertEqual(
-        [('-', 'field', '>', 'value', '')],
-        search.TERM_RE.findall('-field>value '))
+        [('OR ', 'field', '>', 'value', '')],
+        search.TERM_RE.findall('OR field>value '))
     self.assertEqual(
         [('-', 'flag_name', '=', 'version', '')],
         search.TERM_RE.findall('-flag_name=version '))
     self.assertEqual(
-        [('-', 'flag_name', '=', 'enable-super-stuff', '')],
-        search.TERM_RE.findall('-flag_name=enable-super-stuff '))
+        [('OR ', 'flag_name', '=', 'enable-super-stuff', '')],
+        search.TERM_RE.findall('OR flag_name=enable-super-stuff '))
 
   def test_text_terms(self):
     """We can parse text terms."""
@@ -75,6 +75,18 @@ class SearchRETest(testing_config.CustomTestCase):
     self.assertEqual(
         [('', '', '', '', '"memory location $0x25"')],
         search.TERM_RE.findall('"memory location $0x25" '))
+
+  def test_text_terms__complex(self):
+    """We can parse complex text terms."""
+    self.assertEqual(
+        [('-', '', '', '', 'hello')],
+        search.TERM_RE.findall('-hello '))
+    self.assertEqual(
+        [('-', '', '', '', '"hello there people"')],
+        search.TERM_RE.findall('-"hello there people" '))
+    self.assertEqual(
+        [('OR ', '', '', '', '"memory location $0x25"')],
+        search.TERM_RE.findall('OR "memory location $0x25" '))
 
   def test_malformed(self):
     """Malformed queries are treated like full text, junk ignored."""
