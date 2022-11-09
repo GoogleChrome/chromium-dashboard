@@ -20,6 +20,7 @@ import werkzeug.exceptions  # Flask HTTP stuff.
 # from google.appengine.api import users
 from framework import users
 
+from main import Route
 from framework import basehandlers
 from framework import permissions
 from internals import core_models
@@ -44,7 +45,7 @@ class MockHandler(basehandlers.BaseHandler):
 
 test_app = basehandlers.FlaskApplication(
     __name__,
-    [('/path', MockHandler),
+    [Route('/path', MockHandler),
      ],
     [], # POST routes
     debug=True)

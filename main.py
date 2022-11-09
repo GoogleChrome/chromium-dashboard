@@ -13,7 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Any
+from dataclasses import dataclass, field
+from typing import Any, Type
+
 from api import accounts_api
 from api import approvals_api
 from api import blink_components_api
@@ -71,147 +73,163 @@ if not settings.UNIT_TEST_MODE and not settings.DEV_MODE:
 # handler might be used for multiple routes that have the field
 # or not.
 
+@dataclass
+class Route:
+  path: str
+  handler_class: Type[basehandlers.BaseHandler] = basehandlers.SPAHandler
+  defaults: dict[str, Any] = field(default_factory=dict)
 
-metrics_chart_routes: list[tuple] = [
-    ('/data/timeline/cssanimated', metricsdata.AnimatedTimelineHandler),
-    ('/data/timeline/csspopularity', metricsdata.PopularityTimelineHandler),
-    ('/data/timeline/featurepopularity',
-     metricsdata.FeatureObserverTimelineHandler),
-    ('/data/csspopularity', metricsdata.CSSPopularityHandler),
-    ('/data/cssanimated', metricsdata.CSSAnimatedHandler),
-    ('/data/featurepopularity', metricsdata.FeatureObserverPopularityHandler),
-    ('/data/blink/<string:prop_type>', metricsdata.FeatureBucketsHandler),
+
+metrics_chart_routes: list[Route] = [
+    Route('/data/timeline/cssanimated', metricsdata.AnimatedTimelineHandler),
+    Route('/data/timeline/csspopularity', metricsdata.PopularityTimelineHandler),
+    Route('/data/timeline/featurepopularity',
+        metricsdata.FeatureObserverTimelineHandler),
+    Route('/data/csspopularity', metricsdata.CSSPopularityHandler),
+    Route('/data/cssanimated', metricsdata.CSSAnimatedHandler),
+    Route('/data/featurepopularity',
+        metricsdata.FeatureObserverPopularityHandler),
+    Route('/data/blink/<string:prop_type>', metricsdata.FeatureBucketsHandler),
 ]
 
 # TODO(jrobbins): Advance this to v1 once we have it fleshed out
 API_BASE = '/api/v0'
-api_routes: list[tuple] = [
-    (API_BASE + '/features', features_api.FeaturesAPI),
-    (API_BASE + '/features/<int:feature_id>', features_api.FeaturesAPI),
-    (API_BASE + '/features/<int:feature_id>/approvals',
-     approvals_api.ApprovalsAPI),
-    (API_BASE + '/features/<int:feature_id>/approvals/<int:field_id>',
-     approvals_api.ApprovalsAPI),
-    (API_BASE + '/features/<int:feature_id>/configs',
-     approvals_api.ApprovalConfigsAPI),
-    (API_BASE + '/features/<int:feature_id>/approvals/comments',
-     comments_api.CommentsAPI),
-    (API_BASE + '/features/<int:feature_id>/approvals/<int:field_id>/comments',
-     comments_api.CommentsAPI),
-    (API_BASE + '/features/<int:feature_id>/process', processes_api.ProcessesAPI),
-    (API_BASE + '/features/<int:feature_id>/progress', processes_api.ProgressAPI),
+api_routes: list[Route] = [
+    Route(f'{API_BASE}/features', features_api.FeaturesAPI),
+    Route(f'{API_BASE}/features/<int:feature_id>', features_api.FeaturesAPI),
+    Route(f'{API_BASE}/features/<int:feature_id>/approvals',
+        approvals_api.ApprovalsAPI),
+    Route(f'{API_BASE}/features/<int:feature_id>/approvals/<int:field_id>',
+        approvals_api.ApprovalsAPI),
+    Route(f'{API_BASE}/features/<int:feature_id>/configs',
+        approvals_api.ApprovalConfigsAPI),
+    Route(f'{API_BASE}/features/<int:feature_id>/approvals/comments',
+        comments_api.CommentsAPI),
+    Route(f'{API_BASE}/features/<int:feature_id>/approvals/<int:field_id>/comments',
+        comments_api.CommentsAPI),
+    Route(f'{API_BASE}/features/<int:feature_id>/process',
+        processes_api.ProcessesAPI),
+    Route(f'{API_BASE}/features/<int:feature_id>/progress',
+        processes_api.ProgressAPI),
 
-    (API_BASE + '/blinkcomponents', blink_components_api.BlinkComponentsAPI),
+    Route(f'{API_BASE}/blinkcomponents',
+        blink_components_api.BlinkComponentsAPI),
 
-    (API_BASE + '/login', login_api.LoginAPI),
-    (API_BASE + '/logout', logout_api.LogoutAPI),
-    (API_BASE + '/currentuser/permissions', permissions_api.PermissionsAPI),
-    (API_BASE + '/currentuser/settings', settings_api.SettingsAPI),
-    (API_BASE + '/currentuser/stars', stars_api.StarsAPI),
-    (API_BASE + '/currentuser/cues', cues_api.CuesAPI),
-    (API_BASE + '/currentuser/token', token_refresh_api.TokenRefreshAPI),
-    # (API_BASE + '/currentuser/autosaves', TODO),
+    Route(f'{API_BASE}/login', login_api.LoginAPI),
+    Route(f'{API_BASE}/logout', logout_api.LogoutAPI),
+    Route(f'{API_BASE}/currentuser/permissions', permissions_api.PermissionsAPI),
+    Route(f'{API_BASE}/currentuser/settings', settings_api.SettingsAPI),
+    Route(f'{API_BASE}/currentuser/stars', stars_api.StarsAPI),
+    Route(f'{API_BASE}/currentuser/cues', cues_api.CuesAPI),
+    Route(f'{API_BASE}/currentuser/token', token_refresh_api.TokenRefreshAPI),
+    # (f'{API_BASE}/currentuser/autosaves', TODO),
 
     # Admin operations for user accounts
-    (API_BASE + '/accounts', accounts_api.AccountsAPI),
-    (API_BASE + '/accounts/<int:account_id>', accounts_api.AccountsAPI),
+    Route(f'{API_BASE}/accounts', accounts_api.AccountsAPI),
+    Route(f'{API_BASE}/accounts/<int:account_id>', accounts_api.AccountsAPI),
 
-    (API_BASE + '/channels', channels_api.ChannelsAPI),  # omaha data
-    # (API_BASE + '/schedule', TODO),  # chromiumdash data
-    # (API_BASE + '/metrics/<str:kind>', TODO),  # uma-export data
-    # (API_BASE + '/metrics/<str:kind>/<int:bucket_id>', TODO),
+    Route(f'{API_BASE}/channels', channels_api.ChannelsAPI),  # omaha data
+    # (f'{API_BASE}/schedule', TODO),  # chromiumdash data
+    # (f'{API_BASE}/metrics/<str:kind>', TODO),  # uma-export data
+    # (f'{API_BASE}/metrics/<str:kind>/<int:bucket_id>', TODO),
 ]
 
-spa_pages = [
-  '/',
-  '/roadmap',
-  ('/myfeatures', {'require_signin': True}),
-  '/newfeatures',
-  '/feature/<int:feature_id>',
-  ('/guide/new', {'require_create_feature': True}),
-  ('/guide/edit/<int:feature_id>', {'require_edit_feature': True}),
-  ('/guide/stage/<int:feature_id>/<int:stage_id>', {'require_edit_feature': True}),
-  ('/guide/editall/<int:feature_id>', {'require_edit_feature': True}),
-  ('/guide/verify_accuracy/<int:feature_id>', {'require_edit_feature': True}),
-  '/metrics',
-  '/metrics/css',
-  '/metrics/css/popularity',
-  '/metrics/css/animated',
-  '/metrics/css/timeline/popularity',
-  '/metrics/css/timeline/popularity/<int:bucket_id>',
-  '/metrics/css/timeline/animated',
-  '/metrics/css/timeline/animated/<int:bucket_id>',
-  '/metrics/feature/popularity',
-  '/metrics/feature/timeline/popularity',
-  '/metrics/feature/timeline/popularity/<int:bucket_id>',
-  ('/settings', {'require_signin': True}),
+spa_page_routes = [
+  Route('/'),
+  Route('/roadmap'),
+  Route('/myfeatures', defaults={'require_signin': True}),
+  Route('/newfeatures'),
+  Route('/feature/<int:feature_id>'),
+  Route('/guide/new',
+      defaults={'require_create_feature': True}),
+  Route('/guide/edit/<int:feature_id>',
+      defaults={'require_edit_feature': True}),
+  Route('/guide/stage/<int:feature_id>/<int:stage_id>',
+      defaults={'require_edit_feature': True}),
+  Route('/guide/editall/<int:feature_id>',
+      defaults={'require_edit_feature': True}),
+  Route('/guide/verify_accuracy/<int:feature_id>',
+      defaults={'require_edit_feature': True}),
+  Route('/metrics'),
+  Route('/metrics/css'),
+  Route('/metrics/css/popularity'),
+  Route('/metrics/css/animated'),
+  Route('/metrics/css/timeline/popularity'),
+  Route('/metrics/css/timeline/popularity/<int:bucket_id>'),
+  Route('/metrics/css/timeline/animated'),
+  Route('/metrics/css/timeline/animated/<int:bucket_id>'),
+  Route('/metrics/feature/popularity'),
+  Route('/metrics/feature/timeline/popularity'),
+  Route('/metrics/feature/timeline/popularity/<int:bucket_id>'),
+  Route('/settings', defaults={'require_signin': True}),
 ]
 
-spa_page_routes: list[tuple] = []
-for route in spa_pages:
-  page_defaults = {}
-  if isinstance(route, tuple):
-    route, additional_defaults = route
-    page_defaults.update(additional_defaults)
-  spa_page_routes.append((route, basehandlers.SPAHandler, page_defaults))
-
-spa_page_post_routes: list[Any] = [
-  ('/guide/new', guide.FeatureCreateHandler),
-  ('/guide/edit/<int:feature_id>', guide.FeatureEditHandler),
-  ('/guide/stage/<int:feature_id>/<int:stage_id>', guide.FeatureEditHandler),
-  ('/guide/editall/<int:feature_id>', guide.FeatureEditHandler),
-  ('/guide/verify_accuracy/<int:feature_id>', guide.FeatureEditHandler),
+spa_page_post_routes: list[Route] = [
+  Route('/guide/new', guide.FeatureCreateHandler),
+  Route('/guide/edit/<int:feature_id>', guide.FeatureEditHandler),
+  Route('/guide/stage/<int:feature_id>/<int:stage_id>',
+      guide.FeatureEditHandler),
+  Route('/guide/editall/<int:feature_id>', guide.FeatureEditHandler),
+  Route('/guide/verify_accuracy/<int:feature_id>', guide.FeatureEditHandler),
 ]
 
-mpa_page_routes: list[tuple] = [
-    ('/admin/subscribers', blink_handler.SubscribersHandler),
-    ('/admin/blink', blink_handler.BlinkHandler),
-    ('/admin/users/new', users.UserListHandler),
+mpa_page_routes: list[Route] = [
+    Route('/admin/subscribers', blink_handler.SubscribersHandler),
+    Route('/admin/blink', blink_handler.BlinkHandler),
+    Route('/admin/users/new', users.UserListHandler),
 
-    ('/admin/features/launch/<int:feature_id>',
-     intentpreview.IntentEmailPreviewHandler),
-    ('/admin/features/launch/<int:feature_id>/<int:stage_id>',
-     intentpreview.IntentEmailPreviewHandler),
+    Route('/admin/features/launch/<int:feature_id>',
+        intentpreview.IntentEmailPreviewHandler),
+    Route('/admin/features/launch/<int:feature_id>/<int:stage_id>',
+        intentpreview.IntentEmailPreviewHandler),
 
     # Note: The only requests being made now hit /features.json and
     # /features_v2.json, but both of those cause version == 2.
     # There was logic to accept another version value, but it it was not used.
-    (r'/features.json', featurelist.FeaturesJsonHandler),
-    (r'/features_v2.json', featurelist.FeaturesJsonHandler),
+    Route(r'/features.json', featurelist.FeaturesJsonHandler),
+    Route(r'/features_v2.json', featurelist.FeaturesJsonHandler),
 
-    ('/features', featurelist.FeatureListHandler),
-    ('/features/<int:feature_id>', featurelist.FeatureListHandler),
-    ('/features.xml', basehandlers.ConstHandler,
-     {'template_path': 'farewell-rss.xml'}),
-    ('/samples', basehandlers.ConstHandler,
-     {'template_path': 'farewell-samples.html'}),
+    Route('/features', featurelist.FeatureListHandler),
+    Route('/features/<int:feature_id>', featurelist.FeatureListHandler),
+    Route('/features.xml', basehandlers.ConstHandler,
+        defaults={'template_path': 'farewell-rss.xml'}),
+    Route('/samples', basehandlers.ConstHandler,
+        defaults={'template_path': 'farewell-samples.html'}),
 
-    ('/omaha_data', metrics.OmahaDataHandler),
+    Route('/omaha_data', metrics.OmahaDataHandler),
 ]
 
-internals_routes: list[tuple] = [
-  ('/cron/metrics', fetchmetrics.YesterdayHandler),
-  ('/cron/histograms', fetchmetrics.HistogramsHandler),
-  ('/cron/update_blink_components', fetchmetrics.BlinkComponentHandler),
-  ('/cron/export_backup', data_backup.BackupExportHandler),
-  ('/cron/send_accuracy_notifications', reminders.FeatureAccuracyHandler),
-  ('/cron/send_prepublication', reminders.PrepublicationHandler),
-  ('/cron/warn_inactive_users', notifier.NotifyInactiveUsersHandler),
-  ('/cron/remove_inactive_users', inactive_users.RemoveInactiveUsersHandler),
-  ('/cron/write_standard_maturity', deprecate_field.WriteStandardMaturityHandler),
-  ('/cron/reindex_all', search_fulltext.ReindexAllFeatures),
+internals_routes: list[Route] = [
+  Route('/cron/metrics', fetchmetrics.YesterdayHandler),
+  Route('/cron/histograms', fetchmetrics.HistogramsHandler),
+  Route('/cron/update_blink_components', fetchmetrics.BlinkComponentHandler),
+  Route('/cron/export_backup', data_backup.BackupExportHandler),
+  Route('/cron/send_accuracy_notifications', reminders.FeatureAccuracyHandler),
+  Route('/cron/send_prepublication', reminders.PrepublicationHandler),
+  Route('/cron/warn_inactive_users', notifier.NotifyInactiveUsersHandler),
+  Route('/cron/remove_inactive_users',
+      inactive_users.RemoveInactiveUsersHandler),
+  Route('/cron/write_standard_maturity',
+      deprecate_field.WriteStandardMaturityHandler),
+  Route('/cron/reindex_all', search_fulltext.ReindexAllFeatures),
 
-  ('/admin/find_stop_words', search_fulltext.FindStopWords),
+  Route('/admin/find_stop_words', search_fulltext.FindStopWords),
 
-  ('/tasks/email-subscribers', notifier.FeatureChangeHandler),
-  ('/tasks/detect-intent', detect_intent.IntentEmailHandler),
+  Route('/tasks/email-subscribers', notifier.FeatureChangeHandler),
+  Route('/tasks/detect-intent', detect_intent.IntentEmailHandler),
 
-  ('/admin/schema_migration_delete_entities', schema_migration.DeleteNewEntities),
-  ('/admin/schema_migration_comment_activity', schema_migration.MigrateCommentsToActivities),
-  ('/admin/schema_migration_write_entities', schema_migration.MigrateEntities),
-  ('/admin/schema_migration_approval_vote', schema_migration.MigrateApprovalsToVotes),
-  ('/admin/schema_migration_gate_status', schema_migration.EvaluateGateStatus),
-  ('/admin/schema_migration_updated_field', schema_migration.WriteUpdatedField),
+  Route('/admin/schema_migration_delete_entities',
+      schema_migration.DeleteNewEntities),
+  Route('/admin/schema_migration_comment_activity',
+      schema_migration.MigrateCommentsToActivities),
+  Route('/admin/schema_migration_write_entities',
+      schema_migration.MigrateEntities),
+  Route('/admin/schema_migration_approval_vote',
+      schema_migration.MigrateApprovalsToVotes),
+  Route('/admin/schema_migration_gate_status',
+      schema_migration.EvaluateGateStatus),
+  Route('/admin/schema_migration_updated_field',
+      schema_migration.WriteUpdatedField),
 ]
 
 

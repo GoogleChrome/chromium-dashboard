@@ -37,11 +37,10 @@ class MainTest(testing_config.CustomTestCase):
 class ConstTemplateTest(testing_config.CustomTestCase):
 
   def check_template(self, route):
-    request_path, handler_class, defaults = route
-    handler = handler_class()
+    handler = route.handler_class()
 
-    with test_app.test_request_context(request_path):
-      template_data = handler.get_template_data(**defaults)
+    with test_app.test_request_context(route.path):
+      template_data = handler.get_template_data(**route.defaults)
       full_template_path = handler.get_template_path(template_data)
       template_text = handler.render(template_data, full_template_path)
 
@@ -51,7 +50,7 @@ class ConstTemplateTest(testing_config.CustomTestCase):
   def test_const_templates(self):
     """All the ConstHandler instances render valid HTML."""
     for route in main.mpa_page_routes:
-      if (route[1] == basehandlers.ConstHandler and
-          not route[0].endswith('.xml')):
-        with self.subTest(path=route[0]):
+      if (route.handler_class == basehandlers.ConstHandler and
+          not route.path.endswith('.xml')):
+        with self.subTest(path=route.path):
           self.check_template(route)
