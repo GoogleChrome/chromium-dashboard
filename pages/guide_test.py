@@ -24,7 +24,7 @@ from google.cloud import ndb  # type: ignore
 from framework import rediscache
 from internals import core_enums
 from internals.core_models import Feature, FeatureEntry, MilestoneSet, Stage
-from internals.review_models import Gate
+from internals.review_models import Activity, Gate
 from pages import guide
 
 
@@ -114,13 +114,14 @@ class FeatureEditHandlerTest(testing_config.CustomTestCase):
     self.feature_1.put()
     self.stage = core_enums.INTENT_INCUBATE  # Shows first form
 
-    self.feature_entry_1 = FeatureEntry(
+    self.fe_1 = FeatureEntry(
         id=self.feature_1.key.integer_id(), name='feature one',
         summary='sum', owner_emails=['user1@google.com'], category=1,
-        standard_maturity=1, web_dev_views=1, impl_status_chrome=1)
-    self.feature_entry_1.put()
+        standard_maturity=1, ff_views=1, safari_views=1, web_dev_views=1,
+        impl_status_chrome=1)
+    self.fe_1.put()
 
-    feature_id = self.feature_1.key.integer_id()
+    feature_id = self.fe_1.key.integer_id()
     # Shipping stage is not created, and should be created on edit.
     stage_types = [core_enums.STAGE_BLINK_INCUBATE,
         core_enums.STAGE_BLINK_PROTOTYPE,
@@ -139,8 +140,8 @@ class FeatureEditHandlerTest(testing_config.CustomTestCase):
 
   def tearDown(self):
     self.feature_1.key.delete()
-    self.feature_entry_1.key.delete()
-    for stage in Stage.query().fetch():
+    self.fe_1.key.delete()
+    for stage in Stage.query():
       stage.key.delete()
 
   def test_touched(self):
@@ -225,7 +226,7 @@ class FeatureEditHandlerTest(testing_config.CustomTestCase):
             'feature_type': '1'
         }):
       actual_response = self.handler.process_post_data(
-          feature_id=self.feature_1.key.integer_id(), stage_id=self.stage)
+          feature_id=self.fe_1.key.integer_id(), stage_id=self.stage)
 
     self.assertEqual('302 FOUND', actual_response.status)
     location = actual_response.headers['location']

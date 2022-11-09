@@ -19,7 +19,7 @@ from datetime import datetime, timedelta
 import collections
 import logging
 import os
-from typing import Optional
+from typing import Any, Optional
 import urllib
 
 from framework import permissions
@@ -34,22 +34,28 @@ from framework import users
 import settings
 from internals import approval_defs
 from internals import core_enums
-from internals.core_models import Feature, FeatureEntry
+from internals.core_models import Feature, FeatureEntry, MilestoneSet, Stage
 from internals.user_models import (
     AppUser, BlinkComponent, FeatureOwner, UserPref)
 
 
-def format_email_body(is_update, feature, changes):
+def format_email_body(
+    is_update: bool, fe: FeatureEntry, fe_stages: dict[int, Stage],
+    changes: list[dict[str, Any]]) -> str:
   """Return an HTML string for a notification email body."""
-  if feature.shipped_milestone:
-    milestone_str = feature.shipped_milestone
-  elif feature.shipped_milestone is None and feature.shipped_android_milestone:
-    milestone_str = '%s (android)' % feature.shipped_android_milestone
-  else:
-    milestone_str = 'not yet assigned'
+
+  stage_type = core_enums.STAGE_TYPES_SHIPPING[fe.feature_type] or 0
+  ship_milestones: MilestoneSet | None = fe_stages[stage_type].milestones
+  milestone_str = 'not yet assigned'
+  if ship_milestones is not None:
+    if ship_milestones.desktop_first:
+      milestone_str = ship_milestones.desktop_first
+    elif (ship_milestones.desktop_first is None and
+        ship_milestones.android_first is not None):
+      milestone_str = f'{ship_milestones.android_first} (android)'
 
   moz_link_urls = [
-      link for link in feature.doc_links
+      link for link in fe.doc_links
       if urllib.parse.urlparse(link).hostname == 'developer.mozilla.org']
 
   formatted_changes = ''
@@ -65,12 +71,12 @@ def format_email_body(is_update, feature, changes):
     formatted_changes = '<li>None</li>'
 
   body_data = {
-      'feature': feature,
-      'creator_email': feature.created_by.email(),
-      'updater_email': feature.updated_by.email(),
-      'id': feature.key.integer_id(),
+      'feature': fe,
+      'creator_email': fe.creator_email,
+      'updater_email': fe.updater_email,
+      'id': fe.key.integer_id(),
       'milestone': milestone_str,
-      'status': core_enums.IMPLEMENTATION_STATUS[feature.impl_status_chrome],
+      'status': core_enums.IMPLEMENTATION_STATUS[fe.impl_status_chrome],
       'formatted_changes': formatted_changes,
       'moz_link_urls': moz_link_urls,
   }
@@ -119,16 +125,18 @@ WEBVIEW_RULE_ADDRS = ['webview-leads-external@google.com']
 
 
 def apply_subscription_rules(
-    feature: Feature, changes: list) -> dict[str, list[str]]:
+    fe: FeatureEntry, fe_stages: dict[int, Stage],
+    changes: list) -> dict[str, list[str]]:
   """Return {"reason": [addrs]} for users who set up rules."""
   # Note: for now this is hard-coded, but it will eventually be
   # configurable through some kind of user preference.
   changed_field_names = {c['prop_name'] for c in changes}
   results: dict[str, list[str]] = {}
-
+  stage_type = core_enums.STAGE_TYPES_SHIPPING[fe.feature_type] or 0
+  ship_stage = fe_stages[stage_type]
   # Check if feature has some other milestone set, but not webview.
-  if (feature.shipped_android_milestone and
-      not feature.shipped_webview_milestone):
+  if (ship_stage.milestones.android_first and
+      not ship_stage.milestones.webview_first):
     milestone_fields = ['shipped_android_milestone']
     if not changed_field_names.isdisjoint(milestone_fields):
       results[WEBVIEW_RULE_REASON] = WEBVIEW_RULE_ADDRS
@@ -136,7 +144,7 @@ def apply_subscription_rules(
   return results
 
 
-def make_email_tasks(feature: Feature, is_update: bool=False,
+def make_email_tasks(fe: FeatureEntry, is_update: bool=False,
     changes: Optional[list]=None):
   """Return a list of task dicts to notify users of feature changes."""
   if changes is None:
@@ -146,26 +154,28 @@ def make_email_tasks(feature: Feature, is_update: bool=False,
       FeatureOwner.watching_all_features == True).fetch(None)
   watcher_emails: list[str] = [watcher.email for watcher in watchers]
 
-  email_html = format_email_body(is_update, feature, changes)
+  fe_stages = Stage.get_feature_stages(fe.key.integer_id())
+
+  email_html = format_email_body(is_update, fe, fe_stages, changes)
   if is_update:
-    subject = 'updated feature: %s' % feature.name
-    triggering_user_email = feature.updated_by.email()
+    subject = 'updated feature: %s' % fe.name
+    triggering_user_email = fe.updater_email
   else:
-    subject = 'new feature: %s' % feature.name
-    triggering_user_email = feature.created_by.email()
+    subject = 'new feature: %s' % fe.name
+    triggering_user_email = fe.creator_email
 
   addr_reasons: dict[str, list[str]] = collections.defaultdict(list)
 
   accumulate_reasons(
-    addr_reasons, feature.owner,
+    addr_reasons, fe.owner_emails,
     'You are listed as an owner of this feature'
   )
   accumulate_reasons(
-    addr_reasons, feature.editors,
+    addr_reasons, fe.editor_emails,
     'You are listed as an editor of this feature'
   )
   accumulate_reasons(
-    addr_reasons, feature.cc_recipients,
+    addr_reasons, fe.cc_emails,
     'You are CC\'d on this feature'
   )
   accumulate_reasons(
@@ -173,7 +183,7 @@ def make_email_tasks(feature: Feature, is_update: bool=False,
       'You are watching all feature changes')
 
   # There will always be at least one component.
-  for component_name in feature.blink_components:
+  for component_name in fe.blink_components:
     component = BlinkComponent.get_by_name(component_name)
     if not component:
       logging.warning('Blink component "%s" not found.'
@@ -187,11 +197,11 @@ def make_email_tasks(feature: Feature, is_update: bool=False,
     accumulate_reasons(
         addr_reasons, subscriber_emails,
         'You subscribe to this feature\'s component')
-  starrers = FeatureStar.get_feature_starrers(feature.key.integer_id())
+  starrers = FeatureStar.get_feature_starrers(fe.key.integer_id())
   starrer_emails: list[str] = [user.email for user in starrers]
   accumulate_reasons(addr_reasons, starrer_emails, 'You starred this feature')
 
-  rule_results = apply_subscription_rules(feature, changes)
+  rule_results = apply_subscription_rules(fe, fe_stages, changes)
   for reason, sub_addrs in rule_results.items():
     accumulate_reasons(addr_reasons, sub_addrs, reason)
 
@@ -235,14 +245,14 @@ class FeatureStar(ndb.Model):
     if feature.star_count < 0:
       logging.error('count would be < 0: %r', (email, feature_id, starred))
       return
-    feature.put(notify=False)
+    feature.put()
 
     feature_entry = FeatureEntry.get_by_id(feature_id)
     feature_entry.star_count += 1 if starred else -1
     if feature_entry.star_count < 0:
       logging.error('count would be < 0: %r', (email, feature_id, starred))
       return
-    feature_entry.put()  # And, do not call notify.
+    feature_entry.put()
 
   @classmethod
   def get_user_stars(self, email):
@@ -355,10 +365,9 @@ class FeatureChangeHandler(basehandlers.FlaskHandler):
     # Email feature subscribers if the feature exists and there were
     # actually changes to it.
     # Load feature directly from NDB so as to never get a stale cached copy.
-    feature = Feature.get_by_id(feature['id'])
-    if feature and (is_update and len(changes) or not is_update):
-      email_tasks = make_email_tasks(
-          feature, is_update=is_update, changes=changes)
+    fe = FeatureEntry.get_by_id(feature['id'])
+    if fe and (is_update and len(changes) or not is_update):
+      email_tasks = make_email_tasks(fe, is_update=is_update, changes=changes)
       send_emails(email_tasks)
 
     return {'message': 'Done'}

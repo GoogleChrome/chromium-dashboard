@@ -16,14 +16,15 @@
 from datetime import datetime
 import logging
 from typing import Any, Optional
-from google.cloud import ndb  # type: ignore
+from google.cloud import ndb
+import requests  # type: ignore
 
 # Appengine imports.
 from framework import rediscache
 
 from framework import basehandlers
 from framework import permissions
-from internals import core_enums
+from internals import core_enums, notifier_helpers
 from internals.core_models import Feature, FeatureEntry, MilestoneSet, Stage
 from internals.review_models import Gate, Vote
 from internals import processes
@@ -123,8 +124,96 @@ class FeatureCreateHandler(basehandlers.FlaskHandler):
         gate.put()
 
 
-
 class FeatureEditHandler(basehandlers.FlaskHandler):
+
+  # Field name, data type
+  EXISTING_FIELDS: list[tuple[str, str]] = [
+      # impl_status_chrome and intent_stage handled separately.
+      ('spec_link', 'link'),
+      ('standard_maturity', 'int'),
+      ('api_spec', 'bool'),
+      ('spec_mentors', 'emails'),
+      ('security_review_status', 'int'),
+      ('privacy_review_status', 'int'),
+      ('initial_public_proposal_url', 'link'),
+      ('explainer_links', 'links'),
+      ('bug_url', 'link'),
+      ('launch_bug_url', 'link'),
+      ('anticipated_spec_changes', 'str'),
+      ('requires_embedder_support', 'bool'),
+      ('devtrial_instructions', 'link'),
+      ('flag_name', 'str'),
+      ('owner', 'emails'),
+      ('editors', 'emails'),
+      ('cc_recipients', 'emails'),
+      ('doc_links', 'links'),
+      ('measurement', 'str'),
+      ('sample_links', 'links'),
+      ('search_tags', 'split_str'),
+      ('blink_components', 'split_str'),
+      ('devrel', 'emails'),
+      ('category', 'int'),
+      ('name', 'str'),
+      ('summary', 'str'),
+      ('motivation', 'str'),
+      ('interop_compat_risks', 'str'),
+      ('ergonomics_risks', 'str'),
+      ('activation_risks', 'str'),
+      ('security_risks', 'str'),
+      ('debuggability', 'str'),
+      ('all_platforms', 'bool'),
+      ('all_platforms_descr', 'str'),
+      ('wpt', 'bool'),
+      ('wpt_descr', 'str'),
+      ('ff_views', 'int'),
+      ('ff_views_link', 'link'),
+      ('ff_views_notes', 'str'),
+      ('safari_views', 'int'),
+      ('safari_views_link', 'link'),
+      ('safari_views_notes', 'str'),
+      ('web_dev_views', 'int'),
+      ('web_dev_views_link', 'link'),
+      ('web_dev_views_notes', 'str'),
+      ('other_views_notes', 'str'),
+      ('prefixed', 'bool'),
+      ('non_oss_deps', 'str'),
+      ('tag_review', 'str'),
+      ('tag_review_status', 'int'),
+      ('webview_risks', 'str'),
+      ('comments', 'str'),
+      ('ongoing_constraints', 'str')]
+
+  # Old field name, new field name
+  RENAMED_FIELD_MAPPING: dict[str, str] = {
+      'owner': 'owner_emails',
+      'editors': 'editor_emails',
+      'cc_recipients': 'cc_emails',
+      'devrel': 'devrel_emails',
+      'spec_mentors': 'spec_mentor_emails',
+      'comments': 'feature_notes',
+      'ready_for_trial_url': 'announcement_url'}
+
+  # Field name, data type
+  STAGE_FIELDS: list[tuple[str, str]] = [
+      ('intent_to_implement_url', 'link'),
+      ('intent_to_ship_url', 'link'),
+      ('ready_for_trial_url', 'link'),
+      ('intent_to_experiment_url', 'link'),
+      ('intent_to_extend_experiment_url', 'link'),
+      ('origin_trial_feedback_url', 'link'),
+      ('finch_url', 'link'),
+      ('experiment_goals', 'str'),
+      ('experiment_risks', 'str'),
+      ('experiment_extension_reason', 'str')]
+
+  CHECKBOX_FIELDS: frozenset[str] = frozenset([
+      'accurate_as_of', 'unlisted', 'api_spec', 'all_platforms',
+      'wpt', 'requires_embedder_support', 'prefixed'])
+  
+  SELECT_FIELDS: frozenset[str] = frozenset([
+      'category', 'intent_stage', 'standard_maturity', 'security_review_status',
+      'privacy_review_status', 'tag_review_status', 'safari_views', 'ff_views',
+      'web_dev_views', 'blink_components', 'impl_status_chrome'])
 
   def touched(self, param_name: str) -> bool:
     """Return True if the user edited the specified field."""
@@ -135,9 +224,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
 
     # For now, checkboxes are always considered "touched", if they are
     # present on the form.
-    checkboxes = ['accurate_as_of', 'unlisted', 'api_spec',
-      'all_platforms', 'wpt', 'requires_embedder_support', 'prefixed']
-    if param_name in checkboxes:
+    if param_name in self.CHECKBOX_FIELDS:
       form_fields_str = self.form.get('form_fields')
       if form_fields_str:
         form_fields = [field_name.strip()
@@ -148,19 +235,40 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
 
     # For now, selects are considered "touched", if they are
     # present on the form and are not empty strings.
-    selects = ['category', 'intent_stage', 'standard_maturity',
-        'security_review_status', 'privacy_review_status', 'tag_review_status',
-        'safari_views', 'ff_views', 'web_dev_views', 'blink_components',
-        'impl_status_chrome']
-    if param_name in selects:
-      return self.form.get(param_name)
+    if param_name in self.SELECT_FIELDS:
+      return bool(self.form.get(param_name))
 
     # See TODO at top of this method.
     return param_name in self.form
 
-  def process_post_data(self, **kwargs):
+  def _get_field_val(self, field: str, field_type: str) -> Any:
+    """Get the form value of a given field name."""
+    if field_type == 'int':
+      return self.parse_int(field)
+    elif field_type == 'link':
+      return self.parse_link(field)
+    elif field_type == 'links':
+      return self.parse_links(field)
+    elif field_type == 'str':
+      return self.form.get(field)
+    elif field_type == 'split_str':
+      val = self.split_input(field, delim=',')
+      if field == 'blink_components' and len(val) == 0:
+        return [settings.DEFAULT_COMPONENT]
+      return val
+    elif field_type == 'bool':
+      return self.form.get(field) == 'on'
+    raise ValueError(f'Unknown field data type: {field_type}')
+
+  def _add_changed_field(self, fe: FeatureEntry, field: str, new_val: Any,
+      changed_fields: list[tuple[str, Any, Any]]) -> None:
+    """Add values to the list of changed fields if the values differ."""
+    old_val = getattr(fe, field)
+    if new_val != old_val:
+      changed_fields.append((field, old_val, new_val))
+
+  def process_post_data(self, **kwargs) -> requests.Response:
     feature_id = kwargs.get('feature_id', None)
-    intent_stage_id = kwargs.get('stage_id', 0)
     # Validate the user has edit permissions and redirect if needed.
     redirect_resp = permissions.validate_feature_edit_permission(
         self, feature_id)
@@ -170,434 +278,101 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
     if feature_id:
       # Load feature directly from NDB so as to never get a stale cached copy.
       feature: Feature = Feature.get_by_id(feature_id)
-      feature_entry: FeatureEntry = FeatureEntry.get_by_id(feature_id)
-      if feature_entry is None:
+      fe: FeatureEntry = FeatureEntry.get_by_id(feature_id)
+      if fe is None:
         self.abort(404, msg='Feature not found')
-      else:
-        feature.stash_values()
 
     logging.info('POST is %r', self.form)
 
-    update_items = []
-    stage_update_items = []
+    stage_update_items: list[tuple[str, Any]] = []
+    changed_fields: list[tuple[str, Any, Any]] = []
 
-    if self.touched('spec_link'):
-      feature.spec_link = self.parse_link('spec_link')
-      update_items.append(('spec_link', self.parse_link('spec_link')))
+    for field, field_type in self.EXISTING_FIELDS:
+      if self.touched(field):
+        field_val = self._get_field_val(field, field_type)
+        self._add_changed_field(fe, field, field_val, changed_fields)
+        setattr(feature, field, field_val)
+        setattr(fe,
+            self.RENAMED_FIELD_MAPPING.get(field, field), field_val)
 
-    if self.touched('standard_maturity'):
-      feature.standard_maturity = self.parse_int('standard_maturity')
-      update_items.append(('standard_maturity',
-          self.parse_int('standard_maturity')))
-
-    if self.touched('api_spec'):
-      feature.api_spec = self.form.get('api_spec') == 'on'
-      update_items.append(('api_spec', self.form.get('api_spec') == 'on'))
-
-    if self.touched('spec_mentors'):
-      feature.spec_mentors = self.split_emails('spec_mentors')
-      update_items.append(('spec_mentor_emails',
-          self.split_emails('spec_mentors')))
-
-    if self.touched('security_review_status'):
-      feature.security_review_status = self.parse_int('security_review_status')
-      update_items.append(('security_review_status',
-          self.parse_int('security_review_status')))
-
-    if self.touched('privacy_review_status'):
-      feature.privacy_review_status = self.parse_int('privacy_review_status')
-      update_items.append(('privacy_review_status',
-          self.parse_int('privacy_review_status')))
-
-    if self.touched('initial_public_proposal_url'):
-      feature.initial_public_proposal_url = self.parse_link(
-          'initial_public_proposal_url')
-      update_items.append(('initial_public_proposal_url',
-          self.parse_link('initial_public_proposal_url')))
-
-    if self.touched('explainer_links'):
-      feature.explainer_links = self.parse_links('explainer_links')
-      update_items.append(('explainer_links',
-          self.parse_links('explainer_links')))
-
-    if self.touched('bug_url'):
-      feature.bug_url = self.parse_link('bug_url')
-      update_items.append(('bug_url', self.parse_link('bug_url')))
-    if self.touched('launch_bug_url'):
-      feature.launch_bug_url = self.parse_link('launch_bug_url')
-      update_items.append(('launch_bug_url', self.parse_link('launch_bug_url')))
-
-    if self.touched('intent_to_implement_url'):
-      feature.intent_to_implement_url = self.parse_link(
-          'intent_to_implement_url')
-      stage_update_items.append(('intent_to_implement_url', self.parse_link(
-          'intent_to_implement_url')))
-
-    if self.touched('intent_to_ship_url'):
-      feature.intent_to_ship_url = self.parse_link(
-          'intent_to_ship_url')
-      stage_update_items.append(('intent_to_ship_url',
-          self.parse_link('intent_to_ship_url')))
-
-    if self.touched('ready_for_trial_url'):
-      feature.ready_for_trial_url = self.parse_link(
-          'ready_for_trial_url')
-      stage_update_items.append(('announcement_url',
-          self.parse_link('ready_for_trial_url')))
-
-    if self.touched('intent_to_experiment_url'):
-      feature.intent_to_experiment_url = self.parse_link(
-          'intent_to_experiment_url')
-      stage_update_items.append(('intent_to_experiment_url',
-          self.parse_link('intent_to_experiment_url')))
-
-    if self.touched('intent_to_extend_experiment_url'):
-      feature.intent_to_extend_experiment_url = self.parse_link(
-          'intent_to_extend_experiment_url')
-      stage_update_items.append(('intent_to_extend_experiment_url',
-          self.parse_link('intent_to_extend_experiment_url')))
-
-    if self.touched('origin_trial_feedback_url'):
-      feature.origin_trial_feedback_url = self.parse_link(
-          'origin_trial_feedback_url')
-      stage_update_items.append(('origin_trial_feedback_url',
-          self.parse_link('origin_trial_feedback_url')))
-
-    if self.touched('anticipated_spec_changes'):
-      feature.anticipated_spec_changes = self.form.get(
-          'anticipated_spec_changes')
-      update_items.append(('anticipated_spec_changes',
-          self.form.get('anticipated_spec_changes')))
-
-    if self.touched('finch_url'):
-      feature.finch_url = self.parse_link('finch_url')
-      stage_update_items.append(('finch_url', self.parse_link('finch_url')))
-
-    if self.touched('i2e_lgtms'):
-      feature.i2e_lgtms = self.split_emails('i2e_lgtms')
-
-    if self.touched('i2s_lgtms'):
-      feature.i2s_lgtms = self.split_emails('i2s_lgtms')
-
-    # Cast incoming milestones to ints.
-    # TODO(jrobbins): Consider supporting milestones that are not ints.
-    if self.touched('shipped_milestone'):
-      feature.shipped_milestone = self.parse_int('shipped_milestone')
-      stage_update_items.append(('shipped_milestone',
-          self.parse_int('shipped_milestone')))
-
-    if self.touched('shipped_android_milestone'):
-      feature.shipped_android_milestone = self.parse_int(
-          'shipped_android_milestone')
-      stage_update_items.append(('shipped_android_milestone',
-          self.parse_int('shipped_android_milestone')))
-
-    if self.touched('shipped_ios_milestone'):
-      feature.shipped_ios_milestone = self.parse_int('shipped_ios_milestone')
-      stage_update_items.append(('shipped_ios_milestone',
-          self.parse_int('shipped_ios_milestone')))
-
-    if self.touched('shipped_webview_milestone'):
-      feature.shipped_webview_milestone = self.parse_int(
-          'shipped_webview_milestone')
-      stage_update_items.append(('shipped_webview_milestone',
-          self.parse_int('shipped_webview_milestone')))
-
-    if self.touched('ot_milestone_desktop_start'):
-      feature.ot_milestone_desktop_start = self.parse_int(
-          'ot_milestone_desktop_start')
-      stage_update_items.append(('ot_milestone_desktop_start',
-          self.parse_int('ot_milestone_desktop_start')))
-    if self.touched('ot_milestone_desktop_end'):
-      feature.ot_milestone_desktop_end = self.parse_int(
-          'ot_milestone_desktop_end')
-      stage_update_items.append(('ot_milestone_desktop_end',
-          self.parse_int('ot_milestone_desktop_end')))
-
-    if self.touched('ot_milestone_android_start'):
-      feature.ot_milestone_android_start = self.parse_int(
-          'ot_milestone_android_start')
-      stage_update_items.append(('ot_milestone_android_start',
-          self.parse_int('ot_milestone_android_start')))
-    if self.touched('ot_milestone_android_end'):
-      feature.ot_milestone_android_end = self.parse_int(
-          'ot_milestone_android_end')
-      stage_update_items.append(('ot_milestone_android_end',
-          self.parse_int('ot_milestone_android_end')))
-
-    if self.touched('ot_milestone_webview_start'):
-      feature.ot_milestone_webview_start = self.parse_int(
-          'ot_milestone_webview_start')
-      stage_update_items.append(('ot_milestone_webview_start',
-          self.parse_int('ot_milestone_webview_start')))
-    if self.touched('ot_milestone_webview_end'):
-      feature.ot_milestone_webview_end = self.parse_int(
-          'ot_milestone_webview_end')
-      stage_update_items.append(('ot_milestone_webview_end',
-          self.parse_int('ot_milestone_webview_end')))
-
-    if self.touched('requires_embedder_support'):
-      feature.requires_embedder_support = (
-          self.form.get('requires_embedder_support') == 'on')
-      update_items.append(('requires_embedder_support',
-          self.form.get('requires_embedder_support') == 'on'))
-
-    if self.touched('devtrial_instructions'):
-      feature.devtrial_instructions = self.parse_link('devtrial_instructions')
-      update_items.append(('devtrial_instructions',
-          self.parse_link('devtrial_instructions')))
-
-    if self.touched('dt_milestone_desktop_start'):
-      feature.dt_milestone_desktop_start = self.parse_int(
-          'dt_milestone_desktop_start')
-      stage_update_items.append(('dt_milestone_desktop_start',
-          self.parse_int('dt_milestone_desktop_start')))
-
-    if self.touched('dt_milestone_android_start'):
-      feature.dt_milestone_android_start = self.parse_int(
-          'dt_milestone_android_start')
-      stage_update_items.append(('dt_milestone_android_start',
-          self.parse_int('dt_milestone_android_start')))
-
-    if self.touched('dt_milestone_ios_start'):
-      feature.dt_milestone_ios_start = self.parse_int(
-          'dt_milestone_ios_start')
-      stage_update_items.append(('dt_milestone_ios_start',
-          self.parse_int('dt_milestone_ios_start')))
-
-    if self.touched('dt_milestone_webview_start'):
-      feature.dt_milestone_webview_start = self.parse_int(
-          'dt_milestone_webview_start')
-      stage_update_items.append(('dt_milestone_webview_start',
-          self.parse_int('dt_milestone_webview_start')))
-
-    if self.touched('flag_name'):
-      feature.flag_name = self.form.get('flag_name')
-      update_items.append(('flag_name', self.form.get('flag_name')))
-
-    if self.touched('owner'):
-      feature.owner = self.split_emails('owner')
-      update_items.append(('owner_emails', self.split_emails('owner')))
-
-    if self.touched('editors'):
-      feature.editors = self.split_emails('editors')
-      update_items.append(('editor_emails', self.split_emails('editors')))
-
-    if self.touched('cc_recipients'):
-      feature.cc_recipients = self.split_emails('cc_recipients')
-      update_items.append(('cc_emails', self.split_emails('cc_recipients')))
-
-    if self.touched('doc_links'):
-      feature.doc_links = self.parse_links('doc_links')
-      update_items.append(('doc_links', self.parse_links('doc_links')))
-
-    if self.touched('measurement'):
-      feature.measurement = self.form.get('measurement')
-      update_items.append(('measurement', self.form.get('measurement')))
-
-    if self.touched('sample_links'):
-      feature.sample_links = self.parse_links('sample_links')
-      update_items.append(('sample_links', self.parse_links('sample_links')))
-
-    if self.touched('search_tags'):
-      feature.search_tags = self.split_input('search_tags', delim=',')
-      update_items.append(('search_tags',
-          self.split_input('search_tags', delim=',')))
-
-    if self.touched('blink_components'):
-      feature.blink_components = (
-          self.split_input('blink_components', delim=',') or
-          [settings.DEFAULT_COMPONENT])
-      update_items.append(('blink_components', (
-          self.split_input('blink_components', delim=',') or
-          [settings.DEFAULT_COMPONENT])))
-
-    if self.touched('devrel'):
-      feature.devrel = self.split_emails('devrel')
-      update_items.append(('devrel_emails', self.split_emails('devrel')))
-
-    # intent_stage can be be set either by <select> or a checkbox
-    if self.touched('intent_stage'):
-      feature.intent_stage = int(self.form.get('intent_stage'))
-      update_items.append(('intent_stage', int(self.form.get('intent_stage'))))
-    elif self.form.get('set_stage') == 'on':
-      feature.intent_stage = intent_stage_id
-      update_items.append(('intent_stage', intent_stage_id))
-
-    if self.touched('category'):
-      feature.category = int(self.form.get('category'))
-      update_items.append(('category', int(self.form.get('category'))))
-    if self.touched('name'):
-      feature.name = self.form.get('name')
-      update_items.append(('name', self.form.get('name')))
-    if self.touched('summary'):
-      feature.summary = self.form.get('summary')
-      update_items.append(('summary', self.form.get('summary')))
-    if self.touched('motivation'):
-      feature.motivation = self.form.get('motivation')
-      update_items.append(('motivation', self.form.get('motivation')))
-
-    # impl_status_chrome can be be set either by <select> or a checkbox
+    # impl_status_chrome and intent_stage
+    # can be be set either by <select> or a checkbox.
+    impl_status_val: Optional[int] = None
     if self.touched('impl_status_chrome'):
-      feature.impl_status_chrome = int(self.form.get('impl_status_chrome'))
-      update_items.append(('impl_status_chrome',
-          int(self.form.get('impl_status_chrome'))))
-    elif self.form.get('set_impl_status') == 'on':
-      feature.impl_status_chrome = self.parse_int('impl_status_offered')
-      update_items.append(('impl_status_chrome',
-          self.parse_int('impl_status_offered')))
+      impl_status_val = self._get_field_val('impl_status_chrome', 'int')
+    elif self._get_field_val('set_impl_status', 'bool'):
+      impl_status_val = self._get_field_val('impl_status_offered', 'int')
+    if impl_status_val:
+      self._add_changed_field(
+          fe, 'impl_status_chrome', impl_status_val, changed_fields)
+      setattr(feature, 'impl_status_chrome', impl_status_val)
+      setattr(fe, 'impl_status_chrome', impl_status_val)
 
-    if self.touched('interop_compat_risks'):
-      feature.interop_compat_risks = self.form.get('interop_compat_risks')
-      update_items.append(('interop_compat_risks',
-          self.form.get('interop_compat_risks')))
-    if self.touched('ergonomics_risks'):
-      feature.ergonomics_risks = self.form.get('ergonomics_risks')
-      update_items.append(('ergonomics_risks',
-          self.form.get('ergonomics_risks')))
-    if self.touched('activation_risks'):
-      feature.activation_risks = self.form.get('activation_risks')
-      update_items.append(('activation_risks',
-          self.form.get('activation_risks')))
-    if self.touched('security_risks'):
-      feature.security_risks = self.form.get('security_risks')
-      update_items.append(('security_risks', self.form.get('security_risks')))
-    if self.touched('debuggability'):
-      feature.debuggability = self.form.get('debuggability')
-      update_items.append(('debuggability', self.form.get('debuggability')))
-    if self.touched('all_platforms'):
-      feature.all_platforms = self.form.get('all_platforms') == 'on'
-      update_items.append(('all_platforms',
-          self.form.get('all_platforms') == 'on'))
-    if self.touched('all_platforms_descr'):
-      feature.all_platforms_descr = self.form.get('all_platforms_descr')
-      update_items.append(('all_platforms_descr',
-          self.form.get('all_platforms_descr')))
-    if self.touched('wpt'):
-      feature.wpt = self.form.get('wpt') == 'on'
-      update_items.append(('wpt', self.form.get('wpt') == 'on'))
-    if self.touched('wpt_descr'):
-      feature.wpt_descr = self.form.get('wpt_descr')
-      update_items.append(('wpt_descr', self.form.get('wpt_descr')))
-    if self.touched('ff_views'):
-      feature.ff_views = int(self.form.get('ff_views'))
-      update_items.append(('ff_views', int(self.form.get('ff_views'))))
-    if self.touched('ff_views_link'):
-      feature.ff_views_link = self.parse_link('ff_views_link')
-      update_items.append(('ff_views_link', self.parse_link('ff_views_link')))
-    if self.touched('ff_views_notes'):
-      feature.ff_views_notes = self.form.get('ff_views_notes')
-      update_items.append(('ff_views_notes', self.form.get('ff_views_notes')))
+    intent_stage_val: Optional[int] = None
+    if self.touched('intent_stage'):
+      intent_stage_val = self._get_field_val('intent_stage', 'int')
+    elif self.form.get('set_stage') == 'on':
+      intent_stage_val = kwargs.get('stage_id', 0)
+    if intent_stage_val is not None:
+      self._add_changed_field(
+          fe, 'intent_stage', intent_stage_val, changed_fields)
+      setattr(feature, 'intent_stage', impl_status_val)
+      setattr(fe, 'intent_stage', impl_status_val)
 
-    if self.touched('safari_views'):
-      feature.safari_views = int(self.form.get('safari_views'))
-      update_items.append(('safari_views', int(self.form.get('safari_views'))))
-    if self.touched('safari_views_link'):
-      feature.safari_views_link = self.parse_link('safari_views_link')
-      update_items.append(('safari_views_link',
-          self.parse_link('safari_views_link')))
-    if self.touched('safari_views_notes'):
-      feature.safari_views_notes = self.form.get('safari_views_notes')
-      update_items.append(('safari_views_notes',
-          self.form.get('safari_views_notes')))
-    if self.touched('web_dev_views'):
-      feature.web_dev_views = int(self.form.get('web_dev_views'))
-      update_items.append(('web_dev_views',
-          int(self.form.get('web_dev_views'))))
-    if self.touched('web_dev_views_link'):
-      feature.web_dev_views_link = self.parse_link('web_dev_views_link')
-      update_items.append(('web_dev_views_link',
-          self.parse_link('web_dev_views_link')))
-    if self.touched('web_dev_views_notes'):
-      feature.web_dev_views_notes = self.form.get('web_dev_views_notes')
-      update_items.append(('web_dev_views_notes',
-          self.form.get('web_dev_views_notes')))
-    if self.touched('other_views_notes'):
-      feature.other_views_notes = self.form.get('other_views_notes')
-      update_items.append(('other_views_notes',
-          self.form.get('other_views_notes')))
-    if self.touched('prefixed'):
-      feature.prefixed = self.form.get('prefixed') == 'on'
-      update_items.append(('prefixed', self.form.get('prefixed') == 'on'))
-    if self.touched('non_oss_deps'):
-      feature.non_oss_deps = self.form.get('non_oss_deps')
-      update_items.append(('non_oss_deps', self.form.get('non_oss_deps')))
+    for field, field_type in self.STAGE_FIELDS:
+      if self.touched(field):
+        field_val = self._get_field_val(field, field_type)
+        setattr(feature, field, field_val)
+        stage_update_items.append((field, field_val))
 
-    if self.touched('tag_review'):
-      feature.tag_review = self.form.get('tag_review')
-      update_items.append(('tag_review', self.form.get('tag_review')))
-    if self.touched('tag_review_status'):
-      feature.tag_review_status = self.parse_int('tag_review_status')
-      update_items.append(('tag_review_status',
-          self.parse_int('tag_review_status')))
-    if self.touched('webview_risks'):
-      feature.webview_risks = self.form.get('webview_risks')
-      update_items.append(('webview_risks', self.form.get('webview_risks')))
+    for field in MilestoneSet.MILESTONE_FIELD_MAPPING.keys():
+      if self.touched(field):
+        # TODO(jrobbins): Consider supporting milestones that are not ints.
+        field_val = self._get_field_val(field, 'int')
+        setattr(feature, field, field_val)
+        stage_update_items.append((field, field_val))
 
-    if self.touched('standardization'):
-      feature.standardization = int(self.form.get('standardization'))
+    # Update metadata fields.
+    now = datetime.now()
     if self.form.get('accurate_as_of'):
-      feature.accurate_as_of = datetime.now()
-      update_items.append(('accurate_as_of', datetime.now()))
-    if self.touched('unlisted'):
-      feature.unlisted = self.form.get('unlisted') == 'on'
-      update_items.append(('unlisted', self.form.get('unlisted') == 'on'))
-    if self.touched('comments'):
-      feature.comments = self.form.get('comments')
-      update_items.append(('feature_notes', self.form.get('comments')))
-    if self.touched('experiment_goals'):
-      feature.experiment_goals = self.form.get('experiment_goals')
-      stage_update_items.append(('experiment_goals',
-          self.form.get('experiment_goals')))
-    if self.touched('experiment_risks'):
-      feature.experiment_risks = self.form.get('experiment_risks')
-      stage_update_items.append(('experiment_risks',
-          self.form.get('experiment_risks')))
-    if self.touched('experiment_extension_reason'):
-      feature.experiment_extension_reason = self.form.get(
-          'experiment_extension_reason')
-      stage_update_items.append(('experiment_extension_reason',
-          self.form.get('experiment_extension_reason')))
-    if self.touched('ongoing_constraints'):
-      feature.ongoing_constraints = self.form.get('ongoing_constraints')
-      update_items.append(('ongoing_constraints',
-          self.form.get('ongoing_constraints')))
-
+      feature.accurate_as_of = now
+      fe.accurate_as_of = now
+    user_email = self.get_current_user().email()
     feature.updated_by = ndb.User(
-        email=self.get_current_user().email(),
+        email=user_email,
         _auth_domain='gmail.com')
-    update_items.append(('updater_email', self.get_current_user().email()))
-    update_items.append(('updated', datetime.now()))
-    key = feature.put()
+    fe.updater_email = user_email
+    fe.updated = now
 
-    # Write for new FeatureEntry entity.
-    if feature_entry:
-      for field, value in update_items:
-        setattr(feature_entry, field, value)
-      feature_entry.put()
+    key: ndb.Key = fe.put()
+    feature.put()
 
     # Write changes made to the corresponding stage type.
     if stage_update_items:
       self.update_stage_fields(feature_id, feature.feature_type,
-          stage_update_items)
+          stage_update_items, changed_fields)
 
+    notifier_helpers.notify_subscribers_and_save_amendments(
+        fe, changed_fields, notify=True)
     # Remove all feature-related cache.
     rediscache.delete_keys_with_prefix(Feature.feature_cache_prefix())
     rediscache.delete_keys_with_prefix(FeatureEntry.feature_cache_prefix())
 
     # Update full-text index.
-    if feature_entry:
-      search_fulltext.index_feature(feature_entry)
+    if fe:
+      search_fulltext.index_feature(fe)
 
     redirect_url = '/guide/edit/' + str(key.integer_id())
     return self.redirect(redirect_url)
 
   def update_stage_fields(self, feature_id: int, feature_type: int,
-      update_items: list[tuple[str, Any]]) -> None:
+      update_items: list[tuple[str, Any]],
+      changed_fields: list[tuple[str, Any, Any]]) -> None:
     # Get all existing stages associated with the feature.
     stages = Stage.get_feature_stages(feature_id)
 
-    for field, value in update_items:
+    for field, new_val in update_items:
+      field = self.RENAMED_FIELD_MAPPING.get(field, field)
       # Determine the stage type that the field should change on.
       stage_type = core_enums.STAGE_TYPES_BY_FIELD_MAPPING[field][feature_type]
       # If this feature type does not have this field, skip it
@@ -615,21 +390,28 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
       # If this field changing is a milestone, change it in the
       # MilestoneSet entity.
       if field in MilestoneSet.MILESTONE_FIELD_MAPPING:
+        old_val = None
         milestone_field = (
             MilestoneSet.MILESTONE_FIELD_MAPPING[field])
         milestoneset_entity = getattr(stage, 'milestones')
         # If the MilestoneSet entity has not been initiated, create it.
         if milestoneset_entity is None:
           milestoneset_entity = MilestoneSet()
-        setattr(milestoneset_entity, milestone_field, value)
+        old_val = getattr(milestoneset_entity, milestone_field)
+        setattr(milestoneset_entity, milestone_field, new_val)
         stage.milestones = milestoneset_entity
       # If the field starts with "intent_", it should modify the
       # more general "intent_thread_url" field.
       elif field.startswith('intent_'):
-        setattr(stage, 'intent_thread_url', value)
+        old_val = getattr(stage, 'intent_thread_url')
+        setattr(stage, 'intent_thread_url', new_val)
       # Otherwise, replace field value with attribute of the same field name.
       else:
-        setattr(stage, field, value)
+        old_val = getattr(stage, field)
+        setattr(stage, field, new_val)
+      
+      if old_val != new_val:
+        changed_fields.append((field, old_val, new_val))
 
     # Write to all the stages.
     for stage in stages.values():
