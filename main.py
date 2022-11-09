@@ -79,6 +79,7 @@ class Route:
   handler_class: Type[basehandlers.BaseHandler] = basehandlers.SPAHandler
   defaults: dict[str, Any] = field(default_factory=dict)
 
+
 metrics_chart_routes: list[Route] = [
     Route('/data/timeline/cssanimated', metricsdata.AnimatedTimelineHandler),
     Route('/data/timeline/csspopularity', metricsdata.PopularityTimelineHandler),
