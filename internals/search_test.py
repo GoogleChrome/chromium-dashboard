@@ -389,6 +389,38 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
     actual, tc = search.process_query('-browsers.webdev.view=1')
     self.assertEqual(0, len(actual))
 
+  def test_process_query__multiple_fields(self):
+    """We can can run multi-field queries."""
+
+    actual, tc = search.process_query('category=1 category=2')
+    self.assertEqual([], actual)
+
+    actual, tc = search.process_query('category=1 OR category=2')
+    self.assertEqual(2, len(actual))
+    self.assertCountEqual(
+        [f['name'] for f in actual],
+        ['feature 1', 'feature 2'])
+
+    actual, tc = search.process_query('category=1 -category=2')
+    self.assertEqual(1, len(actual))
+    self.assertEqual(actual[0]['name'], 'feature 1')
+
+    actual, tc = search.process_query('browsers.webdev.view=1 -category=2')
+    self.assertEqual(1, len(actual))
+    self.assertEqual(actual[0]['name'], 'feature 1')
+
+    actual, tc = search.process_query(
+        'browsers.webdev.view=1 -category=2 OR category=2')
+    self.assertEqual(2, len(actual))
+    self.assertCountEqual(
+        [f['name'] for f in actual],
+        ['feature 1', 'feature 2'])
+
+    actual, tc = search.process_query(
+        'browsers.webdev.view=1 -category=2 OR category=1 -category=2')
+    self.assertEqual(1, len(actual))
+    self.assertEqual(actual[0]['name'], 'feature 1')
+
   @mock.patch('logging.warning')
   def test_process_query__bad(self, mock_warn):
     """Query terms that are not valid, give warnings."""
