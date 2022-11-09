@@ -256,23 +256,18 @@ def process_query(
   # 3. Get the result of each future and combine them into a result ID set.
   logging.info('now waiting on futures')
 
-  # 3a. Process all negation operaotrs.
+  # 3a. Process all negation operations.
   feature_id_future_ops = process_negation_operations(feature_id_future_ops)
 
-  # 3b. Process the rest of operations.
-  result_id_set = None
-  for logical_op, future in feature_id_future_ops:
-    feature_ids = _resolve_promise_to_id_list(future)
-    if result_id_set is None:
-      logging.info('first term yields %r', feature_ids)
-      result_id_set = set(feature_ids)
-      continue
+  # 3b. Process all AND operations.
+  or_clauses = process_and_operations(feature_id_future_ops)
 
-    logging.info('combining result so far with %r', feature_ids)
-    result_id_set.intersection_update(feature_ids)
+  # 3c. Process all OR operations.
+  result_id_set = process_or_operations(or_clauses)
+
   result_id_list = list(result_id_set or [])
   total_count = len(result_id_list)
-  # 3b. Finish getting the total sort order.
+  # 3d. Finish getting the total sort order.
   total_order_ids = _resolve_promise_to_id_list(total_order_promise)
 
   # 4. Sort the IDs according to their position in the complete sorted list.
@@ -289,27 +284,59 @@ def process_query(
   return features_on_page, total_count
 
 
+def process_or_operations(or_clauses):
+  """ Process OR operations for all id sets."""
+  result_id_set = set()
+  for id_set in or_clauses:
+    result_id_set.update(id_set)
+  return result_id_set
+
+
+def process_and_operations(feature_id_future_ops):
+  """ Process all AND operations in between OR clauses."""
+  or_clauses = []
+
+  current_result_set = None
+  for logical_op, future in feature_id_future_ops:
+    if logical_op == 'OR' and current_result_set is not None:
+      # Add the proceeding AND result
+      or_clauses.append(current_result_set)
+      current_result_set = None
+
+    if type(future) == set:
+      feature_ids = future
+    else:
+      feature_ids = _resolve_promise_to_id_list(future)
+
+    if current_result_set is None:
+      logging.info('first term yields %r', feature_ids)
+      current_result_set = set(feature_ids)
+      continue
+
+    logging.info('combining result so far with %r', feature_ids)
+    current_result_set.intersection_update(feature_ids)
+
+  or_clauses.append(current_result_set)
+  return or_clauses
+
+
 def process_negation_operations(feature_id_future_ops):
-  """ Turn all negation operations into one AND operation. E.g.
-  A - B - C -> A AND (ALL - B) AND (ALL - C) -> A AND (ALL - B - C).
-  """
+  """ Turn all negation operations into AND operations."""
   new_future_ops = []
-  negated_id_set = None
+  all_ids_set = None
   for logical_op, future in feature_id_future_ops:
     if logical_op != '-':
       # Skip all non-negation operations.
       new_future_ops.append((logical_op, future))
       continue
 
-    if negated_id_set is None:
-        negated_id_set = fetch_all_feature_ids_set()
+    if all_ids_set is None:
+        all_ids_set = fetch_all_feature_ids_set()
 
     feature_ids = _resolve_promise_to_id_list(future)
-    negated_id_set.difference_update(feature_ids)
+    result_set = all_ids_set.difference(feature_ids)
+    new_future_ops.append(('', result_set))
 
-  # Append the result of negation operations to the end.
-  if negated_id_set is not None:
-    new_future_ops.append(('', list(negated_id_set)))
   return new_future_ops
 
 
