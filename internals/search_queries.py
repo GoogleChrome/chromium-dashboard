@@ -57,7 +57,11 @@ def single_field_query_async(
 
   # TODO(jrobbins): Handle ":" operator as substrings for text fields.
   if (operator == '='):
-    query = query.filter(field == val)
+    val_list = str(val).split(',')
+    if len(val_list) > 1:
+      query = query.filter(field.IN(val_list))
+    else:
+      query = query.filter(field == val)
   elif (operator == '<='):
     query = query.filter(field <= val)
   elif (operator == '<'):
