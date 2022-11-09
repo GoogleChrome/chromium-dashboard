@@ -864,7 +864,7 @@ export const ALL_FIELDS = {
     label: 'Finch experiment',
     help_text: html`
       If your feature will roll out gradually via a
-      <a href="go/finch" targe="_blank">Finch experiment</a>,
+      <a href="http://go/finch" targe="_blank">Finch experiment</a>,
       link to it here.`,
   },
 
