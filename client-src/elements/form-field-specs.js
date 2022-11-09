@@ -903,7 +903,7 @@ export const ALL_FIELDS = {
 
   'debuggability': {
     type: 'textarea',
-    required: true,
+    required: false,
     label: 'Debuggability',
     help_text: html`
       Description of the DevTools debugging support for your feature.
