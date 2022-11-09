@@ -245,10 +245,14 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
     """Get the form value of a given field name."""
     if field_type == 'int':
       return self.parse_int(field)
+    elif field_type == 'bool':
+      return self.form.get(field) == 'on'
     elif field_type == 'link':
       return self.parse_link(field)
     elif field_type == 'links':
       return self.parse_links(field)
+    elif field_type == 'emails':
+      return self.split_emails(field)
     elif field_type == 'str':
       return self.form.get(field)
     elif field_type == 'split_str':
@@ -256,8 +260,6 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
       if field == 'blink_components' and len(val) == 0:
         return [settings.DEFAULT_COMPONENT]
       return val
-    elif field_type == 'bool':
-      return self.form.get(field) == 'on'
     raise ValueError(f'Unknown field data type: {field_type}')
 
   def _add_changed_field(self, fe: FeatureEntry, field: str, new_val: Any,
@@ -290,10 +292,10 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
     for field, field_type in self.EXISTING_FIELDS:
       if self.touched(field):
         field_val = self._get_field_val(field, field_type)
-        self._add_changed_field(fe, field, field_val, changed_fields)
+        new_field = self.RENAMED_FIELD_MAPPING.get(field, field)
+        self._add_changed_field(fe, new_field, field_val, changed_fields)
         setattr(feature, field, field_val)
-        setattr(fe,
-            self.RENAMED_FIELD_MAPPING.get(field, field), field_val)
+        setattr(fe, new_field, field_val)
 
     # impl_status_chrome and intent_stage
     # can be be set either by <select> or a checkbox.
