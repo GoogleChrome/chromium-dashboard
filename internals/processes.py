@@ -13,44 +13,49 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import collections
+from dataclasses import asdict, dataclass
 
 from internals import approval_defs
 from internals import core_enums
 
 
-Process = collections.namedtuple(
-    'Process',
-    'name, description, applicability, stages')
+@dataclass
+class Action:
+  name: str
+  url: str
+  prerequisites: list[str]
+
+@dataclass
+class ProgressItem:
+  name: str
+  field: str | None = None
+
 # Note: A new feature always starts with intent_stage == INTENT_NONE
 # regardless of process.  intent_stage is set to the first stage of
 # a specific process when the user clicks a "Start" button and submits
 # a form that sets intent_stage.
+@dataclass
+class ProcessStage:
+  name: str
+  description: str
+  progress_items: list[ProgressItem]
+  actions: list[Action]
+  approvals: list[approval_defs.ApprovalFieldDef]
+  incoming_stage: int
+  outgoing_stage: int
 
-
-ProcessStage = collections.namedtuple(
-    'ProcessStage',
-    'name, description, progress_items, actions, approvals, '
-    'incoming_stage, outgoing_stage')
-
-ProgressItem = collections.namedtuple(
-    'ProgressItem',
-    'name, field')
-
-Action = collections.namedtuple(
-    'Action',
-    'name, url, prerequisites')
+@dataclass
+class Process:
+  name: str
+  description: str
+  applicability: str
+  stages: list[ProcessStage]
 
 
 def process_to_dict(process):
-  """Return nested dicts for the nested namedtuples of a process."""
-  # These lines are sort of like a deep version of _asdict().
-  stages = [stage._asdict() for stage in process.stages]
-  for stage in stages:
-    stage['progress_items'] = [pi._asdict() for pi in stage['progress_items']]
-    stage['actions'] = [act._asdict() for act in stage['actions']]
-    stage['approvals'] = [appr._asdict() for appr in stage['approvals']]
-
+  """Return nested dicts for the nested dataclasses of a process."""
+  # asdict() will recursively convert any dataclass props to dicts.
+  stages = [asdict(stage) for stage in process.stages]
   process_dict = {
       'name': process.name,
       'description': process.description,
@@ -80,17 +85,17 @@ PI_EXPLAINER = ProgressItem('Explainer', 'explainer_links')
 
 PI_SPEC_LINK = ProgressItem('Spec link', 'spec_link')
 PI_SPEC_MENTOR = ProgressItem('Spec mentor', 'spec_mentors')
-PI_DRAFT_API_SPEC = ProgressItem('Draft API spec', None)
+PI_DRAFT_API_SPEC = ProgressItem('Draft API spec')
 PI_I2P_EMAIL = ProgressItem(
     'Intent to Prototype email', 'intent_to_implement_url')
 
 PI_SAMPLES = ProgressItem('Samples', 'sample_links')
-PI_DRAFT_API_OVERVIEW = ProgressItem('Draft API overview (may be on MDN)', None)
+PI_DRAFT_API_OVERVIEW = ProgressItem('Draft API overview (may be on MDN)')
 PI_REQUEST_SIGNALS = ProgressItem('Request signals', 'safari_views')
-PI_SEC_REVIEW = ProgressItem('Security review issues addressed', None)
-PI_PRI_REVIEW = ProgressItem('Privacy review issues addressed', None)
+PI_SEC_REVIEW = ProgressItem('Security review issues addressed')
+PI_PRI_REVIEW = ProgressItem('Privacy review issues addressed')
 # TODO(jrobbins): needs detector.
-PI_EXTERNAL_REVIEWS = ProgressItem('External reviews', None)
+PI_EXTERNAL_REVIEWS = ProgressItem('External reviews')
 PI_R4DT_EMAIL = ProgressItem('Ready for Trial email', 'ready_for_trial_url')
 
 PI_TAG_REQUESTED = ProgressItem('TAG review requested', 'tag_review')
@@ -98,21 +103,21 @@ PI_VENDOR_SIGNALS = ProgressItem('Vendor signals', 'safari_views')
 PI_WEB_DEV_SIGNALS = ProgressItem('Web developer signals', 'web_dev_views')
 PI_DOC_LINKS = ProgressItem('Doc links', 'doc_links')
 # TODO(jrobbins): needs detector.
-PI_DOC_SIGNOFF = ProgressItem('Documentation signoff', None)
+PI_DOC_SIGNOFF = ProgressItem('Documentation signoff')
 PI_EST_TARGET_MILESTONE = ProgressItem(
     'Estimated target milestone', 'shipped_milestone')
 
 # TODO(jrobbins): needs detector.
-PI_OT_REQUEST = ProgressItem('OT request', None)
+PI_OT_REQUEST = ProgressItem('OT request')
 # TODO(jrobbins): needs detector.
-PI_OT_AVAILABLE = ProgressItem('OT available', None)
+PI_OT_AVAILABLE = ProgressItem('OT available')
 # TODO(jrobbins): needs detector.
-PI_OT_RESULTS = ProgressItem('OT results', None)
+PI_OT_RESULTS = ProgressItem('OT results')
 PI_I2E_EMAIL = ProgressItem(
     'Intent to Experiment email', 'intent_to_experiment_url')
 PI_I2E_LGTMS = ProgressItem('One LGTM on Intent to Experiment', 'i2e_lgtms')
 
-PI_MIGRATE_INCUBATION = ProgressItem('Request to migrate incubation', None)
+PI_MIGRATE_INCUBATION = ProgressItem('Request to migrate incubation')
 PI_TAG_ADDRESSED = ProgressItem(
     'TAG review issues addressed', 'tag_review_status')
 PI_UPDATED_VENDOR_SIGNALS = ProgressItem(
@@ -128,25 +133,25 @@ PI_FINAL_VENDOR_SIGNALS = ProgressItem('Finalized vendor signals', 'safari_views
 PI_FINAL_TARGET_MILESTONE = ProgressItem(
     'Finalized target milestone', 'shipped_milestone')
 
-PI_CODE_IN_CHROMIUM = ProgressItem('Code in Chromium', None)
+PI_CODE_IN_CHROMIUM = ProgressItem('Code in Chromium')
 
-PI_PSA_EMAIL = ProgressItem('Web facing PSA email', None)
+PI_PSA_EMAIL = ProgressItem('Web facing PSA email')
 
 # TODO(jrobbins): needs detector.
-PI_DT_REQUEST = ProgressItem('DT request', None)
+PI_DT_REQUEST = ProgressItem('DT request')
 # TODO(jrobbins): needs detector.
-PI_DT_AVAILABLE = ProgressItem('DT available', None)
+PI_DT_AVAILABLE = ProgressItem('DT available')
 # TODO(jrobbins): needs detector.
-PI_REMOVAL_OF_DT = ProgressItem('Removal of DT', None)
+PI_REMOVAL_OF_DT = ProgressItem('Removal of DT')
 PI_DT_EMAIL = ProgressItem(
     'Request for Deprecation Trial email', 'intent_to_experiment_url')
 PI_DT_LGTMS = ProgressItem(
     'One LGTM on Request for Deprecation Trial', 'i2e_lgtms')
 
 # TODO(jrobbins): needs detector.
-PI_EXISTING_FEATURE = ProgressItem('Link to existing feature', None)
+PI_EXISTING_FEATURE = ProgressItem('Link to existing feature')
 
-PI_CODE_REMOVED = ProgressItem('Code removed', None)
+PI_CODE_REMOVED = ProgressItem('Code removed')
 
 
 BLINK_PROCESS_STAGES = [
