@@ -127,7 +127,7 @@ class FeatureCreateHandler(basehandlers.FlaskHandler):
 class FeatureEditHandler(basehandlers.FlaskHandler):
 
   # Field name, data type
-  EXISTING_FIELDS = [
+  EXISTING_FIELDS: list[tuple[str, str]] = [
       # impl_status_chrome and intent_stage handled separately.
       ('spec_link', 'link'),
       ('standard_maturity', 'int'),
@@ -184,7 +184,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
       ('ongoing_constraints', 'str')]
 
   # Old field name, new field name
-  RENAMED_FIELD_MAPPING = {
+  RENAMED_FIELD_MAPPING: dict[str, str] = {
       'owner': 'owner_emails',
       'editors': 'editor_emails',
       'cc_recipients': 'cc_emails',
@@ -194,7 +194,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
       'ready_for_trial_url': 'announcement_url'}
 
   # Field name, data type
-  STAGE_FIELDS = [
+  STAGE_FIELDS: list[tuple[str, str]] = [
       ('intent_to_implement_url', 'link'),
       ('intent_to_ship_url', 'link'),
       ('ready_for_trial_url', 'link'),
@@ -206,11 +206,11 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
       ('experiment_risks', 'str'),
       ('experiment_extension_reason', 'str')]
 
-  CHECKBOX_FIELDS = frozenset([
+  CHECKBOX_FIELDS: frozenset[str] = frozenset([
       'accurate_as_of', 'unlisted', 'api_spec', 'all_platforms',
       'wpt', 'requires_embedder_support', 'prefixed'])
   
-  SELECT_FIELDS = frozenset([
+  SELECT_FIELDS: frozenset[str] = frozenset([
       'category', 'intent_stage', 'standard_maturity', 'security_review_status',
       'privacy_review_status', 'tag_review_status', 'safari_views', 'ff_views',
       'web_dev_views', 'blink_components', 'impl_status_chrome'])
@@ -258,9 +258,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
       return val
     elif field_type == 'bool':
       return self.form.get(field) == 'on'
-    elif field_type == 'special':
-      return getattr(self, f'__get_{field}')()
-    raise ValueError(f"Unknown field data type: {field_type}")
+    raise ValueError(f'Unknown field data type: {field_type}')
 
   def _add_changed_field(self, fe: FeatureEntry, field: str, new_val: Any,
       changed_fields: list[tuple[str, Any, Any]]) -> None:

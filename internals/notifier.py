@@ -34,24 +34,25 @@ from framework import users
 import settings
 from internals import approval_defs
 from internals import core_enums
-from internals.core_models import Feature, FeatureEntry, Stage
+from internals.core_models import Feature, FeatureEntry, MilestoneSet, Stage
 from internals.user_models import (
     AppUser, BlinkComponent, FeatureOwner, UserPref)
 
 
 def format_email_body(
-    is_update: bool, fe: FeatureEntry,fe_stages: dict[int, Stage],
+    is_update: bool, fe: FeatureEntry, fe_stages: dict[int, Stage],
     changes: list[dict[str, Any]]) -> str:
   """Return an HTML string for a notification email body."""
+
   stage_type = core_enums.STAGE_TYPES_SHIPPING[fe.feature_type] or 0
-  ship_stage = fe_stages[stage_type]
-  shipped_milestone = ship_stage.milestones.desktop_first
-  if shipped_milestone:
-    milestone_str = shipped_milestone
-  elif shipped_milestone is None and ship_stage.milestones.android_first:
-    milestone_str = f'{ship_stage.milestones.android_first} (android)'
-  else:
-    milestone_str = 'not yet assigned'
+  ship_milestones: MilestoneSet | None = fe_stages[stage_type].milestones
+  milestone_str = 'not yet assigned'
+  if ship_milestones is not None:
+    if ship_milestones.desktop_first:
+      milestone_str = ship_milestones.desktop_first
+    elif (ship_milestones.desktop_first is None and
+        ship_milestones.android_first is not None):
+      milestone_str = f'{ship_milestones.android_first} (android)'
 
   moz_link_urls = [
       link for link in fe.doc_links

@@ -13,11 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Any
+from typing import Any, TYPE_CHECKING
 from api import converters
 from framework import cloud_tasks_helpers, users
 from internals import core_enums
 from internals import review_models
+
+if TYPE_CHECKING:
+  from internals.core_models import FeatureEntry
 
 def _get_changes_as_amendments(
     changed_fields: list[tuple[str, Any, Any]]) -> list[review_models.Amendment]:
@@ -33,7 +36,7 @@ def _get_changes_as_amendments(
           old_value=str(old_val), new_value=str(new_val)))
   return amendments
 
-def notify_feature_subscribers_of_changes(fe,
+def notify_feature_subscribers_of_changes(fe: 'FeatureEntry',
     amendments: list[review_models.Amendment]) -> None:
   """Async notifies subscribers of new features and property changes to
       features by posting to a task queue.
@@ -56,7 +59,7 @@ def notify_feature_subscribers_of_changes(fe,
   # Create task to email subscribers.
   cloud_tasks_helpers.enqueue_task('/tasks/email-subscribers', params)
 
-def notify_subscribers_and_save_amendments(fe,
+def notify_subscribers_and_save_amendments(fe: 'FeatureEntry',
     changed_fields: list[tuple[str, Any, Any]], notify: bool=True) -> None:
   """Notify subscribers of changes to FeatureEntry and save amendments."""
   amendments = _get_changes_as_amendments(changed_fields)
