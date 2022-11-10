@@ -14,7 +14,6 @@
 
 from datetime import datetime
 import json
-import logging
 from google.cloud import ndb  # type: ignore
 
 from framework.basehandlers import APIHandler
