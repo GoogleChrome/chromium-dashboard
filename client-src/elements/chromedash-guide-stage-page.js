@@ -5,6 +5,7 @@ import './chromedash-form-table';
 import './chromedash-form-field';
 import {formatFeatureForEdit, STAGE_FORMS, IMPL_STATUS_FORMS} from './form-definition';
 import {IMPLEMENTATION_STATUS} from './form-field-enums';
+import {ALL_FIELDS} from './form-field-specs';
 import {SHARED_STYLES} from '../sass/shared-css.js';
 import {FORM_STYLES} from '../sass/forms-css.js';
 
@@ -200,16 +201,22 @@ export class ChromedashGuideStagePage extends LitElement {
     `;
   }
 
+  renderOneField(formattedFeature, field) {
+    const featureJSONKey = ALL_FIELDS[field].name || field;
+    return html`
+      <chromedash-form-field
+        name=${field}
+        value=${formattedFeature[featureJSONKey]}>
+      </chromedash-form-field>
+    `;
+  }
+
   renderFeatureFormSection(formattedFeature) {
     const alreadyOnThisStage = this.stageId === this.feature.intent_stage_int;
     return html`
       <section class="stage_form">
-        ${this.featureFormFields.map((field) => html`
-          <chromedash-form-field
-            name=${field}
-            value=${formattedFeature[field]}>
-          </chromedash-form-field>
-        `)}
+        ${this.featureFormFields.map((field) => this.renderOneField(
+      formattedFeature, field))}
         <chromedash-form-field
           name="set_stage"
           value=${alreadyOnThisStage}
