@@ -344,6 +344,11 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
 
   def test_process_query__single_field(self):
     """We can can run single-field queries."""
+    actual, tc = search.process_query('')
+    self.assertEqual(2, len(actual))
+    self.assertCountEqual(
+        [f['name'] for f in actual],
+        ['feature 1', 'feature 2'])
 
     actual, tc = search.process_query('category=1')
     self.assertEqual(1, len(actual))
