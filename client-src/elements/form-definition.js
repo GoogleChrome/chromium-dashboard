@@ -311,10 +311,7 @@ const PAS_PREPARETOSHIP = [
   'launch_bug_url', 'intent_to_ship_url', 'comments',
 ];
 
-const DEPRECATION_IMPLEMENT = [
-  'deprecation_motivation', // map to name="motivation" field upon form submission
-  'spec_link', 'comments',
-];
+const DEPRECATION_IMPLEMENT = ['motivation', 'spec_link', 'comments'];
 
 // Note: Even though this is similar to another form, it is likely to change.
 // const DEPRECATION_PREPARETOSHIP = [
