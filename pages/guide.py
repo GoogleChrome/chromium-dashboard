@@ -318,8 +318,8 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
     if intent_stage_val is not None:
       self._add_changed_field(
           fe, 'intent_stage', intent_stage_val, changed_fields)
-      setattr(feature, 'intent_stage', impl_status_val)
-      setattr(fe, 'intent_stage', impl_status_val)
+      setattr(feature, 'intent_stage', intent_stage_val)
+      setattr(fe, 'intent_stage', intent_stage_val)
 
     for field, field_type in self.STAGE_FIELDS:
       if self.touched(field):
