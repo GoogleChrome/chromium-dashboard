@@ -273,6 +273,12 @@ class ChromedashFeatureDetail extends LitElement {
       return nothing;
     }
     const content = html`
+      <p class="description" style="padding: .6em">
+        <sl-button pill size="small" style="float:right"
+           href="/guide/stage/${this.feature.id}/${stage.outgoing_stage}"
+           >Edit response</sl-button>
+        ${stage.description}
+      </p>
       <section class="card">
         ${this.renderSectionFields(fields)}
       </section>
