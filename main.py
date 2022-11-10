@@ -16,7 +16,7 @@
 from dataclasses import dataclass, field
 from typing import Any, Type
 
-from api import accounts_api
+from api import accounts_api, dev_api
 from api import approvals_api
 from api import blink_components_api
 from api import channels_api
@@ -232,12 +232,17 @@ internals_routes: list[Route] = [
       schema_migration.WriteUpdatedField),
 ]
 
-
+dev_routes: list[Route] = []
+if settings.DEV_MODE:
+  dev_routes = [
+    Route('/dev/clear_entities', dev_api.ClearEntities),
+    Route('/dev/write_dev_data', dev_api.WriteDevData)
+  ]
 # All requests to the app-py3 GAE service are handled by this Flask app.
 app = basehandlers.FlaskApplication(
     __name__,
     (metrics_chart_routes + api_routes + mpa_page_routes + spa_page_routes +
-     internals_routes), spa_page_post_routes)
+     internals_routes + dev_routes), spa_page_post_routes)
 
 # TODO(jrobbins): Make the CSP handler be a class like our others.
 app.add_url_rule(

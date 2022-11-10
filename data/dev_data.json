@@ -1,0 +1,166 @@
+{
+  "feature_entries": [
+    {
+      "id": 1000,
+      "created": "2013-02-01",
+      "updated": "2013-04-01",
+      "accurate_as_of": "2013-04-01",
+      "creator_email": "owner_1@example.com",
+      "updater_email": "editor_1@example.com",
+      "owner_emails": [
+        "owner_1@example.com",
+        "owner_2@example.com"
+      ],
+      "editor_emails": [
+        "editor_1@example.com"
+      ],
+      "cc_emails": [
+        "user_1@example.com"
+      ],
+      "unlisted": false,
+      "deleted": false,
+      "name": "The First Feature Created",
+      "summary": "This ancient feature is one for the history books.",
+      "category": 1,
+      "blink_components": [
+        "Blink>Canvas"
+      ],
+      "star_count": 0,
+      "search_tags": [
+        "old",
+        "first",
+        "ancient"
+      ],
+      "feature_notes": "An interesting comment about prehistoric times.",
+      "feature_type": 0,
+      "intent_stage": 1,
+      "bug_url": "https://example.com/bug_url",
+      "launch_bug_url": "https://example.com/launch_bug_url",
+      "impl_status_chrome": 2,
+      "flag_name": "OldFeatureFlag",
+      "ongoing_constraints": "There's still a problem with the implementation.",
+      "motivation": "No one remembers what the original motivation was for this old thing.",
+      "devtrial_instructions": "We're not sure.",
+      "activation_risks": "It's been activated for too long.",
+      "measurement": "The metric system.",
+      "initial_public_proposal_url": "https://example.com/public_proposal",
+      "explainer_links": [
+        "https://example.com/old_feature_1",
+        "https://example.com/old_feature_2"
+      ],
+      "requires_embedder_support": false,
+      "standard_maturity": 1,
+      "spec_link": "https://example.com/spec_link",
+      "api_spec": true,
+      "spec_mentor_emails": [
+        "mentor_1@example.com",
+        "mentor_2@example.com"
+      ],
+      "interop_compat_risks": "Everyone has to support this old feature.",
+      "prefixed": false,
+      "all_platforms": true,
+      "all_platforms_descr": "All the platforms",
+      "tag_review": "A tag review.",
+      "tag_review_status": 1,
+      "non-oss-deps": "Example text.",
+      "anticipated_spec_changes": "None needed.",
+      "ff_views": 1,
+      "safari_views": 2,
+      "web_dev_views": 3,
+      "ff_views_link": "https://example.com/ff_views_link",
+      "safari_views_link": "https://example.com/safari_views_link",
+      "web_dev_views_link": "https://example.com/web_dev_views_link",
+      "ff_views_notes": "Firefox notes.",
+      "safari_views_notes": "Safari notes.",
+      "web_dev_views_notes": "Web Dev notes.",
+      "other_views_notes": "Other views notes.",
+      "security_risks": "It hasn't been updated in centuries.",
+      "security_review_status": 2,
+      "privacy_review_status": 3,
+      "ergonomics_risks": "Ergonomics risks",
+      "wpt": true,
+      "wpt_descr": "We have wpt :^)",
+      "webview_risks": "It's just bound to be risky, but we don't know why.",
+      "devrel_emails": [
+        "devrel_1@example.com",
+        "devrel_2@example.com"
+      ],
+      "debuggability": "Debuggability.",
+      "doc_links": [
+        "https://example.com/doc1",
+        "https://example.com/doc2"
+      ],
+      "sample_links": [
+        "https://example.com/sample"
+      ],
+      "experiment_timeline": null
+    }
+  ],
+  "stages": [
+    {
+      "id": 10,
+      "feature_id": 1000,
+      "stage_type": 110
+    },
+    {
+      "id": 11,
+      "feature_id": 1000,
+      "stage_type": 120
+    },
+    {
+      "id": 12,
+      "feature_id": 1000,
+      "stage_type": 130
+    },
+    {
+      "id": 13,
+      "feature_id": 1000,
+      "stage_type": 140
+    },
+    {
+      "id": 14,
+      "feature_id": 1000,
+      "stage_type": 150
+    },
+    {
+      "id": 15,
+      "feature_id": 1000,
+      "stage_type": 151
+    },
+    {
+      "id": 16,
+      "feature_id": 1000,
+      "stage_type": 160
+    }
+  ],
+  "gates": [
+    {
+      "id": 100,
+      "feature_id": 1000,
+      "stage_id": 11,
+      "gate_type": 1,
+      "state": 1
+    },
+    {
+      "id": 101,
+      "feature_id": 1000,
+      "stage_id": 14,
+      "gate_type": 2,
+      "state": 1
+    },
+    {
+      "id": 102,
+      "feature_id": 1000,
+      "stage_id": 15,
+      "gate_type": 3,
+      "state": 1
+    },
+    {
+      "id": 103,
+      "feature_id": 1000,
+      "stage_id": 16,
+      "gate_type": 4,
+      "state": 1
+    }
+  ]
+}
