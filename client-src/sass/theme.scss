@@ -21,7 +21,7 @@
   --md-green-700: #388E3C;
   --md-orange-50: #fff3e0;
   --md-orange-200: #ffcc80;
-  --md-orange-900: #E65100;
+  --md-deep-orange-900: #BF360C;
   --md-yellow-100: #FFF9C4;
   --md-yellow-200: #FFF59D;
   // TODO(jrobbins): Add all colors from pallet selected in Figma mocks.
@@ -120,11 +120,11 @@
   --gate-fyi-color: var(--md-gray-800);
   --gate-fyi-icon-color: var(--md-gray-800);
   --gate-pending-background: var(--md-blue-50);
-  --gate-pending-color: var(--md-blue-800);
-  --gate-pending-icon-color: var(--md-blue-800);
+  --gate-pending-color: var(--md-blue-900);
+  --gate-pending-icon-color: var(--md-blue-900);
   --gate-needs-work-background: var(--md-yellow-100);
-  --gate-needs-work-color: var(--md-orange-900);
-  --gate-needs-work-icon-color: var(--md-orange-900);
+  --gate-needs-work-color: var(--md-deep-orange-900);
+  --gate-needs-work-icon-color: var(--md-deep-orange-900);
   --gate-approved-background: var(--md-green-50);
   --gate-approved-color: var(--md-green-700);
   --gate-approved-icon-color: var(--md-green-600);

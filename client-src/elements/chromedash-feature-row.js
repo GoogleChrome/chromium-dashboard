@@ -1,5 +1,4 @@
 import {LitElement, css, html, nothing} from 'lit';
-import {STATE_NAMES} from './chromedash-approvals-dialog.js';
 import {SHARED_STYLES} from '../sass/shared-css.js';
 
 
@@ -13,7 +12,7 @@ class ChromedashFeatureRow extends LitElement {
       canApprove: {type: Boolean},
       starredFeatures: {type: Object},
       approvals: {type: Object},
-      configs: {type: Object},
+      gates: {type: Object},
     };
   }
 
@@ -24,7 +23,7 @@ class ChromedashFeatureRow extends LitElement {
     this.canEdit = false;
     this.canApprove = false;
     this.approvals = {};
-    this.configs = {};
+    this.gates = {};
   }
 
   static get styles() {
@@ -96,40 +95,6 @@ class ChromedashFeatureRow extends LitElement {
     });
   }
 
-  openApprovalsDialog(feature) {
-    // handled in chromedash-myfeatures-page.js
-    this._fireEvent('open-approvals-event', {
-      feature: feature,
-    });
-  }
-
-  doLGTM(feature) {
-    // TODO(jrobbins): Make it pre-select Approved and add comment.
-    this.openApprovalsDialog(feature);
-  }
-
-  doSnooze(feature) {
-    // TODO(jrobbins): Make it pre-set a new next-review-date value.
-    this.openApprovalsDialog(feature);
-  }
-
-  renderApprovalsIcon(feature) {
-    return html`
-      <sl-icon-button
-        @click="${() => this.openApprovalsDialog(feature)}"
-        title="Review approvals"
-        library="material" name="approval"></sl-icon-button>
-    `;
-  }
-
-  renderEditIcon(feature) {
-    return html`
-      <sl-icon-button href="/guide/edit/${feature.id}"
-        title="Edit feature"
-        name="pencil-fill"></sl-icon-button>
-    `;
-  }
-
   renderStarIcon(feature) {
     return html`
       <sl-icon-button
@@ -159,20 +124,6 @@ class ChromedashFeatureRow extends LitElement {
       // Work around unused function parameter lint error.
       const threadLinks = feature ? [] : [];
 
-      // TODO(jrobbins): Show these buttons when they work.
-      // let lgtmButton = html`
-      //  <button data-feature-id="${feature.id}"
-      //          @click="${() => this.doLGTM(feature)}">
-      //    Add LGTM
-      //  </button>
-      // `;
-      // let snoozeButton = html`
-      //  <button data-feature-id="${feature.id}"
-      //          @click="${() => this.doSnooze(feature)}">
-      //    Snooze
-      //  </button>
-      // `;
-
       return html`
         <span class="quick_actions">
           ${threadLinks}
@@ -182,6 +133,7 @@ class ChromedashFeatureRow extends LitElement {
     return nothing;
   }
 
+  // TODO(jrobbins): keep this?
   getEarliestReviewDate(feature) {
     const featureConfigs = this.configs[feature.id] || [];
     const allDates = featureConfigs.map(c => c.next_action).filter(d => d);
@@ -192,66 +144,56 @@ class ChromedashFeatureRow extends LitElement {
     return null;
   }
 
-  getActiveOwners(feature) {
-    const featureConfigs = this.configs[feature.id] || [];
-    const allOwners = featureConfigs.map(c => c.owners).flat();
-    // TODO(jrobbins): Limit to only owners of active intents
-    let activeOwners = allOwners;
-    activeOwners = [...new Set(activeOwners)]; // de-dup.
-    activeOwners.sort();
-    return activeOwners;
+  isActiveGate(gate) {
+    return gate.state == 2 || gate.state == 3 || gate.state == 4;
   }
 
-  getActiveApprovals(feature) {
-    const featureApprovals = this.approvals[feature.id];
-    // TODO(jrobbins): Limit to only owners of active intents
-    const activeApprovals = featureApprovals;
-    return activeApprovals;
-  }
-
-  renderApprovalsSoFar(approvals) {
-    const result = [];
-    for (const stateItem of STATE_NAMES) {
-      const state = stateItem[0];
-      const stateName = stateItem[1];
-      const approvalsWithThatState = approvals.filter(a => a.state == state);
-      const setters = approvalsWithThatState.map(a => a.set_by.split('@')[0]);
-      if (setters.length > 0) {
-        result.push(html`<span>${stateName}: ${setters.join(', ')}. </span>`);
-      }
+  getActiveStages(feature) {
+    const featureGates = this.gates[feature.id] || [];
+    const activeGates = featureGates.filter(g => this.isActiveGate(g));
+    const activeStageIds = new Set(activeGates.map(g => g.stage_id));
+    const activeStagesAndTheirGates = [];
+    for (const activeStageId of activeStageIds) {
+      activeStagesAndTheirGates.push({
+        stageId: activeStageId,
+        gates: featureGates.filter(g => g.stage_id == activeStageId),
+      });
     }
-    return result;
+    console.log(activeStagesAndTheirGates);
+    return activeStagesAndTheirGates;
+    // TODO(jrobbins): Limit to only owners of active intents
+    // const activeGates = [
+    //  {team_name: 'API Owners', name: 'intent to ship', state: 2}];
+    // return activeGates;
+  }
+
+  renderActiveStageAndGates(stageAndGates) {
+    const stageName = ''; // TODO(jrobbins) get this data.
+    return html`
+      <div>
+        ${stageName}
+        ${stageAndGates.gates.map(gate => html`
+        <chromedash-gate-chip
+          .feature=${this.feature}
+          .gate=${gate}
+        ></chromedash-gate-chip>`)}
+      </div>
+    `;
   }
 
   renderHighlights(feature) {
     if (this.columns == 'approvals') {
-      const nextReviewDate = this.getEarliestReviewDate(feature);
-      const owners = this.getActiveOwners(feature);
-      const activeApprovals = this.getActiveApprovals(feature);
-      // TODO(jrobbins): show additional_review.
+      const activeStages = this.getActiveStages(feature);
+      // TODO(jrobbins): group gates by stage
 
       return html`
         <div class="highlights">
-          ${nextReviewDate ? html`
-            <div>
-              Next review date: ${nextReviewDate}
-            </div>
-            ` : nothing}
-          ${owners.length == 1 ? html`
-            <div>
-              Owner: ${owners[0]}
-            </div>
-            ` : nothing}
-          ${owners.length > 1 ? html`
-            <div>
-              Owners: ${owners.join(', ')}
-            </div>
-            ` : nothing}
-          ${activeApprovals && activeApprovals.length > 0 ? html`
-            <div>
-              ${this.renderApprovalsSoFar(activeApprovals)}
-            </div>
-            ` : nothing}
+          ${activeStages.length > 0 ? html`
+          <div>
+            ${activeStages.map(stageAndGates =>
+        this.renderActiveStageAndGates(stageAndGates))}
+          </div>
+          ` : nothing}
           ${this.renderQuickActions(feature)}
         </div>
       `;
@@ -262,12 +204,12 @@ class ChromedashFeatureRow extends LitElement {
   render() {
     const feature = this.feature;
     return html`
-      <td class="icon_col">
-        ${this.renderIcons(feature)}
-      </td>
       <td class="name_col">
         <a href="/feature/${feature.id}?context=myfeatures">${feature.name}</a>
         ${this.renderHighlights(feature)}
+      </td>
+      <td class="icon_col">
+        ${this.renderIcons(feature)}
       </td>
     `;
   }
