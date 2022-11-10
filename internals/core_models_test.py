@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from datetime import datetime
 import testing_config  # Must be imported before the module under test.
 
 from api import converters
@@ -47,31 +48,56 @@ class ModelsFunctionsTest(testing_config.CustomTestCase):
 class FeatureTest(testing_config.CustomTestCase):
 
   def setUp(self):
-    self.feature_2 = core_models.Feature(
-        name='feature b', summary='sum', owner=['feature_owner@example.com'],
-        category=1)
+    self.feature_2 = core_models.FeatureEntry(
+        name='feature b', summary='sum',
+        owner_emails=['feature_owner@example.com'], category=1,
+        updated=datetime(2020, 4, 1))
     self.feature_2.put()
 
-    self.feature_1 = core_models.Feature(
-        name='feature a', summary='sum', owner=['feature_owner@example.com'],
-        category=1, impl_status_chrome=3)
+    self.feature_1 = core_models.FeatureEntry(
+        name='feature a', summary='sum', impl_status_chrome=3,
+        owner_emails=['feature_owner@example.com'], category=1,
+        updated=datetime(2020, 3, 1))
     self.feature_1.put()
 
-    self.feature_4 = core_models.Feature(
-        name='feature d', summary='sum', owner=['feature_owner@example.com'],
-        category=1, impl_status_chrome=2)
+    self.feature_4 = core_models.FeatureEntry(
+        name='feature d', summary='sum', category=1, impl_status_chrome=2,
+        owner_emails=['feature_owner@example.com'],
+        updated=datetime(2020, 2, 1))
     self.feature_4.put()
 
-    self.feature_3 = core_models.Feature(
-        name='feature c', summary='sum', owner=['feature_owner@example.com'],
-        category=1, impl_status_chrome=2)
+    self.feature_3 = core_models.FeatureEntry(
+        name='feature c', summary='sum', category=1, impl_status_chrome=2,
+        owner_emails=['feature_owner@example.com'],
+        updated=datetime(2020, 1, 1))
     self.feature_3.put()
 
+    # Legacy entities for testing legacy functions.
+    self.legacy_feature_2 = core_models.Feature(
+        name='feature b', summary='sum',
+        owner=['feature_owner@example.com'], category=1)
+    self.legacy_feature_2.put()
+
+    self.legacy_feature_1 = core_models.Feature(
+        name='feature a', summary='sum', impl_status_chrome=3,
+        owner=['feature_owner@example.com'], category=1)
+    self.legacy_feature_1.put()
+
+    self.legacy_feature_4 = core_models.Feature(
+        name='feature d', summary='sum', category=1, impl_status_chrome=2,
+        owner=['feature_owner@example.com'])
+    self.legacy_feature_4.put()
+
+    self.legacy_feature_3 = core_models.Feature(
+        name='feature c', summary='sum', category=1, impl_status_chrome=2,
+        owner=['feature_owner@example.com'])
+    self.legacy_feature_3.put()
+
   def tearDown(self):
-    self.feature_1.key.delete()
-    self.feature_2.key.delete()
-    self.feature_3.key.delete()
-    self.feature_4.key.delete()
+    for kind in [core_models.Feature, core_models.FeatureEntry]:
+      for entity in kind.query():
+        entity.key.delete()
+
     rediscache.flushall()
 
   def test_get_all__normal(self):
@@ -79,7 +105,7 @@ class FeatureTest(testing_config.CustomTestCase):
     actual = feature_helpers.get_all(update_cache=True)
     names = [f['name'] for f in actual]
     self.assertEqual(
-        ['feature c', 'feature d', 'feature a', 'feature b'],
+        ['feature b', 'feature a', 'feature d', 'feature c'],
         names)
 
     self.feature_1.summary = 'revised summary'
@@ -87,7 +113,7 @@ class FeatureTest(testing_config.CustomTestCase):
     actual = feature_helpers.get_all(update_cache=True)
     names = [f['name'] for f in actual]
     self.assertEqual(
-        ['feature a', 'feature c', 'feature d', 'feature b'],
+        ['feature b', 'feature a', 'feature d', 'feature c'],
         names)
 
   def test_get_all__category(self):
@@ -111,16 +137,16 @@ class FeatureTest(testing_config.CustomTestCase):
   def test_get_all__owner(self):
     """We can retrieve a list of all features with a given owner."""
     actual = feature_helpers.get_all(
-        filterby=('owner', 'owner@example.com'), update_cache=True)
+        filterby=('owner_emails', 'owner@example.com'), update_cache=True)
     names = [f['name'] for f in actual]
     self.assertEqual(
         [],
         names)
 
-    self.feature_1.owner = ['owner@example.com']
+    self.feature_1.owner_emails = ['owner@example.com']
     self.feature_1.put()  # Changes updated field.
     actual = feature_helpers.get_all(
-        filterby=('owner', 'owner@example.com'), update_cache=True)
+        filterby=('owner_emails', 'owner@example.com'), update_cache=True)
     names = [f['name'] for f in actual]
     self.assertEqual(
         ['feature a'],
@@ -129,26 +155,26 @@ class FeatureTest(testing_config.CustomTestCase):
   def test_get_all__owner_unlisted(self):
     """Unlisted features should still be visible to their owners."""
     self.feature_2.unlisted = True
-    self.feature_2.owner = ['feature_owner@example.com']
+    self.feature_2.owner_emails = ['feature_owner@example.com']
     self.feature_2.put()
     testing_config.sign_in('feature_owner@example.com', 1234567890)
     actual = feature_helpers.get_all(update_cache=True)
     names = [f['name'] for f in actual]
     testing_config.sign_out()
     self.assertEqual(
-      ['feature b', 'feature c', 'feature d', 'feature a'], names)
+      ['feature b', 'feature a', 'feature d', 'feature c'], names)
 
   def test_get_all__editor_unlisted(self):
     """Unlisted features should still be visible to feature editors."""
     self.feature_2.unlisted = True
-    self.feature_2.editors = ['feature_editor@example.com']
+    self.feature_2.editor_emails = ['feature_editor@example.com']
     self.feature_2.put()
     testing_config.sign_in("feature_editor@example.com", 1234567890)
     actual = feature_helpers.get_all(update_cache=True)
     names = [f['name'] for f in actual]
     testing_config.sign_out()
     self.assertEqual(
-      ['feature b', 'feature c', 'feature d', 'feature a'], names)
+      ['feature b', 'feature a', 'feature d', 'feature c'], names)
 
   def test_get_by_ids__empty(self):
     """A request to load zero features returns zero results."""
@@ -165,9 +191,9 @@ class FeatureTest(testing_config.CustomTestCase):
     self.assertEqual('feature a', actual[0]['name'])
     self.assertEqual('feature b', actual[1]['name'])
 
-    lookup_key_1 = '%s|%s' % (core_models.Feature.DEFAULT_CACHE_KEY,
+    lookup_key_1 = '%s|%s' % (core_models.FeatureEntry.DEFAULT_CACHE_KEY,
                               self.feature_1.key.integer_id())
-    lookup_key_2 = '%s|%s' % (core_models.Feature.DEFAULT_CACHE_KEY,
+    lookup_key_2 = '%s|%s' % (core_models.FeatureEntry.DEFAULT_CACHE_KEY,
                               self.feature_2.key.integer_id())
     self.assertEqual('feature a', rediscache.get(lookup_key_1)['name'])
     self.assertEqual('feature b', rediscache.get(lookup_key_2)['name'])
@@ -175,7 +201,7 @@ class FeatureTest(testing_config.CustomTestCase):
   def test_get_by_ids__cache_hit(self):
     """We can load features from rediscache."""
     cache_key = '%s|%s' % (
-        core_models.Feature.DEFAULT_CACHE_KEY, self.feature_1.key.integer_id())
+        core_models.FeatureEntry.DEFAULT_CACHE_KEY, self.feature_1.key.integer_id())
     cached_feature = {
       'name': 'fake cached_feature',
       'id': self.feature_1.key.integer_id(),
@@ -206,9 +232,7 @@ class FeatureTest(testing_config.CustomTestCase):
   def test_get_by_ids__cached_correctly(self):
     """We should no longer be able to trigger bug #1647."""
     # Cache one to try to trigger the bug.
-    feature_helpers.get_by_ids([
-        self.feature_2.key.integer_id(),
-        ])
+    feature_helpers.get_by_ids([self.feature_2.key.integer_id()])
 
     # Now do the lookup, but it would cache feature_2 at the key for feature_3.
     feature_helpers.get_by_ids([
@@ -246,8 +270,8 @@ class FeatureTest(testing_config.CustomTestCase):
 
   def test_get_chronological__unlisted(self):
     """Unlisted features are not included in the list."""
-    self.feature_2.unlisted = True
-    self.feature_2.put()
+    self.legacy_feature_2.unlisted = True
+    self.legacy_feature_2.put()
     actual = feature_helpers.get_chronological()
     names = [f['name'] for f in actual]
     self.assertEqual(
@@ -256,8 +280,8 @@ class FeatureTest(testing_config.CustomTestCase):
 
   def test_get_chronological__unlisted_shown(self):
     """Unlisted features are included for users with edit access."""
-    self.feature_2.unlisted = True
-    self.feature_2.put()
+    self.legacy_feature_2.unlisted = True
+    self.legacy_feature_2.put()
     actual = feature_helpers.get_chronological(show_unlisted=True)
     names = [f['name'] for f in actual]
     self.assertEqual(
@@ -266,21 +290,21 @@ class FeatureTest(testing_config.CustomTestCase):
 
   def test_get_in_milestone__normal(self):
     """We can retrieve a list of features."""
-    self.feature_2.impl_status_chrome = 7
-    self.feature_2.shipped_milestone = 1
-    self.feature_2.put()
+    self.legacy_feature_2.impl_status_chrome = 7
+    self.legacy_feature_2.shipped_milestone = 1
+    self.legacy_feature_2.put()
 
-    self.feature_1.impl_status_chrome = 5
-    self.feature_1.shipped_milestone = 1
-    self.feature_1.put()
+    self.legacy_feature_1.impl_status_chrome = 5
+    self.legacy_feature_1.shipped_milestone = 1
+    self.legacy_feature_1.put()
 
-    self.feature_3.impl_status_chrome = 5
-    self.feature_3.shipped_milestone = 1
-    self.feature_3.put()
+    self.legacy_feature_3.impl_status_chrome = 5
+    self.legacy_feature_3.shipped_milestone = 1
+    self.legacy_feature_3.put()
 
-    self.feature_4.impl_status_chrome = 7
-    self.feature_4.shipped_milestone = 2
-    self.feature_4.put()
+    self.legacy_feature_4.impl_status_chrome = 7
+    self.legacy_feature_4.shipped_milestone = 2
+    self.legacy_feature_4.put()
 
     actual = feature_helpers.get_in_milestone(milestone=1)
     removed = [f['name'] for f in actual['Removed']]
@@ -301,22 +325,22 @@ class FeatureTest(testing_config.CustomTestCase):
 
   def test_get_in_milestone__unlisted(self):
     """Unlisted features should not be listed for users who can't edit."""
-    self.feature_2.unlisted = True
-    self.feature_2.impl_status_chrome = 7
-    self.feature_2.shipped_milestone = 1
-    self.feature_2.put()
+    self.legacy_feature_2.unlisted = True
+    self.legacy_feature_2.impl_status_chrome = 7
+    self.legacy_feature_2.shipped_milestone = 1
+    self.legacy_feature_2.put()
 
-    self.feature_1.impl_status_chrome = 5
-    self.feature_1.shipped_milestone = 1
-    self.feature_1.put()
+    self.legacy_feature_1.impl_status_chrome = 5
+    self.legacy_feature_1.shipped_milestone = 1
+    self.legacy_feature_1.put()
 
-    self.feature_3.impl_status_chrome = 5
-    self.feature_3.shipped_milestone = 1
-    self.feature_3.put()
+    self.legacy_feature_3.impl_status_chrome = 5
+    self.legacy_feature_3.shipped_milestone = 1
+    self.legacy_feature_3.put()
 
-    self.feature_4.impl_status_chrome = 7
-    self.feature_4.shipped_milestone = 2
-    self.feature_4.put()
+    self.legacy_feature_4.impl_status_chrome = 7
+    self.legacy_feature_4.shipped_milestone = 2
+    self.legacy_feature_4.put()
 
     actual = feature_helpers.get_in_milestone(milestone=1)
     self.assertEqual(
@@ -325,22 +349,22 @@ class FeatureTest(testing_config.CustomTestCase):
 
   def test_get_in_milestone__unlisted_shown(self):
     """Unlisted features should be listed for users who can edit."""
-    self.feature_2.unlisted = True
-    self.feature_2.impl_status_chrome = 7
-    self.feature_2.shipped_milestone = 1
-    self.feature_2.put()
+    self.legacy_feature_2.unlisted = True
+    self.legacy_feature_2.impl_status_chrome = 7
+    self.legacy_feature_2.shipped_milestone = 1
+    self.legacy_feature_2.put()
 
-    self.feature_1.impl_status_chrome = 5
-    self.feature_1.shipped_milestone = 1
-    self.feature_1.put()
+    self.legacy_feature_1.impl_status_chrome = 5
+    self.legacy_feature_1.shipped_milestone = 1
+    self.legacy_feature_1.put()
 
-    self.feature_3.impl_status_chrome = 5
-    self.feature_3.shipped_milestone = 1
-    self.feature_3.put()
+    self.legacy_feature_3.impl_status_chrome = 5
+    self.legacy_feature_3.shipped_milestone = 1
+    self.legacy_feature_3.put()
 
-    self.feature_4.impl_status_chrome = 7
-    self.feature_4.shipped_milestone = 2
-    self.feature_4.put()
+    self.legacy_feature_4.impl_status_chrome = 7
+    self.legacy_feature_4.shipped_milestone = 2
+    self.legacy_feature_4.put()
 
     actual = feature_helpers.get_in_milestone(
         milestone=1, show_unlisted=True)

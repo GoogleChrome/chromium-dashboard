@@ -104,16 +104,6 @@ def parse_query_value(val_str: str) -> Union[bool, datetime.datetime, int, str]:
   return val_str
 
 
-def process_queriable_field(
-    field_name: str, operator: str, val_str: str
-    ) -> Future:
-  """Return a list of feature IDs or a promise for keys."""
-  val = parse_query_value(val_str)
-  logging.info('trying %r %r %r', field_name, operator, val)
-  future = search_queries.single_field_query_async(field_name, operator, val)
-  return future
-
-
 # A full-text query term consisting of a single word or quoted string.
 # The single word case cannot contain an operator.
 # We do not support any kind of escaped quotes in quoted strings.
@@ -125,20 +115,43 @@ OPERATORS_PATTERN = r':|=|<=|<|>=|>|!='
 # A value that a feature field can be compared against.  It can be
 # a single word or a quoted string.
 VALUE_PATTERN = r'[^" ]+|"[^"]+"'
+# Logical operators.
+# TODO(kyleju): support 'OR' logic
+LOGICAL_OPERATORS_PATTERN = r'OR\s+|-'
 
 # Overall, a query term can be either a structured term or a full-text term.
 # Structured terms look like: FIELD OPERATOR VALUE.
 # Full-text terms look like: SINGLE_WORD, or like: "QUOTED STRING".
 TERM_RE = re.compile(
-    '(?P<field>%s)(?P<op>%s)(?P<val>%s)\s+|(?P<textterm>%s)\s+' % (
-        FIELD_NAME_PATTERN, OPERATORS_PATTERN, VALUE_PATTERN,
-        TEXT_PATTERN),
+    '(?P<logical>%s)?(?:(?P<field>%s)(?P<op>%s)(?P<val>%s)|(?P<textterm>%s))\s+' % (
+        LOGICAL_OPERATORS_PATTERN, FIELD_NAME_PATTERN, OPERATORS_PATTERN,
+        VALUE_PATTERN, TEXT_PATTERN),
     re.I)
+
+SIMPLE_QUERY_TERMS = ['pending-approval-by:me', 'starred-by:me',
+                      'is:recently-reviewed', 'owner:me', 'editor:me', 'can_edit:me', 'cc:me']
 
 
 def process_query_term(
-    field_name: str, op_str: str, val_str: str) -> Future:
+    is_negation: bool, field_name: str, op_str: str, val_str: str) -> Future:
   """Parse and run a user-supplied query, if we can handle it."""
+  if is_negation:
+    op_str = search_queries.negate_operator(op_str)
+
+  if val_str.startswith('"') and val_str.endswith('"'):
+    val_str = val_str[1:-1]
+
+  val = parse_query_value(val_str)
+  logging.info('trying %r %r %r', field_name, op_str, val)
+
+  future = search_queries.single_field_query_async(
+      field_name, op_str, val)
+  return future
+
+
+def process_predefined_query_term(
+    field_name: str, op_str: str, val_str: str) -> Future:
+  """Parse and run a simple query term."""
   query_term = field_name + op_str + val_str
   if query_term == 'pending-approval-by:me':
     return process_pending_approval_me_query()
@@ -156,9 +169,14 @@ def process_query_term(
   if query_term == 'cc:me':
     return search_queries.handle_me_query_async('cc')
 
-  if val_str.startswith('"') and val_str.endswith('"'):
-    val_str = val_str[1:-1]
-  return process_queriable_field(field_name, op_str, val_str)
+  return None
+
+
+def is_predefined_query_term(
+  field_name: str, op_str: str, val_str: str) -> bool:
+  """Determine if a query is a simple query term."""
+  query_term = field_name + op_str + val_str
+  return query_term in SIMPLE_QUERY_TERMS
 
 
 def _resolve_promise_to_id_list(
@@ -201,42 +219,55 @@ def process_query(
     start=0, num=DEFAULT_RESULTS_PER_PAGE) -> tuple[list[dict[str, Any]], int]:
   """Parse the user's query, run it, and return a list of features."""
   # 1a. Parse the user query into terms.  And, add permission terms.
-  feature_id_futures = []
+  feature_id_future_ops = []
   terms = TERM_RE.findall(user_query + ' ')[:MAX_TERMS] or []
   if not show_deleted:
-    terms.append(('deleted', '=', 'false', None))
+    terms.append(('', 'deleted', '=', 'false', None))
   # TODO(jrobbins): include unlisted features that the user is allowed to view.
   if not show_unlisted:
-    terms.append(('unlisted', '=', 'false', None))
+    terms.append(('', 'unlisted', '=', 'false', None))
   # 1b. Parse the sort directive.
   sort_spec = sort_spec or '-created.when'
 
   # 2a. Create parallel queries for each term.  Each yields a future.
   logging.info('creating parallel queries for %r', terms)
-  for field_name, op_str, val_str, textterm in terms:
+  for logical_op, field_name, op_str, val_str, textterm in terms:
+    is_negation = (logical_op.strip() == '-')
+    is_normal_query = False
     if textterm:
       future = search_fulltext.search_fulltext(textterm)
+    elif is_predefined_query_term(field_name, op_str, val_str):
+      future = process_predefined_query_term(field_name, op_str, val_str)
     else:
-      future = process_query_term(field_name, op_str, val_str)
-    if future is not None:
-      feature_id_futures.append(future)
+      future = process_query_term(is_negation, field_name, op_str, val_str)
+      is_normal_query = True
+
+    if future is None:
+      continue
+
+    if is_negation and is_normal_query:
+      feature_id_future_ops.append(('', future))
+    else:
+      feature_id_future_ops.append((logical_op.strip(), future))
+
   # 2b. Create a parallel query for total sort order.
   total_order_promise = search_queries.total_order_query_async(sort_spec)
 
-  # 3a. Get the result of each future and combine them into a result ID set.
+  # 3. Get the result of each future and combine them into a result ID set.
   logging.info('now waiting on futures')
-  result_id_set = None
-  for future in feature_id_futures:
-    feature_ids = _resolve_promise_to_id_list(future)
-    if result_id_set is None:
-      logging.info('first term yields %r', feature_ids)
-      result_id_set = set(feature_ids)
-    else:
-      logging.info('combining result so far with %r', feature_ids)
-      result_id_set.intersection_update(feature_ids)
+
+  # 3a. Process all negation operations.
+  feature_id_future_ops = process_negation_operations(feature_id_future_ops)
+
+  # 3b. Process all AND operations.
+  or_clauses = process_and_operations(feature_id_future_ops)
+
+  # 3c. Process all OR operations.
+  result_id_set = process_or_operations(or_clauses)
+
   result_id_list = list(result_id_set or [])
   total_count = len(result_id_list)
-  # 3b. Finish getting the total sort order.
+  # 3d. Finish getting the total sort order.
   total_order_ids = _resolve_promise_to_id_list(total_order_promise)
 
   # 4. Sort the IDs according to their position in the complete sorted list.
@@ -251,3 +282,66 @@ def process_query(
 
   logging.info('features_on_page is %r', features_on_page)
   return features_on_page, total_count
+
+
+def process_or_operations(or_clauses):
+  """ Process OR operations for all id sets."""
+  result_id_set = set()
+  for id_set in or_clauses:
+    result_id_set.update(id_set)
+  return result_id_set
+
+
+def process_and_operations(feature_id_future_ops):
+  """ Process all AND operations in between OR clauses."""
+  or_clauses = []
+
+  current_result_set = None
+  for logical_op, future in feature_id_future_ops:
+    if logical_op == 'OR' and current_result_set is not None:
+      # Add the proceeding AND result
+      or_clauses.append(current_result_set)
+      current_result_set = None
+
+    if type(future) == set:
+      feature_ids = future
+    else:
+      feature_ids = _resolve_promise_to_id_list(future)
+
+    if current_result_set is None:
+      logging.info('first term yields %r', feature_ids)
+      current_result_set = set(feature_ids)
+      continue
+
+    logging.info('combining result so far with %r', feature_ids)
+    current_result_set.intersection_update(feature_ids)
+
+  or_clauses.append(current_result_set)
+  return or_clauses
+
+
+def process_negation_operations(feature_id_future_ops):
+  """ Turn all negation operations into AND operations."""
+  new_future_ops = []
+  all_ids_set = None
+  for logical_op, future in feature_id_future_ops:
+    if logical_op != '-':
+      # Skip all non-negation operations.
+      new_future_ops.append((logical_op, future))
+      continue
+
+    if all_ids_set is None:
+        all_ids_set = fetch_all_feature_ids_set()
+
+    feature_ids = _resolve_promise_to_id_list(future)
+    result_set = all_ids_set.difference(feature_ids)
+    new_future_ops.append(('', result_set))
+
+  return new_future_ops
+
+
+def fetch_all_feature_ids_set():
+  """Fetch all FeatureEntry ids. """
+  all_feature_keys = core_models.FeatureEntry.query().fetch(keys_only=True)
+  feature_ids_set = set(key.integer_id() for key in all_feature_keys)
+  return feature_ids_set

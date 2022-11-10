@@ -15,13 +15,15 @@
 
 import re
 import logging
+from typing import Optional
 
 import settings
 from framework import basehandlers
 from framework import permissions
 from framework import users
+from internals import core_enums
 from internals import approval_defs
-from internals import core_models
+from internals.core_models import Feature, FeatureEntry, Stage
 from internals import review_models
 
 
@@ -184,7 +186,7 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
     feature_id = detect_feature_id(body)
     thread_url = detect_thread_url(body)
     feature, message = self.load_detected_feature(
-        feature_id, thread_url, approval_field)
+        feature_id, thread_url)
     if message:
       logging.info(message)
       return {'message': message}
@@ -192,11 +194,12 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
       logging.info('Could not retrieve feature')
       return {'message': 'Feature not found'}
 
-    self.set_intent_thread_url(feature, approval_field, thread_url, subject)
+    self.set_intent_thread_url(feature, approval_field, thread_url)
     self.create_approvals(feature, approval_field, from_addr, body)
     return {'message': 'Done'}
 
-  def load_detected_feature(self, feature_id, thread_url, approval_field):
+  def load_detected_feature(self, feature_id: Optional[int],
+      thread_url: Optional[str]) -> tuple[Optional[FeatureEntry], Optional[str]]:
     """Find the feature being referenced by this email message.
 
     Returns a pair with the feature and an error message, either of
@@ -204,75 +207,49 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
     """
     # If the message had a link to a chromestatus entry, use its ID.
     if feature_id:
-      return core_models.Feature.get_by_id(feature_id), None
+      return FeatureEntry.get_by_id(feature_id), None
 
     # If there is also no thread_url, then give up.
     if not thread_url:
       return None, 'No feature ID or discussion link'
 
     # Find the feature by querying for the previously saved discussion link.
-    matching_features = []
-    if approval_field == approval_defs.PrototypeApproval:
-      query = core_models.Feature.query(
-          core_models.Feature.intent_to_implement_url == thread_url)
-      matching_features = query.fetch()
-    # TODO(jrobbins): Ready-for-trial threads
-    elif approval_field == approval_defs.ExperimentApproval:
-      query = core_models.Feature.query(
-          core_models.Feature.intent_to_experiment_url == thread_url)
-      matching_features = query.fetch()
-    elif approval_field == approval_defs.ExtendExperimentApproval:
-      query = core_models.Feature.query(
-          core_models.Feature.intent_to_extend_experiment_url == thread_url)
-      matching_features = query.fetch()
-    elif approval_field == approval_defs.ShipApproval:
-      query = core_models.Feature.query(
-          core_models.Feature.intent_to_ship_url == thread_url)
-      matching_features = query.fetch()
-    else:
-      return None, 'Unsupported approval field'
+    matching_stages = Stage.query(Stage.intent_thread_url == thread_url).fetch()
+    fe_ids = list(set([s.feature_id for s in matching_stages]))
 
-    if len(matching_features) == 0:
+    if len(fe_ids) == 0:
       return None, 'No feature entry references this discussion thread'
-    if len(matching_features) > 1:
-      ids = [f.key.integer_id() for f in matching_features]
-      return None, 'Ambiguous feature entries %r' % ids
+    if len(fe_ids) > 1:
+      return None, 'Ambiguous feature entries %r' % fe_ids
 
-    return matching_features[0], None
+    return FeatureEntry.get_by_id(fe_ids[0]), None
 
-  def set_intent_thread_url(
-      self, feature, approval_field, thread_url, subject):
+  def set_intent_thread_url(self, feature: FeatureEntry,
+      approval_field: approval_defs.ApprovalFieldDef,
+      thread_url: Optional[str]) -> None:
     """If the feature has no previous thread URL for this intent, set it."""
     if not thread_url:
       return
+    
+    stage_type = core_enums.STAGE_TYPES_BY_GATE_TYPE_MAPPING[
+        approval_field.field_id][feature.feature_type]
+    if stage_type is None:
+      return
+    # TODO(danielrsmith): A new way to approach this detection will be needed
+    # when multiple versions of the same stage type are possible.
+    matching_stages: list[Stage] = Stage.query(
+        Stage.feature_id == feature.key.integer_id(),
+        Stage.stage_type == stage_type).fetch()
+    if (len(matching_stages) == 0 or
+        matching_stages[0].intent_thread_url is not None):
+      return
 
-    if (approval_field == approval_defs.PrototypeApproval and
-        not feature.intent_to_implement_url):
-      feature.intent_to_implement_url = thread_url
-      feature.intent_to_implement_subject_line = subject
-      feature.put()
+    matching_stages[0].intent_thread_url = thread_url
+    matching_stages[0].put()
 
-    # TODO(jrobbins): Ready-for-trial threads
-
-    if (approval_field == approval_defs.ExperimentApproval and
-        not feature.intent_to_experiment_url):
-      feature.intent_to_experiment_url = thread_url
-      feature.intent_to_experiment_subject_line = subject
-      feature.put()
-
-    if (approval_field == approval_defs.ExtendExperimentApproval and
-        not feature.intent_to_extend_experiment_url):
-      feature.intent_to_extend_experiment_url = thread_url
-      feature.intent_to_extend_experiment_subject_line = subject
-      feature.put()
-
-    if (approval_field == approval_defs.ShipApproval and
-        not feature.intent_to_ship_url):
-      feature.intent_to_ship_url = thread_url
-      feature.intent_to_ship_subject_line = subject
-      feature.put()
-
-  def create_approvals(self, feature, approval_field, from_addr, body):
+  def create_approvals(self, feature: FeatureEntry,
+      approval_field: approval_defs.ApprovalFieldDef,
+      from_addr: str, body: str) -> None:
     """Store either a REVIEW_REQUESTED or an APPROVED approval value."""
     feature_id = feature.key.integer_id()
 
@@ -287,7 +264,6 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
           review_models.Approval.APPROVED, from_addr)
       approval_defs.set_vote(feature_id, approval_field.field_id,
           review_models.Vote.APPROVED, from_addr)
-      self.record_lgtm(feature, approval_field, from_addr)
 
     # Case 2: Create a review request for any discussion that does not already
     # have any approval values stored.
@@ -302,18 +278,3 @@ class IntentEmailHandler(basehandlers.FlaskHandler):
         # REVIEW_REQUESTED votes.
         approval_defs.set_vote(feature_id, approval_field.field_id,
             review_models.Vote.REVIEW_REQUESTED, from_addr)
-
-  def record_lgtm(self, feature, approval_field, from_addr):
-    """Add from_addr to the old way or recording LGTMs."""
-    # Note: Intent-to-prototype and Intent-to-extend are not checked
-    # here because there are no old fields for them.
-
-    if (approval_field == approval_defs.ExperimentApproval and
-        from_addr not in feature.i2e_lgtms):
-      feature.i2e_lgtms += [from_addr]
-      feature.put()
-
-    if (approval_field == approval_defs.ShipApproval and
-        from_addr not in feature.i2s_lgtms):
-      feature.i2s_lgtms += [from_addr]
-      feature.put()

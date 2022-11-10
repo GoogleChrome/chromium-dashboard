@@ -18,6 +18,7 @@ import testing_config  # Must be imported before the module under test.
 import flask
 
 from api import processes_api
+from internals import core_enums
 from internals import core_models
 from internals import processes
 from internals import core_enums
@@ -28,15 +29,22 @@ test_app = flask.Flask(__name__)
 class ProcessesAPITest(testing_config.CustomTestCase):
 
   def setUp(self):
-    self.feature_1 = core_models.Feature(
-        name='feature one', summary='sum', category=1)
+    self.feature_1 = core_models.FeatureEntry(
+        name='feature one', summary='sum', category=1, feature_type=0)
     self.feature_1.put()
     self.feature_id = self.feature_1.key.integer_id()
-
+    stage_types = [110, 120, 130, 140, 150, 151, 160]
+    self.stages: list[core_models.Stage] = []
+    for s_type in stage_types:
+      stage = core_models.Stage(feature_id=self.feature_id, stage_type=s_type)
+      stage.put()
+      self.stages.append(stage)
     self.handler = processes_api.ProcessesAPI()
     self.request_path = f'/api/v0/features/{self.feature_id}/process'
 
   def tearDown(self):
+    for stage in self.stages:
+      stage.key.delete()
     self.feature_1.key.delete()
 
   def test_get__default_feature_type(self):
@@ -82,16 +90,32 @@ class ProcessesAPITest(testing_config.CustomTestCase):
 class ProgressAPITest(testing_config.CustomTestCase):
 
   def setUp(self):
-    self.feature_1 = core_models.Feature(
+    self.feature_1 = core_models.FeatureEntry(
         name='feature one', summary='sum Z',
-        owner=['feature_owner@example.com'],
-        ready_for_trial_url='fake ready for trial url',
-        intent_to_experiment_url='fake intent to experiment url',
+        owner_emails=['feature_owner@example.com'],
         spec_link='fake spec link', category=1, web_dev_views=1,
         impl_status_chrome=5, intent_stage=core_enums.INTENT_IMPLEMENT,
-        shipped_milestone=1)
+        feature_type=0)
     self.feature_1.put()
     self.feature_id = self.feature_1.key.integer_id()
+
+    stage_types = [110, 120, 130, 140, 150, 151, 160]
+    self.stages: list[core_models.Stage] = []
+    for s_type in stage_types:
+      stage = core_models.Stage(feature_id=self.feature_id, stage_type=s_type)
+      if s_type == 120:
+        stage.intent_thread_url = 'https://example.com/prototype'
+      elif s_type == 130:
+        stage.announcement_url = 'https://example.com/ready_for_trial'
+      elif s_type == 150:
+        stage.intent_thread_url = 'https://example.com/ot'
+      elif s_type == 151:
+        stage.intent_thread_url = 'https://example.com/extend'
+      elif s_type == 160:
+        stage.milestones = core_models.MilestoneSet(desktop_first=1)
+        stage.intent_thread_url = 'https://example.com/ship'
+      stage.put()
+      self.stages.append(stage)
 
     self.handler = processes_api.ProgressAPI()
     self.request_path = f'/api/v0/features/{self.feature_id}/progress'
@@ -110,8 +134,10 @@ class ProgressAPITest(testing_config.CustomTestCase):
       'Draft API spec': 'fake spec link',
       'Estimated target milestone': 'True',
       'Final target milestone': 'True',
-      'Intent to Experiment email': 'fake intent to experiment url',
-      'Ready for Trial email': 'fake ready for trial url',
+      'Intent to Prototype email': 'https://example.com/prototype',
+      'Intent to Experiment email': 'https://example.com/ot',
+      'Ready for Trial email': 'https://example.com/ready_for_trial',
+      'Intent to Ship email': 'https://example.com/ship',
       'Spec link': 'fake spec link',
       'Web developer signals': 'True',
     }, actual)

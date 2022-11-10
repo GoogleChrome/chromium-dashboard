@@ -425,3 +425,18 @@ class DeleteNewEntities(FlaskHandler):
         count += 1
     
     return f'{count} entities deleted.'
+
+class WriteUpdatedField(FlaskHandler):
+
+  def get_template_data(self, **kwargs) -> str:
+    """Sets the FeatureEntry updated field if it is not initialized."""
+    self.require_cron_header()
+
+    count = 0
+    for fe in FeatureEntry.query():
+      if fe.updated is None:
+        fe.updated = fe.created
+        fe.put()
+        count += 1
+    
+    return f'{count} FeatureEntry entities given updated field values.'

@@ -150,87 +150,8 @@ class Feature(DictModel):
     except Exception as e:
       logging.error(e)
 
-  def crbug_number(self) -> Optional[str]:
-    if not self.bug_url:
-      return None
-    m = re.search(r'[\/|?id=]([0-9]+)$', self.bug_url)
-    if m:
-      return m.group(1)
-    return None
-
-  def new_crbug_url(self) -> str:
-    url = 'https://bugs.chromium.org/p/chromium/issues/entry'
-    if len(self.blink_components) > 0:
-      params = ['components=' + self.blink_components[0]]
-    else:
-      params = ['components=' + settings.DEFAULT_COMPONENT]
-    crbug_number = self.crbug_number()
-    if crbug_number and self.impl_status_chrome in (
-        NO_ACTIVE_DEV,
-        PROPOSED,
-        IN_DEVELOPMENT,
-        BEHIND_A_FLAG,
-        ORIGIN_TRIAL,
-        INTERVENTION):
-      params.append('blocking=' + crbug_number)
-    if self.owner:
-      params.append('cc=' + ','.join(self.owner))
-    return url + '?' + '&'.join(params)
-
-  def stash_values(self) -> None:
-
-    # Stash existing values when entity is created so we can diff property
-    # values later in put() to know what's changed.
-    # https://stackoverflow.com/a/41344898
-
-    for prop_name in self._properties.keys():
-      old_val = getattr(self, prop_name, None)
-      setattr(self, '_old_' + prop_name, old_val)
-    setattr(self, '_values_stashed', True)
-
-  def _get_changes_as_amendments(self) -> list[review_models.Amendment]:
-    """Get all feature changes as Amendment entities."""
-    # Diff values to see what properties have changed.
-    amendments = []
-    for prop_name in self._properties.keys():
-      if prop_name in (
-          'created_by', 'updated_by', 'updated', 'created'):
-        continue
-      new_val = getattr(self, prop_name, None)
-      old_val = getattr(self, '_old_' + prop_name, None)
-      if new_val != old_val:
-        if (new_val == '' or new_val == False) and old_val is None:
-          continue
-        amendments.append(
-            review_models.Amendment(field_name=prop_name,
-            old_value=str(old_val), new_value=str(new_val)))
-
-    return amendments
-
-  def put(self, notify: bool=True, **kwargs) -> Any:
-    is_update = self.is_saved()
-    amendments = self._get_changes_as_amendments()
-
-    # Document changes as new Activity entity with amendments only if all true:
-    # 1. This is an update to an existing feature.
-    # 2. We used stash_values() to document what fields changed.
-    # 3. One or more fields were changed.
-    should_write_activity = (is_update and hasattr(self, '_values_stashed')
-        and len(amendments) > 0)
-
-    if should_write_activity:
-      user = users.get_current_user()
-      email = user.email() if user else None
-      activity = review_models.Activity(feature_id=self.key.integer_id(),
-          author=email, content='')
-      activity.amendments = amendments
-      activity.put()
-
+  def put(self, **kwargs) -> Any:
     key = super(Feature, self).put(**kwargs)
-    if notify:
-      notifier_helpers.notify_feature_subscribers_of_changes(
-          self, amendments, is_update)
-
     # Invalidate rediscache for the individual feature view.
     cache_key = Feature.feature_cache_key(
         Feature.DEFAULT_CACHE_KEY, self.key.integer_id())
@@ -383,7 +304,7 @@ class FeatureEntry(ndb.Model):  # Copy from Feature
 
   # Metadata: Creation and updates.
   created = ndb.DateTimeProperty(auto_now_add=True)
-  updated = ndb.DateTimeProperty()
+  updated = ndb.DateTimeProperty(auto_now_add=True)
   accurate_as_of = ndb.DateTimeProperty()
   creator_email = ndb.StringProperty()
   updater_email = ndb.StringProperty()
@@ -490,74 +411,14 @@ class FeatureEntry(ndb.Model):  # Copy from Feature
   def feature_cache_prefix(cls):
     return '%s|*' % (cls.DEFAULT_CACHE_KEY)
 
-  @classmethod
-  def get_feature_entry(self, feature_id: int, update_cache: bool=False
-      ) -> Optional[FeatureEntry]:
-    KEY = self.feature_cache_key(
-        FeatureEntry.DEFAULT_CACHE_KEY, feature_id)
-    feature = rediscache.get(KEY)
+  def put(self, **kwargs) -> Any:
+    key = super(FeatureEntry, self).put(**kwargs)
+    # Invalidate rediscache for the individual feature view.
+    cache_key = FeatureEntry.feature_cache_key(
+        FeatureEntry.DEFAULT_CACHE_KEY, self.key.integer_id())
+    rediscache.delete(cache_key)
 
-    if feature is None or update_cache:
-      entry = FeatureEntry.get_by_id(feature_id)
-      if entry:
-        if entry.deleted:
-          return None
-        rediscache.set(KEY, entry)
-
-    return entry
-
-  @classmethod
-  def filter_unlisted(self, entry_list: list[FeatureEntry]
-      ) -> list[FeatureEntry]:
-    """Filters feature entries to display only features the user should see."""
-    user = users.get_current_user()
-    email = None
-    if user:
-      email = user.email()
-    allowed_entries = []
-    for fe in entry_list:
-      # Owners and editors of a feature can see their unlisted features.
-      if (not fe.unlisted or
-          email in fe.owners or
-          email in fe.editors or
-          (email is not None and fe.creator == email)):
-        allowed_entries.append(fe)
-
-    return allowed_entries
-
-  @classmethod
-  def get_by_ids(self, entry_ids: list[int], update_cache: bool=False
-      ) -> list[int]:
-    """Return a list of FeatureEntry instances for the specified features.
-
-    Because the cache may rarely have stale data, this should only be
-    used for displaying data read-only, not for populating forms or
-    procesing a POST to edit data.  For editing use case, load the
-    data from NDB directly.
-    """
-    result_dict: dict[int, int] = {}
-    futures = []
-
-    for fe_id in entry_ids:
-      lookup_key = self.feature_cache_key(
-          FeatureEntry.DEFAULT_CACHE_KEY, fe_id)
-      entry = rediscache.get(lookup_key)
-      if entry is None or update_cache:
-        futures.append(FeatureEntry.get_by_id_async(fe_id))
-      else:
-        result_dict[fe_id] = entry
-
-    for future in futures:
-      entry = future.get_result()
-      if entry and not entry.deleted:
-        store_key = self.feature_cache_key(
-            FeatureEntry.DEFAULT_CACHE_KEY, entry.key.integer_id())
-        rediscache.set(store_key, entry)
-        result_dict[entry.key.integer_id()] = entry
-
-    result_list = [result_dict[fe_id] for fe_id in entry_ids
-                   if fe_id in result_dict]
-    return result_list
+    return key
 
   # Note: get_in_milestone will be in a new file legacy_queries.py.
 
@@ -630,4 +491,6 @@ class Stage(ndb.Model):
   def get_feature_stages(cls, feature_id: int) -> dict[int, Stage]:
     """Return a dictionary of stages associated with a given feature."""
     stages: list[Stage] = cls.query(cls.feature_id == feature_id).fetch()
+    # TODO(danielrsmith): Refactor to return a list of stages for each type
+    # when multiple stages of the same type can exist.
     return {stage.stage_type: stage for stage in stages}

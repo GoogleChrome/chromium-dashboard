@@ -23,6 +23,7 @@ import werkzeug.exceptions  # Flask HTTP stuff.
 # from google.appengine.api import users
 from framework import users
 
+from main import Route
 from framework import basehandlers
 from framework import users
 from framework import xsrf
@@ -56,21 +57,21 @@ class TestableFlaskHandler(basehandlers.FlaskHandler):
 
 test_app = basehandlers.FlaskApplication(
     __name__,
-    [('/test', TestableFlaskHandler),
-     ('/data/test', TestableFlaskHandler),
-     ('/old_path', basehandlers.Redirector,
+    [Route('/test', TestableFlaskHandler),
+     Route('/data/test', TestableFlaskHandler),
+     Route('/old_path', basehandlers.Redirector,
       {'location': '/new_path'}),
-     ('/just_a_template', basehandlers.ConstHandler,
+     Route('/just_a_template', basehandlers.ConstHandler,
       {'template_path': 'test_template.html',
        'name': 'Guest'}),
-     ('/just_an_xml_template', basehandlers.ConstHandler,
+     Route('/just_an_xml_template', basehandlers.ConstHandler,
       {'template_path': 'farewell-rss.xml'}),
-     ('/must_be_signed_in', basehandlers.ConstHandler,
+     Route('/must_be_signed_in', basehandlers.ConstHandler,
       {'template_path': 'test_template.html',
        'require_signin': True}),
-     ('/messed_up_template', basehandlers.ConstHandler,
+     Route('/messed_up_template', basehandlers.ConstHandler,
       {'template_path': 'not_a_template'}),
-     ('/ui/density.json', basehandlers.ConstHandler,
+     Route('/ui/density.json', basehandlers.ConstHandler,
       {'UI density': ['default', 'comfortable', 'compact']}),
      ],
     [], # POST routes

@@ -35,7 +35,7 @@ from framework import users
 from framework import utils
 from framework import xsrf
 from internals import approval_defs
-from internals.core_models import Feature
+from internals.core_models import FeatureEntry
 from internals import user_models
 
 from google.auth.transport import requests
@@ -117,12 +117,13 @@ class BaseHandler(flask.views.MethodView):
       self.abort(400, msg='Parameter %r was not a bool' % name)
     return val
 
-  def get_specified_feature(self, feature_id: Optional[int]=None) -> Feature:
+  def get_specified_feature(
+      self, feature_id: Optional[int]=None) -> FeatureEntry:
     """Get the feature specified in the featureId parameter."""
     feature_id = (feature_id or
                   self.get_int_param('featureId', required=True))
     # Load feature directly from NDB so as to never get a stale cached copy.
-    feature = Feature.get_by_id(feature_id)
+    feature = FeatureEntry.get_by_id(feature_id)
     if not feature:
       self.abort(404, msg='Feature not found')
     user = self.get_current_user()
@@ -575,26 +576,21 @@ def FlaskApplication(import_name, routes, post_routes, pattern_base='', debug=Fa
     app.secret_key = secrets.get_session_secret()  # For flask.session
     app.permanent_session_lifetime = xsrf.REFRESH_TOKEN_TIMEOUT_SEC
 
-  for i, rule in enumerate(post_routes):
-    pattern = rule[0]
-    handler_class = rule[1]
-    classname = handler_class.__name__
+  for i, route in enumerate(post_routes):
+    classname = route.handler_class.__name__
     app.add_url_rule(
-        pattern_base + pattern,
-        endpoint=classname + str(i),  # We don't use it, but it must be unique.
-        view_func=handler_class.as_view(classname),
+        pattern_base + route.path,
+        endpoint=f'{classname}{i}',  # We don't use it, but it must be unique.
+        view_func=route.handler_class.as_view(classname),
         methods=["POST"])
 
-  for i, rule in enumerate(routes):
-    pattern = rule[0]
-    handler_class = rule[1]
-    defaults = rule[2] if len(rule) > 2 else None
-    classname = handler_class.__name__
+  for i, route in enumerate(routes):
+    classname = route.handler_class.__name__
     app.add_url_rule(
-        pattern_base + pattern,
-        endpoint=classname + str(i + len(post_routes)),  # We don't use it, but it must be unique.
-        view_func=handler_class.as_view(classname),
-        defaults=defaults)
+        pattern_base + route.path,
+        endpoint=f'{classname}{i + len(post_routes)}',  # We don't use it, but it must be unique.
+        view_func=route.handler_class.as_view(classname),
+        defaults=route.defaults)
 
   # The following causes flask to print a stack trace and return 500
   # when we are running locally and a handler raises a BadRequest exception.

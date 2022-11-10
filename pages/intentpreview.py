@@ -14,7 +14,7 @@
 # limitations under the License.
 
 # from google.appengine.api import users
-from api.converters import feature_to_legacy_json
+from api.converters import feature_entry_to_json_verbose
 
 from internals import core_enums
 from framework import basehandlers
@@ -51,7 +51,7 @@ class IntentEmailPreviewHandler(basehandlers.FlaskHandler):
     """Return a dictionary of data used to render the page."""
     page_data = {
         'subject_prefix': self.compute_subject_prefix(f, intent_stage),
-        'feature': feature_to_legacy_json(f),
+        'feature': feature_entry_to_json_verbose(f),
         'sections_to_show': processes.INTENT_EMAIL_SECTIONS.get(
             intent_stage, []),
         'intent_stage': intent_stage,

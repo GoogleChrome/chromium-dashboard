@@ -24,7 +24,7 @@ import flask
 import werkzeug
 
 from internals import approval_defs
-from internals import review_models
+from internals.review_models import Approval, Gate, Vote
 
 
 class FetchOwnersTest(testing_config.CustomTestCase):
@@ -71,11 +71,11 @@ class FetchOwnersTest(testing_config.CustomTestCase):
 
 MOCK_APPROVALS_BY_ID = {
     1: approval_defs.ApprovalFieldDef(
-        'Intent to test', 'API Owners',
+        'Intent to test',
         'You need permission to test',
         1, approval_defs.ONE_LGTM, ['approver@example.com']),
     2: approval_defs.ApprovalFieldDef(
-        'Intent to optimize', 'API Owners',
+        'Intent to optimize',
         'You need permission to optimize',
         2, approval_defs.THREE_LGTM, 'https://example.com'),
 }
@@ -118,24 +118,24 @@ class IsApprovedTest(testing_config.CustomTestCase):
 
   def setUp(self):
     feature_1_id = 123456
-    self.appr_nr = review_models.Approval(
+    self.appr_nr = Approval(
         feature_id=feature_1_id, field_id=1,
-        state=review_models.Approval.REVIEW_REQUESTED,
+        state=Approval.REVIEW_REQUESTED,
         set_on=datetime.datetime.now(),
         set_by='one@example.com')
-    self.appr_na = review_models.Approval(
+    self.appr_na = Approval(
         feature_id=feature_1_id, field_id=1,
-        state=review_models.Approval.NA,
+        state=Approval.NA,
         set_on=datetime.datetime.now(),
         set_by='one@example.com')
-    self.appr_no = review_models.Approval(
+    self.appr_no = Approval(
         feature_id=feature_1_id, field_id=1,
-        state=review_models.Approval.DENIED,
+        state=Approval.DENIED,
         set_on=datetime.datetime.now(),
         set_by='two@example.com')
-    self.appr_yes = review_models.Approval(
+    self.appr_yes = Approval(
         feature_id=feature_1_id, field_id=1,
-        state=review_models.Approval.APPROVED,
+        state=Approval.APPROVED,
         set_on=datetime.datetime.now(),
         set_by='three@example.com')
 
@@ -206,3 +206,170 @@ class IsApprovedTest(testing_config.CustomTestCase):
         [self.appr_yes, self.appr_yes, self.appr_yes], 2))
     self.assertTrue(approval_defs.is_resolved(
         [self.appr_yes, self.appr_yes, self.appr_yes, self.appr_no], 2))
+
+
+
+RR = Vote.REVIEW_REQUESTED
+AP = Vote.APPROVED
+DN = Vote.DENIED
+NW = Vote.NEEDS_WORK
+RS = Vote.REVIEW_STARTED
+NA = Vote.NA
+GATE_VALUES= Vote.VOTE_VALUES.copy()
+GATE_VALUES.update({Gate.PREPARING: 'preparing'})
+
+
+class CalcGateStateTest(testing_config.CustomTestCase):
+
+  def do_calc(self, *vote_states):
+    votes = [    # set_on dates are in the order of the given list.
+        Vote(state=state, set_on=datetime.datetime(2022, 1, i+1))
+        for i, state in enumerate(vote_states)]
+    actual_1 = approval_defs._calc_gate_state(votes, approval_defs.ONE_LGTM)
+    actual_3 = approval_defs._calc_gate_state(votes, approval_defs.THREE_LGTM)
+    return GATE_VALUES[actual_1], GATE_VALUES[actual_3]
+
+  def test_no_votes_yet(self):
+    """A newly created gate has no votes and should be PREPARING."""
+    self.assertEqual(('preparing', 'preparing'),
+                     self.do_calc())
+
+  def test_just_requested(self):
+    """The user has requested a review."""
+    self.assertEqual(('review_requested', 'review_requested'),
+                     self.do_calc(RR))
+
+  def test_request_one_approved(self):
+    """The user has requested a review and it was approved."""
+    self.assertEqual(('approved', 'review_requested'),
+                     self.do_calc(RR, AP))
+
+  def test_request_three_approved(self):
+    """The user has requested a review and it got 3 approvals."""
+    self.assertEqual(('approved', 'approved'),
+                     self.do_calc(RR, AP, AP, AP))
+
+  def test_request_needs_work(self):
+    """The user has requested a review and a reviewer said it needs work."""
+    self.assertEqual(('needs_work', 'needs_work'),
+                     self.do_calc(RR, NW))
+    self.assertEqual(('needs_work', 'needs_work'),
+                     self.do_calc(RR, RS, NW))
+    self.assertEqual(('needs_work', 'needs_work'),
+                     self.do_calc(RR, NW, NW))
+
+  def test_request_disagreement(self):
+    """Reviewers may have different opinions, needed LGTMs counted."""
+    self.assertEqual(('approved', 'needs_work'),
+                     self.do_calc(RR, AP, NW))
+    self.assertEqual(('approved', 'needs_work'),
+                     self.do_calc(RR, NW, AP))
+    self.assertEqual(('approved', 'review_requested'),
+                     self.do_calc(RR, AP))
+    self.assertEqual(('approved', 'review_requested'),
+                     self.do_calc(RR, AP, AP))
+    self.assertEqual(('approved', 'review_started'),
+                     self.do_calc(RR, AP, AP, RS))
+    self.assertEqual(('approved', 'needs_work'),
+                     self.do_calc(RR, AP, NW, AP))
+
+  def test_ping(self):
+    """Feature owner re-requested review after feedback or waiting."""
+    self.assertEqual(('review_requested', 'review_requested'),
+                     self.do_calc(NW, RR))
+    self.assertEqual(('review_requested', 'review_requested'),
+                     self.do_calc(DN, RR))
+    self.assertEqual(('review_requested', 'review_requested'),
+                     self.do_calc(RS, RR))
+    self.assertEqual(('review_requested', 'review_requested'),
+                     self.do_calc(NW, NW, RS, RR))
+
+  def test_ping_pong(self):
+    """More reviewer votes after re-request."""
+    self.assertEqual(('review_started', 'review_started'),
+                     self.do_calc(NW, RR, RS))
+    self.assertEqual(('approved', 'review_requested'),
+                     self.do_calc(DN, RR, AP))
+    self.assertEqual(('approved', 'needs_work'),
+                     self.do_calc(RS, RR, AP, NW))
+    self.assertEqual(('approved', 'approved'),
+                     self.do_calc(AP, AP, RS, AP))
+
+
+class UpdateTest(testing_config.CustomTestCase):
+
+  def setUp(self):
+    self.gate_1 = Gate(feature_id=1, stage_id=1, gate_type=2, state=Vote.APPROVED)
+    self.gate_1.put()
+    gate_id = self.gate_1.key.integer_id()
+    self.votes = []
+    # Votes that reference gate_1 show that it got the one APPROVED needed.
+    self.votes.append(Vote(feature_id=1, gate_id=gate_id, state=Vote.APPROVED,
+        set_on=datetime.datetime(2020, 1, 1), set_by='user1@example.com'))
+    self.votes.append(Vote(feature_id=1, gate_id=gate_id,
+        state=Vote.DENIED, set_on=datetime.datetime(2020, 1, 1),
+        set_by='use21@example.com'))
+    self.votes.append(Vote(feature_id=1, gate_id=gate_id,
+        state=Vote.REVIEW_REQUESTED, set_on=datetime.datetime(2020, 2, 1),
+        set_by='use31@example.com'))
+    self.votes.append(Vote(feature_id=1, gate_id=gate_id,
+        state=Vote.REVIEW_REQUESTED, set_on=datetime.datetime(2020, 3, 1),
+        set_by='user4@example.com'))
+    self.votes.append(Vote(feature_id=1, gate_id=gate_id,
+        state=Vote.REVIEW_REQUESTED, set_on=datetime.datetime(2020, 1, 2),
+        set_by='user5@example.com'))
+
+    self.gate_2 = Gate(feature_id=2, stage_id=2, gate_type=2,
+        state=Vote.APPROVED)
+    self.gate_2.put()
+    gate_id = self.gate_2.key.integer_id()
+    self.votes.append(Vote(feature_id=1, gate_id=gate_id,
+        state=Vote.REVIEW_REQUESTED, set_on=datetime.datetime(2020, 7, 1),
+        set_by='user6@example.com'))
+    # Votes that reference gate_2 indicate it should be APPROVED.
+    self.votes.append(Vote(feature_id=1, gate_id=gate_id, state=Vote.APPROVED,
+        set_on=datetime.datetime(2020, 2, 1), set_by='user7@example.com'))
+    self.votes.append(Vote(feature_id=1, gate_id=gate_id, state=Vote.APPROVED,
+        set_on=datetime.datetime(2020, 4, 10), set_by='user8@example.com'))
+    self.votes.append(Vote(feature_id=1, gate_id=gate_id, state=Vote.NEEDS_WORK,
+        set_on=datetime.datetime(2020, 1, 15), set_by='user9@example.com'))
+    self.votes.append(Vote(
+        feature_id=1, gate_id=gate_id, state=Vote.REVIEW_STARTED,
+        set_on=datetime.datetime(2020, 8, 23), set_by='user10@example.com'))
+    self.votes.append(Vote(feature_id=1, gate_id=gate_id, state=Vote.APPROVED,
+        set_on=datetime.datetime(2021, 1, 1), set_by='user11@example.com'))
+
+    # Some additional votes that should have no bearing on the gates.
+    self.votes.append(Vote(feature_id=2, gate_id=5, state=Vote.DENIED,
+        set_on=datetime.datetime(2021, 1, 1), set_by='user11@example.com'))
+    self.votes.append(Vote(feature_id=3, gate_id=3, state=Vote.REVIEW_REQUESTED,
+        set_on=datetime.datetime(2021, 1, 1), set_by='user11@example.com'))
+    self.votes.append(Vote(feature_id=2, gate_id=1, state=Vote.REVIEW_REQUESTED,
+        set_on=datetime.datetime(2021, 1, 1), set_by='user11@example.com'))
+    self.votes.append(Vote(feature_id=2, gate_id=1, state=Vote.NA,
+        set_on=datetime.datetime(2021, 1, 1), set_by='user11@example.com'))
+    self.votes.append(Vote(feature_id=1, gate_id=2, state=Vote.APPROVED,
+        set_on=datetime.datetime(2021, 1, 1), set_by='user11@example.com'))
+
+    for vote in self.votes:
+      vote.put()
+
+  def tearDown(self):
+    self.gate_1.key.delete()
+    self.gate_2.key.delete()
+    for vote in self.votes:
+      vote.key.delete()
+
+  def test_update_approval_stage__needs_update(self):
+    """Gate's approval state will be updated based on votes."""
+    # Gate 1 should evaluate to not approved after updating.
+    self.assertEqual(
+        approval_defs.update_gate_approval_state(self.gate_1), Vote.APPROVED)
+    self.assertEqual(self.gate_1.state, Vote.APPROVED)
+
+  def test_update_approval_state__no_change(self):
+    """Gate's approval state does not change unless it needs to."""
+    # Gate 2 is already marked as approved and should not change.
+    self.assertEqual(
+        approval_defs.update_gate_approval_state(self.gate_2), Vote.APPROVED)
+    self.assertEqual(self.gate_2.state, Vote.APPROVED)

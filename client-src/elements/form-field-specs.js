@@ -864,7 +864,7 @@ export const ALL_FIELDS = {
     label: 'Finch experiment',
     help_text: html`
       If your feature will roll out gradually via a
-      <a href="go/finch" targe="_blank">Finch experiment</a>,
+      <a href="http://go/finch" targe="_blank">Finch experiment</a>,
       link to it here.`,
   },
 
@@ -903,7 +903,7 @@ export const ALL_FIELDS = {
 
   'debuggability': {
     type: 'textarea',
-    required: true,
+    required: false,
     label: 'Debuggability',
     help_text: html`
       Description of the DevTools debugging support for your feature.
@@ -1190,5 +1190,4 @@ export const DISPLAY_FIELDS_IN_STAGES = {
     'intent_to_ship_url', 'i2s_lgtms',
   ]),
   [INTENT_STAGES.INTENT_SHIPPED[0]]: makeDisplaySpecs([]),
-  'Misc': makeDisplaySpecs([]),
 };

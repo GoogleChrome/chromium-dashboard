@@ -13,45 +13,49 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import collections
+from dataclasses import asdict, dataclass
 
 from internals import approval_defs
 from internals import core_enums
-from internals import core_models
 
 
-Process = collections.namedtuple(
-    'Process',
-    'name, description, applicability, stages')
+@dataclass
+class Action:
+  name: str
+  url: str
+  prerequisites: list[str]
+
+@dataclass
+class ProgressItem:
+  name: str
+  field: str | None = None
+
 # Note: A new feature always starts with intent_stage == INTENT_NONE
 # regardless of process.  intent_stage is set to the first stage of
 # a specific process when the user clicks a "Start" button and submits
 # a form that sets intent_stage.
+@dataclass
+class ProcessStage:
+  name: str
+  description: str
+  progress_items: list[ProgressItem]
+  actions: list[Action]
+  approvals: list[approval_defs.ApprovalFieldDef]
+  incoming_stage: int
+  outgoing_stage: int
 
-
-ProcessStage = collections.namedtuple(
-    'ProcessStage',
-    'name, description, progress_items, actions, approvals, '
-    'incoming_stage, outgoing_stage')
-
-ProgressItem = collections.namedtuple(
-    'ProgressItem',
-    'name, field')
-
-Action = collections.namedtuple(
-    'Action',
-    'name, url, prerequisites')
+@dataclass
+class Process:
+  name: str
+  description: str
+  applicability: str
+  stages: list[ProcessStage]
 
 
 def process_to_dict(process):
-  """Return nested dicts for the nested namedtuples of a process."""
-  # These lines are sort of like a deep version of _asdict().
-  stages = [stage._asdict() for stage in process.stages]
-  for stage in stages:
-    stage['progress_items'] = [pi._asdict() for pi in stage['progress_items']]
-    stage['actions'] = [act._asdict() for act in stage['actions']]
-    stage['approvals'] = [appr._asdict() for appr in stage['approvals']]
-
+  """Return nested dicts for the nested dataclasses of a process."""
+  # asdict() will recursively convert any dataclass props to dicts.
+  stages = [asdict(stage) for stage in process.stages]
   process_dict = {
       'name': process.name,
       'description': process.description,
@@ -81,17 +85,17 @@ PI_EXPLAINER = ProgressItem('Explainer', 'explainer_links')
 
 PI_SPEC_LINK = ProgressItem('Spec link', 'spec_link')
 PI_SPEC_MENTOR = ProgressItem('Spec mentor', 'spec_mentors')
-PI_DRAFT_API_SPEC = ProgressItem('Draft API spec', None)
+PI_DRAFT_API_SPEC = ProgressItem('Draft API spec')
 PI_I2P_EMAIL = ProgressItem(
     'Intent to Prototype email', 'intent_to_implement_url')
 
 PI_SAMPLES = ProgressItem('Samples', 'sample_links')
-PI_DRAFT_API_OVERVIEW = ProgressItem('Draft API overview (may be on MDN)', None)
+PI_DRAFT_API_OVERVIEW = ProgressItem('Draft API overview (may be on MDN)')
 PI_REQUEST_SIGNALS = ProgressItem('Request signals', 'safari_views')
-PI_SEC_REVIEW = ProgressItem('Security review issues addressed', None)
-PI_PRI_REVIEW = ProgressItem('Privacy review issues addressed', None)
+PI_SEC_REVIEW = ProgressItem('Security review issues addressed')
+PI_PRI_REVIEW = ProgressItem('Privacy review issues addressed')
 # TODO(jrobbins): needs detector.
-PI_EXTERNAL_REVIEWS = ProgressItem('External reviews', None)
+PI_EXTERNAL_REVIEWS = ProgressItem('External reviews')
 PI_R4DT_EMAIL = ProgressItem('Ready for Trial email', 'ready_for_trial_url')
 
 PI_TAG_REQUESTED = ProgressItem('TAG review requested', 'tag_review')
@@ -99,21 +103,21 @@ PI_VENDOR_SIGNALS = ProgressItem('Vendor signals', 'safari_views')
 PI_WEB_DEV_SIGNALS = ProgressItem('Web developer signals', 'web_dev_views')
 PI_DOC_LINKS = ProgressItem('Doc links', 'doc_links')
 # TODO(jrobbins): needs detector.
-PI_DOC_SIGNOFF = ProgressItem('Documentation signoff', None)
+PI_DOC_SIGNOFF = ProgressItem('Documentation signoff')
 PI_EST_TARGET_MILESTONE = ProgressItem(
     'Estimated target milestone', 'shipped_milestone')
 
 # TODO(jrobbins): needs detector.
-PI_OT_REQUEST = ProgressItem('OT request', None)
+PI_OT_REQUEST = ProgressItem('OT request')
 # TODO(jrobbins): needs detector.
-PI_OT_AVAILABLE = ProgressItem('OT available', None)
+PI_OT_AVAILABLE = ProgressItem('OT available')
 # TODO(jrobbins): needs detector.
-PI_OT_RESULTS = ProgressItem('OT results', None)
+PI_OT_RESULTS = ProgressItem('OT results')
 PI_I2E_EMAIL = ProgressItem(
     'Intent to Experiment email', 'intent_to_experiment_url')
 PI_I2E_LGTMS = ProgressItem('One LGTM on Intent to Experiment', 'i2e_lgtms')
 
-PI_MIGRATE_INCUBATION = ProgressItem('Request to migrate incubation', None)
+PI_MIGRATE_INCUBATION = ProgressItem('Request to migrate incubation')
 PI_TAG_ADDRESSED = ProgressItem(
     'TAG review issues addressed', 'tag_review_status')
 PI_UPDATED_VENDOR_SIGNALS = ProgressItem(
@@ -129,25 +133,25 @@ PI_FINAL_VENDOR_SIGNALS = ProgressItem('Finalized vendor signals', 'safari_views
 PI_FINAL_TARGET_MILESTONE = ProgressItem(
     'Finalized target milestone', 'shipped_milestone')
 
-PI_CODE_IN_CHROMIUM = ProgressItem('Code in Chromium', None)
+PI_CODE_IN_CHROMIUM = ProgressItem('Code in Chromium')
 
-PI_PSA_EMAIL = ProgressItem('Web facing PSA email', None)
+PI_PSA_EMAIL = ProgressItem('Web facing PSA email')
 
 # TODO(jrobbins): needs detector.
-PI_DT_REQUEST = ProgressItem('DT request', None)
+PI_DT_REQUEST = ProgressItem('DT request')
 # TODO(jrobbins): needs detector.
-PI_DT_AVAILABLE = ProgressItem('DT available', None)
+PI_DT_AVAILABLE = ProgressItem('DT available')
 # TODO(jrobbins): needs detector.
-PI_REMOVAL_OF_DT = ProgressItem('Removal of DT', None)
+PI_REMOVAL_OF_DT = ProgressItem('Removal of DT')
 PI_DT_EMAIL = ProgressItem(
     'Request for Deprecation Trial email', 'intent_to_experiment_url')
 PI_DT_LGTMS = ProgressItem(
     'One LGTM on Request for Deprecation Trial', 'i2e_lgtms')
 
 # TODO(jrobbins): needs detector.
-PI_EXISTING_FEATURE = ProgressItem('Link to existing feature', None)
+PI_EXISTING_FEATURE = ProgressItem('Link to existing feature')
 
-PI_CODE_REMOVED = ProgressItem('Code removed', None)
+PI_CODE_REMOVED = ProgressItem('Code removed')
 
 
 BLINK_PROCESS_STAGES = [
@@ -523,99 +527,96 @@ def review_is_done(status):
 # be used as a link URL.
 PROGRESS_DETECTORS = {
     'Initial public proposal':
-    lambda f: f.initial_public_proposal_url,
+    lambda f, _: f.initial_public_proposal_url,
 
     'Explainer':
-    lambda f: f.explainer_links and f.explainer_links[0],
+    lambda f, _: f.explainer_links and f.explainer_links[0],
 
     'Security review issues addressed':
-    lambda f: review_is_done(f.security_review_status),
+    lambda f, _: review_is_done(f.security_review_status),
 
     'Privacy review issues addressed':
-    lambda f: review_is_done(f.privacy_review_status),
+    lambda f, _: review_is_done(f.privacy_review_status),
 
     'Intent to Prototype email':
-    lambda f: f.intent_to_implement_url,
+    lambda f, stages: (
+        core_enums.STAGE_TYPES_PROTOTYPE[f.feature_type] and
+        stages[core_enums.STAGE_TYPES_PROTOTYPE[f.feature_type]].intent_thread_url),
 
     'Intent to Ship email':
-    lambda f: f.intent_to_ship_url,
+    lambda f, stages: (core_enums.STAGE_TYPES_SHIPPING[f.feature_type] and
+        stages[core_enums.STAGE_TYPES_SHIPPING[f.feature_type]].intent_thread_url),
 
     'Ready for Trial email':
-    lambda f: f.ready_for_trial_url,
+    lambda f, stages: (core_enums.STAGE_TYPES_DEV_TRIAL[f.feature_type] and
+        stages[core_enums.STAGE_TYPES_DEV_TRIAL[f.feature_type]].announcement_url),
 
     'Intent to Experiment email':
-    lambda f: f.intent_to_experiment_url,
-
-    'One LGTM on Intent to Experiment':
-    lambda f: f.i2e_lgtms,
-
-    'One LGTM on Request for Deprecation Trial':
-    lambda f: f.i2e_lgtms,
-
-    'Three LGTMs on Intent to Ship':
-    lambda f: f.i2s_lgtms and len(f.i2s_lgtms) >= 3,
+    lambda f, stages: (core_enums.STAGE_TYPES_ORIGIN_TRIAL[f.feature_type] and
+        stages[core_enums.STAGE_TYPES_ORIGIN_TRIAL[f.feature_type]].intent_thread_url),
 
     'Samples':
-    lambda f: f.sample_links and f.sample_links[0],
+    lambda f, _: f.sample_links and f.sample_links[0],
 
     'Doc links':
-    lambda f: f.doc_links and f.doc_links[0],
+    lambda f, _: f.doc_links and f.doc_links[0],
 
     'Spec link':
-    lambda f: f.spec_link,
+    lambda f, _: f.spec_link,
 
     'Draft API spec':
-    lambda f: f.spec_link,
+    lambda f, _: f.spec_link,
 
     'API spec':
-    lambda f: f.api_spec,
+    lambda f, _: f.api_spec,
 
     'Spec mentor':
-    lambda f: f.spec_mentors,
+    lambda f, _: f.spec_mentor_emails,
 
     'TAG review requested':
-    lambda f: f.tag_review,
+    lambda f, _: f.tag_review,
 
     'TAG review issues addressed':
-    lambda f: review_is_done(f.tag_review_status),
+    lambda f, _: review_is_done(f.tag_review_status),
 
     'Web developer signals':
-    lambda f: bool(f.web_dev_views and
-                   f.web_dev_views != core_enums.DEV_NO_SIGNALS),
+    lambda f, _: bool(f.web_dev_views and
+        f.web_dev_views != core_enums.DEV_NO_SIGNALS),
 
     'Vendor signals':
-    lambda f: bool(
+    lambda f, _: bool(
         f.ff_views != core_enums.NO_PUBLIC_SIGNALS or
-        f.safari_views != core_enums.NO_PUBLIC_SIGNALS or
-        f.ie_views != core_enums.NO_PUBLIC_SIGNALS),  # IE Deprecated
+        f.safari_views != core_enums.NO_PUBLIC_SIGNALS),
 
     'Updated vendor signals':
-    lambda f: bool(
+    lambda f, _: bool(
         f.ff_views != core_enums.NO_PUBLIC_SIGNALS or
-        f.safari_views != core_enums.NO_PUBLIC_SIGNALS or
-        f.ie_views != core_enums.NO_PUBLIC_SIGNALS),  # IE Deprecated
+        f.safari_views != core_enums.NO_PUBLIC_SIGNALS),
 
     'Final vendor signals':
-    lambda f: bool(
+    lambda f, _: bool(
         f.ff_views != core_enums.NO_PUBLIC_SIGNALS or
-        f.safari_views != core_enums.NO_PUBLIC_SIGNALS or
-        f.ie_views != core_enums.NO_PUBLIC_SIGNALS),  # IE Deprecated
+        f.safari_views != core_enums.NO_PUBLIC_SIGNALS),
 
     'Estimated target milestone':
-    lambda f: bool(f.shipped_milestone),
+    lambda f, stages: bool(core_enums.STAGE_TYPES_SHIPPING[f.feature_type] and
+        stages[core_enums.STAGE_TYPES_SHIPPING[f.feature_type]].milestones and
+        stages[core_enums.STAGE_TYPES_SHIPPING[f.feature_type]].milestones.desktop_first),
 
     'Final target milestone':
-    lambda f: bool(f.shipped_milestone),
+    lambda f, stages: bool(core_enums.STAGE_TYPES_SHIPPING[f.feature_type] and
+        stages[core_enums.STAGE_TYPES_SHIPPING[f.feature_type]].milestones and
+        stages[core_enums.STAGE_TYPES_SHIPPING[f.feature_type]].milestones.desktop_first),
 
     'Code in Chromium':
-    lambda f: f.impl_status_chrome in (
+    lambda f, _: f.impl_status_chrome in (
         core_enums.IN_DEVELOPMENT, core_enums.BEHIND_A_FLAG,
         core_enums.ENABLED_BY_DEFAULT,
         core_enums.ORIGIN_TRIAL, core_enums.INTERVENTION),
 
     'Motivation':
-    lambda f: bool(f.motivation),
+    lambda f, _: bool(f.motivation),
 
     'Code removed':
-    lambda f: f.impl_status_chrome == core_enums.REMOVED,
+    lambda f, _: f.impl_status_chrome == core_enums.REMOVED,
 }

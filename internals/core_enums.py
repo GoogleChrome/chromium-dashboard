@@ -244,6 +244,14 @@ STAGE_TYPES_BY_FIELD_MAPPING: dict[str, dict[int, Optional[int]]] = {
     'dt_milestone_webview_start': STAGE_TYPES_DEV_TRIAL
   }
 
+# Mapping of which stage types are associated with each gate type.
+STAGE_TYPES_BY_GATE_TYPE_MAPPING: dict[int, dict[int, Optional[int]]] = {
+  GATE_PROTOTYPE: STAGE_TYPES_PROTOTYPE,
+  GATE_ORIGIN_TRIAL: STAGE_TYPES_ORIGIN_TRIAL,
+  GATE_EXTEND_ORIGIN_TRIAL: STAGE_TYPES_EXTEND_ORIGIN_TRIAL,
+  GATE_SHIP: STAGE_TYPES_SHIPPING
+}
+
 NO_ACTIVE_DEV = 1
 PROPOSED = 2
 IN_DEVELOPMENT = 3

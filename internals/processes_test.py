@@ -24,9 +24,9 @@ from internals import processes
 
 
 BakeApproval = approval_defs.ApprovalFieldDef(
-    'Approval for baking', 'Chef',
+    'Approval for baking',
     'The head chef must approve of you using the oven',
-    9, approval_defs.ONE_LGTM, ['chef@example.com'])
+    9, approval_defs.ONE_LGTM, ['chef@example.com'], 'Chef')
 
 BAKE_APPROVAL_DEF_DICT = collections.OrderedDict([
     ('name', 'Approval for baking'),
@@ -141,140 +141,130 @@ class ProcessesWellFormedTest(testing_config.CustomTestCase):
 class ProgressDetectorsTest(testing_config.CustomTestCase):
 
   def setUp(self):
-    self.feature_1 = core_models.Feature(
+    self.feature_1 = core_models.FeatureEntry(
         name='feature one', summary='sum', category=1,
-        intent_stage=core_enums.INTENT_IMPLEMENT)
+        intent_stage=core_enums.INTENT_IMPLEMENT, feature_type=0)
     self.feature_1.put()
+    stage_types = [110, 120, 130, 140, 150, 151, 160]
+    self.stages: list[core_models.Stage] = []
+    for s_type in stage_types:
+      stage = core_models.Stage(feature_id=self.feature_1.key.integer_id(),
+          stage_type=s_type)
+      stage.put()
+      self.stages.append(stage)
+    self.stages_dict = core_models.Stage.get_feature_stages(
+        self.feature_1.key.integer_id())
 
   def tearDown(self):
     self.feature_1.key.delete()
+    for stage in self.stages:
+      stage.key.delete()
 
   def test_initial_public_proposal_url(self):
     detector = processes.PROGRESS_DETECTORS['Initial public proposal']
-    self.assertFalse(detector(self.feature_1))
+    self.assertFalse(detector(self.feature_1, self.stages_dict))
     self.feature_1.initial_public_proposal_url = 'http://example.com'
-    self.assertTrue(detector(self.feature_1))
+    self.assertTrue(detector(self.feature_1, self.stages_dict))
 
   def test_explainer(self):
     detector = processes.PROGRESS_DETECTORS['Explainer']
-    self.assertFalse(detector(self.feature_1))
+    self.assertFalse(detector(self.feature_1, self.stages_dict))
     self.feature_1.explainer_links = ['http://example.com']
-    self.assertTrue(detector(self.feature_1))
+    self.assertTrue(detector(self.feature_1, self.stages_dict))
 
   def test_security_review_completed(self):
     detector = processes.PROGRESS_DETECTORS['Security review issues addressed']
-    self.assertFalse(detector(self.feature_1))
+    self.assertFalse(detector(self.feature_1, self.stages_dict))
     self.feature_1.security_review_status = core_enums.REVIEW_ISSUES_ADDRESSED
-    self.assertTrue(detector(self.feature_1))
+    self.assertTrue(detector(self.feature_1, self.stages_dict))
 
   def test_privacy_review_completed(self):
     detector = processes.PROGRESS_DETECTORS['Privacy review issues addressed']
-    self.assertFalse(detector(self.feature_1))
+    self.assertFalse(detector(self.feature_1, self.stages_dict))
     self.feature_1.privacy_review_status = core_enums.REVIEW_ISSUES_ADDRESSED
-    self.assertTrue(detector(self.feature_1))
+    self.assertTrue(detector(self.feature_1, self.stages_dict))
 
   def test_intent_to_prototype_email(self):
     detector = processes.PROGRESS_DETECTORS['Intent to Prototype email']
-    self.assertFalse(detector(self.feature_1))
-    self.feature_1.intent_to_implement_url = 'http://example.com'
-    self.assertTrue(detector(self.feature_1))
+    self.assertFalse(detector(self.feature_1, self.stages_dict))
+    self.stages_dict[120].intent_thread_url = 'http://example.com/prototype'
+    self.assertTrue(detector(self.feature_1, self.stages_dict))
 
   def test_intent_to_ship_email(self):
     detector = processes.PROGRESS_DETECTORS['Intent to Ship email']
-    self.assertFalse(detector(self.feature_1))
-    self.feature_1.intent_to_ship_url = 'http://example.com'
-    self.assertTrue(detector(self.feature_1))
+    self.assertFalse(detector(self.feature_1, self.stages_dict))
+    self.stages_dict[160].intent_thread_url = 'http://example.com/ship'
+    self.assertTrue(detector(self.feature_1, self.stages_dict))
 
   def test_ready_for_trial_email(self):
     detector = processes.PROGRESS_DETECTORS['Ready for Trial email']
-    self.assertFalse(detector(self.feature_1))
-    self.feature_1.ready_for_trial_url = 'http://example.com'
-    self.assertTrue(detector(self.feature_1))
+    self.assertFalse(detector(self.feature_1, self.stages_dict))
+    self.stages_dict[130].announcement_url = 'http://example.com/trial_ready'
+    self.assertTrue(detector(self.feature_1, self.stages_dict))
 
   def test_intent_to_experiment_email(self):
     detector = processes.PROGRESS_DETECTORS['Intent to Experiment email']
-    self.assertFalse(detector(self.feature_1))
-    self.feature_1.intent_to_experiment_url = 'http://example.com'
-    self.assertTrue(detector(self.feature_1))
-
-  def test_one_i2e_lgtm(self):
-    detector = processes.PROGRESS_DETECTORS['One LGTM on Intent to Experiment']
-    self.assertFalse(detector(self.feature_1))
-    self.feature_1.i2e_lgtms = ['api_owner@chromium.org']
-    self.assertTrue(detector(self.feature_1))
-
-  def test_two_i2e_lgtm(self):
-    detector = processes.PROGRESS_DETECTORS[
-        'One LGTM on Request for Deprecation Trial']
-    self.assertFalse(detector(self.feature_1))
-    self.feature_1.i2e_lgtms = ['api_owner@chromium.org']
-    self.assertTrue(detector(self.feature_1))
-
-  def test_three_i2s_lgtm(self):
-    detector = processes.PROGRESS_DETECTORS['Three LGTMs on Intent to Ship']
-    self.assertFalse(detector(self.feature_1))
-    self.feature_1.i2s_lgtms = [
-        'one@chromium.org',
-        'two@chromium.org',
-        'three@chromium.org']
-    self.assertTrue(detector(self.feature_1))
+    self.assertFalse(detector(self.feature_1, self.stages_dict))
+    self.stages_dict[150].intent_thread_url = 'http://example.com/ot'
+    self.assertTrue(detector(self.feature_1, self.stages_dict))
 
   def test_samples(self):
     detector = processes.PROGRESS_DETECTORS['Samples']
-    self.assertFalse(detector(self.feature_1))
+    self.assertFalse(detector(self.feature_1, self.stages_dict))
     self.feature_1.sample_links = ['http://example.com']
-    self.assertTrue(detector(self.feature_1))
+    self.assertTrue(detector(self.feature_1, self.stages_dict))
 
   def test_doc_links(self):
     detector = processes.PROGRESS_DETECTORS['Doc links']
-    self.assertFalse(detector(self.feature_1))
+    self.assertFalse(detector(self.feature_1, self.stages_dict))
     self.feature_1.doc_links = ['http://example.com']
-    self.assertTrue(detector(self.feature_1))
+    self.assertTrue(detector(self.feature_1, self.stages_dict))
 
   def test_tag_review_requested(self):
     detector = processes.PROGRESS_DETECTORS['TAG review requested']
-    self.assertFalse(detector(self.feature_1))
+    self.assertFalse(detector(self.feature_1, self.stages_dict))
     self.feature_1.tag_review = 'http://example.com'
-    self.assertTrue(detector(self.feature_1))
+    self.assertTrue(detector(self.feature_1, self.stages_dict))
 
   def test_tag_review_completed(self):
     detector = processes.PROGRESS_DETECTORS['TAG review issues addressed']
-    self.assertFalse(detector(self.feature_1))
+    self.assertFalse(detector(self.feature_1, self.stages_dict))
     self.feature_1.tag_review_status = core_enums.REVIEW_ISSUES_ADDRESSED
-    self.assertTrue(detector(self.feature_1))
+    self.assertTrue(detector(self.feature_1, self.stages_dict))
 
-  def test_web_dav_signals(self):
+  def test_web_dev_signals(self):
     detector = processes.PROGRESS_DETECTORS['Web developer signals']
-    self.assertFalse(detector(self.feature_1))
+    self.assertFalse(detector(self.feature_1, self.stages_dict))
     self.feature_1.web_dev_views = core_enums.PUBLIC_SUPPORT
-    self.assertTrue(detector(self.feature_1))
+    self.assertTrue(detector(self.feature_1, self.stages_dict))
 
   def test_vendor_signals(self):
     detector = processes.PROGRESS_DETECTORS['Vendor signals']
-    self.assertFalse(detector(self.feature_1))
+    self.assertFalse(detector(self.feature_1, self.stages_dict))
     self.feature_1.ff_views = core_enums.PUBLIC_SUPPORT
-    self.assertTrue(detector(self.feature_1))
+    self.assertTrue(detector(self.feature_1, self.stages_dict))
 
   def test_estimated_target_milestone(self):
     detector = processes.PROGRESS_DETECTORS['Estimated target milestone']
-    self.assertFalse(detector(self.feature_1))
-    self.feature_1.shipped_milestone = 99
-    self.assertTrue(detector(self.feature_1))
+    self.stages_dict[160].milestones = core_models.MilestoneSet()
+    self.assertFalse(detector(self.feature_1, self.stages_dict))
+    self.stages_dict[160].milestones.desktop_first = 99
+    self.assertTrue(detector(self.feature_1, self.stages_dict))
 
   def test_code_in_chromium(self):
     detector = processes.PROGRESS_DETECTORS['Code in Chromium']
-    self.assertFalse(detector(self.feature_1))
+    self.assertFalse(detector(self.feature_1, self.stages_dict))
     self.feature_1.impl_status_chrome = core_enums.ENABLED_BY_DEFAULT
-    self.assertTrue(detector(self.feature_1))
+    self.assertTrue(detector(self.feature_1, self.stages_dict))
 
   def test_motivation(self):
     detector = processes.PROGRESS_DETECTORS['Motivation']
-    self.assertFalse(detector(self.feature_1))
+    self.assertFalse(detector(self.feature_1, self.stages_dict))
     self.feature_1.motivation = 'test motivation'
-    self.assertTrue(detector(self.feature_1))
+    self.assertTrue(detector(self.feature_1, self.stages_dict))
 
   def test_code_removed(self):
     detector = processes.PROGRESS_DETECTORS['Code removed']
-    self.assertFalse(detector(self.feature_1))
+    self.assertFalse(detector(self.feature_1, self.stages_dict))
     self.feature_1.impl_status_chrome = core_enums.REMOVED
-    self.assertTrue(detector(self.feature_1))
+    self.assertTrue(detector(self.feature_1, self.stages_dict))
