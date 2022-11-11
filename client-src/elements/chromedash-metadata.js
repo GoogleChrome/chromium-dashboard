@@ -80,11 +80,6 @@ class ChromedashMetadata extends LitElement {
     this._fireEvent('query-changed', {version: this.selected});
   }
 
-  // Directly called in chromedash-featurelist
-  selectMilestone(feature) {
-    this.selected = feature.browsers.chrome.status.milestone_str;
-  }
-
   selectInVersionList(index) {
     this.shadowRoot.getElementById('versionlist').selectedIndex = index; ; // log null
   }

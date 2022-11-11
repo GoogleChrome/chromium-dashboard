@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from asyncio import Future
 import logging
 import re
 from typing import Any, Optional
@@ -139,32 +140,6 @@ def get_all_legacy(limit=None, order='-updated', filterby=None,
 
   return feature_list
 
-def get_feature_legacy(feature_id: int, update_cache: bool=False) -> Optional[Feature]:
-  """Return a JSON dict for a feature.
-
-  Because the cache may rarely have stale data, this should only be
-  used for displaying data read-only, not for populating forms or
-  procesing a POST to edit data.  For editing use case, load the
-  data from NDB directly.
-  """
-  KEY = Feature.feature_cache_key(Feature.DEFAULT_CACHE_KEY, feature_id)
-  feature = rediscache.get(KEY)
-
-  if feature is None or update_cache:
-    unformatted_feature: Optional[Feature] = Feature.get_by_id(feature_id)
-    if unformatted_feature:
-      if unformatted_feature.deleted:
-        return None
-      feature = converters.feature_to_legacy_json(unformatted_feature)
-      feature['updated_display'] = (
-          unformatted_feature.updated.strftime("%Y-%m-%d"))
-      feature['new_crbug_url'] = _new_crbug_url(
-          unformatted_feature.blink_components, unformatted_feature.bug_url,
-          unformatted_feature.impl_status_chrome, unformatted_feature.owner)
-      rediscache.set(KEY, feature)
-
-  return feature
-
 def filter_unlisted(feature_list: list[dict]) -> list[dict]:
   """Filters a feature list to display only features the user should see."""
   user = users.get_current_user()
@@ -182,7 +157,7 @@ def filter_unlisted(feature_list: list[dict]) -> list[dict]:
 
   return listed_features
 
-def get_chronological(limit=None, update_cache: bool=False,
+def get_chronological_legacy(limit=None, update_cache: bool=False,
     show_unlisted: bool=False) -> list[dict]:
   """Return a list of JSON dicts for features, ordered by milestone.
 
@@ -434,33 +409,6 @@ def get_in_milestone(milestone: int,
 
   return features_by_type
 
-def get_all_with_statuses(statuses, update_cache=False):
-  """Return JSON dicts for entities with the given statuses.
-
-  Because the cache may rarely have stale data, this should only be
-  used for displaying data read-only, not for populating forms or
-  procesing a POST to edit data.  For editing use case, load the
-  data from NDB directly.
-  """
-  if not statuses:
-    return []
-
-  KEY = '%s|%s' % (Feature.DEFAULT_CACHE_KEY, sorted(statuses))
-
-  feature_list = rediscache.get(KEY)
-
-  if feature_list is None or update_cache:
-    # There's no way to do an OR in a single datastore query, and there's a
-    # very good chance that the self.get_all() results will already be in
-    # rediscache, so use an array comprehension to grab the features we
-    # want from the array of everything.
-    feature_list = [
-        feature for feature in get_all(update_cache=update_cache)
-        if feature['browsers']['chrome']['status']['text'] in statuses]
-    rediscache.set(KEY, feature_list)
-
-  return feature_list
-
 def get_all(limit: Optional[int]=None,
     order: str='-updated', filterby: Optional[tuple[str, Any]]=None,
     update_cache: bool=False, keys_only: bool=False) -> list[dict]:
@@ -508,35 +456,6 @@ def get_all(limit: Optional[int]=None,
 
   return feature_list
 
-def get_feature(
-      feature_id: int, update_cache: bool=False) -> Optional[FeatureEntry]:
-  """Return a JSON dict for a feature.
-
-  Because the cache may rarely have stale data, this should only be
-  used for displaying data read-only, not for populating forms or
-  procesing a POST to edit data.  For editing use case, load the
-  data from NDB directly.
-  """
-  KEY = Feature.feature_cache_key(FeatureEntry.DEFAULT_CACHE_KEY, feature_id)
-  feature = rediscache.get(KEY)
-
-  if feature is None or update_cache:
-    unformatted_feature: Optional[FeatureEntry] = (
-        FeatureEntry.get_by_id(feature_id))
-    if unformatted_feature:
-      if unformatted_feature.deleted:
-        return None
-      feature = converters.feature_entry_to_json_verbose(unformatted_feature)
-      feature['updated_display'] = (
-          unformatted_feature.updated.strftime("%Y-%m-%d"))
-      feature['new_crbug_url'] = _new_crbug_url(
-          unformatted_feature.blink_components, unformatted_feature.bug_url,
-          unformatted_feature.impl_status_chrome,
-          unformatted_feature.owner_emails)
-      rediscache.set(KEY, feature)
-
-  return feature
-
 def get_by_ids(feature_ids: list[int],
     update_cache: bool=False) -> list[dict[str, Any]]:
   """Return a list of JSON dicts for the specified features.
@@ -580,3 +499,49 @@ def get_by_ids(feature_ids: list[int],
       result_dict[feature_id] for feature_id in feature_ids
       if feature_id in result_dict]
   return result_list
+
+def get_chronological(limit: int | None=None, update_cache: bool=False,
+    show_unlisted: bool=False) -> list[dict]:
+  """Return a list of JSON dicts for features, ordered by milestone.
+
+  Because the cache may rarely have stale data, this should only be
+  used for displaying data read-only, not for populating forms or
+  procesing a POST to edit data.  For editing use case, load the
+  data from NDB directly.
+  """
+  cache_key = '%s|%s|%s|%s' % (Feature.DEFAULT_CACHE_KEY,
+                                'impl_order', limit, show_unlisted)
+
+  feature_list = rediscache.get(cache_key)
+  logging.info('getting chronological feature list')
+
+  # On cache miss, do a db query.
+  if not feature_list or update_cache:
+    logging.info('recomputing chronological feature list')
+    # Get features by implementation status.
+    futures: list[Future] = []
+    for impl_status in IMPLEMENTATION_STATUS.keys():
+      q = FeatureEntry.query(FeatureEntry.impl_status_chrome == impl_status)
+      q = q.order(FeatureEntry.impl_status_chrome)
+      q = q.order(FeatureEntry.name)
+      futures.append(q.fetch_async(None))
+    # Put "No active development" at end of list.
+    futures = futures[1:] + futures[0:1]
+    logging.info('Waiting on futures')
+    query_results = [future.result() for future in futures]
+    
+    # Construct the proper ordering.
+    feature_list = []
+    for section in query_results:
+      if not show_unlisted:
+        section = filter_unlisted(feature_list)
+      if len(section) > 0:
+        section = [
+            converters.feature_entry_to_json_basic(f) for f in section]
+        section[0]['first_of_section'] = True
+        section[0]['section_name'] = "TODO"
+        feature_list.extend(section)
+
+    rediscache.set(cache_key, feature_list)
+
+  return feature_list

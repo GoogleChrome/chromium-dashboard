@@ -112,7 +112,7 @@ class SubscribersHandler(basehandlers.FlaskHandler):
   def get_template_data(self, **kwargs):
     users = user_models.FeatureOwner.query().order(
         user_models.FeatureOwner.name).fetch(None)
-    feature_list = feature_helpers.get_chronological()
+    feature_list = feature_helpers.get_chronological_legacy()
 
     milestone = self.get_int_arg('milestone')
     if milestone is not None:
