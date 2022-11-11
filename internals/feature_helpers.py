@@ -539,7 +539,6 @@ def get_chronological(limit: int | None=None, update_cache: bool=False,
         section = [
             converters.feature_entry_to_json_basic(f) for f in section]
         section[0]['first_of_section'] = True
-        section[0]['section_name'] = "TODO"
         feature_list.extend(section)
 
     rediscache.set(cache_key, feature_list)
