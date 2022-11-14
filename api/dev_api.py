@@ -42,6 +42,16 @@ class WriteDevData(APIHandler):
 
   DATE_FORMAT = '%Y-%m-%d'
 
+  # New field name, old field name
+  RENAMED_FIELD_MAPPING: dict[str, str] = {
+      'owner_emails': 'owner',
+      'editor_emails': 'editors',
+      'cc_emails': 'cc_recipients',
+      'devrel_emails': 'devrel',
+      'spec_mentor_emails': 'spec_mentor',
+      'feature_notes': 'comments',
+      'announcement_url': 'ready_for_trial_url'}
+
   def do_get(self, **kwargs):
 
     if not settings.DEV_MODE:
@@ -54,13 +64,18 @@ class WriteDevData(APIHandler):
         f_id = d.pop('id')
         created = datetime.strptime(d.pop('created'), self.DATE_FORMAT)
         updated = datetime.strptime(d.pop('updated'), self.DATE_FORMAT)
-        accurate_as_of = datetime.strptime(
+        accurate_as_of = (datetime.strptime(
             d.pop('accurate_as_of'), self.DATE_FORMAT)
+            if 'accurate_as_of' in d else None)
 
         fe = FeatureEntry(id=f_id, created=created, updated=updated,
             accurate_as_of=accurate_as_of)
+        feature = Feature(id=f_id, created=created, updated=updated,
+            accurate_as_of=accurate_as_of)
         for field, value in d.items():
           setattr(fe, field, value)
+          setattr(feature, self.RENAMED_FIELD_MAPPING.get(field, field), value)
+        feature.put()
         fe.put()
 
       for d in info['stages']:
