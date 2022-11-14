@@ -93,7 +93,7 @@
     "@polymer/iron-icon": "^3.0.1",
     "@polymer/iron-iconset-svg": "^3.0.1",
     "lit": "^2",
-    "node-fetch": ">=3.2.10",
+    "node-fetch": ">=3.3.0",
     "sass": ">=1.55.0",
     "page": "^1.11.6",
     "urijs": ">=1.19.11",
