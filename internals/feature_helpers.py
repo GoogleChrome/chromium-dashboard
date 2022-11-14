@@ -519,7 +519,7 @@ def get_by_ids(feature_ids: list[int],
 
 def get_features_by_impl_status(limit: int | None=None, update_cache: bool=False,
     show_unlisted: bool=False) -> list[dict]:
-  """Return a list of JSON dicts for features, ordered by milestone.
+  """Return a list of JSON dicts for features, ordered by chrome_impl_status.
 
   Because the cache may rarely have stale data, this should only be
   used for displaying data read-only, not for populating forms or
@@ -530,11 +530,11 @@ def get_features_by_impl_status(limit: int | None=None, update_cache: bool=False
                                 'impl_order', limit, show_unlisted)
 
   feature_list = rediscache.get(cache_key)
-  logging.info('getting chronological feature list')
+  logging.info('getting feature list, sorted by chrome_impl_status')
 
   # On cache miss, do a db query.
   if not feature_list or update_cache:
-    logging.info('recomputing chronological feature list')
+    logging.info('recomputing feature list')
     # Get features by implementation status.
     futures: list[Future] = []
     for impl_status in IMPLEMENTATION_STATUS.keys():
