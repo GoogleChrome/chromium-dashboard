@@ -140,7 +140,7 @@ def get_all_legacy(limit=None, order='-updated', filterby=None,
 
   return feature_list
 
-def filter_unlisted(feature_list: list[dict]) -> list[dict]:
+def filter_unlisted_legacy(feature_list: list[dict]) -> list[dict]:
   """Filters a feature list to display only features the user should see."""
   user = users.get_current_user()
   email = None
@@ -258,6 +258,23 @@ def get_chronological_legacy(limit=None, update_cache: bool=False,
   if not show_unlisted:
     feature_list = filter_unlisted(feature_list)
   return feature_list
+
+def filter_unlisted(feature_list: list[dict]) -> list[dict]:
+  """Filters a feature list to display only features the user should see."""
+  user = users.get_current_user()
+  email = None
+  if user:
+    email = user.email()
+  listed_features = []
+  for f in feature_list:
+    # Owners and editors of a feature should still be able to see their features.
+    if ((not f.get('unlisted', False)) or
+        ('browsers' in f and email in f['browsers']['chrome']['owners']) or
+        (email in f.get('editors', [])) or
+        (email is not None and f.get('creator') == email)):
+      listed_features.append(f)
+
+  return listed_features
 
 def get_in_milestone(milestone: int,
     show_unlisted: bool=False) -> dict[str, list[dict[str, Any]]]:
@@ -500,7 +517,7 @@ def get_by_ids(feature_ids: list[int],
       if feature_id in result_dict]
   return result_list
 
-def get_chronological(limit: int | None=None, update_cache: bool=False,
+def get_features_by_impl_status(limit: int | None=None, update_cache: bool=False,
     show_unlisted: bool=False) -> list[dict]:
   """Return a list of JSON dicts for features, ordered by milestone.
 
@@ -509,7 +526,7 @@ def get_chronological(limit: int | None=None, update_cache: bool=False,
   procesing a POST to edit data.  For editing use case, load the
   data from NDB directly.
   """
-  cache_key = '%s|%s|%s|%s' % (Feature.DEFAULT_CACHE_KEY,
+  cache_key = '%s|%s|%s|%s' % (FeatureEntry.DEFAULT_CACHE_KEY,
                                 'impl_order', limit, show_unlisted)
 
   feature_list = rediscache.get(cache_key)
@@ -529,16 +546,16 @@ def get_chronological(limit: int | None=None, update_cache: bool=False,
     futures = futures[1:] + futures[0:1]
     logging.info('Waiting on futures')
     query_results = [future.result() for future in futures]
-    
+
     # Construct the proper ordering.
     feature_list = []
     for section in query_results:
-      if not show_unlisted:
-        section = filter_unlisted(feature_list)
       if len(section) > 0:
         section = [
             converters.feature_entry_to_json_basic(f) for f in section]
         section[0]['first_of_section'] = True
+        if not show_unlisted:
+          section = filter_unlisted(section)
         feature_list.extend(section)
 
     rediscache.set(cache_key, feature_list)
