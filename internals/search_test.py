@@ -125,6 +125,16 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
     self.featureentry_2.put()
     notifier.FeatureStar.set_star(
         'starrer@example.com', self.feature_1.key.integer_id())
+    self.feature_3 = core_models.Feature(
+        name='feature 3', summary='sum', category=3, web_dev_views=1,
+        impl_status_chrome=3, unlisted=True)
+    self.feature_3.put()
+    self.featureentry_3 = core_models.FeatureEntry(
+        id=self.feature_3.key.integer_id(),
+        name='feature 3', summary='sum', category=3, web_dev_views=1,
+        impl_status_chrome=3, unlisted=True)
+    self.featureentry_3.owner_emails = ['owner@example.com']
+    self.featureentry_3.put()
 
   def tearDown(self):
     notifier.FeatureStar.set_star(
@@ -132,8 +142,10 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
         starred=False)
     self.feature_1.key.delete()
     self.feature_2.key.delete()
+    self.feature_3.key.delete()
     self.featureentry_1.key.delete()
     self.featureentry_2.key.delete()
+    self.featureentry_3.key.delete()
     for appr in review_models.Approval.query():
       appr.key.delete()
 
@@ -371,6 +383,42 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
     self.assertCountEqual(
         [f['name'] for f in actual],
         ['feature 1', 'feature 2'])
+
+  def test_process_query__show_deleted_unlisted(self):
+    """We can can run queries without deleted/unlisted features."""
+    actual, tc = search.process_query('', show_deleted=True)
+    self.assertEqual(2, len(actual))
+    self.assertCountEqual(
+        [f['name'] for f in actual],
+        ['feature 1', 'feature 2'])
+
+    actual, tc = search.process_query('', show_unlisted=True)
+    self.assertEqual(3, len(actual))
+    self.assertCountEqual(
+        [f['name'] for f in actual],
+        ['feature 1', 'feature 2', 'feature 3'])
+
+    actual, tc = search.process_query(
+        '', show_unlisted=True, show_deleted=True)
+    self.assertEqual([], actual)
+
+    actual, tc = search.process_query(
+        'category=1 category=3', show_unlisted=True)
+    self.assertEqual([], actual)
+
+    actual, tc = search.process_query(
+        'category=1 OR category=3', show_unlisted=True)
+    self.assertEqual(2, len(actual))
+    self.assertCountEqual(
+        [f['name'] for f in actual],
+        ['feature 1', 'feature 3'])
+
+    actual, tc = search.process_query(
+        'category=1 OR category=3', show_deleted=True)
+    self.assertEqual(1, len(actual))
+    self.assertCountEqual(
+        [f['name'] for f in actual],
+        ['feature 1'])
 
   def test_process_query__negated_single_field(self):
     """We can can run single-field queries."""
