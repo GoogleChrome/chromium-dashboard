@@ -218,19 +218,75 @@ def process_query(
     show_unlisted=False, show_deleted=False,
     start=0, num=DEFAULT_RESULTS_PER_PAGE) -> tuple[list[dict[str, Any]], int]:
   """Parse the user's query, run it, and return a list of features."""
-  # 1a. Parse the user query into terms.  And, add permission terms.
-  feature_id_future_ops = []
+  # 1a. Parse the user query into terms.
   terms = TERM_RE.findall(user_query + ' ')[:MAX_TERMS] or []
+
+  # 1b. Add permission terms.
+  permission_terms = []
   if not show_deleted:
-    terms.append(('', 'deleted', '=', 'false', None))
+    permission_terms.append(('', 'deleted', '=', 'false', None))
   # TODO(jrobbins): include unlisted features that the user is allowed to view.
   if not show_unlisted:
-    terms.append(('', 'unlisted', '=', 'false', None))
-  # 1b. Parse the sort directive.
+    permission_terms.append(('', 'unlisted', '=', 'false', None))
+
+  # 1c. Parse the sort directive.
   sort_spec = sort_spec or '-created.when'
 
   # 2a. Create parallel queries for each term.  Each yields a future.
   logging.info('creating parallel queries for %r', terms)
+  feature_id_future_ops = create_future_operations_from_queries(terms)
+
+  # 2b. Create parallel queries for each permission queries.
+  logging.info('creating parallel queries for %r', permission_terms)
+  permissions_future_ops = create_future_operations_from_queries(
+      permission_terms)
+
+  # 2c. Create a parallel query for total sort order.
+  total_order_promise = search_queries.total_order_query_async(sort_spec)
+
+  # 3. Get the result of each future and combine them into a result ID set.
+  logging.info('now waiting on futures')
+
+  # 3a. Process all negation operations.
+  feature_id_future_ops = process_negation_operations(feature_id_future_ops)
+
+  # 3b. Process all AND operations.
+  or_clauses = process_and_operations(feature_id_future_ops)
+
+  # 3c. Process all OR operations.
+  result_id_set = process_or_operations(or_clauses)
+
+  # 3d. Process all permission ops.
+  permission_ids = process_and_operations(permissions_future_ops)
+  if len(permission_ids) == 1:
+    if terms == []:
+      # Empty search terms.
+      result_id_set = permission_ids[0]
+    else:
+      result_id_set.intersection_update(permission_ids[0])
+
+  result_id_list = list(result_id_set)
+  total_count = len(result_id_list)
+  # 3d. Finish getting the total sort order.
+  total_order_ids = _resolve_promise_to_id_list(total_order_promise)
+
+  # 4. Sort the IDs according to their position in the complete sorted list.
+  sorted_id_list = _sort_by_total_order(result_id_list, total_order_ids)
+
+  # 5. Paginate
+  paginated_id_list = sorted_id_list[start : start + num]
+
+  # 6. Fetch the actual issues that have those IDs in the sorted results.
+  # TODO(jrobbins): This still returns Feature objects.
+  features_on_page = feature_helpers.get_by_ids(paginated_id_list)
+
+  logging.info('features_on_page is %r', features_on_page)
+  return features_on_page, total_count
+
+
+def create_future_operations_from_queries(terms):
+  """Create parallel queries for each term. Each yields a future operation"""
+  feature_id_future_ops = []
   for logical_op, field_name, op_str, val_str, textterm in terms:
     is_negation = (logical_op.strip() == '-')
     is_normal_query = False
@@ -250,38 +306,7 @@ def process_query(
     else:
       feature_id_future_ops.append((logical_op.strip(), future))
 
-  # 2b. Create a parallel query for total sort order.
-  total_order_promise = search_queries.total_order_query_async(sort_spec)
-
-  # 3. Get the result of each future and combine them into a result ID set.
-  logging.info('now waiting on futures')
-
-  # 3a. Process all negation operations.
-  feature_id_future_ops = process_negation_operations(feature_id_future_ops)
-
-  # 3b. Process all AND operations.
-  or_clauses = process_and_operations(feature_id_future_ops)
-
-  # 3c. Process all OR operations.
-  result_id_set = process_or_operations(or_clauses)
-
-  result_id_list = list(result_id_set or [])
-  total_count = len(result_id_list)
-  # 3d. Finish getting the total sort order.
-  total_order_ids = _resolve_promise_to_id_list(total_order_promise)
-
-  # 4. Sort the IDs according to their position in the complete sorted list.
-  sorted_id_list = _sort_by_total_order(result_id_list, total_order_ids)
-
-  # 5. Paginate
-  paginated_id_list = sorted_id_list[start : start + num]
-
-  # 6. Fetch the actual issues that have those IDs in the sorted results.
-  # TODO(jrobbins): This still returns Feature objects.
-  features_on_page = feature_helpers.get_by_ids(paginated_id_list)
-
-  logging.info('features_on_page is %r', features_on_page)
-  return features_on_page, total_count
+  return feature_id_future_ops
 
 
 def process_or_operations(or_clauses):
@@ -316,7 +341,8 @@ def process_and_operations(feature_id_future_ops):
     logging.info('combining result so far with %r', feature_ids)
     current_result_set.intersection_update(feature_ids)
 
-  or_clauses.append(current_result_set)
+  if current_result_set is not None:
+    or_clauses.append(current_result_set)
   return or_clauses
 
 
