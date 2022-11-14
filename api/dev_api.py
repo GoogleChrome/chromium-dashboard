@@ -24,7 +24,7 @@ import settings
 
 class ClearEntities(APIHandler):
 
-  def do_get(self, **kwargs):
+  def do_get(self, **kwargs) -> str:
 
     if not settings.LOCAL_MODE:
       self.abort(status=403,
@@ -36,7 +36,8 @@ class ClearEntities(APIHandler):
     for kind in kinds:
       for entity in kind.query():
         entity.key.delete()
-
+    
+    return 'Entities cleared.'
 
 class WriteDevData(APIHandler):
 
@@ -52,7 +53,7 @@ class WriteDevData(APIHandler):
       'feature_notes': 'comments',
       'announcement_url': 'ready_for_trial_url'}
 
-  def do_get(self, **kwargs):
+  def do_get(self, **kwargs) -> str:
 
     if not settings.LOCAL_MODE:
       self.abort(status=403,
@@ -93,4 +94,4 @@ class WriteDevData(APIHandler):
           setattr(gate, field, value)
         gate.put()
     
-    return {'message': f'{features_created} test features created.'}
+    return f'{features_created} test features created.'
