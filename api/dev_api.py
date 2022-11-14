@@ -42,7 +42,7 @@ class WriteDevData(APIHandler):
 
   DATE_FORMAT = '%Y-%m-%d'
 
-  # New field name, old field name
+  # (Feature) New field name, old field name
   RENAMED_FIELD_MAPPING: dict[str, str] = {
       'owner_emails': 'owner',
       'editor_emails': 'editors',
@@ -58,6 +58,7 @@ class WriteDevData(APIHandler):
       self.abort(status=403,
           msg="This can only be used in a development environment.")
 
+    features_created = 0
     with open('data/dev_data.json') as f:
       info = json.load(f)
       for d in info['feature_entries']:
@@ -70,6 +71,7 @@ class WriteDevData(APIHandler):
 
         fe = FeatureEntry(id=f_id, created=created, updated=updated,
             accurate_as_of=accurate_as_of)
+        # Also write the old Feature entity.
         feature = Feature(id=f_id, created=created, updated=updated,
             accurate_as_of=accurate_as_of)
         for field, value in d.items():
@@ -77,6 +79,7 @@ class WriteDevData(APIHandler):
           setattr(feature, self.RENAMED_FIELD_MAPPING.get(field, field), value)
         feature.put()
         fe.put()
+      features_created = len(info['feature_entries'])
 
       for d in info['stages']:
         stage = Stage(id=d.pop('id'))
@@ -90,4 +93,4 @@ class WriteDevData(APIHandler):
           setattr(gate, field, value)
         gate.put()
     
-    return {'message': 'Done'}
+    return {'message': f'{features_created} test features created.'}
