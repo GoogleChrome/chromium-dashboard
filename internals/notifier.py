@@ -41,7 +41,7 @@ from internals.user_models import (
 
 
 def format_email_body(
-    is_update: bool, fe: FeatureEntry, fe_stages: dict[int, Stage],
+    is_update: bool, fe: FeatureEntry, fe_stages: dict[int, list[Stage]],
     changes: list[dict[str, Any]]) -> str:
   """Return an HTML string for a notification email body."""
 
@@ -126,7 +126,7 @@ WEBVIEW_RULE_ADDRS = ['webview-leads-external@google.com']
 
 
 def apply_subscription_rules(
-    fe: FeatureEntry, fe_stages: dict[int, Stage],
+    fe: FeatureEntry, fe_stages: dict[int, list[Stage]],
     changes: list) -> dict[str, list[str]]:
   """Return {"reason": [addrs]} for users who set up rules."""
   # Note: for now this is hard-coded, but it will eventually be
@@ -134,7 +134,7 @@ def apply_subscription_rules(
   changed_field_names = {c['prop_name'] for c in changes}
   results: dict[str, list[str]] = {}
   stage_type = core_enums.STAGE_TYPES_SHIPPING[fe.feature_type] or 0
-  ship_stage = fe_stages[stage_type]
+  ship_stage = fe_stages[stage_type][0]
   # Check if feature has some other milestone set, but not webview.
   if (ship_stage.milestones.android_first and
       not ship_stage.milestones.webview_first):

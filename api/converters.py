@@ -288,7 +288,7 @@ MILESTONE_FIELDS = [
   'webview_last'
 ]
 
-def stage_to_dict(stage: Stage) -> dict[int, Any]:
+def stage_to_dict(stage: Stage) -> dict[str, Any]:
   d: dict[str, Any] = {}
   d['id'] = stage.key.integer_id()
   d['feature_id'] = stage.feature_id

@@ -188,25 +188,25 @@ class ProgressDetectorsTest(testing_config.CustomTestCase):
   def test_intent_to_prototype_email(self):
     detector = processes.PROGRESS_DETECTORS['Intent to Prototype email']
     self.assertFalse(detector(self.feature_1, self.stages_dict))
-    self.stages_dict[120].intent_thread_url = 'http://example.com/prototype'
+    self.stages_dict[120][0].intent_thread_url = 'http://example.com/prototype'
     self.assertTrue(detector(self.feature_1, self.stages_dict))
 
   def test_intent_to_ship_email(self):
     detector = processes.PROGRESS_DETECTORS['Intent to Ship email']
     self.assertFalse(detector(self.feature_1, self.stages_dict))
-    self.stages_dict[160].intent_thread_url = 'http://example.com/ship'
+    self.stages_dict[160][0].intent_thread_url = 'http://example.com/ship'
     self.assertTrue(detector(self.feature_1, self.stages_dict))
 
   def test_ready_for_trial_email(self):
     detector = processes.PROGRESS_DETECTORS['Ready for Trial email']
     self.assertFalse(detector(self.feature_1, self.stages_dict))
-    self.stages_dict[130].announcement_url = 'http://example.com/trial_ready'
+    self.stages_dict[130][0].announcement_url = 'http://example.com/trial_ready'
     self.assertTrue(detector(self.feature_1, self.stages_dict))
 
   def test_intent_to_experiment_email(self):
     detector = processes.PROGRESS_DETECTORS['Intent to Experiment email']
     self.assertFalse(detector(self.feature_1, self.stages_dict))
-    self.stages_dict[150].intent_thread_url = 'http://example.com/ot'
+    self.stages_dict[150][0].intent_thread_url = 'http://example.com/ot'
     self.assertTrue(detector(self.feature_1, self.stages_dict))
 
   def test_samples(self):
@@ -247,9 +247,9 @@ class ProgressDetectorsTest(testing_config.CustomTestCase):
 
   def test_estimated_target_milestone(self):
     detector = processes.PROGRESS_DETECTORS['Estimated target milestone']
-    self.stages_dict[160].milestones = core_models.MilestoneSet()
+    self.stages_dict[160][0].milestones = core_models.MilestoneSet()
     self.assertFalse(detector(self.feature_1, self.stages_dict))
-    self.stages_dict[160].milestones.desktop_first = 99
+    self.stages_dict[160][0].milestones.desktop_first = 99
     self.assertTrue(detector(self.feature_1, self.stages_dict))
 
   def test_code_in_chromium(self):

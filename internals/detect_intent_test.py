@@ -21,6 +21,7 @@ import werkzeug
 from internals import approval_defs
 from internals import core_enums
 from internals import detect_intent
+from internals import stage_helpers
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
 from internals.review_models import Approval, Gate, Vote
 
@@ -378,7 +379,7 @@ class IntentEmailHandlerTest(testing_config.CustomTestCase):
       stage = Stage(feature_id=self.feature_id, stage_type=s_type)
       stage.put()
       self.stages.append(stage)
-    self.stages_dict = Stage.get_feature_stages(self.feature_id)
+    self.stages_dict = stage_helpers.get_feature_stages(self.feature_id)
 
     self.gate_1 = Gate(feature_id=self.feature_id, stage_id=1,
         gate_type=1, state=Vote.NA)
@@ -441,7 +442,8 @@ class IntentEmailHandlerTest(testing_config.CustomTestCase):
     self.assertEqual(Approval.REVIEW_REQUESTED, vote.state)
     self.assertEqual('user@example.com', vote.set_by)
 
-    self.assertEqual(self.stages_dict[160].intent_thread_url, self.thread_url)
+    self.assertEqual(
+        self.stages_dict[160][0].intent_thread_url, self.thread_url)
 
   def test_process_post_data__new_thread_just_FYI(self):
     """When we detect a new thread, it might not require a review."""
@@ -458,14 +460,15 @@ class IntentEmailHandlerTest(testing_config.CustomTestCase):
     created_votes = list(Vote.query().fetch(None))
     self.assertEqual(0, len(created_votes))
 
-    self.assertEqual(self.stages_dict[120].intent_thread_url, self.thread_url)
+    self.assertEqual(
+        self.stages_dict[120][0].intent_thread_url, self.thread_url)
 
   @mock.patch('internals.detect_intent.is_lgtm_allowed')
   def test_process_post_data__lgtm(self, mock_is_lgtm_allowed):
     """If we get an LGTM, we store the approval value and update the feature."""
     mock_is_lgtm_allowed.return_value = True
-    self.stages_dict[160].intent_thread_url = self.thread_url
-    self.stages_dict[160].put()
+    self.stages_dict[160][0].intent_thread_url = self.thread_url
+    self.stages_dict[160][0].put()
 
     with test_app.test_request_context(
         self.request_path, json=self.lgtm_json_data):
@@ -480,4 +483,4 @@ class IntentEmailHandlerTest(testing_config.CustomTestCase):
     self.assertEqual(approval_defs.ShipApproval.field_id, appr.field_id)
     self.assertEqual(Approval.APPROVED, appr.state)
     self.assertEqual('user@example.com', appr.set_by)
-    self.assertEqual(self.stages_dict[160].intent_thread_url, self.thread_url)
+    self.assertEqual(self.stages_dict[160][0].intent_thread_url, self.thread_url)

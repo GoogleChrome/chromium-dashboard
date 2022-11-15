@@ -382,13 +382,13 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
       # (e.g. developer-facing code changes cannot have origin trial fields).
       if stage_type is None:
         continue
-      stages_list: list[Stage | None] = stages.get(stage_type, None)
+      stages_list: list[Stage] = stages.get(stage_type, [])
       stage: Stage | None = stages_list[0] if stages_list else None
       # If a stage of this type does not exist for this feature, create it.
       if stage is None:
         stage = Stage(feature_id=feature_id, stage_type=stage_type)
         stage.put()
-        stages[stage_type] = stage
+        stages[stage_type].append(stage)
 
       # Change the field based on the field type.
       # If this field changing is a milestone, change it in the
