@@ -25,6 +25,7 @@ from framework import rediscache
 from framework import basehandlers
 from framework import permissions
 from internals import core_enums, notifier_helpers
+from internals import stage_helpers
 from internals.core_models import Feature, FeatureEntry, MilestoneSet, Stage
 from internals.review_models import Gate, Vote
 from internals import processes
@@ -372,7 +373,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
       update_items: list[tuple[str, Any]],
       changed_fields: list[tuple[str, Any, Any]]) -> None:
     # Get all existing stages associated with the feature.
-    stages = Stage.get_feature_stages(feature_id)
+    stages = stage_helpers.get_feature_stages(feature_id)
 
     for field, new_val in update_items:
       field = self.RENAMED_FIELD_MAPPING.get(field, field)
@@ -382,12 +383,13 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
       # (e.g. developer-facing code changes cannot have origin trial fields).
       if stage_type is None:
         continue
-      stage = stages.get(stage_type, None)
+      stages_list: list[Stage] = stages.get(stage_type, [])
+      stage: Stage | None = stages_list[0] if stages_list else None
       # If a stage of this type does not exist for this feature, create it.
       if stage is None:
         stage = Stage(feature_id=feature_id, stage_type=stage_type)
         stage.put()
-        stages[stage_type] = stage
+        stages[stage_type].append(stage)
 
       # Change the field based on the field type.
       # If this field changing is a milestone, change it in the
@@ -417,5 +419,6 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
         changed_fields.append((field, old_val, new_val))
 
     # Write to all the stages.
-    for stage in stages.values():
-      stage.put()
+    for stages_by_type in stages.values():
+      for stage in stages_by_type:
+        stage.put()
