@@ -146,6 +146,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
       ('owner', 'emails'),
       ('editors', 'emails'),
       ('cc_recipients', 'emails'),
+      ('unlisted', 'bool'),
       ('doc_links', 'links'),
       ('measurement', 'str'),
       ('sample_links', 'links'),
@@ -209,7 +210,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
   CHECKBOX_FIELDS: frozenset[str] = frozenset([
       'accurate_as_of', 'unlisted', 'api_spec', 'all_platforms',
       'wpt', 'requires_embedder_support', 'prefixed'])
-  
+
   SELECT_FIELDS: frozenset[str] = frozenset([
       'category', 'intent_stage', 'standard_maturity', 'security_review_status',
       'privacy_review_status', 'tag_review_status', 'safari_views', 'ff_views',
@@ -411,7 +412,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
       else:
         old_val = getattr(stage, field)
         setattr(stage, field, new_val)
-      
+
       if old_val != new_val:
         changed_fields.append((field, old_val, new_val))
 

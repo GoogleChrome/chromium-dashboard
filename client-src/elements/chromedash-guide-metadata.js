@@ -104,7 +104,7 @@ export class ChromedashGuideMetadata extends LitElement {
             <a id="open-metadata" @click=${() => this.editing = true}>Edit</a>
             ${this.isAdmin ? html`
               <div>
-                <a id="delete-feature" class="delete-button" 
+                <a id="delete-feature" class="delete-button"
                   @click=${this.handleDeleteFeature}>Delete</a>
               </div>
             `: nothing}
@@ -215,6 +215,8 @@ export class ChromedashGuideMetadata extends LitElement {
       <div id="metadata-editing">
         <form name="overview_form" method="POST" action="/guide/stage/${this.feature.id}/0">
           <input type="hidden" name="token">
+          <input type="hidden" name="form_fields"
+             value="${METADATA_FORM_FIELDS.join(',')}">
 
           <chromedash-form-table ${ref(this.registerFormSubmitHandler)}>
             ${METADATA_FORM_FIELDS.map((field) => html`
