@@ -82,7 +82,7 @@
     "minimist": ">=1.2.7",
     "path-parse": ">=1.0.7",
     "regenerator-runtime": "^0.13.10",
-    "rollup": "^3.2.4",
+    "rollup": "^3.3.0",
     "rollup-plugin-babel-minify": "^10.0.0",
     "sinon": "^14.0.2",
     "tar": ">=6.1.12",
