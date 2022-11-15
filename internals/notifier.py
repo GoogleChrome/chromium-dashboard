@@ -136,7 +136,8 @@ def apply_subscription_rules(
   stage_type = core_enums.STAGE_TYPES_SHIPPING[fe.feature_type] or 0
   ship_stage = fe_stages[stage_type][0]
   # Check if feature has some other milestone set, but not webview.
-  if (ship_stage.milestones.android_first and
+  if (ship_stage.milestones is not None and
+      ship_stage.milestones.android_first and
       not ship_stage.milestones.webview_first):
     milestone_fields = ['shipped_android_milestone']
     if not changed_field_names.isdisjoint(milestone_fields):
