@@ -21,6 +21,7 @@ from internals import approval_defs
 from internals import core_enums
 from internals import core_models
 from internals import processes
+from internals import stage_helpers
 
 
 BakeApproval = approval_defs.ApprovalFieldDef(
@@ -152,7 +153,7 @@ class ProgressDetectorsTest(testing_config.CustomTestCase):
           stage_type=s_type)
       stage.put()
       self.stages.append(stage)
-    self.stages_dict = core_models.Stage.get_feature_stages(
+    self.stages_dict = stage_helpers.get_feature_stages(
         self.feature_1.key.integer_id())
 
   def tearDown(self):

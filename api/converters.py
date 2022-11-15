@@ -253,10 +253,12 @@ def _prep_stage_gate_info(
 
   # Write a collection of stages and gates associated with the feature,
   # sorted by type.
-  d['stages'] = {}
+  d['stages'] = collections.defaultdict(list)
   d['gates'] = collections.defaultdict(list)
   # Stages and gates are given as a dictionary, with the type as the key,
   # and a list of entity IDs as the value.
+  # TODO(danielrsmith): This approach should be removed or refactored when
+  # functionality for creating multiple stages is added.
   for s in stages:
     # Keep major stages for referencing additional fields.
     if s.stage_type == proto_type:
@@ -269,12 +271,50 @@ def _prep_stage_gate_info(
       major_stages['extend'] = s
     elif s.stage_type == ship_type:
       major_stages['ship'] = s
-    d['stages'][s.stage_type] = s.key.integer_id()
+    d['stages'][s.stage_type].append(stage_to_dict(s))
   for g in gates:
     d['gates'][g.gate_type].append(g.key.integer_id())
 
   return major_stages
 
+MILESTONE_FIELDS = [
+  'desktop_first',
+  'desktop_last',
+  'android_first',
+  'android_last',
+  'ios_first',
+  'ios_last',
+  'webview_first',
+  'webview_last'
+]
+
+def stage_to_dict(stage: Stage) -> dict[int, Any]:
+  d: dict[str, Any] = {}
+  d['id'] = stage.key.integer_id()
+  d['feature_id'] = stage.feature_id
+  d['stage_type'] = stage.stage_type
+
+  # Add milestone fields
+  if stage.milestones is not None:
+    for field in MILESTONE_FIELDS:
+      d[field] = getattr(stage.milestones, field)
+  else:
+    for field in MILESTONE_FIELDS:
+      d[field] = None
+
+  d['pm_emails'] = stage.pm_emails
+  d['tl_emails'] = stage.tl_emails
+  d['ux_emails'] = stage.ux_emails
+  d['te_emails'] = stage.te_emails
+  d['experiment_goals'] = stage.experiment_goals
+  d['experiment_risks'] = stage.experiment_risks
+  d['experiment_extension_reason'] = stage.experiment_extension_reason
+  d['intent_thread_url'] = stage.intent_thread_url
+  d['origin_trial_feedback_url'] = stage.origin_trial_feedback_url
+  d['announcement_url'] = stage.announcement_url
+  d['ot_stage_id'] = stage.ot_stage_id
+
+  return d
 
 def feature_entry_to_json_verbose(fe: FeatureEntry) -> dict[str, Any]:
   """Returns a verbose dictionary with all info about a feature."""
