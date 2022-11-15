@@ -17,6 +17,7 @@ from collections import defaultdict
 
 from internals.core_models import Stage
 
+
 def get_feature_stages(feature_id: int) -> dict[int, list[Stage]]:
   """Return a dictionary of stages associated with a given feature."""
   stage_dict = defaultdict(list)
