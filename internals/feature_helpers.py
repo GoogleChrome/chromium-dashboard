@@ -22,7 +22,7 @@ from api import converters
 from framework import rediscache
 from framework import users
 from internals.core_enums import *
-from internals.core_models import Feature, FeatureEntry
+from internals.core_models import Feature, FeatureEntry, Stage
 import settings
 
 
@@ -296,12 +296,12 @@ def get_in_milestone(milestone: int,
   """
   features_by_type = {}
   cache_key = '%s|%s|%s' % (
-      Feature.DEFAULT_CACHE_KEY, 'milestone', milestone)
+      FeatureEntry.DEFAULT_CACHE_KEY, 'milestone', milestone)
   cached_features_by_type = rediscache.get(cache_key)
   if cached_features_by_type:
     features_by_type = cached_features_by_type
   else:
-    all_features: dict[str, list[Feature]] = {}
+    all_features: dict[str, list[FeatureEntry]] = {}
     all_features[IMPLEMENTATION_STATUS[ENABLED_BY_DEFAULT]] = []
     all_features[IMPLEMENTATION_STATUS[DEPRECATED]] = []
     all_features[IMPLEMENTATION_STATUS[REMOVED]] = []
@@ -312,63 +312,146 @@ def get_in_milestone(milestone: int,
     logging.info('Getting chronological feature list in milestone %d',
                 milestone)
     # Start each query asynchronously in parallel.
-    q = Feature.query()
-    q = q.order(Feature.name)
-    q = q.filter(Feature.shipped_milestone == milestone)
-    desktop_shipping_features_future = q.fetch_async(None)
+    q = Stage.query(Stage.milestones.desktop_first == milestone,
+        ndb.OR(Stage.stage_type == STAGE_BLINK_SHIPPING,
+            Stage.stage_type == STAGE_PSA_SHIPPING,
+            Stage.stage_type == STAGE_FAST_SHIPPING,
+            Stage.stage_type == STAGE_DEP_SHIPPING))
+    q = q.filter()
+    desktop_shipping_future = q.fetch_async()
 
-    # Features with an android shipping milestone but no desktop milestone.
-    q = Feature.query()
-    q = q.order(Feature.name)
-    q = q.filter(Feature.shipped_android_milestone == milestone)
-    q = q.filter(Feature.shipped_milestone == None)
-    android_only_shipping_features_future = q.fetch_async(None)
+    # Stages with an android shipping milestone but no desktop milestone.
+    q = Stage.query(Stage.milestones.android_first == milestone,
+        Stage.milestones.desktop_first == None,
+        ndb.OR(Stage.stage_type == STAGE_BLINK_SHIPPING,
+            Stage.stage_type == STAGE_PSA_SHIPPING,
+            Stage.stage_type == STAGE_FAST_SHIPPING,
+            Stage.stage_type == STAGE_DEP_SHIPPING))
+    android_only_shipping_future = q.fetch_async()
 
-    # Features that are in origin trial (Desktop) in this milestone
-    q = Feature.query()
-    q = q.order(Feature.name)
-    q = q.filter(Feature.ot_milestone_desktop_start == milestone)
-    desktop_origin_trial_features_future = q.fetch_async(None)
+    # Stages that are in origin trial (Desktop) in this milestone
+    q = Stage.query(Stage.milestones.desktop_first == milestone,
+        ndb.OR(Stage.stage_type == STAGE_BLINK_ORIGIN_TRIAL,
+            Stage.stage_type == STAGE_FAST_ORIGIN_TRIAL,
+            Stage.stage_type == STAGE_DEP_DEPRECATION_TRIAL))
+    desktop_origin_trial_future = q.fetch_async()
 
-    # Features that are in origin trial (Android) in this milestone
-    q = Feature.query()
-    q = q.order(Feature.name)
-    q = q.filter(Feature.ot_milestone_android_start == milestone)
-    q = q.filter(Feature.ot_milestone_desktop_start == None)
-    android_origin_trial_features_future = q.fetch_async(None)
+    # Stages that are in origin trial (Android) in this milestone
+    q = Stage.query(Stage.milestones.android_first == milestone,
+        Stage.milestones.desktop_first == None,
+        ndb.OR(Stage.stage_type == STAGE_BLINK_ORIGIN_TRIAL,
+            Stage.stage_type == STAGE_FAST_ORIGIN_TRIAL,
+            Stage.stage_type == STAGE_DEP_DEPRECATION_TRIAL))
+    android_origin_trial_future = q.fetch_async()
 
-    # Features that are in origin trial (Webview) in this milestone
-    q = Feature.query()
-    q = q.order(Feature.name)
-    q = q.filter(Feature.ot_milestone_webview_start == milestone)
-    q = q.filter(Feature.ot_milestone_desktop_start == None)
-    webview_origin_trial_features_future = q.fetch_async(None)
+    # Stages that are in origin trial (Webview) in this milestone
+    q = Stage.query(Stage.milestones.webview_first == milestone,
+        Stage.milestones.desktop_first == None,
+        ndb.OR(Stage.stage_type == STAGE_BLINK_ORIGIN_TRIAL,
+            Stage.stage_type == STAGE_FAST_ORIGIN_TRIAL,
+            Stage.stage_type == STAGE_DEP_DEPRECATION_TRIAL))
+    webview_origin_trial_future = q.fetch_async()
 
     # Features that are in dev trial (Desktop) in this milestone
-    q = Feature.query()
-    q = q.order(Feature.name)
-    q = q.filter(Feature.dt_milestone_desktop_start == milestone)
-    desktop_dev_trial_features_future = q.fetch_async(None)
+    q = Stage.query(Stage.milestones.desktop_first == milestone,
+        ndb.OR(Stage.stage_type == STAGE_BLINK_DEV_TRIAL,
+            Stage.stage_type == STAGE_PSA_DEV_TRIAL,
+            Stage.stage_type == STAGE_FAST_DEV_TRIAL,
+            Stage.stage_type == STAGE_DEP_DEV_TRIAL))
+    desktop_dev_trial_future = q.fetch_async()
 
     # Features that are in dev trial (Android) in this milestone
-    q = Feature.query()
-    q = q.order(Feature.name)
-    q = q.filter(Feature.dt_milestone_android_start == milestone)
-    q = q.filter(Feature.dt_milestone_desktop_start == None)
-    android_dev_trial_features_future = q.fetch_async(None)
+    q = Stage.query(Stage.milestones.android_first == milestone,
+        Stage.milestones.desktop_first == None,
+        ndb.OR(Stage.stage_type == STAGE_BLINK_DEV_TRIAL,
+            Stage.stage_type == STAGE_PSA_DEV_TRIAL,
+            Stage.stage_type == STAGE_FAST_DEV_TRIAL,
+            Stage.stage_type == STAGE_DEP_DEV_TRIAL))
+    android_dev_trial_future = q.fetch_async(None)
 
-    # Wait for all futures to complete.
-    desktop_shipping_features = desktop_shipping_features_future.result()
-    android_only_shipping_features = (
-        android_only_shipping_features_future.result())
-    desktop_origin_trial_features = (
-        desktop_origin_trial_features_future.result())
-    android_origin_trial_features = (
-        android_origin_trial_features_future.result())
-    webview_origin_trial_features = (
-        webview_origin_trial_features_future.result())
-    desktop_dev_trial_features = desktop_dev_trial_features_future.result()
-    android_dev_trial_features = android_dev_trial_features_future.result()
+    # Wait for all futures to complete and collect unique feature IDs.
+    desktop_shipping_ids = list(set(
+        [s.feature_id for s in desktop_shipping_future.result()]))
+    android_only_shipping_ids = list(set(
+        [s.feature_id for s in android_only_shipping_future.result()]))
+    desktop_origin_trials_ids = list(set(
+        [s.feature_id for s in desktop_origin_trial_future.result()]))
+    android_origin_trials_ids = list(set(
+        [s.feature_id for s in android_origin_trial_future.result()]))
+    webview_origin_trials_ids = list(set(
+        [s.feature_id for s in webview_origin_trial_future.result()]))
+    desktop_dev_trials_ids = list(set(
+        [s.feature_id for s in desktop_dev_trial_future.result()]))
+    android_dev_trials_ids = list(set(
+        [s.feature_id for s in android_dev_trial_future.result()]))
+
+    # Query for FeatureEntry entities that match the stage feature IDs.
+    # Querying with an empty list will raise an error, so check if each
+    # list is not empty first.
+    if desktop_shipping_ids:
+      q = FeatureEntry.query(FeatureEntry.key.IN(
+          [ndb.Key('FeatureEntry', id) for id in desktop_shipping_ids]))
+      q = q.order(FeatureEntry.name)
+      desktop_shipping_future = q.fetch_async()
+    else:
+      desktop_shipping_future = None
+    if android_only_shipping_ids:
+      q = FeatureEntry.query(FeatureEntry.key.IN(
+          [ndb.Key('FeatureEntry', id) for id in android_only_shipping_ids]))
+      q = q.order(FeatureEntry.name)
+      android_only_shipping_future = q.fetch_async()
+    else:
+      android_only_shipping_future = None
+    if desktop_origin_trials_ids:
+      q = FeatureEntry.query(FeatureEntry.key.IN(
+          [ndb.Key('FeatureEntry', id) for id in desktop_origin_trials_ids]))
+      q = q.order(FeatureEntry.name)
+      desktop_origin_trial_future = q.fetch_async()
+    else:
+      desktop_origin_trial_future = None
+    if android_origin_trials_ids:
+      q = FeatureEntry.query(FeatureEntry.key.IN(
+          [ndb.Key('FeatureEntry', id) for id in android_origin_trials_ids]))
+      q = q.order(FeatureEntry.name)
+      android_origin_trial_future = q.fetch_async()
+    else:
+      android_origin_trial_future = None
+    if webview_origin_trials_ids:
+      q = FeatureEntry.query(FeatureEntry.key.IN(
+          [ndb.Key('FeatureEntry', id) for id in webview_origin_trials_ids]))
+      q = q.order(FeatureEntry.name)
+      webview_origin_trial_future = q.fetch_async()
+    else:
+      webview_origin_trial_future = None
+    if desktop_dev_trials_ids:
+      q = FeatureEntry.query(FeatureEntry.key.IN(
+          [ndb.Key('FeatureEntry', id) for id in desktop_dev_trials_ids]))
+      q = q.order(FeatureEntry.name)
+      desktop_dev_trial_future = q.fetch_async()
+    else:
+      desktop_dev_trial_future = None
+    if android_dev_trials_ids:
+      q = FeatureEntry.query(FeatureEntry.key.IN(
+          [ndb.Key('FeatureEntry', id) for id in android_dev_trials_ids]))
+      q = q.order(FeatureEntry.name)
+      android_dev_trial_future = q.fetch_async()
+    else:
+      android_dev_trial_future = None
+
+    desktop_shipping_features = ([] if desktop_shipping_future is None
+        else desktop_shipping_future.result())
+    android_only_shipping_features = ([] if android_only_shipping_future is None
+        else android_only_shipping_future.result())
+    desktop_origin_trial_features = ([] if desktop_origin_trial_future is None
+        else desktop_origin_trial_future.result())
+    android_origin_trial_features = ([] if android_origin_trial_future is None
+        else android_origin_trial_future.result())
+    webview_origin_trial_features = ([] if webview_origin_trial_future is None
+        else webview_origin_trial_future.result())
+    desktop_dev_trial_features = ([] if desktop_dev_trial_future is None
+        else desktop_dev_trial_future.result())
+    android_dev_trial_features = ([] if android_dev_trial_future is None
+        else android_dev_trial_future.result())
 
     # Push feature to list corresponding to the implementation status of
     # feature in queried milestone
@@ -422,7 +505,7 @@ def get_in_milestone(milestone: int,
       all_features[shipping_type].sort(key=lambda f: f.name)
       all_features[shipping_type] = [
           f for f in all_features[shipping_type] if not f.deleted]
-      features_by_type[shipping_type] = [converters.feature_to_legacy_json(f)
+      features_by_type[shipping_type] = [converters.feature_entry_to_json_basic(f)
           for f in all_features[shipping_type]]
 
     rediscache.set(cache_key, features_by_type)

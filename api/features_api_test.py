@@ -406,8 +406,8 @@ class FeaturesAPITestGet_OldSchema(testing_config.CustomTestCase):
 
   def test_get__in_milestone_unlisted_no_perms(self):
     """JSON feed does not include unlisted features for users who can't edit."""
-    self.legacy_feature_1.unlisted = True
-    self.legacy_feature_1.put()
+    self.feature_1.unlisted = True
+    self.feature_1.put()
 
     # No signed-in user
     with test_app.test_request_context(self.request_path+'?milestone=1'):
