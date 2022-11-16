@@ -258,7 +258,7 @@ class FeatureTest(testing_config.CustomTestCase):
 
   def test_get_chronological__normal(self):
     """We can retrieve a list of features."""
-    actual = feature_helpers.get_chronological()
+    actual = feature_helpers.get_chronological_legacy()
     names = [f['name'] for f in actual]
     self.assertEqual(
         ['feature c', 'feature d', 'feature a', 'feature b'],
@@ -272,7 +272,7 @@ class FeatureTest(testing_config.CustomTestCase):
     """Unlisted features are not included in the list."""
     self.legacy_feature_2.unlisted = True
     self.legacy_feature_2.put()
-    actual = feature_helpers.get_chronological()
+    actual = feature_helpers.get_chronological_legacy()
     names = [f['name'] for f in actual]
     self.assertEqual(
         ['feature c', 'feature d', 'feature a'],
@@ -282,7 +282,7 @@ class FeatureTest(testing_config.CustomTestCase):
     """Unlisted features are included for users with edit access."""
     self.legacy_feature_2.unlisted = True
     self.legacy_feature_2.put()
-    actual = feature_helpers.get_chronological(show_unlisted=True)
+    actual = feature_helpers.get_chronological_legacy(show_unlisted=True)
     names = [f['name'] for f in actual]
     self.assertEqual(
         ['feature c', 'feature d', 'feature a', 'feature b'],

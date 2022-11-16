@@ -324,18 +324,6 @@ class ChromedashFeaturelist extends LitElement {
     this._fireEvent('filtered', {count: this.filtered.length});
   }
 
-  _firstOfMilestone(milestone) {
-    for (let i = 0; i < this.filtered.length; i++) {
-      const feature = this.filtered[i];
-      if (feature.first_of_milestone &&
-          (milestone === feature.browsers.chrome.desktop ||
-           milestone === feature.browsers.chrome.status.text)) {
-        return feature.id;
-      }
-    }
-    return null;
-  }
-
   // Directly called from template/features.html
   scrollToId(targetId) {
     if (!targetId) return;
@@ -356,12 +344,8 @@ class ChromedashFeaturelist extends LitElement {
     this._hasInitialized = true;
   }
 
-  _computeMilestoneHidden(feature, features, filtered) {
-    return filtered.length != features.length || !feature.first_of_milestone;
-  }
-
-  _computeMilestoneString(str) {
-    return isNaN(parseInt(str)) ? str : 'Chrome ' + str;
+  _computeSectionHidden(feature, features, filtered) {
+    return filtered.length != features.length || !feature.first_of_section;
   }
 
   render() {
@@ -384,8 +368,8 @@ class ChromedashFeaturelist extends LitElement {
     return html`
       ${filteredWithState.map((item) => html`
           <div class="item">
-            <div ?hidden="${this._computeMilestoneHidden(item.feature, this.features, this.filtered)}"
-                 class="milestone-marker">${this._computeMilestoneString(item.feature.browsers.chrome.status.milestone_str)}</div>
+            <div ?hidden="${this._computeSectionHidden(item.feature, this.features, this.filtered)}"
+                 class="section-marker">${item.feature.browsers.chrome.status.text}</div>
             <chromedash-feature id="id-${item.feature.id}" tabindex="0"
                  ?open="${item.open}"
                  ?starred="${item.starred}"

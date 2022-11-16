@@ -53,6 +53,13 @@ class TestWithFeature(testing_config.CustomTestCase):
     self.feature_1.put()
     self.feature_id = self.feature_1.key.integer_id()
 
+    self.fe_1 = core_models.FeatureEntry(
+        name='feature one', summary='detailed sum',
+        owner_emails=['owner@example.com'],
+        category=1, intent_stage=core_enums.INTENT_IMPLEMENT)
+    self.fe_1.put()
+    self.fe_id = self.fe_1.key.integer_id()
+
     self.request_path = (self.REQUEST_PATH_FORMAT %
         {'feature_id': self.feature_id} if self.REQUEST_PATH_FORMAT else '')
     if self.HANDLER_CLASS:
@@ -60,6 +67,7 @@ class TestWithFeature(testing_config.CustomTestCase):
 
   def tearDown(self):
     self.feature_1.key.delete()
+    self.fe_1.key.delete()
     self.app_user.delete()
     self.app_admin.delete()
     rediscache.flushall()
@@ -83,6 +91,8 @@ class FeaturesJsonHandlerTest(TestWithFeature):
     """JSON feed does not include unlisted features for users who can't edit."""
     self.feature_1.unlisted = True
     self.feature_1.put()
+    self.fe_1.unlisted = True
+    self.fe_1.put()
 
     testing_config.sign_out()
     with test_app.test_request_context(self.request_path):
