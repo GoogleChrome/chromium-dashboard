@@ -365,6 +365,10 @@ def feature_entry_to_json_verbose(fe: FeatureEntry) -> dict[str, Any]:
   # Ship stage fields.
   d['intent_to_ship_url'] = _stage_attr(stages['ship'], 'intent_thread_url')
   d['finch_url'] = _stage_attr(stages['ship'], 'finch_url')
+  d['rollout_milestone'] = _stage_attr(stages['ship'], 'rollout_milestone')
+  d['rollout_platforms'] = _stage_attr(stages['ship'], 'rollout_platforms')
+  d['rollout_details'] = _stage_attr(stages['ship'], 'rollout_details')
+  d['enterprise_policies'] = _stage_attr(stages['ship'], 'enterprise_policies')
 
   impl_status_chrome = d.pop('impl_status_chrome', None)
   standard_maturity = d.pop('standard_maturity', None)
@@ -494,6 +498,7 @@ def feature_entry_to_json_basic(fe: FeatureEntry) -> dict[str, Any]:
     'name': fe.name,
     'summary': fe.summary,
     'unlisted': fe.unlisted,
+    'breaking_change': fe.breaking_change,
     'blink_components': fe.blink_components or [],
     'resources': {
       'samples': fe.sample_links or [],

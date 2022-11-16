@@ -16,6 +16,7 @@
 
 from framework import basehandlers
 from internals import core_models
+from internals import core_enums
 from internals import processes
 from internals import stage_helpers
 
@@ -33,6 +34,10 @@ class ProcessesAPI(basehandlers.APIHandler):
 
     feature_process = processes.ALL_PROCESSES.get(
       f.feature_type, processes.BLINK_LAUNCH_PROCESS)
+
+    
+    if feature_id != core_enums.FEATURE_TYPE_ENTERPRISE_ID and f.breaking_change:
+      feature_process.stages.insert(-1, processes.FEATURE_ROLLOUT_STAGE)
 
     return processes.process_to_dict(feature_process)
 

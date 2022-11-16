@@ -4,13 +4,13 @@ import {
   FEATURE_TYPES,
   IMPLEMENTATION_STATUS,
   INTENT_STAGES,
+  PLATFORM_CATEGORIES,
   STANDARD_MATURITY_CHOICES,
   REVIEW_STATUS_CHOICES,
   VENDOR_VIEWS_COMMON,
   VENDOR_VIEWS_GECKO,
   WEB_DEV_VIEWS,
 } from './form-field-enums';
-
 
 /* Patterns from https://www.oreilly.com/library/view/regular-expressions-cookbook/9781449327453/ch04s01.html
  * Removing single quote ('), backtick (`), and pipe (|) since they are risky unless properly escaped everywhere.
@@ -31,6 +31,13 @@ const URL_FIELD_ATTRS = {
   type: 'url',
   placeholder: 'https://...',
   pattern: URL_PADDED_REGEX,
+};
+
+const MULTI_STRING_FIELD_ATTRS = {
+  title: 'Enter one or more comma-separated complete words.',
+  type: 'text',
+  multiple: true,
+  placeholder: 'EnableFeature1, Feature1Policy',
 };
 
 const MULTI_EMAIL_FIELD_ATTRS = {
@@ -1134,6 +1141,51 @@ export const ALL_FIELDS = {
     help_text: '',
   },
 
+  'enterprise_policies': {
+    type: 'input',
+    attrs: MULTI_STRING_FIELD_ATTRS,
+    required: false,
+    label: 'Enterprise policies',
+    help_text: html`
+      List of policies that control the feature, if any.`,
+  },
+
+  'rollout_milestone': {
+    type: 'input',
+    attrs: MILESTONE_NUMBER_FILED_ATTRS,
+    required: true,
+    label: 'Rollout milestone',
+    help_text: html`
+      Milestone in which rollout for this feature starts.`,
+  },
+
+  'rollout_platforms': {
+    type: 'multiselect',
+    choices: PLATFORM_CATEGORIES,
+    required: true,
+    label: 'Rollout platforms',
+    help_text: html`
+      Platforms for which rollout for this feature occurs in the selected milestone.`,
+  },
+
+  'rollout_details': {
+    type: 'textarea',
+    attrs: {rows: 4},
+    required: false,
+    label: 'Rollout details',
+    help_text: html`
+      Explain what specifically is changing in the selected milestone for the 
+      selected platforms. Include any controls admins have to test it 
+      (e.g. flags) and control it (e.g. an enterprise policy). Write in the 
+      present tense.`,
+  },
+
+  'breaking_change': {
+    type: 'checkbox',
+    label: 'Breaking change',
+    initial: false,
+    help_text: 'This is a breaking change (customers/developers must take action)',
+  },
 };
 
 // Return a simplified field type to help differentiate the
@@ -1171,6 +1223,7 @@ function makeDisplaySpecs(fields) {
 export const DISPLAY_FIELDS_IN_STAGES = {
   'Metadata': makeDisplaySpecs([
     'category', 'feature_type', 'intent_stage', 'accurate_as_of',
+    'breaking_change',
   ]),
   [INTENT_STAGES.INTENT_INCUBATE[0]]: makeDisplaySpecs([
     'initial_public_proposal_url', 'explainer_links',
@@ -1218,7 +1271,8 @@ export const DISPLAY_FIELDS_IN_STAGES = {
     'finch_url', 'anticipated_spec_changes',
     'shipped_milestone', 'shipped_android_milestone',
     'shipped_ios_milestone', 'shipped_webview_milestone',
-    'intent_to_ship_url', 'i2s_lgtms',
+    'intent_to_ship_url', 'i2s_lgtms', 'rollout_milestone',
+    'rollout_platforms', 'rollout_details', 'enterprise_policies',
   ]),
   [INTENT_STAGES.INTENT_SHIPPED[0]]: makeDisplaySpecs([]),
 };

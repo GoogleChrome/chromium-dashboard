@@ -203,6 +203,11 @@ export class ChromedashGuideMetadata extends LitElement {
                 `}
               </td>
             </tr>
+
+            <tr>
+              <th>Breaking change</th>
+              <td>${this.feature.breaking_change}</td>
+            </tr>
           </table>
         </div>
       </div>

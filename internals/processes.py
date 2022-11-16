@@ -153,6 +153,10 @@ PI_EXISTING_FEATURE = ProgressItem('Link to existing feature')
 
 PI_CODE_REMOVED = ProgressItem('Code removed')
 
+PI_ROLLOUT_MILESTONE = ProgressItem('Rollout milestone', 'rollout_milestone')
+PI_ROLLOUT_PLATFORMS = ProgressItem('Rollout platforms', 'rollout_platforms')
+PI_ROLLOUT_DETAILS = ProgressItem('Rollout details', 'rollout_details')
+PI_ENTERPRISE_POLICIES = ProgressItem('Enterprise policies', 'enterprise_policies')
 
 BLINK_PROCESS_STAGES = [
   ProcessStage(
@@ -478,6 +482,47 @@ DEPRECATION_STAGES = [
   ]
 
 
+FEATURE_ROLLOUT_STAGE = ProcessStage(
+      'Start feature rollout',
+      'Lock in shipping milestone. '
+      'Create feature flag for the feature. '
+      'Create policies to enable/disable and control the feature. '
+      'Finalize docs and announcements and start rolling out the feature.',
+      [PI_ROLLOUT_MILESTONE,
+       PI_ROLLOUT_PLATFORMS,
+       PI_ROLLOUT_DETAILS,
+       PI_ENTERPRISE_POLICIES,
+      ],
+      [],
+      [],
+      core_enums.INTENT_SHIP, core_enums.INTENT_SHIP)
+
+ENTERPRISE_STAGES = [
+  ProcessStage(
+      'Start feature rollout',
+      'Lock in shipping milestone. '
+      'Create feature flag for the feature. '
+      'Create policies to enable/disable and control the feature. '
+      'Finalize docs and announcements and start rolling out the feature.',
+      [PI_ROLLOUT_MILESTONE,
+       PI_ROLLOUT_PLATFORMS,
+       PI_ROLLOUT_DETAILS,
+       PI_ENTERPRISE_POLICIES,
+      ],
+      [],
+      [],
+      core_enums.INTENT_NONE, core_enums.INTENT_SHIP),
+  ProcessStage(
+      'Ship',
+      'Enable the feature by default.',
+      [PI_FINAL_TARGET_MILESTONE,
+      ],
+      [],
+      [],
+      core_enums.INTENT_SHIP, core_enums.INTENT_SHIPPED),
+]
+
+
 DEPRECATION_PROCESS = Process(
     'Feature deprecation',
     'Description of deprecation process',  # Not used yet.
@@ -485,11 +530,19 @@ DEPRECATION_PROCESS = Process(
     DEPRECATION_STAGES)
 
 
+ENTERPRISE_PROCESS = Process(
+    'New Feature or removal affecting enterprises',
+    'Description of enterprise process',  # Not used yet.
+    'When to use it',  # Not used yet.
+    ENTERPRISE_STAGES)
+
+
 ALL_PROCESSES = {
     core_enums.FEATURE_TYPE_INCUBATE_ID: BLINK_LAUNCH_PROCESS,
     core_enums.FEATURE_TYPE_EXISTING_ID: BLINK_FAST_TRACK_PROCESS,
     core_enums.FEATURE_TYPE_CODE_CHANGE_ID: PSA_ONLY_PROCESS,
     core_enums.FEATURE_TYPE_DEPRECATION_ID: DEPRECATION_PROCESS,
+    core_enums.FEATURE_TYPE_ENTERPRISE_ID: ENTERPRISE_PROCESS,
     }
 
 
@@ -619,4 +672,20 @@ PROGRESS_DETECTORS = {
 
     'Code removed':
     lambda f, _: f.impl_status_chrome == core_enums.REMOVED,
+
+    'Rollout milestone':
+    lambda f, stages: stages[core_enums.STAGE_TYPES_SHIPPING[f.feature_type]] and
+        stages[core_enums.STAGE_TYPES_SHIPPING[f.feature_type]][0].rollout_milestone,
+
+    'Rollout platforms':
+    lambda f, stages: stages[core_enums.STAGE_TYPES_SHIPPING[f.feature_type]] and
+        stages[core_enums.STAGE_TYPES_SHIPPING[f.feature_type]][0].rollout_platforms,
+
+    'Rollout details':
+    lambda f, stages: stages[core_enums.STAGE_TYPES_SHIPPING[f.feature_type]] and
+        stages[core_enums.STAGE_TYPES_SHIPPING[f.feature_type]][0].rollout_details,
+
+    'Enterprise policies':
+    lambda f, stages: stages[core_enums.STAGE_TYPES_SHIPPING[f.feature_type]] and
+        stages[core_enums.STAGE_TYPES_SHIPPING[f.feature_type]][0].enterprise_policies,
 }
