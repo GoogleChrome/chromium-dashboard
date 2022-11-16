@@ -36,7 +36,7 @@ class ProcessesAPI(basehandlers.APIHandler):
       f.feature_type, processes.BLINK_LAUNCH_PROCESS)
 
     
-    if feature_id != core_enums.FEATURE_TYPE_ENTERPRISE_ID and f.breaking_change:
+    if f.feature_type != core_enums.FEATURE_TYPE_ENTERPRISE_ID and f.breaking_change:
       feature_process.stages.insert(-1, processes.FEATURE_ROLLOUT_STAGE)
 
     return processes.process_to_dict(feature_process)
