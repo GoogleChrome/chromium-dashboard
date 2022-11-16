@@ -508,6 +508,8 @@ def feature_entry_to_json_basic(fe: FeatureEntry) -> dict[str, Any]:
   if not fe.key:
     return {}
 
+  migrate_fe_views(fe)
+
   return {
     'id': fe.key.integer_id(),
     'name': fe.name,
