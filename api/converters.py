@@ -316,11 +316,27 @@ def stage_to_dict(stage: Stage) -> dict[str, Any]:
 
   return d
 
+# TODO(danielrsmith): These views should be migrated properly
+# for each entity to avoid invoking this function each time.
+def migrate_fe_views(fe: FeatureEntry) -> None:
+  """Migrate obsolete values for views on first edit."""
+  if fe.ff_views == MIXED_SIGNALS:
+    fe.ff_views = NO_PUBLIC_SIGNALS
+  if fe.ff_views == PUBLIC_SKEPTICISM:
+    fe.ff_views = OPPOSED
+
+  if fe.safari_views == MIXED_SIGNALS:
+    fe.safari_views = NO_PUBLIC_SIGNALS
+  if fe.safari_views == PUBLIC_SKEPTICISM:
+    fe.safari_views = OPPOSED
+
 def feature_entry_to_json_verbose(fe: FeatureEntry) -> dict[str, Any]:
   """Returns a verbose dictionary with all info about a feature."""
   # Do not convert to JSON if the entity has not been saved.
   if not fe.key:
     return {}
+
+  migrate_fe_views(fe)
 
   d: dict[str, Any] = fe.to_dict()
 
@@ -440,7 +456,8 @@ def feature_entry_to_json_verbose(fe: FeatureEntry) -> dict[str, Any]:
     },
     'ff': {
       'view': {
-        'text': VENDOR_VIEWS.get(fe.ff_views, None),
+        'text': VENDOR_VIEWS.get(fe.ff_views,
+            VENDOR_VIEWS_COMMON[NO_PUBLIC_SIGNALS]),
         'val': d.pop('ff_views', None),
         'url': d.pop('ff_views_link', None),
         'notes': d.pop('ff_views_notes'),
@@ -448,7 +465,8 @@ def feature_entry_to_json_verbose(fe: FeatureEntry) -> dict[str, Any]:
     },
     'safari': {
       'view': {
-        'text': VENDOR_VIEWS.get(fe.safari_views, None),
+        'text': VENDOR_VIEWS.get(fe.safari_views,
+            VENDOR_VIEWS_COMMON[NO_PUBLIC_SIGNALS]),
         'val': d.pop('safari_views', None),
         'url': d.pop('safari_views_link', None),
         'notes': d.pop('safari_views_notes', None),
@@ -456,7 +474,8 @@ def feature_entry_to_json_verbose(fe: FeatureEntry) -> dict[str, Any]:
     },
     'webdev': {
       'view': {
-        'text': WEB_DEV_VIEWS.get(fe.web_dev_views, None),
+        'text': WEB_DEV_VIEWS.get(fe.web_dev_views,
+            VENDOR_VIEWS_COMMON[NO_PUBLIC_SIGNALS]),
         'val': d.pop('web_dev_views', None),
         'url': d.pop('web_dev_views_link', None),
         'notes': d.pop('web_dev_views_notes', None),
