@@ -444,7 +444,7 @@ def feature_entry_to_json_verbose(fe: FeatureEntry) -> dict[str, Any]:
     },
     'safari': {
       'view': {
-        'text': VENDOR_VIEWS.get(fe.safari_views,
+        'text': VENDOR_VIEWS.get(safari_views,
             VENDOR_VIEWS_COMMON[NO_PUBLIC_SIGNALS]),
         'val': (safari_views if safari_views in VENDOR_VIEWS
             else NO_PUBLIC_SIGNALS),
@@ -454,7 +454,7 @@ def feature_entry_to_json_verbose(fe: FeatureEntry) -> dict[str, Any]:
     },
     'webdev': {
       'view': {
-        'text': WEB_DEV_VIEWS.get(fe.web_dev_views,
+        'text': WEB_DEV_VIEWS.get(web_dev_views,
             WEB_DEV_VIEWS[DEV_NO_SIGNALS]),
         'val': (web_dev_views if web_dev_views in WEB_DEV_VIEWS
             else DEV_NO_SIGNALS),
