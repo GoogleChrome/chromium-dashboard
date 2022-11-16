@@ -84,4 +84,21 @@ describe('chromedash-form-field', () => {
     assert.include(renderElement.innerHTML, 'type="radio"');
     assert.include(renderElement.innerHTML, 'required');
   });
+
+  it('renders a multiselect type of field', async () => {
+    const component = await fixture(
+      html`
+      <chromedash-form-field name="rollout_platforms" .value="[]">
+      </chromedash-form-field>`);
+    assert.exists(component);
+    assert.instanceOf(component, ChromedashFormField);
+    const fieldRow = component.renderRoot.querySelector('tr');
+    assert.exists(fieldRow);
+
+    const renderElement = component.renderRoot;
+    assert.include(renderElement.innerHTML, 'Rollout platforms');
+    assert.include(renderElement.innerHTML, 'sl-select');
+    assert.include(renderElement.innerHTML, 'multiple');
+    assert.include(renderElement.innerHTML, 'clearable');
+  });
 });
