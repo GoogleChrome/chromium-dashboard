@@ -13,18 +13,16 @@
 # limitations under the License.
 
 import testing_config  # Must be imported before the module under test.
-import urllib.request, urllib.parse, urllib.error
 
-import os
 import flask
 import werkzeug
-import html5lib
 from google.cloud import ndb  # type: ignore
 
 from framework import rediscache
 from internals import core_enums
+from internals import stage_helpers
 from internals.core_models import Feature, FeatureEntry, MilestoneSet, Stage
-from internals.review_models import Activity, Gate
+from internals.review_models import Gate
 from pages import guide
 
 
@@ -247,29 +245,29 @@ class FeatureEditHandlerTest(testing_config.CustomTestCase):
     self.assertEqual('Revised feature summary', revised_entry.summary)
 
     # Ensure changes were also made to Stage entities
-    stages = Stage.get_feature_stages(
+    stages = stage_helpers.get_feature_stages(
         self.feature_1.key.integer_id())
     self.assertEqual(len(stages.keys()), 7)
     dev_trial_stage = stages.get(130)
-    origin_trial_stage = stages.get(150)
-    ot_extension_stage = stages.get(151)
+    origin_trial_stages = stages.get(150)
+    ot_extension_stages = stages.get(151)
     # Stage for shipping should have been created.
-    shipping_stage = stages.get(160)
-    self.assertIsNotNone(origin_trial_stage)
-    self.assertIsNotNone(shipping_stage)
-    self.assertIsNotNone(ot_extension_stage)
+    shipping_stages = stages.get(160)
+    self.assertIsNotNone(origin_trial_stages)
+    self.assertIsNotNone(shipping_stages)
+    self.assertIsNotNone(ot_extension_stages)
     # Check that correct stage fields were changed.
-    self.assertEqual(dev_trial_stage.announcement_url,
+    self.assertEqual(dev_trial_stage[0].announcement_url,
                      new_ready_for_trial_url)
-    self.assertEqual(origin_trial_stage.experiment_risks,
+    self.assertEqual(origin_trial_stages[0].experiment_risks,
         new_experiment_risks)
-    self.assertEqual(origin_trial_stage.intent_thread_url,
+    self.assertEqual(origin_trial_stages[0].intent_thread_url,
         new_intent_to_experiment_url)
-    self.assertEqual(origin_trial_stage.origin_trial_feedback_url,
+    self.assertEqual(origin_trial_stages[0].origin_trial_feedback_url,
         new_origin_trial_feedback_url)
-    self.assertEqual(ot_extension_stage.experiment_extension_reason,
+    self.assertEqual(ot_extension_stages[0].experiment_extension_reason,
         new_experiment_extension_reason)
-    self.assertEqual(shipping_stage.milestones.desktop_first,
+    self.assertEqual(shipping_stages[0].milestones.desktop_first,
         int(new_shipped_milestone))
-    self.assertEqual(shipping_stage.intent_thread_url,
+    self.assertEqual(shipping_stages[0].intent_thread_url,
         new_intent_to_ship_url)

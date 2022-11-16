@@ -486,11 +486,3 @@ class Stage(ndb.Model):
   announcement_url = ndb.StringProperty()
   # Origin trial stage id that this stage extends, if trial extension stage.
   ot_stage_id = ndb.IntegerProperty()
-
-  @classmethod
-  def get_feature_stages(cls, feature_id: int) -> dict[int, Stage]:
-    """Return a dictionary of stages associated with a given feature."""
-    stages: list[Stage] = cls.query(cls.feature_id == feature_id).fetch()
-    # TODO(danielrsmith): Refactor to return a list of stages for each type
-    # when multiple stages of the same type can exist.
-    return {stage.stage_type: stage for stage in stages}
