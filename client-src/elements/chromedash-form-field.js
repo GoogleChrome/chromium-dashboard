@@ -4,7 +4,6 @@ import {ref} from 'lit/directives/ref.js';
 import './chromedash-textarea';
 import {showToastMessage} from './utils.js';
 
-
 export class ChromedashFormField extends LitElement {
   static get properties() {
     return {
@@ -99,6 +98,27 @@ export class ChromedashFormField extends LitElement {
           value="${fieldValue}"
           size="small"
           hoist
+          ?disabled=${fieldDisabled || this.disabled || this.loading}>
+          ${Object.values(choices).map(
+            ([value, label]) => html`
+              <sl-menu-item value="${value}"> ${label} </sl-menu-item>
+            `,
+          )}
+        </sl-select>
+      `;
+    } else if (type === 'multiselect') {
+      const valueArray = fieldValue.split(',');
+      console.log(valueArray);
+
+      fieldHTML = html`
+        <sl-select
+          name="${fieldName}"
+          id="id_${this.name}"
+          .value=${valueArray}
+          size="small"
+          hoist
+          multiple
+          cleareable
           ?disabled=${fieldDisabled || this.disabled || this.loading}>
           ${Object.values(choices).map(
             ([value, label]) => html`

@@ -185,6 +185,7 @@ class Feature(DictModel):
   editors = ndb.StringProperty(repeated=True)
   cc_recipients = ndb.StringProperty(repeated=True)
   footprint = ndb.IntegerProperty()  # Deprecated
+  breaking_change = ndb.BooleanProperty(default=False)
 
   # Tracability to intent discussion threads
   intent_to_implement_url = ndb.StringProperty()
@@ -330,6 +331,7 @@ class FeatureEntry(ndb.Model):  # Copy from Feature
   intent_stage = ndb.IntegerProperty(default=INTENT_NONE)
   bug_url = ndb.StringProperty()  # Tracking bug
   launch_bug_url = ndb.StringProperty()  # FLT or go/launch
+  breaking_change = ndb.BooleanProperty(default=False)
 
   # Implementation in Chrome
   impl_status_chrome = ndb.IntegerProperty(required=True, default=NO_ACTIVE_DEV)
@@ -486,3 +488,9 @@ class Stage(ndb.Model):
   announcement_url = ndb.StringProperty()
   # Origin trial stage id that this stage extends, if trial extension stage.
   ot_stage_id = ndb.IntegerProperty()
+
+  #Enterprise
+  rollout_milestone = ndb.IntegerProperty()
+  rollout_platforms = ndb.StringProperty(repeated=True)
+  rollout_details = ndb.StringProperty()
+  enterprise_policies = ndb.StringProperty(repeated=True)

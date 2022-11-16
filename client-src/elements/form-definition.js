@@ -69,6 +69,9 @@ export function formatFeatureForEdit(feature) {
 
     // from feature.browsers.other
     other_views_notes: feature.browsers.other.view.notes,
+
+    rollout_platforms: Array.from(new Set((feature.rollout_platforms || [])
+      .map(x => parseInt(x).toString()))),
   };
 
   COMMA_SEPARATED_FIELDS.map((field) => {
@@ -85,13 +88,13 @@ export function formatFeatureForEdit(feature) {
 // The following arrays define the list of fields for each guide form.
 
 export const NEW_FEATURE_FORM_FIELDS = [
-  'name', 'summary', 'unlisted', 'owner',
+  'name', 'summary', 'unlisted', 'breaking_change', 'owner',
   'editors', 'cc_recipients', 'blink_components', 'category',
 ];
 // Note: feature_type is done with custom HTML in chromedash-guide-new-page
 
 export const METADATA_FORM_FIELDS = [
-  'name', 'summary', 'unlisted', 'owner',
+  'name', 'summary', 'unlisted', 'breaking_change', 'owner',
   'editors', 'cc_recipients', 'category',
   'feature_type', 'intent_stage',
   'search_tags',
@@ -114,7 +117,7 @@ export const VERIFY_ACCURACY_FORM_FIELDS = [
 
 const FLAT_METADATA_FIELDS = [
   // Standardizaton
-  'name', 'summary', 'unlisted', 'owner',
+  'name', 'summary', 'unlisted', 'breaking_change', 'owner',
   'editors', 'cc_recipients', 'category',
   'feature_type', 'intent_stage',
   'search_tags',
@@ -363,6 +366,11 @@ const DEPRECATION_PREPARETOSHIP = [
 
 const DEPRECATION_REMOVED = ['comments'];
 
+const ENTERPRISE_PREPARE_TO_SHIP = [
+  'rollout_milestone', 'rollout_platforms', 'rollout_details',
+  'enterprise_policies',
+];
+
 // Forms to be used for each stage of each process.
 // { feature_type_id: { stage_id: stage_specific_form} }
 export const STAGE_FORMS = {
@@ -397,6 +405,11 @@ export const STAGE_FORMS = {
     [INTENT_STAGES.INTENT_EXTEND_TRIAL[0]]: DEPRECATION_DEPRECATIONTRIAL,
     [INTENT_STAGES.INTENT_SHIP[0]]: DEPRECATION_PREPARETOSHIP,
     [INTENT_STAGES.INTENT_REMOVED[0]]: DEPRECATION_REMOVED,
+  },
+
+  [FEATURE_TYPES.FEATURE_TYPE_ENTERPRISE_ID[0]]: {
+    [INTENT_STAGES.INTENT_SHIP[0]]: ENTERPRISE_PREPARE_TO_SHIP,
+    [INTENT_STAGES.INTENT_SHIPPED[0]]: ANY_SHIP,
   },
 };
 

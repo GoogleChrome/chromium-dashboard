@@ -1,5 +1,6 @@
 import {LitElement, css, html, nothing} from 'lit';
 import {DISPLAY_FIELDS_IN_STAGES} from './form-field-specs';
+import {PLATFORMS_DISPLAYNAME} from './form-field-enums';
 import '@polymer/iron-icon';
 import './chromedash-activity-log';
 import './chromedash-callout';
@@ -206,6 +207,9 @@ class ChromedashFeatureDetail extends LitElement {
           value = value[step];
         }
       }
+    }
+    if (fieldId == 'rollout_platforms') {
+      value = value.map(platformId => PLATFORMS_DISPLAYNAME[platformId]);
     }
     return value;
   }

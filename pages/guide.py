@@ -62,6 +62,7 @@ class FeatureCreateHandler(basehandlers.FlaskHandler):
         creator=signed_in_user.email(),
         accurate_as_of=datetime.now(),
         unlisted=self.form.get('unlisted') == 'on',
+        breaking_change=self.form.get('breaking_change') == 'on',
         blink_components=blink_components,
         tag_review_status=processes.initial_tag_review_status(feature_type),
         created_by=signed_in_user,
@@ -82,6 +83,7 @@ class FeatureCreateHandler(basehandlers.FlaskHandler):
         updater_email=signed_in_user.email(),
         accurate_as_of=datetime.now(),
         unlisted=self.form.get('unlisted') == 'on',
+        breaking_change=self.form.get('breaking_change') == 'on',
         blink_components=blink_components,
         tag_review_status=processes.initial_tag_review_status(feature_type))
     feature_entry.put()
@@ -185,6 +187,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
       ('tag_review_status', 'int'),
       ('webview_risks', 'str'),
       ('comments', 'str'),
+      ('breaking_change', 'bool'),
       ('ongoing_constraints', 'str')]
 
   # Old field name, new field name
@@ -208,7 +211,12 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
       ('finch_url', 'link'),
       ('experiment_goals', 'str'),
       ('experiment_risks', 'str'),
-      ('experiment_extension_reason', 'str')]
+      ('experiment_extension_reason', 'str'),
+      ('rollout_milestone', 'int'),
+      ('rollout_platforms', 'split_str'),
+      ('rollout_details', 'str'),
+      ('enterprise_policies', 'split_str'),
+      ]
 
   CHECKBOX_FIELDS: frozenset[str] = frozenset([
       'accurate_as_of', 'unlisted', 'api_spec', 'all_platforms',
@@ -261,7 +269,9 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
       return self.form.get(field)
     elif field_type == 'split_str':
       val = self.split_input(field, delim=',')
-      if field == 'blink_components' and len(val) == 0:
+      if field == 'rollout_platforms':
+        val = self.form.getlist(field)
+      elif field == 'blink_components' and len(val) == 0:
         return [settings.DEFAULT_COMPONENT]
       return val
     raise ValueError(f'Unknown field data type: {field_type}')
