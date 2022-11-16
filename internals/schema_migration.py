@@ -440,3 +440,40 @@ class WriteUpdatedField(FlaskHandler):
         count += 1
     
     return f'{count} FeatureEntry entities given updated field values.'
+
+class UpdateDeprecatedViews(FlaskHandler):
+
+  def get_template_data(self, **kwargs):
+    """Migrates deprecated feature views fields to their new values"""
+    self.require_cron_header()
+
+    for fe in FeatureEntry.query():
+      if fe.ff_views == MIXED_SIGNALS:
+        fe.ff_views = NO_PUBLIC_SIGNALS
+      if fe.ff_views == PUBLIC_SKEPTICISM:
+        fe.ff_views = OPPOSED
+
+      if fe.safari_views == MIXED_SIGNALS:
+        fe.safari_views = NO_PUBLIC_SIGNALS
+      if fe.safari_views == PUBLIC_SKEPTICISM:
+        fe.safari_views = OPPOSED
+      fe.put()
+    
+    for f in Feature.query():
+      if f.ff_views == MIXED_SIGNALS:
+        f.ff_views = NO_PUBLIC_SIGNALS
+      if f.ff_views == PUBLIC_SKEPTICISM:
+        f.ff_views = OPPOSED
+
+      if f.ie_views == MIXED_SIGNALS:
+        f.ie_views = NO_PUBLIC_SIGNALS
+      if f.ie_views == PUBLIC_SKEPTICISM:
+        f.ie_views = OPPOSED
+
+      if f.safari_views == MIXED_SIGNALS:
+        f.safari_views = NO_PUBLIC_SIGNALS
+      if f.safari_views == PUBLIC_SKEPTICISM:
+        f.safari_views = OPPOSED
+      f.put()
+    
+    return 'Feature and FeatureEntry view fields updated.'
