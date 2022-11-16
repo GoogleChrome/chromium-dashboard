@@ -440,7 +440,7 @@ def feature_entry_to_json_verbose(fe: FeatureEntry) -> dict[str, Any]:
     },
     'ff': {
       'view': {
-        'text': VENDOR_VIEWS[fe.ff_views],
+        'text': VENDOR_VIEWS.get(fe.ff_views, None),
         'val': d.pop('ff_views', None),
         'url': d.pop('ff_views_link', None),
         'notes': d.pop('ff_views_notes'),
@@ -448,7 +448,7 @@ def feature_entry_to_json_verbose(fe: FeatureEntry) -> dict[str, Any]:
     },
     'safari': {
       'view': {
-        'text': VENDOR_VIEWS[fe.safari_views],
+        'text': VENDOR_VIEWS.get(fe.safari_views, None),
         'val': d.pop('safari_views', None),
         'url': d.pop('safari_views_link', None),
         'notes': d.pop('safari_views_notes', None),
@@ -456,7 +456,7 @@ def feature_entry_to_json_verbose(fe: FeatureEntry) -> dict[str, Any]:
     },
     'webdev': {
       'view': {
-        'text': WEB_DEV_VIEWS[fe.web_dev_views],
+        'text': WEB_DEV_VIEWS.get(fe.web_dev_views, None),
         'val': d.pop('web_dev_views', None),
         'url': d.pop('web_dev_views_link', None),
         'notes': d.pop('web_dev_views_notes', None),
