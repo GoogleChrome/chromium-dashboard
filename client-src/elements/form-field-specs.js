@@ -500,7 +500,7 @@ export const ALL_FIELDS = {
     <p>
       It's recommended that you file a TAG <a target="_blank" href=
         "https://github.com/w3ctag/design-reviews/issues/new?template=010-specification-review.md"
-      >Specification Review</a> as soon as your specification is written, during your Origin Trial.
+      >Specification Review</a> as soon as your specification is written, and at least a month ahead of sending an Intent to Ship.  There might be enough time if you file for review of your specification during your Origin Trial, assuming your feature requires one.
       There may be some work involved in preparing your feature for review (see the
       <a target="_blank" href=
         "https://github.com/w3ctag/design-reviews/blob/main/.github/ISSUE_TEMPLATE/010-specification-review.md"
