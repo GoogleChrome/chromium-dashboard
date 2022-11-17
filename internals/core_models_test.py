@@ -17,8 +17,9 @@ import testing_config  # Must be imported before the module under test.
 
 from api import converters
 from framework import rediscache
-from internals import feature_helpers
 from internals import core_enums
+from internals import feature_helpers
+from internals import stage_helpers
 from internals.core_models import Feature, FeatureEntry, MilestoneSet, Stage
 
 
@@ -93,13 +94,13 @@ class FeatureTest(testing_config.CustomTestCase):
       stage = Stage(
           feature_id=self.feature_4.key.integer_id(), stage_type=s_type)
       stage.put()
-    self.fe_1_stages_dict = Stage.get_feature_stages(
+    self.fe_1_stages_dict = stage_helpers.get_feature_stages(
         self.feature_1.key.integer_id())
-    self.fe_2_stages_dict = Stage.get_feature_stages(
+    self.fe_2_stages_dict = stage_helpers.get_feature_stages(
         self.feature_2.key.integer_id())
-    self.fe_3_stages_dict = Stage.get_feature_stages(
+    self.fe_3_stages_dict = stage_helpers.get_feature_stages(
         self.feature_3.key.integer_id())
-    self.fe_4_stages_dict = Stage.get_feature_stages(
+    self.fe_4_stages_dict = stage_helpers.get_feature_stages(
         self.feature_4.key.integer_id())
 
     # Legacy entities for testing legacy functions.
@@ -322,27 +323,27 @@ class FeatureTest(testing_config.CustomTestCase):
     """We can retrieve a list of features."""
     self.feature_1.impl_status_chrome = 5
     # Set shipping milestone to 1.
-    self.fe_1_stages_dict[160].milestones = MilestoneSet(desktop_first=1)
+    self.fe_1_stages_dict[160][0].milestones = MilestoneSet(desktop_first=1)
     self.feature_1.put()
-    self.fe_1_stages_dict[160].put()
+    self.fe_1_stages_dict[160][0].put()
 
     self.feature_2.impl_status_chrome = 7
     # Set shipping milestone to 1.
-    self.fe_2_stages_dict[260].milestones = MilestoneSet(desktop_first=1)
+    self.fe_2_stages_dict[260][0].milestones = MilestoneSet(desktop_first=1)
     self.feature_2.put()
-    self.fe_2_stages_dict[260].put()
+    self.fe_2_stages_dict[260][0].put()
 
     self.feature_3.impl_status_chrome = 5
     # Set shipping milestone to 1.
-    self.fe_3_stages_dict[360].milestones = MilestoneSet(desktop_first=1)
+    self.fe_3_stages_dict[360][0].milestones = MilestoneSet(desktop_first=1)
     self.feature_3.put()
-    self.fe_3_stages_dict[360].put()
+    self.fe_3_stages_dict[360][0].put()
 
     self.feature_4.impl_status_chrome = 7
     # Set shipping milestone to 1.
-    self.fe_4_stages_dict[460].milestones = MilestoneSet(desktop_first=2)
+    self.fe_4_stages_dict[460][0].milestones = MilestoneSet(desktop_first=2)
     self.feature_4.put()
-    self.fe_4_stages_dict[460].put()
+    self.fe_4_stages_dict[460][0].put()
 
     actual = feature_helpers.get_in_milestone(milestone=1)
     removed = [f['name'] for f in actual['Removed']]
@@ -364,25 +365,25 @@ class FeatureTest(testing_config.CustomTestCase):
   def test_get_in_milestone__unlisted(self):
     """Unlisted features should not be listed for users who can't edit."""
     self.feature_1.impl_status_chrome = 5
-    self.fe_1_stages_dict[160].milestones = MilestoneSet(desktop_first=1)
+    self.fe_1_stages_dict[160][0].milestones = MilestoneSet(desktop_first=1)
     self.feature_1.put()
-    self.fe_1_stages_dict[160].put()
+    self.fe_1_stages_dict[160][0].put()
 
     self.feature_2.unlisted = True
     self.feature_2.impl_status_chrome = 7
-    self.fe_2_stages_dict[260].milestones = MilestoneSet(desktop_first=1)
+    self.fe_2_stages_dict[260][0].milestones = MilestoneSet(desktop_first=1)
     self.feature_2.put()
-    self.fe_2_stages_dict[260].put()
+    self.fe_2_stages_dict[260][0].put()
 
     self.feature_3.impl_status_chrome = 5
-    self.fe_3_stages_dict[360].milestones = MilestoneSet(desktop_first=1)
+    self.fe_3_stages_dict[360][0].milestones = MilestoneSet(desktop_first=1)
     self.feature_3.put()
-    self.fe_3_stages_dict[360].put()
+    self.fe_3_stages_dict[360][0].put()
 
     self.feature_4.impl_status_chrome = 7
-    self.fe_4_stages_dict[460].milestones = MilestoneSet(desktop_first=2)
+    self.fe_4_stages_dict[460][0].milestones = MilestoneSet(desktop_first=2)
     self.feature_4.put()
-    self.fe_4_stages_dict[460].put()
+    self.fe_4_stages_dict[460][0].put()
 
     actual = feature_helpers.get_in_milestone(milestone=1)
     self.assertEqual(
@@ -392,25 +393,25 @@ class FeatureTest(testing_config.CustomTestCase):
   def test_get_in_milestone__unlisted_shown(self):
     """Unlisted features should be listed for users who can edit."""
     self.feature_1.impl_status_chrome = 5
-    self.fe_1_stages_dict[160].milestones = MilestoneSet(desktop_first=1)
+    self.fe_1_stages_dict[160][0].milestones = MilestoneSet(desktop_first=1)
     self.feature_1.put()
-    self.fe_1_stages_dict[160].put()
+    self.fe_1_stages_dict[160][0].put()
 
     self.feature_2.unlisted = True
     self.feature_2.impl_status_chrome = 7
-    self.fe_2_stages_dict[260].milestones = MilestoneSet(desktop_first=1)
+    self.fe_2_stages_dict[260][0].milestones = MilestoneSet(desktop_first=1)
     self.feature_2.put()
-    self.fe_2_stages_dict[260].put()
+    self.fe_2_stages_dict[260][0].put()
 
     self.feature_3.impl_status_chrome = 5
-    self.fe_3_stages_dict[360].milestones = MilestoneSet(desktop_first=1)
+    self.fe_3_stages_dict[360][0].milestones = MilestoneSet(desktop_first=1)
     self.feature_3.put()
-    self.fe_3_stages_dict[360].put()
+    self.fe_3_stages_dict[360][0].put()
 
     self.feature_4.impl_status_chrome = 7
-    self.fe_4_stages_dict[460].milestones = MilestoneSet(desktop_first=2)
+    self.fe_4_stages_dict[460][0].milestones = MilestoneSet(desktop_first=2)
     self.feature_4.put()
-    self.fe_4_stages_dict[460].put()
+    self.fe_4_stages_dict[460][0].put()
 
     actual = feature_helpers.get_in_milestone(
         milestone=1, show_unlisted=True)
@@ -453,13 +454,13 @@ class StageTest(testing_config.CustomTestCase):
   
   def test_get_feature_stages(self):
     """A dictionary with stages relevant to the feature should be present."""
-    stage_dict = Stage.get_feature_stages(self.feature_id)
+    stage_dict = stage_helpers.get_feature_stages(self.feature_id)
     list_stages = stage_dict.items()
     expected_stage_types = {410, 430, 450, 460, 470}
     # Extension stage type was not created, so it should not appear.
     self.assertIsNone(stage_dict.get(451, None))
     self.assertEqual(len(list_stages), 5)
-    for stage_type, stage in stage_dict.items():
+    for stage_type, stages in stage_dict.items():
       self.assertTrue(stage_type in expected_stage_types)
-      self.assertEqual(stage.stage_type, stage_type)
+      self.assertEqual(stages[0].stage_type, stage_type)
       expected_stage_types.remove(stage_type)

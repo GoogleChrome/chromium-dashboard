@@ -340,58 +340,58 @@ def get_in_milestone(milestone: int,
     # but no desktop milestone.
     q = Stage.query(Stage.milestones.android_first == milestone,
         Stage.milestones.desktop_first == None,
-        Stage.stage_type.IN(STAGE_BLINK_SHIPPING, STAGE_PSA_SHIPPING,
-            STAGE_FAST_SHIPPING, STAGE_DEP_SHIPPING))
+        Stage.stage_type.IN((STAGE_BLINK_SHIPPING, STAGE_PSA_SHIPPING,
+            STAGE_FAST_SHIPPING, STAGE_DEP_SHIPPING)))
     android_only_shipping_future = q.fetch_async()
 
     # Origin trial stages (Desktop) in this milestone.
     q = Stage.query(Stage.milestones.desktop_first == milestone,
-        Stage.stage_type.IN(STAGE_BLINK_ORIGIN_TRIAL, STAGE_FAST_ORIGIN_TRIAL,
-            STAGE_DEP_DEPRECATION_TRIAL))
+        Stage.stage_type.IN((STAGE_BLINK_ORIGIN_TRIAL, STAGE_FAST_ORIGIN_TRIAL,
+            STAGE_DEP_DEPRECATION_TRIAL)))
     desktop_origin_trial_future = q.fetch_async()
 
     # Origin trial stages (Android) in this milestone.
     q = Stage.query(Stage.milestones.android_first == milestone,
         Stage.milestones.desktop_first == None,
-        Stage.stage_type.IN(STAGE_BLINK_ORIGIN_TRIAL, STAGE_FAST_ORIGIN_TRIAL,
-            STAGE_DEP_DEPRECATION_TRIAL))
+        Stage.stage_type.IN((STAGE_BLINK_ORIGIN_TRIAL, STAGE_FAST_ORIGIN_TRIAL,
+            STAGE_DEP_DEPRECATION_TRIAL)))
     android_origin_trial_future = q.fetch_async()
 
     # Origin trial stages (Webview) in this milestone.
     q = Stage.query(Stage.milestones.webview_first == milestone,
         Stage.milestones.desktop_first == None,
-        Stage.stage_type.IN(STAGE_BLINK_ORIGIN_TRIAL, STAGE_FAST_ORIGIN_TRIAL,
-            STAGE_DEP_DEPRECATION_TRIAL))
+        Stage.stage_type.IN((STAGE_BLINK_ORIGIN_TRIAL, STAGE_FAST_ORIGIN_TRIAL,
+            STAGE_DEP_DEPRECATION_TRIAL)))
     webview_origin_trial_future = q.fetch_async()
 
     # Dev trial stages (Desktop) in this milestone.
     q = Stage.query(Stage.milestones.desktop_first == milestone,
-        Stage.stage_type.IN(STAGE_BLINK_DEV_TRIAL, STAGE_PSA_DEV_TRIAL,
-            STAGE_FAST_DEV_TRIAL, STAGE_DEP_DEV_TRIAL))
+        Stage.stage_type.IN((STAGE_BLINK_DEV_TRIAL, STAGE_PSA_DEV_TRIAL,
+            STAGE_FAST_DEV_TRIAL, STAGE_DEP_DEV_TRIAL)))
     desktop_dev_trial_future = q.fetch_async()
 
     # Dev trial stages (Android) in this milestone.
     q = Stage.query(Stage.milestones.android_first == milestone,
         Stage.milestones.desktop_first == None,
-        Stage.stage_type.IN(STAGE_BLINK_DEV_TRIAL, STAGE_PSA_DEV_TRIAL,
-            STAGE_FAST_DEV_TRIAL, STAGE_DEP_DEV_TRIAL))
-    android_dev_trial_future = q.fetch_async(None)
+        Stage.stage_type.IN((STAGE_BLINK_DEV_TRIAL, STAGE_PSA_DEV_TRIAL,
+            STAGE_FAST_DEV_TRIAL, STAGE_DEP_DEV_TRIAL)))
+    android_dev_trial_future = q.fetch_async()
 
     # Wait for all futures to complete and collect unique feature IDs.
     desktop_shipping_ids = list({
-        [s.feature_id for s in desktop_shipping_future.result()]})
+        *[s.feature_id for s in desktop_shipping_future.result()]})
     android_only_shipping_ids = list({
-        [s.feature_id for s in android_only_shipping_future.result()]})
+        *[s.feature_id for s in android_only_shipping_future.result()]})
     desktop_origin_trials_ids = list({
-        [s.feature_id for s in desktop_origin_trial_future.result()]})
+        *[s.feature_id for s in desktop_origin_trial_future.result()]})
     android_origin_trials_ids = list({
-        [s.feature_id for s in android_origin_trial_future.result()]})
+        *[s.feature_id for s in android_origin_trial_future.result()]})
     webview_origin_trials_ids = list({
-        [s.feature_id for s in webview_origin_trial_future.result()]})
+        *[s.feature_id for s in webview_origin_trial_future.result()]})
     desktop_dev_trials_ids = list({
-        [s.feature_id for s in desktop_dev_trial_future.result()]})
+        *[s.feature_id for s in desktop_dev_trial_future.result()]})
     android_dev_trials_ids = list({
-        [s.feature_id for s in android_dev_trial_future.result()]})
+        *[s.feature_id for s in android_dev_trial_future.result()]})
 
     # Query for FeatureEntry entities that match the stage feature IDs.
     # Querying with an empty list will raise an error, so check if each
