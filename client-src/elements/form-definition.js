@@ -213,6 +213,26 @@ export const FLAT_FORMS = [
 ];
 
 
+export const FLAT_FORMS_BY_FEATURE_TYPE = {
+  [FEATURE_TYPES.FEATURE_TYPE_INCUBATE_ID[0]]: FLAT_FORMS,
+  [FEATURE_TYPES.FEATURE_TYPE_EXISTING_ID[0]]: FLAT_FORMS,
+  [FEATURE_TYPES.FEATURE_TYPE_CODE_CHANGE_ID[0]]: [
+    ['Feature metadata', FLAT_METADATA_FIELDS],
+    ['Identify the need', FLAT_IDENTIFY_FIELDS],
+    ['Dev trial', FLAT_DEV_TRAIL_FIELDS],
+    ['Prepare to ship', FLAT_PREPARE_TO_SHIP_FIELDS],
+    ['Ship', FLAT_SHIP_FIELDS],
+  ],
+  [FEATURE_TYPES.FEATURE_TYPE_DEPRECATION_ID[0]]: [
+    ['Feature metadata', FLAT_METADATA_FIELDS],
+    ['Identify the need', FLAT_IDENTIFY_FIELDS],
+    ['Dev trial', FLAT_DEV_TRAIL_FIELDS],
+    ['Origin trial', FLAT_ORIGIN_TRIAL_FIELDS],
+    ['Prepare to ship', FLAT_PREPARE_TO_SHIP_FIELDS],
+    ['Ship', FLAT_SHIP_FIELDS],
+  ],
+};
+
 const NEWFEATURE_INCUBATE = [
   'motivation', 'initial_public_proposal_url', 'explainer_links',
   'bug_url', 'launch_bug_url', 'comments',
@@ -311,10 +331,7 @@ const PAS_PREPARETOSHIP = [
   'launch_bug_url', 'intent_to_ship_url', 'comments',
 ];
 
-const DEPRECATION_IMPLEMENT = [
-  'deprecation_motivation', // map to name="motivation" field upon form submission
-  'spec_link', 'comments',
-];
+const DEPRECATION_IMPLEMENT = ['deprecation_motivation', 'spec_link', 'comments'];
 
 // Note: Even though this is similar to another form, it is likely to change.
 // const DEPRECATION_PREPARETOSHIP = [

@@ -64,28 +64,7 @@ def del_none(d):
   return d
 
 
-# TODO(danielrsmith): These views should be migrated properly
-# for each entity to avoid invoking this function each time.
-def migrate_views(f: Feature) -> None:
-  """Migrate obsolete values for views on first edit."""
-  if f.ff_views == MIXED_SIGNALS:
-    f.ff_views = NO_PUBLIC_SIGNALS
-  if f.ff_views == PUBLIC_SKEPTICISM:
-    f.ff_views = OPPOSED
-
-  if f.ie_views == MIXED_SIGNALS:
-    f.ie_views = NO_PUBLIC_SIGNALS
-  if f.ie_views == PUBLIC_SKEPTICISM:
-    f.ie_views = OPPOSED
-
-  if f.safari_views == MIXED_SIGNALS:
-    f.safari_views = NO_PUBLIC_SIGNALS
-  if f.safari_views == PUBLIC_SKEPTICISM:
-    f.safari_views = OPPOSED
-
-
 def feature_to_legacy_json(f: Feature) -> dict[str, Any]:
-  migrate_views(f)
   d: dict[str, Any] = to_dict(f)
   is_released = f.impl_status_chrome in RELEASE_IMPL_STATES
   d['is_released'] = is_released
@@ -140,6 +119,11 @@ def feature_to_legacy_json(f: Feature) -> dict[str, Any]:
   d['editors'] = d.pop('editors', [])
   d['cc_recipients'] = d.pop('cc_recipients', [])
   d['creator'] = d.pop('creator', None)
+
+  ff_views = d.pop('ff_views', NO_PUBLIC_SIGNALS)
+  ie_views = d.pop('ie_views', NO_PUBLIC_SIGNALS)
+  safari_views = d.pop('safari_views', NO_PUBLIC_SIGNALS)
+  web_dev_views = d.pop('web_dev_views', DEV_NO_SIGNALS)
   d['browsers'] = {
     'chrome': {
       'bug': d.pop('bug_url', None),
@@ -161,32 +145,38 @@ def feature_to_legacy_json(f: Feature) -> dict[str, Any]:
     },
     'ff': {
       'view': {
-        'text': VENDOR_VIEWS[f.ff_views],
-        'val': d.pop('ff_views', None),
+        'text': VENDOR_VIEWS.get(ff_views,
+            VENDOR_VIEWS_COMMON[NO_PUBLIC_SIGNALS]),
+        'val': ff_views if ff_views in VENDOR_VIEWS else NO_PUBLIC_SIGNALS,
         'url': d.pop('ff_views_link', None),
         'notes': d.pop('ff_views_notes', None),
       }
     },
     'edge': {  # Deprecated
       'view': {
-        'text': VENDOR_VIEWS[f.ie_views],
-        'val': d.pop('ie_views', None),
+        'text': VENDOR_VIEWS.get(ie_views,
+            VENDOR_VIEWS_COMMON[NO_PUBLIC_SIGNALS]),
+        'val': ie_views if ie_views in VENDOR_VIEWS else NO_PUBLIC_SIGNALS,
         'url': d.pop('ie_views_link', None),
         'notes': d.pop('ie_views_notes', None),
       }
     },
     'safari': {
       'view': {
-        'text': VENDOR_VIEWS[f.safari_views],
-        'val': d.pop('safari_views', None),
+        'text': VENDOR_VIEWS.get(safari_views,
+            VENDOR_VIEWS_COMMON[NO_PUBLIC_SIGNALS]),
+        'val': (safari_views if safari_views in VENDOR_VIEWS
+            else NO_PUBLIC_SIGNALS),
         'url': d.pop('safari_views_link', None),
         'notes': d.pop('safari_views_notes', None),
       }
     },
     'webdev': {
       'view': {
-        'text': WEB_DEV_VIEWS[f.web_dev_views],
-        'val': d.pop('web_dev_views', None),
+        'text': WEB_DEV_VIEWS.get(f.web_dev_views,
+            WEB_DEV_VIEWS[DEV_NO_SIGNALS]),
+        'val': (web_dev_views if web_dev_views in WEB_DEV_VIEWS
+            else DEV_NO_SIGNALS),
         'url': d.pop('web_dev_views_link', None),
         'notes': d.pop('web_dev_views_notes', None),
       }
@@ -253,10 +243,12 @@ def _prep_stage_gate_info(
 
   # Write a collection of stages and gates associated with the feature,
   # sorted by type.
-  d['stages'] = {}
+  d['stages'] = collections.defaultdict(list)
   d['gates'] = collections.defaultdict(list)
   # Stages and gates are given as a dictionary, with the type as the key,
   # and a list of entity IDs as the value.
+  # TODO(danielrsmith): This approach should be removed or refactored when
+  # functionality for creating multiple stages is added.
   for s in stages:
     # Keep major stages for referencing additional fields.
     if s.stage_type == proto_type:
@@ -269,11 +261,50 @@ def _prep_stage_gate_info(
       major_stages['extend'] = s
     elif s.stage_type == ship_type:
       major_stages['ship'] = s
-    d['stages'][s.stage_type] = s.key.integer_id()
+    d['stages'][s.stage_type].append(stage_to_dict(s))
   for g in gates:
     d['gates'][g.gate_type].append(g.key.integer_id())
 
   return major_stages
+
+MILESTONE_FIELDS = [
+  'desktop_first',
+  'desktop_last',
+  'android_first',
+  'android_last',
+  'ios_first',
+  'ios_last',
+  'webview_first',
+  'webview_last'
+]
+
+def stage_to_dict(stage: Stage) -> dict[str, Any]:
+  d: dict[str, Any] = {}
+  d['id'] = stage.key.integer_id()
+  d['feature_id'] = stage.feature_id
+  d['stage_type'] = stage.stage_type
+
+  # Add milestone fields
+  if stage.milestones is not None:
+    for field in MILESTONE_FIELDS:
+      d[field] = getattr(stage.milestones, field)
+  else:
+    for field in MILESTONE_FIELDS:
+      d[field] = None
+
+  d['pm_emails'] = stage.pm_emails
+  d['tl_emails'] = stage.tl_emails
+  d['ux_emails'] = stage.ux_emails
+  d['te_emails'] = stage.te_emails
+  d['experiment_goals'] = stage.experiment_goals
+  d['experiment_risks'] = stage.experiment_risks
+  d['experiment_extension_reason'] = stage.experiment_extension_reason
+  d['intent_thread_url'] = stage.intent_thread_url
+  d['origin_trial_feedback_url'] = stage.origin_trial_feedback_url
+  d['announcement_url'] = stage.announcement_url
+  d['ot_stage_id'] = stage.ot_stage_id
+
+  return d
 
 
 def feature_entry_to_json_verbose(fe: FeatureEntry) -> dict[str, Any]:
@@ -378,7 +409,11 @@ def feature_entry_to_json_verbose(fe: FeatureEntry) -> dict[str, Any]:
   d['editors'] =  d.pop('editor_emails', [])
   d['cc_emails'] = d.pop('cc_emails', [])
   d['creator'] = fe.creator_email
+  d['comments'] = d.pop('feature_notes', None)
 
+  ff_views = d.pop('ff_views', NO_PUBLIC_SIGNALS)
+  safari_views = d.pop('safari_views', NO_PUBLIC_SIGNALS)
+  web_dev_views = d.pop('web_dev_views', DEV_NO_SIGNALS)
   d['browsers'] = {
     'chrome': {
       'bug': fe.bug_url,
@@ -400,24 +435,29 @@ def feature_entry_to_json_verbose(fe: FeatureEntry) -> dict[str, Any]:
     },
     'ff': {
       'view': {
-        'text': VENDOR_VIEWS[fe.ff_views],
-        'val': d.pop('ff_views', None),
+        'text': VENDOR_VIEWS.get(ff_views,
+            VENDOR_VIEWS_COMMON[NO_PUBLIC_SIGNALS]),
+        'val': ff_views if ff_views in VENDOR_VIEWS else NO_PUBLIC_SIGNALS,
         'url': d.pop('ff_views_link', None),
         'notes': d.pop('ff_views_notes'),
       }
     },
     'safari': {
       'view': {
-        'text': VENDOR_VIEWS[fe.safari_views],
-        'val': d.pop('safari_views', None),
+        'text': VENDOR_VIEWS.get(safari_views,
+            VENDOR_VIEWS_COMMON[NO_PUBLIC_SIGNALS]),
+        'val': (safari_views if safari_views in VENDOR_VIEWS
+            else NO_PUBLIC_SIGNALS),
         'url': d.pop('safari_views_link', None),
         'notes': d.pop('safari_views_notes', None),
       }
     },
     'webdev': {
       'view': {
-        'text': WEB_DEV_VIEWS[fe.web_dev_views],
-        'val': d.pop('web_dev_views', None),
+        'text': WEB_DEV_VIEWS.get(web_dev_views,
+            WEB_DEV_VIEWS[DEV_NO_SIGNALS]),
+        'val': (web_dev_views if web_dev_views in WEB_DEV_VIEWS
+            else DEV_NO_SIGNALS),
         'url': d.pop('web_dev_views_link', None),
         'notes': d.pop('web_dev_views_notes', None),
       }
@@ -455,6 +495,18 @@ def feature_entry_to_json_basic(fe: FeatureEntry) -> dict[str, Any]:
     'summary': fe.summary,
     'unlisted': fe.unlisted,
     'blink_components': fe.blink_components or [],
+    'resources': {
+      'samples': fe.sample_links or [],
+      'docs': fe.doc_links or [],
+    },
+    'standards': {
+      'spec': fe.spec_link,
+      'maturity': {
+        'text': STANDARD_MATURITY_CHOICES.get(fe.standard_maturity),
+        'short_text': STANDARD_MATURITY_SHORT.get(fe.standard_maturity),
+        'val': fe.standard_maturity,
+      },
+    },
     'browsers': {
       'chrome': {
         'bug': fe.bug_url,
@@ -472,24 +524,30 @@ def feature_entry_to_json_basic(fe: FeatureEntry) -> dict[str, Any]:
       },
       'ff': {
         'view': {
-          'text': VENDOR_VIEWS[fe.ff_views],
-          'val': fe.ff_views,
+        'text': VENDOR_VIEWS.get(fe.ff_views,
+            VENDOR_VIEWS_COMMON[NO_PUBLIC_SIGNALS]),
+        'val': (fe.ff_views if fe.ff_views in VENDOR_VIEWS
+            else NO_PUBLIC_SIGNALS),
           'url': fe.ff_views_link,
           'notes': fe.ff_views_notes,
         }
       },
       'safari': {
         'view': {
-          'text': VENDOR_VIEWS[fe.safari_views],
-          'val': fe.safari_views,
+        'text': VENDOR_VIEWS.get(fe.ff_views,
+            VENDOR_VIEWS_COMMON[NO_PUBLIC_SIGNALS]),
+        'val': (fe.safari_views if fe.safari_views in VENDOR_VIEWS
+            else NO_PUBLIC_SIGNALS),
           'url': fe.safari_views_link,
           'notes': fe.safari_views_notes,
         }
       },
       'webdev': {
         'view': {
-          'text': WEB_DEV_VIEWS[fe.web_dev_views],
-          'val': fe.web_dev_views,
+        'text': WEB_DEV_VIEWS.get(fe.web_dev_views,
+            WEB_DEV_VIEWS[DEV_NO_SIGNALS]),
+        'val': (fe.web_dev_views if fe.web_dev_views in WEB_DEV_VIEWS
+            else DEV_NO_SIGNALS),
           'url': fe.web_dev_views_link,
           'notes': fe.web_dev_views_notes,
         }

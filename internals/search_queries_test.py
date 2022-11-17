@@ -99,6 +99,16 @@ class SearchFeaturesTest(testing_config.CustomTestCase):
         [self.feature_1_id, self.feature_2_id],
         [key.integer_id() for key in actual])
 
+    actual_promise = search_queries.single_field_query_async(
+        'unlisted', '=', True)
+    actual = actual_promise.get_result()
+    self.assertCountEqual([], actual)
+
+    actual_promise = search_queries.single_field_query_async(
+        'deleted', '=', True)
+    actual = actual_promise.get_result()
+    self.assertCountEqual([], actual)
+
   def test_single_field_query_async__multiple_vals(self):
     """We get a promise to run the DB query with multiple values."""
     actual_promise = search_queries.single_field_query_async(

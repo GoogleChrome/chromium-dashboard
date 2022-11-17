@@ -27,6 +27,7 @@ from framework import users
 from internals import approval_defs
 from internals import core_enums
 from internals import notifier
+from internals import stage_helpers
 from internals import user_models
 from internals.core_models import Feature, FeatureEntry, MilestoneSet, Stage
 import settings
@@ -71,7 +72,7 @@ class EmailFormattingTest(testing_config.CustomTestCase):
         stage_type=160, milestones=MilestoneSet())
     self.ot_stage.put()
     self.ship_stage.put()
-    self.fe_1_stages = Stage.get_feature_stages(
+    self.fe_1_stages = stage_helpers.get_feature_stages(
         self.fe_1.key.integer_id())
 
     self.component_1 = user_models.BlinkComponent(name='Blink')
@@ -110,7 +111,7 @@ class EmailFormattingTest(testing_config.CustomTestCase):
     self.fe_2_ship_stage = Stage(feature_id=self.fe_2.key.integer_id(),
         stage_type=260, milestones=MilestoneSet())
     self.fe_2_ship_stage.put()
-    self.fe_2_stages = Stage.get_feature_stages(self.fe_2.key.integer_id())
+    self.fe_2_stages = stage_helpers.get_feature_stages(self.fe_2.key.integer_id())
     # This feature will only be used for the template tests.
     # Hardcode the Feature Key ID so that the ID is deterministic in the
     # template tests.
@@ -133,7 +134,7 @@ class EmailFormattingTest(testing_config.CustomTestCase):
         milestones=MilestoneSet(desktop_first=100))
     self.template_fe.put()
     self.template_ship_stage.put()
-    self.template_stages = Stage.get_feature_stages(123)
+    self.template_stages = stage_helpers.get_feature_stages(123)
     self.template_fe.key = ndb.Key('FeatureEntry', 123)
     self.template_fe.put()
 
@@ -272,6 +273,7 @@ class EmailFormattingTest(testing_config.CustomTestCase):
   def test_apply_subscription_rules__irrelevant_match(self):
     """When a feature matches, but the change is not relevant => skip."""
     self.ship_stage.milestones.android_first = 88
+    self.ship_stage.put()
     changes = [{'prop_name': 'some_other_field'}]  # irrelevant changesa
 
     actual = notifier.apply_subscription_rules(

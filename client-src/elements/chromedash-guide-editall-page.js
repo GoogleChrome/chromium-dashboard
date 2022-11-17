@@ -3,7 +3,7 @@ import {ref} from 'lit/directives/ref.js';
 import {showToastMessage} from './utils.js';
 import './chromedash-form-table';
 import './chromedash-form-field';
-import {formatFeatureForEdit, FLAT_FORMS} from './form-definition';
+import {formatFeatureForEdit, FLAT_FORMS_BY_FEATURE_TYPE} from './form-definition';
 import {SHARED_STYLES} from '../sass/shared-css.js';
 import {FORM_STYLES} from '../sass/forms-css.js';
 
@@ -84,9 +84,9 @@ export class ChromedashGuideEditallPage extends LitElement {
   }
 
   // get a comma-spearated list of field names
-  getFormFields() {
+  getFormFields(featureType) {
     let fields = [];
-    FLAT_FORMS.map((form) => {
+    FLAT_FORMS_BY_FEATURE_TYPE[featureType].map((form) => {
       fields = [...fields, ...form[1]];
     });
     return fields.join();
@@ -135,9 +135,9 @@ export class ChromedashGuideEditallPage extends LitElement {
     return html`
       <form name="feature_form" method="POST" action="/guide/editall/${this.featureId}">
         <input type="hidden" name="token">
-        <input type="hidden" name="form_fields" value=${this.getFormFields()}>
+        <input type="hidden" name="form_fields" value=${this.getFormFields(formattedFeature.feature_type)}>
         <chromedash-form-table ${ref(this.registerFormSubmitHandler)}>
-          ${FLAT_FORMS.map(([sectionName, flatFormFields]) => html`
+          ${FLAT_FORMS_BY_FEATURE_TYPE[formattedFeature.feature_type].map(([sectionName, flatFormFields]) => html`
             <h3>${sectionName}</h3>
             <section class="flat_form">
               ${flatFormFields.map((field) => html`
