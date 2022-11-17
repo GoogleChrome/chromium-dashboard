@@ -12,6 +12,7 @@ describe('chromedash-guide-editall-page', () => {
     summary: 'fake detailed summary',
     category: 'fake category',
     feature_type: 'fake feature type',
+    feature_type_int: 0,
     intent_stage: 'fake intent stage',
     new_crbug_url: 'fake crbug link',
     browsers: {
