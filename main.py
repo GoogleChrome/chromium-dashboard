@@ -227,6 +227,8 @@ internals_routes: list[Route] = [
       schema_migration.EvaluateGateStatus),
   Route('/admin/schema_migration_updated_field',
       schema_migration.WriteUpdatedField),
+  Route('/admin/schema_migration_update_views',
+      schema_migration.UpdateDeprecatedViews)
 ]
 
 
