@@ -534,7 +534,7 @@ def feature_entry_to_json_basic(fe: FeatureEntry) -> dict[str, Any]:
       },
       'safari': {
         'view': {
-        'text': VENDOR_VIEWS.get(fe.ff_views,
+        'text': VENDOR_VIEWS.get(fe.safari_views,
             VENDOR_VIEWS_COMMON[NO_PUBLIC_SIGNALS]),
         'val': (fe.safari_views if fe.safari_views in VENDOR_VIEWS
             else NO_PUBLIC_SIGNALS),
