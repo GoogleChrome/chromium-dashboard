@@ -22,6 +22,7 @@ from internals.review_models import Activity, Approval, Comment, Gate, Vote
 from internals.core_enums import *
 import settings
 
+
 class ClearEntities(APIHandler):
 
   def do_get(self, **kwargs) -> str:
