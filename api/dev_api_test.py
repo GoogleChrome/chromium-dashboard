@@ -20,7 +20,6 @@ from api import dev_api
 from internals import stage_helpers
 from internals.core_models import Feature, FeatureEntry, Stage
 from internals.review_models import  Gate
-from internals.core_enums import *
 
 class DevAPITest(testing_config.CustomTestCase):
 
@@ -40,7 +39,7 @@ class DevAPITest(testing_config.CustomTestCase):
       stages = stage_helpers.get_feature_stages(fe.key.integer_id())
       # At least 1 stage should be created for each possible stage
       # a feature could have.
-      for _, stages_of_type in stages.items():
+      for stages_of_type in stages.values():
         self.assertTrue(len(stages_of_type) > 0)
     
     gates: list[Gate] = Gate.query().fetch()
