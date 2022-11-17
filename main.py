@@ -236,7 +236,7 @@ dev_routes: list[Route] = []
 if settings.DEV_MODE:
   dev_routes = [
 
-    ## These routes can be uncommented for local use ##
+    ## These routes can be uncommented for local environment use. ##
 
     # Route('/dev/clear_entities', dev_api.ClearEntities),
     # Route('/dev/write_dev_data', dev_api.WriteDevData)
