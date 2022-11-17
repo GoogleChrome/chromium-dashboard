@@ -17,6 +17,7 @@
 from framework import basehandlers
 from internals import core_models
 from internals import processes
+from internals import stage_helpers
 
 
 class ProcessesAPI(basehandlers.APIHandler):
@@ -47,7 +48,7 @@ class ProgressAPI(basehandlers.APIHandler):
     fe = core_models.FeatureEntry.get_by_id(feature_id)
     if fe is None:
       self.abort(404, msg=f'Feature {feature_id} not found')
-    stages = core_models.Stage.get_feature_stages(fe.key.integer_id())
+    stages = stage_helpers.get_feature_stages(fe.key.integer_id())
     progress_so_far = {}
     for progress_item, detector in list(processes.PROGRESS_DETECTORS.items()):
       detected = detector(fe, stages)

@@ -41,7 +41,6 @@ from internals import data_backup
 from internals import inactive_users
 from internals import search_fulltext
 from internals import schema_migration
-from internals import deprecate_field
 from internals import reminders
 from pages import blink_handler
 from pages import featurelist
@@ -209,8 +208,6 @@ internals_routes: list[Route] = [
   Route('/cron/warn_inactive_users', notifier.NotifyInactiveUsersHandler),
   Route('/cron/remove_inactive_users',
       inactive_users.RemoveInactiveUsersHandler),
-  Route('/cron/write_standard_maturity',
-      deprecate_field.WriteStandardMaturityHandler),
   Route('/cron/reindex_all', search_fulltext.ReindexAllFeatures),
 
   Route('/admin/find_stop_words', search_fulltext.FindStopWords),
@@ -230,6 +227,8 @@ internals_routes: list[Route] = [
       schema_migration.EvaluateGateStatus),
   Route('/admin/schema_migration_updated_field',
       schema_migration.WriteUpdatedField),
+  Route('/admin/schema_migration_update_views',
+      schema_migration.UpdateDeprecatedViews)
 ]
 
 

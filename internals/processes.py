@@ -541,19 +541,19 @@ PROGRESS_DETECTORS = {
     'Intent to Prototype email':
     lambda f, stages: (
         core_enums.STAGE_TYPES_PROTOTYPE[f.feature_type] and
-        stages[core_enums.STAGE_TYPES_PROTOTYPE[f.feature_type]].intent_thread_url),
+        stages[core_enums.STAGE_TYPES_PROTOTYPE[f.feature_type]][0].intent_thread_url),
 
     'Intent to Ship email':
     lambda f, stages: (core_enums.STAGE_TYPES_SHIPPING[f.feature_type] and
-        stages[core_enums.STAGE_TYPES_SHIPPING[f.feature_type]].intent_thread_url),
+        stages[core_enums.STAGE_TYPES_SHIPPING[f.feature_type]][0].intent_thread_url),
 
     'Ready for Trial email':
     lambda f, stages: (core_enums.STAGE_TYPES_DEV_TRIAL[f.feature_type] and
-        stages[core_enums.STAGE_TYPES_DEV_TRIAL[f.feature_type]].announcement_url),
+        stages[core_enums.STAGE_TYPES_DEV_TRIAL[f.feature_type]][0].announcement_url),
 
     'Intent to Experiment email':
     lambda f, stages: (core_enums.STAGE_TYPES_ORIGIN_TRIAL[f.feature_type] and
-        stages[core_enums.STAGE_TYPES_ORIGIN_TRIAL[f.feature_type]].intent_thread_url),
+        stages[core_enums.STAGE_TYPES_ORIGIN_TRIAL[f.feature_type]][0].intent_thread_url),
 
     'Samples':
     lambda f, _: f.sample_links and f.sample_links[0],
@@ -600,13 +600,13 @@ PROGRESS_DETECTORS = {
 
     'Estimated target milestone':
     lambda f, stages: bool(core_enums.STAGE_TYPES_SHIPPING[f.feature_type] and
-        stages[core_enums.STAGE_TYPES_SHIPPING[f.feature_type]].milestones and
-        stages[core_enums.STAGE_TYPES_SHIPPING[f.feature_type]].milestones.desktop_first),
+        stages[core_enums.STAGE_TYPES_SHIPPING[f.feature_type]][0].milestones and
+        stages[core_enums.STAGE_TYPES_SHIPPING[f.feature_type]][0].milestones.desktop_first),
 
     'Final target milestone':
     lambda f, stages: bool(core_enums.STAGE_TYPES_SHIPPING[f.feature_type] and
-        stages[core_enums.STAGE_TYPES_SHIPPING[f.feature_type]].milestones and
-        stages[core_enums.STAGE_TYPES_SHIPPING[f.feature_type]].milestones.desktop_first),
+        stages[core_enums.STAGE_TYPES_SHIPPING[f.feature_type]][0].milestones and
+        stages[core_enums.STAGE_TYPES_SHIPPING[f.feature_type]][0].milestones.desktop_first),
 
     'Code in Chromium':
     lambda f, _: f.impl_status_chrome in (

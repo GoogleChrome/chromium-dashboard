@@ -440,3 +440,57 @@ class WriteUpdatedField(FlaskHandler):
         count += 1
     
     return f'{count} FeatureEntry entities given updated field values.'
+
+
+class UpdateDeprecatedViews(FlaskHandler):
+
+  def get_template_data(self, **kwargs):
+    """Migrates deprecated feature views fields to their new values"""
+    self.require_cron_header()
+
+    for fe in FeatureEntry.query():
+      fe_changed = False
+      if fe.ff_views == MIXED_SIGNALS:
+        fe_changed = True
+        fe.ff_views = NO_PUBLIC_SIGNALS
+      elif fe.ff_views == PUBLIC_SKEPTICISM:
+        fe_changed = True
+        fe.ff_views = OPPOSED
+
+      if fe.safari_views == MIXED_SIGNALS:
+        fe_changed = True
+        fe.safari_views = NO_PUBLIC_SIGNALS
+      elif fe.safari_views == PUBLIC_SKEPTICISM:
+        fe_changed = True
+        fe.safari_views = OPPOSED
+      
+      if fe_changed:
+        fe.put()
+    
+    for f in Feature.query():
+      f_changed = False
+      if f.ff_views == MIXED_SIGNALS:
+        f_changed = True
+        f.ff_views = NO_PUBLIC_SIGNALS
+      if f.ff_views == PUBLIC_SKEPTICISM:
+        f_changed = True
+        f.ff_views = OPPOSED
+
+      if f.ie_views == MIXED_SIGNALS:
+        f_changed = True
+        f.ie_views = NO_PUBLIC_SIGNALS
+      elif f.ie_views == PUBLIC_SKEPTICISM:
+        f_changed = True
+        f.ie_views = OPPOSED
+
+      if f.safari_views == MIXED_SIGNALS:
+        f_changed = True
+        f.safari_views = NO_PUBLIC_SIGNALS
+      elif f.safari_views == PUBLIC_SKEPTICISM:
+        f_changed = True
+        f.safari_views = OPPOSED
+
+      if f_changed:
+        f.put()
+    
+    return 'Feature and FeatureEntry view fields updated.'
