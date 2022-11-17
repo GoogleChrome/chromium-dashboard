@@ -15,11 +15,9 @@
 import testing_config  # Must be imported before the module under test.
 
 from datetime import datetime
-from google.cloud import ndb  # type: ignore
 
 from api import converters
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
-from internals.core_enums import *
 
 
 class ConvertersTest(testing_config.CustomTestCase):
@@ -56,6 +54,7 @@ class ConvertersTest(testing_config.CustomTestCase):
           milestones=MilestoneSet(desktop_first=1,
               android_first=1, desktop_last=2),
           intent_thread_url=f'https://example.com/{s_type}')
+      # Add stage-specific fields.
       if s_type == 150:
         s.experiment_goals = 'goals'
         s.experiment_risks = 'risks'
@@ -154,7 +153,7 @@ class ConvertersTest(testing_config.CustomTestCase):
   def test_feature_entry_to_json_verbose__normal(self):
     """Converts feature entry to complete JSON with stage data."""
     result = converters.feature_entry_to_json_verbose(self.fe_1)
-    # Remove the stages object for a more apt comparison.
+    # Remove the stages and gates objects for a more apt comparison.
     result.pop('stages')
     result.pop('gates')
 
