@@ -17,9 +17,10 @@ import testing_config  # Must be imported before the module under test.
 
 from api import converters
 from framework import rediscache
-from internals import feature_helpers
 from internals import core_enums
-from internals import core_models
+from internals import feature_helpers
+from internals import stage_helpers
+from internals.core_models import Feature, FeatureEntry, MilestoneSet, Stage
 
 
 class MockQuery(object):
@@ -48,53 +49,83 @@ class ModelsFunctionsTest(testing_config.CustomTestCase):
 class FeatureTest(testing_config.CustomTestCase):
 
   def setUp(self):
-    self.feature_2 = core_models.FeatureEntry(
+    self.feature_2 = FeatureEntry(
         name='feature b', summary='sum',
         owner_emails=['feature_owner@example.com'], category=1,
-        updated=datetime(2020, 4, 1))
+        updated=datetime(2020, 4, 1), feature_type=1)
     self.feature_2.put()
 
-    self.feature_1 = core_models.FeatureEntry(
+    self.feature_1 = FeatureEntry(
         name='feature a', summary='sum', impl_status_chrome=3,
         owner_emails=['feature_owner@example.com'], category=1,
-        updated=datetime(2020, 3, 1))
+        updated=datetime(2020, 3, 1), feature_type=0)
     self.feature_1.put()
 
-    self.feature_4 = core_models.FeatureEntry(
-        name='feature d', summary='sum', category=1, impl_status_chrome=2,
-        owner_emails=['feature_owner@example.com'],
-        updated=datetime(2020, 2, 1))
-    self.feature_4.put()
-
-    self.feature_3 = core_models.FeatureEntry(
+    self.feature_3 = FeatureEntry(
         name='feature c', summary='sum', category=1, impl_status_chrome=2,
         owner_emails=['feature_owner@example.com'],
-        updated=datetime(2020, 1, 1))
+        updated=datetime(2020, 1, 1), feature_type=2)
     self.feature_3.put()
 
+    self.feature_4 = FeatureEntry(
+        name='feature d', summary='sum', category=1, impl_status_chrome=2,
+        owner_emails=['feature_owner@example.com'],
+        updated=datetime(2020, 2, 1), feature_type=3)
+    self.feature_4.put()
+
+    fe_1_stage_types = [110, 120, 130, 140, 150, 151, 160]
+    fe_2_stage_types = [220, 230, 250, 251, 260]
+    fe_3_stage_types = [320, 330, 360]
+    fe_4_stage_types = [410, 430, 450, 451, 460, 470]
+    self.stages: list[Stage] = []
+    for s_type in fe_1_stage_types:
+      stage = Stage(
+          feature_id=self.feature_1.key.integer_id(), stage_type=s_type)
+      stage.put()
+    for s_type in fe_2_stage_types:
+      stage = Stage(
+          feature_id=self.feature_2.key.integer_id(), stage_type=s_type)
+      stage.put()
+    for s_type in fe_3_stage_types:
+      stage = Stage(
+          feature_id=self.feature_3.key.integer_id(), stage_type=s_type)
+      stage.put()
+    for s_type in fe_4_stage_types:
+      stage = Stage(
+          feature_id=self.feature_4.key.integer_id(), stage_type=s_type)
+      stage.put()
+    self.fe_1_stages_dict = stage_helpers.get_feature_stages(
+        self.feature_1.key.integer_id())
+    self.fe_2_stages_dict = stage_helpers.get_feature_stages(
+        self.feature_2.key.integer_id())
+    self.fe_3_stages_dict = stage_helpers.get_feature_stages(
+        self.feature_3.key.integer_id())
+    self.fe_4_stages_dict = stage_helpers.get_feature_stages(
+        self.feature_4.key.integer_id())
+
     # Legacy entities for testing legacy functions.
-    self.legacy_feature_2 = core_models.Feature(
+    self.legacy_feature_2 = Feature(
         name='feature b', summary='sum',
         owner=['feature_owner@example.com'], category=1)
     self.legacy_feature_2.put()
 
-    self.legacy_feature_1 = core_models.Feature(
+    self.legacy_feature_1 = Feature(
         name='feature a', summary='sum', impl_status_chrome=3,
         owner=['feature_owner@example.com'], category=1)
     self.legacy_feature_1.put()
 
-    self.legacy_feature_4 = core_models.Feature(
+    self.legacy_feature_4 = Feature(
         name='feature d', summary='sum', category=1, impl_status_chrome=2,
         owner=['feature_owner@example.com'])
     self.legacy_feature_4.put()
 
-    self.legacy_feature_3 = core_models.Feature(
+    self.legacy_feature_3 = Feature(
         name='feature c', summary='sum', category=1, impl_status_chrome=2,
         owner=['feature_owner@example.com'])
     self.legacy_feature_3.put()
 
   def tearDown(self):
-    for kind in [core_models.Feature, core_models.FeatureEntry]:
+    for kind in [Feature, FeatureEntry, Stage]:
       for entity in kind.query():
         entity.key.delete()
 
@@ -191,9 +222,9 @@ class FeatureTest(testing_config.CustomTestCase):
     self.assertEqual('feature a', actual[0]['name'])
     self.assertEqual('feature b', actual[1]['name'])
 
-    lookup_key_1 = '%s|%s' % (core_models.FeatureEntry.DEFAULT_CACHE_KEY,
+    lookup_key_1 = '%s|%s' % (FeatureEntry.DEFAULT_CACHE_KEY,
                               self.feature_1.key.integer_id())
-    lookup_key_2 = '%s|%s' % (core_models.FeatureEntry.DEFAULT_CACHE_KEY,
+    lookup_key_2 = '%s|%s' % (FeatureEntry.DEFAULT_CACHE_KEY,
                               self.feature_2.key.integer_id())
     self.assertEqual('feature a', rediscache.get(lookup_key_1)['name'])
     self.assertEqual('feature b', rediscache.get(lookup_key_2)['name'])
@@ -201,7 +232,7 @@ class FeatureTest(testing_config.CustomTestCase):
   def test_get_by_ids__cache_hit(self):
     """We can load features from rediscache."""
     cache_key = '%s|%s' % (
-        core_models.FeatureEntry.DEFAULT_CACHE_KEY, self.feature_1.key.integer_id())
+        FeatureEntry.DEFAULT_CACHE_KEY, self.feature_1.key.integer_id())
     cached_feature = {
       'name': 'fake cached_feature',
       'id': self.feature_1.key.integer_id(),
@@ -290,21 +321,29 @@ class FeatureTest(testing_config.CustomTestCase):
 
   def test_get_in_milestone__normal(self):
     """We can retrieve a list of features."""
-    self.legacy_feature_2.impl_status_chrome = 7
-    self.legacy_feature_2.shipped_milestone = 1
-    self.legacy_feature_2.put()
+    self.feature_1.impl_status_chrome = 5
+    # Set shipping milestone to 1.
+    self.fe_1_stages_dict[160][0].milestones = MilestoneSet(desktop_first=1)
+    self.feature_1.put()
+    self.fe_1_stages_dict[160][0].put()
 
-    self.legacy_feature_1.impl_status_chrome = 5
-    self.legacy_feature_1.shipped_milestone = 1
-    self.legacy_feature_1.put()
+    self.feature_2.impl_status_chrome = 7
+    # Set shipping milestone to 1.
+    self.fe_2_stages_dict[260][0].milestones = MilestoneSet(desktop_first=1)
+    self.feature_2.put()
+    self.fe_2_stages_dict[260][0].put()
 
-    self.legacy_feature_3.impl_status_chrome = 5
-    self.legacy_feature_3.shipped_milestone = 1
-    self.legacy_feature_3.put()
+    self.feature_3.impl_status_chrome = 5
+    # Set shipping milestone to 1.
+    self.fe_3_stages_dict[360][0].milestones = MilestoneSet(desktop_first=1)
+    self.feature_3.put()
+    self.fe_3_stages_dict[360][0].put()
 
-    self.legacy_feature_4.impl_status_chrome = 7
-    self.legacy_feature_4.shipped_milestone = 2
-    self.legacy_feature_4.put()
+    self.feature_4.impl_status_chrome = 7
+    # Set shipping milestone to 1.
+    self.fe_4_stages_dict[460][0].milestones = MilestoneSet(desktop_first=2)
+    self.feature_4.put()
+    self.fe_4_stages_dict[460][0].put()
 
     actual = feature_helpers.get_in_milestone(milestone=1)
     removed = [f['name'] for f in actual['Removed']]
@@ -318,29 +357,33 @@ class FeatureTest(testing_config.CustomTestCase):
     self.assertEqual(6, len(actual))
 
     cache_key = '%s|%s|%s' % (
-        core_models.Feature.DEFAULT_CACHE_KEY, 'milestone', 1)
+        FeatureEntry.DEFAULT_CACHE_KEY, 'milestone', 1)
     cached_result = rediscache.get(cache_key)
     self.assertEqual(cached_result, actual)
 
 
   def test_get_in_milestone__unlisted(self):
     """Unlisted features should not be listed for users who can't edit."""
-    self.legacy_feature_2.unlisted = True
-    self.legacy_feature_2.impl_status_chrome = 7
-    self.legacy_feature_2.shipped_milestone = 1
-    self.legacy_feature_2.put()
+    self.feature_1.impl_status_chrome = 5
+    self.fe_1_stages_dict[160][0].milestones = MilestoneSet(desktop_first=1)
+    self.feature_1.put()
+    self.fe_1_stages_dict[160][0].put()
 
-    self.legacy_feature_1.impl_status_chrome = 5
-    self.legacy_feature_1.shipped_milestone = 1
-    self.legacy_feature_1.put()
+    self.feature_2.unlisted = True
+    self.feature_2.impl_status_chrome = 7
+    self.fe_2_stages_dict[260][0].milestones = MilestoneSet(desktop_first=1)
+    self.feature_2.put()
+    self.fe_2_stages_dict[260][0].put()
 
-    self.legacy_feature_3.impl_status_chrome = 5
-    self.legacy_feature_3.shipped_milestone = 1
-    self.legacy_feature_3.put()
+    self.feature_3.impl_status_chrome = 5
+    self.fe_3_stages_dict[360][0].milestones = MilestoneSet(desktop_first=1)
+    self.feature_3.put()
+    self.fe_3_stages_dict[360][0].put()
 
-    self.legacy_feature_4.impl_status_chrome = 7
-    self.legacy_feature_4.shipped_milestone = 2
-    self.legacy_feature_4.put()
+    self.feature_4.impl_status_chrome = 7
+    self.fe_4_stages_dict[460][0].milestones = MilestoneSet(desktop_first=2)
+    self.feature_4.put()
+    self.fe_4_stages_dict[460][0].put()
 
     actual = feature_helpers.get_in_milestone(milestone=1)
     self.assertEqual(
@@ -349,22 +392,26 @@ class FeatureTest(testing_config.CustomTestCase):
 
   def test_get_in_milestone__unlisted_shown(self):
     """Unlisted features should be listed for users who can edit."""
-    self.legacy_feature_2.unlisted = True
-    self.legacy_feature_2.impl_status_chrome = 7
-    self.legacy_feature_2.shipped_milestone = 1
-    self.legacy_feature_2.put()
+    self.feature_1.impl_status_chrome = 5
+    self.fe_1_stages_dict[160][0].milestones = MilestoneSet(desktop_first=1)
+    self.feature_1.put()
+    self.fe_1_stages_dict[160][0].put()
 
-    self.legacy_feature_1.impl_status_chrome = 5
-    self.legacy_feature_1.shipped_milestone = 1
-    self.legacy_feature_1.put()
+    self.feature_2.unlisted = True
+    self.feature_2.impl_status_chrome = 7
+    self.fe_2_stages_dict[260][0].milestones = MilestoneSet(desktop_first=1)
+    self.feature_2.put()
+    self.fe_2_stages_dict[260][0].put()
 
-    self.legacy_feature_3.impl_status_chrome = 5
-    self.legacy_feature_3.shipped_milestone = 1
-    self.legacy_feature_3.put()
+    self.feature_3.impl_status_chrome = 5
+    self.fe_3_stages_dict[360][0].milestones = MilestoneSet(desktop_first=1)
+    self.feature_3.put()
+    self.fe_3_stages_dict[360][0].put()
 
-    self.legacy_feature_4.impl_status_chrome = 7
-    self.legacy_feature_4.shipped_milestone = 2
-    self.legacy_feature_4.put()
+    self.feature_4.impl_status_chrome = 7
+    self.fe_4_stages_dict[460][0].milestones = MilestoneSet(desktop_first=2)
+    self.feature_4.put()
+    self.fe_4_stages_dict[460][0].put()
 
     actual = feature_helpers.get_in_milestone(
         milestone=1, show_unlisted=True)
@@ -375,7 +422,7 @@ class FeatureTest(testing_config.CustomTestCase):
   def test_get_in_milestone__cached(self):
     """If there is something in the cache, we use it."""
     cache_key = '%s|%s|%s' % (
-        core_models.Feature.DEFAULT_CACHE_KEY, 'milestone', 1)
+        FeatureEntry.DEFAULT_CACHE_KEY, 'milestone', 1)
     cached_test_feature = {'test': [{'name': 'test_feature', 'unlisted': False}]}
     rediscache.set(cache_key, cached_test_feature)
 
@@ -383,3 +430,37 @@ class FeatureTest(testing_config.CustomTestCase):
     self.assertEqual(
         cached_test_feature,
         actual)
+
+
+class StageTest(testing_config.CustomTestCase):
+
+  def setUp(self):
+    self.feature_entry_1 = FeatureEntry(id=1, name='fe one',
+        summary='summary', category=1, impl_status_chrome=1,
+        standard_maturity=1, web_dev_views=1)
+    self.feature_entry_1.put()
+    stage_types = [core_enums.STAGE_DEP_PLAN, core_enums.STAGE_DEP_DEV_TRIAL,
+        core_enums.STAGE_DEP_DEPRECATION_TRIAL, core_enums.STAGE_DEP_SHIPPING,
+        core_enums.STAGE_DEP_REMOVE_CODE]
+    self.feature_id = self.feature_entry_1.key.integer_id()
+    for stage_type in stage_types:
+      stage = Stage(feature_id=self.feature_id, stage_type=stage_type)
+      stage.put()
+
+  def tearDown(self):
+    self.feature_entry_1.key.delete()
+    for stage in Stage.query().fetch():
+      stage.key.delete()
+  
+  def test_get_feature_stages(self):
+    """A dictionary with stages relevant to the feature should be present."""
+    stage_dict = stage_helpers.get_feature_stages(self.feature_id)
+    list_stages = stage_dict.items()
+    expected_stage_types = {410, 430, 450, 460, 470}
+    # Extension stage type was not created, so it should not appear.
+    self.assertIsNone(stage_dict.get(451, None))
+    self.assertEqual(len(list_stages), 5)
+    for stage_type, stages in stage_dict.items():
+      self.assertTrue(stage_type in expected_stage_types)
+      self.assertEqual(stages[0].stage_type, stage_type)
+      expected_stage_types.remove(stage_type)
