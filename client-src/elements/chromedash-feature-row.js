@@ -95,6 +95,14 @@ class ChromedashFeatureRow extends LitElement {
     });
   }
 
+  renderEditIcon(feature) {
+    return html`
+      <sl-icon-button href="/guide/edit/${feature.id}"
+        title="Edit feature"
+        name="pencil-fill"></sl-icon-button>
+    `;
+  }
+
   renderStarIcon(feature) {
     return html`
       <sl-icon-button
@@ -110,6 +118,7 @@ class ChromedashFeatureRow extends LitElement {
   renderIcons(feature) {
     if (this.signedIn) {
       return html`
+        ${this.canEdit ? this.renderEditIcon(feature) : nothing}
         ${this.renderStarIcon(feature)}
       `;
     } else {
@@ -133,17 +142,6 @@ class ChromedashFeatureRow extends LitElement {
     return nothing;
   }
 
-  // TODO(jrobbins): keep this?
-  getEarliestReviewDate(feature) {
-    const featureConfigs = this.configs[feature.id] || [];
-    const allDates = featureConfigs.map(c => c.next_action).filter(d => d);
-    if (allDates.length > 0) {
-      allDates.sort();
-      return allDates[0];
-    }
-    return null;
-  }
-
   isActiveGate(gate) {
     return gate.state == 2 || gate.state == 3 || gate.state == 4;
   }
@@ -161,10 +159,6 @@ class ChromedashFeatureRow extends LitElement {
     }
     console.log(activeStagesAndTheirGates);
     return activeStagesAndTheirGates;
-    // TODO(jrobbins): Limit to only owners of active intents
-    // const activeGates = [
-    //  {team_name: 'API Owners', name: 'intent to ship', state: 2}];
-    // return activeGates;
   }
 
   renderActiveStageAndGates(stageAndGates) {
