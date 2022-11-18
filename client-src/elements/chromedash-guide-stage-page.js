@@ -30,6 +30,7 @@ export class ChromedashGuideStagePage extends LitElement {
       implStatusOffered: {type: String},
       loading: {type: Boolean},
       appTitle: {type: String},
+      nextPage: {type: String},
     };
   }
 
@@ -44,6 +45,7 @@ export class ChromedashGuideStagePage extends LitElement {
     this.implStatusOffered = '';
     this.loading = true;
     this.appTitle = '';
+    this.nextPage = '';
   }
 
   connectedCallback() {
@@ -187,11 +189,15 @@ export class ChromedashGuideStagePage extends LitElement {
     `;
   }
 
+  getNextPage() {
+    return this.nextPage || `/guide/edit/${this.featureId}`;
+  }
+
   renderSubheader() {
     return html`
       <div id="subheader">
         <h2 id="breadcrumbs">
-          <a href="/guide/edit/${this.featureId}">
+          <a href=${this.getNextPage()}>
             <iron-icon icon="chromestatus:arrow-back"></iron-icon>
             Edit feature: ${this.feature.name}
           </a>
@@ -289,6 +295,7 @@ export class ChromedashGuideStagePage extends LitElement {
         action="/guide/stage/${this.featureId}/${this.stageId}">
         <input type="hidden" name="token">
         <input type="hidden" name="form_fields" value=${this.getFormFields()} >
+        <input type="hidden" name="nextPage" value=${this.getNextPage()} >
 
         <chromedash-form-table ${ref(this.registerHandlers)}>
           ${this.renderFeatureFormSection(formattedFeature)}

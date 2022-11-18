@@ -23,6 +23,7 @@ export class ChromedashGuideEditallPage extends LitElement {
       feature: {type: Object},
       loading: {type: Boolean},
       appTitle: {type: String},
+      nextPage: {type: String},
     };
   }
 
@@ -32,6 +33,7 @@ export class ChromedashGuideEditallPage extends LitElement {
     this.feature = {};
     this.loading = true;
     this.appTitle = '';
+    this.nextPage = '';
   }
 
   connectedCallback() {
@@ -117,11 +119,15 @@ export class ChromedashGuideEditallPage extends LitElement {
     `;
   }
 
+  getNextPage() {
+    return this.nextPage || `/guide/edit/${this.featureId}`;
+  }
+
   renderSubheader() {
     return html`
       <div id="subheader">
         <h2 id="breadcrumbs">
-          <a href="/guide/edit/${this.featureId}">
+          <a href=${this.getNextPage()}>
             <iron-icon icon="chromestatus:arrow-back"></iron-icon>
             Edit feature: ${this.loading ? 'loading...' : this.feature.name}
           </a>
@@ -135,6 +141,7 @@ export class ChromedashGuideEditallPage extends LitElement {
     return html`
       <form name="feature_form" method="POST" action="/guide/editall/${this.featureId}">
         <input type="hidden" name="token">
+        <input type="hidden" name="nextPage" value=${this.getNextPage()} >
         <input type="hidden" name="form_fields" value=${this.getFormFields(formattedFeature.feature_type)}>
         <chromedash-form-table ${ref(this.registerFormSubmitHandler)}>
           ${FLAT_FORMS_BY_FEATURE_TYPE[formattedFeature.feature_type].map(([sectionName, flatFormFields]) => html`

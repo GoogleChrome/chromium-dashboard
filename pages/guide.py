@@ -95,6 +95,8 @@ class FeatureCreateHandler(basehandlers.FlaskHandler):
     rediscache.delete_keys_with_prefix(Feature.feature_cache_prefix())
     rediscache.delete_keys_with_prefix(FeatureEntry.feature_cache_prefix())
 
+    # TODO(jrobbins): Make this be /feature/ID after ability to edit
+    # from the feature detail page is complete.
     redirect_url = '/guide/edit/' + str(key.integer_id())
     return self.redirect(redirect_url)
 
@@ -366,7 +368,13 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
     if fe:
       search_fulltext.index_feature(fe)
 
-    redirect_url = '/guide/edit/' + str(key.integer_id())
+    # Navigate back to the page that the user was on before editing, iff
+    # it is the URL of a feature detail page on our site.
+    nextPage = self.form.get('nextPage')
+    if nextPage and nextPage.startswith('/feature/'):
+      redirect_url = nextPage
+    else:
+      redirect_url = '/guide/edit/' + str(key.integer_id())
     return self.redirect(redirect_url)
 
   def update_stage_fields(self, feature_id: int, feature_type: int,
