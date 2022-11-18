@@ -153,12 +153,15 @@ class ChromedashFeatureDetail extends LitElement {
   }
 
   renderControls() {
-    const toggleLabel = this.anyCollapsed ? 'Expand all' : 'Collapse all';
-    return html`
+    const editAllButton = html`
       <sl-button variant="text"
            href="/guide/editall/${this.feature.id}">
          Edit all fields
       </sl-button>
+    `;
+    const toggleLabel = this.anyCollapsed ? 'Expand all' : 'Collapse all';
+    return html`
+      ${this.canEdit ? editAllButton : nothing}
 
       <sl-button variant="text"
         title="Expand or collapse all sections"
