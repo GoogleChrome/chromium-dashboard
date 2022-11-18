@@ -99,6 +99,6 @@ describe('chromedash-form-field', () => {
     assert.include(renderElement.innerHTML, 'Rollout platforms');
     assert.include(renderElement.innerHTML, 'sl-select');
     assert.include(renderElement.innerHTML, 'multiple');
-    assert.include(renderElement.innerHTML, 'clearable');
+    assert.include(renderElement.innerHTML, 'cleareable');
   });
 });
