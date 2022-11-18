@@ -220,7 +220,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
 
   CHECKBOX_FIELDS: frozenset[str] = frozenset([
       'accurate_as_of', 'unlisted', 'api_spec', 'all_platforms',
-      'wpt', 'requires_embedder_support', 'prefixed'])
+      'wpt', 'requires_embedder_support', 'prefixed', 'breaking_change'])
 
   SELECT_FIELDS: frozenset[str] = frozenset([
       'category', 'intent_stage', 'standard_maturity', 'security_review_status',

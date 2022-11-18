@@ -65,8 +65,7 @@ export const FEATURE_TYPES = {
   FEATURE_TYPE_DEPRECATION_ID: [3, 'Feature deprecation',
     'Deprecate and remove an old feature.'],
   FEATURE_TYPE_ENTERPRISE_ID: [4, 'New Feature or removal affecting enterprises',
-    'For features or changes that need to be communicated to enterprises or schools',
-    'enterprisefeature'],
+    'For features or changes that need to be communicated to enterprises or schools'],
 };
 
 export const INTENT_STAGES = {
