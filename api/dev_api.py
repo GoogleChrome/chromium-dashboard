@@ -27,9 +27,9 @@ class ClearEntities(APIHandler):
 
   def do_get(self, **kwargs) -> str:
 
-    if not settings.LOCAL_MODE:
+    if not settings.DEV_MODE and not settings.UNIT_TEST_MODE:
       self.abort(status=403,
-          msg="This can only be used in the local development environment.")
+          msg="This can only be used in a development environment.")
     
     kinds: list[ndb.Model] = [Feature, FeatureEntry, MilestoneSet,
         Stage, Activity, Approval, Comment, Gate, Vote]
@@ -56,9 +56,9 @@ class WriteDevData(APIHandler):
 
   def do_get(self, **kwargs) -> str:
 
-    if not settings.LOCAL_MODE:
+    if not settings.DEV_MODE and not settings.UNIT_TEST_MODE:
       self.abort(status=403,
-          msg="This can only be used in the local development environment.")
+          msg="This can only be used in a development environment.")
 
     features_created = 0
     with open('data/dev_data.json') as f:
