@@ -51,7 +51,7 @@
     "@babel/plugin-syntax-dynamic-import": "^7.8.3",
     "@babel/preset-env": "^7.20.2",
     "@babel/register": "^7.18.9",
-    "@open-wc/testing": "^3.1.6",
+    "@open-wc/testing": "^3.1.7",
     "@rollup/plugin-babel": "^6.0.2",
     "@rollup/plugin-node-resolve": "^15.0.1",
     "@shoelace-style/shoelace": "^2.0.0-beta.83",
@@ -82,10 +82,10 @@
     "minimist": ">=1.2.7",
     "path-parse": ">=1.0.7",
     "regenerator-runtime": "^0.13.10",
-    "rollup": "^3.2.4",
+    "rollup": "^3.3.0",
     "rollup-plugin-babel-minify": "^10.0.0",
     "sinon": "^14.0.2",
-    "tar": ">=3.2.3",
+    "tar": ">=6.1.12",
     "trim-newlines": ">=4.0.2"
   },
   "dependencies": {
@@ -93,8 +93,8 @@
     "@polymer/iron-icon": "^3.0.1",
     "@polymer/iron-iconset-svg": "^3.0.1",
     "lit": "^2",
-    "node-fetch": ">=3.2.10",
-    "sass": ">=1.55.0",
+    "node-fetch": ">=3.3.0",
+    "sass": ">=1.56.1",
     "page": "^1.11.6",
     "urijs": ">=1.19.11",
     "yargs-parser": ">=21.1.1"

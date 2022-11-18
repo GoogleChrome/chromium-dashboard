@@ -16,7 +16,7 @@
 from dataclasses import dataclass, field
 from typing import Any, Type
 
-from api import accounts_api
+from api import accounts_api, dev_api
 from api import approvals_api
 from api import blink_components_api
 from api import channels_api
@@ -41,7 +41,6 @@ from internals import data_backup
 from internals import inactive_users
 from internals import search_fulltext
 from internals import schema_migration
-from internals import deprecate_field
 from internals import reminders
 from pages import blink_handler
 from pages import featurelist
@@ -209,8 +208,6 @@ internals_routes: list[Route] = [
   Route('/cron/warn_inactive_users', notifier.NotifyInactiveUsersHandler),
   Route('/cron/remove_inactive_users',
       inactive_users.RemoveInactiveUsersHandler),
-  Route('/cron/write_standard_maturity',
-      deprecate_field.WriteStandardMaturityHandler),
   Route('/cron/reindex_all', search_fulltext.ReindexAllFeatures),
 
   Route('/admin/find_stop_words', search_fulltext.FindStopWords),
@@ -230,14 +227,24 @@ internals_routes: list[Route] = [
       schema_migration.EvaluateGateStatus),
   Route('/admin/schema_migration_updated_field',
       schema_migration.WriteUpdatedField),
+  Route('/admin/schema_migration_update_views',
+      schema_migration.UpdateDeprecatedViews)
 ]
 
+dev_routes: list[Route] = []
+if settings.DEV_MODE:
+  dev_routes = [
 
+    ## These routes can be uncommented for local environment use. ##
+
+    # Route('/dev/clear_entities', dev_api.ClearEntities),
+    # Route('/dev/write_dev_data', dev_api.WriteDevData)
+  ]
 # All requests to the app-py3 GAE service are handled by this Flask app.
 app = basehandlers.FlaskApplication(
     __name__,
     (metrics_chart_routes + api_routes + mpa_page_routes + spa_page_routes +
-     internals_routes), spa_page_post_routes)
+     internals_routes + dev_routes), spa_page_post_routes)
 
 # TODO(jrobbins): Make the CSP handler be a class like our others.
 app.add_url_rule(

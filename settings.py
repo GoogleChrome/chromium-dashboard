@@ -39,6 +39,7 @@ DEBUG = True
 SEND_EMAIL = False  # Just log email
 DEV_MODE = (os.environ['SERVER_SOFTWARE'].startswith('Development') or
             os.environ.get('GAE_ENV', '').startswith('localdev'))
+LOCAL_MODE = os.environ.get('GAE_ENV', '').startswith('localdev')
 UNIT_TEST_MODE = os.environ['SERVER_SOFTWARE'].startswith('test')
 
 if not UNIT_TEST_MODE:

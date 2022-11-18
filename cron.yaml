@@ -26,6 +26,3 @@ cron:
 - description: Removes any users that have been inactive for 9 months.
   url: /cron/remove_inactive_users
   schedule: 1st monday of month 9:00
-- description: Copy over deprecated standardization field
-  url: /cron/write_standard_maturity
-  schedule: 1 of jan 00:00

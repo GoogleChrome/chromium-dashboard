@@ -34,18 +34,19 @@ from framework import users
 import settings
 from internals import approval_defs
 from internals import core_enums
+from internals import stage_helpers
 from internals.core_models import Feature, FeatureEntry, MilestoneSet, Stage
 from internals.user_models import (
     AppUser, BlinkComponent, FeatureOwner, UserPref)
 
 
 def format_email_body(
-    is_update: bool, fe: FeatureEntry, fe_stages: dict[int, Stage],
+    is_update: bool, fe: FeatureEntry, fe_stages: dict[int, list[Stage]],
     changes: list[dict[str, Any]]) -> str:
   """Return an HTML string for a notification email body."""
 
   stage_type = core_enums.STAGE_TYPES_SHIPPING[fe.feature_type] or 0
-  ship_milestones: MilestoneSet | None = fe_stages[stage_type].milestones
+  ship_milestones: MilestoneSet | None = fe_stages[stage_type][0].milestones
   milestone_str = 'not yet assigned'
   if ship_milestones is not None:
     if ship_milestones.desktop_first:
@@ -125,7 +126,7 @@ WEBVIEW_RULE_ADDRS = ['webview-leads-external@google.com']
 
 
 def apply_subscription_rules(
-    fe: FeatureEntry, fe_stages: dict[int, Stage],
+    fe: FeatureEntry, fe_stages: dict[int, list[Stage]],
     changes: list) -> dict[str, list[str]]:
   """Return {"reason": [addrs]} for users who set up rules."""
   # Note: for now this is hard-coded, but it will eventually be
@@ -133,9 +134,10 @@ def apply_subscription_rules(
   changed_field_names = {c['prop_name'] for c in changes}
   results: dict[str, list[str]] = {}
   stage_type = core_enums.STAGE_TYPES_SHIPPING[fe.feature_type] or 0
-  ship_stage = fe_stages[stage_type]
+  ship_stage = fe_stages[stage_type][0]
   # Check if feature has some other milestone set, but not webview.
-  if (ship_stage.milestones.android_first and
+  if (ship_stage.milestones is not None and
+      ship_stage.milestones.android_first and
       not ship_stage.milestones.webview_first):
     milestone_fields = ['shipped_android_milestone']
     if not changed_field_names.isdisjoint(milestone_fields):
@@ -154,7 +156,7 @@ def make_email_tasks(fe: FeatureEntry, is_update: bool=False,
       FeatureOwner.watching_all_features == True).fetch(None)
   watcher_emails: list[str] = [watcher.email for watcher in watchers]
 
-  fe_stages = Stage.get_feature_stages(fe.key.integer_id())
+  fe_stages = stage_helpers.get_feature_stages(fe.key.integer_id())
 
   email_html = format_email_body(is_update, fe, fe_stages, changes)
   if is_update:

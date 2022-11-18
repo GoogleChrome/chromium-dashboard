@@ -10,7 +10,7 @@ export const FEATURELIST_CSS = [
     #ironlist {
       min-height: 0;
     }
-    .milestone-marker {
+    .section-marker {
       margin: 32px 0 8px 0;
       font-size: 18px;
       -webkit-font-smoothing: initial;
@@ -23,7 +23,7 @@ export const FEATURELIST_CSS = [
       margin: 32px;
     }
     @media only screen and (max-width: 700px) {
-      .milestone-marker {
+      .section-marker {
         font-size: 14px;
         font-weight: 500;
         margin: 8px;
