@@ -482,6 +482,8 @@ DEPRECATION_STAGES = [
   ]
 
 
+# This is a stage that can be inserted in the stages of any non-enterprise
+# features that are marked as breaking changes.
 FEATURE_ROLLOUT_STAGE = ProcessStage(
       'Start feature rollout',
       'Lock in shipping milestone. '
@@ -497,6 +499,7 @@ FEATURE_ROLLOUT_STAGE = ProcessStage(
       [],
       core_enums.INTENT_SHIP, core_enums.INTENT_SHIP)
 
+# Thise are the stages for a feature that has the enterprise feature type.
 ENTERPRISE_STAGES = [
   ProcessStage(
       'Start feature rollout',

@@ -492,5 +492,5 @@ class Stage(ndb.Model):
   #Enterprise
   rollout_milestone = ndb.IntegerProperty()
   rollout_platforms = ndb.StringProperty(repeated=True)
-  rollout_details = ndb.StringProperty()
+  rollout_details = ndb.TextProperty()
   enterprise_policies = ndb.StringProperty(repeated=True)
