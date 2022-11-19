@@ -102,6 +102,8 @@ api_routes: list[Route] = [
         approvals_api.ApprovalsAPI),
     Route(f'{API_BASE}/features/<int:feature_id>/configs',
         approvals_api.ApprovalConfigsAPI),
+    Route(f'{API_BASE}/features/<int:feature_id>/gates',
+        approvals_api.GatesAPI),
     Route(f'{API_BASE}/features/<int:feature_id>/approvals/comments',
         comments_api.CommentsAPI),
     Route(f'{API_BASE}/features/<int:feature_id>/approvals/<int:field_id>/comments',

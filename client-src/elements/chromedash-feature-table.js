@@ -23,8 +23,7 @@ class ChromedashFeatureTable extends LitElement {
       canApprove: {type: Boolean},
       starredFeatures: {type: Object},
       noResultsMessage: {type: String},
-      approvals: {type: Object},
-      configs: {type: Object},
+      gates: {type: Object},
     };
   }
 
@@ -43,8 +42,7 @@ class ChromedashFeatureTable extends LitElement {
     this.noResultsMessage = 'No results';
     this.canEdit = false;
     this.canApprove = false;
-    this.approvals = {};
-    this.configs = {};
+    this.gates = {};
   }
 
   connectedCallback() {
@@ -60,24 +58,19 @@ class ChromedashFeatureTable extends LitElement {
       this.totalCount = resp.total_count;
       this.loading = false;
       if (this.columns == 'approvals') {
-        this.loadApprovalData();
+        this.loadGateData();
       }
     }).catch(() => {
       showToastMessage('Some errors occurred. Please refresh the page or try again later.');
     });
   }
 
-  loadApprovalData() {
+  loadGateData() {
     for (const feature of this.features) {
-      window.csClient.getApprovals(feature.id).then(res => {
-        const newApprovals = {...this.approvals};
-        newApprovals[feature.id] = res.approvals;
-        this.approvals = newApprovals;
-      });
-      window.csClient.getApprovalConfigs(feature.id).then(res => {
-        const newConfigs = {...this.configs};
-        newConfigs[feature.id] = res.configs;
-        this.configs = newConfigs;
+      window.csClient.getGates(feature.id).then(res => {
+        const newGates = {...this.gates};
+        newGates[feature.id] = res.gates;
+        this.gates = newGates;
       });
     }
   }
@@ -226,8 +219,7 @@ class ChromedashFeatureTable extends LitElement {
          ?canEdit=${this.canApprove}
          ?canApprove=${this.canApprove}
          .starredFeatures=${this.starredFeatures}
-         .approvals=${this.approvals}
-         .configs=${this.configs}
+         .gates=${this.gates}
          ></chromedash-feature-row>
     `;
   }

@@ -28,12 +28,14 @@ const GATE_STATE_TO_ICON = {
 class ChromedashGateChip extends LitElement {
   static get properties() {
     return {
+      feature: {type: Object},
       gate: {type: Object},
     };
   }
 
   constructor() {
     super();
+    this.feature = {};
     this.gate = {};
   }
 
@@ -47,8 +49,12 @@ class ChromedashGateChip extends LitElement {
 
      sl-button::part(base) {
        border: var(--chip-border);
-       padding: 0 0 0 5px;
+       padding: 0 0 0 4px;
        height: 27px;
+     }
+
+     sl-button::part(base):hover {
+       text-decoration: underline;
      }
 
      sl-button.fyi::part(base) {
@@ -93,6 +99,22 @@ class ChromedashGateChip extends LitElement {
     `];
   }
 
+  _fireEvent(eventName, detail) {
+    const event = new CustomEvent(eventName, {
+      bubbles: true,
+      composed: true,
+      detail,
+    });
+    this.dispatchEvent(event);
+  }
+
+  openApprovalsDialog() {
+    // Handled in chromedash-myfeatures-page.js.
+    this._fireEvent('open-approvals-event', {
+      feature: this.feature,
+    });
+  }
+
   render() {
     if (this.gate === undefined || this.gate == {}) {
       return nothing;
@@ -105,7 +127,9 @@ class ChromedashGateChip extends LitElement {
 
     return html`
       <sl-button pill size="small" class=${className}
-        title="${teamName}: ${gateName}: ${stateName}">
+        title="${teamName}: ${gateName}: ${stateName}"
+        @click=${this.openApprovalsDialog}
+        >
         <sl-icon slot="prefix" library="material" name=${iconName}></sl-icon>
         ${teamName}
       </sl-button>
