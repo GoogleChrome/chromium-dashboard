@@ -157,7 +157,6 @@ class ChromedashFeatureRow extends LitElement {
         gates: featureGates.filter(g => g.stage_id == activeStageId),
       });
     }
-    console.log(activeStagesAndTheirGates);
     return activeStagesAndTheirGates;
   }
 
@@ -167,10 +166,10 @@ class ChromedashFeatureRow extends LitElement {
       <div>
         ${stageName}
         ${stageAndGates.gates.map(gate => html`
-        <chromedash-gate-chip
-          .feature=${this.feature}
-          .gate=${gate}
-        ></chromedash-gate-chip>`)}
+          <chromedash-gate-chip
+            .feature=${this.feature}
+            .gate=${gate}
+          ></chromedash-gate-chip>`)}
       </div>
     `;
   }
@@ -183,11 +182,11 @@ class ChromedashFeatureRow extends LitElement {
       return html`
         <div class="highlights">
           ${activeStages.length > 0 ? html`
-          <div>
-            ${activeStages.map(stageAndGates =>
-        this.renderActiveStageAndGates(stageAndGates))}
-          </div>
-          ` : nothing}
+            <div>
+              ${activeStages.map(stageAndGates =>
+                this.renderActiveStageAndGates(stageAndGates))}
+            </div>
+            ` : nothing}
           ${this.renderQuickActions(feature)}
         </div>
       `;

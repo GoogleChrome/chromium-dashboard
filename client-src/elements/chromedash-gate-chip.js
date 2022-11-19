@@ -109,12 +109,11 @@ class ChromedashGateChip extends LitElement {
   }
 
   openApprovalsDialog() {
-    // handled in chromedash-myfeatures-page.js
+    // Handled in chromedash-myfeatures-page.js.
     this._fireEvent('open-approvals-event', {
       feature: this.feature,
     });
   }
-
 
   render() {
     if (this.gate === undefined || this.gate == {}) {

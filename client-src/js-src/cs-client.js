@@ -202,7 +202,6 @@ class ChromeStatusClient {
     return this.doGet(`/features/${featureId}/gates`);
   }
 
-
   getComments(featureId, gateId, commentsOnly=true) {
     let url = `/features/${featureId}/approvals/comments`;
     if (gateId) {
