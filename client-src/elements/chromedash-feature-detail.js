@@ -13,6 +13,7 @@ class ChromedashFeatureDetail extends LitElement {
   static get properties() {
     return {
       user: {type: Object},
+      canEdit: {type: Boolean},
       feature: {type: Object},
       process: {type: Object},
       dismissedCues: {type: Array},
@@ -23,6 +24,7 @@ class ChromedashFeatureDetail extends LitElement {
   constructor() {
     super();
     this.user = {};
+    this.canEdit = false;
     this.feature = {};
     this.process = {};
     this.dismissedCues = [];
@@ -49,10 +51,36 @@ class ChromedashFeatureDetail extends LitElement {
         flex: 1;
       }
 
-      .card {
-        background: var(--card-background);
+      sl-details {
         border: var(--card-border);
         box-shadow: var(--card-box-shadow);
+        margin: var(--content-padding-half);
+        border-radius: 4px;
+      }
+
+      sl-details {
+        background: var(--card-background);
+      }
+
+      sl-details::part(base),
+      sl-details::part(header) {
+        background: transparent;
+      }
+      sl-details::part(header) {
+        padding-bottom: 8px;
+      }
+
+      .description {
+        padding: 8px 16px;
+      }
+
+      sl-details sl-button::part(base) {
+        color: var(--sl-color-primary-600);
+        border: 1px solid var(--sl-color-primary-600);
+      }
+
+      .card {
+        background: var(--card-background);
         max-width: var(--max-content-width);
         margin-top: 1em;
         padding: 16px;
@@ -125,12 +153,20 @@ class ChromedashFeatureDetail extends LitElement {
   }
 
   renderControls() {
-    const text = this.anyCollapsed ? 'Expand all' : 'Collapse all';
+    const editAllButton = html`
+      <sl-button variant="text"
+           href="/guide/editall/${this.feature.id}">
+         Edit all fields
+      </sl-button>
+    `;
+    const toggleLabel = this.anyCollapsed ? 'Expand all' : 'Collapse all';
     return html`
+      ${this.canEdit ? editAllButton : nothing}
+
       <sl-button variant="text"
         title="Expand or collapse all sections"
         @click=${this.toggleAll}>
-        ${text}
+        ${toggleLabel}
       </sl-button>
     `;
   }
@@ -272,7 +308,16 @@ class ChromedashFeatureDetail extends LitElement {
     if (fields === undefined || fields.length == 0) {
       return nothing;
     }
+    const editButton = html`
+      <sl-button size="small" style="float:right"
+           href="/guide/stage/${this.feature.id}/${stage.outgoing_stage}"
+           >Edit fields</sl-button>
+    `;
     const content = html`
+      <p class="description">
+        ${this.canEdit ? editButton : nothing}
+        ${stage.description}
+      </p>
       <section class="card">
         ${this.renderSectionFields(fields)}
       </section>

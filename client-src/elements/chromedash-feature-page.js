@@ -214,9 +214,14 @@ export class ChromedashFeaturePage extends LitElement {
     return INACTIVE_STATES.includes(status);
   }
 
+  userCanEdit() {
+    return (this.user &&
+            (this.user.can_edit_all ||
+             this.user.editable_features.includes(this.featureId)));
+  }
+
   renderSubHeader() {
-    const canEdit = (this.user &&
-      (this.user.can_edit_all || this.user.editable_features.includes(this.featureId)));
+    const canEdit = this.userCanEdit();
 
     return html`
       <div id="subheader" style="display:block">
@@ -432,6 +437,7 @@ export class ChromedashFeaturePage extends LitElement {
       <chromedash-feature-detail
         .loading=${this.loading}
         .user=${this.user}
+        ?canEdit=${this.userCanEdit()}
         .feature=${this.feature}
         .comments=${this.comments}
         .process=${this.process}
