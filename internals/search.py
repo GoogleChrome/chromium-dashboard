@@ -35,29 +35,18 @@ MAX_TERMS = 6
 DEFAULT_RESULTS_PER_PAGE = 100
 
 
-def _get_referenced_feature_ids(
-    approvals: list[review_models.Approval], reverse=False) -> list[int]:
-  """Retrieve the features being approved, withuot duplicates."""
-  logging.info('approvals is %r', [(a.feature_id, a.state) for a in approvals])
-  feature_ids = utils.dedupe(a.feature_id for a in approvals)
-
-  return feature_ids
-
-
 def process_pending_approval_me_query() -> list[int]:
   """Return a list of features needing approval by current user."""
   user = users.get_current_user()
   if not user:
     return []
 
-  approvable_fields_ids = approval_defs.fields_approvable_by(user)
-  pending_approvals = review_models.Approval.get_approvals(
-      states=[review_models.Approval.REVIEW_REQUESTED])
-  pending_approvals = [pa for pa in pending_approvals
-                       if pa.field_id in approvable_fields_ids]
-
-  feature_ids = _get_referenced_feature_ids(pending_approvals)
-  return feature_ids
+  approvable_gate_types = approval_defs.fields_approvable_by(user)
+  query = review_models.Gate.query(
+      review_models.Gate.state.IN(review_models.Gate.PENDING_STATES),
+      review_models.Gate.gate_type.IN(approvable_gate_types))
+  future_feature_ids = query.fetch_async(projection=['feature_id'])
+  return future_feature_ids
 
 
 def process_starred_me_query() -> list[int]:
@@ -72,15 +61,10 @@ def process_starred_me_query() -> list[int]:
 
 def process_recent_reviews_query() -> list[int]:
   """Return features that were reviewed recently."""
-  user = users.get_current_user()
-  if not user:
-    return []
-
-  recent_approvals = review_models.Approval.get_approvals(
-      states=review_models.Approval.FINAL_STATES, limit=40)
-
-  feature_ids = _get_referenced_feature_ids(recent_approvals, reverse=True)
-  return feature_ids
+  query = review_models.Gate.query(
+      review_models.Gate.state.IN(review_models.Gate.FINAL_STATES))
+  future_feature_ids = query.fetch_async(projection=['feature_id'], limit=40)
+  return future_feature_ids
 
 
 def parse_query_value(val_str: str) -> Union[bool, datetime.datetime, int, str]:

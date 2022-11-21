@@ -170,17 +170,17 @@ def _sorted_by_joined_model(
 def sorted_by_pending_request_date(descending: bool) -> list[int]:
   """Return feature_ids of pending approvals sorted by request date."""
   return _sorted_by_joined_model(
-      review_models.Approval,
-      review_models.Approval.state == review_models.Approval.REVIEW_REQUESTED,
-      descending, review_models.Approval.set_on)
+      review_models.Gate,
+      review_models.Gate.state.IN(review_models.Gate.PENDING_STATES),
+      descending, review_models.Gate.requested_on)
 
 
 def sorted_by_review_date(descending: bool) -> list[int]:
   """Return feature_ids of reviewed approvals sorted by last review."""
   return _sorted_by_joined_model(
-      review_models.Approval,
-      review_models.Approval.state.IN(review_models.Approval.FINAL_STATES),
-      descending, review_models.Approval.set_on)
+      review_models.Gate,
+      review_models.Gate.state.IN(review_models.Gate.FINAL_STATES),
+      descending, review_models.Gate.requested_on)
 
 
 QUERIABLE_FIELDS: dict[str, Property] = {
@@ -328,6 +328,6 @@ STAGE_TYPES_BY_QUERY_FIELD: dict[str, dict[int, Optional[int]]] = {
 
 SORTABLE_FIELDS: dict[str, Union[Property, Callable]] = QUERIABLE_FIELDS.copy()
 SORTABLE_FIELDS.update({
-    'approvals.requested_on': sorted_by_pending_request_date,
-    'approvals.reviewed_on': sorted_by_review_date,
+    'gate.requested_on': sorted_by_pending_request_date,
+    'gate.reviewed_on': sorted_by_review_date,
     })

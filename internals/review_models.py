@@ -199,42 +199,6 @@ class OwnersFile(ndb.Model):
     return owners_file.raw_content
 
 
-class Gate(ndb.Model):  # copy from ApprovalConfig
-  """Gates regulate the completion of a stage."""
-
-  PREPARING = 0
-
-  feature_id = ndb.IntegerProperty(required=True)
-  stage_id = ndb.IntegerProperty(required=True)
-  gate_type = ndb.IntegerProperty(required=True)  # copy from field_id
-
-  # Can one of Vote states or PREPARING.
-  state = ndb.IntegerProperty(required=True)  # calc from Approval
-
-  owners = ndb.StringProperty(repeated=True)
-  next_action = ndb.DateProperty()
-  additional_review = ndb.BooleanProperty(default=False)
-
-  # TODO(jrobbins): implement request_review()
-
-  def is_resolved(self) -> bool:
-    """Return if the Gate's outcome has been decided."""
-    return self.state == Vote.APPROVED or self.state == Vote.DENIED
-
-  def is_approved(self) -> bool:
-    """Return if the Gate approval requirements have been met."""
-    return self.state == Vote.APPROVED
-
-  @classmethod
-  def get_feature_gates(cls, feature_id: int) -> dict[int, list[Gate]]:
-    """Return a dictionary of stages associated with a given feature."""
-    gates: list[Gate] = Gate.query(Gate.feature_id == feature_id).fetch()
-    gates_dict = collections.defaultdict(list)
-    for gate in gates:
-      gates_dict[gate.gate_type].append(gate)
-    return gates_dict
-
-
 class Vote(ndb.Model):  # copy from Approval
   """One approver's vote on what the state of a gate should be."""
 
@@ -295,8 +259,46 @@ class Vote(ndb.Model):  # copy from Approval
   # Note: set_vote() moved to approval_defs.py
 
 
+class Gate(ndb.Model):  # copy from ApprovalConfig
+  """Gates regulate the completion of a stage."""
 
-# Note: This class is not used yet.
+  PREPARING = 0
+  PENDING_STATES = [Vote.REVIEW_REQUESTED, Vote.REVIEW_STARTED, Vote.NEEDS_WORK]
+  FINAL_STATES = [Vote.NA, Vote.APPROVED, Vote.DENIED]
+
+  feature_id = ndb.IntegerProperty(required=True)
+  stage_id = ndb.IntegerProperty(required=True)
+  gate_type = ndb.IntegerProperty(required=True)  # copy from field_id
+
+  # Calulated from Vote staes.  Can be one of Vote states or PREPARING.
+  state = ndb.IntegerProperty(required=True)
+  # The datetime of the first vote on this gate.
+  requested_on = ndb.DateTimeProperty()
+
+  owners = ndb.StringProperty(repeated=True)
+  next_action = ndb.DateProperty()
+  additional_review = ndb.BooleanProperty(default=False)
+
+  # TODO(jrobbins): implement request_review()
+
+  def is_resolved(self) -> bool:
+    """Return if the Gate's outcome has been decided."""
+    return self.state == Vote.APPROVED or self.state == Vote.DENIED
+
+  def is_approved(self) -> bool:
+    """Return if the Gate approval requirements have been met."""
+    return self.state == Vote.APPROVED
+
+  @classmethod
+  def get_feature_gates(cls, feature_id: int) -> dict[int, list[Gate]]:
+    """Return a dictionary of stages associated with a given feature."""
+    gates: list[Gate] = Gate.query(Gate.feature_id == feature_id).fetch()
+    gates_dict = collections.defaultdict(list)
+    for gate in gates:
+      gates_dict[gate.gate_type].append(gate)
+    return gates_dict
+
+
 class Amendment(ndb.Model):
   """Activity log entries can record changes to fields."""
   field_name = ndb.StringProperty()  # from QUERIABLE_FIELDS
@@ -304,9 +306,6 @@ class Amendment(ndb.Model):
   new_value = ndb.TextProperty()
 
 
-# Note: This class is not used yet.
-# TODO(jrobbins): Decide on either copying to this new class or adding
-# and removing fields from the existing Comment class.
 class Activity(ndb.Model):  # copy from Comment
   """An activity log entry (comment + amendments) on a gate or feature."""
   feature_id = ndb.IntegerProperty(required=True)

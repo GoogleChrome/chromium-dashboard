@@ -248,5 +248,7 @@ def update_gate_approval_state(gate: Gate) -> int:
   votes = Vote.get_votes(gate_id=gate.key.integer_id())
   afd = APPROVAL_FIELDS_BY_ID[gate.gate_type]
   gate.state = _calc_gate_state(votes, afd.rule)
+  if votes:
+    gate.requested_on = min(v.set_on for v in votes)
   gate.put()
   return gate.state
