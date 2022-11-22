@@ -57,7 +57,7 @@ FEATURE_CATEGORIES = {
   GRAPHICS: 'Graphics',
   HOUDINI: 'Houdini',
   SERVICEWORKER: 'Service Worker',
-  WEBRTC: 'Web RTC',
+  WEBRTC: 'WebRTC',
   LAYERED: 'Layered APIs',
   WEBASSEMBLY: 'WebAssembly',
   CAPABILITIES: 'Capabilities (Fugu)'

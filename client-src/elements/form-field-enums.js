@@ -22,7 +22,7 @@ export const FEATURE_CATEGORIES = {
   CSS: [15, 'CSS'],
   HOUDINI: [16, 'Houdini'],
   SERVICEWORKER: [17, 'Service Worker'],
-  WEBRTC: [18, 'Web RTC'],
+  WEBRTC: [18, 'WebRTC'],
   LAYERED: [19, 'Layered APIs'],
   WEBASSEMBLY: [20, 'WebAssembly'],
   CAPABILITIES: [21, 'Capabilities (Fugu)'],
