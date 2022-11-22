@@ -17,6 +17,7 @@ import testing_config  # Must be imported before the module under test.
 
 import flask
 
+from dataclasses import asdict
 from api import processes_api
 from internals import core_enums
 from internals import core_models
@@ -62,12 +63,38 @@ class ProcessesAPITest(testing_config.CustomTestCase):
     expected = processes.process_to_dict(processes.BLINK_LAUNCH_PROCESS)
     self.assertEqual(expected, actual)
 
+  def test_get__feature_type_0_breaking_change(self):
+    """We can get process for breaking features with feature type 0 (New feature incubation)."""
+    self.feature_1.feature_type = 0
+    self.feature_1.breaking_change = True
+    self.feature_1.put()
+    self.maxDiff = None
+    with test_app.test_request_context(self.request_path):
+      actual = self.handler.do_get(feature_id=self.feature_id)
+    expected = processes.process_to_dict(processes.BLINK_LAUNCH_PROCESS)
+    expected['stages'].insert(-1, asdict(processes.FEATURE_ROLLOUT_STAGE))
+
+    self.assertEqual(expected, actual)
+  
   def test_get__feature_type_1(self):
     """We can get process for features with feature type 1 (Existing feature implementation)."""
     self.feature_1.feature_type = 1
     with test_app.test_request_context(self.request_path):
       actual = self.handler.do_get(feature_id=self.feature_id)
     expected = processes.process_to_dict(processes.BLINK_FAST_TRACK_PROCESS)
+    self.assertEqual(expected, actual)
+
+  def test_get__feature_type_1_breaking_change(self):
+    """We can get process for breaking features with feature type 1 (Existing feature implementation)."""
+    self.feature_1.feature_type = 1
+    self.feature_1.breaking_change = True
+    self.feature_1.put()
+    self.maxDiff = None
+    with test_app.test_request_context(self.request_path):
+      actual = self.handler.do_get(feature_id=self.feature_id)
+    expected = processes.process_to_dict(processes.BLINK_FAST_TRACK_PROCESS)
+    expected['stages'].insert(-1, asdict(processes.FEATURE_ROLLOUT_STAGE))
+
     self.assertEqual(expected, actual)
 
   def test_get__feature_type_2(self):
@@ -78,12 +105,58 @@ class ProcessesAPITest(testing_config.CustomTestCase):
     expected = processes.process_to_dict(processes.PSA_ONLY_PROCESS)
     self.assertEqual(expected, actual)
 
+  def test_get__feature_type_2_breaking_change(self):
+    """We can get process for breaking features with feature type 2 (Web developer facing change to existing code)."""
+    self.feature_1.feature_type = 2
+    self.feature_1.breaking_change = True
+    self.feature_1.put()
+    self.maxDiff = None
+    with test_app.test_request_context(self.request_path):
+      actual = self.handler.do_get(feature_id=self.feature_id)
+    expected = processes.process_to_dict(processes.PSA_ONLY_PROCESS)
+    expected['stages'].insert(-1, asdict(processes.FEATURE_ROLLOUT_STAGE))
+
+    self.assertEqual(expected, actual)
+
   def test_get__feature_type_3(self):
     """We can get process for features with feature type 3 (Feature deprecation)."""
     self.feature_1.feature_type = 3
     with test_app.test_request_context(self.request_path):
       actual = self.handler.do_get(feature_id=self.feature_id)
     expected = processes.process_to_dict(processes.DEPRECATION_PROCESS)
+    self.assertEqual(expected, actual)
+
+  def test_get__feature_type_3_breaking_change(self):
+    """We can get process for breaking features with feature type 3 (Feature deprecation)."""
+    self.feature_1.feature_type = 3
+    self.feature_1.breaking_change = True
+    self.feature_1.put()
+    self.maxDiff = None
+    with test_app.test_request_context(self.request_path):
+      actual = self.handler.do_get(feature_id=self.feature_id)
+    expected = processes.process_to_dict(processes.DEPRECATION_PROCESS)
+    expected['stages'].insert(-1, asdict(processes.FEATURE_ROLLOUT_STAGE))
+
+    self.assertEqual(expected, actual)
+
+  def test_get__feature_type_4(self):
+    """We can get process for features with feature type 4 (Enterprise feature)."""
+    self.feature_1.feature_type = 4
+    with test_app.test_request_context(self.request_path):
+      actual = self.handler.do_get(feature_id=self.feature_id)
+    expected = processes.process_to_dict(processes.ENTERPRISE_PROCESS)
+    self.assertEqual(expected, actual)
+
+  def test_get__feature_type_4_breaking_change(self):
+    """We can get process for breaking features with feature type 4 (Enterprise feature)."""
+    self.feature_1.feature_type = 4
+    self.feature_1.breaking_change = True
+    self.feature_1.put()
+    self.maxDiff = None
+    with test_app.test_request_context(self.request_path):
+      actual = self.handler.do_get(feature_id=self.feature_id)
+    expected = processes.process_to_dict(processes.ENTERPRISE_PROCESS)
+
     self.assertEqual(expected, actual)
 
 

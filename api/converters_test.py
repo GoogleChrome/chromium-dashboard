@@ -80,6 +80,7 @@ class ConvertersTest(testing_config.CustomTestCase):
       'summary': 'sum',
       'unlisted': False,
       'blink_components': ['Blink'],
+      'breaking_change': False,
       'resources': {
         'samples': ['https://example.com/samples'],
         'docs': ['https://example.com/docs'],
@@ -163,6 +164,7 @@ class ConvertersTest(testing_config.CustomTestCase):
       'summary': 'sum',
       'unlisted': False,
       'api_spec': False,
+      'breaking_change': False,
 
       # Intent fields
       'intent_to_implement_url': 'https://example.com/120',

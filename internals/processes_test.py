@@ -138,6 +138,10 @@ class ProcessesWellFormedTest(testing_config.CustomTestCase):
     """Prerequisites in DEPRECATION_PROCESS are defined and actionable."""
     self.verify_references_to_prerequisites(processes.DEPRECATION_PROCESS)
 
+  def test_ENTERPRISE_PROCESS(self):
+    """Prerequisites in NTERPRISE_PROCESS are defined and actionable."""
+    self.verify_references_to_prerequisites(processes.ENTERPRISE_PROCESS)
+
 
 class ProgressDetectorsTest(testing_config.CustomTestCase):
 
@@ -268,4 +272,28 @@ class ProgressDetectorsTest(testing_config.CustomTestCase):
     detector = processes.PROGRESS_DETECTORS['Code removed']
     self.assertFalse(detector(self.feature_1, self.stages_dict))
     self.feature_1.impl_status_chrome = core_enums.REMOVED
+    self.assertTrue(detector(self.feature_1, self.stages_dict))
+
+  def test_rollout_milestone(self):
+    detector = processes.PROGRESS_DETECTORS['Rollout milestone']
+    self.assertFalse(detector(self.feature_1, self.stages_dict))
+    self.stages_dict[160][0].rollout_milestone = 99
+    self.assertTrue(detector(self.feature_1, self.stages_dict))
+
+  def test_rollout_platforms(self):
+    detector = processes.PROGRESS_DETECTORS['Rollout platforms']
+    self.assertFalse(detector(self.feature_1, self.stages_dict))
+    self.stages_dict[160][0].rollout_platforms = ['iOS', 'Android']
+    self.assertTrue(detector(self.feature_1, self.stages_dict))
+
+  def test_rollout_details(self):
+    detector = processes.PROGRESS_DETECTORS['Rollout details']
+    self.assertFalse(detector(self.feature_1, self.stages_dict))
+    self.stages_dict[160][0].rollout_details = 'Details'
+    self.assertTrue(detector(self.feature_1, self.stages_dict))
+
+  def test_enterprise_policies(self):
+    detector = processes.PROGRESS_DETECTORS['Enterprise policies']
+    self.assertFalse(detector(self.feature_1, self.stages_dict))
+    self.stages_dict[160][0].enterprise_policies = ['Policy1', 'Policy2']
     self.assertTrue(detector(self.feature_1, self.stages_dict))
