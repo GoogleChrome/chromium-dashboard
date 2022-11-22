@@ -88,7 +88,7 @@ describe('chromedash-form-field', () => {
   it('renders a multiselect type of field', async () => {
     const component = await fixture(
       html`
-      <chromedash-form-field name="rollout_platforms" .value="${[]}">
+      <chromedash-form-field name="rollout_platforms">
       </chromedash-form-field>`);
     assert.exists(component);
     assert.instanceOf(component, ChromedashFormField);
