@@ -175,7 +175,7 @@ GATE_EXTEND_ORIGIN_TRIAL = 3
 GATE_SHIP = 4
 
 # List of (stage type, gate type) for each feature type.
-STAGES_AND_GATES_BY_FEATURE_TYPE = {
+STAGES_AND_GATES_BY_FEATURE_TYPE: dict[int, list[tuple[int, Optional[int]]]] = {
     FEATURE_TYPE_INCUBATE_ID: [
         (STAGE_BLINK_INCUBATE, None),
         (STAGE_BLINK_PROTOTYPE, GATE_PROTOTYPE),
