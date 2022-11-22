@@ -1,4 +1,10 @@
 name: Continuous Integration
+# Needed for gcloud because as of Nov 2022, gcloud only supports python 3.5-3.9
+# https://cloud.google.com/sdk/docs/install#supported_python_versions
+# https://github.com/google-github-actions/setup-gcloud/issues/381#issuecomment-955631107
+# ubuntu-latest comes with python3.8 (for now). As a result, we can tell gcloud to use that.
+# env:
+#  CLOUDSDK_PYTHON: python3.8
 on:
   push:
     branches:
