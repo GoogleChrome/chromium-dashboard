@@ -1,4 +1,10 @@
 name: Continuous Integration Web Tests
+# Needed for gcloud because as of Nov 2022, gcloud only supports python 3.5-3.9
+# https://cloud.google.com/sdk/docs/install#supported_python_versions
+# https://github.com/google-github-actions/setup-gcloud/issues/381#issuecomment-955631107
+# ubuntu-20.04 comes with python3.8. As a result, we can tell gcloud to use that.
+env:
+ CLOUDSDK_PYTHON: python3.8
 on:
   push:
     branches:
@@ -7,7 +13,11 @@ on:
 
 jobs:
   web_tests:
-    runs-on: ubuntu-latest
+    # Need to use 20.04 because ubuntu-latest uses ubuntu-22.04.
+    # 22.04 comes with python 3.10 and that does not work with gcloud.
+    # https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners
+    # Refer to CLOUDSDK_PYTHON above for more details.
+    runs-on: ubuntu-20.04
 
     strategy:
       matrix:
@@ -33,7 +43,7 @@ jobs:
         run: |
           # Remove existing google-cloud-sdk packages in Ubuntu.
           sudo rm -rf /usr/lib/google-cloud-sdk
-          curl https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-353.0.0-linux-x86_64.tar.gz | tar -zx > /dev/null
+          curl https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-410.0.0-linux-x86_64.tar.gz | tar -zx > /dev/null
           # Substitute the downloaded google-cloud-sdk packages, due to https://stackoverflow.com/questions/42697026/install-google-cloud-components-error-from-gcloud-command.
           sudo mv google-cloud-sdk /usr/lib/
           sudo gcloud components update
