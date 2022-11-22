@@ -2,7 +2,7 @@ name: Continuous Integration
 # Needed for gcloud because as of Nov 2022, gcloud only supports python 3.5-3.9
 # https://cloud.google.com/sdk/docs/install#supported_python_versions
 # https://github.com/google-github-actions/setup-gcloud/issues/381#issuecomment-955631107
-# ubuntu-latest comes with python3.8 (for now). As a result, we can tell gcloud to use that.
+# ubuntu-20.04 comes with python3.8. As a result, we can tell gcloud to use that.
 env:
  CLOUDSDK_PYTHON: python3.8
 on:
@@ -12,7 +12,11 @@ on:
   pull_request:
 jobs:
   python_tests:
-    runs-on: ubuntu-latest
+    # Need to use 20.04 because ubuntu-latest uses ubuntu-22.04.
+    # 22.04 comes with python 3.10 and that does not work with gcloud.
+    # https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners
+    # Refer to CLOUDSDK_PYTHON above for more details.
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
 
