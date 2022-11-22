@@ -184,7 +184,7 @@ class ChromedashFeatureRow extends LitElement {
           ${activeStages.length > 0 ? html`
             <div>
               ${activeStages.map(stageAndGates =>
-                this.renderActiveStageAndGates(stageAndGates))}
+        this.renderActiveStageAndGates(stageAndGates))}
             </div>
             ` : nothing}
           ${this.renderQuickActions(feature)}
