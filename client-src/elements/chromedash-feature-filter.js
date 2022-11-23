@@ -1,5 +1,17 @@
 import {LitElement, css, html, nothing} from 'lit';
 import {SHARED_STYLES} from '../sass/shared-css.js';
+import {
+  FEATURE_CATEGORIES,
+  FEATURE_TYPES,
+  IMPLEMENTATION_STATUS,
+  INTENT_STAGES,
+  PLATFORM_CATEGORIES,
+  STANDARD_MATURITY_CHOICES,
+  REVIEW_STATUS_CHOICES,
+  VENDOR_VIEWS_COMMON,
+  VENDOR_VIEWS_GECKO,
+  WEB_DEV_VIEWS,
+} from './form-field-enums';
 
 const ENTER_KEY_CODE = 13;
 
@@ -11,12 +23,12 @@ const TEXT_TYPE = 'text';
 const NUM_TYPE = 'number';
 const DATE_TYPE = 'date';
 const EMAIL_TYPE = 'email';
-// const ENUM_TYPE = 'enum';
+const ENUM_TYPE = 'enum';
 // const BOOL_TYPE = 'bool';
 
 // This works around a lint warning for <input type="${inputType}">.
 const FIELD_TYPE_TO_INPUT_TYPE = {
-  text: 'text', number: 'number', date: 'date', email: 'email',
+  text: 'text', number: 'number', date: 'date', email: 'email', enum: 'enum',
 };
 
 
@@ -27,7 +39,7 @@ AVAILABLE_OPS[NUM_TYPE] = [BETWEEN_OP, EQ_OP];
 AVAILABLE_OPS[DATE_TYPE] = [BETWEEN_OP];
 // TODO: CONTAINS_OP is yet supported in EMAIL_TYPE.
 AVAILABLE_OPS[EMAIL_TYPE] = [EQ_OP];
-// AVAILABLE_OPS[ENUM_TYPE] = [EQ_OP];
+AVAILABLE_OPS[ENUM_TYPE] = [EQ_OP];
 // AVAILABLE_OPS[BOOL_TYPE] = [EQ_OP];
 
 
@@ -144,6 +156,57 @@ const QUERIABLE_FIELDS = [
     type: NUM_TYPE},
   // 'browsers.chrome.ot.feedback_url': Feature.origin_trial_feedback_url,
   // 'finch_url': Feature.finch_url,
+
+  // TODO(kyleju): Use ALL_FIELDS from form-field-specs.js.
+  // Available ENUM fields.
+  {name: 'category',
+    display: 'Feature category',
+    choices: FEATURE_CATEGORIES,
+    type: ENUM_TYPE},
+  {name: 'feature_type',
+    display: 'Feature type',
+    choices: FEATURE_TYPES,
+    type: ENUM_TYPE},
+  {name: 'impl_status_chrome',
+    display: 'Implementation status',
+    choices: IMPLEMENTATION_STATUS,
+    type: ENUM_TYPE},
+  {name: 'intent_stage',
+    display: 'Spec process stage',
+    choices: INTENT_STAGES,
+    type: ENUM_TYPE},
+  {name: 'rollout_platforms',
+    display: 'Rollout platforms',
+    choices: PLATFORM_CATEGORIES,
+    type: ENUM_TYPE},
+  {name: 'standard_maturity',
+    display: 'Standard maturity',
+    choices: STANDARD_MATURITY_CHOICES,
+    type: ENUM_TYPE},
+  {name: 'security_review_status',
+    display: 'Security review status',
+    choices: REVIEW_STATUS_CHOICES,
+    type: ENUM_TYPE},
+  {name: 'privacy_review_status',
+    display: 'Privacy review status',
+    choices: REVIEW_STATUS_CHOICES,
+    type: ENUM_TYPE},
+  {name: 'tag_review_status',
+    display: 'TAG Specification Review Status',
+    choices: REVIEW_STATUS_CHOICES,
+    type: ENUM_TYPE},
+  {name: 'safari_views',
+    display: 'Safari views',
+    choices: VENDOR_VIEWS_COMMON,
+    type: ENUM_TYPE},
+  {name: 'ff_views',
+    display: 'Firefox views',
+    choices: VENDOR_VIEWS_GECKO,
+    type: ENUM_TYPE},
+  {name: 'web_dev_views',
+    display: 'Web / Framework developer views',
+    choices: WEB_DEV_VIEWS,
+    type: ENUM_TYPE},
 ];
 
 
