@@ -208,7 +208,7 @@ class ChromedashFeatureDetail extends LitElement {
         }
       }
     }
-    if (fieldId == 'rollout_platforms') {
+    if (value && fieldId == 'rollout_platforms') {
       value = value.map(platformId => PLATFORMS_DISPLAYNAME[platformId]);
     }
     return value;
