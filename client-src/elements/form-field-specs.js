@@ -1174,9 +1174,9 @@ export const ALL_FIELDS = {
     required: false,
     label: 'Rollout details',
     help_text: html`
-      Explain what specifically is changing in the selected milestone for the 
-      selected platforms. Include any controls admins have to test it 
-      (e.g. flags) and control it (e.g. an enterprise policy). Write in the 
+      Explain what specifically is changing in the selected milestone for the
+      selected platforms. Include any controls admins have to test it
+      (e.g. flags) and control it (e.g. an enterprise policy). Write in the
       present tense.`,
   },
 
@@ -1184,7 +1184,9 @@ export const ALL_FIELDS = {
     type: 'checkbox',
     label: 'Breaking change',
     initial: false,
-    help_text: 'This is a breaking change (customers/developers must take action)',
+    help_text: html`
+      This is a breaking change: customers or developers must take action
+      to continue using some existing functionaity.`,
   },
 };
 
