@@ -497,7 +497,7 @@ FEATURE_ROLLOUT_STAGE = ProcessStage(
       ],
       [],
       [],
-      core_enums.INTENT_SHIP, core_enums.INTENT_SHIP)
+      core_enums.INTENT_SHIP, core_enums.INTENT_ROLLOUT)
 
 # Thise are the stages for a feature that has the enterprise feature type.
 ENTERPRISE_STAGES = [
@@ -514,7 +514,7 @@ ENTERPRISE_STAGES = [
       ],
       [],
       [],
-      core_enums.INTENT_NONE, core_enums.INTENT_SHIP),
+      core_enums.INTENT_NONE, core_enums.INTENT_ROLLOUT),
   ProcessStage(
       'Ship',
       'Enable the feature by default.',
@@ -522,7 +522,7 @@ ENTERPRISE_STAGES = [
       ],
       [],
       [],
-      core_enums.INTENT_SHIP, core_enums.INTENT_SHIPPED),
+      core_enums.INTENT_ROLLOUT, core_enums.INTENT_SHIPPED),
 ]
 
 
