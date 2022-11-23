@@ -1,24 +1,26 @@
-import {LitElement, css, html, nothing} from 'lit';
-import {SHARED_STYLES} from '../sass/shared-css.js';
+import { LitElement, css, html, nothing } from "lit";
+import { SHARED_STYLES } from "../sass/shared-css.js";
 
 const ENTER_KEY_CODE = 13;
 
-const EQ_OP = 'Equals';
-const BETWEEN_OP = 'Between';
-const CONTAINS_OP = 'Contains words';
+const EQ_OP = "Equals";
+const BETWEEN_OP = "Between";
+const CONTAINS_OP = "Contains words";
 
-const TEXT_TYPE = 'text';
-const NUM_TYPE = 'number';
-const DATE_TYPE = 'date';
-const EMAIL_TYPE = 'email';
+const TEXT_TYPE = "text";
+const NUM_TYPE = "number";
+const DATE_TYPE = "date";
+const EMAIL_TYPE = "email";
 // const ENUM_TYPE = 'enum';
 // const BOOL_TYPE = 'bool';
 
 // This works around a lint warning for <input type="${inputType}">.
 const FIELD_TYPE_TO_INPUT_TYPE = {
-  text: 'text', number: 'number', date: 'date', email: 'email',
+  text: "text",
+  number: "number",
+  date: "date",
+  email: "email",
 };
-
 
 const AVAILABLE_OPS = {};
 // TODO: CONTAINS_OP is not yet supported in TEXT_TYPE.
@@ -30,10 +32,9 @@ AVAILABLE_OPS[EMAIL_TYPE] = [EQ_OP];
 // AVAILABLE_OPS[ENUM_TYPE] = [EQ_OP];
 // AVAILABLE_OPS[BOOL_TYPE] = [EQ_OP];
 
-
 const QUERIABLE_FIELDS = [
-  {name: 'created.when', display: 'Created', type: DATE_TYPE},
-  {name: 'updated.when', display: 'Updated', type: DATE_TYPE},
+  { name: "created.when", display: "Created", type: DATE_TYPE },
+  { name: "updated.when", display: "Updated", type: DATE_TYPE },
 
   // TODO(jrobbins): The backend cannot handle User-type fields.
   // These need to be migrated to string fields with emails.
@@ -43,15 +44,15 @@ const QUERIABLE_FIELDS = [
   // {name: 'category', display: 'Category', type: ENUM_TYPE,
   //  values: ['one', 'two', 'three']},
 
-  {name: 'name', display: 'Name', type: TEXT_TYPE},
+  { name: "name", display: "Name", type: TEXT_TYPE },
   //  'feature_type': Feature.feature_type,
   //  'intent_stage': Feature.intent_stage,
-  {name: 'summary', display: 'Summary', type: TEXT_TYPE},
+  { name: "summary", display: "Summary", type: TEXT_TYPE },
   // 'unlisted': Feature.unlisted,
   //  'motivation': Feature.motivation,
   //  'star_count': Feature.star_count,
-  {name: 'tags', display: 'Tags', type: TEXT_TYPE},
-  {name: 'owner', display: 'Owner', type: EMAIL_TYPE},
+  { name: "tags", display: "Tags", type: TEXT_TYPE },
+  { name: "owner", display: "Owner", type: EMAIL_TYPE },
   //  'intent_to_implement_url': Feature.intent_to_implement_url,
   //  'intent_to_ship_url': Feature.intent_to_ship_url,
   //  'ready_for_trial_url': Feature.ready_for_trial_url,
@@ -63,40 +64,60 @@ const QUERIABLE_FIELDS = [
   //  'launch_bug_url': Feature.launch_bug_url,
   //  'initial_public_proposal_url': Feature.initial_public_proposal_url,
   //  'browsers.chrome.blink_components': Feature.blink_components,
-  {name: 'browsers.chrome.devrel', display: 'DevRel contact', type: EMAIL_TYPE},
+  {
+    name: "browsers.chrome.devrel",
+    display: "DevRel contact",
+    type: EMAIL_TYPE,
+  },
   // {name: 'browsers.chrome.prefixed', display: 'Prefixed', type: BOOL_TYPE},
 
   //  'browsers.chrome.status': Feature.impl_status_chrome,
-  {name: 'browsers.chrome.desktop',
-    display: 'Desktop Shipping Milestone',
-    type: NUM_TYPE},
-  {name: 'browsers.chrome.android',
-    display: 'Android Shipping Milestone',
-    type: NUM_TYPE},
-  {name: 'browsers.chrome.ios',
-    display: 'iOS Shipping Milestone',
-    type: NUM_TYPE},
-  {name: 'browsers.chrome.webview',
-    display: 'Webview Shipping Milestone',
-    type: NUM_TYPE},
+  {
+    name: "browsers.chrome.desktop",
+    display: "Desktop Shipping Milestone",
+    type: NUM_TYPE,
+  },
+  {
+    name: "browsers.chrome.android",
+    display: "Android Shipping Milestone",
+    type: NUM_TYPE,
+  },
+  {
+    name: "browsers.chrome.ios",
+    display: "iOS Shipping Milestone",
+    type: NUM_TYPE,
+  },
+  {
+    name: "browsers.chrome.webview",
+    display: "Webview Shipping Milestone",
+    type: NUM_TYPE,
+  },
   // 'requires_embedder_support': Feature.requires_embedder_support,
 
-  {name: 'browsers.chrome.flag_name', display: 'Flag name', type: TEXT_TYPE},
+  { name: "browsers.chrome.flag_name", display: "Flag name", type: TEXT_TYPE },
   // 'all_platforms': Feature.all_platforms,
   // 'all_platforms_descr': Feature.all_platforms_descr,
   // 'wpt': Feature.wpt,
-  {name: 'browsers.chrome.devtrial.desktop.start',
-    display: 'Desktop Dev Trial Start',
-    type: NUM_TYPE},
-  {name: 'browsers.chrome.devtrial.android.start',
-    display: 'Android Dev Trial Start',
-    type: NUM_TYPE},
-  {name: 'browsers.chrome.devtrial.ios.start',
-    display: 'iOS Dev Trial Start',
-    type: NUM_TYPE},
-  {name: 'browsers.chrome.devtrial.webview.start',
-    display: 'WebView Dev Trial Start',
-    type: NUM_TYPE},
+  {
+    name: "browsers.chrome.devtrial.desktop.start",
+    display: "Desktop Dev Trial Start",
+    type: NUM_TYPE,
+  },
+  {
+    name: "browsers.chrome.devtrial.android.start",
+    display: "Android Dev Trial Start",
+    type: NUM_TYPE,
+  },
+  {
+    name: "browsers.chrome.devtrial.ios.start",
+    display: "iOS Dev Trial Start",
+    type: NUM_TYPE,
+  },
+  {
+    name: "browsers.chrome.devtrial.webview.start",
+    display: "WebView Dev Trial Start",
+    type: NUM_TYPE,
+  },
 
   // 'standards.maturity': Feature.standard_maturity,
   // 'standards.spec': Feature.spec_link,
@@ -119,46 +140,57 @@ const QUERIABLE_FIELDS = [
   // 'non_oss_deps': Feature.non_oss_deps,
 
   // 'browsers.chrome.ot.desktop.start': Feature.ot_milestone_desktop_start,
-  {name: 'browsers.chrome.ot.desktop.start',
-    display: 'Desktop Origin Trial Start',
-    type: NUM_TYPE},
+  {
+    name: "browsers.chrome.ot.desktop.start",
+    display: "Desktop Origin Trial Start",
+    type: NUM_TYPE,
+  },
   // 'browsers.chrome.ot.desktop.end': Feature.ot_milestone_desktop_end,
-  {name: 'browsers.chrome.ot.desktop.end',
-    display: 'Desktop Origin Trial End',
-    type: NUM_TYPE},
+  {
+    name: "browsers.chrome.ot.desktop.end",
+    display: "Desktop Origin Trial End",
+    type: NUM_TYPE,
+  },
   // 'browsers.chrome.ot.android.start': Feature.ot_milestone_android_start,
-  {name: 'browsers.chrome.ot.android.start',
-    display: 'Android Origin Trial Start',
-    type: NUM_TYPE},
+  {
+    name: "browsers.chrome.ot.android.start",
+    display: "Android Origin Trial Start",
+    type: NUM_TYPE,
+  },
   // 'browsers.chrome.ot.android.end': Feature.ot_milestone_android_end,
-  {name: 'browsers.chrome.ot.android.end',
-    display: 'Android Origin Trial End',
-    type: NUM_TYPE},
+  {
+    name: "browsers.chrome.ot.android.end",
+    display: "Android Origin Trial End",
+    type: NUM_TYPE,
+  },
   // 'browsers.chrome.ot.webview.start': Feature.ot_milestone_webview_start,
-  {name: 'browsers.chrome.ot.webview.start',
-    display: 'WebView Origin Trial Start',
-    type: NUM_TYPE},
+  {
+    name: "browsers.chrome.ot.webview.start",
+    display: "WebView Origin Trial Start",
+    type: NUM_TYPE,
+  },
   // 'browsers.chrome.ot.webview.end': Feature.ot_milestone_webview_end,
-  {name: 'browsers.chrome.ot.webview.end',
-    display: 'WebView Origin Trial End',
-    type: NUM_TYPE},
+  {
+    name: "browsers.chrome.ot.webview.end",
+    display: "WebView Origin Trial End",
+    type: NUM_TYPE,
+  },
   // 'browsers.chrome.ot.feedback_url': Feature.origin_trial_feedback_url,
   // 'finch_url': Feature.finch_url,
 ];
 
-
 class ChromedashFeatureFilter extends LitElement {
   static get properties() {
     return {
-      query: {type: String},
-      showFilters: {type: Boolean},
-      filterConditions: {type: Array},
+      query: { type: String },
+      showFilters: { type: Boolean },
+      filterConditions: { type: Array },
     };
   }
 
   constructor() {
     super();
-    this.query = '';
+    this.query = "";
     this.showFilters = false;
     this.filterConditions = [];
   }
@@ -173,40 +205,40 @@ class ChromedashFeatureFilter extends LitElement {
   }
 
   computeQuery() {
-    const searchBarEl = this.shadowRoot.querySelector('#searchbar');
+    const searchBarEl = this.shadowRoot.querySelector("#searchbar");
     const queryTerms = [searchBarEl.value.trim()];
     for (const cond of this.filterConditions) {
       if (cond.op == EQ_OP && cond.value && cond.value.trim()) {
         queryTerms.push(cond.fieldName + '="' + cond.value + '"');
       }
       if (cond.op == BETWEEN_OP && cond.low) {
-        queryTerms.push(cond.fieldName + '>=' + cond.low);
+        queryTerms.push(cond.fieldName + ">=" + cond.low);
       }
       if (cond.op == BETWEEN_OP && cond.high) {
-        queryTerms.push(cond.fieldName + '<=' + cond.high);
+        queryTerms.push(cond.fieldName + "<=" + cond.high);
       }
       if (cond.op == CONTAINS_OP && cond.value && cond.value.trim()) {
-        queryTerms.push(cond.fieldName + ':' + cond.value.trim());
+        queryTerms.push(cond.fieldName + ":" + cond.value.trim());
       }
     }
-    return queryTerms.join(' ').trim();
+    return queryTerms.join(" ").trim();
   }
 
   handleSearchKey(event) {
     if (event.keyCode == ENTER_KEY_CODE) {
       const newQuery = this.computeQuery();
-      this._fireEvent('search', {query: newQuery});
+      this._fireEvent("search", { query: newQuery });
     }
   }
 
   handleSearchClick() {
     const newQuery = this.computeQuery();
-    this._fireEvent('search', {query: newQuery});
+    this._fireEvent("search", { query: newQuery });
   }
 
   handleFilterClick() {
     const newQuery = this.computeQuery();
-    this._fireEvent('search', {query: newQuery});
+    this._fireEvent("search", { query: newQuery });
   }
 
   toggleFilters() {
@@ -217,61 +249,74 @@ class ChromedashFeatureFilter extends LitElement {
     return [
       ...SHARED_STYLES,
       css`
-      sl-icon-button {
-        font-size: 1.6rem;
-        margin: 0 !important;
-      }
-      #searchbar::part(base), #filterwidgets {
-       background: #eee;
-       border: none;
-       border-radius: 8px;
-      }
-      #filterwidgets {
-       padding: 4px;
-       margin: 4px 0;
-      }
-      .filterrow {
-        display: flex;
-      }
-      .filterrow * {
-        margin: 6px 3px;
-      }
-      .cond-field-menu {
-        width: 180px;
-      }
-      .cond-op-menu {
-        width: 150px;
-      }
-      .filterrow label {
-        padding-right: 4px;
-        align-self: center;
-      }
-      .filterrow sl-input {
-        flex: 1;
-      }
-      .cond-delete {
-        padding: 0;
-      }
-      .cond-delete:hover {
-        background: #ccc;
-      }
-      .cond-delete:active {
-       background: #222;
-       color: white;
-      }
-    `];
+        sl-icon-button {
+          font-size: 1.6rem;
+          margin: 0 !important;
+        }
+        #searchbar::part(base),
+        #filterwidgets {
+          background: #eee;
+          border: none;
+          border-radius: 8px;
+        }
+        #filterwidgets {
+          padding: 4px;
+          margin: 4px 0;
+        }
+        .filterrow {
+          display: flex;
+        }
+        .filterrow * {
+          margin: 6px 3px;
+        }
+        .cond-field-menu {
+          width: 180px;
+        }
+        .cond-op-menu {
+          width: 150px;
+        }
+        .filterrow label {
+          padding-right: 4px;
+          align-self: center;
+        }
+        .filterrow sl-input {
+          flex: 1;
+        }
+        .cond-delete {
+          padding: 0;
+        }
+        .cond-delete:hover {
+          background: #ccc;
+        }
+        .cond-delete:active {
+          background: #222;
+          color: white;
+        }
+      `,
+    ];
   }
 
   renderSearchBar() {
     return html`
       <div>
-        <sl-input id="searchbar" placeholder="Search"
-            @keyup="${this.handleSearchKey}">
-          <sl-icon-button library="material" name="search" slot="prefix"
-               @click="${this.handleSearchClick}">
+        <sl-input
+          id="searchbar"
+          placeholder="Search"
+          @keyup="${this.handleSearchKey}"
+        >
+          <sl-icon-button
+            library="material"
+            name="search"
+            slot="prefix"
+            @click="${this.handleSearchClick}"
+          >
           </sl-icon-button>
-          <sl-icon-button library="material" name="tune" slot="suffix"
-               @click="${this.toggleFilters}">
+          <sl-icon-button
+            library="material"
+            name="tune"
+            slot="suffix"
+            @click="${this.toggleFilters}"
+          >
           </sl-icon-button>
         </sl-input>
       </div>
@@ -280,40 +325,46 @@ class ChromedashFeatureFilter extends LitElement {
 
   renderFilterFieldMenu(fieldName, index) {
     return html`
-      <sl-select class="cond-field-menu" size="small"
-              value=${fieldName}
-              @sl-change="${(e) => this.handleChangeField(e.target.value, index)}">
-       ${QUERIABLE_FIELDS.map((item) => html`
-         <sl-menu-item value="${item.name}">
-           ${item.display}
-         </sl-menu-item>
-        `)}
+      <sl-select
+        class="cond-field-menu"
+        size="small"
+        value=${fieldName}
+        @sl-change="${(e) => this.handleChangeField(e.target.value, index)}"
+      >
+        ${QUERIABLE_FIELDS.map(
+          (item) => html`
+            <sl-menu-item value="${item.name}"> ${item.display} </sl-menu-item>
+          `
+        )}
       </sl-select>
     `;
   }
 
   findAvailableOps(fieldName) {
-    const field = QUERIABLE_FIELDS.find(f => f.name == fieldName);
+    const field = QUERIABLE_FIELDS.find((f) => f.name == fieldName);
     return AVAILABLE_OPS[field.type];
   }
 
   handleChangeOp(op, index) {
     const oldCond = this.filterConditions[index];
-    const newCond = {fieldName: oldCond.fieldName, op: op}; // Reset values.
+    const newCond = { fieldName: oldCond.fieldName, op: op }; // Reset values.
     this.replaceCond(newCond, index);
   }
 
   renderFilterOpMenu(cond, index) {
     const operatorOptions = this.findAvailableOps(cond.fieldName);
     return html`
-      <sl-select class="cond-op-menu" size="small"
-              value=${cond.op}
-              @sl-change="${(e) => this.handleChangeOp(e.target.value, index)}">
-       ${operatorOptions.map(opOption => html`
-         <sl-menu-item value="${opOption}">
-           ${opOption}
-         </sl-menu-item>
-        `)}
+      <sl-select
+        class="cond-op-menu"
+        size="small"
+        value=${cond.op}
+        @sl-change="${(e) => this.handleChangeOp(e.target.value, index)}"
+      >
+        ${operatorOptions.map(
+          (opOption) => html`
+            <sl-menu-item value="${opOption}"> ${opOption} </sl-menu-item>
+          `
+        )}
       </sl-select>
     `;
   }
@@ -331,56 +382,71 @@ class ChromedashFeatureFilter extends LitElement {
 
   handleChangeValue(value, index) {
     const oldCond = this.filterConditions[index];
-    const newCond = {...oldCond, value: value};
+    const newCond = { ...oldCond, value: value };
     this.replaceCond(newCond, index);
   }
 
   handleChangeLow(low, index) {
     const oldCond = this.filterConditions[index];
-    const newCond = {...oldCond, low: low};
+    const newCond = { ...oldCond, low: low };
     this.replaceCond(newCond, index);
   }
 
   handleChangeHigh(high, index) {
     const oldCond = this.filterConditions[index];
-    const newCond = {...oldCond, high: high};
+    const newCond = { ...oldCond, high: high };
     this.replaceCond(newCond, index);
   }
 
   renderFilterValues(cond, index) {
-    const field = QUERIABLE_FIELDS.find(f => f.name == cond.fieldName);
-    const inputType = FIELD_TYPE_TO_INPUT_TYPE[field && field.type] || 'text';
+    const field = QUERIABLE_FIELDS.find((f) => f.name == cond.fieldName);
+    const inputType = FIELD_TYPE_TO_INPUT_TYPE[field && field.type] || "text";
 
     if (cond.op == EQ_OP) {
       return html`
-        <sl-input type="${inputType}" value="${cond.value || ''}" size="small"
-               @sl-change="${(e) => this.handleChangeValue(e.target.value, index)}">
+        <sl-input
+          type="${inputType}"
+          value="${cond.value || ""}"
+          size="small"
+          @sl-change="${(e) => this.handleChangeValue(e.target.value, index)}"
+        >
         </sl-input>
-        `;
+      `;
     }
 
     if (cond.op == BETWEEN_OP) {
       return html`
         <label>Min:</label>
-        <sl-input type="${inputType}" value="${cond.low}" size="small"
-               @sl-change="${(e) => this.handleChangeLow(e.target.value, index)}">
+        <sl-input
+          type="${inputType}"
+          value="${cond.low}"
+          size="small"
+          @sl-change="${(e) => this.handleChangeLow(e.target.value, index)}"
+        >
         </sl-input>
         <label>Max:</label>
-        <sl-input type="${inputType}" value="${cond.high}" size="small"
-               @sl-change="${(e) => this.handleChangeHigh(e.target.value, index)}">
+        <sl-input
+          type="${inputType}"
+          value="${cond.high}"
+          size="small"
+          @sl-change="${(e) => this.handleChangeHigh(e.target.value, index)}"
+        >
         </sl-input>
-        `;
+      `;
     }
 
     if (cond.op == CONTAINS_OP) {
       return html`
-        <sl-input value="${cond.value}" size="small"
-               @sl-change="${(e) => this.handleChangeValue(e.target.value, index)}">
+        <sl-input
+          value="${cond.value}"
+          size="small"
+          @sl-change="${(e) => this.handleChangeValue(e.target.value, index)}"
+        >
         </sl-input>
-        `;
+      `;
     }
 
-    return 'Unrecognized operator';
+    return "Unrecognized operator";
   }
 
   replaceCond(cond, index) {
@@ -388,12 +454,14 @@ class ChromedashFeatureFilter extends LitElement {
       this.filterConditions = [
         ...this.filterConditions.slice(0, index),
         cond,
-        ...this.filterConditions.slice(index + 1)];
+        ...this.filterConditions.slice(index + 1),
+      ];
     } else {
       this.filterConditions = [
         ...this.filterConditions.slice(0, index),
         // nothing in the middle
-        ...this.filterConditions.slice(index + 1)];
+        ...this.filterConditions.slice(index + 1),
+      ];
     }
   }
 
@@ -403,29 +471,35 @@ class ChromedashFeatureFilter extends LitElement {
 
   renderFilterRow(cond, index) {
     return html`
-     <div class="filterrow">
-      ${this.renderFilterFieldMenu(cond.fieldName, index)}
-      ${this.renderFilterOpMenu(cond, index)}
-      ${this.renderFilterValues(cond, index)}
-      <sl-icon-button name="x" @click="${() => this.handleDeleteCond(index)}">
-      </sl-icon-button>
-     </div>
+      <div class="filterrow">
+        ${this.renderFilterFieldMenu(cond.fieldName, index)}
+        ${this.renderFilterOpMenu(cond, index)}
+        ${this.renderFilterValues(cond, index)}
+        <sl-icon-button name="x" @click="${() => this.handleDeleteCond(index)}">
+        </sl-icon-button>
+      </div>
     `;
   }
 
   renderBlankCondition() {
     return html`
-     <div class="filterrow">
-      <sl-select id="choose_field" class="cond-field-menu" size="small"
+      <div class="filterrow">
+        <sl-select
+          id="choose_field"
+          class="cond-field-menu"
+          size="small"
           placeholder="Select field name"
-              @sl-change="${this.addFilterCondition}">
-       ${QUERIABLE_FIELDS.map((item) => html`
-         <sl-menu-item value="${item.name}">
-           ${item.display}
-         </sl-menu-item>
-        `)}
-      </sl-select>
-     </div>
+          @sl-change="${this.addFilterCondition}"
+        >
+          ${QUERIABLE_FIELDS.map(
+            (item) => html`
+              <sl-menu-item value="${item.name}" size="small">
+                ${item.display}
+              </sl-menu-item>
+            `
+          )}
+        </sl-select>
+      </div>
     `;
   }
 
@@ -439,23 +513,27 @@ class ChromedashFeatureFilter extends LitElement {
     const newFilterConditions = [...this.filterConditions, newCond];
     this.filterConditions = newFilterConditions;
     // Reset the choose_field menu so user can add another.
-    this.shadowRoot.querySelector('#choose_field').value = null;
+    this.shadowRoot.querySelector("#choose_field").value = null;
   }
-
 
   renderFilterWidgets() {
     return html`
       <div id="filterwidgets">
-       ${this.filterConditions.map((cond, index) =>
-      this.renderFilterRow(cond, index))}
-       ${this.renderBlankCondition()}
+        ${this.filterConditions.map((cond, index) =>
+          this.renderFilterRow(cond, index)
+        )}
+        ${this.renderBlankCondition()}
 
-       <div class="filterrow">
-        <sl-button class="searchbutton" variant="primary" size="small"
-          @click="${this.handleFilterClick}">
-          Search
-        </sl-button>
-       </div>
+        <div class="filterrow">
+          <sl-button
+            class="searchbutton"
+            variant="primary"
+            size="small"
+            @click="${this.handleFilterClick}"
+          >
+            Search
+          </sl-button>
+        </div>
       </div>
     `;
   }
@@ -468,5 +546,4 @@ class ChromedashFeatureFilter extends LitElement {
   }
 }
 
-
-customElements.define('chromedash-feature-filter', ChromedashFeatureFilter);
+customElements.define("chromedash-feature-filter", ChromedashFeatureFilter);
