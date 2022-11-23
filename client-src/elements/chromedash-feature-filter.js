@@ -420,8 +420,8 @@ class ChromedashFeatureFilter extends LitElement {
           <sl-select size="small" placeholder="Select a field value"
                 @sl-change="${(e) => this.handleChangeValue(e.target.value, index)}">
             ${Object.values(field.choices).map(
-              ([value, label]) => html`
-                <sl-menu-item value="${value}"> ${label} </sl-menu-item>
+              (val) => html`
+                <sl-menu-item value="${val[1]}"> ${val[1]} </sl-menu-item>
               `,
             )}
           </sl-select>
