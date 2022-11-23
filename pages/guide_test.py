@@ -175,6 +175,24 @@ class FeatureEditHandlerTest(testing_config.CustomTestCase):
       # intent_state is a select, but it was not present in this POST.
       self.assertFalse(self.handler.touched('select'))
 
+  def test_touched__multiselects(self):
+    """For now, any multi-select listed in form_fields is considered touched."""
+    # Field is in this form and the user selected a value.
+    with test_app.test_request_context(
+        'path', data={'form_fields': 'rollout_platforms',
+                      'rollout_platforms': 'iOS'}):
+      self.assertTrue(self.handler.touched('rollout_platforms'))
+
+    # Field in is this form and no value was selected
+    with test_app.test_request_context(
+        'path', data={'form_fields': 'rollout_platforms'}):
+      self.assertTrue(self.handler.touched('rollout_platforms'))
+
+    # rollout_platforms is not part of this form
+    with test_app.test_request_context(
+        'path', data={'form_fields': 'other,fields'}):
+      self.assertFalse(self.handler.touched('rollout_platforms'))
+
   def test_post__anon(self):
     """Anon cannot edit features, gets a 403."""
     testing_config.sign_out()
