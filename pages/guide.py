@@ -227,6 +227,8 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
       'privacy_review_status', 'tag_review_status', 'safari_views', 'ff_views',
       'web_dev_views', 'blink_components', 'impl_status_chrome'])
 
+  MULTI_SELECT_FIELDS: frozenset[str] = frozenset(['rollout_platforms'])
+
   def touched(self, param_name: str) -> bool:
     """Return True if the user edited the specified field."""
     # TODO(jrobbins): for now we just consider everything on the current form
@@ -234,9 +236,10 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
     # hidden form field named "touched" that lists the names of all fields
     # actually touched by the user.
 
-    # For now, checkboxes are always considered "touched", if they are
-    # present on the form.
-    if param_name in self.CHECKBOX_FIELDS:
+    # For now, checkboxes and multi-selects are always considered "touched",
+    # if they are present on the form.
+    if (param_name in self.CHECKBOX_FIELDS or
+        param_name in self.MULTI_SELECT_FIELDS):
       form_fields_str = self.form.get('form_fields')
       if form_fields_str:
         form_fields = [field_name.strip()
