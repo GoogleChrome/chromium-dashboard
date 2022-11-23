@@ -38,6 +38,12 @@ def single_field_query_async(
     # It is a query on a field in FeatureEntry.
     query = FeatureEntry.query()
     field = QUERIABLE_FIELDS[field_name]
+    if core_enums.is_enum_field(field_name):
+      enum_val = core_enums.convert_enum_string_to_int(field_name, val)
+      if enum_val < 0:
+        logging.warning('Cannot find enum %r:%r', field_name, val)
+        return []
+      val = enum_val
   elif field_name in STAGE_QUERIABLE_FIELDS:
     # It is a query on a field in Stage.
     query = Stage.query()
