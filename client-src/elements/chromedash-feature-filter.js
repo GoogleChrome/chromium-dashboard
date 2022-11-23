@@ -415,11 +415,24 @@ class ChromedashFeatureFilter extends LitElement {
     const inputType = FIELD_TYPE_TO_INPUT_TYPE[field && field.type] || 'text';
 
     if (cond.op == EQ_OP) {
-      return html`
-        <sl-input type="${inputType}" value="${cond.value || ''}" size="small"
-               @sl-change="${(e) => this.handleChangeValue(e.target.value, index)}">
-        </sl-input>
-        `;
+      if (inputType == ENUM_TYPE) {
+        return html`
+          <sl-select size="small" placeholder="Select a field value"
+                @sl-change="${(e) => this.handleChangeValue(e.target.value, index)}">
+            ${Object.values(field.choices).map(
+              ([value, label]) => html`
+                <sl-menu-item value="${value}"> ${label} </sl-menu-item>
+              `,
+            )}
+          </sl-select>
+          `;
+      } else {
+        return html`
+          <sl-input type="${inputType}" value="${cond.value || ''}" size="small"
+                @sl-change="${(e) => this.handleChangeValue(e.target.value, index)}">
+          </sl-input>
+          `;
+      }
     }
 
     if (cond.op == BETWEEN_OP) {
@@ -480,7 +493,7 @@ class ChromedashFeatureFilter extends LitElement {
     return html`
      <div class="filterrow">
       <sl-select id="choose_field" class="cond-field-menu" size="small"
-          placeholder="Select field name"
+          placeholder="Select a field name"
               @sl-change="${this.addFilterCondition}">
        ${QUERIABLE_FIELDS.map((item) => html`
          <sl-menu-item value="${item.name}">
