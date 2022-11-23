@@ -116,6 +116,10 @@ export class ChromedashFeaturePage extends LitElement {
     this.fetchData();
   }
 
+  isFeatureLoaded() {
+    return this.feature && Object.keys(this.feature).length !== 0;
+  }
+
   fetchData() {
     this.loading = true;
     Promise.all([
@@ -137,8 +141,20 @@ export class ChromedashFeaturePage extends LitElement {
         document.title = `${this.feature.name} - ${this.appTitle}`;
       }
       this.loading = false;
-    }).catch(() => {
-      showToastMessage('Some errors occurred. Please refresh the page or try again later.');
+    }).catch((error) => {
+      // Cannot import the type currently with rollup when doing:
+      // import {FeatureNotFoundError} from '../js-src/cs-client';
+      // Will get:
+      //    RollupError: "FeatureNotFoundError" is not exported by
+      //    "client-src/js-src/cs-client.js", imported by
+      //    "client-src/elements/chromedash-feature-page.js"
+      // For now, compare the name.
+      if (error.name && error.name === 'FeatureNotFoundError') {
+        this.loading = false;
+        showToastMessage('Feature not found.');
+      } else {
+        showToastMessage('Some errors occurred. Please refresh the page or try again later.');
+      }
     });
   }
 
@@ -452,14 +468,16 @@ export class ChromedashFeaturePage extends LitElement {
     return html`
       ${this.loading ?
         this.renderSkeletons() :
-        html`
-          ${this.renderSubHeader()}
-          <div id="feature">
-            ${this.renderFeatureContent()}
-            ${this.renderFeatureStatus()}
-          </div>
-          ${this.renderFeatureDetails()}
-      `}
+        this.isFeatureLoaded() ?
+          html`
+            ${this.renderSubHeader()}
+            <div id="feature">
+              ${this.renderFeatureContent()}
+              ${this.renderFeatureStatus()}
+            </div>
+            ${this.renderFeatureDetails()}
+            ` :
+          html``}
     `;
   }
 }
