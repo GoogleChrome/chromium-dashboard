@@ -489,9 +489,12 @@ PROPERTY_NAMES_TO_ENUM_DICTS = {
     'standard_maturity': STANDARD_MATURITY_CHOICES,
     'standardization': STANDARDIZATION,
     'ff_views': VENDOR_VIEWS,
+    'browsers.ff.view': VENDOR_VIEWS,
     'ie_views': VENDOR_VIEWS,
     'safari_views': VENDOR_VIEWS,
+    'browsers.safari.view': VENDOR_VIEWS,
     'web_dev_views': WEB_DEV_VIEWS,
+    'browsers.webdev.view': WEB_DEV_VIEWS,
     'rollout_platforms': PLATFORM_CATEGORIES,
   }
 
@@ -518,5 +521,4 @@ def convert_enum_string_to_int(property_name, value):
 
 
 def is_enum_field(property_name):
-  enum_dict = PROPERTY_NAMES_TO_ENUM_DICTS.get(property_name, {})
-  return bool(enum_dict)
+  return property_name in PROPERTY_NAMES_TO_ENUM_DICTS

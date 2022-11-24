@@ -240,8 +240,6 @@ QUERIABLE_FIELDS: dict[str, Property] = {
     'standards.anticipated_spec_changes':
         FeatureEntry.anticipated_spec_changes,
 
-    'browsers.safari.view': FeatureEntry.safari_views,
-    'browsers.webdev.view': FeatureEntry.web_dev_views,
     'browsers.ff.view.url': FeatureEntry.ff_views_link,
     'browsers.safari.view.url': FeatureEntry.safari_views_link,
     'browsers.webdev.view.url': FeatureEntry.web_dev_views_link,
@@ -264,11 +262,9 @@ QUERIABLE_FIELDS: dict[str, Property] = {
     'security_review_status': FeatureEntry.security_review_status,
     'privacy_review_status': FeatureEntry.privacy_review_status,
     'standards.maturity': FeatureEntry.standard_maturity,
-    'standardization': FeatureEntry.standardization,
     'browsers.ff.view': FeatureEntry.ff_views,
-    'ie_views': FeatureEntry.ie_views,
-    'safari_views': FeatureEntry.safari_views,
-    'web_dev_views': FeatureEntry.web_dev_views,
+    'browsers.safari.view': FeatureEntry.safari_views,
+    'browsers.webdev.view': FeatureEntry.web_dev_views,
     'rollout_platforms': FeatureEntry.rollout_platforms,
 }
 
