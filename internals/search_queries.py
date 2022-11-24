@@ -265,7 +265,6 @@ QUERIABLE_FIELDS: dict[str, Property] = {
     'browsers.ff.view': FeatureEntry.ff_views,
     'browsers.safari.view': FeatureEntry.safari_views,
     'browsers.webdev.view': FeatureEntry.web_dev_views,
-    'rollout_platforms': FeatureEntry.rollout_platforms,
 }
 
 
