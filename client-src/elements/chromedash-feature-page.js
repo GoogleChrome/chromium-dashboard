@@ -465,19 +465,22 @@ export class ChromedashFeaturePage extends LitElement {
   render() {
     // TODO: create another element - chromedash-feature-highlights
     // for all the content of the <div id="feature"> part of the page
+    // If loading, only render the skeletons.
+    if (this.loading) {
+      return this.renderSkeletons();
+    }
+    // If after loading, the feature did not load, render nothing.
+    if (!this.isFeatureLoaded()) {
+      return html ``;
+    }
+    // At this point, the feature has loaded successfully, render the components.
     return html`
-      ${this.loading ?
-        this.renderSkeletons() :
-        this.isFeatureLoaded() ?
-          html`
-            ${this.renderSubHeader()}
-            <div id="feature">
-              ${this.renderFeatureContent()}
-              ${this.renderFeatureStatus()}
-            </div>
-            ${this.renderFeatureDetails()}
-            ` :
-          html``}
+      ${this.renderSubHeader()}
+      <div id="feature">
+        ${this.renderFeatureContent()}
+        ${this.renderFeatureStatus()}
+      </div>
+      ${this.renderFeatureDetails()}
     `;
   }
 }
