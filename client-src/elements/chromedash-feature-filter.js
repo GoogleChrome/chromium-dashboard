@@ -117,7 +117,6 @@ const QUERIABLE_FIELDS = [
   // 'security_review_status': Feature.security_review_status,
   // 'privacy_review_status': Feature.privacy_review_status,
   // 'tag_review.url': Feature.tag_review,
-  // 'tag_review.status': Feature.tag_review_status,
   // 'explainer': Feature.explainer_links,
 
   // 'resources.docs': Feature.doc_links,

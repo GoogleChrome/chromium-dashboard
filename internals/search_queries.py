@@ -260,7 +260,7 @@ QUERIABLE_FIELDS: dict[str, Property] = {
     'impl_status_chrome': FeatureEntry.impl_status_chrome,
     'security_review_status': FeatureEntry.security_review_status,
     'privacy_review_status': FeatureEntry.privacy_review_status,
-    'tag_review.status': FeatureEntry.tag_review_status,
+    'tag_review_status': FeatureEntry.tag_review_status,
     'standards.maturity': FeatureEntry.standard_maturity,
     'browsers.ff.view': FeatureEntry.ff_views,
     'browsers.safari.view': FeatureEntry.safari_views,
