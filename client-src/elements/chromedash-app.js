@@ -177,6 +177,12 @@ class ChromedashApp extends LitElement {
     page('/metrics/css/timeline/animated', () => page.redirect('/metrics/css/animated'));
     page('/metrics/feature/timeline/popularity', () =>
       page.redirect('/metrics/feature/popularity'));
+    page('/enterprise', (ctx) => {
+      this.pageComponent = document.createElement('chromedash-enterprise-page');
+      this.pageComponent.user = this.user;
+      this.contextLink = ctx.path;
+      this.currentPage = ctx.path;
+    });
     page.start();
   }
 

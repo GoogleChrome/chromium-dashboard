@@ -209,6 +209,7 @@ QUERIABLE_FIELDS: dict[str, Property] = {
     'intent_stage': FeatureEntry.intent_stage,
     'browsers.chrome.bug': FeatureEntry.bug_url,
     'launch_bug_url': FeatureEntry.launch_bug_url,
+    'breaking_change': FeatureEntry.breaking_change,
 
     'browsers.chrome.status': FeatureEntry.impl_status_chrome,
     'browsers.chrome.flag_name': FeatureEntry.flag_name,
