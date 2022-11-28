@@ -270,7 +270,7 @@ class Gate(ndb.Model):  # copy from ApprovalConfig
   stage_id = ndb.IntegerProperty(required=True)
   gate_type = ndb.IntegerProperty(required=True)  # copy from field_id
 
-  # Calulated from Vote staes.  Can be one of Vote states or PREPARING.
+  # Calculated from Vote states.  Can be one of Vote states or PREPARING.
   state = ndb.IntegerProperty(required=True)
   # The datetime of the first vote on this gate.
   requested_on = ndb.DateTimeProperty()

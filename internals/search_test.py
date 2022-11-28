@@ -157,7 +157,8 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
     now = datetime.datetime.now()
     mock_approvable_by.return_value = set()
 
-    feature_ids = search.process_pending_approval_me_query()
+    future = search.process_pending_approval_me_query()
+    feature_ids = search._resolve_promise_to_id_list(future)
 
     self.assertEqual(0, len(feature_ids))
 
@@ -173,7 +174,8 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
         field_id=1, state=review_models.Approval.REVIEW_REQUESTED,
         set_by='feature_owner@example.com', set_on=now).put()
 
-    feature_ids = search.process_pending_approval_me_query()
+    future = search.process_pending_approval_me_query()
+    feature_ids = search._resolve_promise_to_id_list(future)
 
     self.assertEqual(0, len(feature_ids))
 
@@ -194,7 +196,8 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
         field_id=1, state=review_models.Approval.REVIEW_REQUESTED,
         set_by='feature_owner@example.com', set_on=time_2).put()
 
-    feature_ids = search.process_pending_approval_me_query()
+    future = search.process_pending_approval_me_query()
+    feature_ids = search._resolve_promise_to_id_list(future)
     self.assertEqual(2, len(feature_ids))
     # Results are sorted by set_on timestamp.
     self.assertEqual(
@@ -219,7 +222,8 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
         field_id=1, state=review_models.Approval.NEEDS_WORK,
         set_by='feature_owner@example.com', set_on=time_2).put()
 
-    feature_ids = search.process_pending_approval_me_query()
+    future = search.process_pending_approval_me_query()
+    feature_ids = search._resolve_promise_to_id_list(future)
     self.assertEqual(1, len(feature_ids))
     # Results are sorted by set_on timestamp, but there is only one.
     self.assertEqual(
@@ -253,9 +257,10 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
     mock_approvable_by.return_value = set({1, 2, 3})
     mock_get_approvals.return_value = []
 
-    actual = search.process_recent_reviews_query()
+    future = search.process_recent_reviews_query()
+    feature_ids = search._resolve_promise_to_id_list(future)
 
-    self.assertEqual(0, len(actual))
+    self.assertEqual(0, len(feature_ids))
 
   @mock.patch('internals.review_models.Approval.get_approvals')
   @mock.patch('internals.approval_defs.fields_approvable_by')
@@ -274,11 +279,14 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
             field_id=1, state=review_models.Approval.APPROVED, set_on=time_1),
     ]
 
-    actual = search.process_recent_reviews_query()
+    future = search.process_recent_reviews_query()
+    feature_ids = search._resolve_promise_to_id_list(future)
 
-    self.assertEqual(2, len(actual))
-    self.assertEqual(actual[0], self.feature_1.key.integer_id())  # Most recent
-    self.assertEqual(actual[1], self.feature_2.key.integer_id())
+    self.assertEqual(2, len(feature_ids))
+    self.assertEqual(
+        feature_ids[0], self.feature_1.key.integer_id())  # Most recent
+    self.assertEqual(
+        feature_ids[1], self.feature_2.key.integer_id())
 
   def test_sort_by_total_order__empty(self):
     """Sorting an empty list works."""
