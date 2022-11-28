@@ -142,14 +142,7 @@ export class ChromedashFeaturePage extends LitElement {
       }
       this.loading = false;
     }).catch((error) => {
-      // Cannot import the type currently with rollup when doing:
-      // import {FeatureNotFoundError} from '../js-src/cs-client';
-      // Will get:
-      //    RollupError: "FeatureNotFoundError" is not exported by
-      //    "client-src/js-src/cs-client.js", imported by
-      //    "client-src/elements/chromedash-feature-page.js"
-      // For now, compare the name.
-      if (error.name && error.name === 'FeatureNotFoundError') {
+      if (error instanceof FeatureNotFoundError) {
         this.loading = false;
         showToastMessage('Feature not found.');
       } else {
