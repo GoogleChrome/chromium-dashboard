@@ -29,7 +29,8 @@ def _get_changes_as_amendments(
   amendments = []
   for field, old_val, new_val in changed_fields:
     if new_val != old_val:
-      if (new_val == '' or new_val == False) and old_val is None:
+      # Don't log if the old value was null and now it's falsey.
+      if old_val is None and not bool(new_val):
         continue
       amendments.append(
           review_models.Amendment(field_name=field,
