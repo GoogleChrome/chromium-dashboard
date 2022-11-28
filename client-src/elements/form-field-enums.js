@@ -22,10 +22,32 @@ export const FEATURE_CATEGORIES = {
   CSS: [15, 'CSS'],
   HOUDINI: [16, 'Houdini'],
   SERVICEWORKER: [17, 'Service Worker'],
-  WEBRTC: [18, 'Web RTC'],
+  WEBRTC: [18, 'WebRTC'],
   LAYERED: [19, 'Layered APIs'],
   WEBASSEMBLY: [20, 'WebAssembly'],
   CAPABILITIES: [21, 'Capabilities (Fugu)'],
+};
+
+export const PLATFORM_CATEGORIES = {
+  PLATFORM_ANDROID: [1, 'Android'],
+  PLATFORM_IOS: [2, 'iOS'],
+  PLATFORM_CHROMEOS: [3, 'Chrome OS'],
+  PLATFORM_LACROS: [4, 'LaCrOS'],
+  PLATFORM_LINUX: [5, 'Linux'],
+  PLATFORM_MAC: [6, 'Mac'],
+  PLATFORM_WINDOWS: [7, 'Windows'],
+  PLATFORM_FUCHSIA: [8, 'Fuchsia'],
+};
+
+export const PLATFORMS_DISPLAYNAME = {
+  1: 'Android', // PLATFORM_ANDROID
+  2: 'iOS', // PLATFORM_IOS
+  3: 'Chrome OS', // PLATFORM_CHROMEOS
+  4: 'LaCrOS', // PLATFORM_LACROS
+  5: 'Linux', // PLATFORM_LINUX
+  6: 'Mac', // PLATFORM_MAC
+  7: 'Windows', // PLATFORM_WINDOWS
+  8: 'Fuchsia', // PLATFORM_FUCHSIA
 };
 
 // FEATURE_TYPES object is organized as [intValue, stringLabel, description],
@@ -42,6 +64,8 @@ export const FEATURE_TYPES = {
     'This type of feature entry can be referenced from a PSA immediately.'],
   FEATURE_TYPE_DEPRECATION_ID: [3, 'Feature deprecation',
     'Deprecate and remove an old feature.'],
+  FEATURE_TYPE_ENTERPRISE_ID: [4, 'New Feature or removal affecting enterprises',
+    'For features or changes that need to be communicated to enterprises or schools.'],
 };
 
 export const INTENT_STAGES = {

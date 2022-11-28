@@ -62,6 +62,7 @@ class FeatureCreateHandler(basehandlers.FlaskHandler):
         creator=signed_in_user.email(),
         accurate_as_of=datetime.now(),
         unlisted=self.form.get('unlisted') == 'on',
+        breaking_change=self.form.get('breaking_change') == 'on',
         blink_components=blink_components,
         tag_review_status=processes.initial_tag_review_status(feature_type),
         created_by=signed_in_user,
@@ -82,6 +83,7 @@ class FeatureCreateHandler(basehandlers.FlaskHandler):
         updater_email=signed_in_user.email(),
         accurate_as_of=datetime.now(),
         unlisted=self.form.get('unlisted') == 'on',
+        breaking_change=self.form.get('breaking_change') == 'on',
         blink_components=blink_components,
         tag_review_status=processes.initial_tag_review_status(feature_type))
     feature_entry.put()
@@ -185,6 +187,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
       ('tag_review_status', 'int'),
       ('webview_risks', 'str'),
       ('comments', 'str'),
+      ('breaking_change', 'bool'),
       ('ongoing_constraints', 'str')]
 
   # Old field name, new field name
@@ -208,16 +211,23 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
       ('finch_url', 'link'),
       ('experiment_goals', 'str'),
       ('experiment_risks', 'str'),
-      ('experiment_extension_reason', 'str')]
+      ('experiment_extension_reason', 'str'),
+      ('rollout_milestone', 'int'),
+      ('rollout_platforms', 'split_str'),
+      ('rollout_details', 'str'),
+      ('enterprise_policies', 'split_str'),
+      ]
 
   CHECKBOX_FIELDS: frozenset[str] = frozenset([
       'accurate_as_of', 'unlisted', 'api_spec', 'all_platforms',
-      'wpt', 'requires_embedder_support', 'prefixed'])
+      'wpt', 'requires_embedder_support', 'prefixed', 'breaking_change'])
 
   SELECT_FIELDS: frozenset[str] = frozenset([
       'category', 'intent_stage', 'standard_maturity', 'security_review_status',
       'privacy_review_status', 'tag_review_status', 'safari_views', 'ff_views',
       'web_dev_views', 'blink_components', 'impl_status_chrome'])
+
+  MULTI_SELECT_FIELDS: frozenset[str] = frozenset(['rollout_platforms'])
 
   def touched(self, param_name: str) -> bool:
     """Return True if the user edited the specified field."""
@@ -226,9 +236,10 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
     # hidden form field named "touched" that lists the names of all fields
     # actually touched by the user.
 
-    # For now, checkboxes are always considered "touched", if they are
-    # present on the form.
-    if param_name in self.CHECKBOX_FIELDS:
+    # For now, checkboxes and multi-selects are always considered "touched",
+    # if they are present on the form.
+    if (param_name in self.CHECKBOX_FIELDS or
+        param_name in self.MULTI_SELECT_FIELDS):
       form_fields_str = self.form.get('form_fields')
       if form_fields_str:
         form_fields = [field_name.strip()
@@ -261,7 +272,9 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
       return self.form.get(field)
     elif field_type == 'split_str':
       val = self.split_input(field, delim=',')
-      if field == 'blink_components' and len(val) == 0:
+      if field == 'rollout_platforms':
+        val = self.form.getlist(field)
+      elif field == 'blink_components' and len(val) == 0:
         return [settings.DEFAULT_COMPONENT]
       return val
     raise ValueError(f'Unknown field data type: {field_type}')
