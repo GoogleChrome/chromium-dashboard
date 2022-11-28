@@ -514,7 +514,7 @@ def convert_enum_int_to_string(property_name, value):
 def convert_enum_string_to_int(property_name, value):
   """If the property is an enum, return its enum value, else -1."""
   enum_dict = PROPERTY_NAMES_TO_ENUM_DICTS.get(property_name, {})
-  for index, enum_str in enumerate(enum_dict):
+  for index, enum_str in enum_dict.items():
     if enum_str == value:
       return index
   return -1

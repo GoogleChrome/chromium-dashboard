@@ -362,15 +362,15 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
         [f['name'] for f in actual],
         ['feature 1', 'feature 2'])
 
-    actual, tc = search.process_query('category=1')
+    actual, tc = search.process_query('category="Web Components"')
     self.assertEqual(1, len(actual))
     self.assertEqual(actual[0]['name'], 'feature 1')
 
-    actual, tc = search.process_query('category=2')
+    actual, tc = search.process_query('category=Miscellaneous')
     self.assertEqual(1, len(actual))
     self.assertEqual(actual[0]['name'], 'feature 2')
 
-    actual, tc = search.process_query('category="2"')
+    actual, tc = search.process_query('category="Miscellaneous"')
     self.assertEqual(1, len(actual))
     self.assertEqual(actual[0]['name'], 'feature 2')
 
@@ -378,7 +378,7 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
     self.assertEqual(1, len(actual))
     self.assertEqual(actual[0]['name'], 'feature 2')
 
-    actual, tc = search.process_query('browsers.webdev.view=1')
+    actual, tc = search.process_query('browsers.webdev.view="Strongly positive"')
     self.assertEqual(2, len(actual))
     self.assertCountEqual(
         [f['name'] for f in actual],
@@ -403,18 +403,18 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
     self.assertEqual([], actual)
 
     actual, tc = search.process_query(
-        'category=1 category=3', show_unlisted=True)
+        'category="Web Components" category=Security', show_unlisted=True)
     self.assertEqual([], actual)
 
     actual, tc = search.process_query(
-        'category=1 OR category=3', show_unlisted=True)
+        'category="Web Components" OR category=Security', show_unlisted=True)
     self.assertEqual(2, len(actual))
     self.assertCountEqual(
         [f['name'] for f in actual],
         ['feature 1', 'feature 3'])
 
     actual, tc = search.process_query(
-        'category=1 OR category=3', show_deleted=True)
+        'category="Web Components" OR category=Security', show_deleted=True)
     self.assertEqual(1, len(actual))
     self.assertCountEqual(
         [f['name'] for f in actual],
@@ -423,15 +423,15 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
   def test_process_query__negated_single_field(self):
     """We can can run single-field queries."""
 
-    actual, tc = search.process_query('-category=1')
+    actual, tc = search.process_query('-category="Web Components"')
     self.assertEqual(1, len(actual))
     self.assertEqual(actual[0]['name'], 'feature 2')
 
-    actual, tc = search.process_query('-category=2')
+    actual, tc = search.process_query('-category=Miscellaneous')
     self.assertEqual(1, len(actual))
     self.assertEqual(actual[0]['name'], 'feature 1')
 
-    actual, tc = search.process_query('-category="2"')
+    actual, tc = search.process_query('-category="Miscellaneous"')
     self.assertEqual(1, len(actual))
     self.assertEqual(actual[0]['name'], 'feature 1')
 
@@ -439,38 +439,44 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
     self.assertEqual(1, len(actual))
     self.assertEqual(actual[0]['name'], 'feature 1')
 
-    actual, tc = search.process_query('-browsers.webdev.view=1')
+    actual, tc = search.process_query('-browsers.webdev.view="Strongly positive"')
     self.assertEqual(0, len(actual))
 
   def test_process_query__multiple_fields(self):
     """We can can run multi-field queries."""
 
-    actual, tc = search.process_query('category=1 category=2')
+    actual, tc = search.process_query(
+        'category="Web Components" category=Miscellaneous')
     self.assertEqual([], actual)
 
-    actual, tc = search.process_query('category=1 OR category=2')
-    self.assertEqual(2, len(actual))
-    self.assertCountEqual(
-        [f['name'] for f in actual],
-        ['feature 1', 'feature 2'])
-
-    actual, tc = search.process_query('category=1 -category=2')
-    self.assertEqual(1, len(actual))
-    self.assertEqual(actual[0]['name'], 'feature 1')
-
-    actual, tc = search.process_query('browsers.webdev.view=1 -category=2')
-    self.assertEqual(1, len(actual))
-    self.assertEqual(actual[0]['name'], 'feature 1')
-
     actual, tc = search.process_query(
-        'browsers.webdev.view=1 -category=2 OR category=2')
+        'category="Web Components" OR category=Miscellaneous')
     self.assertEqual(2, len(actual))
     self.assertCountEqual(
         [f['name'] for f in actual],
         ['feature 1', 'feature 2'])
 
     actual, tc = search.process_query(
-        'browsers.webdev.view=1 -category=2 OR category=1 -category=2')
+        'category="Web Components" -category=Miscellaneous')
+    self.assertEqual(1, len(actual))
+    self.assertEqual(actual[0]['name'], 'feature 1')
+
+    actual, tc = search.process_query(
+        'browsers.webdev.view="Strongly positive" -category=Miscellaneous')
+    self.assertEqual(1, len(actual))
+    self.assertEqual(actual[0]['name'], 'feature 1')
+
+    actual, tc = search.process_query(
+        'browsers.webdev.view="Strongly positive" '
+        '-category=Miscellaneous OR category=Miscellaneous')
+    self.assertEqual(2, len(actual))
+    self.assertCountEqual(
+        [f['name'] for f in actual],
+        ['feature 1', 'feature 2'])
+
+    actual, tc = search.process_query(
+        'browsers.webdev.view="Strongly positive" -category=Miscellaneous '
+        'OR category="Web Components" -category=Miscellaneous')
     self.assertEqual(1, len(actual))
     self.assertEqual(actual[0]['name'], 'feature 1')
 
