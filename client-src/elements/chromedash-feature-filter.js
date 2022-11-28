@@ -1,5 +1,17 @@
 import {LitElement, css, html, nothing} from 'lit';
 import {SHARED_STYLES} from '../sass/shared-css.js';
+import {
+  FEATURE_CATEGORIES,
+  FEATURE_TYPES,
+  IMPLEMENTATION_STATUS,
+  INTENT_STAGES,
+  // PLATFORM_CATEGORIES,
+  STANDARD_MATURITY_CHOICES,
+  REVIEW_STATUS_CHOICES,
+  VENDOR_VIEWS_COMMON,
+  VENDOR_VIEWS_GECKO,
+  WEB_DEV_VIEWS,
+} from './form-field-enums';
 
 const ENTER_KEY_CODE = 13;
 
@@ -11,12 +23,12 @@ const TEXT_TYPE = 'text';
 const NUM_TYPE = 'number';
 const DATE_TYPE = 'date';
 const EMAIL_TYPE = 'email';
-// const ENUM_TYPE = 'enum';
+const ENUM_TYPE = 'enum';
 // const BOOL_TYPE = 'bool';
 
 // This works around a lint warning for <input type="${inputType}">.
 const FIELD_TYPE_TO_INPUT_TYPE = {
-  text: 'text', number: 'number', date: 'date', email: 'email',
+  text: 'text', number: 'number', date: 'date', email: 'email', enum: 'enum',
 };
 
 
@@ -27,7 +39,7 @@ AVAILABLE_OPS[NUM_TYPE] = [BETWEEN_OP, EQ_OP];
 AVAILABLE_OPS[DATE_TYPE] = [BETWEEN_OP];
 // TODO: CONTAINS_OP is yet supported in EMAIL_TYPE.
 AVAILABLE_OPS[EMAIL_TYPE] = [EQ_OP];
-// AVAILABLE_OPS[ENUM_TYPE] = [EQ_OP];
+AVAILABLE_OPS[ENUM_TYPE] = [EQ_OP];
 // AVAILABLE_OPS[BOOL_TYPE] = [EQ_OP];
 
 
@@ -108,13 +120,6 @@ const QUERIABLE_FIELDS = [
   // 'tag_review.status': Feature.tag_review_status,
   // 'explainer': Feature.explainer_links,
 
-  // 'browsers.ff.view': Feature.ff_views,
-  // 'browsers.safari.view': Feature.safari_views,
-  // 'browsers.webdev.view': Feature.web_dev_views,
-  // 'browsers.ff.view.url': Feature.ff_views_link,
-  // 'browsers.safari.view.url': Feature.safari_views_link,
-  // 'browsers.webdev.url.url': Feature.web_dev_views_link,
-
   // 'resources.docs': Feature.doc_links,
   // 'non_oss_deps': Feature.non_oss_deps,
 
@@ -144,6 +149,58 @@ const QUERIABLE_FIELDS = [
     type: NUM_TYPE},
   // 'browsers.chrome.ot.feedback_url': Feature.origin_trial_feedback_url,
   // 'finch_url': Feature.finch_url,
+
+  // TODO(kyleju): Use ALL_FIELDS from form-field-specs.js.
+  // Available ENUM fields.
+  {name: 'category',
+    display: 'Feature category',
+    choices: FEATURE_CATEGORIES,
+    type: ENUM_TYPE},
+  {name: 'feature_type',
+    display: 'Feature type',
+    choices: FEATURE_TYPES,
+    type: ENUM_TYPE},
+  {name: 'impl_status_chrome',
+    display: 'Implementation status',
+    choices: IMPLEMENTATION_STATUS,
+    type: ENUM_TYPE},
+  {name: 'intent_stage',
+    display: 'Spec process stage',
+    choices: INTENT_STAGES,
+    type: ENUM_TYPE},
+  // TODO: rollout_platforms is not yet supported.
+  // {name: 'rollout_platforms',
+  //  display: 'Rollout platforms',
+  //  choices: PLATFORM_CATEGORIES,
+  //  type: ENUM_TYPE},
+  {name: 'standard_maturity',
+    display: 'Standard maturity',
+    choices: STANDARD_MATURITY_CHOICES,
+    type: ENUM_TYPE},
+  {name: 'security_review_status',
+    display: 'Security review status',
+    choices: REVIEW_STATUS_CHOICES,
+    type: ENUM_TYPE},
+  {name: 'privacy_review_status',
+    display: 'Privacy review status',
+    choices: REVIEW_STATUS_CHOICES,
+    type: ENUM_TYPE},
+  {name: 'tag_review_status',
+    display: 'TAG Specification Review Status',
+    choices: REVIEW_STATUS_CHOICES,
+    type: ENUM_TYPE},
+  {name: 'browsers.safari.view',
+    display: 'Safari views',
+    choices: VENDOR_VIEWS_COMMON,
+    type: ENUM_TYPE},
+  {name: 'browsers.ff.view',
+    display: 'Firefox views',
+    choices: VENDOR_VIEWS_GECKO,
+    type: ENUM_TYPE},
+  {name: 'browsers.webdev.view',
+    display: 'Web / Framework developer views',
+    choices: WEB_DEV_VIEWS,
+    type: ENUM_TYPE},
 ];
 
 
@@ -352,11 +409,24 @@ class ChromedashFeatureFilter extends LitElement {
     const inputType = FIELD_TYPE_TO_INPUT_TYPE[field && field.type] || 'text';
 
     if (cond.op == EQ_OP) {
-      return html`
-        <sl-input type="${inputType}" value="${cond.value || ''}" size="small"
-               @sl-change="${(e) => this.handleChangeValue(e.target.value, index)}">
-        </sl-input>
-        `;
+      if (inputType == ENUM_TYPE) {
+        return html`
+          <sl-select size="small" placeholder="Select a field value"
+                @sl-change="${(e) => this.handleChangeValue(e.target.value, index)}">
+            ${Object.values(field.choices).map(
+              (val) => html`
+                <sl-menu-item value="${val[1]}"> ${val[1]} </sl-menu-item>
+              `,
+            )}
+          </sl-select>
+          `;
+      } else {
+        return html`
+          <sl-input type="${inputType}" value="${cond.value || ''}" size="small"
+                @sl-change="${(e) => this.handleChangeValue(e.target.value, index)}">
+          </sl-input>
+          `;
+      }
     }
 
     if (cond.op == BETWEEN_OP) {
@@ -417,7 +487,7 @@ class ChromedashFeatureFilter extends LitElement {
     return html`
      <div class="filterrow">
       <sl-select id="choose_field" class="cond-field-menu" size="small"
-          placeholder="Select field name"
+          placeholder="Select a field name"
               @sl-change="${this.addFilterCondition}">
        ${QUERIABLE_FIELDS.map((item) => html`
          <sl-menu-item value="${item.name}">

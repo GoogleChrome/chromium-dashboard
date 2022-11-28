@@ -38,6 +38,12 @@ def single_field_query_async(
     # It is a query on a field in FeatureEntry.
     query = FeatureEntry.query()
     field = QUERIABLE_FIELDS[field_name]
+    if core_enums.is_enum_field(field_name):
+      enum_val = core_enums.convert_enum_string_to_int(field_name, val)
+      if enum_val < 0:
+        logging.warning('Cannot find enum %r:%r', field_name, val)
+        return []
+      val = enum_val
   elif field_name in STAGE_QUERIABLE_FIELDS:
     # It is a query on a field in Stage.
     query = Stage.query()
@@ -198,7 +204,6 @@ QUERIABLE_FIELDS: dict[str, Property] = {
 
     'name': FeatureEntry.name,
     'summary': FeatureEntry.summary,
-    'category': FeatureEntry.category,
 
     'browsers.chrome.blink_component': FeatureEntry.blink_components,
     'star_count': FeatureEntry.star_count,
@@ -206,7 +211,6 @@ QUERIABLE_FIELDS: dict[str, Property] = {
     'feature_notes': FeatureEntry.feature_notes,
 
     'feature_type': FeatureEntry.feature_type,
-    'intent_stage': FeatureEntry.intent_stage,
     'browsers.chrome.bug': FeatureEntry.bug_url,
     'launch_bug_url': FeatureEntry.launch_bug_url,
 
@@ -223,7 +227,6 @@ QUERIABLE_FIELDS: dict[str, Property] = {
         FeatureEntry.initial_public_proposal_url,
     'explainer': FeatureEntry.explainer_links,
     'requires_embedder_support': FeatureEntry.requires_embedder_support,
-    'standards.maturity': FeatureEntry.standard_maturity,
     'standards.spec': FeatureEntry.spec_link,
     'api_spec': FeatureEntry.api_spec,
     'spec_mentors': FeatureEntry.spec_mentor_emails,
@@ -237,17 +240,11 @@ QUERIABLE_FIELDS: dict[str, Property] = {
     'standards.anticipated_spec_changes':
         FeatureEntry.anticipated_spec_changes,
 
-    'browsers.ff.view': FeatureEntry.ff_views,
-    'browsers.safari.view': FeatureEntry.safari_views,
-    'browsers.webdev.view': FeatureEntry.web_dev_views,
     'browsers.ff.view.url': FeatureEntry.ff_views_link,
     'browsers.safari.view.url': FeatureEntry.safari_views_link,
     'browsers.webdev.view.url': FeatureEntry.web_dev_views_link,
 
     'security_risks': FeatureEntry.security_risks,
-    'security_review_status': FeatureEntry.security_review_status,
-    'privacy_review_status': FeatureEntry.privacy_review_status,
-
     'ergonomics_risks': FeatureEntry.ergonomics_risks,
     'wpt': FeatureEntry.wpt,
     'wpt_descr': FeatureEntry.wpt_descr,
@@ -257,6 +254,17 @@ QUERIABLE_FIELDS: dict[str, Property] = {
     'debuggability': FeatureEntry.debuggability,
     'resources.doc': FeatureEntry.doc_links,
     'resources.sample': FeatureEntry.sample_links,
+
+    # Enum fields
+    'category': FeatureEntry.category,
+    'intent_stage': FeatureEntry.intent_stage,
+    'impl_status_chrome': FeatureEntry.impl_status_chrome,
+    'security_review_status': FeatureEntry.security_review_status,
+    'privacy_review_status': FeatureEntry.privacy_review_status,
+    'standards.maturity': FeatureEntry.standard_maturity,
+    'browsers.ff.view': FeatureEntry.ff_views,
+    'browsers.safari.view': FeatureEntry.safari_views,
+    'browsers.webdev.view': FeatureEntry.web_dev_views,
 }
 
 
