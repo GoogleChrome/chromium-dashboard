@@ -95,6 +95,21 @@ describe('chromedash-feature-page', () => {
     tags: ['tag_one'],
   });
 
+  // Holds the global toast element.
+  // If `document.querySelector('chromedash-toast');` is used in each test, it
+  // returns a new toast element. However, the toast element that actually used
+  // is the one from the first test.
+  // To fix that, manage a single instance and reset it after every test.
+  // More details: https://github.com/GoogleChrome/chromium-dashboard/pull/2503#issuecomment-1329665602
+  let toastEl;
+  function getToastElement() {
+    if (toastEl) {
+      return toastEl;
+    }
+    toastEl = document.querySelector('chromedash-toast');
+    return toastEl;
+  }
+
   /* window.csClient and <chromedash-toast> are initialized at spa.html
    * which are not available here, so we initialize them before each test.
    * We also stub out the API calls here so that they return test data. */
@@ -122,9 +137,14 @@ describe('chromedash-feature-page', () => {
     window.csClient.getDismissedCues.restore();
     window.csClient.getStars.restore();
     window.csClient.getChannels.restore();
+    getToastElement().reset();
   });
 
   it('renders with no data', async () => {
+    const toastEl = getToastElement();
+    assert.isEmpty(toastEl.msg);
+    assert.isFalse(toastEl.open);
+
     const invalidFeaturePromise = Promise.reject(new Error('Got error response from server'));
     window.csClient.getFeature.withArgs(0).returns(invalidFeaturePromise);
 
@@ -134,10 +154,33 @@ describe('chromedash-feature-page', () => {
     assert.instanceOf(component, ChromedashFeaturePage);
 
     // invalid feature requests would trigger the toast to show message
-    const toastEl = document.querySelector('chromedash-toast');
     const toastMsgSpan = toastEl.shadowRoot.querySelector('span#msg');
-    assert.include(toastMsgSpan.innerHTML,
-      'Some errors occurred. Please refresh the page or try again later.');
+    const expectedToastMsg = 'Some errors occurred. Please refresh the page or try again later.';
+    assert.isTrue(toastEl.open);
+    assert.equal(toastEl.msg, expectedToastMsg);
+    assert.include(toastMsgSpan.innerHTML, expectedToastMsg);
+  });
+
+  it('renders with "No Feature Found" when feature not found', async () => {
+    const toastEl = getToastElement();
+    assert.isEmpty(toastEl.msg);
+    assert.isFalse(toastEl.open);
+
+    const featureNotFoundPromise = Promise.reject(new FeatureNotFoundError(12345));
+    window.csClient.getFeature.withArgs(0).returns(featureNotFoundPromise);
+
+    const component = await fixture(
+      html`<chromedash-feature-page></chromedash-feature-page>`);
+    assert.exists(component);
+    assert.instanceOf(component, ChromedashFeaturePage);
+
+    // If a request for a feature returns stating that it is not found, it
+    // would trigger the toast to show message.
+    const toastMsgSpan = toastEl.shadowRoot.querySelector('span#msg');
+    const expectedToastMsg = 'Feature not found.';
+    assert.isTrue(toastEl.open);
+    assert.equal(toastEl.msg, expectedToastMsg);
+    assert.include(toastMsgSpan.innerHTML, expectedToastMsg);
   });
 
   it('renders with fake data', async () => {
