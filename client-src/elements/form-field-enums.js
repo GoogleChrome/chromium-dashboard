@@ -65,7 +65,7 @@ export const FEATURE_TYPES = {
   FEATURE_TYPE_DEPRECATION_ID: [3, 'Feature deprecation',
     'Deprecate and remove an old feature.'],
   FEATURE_TYPE_ENTERPRISE_ID: [4, 'New Feature or removal affecting enterprises',
-    'For features or changes that need to be communicated to enterprises or schools'],
+    'For features or changes that need to be communicated to enterprises or schools.'],
 };
 
 export const INTENT_STAGES = {
@@ -79,6 +79,7 @@ export const INTENT_STAGES = {
   INTENT_REMOVED: [6, 'Removed'],
   INTENT_SHIPPED: [8, 'Shipped'],
   INTENT_PARKED: [9, 'Parked'],
+  INTENT_ROLLOUT: [10, 'Rollout'],
 };
 
 export const IMPLEMENTATION_STATUS = {

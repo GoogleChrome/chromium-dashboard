@@ -112,6 +112,7 @@ INTENT_SHIP = 5  # Prepare to ship
 INTENT_REMOVED = 6
 INTENT_SHIPPED = 8
 INTENT_PARKED = 9
+INTENT_ROLLOUT = 10
 
 INTENT_STAGES = collections.OrderedDict([
   (INTENT_NONE, 'None'),
@@ -123,6 +124,7 @@ INTENT_STAGES = collections.OrderedDict([
   (INTENT_SHIP, 'Prepare to ship'),
   (INTENT_REMOVED, 'Removed'),
   (INTENT_SHIPPED, 'Shipped'),
+  (INTENT_ROLLOUT, 'Rollout'),
   (INTENT_PARKED, 'Parked'),
 ])
 
