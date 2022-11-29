@@ -241,6 +241,7 @@ export const FLAT_FORMS_BY_FEATURE_TYPE = {
     ['Ship', FLAT_SHIP_FIELDS],
   ],
   [FEATURE_TYPES.FEATURE_TYPE_ENTERPRISE_ID[0]]: [
+    ['Feature metadata', FLAT_METADATA_FIELDS],
     ['Start feature rollout', FLAT_ENTERPRISE_PREPARE_TO_SHIP],
     ['Ship', FLAT_SHIP_FIELDS],
   ],
