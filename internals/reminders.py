@@ -121,7 +121,7 @@ class AbstractReminderHandler(basehandlers.FlaskHandler):
           milestones = stage.milestones
           m = (None if milestones is None
               else getattr(milestones,
-                  OLD_FEATURE_FIELDS_TO_NEW_MILESTONE_FIELDS[field]))
+                  core_models.MilestoneSet.MILESTONE_FIELD_MAPPING[field]))
           if m is not None and m >= min_mstone and m <= max_mstone:
             if min_milestone is None:
               min_milestone = m
