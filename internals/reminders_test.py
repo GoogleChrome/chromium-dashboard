@@ -100,7 +100,8 @@ class FunctionTest(testing_config.CustomTestCase):
     self.maxDiff = None
   
   def tearDown(self) -> None:
-    for kind in [Feature, FeatureEntry, Stage]:
+    kinds: list[ndb.Model] = [Feature, FeatureEntry, Stage]
+    for kind in kinds:
       for entity in kind.query():
         entity.key.delete()
 

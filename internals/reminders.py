@@ -24,8 +24,7 @@ from framework import basehandlers
 from internals import core_models
 from internals import notifier
 from internals import stage_helpers
-from internals.core_enums import (
-    STAGE_TYPES_BY_FIELD_MAPPING, OLD_FEATURE_FIELDS_TO_NEW_MILESTONE_FIELDS)
+from internals.core_enums import STAGE_TYPES_BY_FIELD_MAPPING
 import settings
 
 
