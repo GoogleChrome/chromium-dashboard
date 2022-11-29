@@ -42,10 +42,11 @@ def process_pending_approval_me_query() -> list[int]:
     return []
 
   approvable_gate_types = approval_defs.fields_approvable_by(user)
+  if not approvable_gate_types:
+    return []
   query = review_models.Gate.query(
       review_models.Gate.state.IN(review_models.Gate.PENDING_STATES),
       review_models.Gate.gate_type.IN(approvable_gate_types))
-  logging.info('query is %r', query)
   future_feature_ids = query.fetch_async(projection=['feature_id'])
   return future_feature_ids
 

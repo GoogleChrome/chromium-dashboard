@@ -119,7 +119,7 @@ class FeatureCreateHandler(basehandlers.FlaskHandler):
         if gate_type == core_enums.GATE_ORIGIN_TRIAL:
           ot_stage_id = stage.key.integer_id()
         gate = Gate(feature_id=feature_id, stage_id=stage.key.integer_id(),
-            gate_type=gate_type, state=Vote.NA)
+                    gate_type=gate_type, state=Gate.PREPARING)
 
         # If we are creating a trial extension gate,
         # then the trial extension stage was just created.

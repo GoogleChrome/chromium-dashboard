@@ -54,29 +54,49 @@ class SearchFeaturesTest(testing_config.CustomTestCase):
     self.feature_3.put()
     self.feature_3_id = self.feature_3.key.integer_id()
 
+    self.gate_1 = review_models.Gate(
+        feature_id=self.feature_1_id, stage_id=1,
+        gate_type=core_models.GATE_PROTOTYPE,
+        state=review_models.Vote.APPROVED,
+        requested_on=datetime.datetime(2022, 7, 1))
+    self.gate_1.put()
+    self.gate_1_id = self.gate_1.key.integer_id()
+
     self.vote_1_1 = review_models.Vote(
-        feature_id=self.feature_1_id, field_id=1,
+        feature_id=self.feature_1_id, gate_type=core_models.GATE_PROTOTYPE,
+        gate_id=self.gate_1_id,
         state=review_models.Vote.REVIEW_REQUESTED,
         set_on=datetime.datetime(2022, 7, 1),
         set_by='feature_owner@example.com')
     self.vote_1_1.put()
 
     self.vote_1_2 = review_models.Vote(
-        feature_id=self.feature_1_id, field_id=1,
+        feature_id=self.feature_1_id, gate_type=core_models.GATE_PROTOTYPE,
+        gate_id=self.gate_1_id,
         state=review_models.Vote.APPROVED,
         set_on=datetime.datetime(2022, 7, 2),
         set_by='reviewer@example.com')
     self.vote_1_2.put()
 
+    self.gate_2 = review_models.Gate(
+        feature_id=self.feature_2_id, stage_id=1,
+        gate_type=core_enums.GATE_SHIP,
+        state=review_models.Vote.REVIEW_REQUESTED,
+        requested_on=datetime.datetime(2022, 8, 1))
+    self.gate_2.put()
+    self.gate_2_id = self.gate_2.key.integer_id()
+
     self.vote_2_1 = review_models.Vote(
-        feature_id=self.feature_2_id, field_id=1,
+        feature_id=self.feature_2_id, gate_type=core_enums.GATE_SHIP,
+        gate_id=self.gate_2_id,
         state=review_models.Vote.REVIEW_REQUESTED,
         set_on=datetime.datetime(2022, 8, 1),
         set_by='feature_owner@example.com')
     self.vote_2_1.put()
 
     self.vote_2_2 = review_models.Vote(
-        feature_id=self.feature_2_id, field_id=1,
+        feature_id=self.feature_2_id, gate_type=core_enums.GATE_SHIP,
+        gate_id=self.gate_2_id,
         state=review_models.Vote.APPROVED,
         set_on=datetime.datetime(2022, 8, 2),
         set_by='reviewer@example.com')
@@ -87,6 +107,8 @@ class SearchFeaturesTest(testing_config.CustomTestCase):
     self.feature_2.key.delete()
     self.feature_3.key.delete()
     self.stage_1_ship.key.delete()
+    for gate in review_models.Gate.query():
+      gate.key.delete()
     for vote in review_models.Vote.query():
       vote.key.delete()
 
@@ -237,14 +259,14 @@ class SearchFeaturesTest(testing_config.CustomTestCase):
     """We can get feature IDs sorted by gate review requests."""
     actual = search_queries.total_order_query_async('gate.requested_on')
     self.assertEqual(
-        [self.feature_1_id, self.feature_2_id],
+        [self.feature_2_id],
         actual)
 
   def test_total_order_query_async__reviewed_on(self):
     """We can get feature IDs sorted by gate resolution times."""
     actual = search_queries.total_order_query_async('gate.reviewed_on')
     self.assertEqual(
-        [self.feature_1_id, self.feature_2_id],
+        [self.feature_1_id],
         actual)
 
   def test_stage_fields_have_join_conditions(self):
