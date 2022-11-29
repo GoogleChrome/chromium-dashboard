@@ -435,3 +435,14 @@ indexes:
   properties:
   - name: state
   - name: gate_type
+- kind: Gate
+  properties:
+  - name: state
+  - name: requested_on
+    direction: desc
+  - name: feature_id
+- kind: Gate
+  properties:
+  - name: state
+  - name: requested_on
+  - name: feature_id
