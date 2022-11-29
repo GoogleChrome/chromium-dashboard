@@ -282,6 +282,24 @@ STAGE_TYPES_BY_FIELD_MAPPING: dict[str, dict[int, Optional[int]]] = {
     'rollout_details': STAGE_TYPES_SHIPPING
   }
 
+# Mapping of the old Feature milestone field names to MilestoneSet field names.
+OLD_FEATURE_FIELDS_TO_NEW_MILESTONE_FIELDS = {
+  'ot_milestone_desktop_start': 'desktop_first',
+  'ot_milestone_desktop_end': 'desktop_last',
+  'ot_milestone_android_start': 'android_first',
+  'ot_milestone_android_end': 'android_last',
+  'ot_milestone_webview_start': 'webview_first',
+  'ot_milestone_webview_end': 'webview_last',
+  'dt_milestone_desktop_start': 'desktop_first',
+  'dt_milestone_android_start': 'android_first',
+  'dt_milestone_ios_start': 'ios_first',
+  'dt_milestone_webview_start': 'webview_first',
+  'shipped_milestone': 'desktop_first',
+  'shipped_android_milestone': 'android_first',
+  'shipped_ios_milestone': 'ios_first',
+  'shipped_webview_milestone': 'webview_first'
+}
+
 # Mapping of which stage types are associated with each gate type.
 STAGE_TYPES_BY_GATE_TYPE_MAPPING: dict[int, dict[int, Optional[int]]] = {
   GATE_PROTOTYPE: STAGE_TYPES_PROTOTYPE,
