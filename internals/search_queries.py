@@ -328,6 +328,10 @@ STAGE_TYPES_BY_QUERY_FIELD: dict[str, dict[int, Optional[int]]] = {
 
 SORTABLE_FIELDS: dict[str, Union[Property, Callable]] = QUERIABLE_FIELDS.copy()
 SORTABLE_FIELDS.update({
+    # TODO(jrobbins): remove the 'approvals.*' items after 2023-01-01.
+    'approvals.requested_on': sorted_by_pending_request_date,
+    'approvals.reviewed_on': sorted_by_review_date,
+
     'gate.requested_on': sorted_by_pending_request_date,
     'gate.reviewed_on': sorted_by_review_date,
     })
