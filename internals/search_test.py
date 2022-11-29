@@ -146,8 +146,8 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
     self.featureentry_1.key.delete()
     self.featureentry_2.key.delete()
     self.featureentry_3.key.delete()
-    for appr in review_models.Approval.query():
-      appr.key.delete()
+    for gate in review_models.Gate.query():
+      gate.key.delete()
 
   @mock.patch('internals.approval_defs.fields_approvable_by')
   def test_process_pending_approval_me_query__none(
@@ -155,9 +155,10 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
     """Nothing is pending."""
     testing_config.sign_in('oner@example.com', 111)
     now = datetime.datetime.now()
-    mock_approvable_by.return_value = set()
+    mock_approvable_by.return_value = set([1, 2, 3])
 
-    feature_ids = search.process_pending_approval_me_query()
+    future = search.process_pending_approval_me_query()
+    feature_ids = search._resolve_promise_to_id_list(future)
 
     self.assertEqual(0, len(feature_ids))
 
@@ -168,12 +169,13 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
     testing_config.sign_in('visitor@example.com', 111)
     now = datetime.datetime.now()
     mock_approvable_by.return_value = set()
-    review_models.Approval(
-        feature_id=self.feature_1.key.integer_id(),
-        field_id=1, state=review_models.Approval.REVIEW_REQUESTED,
-        set_by='feature_owner@example.com', set_on=now).put()
+    review_models.Gate(
+        feature_id=self.feature_1.key.integer_id(), stage_id=1,
+        gate_type=1, state=review_models.Vote.REVIEW_REQUESTED,
+        requested_on=now).put()
 
-    feature_ids = search.process_pending_approval_me_query()
+    future = search.process_pending_approval_me_query()
+    feature_ids = search._resolve_promise_to_id_list(future)
 
     self.assertEqual(0, len(feature_ids))
 
@@ -185,19 +187,20 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
     time_1 = datetime.datetime.now() - datetime.timedelta(days=4)
     time_2 = datetime.datetime.now()
     mock_approvable_by.return_value = set([1, 2, 3])
-    review_models.Approval(
-        feature_id=self.feature_2.key.integer_id(),
-        field_id=1, state=review_models.Approval.REVIEW_REQUESTED,
-        set_by='feature_owner@example', set_on=time_1).put()
-    review_models.Approval(
-        feature_id=self.feature_1.key.integer_id(),
-        field_id=1, state=review_models.Approval.REVIEW_REQUESTED,
-        set_by='feature_owner@example.com', set_on=time_2).put()
+    review_models.Gate(
+        feature_id=self.feature_2.key.integer_id(), stage_id=1,
+        gate_type=1, state=review_models.Vote.REVIEW_REQUESTED,
+        requested_on=time_1).put()
+    review_models.Gate(
+        feature_id=self.feature_1.key.integer_id(), stage_id=1,
+        gate_type=1, state=review_models.Vote.REVIEW_REQUESTED,
+        requested_on=time_2).put()
 
-    feature_ids = search.process_pending_approval_me_query()
+    future = search.process_pending_approval_me_query()
+    feature_ids = search._resolve_promise_to_id_list(future)
     self.assertEqual(2, len(feature_ids))
-    # Results are sorted by set_on timestamp.
-    self.assertEqual(
+    # Results are not sorted.
+    self.assertCountEqual(
         [self.feature_2.key.integer_id(),
          self.feature_1.key.integer_id()],
         feature_ids)
@@ -205,23 +208,24 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
   @mock.patch('internals.approval_defs.fields_approvable_by')
   def test_process_pending_approval_me_query__mixed__approver(
       self, mock_approvable_by):
-    """Only REVIEW_REQUESTED is considered a pending approval."""
+    """We can find gates that are pending approval."""
     testing_config.sign_in('owner@example.com', 111)
     time_1 = datetime.datetime.now() - datetime.timedelta(days=4)
     time_2 = datetime.datetime.now()
     mock_approvable_by.return_value = set([1, 2, 3])
-    review_models.Approval(
-        feature_id=self.feature_2.key.integer_id(),
-        field_id=1, state=review_models.Approval.REVIEW_REQUESTED,
-        set_by='feature_owner@example', set_on=time_1).put()
-    review_models.Approval(
-        feature_id=self.feature_1.key.integer_id(),
-        field_id=1, state=review_models.Approval.NEEDS_WORK,
-        set_by='feature_owner@example.com', set_on=time_2).put()
+    review_models.Gate(
+        feature_id=self.feature_2.key.integer_id(), stage_id=1,
+        gate_type=1, state=review_models.Vote.REVIEW_REQUESTED,
+        requested_on=time_1).put()
+    review_models.Gate(
+        feature_id=self.feature_1.key.integer_id(), stage_id=1,
+        gate_type=1, state=review_models.Vote.APPROVED,
+        requested_on=time_2).put()
 
-    feature_ids = search.process_pending_approval_me_query()
+    future = search.process_pending_approval_me_query()
+    feature_ids = search._resolve_promise_to_id_list(future)
     self.assertEqual(1, len(feature_ids))
-    # Results are sorted by set_on timestamp, but there is only one.
+    # Results are not sorted.
     self.assertEqual(
         [self.feature_2.key.integer_id()],
         feature_ids)
@@ -245,40 +249,41 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
     self.assertEqual(len(actual), 1)
     self.assertEqual(actual[0], self.feature_1.key.integer_id())
 
-  @mock.patch('internals.review_models.Approval.get_approvals')
   @mock.patch('internals.approval_defs.fields_approvable_by')
   def test_process_recent_reviews_query__none(
-      self, mock_approvable_by, mock_get_approvals):
+      self, mock_approvable_by):
     """Nothing has been reviewed recently."""
     mock_approvable_by.return_value = set({1, 2, 3})
-    mock_get_approvals.return_value = []
 
-    actual = search.process_recent_reviews_query()
+    future = search.process_recent_reviews_query()
+    feature_ids = search._resolve_promise_to_id_list(future)
 
-    self.assertEqual(0, len(actual))
+    self.assertEqual(0, len(feature_ids))
 
-  @mock.patch('internals.review_models.Approval.get_approvals')
   @mock.patch('internals.approval_defs.fields_approvable_by')
   def test_process_recent_reviews_query__some(
-      self, mock_approvable_by, mock_get_approvals):
+      self, mock_approvable_by):
     """Some features have been reviewed recently."""
     mock_approvable_by.return_value = set({1, 2, 3})
     time_1 = datetime.datetime.now() - datetime.timedelta(days=4)
     time_2 = datetime.datetime.now()
-    mock_get_approvals.return_value = [
-        review_models.Approval(
-            feature_id=self.feature_1.key.integer_id(),
-            field_id=1, state=review_models.Approval.NA, set_on=time_2),
-        review_models.Approval(
-            feature_id=self.feature_2.key.integer_id(),
-            field_id=1, state=review_models.Approval.APPROVED, set_on=time_1),
-    ]
+    review_models.Gate(
+        feature_id=self.feature_1.key.integer_id(), stage_id=1,
+        gate_type=1, state=review_models.Vote.NA,
+        requested_on=time_2).put()
+    review_models.Gate(
+        feature_id=self.feature_2.key.integer_id(), stage_id=1,
+        gate_type=1, state=review_models.Vote.APPROVED,
+        requested_on=time_1).put()
 
-    actual = search.process_recent_reviews_query()
+    future = search.process_recent_reviews_query()
+    feature_ids = search._resolve_promise_to_id_list(future)
 
-    self.assertEqual(2, len(actual))
-    self.assertEqual(actual[0], self.feature_1.key.integer_id())  # Most recent
-    self.assertEqual(actual[1], self.feature_2.key.integer_id())
+    self.assertEqual(2, len(feature_ids))
+    self.assertEqual(
+        feature_ids[0], self.feature_1.key.integer_id())  # Most recent
+    self.assertEqual(
+        feature_ids[1], self.feature_2.key.integer_id())
 
   def test_sort_by_total_order__empty(self):
     """Sorting an empty list works."""
