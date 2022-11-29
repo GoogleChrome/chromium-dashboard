@@ -18,7 +18,7 @@ import settings
 from datetime import datetime
 from unittest import mock
 
-from internals import core_models
+from internals.core_models import Feature, FeatureEntry, MilestoneSet, Stage
 from internals import reminders
 
 from google.cloud import ndb  # type: ignore
@@ -37,18 +37,39 @@ class MockResponse:
 
 
 def make_test_features():
-  feature_1 = core_models.Feature(
-      name='feature one', summary='sum', owner=['feature_owner@example.com'],
-      category=1, ot_milestone_desktop_start=100)
+  feature_1 = FeatureEntry(
+      name='feature one', summary='sum',
+      owner_emails=['feature_owner@example.com'],
+      category=1, feature_type=0)
   feature_1.put()
-  feature_2 = core_models.Feature(
+  stages = [110, 120, 130, 140, 150, 151, 160]
+  for stage_type in stages:
+    stage = Stage(feature_id=feature_1.key.integer_id(), stage_type=stage_type)
+    if stage_type == 150:
+      stage.milestones = MilestoneSet(desktop_first=100)
+    stage.put()
+
+  feature_2 = FeatureEntry(
       name='feature two', summary='sum',
-      owner=['owner_1@example.com', 'owner_2@example.com'],
-      category=1, shipped_milestone=150)
+      owner_emails=['owner_1@example.com', 'owner_2@example.com'],
+      category=1, feature_type=1)
   feature_2.put()
-  feature_3 = core_models.Feature(
-      name='feature three', summary='sum', category=1)
+
+  stages = [220, 230, 250, 251, 260]
+  for stage_type in stages:
+    stage = Stage(feature_id=feature_2.key.integer_id(), stage_type=stage_type)
+    if stage_type == 260:
+      stage.milestones = MilestoneSet(desktop_first=150)
+    stage.put()
+
+  feature_3 = FeatureEntry(
+      name='feature three', summary='sum', category=1, feature_type=2)
   feature_3.put()
+  stages = [320, 330, 360]
+  for stage_type in stages:
+    stage = Stage(feature_id=feature_3.key.integer_id(), stage_type=stage_type)
+    stage.put()
+
   return feature_1, feature_2, feature_3
 
 
@@ -58,13 +79,31 @@ class FunctionTest(testing_config.CustomTestCase):
     self.current_milestone_info = {
         'earliest_beta': '2022-09-21T12:34:56',
     }
-    self.feature_template = core_models.Feature(
-      name='feature one', summary='sum', owner=['feature_owner@example.com'],
-      category=1, ot_milestone_desktop_start=100)
-    self.feature_template.key = ndb.Key('Feature', 123)
-    # This test does not require saving to the database.
+
+    self.old_feature_template = Feature(id=123,
+        name='feature one', summary='sum', owner=['feature_owner@example.com'],
+        category=1, feature_type=0, ot_milestone_desktop_start=100)
+    self.feature_template = FeatureEntry(id=123,
+      name='feature one', summary='sum',
+      owner_emails=['feature_owner@example.com'],
+      category=1, feature_type=0)
+    stages = [110, 120, 130, 140, 150, 151, 160]
+    for stage_type in stages:
+      stage = Stage(feature_id=123, stage_type=stage_type)
+      if stage_type == 150:
+        stage.milestones = MilestoneSet(desktop_first=100)
+      stage.put()
+    
+    self.old_feature_template.put()
+    self.feature_template.put()
 
     self.maxDiff = None
+  
+  def tearDown(self) -> None:
+    kinds: list[ndb.Model] = [Feature, FeatureEntry, Stage]
+    for kind in kinds:
+      for entity in kind.query():
+        entity.key.delete()
 
   def test_build_email_tasks_feature_accuracy(self):
     with test_app.app_context():
@@ -106,6 +145,8 @@ class FeatureAccuracyHandlerTest(testing_config.CustomTestCase):
     self.feature_1.key.delete()
     self.feature_2.key.delete()
     self.feature_3.key.delete()
+    for stage in Stage.query():
+      stage.key.delete()
 
   @mock.patch('requests.get')
   def test_determine_features_to_notify__no_features(self, mock_get):

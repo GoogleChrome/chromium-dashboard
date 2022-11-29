@@ -79,6 +79,7 @@ export const INTENT_STAGES = {
   INTENT_REMOVED: [6, 'Removed'],
   INTENT_SHIPPED: [8, 'Shipped'],
   INTENT_PARKED: [9, 'Parked'],
+  INTENT_ROLLOUT: [10, 'Rollout'],
 };
 
 export const IMPLEMENTATION_STATUS = {
