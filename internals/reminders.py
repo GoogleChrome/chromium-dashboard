@@ -23,6 +23,8 @@ from flask import render_template
 from framework import basehandlers
 from internals import core_models
 from internals import notifier
+from internals import stage_helpers
+from internals.core_enums import STAGE_TYPES_BY_FIELD_MAPPING
 import settings
 
 
@@ -46,17 +48,21 @@ def build_email_tasks(
   email_tasks = []
   beta_date = datetime.fromisoformat(current_milestone_info['earliest_beta'])
   beta_date_str = beta_date.strftime('%Y-%m-%d')
-  for feature, mstone in features_to_notify:
+  for fe, mstone in features_to_notify:
+    # TODO(danielrsmith): the estimated-milestones-template.html is reliant
+    # on old Feature entity milestone fields and will need to be refactored
+    # to use Stage entity fields before removing this Feature use.
+    feature = core_models.Feature.get_by_id(fe.key.integer_id())
     body_data = {
-      'id': feature.key.integer_id(),
+      'id': fe.key.integer_id(),
       'feature': feature,
       'site_url': settings.SITE_URL,
       'milestone': mstone,
       'beta_date_str': beta_date_str,
     }
     html = render_template(body_template_path, **body_data)
-    subject = subject_format % feature.name
-    for owner in feature.owner:
+    subject = subject_format % fe.name
+    for owner in fe.owner_emails:
       email_tasks.append({
         'to': owner,
         'subject': subject,
@@ -103,19 +109,33 @@ class AbstractReminderHandler(basehandlers.FlaskHandler):
 
     result = []
     for feature in features:
-      field_values = [getattr(feature, field) for field in self.MILESTONE_FIELDS]
-      matching_values = [
-          m for m in field_values
-          if m is not None and m >= min_mstone and m <= max_mstone]
-      if matching_values:
-        result.append((feature, min(matching_values)))
+      stages = stage_helpers.get_feature_stages(feature.key.integer_id())
+      min_milestone = None
+      for field in self.MILESTONE_FIELDS:
+        # Get fields that are relevant to the milestones field specified
+        # (e.g. 'shipped_milestone' implies shipping stages)
+        relevant_stages = stages[
+            STAGE_TYPES_BY_FIELD_MAPPING[field][feature.feature_type]]
+        for stage in relevant_stages:
+          milestones = stage.milestones
+          m = (None if milestones is None
+              else getattr(milestones,
+                  core_models.MilestoneSet.MILESTONE_FIELD_MAPPING[field]))
+          if m is not None and m >= min_mstone and m <= max_mstone:
+            if min_milestone is None:
+              min_milestone = m
+            else:
+              min_milestone = min(min_milestone, m)
+      # If a matching milestone was ever found, use it for the reminder.
+      if min_milestone:
+        result.append((feature, min_milestone))
 
     return result
 
   def determine_features_to_notify(self, current_milestone_info):
     """Get all features filter them by class-specific and milestone criteria."""
-    features = core_models.Feature.query(
-        core_models.Feature.deleted == False).fetch(None)
+    features = core_models.FeatureEntry.query(
+        core_models.FeatureEntry.deleted == False).fetch()
     prefiltered_features = self.prefilter_features(
         current_milestone_info, features)
     features_milestone_pairs = self.filter_by_milestones(
