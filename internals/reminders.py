@@ -113,6 +113,8 @@ class AbstractReminderHandler(basehandlers.FlaskHandler):
       stages = stage_helpers.get_feature_stages(feature.key.integer_id())
       min_milestone = None
       for field in self.MILESTONE_FIELDS:
+        # Get fields that are relevant to the milestones field specified
+        # (e.g. 'shipped_milestone' implies shipping stages)
         relevant_stages = stages[
             STAGE_TYPES_BY_FIELD_MAPPING[field][feature.feature_type]]
         for stage in relevant_stages:
@@ -125,6 +127,7 @@ class AbstractReminderHandler(basehandlers.FlaskHandler):
               min_milestone = m
             else:
               min_milestone = min(min_milestone, m)
+      # If a matching milestone was ever found, use it for the reminder.
       if min_milestone:
         result.append((feature, min_milestone))
 
