@@ -434,7 +434,12 @@ indexes:
 - kind: Gate
   properties:
   - name: state
+  - name: feature_id
+- kind: Gate
+  properties:
   - name: gate_type
+  - name: state
+  - name: feature_id
 - kind: Gate
   properties:
   - name: state
