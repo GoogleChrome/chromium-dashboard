@@ -17,6 +17,8 @@ import collections
 from typing import Optional
 
 
+# NOTE: The enum mapping in this file needs to be consistent with
+# chromium-dashboard/client-src/elements/form-field-enums.js.
 WEBCOMPONENTS = 1
 MISC = 2
 SECURITY = 3
@@ -483,11 +485,13 @@ WEB_DEV_VIEWS = {
 
 
 PROPERTY_NAMES_TO_ENUM_DICTS = {
+    'feature_type': FEATURE_TYPES,
     'category': FEATURE_CATEGORIES,
     'intent_stage': INTENT_STAGES,
     'impl_status_chrome': IMPLEMENTATION_STATUS,
     'security_review_status': REVIEW_STATUS_CHOICES,
     'privacy_review_status': REVIEW_STATUS_CHOICES,
+    'tag_review_status': REVIEW_STATUS_CHOICES,
     'standard_maturity': STANDARD_MATURITY_CHOICES,
     'standardization': STANDARDIZATION,
     'ff_views': VENDOR_VIEWS,

@@ -210,7 +210,6 @@ QUERIABLE_FIELDS: dict[str, Property] = {
     'tag': FeatureEntry.search_tags,
     'feature_notes': FeatureEntry.feature_notes,
 
-    'feature_type': FeatureEntry.feature_type,
     'browsers.chrome.bug': FeatureEntry.bug_url,
     'launch_bug_url': FeatureEntry.launch_bug_url,
 
@@ -235,7 +234,6 @@ QUERIABLE_FIELDS: dict[str, Property] = {
     'all_platforms': FeatureEntry.all_platforms,
     'all_platforms_descr': FeatureEntry.all_platforms_descr,
     'tag_review.url': FeatureEntry.tag_review,
-    'tag_review.status': FeatureEntry.tag_review_status,
     'non_oss_deps': FeatureEntry.non_oss_deps,
     'standards.anticipated_spec_changes':
         FeatureEntry.anticipated_spec_changes,
@@ -256,11 +254,13 @@ QUERIABLE_FIELDS: dict[str, Property] = {
     'resources.sample': FeatureEntry.sample_links,
 
     # Enum fields
+    'feature_type': FeatureEntry.feature_type,
     'category': FeatureEntry.category,
     'intent_stage': FeatureEntry.intent_stage,
     'impl_status_chrome': FeatureEntry.impl_status_chrome,
     'security_review_status': FeatureEntry.security_review_status,
     'privacy_review_status': FeatureEntry.privacy_review_status,
+    'tag_review_status': FeatureEntry.tag_review_status,
     'standards.maturity': FeatureEntry.standard_maturity,
     'browsers.ff.view': FeatureEntry.ff_views,
     'browsers.safari.view': FeatureEntry.safari_views,
