@@ -54,3 +54,19 @@ class EnumsFunctionsTest(testing_config.CustomTestCase):
     actual = core_enums.convert_enum_int_to_string(
         'impl_status_chrome', 99)
     self.assertEqual(99, actual)
+
+  def test_convert_enum_string_to_int__enum_found(self):
+    """We use the enum representation if it is defined."""
+    actual = core_enums.convert_enum_string_to_int(
+        'impl_status_chrome', 'No active development')
+    self.assertEqual(core_enums.NO_ACTIVE_DEV, actual)
+
+    actual = core_enums.convert_enum_string_to_int(
+        'category', 'Miscellaneous')
+    self.assertEqual(core_enums.MISC, actual)
+
+  def test_convert_enum_string_to_int__not_found(self):
+    """If enum representation is not defined, return -1."""
+    actual = core_enums.convert_enum_string_to_int(
+        'impl_status_chrome', 'abc')
+    self.assertEqual(-1, actual)

@@ -381,23 +381,6 @@ TEST_ARCHIVE_URL_PREFIX = (
     'https://groups.google.com/d/msgid/jrobbins-test/')
 
 
-def get_existing_thread_subject(feature, approval_field):
-  """If we have the subject line of the Google Groups thread, use it."""
-  # This improves message threading in gmail.
-
-  if approval_field == approval_defs.PrototypeApproval:
-    return feature.intent_to_implement_subject_line
-  # TODO(jrobbins): Ready-for-trial threads
-  elif approval_field == approval_defs.ExperimentApproval:
-    return feature.intent_to_experiment_subject_line
-  elif approval_field == approval_defs.ExtendExperimentApproval:
-    return feature.intent_to_extend_experiment_subject_line
-  elif approval_field == approval_defs.ShipApproval:
-    return feature.intent_to_ship_subject_line
-  else:
-    raise ValueError('Unexpected approval type')
-
-
 def generate_thread_subject(feature, approval_field):
   """Use the expected subject based on the feature type and approval type."""
   intent_phrase = approval_field.name
@@ -412,18 +395,27 @@ def generate_thread_subject(feature, approval_field):
   return '%s: %s' % (intent_phrase, feature.name)
 
 
-def get_thread_id(feature, approval_field):
+def get_thread_id(feature: FeatureEntry, approval_field):
   """If we have the URL of the Google Groups thread, we can get its ID."""
+  stages = stage_helpers.get_feature_stages(feature.key.integer_id())
+  stage_type: int | None = None
   if approval_field == approval_defs.PrototypeApproval:
-    thread_url = feature.intent_to_implement_url
+    stage_type = core_enums.STAGE_TYPES_PROTOTYPE[feature.feature_type]
   # TODO(jrobbins): Ready-for-trial threads
   if approval_field == approval_defs.ExperimentApproval:
-    thread_url = feature.intent_to_experiment_url
+    stage_type = core_enums.STAGE_TYPES_ORIGIN_TRIAL[feature.feature_type]
   if approval_field == approval_defs.ExtendExperimentApproval:
-    thread_url = feature.intent_to_extend_experiment_url
+    stage_type = core_enums.STAGE_TYPES_EXTEND_ORIGIN_TRIAL[
+        feature.feature_type]
   if approval_field == approval_defs.ShipApproval:
-    thread_url = feature.intent_to_ship_url
+    stage_type = core_enums.STAGE_TYPES_SHIPPING[feature.feature_type]
 
+  thread_url: str | None = None
+  if stage_type:
+    relevant_stages = stages[stage_type]
+    if relevant_stages:
+      # TODO(danielrsmith): Refactor for compatibility with multiple stages.
+      thread_url = relevant_stages[0].intent_thread_url
   if not thread_url:
     return None
 
@@ -470,8 +462,7 @@ def post_comment_to_mailing_list(
   to_addr = settings.REVIEW_COMMENT_MAILING_LIST
   from_user = author_addr.split('@')[0]
   approval_field = approval_defs.APPROVAL_FIELDS_BY_ID[approval_field_id]
-  subject = (get_existing_thread_subject(feature, approval_field) or
-             generate_thread_subject(feature, approval_field))
+  subject = generate_thread_subject(feature, approval_field)
   if not subject.startswith('Re: '):
     subject = 'Re: ' + subject
   thread_id = get_thread_id(feature, approval_field)

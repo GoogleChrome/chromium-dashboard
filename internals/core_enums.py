@@ -17,6 +17,8 @@ import collections
 from typing import Optional
 
 
+# NOTE: The enum mapping in this file needs to be consistent with
+# chromium-dashboard/client-src/elements/form-field-enums.js.
 WEBCOMPONENTS = 1
 MISC = 2
 SECURITY = 3
@@ -112,6 +114,7 @@ INTENT_SHIP = 5  # Prepare to ship
 INTENT_REMOVED = 6
 INTENT_SHIPPED = 8
 INTENT_PARKED = 9
+INTENT_ROLLOUT = 10
 
 INTENT_STAGES = collections.OrderedDict([
   (INTENT_NONE, 'None'),
@@ -123,6 +126,7 @@ INTENT_STAGES = collections.OrderedDict([
   (INTENT_SHIP, 'Prepare to ship'),
   (INTENT_REMOVED, 'Removed'),
   (INTENT_SHIPPED, 'Shipped'),
+  (INTENT_ROLLOUT, 'Rollout'),
   (INTENT_PARKED, 'Parked'),
 ])
 
@@ -481,17 +485,22 @@ WEB_DEV_VIEWS = {
 
 
 PROPERTY_NAMES_TO_ENUM_DICTS = {
+    'feature_type': FEATURE_TYPES,
     'category': FEATURE_CATEGORIES,
     'intent_stage': INTENT_STAGES,
     'impl_status_chrome': IMPLEMENTATION_STATUS,
     'security_review_status': REVIEW_STATUS_CHOICES,
     'privacy_review_status': REVIEW_STATUS_CHOICES,
+    'tag_review_status': REVIEW_STATUS_CHOICES,
     'standard_maturity': STANDARD_MATURITY_CHOICES,
     'standardization': STANDARDIZATION,
     'ff_views': VENDOR_VIEWS,
+    'browsers.ff.view': VENDOR_VIEWS,
     'ie_views': VENDOR_VIEWS,
     'safari_views': VENDOR_VIEWS,
+    'browsers.safari.view': VENDOR_VIEWS,
     'web_dev_views': WEB_DEV_VIEWS,
+    'browsers.webdev.view': WEB_DEV_VIEWS,
     'rollout_platforms': PLATFORM_CATEGORIES,
   }
 
@@ -506,3 +515,16 @@ def convert_enum_int_to_string(property_name, value):
   enum_dict = PROPERTY_NAMES_TO_ENUM_DICTS.get(property_name, {})
   converted_value = enum_dict.get(int_val, value)
   return converted_value
+
+
+def convert_enum_string_to_int(property_name, value):
+  """If the property is an enum, return its enum value, else -1."""
+  enum_dict = PROPERTY_NAMES_TO_ENUM_DICTS.get(property_name, {})
+  for index, enum_str in enum_dict.items():
+    if enum_str == value:
+      return index
+  return -1
+
+
+def is_enum_field(property_name):
+  return property_name in PROPERTY_NAMES_TO_ENUM_DICTS

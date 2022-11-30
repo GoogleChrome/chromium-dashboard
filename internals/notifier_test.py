@@ -674,93 +674,84 @@ class FunctionsTest(testing_config.CustomTestCase):
     quoted_msg_id = 'xxx%3Dyyy%40mail.gmail.com'
     impl_url = notifier.BLINK_DEV_ARCHIVE_URL_PREFIX + '123' + quoted_msg_id
     expr_url = notifier.TEST_ARCHIVE_URL_PREFIX + '456' + quoted_msg_id
-    self.feature_1 = Feature(
-        name='feature one', summary='sum', category=1,
-        intent_to_implement_url=impl_url, intent_to_experiment_url=expr_url)
+    self.fe_1 = FeatureEntry(
+        name='feature one', summary='sum', category=1, feature_type=0)
+    self.fe_1.put()
+    # Prototyping stage.
+    self.proto_stage = Stage(feature_id=self.fe_1.key.integer_id(),
+        stage_type=120, intent_thread_url=impl_url)
+    self.proto_stage.put()
+    # Origin trial stage.
+    self.ot_stage = Stage(feature_id=self.fe_1.key.integer_id(), stage_type=150,
+        intent_thread_url=expr_url)
+    self.ot_stage.put()
     # Note: There is no need to put() it in the datastore.
+
+  def tearDown(self) -> None:
+    kinds: list[ndb.Model] = [FeatureEntry, Stage]
+    for kind in kinds:
+      for entity in kind.query():
+        entity.key.delete()
 
   def test_get_thread_id__normal(self):
     """We can select the correct approval thread field of a feature."""
     self.assertEqual(
         '123xxx=yyy@mail.gmail.com',
         notifier.get_thread_id(
-            self.feature_1, approval_defs.PrototypeApproval))
+            self.fe_1, approval_defs.PrototypeApproval))
     self.assertEqual(
         '456xxx=yyy@mail.gmail.com',
         notifier.get_thread_id(
-            self.feature_1, approval_defs.ExperimentApproval))
+            self.fe_1, approval_defs.ExperimentApproval))
     self.assertEqual(
         None,
         notifier.get_thread_id(
-            self.feature_1, approval_defs.ShipApproval))
-
-  def test_get_existing_thread_subject__none(self):
-    """If a feature does not store an existing thread subject, use None."""
-    self.assertIsNone(notifier.get_existing_thread_subject(
-        self.feature_1, approval_defs.PrototypeApproval))
-
-  def test_get_existing_thread_subject__found(self):
-    """If a feature does not store an existing thread subject, use it."""
-    self.feature_1.intent_to_ship_subject_line = (
-        'Intent to really ship: feature one')
-    actual = notifier.get_existing_thread_subject(
-        self.feature_1, approval_defs.ShipApproval)
-    self.assertEqual('Intent to really ship: feature one', actual)
-
-  def test_get_existing_thread_subject__unknown(self):
-    """Raise ValueError if called with an unknown approval field."""
-    PivotApproval = approval_defs.ApprovalFieldDef(
-        'Intent to Pivot', 'API Owners',
-        'One API Owner must approve your intent',
-        99, approval_defs.ONE_LGTM, [])
-    with self.assertRaises(ValueError):
-      notifier.get_existing_thread_subject(
-          self.feature_1, PivotApproval)
+            self.fe_1, approval_defs.ShipApproval))
 
   def test_generate_thread_subject__normal(self):
     """Most intents just use the name of the intent."""
     self.assertEqual(
         'Intent to Prototype: feature one',
         notifier.generate_thread_subject(
-            self.feature_1, approval_defs.PrototypeApproval))
+            self.fe_1, approval_defs.PrototypeApproval))
     self.assertEqual(
         'Intent to Experiment: feature one',
         notifier.generate_thread_subject(
-            self.feature_1, approval_defs.ExperimentApproval))
+            self.fe_1, approval_defs.ExperimentApproval))
     self.assertEqual(
         'Intent to Extend Experiment: feature one',
         notifier.generate_thread_subject(
-            self.feature_1, approval_defs.ExtendExperimentApproval))
+            self.fe_1, approval_defs.ExtendExperimentApproval))
     self.assertEqual(
         'Intent to Ship: feature one',
         notifier.generate_thread_subject(
-            self.feature_1, approval_defs.ShipApproval))
+            self.fe_1, approval_defs.ShipApproval))
 
   def test_generate_thread_subject__deprecation(self):
     """Deprecation intents use different subjects for most intents."""
-    self.feature_1.feature_type = core_enums.FEATURE_TYPE_DEPRECATION_ID
+    self.fe_1.feature_type = core_enums.FEATURE_TYPE_DEPRECATION_ID
     self.assertEqual(
         'Intent to Deprecate and Remove: feature one',
         notifier.generate_thread_subject(
-            self.feature_1, approval_defs.PrototypeApproval))
+            self.fe_1, approval_defs.PrototypeApproval))
     self.assertEqual(
         'Request for Deprecation Trial: feature one',
         notifier.generate_thread_subject(
-            self.feature_1, approval_defs.ExperimentApproval))
+            self.fe_1, approval_defs.ExperimentApproval))
     self.assertEqual(
         'Intent to Extend Deprecation Trial: feature one',
         notifier.generate_thread_subject(
-            self.feature_1, approval_defs.ExtendExperimentApproval))
+            self.fe_1, approval_defs.ExtendExperimentApproval))
     self.assertEqual(
         'Intent to Ship: feature one',
         notifier.generate_thread_subject(
-            self.feature_1, approval_defs.ShipApproval))
+            self.fe_1, approval_defs.ShipApproval))
 
 
   def test_get_thread_id__trailing_junk(self):
     """We can select the correct approval thread field of a feature."""
-    self.feature_1.intent_to_implement_url += '?param=val#anchor'
+    self.proto_stage.intent_thread_url += '?param=val#anchor'
     self.assertEqual(
         '123xxx=yyy@mail.gmail.com',
         notifier.get_thread_id(
-            self.feature_1, approval_defs.PrototypeApproval))
+            self.fe_1, approval_defs.PrototypeApproval))

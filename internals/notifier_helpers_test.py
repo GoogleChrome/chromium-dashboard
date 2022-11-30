@@ -62,3 +62,13 @@ class ActivityTest(testing_config.CustomTestCase):
     feature_id = self.feature_1.key.integer_id()
     activities = Activity.get_activities(feature_id)
     self.assertEqual(len(activities), 0)
+
+  def test_activities_created__empty_list_not_created(self):
+    """No amendment should be logged if the value moved from None to empty list."""
+    changed_fields = [('editor_emails', None, [])]
+    notifier_helpers.notify_subscribers_and_save_amendments(
+        self.feature_1, changed_fields)
+    
+    activities = Activity.get_activities(self.feature_1.key.integer_id())
+    # No activity entity created.
+    self.assertTrue(len(activities) == 0)

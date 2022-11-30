@@ -1273,8 +1273,11 @@ export const DISPLAY_FIELDS_IN_STAGES = {
     'finch_url', 'anticipated_spec_changes',
     'shipped_milestone', 'shipped_android_milestone',
     'shipped_ios_milestone', 'shipped_webview_milestone',
-    'intent_to_ship_url', 'i2s_lgtms', 'rollout_milestone',
-    'rollout_platforms', 'rollout_details', 'enterprise_policies',
+    'intent_to_ship_url', 'i2s_lgtms',
+  ]),
+  [INTENT_STAGES.INTENT_ROLLOUT[0]]: makeDisplaySpecs([
+    'rollout_milestone', 'rollout_platforms', 'rollout_details',
+    'enterprise_policies',
   ]),
   [INTENT_STAGES.INTENT_SHIPPED[0]]: makeDisplaySpecs([]),
 };
