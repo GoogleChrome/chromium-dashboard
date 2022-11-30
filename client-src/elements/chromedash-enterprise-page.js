@@ -19,7 +19,9 @@ export class ChromedashEnterprisePage extends ChromedashAllFeaturesPage {
   }
 
   renderEnterpriseFeatures() {
-    return this.renderBox('feature_type=4 OR breaking_change=true');
+    return this.renderBox(
+      'feature_type="New Feature or removal affecting enterprises" ' +
+        'OR breaking_change=true');
   }
 
   render() {
