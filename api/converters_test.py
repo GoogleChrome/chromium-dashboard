@@ -54,13 +54,16 @@ class ConvertersTest(testing_config.CustomTestCase):
           milestones=MilestoneSet(desktop_first=1,
               android_first=1, desktop_last=2),
           intent_thread_url=f'https://example.com/{s_type}')
-      # Add stage-specific fields.
+      # Add stage-specific fields based on the stage ID.
+      # 150 is the ID associated with the origin trial stage for feature type 0.
       if s_type == 150:
         s.experiment_goals = 'goals'
         s.experiment_risks = 'risks'
         s.announcement_url = 'https://example.com/announce'
+      # 151 is the stage ID associated with the origin trial extension.
       elif s_type == 151:
         s.experiment_extension_reason = 'reason'
+      # 151 is the ID associated with the shipping stage.
       elif s_type == 160:
         s.finch_url = 'https://example.com/finch'
       s.put()

@@ -431,3 +431,23 @@ indexes:
   - name: stage_type
   - name: milestones.webview_last
   - name: feature_id
+- kind: Gate
+  properties:
+  - name: state
+  - name: feature_id
+- kind: Gate
+  properties:
+  - name: gate_type
+  - name: state
+  - name: feature_id
+- kind: Gate
+  properties:
+  - name: state
+  - name: requested_on
+    direction: desc
+  - name: feature_id
+- kind: Gate
+  properties:
+  - name: state
+  - name: requested_on
+  - name: feature_id
