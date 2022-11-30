@@ -13,26 +13,19 @@ export class ChromedashEnterprisePage extends ChromedashAllFeaturesPage {
         .starredFeatures=${this.starredFeatures}
         @star-toggle-event=${this.handleStarToggle}
         @open-approvals-event=${this.handleOpenApprovals}
-        num=25 alwaysOfferPagination columns="normal">
+        num=100 alwaysOfferPagination columns="normal">
       </chromedash-feature-table>
     `;
   }
 
   renderEnterpriseFeatures() {
-    return this.renderBox('feature_type=4');
-  }
-
-  renderBreankingChanges() {
-    return this.renderBox('breaking_change=true');
+    return this.renderBox('feature_type=4 OR breaking_change=true');
   }
 
   render() {
     return html`
-      <h2>Enterprise Features</h2>
+      <h2>Enterprise features and breaking changes</h2>
       ${this.renderEnterpriseFeatures()}
-
-      <h2 style="margin-top: 2em">Breaking Changes</h2>
-      ${this.renderBreankingChanges()}
     `;
   }
 }
