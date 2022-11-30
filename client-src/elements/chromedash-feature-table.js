@@ -216,7 +216,7 @@ class ChromedashFeatureTable extends LitElement {
          .feature=${feature}
          columns=${this.columns}
          ?signedIn=${this.signedIn}
-         ?canEdit=${this.canApprove}
+         ?canEdit=${this.canEdit}
          ?canApprove=${this.canApprove}
          .starredFeatures=${this.starredFeatures}
          .gates=${this.gates}
