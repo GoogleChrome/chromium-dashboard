@@ -292,8 +292,18 @@ class ChromedashFeatureFilter extends LitElement {
       .filterrow * {
         margin: 6px 3px;
       }
-      .cond-field-menu {
-        width: 180px;
+      .field-name-select {
+        // The smallest width to accomodate the
+        // largest text, Webview Shipping Milestone.
+        width: 240px;
+      }
+      .field-name-menu {
+        // The smallest width without showing
+        // horizontal scroll.
+        width: 265px;
+        position: absolute;
+        // Half of the field-name-select width.
+        left: -120px;
       }
       .cond-op-menu {
         width: 150px;
@@ -336,11 +346,11 @@ class ChromedashFeatureFilter extends LitElement {
 
   renderFilterFieldMenu(fieldName, index) {
     return html`
-      <sl-select class="cond-field-menu" size="small"
+      <sl-select class="field-name-select" size="small"
               value=${fieldName}
               @sl-change="${(e) => this.handleChangeField(e.target.value, index)}">
        ${QUERIABLE_FIELDS.map((item) => html`
-         <sl-menu-item value="${item.name}">
+         <sl-menu-item class="field-name-menu" value="${item.name}">
            ${item.display}
          </sl-menu-item>
         `)}
@@ -485,11 +495,11 @@ class ChromedashFeatureFilter extends LitElement {
   renderBlankCondition() {
     return html`
      <div class="filterrow">
-      <sl-select id="choose_field" class="cond-field-menu" size="small"
+      <sl-select id="choose_field" class="field-name-select" size="small"
           placeholder="Select a field name"
               @sl-change="${this.addFilterCondition}">
        ${QUERIABLE_FIELDS.map((item) => html`
-         <sl-menu-item value="${item.name}">
+         <sl-menu-item class="field-name-menu" value="${item.name}">
            ${item.display}
          </sl-menu-item>
         `)}
