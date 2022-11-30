@@ -180,6 +180,7 @@ class ProgressAPITest(testing_config.CustomTestCase):
     self.stages: list[core_models.Stage] = []
     for s_type in stage_types:
       stage = core_models.Stage(feature_id=self.feature_id, stage_type=s_type)
+      # Add separate intent URLs for each stage type.
       if s_type == 120:
         stage.intent_thread_url = 'https://example.com/prototype'
       elif s_type == 130:
