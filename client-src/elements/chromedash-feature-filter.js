@@ -293,7 +293,7 @@ class ChromedashFeatureFilter extends LitElement {
         margin: 6px 3px;
       }
       .field-name-select {
-        // The smallest width to accomodate the
+        // The smallest width to accommodate the
         // largest text, Webview Shipping Milestone.
         width: 240px;
       }
@@ -304,6 +304,9 @@ class ChromedashFeatureFilter extends LitElement {
         position: absolute;
         // Half of the field-name-select width.
         left: -120px;
+      }
+      .enum-select {
+        flex: 1 1 auto;
       }
       .cond-op-menu {
         width: 150px;
@@ -420,7 +423,7 @@ class ChromedashFeatureFilter extends LitElement {
     if (cond.op == EQ_OP) {
       if (inputType == ENUM_TYPE) {
         return html`
-          <sl-select size="small" placeholder="Select a field value"
+          <sl-select class="enum-select" size="small" placeholder="Select a field value"
                 @sl-change="${(e) => this.handleChangeValue(e.target.value, index)}">
             ${Object.values(field.choices).map(
               (val) => html`
