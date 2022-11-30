@@ -293,17 +293,7 @@ class ChromedashFeatureFilter extends LitElement {
         margin: 6px 3px;
       }
       .field-name-select {
-        // The smallest width to accommodate the
-        // largest text, Webview Shipping Milestone.
         width: 240px;
-      }
-      .field-name-menu {
-        // The smallest width without showing
-        // horizontal scroll.
-        width: 265px;
-        position: absolute;
-        // Half of the field-name-select width.
-        left: -120px;
       }
       .enum-select {
         flex: 1 1 auto;
@@ -353,7 +343,7 @@ class ChromedashFeatureFilter extends LitElement {
               value=${fieldName}
               @sl-change="${(e) => this.handleChangeField(e.target.value, index)}">
        ${QUERIABLE_FIELDS.map((item) => html`
-         <sl-menu-item class="field-name-menu" value="${item.name}">
+         <sl-menu-item value="${item.name}">
            ${item.display}
          </sl-menu-item>
         `)}
@@ -502,7 +492,7 @@ class ChromedashFeatureFilter extends LitElement {
           placeholder="Select a field name"
               @sl-change="${this.addFilterCondition}">
        ${QUERIABLE_FIELDS.map((item) => html`
-         <sl-menu-item class="field-name-menu" value="${item.name}">
+         <sl-menu-item value="${item.name}">
            ${item.display}
          </sl-menu-item>
         `)}
