@@ -713,19 +713,19 @@ class FunctionsTest(testing_config.CustomTestCase):
     self.assertEqual(
         'Intent to Prototype: feature one',
         notifier.generate_thread_subject(
-            self.feature_1, approval_defs.PrototypeApproval))
+            self.fe_1, approval_defs.PrototypeApproval))
     self.assertEqual(
         'Intent to Experiment: feature one',
         notifier.generate_thread_subject(
-            self.feature_1, approval_defs.ExperimentApproval))
+            self.fe_1, approval_defs.ExperimentApproval))
     self.assertEqual(
         'Intent to Extend Experiment: feature one',
         notifier.generate_thread_subject(
-            self.feature_1, approval_defs.ExtendExperimentApproval))
+            self.fe_1, approval_defs.ExtendExperimentApproval))
     self.assertEqual(
         'Intent to Ship: feature one',
         notifier.generate_thread_subject(
-            self.feature_1, approval_defs.ShipApproval))
+            self.fe_1, approval_defs.ShipApproval))
 
   def test_generate_thread_subject__deprecation(self):
     """Deprecation intents use different subjects for most intents."""
