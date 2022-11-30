@@ -688,7 +688,8 @@ class FunctionsTest(testing_config.CustomTestCase):
     # Note: There is no need to put() it in the datastore.
 
   def tearDown(self) -> None:
-    for kind in [FeatureEntry, Stage]:
+    kinds: list[ndb.Model] = [FeatureEntry, Stage]
+    for kind in kinds:
       for entity in kind.query():
         entity.key.delete()
 
@@ -706,6 +707,25 @@ class FunctionsTest(testing_config.CustomTestCase):
         None,
         notifier.get_thread_id(
             self.fe_1, approval_defs.ShipApproval))
+
+  def test_generate_thread_subject__normal(self):
+    """Most intents just use the name of the intent."""
+    self.assertEqual(
+        'Intent to Prototype: feature one',
+        notifier.generate_thread_subject(
+            self.feature_1, approval_defs.PrototypeApproval))
+    self.assertEqual(
+        'Intent to Experiment: feature one',
+        notifier.generate_thread_subject(
+            self.feature_1, approval_defs.ExperimentApproval))
+    self.assertEqual(
+        'Intent to Extend Experiment: feature one',
+        notifier.generate_thread_subject(
+            self.feature_1, approval_defs.ExtendExperimentApproval))
+    self.assertEqual(
+        'Intent to Ship: feature one',
+        notifier.generate_thread_subject(
+            self.feature_1, approval_defs.ShipApproval))
 
   def test_generate_thread_subject__deprecation(self):
     """Deprecation intents use different subjects for most intents."""
