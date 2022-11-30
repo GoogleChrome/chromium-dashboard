@@ -292,8 +292,11 @@ class ChromedashFeatureFilter extends LitElement {
       .filterrow * {
         margin: 6px 3px;
       }
-      .cond-field-menu {
-        width: 180px;
+      .field-name-select {
+        width: 240px;
+      }
+      .enum-select {
+        flex: 1 1 auto;
       }
       .cond-op-menu {
         width: 150px;
@@ -336,7 +339,7 @@ class ChromedashFeatureFilter extends LitElement {
 
   renderFilterFieldMenu(fieldName, index) {
     return html`
-      <sl-select class="cond-field-menu" size="small"
+      <sl-select class="field-name-select" size="small"
               value=${fieldName}
               @sl-change="${(e) => this.handleChangeField(e.target.value, index)}">
        ${QUERIABLE_FIELDS.map((item) => html`
@@ -410,7 +413,7 @@ class ChromedashFeatureFilter extends LitElement {
     if (cond.op == EQ_OP) {
       if (inputType == ENUM_TYPE) {
         return html`
-          <sl-select size="small" placeholder="Select a field value"
+          <sl-select class="enum-select" size="small" placeholder="Select a field value"
                 @sl-change="${(e) => this.handleChangeValue(e.target.value, index)}">
             ${Object.values(field.choices).map(
               (val) => html`
@@ -485,7 +488,7 @@ class ChromedashFeatureFilter extends LitElement {
   renderBlankCondition() {
     return html`
      <div class="filterrow">
-      <sl-select id="choose_field" class="cond-field-menu" size="small"
+      <sl-select id="choose_field" class="field-name-select" size="small"
           placeholder="Select a field name"
               @sl-change="${this.addFilterCondition}">
        ${QUERIABLE_FIELDS.map((item) => html`
