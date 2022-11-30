@@ -4,7 +4,7 @@
 #
 # Copyright 2017 Eric Bidelman <ericbidelman@chromium.org>
 
-export PYTHONPATH=cs-env/lib/python3.9/site-packages:$PYTHONPATH
+export PYTHONPATH=cs-env/lib/python3.10/site-packages:$PYTHONPATH
 export GOOGLE_CLOUD_PROJECT='cr-status-staging'
 export SERVER_SOFTWARE='gunicorn'
 export GAE_ENV='localdev'
