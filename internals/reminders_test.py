@@ -45,6 +45,7 @@ def make_test_features():
   stages = [110, 120, 130, 140, 150, 151, 160]
   for stage_type in stages:
     stage = Stage(feature_id=feature_1.key.integer_id(), stage_type=stage_type)
+    # Add a starting milestone for the origin trial stage.
     if stage_type == 150:
       stage.milestones = MilestoneSet(desktop_first=100)
     stage.put()
@@ -58,6 +59,7 @@ def make_test_features():
   stages = [220, 230, 250, 251, 260]
   for stage_type in stages:
     stage = Stage(feature_id=feature_2.key.integer_id(), stage_type=stage_type)
+    # Add a starting milestone for the shipping stage.
     if stage_type == 260:
       stage.milestones = MilestoneSet(desktop_first=150)
     stage.put()
