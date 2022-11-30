@@ -22,7 +22,7 @@ For a one-click setup that leverages devcontainers, check out the devcontainer
 1. Install other developer tools commands
     1. node and npm.
     1. Gulp: `npm install --global gulp-cli`
-    1. Python virtual environment: `sudo apt install python3.9-venv`
+    1. Python virtual environment: `sudo apt install python3.10-venv`
 1. We recommend using an older node version, e.g. node 18
     1. Use `node -v` to check the default node version
     2. `nvm use 18` to switch to node 18
