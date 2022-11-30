@@ -63,3 +63,9 @@ There are other ports needed for the IDE itself but mainly, you only need to wat
 In the docker-compose.yml file:
 - For Python: Change the `VARIANT` argument to the appropirate [variant](https://github.com/microsoft/vscode-dev-containers/tree/main/containers/python-3)
 - For Node: Change the `NODE_VERSION` to the appropriate version used by [nvm](https://github.com/nvm-sh/nvm)
+
+## Troubleshooting
+
+When there are depedency changes and environment changes in requirements.txt or package.json, the Devcontainer needs to be rebuilt:
+- `rm -rf node_modules cs-env` in terminal
+- View -> Command Palette -> Rebuild container without cache
