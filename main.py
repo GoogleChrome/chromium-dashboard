@@ -163,6 +163,7 @@ spa_page_routes = [
   Route('/metrics/feature/timeline/popularity'),
   Route('/metrics/feature/timeline/popularity/<int:bucket_id>'),
   Route('/settings', defaults={'require_signin': True}),
+  Route('/enterprise'),
 ]
 
 spa_page_post_routes: list[Route] = [

@@ -81,3 +81,4 @@ import './elements/chromedash-roadmap-milestone-card';
 import './elements/chromedash-roadmap-page';
 import './elements/chromedash-userlist';
 import './elements/chromedash-x-meter';
+import './elements/chromedash-enterprise-page';
