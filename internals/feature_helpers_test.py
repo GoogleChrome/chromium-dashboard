@@ -17,36 +17,13 @@ import testing_config  # Must be imported before the module under test.
 
 from api import converters
 from framework import rediscache
-from internals import core_enums
+from internals.core_enums import *
 from internals import feature_helpers
 from internals import stage_helpers
 from internals.core_models import Feature, FeatureEntry, MilestoneSet, Stage
 
 
-class MockQuery(object):
-
-  def __init__(self, result_list):
-    self.result_list = result_list
-
-  def fetch(self, *args, **kw):
-    return self.result_list
-
-
-class ModelsFunctionsTest(testing_config.CustomTestCase):
-
-  def test_del_none(self):
-    d = {}
-    self.assertEqual(
-        {},
-        converters.del_none(d))
-
-    d = {1: 'one', 2: None, 3: {33: None}, 4:{44: 44, 45: None}}
-    self.assertEqual(
-        {1: 'one', 3: {}, 4: {44: 44}},
-        converters.del_none(d))
-
-
-class FeatureTest(testing_config.CustomTestCase):
+class FeatureHelpersTest(testing_config.CustomTestCase):
 
   def setUp(self):
     self.feature_2 = FeatureEntry(
@@ -150,16 +127,16 @@ class FeatureTest(testing_config.CustomTestCase):
   def test_get_all__category(self):
     """We can retrieve a list of all features of a given category."""
     actual = feature_helpers.get_all(
-        filterby=('category', core_enums.CSS), update_cache=True)
+        filterby=('category', CSS), update_cache=True)
     names = [f['name'] for f in actual]
     self.assertEqual(
         [],
         names)
 
-    self.feature_1.category = core_enums.CSS
+    self.feature_1.category = CSS
     self.feature_1.put()  # Changes updated field.
     actual = feature_helpers.get_all(
-        filterby=('category', core_enums.CSS), update_cache=True)
+        filterby=('category', CSS), update_cache=True)
     names = [f['name'] for f in actual]
     self.assertEqual(
         ['feature a'],
@@ -361,7 +338,6 @@ class FeatureTest(testing_config.CustomTestCase):
     cached_result = rediscache.get(cache_key)
     self.assertEqual(cached_result, actual)
 
-
   def test_get_in_milestone__unlisted(self):
     """Unlisted features should not be listed for users who can't edit."""
     self.feature_1.impl_status_chrome = 5
@@ -419,6 +395,35 @@ class FeatureTest(testing_config.CustomTestCase):
         1,
         len(actual['Removed']))
 
+  def test_get_in_milestone__no_enterprise(self):
+    """Enterprise features are not shown in the roadmap."""
+    # This is not included because STAGE_ENT_ROLLOUT is not considered.
+    self.feature_1.impl_status_chrome = ENABLED_BY_DEFAULT
+    rollout_stage = Stage(
+        feature_id=self.feature_1.key.integer_id(),
+        stage_type=STAGE_ENT_ROLLOUT,
+        milestones=MilestoneSet(desktop_first=1),
+        rollout_milestone=1)
+    self.feature_1.put()
+    rollout_stage.put()
+
+    # This one is included because it uses a stage that is considered.
+    self.feature_2.impl_status_chrome = REMOVED
+    self.fe_2_stages_dict[260][0].milestones = MilestoneSet(desktop_first=1)
+    self.feature_2.put()
+    self.fe_2_stages_dict[260][0].put()
+
+    actual = feature_helpers.get_in_milestone(milestone=1)
+    expected_fe_2 = converters.feature_entry_to_json_basic(self.feature_2)
+    expected = {
+        'Browser Intervention': [],
+        'Deprecated': [],
+        'Enabled by default': [],
+        'In developer trial (Behind a flag)': [],
+        'Origin trial': [],
+        'Removed': [expected_fe_2]}
+    self.assertEqual(expected, actual)
+
   def test_get_in_milestone__cached(self):
     """If there is something in the cache, we use it."""
     cache_key = '%s|%s|%s' % (
@@ -430,37 +435,3 @@ class FeatureTest(testing_config.CustomTestCase):
     self.assertEqual(
         cached_test_feature,
         actual)
-
-
-class StageTest(testing_config.CustomTestCase):
-
-  def setUp(self):
-    self.feature_entry_1 = FeatureEntry(id=1, name='fe one',
-        summary='summary', category=1, impl_status_chrome=1,
-        standard_maturity=1, web_dev_views=1)
-    self.feature_entry_1.put()
-    stage_types = [core_enums.STAGE_DEP_PLAN, core_enums.STAGE_DEP_DEV_TRIAL,
-        core_enums.STAGE_DEP_DEPRECATION_TRIAL, core_enums.STAGE_DEP_SHIPPING,
-        core_enums.STAGE_DEP_REMOVE_CODE]
-    self.feature_id = self.feature_entry_1.key.integer_id()
-    for stage_type in stage_types:
-      stage = Stage(feature_id=self.feature_id, stage_type=stage_type)
-      stage.put()
-
-  def tearDown(self):
-    self.feature_entry_1.key.delete()
-    for stage in Stage.query().fetch():
-      stage.key.delete()
-  
-  def test_get_feature_stages(self):
-    """A dictionary with stages relevant to the feature should be present."""
-    stage_dict = stage_helpers.get_feature_stages(self.feature_id)
-    list_stages = stage_dict.items()
-    expected_stage_types = {410, 430, 450, 460, 470}
-    # Extension stage type was not created, so it should not appear.
-    self.assertIsNone(stage_dict.get(451, None))
-    self.assertEqual(len(list_stages), 5)
-    for stage_type, stages in stage_dict.items():
-      self.assertTrue(stage_type in expected_stage_types)
-      self.assertEqual(stages[0].stage_type, stage_type)
-      expected_stage_types.remove(stage_type)

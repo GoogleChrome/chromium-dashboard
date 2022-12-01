@@ -328,6 +328,7 @@ def get_in_milestone(milestone: int,
     # Start each query asynchronously in parallel.
 
     # Shipping stages with a matching desktop milestone.
+    # Note: Enterprise features use STAGE_ENT_ROLLOUT and are NOT included.
     q = Stage.query(Stage.milestones.desktop_first == milestone,
         ndb.OR(Stage.stage_type == STAGE_BLINK_SHIPPING,
             Stage.stage_type == STAGE_PSA_SHIPPING,
