@@ -55,6 +55,12 @@ class EnumsFunctionsTest(testing_config.CustomTestCase):
         'impl_status_chrome', 99)
     self.assertEqual(99, actual)
 
+  def test_convert_enum_string_to_int__already_numeric(self):
+    """If the value passed in is already an int, go with it."""
+    actual = core_enums.convert_enum_string_to_int(
+        'impl_status_chrome', str(core_enums.NO_ACTIVE_DEV))
+    self.assertEqual(core_enums.NO_ACTIVE_DEV, actual)
+
   def test_convert_enum_string_to_int__enum_found(self):
     """We use the enum representation if it is defined."""
     actual = core_enums.convert_enum_string_to_int(

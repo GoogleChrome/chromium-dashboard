@@ -24,6 +24,7 @@ from google.cloud.ndb.tasklets import Future  # for type checking only
 from framework import users
 from framework import utils
 from internals import approval_defs
+from internals import core_enums
 from internals import core_models
 from internals import feature_helpers
 from internals import notifier
@@ -201,19 +202,23 @@ def _sort_by_total_order(
 
 def process_query(
     user_query: str, sort_spec: str = None,
-    show_unlisted=False, show_deleted=False,
+    show_unlisted=False, show_deleted=False, show_enterprise=False,
     start=0, num=DEFAULT_RESULTS_PER_PAGE) -> tuple[list[dict[str, Any]], int]:
   """Parse the user's query, run it, and return a list of features."""
   # 1a. Parse the user query into terms.
   terms = TERM_RE.findall(user_query + ' ')[:MAX_TERMS] or []
 
-  # 1b. Add permission terms.
+  # 1b. Add permission and search scope terms.
   permission_terms = []
   if not show_deleted:
     permission_terms.append(('', 'deleted', '=', 'false', None))
   # TODO(jrobbins): include unlisted features that the user is allowed to view.
   if not show_unlisted:
     permission_terms.append(('', 'unlisted', '=', 'false', None))
+  if not show_enterprise:
+    permission_terms.append(
+        ('', 'feature_type', '<=',
+         str(core_enums.FEATURE_TYPE_DEPRECATION_ID), None))
 
   # 1c. Parse the sort directive.
   sort_spec = sort_spec or '-created.when'
@@ -233,30 +238,22 @@ def process_query(
   # 3. Get the result of each future and combine them into a result ID set.
   logging.info('now waiting on futures')
 
-  # 3a. Process all negation operations.
+  # 3a. Process user query: negation, AND, and OR.
   feature_id_future_ops = process_negation_operations(feature_id_future_ops)
+  query_clauses = process_and_operations(feature_id_future_ops)
+  result_id_set = process_or_operations(query_clauses)
 
-  # 3b. Process all AND operations.
-  or_clauses = process_and_operations(feature_id_future_ops)
-
-  # 3c. Process all OR operations.
-  result_id_set = process_or_operations(or_clauses)
-
-  # 3d. Process all permission ops.
-  permission_ids = process_and_operations(permissions_future_ops)
-  if len(permission_ids) == 1:
-    if terms == []:
-      # Empty search terms.
-      result_id_set = permission_ids[0]
-    else:
-      result_id_set.intersection_update(permission_ids[0])
+  # 3b. Process all permission ops, then interesect to apply permisisons.
+  permission_clauses = process_and_operations(permissions_future_ops)
+  permission_ids = process_or_operations(permission_clauses)
+  result_id_set.intersection_update(permission_ids)
 
   result_id_list = list(result_id_set)
   total_count = len(result_id_list)
-  # 3d. Finish getting the total sort order.
-  total_order_ids = _resolve_promise_to_id_list(total_order_promise)
 
-  # 4. Sort the IDs according to their position in the complete sorted list.
+  # 4. Finish getting the total sort order. Then, sort the IDs according
+  # to their position in the complete sorted list.
+  total_order_ids = _resolve_promise_to_id_list(total_order_promise)
   sorted_id_list = _sort_by_total_order(result_id_list, total_order_ids)
 
   # 5. Paginate
@@ -296,7 +293,11 @@ def create_future_operations_from_queries(terms):
 
 
 def process_or_operations(or_clauses):
-  """ Process OR operations for all id sets."""
+  """Process OR operations for all id sets."""
+  # If there were no conditions, all features match.
+  if not or_clauses:
+    return fetch_all_feature_ids_set()
+
   result_id_set = set()
   for id_set in or_clauses:
     result_id_set.update(id_set)
@@ -343,7 +344,7 @@ def process_negation_operations(feature_id_future_ops):
       continue
 
     if all_ids_set is None:
-        all_ids_set = fetch_all_feature_ids_set()
+      all_ids_set = fetch_all_feature_ids_set()
 
     feature_ids = _resolve_promise_to_id_list(future)
     result_set = all_ids_set.difference(feature_ids)
