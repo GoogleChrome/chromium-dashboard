@@ -275,7 +275,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
         val = self.form.getlist(field)
         # Occasionally, input will give an empty string as the first element.
         # It needs to be removed.
-        if val and len(val[0]) == 0:
+        if val and val[0] == '':
           val = val[1:]
         return val
       elif field == 'blink_components' and len(val) == 0:
