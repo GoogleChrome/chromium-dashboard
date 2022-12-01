@@ -55,9 +55,10 @@ class FeaturesAPI(basehandlers.APIHandler):
     num = self.get_int_arg('num', search.DEFAULT_RESULTS_PER_PAGE)
     start = self.get_int_arg('start', 0)
 
+    show_enterprise = 'feature_type' in user_query
     features_on_page, total_count = search.process_query(
         user_query, sort_spec=sort_spec, show_unlisted=show_unlisted_features,
-        start=start, num=num)
+        show_enterprise=show_enterprise, start=start, num=num)
 
     return {
         'total_count': total_count,

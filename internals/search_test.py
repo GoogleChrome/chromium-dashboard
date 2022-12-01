@@ -17,6 +17,7 @@ import testing_config  # Must be imported before the module under test.
 import datetime
 from unittest import mock
 
+from internals import core_enums
 from internals import core_models
 from internals import notifier
 from internals import review_models
@@ -135,6 +136,18 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
         impl_status_chrome=3, unlisted=True)
     self.featureentry_3.owner_emails = ['owner@example.com']
     self.featureentry_3.put()
+    self.feature_4 = core_models.Feature(
+        name='feature 4', summary='sum', category=4, web_dev_views=1,
+        impl_status_chrome=4,
+        feature_type=core_enums.FEATURE_TYPE_ENTERPRISE_ID)
+    self.feature_4.put()
+    self.featureentry_4 = core_models.FeatureEntry(
+        id=self.feature_4.key.integer_id(),
+        name='feature 4', summary='sum', category=4, web_dev_views=1,
+        impl_status_chrome=4,
+        feature_type=core_enums.FEATURE_TYPE_ENTERPRISE_ID)
+    self.featureentry_4.owner_emails = ['owner@example.com']
+    self.featureentry_4.put()
 
   def tearDown(self):
     notifier.FeatureStar.set_star(
@@ -143,9 +156,11 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
     self.feature_1.key.delete()
     self.feature_2.key.delete()
     self.feature_3.key.delete()
+    self.feature_4.key.delete()
     self.featureentry_1.key.delete()
     self.featureentry_2.key.delete()
     self.featureentry_3.key.delete()
+    self.featureentry_4.key.delete()
     for gate in review_models.Gate.query():
       gate.key.delete()
 
@@ -360,7 +375,7 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
     self.assertEqual(actual_recent[0]['name'],'feature 2')
 
   def test_process_query__single_field(self):
-    """We can can run single-field queries."""
+    """We can run single-field queries."""
     actual, tc = search.process_query('')
     self.assertEqual(2, len(actual))
     self.assertCountEqual(
@@ -390,7 +405,7 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
         ['feature 1', 'feature 2'])
 
   def test_process_query__show_deleted_unlisted(self):
-    """We can can run queries without deleted/unlisted features."""
+    """We can run queries without deleted/unlisted features."""
     actual, tc = search.process_query('', show_deleted=True)
     self.assertEqual(2, len(actual))
     self.assertCountEqual(
@@ -405,7 +420,10 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
 
     actual, tc = search.process_query(
         '', show_unlisted=True, show_deleted=True)
-    self.assertEqual([], actual)
+    self.assertEqual(3, len(actual))
+    self.assertCountEqual(
+        [f['name'] for f in actual],
+        ['feature 1', 'feature 2', 'feature 3'])
 
     actual, tc = search.process_query(
         'category="Web Components" category=Security', show_unlisted=True)
@@ -425,8 +443,23 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
         [f['name'] for f in actual],
         ['feature 1'])
 
+  def test_process_query__show_enterprise(self):
+    """We can run queries without or without enterprise features."""
+    actual, tc = search.process_query('')
+    self.assertEqual(2, len(actual))
+    self.assertCountEqual(
+        [f['name'] for f in actual],
+        ['feature 1', 'feature 2'])
+
+    actual, tc = search.process_query('', show_enterprise=True)
+    self.assertEqual(3, len(actual))
+    self.assertCountEqual(
+        [f['name'] for f in actual],
+        ['feature 1', 'feature 2', 'feature 4'])
+
+
   def test_process_query__negated_single_field(self):
-    """We can can run single-field queries."""
+    """We can run single-field queries."""
 
     actual, tc = search.process_query('-category="Web Components"')
     self.assertEqual(1, len(actual))
@@ -448,7 +481,7 @@ class SearchFunctionsTest(testing_config.CustomTestCase):
     self.assertEqual(0, len(actual))
 
   def test_process_query__multiple_fields(self):
-    """We can can run multi-field queries."""
+    """We can run multi-field queries."""
 
     actual, tc = search.process_query(
         'category="Web Components" category=Miscellaneous')
