@@ -144,7 +144,6 @@ export class ChromedashFeaturePage extends LitElement {
     }).catch((error) => {
       if (error instanceof FeatureNotFoundError) {
         this.loading = false;
-        showToastMessage('Feature not found.');
       } else {
         showToastMessage('Some errors occurred. Please refresh the page or try again later.');
       }
@@ -464,7 +463,7 @@ export class ChromedashFeaturePage extends LitElement {
     }
     // If after loading, the feature did not load, render nothing.
     if (!this.isFeatureLoaded()) {
-      return html ``;
+      return html `Feature not found.`;
     }
     // At this point, the feature has loaded successfully, render the components.
     return html`

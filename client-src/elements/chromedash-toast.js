@@ -117,17 +117,6 @@ class ChromedashToast extends LitElement {
     this.open = true;
   }
 
-  reset() {
-    if (this.currentTimeout !== null) {
-      clearTimeout(this.currentTimeout);
-    }
-    this.msg = '';
-    this.actionLabel = '';
-    this.open = false;
-    this.currentTimeout = null;
-    this.waitingForTransition = false;
-  }
-
   render() {
     return html`
       <span id="msg">${this.msg}</span>
