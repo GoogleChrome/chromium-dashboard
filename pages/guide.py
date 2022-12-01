@@ -271,12 +271,16 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
     elif field_type == 'str':
       return self.form.get(field)
     elif field_type == 'split_str':
-      val = self.split_input(field, delim=',')
       if field == 'rollout_platforms':
         val = self.form.getlist(field)
+        # Occasionally, input will give an empty string as the first element.
+        # It needs to be removed.
+        if val and val[0] == '':
+          val = val[1:]
+        return val
       elif field == 'blink_components' and len(val) == 0:
         return [settings.DEFAULT_COMPONENT]
-      return val
+      return self.split_input(field, delim=',')
     raise ValueError(f'Unknown field data type: {field_type}')
 
   def _add_changed_field(self, fe: FeatureEntry, field: str, new_val: Any,
