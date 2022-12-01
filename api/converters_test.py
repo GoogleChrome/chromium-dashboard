@@ -20,6 +20,20 @@ from api import converters
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
 
 
+class DelNoneTest(testing_config.CustomTestCase):
+
+  def test_del_none(self):
+    d = {}
+    self.assertEqual(
+        {},
+        converters.del_none(d))
+
+    d = {1: 'one', 2: None, 3: {33: None}, 4:{44: 44, 45: None}}
+    self.assertEqual(
+        {1: 'one', 3: {}, 4: {44: 44}},
+        converters.del_none(d))
+
+
 class ConvertersTest(testing_config.CustomTestCase):
 
   def setUp(self):
