@@ -6,7 +6,7 @@ export class ChromedashEnterprisePage extends ChromedashAllFeaturesPage {
   renderBox(query) {
     return html`
       <chromedash-feature-table
-        query="${query}"
+        query=${query}
         ?signedIn=${Boolean(this.user)}
         ?canEdit=${this.user && this.user.can_edit_all}
         ?canApprove=${this.user && this.user.can_approve}
