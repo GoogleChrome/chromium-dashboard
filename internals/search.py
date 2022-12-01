@@ -294,7 +294,7 @@ def create_future_operations_from_queries(terms):
 
 def process_or_operations(or_clauses):
   """Process OR operations for all id sets."""
-  # If there were no conditions, then all features match.
+  # If there were no conditions, all features match.
   if not or_clauses:
     return fetch_all_feature_ids_set()
 
