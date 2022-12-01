@@ -17,6 +17,30 @@
 (function(exports) {
 'use strict';
 
+/**
+ * Generic Chrome Status Http Error.
+ */
+class ChromeStatusHttpError extends Error {
+  constructor(message, resource, method, status) {
+    super(message);
+    this.name = 'ChromeStatusHttpError';
+    this.resource = resource;
+    this.method = method;
+    this.status = status;
+  }
+}
+
+/**
+ * FeatureNotFoundError represents an error for when a feature was not found
+ * for the given ID.
+ */
+class FeatureNotFoundError extends Error {
+  constructor(featureID) {
+    super('Feature not found');
+    this.name = 'FeatureNotFoundError';
+    this.featureID = featureID;
+  }
+}
 
 class ChromeStatusClient {
   constructor(token, tokenExpiresSec) {
@@ -64,8 +88,11 @@ class ChromeStatusClient {
     const response = await fetch(url, options);
 
     if (response.status !== 200) {
-      throw new Error(
-          `Got error response from server ${resource}: ${response.status}`);
+      throw new ChromeStatusHttpError(
+        `Got error response from server ${resource}: ${response.status}`,
+        resource,
+        httpMethod,
+        response.status);
     }
     const rawResponseText = await response.text();
     const XSSIPrefix = ')]}\'\n';
@@ -241,7 +268,19 @@ class ChromeStatusClient {
 
   // Features API
   getFeature(featureId) {
-    return this.doGet(`/features/${featureId}`);
+    return this.doGet(`/features/${featureId}`)
+      .catch((error) => {
+        // If not the ChromeStatusHttpError, continue throwing.
+        if (!(error instanceof ChromeStatusHttpError)) {
+          throw error;
+        }
+        // Else, do further validations
+        if (error.status === 404) {
+          throw new FeatureNotFoundError(featureId);
+        }
+        // No other special cases means, we can re throw the error.
+        throw error;
+      });
   }
 
   getFeaturesInMilestone(milestone) {
@@ -289,4 +328,5 @@ class ChromeStatusClient {
 };
 
 exports.ChromeStatusClient = ChromeStatusClient;
+exports.FeatureNotFoundError = FeatureNotFoundError;
 })(window);

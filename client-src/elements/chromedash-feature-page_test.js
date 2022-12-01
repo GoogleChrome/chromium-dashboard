@@ -140,6 +140,21 @@ describe('chromedash-feature-page', () => {
       'Some errors occurred. Please refresh the page or try again later.');
   });
 
+  it('renders with "Feature not found." when feature not found', async () => {
+    const featureNotFoundPromise = Promise.reject(new FeatureNotFoundError(12345));
+    window.csClient.getFeature.withArgs(0).returns(featureNotFoundPromise);
+
+    const component = await fixture(
+      html`<chromedash-feature-page></chromedash-feature-page>`);
+    assert.exists(component);
+    assert.instanceOf(component, ChromedashFeaturePage);
+
+    // If a request for a feature returns stating that it is not found, it
+    // should show a simple message about that.
+    const expectedMsg = 'Feature not found.';
+    assert.include(component.shadowRoot.innerHTML, expectedMsg);
+  });
+
   it('renders with fake data', async () => {
     const featureId = 123456;
     const contextLink = '/features';

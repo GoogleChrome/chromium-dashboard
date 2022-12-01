@@ -116,6 +116,10 @@ export class ChromedashFeaturePage extends LitElement {
     this.fetchData();
   }
 
+  isFeatureLoaded() {
+    return this.feature && Object.keys(this.feature).length !== 0;
+  }
+
   fetchData() {
     this.loading = true;
     Promise.all([
@@ -137,8 +141,12 @@ export class ChromedashFeaturePage extends LitElement {
         document.title = `${this.feature.name} - ${this.appTitle}`;
       }
       this.loading = false;
-    }).catch(() => {
-      showToastMessage('Some errors occurred. Please refresh the page or try again later.');
+    }).catch((error) => {
+      if (error instanceof FeatureNotFoundError) {
+        this.loading = false;
+      } else {
+        showToastMessage('Some errors occurred. Please refresh the page or try again later.');
+      }
     });
   }
 
@@ -449,17 +457,22 @@ export class ChromedashFeaturePage extends LitElement {
   render() {
     // TODO: create another element - chromedash-feature-highlights
     // for all the content of the <div id="feature"> part of the page
+    // If loading, only render the skeletons.
+    if (this.loading) {
+      return this.renderSkeletons();
+    }
+    // If after loading, the feature did not load, render nothing.
+    if (!this.isFeatureLoaded()) {
+      return html `Feature not found.`;
+    }
+    // At this point, the feature has loaded successfully, render the components.
     return html`
-      ${this.loading ?
-        this.renderSkeletons() :
-        html`
-          ${this.renderSubHeader()}
-          <div id="feature">
-            ${this.renderFeatureContent()}
-            ${this.renderFeatureStatus()}
-          </div>
-          ${this.renderFeatureDetails()}
-      `}
+      ${this.renderSubHeader()}
+      <div id="feature">
+        ${this.renderFeatureContent()}
+        ${this.renderFeatureStatus()}
+      </div>
+      ${this.renderFeatureDetails()}
     `;
   }
 }
