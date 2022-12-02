@@ -17,6 +17,8 @@ from dataclasses import asdict, dataclass
 
 from internals import approval_defs
 from internals import core_enums
+from internals import core_models
+from internals import stage_helpers
 
 
 @dataclass
@@ -602,6 +604,23 @@ def initial_tag_review_status(feature_type):
 def review_is_done(status):
   return status in (core_enums.REVIEW_ISSUES_ADDRESSED, core_enums.REVIEW_NA)
 
+def should_add_rollout_stage(feature_entry):
+  """Returns whether the rollout stage should be added to the feature process.
+
+     Returns true if the feature is not of type FEATURE_TYPE_ENTERPRISE_ID,
+     and the featuer is a breaking change or has one of the fields from the
+     following fiels modified: 'rollout_milestone', 'rollout_platforms',
+     'rolout_detials' oe 'enterprise_policies'.
+  Args:
+    feature_entry: core.FeatureEntry the feature to check.
+  """
+  if feature_entry.feature_type == core_enums.FEATURE_TYPE_ENTERPRISE_ID:
+    return False
+  if  feature_entry.breaking_change:
+    return True
+  stages = stage_helpers.get_feature_stages(feature_entry.key.integer_id())
+  return core_enums.STAGE_ENT_ROLLOUT in stages
+
 
 # These functions return a true value when the checkmark should be shown.
 # If they return a string, and it starts with "http:" or "https:", it will
@@ -702,18 +721,18 @@ PROGRESS_DETECTORS = {
     lambda f, _: f.impl_status_chrome == core_enums.REMOVED,
 
     'Rollout milestone':
-    lambda f, stages: stages[core_enums.STAGE_TYPES_SHIPPING[f.feature_type]] and
-        stages[core_enums.STAGE_TYPES_SHIPPING[f.feature_type]][0].rollout_milestone,
+    lambda f, stages: stages[core_enums.STAGE_TYPES_ROLLOUT[f.feature_type]] and
+        stages[core_enums.STAGE_TYPES_ROLLOUT[f.feature_type]][0].rollout_milestone,
 
     'Rollout platforms':
-    lambda f, stages: stages[core_enums.STAGE_TYPES_SHIPPING[f.feature_type]] and
-        stages[core_enums.STAGE_TYPES_SHIPPING[f.feature_type]][0].rollout_platforms,
+    lambda f, stages: stages[core_enums.STAGE_TYPES_ROLLOUT[f.feature_type]] and
+        stages[core_enums.STAGE_TYPES_ROLLOUT[f.feature_type]][0].rollout_platforms,
 
     'Rollout details':
-    lambda f, stages: stages[core_enums.STAGE_TYPES_SHIPPING[f.feature_type]] and
-        stages[core_enums.STAGE_TYPES_SHIPPING[f.feature_type]][0].rollout_details,
+    lambda f, stages: stages[core_enums.STAGE_TYPES_ROLLOUT[f.feature_type]] and
+        stages[core_enums.STAGE_TYPES_ROLLOUT[f.feature_type]][0].rollout_details,
 
     'Enterprise policies':
-    lambda f, stages: stages[core_enums.STAGE_TYPES_SHIPPING[f.feature_type]] and
-        stages[core_enums.STAGE_TYPES_SHIPPING[f.feature_type]][0].enterprise_policies,
+    lambda f, stages: stages[core_enums.STAGE_TYPES_ROLLOUT[f.feature_type]] and
+        stages[core_enums.STAGE_TYPES_ROLLOUT[f.feature_type]][0].enterprise_policies,
 }

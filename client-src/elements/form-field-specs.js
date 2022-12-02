@@ -1153,7 +1153,7 @@ export const ALL_FIELDS = {
   'rollout_milestone': {
     type: 'input',
     attrs: MILESTONE_NUMBER_FILED_ATTRS,
-    required: true,
+    required: false,
     label: 'Rollout milestone',
     help_text: html`
       Milestone in which rollout for this feature starts.`,
@@ -1162,7 +1162,7 @@ export const ALL_FIELDS = {
   'rollout_platforms': {
     type: 'multiselect',
     choices: PLATFORM_CATEGORIES,
-    required: true,
+    required: false,
     label: 'Rollout platforms',
     help_text: html`
       Platforms for which rollout for this feature occurs in the selected milestone.`,

@@ -218,6 +218,7 @@ export const FLAT_FORMS = [
   ['Dev trial', FLAT_DEV_TRAIL_FIELDS],
   ['Origin trial', FLAT_ORIGIN_TRIAL_FIELDS],
   ['Prepare to ship', FLAT_PREPARE_TO_SHIP_FIELDS],
+  ['Start feature rollout', FLAT_ENTERPRISE_PREPARE_TO_SHIP],
   ['Ship', FLAT_SHIP_FIELDS],
 ];
 
@@ -230,6 +231,7 @@ export const FLAT_FORMS_BY_FEATURE_TYPE = {
     ['Identify the need', FLAT_IDENTIFY_FIELDS],
     ['Dev trial', FLAT_DEV_TRAIL_FIELDS],
     ['Prepare to ship', FLAT_PREPARE_TO_SHIP_FIELDS],
+    ['Start feature rollout', FLAT_ENTERPRISE_PREPARE_TO_SHIP],
     ['Ship', FLAT_SHIP_FIELDS],
   ],
   [FEATURE_TYPES.FEATURE_TYPE_DEPRECATION_ID[0]]: [
@@ -238,6 +240,7 @@ export const FLAT_FORMS_BY_FEATURE_TYPE = {
     ['Dev trial', FLAT_DEV_TRAIL_FIELDS],
     ['Origin trial', FLAT_ORIGIN_TRIAL_FIELDS],
     ['Prepare to ship', FLAT_PREPARE_TO_SHIP_FIELDS],
+    ['Start feature rollout', FLAT_ENTERPRISE_PREPARE_TO_SHIP],
     ['Ship', FLAT_SHIP_FIELDS],
   ],
   [FEATURE_TYPES.FEATURE_TYPE_ENTERPRISE_ID[0]]: [
