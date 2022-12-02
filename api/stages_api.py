@@ -13,21 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from datetime import datetime
-import logging
-from typing import Any, Optional
-from google.cloud import ndb  # type: ignore
-
-# Appengine imports.
-from framework import rediscache
-
 from framework import basehandlers
 from framework import permissions
-from internals import core_enums, notifier_helpers
-from internals import stage_helpers
+from internals import core_enums
 from internals.core_models import FeatureEntry, MilestoneSet, Stage
 from internals.review_models import Gate
-import settings
 
 
 
@@ -35,16 +25,16 @@ import settings
 class StagesAPI(basehandlers.APIHandler):
 
   # Categorized field names of the Stage kind.
-  GENERAL_FIELDS: tuple[str] = (
+  GENERAL_FIELDS: list[str] = [
       'stage_type',
       'browser',
       'pm_emails',
       'tl_emails',
       'ux_emails',
       'te_emails',
-      'intent_thread_url')
+      'intent_thread_url']
 
-  MILESTONE_FIELDS: tuple[str] = (
+  MILESTONE_FIELDS: list[str] = [
       'desktop_first',
       'desktop_last',
       'android_first',
@@ -52,35 +42,35 @@ class StagesAPI(basehandlers.APIHandler):
       'ios_first',
       'ios_last',
       'webview_first',
-      'webview_last')
+      'webview_last']
 
-  OT_FIELDS: tuple[str] = (
+  OT_FIELDS: list[str] = [
       'experiment_goals',
       'experiment_risks',
-      'origin_trial_feedback_url')
+      'origin_trial_feedback_url']
 
-  OT_EXTENSION_FIELDS: tuple[str] = (
+  OT_EXTENSION_FIELDS: list[str] = [
       'experiment_extension_reason',
-      'ot_stage_id')
+      'ot_stage_id']
 
-  SHIPPING_FIELDS: tuple[str] = (
+  SHIPPING_FIELDS: list[str] = [
       'announcement_url',
-      'finch_url')
+      'finch_url']
   
-  ENTERPRISE_FIELDS: tuple[str] = (
+  ENTERPRISE_FIELDS: list[str] = [
       'rollout_milestone',
       'rollout_platforms',
       'rollout_details',
-      'enterprise_policies')
+      'enterprise_policies']
 
   # Fields that should default to an empty list if null.
-  FIELDS_DEFAULT_TO_LIST: tuple[str] = (
+  FIELDS_DEFAULT_TO_LIST: list[str] = [
       'pm_emails',
       'tl_emails',
       'ux_emails',
       'te_emails',
       'rollout_platforms',
-      'enterprise_policies')
+      'enterprise_policies']
 
   def _stage_to_json_dict(self, stage: Stage) -> dict:
     """Create a JSON representation of a given stage."""
@@ -114,7 +104,7 @@ class StagesAPI(basehandlers.APIHandler):
     gate.put()
 
   def _add_given_stage_vals(self,
-      stage: Stage, kwargs: dict, fields: tuple[str]) -> None:
+      stage: Stage, kwargs: dict, fields: list[str]) -> None:
     """Add given fields of the stage entity."""
     for field in fields:
       if field in kwargs:

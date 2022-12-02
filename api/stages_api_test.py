@@ -82,7 +82,7 @@ class StagesAPITest(testing_config.CustomTestCase):
         'enterprise_policies': []}
 
     self.handler = stages_api.StagesAPI()
-    self.request_path = '/api/v0/stages/'
+    self.request_path = '/api/v0/features/'
 
     self.maxDiff = None
 
