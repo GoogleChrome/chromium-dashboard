@@ -16,7 +16,7 @@
 from dataclasses import asdict, dataclass
 
 from internals import approval_defs
-from internals import core_enums
+from internals.core_enums import *
 
 
 @dataclass
@@ -43,6 +43,7 @@ class ProcessStage:
   approvals: list[approval_defs.ApprovalFieldDef]
   incoming_stage: int
   outgoing_stage: int
+  stage_id: int
 
 @dataclass
 class Process:
@@ -169,7 +170,7 @@ BLINK_PROCESS_STAGES = [
       ],
       [],
       [],
-      core_enums.INTENT_NONE, core_enums.INTENT_INCUBATE),
+      INTENT_NONE, INTENT_INCUBATE, STAGE_BLINK_INCUBATE),
 
   ProcessStage(
       'Start prototyping',
@@ -184,7 +185,7 @@ BLINK_PROCESS_STAGES = [
               [PI_INITIAL_PUBLIC_PROPOSAL.name, PI_MOTIVATION.name,
                PI_EXPLAINER.name])],
       [approval_defs.PrototypeApproval],
-      core_enums.INTENT_INCUBATE, core_enums.INTENT_IMPLEMENT),
+      INTENT_INCUBATE, INTENT_IMPLEMENT, STAGE_BLINK_PROTOTYPE),
 
   ProcessStage(
       'Dev trials and iterate on design',
@@ -203,7 +204,7 @@ BLINK_PROCESS_STAGES = [
               [PI_INITIAL_PUBLIC_PROPOSAL.name, PI_MOTIVATION.name,
                PI_EXPLAINER.name, PI_SPEC_LINK.name])],
       [],
-      core_enums.INTENT_IMPLEMENT, core_enums.INTENT_EXPERIMENT),
+      INTENT_IMPLEMENT, INTENT_EXPERIMENT, STAGE_BLINK_DEV_TRIAL),
 
   ProcessStage(
       'Evaluate readiness to ship',
@@ -217,7 +218,7 @@ BLINK_PROCESS_STAGES = [
       ],
       [],
       [],
-      core_enums.INTENT_EXPERIMENT, core_enums.INTENT_IMPLEMENT_SHIP),
+      INTENT_EXPERIMENT, INTENT_IMPLEMENT_SHIP, STAGE_BLINK_EVAL_READINESS),
 
   ProcessStage(
       'Origin Trial',
@@ -234,7 +235,10 @@ BLINK_PROCESS_STAGES = [
                PI_EXPLAINER.name, PI_SPEC_LINK.name,
                PI_EST_TARGET_MILESTONE.name])],
       [approval_defs.ExperimentApproval],
-      core_enums.INTENT_IMPLEMENT_SHIP, core_enums.INTENT_EXTEND_TRIAL),
+      INTENT_IMPLEMENT_SHIP, INTENT_EXTEND_TRIAL, STAGE_BLINK_ORIGIN_TRIAL),
+
+  # TODO(danielrsmith): Extend origin trial stage declared here.
+  # TODO(danielrsmith): Combine prepare to ship and ship.
 
   ProcessStage(
       'Prepare to ship',
@@ -253,7 +257,7 @@ BLINK_PROCESS_STAGES = [
                PI_TAG_ADDRESSED.name, PI_UPDATED_VENDOR_SIGNALS.name,
                PI_UPDATED_TARGET_MILESTONE.name])],
       [approval_defs.ShipApproval],
-      core_enums.INTENT_IMPLEMENT_SHIP, core_enums.INTENT_SHIP),
+      INTENT_IMPLEMENT_SHIP, INTENT_SHIP, STAGE_BLINK_SHIPPING),
 
   ProcessStage(
       'Ship',
@@ -264,7 +268,7 @@ BLINK_PROCESS_STAGES = [
       ],
       [],
       [],
-      core_enums.INTENT_SHIP, core_enums.INTENT_SHIPPED),
+      INTENT_SHIP, INTENT_SHIPPED, STAGE_BLINK_SHIPPING),
   ]
 
 
@@ -286,7 +290,7 @@ BLINK_FAST_TRACK_STAGES = [
       [Action('Draft Intent to Prototype email', INTENT_EMAIL_URL,
               [PI_SPEC_LINK.name])],
       [approval_defs.PrototypeApproval],
-      core_enums.INTENT_NONE, core_enums.INTENT_IMPLEMENT),
+      INTENT_NONE, INTENT_IMPLEMENT, STAGE_FAST_PROTOTYPE),
 
   ProcessStage(
       'Dev trials and iterate on implementation',
@@ -302,7 +306,7 @@ BLINK_FAST_TRACK_STAGES = [
       [Action('Draft Ready for Trial email', INTENT_EMAIL_URL,
               [PI_SPEC_LINK.name, PI_EST_TARGET_MILESTONE.name])],
       [],
-      core_enums.INTENT_IMPLEMENT, core_enums.INTENT_EXPERIMENT),
+      INTENT_IMPLEMENT, INTENT_EXPERIMENT, STAGE_FAST_DEV_TRIAL),
 
   ProcessStage(
       'Origin Trial',
@@ -317,7 +321,7 @@ BLINK_FAST_TRACK_STAGES = [
       [Action('Draft Intent to Experiment email', INTENT_EMAIL_URL,
               [PI_SPEC_LINK.name, PI_EST_TARGET_MILESTONE.name])],
       [approval_defs.ExperimentApproval],
-      core_enums.INTENT_EXPERIMENT, core_enums.INTENT_EXTEND_TRIAL),
+      INTENT_EXPERIMENT, INTENT_EXTEND_TRIAL, STAGE_FAST_ORIGIN_TRIAL),
 
   ProcessStage(
       'Prepare to ship',
@@ -331,7 +335,7 @@ BLINK_FAST_TRACK_STAGES = [
       [Action('Draft Intent to Ship email', INTENT_EMAIL_URL,
               [PI_SPEC_LINK.name, PI_UPDATED_TARGET_MILESTONE.name])],
       [approval_defs.ShipApproval],
-      core_enums.INTENT_EXPERIMENT, core_enums.INTENT_SHIP),
+      INTENT_EXPERIMENT, INTENT_SHIP, STAGE_FAST_SHIPPING),
 
   ProcessStage(
       'Ship',
@@ -342,7 +346,7 @@ BLINK_FAST_TRACK_STAGES = [
       ],
       [],
       [],
-      core_enums.INTENT_SHIP, core_enums.INTENT_SHIPPED),
+      INTENT_SHIP, INTENT_SHIPPED, STAGE_FAST_SHIPPING),
   ]
 
 
@@ -362,7 +366,7 @@ PSA_ONLY_STAGES = [
       ],
       [],
       [],
-      core_enums.INTENT_NONE, core_enums.INTENT_IMPLEMENT),
+      INTENT_NONE, INTENT_IMPLEMENT, STAGE_PSA_IMPLEMENT),
 
   ProcessStage(
       'Dev trials and iterate on implementation',
@@ -375,7 +379,7 @@ PSA_ONLY_STAGES = [
       [Action('Draft Ready for Trial email', INTENT_EMAIL_URL,
               [PI_SPEC_LINK.name, PI_EST_TARGET_MILESTONE.name])],
       [],
-      core_enums.INTENT_IMPLEMENT, core_enums.INTENT_EXPERIMENT),
+      INTENT_IMPLEMENT, INTENT_EXPERIMENT, STAGE_PSA_DEV_TRIAL),
 
   ProcessStage(
       'Prepare to ship',
@@ -387,7 +391,7 @@ PSA_ONLY_STAGES = [
       [Action('Draft Intent to Ship email', INTENT_EMAIL_URL,
               [PI_SPEC_LINK.name, PI_UPDATED_TARGET_MILESTONE.name])],
       [approval_defs.ShipApproval],
-      core_enums.INTENT_EXPERIMENT, core_enums.INTENT_SHIP),
+      INTENT_EXPERIMENT, INTENT_SHIP, STAGE_PSA_SHIPPING),
 
   ProcessStage(
       'Ship',
@@ -398,7 +402,7 @@ PSA_ONLY_STAGES = [
       ],
       [],
       [],
-      core_enums.INTENT_SHIP, core_enums.INTENT_SHIPPED),
+      INTENT_SHIP, INTENT_SHIPPED, STAGE_PSA_SHIPPING),
   ]
 
 
@@ -421,7 +425,7 @@ DEPRECATION_STAGES = [
       [Action('Draft Intent to Deprecate and Remove email', INTENT_EMAIL_URL,
               [PI_MOTIVATION.name])],
       [approval_defs.PrototypeApproval],
-      core_enums.INTENT_NONE, core_enums.INTENT_IMPLEMENT),
+      INTENT_NONE, INTENT_IMPLEMENT, STAGE_DEP_PLAN),
 
   # TODO(cwilso): Work out additional steps for flag defaulting to disabled.
   ProcessStage(
@@ -435,7 +439,7 @@ DEPRECATION_STAGES = [
               [PI_MOTIVATION.name, PI_VENDOR_SIGNALS.name,
                PI_EST_TARGET_MILESTONE.name])],
       [],
-      core_enums.INTENT_IMPLEMENT, core_enums.INTENT_EXPERIMENT),
+      INTENT_IMPLEMENT, INTENT_EXPERIMENT, STAGE_DEP_DEV_TRIAL),
 
   ProcessStage(
       'Prepare for Deprecation Trial',
@@ -451,7 +455,7 @@ DEPRECATION_STAGES = [
                PI_EST_TARGET_MILESTONE.name])],
       # TODO(jrobbins): Intent to extend deprecation.
       [approval_defs.ExperimentApproval],
-      core_enums.INTENT_EXPERIMENT, core_enums.INTENT_EXTEND_TRIAL),
+      INTENT_EXPERIMENT, INTENT_EXTEND_TRIAL, STAGE_DEP_DEPRECATION_TRIAL),
 
   ProcessStage(
       'Prepare to ship',
@@ -465,7 +469,7 @@ DEPRECATION_STAGES = [
               [PI_MOTIVATION.name, PI_VENDOR_SIGNALS.name,
                PI_UPDATED_TARGET_MILESTONE.name])],
       [approval_defs.ShipApproval],
-      core_enums.INTENT_EXPERIMENT, core_enums.INTENT_SHIP),
+      INTENT_EXPERIMENT, INTENT_SHIP, STAGE_DEP_SHIPPING),
 
   ProcessStage(
       'Remove code',
@@ -478,7 +482,7 @@ DEPRECATION_STAGES = [
                PI_UPDATED_TARGET_MILESTONE.name]),
        ],
       [],
-      core_enums.INTENT_SHIP, core_enums.INTENT_REMOVED),
+      INTENT_SHIP, INTENT_REMOVED, STAGE_DEP_REMOVE_CODE),
   ]
 
 
@@ -497,7 +501,7 @@ FEATURE_ROLLOUT_STAGE = ProcessStage(
       ],
       [],
       [],
-      core_enums.INTENT_SHIP, core_enums.INTENT_ROLLOUT)
+      INTENT_SHIP, INTENT_ROLLOUT, STAGE_ENT_ROLLOUT)
 
 # Thise are the stages for a feature that has the enterprise feature type.
 ENTERPRISE_STAGES = [
@@ -514,7 +518,7 @@ ENTERPRISE_STAGES = [
       ],
       [],
       [],
-      core_enums.INTENT_NONE, core_enums.INTENT_ROLLOUT),
+      INTENT_NONE, INTENT_ROLLOUT, STAGE_ENT_ROLLOUT),
   ProcessStage(
       'Ship',
       'Enable the feature by default.',
@@ -522,7 +526,7 @@ ENTERPRISE_STAGES = [
       ],
       [],
       [],
-      core_enums.INTENT_ROLLOUT, core_enums.INTENT_SHIPPED),
+      INTENT_ROLLOUT, INTENT_SHIPPED, STAGE_ENT_ROLLOUT),
 ]
 
 
@@ -541,41 +545,41 @@ ENTERPRISE_PROCESS = Process(
 
 
 ALL_PROCESSES = {
-    core_enums.FEATURE_TYPE_INCUBATE_ID: BLINK_LAUNCH_PROCESS,
-    core_enums.FEATURE_TYPE_EXISTING_ID: BLINK_FAST_TRACK_PROCESS,
-    core_enums.FEATURE_TYPE_CODE_CHANGE_ID: PSA_ONLY_PROCESS,
-    core_enums.FEATURE_TYPE_DEPRECATION_ID: DEPRECATION_PROCESS,
-    core_enums.FEATURE_TYPE_ENTERPRISE_ID: ENTERPRISE_PROCESS,
+    FEATURE_TYPE_INCUBATE_ID: BLINK_LAUNCH_PROCESS,
+    FEATURE_TYPE_EXISTING_ID: BLINK_FAST_TRACK_PROCESS,
+    FEATURE_TYPE_CODE_CHANGE_ID: PSA_ONLY_PROCESS,
+    FEATURE_TYPE_DEPRECATION_ID: DEPRECATION_PROCESS,
+    FEATURE_TYPE_ENTERPRISE_ID: ENTERPRISE_PROCESS,
     }
 
 
 INTENT_EMAIL_SECTIONS = {
-    core_enums.INTENT_NONE: [],
-    core_enums.INTENT_INCUBATE: [],
-    core_enums.INTENT_IMPLEMENT: ['motivation'],
-    core_enums.INTENT_EXPERIMENT: ['i2p_thread', 'experiment'],
-    core_enums.INTENT_IMPLEMENT_SHIP: [
+    INTENT_NONE: [],
+    INTENT_INCUBATE: [],
+    INTENT_IMPLEMENT: ['motivation'],
+    INTENT_EXPERIMENT: ['i2p_thread', 'experiment'],
+    INTENT_IMPLEMENT_SHIP: [
         'need_api_owners_lgtms', 'motivation', 'tracking_bug', 'sample_links'],
-    core_enums.INTENT_EXTEND_TRIAL: [
+    INTENT_EXTEND_TRIAL: [
         'i2p_thread', 'experiment', 'extension_reason'],
-    core_enums.INTENT_SHIP: [
+    INTENT_SHIP: [
         'need_api_owners_lgtms', 'i2p_thread', 'tracking_bug', 'sample_links',
         'anticipated_spec_changes', 'ship'],
-    core_enums.INTENT_REMOVED: [],
-    core_enums.INTENT_SHIPPED: [],
-    core_enums.INTENT_PARKED: [],
+    INTENT_REMOVED: [],
+    INTENT_SHIPPED: [],
+    INTENT_PARKED: [],
     }
 
 
 def initial_tag_review_status(feature_type):
   """Incubating a new feature requires a TAG review, other types do not."""
-  if feature_type == core_enums.FEATURE_TYPE_INCUBATE_ID:
-    return core_enums.REVIEW_PENDING
-  return core_enums.REVIEW_NA
+  if feature_type == FEATURE_TYPE_INCUBATE_ID:
+    return REVIEW_PENDING
+  return REVIEW_NA
 
 
 def review_is_done(status):
-  return status in (core_enums.REVIEW_ISSUES_ADDRESSED, core_enums.REVIEW_NA)
+  return status in (REVIEW_ISSUES_ADDRESSED, REVIEW_NA)
 
 
 # These functions return a true value when the checkmark should be shown.
@@ -596,20 +600,20 @@ PROGRESS_DETECTORS = {
 
     'Intent to Prototype email':
     lambda f, stages: (
-        core_enums.STAGE_TYPES_PROTOTYPE[f.feature_type] and
-        stages[core_enums.STAGE_TYPES_PROTOTYPE[f.feature_type]][0].intent_thread_url),
+        STAGE_TYPES_PROTOTYPE[f.feature_type] and
+        stages[STAGE_TYPES_PROTOTYPE[f.feature_type]][0].intent_thread_url),
 
     'Intent to Ship email':
-    lambda f, stages: (core_enums.STAGE_TYPES_SHIPPING[f.feature_type] and
-        stages[core_enums.STAGE_TYPES_SHIPPING[f.feature_type]][0].intent_thread_url),
+    lambda f, stages: (STAGE_TYPES_SHIPPING[f.feature_type] and
+        stages[STAGE_TYPES_SHIPPING[f.feature_type]][0].intent_thread_url),
 
     'Ready for Trial email':
-    lambda f, stages: (core_enums.STAGE_TYPES_DEV_TRIAL[f.feature_type] and
-        stages[core_enums.STAGE_TYPES_DEV_TRIAL[f.feature_type]][0].announcement_url),
+    lambda f, stages: (STAGE_TYPES_DEV_TRIAL[f.feature_type] and
+        stages[STAGE_TYPES_DEV_TRIAL[f.feature_type]][0].announcement_url),
 
     'Intent to Experiment email':
-    lambda f, stages: (core_enums.STAGE_TYPES_ORIGIN_TRIAL[f.feature_type] and
-        stages[core_enums.STAGE_TYPES_ORIGIN_TRIAL[f.feature_type]][0].intent_thread_url),
+    lambda f, stages: (STAGE_TYPES_ORIGIN_TRIAL[f.feature_type] and
+        stages[STAGE_TYPES_ORIGIN_TRIAL[f.feature_type]][0].intent_thread_url),
 
     'Samples':
     lambda f, _: f.sample_links and f.sample_links[0],
@@ -637,58 +641,58 @@ PROGRESS_DETECTORS = {
 
     'Web developer signals':
     lambda f, _: bool(f.web_dev_views and
-        f.web_dev_views != core_enums.DEV_NO_SIGNALS),
+        f.web_dev_views != DEV_NO_SIGNALS),
 
     'Vendor signals':
     lambda f, _: bool(
-        f.ff_views != core_enums.NO_PUBLIC_SIGNALS or
-        f.safari_views != core_enums.NO_PUBLIC_SIGNALS),
+        f.ff_views != NO_PUBLIC_SIGNALS or
+        f.safari_views != NO_PUBLIC_SIGNALS),
 
     'Updated vendor signals':
     lambda f, _: bool(
-        f.ff_views != core_enums.NO_PUBLIC_SIGNALS or
-        f.safari_views != core_enums.NO_PUBLIC_SIGNALS),
+        f.ff_views != NO_PUBLIC_SIGNALS or
+        f.safari_views != NO_PUBLIC_SIGNALS),
 
     'Final vendor signals':
     lambda f, _: bool(
-        f.ff_views != core_enums.NO_PUBLIC_SIGNALS or
-        f.safari_views != core_enums.NO_PUBLIC_SIGNALS),
+        f.ff_views != NO_PUBLIC_SIGNALS or
+        f.safari_views != NO_PUBLIC_SIGNALS),
 
     'Estimated target milestone':
-    lambda f, stages: bool(core_enums.STAGE_TYPES_SHIPPING[f.feature_type] and
-        stages[core_enums.STAGE_TYPES_SHIPPING[f.feature_type]][0].milestones and
-        stages[core_enums.STAGE_TYPES_SHIPPING[f.feature_type]][0].milestones.desktop_first),
+    lambda f, stages: bool(STAGE_TYPES_SHIPPING[f.feature_type] and
+        stages[STAGE_TYPES_SHIPPING[f.feature_type]][0].milestones and
+        stages[STAGE_TYPES_SHIPPING[f.feature_type]][0].milestones.desktop_first),
 
     'Final target milestone':
-    lambda f, stages: bool(core_enums.STAGE_TYPES_SHIPPING[f.feature_type] and
-        stages[core_enums.STAGE_TYPES_SHIPPING[f.feature_type]][0].milestones and
-        stages[core_enums.STAGE_TYPES_SHIPPING[f.feature_type]][0].milestones.desktop_first),
+    lambda f, stages: bool(STAGE_TYPES_SHIPPING[f.feature_type] and
+        stages[STAGE_TYPES_SHIPPING[f.feature_type]][0].milestones and
+        stages[STAGE_TYPES_SHIPPING[f.feature_type]][0].milestones.desktop_first),
 
     'Code in Chromium':
     lambda f, _: f.impl_status_chrome in (
-        core_enums.IN_DEVELOPMENT, core_enums.BEHIND_A_FLAG,
-        core_enums.ENABLED_BY_DEFAULT,
-        core_enums.ORIGIN_TRIAL, core_enums.INTERVENTION),
+        IN_DEVELOPMENT, BEHIND_A_FLAG,
+        ENABLED_BY_DEFAULT,
+        ORIGIN_TRIAL, INTERVENTION),
 
     'Motivation':
     lambda f, _: bool(f.motivation),
 
     'Code removed':
-    lambda f, _: f.impl_status_chrome == core_enums.REMOVED,
+    lambda f, _: f.impl_status_chrome == REMOVED,
 
     'Rollout milestone':
-    lambda f, stages: stages[core_enums.STAGE_TYPES_SHIPPING[f.feature_type]] and
-        stages[core_enums.STAGE_TYPES_SHIPPING[f.feature_type]][0].rollout_milestone,
+    lambda f, stages: stages[STAGE_TYPES_SHIPPING[f.feature_type]] and
+        stages[STAGE_TYPES_SHIPPING[f.feature_type]][0].rollout_milestone,
 
     'Rollout platforms':
-    lambda f, stages: stages[core_enums.STAGE_TYPES_SHIPPING[f.feature_type]] and
-        stages[core_enums.STAGE_TYPES_SHIPPING[f.feature_type]][0].rollout_platforms,
+    lambda f, stages: stages[STAGE_TYPES_SHIPPING[f.feature_type]] and
+        stages[STAGE_TYPES_SHIPPING[f.feature_type]][0].rollout_platforms,
 
     'Rollout details':
-    lambda f, stages: stages[core_enums.STAGE_TYPES_SHIPPING[f.feature_type]] and
-        stages[core_enums.STAGE_TYPES_SHIPPING[f.feature_type]][0].rollout_details,
+    lambda f, stages: stages[STAGE_TYPES_SHIPPING[f.feature_type]] and
+        stages[STAGE_TYPES_SHIPPING[f.feature_type]][0].rollout_details,
 
     'Enterprise policies':
-    lambda f, stages: stages[core_enums.STAGE_TYPES_SHIPPING[f.feature_type]] and
-        stages[core_enums.STAGE_TYPES_SHIPPING[f.feature_type]][0].enterprise_policies,
+    lambda f, stages: stages[STAGE_TYPES_SHIPPING[f.feature_type]] and
+        stages[STAGE_TYPES_SHIPPING[f.feature_type]][0].enterprise_policies,
 }

@@ -69,17 +69,54 @@ export const FEATURE_TYPES = {
 };
 
 export const INTENT_STAGES = {
-  INTENT_NONE: [0, 'None'],
-  INTENT_INCUBATE: [7, 'Start incubating'], // Start incubating
-  INTENT_IMPLEMENT: [1, 'Start prototyping'], // Start prototyping
-  INTENT_EXPERIMENT: [2, 'Dev trials'], // Dev trials
-  INTENT_IMPLEMENT_SHIP: [4, 'Evaluate readiness to ship'], // Eval readiness to ship
-  INTENT_EXTEND_TRIAL: [3, 'Origin Trial'], // Origin trials
-  INTENT_SHIP: [5, 'Prepare to ship'], // Prepare to ship
-  INTENT_REMOVED: [6, 'Removed'],
-  INTENT_SHIPPED: [8, 'Shipped'],
-  INTENT_PARKED: [9, 'Parked'],
-  INTENT_ROLLOUT: [10, 'Rollout'],
+  [FEATURE_TYPES.FEATURE_TYPE_INCUBATE_ID[0]]: {
+    INTENT_NONE: [0, 'None'],
+    INTENT_INCUBATE: [110, 'Start incubating'], // Start incubating
+    INTENT_IMPLEMENT: [120, 'Start prototyping'], // Start prototyping
+    INTENT_EXPERIMENT: [130, 'Dev trials'], // Dev trials
+    INTENT_IMPLEMENT_SHIP: [140, 'Evaluate readiness to ship'], // Eval readiness to ship
+    INTENT_EXTEND_TRIAL: [150, 'Origin Trial'], // Origin trials
+    INTENT_SHIP: [160, 'Prepare to ship'], // Prepare to ship
+    INTENT_REMOVED: [161, 'Removed'],
+    INTENT_SHIPPED: [162, 'Shipped'],
+    INTENT_PARKED: [163, 'Parked'],
+    INTENT_ROLLOUT: [164, 'Rollout'],
+  },
+  [FEATURE_TYPES.FEATURE_TYPE_EXISTING_ID[0]]: {
+    INTENT_NONE: [0, 'None'],
+    INTENT_IMPLEMENT: [220, 'Start prototyping'], // Start prototyping
+    INTENT_EXPERIMENT: [230, 'Dev trials'], // Dev trials
+    INTENT_EXTEND_TRIAL: [250, 'Origin Trial'], // Origin trials
+    INTENT_SHIP: [260, 'Prepare to ship'], // Prepare to ship
+    INTENT_REMOVED: [261, 'Removed'],
+    INTENT_SHIPPED: [262, 'Shipped'],
+    INTENT_PARKED: [263, 'Parked'],
+    INTENT_ROLLOUT: [264, 'Rollout'],
+  },
+  [FEATURE_TYPES.FEATURE_TYPE_CODE_CHANGE_ID[0]]: {
+    INTENT_NONE: [0, 'None'],
+    INTENT_IMPLEMENT: [320, 'Start prototyping'], // Start prototyping
+    INTENT_EXPERIMENT: [330, 'Dev trials'], // Dev trials
+    INTENT_SHIP: [360, 'Prepare to ship'], // Prepare to ship
+    INTENT_REMOVED: [361, 'Removed'],
+    INTENT_SHIPPED: [362, 'Shipped'],
+    INTENT_PARKED: [363, 'Parked'],
+    INTENT_ROLLOUT: [364, 'Rollout'],
+  },
+  [FEATURE_TYPES.FEATURE_TYPE_DEPRECATION_ID[0]]: {
+    INTENT_NONE: [0, 'None'],
+    INTENT_IMPLEMENT: [410, 'Planning'],
+    INTENT_EXPERIMENT: [430, 'Dev trials'], // Dev trials
+    INTENT_EXTEND_TRIAL: [450, 'Origin Trial'], // Origin trials
+    INTENT_SHIP: [460, 'Prepare to ship'], // Prepare to ship
+    INTENT_REMOVED: [461, 'Removed'],
+    INTENT_SHIPPED: [462, 'Shipped'],
+    INTENT_PARKED: [463, 'Parked'],
+    INTENT_ROLLOUT: [464, 'Rollout'],
+  },
+  [FEATURE_TYPES.FEATURE_TYPE_ENTERPRISE_ID[0]]: {
+    INTENT_ROLLOUT: [1061, 'Rollout'],
+  },
 };
 
 export const IMPLEMENTATION_STATUS = {

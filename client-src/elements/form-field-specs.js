@@ -257,7 +257,7 @@ export const ALL_FIELDS = {
   'intent_stage': {
     type: 'select',
     choices: INTENT_STAGES,
-    initial: INTENT_STAGES.INTENT_IMPLEMENT[0],
+    initial: INTENT_STAGES[0].INTENT_IMPLEMENT[0],  // TODO(danielrsmith): fix this. Don't finalize PR until it's done.
     label: 'Process stage',
     help_text: html`
         Select the appropriate spec process stage. If you select
@@ -1222,62 +1222,105 @@ function makeDisplaySpecs(fields) {
   return fields.map(field => makeDisplaySpec(field));
 };
 
+
+const INCUBATE_FIELDS = makeDisplaySpecs([
+  'initial_public_proposal_url', 'explainer_links',
+  'requires_embedder_support',
+]);
+
+const PROTOTYPE_FIELDS = makeDisplaySpecs([
+  'spec_link', 'standard_maturity', 'api_spec', 'spec_mentors',
+  'intent_to_implement_url',
+]);
+
+const EXPERIMENT_FIELDS = makeDisplaySpecs([
+  'devtrial_instructions', 'doc_links',
+  'interop_compat_risks',
+  'safari_views', 'safari_views_link', 'safari_views_notes',
+  'ff_views', 'ff_views_link', 'ff_views_notes',
+  'web_dev_views', 'web_dev_views_link', 'web_dev_views_notes',
+  'other_views_notes',
+  'security_review_status', 'privacy_review_status',
+  'ergonomics_risks', 'activation_risks', 'security_risks',
+  'debuggability',
+  'all_platforms', 'all_platforms_descr', 'wpt', 'wpt_descr',
+  'sample_links', 'devrel', 'ready_for_trial_url',
+  'dt_milestone_desktop_start', 'dt_milestone_android_start',
+  'dt_milestone_ios_start',
+  'flag_name',
+]);
+
+const EXTEND_TRIAL_FIELDS = makeDisplaySpecs([
+  'experiment_goals', 'experiment_risks',
+  'experiment_extension_reason', 'ongoing_constraints',
+  'origin_trial_feedback_url', 'intent_to_experiment_url',
+  'r4dt_url',
+  'intent_to_extend_experiment_url',
+  'i2e_lgtms', 'r4dt_lgtms',
+  'ot_milestone_desktop_start', 'ot_milestone_desktop_end',
+  'ot_milestone_android_start', 'ot_milestone_android_end',
+  'ot_milestone_webview_start', 'ot_milestone_webview_end',
+  'experiment_timeline', // Deprecated
+]);
+
+const IMPLEMENT_SHIP_FIELDS = makeDisplaySpecs([
+  'launch_bug_url',
+  'tag_review', 'tag_review_status',
+  'webview_risks',
+  'measurement', 'prefixed', 'non_oss_deps',
+]);
+
+const SHIP_FIELDS = makeDisplaySpecs([
+  'finch_url', 'anticipated_spec_changes',
+  'shipped_milestone', 'shipped_android_milestone',
+  'shipped_ios_milestone', 'shipped_webview_milestone',
+  'intent_to_ship_url', 'i2s_lgtms',
+]);
+
+const ROLLOUT_FIELDS = makeDisplaySpecs([
+  'rollout_milestone', 'rollout_platforms', 'rollout_details',
+  'enterprise_policies',
+]);
+
+const SHIPPED_FIELDS = makeDisplaySpecs([]);
+
+
+// Feature types for reference.
+const INCUBATE_ID = FEATURE_TYPES.FEATURE_TYPE_INCUBATE_ID[0];
+const EXISTING_ID = FEATURE_TYPES.FEATURE_TYPE_EXISTING_ID[0];
+const CODE_CHANGE_ID = FEATURE_TYPES.FEATURE_TYPE_CODE_CHANGE_ID[0];
+const DEPRECATION_ID = FEATURE_TYPES.FEATURE_TYPE_DEPRECATION_ID[0];
+const ENTERPRISE_ID = FEATURE_TYPES.FEATURE_TYPE_ENTERPRISE_ID[0];
+
+
 export const DISPLAY_FIELDS_IN_STAGES = {
   'Metadata': makeDisplaySpecs([
     'category', 'feature_type', 'intent_stage', 'accurate_as_of',
     'breaking_change',
   ]),
-  [INTENT_STAGES.INTENT_INCUBATE[0]]: makeDisplaySpecs([
-    'initial_public_proposal_url', 'explainer_links',
-    'requires_embedder_support',
-  ]),
-  [INTENT_STAGES.INTENT_IMPLEMENT[0]]: makeDisplaySpecs([
-    'spec_link', 'standard_maturity', 'api_spec', 'spec_mentors',
-    'intent_to_implement_url',
-  ]),
-  [INTENT_STAGES.INTENT_EXPERIMENT[0]]: makeDisplaySpecs([
-    'devtrial_instructions', 'doc_links',
-    'interop_compat_risks',
-    'safari_views', 'safari_views_link', 'safari_views_notes',
-    'ff_views', 'ff_views_link', 'ff_views_notes',
-    'web_dev_views', 'web_dev_views_link', 'web_dev_views_notes',
-    'other_views_notes',
-    'security_review_status', 'privacy_review_status',
-    'ergonomics_risks', 'activation_risks', 'security_risks',
-    'debuggability',
-    'all_platforms', 'all_platforms_descr', 'wpt', 'wpt_descr',
-    'sample_links', 'devrel', 'ready_for_trial_url',
-    'dt_milestone_desktop_start', 'dt_milestone_android_start',
-    'dt_milestone_ios_start',
-    'flag_name',
-  ]),
-  [INTENT_STAGES.INTENT_IMPLEMENT_SHIP[0]]: makeDisplaySpecs([
-    'launch_bug_url',
-    'tag_review', 'tag_review_status',
-    'webview_risks',
-    'measurement', 'prefixed', 'non_oss_deps',
-  ]),
-  [INTENT_STAGES.INTENT_EXTEND_TRIAL[0]]: makeDisplaySpecs([
-    'experiment_goals', 'experiment_risks',
-    'experiment_extension_reason', 'ongoing_constraints',
-    'origin_trial_feedback_url', 'intent_to_experiment_url',
-    'r4dt_url',
-    'intent_to_extend_experiment_url',
-    'i2e_lgtms', 'r4dt_lgtms',
-    'ot_milestone_desktop_start', 'ot_milestone_desktop_end',
-    'ot_milestone_android_start', 'ot_milestone_android_end',
-    'ot_milestone_webview_start', 'ot_milestone_webview_end',
-    'experiment_timeline', // Deprecated
-  ]),
-  [INTENT_STAGES.INTENT_SHIP[0]]: makeDisplaySpecs([
-    'finch_url', 'anticipated_spec_changes',
-    'shipped_milestone', 'shipped_android_milestone',
-    'shipped_ios_milestone', 'shipped_webview_milestone',
-    'intent_to_ship_url', 'i2s_lgtms',
-  ]),
-  [INTENT_STAGES.INTENT_ROLLOUT[0]]: makeDisplaySpecs([
-    'rollout_milestone', 'rollout_platforms', 'rollout_details',
-    'enterprise_policies',
-  ]),
-  [INTENT_STAGES.INTENT_SHIPPED[0]]: makeDisplaySpecs([]),
+  [INTENT_STAGES[INCUBATE_ID].INTENT_INCUBATE[0]]: INCUBATE_FIELDS,
+  [INTENT_STAGES[INCUBATE_ID].INTENT_IMPLEMENT[0]]: PROTOTYPE_FIELDS,
+  [INTENT_STAGES[INCUBATE_ID].INTENT_IMPLEMENT_SHIP[0]]: IMPLEMENT_SHIP_FIELDS,
+  [INTENT_STAGES[INCUBATE_ID].INTENT_EXPERIMENT[0]]: EXPERIMENT_FIELDS,
+  [INTENT_STAGES[INCUBATE_ID].INTENT_EXTEND_TRIAL[0]]: EXTEND_TRIAL_FIELDS,
+  [INTENT_STAGES[INCUBATE_ID].INTENT_SHIP[0]]: SHIP_FIELDS,
+  [INTENT_STAGES[INCUBATE_ID].INTENT_SHIPPED[0]]: SHIPPED_FIELDS,
+
+  [INTENT_STAGES[EXISTING_ID].INTENT_IMPLEMENT[0]]: PROTOTYPE_FIELDS,
+  [INTENT_STAGES[EXISTING_ID].INTENT_EXPERIMENT[0]]: EXPERIMENT_FIELDS,
+  [INTENT_STAGES[EXISTING_ID].INTENT_EXTEND_TRIAL[0]]: EXTEND_TRIAL_FIELDS,
+  [INTENT_STAGES[EXISTING_ID].INTENT_SHIP[0]]: SHIP_FIELDS,
+  [INTENT_STAGES[EXISTING_ID].INTENT_SHIPPED[0]]: SHIPPED_FIELDS,
+
+  [INTENT_STAGES[CODE_CHANGE_ID].INTENT_IMPLEMENT[0]]: PROTOTYPE_FIELDS,
+  [INTENT_STAGES[CODE_CHANGE_ID].INTENT_EXPERIMENT[0]]: EXPERIMENT_FIELDS,
+  [INTENT_STAGES[CODE_CHANGE_ID].INTENT_SHIP[0]]: SHIP_FIELDS,
+  [INTENT_STAGES[CODE_CHANGE_ID].INTENT_SHIPPED[0]]: SHIPPED_FIELDS,
+
+  [INTENT_STAGES[DEPRECATION_ID].INTENT_EXPERIMENT[0]]: EXPERIMENT_FIELDS,
+  [INTENT_STAGES[DEPRECATION_ID].INTENT_EXTEND_TRIAL[0]]: EXTEND_TRIAL_FIELDS,
+  [INTENT_STAGES[DEPRECATION_ID].INTENT_SHIP[0]]: SHIP_FIELDS,
+  [INTENT_STAGES[DEPRECATION_ID].INTENT_SHIPPED[0]]: SHIPPED_FIELDS,
+
+  [INTENT_STAGES[ENTERPRISE_ID].INTENT_ROLLOUT[0]]: ROLLOUT_FIELDS,
 };

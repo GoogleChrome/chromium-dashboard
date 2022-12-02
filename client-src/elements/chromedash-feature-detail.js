@@ -307,7 +307,7 @@ class ChromedashFeatureDetail extends LitElement {
   }
 
   renderStageSection(stage) {
-    const fields = DISPLAY_FIELDS_IN_STAGES[stage.outgoing_stage];
+    const fields = DISPLAY_FIELDS_IN_STAGES[stage.stage_id];
     const isActive = (this.feature.intent_stage_int == stage.outgoing_stage);
     if (fields === undefined || fields.length == 0) {
       return nothing;
