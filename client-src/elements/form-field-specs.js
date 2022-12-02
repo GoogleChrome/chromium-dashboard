@@ -257,7 +257,7 @@ export const ALL_FIELDS = {
   'intent_stage': {
     type: 'select',
     choices: INTENT_STAGES,
-    initial: INTENT_STAGES[0].INTENT_IMPLEMENT[0],  // TODO(danielrsmith): fix this. Don't finalize PR until it's done.
+    initial: INTENT_STAGES[0].INTENT_IMPLEMENT[0], // TODO(danielrsmith): fix this. Don't finalize PR until it's done.
     label: 'Process stage',
     help_text: html`
         Select the appropriate spec process stage. If you select
