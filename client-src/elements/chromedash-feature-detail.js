@@ -30,6 +30,8 @@ class ChromedashFeatureDetail extends LitElement {
     this.process = {};
     this.dismissedCues = [];
     this.anyCollapsed = true;
+    this.previousStageTypeRendered = 0;
+    this.sameTypeRendered = 0;
   }
 
   static get styles() {
@@ -321,6 +323,17 @@ class ChromedashFeatureDetail extends LitElement {
     if (fields === undefined || fields.length == 0) {
       return nothing;
     }
+
+    let name = processStage.name;
+    // Add a number differentiation if this stage type is the same as another stage.
+    if (this.previousStageTypeRendered === stage.stage_type) {
+      this.sameTypeRendered += 1;
+      name = `${name} ${this.sameTypeRendered}`;
+    } else {
+      this.previousStageTypeRendered = stage.stage_type;
+      this.sameTypeRendered = 1;
+    }
+
     const editButton = html`
       <sl-button size="small" style="float:right"
            href="/guide/stage/${this.feature.id}/${stage.stage_id}/${stage.intent_stage}"
@@ -335,7 +348,7 @@ class ChromedashFeatureDetail extends LitElement {
         ${this.renderSectionFields(fields)}
       </section>
     `;
-    return this.renderSection(processStage.name, content, isActive);
+    return this.renderSection(name, content, isActive);
   }
 
   renderActivitySection() {
