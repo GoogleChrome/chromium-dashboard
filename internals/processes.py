@@ -538,7 +538,7 @@ ENTERPRISE_STAGES = [
       [],
       [],
       core_enums.INTENT_NONE, core_enums.INTENT_ROLLOUT,
-      stage_type=core_enums.STAGE_ENT_PLAN),
+      stage_type=core_enums.STAGE_ENT_ROLLOUT),
   ProcessStage(
       'Ship',
       'Enable the feature by default.',
@@ -547,7 +547,7 @@ ENTERPRISE_STAGES = [
       [],
       [],
       core_enums.INTENT_ROLLOUT, core_enums.INTENT_SHIPPED,
-      stage_type=core_enums.STAGE_ENT_ROLLOUT),
+      stage_type=core_enums.STAGE_ENT_SHIPPED),
 ]
 
 
