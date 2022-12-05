@@ -321,18 +321,18 @@ class ChromedashFeatureDetail extends LitElement {
     const fields = DISPLAY_FIELDS_IN_STAGES[feStage.intent_stage];
     const processStage = this.findProcessStage(feStage);
     if (processStage === null) return nothing;
-    const isActive = (this.feature.active_stage_id == stage.stage_id);
+    const isActive = (this.feature.active_stage_id == feStage.stage_id);
     if (fields === undefined || fields.length == 0) {
       return nothing;
     }
 
     let name = processStage.name;
     // Add a number differentiation if this stage type is the same as another stage.
-    if (this.previousStageTypeRendered === stage.stage_type) {
+    if (this.previousStageTypeRendered === feStage.stage_type) {
       this.sameTypeRendered += 1;
       name = `${name} ${this.sameTypeRendered}`;
     } else {
-      this.previousStageTypeRendered = stage.stage_type;
+      this.previousStageTypeRendered = feStage.stage_type;
       this.sameTypeRendered = 1;
     }
 
