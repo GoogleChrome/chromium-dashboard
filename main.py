@@ -29,6 +29,7 @@ from api import metricsdata
 from api import permissions_api
 from api import processes_api
 from api import settings_api
+from api import stages_api
 from api import stars_api
 from api import token_refresh_api
 from framework import basehandlers
@@ -112,6 +113,8 @@ api_routes: list[Route] = [
         processes_api.ProcessesAPI),
     Route(f'{API_BASE}/features/<int:feature_id>/progress',
         processes_api.ProgressAPI),
+    Route(f'{API_BASE}/features/<int:feature_id>/stages/<int:stage_id>',
+            stages_api.StagesAPI),
 
     Route(f'{API_BASE}/blinkcomponents',
         blink_components_api.BlinkComponentsAPI),

@@ -87,6 +87,10 @@ class BaseHandler(flask.views.MethodView):
       self.abort(403, msg='User must be signed in')
     return current_user
 
+  def get_json_param_dict(self) -> dict:
+    """Return the JSON content in the body of the request."""
+    return self.request.get_json(force=True, silent=True) or {}
+
   def get_param(
       self, name, default=None, required=True, validator=None, allowed=None):
     """Get the specified JSON parameter."""

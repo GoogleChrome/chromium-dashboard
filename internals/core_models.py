@@ -494,3 +494,5 @@ class Stage(ndb.Model):
   rollout_platforms = ndb.StringProperty(repeated=True)
   rollout_details = ndb.TextProperty()
   enterprise_policies = ndb.StringProperty(repeated=True)
+
+  archived = ndb.BooleanProperty(default=False)
