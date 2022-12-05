@@ -361,8 +361,8 @@ class ChromedashFeatureDetail extends LitElement {
         ${this.renderControls()}
       </h2>
       ${this.renderMetadataSection()}
-      ${Object.values(this.feature.stages).map(feStageList =>
-      this.renderStageSection(feStageList[0]))}
+      ${Object.values(this.feature.stages).flat(1).map(feStage =>
+      this.renderStageSection(feStage))}
       ${this.renderActivitySection()}
     `;
   }
