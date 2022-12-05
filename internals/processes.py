@@ -566,41 +566,41 @@ ENTERPRISE_PROCESS = Process(
 
 
 ALL_PROCESSES = {
-    FEATURE_TYPE_INCUBATE_ID: BLINK_LAUNCH_PROCESS,
-    FEATURE_TYPE_EXISTING_ID: BLINK_FAST_TRACK_PROCESS,
-    FEATURE_TYPE_CODE_CHANGE_ID: PSA_ONLY_PROCESS,
-    FEATURE_TYPE_DEPRECATION_ID: DEPRECATION_PROCESS,
-    FEATURE_TYPE_ENTERPRISE_ID: ENTERPRISE_PROCESS,
+    core_enums.FEATURE_TYPE_INCUBATE_ID: BLINK_LAUNCH_PROCESS,
+    core_enums.FEATURE_TYPE_EXISTING_ID: BLINK_FAST_TRACK_PROCESS,
+    core_enums.FEATURE_TYPE_CODE_CHANGE_ID: PSA_ONLY_PROCESS,
+    core_enums.FEATURE_TYPE_DEPRECATION_ID: DEPRECATION_PROCESS,
+    core_enums.FEATURE_TYPE_ENTERPRISE_ID: ENTERPRISE_PROCESS,
     }
 
 
 INTENT_EMAIL_SECTIONS = {
-    INTENT_NONE: [],
-    INTENT_INCUBATE: [],
-    INTENT_IMPLEMENT: ['motivation'],
-    INTENT_EXPERIMENT: ['i2p_thread', 'experiment'],
-    INTENT_IMPLEMENT_SHIP: [
+    core_enums.INTENT_NONE: [],
+    core_enums.INTENT_INCUBATE: [],
+    core_enums.INTENT_IMPLEMENT: ['motivation'],
+    core_enums.INTENT_EXPERIMENT: ['i2p_thread', 'experiment'],
+    core_enums.INTENT_IMPLEMENT_SHIP: [
         'need_api_owners_lgtms', 'motivation', 'tracking_bug', 'sample_links'],
-    INTENT_EXTEND_TRIAL: [
+    core_enums.INTENT_EXTEND_TRIAL: [
         'i2p_thread', 'experiment', 'extension_reason'],
-    INTENT_SHIP: [
+    core_enums.INTENT_SHIP: [
         'need_api_owners_lgtms', 'i2p_thread', 'tracking_bug', 'sample_links',
         'anticipated_spec_changes', 'ship'],
-    INTENT_REMOVED: [],
-    INTENT_SHIPPED: [],
-    INTENT_PARKED: [],
+    core_enums.INTENT_REMOVED: [],
+    core_enums.INTENT_SHIPPED: [],
+    core_enums.INTENT_PARKED: [],
     }
 
 
 def initial_tag_review_status(feature_type):
   """Incubating a new feature requires a TAG review, other types do not."""
-  if feature_type == FEATURE_TYPE_INCUBATE_ID:
-    return REVIEW_PENDING
-  return REVIEW_NA
+  if feature_type == core_enums.FEATURE_TYPE_INCUBATE_ID:
+    return core_enums.REVIEW_PENDING
+  return core_enums.REVIEW_NA
 
 
 def review_is_done(status):
-  return status in (REVIEW_ISSUES_ADDRESSED, REVIEW_NA)
+  return status in (core_enums.REVIEW_ISSUES_ADDRESSED, core_enums.REVIEW_NA)
 
 
 # These functions return a true value when the checkmark should be shown.
@@ -621,20 +621,20 @@ PROGRESS_DETECTORS = {
 
     'Intent to Prototype email':
     lambda f, stages: (
-        STAGE_TYPES_PROTOTYPE[f.feature_type] and
-        stages[STAGE_TYPES_PROTOTYPE[f.feature_type]][0].intent_thread_url),
+        core_enums.STAGE_TYPES_PROTOTYPE[f.feature_type] and
+        stages[core_enums.STAGE_TYPES_PROTOTYPE[f.feature_type]][0].intent_thread_url),
 
     'Intent to Ship email':
-    lambda f, stages: (STAGE_TYPES_SHIPPING[f.feature_type] and
-        stages[STAGE_TYPES_SHIPPING[f.feature_type]][0].intent_thread_url),
+    lambda f, stages: (core_enums.STAGE_TYPES_SHIPPING[f.feature_type] and
+        stages[core_enums.STAGE_TYPES_SHIPPING[f.feature_type]][0].intent_thread_url),
 
     'Ready for Trial email':
-    lambda f, stages: (STAGE_TYPES_DEV_TRIAL[f.feature_type] and
-        stages[STAGE_TYPES_DEV_TRIAL[f.feature_type]][0].announcement_url),
+    lambda f, stages: (core_enums.STAGE_TYPES_DEV_TRIAL[f.feature_type] and
+        stages[core_enums.STAGE_TYPES_DEV_TRIAL[f.feature_type]][0].announcement_url),
 
     'Intent to Experiment email':
-    lambda f, stages: (STAGE_TYPES_ORIGIN_TRIAL[f.feature_type] and
-        stages[STAGE_TYPES_ORIGIN_TRIAL[f.feature_type]][0].intent_thread_url),
+    lambda f, stages: (core_enums.STAGE_TYPES_ORIGIN_TRIAL[f.feature_type] and
+        stages[core_enums.STAGE_TYPES_ORIGIN_TRIAL[f.feature_type]][0].intent_thread_url),
 
     'Samples':
     lambda f, _: f.sample_links and f.sample_links[0],
@@ -662,58 +662,58 @@ PROGRESS_DETECTORS = {
 
     'Web developer signals':
     lambda f, _: bool(f.web_dev_views and
-        f.web_dev_views != DEV_NO_SIGNALS),
+        f.web_dev_views != core_enums.DEV_NO_SIGNALS),
 
     'Vendor signals':
     lambda f, _: bool(
-        f.ff_views != NO_PUBLIC_SIGNALS or
-        f.safari_views != NO_PUBLIC_SIGNALS),
+        f.ff_views != core_enums.NO_PUBLIC_SIGNALS or
+        f.safari_views != core_enums.NO_PUBLIC_SIGNALS),
 
     'Updated vendor signals':
     lambda f, _: bool(
-        f.ff_views != NO_PUBLIC_SIGNALS or
-        f.safari_views != NO_PUBLIC_SIGNALS),
+        f.ff_views != core_enums.NO_PUBLIC_SIGNALS or
+        f.safari_views != core_enums.NO_PUBLIC_SIGNALS),
 
     'Final vendor signals':
     lambda f, _: bool(
-        f.ff_views != NO_PUBLIC_SIGNALS or
-        f.safari_views != NO_PUBLIC_SIGNALS),
+        f.ff_views != core_enums.NO_PUBLIC_SIGNALS or
+        f.safari_views != core_enums.NO_PUBLIC_SIGNALS),
 
     'Estimated target milestone':
-    lambda f, stages: bool(STAGE_TYPES_SHIPPING[f.feature_type] and
-        stages[STAGE_TYPES_SHIPPING[f.feature_type]][0].milestones and
-        stages[STAGE_TYPES_SHIPPING[f.feature_type]][0].milestones.desktop_first),
+    lambda f, stages: bool(core_enums.STAGE_TYPES_SHIPPING[f.feature_type] and
+        stages[core_enums.STAGE_TYPES_SHIPPING[f.feature_type]][0].milestones and
+        stages[core_enums.STAGE_TYPES_SHIPPING[f.feature_type]][0].milestones.desktop_first),
 
     'Final target milestone':
-    lambda f, stages: bool(STAGE_TYPES_SHIPPING[f.feature_type] and
-        stages[STAGE_TYPES_SHIPPING[f.feature_type]][0].milestones and
-        stages[STAGE_TYPES_SHIPPING[f.feature_type]][0].milestones.desktop_first),
+    lambda f, stages: bool(core_enums.STAGE_TYPES_SHIPPING[f.feature_type] and
+        stages[core_enums.STAGE_TYPES_SHIPPING[f.feature_type]][0].milestones and
+        stages[core_enums.STAGE_TYPES_SHIPPING[f.feature_type]][0].milestones.desktop_first),
 
     'Code in Chromium':
     lambda f, _: f.impl_status_chrome in (
-        IN_DEVELOPMENT, BEHIND_A_FLAG,
-        ENABLED_BY_DEFAULT,
-        ORIGIN_TRIAL, INTERVENTION),
+        core_enums.IN_DEVELOPMENT, core_enums.BEHIND_A_FLAG,
+        core_enums.ENABLED_BY_DEFAULT,
+        core_enums.ORIGIN_TRIAL, core_enums.INTERVENTION),
 
     'Motivation':
     lambda f, _: bool(f.motivation),
 
     'Code removed':
-    lambda f, _: f.impl_status_chrome == REMOVED,
+    lambda f, _: f.impl_status_chrome == core_enums.REMOVED,
 
     'Rollout milestone':
-    lambda f, stages: stages[STAGE_TYPES_SHIPPING[f.feature_type]] and
-        stages[STAGE_TYPES_SHIPPING[f.feature_type]][0].rollout_milestone,
+    lambda f, stages: stages[core_enums.STAGE_TYPES_SHIPPING[f.feature_type]] and
+        stages[core_enums.STAGE_TYPES_SHIPPING[f.feature_type]][0].rollout_milestone,
 
     'Rollout platforms':
-    lambda f, stages: stages[STAGE_TYPES_SHIPPING[f.feature_type]] and
-        stages[STAGE_TYPES_SHIPPING[f.feature_type]][0].rollout_platforms,
+    lambda f, stages: stages[core_enums.STAGE_TYPES_SHIPPING[f.feature_type]] and
+        stages[core_enums.STAGE_TYPES_SHIPPING[f.feature_type]][0].rollout_platforms,
 
     'Rollout details':
-    lambda f, stages: stages[STAGE_TYPES_SHIPPING[f.feature_type]] and
-        stages[STAGE_TYPES_SHIPPING[f.feature_type]][0].rollout_details,
+    lambda f, stages: stages[core_enums.STAGE_TYPES_SHIPPING[f.feature_type]] and
+        stages[core_enums.STAGE_TYPES_SHIPPING[f.feature_type]][0].rollout_details,
 
     'Enterprise policies':
-    lambda f, stages: stages[STAGE_TYPES_SHIPPING[f.feature_type]] and
-        stages[STAGE_TYPES_SHIPPING[f.feature_type]][0].enterprise_policies,
+    lambda f, stages: stages[core_enums.STAGE_TYPES_SHIPPING[f.feature_type]] and
+        stages[core_enums.STAGE_TYPES_SHIPPING[f.feature_type]][0].enterprise_policies,
 }
