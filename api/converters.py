@@ -234,7 +234,6 @@ def _prep_stage_gate_info(
   ship_type = STAGE_TYPES_SHIPPING[fe.feature_type]
 
   stages = Stage.query(Stage.feature_id == d['id'])
-  gates = Gate.query(Gate.feature_id == d['id'])
   major_stages: dict[str, Optional[Stage]] = {
       'proto': None,
       'dev_trial': None,
@@ -242,12 +241,9 @@ def _prep_stage_gate_info(
       'extend': None,
       'ship': None}
 
-  # Write a collection of stages and gates associated with the feature,
-  # sorted by type.
+  # Write a list of stages and gates associated with the feature
   d['stages'] = stage_helpers.get_feature_stage_ids_list(d['id'])
-  d['gates'] = collections.defaultdict(list)
-  # Stages and gates are given as a dictionary, with the type as the key,
-  # and a list of entity IDs as the value.
+
   # TODO(danielrsmith): This approach should be removed or refactored when
   # functionality for creating multiple stages is added.
   for s in stages:
@@ -262,8 +258,6 @@ def _prep_stage_gate_info(
       major_stages['extend'] = s
     elif s.stage_type == ship_type:
       major_stages['ship'] = s
-  for g in gates:
-    d['gates'][g.gate_type].append(g.key.integer_id())
 
   return major_stages
 
