@@ -75,7 +75,6 @@ export class ChromedashGuideStagePage extends LitElement {
       this.featureFormFields = STAGE_FORMS[this.feature.feature_type_int][this.intentStage];
       [this.implStatusOffered, this.implStatusFormFields] =
         IMPL_STATUS_FORMS[this.intentStage] || [null, null];
-      console.log(this.implStatusFormFields);
       this.loading = false;
     }).catch(() => {
       showToastMessage('Some errors occurred. Please refresh the page or try again later.');
