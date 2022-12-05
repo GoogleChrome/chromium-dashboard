@@ -379,8 +379,10 @@ def feature_entry_to_json_verbose(fe: FeatureEntry) -> dict[str, Any]:
     d['feature_type'] = FEATURE_TYPES[fe.feature_type]
     d['feature_type_int'] = fe.feature_type
   if fe.intent_stage is not None:
-    d['intent_stage'] = INTENT_STAGES[fe.intent_stage]
+    d['intent_stage'] = INTENT_STAGES.get(
+        fe.intent_stage, INTENT_STAGES[INTENT_NONE])
     d['intent_stage_int'] = fe.intent_stage
+  d['active_stage_id'] = fe.active_stage_id
   d['created'] = {
     'by': d.pop('creator_email', None),
     'when': _date_to_str(fe.created),

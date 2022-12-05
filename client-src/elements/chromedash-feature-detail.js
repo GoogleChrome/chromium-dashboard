@@ -317,7 +317,7 @@ class ChromedashFeatureDetail extends LitElement {
       console.log(`no stage for ${stage.stage_type}`);
       return nothing;
     }
-    const isActive = (this.feature.intent_stage_int == stage.stage_id);
+    const isActive = (this.feature.active_stage_id == stage.stage_id);
     if (fields === undefined || fields.length == 0) {
       return nothing;
     }
