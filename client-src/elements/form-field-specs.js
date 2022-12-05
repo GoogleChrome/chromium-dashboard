@@ -254,17 +254,6 @@ export const ALL_FIELDS = {
       draft information or revising a previous stage.`,
   },
 
-  'intent_stage': {
-    type: 'select',
-    choices: INTENT_STAGES,
-    initial: INTENT_STAGES[0].INTENT_IMPLEMENT[0], // TODO(danielrsmith): fix this. Don't finalize PR until it's done.
-    label: 'Process stage',
-    help_text: html`
-        Select the appropriate spec process stage. If you select
-        Dev trials, Origin Trial, or Shipped, be sure to set the
-        equivalent Implementation status.`,
-  },
-
   'search_tags': {
     type: 'input',
     attrs: TEXT_FIELD_ATTRS,
@@ -1295,7 +1284,7 @@ const ENTERPRISE_ID = FEATURE_TYPES.FEATURE_TYPE_ENTERPRISE_ID[0];
 
 export const DISPLAY_FIELDS_IN_STAGES = {
   'Metadata': makeDisplaySpecs([
-    'category', 'feature_type', 'intent_stage', 'accurate_as_of',
+    'category', 'feature_type', 'accurate_as_of',
     'breaking_change',
   ]),
   [INTENT_STAGES[INCUBATE_ID].INTENT_INCUBATE[0]]: INCUBATE_FIELDS,

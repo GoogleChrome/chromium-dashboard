@@ -58,19 +58,21 @@ export class ChromedashGuideStagePage extends LitElement {
     Promise.all([
       window.csClient.getFeature(this.featureId),
       window.csClient.getFeatureProcess(this.featureId),
-    ]).then(([feature, process]) => {
+      window.csClient.getStage(this.featureId, this.stageId),
+    ]).then(([feature, process, stage]) => {
       this.feature = feature;
+      this.stage = stage;
       if (this.feature.name) {
         document.title = `${this.feature.name} - ${this.appTitle}`;
       }
       process.stages.map(stage => {
-        if (stage.outgoing_stage === this.stageId) {
+        if (stage.stage_type === this.stage.stage_type) {
           this.stageName = stage.name;
         }
       });
-      this.featureFormFields = STAGE_FORMS[this.feature.feature_type_int][this.stageId];
+      this.featureFormFields = STAGE_FORMS[this.feature.feature_type_int][this.stage.stage_type];
       [this.implStatusOffered, this.implStatusFormFields] =
-        IMPL_STATUS_FORMS[this.stageId] || [null, null];
+        IMPL_STATUS_FORMS[this.stage.stage_type] || [null, null];
 
       this.loading = false;
     }).catch(() => {
@@ -218,7 +220,7 @@ export class ChromedashGuideStagePage extends LitElement {
   }
 
   renderFeatureFormSection(formattedFeature) {
-    const alreadyOnThisStage = this.stageId === this.feature.intent_stage_int;
+    const alreadyOnThisStage = this.stage.stage_type === this.feature.intent_stage_int;
     return html`
       <section class="stage_form">
         ${this.featureFormFields.map((field) => this.renderOneField(

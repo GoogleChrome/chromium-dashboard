@@ -15,7 +15,8 @@
 
 import datetime
 from typing import Any
-from google.cloud import ndb  # type: ignore
+from google.cloud import ndb
+from internals import stage_helpers  # type: ignore
 
 from internals.core_enums import *
 from internals.core_models import Feature, FeatureEntry, Stage
@@ -243,7 +244,7 @@ def _prep_stage_gate_info(
 
   # Write a collection of stages and gates associated with the feature,
   # sorted by type.
-  d['stages'] = collections.defaultdict(list)
+  d['stages'] = stage_helpers.get_feature_stage_ids_list(d['id'])
   d['gates'] = collections.defaultdict(list)
   # Stages and gates are given as a dictionary, with the type as the key,
   # and a list of entity IDs as the value.
@@ -261,7 +262,6 @@ def _prep_stage_gate_info(
       major_stages['extend'] = s
     elif s.stage_type == ship_type:
       major_stages['ship'] = s
-    d['stages'][s.stage_type].append(stage_to_dict(s))
   for g in gates:
     d['gates'][g.gate_type].append(g.key.integer_id())
 

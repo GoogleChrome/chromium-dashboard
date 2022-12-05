@@ -306,27 +306,36 @@ class ChromedashFeatureDetail extends LitElement {
     return this.renderSection('Metadata', content);
   }
 
+  getProcessStage(stageType) {
+    return this.process.stages.find(stage => stage.stage_type === stageType);
+  }
+
   renderStageSection(stage) {
-    const fields = DISPLAY_FIELDS_IN_STAGES[stage.stage_id];
-    const isActive = (this.feature.intent_stage_int == stage.outgoing_stage);
+    const fields = DISPLAY_FIELDS_IN_STAGES[stage.stage_type];
+    const processStage = this.getProcessStage(stage.stage_type);
+    if (!processStage) {
+      console.log(`no stage for ${stage.stage_type}`);
+      return nothing;
+    }
+    const isActive = (this.feature.intent_stage_int == stage.stage_id);
     if (fields === undefined || fields.length == 0) {
       return nothing;
     }
     const editButton = html`
       <sl-button size="small" style="float:right"
-           href="/guide/stage/${this.feature.id}/${stage.outgoing_stage}"
+           href="/guide/stage/${this.feature.id}/${stage.stage_id}"
            >Edit fields</sl-button>
     `;
     const content = html`
       <p class="description">
         ${this.canEdit ? editButton : nothing}
-        ${stage.description}
+        ${processStage.description}
       </p>
       <section class="card">
         ${this.renderSectionFields(fields)}
       </section>
     `;
-    return this.renderSection(stage.name, content, isActive);
+    return this.renderSection(processStage.name, content, isActive);
   }
 
   renderActivitySection() {
@@ -350,7 +359,7 @@ class ChromedashFeatureDetail extends LitElement {
         ${this.renderControls()}
       </h2>
       ${this.renderMetadataSection()}
-      ${this.process.stages.map(stage => this.renderStageSection(stage))}
+      ${this.feature.stages.map(stage => this.renderStageSection(stage))}
       ${this.renderActivitySection()}
     `;
   }

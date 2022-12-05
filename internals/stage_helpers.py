@@ -30,3 +30,10 @@ def get_feature_stage_ids(feature_id: int) -> dict[int, list[int]]:
   for stage in Stage.query(Stage.feature_id == feature_id):
     stage_dict[stage.stage_type].append(stage.key.integer_id())
   return stage_dict
+
+def get_feature_stage_ids_list(feature_id: int) -> list[dict[str, int]]:
+  """Return a list of stage types and IDs associated with a given feature."""
+  q = Stage.query(Stage.feature_id == feature_id)
+  q = q.order(Stage.stage_type)
+  return [{'stage_id': s.key.integer_id(), 'stage_type': s.stage_type}
+      for s in q]

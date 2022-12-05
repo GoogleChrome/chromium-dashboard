@@ -96,7 +96,7 @@ export const NEW_FEATURE_FORM_FIELDS = [
 export const METADATA_FORM_FIELDS = [
   'name', 'summary', 'unlisted', 'breaking_change', 'owner',
   'editors', 'cc_recipients', 'category',
-  'feature_type', 'intent_stage',
+  'feature_type',
   'search_tags',
   // Implemention
   'impl_status_chrome',
@@ -105,7 +105,7 @@ export const METADATA_FORM_FIELDS = [
 ];
 
 export const VERIFY_ACCURACY_FORM_FIELDS = [
-  'summary', 'owner', 'editors', 'cc_recipients', 'impl_status_chrome', 'intent_stage',
+  'summary', 'owner', 'editors', 'cc_recipients', 'impl_status_chrome',
   'dt_milestone_android_start', 'dt_milestone_desktop_start',
   'dt_milestone_ios_start', 'ot_milestone_android_start',
   'ot_milestone_android_end', 'ot_milestone_desktop_start',
@@ -119,7 +119,7 @@ const FLAT_METADATA_FIELDS = [
   // Standardizaton
   'name', 'summary', 'unlisted', 'breaking_change', 'owner',
   'editors', 'cc_recipients', 'category',
-  'feature_type', 'intent_stage',
+  'feature_type',
   'search_tags',
   // Implementtion
   'impl_status_chrome',

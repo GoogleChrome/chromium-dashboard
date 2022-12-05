@@ -43,7 +43,7 @@ class ProcessStage:
   approvals: list[approval_defs.ApprovalFieldDef]
   incoming_stage: int
   outgoing_stage: int
-  stage_id: int
+  stage_type: int
 
 @dataclass
 class Process:
@@ -268,7 +268,7 @@ BLINK_PROCESS_STAGES = [
       ],
       [],
       [],
-      INTENT_SHIP, INTENT_SHIPPED, STAGE_BLINK_SHIPPING),
+      INTENT_SHIP, INTENT_SHIPPED, STAGE_BLINK_SHIPPED),
   ]
 
 
@@ -346,7 +346,7 @@ BLINK_FAST_TRACK_STAGES = [
       ],
       [],
       [],
-      INTENT_SHIP, INTENT_SHIPPED, STAGE_FAST_SHIPPING),
+      INTENT_SHIP, INTENT_SHIPPED, STAGE_FAST_SHIPPED),
   ]
 
 
@@ -402,7 +402,7 @@ PSA_ONLY_STAGES = [
       ],
       [],
       [],
-      INTENT_SHIP, INTENT_SHIPPED, STAGE_PSA_SHIPPING),
+      INTENT_SHIP, INTENT_SHIPPED, STAGE_PSA_SHIPPED),
   ]
 
 
