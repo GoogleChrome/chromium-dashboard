@@ -169,12 +169,13 @@ STAGE_DEP_SHIPPING = 460
 STAGE_DEP_REMOVE_CODE = 470
 # TODO(jrobbins): reverse origin trial stage?
 
-# Note STAGE_* enum values 500-9999 are reseverd for future WP processes.
+# Note STAGE_* enum values 500-999 are reseverd for future WP processes.
 
 # Define enterprise feature processes.
 STAGE_ENT_PLAN = 1010
 # Note: This stage can ge added to any feature that is following any process.
 STAGE_ENT_ROLLOUT = 1061
+STAGE_ENT_SHIPPED = 1070
 
 # Intent stage enums for each stage type.
 INTENT_STAGES_BY_STAGE_TYPE = {

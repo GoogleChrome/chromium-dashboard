@@ -308,17 +308,19 @@ class ChromedashFeatureDetail extends LitElement {
     return this.renderSection('Metadata', content);
   }
 
-  getProcessStage(stageType) {
-    return this.process.stages.find(stage => stage.stage_type === stageType);
+  findProcessStage(feStage) {
+    for (const processStage of this.process.stages) {
+      if (feStage.stage_type == processStage.stage_type) {
+        return processStage;
+      }
+    }
+    return null;
   }
 
-  renderStageSection(stage) {
-    const fields = DISPLAY_FIELDS_IN_STAGES[stage.intent_stage];
-    const processStage = this.getProcessStage(stage.stage_type);
-    if (!processStage) {
-      // No matching process stage for the given stage type.
-      return nothing;
-    }
+  renderStageSection(feStage) {
+    const fields = DISPLAY_FIELDS_IN_STAGES[feStage.intent_stage];
+    const processStage = this.findProcessStage(feStage);
+    if (processStage === null) return nothing;
     const isActive = (this.feature.active_stage_id == stage.stage_id);
     if (fields === undefined || fields.length == 0) {
       return nothing;
@@ -336,7 +338,7 @@ class ChromedashFeatureDetail extends LitElement {
 
     const editButton = html`
       <sl-button size="small" style="float:right"
-           href="/guide/stage/${this.feature.id}/${stage.stage_id}/${stage.intent_stage}"
+           href="/guide/stage/${this.feature.id}/${feStage.stage_id}/${feStage.intent_stage}"
            >Edit fields</sl-button>
     `;
     const content = html`
