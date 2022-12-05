@@ -334,10 +334,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
 
     active_stage_id: int | None = None
     intent_stage_val: int | None = None
-    if self.touched('intent_stage'):
-      active_stage_id = self._get_field_val('active_stage_id', 'int')
-      intent_stage_val = self._get_field_val('intent_stage', 'int')
-    elif self.form.get('set_stage') == 'on':
+    if self.form.get('set_stage') == 'on':
       active_stage_id = kwargs.get('stage_id', 0)
       intent_stage_val = core_enums.INTENT_STAGES_BY_STAGE_TYPE.get(
           active_stage_id, core_enums.INTENT_NONE)
