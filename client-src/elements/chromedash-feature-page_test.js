@@ -93,6 +93,32 @@ describe('chromedash-feature-page', () => {
       maturity: {text: 'Unknown standards status - check spec link for status'},
     },
     tags: ['tag_one'],
+    stages: {
+      110: [{
+        "id": 3525,
+        "feature_id": 3523,
+        "stage_type": 110,
+        "desktop_first": null,
+        "desktop_last": null,
+        "android_first": null,
+        "android_last": null,
+        "ios_first": null,
+        "ios_last": null,
+        "webview_first": null,
+        "webview_last": null,
+        "pm_emails": [],
+        "tl_emails": [],
+        "ux_emails": [],
+        "te_emails": [],
+        "experiment_goals": null,
+        "experiment_risks": null,
+        "experiment_extension_reason": null,
+        "intent_thread_url": null,
+        "origin_trial_feedback_url": null,
+        "announcement_url": null,
+        "ot_stage_id": null
+      }]
+    }
   });
 
   /* window.csClient and <chromedash-toast> are initialized at spa.html

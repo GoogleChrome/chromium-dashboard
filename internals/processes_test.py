@@ -42,6 +42,8 @@ PI_COLD_DOUGH = processes.ProgressItem('Cold dough', 'dough')
 PI_LOAF = processes.ProgressItem('A loaf', None)
 PI_DIRTY_PAN = processes.ProgressItem('A dirty pan', None)
 
+STAGE_BAKE_DOUGH = 110
+STAGE_BAKE_BAKE = 120
 
 class HelperFunctionsTest(testing_config.CustomTestCase):
 
@@ -57,14 +59,14 @@ class HelperFunctionsTest(testing_config.CustomTestCase):
             [processes.Action(
                 'Share kneeding video', 'https://example.com', [])],
             [],
-            0, 1),
+            0, 1, STAGE_BAKE_DOUGH),
          processes.ProcessStage(
              'Bake it',
              'Heat at 375 for 40 minutes',
              [PI_LOAF, PI_DIRTY_PAN],
              [],
              [BakeApproval],
-             1, 2),
+             1, 2, STAGE_BAKE_BAKE),
          ])
     expected = {
         'name': 'Baking',
@@ -80,7 +82,8 @@ class HelperFunctionsTest(testing_config.CustomTestCase):
                  'prerequisites': []}],
              'approvals': [],
              'incoming_stage': 0,
-             'outgoing_stage': 1},
+             'outgoing_stage': 1,
+             'stage_type': 110},
             {'name': 'Bake it',
              'description': 'Heat at 375 for 40 minutes',
              'progress_items': [
@@ -89,7 +92,8 @@ class HelperFunctionsTest(testing_config.CustomTestCase):
              'actions': [],
              'approvals': [BAKE_APPROVAL_DEF_DICT],
              'incoming_stage': 1,
-             'outgoing_stage': 2},
+             'outgoing_stage': 2,
+             'stage_type': 120},
         ]
     }
     actual = processes.process_to_dict(process)

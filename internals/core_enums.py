@@ -143,6 +143,7 @@ STAGE_BLINK_EVAL_READINESS = 140
 STAGE_BLINK_ORIGIN_TRIAL = 150
 STAGE_BLINK_EXTEND_ORIGIN_TRIAL = 151
 STAGE_BLINK_SHIPPING = 160
+STAGE_BLINK_SHIPPED = 170
 # Note: We might define post-ship support stage(s) later.
 
 # For implementing existing standards: the "fast track" process.
@@ -151,11 +152,13 @@ STAGE_FAST_DEV_TRIAL = 230
 STAGE_FAST_ORIGIN_TRIAL = 250
 STAGE_FAST_EXTEND_ORIGIN_TRIAL = 251
 STAGE_FAST_SHIPPING = 260
+STAGE_FAST_SHIPPED = 270
 
 # For developer-facing code changes not impacting a standard: the "PSA" process.
 STAGE_PSA_IMPLEMENT = 320
 STAGE_PSA_DEV_TRIAL = 330
 STAGE_PSA_SHIPPING = 360
+STAGE_PSA_SHIPPED = 370
 
 # For deprecating a feature: the "DEP" process.
 STAGE_DEP_PLAN = 410
@@ -166,11 +169,12 @@ STAGE_DEP_SHIPPING = 460
 STAGE_DEP_REMOVE_CODE = 470
 # TODO(jrobbins): reverse origin trial stage?
 
-# Note STAGE_* enum values 500-9999 are reseverd for future WP processes.
+# Note STAGE_* enum values 500-999 are reseverd for future WP processes.
 
 # Define enterprise feature processes.
 # Note: This stage can ge added to any feature that is following any process.
 STAGE_ENT_ROLLOUT = 1061
+STAGE_ENT_SHIPPED = 1070
 
 # Gate types
 GATE_PROTOTYPE = 1
