@@ -22,6 +22,7 @@ export class ChromedashGuideStagePage extends LitElement {
   static get properties() {
     return {
       stageId: {type: Number},
+      intentStage: {type: Number},
       stageName: {type: String},
       featureId: {type: Number},
       feature: {type: Object},
@@ -37,6 +38,7 @@ export class ChromedashGuideStagePage extends LitElement {
   constructor() {
     super();
     this.stageId = 0;
+    this.intentStage = 0;
     this.stageName = '';
     this.featureId = 0;
     this.feature = {};
@@ -70,10 +72,10 @@ export class ChromedashGuideStagePage extends LitElement {
           this.stageName = stage.name;
         }
       });
-      this.featureFormFields = STAGE_FORMS[this.feature.feature_type_int][this.stage.stage_type];
+      this.featureFormFields = STAGE_FORMS[this.feature.feature_type_int][this.intentStage];
       [this.implStatusOffered, this.implStatusFormFields] =
-        IMPL_STATUS_FORMS[this.stage.stage_type] || [null, null];
-
+        IMPL_STATUS_FORMS[this.intentStage] || [null, null];
+      console.log(this.implStatusFormFields);
       this.loading = false;
     }).catch(() => {
       showToastMessage('Some errors occurred. Please refresh the page or try again later.');
