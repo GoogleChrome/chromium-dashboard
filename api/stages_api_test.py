@@ -97,24 +97,24 @@ class StagesAPITest(testing_config.CustomTestCase):
   def test_get__bad_id(self, mock_abort):
     """Raises 404 if stage ID does not match any stage."""
     mock_abort.side_effect = werkzeug.exceptions.BadRequest
-    with test_app.test_request_context(self.request_path):
+    with test_app.test_request_context(f'{self.request_path}1/stages/3001'):
       with self.assertRaises(werkzeug.exceptions.BadRequest):
-        self.handler.do_get(stage_id=3001)
+        self.handler.do_get(feature_id=1, stage_id=3001)
     mock_abort.assert_called_once_with(404, description=f'Stage 3001 not found')
 
   @mock.patch('flask.abort')
   def test_get__no_id(self, mock_abort):
     """Raises 404 if stage ID is not specified."""
     mock_abort.side_effect = werkzeug.exceptions.BadRequest
-    with test_app.test_request_context(self.request_path):
+    with test_app.test_request_context(f'{self.request_path}1/stages'):
       with self.assertRaises(werkzeug.exceptions.BadRequest):
-        self.handler.do_get()
+        self.handler.do_get(feature_id=1)
     mock_abort.assert_called_once_with(404, description='No stage specified.')
 
   def test_get__valid(self):
     """Returns stage data if requesting a valid stage ID."""
-    with test_app.test_request_context(self.request_path):
-      actual = self.handler.do_get(stage_id=10)
+    with test_app.test_request_context(f'{self.request_path}1/stages/10'):
+      actual = self.handler.do_get(feature_id=1, stage_id=10)
 
     self.assertEqual(self.expected_stage_1, actual)
 
@@ -123,10 +123,14 @@ class StagesAPITest(testing_config.CustomTestCase):
     """Raises 403 if user has no edit access to feature."""
     testing_config.sign_in('basic_user@example.com', 123)
     mock_abort.side_effect = werkzeug.exceptions.Forbidden
-    with test_app.test_request_context(self.request_path):
+    request_path = f'{self.request_path}1/stages'
+    json = {
+        'stage_type': 151,
+        'intent_thread_url': 'https://example.com/different'}
+
+    with test_app.test_request_context(request_path, json=json):
       with self.assertRaises(werkzeug.exceptions.Forbidden):
-        self.handler.do_post(feature_id=1, stage_type=151,
-            intent_thread_url='https://example.com/different')
+        self.handler.do_post(feature_id=1)
     mock_abort.assert_called_once_with(403)
 
   @mock.patch('flask.abort')
@@ -134,29 +138,23 @@ class StagesAPITest(testing_config.CustomTestCase):
     """Raises 404 if ID does not match any feature."""
     testing_config.sign_in('feature_owner@example.com', 123)
     mock_abort.side_effect = werkzeug.exceptions.BadRequest
-    with test_app.test_request_context(self.request_path):
+    json = {
+        'stage_type': 151,
+        'intent_thread_url': 'https://example.com/different'}
+
+    with test_app.test_request_context(
+        f'{self.request_path}3001/stages', json=json):
       with self.assertRaises(werkzeug.exceptions.BadRequest):
-        self.handler.do_post(feature_id=3001, stage_type=151,
-            intent_thread_url='https://example.com/different')
+        self.handler.do_post(feature_id=3001)
     mock_abort.assert_called_once_with(
         404, description=f'Feature 3001 not found')
-
-  @mock.patch('flask.abort')
-  def test_post__no_id(self, mock_abort):
-    """Raises 404 if no feature ID was given."""
-    testing_config.sign_in('feature_owner@example.com', 123)
-    mock_abort.side_effect = werkzeug.exceptions.BadRequest
-    with test_app.test_request_context(self.request_path):
-      with self.assertRaises(werkzeug.exceptions.BadRequest):
-        self.handler.do_post(stage_type=151)
-    mock_abort.assert_called_once_with(404, description='No feature specified.')
 
   @mock.patch('flask.abort')
   def test_post__no_stage_type(self, mock_abort):
     """Raises 404 if no stage type was given."""
     testing_config.sign_in('feature_owner@example.com', 123)
     mock_abort.side_effect = werkzeug.exceptions.BadRequest
-    with test_app.test_request_context(self.request_path):
+    with test_app.test_request_context(f'{self.request_path}1/stages'):
       with self.assertRaises(werkzeug.exceptions.BadRequest):
         self.handler.do_post(feature_id=1)
     mock_abort.assert_called_once_with(
@@ -165,9 +163,13 @@ class StagesAPITest(testing_config.CustomTestCase):
   def test_post__valid(self):
     """A valid POST request should create a new stage."""
     testing_config.sign_in('feature_owner@example.com', 123)
-    with test_app.test_request_context(self.request_path):
-      actual = self.handler.do_post(feature_id=1, stage_type=151,
-          intent_thread_url='https://example.com/different')
+    json = {
+        'stage_type': 151,
+        'intent_thread_url': 'https://example.com/different'}
+
+    with test_app.test_request_context(
+        f'{self.request_path}/1/stages', json=json):
+      actual = self.handler.do_post(feature_id=1)
     self.assertEqual(actual['message'], 'Stage created.')
     stage_id = actual['stage_id']
     stage: Stage | None = Stage.get_by_id(stage_id)
@@ -178,9 +180,13 @@ class StagesAPITest(testing_config.CustomTestCase):
   def test_post__gate_created(self):
     """A Gate entity is created when a gated stage is created."""
     testing_config.sign_in('feature_owner@example.com', 123)
-    with test_app.test_request_context(self.request_path):
-      actual = self.handler.do_post(feature_id=1, stage_type=151,
-          intent_thread_url='https://example.com/different')
+    json = {
+        'stage_type': 151,
+        'intent_thread_url': 'https://example.com/different'}
+
+    with test_app.test_request_context(
+        f'{self.request_path}1/stages', json=json):
+      actual = self.handler.do_post(feature_id=1)
     self.assertEqual(actual['message'], 'Stage created.')
     stage_id = actual['stage_id']
     gates: list[Gate] = Gate.query(Gate.stage_id == stage_id).fetch()
@@ -189,9 +195,13 @@ class StagesAPITest(testing_config.CustomTestCase):
   def test_post__gate_not_needed(self):
     """A Gate entity is created when a non-gated stage is created."""
     testing_config.sign_in('feature_owner@example.com', 123)
-    with test_app.test_request_context(self.request_path):
-      actual = self.handler.do_post(feature_id=1, stage_type=110,
-          intent_thread_url='https://example.com/different')
+    json = {
+        'stage_type': 110,
+        'intent_thread_url': 'https://example.com/different'}
+
+    with test_app.test_request_context(
+        f'{self.request_path}1/stages', json=json):
+      actual = self.handler.do_post(feature_id=1)
     self.assertEqual(actual['message'], 'Stage created.')
     stage_id = actual['stage_id']
     gates: list[Gate] = Gate.query(Gate.stage_id == stage_id).fetch()
@@ -201,22 +211,26 @@ class StagesAPITest(testing_config.CustomTestCase):
   def test_patch__not_allowed(self, mock_abort):
     """Raises 403 if user does not have edit access to the stage."""
     testing_config.sign_in('basic_user@example.com', 123)
+    json = {'intent_thread_url': 'https://example.com/different'}
+
     mock_abort.side_effect = werkzeug.exceptions.Forbidden
-    with test_app.test_request_context(self.request_path):
+    with test_app.test_request_context(
+        f'{self.request_path}1/stages/10', json=json):
       with self.assertRaises(werkzeug.exceptions.Forbidden):
-        self.handler.do_patch(stage_id=10,
-            intent_thread_url='https://example.com/different')
+        self.handler.do_patch(feature_id=1, stage_id=10)
     mock_abort.assert_called_once_with(403)
 
   @mock.patch('flask.abort')
   def test_patch__bad_id(self, mock_abort):
     """Raises 404 if ID does not match any stage."""
     testing_config.sign_in('feature_owner@example.com', 123)
+    json = {'intent_thread_url': 'https://example.com/different'}
+
     mock_abort.side_effect = werkzeug.exceptions.BadRequest
-    with test_app.test_request_context(self.request_path):
+    with test_app.test_request_context(
+        f'{self.request_path}1/stages/3001', json=json):
       with self.assertRaises(werkzeug.exceptions.BadRequest):
-        self.handler.do_patch(stage_id=3001,
-            intent_thread_url='https://example.com/different')
+        self.handler.do_patch(feature_id=1, stage_id=3001)
     mock_abort.assert_called_once_with(
         404, description=f'Stage 3001 not found')
 
@@ -224,32 +238,41 @@ class StagesAPITest(testing_config.CustomTestCase):
   def test_patch__no_id(self, mock_abort):
     """Raises 404 if no stage ID was given."""
     testing_config.sign_in('feature_owner@example.com', 123)
+    json = {'intent_thread_url': 'https://example.com/different'}
+
     mock_abort.side_effect = werkzeug.exceptions.BadRequest
-    with test_app.test_request_context(self.request_path):
+    with test_app.test_request_context(
+        f'{self.request_path}1/stages', json=json):
       with self.assertRaises(werkzeug.exceptions.BadRequest):
-        self.handler.do_patch(intent_thread_url='https://example.com/different')
+        self.handler.do_patch(feature_id=1)
     mock_abort.assert_called_once_with(404, description='No stage specified.')
 
   @mock.patch('flask.abort')
   def test_patch__stage_type_change_attempt(self, mock_abort):
-    """Raises 404 if stage_type is supplied. This field cannot be mutated."""
+    """stage_type field cannot be mutated."""
     testing_config.sign_in('feature_owner@example.com', 123)
-    mock_abort.side_effect = werkzeug.exceptions.BadRequest
-    with test_app.test_request_context(self.request_path):
-      with self.assertRaises(werkzeug.exceptions.BadRequest):
-        self.handler.do_patch(stage_id=10, stage_type=260,
-            intent_thread_url='https://example.com/different')
-    mock_abort.assert_called_once_with(
-        404, description='stage_type field cannot be mutated.')
+    json = {
+        'stage_type': 260,
+        'intent_thread_url': 'https://example.com/different'}
+
+    with test_app.test_request_context(
+        f'{self.request_path}1/stages/10', json=json):
+      self.handler.do_patch(feature_id=1, stage_id=10)
+    # Stage type not changed.
+    self.assertEqual(self.stage_1.stage_type, 150)
 
   def test_patch__valid(self):
     """A valid PATCH request should update an existing stage."""
     testing_config.sign_in('feature_owner@example.com', 123)
-    with test_app.test_request_context(self.request_path):
-      actual = self.handler.do_patch(stage_id=10,
-          intent_thread_url='https://example.com/different',
-          announcement_url='https://example.com/announce',
-          experiment_risks='No risks.', browser=None)
+    json = {
+        'intent_thread_url': 'https://example.com/different',
+        'announcement_url': 'https://example.com/announce',
+        'experiment_risks': 'No risks.',
+        'browser': None}
+
+    with test_app.test_request_context(
+        f'{self.request_path}1/stages/10', json=json):
+      actual = self.handler.do_patch(feature_id=1, stage_id=10)
     self.assertEqual(actual['message'], 'Stage values updated.')
     stage = self.stage_1
     self.assertEqual(stage.experiment_risks, 'No risks.')
@@ -266,7 +289,7 @@ class StagesAPITest(testing_config.CustomTestCase):
     """Raises 403 if user does not have edit access to the stage."""
     testing_config.sign_in('basic_user@example.com', 123)
     mock_abort.side_effect = werkzeug.exceptions.Forbidden
-    with test_app.test_request_context(self.request_path):
+    with test_app.test_request_context(f'{self.request_path}1/stages/10'):
       with self.assertRaises(werkzeug.exceptions.Forbidden):
         self.handler.do_delete(stage_id=10)
     mock_abort.assert_called_once_with(403)
@@ -276,9 +299,9 @@ class StagesAPITest(testing_config.CustomTestCase):
     """Raises 404 if no stage ID was given."""
     testing_config.sign_in('feature_owner@example.com', 123)
     mock_abort.side_effect = werkzeug.exceptions.BadRequest
-    with test_app.test_request_context(self.request_path):
+    with test_app.test_request_context(f'{self.request_path}1/stages'):
       with self.assertRaises(werkzeug.exceptions.BadRequest):
-        self.handler.do_delete()
+        self.handler.do_delete(feature_id=1)
     mock_abort.assert_called_once_with(404, description='No stage specified.')
 
   @mock.patch('flask.abort')
@@ -286,15 +309,15 @@ class StagesAPITest(testing_config.CustomTestCase):
     """Raises 404 if ID does not match any stage."""
     testing_config.sign_in('feature_owner@example.com', 123)
     mock_abort.side_effect = werkzeug.exceptions.BadRequest
-    with test_app.test_request_context(self.request_path):
+    with test_app.test_request_context(f'{self.request_path}1/stages/3001'):
       with self.assertRaises(werkzeug.exceptions.BadRequest):
         self.handler.do_delete(stage_id=3001)
     mock_abort.assert_called_once_with(404, description='Stage 3001 not found.')
 
   def test_delete__valid(self):
-    """A valid DELETE request should mark the existing stage as deleted."""
+    """A valid DELETE request should mark the existing stage as archived."""
     testing_config.sign_in('feature_owner@example.com', 123)
-    with test_app.test_request_context(self.request_path):
-      actual = self.handler.do_delete(stage_id=10)
-    self.assertEqual(actual['message'], 'Stage deleted.')
-    self.assertEqual(self.stage_1.deleted, True)
+    with test_app.test_request_context(f'{self.request_path}1/stages/10'):
+      actual = self.handler.do_delete(feature_id=1, stage_id=10)
+    self.assertEqual(actual['message'], 'Stage archived.')
+    self.assertEqual(self.stage_1.archived, True)

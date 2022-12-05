@@ -20,13 +20,10 @@ from internals.core_models import FeatureEntry, MilestoneSet, Stage
 from internals.review_models import Gate
 
 
-
-
 class StagesAPI(basehandlers.APIHandler):
 
   # Categorized field names of the Stage kind.
   GENERAL_FIELDS: list[str] = [
-      'stage_type',
       'browser',
       'pm_emails',
       'tl_emails',
@@ -94,6 +91,7 @@ class StagesAPI(basehandlers.APIHandler):
 
     stage_dict['id'] = stage.key.integer_id()
     stage_dict['feature_id'] = stage.feature_id
+    stage_dict['stage_type'] = stage.stage_type
     return stage_dict
 
   def _create_gate_for_stage(
@@ -104,30 +102,32 @@ class StagesAPI(basehandlers.APIHandler):
     gate.put()
 
   def _add_given_stage_vals(self,
-      stage: Stage, kwargs: dict, fields: list[str]) -> None:
+      stage: Stage, body: dict, fields: list[str]) -> None:
     """Add given fields of the stage entity."""
     for field in fields:
-      if field in kwargs:
-        setattr(stage, field, kwargs[field])
+      if field in body:
+        setattr(stage, field, body[field])
 
   def _update_stage_vals(self, stage: Stage, feature_type: int,
-      kwargs: dict, create_gate: bool=False) -> None:
+      use_stage_type: bool=True, create_gate: bool=False) -> None:
     """Check for relevant stage fields and update stage as needed."""
-    if 'stage_type' in kwargs:
-      stage.stage_type = kwargs['stage_type']
+    body = self.get_json_param_dict()
+    if use_stage_type:
+      if 'stage_type' not in body:
+        self.abort(404, msg='Stage type not specified.')
+      stage.stage_type = body['stage_type']
     s_type = stage.stage_type
 
-
     for field in self.GENERAL_FIELDS:
-      if field in kwargs:
-        setattr(stage, field, kwargs[field])
+      if field in body:
+        setattr(stage, field, body[field])
 
     # Update milestone fields.
     for field in self.MILESTONE_FIELDS:
-      if field in kwargs:
+      if field in body:
         if stage.milestones is None:
           stage.milestones = MilestoneSet()
-        setattr(stage.milestones, field, kwargs['field'])
+        setattr(stage.milestones, field, body['field'])
     
     # Keep the gate type that might need to be created for the stage type.
     gate_type: int | None = None
@@ -136,15 +136,15 @@ class StagesAPI(basehandlers.APIHandler):
       gate_type = core_enums.GATE_PROTOTYPE
 
     if s_type == core_enums.STAGE_TYPES_ORIGIN_TRIAL[feature_type]:
-      self._add_given_stage_vals(stage, kwargs, self.OT_FIELDS)
+      self._add_given_stage_vals(stage, body, self.OT_FIELDS)
       gate_type = core_enums.GATE_ORIGIN_TRIAL
 
     if s_type == core_enums.STAGE_TYPES_EXTEND_ORIGIN_TRIAL[feature_type]:
-      self._add_given_stage_vals(stage, kwargs, self.OT_EXTENSION_FIELDS)
+      self._add_given_stage_vals(stage, body, self.OT_EXTENSION_FIELDS)
       gate_type = core_enums.GATE_EXTEND_ORIGIN_TRIAL
 
     if s_type == core_enums.STAGE_TYPES_SHIPPING[feature_type]:
-      self._add_given_stage_vals(stage, kwargs, self.SHIPPING_FIELDS)
+      self._add_given_stage_vals(stage, body, self.SHIPPING_FIELDS)
       gate_type = core_enums.GATE_SHIP
 
     stage.put()
@@ -171,9 +171,7 @@ class StagesAPI(basehandlers.APIHandler):
 
   def do_post(self, **kwargs):
     """Create a new stage."""
-    feature_id = kwargs.get('feature_id', None)
-    if feature_id is None:
-      self.abort(404, msg='No feature specified.')
+    feature_id = kwargs['feature_id']
 
     feature: FeatureEntry | None = FeatureEntry.get_by_id(feature_id)
     if feature is None:
@@ -185,14 +183,11 @@ class StagesAPI(basehandlers.APIHandler):
     if redirect_resp:
       return redirect_resp
 
-    if 'stage_type' not in kwargs:
-      self.abort(404, msg='Stage type not specified.')
-
     # Create the stage.
     stage = Stage(feature_id=feature_id)
     # Add the specified field values to the stage. Create a gate if needed.
     self._update_stage_vals(
-        stage, feature.feature_type, kwargs, create_gate=True)
+        stage, feature.feature_type, use_stage_type=True, create_gate=True)
 
     # Return  the newly created stage ID.
     return {'message': 'Stage created.', 'stage_id': stage.key.integer_id()}
@@ -219,13 +214,9 @@ class StagesAPI(basehandlers.APIHandler):
     if redirect_resp:
       return redirect_resp
 
-    # The stage_type field should not be able to change.
-    if 'stage_type' in kwargs:
-      self.abort(404, msg='stage_type field cannot be mutated.')
-
     # Update specified fields. No need to create a gate for existing stage.
     self._update_stage_vals(
-        stage, feature.feature_type, kwargs, create_gate=False)
+        stage, feature.feature_type, use_stage_type=False, create_gate=False)
 
     return {'message': 'Stage values updated.'}
 
@@ -245,7 +236,7 @@ class StagesAPI(basehandlers.APIHandler):
     if redirect_resp:
       return redirect_resp
     
-    stage.deleted = True
+    stage.archived = True
     stage.put()
 
-    return {'message': 'Stage deleted.'}
+    return {'message': 'Stage archived.'}
