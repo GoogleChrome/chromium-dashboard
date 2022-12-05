@@ -15,8 +15,8 @@
 
 import datetime
 from typing import Any
-from google.cloud import ndb
-from internals import stage_helpers  # type: ignore
+from google.cloud import ndb  # type: ignore
+from internals import stage_helpers
 
 from internals.core_enums import *
 from internals.core_models import Feature, FeatureEntry, Stage
