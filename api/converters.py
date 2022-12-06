@@ -569,8 +569,11 @@ def feature_entry_to_json_basic(fe: FeatureEntry,
   is_released = fe.impl_status_chrome in RELEASE_IMPL_STATES
   d['is_released'] = is_released
 
+  # This key is used for filtering on the featurelist page.
   # This does not take into account multiple shipping milestones
   milestone = None
+  # This field is only updated if the feature is released and
+  # the feature's stages were passed to the function.
   if stages and d['is_released']:
     for s in stages:
       if (s.stage_type == STAGE_TYPES_SHIPPING[fe.feature_type]
