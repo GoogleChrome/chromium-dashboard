@@ -22,6 +22,7 @@ from google.cloud import ndb  # type: ignore
 from api import converters
 from framework import rediscache
 from framework import users
+from internals import stage_helpers
 from internals.core_enums import *
 from internals.core_models import Feature, FeatureEntry, Stage
 import settings
@@ -611,12 +612,13 @@ def get_features_by_impl_status(limit: int | None=None, update_cache: bool=False
     logging.info('Waiting on futures')
     query_results = [future.result() for future in futures]
 
+    all_stages = stage_helpers.get_all_stages_by_feature()
     # Construct the proper ordering.
     feature_list = []
     for section in query_results:
       if len(section) > 0:
-        section = [
-            converters.feature_entry_to_json_basic(f) for f in section]
+        section = [converters.feature_entry_to_json_basic(
+            f, all_stages[f.key.integer_id()]) for f in section]
         section[0]['first_of_section'] = True
         if not show_unlisted:
           section = filter_unlisted(section)
