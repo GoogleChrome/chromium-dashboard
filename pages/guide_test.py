@@ -131,9 +131,11 @@ class FeatureEditHandlerTest(testing_config.CustomTestCase):
       stage = Stage(feature_id=feature_id, stage_type=stage_type,
           milestones=MilestoneSet())
       stage.put()
+      # OT stage will be used to edit a single stage.
+      if stage_type == 150:
+        self.stage_id = stage.key.integer_id()
 
-    self.request_path = ('/guide/stage/%d/%d' % (
-        self.feature_1.key.integer_id(), self.stage))
+    self.request_path = f'/guide/stage/{self.feature_1.key.integer_id()}'
     self.handler = guide.FeatureEditHandler()
 
   def tearDown(self):
@@ -199,7 +201,7 @@ class FeatureEditHandlerTest(testing_config.CustomTestCase):
     with test_app.test_request_context(self.request_path, method='POST'):
       with self.assertRaises(werkzeug.exceptions.Forbidden):
         self.handler.process_post_data(
-            feature_id=self.feature_1.key.integer_id(), stage_id=self.stage)
+            feature_id=self.feature_1.key.integer_id(), stage_id=self.stage_id)
 
   def test_post__non_allowed(self):
     """Non-allowed cannot edit features, gets a 403."""
@@ -207,9 +209,9 @@ class FeatureEditHandlerTest(testing_config.CustomTestCase):
     with test_app.test_request_context(self.request_path, method='POST'):
       with self.assertRaises(werkzeug.exceptions.Forbidden):
         self.handler.process_post_data(
-            feature_id=self.feature_1.key.integer_id(), stage_id=self.stage)
+            feature_id=self.feature_1.key.integer_id(), stage_id=self.stage_id)
 
-  def test_post__normal_valid(self):
+  def test_post__normal_valid_multiple_stages(self):
     """Allowed user can edit a feature."""
     testing_config.sign_in('user1@google.com', 1234567890)
 
@@ -242,7 +244,7 @@ class FeatureEditHandlerTest(testing_config.CustomTestCase):
             'feature_type': '1'
         }):
       actual_response = self.handler.process_post_data(
-          feature_id=self.fe_1.key.integer_id(), stage_id=self.stage)
+          feature_id=self.fe_1.key.integer_id())
 
     self.assertEqual('302 FOUND', actual_response.status)
     location = actual_response.headers['location']
@@ -289,3 +291,60 @@ class FeatureEditHandlerTest(testing_config.CustomTestCase):
         int(new_shipped_milestone))
     self.assertEqual(shipping_stages[0].intent_thread_url,
         new_intent_to_ship_url)
+
+  def test_post__normal_valid_single_stage(self):
+    """Allowed user can edit a feature."""
+    testing_config.sign_in('user1@google.com', 1234567890)
+
+    # Fields changed.
+    form_fields = ('name, summary, ot_milestone_desktop_start, '
+        'intent_to_experiment_url, experiment_risks, experiment_reason, '
+        'origin_trial_feedback_url')
+    # Expected stage change items.
+    new_ot_milestone_desktop_start = '84'
+    new_intent_to_experiment_url = 'https://example.com/intent'
+    new_experiment_risks = 'Some pretty risky business'
+    new_origin_trial_feedback_url = 'https://example.com/ot_intent'
+
+    with test_app.test_request_context(
+        f'{self.request_path}/{self.stage_id}', data={
+            'form_fields': form_fields,
+            'name': 'Revised feature name',
+            'summary': 'Revised feature summary',
+            'ot_milestone_desktop_start': new_ot_milestone_desktop_start,
+            'experiment_risks': new_experiment_risks,
+            'origin_trial_feedback_url': new_origin_trial_feedback_url,
+            'intent_to_experiment_url': new_intent_to_experiment_url
+        }):
+      actual_response = self.handler.process_post_data(
+          feature_id=self.fe_1.key.integer_id(), stage_id=self.stage_id)
+
+    self.assertEqual('302 FOUND', actual_response.status)
+    location = actual_response.headers['location']
+    self.assertEqual('/guide/edit/%d' % self.feature_1.key.integer_id(),
+                     location)
+    revised_feature = Feature.get_by_id(
+        self.feature_1.key.integer_id())
+    self.assertEqual('Revised feature name', revised_feature.name)
+    self.assertEqual('Revised feature summary', revised_feature.summary)
+    self.assertEqual(84, revised_feature.ot_milestone_desktop_start)
+
+    # Ensure changes were also made to FeatureEntry entity
+    revised_entry = FeatureEntry.get_by_id(
+        self.feature_1.key.integer_id())
+    self.assertEqual('Revised feature name', revised_entry.name)
+    self.assertEqual('Revised feature summary', revised_entry.summary)
+
+    # Ensure changes were also made to Stage entity
+    stages = stage_helpers.get_feature_stages(
+        self.feature_1.key.integer_id())
+    self.assertEqual(len(stages.keys()), 6)
+    origin_trial_stages = stages.get(150)
+    # Stage for shipping should have been created.
+    self.assertIsNotNone(origin_trial_stages)
+    self.assertEqual(origin_trial_stages[0].experiment_risks,
+        new_experiment_risks)
+    self.assertEqual(origin_trial_stages[0].intent_thread_url,
+        new_intent_to_experiment_url)
+    self.assertEqual(origin_trial_stages[0].origin_trial_feedback_url,
+        new_origin_trial_feedback_url)
