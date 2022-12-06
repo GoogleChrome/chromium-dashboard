@@ -67,11 +67,7 @@ class ChromedashFeaturelist extends LitElement {
       features.map((feature) => {
         feature.receivePush = false;
         if (feature.is_released) {
-          feature.milestone = feature.browsers.chrome.desktop ||
-              feature.browsers.chrome.android ||
-              feature.browsers.chrome.webview ||
-              feature.browsers.chrome.ios ||
-              Infinity;
+          feature.milestone = feature.milestone || Infinity;
         }
       });
       this.features = features;

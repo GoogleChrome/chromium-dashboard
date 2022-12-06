@@ -487,13 +487,14 @@ def feature_entry_to_json_verbose(fe: FeatureEntry) -> dict[str, Any]:
   return d
 
 
-def feature_entry_to_json_basic(fe: FeatureEntry) -> dict[str, Any]:
+def feature_entry_to_json_basic(fe: FeatureEntry,
+    stages: list[Stage] | None=None) -> dict[str, Any]:
   """Returns a dictionary with basic info about a feature."""
   # Return an empty dictionary if the entity has not been saved to datastore.
   if not fe.key:
     return {}
 
-  return {
+  d: dict[str, Any] = {
     'id': fe.key.integer_id(),
     'name': fe.name,
     'summary': fe.summary,
@@ -564,3 +565,22 @@ def feature_entry_to_json_basic(fe: FeatureEntry) -> dict[str, Any]:
       },
     }
   }
+
+  is_released = fe.impl_status_chrome in RELEASE_IMPL_STATES
+  d['is_released'] = is_released
+
+  # This key is used for filtering on the featurelist page.
+  # This does not take into account multiple shipping milestones
+  milestone = None
+  # This field is only updated if the feature is released and
+  # the feature's stages were passed to the function.
+  if stages and d['is_released']:
+    for s in stages:
+      if (s.stage_type == STAGE_TYPES_SHIPPING[fe.feature_type]
+          and s.milestones is not None):
+        milestone = (s.milestones.desktop_first or
+            s.milestones.android_first or
+            s.milestones.ios_first or s.milestones.webview_first)
+  d['milestone'] = milestone
+
+  return d
