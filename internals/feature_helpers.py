@@ -602,6 +602,7 @@ def get_features_by_impl_status(limit: int | None=None, update_cache: bool=False
     logging.info('recomputing feature list')
     # Get features by implementation status.
     futures: list[Future] = []
+    stages_future = Stage.query().fetch_async()
     for impl_status in IMPLEMENTATION_STATUS.keys():
       q = FeatureEntry.query(FeatureEntry.impl_status_chrome == impl_status)
       q = q.order(FeatureEntry.impl_status_chrome)
@@ -611,8 +612,9 @@ def get_features_by_impl_status(limit: int | None=None, update_cache: bool=False
     futures = futures[1:] + futures[0:1]
     logging.info('Waiting on futures')
     query_results = [future.result() for future in futures]
+    all_stages = stage_helpers.organize_all_stages_by_feature(
+        stages_future.result())
 
-    all_stages = stage_helpers.get_all_stages_by_feature()
     # Construct the proper ordering.
     feature_list = []
     for section in query_results:
