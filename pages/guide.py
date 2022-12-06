@@ -332,7 +332,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
       setattr(feature, 'impl_status_chrome', impl_status_val)
       setattr(fe, 'impl_status_chrome', impl_status_val)
 
-    active_stage_id: int = -1
+    active_stage_id = -1
     intent_stage_val: int | None = None
     if self.form.get('set_stage') == 'on':
       active_stage_id = kwargs.get('stage_id', 0)
