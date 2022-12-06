@@ -173,7 +173,6 @@ class ConvertersTest(testing_config.CustomTestCase):
     result = converters.feature_entry_to_json_verbose(self.fe_1)
     # Remove the stages and gates objects for a more apt comparison.
     result.pop('stages')
-    result.pop('gates')
 
     expected = {
       'id': 123,

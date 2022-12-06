@@ -99,7 +99,7 @@ class FeatureCreateTest(testing_config.CustomTestCase):
     # Ensure Stage and Gate entities were also created.
     stages = Stage.query().fetch()
     gates = Gate.query().fetch()
-    self.assertEqual(len(stages), 7)
+    self.assertEqual(len(stages), 8)
     self.assertEqual(len(gates), 4)
 
 
