@@ -16,6 +16,13 @@ describe('chromedash-guide-stage-page', () => {
     feature_type_int: 1,
     intent_stage: 'fake intent stage',
     new_crbug_url: 'fake crbug link',
+    stages: [
+      {
+        stage_id: 10,
+        stage_type: 150,
+        intent_stage: 3,
+      },
+    ],
     browsers: {
       chrome: {
         blink_components: ['Blink'],
@@ -54,6 +61,37 @@ describe('chromedash-guide-stage-page', () => {
     }],
   });
 
+  const validStagePromise = Promise.resolve({
+    id: 10,
+    feature_id: 1,
+    stage_type: 150,
+    browser: 'Chrome',
+    pm_emails: [],
+    tl_emails: [],
+    ux_emails: ['ux_person@example.com'],
+    te_emails: [],
+    intent_thread_url: 'https://example.com/intent',
+    desktop_first: 100,
+    desktop_last: null,
+    android_first: null,
+    android_last: null,
+    ios_first: null,
+    ios_last: null,
+    webview_first: null,
+    webview_last: null,
+    experiment_goals: 'To be the very best.',
+    experiment_risks: null,
+    origin_trial_feedback_url: null,
+    experiment_extension_reason: null,
+    ot_stage_id: null,
+    announcement_url: null,
+    finch_url: null,
+    rollout_milestone: null,
+    rollout_platforms: [],
+    rollout_details: null,
+    enterprise_policies: [],
+  });
+
   /* window.csClient and <chromedash-toast> are initialized at spa.html
    * which are not available here, so we initialize them before each test.
    * We also stub out the API calls here so that they return test data. */
@@ -62,6 +100,7 @@ describe('chromedash-guide-stage-page', () => {
     window.csClient = new ChromeStatusClient('fake_token', 1);
     sinon.stub(window.csClient, 'getFeature');
     sinon.stub(window.csClient, 'getFeatureProcess');
+    sinon.stub(window.csClient, 'getStage');
     sinon.stub(window.csClient, 'getBlinkComponents');
     window.csClient.getFeatureProcess.returns(processPromise);
     window.csClient.getBlinkComponents.returns(Promise.resolve({}));
@@ -71,6 +110,7 @@ describe('chromedash-guide-stage-page', () => {
     window.csClient.getFeature.restore();
     window.csClient.getFeatureProcess.restore();
     window.csClient.getBlinkComponents.restore();
+    window.csClient.getStage.restore();
   });
 
   it('renders with no data', async () => {
@@ -90,14 +130,17 @@ describe('chromedash-guide-stage-page', () => {
   });
 
   it('renders with fake data (with implStatusForm and implStatusName)', async () => {
-    const stageId = 2;
+    const stageId = 10;
     const featureId = 123456;
+    const intentStage = 2;
     window.csClient.getFeature.withArgs(featureId).returns(validFeaturePromise);
+    window.csClient.getStage.withArgs(featureId, stageId).returns(validStagePromise);
 
     const component = await fixture(
       html`<chromedash-guide-stage-page
              .stageId=${stageId}
-             .featureId=${featureId}>
+             .featureId=${featureId}
+             .intentStage=${intentStage}>
            </chromedash-guide-stage-page>`);
     assert.exists(component);
     assert.instanceOf(component, ChromedashGuideStagePage);
@@ -113,8 +156,8 @@ describe('chromedash-guide-stage-page', () => {
     assert.exists(form);
     assert.include(form.innerHTML, '<input type="hidden" name="token">');
     assert.include(form.innerHTML, '<input type="hidden" name="form_fields"');
-    assert.include(form.innerHTML, `${STAGE_FORMS[1][stageId].join()}`);
-    assert.include(form.innerHTML, `${IMPL_STATUS_FORMS[stageId][1].join()}`);
+    assert.include(form.innerHTML, `${STAGE_FORMS[1][intentStage].join()}`);
+    assert.include(form.innerHTML, `${IMPL_STATUS_FORMS[intentStage][1].join()}`);
     assert.include(form.innerHTML, '<div class="final_buttons">');
 
     // Implementation section renders correct title and fields
@@ -126,9 +169,10 @@ describe('chromedash-guide-stage-page', () => {
   });
 
   it('renders with fake data (without implStatusForm and implStatusName)', async () => {
-    const stageId = 1;
+    const stageId = 10;
     const featureId = 123456;
     window.csClient.getFeature.withArgs(featureId).returns(validFeaturePromise);
+    window.csClient.getStage.withArgs(featureId, stageId).returns(validStagePromise);
 
     const component = await fixture(
       html`<chromedash-guide-stage-page

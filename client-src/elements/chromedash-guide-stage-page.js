@@ -72,7 +72,7 @@ export class ChromedashGuideStagePage extends LitElement {
           this.stageName = stage.name;
         }
       });
-      this.featureFormFields = STAGE_FORMS[this.feature.feature_type_int][this.intentStage];
+      this.featureFormFields = STAGE_FORMS[this.feature.feature_type_int][this.intentStage] || [];
       [this.implStatusOffered, this.implStatusFormFields] =
         IMPL_STATUS_FORMS[this.intentStage] || [null, null];
       this.loading = false;
