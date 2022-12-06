@@ -15,6 +15,8 @@ export class ChromedashAllFeaturesPage extends LitElement {
 
   static get properties() {
     return {
+      rawQuery: {type: Object},
+      query: {type: String},
       user: {type: Object},
       starredFeatures: {type: Object},
     };
@@ -22,13 +24,26 @@ export class ChromedashAllFeaturesPage extends LitElement {
 
   constructor() {
     super();
+    this.query = '';
     this.user = {};
     this.starredFeatures = new Set();
   }
 
   connectedCallback() {
     super.connectedCallback();
+    this.initializeQuery();
     this.fetchData();
+  }
+
+  initializeQuery() {
+    if (!this.rawQuery) {
+      return;
+    }
+
+    if (!this.rawQuery.hasOwnProperty('q')) {
+      return;
+    }
+    this.query = this.rawQuery['q'];
   }
 
   fetchData() {
@@ -63,7 +78,7 @@ export class ChromedashAllFeaturesPage extends LitElement {
   renderBox(query) {
     return html`
       <chromedash-feature-table
-        query="${query}"
+        .query=${query}
         showQuery
         ?signedIn=${Boolean(this.user)}
         ?canEdit=${this.user && this.user.can_edit_all}
@@ -77,7 +92,7 @@ export class ChromedashAllFeaturesPage extends LitElement {
   }
 
   renderFeatureList() {
-    return this.renderBox('');
+    return this.renderBox(this.query);
   }
 
   render() {
