@@ -280,6 +280,55 @@ export class ChromedashProcessOverview extends LitElement {
     }
   }
 
+  findProcessStage(feStage) {
+    for (const processStage of this.process.stages) {
+      if (feStage.stage_type == processStage.stage_type) {
+        return processStage;
+      }
+    }
+    return null;
+  }
+
+  renderStage(featureId, feStage) {
+    const processStage = this.findProcessStage(feStage);
+    if (!processStage) {
+      return nothing;
+    }
+    return html`
+      <tr class="${this.feature.active_stage_id === feStage.stage_id ?
+                    'active' : ''}">
+        <td>
+          <div><b>${processStage.name}</b></div>
+          <div>${processStage.description}</div>
+        </td>
+        <td>
+          ${processStage.progress_items.map(item =>
+                      this.renderProgressItem(processStage, item))}
+        </td>
+        <td>
+          ${this.feature.active_stage_id === feStage.stage_id ?
+            html`<div><a
+                  href="/guide/stage/${featureId}/${feStage.stage_id}/${processStage.outgoing_stage}"
+                  class="button primary">Update</a></div>` :
+            nothing }
+          ${this.isPriorStage(processStage) ?
+            html`<a href="/guide/stage/${featureId}/${feStage.stage_id}/${processStage.outgoing_stage}"
+                >Revisit</a>` :
+            nothing }
+          ${this.isStartableStage(processStage) ?
+            html`<a href="/guide/stage/${featureId}/${feStage.stage_id}/${processStage.outgoing_stage}"
+                    class="button primary">Start</a>` :
+            nothing }
+          ${this.isFutureStage(processStage) ?
+            html`<a href="/guide/stage/${featureId}/${feStage.stage_id}/${processStage.outgoing_stage}"
+                >Preview</a>` :
+            nothing }
+
+          ${this.renderActions(processStage)}
+        </td>
+      </tr>`;
+  }
+
   render() {
     const featureId = this.feature.id;
     return html`
@@ -291,40 +340,7 @@ export class ChromedashProcessOverview extends LitElement {
          <th style="width: 12em"></th>
        </tr>
 
-       ${this.process.stages.map(stage => html`
-         <tr class="${this.feature.intent_stage_int == stage.outgoing_stage ?
-                      'active' : ''}">
-           <td>
-             <div><b>${stage.name}</b></div>
-             <div>${stage.description}</div>
-           </td>
-           <td>
-             ${stage.progress_items.map(item =>
-                        this.renderProgressItem(stage, item))}
-           </td>
-           <td>
-            ${this.feature.intent_stage_int == stage.outgoing_stage ?
-              html`<div><a
-                     href="/guide/stage/${featureId}/${stage.outgoing_stage}"
-                     class="button primary">Update</a></div>` :
-              nothing }
-            ${this.isPriorStage(stage) ?
-              html`<a href="/guide/stage/${featureId}/${stage.outgoing_stage}"
-                   >Revisit</a>` :
-              nothing }
-            ${this.isStartableStage(stage) ?
-              html`<a href="/guide/stage/${featureId}/${stage.outgoing_stage}"
-                      class="button primary">Start</a>` :
-              nothing }
-            ${this.isFutureStage(stage) ?
-              html`<a href="/guide/stage/${featureId}/${stage.outgoing_stage}"
-                   >Preview</a>` :
-              nothing }
-
-            ${this.renderActions(stage)}
-           </td>
-         </tr>
-       `)}
+       ${this.feature.stages.map(feStage => this.renderStage(featureId, feStage))}
        <tr>
          <td><b>Final review</b></td>
          <td></td>
