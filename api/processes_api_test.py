@@ -75,21 +75,6 @@ class ProcessesAPITest(testing_config.CustomTestCase):
     expected['stages'][-1]['incoming_stage'] = core_enums.INTENT_ROLLOUT
 
     self.assertEqual(expected, actual)
-
-  def test_get__feature_type_0_existing_rollout_stage(self):
-    """We can get process for breaking features with feature type 0 (New feature incubation)."""
-    self.feature_1.feature_type = 0
-    self.feature_1.put()
-    stage = core_models.Stage(feature_id=self.feature_id, stage_type=1061)
-    stage.put()
-    self.stages.append(stage)
-    with test_app.test_request_context(self.request_path):
-      actual = self.handler.do_get(feature_id=self.feature_id)
-    expected = processes.process_to_dict(processes.BLINK_LAUNCH_PROCESS)
-    expected['stages'].insert(-1, asdict(processes.FEATURE_ROLLOUT_STAGE))
-    expected['stages'][-1]['incoming_stage'] = core_enums.INTENT_ROLLOUT
-
-    self.assertEqual(expected, actual)
   
   def test_get__feature_type_1(self):
     """We can get process for features with feature type 1 (Existing feature implementation)."""
@@ -104,21 +89,6 @@ class ProcessesAPITest(testing_config.CustomTestCase):
     self.feature_1.feature_type = 1
     self.feature_1.breaking_change = True
     self.feature_1.put()
-    with test_app.test_request_context(self.request_path):
-      actual = self.handler.do_get(feature_id=self.feature_id)
-    expected = processes.process_to_dict(processes.BLINK_FAST_TRACK_PROCESS)
-    expected['stages'].insert(-1, asdict(processes.FEATURE_ROLLOUT_STAGE))
-    expected['stages'][-1]['incoming_stage'] = core_enums.INTENT_ROLLOUT
-
-    self.assertEqual(expected, actual)
-
-  def test_get__feature_type_1_existing_rollout_stage(self):
-    """We can get process for breaking features with feature type 0 (New feature incubation)."""
-    self.feature_1.feature_type = 1
-    self.feature_1.put()
-    stage = core_models.Stage(feature_id=self.feature_id, stage_type=1061)
-    stage.put()
-    self.stages.append(stage)
     with test_app.test_request_context(self.request_path):
       actual = self.handler.do_get(feature_id=self.feature_id)
     expected = processes.process_to_dict(processes.BLINK_FAST_TRACK_PROCESS)
@@ -148,21 +118,6 @@ class ProcessesAPITest(testing_config.CustomTestCase):
 
     self.assertEqual(expected, actual)
 
-  def test_get__feature_type_2_existing_rollout_stage(self):
-    """We can get process for breaking features with feature type 0 (New feature incubation)."""
-    self.feature_1.feature_type = 2
-    self.feature_1.put()
-    stage = core_models.Stage(feature_id=self.feature_id, stage_type=1061)
-    stage.put()
-    self.stages.append(stage)
-    with test_app.test_request_context(self.request_path):
-      actual = self.handler.do_get(feature_id=self.feature_id)
-    expected = processes.process_to_dict(processes.PSA_ONLY_PROCESS)
-    expected['stages'].insert(-1, asdict(processes.FEATURE_ROLLOUT_STAGE))
-    expected['stages'][-1]['incoming_stage'] = core_enums.INTENT_ROLLOUT
-
-    self.assertEqual(expected, actual)
-
   def test_get__feature_type_3(self):
     """We can get process for features with feature type 3 (Feature deprecation)."""
     self.feature_1.feature_type = 3
@@ -184,21 +139,6 @@ class ProcessesAPITest(testing_config.CustomTestCase):
 
     self.assertEqual(expected, actual)
 
-  def test_get__feature_type_3_existing_rollout_stage(self):
-    """We can get process for breaking features with feature type 0 (New feature incubation)."""
-    self.feature_1.feature_type = 3
-    self.feature_1.put()
-    stage = core_models.Stage(feature_id=self.feature_id, stage_type=1061)
-    stage.put()
-    self.stages.append(stage)
-    with test_app.test_request_context(self.request_path):
-      actual = self.handler.do_get(feature_id=self.feature_id)
-    expected = processes.process_to_dict(processes.DEPRECATION_PROCESS)
-    expected['stages'].insert(-1, asdict(processes.FEATURE_ROLLOUT_STAGE))
-    expected['stages'][-1]['incoming_stage'] = core_enums.INTENT_ROLLOUT
-
-    self.assertEqual(expected, actual)
-
   def test_get__feature_type_4(self):
     """We can get process for features with feature type 4 (Enterprise feature)."""
     self.feature_1.feature_type = 4
@@ -212,19 +152,6 @@ class ProcessesAPITest(testing_config.CustomTestCase):
     self.feature_1.feature_type = 4
     self.feature_1.breaking_change = True
     self.feature_1.put()
-    with test_app.test_request_context(self.request_path):
-      actual = self.handler.do_get(feature_id=self.feature_id)
-    expected = processes.process_to_dict(processes.ENTERPRISE_PROCESS)
-
-    self.assertEqual(expected, actual)
-
-  def test_get__feature_type_4_existing_rollout_stage(self):
-    """We can get process for breaking features with feature type 0 (New feature incubation)."""
-    self.feature_1.feature_type = 4
-    self.feature_1.put()
-    stage = core_models.Stage(feature_id=self.feature_id, stage_type=1061)
-    stage.put()
-    self.stages.append(stage)
     with test_app.test_request_context(self.request_path):
       actual = self.handler.do_get(feature_id=self.feature_id)
     expected = processes.process_to_dict(processes.ENTERPRISE_PROCESS)
