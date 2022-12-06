@@ -325,6 +325,20 @@ class ChromeStatusClient {
   getSpecifiedChannels(start, end) {
     return this.doGet(`/channels?start=${start}&end=${end}`);
   }
+
+  parseRawQuery(rawQuery) {
+    const params = new URLSearchParams(rawQuery);
+    const result = {};
+    for (const param of params.keys()) {
+      const values = params.getAll(param);
+      if (!values.length) {
+        continue;
+      }
+      // Assume there is only one value.
+      result[param] = values[0];
+    }
+    return result;
+  }
 };
 
 exports.ChromeStatusClient = ChromeStatusClient;
