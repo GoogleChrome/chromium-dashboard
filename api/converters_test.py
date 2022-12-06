@@ -98,6 +98,8 @@ class ConvertersTest(testing_config.CustomTestCase):
       'unlisted': False,
       'blink_components': ['Blink'],
       'breaking_change': False,
+      'is_released': True,
+      'milestone': None,
       'resources': {
         'samples': ['https://example.com/samples'],
         'docs': ['https://example.com/docs'],
