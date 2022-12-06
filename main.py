@@ -150,6 +150,8 @@ spa_page_routes = [
       defaults={'require_edit_feature': True}),
   Route('/guide/stage/<int:feature_id>/<int:stage_id>/<int:intent_stage>',
       defaults={'require_edit_feature': True}),
+  Route('/guide/stage/<int:feature_id>/<int:stage_id>',
+      defaults={'require_edit_feature': True}),
   Route('/guide/edit/<int:feature_id>/<int:stage_id>',
       defaults={'require_edit_feature': True}),
   Route('/guide/editall/<int:feature_id>',
