@@ -327,6 +327,15 @@ STAGE_TYPES_SHIPPING: dict[int, Optional[int]] = {
     FEATURE_TYPE_ENTERPRISE_ID: STAGE_ENT_ROLLOUT
   }
 
+# Shipped stage types for every feature type.
+STAGE_TYPES_SHIPPED: dict[int, int | None] = {
+  FEATURE_TYPE_INCUBATE_ID: STAGE_BLINK_SHIPPED,
+  FEATURE_TYPE_EXISTING_ID: STAGE_FAST_SHIPPED,
+  FEATURE_TYPE_CODE_CHANGE_ID: STAGE_PSA_SHIPPED,
+  FEATURE_TYPE_DEPRECATION_ID: STAGE_DEP_REMOVE_CODE,
+  FEATURE_TYPE_ENTERPRISE_ID: STAGE_ENT_SHIPPED
+}
+
 # Mapping of original field names to the new stage types the fields live on.
 STAGE_TYPES_BY_FIELD_MAPPING: dict[str, dict[int, Optional[int]]] = {
     'finch_url': STAGE_TYPES_SHIPPING,

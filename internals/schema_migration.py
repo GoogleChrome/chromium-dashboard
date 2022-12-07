@@ -496,6 +496,28 @@ class UpdateDeprecatedViews(FlaskHandler):
     return 'Feature and FeatureEntry view fields updated.'
 
 
+class WriteMissingGates(FlaskHandler):
+
+  def get_template_data(self, **kwargs):
+    """Write gates for code change implement stages (previously not written)."""
+    self.require_cron_header()
+
+    gates_created = 0
+    for stage in Stage.query(Stage.stage_type == STAGE_PSA_IMPLEMENT):
+      # Check if a gate already exists for this phase.
+      stage_id = stage.key.integer_id()
+      matching_gates = Gate.query(Gate.stage_id == stage_id).fetch()
+      # If the gate doesn't exist, create it.
+      if len(matching_gates) == 0:
+        gate = Gate(feature_id=stage.feature_id, stage_id=stage_id,
+            gate_type=GATE_PROTOTYPE, state=Gate.PREPARING)
+        gate.put()
+        gates_created += 1
+
+    return f'{gates_created} missing gates created for stages.'
+
+
+
 class CalcActiveStages(FlaskHandler):
 
   def get_template_data(self, **kwargs):
