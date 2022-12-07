@@ -295,7 +295,7 @@ export class ChromedashGuideStagePage extends LitElement {
     const formattedFeature = formatFeatureForEdit(this.feature);
     return html`
       <form name="feature_form" method="POST"
-        action="/guide/stage/${this.featureId}/${this.stageId}">
+        action="/guide/stage/${this.featureId}/${this.stageId}/${this.intentStage}">
         <input type="hidden" name="token">
         <input type="hidden" name="form_fields" value=${this.getFormFields()} >
         <input type="hidden" name="nextPage" value=${this.getNextPage()} >

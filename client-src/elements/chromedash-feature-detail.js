@@ -339,7 +339,7 @@ class ChromedashFeatureDetail extends LitElement {
     for (const processStage of processStages) {
       const name = `${processStage.name}${numberDifferentiation}`;
       const isActive = (this.feature.active_stage_id === feStage.stage_id &&
-          this.processStage.intent_stage === this.feature.intent_stage);
+        this.feature.intent_stage_int === processStage.outgoing_stage);
 
       const editButton = html`
         <sl-button size="small" style="float:right"

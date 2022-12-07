@@ -337,8 +337,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
     intent_stage_val: int | None = None
     if self.form.get('set_stage') == 'on':
       active_stage_id = kwargs.get('stage_id', 0)
-      intent_stage_val = core_enums.INTENT_STAGES_BY_STAGE_TYPE.get(
-          active_stage_id, core_enums.INTENT_NONE)
+      intent_stage_val = kwargs.get('intent_stage', core_enums.INTENT_NONE)
     if intent_stage_val is not None:
       self._add_changed_field(
           fe, 'active_stage_id', active_stage_id, changed_fields)
