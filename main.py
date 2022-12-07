@@ -240,7 +240,11 @@ internals_routes: list[Route] = [
   Route('/admin/schema_migration_updated_field',
       schema_migration.WriteUpdatedField),
   Route('/admin/schema_migration_update_views',
-      schema_migration.UpdateDeprecatedViews)
+      schema_migration.UpdateDeprecatedViews),
+  Route('/admin/schema_migration_missing_gates',
+    schema_migration.WriteMissingGates),
+  Route('/admin/schema_migration_active_stage',
+      schema_migration.CalcActiveStages),
 ]
 
 dev_routes: list[Route] = []

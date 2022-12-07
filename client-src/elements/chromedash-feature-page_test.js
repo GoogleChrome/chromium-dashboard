@@ -95,9 +95,14 @@ describe('chromedash-feature-page', () => {
     tags: ['tag_one'],
     stages: [
       {
-        'stage_id': 10,
-        'stage_type': 150,
-        'intent_stage': 8,
+        stage_id: 1,
+        stage_type: 110,
+        intent_stage: 1,
+      },
+      {
+        stage_id: 2,
+        stage_type: 120,
+        intent_stage: 2,
       },
     ],
   });
