@@ -103,7 +103,7 @@ export class ChromedashFeaturePage extends LitElement {
     this.user = {};
     this.featureId = 0;
     this.feature = {};
-    this.gates = {};
+    this.gates = [];
     this.comments = {};
     this.process = {};
     this.dismissedCues = [];
