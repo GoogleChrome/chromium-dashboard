@@ -297,7 +297,7 @@ class ChromedashFeatureDetail extends LitElement {
 
   renderMetadataSection() {
     const fields = DISPLAY_FIELDS_IN_STAGES['Metadata'];
-    if (fields === undefined || fields.length == 0) {
+    if (fields === undefined || fields.length === 0) {
       return nothing;
     }
     const content = html`
@@ -308,49 +308,65 @@ class ChromedashFeatureDetail extends LitElement {
     return this.renderSection('Metadata', content);
   }
 
-  findProcessStage(feStage) {
+  findProcessStages(feStage) {
+    const stages = [];
     for (const processStage of this.process.stages) {
-      if (feStage.stage_type == processStage.stage_type) {
-        return processStage;
+      if (feStage.stage_type === processStage.stage_type) {
+        stages.push(processStage);
       }
     }
-    return null;
+    return stages;
   }
 
-  renderStageSection(feStage) {
+  renderProcessesForStage(feStage) {
     const fields = DISPLAY_FIELDS_IN_STAGES[feStage.intent_stage];
-    const processStage = this.findProcessStage(feStage);
-    if (processStage === null) return nothing;
-    const isActive = (this.feature.active_stage_id == feStage.stage_id);
+    const processStages = this.findProcessStages(feStage);
+    if (processStages.length === 0) return nothing;
     if (fields === undefined || fields.length == 0) {
       return nothing;
     }
-
-    let name = processStage.name;
     // Add a number differentiation if this stage type is the same as another stage.
+    let numberDifferentiation = '';
     if (this.previousStageTypeRendered === feStage.stage_type) {
       this.sameTypeRendered += 1;
-      name = `${name} ${this.sameTypeRendered}`;
+      numberDifferentiation = ` ${this.sameTypeRendered}`;
     } else {
       this.previousStageTypeRendered = feStage.stage_type;
       this.sameTypeRendered = 1;
     }
 
-    const editButton = html`
-      <sl-button size="small" style="float:right"
-           href="/guide/stage/${this.feature.id}/${feStage.stage_id}/${feStage.intent_stage}"
-           >Edit fields</sl-button>
-    `;
-    const content = html`
-      <p class="description">
-        ${this.canEdit ? editButton : nothing}
-        ${processStage.description}
-      </p>
-      <section class="card">
-        ${this.renderSectionFields(fields)}
-      </section>
-    `;
-    return this.renderSection(name, content, isActive);
+    const sections = [];
+    for (const processStage of processStages) {
+      const name = `${processStage.name}${numberDifferentiation}`;
+      const isActive = (this.feature.active_stage_id === feStage.stage_id &&
+          this.processStage.intent_stage === this.feature.intent_stage);
+
+      const editButton = html`
+        <sl-button size="small" style="float:right"
+            href="/guide/stage/${this.feature.id}/${feStage.stage_id}/${feStage.intent_stage}"
+            >Edit fields</sl-button>
+      `;
+      const content = html`
+        <p class="description">
+          ${this.canEdit ? editButton : nothing}
+          ${processStage.description}
+        </p>
+        <section class="card">
+          ${this.renderSectionFields(fields)}
+        </section>
+      `;
+      sections.push(this.renderSection(name, content, isActive));
+    }
+    return sections;
+  }
+
+  renderStages(feStages) {
+    let allSections = [];
+    feStages.forEach(feStage => {
+      const sections = this.renderProcessesForStage(feStage);
+      allSections = allSections.concat(sections);
+    });
+    return allSections;
   }
 
   renderActivitySection() {
@@ -374,7 +390,7 @@ class ChromedashFeatureDetail extends LitElement {
         ${this.renderControls()}
       </h2>
       ${this.renderMetadataSection()}
-      ${this.feature.stages.map(stage => this.renderStageSection(stage))}
+      ${this.renderStages(this.feature.stages)}
       ${this.renderActivitySection()}
     `;
   }
