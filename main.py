@@ -237,6 +237,8 @@ internals_routes: list[Route] = [
       schema_migration.UpdateDeprecatedViews),
   Route('/admin/schema_migration_missing_gates',
     schema_migration.WriteMissingGates),
+  Route('/admin/schema_migration_active_stage',
+      schema_migration.CalcActiveStages),
 ]
 
 dev_routes: list[Route] = []

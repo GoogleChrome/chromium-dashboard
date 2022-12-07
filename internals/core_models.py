@@ -329,6 +329,7 @@ class FeatureEntry(ndb.Model):  # Copy from Feature
   # Metadata: Process information
   feature_type = ndb.IntegerProperty(default=FEATURE_TYPE_INCUBATE_ID)
   intent_stage = ndb.IntegerProperty(default=INTENT_NONE)
+  active_stage_id = ndb.IntegerProperty()
   bug_url = ndb.StringProperty()  # Tracking bug
   launch_bug_url = ndb.StringProperty()  # FLT or go/launch
   breaking_change = ndb.BooleanProperty(default=False)
