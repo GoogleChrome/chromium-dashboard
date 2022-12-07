@@ -208,8 +208,10 @@ class ChromedashApp extends LitElement {
     if (newURL.toString() === window.location.toString()) {
       return;
     }
-    // Update URL without refreshing the page.
-    window.history.pushState(rawQuery, '', newURL);
+    // Update URL without refreshing the page. {path:} is needed for
+    // an issue in page.js:
+    // https://github.com/visionmedia/page.js/issues/293#issuecomment-456906679
+    window.history.pushState({path: newURL.toString()}, '', newURL);
   }
 
   /**
