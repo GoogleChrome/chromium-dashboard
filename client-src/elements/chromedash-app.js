@@ -202,7 +202,7 @@ class ChromedashApp extends LitElement {
     const rawQuery = window.csClient.parseRawQuery(window.location.search);
     rawQuery[key] = encodeURIComponent(val);
 
-    // Aseemble the new URL.
+    // Assemble the new URL.
     const newURL = this.getNewLocation(rawQuery, window.location);
     newURL.hash = '';
     if (newURL.toString() === window.location.toString()) {

@@ -321,16 +321,27 @@ class ChromedashFeatureFilter extends LitElement {
     `];
   }
 
+  getSearcbarValue(query) {
+    // Only update the searchbar value if filter widgets are not in use.
+    // TODO(kyle): eventually we should populate the widget and searchbox.
+    if (this.filterConditions.length) {
+      const searchBarEl = this.shadowRoot.querySelector('#searchbar');
+      return searchBarEl.value;
+    }
+    return query;
+  }
+
   renderSearchBar() {
     return html`
       <div>
-        <sl-input id="searchbar" placeholder="Search" value=${this.query}
+        <sl-input id="searchbar" placeholder="Search"
+            value=${this.getSearcbarValue(this.query)}
             @keyup="${this.handleSearchKey}">
           <sl-icon-button library="material" name="search" slot="prefix"
-               @click="${this.handleSearchClick}">
+              @click="${this.handleSearchClick}">
           </sl-icon-button>
           <sl-icon-button library="material" name="tune" slot="suffix"
-               @click="${this.toggleFilters}">
+              @click="${this.toggleFilters}">
           </sl-icon-button>
         </sl-input>
       </div>
