@@ -293,9 +293,13 @@ export class ChromedashProcessOverview extends LitElement {
   renderProcessesForStage(featureId, feStage) {
     const processStages = this.findProcessStages(feStage);
     const sections = [];
+
     for (const processStage of processStages) {
+      const isActive = (this.feature.active_stage_id === feStage.stage_id &&
+          this.feature.intent_stage_int === processStage.outgoing_stage);
+
       sections.push(html`
-        <tr class="${this.feature.active_stage_id === feStage.stage_id ?
+        <tr class="${isActive ?
                       'active' : ''}">
           <td>
             <div><b>${processStage.name}</b></div>
@@ -306,7 +310,7 @@ export class ChromedashProcessOverview extends LitElement {
                         this.renderProgressItem(processStage, item))}
           </td>
           <td>
-            ${this.feature.active_stage_id === feStage.stage_id ?
+            ${isActive ?
               html`<div><a
                     href="/guide/stage/${featureId}/${feStage.stage_id}/${processStage.outgoing_stage}"
                     class="button primary">Update</a></div>` :
