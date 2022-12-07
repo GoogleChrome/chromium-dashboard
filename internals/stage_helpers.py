@@ -16,6 +16,7 @@
 from collections import defaultdict
 
 from internals.core_models import Stage
+from internals.core_models import INTENT_STAGES_BY_STAGE_TYPE
 
 
 def get_feature_stages(feature_id: int) -> dict[int, list[Stage]]:
@@ -37,3 +38,14 @@ def organize_all_stages_by_feature(stages: list[Stage]):
   for stage in stages:
     stages_by_feature[stage.feature_id].append(stage)
   return stages_by_feature
+
+def get_feature_stage_ids_list(feature_id: int) -> list[dict[str, int]]:
+  """Return a list of stage types and IDs associated with a given feature."""
+  q = Stage.query(Stage.feature_id == feature_id)
+  q = q.order(Stage.stage_type)
+  return [
+    {
+      'stage_id': s.key.integer_id(),
+      'stage_type': s.stage_type,
+      'intent_stage': INTENT_STAGES_BY_STAGE_TYPE[s.stage_type]
+    } for s in q]

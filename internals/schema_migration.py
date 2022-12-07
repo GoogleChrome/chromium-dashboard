@@ -494,3 +494,71 @@ class UpdateDeprecatedViews(FlaskHandler):
         f.put()
     
     return 'Feature and FeatureEntry view fields updated.'
+
+
+class WriteMissingGates(FlaskHandler):
+
+  def get_template_data(self, **kwargs):
+    """Write gates for code change implement stages (previously not written)."""
+    self.require_cron_header()
+
+    gates_created = 0
+    for stage in Stage.query(Stage.stage_type == STAGE_PSA_IMPLEMENT):
+      # Check if a gate already exists for this phase.
+      stage_id = stage.key.integer_id()
+      matching_gates = Gate.query(Gate.stage_id == stage_id).fetch()
+      # If the gate doesn't exist, create it.
+      if len(matching_gates) == 0:
+        gate = Gate(feature_id=stage.feature_id, stage_id=stage_id,
+            gate_type=GATE_PROTOTYPE, state=Gate.PREPARING)
+        gate.put()
+        gates_created += 1
+
+    return f'{gates_created} missing gates created for stages.'
+
+
+
+class CalcActiveStages(FlaskHandler):
+
+  def get_template_data(self, **kwargs):
+    """Calculates the active stage of features based on the intent stage."""
+    self.require_cron_header()
+
+    active_stages_set = 0
+    stages_created = 0
+
+    for fe in FeatureEntry.query():
+      # Don't try to detect active stage if it's already set.
+      if fe.active_stage_id is not None:
+        continue
+
+      feature_id = fe.key.integer_id()
+      # Check which stage type is associated with the active intent stage.
+      active_stage_type = (
+        STAGE_TYPES_BY_INTENT_STAGE[fe.feature_type].get(fe.intent_stage))
+
+      # If a matching stage type isn't found, don't set it.
+      if active_stage_type is None:
+        continue
+      else:
+        active_stage = Stage.query(
+            Stage.stage_type == active_stage_type,
+            Stage.feature_id == feature_id).get()
+        
+        # Find the stage ID and set active stage field to this ID.
+        if active_stage:
+          fe.active_stage_id = active_stage.key.integer_id()
+        else:
+          # If the stage doesn't exist, create it.
+          # This probably shouldn't need to happen if everything is
+          # migrated correctly.
+          stage = Stage(feature_id=feature_id, stage_type=active_stage_type)
+          stage.put()
+          stages_created += 1
+          fe.active_stage_id = stage.key.integer_id()
+        active_stages_set += 1
+      fe.put()
+      
+    
+    return (f'{active_stages_set} active stages set for features and '
+        f'{stages_created} stages created for features.')

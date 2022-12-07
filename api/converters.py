@@ -16,6 +16,7 @@
 import datetime
 from typing import Any
 from google.cloud import ndb  # type: ignore
+from internals import stage_helpers
 
 from internals.core_enums import *
 from internals.core_models import Feature, FeatureEntry, Stage
@@ -234,7 +235,6 @@ def _prep_stage_gate_info(
   rollout_type = STAGE_TYPES_ROLLOUT[fe.feature_type]
 
   stages = Stage.query(Stage.feature_id == d['id'])
-  gates = Gate.query(Gate.feature_id == d['id'])
   major_stages: dict[str, Optional[Stage]] = {
       'proto': None,
       'dev_trial': None,
@@ -243,12 +243,9 @@ def _prep_stage_gate_info(
       'ship': None,
       'rollout': None}
 
-  # Write a collection of stages and gates associated with the feature,
-  # sorted by type.
-  d['stages'] = collections.defaultdict(list)
-  d['gates'] = collections.defaultdict(list)
-  # Stages and gates are given as a dictionary, with the type as the key,
-  # and a list of entity IDs as the value.
+  # Write a list of stages and gates associated with the feature
+  d['stages'] = stage_helpers.get_feature_stage_ids_list(d['id'])
+
   # TODO(danielrsmith): This approach should be removed or refactored when
   # functionality for creating multiple stages is added.
   for s in stages:
@@ -265,9 +262,6 @@ def _prep_stage_gate_info(
       major_stages['ship'] = s
     elif s.stage_type == rollout_type:
       major_stages['rollout'] = s
-    d['stages'][s.stage_type].append(stage_to_dict(s))
-  for g in gates:
-    d['gates'][g.gate_type].append(g.key.integer_id())
 
   return major_stages
 
@@ -383,7 +377,8 @@ def feature_entry_to_json_verbose(fe: FeatureEntry) -> dict[str, Any]:
     d['feature_type'] = FEATURE_TYPES[fe.feature_type]
     d['feature_type_int'] = fe.feature_type
   if fe.intent_stage is not None:
-    d['intent_stage'] = INTENT_STAGES[fe.intent_stage]
+    d['intent_stage'] = INTENT_STAGES.get(
+        fe.intent_stage, INTENT_STAGES[INTENT_NONE])
     d['intent_stage_int'] = fe.intent_stage
   d['created'] = {
     'by': d.pop('creator_email', None),

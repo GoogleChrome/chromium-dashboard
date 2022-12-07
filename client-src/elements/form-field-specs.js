@@ -254,17 +254,6 @@ export const ALL_FIELDS = {
       draft information or revising a previous stage.`,
   },
 
-  'intent_stage': {
-    type: 'select',
-    choices: INTENT_STAGES,
-    initial: INTENT_STAGES.INTENT_IMPLEMENT[0],
-    label: 'Process stage',
-    help_text: html`
-        Select the appropriate spec process stage. If you select
-        Dev trials, Origin Trial, or Shipped, be sure to set the
-        equivalent Implementation status.`,
-  },
-
   'search_tags': {
     type: 'input',
     attrs: TEXT_FIELD_ATTRS,
@@ -1224,8 +1213,7 @@ function makeDisplaySpecs(fields) {
 
 export const DISPLAY_FIELDS_IN_STAGES = {
   'Metadata': makeDisplaySpecs([
-    'category', 'feature_type', 'intent_stage', 'accurate_as_of',
-    'breaking_change',
+    'category', 'feature_type', 'accurate_as_of', 'breaking_change',
   ]),
   [INTENT_STAGES.INTENT_INCUBATE[0]]: makeDisplaySpecs([
     'initial_public_proposal_url', 'explainer_links',
