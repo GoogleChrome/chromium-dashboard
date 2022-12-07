@@ -21,6 +21,18 @@ describe('chromedash-guide-edit-page', () => {
     feature_type: 'fake feature type',
     intent_stage: 'fake intent stage',
     new_crbug_url: 'fake crbug link',
+    stages: [
+      {
+        stage_id: 1,
+        stage_type: 110,
+        intent_stage: 1,
+      },
+      {
+        stage_id: 2,
+        stage_type: 120,
+        intent_stage: 2,
+      },
+    ],
     browsers: {
       chrome: {
         blink_components: ['Blink'],
