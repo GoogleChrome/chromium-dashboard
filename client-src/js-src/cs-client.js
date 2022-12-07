@@ -302,6 +302,11 @@ class ChromeStatusClient {
     return this.doGet(url);
   }
 
+  // Stages API
+  getStage(featureId, stageId) {
+    return this.doGet(`/features/${featureId}/stages/${stageId}`);
+  }
+
   // Processes API
   getFeatureProcess(featureId) {
     return this.doGet(`/features/${featureId}/process`);
