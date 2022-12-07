@@ -113,6 +113,7 @@ class ChromedashApp extends LitElement {
     page('/newfeatures', (ctx) => {
       this.pageComponent = document.createElement('chromedash-all-features-page');
       this.pageComponent.user = this.user;
+      this.pageComponent.rawQuery = window.csClient.parseRawQuery(ctx.querystring);
       this.contextLink = ctx.path;
       this.currentPage = ctx.path;
     });

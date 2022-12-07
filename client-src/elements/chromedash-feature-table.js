@@ -154,6 +154,7 @@ class ChromedashFeatureTable extends LitElement {
     if (this.showQuery) {
       return html`
        <chromedash-feature-filter
+        .query=${this.query}
         @search="${this.handleSearch}"
        ></chromedash-feature-filter>
       `;

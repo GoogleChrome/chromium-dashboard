@@ -324,7 +324,7 @@ class ChromedashFeatureFilter extends LitElement {
   renderSearchBar() {
     return html`
       <div>
-        <sl-input id="searchbar" placeholder="Search"
+        <sl-input id="searchbar" placeholder="Search" value=${this.query}
             @keyup="${this.handleSearchKey}">
           <sl-icon-button library="material" name="search" slot="prefix"
                @click="${this.handleSearchClick}">

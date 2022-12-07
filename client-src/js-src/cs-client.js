@@ -325,6 +325,25 @@ class ChromeStatusClient {
   getSpecifiedChannels(start, end) {
     return this.doGet(`/channels?start=${start}&end=${end}`);
   }
+
+  /**
+   * Parses URL query strings into a dict.
+   * @param {string} rawQuery a raw URL query string, e.g. q=abc&num=1;
+   * @return {object} A key-value pair dictionary for the query string.
+   */
+  parseRawQuery(rawQuery) {
+    const params = new URLSearchParams(rawQuery);
+    const result = {};
+    for (const param of params.keys()) {
+      const values = params.getAll(param);
+      if (!values.length) {
+        continue;
+      }
+      // Assume there is only one value.
+      result[param] = values[0];
+    }
+    return result;
+  }
 };
 
 exports.ChromeStatusClient = ChromeStatusClient;
