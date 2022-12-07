@@ -159,3 +159,19 @@ export const WEB_DEV_VIEWS = {
   DEV_NEGATIVE: [5, 'Negative'],
   DEV_STRONG_NEGATIVE: [6, 'Strongly negative'],
 };
+
+export const GATE_STATES = {
+  PREPARING: [0, 'Preparing'],
+  NA: [1, 'N/a or Ack'],
+  REVIEW_REQUESTED: [2, 'Review requested'],
+  REVIEW_STARTED: [3, 'Review started'],
+  NEEDS_WORK: [4, 'Needs work'],
+  APPROVED: [5, 'Approved'],
+  DENIED: [6, 'Denied'],
+};
+
+export const GATE_ACTIVE_STATES = [
+  GATE_STATES.REVIEW_REQUESTED[0],
+  GATE_STATES.REVIEW_STARTED[0],
+  GATE_STATES.NEEDS_WORK[0],
+];
