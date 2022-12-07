@@ -173,9 +173,8 @@ class ConvertersTest(testing_config.CustomTestCase):
   def test_feature_entry_to_json_verbose__normal(self):
     """Converts feature entry to complete JSON with stage data."""
     result = converters.feature_entry_to_json_verbose(self.fe_1)
-    # Remove the stages and gates objects for a more apt comparison.
+    # Remove the stages list for a more apt comparison.
     result.pop('stages')
-    result.pop('gates')
 
     expected = {
       'id': 123,
