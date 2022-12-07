@@ -608,9 +608,9 @@ def should_add_rollout_stage(feature_entry):
   """Returns whether the rollout stage should be added to the feature process.
 
      Returns true if the feature is not of type FEATURE_TYPE_ENTERPRISE_ID,
-     and the featuer is a breaking change or has one of the fields from the
-     following fiels modified: 'rollout_milestone', 'rollout_platforms',
-     'rolout_detials' oe 'enterprise_policies'.
+     and the feature is a breaking change or has one of the fields from the
+     following fields modified: 'rollout_milestone', 'rollout_platforms',
+     'rolout_detials' or 'enterprise_policies'.
   Args:
     feature_entry: core.FeatureEntry the feature to check.
   """
