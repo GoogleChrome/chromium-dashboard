@@ -513,7 +513,7 @@ class CalcActiveStages(FlaskHandler):
       feature_id = fe.key.integer_id()
       # Check which stage type is associated with the active intent stage.
       active_stage_type = (
-        STAGE_TYPES_BY_INTENT_STAGE[fe.feature_type].get(fe.intent_stage, None))
+        STAGE_TYPES_BY_INTENT_STAGE[fe.feature_type].get(fe.intent_stage))
 
       # If a matching stage type isn't found, don't set it.
       if active_stage_type is None:
@@ -521,11 +521,11 @@ class CalcActiveStages(FlaskHandler):
       else:
         active_stage = Stage.query(
             Stage.stage_type == active_stage_type,
-            Stage.feature_id == feature_id).fetch()
+            Stage.feature_id == feature_id).get()
         
         # Find the stage ID and set active stage field to this ID.
         if active_stage:
-          fe.active_stage_id = active_stage[0].key.integer_id()
+          fe.active_stage_id = active_stage.key.integer_id()
         else:
           # If the stage doesn't exist, create it.
           # This probably shouldn't need to happen if everything is
