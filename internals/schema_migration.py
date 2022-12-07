@@ -507,6 +507,7 @@ class WriteMissingGates(FlaskHandler):
       # Check if a gate already exists for this phase.
       stage_id = stage.key.integer_id()
       matching_gates = Gate.query(Gate.stage_id == stage_id).fetch()
+      # If the gate doesn't exist, create it.
       if len(matching_gates) == 0:
         gate = Gate(feature_id=stage.feature_id, stage_id=stage_id,
             gate_type=GATE_PROTOTYPE, state=Gate.PREPARING)
