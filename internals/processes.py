@@ -604,23 +604,6 @@ def initial_tag_review_status(feature_type):
 def review_is_done(status):
   return status in (core_enums.REVIEW_ISSUES_ADDRESSED, core_enums.REVIEW_NA)
 
-def should_add_rollout_stage(feature_entry):
-  """Returns whether the rollout stage should be added to the feature process.
-
-     Returns true if the feature is not of type FEATURE_TYPE_ENTERPRISE_ID,
-     and the feature is a breaking change or has one of the fields from the
-     following fields modified: 'rollout_milestone', 'rollout_platforms',
-     'rolout_detials' or 'enterprise_policies'.
-  Args:
-    feature_entry: core.FeatureEntry the feature to check.
-  """
-  if feature_entry.feature_type == core_enums.FEATURE_TYPE_ENTERPRISE_ID:
-    return False
-  if  feature_entry.breaking_change:
-    return True
-  stages = stage_helpers.get_feature_stages(feature_entry.key.integer_id())
-  return core_enums.STAGE_ENT_ROLLOUT in stages
-
 
 # These functions return a true value when the checkmark should be shown.
 # If they return a string, and it starts with "http:" or "https:", it will

@@ -92,8 +92,9 @@ export class ChromedashGuideEditallPage extends LitElement {
   }
 
   getForms() {
-    const forms = FLAT_FORMS_BY_FEATURE_TYPE[this.featureForEdit.feature_type];
-    
+    const forms = JSON.parse(JSON.stringify(
+      FLAT_FORMS_BY_FEATURE_TYPE[this.featureForEdit.feature_type]));
+
     // Ensures the rollout field is shown for breaking changes.
     if (this.featureForEdit.breaking_change &&
       !forms.some(([name]) => name === FLAT_ENTERPRISE_PREPARE_TO_SHIP_NAME)) {
