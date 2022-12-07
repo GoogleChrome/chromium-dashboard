@@ -67,8 +67,8 @@ export class ChromedashGuideStagePage extends LitElement {
       if (this.feature.name) {
         document.title = `${this.feature.name} - ${this.appTitle}`;
       }
-      process.stages.map(stage => {
-        if (stage.stage_type === this.stage.stage_type) {
+      process.stages.map(processStage => {
+        if (processStage.stage_type === this.stage.stage_type) {
           this.stageName = stage.name;
         }
       });
