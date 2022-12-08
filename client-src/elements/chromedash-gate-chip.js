@@ -3,7 +3,7 @@ import {SHARED_STYLES} from '../sass/shared-css.js';
 
 
 const GATE_STATE_TO_NAME = {
-  // TODO(jrobbins): NOT_STARTED.
+  0: 'Preparing', // PREPARING
   1: 'FYI', //  NA
   2: 'Pending', // REVIEW_REQUESTED
   3: 'Pending', // REVIEW_STARTED
@@ -14,7 +14,7 @@ const GATE_STATE_TO_NAME = {
 };
 
 const GATE_STATE_TO_ICON = {
-  // TODO(jrobbins): arrow_circle_right_20px NOT_STARTED.
+  0: 'arrow_circle_right_20px', // PREPARING
   1: 'visibility_20px', //  NA
   2: 'pending_20px', // REVIEW_REQUESTED
   3: 'pending_20px', // REVIEW_STARTED
@@ -63,6 +63,14 @@ class ChromedashGateChip extends LitElement {
      }
      .fyi sl-icon {
        color: var(--gate-fyi-icon-color);
+     }
+
+     sl-button.preparing::part(base) {
+       background: var(--gate-preparing-background);
+       color: var(--gate-preparing-color);
+     }
+     .preparing sl-icon {
+       color: var(--gate-preparing-icon-color);
      }
 
      sl-button.pending::part(base) {
