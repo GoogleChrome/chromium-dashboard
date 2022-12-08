@@ -322,7 +322,6 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
 
   def write_specific_stages(self, feature, feature_type, stage_ids, changed_fields) -> None:
     for id in stage_ids:
-      print(id)
       if id == 0:
         continue
       stage = Stage.get_by_id(id)
