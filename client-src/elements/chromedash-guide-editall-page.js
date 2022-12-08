@@ -35,6 +35,7 @@ export class ChromedashGuideEditallPage extends LitElement {
     super();
     this.featureId = 0;
     this.feature = {};
+    this.featureForEdit = {};
     this.loading = true;
     this.appTitle = '';
     this.nextPage = '';
@@ -53,6 +54,7 @@ export class ChromedashGuideEditallPage extends LitElement {
     ]).then(([feature, process]) => {
       this.feature = feature;
       this.process = process;
+      this.featureForEdit = formatFeatureForEdit(feature);
       if (this.feature.name) {
         document.title = `${this.feature.name} - ${this.appTitle}`;
       }

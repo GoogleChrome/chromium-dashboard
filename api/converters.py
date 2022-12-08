@@ -232,6 +232,7 @@ def _prep_stage_gate_info(
   ot_type = STAGE_TYPES_ORIGIN_TRIAL[fe.feature_type]
   extend_type = STAGE_TYPES_EXTEND_ORIGIN_TRIAL[fe.feature_type]
   ship_type = STAGE_TYPES_SHIPPING[fe.feature_type]
+  rollout_type = STAGE_TYPES_ROLLOUT[fe.feature_type]
 
   stages = Stage.query(Stage.feature_id == d['id'])
   major_stages: dict[str, Optional[Stage]] = {
@@ -239,7 +240,8 @@ def _prep_stage_gate_info(
       'dev_trial': None,
       'ot': None,
       'extend': None,
-      'ship': None}
+      'ship': None,
+      'rollout': None}
 
   # Write a list of stages and gates associated with the feature
   d['stages'] = stage_helpers.get_feature_stage_ids_list(d['id'])
@@ -258,6 +260,8 @@ def _prep_stage_gate_info(
       major_stages['extend'] = s
     elif s.stage_type == ship_type:
       major_stages['ship'] = s
+    elif s.stage_type == rollout_type:
+      major_stages['rollout'] = s
 
   return major_stages
 
@@ -359,10 +363,10 @@ def feature_entry_to_json_verbose(fe: FeatureEntry) -> dict[str, Any]:
   # Ship stage fields.
   d['intent_to_ship_url'] = _stage_attr(stages['ship'], 'intent_thread_url')
   d['finch_url'] = _stage_attr(stages['ship'], 'finch_url')
-  d['rollout_milestone'] = _stage_attr(stages['ship'], 'rollout_milestone')
-  d['rollout_platforms'] = _stage_attr(stages['ship'], 'rollout_platforms')
-  d['rollout_details'] = _stage_attr(stages['ship'], 'rollout_details')
-  d['enterprise_policies'] = _stage_attr(stages['ship'], 'enterprise_policies')
+  d['rollout_milestone'] = _stage_attr(stages['rollout'], 'rollout_milestone')
+  d['rollout_platforms'] = _stage_attr(stages['rollout'], 'rollout_platforms')
+  d['rollout_details'] = _stage_attr(stages['rollout'], 'rollout_details')
+  d['enterprise_policies'] = _stage_attr(stages['rollout'], 'enterprise_policies')
 
   impl_status_chrome = d.pop('impl_status_chrome', None)
   standard_maturity = d.pop('standard_maturity', None)
