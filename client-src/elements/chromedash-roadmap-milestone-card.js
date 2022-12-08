@@ -1,4 +1,5 @@
 import {LitElement, html, nothing} from 'lit';
+import {ref, createRef} from 'lit/directives/ref.js';
 import {ROADMAP_MILESTONE_CARD_CSS} from
   '../sass/elements/chromedash-roadmap-milestone-card-css.js';
 
@@ -10,6 +11,8 @@ const NO_FEATURE_STRING = 'NO FEATURES ARE PLANNED FOR THIS MILESTONE YET';
 
 
 class ChromedashRoadmapMilestoneCard extends LitElement {
+  infoPopupRef = createRef();
+
   static styles = ROADMAP_MILESTONE_CARD_CSS;
   static get properties() {
     return {
@@ -130,7 +133,30 @@ class ChromedashRoadmapMilestoneCard extends LitElement {
     return Object.keys(obj).sort();
   }
 
+  renderInfoIcon() {
+    return html`
+      <sl-icon-button name="info-circle" id="info-button"
+        @click=${() => this.infoPopupRef.value.active = !this.infoPopupRef.value.active}
+      ></sl-icon-button>
+
+      <sl-popup anchor="info-button" placement="bottom" strategy="fixed"
+        ${ref(this.infoPopupRef)}>
+        <div class="popup-content">
+          New versions are offered to users gradually. <br/>
+          See
+          <a href="https://chromiumdash.appspot.com/schedule"
+             target="_blank">detailed dates</a>.
+        </div>
+      </sl-popup>
+    `;
+  }
+
+
   renderCardHeader() {
+    // Starting with M110, display Early Stable Release dates.
+    const stableStart = (this.channel.version >= 110) ?
+      this.channel.final_beta : this.channel.stable_date;
+
     return html `
       <div class="layout vertical center">
         <h1 class="channel_label">${this.templateContent.channelLabel}</h1>
@@ -143,13 +169,18 @@ class ChromedashRoadmapMilestoneCard extends LitElement {
       <div class="milestone_info layout horizontal center-center">
         <h3>
           <span class="channel_label">Beta</span> ${this.templateContent.dateText}
-          <span class="milestone_info-beta">${this._computeDate(this.channel.earliest_beta)} - ${this._computeDate(this.channel.latest_beta)}</span>
+          <span class="milestone_info-beta">
+            ${this._computeDate(this.channel.earliest_beta)} -
+            ${this._computeDate(this.channel.latest_beta)}
+         </span>
         </h3>
       </div>
       <div class="milestone_info layout horizontal center-center">
         <h3>
-          <span class="channel_label">Stable</span> ${this._computeDaysUntil(this.channel.stable_date)}
-          <span class="release-stable">(${this._computeDate(this.channel.stable_date, true)})</span>
+          <span class="channel_label">Stable</span> ${this._computeDaysUntil(stableStart)}
+          <span class="release-stable">(${this._computeDate(stableStart, true)})</span>
+          ${this.renderInfoIcon()}
+
         </h3>
       </div>
       ` : nothing}
