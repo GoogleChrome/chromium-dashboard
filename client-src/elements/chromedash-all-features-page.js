@@ -53,7 +53,7 @@ export class ChromedashAllFeaturesPage extends LitElement {
     }
 
     if (this.rawQuery.hasOwnProperty('num')) {
-      this.start = this.rawQuery['num'];
+      this.num = this.rawQuery['num'];
     }
   }
 
