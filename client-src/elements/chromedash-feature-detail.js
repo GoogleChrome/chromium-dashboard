@@ -4,11 +4,11 @@ import {PLATFORMS_DISPLAYNAME} from './form-field-enums';
 import '@polymer/iron-icon';
 import './chromedash-activity-log';
 import './chromedash-callout';
+import './chromedash-gate-chip';
 import {autolink} from './utils.js';
 import {SHARED_STYLES} from '../sass/shared-css.js';
 
 const LONG_TEXT = 60;
-
 
 class ChromedashFeatureDetail extends LitElement {
   static get properties() {
@@ -16,6 +16,7 @@ class ChromedashFeatureDetail extends LitElement {
       user: {type: Object},
       canEdit: {type: Boolean},
       feature: {type: Object},
+      gates: {type: Array},
       process: {type: Object},
       dismissedCues: {type: Array},
       anyCollapsed: {type: Boolean},
@@ -27,6 +28,7 @@ class ChromedashFeatureDetail extends LitElement {
     this.user = {};
     this.canEdit = false;
     this.feature = {};
+    this.gates = [];
     this.process = {};
     this.dismissedCues = [];
     this.anyCollapsed = true;
@@ -73,7 +75,8 @@ class ChromedashFeatureDetail extends LitElement {
         padding-bottom: 8px;
       }
 
-      .description {
+      .description,
+      .gates {
         padding: 8px 16px;
       }
 
@@ -308,6 +311,25 @@ class ChromedashFeatureDetail extends LitElement {
     return this.renderSection('Metadata', content);
   }
 
+  renderGateChip(gate) {
+    return html`
+      <chromedash-gate-chip
+        .feature=${this.feature}
+        .gate=${gate}
+      >
+      </chromedash-gate-chip>
+    `;
+  }
+
+  renderGateChips(feStage) {
+    const gatesForStage = this.gates.filter(g => g.stage_id == feStage.id);
+    return html`
+      <div class="gates">
+        ${gatesForStage.map(g => this.renderGateChip(g))}
+      </div>
+    `;
+  }
+
   findProcessStages(feStage) {
     const stages = [];
     for (const processStage of this.process.stages) {
@@ -351,6 +373,7 @@ class ChromedashFeatureDetail extends LitElement {
           ${this.canEdit ? editButton : nothing}
           ${processStage.description}
         </p>
+        ${this.renderGateChips(feStage)}
         <section class="card">
           ${this.renderSectionFields(fields)}
         </section>

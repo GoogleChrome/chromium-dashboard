@@ -18,6 +18,8 @@ export class ChromedashAllFeaturesPage extends LitElement {
       rawQuery: {type: Object},
       query: {type: String},
       user: {type: Object},
+      start: {type: Number},
+      num: {type: Number},
       starredFeatures: {type: Object},
     };
   }
@@ -26,24 +28,33 @@ export class ChromedashAllFeaturesPage extends LitElement {
     super();
     this.query = '';
     this.user = {};
+    this.start = 0;
+    this.num = 100;
     this.starredFeatures = new Set();
   }
 
   connectedCallback() {
     super.connectedCallback();
-    this.initializeQuery();
+    this.initializeParams();
     this.fetchData();
   }
 
-  initializeQuery() {
+  initializeParams() {
     if (!this.rawQuery) {
       return;
     }
 
-    if (!this.rawQuery.hasOwnProperty('q')) {
-      return;
+    if (this.rawQuery.hasOwnProperty('q')) {
+      this.query = this.rawQuery['q'];
     }
-    this.query = this.rawQuery['q'];
+
+    if (this.rawQuery.hasOwnProperty('start')) {
+      this.start = this.rawQuery['start'];
+    }
+
+    if (this.rawQuery.hasOwnProperty('num')) {
+      this.num = this.rawQuery['num'];
+    }
   }
 
   fetchData() {
@@ -79,6 +90,8 @@ export class ChromedashAllFeaturesPage extends LitElement {
     return html`
       <chromedash-feature-table
         .query=${query}
+        .start=${this.start}
+        .num=${this.num}
         showQuery
         ?signedIn=${Boolean(this.user)}
         ?canEdit=${this.user && this.user.can_edit_all}
@@ -86,7 +99,7 @@ export class ChromedashAllFeaturesPage extends LitElement {
         .starredFeatures=${this.starredFeatures}
         @star-toggle-event=${this.handleStarToggle}
         @open-approvals-event=${this.handleOpenApprovals}
-        num=100 alwaysOfferPagination columns="normal">
+        alwaysOfferPagination columns="normal">
       </chromedash-feature-table>
     `;
   }

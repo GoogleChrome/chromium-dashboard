@@ -87,6 +87,7 @@ export class ChromedashFeaturePage extends LitElement {
       user: {type: Object},
       featureId: {type: Number},
       feature: {type: Object},
+      gates: {type: Array},
       comments: {type: Array},
       process: {type: Object},
       dismissedCues: {type: Array},
@@ -102,6 +103,7 @@ export class ChromedashFeaturePage extends LitElement {
     this.user = {};
     this.featureId = 0;
     this.feature = {};
+    this.gates = [];
     this.comments = {};
     this.process = {};
     this.dismissedCues = [];
@@ -124,12 +126,14 @@ export class ChromedashFeaturePage extends LitElement {
     this.loading = true;
     Promise.all([
       window.csClient.getFeature(this.featureId),
+      window.csClient.getGates(this.featureId),
       window.csClient.getComments(this.featureId, null, false),
       window.csClient.getFeatureProcess(this.featureId),
       window.csClient.getDismissedCues(),
       window.csClient.getStars(),
-    ]).then(([feature, commentRes, process, dismissedCues, starredFeatures]) => {
+    ]).then(([feature, gatesRes, commentRes, process, dismissedCues, starredFeatures]) => {
       this.feature = feature;
+      this.gates = gatesRes.gates;
       this.comments = commentRes.comments;
       this.process = process;
       this.dismissedCues = dismissedCues;
@@ -189,9 +193,17 @@ export class ChromedashFeaturePage extends LitElement {
     });
   }
 
+  /* Open the general approvals dialog when the user clicks on stamp icon. */
   handleApprovalClick(e) {
     e.preventDefault();
     openApprovalsDialog(this.user, this.feature);
+  }
+
+  /* Open the specific approvals dialog when the user clicks on a gate chip. */
+  // TODO(jrobbins): Make it specific.
+  handleOpenApprovals(e) {
+    e.preventDefault();
+    openApprovalsDialog(this.user, e.detail.feature);
   }
 
   renderSkeletonSection() {
@@ -447,9 +459,12 @@ export class ChromedashFeaturePage extends LitElement {
         .user=${this.user}
         ?canEdit=${this.userCanEdit()}
         .feature=${this.feature}
+        .gates=${this.gates}
         .comments=${this.comments}
         .process=${this.process}
-        .dismissedCues=${this.dismissedCues}>
+        .dismissedCues=${this.dismissedCues}
+        @open-approvals-event=${this.handleOpenApprovals}
+       >
       </chromedash-feature-detail>
     `;
   }
