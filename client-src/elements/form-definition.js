@@ -203,11 +203,12 @@ const FLAT_SHIP_FIELDS = [
   'shipped_ios_milestone', 'shipped_webview_milestone',
 ];
 
-const FLAT_ENTERPRISE_PREPARE_TO_SHIP = [
+export const FLAT_ENTERPRISE_PREPARE_TO_SHIP = [
   'rollout_milestone', 'rollout_platforms', 'rollout_details',
   'enterprise_policies',
 ];
 
+export const FLAT_ENTERPRISE_PREPARE_TO_SHIP_NAME = 'Start feature rollout';
 
 // Forms to be used on the "Edit all" page that shows a flat list of fields.
 // [[sectionName, flatFormFields]].
@@ -242,7 +243,7 @@ export const FLAT_FORMS_BY_FEATURE_TYPE = {
   ],
   [FEATURE_TYPES.FEATURE_TYPE_ENTERPRISE_ID[0]]: [
     ['Feature metadata', FLAT_METADATA_FIELDS],
-    ['Start feature rollout', FLAT_ENTERPRISE_PREPARE_TO_SHIP],
+    [FLAT_ENTERPRISE_PREPARE_TO_SHIP_NAME, FLAT_ENTERPRISE_PREPARE_TO_SHIP],
     ['Ship', FLAT_SHIP_FIELDS],
   ],
 };

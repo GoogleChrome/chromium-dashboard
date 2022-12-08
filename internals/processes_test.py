@@ -154,7 +154,7 @@ class ProgressDetectorsTest(testing_config.CustomTestCase):
         name='feature one', summary='sum', category=1,
         intent_stage=core_enums.INTENT_IMPLEMENT, feature_type=0)
     self.feature_1.put()
-    stage_types = [110, 120, 130, 140, 150, 151, 160]
+    stage_types = [110, 120, 130, 140, 150, 151, 160, 1061]
     self.stages: list[core_models.Stage] = []
     for s_type in stage_types:
       stage = core_models.Stage(feature_id=self.feature_1.key.integer_id(),
@@ -281,23 +281,23 @@ class ProgressDetectorsTest(testing_config.CustomTestCase):
   def test_rollout_milestone(self):
     detector = processes.PROGRESS_DETECTORS['Rollout milestone']
     self.assertFalse(detector(self.feature_1, self.stages_dict))
-    self.stages_dict[160][0].rollout_milestone = 99
+    self.stages_dict[1061][0].rollout_milestone = 99
     self.assertTrue(detector(self.feature_1, self.stages_dict))
 
   def test_rollout_platforms(self):
     detector = processes.PROGRESS_DETECTORS['Rollout platforms']
     self.assertFalse(detector(self.feature_1, self.stages_dict))
-    self.stages_dict[160][0].rollout_platforms = ['iOS', 'Android']
+    self.stages_dict[1061][0].rollout_platforms = ['iOS', 'Android']
     self.assertTrue(detector(self.feature_1, self.stages_dict))
 
   def test_rollout_details(self):
     detector = processes.PROGRESS_DETECTORS['Rollout details']
     self.assertFalse(detector(self.feature_1, self.stages_dict))
-    self.stages_dict[160][0].rollout_details = 'Details'
+    self.stages_dict[1061][0].rollout_details = 'Details'
     self.assertTrue(detector(self.feature_1, self.stages_dict))
 
   def test_enterprise_policies(self):
     detector = processes.PROGRESS_DETECTORS['Enterprise policies']
     self.assertFalse(detector(self.feature_1, self.stages_dict))
-    self.stages_dict[160][0].enterprise_policies = ['Policy1', 'Policy2']
+    self.stages_dict[1061][0].enterprise_policies = ['Policy1', 'Policy2']
     self.assertTrue(detector(self.feature_1, self.stages_dict))
