@@ -17,6 +17,8 @@ from dataclasses import asdict, dataclass
 
 from internals import approval_defs
 from internals import core_enums
+from internals import core_models
+from internals import stage_helpers
 
 
 @dataclass
@@ -702,18 +704,18 @@ PROGRESS_DETECTORS = {
     lambda f, _: f.impl_status_chrome == core_enums.REMOVED,
 
     'Rollout milestone':
-    lambda f, stages: stages[core_enums.STAGE_TYPES_SHIPPING[f.feature_type]] and
-        stages[core_enums.STAGE_TYPES_SHIPPING[f.feature_type]][0].rollout_milestone,
+    lambda f, stages: stages[core_enums.STAGE_TYPES_ROLLOUT[f.feature_type]] and
+        stages[core_enums.STAGE_TYPES_ROLLOUT[f.feature_type]][0].rollout_milestone,
 
     'Rollout platforms':
-    lambda f, stages: stages[core_enums.STAGE_TYPES_SHIPPING[f.feature_type]] and
-        stages[core_enums.STAGE_TYPES_SHIPPING[f.feature_type]][0].rollout_platforms,
+    lambda f, stages: stages[core_enums.STAGE_TYPES_ROLLOUT[f.feature_type]] and
+        stages[core_enums.STAGE_TYPES_ROLLOUT[f.feature_type]][0].rollout_platforms,
 
     'Rollout details':
-    lambda f, stages: stages[core_enums.STAGE_TYPES_SHIPPING[f.feature_type]] and
-        stages[core_enums.STAGE_TYPES_SHIPPING[f.feature_type]][0].rollout_details,
+    lambda f, stages: stages[core_enums.STAGE_TYPES_ROLLOUT[f.feature_type]] and
+        stages[core_enums.STAGE_TYPES_ROLLOUT[f.feature_type]][0].rollout_details,
 
     'Enterprise policies':
-    lambda f, stages: stages[core_enums.STAGE_TYPES_SHIPPING[f.feature_type]] and
-        stages[core_enums.STAGE_TYPES_SHIPPING[f.feature_type]][0].enterprise_policies,
+    lambda f, stages: stages[core_enums.STAGE_TYPES_ROLLOUT[f.feature_type]] and
+        stages[core_enums.STAGE_TYPES_ROLLOUT[f.feature_type]][0].enterprise_policies,
 }

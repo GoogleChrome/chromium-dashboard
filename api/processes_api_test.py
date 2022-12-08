@@ -68,7 +68,6 @@ class ProcessesAPITest(testing_config.CustomTestCase):
     self.feature_1.feature_type = 0
     self.feature_1.breaking_change = True
     self.feature_1.put()
-    self.maxDiff = None
     with test_app.test_request_context(self.request_path):
       actual = self.handler.do_get(feature_id=self.feature_id)
     expected = processes.process_to_dict(processes.BLINK_LAUNCH_PROCESS)
@@ -90,7 +89,6 @@ class ProcessesAPITest(testing_config.CustomTestCase):
     self.feature_1.feature_type = 1
     self.feature_1.breaking_change = True
     self.feature_1.put()
-    self.maxDiff = None
     with test_app.test_request_context(self.request_path):
       actual = self.handler.do_get(feature_id=self.feature_id)
     expected = processes.process_to_dict(processes.BLINK_FAST_TRACK_PROCESS)
@@ -112,7 +110,6 @@ class ProcessesAPITest(testing_config.CustomTestCase):
     self.feature_1.feature_type = 2
     self.feature_1.breaking_change = True
     self.feature_1.put()
-    self.maxDiff = None
     with test_app.test_request_context(self.request_path):
       actual = self.handler.do_get(feature_id=self.feature_id)
     expected = processes.process_to_dict(processes.PSA_ONLY_PROCESS)
@@ -134,7 +131,6 @@ class ProcessesAPITest(testing_config.CustomTestCase):
     self.feature_1.feature_type = 3
     self.feature_1.breaking_change = True
     self.feature_1.put()
-    self.maxDiff = None
     with test_app.test_request_context(self.request_path):
       actual = self.handler.do_get(feature_id=self.feature_id)
     expected = processes.process_to_dict(processes.DEPRECATION_PROCESS)
@@ -156,7 +152,6 @@ class ProcessesAPITest(testing_config.CustomTestCase):
     self.feature_1.feature_type = 4
     self.feature_1.breaking_change = True
     self.feature_1.put()
-    self.maxDiff = None
     with test_app.test_request_context(self.request_path):
       actual = self.handler.do_get(feature_id=self.feature_id)
     expected = processes.process_to_dict(processes.ENTERPRISE_PROCESS)
@@ -206,7 +201,6 @@ class ProgressAPITest(testing_config.CustomTestCase):
     with test_app.test_request_context(self.request_path):
       actual = self.handler.do_get(feature_id=self.feature_id)
 
-    self.maxDiff = None
     self.assertEqual({
       'Code in Chromium': 'True',
       'Draft API spec': 'fake spec link',

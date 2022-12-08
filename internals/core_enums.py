@@ -324,6 +324,14 @@ STAGE_TYPES_SHIPPING: dict[int, Optional[int]] = {
     FEATURE_TYPE_EXISTING_ID: STAGE_FAST_SHIPPING,
     FEATURE_TYPE_CODE_CHANGE_ID: STAGE_PSA_SHIPPING,
     FEATURE_TYPE_DEPRECATION_ID: STAGE_DEP_SHIPPING,
+    FEATURE_TYPE_ENTERPRISE_ID: None
+  }
+# Rollout stage types for every feature type.
+STAGE_TYPES_ROLLOUT: dict[int, Optional[int]] = {
+    FEATURE_TYPE_INCUBATE_ID: STAGE_ENT_ROLLOUT,
+    FEATURE_TYPE_EXISTING_ID: STAGE_ENT_ROLLOUT,
+    FEATURE_TYPE_CODE_CHANGE_ID: STAGE_ENT_ROLLOUT,
+    FEATURE_TYPE_DEPRECATION_ID: STAGE_ENT_ROLLOUT,
     FEATURE_TYPE_ENTERPRISE_ID: STAGE_ENT_ROLLOUT
   }
 
@@ -364,10 +372,10 @@ STAGE_TYPES_BY_FIELD_MAPPING: dict[str, dict[int, Optional[int]]] = {
     'dt_milestone_android_start': STAGE_TYPES_DEV_TRIAL,
     'dt_milestone_ios_start': STAGE_TYPES_DEV_TRIAL,
     'dt_milestone_webview_start': STAGE_TYPES_DEV_TRIAL,
-    'enterprise_policies': STAGE_TYPES_SHIPPING,
-    'rollout_milestone': STAGE_TYPES_SHIPPING,
-    'rollout_platforms': STAGE_TYPES_SHIPPING,
-    'rollout_details': STAGE_TYPES_SHIPPING
+    'enterprise_policies': STAGE_TYPES_ROLLOUT,
+    'rollout_milestone': STAGE_TYPES_ROLLOUT,
+    'rollout_platforms': STAGE_TYPES_ROLLOUT,
+    'rollout_details': STAGE_TYPES_ROLLOUT
   }
 
 # Mapping of which stage types are associated with each gate type.

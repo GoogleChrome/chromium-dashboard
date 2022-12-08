@@ -3,7 +3,11 @@ import {ref} from 'lit/directives/ref.js';
 import {showToastMessage} from './utils.js';
 import './chromedash-form-table';
 import './chromedash-form-field';
-import {formatFeatureForEdit, FLAT_FORMS_BY_FEATURE_TYPE} from './form-definition';
+import {
+  formatFeatureForEdit,
+  FLAT_FORMS_BY_FEATURE_TYPE,
+  FLAT_ENTERPRISE_PREPARE_TO_SHIP_NAME,
+  FLAT_ENTERPRISE_PREPARE_TO_SHIP} from './form-definition';
 import {SHARED_STYLES} from '../sass/shared-css.js';
 import {FORM_STYLES} from '../sass/forms-css.js';
 
@@ -31,6 +35,7 @@ export class ChromedashGuideEditallPage extends LitElement {
     super();
     this.featureId = 0;
     this.feature = {};
+    this.featureForEdit = {};
     this.loading = true;
     this.appTitle = '';
     this.nextPage = '';
@@ -45,6 +50,7 @@ export class ChromedashGuideEditallPage extends LitElement {
     this.loading = true;
     window.csClient.getFeature(this.featureId).then((feature) => {
       this.feature = feature;
+      this.featureForEdit = formatFeatureForEdit(feature);
       if (this.feature.name) {
         document.title = `${this.feature.name} - ${this.appTitle}`;
       }
@@ -85,10 +91,25 @@ export class ChromedashGuideEditallPage extends LitElement {
     window.location.href = `/guide/edit/${this.featureId}`;
   }
 
+  getForms() {
+    const forms = JSON.parse(JSON.stringify(
+      FLAT_FORMS_BY_FEATURE_TYPE[this.featureForEdit.feature_type]));
+
+    // Ensures the rollout field is shown for breaking changes.
+    if (this.featureForEdit.breaking_change &&
+      !forms.some(([name]) => name === FLAT_ENTERPRISE_PREPARE_TO_SHIP_NAME)) {
+      forms.splice(
+        forms.length - 1,
+        0,
+        [FLAT_ENTERPRISE_PREPARE_TO_SHIP_NAME, FLAT_ENTERPRISE_PREPARE_TO_SHIP]);
+    }
+    return forms;
+  }
+
   // get a comma-spearated list of field names
-  getFormFields(featureType) {
+  getFormFields() {
     let fields = [];
-    FLAT_FORMS_BY_FEATURE_TYPE[featureType].map((form) => {
+    this.getForms().map((form) => {
       fields = [...fields, ...form[1]];
     });
     return fields.join();
@@ -137,20 +158,19 @@ export class ChromedashGuideEditallPage extends LitElement {
   }
 
   renderForm() {
-    const formattedFeature = formatFeatureForEdit(this.feature);
     return html`
       <form name="feature_form" method="POST" action="/guide/editall/${this.featureId}">
         <input type="hidden" name="token">
         <input type="hidden" name="nextPage" value=${this.getNextPage()} >
-        <input type="hidden" name="form_fields" value=${this.getFormFields(formattedFeature.feature_type)}>
+        <input type="hidden" name="form_fields" value=${this.getFormFields(this.featureForEdit.feature_type)}>
         <chromedash-form-table ${ref(this.registerFormSubmitHandler)}>
-          ${FLAT_FORMS_BY_FEATURE_TYPE[formattedFeature.feature_type].map(([sectionName, flatFormFields]) => html`
+          ${this.getForms().map(([sectionName, flatFormFields]) => html`
             <h3>${sectionName}</h3>
             <section class="flat_form">
               ${flatFormFields.map((field) => html`
                 <chromedash-form-field
                   name=${field}
-                  value=${formattedFeature[field]}>
+                  value=${this.featureForEdit[field]}>
                 </chromedash-form-field>
               `)}
             </section>
