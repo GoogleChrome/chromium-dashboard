@@ -54,6 +54,18 @@ export const ROADMAP_MILESTONE_CARD_CSS = [
     iron-icon.pushicon {
       cursor: pointer;
     }
+    sl-icon-button {
+     font-size: 16px;
+    }
+    .popup-content {
+      border: 2px solid #888;
+      border-radius: 8px;
+      background: #f8f8f8;
+      color: black;
+      font-size: 12pt;
+      padding: 1em;
+      width: 14em;
+    }
     .chrome_version {
       font-size: 45px;
       margin: 8px 0 16px 0;
