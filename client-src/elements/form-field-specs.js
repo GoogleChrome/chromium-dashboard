@@ -310,7 +310,7 @@ export const ALL_FIELDS = {
     help_text: html`
         Explain why the web needs this change. It may be useful
         to describe what web developers are forced to do without
-        it. When possible, add links to your explainer
+        it. When possible, add links to your explainer (under Explainer link(s))
         backing up your claims.
         <br/><br/>
         This text is sometimes included with the summary in the
@@ -366,6 +366,26 @@ export const ALL_FIELDS = {
         public forum before sending an Intent to Prototype in
         order to enable discussion with other browser vendors,
         standards bodies, or other interested parties.`,
+    extra_help: html`
+        <p>
+        You will need to publish this explainer by sharig it on a public forum,
+        and kick off "standards incubation" by proposing this to a relevant standards venue.
+        Frequently, this means you should make a WICG proposal and start socializing
+        the problem with other vendors and developers.
+        Enter a reference to the public proposal in “Initial Public Proposal” field;
+        if there is interest in the WICG proposal and it can be moved into the WICG at this point, do so. The WICG co-chairs can help you.
+        </p>
+        <p>
+        It's also a good idea to discuss your idea with the team/team lead (TL) or area expert in the feature area, prior to checking in code in the area.
+        </p>
+        <p>
+        Start sketching out a proposed solution in your (public) explainer, detailing API design (IDL) in your incubation.
+
+      See the TAG guide to writing <a href="https://tag.w3.org/explainers/">Explainers</a> for several examples of good explainers and tips for effective explainers.
+        </p>
+        <p></p>
+        If you are a Googler, you may wish to review this with your specification mentor before proceeding.
+        </p>`,
   },
 
   'spec_link': {
