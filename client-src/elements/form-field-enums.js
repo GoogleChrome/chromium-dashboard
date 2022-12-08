@@ -82,6 +82,46 @@ export const INTENT_STAGES = {
   INTENT_ROLLOUT: [10, 'Rollout'],
 };
 
+// Every mutable field that exists on the Stage entity and every key
+// in MilestoneSet.MILESTONE_FIELD_MAPPING should be listed here.
+export const STAGE_SPECIFIC_FIELDS = new Set([
+  // Milestone fields.
+  'shipped_milestone',
+  'shipped_android_milestone',
+  'shipped_ios_milestone',
+  'shipped_webview_milestone',
+  'ot_milestone_desktop_start',
+  'ot_milestone_desktop_end',
+  'ot_milestone_android_start',
+  'ot_milestone_android_end',
+  'ot_milestone_ios_start',
+  'ot_milestone_ios_end',
+  'ot_milestone_webview_start',
+  'ot_milestone_webview_end',
+  'dt_milestone_desktop_start',
+  'dt_milestone_android_start',
+  'dt_milestone_ios_start',
+  'dt_milestone_webview_start',
+
+  // Intent fields.
+  'intent_to_implement_url',
+  'intent_to_ship_url',
+  'intent_to_experiment_url',
+  'intent_to_extend_experiment_url',
+
+  // Misc fields.
+  'origin_trial_feedback_url',
+  'finch_url',
+  'experiment_goals',
+  'experiment_risks',
+  'experiment_extension_reason',
+  'rollout_milestone',
+  'rollout_platforms',
+  'rollout_details',
+  'enterprise_policies',
+  'ready_for_trial_url',
+]);
+
 export const IMPLEMENTATION_STATUS = {
   NO_ACTIVE_DEV: [1, 'No active development'],
   PROPOSED: [2, 'Proposed'],
