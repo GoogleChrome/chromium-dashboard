@@ -30,6 +30,7 @@ describe('chromedash-feature-page', () => {
     email: 'example@example.com',
   };
   const anon = null;
+  const gatesPromise = Promise.resolve([]);
   const commentsPromise = Promise.resolve([]);
   const processPromise = Promise.resolve({
     stages: [{
@@ -114,10 +115,12 @@ describe('chromedash-feature-page', () => {
     await fixture(html`<chromedash-toast></chromedash-toast>`);
     window.csClient = new ChromeStatusClient('fake_token', 1);
     sinon.stub(window.csClient, 'getFeature');
+    sinon.stub(window.csClient, 'getGates');
     sinon.stub(window.csClient, 'getComments');
     sinon.stub(window.csClient, 'getFeatureProcess');
     sinon.stub(window.csClient, 'getDismissedCues');
     sinon.stub(window.csClient, 'getStars');
+    window.csClient.getGates.returns(gatesPromise);
     window.csClient.getComments.returns(commentsPromise);
     window.csClient.getFeatureProcess.returns(processPromise);
     window.csClient.getDismissedCues.returns(dismissedCuesPromise);
