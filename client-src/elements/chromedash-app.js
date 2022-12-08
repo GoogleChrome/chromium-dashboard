@@ -116,6 +116,7 @@ class ChromedashApp extends LitElement {
       this.pageComponent.rawQuery = window.csClient.parseRawQuery(ctx.querystring);
       this.contextLink = ctx.path;
       this.currentPage = ctx.path;
+      this.pageComponent.addEventListener('search', this.handleSearchQuery.bind(this));
     });
     page('/feature/:featureId(\\d+)', (ctx) => {
       this.pageComponent = document.createElement('chromedash-feature-page');
@@ -185,6 +186,53 @@ class ChromedashApp extends LitElement {
       this.currentPage = ctx.path;
     });
     page.start();
+  }
+
+  handleSearchQuery(e) {
+    this.updateURLParams('q', e.detail.query);
+  }
+
+  /**
+ * Update window.locaton with new query params.
+ * @param {string} key is the key of the query param.
+ * @param {string} val is the unencoded value of the query param.
+ */
+  updateURLParams(key, val) {
+    // Update the query param object.
+    const rawQuery = window.csClient.parseRawQuery(window.location.search);
+    rawQuery[key] = encodeURIComponent(val);
+
+    // Assemble the new URL.
+    const newURL = this.getNewLocation(rawQuery, window.location);
+    newURL.hash = '';
+    if (newURL.toString() === window.location.toString()) {
+      return;
+    }
+    // Update URL without refreshing the page. {path:} is needed for
+    // an issue in page.js:
+    // https://github.com/visionmedia/page.js/issues/293#issuecomment-456906679
+    window.history.pushState({path: newURL.toString()}, '', newURL);
+  }
+
+  /**
+   * Create a new URL using params and a location.
+   * @param {string} params is the new param object.
+   * @param {Object} location is an URL location.
+   * @return {Object} the new URL.
+   */
+  getNewLocation(params, location) {
+    const url = new URL(location);
+    url.search = '';
+    if (params) {
+      for (const [k, v] of Object.entries(params)) {
+        // Skip if the value is empty.
+        if (!v) {
+          continue;
+        }
+        url.searchParams.append(k, v);
+      }
+    }
+    return url;
   }
 
   render() {
