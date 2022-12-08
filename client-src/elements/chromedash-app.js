@@ -116,6 +116,7 @@ class ChromedashApp extends LitElement {
       this.pageComponent.rawQuery = window.csClient.parseRawQuery(ctx.querystring);
       this.contextLink = ctx.path;
       this.currentPage = ctx.path;
+      this.pageComponent.addEventListener('pagination', this.handlePagination.bind(this));
     });
     page('/feature/:featureId(\\d+)', (ctx) => {
       this.pageComponent = document.createElement('chromedash-feature-page');
@@ -185,6 +186,10 @@ class ChromedashApp extends LitElement {
       this.currentPage = ctx.path;
     });
     page.start();
+  }
+
+  handlePagination(e) {
+    this.updateURLParams('start', e.detail.index);
   }
 
   render() {
