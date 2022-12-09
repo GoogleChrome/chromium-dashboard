@@ -193,6 +193,8 @@ const FLAT_PREPARE_TO_SHIP_FIELDS = [
   // Implementation
   'measurement',
   'non_oss_deps',
+  'shipped_milestone', 'shipped_android_milestone',
+  'shipped_ios_milestone', 'shipped_webview_milestone',
 ];
 
 

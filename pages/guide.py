@@ -320,51 +320,6 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
     if new_val != old_val:
       changed_fields.append((field, old_val, new_val))
 
-  def write_specific_stages(self, feature, feature_type, stage_ids, changed_fields) -> None:
-    for id in stage_ids:
-      if id == 0:
-        continue
-      stage = Stage.get_by_id(id)
-      if not stage:
-        self.abort(404, msg=f'No stage {id} found')
-
-      # Update the stage-specific fields.
-      for field, field_type in self.STAGE_FIELDS:
-        field_with_id = f'{field}__{id}'
-        new_field_name = self.RENAMED_FIELD_MAPPING.get(field, field)
-        old_val = getattr(stage, new_field_name)
-        new_val = self._get_field_val(field_with_id, field_type)
-        setattr(stage, new_field_name, new_val)
-        changed_fields.append((field, old_val, new_val))
-
-      # Update the fields representing milestones.
-      milestoneset_entity = stage.milestones
-      if milestoneset_entity is None:
-        milestoneset_entity = MilestoneSet()
-
-      milestone_fields = []
-      if stage.stage_type == core_enums.STAGE_TYPES_DEV_TRIAL[feature_type]:
-        milestone_fields = self.DEV_TRIAL_MILESTONE_FIELDS
-      if stage.stage_type == core_enums.STAGE_TYPES_ORIGIN_TRIAL[feature_type]:
-        milestone_fields = self.OT_MILESTONE_FIELDS
-      if stage.stage_type == core_enums.STAGE_TYPES_SHIPPING[feature_type]:
-        milestone_fields = self.SHIPPING_MILESTONE_FIELDS
-
-      for field, milestone_field in milestone_fields:
-        field_with_id = f'{field}__{id}'
-        old_val = None
-        new_val = self._get_field_val(field_with_id, 'int')
-        setattr(feature, field, new_val)
-        milestoneset_entity = getattr(stage, 'milestones')
-        if milestoneset_entity is None:
-          milestoneset_entity = MilestoneSet()
-        else:
-          old_val = getattr(milestoneset_entity, milestone_field)
-        setattr(milestoneset_entity, milestone_field, new_val)
-        stage.milestones = milestoneset_entity
-        changed_fields.append((field, old_val, new_val))
-      stage.put()
-
   def process_post_data(self, **kwargs) -> requests.Response:
     feature_id = kwargs.get('feature_id', None)
     stage_id = kwargs.get('stage_id', None)
@@ -425,7 +380,7 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
     stage_ids = self.form.get('stages')
     if stage_ids:
       stage_ids_list = [int(id) for id in stage_ids.split(',')]
-      self.write_specific_stages(
+      self.update_stages_editall(
           feature, fe.feature_type, stage_ids_list, changed_fields)
     else:
       for field, field_type in self.STAGE_FIELDS:
@@ -564,3 +519,47 @@ class FeatureEditHandler(basehandlers.FlaskHandler):
     for stages_by_type in stages.values():
       for stage in stages_by_type:
         stage.put()
+
+  def update_stages_editall(self, feature: Feature, feature_type: int,
+      stage_ids: list[int], changed_fields: list[tuple[str, Any, Any]]) -> None:
+    for id in stage_ids:
+      stage = Stage.get_by_id(id)
+      if not stage:
+        self.abort(404, msg=f'No stage {id} found')
+
+      # Update the stage-specific fields.
+      for field, field_type in self.STAGE_FIELDS:
+        # To differentiate stages that have the same fields, the stage ID
+        # is appended to the field name with 2 underscores.
+        field_with_id = f'{field}__{id}'
+        new_field_name = self.RENAMED_FIELD_MAPPING.get(field, field)
+        old_val = getattr(stage, new_field_name)
+        new_val = self._get_field_val(field_with_id, field_type)
+        setattr(stage, new_field_name, new_val)
+        changed_fields.append((field, old_val, new_val))
+
+      milestone_fields = []
+      # Determine if the stage type is one with specific milestone fields.
+      if stage.stage_type == core_enums.STAGE_TYPES_DEV_TRIAL[feature_type]:
+        milestone_fields = self.DEV_TRIAL_MILESTONE_FIELDS
+      if stage.stage_type == core_enums.STAGE_TYPES_ORIGIN_TRIAL[feature_type]:
+        milestone_fields = self.OT_MILESTONE_FIELDS
+      if stage.stage_type == core_enums.STAGE_TYPES_SHIPPING[feature_type]:
+        milestone_fields = self.SHIPPING_MILESTONE_FIELDS
+
+      for field, milestone_field in milestone_fields:
+        field_with_id = f'{field}__{id}'
+        old_val = None
+        new_val = self._get_field_val(field_with_id, 'int')
+
+        milestoneset_entity = stage.milestones
+        setattr(feature, field, new_val)
+        milestoneset_entity = getattr(stage, 'milestones')
+        if milestoneset_entity is None:
+          milestoneset_entity = MilestoneSet()
+        else:
+          old_val = getattr(milestoneset_entity, milestone_field)
+        setattr(milestoneset_entity, milestone_field, new_val)
+        stage.milestones = milestoneset_entity
+        changed_fields.append((field, old_val, new_val))
+      stage.put()
