@@ -320,7 +320,7 @@ class ChromedashFeatureDetail extends LitElement {
   }
 
   renderGateChips(feStage) {
-    const gatesForStage = this.gates.filter(g => g.stage_id == feStage.id);
+    const gatesForStage = this.gates.filter(g => g.stage_id == feStage.stage_id);
     return html`
       <div class="gates">
         ${gatesForStage.map(g => this.renderGateChip(g))}
