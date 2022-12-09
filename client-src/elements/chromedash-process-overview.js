@@ -309,19 +309,19 @@ export class ChromedashProcessOverview extends LitElement {
         <td>
           ${isActive ?
             html`<div><a
-                  href="/guide/stage/${featureId}/${processStage.outgoing_stage}"
+                  href="/guide/stage/${featureId}/${feStage.stage_id}/${processStage.outgoing_stage}"
                   class="button primary">Update</a></div>` :
             nothing }
           ${this.isPriorStage(processStage) ?
-            html`<a href="/guide/stage/${featureId}/${processStage.outgoing_stage}"
+            html`<a href="/guide/stage/${featureId}/${feStage.stage_id}/${processStage.outgoing_stage}"
                 >Revisit</a>` :
             nothing }
           ${this.isStartableStage(processStage) ?
-            html`<a href="/guide/stage/${featureId}/${processStage.outgoing_stage}"
+            html`<a href="/guide/stage/${featureId}/${feStage.stage_id}/${processStage.outgoing_stage}"
                     class="button primary">Start</a>` :
             nothing }
           ${this.isFutureStage(processStage) ?
-            html`<a href="/guide/stage/${featureId}/${processStage.outgoing_stage}"
+            html`<a href="/guide/stage/${featureId}/${feStage.stage_id}/${processStage.outgoing_stage}"
                 >Preview</a>` :
             nothing }
 
